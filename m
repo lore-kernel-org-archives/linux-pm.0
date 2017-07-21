@@ -1,12 +1,11 @@
 From: Markus Mayer <code@mmayer.net>
-Subject: [PATCH v2 1/4] Documentation: devicetree: add binding for Broadcom
- STB AVS TMON
-Date: Fri, 21 Jul 2017 12:27:32 -0700
-Message-ID: <20170721192735.6546-2-code@mmayer.net>
+Subject: [PATCH v2 3/4] ARM: multi_v7_defconfig: add CONFIG_BRCMSTB_THERMAL
+Date: Fri, 21 Jul 2017 12:27:34 -0700
+Message-ID: <20170721192735.6546-4-code@mmayer.net>
 References: <20170721192735.6546-1-code@mmayer.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <20170721192735.6546-1-code@mmayer.net>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
@@ -22,42 +21,26 @@ To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob
 Cc: Device Tree List <devicetree@vger.kernel.org>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Markus Mayer <mmayer@broadcom.com>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-RnJvbTogQnJpYW4gTm9ycmlzIDxjb21wdXRlcnNmb3JwZWFjZUBnbWFpbC5jb20+CgpBZGQgYmlu
-ZGluZyBmb3IgQnJvYWRjb20gU1RCIHRoZXJtYWwuCgpTaWduZWQtb2ZmLWJ5OiBCcmlhbiBOb3Jy
-aXMgPGNvbXB1dGVyc2ZvcnBlYWNlQGdtYWlsLmNvbT4KU2lnbmVkLW9mZi1ieTogTWFya3VzIE1h
-eWVyIDxtbWF5ZXJAYnJvYWRjb20uY29tPgotLS0KIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL3Ro
-ZXJtYWwvYnJjbSxhdnMtdG1vbi50eHQgICAgfCAyMCArKysrKysrKysrKysrKysrKysrKwogTUFJ
-TlRBSU5FUlMgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICA4ICsr
-KysrKysrCiAyIGZpbGVzIGNoYW5nZWQsIDI4IGluc2VydGlvbnMoKykKIGNyZWF0ZSBtb2RlIDEw
-MDY0NCBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9icmNtLGF2cy10
-bW9uLnR4dAoKZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90
-aGVybWFsL2JyY20sYXZzLXRtb24udHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRp
-bmdzL3RoZXJtYWwvYnJjbSxhdnMtdG1vbi50eHQKbmV3IGZpbGUgbW9kZSAxMDA2NDQKaW5kZXgg
-MDAwMDAwMC4uOWQ0MzU1MwotLS0gL2Rldi9udWxsCisrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNl
-dHJlZS9iaW5kaW5ncy90aGVybWFsL2JyY20sYXZzLXRtb24udHh0CkBAIC0wLDAgKzEsMjAgQEAK
-KyogQnJvYWRjb20gU1RCIHRoZXJtYWwgbWFuYWdlbWVudAorCitUaGVybWFsIG1hbmFnZW1lbnQg
-Y29yZSwgcHJvdmlkZWQgYnkgdGhlIEFWUyBUTU9OIGhhcmR3YXJlIGJsb2NrLgorCitSZXF1aXJl
-ZCBwcm9wZXJ0aWVzOgorLSBjb21wYXRpYmxlOiBtdXN0IGJlICJicmNtLGF2cy10bW9uIiBhbmQv
-b3IgImJyY20sYXZzLXRtb24tYmNtNzQ0NSIKKy0gcmVnOiBhZGRyZXNzIHJhbmdlIGZvciB0aGUg
-QVZTIFRNT04gcmVnaXN0ZXJzCistIGludGVycnVwdHM6IHRlbXBlcmF0dXJlIG1vbml0b3IgaW50
-ZXJydXB0LCBmb3IgaGlnaC9sb3cgdGhyZXNob2xkIHRyaWdnZXJzCistIGludGVycnVwdC1uYW1l
-czogc2hvdWxkIGJlICJ0bW9uIgorLSBpbnRlcnJ1cHQtcGFyZW50OiB0aGUgcGFyZW50IGludGVy
-cnVwdCBjb250cm9sbGVyCisKK0V4YW1wbGU6CisKKwl0aGVybWFsQGYwNGQxNTAwIHsKKwkJY29t
-cGF0aWJsZSA9ICJicmNtLGF2cy10bW9uLWJjbTc0NDUiLCAiYnJjbSxhdnMtdG1vbiI7CisJCXJl
-ZyA9IDwweGYwNGQxNTAwIDB4Mjg+OworCQlpbnRlcnJ1cHRzID0gPDB4Nj47CisJCWludGVycnVw
-dC1uYW1lcyA9ICJ0bW9uIjsKKwkJaW50ZXJydXB0LXBhcmVudCA9IDwmYXZzX2hvc3RfbDJfaW50
-Yz47CisJfTsKZGlmZiAtLWdpdCBhL01BSU5UQUlORVJTIGIvTUFJTlRBSU5FUlMKaW5kZXggMjA1
-ZDM5Ny4uYTY4M2Q0YyAxMDA2NDQKLS0tIGEvTUFJTlRBSU5FUlMKKysrIGIvTUFJTlRBSU5FUlMK
-QEAgLTI5MjgsNiArMjkyOCwxNCBAQCBTOglNYWludGFpbmVkCiBGOglEb2N1bWVudGF0aW9uL2Rl
-dmljZXRyZWUvYmluZGluZ3MvY3B1ZnJlcS9icmNtLHN0Yi1hdnMtY3B1LWZyZXEudHh0CiBGOglk
-cml2ZXJzL2NwdWZyZXEvYnJjbXN0YioKIAorQlJPQURDT00gU1RCIEFWUyBUTU9OIERSSVZFUgor
-TToJTWFya3VzIE1heWVyIDxtbWF5ZXJAYnJvYWRjb20uY29tPgorTToJYmNtLWtlcm5lbC1mZWVk
-YmFjay1saXN0QGJyb2FkY29tLmNvbQorTDoJbGludXgtcG1Admdlci5rZXJuZWwub3JnCitTOglN
-YWludGFpbmVkCitGOglEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9i
-cmNtLGF2cy10bW9uLnR4dAorRjoJZHJpdmVycy90aGVybWFsL2Jyb2FkY29tL2JyY21zdGIqCisK
-IEJST0FEQ09NIFNQRUNJRklDIEFNQkEgRFJJVkVSIChCQ01BKQogTToJUmFmYcWCIE1pxYJlY2tp
-IDx6YWplYzVAZ21haWwuY29tPgogTDoJbGludXgtd2lyZWxlc3NAdmdlci5rZXJuZWwub3JnCi0t
-IAoyLjcuNAoKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-CmxpbnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5m
-cmFkZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xp
-bnV4LWFybS1rZXJuZWwK
+From: Markus Mayer <mmayer@broadcom.com>
+
+Turn on CONFIG_BRCMSTB_THERMAL as module.
+
+Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+---
+ arch/arm/configs/multi_v7_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index 4d19c1b..230f7fa 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -455,6 +455,7 @@ CONFIG_SENSORS_NTC_THERMISTOR=m
+ CONFIG_SENSORS_PWM_FAN=m
+ CONFIG_SENSORS_INA2XX=m
+ CONFIG_CPU_THERMAL=y
++CONFIG_BRCMSTB_THERMAL=m
+ CONFIG_ROCKCHIP_THERMAL=y
+ CONFIG_RCAR_THERMAL=y
+ CONFIG_ARMADA_THERMAL=y
+-- 
+2.7.4
