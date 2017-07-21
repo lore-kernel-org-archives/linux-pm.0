@@ -1,44 +1,56 @@
-From: <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH 0/3] add support of SCPSYS power domain for MediaTek MT7622
-Date: Fri, 21 Jul 2017 11:57:11 +0800
-Message-ID: <cover.1500608650.git.sean.wang@mediatek.com>
+From: <sean.wang@mediatek.com>
+Subject: [PATCH 2/3] soc: mediatek: add header files required for MT7622 SCPSYS dt-binding
+Date: Fri, 21 Jul 2017 11:57:13 +0800
+Message-ID: <f0a5990699432508a3210b29cafae32db5691ed8.1500608650.git.sean.wang@mediatek.com>
+References: <cover.1500608650.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org
-Cc: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1500608650.git.sean.wang@mediatek.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: robh+dt@kernel.org, matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com
+Cc: ulf.hansson@linaro.org, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Chen Zhong <chen.zhong@mediatek.com>, Sean Wang <sean.wang@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+From: Chen Zhong <chen.zhong@mediatek.com>
 
-There are four power domains on MediaTek MT7622 SoC which are respectively
-ETHSYS for Ethernet including extra embedded switch, HIF0SYS for PCI-E and
-SATA, HIF1SYS for USB and WBSYS for WIFI and Bluetooth.
+Add relevant header files required for dt-bindings of SCPSYS power domain
+control for all subsystems found on MT7622 SoC.
 
-Those functions could be selectively powered gated when the corresponding
-function is no longer to use in order to reach more minimal power
-dissipation through the patch series introduced here.
-
-Chen Zhong (2):
-  soc: mediatek: add header files required for MT7622 SCPSYS dt-binding
-  soc: mediatek: add SCPSYS power domain driver for MediaTek MT7622 SoC
-
-Sean Wang (1):
-  dt-bindings: soc: update the binding document for SCPSYS on MediaTek
-    MT7622 SoC
-
- .../devicetree/bindings/soc/mediatek/scpsys.txt    |  3 +
- drivers/soc/mediatek/mtk-scpsys.c                  | 76 ++++++++++++++++++++++
- include/dt-bindings/power/mt7622-power.h           | 22 +++++++
- include/linux/soc/mediatek/infracfg.h              |  8 ++-
- 4 files changed, 108 insertions(+), 1 deletion(-)
+Signed-off-by: Chen Zhong <chen.zhong@mediatek.com>
+Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+---
+ include/dt-bindings/power/mt7622-power.h | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
  create mode 100644 include/dt-bindings/power/mt7622-power.h
 
+diff --git a/include/dt-bindings/power/mt7622-power.h b/include/dt-bindings/power/mt7622-power.h
+new file mode 100644
+index 0000000..1b63926
+--- /dev/null
++++ b/include/dt-bindings/power/mt7622-power.h
+@@ -0,0 +1,22 @@
++/*
++ * Copyright (C) 2017 MediaTek Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++ * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
++ */
++
++#ifndef _DT_BINDINGS_POWER_MT7622_POWER_H
++#define _DT_BINDINGS_POWER_MT7622_POWER_H
++
++#define MT7622_POWER_DOMAIN_ETHSYS	0
++#define MT7622_POWER_DOMAIN_HIF0	1
++#define MT7622_POWER_DOMAIN_HIF1	2
++#define MT7622_POWER_DOMAIN_WB		3
++
++#endif /* _DT_BINDINGS_POWER_MT7622_POWER_H */
 -- 
 2.7.4
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
