@@ -1,79 +1,51 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH 3/3] ACPI / PCI / PM: Rework acpi_pci_propagate_wakeup()
-Date: Fri, 21 Jul 2017 18:45:03 +0300
-Message-ID: <CAHp75VeQpmf5z1p9an2bvJDkAGeOxFyXz+VWk7OibNt+-9VMDw@mail.gmail.com>
-References: <3116391.JNS1F4DjTg@aspire.rjw.lan> <4853865.5aRGCM4CdQ@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4853865.5aRGCM4CdQ@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] thermal: fix INTEL_SOC_DTS_IOSF_CORE dependencies
+Date: Fri, 21 Jul 2017 18:16:28 +0200
+Message-ID: <20170721161704.3335851-1-arnd@arndb.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([217.72.192.74]:65093 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750849AbdGUQRT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2017 12:17:19 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Jul 21, 2017 at 3:42 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+We get a Kconfig warning when selecting this without also enabling
+CONFIG_PCI:
 
-> The acpi_pci_propagate_wakeup() routine is there to handle cases in
-> which PCI bridges (or PCIe ports) are expected to signal wakeup
-> for devices below them, but currently it doesn't do that correctly.
->
-> The problem is that acpi_pci_propagate_wakeup() uses
-> acpi_pm_set_device_wakeup() for bridges and if that routine is
-> called for multiple times to disable wakeup for the same device,
-> it will disable it on the first invocation and the next calls
-> will have no effect (it works analogously when called to enable
-> wakeup, but that is not a problem).
->
-> Now, say acpi_pci_propagate_wakeup() has been called for two
-> different devices under the same bridge and it has called
-> acpi_pm_set_device_wakeup() for that bridge each time.  The
-> bridge is now enabled to generate wakeup signals.  Next,
-> suppose that one of the devices below it resumes and
-> acpi_pci_propagate_wakeup() is called to disable wakeup for that
-> device.  It will then call acpi_pm_set_device_wakeup() for the bridge
-> and that will effectively disable remote wakeup for all devices under
-> it even though some of them may still be suspended and remote wakeup
-> may be expected to work for them.
->
-> To address this (arguably theoretical) issue, allow
-> wakeup.enable_count under struct acpi_device to grow beyond 1 in
-> certain situations.  In particular, allow that to happen in
-> acpi_pci_propagate_wakeup() when wakeup is enabled or disabled
-> for PCI bridges, so that wakeup is actually disabled for the
-> bridge when all devices under it resume and not when just one
-> of them does that.
+warning: (X86_INTEL_LPSS && INTEL_SOC_DTS_IOSF_CORE && SND_SST_IPC_ACPI && MMC_SDHCI_ACPI && PUNIT_ATOM_DEBUG) selects IOSF_MBI which has unmet direct dependencies (PCI)
 
-> -       if (wakeup->enable_count > 0)
-> -               goto out;
-> +       if (wakeup->enable_count > 0) {
-> +               if (wakeup->enable_count < max_count)
-> +                       goto inc;
-> +               else
-> +                       goto out;
-> +       }
+This adds a new depedency.
 
-Wouldn't be simpler
+Fixes: 3a2419f865a6 ("Thermal: Intel SoC: DTS thermal use common APIs")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/thermal/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-    if (wakeup->enable_count >= max_count)
-      goto out;
-
-    if (wakeup->enable_count > 0)
-      goto inc;
-
-If max_count can be <= 0,
-
-    if (max_count > 0 && wakeup->enable_count >= max_count)
-      goto out;
-
-
-> +inc:
->         wakeup->enable_count++;
->
->  out:
-
-
-
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index b5b5facb8747..ac2a53823576 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -342,7 +342,7 @@ config X86_PKG_TEMP_THERMAL
+ 
+ config INTEL_SOC_DTS_IOSF_CORE
+ 	tristate
+-	depends on X86
++	depends on X86 && PCI
+ 	select IOSF_MBI
+ 	help
+ 	  This is becoming a common feature for Intel SoCs to expose the additional
+@@ -352,7 +352,7 @@ config INTEL_SOC_DTS_IOSF_CORE
+ 
+ config INTEL_SOC_DTS_THERMAL
+ 	tristate "Intel SoCs DTS thermal driver"
+-	depends on X86
++	depends on X86 && PCI
+ 	select INTEL_SOC_DTS_IOSF_CORE
+ 	select THERMAL_WRITABLE_TRIPS
+ 	help
 -- 
-With Best Regards,
-Andy Shevchenko
+2.9.0
