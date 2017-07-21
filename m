@@ -1,60 +1,84 @@
-From: =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>
-Subject: Re: [PATCH v2 2/4] thermal: add brcmstb AVS TMON driver
-Date: Fri, 21 Jul 2017 22:04:42 +0200
-Message-ID: <1b44dcc1381fda8ab3f29c97718e9999@milecki.pl>
-References: <20170721192735.6546-1-code@mmayer.net>
- <20170721192735.6546-3-code@mmayer.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170721192735.6546-3-code@mmayer.net>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Markus Mayer <code@mmayer.net>
-Cc: Mark Rutland <mark.rutland@arm.com>, Device Tree List <devicetree@vger.kernel.org>, Doug Berger <opendmb@gmail.com>, Markus Mayer <mmayer@broadcom.com>, Arnd Bergmann <arnd@arndb.de>, Power Management List <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Gregory Fong <gregory.0xf0@gmail.com>, Olof Johansson <olof@lixom.net>, Florian Fainelli <f.fainelli@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Brian Norris <computersforpeace@gmail.com>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Subject: [PATCH v2] cpufreq: s5pv210: add missing of_node_put
+Date: Fri, 21 Jul 2017 21:53:30 +0200
+Message-ID: <1500666810-21841-1-git-send-email-Julia.Lawall@lip6.fr>
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>
+Cc: kernel-janitors@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-I'm far from being thermal expert, to me it looks OK, only 1 trivial 
-issue
-noticed (see below).
+for_each_compatible_node performs an of_node_get on each iteration, so a
+return from the loop requires an of_node_put.
 
+The semantic patch that fixes this problem is as follows
+(http://coccinelle.lip6.fr):
 
-On 2017-07-21 21:27, Markus Mayer wrote:
-> +static void avs_tmon_trip_enable(struct brcmstb_thermal_priv *priv,
-> +				 enum avs_tmon_trip_type type, int en)
-> +{
-> +	struct avs_tmon_trip *trip = &avs_tmon_trips[type];
-> +	u32 val = __raw_readl(priv->tmon_base + trip->enable_offs);
-> +
-> +	pr_debug("%sable trip, type %d\n", en ? "en" : "dis", type);
+// <smpl>
+@@
+local idexpression n;
+expression e,e1,e2;
+statement S;
+iterator i1;
+iterator name for_each_compatible_node;
+@@
 
-This probably could be dev_dbg?
+ for_each_compatible_node(n,e1,e2) {
+   ...
+(
+   of_node_put(n);
+|
+   e = n
+|
+   return n;
+|
+   i1(...,n,...) S
+|
++  of_node_put(n);
+?  return ...;
+)
+   ...
+ }
+// </smpl>
 
+Additionally, call of_node_put on the previous value of np, obtained from
+of_find_compatible_node, that is no longer accessible at the point of the
+for_each_compatible_node.
 
-> +static void avs_tmon_set_trip_temp(struct brcmstb_thermal_priv *priv,
-> +				   enum avs_tmon_trip_type type,
-> +				   int temp)
-> +{
-> +	struct avs_tmon_trip *trip = &avs_tmon_trips[type];
-> +	u32 val, orig;
-> +
-> +	pr_debug("set temp %d to %d\n", type, temp);
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Same here.
+---
 
+v2: add the of_node_put for the call to of_find_compatible_node as well.
 
-> +static int brcmstb_set_trips(void *data, int low, int high)
-> +{
-> +	struct brcmstb_thermal_priv *priv = data;
-> +
-> +	pr_debug("set trips %d <--> %d\n", low, high);
+ drivers/cpufreq/s5pv210-cpufreq.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-And the last time here.
+diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+index f82074e..5d31c2d 100644
+--- a/drivers/cpufreq/s5pv210-cpufreq.c
++++ b/drivers/cpufreq/s5pv210-cpufreq.c
+@@ -602,6 +602,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	clk_base = of_iomap(np, 0);
++	of_node_put(np);
+ 	if (!clk_base) {
+ 		pr_err("%s: failed to map clock registers\n", __func__);
+ 		return -EFAULT;
+@@ -612,6 +613,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+ 		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
+ 			pr_err("%s: failed to get alias of dmc node '%s'\n",
+ 				__func__, np->name);
++			of_node_put(np);
+ 			return id;
+ 		}
+ 
+@@ -619,6 +621,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+ 		if (!dmc_base[id]) {
+ 			pr_err("%s: failed to map dmc%d registers\n",
+ 				__func__, id);
++			of_node_put(np);
+ 			return -EFAULT;
+ 		}
+ 	}
