@@ -1,71 +1,44 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
-Subject: Re: cpuidle and cpufreq coupling?
-Date: Thu, 20 Jul 2017 17:30:38 -0700
-Message-ID: <7d60dab4-f461-39d2-f1b6-12f053347bd9@gmail.com>
-References: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
- <CAJZ5v0i2B0=cPB5VxXJUb36LW9hp_L7k-moj+Eg+vPvfPHFcSA@mail.gmail.com>
- <20170720071846.GK352@vireshk-i7>
- <CAJZ5v0hxK9iBR4RJBu9yutn7M=uTfsEwZZcwJie=17RuYtnuNA@mail.gmail.com>
- <20170720144530.da6bqpdvt2cvbjjs@hirez.programming.kicks-ass.net>
- <a237a845-c24e-c1dc-c910-e09a69d631b6@gmail.com>
- <6b28e6f3-d961-24c8-ad90-8cd6cd844236@codeaurora.org>
+From: <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH 0/3] add support of SCPSYS power domain for MediaTek MT7622
+Date: Fri, 21 Jul 2017 11:57:11 +0800
+Message-ID: <cover.1500608650.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:36501 "EHLO
-        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S964809AbdGUAap (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 20:30:45 -0400
-In-Reply-To: <6b28e6f3-d961-24c8-ad90-8cd6cd844236@codeaurora.org>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org
+Cc: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Vikram Mulukutla <markivx@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Markus Mayer <code@mmayer.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-On 07/20/2017 05:11 PM, Vikram Mulukutla wrote:
-> On 7/20/2017 3:56 PM, Florian Fainelli wrote:
->> On 07/20/2017 07:45 AM, Peter Zijlstra wrote:
-> 
-> <snip>
-> 
->>>
->>> Can your ARM part change OPP without scheduling? Because (for obvious
->>> reasons) the idle thread is not supposed to block.
->>
->> I think it should be able to do that, but I am not sure that if I went
->> through the cpufreq API it would be that straight forward so I may have
->> to re-implement some of the frequency scaling logic outside of cpufreq
->> (or rather make the low-level parts some kind of library I guess).
->>
-> 
-> I think I can safely mention that some of our non-upstream idle drivers
-> in the past have invoked low level clock drivers to atomically switch
-> CPUs to low frequency OPPs, with no interaction whatsoever with cpufreq.
-> It was maintainable since both the idle and clock drivers were
-> qcom-specific. However this is no longer necessary in recent designs and
-> I really hope we never need to do this again...
+From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 
-Yes same here, this is for a past generation product, current generation
-has a smarter design that so far does not require that.
+There are four power domains on MediaTek MT7622 SoC which are respectively
+ETHSYS for Ethernet including extra embedded switch, HIF0SYS for PCI-E and
+SATA, HIF1SYS for USB and WBSYS for WIFI and Bluetooth.
 
-> 
-> We didn't have to do a voltage switch and just PLL or mux
-> work so this was doable. I'm guessing your atomic switching also allows
-> voltage reduction?
+Those functions could be selectively powered gated when the corresponding
+function is no longer to use in order to reach more minimal power
+dissipation through the patch series introduced here.
 
-Correct there is a voltage reduction occurring which is largely under
-control of a separate MCU/firmware.
+Chen Zhong (2):
+  soc: mediatek: add header files required for MT7622 SCPSYS dt-binding
+  soc: mediatek: add SCPSYS power domain driver for MediaTek MT7622 SoC
 
-> 
-> If your architecture allows another CPU to change the entering-idle CPU's
-> frequency, synchronization will be necessary as well - this is where it
-> can get a bit tricky.
+Sean Wang (1):
+  dt-bindings: soc: update the binding document for SCPSYS on MediaTek
+    MT7622 SoC
 
-That is a very good point, the frequency scaling is not per-CPU but for
-the entire CPU complex (up to 4 cores) so that might indeed be a problem.
+ .../devicetree/bindings/soc/mediatek/scpsys.txt    |  3 +
+ drivers/soc/mediatek/mtk-scpsys.c                  | 76 ++++++++++++++++++++++
+ include/dt-bindings/power/mt7622-power.h           | 22 +++++++
+ include/linux/soc/mediatek/infracfg.h              |  8 ++-
+ 4 files changed, 108 insertions(+), 1 deletion(-)
+ create mode 100644 include/dt-bindings/power/mt7622-power.h
 
-Thanks!
 -- 
-Florian
+2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
