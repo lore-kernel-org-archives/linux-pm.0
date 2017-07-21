@@ -1,47 +1,70 @@
-From: Benjamin Tissoires <benjamin.tissoires@redhat.com>
-Subject: Re: [PATCH v8 3/9] i2c: core: call of_i2c_setup_smbus_alert in
- i2c_register_adapter
-Date: Fri, 21 Jul 2017 11:37:59 +0200
-Message-ID: <20170721093759.GD11387@mail.corp.redhat.com>
-References: <201707200255.SHskJrcM%fengguang.wu@intel.com>
- <c6e4dce0-853f-a4d4-be64-ef4bb0f68162@electromag.com.au>
+From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Subject: Re: [PATCH v4 2/2] thermal: uniphier: add UniPhier thermal driver
+Date: Fri, 21 Jul 2017 20:15:03 +0900
+Message-ID: <20170721201503.BC76.4A936039@socionext.com>
+References: <CAK7LNATDxacQXyJr=4b7zaWkX1Y6S8DMHEkQxECvmETemfGRfA@mail.gmail.com> <CAK7LNATDY4SdGHH1_K2GhFcsXMuG_9vGECWNtNfBJ_D=AO785w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:34142 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753388AbdGUJiJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Jul 2017 05:38:09 -0400
-Content-Disposition: inline
-In-Reply-To: <c6e4dce0-853f-a4d4-be64-ef4bb0f68162@electromag.com.au>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAK7LNATDY4SdGHH1_K2GhFcsXMuG_9vGECWNtNfBJ_D=AO785w@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Masami Hiramatsu <masami.hiramatsu@linaro.org>, Jassi Brar <jaswinder.singh@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: kbuild test robot <lkp@intel.com>, kbuild-all@01.org, wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Jul 20 2017 or thereabouts, Phil Reid wrote:
-> On 20/07/2017 02:30, kbuild test robot wrote:
-> > 
-> 
-> I understand how this is occurring.
-> I2C=y, OF=y and I2C_PARPORT=m
-> I2C_PARPORT selects I2C_SMBUS setting it to m
-> 
-> Calling a function in i2c-smbus (module) from i2c-core (builtin) is then a problem.
-> 
-> However there doesn't seem to be a way (that I can see) to have select statement force I2C_SMBUS=y if I2C=y
+On Fri, 21 Jul 2017 02:09:18 +0900 <yamada.masahiro@socionext.com> wrote:
 
-What if I2C selects I2C_SMBUS directly?
+> 2017-07-21 1:53 GMT+09:00 Masahiro Yamada <yamada.masahiro@socionext.com>:
+> > 2017-07-21 1:08 GMT+09:00 Masahiro Yamada <yamada.masahiro@socionext.com>:
+> >> 2017-07-07 10:54 GMT+09:00 Kunihiko Hayashi <hayashi.kunihiko@socionext.com>:
+> >>> Add a thermal driver for on-chip PVT (Process, Voltage and Temperature)
+> >>> monitoring unit implemented on UniPhier SoCs. This driver supports
+> >>> temperature monitoring and alert function.
+> >>>
+> >>> Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+> >>
+> >>
+> >> Sparse reports several warnings.
+> >>
+> >>
+> >>   CHECK   drivers/thermal/uniphier_thermal.c
+> >> drivers/thermal/uniphier_thermal.c:276:52: warning: incorrect type in
+> >> argument 1 (different base types)
+> >> drivers/thermal/uniphier_thermal.c:276:52:    expected restricted
+> >> __be32 const [usertype] *cell
+> >> drivers/thermal/uniphier_thermal.c:276:52:    got unsigned int const
+> >> [usertype] *[assigned] calib
+> >> drivers/thermal/uniphier_thermal.c:277:58: warning: incorrect type in
+> >> argument 1 (different base types)
+> >> drivers/thermal/uniphier_thermal.c:277:58:    expected restricted
+> >> __be32 const [usertype] *cell
+> >> drivers/thermal/uniphier_thermal.c:277:58:    got unsigned int const
+> >> [usertype] *
+> >> drivers/thermal/uniphier_thermal.c:136:9: warning: cast truncates bits
+> >> from constant value (fffffffff becomes ffffffff)
+> >> drivers/thermal/uniphier_thermal.c:141:9: warning: cast truncates bits
+> >> from constant value (7ffffffff becomes ffffffff)
+> >> drivers/thermal/uniphier_thermal.c:153:9: warning: cast truncates bits
+> >> from constant value (ffffffffff0001 becomes ffff0001)
+> >> drivers/thermal/uniphier_thermal.c:170:9: warning: cast truncates bits
+> >> from constant value (7ffffffffff becomes ffffffff)
+> >> drivers/thermal/uniphier_thermal.c:185:9: warning: cast truncates bits
+> >> from constant value (7ffffffffff becomes ffffffff)
+> >>
+> >
+> > Hmm.
+> > The endian mismatch can be fixed by replacing u32 with __be32.
+> >
+> > I can not get the truncates bits warnings.
+> > Why sparse complains about this...
+> 
+> My bad - I was cross-compiling with ARCH=arm, so I think that's why.
+> 
+> I think the incorrect type should be fixed.  (u32 -> __be32)
 
-Cheers,
-Benjamin
+Thanks for your pointing out.
+I'll fix it next.
 
-> 
-> Can I get a hint on what the correct course of action is.
-> 
-> 
-> 
-> -- 
-> Regards
-> Phil Reid
-> 
+Best Regards,
+Kunihiko Hayashi
