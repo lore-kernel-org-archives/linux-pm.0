@@ -1,51 +1,78 @@
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH 2/3] ACPI / PM: Split acpi_device_wakeup()
-Date: Fri, 21 Jul 2017 18:27:39 +0300
-Message-ID: <CAHp75VdJqyNBC=iy_FGVsxeskHko=P9=SJqrN8Hq1GtXZEyoRA@mail.gmail.com>
-References: <3116391.JNS1F4DjTg@aspire.rjw.lan> <3408475.MC8krXn0zk@aspire.rjw.lan>
+Subject: Re: [PATCH 3/3] ACPI / PCI / PM: Rework acpi_pci_propagate_wakeup()
+Date: Fri, 21 Jul 2017 18:45:03 +0300
+Message-ID: <CAHp75VeQpmf5z1p9an2bvJDkAGeOxFyXz+VWk7OibNt+-9VMDw@mail.gmail.com>
+References: <3116391.JNS1F4DjTg@aspire.rjw.lan> <4853865.5aRGCM4CdQ@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3408475.MC8krXn0zk@aspire.rjw.lan>
+In-Reply-To: <4853865.5aRGCM4CdQ@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 21, 2017 at 3:40 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> To prepare for a subsequent change and make the code somewhat easier
-> to follow, do the following in the ACPI device wakeup handling code:
->
->  * Replace wakeup.flags.enabled under struct acpi_device with
->    wakeup.enable_count as that will be necessary going forward.
->
->    For now, wakeup.enable_count is not allowed to grow beyond 1,
->    so the current behavior is retained.
->
->  * Split acpi_device_wakeup() into acpi_device_wakeup_enable()
->    and acpi_device_wakeup_disable() and modify the callers of
->    it accordingly.
->
->  * Introduce a new acpi_wakeup_lock mutex to protect the wakeup
->    enabling/disabling code from races in case it is executed
->    more than once in parallel for the same device (which may
->    happen for bridges theoretically).
+On Fri, Jul 21, 2017 at 3:42 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 
-I prefer more self-explaining labels, though it's minor here
+> The acpi_pci_propagate_wakeup() routine is there to handle cases in
+> which PCI bridges (or PCIe ports) are expected to signal wakeup
+> for devices below them, but currently it doesn't do that correctly.
+>
+> The problem is that acpi_pci_propagate_wakeup() uses
+> acpi_pm_set_device_wakeup() for bridges and if that routine is
+> called for multiple times to disable wakeup for the same device,
+> it will disable it on the first invocation and the next calls
+> will have no effect (it works analogously when called to enable
+> wakeup, but that is not a problem).
+>
+> Now, say acpi_pci_propagate_wakeup() has been called for two
+> different devices under the same bridge and it has called
+> acpi_pm_set_device_wakeup() for that bridge each time.  The
+> bridge is now enabled to generate wakeup signals.  Next,
+> suppose that one of the devices below it resumes and
+> acpi_pci_propagate_wakeup() is called to disable wakeup for that
+> device.  It will then call acpi_pm_set_device_wakeup() for the bridge
+> and that will effectively disable remote wakeup for all devices under
+> it even though some of them may still be suspended and remote wakeup
+> may be expected to work for them.
+>
+> To address this (arguably theoretical) issue, allow
+> wakeup.enable_count under struct acpi_device to grow beyond 1 in
+> certain situations.  In particular, allow that to happen in
+> acpi_pci_propagate_wakeup() when wakeup is enabled or disabled
+> for PCI bridges, so that wakeup is actually disabled for the
+> bridge when all devices under it resume and not when just one
+> of them does that.
 
-To be constructive:
-out -> err_unlock
-out -> out_unlock or err_unlock (depends on context)
+> -       if (wakeup->enable_count > 0)
+> -               goto out;
+> +       if (wakeup->enable_count > 0) {
+> +               if (wakeup->enable_count < max_count)
+> +                       goto inc;
+> +               else
+> +                       goto out;
+> +       }
+
+Wouldn't be simpler
+
+    if (wakeup->enable_count >= max_count)
+      goto out;
+
+    if (wakeup->enable_count > 0)
+      goto inc;
+
+If max_count can be <= 0,
+
+    if (max_count > 0 && wakeup->enable_count >= max_count)
+      goto out;
 
 
-> +out:
-> +       mutex_unlock(&acpi_wakeup_lock);
-> +       return error;
+> +inc:
+>         wakeup->enable_count++;
+>
+>  out:
 
-> +out:
-> +       mutex_unlock(&acpi_wakeup_lock);
+
 
 -- 
 With Best Regards,
