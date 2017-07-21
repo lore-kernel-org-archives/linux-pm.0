@@ -1,168 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/4] PM / core: Split dpm_suspend_noirq() and dpm_resume_noirq()
-Date: Fri, 21 Jul 2017 02:09:22 +0200
-Message-ID: <2637300.76LCBDfMZE@aspire.rjw.lan>
-References: <1846472.PIoZyNk2cf@aspire.rjw.lan>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: cpuidle and cpufreq coupling?
+Date: Thu, 20 Jul 2017 17:30:38 -0700
+Message-ID: <7d60dab4-f461-39d2-f1b6-12f053347bd9@gmail.com>
+References: <d56144f8-cb62-a458-d69d-8e2a65cbe434@gmail.com>
+ <CAJZ5v0i2B0=cPB5VxXJUb36LW9hp_L7k-moj+Eg+vPvfPHFcSA@mail.gmail.com>
+ <20170720071846.GK352@vireshk-i7>
+ <CAJZ5v0hxK9iBR4RJBu9yutn7M=uTfsEwZZcwJie=17RuYtnuNA@mail.gmail.com>
+ <20170720144530.da6bqpdvt2cvbjjs@hirez.programming.kicks-ass.net>
+ <a237a845-c24e-c1dc-c910-e09a69d631b6@gmail.com>
+ <6b28e6f3-d961-24c8-ad90-8cd6cd844236@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1846472.PIoZyNk2cf@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:36501 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S964809AbdGUAap (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Jul 2017 20:30:45 -0400
+In-Reply-To: <6b28e6f3-d961-24c8-ad90-8cd6cd844236@codeaurora.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vikram Mulukutla <markivx@codeaurora.org>, Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Markus Mayer <code@mmayer.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 07/20/2017 05:11 PM, Vikram Mulukutla wrote:
+> On 7/20/2017 3:56 PM, Florian Fainelli wrote:
+>> On 07/20/2017 07:45 AM, Peter Zijlstra wrote:
+> 
+> <snip>
+> 
+>>>
+>>> Can your ARM part change OPP without scheduling? Because (for obvious
+>>> reasons) the idle thread is not supposed to block.
+>>
+>> I think it should be able to do that, but I am not sure that if I went
+>> through the cpufreq API it would be that straight forward so I may have
+>> to re-implement some of the frequency scaling logic outside of cpufreq
+>> (or rather make the low-level parts some kind of library I guess).
+>>
+> 
+> I think I can safely mention that some of our non-upstream idle drivers
+> in the past have invoked low level clock drivers to atomically switch
+> CPUs to low frequency OPPs, with no interaction whatsoever with cpufreq.
+> It was maintainable since both the idle and clock drivers were
+> qcom-specific. However this is no longer necessary in recent designs and
+> I really hope we never need to do this again...
 
-Put the device interrupts disabling and enabling as well as
-cpuidle_pause() and cpuidle_resume() called during the "noirq"
-stages of system suspend into separate functions to allow the
-core suspend-to-idle code to be optimized (later).
+Yes same here, this is for a past generation product, current generation
+has a smarter design that so far does not require that.
 
-The only functional difference this makes is that debug facilities
-and diagnostic tools will not include the above operations into the
-"noirq" device suspend/resume duration measurements.
+> 
+> We didn't have to do a voltage switch and just PLL or mux
+> work so this was doable. I'm guessing your atomic switching also allows
+> voltage reduction?
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/main.c |   67 +++++++++++++++++++++++++++++++---------------
- include/linux/pm.h        |    4 ++
- 2 files changed, 50 insertions(+), 21 deletions(-)
+Correct there is a voltage reduction occurring which is largely under
+control of a separate MCU/firmware.
 
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -598,14 +598,7 @@ static void async_resume_noirq(void *dat
- 	put_device(dev);
- }
- 
--/**
-- * dpm_resume_noirq - Execute "noirq resume" callbacks for all devices.
-- * @state: PM transition of the system being carried out.
-- *
-- * Call the "noirq" resume handlers for all devices in dpm_noirq_list and
-- * enable device drivers to receive interrupts.
-- */
--void dpm_resume_noirq(pm_message_t state)
-+void dpm_noirq_resume_devices(pm_message_t state)
- {
- 	struct device *dev;
- 	ktime_t starttime = ktime_get();
-@@ -651,10 +644,27 @@ void dpm_resume_noirq(pm_message_t state
- 	mutex_unlock(&dpm_list_mtx);
- 	async_synchronize_full();
- 	dpm_show_time(starttime, state, "noirq");
-+	trace_suspend_resume(TPS("dpm_resume_noirq"), state.event, false);
-+}
-+
-+void dpm_noirq_end(void)
-+{
- 	resume_device_irqs();
- 	device_wakeup_disarm_wake_irqs();
- 	cpuidle_resume();
--	trace_suspend_resume(TPS("dpm_resume_noirq"), state.event, false);
-+}
-+
-+/**
-+ * dpm_resume_noirq - Execute "noirq resume" callbacks for all devices.
-+ * @state: PM transition of the system being carried out.
-+ *
-+ * Invoke the "noirq" resume callbacks for all devices in dpm_noirq_list and
-+ * allow device drivers' interrupt handlers to be called.
-+ */
-+void dpm_resume_noirq(pm_message_t state)
-+{
-+	dpm_noirq_resume_devices(state);
-+	dpm_noirq_end();
- }
- 
- /**
-@@ -1154,22 +1164,19 @@ static int device_suspend_noirq(struct d
- 	return __device_suspend_noirq(dev, pm_transition, false);
- }
- 
--/**
-- * dpm_suspend_noirq - Execute "noirq suspend" callbacks for all devices.
-- * @state: PM transition of the system being carried out.
-- *
-- * Prevent device drivers from receiving interrupts and call the "noirq" suspend
-- * handlers for all non-sysdev devices.
-- */
--int dpm_suspend_noirq(pm_message_t state)
-+void dpm_noirq_begin(void)
-+{
-+	cpuidle_pause();
-+	device_wakeup_arm_wake_irqs();
-+	suspend_device_irqs();
-+}
-+
-+int dpm_noirq_suspend_devices(pm_message_t state)
- {
- 	ktime_t starttime = ktime_get();
- 	int error = 0;
- 
- 	trace_suspend_resume(TPS("dpm_suspend_noirq"), state.event, true);
--	cpuidle_pause();
--	device_wakeup_arm_wake_irqs();
--	suspend_device_irqs();
- 	mutex_lock(&dpm_list_mtx);
- 	pm_transition = state;
- 	async_error = 0;
-@@ -1204,7 +1211,6 @@ int dpm_suspend_noirq(pm_message_t state
- 	if (error) {
- 		suspend_stats.failed_suspend_noirq++;
- 		dpm_save_failed_step(SUSPEND_SUSPEND_NOIRQ);
--		dpm_resume_noirq(resume_event(state));
- 	} else {
- 		dpm_show_time(starttime, state, "noirq");
- 	}
-@@ -1213,6 +1219,25 @@ int dpm_suspend_noirq(pm_message_t state
- }
- 
- /**
-+ * dpm_suspend_noirq - Execute "noirq suspend" callbacks for all devices.
-+ * @state: PM transition of the system being carried out.
-+ *
-+ * Prevent device drivers' interrupt handlers from being called and invoke
-+ * "noirq" suspend callbacks for all non-sysdev devices.
-+ */
-+int dpm_suspend_noirq(pm_message_t state)
-+{
-+	int ret;
-+
-+	dpm_noirq_begin();
-+	ret = dpm_noirq_suspend_devices(state);
-+	if (ret)
-+		dpm_resume_noirq(resume_event(state));
-+
-+	return ret;
-+}
-+
-+/**
-  * device_suspend_late - Execute a "late suspend" callback for given device.
-  * @dev: Device to handle.
-  * @state: PM transition of the system being carried out.
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -689,6 +689,8 @@ struct dev_pm_domain {
- extern void device_pm_lock(void);
- extern void dpm_resume_start(pm_message_t state);
- extern void dpm_resume_end(pm_message_t state);
-+extern void dpm_noirq_resume_devices(pm_message_t state);
-+extern void dpm_noirq_end(void);
- extern void dpm_resume_noirq(pm_message_t state);
- extern void dpm_resume_early(pm_message_t state);
- extern void dpm_resume(pm_message_t state);
-@@ -697,6 +699,8 @@ extern void dpm_complete(pm_message_t st
- extern void device_pm_unlock(void);
- extern int dpm_suspend_end(pm_message_t state);
- extern int dpm_suspend_start(pm_message_t state);
-+extern void dpm_noirq_begin(void);
-+extern int dpm_noirq_suspend_devices(pm_message_t state);
- extern int dpm_suspend_noirq(pm_message_t state);
- extern int dpm_suspend_late(pm_message_t state);
- extern int dpm_suspend(pm_message_t state);
+> 
+> If your architecture allows another CPU to change the entering-idle CPU's
+> frequency, synchronization will be necessary as well - this is where it
+> can get a bit tricky.
+
+That is a very good point, the frequency scaling is not per-CPU but for
+the entire CPU complex (up to 4 cores) so that might indeed be a problem.
+
+Thanks!
+-- 
+Florian
