@@ -1,214 +1,214 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V8 1/6] PM / Domains: Add support to select
- performance-state of domains
-Date: Fri, 21 Jul 2017 14:35:19 +0530
-Message-ID: <20170721090519.GO352@vireshk-i7>
-References: <cover.1498026827.git.viresh.kumar@linaro.org>
- <52daf22d2c9d92b0e61c8c5c5a88516d7a08a31a.1498026827.git.viresh.kumar@linaro.org>
- <CAPDyKFqaFvET9yM_6wr7b1Zw=hePQrE-Ak-7YPCR9izooh4LBA@mail.gmail.com>
- <20170719123751.GF352@vireshk-i7>
- <CAPDyKFr0ZMeS=57p48W9f_j3U0T41msxOqQHBXB_soA8-weM+w@mail.gmail.com>
+From: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Subject: Re: [PATCH v7 05/10] i2c: core: call of_i2c_setup_smbus_alert in
+ i2c_register_adapter
+Date: Fri, 21 Jul 2017 11:24:31 +0200
+Message-ID: <20170721092431.GA11387@mail.corp.redhat.com>
+References: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
+ <1497535178-12001-6-git-send-email-preid@electromag.com.au>
+ <20170619152811.svoxmxybyoy6l4hc@ninjato>
+ <20170623121923.GN26073@mail.corp.redhat.com>
+ <367a1a1d-afdb-8895-8216-ae3c18e16fc8@electromag.com.au>
+ <20170628124549.GF26073@mail.corp.redhat.com>
+ <6d3cbda9-2459-60a8-170c-db3671969925@electromag.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:42992 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753388AbdGUJYn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 21 Jul 2017 05:24:43 -0400
 Content-Disposition: inline
-In-Reply-To: <CAPDyKFr0ZMeS=57p48W9f_j3U0T41msxOqQHBXB_soA8-weM+w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
+In-Reply-To: <6d3cbda9-2459-60a8-170c-db3671969925@electromag.com.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Phil Reid <preid@electromag.com.au>
+Cc: Wolfram Sang <wsa@the-dreams.de>, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 21-07-17, 10:35, Ulf Hansson wrote:
-> This depends on how drivers are dealing with runtime PM in conjunction
-> with the new pm_genpd_update_performance_state().
+On Jul 11 2017 or thereabouts, Phil Reid wrote:
+> On 28/06/2017 20:45, Benjamin Tissoires wrote:
+> > On Jun 28 2017 or thereabouts, Phil Reid wrote:
+> > > On 23/06/2017 20:19, Benjamin Tissoires wrote:
+> > > > On Jun 19 2017 or thereabouts, Wolfram Sang wrote:
+> > > > > On Thu, Jun 15, 2017 at 09:59:33PM +0800, Phil Reid wrote:
+> > > > > > Add a call to of_i2c_setup_smbus_alert when a i2c adapter is registered
+> > > > > > so the the smbalert driver can be registered.
+> > > > > > 
+> > > > > > Signed-off-by: Phil Reid <preid@electromag.com.au>
+> > > > > 
+> > > > > CCing Benjamin
+> > > > > 
+> > > > > > ---
+> > > > > >    drivers/i2c/i2c-core.c | 4 ++++
+> > > > > >    1 file changed, 4 insertions(+)
+> > > > > > 
+> > > > > > diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> > > > > > index d2402bb..626471b 100644
+> > > > > > --- a/drivers/i2c/i2c-core.c
+> > > > > > +++ b/drivers/i2c/i2c-core.c
+> > > > > > @@ -40,6 +40,7 @@
+> > > > > >    #include <linux/gpio.h>
+> > > > > >    #include <linux/hardirq.h>
+> > > > > >    #include <linux/i2c.h>
+> > > > > > +#include <linux/i2c-smbus.h>
+> > > > > >    #include <linux/idr.h>
+> > > > > >    #include <linux/init.h>
+> > > > > >    #include <linux/irqflags.h>
+> > > > > > @@ -2045,6 +2046,9 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
+> > > > > >    		dev_warn(&adap->dev,
+> > > > > >    			 "Failed to create compatibility class link\n");
+> > > > > >    #endif
+> > > > > > +	res = of_i2c_setup_smbus_alert(adap);
+> > > > > > +	if (res)
+> > > > > > +		goto out_list;
+> > > > 
+> > > > See my concerns in patch 4/10.
+> > > > 
+> > > > In addition, shouldn't this be placed before device_register() for the
+> > > > least? pm_runtime_enable() would require a matching pm_runtime_disable(),
+> > > > and device_register() some unregistering behavior too.
+> > > > 
+> > > 
+> > > G'day Ben,
+> > > 
+> > > Thanks for the review.
+> > > Yes this makes sense. I tried having it before the device_register and I get an error
+> > > about a kobject not being initialised in the a call from of_i2c_setup_smbus_alert.
+> > > 
+> > > Having a look at what I'm doing in of_i2c_setup_smbus_alert now I'm not sure there's
+> > > a need to bail out on an error now. Originally I was registering the irq in the setup call.
+> > > Which need to handle probe defer. Now this should be handled in the alert probe call.
+> > > 
+> > > WDYR?
+> > 
+> > Well, of_i2c_setup_smbus_alert() returns an error code, so it has to be
+> > accounted for. If the error is not a reason to fail, you should at least
+> > shout some error messages and act accordingly.
+> > 
+> > However, looking at of_i2c_setup_smbus_alert() again, I wonder if we
+> > should not split it in 2: one part that checks for the OF flag presence
+> > and bail out early if an error is encountered (before device
+> > registration), and one part once the device is registered that calls
+> > i2c_setup_smbus_alert(). In case of a failure here, we need to
+> > unregister the adapter because we don't have all the elements at hands
+> > (assuming we consider that smbus-alert should be mandatory).
+> > 
 > 
-> In case you don't want to manage some of this in genpd, then each
-> driver will have to drop their constraints every time they are about
-> to runtime suspend its device. And restore them at runtime resume.
+> G'day Benjamin,
+
+Hi Phil,
+
+[sorry for the lag, been busy with other topics + public holidays]
+
 > 
-> To me, that's seems like a bad idea. Then it's better to make genpd
-> deal with this - somehow.
-
-Right. So we should call the ->set_performance_state() from off/on as
-well. Will do that.
-
-> Yes!
+> I've tried a couple of different ways of handling errors from of_i2c_setup_smbus_alert()
+> and not having much success.
 > 
-> On top of that change, you could also add some validation if the
-> get/set callbacks is there are any constraints on how they must be
-> assigned.
+> Call of_i2c_setup_smbus_alert() before the device_register() call results in a kernel panic.
 
-I am not sure if I understood that, sorry. What other constraints are
-you talking about ?
+Yeah, i2c_setup_smbus_alert() basically creates an I2C device, so you
+need to have the adapter registered before you can call it.
 
-> >> From a locking point of view we always traverse the topology from
-> >> bottom an up. In other words, we walk the genpd's ->slave_links, and
-> >> lock the masters in the order the are defined via the slave_links
-> >> list. The order is important to avoid deadlocks. I don't think you
-> >> should walk the master_links as being done above, especially not
-> >> without using locks.
-> >
-> > So we need to look at the performance states of the subdomains of a
-> > master. The way it is done in this patch with help of
-> > link->performance_state, we don't need that locking while traversing
-> > the master_links list. Here is how:
-> >
-> > - Master's (genpd) master_links list is only updated under master's
-> >   lock, which we have already taken here. So master_links list can't
-> >   get updated concurrently.
-> >
-> > - The link->performance_state field of a subdomain (or slave) is only
-> >   updated from within the master's lock. And we are reading it here
-> >   from the same lock.
-> >
-> > AFAIU, there shouldn't be any deadlocks or locking issues here. Can
-> > you describe some case that may blow up ?
 > 
-> My main concern is the order of how you take the looks. We never take
-> a masters lock before the current domain lock.
+> Call after device_register() and injecting an error into the of_i2c_setup_smbus_alert()
+> also results in a kernel panic.
 
-Right and this patch doesn't break that.
+I wonder if this is just not required at all to have a failure path that
+will remove the smbusalert device. Because this is an I2C device, when
+we unregister the adapter, it should properly remove all of its attached
+devices.
 
-> And when walking the topology, we use the slave links and locks the
-> first master from that list. Continues with that tree, then get back
-> to slave list and pick the next master.
-
-Again, that's how this patch does it.
-
-> If you change that order, we could end getting deadlocks.
-
-And because that order isn't changed at all, we shouldn't have
-deadlocks.
-
-> >> A general comment is that I think you should look more closely in the
-> >> code of genpd_power_off|on(). And also how it calls the
-> >> ->power_on|off() callbacks.
-> >>
-> >> Depending whether you want to update the performance state of the
-> >> master domain before the subdomain or the opposite, you will find one
-> >> of them being suited for this case as well.
-> >
-> > Isn't it very much similar to that already ? The only major difference
-> > is link->performance_state and I already explained why is it required
-> > to be done that way to avoid deadlocks.
 > 
-> No, because you walk the master lists. Thus getting a different order or locks.
+> On error I'm calling device_unregister()
 > 
-> I did some drawing of this, using the slave links, and I don't see any
-> issues why you can't use that instead.
+> I also tried spliting the device_unregister() call into
+>   device_initialize(dev);
+>   of_i2c_setup_smbus_alert()
+>   device_add(dev);
+> 
+> but that results in a crash in of_i2c_setup_smbus_alert()
+> 
+> 
+> If i2c_new_device() is not called then I get:
+> Unable to handle kernel NULL pointer dereference at virtual address 00000000
+>  PC is at __wake_up_common+0x2c/0x90
+> 
+> [<8015d940>] (__wake_up_common) from [<8015d9c8>] (__wake_up_locked+0x24/0x2c)
+> [<8015d9c8>] (__wake_up_locked) from [<8015e680>] (complete+0x48/0x58)
+> [<8015e680>] (complete) from [<805ba6c0>] (i2c_adapter_dev_release+0x1c/0x20)
+> [<805ba6c0>] (i2c_adapter_dev_release) from [<804d22f8>] (device_release+0x3c/0xa0)
+> [<804d22f8>] (device_release) from [<80419ab0>] (kobject_put+0xac/0x208)
+> [<80419ab0>] (kobject_put) from [<804d3778>] (device_unregister+0x64/0x70)
+> [<804d3778>] (device_unregister) from [<805bb234>] (i2c_register_adapter+0x2a4/0x480)
+> [<805bb234>] (i2c_register_adapter) from [<805bc5b4>] (i2c_add_adapter+0x8c/0xd0)
+> [<805bc5b4>] (i2c_add_adapter) from [<805c0690>] (i2c_mux_add_adapter+0x278/0x428)
+> [<805c0690>] (i2c_mux_add_adapter) from [<805c4b48>] (pca954x_probe+0x2b0/0x394)
+> [<805c4b48>] (pca954x_probe) from [<805b9c44>] (i2c_device_probe+0x200/0x2dc)
+> [<805b9c44>] (i2c_device_probe) from [<804d7e0c>] (driver_probe_device+0x338/0x460)
+> [<804d7e0c>] (driver_probe_device) from [<804d814c>] (__device_attach_driver+0xa4/0x128)
+> [<804d814c>] (__device_attach_driver) from [<804d5ad8>] (bus_for_each_drv+0x68/0x9c)
+> [<804d5ad8>] (bus_for_each_drv) from [<804d792c>] (__device_attach+0xc0/0x14c)
+> [<804d792c>] (__device_attach) from [<804d81ec>] (device_initial_probe+0x1c/0x20)
+> [<804d81ec>] (device_initial_probe) from [<804d6cf4>] (bus_probe_device+0x94/0x9c)
+> [<804d6cf4>] (bus_probe_device) from [<804d72dc>] (deferred_probe_work_func+0xa0/0xd4)
+> [<804d72dc>] (deferred_probe_work_func) from [<8013d7f0>] (process_one_work+0x14c/0x4c4)
+> [<8013d7f0>] (process_one_work) from [<8013dd94>] (worker_thread+0x22c/0x514)
+> [<8013dd94>] (worker_thread) from [<80143a20>] (kthread+0x140/0x170)
+> [<80143a20>] (kthread) from [<80108e38>] (ret_from_fork+0x14/0x3c)
+> 
+> And the system hangs.
+> 
+> 
+> If i2c_new_device() is called and I return an error after I get:
+> This one probably wouldn't happen.
+> 
+> WARNING: CPU: 0 PID: 70 at fs/proc/generic.c:580 remove_proc_entry+0x124/0x168
+> remove_proc_entry: removing non-empty directory 'irq/193', leaking at least 'smbus_alert'
+> Modules linked in:
+> CPU: 0 PID: 70 Comm: kworker/0:2 Not tainted 4.12.0-rc6+ #141
+> Hardware name: Altera SOCFPGA
+> Workqueue: events deferred_probe_work_func
+> [<801145a4>] (unwind_backtrace) from [<8010df44>] (show_stack+0x20/0x24)
+> [<8010df44>] (show_stack) from [<80418308>] (dump_stack+0x8c/0xa0)
+> [<80418308>] (dump_stack) from [<80123518>] (__warn+0xf8/0x110)
+> [<80123518>] (__warn) from [<80123578>] (warn_slowpath_fmt+0x48/0x50)
+> [<80123578>] (warn_slowpath_fmt) from [<802acfa0>] (remove_proc_entry+0x124/0x168)
+> [<802acfa0>] (remove_proc_entry) from [<80174d38>] (unregister_irq_proc+0xac/0xb4)
+> [<80174d38>] (unregister_irq_proc) from [<8016b404>] (free_desc+0x40/0x78)
+> [<8016b404>] (free_desc) from [<8016b494>] (irq_free_descs+0x58/0x90)
+> [<8016b494>] (irq_free_descs) from [<80174128>] (irq_dispose_mapping+0x54/0x7c)
+> [<80174128>] (irq_dispose_mapping) from [<805c45ac>] (pca954x_cleanup+0x4c/0x70)
+> [<805c45ac>] (pca954x_cleanup) from [<805c4ac0>] (pca954x_probe+0x210/0x394)
+> [<805c4ac0>] (pca954x_probe) from [<805b9c44>] (i2c_device_probe+0x200/0x2dc)
+> [<805b9c44>] (i2c_device_probe) from [<804d7e0c>] (driver_probe_device+0x338/0x460)
+> [<804d7e0c>] (driver_probe_device) from [<804d814c>] (__device_attach_driver+0xa4/0x128)
+> [<804d814c>] (__device_attach_driver) from [<804d5ad8>] (bus_for_each_drv+0x68/0x9c)
+> [<804d5ad8>] (bus_for_each_drv) from [<804d792c>] (__device_attach+0xc0/0x14c)
+> [<804d792c>] (__device_attach) from [<804d81ec>] (device_initial_probe+0x1c/0x20)
+> [<804d81ec>] (device_initial_probe) from [<804d6cf4>] (bus_probe_device+0x94/0x9c)
+> [<804d6cf4>] (bus_probe_device) from [<804d72dc>] (deferred_probe_work_func+0xa0/0xd4)
+> [<804d72dc>] (deferred_probe_work_func) from [<8013d7f0>] (process_one_work+0x14c/0x4c4)
+> [<8013d7f0>] (process_one_work) from [<8013dd94>] (worker_thread+0x22c/0x514)
+> [<8013dd94>] (worker_thread) from [<80143a20>] (kthread+0x140/0x170)
+> [<80143a20>] (kthread) from [<80108e38>] (ret_from_fork+0x14/0x3c)
+> 
+> 
+> I'm at a real loss on how to safely handle the error from of_i2c_setup_smbus_alert()
+> 
+> Any hints as to what the correct way is to unregister the device?
 
-Damn, I am confused on which part are you talking about. Let me paste
-the code here once again and clarify how this is supposed to work just fine :)
+I'd say try to register the smbus_alert device after the registering of
+the adapter, and if it fails simply call the unregister from the
+adapter. On remove, there might not need to do anything given that the
+smbus_alert is an I2C client like every others.
 
->> +static int genpd_update_performance_state(struct generic_pm_domain *genpd,
->> +                                         int depth)
->> +{
+Cheers,
+Benjamin
 
-genpd is already locked.
+PS: sorry if I am completely off-topic
 
->> +       struct generic_pm_domain_data *pd_data;
->> +       struct generic_pm_domain *master;
->> +       struct pm_domain_data *pdd;
->> +       unsigned int state = 0, prev;
->> +       struct gpd_link *link;
->> +       int ret;
->> +
->> +       /* Traverse all devices within the domain */
->> +       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
->> +               pd_data = to_gpd_data(pdd);
->> +
->> +               if (pd_data->performance_state > state)
->> +                       state = pd_data->performance_state;
->> +       }
->> +
->> +       /* Traverse all subdomains within the domain */
->> +       list_for_each_entry(link, &genpd->master_links, master_node) {
-
-This is the only place where we look at all the sub-domains, but we
-don't need locking here at all as link->performance_state is only
-accessed while "genpd" is locked. It doesn't need sub-domain's lock.
-
->> +               if (link->performance_state > state)
->> +                       state = link->performance_state;
->> +       }
->> +
->> +       if (genpd->performance_state == state)
->> +               return 0;
->> +
->> +       if (genpd->set_performance_state) {
->> +               ret = genpd->set_performance_state(genpd, state);
->> +               if (!ret)
->> +                       genpd->performance_state = state;
->> +
->> +               return ret;
->> +       }
->> +
->> +       /*
->> +        * Not all domains support updating performance state. Move on to their
->> +        * parent domains in that case.
->> +        */
->> +       prev = genpd->performance_state;
->> +
-
-The below part is what I assumed you were commenting on and this is
-very similar to how on/off are implemented today.
-
->> +       list_for_each_entry(link, &genpd->slave_links, slave_node) {
-
-i.e. we traverse the list of masters from slave_links list.
-
->> +               master = link->master;
->> +
->> +               genpd_lock_nested(master, depth + 1);
-
-Take master's lock (and "genpd" is already locked when this function
-is called.)
-
->> +
->> +               link->performance_state = state;
->> +               ret = genpd_update_performance_state(master, depth + 1);
-
-Do recursive calling and so the master tree will finish first before
-moving to next master.
-
->> +               if (ret)
->> +                       link->performance_state = prev;
->> +
-
-The above can actually be done outside of this lock as we are only
-concerned about "genpd" lock here.
-
-Where do you think the order of locking is screwed up ?
-
->> +               genpd_unlock(master);
->> +
->> +               if (ret)
->> +                       goto err;
->> +       }
->> +
->> +       /*
->> +        * The parent domains are updated now, lets get genpd performance_state
->> +        * in sync with those.
->> +        */
->> +       genpd->performance_state = state;
->> +       return 0;
->> +
->> +err:
->> +       list_for_each_entry_continue_reverse(link, &genpd->slave_links,
->> +                                            slave_node) {
->> +               master = link->master;
->> +
->> +               genpd_lock_nested(master, depth + 1);
->> +               link->performance_state = prev;
->> +               if (genpd_update_performance_state(master, depth + 1))
->> +                       pr_err("%s: Failed to roll back to %d performance state\n",
->> +                              genpd->name, prev);
->> +               genpd_unlock(master);
->> +       }
->> +
->> +       return ret;
->> +}
->> +
-
--- 
-viresh
+> 
+> 
+> -- 
+> Regards
+> Phil Reid
+> 
