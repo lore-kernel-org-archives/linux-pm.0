@@ -1,37 +1,51 @@
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH 0/2] PM / suspend: Messaging updates
-Date: Fri, 21 Jul 2017 18:13:45 +0300
-Message-ID: <CAHp75VdGUNTU1URWqRW-B1y=2Wrw0YU0U1orC7gcVBuQRYXxZQ@mail.gmail.com>
-References: <1714767.SyJDFOT8Lq@aspire.rjw.lan>
+Subject: Re: [PATCH 2/3] ACPI / PM: Split acpi_device_wakeup()
+Date: Fri, 21 Jul 2017 18:27:39 +0300
+Message-ID: <CAHp75VdJqyNBC=iy_FGVsxeskHko=P9=SJqrN8Hq1GtXZEyoRA@mail.gmail.com>
+References: <3116391.JNS1F4DjTg@aspire.rjw.lan> <3408475.MC8krXn0zk@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1714767.SyJDFOT8Lq@aspire.rjw.lan>
+In-Reply-To: <3408475.MC8krXn0zk@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 21, 2017 at 3:48 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> Hi,
+On Fri, Jul 21, 2017 at 3:40 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> The first patch addresses a potential confusion regarding messages printed by
-> the suspend core code to the kernel log and the second one adds a pr_fmt() to
-> kernel/power/suspend.c.
+> To prepare for a subsequent change and make the code somewhat easier
+> to follow, do the following in the ACPI device wakeup handling code:
 >
-> The patches are on top of the series I posted yesterday:
+>  * Replace wakeup.flags.enabled under struct acpi_device with
+>    wakeup.enable_count as that will be necessary going forward.
 >
-> http://marc.info/?l=linux-pm&m=150059650805506&w=2
-
-Standardization is what I like.
-
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-
+>    For now, wakeup.enable_count is not allowed to grow beyond 1,
+>    so the current behavior is retained.
 >
-> Thanks,
-> Rafael
+>  * Split acpi_device_wakeup() into acpi_device_wakeup_enable()
+>    and acpi_device_wakeup_disable() and modify the callers of
+>    it accordingly.
+>
+>  * Introduce a new acpi_wakeup_lock mutex to protect the wakeup
+>    enabling/disabling code from races in case it is executed
+>    more than once in parallel for the same device (which may
+>    happen for bridges theoretically).
+
+I prefer more self-explaining labels, though it's minor here
+
+To be constructive:
+out -> err_unlock
+out -> out_unlock or err_unlock (depends on context)
 
 
+> +out:
+> +       mutex_unlock(&acpi_wakeup_lock);
+> +       return error;
+
+> +out:
+> +       mutex_unlock(&acpi_wakeup_lock);
 
 -- 
 With Best Regards,
