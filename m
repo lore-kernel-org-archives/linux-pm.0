@@ -1,80 +1,79 @@
-From: "Maxim Yu. Osipov" <mosipov@ilbers.de>
-Subject: [PATCH] thermal: imx: Temperature could be not read out from on-SOC temp sensor.
-Date: Fri, 21 Jul 2017 15:12:01 +0200
-Message-ID: <20170721131201.30507-1-mosipov@ilbers.de>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: Re: [PATCH v5 0/2] add UniPhier thermal support
+Date: Fri, 21 Jul 2017 22:24:17 +0900
+Message-ID: <CAK7LNARchNY8wA56+spLCUh99tsGpPQ9VuYc5ymnOL3cu0bd8g@mail.gmail.com>
+References: <1500636105-11520-1-git-send-email-hayashi.kunihiko@socionext.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from aqmola.ilbers.de ([85.214.62.211]:57012 "EHLO aqmola.ilbers.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754162AbdGUNX6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Jul 2017 09:23:58 -0400
+Received: from conssluserg-03.nifty.com ([210.131.2.82]:46790 "EHLO
+        conssluserg-03.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751643AbdGUNYe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Jul 2017 09:24:34 -0400
+In-Reply-To: <1500636105-11520-1-git-send-email-hayashi.kunihiko@socionext.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
-Cc: "Maxim Yu. Osipov" <mosipov@ilbers.de>
+To: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Cc: rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Masami Hiramatsu <masami.hiramatsu@linaro.org>, Jassi Brar <jaswinder.singh@linaro.org>
 
-In imx_thermal_probe() thermal alarm interrupt is
-enabled before device's 'mode' field is set to THERMAL_DEVICE_ENABLED while
-the sensor hardware is already powered up. If alarm condition is met -
-the interrupt immediately fires up. During (threaded) interrupt processing
-imx_get_temp() is called. The field 'mode' is still set to DISABLED,
-so imx_get_temp() processes such case by special way: sensor is powered up,
-measurement is enabled, a reading is taken, after that measurement is
-DISABLED and temperature sensor is POWERED DOWN.
+2017-07-21 20:21 GMT+09:00 Kunihiko Hayashi <hayashi.kunihiko@socionext.com>:
+> This series adds support for CPU temperature monitor modules implemented
+> on UniPhier LD20 and PXs2 SoCs. This driver supports temperature monitoring
+> and alert function on the module.
+>
+> Changes in v4:
+> - fix warnings from sparse by replacing u32 with __be32
 
-When processing of alarm interrupt ends, imx_thermal_probe() continues
-and sets mode field to ENABLED, but in fact the device is powered off!
+Nit.
 
-This leads to broken logic of further calls of imx_get_temp().
+Your subject prefix indicates this patch is v5.
 
-Note, that explicit enabling of mode via sysfs
-(echo enabled > /sys/sys/class/therma/thermal_zone0/mode)
-leads to powering up of the sensor hardware (see sensor_set_mode())
-The same applies to suspend/resume cycles - after resume the temperature
-sensor will start reading the temperature w/o errors.
+Do you mean "Changes in v5" or "Changes since v4" ?
 
-I sent the patch to i.MX list <linux-arm-kernel@lists.infradead.org>
-and Philipp Zabel <p.zabel@pengutronix.de> additionally suggested:
 
->>>>>>
-Thank you for the patch and the analysis. I have some comments below.
 
-I think the data->irq_enabled assignment should be moved up before the
-call to devm_request_threaded_irq as well. If the interrupt triggers
-immediately (and sets data->irq_enabled=false), and then
-imx_thermal_probe returns (after setting data->irq_enabled=true) before
-the threaded irq handler gets to run, imx_get_temp will not reenable the
-interrupt at the end, if the temperature has just fallen below the alarm
-temperature.
 
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
-<<<<<<
 
-Signed-off-by: Maxim Yu. Osipov <mosipov@ilbers.de>
----
- drivers/thermal/imx_thermal.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 4798b4b1fd77..0d35487f4c3e 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -600,6 +600,8 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 
- 	regmap_write(map, TEMPSENSE0 + REG_CLR, TEMPSENSE0_POWER_DOWN);
- 	regmap_write(map, TEMPSENSE0 + REG_SET, TEMPSENSE0_MEASURE_TEMP);
-+	data->irq_enabled = true;
-+	data->mode = THERMAL_DEVICE_ENABLED;
- 
- 	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
- 			imx_thermal_alarm_irq, imx_thermal_alarm_irq_thread,
-@@ -613,8 +615,6 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	data->irq_enabled = true;
--	data->mode = THERMAL_DEVICE_ENABLED;
- 
- 	return 0;
- }
+> Changes in v3:
+> - remove TMOD_MASK and use TMOD_WIDTH representing the bit width of TMOD
+>
+> Changes in v2:
+> - add nsleep after starting and stopping PVT
+> - replace temperature calculation with sign_extend32()
+>
+> Changes in v1:
+> - separate dts from this patchset as another patchset
+> - remove 'reg' description on the dt-bindings document
+> - fix the order of calling initialization functions
+> - replace mask bits to use GENMASK
+> - fix calculation of temperature because of not considering a negative value
+> - use devm_request_threaded_irq() instead of devm_request_irq() and
+>   separate a thread function from the interrupt handler
+> - add dependency to Kconfig
+> - set 120C to CRITICAL_TEMP_LIMIT as maximum temperature
+> - shrink each line of parameters to save the number of lines
+> - improve some comments and copyright description
+>
+> Kunihiko Hayashi (2):
+>   dt-bindings: thermal: add binding documentation for UniPhier thermal
+>     monitor
+>   thermal: uniphier: add UniPhier thermal driver
+>
+>  .../bindings/thermal/uniphier-thermal.txt          |  64 ++++
+>  drivers/thermal/Kconfig                            |   8 +
+>  drivers/thermal/Makefile                           |   1 +
+>  drivers/thermal/uniphier_thermal.c                 | 386 +++++++++++++++++++++
+>  4 files changed, 459 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
+>  create mode 100644 drivers/thermal/uniphier_thermal.c
+>
+> --
+> 2.7.4
+>
+
+
+
 -- 
-2.11.0
+Best Regards
+Masahiro Yamada
