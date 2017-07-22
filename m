@@ -1,31 +1,40 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v3 4/5] ACPI / boot: Not all platform require acpi_reduced_hw_init()
-Date: Sat, 22 Jul 2017 04:53:52 +0300
-Message-ID: <CAHp75VejtJC87eWhxKcT_yWKR2kOWLOARGmhiK7S9WO4bCHYRg@mail.gmail.com>
-References: <20170718150420.61600-1-andriy.shevchenko@linux.intel.com>
- <20170718150420.61600-5-andriy.shevchenko@linux.intel.com> <1535497.HrG5Hi31l1@aspire.rjw.lan>
+From: Jean Delvare <jdelvare@suse.de>
+Subject: Re: [PATCH v8 3/9] i2c: core: call of_i2c_setup_smbus_alert in
+ i2c_register_adapter
+Date: Sat, 22 Jul 2017 13:49:45 +0200
+Message-ID: <20170722134945.6db60b24@endymion>
+References: <201707200255.SHskJrcM%fengguang.wu@intel.com>
+        <c6e4dce0-853f-a4d4-be64-ef4bb0f68162@electromag.com.au>
+        <20170721093759.GD11387@mail.corp.redhat.com>
+        <20170721164533.54855e1d@endymion>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1535497.HrG5Hi31l1@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hanjun Guo <guohanjun@huawei.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:59425 "EHLO mx1.suse.de"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1755097AbdGVLtx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 22 Jul 2017 07:49:53 -0400
+In-Reply-To: <20170721164533.54855e1d@endymion>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Cc: Phil Reid <preid@electromag.com.au>, kbuild test robot <lkp@intel.com>, kbuild-all@01.org, wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Sat, Jul 22, 2017 at 1:25 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, July 18, 2017 06:04:19 PM Andy Shevchenko wrote:
->> Some platform might take care of legacy devices on theirs own.
->> Let's allow them to do that by exporting a weak function.
->>
->> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
->
-> I'd rather do it at the time when acpi_reduced_hw_init() actually needs to be
-> overridden by at least one platform.
+On Fri, 21 Jul 2017 16:45:33 +0200, Jean Delvare wrote:
+> On Fri, 21 Jul 2017 11:37:59 +0200, Benjamin Tissoires wrote:
+> > What if I2C selects I2C_SMBUS directly?  
+> 
+> Selecting I2C_SMBUS is what device drivers are indeed supposed to do.
+> However doing it from i2c-core seems awkward, because i2c-smbus itself
+> depends on i2c-core. If they end up both built in, I guess it will be
+> fine. But if they are modular, I'm afraid you won't be able to load the
+> modules, because each of them requires the other to be loaded first for
+> proper symbol resolution.
 
-Do you mean as folded into some other patch or just as a preparatory
-patch in some future series?
+Out of curiosity I gave it a try and I can confirm it fails as I
+expected.
 
 -- 
-With Best Regards,
-Andy Shevchenko
+Jean Delvare
+SUSE L3 Support
