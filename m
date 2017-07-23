@@ -1,12 +1,12 @@
 From: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Subject: [PATCH 03/10] ARM: sunxi: h3/h5: Add r_i2c pinmux node
-Date: Sun, 23 Jul 2017 18:27:42 +0800
-Message-ID: <20170723102749.17323-4-icenowy@aosc.io>
+Subject: [PATCH 04/10] ARM: sunxi: h3/h5: Add r_i2c I2C controller
+Date: Sun, 23 Jul 2017 18:27:43 +0800
+Message-ID: <20170723102749.17323-5-icenowy@aosc.io>
 References: <20170723102749.17323-1-icenowy@aosc.io>
 Reply-To: icenowy-h8G6r0blFSE@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBDS6XAN6ZADRBTPU2HFQKGQET3YSJKY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBDS6XAN6ZADRBU7U2HFQKGQEELVPHSA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <20170723102749.17323-1-icenowy-h8G6r0blFSE@public.gmane.org>
 List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
@@ -21,32 +21,41 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Ondrej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
 
-H3/H5 SoCs contain an I2C controller optionally available
-on the PL0 and PL1 pins. This patch adds pinmux configuration
-for this controller.
+Allwinner H3/H5 SoCs have an I2C controller at PL GPIO bank.
+
+Add support for it in the device tree.
 
 Signed-off-by: Ondrej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
-[Icenowy: change commit message and node name]
+[Icenowy: Change to use r_ccu and change pinmux node name]
 Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
 ---
- arch/arm/boot/dts/sunxi-h3-h5.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+ arch/arm/boot/dts/sunxi-h3-h5.dtsi | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
 diff --git a/arch/arm/boot/dts/sunxi-h3-h5.dtsi b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-index 6f2162608006..b240099bc865 100644
+index b240099bc865..65643c4710a3 100644
 --- a/arch/arm/boot/dts/sunxi-h3-h5.dtsi
 +++ b/arch/arm/boot/dts/sunxi-h3-h5.dtsi
-@@ -639,6 +639,11 @@
- 				pins = "PL11";
- 				function = "s_cir_rx";
- 			};
-+
-+			r_i2c_pins: r-i2c {
-+				pins = "PL0", "PL1";
-+				function = "s_twi";
-+			};
+@@ -624,6 +624,20 @@
+ 			status = "disabled";
  		};
- 	};
- };
+ 
++		r_i2c: i2c@01f02400 {
++			compatible = "allwinner,sun6i-a31-i2c";
++			reg = <0x01f02400 0x400>;
++			interrupts = <GIC_SPI 44 IRQ_TYPE_LEVEL_HIGH>;
++			pinctrl-names = "default";
++			pinctrl-0 = <&r_i2c_pins>;
++			clocks = <&r_ccu CLK_APB0_I2C>;
++			clock-frequency = <100000>;
++			resets = <&r_ccu RST_APB0_I2C>;
++			status = "disabled";
++			#address-cells = <1>;
++			#size-cells = <0>;
++		};
++
+ 		r_pio: pinctrl@01f02c00 {
+ 			compatible = "allwinner,sun8i-h3-r-pinctrl";
+ 			reg = <0x01f02c00 0x400>;
 -- 
 2.13.0
