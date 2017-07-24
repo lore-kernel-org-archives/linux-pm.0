@@ -1,93 +1,64 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: s5pv210: add missing of_node_put
-Date: Mon, 24 Jul 2017 14:22:16 +0530
-Message-ID: <20170724085216.GS352@vireshk-i7>
-References: <1500666810-21841-1-git-send-email-Julia.Lawall@lip6.fr>
+Subject: Re: [PATCH 07/10] cpufreq: dt: Add support for some new Allwinner
+ SoCs
+Date: Mon, 24 Jul 2017 14:23:49 +0530
+Message-ID: <20170724085349.GT352@vireshk-i7>
+References: <20170723102749.17323-1-icenowy@aosc.io>
+ <20170723102749.17323-8-icenowy@aosc.io>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:35243 "EHLO
+        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752428AbdGXIxw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 04:53:52 -0400
+Received: by mail-pf0-f175.google.com with SMTP id h29so9527041pfd.2
+        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2017 01:53:52 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1500666810-21841-1-git-send-email-Julia.Lawall@lip6.fr>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Kukjin Kim <kgene@kernel.org>, kernel-janitors@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20170723102749.17323-8-icenowy@aosc.io>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Icenowy Zheng <icenowy@aosc.io>
+Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sunxi@googlegroups.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 21-07-17, 21:53, Julia Lawall wrote:
-> for_each_compatible_node performs an of_node_get on each iteration, so a
-> return from the loop requires an of_node_put.
+On 23-07-17, 18:27, Icenowy Zheng wrote:
+> Some new Allwinner SoCs get supported in the kernel after the
+> compatibles are added to cpufreq-dt-platdev driver.
 > 
-> The semantic patch that fixes this problem is as follows
-> (http://coccinelle.lip6.fr):
+> Add their compatible strings in the cpufreq-dt-platdev driver.
 > 
-> // <smpl>
-> @@
-> local idexpression n;
-> expression e,e1,e2;
-> statement S;
-> iterator i1;
-> iterator name for_each_compatible_node;
-> @@
-> 
->  for_each_compatible_node(n,e1,e2) {
->    ...
-> (
->    of_node_put(n);
-> |
->    e = n
-> |
->    return n;
-> |
->    i1(...,n,...) S
-> |
-> +  of_node_put(n);
-> ?  return ...;
-> )
->    ...
->  }
-> // </smpl>
-> 
-> Additionally, call of_node_put on the previous value of np, obtained from
-> of_find_compatible_node, that is no longer accessible at the point of the
-> for_each_compatible_node.
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-> 
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
 > ---
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
 > 
-> v2: add the of_node_put for the call to of_find_compatible_node as well.
-> 
->  drivers/cpufreq/s5pv210-cpufreq.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-> index f82074e..5d31c2d 100644
-> --- a/drivers/cpufreq/s5pv210-cpufreq.c
-> +++ b/drivers/cpufreq/s5pv210-cpufreq.c
-> @@ -602,6 +602,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
->  	}
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index 2eb40d46d357..c3851453e84a 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -24,7 +24,11 @@ static const struct of_device_id machines[] __initconst = {
+>  	{ .compatible = "allwinner,sun8i-a23", },
+>  	{ .compatible = "allwinner,sun8i-a33", },
+>  	{ .compatible = "allwinner,sun8i-a83t", },
+> +	{ .compatible = "allwinner,sun8i-h2-plus", },
+>  	{ .compatible = "allwinner,sun8i-h3", },
+> +	{ .compatible = "allwinner,sun8i-v3s", },
+> +	{ .compatible = "allwinner,sun50i-a64", },
+> +	{ .compatible = "allwinner,sun50i-h5", },
 >  
->  	clk_base = of_iomap(np, 0);
-> +	of_node_put(np);
->  	if (!clk_base) {
->  		pr_err("%s: failed to map clock registers\n", __func__);
->  		return -EFAULT;
-> @@ -612,6 +613,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
->  		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
->  			pr_err("%s: failed to get alias of dmc node '%s'\n",
->  				__func__, np->name);
-> +			of_node_put(np);
->  			return id;
->  		}
+>  	{ .compatible = "apm,xgene-shadowcat", },
 >  
-> @@ -619,6 +621,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
->  		if (!dmc_base[id]) {
->  			pr_err("%s: failed to map dmc%d registers\n",
->  				__func__, id);
-> +			of_node_put(np);
->  			return -EFAULT;
->  		}
->  	}
+> @@ -43,6 +47,8 @@ static const struct of_device_id machines[] __initconst = {
+>  	{ .compatible = "marvell,pxa250", },
+>  	{ .compatible = "marvell,pxa270", },
+>  
+> +	{ .compatible = "nextthing,gr8", },
+> +
+>  	{ .compatible = "samsung,exynos3250", },
+>  	{ .compatible = "samsung,exynos4210", },
+>  	{ .compatible = "samsung,exynos4212", },
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
