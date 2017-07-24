@@ -1,64 +1,62 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 07/10] cpufreq: dt: Add support for some new Allwinner
- SoCs
-Date: Mon, 24 Jul 2017 14:23:49 +0530
-Message-ID: <20170724085349.GT352@vireshk-i7>
-References: <20170723102749.17323-1-icenowy@aosc.io>
- <20170723102749.17323-8-icenowy@aosc.io>
+Subject: Re: [PATCH v7 1/2] cpufreq: schedutil: Make iowait boost more energy
+ efficient
+Date: Mon, 24 Jul 2017 14:27:45 +0530
+Message-ID: <20170724085745.GU352@vireshk-i7>
+References: <20170723155426.9170-1-joelaf@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f175.google.com ([209.85.192.175]:35243 "EHLO
-        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752428AbdGXIxw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 04:53:52 -0400
-Received: by mail-pf0-f175.google.com with SMTP id h29so9527041pfd.2
-        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2017 01:53:52 -0700 (PDT)
+Received: from mail-pg0-f50.google.com ([74.125.83.50]:38853 "EHLO
+        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753225AbdGXI5s (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 04:57:48 -0400
+Received: by mail-pg0-f50.google.com with SMTP id s4so54434649pgr.5
+        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2017 01:57:48 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20170723102749.17323-8-icenowy@aosc.io>
+In-Reply-To: <20170723155426.9170-1-joelaf@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Icenowy Zheng <icenowy@aosc.io>
-Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-sunxi@googlegroups.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Joel Fernandes <joelaf@google.com>
+Cc: linux-kernel@vger.kernel.org, Juri Lelli <juri.lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Andres Oportus <andresoportus@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-On 23-07-17, 18:27, Icenowy Zheng wrote:
-> Some new Allwinner SoCs get supported in the kernel after the
-> compatibles are added to cpufreq-dt-platdev driver.
+On 23-07-17, 08:54, Joel Fernandes wrote:
+> Currently the iowait_boost feature in schedutil makes the frequency go to max
+> on iowait wakeups.  This feature was added to handle a case that Peter
+> described where the throughput of operations involving continuous I/O requests
+> [1] is reduced due to running at a lower frequency, however the lower
+> throughput itself causes utilization to be low and hence causing frequency to
+> be low hence its "stuck".
 > 
-> Add their compatible strings in the cpufreq-dt-platdev driver.
+> Instead of going to max, its also possible to achieve the same effect by
+> ramping up to max if there are repeated in_iowait wakeups happening. This patch
+> is an attempt to do that. We start from a lower frequency (policy->min)
+> and double the boost for every consecutive iowait update until we reach the
+> maximum iowait boost frequency (iowait_boost_max).
 > 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> I ran a synthetic test (continuous O_DIRECT writes in a loop) on an x86 machine
+> with intel_pstate in passive mode using schedutil. In this test the iowait_boost
+> value ramped from 800MHz to 4GHz in 60ms. The patch achieves the desired improved
+> throughput as the existing behavior.
+> 
+> [1] https://patchwork.kernel.org/patch/9735885/
+> 
+> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Joel Fernandes <joelaf@google.com>
 > ---
->  drivers/cpufreq/cpufreq-dt-platdev.c | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 2eb40d46d357..c3851453e84a 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -24,7 +24,11 @@ static const struct of_device_id machines[] __initconst = {
->  	{ .compatible = "allwinner,sun8i-a23", },
->  	{ .compatible = "allwinner,sun8i-a33", },
->  	{ .compatible = "allwinner,sun8i-a83t", },
-> +	{ .compatible = "allwinner,sun8i-h2-plus", },
->  	{ .compatible = "allwinner,sun8i-h3", },
-> +	{ .compatible = "allwinner,sun8i-v3s", },
-> +	{ .compatible = "allwinner,sun50i-a64", },
-> +	{ .compatible = "allwinner,sun50i-h5", },
->  
->  	{ .compatible = "apm,xgene-shadowcat", },
->  
-> @@ -43,6 +47,8 @@ static const struct of_device_id machines[] __initconst = {
->  	{ .compatible = "marvell,pxa250", },
->  	{ .compatible = "marvell,pxa270", },
->  
-> +	{ .compatible = "nextthing,gr8", },
-> +
->  	{ .compatible = "samsung,exynos3250", },
->  	{ .compatible = "samsung,exynos4210", },
->  	{ .compatible = "samsung,exynos4212", },
+>  kernel/sched/cpufreq_schedutil.c | 38 ++++++++++++++++++++++++++++++++------
+>  1 file changed, 32 insertions(+), 6 deletions(-)
+
+You Send V7 [1-2]/2 twice, Are they different ?
+
+For both the patches:
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
