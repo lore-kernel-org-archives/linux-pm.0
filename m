@@ -1,11 +1,14 @@
 From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [PATCH v2 1/5] arm64: tegra: Add BPMP thermal sensor to Tegra186
-Date: Mon, 24 Jul 2017 19:29:14 +0300
-Message-ID: <20170724162918.21050-1-mperttunen@nvidia.com>
+Subject: [PATCH v2 2/5] dt-bindings: Add bindings for nvidia,
+ tegra186-bpmp-thermal
+Date: Mon, 24 Jul 2017 19:29:15 +0300
+Message-ID: <20170724162918.21050-2-mperttunen@nvidia.com>
+References: <20170724162918.21050-1-mperttunen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170724162918.21050-1-mperttunen@nvidia.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -19,136 +22,77 @@ To: rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com, jonathan
 Cc: linux-tegra@vger.kernel.org, Mikko Perttunen <mperttunen@nvidia.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This adds the thermal sensor device provided by the BPMP, and the
-relevant thermal sensors to the Tegra186 device tree.
+In Tegra186, the BPMP (Boot and Power Management Processor) implements
+an interface that is used to read system temperatures, including CPU
+cluster and GPU temperatures. This binding describes the thermal sensor
+that is exposed by BPMP.
 
 Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
-v2:
-- added trips and cooling-maps nodes
- arch/arm64/boot/dts/nvidia/tegra186.dtsi | 103 +++++++++++++++++++++++++++++++
- 1 file changed, 103 insertions(+)
+ .../thermal/nvidia,tegra186-bpmp-thermal.txt       | 32 ++++++++++++++++++++++
+ .../dt-bindings/thermal/tegra186-bpmp-thermal.h    | 14 ++++++++++
+ 2 files changed, 46 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt
+ create mode 100644 include/dt-bindings/thermal/tegra186-bpmp-thermal.h
 
-diff --git a/arch/arm64/boot/dts/nvidia/tegra186.dtsi b/arch/arm64/boot/dts/nvidia/tegra186.dtsi
-index 0b0552c9f7dd..6adcf25e13d1 100644
---- a/arch/arm64/boot/dts/nvidia/tegra186.dtsi
-+++ b/arch/arm64/boot/dts/nvidia/tegra186.dtsi
-@@ -4,6 +4,7 @@
- #include <dt-bindings/mailbox/tegra186-hsp.h>
- #include <dt-bindings/power/tegra186-powergate.h>
- #include <dt-bindings/reset/tegra186-reset.h>
-+#include <dt-bindings/thermal/tegra186-bpmp-thermal.h>
- 
- / {
- 	compatible = "nvidia,tegra186";
-@@ -451,6 +452,108 @@
- 			#size-cells = <0>;
- 			status = "disabled";
- 		};
+diff --git a/Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt b/Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt
+new file mode 100644
+index 000000000000..276387dd6815
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt
+@@ -0,0 +1,32 @@
++NVIDIA Tegra186 BPMP thermal sensor
 +
-+		bpmp_thermal: thermal {
-+			compatible = "nvidia,tegra186-bpmp-thermal";
-+			#thermal-sensor-cells = <1>;
-+		};
++In Tegra186, the BPMP (Boot and Power Management Processor) implements an
++interface that is used to read system temperatures, including CPU cluster
++and GPU temperatures. This binding describes the thermal sensor that is
++exposed by BPMP.
++
++The BPMP thermal node must be located directly inside the main BPMP node. See
++../firmware/nvidia,tegra186-bpmp.txt for details of the BPMP binding.
++
++This node represents a thermal sensor. See thermal.txt for details of the
++core thermal binding.
++
++Required properties:
++- compatible:
++    Array of strings.
++    One of:
++    - "nvidia,tegra186-bpmp-thermal".
++- #thermal-sensor-cells: Cell for sensor index.
++    Single-cell integer.
++    Must be <1>.
++
++Example:
++
++bpmp {
++	...
++
++	bpmp_thermal: thermal {
++		compatible = "nvidia,tegra186-bpmp-thermal";
++		#thermal-sensor-cells = <1>;
 +	};
++};
+diff --git a/include/dt-bindings/thermal/tegra186-bpmp-thermal.h b/include/dt-bindings/thermal/tegra186-bpmp-thermal.h
+new file mode 100644
+index 000000000000..a96b8fa31aab
+--- /dev/null
++++ b/include/dt-bindings/thermal/tegra186-bpmp-thermal.h
+@@ -0,0 +1,14 @@
++/*
++ * This header provides constants for binding nvidia,tegra186-bpmp-thermal.
++ */
 +
-+	thermal-zones {
-+		a57 {
-+			polling-delay = <0>;
-+			polling-delay-passive = <1000>;
++#ifndef _DT_BINDINGS_THERMAL_TEGRA186_BPMP_THERMAL_H
++#define _DT_BINDINGS_THERMAL_TEGRA186_BPMP_THERMAL_H
 +
-+			thermal-sensors =
-+				<&bpmp_thermal TEGRA186_BPMP_THERMAL_ZONE_CPU>;
++#define TEGRA186_BPMP_THERMAL_ZONE_CPU 2
++#define TEGRA186_BPMP_THERMAL_ZONE_GPU 3
++#define TEGRA186_BPMP_THERMAL_ZONE_AUX 4
++#define TEGRA186_BPMP_THERMAL_ZONE_PLLX 5
++#define TEGRA186_BPMP_THERMAL_ZONE_AO 6
 +
-+			trips {
-+				critical {
-+					temperature = <101000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+			};
-+		};
-+
-+		denver {
-+			polling-delay = <0>;
-+			polling-delay-passive = <1000>;
-+
-+			thermal-sensors =
-+				<&bpmp_thermal TEGRA186_BPMP_THERMAL_ZONE_AUX>;
-+
-+			trips {
-+				critical {
-+					temperature = <101000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+			};
-+		};
-+
-+		gpu {
-+			polling-delay = <0>;
-+			polling-delay-passive = <1000>;
-+
-+			thermal-sensors =
-+				<&bpmp_thermal TEGRA186_BPMP_THERMAL_ZONE_GPU>;
-+
-+			trips {
-+				critical {
-+					temperature = <101000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+			};
-+		};
-+
-+		pll {
-+			polling-delay = <0>;
-+			polling-delay-passive = <1000>;
-+
-+			thermal-sensors =
-+				<&bpmp_thermal TEGRA186_BPMP_THERMAL_ZONE_PLLX>;
-+
-+			trips {
-+				critical {
-+					temperature = <101000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+			};
-+		};
-+
-+		always_on {
-+			polling-delay = <0>;
-+			polling-delay-passive = <1000>;
-+
-+			thermal-sensors =
-+				<&bpmp_thermal TEGRA186_BPMP_THERMAL_ZONE_AO>;
-+
-+			trips {
-+				critical {
-+					temperature = <101000>;
-+					hysteresis = <0>;
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+			};
-+		};
- 	};
- 
- 	timer {
++#endif
 -- 
 2.13.3
