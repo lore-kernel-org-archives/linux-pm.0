@@ -1,92 +1,353 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [RFC 21/22] x86/module: Add support for mcmodel large and PLTs
-Date: Mon, 24 Jul 2017 09:32:58 -0700
-Message-ID: <CAJcbSZF=gCLRzqAzPgb46CJ6YDibUK0bG0NsVsAqV6jOHzZskA@mail.gmail.com>
-References: <20170718223333.110371-1-thgarnie@google.com> <20170718223333.110371-22-thgarnie@google.com>
- <c0bc2d98-d6eb-e3db-3799-2e28e9919f3d@zytor.com> <CAMzpN2j+Z27uudHXqqMhbk=s=pnk7LdA2FPkgmsdZzO3ysemsQ@mail.gmail.com>
- <CAJcbSZFphkF8bcodkcwpK-oi3D7GTQXyTkOLPkmtWSPLPkvB0Q@mail.gmail.com> <CAMzpN2jWTS8R5V6i5q=bq4NGW_svELw5bjgWTOX=Ow3ddWx-6Q@mail.gmail.com>
+From: Mikko Perttunen <mperttunen@nvidia.com>
+Subject: [PATCH v2 5/5] thermal: Add Tegra BPMP thermal sensor driver
+Date: Mon, 24 Jul 2017 19:29:18 +0300
+Message-ID: <20170724162918.21050-5-mperttunen@nvidia.com>
+References: <20170724162918.21050-1-mperttunen@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-9115-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAMzpN2jWTS8R5V6i5q=bq4NGW_svELw5bjgWTOX=Ow3ddWx-6Q@mail.gmail.com>
-To: Brian Gerst <brgerst@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>Christ
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170724162918.21050-1-mperttunen@nvidia.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com, jonathanh@nvidia.com
+Cc: linux-tegra@vger.kernel.org, Mikko Perttunen <mperttunen@nvidia.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 19, 2017 at 10:34 AM, Brian Gerst <brgerst@gmail.com> wrote:
-> On Wed, Jul 19, 2017 at 11:58 AM, Thomas Garnier <thgarnie@google.com> wrote:
->> On Tue, Jul 18, 2017 at 8:59 PM, Brian Gerst <brgerst@gmail.com> wrote:
->>> On Tue, Jul 18, 2017 at 9:35 PM, H. Peter Anvin <hpa@zytor.com> wrote:
->>>> On 07/18/17 15:33, Thomas Garnier wrote:
->>>>> With PIE support and KASLR extended range, the modules may be further
->>>>> away from the kernel than before breaking mcmodel=kernel expectations.
->>>>>
->>>>> Add an option to build modules with mcmodel=large. The modules generated
->>>>> code will make no assumptions on placement in memory.
->>>>>
->>>>> Despite this option, modules still expect kernel functions to be within
->>>>> 2G and generate relative calls. To solve this issue, the PLT arm64 code
->>>>> was adapted for x86_64. When a relative relocation go outside its range,
->>>>> a dynamic PLT entry is used to correctly jump to the destination.
->>>>
->>>> Why large as opposed to medium or medium-PIC?
->>>
->>> Or for that matter, why not small-PIC?  We aren't changing the size of
->>> the kernel to be larger than 2G text or data.  Small-PIC would still
->>> allow it to be placed anywhere in the address space, and would
->>> generate far better code.
->>
->> My understanding was that small=PIC and medium=PIC assume that the
->> module code is in the lower 2G of memory. I will do additional testing
->> on the modules to confirm that.
->
-> That is only for small/medium absolute (non-PIC) code.  Think about
-> userspace shared libraries.  They are not limited to being mapped in
-> the lower 2G of the address space.
+On Tegra186, the BPMP (Boot and Power Management Processor) exposes an
+interface to thermal sensors on the system-on-chip. This driver
+implements access to the interface. It supports reading the
+temperature, setting trip points and receiving notification of a
+tripped trip point.
 
-I built lkdtm with mcmodel=(kernel, small, medium & large).
+Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+---
+v2:
+- don't allocate space for disabled zones
+- allow compilation with COMPILE_TEST
 
-Comparing the same instruction and its relocation in lkdtm
-(lkdtm_register_cpoint).
+ drivers/thermal/Makefile             |   2 +-
+ drivers/thermal/tegra/Kconfig        |   7 +
+ drivers/thermal/tegra/Makefile       |   3 +-
+ drivers/thermal/tegra/bpmp-thermal.c | 263 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 273 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/thermal/tegra/bpmp-thermal.c
 
-On mcmodel=kernel:
-
-     1b8:       48 c7 c7 00 00 00 00    mov    $0x0,%rdi
-                        1bb: R_X86_64_32S       .rodata.str1.8+0x50
-
-On mcmodel=small and mcmodel=medium:
-
-     1b8:       bf 00 00 00 00          mov    $0x0,%edi
-     1b9: R_X86_64_32        .rodata.str1.8+0x50
-
-On mcmodel=large:
-
-     235:       48 bf 00 00 00 00 00    movabs $0x0,%rdi
-     23c:       00 00 00
-                        237: R_X86_64_64        .rodata.str1.8+0x50
-
-The kernel mcmodel extends the sign of the address. It assumes you are
-in the top 2G of the address space. So the relocated pointer
-0x8XXXXXXX becomes 0xFFFFFFFF8XXXXXXX.
-
-The small and medium mcmodels assume the pointer is within the lower
-part of the address space. The generate pointer has the 32-bit high
-part to zero. You can only map the module between 0 and 0xFFFFFFFF.
-
-The large mcmodel can handle a full 64-bit pointer.
-
-That's why I use the large mcmodel on modules. I cannot use PIE due to
-how the modules are linked.
-
->
-> --
-> Brian Gerst
-
-
-
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 094d7039981c..c03dccdba7b8 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -54,7 +54,7 @@ obj-$(CONFIG_INTEL_BXT_PMIC_THERMAL) += intel_bxt_pmic_thermal.o
+ obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
+ obj-$(CONFIG_ST_THERMAL)	+= st/
+ obj-$(CONFIG_QCOM_TSENS)	+= qcom/
+-obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra/
++obj-y				+= tegra/
+ obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
+ obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
+ obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
+diff --git a/drivers/thermal/tegra/Kconfig b/drivers/thermal/tegra/Kconfig
+index cec586ec7e4b..f8740f7852e3 100644
+--- a/drivers/thermal/tegra/Kconfig
++++ b/drivers/thermal/tegra/Kconfig
+@@ -10,4 +10,11 @@ config TEGRA_SOCTHERM
+ 	  zones to manage temperatures. This option is also required for the
+ 	  emergency thermal reset (thermtrip) feature to function.
+ 
++config TEGRA_BPMP_THERMAL
++	tristate "Tegra BPMP thermal sensing"
++	depends on TEGRA_BPMP || COMPILE_TEST
++	help
++	 Enable this option for support for sensing system temperature of NVIDIA
++	 Tegra systems-on-chip with the BPMP coprocessor (Tegra186).
++
+ endmenu
+diff --git a/drivers/thermal/tegra/Makefile b/drivers/thermal/tegra/Makefile
+index 1ce1af2cf0f5..757abcd1feaf 100644
+--- a/drivers/thermal/tegra/Makefile
++++ b/drivers/thermal/tegra/Makefile
+@@ -1,4 +1,5 @@
+-obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra-soctherm.o
++obj-$(CONFIG_TEGRA_SOCTHERM)		+= tegra-soctherm.o
++obj-$(CONFIG_TEGRA_BPMP_THERMAL)	+= bpmp-thermal.o
+ 
+ tegra-soctherm-y				:= soctherm.o soctherm-fuse.o
+ tegra-soctherm-$(CONFIG_ARCH_TEGRA_124_SOC)	+= tegra124-soctherm.o
+diff --git a/drivers/thermal/tegra/bpmp-thermal.c b/drivers/thermal/tegra/bpmp-thermal.c
+new file mode 100644
+index 000000000000..b0980dbca3b3
+--- /dev/null
++++ b/drivers/thermal/tegra/bpmp-thermal.c
+@@ -0,0 +1,263 @@
++/*
++ * Copyright (c) 2015-2017, NVIDIA CORPORATION.  All rights reserved.
++ *
++ * Author:
++ *	Mikko Perttunen <mperttunen@nvidia.com>
++ *	Aapo Vienamo	<avienamo@nvidia.com>
++ *
++ * This software is licensed under the terms of the GNU General Public
++ * License version 2, as published by the Free Software Foundation, and
++ * may be copied, distributed, and modified under those terms.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/thermal.h>
++#include <linux/workqueue.h>
++
++#include <soc/tegra/bpmp.h>
++#include <soc/tegra/bpmp-abi.h>
++
++struct tegra_bpmp_thermal_zone {
++	struct tegra_bpmp_thermal *tegra;
++	struct thermal_zone_device *tzd;
++	struct work_struct tz_device_update_work;
++	unsigned int idx;
++};
++
++struct tegra_bpmp_thermal {
++	struct device *dev;
++	struct tegra_bpmp *bpmp;
++	unsigned int num_zones;
++	struct tegra_bpmp_thermal_zone **zones;
++};
++
++static int tegra_bpmp_thermal_get_temp(void *data, int *out_temp)
++{
++	struct tegra_bpmp_thermal_zone *zone = data;
++	struct mrq_thermal_host_to_bpmp_request req;
++	union mrq_thermal_bpmp_to_host_response reply;
++	struct tegra_bpmp_message msg;
++	int err;
++
++	memset(&req, 0, sizeof(req));
++	req.type = CMD_THERMAL_GET_TEMP;
++	req.get_temp.zone = zone->idx;
++
++	memset(&msg, 0, sizeof(msg));
++	msg.mrq = MRQ_THERMAL;
++	msg.tx.data = &req;
++	msg.tx.size = sizeof(req);
++	msg.rx.data = &reply;
++	msg.rx.size = sizeof(reply);
++
++	err = tegra_bpmp_transfer(zone->tegra->bpmp, &msg);
++	if (err)
++		return err;
++
++	*out_temp = reply.get_temp.temp;
++
++	return 0;
++}
++
++static int tegra_bpmp_thermal_set_trips(void *data, int low, int high)
++{
++	struct tegra_bpmp_thermal_zone *zone = data;
++	struct mrq_thermal_host_to_bpmp_request req;
++	struct tegra_bpmp_message msg;
++
++	memset(&req, 0, sizeof(req));
++	req.type = CMD_THERMAL_SET_TRIP;
++	req.set_trip.zone = zone->idx;
++	req.set_trip.enabled = true;
++	req.set_trip.low = low;
++	req.set_trip.high = high;
++
++	memset(&msg, 0, sizeof(msg));
++	msg.mrq = MRQ_THERMAL;
++	msg.tx.data = &req;
++	msg.tx.size = sizeof(req);
++
++	return tegra_bpmp_transfer(zone->tegra->bpmp, &msg);
++}
++
++static void tz_device_update_work_fn(struct work_struct *work)
++{
++	struct tegra_bpmp_thermal_zone *zone;
++
++	zone = container_of(work, struct tegra_bpmp_thermal_zone,
++			    tz_device_update_work);
++
++	thermal_zone_device_update(zone->tzd, THERMAL_TRIP_VIOLATED);
++}
++
++static void bpmp_mrq_thermal(unsigned int mrq, struct tegra_bpmp_channel *ch,
++			     void *data)
++{
++	struct mrq_thermal_bpmp_to_host_request *req;
++	struct tegra_bpmp_thermal *tegra = data;
++	int i;
++
++	req = (struct mrq_thermal_bpmp_to_host_request *)ch->ib->data;
++
++	if (req->type != CMD_THERMAL_HOST_TRIP_REACHED) {
++		dev_err(tegra->dev, "%s: invalid request type: %d\n",
++			__func__, req->type);
++		tegra_bpmp_mrq_return(ch, -EINVAL, NULL, 0);
++		return;
++	}
++
++	for (i = 0; i < tegra->num_zones; ++i) {
++		if (tegra->zones[i]->idx != req->host_trip_reached.zone)
++			continue;
++
++		schedule_work(&tegra->zones[i]->tz_device_update_work);
++		tegra_bpmp_mrq_return(ch, 0, NULL, 0);
++		return;
++	}
++
++	dev_err(tegra->dev, "%s: invalid thermal zone: %d\n", __func__,
++		req->host_trip_reached.zone);
++	tegra_bpmp_mrq_return(ch, -EINVAL, NULL, 0);
++}
++
++static int tegra_bpmp_thermal_get_num_zones(struct tegra_bpmp *bpmp,
++					    int *num_zones)
++{
++	struct mrq_thermal_host_to_bpmp_request req;
++	union mrq_thermal_bpmp_to_host_response reply;
++	struct tegra_bpmp_message msg;
++	int err;
++
++	memset(&req, 0, sizeof(req));
++	req.type = CMD_THERMAL_GET_NUM_ZONES;
++
++	memset(&msg, 0, sizeof(msg));
++	msg.mrq = MRQ_THERMAL;
++	msg.tx.data = &req;
++	msg.tx.size = sizeof(req);
++	msg.rx.data = &reply;
++	msg.rx.size = sizeof(reply);
++
++	err = tegra_bpmp_transfer(bpmp, &msg);
++	if (err)
++		return err;
++
++	*num_zones = reply.get_num_zones.num;
++
++	return 0;
++}
++
++static const struct thermal_zone_of_device_ops tegra_bpmp_of_thermal_ops = {
++	.get_temp = tegra_bpmp_thermal_get_temp,
++	.set_trips = tegra_bpmp_thermal_set_trips,
++};
++
++static int tegra_bpmp_thermal_probe(struct platform_device *pdev)
++{
++	struct tegra_bpmp *bpmp = dev_get_drvdata(pdev->dev.parent);
++	struct tegra_bpmp_thermal *tegra;
++	struct thermal_zone_device *tzd;
++	unsigned int i, max_num_zones;
++	int err;
++
++	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
++	if (!tegra)
++		return -ENOMEM;
++
++	tegra->dev = &pdev->dev;
++	tegra->bpmp = bpmp;
++
++	err = tegra_bpmp_thermal_get_num_zones(bpmp, &max_num_zones);
++	if (err) {
++		dev_err(&pdev->dev, "failed to get the number of zones: %d\n",
++			err);
++		return err;
++	}
++
++	tegra->zones = devm_kcalloc(&pdev->dev, max_num_zones,
++				    sizeof(*tegra->zones), GFP_KERNEL);
++	if (!tegra->zones)
++		return -ENOMEM;
++
++	for (i = 0; i < max_num_zones; ++i) {
++		struct tegra_bpmp_thermal_zone *zone;
++		int temp;
++
++		zone = devm_kzalloc(&pdev->dev, sizeof(*zone), GFP_KERNEL);
++		if (!zone)
++			return -ENOMEM;
++
++		zone->idx = i;
++		zone->tegra = tegra;
++
++		err = tegra_bpmp_thermal_get_temp(zone, &temp);
++		if (err < 0) {
++			devm_kfree(&pdev->dev, zone);
++			continue;
++		}
++
++		tzd = devm_thermal_zone_of_sensor_register(
++			&pdev->dev, i, zone, &tegra_bpmp_of_thermal_ops);
++		if (IS_ERR(tzd)) {
++			if (PTR_ERR(tzd) == -EPROBE_DEFER)
++				return -EPROBE_DEFER;
++			devm_kfree(&pdev->dev, zone);
++			continue;
++		}
++
++		zone->tzd = tzd;
++		INIT_WORK(&zone->tz_device_update_work,
++			  tz_device_update_work_fn);
++
++		tegra->zones[tegra->num_zones++] = zone;
++	}
++
++	err = tegra_bpmp_request_mrq(bpmp, MRQ_THERMAL, bpmp_mrq_thermal,
++				     tegra);
++	if (err) {
++		dev_err(&pdev->dev, "failed to register mrq handler: %d\n",
++			err);
++		return err;
++	}
++
++	platform_set_drvdata(pdev, tegra);
++
++	return 0;
++}
++
++static int tegra_bpmp_thermal_remove(struct platform_device *pdev)
++{
++	struct tegra_bpmp_thermal *tegra = platform_get_drvdata(pdev);
++
++	tegra_bpmp_free_mrq(tegra->bpmp, MRQ_THERMAL, tegra);
++
++	return 0;
++}
++
++static const struct of_device_id tegra_bpmp_thermal_of_match[] = {
++	{ .compatible = "nvidia,tegra186-bpmp-thermal" },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, tegra_bpmp_thermal_of_match);
++
++static struct platform_driver tegra_bpmp_thermal_driver = {
++	.probe = tegra_bpmp_thermal_probe,
++	.remove = tegra_bpmp_thermal_remove,
++	.driver = {
++		.name = "tegra-bpmp-thermal",
++		.of_match_table = tegra_bpmp_thermal_of_match,
++	},
++};
++module_platform_driver(tegra_bpmp_thermal_driver);
++
++MODULE_AUTHOR("Mikko Perttunen <mperttunen@nvidia.com>");
++MODULE_DESCRIPTION("NVIDIA Tegra BPMP thermal sensor driver");
++MODULE_LICENSE("GPL v2");
 -- 
-Thomas
+2.13.3
