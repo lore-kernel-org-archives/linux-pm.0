@@ -1,64 +1,91 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v7 1/2] cpufreq: schedutil: Make iowait boost more energy
- efficient
-Date: Mon, 24 Jul 2017 14:27:45 +0530
-Message-ID: <20170724085745.GU352@vireshk-i7>
-References: <20170723155426.9170-1-joelaf@google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f50.google.com ([74.125.83.50]:38853 "EHLO
-        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753225AbdGXI5s (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 04:57:48 -0400
-Received: by mail-pg0-f50.google.com with SMTP id s4so54434649pgr.5
-        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2017 01:57:48 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20170723155426.9170-1-joelaf@google.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: [PATCH] USB: musb: fix external abort on suspend
+Date: Mon, 24 Jul 2017 11:49:39 +0200
+Message-ID: <20170724094939.21477-1-johan@kernel.org>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Bin Liu <b-liu-l0cyMroinI0@public.gmane.org>
+Cc: Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, stable <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, Daniel Mack <zonque-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Sebastian Andrzej Siewior <bigeasy-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Joel Fernandes <joelaf@google.com>
-Cc: linux-kernel@vger.kernel.org, Juri Lelli <juri.lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Andres Oportus <andresoportus@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-On 23-07-17, 08:54, Joel Fernandes wrote:
-> Currently the iowait_boost feature in schedutil makes the frequency go to max
-> on iowait wakeups.  This feature was added to handle a case that Peter
-> described where the throughput of operations involving continuous I/O requests
-> [1] is reduced due to running at a lower frequency, however the lower
-> throughput itself causes utilization to be low and hence causing frequency to
-> be low hence its "stuck".
-> 
-> Instead of going to max, its also possible to achieve the same effect by
-> ramping up to max if there are repeated in_iowait wakeups happening. This patch
-> is an attempt to do that. We start from a lower frequency (policy->min)
-> and double the boost for every consecutive iowait update until we reach the
-> maximum iowait boost frequency (iowait_boost_max).
-> 
-> I ran a synthetic test (continuous O_DIRECT writes in a loop) on an x86 machine
-> with intel_pstate in passive mode using schedutil. In this test the iowait_boost
-> value ramped from 800MHz to 4GHz in 60ms. The patch achieves the desired improved
-> throughput as the existing behavior.
-> 
-> [1] https://patchwork.kernel.org/patch/9735885/
-> 
-> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Suggested-by: Peter Zijlstra <peterz@infradead.org>
-> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Joel Fernandes <joelaf@google.com>
-> ---
->  kernel/sched/cpufreq_schedutil.c | 38 ++++++++++++++++++++++++++++++++------
->  1 file changed, 32 insertions(+), 6 deletions(-)
+Make sure that the controller is runtime resumed when system suspending
+to avoid an external abort when accessing the interrupt registers:
 
-You Send V7 [1-2]/2 twice, Are they different ?
+  Unhandled fault: external abort on non-linefetch (0x1008) at 0xd025840a
+  ...
+  [<c05481a4>] (musb_default_readb) from [<c0545abc>] (musb_disable_interrupts+0x84/0xa8)
+  [<c0545abc>] (musb_disable_interrupts) from [<c0546b08>] (musb_suspend+0x38/0xb8)
+  [<c0546b08>] (musb_suspend) from [<c04a57f8>] (platform_pm_suspend+0x3c/0x64)
 
-For both the patches:
+This is easily reproduced on a BBB by enabling the peripheral port only
+(as the host port may enable the shared clock) and keeping it
+disconnected so that the controller is runtime suspended. (Well, you
+would also need to the not-yet-merged am33xx-suspend patches by Dave
+Gerlach to be able to suspend the BBB.)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+This is a regression that was introduced by commit 1c4d0b4e1806 ("usb:
+musb: Remove pm_runtime_set_irq_safe") which allowed the parent glue
+device to runtime suspend and thereby exposed a couple of older issues:
 
--- 
-viresh
+Register accesses without explicitly making sure the controller is
+runtime resumed during suspend was first introduced by commit
+c338412b5ded ("usb: musb: unconditionally save and restore the context
+on suspend") in 3.14.
+
+Commit a1fc1920aaaa ("usb: musb: core: make sure musb is in RPM_ACTIVE on
+resume") later started setting the RPM status to active during resume
+without first making sure that the parent was runtime resumed. This was
+also implicitly relying on the parent always being active. Since commit
+71723f95463d ("PM / runtime: print error when activating a child to
+unactive parent") this now also results in following warning:
+
+  musb-hdrc musb-hdrc.0: runtime PM trying to activate child device
+    musb-hdrc.0 but parent (47401400.usb) is not active
+
+This patch has been verified on 4.13-rc2, 4.12 and 4.9 using a BBB
+(the dsps glue would always be active also in 4.8).
+
+Fixes: c338412b5ded ("usb: musb: unconditionally save and restore the context on suspend")
+Fixes: a1fc1920aaaa ("usb: musb: core: make sure musb is in RPM_ACTIVE on resume")
+Fixes: 1c4d0b4e1806 ("usb: musb: Remove pm_runtime_set_irq_safe")
+Cc: stable <stable-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>	# 4.8
+Cc: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Cc: Daniel Mack <zonque-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Cc: Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Sebastian Andrzej Siewior <bigeasy-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
+Cc: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Signed-off-by: Johan Hovold <johan-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+---
+ drivers/usb/musb/musb_core.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
+index 87cbd56cc761..b67692857daf 100644
+--- a/drivers/usb/musb/musb_core.c
++++ b/drivers/usb/musb/musb_core.c
+@@ -2671,6 +2671,13 @@ static int musb_suspend(struct device *dev)
+ {
+ 	struct musb	*musb = dev_to_musb(dev);
+ 	unsigned long	flags;
++	int ret;
++
++	ret = pm_runtime_get_sync(dev);
++	if (ret < 0) {
++		pm_runtime_put_noidle(dev);
++		return ret;
++	}
+ 
+ 	musb_platform_disable(musb);
+ 	musb_disable_interrupts(musb);
+@@ -2721,14 +2728,6 @@ static int musb_resume(struct device *dev)
+ 	if ((devctl & mask) != (musb->context.devctl & mask))
+ 		musb->port1_status = 0;
+ 
+-	/*
+-	 * The USB HUB code expects the device to be in RPM_ACTIVE once it came
+-	 * out of suspend
+-	 */
+-	pm_runtime_disable(dev);
+-	pm_runtime_set_active(dev);
+-	pm_runtime_enable(dev);
