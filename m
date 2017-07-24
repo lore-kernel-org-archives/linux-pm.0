@@ -1,76 +1,67 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH V3 1/3] sched: cpufreq: Allow remote cpufreq callbacks
-Date: Mon, 24 Jul 2017 15:47:52 +0200
-Message-ID: <20170724134752.sejehwa5mjqqc2mq@hirez.programming.kicks-ass.net>
-References: <cover.1499927699.git.viresh.kumar@linaro.org>
- <0f950529a63fb95e87944644c4854be4fcfaea38.1499927699.git.viresh.kumar@linaro.org>
- <20170721130349.mv7soic62jdnirq5@hirez.programming.kicks-ass.net>
- <20170724110122.GX352@vireshk-i7>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] USB: musb: fix external abort on suspend
+Date: Mon, 24 Jul 2017 10:38:41 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1707241029380.1739-100000@iolanthe.rowland.org>
+References: <20170724094939.21477-1-johan@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170724110122.GX352@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org, linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from iolanthe.rowland.org ([192.131.102.54]:60178 "HELO
+        iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with SMTP id S1755973AbdGXOim (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 10:38:42 -0400
+In-Reply-To: <20170724094939.21477-1-johan@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Johan Hovold <johan@kernel.org>
+Cc: Bin Liu <b-liu@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable <stable@vger.kernel.org>, Daniel Mack <zonque@gmail.com>, Dave Gerlach <d-gerlach@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Tony Lindgren <tony@atomide.com>
 
-On Mon, Jul 24, 2017 at 04:31:22PM +0530, Viresh Kumar wrote:
-> On 21-07-17, 15:03, Peter Zijlstra wrote:
-> > On Thu, Jul 13, 2017 at 12:14:37PM +0530, Viresh Kumar wrote:
+On Mon, 24 Jul 2017, Johan Hovold wrote:
 
-> > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > > index 29a397067ffa..ed9c589e5386 100644
-> > > --- a/kernel/sched/cpufreq_schedutil.c
-> > > +++ b/kernel/sched/cpufreq_schedutil.c
-> > > @@ -218,6 +218,10 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
-> > >  	unsigned int next_f;
-> > >  	bool busy;
-> > >  
-> > > +	/* Remote callbacks aren't allowed for policies which aren't shared */
-> > > +	if (smp_processor_id() != hook->cpu)
-> > > +		return;
-> > > +
-> > >  	sugov_set_iowait_boost(sg_cpu, time, flags);
-> > >  	sg_cpu->last_update = time;
-> > >  
-> > > @@ -290,6 +294,10 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
-> > >  	unsigned long util, max;
-> > >  	unsigned int next_f;
-> > >  
-> > > +	/* Don't allow remote callbacks */
-> > > +	if (smp_processor_id() != hook->cpu)
-> > > +		return;
-> > > +
-> > >  	sugov_get_util(&util, &max);
-> > >  
-> > >  	raw_spin_lock(&sg_policy->update_lock);
-> > 
-> > 
-> > Given the whole rq->lock thing, I suspect we could actually not do these
-> > two.
+> Make sure that the controller is runtime resumed when system suspending
+> to avoid an external abort when accessing the interrupt registers:
 > 
-> You meant sugov_get_util() and raw_spin_lock()? Why?
+>   Unhandled fault: external abort on non-linefetch (0x1008) at 0xd025840a
+>   ...
+>   [<c05481a4>] (musb_default_readb) from [<c0545abc>] (musb_disable_interrupts+0x84/0xa8)
+>   [<c0545abc>] (musb_disable_interrupts) from [<c0546b08>] (musb_suspend+0x38/0xb8)
+>   [<c0546b08>] (musb_suspend) from [<c04a57f8>] (platform_pm_suspend+0x3c/0x64)
 > 
-> The locking is required here in the shared-policy case to make sure
-> only one CPU is updating the frequency for the entire policy. And we
-> can't really avoid that even with the rq->lock guarantees from the
-> scheduler for the target CPU. 
-
-I said nothing about the shared locking. That is indeed required. All I
-said is that those two tests you add could be left out.
-
-> > That would then continue to process the iowait and other accounting
-> > stuff, but stall the moment we call into the actual driver, which will
-> > then drop the request on the floor as per the first few hunks.
+> This is easily reproduced on a BBB by enabling the peripheral port only
+> (as the host port may enable the shared clock) and keeping it
+> disconnected so that the controller is runtime suspended. (Well, you
+> would also need to the not-yet-merged am33xx-suspend patches by Dave
+> Gerlach to be able to suspend the BBB.)
 > 
-> I am not sure I understood your comment completely though.
+> This is a regression that was introduced by commit 1c4d0b4e1806 ("usb:
+> musb: Remove pm_runtime_set_irq_safe") which allowed the parent glue
+> device to runtime suspend and thereby exposed a couple of older issues:
+> 
+> Register accesses without explicitly making sure the controller is
+> runtime resumed during suspend was first introduced by commit
+> c338412b5ded ("usb: musb: unconditionally save and restore the context
+> on suspend") in 3.14.
+> 
+> Commit a1fc1920aaaa ("usb: musb: core: make sure musb is in RPM_ACTIVE on
+> resume") later started setting the RPM status to active during resume
+> without first making sure that the parent was runtime resumed. This was
+> also implicitly relying on the parent always being active. Since commit
+> 71723f95463d ("PM / runtime: print error when activating a child to
+> unactive parent") this now also results in following warning:
+> 
+>   musb-hdrc musb-hdrc.0: runtime PM trying to activate child device
+>     musb-hdrc.0 but parent (47401400.usb) is not active
 
-Since we call cpufreq_update_util(@rq, ...) with @rq->lock held, all
-such calls are in fact serialized for that cpu. Therefore the cpu !=
-current_cpu test you add are pointless.
+I don't understand this.  Why wouldn't the parent be in RPM_ACTIVE at
+this time?  After all, how could the system be expected to resume a
+child device if its parent wasn't fully active?
 
-Only once we get to the actual cpufreq driver (intel_pstate and others)
-do we run into the fact that we might not be able to service the request
-remotely. But since you also add a test there, that is sufficient.
+In general, during a system resume callback we should bring a device
+back to full power, tell the PM core that this has been done, and leave
+it at full power until the whole system resume is finished.  For
+efficiency we can avoid doing this in cases where the device was in
+runtime suspend before the system suspend began, but you have to be
+very careful about it -- see the documentation for the ->prepare
+callback in Documentation/driver-api/pm/devices.rst.
+
+Alan Stern
