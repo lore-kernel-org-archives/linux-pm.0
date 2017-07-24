@@ -1,83 +1,151 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH] USB: musb: fix external abort on suspend
-Date: Mon, 24 Jul 2017 17:20:59 +0200
-Message-ID: <20170724152059.GA27453@localhost>
-References: <20170724094939.21477-1-johan@kernel.org>
- <Pine.LNX.4.44L0.1707241029380.1739-100000@iolanthe.rowland.org>
+From: Huaisheng HS1 Ye <yehs1@lenovo.com>
+Subject: RE: [PATCH] cpufreq: intel_pstate: Fix cpuinfo_cur_freq after
+ performance governor changes
+Date: Mon, 24 Jul 2017 15:32:47 +0000
+Message-ID: <KL1PR0302MB2502C43359F4B6A738D509B992BB0@KL1PR0302MB2502.apcprd03.prod.outlook.com>
+References: <1500875013-123321-1-git-send-email-yehs1@lenovo.com>
+ <7185077.O26hx51RqR@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.1707241029380.1739-100000@iolanthe.rowland.org>
-Sender: stable-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Johan Hovold <johan@kernel.org>, Bin Liu <b-liu@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable <stable@vger.kernel.org>, Daniel Mack <zonque@gmail.com>, Dave Gerlach <d-gerlach@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Tony Lindgren <tony@atomide.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail1.bemta8.messagelabs.com ([216.82.243.207]:12437 "EHLO
+        mail1.bemta8.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752259AbdGXPdC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 11:33:02 -0400
+In-Reply-To: <7185077.O26hx51RqR@aspire.rjw.lan>
+Content-Language: zh-CN
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "srinivas.pandruvada@linux.intel.com" <srinivas.pandruvada@linux.intel.com>, "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Mon, Jul 24, 2017 at 10:38:41AM -0400, Alan Stern wrote:
-> On Mon, 24 Jul 2017, Johan Hovold wrote:
-> 
-> > Make sure that the controller is runtime resumed when system suspending
-> > to avoid an external abort when accessing the interrupt registers:
-> > 
-> >   Unhandled fault: external abort on non-linefetch (0x1008) at 0xd025840a
-> >   ...
-> >   [<c05481a4>] (musb_default_readb) from [<c0545abc>] (musb_disable_interrupts+0x84/0xa8)
-> >   [<c0545abc>] (musb_disable_interrupts) from [<c0546b08>] (musb_suspend+0x38/0xb8)
-> >   [<c0546b08>] (musb_suspend) from [<c04a57f8>] (platform_pm_suspend+0x3c/0x64)
-> > 
-> > This is easily reproduced on a BBB by enabling the peripheral port only
-> > (as the host port may enable the shared clock) and keeping it
-> > disconnected so that the controller is runtime suspended. (Well, you
-> > would also need to the not-yet-merged am33xx-suspend patches by Dave
-> > Gerlach to be able to suspend the BBB.)
-> > 
-> > This is a regression that was introduced by commit 1c4d0b4e1806 ("usb:
-> > musb: Remove pm_runtime_set_irq_safe") which allowed the parent glue
-> > device to runtime suspend and thereby exposed a couple of older issues:
-> > 
-> > Register accesses without explicitly making sure the controller is
-> > runtime resumed during suspend was first introduced by commit
-> > c338412b5ded ("usb: musb: unconditionally save and restore the context
-> > on suspend") in 3.14.
-> > 
-> > Commit a1fc1920aaaa ("usb: musb: core: make sure musb is in RPM_ACTIVE on
-> > resume") later started setting the RPM status to active during resume
-> > without first making sure that the parent was runtime resumed. This was
-> > also implicitly relying on the parent always being active. Since commit
-> > 71723f95463d ("PM / runtime: print error when activating a child to
-> > unactive parent") this now also results in following warning:
-> > 
-> >   musb-hdrc musb-hdrc.0: runtime PM trying to activate child device
-> >     musb-hdrc.0 but parent (47401400.usb) is not active
-> 
-> I don't understand this.  Why wouldn't the parent be in RPM_ACTIVE at
-> this time?  After all, how could the system be expected to resume a
-> child device if its parent wasn't fully active?
+Hi Rafael,
+Thanks for your reply.
 
-The parent for a musb controller is a "glue" device (e.g. musb_dsps)
-which previously was always kept active, but that's no longer the case
-as mentioned above.
+> On Monday, July 24, 2017 05:43:14 AM Huaisheng HS1 Ye wrote:
+> > After commit 82b4e03e01bc (intel_pstate: skip scheduler hook when in
+> > "performance" mode) Software P-state control modes couldn't get
+> > dynamic value during performance mode,
+>=20
+> Please explain what you mean here.
+>=20
+commit 82b4e03e01bc (intel_pstate: skip scheduler hook when in=20
+"performance" mode) disables intel_pstate_set_update_util_hook when current
+policy is performance within function intel_pstate_set_policy. It leads to=
+=20
+Software P-states couldn't update sysfs interface cpuinfo_cur_freq's value=
+=20
+during performance mode, because of pstate_funcs.update_util couldn't set=20
+for the given CPU.
 
-In a system with two controllers (e.g. a Beagle Bone Black), the host
-port may be active and keep the shared clock enabled (managed by the
-grandparent device). Thereby the external-abort crash can be avoided
-when suspending a disconnected (and runtime suspended) peripheral port.
+> I guess you carried out some tests and the results were not as expected, =
+so
+> what was the test?
+Exactly, we check the sysfs interface cpuinfo_cur_freq and the output of=20
+cpupower frequency-info both with performance mode.
 
-When the system is later resumed, you would hit that broken activation
-code of the runtime suspended device, with a likewise runtime suspended
-parent, and the warning would be printed.
+For example, we list logic CPU 63's sysfs interface and output of cpupower =
+with performance=20
+mode below,
+analyzing CPU 63:
+  driver: intel_pstate
+  CPUs which run at the same hardware frequency: 63
+  CPUs which need to have their frequency coordinated by software: 63
+  maximum transition latency:  Cannot determine or is not supported.
+  hardware limits: 1000 MHz - 3.70 GHz
+  available cpufreq governors: performance powersave
+  current policy: frequency should be within 1000 MHz and 3.70 GHz.
+                  The governor "performance" may decide which speed to use
+                  within this range.
+  current CPU frequency: 1.07 GHz (asserted by call to hardware)  <--------=
+cpuinfo_cur_freq=20
+  boost state support:
+    Supported: yes
+    Active: yes
 
-> In general, during a system resume callback we should bring a device
-> back to full power, tell the PM core that this has been done, and leave
-> it at full power until the whole system resume is finished.  For
-> efficiency we can avoid doing this in cases where the device was in
-> runtime suspend before the system suspend began, but you have to be
-> very careful about it -- see the documentation for the ->prepare
-> callback in Documentation/driver-api/pm/devices.rst.
+[root@localhost cpufreq]# pwd
+/sys/devices/system/cpu/cpu63/cpufreq
+[root@localhost cpufreq]# cat cpuinfo_cur_freq scaling_cur_freq=20
+1070379
+2796179
 
-Right, this is how things should have been implemented if it is at all
-possible too keep the device runtime suspended across system suspend.
+The value of cpuinfo_cur_freq is static always during performance mode, bec=
+ause of=20
+"cpu->sample.core_avg_perf" doesn't have chance to be updated when driver l=
+eaves=20
+from powersave mode. Its value equals to last sample result which comes fro=
+m function=20
+intel_pstate_calc_avg_perf.
+commit f8475cef (x86: use common aperfmperf_khz_on_cpu() to calculate KHz u=
+sing=20
+APERF/MPERF) offers a great method to help scaling_cur_freq gets accurate f=
+requency.=20
+And for some tools like cpupower which would try to get cpuinfo_cur_freq at=
+ first to show=20
+current frequency, if it fails then it would move to scaling_cur_freq which=
+ represents the=20
+real value.
 
-Thanks,
-Johan
+>=20
+> > and it still in last value from powersave mode, so clear its value to
+> > get same behavior as Hardware P-state to avoid confusion.
+>=20
+> And please explain why it should be fixed the way you've done that.
+>=20
+
+In order to make sure that cpuinfo_cur_freq couldn't get an effective value=
+,=20
+we clean up "sample.core_avg_perf" when cpu's policy set to performance mod=
+e.=20
+so the reading of sysfs cpuinfo_cur_freq would get "<unknown>" always withi=
+n=20
+performance mode, which is same with the status when HWP has been enabled.
+
+With this patch, logic CPU 63's sysfs interface and output of cpupower with=
+ performance=20
+mode would be like this,
+
+analyzing CPU 63:
+  driver: intel_pstate
+  CPUs which run at the same hardware frequency: 63
+  CPUs which need to have their frequency coordinated by software: 63
+  maximum transition latency:  Cannot determine or is not supported.
+  hardware limits: 1000 MHz - 3.70 GHz
+  available cpufreq governors: performance powersave
+  current policy: frequency should be within 1000 MHz and 3.70 GHz.
+                  The governor "performance" may decide which speed to use
+                  within this range.
+  current CPU frequency: Unable to call hardware				<--------cpuinfo_cur_fr=
+eq
+  current CPU frequency: 2.80 GHz (asserted by call to kernel)	<--------sca=
+ling_cur_freq
+  boost state support:
+    Supported: yes
+    Active: yes
+
+[root@localhost cpufreq]# pwd
+/sys/devices/system/cpu/cpu63/cpufreq
+[root@localhost cpufreq]# cat cpuinfo_cur_freq scaling_cur_freq=20
+<unknown>
+2800000
+
+> > Signed-off-by: Huaisheng Ye <yehs1@lenovo.com>
+> > ---
+> >  drivers/cpufreq/intel_pstate.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > diff --git a/drivers/cpufreq/intel_pstate.c
+> > b/drivers/cpufreq/intel_pstate.c index 6cd5035..c675626 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -2050,6 +2050,7 @@ static int intel_pstate_set_policy(struct
+> cpufreq_policy *policy)
+> >  		 */
+> >  		intel_pstate_clear_update_util_hook(policy->cpu);
+> >  		intel_pstate_max_within_limits(cpu);
+> > +		cpu->sample.core_avg_perf =3D 0;
+> >  	} else {
+> >  		intel_pstate_set_update_util_hook(policy->cpu);
+> >  	}
+> >
