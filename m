@@ -1,435 +1,219 @@
-From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
-Subject: Re: [PATCH 02/10] regulator: add support for SY8106A regulator
-Date: Mon, 24 Jul 2017 14:17:35 +0800
-Message-ID: <CAGb2v67XLNeAYFZ2yEFA9DQszfDgjXxFEKnVicL2UGhrJPqYgQ@mail.gmail.com>
-References: <20170723102749.17323-1-icenowy@aosc.io> <20170723102749.17323-3-icenowy@aosc.io>
- <CAGb2v640bB27M_Xd4r-oQ=acgfpHEwoV2tSk3vH0VZc7R-de6w@mail.gmail.com>
- <a40cabec7eb7f4ae7bb35c4e3e6d3795@aosc.io> <CAGb2v65k3V74MepvFnOF7DRdhyOsSR+6Bgh5Vaf4U2bJ=9=qjg@mail.gmail.com>
- <dce1ffc444edd9de64326e85152ee555@aosc.io>
-Reply-To: wens-jdAy2FN1RRM@public.gmane.org
+From: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Subject: Re: [PATCH v7 05/10] i2c: core: call of_i2c_setup_smbus_alert in
+ i2c_register_adapter
+Date: Mon, 24 Jul 2017 15:38:17 +0800
+Message-ID: <c223fd66-9a4f-fba0-29c5-528e69915f14@electromag.com.au>
+References: <1497535178-12001-1-git-send-email-preid@electromag.com.au>
+ <1497535178-12001-6-git-send-email-preid@electromag.com.au>
+ <20170619152811.svoxmxybyoy6l4hc@ninjato>
+ <20170623121923.GN26073@mail.corp.redhat.com>
+ <367a1a1d-afdb-8895-8216-ae3c18e16fc8@electromag.com.au>
+ <20170628124549.GF26073@mail.corp.redhat.com>
+ <6d3cbda9-2459-60a8-170c-db3671969925@electromag.com.au>
+ <20170721092431.GA11387@mail.corp.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-sunxi+bncBCMILY6JWQBBBGFC23FQKGQEHPLYTSQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <dce1ffc444edd9de64326e85152ee555-h8G6r0blFSE@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Cc: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Ondrej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Carlo Caione <carlo-KA+7E9HrN00dnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-clk <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170721092431.GA11387-/m+UfqrgI5QNLKR9yMNcA1aTQe2KTcn/@public.gmane.org>
+Content-Language: en-AU
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Benjamin Tissoires <benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
+Cc: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jdelvare-IBi9RG/b67k@public.gmane.org, jglauber-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, david.daney-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Jul 24, 2017 at 11:38 AM,  <icenowy-h8G6r0blFSE@public.gmane.org> wrote:
-> =E5=9C=A8 2017-07-24 11:33=EF=BC=8CChen-Yu Tsai =E5=86=99=E9=81=93=EF=BC=
-=9A
+On 21/07/2017 17:24, Benjamin Tissoires wrote:
+> On Jul 11 2017 or thereabouts, Phil Reid wrote:
+>> On 28/06/2017 20:45, Benjamin Tissoires wrote:
+>>> On Jun 28 2017 or thereabouts, Phil Reid wrote:
+>>>> On 23/06/2017 20:19, Benjamin Tissoires wrote:
+>>>>> On Jun 19 2017 or thereabouts, Wolfram Sang wrote:
+>>>>>> On Thu, Jun 15, 2017 at 09:59:33PM +0800, Phil Reid wrote:
+>>>>>>> Add a call to of_i2c_setup_smbus_alert when a i2c adapter is registered
+>>>>>>> so the the smbalert driver can be registered.
+>>>>>>>
+>>>>>>> Signed-off-by: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+>>>>>>
+>>>>>> CCing Benjamin
+>>>>>>
+>>>>>>> ---
+>>>>>>>     drivers/i2c/i2c-core.c | 4 ++++
+>>>>>>>     1 file changed, 4 insertions(+)
+>>>>>>>
+>>>>>>> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+>>>>>>> index d2402bb..626471b 100644
+>>>>>>> --- a/drivers/i2c/i2c-core.c
+>>>>>>> +++ b/drivers/i2c/i2c-core.c
+>>>>>>> @@ -40,6 +40,7 @@
+>>>>>>>     #include <linux/gpio.h>
+>>>>>>>     #include <linux/hardirq.h>
+>>>>>>>     #include <linux/i2c.h>
+>>>>>>> +#include <linux/i2c-smbus.h>
+>>>>>>>     #include <linux/idr.h>
+>>>>>>>     #include <linux/init.h>
+>>>>>>>     #include <linux/irqflags.h>
+>>>>>>> @@ -2045,6 +2046,9 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
+>>>>>>>     		dev_warn(&adap->dev,
+>>>>>>>     			 "Failed to create compatibility class link\n");
+>>>>>>>     #endif
+>>>>>>> +	res = of_i2c_setup_smbus_alert(adap);
+>>>>>>> +	if (res)
+>>>>>>> +		goto out_list;
+>>>>>
+>>>>> See my concerns in patch 4/10.
+>>>>>
+>>>>> In addition, shouldn't this be placed before device_register() for the
+>>>>> least? pm_runtime_enable() would require a matching pm_runtime_disable(),
+>>>>> and device_register() some unregistering behavior too.
+>>>>>
+>>>>
+>>>> G'day Ben,
+>>>>
+>>>> Thanks for the review.
+>>>> Yes this makes sense. I tried having it before the device_register and I get an error
+>>>> about a kobject not being initialised in the a call from of_i2c_setup_smbus_alert.
+>>>>
+>>>> Having a look at what I'm doing in of_i2c_setup_smbus_alert now I'm not sure there's
+>>>> a need to bail out on an error now. Originally I was registering the irq in the setup call.
+>>>> Which need to handle probe defer. Now this should be handled in the alert probe call.
+>>>>
+>>>> WDYR?
+>>>
+>>> Well, of_i2c_setup_smbus_alert() returns an error code, so it has to be
+>>> accounted for. If the error is not a reason to fail, you should at least
+>>> shout some error messages and act accordingly.
+>>>
+>>> However, looking at of_i2c_setup_smbus_alert() again, I wonder if we
+>>> should not split it in 2: one part that checks for the OF flag presence
+>>> and bail out early if an error is encountered (before device
+>>> registration), and one part once the device is registered that calls
+>>> i2c_setup_smbus_alert(). In case of a failure here, we need to
+>>> unregister the adapter because we don't have all the elements at hands
+>>> (assuming we consider that smbus-alert should be mandatory).
+>>>
 >>
->> On Mon, Jul 24, 2017 at 11:18 AM,  <icenowy-h8G6r0blFSE@public.gmane.org> wrote:
->>>
->>> =E5=9C=A8 2017-07-24 11:03=EF=BC=8CChen-Yu Tsai =E5=86=99=E9=81=93=EF=
-=BC=9A
->>>>
->>>>
->>>> On Sun, Jul 23, 2017 at 6:27 PM, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org> wrote=
-:
->>>>>
->>>>>
->>>>> From: Ondrej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
->>>>>
->>>>> SY8106A is an I2C attached single output regulator made by Silergy
->>>>> Corp,
->>>>> which is used on several Allwinner H3/H5 SBCs to control the power
->>>>> supply of the ARM cores.
->>>>>
->>>>> Add a driver for it.
->>>>>
->>>>> Signed-off-by: Ondrej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
->>>>> [Icenowy: Change commit message]
->>>>> Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
->>>>> ---
->>>>>  drivers/regulator/Kconfig             |   8 +-
->>>>>  drivers/regulator/Makefile            |   2 +-
->>>>>  drivers/regulator/sy8106a-regulator.c | 163
->>>>> ++++++++++++++++++++++++++++++++++
->>>>>  3 files changed, 171 insertions(+), 2 deletions(-)
->>>>>  create mode 100644 drivers/regulator/sy8106a-regulator.c
->>>>>
->>>>> diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
->>>>> index 99b9362331b5..1efa73e18d07 100644
->>>>> --- a/drivers/regulator/Kconfig
->>>>> +++ b/drivers/regulator/Kconfig
->>>>> @@ -764,6 +764,13 @@ config REGULATOR_STW481X_VMMC
->>>>>           This driver supports the internal VMMC regulator in the
->>>>> STw481x
->>>>>           PMIC chips.
->>>>>
->>>>> +config REGULATOR_SY8106A
->>>>> +       tristate "Silergy SY8106A regulator"
->>>>> +       depends on I2C && (OF || COMPILE_TEST)
->>>>> +       select REGMAP_I2C
->>>>> +       help
->>>>> +         This driver supports SY8106A single output regulator.
->>>>> +
->>>>>  config REGULATOR_TPS51632
->>>>>         tristate "TI TPS51632 Power Regulator"
->>>>>         depends on I2C
->>>>> @@ -938,4 +945,3 @@ config REGULATOR_WM8994
->>>>>           WM8994 CODEC.
->>>>>
->>>>>  endif
->>>>> -
->>>>> diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
->>>>> index 95b1e86ae692..f5120252f86a 100644
->>>>> --- a/drivers/regulator/Makefile
->>>>> +++ b/drivers/regulator/Makefile
->>>>> @@ -95,6 +95,7 @@ obj-$(CONFIG_REGULATOR_S2MPS11) +=3D s2mps11.o
->>>>>  obj-$(CONFIG_REGULATOR_S5M8767) +=3D s5m8767.o
->>>>>  obj-$(CONFIG_REGULATOR_SKY81452) +=3D sky81452-regulator.o
->>>>>  obj-$(CONFIG_REGULATOR_STW481X_VMMC) +=3D stw481x-vmmc.o
->>>>> +obj-$(CONFIG_REGULATOR_SY8106A) +=3D sy8106a-regulator.o
->>>>>  obj-$(CONFIG_REGULATOR_TI_ABB) +=3D ti-abb-regulator.o
->>>>>  obj-$(CONFIG_REGULATOR_TPS6105X) +=3D tps6105x-regulator.o
->>>>>  obj-$(CONFIG_REGULATOR_TPS62360) +=3D tps62360-regulator.o
->>>>> @@ -120,5 +121,4 @@ obj-$(CONFIG_REGULATOR_WM8350) +=3D
->>>>> wm8350-regulator.o
->>>>>  obj-$(CONFIG_REGULATOR_WM8400) +=3D wm8400-regulator.o
->>>>>  obj-$(CONFIG_REGULATOR_WM8994) +=3D wm8994-regulator.o
->>>>>
->>>>> -
->>>>>  ccflags-$(CONFIG_REGULATOR_DEBUG) +=3D -DDEBUG
->>>>> diff --git a/drivers/regulator/sy8106a-regulator.c
->>>>> b/drivers/regulator/sy8106a-regulator.c
->>>>> new file mode 100644
->>>>> index 000000000000..1df889f68b3d
->>>>> --- /dev/null
->>>>> +++ b/drivers/regulator/sy8106a-regulator.c
->>>>> @@ -0,0 +1,163 @@
->>>>> +/*
->>>>> + * sy8106a-regulator.c - Regulator device driver for SY8106A
->>>>> + *
->>>>> + * Copyright (C) 2016 Ond=C5=99ej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
->>>>> + *
->>>>> + * This program is free software; you can redistribute it and/or
->>>>> + * modify it under the terms of the GNU Library General Public
->>>>> + * License as published by the Free Software Foundation; either
->>>>> + * version 2 of the License, or (at your option) any later version.
->>>>> + *
->>>>> + * This program is distributed in the hope that it will be useful,
->>>>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
->>>>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
->>>>> + * Library General Public License for more details.
->>>>> + */
->>>>> +
->>>>> +#include <linux/err.h>
->>>>> +#include <linux/i2c.h>
->>>>> +#include <linux/module.h>
->>>>> +#include <linux/regmap.h>
->>>>> +#include <linux/regulator/driver.h>
->>>>> +#include <linux/regulator/of_regulator.h>
->>>>> +
->>>>> +#define SY8106A_REG_VOUT1_SEL          0x01
->>>>> +#define SY8106A_REG_VOUT_COM           0x02
->>>>> +#define SY8106A_REG_VOUT1_SEL_MASK     0x7f
->>>>> +#define SY8106A_DISABLE_REG            BIT(0)
->>>>> +#define SY8106A_GO_BIT                 BIT(7)
->>>>> +
->>>>> +struct sy8106a {
->>>>> +       struct regulator_dev *rdev;
->>>>> +       struct regmap *regmap;
->>>>> +};
->>>>> +
->>>>> +static const struct regmap_config sy8106a_regmap_config =3D {
->>>>> +       .reg_bits =3D 8,
->>>>> +       .val_bits =3D 8,
->>>>> +};
->>>>> +
->>>>> +static int sy8106a_set_voltage_sel(struct regulator_dev *rdev,
->>>>> unsigned
->>>>> int sel)
->>>>> +{
->>>>> +       /* We use our set_voltage_sel in order to avoid unnecessary I=
-2C
->>>>> +        * chatter, because the regulator_get_voltage_sel_regmap usin=
-g
->>>>> +        * apply_bit would perform 4 unnecessary transfers instead of
->>>>> one,
->>>>> +        * increasing the chance of error.
->>>>> +        */
->>>>> +       return regmap_write(rdev->regmap, rdev->desc->vsel_reg,
->>>>> +                           sel | SY8106A_GO_BIT);
->>>>
->>>>
->>>>
->>>> There should also be an explanation of what the "go bit" does.
->>>> In this case it enables control of the voltage over I2C.
->>>>
->>>>> +}
->>>>> +
->>>>> +static const struct regulator_ops sy8106a_ops =3D {
->>>>> +       .is_enabled =3D regulator_is_enabled_regmap,
->>>>> +       .set_voltage_sel =3D sy8106a_set_voltage_sel,
->>>>> +       .set_voltage_time_sel =3D regulator_set_voltage_time_sel,
->>>>> +       .get_voltage_sel =3D regulator_get_voltage_sel_regmap,
->>>>> +       .list_voltage =3D regulator_list_voltage_linear,
->>>>
->>>>
->>>>
->>>> No enable/disable ops?
->>>>
->>>>> +};
->>>>> +
->>>>> +/* Default limits measured in millivolts and milliamps */
->>>>> +#define SY8106A_MIN_MV         680
->>>>> +#define SY8106A_MAX_MV         1950
->>>>> +#define SY8106A_STEP_MV                10
->>>>> +
->>>>> +static const struct regulator_desc sy8106a_reg =3D {
->>>>> +       .name =3D "SY8106A",
->>>>> +       .id =3D 0,
->>>>> +       .ops =3D &sy8106a_ops,
->>>>> +       .type =3D REGULATOR_VOLTAGE,
->>>>> +       .n_voltages =3D ((SY8106A_MAX_MV - SY8106A_MIN_MV) /
->>>>> SY8106A_STEP_MV) + 1,
->>>>> +       .min_uV =3D (SY8106A_MIN_MV * 1000),
->>>>> +       .uV_step =3D (SY8106A_STEP_MV * 1000),
->>>>> +       .vsel_reg =3D SY8106A_REG_VOUT1_SEL,
->>>>> +       .vsel_mask =3D SY8106A_REG_VOUT1_SEL_MASK,
->>>>> +       .enable_reg =3D SY8106A_REG_VOUT_COM,
->>>>> +       .enable_mask =3D SY8106A_DISABLE_REG,
->>>>> +       .disable_val =3D SY8106A_DISABLE_REG,
->>>>> +       .enable_is_inverted =3D 1,
->>>>
->>>>
->>>>
->>>> As the regulator core helpers currently are, there is no way to disabl=
-e
->>>> this regulator. regulator_disable_regmap looks like:
->>>
->>>
->>>
->>> By reading the current code, I think removing the disable_val variable
->>> will
->>> just make it work -- when enabling, the enable_reg will be set to
->>> disable_val
->>> (as enable_is_inverted is 1), and disable_val is defaultly 0; when
->>> disabling,
->>> the enable_reg will be set to enable_mask (fallbacked from enable_val,
->>> which
->>> is also the default value 0), and the regulator successfully get
->>> disabled.
+>> G'day Benjamin,
+> 
+> Hi Phil,
+> 
+> [sorry for the lag, been busy with other topics + public holidays]
+> 
+>>
+>> I've tried a couple of different ways of handling errors from of_i2c_setup_smbus_alert()
+>> and not having much success.
+>>
+>> Call of_i2c_setup_smbus_alert() before the device_register() call results in a kernel panic.
+> 
+> Yeah, i2c_setup_smbus_alert() basically creates an I2C device, so you
+> need to have the adapter registered before you can call it.
+> 
+>>
+>> Call after device_register() and injecting an error into the of_i2c_setup_smbus_alert()
+>> also results in a kernel panic.
+> 
+> I wonder if this is just not required at all to have a failure path that
+> will remove the smbusalert device. Because this is an I2C device, when
+> we unregister the adapter, it should properly remove all of its attached
+> devices.
+> 
+>>
+>> On error I'm calling device_unregister()
+>>
+>> I also tried spliting the device_unregister() call into
+>>    device_initialize(dev);
+>>    of_i2c_setup_smbus_alert()
+>>    device_add(dev);
+>>
+>> but that results in a crash in of_i2c_setup_smbus_alert()
 >>
 >>
->> (Gmail is wrapping the lines :( )
+>> If i2c_new_device() is not called then I get:
+>> Unable to handle kernel NULL pointer dereference at virtual address 00000000
+>>   PC is at __wake_up_common+0x2c/0x90
 >>
->> enable_mask is set to SY8106A_DISABLE_REG, which equals disable_val here=
-,
->> which is not 0. This is correct, as it is the bit mask passed to
->> regmap_update_bits. So no, it does not work.
->
->
-> From my personal understanding of the code, the behavior of
-> enable_is_inverted
-> is that switch the roles of enable_val and disable_val, so if
-> enable_is_inverted is set, the regulator_disable_regmap function will wri=
-te
-> enable_val (if it's 0, fallback to enable_mask) to the register, and
-> regulator_enable_regmap will write disable_val.
->
-> Maybe this design is used to ensure enable_val (then fallback to
-> enable_mask)
-> is not 0.
+>> [<8015d940>] (__wake_up_common) from [<8015d9c8>] (__wake_up_locked+0x24/0x2c)
+>> [<8015d9c8>] (__wake_up_locked) from [<8015e680>] (complete+0x48/0x58)
+>> [<8015e680>] (complete) from [<805ba6c0>] (i2c_adapter_dev_release+0x1c/0x20)
+>> [<805ba6c0>] (i2c_adapter_dev_release) from [<804d22f8>] (device_release+0x3c/0xa0)
+>> [<804d22f8>] (device_release) from [<80419ab0>] (kobject_put+0xac/0x208)
+>> [<80419ab0>] (kobject_put) from [<804d3778>] (device_unregister+0x64/0x70)
+>> [<804d3778>] (device_unregister) from [<805bb234>] (i2c_register_adapter+0x2a4/0x480)
+>> [<805bb234>] (i2c_register_adapter) from [<805bc5b4>] (i2c_add_adapter+0x8c/0xd0)
+>> [<805bc5b4>] (i2c_add_adapter) from [<805c0690>] (i2c_mux_add_adapter+0x278/0x428)
+>> [<805c0690>] (i2c_mux_add_adapter) from [<805c4b48>] (pca954x_probe+0x2b0/0x394)
+>> [<805c4b48>] (pca954x_probe) from [<805b9c44>] (i2c_device_probe+0x200/0x2dc)
+>> [<805b9c44>] (i2c_device_probe) from [<804d7e0c>] (driver_probe_device+0x338/0x460)
+>> [<804d7e0c>] (driver_probe_device) from [<804d814c>] (__device_attach_driver+0xa4/0x128)
+>> [<804d814c>] (__device_attach_driver) from [<804d5ad8>] (bus_for_each_drv+0x68/0x9c)
+>> [<804d5ad8>] (bus_for_each_drv) from [<804d792c>] (__device_attach+0xc0/0x14c)
+>> [<804d792c>] (__device_attach) from [<804d81ec>] (device_initial_probe+0x1c/0x20)
+>> [<804d81ec>] (device_initial_probe) from [<804d6cf4>] (bus_probe_device+0x94/0x9c)
+>> [<804d6cf4>] (bus_probe_device) from [<804d72dc>] (deferred_probe_work_func+0xa0/0xd4)
+>> [<804d72dc>] (deferred_probe_work_func) from [<8013d7f0>] (process_one_work+0x14c/0x4c4)
+>> [<8013d7f0>] (process_one_work) from [<8013dd94>] (worker_thread+0x22c/0x514)
+>> [<8013dd94>] (worker_thread) from [<80143a20>] (kthread+0x140/0x170)
+>> [<80143a20>] (kthread) from [<80108e38>] (ret_from_fork+0x14/0x3c)
+>>
+>> And the system hangs.
+>>
+>>
+>> If i2c_new_device() is called and I return an error after I get:
+>> This one probably wouldn't happen.
+>>
+>> WARNING: CPU: 0 PID: 70 at fs/proc/generic.c:580 remove_proc_entry+0x124/0x168
+>> remove_proc_entry: removing non-empty directory 'irq/193', leaking at least 'smbus_alert'
+>> Modules linked in:
+>> CPU: 0 PID: 70 Comm: kworker/0:2 Not tainted 4.12.0-rc6+ #141
+>> Hardware name: Altera SOCFPGA
+>> Workqueue: events deferred_probe_work_func
+>> [<801145a4>] (unwind_backtrace) from [<8010df44>] (show_stack+0x20/0x24)
+>> [<8010df44>] (show_stack) from [<80418308>] (dump_stack+0x8c/0xa0)
+>> [<80418308>] (dump_stack) from [<80123518>] (__warn+0xf8/0x110)
+>> [<80123518>] (__warn) from [<80123578>] (warn_slowpath_fmt+0x48/0x50)
+>> [<80123578>] (warn_slowpath_fmt) from [<802acfa0>] (remove_proc_entry+0x124/0x168)
+>> [<802acfa0>] (remove_proc_entry) from [<80174d38>] (unregister_irq_proc+0xac/0xb4)
+>> [<80174d38>] (unregister_irq_proc) from [<8016b404>] (free_desc+0x40/0x78)
+>> [<8016b404>] (free_desc) from [<8016b494>] (irq_free_descs+0x58/0x90)
+>> [<8016b494>] (irq_free_descs) from [<80174128>] (irq_dispose_mapping+0x54/0x7c)
+>> [<80174128>] (irq_dispose_mapping) from [<805c45ac>] (pca954x_cleanup+0x4c/0x70)
+>> [<805c45ac>] (pca954x_cleanup) from [<805c4ac0>] (pca954x_probe+0x210/0x394)
+>> [<805c4ac0>] (pca954x_probe) from [<805b9c44>] (i2c_device_probe+0x200/0x2dc)
+>> [<805b9c44>] (i2c_device_probe) from [<804d7e0c>] (driver_probe_device+0x338/0x460)
+>> [<804d7e0c>] (driver_probe_device) from [<804d814c>] (__device_attach_driver+0xa4/0x128)
+>> [<804d814c>] (__device_attach_driver) from [<804d5ad8>] (bus_for_each_drv+0x68/0x9c)
+>> [<804d5ad8>] (bus_for_each_drv) from [<804d792c>] (__device_attach+0xc0/0x14c)
+>> [<804d792c>] (__device_attach) from [<804d81ec>] (device_initial_probe+0x1c/0x20)
+>> [<804d81ec>] (device_initial_probe) from [<804d6cf4>] (bus_probe_device+0x94/0x9c)
+>> [<804d6cf4>] (bus_probe_device) from [<804d72dc>] (deferred_probe_work_func+0xa0/0xd4)
+>> [<804d72dc>] (deferred_probe_work_func) from [<8013d7f0>] (process_one_work+0x14c/0x4c4)
+>> [<8013d7f0>] (process_one_work) from [<8013dd94>] (worker_thread+0x22c/0x514)
+>> [<8013dd94>] (worker_thread) from [<80143a20>] (kthread+0x140/0x170)
+>> [<80143a20>] (kthread) from [<80108e38>] (ret_from_fork+0x14/0x3c)
+>>
+>>
+>> I'm at a real loss on how to safely handle the error from of_i2c_setup_smbus_alert()
+>>
+>> Any hints as to what the correct way is to unregister the device?
+> 
+> I'd say try to register the smbus_alert device after the registering of
+> the adapter, and if it fails simply call the unregister from the
+> adapter. On remove, there might not need to do anything given that the
+> smbus_alert is an I2C client like every others.
 
-I think the changes needed to the core are probably too invasive, i.e.
-affect too many other drivers, to be worth doing. Especially since we
-won't really be using enable/disable much, as the regulator supplies
-the CPU cores.
+I think my latest iteration of the patch solves this problem.
+Testing error handling without unregistering does seem to be a problem.
+I get kernel panics when I return an error from of_i2c_setup_smbus_alert().
 
-For now, lets just remove the enable/disable related fields, and leave
-a TODO note citing the possibly required changes to the core instead.
-You haven't assigned the callbacks anyway.
+I was missing the init_completion of dev_released.
+Which I found in i2c_del_adapter().
 
-ChenYu
 
->
->
->>
->> It seems quite a lot of drivers depend on this fallback behavior though.
->>
->> ChenYu
->>
->>>
->>>>
->>>>         if (rdev->desc->enable_is_inverted) {
->>>>                 val =3D rdev->desc->enable_val;
->>>>                 if (!val)
->>>>                         val =3D rdev->desc->enable_mask;
->>>>         } else {
->>>>                 val =3D rdev->desc->disable_val;
->>>>         }
->>>>
->>>>         return regmap_update_bits(rdev->regmap, rdev->desc->enable_reg=
-,
->>>>                                   rdev->desc->enable_mask, val);
->>>>
->>>> Note the fallback to enable_mask if enable_val is not set. The enable
->>>> helper has a similar structure. This regulator uses an enable value
->>>> of 0, and disable value of 1, it is impossible to get it right. As
->>>> it is now, it doesn't really make sense to me.
->>>>
->>>> The code was introduced in ca5d1b3524b4 ("regulator: helpers: Modify
->>>> helpers enabling multi-bit control"). I wonder if it was an unintended
->>>> consequence of the change? (original author CC-ed)
->>>>
->>>>> +       .owner =3D THIS_MODULE,
->>>>> +};
->>>>> +
->>>>> +/*
->>>>> + * I2C driver interface functions
->>>>> + */
->>>>> +static int sy8106a_i2c_probe(struct i2c_client *i2c,
->>>>> +                           const struct i2c_device_id *id)
->>>>> +{
->>>>> +       struct sy8106a *chip;
->>>>> +       struct device *dev =3D &i2c->dev;
->>>>> +       struct regulator_dev *rdev =3D NULL;
->>>>> +       struct regulator_config config =3D { };
->>>>> +       unsigned int selector;
->>>>> +       int error;
->>>>> +
->>>>> +       chip =3D devm_kzalloc(&i2c->dev, sizeof(struct sy8106a),
->>>>> GFP_KERNEL);
->>>>> +       if (!chip)
->>>>> +               return -ENOMEM;
->>>>> +
->>>>> +       chip->regmap =3D devm_regmap_init_i2c(i2c,
->>>>> &sy8106a_regmap_config);
->>>>> +       if (IS_ERR(chip->regmap)) {
->>>>> +               error =3D PTR_ERR(chip->regmap);
->>>>> +               dev_err(&i2c->dev, "Failed to allocate register map:
->>>>> %d\n",
->>>>> +                       error);
->>>>> +               return error;
->>>>> +       }
->>>>> +
->>>>> +       config.dev =3D &i2c->dev;
->>>>> +       config.regmap =3D chip->regmap;
->>>>> +       config.driver_data =3D chip;
->>>>> +
->>>>> +       config.of_node =3D dev->of_node;
->>>>> +       config.init_data =3D of_get_regulator_init_data(dev,
->>>>> dev->of_node,
->>>>> +                                                     &sy8106a_reg);
->>>>> +
->>>>> +       if (!config.init_data)
->>>>> +               return -ENOMEM;
->>>>> +
->>>>> +       /* Probe regulator */
->>>>> +       error =3D regmap_read(chip->regmap, SY8106A_REG_VOUT1_SEL,
->>>>> &selector);
->>>>> +       if (error) {
->>>>> +               dev_err(&i2c->dev, "Failed to read voltage at probe
->>>>> time:
->>>>> %d\n", error);
->>>>> +               return error;
->>>>> +       }
->>>>> +
->>>>> +       rdev =3D devm_regulator_register(&i2c->dev, &sy8106a_reg,
->>>>> &config);
->>>>> +       if (IS_ERR(rdev)) {
->>>>> +               error =3D PTR_ERR(rdev);
->>>>> +               dev_err(&i2c->dev, "Failed to register SY8106A
->>>>> regulator:
->>>>> %d\n", error);
->>>>> +               return error;
->>>>> +       }
->>>>> +
->>>>> +       chip->rdev =3D rdev;
->>>>> +
->>>>> +       i2c_set_clientdata(i2c, chip);
->>>>> +
->>>>> +       return 0;
->>>>> +}
->>>>> +
->>>>> +static const struct of_device_id sy8106a_i2c_of_match[] =3D {
->>>>> +       { .compatible =3D "silergy,sy8106a" },
->>>>> +       { },
->>>>> +};
->>>>> +MODULE_DEVICE_TABLE(of, sy8106a_i2c_of_match);
->>>>> +
->>>>> +static const struct i2c_device_id sy8106a_i2c_id[] =3D {
->>>>> +       { "sy8106a", 0 },
->>>>> +       { },
->>>>> +};
->>>>> +MODULE_DEVICE_TABLE(i2c, sy8106a_i2c_id);
->>>>> +
->>>>> +static struct i2c_driver sy8106a_regulator_driver =3D {
->>>>> +       .driver =3D {
->>>>> +               .name =3D "sy8106a",
->>>>> +               .of_match_table =3D of_match_ptr(sy8106a_i2c_of_match=
-),
->>>>> +       },
->>>>> +       .probe =3D sy8106a_i2c_probe,
->>>>> +       .id_table =3D sy8106a_i2c_id,
->>>>> +};
->>>>> +
->>>>> +module_i2c_driver(sy8106a_regulator_driver);
->>>>> +
->>>>> +MODULE_AUTHOR("Ond=C5=99ej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>");
->>>>> +MODULE_DESCRIPTION("Regulator device driver for Silergy SY8106A");
->>>>> +MODULE_LICENSE("GPL v2");
->>>>
->>>>
->>>>
->>>> This should be "GPL", to match what the license at the very top says.
->>>>
->>>> Regards
->>>> ChenYu
->>>>
->>>>> --
->>>>> 2.13.0
->>>>>
->>>>> --
->>>>> You received this message because you are subscribed to the Google
->>>>> Groups
->>>>> "linux-sunxi" group.
->>>>> To unsubscribe from this group and stop receiving emails from it, sen=
-d
->>>>> an
->>>>> email to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
->>>>> For more options, visit https://groups.google.com/d/optout.
->>>>
->>>>
->>>>
->>>> _______________________________________________
->>>> linux-arm-kernel mailing list
->>>> linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
->>>> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
->>>
->>>
->>>
->>> --
->>> You received this message because you are subscribed to the Google Grou=
-ps
->>> "linux-sunxi" group.
->>> To unsubscribe from this group and stop receiving emails from it, send =
-an
->>> email to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
->>> For more options, visit https://groups.google.com/d/optout.
->
->
-> --
-> You received this message because you are subscribed to the Google Groups
-> "linux-sunxi" group.
-> To unsubscribe from this group and stop receiving emails from it, send an
-> email to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-> For more options, visit https://groups.google.com/d/optout.
 
---=20
-You received this message because you are subscribed to the Google Groups "=
-linux-sunxi" group.
-To unsubscribe from this group and stop receiving emails from it, send an e=
-mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
-For more options, visit https://groups.google.com/d/optout.
+-- 
+Regards
+Phil Reid
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
