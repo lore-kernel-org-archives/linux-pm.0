@@ -1,33 +1,37 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/3] dt-bindings: soc: update the binding document for
- SCPSYS on MediaTek MT7622 SoC
-Date: Mon, 24 Jul 2017 15:27:49 -0500
-Message-ID: <20170724202749.or25323jsme6x7uz@rob-hp-laptop>
-References: <cover.1500608650.git.sean.wang@mediatek.com>
- <e06a627dab64f5a4f900e75fff3d4b39e0829b20.1500608650.git.sean.wang@mediatek.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/3] TOOLS: pm-graph v4.7
+Date: Mon, 24 Jul 2017 22:50:23 +0200
+Message-ID: <187621464.ImEllgTIPt@aspire.rjw.lan>
+References: <cover.1499290431.git.todd.e.brandt@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <e06a627dab64f5a4f900e75fff3d4b39e0829b20.1500608650.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
-Cc: matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Chen Zhong <chen.zhong-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61938 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753513AbdGXU6U (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 16:58:20 -0400
+In-Reply-To: <cover.1499290431.git.todd.e.brandt@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Todd Brandt <todd.e.brandt@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, todd.e.brandt@intel.com
 
-On Fri, Jul 21, 2017 at 11:57:12AM +0800, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org wrote:
-> From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+On Wednesday, July 05, 2017 02:42:54 PM Todd Brandt wrote:
+> Upgrade the pm-graph tools from v4.6 to v4.7
 > 
-> Update the binding document for enabling SCPSYS on MediaTek MT7622 SoC.
+> Todd Brandt (3):
+>   pm-graph: AnalyzeSuspend v4.7
+>   pm-graph: AnalyzeBoot v2.1
+>   pm-graph: package makefile and man pages
 > 
-> Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> Signed-off-by: Chen Zhong <chen.zhong-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-> ---
->  Documentation/devicetree/bindings/soc/mediatek/scpsys.txt | 3 +++
->  1 file changed, 3 insertions(+)
+>  tools/power/pm-graph/Makefile           |  19 +-
+>  tools/power/pm-graph/analyze_boot.py    | 586 +++++++++++++++++++++-----------
+>  tools/power/pm-graph/analyze_suspend.py | 534 ++++++++++++++++++++---------
+>  tools/power/pm-graph/bootgraph.8        |  61 +++-
+>  tools/power/pm-graph/sleepgraph.8       |  48 +--
+>  5 files changed, 852 insertions(+), 396 deletions(-)
+> 
+> 
 
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Series applied, thanks!
