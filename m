@@ -1,228 +1,537 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH] ARM: OMAP2+: omap_device: drop broken RPM status update
- from suspend_noirq
-Date: Mon, 24 Jul 2017 17:16:02 -0500
-Message-ID: <05ae4585-8da0-6fb1-8cfd-6b236ec3a8a2@ti.com>
-References: <20170724095201.21601-1-johan@kernel.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 1/2] cpufreq: intel_pstate: Do not use PID-based P-state selection
+Date: Tue, 25 Jul 2017 00:10:59 +0200
+Message-ID: <11208019.TpsrN09bfC@aspire.rjw.lan>
+References: <6183701.sLtcQDF8CA@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170724095201.21601-1-johan@kernel.org>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Johan Hovold <johan@kernel.org>, Tony Lindgren <tony@atomide.com>
-Cc: Nishanth Menon <nm@ti.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@baylibre.com>, Dave Gerlach <d-gerlach@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Alan Stern <stern@rowland.harvard.edu>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64381 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753206AbdGXWUi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 18:20:38 -0400
+In-Reply-To: <6183701.sLtcQDF8CA@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
+All systems with a defined ACPI preferred profile that are not
+"servers" have been using the load-based P-state selection algorithm
+in intel_pstate since 4.12-rc1 (mobile systems and laptops have been
+using it since 4.10-rc1) and no problems with it have been reported
+to date.  In particular, no regressions with respect to the PID-based
+P-state selection have been reported.  Also testing indicates that
+the P-state selection algorithm based on CPU load is generally on par
+with the PID-based algorithm performance-wise, and for some workloads
+it turns out to be better than the other one, while being more
+straightforward and easier to understand at the same time.
 
-On 07/24/2017 04:52 AM, Johan Hovold wrote:
-> Since commit a8636c89648a ("PM / Runtime: Don't allow to suspend a
-> device with an active child"), which went into 4.10, it is no longer
-> permitted to set RPM_SUSPENDED state for a device with active children
-> (unless power.ignore_children is set).
-> 
-> This specifically means that the attempts to do just that from the omap
-> pm-domain suspend_noirq callback have since been failing whenever a
-> child is active, for example:
-> 
->    am335x-usb-childs 47400000.usb: runtime PM trying to suspend
->      device but active child
-> 
-> Silence this warning by dropping the broken pm_runtime_set_suspended()
-> call from the omap suspend_noirq callback along with the redundant
-> pm_runtime_set_active() in resume_noirq.
-> 
-> This effectively reverts commit 3522bf7bfa24 ("ARM: OMAP2+: omap_device:
-> maintain sane runtime pm status around suspend/resume"), which started
-> updating the RPM state after the runtime_suspend callback (!) for active
-> omap devices had been called during system suspend. The rationale was
-> that a later pm_runtime_get_sync() would then fail (even after runtime
-> pm had been disabled) and that this in turn would avoid any external
-> aborts when accessing registers with clocks disabled. (See also commit
-> 6f3c77b040fc ("PM / Runtime: let rpm_resume() succeed if RPM_ACTIVE,
-> even when disabled, v2").
-> 
-> But during the suspend_noirq phase all children would already have been
-> suspended and their drivers would specifically not attempt any further
-> register accesses. And if this was all just a workaround for random
-> device drivers doing cross-tree calls during system suspend, those
-> drivers should be fixed and updated to explicitly model such
-> dependencies using device-links instead (and either way, any such calls
-> have been causing crashes since 4.10).
+Moreover, the PID-based P-state selection algorithm in intel_pstate
+is known to be unstable in some situation and generally problematic,
+the issues with it are hard to address and it has become a
+significant maintenance burden.
 
-I'd like to provide some background and comments here.
+For these reasons, make intel_pstate use the "powersave" P-state
+selection algorithm based on CPU load in the active mode on all
+systems and drop the PID-based P-state selection code along with
+all things related to it from the driver.  Also update the
+documentation accordingly.
 
-1) OMAP platform is PM runtime centric - in other words all device's
-PM operations (power on/off) are done through PM runtime calls and devices
-drivers do not really change device's Power states during suspend/resume
-- just do preparation for suspend. The final disabling of devices is done
-form _od_suspend_noirq() or if device driver calls pm_runtime_force_suspend()
-directly during suspend.
-
-2) Initially all this suspend_noirq code was introduced due to commit
-
-commit 1e2ef05bb8cf851a694d38e9170c89e7ff052741
-Author: Rafael J. Wysocki <rjw@sisk.pl>
-Date:   Wed Jul 6 10:51:58 2011 +0200
-
-    PM: Limit race conditions between runtime PM and system sleep (v2)
-
-which blocks PM runtime during suspend resume. And, at that time, there were
-no pm_runtime_force_suspend/resume() neither proper support for power domains.
-
-As result, below two calls really switch OFF device and its state should be 
-RPM_SUSPENDED as it will reflect real PM state of HW:
-	m_generic_runtime_suspend(dev)
-	omap_device_idle(pdev);
-
-In general, now the code in _od_resume/resume_noirq() callback is
-equivalent to pm_runtime_force_suspend/resume().
-
-3) It's expected to ignore -EBUSY return code from pm_generic_runtime_suspend(dev)
-in _od_suspend_noirq(), as such code (-EBUSY) tells OMAP device framework that 
-device should be kept active during suspend (for example 
-serial device in case of "no_console_suspend").
-
-commit 4b7ec5accecdb136c7afaf8739a06d5335cc05aa
-Author: Sourav Poddar <sourav.poddar@ti.com>
-Date:   Sat Apr 27 01:55:34 2013 +0530
-
-    arm: omap2+: omap_device: remove no_idle_on_suspend
-
-As result, when "runtime PM trying to suspend device but active child" happens
-the OMAP device framework will ignore it and gracefully continue to suspend where
-target device will finally powered off (depending on suspend mode and device). 
-On resume, target device will not be powered on, because its state was not marked as
-OMAP_DEVICE_SUSPENDED, so further attempts to power on device with pm_runtime_get_sync()
-will be a NOP (because device state is RPM_ACTIVE) and any access to the device will fail
-(system crash).
-
-4) Unfortunately, commit a8636c89648a ("PM / Runtime: Don't allow to suspend a
- device with an active child") "breaks" OMAP suspend functionality (or
- makes visible more fundamental issues of PM runtime vs Sys suspend), because
- not all Kernel subsystem (especially USB) maintain their devices PM runtime
- state properly during suspend, which cause pm_runtime_set_suspended() (or
- pm_runtime_force_suspend()) to return -EBUSY and, as result, misbehave of
- OMAP device framework. 
-
-
-My personal thought here is that removing of pm_runtime_set_active() will not fix
-root cause of the problem, but rather hide it :( and, probably, real fix will be 
-to update USB framework to ensure that all suspend devices are also PM runtime suspend
-(not sure how) or add few more pm_suspend_ignore_children() calls 
- (for example as I've tried to do in [2], but this was unfinished).
-
-I've found very simple steps to reproduce suspend failure on am335x-evm (should also
-work on BBB) -  do below sequence with USB device plugged:
-
-   echo platform > /sys/power/pm_test 
-   echo 1 > /sys/power/pm_print_times 
-   [ echo 0 > /sys/module/printk/parameters/console_suspend ]
-   echo mem > /sys/power/state 
-
-[   95.499685] calling  47400000.usb+ @ 733, parent: ocp
-[   95.504818] am335x-usb-childs 47400000.usb: runtime PM trying to suspend device but active child
-[   95.513750] am335x-usb-childs 47400000.usb: omap device suspend failure 0
-
-Below I've attached possible patch which converts OMAP device to
-use pm_runtime_force_suspend/resume().
-
-
-Related discussion:
-[1] https://patchwork.kernel.org/patch/9642979/
-[2] https://patchwork.kernel.org/patch/9660517/
-
-regards,
--grygorii
-
-----
->From 05cd6c19f898ca28480b9ca8dca5b987190351d9 Mon Sep 17 00:00:00 2001
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Date: Mon, 24 Jul 2017 16:54:48 -0500
-Subject: [PATCH] ARM: OMAP2+: omap_device: use pm runtime force api in noirq
- callbacks
-
-The current implementation of _od_suspend_noirq and _od_resume_noirq
-callbacks is duing actually the same things as
-pm_runtime_force_suspend/resume() when it disables currently active
-devices, so convert those callbacks to use
-pm_runtime_force_suspend/resume().
-
-Signed-off-by: Grygorii Strashko <grygorii.strashko@ti.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- arch/arm/mach-omap2/omap_device.c | 41 +++++++++++++++++++++------------------
- 1 file changed, 22 insertions(+), 19 deletions(-)
+ Documentation/admin-guide/pm/intel_pstate.rst |   59 -----
+ drivers/cpufreq/intel_pstate.c                |  276 --------------------------
+ 2 files changed, 9 insertions(+), 326 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/omap_device.c b/arch/arm/mach-omap2/omap_device.c
-index ef9ffb8..b91b0cd 100644
---- a/arch/arm/mach-omap2/omap_device.c
-+++ b/arch/arm/mach-omap2/omap_device.c
-@@ -670,12 +670,21 @@ static int _od_suspend_noirq(struct device *dev)
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -173,28 +173,6 @@ struct vid_data {
+ };
  
- 	ret = pm_generic_suspend_noirq(dev);
+ /**
+- * struct _pid -	Stores PID data
+- * @setpoint:		Target set point for busyness or performance
+- * @integral:		Storage for accumulated error values
+- * @p_gain:		PID proportional gain
+- * @i_gain:		PID integral gain
+- * @d_gain:		PID derivative gain
+- * @deadband:		PID deadband
+- * @last_err:		Last error storage for integral part of PID calculation
+- *
+- * Stores PID coefficients and last error for PID controller.
+- */
+-struct _pid {
+-	int setpoint;
+-	int32_t integral;
+-	int32_t p_gain;
+-	int32_t i_gain;
+-	int32_t d_gain;
+-	int deadband;
+-	int32_t last_err;
+-};
+-
+-/**
+  * struct global_params - Global parameters, mostly tunable via sysfs.
+  * @no_turbo:		Whether or not to use turbo P-states.
+  * @turbo_disabled:	Whethet or not turbo P-states are available at all,
+@@ -223,7 +201,6 @@ struct global_params {
+  * @last_update:	Time of the last update.
+  * @pstate:		Stores P state limits for this CPU
+  * @vid:		Stores VID limits for this CPU
+- * @pid:		Stores PID parameters for this CPU
+  * @last_sample_time:	Last Sample time
+  * @aperf_mperf_shift:	Number of clock cycles after aperf, merf is incremented
+  *			This shift is a multiplier to mperf delta to
+@@ -258,7 +235,6 @@ struct cpudata {
  
--	if (!ret && !pm_runtime_status_suspended(dev)) {
--		if (pm_generic_runtime_suspend(dev) == 0) {
--			pm_runtime_set_suspended(dev);
--			omap_device_idle(pdev);
--			od->flags |= OMAP_DEVICE_SUSPENDED;
-+	if (!ret) {
-+		ret = pm_runtime_force_suspend(dev);
-+		if (ret == -EBUSY) {
-+			/*
-+			 * In case of error pm_runtime_force_suspend will
-+			 * not call pm_runtime_disable() and it's required to
-+			 * make additional call to pm_runtime_disable() here
-+			 * to balance it with pm_runtime_enable() call in
-+			 * pm_runtime_force_resume()
-+			 */
-+			pm_runtime_disable(dev);
-+			return 0;
- 		}
-+		if (ret)
-+			dev_err(dev, "omap device suspend failure %d", ret);
+ 	struct pstate_data pstate;
+ 	struct vid_data vid;
+-	struct _pid pid;
+ 
+ 	u64	last_update;
+ 	u64	last_sample_time;
+@@ -284,28 +260,6 @@ struct cpudata {
+ static struct cpudata **all_cpu_data;
+ 
+ /**
+- * struct pstate_adjust_policy - Stores static PID configuration data
+- * @sample_rate_ms:	PID calculation sample rate in ms
+- * @sample_rate_ns:	Sample rate calculation in ns
+- * @deadband:		PID deadband
+- * @setpoint:		PID Setpoint
+- * @p_gain_pct:		PID proportional gain
+- * @i_gain_pct:		PID integral gain
+- * @d_gain_pct:		PID derivative gain
+- *
+- * Stores per CPU model static PID configuration data.
+- */
+-struct pstate_adjust_policy {
+-	int sample_rate_ms;
+-	s64 sample_rate_ns;
+-	int deadband;
+-	int setpoint;
+-	int p_gain_pct;
+-	int d_gain_pct;
+-	int i_gain_pct;
+-};
+-
+-/**
+  * struct pstate_funcs - Per CPU model specific callbacks
+  * @get_max:		Callback to get maximum non turbo effective P state
+  * @get_max_physical:	Callback to get maximum non turbo physical P state
+@@ -333,15 +287,6 @@ struct pstate_funcs {
+ };
+ 
+ static struct pstate_funcs pstate_funcs __read_mostly;
+-static struct pstate_adjust_policy pid_params __read_mostly = {
+-	.sample_rate_ms = 10,
+-	.sample_rate_ns = 10 * NSEC_PER_MSEC,
+-	.deadband = 0,
+-	.setpoint = 97,
+-	.p_gain_pct = 20,
+-	.d_gain_pct = 0,
+-	.i_gain_pct = 0,
+-};
+ 
+ static int hwp_active __read_mostly;
+ static bool per_cpu_limits __read_mostly;
+@@ -509,56 +454,6 @@ static inline void intel_pstate_exit_per
+ }
+ #endif
+ 
+-static signed int pid_calc(struct _pid *pid, int32_t busy)
+-{
+-	signed int result;
+-	int32_t pterm, dterm, fp_error;
+-	int32_t integral_limit;
+-
+-	fp_error = pid->setpoint - busy;
+-
+-	if (abs(fp_error) <= pid->deadband)
+-		return 0;
+-
+-	pterm = mul_fp(pid->p_gain, fp_error);
+-
+-	pid->integral += fp_error;
+-
+-	/*
+-	 * We limit the integral here so that it will never
+-	 * get higher than 30.  This prevents it from becoming
+-	 * too large an input over long periods of time and allows
+-	 * it to get factored out sooner.
+-	 *
+-	 * The value of 30 was chosen through experimentation.
+-	 */
+-	integral_limit = int_tofp(30);
+-	if (pid->integral > integral_limit)
+-		pid->integral = integral_limit;
+-	if (pid->integral < -integral_limit)
+-		pid->integral = -integral_limit;
+-
+-	dterm = mul_fp(pid->d_gain, fp_error - pid->last_err);
+-	pid->last_err = fp_error;
+-
+-	result = pterm + mul_fp(pid->integral, pid->i_gain) + dterm;
+-	result = result + (1 << (FRAC_BITS-1));
+-	return (signed int)fp_toint(result);
+-}
+-
+-static inline void intel_pstate_pid_reset(struct cpudata *cpu)
+-{
+-	struct _pid *pid = &cpu->pid;
+-
+-	pid->p_gain = percent_fp(pid_params.p_gain_pct);
+-	pid->d_gain = percent_fp(pid_params.d_gain_pct);
+-	pid->i_gain = percent_fp(pid_params.i_gain_pct);
+-	pid->setpoint = int_tofp(pid_params.setpoint);
+-	pid->last_err  = pid->setpoint - int_tofp(100);
+-	pid->deadband  = int_tofp(pid_params.deadband);
+-	pid->integral  = 0;
+-}
+-
+ static inline void update_turbo_state(void)
+ {
+ 	u64 misc_en;
+@@ -911,82 +806,6 @@ static void intel_pstate_update_policies
+ 		cpufreq_update_policy(cpu);
+ }
+ 
+-/************************** debugfs begin ************************/
+-static int pid_param_set(void *data, u64 val)
+-{
+-	unsigned int cpu;
+-
+-	*(u32 *)data = val;
+-	pid_params.sample_rate_ns = pid_params.sample_rate_ms * NSEC_PER_MSEC;
+-	for_each_possible_cpu(cpu)
+-		if (all_cpu_data[cpu])
+-			intel_pstate_pid_reset(all_cpu_data[cpu]);
+-
+-	return 0;
+-}
+-
+-static int pid_param_get(void *data, u64 *val)
+-{
+-	*val = *(u32 *)data;
+-	return 0;
+-}
+-DEFINE_SIMPLE_ATTRIBUTE(fops_pid_param, pid_param_get, pid_param_set, "%llu\n");
+-
+-static struct dentry *debugfs_parent;
+-
+-struct pid_param {
+-	char *name;
+-	void *value;
+-	struct dentry *dentry;
+-};
+-
+-static struct pid_param pid_files[] = {
+-	{"sample_rate_ms", &pid_params.sample_rate_ms, },
+-	{"d_gain_pct", &pid_params.d_gain_pct, },
+-	{"i_gain_pct", &pid_params.i_gain_pct, },
+-	{"deadband", &pid_params.deadband, },
+-	{"setpoint", &pid_params.setpoint, },
+-	{"p_gain_pct", &pid_params.p_gain_pct, },
+-	{NULL, NULL, }
+-};
+-
+-static void intel_pstate_debug_expose_params(void)
+-{
+-	int i;
+-
+-	debugfs_parent = debugfs_create_dir("pstate_snb", NULL);
+-	if (IS_ERR_OR_NULL(debugfs_parent))
+-		return;
+-
+-	for (i = 0; pid_files[i].name; i++) {
+-		struct dentry *dentry;
+-
+-		dentry = debugfs_create_file(pid_files[i].name, 0660,
+-					     debugfs_parent, pid_files[i].value,
+-					     &fops_pid_param);
+-		if (!IS_ERR(dentry))
+-			pid_files[i].dentry = dentry;
+-	}
+-}
+-
+-static void intel_pstate_debug_hide_params(void)
+-{
+-	int i;
+-
+-	if (IS_ERR_OR_NULL(debugfs_parent))
+-		return;
+-
+-	for (i = 0; pid_files[i].name; i++) {
+-		debugfs_remove(pid_files[i].dentry);
+-		pid_files[i].dentry = NULL;
+-	}
+-
+-	debugfs_remove(debugfs_parent);
+-	debugfs_parent = NULL;
+-}
+-
+-/************************** debugfs end ************************/
+-
+ /************************** sysfs begin ************************/
+ #define show_one(file_name, object)					\
+ 	static ssize_t show_##file_name					\
+@@ -1661,44 +1480,6 @@ static inline int32_t get_target_pstate_
+ 	return target;
+ }
+ 
+-static inline int32_t get_target_pstate_use_performance(struct cpudata *cpu)
+-{
+-	int32_t perf_scaled, max_pstate, current_pstate, sample_ratio;
+-	u64 duration_ns;
+-
+-	/*
+-	 * perf_scaled is the ratio of the average P-state during the last
+-	 * sampling period to the P-state requested last time (in percent).
+-	 *
+-	 * That measures the system's response to the previous P-state
+-	 * selection.
+-	 */
+-	max_pstate = cpu->pstate.max_pstate_physical;
+-	current_pstate = cpu->pstate.current_pstate;
+-	perf_scaled = mul_ext_fp(cpu->sample.core_avg_perf,
+-			       div_fp(100 * max_pstate, current_pstate));
+-
+-	/*
+-	 * Since our utilization update callback will not run unless we are
+-	 * in C0, check if the actual elapsed time is significantly greater (3x)
+-	 * than our sample interval.  If it is, then we were idle for a long
+-	 * enough period of time to adjust our performance metric.
+-	 */
+-	duration_ns = cpu->sample.time - cpu->last_sample_time;
+-	if ((s64)duration_ns > pid_params.sample_rate_ns * 3) {
+-		sample_ratio = div_fp(pid_params.sample_rate_ns, duration_ns);
+-		perf_scaled = mul_fp(perf_scaled, sample_ratio);
+-	} else {
+-		sample_ratio = div_fp(100 * (cpu->sample.mperf << cpu->aperf_mperf_shift),
+-				      cpu->sample.tsc);
+-		if (sample_ratio < int_tofp(1))
+-			perf_scaled = 0;
+-	}
+-
+-	cpu->sample.busy_scaled = perf_scaled;
+-	return cpu->pstate.current_pstate - pid_calc(&cpu->pid, perf_scaled);
+-}
+-
+ static int intel_pstate_prepare_request(struct cpudata *cpu, int pstate)
+ {
+ 	int max_pstate = intel_pstate_get_base_pstate(cpu);
+@@ -1741,23 +1522,6 @@ static void intel_pstate_adjust_pstate(s
+ 		fp_toint(cpu->iowait_boost * 100));
+ }
+ 
+-static void intel_pstate_update_util_pid(struct update_util_data *data,
+-					 u64 time, unsigned int flags)
+-{
+-	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
+-	u64 delta_ns = time - cpu->sample.time;
+-
+-	if ((s64)delta_ns < pid_params.sample_rate_ns)
+-		return;
+-
+-	if (intel_pstate_sample(cpu, time)) {
+-		int target_pstate;
+-
+-		target_pstate = get_target_pstate_use_performance(cpu);
+-		intel_pstate_adjust_pstate(cpu, target_pstate);
+-	}
+-}
+-
+ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+ 				     unsigned int flags)
+ {
+@@ -1792,7 +1556,7 @@ static struct pstate_funcs core_funcs =
+ 	.get_turbo = core_get_turbo_pstate,
+ 	.get_scaling = core_get_scaling,
+ 	.get_val = core_get_val,
+-	.update_util = intel_pstate_update_util_pid,
++	.update_util = intel_pstate_update_util,
+ };
+ 
+ static const struct pstate_funcs silvermont_funcs = {
+@@ -1825,7 +1589,7 @@ static const struct pstate_funcs knl_fun
+ 	.get_aperf_mperf_shift = knl_get_aperf_mperf_shift,
+ 	.get_scaling = core_get_scaling,
+ 	.get_val = core_get_val,
+-	.update_util = intel_pstate_update_util_pid,
++	.update_util = intel_pstate_update_util,
+ };
+ 
+ static const struct pstate_funcs bxt_funcs = {
+@@ -1879,8 +1643,6 @@ static const struct x86_cpu_id intel_pst
+ 	{}
+ };
+ 
+-static bool pid_in_use(void);
+-
+ static int intel_pstate_init_cpu(unsigned int cpunum)
+ {
+ 	struct cpudata *cpu;
+@@ -1911,8 +1673,6 @@ static int intel_pstate_init_cpu(unsigne
+ 			intel_pstate_disable_ee(cpunum);
+ 
+ 		intel_pstate_hwp_enable(cpu);
+-	} else if (pid_in_use()) {
+-		intel_pstate_pid_reset(cpu);
  	}
  
- 	return ret;
-@@ -685,21 +694,15 @@ static int _od_resume_noirq(struct device *dev)
+ 	intel_pstate_get_cpu_pstates(cpu);
+@@ -2270,12 +2030,6 @@ static struct cpufreq_driver intel_cpufr
+ 
+ static struct cpufreq_driver *default_driver = &intel_pstate;
+ 
+-static bool pid_in_use(void)
+-{
+-	return intel_pstate_driver == &intel_pstate &&
+-		pstate_funcs.update_util == intel_pstate_update_util_pid;
+-}
+-
+ static void intel_pstate_driver_cleanup(void)
  {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct omap_device *od = to_omap_device(pdev);
-+	int ret;
+ 	unsigned int cpu;
+@@ -2310,9 +2064,6 @@ static int intel_pstate_register_driver(
  
--	if (od->flags & OMAP_DEVICE_SUSPENDED) {
--		od->flags &= ~OMAP_DEVICE_SUSPENDED;
--		omap_device_enable(pdev);
--		/*
--		 * XXX: we run before core runtime pm has resumed itself. At
--		 * this point in time, we just restore the runtime pm state and
--		 * considering symmetric operations in resume, we donot expect
--		 * to fail. If we failed, something changed in core runtime_pm
--		 * framework OR some device driver messed things up, hence, WARN
--		 */
--		WARN(pm_runtime_set_active(dev),
--		     "Could not set %s runtime state active\n", dev_name(dev));
--		pm_generic_runtime_resume(dev);
--	}
-+	/* Don't attempt late suspend on a driver that is not bound */
-+	if (od->_driver_status != BUS_NOTIFY_BOUND_DRIVER)
-+		return 0;
-+
-+	ret = pm_runtime_force_resume(dev);
-+	if (ret)
-+		dev_err(dev, "omap device resume failure %d", ret);
+ 	global.min_perf_pct = min_perf_pct_min();
  
- 	return pm_generic_resume_noirq(dev);
+-	if (pid_in_use())
+-		intel_pstate_debug_expose_params();
+-
+ 	return 0;
  }
--- 
-2.10.1
+ 
+@@ -2321,9 +2072,6 @@ static int intel_pstate_unregister_drive
+ 	if (hwp_active)
+ 		return -EBUSY;
+ 
+-	if (pid_in_use())
+-		intel_pstate_debug_hide_params();
+-
+ 	cpufreq_unregister_driver(intel_pstate_driver);
+ 	intel_pstate_driver_cleanup();
+ 
+@@ -2391,24 +2139,6 @@ static int __init intel_pstate_msrs_not_
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_ACPI
+-static void intel_pstate_use_acpi_profile(void)
+-{
+-	switch (acpi_gbl_FADT.preferred_profile) {
+-	case PM_MOBILE:
+-	case PM_TABLET:
+-	case PM_APPLIANCE_PC:
+-	case PM_DESKTOP:
+-	case PM_WORKSTATION:
+-		pstate_funcs.update_util = intel_pstate_update_util;
+-	}
+-}
+-#else
+-static void intel_pstate_use_acpi_profile(void)
+-{
+-}
+-#endif
+-
+ static void __init copy_cpu_funcs(struct pstate_funcs *funcs)
+ {
+ 	pstate_funcs.get_max   = funcs->get_max;
+@@ -2420,8 +2150,6 @@ static void __init copy_cpu_funcs(struct
+ 	pstate_funcs.get_vid   = funcs->get_vid;
+ 	pstate_funcs.update_util = funcs->update_util;
+ 	pstate_funcs.get_aperf_mperf_shift = funcs->get_aperf_mperf_shift;
+-
+-	intel_pstate_use_acpi_profile();
+ }
+ 
+ #ifdef CONFIG_ACPI
+Index: linux-pm/Documentation/admin-guide/pm/intel_pstate.rst
+===================================================================
+--- linux-pm.orig/Documentation/admin-guide/pm/intel_pstate.rst
++++ linux-pm/Documentation/admin-guide/pm/intel_pstate.rst
+@@ -167,35 +167,17 @@ is set.
+ ``powersave``
+ .............
+ 
+-Without HWP, this P-state selection algorithm generally depends on the
+-processor model and/or the system profile setting in the ACPI tables and there
+-are two variants of it.
+-
+-One of them is used with processors from the Atom line and (regardless of the
+-processor model) on platforms with the system profile in the ACPI tables set to
+-"mobile" (laptops mostly), "tablet", "appliance PC", "desktop", or
+-"workstation".  It is also used with processors supporting the HWP feature if
+-that feature has not been enabled (that is, with the ``intel_pstate=no_hwp``
+-argument in the kernel command line).  It is similar to the algorithm
++Without HWP, this P-state selection algorithm is similar to the algorithm
+ implemented by the generic ``schedutil`` scaling governor except that the
+ utilization metric used by it is based on numbers coming from feedback
+ registers of the CPU.  It generally selects P-states proportional to the
+-current CPU utilization, so it is referred to as the "proportional" algorithm.
++current CPU utilization.
+ 
+-The second variant of the ``powersave`` P-state selection algorithm, used in all
+-of the other cases (generally, on processors from the Core line, so it is
+-referred to as the "Core" algorithm), is based on the values read from the APERF
+-and MPERF feedback registers and the previously requested target P-state.
+-It does not really take CPU utilization into account explicitly, but as a rule
+-it causes the CPU P-state to ramp up very quickly in response to increased
+-utilization which is generally desirable in server environments.
+-
+-Regardless of the variant, this algorithm is run by the driver's utilization
+-update callback for the given CPU when it is invoked by the CPU scheduler, but
+-not more often than every 10 ms (that can be tweaked via ``debugfs`` in `this
+-particular case <Tuning Interface in debugfs_>`_).  Like in the ``performance``
+-case, the hardware configuration is not touched if the new P-state turns out to
+-be the same as the current one.
++This algorithm is run by the driver's utilization update callback for the
++given CPU when it is invoked by the CPU scheduler, but not more often than
++every 10 ms.  Like in the ``performance`` case, the hardware configuration
++is not touched if the new P-state turns out to be the same as the current
++one.
+ 
+ This is the default P-state selection algorithm if the
+ :c:macro:`CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE` kernel configuration option
+@@ -720,34 +702,7 @@ P-state is called, the ``ftrace`` filter
+       gnome-shell-3409  [001] ..s.  2537.650850: intel_pstate_set_pstate <-intel_pstate_timer_func
+            <idle>-0     [000] ..s.  2537.654843: intel_pstate_set_pstate <-intel_pstate_timer_func
+ 
+-Tuning Interface in ``debugfs``
+--------------------------------
+-
+-The ``powersave`` algorithm provided by ``intel_pstate`` for `the Core line of
+-processors in the active mode <powersave_>`_ is based on a `PID controller`_
+-whose parameters were chosen to address a number of different use cases at the
+-same time.  However, it still is possible to fine-tune it to a specific workload
+-and the ``debugfs`` interface under ``/sys/kernel/debug/pstate_snb/`` is
+-provided for this purpose.  [Note that the ``pstate_snb`` directory will be
+-present only if the specific P-state selection algorithm matching the interface
+-in it actually is in use.]
+-
+-The following files present in that directory can be used to modify the PID
+-controller parameters at run time:
+-
+-| ``deadband``
+-| ``d_gain_pct``
+-| ``i_gain_pct``
+-| ``p_gain_pct``
+-| ``sample_rate_ms``
+-| ``setpoint``
+-
+-Note, however, that achieving desirable results this way generally requires
+-expert-level understanding of the power vs performance tradeoff, so extra care
+-is recommended when attempting to do that.
+-
+ 
+ .. _LCEU2015: http://events.linuxfoundation.org/sites/events/files/slides/LinuxConEurope_2015.pdf
+ .. _SDM: http://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-software-developer-system-programming-manual-325384.html
+ .. _ACPI specification: http://www.uefi.org/sites/default/files/resources/ACPI_6_1.pdf
+-.. _PID controller: https://en.wikipedia.org/wiki/PID_controller
