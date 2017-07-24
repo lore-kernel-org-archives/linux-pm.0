@@ -1,8 +1,7 @@
 From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: [PATCH v2 2/5] dt-bindings: Add bindings for nvidia,
- tegra186-bpmp-thermal
-Date: Mon, 24 Jul 2017 19:29:15 +0300
-Message-ID: <20170724162918.21050-2-mperttunen@nvidia.com>
+Subject: [PATCH v2 3/5] firmware: tegra: Expose tegra_bpmp_mrq_return
+Date: Mon, 24 Jul 2017 19:29:16 +0300
+Message-ID: <20170724162918.21050-3-mperttunen@nvidia.com>
 References: <20170724162918.21050-1-mperttunen@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,77 +21,52 @@ To: rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com, jonathan
 Cc: linux-tegra@vger.kernel.org, Mikko Perttunen <mperttunen@nvidia.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-In Tegra186, the BPMP (Boot and Power Management Processor) implements
-an interface that is used to read system temperatures, including CPU
-cluster and GPU temperatures. This binding describes the thermal sensor
-that is exposed by BPMP.
+Expose and export the tegra_bpmp_mrq_return function for use of drivers
+outside the core BPMP driver. This function is used to reply to
+messages originating from the BPMP, which is required in the thermal
+driver.
 
 Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
-Acked-by: Rob Herring <robh@kernel.org>
 ---
- .../thermal/nvidia,tegra186-bpmp-thermal.txt       | 32 ++++++++++++++++++++++
- .../dt-bindings/thermal/tegra186-bpmp-thermal.h    | 14 ++++++++++
- 2 files changed, 46 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt
- create mode 100644 include/dt-bindings/thermal/tegra186-bpmp-thermal.h
+ drivers/firmware/tegra/bpmp.c | 5 +++--
+ include/soc/tegra/bpmp.h      | 2 ++
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt b/Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt
-new file mode 100644
-index 000000000000..276387dd6815
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/nvidia,tegra186-bpmp-thermal.txt
-@@ -0,0 +1,32 @@
-+NVIDIA Tegra186 BPMP thermal sensor
-+
-+In Tegra186, the BPMP (Boot and Power Management Processor) implements an
-+interface that is used to read system temperatures, including CPU cluster
-+and GPU temperatures. This binding describes the thermal sensor that is
-+exposed by BPMP.
-+
-+The BPMP thermal node must be located directly inside the main BPMP node. See
-+../firmware/nvidia,tegra186-bpmp.txt for details of the BPMP binding.
-+
-+This node represents a thermal sensor. See thermal.txt for details of the
-+core thermal binding.
-+
-+Required properties:
-+- compatible:
-+    Array of strings.
-+    One of:
-+    - "nvidia,tegra186-bpmp-thermal".
-+- #thermal-sensor-cells: Cell for sensor index.
-+    Single-cell integer.
-+    Must be <1>.
-+
-+Example:
-+
-+bpmp {
-+	...
-+
-+	bpmp_thermal: thermal {
-+		compatible = "nvidia,tegra186-bpmp-thermal";
-+		#thermal-sensor-cells = <1>;
-+	};
-+};
-diff --git a/include/dt-bindings/thermal/tegra186-bpmp-thermal.h b/include/dt-bindings/thermal/tegra186-bpmp-thermal.h
-new file mode 100644
-index 000000000000..a96b8fa31aab
---- /dev/null
-+++ b/include/dt-bindings/thermal/tegra186-bpmp-thermal.h
-@@ -0,0 +1,14 @@
-+/*
-+ * This header provides constants for binding nvidia,tegra186-bpmp-thermal.
-+ */
-+
-+#ifndef _DT_BINDINGS_THERMAL_TEGRA186_BPMP_THERMAL_H
-+#define _DT_BINDINGS_THERMAL_TEGRA186_BPMP_THERMAL_H
-+
-+#define TEGRA186_BPMP_THERMAL_ZONE_CPU 2
-+#define TEGRA186_BPMP_THERMAL_ZONE_GPU 3
-+#define TEGRA186_BPMP_THERMAL_ZONE_AUX 4
-+#define TEGRA186_BPMP_THERMAL_ZONE_PLLX 5
-+#define TEGRA186_BPMP_THERMAL_ZONE_AO 6
-+
-+#endif
+diff --git a/drivers/firmware/tegra/bpmp.c b/drivers/firmware/tegra/bpmp.c
+index b25179517cc5..53996a33a863 100644
+--- a/drivers/firmware/tegra/bpmp.c
++++ b/drivers/firmware/tegra/bpmp.c
+@@ -387,8 +387,8 @@ static struct tegra_bpmp_mrq *tegra_bpmp_find_mrq(struct tegra_bpmp *bpmp,
+ 	return NULL;
+ }
+ 
+-static void tegra_bpmp_mrq_return(struct tegra_bpmp_channel *channel,
+-				  int code, const void *data, size_t size)
++void tegra_bpmp_mrq_return(struct tegra_bpmp_channel *channel, int code,
++			   const void *data, size_t size)
+ {
+ 	unsigned long flags = channel->ib->flags;
+ 	struct tegra_bpmp *bpmp = channel->bpmp;
+@@ -426,6 +426,7 @@ static void tegra_bpmp_mrq_return(struct tegra_bpmp_channel *channel,
+ 		mbox_client_txdone(bpmp->mbox.channel, 0);
+ 	}
+ }
++EXPORT_SYMBOL_GPL(tegra_bpmp_mrq_return);
+ 
+ static void tegra_bpmp_handle_mrq(struct tegra_bpmp *bpmp,
+ 				  unsigned int mrq,
+diff --git a/include/soc/tegra/bpmp.h b/include/soc/tegra/bpmp.h
+index 9ba65222bd3f..16d36dfe9fcd 100644
+--- a/include/soc/tegra/bpmp.h
++++ b/include/soc/tegra/bpmp.h
+@@ -117,6 +117,8 @@ int tegra_bpmp_transfer_atomic(struct tegra_bpmp *bpmp,
+ 			       struct tegra_bpmp_message *msg);
+ int tegra_bpmp_transfer(struct tegra_bpmp *bpmp,
+ 			struct tegra_bpmp_message *msg);
++void tegra_bpmp_mrq_return(struct tegra_bpmp_channel *channel, int code,
++			   const void *data, size_t size);
+ 
+ int tegra_bpmp_request_mrq(struct tegra_bpmp *bpmp, unsigned int mrq,
+ 			   tegra_bpmp_mrq_handler_t handler, void *data);
 -- 
 2.13.3
