@@ -1,209 +1,242 @@
-From: Gautham R Shenoy <ego.lkml@gmail.com>
-Subject: Re: [PATCH] Fix header-name to read full state name and adjust column width
-Date: Mon, 24 Jul 2017 15:41:11 +0530
-Message-ID: <CAHZ_5WwfS52JVM_-Ws7yh2yuZYTn5T1vmhT=z1k9oN1yF_fdrA@mail.gmail.com>
-References: <1499325264-15521-1-git-send-email-s1seetee@linux.vnet.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V8 1/6] PM / Domains: Add support to select
+ performance-state of domains
+Date: Mon, 24 Jul 2017 16:02:25 +0530
+Message-ID: <20170724103225.GW352@vireshk-i7>
+References: <cover.1498026827.git.viresh.kumar@linaro.org>
+ <52daf22d2c9d92b0e61c8c5c5a88516d7a08a31a.1498026827.git.viresh.kumar@linaro.org>
+ <CAPDyKFqaFvET9yM_6wr7b1Zw=hePQrE-Ak-7YPCR9izooh4LBA@mail.gmail.com>
+ <20170719123751.GF352@vireshk-i7>
+ <CAPDyKFr0ZMeS=57p48W9f_j3U0T41msxOqQHBXB_soA8-weM+w@mail.gmail.com>
+ <20170721090519.GO352@vireshk-i7>
+ <CAPDyKFo_10Q3GOmygejBjW15jk23tbgDNrK2aMV+DvcF5S8oQw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:33247 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752201AbdGXKLM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 06:11:12 -0400
-In-Reply-To: <1499325264-15521-1-git-send-email-s1seetee@linux.vnet.ibm.com>
+Received: from mail-pf0-f176.google.com ([209.85.192.176]:33600 "EHLO
+        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752954AbdGXKca (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 06:32:30 -0400
+Received: by mail-pf0-f176.google.com with SMTP id s70so45486028pfs.0
+        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2017 03:32:30 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFo_10Q3GOmygejBjW15jk23tbgDNrK2aMV+DvcF5S8oQw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, trenn@suse.com, ego@linux.vnet.ibm.com, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 
-Hello Seeteena,
+On 23-07-17, 09:20, Ulf Hansson wrote:
+> I should have been more clear. Walking the master list, then checking
+> each link without using locks - why is that safe?
+> 
+> Then even if you think it's safe, then please explain in detail why its needed.
+> 
+> Walking the slave list as being done for power off/on should work
+> perfectly okay for your case as well. No?
 
-Thanks for this useful patch. Couple of suggestions below.
+I got it. I will try to explain why it is done this way with the help
+of two versions of genpd_update_performance_state() routine. The first
+one is from a previous version and second one is from the current
+series.
 
-On Thu, Jul 6, 2017 at 12:44 PM, Seeteena Thoufeek
-<s1seetee@linux.vnet.ibm.com> wrote:
-> ---Steps to Reproduce---
->
-> 1.Execute the cpupower monitor command to fetch all the Idle_Stats values.
->
-> root:~# cpupower monitor
->               |Idle_Stats
-> PKG |CORE|CPU | snoo | stop | stop
->    0|   8|   0|  0.00|  0.00|  2.79
->    0|   8|   1|  0.00|  0.00| 70.68
->
-> User interpret it as 2 columns for stop Idle_stats.
->
-> root:/sys/devices/system/cpu/cpu8/cpuidle# cat */name
-> snooze
-> stop0_lite
-> stop1_lite
->
-> cpupower monitor now shows full state name and adjust colomn width.
->
-> root:~/linux/tools/power/cpupower# cpupower monitor
->               |Idle_Stats
-> PKG |CORE|CPU |snooze|stop0_lite|stop1_lite
->    0|   8|   0|  0.00|      0.00|     99.83
->    0|   8|   1|  0.00|      0.00|     43.82
->    0|   8|   2|  0.00|      0.00|     102.1
->    0|   8|   3|  0.00|      0.00|     96.56
->
-> tested on x86 as well.
+Just as a note, the problem is not with traversing slave_links list
+but the master_links list.
 
-Can you rewrite the commit log describing the problem and what you do
-in this patch to mitigate the problem ?
-Something along the lines of the following
+1.) Previous Version (Have deadlock issues, as you reported then).
 
-"The names of the idle states in the output of cpupower monitor
-command are truncated to 4 characters.
- Hence, On POWER9, since the states are named "stop0, stop1, stop2,
-stop4, stop11" , this output is ambiguous
+>> +static int genpd_update_performance_state(struct generic_pm_domain *genpd,
+>> +                                         int depth)
+>> +{
 
- root:~# cpupower monitor
-               |Idle_Stats
- PKG |CORE|CPU | snoo | stop | stop
-    0|   8|   0|  0.00|  0.00|  2.79
-    0|   8|   1|  0.00|  0.00| 70.68
+The genpd is already locked here..
 
-In this patch, we modify the output to print the full state name and
-adjust the column width, that results in a
-legible output.
+>> +       struct generic_pm_domain_data *pd_data;
+>> +       struct generic_pm_domain *subdomain;
+>> +       struct pm_domain_data *pdd;
+>> +       unsigned int state = 0, prev;
+>> +       struct gpd_link *link;
+>> +       int ret;
+>> +
+>> +       /* Traverse all devices within the domain */
+>> +       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
+>> +               pd_data = to_gpd_data(pdd);
+>> +
+>> +               if (pd_data->performance_state > state)
+>> +                       state = pd_data->performance_state;
+>> +       }
 
- root:~/linux/tools/power/cpupower# cpupower monitor
-               |Idle_Stats
- PKG |CORE|CPU |snooze|stop0_lite|stop1_lite
-    0|   8|   0|  0.00|      0.00|     99.83
-    0|   8|   1|  0.00|      0.00|     43.82
-    0|   8|   2|  0.00|      0.00|     102.1
-    0|   8|   3|  0.00|      0.00|     96.56
+Above is fine as we traversed list of devices that are powered by the
+PM domain. No additional locks are required.
 
+>> +       /* Traverse all subdomains within the domain */
+>> +       list_for_each_entry(link, &genpd->master_links, master_node) {
+>> +               subdomain = link->slave;
+>> +
+>> +               if (subdomain->performance_state > state)
+>> +                       state = subdomain->performance_state;
+>> +       }
 
-Tested on POWER8, POWER9 and x86."
+But this is not fine at all. subdomain->performance_state might get
+updated from another thread for another genpd. And so we need locking
+here, but we can't do that as we need to take locks starting from
+slaves to masters. This is what you correctly pointed out in earlier
+versions.
 
-> Signed-off-by: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
-> ---
->  .../cpupower/utils/idle_monitor/cpupower-monitor.c | 25 ++++++++++++++--------
->  .../cpupower/utils/idle_monitor/cpupower-monitor.h |  2 +-
->  2 files changed, 17 insertions(+), 10 deletions(-)
->
-> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> index 05f953f..5e708d5 100644
-> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> @@ -88,7 +88,7 @@ void print_header(int topology_depth)
->         int state, need_len;
->         cstate_t s;
->         char buf[128] = "";
-> -       int percent_width = 4;
-> +       unsigned int percent_width = 6;
+>> +       if (genpd->performance_state == state)
+>> +               return 0;
+>> +
+>> +       /*
+>> +        * Not all domains support updating performance state. Move on to their
+>> +        * parent domains in that case.
+>> +        */
+>> +       if (genpd->set_performance_state) {
+>> +               ret = genpd->set_performance_state(genpd, state);
+>> +               if (!ret)
+>> +                       genpd->performance_state = state;
+>> +
+>> +               return ret;
+>> +       }
+>> +
+>> +       prev = genpd->performance_state;
+>> +       genpd->performance_state = state;
 
-While you are at it, can we have these as #defines? i.e.
+This is racy as well (because of the earlier traversal of
+master-list), as genpd->performance_state might be getting read for
+one of its masters currently (from another instance of this same
+routine).
 
-#define COL_WIDTH_MIN       6
+>> +
+>> +       list_for_each_entry(link, &genpd->slave_links, slave_node) {
+>> +               struct generic_pm_domain *master = link->master;
+>> +
+>> +               genpd_lock_nested(master, depth + 1);
+>> +               ret = genpd_update_performance_state(master, depth + 1);
+>> +               genpd_unlock(master);
+>>
+>>                 ... Handle errors here.
+>> +       }
+>> +
+>> +       return 0;
+>> +}
 
->
->         fill_string_with_spaces(buf, topology_depth * 5 - 1);
->         printf("%s|", buf);
-> @@ -116,17 +116,18 @@ void print_header(int topology_depth)
->         for (mon = 0; mon < avail_monitors; mon++) {
->                 if (mon != 0)
->                         printf("|| ");
-> -               else
-> -                       printf(" ");
->                 for (state = 0; state < monitors[mon]->hw_states_num; state++) {
->                         if (state != 0)
-> -                               printf(" | ");
-> +                               printf("|");
->                         s = monitors[mon]->hw_states[state];
->                         sprintf(buf, "%s", s.name);
-> -                       fill_string_with_spaces(buf, percent_width);
-> +                       if (strlen(s.name) > percent_width)
-> +                               fill_string_with_spaces(buf, strlen(s.name));
+So the conclusion was that we surely can't lock the subdomains while
+running genpd_update_performance_state() for a master genpd.
 
-When we have many states (and on POWER9 we can have upto 8 idle
-states), printing the full name
-may not be advisable. We can instead define COL_WIDTH_MAX along with
-COL_WIDTH_MIN and set
-the percent_width to the length of the state's name only when that
-length is in the interval [COL_WIDTH_MIN, COL_WIDTH_MAX]
-Something like the following?
+And that's what the below latest code tried to address.
 
-#define COL_WIDTH_MIN      4
-#define COL_WIDTH_MAX     8
+2.) New code, which shouldn't have any of those deadlock issues.
+ 
+>> +static int genpd_update_performance_state(struct generic_pm_domain *genpd,
 
+genpd is still locked from its caller.
 
-name_len = strlen(s.name);
-if (name_len < COL_WIDTH_MIN)
-       percent_width = COL_WIDTH_MIN;
-else if (name_len > COL_WIDTH_MAX )
-       percent_width = COL_WIDTH_MAX;
-else
-       percent_width = name_len;
+>> +                                         int depth)
+>> +{
+>> +       struct generic_pm_domain_data *pd_data;
+>> +       struct generic_pm_domain *master;
+>> +       struct pm_domain_data *pdd;
+>> +       unsigned int state = 0, prev;
+>> +       struct gpd_link *link;
+>> +       int ret;
+>> +
+>> +       /* Traverse all devices within the domain */
+>> +       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
+>> +               pd_data = to_gpd_data(pdd);
+>> +
+>> +               if (pd_data->performance_state > state)
+>> +                       state = pd_data->performance_state;
+>> +       }
+>> +
 
-fill_string_with_spaces(buf, percent_width)
-> +                       else
-> +                               fill_string_with_spaces(buf, percent_width);
-> +
->                         printf("%s", buf);
-> -               }
-> -               printf(" ");
-> +                       }
->         }
->         printf("\n");
->  }
-> @@ -139,7 +140,9 @@ void print_results(int topology_depth, int cpu)
->         double percent;
->         unsigned long long result;
->         cstate_t s;
-> -
-> +       char buf[128] = "";
-> +       unsigned int percent_width = 6;
-> +       unsigned int width;
->         /* Be careful CPUs may got resorted for pkg value do not just use cpu */
->         if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
->                 return;
-> @@ -163,7 +166,11 @@ void print_results(int topology_depth, int cpu)
->                                 printf("|");
->
->                         s = monitors[mon]->hw_states[state];
-> -
-> +                       if (strlen(s.name) > percent_width) {
-> +                               width = strlen(s.name) - percent_width;
-> +                               fill_string_with_spaces(buf, width);
-> +                               printf("%s", buf);
-> +                       }
->                         if (s.get_count_percent) {
->                                 ret = s.get_count_percent(s.id, &percent,
->                                                   cpu_top.core_info[cpu].cpu);
-> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-> index 9e43f33..c9179c6 100644
-> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-> @@ -15,7 +15,7 @@
->
->  #define MONITORS_MAX 20
->  #define MONITOR_NAME_LEN 20
-> -#define CSTATE_NAME_LEN 5
-> +#define CSTATE_NAME_LEN 16
+Above remains the same and shouldn't have any issues.
 
-So, this is based on the CPUIDLE_NAME_LEN I suppose. You might want to
-add a comment
-about it here.
+>> +       /* Traverse all subdomains within the domain */
+>> +       list_for_each_entry(link, &genpd->master_links, master_node) {
+>> +               if (link->performance_state > state)
+>> +                       state = link->performance_state;
+>> +       }
+>> +
 
+Instead of a single performance_state field for the entire subdomain
+structure, we store a performance_state value for each
+master <-> subdomain pair. And this field is protected by the master
+lock, always.
 
->  #define CSTATE_DESC_LEN 60
->
->  int cpu_count;
-> --
-> 1.8.3.1
->
+Since the genpd was already locked, the link->performance_state field
+of all its subdomains can be accessed without further locking.
 
-Otherwise the patch looks good.
+>> +       if (genpd->performance_state == state)
+>> +               return 0;
+>> +
+>> +       if (genpd->set_performance_state) {
+>> +               ret = genpd->set_performance_state(genpd, state);
+>> +               if (!ret)
+>> +                       genpd->performance_state = state;
+>> +
+>> +               return ret;
+>> +       }
+>> +
+>> +       /*
+>> +        * Not all domains support updating performance state. Move on to their
+>> +        * parent domains in that case.
+>> +        */
+>> +       prev = genpd->performance_state;
+>> +
 
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Lets look at the below one now.
+
+>> +       list_for_each_entry(link, &genpd->slave_links, slave_node) {
+>> +               master = link->master;
+>> +
+>> +               genpd_lock_nested(master, depth + 1);
+>> +
+>> +               link->performance_state = state;
+
+(I incorrectly mentioned in my last reply to you that this can be
+present outside of the lock, this can't be.)
+
+So here we have taken the master's lock and updated the link shared
+between master <-> subdomain (genpd here).
+
+>> +               ret = genpd_update_performance_state(master, depth + 1);
+
+So when this recursive call is made for the "master" domain, it will
+read link->performance_state of all its subdomains (from the earlier
+for-loop) and the current "genpd" domain will be part of that
+master-list. And that's why we updated link->performance_state before
+calling the genpd_update_performance_state() routine above, so that
+its new value can be available.
+
+IOW, we can't have a race now where link->performance_state for any of
+the subdomains of genpd is read/updated in parallel.
+
+>> +               if (ret)
+>> +                       link->performance_state = prev;
+>> +
+>> +               genpd_unlock(master);
+>> +
+>> +               if (ret)
+>> +                       goto err;
+>> +       }
+>> +
+>> +       /*
+>> +        * The parent domains are updated now, lets get genpd performance_state
+>> +        * in sync with those.
+>> +        */
+
+And once we are done with all the master domains, we can update the
+genpd->performance_state safely.
+
+>> +       genpd->performance_state = state;
+>> +       return 0;
+>> +
+>> +err:
+>>         ...
+>> +}
+>> +
+
+Was I able to clarify your doubts ?
 
 -- 
-Thanks and Regards
-gautham.
+viresh
