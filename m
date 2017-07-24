@@ -1,45 +1,93 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 1/1] PM / OPP: Fix get sharing cpus when hotplug is
- used
-Date: Mon, 24 Jul 2017 14:17:13 +0530
-Message-ID: <20170724084713.GR352@vireshk-i7>
-References: <20170721121403.31202-1-waldemarx.rymarkiewicz@intel.com>
+Subject: Re: [PATCH v2] cpufreq: s5pv210: add missing of_node_put
+Date: Mon, 24 Jul 2017 14:22:16 +0530
+Message-ID: <20170724085216.GS352@vireshk-i7>
+References: <1500666810-21841-1-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f50.google.com ([74.125.83.50]:33944 "EHLO
-        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752875AbdGXIrQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 04:47:16 -0400
-Received: by mail-pg0-f50.google.com with SMTP id 123so54442376pgj.1
-        for <linux-pm@vger.kernel.org>; Mon, 24 Jul 2017 01:47:16 -0700 (PDT)
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170721121403.31202-1-waldemarx.rymarkiewicz@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1500666810-21841-1-git-send-email-Julia.Lawall@lip6.fr>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Kukjin Kim <kgene@kernel.org>, kernel-janitors@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
-Cc: linux-pm@vger.kernel.org, WaldemarRymarkiewiczwaldemar.rymarkiewicz@gmail.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
 
-On 21-07-17, 14:13, Waldemar Rymarkiewicz wrote:
-> We fail dev_pm_opp_of_get_sharing_cpus() when possible cpu device does not
-> exist. This can happen on platforms where not all possible CPUs are
-> available at start up ie. hotplugged out. Cpu device is not registered in
-> the system so we are not able to check struct device to set the sharing
-> CPUs bitmask properly.
+On 21-07-17, 21:53, Julia Lawall wrote:
+> for_each_compatible_node performs an of_node_get on each iteration, so a
+> return from the loop requires an of_node_put.
 > 
-> Example (real use case):
-> 2 physical MIPS cores, 4 VPE, cpu0/2 run Linux and cpu1/3 are not available
-> for Linux at boot up. cpufreq-dt driver + opp v2 fail to register opp_table
-> due to the fact there is no struct device for cpu1 (remains offline at
-> bootup).
+> The semantic patch that fixes this problem is as follows
+> (http://coccinelle.lip6.fr):
 > 
-> To solve the bug, stop using device struct to check device_node. Instead
-> get cpu device_node directly from device tree with of_get_cpu_node().
+> // <smpl>
+> @@
+> local idexpression n;
+> expression e,e1,e2;
+> statement S;
+> iterator i1;
+> iterator name for_each_compatible_node;
+> @@
 > 
-> Signed-off-by: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
+>  for_each_compatible_node(n,e1,e2) {
+>    ...
+> (
+>    of_node_put(n);
+> |
+>    e = n
+> |
+>    return n;
+> |
+>    i1(...,n,...) S
+> |
+> +  of_node_put(n);
+> ?  return ...;
+> )
+>    ...
+>  }
+> // </smpl>
+> 
+> Additionally, call of_node_put on the previous value of np, obtained from
+> of_find_compatible_node, that is no longer accessible at the point of the
+> for_each_compatible_node.
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> 
 > ---
->  drivers/base/power/opp/of.c | 28 +++++++++++++++++-----------
->  1 file changed, 17 insertions(+), 11 deletions(-)
+> 
+> v2: add the of_node_put for the call to of_find_compatible_node as well.
+> 
+>  drivers/cpufreq/s5pv210-cpufreq.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+> index f82074e..5d31c2d 100644
+> --- a/drivers/cpufreq/s5pv210-cpufreq.c
+> +++ b/drivers/cpufreq/s5pv210-cpufreq.c
+> @@ -602,6 +602,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	clk_base = of_iomap(np, 0);
+> +	of_node_put(np);
+>  	if (!clk_base) {
+>  		pr_err("%s: failed to map clock registers\n", __func__);
+>  		return -EFAULT;
+> @@ -612,6 +613,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+>  		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
+>  			pr_err("%s: failed to get alias of dmc node '%s'\n",
+>  				__func__, np->name);
+> +			of_node_put(np);
+>  			return id;
+>  		}
+>  
+> @@ -619,6 +621,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+>  		if (!dmc_base[id]) {
+>  			pr_err("%s: failed to map dmc%d registers\n",
+>  				__func__, id);
+> +			of_node_put(np);
+>  			return -EFAULT;
+>  		}
+>  	}
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
