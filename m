@@ -1,45 +1,209 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: [PATCH] PM / runtime: Document new pm_runtime_set_suspended constraint
-Date: Mon, 24 Jul 2017 11:53:56 +0200
-Message-ID: <20170724095356.21667-1-johan@kernel.org>
+From: Gautham R Shenoy <ego.lkml@gmail.com>
+Subject: Re: [PATCH] Fix header-name to read full state name and adjust column width
+Date: Mon, 24 Jul 2017 15:41:11 +0530
+Message-ID: <CAHZ_5WwfS52JVM_-Ws7yh2yuZYTn5T1vmhT=z1k9oN1yF_fdrA@mail.gmail.com>
+References: <1499325264-15521-1-git-send-email-s1seetee@linux.vnet.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f67.google.com ([209.85.215.67]:32977 "EHLO
-        mail-lf0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753211AbdGXJyR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 05:54:17 -0400
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:33247 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752201AbdGXKLM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Jul 2017 06:11:12 -0400
+In-Reply-To: <1499325264-15521-1-git-send-email-s1seetee@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Tony Lindgren <tony@atomide.com>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, trenn@suse.com, ego@linux.vnet.ibm.com, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-Since commit a8636c89648a ("PM / Runtime: Don't allow to suspend a
-device with an active child") it is no longer permitted to set
-RPM_SUSPENDED state for a device with active children unless
-power.ignore_children is set.
+Hello Seeteena,
 
-Update the documentation to reflect this.
+Thanks for this useful patch. Couple of suggestions below.
 
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>
-Signed-off-by: Johan Hovold <johan@kernel.org>
----
- Documentation/power/runtime_pm.txt | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+On Thu, Jul 6, 2017 at 12:44 PM, Seeteena Thoufeek
+<s1seetee@linux.vnet.ibm.com> wrote:
+> ---Steps to Reproduce---
+>
+> 1.Execute the cpupower monitor command to fetch all the Idle_Stats values.
+>
+> root:~# cpupower monitor
+>               |Idle_Stats
+> PKG |CORE|CPU | snoo | stop | stop
+>    0|   8|   0|  0.00|  0.00|  2.79
+>    0|   8|   1|  0.00|  0.00| 70.68
+>
+> User interpret it as 2 columns for stop Idle_stats.
+>
+> root:/sys/devices/system/cpu/cpu8/cpuidle# cat */name
+> snooze
+> stop0_lite
+> stop1_lite
+>
+> cpupower monitor now shows full state name and adjust colomn width.
+>
+> root:~/linux/tools/power/cpupower# cpupower monitor
+>               |Idle_Stats
+> PKG |CORE|CPU |snooze|stop0_lite|stop1_lite
+>    0|   8|   0|  0.00|      0.00|     99.83
+>    0|   8|   1|  0.00|      0.00|     43.82
+>    0|   8|   2|  0.00|      0.00|     102.1
+>    0|   8|   3|  0.00|      0.00|     96.56
+>
+> tested on x86 as well.
 
-diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-index 0fde3dcf077a..625549d4c74a 100644
---- a/Documentation/power/runtime_pm.txt
-+++ b/Documentation/power/runtime_pm.txt
-@@ -435,7 +435,8 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
-       PM status to 'suspended' and update its parent's counter of 'active'
-       children as appropriate (it is only valid to use this function if
-       'power.runtime_error' is set or 'power.disable_depth' is greater than
--      zero)
-+      zero); it will fail and return an error code if the device has a child
-+      which is active and the 'power.ignore_children' flag is unset
- 
-   bool pm_runtime_active(struct device *dev);
-     - return true if the device's runtime PM status is 'active' or its
+Can you rewrite the commit log describing the problem and what you do
+in this patch to mitigate the problem ?
+Something along the lines of the following
+
+"The names of the idle states in the output of cpupower monitor
+command are truncated to 4 characters.
+ Hence, On POWER9, since the states are named "stop0, stop1, stop2,
+stop4, stop11" , this output is ambiguous
+
+ root:~# cpupower monitor
+               |Idle_Stats
+ PKG |CORE|CPU | snoo | stop | stop
+    0|   8|   0|  0.00|  0.00|  2.79
+    0|   8|   1|  0.00|  0.00| 70.68
+
+In this patch, we modify the output to print the full state name and
+adjust the column width, that results in a
+legible output.
+
+ root:~/linux/tools/power/cpupower# cpupower monitor
+               |Idle_Stats
+ PKG |CORE|CPU |snooze|stop0_lite|stop1_lite
+    0|   8|   0|  0.00|      0.00|     99.83
+    0|   8|   1|  0.00|      0.00|     43.82
+    0|   8|   2|  0.00|      0.00|     102.1
+    0|   8|   3|  0.00|      0.00|     96.56
+
+
+Tested on POWER8, POWER9 and x86."
+
+> Signed-off-by: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
+> ---
+>  .../cpupower/utils/idle_monitor/cpupower-monitor.c | 25 ++++++++++++++--------
+>  .../cpupower/utils/idle_monitor/cpupower-monitor.h |  2 +-
+>  2 files changed, 17 insertions(+), 10 deletions(-)
+>
+> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> index 05f953f..5e708d5 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> @@ -88,7 +88,7 @@ void print_header(int topology_depth)
+>         int state, need_len;
+>         cstate_t s;
+>         char buf[128] = "";
+> -       int percent_width = 4;
+> +       unsigned int percent_width = 6;
+
+While you are at it, can we have these as #defines? i.e.
+
+#define COL_WIDTH_MIN       6
+
+>
+>         fill_string_with_spaces(buf, topology_depth * 5 - 1);
+>         printf("%s|", buf);
+> @@ -116,17 +116,18 @@ void print_header(int topology_depth)
+>         for (mon = 0; mon < avail_monitors; mon++) {
+>                 if (mon != 0)
+>                         printf("|| ");
+> -               else
+> -                       printf(" ");
+>                 for (state = 0; state < monitors[mon]->hw_states_num; state++) {
+>                         if (state != 0)
+> -                               printf(" | ");
+> +                               printf("|");
+>                         s = monitors[mon]->hw_states[state];
+>                         sprintf(buf, "%s", s.name);
+> -                       fill_string_with_spaces(buf, percent_width);
+> +                       if (strlen(s.name) > percent_width)
+> +                               fill_string_with_spaces(buf, strlen(s.name));
+
+When we have many states (and on POWER9 we can have upto 8 idle
+states), printing the full name
+may not be advisable. We can instead define COL_WIDTH_MAX along with
+COL_WIDTH_MIN and set
+the percent_width to the length of the state's name only when that
+length is in the interval [COL_WIDTH_MIN, COL_WIDTH_MAX]
+Something like the following?
+
+#define COL_WIDTH_MIN      4
+#define COL_WIDTH_MAX     8
+
+
+name_len = strlen(s.name);
+if (name_len < COL_WIDTH_MIN)
+       percent_width = COL_WIDTH_MIN;
+else if (name_len > COL_WIDTH_MAX )
+       percent_width = COL_WIDTH_MAX;
+else
+       percent_width = name_len;
+
+fill_string_with_spaces(buf, percent_width)
+> +                       else
+> +                               fill_string_with_spaces(buf, percent_width);
+> +
+>                         printf("%s", buf);
+> -               }
+> -               printf(" ");
+> +                       }
+>         }
+>         printf("\n");
+>  }
+> @@ -139,7 +140,9 @@ void print_results(int topology_depth, int cpu)
+>         double percent;
+>         unsigned long long result;
+>         cstate_t s;
+> -
+> +       char buf[128] = "";
+> +       unsigned int percent_width = 6;
+> +       unsigned int width;
+>         /* Be careful CPUs may got resorted for pkg value do not just use cpu */
+>         if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
+>                 return;
+> @@ -163,7 +166,11 @@ void print_results(int topology_depth, int cpu)
+>                                 printf("|");
+>
+>                         s = monitors[mon]->hw_states[state];
+> -
+> +                       if (strlen(s.name) > percent_width) {
+> +                               width = strlen(s.name) - percent_width;
+> +                               fill_string_with_spaces(buf, width);
+> +                               printf("%s", buf);
+> +                       }
+>                         if (s.get_count_percent) {
+>                                 ret = s.get_count_percent(s.id, &percent,
+>                                                   cpu_top.core_info[cpu].cpu);
+> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+> index 9e43f33..c9179c6 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+> @@ -15,7 +15,7 @@
+>
+>  #define MONITORS_MAX 20
+>  #define MONITOR_NAME_LEN 20
+> -#define CSTATE_NAME_LEN 5
+> +#define CSTATE_NAME_LEN 16
+
+So, this is based on the CPUIDLE_NAME_LEN I suppose. You might want to
+add a comment
+about it here.
+
+
+>  #define CSTATE_DESC_LEN 60
+>
+>  int cpu_count;
+> --
+> 1.8.3.1
+>
+
+Otherwise the patch looks good.
+
+Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+
 -- 
-2.13.3
+Thanks and Regards
+gautham.
