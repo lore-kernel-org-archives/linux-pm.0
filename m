@@ -1,402 +1,189 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH v10 08/10] power: Adds support for Smart Battery System Manager
-Date: Tue, 25 Jul 2017 11:40:22 +0800
-Message-ID: <1500954024-6860-9-git-send-email-preid@electromag.com.au>
-References: <1500954024-6860-1-git-send-email-preid@electromag.com.au>
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1500954024-6860-1-git-send-email-preid@electromag.com.au>
-Sender: linux-i2c-owner@vger.kernel.org
-To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, preid@electromag.com.au, benjamin.tissoires@redhat.com, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+From: Luca Abeni <luca.abeni@santannapisa.it>
+Subject: Re: [RFC PATCH v1 8/8] sched/deadline: make bandwidth enforcement
+ scale-invariant
+Date: Tue, 25 Jul 2017 09:03:08 +0200
+Message-ID: <20170725090308.2cca53c0@luca>
+References: <20170705085905.6558-1-juri.lelli@arm.com>
+        <20170705085905.6558-9-juri.lelli@arm.com>
+        <20170719072143.lploljodns3kfucf@hirez.programming.kicks-ass.net>
+        <20170719092029.oakmetq3u52e4rfw@e106622-lin>
+        <20170719110028.uggud56bg2jh45ge@hirez.programming.kicks-ass.net>
+        <20170719111624.fwcydcklmfeesfgb@e106622-lin>
+        <20170724164349.clzsajrwxtobyqkm@hirez.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170724164349.clzsajrwxtobyqkm@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Hi Peter,
 
-This patch adds support for Smart Battery System Manager.
-A SBSM is a device listening at I2C/SMBus address 0x0a and is capable of
-communicating up to four I2C smart battery devices. All smart battery
-devices are listening at address 0x0b, so the SBSM muliplexes between
-them. The driver makes use of the I2C-Mux framework to allow smart
-batteries to be bound via device tree, i.e. the sbs-battery driver.
+On Mon, 24 Jul 2017 18:43:49 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-Via sysfs interface the online state and charge type are presented. If
-the driver is bound as ltc1760 (an implementation of a Dual Smart Battery
-System Manager) the charge type can also be changed from trickle to fast.
+> On Wed, Jul 19, 2017 at 12:16:24PM +0100, Juri Lelli wrote:
+> > On 19/07/17 13:00, Peter Zijlstra wrote:  
+> > > On Wed, Jul 19, 2017 at 10:20:29AM +0100, Juri Lelli wrote:  
+> > > > On 19/07/17 09:21, Peter Zijlstra wrote:  
+> > > > > On Wed, Jul 05, 2017 at 09:59:05AM +0100, Juri Lelli wrote:  
+> > > > > > @@ -1156,9 +1157,26 @@ static void update_curr_dl(struct rq *rq)
+> > > > > >  	if (unlikely(dl_entity_is_special(dl_se)))
+> > > > > >  		return;
+> > > > > >  
+> > > > > > -	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM))
+> > > > > > -		delta_exec = grub_reclaim(delta_exec, rq, &curr->dl);
+> > > > > > -	dl_se->runtime -= delta_exec;
+> > > > > > +	/*
+> > > > > > +	 * For tasks that participate in GRUB, we implement GRUB-PA: the
+> > > > > > +	 * spare reclaimed bandwidth is used to clock down frequency.
+> > > > > > +	 *
+> > > > > > +	 * For the others, we still need to scale reservation parameters
+> > > > > > +	 * according to current frequency and CPU maximum capacity.
+> > > > > > +	 */
+> > > > > > +	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM)) {
+> > > > > > +		scaled_delta_exec = grub_reclaim(delta_exec,
+> > > > > > +						 rq,
+> > > > > > +						 &curr->dl);
+> > > > > > +	} else {
+> > > > > > +		unsigned long scale_freq = arch_scale_freq_capacity(cpu);
+> > > > > > +		unsigned long scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
+> > > > > > +
+> > > > > > +		scaled_delta_exec = cap_scale(delta_exec, scale_freq);
+> > > > > > +		scaled_delta_exec = cap_scale(scaled_delta_exec, scale_cpu);
+> > > > > > +	}
+> > > > > > +
+> > > > > > +	dl_se->runtime -= scaled_delta_exec;
+> > > > > >    
+> > > > > 
+> > > > > This I don't get...   
+> > > > 
+> > > > 
+> > > > Considering that we use GRUB's active utilization to drive clock
+> > > > frequency selection, rationale is that GRUB tasks don't need any special
+> > > > scaling, as their delta_exec is already scaled according to GRUB rules.
+> > > > OTOH, normal tasks need to have their runtime (delta_exec) explicitly
+> > > > scaled considering current frequency (and CPU max capacity), otherwise
+> > > > they are going to receive less runtime than granted at AC, when
+> > > > frequency is reduced.  
+> > > 
+> > > I don't think that quite works out. Given that the frequency selection
+> > > will never quite end up at exactly the same fraction (if the hardware
+> > > listens to your requests at all).
+> > >   
+> > 
+> > It's an approximation yes (how big it depends on the granularity of the
+> > available frequencies). But, for the !GRUB tasks it should be OK, as we
+> > always select a frequency (among the available ones) bigger than the
+> > current active utilization.
+> > 
+> > Also, for platforms/archs that don't redefine arch_scale_* this is not
+> > used. In case they are defined instead the assumption is that either hw
+> > listens to requests or scaling factors can be derived in some other ways
+> > (avgs?).
+> >   
+> > > Also, by not scaling the GRUB stuff, don't you run the risk of
+> > > attempting to hand out more idle time than there actually is?  
+> > 
+> > The way I understand it is that for GRUB tasks we always scale
+> > considering the "correct" factor. Then frequency could be higher, but
+> > this spare idle time will be reclaimed by other GRUB tasks.  
+> 
+> I'm still confused..
+> 
+> So GRUB does:
+> 
+> 	dq = Uact -dt
+> 
+> right?
 
-Signed-off-by: Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Signed-off-by: Phil Reid <preid@electromag.com.au>
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
----
- drivers/power/supply/Kconfig       |  13 ++
- drivers/power/supply/Makefile      |   1 +
- drivers/power/supply/sbs-manager.c | 323 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 337 insertions(+)
- create mode 100644 drivers/power/supply/sbs-manager.c
+Right. This is what the original (single processor) GRUB did. And this
+was used by the "GRUB-PA" algorithm:
+https://www.researchgate.net/profile/Giuseppe_Lipari/publication/220800940_Using_resource_reservation_techniques_for_power-aware_scheduling/links/09e41513639b2703fc000000.pdf
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 969f500..e7e16ec 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -184,6 +184,19 @@ config CHARGER_SBS
-         help
- 	  Say Y to include support for SBS compilant battery chargers.
- 
-+config MANAGER_SBS
-+	tristate "Smart Battery System Manager"
-+	depends on I2C && I2C_MUX
-+	help
-+	  Say Y here to include support for Smart Battery System Manager
-+	  ICs. The driver reports online and charging status via sysfs.
-+	  It presents itself also as I2C mux which allows to bind
-+	  smart battery driver to its ports.
-+	  Supported is for example LTC1760.
-+
-+	  This driver can also be built as a module. If so, the module will be
-+	  called sbs-manager.
-+
- config BATTERY_BQ27XXX
- 	tristate "BQ27xxx battery driver"
- 	help
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index a41f409..2958807 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -36,6 +36,7 @@ obj-$(CONFIG_BATTERY_IPAQ_MICRO) += ipaq_micro_battery.o
- obj-$(CONFIG_BATTERY_WM97XX)	+= wm97xx_battery.o
- obj-$(CONFIG_BATTERY_SBS)	+= sbs-battery.o
- obj-$(CONFIG_CHARGER_SBS)	+= sbs-charger.o
-+obj-$(CONFIG_MANAGER_SBS)	+= sbs-manager.o
- obj-$(CONFIG_BATTERY_BQ27XXX)	+= bq27xxx_battery.o
- obj-$(CONFIG_BATTERY_BQ27XXX_I2C) += bq27xxx_battery_i2c.o
- obj-$(CONFIG_BATTERY_DA9030)	+= da9030_battery.o
-diff --git a/drivers/power/supply/sbs-manager.c b/drivers/power/supply/sbs-manager.c
-new file mode 100644
-index 0000000..47c09a1
---- /dev/null
-+++ b/drivers/power/supply/sbs-manager.c
-@@ -0,0 +1,323 @@
-+/*
-+ * Driver for SBS compliant Smart Battery System Managers
-+ *
-+ * The device communicates via i2c at address 0x0a and multiplexes access to up
-+ * to four smart batteries at address 0x0b.
-+ *
-+ * Via sysfs interface the online state and charge type are presented.
-+ *
-+ * Datasheet SBSM:    http://sbs-forum.org/specs/sbsm100b.pdf
-+ * Datasheet LTC1760: http://cds.linear.com/docs/en/datasheet/1760fb.pdf
-+ *
-+ * Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/i2c.h>
-+#include <linux/i2c-mux.h>
-+#include <linux/power_supply.h>
-+
-+#define SBSM_MAX_BATS  4
-+#define SBSM_RETRY_CNT 3
-+
-+/* registers addresses */
-+#define SBSM_CMD_BATSYSSTATE     0x01
-+#define SBSM_CMD_BATSYSSTATECONT 0x02
-+#define SBSM_CMD_BATSYSINFO      0x04
-+#define SBSM_CMD_LTC             0x3c
-+
-+#define SBSM_MASK_BAT_SUPPORTED  GENMASK(3, 0)
-+#define SBSM_MASK_CHARGE_BAT     GENMASK(7, 4)
-+#define SBSM_BIT_AC_PRESENT      BIT(0)
-+#define SBSM_BIT_TURBO           BIT(7)
-+
-+#define SBSM_SMB_BAT_OFFSET      11
-+struct sbsm_data {
-+	struct i2c_client *client;
-+	struct i2c_mux_core *muxc;
-+
-+	struct power_supply *psy;
-+
-+	u8 cur_chan;          /* currently selected channel */
-+	bool is_ltc1760;      /* special capabilities */
-+};
-+
-+static enum power_supply_property sbsm_props[] = {
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_CHARGE_TYPE,
-+};
-+
-+static int sbsm_read_word(struct i2c_client *client, u8 address)
-+{
-+	int reg, retries;
-+
-+	for (retries = SBSM_RETRY_CNT; retries > 0; retries--) {
-+		reg = i2c_smbus_read_word_data(client, address);
-+		if (reg >= 0)
-+			break;
-+	}
-+
-+	if (reg < 0) {
-+		dev_err(&client->dev, "failed to read register 0x%02x\n",
-+			address);
-+	}
-+
-+	return reg;
-+}
-+
-+static int sbsm_write_word(struct i2c_client *client, u8 address, u16 word)
-+{
-+	int ret, retries;
-+
-+	for (retries = SBSM_RETRY_CNT; retries > 0; retries--) {
-+		ret = i2c_smbus_write_word_data(client, address, word);
-+		if (ret >= 0)
-+			break;
-+	}
-+	if (ret < 0)
-+		dev_err(&client->dev, "failed to write to register 0x%02x\n",
-+			address);
-+
-+	return ret;
-+}
-+
-+static int sbsm_get_property(struct power_supply *psy,
-+			     enum power_supply_property psp,
-+			     union power_supply_propval *val)
-+{
-+	struct sbsm_data *data = power_supply_get_drvdata(psy);
-+	int regval = 0;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		regval = sbsm_read_word(data->client, SBSM_CMD_BATSYSSTATECONT);
-+		if (regval < 0)
-+			return regval;
-+		val->intval = !!(regval & SBSM_BIT_AC_PRESENT);
-+		break;
-+
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		regval = sbsm_read_word(data->client, SBSM_CMD_BATSYSSTATE);
-+		if (regval < 0)
-+			return regval;
-+
-+		if ((regval & SBSM_MASK_CHARGE_BAT) == 0) {
-+			val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
-+			return 0;
-+		}
-+		val->intval = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
-+
-+		if (data->is_ltc1760) {
-+			/* charge mode fast if turbo is active */
-+			regval = sbsm_read_word(data->client, SBSM_CMD_LTC);
-+			if (regval < 0)
-+				return regval;
-+			else if (regval & SBSM_BIT_TURBO)
-+				val->intval = POWER_SUPPLY_CHARGE_TYPE_FAST;
-+		}
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int sbsm_prop_is_writeable(struct power_supply *psy,
-+				  enum power_supply_property psp)
-+{
-+	struct sbsm_data *data = power_supply_get_drvdata(psy);
-+
-+	return (psp == POWER_SUPPLY_PROP_CHARGE_TYPE) && data->is_ltc1760;
-+}
-+
-+static int sbsm_set_property(struct power_supply *psy,
-+			     enum power_supply_property psp,
-+			     const union power_supply_propval *val)
-+{
-+	struct sbsm_data *data = power_supply_get_drvdata(psy);
-+	int ret = -EINVAL;
-+	u16 regval;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		/* write 1 to TURBO if type fast is given */
-+		if (!data->is_ltc1760)
-+			break;
-+		regval = val->intval ==
-+			 POWER_SUPPLY_CHARGE_TYPE_FAST ? SBSM_BIT_TURBO : 0;
-+		ret = sbsm_write_word(data->client, SBSM_CMD_LTC, regval);
-+		break;
-+
-+	default:
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
-+/*
-+ * Switch to battery
-+ * Parameter chan is directly the content of SMB_BAT* nibble
-+ */
-+static int sbsm_select(struct i2c_mux_core *muxc, u32 chan)
-+{
-+	struct sbsm_data *data = i2c_mux_priv(muxc);
-+	struct device *dev = &data->client->dev;
-+	int ret = 0;
-+	u16 reg;
-+
-+	if (data->cur_chan == chan)
-+		return ret;
-+
-+	/* chan goes from 1 ... 4 */
-+	reg = 1 << BIT(SBSM_SMB_BAT_OFFSET + chan);
-+	ret = sbsm_write_word(data->client, SBSM_CMD_BATSYSSTATE, reg);
-+	if (ret)
-+		dev_err(dev, "Failed to select channel %i\n", chan);
-+	else
-+		data->cur_chan = chan;
-+
-+	return ret;
-+}
-+
-+static const struct power_supply_desc sbsm_default_psy_desc = {
-+	.type = POWER_SUPPLY_TYPE_MAINS,
-+	.properties = sbsm_props,
-+	.num_properties = ARRAY_SIZE(sbsm_props),
-+	.get_property = &sbsm_get_property,
-+	.set_property = &sbsm_set_property,
-+	.property_is_writeable = &sbsm_prop_is_writeable,
-+};
-+
-+static int sbsm_probe(struct i2c_client *client,
-+		      const struct i2c_device_id *id)
-+{
-+	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
-+	struct sbsm_data *data;
-+	struct device *dev = &client->dev;
-+	struct power_supply_desc *psy_desc;
-+	struct power_supply_config psy_cfg = {};
-+	int ret = 0, i, supported_bats;
-+
-+	/* Device listens only at address 0x0a */
-+	if (client->addr != 0x0a)
-+		return -EINVAL;
-+
-+	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_WORD_DATA))
-+		return -EPFNOSUPPORT;
-+
-+	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	i2c_set_clientdata(client, data);
-+
-+	data->client = client;
-+	data->is_ltc1760 = !!strstr(id->name, "ltc1760");
-+
-+	ret  = sbsm_read_word(client, SBSM_CMD_BATSYSINFO);
-+	if (ret < 0)
-+		return ret;
-+	supported_bats = ret & SBSM_MASK_BAT_SUPPORTED;
-+
-+	data->muxc = i2c_mux_alloc(adapter, dev, SBSM_MAX_BATS, 0,
-+				   I2C_MUX_LOCKED, &sbsm_select, NULL);
-+	if (!data->muxc) {
-+		dev_err(dev, "failed to alloc i2c mux\n");
-+		ret = -ENOMEM;
-+		goto err_mux_alloc;
-+	}
-+	data->muxc->priv = data;
-+
-+	/* register muxed i2c channels. One for each supported battery */
-+	for (i = 0; i < SBSM_MAX_BATS; ++i) {
-+		if (supported_bats & BIT(i)) {
-+			ret = i2c_mux_add_adapter(data->muxc, 0, i + 1, 0);
-+			if (ret)
-+				break;
-+		}
-+	}
-+	if (ret) {
-+		dev_err(dev, "failed to register i2c mux channel %d\n", i + 1);
-+		goto err_mux_register;
-+	}
-+
-+	psy_desc = devm_kmemdup(dev, &sbsm_default_psy_desc,
-+				sizeof(struct power_supply_desc),
-+				GFP_KERNEL);
-+	if (!psy_desc) {
-+		ret = -ENOMEM;
-+		goto err_psy;
-+	}
-+
-+	psy_desc->name = devm_kasprintf(dev, GFP_KERNEL, "sbsm-%s",
-+					dev_name(&client->dev));
-+	if (!psy_desc->name) {
-+		ret = -ENOMEM;
-+		goto err_psy;
-+	}
-+
-+	psy_cfg.drv_data = data;
-+	psy_cfg.of_node = dev->of_node;
-+	data->psy = devm_power_supply_register(dev, psy_desc, &psy_cfg);
-+	if (IS_ERR(data->psy)) {
-+		ret = PTR_ERR(data->psy);
-+		dev_err(dev, "failed to register power supply %s\n",
-+			psy_desc->name);
-+		goto err_psy;
-+	}
-+
-+	return 0;
-+
-+err_psy:
-+err_mux_register:
-+	i2c_mux_del_adapters(data->muxc);
-+
-+err_mux_alloc:
-+	return ret;
-+}
-+
-+static int sbsm_remove(struct i2c_client *client)
-+{
-+	struct sbsm_data *data = i2c_get_clientdata(client);
-+
-+	i2c_mux_del_adapters(data->muxc);
-+	return 0;
-+}
-+
-+static const struct i2c_device_id sbsm_ids[] = {
-+	{ "sbs-manager", 0 },
-+	{ "ltc1760",     0 },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, sbsm_ids);
-+
-+#ifdef CONFIG_OF
-+static const struct of_device_id sbsm_dt_ids[] = {
-+	{ .compatible = "sbs,sbs-manager" },
-+	{ .compatible = "lltc,ltc1760" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, sbsm_dt_ids);
-+#endif
-+
-+static struct i2c_driver sbsm_driver = {
-+	.driver = {
-+		.name = "sbsm",
-+		.of_match_table = of_match_ptr(sbsm_dt_ids),
-+	},
-+	.probe		= sbsm_probe,
-+	.remove		= sbsm_remove,
-+	.id_table	= sbsm_ids
-+};
-+module_i2c_driver(sbsm_driver);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Karl-Heinz Schneider <karl-heinz@schneider-inet.de>");
-+MODULE_DESCRIPTION("SBSM Smart Battery System Manager");
--- 
-1.8.3.1
+(basically, GRUB-PA uses GRUB for reclaiming, and scales the CPU
+frequency based on Uact)
+
+
+> Now, you do DVFS using that same Uact. If we lower the clock, we need
+> more time, so would we then not end up with something like:
+> 
+> 	dq = 1/Uact -dt
+
+Well, in the GRUB-PA algorithm GRUB reclaiming is the mechanism used to
+give more runtime to the task... Since Uact is < 1, doing
+	dq = - Uact * dt
+means that we decrease the current runtime by a smaller amount of time.
+And so we end up giving more runtime to the task: instead of giving 
+dl_runtime every dl_period, we give "dl_runtime / Uact" every
+dl_period... And since the CPU is slower (by a ratio Uact), this is
+equivalent to giving dl_runtime at the maximum CPU speed / frequency
+(at least, in theory :).
+
+
+> After all; our budget assignment is such that we're able to complete
+> our work at max freq. Therefore, when we lower the frequency, we'll have
+> to increase budget pro rata, otherwise we'll not complete our work and
+> badness happens.
+
+Right. But instead of increasing dl_runtime, GRUB-PA decreases the
+amount of time accounted to the current runtime.
+
+
+> Say we have a 1 Ghz part and Uact=0.5 we'd select 500 Mhz and need
+> double the time to complete.
+> 
+> Now, if we fold these two together, you'd get:
+> 
+> 	dq = Uact/Uact -dt = -dt
+
+Not sure why " / Uact"... According to the GRUB-PA algorithm, you just
+do
+	dq = - Uact * dt = -0.5dt
+and you end up giving the CPU to the task for 2 * dl_runtime every
+dl_period (as expected)
+
+> Because, after all, if we lowered the clock to consume all idle time,
+> there's no further idle time to reclaim.
+
+The idea of GRUB-PA is that you do not change dl_runtime... So, the
+task is still "nominally reserved" dl_runtime every dl_period (in
+this example, 1/2*dl_period every dl_period)... It is the reclaiming
+mechanism that allows the task to execute for dl_runtime/Uact every
+dl_period (in this example, for dl_period every dl_period, so it
+reclaims 1/2dl_period every dl_period).
+
+
+> Now, of course, our DVFS assignment isn't as precise nor as
+> deterministic as this, so we'll get a slightly different ratio, lets
+> call that Udvfs.
+
+This is where GRUB-PA starts to have issues... :)
+The implicit assumption is (I think) that is the DVFS mechanism cannot
+assign exactly the requested frequency then it makes a "conservative"
+assignment (assigning a frequency higher than the requested one).
+
+
+> So would then not GRUB change into something like:
+> 
+> 	dq = Uact/Udvfs -dt
+> 
+> Allowing it to only reclaim that idle time that exists because our DVFS
+> level is strictly higher than required?
+
+I think GRUB should still do "dq = -Uact * dt", trying to reclaim all
+the idle CPU time (up to the configured limit, of course).
+
+
+
+				Luca
+
+> 
+> This way, on our 1 GHz part, with Uact=.5 but Udvfs=.6, we'll allow it
+> to reclaim just the additional 100Mhz of idle time.
+> 
+> 
+> Or am I completely off the rails now?
