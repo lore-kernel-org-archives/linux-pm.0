@@ -1,32 +1,51 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH v2 3/5] thermal: imx: Add support for reading OCOTP
- through nvmem
-Date: Tue, 25 Jul 2017 16:08:36 +0800
-Message-ID: <20170725080835.GD20064@dragon>
-References: <cover.1500041281.git.leonard.crestez@nxp.com>
- <faf9c3e5f970b9609073c4c191a7af03d647ea51.1500041281.git.leonard.crestez@nxp.com>
+From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Subject: Re: [PATCH v2 1/1] PM / OPP: Fix get sharing cpus when hotplug is used
+Date: Tue, 25 Jul 2017 10:09:42 +0200
+Message-ID: <CAHKzcEONE7CUyqdQC5X45S9oWLa9iEbyVd4gpgiYBuU4vQeKUA@mail.gmail.com>
+References: <20170721121403.31202-1-waldemarx.rymarkiewicz@intel.com>
+ <20170724084713.GR352@vireshk-i7> <10881593.7egIBYKlCz@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:41224 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750824AbdGYIJW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 25 Jul 2017 04:09:22 -0400
-Content-Disposition: inline
-In-Reply-To: <faf9c3e5f970b9609073c4c191a7af03d647ea51.1500041281.git.leonard.crestez@nxp.com>
+Received: from mail-wr0-f195.google.com ([209.85.128.195]:37263 "EHLO
+        mail-wr0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750757AbdGYIKX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 04:10:23 -0400
+Received: by mail-wr0-f195.google.com with SMTP id 12so11201209wrb.4
+        for <linux-pm@vger.kernel.org>; Tue, 25 Jul 2017 01:10:23 -0700 (PDT)
+In-Reply-To: <10881593.7egIBYKlCz@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Lothar =?iso-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>, Dong Aisheng <aisheng.dong@nxp.com>, Bai Ping <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, WaldemarRymarkiewiczwaldemar.rymarkiewicz@gmail.com, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
 
-On Fri, Jul 14, 2017 at 05:11:08PM +0300, Leonard Crestez wrote:
-> On newer imx SOCs accessing OCOTP directly is wrong because the ocotp clock
-> needs to be enabled first. Add support for reading those same values through
-> the nvmem API instead.
-> 
-> The older path is preserved for compatibility with older dts and because it
-> works correctly on imx6qdl chips.
-> 
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+On 24 July 2017 at 23:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Monday, July 24, 2017 02:17:13 PM Viresh Kumar wrote:
+>> On 21-07-17, 14:13, Waldemar Rymarkiewicz wrote:
+>> > We fail dev_pm_opp_of_get_sharing_cpus() when possible cpu device does not
+>> > exist. This can happen on platforms where not all possible CPUs are
+>> > available at start up ie. hotplugged out. Cpu device is not registered in
+>> > the system so we are not able to check struct device to set the sharing
+>> > CPUs bitmask properly.
+>> >
+>> > Example (real use case):
+>> > 2 physical MIPS cores, 4 VPE, cpu0/2 run Linux and cpu1/3 are not available
+>> > for Linux at boot up. cpufreq-dt driver + opp v2 fail to register opp_table
+>> > due to the fact there is no struct device for cpu1 (remains offline at
+>> > bootup).
+>> >
+>> > To solve the bug, stop using device struct to check device_node. Instead
+>> > get cpu device_node directly from device tree with of_get_cpu_node().
+>> >
+>> > Signed-off-by: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
+>> > ---
+>> >  drivers/base/power/opp/of.c | 28 +++++++++++++++++-----------
+>> >  1 file changed, 17 insertions(+), 11 deletions(-)
+>>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>
+> I've lost track of this, care to resend?
 
-Acked-by: Shawn Guo <shawnguo@kernel.org>
+I've resent v3.
+
+/Waldek
