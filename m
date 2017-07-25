@@ -1,57 +1,92 @@
-From: Manu Gautam <mgautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v3 2/3] usb: phy: Add USB charger support
-Date: Tue, 25 Jul 2017 16:49:31 +0530
-Message-ID: <a4cdd6e0-83a2-7946-9ca3-986f9ff13315@codeaurora.org>
-References: <cover.1500968744.git.baolin.wang@linaro.org>
- <0bfc4d3534a7cc735ef213da8d280a4a79629c0d.1500968745.git.baolin.wang@linaro.org>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [RFC v1 1/6] power: supply: bq27xxx: Create single chip data
+ table
+Date: Tue, 25 Jul 2017 13:21:13 +0200
+Message-ID: <20170725112113.jplophe6enkgabnb@earth>
+References: <20170709021700.14354-1-liam@networkimprov.net>
+ <20170709021700.14354-2-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <0bfc4d3534a7cc735ef213da8d280a4a79629c0d.1500968745.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org
-Cc: jun.li-3arQi8VN3Tc@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, neilb-IBi9RG/b67k@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="rlq5cx4bbyshowmr"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:32824 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751103AbdGYLVW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 07:21:22 -0400
+Content-Disposition: inline
+In-Reply-To: <20170709021700.14354-2-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
+
+
+--rlq5cx4bbyshowmr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
+On Sat, Jul 08, 2017 at 07:16:55PM -0700, Liam Breck wrote:
+> From: Liam Breck <kernel@networkimprov.net>
+>=20
+> To support new features which require different data for each chip, we
+> unify the bq27xxx_regs and bq27xxx_battery_props tables into a single one.
+>=20
+> No functional changes to the driver.
 
-On 7/25/2017 1:30 PM, Baolin Wang wrote:
-> This patch introduces the usb charger support based on usb phy that
-> makes an enhancement to a power driver. The basic conception of the
-> usb charger is that, when one usb charger is added or removed by
-> reporting from the extcon device state change, the usb charger will
-> report to power user to set the current limitation.
+Looks good to me except for one thing.
+
+> [...]
+> +#define BQ27XXX_DATA(ref) {			\
+> +	.regs  =3D bq27##ref##_regs,		\
+> +	.props =3D bq27##ref##_props,		\
+> +	.props_size =3D ARRAY_SIZE(bq27##ref##_props) }
 >
-> Power user can register a notifiee on the usb phy by issuing
-> usb_register_notifier() to get notified by charger status changes
-> or charger current changes.
-
-Why can't we use power_supply framework for this?
-Power user can register usb power_supply and USB PHY driver
-can update charging current using - power_supply_set_property().
-
-
-
-> we can notify what current to be drawn to power user according to
-> different charger type, and now we have 2 methods to get charger type.
-> One is get charger type from extcon subsystem, which also means the
-> charger state changes. Another is we can get the charger type from
-> USB controller detecting or PMIC detecting, and the charger state
-> changes should be told by issuing usb_phy_set_charger_state().
+> [...]
 >
-> Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-> ---
->  drivers/usb/phy/phy.c   |  272 +++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/usb/phy.h |   49 +++++++++
+> +	[BQ27000]   =3D BQ27XXX_DATA(000),
+> +	[BQ27010]   =3D BQ27XXX_DATA(010),
+> +	[BQ2750X]   =3D BQ27XXX_DATA(50x),
+> +	[BQ2751X]   =3D BQ27XXX_DATA(51x),
+> +	[BQ27500]   =3D BQ27XXX_DATA(500),
+> +	[BQ27510G1] =3D BQ27XXX_DATA(510g1),
+> +	[BQ27510G2] =3D BQ27XXX_DATA(510g2),
+> +	[BQ27510G3] =3D BQ27XXX_DATA(510g3),
+> +	[BQ27520G1] =3D BQ27XXX_DATA(520g1),
+> +	[BQ27520G2] =3D BQ27XXX_DATA(520g2),
+> +	[BQ27520G3] =3D BQ27XXX_DATA(520g3),
+> +	[BQ27520G4] =3D BQ27XXX_DATA(520g4),
+> +	[BQ27530]   =3D BQ27XXX_DATA(530),
+> +	[BQ27541]   =3D BQ27XXX_DATA(541),
+> +	[BQ27545]   =3D BQ27XXX_DATA(545),
+> +	[BQ27421]   =3D BQ27XXX_DATA(421),
+>  };
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+I would prefer to use ##ref##_regs and ##ref##_props above
+and add the bq27 prefix here.
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- Sebastian
+
+--rlq5cx4bbyshowmr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAll3KakACgkQ2O7X88g7
++poc0xAAnQtdUCADsJVPuUtVkGhHuSmc3IuAgLGtG2DZQXOSXEDDscfjz56MBxf2
+/+cYxg3zc59TakcUbf3p9cd1yN5lot/946FzPp3NYEGpbH0yKL8gT/BNxM3AUCpp
+LctqVLn1R7uFZQLlmedC4CK8oJppPAgTJoKtdYfatVrJm77SNM4tdaStp2oKt/Tu
+mXpvdzIOHnSF+r1FnCnsOdyBVfClot+XvlQcRoJGb8UcfKia3sCjL8K4aqYrxuNm
+KE96GV1ey2f7CY9iqXkaHJw4jG6t10LRqV44N9KtJ+2E/OdjhD0UYeqyXnS3UmNj
+3oc4AX/WvRC0Voaae3Eu6ev1Ey7OsrW+10byPdv/Td3MTvhrVXu+R/hA/7Y3S/48
+w8qQXTGyaJcIv8kyp+6GmcgOSjCFcewNBYnisCaalSY4VLInXrW3+21vjXmqb+ym
+ig+y61o9vnDXWY9kjeCTpTjRdpMX8T88nVoZSijAC4imzpVFyAxnBoD1vnNChLAM
+IZRxzfHTp14PV0Yi5q8cpM9hQnZaY9EwV7WaSWdzWruUGVN6iKtcNb+mL8qos9pK
+pKfn38Tqk9xneK2+/YFOyCyomQLzppbwDlpPlD11XmHCQIVarBj/PuzINbbNWlZ3
+E9WUAMfbmHiYHCieawu1pGhkqUOdI58BNm8XmH2FG8nD6prltRU=
+=gr/o
+-----END PGP SIGNATURE-----
+
+--rlq5cx4bbyshowmr--
