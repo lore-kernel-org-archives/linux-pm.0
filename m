@@ -1,156 +1,154 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [RFC v1 5/6] power: supply: bq27xxx: Flag identical chip data
- when in debug mode
-Date: Tue, 25 Jul 2017 15:04:42 +0200
-Message-ID: <20170725130441.xejsh6yuubzqaclr@earth>
-References: <20170709021700.14354-1-liam@networkimprov.net>
- <20170709021700.14354-6-liam@networkimprov.net>
+Subject: Re: [PATCH v2 1/2] power: supply: move HDQ interface for bq27xxx
+ from w1 to power/supply
+Date: Tue, 25 Jul 2017 15:30:22 +0200
+Message-ID: <20170725133022.xjxqas7xy24v3pqa@earth>
+References: <20170719170407.14005-1-afd@ti.com>
+ <20170719170407.14005-2-afd@ti.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="6f3uu3vxzxgr3q6m"
+        protocol="application/pgp-signature"; boundary="7qudec6p5m337mub"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:33122 "EHLO
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:33169 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751799AbdGYNEq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 09:04:46 -0400
+        with ESMTP id S1750980AbdGYNa1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 09:30:27 -0400
 Content-Disposition: inline
-In-Reply-To: <20170709021700.14354-6-liam@networkimprov.net>
+In-Reply-To: <20170719170407.14005-2-afd@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
+To: "Andrew F. Davis" <afd@ti.com>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, Evgeniy Polyakov <zbr@ioremap.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
 
---6f3uu3vxzxgr3q6m
-Content-Type: text/plain; charset=us-ascii
+--7qudec6p5m337mub
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sat, Jul 08, 2017 at 07:16:59PM -0700, Liam Breck wrote:
-> From: Liam Breck <kernel@networkimprov.net>
+On Wed, Jul 19, 2017 at 12:04:06PM -0500, Andrew F. Davis wrote:
+> The HDQ interface driver should be in this folder just like the I2C
+> interface driver. Move this driver out of drivers/w1/slave and into
+> drivers/power/supply.
 >=20
-> The driver has 13 unique register maps, several of which are shared
-> by multiple chips. When adding support for a new chip, it's easy to
-> add a duplicate map by mistake.
+> Signed-off-by: Andrew F. Davis <afd@ti.com>
+> Acked-by: Pali Roh=E1r <pali.rohar@gmail.com>
+> Acked-by: Sebastian Reichel <sre@kernel.org>
 
-Which is not that bad. Sure, some bytes wasted, but your code also
-wastes some bytes. This is something, that should normally tested
-@ compile time using static checkers. Independently the patch has
-some issues:
+Thanks, queued to power-supply's for-next branch. I prepared a
+immutable branch/tag for the w1 tree and will send a pull request
+for that in a minute.
 
-> In debug mode we now scan bq27xxx_chip_data[n].regs/props/dm_regs for
-> duplicates.
+-- Sebastian
+
+>  drivers/power/supply/Kconfig                                     | 9 +++=
+++++++
+>  drivers/power/supply/Makefile                                    | 1 +
+>  .../slaves/w1_bq27000.c =3D> power/supply/bq27xxx_battery_hdq.c}   | 2 --
+>  drivers/w1/slaves/Kconfig                                        | 6 ---=
+---
+>  drivers/w1/slaves/Makefile                                       | 1 -
+>  5 files changed, 10 insertions(+), 9 deletions(-)
+>  rename drivers/{w1/slaves/w1_bq27000.c =3D> power/supply/bq27xxx_battery=
+_hdq.c} (98%)
 >=20
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> ---
->  drivers/power/supply/bq27xxx_battery.c | 36 ++++++++++++++++++++++++++++=
-+++++-
->  1 file changed, 35 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/suppl=
-y/bq27xxx_battery.c
-> index 5d3893a9..54755c88 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -883,7 +883,7 @@ static struct bq27xxx_dm_reg bq27621_dm_regs[] =3D {
->  	.props =3D bq27##ref##_props,		\
->  	.props_size =3D ARRAY_SIZE(bq27##ref##_props) }
+> diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+> index 969f5005669c..af6397224a82 100644
+> --- a/drivers/power/supply/Kconfig
+> +++ b/drivers/power/supply/Kconfig
+> @@ -198,6 +198,15 @@ config BATTERY_BQ27XXX_I2C
+>  	  Say Y here to enable support for batteries with BQ27xxx chips
+>  	  connected over an I2C bus.
 > =20
-> -static struct {
-> +static struct bq27xxx_chip_datum {
->  	u32 opts;
->  	int acts_like; //todo drop this when opts fully implemented
->  	u32 unseal_key;
-> @@ -918,6 +918,38 @@ static struct {
->  	[BQ27621]   =3D BQ27XXX_DATA(621,   BQ27421, 0x80008000, BQ27XXX_O_CFGU=
-P | BQ27XXX_O_RAM),
->  };
+> +config BATTERY_BQ27XXX_HDQ
+> +	tristate "BQ27xxx HDQ support"
+> +	depends on BATTERY_BQ27XXX
+> +	depends on W1
+> +	default y
+> +	help
+> +	  Say Y here to enable support for batteries with BQ27xxx chips
+> +	  connected over an HDQ bus.
+> +
+>  config BATTERY_BQ27XXX_DT_UPDATES_NVM
+>  	bool "BQ27xxx support for update of NVM/flash data memory"
+>  	depends on BATTERY_BQ27XXX_I2C
+> diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
+> index a41f40957847..946a5e6be860 100644
+> --- a/drivers/power/supply/Makefile
+> +++ b/drivers/power/supply/Makefile
+> @@ -38,6 +38,7 @@ obj-$(CONFIG_BATTERY_SBS)	+=3D sbs-battery.o
+>  obj-$(CONFIG_CHARGER_SBS)	+=3D sbs-charger.o
+>  obj-$(CONFIG_BATTERY_BQ27XXX)	+=3D bq27xxx_battery.o
+>  obj-$(CONFIG_BATTERY_BQ27XXX_I2C) +=3D bq27xxx_battery_i2c.o
+> +obj-$(CONFIG_BATTERY_BQ27XXX_HDQ) +=3D bq27xxx_battery_hdq.o
+>  obj-$(CONFIG_BATTERY_DA9030)	+=3D da9030_battery.o
+>  obj-$(CONFIG_BATTERY_DA9052)	+=3D da9052-battery.o
+>  obj-$(CONFIG_CHARGER_DA9150)	+=3D da9150-charger.o
+> diff --git a/drivers/w1/slaves/w1_bq27000.c b/drivers/power/supply/bq27xx=
+x_battery_hdq.c
+> similarity index 98%
+> rename from drivers/w1/slaves/w1_bq27000.c
+> rename to drivers/power/supply/bq27xxx_battery_hdq.c
+> index 8046ac45381a..f4df67eb9d2c 100644
+> --- a/drivers/w1/slaves/w1_bq27000.c
+> +++ b/drivers/power/supply/bq27xxx_battery_hdq.c
+> @@ -1,6 +1,4 @@
+>  /*
+> - * drivers/w1/slaves/w1_bq27000.c
+> - *
+>   * Copyright (C) 2007 Texas Instruments, Inc.
+>   *
+>   * This file is licensed under the terms of the GNU General Public Licen=
+se
+> diff --git a/drivers/w1/slaves/Kconfig b/drivers/w1/slaves/Kconfig
+> index fb68465908f2..dc4437683956 100644
+> --- a/drivers/w1/slaves/Kconfig
+> +++ b/drivers/w1/slaves/Kconfig
+> @@ -140,10 +140,4 @@ config W1_SLAVE_DS28E04
 > =20
-> +static void __maybe_unused bq27xxx_battery_dbg_dupes(struct bq27xxx_devi=
-ce_info *di)
-
-If there are multiple bq27xxx batteries installed in the system the
-code is executed multiple times, so let's modify this a bit:
-
-> +{
-> +	const size_t max =3D ARRAY_SIZE(bq27xxx_chip_data);
-> +	const char * const msg =3D "bq27xxx_chip_data[%d].%s & [%d].%s are iden=
-tical\n";
-> +	struct bq27xxx_chip_datum *a, *b;
-> +	int i, j;
-
-static checked =3D false;
-
-if (checked)
-    return;
-
-> +	for (i =3D 1; i < max-1; i++) {
-> +		a =3D bq27xxx_chip_data + i;
-> +
-> +		for (j =3D i+1; j < max; j++) {
-> +			b =3D bq27xxx_chip_data + j;
-> +
-> +			if (a->regs !=3D b->regs &&
-> +			    !memcmp(a->regs, b->regs, sizeof(bq27000_regs)))
-> +				dev_warn(di->dev, msg, i, "regs", j, "regs");
-> +
-> +			if (a->props !=3D b->props &&
-> +			    a->props_size =3D=3D b->props_size &&
-> +			    !memcmp(a->props, b->props, a->props_size))
-> +				dev_warn(di->dev, msg, i, "props", j, "props");
-> +
-> +			if (a->dm_regs !=3D b->dm_regs &&
-> +			    !memcmp(a->dm_regs, b->dm_regs, sizeof(bq27500_dm_regs)))
-> +				dev_warn(di->dev, msg, i, "dm_regs", j, "dm_regs");
-> +		}
-> +	}
-
-checked =3D true;
-
-> +}
-> +#ifndef DEBUG
-> +#define bq27xxx_battery_dbg_dupes(di)
-> +#endif
-> +
->  static DEFINE_MUTEX(bq27xxx_list_lock);
->  static LIST_HEAD(bq27xxx_battery_devices);
+>  	  If you are unsure, say N.
 > =20
-> @@ -1989,6 +2021,8 @@ int bq27xxx_battery_setup(struct bq27xxx_device_inf=
-o *di)
->  		.drv_data =3D di,
->  	};
-> =20
-> +	bq27xxx_battery_dbg_dupes(di);
-
-Add #ifdef DEBUG here and drop the above.
-
->  	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
->  	mutex_init(&di->lock);
-> =20
+> -config W1_SLAVE_BQ27000
+> -	tristate "BQ27000 slave support"
+> -	help
+> -	  Say Y here if you want to use a hdq
+> -	  bq27000 slave support.
+> -
+>  endmenu
+> diff --git a/drivers/w1/slaves/Makefile b/drivers/w1/slaves/Makefile
+> index 54c63e420302..e59441a5e157 100644
+> --- a/drivers/w1/slaves/Makefile
+> +++ b/drivers/w1/slaves/Makefile
+> @@ -15,5 +15,4 @@ obj-$(CONFIG_W1_SLAVE_DS2438)	+=3D w1_ds2438.o
+>  obj-$(CONFIG_W1_SLAVE_DS2760)	+=3D w1_ds2760.o
+>  obj-$(CONFIG_W1_SLAVE_DS2780)	+=3D w1_ds2780.o
+>  obj-$(CONFIG_W1_SLAVE_DS2781)	+=3D w1_ds2781.o
+> -obj-$(CONFIG_W1_SLAVE_BQ27000)	+=3D w1_bq27000.o
+>  obj-$(CONFIG_W1_SLAVE_DS28E04)	+=3D w1_ds28e04.o
 > --=20
-> 2.13.1
+> 2.13.0
 >=20
 
---6f3uu3vxzxgr3q6m
+--7qudec6p5m337mub
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAll3QeYACgkQ2O7X88g7
-+pppqxAAl71MNVOVpVYxe3hX+uFexzLkTaB9osu0ffAN/VdyXIoWDqqhlnnwA9+i
-wF1SZopnNhDGXdyQoyfFKvq9gOgWFwD5BnqR3/BlV2SNEbs5+Be6Tu3j63WHinD/
-7NhcjB5uebDlyic/JrGei8A8itlHEVxESLqPPjo3Wc8cLwcGy4O1DSsoL2TaHBN5
-euNQPU8TB+4tozkLRxZsgxhlkwnNJFdmYwc1j6HYCv9O186JOyvMysFie092d1Tl
-H+vSjjL1sztSQBI82VGn0HirUBgmGVfmvhsCGLoP2nSqQl78nWU2KY7PkFs9xVgO
-NFNVCSBEZYmyyDLcYveFaQeunIJXclmDlbsJSIVG3BfU0R+/mp4CHO1dUwD/jyJE
-qj8qqyN9kDUJudUPbWU3H9J2KGCaYT+Y9yWC3Bdc/A+kBi703CGI5+nsqHocj7K/
-sBtyAudZWosL+8Mqtn++EiK/Fd6cdxjBbfnbaM8WhEv63nzTytyMOkP7myUsdJgR
-h0OHDiARGj9RRuQ0WGcPdRFQs9+MhGw7Pr8w713xWXR/ei5lUtjcT1CRgfZRxa8h
-f+GUaeK+TKFf7i0TTIxpi9INPvdaSSiS/3JyiOggr9lh6OWitRuq08hTuCfned8Z
-U+sBsSZtA0V1jhRyaV9mT3OdXetWVEmDsjz0n6Ar/0tHiLQTfr0=
-=04uX
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAll3R+4ACgkQ2O7X88g7
++poOvw//RUMYq1AZXzkYpxEuUCpUf7u1xpFeSucUiFdjPZX2GMvE1/Wd/6zQ2mOr
+Y1dIfHftzusFwq1tn1T0JVChM4RVUfP76GMWaHZWgoN2FEfZPSk4BvOrjk3hV07d
+wJ3IblvlU7157uVArsQI6OQAaYAOvKk8mwLavmBvjwfJXYlTSfwtGf1Cz0/B13q/
+ysobl98FtWGDZ4EZrHURKaQLrCLKXy/p7DOs7jO+4uVb6g+eB/kXStJlisbp6ZS1
+nZdiKhfBKJH11FP3FwqXs/bYNuqNCr761WHe9lR11IOfRJz2K2yj3gsGbRsIg637
+m08YQKW8NawbeQOArE841T/D11oMf8nbdFExuNjBTNVwkCaxS0AP/z4vhm3BFJ+A
+i4+khzhdxOngkxVKR/8BbBSjiArEY+Ix8io3ex4IZSnmIlMoFcjjJSmvbLrF/aMr
+VmCjvqgarE9TkVj3qOGZgTAVkjnyj56R2+9jfJdIZb6tHzeIXPw83yLLyI7mv39y
+NsoA3Y+Y0ICMWaJTsLdU2r1BKuZib6kA7/FLbfH42D2/UM1Rjx/k/og3bcrFQRcM
+Q8KpGA0WVdm7iOOgLF4vXxNOvuSkbJRyC93V+2S1MJnj39ZHQmFBvFEgvvYhiM6o
+bhyojouMj6HniqyK7v7lXvxv8Im7lp+83vE5afcgwqc5GvkY9cA=
+=ciNx
 -----END PGP SIGNATURE-----
 
---6f3uu3vxzxgr3q6m--
+--7qudec6p5m337mub--
