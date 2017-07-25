@@ -1,99 +1,57 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [RFC v1 3/6] power: supply: bq27xxx: Enable data memory update
- for certain chips
-Date: Tue, 25 Jul 2017 13:17:01 +0200
-Message-ID: <20170725111701.3hqgnzqfuaocfu2w@earth>
-References: <20170709021700.14354-1-liam@networkimprov.net>
- <201707091107.44653@pali>
- <CAKvHMgQ0D6DRz8Ckk4st+5uYZybXfAQtGq=wZ3Bgz4RuaNZV_g@mail.gmail.com>
- <201707091712.34705@pali>
+From: Manu Gautam <mgautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: Re: [PATCH v3 2/3] usb: phy: Add USB charger support
+Date: Tue, 25 Jul 2017 16:49:31 +0530
+Message-ID: <a4cdd6e0-83a2-7946-9ca3-986f9ff13315@codeaurora.org>
+References: <cover.1500968744.git.baolin.wang@linaro.org>
+ <0bfc4d3534a7cc735ef213da8d280a4a79629c0d.1500968745.git.baolin.wang@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="mqxhgjvvyc4cxedu"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:32817 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750839AbdGYLRJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 07:17:09 -0400
-Content-Disposition: inline
-In-Reply-To: <201707091712.34705@pali>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <0bfc4d3534a7cc735ef213da8d280a4a79629c0d.1500968745.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org
+Cc: jun.li-3arQi8VN3Tc@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, neilb-IBi9RG/b67k@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>
-Cc: Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
-
-
---mqxhgjvvyc4cxedu
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sun, Jul 09, 2017 at 05:12:34PM +0200, Pali Roh=E1r wrote:
-> On Sunday 09 July 2017 16:13:59 Liam Breck wrote:
-> > On Sun, Jul 9, 2017 at 2:07 AM, Pali Roh=E1r <pali.rohar@gmail.com>
-> > wrote:
-> > > On Sunday 09 July 2017 04:16:57 Liam Breck wrote:
-> > >> From: Liam Breck <kernel@networkimprov.net>
-> > >>=20
-> > >> Support data memory update on BQ27500, 545, 425, 421, 441, 621.
-> > >> With exception of BQ27425, these are only enabled #ifdef DEBUG,
-> > >> as they are not tested.
-> > >>=20
-> > >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> > >> ---
-> > >>=20
-> > >>  drivers/power/supply/bq27xxx_battery.c | 164
-> > >=20
-> > > Why under #ifdef DEBUG? Seems that this is misusing DEBUG which is
-> > > used for other things.
-> >=20
-> > This is a temporary measure, as those definitions are not tested on
-> > their chips. Nothing new happens in debug mode unless
-> > monitored-battery is set in driver's DT config, and it's either a
-> > ram-only chip or the dt_updates_nvm config option is set.
-> >=20
-> > If DEBUG isn't ok in this case, alternative suggestions?
-> >=20
-> > Thanks for your input!
->=20
-> DEBUG can be enabled by other kernel option and should provide just more=
-=20
-> debugging functionality. But you are adding non-debug functionality=20
-> under #ifdef DEBUG, which basically is "new experimental untested=20
-> feature".
->=20
-> Better way for "experimental feature" would be introduction of other=20
-> kconfig switch or probably runtime module option...
 
-As far as I understand it, there is a risk to brick hardware
-when internal data is modified. So if these chips are untested,
-let's just leave them out.
+On 7/25/2017 1:30 PM, Baolin Wang wrote:
+> This patch introduces the usb charger support based on usb phy that
+> makes an enhancement to a power driver. The basic conception of the
+> usb charger is that, when one usb charger is added or removed by
+> reporting from the extcon device state change, the usb charger will
+> report to power user to set the current limitation.
+>
+> Power user can register a notifiee on the usb phy by issuing
+> usb_register_notifier() to get notified by charger status changes
+> or charger current changes.
 
-Testing should be done by a developer anyways and then he can
-just add the required values.
+Why can't we use power_supply framework for this?
+Power user can register usb power_supply and USB PHY driver
+can update charging current using - power_supply_set_property().
 
--- Sebastian
 
---mqxhgjvvyc4cxedu
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
+> we can notify what current to be drawn to power user according to
+> different charger type, and now we have 2 methods to get charger type.
+> One is get charger type from extcon subsystem, which also means the
+> charger state changes. Another is we can get the charger type from
+> USB controller detecting or PMIC detecting, and the charger state
+> changes should be told by issuing usb_phy_set_charger_state().
+>
+> Signed-off-by: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  drivers/usb/phy/phy.c   |  272 +++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/usb/phy.h |   49 +++++++++
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAll3KKoACgkQ2O7X88g7
-+pq3Ew/+JQfdZn8eHx7TSTP+jbvNvBYsDC9CzDlf3NEjhze+E45wI55UxsW5VJEY
-tyIfzFdcd7/xWfdYF5V5vjT1EyBbZ7jV4T+pkaEMKKijR9H2AGQu6OLwt05svbt8
-Q9Pxm2nYzsZWp959VQ3dUz6Qf8eaqlW62SYbhpPZG8CLWC0j4TusBTZZBmujAuZN
-GkY/LfMwFOl6mfEpOfLhABwZZeyUP3H+I1I4gY5yIfqGs4dej1YdurZ/3aOzRZOi
-M9kco8Ree7KRItaAAlW+XZqaOd2iAwt8DcFoWvbAXvt4gRH6un4cPHApVB9ARTfg
-f/R8Fo498V4LXv4J0dcTycvrTnrQcjHnTdtz5Xe2q2D+z6onu9f3FnHtxrvFXNz8
-gLTuKYkbn9+lWTfvL5xlBWcwDAYWjpkfkzdzVgtn5p+hkzRS1OlWlEXxL4jr9i2n
-r/dTLQLxA+rOEZkJVJCDCcifJhfQHZgc4pmfFagG1a/1ZDkn9e+Q7zusExLHgSG4
-7EzzmW1WaWvNo4sp0rdUzXHJSsknIXFd8KzaFD5LAuKYQ4vZ4Yq36/kwmAEK0aPG
-x3vX5/+qCm8j0JV2Jk6Raoc9Jt7AbdF5p9kMsddvjk8eedW0Em6oMbhadngdEmKi
-+JL0JY0xPwRO1y4VKur8oPTHDR49h16Jn4V1LWV5GrxaLlXlMHQ=
-=1A6w
------END PGP SIGNATURE-----
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
---mqxhgjvvyc4cxedu--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
