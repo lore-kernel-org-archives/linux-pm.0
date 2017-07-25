@@ -1,189 +1,138 @@
-From: Luca Abeni <luca.abeni@santannapisa.it>
-Subject: Re: [RFC PATCH v1 8/8] sched/deadline: make bandwidth enforcement
- scale-invariant
-Date: Tue, 25 Jul 2017 09:03:08 +0200
-Message-ID: <20170725090308.2cca53c0@luca>
-References: <20170705085905.6558-1-juri.lelli@arm.com>
-        <20170705085905.6558-9-juri.lelli@arm.com>
-        <20170719072143.lploljodns3kfucf@hirez.programming.kicks-ass.net>
-        <20170719092029.oakmetq3u52e4rfw@e106622-lin>
-        <20170719110028.uggud56bg2jh45ge@hirez.programming.kicks-ass.net>
-        <20170719111624.fwcydcklmfeesfgb@e106622-lin>
-        <20170724164349.clzsajrwxtobyqkm@hirez.programming.kicks-ass.net>
+From: Huaisheng HS1 Ye <yehs1@lenovo.com>
+Subject: RE: [PATCH] cpufreq: intel_pstate: Fix cpuinfo_cur_freq after
+ performance governor changes
+Date: Tue, 25 Jul 2017 07:03:36 +0000
+Message-ID: <KL1PR0302MB2502B85BBFF7B8BB79BE40D692B80@KL1PR0302MB2502.apcprd03.prod.outlook.com>
+References: <1500875013-123321-1-git-send-email-yehs1@lenovo.com>
+         <7185077.O26hx51RqR@aspire.rjw.lan>
+         <KL1PR0302MB2502C43359F4B6A738D509B992BB0@KL1PR0302MB2502.apcprd03.prod.outlook.com>
+         <13292124.r3mFCOTPK8@aspire.rjw.lan>
+         <KL1PR0302MB2502DDDCC1D0F4FCC2916B4392B80@KL1PR0302MB2502.apcprd03.prod.outlook.com>
+ <1500951465.4920.2.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170724164349.clzsajrwxtobyqkm@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Juri Lelli <juri.lelli@arm.com>, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail1.bemta8.messagelabs.com ([216.82.243.199]:40475 "EHLO
+        mail1.bemta8.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750781AbdGYHEI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 03:04:08 -0400
+In-Reply-To: <1500951465.4920.2.camel@linux.intel.com>
+Content-Language: zh-CN
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, NingTing Cheng <chengnt@lenovo.com>
 
-Hi Peter,
-
-On Mon, 24 Jul 2017 18:43:49 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Wed, Jul 19, 2017 at 12:16:24PM +0100, Juri Lelli wrote:
-> > On 19/07/17 13:00, Peter Zijlstra wrote:  
-> > > On Wed, Jul 19, 2017 at 10:20:29AM +0100, Juri Lelli wrote:  
-> > > > On 19/07/17 09:21, Peter Zijlstra wrote:  
-> > > > > On Wed, Jul 05, 2017 at 09:59:05AM +0100, Juri Lelli wrote:  
-> > > > > > @@ -1156,9 +1157,26 @@ static void update_curr_dl(struct rq *rq)
-> > > > > >  	if (unlikely(dl_entity_is_special(dl_se)))
-> > > > > >  		return;
-> > > > > >  
-> > > > > > -	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM))
-> > > > > > -		delta_exec = grub_reclaim(delta_exec, rq, &curr->dl);
-> > > > > > -	dl_se->runtime -= delta_exec;
-> > > > > > +	/*
-> > > > > > +	 * For tasks that participate in GRUB, we implement GRUB-PA: the
-> > > > > > +	 * spare reclaimed bandwidth is used to clock down frequency.
-> > > > > > +	 *
-> > > > > > +	 * For the others, we still need to scale reservation parameters
-> > > > > > +	 * according to current frequency and CPU maximum capacity.
-> > > > > > +	 */
-> > > > > > +	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM)) {
-> > > > > > +		scaled_delta_exec = grub_reclaim(delta_exec,
-> > > > > > +						 rq,
-> > > > > > +						 &curr->dl);
-> > > > > > +	} else {
-> > > > > > +		unsigned long scale_freq = arch_scale_freq_capacity(cpu);
-> > > > > > +		unsigned long scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
-> > > > > > +
-> > > > > > +		scaled_delta_exec = cap_scale(delta_exec, scale_freq);
-> > > > > > +		scaled_delta_exec = cap_scale(scaled_delta_exec, scale_cpu);
-> > > > > > +	}
-> > > > > > +
-> > > > > > +	dl_se->runtime -= scaled_delta_exec;
-> > > > > >    
-> > > > > 
-> > > > > This I don't get...   
-> > > > 
-> > > > 
-> > > > Considering that we use GRUB's active utilization to drive clock
-> > > > frequency selection, rationale is that GRUB tasks don't need any special
-> > > > scaling, as their delta_exec is already scaled according to GRUB rules.
-> > > > OTOH, normal tasks need to have their runtime (delta_exec) explicitly
-> > > > scaled considering current frequency (and CPU max capacity), otherwise
-> > > > they are going to receive less runtime than granted at AC, when
-> > > > frequency is reduced.  
-> > > 
-> > > I don't think that quite works out. Given that the frequency selection
-> > > will never quite end up at exactly the same fraction (if the hardware
-> > > listens to your requests at all).
-> > >   
-> > 
-> > It's an approximation yes (how big it depends on the granularity of the
-> > available frequencies). But, for the !GRUB tasks it should be OK, as we
-> > always select a frequency (among the available ones) bigger than the
-> > current active utilization.
-> > 
-> > Also, for platforms/archs that don't redefine arch_scale_* this is not
-> > used. In case they are defined instead the assumption is that either hw
-> > listens to requests or scaling factors can be derived in some other ways
-> > (avgs?).
-> >   
-> > > Also, by not scaling the GRUB stuff, don't you run the risk of
-> > > attempting to hand out more idle time than there actually is?  
-> > 
-> > The way I understand it is that for GRUB tasks we always scale
-> > considering the "correct" factor. Then frequency could be higher, but
-> > this spare idle time will be reclaimed by other GRUB tasks.  
-> 
-> I'm still confused..
-> 
-> So GRUB does:
-> 
-> 	dq = Uact -dt
-> 
-> right?
-
-Right. This is what the original (single processor) GRUB did. And this
-was used by the "GRUB-PA" algorithm:
-https://www.researchgate.net/profile/Giuseppe_Lipari/publication/220800940_Using_resource_reservation_techniques_for_power-aware_scheduling/links/09e41513639b2703fc000000.pdf
-
-(basically, GRUB-PA uses GRUB for reclaiming, and scales the CPU
-frequency based on Uact)
-
-
-> Now, you do DVFS using that same Uact. If we lower the clock, we need
-> more time, so would we then not end up with something like:
-> 
-> 	dq = 1/Uact -dt
-
-Well, in the GRUB-PA algorithm GRUB reclaiming is the mechanism used to
-give more runtime to the task... Since Uact is < 1, doing
-	dq = - Uact * dt
-means that we decrease the current runtime by a smaller amount of time.
-And so we end up giving more runtime to the task: instead of giving 
-dl_runtime every dl_period, we give "dl_runtime / Uact" every
-dl_period... And since the CPU is slower (by a ratio Uact), this is
-equivalent to giving dl_runtime at the maximum CPU speed / frequency
-(at least, in theory :).
-
-
-> After all; our budget assignment is such that we're able to complete
-> our work at max freq. Therefore, when we lower the frequency, we'll have
-> to increase budget pro rata, otherwise we'll not complete our work and
-> badness happens.
-
-Right. But instead of increasing dl_runtime, GRUB-PA decreases the
-amount of time accounted to the current runtime.
-
-
-> Say we have a 1 Ghz part and Uact=0.5 we'd select 500 Mhz and need
-> double the time to complete.
-> 
-> Now, if we fold these two together, you'd get:
-> 
-> 	dq = Uact/Uact -dt = -dt
-
-Not sure why " / Uact"... According to the GRUB-PA algorithm, you just
-do
-	dq = - Uact * dt = -0.5dt
-and you end up giving the CPU to the task for 2 * dl_runtime every
-dl_period (as expected)
-
-> Because, after all, if we lowered the clock to consume all idle time,
-> there's no further idle time to reclaim.
-
-The idea of GRUB-PA is that you do not change dl_runtime... So, the
-task is still "nominally reserved" dl_runtime every dl_period (in
-this example, 1/2*dl_period every dl_period)... It is the reclaiming
-mechanism that allows the task to execute for dl_runtime/Uact every
-dl_period (in this example, for dl_period every dl_period, so it
-reclaims 1/2dl_period every dl_period).
-
-
-> Now, of course, our DVFS assignment isn't as precise nor as
-> deterministic as this, so we'll get a slightly different ratio, lets
-> call that Udvfs.
-
-This is where GRUB-PA starts to have issues... :)
-The implicit assumption is (I think) that is the DVFS mechanism cannot
-assign exactly the requested frequency then it makes a "conservative"
-assignment (assigning a frequency higher than the requested one).
-
-
-> So would then not GRUB change into something like:
-> 
-> 	dq = Uact/Udvfs -dt
-> 
-> Allowing it to only reclaim that idle time that exists because our DVFS
-> level is strictly higher than required?
-
-I think GRUB should still do "dq = -Uact * dt", trying to reclaim all
-the idle CPU time (up to the configured limit, of course).
-
-
-
-				Luca
-
-> 
-> This way, on our 1 GHz part, with Uact=.5 but Udvfs=.6, we'll allow it
-> to reclaim just the additional 100Mhz of idle time.
-> 
-> 
-> Or am I completely off the rails now?
+SGkgU3Jpbml2YXMsDQpZb3VyIGlkZWEgaXMgZ3JlYXQsIGJ1dCB5b3VyIHBhdGNoIGF0IGNwdWZy
+ZXEuYyB3aWxsIGZvcmNlIGFsbCBwbGF0Zm9ybXMgdG8gdXNlIHNjYWxpbmdfY3VyX2ZyZXEgYXMg
+Zmlyc3QgY2hvaWNlIHdoZW4gdXNlcnNwYWNlIHdhbnRzIHRvIGFjY2VzcyBjcHVpbmZvX2N1cl9m
+cmVxLiBJdCBpcyBvayBmb3IgaW50ZWwgeDg2IHBsYXRmcm9tIGJ1dCBoYXJkIHRvIHNheSB3aXRo
+IG90aGVyIHBsYXRmb3Jtcy4NCkkgbW9kaWZpZWQgaXQgbGlrZSB0aGF0LCBpdCBsb29rcyBtb3Jl
+IHJlYXNvbmFibGUuIEhvdyBhYm91dCB0aGF0Pw0KDQpIaSBSYWZhZWwsDQpEZWxldGluZyAiZ2V0
+IiBmdW5jdGlvbiBwb2ludGVyIHdpdGhpbiBpbnRlbF9wc3RhdGUgd291bGQgbGVhZCB0byBzeXNm
+cyBpbnRlcmZhY2UgY3B1aW5mb19jdXJfZnJlcSBkaXNhcHBlYXJpbmcsIGJlY2F1c2Ugb2YgY3B1
+ZnJlcV9hZGRfZGV2X2ludGVyZmFjZSB3aWxsIGNoZWNrICJjcHVmcmVxX2RyaXZlci0+Z2V0IiBm
+b3IgaXQuDQpQZXJoYXBzIGp1c3QgcmV0dXJuIDAgd2l0aCBpbiBpbnRlbF9wc3RhdGVfZ2V0IHdv
+dWxkIGJlIGEgd29ya2Fyb3VuZCBmb3IgdGhpcyBpc3N1ZSwgaG93IGFib3V0IGl0Pw0KDQpJIGhh
+dmUgdGVzdGVkIHRoaXMgcGF0Y2ggYmFzZWQgb24gUHVybGV5IHBsYXRmb3JtLCBib3RoIEhhcmR3
+YXJlIGFuZCBTb2Z0d2FyZSBQLXN0YXRlcyB3b3JrcyBjb3JyZWN0LCB3ZSBjb3VsZCBnZXQgYWNj
+dXJhdGUgYW5kIHNhbWUgZnJlcXVlbmN5IGZyb20gY3B1aW5mb19jdXJfZnJlcSBhbmQgc2NhbGlu
+Z19jdXJfZnJlcS4NCg0KIGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgICAgICB8IDQgKysrKw0K
+IGRyaXZlcnMvY3B1ZnJlcS9pbnRlbF9wc3RhdGUuYyB8IDggKysrKystLS0NCiAyIGZpbGVzIGNo
+YW5nZWQsIDkgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkNCg0KZGlmZiAtLWdpdCBhL2Ry
+aXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jDQppbmRl
+eCA5YmY5N2EzLi45MjJmOWQ5IDEwMDY0NA0KLS0tIGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEu
+Yw0KKysrIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYw0KQEAgLTY5NCw2ICs2OTQsMTAgQEAg
+c3RhdGljIHNzaXplX3Qgc2hvd19jcHVpbmZvX2N1cl9mcmVxKHN0cnVjdCBjcHVmcmVxX3BvbGlj
+eSAqcG9saWN5LA0KIAlpZiAoY3VyX2ZyZXEpDQogCQlyZXR1cm4gc3ByaW50ZihidWYsICIldVxu
+IiwgY3VyX2ZyZXEpOw0KIA0KKwljdXJfZnJlcSA9IGFyY2hfZnJlcV9nZXRfb25fY3B1KHBvbGlj
+eS0+Y3B1KTsNCisJaWYgKGN1cl9mcmVxKQ0KKwkJcmV0dXJuIHNwcmludGYoYnVmLCAiJXVcbiIs
+IGN1cl9mcmVxKTsNCisNCiAJcmV0dXJuIHNwcmludGYoYnVmLCAiPHVua25vd24+XG4iKTsNCiB9
+DQogDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jIGIvZHJpdmVy
+cy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jDQppbmRleCA2Y2Q1MDM1Li4zM2U2YzEwIDEwMDY0NA0K
+LS0tIGEvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jDQorKysgYi9kcml2ZXJzL2NwdWZy
+ZXEvaW50ZWxfcHN0YXRlLmMNCkBAIC0xOTI0LDkgKzE5MjQsMTEgQEAgc3RhdGljIGludCBpbnRl
+bF9wc3RhdGVfaW5pdF9jcHUodW5zaWduZWQgaW50IGNwdW51bSkNCiANCiBzdGF0aWMgdW5zaWdu
+ZWQgaW50IGludGVsX3BzdGF0ZV9nZXQodW5zaWduZWQgaW50IGNwdV9udW0pDQogew0KLQlzdHJ1
+Y3QgY3B1ZGF0YSAqY3B1ID0gYWxsX2NwdV9kYXRhW2NwdV9udW1dOw0KLQ0KLQlyZXR1cm4gY3B1
+ID8gZ2V0X2F2Z19mcmVxdWVuY3koY3B1KSA6IDA7DQorCS8qDQorCSAqIFVzZSBmcmVxdWVuY3kg
+ZnJvbSBzY2FsaW5nX2N1cl9mcmVxLCByZXNlcnZlIHRoaXMgZnVuY3Rpb24NCisJICogZm9yIGV4
+aXN0aW5nIG9mIHN5c2ZzIGNwdWluZm9fY3VyX2ZyZXEuDQorCSAqLw0KKwlyZXR1cm4gMDsNCiB9
+DQogDQogc3RhdGljIHZvaWQgaW50ZWxfcHN0YXRlX3NldF91cGRhdGVfdXRpbF9ob29rKHVuc2ln
+bmVkIGludCBjcHVfbnVtKQ0KDQoNCj4gT24gVHVlLCAyMDE3LTA3LTI1IGF0IDAxOjQ2ICswMDAw
+LCBIdWFpc2hlbmcgSFMxIFllIHdyb3RlOg0KPiA+IEhpIFJhZmFlbCwNCj4gPg0KPiA+IElmIHlv
+dSBkZWxldGUgImdldCIgZnVuY3Rpb24gaW1wbGVtZW50IHdpdGhpbiBpbnRlbF9wc3RhdGUsIHRo
+ZSBzeXNmcw0KPiA+IGludGVyZmFjZSBjcHVpbmZvX2N1cl9mcmVxIHdpbGwgZGlzcGxheSA8dW5r
+bm93bj4gYWxsIHRoZSB0aW1lLg0KPiBjcHVpbmZvX2N1cl9mcmVxIGJ5IGRlZmluaXRpb24gc2hv
+dWxkIHNob3cgYWN0dWFsIGZyZXF1ZW5jeSBIVyBmcmVxdWVuY3kuDQo+IFVubGVzcyBJIG1pc3Nl
+ZCBzb21ldGhpbmcuIFNvIExlbiBCcm93bidzIHBhdGNoIHNob3VsZCBhbHNvIHRha2UgY2FyZSBv
+ZiB0aGlzDQo+IHRvIGdldCBmcm9tIGFyY2ggc3BlY2lmaWMgZnVuY3Rpb24gaXMgYXZhaWxhYmxl
+Lg0KPiBTbyBpbiBhZGRpdGlvbiB0byBSYWZhZWwncyBjaGFuZ2UsIHdoYXQgYWJvdXQgdGhpcz8N
+Cj4gDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYyBiL2RyaXZl
+cnMvY3B1ZnJlcS9jcHVmcmVxLmMgaW5kZXgNCj4gOWJmOTdhMy4uMjllYzY4NyAxMDA2NDQNCj4g
+LS0tIGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYw0KPiArKysgYi9kcml2ZXJzL2NwdWZyZXEv
+Y3B1ZnJlcS5jDQo+IEBAIC02ODksOCArNjg5LDEzIEBAIHN0b3JlX29uZShzY2FsaW5nX21heF9m
+cmVxLCBtYXgpOw0KPiDCoHN0YXRpYyBzc2l6ZV90IHNob3dfY3B1aW5mb19jdXJfZnJlcShzdHJ1
+Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwNCj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBjaGFy
+ICpidWYpDQo+IMKgew0KPiAtwqDCoMKgwqDCoMKgwqB1bnNpZ25lZCBpbnQgY3VyX2ZyZXEgPSBf
+X2NwdWZyZXFfZ2V0KHBvbGljeSk7DQo+ICvCoMKgwqDCoMKgwqDCoHVuc2lnbmVkIGludCBjdXJf
+ZnJlcTsNCj4gDQo+ICvCoMKgwqDCoMKgwqDCoGN1cl9mcmVxID0gYXJjaF9mcmVxX2dldF9vbl9j
+cHUocG9saWN5LT5jcHUpOw0KPiArwqDCoMKgwqDCoMKgwqBpZiAoY3VyX2ZyZXEpDQo+ICvCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZXR1cm4gc3ByaW50ZihidWYsICIldVxuIiwgY3Vy
+X2ZyZXEpOw0KPiArDQo+ICvCoMKgwqDCoMKgwqDCoGN1cl9mcmVxID0gX19jcHVmcmVxX2dldChw
+b2xpY3kpOw0KPiDCoMKgwqDCoMKgwqDCoMKgaWYgKGN1cl9mcmVxKQ0KPiDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoHJldHVybiBzcHJpbnRmKGJ1ZiwgIiV1XG4iLCBjdXJfZnJlcSk7
+DQo+IA0KPiANCj4gDQo+IFRoYW5rcywNCj4gU3Jpbml2YXMNCj4gDQo+ID4gVG8gYmUgaG9uZXN0
+LCBhdCB0aGUgYmVnaW5uaW5nIEkgaGF2ZSBjb25zaWRlciB0aGlzIHdheSBsaWtlIHlvdQ0KPiA+
+IHBhdGNoZWQsIGJ1dCBiYXNlZCB0d28gcmVhc29ucyBiZWxvdywgaXQgaXMgY29uc2VydmF0aXZl
+IGZvciB1cyB0byBkbw0KPiA+IHRoYXQuDQo+ID4NCj4gPiAxLiBJIGFtIHdvcnJpZWQgYWJvdXQg
+d2hldGhlciBpdCB3b3VsZCBsZWFkIHRvIGNvbmZ1c2lvbiBmb3IgY3VzdG9tZXJzDQo+ID4gb3Ig
+TGludXggT1MgdmVuZGVycyB3aG8gYXJlIGFjY3VzdG9tZWQgdG8gY3B1aW5mb19jdXJfZnJlcS4N
+Cj4gPiAyLiBUaGlzIGlzIHRoZSBmaXJzdCB0aW1lIGZvciBtZSB0byBvZmZlciBwYXRjaCB0byBp
+bnRlbF9wc3RhdGUsIG5vdA0KPiA+IHN1cmUgd2hldGhlciBpdCBjb3VsZCBiZSBhY2NlcHRlZCBi
+eSB5b3UuDQo+ID4NCj4gPiA+DQo+ID4gPiBPbiBNb25kYXksIEp1bHkgMjQsIDIwMTcgMDM6MzI6
+NDcgUE0gSHVhaXNoZW5nIEhTMSBZZSB3cm90ZToNCj4gPiA+ID4NCj4gPiA+ID4gSGkgUmFmYWVs
+LA0KPiA+ID4gPiBUaGFua3MgZm9yIHlvdXIgcmVwbHkuDQo+ID4gPiA+DQo+ID4gPiA+ID4NCj4g
+PiA+ID4gPiBPbiBNb25kYXksIEp1bHkgMjQsIDIwMTcgMDU6NDM6MTQgQU0gSHVhaXNoZW5nIEhT
+MSBZZSB3cm90ZToNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBBZnRlciBjb21taXQgODJiNGUw
+M2UwMWJjIChpbnRlbF9wc3RhdGU6IHNraXAgc2NoZWR1bGVyIGhvb2sNCj4gPiA+ID4gPiA+IHdo
+ZW4gaW4gInBlcmZvcm1hbmNlIiBtb2RlKSBTb2Z0d2FyZSBQLXN0YXRlIGNvbnRyb2wgbW9kZXMN
+Cj4gPiA+ID4gPiA+IGNvdWxkbid0IGdldCBkeW5hbWljIHZhbHVlIGR1cmluZyBwZXJmb3JtYW5j
+ZSBtb2RlLA0KPiA+ID4gPiA+IFBsZWFzZSBleHBsYWluIHdoYXQgeW91IG1lYW4gaGVyZS4NCj4g
+PiA+ID4gPg0KPiA+ID4gPiBjb21taXQgODJiNGUwM2UwMWJjIChpbnRlbF9wc3RhdGU6IHNraXAg
+c2NoZWR1bGVyIGhvb2sgd2hlbiBpbg0KPiA+ID4gPiAicGVyZm9ybWFuY2UiIG1vZGUpIGRpc2Fi
+bGVzIGludGVsX3BzdGF0ZV9zZXRfdXBkYXRlX3V0aWxfaG9vaw0KPiA+ID4gPiB3aGVuIGN1cnJl
+bnQgcG9saWN5IGlzIHBlcmZvcm1hbmNlIHdpdGhpbiBmdW5jdGlvbg0KPiA+ID4gPiBpbnRlbF9w
+c3RhdGVfc2V0X3BvbGljeS4NCj4gPiA+ID4gSXQgbGVhZHMgdG8gU29mdHdhcmUgUC1zdGF0ZXMg
+Y291bGRuJ3QgdXBkYXRlIHN5c2ZzIGludGVyZmFjZQ0KPiA+ID4gPiBjcHVpbmZvX2N1cl9mcmVx
+J3MgdmFsdWUgZHVyaW5nIHBlcmZvcm1hbmNlIG1vZGUsIGJlY2F1c2Ugb2YNCj4gPiA+ID4gcHN0
+YXRlX2Z1bmNzLnVwZGF0ZV91dGlsIGNvdWxkbid0IHNldCBmb3IgdGhlIGdpdmVuIENQVS4NCj4g
+PiA+ID4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEkgZ3Vlc3MgeW91IGNhcnJpZWQgb3V0IHNvbWUg
+dGVzdHMgYW5kIHRoZSByZXN1bHRzIHdlcmUgbm90IGFzDQo+ID4gPiA+ID4gZXhwZWN0ZWQsIHNv
+IHdoYXQgd2FzIHRoZSB0ZXN0Pw0KPiA+ID4gPiBFeGFjdGx5LCB3ZSBjaGVjayB0aGUgc3lzZnMg
+aW50ZXJmYWNlIGNwdWluZm9fY3VyX2ZyZXEgYW5kIHRoZQ0KPiA+ID4gPiBvdXRwdXQgb2YgY3B1
+cG93ZXIgZnJlcXVlbmN5LWluZm8gYm90aCB3aXRoIHBlcmZvcm1hbmNlIG1vZGUuDQo+ID4gPiBP
+Sywgc28gd2hhdCBhYm91dCB0aGUgY2hhbmdlIGJlbG93Og0KPiA+ID4NCj4gPiA+IC0tLQ0KPiA+
+ID4gwqBkcml2ZXJzL2NwdWZyZXEvaW50ZWxfcHN0YXRlLmMgfMKgwqDCoMKgOCAtLS0tLS0tLQ0K
+PiA+ID4gwqAxIGZpbGUgY2hhbmdlZCwgOCBkZWxldGlvbnMoLSkNCj4gPiA+DQo+ID4gPiBJbmRl
+eDogbGludXgtcG0vZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jDQo+ID4gPg0KPiA9PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PQ0KPiA+ID4gPT09PT0NCj4gPiA+IC0tLSBsaW51eC1wbS5vcmlnL2RyaXZlcnMvY3B1ZnJlcS9p
+bnRlbF9wc3RhdGUuYw0KPiA+ID4gKysrIGxpbnV4LXBtL2RyaXZlcnMvY3B1ZnJlcS9pbnRlbF9w
+c3RhdGUuYw0KPiA+ID4gQEAgLTE2NzQsMTMgKzE2NzQsNiBAQCBzdGF0aWMgaW50IGludGVsX3Bz
+dGF0ZV9pbml0X2NwdSh1bnNpZ25lDQo+ID4gPiDCoAlyZXR1cm4gMDsNCj4gPiA+IMKgfQ0KPiA+
+ID4NCj4gPiA+IC1zdGF0aWMgdW5zaWduZWQgaW50IGludGVsX3BzdGF0ZV9nZXQodW5zaWduZWQg
+aW50IGNwdV9udW0pIC17DQo+ID4gPiAtCXN0cnVjdCBjcHVkYXRhICpjcHUgPSBhbGxfY3B1X2Rh
+dGFbY3B1X251bV07DQo+ID4gPiAtDQo+ID4gPiAtCXJldHVybiBjcHUgPyBnZXRfYXZnX2ZyZXF1
+ZW5jeShjcHUpIDogMDsNCj4gPiA+IC19DQo+ID4gPiAtDQo+ID4gPiDCoHN0YXRpYyB2b2lkIGlu
+dGVsX3BzdGF0ZV9zZXRfdXBkYXRlX3V0aWxfaG9vayh1bnNpZ25lZCBpbnQNCj4gPiA+IGNwdV9u
+dW0pwqDCoHsNCj4gPiA+IMKgCXN0cnVjdCBjcHVkYXRhICpjcHUgPSBhbGxfY3B1X2RhdGFbY3B1
+X251bV07IEBAIC0xOTIxLDcNCj4gPiA+ICsxOTE0LDYgQEANCj4gPiA+IHN0YXRpYyBzdHJ1Y3Qg
+Y3B1ZnJlcV9kcml2ZXIgaW50ZWxfcHN0YXQNCj4gPiA+IMKgCS5zZXRwb2xpY3kJPSBpbnRlbF9w
+c3RhdGVfc2V0X3BvbGljeSwNCj4gPiA+IMKgCS5zdXNwZW5kCT0gaW50ZWxfcHN0YXRlX2h3cF9z
+YXZlX3N0YXRlLA0KPiA+ID4gwqAJLnJlc3VtZQkJPSBpbnRlbF9wc3RhdGVfcmVzdW1lLA0KPiA+
+ID4gLQkuZ2V0CQk9IGludGVsX3BzdGF0ZV9nZXQsDQo+ID4gPiDCoAkuaW5pdAkJPSBpbnRlbF9w
+c3RhdGVfY3B1X2luaXQsDQo+ID4gPiDCoAkuZXhpdAkJPSBpbnRlbF9wc3RhdGVfY3B1X2V4aXQs
+DQo+ID4gPiDCoAkuc3RvcF9jcHUJPSBpbnRlbF9wc3RhdGVfc3RvcF9jcHUsDQo=
