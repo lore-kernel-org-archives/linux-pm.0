@@ -1,73 +1,35 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / USB: hcd_pci: Skip secondary root hub check for HCD_DEAD()
-Date: Tue, 25 Jul 2017 17:59:04 +0200
-Message-ID: <2055160.bTgMse1pkO@aspire.rjw.lan>
-References: <Pine.LNX.4.44L0.1707251000470.2256-100000@iolanthe.rowland.org>
+Subject: Re: [RFC][PATCH] thunderbolt: icm: Ignore mailbox errors in icm_suspend()
+Date: Tue, 25 Jul 2017 18:10:57 +0200
+Message-ID: <2537138.AhdhMFtmoG@aspire.rjw.lan>
+References: <4063610.TqANq0McE8@aspire.rjw.lan> <20170725100012.GH2369@lahna.fi.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61292 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59418 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752144AbdGYQHD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 12:07:03 -0400
-In-Reply-To: <Pine.LNX.4.44L0.1707251000470.2256-100000@iolanthe.rowland.org>
+        by vger.kernel.org with ESMTP id S1752243AbdGYQS4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 12:18:56 -0400
+In-Reply-To: <20170725100012.GH2369@lahna.fi.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux USB <linux-usb@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>
+To: Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>, Michael Jamet <michael.jamet@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Tuesday, July 25, 2017 10:05:03 AM Alan Stern wrote:
-> On Tue, 25 Jul 2017, Rafael J. Wysocki wrote:
-> 
+On Tuesday, July 25, 2017 01:00:12 PM Mika Westerberg wrote:
+> On Tue, Jul 25, 2017 at 01:31:00AM +0200, Rafael J. Wysocki wrote:
 > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > > 
-> > If HCD_DEAD(hcd) is "true" in check_root_hub_suspended(), it is
-> > rather pointless to check the secondary root hub, so return early
-> > then.
+> > On one of my test machines nhi_mailbox_cmd() called from icm_suspend()
+> > times out and returnes an error which then is propagated to the
+> > caller and causes the entire system suspend to be aborted which isn't
+> > very useful.
 > > 
-> > This actually fixes occasional suspend failures on one of my test
-> > machines.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/usb/core/hcd-pci.c |    3 +++
-> >  1 file changed, 3 insertions(+)
-> > 
-> > Index: linux-pm/drivers/usb/core/hcd-pci.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/usb/core/hcd-pci.c
-> > +++ linux-pm/drivers/usb/core/hcd-pci.c
-> > @@ -427,6 +427,9 @@ static int check_root_hub_suspended(stru
-> >  		dev_warn(dev, "Root hub is not suspended\n");
-> >  		return -EBUSY;
-> >  	}
-> > +	if (HCD_DEAD(hcd))
-> > +		return 0;
-> > +
-> >  	if (hcd->shared_hcd) {
-> >  		hcd = hcd->shared_hcd;
-> >  		if (HCD_RH_RUNNING(hcd)) {
+> > Instead of aborting system suspend, print the error into the log
+> > and continue.
 > 
-> While this is an okay solution, IMO it would be more reliable and more 
-> general to have usb_hc_died() clear the HCD_FLAG_RH_RUNNING bit and set 
-> the HCD_FLAG_DEAD bit in the shared hcd.  Right now it only does these 
-> things for the primary.
-> 
-> Would you like to write and test a patch to do that?
+> I agree, it should not prevent suspend but I wonder why it fails in the
+> first place? Can you check what is the return value?
 
-I can do that.
-
-> Incidentally, if this fixes occasional suspend failures on your test 
-> machine, does that mean the test machine's host controller occasionally 
-> dies?  Maybe that should be fixed too...
-
-Yes, it does sometimes.
-
-What appears to happen is that the platform does not initialize properly
-sometimes after a reset and then the HCD dies during suspend.
-
-So reproduction may be somewhat tricky, but oh well.
-
-Thanks,
-Rafael
+As per the above, the error is a timeout, ie. -ETIMEDOUT.
