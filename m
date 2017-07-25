@@ -1,114 +1,79 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: [PATCH v10 02/10] i2c: i2c-smbus: Move i2c_setup_smbus_alert from i2c-smbus to i2c-core-smbus
-Date: Tue, 25 Jul 2017 11:40:16 +0800
-Message-ID: <1500954024-6860-3-git-send-email-preid@electromag.com.au>
+From: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Subject: [PATCH v10 10/10] power: supply: sbs-battery: move gpio present detect to sbs_get_property
+Date: Tue, 25 Jul 2017 11:40:24 +0800
+Message-ID: <1500954024-6860-11-git-send-email-preid@electromag.com.au>
 References: <1500954024-6860-1-git-send-email-preid@electromag.com.au>
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1500954024-6860-1-git-send-email-preid@electromag.com.au>
-Sender: linux-i2c-owner@vger.kernel.org
-To: wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, preid@electromag.com.au, benjamin.tissoires@redhat.com, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1500954024-6860-1-git-send-email-preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jdelvare-IBi9RG/b67k@public.gmane.org, jglauber-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, david.daney-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org, benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-In preparation to adding of_i2c_setup_smbus_alert() move
-i2c_setup_smbus_alert() to core module. of_i2c_setup_smbus_alert()
-will call i2c_setup_smbus_alert() and this avoid module dependecy issues.
+Currently when a gpio is defined for battery presence it is only used in
+the sbs_get_battery_presence_and_health function for 2 properties.
+All other properties currently try to read data form the battery before
+returning an error if not present. We should know in advance that no
+data is going to returned.
 
-Signed-off-by: Phil Reid <preid@electromag.com.au>
+As the driver tries multiple times to access a property, this prevents
+a lot of smbus accesses, which had a significant effect on device boot-up.
+As when the device is registered lots of property accesses are attempted
+during boot.
+
+If no gpio is used for presence detection no change in behaviour should
+occur.
+
+Signed-off-by: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Reviewed-by: Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
 ---
- drivers/i2c/i2c-core-smbus.c | 33 +++++++++++++++++++++++++++++++++
- drivers/i2c/i2c-smbus.c      | 32 --------------------------------
- 2 files changed, 33 insertions(+), 32 deletions(-)
+ drivers/power/supply/sbs-battery.c | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/i2c/i2c-core-smbus.c b/drivers/i2c/i2c-core-smbus.c
-index 10f00a8..7f3ec02 100644
---- a/drivers/i2c/i2c-core-smbus.c
-+++ b/drivers/i2c/i2c-core-smbus.c
-@@ -17,6 +17,7 @@
- #include <linux/device.h>
- #include <linux/err.h>
- #include <linux/i2c.h>
-+#include <linux/i2c-smbus.h>
- 
- #define CREATE_TRACE_POINTS
- #include <trace/events/smbus.h>
-@@ -592,3 +593,35 @@ s32 i2c_smbus_read_i2c_block_data_or_emulated(const struct i2c_client *client,
- 	return i;
- }
- EXPORT_SYMBOL(i2c_smbus_read_i2c_block_data_or_emulated);
-+
-+/**
-+ * i2c_setup_smbus_alert - Setup SMBus alert support
-+ * @adapter: the target adapter
-+ * @setup: setup data for the SMBus alert handler
-+ * Context: can sleep
-+ *
-+ * Setup handling of the SMBus alert protocol on a given I2C bus segment.
-+ *
-+ * Handling can be done either through our IRQ handler, or by the
-+ * adapter (from its handler, periodic polling, or whatever).
-+ *
-+ * NOTE that if we manage the IRQ, we *MUST* know if it's level or
-+ * edge triggered in order to hand it to the workqueue correctly.
-+ * If triggering the alert seems to wedge the system, you probably
-+ * should have said it's level triggered.
-+ *
-+ * This returns the ara client, which should be saved for later use with
-+ * i2c_handle_smbus_alert() and ultimately i2c_unregister_device(); or NULL
-+ * to indicate an error.
-+ */
-+struct i2c_client *i2c_setup_smbus_alert(struct i2c_adapter *adapter,
-+					 struct i2c_smbus_alert_setup *setup)
-+{
-+	struct i2c_board_info ara_board_info = {
-+		I2C_BOARD_INFO("smbus_alert", 0x0c),
-+		.platform_data = setup,
-+	};
-+
-+	return i2c_new_device(adapter, &ara_board_info);
-+}
-+EXPORT_SYMBOL_GPL(i2c_setup_smbus_alert);
-diff --git a/drivers/i2c/i2c-smbus.c b/drivers/i2c/i2c-smbus.c
-index d4af270..d0bb035 100644
---- a/drivers/i2c/i2c-smbus.c
-+++ b/drivers/i2c/i2c-smbus.c
-@@ -183,38 +183,6 @@ static int smbalert_remove(struct i2c_client *ara)
- };
- 
- /**
-- * i2c_setup_smbus_alert - Setup SMBus alert support
-- * @adapter: the target adapter
-- * @setup: setup data for the SMBus alert handler
-- * Context: can sleep
-- *
-- * Setup handling of the SMBus alert protocol on a given I2C bus segment.
-- *
-- * Handling can be done either through our IRQ handler, or by the
-- * adapter (from its handler, periodic polling, or whatever).
-- *
-- * NOTE that if we manage the IRQ, we *MUST* know if it's level or
-- * edge triggered in order to hand it to the workqueue correctly.
-- * If triggering the alert seems to wedge the system, you probably
-- * should have said it's level triggered.
-- *
-- * This returns the ara client, which should be saved for later use with
-- * i2c_handle_smbus_alert() and ultimately i2c_unregister_device(); or NULL
-- * to indicate an error.
-- */
--struct i2c_client *i2c_setup_smbus_alert(struct i2c_adapter *adapter,
--					 struct i2c_smbus_alert_setup *setup)
--{
--	struct i2c_board_info ara_board_info = {
--		I2C_BOARD_INFO("smbus_alert", 0x0c),
--		.platform_data = setup,
--	};
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index f705945..686e7cb 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -325,16 +325,6 @@ static int sbs_get_battery_presence_and_health(
+ 	union power_supply_propval *val)
+ {
+ 	s32 ret;
+-	struct sbs_info *chip = i2c_get_clientdata(client);
 -
--	return i2c_new_device(adapter, &ara_board_info);
--}
--EXPORT_SYMBOL_GPL(i2c_setup_smbus_alert);
--
--/**
-  * i2c_handle_smbus_alert - Handle an SMBus alert
-  * @ara: the ARA client on the relevant adapter
-  * Context: can't sleep
+-	if (psp == POWER_SUPPLY_PROP_PRESENT && chip->gpio_detect) {
+-		ret = gpiod_get_value_cansleep(chip->gpio_detect);
+-		if (ret < 0)
+-			return ret;
+-		val->intval = ret;
+-		chip->is_present = val->intval;
+-		return ret;
+-	}
+ 
+ 	/*
+ 	 * Write to ManufacturerAccess with ManufacturerAccess command
+@@ -600,6 +590,19 @@ static int sbs_get_property(struct power_supply *psy,
+ 	struct sbs_info *chip = power_supply_get_drvdata(psy);
+ 	struct i2c_client *client = chip->client;
+ 
++	if (chip->gpio_detect) {
++		ret = gpiod_get_value_cansleep(chip->gpio_detect);
++		if (ret < 0)
++			return ret;
++		if (psp == POWER_SUPPLY_PROP_PRESENT) {
++			val->intval = ret;
++			chip->is_present = val->intval;
++			return 0;
++		}
++		if (ret == 0)
++			return -ENODATA;
++	}
++
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_PRESENT:
+ 	case POWER_SUPPLY_PROP_HEALTH:
 -- 
 1.8.3.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
