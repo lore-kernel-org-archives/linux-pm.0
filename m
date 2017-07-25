@@ -1,122 +1,156 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [RFC v1 2/6] power: supply: bq27xxx: Add chip IDs for previously
- shadowed chips
-Date: Tue, 25 Jul 2017 14:52:53 +0200
-Message-ID: <20170725125253.lr3dko4k3crpih6z@earth>
+Subject: Re: [RFC v1 5/6] power: supply: bq27xxx: Flag identical chip data
+ when in debug mode
+Date: Tue, 25 Jul 2017 15:04:42 +0200
+Message-ID: <20170725130441.xejsh6yuubzqaclr@earth>
 References: <20170709021700.14354-1-liam@networkimprov.net>
- <20170709021700.14354-3-liam@networkimprov.net>
+ <20170709021700.14354-6-liam@networkimprov.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ayryj3rmmiaio4te"
+        protocol="application/pgp-signature"; boundary="6f3uu3vxzxgr3q6m"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:33094 "EHLO
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:33122 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750861AbdGYMw6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 08:52:58 -0400
+        with ESMTP id S1751799AbdGYNEq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 09:04:46 -0400
 Content-Disposition: inline
-In-Reply-To: <20170709021700.14354-3-liam@networkimprov.net>
+In-Reply-To: <20170709021700.14354-6-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
 Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
 
 
---ayryj3rmmiaio4te
+--6f3uu3vxzxgr3q6m
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Sat, Jul 08, 2017 at 07:16:56PM -0700, Liam Breck wrote:
-> For the existing feature set, these chips act like ones already listed,
-> so they had been given false but functional IDs. We will be adding featur=
-es
-> which obsolete that shadowing, so the following IDs are added:
-> BQ2752X, 531, 542, 546, 742, 425, 441, 621
+On Sat, Jul 08, 2017 at 07:16:59PM -0700, Liam Breck wrote:
+> From: Liam Breck <kernel@networkimprov.net>
 >=20
-> So as not to disturb code that relies on the shadowing,
-> bq27xxx_chip_data[n].acts_like now gives the previous ID for the above
-> chips. That field will no longer be necessary when the code in question c=
-an
-> test for specific options (to be provided in later patches) with:
-> (BQ27XXX_O_XYZ & di->opts)
+> The driver has 13 unique register maps, several of which are shared
+> by multiple chips. When adding support for a new chip, it's easy to
+> add a duplicate map by mistake.
 
-As stated in the other patch it should be (di->opts & BQ27XXX_O_XYZ)
+Which is not that bad. Sure, some bytes wasted, but your code also
+wastes some bytes. This is something, that should normally tested
+@ compile time using static checkers. Independently the patch has
+some issues:
 
-> No functional changes to the driver.
+> In debug mode we now scan bq27xxx_chip_data[n].regs/props/dm_regs for
+> duplicates.
 >=20
 > Signed-off-by: Liam Breck <kernel@networkimprov.net>
->
-> [...]
->
-> +	[BQ2752X]   =3D BQ27XXX_DATA(52x,   BQ2751X, 0),
-> +	[BQ27531]   =3D BQ27XXX_DATA(531,   BQ27530, 0),
-> +	[BQ27542]   =3D BQ27XXX_DATA(542,   BQ27541, 0),
-> +	[BQ27546]   =3D BQ27XXX_DATA(546,   BQ27541, 0),
-> +	[BQ27742]   =3D BQ27XXX_DATA(742,   BQ27541, 0),
-> +	[BQ27425]   =3D BQ27XXX_DATA(425,   BQ27421, 0),
-> +	[BQ27441]   =3D BQ27XXX_DATA(441,   BQ27421, 0),
-> +	[BQ27621]   =3D BQ27XXX_DATA(621,   BQ27421, 0),
+> ---
+>  drivers/power/supply/bq27xxx_battery.c | 36 ++++++++++++++++++++++++++++=
++++++-
+>  1 file changed, 35 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/suppl=
+y/bq27xxx_battery.c
+> index 5d3893a9..54755c88 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -883,7 +883,7 @@ static struct bq27xxx_dm_reg bq27621_dm_regs[] =3D {
+>  	.props =3D bq27##ref##_props,		\
+>  	.props_size =3D ARRAY_SIZE(bq27##ref##_props) }
+> =20
+> -static struct {
+> +static struct bq27xxx_chip_datum {
+>  	u32 opts;
+>  	int acts_like; //todo drop this when opts fully implemented
+>  	u32 unseal_key;
+> @@ -918,6 +918,38 @@ static struct {
+>  	[BQ27621]   =3D BQ27XXX_DATA(621,   BQ27421, 0x80008000, BQ27XXX_O_CFGU=
+P | BQ27XXX_O_RAM),
+>  };
+> =20
+> +static void __maybe_unused bq27xxx_battery_dbg_dupes(struct bq27xxx_devi=
+ce_info *di)
 
-Let's get rid of the chip id mapping directly. I deleted everything
-but the mapped IDs above. This is what I get for a simple git grep:
+If there are multiple bq27xxx batteries installed in the system the
+code is executed multiple times, so let's modify this a bit:
 
-drivers/power/supply $ git grep -nE "BQ2751X|BQ27530|BQ27541"
-bq27xxx_battery.c:204:  [BQ2751X] =3D {
-bq27xxx_battery.c:384:  [BQ27530] =3D {
-bq27xxx_battery.c:404:  [BQ27541] =3D {
-bq27xxx_battery.c:786:  BQ27XXX_PROP(BQ2751X, bq2751x_battery_props),
-bq27xxx_battery.c:795:  BQ27XXX_PROP(BQ27530, bq27530_battery_props),
-bq27xxx_battery.c:796:  BQ27XXX_PROP(BQ27541, bq27541_battery_props),
-bq27xxx_battery.c:1523: case BQ2751X:
-bq27xxx_battery.c:1532: case BQ27541:
-bq27xxx_battery.c:1535: case BQ27530:
-bq27xxx_battery.c:1548: if (di->chip =3D=3D BQ27530 || di->chip =3D=3D BQ27=
-421)
-bq27xxx_battery_i2c.c:232:      { "bq27510", BQ2751X },
-bq27xxx_battery_i2c.c:233:      { "bq27520", BQ2751X },
-bq27xxx_battery_i2c.c:242:      { "bq27530", BQ27530 },
-bq27xxx_battery_i2c.c:243:      { "bq27531", BQ27530 },
-bq27xxx_battery_i2c.c:244:      { "bq27541", BQ27541 },
-bq27xxx_battery_i2c.c:245:      { "bq27542", BQ27541 },
-bq27xxx_battery_i2c.c:246:      { "bq27546", BQ27541 },
-bq27xxx_battery_i2c.c:247:      { "bq27742", BQ27541 },
+> +{
+> +	const size_t max =3D ARRAY_SIZE(bq27xxx_chip_data);
+> +	const char * const msg =3D "bq27xxx_chip_data[%d].%s & [%d].%s are iden=
+tical\n";
+> +	struct bq27xxx_chip_datum *a, *b;
+> +	int i, j;
 
-Ignoring the chip data defines, that are not affected, this leaves
-the following affected lines:
+static checked =3D false;
 
-bq27xxx_battery.c:1523: case BQ2751X:
-bq27xxx_battery.c:1532: case BQ27541:
-bq27xxx_battery.c:1535: case BQ27530:
-bq27xxx_battery.c:1548: if (di->chip =3D=3D BQ27530 || di->chip =3D=3D BQ27=
-421)
+if (checked)
+    return;
 
-FWIW I do not follow you, that introducing the flags for
-those is more error prone, than the ID mapping. If you
-don't want to add the flags please just add the new IDs
-to the check in bq27xxx_battery_over/undertemp().
+> +	for (i =3D 1; i < max-1; i++) {
+> +		a =3D bq27xxx_chip_data + i;
+> +
+> +		for (j =3D i+1; j < max; j++) {
+> +			b =3D bq27xxx_chip_data + j;
+> +
+> +			if (a->regs !=3D b->regs &&
+> +			    !memcmp(a->regs, b->regs, sizeof(bq27000_regs)))
+> +				dev_warn(di->dev, msg, i, "regs", j, "regs");
+> +
+> +			if (a->props !=3D b->props &&
+> +			    a->props_size =3D=3D b->props_size &&
+> +			    !memcmp(a->props, b->props, a->props_size))
+> +				dev_warn(di->dev, msg, i, "props", j, "props");
+> +
+> +			if (a->dm_regs !=3D b->dm_regs &&
+> +			    !memcmp(a->dm_regs, b->dm_regs, sizeof(bq27500_dm_regs)))
+> +				dev_warn(di->dev, msg, i, "dm_regs", j, "dm_regs");
+> +		}
+> +	}
 
--- Sebastian
+checked =3D true;
 
---ayryj3rmmiaio4te
+> +}
+> +#ifndef DEBUG
+> +#define bq27xxx_battery_dbg_dupes(di)
+> +#endif
+> +
+>  static DEFINE_MUTEX(bq27xxx_list_lock);
+>  static LIST_HEAD(bq27xxx_battery_devices);
+> =20
+> @@ -1989,6 +2021,8 @@ int bq27xxx_battery_setup(struct bq27xxx_device_inf=
+o *di)
+>  		.drv_data =3D di,
+>  	};
+> =20
+> +	bq27xxx_battery_dbg_dupes(di);
+
+Add #ifdef DEBUG here and drop the above.
+
+>  	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
+>  	mutex_init(&di->lock);
+> =20
+> --=20
+> 2.13.1
+>=20
+
+--6f3uu3vxzxgr3q6m
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAll3PyIACgkQ2O7X88g7
-+poI7w//Zr9P0DXZfvADwFQGR8KiosnErid05QfOKKONwJUDOGuBXn6u4CbqkPY+
-y66LkNGUh+Il35T6jLC1DeqbEqm/4KmAx0NY+otKeEZA4kIrZAl5ImtKiKLnLILE
-32TJjfS5MHKK3M3uay6RztfmiJPLYfMeE+n9n6CxfKy+rGZQSS/ftgvRAKX8At1g
-4qVuhsLcDSe+EXNe8MeVSYagGa43d6/2kzEUxFq60vdNg86vqbE60SdEBsIPOxFY
-9ON/r5mWmeHRqULov27b8bzSx8FdhCE/Bwq0Pwwblrf0H0+bcayS46EuoUSMwa2R
-COy5WHPx6qAtTIKnc6ALY/Ghz1X/i1AHNjbYcxO20zZd5gvShHytCmr7XexfEAlE
-paTqo+pe3yDmZJlEH4D7jkGVq9C2plFds/E3oM18fAetPeVlertF/X6X7+4glagd
-3kkP8c78T58CthM2/rQQK4J/h1FyNrGw7gm0lBNMp8yMa3HHBmRZv3dGzW6wyY0f
-vz4N+O9UXfLwB+lMnsqQ0mv4CVKEuCLxqBolL/ckiZaZ+oHB2XGSoL8BejaB2f5l
-yY3oUUkeWCqE4mAQuCl2UD5/j14EBdpkmoi/T6bG/ppeq/0SWvciQemIhL35rf8a
-eZ/dONTa4xSr9wy/qYm1cWk3LnmR/6nK1Ub/1wDwr09Rg2JGSNU=
-=gqCL
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAll3QeYACgkQ2O7X88g7
++pppqxAAl71MNVOVpVYxe3hX+uFexzLkTaB9osu0ffAN/VdyXIoWDqqhlnnwA9+i
+wF1SZopnNhDGXdyQoyfFKvq9gOgWFwD5BnqR3/BlV2SNEbs5+Be6Tu3j63WHinD/
+7NhcjB5uebDlyic/JrGei8A8itlHEVxESLqPPjo3Wc8cLwcGy4O1DSsoL2TaHBN5
+euNQPU8TB+4tozkLRxZsgxhlkwnNJFdmYwc1j6HYCv9O186JOyvMysFie092d1Tl
+H+vSjjL1sztSQBI82VGn0HirUBgmGVfmvhsCGLoP2nSqQl78nWU2KY7PkFs9xVgO
+NFNVCSBEZYmyyDLcYveFaQeunIJXclmDlbsJSIVG3BfU0R+/mp4CHO1dUwD/jyJE
+qj8qqyN9kDUJudUPbWU3H9J2KGCaYT+Y9yWC3Bdc/A+kBi703CGI5+nsqHocj7K/
+sBtyAudZWosL+8Mqtn++EiK/Fd6cdxjBbfnbaM8WhEv63nzTytyMOkP7myUsdJgR
+h0OHDiARGj9RRuQ0WGcPdRFQs9+MhGw7Pr8w713xWXR/ei5lUtjcT1CRgfZRxa8h
+f+GUaeK+TKFf7i0TTIxpi9INPvdaSSiS/3JyiOggr9lh6OWitRuq08hTuCfned8Z
+U+sBsSZtA0V1jhRyaV9mT3OdXetWVEmDsjz0n6Ar/0tHiLQTfr0=
+=04uX
 -----END PGP SIGNATURE-----
 
---ayryj3rmmiaio4te--
+--6f3uu3vxzxgr3q6m--
