@@ -1,81 +1,58 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC PATCH v1 8/8] sched/deadline: make bandwidth enforcement
- scale-invariant
-Date: Tue, 25 Jul 2017 15:51:05 +0200
-Message-ID: <20170725135105.akkwwsf3r65jy3pa@hirez.programming.kicks-ass.net>
-References: <20170705085905.6558-1-juri.lelli@arm.com>
- <20170705085905.6558-9-juri.lelli@arm.com>
- <20170719072143.lploljodns3kfucf@hirez.programming.kicks-ass.net>
- <20170719092029.oakmetq3u52e4rfw@e106622-lin>
- <20170719110028.uggud56bg2jh45ge@hirez.programming.kicks-ass.net>
- <20170719111624.fwcydcklmfeesfgb@e106622-lin>
- <20170724164349.clzsajrwxtobyqkm@hirez.programming.kicks-ass.net>
- <20170725090308.2cca53c0@luca>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] PM / USB: hcd_pci: Skip secondary root hub check for
+ HCD_DEAD()
+Date: Tue, 25 Jul 2017 10:05:03 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1707251000470.2256-100000@iolanthe.rowland.org>
+References: <5273465.xcnvLcBNTW@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170725090308.2cca53c0@luca>
+In-Reply-To: <5273465.xcnvLcBNTW@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Luca Abeni <luca.abeni@santannapisa.it>
-Cc: Juri Lelli <juri.lelli@arm.com>, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux USB <linux-usb@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 25, 2017 at 09:03:08AM +0200, Luca Abeni wrote:
+On Tue, 25 Jul 2017, Rafael J. Wysocki wrote:
 
-> > I'm still confused..
-> > 
-> > So GRUB does:
-> > 
-> > 	dq = Uact -dt
-> > 
-> > right?
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Right. This is what the original (single processor) GRUB did. And this
-> was used by the "GRUB-PA" algorithm:
-> https://www.researchgate.net/profile/Giuseppe_Lipari/publication/220800940_Using_resource_reservation_techniques_for_power-aware_scheduling/links/09e41513639b2703fc000000.pdf
+> If HCD_DEAD(hcd) is "true" in check_root_hub_suspended(), it is
+> rather pointless to check the secondary root hub, so return early
+> then.
 > 
-> (basically, GRUB-PA uses GRUB for reclaiming, and scales the CPU
-> frequency based on Uact)
+> This actually fixes occasional suspend failures on one of my test
+> machines.
 > 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/usb/core/hcd-pci.c |    3 +++
+>  1 file changed, 3 insertions(+)
 > 
-> > Now, you do DVFS using that same Uact. If we lower the clock, we need
-> > more time, so would we then not end up with something like:
-> > 
-> > 	dq = 1/Uact -dt
-> 
-> Well, in the GRUB-PA algorithm GRUB reclaiming is the mechanism used to
-> give more runtime to the task... Since Uact is < 1, doing
-> 	dq = - Uact * dt
-> means that we decrease the current runtime by a smaller amount of time.
-> And so we end up giving more runtime to the task: instead of giving 
-> dl_runtime every dl_period, we give "dl_runtime / Uact" every
-> dl_period... And since the CPU is slower (by a ratio Uact), this is
-> equivalent to giving dl_runtime at the maximum CPU speed / frequency
-> (at least, in theory :).
-> 
-> 
-> > After all; our budget assignment is such that we're able to complete
-> > our work at max freq. Therefore, when we lower the frequency, we'll have
-> > to increase budget pro rata, otherwise we'll not complete our work and
-> > badness happens.
-> 
-> Right. But instead of increasing dl_runtime, GRUB-PA decreases the
-> amount of time accounted to the current runtime.
-> 
-> 
-> > Say we have a 1 Ghz part and Uact=0.5 we'd select 500 Mhz and need
-> > double the time to complete.
-> > 
-> > Now, if we fold these two together, you'd get:
-> > 
-> > 	dq = Uact/Uact -dt = -dt
-> 
-> Not sure why " / Uact"... According to the GRUB-PA algorithm, you just
-> do
-> 	dq = - Uact * dt = -0.5dt
-> and you end up giving the CPU to the task for 2 * dl_runtime every
-> dl_period (as expected)
+> Index: linux-pm/drivers/usb/core/hcd-pci.c
+> ===================================================================
+> --- linux-pm.orig/drivers/usb/core/hcd-pci.c
+> +++ linux-pm/drivers/usb/core/hcd-pci.c
+> @@ -427,6 +427,9 @@ static int check_root_hub_suspended(stru
+>  		dev_warn(dev, "Root hub is not suspended\n");
+>  		return -EBUSY;
+>  	}
+> +	if (HCD_DEAD(hcd))
+> +		return 0;
+> +
+>  	if (hcd->shared_hcd) {
+>  		hcd = hcd->shared_hcd;
+>  		if (HCD_RH_RUNNING(hcd)) {
 
-Yeah, I seem to have gone off the rails there... Bah I'm terminally
-confused now. Let me try and get my brain the right way up.
+While this is an okay solution, IMO it would be more reliable and more 
+general to have usb_hc_died() clear the HCD_FLAG_RH_RUNNING bit and set 
+the HCD_FLAG_DEAD bit in the shared hcd.  Right now it only does these 
+things for the primary.
+
+Would you like to write and test a patch to do that?
+
+Incidentally, if this fixes occasional suspend failures on your test 
+machine, does that mean the test machine's host controller occasionally 
+dies?  Maybe that should be fixed too...
+
+Alan Stern
