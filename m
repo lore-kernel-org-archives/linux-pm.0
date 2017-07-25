@@ -1,39 +1,53 @@
 From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH 2/3] ACPI / PM: Split acpi_device_wakeup()
-Date: Tue, 25 Jul 2017 15:45:27 +0300
-Message-ID: <20170725124527.GR2369@lahna.fi.intel.com>
+Subject: Re: [PATCH v2 3/3] ACPI / PCI / PM: Rework
+ acpi_pci_propagate_wakeup()
+Date: Tue, 25 Jul 2017 15:46:21 +0300
+Message-ID: <20170725124621.GS2369@lahna.fi.intel.com>
 References: <3116391.JNS1F4DjTg@aspire.rjw.lan>
- <3408475.MC8krXn0zk@aspire.rjw.lan>
+ <4853865.5aRGCM4CdQ@aspire.rjw.lan>
+ <4690779.IRjbMOd2yB@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3408475.MC8krXn0zk@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
+In-Reply-To: <4690779.IRjbMOd2yB@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Andy Shevchenko <andy.shevchenko@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jul 21, 2017 at 02:40:49PM +0200, Rafael J. Wysocki wrote:
+On Fri, Jul 21, 2017 at 11:30:24PM +0200, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> To prepare for a subsequent change and make the code somewhat easier
-> to follow, do the following in the ACPI device wakeup handling code:
+> The acpi_pci_propagate_wakeup() routine is there to handle cases in
+> which PCI bridges (or PCIe ports) are expected to signal wakeup
+> for devices below them, but currently it doesn't do that correctly.
 > 
->  * Replace wakeup.flags.enabled under struct acpi_device with
->    wakeup.enable_count as that will be necessary going forward.
+> The problem is that acpi_pci_propagate_wakeup() uses
+> acpi_pm_set_device_wakeup() for bridges and if that routine is
+> called for multiple times to disable wakeup for the same device,
+> it will disable it on the first invocation and the next calls
+> will have no effect (it works analogously when called to enable
+> wakeup, but that is not a problem).
 > 
->    For now, wakeup.enable_count is not allowed to grow beyond 1,
->    so the current behavior is retained.
+> Now, say acpi_pci_propagate_wakeup() has been called for two
+> different devices under the same bridge and it has called
+> acpi_pm_set_device_wakeup() for that bridge each time.  The
+> bridge is now enabled to generate wakeup signals.  Next,
+> suppose that one of the devices below it resumes and
+> acpi_pci_propagate_wakeup() is called to disable wakeup for that
+> device.  It will then call acpi_pm_set_device_wakeup() for the bridge
+> and that will effectively disable remote wakeup for all devices under
+> it even though some of them may still be suspended and remote wakeup
+> may be expected to work for them.
 > 
->  * Split acpi_device_wakeup() into acpi_device_wakeup_enable()
->    and acpi_device_wakeup_disable() and modify the callers of
->    it accordingly.
-> 
->  * Introduce a new acpi_wakeup_lock mutex to protect the wakeup
->    enabling/disabling code from races in case it is executed
->    more than once in parallel for the same device (which may
->    happen for bridges theoretically).
+> To address this (arguably theoretical) issue, allow
+> wakeup.enable_count under struct acpi_device to grow beyond 1 in
+> certain situations.  In particular, allow that to happen in
+> acpi_pci_propagate_wakeup() when wakeup is enabled or disabled
+> for PCI bridges, so that wakeup is actually disabled for the
+> bridge when all devices under it resume and not when just one
+> of them does that.
 > 
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
