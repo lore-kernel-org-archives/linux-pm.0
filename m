@@ -1,87 +1,42 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / USB: hcd_pci: Skip secondary root hub check for HCD_DEAD()
-Date: Tue, 25 Jul 2017 23:36:40 +0200
-Message-ID: <1696811.btiC2oedaq@aspire.rjw.lan>
-References: <Pine.LNX.4.44L0.1707251705060.1605-100000@iolanthe.rowland.org>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Fix cpuinfo_cur_freq after performance governor changes
+Date: Tue, 25 Jul 2017 23:46:34 +0200
+Message-ID: <6482077.jWgIauTCtV@aspire.rjw.lan>
+References: <1500875013-123321-1-git-send-email-yehs1@lenovo.com> <1500951465.4920.2.camel@linux.intel.com> <KL1PR0302MB2502B85BBFF7B8BB79BE40D692B80@KL1PR0302MB2502.apcprd03.prod.outlook.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1707251705060.1605-100000@iolanthe.rowland.org>
+In-Reply-To: <KL1PR0302MB2502B85BBFF7B8BB79BE40D692B80@KL1PR0302MB2502.apcprd03.prod.outlook.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Linux USB <linux-usb@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mathias Nyman <mathias.nyman@linux.intel.com>, Felipe Balbi <balbi@kernel.org>
+To: Huaisheng HS1 Ye <yehs1@lenovo.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, NingTing Cheng <chengnt@lenovo.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, July 25, 2017 05:06:40 PM Alan Stern wrote:
-> On Tue, 25 Jul 2017, Rafael J. Wysocki wrote:
+On Tuesday, July 25, 2017 07:03:36 AM Huaisheng HS1 Ye wrote:
+> Hi Srinivas,
+> Your idea is great, but your patch at cpufreq.c will force all platforms to use scaling_cur_freq as first choice when userspace wants to access cpuinfo_cur_freq. It is ok for intel x86 platfrom but hard to say with other platforms.
+> I modified it like that, it looks more reasonable. How about that?
 > 
-> > On Tuesday, July 25, 2017 05:59:04 PM Rafael J. Wysocki wrote:
-> > > On Tuesday, July 25, 2017 10:05:03 AM Alan Stern wrote:
-> > > > On Tue, 25 Jul 2017, Rafael J. Wysocki wrote:
-> > > > 
-> > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > 
-> > > > > If HCD_DEAD(hcd) is "true" in check_root_hub_suspended(), it is
-> > > > > rather pointless to check the secondary root hub, so return early
-> > > > > then.
-> > > > > 
-> > > > > This actually fixes occasional suspend failures on one of my test
-> > > > > machines.
-> > > > > 
-> > > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > ---
-> > > > >  drivers/usb/core/hcd-pci.c |    3 +++
-> > > > >  1 file changed, 3 insertions(+)
-> > > > > 
-> > > > > Index: linux-pm/drivers/usb/core/hcd-pci.c
-> > > > > ===================================================================
-> > > > > --- linux-pm.orig/drivers/usb/core/hcd-pci.c
-> > > > > +++ linux-pm/drivers/usb/core/hcd-pci.c
-> > > > > @@ -427,6 +427,9 @@ static int check_root_hub_suspended(stru
-> > > > >  		dev_warn(dev, "Root hub is not suspended\n");
-> > > > >  		return -EBUSY;
-> > > > >  	}
-> > > > > +	if (HCD_DEAD(hcd))
-> > > > > +		return 0;
-> > > > > +
-> > > > >  	if (hcd->shared_hcd) {
-> > > > >  		hcd = hcd->shared_hcd;
-> > > > >  		if (HCD_RH_RUNNING(hcd)) {
-> > > > 
-> > > > While this is an okay solution, IMO it would be more reliable and more 
-> > > > general to have usb_hc_died() clear the HCD_FLAG_RH_RUNNING bit and set 
-> > > > the HCD_FLAG_DEAD bit in the shared hcd.  Right now it only does these 
-> > > > things for the primary.
-> > > > 
-> > > > Would you like to write and test a patch to do that?
-> > > 
-> > > I can do that.
-> > 
-> > Just to make sure that we are on the same page, is the below what you mean?
-> > 
-> > ---
-> >  drivers/usb/core/hcd.c |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > Index: linux-pm/drivers/usb/core/hcd.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/usb/core/hcd.c
-> > +++ linux-pm/drivers/usb/core/hcd.c
-> > @@ -2485,6 +2485,8 @@ void usb_hc_died (struct usb_hcd *hcd)
-> >  	}
-> >  	if (usb_hcd_is_primary_hcd(hcd) && hcd->shared_hcd) {
-> >  		hcd = hcd->shared_hcd;
-> > +		clear_bit(HCD_FLAG_RH_RUNNING, &hcd->flags);
-> > +		set_bit(HCD_FLAG_DEAD, &hcd->flags);
-> >  		if (hcd->rh_registered) {
-> >  			clear_bit(HCD_FLAG_POLL_RH, &hcd->flags);
+> Hi Rafael,
+> Deleting "get" function pointer within intel_pstate would lead to sysfs
+> interface cpuinfo_cur_freq disappearing, because of
+> cpufreq_add_dev_interface will check "cpufreq_driver->get" for it.
+
+Which is exactly what I want.
+
+cpuinfo_cur_freq is bogus for intel_pstate and it should have never been
+exported for this driver.
+
+> Perhaps just return 0 with in intel_pstate_get would be a workaround for this
+> issue, how about it?
 > 
-> Yes, exactly.  Does it fix your suspend problem?
+> I have tested this patch based on Purley platform, both Hardware and Software
+> P-states works correct, we could get accurate and same frequency from
+> cpuinfo_cur_freq and scaling_cur_freq.
 
-Yes, it does.
-
-I guess I should resend it with a changelog and tags, then.
+But this is not correct.  These two attributes should not be expected to always
+return the same value.
 
 Thanks,
 Rafael
