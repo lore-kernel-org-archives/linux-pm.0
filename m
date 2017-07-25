@@ -1,226 +1,134 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix cpuinfo_cur_freq after
- performance governor changes
-Date: Tue, 25 Jul 2017 07:37:32 -0700
-Message-ID: <1500993452.4920.9.camel@linux.intel.com>
-References: <1500875013-123321-1-git-send-email-yehs1@lenovo.com>
-         <7185077.O26hx51RqR@aspire.rjw.lan>
-         <KL1PR0302MB2502C43359F4B6A738D509B992BB0@KL1PR0302MB2502.apcprd03.prod.outlook.com>
-         <13292124.r3mFCOTPK8@aspire.rjw.lan>
-         <KL1PR0302MB2502DDDCC1D0F4FCC2916B4392B80@KL1PR0302MB2502.apcprd03.prod.outlook.com>
-         <1500951465.4920.2.camel@linux.intel.com>
-         <KL1PR0302MB2502B85BBFF7B8BB79BE40D692B80@KL1PR0302MB2502.apcprd03.prod.outlook.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] USB: musb: fix external abort on suspend
+Date: Tue, 25 Jul 2017 10:38:31 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1707251030280.2256-100000@iolanthe.rowland.org>
+References: <20170725070929.GK2729@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <KL1PR0302MB2502B85BBFF7B8BB79BE40D692B80@KL1PR0302MB2502.apcprd03.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Huaisheng HS1 Ye <yehs1@lenovo.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, NingTing Cheng <chengnt@lenovo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <20170725070929.GK2729@localhost>
+Sender: stable-owner@vger.kernel.org
+To: Johan Hovold <johan@kernel.org>
+Cc: Bin Liu <b-liu@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable <stable@vger.kernel.org>, Daniel Mack <zonque@gmail.com>, Dave Gerlach <d-gerlach@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Tony Lindgren <tony@atomide.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Huaisheng,
+On Tue, 25 Jul 2017, Johan Hovold wrote:
 
-On Tue, 2017-07-25 at 07:03 +0000, Huaisheng HS1 Ye wrote:
-> Hi Srinivas,
-> Your idea is great, but your patch at cpufreq.c will force all
-> platforms to use scaling_cur_freq as first choice when userspace
-> wants to access cpuinfo_cur_freq. It is ok for intel x86 platfrom but
-> hard to say with other platforms.
-arch_freq_get_on_cpu is only implemented on x86, for other platforms it
-will not change behavior. I didn't understand your comment about first
-choice.
+> On Mon, Jul 24, 2017 at 01:13:22PM -0400, Alan Stern wrote:
+> > On Mon, 24 Jul 2017, Johan Hovold wrote:
+> > 
+> > > On Mon, Jul 24, 2017 at 10:38:41AM -0400, Alan Stern wrote:
+> > > > On Mon, 24 Jul 2017, Johan Hovold wrote:
+> > > > 
+> > > > > Make sure that the controller is runtime resumed when system suspending
+> > > > > to avoid an external abort when accessing the interrupt registers:
+> > > > > 
+> > > > >   Unhandled fault: external abort on non-linefetch (0x1008) at 0xd025840a
+> > > > >   ...
+> > > > >   [<c05481a4>] (musb_default_readb) from [<c0545abc>] (musb_disable_interrupts+0x84/0xa8)
+> > > > >   [<c0545abc>] (musb_disable_interrupts) from [<c0546b08>] (musb_suspend+0x38/0xb8)
+> > > > >   [<c0546b08>] (musb_suspend) from [<c04a57f8>] (platform_pm_suspend+0x3c/0x64)
+> > > > > 
+> > > > > This is easily reproduced on a BBB by enabling the peripheral port only
+> > > > > (as the host port may enable the shared clock) and keeping it
+> > > > > disconnected so that the controller is runtime suspended. (Well, you
+> > > > > would also need to the not-yet-merged am33xx-suspend patches by Dave
+> > > > > Gerlach to be able to suspend the BBB.)
+> > > > > 
+> > > > > This is a regression that was introduced by commit 1c4d0b4e1806 ("usb:
+> > > > > musb: Remove pm_runtime_set_irq_safe") which allowed the parent glue
+> > > > > device to runtime suspend and thereby exposed a couple of older issues:
+> > > > > 
+> > > > > Register accesses without explicitly making sure the controller is
+> > > > > runtime resumed during suspend was first introduced by commit
+> > > > > c338412b5ded ("usb: musb: unconditionally save and restore the context
+> > > > > on suspend") in 3.14.
+> > > > > 
+> > > > > Commit a1fc1920aaaa ("usb: musb: core: make sure musb is in RPM_ACTIVE on
+> > > > > resume") later started setting the RPM status to active during resume
+> > > > > without first making sure that the parent was runtime resumed. This was
+> > > > > also implicitly relying on the parent always being active. Since commit
+> > > > > 71723f95463d ("PM / runtime: print error when activating a child to
+> > > > > unactive parent") this now also results in following warning:
+> > > > > 
+> > > > >   musb-hdrc musb-hdrc.0: runtime PM trying to activate child device
+> > > > >     musb-hdrc.0 but parent (47401400.usb) is not active
+> > > > 
+> > > > I don't understand this.  Why wouldn't the parent be in RPM_ACTIVE at
+> > > > this time?  After all, how could the system be expected to resume a
+> > > > child device if its parent wasn't fully active?
+> > > 
+> > > The parent for a musb controller is a "glue" device (e.g. musb_dsps)
+> > > which previously was always kept active, but that's no longer the case
+> > > as mentioned above.
+> > 
+> > Even if the parent is not always kept active, it should still be active
+> > during a system resume.  Starting from the time its resume routine
+> > runs, it should remain at full power until the system resume is 
+> > finished.
+> 
+> It is powered, but its runtime PM status does not reflect that, and that
+> is the problem. This patch makes sure that the child, and thereby
+> parent, are both runtime resumed throughout system suspend, but perhaps
+> that should be done explicitly in the parent driver as well (more
+> below).
+> 
+> > > In a system with two controllers (e.g. a Beagle Bone Black),
+> > 
+> > Do you mean a host controller and a peripheral controller?
+> 
+> Yes, in this example (the BBB has two OTG controllers), but it could
+> just as well be two controllers in peripheral mode where one is active.
+> 
+> > > the host
+> > > port may be active and keep the shared clock enabled (managed by the
+> > > grandparent device). Thereby the external-abort crash can be avoided
+> > > when suspending a disconnected (and runtime suspended) peripheral port.
+> > 
+> > So what?  There are lots of ways of avoiding such crashes.  (Disabling
+> > the driver entirely, for example.)  They aren't relevant for this
+> > discussion.
+> 
+> Perhaps I read your question too literally above; I'm trying to explain
+> how you can end up with a runtime suspended parent during resume, without
+> hitting the external abort during suspend, with the current kernel.
+> 
+> This can be done by keeping the sibling/cousin controller enabled, but
+> could of course also have been achieved by preventing the grandparent
+> (omap) device (which controls the clock) from suspending by other means.
+> 
+> I'm just describing how this could happen with the current
+> implementation; I'm not claiming that the implementation is correct.
+> 
+> > > When the system is later resumed, you would hit that broken activation
+> > > code of the runtime suspended device, with a likewise runtime suspended
+> > > parent, and the warning would be printed.
+> > 
+> > Why would the parent be runtime suspended?  Why wouldn't it still be in
+> > the full-power state, the way its own resume routine should have left
+> > it?
+> > 
+> > Maybe I'm being slow and dumb here, but I don't see how any of this 
+> > answers the question I raised earlier.
+> 
+> I think understand what you're getting at and yes, the parent *should*
+> be RPM_ACTIVE, while I'm saying that it *currently* is not guaranteed.
+> 
+> As mentioned above, this patch does make sure that child and parent are
+> both runtime resume when suspending and therefore remain RPM_ACTIVE
+> throughout suspend. This specifically means that the explicit activation
+> code on resume can now be removed.
+> 
+> But I should fix that paragraph and not blame the explicit activation
+> code for not "making sure that the parent was runtime resumed".
+> 
+> In fact, some of the parent glue drivers also do register accesses in
+> their suspend/resume callbacks which ought to have been preceded by an
+> explicit runtime resume. These glue drivers are a bit special however
+> and does check for a registered child in their pm callbacks so it's not
+> a problem in practise. I think I'll add them anyway for clarity in a
+> follow up patch.
 
-Thanks,
-Srinivas
+I see.  Thanks for the explanation.
 
-
-> I modified it like that, it looks more reasonable. How about that?
-> 
-> Hi Rafael,
-> Deleting "get" function pointer within intel_pstate would lead to
-> sysfs interface cpuinfo_cur_freq disappearing, because of
-> cpufreq_add_dev_interface will check "cpufreq_driver->get" for it.
-> Perhaps just return 0 with in intel_pstate_get would be a workaround
-> for this issue, how about it?
-> 
-> I have tested this patch based on Purley platform, both Hardware and
-> Software P-states works correct, we could get accurate and same
-> frequency from cpuinfo_cur_freq and scaling_cur_freq.
-> 
->  drivers/cpufreq/cpufreq.c      | 4 ++++
->  drivers/cpufreq/intel_pstate.c | 8 +++++---
->  2 files changed, 9 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 9bf97a3..922f9d9 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -694,6 +694,10 @@ static ssize_t show_cpuinfo_cur_freq(struct
-> cpufreq_policy *policy,
->  	if (cur_freq)
->  		return sprintf(buf, "%u\n", cur_freq);
->  
-> +	cur_freq = arch_freq_get_on_cpu(policy->cpu);
-> +	if (cur_freq)
-> +		return sprintf(buf, "%u\n", cur_freq);
-> +
->  	return sprintf(buf, "<unknown>\n");
->  }
->  
-> diff --git a/drivers/cpufreq/intel_pstate.c
-> b/drivers/cpufreq/intel_pstate.c
-> index 6cd5035..33e6c10 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1924,9 +1924,11 @@ static int intel_pstate_init_cpu(unsigned int
-> cpunum)
->  
->  static unsigned int intel_pstate_get(unsigned int cpu_num)
->  {
-> -	struct cpudata *cpu = all_cpu_data[cpu_num];
-> -
-> -	return cpu ? get_avg_frequency(cpu) : 0;
-> +	/*
-> +	 * Use frequency from scaling_cur_freq, reserve this
-> function
-> +	 * for existing of sysfs cpuinfo_cur_freq.
-> +	 */
-> +	return 0;
->  }
->  
->  static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
-> 
-> 
-> > 
-> > On Tue, 2017-07-25 at 01:46 +0000, Huaisheng HS1 Ye wrote:
-> > > 
-> > > Hi Rafael,
-> > > 
-> > > If you delete "get" function implement within intel_pstate, the
-> > > sysfs
-> > > interface cpuinfo_cur_freq will display <unknown> all the time.
-> > cpuinfo_cur_freq by definition should show actual frequency HW
-> > frequency.
-> > Unless I missed something. So Len Brown's patch should also take
-> > care of this
-> > to get from arch specific function is available.
-> > So in addition to Rafael's change, what about this?
-> > 
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index
-> > 9bf97a3..29ec687 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -689,8 +689,13 @@ store_one(scaling_max_freq, max);
-> >  static ssize_t show_cpuinfo_cur_freq(struct cpufreq_policy
-> > *policy,
-> >                                         char *buf)
-> >  {
-> > -       unsigned int cur_freq = __cpufreq_get(policy);
-> > +       unsigned int cur_freq;
-> > 
-> > +       cur_freq = arch_freq_get_on_cpu(policy->cpu);
-> > +       if (cur_freq)
-> > +               return sprintf(buf, "%u\n", cur_freq);
-> > +
-> > +       cur_freq = __cpufreq_get(policy);
-> >         if (cur_freq)
-> >                 return sprintf(buf, "%u\n", cur_freq);
-> > 
-> > 
-> > 
-> > Thanks,
-> > Srinivas
-> > 
-> > > 
-> > > To be honest, at the beginning I have consider this way like you
-> > > patched, but based two reasons below, it is conservative for us
-> > > to do
-> > > that.
-> > > 
-> > > 1. I am worried about whether it would lead to confusion for
-> > > customers
-> > > or Linux OS venders who are accustomed to cpuinfo_cur_freq.
-> > > 2. This is the first time for me to offer patch to intel_pstate,
-> > > not
-> > > sure whether it could be accepted by you.
-> > > 
-> > > > 
-> > > > 
-> > > > On Monday, July 24, 2017 03:32:47 PM Huaisheng HS1 Ye wrote:
-> > > > > 
-> > > > > 
-> > > > > Hi Rafael,
-> > > > > Thanks for your reply.
-> > > > > 
-> > > > > > 
-> > > > > > 
-> > > > > > On Monday, July 24, 2017 05:43:14 AM Huaisheng HS1 Ye
-> > > > > > wrote:
-> > > > > > > 
-> > > > > > > 
-> > > > > > > After commit 82b4e03e01bc (intel_pstate: skip scheduler
-> > > > > > > hook
-> > > > > > > when in "performance" mode) Software P-state control
-> > > > > > > modes
-> > > > > > > couldn't get dynamic value during performance mode,
-> > > > > > Please explain what you mean here.
-> > > > > > 
-> > > > > commit 82b4e03e01bc (intel_pstate: skip scheduler hook when
-> > > > > in
-> > > > > "performance" mode) disables
-> > > > > intel_pstate_set_update_util_hook
-> > > > > when current policy is performance within function
-> > > > > intel_pstate_set_policy.
-> > > > > It leads to Software P-states couldn't update sysfs interface
-> > > > > cpuinfo_cur_freq's value during performance mode, because of
-> > > > > pstate_funcs.update_util couldn't set for the given CPU.
-> > > > > 
-> > > > > > 
-> > > > > > 
-> > > > > > I guess you carried out some tests and the results were not
-> > > > > > as
-> > > > > > expected, so what was the test?
-> > > > > Exactly, we check the sysfs interface cpuinfo_cur_freq and
-> > > > > the
-> > > > > output of cpupower frequency-info both with performance mode.
-> > > > OK, so what about the change below:
-> > > > 
-> > > > ---
-> > > >  drivers/cpufreq/intel_pstate.c |    8 --------
-> > > >  1 file changed, 8 deletions(-)
-> > > > 
-> > > > Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> > > > 
-> > ==============================================================
-> > > 
-> > > > 
-> > > > =====
-> > > > --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> > > > +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> > > > @@ -1674,13 +1674,6 @@ static int intel_pstate_init_cpu(unsigne
-> > > >  	return 0;
-> > > >  }
-> > > > 
-> > > > -static unsigned int intel_pstate_get(unsigned int cpu_num) -{
-> > > > -	struct cpudata *cpu = all_cpu_data[cpu_num];
-> > > > -
-> > > > -	return cpu ? get_avg_frequency(cpu) : 0;
-> > > > -}
-> > > > -
-> > > >  static void intel_pstate_set_update_util_hook(unsigned int
-> > > > cpu_num)  {
-> > > >  	struct cpudata *cpu = all_cpu_data[cpu_num]; @@
-> > > > -1921,7
-> > > > +1914,6 @@
-> > > > static struct cpufreq_driver intel_pstat
-> > > >  	.setpolicy	= intel_pstate_set_policy,
-> > > >  	.suspend	= intel_pstate_hwp_save_state,
-> > > >  	.resume		= intel_pstate_resume,
-> > > > -	.get		= intel_pstate_get,
-> > > >  	.init		= intel_pstate_cpu_init,
-> > > >  	.exit		= intel_pstate_cpu_exit,
-> > > >  	.stop_cpu	= intel_pstate_stop_cpu,
+Alan Stern
