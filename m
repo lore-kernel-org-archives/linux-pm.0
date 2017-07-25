@@ -1,111 +1,100 @@
-From: Rocky Hao <rocky.hao@rock-chips.com>
-Subject: [PATCH 4/5] arm64: dts: rockchip: add thermal nodes for rk3328 SoC
-Date: Tue, 25 Jul 2017 17:09:47 +0800
-Message-ID: <1500973788-14627-5-git-send-email-rocky.hao@rock-chips.com>
-References: <1500973788-14627-1-git-send-email-rocky.hao@rock-chips.com>
+From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Subject: Re: [PATCH v5 0/2] add UniPhier thermal support
+Date: Tue, 25 Jul 2017 18:11:08 +0900
+Message-ID: <20170725181108.7EA5.4A936039@socionext.com>
+References: <CAK7LNARchNY8wA56+spLCUh99tsGpPQ9VuYc5ymnOL3cu0bd8g@mail.gmail.com> <CAA93ih2rYfMasZGzZ6K4nUWJx64KmmW8VWx8MZCscSag2z0-5w@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1500973788-14627-1-git-send-email-rocky.hao@rock-chips.com>
+In-Reply-To: <CAA93ih2rYfMasZGzZ6K4nUWJx64KmmW8VWx8MZCscSag2z0-5w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com
-Cc: shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com, rocky.hao@rock-chips.com
+To: Masami Hiramatsu <masami.hiramatsu@linaro.org>
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, rui.zhang@intel.com, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jassi Brar <jaswinder.singh@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-add thermal zone and dynamic CPU power coefficients for rk3328
+Hello,
 
-Change-Id: I227468506c0b978a0fd4dd9596631e026743910e
-Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
----
- arch/arm64/boot/dts/rockchip/rk3328.dtsi | 43 ++++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+On Fri, 21 Jul 2017 22:34:49 +0900 <masami.hiramatsu@linaro.org> wrote:
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3328.dtsi b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
-index 186fb93fdffd..68829f808320 100644
---- a/arch/arm64/boot/dts/rockchip/rk3328.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
-@@ -47,6 +47,7 @@
- #include <dt-bindings/pinctrl/rockchip.h>
- #include <dt-bindings/power/rk3328-power.h>
- #include <dt-bindings/soc/rockchip,boot-mode.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- / {
- 	compatible = "rockchip,rk3328";
-@@ -74,6 +75,8 @@
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			reg = <0x0 0x0>;
- 			clocks = <&cru ARMCLK>;
-+			#cooling-cells = <2>; /* min followed by max */
-+			dynamic-power-coefficient = <120>;
- 			enable-method = "psci";
- 			next-level-cache = <&l2>;
- 		};
-@@ -83,6 +86,7 @@
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			reg = <0x0 0x1>;
- 			clocks = <&cru ARMCLK>;
-+			dynamic-power-coefficient = <120>;
- 			enable-method = "psci";
- 			next-level-cache = <&l2>;
- 		};
-@@ -92,6 +96,7 @@
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			reg = <0x0 0x2>;
- 			clocks = <&cru ARMCLK>;
-+			dynamic-power-coefficient = <120>;
- 			enable-method = "psci";
- 			next-level-cache = <&l2>;
- 		};
-@@ -101,6 +106,7 @@
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			reg = <0x0 0x3>;
- 			clocks = <&cru ARMCLK>;
-+			dynamic-power-coefficient = <120>;
- 			enable-method = "psci";
- 			next-level-cache = <&l2>;
- 		};
-@@ -308,6 +314,43 @@
- 		interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
- 	};
- 
-+	thermal-zones {
-+		soc_thermal: soc-thermal {
-+			polling-delay-passive = <20>; /* milliseconds */
-+			polling-delay = <1000>; /* milliseconds */
-+			sustainable-power = <1000>; /* milliwatts */
-+
-+			thermal-sensors = <&tsadc 0>;
-+
-+			trips {
-+				threshold: trip-point0 {
-+					temperature = <70000>; /* millicelsius */
-+					hysteresis = <2000>; /* millicelsius */
-+					type = "passive";
-+				};
-+				target: trip-point1 {
-+					temperature = <85000>; /* millicelsius */
-+					hysteresis = <2000>; /* millicelsius */
-+					type = "passive";
-+				};
-+				soc_crit: soc-crit {
-+					temperature = <95000>; /* millicelsius */
-+					hysteresis = <2000>; /* millicelsius */
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&target>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+					contribution = <4096>;
-+				};
-+			};
-+		};
-+
-+	};
-+
- 	tsadc: tsadc@ff250000 {
- 		compatible = "rockchip,rk3328-tsadc";
- 		reg = <0x0 0xff250000 0x0 0x100>;
--- 
-1.9.1
+> Hello,
+> 
+> 2017-07-21 22:24 GMT+09:00 Masahiro Yamada <yamada.masahiro@socionext.com>:
+> > 2017-07-21 20:21 GMT+09:00 Kunihiko Hayashi <hayashi.kunihiko@socionext.com>:
+> >> This series adds support for CPU temperature monitor modules implemented
+> >> on UniPhier LD20 and PXs2 SoCs. This driver supports temperature monitoring
+> >> and alert function on the module.
+> >>
+> >> Changes in v4:
+> >> - fix warnings from sparse by replacing u32 with __be32
+> >
+> > Nit.
+> >
+> > Your subject prefix indicates this patch is v5.
+> >
+> > Do you mean "Changes in v5" or "Changes since v4" ?
+> 
+> I've checked all previous series and it seems to mean "Changes from vN".
+
+Surely my description is misleading.
+I'll fix it next.
+
+> Thanks,
+> 
+> >
+> >
+> >
+> >
+> >
+> >
+> >> Changes in v3:
+> >> - remove TMOD_MASK and use TMOD_WIDTH representing the bit width of TMOD
+> >>
+> >> Changes in v2:
+> >> - add nsleep after starting and stopping PVT
+> >> - replace temperature calculation with sign_extend32()
+> >>
+> >> Changes in v1:
+> >> - separate dts from this patchset as another patchset
+> >> - remove 'reg' description on the dt-bindings document
+> >> - fix the order of calling initialization functions
+> >> - replace mask bits to use GENMASK
+> >> - fix calculation of temperature because of not considering a negative value
+> >> - use devm_request_threaded_irq() instead of devm_request_irq() and
+> >>   separate a thread function from the interrupt handler
+> >> - add dependency to Kconfig
+> >> - set 120C to CRITICAL_TEMP_LIMIT as maximum temperature
+> >> - shrink each line of parameters to save the number of lines
+> >> - improve some comments and copyright description
+> >>
+> >> Kunihiko Hayashi (2):
+> >>   dt-bindings: thermal: add binding documentation for UniPhier thermal
+> >>     monitor
+> >>   thermal: uniphier: add UniPhier thermal driver
+> >>
+> >>  .../bindings/thermal/uniphier-thermal.txt          |  64 ++++
+> >>  drivers/thermal/Kconfig                            |   8 +
+> >>  drivers/thermal/Makefile                           |   1 +
+> >>  drivers/thermal/uniphier_thermal.c                 | 386 +++++++++++++++++++++
+> >>  4 files changed, 459 insertions(+)
+> >>  create mode 100644 Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
+> >>  create mode 100644 drivers/thermal/uniphier_thermal.c
+> >>
+> >> --
+> >> 2.7.4
+> >>
+> >
+> >
+> >
+> > --
+> > Best Regards
+> > Masahiro Yamada
+> 
+> 
+> 
+> -- 
+> Masami Hiramatsu
+
+--
+Best Regards,
+Kunihiko Hayashi
