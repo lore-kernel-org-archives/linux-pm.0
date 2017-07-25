@@ -1,138 +1,137 @@
-From: Huaisheng HS1 Ye <yehs1@lenovo.com>
-Subject: RE: [PATCH] cpufreq: intel_pstate: Fix cpuinfo_cur_freq after
- performance governor changes
-Date: Tue, 25 Jul 2017 07:03:36 +0000
-Message-ID: <KL1PR0302MB2502B85BBFF7B8BB79BE40D692B80@KL1PR0302MB2502.apcprd03.prod.outlook.com>
-References: <1500875013-123321-1-git-send-email-yehs1@lenovo.com>
-         <7185077.O26hx51RqR@aspire.rjw.lan>
-         <KL1PR0302MB2502C43359F4B6A738D509B992BB0@KL1PR0302MB2502.apcprd03.prod.outlook.com>
-         <13292124.r3mFCOTPK8@aspire.rjw.lan>
-         <KL1PR0302MB2502DDDCC1D0F4FCC2916B4392B80@KL1PR0302MB2502.apcprd03.prod.outlook.com>
- <1500951465.4920.2.camel@linux.intel.com>
+From: Johan Hovold <johan@kernel.org>
+Subject: Re: [PATCH] USB: musb: fix external abort on suspend
+Date: Tue, 25 Jul 2017 09:09:29 +0200
+Message-ID: <20170725070929.GK2729@localhost>
+References: <20170724152059.GA27453@localhost>
+ <Pine.LNX.4.44L0.1707241305260.1739-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta8.messagelabs.com ([216.82.243.199]:40475 "EHLO
-        mail1.bemta8.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750781AbdGYHEI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 03:04:08 -0400
-In-Reply-To: <1500951465.4920.2.camel@linux.intel.com>
-Content-Language: zh-CN
+Received: from mail-lf0-f42.google.com ([209.85.215.42]:37103 "EHLO
+        mail-lf0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750768AbdGYHJi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 03:09:38 -0400
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.1707241305260.1739-100000@iolanthe.rowland.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, NingTing Cheng <chengnt@lenovo.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Johan Hovold <johan@kernel.org>, Bin Liu <b-liu@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, stable <stable@vger.kernel.org>, Daniel Mack <zonque@gmail.com>, Dave Gerlach <d-gerlach@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Tony Lindgren <tony@atomide.com>
 
-SGkgU3Jpbml2YXMsDQpZb3VyIGlkZWEgaXMgZ3JlYXQsIGJ1dCB5b3VyIHBhdGNoIGF0IGNwdWZy
-ZXEuYyB3aWxsIGZvcmNlIGFsbCBwbGF0Zm9ybXMgdG8gdXNlIHNjYWxpbmdfY3VyX2ZyZXEgYXMg
-Zmlyc3QgY2hvaWNlIHdoZW4gdXNlcnNwYWNlIHdhbnRzIHRvIGFjY2VzcyBjcHVpbmZvX2N1cl9m
-cmVxLiBJdCBpcyBvayBmb3IgaW50ZWwgeDg2IHBsYXRmcm9tIGJ1dCBoYXJkIHRvIHNheSB3aXRo
-IG90aGVyIHBsYXRmb3Jtcy4NCkkgbW9kaWZpZWQgaXQgbGlrZSB0aGF0LCBpdCBsb29rcyBtb3Jl
-IHJlYXNvbmFibGUuIEhvdyBhYm91dCB0aGF0Pw0KDQpIaSBSYWZhZWwsDQpEZWxldGluZyAiZ2V0
-IiBmdW5jdGlvbiBwb2ludGVyIHdpdGhpbiBpbnRlbF9wc3RhdGUgd291bGQgbGVhZCB0byBzeXNm
-cyBpbnRlcmZhY2UgY3B1aW5mb19jdXJfZnJlcSBkaXNhcHBlYXJpbmcsIGJlY2F1c2Ugb2YgY3B1
-ZnJlcV9hZGRfZGV2X2ludGVyZmFjZSB3aWxsIGNoZWNrICJjcHVmcmVxX2RyaXZlci0+Z2V0IiBm
-b3IgaXQuDQpQZXJoYXBzIGp1c3QgcmV0dXJuIDAgd2l0aCBpbiBpbnRlbF9wc3RhdGVfZ2V0IHdv
-dWxkIGJlIGEgd29ya2Fyb3VuZCBmb3IgdGhpcyBpc3N1ZSwgaG93IGFib3V0IGl0Pw0KDQpJIGhh
-dmUgdGVzdGVkIHRoaXMgcGF0Y2ggYmFzZWQgb24gUHVybGV5IHBsYXRmb3JtLCBib3RoIEhhcmR3
-YXJlIGFuZCBTb2Z0d2FyZSBQLXN0YXRlcyB3b3JrcyBjb3JyZWN0LCB3ZSBjb3VsZCBnZXQgYWNj
-dXJhdGUgYW5kIHNhbWUgZnJlcXVlbmN5IGZyb20gY3B1aW5mb19jdXJfZnJlcSBhbmQgc2NhbGlu
-Z19jdXJfZnJlcS4NCg0KIGRyaXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgICAgICB8IDQgKysrKw0K
-IGRyaXZlcnMvY3B1ZnJlcS9pbnRlbF9wc3RhdGUuYyB8IDggKysrKystLS0NCiAyIGZpbGVzIGNo
-YW5nZWQsIDkgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkNCg0KZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvY3B1ZnJlcS9jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvY3B1ZnJlcS5jDQppbmRl
-eCA5YmY5N2EzLi45MjJmOWQ5IDEwMDY0NA0KLS0tIGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEu
-Yw0KKysrIGIvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYw0KQEAgLTY5NCw2ICs2OTQsMTAgQEAg
-c3RhdGljIHNzaXplX3Qgc2hvd19jcHVpbmZvX2N1cl9mcmVxKHN0cnVjdCBjcHVmcmVxX3BvbGlj
-eSAqcG9saWN5LA0KIAlpZiAoY3VyX2ZyZXEpDQogCQlyZXR1cm4gc3ByaW50ZihidWYsICIldVxu
-IiwgY3VyX2ZyZXEpOw0KIA0KKwljdXJfZnJlcSA9IGFyY2hfZnJlcV9nZXRfb25fY3B1KHBvbGlj
-eS0+Y3B1KTsNCisJaWYgKGN1cl9mcmVxKQ0KKwkJcmV0dXJuIHNwcmludGYoYnVmLCAiJXVcbiIs
-IGN1cl9mcmVxKTsNCisNCiAJcmV0dXJuIHNwcmludGYoYnVmLCAiPHVua25vd24+XG4iKTsNCiB9
-DQogDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jIGIvZHJpdmVy
-cy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jDQppbmRleCA2Y2Q1MDM1Li4zM2U2YzEwIDEwMDY0NA0K
-LS0tIGEvZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jDQorKysgYi9kcml2ZXJzL2NwdWZy
-ZXEvaW50ZWxfcHN0YXRlLmMNCkBAIC0xOTI0LDkgKzE5MjQsMTEgQEAgc3RhdGljIGludCBpbnRl
-bF9wc3RhdGVfaW5pdF9jcHUodW5zaWduZWQgaW50IGNwdW51bSkNCiANCiBzdGF0aWMgdW5zaWdu
-ZWQgaW50IGludGVsX3BzdGF0ZV9nZXQodW5zaWduZWQgaW50IGNwdV9udW0pDQogew0KLQlzdHJ1
-Y3QgY3B1ZGF0YSAqY3B1ID0gYWxsX2NwdV9kYXRhW2NwdV9udW1dOw0KLQ0KLQlyZXR1cm4gY3B1
-ID8gZ2V0X2F2Z19mcmVxdWVuY3koY3B1KSA6IDA7DQorCS8qDQorCSAqIFVzZSBmcmVxdWVuY3kg
-ZnJvbSBzY2FsaW5nX2N1cl9mcmVxLCByZXNlcnZlIHRoaXMgZnVuY3Rpb24NCisJICogZm9yIGV4
-aXN0aW5nIG9mIHN5c2ZzIGNwdWluZm9fY3VyX2ZyZXEuDQorCSAqLw0KKwlyZXR1cm4gMDsNCiB9
-DQogDQogc3RhdGljIHZvaWQgaW50ZWxfcHN0YXRlX3NldF91cGRhdGVfdXRpbF9ob29rKHVuc2ln
-bmVkIGludCBjcHVfbnVtKQ0KDQoNCj4gT24gVHVlLCAyMDE3LTA3LTI1IGF0IDAxOjQ2ICswMDAw
-LCBIdWFpc2hlbmcgSFMxIFllIHdyb3RlOg0KPiA+IEhpIFJhZmFlbCwNCj4gPg0KPiA+IElmIHlv
-dSBkZWxldGUgImdldCIgZnVuY3Rpb24gaW1wbGVtZW50IHdpdGhpbiBpbnRlbF9wc3RhdGUsIHRo
-ZSBzeXNmcw0KPiA+IGludGVyZmFjZSBjcHVpbmZvX2N1cl9mcmVxIHdpbGwgZGlzcGxheSA8dW5r
-bm93bj4gYWxsIHRoZSB0aW1lLg0KPiBjcHVpbmZvX2N1cl9mcmVxIGJ5IGRlZmluaXRpb24gc2hv
-dWxkIHNob3cgYWN0dWFsIGZyZXF1ZW5jeSBIVyBmcmVxdWVuY3kuDQo+IFVubGVzcyBJIG1pc3Nl
-ZCBzb21ldGhpbmcuIFNvIExlbiBCcm93bidzIHBhdGNoIHNob3VsZCBhbHNvIHRha2UgY2FyZSBv
-ZiB0aGlzDQo+IHRvIGdldCBmcm9tIGFyY2ggc3BlY2lmaWMgZnVuY3Rpb24gaXMgYXZhaWxhYmxl
-Lg0KPiBTbyBpbiBhZGRpdGlvbiB0byBSYWZhZWwncyBjaGFuZ2UsIHdoYXQgYWJvdXQgdGhpcz8N
-Cj4gDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYyBiL2RyaXZl
-cnMvY3B1ZnJlcS9jcHVmcmVxLmMgaW5kZXgNCj4gOWJmOTdhMy4uMjllYzY4NyAxMDA2NDQNCj4g
-LS0tIGEvZHJpdmVycy9jcHVmcmVxL2NwdWZyZXEuYw0KPiArKysgYi9kcml2ZXJzL2NwdWZyZXEv
-Y3B1ZnJlcS5jDQo+IEBAIC02ODksOCArNjg5LDEzIEBAIHN0b3JlX29uZShzY2FsaW5nX21heF9m
-cmVxLCBtYXgpOw0KPiDCoHN0YXRpYyBzc2l6ZV90IHNob3dfY3B1aW5mb19jdXJfZnJlcShzdHJ1
-Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSwNCj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBjaGFy
-ICpidWYpDQo+IMKgew0KPiAtwqDCoMKgwqDCoMKgwqB1bnNpZ25lZCBpbnQgY3VyX2ZyZXEgPSBf
-X2NwdWZyZXFfZ2V0KHBvbGljeSk7DQo+ICvCoMKgwqDCoMKgwqDCoHVuc2lnbmVkIGludCBjdXJf
-ZnJlcTsNCj4gDQo+ICvCoMKgwqDCoMKgwqDCoGN1cl9mcmVxID0gYXJjaF9mcmVxX2dldF9vbl9j
-cHUocG9saWN5LT5jcHUpOw0KPiArwqDCoMKgwqDCoMKgwqBpZiAoY3VyX2ZyZXEpDQo+ICvCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqByZXR1cm4gc3ByaW50ZihidWYsICIldVxuIiwgY3Vy
-X2ZyZXEpOw0KPiArDQo+ICvCoMKgwqDCoMKgwqDCoGN1cl9mcmVxID0gX19jcHVmcmVxX2dldChw
-b2xpY3kpOw0KPiDCoMKgwqDCoMKgwqDCoMKgaWYgKGN1cl9mcmVxKQ0KPiDCoMKgwqDCoMKgwqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoHJldHVybiBzcHJpbnRmKGJ1ZiwgIiV1XG4iLCBjdXJfZnJlcSk7
-DQo+IA0KPiANCj4gDQo+IFRoYW5rcywNCj4gU3Jpbml2YXMNCj4gDQo+ID4gVG8gYmUgaG9uZXN0
-LCBhdCB0aGUgYmVnaW5uaW5nIEkgaGF2ZSBjb25zaWRlciB0aGlzIHdheSBsaWtlIHlvdQ0KPiA+
-IHBhdGNoZWQsIGJ1dCBiYXNlZCB0d28gcmVhc29ucyBiZWxvdywgaXQgaXMgY29uc2VydmF0aXZl
-IGZvciB1cyB0byBkbw0KPiA+IHRoYXQuDQo+ID4NCj4gPiAxLiBJIGFtIHdvcnJpZWQgYWJvdXQg
-d2hldGhlciBpdCB3b3VsZCBsZWFkIHRvIGNvbmZ1c2lvbiBmb3IgY3VzdG9tZXJzDQo+ID4gb3Ig
-TGludXggT1MgdmVuZGVycyB3aG8gYXJlIGFjY3VzdG9tZWQgdG8gY3B1aW5mb19jdXJfZnJlcS4N
-Cj4gPiAyLiBUaGlzIGlzIHRoZSBmaXJzdCB0aW1lIGZvciBtZSB0byBvZmZlciBwYXRjaCB0byBp
-bnRlbF9wc3RhdGUsIG5vdA0KPiA+IHN1cmUgd2hldGhlciBpdCBjb3VsZCBiZSBhY2NlcHRlZCBi
-eSB5b3UuDQo+ID4NCj4gPiA+DQo+ID4gPiBPbiBNb25kYXksIEp1bHkgMjQsIDIwMTcgMDM6MzI6
-NDcgUE0gSHVhaXNoZW5nIEhTMSBZZSB3cm90ZToNCj4gPiA+ID4NCj4gPiA+ID4gSGkgUmFmYWVs
-LA0KPiA+ID4gPiBUaGFua3MgZm9yIHlvdXIgcmVwbHkuDQo+ID4gPiA+DQo+ID4gPiA+ID4NCj4g
-PiA+ID4gPiBPbiBNb25kYXksIEp1bHkgMjQsIDIwMTcgMDU6NDM6MTQgQU0gSHVhaXNoZW5nIEhT
-MSBZZSB3cm90ZToNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBBZnRlciBjb21taXQgODJiNGUw
-M2UwMWJjIChpbnRlbF9wc3RhdGU6IHNraXAgc2NoZWR1bGVyIGhvb2sNCj4gPiA+ID4gPiA+IHdo
-ZW4gaW4gInBlcmZvcm1hbmNlIiBtb2RlKSBTb2Z0d2FyZSBQLXN0YXRlIGNvbnRyb2wgbW9kZXMN
-Cj4gPiA+ID4gPiA+IGNvdWxkbid0IGdldCBkeW5hbWljIHZhbHVlIGR1cmluZyBwZXJmb3JtYW5j
-ZSBtb2RlLA0KPiA+ID4gPiA+IFBsZWFzZSBleHBsYWluIHdoYXQgeW91IG1lYW4gaGVyZS4NCj4g
-PiA+ID4gPg0KPiA+ID4gPiBjb21taXQgODJiNGUwM2UwMWJjIChpbnRlbF9wc3RhdGU6IHNraXAg
-c2NoZWR1bGVyIGhvb2sgd2hlbiBpbg0KPiA+ID4gPiAicGVyZm9ybWFuY2UiIG1vZGUpIGRpc2Fi
-bGVzIGludGVsX3BzdGF0ZV9zZXRfdXBkYXRlX3V0aWxfaG9vaw0KPiA+ID4gPiB3aGVuIGN1cnJl
-bnQgcG9saWN5IGlzIHBlcmZvcm1hbmNlIHdpdGhpbiBmdW5jdGlvbg0KPiA+ID4gPiBpbnRlbF9w
-c3RhdGVfc2V0X3BvbGljeS4NCj4gPiA+ID4gSXQgbGVhZHMgdG8gU29mdHdhcmUgUC1zdGF0ZXMg
-Y291bGRuJ3QgdXBkYXRlIHN5c2ZzIGludGVyZmFjZQ0KPiA+ID4gPiBjcHVpbmZvX2N1cl9mcmVx
-J3MgdmFsdWUgZHVyaW5nIHBlcmZvcm1hbmNlIG1vZGUsIGJlY2F1c2Ugb2YNCj4gPiA+ID4gcHN0
-YXRlX2Z1bmNzLnVwZGF0ZV91dGlsIGNvdWxkbid0IHNldCBmb3IgdGhlIGdpdmVuIENQVS4NCj4g
-PiA+ID4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IEkgZ3Vlc3MgeW91IGNhcnJpZWQgb3V0IHNvbWUg
-dGVzdHMgYW5kIHRoZSByZXN1bHRzIHdlcmUgbm90IGFzDQo+ID4gPiA+ID4gZXhwZWN0ZWQsIHNv
-IHdoYXQgd2FzIHRoZSB0ZXN0Pw0KPiA+ID4gPiBFeGFjdGx5LCB3ZSBjaGVjayB0aGUgc3lzZnMg
-aW50ZXJmYWNlIGNwdWluZm9fY3VyX2ZyZXEgYW5kIHRoZQ0KPiA+ID4gPiBvdXRwdXQgb2YgY3B1
-cG93ZXIgZnJlcXVlbmN5LWluZm8gYm90aCB3aXRoIHBlcmZvcm1hbmNlIG1vZGUuDQo+ID4gPiBP
-Sywgc28gd2hhdCBhYm91dCB0aGUgY2hhbmdlIGJlbG93Og0KPiA+ID4NCj4gPiA+IC0tLQ0KPiA+
-ID4gwqBkcml2ZXJzL2NwdWZyZXEvaW50ZWxfcHN0YXRlLmMgfMKgwqDCoMKgOCAtLS0tLS0tLQ0K
-PiA+ID4gwqAxIGZpbGUgY2hhbmdlZCwgOCBkZWxldGlvbnMoLSkNCj4gPiA+DQo+ID4gPiBJbmRl
-eDogbGludXgtcG0vZHJpdmVycy9jcHVmcmVxL2ludGVsX3BzdGF0ZS5jDQo+ID4gPg0KPiA9PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PQ0KPiA+ID4gPT09PT0NCj4gPiA+IC0tLSBsaW51eC1wbS5vcmlnL2RyaXZlcnMvY3B1ZnJlcS9p
-bnRlbF9wc3RhdGUuYw0KPiA+ID4gKysrIGxpbnV4LXBtL2RyaXZlcnMvY3B1ZnJlcS9pbnRlbF9w
-c3RhdGUuYw0KPiA+ID4gQEAgLTE2NzQsMTMgKzE2NzQsNiBAQCBzdGF0aWMgaW50IGludGVsX3Bz
-dGF0ZV9pbml0X2NwdSh1bnNpZ25lDQo+ID4gPiDCoAlyZXR1cm4gMDsNCj4gPiA+IMKgfQ0KPiA+
-ID4NCj4gPiA+IC1zdGF0aWMgdW5zaWduZWQgaW50IGludGVsX3BzdGF0ZV9nZXQodW5zaWduZWQg
-aW50IGNwdV9udW0pIC17DQo+ID4gPiAtCXN0cnVjdCBjcHVkYXRhICpjcHUgPSBhbGxfY3B1X2Rh
-dGFbY3B1X251bV07DQo+ID4gPiAtDQo+ID4gPiAtCXJldHVybiBjcHUgPyBnZXRfYXZnX2ZyZXF1
-ZW5jeShjcHUpIDogMDsNCj4gPiA+IC19DQo+ID4gPiAtDQo+ID4gPiDCoHN0YXRpYyB2b2lkIGlu
-dGVsX3BzdGF0ZV9zZXRfdXBkYXRlX3V0aWxfaG9vayh1bnNpZ25lZCBpbnQNCj4gPiA+IGNwdV9u
-dW0pwqDCoHsNCj4gPiA+IMKgCXN0cnVjdCBjcHVkYXRhICpjcHUgPSBhbGxfY3B1X2RhdGFbY3B1
-X251bV07IEBAIC0xOTIxLDcNCj4gPiA+ICsxOTE0LDYgQEANCj4gPiA+IHN0YXRpYyBzdHJ1Y3Qg
-Y3B1ZnJlcV9kcml2ZXIgaW50ZWxfcHN0YXQNCj4gPiA+IMKgCS5zZXRwb2xpY3kJPSBpbnRlbF9w
-c3RhdGVfc2V0X3BvbGljeSwNCj4gPiA+IMKgCS5zdXNwZW5kCT0gaW50ZWxfcHN0YXRlX2h3cF9z
-YXZlX3N0YXRlLA0KPiA+ID4gwqAJLnJlc3VtZQkJPSBpbnRlbF9wc3RhdGVfcmVzdW1lLA0KPiA+
-ID4gLQkuZ2V0CQk9IGludGVsX3BzdGF0ZV9nZXQsDQo+ID4gPiDCoAkuaW5pdAkJPSBpbnRlbF9w
-c3RhdGVfY3B1X2luaXQsDQo+ID4gPiDCoAkuZXhpdAkJPSBpbnRlbF9wc3RhdGVfY3B1X2V4aXQs
-DQo+ID4gPiDCoAkuc3RvcF9jcHUJPSBpbnRlbF9wc3RhdGVfc3RvcF9jcHUsDQo=
+On Mon, Jul 24, 2017 at 01:13:22PM -0400, Alan Stern wrote:
+> On Mon, 24 Jul 2017, Johan Hovold wrote:
+> 
+> > On Mon, Jul 24, 2017 at 10:38:41AM -0400, Alan Stern wrote:
+> > > On Mon, 24 Jul 2017, Johan Hovold wrote:
+> > > 
+> > > > Make sure that the controller is runtime resumed when system suspending
+> > > > to avoid an external abort when accessing the interrupt registers:
+> > > > 
+> > > >   Unhandled fault: external abort on non-linefetch (0x1008) at 0xd025840a
+> > > >   ...
+> > > >   [<c05481a4>] (musb_default_readb) from [<c0545abc>] (musb_disable_interrupts+0x84/0xa8)
+> > > >   [<c0545abc>] (musb_disable_interrupts) from [<c0546b08>] (musb_suspend+0x38/0xb8)
+> > > >   [<c0546b08>] (musb_suspend) from [<c04a57f8>] (platform_pm_suspend+0x3c/0x64)
+> > > > 
+> > > > This is easily reproduced on a BBB by enabling the peripheral port only
+> > > > (as the host port may enable the shared clock) and keeping it
+> > > > disconnected so that the controller is runtime suspended. (Well, you
+> > > > would also need to the not-yet-merged am33xx-suspend patches by Dave
+> > > > Gerlach to be able to suspend the BBB.)
+> > > > 
+> > > > This is a regression that was introduced by commit 1c4d0b4e1806 ("usb:
+> > > > musb: Remove pm_runtime_set_irq_safe") which allowed the parent glue
+> > > > device to runtime suspend and thereby exposed a couple of older issues:
+> > > > 
+> > > > Register accesses without explicitly making sure the controller is
+> > > > runtime resumed during suspend was first introduced by commit
+> > > > c338412b5ded ("usb: musb: unconditionally save and restore the context
+> > > > on suspend") in 3.14.
+> > > > 
+> > > > Commit a1fc1920aaaa ("usb: musb: core: make sure musb is in RPM_ACTIVE on
+> > > > resume") later started setting the RPM status to active during resume
+> > > > without first making sure that the parent was runtime resumed. This was
+> > > > also implicitly relying on the parent always being active. Since commit
+> > > > 71723f95463d ("PM / runtime: print error when activating a child to
+> > > > unactive parent") this now also results in following warning:
+> > > > 
+> > > >   musb-hdrc musb-hdrc.0: runtime PM trying to activate child device
+> > > >     musb-hdrc.0 but parent (47401400.usb) is not active
+> > > 
+> > > I don't understand this.  Why wouldn't the parent be in RPM_ACTIVE at
+> > > this time?  After all, how could the system be expected to resume a
+> > > child device if its parent wasn't fully active?
+> > 
+> > The parent for a musb controller is a "glue" device (e.g. musb_dsps)
+> > which previously was always kept active, but that's no longer the case
+> > as mentioned above.
+> 
+> Even if the parent is not always kept active, it should still be active
+> during a system resume.  Starting from the time its resume routine
+> runs, it should remain at full power until the system resume is 
+> finished.
+
+It is powered, but its runtime PM status does not reflect that, and that
+is the problem. This patch makes sure that the child, and thereby
+parent, are both runtime resumed throughout system suspend, but perhaps
+that should be done explicitly in the parent driver as well (more
+below).
+
+> > In a system with two controllers (e.g. a Beagle Bone Black),
+> 
+> Do you mean a host controller and a peripheral controller?
+
+Yes, in this example (the BBB has two OTG controllers), but it could
+just as well be two controllers in peripheral mode where one is active.
+
+> > the host
+> > port may be active and keep the shared clock enabled (managed by the
+> > grandparent device). Thereby the external-abort crash can be avoided
+> > when suspending a disconnected (and runtime suspended) peripheral port.
+> 
+> So what?  There are lots of ways of avoiding such crashes.  (Disabling
+> the driver entirely, for example.)  They aren't relevant for this
+> discussion.
+
+Perhaps I read your question too literally above; I'm trying to explain
+how you can end up with a runtime suspended parent during resume, without
+hitting the external abort during suspend, with the current kernel.
+
+This can be done by keeping the sibling/cousin controller enabled, but
+could of course also have been achieved by preventing the grandparent
+(omap) device (which controls the clock) from suspending by other means.
+
+I'm just describing how this could happen with the current
+implementation; I'm not claiming that the implementation is correct.
+
+> > When the system is later resumed, you would hit that broken activation
+> > code of the runtime suspended device, with a likewise runtime suspended
+> > parent, and the warning would be printed.
+> 
+> Why would the parent be runtime suspended?  Why wouldn't it still be in
+> the full-power state, the way its own resume routine should have left
+> it?
+> 
+> Maybe I'm being slow and dumb here, but I don't see how any of this 
+> answers the question I raised earlier.
+
+I think understand what you're getting at and yes, the parent *should*
+be RPM_ACTIVE, while I'm saying that it *currently* is not guaranteed.
+
+As mentioned above, this patch does make sure that child and parent are
+both runtime resume when suspending and therefore remain RPM_ACTIVE
+throughout suspend. This specifically means that the explicit activation
+code on resume can now be removed.
+
+But I should fix that paragraph and not blame the explicit activation
+code for not "making sure that the parent was runtime resumed".
+
+In fact, some of the parent glue drivers also do register accesses in
+their suspend/resume callbacks which ought to have been preceded by an
+explicit runtime resume. These glue drivers are a bit special however
+and does check for a registered child in their pm callbacks so it's not
+a problem in practise. I think I'll add them anyway for clarity in a
+follow up patch.
+
+Thanks,
+Johan
