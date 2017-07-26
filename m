@@ -1,54 +1,47 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH] ARM: OMAP2+: omap_device: drop broken RPM status update
- from suspend_noirq
-Date: Wed, 26 Jul 2017 10:35:21 +0200
-Message-ID: <20170726083521.GE27516@localhost>
-References: <20170724095201.21601-1-johan@kernel.org>
- <05ae4585-8da0-6fb1-8cfd-6b236ec3a8a2@ti.com>
- <20170725082444.GL2729@localhost>
- <3f0f8ed2-9466-d5c9-10e4-de95e5155653@ti.com>
- <20170726075004.GD27516@localhost>
- <20170726081716.GB10026@atomide.com>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [RFC][PATCH] thunderbolt: icm: Ignore mailbox errors in
+ icm_suspend()
+Date: Wed, 26 Jul 2017 11:32:44 +0300
+Message-ID: <20170726083244.GE2369@lahna.fi.intel.com>
+References: <4063610.TqANq0McE8@aspire.rjw.lan>
+ <20170725100012.GH2369@lahna.fi.intel.com>
+ <2537138.AhdhMFtmoG@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f51.google.com ([209.85.215.51]:37338 "EHLO
-        mail-lf0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751196AbdGZIf1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jul 2017 04:35:27 -0400
+Received: from mga04.intel.com ([192.55.52.120]:48778 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751150AbdGZIhI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 26 Jul 2017 04:37:08 -0400
 Content-Disposition: inline
-In-Reply-To: <20170726081716.GB10026@atomide.com>
+In-Reply-To: <2537138.AhdhMFtmoG@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: Johan Hovold <johan@kernel.org>, Grygorii Strashko <grygorii.strashko@ti.com>, Russell King <linux@armlinux.org.uk>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Dave Gerlach <d-gerlach@ti.com>, Kevin Hilman <khilman@baylibre.com>, Nishanth Menon <nm@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>, Michael Jamet <michael.jamet@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Wed, Jul 26, 2017 at 01:17:17AM -0700, Tony Lindgren wrote: > * Johan Hovold <johan@kernel.org> [170726 00:51]:
-> > On Tue, Jul 25, 2017 at 12:48:40PM -0500, Grygorii Strashko wrote:
-> > > So, thank you for your patches and sorry for the noise.
+On Tue, Jul 25, 2017 at 06:10:57PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, July 25, 2017 01:00:12 PM Mika Westerberg wrote:
+> > On Tue, Jul 25, 2017 at 01:31:00AM +0200, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > > > 
-> > > Tested-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> > > On one of my test machines nhi_mailbox_cmd() called from icm_suspend()
+> > > times out and returnes an error which then is propagated to the
+> > > caller and causes the entire system suspend to be aborted which isn't
+> > > very useful.
+> > > 
+> > > Instead of aborting system suspend, print the error into the log
+> > > and continue.
 > > 
-> > Thanks for testing.
+> > I agree, it should not prevent suspend but I wonder why it fails in the
+> > first place? Can you check what is the return value?
 > 
-> So does the patch description need updating?
+> As per the above, the error is a timeout, ie. -ETIMEDOUT.
 
-I don't think so.
+Ah, right I somehow missed that.
 
-I did notice that I left out a "would" in the final sentence
+Does it have Falcon Ridge controller or Alpine Ridge? Just to make sure,
+can you increase the timeout in nhi_mailbox_cmd() to 1000ms or so. It
+should not take that long though but better to check.
 
-	"and either way, any such calls *would* have been causing
-	crashes since 4.10"
-	
-which perhaps you could add when applying?
-
-> And this is needed as a fix for the -rc cycle in addition to your musb
-> patch?
-
-Unlike the musb patch, this one is not critical and could possibly wait
-for 4.14. But since all it does is to get rid of a (since 4.10) broken
-state update, and thereby those warning messages on suspend, I'd say
-it's -rc material.
-
-Thanks,
-Johan
+Which system this is BTW?
