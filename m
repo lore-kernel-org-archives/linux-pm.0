@@ -1,76 +1,99 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [RFC][PATCH] thunderbolt: icm: Ignore mailbox errors in
- icm_suspend()
-Date: Wed, 26 Jul 2017 16:12:59 +0300
-Message-ID: <20170726131259.GM2369@lahna.fi.intel.com>
-References: <4063610.TqANq0McE8@aspire.rjw.lan>
- <2537138.AhdhMFtmoG@aspire.rjw.lan>
- <20170726083244.GE2369@lahna.fi.intel.com>
- <2817723.OEn9Hxcbhj@aspire.rjw.lan>
+From: luca abeni <luca.abeni@santannapisa.it>
+Subject: Re: [RFC PATCH v1 8/8] sched/deadline: make bandwidth enforcement
+ scale-invariant
+Date: Wed, 26 Jul 2017 15:50:20 +0200
+Message-ID: <20170726155020.18d773a9@nowhere>
+References: <20170705085905.6558-1-juri.lelli@arm.com>
+        <20170705085905.6558-9-juri.lelli@arm.com>
+        <20170719072143.lploljodns3kfucf@hirez.programming.kicks-ass.net>
+        <20170719092029.oakmetq3u52e4rfw@e106622-lin>
+        <20170719110028.uggud56bg2jh45ge@hirez.programming.kicks-ass.net>
+        <20170719111624.fwcydcklmfeesfgb@e106622-lin>
+        <20170724164349.clzsajrwxtobyqkm@hirez.programming.kicks-ass.net>
+        <20170725090308.2cca53c0@luca>
+        <20170725135105.akkwwsf3r65jy3pa@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2817723.OEn9Hxcbhj@aspire.rjw.lan>
+In-Reply-To: <20170725135105.akkwwsf3r65jy3pa@hirez.programming.kicks-ass.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>, Michael Jamet <michael.jamet@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Juri Lelli <juri.lelli@arm.com>, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, andresoportus@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 26, 2017 at 02:48:54PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, July 26, 2017 11:32:44 AM Mika Westerberg wrote:
-> > On Tue, Jul 25, 2017 at 06:10:57PM +0200, Rafael J. Wysocki wrote:
-> > > On Tuesday, July 25, 2017 01:00:12 PM Mika Westerberg wrote:
-> > > > On Tue, Jul 25, 2017 at 01:31:00AM +0200, Rafael J. Wysocki wrote:
-> > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > 
-> > > > > On one of my test machines nhi_mailbox_cmd() called from icm_suspend()
-> > > > > times out and returnes an error which then is propagated to the
-> > > > > caller and causes the entire system suspend to be aborted which isn't
-> > > > > very useful.
-> > > > > 
-> > > > > Instead of aborting system suspend, print the error into the log
-> > > > > and continue.
-> > > > 
-> > > > I agree, it should not prevent suspend but I wonder why it fails in the
-> > > > first place? Can you check what is the return value?
+On Tue, 25 Jul 2017 15:51:05 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
+
+> On Tue, Jul 25, 2017 at 09:03:08AM +0200, Luca Abeni wrote:
+> 
+> > > I'm still confused..
 > > > 
-> > > As per the above, the error is a timeout, ie. -ETIMEDOUT.
+> > > So GRUB does:
+> > > 
+> > > 	dq = Uact -dt
+> > > 
+> > > right?  
 > > 
-> > Ah, right I somehow missed that.
+> > Right. This is what the original (single processor) GRUB did. And
+> > this was used by the "GRUB-PA" algorithm:
+> > https://www.researchgate.net/profile/Giuseppe_Lipari/publication/220800940_Using_resource_reservation_techniques_for_power-aware_scheduling/links/09e41513639b2703fc000000.pdf
 > > 
-> > Does it have Falcon Ridge controller or Alpine Ridge?
+> > (basically, GRUB-PA uses GRUB for reclaiming, and scales the CPU
+> > frequency based on Uact)
+> > 
+> >   
+> > > Now, you do DVFS using that same Uact. If we lower the clock, we
+> > > need more time, so would we then not end up with something like:
+> > > 
+> > > 	dq = 1/Uact -dt  
+> > 
+> > Well, in the GRUB-PA algorithm GRUB reclaiming is the mechanism
+> > used to give more runtime to the task... Since Uact is < 1, doing
+> > 	dq = - Uact * dt
+> > means that we decrease the current runtime by a smaller amount of
+> > time. And so we end up giving more runtime to the task: instead of
+> > giving dl_runtime every dl_period, we give "dl_runtime / Uact" every
+> > dl_period... And since the CPU is slower (by a ratio Uact), this is
+> > equivalent to giving dl_runtime at the maximum CPU speed / frequency
+> > (at least, in theory :).
+> > 
+> >   
+> > > After all; our budget assignment is such that we're able to
+> > > complete our work at max freq. Therefore, when we lower the
+> > > frequency, we'll have to increase budget pro rata, otherwise
+> > > we'll not complete our work and badness happens.  
+> > 
+> > Right. But instead of increasing dl_runtime, GRUB-PA decreases the
+> > amount of time accounted to the current runtime.
+> > 
+> >   
+> > > Say we have a 1 Ghz part and Uact=0.5 we'd select 500 Mhz and need
+> > > double the time to complete.
+> > > 
+> > > Now, if we fold these two together, you'd get:
+> > > 
+> > > 	dq = Uact/Uact -dt = -dt  
+> > 
+> > Not sure why " / Uact"... According to the GRUB-PA algorithm, you
+> > just do
+> > 	dq = - Uact * dt = -0.5dt
+> > and you end up giving the CPU to the task for 2 * dl_runtime every
+> > dl_period (as expected)  
 > 
-> I'll check later today, but i guess you'll know (see below).
+> Yeah, I seem to have gone off the rails there... Bah I'm terminally
+> confused now. Let me try and get my brain the right way up.
 
-No need to check, it is Alpine Ridge (since it is Dell 9360).
+This stuff always confuses me too... :)
 
-> > Just to make sure, can you increase the timeout in nhi_mailbox_cmd()
-> > to 1000ms or so. It should not take that long though but better to check.
-> 
-> Well, I can do that, but I don't think it will help.
-> 
-> It just looks like the chip is not responding at all at that point.
+The parts that gives me more headaches is how to combine GRUB-PA with
+non-reclaiming tasks, and how to cope with "real world issues" (such as
+an actual DVFS frequency different from the theoretical one, GRUB
+reclaiming less than 100% of the CPU time, etc...)
 
-I see.
+Anyway, Claudio is running some experiments with this patchset,
+measuring power saving and missed deadlines for various sets of
+periodic real-time tasks... We hope to present the results at RTLWS.
 
-Then I think we should apply your patch now and we can investigate this
-further offline and hopefully find the root cause for the problem.
 
-For this patch:
-
-Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-
-> > Which system this is BTW?
-> 
-> It's the Dell 9360. :-)
-> 
-> Sometimes after a reboot or a power cycle it starts in a state in which the
-> TBT controller and a USB one (which seem to be somehow connected)
-> appear to be dead or at least really flaky.  Basically, the box needs to be
-> power-cycled again to get rid of this condition and then everything works.
-
-The xHCI controller is part of the Thunderbolt controller so whenever
-you have normal USB-C device connected there, you should also see the
-Alpine Ridge hierarchy in lspci output but the Thunderbolt host
-controller is not there.
+			Luca
