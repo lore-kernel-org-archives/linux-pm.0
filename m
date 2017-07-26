@@ -1,86 +1,60 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH] thunderbolt: icm: Ignore mailbox errors in icm_suspend()
-Date: Wed, 26 Jul 2017 19:05:01 +0200
-Message-ID: <4165239.xHgWvuTePe@aspire.rjw.lan>
-References: <4063610.TqANq0McE8@aspire.rjw.lan> <2817723.OEn9Hxcbhj@aspire.rjw.lan> <20170726131259.GM2369@lahna.fi.intel.com>
+Subject: Re: [PATCH] USB: hcd: Mark secondary HCD as dead if the primary one died
+Date: Wed, 26 Jul 2017 19:07:51 +0200
+Message-ID: <29451701.e6zKZOze4p@aspire.rjw.lan>
+References: <Pine.LNX.4.44L0.1707261021380.1965-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170726131259.GM2369@lahna.fi.intel.com>
+In-Reply-To: <Pine.LNX.4.44L0.1707261021380.1965-100000@iolanthe.rowland.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>, Michael Jamet <michael.jamet@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@kernel.org>
+Cc: Linux USB <linux-usb@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mathias Nyman <mathias.nyman@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, July 26, 2017 04:12:59 PM Mika Westerberg wrote:
-> On Wed, Jul 26, 2017 at 02:48:54PM +0200, Rafael J. Wysocki wrote:
-> > On Wednesday, July 26, 2017 11:32:44 AM Mika Westerberg wrote:
-> > > On Tue, Jul 25, 2017 at 06:10:57PM +0200, Rafael J. Wysocki wrote:
-> > > > On Tuesday, July 25, 2017 01:00:12 PM Mika Westerberg wrote:
-> > > > > On Tue, Jul 25, 2017 at 01:31:00AM +0200, Rafael J. Wysocki wrote:
-> > > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > > 
-> > > > > > On one of my test machines nhi_mailbox_cmd() called from icm_suspend()
-> > > > > > times out and returnes an error which then is propagated to the
-> > > > > > caller and causes the entire system suspend to be aborted which isn't
-> > > > > > very useful.
-> > > > > > 
-> > > > > > Instead of aborting system suspend, print the error into the log
-> > > > > > and continue.
-> > > > > 
-> > > > > I agree, it should not prevent suspend but I wonder why it fails in the
-> > > > > first place? Can you check what is the return value?
-> > > > 
-> > > > As per the above, the error is a timeout, ie. -ETIMEDOUT.
-> > > 
-> > > Ah, right I somehow missed that.
-> > > 
-> > > Does it have Falcon Ridge controller or Alpine Ridge?
+On Wednesday, July 26, 2017 10:21:54 AM Alan Stern wrote:
+> On Tue, 25 Jul 2017, Rafael J. Wysocki wrote:
+> 
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > > 
-> > I'll check later today, but i guess you'll know (see below).
-> 
-> No need to check, it is Alpine Ridge (since it is Dell 9360).
-> 
-> > > Just to make sure, can you increase the timeout in nhi_mailbox_cmd()
-> > > to 1000ms or so. It should not take that long though but better to check.
+> > Make usb_hc_died() clear the HCD_FLAG_RH_RUNNING flag for the shared
+> > HCD and set HCD_FLAG_DEAD for it, in analogy with what is done for
+> > the primary one.
 > > 
-> > Well, I can do that, but I don't think it will help.
+> > Among other thigs, this prevents check_root_hub_suspended() from
+> > returning -EBUSY for dead HCDs which helps to work around system
+> > suspend issues in some situations.
 > > 
-> > It just looks like the chip is not responding at all at that point.
-> 
-> I see.
-> 
-> Then I think we should apply your patch now and we can investigate this
-> further offline and hopefully find the root cause for the problem.
-> 
-> For this patch:
-> 
-> Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-
-OK
-
-I guess I can apply it, then, or if anyone else in the CC wants to do that,
-please let me know.
-
-> 
-> > > Which system this is BTW?
+> > This actually fixes occasional suspend failures on one of my test
+> > machines.
 > > 
-> > It's the Dell 9360. :-)
+> > Suggested-by: Alan Stern <stern@rowland.harvard.edu>
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/usb/core/hcd.c |    2 ++
+> >  1 file changed, 2 insertions(+)
 > > 
-> > Sometimes after a reboot or a power cycle it starts in a state in which the
-> > TBT controller and a USB one (which seem to be somehow connected)
-> > appear to be dead or at least really flaky.  Basically, the box needs to be
-> > power-cycled again to get rid of this condition and then everything works.
+> > Index: linux-pm/drivers/usb/core/hcd.c
+> > ===================================================================
+> > --- linux-pm.orig/drivers/usb/core/hcd.c
+> > +++ linux-pm/drivers/usb/core/hcd.c
+> > @@ -2485,6 +2485,8 @@ void usb_hc_died (struct usb_hcd *hcd)
+> >  	}
+> >  	if (usb_hcd_is_primary_hcd(hcd) && hcd->shared_hcd) {
+> >  		hcd = hcd->shared_hcd;
+> > +		clear_bit(HCD_FLAG_RH_RUNNING, &hcd->flags);
+> > +		set_bit(HCD_FLAG_DEAD, &hcd->flags);
+> >  		if (hcd->rh_registered) {
+> >  			clear_bit(HCD_FLAG_POLL_RH, &hcd->flags);
 > 
-> The xHCI controller is part of the Thunderbolt controller so whenever
-> you have normal USB-C device connected there, you should also see the
-> Alpine Ridge hierarchy in lspci output but the Thunderbolt host
-> controller is not there.
+> Acked-by: Alan Stern <stern@rowland.harvard.edu>
+> 
 
-I don't have any USB-C devices, though, so I can't really test it this way ATM.
+Thanks!
 
-It's jjust never used now. :-)
+I guess this should go in via USB, so Felipe & Greg, please apply or let me
+know if you prefer me to handle it.
 
 Thanks,
 Rafael
