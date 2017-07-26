@@ -1,100 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V4 2/3] cpufreq: schedutil: Process remote callback for shared policies
-Date: Wed, 26 Jul 2017 14:52:33 +0530
-Message-ID: <d3e7bcbd5c87690b8d7607f92763081a4416af9c.1501060871.git.viresh.kumar@linaro.org>
-References: <cover.1501060871.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1501060871.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1501060871.git.viresh.kumar@linaro.org>
-References: <cover.1501060871.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org, linux-kernel@vger.kernel.org
+From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Subject: Re: [PATCH v3 1/1] PM / OPP: Fix get sharing cpus when hotplug is used
+Date: Wed, 26 Jul 2017 11:26:17 +0200
+Message-ID: <CAHKzcEPhyGOzmZJKQg4KGDApT7u4yzKcPzL3fBKUg+=zd__vPQ@mail.gmail.com>
+References: <20170724160342.1879-1-waldemarx.rymarkiewicz@intel.com> <20170726061637.GZ352@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f194.google.com ([209.85.128.194]:33893 "EHLO
+        mail-wr0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750813AbdGZJ07 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jul 2017 05:26:59 -0400
+Received: by mail-wr0-f194.google.com with SMTP id o33so14174103wrb.1
+        for <linux-pm@vger.kernel.org>; Wed, 26 Jul 2017 02:26:59 -0700 (PDT)
+In-Reply-To: <20170726061637.GZ352@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, WaldemarRymarkiewiczwaldemar.rymarkiewicz@gmail.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
 
-This patch updates the schedutil governor to process cpufreq utilization
-update hooks called for remote CPUs where the remote CPU is managed by
-the cpufreq policy of the local CPU.
+On 26 July 2017 at 08:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> +Rafael,
+>
+> On 24-07-17, 18:03, Waldemar Rymarkiewicz wrote:
+>> We fail dev_pm_opp_of_get_sharing_cpus() when possible cpu device does not
+>> exist. This can happen on platforms where not all possible CPUs are
+>> available at start up ie. hotplugged out. Cpu device is not registered in
+>> the system so we are not able to check struct device to set the sharing
+>> CPUs bitmask properly.
+>>
+>> Example (real use case):
+>> 2 physical MIPS cores, 4 VPE, cpu0/2 run Linux and cpu1/3 are not available
+>> for Linux at boot up. cpufreq-dt driver + opp v2 fail to register opp_table
+>> due to the fact there is no struct device for cpu1 (remains offline at
+>> bootup).
+>>
+>> To solve the bug, stop using device struct to check device_node. Instead
+>> get cpu device_node directly from device tree with of_get_cpu_node().
+>>
+>> Signed-off-by: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> ---
+>>  drivers/base/power/opp/of.c | 28 +++++++++++++++++-----------
+>>  1 file changed, 17 insertions(+), 11 deletions(-)
+>
+> @Waldemar: I don't see this series on patchwork [1]. Are you
+> subscribed for that list ?
 
-Based on initial work from Steve Muckle.
+Well, I am indeed but with my gmail. I have all my mailboxes attached
+to my patchwork account but didn't know that patchwork checks for the
+subscription before it picks up a patch.  Will subscribe with my
+@intel.com and send v4  including Stephen comment and Reviewed-by.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- kernel/sched/cpufreq_schedutil.c | 21 ++++++++++-----------
- 1 file changed, 10 insertions(+), 11 deletions(-)
-
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index bb834747e49b..c3baf70d360c 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -72,13 +72,12 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
- 
- /************************ Governor internals ***********************/
- 
--static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time,
--				     int target_cpu)
-+static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
- {
- 	s64 delta_ns;
- 
--	/* Don't allow remote callbacks */
--	if (smp_processor_id() != target_cpu)
-+	/* Allow remote callbacks only on the CPUs sharing cpufreq policy */
-+	if (!cpumask_test_cpu(smp_processor_id(), sg_policy->policy->cpus))
- 		return false;
- 
- 	if (sg_policy->work_in_progress)
-@@ -159,12 +158,12 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
- 	return cpufreq_driver_resolve_freq(policy, freq);
- }
- 
--static void sugov_get_util(unsigned long *util, unsigned long *max)
-+static void sugov_get_util(unsigned long *util, unsigned long *max, int cpu)
- {
--	struct rq *rq = this_rq();
-+	struct rq *rq = cpu_rq(cpu);
- 	unsigned long cfs_max;
- 
--	cfs_max = arch_scale_cpu_capacity(NULL, smp_processor_id());
-+	cfs_max = arch_scale_cpu_capacity(NULL, cpu);
- 
- 	*util = min(rq->cfs.avg.util_avg, cfs_max);
- 	*max = cfs_max;
-@@ -226,7 +225,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 	sugov_set_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
- 
--	if (!sugov_should_update_freq(sg_policy, time, hook->cpu))
-+	if (!sugov_should_update_freq(sg_policy, time))
- 		return;
- 
- 	busy = sugov_cpu_is_busy(sg_cpu);
-@@ -234,7 +233,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 	if (flags & SCHED_CPUFREQ_RT_DL) {
- 		next_f = policy->cpuinfo.max_freq;
- 	} else {
--		sugov_get_util(&util, &max);
-+		sugov_get_util(&util, &max, hook->cpu);
- 		sugov_iowait_boost(sg_cpu, &util, &max);
- 		next_f = get_next_freq(sg_policy, util, max);
- 		/*
-@@ -295,7 +294,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
- 	unsigned long util, max;
- 	unsigned int next_f;
- 
--	sugov_get_util(&util, &max);
-+	sugov_get_util(&util, &max, hook->cpu);
- 
- 	raw_spin_lock(&sg_policy->update_lock);
- 
-@@ -306,7 +305,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
- 	sugov_set_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
- 
--	if (sugov_should_update_freq(sg_policy, time, hook->cpu)) {
-+	if (sugov_should_update_freq(sg_policy, time)) {
- 		if (flags & SCHED_CPUFREQ_RT_DL)
- 			next_f = sg_policy->policy->cpuinfo.max_freq;
- 		else
--- 
-2.13.0.71.gd7076ec9c9cb
+/Waldek
