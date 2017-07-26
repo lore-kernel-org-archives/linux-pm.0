@@ -1,42 +1,41 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 4/5] ACPI / boot: Not all platform require acpi_reduced_hw_init()
-Date: Wed, 26 Jul 2017 20:53:10 +0200
-Message-ID: <5814320.0Xa8vJDJkv@aspire.rjw.lan>
-References: <20170718150420.61600-1-andriy.shevchenko@linux.intel.com> <CAHp75Ve=7HsNHZ443Fs08O7Ya4mMfgtq3nD-6znkeKCjQtGe3w@mail.gmail.com> <CAJZ5v0hwg5Y3UeGpnM24HXVrJbmDm7ipX-1R9OSgo3wRR50mYQ@mail.gmail.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [Eas-dev] [PATCH V3 2/3] cpufreq: schedutil: Process remote callback
+ for shared policies
+Date: Wed, 26 Jul 2017 13:56:10 -0700
+Message-ID: <597901EA.6080702@codeaurora.org>
+References: <cover.1499927699.git.viresh.kumar@linaro.org> <3fbaa9aaba19bfff5ff25d2c4141e88fb83f1ea9.1499927699.git.viresh.kumar@linaro.org> <5968263D.1020801@codeaurora.org> <20170720122239.licc6yjd7jwipcvk@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hwg5Y3UeGpnM24HXVrJbmDm7ipX-1R9OSgo3wRR50mYQ@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hanjun Guo <guohanjun@huawei.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:57114 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750982AbdGZU4M (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jul 2017 16:56:12 -0400
+In-Reply-To: <20170720122239.licc6yjd7jwipcvk@hirez.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, smuckle.linux@gmail.com, eas-dev@lists.linaro.org
 
-On Sunday, July 23, 2017 12:14:27 AM Rafael J. Wysocki wrote:
-> On Sun, Jul 23, 2017 at 12:13 AM, Andy Shevchenko
-> <andy.shevchenko@gmail.com> wrote:
-> > On Sun, Jul 23, 2017 at 1:02 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >> On Saturday, July 22, 2017 04:53:52 AM Andy Shevchenko wrote:
-> >>> On Sat, Jul 22, 2017 at 1:25 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> >>> > On Tuesday, July 18, 2017 06:04:19 PM Andy Shevchenko wrote:
-> >
-> >>> > I'd rather do it at the time when acpi_reduced_hw_init() actually needs to be
-> >>> > overridden by at least one platform.
-> >>>
-> >>> Do you mean as folded into some other patch or just as a preparatory
-> >>> patch in some future series?
-> >
-> >> Any of the above would work for me.
-> >
-> > Logically it should be a separate change as I can see (I have already
-> > locally prepared patches for that one platform).
-> >
-> > Thanks for review.
-> >
-> > P.S. Are you going to apply first 3 then from this series?
-> 
-> Yes, I am.
+On 07/20/2017 05:22 AM, Peter Zijlstra wrote:
+> So the typical implementation of fast switching we're thinking of is the
+> CPU writing the DVFS request into a machine register. Now machine
+> registers are typically per logical CPU.
 
-So applied now, thanks!
+Writing to a memory addressable register. AFAIK, ARM has no support for 
+a machine register for DVFS request. So, even if any ARM licensee wants 
+to add one, it won't be possible.
 
+Also, even if we have an ARM CPU with a machine register, rejecting a 
+valid frequency switch just because it happened to come on a different 
+CPU seem silly (you can have a huge performance hit due to that). A much 
+better solution is to just make an IPI to the right CPU and execute the 
+machine register write on the right CPU.
+
+-Saravana
+
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
