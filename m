@@ -1,78 +1,51 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] cpufreq: intel_pstate: Drop ->get from intel_pstate structure
-Date: Wed, 26 Jul 2017 00:42:54 +0200
-Message-ID: <5898530.IS6IniWbqq@aspire.rjw.lan>
-References: <1500875013-123321-1-git-send-email-yehs1@lenovo.com> <1500951465.4920.2.camel@linux.intel.com> <3849070.kDntuffBgp@aspire.rjw.lan>
+Subject: Re: [PATCH v2 1/1] PM / OPP: Fix get sharing cpus when hotplug is used
+Date: Wed, 26 Jul 2017 02:17:15 +0200
+Message-ID: <4051208.gOcJRl3Z1H@aspire.rjw.lan>
+References: <20170721121403.31202-1-waldemarx.rymarkiewicz@intel.com> <10881593.7egIBYKlCz@aspire.rjw.lan> <CAHKzcEONE7CUyqdQC5X45S9oWLa9iEbyVd4gpgiYBuU4vQeKUA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3849070.kDntuffBgp@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Huaisheng HS1 Ye <yehs1@lenovo.com>, "lenb@kernel.org" <lenb@kernel.org>, "viresh.kumar@linaro.org" <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50701 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751011AbdGZAZO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Jul 2017 20:25:14 -0400
+In-Reply-To: <CAHKzcEONE7CUyqdQC5X45S9oWLa9iEbyVd4gpgiYBuU4vQeKUA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, WaldemarRymarkiewiczwaldemar.rymarkiewicz@gmail.com, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tuesday, July 25, 2017 10:09:42 AM Waldemar Rymarkiewicz wrote:
+> On 24 July 2017 at 23:04, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Monday, July 24, 2017 02:17:13 PM Viresh Kumar wrote:
+> >> On 21-07-17, 14:13, Waldemar Rymarkiewicz wrote:
+> >> > We fail dev_pm_opp_of_get_sharing_cpus() when possible cpu device does not
+> >> > exist. This can happen on platforms where not all possible CPUs are
+> >> > available at start up ie. hotplugged out. Cpu device is not registered in
+> >> > the system so we are not able to check struct device to set the sharing
+> >> > CPUs bitmask properly.
+> >> >
+> >> > Example (real use case):
+> >> > 2 physical MIPS cores, 4 VPE, cpu0/2 run Linux and cpu1/3 are not available
+> >> > for Linux at boot up. cpufreq-dt driver + opp v2 fail to register opp_table
+> >> > due to the fact there is no struct device for cpu1 (remains offline at
+> >> > bootup).
+> >> >
+> >> > To solve the bug, stop using device struct to check device_node. Instead
+> >> > get cpu device_node directly from device tree with of_get_cpu_node().
+> >> >
+> >> > Signed-off-by: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
+> >> > ---
+> >> >  drivers/base/power/opp/of.c | 28 +++++++++++++++++-----------
+> >> >  1 file changed, 17 insertions(+), 11 deletions(-)
+> >>
+> >> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >
+> > I've lost track of this, care to resend?
+> 
+> I've resent v3.
 
-The ->get callback in the intel_pstate structure was mostly there
-for the scaling_cur_freq sysfs attribute to work, but after commit
-f8475cef9008 (x86: use common aperfmperf_khz_on_cpu() to calculate
-KHz using APERF/MPERF) that attribute uses arch_freq_get_on_cpu()
-provided by the x86 arch code on all processors supported by
-intel_pstate, so it doesn't need the ->get callback from the
-driver any more.
+Well, I'm not seeing it in any of my mailboxes.
 
-Moreover, the very presence of the ->get callback in the intel_pstate
-structure causes the cpuinfo_cur_freq attribute to be present when
-intel_pstate operates in the active mode, which is bogus, because
-the role of that attribute is to return the current CPU frequency
-as seen by the hardware.  For intel_pstate, though, this is just an
-average frequency and not really current, but computed for the
-previous sampling interval (the actual current frequency may be
-way different at the point this value is obtained by reading from
-cpuinfo_cur_freq), and after commit 82b4e03e01bc (intel_pstate: skip
-scheduler hook when in "performance" mode) the value in
-cpuinfo_cur_freq may be stale or just 0, depending on the driver's
-operation mode.  In fact, however, on the hardware supported by
-intel_pstate there is no way to read the current CPU frequency
-from it, so the cpuinfo_cur_freq attribute should not be present
-at all when this driver is in use.
-
-For this reason, drop intel_pstate_get() and clear the ->get
-callback pointer pointing to it, so that the cpuinfo_cur_freq is
-not present for intel_pstate in the active mode any more.
-
-Fixes: 82b4e03e01bc (intel_pstate: skip scheduler hook when in "performance" mode)
-Reported-by: Huaisheng Ye <yehs1@lenovo.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/intel_pstate.c |    8 --------
- 1 file changed, 8 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1674,13 +1674,6 @@ static int intel_pstate_init_cpu(unsigne
- 	return 0;
- }
- 
--static unsigned int intel_pstate_get(unsigned int cpu_num)
--{
--	struct cpudata *cpu = all_cpu_data[cpu_num];
--
--	return cpu ? get_avg_frequency(cpu) : 0;
--}
--
- static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
- {
- 	struct cpudata *cpu = all_cpu_data[cpu_num];
-@@ -1921,7 +1914,6 @@ static struct cpufreq_driver intel_pstat
- 	.setpolicy	= intel_pstate_set_policy,
- 	.suspend	= intel_pstate_hwp_save_state,
- 	.resume		= intel_pstate_resume,
--	.get		= intel_pstate_get,
- 	.init		= intel_pstate_cpu_init,
- 	.exit		= intel_pstate_cpu_exit,
- 	.stop_cpu	= intel_pstate_stop_cpu,
+Have you CCed it to the mailing lists?
