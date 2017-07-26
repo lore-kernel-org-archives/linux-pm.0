@@ -1,152 +1,60 @@
-From: Johan Hovold <johan@kernel.org>
-Subject: Re: [PATCH] ARM: OMAP2+: omap_device: drop broken RPM status update
- from suspend_noirq
-Date: Wed, 26 Jul 2017 09:50:04 +0200
-Message-ID: <20170726075004.GD27516@localhost>
-References: <20170724095201.21601-1-johan@kernel.org>
- <05ae4585-8da0-6fb1-8cfd-6b236ec3a8a2@ti.com>
- <20170725082444.GL2729@localhost>
- <3f0f8ed2-9466-d5c9-10e4-de95e5155653@ti.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH V3 1/3] sched: cpufreq: Allow remote cpufreq callbacks
+Date: Wed, 26 Jul 2017 10:12:59 +0200
+Message-ID: <20170726081259.fzymne5arv4vsje3@hirez.programming.kicks-ass.net>
+References: <cover.1499927699.git.viresh.kumar@linaro.org>
+ <0f950529a63fb95e87944644c4854be4fcfaea38.1499927699.git.viresh.kumar@linaro.org>
+ <20170721130349.mv7soic62jdnirq5@hirez.programming.kicks-ass.net>
+ <20170724110122.GX352@vireshk-i7>
+ <20170724134752.sejehwa5mjqqc2mq@hirez.programming.kicks-ass.net>
+ <20170726062912.GA352@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3f0f8ed2-9466-d5c9-10e4-de95e5155653@ti.com>
+In-Reply-To: <20170726062912.GA352@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Johan Hovold <johan@kernel.org>, Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Dave Gerlach <d-gerlach@ti.com>, Kevin Hilman <khilman@baylibre.com>, Nishanth Menon <nm@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jul 25, 2017 at 12:48:40PM -0500, Grygorii Strashko wrote:
-> Hi Johan,
+On Wed, Jul 26, 2017 at 11:59:12AM +0530, Viresh Kumar wrote:
+> On 24-07-17, 15:47, Peter Zijlstra wrote:
+> > I said nothing about the shared locking. That is indeed required. All I
+> > said is that those two tests you add could be left out.
 > 
-> On 07/25/2017 03:24 AM, Johan Hovold wrote:
-> > On Mon, Jul 24, 2017 at 05:16:02PM -0500, Grygorii Strashko wrote:
-> >> On 07/24/2017 04:52 AM, Johan Hovold wrote:
-> >>> Since commit a8636c89648a ("PM / Runtime: Don't allow to suspend a
-> >>> device with an active child"), which went into 4.10, it is no longer
-> >>> permitted to set RPM_SUSPENDED state for a device with active children
-> >>> (unless power.ignore_children is set).
-> >>>
-> >>> This specifically means that the attempts to do just that from the omap
-> >>> pm-domain suspend_noirq callback have since been failing whenever a
-> >>> child is active, for example:
-> >>>
-> >>>     am335x-usb-childs 47400000.usb: runtime PM trying to suspend
-> >>>       device but active child
-> >>>
-> >>> Silence this warning by dropping the broken pm_runtime_set_suspended()
-> >>> call from the omap suspend_noirq callback along with the redundant
-> >>> pm_runtime_set_active() in resume_noirq.
-> >>>
-> >>> This effectively reverts commit 3522bf7bfa24 ("ARM: OMAP2+: omap_device:
-> >>> maintain sane runtime pm status around suspend/resume"), which started
-> >>> updating the RPM state after the runtime_suspend callback (!) for active
-> >>> omap devices had been called during system suspend. The rationale was
-> >>> that a later pm_runtime_get_sync() would then fail (even after runtime
-> >>> pm had been disabled) and that this in turn would avoid any external
-> >>> aborts when accessing registers with clocks disabled. (See also commit
-> >>> 6f3c77b040fc ("PM / Runtime: let rpm_resume() succeed if RPM_ACTIVE,
-> >>> even when disabled, v2").
-> >>>
-> >>> But during the suspend_noirq phase all children would already have been
-> >>> suspended and their drivers would specifically not attempt any further
-> >>> register accesses. And if this was all just a workaround for random
-> >>> device drivers doing cross-tree calls during system suspend, those
-> >>> drivers should be fixed and updated to explicitly model such
-> >>> dependencies using device-links instead (and either way, any such calls
-> >>> have been causing crashes since 4.10).
-> >>
-> >> I'd like to provide some background and comments here.
-
-> >> As result, below two calls really switch OFF device and its state
-> >> should be RPM_SUSPENDED as it will reflect real PM state of HW:
-> >> 	m_generic_runtime_suspend(dev)
-> >> 	omap_device_idle(pdev);
+> I was right, I didn't understood your comment at all :(
+> 
+> > > > That would then continue to process the iowait and other accounting
+> > > > stuff, but stall the moment we call into the actual driver, which will
+> > > > then drop the request on the floor as per the first few hunks.
+> > > 
+> > > I am not sure I understood your comment completely though.
 > > 
-> > That's the point to be discussed; does the runtime status really need to
-> > reflect the hardware state *during* suspend?
+> > Since we call cpufreq_update_util(@rq, ...) with @rq->lock held, all
+> > such calls are in fact serialized for that cpu.
 > 
-> At least there are no restriction, as I know.
+> Yes, they are serialized but ..
 > 
-> > As you've noticed, not all subsystems enforce that, even if omap seems
-> > to have been expecting it.
+> > Therefore the cpu !=
+> > current_cpu test you add are pointless.
 > 
-> True.
+> .. I didn't understand why you said so. This check isn't there to take
+> care of serialization but remote callbacks.
 > 
-> > And as I mentioned in the commit message, at least the point about
-> > wanting to have late pm_runtime_get_sync() fail during suspend appears
-> > to be moot.
+> > Only once we get to the actual cpufreq driver (intel_pstate and others)
+> > do we run into the fact that we might not be able to service the request
+> > remotely.
 > 
-> Correct. It was introduced long time ago (before device-links).
-
-Yeah, and I'm sure there were good reasons at the time.
-
-> >> As result, when "runtime PM trying to suspend device but active child"
-> >> happens the OMAP device framework will ignore it and gracefully
-> >> continue to suspend where target device will finally powered off
-> >> (depending on suspend mode and device).  On resume, target device will
-> >> not be powered on, because its state was not marked as
-> >> OMAP_DEVICE_SUSPENDED, so further attempts to power on device with
-> >> pm_runtime_get_sync() will be a NOP (because device state is
-> >> RPM_ACTIVE) and any access to the device will fail (system crash).
-> > 
-> > I believe you're mistaken here; _od_suspend_noirq() will continue to
-> > power-off *and* set OMAP_DEVICE_SUSPENDED, so that device is again
-> > powered during resume_noirq also after this patch has been applied.
-> > 
-> > Specifically, note that the return value of pm_runtime_set_suspended()
-> > was never checked, so the only difference here would be that the error
-> > message is suppressed.
+> We never check for remote callbacks in drivers.
 > 
-> Correct. Sorry. My bad - it was Monday. 
-
-Heh, no worries.
-
-> >> My personal thought here is that removing of pm_runtime_set_active()
-> >> will not fix root cause of the problem, but rather hide it :( and,
-> >> probably, real fix will be to update USB framework to ensure that all
-> >> suspend devices are also PM runtime suspend (not sure how) or add few
-> >> more pm_suspend_ignore_children() calls (for example as I've tried to
-> >> do in [2], but this was unfinished).
-> >>
-> >> I've found very simple steps to reproduce suspend failure on
-> >> am335x-evm (should also > work on BBB) -  do below sequence with USB
-> >> device plugged:
-> >>
-> >>     echo platform > /sys/power/pm_test
-> >>     echo 1 > /sys/power/pm_print_times
-> >>     [ echo 0 > /sys/module/printk/parameters/console_suspend ]
-> >>     echo mem > /sys/power/state
-> >>
-> >> [   95.499685] calling  47400000.usb+ @ 733, parent: ocp
-> >> [   95.504818] am335x-usb-childs 47400000.usb: runtime PM trying to suspend device but active child
-> >> [   95.513750] am335x-usb-childs 47400000.usb: omap device suspend failure 0
-> >>
-> >> Below I've attached possible patch which converts OMAP device to
-> >> use pm_runtime_force_suspend/resume().
-> > 
-> > What code are you running above? The OMAP PM code should not be failing
-> > due to that error message at least (as mentioned twice above).
-> > 
-> > I have musb suspend working on BBB with the patch I posted yesterday
-> > which keeps the controller at RPM_ACTIVE during suspend:
-> > 
-> > 	https://marc.info/?i=20170724094939.21477-1-johan%40kernel.org
+> > But since you also add a test there, that is sufficient.
 > 
-> I re-checked it on clean master (Linux 4.13-rc2) with and without your
-> patches and see no issues, just "runtime PM trying to suspend device
-> but active child" message is gone. Above test sequence still can be
-> used without any additional patches.
-
-Yes, the musb patch I mentioned is only needed when the ancestor device
-controlling the clock is runtime suspended when going into system
-suspend. With an active port, suspend works without it also on BBB.
-
-> So, thank you for your patches and sorry for the noise.
+> No.
 > 
-> Tested-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> The diff for intel-pstate that you saw in this patch was for the case
+> where intel-pstate works directly with the scheduler (i.e. no
+> schedutil governor). The routine that gets called with schedutil is
+> intel_cpufreq_target(), which doesn't check for remoteness at all.
 
-Thanks for testing.
-
-Johan
+Argh, what a horrible mess.. :-(
