@@ -1,110 +1,62 @@
-From: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 2/4 v2] x86: use common aperfmperf_khz_on_cpu() to
- calculate KHz using APERF/MPERF
-Date: Wed, 26 Jul 2017 13:23:50 -0400
-Message-ID: <CAJvTdKmymtO99fAcjzjC4Rp0bWdOiH4vGzr_kOFoM4mNr6ihuA@mail.gmail.com>
-References: <1498281114-3868-1-git-send-email-lenb@kernel.org> <006201d30595$e0a23870$a1e6a950$@net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 1/3] sched: cpufreq: Allow remote cpufreq callbacks
+Date: Wed, 26 Jul 2017 19:26:38 +0200
+Message-ID: <2367709.KiRkWci6fx@aspire.rjw.lan>
+References: <cover.1499927699.git.viresh.kumar@linaro.org> <20170724134752.sejehwa5mjqqc2mq@hirez.programming.kicks-ass.net> <20170726062912.GA352@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <006201d30595$e0a23870$a1e6a950$@net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, X86 ML <x86@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49989 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751413AbdGZRej (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jul 2017 13:34:39 -0400
+In-Reply-To: <20170726062912.GA352@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org, linux-kernel@vger.kernel.org
 
-Hi Doug,
+On Wednesday, July 26, 2017 11:59:12 AM Viresh Kumar wrote:
+> On 24-07-17, 15:47, Peter Zijlstra wrote:
+> > I said nothing about the shared locking. That is indeed required. All I
+> > said is that those two tests you add could be left out.
+> 
+> I was right, I didn't understood your comment at all :(
+> 
+> > > > That would then continue to process the iowait and other accounting
+> > > > stuff, but stall the moment we call into the actual driver, which will
+> > > > then drop the request on the floor as per the first few hunks.
+> > > 
+> > > I am not sure I understood your comment completely though.
+> > 
+> > Since we call cpufreq_update_util(@rq, ...) with @rq->lock held, all
+> > such calls are in fact serialized for that cpu.
+> 
+> Yes, they are serialized but ..
+> 
+> > Therefore the cpu !=
+> > current_cpu test you add are pointless.
+> 
+> .. I didn't understand why you said so. This check isn't there to take
+> care of serialization but remote callbacks.
+> 
+> > Only once we get to the actual cpufreq driver (intel_pstate and others)
+> > do we run into the fact that we might not be able to service the request
+> > remotely.
+> 
+> We never check for remote callbacks in drivers.
+> 
+> > But since you also add a test there, that is sufficient.
+> 
+> No.
+> 
+> The diff for intel-pstate that you saw in this patch was for the case
+> where intel-pstate works directly with the scheduler (i.e. no
+> schedutil governor). The routine that gets called with schedutil is
+> intel_cpufreq_target(), which doesn't check for remoteness at all.
 
-Clearly you are a "discerning user", who understands the limitations
-of the kernel sysfs interface,
-both new and old, for communicating frequency.  With the limitations
-of the (old and new)
-sysfs interfaces, why are you using it, rather than turbostat?
+And of course acpi-cpufreq doesn't check for that too, for example.
 
->> As with previous methods of calculating MHz,
->> idle time is excluded.
->
-> Which makes the response time to a correct answer
-> asymmetric. i.e. removal of a load on a CPU will
-> linger much much longer that adding a load on a CPU.
-
-If the measurement interval is not defined, then a "correct answer"
-is also no defined.
-
-Users now have the capability to define the measurement interval.
-Before they didn't, they just could observe it was "short enough
-that it looks current".  Others may want to measure frequency over
-a longer (or even known) interval, and the previous code made
-that impossible.
-
-Also, you may be interested to know that in HWP mode, intel_pstate
-used to have a periodic timer who's _only_ job was to wake up the
-CPU so that the driver could update the frequency statistic for sysfs.
-(now it is a scheduler callback)
-Sure, a "discerning user" may have noticed that they have "fresh" data
-in sysfs, but most users were better served by not having a timer
-fire to refresh data that they'll never consume...  The new code
-never runs at all, unless the user asks it to.
-
-> Somehow, somewhere along the way, turbostat no longer seems
-> to use base_MHz based on the actual TSC. It used to.
-
-True, though not directly related to this thread...
-On current and future Intel hardware, base_mhz and TSC rate
-are not in the same clock domain.  Only on very specific configurations
-are those clock rates now equal.
-
->> +     /* Don't bother re-computing within 10 ms */
->> +     if (time_before(jiffies, s->jiffies + HZ/100))
->> +             return;
->
-> The above condition would be 8 mSec on a 250 Hertz kernel,
-> wouldn't it?
-> (I don't care, I'm just saying.)
-
-True.  We could replace the "10ms" comment with "typically 10ms", or "recently".
-Note that the value here isn't precise, it is there just to prevent
-wasted overhead.
-The previous version of this patch was equally valid with a value 10x larger.
-
-> Summary:
->
-> . There no longer seems to be a way to check the CPU frequency without affecting the processor (i.e. forcing a wakeup),
-> thereby potentially influencing the system under test.
-
-This has always been true, just that the wakeups used to happen inside
-the kernel -- whether you consumed the answer or not.
-
-> . Yes, the old way might have been a "lie", but in some situations it was much much less of a "lie", and took data that
-> was already available (and at the very maximum 4 seconds old), and didn't force a wakeup, thus monitoring CPU frequency
-> was a negligible perturbation to the system.
-
-Frequency data isn't "already available", it has to be measured.
-A measurement is not valid unless it is made over a known measurement interval.
-
-> . Now the data is as old as the time the command was run, which might be hours.
-
-True, under controlled conditions, the sysfs measurement interval
-could be days or months long.
-
-If a known interval is desired, than something need to provoke a read
-of the attribute
-at the start of the interval of interest.
-
-Yes, we could do this inside the kernel, but then that would add
-overhead  to the
-system for the vast majority of users who never even read this attribute,
-and it would also take control of the interval away from the user.
-
-Making this interface more complex inside the kernel doesn't seem like
-a prudent path to go down
-when turbostat already exists and can already measure
-concurrent/overlapping intervals of arbitrary length
-in user-space.
-
-While I still haven't gleaned exactly what you are trying to measure,
-I'm very much interested to know if/why you can't measure it using
-the new sysfs attribute semantics, or better yet, using turbostat.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+Thanks,
+Rafael
