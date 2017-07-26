@@ -1,44 +1,42 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V4 0/2] PM / Domains: Expand generic power domain debugfs.
-Date: Wed, 26 Jul 2017 20:38:33 +0200
-Message-ID: <2371398.9SIGdC6dIE@aspire.rjw.lan>
-References: <1500052216-22252-1-git-send-email-thara.gopinath@linaro.org>
+Subject: Re: [PATCH v3 4/5] ACPI / boot: Not all platform require acpi_reduced_hw_init()
+Date: Wed, 26 Jul 2017 20:53:10 +0200
+Message-ID: <5814320.0Xa8vJDJkv@aspire.rjw.lan>
+References: <20170718150420.61600-1-andriy.shevchenko@linux.intel.com> <CAHp75Ve=7HsNHZ443Fs08O7Ya4mMfgtq3nD-6znkeKCjQtGe3w@mail.gmail.com> <CAJZ5v0hwg5Y3UeGpnM24HXVrJbmDm7ipX-1R9OSgo3wRR50mYQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46373 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751022AbdGZSqd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jul 2017 14:46:33 -0400
-In-Reply-To: <1500052216-22252-1-git-send-email-thara.gopinath@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hwg5Y3UeGpnM24HXVrJbmDm7ipX-1R9OSgo3wRR50mYQ@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, "x86@kernel.org" <x86@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Hanjun Guo <guohanjun@huawei.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: linux-pm@vger.kernel.org
-To: Thara Gopinath <thara.gopinath@linaro.org>
-Cc: ulf.hansson@linaro.org, khilman@kernel.org, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org
 
-On Friday, July 14, 2017 01:10:14 PM Thara Gopinath wrote:
-> This patch set attempts to improve the existing generic power domain
-> debugfs capabilities. The first  patch adds various accounting and
-> other bits needed to expose out the generic power domain statistics.
-> The second patch introduces new debugfs entries and attributes.
+On Sunday, July 23, 2017 12:14:27 AM Rafael J. Wysocki wrote:
+> On Sun, Jul 23, 2017 at 12:13 AM, Andy Shevchenko
+> <andy.shevchenko@gmail.com> wrote:
+> > On Sun, Jul 23, 2017 at 1:02 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >> On Saturday, July 22, 2017 04:53:52 AM Andy Shevchenko wrote:
+> >>> On Sat, Jul 22, 2017 at 1:25 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >>> > On Tuesday, July 18, 2017 06:04:19 PM Andy Shevchenko wrote:
+> >
+> >>> > I'd rather do it at the time when acpi_reduced_hw_init() actually needs to be
+> >>> > overridden by at least one platform.
+> >>>
+> >>> Do you mean as folded into some other patch or just as a preparatory
+> >>> patch in some future series?
+> >
+> >> Any of the above would work for me.
+> >
+> > Logically it should be a separate change as I can see (I have already
+> > locally prepared patches for that one platform).
+> >
+> > Thanks for review.
+> >
+> > P.S. Are you going to apply first 3 then from this series?
 > 
-> V3->V4:
-> - Renamed the newly defined static functions in domain.c to adhere
->   to existing naming convention.
-> V2->V3:
-> - Changed the order of calling genpd_update_accounting and genpd->status
->   getting updated in power on and power off apis.
-> - Minor fixes from review comments on the list.
-> V1->V2:
-> - Removed calling of update accounting from suspend resume context
->   where time keeping can be disabled.
-> - Added back the pm_genpd_summary which was removed by the first version
->   of this patchset.
-> - Renamed a few debugfs parameters. 
-> 
-> Thara Gopinath (2):
->   PM / Domains: Add time accounting to various genpd states.
->   PM / Domains: Extend generic power domain debugfs.
+> Yes, I am.
 
-Both patches applied, thanks!
+So applied now, thanks!
+
