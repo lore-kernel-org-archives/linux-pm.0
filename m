@@ -1,59 +1,86 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 1/3] sched: cpufreq: Allow remote cpufreq callbacks
-Date: Wed, 26 Jul 2017 11:59:12 +0530
-Message-ID: <20170726062912.GA352@vireshk-i7>
-References: <cover.1499927699.git.viresh.kumar@linaro.org>
- <0f950529a63fb95e87944644c4854be4fcfaea38.1499927699.git.viresh.kumar@linaro.org>
- <20170721130349.mv7soic62jdnirq5@hirez.programming.kicks-ass.net>
- <20170724110122.GX352@vireshk-i7>
- <20170724134752.sejehwa5mjqqc2mq@hirez.programming.kicks-ass.net>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [linux-sunxi] [PATCH 10/10] ARM: dts: sun8i: Add SY8106A
+ regulator to Orange Pi PC
+Date: Wed, 26 Jul 2017 15:08:06 +0800
+Message-ID: <CAGb2v66AGjazHT-+hWVLyNBLDw=DJ5yTmNxF-_=BtZFfjnni-A@mail.gmail.com>
+References: <20170723102749.17323-1-icenowy@aosc.io> <20170723102749.17323-11-icenowy@aosc.io>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170724134752.sejehwa5mjqqc2mq@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <20170723102749.17323-11-icenowy@aosc.io>
+Sender: linux-clk-owner@vger.kernel.org
+To: Icenowy Zheng <icenowy@aosc.io>
+Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-kernel <linux-kernel@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-clk <linux-clk@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-sunxi <linux-sunxi@googlegroups.com>, Ondrej Jirman <megous@megous.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 24-07-17, 15:47, Peter Zijlstra wrote:
-> I said nothing about the shared locking. That is indeed required. All I
-> said is that those two tests you add could be left out.
+On Sun, Jul 23, 2017 at 6:27 PM, Icenowy Zheng <icenowy@aosc.io> wrote:
+> From: Ondrej Jirman <megous@megous.com>
+>
+> Add SY8106A regulator to r_i2c bus and enable the r_i2c bus on
+> Orange Pi PC, then set the power supply of the ARM cores to this
+> regulator, in order to enable DVFS.
+>
+> Signed-off-by: Ondrej Jirman <megous@megous.com>
+> [Icenowy: Enable DVFS in this patch, slight changes and change commit
+>  message]
+> Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
+> ---
+>  arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts b/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts
+> index 998b60f8d295..d855f8b6254e 100644
+> --- a/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts
+> +++ b/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts
+> @@ -98,6 +98,10 @@
+>         status = "okay";
+>  };
+>
+> +&cpu0 {
+> +       cpu-supply = <&reg_sy8106a>;
+> +};
+> +
+>  &ehci0 {
+>         status = "okay";
+>  };
+> @@ -160,6 +164,21 @@
+>         };
+>  };
+>
+> +&r_i2c {
+> +       status = "okay";
+> +
+> +       reg_sy8106a: regulator@65 {
+> +               compatible = "silergy,sy8106a";
+> +               reg = <0x65>;
+> +               regulator-name = "vdd-cpux";
+> +               regulator-min-microvolt = <1000000>;
 
-I was right, I didn't understood your comment at all :(
+According to the H3 datasheet, the minimum voltage is 1.1V, not 1V.
 
-> > > That would then continue to process the iowait and other accounting
-> > > stuff, but stall the moment we call into the actual driver, which will
-> > > then drop the request on the floor as per the first few hunks.
-> > 
-> > I am not sure I understood your comment completely though.
-> 
-> Since we call cpufreq_update_util(@rq, ...) with @rq->lock held, all
-> such calls are in fact serialized for that cpu.
+Otherwse
 
-Yes, they are serialized but ..
+> +               regulator-max-microvolt = <1400000>;
+> +               regulator-ramp-delay = <200>;
 
-> Therefore the cpu !=
-> current_cpu test you add are pointless.
+Is this an actual constraint of the SoC? Or is it a characteristic
+of the regulator? If it is the latter, it belongs in the driver.
+AFAIK the regulator supports varying the ramp delay (slew rate).
 
-.. I didn't understand why you said so. This check isn't there to take
-care of serialization but remote callbacks.
+ChenYu
 
-> Only once we get to the actual cpufreq driver (intel_pstate and others)
-> do we run into the fact that we might not be able to service the request
-> remotely.
-
-We never check for remote callbacks in drivers.
-
-> But since you also add a test there, that is sufficient.
-
-No.
-
-The diff for intel-pstate that you saw in this patch was for the case
-where intel-pstate works directly with the scheduler (i.e. no
-schedutil governor). The routine that gets called with schedutil is
-intel_cpufreq_target(), which doesn't check for remoteness at all.
-
--- 
-viresh
+> +               regulator-boot-on;
+> +               regulator-always-on;
+> +       };
+> +};
+> +
+>  &r_pio {
+>         leds_r_opc: led_pins@0 {
+>                 pins = "PL10";
+> --
+> 2.13.0
+>
+> --
+> You received this message because you are subscribed to the Google Groups "linux-sunxi" group.
+> To unsubscribe from this group and stop receiving emails from it, send an email to linux-sunxi+unsubscribe@googlegroups.com.
+> For more options, visit https://groups.google.com/d/optout.
