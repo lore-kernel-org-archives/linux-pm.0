@@ -1,60 +1,34 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH V3 1/3] sched: cpufreq: Allow remote cpufreq callbacks
-Date: Wed, 26 Jul 2017 10:12:59 +0200
-Message-ID: <20170726081259.fzymne5arv4vsje3@hirez.programming.kicks-ass.net>
-References: <cover.1499927699.git.viresh.kumar@linaro.org>
- <0f950529a63fb95e87944644c4854be4fcfaea38.1499927699.git.viresh.kumar@linaro.org>
- <20170721130349.mv7soic62jdnirq5@hirez.programming.kicks-ass.net>
- <20170724110122.GX352@vireshk-i7>
- <20170724134752.sejehwa5mjqqc2mq@hirez.programming.kicks-ass.net>
- <20170726062912.GA352@vireshk-i7>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH] ARM: OMAP2+: omap_device: drop broken RPM status update
+ from suspend_noirq
+Date: Wed, 26 Jul 2017 01:17:17 -0700
+Message-ID: <20170726081716.GB10026@atomide.com>
+References: <20170724095201.21601-1-johan@kernel.org>
+ <05ae4585-8da0-6fb1-8cfd-6b236ec3a8a2@ti.com>
+ <20170725082444.GL2729@localhost>
+ <3f0f8ed2-9466-d5c9-10e4-de95e5155653@ti.com>
+ <20170726075004.GD27516@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170726062912.GA352@vireshk-i7>
+In-Reply-To: <20170726075004.GD27516@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org, linux-kernel@vger.kernel.org
+To: Johan Hovold <johan@kernel.org>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Russell King <linux@armlinux.org.uk>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Dave Gerlach <d-gerlach@ti.com>, Kevin Hilman <khilman@baylibre.com>, Nishanth Menon <nm@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Jul 26, 2017 at 11:59:12AM +0530, Viresh Kumar wrote:
-> On 24-07-17, 15:47, Peter Zijlstra wrote:
-> > I said nothing about the shared locking. That is indeed required. All I
-> > said is that those two tests you add could be left out.
-> 
-> I was right, I didn't understood your comment at all :(
-> 
-> > > > That would then continue to process the iowait and other accounting
-> > > > stuff, but stall the moment we call into the actual driver, which will
-> > > > then drop the request on the floor as per the first few hunks.
-> > > 
-> > > I am not sure I understood your comment completely though.
+* Johan Hovold <johan@kernel.org> [170726 00:51]:
+> On Tue, Jul 25, 2017 at 12:48:40PM -0500, Grygorii Strashko wrote:
+> > So, thank you for your patches and sorry for the noise.
 > > 
-> > Since we call cpufreq_update_util(@rq, ...) with @rq->lock held, all
-> > such calls are in fact serialized for that cpu.
+> > Tested-by: Grygorii Strashko <grygorii.strashko@ti.com>
 > 
-> Yes, they are serialized but ..
-> 
-> > Therefore the cpu !=
-> > current_cpu test you add are pointless.
-> 
-> .. I didn't understand why you said so. This check isn't there to take
-> care of serialization but remote callbacks.
-> 
-> > Only once we get to the actual cpufreq driver (intel_pstate and others)
-> > do we run into the fact that we might not be able to service the request
-> > remotely.
-> 
-> We never check for remote callbacks in drivers.
-> 
-> > But since you also add a test there, that is sufficient.
-> 
-> No.
-> 
-> The diff for intel-pstate that you saw in this patch was for the case
-> where intel-pstate works directly with the scheduler (i.e. no
-> schedutil governor). The routine that gets called with schedutil is
-> intel_cpufreq_target(), which doesn't check for remoteness at all.
+> Thanks for testing.
 
-Argh, what a horrible mess.. :-(
+So does the patch description need updating? And this is needed
+as a fix for the -rc cycle in addition to your musb patch?
+
+Regards,
+
+Tony
