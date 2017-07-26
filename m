@@ -1,93 +1,109 @@
-From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Subject: Re: [PATCH v4 1/1] PM / OPP: Fix get sharing cpus when hotplug is used
-Date: Wed, 26 Jul 2017 16:41:23 +0200
-Message-ID: <CAHKzcEMYVZu9NvjGiXMOt7G+4bop4ik6W7UynfQiQyTCr-aT1w@mail.gmail.com>
-References: <20170726121151.7576-1-waldemarx.rymarkiewicz@intel.com>
- <276e68a1-edfe-961b-e387-7855f409557b@arm.com> <CAHKzcEMDRE5_dA11f9C19FHaMNcTFfj8=tEbOnMG92TtfyUz9w@mail.gmail.com>
- <592bc7b8-615d-5d80-f328-eabdfe6c3828@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:37966 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751744AbdGZOmF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Jul 2017 10:42:05 -0400
-Received: by mail-wm0-f67.google.com with SMTP id r123so10883485wmb.5
-        for <linux-pm@vger.kernel.org>; Wed, 26 Jul 2017 07:42:04 -0700 (PDT)
-In-Reply-To: <592bc7b8-615d-5d80-f328-eabdfe6c3828@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Johan Hovold <johan@kernel.org>
+Subject: [PATCH v2 1/2] USB: musb: fix external abort on suspend
+Date: Wed, 26 Jul 2017 17:00:45 +0200
+Message-ID: <20170726150046.22757-2-johan@kernel.org>
+References: <20170726150046.22757-1-johan@kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170726150046.22757-1-johan@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bin Liu <b-liu@ti.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>, stable <stable@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Daniel Mack <zonque@gmail.com>, Dave Gerlach <d-gerlach@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Tony Lindgren <tony@atomide.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 26 July 2017 at 16:08, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
->
-> On 26/07/17 14:54, Waldemar Rymarkiewicz wrote:
->> On 26 July 2017 at 15:10, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
->
->>>> diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
->>>> index 57eec1c..e83bc15 100644
->>>> --- a/drivers/base/power/opp/of.c
->>>> +++ b/drivers/base/power/opp/of.c
->>>> +     struct device_node *np, *tmp_np, *cpu_np;
->>>>       int cpu, ret = 0;
->>>>
->>>>       /* Get OPP descriptor node */
->>>> @@ -593,19 +599,18 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
->>>>               if (cpu == cpu_dev->id)
->>>>                       continue;
->>>>
->>>> -             tcpu_dev = get_cpu_device(cpu);
->>>> -             if (!tcpu_dev) {
->>>> -                     dev_err(cpu_dev, "%s: failed to get cpu%d device\n",
->>>> +             cpu_np = of_get_cpu_node(cpu, NULL);
->>>
->>> Does this mean you get cpu_np != NULL even for cpu1/3 ?
->>
->> cpu_np exists for all logical cpus defined in DT.  System boots with
->> all logical CPUs, but platform code (mips) reconfigures that later on.
->>
->
-> Fine, that's what I assumed but can't understand how is this case any
-> different from normal hotplug ?
->
-> CPUs won't be unregistered on hotplug path and hence I can't figure out
-> why get_cpu_device would fail if all the CPUs were registered on boot.
-> Just trying to understand the scenario and how it differs from normal
-> hotplug case.
+Make sure that the controller is runtime resumed when system suspending
+to avoid an external abort when accessing the interrupt registers:
 
-Frankly, I did not analyse this so much, but I just saw that, in my
-case, mips reconfigures CPUs before topology_init() is called. This
-function registers cpus that are set in cpu_present_mask. Therefore I
-cannot find "struct device" for all *possible* CPUs.
-See [1]
+  Unhandled fault: external abort on non-linefetch (0x1008) at 0xd025840a
+  ...
+  [<c05481a4>] (musb_default_readb) from [<c0545abc>] (musb_disable_interrupts+0x84/0xa8)
+  [<c0545abc>] (musb_disable_interrupts) from [<c0546b08>] (musb_suspend+0x38/0xb8)
+  [<c0546b08>] (musb_suspend) from [<c04a57f8>] (platform_pm_suspend+0x3c/0x64)
 
->
->>> Can we make use of of_cpu_device_node_get instead above ? We don't want
->>> keep parsing the device tree every time as the pointers are stashed in
->>> device struct.
->>
->> This is exactly what I want to change, not to use 'device struct'
->> because for cpu1/3 I don't have these structs.
->>
-> Understood, but I am just trying to avoid that. I still want to use
-> of_cpu_device_node_get as I recently posted a patch[1] to deal with such
-> case in that function.
+This is easily reproduced on a BBB by enabling the peripheral port only
+(as the host port may enable the shared clock) and keeping it
+disconnected so that the controller is runtime suspended. (Well, you
+would also need to the not-yet-merged am33xx-suspend patches by Dave
+Gerlach to be able to suspend the BBB.)
 
-Well, I see I do exactly what you try to avoid with your patch :)
-I agree this makes really sense so I can use your
-of_cpu_device_node_get once it's in the tree.
+This is a regression that was introduced by commit 1c4d0b4e1806 ("usb:
+musb: Remove pm_runtime_set_irq_safe") which allowed the parent glue
+device to runtime suspend and thereby exposed a couple of older issues:
 
--               tcpu_dev = get_cpu_device(cpu);
--               if (!tcpu_dev) {
--                       dev_err(cpu_dev, "%s: failed to get cpu%d device\n",
-+               cpu_np = of_cpu_device_node_get(cpu);
-+               if (!cpu_np) {
-+                       dev_err(cpu_dev, "%s: failed to get cpu%d node\n",
+Register accesses without explicitly making sure the controller is
+runtime resumed during suspend was first introduced by commit
+c338412b5ded ("usb: musb: unconditionally save and restore the context
+on suspend") in 3.14.
 
+Commit a1fc1920aaaa ("usb: musb: core: make sure musb is in RPM_ACTIVE on
+resume") later started setting the RPM status to active during resume,
+and this was also implicitly relying on the parent always being active.
+Since commit 71723f95463d ("PM / runtime: print error when activating a
+child to unactive parent") this now also results in the following
+warning:
 
-[1] http://elixir.free-electrons.com/linux/latest/source/arch/mips/kernel/topology.c#L19
+  musb-hdrc musb-hdrc.0: runtime PM trying to activate child device
+    musb-hdrc.0 but parent (47401400.usb) is not active
 
-/Waldek
+This patch has been verified on 4.13-rc2, 4.12 and 4.9 using a BBB
+(the dsps glue would always be active also in 4.8).
+
+Fixes: c338412b5ded ("usb: musb: unconditionally save and restore the context on suspend")
+Fixes: a1fc1920aaaa ("usb: musb: core: make sure musb is in RPM_ACTIVE on resume")
+Fixes: 1c4d0b4e1806 ("usb: musb: Remove pm_runtime_set_irq_safe")
+Cc: stable <stable@vger.kernel.org>	# 4.8
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Daniel Mack <zonque@gmail.com>
+Cc: Dave Gerlach <d-gerlach@ti.com>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Tony Lindgren <tony@atomide.com>
+Signed-off-by: Johan Hovold <johan@kernel.org>
+---
+ drivers/usb/musb/musb_core.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/usb/musb/musb_core.c b/drivers/usb/musb/musb_core.c
+index 87cbd56cc761..b67692857daf 100644
+--- a/drivers/usb/musb/musb_core.c
++++ b/drivers/usb/musb/musb_core.c
+@@ -2671,6 +2671,13 @@ static int musb_suspend(struct device *dev)
+ {
+ 	struct musb	*musb = dev_to_musb(dev);
+ 	unsigned long	flags;
++	int ret;
++
++	ret = pm_runtime_get_sync(dev);
++	if (ret < 0) {
++		pm_runtime_put_noidle(dev);
++		return ret;
++	}
+ 
+ 	musb_platform_disable(musb);
+ 	musb_disable_interrupts(musb);
+@@ -2721,14 +2728,6 @@ static int musb_resume(struct device *dev)
+ 	if ((devctl & mask) != (musb->context.devctl & mask))
+ 		musb->port1_status = 0;
+ 
+-	/*
+-	 * The USB HUB code expects the device to be in RPM_ACTIVE once it came
+-	 * out of suspend
+-	 */
+-	pm_runtime_disable(dev);
+-	pm_runtime_set_active(dev);
+-	pm_runtime_enable(dev);
+-
+ 	musb_start(musb);
+ 
+ 	spin_lock_irqsave(&musb->lock, flags);
+@@ -2738,6 +2737,9 @@ static int musb_resume(struct device *dev)
+ 			error);
+ 	spin_unlock_irqrestore(&musb->lock, flags);
+ 
++	pm_runtime_mark_last_busy(dev);
++	pm_runtime_put_autosuspend(dev);
++
+ 	return 0;
+ }
+ 
+-- 
+2.13.3
