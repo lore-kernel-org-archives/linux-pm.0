@@ -1,86 +1,38 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [linux-sunxi] [PATCH 10/10] ARM: dts: sun8i: Add SY8106A
- regulator to Orange Pi PC
-Date: Wed, 26 Jul 2017 15:08:06 +0800
-Message-ID: <CAGb2v66AGjazHT-+hWVLyNBLDw=DJ5yTmNxF-_=BtZFfjnni-A@mail.gmail.com>
-References: <20170723102749.17323-1-icenowy@aosc.io> <20170723102749.17323-11-icenowy@aosc.io>
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: Re: [PATCH 05/10] clk: sunxi-ng: h3: gate then ungate
+ PLL CPU clk after rate change
+Date: Wed, 26 Jul 2017 15:14:43 +0800
+Message-ID: <CAGb2v66jK+iAbKVsv6=4tb0470KBdwU+AHjWDnWwKKTY+U+W6g@mail.gmail.com>
+References: <20170723102749.17323-1-icenowy@aosc.io> <20170723102749.17323-6-icenowy@aosc.io>
+Reply-To: wens-jdAy2FN1RRM@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <20170723102749.17323-11-icenowy@aosc.io>
-Sender: linux-clk-owner@vger.kernel.org
-To: Icenowy Zheng <icenowy@aosc.io>
-Cc: Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-kernel <linux-kernel@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-clk <linux-clk@vger.kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>, linux-sunxi <linux-sunxi@googlegroups.com>, Ondrej Jirman <megous@megous.com>
+Return-path: <linux-sunxi+bncBCMILY6JWQBBB64C4HFQKGQEJID2G5A-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20170723102749.17323-6-icenowy-h8G6r0blFSE@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+Cc: Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-clk <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, Jul 23, 2017 at 6:27 PM, Icenowy Zheng <icenowy@aosc.io> wrote:
-> From: Ondrej Jirman <megous@megous.com>
+On Sun, Jul 23, 2017 at 6:27 PM, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org> wrote:
+> From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
 >
-> Add SY8106A regulator to r_i2c bus and enable the r_i2c bus on
-> Orange Pi PC, then set the power supply of the ARM cores to this
-> regulator, in order to enable DVFS.
+> This patch utilizes the new PLL clk notifier to gate then ungate the
+> PLL CPU clock after rate changes. This should prevent any system hangs
+> resulting from cpufreq changes to the clk.
 >
-> Signed-off-by: Ondrej Jirman <megous@megous.com>
-> [Icenowy: Enable DVFS in this patch, slight changes and change commit
->  message]
-> Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
-> ---
->  arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts | 19 +++++++++++++++++++
->  1 file changed, 19 insertions(+)
->
-> diff --git a/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts b/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts
-> index 998b60f8d295..d855f8b6254e 100644
-> --- a/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts
-> +++ b/arch/arm/boot/dts/sun8i-h3-orangepi-pc.dts
-> @@ -98,6 +98,10 @@
->         status = "okay";
->  };
->
-> +&cpu0 {
-> +       cpu-supply = <&reg_sy8106a>;
-> +};
-> +
->  &ehci0 {
->         status = "okay";
->  };
-> @@ -160,6 +164,21 @@
->         };
->  };
->
-> +&r_i2c {
-> +       status = "okay";
-> +
-> +       reg_sy8106a: regulator@65 {
-> +               compatible = "silergy,sy8106a";
-> +               reg = <0x65>;
-> +               regulator-name = "vdd-cpux";
-> +               regulator-min-microvolt = <1000000>;
+> Reported-by: Ondrej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
+> Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+> Tested-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
 
-According to the H3 datasheet, the minimum voltage is 1.1V, not 1V.
+This is missing
 
-Otherwse
-
-> +               regulator-max-microvolt = <1400000>;
-> +               regulator-ramp-delay = <200>;
-
-Is this an actual constraint of the SoC? Or is it a characteristic
-of the regulator? If it is the latter, it belongs in the driver.
-AFAIK the regulator supports varying the ramp delay (slew rate).
+Fixes: 0577e4853bfb ("clk: sunxi-ng: Add H3 clocks")
 
 ChenYu
-
-> +               regulator-boot-on;
-> +               regulator-always-on;
-> +       };
-> +};
-> +
->  &r_pio {
->         leds_r_opc: led_pins@0 {
->                 pins = "PL10";
-> --
-> 2.13.0
->
-> --
-> You received this message because you are subscribed to the Google Groups "linux-sunxi" group.
-> To unsubscribe from this group and stop receiving emails from it, send an email to linux-sunxi+unsubscribe@googlegroups.com.
-> For more options, visit https://groups.google.com/d/optout.
