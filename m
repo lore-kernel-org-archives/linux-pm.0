@@ -1,69 +1,97 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI fixes for v4.13-rc3
-Date: Thu, 27 Jul 2017 23:44:15 +0200
-Message-ID: <CAJZ5v0iV=qc297eDjTWDGQx_O1sNDjMRbCCGp0tqs3pmH+RvuQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] cpufreq: s5pv210: add missing of_node_put
+Date: Fri, 28 Jul 2017 01:54:06 +0200
+Message-ID: <3083277.s4JKRQruaM@aspire.rjw.lan>
+References: <1500666810-21841-1-git-send-email-Julia.Lawall@lip6.fr> <20170724085216.GS352@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170724085216.GS352@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Kukjin Kim <kgene@kernel.org>, kernel-janitors@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Monday, July 24, 2017 02:22:16 PM Viresh Kumar wrote:
+> On 21-07-17, 21:53, Julia Lawall wrote:
+> > for_each_compatible_node performs an of_node_get on each iteration, so a
+> > return from the loop requires an of_node_put.
+> > 
+> > The semantic patch that fixes this problem is as follows
+> > (http://coccinelle.lip6.fr):
+> > 
+> > // <smpl>
+> > @@
+> > local idexpression n;
+> > expression e,e1,e2;
+> > statement S;
+> > iterator i1;
+> > iterator name for_each_compatible_node;
+> > @@
+> > 
+> >  for_each_compatible_node(n,e1,e2) {
+> >    ...
+> > (
+> >    of_node_put(n);
+> > |
+> >    e = n
+> > |
+> >    return n;
+> > |
+> >    i1(...,n,...) S
+> > |
+> > +  of_node_put(n);
+> > ?  return ...;
+> > )
+> >    ...
+> >  }
+> > // </smpl>
+> > 
+> > Additionally, call of_node_put on the previous value of np, obtained from
+> > of_find_compatible_node, that is no longer accessible at the point of the
+> > for_each_compatible_node.
+> > 
+> > Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> > 
+> > ---
+> > 
+> > v2: add the of_node_put for the call to of_find_compatible_node as well.
+> > 
+> >  drivers/cpufreq/s5pv210-cpufreq.c |    3 +++
+> >  1 file changed, 3 insertions(+)
+> > 
+> > diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+> > index f82074e..5d31c2d 100644
+> > --- a/drivers/cpufreq/s5pv210-cpufreq.c
+> > +++ b/drivers/cpufreq/s5pv210-cpufreq.c
+> > @@ -602,6 +602,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+> >  	}
+> >  
+> >  	clk_base = of_iomap(np, 0);
+> > +	of_node_put(np);
+> >  	if (!clk_base) {
+> >  		pr_err("%s: failed to map clock registers\n", __func__);
+> >  		return -EFAULT;
+> > @@ -612,6 +613,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+> >  		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
+> >  			pr_err("%s: failed to get alias of dmc node '%s'\n",
+> >  				__func__, np->name);
+> > +			of_node_put(np);
+> >  			return id;
+> >  		}
+> >  
+> > @@ -619,6 +621,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+> >  		if (!dmc_base[id]) {
+> >  			pr_err("%s: failed to map dmc%d registers\n",
+> >  				__func__, id);
+> > +			of_node_put(np);
+> >  			return -EFAULT;
+> >  		}
+> >  	}
+> 
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> 
 
-Please pull from the tag
-
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-4.13-rc3
-
-with top-most commit f6248dd88dba3aeb19351410a027d92eee7ceb72
-
- Merge branches 'acpi-pm' and 'acpi-numa'
-
-on top of commit 520eccdfe187591a51ea9ab4c1a024ae4d0f68d9
-
- Linux 4.13-rc2
-
-to receive ACPI fixes for v4.13-rc3.
-
-These are two fixups for the suspend-to-idle handling in the ACPI
-subsystem after recent changes in that area and two simple fixes
-of the ACPI NUMA code.
-
-Specifics:
-
- - Add an ACPI module parameter to allow users to override the
-   new default behavior on some systems where the EC GPE is not
-   disabled during suspend-to-idle in case the EC on their systems
-   generates excessive wakeup events and they want to sacrifice
-   some functionality (like power button wakeups) for extra battery
-   life while suspended (Rafael Wysocki).
-
- - Fix flushing of the outstanding EC work in the ACPI core
-   suspend-to-idle code (Rafael Wysocki).
-
- - Add a missing include and fix a messed-up comment in the ACPI
-   NUMA code (Ross Zwisler).
-
-Thanks!
-
-
----------------
-
-Rafael J. Wysocki (2):
-      ACPI / EC: Add parameter to force disable the GPE on suspend
-      ACPI / PM / EC: Flush all EC work in acpi_freeze_sync()
-
-Ross Zwisler (2):
-      ACPI: NUMA: add missing include in acpi_numa.h
-      ACPI: NUMA: Fix typo in the full name of SRAT
-
----------------
-
- drivers/acpi/ec.c        | 39 +++++++++++++++++++++++++++++++++++++++
- drivers/acpi/internal.h  |  4 ++++
- drivers/acpi/numa.c      |  2 +-
- drivers/acpi/sleep.c     |  6 +++---
- include/acpi/acpi_numa.h |  1 +
- 5 files changed, 48 insertions(+), 4 deletions(-)
+Applied, thanks!
