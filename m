@@ -1,59 +1,71 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / runtime: Document new pm_runtime_set_suspended constraint
-Date: Thu, 27 Jul 2017 15:20:16 +0200
-Message-ID: <CAPDyKFrp4wNJs_pc+hM6zv7ZRBjWjJ9Cf3GdtjPPMECQgNChaA@mail.gmail.com>
-References: <20170724095356.21667-1-johan@kernel.org>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH v1 3/4] thermal: mediatek: extend calibration data for
+ mt2712 chip
+Date: Thu, 27 Jul 2017 17:46:44 +0200
+Message-ID: <f11a8633-79cb-42f7-eb7c-b4e929829568@gmail.com>
+References: <1501134417-3505-1-git-send-email-louis.yu@mediatek.com>
+ <1501134417-3505-4-git-send-email-louis.yu@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f178.google.com ([209.85.220.178]:37031 "EHLO
-        mail-qk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751452AbdG0NUR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 09:20:17 -0400
-Received: by mail-qk0-f178.google.com with SMTP id z18so21535289qka.4
-        for <linux-pm@vger.kernel.org>; Thu, 27 Jul 2017 06:20:17 -0700 (PDT)
-In-Reply-To: <20170724095356.21667-1-johan@kernel.org>
+Received: from mail-wr0-f195.google.com ([209.85.128.195]:33000 "EHLO
+        mail-wr0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750836AbdG0Pqr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 11:46:47 -0400
+Received: by mail-wr0-f195.google.com with SMTP id y43so24644928wrd.0
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jul 2017 08:46:46 -0700 (PDT)
+In-Reply-To: <1501134417-3505-4-git-send-email-louis.yu@mediatek.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Johan Hovold <johan@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Tony Lindgren <tony@atomide.com>
+To: louis.yu@mediatek.com, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, dawei.chien@mediatek.com, fan.chen@mediatek.com, eddie.huang@mediatek.com, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com
 
-On 24 July 2017 at 11:53, Johan Hovold <johan@kernel.org> wrote:
-> Since commit a8636c89648a ("PM / Runtime: Don't allow to suspend a
-> device with an active child") it is no longer permitted to set
-> RPM_SUSPENDED state for a device with active children unless
-> power.ignore_children is set.
->
-> Update the documentation to reflect this.
->
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: Ulf Hansson <ulf.hansson@linaro.org>
-> Signed-off-by: Johan Hovold <johan@kernel.org>
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Kind regards
-Uffe
-
+On 07/27/2017 07:46 AM, louis.yu@mediatek.com wrote:
+> From: Louis Yu <louis.yu@mediatek.com>
+> 
+> This patch adds support for mt2712 chip thermal calibration data
+> and calculation.
+> 
+> Signed-off-by: Louis Yu <louis.yu@mediatek.com>
 > ---
->  Documentation/power/runtime_pm.txt | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
-> index 0fde3dcf077a..625549d4c74a 100644
-> --- a/Documentation/power/runtime_pm.txt
-> +++ b/Documentation/power/runtime_pm.txt
-> @@ -435,7 +435,8 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
->        PM status to 'suspended' and update its parent's counter of 'active'
->        children as appropriate (it is only valid to use this function if
->        'power.runtime_error' is set or 'power.disable_depth' is greater than
-> -      zero)
-> +      zero); it will fail and return an error code if the device has a child
-> +      which is active and the 'power.ignore_children' flag is unset
->
->    bool pm_runtime_active(struct device *dev);
->      - return true if the device's runtime PM status is 'active' or its
-> --
-> 2.13.3
->
+>   drivers/thermal/mtk_thermal.c | 8 +++++++-
+>   1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+> index e35d28d..f2a7155 100644
+> --- a/drivers/thermal/mtk_thermal.c
+> +++ b/drivers/thermal/mtk_thermal.c
+> @@ -126,6 +126,8 @@
+>   #define MT8173_CALIB_BUF2_VTS_TSABB(x)	(((x) >> 14) & 0x1ff)
+>   #define MT8173_CALIB_BUF0_DEGC_CALI(x)	(((x) >> 1) & 0x3f)
+>   #define MT8173_CALIB_BUF0_O_SLOPE(x)	(((x) >> 26) & 0x3f)
+> +#define MT8173_CALIB_BUF0_O_SLOPE_SIGN(x)	(((x) >> 7) & 0x1)
+> +#define MT8173_CALIB_BUF1_ID(x)	(((x) >> 9) & 0x1)
+
+Why do define them as MT8173_* is this calibration computation generic to 
+all/some SoCs?
+
+Regards,
+Matthias
+
+>   
+>   /* MT2701 thermal sensors */
+>   #define MT2701_TS1	0
+> @@ -609,7 +611,11 @@ static int mtk_thermal_get_calibration_data(struct device *dev,
+>   		mt->vts[MT8173_TS4] = MT8173_CALIB_BUF2_VTS_TS4(buf[2]);
+>   		mt->vts[MT8173_TSABB] = MT8173_CALIB_BUF2_VTS_TSABB(buf[2]);
+>   		mt->degc_cali = MT8173_CALIB_BUF0_DEGC_CALI(buf[0]);
+> -		mt->o_slope = MT8173_CALIB_BUF0_O_SLOPE(buf[0]);
+> +		if (MT8173_CALIB_BUF1_ID(buf[1]) &
+> +		    MT8173_CALIB_BUF0_O_SLOPE_SIGN(buf[0]))
+> +			mt->o_slope = -MT8173_CALIB_BUF0_O_SLOPE(buf[0]);
+> +		else
+> +			mt->o_slope = MT8173_CALIB_BUF0_O_SLOPE(buf[0]);
+>   	} else {
+>   		dev_info(dev, "Device not calibrated, using default calibration values\n");
+>   	}
+> 
