@@ -1,96 +1,197 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH V3 3/9] cpufreq: Cap the default transition delay value
- to 10 ms
-Date: Thu, 27 Jul 2017 19:54:13 +0300
-Message-ID: <1501174453.7957.30.camel@nxp.com>
-References: <cover.1500373914.git.viresh.kumar@linaro.org>
-         <1b93c94cb8b4914314e4f50304c3cb11c53d8b14.1500373914.git.viresh.kumar@linaro.org>
-         <1500983686.30745.28.camel@nxp.com> <20170726060634.GY352@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170726060634.GY352@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux@dominikbrodowski.net, linux-kernel@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: [PATCH v3 00/10] arm, arm64, cpufreq: frequency- and cpu-invariant accounting support for task scheduler
+Date: Thu, 27 Jul 2017 20:33:02 +0100
+Message-ID: <20170727193312.9849-1-dietmar.eggemann@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:51012 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751606AbdG0Tdi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 27 Jul 2017 15:33:38 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
 
-On Wed, 2017-07-26 at 11:36 +0530, Viresh Kumar wrote:
-> On 25-07-17, 14:54, Leonard Crestez wrote:
+For a more accurate (i.e. frequency- and cpu-invariant) accounting
+the task scheduler needs a frequency-scaling and on a heterogeneous
+system a cpu-scaling correction factor.
 
-> > This patch made it's way into linux-next and it seems to cause imx socs
-> > to almost always hang around their max frequency with the ondemand
-> > governor, even when almost completely idle. The lowest frequency is
-> > never reached. This seems wrong?
+This patch-set implements a Frequency Invariance Engine (FIE)
+based on the ratio of current frequency and maximum supported frequency
+(topology_get_freq_scale()) in the arch topology driver (arm, arm64) to
+provide such a frequency-scaling correction factor.
+This is a solution to get frequency-invariant accounting support for
+platforms without hardware-based performance tracking.
 
-> > This driver calculates transition_latency at probe time, the value is
-> > not terribly accurate but it reaches values like latency = 109 us, so
+The Cpu Invariance Engine (CIE) (topology_get_cpu_scale()) providing a
+cpu-scaling correction factor was already introduced by the "Fix issues
+and factorize arm/arm64 capacity information code" patch-set [1] and is
+currently part of v4.13-rc2.
 
-> So this is the value that is stored in the global variable
-> "transition_latency" in the imx6q-cpufreq.c file? i.e.
-> transition_latency = 109000 (ns) to be exact ?
+This patch-set also enables the frequency- and cpu-invariant accounting
+support. Enabling here means to associate (wire) the task scheduler
+function name arch_scale_freq_capacity and arch_scale_cpu_capacity with
+the FIE and CIE function names from drivers/base/arch_topology.c. This
+replaces the task scheduler's default FIE and CIE in
+kernel/sched/sched.h.
 
-Yes.
+v2: review results:
 
-> - Don't use this patch and try to change ondemand's sampling rate from
->   sysfs. Try setting it to 10000 and see if the behavior is identical
->   to after this patch.
+During the v2 [2] review we agreed that cpufreq core is not the right
+place to drive this kind of FIE. In case of a future fast-switching
+arm/arm64 cpufreq driver, a return value other than
+CPUFREQ_ENTRY_INVALID of the '->fast_switch' driver callback does not
+indicate that the new frequency has been set. So calling the FIE's
+setter function (arch_set_freq_scale()) in cpufreq_driver_fast_switch()
+would not be correct.
 
-Yes, it seems to be. Also setting 100000 explicitly fixes this.
+Instead this version of the patch-set assumes that the FIE setter
+function is provided by the cpufreq driver (slow- or fast-switching).
 
-I also tried to switch from HZ=100 to HZ=1000 but that did not make a
-difference.
+Slow-switching driver:
 
-> - Find how much time does it really take to change the frequency of
->   the CPU. I don't really thing 109 us is the right transition
->   latency. Use attached patch for that and look for the print message.
+For a slow-switching driver the FIE setter function can be called in its
+'->target_index' driver callback, after a non-error return value from
+the (blocking) firmware call has been received.
+Two slow-switching cpufreq drivers (arm-big-little (exclusively used in
+arm/arm64) and cpufreq-dt) have been changed accordingly.
 
-Your patch measures latencies of around 2.5ms, but it can vary between
-1.6 ms to 3ms from boot-to-boot. This is a lot more than what the
-driver reports. Most transitions seem to be faster.
+Fast-switching driver:
 
-I did a little digging and it seems that a majority of time is always
-spent inside clk_pllv3_wait_lock which spins on a HW bit while doing
-usleep_range(50, 500). I originally thought it was because of
-regulators but the delays involved in that are smaller.
+For a fast-switching driver the ARM System Control and Management
+Interface (SCMI) document [3] (4.5 Performance domain management
+protocol) provides an example for such a driver how to communicate with
+the firmware.
+It defines an optional performance domain related notification which
+indicates that the requested frequency has been changed. So the FIE
+setter function could be implemented here.
+In case the firmware does not implement this notification or the driver
+makes no use of it, the FIE setter would have to be placed in the
+'->fast_switch' driver callback assuming that the firmware has set the
+frequency.
 
-Measuring wall time on a process that can sleep seems dubious, isn't
-this vulnerable to random delays because of other tasks?
+Weak arch_set_freq_scale() interface:
 
-> Without this patch the sampling rate of ondemand governor will be 109
-> ms. And after this patch it would be capped at 10 ms. Why would that
-> screw up anyone's setup ? I don't have an answer to that right now.
+Since a cpufreq driver (e.g. cpufreq-dt) can be build for different
+arch's a default (empty) implementation of the FIE setter function in
+cpufreq core is still needed for those arch's which do not implement it.
 
-On a closer look it seems that most of the time is actually spent at
-low cpufreq though (90%+).
+FIE/CIE inlining:
 
-Your change makes it so that even something like "sleep 1; cat
-scaling_cur_freq" raises the frequency to the maximum. This happens
-enough that even if you do it in a loop you will never see the minimum
-frequency. It seems there is enough internal bookkeeping on such a
-wakeup that it takes more than 10ms and enough for a reevaluation of
-cpufreq until cat returns the value?!
- 
-I found this by enabling the power:cpu_frequency tracepoint event and
-checking for deltas with a script. Enabling CPU_FREQ_STAT show this:
+The FIE (topology_get_freq_scale()) and CIE (topology_get_cpu_scale())
+getter functions have been coded as static inline functions so they can
+be inlined into the task scheduler fast path (e.g.
+__update_load_avg_se()).
 
-time_in_state:
++------------------------------+       +------------------------------+
+|                              |       |                              |
+| cpufreq:                     |       | arch:                        |
+|                              |       |                              |
+| weak arch_set_freq_scale() {}|       |                              |
+|                              |       |                              |
++------------------------------+       |                              |
+                                       |                              |
++------------------------------+       |                              |
+|                              |       |                              |
+| cpufreq driver:              |       |                              |
+|                              |       |                              |
+|                            +-----------> arch_set_freq_scale()      |
+|                              |       |                              |
++------------------------------+       |   topology_set_cpu_scale()   |
+                                       |                              |
++------------------------------+       |                              |
+|                              |       |                              |
+| task scheduler:              |       |                              |
+|                              |       |                              |
+| arch_scale_freq_capacity() +-----------> topology_get_freq_scale()  |
+|                              |       |                              |
+| arch_scale_cpu_capacity()  +-----------> topology_get_cpu_scale()   |
+|                              |       |                              |
++------------------------------+       +------------------------------+
 
-396000 1609
-792000 71
-996000 54
+v1 review results:
 
-trans_table:
+During the v1 [4] review Viresh Kumar pointed out that such a FIE based
+on cpufreq transition notifier will not work with future cpufreq
+policies supporting fast frequency switching.
+To include support for fast frequency switching policies the FIE
+implementation has been changed. Whenever there is a frequency change
+cpufreq now calls the arch specific function arch_set_freq_scale() which
+has to be implemented by the architecture. In case the arch does not
+specify this function FIE support is compiled out of cpufreq.
+The advantage is that this would support fast frequency switching since
+it does not rely on cpufreq transition (or policy) notifier anymore.
 
-   From  :    To
-         :    396000    792000    996000 
-   396000:         0        10         7 
-   792000:        16         0        12 
-   996000:         1        18         0 
+Patch high level description:
 
-This is very unexpected but not necessarily wrong.
+   [   01/10] Fix to free cpumask cpus_to_visit
+   [   02/10] Default (empty, weak) arch_set_freq_scale() implementation
+   [03,04/10] Call arch_set_freq_scale() from two cpufreq drivers
+              (arm_big_little and cpufreq-dt)
+   [   05/10] FIE
+   [   06/10] Allow CIE inlining
+   [07,08/10] Enable frequency- and cpu-invariant accounting on arm
+   [09,10/10] Enable frequency- and cpu-invariant accounting on arm64
 
---
-Regards,
-Leonard
+Changes v2->v3:
+
+   - Rebase on top of v4.13-rc2
+   - Fix 'notifier unregister'-'free cpumask' order in
+     parsing_done_workfn() in [01/10]
+   - Call arch_set_freq_scale() from cpufreq drivers (arm-big-little
+     and cpufreq-dt) [02-04/10]
+   - Allow inlining of topology_get_freq_scale() and    
+     topology_get_cpu_scale() into task scheduler fastpath [05,06/10]
+
+Changes v1->v2:
+   - Rebase on top of next-20170630
+   - Add fixup patch to free cpumask cpus_to_visit [01/10]
+   - Propose solution to support fast frequency switching [02-04,07/10]
+   - Add patch to allow CIE and FIE inlining [10/10]
+
+The patch-set is based on top of v4.13-rc2 and is also available from:
+
+   git://linux-arm.org/linux-de.git upstream/freq_and_cpu_inv_v3
+
+Testing:
+
+The patch-set has been tested on TC2 (arm, arm-big-little driver), JUNO
+(arm64, arm-big-little driver) and Hikey620 (arm64, cpufreq-dt driver)
+by running a ramp-up rt-app task pinned to a cpu with the ondemand
+cpufreq governor and checking the load-tracking signals of this task.
+
+Driver module loading has been tested on TC2, JUNO and Hikey620 as well.
+
+[1] https://marc.info/?l=linux-kernel&m=149625018223002&w=2
+[2] https://marc.info/?l=linux-pm&m=149933474313566&w=2
+[3] http://arminfo.emea.arm.com/help/topic/com.arm.doc.den0056a/DEN0056A_System_Control_and_Management_Interface.pdf
+[4] https://marc.info/?l=linux-kernel&m=149690865010019&w=2
+
+Dietmar Eggemann (10):
+  drivers base/arch_topology: free cpumask cpus_to_visit
+  cpufreq: provide default frequency-invariance setter function
+  cpufreq: arm_big_little: invoke frequency-invariance setter function
+  cpufreq: dt: invoke frequency-invariance setter function
+  drivers base/arch_topology: provide frequency-invariant accounting
+    support
+  drivers base/arch_topology: allow inlining cpu-invariant accounting
+    support
+  arm: wire frequency-invariant accounting support up to the task
+    scheduler
+  arm: wire cpu-invariant accounting support up to the task scheduler
+  arm64: wire frequency-invariant accounting support up to the task
+    scheduler
+  arm64: wire cpu-invariant accounting support up to the task scheduler
+
+ arch/arm/include/asm/topology.h   |  8 ++++++++
+ arch/arm64/include/asm/topology.h |  8 ++++++++
+ drivers/base/arch_topology.c      | 29 +++++++++++++++++++++++------
+ drivers/cpufreq/arm_big_little.c  | 10 +++++++++-
+ drivers/cpufreq/cpufreq-dt.c      | 12 ++++++++++--
+ drivers/cpufreq/cpufreq.c         | 11 +++++++++++
+ include/linux/arch_topology.h     | 18 +++++++++++++++++-
+ include/linux/cpufreq.h           |  3 +++
+ 8 files changed, 89 insertions(+), 10 deletions(-)
+
+-- 
+2.11.0
