@@ -1,185 +1,62 @@
-From: kbuild test robot <lkp@intel.com>
-Subject: Re: [PATCH v2 1/5] arm64: tegra: Add BPMP thermal sensor to Tegra186
-Date: Thu, 27 Jul 2017 14:47:10 +0800
-Message-ID: <201707271402.PznRxqSc%fengguang.wu@intel.com>
-References: <20170724162918.21050-1-mperttunen@nvidia.com>
+From: "rocky.hao" <rocky.hao@rock-chips.com>
+Subject: Re: [PATCH 1/5] dt-bindings: rockchip-thermal: Support the RK3328 SoC
+ compatible
+Date: Thu, 27 Jul 2017 14:49:37 +0800
+Message-ID: <4c4a3974-e841-3d98-9850-131711c40c61@rock-chips.com>
+References: <1500973788-14627-1-git-send-email-rocky.hao@rock-chips.com>
+ <1500973788-14627-2-git-send-email-rocky.hao@rock-chips.com>
+ <4621265.xPXIvBV6Fl@diego>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="ZPt4rx8FFjLCG7dd"
+Content-Type: text/plain; charset=gbk; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170724162918.21050-1-mperttunen@nvidia.com>
+In-Reply-To: <4621265.xPXIvBV6Fl@diego>
 Sender: linux-kernel-owner@vger.kernel.org
-Cc: kbuild-all@01.org, rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com, jonathanh@nvidia.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Mikko Perttunen <mperttunen@nvidia.com>
+To: =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
+Hi Heiko,
+Thank you for the quick reply. I will remove the gerrit Change-Ids in my 
+v2 patches.
 
---ZPt4rx8FFjLCG7dd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Thanks again,
+Rocky
 
-Hi Mikko,
-
-[auto build test ERROR on tegra/for-next]
-[also build test ERROR on v4.13-rc2 next-20170726]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Mikko-Perttunen/arm64-tegra-Add-BPMP-thermal-sensor-to-Tegra186/20170726-055759
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/tegra/linux.git for-next
-config: arm64-allnoconfig (attached as .config)
-compiler: aarch64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-reproduce:
-        wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
-        chmod +x ~/bin/make.cross
-        # save the attached .config to linux build tree
-        make.cross ARCH=arm64 
-
-Note: the linux-review/Mikko-Perttunen/arm64-tegra-Add-BPMP-thermal-sensor-to-Tegra186/20170726-055759 HEAD 2aebe2225f7f5f03abf6098e07387fa011ec16a8 builds fine.
-      It only hurts bisectibility.
-
-All errors (new ones prefixed by >>):
-
-   In file included from arch/arm64/boot/dts/nvidia/tegra186-p3310.dtsi:1:0,
-                    from arch/arm64/boot/dts/nvidia/tegra186-p2771-0000.dts:5:
->> arch/arm64/boot/dts/nvidia/tegra186.dtsi:7:55: fatal error: dt-bindings/thermal/tegra186-bpmp-thermal.h: No such file or directory
-    #include <dt-bindings/thermal/tegra186-bpmp-thermal.h>
-                                                          ^
-   compilation terminated.
-
-vim +7 arch/arm64/boot/dts/nvidia/tegra186.dtsi
-
-   > 7	#include <dt-bindings/thermal/tegra186-bpmp-thermal.h>
-     8	
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-
---ZPt4rx8FFjLCG7dd
-Content-Type: application/gzip
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
-
-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
-gPAyq5MaGgl3qKiSKGj/A2hY5sOeXAAA
-
---ZPt4rx8FFjLCG7dd--
+ÔÚ 2017/7/27 14:36, Heiko St¨¹bner Ð´µÀ:
+> Hi Rocky,
+> 
+> Am Dienstag, 25. Juli 2017, 17:09:44 CEST schrieb Rocky Hao:
+>> attempt to new compatible for thermal founding on RK3328 SoC.
+>>
+>> Change-Id: Ie6f6d7b4e545891a0035851a923c0412f584140c
+>> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
+> 
+> generally looks good but you should not have gerrit Change-Ids in patches
+> for mainline. This is true for all patches in this series.
+> 
+> 
+> Heiko
+> 
+>> ---
+>>   Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 1 +
+>>   1 file changed, 1 insertion(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt index
+>> 43003aec94bd..e3a6234fb1ac 100644
+>> --- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
+>> @@ -4,6 +4,7 @@ Required properties:
+>>   - compatible : should be "rockchip,<name>-tsadc"
+>>      "rockchip,rk3228-tsadc": found on RK3228 SoCs
+>>      "rockchip,rk3288-tsadc": found on RK3288 SoCs
+>> +   "rockchip,rk3328-tsadc": found on RK3328 SoCs
+>>      "rockchip,rk3368-tsadc": found on RK3368 SoCs
+>>      "rockchip,rk3399-tsadc": found on RK3399 SoCs
+>>   - reg : physical base address of the controller and length of memory mapped
+> 
+> 
+> 
+> 
+> 
