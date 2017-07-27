@@ -1,81 +1,92 @@
 From: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
-Subject: Re: [Eas-dev] [PATCH V4 1/3] sched: cpufreq: Allow remote cpufreq callbacks
-Date: Wed, 26 Jul 2017 23:13:11 -0700
-Message-ID: <CAEi0qNnYANJ9qNAnh3H4F5igXvHhT8ujoVH3JjMgr_1aBvvcRg@mail.gmail.com>
-References: <cover.1501060871.git.viresh.kumar@linaro.org> <8797d4993baa6580e3af741d081be492032ce9dd.1501060871.git.viresh.kumar@linaro.org>
- <CAEi0qN=ipk9SR+3DYcLk-5SoKnsfK=PQV62VH9KAoXz2PDRkjQ@mail.gmail.com> <20170727055026.GK352@vireshk-i7>
+Subject: Re: [Eas-dev] [PATCH V4 0/3] sched: cpufreq: Allow remote callbacks
+Date: Wed, 26 Jul 2017 23:23:21 -0700
+Message-ID: <CAEi0qN=e9sL+ndTerAwcJTwCsmzJiwgtWkSk3Coa0Qzvyzdb2Q@mail.gmail.com>
+References: <cover.1501060871.git.viresh.kumar@linaro.org> <CAEi0qNmuPLG68o0XZy5BTZO7=MwAkUdobOs=m4Fa6NYJ2q6B6w@mail.gmail.com>
+ <20170727054635.GJ352@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:33210 "EHLO
-        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751042AbdG0GNN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 02:13:13 -0400
-In-Reply-To: <20170727055026.GK352@vireshk-i7>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:34623 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750946AbdG0GXX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 02:23:23 -0400
+In-Reply-To: <20170727054635.GJ352@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, smuckle.linux@gmail.com, eas-dev@lists.linaro.org, Joel Fernandes <joelaf@google.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, smuckle.linux@gmail.com, eas-dev@lists.linaro.org, Joel Fernandes <joelaf@google.com>
 
-On Wed, Jul 26, 2017 at 10:50 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 26-07-17, 22:34, Joel Fernandes (Google) wrote:
->> On Wed, Jul 26, 2017 at 2:22 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > @@ -221,7 +226,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
->> >         sugov_set_iowait_boost(sg_cpu, time, flags);
->> >         sg_cpu->last_update = time;
->> >
->> > -       if (!sugov_should_update_freq(sg_policy, time))
->> > +       if (!sugov_should_update_freq(sg_policy, time, hook->cpu))
->> >                 return;
+Hi Viresh,
+
+On Wed, Jul 26, 2017 at 10:46 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 26-07-17, 22:14, Joel Fernandes (Google) wrote:
+<snip>
+>> Also one more comment about this usecase:
 >>
->> Since with the remote callbacks now possible, isn't it unsafe to
->> modify sg_cpu and sg_policy structures without a lock in
->> sugov_update_single?
+>> You mentioned in our discussion at [2] sometime back, about the
+>> question of initial utilization,
 >>
->> Unlike sugov_update_shared, we don't acquire any lock in
->> sugov_update_single before updating these structures. Did I miss
->> something?
+>> "We don't have any such configurable way possible right
+>> now, but there were discussions on how much utilization should a new
+>> task be assigned when it first comes up."
 >
-> As Peter already mentioned it earlier, the callbacks are called with
-> rq locks held and so sugov_update_single() wouldn't get called in
-> parallel for a target CPU.
+> We still initialize it to a value, just that it isn't configurable.
+> See below..
+>
+>> But, then in your cover letter above, you mentioned "This is verified
+>> using ftrace". So my question is how has this been verified with
+>> ftrace if the new initial utilization as you said in [2] is currently
+>> still under discussion? Basically how could you verify with ftrace
+>> that the target CPU frequency isn't increasing immediately on spawning
+>> of a new task remotely, if the initial utilization of a new task isn't
+>> something we set/configure with current code? Am I missing something?
+>>
+>> [2] https://lists.linaro.org/pipermail/eas-dev/2017-January/000785.html
+>
+> The statement "new tasks should receive maximum demand initially" is
+> used to represent tasks which have high demand every time they run.
+> For example scrolling of a web page or gallery on our phones. Yes,
+> maybe I can use the work "migrated" (as you suggested later) as the
+> history of its utilization will move with it then to the new CPU.
+>
+> But even without that, if you see the routine
+> init_entity_runnable_average() in fair.c, the new tasks are
+> initialized in a way that they are seen as heavy tasks. And so even
+> for the first time they run, freq should normally increase on the
+> target CPU (at least with above application).i
 
-Ah ok, I have to catch up with that discussion since I missed the
-whole thing. Now that you will have me on CC, that shouldn't happen,
-thanks and sorry about the noise.
+Ok, but the "heavy" in init_entity_runnable_average means for load,
+not the util_avg. The util_avg is what's used for frequency scaling
+IIUC and is set to 0 in that function no?
 
-> That's the only race you were worried about ?
+>
+> The application was written by Steve (all credit goes to him) before
+> he left Linaro, but I did test it with ftrace. What I saw with ftrace
+> was that the freq isn't reevaluated for almost an entire tick many
+> times because we enqueued the task remotely. And that changes with
+> this series.
+>
+>> > The reason being that this patchset only targets a corner case, where
+>> > following are required to be true to improve performance and that
+>> > doesn't happen too often with these tests:
+>> >
+>> > - Task is migrated to another CPU.
+>> > - The task has maximum demand initially, and should take the CPU to
+>>
+>> Just to make the cover-letter more clear and also confirming with you
+>> I understand the above usecase, maybe in the future this can reworded
+>> from "initially" to "before the migration" and "take the CPU" to "take
+>> the target CPU of the migration" ?
+>
+> I can reword it a bit, but the test case wasn't really migrating
+> anything and was looking only at the initial loads.
 
-Yes. So then in that case, makes sense to move raw_spin_lock in
-sugov_update_shared further down? (Just discussing, this point is
-independent of your patch), Something like:
-
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 622eed1b7658..9a6c12fb2c16 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -295,8 +295,6 @@ static void sugov_update_shared(struct
-update_util_data *hook, u64 time,
-
-        sugov_get_util(&util, &max);
-
--       raw_spin_lock(&sg_policy->update_lock);
--
-        sg_cpu->util = util;
-        sg_cpu->max = max;
-        sg_cpu->flags = flags;
-@@ -304,6 +302,8 @@ static void sugov_update_shared(struct
-update_util_data *hook, u64 time,
-        sugov_set_iowait_boost(sg_cpu, time, flags);
-        sg_cpu->last_update = time;
-
-+       raw_spin_lock(&sg_policy->update_lock);
-+
-        if (sugov_should_update_freq(sg_policy, time)) {
-                if (flags & SCHED_CPUFREQ_RT_DL)
-                        next_f = sg_policy->policy->cpuinfo.max_freq;
-
-
+Ok, I wasn't talking about the synthetic test in the second part of my
+email above but about the explanation you gave about Galleryfling
+improvement (that the migration of a task with high utilization
+doesn't update the target frequency) which makes sense to me so we are
+on the same page about that.
 
 thanks,
 
