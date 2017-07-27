@@ -1,70 +1,29 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [Eas-dev] [PATCH V3 1/3] sched: cpufreq: Allow remote cpufreq
- callbacks
-Date: Thu, 27 Jul 2017 12:55:24 -0700
-Message-ID: <597A452C.7000303@codeaurora.org>
-References: <cover.1499927699.git.viresh.kumar@linaro.org> <0f950529a63fb95e87944644c4854be4fcfaea38.1499927699.git.viresh.kumar@linaro.org> <20170721130349.mv7soic62jdnirq5@hirez.programming.kicks-ass.net> <597902DA.8060608@codeaurora.org> <20170727033059.GD352@vireshk-i7>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Regression with suspicious RCU usage splats with cpu_pm change
+Date: Thu, 27 Jul 2017 23:32:31 +0200
+Message-ID: <12130551.tgrm1NBPQm@aspire.rjw.lan>
+References: <20170713070749.GE16509@atomide.com> <c5c6623b-ea1d-1bbf-ea80-5d93e7e81c6f@linaro.org> <461af072-9b01-b08b-9ae6-09f14c9b187a@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:32796 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751582AbdG0Tz0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 15:55:26 -0400
-In-Reply-To: <20170727033059.GD352@vireshk-i7>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:60609 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751610AbdG0Vkd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 17:40:33 -0400
+In-Reply-To: <461af072-9b01-b08b-9ae6-09f14c9b187a@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: eas-dev@lists.linaro.org, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, smuckle.linux@gmail.com, Len Brown <lenb@kernel.org>
+To: Alex Shi <alex.shi@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, paulmck@linux.vnet.ibm.com, Tony Lindgren <tony@atomide.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <Will.Deacon@arm.com>
 
-On 07/26/2017 08:30 PM, Viresh Kumar wrote:
-> On 26-07-17, 14:00, Saravana Kannan wrote:
->> No, the alternative is to pass it on to the CPU freq driver and let it
->> decide what it wants to do. That's the whole point if having a CPU freq
->> driver -- so that the generic code doesn't need to care about HW specific
->> details. Which is the point I was making in an earlier email to Viresh's
->> patch -- we shouldn't be doing any CPU check for the call backs at the
->> scheduler or ever governor level.
->>
->> That would simplify this whole thing by deleting a bunch of code. And having
->> much simpler checks in those drivers that actually have to deal with their
->> HW specific details.
->
-> So what you are saying is that we go and update (almost) every cpufreq
-> driver we have today and make their ->target() callbacks return early
-> if they don't support switching frequency remotely ? Is that really
-> simplifying anything?
+On Thursday, July 27, 2017 05:55:19 PM Alex Shi wrote:
+> Hi Rafael,
+> 
+> Guess you overlook my new patch in this thread. :)
+> Do I need to recent this patch as new? or you could pick it up here?
 
-Yes. Simplifying isn't always about number of lines of code. It's also 
-about abstraction. Having generic scheduler code care about HW details 
-doesn't seem nice.
+Please resend it, add all of the applicable tags etc.
 
-It'll literally one simple check (cpu == smp_processor_id()) or (cpu 
-"in" policy->cpus).
-
-Also, this is only for drivers that currently support fast switching. 
-How many of those do you have?
-
-> The core already has most of the data required and I believe that we
-> need to handle it in the governor's code as is handled in this series.
-
-Clearly, it doesn't. You are just making assumptions about HW.
-
-> To solve the problem that you have been reporting (update from any
-> CPU), we need something like this which I earlier suggested and I
-> will come back to it after this series is gone. Don't want to
-> complicate things here unnecessarily.
->
-> https://marc.info/?l=linux-kernel&m=148906012827786&w=2
-
-I'm okay with handling it later. I'm just saying that if we are going to 
-go back and debate the CPU check, then maybe it's better do it in one 
-series.
-
--Saravana
-
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+Thanks,
+Rafael
