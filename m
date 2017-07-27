@@ -1,62 +1,61 @@
-From: "rocky.hao" <rocky.hao@rock-chips.com>
-Subject: Re: [PATCH 1/5] dt-bindings: rockchip-thermal: Support the RK3328 SoC
- compatible
-Date: Thu, 27 Jul 2017 14:49:37 +0800
-Message-ID: <4c4a3974-e841-3d98-9850-131711c40c61@rock-chips.com>
-References: <1500973788-14627-1-git-send-email-rocky.hao@rock-chips.com>
- <1500973788-14627-2-git-send-email-rocky.hao@rock-chips.com>
- <4621265.xPXIvBV6Fl@diego>
+From: Mikko Perttunen <mperttunen@nvidia.com>
+Subject: Re: [PATCH v2 1/5] arm64: tegra: Add BPMP thermal sensor to Tegra186
+Date: Thu, 27 Jul 2017 09:52:10 +0300
+Message-ID: <0f9e5f15-c4e2-d897-df3e-5253c3b94007@nvidia.com>
+References: <201707271402.PznRxqSc%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gbk; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4621265.xPXIvBV6Fl@diego>
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:5650 "EHLO
+        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750765AbdG0GwP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 02:52:15 -0400
+In-Reply-To: <201707271402.PznRxqSc%fengguang.wu@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: kbuild test robot <lkp@intel.com>
+Cc: kbuild-all@01.org, rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com, jonathanh@nvidia.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-Hi Heiko,
-Thank you for the quick reply. I will remove the gerrit Change-Ids in my 
-v2 patches.
+Good point, so patches 1/5 and 2/5 should be swapped around.
 
-Thanks again,
-Rocky
+Mikko
 
-ÔÚ 2017/7/27 14:36, Heiko St¨¹bner Ð´µÀ:
-> Hi Rocky,
-> 
-> Am Dienstag, 25. Juli 2017, 17:09:44 CEST schrieb Rocky Hao:
->> attempt to new compatible for thermal founding on RK3328 SoC.
->>
->> Change-Id: Ie6f6d7b4e545891a0035851a923c0412f584140c
->> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
-> 
-> generally looks good but you should not have gerrit Change-Ids in patches
-> for mainline. This is true for all patches in this series.
-> 
-> 
-> Heiko
-> 
->> ---
->>   Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 1 +
->>   1 file changed, 1 insertion(+)
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt index
->> 43003aec94bd..e3a6234fb1ac 100644
->> --- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->> @@ -4,6 +4,7 @@ Required properties:
->>   - compatible : should be "rockchip,<name>-tsadc"
->>      "rockchip,rk3228-tsadc": found on RK3228 SoCs
->>      "rockchip,rk3288-tsadc": found on RK3288 SoCs
->> +   "rockchip,rk3328-tsadc": found on RK3328 SoCs
->>      "rockchip,rk3368-tsadc": found on RK3368 SoCs
->>      "rockchip,rk3399-tsadc": found on RK3399 SoCs
->>   - reg : physical base address of the controller and length of memory mapped
-> 
-> 
-> 
-> 
-> 
+On 27.07.2017 09:47, kbuild test robot wrote:
+> Hi Mikko,
+>
+> [auto build test ERROR on tegra/for-next]
+> [also build test ERROR on v4.13-rc2 next-20170726]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>
+> url:    https://github.com/0day-ci/linux/commits/Mikko-Perttunen/arm64-tegra-Add-BPMP-thermal-sensor-to-Tegra186/20170726-055759
+> base:   https://git.kernel.org/pub/scm/linux/kernel/git/tegra/linux.git for-next
+> config: arm64-allnoconfig (attached as .config)
+> compiler: aarch64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
+> reproduce:
+>         wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=arm64
+>
+> Note: the linux-review/Mikko-Perttunen/arm64-tegra-Add-BPMP-thermal-sensor-to-Tegra186/20170726-055759 HEAD 2aebe2225f7f5f03abf6098e07387fa011ec16a8 builds fine.
+>       It only hurts bisectibility.
+>
+> All errors (new ones prefixed by >>):
+>
+>    In file included from arch/arm64/boot/dts/nvidia/tegra186-p3310.dtsi:1:0,
+>                     from arch/arm64/boot/dts/nvidia/tegra186-p2771-0000.dts:5:
+>>> arch/arm64/boot/dts/nvidia/tegra186.dtsi:7:55: fatal error: dt-bindings/thermal/tegra186-bpmp-thermal.h: No such file or directory
+>     #include <dt-bindings/thermal/tegra186-bpmp-thermal.h>
+>                                                           ^
+>    compilation terminated.
+>
+> vim +7 arch/arm64/boot/dts/nvidia/tegra186.dtsi
+>
+>    > 7	#include <dt-bindings/thermal/tegra186-bpmp-thermal.h>
+>      8	
+>
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+>
