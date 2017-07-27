@@ -1,50 +1,57 @@
-From: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>
-Subject: [PATCH v5 0/1] Fix get sharing cpus when hotplug is used
-Date: Thu, 27 Jul 2017 12:01:18 +0200
-Message-ID: <20170727100128.26818-2-waldemarx.rymarkiewicz@intel.com>
-References: <20170727100128.26818-1-waldemarx.rymarkiewicz@intel.com>
+From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Subject: [PATCH] turbostat: fix Skylake server package C-states reporting
+Date: Thu, 27 Jul 2017 14:41:39 +0300
+Message-ID: <1501155699.2643.9.camel@linux.intel.com>
+Reply-To: artem.bityutskiy@linux.intel.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:42113 "EHLO mga02.intel.com"
+Received: from mga05.intel.com ([192.55.52.43]:61525 "EHLO mga05.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751533AbdG0KBo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 27 Jul 2017 06:01:44 -0400
-In-Reply-To: <20170727100128.26818-1-waldemarx.rymarkiewicz@intel.com>
+        id S1750965AbdG0Llt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 27 Jul 2017 07:41:49 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: waldemar.rymarkiewicz@gmail.com, Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: "Brown, Len" <len.brown@intel.com>
+Cc: linux-pm@vger.kernel.org
 
-Hi,
+From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
 
-This patch fixes problem with setting opp shared cpus bitmask on
-hotplugable systems. See patch commit message for details.
+This patch fixes the problem of turbostat not reporting any package C-states on
+Skylake Xeon processor when the deepest package C-stated is configured as "no
+limit" in the UEFI firmware configuration menu.
 
-CHANGLOG:
+The lowest 3 bits of the MSR_PKG_CST_CONFIG_CONTROL (0x000000e2) register
+contain 7 in this case, meaning "No Package C state limits" (see Intel SDM, vol
+4, Table 2-41 - MSRs Supported by Intel® Xeon® Processor Scalable Family with
+DisplayFamily_DisplayModel 06_55H).
 
-v5  0-day reported issue fixed 
+The problem was that turbostat's internal array of supported package C-sates
+(skx_pkg_cstate_limits) marked position #7 as "PCLRSV" (reserved), instead of
+"PCLUNL" (not limited). Instead, position #8 was incorrectly marked as "PCLUNL"
+(probably due to a typo).
 
-v4  Added Reviewed-by: Stephen Boyd <sboyd@codeaurora.org> + use pr_err
-    instead dev_err for missing opp node phandle.
+This patch fixes the issue by marking position #7 as "not limited", and
+position #8 as "reserved".
 
-v3  Acked-by: Viresh Kumar added
+Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+---
+ turbostat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-v2  Abandon v1 as it was not good enough. Still check all possible CPUs as in
-    original code, but don't check device struct. Instead check device_node
-    directly in DT.
-
-v1  [PATCH] PM / OPP: Don't check not plugged in CPUs to avoid error
-    Avoid error by checking all present cpus instead possible cpus.
-
-Thanks,
-/Waldek
-
-
-
-Waldemar Rymarkiewicz (1):
-  PM / OPP: Fix get sharing cpus when hotplug is used
-
- drivers/base/power/opp/of.c | 29 +++++++++++++++++------------
- 1 file changed, 17 insertions(+), 12 deletions(-)
-
+diff --git a/turbostat.c b/turbostat.c
+index 6c185a9..1c4d3e2 100644
+--- a/turbostat.c
++++ b/turbostat.c
+@@ -1816,7 +1816,7 @@ int slv_pkg_cstate_limits[16] = {PCL__0, PCL__1, PCLRSV, PCLRSV, PCL__4, PCLRSV,
+ int amt_pkg_cstate_limits[16] = {PCLUNL, PCL__1, PCL__2, PCLRSV, PCLRSV, PCLRSV, PCL__6, PCL__7, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
+ int phi_pkg_cstate_limits[16] = {PCL__0, PCL__2, PCL_6N, PCL_6R, PCLRSV, PCLRSV, PCLRSV, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
+ int bxt_pkg_cstate_limits[16] = {PCL__0, PCL__2, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
+-int skx_pkg_cstate_limits[16] = {PCL__0, PCL__2, PCL_6N, PCL_6R, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
++int skx_pkg_cstate_limits[16] = {PCL__0, PCL__2, PCL_6N, PCL_6R, PCLRSV, PCLRSV, PCLRSV, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
+ 
+ 
+ static void
 -- 
-2.10.1
+2.9.3
