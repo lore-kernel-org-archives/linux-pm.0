@@ -1,7 +1,7 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v3 07/10] arm: wire frequency-invariant accounting support up to the task scheduler
-Date: Thu, 27 Jul 2017 20:33:09 +0100
-Message-ID: <20170727193312.9849-8-dietmar.eggemann@arm.com>
+Subject: [PATCH v3 04/10] cpufreq: dt: invoke frequency-invariance setter function
+Date: Thu, 27 Jul 2017 20:33:06 +0100
+Message-ID: <20170727193312.9849-5-dietmar.eggemann@arm.com>
 References: <20170727193312.9849-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170727193312.9849-1-dietmar.eggemann@arm.com>
@@ -10,41 +10,40 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Commit dfbca41f3479 ("sched: Optimize freq invariant accounting")
-changed the wiring which now has to be done by associating
-arch_scale_freq_capacity with the actual implementation provided
-by the architecture.
+Call the frequency-invariance setter function arch_set_freq_scale()
+if the new frequency has been successfully set which is indicated by
+dev_pm_opp_set_rate() returning 0.
 
-Define arch_scale_freq_capacity to use the arch_topology "driver"
-function topology_get_freq_scale() for the task scheduler's
-frequency-invariant accounting instead of the default
-arch_scale_freq_capacity() in kernel/sched/sched.h.
-
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Juri Lelli <juri.lelli@arm.com>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
-Tested-by: Juri Lelli <juri.lelli@arm.com>
-Reviewed-by: Juri Lelli <juri.lelli@arm.com>
 ---
- arch/arm/include/asm/topology.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/cpufreq/cpufreq-dt.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
-index 370f7a732900..a56a9e24f4c0 100644
---- a/arch/arm/include/asm/topology.h
-+++ b/arch/arm/include/asm/topology.h
-@@ -24,6 +24,11 @@ void init_cpu_topology(void);
- void store_cpu_topology(unsigned int cpuid);
- const struct cpumask *cpu_coregroup_mask(int cpu);
- 
-+#include <linux/arch_topology.h>
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index fef3c2160691..cbac8a7dbc50 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -43,9 +43,17 @@ static struct freq_attr *cpufreq_dt_attr[] = {
+ static int set_target(struct cpufreq_policy *policy, unsigned int index)
+ {
+ 	struct private_data *priv = policy->driver_data;
++	unsigned long freq = policy->freq_table[index].frequency;
++	int ret;
 +
-+/* Replace task scheduler's default frequency-invariant accounting */
-+#define arch_scale_freq_capacity topology_get_freq_scale
-+
- #else
++	ret = dev_pm_opp_set_rate(priv->cpu_dev, freq * 1000);
  
- static inline void init_cpu_topology(void) { }
+-	return dev_pm_opp_set_rate(priv->cpu_dev,
+-				   policy->freq_table[index].frequency * 1000);
++	if (!ret) {
++		arch_set_freq_scale(policy->related_cpus, freq,
++				    policy->cpuinfo.max_freq);
++	}
++
++	return ret;
+ }
+ 
+ /*
 -- 
 2.11.0
