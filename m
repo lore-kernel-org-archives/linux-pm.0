@@ -1,100 +1,30 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [RFC][PATCH] thunderbolt: icm: Ignore mailbox errors in
- icm_suspend()
-Date: Thu, 27 Jul 2017 11:50:11 +0300
-Message-ID: <20170727085011.GY2369@lahna.fi.intel.com>
-References: <4063610.TqANq0McE8@aspire.rjw.lan>
- <2817723.OEn9Hxcbhj@aspire.rjw.lan>
- <20170726131259.GM2369@lahna.fi.intel.com>
- <4165239.xHgWvuTePe@aspire.rjw.lan>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [Eas-dev] [PATCH V4 1/3] sched: cpufreq: Allow remote cpufreq
+ callbacks
+Date: Thu, 27 Jul 2017 11:10:21 +0200
+Message-ID: <20170727091021.253yiqwzrn5qqi4m@hirez.programming.kicks-ass.net>
+References: <cover.1501060871.git.viresh.kumar@linaro.org>
+ <8797d4993baa6580e3af741d081be492032ce9dd.1501060871.git.viresh.kumar@linaro.org>
+ <CAEi0qN=ipk9SR+3DYcLk-5SoKnsfK=PQV62VH9KAoXz2PDRkjQ@mail.gmail.com>
+ <20170727055026.GK352@vireshk-i7>
+ <CAEi0qNnYANJ9qNAnh3H4F5igXvHhT8ujoVH3JjMgr_1aBvvcRg@mail.gmail.com>
+ <20170727071441.GL352@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:27597 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751427AbdG0Iua (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 27 Jul 2017 04:50:30 -0400
+Received: from merlin.infradead.org ([205.233.59.134]:57208 "EHLO
+        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751779AbdG0JKf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 05:10:35 -0400
 Content-Disposition: inline
-In-Reply-To: <4165239.xHgWvuTePe@aspire.rjw.lan>
+In-Reply-To: <20170727071441.GL352@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>, Michael Jamet <michael.jamet@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, smuckle.linux@gmail.com, eas-dev@lists.linaro.org, Joel Fernandes <joelaf@google.com>
 
-On Wed, Jul 26, 2017 at 07:05:01PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday, July 26, 2017 04:12:59 PM Mika Westerberg wrote:
-> > On Wed, Jul 26, 2017 at 02:48:54PM +0200, Rafael J. Wysocki wrote:
-> > > On Wednesday, July 26, 2017 11:32:44 AM Mika Westerberg wrote:
-> > > > On Tue, Jul 25, 2017 at 06:10:57PM +0200, Rafael J. Wysocki wrote:
-> > > > > On Tuesday, July 25, 2017 01:00:12 PM Mika Westerberg wrote:
-> > > > > > On Tue, Jul 25, 2017 at 01:31:00AM +0200, Rafael J. Wysocki wrote:
-> > > > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > > > 
-> > > > > > > On one of my test machines nhi_mailbox_cmd() called from icm_suspend()
-> > > > > > > times out and returnes an error which then is propagated to the
-> > > > > > > caller and causes the entire system suspend to be aborted which isn't
-> > > > > > > very useful.
-> > > > > > > 
-> > > > > > > Instead of aborting system suspend, print the error into the log
-> > > > > > > and continue.
-> > > > > > 
-> > > > > > I agree, it should not prevent suspend but I wonder why it fails in the
-> > > > > > first place? Can you check what is the return value?
-> > > > > 
-> > > > > As per the above, the error is a timeout, ie. -ETIMEDOUT.
-> > > > 
-> > > > Ah, right I somehow missed that.
-> > > > 
-> > > > Does it have Falcon Ridge controller or Alpine Ridge?
-> > > 
-> > > I'll check later today, but i guess you'll know (see below).
-> > 
-> > No need to check, it is Alpine Ridge (since it is Dell 9360).
-> > 
-> > > > Just to make sure, can you increase the timeout in nhi_mailbox_cmd()
-> > > > to 1000ms or so. It should not take that long though but better to check.
-> > > 
-> > > Well, I can do that, but I don't think it will help.
-> > > 
-> > > It just looks like the chip is not responding at all at that point.
-> > 
-> > I see.
-> > 
-> > Then I think we should apply your patch now and we can investigate this
-> > further offline and hopefully find the root cause for the problem.
-> > 
-> > For this patch:
-> > 
-> > Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> 
-> OK
-> 
-> I guess I can apply it, then, or if anyone else in the CC wants to do that,
-> please let me know.
+On Thu, Jul 27, 2017 at 12:44:41PM +0530, Viresh Kumar wrote:
+> Even that was discussed tomorrow with Peter :)
 
-Greg typically takes these but I'm fine either way.
-
-(Eventually we should probably establish Thunderbolt tree/branch in
- kernel.org where we gather all Thunderbolt related patches and just send
- pull request to Greg or something like that).
-
-> > > > Which system this is BTW?
-> > > 
-> > > It's the Dell 9360. :-)
-> > > 
-> > > Sometimes after a reboot or a power cycle it starts in a state in which the
-> > > TBT controller and a USB one (which seem to be somehow connected)
-> > > appear to be dead or at least really flaky.  Basically, the box needs to be
-> > > power-cycled again to get rid of this condition and then everything works.
-> > 
-> > The xHCI controller is part of the Thunderbolt controller so whenever
-> > you have normal USB-C device connected there, you should also see the
-> > Alpine Ridge hierarchy in lspci output but the Thunderbolt host
-> > controller is not there.
-> 
-> I don't have any USB-C devices, though, so I can't really test it this way ATM.
-> 
-> It's jjust never used now. :-)
-
-OK. We have one 9365 which I think should be pretty similar. I'll give
-it a try once I find it ;-)
+Just to clarify I don't have a time machine. That discussion was
+_yesterday_,... I think :-)
