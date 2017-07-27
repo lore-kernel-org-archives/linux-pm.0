@@ -1,61 +1,67 @@
-From: Mikko Perttunen <mperttunen@nvidia.com>
-Subject: Re: [PATCH v2 1/5] arm64: tegra: Add BPMP thermal sensor to Tegra186
-Date: Thu, 27 Jul 2017 09:52:10 +0300
-Message-ID: <0f9e5f15-c4e2-d897-df3e-5253c3b94007@nvidia.com>
-References: <201707271402.PznRxqSc%fengguang.wu@intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Eas-dev] [PATCH V4 1/3] sched: cpufreq: Allow remote cpufreq
+ callbacks
+Date: Thu, 27 Jul 2017 12:44:41 +0530
+Message-ID: <20170727071441.GL352@vireshk-i7>
+References: <cover.1501060871.git.viresh.kumar@linaro.org>
+ <8797d4993baa6580e3af741d081be492032ce9dd.1501060871.git.viresh.kumar@linaro.org>
+ <CAEi0qN=ipk9SR+3DYcLk-5SoKnsfK=PQV62VH9KAoXz2PDRkjQ@mail.gmail.com>
+ <20170727055026.GK352@vireshk-i7>
+ <CAEi0qNnYANJ9qNAnh3H4F5igXvHhT8ujoVH3JjMgr_1aBvvcRg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:5650 "EHLO
-        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750765AbdG0GwP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 02:52:15 -0400
-In-Reply-To: <201707271402.PznRxqSc%fengguang.wu@intel.com>
+Received: from mail-pg0-f48.google.com ([74.125.83.48]:37010 "EHLO
+        mail-pg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751595AbdG0HOp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 03:14:45 -0400
+Received: by mail-pg0-f48.google.com with SMTP id y129so94278114pgy.4
+        for <linux-pm@vger.kernel.org>; Thu, 27 Jul 2017 00:14:45 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAEi0qNnYANJ9qNAnh3H4F5igXvHhT8ujoVH3JjMgr_1aBvvcRg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <lkp@intel.com>
-Cc: kbuild-all@01.org, rui.zhang@intel.com, edubezval@gmail.com, thierry.reding@gmail.com, jonathanh@nvidia.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, smuckle.linux@gmail.com, eas-dev@lists.linaro.org, Joel Fernandes <joelaf@google.com>
 
-Good point, so patches 1/5 and 2/5 should be swapped around.
+On 26-07-17, 23:13, Joel Fernandes (Google) wrote:
+> On Wed, Jul 26, 2017 at 10:50 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 26-07-17, 22:34, Joel Fernandes (Google) wrote:
+> >> On Wed, Jul 26, 2017 at 2:22 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >> > @@ -221,7 +226,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+> >> >         sugov_set_iowait_boost(sg_cpu, time, flags);
+> >> >         sg_cpu->last_update = time;
+> >> >
+> >> > -       if (!sugov_should_update_freq(sg_policy, time))
+> >> > +       if (!sugov_should_update_freq(sg_policy, time, hook->cpu))
+> >> >                 return;
+> >>
+> >> Since with the remote callbacks now possible, isn't it unsafe to
+> >> modify sg_cpu and sg_policy structures without a lock in
+> >> sugov_update_single?
+> >>
+> >> Unlike sugov_update_shared, we don't acquire any lock in
+> >> sugov_update_single before updating these structures. Did I miss
+> >> something?
+> >
+> > As Peter already mentioned it earlier, the callbacks are called with
+> > rq locks held and so sugov_update_single() wouldn't get called in
+> > parallel for a target CPU.
+> 
+> Ah ok, I have to catch up with that discussion since I missed the
+> whole thing. Now that you will have me on CC, that shouldn't happen,
+> thanks and sorry about the noise.
+> 
+> > That's the only race you were worried about ?
+> 
+> Yes. So then in that case, makes sense to move raw_spin_lock in
+> sugov_update_shared further down? (Just discussing, this point is
+> independent of your patch), Something like:
 
-Mikko
+Even that was discussed tomorrow with Peter :)
 
-On 27.07.2017 09:47, kbuild test robot wrote:
-> Hi Mikko,
->
-> [auto build test ERROR on tegra/for-next]
-> [also build test ERROR on v4.13-rc2 next-20170726]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Mikko-Perttunen/arm64-tegra-Add-BPMP-thermal-sensor-to-Tegra186/20170726-055759
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/tegra/linux.git for-next
-> config: arm64-allnoconfig (attached as .config)
-> compiler: aarch64-linux-gnu-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> reproduce:
->         wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=arm64
->
-> Note: the linux-review/Mikko-Perttunen/arm64-tegra-Add-BPMP-thermal-sensor-to-Tegra186/20170726-055759 HEAD 2aebe2225f7f5f03abf6098e07387fa011ec16a8 builds fine.
->       It only hurts bisectibility.
->
-> All errors (new ones prefixed by >>):
->
->    In file included from arch/arm64/boot/dts/nvidia/tegra186-p3310.dtsi:1:0,
->                     from arch/arm64/boot/dts/nvidia/tegra186-p2771-0000.dts:5:
->>> arch/arm64/boot/dts/nvidia/tegra186.dtsi:7:55: fatal error: dt-bindings/thermal/tegra186-bpmp-thermal.h: No such file or directory
->     #include <dt-bindings/thermal/tegra186-bpmp-thermal.h>
->                                                           ^
->    compilation terminated.
->
-> vim +7 arch/arm64/boot/dts/nvidia/tegra186.dtsi
->
->    > 7	#include <dt-bindings/thermal/tegra186-bpmp-thermal.h>
->      8	
->
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
->
+No it wouldn't work because sg_cpu->util we are updating here may be
+getting read from some other cpu that shares policy with sg_cpu.
+
+-- 
+viresh
