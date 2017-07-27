@@ -1,62 +1,73 @@
-From: Baolin Wang <baolin.wang@linaro.org>
-Subject: [PATCH v4 1/3] include: uapi: usb: Introduce USB charger type and state definition
-Date: Thu, 27 Jul 2017 13:14:36 +0800
-Message-ID: <67d041fc5b387696874186f36231b8d696aec6ee.1501132173.git.baolin.wang@linaro.org>
-References: <cover.1501132171.git.baolin.wang@linaro.org>
+From: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
+Subject: Re: [Eas-dev] [PATCH V4 1/3] sched: cpufreq: Allow remote cpufreq callbacks
+Date: Wed, 26 Jul 2017 22:34:58 -0700
+Message-ID: <CAEi0qN=ipk9SR+3DYcLk-5SoKnsfK=PQV62VH9KAoXz2PDRkjQ@mail.gmail.com>
+References: <cover.1501060871.git.viresh.kumar@linaro.org> <8797d4993baa6580e3af741d081be492032ce9dd.1501060871.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1501132171.git.baolin.wang@linaro.org>
-In-Reply-To: <cover.1501132171.git.baolin.wang@linaro.org>
-References: <cover.1501132171.git.baolin.wang@linaro.org>
+In-Reply-To: <8797d4993baa6580e3af741d081be492032ce9dd.1501060871.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: balbi@kernel.org, gregkh@linuxfoundation.org, sre@kernel.org, lee.jones@linaro.org, robh+dt@kernel.org, mark.rutland@arm.com
-Cc: jun.li@nxp.com, peter.chen@freescale.com, broonie@kernel.org, john.stultz@linaro.org, neilb@suse.com, patches@opensource.wolfsonmicro.com, baolin.wang@linaro.org, linux-pm@vger.kernel.org, linux-usb@vger.kernel.org, device-mainlining@lists.linuxfoundation.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, smuckle.linux@gmail.com, eas-dev@lists.linaro.org, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Introducing USB charger type and state definition can help
-to support USB charging which will be added in USB phy core.
+Hi Viresh,
 
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
----
- include/uapi/linux/usb/charger.h |   31 +++++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
- create mode 100644 include/uapi/linux/usb/charger.h
+On Wed, Jul 26, 2017 at 2:22 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> We do not call cpufreq callbacks from scheduler core for remote
+> (non-local) CPUs currently. But there are cases where such remote
+> callbacks are useful, specially in the case of shared cpufreq policies.
+>
+> This patch updates the scheduler core to call the cpufreq callbacks for
+> remote CPUs as well.
+>
+> For now, all the registered utilization update callbacks are updated to
+> return early if remote callback is detected. That is, this patch just
+> moves the decision making down in the hierarchy.
+>
+> Later patches would enable remote callbacks for shared policies.
+>
+> Based on initial work from Steve Muckle.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+<snip>
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -72,10 +72,15 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
+>
+>  /************************ Governor internals ***********************/
+>
+> -static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+> +static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time,
+> +                                    int target_cpu)
+>  {
+>         s64 delta_ns;
+>
+> +       /* Don't allow remote callbacks */
+> +       if (smp_processor_id() != target_cpu)
+> +               return false;
+> +
+>         if (sg_policy->work_in_progress)
+>                 return false;
+>
+> @@ -221,7 +226,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+>         sugov_set_iowait_boost(sg_cpu, time, flags);
+>         sg_cpu->last_update = time;
+>
+> -       if (!sugov_should_update_freq(sg_policy, time))
+> +       if (!sugov_should_update_freq(sg_policy, time, hook->cpu))
+>                 return;
 
-diff --git a/include/uapi/linux/usb/charger.h b/include/uapi/linux/usb/charger.h
-new file mode 100644
-index 0000000..5f72af3
---- /dev/null
-+++ b/include/uapi/linux/usb/charger.h
-@@ -0,0 +1,31 @@
-+/*
-+ * This file defines the USB charger type and state that are needed for
-+ * USB device APIs.
-+ */
-+
-+#ifndef _UAPI__LINUX_USB_CHARGER_H
-+#define _UAPI__LINUX_USB_CHARGER_H
-+
-+/*
-+ * USB charger type:
-+ * SDP (Standard Downstream Port)
-+ * DCP (Dedicated Charging Port)
-+ * CDP (Charging Downstream Port)
-+ * ACA (Accessory Charger Adapters)
-+ */
-+enum usb_charger_type {
-+	UNKNOWN_TYPE,
-+	SDP_TYPE,
-+	DCP_TYPE,
-+	CDP_TYPE,
-+	ACA_TYPE,
-+};
-+
-+/* USB charger state */
-+enum usb_charger_state {
-+	USB_CHARGER_DEFAULT,
-+	USB_CHARGER_PRESENT,
-+	USB_CHARGER_ABSENT,
-+};
-+
-+#endif /* _UAPI__LINUX_USB_CHARGER_H */
--- 
-1.7.9.5
+Since with the remote callbacks now possible, isn't it unsafe to
+modify sg_cpu and sg_policy structures without a lock in
+sugov_update_single?
+
+Unlike sugov_update_shared, we don't acquire any lock in
+sugov_update_single before updating these structures. Did I miss
+something?
+
+
+thanks,
+
+-Joel
