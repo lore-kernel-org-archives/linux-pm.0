@@ -1,88 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Drop ->get from intel_pstate
- structure
-Date: Thu, 27 Jul 2017 09:17:49 +0530
-Message-ID: <20170727034749.GH352@vireshk-i7>
-References: <1500875013-123321-1-git-send-email-yehs1@lenovo.com>
- <1500951465.4920.2.camel@linux.intel.com>
- <3849070.kDntuffBgp@aspire.rjw.lan>
- <5898530.IS6IniWbqq@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <5898530.IS6IniWbqq@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Huaisheng HS1 Ye <yehs1@lenovo.com>, "lenb@kernel.org" <lenb@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH v4 0/3] Introduce USB charger support in USB phy
+Date: Thu, 27 Jul 2017 13:14:35 +0800
+Message-ID: <cover.1501132171.git.baolin.wang@linaro.org>
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org
+Cc: jun.li-3arQi8VN3Tc@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, neilb-IBi9RG/b67k@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 26-07-17, 00:42, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The ->get callback in the intel_pstate structure was mostly there
-> for the scaling_cur_freq sysfs attribute to work, but after commit
-> f8475cef9008 (x86: use common aperfmperf_khz_on_cpu() to calculate
-> KHz using APERF/MPERF) that attribute uses arch_freq_get_on_cpu()
-> provided by the x86 arch code on all processors supported by
-> intel_pstate, so it doesn't need the ->get callback from the
-> driver any more.
-> 
-> Moreover, the very presence of the ->get callback in the intel_pstate
-> structure causes the cpuinfo_cur_freq attribute to be present when
-> intel_pstate operates in the active mode, which is bogus, because
-> the role of that attribute is to return the current CPU frequency
-> as seen by the hardware.  For intel_pstate, though, this is just an
-> average frequency and not really current, but computed for the
-> previous sampling interval (the actual current frequency may be
-> way different at the point this value is obtained by reading from
-> cpuinfo_cur_freq), and after commit 82b4e03e01bc (intel_pstate: skip
-> scheduler hook when in "performance" mode) the value in
-> cpuinfo_cur_freq may be stale or just 0, depending on the driver's
-> operation mode.  In fact, however, on the hardware supported by
-> intel_pstate there is no way to read the current CPU frequency
-> from it, so the cpuinfo_cur_freq attribute should not be present
-> at all when this driver is in use.
-> 
-> For this reason, drop intel_pstate_get() and clear the ->get
-> callback pointer pointing to it, so that the cpuinfo_cur_freq is
-> not present for intel_pstate in the active mode any more.
-> 
-> Fixes: 82b4e03e01bc (intel_pstate: skip scheduler hook when in "performance" mode)
-> Reported-by: Huaisheng Ye <yehs1@lenovo.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c |    8 --------
->  1 file changed, 8 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -1674,13 +1674,6 @@ static int intel_pstate_init_cpu(unsigne
->  	return 0;
->  }
->  
-> -static unsigned int intel_pstate_get(unsigned int cpu_num)
-> -{
-> -	struct cpudata *cpu = all_cpu_data[cpu_num];
-> -
-> -	return cpu ? get_avg_frequency(cpu) : 0;
-> -}
-> -
->  static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
->  {
->  	struct cpudata *cpu = all_cpu_data[cpu_num];
-> @@ -1921,7 +1914,6 @@ static struct cpufreq_driver intel_pstat
->  	.setpolicy	= intel_pstate_set_policy,
->  	.suspend	= intel_pstate_hwp_save_state,
->  	.resume		= intel_pstate_resume,
-> -	.get		= intel_pstate_get,
->  	.init		= intel_pstate_cpu_init,
->  	.exit		= intel_pstate_cpu_exit,
->  	.stop_cpu	= intel_pstate_stop_cpu,
+Currently the Linux kernel does not provide any standard integration of this
+feature that integrates the USB subsystem with the system power regulation
+provided by PMICs meaning that either vendors must add this in their kernels
+or USB gadget devices based on Linux (such as mobile phones) may not behave
+as they should. Thus provide a standard USB charger support in USB phy core
+for doing this in kernel.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Now introduce one user with wm831x_power to support and test the usb charger.
+In future we will also cnvert below power drivers:
+drivers/power/supply/axp288_charger.c
+drivers/power/supply/bq24190_charger.c
+drivers/power/supply/charger-manager.c
+drivers/power/supply/qcom_smbb.c
+
+Changes since v3:
+ - Bail out errors when failed to find usb phy for wm831x_power driver.
+Changes since v2:
+ - Add DT binding documentation for wm831x_power driver.
+ - Change 'usb-phy' as one optional property for wm831x_power driver.
+Changes since v1:
+ - Fix building errors.
+
+Baolin Wang (3):
+  include: uapi: usb: Introduce USB charger type and state definition
+  usb: phy: Add USB charger support
+  power: wm831x_power: Support USB charger current limit management
+
+ Documentation/devicetree/bindings/mfd/wm831x.txt |    1 +
+ drivers/power/supply/wm831x_power.c              |   72 ++++++
+ drivers/usb/phy/phy.c                            |  272 ++++++++++++++++++++++
+ include/linux/usb/phy.h                          |   49 ++++
+ include/uapi/linux/usb/charger.h                 |   31 +++
+ 5 files changed, 425 insertions(+)
+ create mode 100644 include/uapi/linux/usb/charger.h
 
 -- 
-viresh
+1.7.9.5
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
