@@ -1,97 +1,68 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: s5pv210: add missing of_node_put
-Date: Fri, 28 Jul 2017 01:54:06 +0200
-Message-ID: <3083277.s4JKRQruaM@aspire.rjw.lan>
-References: <1500666810-21841-1-git-send-email-Julia.Lawall@lip6.fr> <20170724085216.GS352@vireshk-i7>
+Subject: Re: [PATCH v7 1/2] cpufreq: schedutil: Make iowait boost more energy efficient
+Date: Fri, 28 Jul 2017 01:54:41 +0200
+Message-ID: <25908597.bDgOEpvcUY@aspire.rjw.lan>
+References: <20170723155426.9170-1-joelaf@google.com> <20170724085745.GU352@vireshk-i7> <CAJWu+oriTd4bXaWo9LB2oUGHbVz11P__Cb20_=cndpjiwqyN7g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170724085216.GS352@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Kukjin Kim <kgene@kernel.org>, kernel-janitors@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53059 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751573AbdG1ACn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 20:02:43 -0400
+In-Reply-To: <CAJWu+oriTd4bXaWo9LB2oUGHbVz11P__Cb20_=cndpjiwqyN7g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Joel Fernandes <joelaf@google.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, LKML <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@arm.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Andres Oportus <andresoportus@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-On Monday, July 24, 2017 02:22:16 PM Viresh Kumar wrote:
-> On 21-07-17, 21:53, Julia Lawall wrote:
-> > for_each_compatible_node performs an of_node_get on each iteration, so a
-> > return from the loop requires an of_node_put.
-> > 
-> > The semantic patch that fixes this problem is as follows
-> > (http://coccinelle.lip6.fr):
-> > 
-> > // <smpl>
-> > @@
-> > local idexpression n;
-> > expression e,e1,e2;
-> > statement S;
-> > iterator i1;
-> > iterator name for_each_compatible_node;
-> > @@
-> > 
-> >  for_each_compatible_node(n,e1,e2) {
-> >    ...
-> > (
-> >    of_node_put(n);
-> > |
-> >    e = n
-> > |
-> >    return n;
-> > |
-> >    i1(...,n,...) S
-> > |
-> > +  of_node_put(n);
-> > ?  return ...;
-> > )
-> >    ...
-> >  }
-> > // </smpl>
-> > 
-> > Additionally, call of_node_put on the previous value of np, obtained from
-> > of_find_compatible_node, that is no longer accessible at the point of the
-> > for_each_compatible_node.
-> > 
-> > Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-> > 
-> > ---
-> > 
-> > v2: add the of_node_put for the call to of_find_compatible_node as well.
-> > 
-> >  drivers/cpufreq/s5pv210-cpufreq.c |    3 +++
-> >  1 file changed, 3 insertions(+)
-> > 
-> > diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-> > index f82074e..5d31c2d 100644
-> > --- a/drivers/cpufreq/s5pv210-cpufreq.c
-> > +++ b/drivers/cpufreq/s5pv210-cpufreq.c
-> > @@ -602,6 +602,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
-> >  	}
-> >  
-> >  	clk_base = of_iomap(np, 0);
-> > +	of_node_put(np);
-> >  	if (!clk_base) {
-> >  		pr_err("%s: failed to map clock registers\n", __func__);
-> >  		return -EFAULT;
-> > @@ -612,6 +613,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
-> >  		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
-> >  			pr_err("%s: failed to get alias of dmc node '%s'\n",
-> >  				__func__, np->name);
-> > +			of_node_put(np);
-> >  			return id;
-> >  		}
-> >  
-> > @@ -619,6 +621,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
-> >  		if (!dmc_base[id]) {
-> >  			pr_err("%s: failed to map dmc%d registers\n",
-> >  				__func__, id);
-> > +			of_node_put(np);
-> >  			return -EFAULT;
-> >  		}
-> >  	}
+On Monday, July 24, 2017 11:37:58 AM Joel Fernandes wrote:
+> On Mon, Jul 24, 2017 at 1:57 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > On 23-07-17, 08:54, Joel Fernandes wrote:
+> >> Currently the iowait_boost feature in schedutil makes the frequency go to max
+> >> on iowait wakeups.  This feature was added to handle a case that Peter
+> >> described where the throughput of operations involving continuous I/O requests
+> >> [1] is reduced due to running at a lower frequency, however the lower
+> >> throughput itself causes utilization to be low and hence causing frequency to
+> >> be low hence its "stuck".
+> >>
+> >> Instead of going to max, its also possible to achieve the same effect by
+> >> ramping up to max if there are repeated in_iowait wakeups happening. This patch
+> >> is an attempt to do that. We start from a lower frequency (policy->min)
+> >> and double the boost for every consecutive iowait update until we reach the
+> >> maximum iowait boost frequency (iowait_boost_max).
+> >>
+> >> I ran a synthetic test (continuous O_DIRECT writes in a loop) on an x86 machine
+> >> with intel_pstate in passive mode using schedutil. In this test the iowait_boost
+> >> value ramped from 800MHz to 4GHz in 60ms. The patch achieves the desired improved
+> >> throughput as the existing behavior.
+> >>
+> >> [1] https://patchwork.kernel.org/patch/9735885/
+> >>
+> >> Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> >> Cc: Len Brown <lenb@kernel.org>
+> >> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> >> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> >> Cc: Ingo Molnar <mingo@redhat.com>
+> >> Cc: Peter Zijlstra <peterz@infradead.org>
+> >> Suggested-by: Peter Zijlstra <peterz@infradead.org>
+> >> Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >> Signed-off-by: Joel Fernandes <joelaf@google.com>
+> >> ---
+> >>  kernel/sched/cpufreq_schedutil.c | 38 ++++++++++++++++++++++++++++++++------
+> >>  1 file changed, 32 insertions(+), 6 deletions(-)
+> >
+> > You Send V7 [1-2]/2 twice, Are they different ?
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> No they are the same. Rafael suggested reposting it with linux-pm in
+> CC I just resent it.
 > 
+> >
+> > For both the patches:
+> >
+> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
+> Thanks!
 
 Applied, thanks!
