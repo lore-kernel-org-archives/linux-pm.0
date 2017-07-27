@@ -1,73 +1,93 @@
-From: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
-Subject: Re: [Eas-dev] [PATCH V4 1/3] sched: cpufreq: Allow remote cpufreq callbacks
-Date: Wed, 26 Jul 2017 22:34:58 -0700
-Message-ID: <CAEi0qN=ipk9SR+3DYcLk-5SoKnsfK=PQV62VH9KAoXz2PDRkjQ@mail.gmail.com>
-References: <cover.1501060871.git.viresh.kumar@linaro.org> <8797d4993baa6580e3af741d081be492032ce9dd.1501060871.git.viresh.kumar@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [Eas-dev] [PATCH V4 0/3] sched: cpufreq: Allow remote callbacks
+Date: Thu, 27 Jul 2017 11:16:35 +0530
+Message-ID: <20170727054635.GJ352@vireshk-i7>
+References: <cover.1501060871.git.viresh.kumar@linaro.org>
+ <CAEi0qNmuPLG68o0XZy5BTZO7=MwAkUdobOs=m4Fa6NYJ2q6B6w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8797d4993baa6580e3af741d081be492032ce9dd.1501060871.git.viresh.kumar@linaro.org>
+Content-Disposition: inline
+In-Reply-To: <CAEi0qNmuPLG68o0XZy5BTZO7=MwAkUdobOs=m4Fa6NYJ2q6B6w@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, smuckle.linux@gmail.com, eas-dev@lists.linaro.org, Joel Fernandes <joelaf@google.com>
+To: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, smuckle.linux@gmail.com, eas-dev@lists.linaro.org, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Viresh,
+On 26-07-17, 22:14, Joel Fernandes (Google) wrote:
+> I think you dropped [1] in your cover-letter. May be you meant to add
+> it at the end of the cover letter?
+> 
+> I noticed from your v2 that its:
+> https://pastebin.com/7LkMSRxE
 
-On Wed, Jul 26, 2017 at 2:22 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> We do not call cpufreq callbacks from scheduler core for remote
-> (non-local) CPUs currently. But there are cases where such remote
-> callbacks are useful, specially in the case of shared cpufreq policies.
->
-> This patch updates the scheduler core to call the cpufreq callbacks for
-> remote CPUs as well.
->
-> For now, all the registered utilization update callbacks are updated to
-> return early if remote callback is detected. That is, this patch just
-> moves the decision making down in the hierarchy.
->
-> Later patches would enable remote callbacks for shared policies.
->
-> Based on initial work from Steve Muckle.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-<snip>
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -72,10 +72,15 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
->
->  /************************ Governor internals ***********************/
->
-> -static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
-> +static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time,
-> +                                    int target_cpu)
->  {
->         s64 delta_ns;
->
-> +       /* Don't allow remote callbacks */
-> +       if (smp_processor_id() != target_cpu)
-> +               return false;
-> +
->         if (sg_policy->work_in_progress)
->                 return false;
->
-> @@ -221,7 +226,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
->         sugov_set_iowait_boost(sg_cpu, time, flags);
->         sg_cpu->last_update = time;
->
-> -       if (!sugov_should_update_freq(sg_policy, time))
-> +       if (!sugov_should_update_freq(sg_policy, time, hook->cpu))
->                 return;
+Yeah, I missed it. Thanks :)
 
-Since with the remote callbacks now possible, isn't it unsafe to
-modify sg_cpu and sg_policy structures without a lock in
-sugov_update_single?
+> Also one more comment about this usecase:
+> 
+> You mentioned in our discussion at [2] sometime back, about the
+> question of initial utilization,
+> 
+> "We don't have any such configurable way possible right
+> now, but there were discussions on how much utilization should a new
+> task be assigned when it first comes up."
 
-Unlike sugov_update_shared, we don't acquire any lock in
-sugov_update_single before updating these structures. Did I miss
-something?
+We still initialize it to a value, just that it isn't configurable.
+See below..
 
+> But, then in your cover letter above, you mentioned "This is verified
+> using ftrace". So my question is how has this been verified with
+> ftrace if the new initial utilization as you said in [2] is currently
+> still under discussion? Basically how could you verify with ftrace
+> that the target CPU frequency isn't increasing immediately on spawning
+> of a new task remotely, if the initial utilization of a new task isn't
+> something we set/configure with current code? Am I missing something?
+> 
+> [2] https://lists.linaro.org/pipermail/eas-dev/2017-January/000785.html
 
-thanks,
+The statement "new tasks should receive maximum demand initially" is
+used to represent tasks which have high demand every time they run.
+For example scrolling of a web page or gallery on our phones. Yes,
+maybe I can use the work "migrated" (as you suggested later) as the
+history of its utilization will move with it then to the new CPU.
 
--Joel
+But even without that, if you see the routine
+init_entity_runnable_average() in fair.c, the new tasks are
+initialized in a way that they are seen as heavy tasks. And so even
+for the first time they run, freq should normally increase on the
+target CPU (at least with above application).
+
+The application was written by Steve (all credit goes to him) before
+he left Linaro, but I did test it with ftrace. What I saw with ftrace
+was that the freq isn't reevaluated for almost an entire tick many
+times because we enqueued the task remotely. And that changes with
+this series.
+
+> > The reason being that this patchset only targets a corner case, where
+> > following are required to be true to improve performance and that
+> > doesn't happen too often with these tests:
+> >
+> > - Task is migrated to another CPU.
+> > - The task has maximum demand initially, and should take the CPU to
+> 
+> Just to make the cover-letter more clear and also confirming with you
+> I understand the above usecase, maybe in the future this can reworded
+> from "initially" to "before the migration" and "take the CPU" to "take
+> the target CPU of the migration" ?
+
+I can reword it a bit, but the test case wasn't really migrating
+anything and was looking only at the initial loads.
+
+> >   higher OPPs.
+> > - And the target CPU doesn't call into schedutil until the next tick.
+> 
+> I found this usecase to be more plausible and can see this patch
+> series being useful there.
+> 
+> Could you also keep me in CC on these patches (at joelaf@google.com)?
+> I'm interested in this series.
+
+Sure.
+
+-- 
+viresh
