@@ -1,67 +1,70 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v3 01/10] drivers base/arch_topology: free cpumask cpus_to_visit
-Date: Thu, 27 Jul 2017 20:33:03 +0100
-Message-ID: <20170727193312.9849-2-dietmar.eggemann@arm.com>
-References: <20170727193312.9849-1-dietmar.eggemann@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170727193312.9849-1-dietmar.eggemann@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [Eas-dev] [PATCH V3 1/3] sched: cpufreq: Allow remote cpufreq
+ callbacks
+Date: Thu, 27 Jul 2017 12:55:24 -0700
+Message-ID: <597A452C.7000303@codeaurora.org>
+References: <cover.1499927699.git.viresh.kumar@linaro.org> <0f950529a63fb95e87944644c4854be4fcfaea38.1499927699.git.viresh.kumar@linaro.org> <20170721130349.mv7soic62jdnirq5@hirez.programming.kicks-ass.net> <597902DA.8060608@codeaurora.org> <20170727033059.GD352@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:32796 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751582AbdG0Tz0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 15:55:26 -0400
+In-Reply-To: <20170727033059.GD352@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: eas-dev@lists.linaro.org, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, smuckle.linux@gmail.com, Len Brown <lenb@kernel.org>
 
-Free cpumask cpus_to_visit in case registering
-init_cpu_capacity_notifier has failed or the parsing of the cpu
-capacity-dmips-mhz property is done. The cpumask cpus_to_visit is
-only used inside the notifier call init_cpu_capacity_callback.
+On 07/26/2017 08:30 PM, Viresh Kumar wrote:
+> On 26-07-17, 14:00, Saravana Kannan wrote:
+>> No, the alternative is to pass it on to the CPU freq driver and let it
+>> decide what it wants to do. That's the whole point if having a CPU freq
+>> driver -- so that the generic code doesn't need to care about HW specific
+>> details. Which is the point I was making in an earlier email to Viresh's
+>> patch -- we shouldn't be doing any CPU check for the call backs at the
+>> scheduler or ever governor level.
+>>
+>> That would simplify this whole thing by deleting a bunch of code. And having
+>> much simpler checks in those drivers that actually have to deal with their
+>> HW specific details.
+>
+> So what you are saying is that we go and update (almost) every cpufreq
+> driver we have today and make their ->target() callbacks return early
+> if they don't support switching frequency remotely ? Is that really
+> simplifying anything?
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Juri Lelli <juri.lelli@arm.com>
-Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
-Tested-by: Juri Lelli <juri.lelli@arm.com>
-Reviewed-by: Juri Lelli <juri.lelli@arm.com>
----
- drivers/base/arch_topology.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+Yes. Simplifying isn't always about number of lines of code. It's also 
+about abstraction. Having generic scheduler code care about HW details 
+doesn't seem nice.
 
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index d1c33a85059e..562e0c93ae52 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -206,6 +206,8 @@ static struct notifier_block init_cpu_capacity_notifier = {
- 
- static int __init register_cpufreq_notifier(void)
- {
-+	int ret;
-+
- 	/*
- 	 * on ACPI-based systems we need to use the default cpu capacity
- 	 * until we have the necessary code to parse the cpu capacity, so
-@@ -221,8 +223,13 @@ static int __init register_cpufreq_notifier(void)
- 
- 	cpumask_copy(cpus_to_visit, cpu_possible_mask);
- 
--	return cpufreq_register_notifier(&init_cpu_capacity_notifier,
--					 CPUFREQ_POLICY_NOTIFIER);
-+	ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
-+					CPUFREQ_POLICY_NOTIFIER);
-+
-+	if (ret)
-+		free_cpumask_var(cpus_to_visit);
-+
-+	return ret;
- }
- core_initcall(register_cpufreq_notifier);
- 
-@@ -230,6 +237,7 @@ static void parsing_done_workfn(struct work_struct *work)
- {
- 	cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
- 					 CPUFREQ_POLICY_NOTIFIER);
-+	free_cpumask_var(cpus_to_visit);
- }
- 
- #else
+It'll literally one simple check (cpu == smp_processor_id()) or (cpu 
+"in" policy->cpus).
+
+Also, this is only for drivers that currently support fast switching. 
+How many of those do you have?
+
+> The core already has most of the data required and I believe that we
+> need to handle it in the governor's code as is handled in this series.
+
+Clearly, it doesn't. You are just making assumptions about HW.
+
+> To solve the problem that you have been reporting (update from any
+> CPU), we need something like this which I earlier suggested and I
+> will come back to it after this series is gone. Don't want to
+> complicate things here unnecessarily.
+>
+> https://marc.info/?l=linux-kernel&m=148906012827786&w=2
+
+I'm okay with handling it later. I'm just saying that if we are going to 
+go back and debate the CPU check, then maybe it's better do it in one 
+series.
+
+-Saravana
+
 -- 
-2.11.0
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
