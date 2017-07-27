@@ -1,52 +1,103 @@
-From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: [PATCH v4 0/3] Introduce USB charger support in USB phy
-Date: Thu, 27 Jul 2017 13:14:35 +0800
-Message-ID: <cover.1501132171.git.baolin.wang@linaro.org>
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org
-Cc: jun.li-3arQi8VN3Tc@public.gmane.org, peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org, broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, neilb-IBi9RG/b67k@public.gmane.org, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
+Subject: Re: [Eas-dev] [PATCH V4 0/3] sched: cpufreq: Allow remote callbacks
+Date: Wed, 26 Jul 2017 22:14:56 -0700
+Message-ID: <CAEi0qNmuPLG68o0XZy5BTZO7=MwAkUdobOs=m4Fa6NYJ2q6B6w@mail.gmail.com>
+References: <cover.1501060871.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1501060871.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, smuckle.linux@gmail.com, eas-dev@lists.linaro.org, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Currently the Linux kernel does not provide any standard integration of this
-feature that integrates the USB subsystem with the system power regulation
-provided by PMICs meaning that either vendors must add this in their kernels
-or USB gadget devices based on Linux (such as mobile phones) may not behave
-as they should. Thus provide a standard USB charger support in USB phy core
-for doing this in kernel.
+Hi Viresh,
 
-Now introduce one user with wm831x_power to support and test the usb charger.
-In future we will also cnvert below power drivers:
-drivers/power/supply/axp288_charger.c
-drivers/power/supply/bq24190_charger.c
-drivers/power/supply/charger-manager.c
-drivers/power/supply/qcom_smbb.c
+On Wed, Jul 26, 2017 at 2:22 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+<snip>
+>
+> With Android UI and benchmarks the latency of cpufreq response to
+> certain scheduling events can become very critical. Currently, callbacks
+> into schedutil are only made from the scheduler if the target CPU of the
+> event is the same as the current CPU. This means there are certain
+> situations where a target CPU may not run schedutil for some time.
+>
+> One testcase to show this behavior is where a task starts running on
+> CPU0, then a new task is also spawned on CPU0 by a task on CPU1. If the
+> system is configured such that new tasks should receive maximum demand
+> initially, this should result in CPU0 increasing frequency immediately.
+> Because of the above mentioned limitation though this does not occur.
+> This is verified using ftrace with the sample [1] application.
 
-Changes since v3:
- - Bail out errors when failed to find usb phy for wm831x_power driver.
-Changes since v2:
- - Add DT binding documentation for wm831x_power driver.
- - Change 'usb-phy' as one optional property for wm831x_power driver.
-Changes since v1:
- - Fix building errors.
+I think you dropped [1] in your cover-letter. May be you meant to add
+it at the end of the cover letter?
 
-Baolin Wang (3):
-  include: uapi: usb: Introduce USB charger type and state definition
-  usb: phy: Add USB charger support
-  power: wm831x_power: Support USB charger current limit management
+I noticed from your v2 that its:
+https://pastebin.com/7LkMSRxE
 
- Documentation/devicetree/bindings/mfd/wm831x.txt |    1 +
- drivers/power/supply/wm831x_power.c              |   72 ++++++
- drivers/usb/phy/phy.c                            |  272 ++++++++++++++++++++++
- include/linux/usb/phy.h                          |   49 ++++
- include/uapi/linux/usb/charger.h                 |   31 +++
- 5 files changed, 425 insertions(+)
- create mode 100644 include/uapi/linux/usb/charger.h
+Also one more comment about this usecase:
 
--- 
-1.7.9.5
+You mentioned in our discussion at [2] sometime back, about the
+question of initial utilization,
 
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+"We don't have any such configurable way possible right
+now, but there were discussions on how much utilization should a new
+task be assigned when it first comes up."
+
+But, then in your cover letter above, you mentioned "This is verified
+using ftrace". So my question is how has this been verified with
+ftrace if the new initial utilization as you said in [2] is currently
+still under discussion? Basically how could you verify with ftrace
+that the target CPU frequency isn't increasing immediately on spawning
+of a new task remotely, if the initial utilization of a new task isn't
+something we set/configure with current code? Am I missing something?
+
+[2] https://lists.linaro.org/pipermail/eas-dev/2017-January/000785.html
+
+>
+> Maybe the ideal solution is to always allow remote callbacks but that
+> has its own challenges:
+>
+> o There is no protection required for single CPU per policy case today,
+>   and adding any kind of locking there, to supply remote callbacks,
+>   isn't really a good idea.
+>
+> o If is local CPU isn't part of the same cpufreq policy as the target
+>   CPU, then we wouldn't be able to do fast switching at all and have to
+>   use some kind of bottom half to schedule work on the target CPU to do
+>   real switching. That may be overkill as well.
+>
+>
+> And so this series only allows remote callbacks for target CPUs that
+> share the cpufreq policy with the local CPU.
+>
+> This series is tested with couple of usecases (Android: hackbench,
+> recentfling, galleryfling, vellamo, Ubuntu: hackbench) on ARM hikey
+> board (64 bit octa-core, single policy). Only galleryfling showed minor
+> improvements, while others didn't had much deviation.
+>
+> The reason being that this patchset only targets a corner case, where
+> following are required to be true to improve performance and that
+> doesn't happen too often with these tests:
+>
+> - Task is migrated to another CPU.
+> - The task has maximum demand initially, and should take the CPU to
+
+Just to make the cover-letter more clear and also confirming with you
+I understand the above usecase, maybe in the future this can reworded
+from "initially" to "before the migration" and "take the CPU" to "take
+the target CPU of the migration" ?
+
+>   higher OPPs.
+> - And the target CPU doesn't call into schedutil until the next tick.
+
+I found this usecase to be more plausible and can see this patch
+series being useful there.
+
+Could you also keep me in CC on these patches (at joelaf@google.com)?
+I'm interested in this series.
+
+thanks!
+
+-Joel
