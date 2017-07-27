@@ -1,51 +1,86 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: docs: Add missing cpuinfo_cur_freq description
-Date: Thu, 27 Jul 2017 09:15:11 +0530
-Message-ID: <20170727034511.GG352@vireshk-i7>
-References: <3481245.BTZgO6DXTS@aspire.rjw.lan>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Drop ->get from intel_pstate
+ structure
+Date: Thu, 27 Jul 2017 09:17:49 +0530
+Message-ID: <20170727034749.GH352@vireshk-i7>
+References: <1500875013-123321-1-git-send-email-yehs1@lenovo.com>
+ <1500951465.4920.2.camel@linux.intel.com>
+ <3849070.kDntuffBgp@aspire.rjw.lan>
+ <5898530.IS6IniWbqq@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-doc-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3481245.BTZgO6DXTS@aspire.rjw.lan>
-Sender: linux-doc-owner@vger.kernel.org
+In-Reply-To: <5898530.IS6IniWbqq@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Huaisheng HS1 Ye <yehs1@lenovo.com>, "lenb@kernel.org" <lenb@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 27-07-17, 02:05, Rafael J. Wysocki wrote:
+On 26-07-17, 00:42, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Add a description of the cpuinfo_cur_freq policy attribute in sysfs
-> to the cpufreq documentation under Documentation/admin-guide/pm/ as
-> it is missing after commit 2a0e49279850 (cpufreq: User/admin
-> documentation update and consolidation) that overlooked it.
+> The ->get callback in the intel_pstate structure was mostly there
+> for the scaling_cur_freq sysfs attribute to work, but after commit
+> f8475cef9008 (x86: use common aperfmperf_khz_on_cpu() to calculate
+> KHz using APERF/MPERF) that attribute uses arch_freq_get_on_cpu()
+> provided by the x86 arch code on all processors supported by
+> intel_pstate, so it doesn't need the ->get callback from the
+> driver any more.
 > 
-> Fixes: 2a0e49279850 (cpufreq: User/admin documentation update and consolidation)
+> Moreover, the very presence of the ->get callback in the intel_pstate
+> structure causes the cpuinfo_cur_freq attribute to be present when
+> intel_pstate operates in the active mode, which is bogus, because
+> the role of that attribute is to return the current CPU frequency
+> as seen by the hardware.  For intel_pstate, though, this is just an
+> average frequency and not really current, but computed for the
+> previous sampling interval (the actual current frequency may be
+> way different at the point this value is obtained by reading from
+> cpuinfo_cur_freq), and after commit 82b4e03e01bc (intel_pstate: skip
+> scheduler hook when in "performance" mode) the value in
+> cpuinfo_cur_freq may be stale or just 0, depending on the driver's
+> operation mode.  In fact, however, on the hardware supported by
+> intel_pstate there is no way to read the current CPU frequency
+> from it, so the cpuinfo_cur_freq attribute should not be present
+> at all when this driver is in use.
+> 
+> For this reason, drop intel_pstate_get() and clear the ->get
+> callback pointer pointing to it, so that the cpuinfo_cur_freq is
+> not present for intel_pstate in the active mode any more.
+> 
+> Fixes: 82b4e03e01bc (intel_pstate: skip scheduler hook when in "performance" mode)
+> Reported-by: Huaisheng Ye <yehs1@lenovo.com>
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  Documentation/admin-guide/pm/cpufreq.rst |    8 ++++++++
->  1 file changed, 8 insertions(+)
+>  drivers/cpufreq/intel_pstate.c |    8 --------
+>  1 file changed, 8 deletions(-)
 > 
-> Index: linux-pm/Documentation/admin-guide/pm/cpufreq.rst
+> Index: linux-pm/drivers/cpufreq/intel_pstate.c
 > ===================================================================
-> --- linux-pm.orig/Documentation/admin-guide/pm/cpufreq.rst
-> +++ linux-pm/Documentation/admin-guide/pm/cpufreq.rst
-> @@ -237,6 +237,14 @@ are the following:
->  	This attribute is not present if the scaling driver in use does not
->  	support it.
+> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
+> +++ linux-pm/drivers/cpufreq/intel_pstate.c
+> @@ -1674,13 +1674,6 @@ static int intel_pstate_init_cpu(unsigne
+>  	return 0;
+>  }
 >  
-> +``cpuinfo_cur_freq``
-> +	Current frequency of the CPUs belonging to this policy as obtained from
-> +	the hardware (in KHz).
-> +
-> +	This is expected to be the frequency the hardware actually runs at.
-> +	If that frequency cannot be determined, this attribute should not
-> +	be present.
-> +
->  ``cpuinfo_max_freq``
->  	Maximum possible operating frequency the CPUs belonging to this policy
->  	can run at (in kHz).
+> -static unsigned int intel_pstate_get(unsigned int cpu_num)
+> -{
+> -	struct cpudata *cpu = all_cpu_data[cpu_num];
+> -
+> -	return cpu ? get_avg_frequency(cpu) : 0;
+> -}
+> -
+>  static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+>  {
+>  	struct cpudata *cpu = all_cpu_data[cpu_num];
+> @@ -1921,7 +1914,6 @@ static struct cpufreq_driver intel_pstat
+>  	.setpolicy	= intel_pstate_set_policy,
+>  	.suspend	= intel_pstate_hwp_save_state,
+>  	.resume		= intel_pstate_resume,
+> -	.get		= intel_pstate_get,
+>  	.init		= intel_pstate_cpu_init,
+>  	.exit		= intel_pstate_cpu_exit,
+>  	.stop_cpu	= intel_pstate_stop_cpu,
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
