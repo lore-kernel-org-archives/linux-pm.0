@@ -1,81 +1,197 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Subject: Re: LTC3651 and other GPIO chargers
-Date: Fri, 28 Jul 2017 03:04:40 +0200
-Message-ID: <20170728010440.4vw23w5xafyhanp6@lenoch>
-References: <20170626162105.rgewvl2z2ftbxqyn@lenoch>
- <5b439c7f-4401-5333-a45f-2d2e243902c8@topic.nl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from eddie.linux-mips.org ([148.251.95.138]:60870 "EHLO
-        cvs.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751551AbdG1BEn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 21:04:43 -0400
-Received: (from localhost user: 'ladis' uid#1021 fake: STDIN
-        (ladis@eddie.linux-mips.org)) by eddie.linux-mips.org
-        id S23993961AbdG1BElnha4O (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 28 Jul 2017 03:04:41 +0200
-Content-Disposition: inline
-In-Reply-To: <5b439c7f-4401-5333-a45f-2d2e243902c8@topic.nl>
-Sender: linux-pm-owner@vger.kernel.org
+From: Alex Shi <alex.shi@linaro.org>
+Subject: [PATCH v3] cpu_pm: replace raw_notifier to atomic_notifier
+Date: Fri, 28 Jul 2017 09:39:37 +0800
+Message-ID: <1501205977-10774-1-git-send-email-alex.shi@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rafael@kernel.org, open list <linux-kernel@vger.kernel.org>
+Cc: Alex Shi <alex.shi@linaro.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, Anders Roxell <anders.roxell@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, linux-rt-users <linux-rt-users@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Mike Looijmans <mike.looijmans@topic.nl>
-Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
 
-Hello Mike,
+This patch replace a rwlock and raw notifier by atomic notifier which
+protected by spin_lock and rcu.
 
-On Tue, Jun 27, 2017 at 07:39:21AM +0200, Mike Looijmans wrote:
-> On 26-06-17 18:21, Ladislav Michl wrote:
-> > Hi there!
-> > 
-> > A driver for LTC3651 was recently added to -next
-> > https://patchwork.kernel.org/patch/9717049/
-> > which brings a question whenever we want to add separate driver
-> > (or vendor specific bindings) for ever growing list of similar
-> > chargers. For example those using the same status output lines
-> > are: BQ24232HA, LTC4007, LTM8061, RT9502, LT3651, LT3650, TP4056,
-> > MAX1737...
-> > Others for example BQ24032A and LM3658 (which I have to support)
-> > are using different status encoding, ie. LM3658:
-> > 
-> > stat1	stat2		Condition
-> >    0	  0	Power-Down, charging is suspended or interrupted
-> >    1	  0	Pre-qualification mode, CC and CV charging
-> >    0	  1	Charge is completed
-> >    1	  1	Bad battery (Safety timer expired), or LDO mode
-> > 
-> > What about extending gpio-charger instead?
-> > - allow gpio list fdt subnode
-> >    - consider each gpio line to represent bit in a word
-> > - provide per property subnodes
-> >    - each subnode holds a mask and mapping to property values
-> > This way we should be able to cover most chargers providing status
-> > using gpios. Comments welcome and appreciated - those will turn into
-> > implementation.
-> 
-> It's an interesting idea, and while writing the ltc3651 driver, I was
-> thinking along those lines already. However, there are only two gpio charger
-> drivers now, so I didn't see the need yet.
-> 
-> The table is an interesting approach. Something else to consider: Some gpio
-> chargers allow control as well, e.g. pulling the "charging" ping low
-> externally forces the charging to stop.
+The first to reason to have this replace is due to a 'scheduling while
+ atomic' bug of RT kernel on arm/arm64 platform. On arm/arm64, rwlock
+cpu_pm_notifier_lock in cpu_pm cause a potential schedule after irq
+disable in idle call chain:
 
-Just one more question before submitting "one driver for all" patch...
-In LTC3651 you made acpr_gpio mandatory while chrg_gpio and fault_gpio
-are optional. I quite do not get it as those later two gpios make
-driver LTC3651 specific, while without them it is just another gpio-charger
-driver. Also I have a board here, where acpr_gpio is not routed at all
-and ADC is used to measure Vin, which makes this driver imposible to use.
+cpu_startup_entry
+  cpu_idle_loop
+    local_irq_disable()
+    cpuidle_idle_call
+      call_cpuidle
+        cpuidle_enter
+          cpuidle_enter_state
+            ->enter :arm_enter_idle_state
+              cpu_pm_enter/exit
+                CPU_PM_CPU_IDLE_ENTER
+                  read_lock(&cpu_pm_notifier_lock); <-- sleep in idle
+                     __rt_spin_lock();
+                        schedule();
 
-Any specific reason you implemented it this way? As once 4.13 is out,
-devicetree binding will be set in stone and I'm out of luck...
+The kernel panic is here:
+[    4.609601] BUG: scheduling while atomic: swapper/1/0/0x00000002
+[    4.609608] [<ffff0000086fae70>] arm_enter_idle_state+0x18/0x70
+[    4.609614] Modules linked in:
+[    4.609615] [<ffff0000086f9298>] cpuidle_enter_state+0xf0/0x218
+[    4.609620] [<ffff0000086f93f8>] cpuidle_enter+0x18/0x20
+[    4.609626] Preemption disabled at:
+[    4.609627] [<ffff0000080fa234>] call_cpuidle+0x24/0x40
+[    4.609635] [<ffff000008882fa4>] schedule_preempt_disabled+0x1c/0x28
+[    4.609639] [<ffff0000080fa49c>] cpu_startup_entry+0x154/0x1f8
+[    4.609645] [<ffff00000808e004>] secondary_start_kernel+0x15c/0x1a0
 
-(based on that I exteded gpio-charger to take into account optional
-gpios as well)
+Daniel Lezcano said this notification is needed on arm/arm64 platforms.
+Sebastian suggested using atomic_notifier instead of rwlock, which is not
+only removing the sleeping in idle, but also getting better latency
+improvement.
 
-> Something that might help is to create a "GPIO charger" sub-menu in Kconfig,
-> to make hunting for these drivers a bit easier.
+Tony Lezcano found a miss use that rcu_read_lock used after rcu_idle_enter
+Paul E. McKenney suggested trying RCU_NONIDLE.
 
-Thank you,
-	ladis
+Thanks everyone! :)
+
+This patch passed Fengguang's 0day testing.
+
+Signed-off-by: Alex Shi <alex.shi@linaro.org>
+Tested-by: Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Anders Roxell <anders.roxell@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Rafael J. Wysocki <rafael@kernel.org>
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-rt-users <linux-rt-users@vger.kernel.org>
+Acked-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+ kernel/cpu_pm.c | 50 +++++++++++++-------------------------------------
+ 1 file changed, 13 insertions(+), 37 deletions(-)
+
+diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
+index 009cc9a..67b02e1 100644
+--- a/kernel/cpu_pm.c
++++ b/kernel/cpu_pm.c
+@@ -22,15 +22,21 @@
+ #include <linux/spinlock.h>
+ #include <linux/syscore_ops.h>
+ 
+-static DEFINE_RWLOCK(cpu_pm_notifier_lock);
+-static RAW_NOTIFIER_HEAD(cpu_pm_notifier_chain);
++static ATOMIC_NOTIFIER_HEAD(cpu_pm_notifier_chain);
+ 
+ static int cpu_pm_notify(enum cpu_pm_event event, int nr_to_call, int *nr_calls)
+ {
+ 	int ret;
+ 
+-	ret = __raw_notifier_call_chain(&cpu_pm_notifier_chain, event, NULL,
++	/*
++	 * __atomic_notifier_call_chain has a RCU read critical section, which
++	 * could be disfunctional in cpu idle. Copy RCU_NONIDLE code to let
++	 * RCU know this.
++	 */
++	rcu_irq_enter_irqson();
++	ret = __atomic_notifier_call_chain(&cpu_pm_notifier_chain, event, NULL,
+ 		nr_to_call, nr_calls);
++	rcu_irq_exit_irqson();
+ 
+ 	return notifier_to_errno(ret);
+ }
+@@ -47,14 +53,7 @@ static int cpu_pm_notify(enum cpu_pm_event event, int nr_to_call, int *nr_calls)
+  */
+ int cpu_pm_register_notifier(struct notifier_block *nb)
+ {
+-	unsigned long flags;
+-	int ret;
+-
+-	write_lock_irqsave(&cpu_pm_notifier_lock, flags);
+-	ret = raw_notifier_chain_register(&cpu_pm_notifier_chain, nb);
+-	write_unlock_irqrestore(&cpu_pm_notifier_lock, flags);
+-
+-	return ret;
++	return atomic_notifier_chain_register(&cpu_pm_notifier_chain, nb);
+ }
+ EXPORT_SYMBOL_GPL(cpu_pm_register_notifier);
+ 
+@@ -69,14 +68,7 @@ EXPORT_SYMBOL_GPL(cpu_pm_register_notifier);
+  */
+ int cpu_pm_unregister_notifier(struct notifier_block *nb)
+ {
+-	unsigned long flags;
+-	int ret;
+-
+-	write_lock_irqsave(&cpu_pm_notifier_lock, flags);
+-	ret = raw_notifier_chain_unregister(&cpu_pm_notifier_chain, nb);
+-	write_unlock_irqrestore(&cpu_pm_notifier_lock, flags);
+-
+-	return ret;
++	return atomic_notifier_chain_unregister(&cpu_pm_notifier_chain, nb);
+ }
+ EXPORT_SYMBOL_GPL(cpu_pm_unregister_notifier);
+ 
+@@ -100,7 +92,6 @@ int cpu_pm_enter(void)
+ 	int nr_calls;
+ 	int ret = 0;
+ 
+-	read_lock(&cpu_pm_notifier_lock);
+ 	ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
+ 	if (ret)
+ 		/*
+@@ -108,7 +99,6 @@ int cpu_pm_enter(void)
+ 		 * PM entry who are notified earlier to prepare for it.
+ 		 */
+ 		cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
+-	read_unlock(&cpu_pm_notifier_lock);
+ 
+ 	return ret;
+ }
+@@ -128,13 +118,7 @@ EXPORT_SYMBOL_GPL(cpu_pm_enter);
+  */
+ int cpu_pm_exit(void)
+ {
+-	int ret;
+-
+-	read_lock(&cpu_pm_notifier_lock);
+-	ret = cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
+-	read_unlock(&cpu_pm_notifier_lock);
+-
+-	return ret;
++	return cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
+ }
+ EXPORT_SYMBOL_GPL(cpu_pm_exit);
+ 
+@@ -159,7 +143,6 @@ int cpu_cluster_pm_enter(void)
+ 	int nr_calls;
+ 	int ret = 0;
+ 
+-	read_lock(&cpu_pm_notifier_lock);
+ 	ret = cpu_pm_notify(CPU_CLUSTER_PM_ENTER, -1, &nr_calls);
+ 	if (ret)
+ 		/*
+@@ -167,7 +150,6 @@ int cpu_cluster_pm_enter(void)
+ 		 * PM entry who are notified earlier to prepare for it.
+ 		 */
+ 		cpu_pm_notify(CPU_CLUSTER_PM_ENTER_FAILED, nr_calls - 1, NULL);
+-	read_unlock(&cpu_pm_notifier_lock);
+ 
+ 	return ret;
+ }
+@@ -190,13 +172,7 @@ EXPORT_SYMBOL_GPL(cpu_cluster_pm_enter);
+  */
+ int cpu_cluster_pm_exit(void)
+ {
+-	int ret;
+-
+-	read_lock(&cpu_pm_notifier_lock);
+-	ret = cpu_pm_notify(CPU_CLUSTER_PM_EXIT, -1, NULL);
+-	read_unlock(&cpu_pm_notifier_lock);
+-
+-	return ret;
++	return cpu_pm_notify(CPU_CLUSTER_PM_EXIT, -1, NULL);
+ }
+ EXPORT_SYMBOL_GPL(cpu_cluster_pm_exit);
+ 
+-- 
+2.7.4
