@@ -1,104 +1,109 @@
-From: Mike Looijmans <mike.looijmans@topic.nl>
-Subject: Re: LTC3651 and other GPIO chargers
-Date: Fri, 28 Jul 2017 07:27:09 +0200
-Message-ID: <71ab477e-7325-ab18-533d-76718acfee84@topic.nl>
-References: <20170626162105.rgewvl2z2ftbxqyn@lenoch>
- <5b439c7f-4401-5333-a45f-2d2e243902c8@topic.nl>
- <20170728010440.4vw23w5xafyhanp6@lenoch>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 3/9] cpufreq: Cap the default transition delay value
+ to 10 ms
+Date: Fri, 28 Jul 2017 10:58:43 +0530
+Message-ID: <20170728052843.GT352@vireshk-i7>
+References: <cover.1500373914.git.viresh.kumar@linaro.org>
+ <1b93c94cb8b4914314e4f50304c3cb11c53d8b14.1500373914.git.viresh.kumar@linaro.org>
+ <1500983686.30745.28.camel@nxp.com>
+ <20170726060634.GY352@vireshk-i7>
+ <1501174453.7957.30.camel@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx12-04.smtp.antispamcloud.com ([46.165.232.174]:34967 "EHLO
-        mx12-04.smtp.antispamcloud.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750935AbdG1F1P (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2017 01:27:15 -0400
-In-Reply-To: <20170728010440.4vw23w5xafyhanp6@lenoch>
-Content-Language: nl
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1501174453.7957.30.camel@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux@dominikbrodowski.net, linux-kernel@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
-To: Ladislav Michl <ladis@linux-mips.org>
-Cc: linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>
 
-ï»¿On 28-07-17 03:04, Ladislav Michl wrote:
-> Hello Mike,
++ IMX maintainers.
+
+On 27-07-17, 19:54, Leonard Crestez wrote:
+> On Wed, 2017-07-26 at 11:36 +0530, Viresh Kumar wrote:
+
+> > - Find how much time does it really take to change the frequency of
+> >   the CPU. I don't really thing 109 us is the right transition
+> >   latency. Use attached patch for that and look for the print message.
 > 
-> On Tue, Jun 27, 2017 at 07:39:21AM +0200, Mike Looijmans wrote:
->> On 26-06-17 18:21, Ladislav Michl wrote:
->>> Hi there!
->>>
->>> A driver for LTC3651 was recently added to -next
->>> https://patchwork.kernel.org/patch/9717049/
->>> which brings a question whenever we want to add separate driver
->>> (or vendor specific bindings) for ever growing list of similar
->>> chargers. For example those using the same status output lines
->>> are: BQ24232HA, LTC4007, LTM8061, RT9502, LT3651, LT3650, TP4056,
->>> MAX1737...
->>> Others for example BQ24032A and LM3658 (which I have to support)
->>> are using different status encoding, ie. LM3658:
->>>
->>> stat1	stat2		Condition
->>>     0	  0	Power-Down, charging is suspended or interrupted
->>>     1	  0	Pre-qualification mode, CC and CV charging
->>>     0	  1	Charge is completed
->>>     1	  1	Bad battery (Safety timer expired), or LDO mode
->>>
->>> What about extending gpio-charger instead?
->>> - allow gpio list fdt subnode
->>>     - consider each gpio line to represent bit in a word
->>> - provide per property subnodes
->>>     - each subnode holds a mask and mapping to property values
->>> This way we should be able to cover most chargers providing status
->>> using gpios. Comments welcome and appreciated - those will turn into
->>> implementation.
->>
->> It's an interesting idea, and while writing the ltc3651 driver, I was
->> thinking along those lines already. However, there are only two gpio charger
->> drivers now, so I didn't see the need yet.
->>
->> The table is an interesting approach. Something else to consider: Some gpio
->> chargers allow control as well, e.g. pulling the "charging" ping low
->> externally forces the charging to stop.
+> Your patch measures latencies of around 2.5ms, but it can vary between
+> 1.6 ms to 3ms from boot-to-boot. This is a lot more than what the
+> driver reports. Most transitions seem to be faster.
+
+Wow !!
+
+I was pretty sure all these figures are just made up by some coder :)
+
+> I did a little digging and it seems that a majority of time is always
+> spent inside clk_pllv3_wait_lock which spins on a HW bit while doing
+> usleep_range(50, 500). I originally thought it was because of
+> regulators but the delays involved in that are smaller.
 > 
-> Just one more question before submitting "one driver for all" patch...
-> In LTC3651 you made acpr_gpio mandatory while chrg_gpio and fault_gpio
-> are optional. I quite do not get it as those later two gpios make
-> driver LTC3651 specific, while without them it is just another gpio-charger
-> driver. Also I have a board here, where acpr_gpio is not routed at all
-> and ADC is used to measure Vin, which makes this driver imposible to use.
+> Measuring wall time on a process that can sleep seems dubious, isn't
+> this vulnerable to random delays because of other tasks?
+
+I am not sure I understood that, sorry.
+
+> > Without this patch the sampling rate of ondemand governor will be 109
+> > ms. And after this patch it would be capped at 10 ms. Why would that
+> > screw up anyone's setup ? I don't have an answer to that right now.
 > 
-> Any specific reason you implemented it this way? As once 4.13 is out,
-> devicetree binding will be set in stone and I'm out of luck...
+> On a closer look it seems that most of the time is actually spent at
+> low cpufreq though (90%+).
 > 
-> (based on that I exteded gpio-charger to take into account optional
-> gpios as well)
+> Your change makes it so that even something like "sleep 1; cat
+> scaling_cur_freq" raises the frequency to the maximum.
 
-I only made acpr_gpio mandatory out of a feeling that at least one of the 
-three should be connected, and it makes things slightly simpler. Without it, 
-the "online" property isn't available.
+Why?
 
-It can be made optional, but it requires a few changes in the driver.
+> This happens
+> enough that even if you do it in a loop you will never see the minimum
+> frequency. It seems there is enough internal bookkeeping on such a
+> wakeup that it takes more than 10ms and enough for a reevaluation of
+> cpufreq until cat returns the value?!
 
+At this point I really feel that this is a hardware specific problem
+and it was working by chance until now. And I am not sure if we
+shouldn't be stopping this patch from getting merged just because of
+that.
+
+At least you can teach your distribution to go increase the sampling
+rate from userspace to make it all work.
+
+Can you try one more thing? Try using schedutil governor and see how
+it behaves ?
+
+> I found this by enabling the power:cpu_frequency tracepoint event and
+> checking for deltas with a script. Enabling CPU_FREQ_STAT show this:
 > 
->> Something that might help is to create a "GPIO charger" sub-menu in Kconfig,
->> to make hunting for these drivers a bit easier.
+> time_in_state:
 > 
-> Thank you,
-> 	ladis
+> 396000 1609
+
+So we still stay at the lowest frequency most of the time.
+
+> 792000 71
+> 996000 54
 > 
+> trans_table:
+> 
+>    From  :    To
+>          :    396000    792000    996000 
+>    396000:         0        10         7 
+>    792000:        16         0        12 
+>    996000:         1        18         0 
 
+What is it that you are trying to point out here? I still see that we
+are coming back to 396 MHz quite often.
 
+Maybe can you compare these values with and without this patch to let
+us know?
 
-Kind regards,
+> This is very unexpected but not necessarily wrong.
 
-Mike Looijmans
-System Expert
+I haven't understood the problem completely yet :(
 
-TOPIC Products
-Materiaalweg 4, NL-5681 RJ Best
-Postbus 440, NL-5680 AK Best
-Telefoon: +31 (0) 499 33 69 79
-E-mail: mike.looijmans@topicproducts.com
-Website: www.topicproducts.com
-
-Please consider the environment before printing this e-mail
+-- 
+viresh
