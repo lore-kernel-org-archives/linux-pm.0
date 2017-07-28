@@ -1,78 +1,71 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 06/10] drivers base/arch_topology: allow inlining
- cpu-invariant accounting support
-Date: Fri, 28 Jul 2017 13:57:39 +0530
-Message-ID: <20170728082739.GD352@vireshk-i7>
-References: <20170727193312.9849-1-dietmar.eggemann@arm.com>
- <20170727193312.9849-7-dietmar.eggemann@arm.com>
+From: =?UTF-8?q?S=C3=A9bastien=20Szymanski?= <sebastien.szymanski@armadeus.com>
+Subject: [PATCH 1/1] cpufreq: imx6q: imx6ull: use PLL1 for frequency higher
+ than 528MHz
+Date: Fri, 28 Jul 2017 10:36:33 +0200
+Message-ID: <1501230993-15812-1-git-send-email-sebastien.szymanski@armadeus.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f52.google.com ([74.125.83.52]:37805 "EHLO
-        mail-pg0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751613AbdG1I1m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2017 04:27:42 -0400
-Received: by mail-pg0-f52.google.com with SMTP id y129so108396227pgy.4
-        for <linux-pm@vger.kernel.org>; Fri, 28 Jul 2017 01:27:42 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20170727193312.9849-7-dietmar.eggemann@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Julien Boibessot <julien.boibessot@armadeus.com>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
 
-On 27-07-17, 20:33, Dietmar Eggemann wrote:
-> Allow inlining of topology_get_cpu_scale() into the task
-> scheduler fast path (e.g. __update_load_avg_se()) by coding it as a
-> static inline function in the arch topology header file.
-> 
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Juri Lelli <juri.lelli@arm.com>
-> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> ---
->  drivers/base/arch_topology.c  | 7 +------
->  include/linux/arch_topology.h | 8 +++++++-
->  2 files changed, 8 insertions(+), 7 deletions(-)
-> 
-> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-> index af9ab98a233e..c8cd92ba4cc0 100644
-> --- a/drivers/base/arch_topology.c
-> +++ b/drivers/base/arch_topology.c
-> @@ -37,12 +37,7 @@ void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
->  }
->  
->  static DEFINE_MUTEX(cpu_scale_mutex);
-> -static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
-> -
-> -unsigned long topology_get_cpu_scale(struct sched_domain *sd, int cpu)
-> -{
-> -	return per_cpu(cpu_scale, cpu);
-> -}
-> +DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
->  
->  void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity)
->  {
-> diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
-> index 3e3c2657c9a1..0c4e43d6a3bb 100644
-> --- a/include/linux/arch_topology.h
-> +++ b/include/linux/arch_topology.h
-> @@ -11,8 +11,14 @@ void topology_normalize_cpu_scale(void);
->  struct device_node;
->  int topology_parse_cpu_capacity(struct device_node *cpu_node, int cpu);
->  
-> +DECLARE_PER_CPU(unsigned long, cpu_scale);
-> +
->  struct sched_domain;
-> -unsigned long topology_get_cpu_scale(struct sched_domain *sd, int cpu);
-> +static inline
-> +unsigned long topology_get_cpu_scale(struct sched_domain *sd, int cpu)
-> +{
-> +	return per_cpu(cpu_scale, cpu);
-> +}
->  
->  void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+U2V0dGluZyB0aGUgZnJlcXVlbmN5IGhpZ2hlciB0aGFuIDUyOE1oeiBhY3R1YWxseSBzZXRzIHRo
+ZSBBUk0KY2xvY2sgdG8gNTI4TUh6LiBUaGF0J3MgYmVjYXVzZSBQTEwyIGlzIHVzZWQgYXMgdGhl
+IHJvb3QgY2xvY2sgd2hlbiB0aGUKZnJlcXVlbmN5IGlzIGhpZ2hlciB0aGFuIDM5Nk1Iei4KCmNw
+dXBvd2VyIGZyZXF1ZW5jeS1zZXQgLWYgNzkyMDAwCgphcm1fY2xrX3Jvb3Qgb24gdGhlIENDTV9D
+TEtPMiBzaWduYWwgaXMgNTI4TUh6IGluc3RlYWQgb2YgNzkyTUh6LgoKWyAgIDYxLjYwNjM4M10g
+Y3B1IGNwdTA6IDM5NiBNSHosIDEwMjUgbVYgLS0+IDc5MiBNSHosIDEyMjUgbVYKCnBsbDIgICAg
+ICAgICAgICAgICAgICAgICAgICAgMSAgMSAgNTI4MDAwMDAwIDAgMAogICBwbGwyX2J5cGFzcyAg
+ICAgICAgICAgICAgIDEgIDEgIDUyODAwMDAwMCAwIDAKICAgICAgcGxsMl9idXMgICAgICAgICAg
+ICAgICAzICAzICA1MjgwMDAwMDAgMCAwCgkgY2E3X3NlY29uZGFyeV9zZWwgICAxICAxICA1Mjgw
+MDAwMDAgMCAwCgkgICAgc3RlcCAgICAgICAgICAgICAxICAxICA1MjgwMDAwMDAgMCAwCgkgICAg
+ICAgcGxsMV9zdyAgICAgICAxICAxICA1MjgwMDAwMDAgMCAwCgkJICBhcm0gICAgICAgIDEgIDEg
+IDUyODAwMDAwMCAwIDAKCkZpeGVzIHRoaXMgYnkgdXNpbmcgdGhlIFBMTDEgYXMgdGhlIHJvb3Qg
+Y2xvY2sgd2hlbiB0aGUgZnJlcXVlbmN5IGlzCmhpZ2hlciB0aGFuIDUyOE1Iei4KCmNwdXBvd2Vy
+IGZyZXF1ZW5jeS1zZXQgLWYgNzkyMDAwCgphcm1fY2xrX3Jvb3Qgb24gdGhlIENDTV9DTEtPMiBz
+aWduYWwgaXMgbm93IDc5Mk1IeiBhcyBleHBlY3RlZC4KClsgICA2OS43MTc5ODddIGNwdSBjcHUw
+OiAxOTggTUh6LCA5NTAgbVYgLS0+IDc5MiBNSHosIDEyMjUgbVYKCnBsbDEgICAgICAgICAgICAg
+ICAxIDEgNzkyMDAwMDAwIDAgMAogICBwbGwxX2J5cGFzcyAgICAgMSAxIDc5MjAwMDAwMCAwIDAK
+ICAgICAgcGxsMV9zeXMgICAgIDEgMSA3OTIwMDAwMDAgMCAwCgkgcGxsMV9zdyAgIDEgMSA3OTIw
+MDAwMDAgMCAwCgkgICAgYXJtICAgIDEgMSA3OTIwMDAwMDAgMCAwCgpTaWduZWQtb2ZmLWJ5OiBT
+w6liYXN0aWVuIFN6eW1hbnNraSA8c2ViYXN0aWVuLnN6eW1hbnNraUBhcm1hZGV1cy5jb20+Ci0t
+LQogZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYyB8IDExICsrKysrKysrKy0tCiAxIGZp
+bGUgY2hhbmdlZCwgOSBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBh
+L2RyaXZlcnMvY3B1ZnJlcS9pbXg2cS1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvaW14NnEt
+Y3B1ZnJlcS5jCmluZGV4IGI2ZWRkM2MuLmU1ZmJhNTAgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvY3B1
+ZnJlcS9pbXg2cS1jcHVmcmVxLmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEu
+YwpAQCAtMTgsNiArMTgsNyBAQAogCiAjZGVmaW5lIFBVX1NPQ19WT0xUQUdFX05PUk1BTAkxMjUw
+MDAwCiAjZGVmaW5lIFBVX1NPQ19WT0xUQUdFX0hJR0gJMTI3NTAwMAorI2RlZmluZSBGUkVRXzUy
+OF9NSFoJCTUyODAwMDAwMAogI2RlZmluZSBGUkVRXzFQMl9HSFoJCTEyMDAwMDAwMDAKIAogc3Rh
+dGljIHN0cnVjdCByZWd1bGF0b3IgKmFybV9yZWc7CkBAIC0xMTAsMTQgKzExMSwyMCBAQCBzdGF0
+aWMgaW50IGlteDZxX3NldF90YXJnZXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksIHVu
+c2lnbmVkIGludCBpbmRleCkKIAkJICogdm9sdGFnZSBvZiA1MjhNSHosIHNvIGxvd2VyIHRoZSBD
+UFUgZnJlcXVlbmN5IHRvIG9uZQogCQkgKiBoYWxmIGJlZm9yZSBjaGFuZ2luZyBDUFUgZnJlcXVl
+bmN5LgogCQkgKi8KLQkJY2xrX3NldF9yYXRlKGFybV9jbGssIChvbGRfZnJlcSA+PiAxKSAqIDEw
+MDApOwotCQljbGtfc2V0X3BhcmVudChwbGwxX3N3X2NsaywgcGxsMV9zeXNfY2xrKTsKKwkJaWYg
+KChvbGRfZnJlcSAqIDEwMDApIDw9IEZSRVFfNTI4X01IWikgeworCQkJY2xrX3NldF9yYXRlKGFy
+bV9jbGssIChvbGRfZnJlcSA+PiAxKSAqIDEwMDApOworCQkJY2xrX3NldF9wYXJlbnQocGxsMV9z
+d19jbGssIHBsbDFfc3lzX2Nsayk7CisJCX0KIAkJaWYgKGZyZXFfaHogPiBjbGtfZ2V0X3JhdGUo
+cGxsMl9wZmQyXzM5Nm1fY2xrKSkKIAkJCWNsa19zZXRfcGFyZW50KHNlY29uZGFyeV9zZWxfY2xr
+LCBwbGwyX2J1c19jbGspOwogCQllbHNlCiAJCQljbGtfc2V0X3BhcmVudChzZWNvbmRhcnlfc2Vs
+X2NsaywgcGxsMl9wZmQyXzM5Nm1fY2xrKTsKIAkJY2xrX3NldF9wYXJlbnQoc3RlcF9jbGssIHNl
+Y29uZGFyeV9zZWxfY2xrKTsKIAkJY2xrX3NldF9wYXJlbnQocGxsMV9zd19jbGssIHN0ZXBfY2xr
+KTsKKwkJaWYgKGZyZXFfaHogPiBGUkVRXzUyOF9NSFopIHsKKwkJCWNsa19zZXRfcmF0ZShwbGwx
+X3N5c19jbGssIGZyZXFfaHopOworCQkJY2xrX3NldF9wYXJlbnQocGxsMV9zd19jbGssIHBsbDFf
+c3lzX2Nsayk7CisJCX0KIAl9IGVsc2UgewogCQljbGtfc2V0X3BhcmVudChzdGVwX2NsaywgcGxs
+Ml9wZmQyXzM5Nm1fY2xrKTsKIAkJY2xrX3NldF9wYXJlbnQocGxsMV9zd19jbGssIHN0ZXBfY2xr
+KTsKLS0gCjIuNy4zCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0
+cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGlu
+Zm8vbGludXgtYXJtLWtlcm5lbAo=
