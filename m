@@ -1,156 +1,232 @@
 From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH 3/7] turbostat: Calculate additional node information for a package
-Date: Fri, 28 Jul 2017 08:06:17 -0400
-Message-ID: <1501243581-31491-5-git-send-email-prarit@redhat.com>
+Subject: [PATCH 2/7] turbostat: Fix node and siblings lookup data
+Date: Fri, 28 Jul 2017 08:06:16 -0400
+Message-ID: <1501243581-31491-4-git-send-email-prarit@redhat.com>
 References: <1501243581-31491-1-git-send-email-prarit@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:47378 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:52322 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751722AbdG1MGg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 28 Jul 2017 08:06:36 -0400
+        id S1751697AbdG1MGe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 28 Jul 2017 08:06:34 -0400
 In-Reply-To: <1501243581-31491-1-git-send-email-prarit@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: lenb@kernel.org, Prarit Bhargava <prarit@redhat.com>, Len Brown <len.brown@intel.com>
 
-The code currently assumes each package has exactly one node.  This is not
-the case for AMD systems and Intel systems with COD.  AMD systems also
-may re-enumerate each node's core IDs starting at 0 (for example, an AMD
-processor may have two nodes, each with core IDs from 0 to 7).  In order
-to properly enumerate the cores we need to track both the physical and
-logical node IDs.
+The turbostat code only looks at thread_siblings_list to determine if
+processing units/threads are on the same the core.  This works well on
+Intel systems which have a shared L1 instruction and data cache.  This
+does not work on AMD systems which have shared L1 instruction cache but
+separate L1 data caches.  Other utilities also check sibling's core ID
+to determine if the processing unit shares the same core.
 
-Add physical_node_id to track the node ID assigned by the kernel, and
-logical_node_id used by turbostat to track the nodes per package ie) a 0-based
-count within the package.
+Additionally, the cpu_topology *cpus list used in topology_probe() can
+be used elsewhere in the code to simplify things.
+
+Export *cpus to the entire turbostat code, and add Processing Unit/Thread
+IDs information to each cpu_topology struct.  Confirm that the thread
+is on the same core as indicated by thread_siblings_list.
 
 Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 Cc: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 66 ++++++++++++++++++++++++++++++++---
- 1 file changed, 62 insertions(+), 4 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 112 +++++++++++++++++++++++-----------
+ 1 file changed, 77 insertions(+), 35 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 5f66988b0303..696ced1974c5 100644
+index 6d368e744d27..5f66988b0303 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -249,7 +249,8 @@ struct system_summary {
- struct cpu_topology {
- 	int physical_package_id;
- 	int logical_cpu_id;
--	int node_id;
-+	int physical_node_id;
-+	int logical_node_id;	/* 0-based count within the package */
- 	int physical_core_id;
- 	cpu_set_t *put_ids; /* Processing Unit/Thread IDs */
- } *cpus;
-@@ -259,6 +260,8 @@ struct topo_params {
- 	int num_cpus;
- 	int num_cores;
- 	int max_cpu_num;
-+	int max_node_num;
-+	int num_nodes_per_pkg;
- 	int num_cores_per_pkg;
- 	int num_threads_per_core;
- } topo;
-@@ -2316,7 +2319,54 @@ int get_core_id(int cpu)
+@@ -149,6 +149,7 @@
+ cpu_set_t *cpu_present_set, *cpu_affinity_set, *cpu_subset;
+ size_t cpu_present_setsize, cpu_affinity_setsize, cpu_subset_size;
+ #define MAX_ADDED_COUNTERS 16
++#define BITMASK_SIZE 32
+ 
+ struct thread_data {
+ 	struct timeval tv_begin;
+@@ -245,6 +246,13 @@ struct system_summary {
+ 	struct pkg_data packages;
+ } average;
+ 
++struct cpu_topology {
++	int physical_package_id;
++	int logical_cpu_id;
++	int node_id;
++	int physical_core_id;
++	cpu_set_t *put_ids; /* Processing Unit/Thread IDs */
++} *cpus;
+ 
+ struct topo_params {
+ 	int num_packages;
+@@ -2188,6 +2196,8 @@ void free_fd_percpu(void)
+ 
+ void free_all_buffers(void)
+ {
++	int i;
++
+ 	CPU_FREE(cpu_present_set);
+ 	cpu_present_set = NULL;
+ 	cpu_present_setsize = 0;
+@@ -2220,6 +2230,12 @@ void free_all_buffers(void)
+ 
+ 	free(irq_column_2_cpu);
+ 	free(irqs_per_cpu);
++
++	for (i = 0; i <= topo.max_cpu_num; ++i) {
++		if (cpus[i].put_ids)
++			CPU_FREE(cpus[i].put_ids);
++	}
++	free(cpus);
+ }
+ 
+ 
+@@ -2300,35 +2316,55 @@ int get_core_id(int cpu)
  	return parse_int_file("/sys/devices/system/cpu/cpu%d/topology/core_id", cpu);
  }
  
--int get_node_id(struct cpu_topology *thiscpu)
-+void set_node_data(void)
-+{
-+	char path[80];
-+	FILE *filep;
-+	int pkg, node, cpu;
-+
-+	struct pkg_node_info {
-+		int count;
-+		int min;
-+	} *pni;
-+
-+	pni = calloc(topo.num_packages, sizeof(struct pkg_node_info));
-+	if (!pni)
-+		err(1, "calloc pkg_node_count");
-+
-+	for (pkg = 0; pkg < topo.num_packages; pkg++)
-+		pni[pkg].min = topo.num_cpus;
-+
-+	for (node = 0; node <= topo.max_node_num; node++) {
-+		/* find the "first" cpu in the node */
-+		sprintf(path, "/sys/bus/node/devices/node%d/cpulist", node);
-+		filep = fopen(path, "r");
-+		if (!filep)
-+			continue;
-+		fscanf(filep, "%d", &cpu);
-+		fclose(filep);
-+
-+		pkg = cpus[cpu].physical_package_id;
-+		pni[pkg].count++;
-+
-+		if (node < pni[pkg].min)
-+			pni[pkg].min = node;
-+	}
-+
-+	for (pkg = 0; pkg < topo.num_packages; pkg++)
-+		if (pni[pkg].count > topo.num_nodes_per_pkg)
-+			topo.num_nodes_per_pkg = pni[0].count;
-+
-+	for (cpu = 0; cpu < topo.num_cpus; cpu++) {
-+		pkg = cpus[cpu].physical_package_id;
-+		node = cpus[cpu].physical_node_id;
-+		cpus[cpu].logical_node_id = node - pni[pkg].min;
-+	}
-+	free(pni);
-+
-+}
-+
-+int get_physical_node_id(struct cpu_topology *thiscpu)
+-int get_num_ht_siblings(int cpu)
++int get_node_id(struct cpu_topology *thiscpu)
  {
  	char path[80];
  	FILE *filep;
-@@ -4361,6 +4411,7 @@ void topology_probe()
+-	int sib1;
+-	int matches = 0;
+-	char character;
+-	char str[100];
+-	char *ch;
++	int i;
++	int cpu = thiscpu->logical_cpu_id;
++	for (i = 0; i <= topo.max_cpu_num; i++) {
++		sprintf(path, "/sys/devices/system/cpu/cpu%d/node%i/cpulist",
++			cpu, i);
++		filep = fopen(path, "r");
++		if (!filep)
++			continue;
++		fclose(filep);
++		return i;
++	}
++	return -1;
++}
+ 
+-	sprintf(path, "/sys/devices/system/cpu/cpu%d/topology/thread_siblings_list", cpu);
+-	filep = fopen_or_die(path, "r");
++int get_thread_siblings(struct cpu_topology *thiscpu)
++{
++	char path[80], character;
++	FILE *filep;
++	unsigned long map;
++	int shift, sib_core;
++	int cpu = thiscpu->logical_cpu_id;
++	int offset = topo.max_cpu_num + 1;
+ 
+-	/*
+-	 * file format:
+-	 * A ',' separated or '-' separated set of numbers
+-	 * (eg 1-2 or 1,3,4,5)
+-	 */
+-	fscanf(filep, "%d%c\n", &sib1, &character);
+-	fseek(filep, 0, SEEK_SET);
+-	fgets(str, 100, filep);
+-	ch = strchr(str, character);
+-	while (ch != NULL) {
+-		matches++;
+-		ch = strchr(ch+1, character);
+-	}
++	thiscpu->put_ids = CPU_ALLOC((topo.max_cpu_num + 1));
++	if (!thiscpu->put_ids)
++		return -1;
++	CPU_ZERO(thiscpu->put_ids);
+ 
++	sprintf(path, "/sys/devices/system/cpu/cpu%d/topology/thread_siblings", cpu);
++	filep = fopen_or_die(path, "r");
++	do {
++		offset-=BITMASK_SIZE;
++		fscanf(filep, "%lx%c", &map, &character);
++		for (shift = 0; shift < BITMASK_SIZE; shift++) {
++			if ((map >> shift) & 0x1) {
++				sib_core = get_core_id(shift + offset);
++				if (sib_core == thiscpu->physical_core_id)
++					CPU_SET(shift + offset,
++						thiscpu->put_ids);
++			}
++		}
++	} while (!strncmp(&character, ",", 1));
+ 	fclose(filep);
+-	return matches+1;
++
++	return CPU_COUNT(thiscpu->put_ids);
+ }
+ 
+ /*
+@@ -2423,7 +2459,7 @@ void set_max_cpu_num(void)
+ 			"/sys/devices/system/cpu/cpu0/topology/thread_siblings",
+ 			"r");
+ 	while (fscanf(filep, "%lx,", &dummy) == 1)
+-		topo.max_cpu_num+=32;
++		topo.max_cpu_num+=BITMASK_SIZE;
+ 	fclose(filep);
+ 	topo.max_cpu_num--; /* 0 based */
+ }
+@@ -4325,10 +4361,6 @@ void topology_probe()
  	int max_core_id = 0;
  	int max_package_id = 0;
  	int max_siblings = 0;
-+	int max_physical_node_id = 0;
+-	struct cpu_topology {
+-		int core_id;
+-		int physical_package_id;
+-	} *cpus;
  
  	/* Initialize num_cpus, max_cpu_num */
  	set_max_cpu_num();
-@@ -4426,7 +4477,9 @@ void topology_probe()
+@@ -4385,20 +4417,32 @@ void topology_probe()
+ 				fprintf(outf, "cpu%d NOT PRESENT\n", i);
+ 			continue;
+ 		}
+-		cpus[i].core_id = get_core_id(i);
+-		if (cpus[i].core_id > max_core_id)
+-			max_core_id = cpus[i].core_id;
+ 
++		cpus[i].logical_cpu_id = i;
++
++		/* get package information */
+ 		cpus[i].physical_package_id = get_physical_package_id(i);
+ 		if (cpus[i].physical_package_id > max_package_id)
  			max_package_id = cpus[i].physical_package_id;
  
- 		/* get numa node information */
--		cpus[i].node_id = get_node_id(&cpus[i]);
-+		cpus[i].physical_node_id = get_physical_node_id(&cpus[i]);
-+		if (cpus[i].physical_node_id > max_physical_node_id)
-+			topo.max_node_num = cpus[i].physical_node_id;
- 
- 		/* get core information */
- 		cpus[i].physical_core_id = get_core_id(i);
-@@ -4441,9 +4494,10 @@ void topology_probe()
- 		if (debug > 1)
- 			fprintf(outf, "cpu %d pkg %d node %d core %d\n",
- 				i, cpus[i].physical_package_id,
--				cpus[i].node_id,
-+				cpus[i].physical_node_id,
- 				cpus[i].physical_core_id);
- 	}
+-		siblings = get_num_ht_siblings(i);
++		/* get numa node information */
++		cpus[i].node_id = get_node_id(&cpus[i]);
 +
++		/* get core information */
++		cpus[i].physical_core_id = get_core_id(i);
++		if (cpus[i].physical_core_id > max_core_id)
++			max_core_id = cpus[i].physical_core_id;
++
++		/* get thread information */
++		siblings = get_thread_siblings(&cpus[i]);
+ 		if (siblings > max_siblings)
+ 			max_siblings = siblings;
++
+ 		if (debug > 1)
+-			fprintf(outf, "cpu %d pkg %d core %d\n",
+-				i, cpus[i].physical_package_id, cpus[i].core_id);
++			fprintf(outf, "cpu %d pkg %d node %d core %d\n",
++				i, cpus[i].physical_package_id,
++				cpus[i].node_id,
++				cpus[i].physical_core_id);
+ 	}
  	topo.num_cores_per_pkg = max_core_id + 1;
  	if (debug > 1)
- 		fprintf(outf, "max_core_id %d, sizing for %d cores per package\n",
-@@ -4458,6 +4512,10 @@ void topology_probe()
- 	if (!summary_only && topo.num_packages > 1)
- 		BIC_PRESENT(BIC_Package);
- 
-+	set_node_data();
-+	if (debug > 1)
-+		fprintf(outf, "num_nodes_per_pkg %d\n", topo.num_nodes_per_pkg);
-+
+@@ -4417,8 +4461,6 @@ void topology_probe()
  	topo.num_threads_per_core = max_siblings;
  	if (debug > 1)
  		fprintf(outf, "max_siblings %d\n", max_siblings);
+-
+-	free(cpus);
+ }
+ 
+ void
 -- 
 1.8.5.5
