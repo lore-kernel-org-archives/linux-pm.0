@@ -1,177 +1,59 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V8 1/6] PM / Domains: Add support to select
- performance-state of domains
-Date: Fri, 28 Jul 2017 16:30:30 +0530
-Message-ID: <20170728110030.GG352@vireshk-i7>
-References: <cover.1498026827.git.viresh.kumar@linaro.org>
- <52daf22d2c9d92b0e61c8c5c5a88516d7a08a31a.1498026827.git.viresh.kumar@linaro.org>
- <CAPDyKFqaFvET9yM_6wr7b1Zw=hePQrE-Ak-7YPCR9izooh4LBA@mail.gmail.com>
- <20170719123751.GF352@vireshk-i7>
- <CAPDyKFr0ZMeS=57p48W9f_j3U0T41msxOqQHBXB_soA8-weM+w@mail.gmail.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH] turbostat: Running on virtual machine is not supported
+Date: Fri, 28 Jul 2017 07:54:27 -0400
+Message-ID: <8aa1f7ec-1d21-f027-f4c4-7c3d8e88b8d2@redhat.com>
+References: <1500987324-507-1-git-send-email-prarit@redhat.com>
+ <20170725155911.ihtjkz5cuwdpwoxp@khazad-dum.debian.net>
+ <CAJvTdKmZqPkvUrgEJitYrBv7EJzpemLjN-nfYUnT3b127LNSQA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f44.google.com ([74.125.83.44]:37152 "EHLO
-        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751775AbdG1LAe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2017 07:00:34 -0400
-Received: by mail-pg0-f44.google.com with SMTP id y129so109853092pgy.4
-        for <linux-pm@vger.kernel.org>; Fri, 28 Jul 2017 04:00:33 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFr0ZMeS=57p48W9f_j3U0T41msxOqQHBXB_soA8-weM+w@mail.gmail.com>
+Received: from mx1.redhat.com ([209.132.183.28]:42602 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751071AbdG1Ly3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 28 Jul 2017 07:54:29 -0400
+In-Reply-To: <CAJvTdKmZqPkvUrgEJitYrBv7EJzpemLjN-nfYUnT3b127LNSQA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
+To: Len Brown <lenb@kernel.org>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 21-07-17, 10:35, Ulf Hansson wrote:
-> >> > +/*
-> >> > + * Returns true if anyone in genpd's parent hierarchy has
-> >> > + * set_performance_state() set.
-> >> > + */
-> >> > +static bool genpd_has_set_performance_state(struct generic_pm_domain *genpd)
-> >> > +{
-> >>
-> >> So this function will be become in-directly called by generic drivers
-> >> that supports DVFS of the genpd for their devices.
-> >>
-> >> I think the data you validate here would be better to be pre-validated
-> >> at pm_genpd_init() and at pm_genpd_add|remove_subdomain() and the
-> >> result stored in a variable in the genpd struct. Especially when a
-> >> subdomain is added, that is a point when you can verify the
-> >> *_performance_state() callbacks, and thus make sure it's a correct
-> >> setup from the topology point of view.
 
-Looks like I have to keep this routine as is and your solution may not
-work well. :(
 
-> > Something like this ?
-> >
-> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> > index 4a898e095a1d..182c1911ea9c 100644
-> > --- a/drivers/base/power/domain.c
-> > +++ b/drivers/base/power/domain.c
-> > @@ -466,25 +466,6 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
-> >         return NOTIFY_DONE;
-> >  }
-> >
-> > -/*
-> > - * Returns true if anyone in genpd's parent hierarchy has
-> > - * set_performance_state() set.
-> > - */
-> > -static bool genpd_has_set_performance_state(struct generic_pm_domain *genpd)
-> > -{
-> > -       struct gpd_link *link;
-> > -
-> > -       if (genpd->set_performance_state)
-> > -               return true;
-> > -
-> > -       list_for_each_entry(link, &genpd->slave_links, slave_node) {
-> > -               if (genpd_has_set_performance_state(link->master))
-> > -                       return true;
-> > -       }
-> > -
-> > -       return false;
-> > -}
-> > -
-> >  /**
-> >   * pm_genpd_has_performance_state - Checks if power domain does performance
-> >   * state management.
-> > @@ -507,7 +488,7 @@ bool pm_genpd_has_performance_state(struct device *dev)
-> >
-> >         /* The parent domain must have set get_performance_state() */
-> >         if (!IS_ERR(genpd) && genpd->get_performance_state) {
-> > -               if (genpd_has_set_performance_state(genpd))
-> > +               if (genpd->can_set_performance_state)
-> >                         return true;
-> >
-> >                 /*
-> > @@ -1594,6 +1575,8 @@ static int genpd_add_subdomain(struct generic_pm_domain *genpd,
-> >         if (genpd_status_on(subdomain))
-> >                 genpd_sd_counter_inc(genpd);
-> >
-> > +       subdomain->can_set_performance_state += genpd->can_set_performance_state;
-> > +
-> >   out:
-> >         genpd_unlock(genpd);
-> >         genpd_unlock(subdomain);
-> > @@ -1654,6 +1637,8 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
-> >                 if (genpd_status_on(subdomain))
-> >                         genpd_sd_counter_dec(genpd);
-> >
-> > +               subdomain->can_set_performance_state -= genpd->can_set_performance_state;
-> > +
-> >                 ret = 0;
-> >                 break;
-> >         }
-> > @@ -1721,6 +1706,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
-> >         genpd->max_off_time_changed = true;
-> >         genpd->provider = NULL;
-> >         genpd->has_provider = false;
-> > +       genpd->can_set_performance_state = !!genpd->set_performance_state;
-> >         genpd->domain.ops.runtime_suspend = genpd_runtime_suspend;
-> >         genpd->domain.ops.runtime_resume = genpd_runtime_resume;
-> >         genpd->domain.ops.prepare = pm_genpd_prepare;
-> > diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> > index bf90177208a2..995d0cb1bc14 100644
-> > --- a/include/linux/pm_domain.h
-> > +++ b/include/linux/pm_domain.h
-> > @@ -64,6 +64,7 @@ struct generic_pm_domain {
-> >         unsigned int suspended_count;   /* System suspend device counter */
-> >         unsigned int prepared_count;    /* Suspend counter of prepared devices */
-> >         unsigned int performance_state; /* Max requested performance state */
-> > +       unsigned int can_set_performance_state; /* Number of parent domains supporting set state */
-> >         int (*power_off)(struct generic_pm_domain *domain);
-> >         int (*power_on)(struct generic_pm_domain *domain);
-> >         int (*get_performance_state)(struct device *dev, unsigned long rate);
-> >
+On 07/26/2017 11:09 PM, Len Brown wrote:
+> Henrique,
 > 
-> Yes!
+> I like your suggestion, thanks!
+> 
+> BTW. let's discuss (and patch) turbostat on linux-pm, rather than on lkml.
+> 
+> thanks,
+> -Len
+> 
+> 
+> On Tue, Jul 25, 2017 at 11:59 AM, Henrique de Moraes Holschuh
+> <hmh@hmh.eng.br> wrote:
+>> On Tue, 25 Jul 2017, Prarit Bhargava wrote:
+>>> A common way of determining if the system is a virtual machine is to
+>>> search /proc/cpuinfo flags entry for "hypervisor".  turbostat must output
+>>> a proper error message when found.
+>>
+>> Maybe you could output that message only if it fails to both use
+>> /dev/msr and perf *and* it is under a virtual machine?  That would have
+>> better forward compatibility, maybe someday /dev/msr or perf will work
+>> inside a VM for what turbostat needs...
 
-The above diff will work fine only for the case where the master
-domain has all its masters set properly before genpd_add_subdomain()
-is called for the subdomain, as the genpd->can_set_performance_state
-count wouldn't change after that. But if the masters of the
-master are linked to the master after genpd_add_subdomain() is called
-for the subdomain, then we wouldn't be update the
-subdomain->can_set_performance_state field later.
+To answer Len's previous question: I was wrong in my description.  perf does
+work (mostly) under virt.  So this would only be for the msr code.  I'll post a
+v2 to linux-pm, and take Henrique's suggestion to only trigger on an msr read
+failure.
 
-For example, consider this scenario:
+P.
 
-               Domain A (has set_performance_state())
-
-       Domain B                Domain C        (both don't have set_performance_state())
-
-       Domain D                Domain E         (both don't have set_performance_state(), but have get_performance_state())
-
-
-and here is the call sequence:
-
-genpd_add_subdomain(B, D); can_set_performance_state of B and D = 0;
-genpd_add_subdomain(C, E); ... C and E = 0;
-genpd_add_subdomain(A, B); ... A = 1, B = 1;
-genpd_add_subdomain(A, C); ... A = 1, C = 1;
-
-While the count is set properly for A, B and C, it isn't propagated to
-C and E. :(
-
-Though everything would have worked fine if we had this sequence:
-
-genpd_add_subdomain(A, B); ... A = 1, B = 1;
-genpd_add_subdomain(A, C); ... A = 1, C = 1;
-genpd_add_subdomain(B, D); ... D = 1 ;
-genpd_add_subdomain(C, E); ... E = 1;
-
-How to fix it? I tried solving that by propagating the count to all
-the subdomains of the subdomain getting added here. But that requires
-locking and we can't do that in the reverse direction :(
-
-Anyway, genpd_has_set_performance_state() is supposed to be called
-only ONCE by the drivers and so its fine if we have to traverse the
-list of subdomains there.
-
-I will keep the original code unless you suggest a good way of getting
-around that.
-
--- 
-viresh
+>>
+>> --
+>>   Henrique Holschuh
+> 
+> 
+> 
