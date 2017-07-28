@@ -1,39 +1,38 @@
-From: Todd Brandt <todd.e.brandt@linux.intel.com>
-Subject: Please ignore: [PATCH 0/3 RESEND] TOOLS: pm-graph v4.7
-Date: Thu, 27 Jul 2017 20:38:17 -0700
-Message-ID: <1501213097.6778.1.camel@linux.intel.com>
-References: <cover.1499290431.git.todd.e.brandt@linux.intel.com>
-Reply-To: todd.e.brandt@linux.intel.com
+From: "Joel Fernandes (Google)" <joel.opensrc@gmail.com>
+Subject: Re: [Eas-dev] [PATCH V4 0/3] sched: cpufreq: Allow remote callbacks
+Date: Thu, 27 Jul 2017 20:44:03 -0700
+Message-ID: <CAEi0qNnz3PhETrq4YSxLZCa0jdfApSw8K9dgJN276rWG7qbwyg@mail.gmail.com>
+References: <cover.1501060871.git.viresh.kumar@linaro.org> <CAEi0qNmuPLG68o0XZy5BTZO7=MwAkUdobOs=m4Fa6NYJ2q6B6w@mail.gmail.com>
+ <20170727054635.GJ352@vireshk-i7> <CAEi0qN=e9sL+ndTerAwcJTwCsmzJiwgtWkSk3Coa0Qzvyzdb2Q@mail.gmail.com>
+ <20170727072146.uiuvadgsbpjk5gyb@e106622-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:8720 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751605AbdG1DiS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 27 Jul 2017 23:38:18 -0400
-In-Reply-To: <cover.1499290431.git.todd.e.brandt@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170727072146.uiuvadgsbpjk5gyb@e106622-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Joel Fernandes <joelaf@google.com>, eas-dev@lists.linaro.org, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Steve Muckle <smuckle.linux@gmail.com>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, rjw@rjwysocki.net
-Cc: todd.e.brandt@intel.com
 
-On Thu, 2017-07-27 at 20:34 -0700, Todd Brandt wrote:
-> Upgrade the pm-graph tools from v4.6 to v4.7
-> 
-> Todd Brandt (3):
->   pm-graph: AnalyzeSuspend v4.7
->   pm-graph: AnalyzeBoot v2.1
->   pm-graph: package makefile and man pages
-> 
->  tools/power/pm-graph/Makefile           |  19 +-
->  tools/power/pm-graph/analyze_boot.py    | 586 +++++++++++++++++++++-
-> ----------
->  tools/power/pm-graph/analyze_suspend.py | 534 ++++++++++++++++++++
-> ---------
->  tools/power/pm-graph/bootgraph.8        |  61 +++-
->  tools/power/pm-graph/sleepgraph.8       |  48 +--
->  5 files changed, 852 insertions(+), 396 deletions(-)
-> 
+On Thu, Jul 27, 2017 at 12:21 AM, Juri Lelli <juri.lelli@arm.com> wrote:
+[..]
+>> >
+>> > But even without that, if you see the routine
+>> > init_entity_runnable_average() in fair.c, the new tasks are
+>> > initialized in a way that they are seen as heavy tasks. And so even
+>> > for the first time they run, freq should normally increase on the
+>> > target CPU (at least with above application).i
+>>
+>> Ok, but the "heavy" in init_entity_runnable_average means for load,
+>> not the util_avg. The util_avg is what's used for frequency scaling
+>> IIUC and is set to 0 in that function no?
+>>
+>
+> True for init_entity_runnable_average(), but for new task post_init_
+> entity_util_avg() is then also called (from wake_up_new_task()), which
+> modifies the initial util_avg value (depending on current rq {util,
+> load}_avg.
 
-patch already applied, resend was unnecessary, please ignore.
+Got it. That makes sense, thank you!
+
+-Joel
