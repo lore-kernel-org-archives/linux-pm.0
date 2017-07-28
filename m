@@ -1,71 +1,177 @@
-From: =?UTF-8?q?S=C3=A9bastien=20Szymanski?= <sebastien.szymanski@armadeus.com>
-Subject: [PATCH 1/1] cpufreq: imx6q: imx6ull: use PLL1 for frequency higher
- than 528MHz
-Date: Fri, 28 Jul 2017 10:36:33 +0200
-Message-ID: <1501230993-15812-1-git-send-email-sebastien.szymanski@armadeus.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V8 1/6] PM / Domains: Add support to select
+ performance-state of domains
+Date: Fri, 28 Jul 2017 16:30:30 +0530
+Message-ID: <20170728110030.GG352@vireshk-i7>
+References: <cover.1498026827.git.viresh.kumar@linaro.org>
+ <52daf22d2c9d92b0e61c8c5c5a88516d7a08a31a.1498026827.git.viresh.kumar@linaro.org>
+ <CAPDyKFqaFvET9yM_6wr7b1Zw=hePQrE-Ak-7YPCR9izooh4LBA@mail.gmail.com>
+ <20170719123751.GF352@vireshk-i7>
+ <CAPDyKFr0ZMeS=57p48W9f_j3U0T41msxOqQHBXB_soA8-weM+w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Julien Boibessot <julien.boibessot@armadeus.com>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f44.google.com ([74.125.83.44]:37152 "EHLO
+        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751775AbdG1LAe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2017 07:00:34 -0400
+Received: by mail-pg0-f44.google.com with SMTP id y129so109853092pgy.4
+        for <linux-pm@vger.kernel.org>; Fri, 28 Jul 2017 04:00:33 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAPDyKFr0ZMeS=57p48W9f_j3U0T41msxOqQHBXB_soA8-weM+w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 
-U2V0dGluZyB0aGUgZnJlcXVlbmN5IGhpZ2hlciB0aGFuIDUyOE1oeiBhY3R1YWxseSBzZXRzIHRo
-ZSBBUk0KY2xvY2sgdG8gNTI4TUh6LiBUaGF0J3MgYmVjYXVzZSBQTEwyIGlzIHVzZWQgYXMgdGhl
-IHJvb3QgY2xvY2sgd2hlbiB0aGUKZnJlcXVlbmN5IGlzIGhpZ2hlciB0aGFuIDM5Nk1Iei4KCmNw
-dXBvd2VyIGZyZXF1ZW5jeS1zZXQgLWYgNzkyMDAwCgphcm1fY2xrX3Jvb3Qgb24gdGhlIENDTV9D
-TEtPMiBzaWduYWwgaXMgNTI4TUh6IGluc3RlYWQgb2YgNzkyTUh6LgoKWyAgIDYxLjYwNjM4M10g
-Y3B1IGNwdTA6IDM5NiBNSHosIDEwMjUgbVYgLS0+IDc5MiBNSHosIDEyMjUgbVYKCnBsbDIgICAg
-ICAgICAgICAgICAgICAgICAgICAgMSAgMSAgNTI4MDAwMDAwIDAgMAogICBwbGwyX2J5cGFzcyAg
-ICAgICAgICAgICAgIDEgIDEgIDUyODAwMDAwMCAwIDAKICAgICAgcGxsMl9idXMgICAgICAgICAg
-ICAgICAzICAzICA1MjgwMDAwMDAgMCAwCgkgY2E3X3NlY29uZGFyeV9zZWwgICAxICAxICA1Mjgw
-MDAwMDAgMCAwCgkgICAgc3RlcCAgICAgICAgICAgICAxICAxICA1MjgwMDAwMDAgMCAwCgkgICAg
-ICAgcGxsMV9zdyAgICAgICAxICAxICA1MjgwMDAwMDAgMCAwCgkJICBhcm0gICAgICAgIDEgIDEg
-IDUyODAwMDAwMCAwIDAKCkZpeGVzIHRoaXMgYnkgdXNpbmcgdGhlIFBMTDEgYXMgdGhlIHJvb3Qg
-Y2xvY2sgd2hlbiB0aGUgZnJlcXVlbmN5IGlzCmhpZ2hlciB0aGFuIDUyOE1Iei4KCmNwdXBvd2Vy
-IGZyZXF1ZW5jeS1zZXQgLWYgNzkyMDAwCgphcm1fY2xrX3Jvb3Qgb24gdGhlIENDTV9DTEtPMiBz
-aWduYWwgaXMgbm93IDc5Mk1IeiBhcyBleHBlY3RlZC4KClsgICA2OS43MTc5ODddIGNwdSBjcHUw
-OiAxOTggTUh6LCA5NTAgbVYgLS0+IDc5MiBNSHosIDEyMjUgbVYKCnBsbDEgICAgICAgICAgICAg
-ICAxIDEgNzkyMDAwMDAwIDAgMAogICBwbGwxX2J5cGFzcyAgICAgMSAxIDc5MjAwMDAwMCAwIDAK
-ICAgICAgcGxsMV9zeXMgICAgIDEgMSA3OTIwMDAwMDAgMCAwCgkgcGxsMV9zdyAgIDEgMSA3OTIw
-MDAwMDAgMCAwCgkgICAgYXJtICAgIDEgMSA3OTIwMDAwMDAgMCAwCgpTaWduZWQtb2ZmLWJ5OiBT
-w6liYXN0aWVuIFN6eW1hbnNraSA8c2ViYXN0aWVuLnN6eW1hbnNraUBhcm1hZGV1cy5jb20+Ci0t
-LQogZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYyB8IDExICsrKysrKysrKy0tCiAxIGZp
-bGUgY2hhbmdlZCwgOSBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvY3B1ZnJlcS9pbXg2cS1jcHVmcmVxLmMgYi9kcml2ZXJzL2NwdWZyZXEvaW14NnEt
-Y3B1ZnJlcS5jCmluZGV4IGI2ZWRkM2MuLmU1ZmJhNTAgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvY3B1
-ZnJlcS9pbXg2cS1jcHVmcmVxLmMKKysrIGIvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEu
-YwpAQCAtMTgsNiArMTgsNyBAQAogCiAjZGVmaW5lIFBVX1NPQ19WT0xUQUdFX05PUk1BTAkxMjUw
-MDAwCiAjZGVmaW5lIFBVX1NPQ19WT0xUQUdFX0hJR0gJMTI3NTAwMAorI2RlZmluZSBGUkVRXzUy
-OF9NSFoJCTUyODAwMDAwMAogI2RlZmluZSBGUkVRXzFQMl9HSFoJCTEyMDAwMDAwMDAKIAogc3Rh
-dGljIHN0cnVjdCByZWd1bGF0b3IgKmFybV9yZWc7CkBAIC0xMTAsMTQgKzExMSwyMCBAQCBzdGF0
-aWMgaW50IGlteDZxX3NldF90YXJnZXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3ksIHVu
-c2lnbmVkIGludCBpbmRleCkKIAkJICogdm9sdGFnZSBvZiA1MjhNSHosIHNvIGxvd2VyIHRoZSBD
-UFUgZnJlcXVlbmN5IHRvIG9uZQogCQkgKiBoYWxmIGJlZm9yZSBjaGFuZ2luZyBDUFUgZnJlcXVl
-bmN5LgogCQkgKi8KLQkJY2xrX3NldF9yYXRlKGFybV9jbGssIChvbGRfZnJlcSA+PiAxKSAqIDEw
-MDApOwotCQljbGtfc2V0X3BhcmVudChwbGwxX3N3X2NsaywgcGxsMV9zeXNfY2xrKTsKKwkJaWYg
-KChvbGRfZnJlcSAqIDEwMDApIDw9IEZSRVFfNTI4X01IWikgeworCQkJY2xrX3NldF9yYXRlKGFy
-bV9jbGssIChvbGRfZnJlcSA+PiAxKSAqIDEwMDApOworCQkJY2xrX3NldF9wYXJlbnQocGxsMV9z
-d19jbGssIHBsbDFfc3lzX2Nsayk7CisJCX0KIAkJaWYgKGZyZXFfaHogPiBjbGtfZ2V0X3JhdGUo
-cGxsMl9wZmQyXzM5Nm1fY2xrKSkKIAkJCWNsa19zZXRfcGFyZW50KHNlY29uZGFyeV9zZWxfY2xr
-LCBwbGwyX2J1c19jbGspOwogCQllbHNlCiAJCQljbGtfc2V0X3BhcmVudChzZWNvbmRhcnlfc2Vs
-X2NsaywgcGxsMl9wZmQyXzM5Nm1fY2xrKTsKIAkJY2xrX3NldF9wYXJlbnQoc3RlcF9jbGssIHNl
-Y29uZGFyeV9zZWxfY2xrKTsKIAkJY2xrX3NldF9wYXJlbnQocGxsMV9zd19jbGssIHN0ZXBfY2xr
-KTsKKwkJaWYgKGZyZXFfaHogPiBGUkVRXzUyOF9NSFopIHsKKwkJCWNsa19zZXRfcmF0ZShwbGwx
-X3N5c19jbGssIGZyZXFfaHopOworCQkJY2xrX3NldF9wYXJlbnQocGxsMV9zd19jbGssIHBsbDFf
-c3lzX2Nsayk7CisJCX0KIAl9IGVsc2UgewogCQljbGtfc2V0X3BhcmVudChzdGVwX2NsaywgcGxs
-Ml9wZmQyXzM5Nm1fY2xrKTsKIAkJY2xrX3NldF9wYXJlbnQocGxsMV9zd19jbGssIHN0ZXBfY2xr
-KTsKLS0gCjIuNy4zCgoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX18KbGludXgtYXJtLWtlcm5lbCBtYWlsaW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0
-cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGlu
-Zm8vbGludXgtYXJtLWtlcm5lbAo=
+On 21-07-17, 10:35, Ulf Hansson wrote:
+> >> > +/*
+> >> > + * Returns true if anyone in genpd's parent hierarchy has
+> >> > + * set_performance_state() set.
+> >> > + */
+> >> > +static bool genpd_has_set_performance_state(struct generic_pm_domain *genpd)
+> >> > +{
+> >>
+> >> So this function will be become in-directly called by generic drivers
+> >> that supports DVFS of the genpd for their devices.
+> >>
+> >> I think the data you validate here would be better to be pre-validated
+> >> at pm_genpd_init() and at pm_genpd_add|remove_subdomain() and the
+> >> result stored in a variable in the genpd struct. Especially when a
+> >> subdomain is added, that is a point when you can verify the
+> >> *_performance_state() callbacks, and thus make sure it's a correct
+> >> setup from the topology point of view.
+
+Looks like I have to keep this routine as is and your solution may not
+work well. :(
+
+> > Something like this ?
+> >
+> > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> > index 4a898e095a1d..182c1911ea9c 100644
+> > --- a/drivers/base/power/domain.c
+> > +++ b/drivers/base/power/domain.c
+> > @@ -466,25 +466,6 @@ static int genpd_dev_pm_qos_notifier(struct notifier_block *nb,
+> >         return NOTIFY_DONE;
+> >  }
+> >
+> > -/*
+> > - * Returns true if anyone in genpd's parent hierarchy has
+> > - * set_performance_state() set.
+> > - */
+> > -static bool genpd_has_set_performance_state(struct generic_pm_domain *genpd)
+> > -{
+> > -       struct gpd_link *link;
+> > -
+> > -       if (genpd->set_performance_state)
+> > -               return true;
+> > -
+> > -       list_for_each_entry(link, &genpd->slave_links, slave_node) {
+> > -               if (genpd_has_set_performance_state(link->master))
+> > -                       return true;
+> > -       }
+> > -
+> > -       return false;
+> > -}
+> > -
+> >  /**
+> >   * pm_genpd_has_performance_state - Checks if power domain does performance
+> >   * state management.
+> > @@ -507,7 +488,7 @@ bool pm_genpd_has_performance_state(struct device *dev)
+> >
+> >         /* The parent domain must have set get_performance_state() */
+> >         if (!IS_ERR(genpd) && genpd->get_performance_state) {
+> > -               if (genpd_has_set_performance_state(genpd))
+> > +               if (genpd->can_set_performance_state)
+> >                         return true;
+> >
+> >                 /*
+> > @@ -1594,6 +1575,8 @@ static int genpd_add_subdomain(struct generic_pm_domain *genpd,
+> >         if (genpd_status_on(subdomain))
+> >                 genpd_sd_counter_inc(genpd);
+> >
+> > +       subdomain->can_set_performance_state += genpd->can_set_performance_state;
+> > +
+> >   out:
+> >         genpd_unlock(genpd);
+> >         genpd_unlock(subdomain);
+> > @@ -1654,6 +1637,8 @@ int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
+> >                 if (genpd_status_on(subdomain))
+> >                         genpd_sd_counter_dec(genpd);
+> >
+> > +               subdomain->can_set_performance_state -= genpd->can_set_performance_state;
+> > +
+> >                 ret = 0;
+> >                 break;
+> >         }
+> > @@ -1721,6 +1706,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+> >         genpd->max_off_time_changed = true;
+> >         genpd->provider = NULL;
+> >         genpd->has_provider = false;
+> > +       genpd->can_set_performance_state = !!genpd->set_performance_state;
+> >         genpd->domain.ops.runtime_suspend = genpd_runtime_suspend;
+> >         genpd->domain.ops.runtime_resume = genpd_runtime_resume;
+> >         genpd->domain.ops.prepare = pm_genpd_prepare;
+> > diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+> > index bf90177208a2..995d0cb1bc14 100644
+> > --- a/include/linux/pm_domain.h
+> > +++ b/include/linux/pm_domain.h
+> > @@ -64,6 +64,7 @@ struct generic_pm_domain {
+> >         unsigned int suspended_count;   /* System suspend device counter */
+> >         unsigned int prepared_count;    /* Suspend counter of prepared devices */
+> >         unsigned int performance_state; /* Max requested performance state */
+> > +       unsigned int can_set_performance_state; /* Number of parent domains supporting set state */
+> >         int (*power_off)(struct generic_pm_domain *domain);
+> >         int (*power_on)(struct generic_pm_domain *domain);
+> >         int (*get_performance_state)(struct device *dev, unsigned long rate);
+> >
+> 
+> Yes!
+
+The above diff will work fine only for the case where the master
+domain has all its masters set properly before genpd_add_subdomain()
+is called for the subdomain, as the genpd->can_set_performance_state
+count wouldn't change after that. But if the masters of the
+master are linked to the master after genpd_add_subdomain() is called
+for the subdomain, then we wouldn't be update the
+subdomain->can_set_performance_state field later.
+
+For example, consider this scenario:
+
+               Domain A (has set_performance_state())
+
+       Domain B                Domain C        (both don't have set_performance_state())
+
+       Domain D                Domain E         (both don't have set_performance_state(), but have get_performance_state())
+
+
+and here is the call sequence:
+
+genpd_add_subdomain(B, D); can_set_performance_state of B and D = 0;
+genpd_add_subdomain(C, E); ... C and E = 0;
+genpd_add_subdomain(A, B); ... A = 1, B = 1;
+genpd_add_subdomain(A, C); ... A = 1, C = 1;
+
+While the count is set properly for A, B and C, it isn't propagated to
+C and E. :(
+
+Though everything would have worked fine if we had this sequence:
+
+genpd_add_subdomain(A, B); ... A = 1, B = 1;
+genpd_add_subdomain(A, C); ... A = 1, C = 1;
+genpd_add_subdomain(B, D); ... D = 1 ;
+genpd_add_subdomain(C, E); ... E = 1;
+
+How to fix it? I tried solving that by propagating the count to all
+the subdomains of the subdomain getting added here. But that requires
+locking and we can't do that in the reverse direction :(
+
+Anyway, genpd_has_set_performance_state() is supposed to be called
+only ONCE by the drivers and so its fine if we have to traverse the
+list of subdomains there.
+
+I will keep the original code unless you suggest a good way of getting
+around that.
+
+-- 
+viresh
