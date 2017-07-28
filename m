@@ -1,74 +1,137 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC][PATCH] thunderbolt: icm: Ignore mailbox errors in icm_suspend()
-Date: Fri, 28 Jul 2017 01:56:29 +0200
-Message-ID: <4219139.ZZxCFtAegj@aspire.rjw.lan>
-References: <4063610.TqANq0McE8@aspire.rjw.lan> <4165239.xHgWvuTePe@aspire.rjw.lan> <20170727085011.GY2369@lahna.fi.intel.com>
+Subject: [PATCH] cpufreq: x86: Make scaling_cur_freq behave more as expected
+Date: Fri, 28 Jul 2017 02:13:23 +0200
+Message-ID: <8753755.adRLzWASdR@aspire.rjw.lan>
+References: <1498281114-3868-1-git-send-email-lenb@kernel.org> <006201d30595$e0a23870$a1e6a950$@net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59071 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57119 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751584AbdG1AEb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 20:04:31 -0400
-In-Reply-To: <20170727085011.GY2369@lahna.fi.intel.com>
+        by vger.kernel.org with ESMTP id S1751755AbdG1AVZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Jul 2017 20:21:25 -0400
+In-Reply-To: <006201d30595$e0a23870$a1e6a950$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>, Michael Jamet <michael.jamet@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: x86@kernel.org, linux-pm@vger.kernel.org
+Cc: Doug Smythies <dsmythies@telus.net>, 'Len Brown' <lenb@kernel.org>, rafael@kernel.org, tglx@linutronix.de, srinivas.pandruvada@linux.intel.com, peterz@infradead.org, linux-kernel@vger.kernel.org, 'Len Brown' <len.brown@intel.com>
 
-On Thursday, July 27, 2017 11:50:11 AM Mika Westerberg wrote:
-> On Wed, Jul 26, 2017 at 07:05:01PM +0200, Rafael J. Wysocki wrote:
-> > On Wednesday, July 26, 2017 04:12:59 PM Mika Westerberg wrote:
-> > > On Wed, Jul 26, 2017 at 02:48:54PM +0200, Rafael J. Wysocki wrote:
-> > > > On Wednesday, July 26, 2017 11:32:44 AM Mika Westerberg wrote:
-> > > > > On Tue, Jul 25, 2017 at 06:10:57PM +0200, Rafael J. Wysocki wrote:
-> > > > > > On Tuesday, July 25, 2017 01:00:12 PM Mika Westerberg wrote:
-> > > > > > > On Tue, Jul 25, 2017 at 01:31:00AM +0200, Rafael J. Wysocki wrote:
-> > > > > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > > > > > 
-> > > > > > > > On one of my test machines nhi_mailbox_cmd() called from icm_suspend()
-> > > > > > > > times out and returnes an error which then is propagated to the
-> > > > > > > > caller and causes the entire system suspend to be aborted which isn't
-> > > > > > > > very useful.
-> > > > > > > > 
-> > > > > > > > Instead of aborting system suspend, print the error into the log
-> > > > > > > > and continue.
-> > > > > > > 
-> > > > > > > I agree, it should not prevent suspend but I wonder why it fails in the
-> > > > > > > first place? Can you check what is the return value?
-> > > > > > 
-> > > > > > As per the above, the error is a timeout, ie. -ETIMEDOUT.
-> > > > > 
-> > > > > Ah, right I somehow missed that.
-> > > > > 
-> > > > > Does it have Falcon Ridge controller or Alpine Ridge?
-> > > > 
-> > > > I'll check later today, but i guess you'll know (see below).
-> > > 
-> > > No need to check, it is Alpine Ridge (since it is Dell 9360).
-> > > 
-> > > > > Just to make sure, can you increase the timeout in nhi_mailbox_cmd()
-> > > > > to 1000ms or so. It should not take that long though but better to check.
-> > > > 
-> > > > Well, I can do that, but I don't think it will help.
-> > > > 
-> > > > It just looks like the chip is not responding at all at that point.
-> > > 
-> > > I see.
-> > > 
-> > > Then I think we should apply your patch now and we can investigate this
-> > > further offline and hopefully find the root cause for the problem.
-> > > 
-> > > For this patch:
-> > > 
-> > > Acked-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> > 
-> > OK
-> > 
-> > I guess I can apply it, then, or if anyone else in the CC wants to do that,
-> > please let me know.
-> 
-> Greg typically takes these but I'm fine either way.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-OK, applied then.
+After commit f8475cef9008 "x86: use common aperfmperf_khz_on_cpu() to
+calculate KHz using APERF/MPERF" the scaling_cur_freq policy attribute
+in sysfs only behaves as expected on x86 with APERF/MPERF registers
+available when it is read from at least twice in a row.
+
+The value returned by the first read may not be meaningful, because
+the computations in there use cached values from the previous
+aperfmperf_snapshot_khz() call which may be stale.  However, the
+interface is expected to return meaningful values on every read,
+including the first one.
+
+To address this problem modify arch_freq_get_on_cpu() to call
+aperfmperf_snapshot_khz() twice, with a short delay between
+these calls, if the previous invocation of aperfmperf_snapshot_khz()
+was too far back in the past (specifically, more that 1s ago) and
+adjust aperfmperf_snapshot_khz() for that.
+
+Fixes: f8475cef9008 "x86: use common aperfmperf_khz_on_cpu() to calculate KHz using APERF/MPERF"
+Reported-by: Doug Smythies <dsmythies@telus.net>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ arch/x86/kernel/cpu/aperfmperf.c |   36 +++++++++++++++++++++++++++++-------
+ 1 file changed, 29 insertions(+), 7 deletions(-)
+
+Index: linux-pm/arch/x86/kernel/cpu/aperfmperf.c
+===================================================================
+--- linux-pm.orig/arch/x86/kernel/cpu/aperfmperf.c
++++ linux-pm/arch/x86/kernel/cpu/aperfmperf.c
+@@ -8,20 +8,25 @@
+  * This file is licensed under GPLv2.
+  */
+ 
+-#include <linux/jiffies.h>
++#include <linux/delay.h>
++#include <linux/ktime.h>
+ #include <linux/math64.h>
+ #include <linux/percpu.h>
+ #include <linux/smp.h>
+ 
+ struct aperfmperf_sample {
+ 	unsigned int	khz;
+-	unsigned long	jiffies;
++	ktime_t	time;
+ 	u64	aperf;
+ 	u64	mperf;
+ };
+ 
+ static DEFINE_PER_CPU(struct aperfmperf_sample, samples);
+ 
++#define APERFMPERF_CACHE_THRESHOLD_MS	10
++#define APERFMPERF_REFRESH_DELAY_MS	20
++#define APERFMPERF_STALE_THRESHOLD_MS	1000
++
+ /*
+  * aperfmperf_snapshot_khz()
+  * On the current CPU, snapshot APERF, MPERF, and jiffies
+@@ -33,9 +38,11 @@ static void aperfmperf_snapshot_khz(void
+ 	u64 aperf, aperf_delta;
+ 	u64 mperf, mperf_delta;
+ 	struct aperfmperf_sample *s = this_cpu_ptr(&samples);
++	ktime_t now = ktime_get();
++	s64 time_delta = ktime_ms_delta(now, s->time);
+ 
+-	/* Don't bother re-computing within 10 ms */
+-	if (time_before(jiffies, s->jiffies + HZ/100))
++	/* Don't bother re-computing within the cache threshold time. */
++	if (time_delta < APERFMPERF_CACHE_THRESHOLD_MS)
+ 		return;
+ 
+ 	rdmsrl(MSR_IA32_APERF, aperf);
+@@ -51,6 +58,16 @@ static void aperfmperf_snapshot_khz(void
+ 	if (mperf_delta == 0)
+ 		return;
+ 
++	s->time = now;
++	s->aperf = aperf;
++	s->mperf = mperf;
++
++	/* If the previous iteration was too long ago, discard it. */
++	if (time_delta > APERFMPERF_STALE_THRESHOLD_MS) {
++		s->khz = 0;
++		return;
++	}
++
+ 	/*
+ 	 * if (cpu_khz * aperf_delta) fits into ULLONG_MAX, then
+ 	 *	khz = (cpu_khz * aperf_delta) / mperf_delta
+@@ -60,13 +77,12 @@ static void aperfmperf_snapshot_khz(void
+ 	else	/* khz = aperf_delta / (mperf_delta / cpu_khz) */
+ 		s->khz = div64_u64(aperf_delta,
+ 			div64_u64(mperf_delta, cpu_khz));
+-	s->jiffies = jiffies;
+-	s->aperf = aperf;
+-	s->mperf = mperf;
+ }
+ 
+ unsigned int arch_freq_get_on_cpu(int cpu)
+ {
++	unsigned int khz;
++
+ 	if (!cpu_khz)
+ 		return 0;
+ 
+@@ -74,6 +90,12 @@ unsigned int arch_freq_get_on_cpu(int cp
+ 		return 0;
+ 
+ 	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, 1);
++	khz = per_cpu(samples.khz, cpu);
++	if (khz)
++		return khz;
++
++	msleep(APERFMPERF_REFRESH_DELAY_MS);
++	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, 1);
+ 
+ 	return per_cpu(samples.khz, cpu);
+ }
