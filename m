@@ -1,83 +1,198 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V5 2/2] cpufreq: Process remote callbacks from any CPU if the platform permits
-Date: Fri, 28 Jul 2017 12:16:39 +0530
-Message-ID: <c121a20eff05565155852c070e83504bf117da3e.1501223897.git.viresh.kumar@linaro.org>
-References: <cover.1501223897.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1501223897.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1501223897.git.viresh.kumar@linaro.org>
-References: <cover.1501223897.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org, skannan@codeaurora.org, joelaf@google.com, linux-kernel@vger.kernel.org
+From: Alex Shi <alex.shi@linaro.org>
+Subject: [PATCH] cpu_pm: replace raw_notifier to atomic_notifier
+Date: Fri, 28 Jul 2017 15:09:25 +0800
+Message-ID: <1501225765-16869-1-git-send-email-alex.shi@linaro.org>
+Return-path: <linux-rt-users-owner@vger.kernel.org>
+Sender: linux-rt-users-owner@vger.kernel.org
+To: rafael@kernel.org, open list <linux-kernel@vger.kernel.org>
+Cc: Alex Shi <alex.shi@linaro.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, Thomas Gleixner <tglx@linutronix.de>, Anders Roxell <anders.roxell@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, linux-rt-users <linux-rt-users@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On many platforms, CPUs can do DVFS across cpufreq policies. i.e CPU
-from policy-A can change frequency of CPUs belonging to policy-B.
+This patch replace a rwlock and raw notifier by atomic notifier which
+protected by spin_lock and rcu.
 
-This is quite common in case of ARM platforms where we don't
-configure any per-cpu register.
+The first to reason to have this replace is due to a 'scheduling while
+ atomic' bug of RT kernel on arm/arm64 platform. On arm/arm64, rwlock
+cpu_pm_notifier_lock in cpu_pm cause a potential schedule after irq
+disable in idle call chain:
 
-Add a flag to identify such platforms and update
-cpufreq_can_do_remote_dvfs() to allow remote callbacks if this flag is
-set.
+cpu_startup_entry
+  cpu_idle_loop
+    local_irq_disable()
+    cpuidle_idle_call
+      call_cpuidle
+        cpuidle_enter
+          cpuidle_enter_state
+            ->enter :arm_enter_idle_state
+              cpu_pm_enter/exit
+                CPU_PM_CPU_IDLE_ENTER
+                  read_lock(&cpu_pm_notifier_lock); <-- sleep in idle
+                     __rt_spin_lock();
+                        schedule();
 
-Also enable the flag for cpufreq-dt driver which is used only on ARM
-platforms currently.
+The kernel panic is here:
+[    4.609601] BUG: scheduling while atomic: swapper/1/0/0x00000002
+[    4.609608] [<ffff0000086fae70>] arm_enter_idle_state+0x18/0x70
+[    4.609614] Modules linked in:
+[    4.609615] [<ffff0000086f9298>] cpuidle_enter_state+0xf0/0x218
+[    4.609620] [<ffff0000086f93f8>] cpuidle_enter+0x18/0x20
+[    4.609626] Preemption disabled at:
+[    4.609627] [<ffff0000080fa234>] call_cpuidle+0x24/0x40
+[    4.609635] [<ffff000008882fa4>] schedule_preempt_disabled+0x1c/0x28
+[    4.609639] [<ffff0000080fa49c>] cpu_startup_entry+0x154/0x1f8
+[    4.609645] [<ffff00000808e004>] secondary_start_kernel+0x15c/0x1a0
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Daniel Lezcano said this notification is needed on arm/arm64 platforms.
+Sebastian suggested using atomic_notifier instead of rwlock, which is not
+only removing the sleeping in idle, but also getting better latency
+improvement.
+
+Tony Lindgren found a miss use that rcu_read_lock used after rcu_idle_enter
+Paul E. McKenney suggested trying RCU_NONIDLE.
+
+Thanks everyone! :)
+
+This patch passed Fengguang's 0day testing.
+
+Signed-off-by: Alex Shi <alex.shi@linaro.org>
+Tested-by: Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Anders Roxell <anders.roxell@linaro.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Rafael J. Wysocki <rafael@kernel.org>
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-rt-users <linux-rt-users@vger.kernel.org>
+Acked-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- drivers/cpufreq/cpufreq-dt.c |  1 +
- include/linux/cpufreq.h      | 18 ++++++++++++++++--
- 2 files changed, 17 insertions(+), 2 deletions(-)
+ kernel/cpu_pm.c | 50 +++++++++++++-------------------------------------
+ 1 file changed, 13 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index fef3c2160691..d83ab94d041a 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -274,6 +274,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 		transition_latency = CPUFREQ_ETERNAL;
+diff --git a/kernel/cpu_pm.c b/kernel/cpu_pm.c
+index 009cc9a..67b02e1 100644
+--- a/kernel/cpu_pm.c
++++ b/kernel/cpu_pm.c
+@@ -22,15 +22,21 @@
+ #include <linux/spinlock.h>
+ #include <linux/syscore_ops.h>
  
- 	policy->cpuinfo.transition_latency = transition_latency;
-+	policy->dvfs_possible_from_any_cpu = true;
+-static DEFINE_RWLOCK(cpu_pm_notifier_lock);
+-static RAW_NOTIFIER_HEAD(cpu_pm_notifier_chain);
++static ATOMIC_NOTIFIER_HEAD(cpu_pm_notifier_chain);
  
- 	return 0;
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index b3b6e8203e82..227cd0f13300 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -127,6 +127,15 @@ struct cpufreq_policy {
- 	 */
- 	unsigned int		transition_delay_us;
- 
-+	/*
-+	 * Remote DVFS flag (Not added to the driver structure as we don't want
-+	 * to access another structure from scheduler hotpath).
-+	 *
-+	 * Should be set if CPUs can do DVFS on behalf of other CPUs from
-+	 * different cpufreq policies.
-+	 */
-+	bool			dvfs_possible_from_any_cpu;
-+
- 	 /* Cached frequency lookup from cpufreq_driver_resolve_freq. */
- 	unsigned int cached_target_freq;
- 	int cached_resolved_idx;
-@@ -564,8 +573,13 @@ struct governor_attr {
- 
- static inline bool cpufreq_can_do_remote_dvfs(struct cpufreq_policy *policy)
+ static int cpu_pm_notify(enum cpu_pm_event event, int nr_to_call, int *nr_calls)
  {
--	/* Allow remote callbacks only on the CPUs sharing cpufreq policy */
--	if (cpumask_test_cpu(smp_processor_id(), policy->cpus))
-+	/*
-+	 * Allow remote callbacks if:
-+	 * - dvfs_possible_from_any_cpu flag is set
-+	 * - the local and remote CPUs share cpufreq policy
-+	 */
-+	if (policy->dvfs_possible_from_any_cpu ||
-+	    cpumask_test_cpu(smp_processor_id(), policy->cpus))
- 		return true;
+ 	int ret;
  
- 	return false;
+-	ret = __raw_notifier_call_chain(&cpu_pm_notifier_chain, event, NULL,
++	/*
++	 * __atomic_notifier_call_chain has a RCU read critical section, which
++	 * could be disfunctional in cpu idle. Copy RCU_NONIDLE code to let
++	 * RCU know this.
++	 */
++	rcu_irq_enter_irqson();
++	ret = __atomic_notifier_call_chain(&cpu_pm_notifier_chain, event, NULL,
+ 		nr_to_call, nr_calls);
++	rcu_irq_exit_irqson();
+ 
+ 	return notifier_to_errno(ret);
+ }
+@@ -47,14 +53,7 @@ static int cpu_pm_notify(enum cpu_pm_event event, int nr_to_call, int *nr_calls)
+  */
+ int cpu_pm_register_notifier(struct notifier_block *nb)
+ {
+-	unsigned long flags;
+-	int ret;
+-
+-	write_lock_irqsave(&cpu_pm_notifier_lock, flags);
+-	ret = raw_notifier_chain_register(&cpu_pm_notifier_chain, nb);
+-	write_unlock_irqrestore(&cpu_pm_notifier_lock, flags);
+-
+-	return ret;
++	return atomic_notifier_chain_register(&cpu_pm_notifier_chain, nb);
+ }
+ EXPORT_SYMBOL_GPL(cpu_pm_register_notifier);
+ 
+@@ -69,14 +68,7 @@ EXPORT_SYMBOL_GPL(cpu_pm_register_notifier);
+  */
+ int cpu_pm_unregister_notifier(struct notifier_block *nb)
+ {
+-	unsigned long flags;
+-	int ret;
+-
+-	write_lock_irqsave(&cpu_pm_notifier_lock, flags);
+-	ret = raw_notifier_chain_unregister(&cpu_pm_notifier_chain, nb);
+-	write_unlock_irqrestore(&cpu_pm_notifier_lock, flags);
+-
+-	return ret;
++	return atomic_notifier_chain_unregister(&cpu_pm_notifier_chain, nb);
+ }
+ EXPORT_SYMBOL_GPL(cpu_pm_unregister_notifier);
+ 
+@@ -100,7 +92,6 @@ int cpu_pm_enter(void)
+ 	int nr_calls;
+ 	int ret = 0;
+ 
+-	read_lock(&cpu_pm_notifier_lock);
+ 	ret = cpu_pm_notify(CPU_PM_ENTER, -1, &nr_calls);
+ 	if (ret)
+ 		/*
+@@ -108,7 +99,6 @@ int cpu_pm_enter(void)
+ 		 * PM entry who are notified earlier to prepare for it.
+ 		 */
+ 		cpu_pm_notify(CPU_PM_ENTER_FAILED, nr_calls - 1, NULL);
+-	read_unlock(&cpu_pm_notifier_lock);
+ 
+ 	return ret;
+ }
+@@ -128,13 +118,7 @@ EXPORT_SYMBOL_GPL(cpu_pm_enter);
+  */
+ int cpu_pm_exit(void)
+ {
+-	int ret;
+-
+-	read_lock(&cpu_pm_notifier_lock);
+-	ret = cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
+-	read_unlock(&cpu_pm_notifier_lock);
+-
+-	return ret;
++	return cpu_pm_notify(CPU_PM_EXIT, -1, NULL);
+ }
+ EXPORT_SYMBOL_GPL(cpu_pm_exit);
+ 
+@@ -159,7 +143,6 @@ int cpu_cluster_pm_enter(void)
+ 	int nr_calls;
+ 	int ret = 0;
+ 
+-	read_lock(&cpu_pm_notifier_lock);
+ 	ret = cpu_pm_notify(CPU_CLUSTER_PM_ENTER, -1, &nr_calls);
+ 	if (ret)
+ 		/*
+@@ -167,7 +150,6 @@ int cpu_cluster_pm_enter(void)
+ 		 * PM entry who are notified earlier to prepare for it.
+ 		 */
+ 		cpu_pm_notify(CPU_CLUSTER_PM_ENTER_FAILED, nr_calls - 1, NULL);
+-	read_unlock(&cpu_pm_notifier_lock);
+ 
+ 	return ret;
+ }
+@@ -190,13 +172,7 @@ EXPORT_SYMBOL_GPL(cpu_cluster_pm_enter);
+  */
+ int cpu_cluster_pm_exit(void)
+ {
+-	int ret;
+-
+-	read_lock(&cpu_pm_notifier_lock);
+-	ret = cpu_pm_notify(CPU_CLUSTER_PM_EXIT, -1, NULL);
+-	read_unlock(&cpu_pm_notifier_lock);
+-
+-	return ret;
++	return cpu_pm_notify(CPU_CLUSTER_PM_EXIT, -1, NULL);
+ }
+ EXPORT_SYMBOL_GPL(cpu_cluster_pm_exit);
+ 
 -- 
-2.13.0.71.gd7076ec9c9cb
+2.7.4
+
