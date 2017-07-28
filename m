@@ -1,75 +1,91 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH] PM / Domains: Ensure genpd name is set before creating
- debugfs entry
-Date: Fri, 28 Jul 2017 13:55:35 -0500
-Message-ID: <7c1b9c08-4b54-78ec-98da-ae10abd63dc7@ti.com>
-References: <20170728184818.1306-1-d-gerlach@ti.com>
+From: Saravana Kannan <skannan@codeaurora.org>
+Subject: Re: [Eas-dev] [PATCH V3 1/3] sched: cpufreq: Allow remote cpufreq
+ callbacks
+Date: Fri, 28 Jul 2017 14:05:39 -0700
+Message-ID: <597BA723.1060908@codeaurora.org>
+References: <cover.1499927699.git.viresh.kumar@linaro.org> <0f950529a63fb95e87944644c4854be4fcfaea38.1499927699.git.viresh.kumar@linaro.org> <20170721130349.mv7soic62jdnirq5@hirez.programming.kicks-ass.net> <597902DA.8060608@codeaurora.org> <20170727033059.GD352@vireshk-i7> <597A452C.7000303@codeaurora.org> <20170728060054.GU352@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx209.ext.ti.com ([198.47.19.16]:39625 "EHLO
-        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752236AbdG1S40 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2017 14:56:26 -0400
-In-Reply-To: <20170728184818.1306-1-d-gerlach@ti.com>
+Received: from smtp.codeaurora.org ([198.145.29.96]:38052 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752623AbdG1VFl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2017 17:05:41 -0400
+In-Reply-To: <20170728060054.GU352@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Thara Gopinath <thara.gopinath@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: eas-dev@lists.linaro.org, linux-pm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, smuckle.linux@gmail.com, Len Brown <lenb@kernel.org>
 
-Hi,
-On 07/28/2017 01:48 PM, Dave Gerlach wrote:
-> Commit b6a1d093f96b ("PM / Domains: Extend generic power domain
-> debugfs") extends the existing generic power domain debugfs to provide
-> more information about each genpd, however it creates a debugfs
-> directory for each based on the name of the genpd. While it is a good
-> idea to populate the name field of each genpd, up until this commit it
-> was not required. However, attempting to call debugfs_create_dir with a
-> null name value causes a NULL pointer dereference panic.
-> 
-> In order to keep things working as they did before the aforementioned
-> patch, check to see if name has been populated and if not, skip creating
-> the extended debugfs info path and warn that name is needed to get this
-> extended info.
-> 
-> Fixes: b6a1d093f96b ("PM / Domains: Extend generic power domain debugfs")
-> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
-> ---
+On 07/27/2017 11:00 PM, Viresh Kumar wrote:
+> On 27-07-17, 12:55, Saravana Kannan wrote:
+>> Yes. Simplifying isn't always about number of lines of code. It's also about
+>> abstraction. Having generic scheduler code care about HW details doesn't
+>> seem nice.
+>
+> I can argue that even the policy->cpus field is also hardware
+> specific, isn't it ?
 
-As changelog describes, commit b6a1d093f96b ("PM / Domains: Extend generic power
-domain debugfs") currently causes a NULL pointer dereference panic if no name is
-assigned for a struct generic_pm_domain registered with the framework. Before
-this patch no name was required, so this patch is a first attempt to keep things
-that way and just warn the user that they can't get extended debugfs info
-without providing a genpd name.
+Yes.
+> And we are using that in the schedutil governor
+> anyway.
+Yes
 
-Of course a name is always a good idea, so I'm not sure if this patch is how we
-want to go about preventing this panic or perhaps just making the name mandatory
-and checking during probe, but I figured I'd kick the discussion off with a
-suggestion by sending this patch.
+> What's wrong with having another field (in a generic way) in
+> the same structure that tells us more about hardware ?
 
-Regards,
-Dave
+Nothing wrong. I'm not saying you shouldn't have the cpu field in the 
+data or as a parameter to the hook. You'll definitely need that.
 
->  drivers/base/power/domain.c | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index 43fd08e50ae9..77f7ea6f7fc3 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -2575,6 +2575,12 @@ static int __init pm_genpd_debug_init(void)
->  		return -ENOMEM;
->  
->  	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
-> +		if (!genpd->name) {
-> +			pr_warn("%s: Must populate name of genpd for extended debugfs info.",
-> +				__func__);
-> +			continue;
-> +		}
-> +
->  		d = debugfs_create_dir(genpd->name, pm_genpd_debugfs_dir);
->  		if (!d)
->  			return -ENOMEM;
-> 
+> And then schedutil isn't really scheduler, but a cpufreq governor.
+> Just like ondemand/conservative, which are also called from the same
+> scheduler path.
+
+Exactly. I never debated anything about schedutil. I'm just saying don't 
+have any CPU limitations or check on the scheduler side when sending 
+notification. Scheduler shouldn't have to know/care of the driver can 
+only set the freq on that CPU or across CPUs in a cluster or across the 
+entire system.
+
+>> It'll literally one simple check (cpu == smp_processor_id()) or (cpu "in"
+>> policy->cpus).
+>>
+>> Also, this is only for drivers that currently support fast switching. How
+>> many of those do you have?
+>
+> Why? Why shouldn't we do that for the other drivers? I think it should
+> be done across everyone.
+
+Because if I remember it right, the "don't send the notification if it's 
+not the same CPU" limitation is only for the fast switching case?  I 
+might be mistaken about this part though.
+
+>>> The core already has most of the data required and I believe that we
+>>> need to handle it in the governor's code as is handled in this series.
+>>
+>> Clearly, it doesn't. You are just making assumptions about HW.
+>
+> So assuming that any CPU from a policy can change freq on behalf of
+> all the CPUs of the same policy is wrong? That is the basis of how the
+> cpufreq core is designed.
+
+1. I'm not saying that. I'm saying assuming CPUs can change the freq 
+only on behalf of all the CPUs in the same policy is wrong. Again, the 
+scheduler or governor shouldn't even be making any of that assumption. 
+That's a CPUfreq driver problem.
+
+2. No, that is not the basis of the entire cpufreq core design. None of 
+the existing CPUfreq code has any assumptions that only CPUs in a policy 
+can change their frequency. It doesn't break in any way in system where 
+any CPU can change any other CPU's frequency -- all Qualcomm chips are 
+like that. It's only the recent scheduler notifier changes that are 
+adding this additional limitation and breaking stuff for systems where 
+any CPU can change any other CPU's frequency.
+
+-Saravana
+
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
