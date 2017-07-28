@@ -1,60 +1,100 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 04/10] cpufreq: dt: invoke frequency-invariance setter
- function
-Date: Fri, 28 Jul 2017 13:55:37 +0530
-Message-ID: <20170728082537.GB352@vireshk-i7>
+Subject: Re: [PATCH v3 05/10] drivers base/arch_topology: provide
+ frequency-invariant accounting support
+Date: Fri, 28 Jul 2017 13:56:42 +0530
+Message-ID: <20170728082642.GC352@vireshk-i7>
 References: <20170727193312.9849-1-dietmar.eggemann@arm.com>
- <20170727193312.9849-5-dietmar.eggemann@arm.com>
+ <20170727193312.9849-6-dietmar.eggemann@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f49.google.com ([74.125.83.49]:33538 "EHLO
-        mail-pg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751796AbdG1IZk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2017 04:25:40 -0400
-Received: by mail-pg0-f49.google.com with SMTP id c14so15890867pgn.0
-        for <linux-pm@vger.kernel.org>; Fri, 28 Jul 2017 01:25:39 -0700 (PDT)
+Received: from mail-pg0-f41.google.com ([74.125.83.41]:37604 "EHLO
+        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751554AbdG1I0p (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Jul 2017 04:26:45 -0400
+Received: by mail-pg0-f41.google.com with SMTP id y129so108386530pgy.4
+        for <linux-pm@vger.kernel.org>; Fri, 28 Jul 2017 01:26:45 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20170727193312.9849-5-dietmar.eggemann@arm.com>
+In-Reply-To: <20170727193312.9849-6-dietmar.eggemann@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
 
 On 27-07-17, 20:33, Dietmar Eggemann wrote:
-> Call the frequency-invariance setter function arch_set_freq_scale()
-> if the new frequency has been successfully set which is indicated by
-> dev_pm_opp_set_rate() returning 0.
+> Implements the arch-specific (arm and arm64) frequency-invariance setter
+> function arch_set_freq_scale() which provides the following frequency
+> scaling factor:
 > 
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>   current_freq(cpu) << SCHED_CAPACITY_SHIFT / max_supported_freq(cpu)
+> 
+> One possible consumer of the frequency-invariance getter function
+> topology_get_freq_scale() is the Per-Entity Load Tracking (PELT)
+> mechanism of the task scheduler.
+> 
+> Allow inlining of topology_get_freq_scale() into the task scheduler
+> fast path (e.g. __update_load_avg_se()) by coding it as a static inline
+> function in the arch topology header file.
+> 
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Juri Lelli <juri.lelli@arm.com>
 > Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 > ---
->  drivers/cpufreq/cpufreq-dt.c | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
+>  drivers/base/arch_topology.c  | 14 ++++++++++++++
+>  include/linux/arch_topology.h | 10 ++++++++++
+>  2 files changed, 24 insertions(+)
 > 
-> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> index fef3c2160691..cbac8a7dbc50 100644
-> --- a/drivers/cpufreq/cpufreq-dt.c
-> +++ b/drivers/cpufreq/cpufreq-dt.c
-> @@ -43,9 +43,17 @@ static struct freq_attr *cpufreq_dt_attr[] = {
->  static int set_target(struct cpufreq_policy *policy, unsigned int index)
->  {
->  	struct private_data *priv = policy->driver_data;
-> +	unsigned long freq = policy->freq_table[index].frequency;
-> +	int ret;
-> +
-> +	ret = dev_pm_opp_set_rate(priv->cpu_dev, freq * 1000);
+> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+> index 562e0c93ae52..af9ab98a233e 100644
+> --- a/drivers/base/arch_topology.c
+> +++ b/drivers/base/arch_topology.c
+> @@ -22,6 +22,20 @@
+>  #include <linux/string.h>
+>  #include <linux/sched/topology.h>
 >  
-> -	return dev_pm_opp_set_rate(priv->cpu_dev,
-> -				   policy->freq_table[index].frequency * 1000);
-> +	if (!ret) {
-> +		arch_set_freq_scale(policy->related_cpus, freq,
-> +				    policy->cpuinfo.max_freq);
-> +	}
+> +DEFINE_PER_CPU(unsigned long, freq_scale) = SCHED_CAPACITY_SCALE;
 > +
-> +	return ret;
->  }
+> +void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
+> +			 unsigned long max_freq)
+> +{
+> +	unsigned long scale;
+> +	int i;
+> +
+> +	scale = (cur_freq << SCHED_CAPACITY_SHIFT) / max_freq;
+> +
+> +	for_each_cpu(i, cpus)
+> +		per_cpu(freq_scale, i) = scale;
+> +}
+> +
+>  static DEFINE_MUTEX(cpu_scale_mutex);
+>  static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
+>  
+> diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
+> index 9af3c174c03a..3e3c2657c9a1 100644
+> --- a/include/linux/arch_topology.h
+> +++ b/include/linux/arch_topology.h
+> @@ -4,6 +4,8 @@
+>  #ifndef _LINUX_ARCH_TOPOLOGY_H_
+>  #define _LINUX_ARCH_TOPOLOGY_H_
+>  
+> +#include <linux/percpu.h>
+> +
+>  void topology_normalize_cpu_scale(void);
+>  
+>  struct device_node;
+> @@ -14,4 +16,12 @@ unsigned long topology_get_cpu_scale(struct sched_domain *sd, int cpu);
+>  
+>  void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
+>  
+> +DECLARE_PER_CPU(unsigned long, freq_scale);
+> +
+> +static inline
+> +unsigned long topology_get_freq_scale(struct sched_domain *sd, int cpu)
+> +{
+> +	return per_cpu(freq_scale, cpu);
+> +}
+> +
+>  #endif /* _LINUX_ARCH_TOPOLOGY_H_ */
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
