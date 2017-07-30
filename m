@@ -1,63 +1,49 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] thermal: intel_pch_thermal: Read large temp values
- correctly
-Date: Sat, 29 Jul 2017 12:28:28 -0700
-Message-ID: <1501356508.3479.3.camel@linux.intel.com>
-References: <1500511651-52403-1-git-send-email-eswierk@skyportsystems.com>
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Subject: Re: [PATCH RESEND] tools/power/cpupower: allow running without cpu0
+Date: Sun, 30 Jul 2017 15:21:19 +0200
+Message-ID: <f8277612-9dd7-d5d1-9586-d1054b784db1@intel.com>
+References: <1478871719-30660-1-git-send-email-prarit@redhat.com>
+ <ca8bce98-611a-27df-6bd8-330c593f76d0@redhat.com>
+ <3083768.QHHqEAixeY@skinner>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:40207 "EHLO mga01.intel.com"
+Received: from mga09.intel.com ([134.134.136.24]:9673 "EHLO mga09.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751444AbdG2T2z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 29 Jul 2017 15:28:55 -0400
-In-Reply-To: <1500511651-52403-1-git-send-email-eswierk@skyportsystems.com>
+        id S1750988AbdG3NVY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 30 Jul 2017 09:21:24 -0400
+In-Reply-To: <3083768.QHHqEAixeY@skinner>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ed Swierk <eswierk@skyportsystems.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Thomas Renninger <trenn@suse.de>, Prarit Bhargava <prarit@redhat.com>
+Cc: linux-pm@vger.kernel.org, ego.lkml@gmail.com, s1seetee@linux.vnet.ibm.com
 
-On Wed, 2017-07-19 at 17:47 -0700, Ed Swierk wrote:
-> On all supported platforms, the TS Reading (TSR) field in the
-> Temperature (TEMP) register is 9 bits wide. Values above 0x100 (78
-> degrees C) are plausible, so don't mask out the topmost bit. And the
-> register itself is 16 bits wide, so use readw() rather than readl().
-> 
-> Signed-off-by: Ed Swierk <eswierk@skyportsystems.com>
-Reviewed-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+On 7/28/2017 3:46 PM, Thomas Renninger wrote:
+> On Monday, July 17, 2017 11:23:19 AM Prarit Bhargava wrote:
+>> ping?  Thomas?  Rafael?
+>>
+>> ... patch still applies.
+>>
+> This one slipped through, sorry.
+>
+> Looks nice. There has been a more complex output varying
+> patch submitted recently:
+>
+> [PATCH] Fix header-name to read full state name and adjust column width
+>
+> Let me play with this one next week and I'll try to queue up both
+> if it make sense.
+>
+>       Thomas
+>
+> PS: Yours look fine and can get my signed off:
+>
+> Signed-off-by: Thomas Renninger <trenn@suse.com>
+>
+> if someone likes to pick it up already or if it should
+> get re-submitted.
 
-> ---
->  drivers/thermal/intel_pch_thermal.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/thermal/intel_pch_thermal.c
-> b/drivers/thermal/intel_pch_thermal.c
-> index 9889c90..318fc1b 100644
-> --- a/drivers/thermal/intel_pch_thermal.c
-> +++ b/drivers/thermal/intel_pch_thermal.c
-> @@ -49,7 +49,7 @@
->  #define WPT_TSGPEN	0x84	/* General Purpose Event
-> Enables */
->  
->  /*  Wildcat Point-LP  PCH Thermal Register bit definitions */
-> -#define WPT_TEMP_TSR	0x00ff	/* Temp TS Reading */
-> +#define WPT_TEMP_TSR	0x01ff	/* Temp TS Reading */
->  #define WPT_TSC_CPDE	0x01	/* Catastrophic Power-Down
-> Enable */
->  #define WPT_TSS_TSDSS	0x10	/* Thermal Sensor Dynamic
-> Shutdown Status */
->  #define WPT_TSS_GPES	0x08	/* GPE status */
-> @@ -174,9 +174,9 @@ static int pch_wpt_init(struct pch_thermal_device
-> *ptd, int *nr_trips)
->  
->  static int pch_wpt_get_temp(struct pch_thermal_device *ptd, int
-> *temp)
->  {
-> -	u8 wpt_temp;
-> +	u16 wpt_temp;
->  
-> -	wpt_temp = WPT_TEMP_TSR & readl(ptd->hw_base + WPT_TEMP);
-> +	wpt_temp = WPT_TEMP_TSR & readw(ptd->hw_base + WPT_TEMP);
->  
->  	/* Resolution of 1/2 degree C and an offset of -50C */
->  	*temp = (wpt_temp * 1000 / 2 - 50000);
+
+Prarit, can you resend the patch, please?
