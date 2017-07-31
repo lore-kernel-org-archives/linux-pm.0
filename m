@@ -1,100 +1,123 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH V5 2/2] cpufreq: Process remote callbacks from any CPU
- if the platform permits
-Date: Mon, 31 Jul 2017 14:20:18 -0700
-Message-ID: <597F9F12.4000304@codeaurora.org>
-References: <cover.1501223897.git.viresh.kumar@linaro.org> <c121a20eff05565155852c070e83504bf117da3e.1501223897.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] ACPI / PM: Prefer suspend-to-idle over S3 on some systems
+Date: Mon, 31 Jul 2017 23:43:18 +0200
+Message-ID: <3043895.8nuHiCWbDe@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:48284 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751296AbdGaVUU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Jul 2017 17:20:20 -0400
-In-Reply-To: <c121a20eff05565155852c070e83504bf117da3e.1501223897.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mario Limonciello <mario_limonciello@dell.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org, joelaf@google.com, linux-kernel@vger.kernel.org
 
-On 07/27/2017 11:46 PM, Viresh Kumar wrote:
-> On many platforms, CPUs can do DVFS across cpufreq policies. i.e CPU
-> from policy-A can change frequency of CPUs belonging to policy-B.
->
-> This is quite common in case of ARM platforms where we don't
-> configure any per-cpu register.
->
-> Add a flag to identify such platforms and update
-> cpufreq_can_do_remote_dvfs() to allow remote callbacks if this flag is
-> set.
->
-> Also enable the flag for cpufreq-dt driver which is used only on ARM
-> platforms currently.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->   drivers/cpufreq/cpufreq-dt.c |  1 +
->   include/linux/cpufreq.h      | 18 ++++++++++++++++--
->   2 files changed, 17 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-> index fef3c2160691..d83ab94d041a 100644
-> --- a/drivers/cpufreq/cpufreq-dt.c
-> +++ b/drivers/cpufreq/cpufreq-dt.c
-> @@ -274,6 +274,7 @@ static int cpufreq_init(struct cpufreq_policy *policy)
->   		transition_latency = CPUFREQ_ETERNAL;
->
->   	policy->cpuinfo.transition_latency = transition_latency;
-> +	policy->dvfs_possible_from_any_cpu = true;
->
->   	return 0;
->
-> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-> index b3b6e8203e82..227cd0f13300 100644
-> --- a/include/linux/cpufreq.h
-> +++ b/include/linux/cpufreq.h
-> @@ -127,6 +127,15 @@ struct cpufreq_policy {
->   	 */
->   	unsigned int		transition_delay_us;
->
-> +	/*
-> +	 * Remote DVFS flag (Not added to the driver structure as we don't want
-> +	 * to access another structure from scheduler hotpath).
-> +	 *
-> +	 * Should be set if CPUs can do DVFS on behalf of other CPUs from
-> +	 * different cpufreq policies.
-> +	 */
-> +	bool			dvfs_possible_from_any_cpu;
-> +
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Seems reasonable. This is something that can be easily set by the driver.
+Modify the ACPI system sleep support setup code to select
+suspend-to-idle as the default system sleep state if
+(1) the ACPI_FADT_LOW_POWER_S0 flag is set in the FADT and
+(2) the Low Power Idle S0 _DSM interface has been discovered and
+(3) the default sleep state was not selected from the kernel command
+line.
 
->   	 /* Cached frequency lookup from cpufreq_driver_resolve_freq. */
->   	unsigned int cached_target_freq;
->   	int cached_resolved_idx;
-> @@ -564,8 +573,13 @@ struct governor_attr {
->
->   static inline bool cpufreq_can_do_remote_dvfs(struct cpufreq_policy *policy)
->   {
-> -	/* Allow remote callbacks only on the CPUs sharing cpufreq policy */
-> -	if (cpumask_test_cpu(smp_processor_id(), policy->cpus))
-> +	/*
-> +	 * Allow remote callbacks if:
-> +	 * - dvfs_possible_from_any_cpu flag is set
-> +	 * - the local and remote CPUs share cpufreq policy
-> +	 */
-> +	if (policy->dvfs_possible_from_any_cpu ||
-> +	    cpumask_test_cpu(smp_processor_id(), policy->cpus))
->   		return true;
->
->   	return false;
->
+The main motivation for this change is that systems where the (1) and
+(2) conditions are met typically ship with OSes that don't exercise
+the S3 path in the platform firmware which remains untested and turns
+out to be non-functional at least in some cases.
 
-Acked-by: Saravana Kannan <skannan@codeaurora.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
+This patch depends on the intel-hid change at
 
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+https://patchwork.kernel.org/patch/9867703/
+
+---
+ Documentation/power/states.txt |    4 +++-
+ drivers/acpi/sleep.c           |    6 ++++++
+ include/linux/suspend.h        |    3 +++
+ kernel/power/power.h           |    1 -
+ kernel/power/suspend.c         |    4 ++--
+ 5 files changed, 14 insertions(+), 4 deletions(-)
+
+Index: linux-pm/Documentation/power/states.txt
+===================================================================
+--- linux-pm.orig/Documentation/power/states.txt
++++ linux-pm/Documentation/power/states.txt
+@@ -35,7 +35,9 @@ only one way to cause the system to go i
+ The default suspend mode (ie. the one to be used without writing anything into
+ /sys/power/mem_sleep) is either "deep" (if Suspend-To-RAM is supported) or
+ "s2idle", but it can be overridden by the value of the "mem_sleep_default"
+-parameter in the kernel command line.
++parameter in the kernel command line.  On some ACPI-based systems, depending on
++the information in the FADT, the default may be "s2idle" even if Suspend-To-RAM
++is supported.
+ 
+ The properties of all of the sleep states are described below.
+ 
+Index: linux-pm/drivers/acpi/sleep.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -714,6 +714,12 @@ static int lps0_device_attach(struct acp
+ 		if ((bitmask & ACPI_S2IDLE_FUNC_MASK) == ACPI_S2IDLE_FUNC_MASK) {
+ 			lps0_dsm_func_mask = bitmask;
+ 			lps0_device_handle = adev->handle;
++			/*
++			 * Use suspend-to-idle by default if the default
++			 * suspend mode was not set from the command line.
++			 */
++			if (mem_sleep_default > PM_SUSPEND_MEM)
++				mem_sleep_current = PM_SUSPEND_FREEZE;
+ 		}
+ 
+ 		acpi_handle_debug(adev->handle, "_DSM function mask: 0x%x\n",
+Index: linux-pm/include/linux/suspend.h
+===================================================================
+--- linux-pm.orig/include/linux/suspend.h
++++ linux-pm/include/linux/suspend.h
+@@ -196,6 +196,9 @@ struct platform_freeze_ops {
+ };
+ 
+ #ifdef CONFIG_SUSPEND
++extern suspend_state_t mem_sleep_current;
++extern suspend_state_t mem_sleep_default;
++
+ /**
+  * suspend_set_ops - set platform dependent suspend operations
+  * @ops: The new suspend operations to set.
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -48,7 +48,7 @@ static const char * const mem_sleep_labe
+ const char *mem_sleep_states[PM_SUSPEND_MAX];
+ 
+ suspend_state_t mem_sleep_current = PM_SUSPEND_FREEZE;
+-static suspend_state_t mem_sleep_default = PM_SUSPEND_MEM;
++suspend_state_t mem_sleep_default = PM_SUSPEND_MAX;
+ suspend_state_t pm_suspend_target_state;
+ EXPORT_SYMBOL_GPL(pm_suspend_target_state);
+ 
+@@ -216,7 +216,7 @@ void suspend_set_ops(const struct platfo
+ 	}
+ 	if (valid_state(PM_SUSPEND_MEM)) {
+ 		mem_sleep_states[PM_SUSPEND_MEM] = mem_sleep_labels[PM_SUSPEND_MEM];
+-		if (mem_sleep_default == PM_SUSPEND_MEM)
++		if (mem_sleep_default >= PM_SUSPEND_MEM)
+ 			mem_sleep_current = PM_SUSPEND_MEM;
+ 	}
+ 
+Index: linux-pm/kernel/power/power.h
+===================================================================
+--- linux-pm.orig/kernel/power/power.h
++++ linux-pm/kernel/power/power.h
+@@ -192,7 +192,6 @@ extern void swsusp_show_speed(ktime_t, k
+ extern const char * const pm_labels[];
+ extern const char *pm_states[];
+ extern const char *mem_sleep_states[];
+-extern suspend_state_t mem_sleep_current;
+ 
+ extern int suspend_devices_and_enter(suspend_state_t state);
+ #else /* !CONFIG_SUSPEND */
+
