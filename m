@@ -1,27 +1,12 @@
 From: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
 Subject: [PATCH  v2] Fix header-name to read state name and adjust column width
-Date: Mon, 31 Jul 2017 14:37:32 +0530
-Message-ID: <1501492052-25597-1-git-send-email-s1seetee@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:47121 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1750807AbdGaJJp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Jul 2017 05:09:45 -0400
-Received: from pps.filterd (m0098416.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id v6V99DH5002323
-        for <linux-pm@vger.kernel.org>; Mon, 31 Jul 2017 05:09:45 -0400
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2c202bbxqq-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Mon, 31 Jul 2017 05:09:45 -0400
-Received: from localhost
-        by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <s1seetee@linux.vnet.ibm.com>;
-        Mon, 31 Jul 2017 19:09:41 +1000
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com
+Date: Mon, 31 Jul 2017 14:50:22 +0530
+Message-ID: <1501492822-28994-1-git-send-email-s1seetee@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: s1seetee@linux.vnet.ibm.com
+List-Id: linux-pm@vger.kernel.org
 
 The names of the idle states in the output of cpupower monitor
 command are truncated to 4 characters. Hence, On POWER9, since
