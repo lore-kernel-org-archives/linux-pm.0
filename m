@@ -1,39 +1,34 @@
-From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Subject: Re: [PATCH v4 1/1] PM / OPP: Fix get sharing cpus when hotplug is used
-Date: Mon, 31 Jul 2017 17:12:44 +0200
-Message-ID: <CAHKzcEPQw=_mMr2-5TgU7FiPKvYfeHNCV=LjjKwEV1==y47y9g@mail.gmail.com>
-References: <201707302248.x4bqfCKB%fengguang.wu@intel.com> <1881043.tatm6HIeku@aspire.rjw.lan>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [RFC][PATCH] thunderbolt: icm: Ignore mailbox errors in
+ icm_suspend()
+Date: Mon, 31 Jul 2017 09:01:08 -0700
+Message-ID: <20170731160108.GB1985@kroah.com>
+References: <4063610.TqANq0McE8@aspire.rjw.lan>
+ <2817723.OEn9Hxcbhj@aspire.rjw.lan>
+ <20170726131259.GM2369@lahna.fi.intel.com>
+ <4165239.xHgWvuTePe@aspire.rjw.lan>
+ <BC567D27D6B7384F84318942321624DE4B25E8CA@hasmsx109.ger.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:34407 "EHLO
-        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750987AbdGaPN0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Jul 2017 11:13:26 -0400
-Received: by mail-wm0-f68.google.com with SMTP id x64so11817239wmg.1
-        for <linux-pm@vger.kernel.org>; Mon, 31 Jul 2017 08:13:25 -0700 (PDT)
-In-Reply-To: <1881043.tatm6HIeku@aspire.rjw.lan>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:51948 "EHLO
+        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752059AbdGaQBL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Jul 2017 12:01:11 -0400
+Content-Disposition: inline
+In-Reply-To: <BC567D27D6B7384F84318942321624DE4B25E8CA@hasmsx109.ger.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, kbuild test robot <lkp@intel.com>, kbuild-all@01.org, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+To: "Jamet, Michael" <michael.jamet@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andreas Noever <andreas.noever@gmail.com>, "Bernat, Yehezkel" <yehezkel.bernat@intel.com>, "Alloun, Dan" <dan.alloun@intel.com>
 
-On 31 July 2017 at 13:14, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Sunday, July 30, 2017 10:54:30 PM kbuild test robot wrote:
->> Hi Waldemar,
->>
->> [auto build test ERROR on pm/linux-next]
->> [also build test ERROR on v4.13-rc2 next-20170728]
->> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> OK, I'm dropping this commit.
->
-> Please make sure that the problem is fixed before sending a new version of it.
+On Mon, Jul 31, 2017 at 07:00:32AM +0000, Jamet, Michael wrote:
+> This e-mail and any attachments may contain confidential material for
+> the sole use of the intended recipient(s). Any review or distribution
+> by others is strictly prohibited. If you are not the intended
+> recipient, please contact the sender and delete all copies.
 
-I am a bit confused, it was already fixed and sent out in v5 [1], but
-I see v5 is in 'Not Applicable, archived' state. Why?
+Now deleted!!!
 
-[1] https://patchwork.kernel.org/patch/9866525/
-
-Thanks,
-/Waldek
+Go kick your email system, such footers are not compatible with open
+source development at all, and cause your emails to be ignored...
