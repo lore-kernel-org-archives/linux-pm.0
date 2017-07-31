@@ -1,61 +1,39 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH] psci: add CPU_IDLE dependency
-Date: Mon, 31 Jul 2017 07:34:43 -0500
-Message-ID: <ab4a0f46-6b8a-9198-8a4f-898834685b16@ti.com>
-References: <20170731085523.320244-1-arnd@arndb.de>
+From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Subject: Re: [PATCH v4 1/1] PM / OPP: Fix get sharing cpus when hotplug is used
+Date: Mon, 31 Jul 2017 17:12:44 +0200
+Message-ID: <CAHKzcEPQw=_mMr2-5TgU7FiPKvYfeHNCV=LjjKwEV1==y47y9g@mail.gmail.com>
+References: <201707302248.x4bqfCKB%fengguang.wu@intel.com> <1881043.tatm6HIeku@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170731085523.320244-1-arnd@arndb.de>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Arnd Bergmann <arnd@arndb.de>, Kevin Brodsky <kevin.brodsky@arm.com>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org, Tero Kristo <t-kristo@ti.com>, Carlo Caione <carlo@endlessm.com>, Olof Johansson <olof@lixom.net>, Thierry Reding <treding@nvidia.com>, Jean Delvare <jdelvare@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:34407 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750987AbdGaPN0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Jul 2017 11:13:26 -0400
+Received: by mail-wm0-f68.google.com with SMTP id x64so11817239wmg.1
+        for <linux-pm@vger.kernel.org>; Mon, 31 Jul 2017 08:13:25 -0700 (PDT)
+In-Reply-To: <1881043.tatm6HIeku@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Waldemar Rymarkiewicz <waldemarx.rymarkiewicz@intel.com>, kbuild test robot <lkp@intel.com>, kbuild-all@01.org, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
 
-On 07/31/2017 03:55 AM, Arnd Bergmann wrote:
-> I ran into a build error for the psci_checker:
-> 
-> drivers/firmware/psci_checker.o: In function `psci_checker':
-> psci_checker.c:(.init.text+0x528): undefined reference to `cpuidle_devices'
-> 
-> As far as I can tell, this is simply a very rare combination of options,
-> but the problem has existed since the code was initially added.
-> Adding a Kconfig dependency makes it build properly.
-> 
-> Fixes: ea8b1c4a6019 ("drivers: psci: PSCI checker module")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> ---
->   drivers/firmware/Kconfig | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
-> index 6e4ed5a9c6fd..1983e6e0106f 100644
-> --- a/drivers/firmware/Kconfig
-> +++ b/drivers/firmware/Kconfig
-> @@ -10,7 +10,7 @@ config ARM_PSCI_FW
->   
->   config ARM_PSCI_CHECKER
->   	bool "ARM PSCI checker"
-> -	depends on ARM_PSCI_FW && HOTPLUG_CPU && !TORTURE_TEST
-> +	depends on ARM_PSCI_FW && HOTPLUG_CPU && CPU_IDLE && !TORTURE_TEST
->   	help
->   	  Run the PSCI checker during startup. This checks that hotplug and
->   	  suspend operations work correctly when using PSCI.
-> 
-Ccying linux-arm and linux-pm
+On 31 July 2017 at 13:14, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Sunday, July 30, 2017 10:54:30 PM kbuild test robot wrote:
+>> Hi Waldemar,
+>>
+>> [auto build test ERROR on pm/linux-next]
+>> [also build test ERROR on v4.13-rc2 next-20170728]
+>> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>
+> OK, I'm dropping this commit.
+>
+> Please make sure that the problem is fixed before sending a new version of it.
 
-Reviewed-by: Nishanth Menon <nm@ti.com>
+I am a bit confused, it was already fixed and sent out in v5 [1], but
+I see v5 is in 'Not Applicable, archived' state. Why?
 
--- 
-Regards,
-Nishanth Menon
+[1] https://patchwork.kernel.org/patch/9866525/
+
+Thanks,
+/Waldek
