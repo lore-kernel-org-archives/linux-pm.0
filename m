@@ -1,123 +1,254 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] ACPI / PM: Prefer suspend-to-idle over S3 on some systems
-Date: Mon, 31 Jul 2017 23:43:18 +0200
-Message-ID: <3043895.8nuHiCWbDe@aspire.rjw.lan>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH v2 3/3] ACPI / PCI / PM: Rework
+ acpi_pci_propagate_wakeup()
+Date: Mon, 31 Jul 2017 16:59:57 -0500
+Message-ID: <20170731215957.GG9303@bhelgaas-glaptop.roam.corp.google.com>
+References: <3116391.JNS1F4DjTg@aspire.rjw.lan>
+ <4853865.5aRGCM4CdQ@aspire.rjw.lan>
+ <4690779.IRjbMOd2yB@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mario Limonciello <mario_limonciello@dell.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <4690779.IRjbMOd2yB@aspire.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Andy Shevchenko <andy.shevchenko@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Jul 21, 2017 at 11:30:24PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The acpi_pci_propagate_wakeup() routine is there to handle cases in
+> which PCI bridges (or PCIe ports) are expected to signal wakeup
+> for devices below them, but currently it doesn't do that correctly.
+> 
+> The problem is that acpi_pci_propagate_wakeup() uses
+> acpi_pm_set_device_wakeup() for bridges and if that routine is
+> called for multiple times to disable wakeup for the same device,
+> it will disable it on the first invocation and the next calls
+> will have no effect (it works analogously when called to enable
+> wakeup, but that is not a problem).
+> 
+> Now, say acpi_pci_propagate_wakeup() has been called for two
+> different devices under the same bridge and it has called
+> acpi_pm_set_device_wakeup() for that bridge each time.  The
+> bridge is now enabled to generate wakeup signals.  Next,
+> suppose that one of the devices below it resumes and
+> acpi_pci_propagate_wakeup() is called to disable wakeup for that
+> device.  It will then call acpi_pm_set_device_wakeup() for the bridge
+> and that will effectively disable remote wakeup for all devices under
+> it even though some of them may still be suspended and remote wakeup
+> may be expected to work for them.
+> 
+> To address this (arguably theoretical) issue, allow
+> wakeup.enable_count under struct acpi_device to grow beyond 1 in
+> certain situations.  In particular, allow that to happen in
+> acpi_pci_propagate_wakeup() when wakeup is enabled or disabled
+> for PCI bridges, so that wakeup is actually disabled for the
+> bridge when all devices under it resume and not when just one
+> of them does that.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Modify the ACPI system sleep support setup code to select
-suspend-to-idle as the default system sleep state if
-(1) the ACPI_FADT_LOW_POWER_S0 flag is set in the FADT and
-(2) the Low Power Idle S0 _DSM interface has been discovered and
-(3) the default sleep state was not selected from the kernel command
-line.
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-The main motivation for this change is that systems where the (1) and
-(2) conditions are met typically ship with OSes that don't exercise
-the S3 path in the platform firmware which remains untested and turns
-out to be non-functional at least in some cases.
+But see questions below, stemming from my ignorance of ACPI PM.  I
+don't want to start a discussion and delay this.  If my questions
+don't suggest any useful changes, please ignore them.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+> ---
+> 
+> -> v2: Rearrange checks in acpi_device_wakeup_enable() to reduce indentation
+>           level and possibly save some unnecessary checks for max_count == 1.
+> 
+> ---
+>  drivers/acpi/device_pm.c |   46 +++++++++++++++++++++++++++++-----------------
+>  drivers/pci/pci-acpi.c   |    4 ++--
+>  include/acpi/acpi_bus.h  |   14 ++++++++++++--
+>  3 files changed, 43 insertions(+), 21 deletions(-)
+> 
+> Index: linux-pm/drivers/acpi/device_pm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/device_pm.c
+> +++ linux-pm/drivers/acpi/device_pm.c
+> @@ -682,19 +682,8 @@ static void acpi_pm_notify_work_func(str
+>  
+>  static DEFINE_MUTEX(acpi_wakeup_lock);
+>  
+> -/**
+> - * acpi_device_wakeup_enable - Enable wakeup functionality for device.
+> - * @adev: ACPI device to enable wakeup functionality for.
+> - * @target_state: State the system is transitioning into.
+> - *
+> - * Enable the GPE associated with @adev so that it can generate wakeup signals
+> - * for the device in response to external (remote) events and enable wakeup
+> - * power for it.
+> - *
+> - * Callers must ensure that @adev is a valid ACPI device node before executing
+> - * this function.
+> - */
+> -static int acpi_device_wakeup_enable(struct acpi_device *adev, u32 target_state)
+> +static int __acpi_device_wakeup_enable(struct acpi_device *adev,
+> +				       u32 target_state, int max_count)
 
-This patch depends on the intel-hid change at
+It looks like @max_count is always either 1 or INT_MAX, so it's
+effectively a boolean.  Is there a way to interpret @max_count in
+terms of the PCI topology?  It's obviously related to
+wakeup->enable_count; does wakeup->enable_count basically mean "the
+number of subordinate devices that are enabled to generate wakeups"?
 
-https://patchwork.kernel.org/patch/9867703/
+__acpi_pm_set_device_wakeup() is exported; maybe only to make the
+inlined callers in acpi_bus.h work?  It might be worth un-inlining
+them to avoid having to export __acpi_pm_set_device_wakeup().  I'm
+just thinking that exporting it makes it visible everywhere, and
+@max_count seems like an internal detail that's hard to document for
+use by non-core code.
 
----
- Documentation/power/states.txt |    4 +++-
- drivers/acpi/sleep.c           |    6 ++++++
- include/linux/suspend.h        |    3 +++
- kernel/power/power.h           |    1 -
- kernel/power/suspend.c         |    4 ++--
- 5 files changed, 14 insertions(+), 4 deletions(-)
+I guess you still have to export both acpi_pm_set_device_wakeup()
+(currently already exported) and acpi_pm_set_bridge_wakeup()
+(this patch effectively exports it by implementing it as an inline
+function).
 
-Index: linux-pm/Documentation/power/states.txt
-===================================================================
---- linux-pm.orig/Documentation/power/states.txt
-+++ linux-pm/Documentation/power/states.txt
-@@ -35,7 +35,9 @@ only one way to cause the system to go i
- The default suspend mode (ie. the one to be used without writing anything into
- /sys/power/mem_sleep) is either "deep" (if Suspend-To-RAM is supported) or
- "s2idle", but it can be overridden by the value of the "mem_sleep_default"
--parameter in the kernel command line.
-+parameter in the kernel command line.  On some ACPI-based systems, depending on
-+the information in the FADT, the default may be "s2idle" even if Suspend-To-RAM
-+is supported.
- 
- The properties of all of the sleep states are described below.
- 
-Index: linux-pm/drivers/acpi/sleep.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sleep.c
-+++ linux-pm/drivers/acpi/sleep.c
-@@ -714,6 +714,12 @@ static int lps0_device_attach(struct acp
- 		if ((bitmask & ACPI_S2IDLE_FUNC_MASK) == ACPI_S2IDLE_FUNC_MASK) {
- 			lps0_dsm_func_mask = bitmask;
- 			lps0_device_handle = adev->handle;
-+			/*
-+			 * Use suspend-to-idle by default if the default
-+			 * suspend mode was not set from the command line.
-+			 */
-+			if (mem_sleep_default > PM_SUSPEND_MEM)
-+				mem_sleep_current = PM_SUSPEND_FREEZE;
- 		}
- 
- 		acpi_handle_debug(adev->handle, "_DSM function mask: 0x%x\n",
-Index: linux-pm/include/linux/suspend.h
-===================================================================
---- linux-pm.orig/include/linux/suspend.h
-+++ linux-pm/include/linux/suspend.h
-@@ -196,6 +196,9 @@ struct platform_freeze_ops {
- };
- 
- #ifdef CONFIG_SUSPEND
-+extern suspend_state_t mem_sleep_current;
-+extern suspend_state_t mem_sleep_default;
-+
- /**
-  * suspend_set_ops - set platform dependent suspend operations
-  * @ops: The new suspend operations to set.
-Index: linux-pm/kernel/power/suspend.c
-===================================================================
---- linux-pm.orig/kernel/power/suspend.c
-+++ linux-pm/kernel/power/suspend.c
-@@ -48,7 +48,7 @@ static const char * const mem_sleep_labe
- const char *mem_sleep_states[PM_SUSPEND_MAX];
- 
- suspend_state_t mem_sleep_current = PM_SUSPEND_FREEZE;
--static suspend_state_t mem_sleep_default = PM_SUSPEND_MEM;
-+suspend_state_t mem_sleep_default = PM_SUSPEND_MAX;
- suspend_state_t pm_suspend_target_state;
- EXPORT_SYMBOL_GPL(pm_suspend_target_state);
- 
-@@ -216,7 +216,7 @@ void suspend_set_ops(const struct platfo
- 	}
- 	if (valid_state(PM_SUSPEND_MEM)) {
- 		mem_sleep_states[PM_SUSPEND_MEM] = mem_sleep_labels[PM_SUSPEND_MEM];
--		if (mem_sleep_default == PM_SUSPEND_MEM)
-+		if (mem_sleep_default >= PM_SUSPEND_MEM)
- 			mem_sleep_current = PM_SUSPEND_MEM;
- 	}
- 
-Index: linux-pm/kernel/power/power.h
-===================================================================
---- linux-pm.orig/kernel/power/power.h
-+++ linux-pm/kernel/power/power.h
-@@ -192,7 +192,6 @@ extern void swsusp_show_speed(ktime_t, k
- extern const char * const pm_labels[];
- extern const char *pm_states[];
- extern const char *mem_sleep_states[];
--extern suspend_state_t mem_sleep_current;
- 
- extern int suspend_devices_and_enter(suspend_state_t state);
- #else /* !CONFIG_SUSPEND */
+It'd be nice if we could distinguish the device case from the bridge
+case inside acpi_pm_set_device_wakeup() so we wouldn't have to rely on
+the caller using the correct one.  But I assume you already considered
+that and found it impractical.
 
+>  {
+>  	struct acpi_device_wakeup *wakeup = &adev->wakeup;
+>  	acpi_status status;
+> @@ -702,9 +691,12 @@ static int acpi_device_wakeup_enable(str
+>  
+>  	mutex_lock(&acpi_wakeup_lock);
+>  
+> -	if (wakeup->enable_count > 0)
+> +	if (wakeup->enable_count >= max_count)
+>  		goto out;
+>  
+> +	if (wakeup->enable_count > 0)
+> +		goto inc;
+> +
+>  	error = acpi_enable_wakeup_device_power(adev, target_state);
+>  	if (error)
+>  		goto out;
+> @@ -716,6 +708,7 @@ static int acpi_device_wakeup_enable(str
+>  		goto out;
+>  	}
+>  
+> +inc:
+>  	wakeup->enable_count++;
+>  
+>  out:
+> @@ -724,6 +717,23 @@ out:
+>  }
+>  
+>  /**
+> + * acpi_device_wakeup_enable - Enable wakeup functionality for device.
+> + * @adev: ACPI device to enable wakeup functionality for.
+> + * @target_state: State the system is transitioning into.
+> + *
+> + * Enable the GPE associated with @adev so that it can generate wakeup signals
+> + * for the device in response to external (remote) events and enable wakeup
+> + * power for it.
+> + *
+> + * Callers must ensure that @adev is a valid ACPI device node before executing
+> + * this function.
+> + */
+> +static int acpi_device_wakeup_enable(struct acpi_device *adev, u32 target_state)
+> +{
+> +	return __acpi_device_wakeup_enable(adev, target_state, 1);
+> +}
+> +
+> +/**
+>   * acpi_device_wakeup_disable - Disable wakeup functionality for device.
+>   * @adev: ACPI device to disable wakeup functionality for.
+>   *
+> @@ -754,8 +764,9 @@ out:
+>   * acpi_pm_set_device_wakeup - Enable/disable remote wakeup for given device.
+>   * @dev: Device to enable/disable to generate wakeup events.
+>   * @enable: Whether to enable or disable the wakeup functionality.
+> + * @max_count: Maximum value of the enable reference counter.
+>   */
+> -int acpi_pm_set_device_wakeup(struct device *dev, bool enable)
+> +int __acpi_pm_set_device_wakeup(struct device *dev, bool enable, int max_count)
+>  {
+>  	struct acpi_device *adev;
+>  	int error;
+> @@ -775,13 +786,14 @@ int acpi_pm_set_device_wakeup(struct dev
+>  		return 0;
+>  	}
+>  
+> -	error = acpi_device_wakeup_enable(adev, acpi_target_system_state());
+> +	error = __acpi_device_wakeup_enable(adev, acpi_target_system_state(),
+> +					    max_count);
+>  	if (!error)
+>  		dev_dbg(dev, "Wakeup enabled by ACPI\n");
+>  
+>  	return error;
+>  }
+> -EXPORT_SYMBOL(acpi_pm_set_device_wakeup);
+> +EXPORT_SYMBOL(__acpi_pm_set_device_wakeup);
+>  
+>  /**
+>   * acpi_dev_pm_low_power - Put ACPI device into a low-power state.
+> Index: linux-pm/include/acpi/acpi_bus.h
+> ===================================================================
+> --- linux-pm.orig/include/acpi/acpi_bus.h
+> +++ linux-pm/include/acpi/acpi_bus.h
+> @@ -605,7 +605,7 @@ acpi_status acpi_add_pm_notifier(struct
+>  acpi_status acpi_remove_pm_notifier(struct acpi_device *adev);
+>  bool acpi_pm_device_can_wakeup(struct device *dev);
+>  int acpi_pm_device_sleep_state(struct device *, int *, int);
+> -int acpi_pm_set_device_wakeup(struct device *dev, bool enable);
+> +int __acpi_pm_set_device_wakeup(struct device *dev, bool enable, int max_count);
+>  #else
+>  static inline void acpi_pm_wakeup_event(struct device *dev)
+>  {
+> @@ -632,12 +632,22 @@ static inline int acpi_pm_device_sleep_s
+>  	return (m >= ACPI_STATE_D0 && m <= ACPI_STATE_D3_COLD) ?
+>  		m : ACPI_STATE_D0;
+>  }
+> -static inline int acpi_pm_set_device_wakeup(struct device *dev, bool enable)
+> +static inline int __acpi_pm_set_device_wakeup(struct device *dev, bool enable, int max_count)
+>  {
+>  	return -ENODEV;
+>  }
+>  #endif
+>  
+> +static inline int acpi_pm_set_device_wakeup(struct device *dev, bool enable)
+> +{
+> +	return __acpi_pm_set_device_wakeup(dev, enable, 1);
+> +}
+> +
+> +static inline int acpi_pm_set_bridge_wakeup(struct device *dev, bool enable)
+> +{
+> +	return __acpi_pm_set_device_wakeup(dev, enable, INT_MAX);
+> +}
+> +
+>  #ifdef CONFIG_ACPI_SLEEP
+>  u32 acpi_target_system_state(void);
+>  #else
+> Index: linux-pm/drivers/pci/pci-acpi.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-acpi.c
+> +++ linux-pm/drivers/pci/pci-acpi.c
+> @@ -573,7 +573,7 @@ static int acpi_pci_propagate_wakeup(str
+>  {
+>  	while (bus->parent) {
+>  		if (acpi_pm_device_can_wakeup(&bus->self->dev))
+> -			return acpi_pm_set_device_wakeup(&bus->self->dev, enable);
+> +			return acpi_pm_set_bridge_wakeup(&bus->self->dev, enable);
+>  
+>  		bus = bus->parent;
+>  	}
+> @@ -581,7 +581,7 @@ static int acpi_pci_propagate_wakeup(str
+>  	/* We have reached the root bus. */
+>  	if (bus->bridge) {
+>  		if (acpi_pm_device_can_wakeup(bus->bridge))
+> -			return acpi_pm_set_device_wakeup(bus->bridge, enable);
+> +			return acpi_pm_set_bridge_wakeup(bus->bridge, enable);
+>  	}
+>  	return 0;
+>  }
+> 
