@@ -1,61 +1,92 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / wakeup: Set power.can_wakeup if wakeup_sysfs_add() fails
-Date: Wed, 02 Aug 2017 01:32:44 +0200
-Message-ID: <1650146.ozLLNlAB8h@aspire.rjw.lan>
+From: Andy Lutomirski <luto@kernel.org>
+Subject: Re: [PATCH 3/3] platform/wmi: Expose the raw WDG data in sysfs
+Date: Tue, 1 Aug 2017 16:51:40 -0700
+Message-ID: <CALCETrXFySnB3jq_EAn+NDTb6jsp__4Dc=0ipdFqCbaZEPSOfg@mail.gmail.com>
+References: <cover.1501601667.git.luto@kernel.org> <e6df9d038af0a0ce4d4119395aaea58366ade26d.1501601667.git.luto@kernel.org>
+ <20170801200313.GC3110@fury> <CALCETrX0zqq3xQgNBx41R9ZCT3_bB4EoXGrY3jWLK0e0Koo=EQ@mail.gmail.com>
+ <20170801204040.GH25574@pali> <20170801211702.GF3110@fury>
+ <20170801213112.GK25574@pali> <20170801223947.GH3110@fury>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45922 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750853AbdHAXkw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Aug 2017 19:40:52 -0400
+Received: from mail.kernel.org ([198.145.29.99]:45888 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751748AbdHAXwC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 1 Aug 2017 19:52:02 -0400
+Received: from mail-ua0-f176.google.com (mail-ua0-f176.google.com [209.85.217.176])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id A539922DA9
+        for <linux-pm@vger.kernel.org>; Tue,  1 Aug 2017 23:52:01 +0000 (UTC)
+Received: by mail-ua0-f176.google.com with SMTP id q25so13965424uah.1
+        for <linux-pm@vger.kernel.org>; Tue, 01 Aug 2017 16:52:01 -0700 (PDT)
+In-Reply-To: <20170801223947.GH3110@fury>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+To: Darren Hart <dvhart@infradead.org>
+Cc: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Andy Lutomirski <luto@kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, Aug 1, 2017 at 3:39 PM, Darren Hart <dvhart@infradead.org> wrote:
+> On Tue, Aug 01, 2017 at 11:31:12PM +0200, Pali Rohár wrote:
+>> On Tuesday 01 August 2017 14:17:02 Darren Hart wrote:
+> ...
+>> > My understanding of the BMOF data is that it provided us "with a description of
+>> > all data blocks, WMI methods, and events for the device" [1].
+>> >
+>> > If that's accurate, why do we need the _WDG? This just seems contrary to what
+>> > the BMOF data is supposed to be for.
+>>
+>> BMOF provides mapping from human class and method names to WMI GUID. WDG
+>> then provides mapping from WMI GUID to ACPI function names.
+>>
+>> Therefore if you upper layer in MOF world say that it want to call
+>> method M of class C and you want to know which ACPI function is called,
+>> you need to parse both BMOF and WDG to get mapping from MOF to ACPI.
+>> Same for WMI events.
+>>
+>> > > Ideally ability to create dump of BMOF and WDG on one computer and then
+>> > > parse those data on another.
+>> > >
+>> > > Having original BMOF and WDG structures is a good for debugging and
+>> > > development purpose.
+>
+> OK, I went and reviewed the MOF docs, our previous discussions, and your bmf2moc
+> code (awesome by the way). So, agreed - we need easy access to _WDG and BMOF for
+> development purposes.
+>
+> Having the kernel expose a guid/class/method interface should provide the
+> abstraction Rafael called for.
+>
+> The question then, is should these two things be in sysfs, where they become
+> more or less permanent, or are they better off in debugfs, where they can be
+> used by developers as needed, but are not present on production systems, and
+> we are not bound to the representation we use from now until forever.
+>
+> Seems to me:
+>
+> /debug/wmi/<GUID>/bmof
 
-Currently, an error from wakeup_sysfs_add() in
-device_set_wakeup_capable() causes the device's power.can_wakeup
-flag to remain unset even though the device technically is capable
-of signaling wakeup.
+I can imagine a real production userspace app that parses BMOF data.
+Imagine you write a thingy that calls some laptop method foo(1) where
+foo is defined in the MOF.  You could hardcode the mapping to the
+GUID, but you could also parse the BMOF.
 
-If wakeup_sysfs_add() fails user space may not be able to enable
-the device to wake up the system from sleep states, but at least
-for some devices that does not matter.
+> /debug/wmi/<GUID>/_wdg
 
-For this reason, set or clear power.can_wakeup upfront and if
-wakeup_sysfs_add() returns an error, print a message to the log.
+More like /debug/wmi/<bus name>/_wdg, but yes.  I wish there was a
+standard way to make a debugfs directory corresponding to a sysfs
+path.  Maybe this exists -- I'll look.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/wakeup.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+FWIW, almost all the _WDG data is already there in sysfs in Linus'
+tree.  See, for example, cat
+/sys/devices/platform/PNP0C14:01/wmi_bus/wmi_bus-PNP0C14:01/05901221-D566-11D1-B2F0-00A0C9062910/object_id
 
-Index: linux-pm/drivers/base/power/wakeup.c
-===================================================================
---- linux-pm.orig/drivers/base/power/wakeup.c
-+++ linux-pm/drivers/base/power/wakeup.c
-@@ -412,15 +412,17 @@ void device_set_wakeup_capable(struct de
- 	if (!!dev->power.can_wakeup == !!capable)
- 		return;
- 
-+	dev->power.can_wakeup = capable;
- 	if (device_is_registered(dev) && !list_empty(&dev->power.entry)) {
- 		if (capable) {
--			if (wakeup_sysfs_add(dev))
--				return;
-+			int ret = wakeup_sysfs_add(dev);
-+
-+			if (ret)
-+				dev_info(dev, "Wakeup sysfs attributes not added\n");
- 		} else {
- 			wakeup_sysfs_remove(dev);
- 		}
- 	}
--	dev->power.can_wakeup = capable;
- }
- EXPORT_SYMBOL_GPL(device_set_wakeup_capable);
- 
+--Andy
+
+>
+> would be the most appropriate location for these.
+>
+> --
+> Darren Hart
+> VMware Open Source Technology Center
