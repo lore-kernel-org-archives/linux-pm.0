@@ -1,238 +1,224 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v3 3/3] ACPI / PCI / PM: Rework acpi_pci_propagate_wakeup()
-Date: Tue, 01 Aug 2017 02:56:18 +0200
-Message-ID: <1916183.UEozbhaQct@aspire.rjw.lan>
-References: <3116391.JNS1F4DjTg@aspire.rjw.lan> <4853865.5aRGCM4CdQ@aspire.rjw.lan> <4690779.IRjbMOd2yB@aspire.rjw.lan>
+From: Phil Reid <preid@electromag.com.au>
+Subject: Re: [PATCH v10 05/10] i2c: mux: pca954x: Call request irq after
+ adding mux segments
+Date: Tue, 1 Aug 2017 10:01:46 +0800
+Message-ID: <694acf86-0917-e7e6-7459-623119d24723@electromag.com.au>
+References: <1500954024-6860-1-git-send-email-preid@electromag.com.au>
+ <1500954024-6860-6-git-send-email-preid@electromag.com.au>
+ <612a8d32-77e8-a1d3-94e8-700a9e6a2184@axentia.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4690779.IRjbMOd2yB@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Andy Shevchenko <andy.shevchenko@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <612a8d32-77e8-a1d3-94e8-700a9e6a2184@axentia.se>
+Content-Language: en-AU
+Sender: linux-i2c-owner@vger.kernel.org
+To: Peter Rosin <peda@axentia.se>, wsa@the-dreams.de, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, benjamin.tissoires@redhat.com, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+G'day Peter,
 
-The acpi_pci_propagate_wakeup() routine is there to handle cases in
-which PCI bridges (or PCIe ports) are expected to signal wakeup
-for devices below them, but currently it doesn't do that correctly.
+Thanks for the review.
 
-The problem is that acpi_pci_propagate_wakeup() uses
-acpi_pm_set_device_wakeup() for bridges and if that routine is
-called for multiple times to disable wakeup for the same device,
-it will disable it on the first invocation and the next calls
-will have no effect (it works analogously when called to enable
-wakeup, but that is not a problem).
+On 31/07/2017 16:09, Peter Rosin wrote:
+> Hi Phil,
+> 
+> Nice to get rid of the mask/unmask! One small nit though, the
+> 'fail_del_adapters' label no longer describes what's going on.
+> Please change it to 'fail_cleanup' or something like that.
+will do, I'll wait a little bit longer to see if there's any other comments
+on the series.
 
-Now, say acpi_pci_propagate_wakeup() has been called for two
-different devices under the same bridge and it has called
-acpi_pm_set_device_wakeup() for that bridge each time.  The
-bridge is now enabled to generate wakeup signals.  Next,
-suppose that one of the devices below it resumes and
-acpi_pci_propagate_wakeup() is called to disable wakeup for that
-device.  It will then call acpi_pm_set_device_wakeup() for the bridge
-and that will effectively disable remote wakeup for all devices under
-it even though some of them may still be suspended and remote wakeup
-may be expected to work for them.
+> 
+> With that,
+> Acked-by: Peter Rosin <peda@axentia.se>
+> 
+> And also, for the future, please use subjects according to
+> submitting-patches, i.e., in this case
+> 
+> i2c: mux: pca954x: call request irq after adding mux segments
+> 
+> (lower-case 'c' in call)
 
-To address this (arguably theoretical) issue, allow
-wakeup.enable_count under struct acpi_device to grow beyond 1 in
-certain situations.  In particular, allow that to happen in
-acpi_pci_propagate_wakeup() when wakeup is enabled or disabled
-for PCI bridges, so that wakeup is actually disabled for the
-bridge when all devices under it resume and not when just one
-of them does that.
+ok
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
----
+> 
+> Cheers,
+> Peter
+> 
+> On 2017-07-25 05:40, Phil Reid wrote:
+>> The pca954x device do not have the ability to mask interrupts. For
+>> i2c slave devices that also don't have masking ability (eg ltc1760
+>> smbalert output) delay registering the irq until after the mux
+>> segments have been configured. During the mux add_adaptor call the
+>> core i2c system can register an smbalert handler which would then
+>> be called immediately when the irq is registered. This smbalert
+>> handler will then clear the pending irq.
+>>
+>> This removes the need for the irq_mask / irq_unmask calls that were
+>> original used to do this.
+>>
+>> Signed-off-by: Phil Reid <preid@electromag.com.au>
+>> ---
+>>   drivers/i2c/muxes/i2c-mux-pca954x.c | 85 +++++++++++--------------------------
+>>   1 file changed, 25 insertions(+), 60 deletions(-)
+>>
+>> diff --git a/drivers/i2c/muxes/i2c-mux-pca954x.c b/drivers/i2c/muxes/i2c-mux-pca954x.c
+>> index f1751c2..ac0f083 100644
+>> --- a/drivers/i2c/muxes/i2c-mux-pca954x.c
+>> +++ b/drivers/i2c/muxes/i2c-mux-pca954x.c
+>> @@ -246,36 +246,6 @@ static irqreturn_t pca954x_irq_handler(int irq, void *dev_id)
+>>   	return handled ? IRQ_HANDLED : IRQ_NONE;
+>>   }
+>>   
+>> -static void pca954x_irq_mask(struct irq_data *idata)
+>> -{
+>> -	struct pca954x *data = irq_data_get_irq_chip_data(idata);
+>> -	unsigned int pos = idata->hwirq;
+>> -	unsigned long flags;
+>> -
+>> -	raw_spin_lock_irqsave(&data->lock, flags);
+>> -
+>> -	data->irq_mask &= ~BIT(pos);
+>> -	if (!data->irq_mask)
+>> -		disable_irq(data->client->irq);
+>> -
+>> -	raw_spin_unlock_irqrestore(&data->lock, flags);
+>> -}
+>> -
+>> -static void pca954x_irq_unmask(struct irq_data *idata)
+>> -{
+>> -	struct pca954x *data = irq_data_get_irq_chip_data(idata);
+>> -	unsigned int pos = idata->hwirq;
+>> -	unsigned long flags;
+>> -
+>> -	raw_spin_lock_irqsave(&data->lock, flags);
+>> -
+>> -	if (!data->irq_mask)
+>> -		enable_irq(data->client->irq);
+>> -	data->irq_mask |= BIT(pos);
+>> -
+>> -	raw_spin_unlock_irqrestore(&data->lock, flags);
+>> -}
+>> -
+>>   static int pca954x_irq_set_type(struct irq_data *idata, unsigned int type)
+>>   {
+>>   	if ((type & IRQ_TYPE_SENSE_MASK) != IRQ_TYPE_LEVEL_LOW)
+>> @@ -285,8 +255,6 @@ static int pca954x_irq_set_type(struct irq_data *idata, unsigned int type)
+>>   
+>>   static struct irq_chip pca954x_irq_chip = {
+>>   	.name = "i2c-mux-pca954x",
+>> -	.irq_mask = pca954x_irq_mask,
+>> -	.irq_unmask = pca954x_irq_unmask,
+>>   	.irq_set_type = pca954x_irq_set_type,
+>>   };
+>>   
+>> @@ -294,7 +262,7 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
+>>   {
+>>   	struct pca954x *data = i2c_mux_priv(muxc);
+>>   	struct i2c_client *client = data->client;
+>> -	int c, err, irq;
+>> +	int c, irq;
+>>   
+>>   	if (!data->chip->has_irq || client->irq <= 0)
+>>   		return 0;
+>> @@ -314,24 +282,22 @@ static int pca954x_irq_setup(struct i2c_mux_core *muxc)
+>>   			handle_simple_irq);
+>>   	}
+>>   
+>> -	err = devm_request_threaded_irq(&client->dev, data->client->irq, NULL,
+>> -					pca954x_irq_handler,
+>> -					IRQF_ONESHOT | IRQF_SHARED,
+>> -					"pca954x", data);
+>> -	if (err)
+>> -		goto err_req_irq;
+>> +	return 0;
+>> +}
+>>   
+>> -	disable_irq(data->client->irq);
+>> +static void pca954x_cleanup(struct i2c_mux_core *muxc)
+>> +{
+>> +	struct pca954x *data = i2c_mux_priv(muxc);
+>> +	int c, irq;
+>>   
+>> -	return 0;
+>> -err_req_irq:
+>> -	for (c = 0; c < data->chip->nchans; c++) {
+>> -		irq = irq_find_mapping(data->irq, c);
+>> -		irq_dispose_mapping(irq);
+>> +	if (data->irq) {
+>> +		for (c = 0; c < data->chip->nchans; c++) {
+>> +			irq = irq_find_mapping(data->irq, c);
+>> +			irq_dispose_mapping(irq);
+>> +		}
+>> +		irq_domain_remove(data->irq);
+>>   	}
+>> -	irq_domain_remove(data->irq);
+>> -
+>> -	return err;
+>> +	i2c_mux_del_adapters(muxc);
+>>   }
+>>   
+>>   /*
+>> @@ -417,6 +383,15 @@ static int pca954x_probe(struct i2c_client *client,
+>>   			goto fail_del_adapters;
+>>   	}
+>>   
+>> +	if (data->irq) {
+>> +		ret = devm_request_threaded_irq(&client->dev, data->client->irq,
+>> +						NULL, pca954x_irq_handler,
+>> +						IRQF_ONESHOT | IRQF_SHARED,
+>> +						"pca954x", data);
+>> +		if (ret)
+>> +			goto fail_del_adapters;
+>> +	}
+>> +
+>>   	dev_info(&client->dev,
+>>   		 "registered %d multiplexed busses for I2C %s %s\n",
+>>   		 num, data->chip->muxtype == pca954x_ismux
+>> @@ -425,25 +400,15 @@ static int pca954x_probe(struct i2c_client *client,
+>>   	return 0;
+>>   
+>>   fail_del_adapters:
+>> -	i2c_mux_del_adapters(muxc);
+>> +	pca954x_cleanup(muxc);
+>>   	return ret;
+>>   }
+>>   
+>>   static int pca954x_remove(struct i2c_client *client)
+>>   {
+>>   	struct i2c_mux_core *muxc = i2c_get_clientdata(client);
+>> -	struct pca954x *data = i2c_mux_priv(muxc);
+>> -	int c, irq;
+>>   
+>> -	if (data->irq) {
+>> -		for (c = 0; c < data->chip->nchans; c++) {
+>> -			irq = irq_find_mapping(data->irq, c);
+>> -			irq_dispose_mapping(irq);
+>> -		}
+>> -		irq_domain_remove(data->irq);
+>> -	}
+>> -
+>> -	i2c_mux_del_adapters(muxc);
+>> +	pca954x_cleanup(muxc);
+>>   	return 0;
+>>   }
+>>   
+>>
+> 
+> 
+> 
 
-v2 -> v3: Follow the Bjorn's suggestion to un-inline acpi_pm_set_device_wakeup()
-  and acpi_pm_set_bridge_wakeup() to avoid exporting __acpi_pm_set_device_wakeup()
-  whose max_count argument is too much of an internal detail to be documented
-  for use in non-core code clearly enough.
 
-I've retained the tags, because the changes are minor and don't affect the
-behavior, but if (some of all) the tags are not applicabe any more, please let
-me know. :-)
+-- 
+Regards
+Phil Reid
 
----
- drivers/acpi/device_pm.c |   72 ++++++++++++++++++++++++++++++++---------------
- drivers/pci/pci-acpi.c   |    4 +-
- include/acpi/acpi_bus.h  |    5 +++
- 3 files changed, 57 insertions(+), 24 deletions(-)
+ElectroMagnetic Imaging Technology Pty Ltd
+Development of Geophysical Instrumentation & Software
+www.electromag.com.au
 
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -684,19 +684,8 @@ static void acpi_pm_notify_work_func(str
- 
- static DEFINE_MUTEX(acpi_wakeup_lock);
- 
--/**
-- * acpi_device_wakeup_enable - Enable wakeup functionality for device.
-- * @adev: ACPI device to enable wakeup functionality for.
-- * @target_state: State the system is transitioning into.
-- *
-- * Enable the GPE associated with @adev so that it can generate wakeup signals
-- * for the device in response to external (remote) events and enable wakeup
-- * power for it.
-- *
-- * Callers must ensure that @adev is a valid ACPI device node before executing
-- * this function.
-- */
--static int acpi_device_wakeup_enable(struct acpi_device *adev, u32 target_state)
-+static int __acpi_device_wakeup_enable(struct acpi_device *adev,
-+				       u32 target_state, int max_count)
- {
- 	struct acpi_device_wakeup *wakeup = &adev->wakeup;
- 	acpi_status status;
-@@ -704,9 +693,12 @@ static int acpi_device_wakeup_enable(str
- 
- 	mutex_lock(&acpi_wakeup_lock);
- 
--	if (wakeup->enable_count > 0)
-+	if (wakeup->enable_count >= max_count)
- 		goto out;
- 
-+	if (wakeup->enable_count > 0)
-+		goto inc;
-+
- 	error = acpi_enable_wakeup_device_power(adev, target_state);
- 	if (error)
- 		goto out;
-@@ -718,6 +710,7 @@ static int acpi_device_wakeup_enable(str
- 		goto out;
- 	}
- 
-+inc:
- 	wakeup->enable_count++;
- 
- out:
-@@ -726,6 +719,23 @@ out:
- }
- 
- /**
-+ * acpi_device_wakeup_enable - Enable wakeup functionality for device.
-+ * @adev: ACPI device to enable wakeup functionality for.
-+ * @target_state: State the system is transitioning into.
-+ *
-+ * Enable the GPE associated with @adev so that it can generate wakeup signals
-+ * for the device in response to external (remote) events and enable wakeup
-+ * power for it.
-+ *
-+ * Callers must ensure that @adev is a valid ACPI device node before executing
-+ * this function.
-+ */
-+static int acpi_device_wakeup_enable(struct acpi_device *adev, u32 target_state)
-+{
-+	return __acpi_device_wakeup_enable(adev, target_state, 1);
-+}
-+
-+/**
-  * acpi_device_wakeup_disable - Disable wakeup functionality for device.
-  * @adev: ACPI device to disable wakeup functionality for.
-  *
-@@ -752,12 +762,8 @@ out:
- 	mutex_unlock(&acpi_wakeup_lock);
- }
- 
--/**
-- * acpi_pm_set_device_wakeup - Enable/disable remote wakeup for given device.
-- * @dev: Device to enable/disable to generate wakeup events.
-- * @enable: Whether to enable or disable the wakeup functionality.
-- */
--int acpi_pm_set_device_wakeup(struct device *dev, bool enable)
-+static int __acpi_pm_set_device_wakeup(struct device *dev, bool enable,
-+				       int max_count)
- {
- 	struct acpi_device *adev;
- 	int error;
-@@ -777,13 +783,35 @@ int acpi_pm_set_device_wakeup(struct dev
- 		return 0;
- 	}
- 
--	error = acpi_device_wakeup_enable(adev, acpi_target_system_state());
-+	error = __acpi_device_wakeup_enable(adev, acpi_target_system_state(),
-+					    max_count);
- 	if (!error)
- 		dev_dbg(dev, "Wakeup enabled by ACPI\n");
- 
- 	return error;
- }
--EXPORT_SYMBOL(acpi_pm_set_device_wakeup);
-+
-+/**
-+ * acpi_pm_set_device_wakeup - Enable/disable remote wakeup for given device.
-+ * @dev: Device to enable/disable to generate wakeup events.
-+ * @enable: Whether to enable or disable the wakeup functionality.
-+ */
-+int acpi_pm_set_device_wakeup(struct device *dev, bool enable)
-+{
-+	return __acpi_pm_set_device_wakeup(dev, enable, 1);
-+}
-+EXPORT_SYMBOL_GPL(acpi_pm_set_device_wakeup);
-+
-+/**
-+ * acpi_pm_set_bridge_wakeup - Enable/disable remote wakeup for given bridge.
-+ * @dev: Bridge device to enable/disable to generate wakeup events.
-+ * @enable: Whether to enable or disable the wakeup functionality.
-+ */
-+int acpi_pm_set_bridge_wakeup(struct device *dev, bool enable)
-+{
-+	return __acpi_pm_set_device_wakeup(dev, enable, INT_MAX);
-+}
-+EXPORT_SYMBOL_GPL(acpi_pm_set_bridge_wakeup);
- 
- /**
-  * acpi_dev_pm_low_power - Put ACPI device into a low-power state.
-Index: linux-pm/include/acpi/acpi_bus.h
-===================================================================
---- linux-pm.orig/include/acpi/acpi_bus.h
-+++ linux-pm/include/acpi/acpi_bus.h
-@@ -626,6 +626,7 @@ acpi_status acpi_remove_pm_notifier(stru
- bool acpi_pm_device_can_wakeup(struct device *dev);
- int acpi_pm_device_sleep_state(struct device *, int *, int);
- int acpi_pm_set_device_wakeup(struct device *dev, bool enable);
-+int acpi_pm_set_bridge_wakeup(struct device *dev, bool enable);
- #else
- static inline void acpi_pm_wakeup_event(struct device *dev)
- {
-@@ -656,6 +657,10 @@ static inline int acpi_pm_set_device_wak
- {
- 	return -ENODEV;
- }
-+static inline int acpi_pm_set_bridge_wakeup(struct device *dev, bool enable)
-+{
-+	return -ENODEV;
-+}
- #endif
- 
- #ifdef CONFIG_ACPI_SLEEP
-Index: linux-pm/drivers/pci/pci-acpi.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-acpi.c
-+++ linux-pm/drivers/pci/pci-acpi.c
-@@ -573,7 +573,7 @@ static int acpi_pci_propagate_wakeup(str
- {
- 	while (bus->parent) {
- 		if (acpi_pm_device_can_wakeup(&bus->self->dev))
--			return acpi_pm_set_device_wakeup(&bus->self->dev, enable);
-+			return acpi_pm_set_bridge_wakeup(&bus->self->dev, enable);
- 
- 		bus = bus->parent;
- 	}
-@@ -581,7 +581,7 @@ static int acpi_pci_propagate_wakeup(str
- 	/* We have reached the root bus. */
- 	if (bus->bridge) {
- 		if (acpi_pm_device_can_wakeup(bus->bridge))
--			return acpi_pm_set_device_wakeup(bus->bridge, enable);
-+			return acpi_pm_set_bridge_wakeup(bus->bridge, enable);
- 	}
- 	return 0;
- }
+3 The Avenue, Midland WA 6056, AUSTRALIA
+Ph: +61 8 9250 8100
+Fax: +61 8 9250 7100
+Email: preid@electromag.com.au
