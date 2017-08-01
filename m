@@ -1,64 +1,85 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] tools/power/cpupower: allow running without cpu0
-Date: Wed, 02 Aug 2017 01:21:10 +0200
-Message-ID: <1829177.9i0RptnLyT@aspire.rjw.lan>
-References: <1501502166-29452-1-git-send-email-prarit@redhat.com>
+Subject: Re: [PATCH V5 0/2] sched: cpufreq: Allow remote callbacks
+Date: Wed, 02 Aug 2017 01:22:46 +0200
+Message-ID: <2779554.PPOFIyaKmk@aspire.rjw.lan>
+References: <cover.1501223897.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:65319 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750853AbdHAX3S (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Aug 2017 19:29:18 -0400
-In-Reply-To: <1501502166-29452-1-git-send-email-prarit@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1501223897.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, smuckle.linux@gmail.com, juri.lelli@arm.com, Morten.Rasmussen@arm.com, patrick.bellasi@arm.com, eas-dev@lists.linaro.org, skannan@codeaurora.org, joelaf@google.com, Ingo Molnar <mingo@redhat.com>, Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>Saravana Kannan <skannan@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>
-Cc: linux-pm@vger.kernel.org, Thomas Renninger <trenn@suse.com>, ego.lkml@gmail.com, s1seetee@linux.vnet.ibm.com
 
-On Monday, July 31, 2017 07:56:06 AM Prarit Bhargava wrote:
-> Linux-3.7 added CONFIG_BOOTPARAM_HOTPLUG_CPU0,
-> allowing systems to offline cpu0.
+On Friday, July 28, 2017 12:16:37 PM Viresh Kumar wrote:
+> With Android UI and benchmarks the latency of cpufreq response to
+> certain scheduling events can become very critical. Currently, callbacks
+> into cpufreq governors are only made from the scheduler if the target
+> CPU of the event is the same as the current CPU. This means there are
+> certain situations where a target CPU may not run the cpufreq governor
+> for some time.
 > 
-> But when cpu0 is offline, cpupower monitor will not display all
-> processor and Mperf information:
+> One testcase [1] to show this behavior is where a task starts running on
+> CPU0, then a new task is also spawned on CPU0 by a task on CPU1. If the
+> system is configured such that the new tasks should receive maximum
+> demand initially, this should result in CPU0 increasing frequency
+> immediately. But because of the above mentioned limitation though, this
+> does not occur.
 > 
-> [root@intel-skylake-dh-03 cpupower]# ./cpupower monitor
-> WARNING: at least one cpu is offline
->     |Idle_Stats
-> CPU | POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S
->    4|  0.00|  0.00|  0.00|  0.00|  0.90|  0.00| 96.13
->    1|  0.00|  0.00|  5.49|  0.00|  0.01|  0.00| 92.26
->    5|  0.00|  0.00|  0.00|  0.00|  0.46|  0.00| 99.50
->    2| 45.42|  0.00|  0.00|  0.00| 22.94|  0.00| 28.84
->    6|  0.00| 37.54|  0.00|  0.00|  0.00|  0.00|  0.00
->    3|  0.00|  0.00|  0.00|  0.00|  0.30|  0.00| 91.99
->    7|  0.00|  0.00|  0.00|  0.00|  4.70|  0.00|  0.70
+> This series updates the scheduler core to call the cpufreq callbacks for
+> remote CPUs as well and updates the registered hooks to handle that.
 > 
-> This patch replaces the hard-coded use of cpu0 in cpupower with the
-> current cpu, allowing it to run without a cpu0.
+> This is tested with couple of usecases (Android: hackbench, recentfling,
+> galleryfling, vellamo, Ubuntu: hackbench) on ARM hikey board (64 bit
+> octa-core, single policy). Only galleryfling showed minor improvements,
+> while others didn't had much deviation.
 > 
-> After the patch is applied,
+> The reason being that this patch only targets a corner case, where
+> following are required to be true to improve performance and that
+> doesn't happen too often with these tests:
 > 
-> [root@intel-skylake-dh-03 cpupower]# ./cpupower monitor
-> WARNING: at least one cpu is offline
->     |Nehalem                    || Mperf              || Idle_Stats
-> CPU | C3   | C6   | PC3  | PC6  || C0   | Cx   | Freq || POLL | C1-S | C1E- | C3-S | C6-S | C7s- | C8-S
->    4|  0.01|  1.27|  0.00|  0.00||  0.04| 99.96|  3957||  0.00|  0.00|  0.00|  0.00|  1.43|  0.00| 98.52
->    1|  0.00| 98.82|  0.00|  0.00||  0.05| 99.95|  3361||  0.00|  0.00|  0.01|  0.00|  0.03|  0.00| 99.88
->    5|  0.00| 98.82|  0.00|  0.00||  0.09| 99.91|  3917||  0.00|  0.00|  0.00|  0.00| 99.38|  0.00|  0.50
->    2|  0.33|  0.00|  0.00|  0.00||  0.00|100.00|  3890||  0.00|  0.00|  0.00|  0.00|  0.00|  0.00|100.00
->    6|  0.33|  0.00|  0.00|  0.00||  0.01| 99.99|  3903||  0.00|  0.00|  0.00|  0.00|  0.00|  0.00| 99.99
->    3|  0.01|  0.71|  0.00|  0.00||  0.06| 99.94|  3678||  0.00|  0.00|  0.00|  0.00|  0.80|  0.00| 99.13
->    7|  0.01|  0.71|  0.00|  0.00||  0.03| 99.97|  3538||  0.00|  0.69| 11.70|  0.00|  0.00|  0.00| 87.57
+> - Task is migrated to another CPU.
+> - The task has high demand, and should take the target CPU to higher
+>   OPPs.
+> - And the target CPU doesn't call into the cpufreq governor until the
+>   next tick.
 > 
-> There are some minor cleanups included in this patch.
+> Rebased over: pm/linux-next
 > 
-> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-> Signed-off-by: Thomas Renninger <trenn@suse.com>
-> Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> Cc: ego.lkml@gmail.com
-> Cc: s1seetee@linux.vnet.ibm.com
+> V4->V5:
+> - Drop cpu field from "struct update_util_data" and add it in "struct
+>   sugov_cpu" instead.
+> - Can't have separate patches now because of the above change and so
+>   merged all the patches from V4 into a single patch.
+> - Add a comment suggested by PeterZ.
+> - Commit log of 1/2 is improved to contain more details.
+> - A new patch (which was posted during V1) is also added to take care of
+>   platforms where any CPU can do DVFS on behalf of any other CPU, even
+>   if they are part of different cpufreq policies. This has been
+>   requested by Saravana several times already and as the series is quite
+>   straight forward now, I decided to include it in.
+> 
+> V3->V4:
+> - Respect iowait boost flag and util updates for the all remote
+>   callbacks.
+> - Minor updates in commit log of 2/3.
+> 
+> V2->V3:
+> - Rearranged/merged patches as suggested by Rafael (looks much better
+>   now)
+> - Also handle new hook added to intel-pstate driver.
+> - The final code remains the same as V2, except for the above hook.
+> 
+> V1->V2:
+> - Don't support remote callbacks for unshared cpufreq policies.
+> - Don't support remote callbacks where local CPU isn't part of the
+>   target CPU's cpufreq policy.
+> - Dropped dvfs_possible_from_any_cpu flag.
+> 
 
-Applied, thanks!
+Applied with the tags from Peter and Saravana.
+
+Thanks,
+Rafael
