@@ -1,106 +1,46 @@
-From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Subject: [PATCH v6 1/2] dt-bindings: thermal: add binding documentation for
- UniPhier thermal monitor
-Date: Tue,  1 Aug 2017 17:04:50 +0900
-Message-ID: <1501574691-8961-2-git-send-email-hayashi.kunihiko@socionext.com>
-References: <1501574691-8961-1-git-send-email-hayashi.kunihiko@socionext.com>
+From: <sean.wang@mediatek.com>
+Subject: [PATCH v2 0/3] add support of SCPSYS power domain for MediaTek MT7622
+Date: Tue, 1 Aug 2017 18:06:10 +0800
+Message-ID: <cover.1501581552.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1501574691-8961-1-git-send-email-hayashi.kunihiko@socionext.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: mark.rutland@arm.com, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, masami.hiramatsu@linaro.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, yamada.masahiro@socionext.com, robh+dt@kernel.org, jaswinder.singh@linaro.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailgw01.mediatek.com ([210.61.82.183]:15622 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1751012AbdHAKGT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Aug 2017 06:06:19 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: robh+dt@kernel.org, matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com
+Cc: ulf.hansson@linaro.org, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>
 
-Add devicetree binding documentation for thermal monitor implemented on
-Socionext UniPhier SoCs.
+From: Sean Wang <sean.wang@mediatek.com>
 
-Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Acked-by: Rob Herring <robh@kernel.org>
----
- .../bindings/thermal/uniphier-thermal.txt          | 64 ++++++++++++++++++++++
- 1 file changed, 64 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
+Changes since v1:
+- rebase to Linux v4.13-rc1
 
-diff --git a/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt b/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
-new file mode 100644
-index 0000000..686c0b4
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
-@@ -0,0 +1,64 @@
-+* UniPhier Thermal bindings
-+
-+This describes the devicetree bindings for thermal monitor supported by
-+PVT(Process, Voltage and Temperature) monitoring unit implemented on Socionext
-+UniPhier SoCs.
-+
-+Required properties:
-+- compatible :
-+  - "socionext,uniphier-pxs2-thermal" : For UniPhier PXs2 SoC
-+  - "socionext,uniphier-ld20-thermal" : For UniPhier LD20 SoC
-+- interrupts : IRQ for the temperature alarm
-+- #thermal-sensor-cells : Should be 0. See ./thermal.txt for details.
-+
-+Optional properties:
-+- socionext,tmod-calibration: A pair of calibrated values referred from PVT,
-+                              in case that the values aren't set on SoC,
-+                              like a reference board.
-+
-+Example:
-+
-+	sysctrl@61840000 {
-+		compatible = "socionext,uniphier-ld20-sysctrl",
-+			     "simple-mfd", "syscon";
-+		reg = <0x61840000 0x10000>;
-+		...
-+		pvtctl: pvtctl {
-+			compatible = "socionext,uniphier-ld20-thermal";
-+			interrupts = <0 3 1>;
-+			#thermal-sensor-cells = <0>;
-+		};
-+		...
-+	};
-+
-+	thermal-zones {
-+		cpu_thermal {
-+			polling-delay-passive = <250>;	/* 250ms */
-+			polling-delay = <1000>;		/* 1000ms */
-+			thermal-sensors = <&pvtctl>;
-+
-+			trips {
-+				cpu_crit: cpu_crit {
-+					temperature = <110000>;	/* 110C */
-+					hysteresis = <2000>;
-+					type = "critical";
-+				};
-+				cpu_alert: cpu_alert {
-+					temperature = <100000>;	/* 100C */
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&cpu_alert>;
-+					cooling-device = <&cpu0 (-1) (-1)>;
-+				};
-+				map1 {
-+					trip = <&cpu_alert>;
-+					cooling-device = <&cpu2 (-1) (-1)>;
-+				};
-+			};
-+		};
-+	};
+There are four power domains on MediaTek MT7622 SoC which are respectively
+ETHSYS for Ethernet including extra embedded switch, HIF0SYS for PCI-E and
+SATA, HIF1SYS for USB and WBSYS for WIFI and Bluetooth.
+
+Those functions could be selectively powered gated when the corresponding
+function is no longer to use in order to reach more minimal power
+dissipation through the patch series introduced here.
+
+Chen Zhong (2):
+  soc: mediatek: add header files required for MT7622 SCPSYS dt-binding
+  soc: mediatek: add SCPSYS power domain driver for MediaTek MT7622 SoC
+
+Sean Wang (1):
+  dt-bindings: soc: update the binding document for SCPSYS on MediaTek
+    MT7622 SoC
+
+ .../devicetree/bindings/soc/mediatek/scpsys.txt    |  3 +
+ drivers/soc/mediatek/mtk-scpsys.c                  | 81 ++++++++++++++++++++++
+ include/dt-bindings/power/mt7622-power.h           | 22 ++++++
+ include/linux/soc/mediatek/infracfg.h              |  8 ++-
+ 4 files changed, 113 insertions(+), 1 deletion(-)
+ create mode 100644 include/dt-bindings/power/mt7622-power.h
+
 -- 
 2.7.4
