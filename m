@@ -1,52 +1,56 @@
-From: Louis Yu <louis.yu@mediatek.com>
-Subject: [PATCH v2 4/4] thermal: mediatek: minor mtk_thermal.c cleanups
-Date: Tue, 1 Aug 2017 15:28:33 +0800
-Message-ID: <1501572513-7958-5-git-send-email-louis.yu@mediatek.com>
-References: <1501572513-7958-1-git-send-email-louis.yu@mediatek.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailgw01.mediatek.com ([210.61.82.183]:62551 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751663AbdHAH37 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Aug 2017 03:29:59 -0400
-In-Reply-To: <1501572513-7958-1-git-send-email-louis.yu@mediatek.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Subject: [PATCH v6 0/2] add UniPhier thermal support
+Date: Tue,  1 Aug 2017 17:04:49 +0900
+Message-ID: <1501574691-8961-1-git-send-email-hayashi.kunihiko@socionext.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, robh+dt@kernel.org, mark.rutland@arm.com, yamada.masahiro@socionext.com, masami.hiramatsu@linaro.org, jaswinder.singh@linaro.org, Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dawei Chien <dawei.chien@mediatek.com>, Fan Chen <fan.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, Louis Yu <louis.yu@mediatek.com>
 
-Move independent thermal module reset in the beginning.
+This series adds support for CPU temperature monitor modules implemented
+on UniPhier LD20 and PXs2 SoCs. This driver supports temperature monitoring
+and alert function on the module.
 
-Signed-off-by: Louis Yu <louis.yu@mediatek.com>
----
- drivers/thermal/mtk_thermal.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Changes since v5:
+- replace of_get_property() with of_property_get_u32_array()
+- get the cariblation value in DT after failure to get the value from register
 
-diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-index b609589..1e61c09 100644
---- a/drivers/thermal/mtk_thermal.c
-+++ b/drivers/thermal/mtk_thermal.c
-@@ -712,16 +712,16 @@ static int mtk_thermal_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
-+	ret = device_reset(&pdev->dev);
-+	if (ret)
-+		return ret;
-+
- 	ret = clk_prepare_enable(mt->clk_auxadc);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Can't enable auxadc clk: %d\n", ret);
- 		return ret;
- 	}
- 
--	ret = device_reset(&pdev->dev);
--	if (ret)
--		goto err_disable_clk_auxadc;
--
- 	ret = clk_prepare_enable(mt->clk_peri_therm);
- 	if (ret) {
- 		dev_err(&pdev->dev, "Can't enable peri clk: %d\n", ret);
+Changes since v4:
+- fix warnings from sparse by replacing u32 with __be32
+
+Changes since v3:
+- remove TMOD_MASK and use TMOD_WIDTH representing the bit width of TMOD
+
+Changes since v2:
+- add nsleep after starting and stopping PVT
+- replace temperature calculation with sign_extend32()
+
+Changes since v1:
+- separate dts from this patchset as another patchset
+- remove 'reg' description on the dt-bindings document
+- fix the order of calling initialization functions
+- replace mask bits to use GENMASK
+- fix calculation of temperature because of not considering a negative value
+- use devm_request_threaded_irq() instead of devm_request_irq() and
+  separate a thread function from the interrupt handler
+- add dependency to Kconfig
+- set 120C to CRITICAL_TEMP_LIMIT as maximum temperature
+- shrink each line of parameters to save the number of lines
+- improve some comments and copyright description
+
+Kunihiko Hayashi (2):
+  dt-bindings: thermal: add binding documentation for UniPhier thermal
+    monitor
+  thermal: uniphier: add UniPhier thermal driver
+
+ .../bindings/thermal/uniphier-thermal.txt          |  64 ++++
+ drivers/thermal/Kconfig                            |   8 +
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/uniphier_thermal.c                 | 384 +++++++++++++++++++++
+ 4 files changed, 457 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
+ create mode 100644 drivers/thermal/uniphier_thermal.c
+
 -- 
-1.8.1.1.dirty
+2.7.4
