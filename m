@@ -1,29 +1,32 @@
 From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [RFC PATCH 1/5] dt-bindings: power: Add battery types
-Date: Wed, 2 Aug 2017 13:38:20 +0200
-Message-ID: <20170802113820.GA2765@amd>
+Date: Wed, 2 Aug 2017 13:43:04 +0200
+Message-ID: <20170802114304.GB2765@amd>
 References: <1501620926-22669-1-git-send-email-marek.belisko@open-nandra.com>
  <1501620926-22669-2-git-send-email-marek.belisko@open-nandra.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="E39vaYmALEf/7YXx"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51699 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753046AbdHBLnG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2017 07:43:06 -0400
 Content-Disposition: inline
 In-Reply-To: <1501620926-22669-2-git-send-email-marek.belisko@open-nandra.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Marek Belisko <marek.belisko@open-nandra.com>
 Cc: sre@kernel.org, robh+dt@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hns@goldelico.com, Marek Belisko <marek.belisko@gmail.com>
-List-Id: linux-pm@vger.kernel.org
 
 
---OXfL5xGRrasGEqWY
+--E39vaYmALEf/7YXx
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue 2017-08-01 22:55:22, Marek Belisko wrote:
-> From: Marek Belisko <marek.belisko@gmail.com>
->=20
+Hi!
+
 > Signed-off-by: Marek Belisko <marek.belisko@gmail.com>
 > ---
 >  include/dt-bindings/power/power.h | 11 +++++++++++
@@ -42,38 +45,40 @@ r/power.h
 > +
 > +#define POWER_SUPPLY_TECHNOLOGY_NiMH 1
 > +#define POWER_SUPPLY_TECHNOLOGY_LION 2
-
-Nice animal :-), but I guess this should be "LiION" or something.
-
 > +#define POWER_SUPPLY_TECHNOLOGY_LIPO 3
-
-Make it "LiPo" for consistency.
-
-There's no differnce between Li-ion and Li-Po from the software side,
-AFAICT, but I guess we can keep both..
-
 > +#define POWER_SUPPLY_TECHNOLOGY_LiFe 4
+
+Actually I'd add comments here, such as "/* LiFePO4 */, because
+otherwise it is a bit ambiguous.
+
 > +#define POWER_SUPPLY_TECHNOLOGY_NiCd 5
 > +#define POWER_SUPPLY_TECHNOLOGY_LiMn 6
 > +
 > +#endif /* _DT_BINDINGS_POWER_H */
 
+The rest of series is ok, you can add
+
+Acked-by: Pavel Machek <pavel@ucw.cz>
+
+, but I guess someone would want a little more verbose changelogs.
+
+BTW what hardware are you working with?
 									Pavel
 --=20
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
 g.html
 
---OXfL5xGRrasGEqWY
+--E39vaYmALEf/7YXx
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iEYEARECAAYFAlmBuawACgkQMOfwapXb+vIg2wCfYL98nQeICF78MuleooLt2SjE
-iH8An0NfgWelHvr9f65RbC7aicj3WUc9
-=MoxA
+iEYEARECAAYFAlmBusgACgkQMOfwapXb+vLr3QCgrkkhOd8aSFo+4I3+QsBcKwIJ
+1a0An1Vh67BNyYLS3k4QCSC8mvrjafoH
+=jF+n
 -----END PGP SIGNATURE-----
 
---OXfL5xGRrasGEqWY--
+--E39vaYmALEf/7YXx--
