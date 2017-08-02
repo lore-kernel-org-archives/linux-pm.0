@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V9 2/7] PM / Domains: Catch missing genpd_set_performance_state() in masters
-Date: Wed,  2 Aug 2017 15:42:33 +0530
-Message-ID: <565fee348107f84f643c8f1a37a90a41654ea707.1501668354.git.viresh.kumar@linaro.org>
+Subject: [PATCH V9 6/7] mmc: sdhci-msm: Adapt the driver to use OPPs to set clocks/performance state
+Date: Wed,  2 Aug 2017 15:42:37 +0530
+Message-ID: <9e8bdfb809f1b17212625da121f53be750131893.1501668354.git.viresh.kumar@linaro.org>
 References: <cover.1501668354.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1501668354.git.viresh.kumar@linaro.org>
@@ -12,153 +12,209 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <kh
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch catches the cases where dev_get_performance_state() callback
-is implemented for a genpd, but none of its masters or their masters
-(and so on) have implemented genpd_set_performance_state() callback.
+From: Rajendra Nayak <rnayak@codeaurora.org>
 
-The internal performance state routines don't return 0 anymore for
-success, rather they return count of the domains whose performance state
-is updated and the top level routine checks for that.
+THIS IS TEST CODE, SHOULDN'T BE MERGED.
 
-A zero value there would indicate that the genpd_set_performance_state()
-callbacks are missing in the master hierarchy of the device.
+SDHCI driver needs to set a performance state along with scaling its
+clocks. Modify the driver to use the newly introducded powerdomain
+performance state based OPPs to scale clocks as well as set an
+appropriate powerdomain performance state.
 
-This adds very little burden on the API and can be pretty useful.
+The patch also adds OPPs for sdhci device on msm8996.
 
-Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+The changes have to be validated by populating similar OPP tables
+on all other devices which use the sdhci driver. This is for now
+validated only on msm8996 and with missing OPP tables for other
+devices is known to break those platforms.
+
+NOT-signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+NOT-signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/domain.c | 40 +++++++++++++++++++++++++++-------------
- 1 file changed, 27 insertions(+), 13 deletions(-)
+ arch/arm64/boot/dts/qcom/msm8996.dtsi | 34 ++++++++++++++++++++++++++++++
+ drivers/clk/qcom/gcc-msm8996.c        |  8 +++----
+ drivers/mmc/host/sdhci-msm.c          | 39 ++++++++++++++++++++++++++---------
+ 3 files changed, 67 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 5f50d5295cd4..0922679c1d43 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -264,18 +264,20 @@ EXPORT_SYMBOL_GPL(dev_pm_genpd_has_performance_state);
- static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
- 					   int state, int depth);
+diff --git a/arch/arm64/boot/dts/qcom/msm8996.dtsi b/arch/arm64/boot/dts/qcom/msm8996.dtsi
+index 0ce9ea514cd1..00f514f53571 100644
+--- a/arch/arm64/boot/dts/qcom/msm8996.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8996.dtsi
+@@ -437,8 +437,42 @@
+ 			 <&gcc GCC_SDCC2_APPS_CLK>,
+ 			 <&xo_board>;
+ 			 bus-width = <4>;
++			power-domains = <&rpmpd 0>;
++			operating-points-v2 = <&sdhc_opp_table>;
+ 		 };
  
--/* Returns -ve errors or 0 on success */
-+/* Returns -ve errors or number of domains whose performance is set */
- static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
- 					int state, int depth)
++		sdhc_opp_table: opp_table {
++			compatible = "operating-points-v2";
++
++			opp@400000 {
++				opp-hz = /bits/ 64 <400000>;
++			};
++
++			opp@20000000 {
++				opp-hz = /bits/ 64 <20000000>;
++			};
++
++			opp@25000000 {
++				opp-hz = /bits/ 64 <25000000>;
++			};
++
++			opp@50000000 {
++				opp-hz = /bits/ 64 <50000000>;
++			};
++
++			opp@96000000 {
++				opp-hz = /bits/ 64 <96000000>;
++			};
++
++			opp@192000000 {
++				opp-hz = /bits/ 64 <192000000>;
++			};
++
++			opp@384000000 {
++				opp-hz = /bits/ 64 <384000000>;
++			};
++		};
++
+ 		msmgpio: pinctrl@1010000 {
+ 			compatible = "qcom,msm8996-pinctrl";
+ 			reg = <0x01010000 0x300000>;
+diff --git a/drivers/clk/qcom/gcc-msm8996.c b/drivers/clk/qcom/gcc-msm8996.c
+index 8abc200d4fd3..9eb23063e78f 100644
+--- a/drivers/clk/qcom/gcc-msm8996.c
++++ b/drivers/clk/qcom/gcc-msm8996.c
+@@ -460,7 +460,7 @@ static struct clk_rcg2 sdcc1_apps_clk_src = {
+ 		.name = "sdcc1_apps_clk_src",
+ 		.parent_names = gcc_xo_gpll0_gpll4_gpll0_early_div,
+ 		.num_parents = 4,
+-		.ops = &clk_rcg2_floor_ops,
++		.ops = &clk_rcg2_ops,
+ 	},
+ };
+ 
+@@ -505,7 +505,7 @@ static struct clk_rcg2 sdcc2_apps_clk_src = {
+ 		.name = "sdcc2_apps_clk_src",
+ 		.parent_names = gcc_xo_gpll0_gpll4,
+ 		.num_parents = 3,
+-		.ops = &clk_rcg2_floor_ops,
++		.ops = &clk_rcg2_ops,
+ 	},
+ };
+ 
+@@ -519,7 +519,7 @@ static struct clk_rcg2 sdcc3_apps_clk_src = {
+ 		.name = "sdcc3_apps_clk_src",
+ 		.parent_names = gcc_xo_gpll0_gpll4,
+ 		.num_parents = 3,
+-		.ops = &clk_rcg2_floor_ops,
++		.ops = &clk_rcg2_ops,
+ 	},
+ };
+ 
+@@ -543,7 +543,7 @@ static struct clk_rcg2 sdcc4_apps_clk_src = {
+ 		.name = "sdcc4_apps_clk_src",
+ 		.parent_names = gcc_xo_gpll0,
+ 		.num_parents = 2,
+-		.ops = &clk_rcg2_floor_ops,
++		.ops = &clk_rcg2_ops,
+ 	},
+ };
+ 
+diff --git a/drivers/mmc/host/sdhci-msm.c b/drivers/mmc/host/sdhci-msm.c
+index 9d601dc0d646..2dfa4d58e113 100644
+--- a/drivers/mmc/host/sdhci-msm.c
++++ b/drivers/mmc/host/sdhci-msm.c
+@@ -21,6 +21,7 @@
+ #include <linux/pm_runtime.h>
+ #include <linux/slab.h>
+ #include <linux/iopoll.h>
++#include <linux/pm_opp.h>
+ 
+ #include "sdhci-pltfm.h"
+ 
+@@ -131,6 +132,7 @@ struct sdhci_msm_host {
+ 	struct clk *pclk;	/* SDHC peripheral bus clock */
+ 	struct clk *bus_clk;	/* SDHC bus voter clock */
+ 	struct clk *xo_clk;	/* TCXO clk needed for FLL feature of cm_dll*/
++	struct opp_table *opp_table;
+ 	unsigned long clk_rate;
+ 	struct mmc_host *mmc;
+ 	bool use_14lpp_dll_reset;
+@@ -140,7 +142,7 @@ struct sdhci_msm_host {
+ 	bool use_cdclp533;
+ };
+ 
+-static unsigned int msm_get_clock_rate_for_bus_mode(struct sdhci_host *host,
++static long unsigned int msm_get_clock_rate_for_bus_mode(struct sdhci_host *host,
+ 						    unsigned int clock)
  {
- 	struct generic_pm_domain *master;
- 	struct gpd_link *link;
--	int prev = genpd->performance_state, ret;
-+	int prev = genpd->performance_state, ret, count = 0;
- 
- 	if (genpd->genpd_set_performance_state) {
- 		ret = genpd->genpd_set_performance_state(genpd, state);
- 		if (ret)
- 			return ret;
+ 	struct mmc_ios ios = host->mmc->ios;
+@@ -165,16 +167,22 @@ static void msm_set_clock_rate_for_bus_mode(struct sdhci_host *host,
+ 	struct sdhci_msm_host *msm_host = sdhci_pltfm_priv(pltfm_host);
+ 	struct mmc_ios curr_ios = host->mmc->ios;
+ 	int rc;
++	struct device *dev = &msm_host->pdev->dev;
++	struct dev_pm_opp *opp;
++	long unsigned int freq;
 +
-+		count = 1;
- 	}
- 
- 	/* Propagate to masters of genpd */
-@@ -286,13 +288,15 @@ static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
- 
- 		link->performance_state = state;
- 		ret = _genpd_reeval_performance_state(master, state, depth + 1);
--		if (ret)
-+		if (ret < 0)
- 			link->performance_state = prev;
- 
- 		genpd_unlock(master);
- 
--		if (ret)
-+		if (ret < 0)
- 			goto err;
++	freq = msm_get_clock_rate_for_bus_mode(host, clock);
++	opp = dev_pm_opp_find_freq_floor(dev, &freq);
++	if (IS_ERR(opp))
++		pr_err("%s: failed to find OPP for %u at timing %d\n",
++				mmc_hostname(host->mmc), clock, curr_ios.timing);
 +
-+		count += ret;
++	rc = dev_pm_opp_set_rate(dev, freq);
++	if (rc)
++		pr_err("%s: error in setting opp\n", __func__);
++
++	msm_host->clk_rate = freq;
+ 
+-	clock = msm_get_clock_rate_for_bus_mode(host, clock);
+-	rc = clk_set_rate(msm_host->clk, clock);
+-	if (rc) {
+-		pr_err("%s: Failed to set clock at rate %u at timing %d\n",
+-		       mmc_hostname(host->mmc), clock,
+-		       curr_ios.timing);
+-		return;
+-	}
+-	msm_host->clk_rate = clock;
+ 	pr_debug("%s: Setting clock at rate %lu at timing %d\n",
+ 		 mmc_hostname(host->mmc), clk_get_rate(msm_host->clk),
+ 		 curr_ios.timing);
+@@ -1267,6 +1275,13 @@ static int sdhci_msm_probe(struct platform_device *pdev)
+ 		goto clk_disable;
  	}
  
- 	/*
-@@ -300,7 +304,7 @@ static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
- 	 * with those.
- 	 */
- 	genpd->performance_state = state;
--	return 0;
-+	return count;
++	/* Set up the OPP table */
++	msm_host->opp_table = dev_pm_opp_set_clkname(&pdev->dev, "core");
++
++	ret = dev_pm_opp_of_add_table(&pdev->dev);
++	if (ret)
++		dev_warn(&pdev->dev, "%s: No OPP table specified\n", __func__);
++
+ 	pm_runtime_get_noresume(&pdev->dev);
+ 	pm_runtime_set_active(&pdev->dev);
+ 	pm_runtime_enable(&pdev->dev);
+@@ -1288,6 +1303,8 @@ static int sdhci_msm_probe(struct platform_device *pdev)
+ 	pm_runtime_disable(&pdev->dev);
+ 	pm_runtime_set_suspended(&pdev->dev);
+ 	pm_runtime_put_noidle(&pdev->dev);
++	dev_pm_opp_of_remove_table(&pdev->dev);
++	dev_pm_opp_put_clkname(msm_host->opp_table);
+ clk_disable:
+ 	clk_disable_unprepare(msm_host->clk);
+ pclk_disable:
+@@ -1313,6 +1330,8 @@ static int sdhci_msm_remove(struct platform_device *pdev)
+ 	pm_runtime_get_sync(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 	pm_runtime_put_noidle(&pdev->dev);
++	dev_pm_opp_of_remove_table(&pdev->dev);
++	dev_pm_opp_put_clkname(msm_host->opp_table);
  
- err:
- 	/* Encountered an error, lets rollback */
-@@ -310,7 +314,7 @@ static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
- 
- 		genpd_lock_nested(master, depth + 1);
- 		link->performance_state = prev;
--		if (_genpd_reeval_performance_state(master, prev, depth + 1)) {
-+		if (_genpd_reeval_performance_state(master, prev, depth + 1) < 0) {
- 			pr_err("%s: Failed to roll back to %d performance state\n",
- 			       master->name, prev);
- 		}
-@@ -352,7 +356,7 @@ static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
-  * - The locks are always taken in bottom->up order, i.e. subdomain first,
-  *   followed by its masters.
-  *
-- * Returns -ve errors or 0 on success.
-+ * Returns -ve errors or number of domains whose performance is set.
-  */
- static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
- 					   int state, int depth)
-@@ -361,9 +365,14 @@ static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
- 	struct pm_domain_data *pdd;
- 	struct gpd_link *link;
- 
--	/* New requested state is same as Max requested state */
--	if (state == genpd->performance_state)
--		return 0;
-+	if (state == genpd->performance_state) {
-+		/*
-+		 * New requested state is same as Max requested state, return 1
-+		 * to distinguish from the case where none of the masters have
-+		 * set their genpd_set_performance_state() callback.
-+		 */
-+		return 1;
-+	}
- 
- 	/* New requested state is higher than Max requested state */
- 	if (state > genpd->performance_state)
-@@ -451,7 +460,7 @@ int dev_pm_genpd_update_performance_state(struct device *dev,
- 	}
- 
- 	ret = _genpd_reeval_performance_state(genpd, state, 0);
--	if (!ret) {
-+	if (ret > 0) {
- 		/*
- 		 * Since we are passing "state" to
- 		 * _genpd_reeval_performance_state() as well, we don't need to
-@@ -460,6 +469,11 @@ int dev_pm_genpd_update_performance_state(struct device *dev,
- 		 * state of master domain is updated.
- 		 */
- 		__genpd_dev_update_performance_state(dev, state);
-+		ret = 0;
-+	} else {
-+		WARN(!ret, "%s: None of %s and its masters have provided genpd_set_performance_state()\n",
-+		     __func__, genpd->name);
-+		ret = -ENODEV;
- 	}
- 
- unlock:
-@@ -478,7 +492,7 @@ static int _genpd_on_update_performance_state(struct generic_pm_domain *genpd,
- 		return 0;
- 
- 	ret = _genpd_set_performance_state(genpd, prev, depth);
--	if (ret) {
-+	if (ret < 0) {
- 		pr_err("%s: Failed to restore performance state to %d (%d)\n",
- 		       genpd->name, prev, ret);
- 	} else {
-@@ -497,7 +511,7 @@ static void _genpd_off_update_performance_state(struct generic_pm_domain *genpd,
- 		return;
- 
- 	ret = _genpd_set_performance_state(genpd, 0, depth);
--	if (ret) {
-+	if (ret < 0) {
- 		pr_err("%s: Failed to set performance state to 0 (%d)\n",
- 		       genpd->name, ret);
- 	} else {
+ 	clk_disable_unprepare(msm_host->clk);
+ 	clk_disable_unprepare(msm_host->pclk);
 -- 
 2.13.0.71.gd7076ec9c9cb
