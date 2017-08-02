@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V9 6/7] mmc: sdhci-msm: Adapt the driver to use OPPs to set clocks/performance state
-Date: Wed,  2 Aug 2017 15:42:37 +0530
-Message-ID: <9e8bdfb809f1b17212625da121f53be750131893.1501668354.git.viresh.kumar@linaro.org>
+Subject: [PATCH V9 7/7] remoteproc: qcom: q6v5: Vote for proxy powerdomain performance state
+Date: Wed,  2 Aug 2017 15:42:38 +0530
+Message-ID: <632eb4c9568177dd7a3f3c29ba88698616f6e4ad.1501668354.git.viresh.kumar@linaro.org>
 References: <cover.1501668354.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1501668354.git.viresh.kumar@linaro.org>
@@ -16,205 +16,110 @@ From: Rajendra Nayak <rnayak@codeaurora.org>
 
 THIS IS TEST CODE, SHOULDN'T BE MERGED.
 
-SDHCI driver needs to set a performance state along with scaling its
-clocks. Modify the driver to use the newly introducded powerdomain
-performance state based OPPs to scale clocks as well as set an
-appropriate powerdomain performance state.
+This patch just demonstrates the usage of pm_genpd_update_performance_state()
+api in cases where users need to set performance state of a powerdomain without
+having to do it via the OPP framework.
 
-The patch also adds OPPs for sdhci device on msm8996.
+q6v5 remoteproc driver needs to proxy vote for performance states of multiple
+powerdomains (but we currently only demonstate how it can be done for
+one powerdomain, as there is no way to associate multiple powerdomains
+to a device at this time) while it loads the firmware, and then releases
+the vote, once the firmware is up and can vote for itself.
 
-The changes have to be validated by populating similar OPP tables
-on all other devices which use the sdhci driver. This is for now
-validated only on msm8996 and with missing OPP tables for other
-devices is known to break those platforms.
+This is not a functional patch since rpmpd driver only supports msm8996
+and there is no msm8996 support in the q6v5 remoteproc driver at this
+point in mainline.
+
+This patch is not tested as well.
 
 NOT-signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 NOT-signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm64/boot/dts/qcom/msm8996.dtsi | 34 ++++++++++++++++++++++++++++++
- drivers/clk/qcom/gcc-msm8996.c        |  8 +++----
- drivers/mmc/host/sdhci-msm.c          | 39 ++++++++++++++++++++++++++---------
- 3 files changed, 67 insertions(+), 14 deletions(-)
+ drivers/remoteproc/qcom_q6v5_pil.c | 20 +++++++++++++-------
+ drivers/soc/qcom/rpmpd.c           |  5 +++++
+ 2 files changed, 18 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/msm8996.dtsi b/arch/arm64/boot/dts/qcom/msm8996.dtsi
-index 0ce9ea514cd1..00f514f53571 100644
---- a/arch/arm64/boot/dts/qcom/msm8996.dtsi
-+++ b/arch/arm64/boot/dts/qcom/msm8996.dtsi
-@@ -437,8 +437,42 @@
- 			 <&gcc GCC_SDCC2_APPS_CLK>,
- 			 <&xo_board>;
- 			 bus-width = <4>;
-+			power-domains = <&rpmpd 0>;
-+			operating-points-v2 = <&sdhc_opp_table>;
- 		 };
+diff --git a/drivers/remoteproc/qcom_q6v5_pil.c b/drivers/remoteproc/qcom_q6v5_pil.c
+index 8fd697a3cf8f..586f74ddd909 100644
+--- a/drivers/remoteproc/qcom_q6v5_pil.c
++++ b/drivers/remoteproc/qcom_q6v5_pil.c
+@@ -18,6 +18,7 @@
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
++#include <linux/pm_domain.h>
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/mfd/syscon.h>
+@@ -152,6 +153,8 @@ struct q6v5 {
+ 	void *mpss_region;
+ 	size_t mpss_size;
  
-+		sdhc_opp_table: opp_table {
-+			compatible = "operating-points-v2";
++	bool has_perf_state;
 +
-+			opp@400000 {
-+				opp-hz = /bits/ 64 <400000>;
-+			};
-+
-+			opp@20000000 {
-+				opp-hz = /bits/ 64 <20000000>;
-+			};
-+
-+			opp@25000000 {
-+				opp-hz = /bits/ 64 <25000000>;
-+			};
-+
-+			opp@50000000 {
-+				opp-hz = /bits/ 64 <50000000>;
-+			};
-+
-+			opp@96000000 {
-+				opp-hz = /bits/ 64 <96000000>;
-+			};
-+
-+			opp@192000000 {
-+				opp-hz = /bits/ 64 <192000000>;
-+			};
-+
-+			opp@384000000 {
-+				opp-hz = /bits/ 64 <384000000>;
-+			};
-+		};
-+
- 		msmgpio: pinctrl@1010000 {
- 			compatible = "qcom,msm8996-pinctrl";
- 			reg = <0x01010000 0x300000>;
-diff --git a/drivers/clk/qcom/gcc-msm8996.c b/drivers/clk/qcom/gcc-msm8996.c
-index 8abc200d4fd3..9eb23063e78f 100644
---- a/drivers/clk/qcom/gcc-msm8996.c
-+++ b/drivers/clk/qcom/gcc-msm8996.c
-@@ -460,7 +460,7 @@ static struct clk_rcg2 sdcc1_apps_clk_src = {
- 		.name = "sdcc1_apps_clk_src",
- 		.parent_names = gcc_xo_gpll0_gpll4_gpll0_early_div,
- 		.num_parents = 4,
--		.ops = &clk_rcg2_floor_ops,
-+		.ops = &clk_rcg2_ops,
- 	},
+ 	struct qcom_rproc_subdev smd_subdev;
  };
  
-@@ -505,7 +505,7 @@ static struct clk_rcg2 sdcc2_apps_clk_src = {
- 		.name = "sdcc2_apps_clk_src",
- 		.parent_names = gcc_xo_gpll0_gpll4,
- 		.num_parents = 3,
--		.ops = &clk_rcg2_floor_ops,
-+		.ops = &clk_rcg2_ops,
- 	},
- };
+@@ -603,11 +606,12 @@ static int q6v5_start(struct rproc *rproc)
+ 	struct q6v5 *qproc = (struct q6v5 *)rproc->priv;
+ 	int ret;
  
-@@ -519,7 +519,7 @@ static struct clk_rcg2 sdcc3_apps_clk_src = {
- 		.name = "sdcc3_apps_clk_src",
- 		.parent_names = gcc_xo_gpll0_gpll4,
- 		.num_parents = 3,
--		.ops = &clk_rcg2_floor_ops,
-+		.ops = &clk_rcg2_ops,
- 	},
- };
- 
-@@ -543,7 +543,7 @@ static struct clk_rcg2 sdcc4_apps_clk_src = {
- 		.name = "sdcc4_apps_clk_src",
- 		.parent_names = gcc_xo_gpll0,
- 		.num_parents = 2,
--		.ops = &clk_rcg2_floor_ops,
-+		.ops = &clk_rcg2_ops,
- 	},
- };
- 
-diff --git a/drivers/mmc/host/sdhci-msm.c b/drivers/mmc/host/sdhci-msm.c
-index 9d601dc0d646..2dfa4d58e113 100644
---- a/drivers/mmc/host/sdhci-msm.c
-+++ b/drivers/mmc/host/sdhci-msm.c
-@@ -21,6 +21,7 @@
- #include <linux/pm_runtime.h>
- #include <linux/slab.h>
- #include <linux/iopoll.h>
-+#include <linux/pm_opp.h>
- 
- #include "sdhci-pltfm.h"
- 
-@@ -131,6 +132,7 @@ struct sdhci_msm_host {
- 	struct clk *pclk;	/* SDHC peripheral bus clock */
- 	struct clk *bus_clk;	/* SDHC bus voter clock */
- 	struct clk *xo_clk;	/* TCXO clk needed for FLL feature of cm_dll*/
-+	struct opp_table *opp_table;
- 	unsigned long clk_rate;
- 	struct mmc_host *mmc;
- 	bool use_14lpp_dll_reset;
-@@ -140,7 +142,7 @@ struct sdhci_msm_host {
- 	bool use_cdclp533;
- };
- 
--static unsigned int msm_get_clock_rate_for_bus_mode(struct sdhci_host *host,
-+static long unsigned int msm_get_clock_rate_for_bus_mode(struct sdhci_host *host,
- 						    unsigned int clock)
- {
- 	struct mmc_ios ios = host->mmc->ios;
-@@ -165,16 +167,22 @@ static void msm_set_clock_rate_for_bus_mode(struct sdhci_host *host,
- 	struct sdhci_msm_host *msm_host = sdhci_pltfm_priv(pltfm_host);
- 	struct mmc_ios curr_ios = host->mmc->ios;
- 	int rc;
-+	struct device *dev = &msm_host->pdev->dev;
-+	struct dev_pm_opp *opp;
-+	long unsigned int freq;
-+
-+	freq = msm_get_clock_rate_for_bus_mode(host, clock);
-+	opp = dev_pm_opp_find_freq_floor(dev, &freq);
-+	if (IS_ERR(opp))
-+		pr_err("%s: failed to find OPP for %u at timing %d\n",
-+				mmc_hostname(host->mmc), clock, curr_ios.timing);
-+
-+	rc = dev_pm_opp_set_rate(dev, freq);
-+	if (rc)
-+		pr_err("%s: error in setting opp\n", __func__);
-+
-+	msm_host->clk_rate = freq;
- 
--	clock = msm_get_clock_rate_for_bus_mode(host, clock);
--	rc = clk_set_rate(msm_host->clk, clock);
--	if (rc) {
--		pr_err("%s: Failed to set clock at rate %u at timing %d\n",
--		       mmc_hostname(host->mmc), clock,
--		       curr_ios.timing);
--		return;
--	}
--	msm_host->clk_rate = clock;
- 	pr_debug("%s: Setting clock at rate %lu at timing %d\n",
- 		 mmc_hostname(host->mmc), clk_get_rate(msm_host->clk),
- 		 curr_ios.timing);
-@@ -1267,6 +1275,13 @@ static int sdhci_msm_probe(struct platform_device *pdev)
- 		goto clk_disable;
+-	ret = q6v5_regulator_enable(qproc, qproc->proxy_regs,
+-				    qproc->proxy_reg_count);
+-	if (ret) {
+-		dev_err(qproc->dev, "failed to enable proxy supplies\n");
+-		return ret;
++	if (qproc->has_perf_state) {
++		ret = dev_pm_genpd_update_performance_state(qproc->dev, INT_MAX);
++		if (ret) {
++			dev_err(qproc->dev, "Failed to set performance state.\n");
++			return ret;
++		}
  	}
  
-+	/* Set up the OPP table */
-+	msm_host->opp_table = dev_pm_opp_set_clkname(&pdev->dev, "core");
-+
-+	ret = dev_pm_opp_of_add_table(&pdev->dev);
-+	if (ret)
-+		dev_warn(&pdev->dev, "%s: No OPP table specified\n", __func__);
-+
- 	pm_runtime_get_noresume(&pdev->dev);
- 	pm_runtime_set_active(&pdev->dev);
- 	pm_runtime_enable(&pdev->dev);
-@@ -1288,6 +1303,8 @@ static int sdhci_msm_probe(struct platform_device *pdev)
- 	pm_runtime_disable(&pdev->dev);
- 	pm_runtime_set_suspended(&pdev->dev);
- 	pm_runtime_put_noidle(&pdev->dev);
-+	dev_pm_opp_of_remove_table(&pdev->dev);
-+	dev_pm_opp_put_clkname(msm_host->opp_table);
- clk_disable:
- 	clk_disable_unprepare(msm_host->clk);
- pclk_disable:
-@@ -1313,6 +1330,8 @@ static int sdhci_msm_remove(struct platform_device *pdev)
- 	pm_runtime_get_sync(&pdev->dev);
- 	pm_runtime_disable(&pdev->dev);
- 	pm_runtime_put_noidle(&pdev->dev);
-+	dev_pm_opp_of_remove_table(&pdev->dev);
-+	dev_pm_opp_put_clkname(msm_host->opp_table);
+ 	ret = q6v5_clk_enable(qproc->dev, qproc->proxy_clks,
+@@ -671,8 +675,8 @@ static int q6v5_start(struct rproc *rproc)
  
- 	clk_disable_unprepare(msm_host->clk);
- 	clk_disable_unprepare(msm_host->pclk);
+ 	q6v5_clk_disable(qproc->dev, qproc->proxy_clks,
+ 			 qproc->proxy_clk_count);
+-	q6v5_regulator_disable(qproc, qproc->proxy_regs,
+-			       qproc->proxy_reg_count);
++	if (qproc->has_perf_state)
++		dev_pm_genpd_update_performance_state(qproc->dev, 0);
+ 
+ 	return 0;
+ 
+@@ -1043,6 +1047,8 @@ static int q6v5_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto free_rproc;
+ 
++	qproc->has_perf_state = pm_genpd_has_performance_state(&qproc->dev);
++
+ 	return 0;
+ 
+ free_rproc:
+diff --git a/drivers/soc/qcom/rpmpd.c b/drivers/soc/qcom/rpmpd.c
+index 4e4f5cda9ce2..c1733da8a7c8 100644
+--- a/drivers/soc/qcom/rpmpd.c
++++ b/drivers/soc/qcom/rpmpd.c
+@@ -145,6 +145,7 @@ enum msm8996_devices {
+ 	UFS,
+ 	PCIE,
+ 	USB3,
++	Q6V5_PIL,
+ };
+ 
+ static struct rpmpd_freq_map msm8996_rpmpd_freq_map[] = {
+@@ -171,6 +172,10 @@ static struct rpmpd_freq_map msm8996_rpmpd_freq_map[] = {
+ 		.freq[LOW] = 120000000,
+ 		.freq[NOMINAL] = 150000000,
+ 	},
++	[Q6V5_PIL] = {
++		.pd = &msm8996_vddcx,
++		.freq[HIGH] = INT_MAX,
++	},
+ };
+ 
+ static const struct of_device_id rpmpd_performance_table[] = {
 -- 
 2.13.0.71.gd7076ec9c9cb
