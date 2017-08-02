@@ -1,50 +1,38 @@
-From: Kees Cook <keescook@chromium.org>
-Subject: Re: [RFC 16/22] x86/percpu: Adapt percpu for PIE support
-Date: Wed, 2 Aug 2017 09:56:32 -0700
-Message-ID: <CAGXu5jLhg5d0rxkfTGDjNxcsqd9BH8BSOPEOn=PBKx_dYeq8ow@mail.gmail.com>
-References: <20170718223333.110371-1-thgarnie@google.com> <20170718223333.110371-17-thgarnie@google.com>
- <CAMzpN2g5YkFZTY7yfvG03QUKc-=asKMZbqke9g4e2oT_pgg7Yw@mail.gmail.com>
- <CAJcbSZFXrDZikh9P5M81ztkiMv7EhO4x0bzBdYE8RYC=HMZgqg@mail.gmail.com>
- <25a2974a-fbb4-ea4b-d090-582d6d0de7fd@zytor.com> <CAJcbSZHuOhMHW6OTyt7-vZkPLS3XRQ48gpkF-TyohXpDW+825w@mail.gmail.com>
- <CAJcbSZF5-gVg=Q6yAV2ymHo+SC6Go=vQHXMR0UTdKH2Jbe-s-g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-9211-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: keescook@google.com
-In-Reply-To: <CAJcbSZF5-gVg=Q6yAV2ymHo+SC6Go=vQHXMR0UTdKH2Jbe-s-g@mail.gmail.com>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Brian Gerst <brgerst@gmail.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@alien8.de>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, Christian Borntraeger <borntraeger@de.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [PATCH] thermal: intel_pch_thermal: constify pci_device_id.
+Date: Wed,  2 Aug 2017 23:28:40 +0530
+Message-ID: <c05199b0e83a76e5ca8e5e94f207aabf419f618d.1501696637.git.arvind.yadav.cs@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f194.google.com ([209.85.192.194]:34285 "EHLO
+        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751988AbdHBR6u (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2017 13:58:50 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Aug 2, 2017 at 9:42 AM, Thomas Garnier <thgarnie@google.com> wrote:
-> I noticed that not only we have the problem of gs:0x40 not being
-> accessible. The compiler will default to the fs register if
-> mcmodel=kernel is not set.
->
-> On the next patch set, I am going to add support for
-> -mstack-protector-guard=global so a global variable can be used
-> instead of the segment register. Similar approach than ARM/ARM64.
+pci_device_id are not supposed to change at runtime. All functions
+working with pci_device_id provided by <linux/pci.h> work with
+const pci_device_id. So mark the non-const structs as const.
 
-While this is probably understood, I have to point out that this would
-be a major regression for the stack protection on x86.
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/thermal/intel_pch_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> Following this patch, I will work with gcc and llvm to add
-> -mstack-protector-reg=<segment register> support similar to PowerPC.
-> This way we can have gs used even without mcmodel=kernel. Once that's
-> an option, I can setup the GDT as described in the previous email
-> (similar to RFG).
-
-It would be much nicer if we could teach gcc about the percpu area
-instead. This would let us solve the global stack protector problem on
-the other architectures:
-http://www.openwall.com/lists/kernel-hardening/2017/06/27/6
-
--Kees
-
+diff --git a/drivers/thermal/intel_pch_thermal.c b/drivers/thermal/intel_pch_thermal.c
+index 2b49e8d..0bdce3e 100644
+--- a/drivers/thermal/intel_pch_thermal.c
++++ b/drivers/thermal/intel_pch_thermal.c
+@@ -387,7 +387,7 @@ static int intel_pch_thermal_resume(struct device *device)
+ 	return ptd->ops->resume(ptd);
+ }
+ 
+-static struct pci_device_id intel_pch_thermal_id[] = {
++static const struct pci_device_id intel_pch_thermal_id[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_HSW_1),
+ 		.driver_data = board_hsw, },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_HSW_2),
 -- 
-Kees Cook
-Pixel Security
+2.7.4
