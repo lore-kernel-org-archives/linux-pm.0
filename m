@@ -1,54 +1,173 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V8 1/6] PM / Domains: Add support to select
- performance-state of domains
-Date: Wed, 2 Aug 2017 13:51:51 +0530
-Message-ID: <20170802082151.GD31169@vireshk-i7>
-References: <cover.1498026827.git.viresh.kumar@linaro.org>
- <52daf22d2c9d92b0e61c8c5c5a88516d7a08a31a.1498026827.git.viresh.kumar@linaro.org>
- <CAPDyKFqaFvET9yM_6wr7b1Zw=hePQrE-Ak-7YPCR9izooh4LBA@mail.gmail.com>
- <20170719123751.GF352@vireshk-i7>
- <CAPDyKFr0ZMeS=57p48W9f_j3U0T41msxOqQHBXB_soA8-weM+w@mail.gmail.com>
- <20170728110030.GG352@vireshk-i7>
- <CAPDyKFrt8_dWZSFYh3ERfDSxBGjfEHFEYbeMnnT7tfNKnBp6dw@mail.gmail.com>
- <20170731041424.GA5804@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH V9 0/7] PM / Domains: Performance state support
+Date: Wed,  2 Aug 2017 15:42:31 +0530
+Message-ID: <cover.1501668354.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170731041424.GA5804@vireshk-i7>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 31-07-17, 09:44, Viresh Kumar wrote:
-> On 29-07-17, 10:24, Ulf Hansson wrote:
-> > Let's invent a new genpd flag, GENPD_FLAG_PERF_STATE!
-> > 
-> > The creator of the genpd then needs to set this before calling
-> > pm_genpd_init(). Similar as we are dealing with GENPD_FLAG_PM_CLK.
-> > 
-> > The requirement for GENPD_FLAG_PERF_STATES, is to have the
-> > ->get_performance_state() assigned. This shall be verified during
-> > pm_genpd_init().
-> > 
-> > The pm_genpd_has_performance_state() then only need to return true, in
-> > cases the device's genpd has GENPD_FLAG_PERF_STATE set - else false.
-> > 
-> > Regarding ->set_performance_state(), let's just make it optional - and
-> > when trying to set a new performance state, just walk the genpd
-> > hierarchy, from bottom to up, then invoke the callback when it's
-> > assigned.
-> 
-> Sounds good.
+Hi Ulf/Kevin,
 
-Actually, I don't think we need this flag at all. The presence of the
-get_performance_state() callback itself can be used as a flag here instead of
-defining a new one.
+These are the changes since V8:
 
-As with both, your above solution and my solution, we pretty much don't check
-presence of set_performance_state() callbacks in the master hierarchy. If its
-present, we call it, else nothing happens.
+- Renamed genpd callbacks and internal routines.
+- dev_pm_genpd_has_performance_state() simplified a lot and doesn't
+  check master hierarchy now. Rather a new patch (2/7) is added to
+  take care of that and WARN if no master has set
+  genpd_set_performance_state() callback.
+- Update is propagated to the masters even if the genpd's callback is
+  already called.
+- Exit _genpd_reeval_performance_state() early if no state change is
+  required and it gets an additional argument (new state of the
+  device/subdomain).
+- Taken care of genpd on/off cases.
+- s/parent/master everywhere in comments and logs.
+- Better explanations in logs, comments etc.
+- All the other patches (3-7/7) are same as V8. (Just minor update in
+  5/7 to use the updated callback names).
+
+-------------------------8<-------------------------
+
+Some platforms have the capability to configure the performance state of
+their power domains. The process of configuring the performance state is
+pretty much platform dependent and we may need to work with a wide range
+of configurables.  For some platforms, like Qcom, it can be a positive
+integer value alone, while in other cases it can be voltage levels, etc.
+
+The power-domain framework until now was only designed for the idle
+state management of the device and this needs to change in order to
+reuse the power-domain framework for active state management of the
+devices.
+
+The first two patches updates the genpd framework to supply new APIs to
+support active state management and the third patch uses them from the
+OPP core.
+
+Rest of the patches [4-4/4] are included just to show how user drivers
+would end up using the new APIs and these patches aren't there to get
+merged and are marked clearly like that.
+
+The ideal way is still to get the relation between device and domain
+states via the DT instead of platform code, but that can be done
+incrementally later once we have some users for it upstream.
+
+This is currently tested by:
+- /me by hacking the kernel a bit with virtual power-domains for the ARM
+  64 hikey platform. I have also tested the complex cases where the
+  device's parent power domain doesn't have set_performance_state()
+  callback set, but parents of that domains have it. Lockdep configs
+  were enabled for these tests.
+- Rajendra Nayak, on msm8996 platform (Qcom) with MMC controller.
+
+Thanks Rajendra for helping me testing this out.
+
+Pushed here as well:
+
+https://git.linaro.org/people/viresh.kumar/linux.git/log/?h=opp/genpd-performance-state
+
+Rebased on: pm/linux-next (have some OPP dependencies there)
+
+V7->V8:
+- Ulf helped a lot in reviewing V7 and pointed out couple of issues,
+  specially in locking while dealing with a hierarchy of power domains.
+- All those locking issues are sorted out now, even for the complex
+  cases.
+- genpd_lookup_dev() is used in pm_genpd_has_performance_state() to make
+  sure we have a valid genpd available for the device.
+- Validation of performance state callbacks isn't done anymore in
+  pm_genpd_init() as it gets called very early and the binding of
+  subdomains to their parent domains happens later. This is handled in
+  pm_genpd_has_performance_state() now, which is called from user
+  drivers.
+- User driver changes (not to be merged) are included for the first time
+  here, to demonstrate how changes would look finally.
+
+V6->V7:
+- Almost a rewrite, only two patches against 9 in earlier version.
+- No bindings updated now and domain's performance state aren't passed
+  via DT for now (until we know how users are going to use it).
+- We also skipped the QoS framework completely and new APIs are provided
+  directly by genpd.
+
+V5->V6:
+- Use freq/voltage in OPP table as it is for power domain and don't
+  create "domain-performance-level" property
+- Create new "power-domain-opp" property for the devices.
+- Take care of domain providers that provide multiple domains and extend
+  "operating-points-v2" property to contain a list of phandles
+- Update code according to those bindings.
+
+V4->V5:
+- Only 3 patches were resent and 2 of them are Acked from Ulf.
+
+V3->V4:
+- Use OPP table for genpd devices as well.
+- Add struct device to genpd, in order to reuse OPP infrastructure.
+- Based over: https://marc.info/?l=linux-kernel&m=148972988002317&w=2
+- Fixed examples in DT document to have voltage in target,min,max order.
+
+V2->V3:
+- Based over latest pm/linux-next
+- Bindings and code are merged together
+- Lots of updates in bindings
+  - the performance-states node is present within the power-domain now,
+    instead of its phandle.
+  - performance-level property is replaced by "reg".
+  - domain-performance-state property of the consumers contain an
+    integer value now instead of phandle.
+- Lots of updates to the code as well
+  - Patch "PM / QOS: Add default case to the switch" is merged with
+    other patches and the code is changed a bit as well.
+  - Don't pass 'type' to dev_pm_qos_add_notifier(), rather handle all
+    notifiers with a single list. A new patch is added for that.
+  - The OPP framework patch can be applied now and has proper SoB from
+    me.
+  - Dropped "PM / domain: Save/restore performance state at runtime
+    suspend/resume".
+  - Drop all WARN().
+  - Tested-by Rajendra nayak.
+
+V1->V2:
+- Based over latest pm/linux-next
+- It is mostly a resend of what is sent earlier as this series hasn't
+  got any reviews so far and Rafael suggested that its better I resend
+  it.
+- Only the 4/6 patch got an update, which was shared earlier as reply to
+  V1 as well. It has got several fixes for taking care of power domain
+  hierarchy, etc.
+
+--
+viresh
+
+Rajendra Nayak (4):
+  soc: qcom: rpmpd: Add a powerdomain driver to model cx/mx powerdomains
+  soc: qcom: rpmpd: Add support for get/set performance state
+  mmc: sdhci-msm: Adapt the driver to use OPPs to set clocks/performance
+    state
+  remoteproc: qcom: q6v5: Vote for proxy powerdomain performance state
+
+Viresh Kumar (3):
+  PM / Domains: Add support to select performance-state of domains
+  PM / Domains: Catch missing genpd_set_performance_state() in masters
+  PM / OPP: Support updating performance state of device's power domains
+
+ .../devicetree/bindings/power/qcom,rpmpd.txt       |  10 +
+ arch/arm64/boot/dts/qcom/msm8996.dtsi              |  39 ++
+ drivers/base/power/domain.c                        | 298 ++++++++++++++-
+ drivers/base/power/opp/core.c                      |  48 ++-
+ drivers/base/power/opp/opp.h                       |   2 +
+ drivers/clk/qcom/gcc-msm8996.c                     |   8 +-
+ drivers/mmc/host/sdhci-msm.c                       |  39 +-
+ drivers/remoteproc/qcom_q6v5_pil.c                 |  20 +-
+ drivers/soc/qcom/Kconfig                           |   9 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/rpmpd.c                           | 412 +++++++++++++++++++++
+ include/linux/pm_domain.h                          |  23 ++
+ 12 files changed, 885 insertions(+), 24 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/qcom,rpmpd.txt
+ create mode 100644 drivers/soc/qcom/rpmpd.c
 
 -- 
-viresh
+2.13.0.71.gd7076ec9c9cb
