@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V9 1/7] PM / Domains: Add support to select performance-state of domains
-Date: Wed,  2 Aug 2017 15:42:32 +0530
-Message-ID: <be580e89b254e3aa42e9784a8b73244e913c26e4.1501668354.git.viresh.kumar@linaro.org>
+Subject: [PATCH V9 3/7] PM / OPP: Support updating performance state of device's power domains
+Date: Wed,  2 Aug 2017 15:42:34 +0530
+Message-ID: <f58fd4bbde2f96cbb78a514e6580be1506850019.1501668354.git.viresh.kumar@linaro.org>
 References: <cover.1501668354.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1501668354.git.viresh.kumar@linaro.org>
@@ -12,462 +12,124 @@ To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <kh
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Some platforms have the capability to configure the performance state of
-PM domains and this patch updates the genpd core to support them.
+The genpd framework now provides an API to request device's power
+domain to update its performance state based on a particular target
+frequency for the device.
 
-The performance levels (within the genpd core) are identified by
-positive integer values, a lower value represents lower performance
-state.
+Use that interface from the OPP core for devices whose power domains
+support performance states.
 
-This patch adds two new genpd APIs:
-
-- int dev_pm_genpd_has_performance_state(struct device *dev)
-
-  This can be called (only once) by the device drivers to make sure all
-  dependencies are met and the PM domain of the device supports
-  performance states.
-
-- int dev_pm_genpd_update_performance_state(struct device *dev,
-  					    unsigned long rate);
-
-  This can be called (any number of times) by the device drivers after
-  they have called dev_pm_genpd_has_performance_state() once and it
-  returned "true".
-
-  This call will update the performance state of the PM domain of the
-  device (for which this routine is called) and propagate it to the
-  masters of the PM domain. This requires certain callbacks to be
-  available for the genpd of the device, which are internally called by
-  this routine in the order in which they are described below.
-
-  - dev_get_performance_state()
-
-    This shall return the performance state (integer value)
-    corresponding to a target frequency for the device. This state is
-    used by the genpd core as device's requested performance state and
-    would be used while aggregating the requested states of all the
-    devices and subdomains for a PM domain.
-
-    Note that the same state value will be used by the device's PM
-    domain and its masters hierarchy. We may want to implement master
-    specific states later on once we have more complex cases available.
-
-    Providing this callback is mandatory for any genpd which needs to
-    manage performance states and is registered as master of one or more
-    devices. Domains which only have sub domains and no devices, should
-    not implement this callback.
-
-  - genpd_set_performance_state()
-
-    The aggregate of the performance states of the devices and
-    subdomains of a PM genpd is then passed to this callback, which must
-    change the performance state of the genpd. This callback of the
-    masters of the genpd are also called to propagate the change.
-
-  The power domains can avoid supplying these callbacks, if they don't
-  support setting performance-states.
+Note that the current implementation is restricted to the case where the
+device doesn't have separate regulators for itself. We shouldn't
+over engineer the code before we have real use case for them. We can
+always come back and add more code to support such cases later on.
 
 Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/domain.c | 284 +++++++++++++++++++++++++++++++++++++++++++-
- include/linux/pm_domain.h   |  23 ++++
- 2 files changed, 305 insertions(+), 2 deletions(-)
+ drivers/base/power/opp/core.c | 48 ++++++++++++++++++++++++++++++++++++++++++-
+ drivers/base/power/opp/opp.h  |  2 ++
+ 2 files changed, 49 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 43fd08e50ae9..5f50d5295cd4 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -237,6 +237,274 @@ static void genpd_update_accounting(struct generic_pm_domain *genpd)
- static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
- #endif
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index a8cc14fd8ae4..4360b4efcd4c 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -19,6 +19,7 @@
+ #include <linux/slab.h>
+ #include <linux/device.h>
+ #include <linux/export.h>
++#include <linux/pm_domain.h>
+ #include <linux/regulator/consumer.h>
  
-+/**
-+ * dev_pm_genpd_has_performance_state - Checks if power domain does performance
-+ * state management.
-+ *
-+ * @dev: Device whose power domain is getting inquired.
-+ *
-+ * This can be called by the user drivers, before they start calling
-+ * dev_pm_genpd_update_performance_state(), to guarantee that all dependencies
-+ * are met and the device's genpd supports performance states.
-+ *
-+ * It is assumed that the user driver guarantees that the genpd wouldn't be
-+ * detached while this routine is getting called.
-+ *
-+ * Returns "true" if device's genpd supports performance states, "false"
-+ * otherwise.
-+ */
-+bool dev_pm_genpd_has_performance_state(struct device *dev)
+ #include "opp.h"
+@@ -535,6 +536,42 @@ _generic_set_opp_clk_only(struct device *dev, struct clk *clk,
+ 	return ret;
+ }
+ 
++static inline int
++_generic_set_opp_domain(struct device *dev, struct clk *clk,
++			unsigned long old_freq, unsigned long freq)
 +{
-+	struct generic_pm_domain *genpd = genpd_lookup_dev(dev);
++	int ret;
 +
-+	return !IS_ERR(genpd) && genpd->dev_get_performance_state;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_genpd_has_performance_state);
-+
-+static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
-+					   int state, int depth);
-+
-+/* Returns -ve errors or 0 on success */
-+static int _genpd_set_performance_state(struct generic_pm_domain *genpd,
-+					int state, int depth)
-+{
-+	struct generic_pm_domain *master;
-+	struct gpd_link *link;
-+	int prev = genpd->performance_state, ret;
-+
-+	if (genpd->genpd_set_performance_state) {
-+		ret = genpd->genpd_set_performance_state(genpd, state);
++	/* Scaling up? Scale domain performance state before frequency */
++	if (freq > old_freq) {
++		ret = dev_pm_genpd_update_performance_state(dev, freq);
 +		if (ret)
 +			return ret;
 +	}
 +
-+	/* Propagate to masters of genpd */
-+	list_for_each_entry(link, &genpd->slave_links, slave_node) {
-+		master = link->master;
++	ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
++	if (ret)
++		goto restore_domain_state;
 +
-+		genpd_lock_nested(master, depth + 1);
-+
-+		link->performance_state = state;
-+		ret = _genpd_reeval_performance_state(master, state, depth + 1);
++	/* Scaling down? Scale domain performance state after frequency */
++	if (freq < old_freq) {
++		ret = dev_pm_genpd_update_performance_state(dev, freq);
 +		if (ret)
-+			link->performance_state = prev;
-+
-+		genpd_unlock(master);
-+
-+		if (ret)
-+			goto err;
++			goto restore_freq;
 +	}
 +
-+	/*
-+	 * The masters are updated now, lets get genpd performance_state in sync
-+	 * with those.
-+	 */
-+	genpd->performance_state = state;
 +	return 0;
 +
-+err:
-+	/* Encountered an error, lets rollback */
-+	list_for_each_entry_continue_reverse(link, &genpd->slave_links,
-+					     slave_node) {
-+		master = link->master;
-+
-+		genpd_lock_nested(master, depth + 1);
-+		link->performance_state = prev;
-+		if (_genpd_reeval_performance_state(master, prev, depth + 1)) {
-+			pr_err("%s: Failed to roll back to %d performance state\n",
-+			       master->name, prev);
-+		}
-+		genpd_unlock(master);
-+	}
-+
-+	if (genpd->genpd_set_performance_state) {
-+		if (genpd->genpd_set_performance_state(genpd, prev)) {
-+			pr_err("%s: Failed to roll back to %d performance state\n",
-+			       genpd->name, prev);
-+		}
-+	}
++restore_freq:
++	if (_generic_set_opp_clk_only(dev, clk, freq, old_freq))
++		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
++			__func__, old_freq);
++restore_domain_state:
++	dev_pm_genpd_update_performance_state(dev, old_freq);
 +
 +	return ret;
 +}
 +
-+/*
-+ * Re-evaluate performance state of a genpd. Finds the highest requested
-+ * performance state by the devices and subdomains within the genpd and then
-+ * change genpd's performance state (if required). The request is then
-+ * propagated to the masters of the genpd.
-+ *
-+ * @genpd: PM domain whose state needs to be reevaluated.
-+ * @state: Newly requested performance state of the device or subdomain for
-+ * which this routine is called.
-+ * @depth: nesting count for lockdep.
-+ *
-+ * Locking rules followed are:
-+ *
-+ * - Device's state (pd_data->performance_state) should be accessed from within
-+ *   its master's lock protected section.
-+ *
-+ * - Subdomains have a separate state field (link->performance_state) per master
-+ *   domain and is accessed only from within master's lock protected section.
-+ *
-+ * - Subdomain's state (genpd->performance_state) should be accessed from within
-+ *   its own lock protected section.
-+ *
-+ * - The locks are always taken in bottom->up order, i.e. subdomain first,
-+ *   followed by its masters.
-+ *
-+ * Returns -ve errors or 0 on success.
-+ */
-+static int _genpd_reeval_performance_state(struct generic_pm_domain *genpd,
-+					   int state, int depth)
-+{
-+	struct generic_pm_domain_data *pd_data;
-+	struct pm_domain_data *pdd;
-+	struct gpd_link *link;
-+
-+	/* New requested state is same as Max requested state */
-+	if (state == genpd->performance_state)
-+		return 0;
-+
-+	/* New requested state is higher than Max requested state */
-+	if (state > genpd->performance_state)
-+		goto update_state;
-+
-+	/* Traverse all devices within the domain */
-+	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-+		pd_data = to_gpd_data(pdd);
-+
-+		if (pd_data->performance_state > state)
-+			state = pd_data->performance_state;
-+	}
-+
-+	/*
-+	 * Traverse all subdomains within the domain. This can be done without
-+	 * any additional locks as all link->performance_state fields are
-+	 * protected by genpd->lock, which is already taken.
-+	 */
-+	list_for_each_entry(link, &genpd->master_links, master_node) {
-+		if (link->performance_state > state)
-+			state = link->performance_state;
-+	}
-+
-+update_state:
-+	return _genpd_set_performance_state(genpd, state, depth);
-+}
-+
-+static void __genpd_dev_update_performance_state(struct device *dev, int state)
-+{
-+	struct generic_pm_domain_data *gpd_data;
-+
-+	spin_lock_irq(&dev->power.lock);
-+
-+	if (!dev->power.subsys_data || !dev->power.subsys_data->domain_data) {
-+		WARN_ON(1);
-+		goto unlock;
-+	}
-+
-+	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
-+	gpd_data->performance_state = state;
-+
-+unlock:
-+	spin_unlock_irq(&dev->power.lock);
-+}
-+
-+/**
-+ * dev_pm_genpd_update_performance_state - Update performance state of device's
-+ * power domain for the target frequency for the device.
-+ *
-+ * @dev: Device for which the performance-state needs to be adjusted.
-+ * @rate: Device's next frequency. This can be set as 0 when the device doesn't
-+ * have any performance state constraints left (And so the device wouldn't
-+ * participate anymore to find the target performance state of the genpd).
-+ *
-+ * The user drivers may want to call dev_pm_genpd_has_performance_state() (only
-+ * once) before calling this routine (any number of times) to guarantee that all
-+ * dependencies are met.
-+ *
-+ * It is assumed that the user driver guarantees that the genpd wouldn't be
-+ * detached while this routine is getting called.
-+ *
-+ * Returns 0 on success and negative error values on failures.
-+ */
-+int dev_pm_genpd_update_performance_state(struct device *dev,
-+					  unsigned long rate)
-+{
-+	struct generic_pm_domain *genpd;
-+	int ret, state;
-+
-+	genpd = dev_to_genpd(dev);
-+	if (IS_ERR(genpd))
-+		return -ENODEV;
-+
-+	genpd_lock(genpd);
-+
-+	if (!genpd_status_on(genpd)) {
-+		ret = -EBUSY;
-+		goto unlock;
-+	}
-+
-+	state = genpd->dev_get_performance_state(dev, rate);
-+	if (state < 0) {
-+		ret = state;
-+		goto unlock;
-+	}
-+
-+	ret = _genpd_reeval_performance_state(genpd, state, 0);
-+	if (!ret) {
+ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
+ 				      struct device *dev,
+ 				      unsigned long old_freq,
+@@ -653,7 +690,14 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 
+ 	/* Only frequency scaling */
+ 	if (!opp_table->regulators) {
+-		ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
 +		/*
-+		 * Since we are passing "state" to
-+		 * _genpd_reeval_performance_state() as well, we don't need to
-+		 * call __genpd_dev_update_performance_state() before updating
-+		 * genpd's state with the above call. Update it only after the
-+		 * state of master domain is updated.
++		 * We don't support devices with both regulator and
++		 * domain performance-state for now.
 +		 */
-+		__genpd_dev_update_performance_state(dev, state);
-+	}
-+
-+unlock:
-+	genpd_unlock(genpd);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_genpd_update_performance_state);
-+
-+static int _genpd_on_update_performance_state(struct generic_pm_domain *genpd,
-+					      int depth)
-+{
-+	int ret, prev = genpd->prev_performance_state;
-+
-+	if (likely(!prev))
-+		return 0;
-+
-+	ret = _genpd_set_performance_state(genpd, prev, depth);
-+	if (ret) {
-+		pr_err("%s: Failed to restore performance state to %d (%d)\n",
-+		       genpd->name, prev, ret);
-+	} else {
-+		genpd->prev_performance_state = 0;
-+	}
-+
-+	return ret;
-+}
-+
-+static void _genpd_off_update_performance_state(struct generic_pm_domain *genpd,
-+						int depth)
-+{
-+	int ret, state = genpd->performance_state;
-+
-+	if (likely(!state))
-+		return;
-+
-+	ret = _genpd_set_performance_state(genpd, 0, depth);
-+	if (ret) {
-+		pr_err("%s: Failed to set performance state to 0 (%d)\n",
-+		       genpd->name, ret);
-+	} else {
-+		genpd->prev_performance_state = state;
-+	}
-+}
-+
- static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- {
- 	unsigned int state_idx = genpd->state_idx;
-@@ -388,6 +656,8 @@ static int genpd_power_off(struct generic_pm_domain *genpd, bool one_dev_on,
- 			return ret;
++		if (opp_table->genpd_performance_state)
++			ret = _generic_set_opp_domain(dev, clk, old_freq, freq);
++		else
++			ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
+ 	} else if (!opp_table->set_opp) {
+ 		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
+ 						 IS_ERR(old_opp) ? NULL : old_opp->supplies,
+@@ -755,6 +799,8 @@ static struct opp_table *_allocate_opp_table(struct device *dev)
+ 				ret);
  	}
  
-+	_genpd_off_update_performance_state(genpd, depth);
++	opp_table->genpd_performance_state = dev_pm_genpd_has_performance_state(dev);
 +
- 	genpd->status = GPD_STATE_POWER_OFF;
- 	genpd_update_accounting(genpd);
+ 	BLOCKING_INIT_NOTIFIER_HEAD(&opp_table->head);
+ 	INIT_LIST_HEAD(&opp_table->opp_list);
+ 	mutex_init(&opp_table->lock);
+diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
+index 166eef990599..1efa253e1934 100644
+--- a/drivers/base/power/opp/opp.h
++++ b/drivers/base/power/opp/opp.h
+@@ -135,6 +135,7 @@ enum opp_table_access {
+  * @clk: Device's clock handle
+  * @regulators: Supply regulators
+  * @regulator_count: Number of power supply regulators
++ * @genpd_performance_state: Device's power domain support performance state.
+  * @set_opp: Platform specific set_opp callback
+  * @set_opp_data: Data to be passed to set_opp callback
+  * @dentry:	debugfs dentry pointer of the real device directory (not links).
+@@ -170,6 +171,7 @@ struct opp_table {
+ 	struct clk *clk;
+ 	struct regulator **regulators;
+ 	unsigned int regulator_count;
++	bool genpd_performance_state;
  
-@@ -437,15 +707,21 @@ static int genpd_power_on(struct generic_pm_domain *genpd, unsigned int depth)
- 		}
- 	}
- 
--	ret = _genpd_power_on(genpd, true);
-+	ret = _genpd_on_update_performance_state(genpd, depth);
- 	if (ret)
- 		goto err;
- 
-+	ret = _genpd_power_on(genpd, true);
-+	if (ret)
-+		goto err_power_on;
-+
- 	genpd->status = GPD_STATE_ACTIVE;
- 	genpd_update_accounting(genpd);
- 
- 	return 0;
- 
-+ err_power_on:
-+	_genpd_off_update_performance_state(genpd, depth);
-  err:
- 	list_for_each_entry_continue_reverse(link,
- 					&genpd->slave_links,
-@@ -807,6 +1083,8 @@ static void genpd_sync_power_off(struct generic_pm_domain *genpd, bool use_lock,
- 	if (_genpd_power_off(genpd, false))
- 		return;
- 
-+	_genpd_off_update_performance_state(genpd, depth);
-+
- 	genpd->status = GPD_STATE_POWER_OFF;
- 
- 	list_for_each_entry(link, &genpd->slave_links, slave_node) {
-@@ -852,7 +1130,9 @@ static void genpd_sync_power_on(struct generic_pm_domain *genpd, bool use_lock,
- 			genpd_unlock(link->master);
- 	}
- 
--	_genpd_power_on(genpd, false);
-+	if (!_genpd_on_update_performance_state(genpd, depth))
-+		if (_genpd_power_on(genpd, false))
-+			_genpd_off_update_performance_state(genpd, depth);
- 
- 	genpd->status = GPD_STATE_ACTIVE;
- }
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 84f423d5633e..715cca7ac399 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -64,8 +64,13 @@ struct generic_pm_domain {
- 	unsigned int device_count;	/* Number of devices */
- 	unsigned int suspended_count;	/* System suspend device counter */
- 	unsigned int prepared_count;	/* Suspend counter of prepared devices */
-+	unsigned int performance_state;	/* Max requested performance state */
-+	unsigned int prev_performance_state;	/* Performance state before power off */
- 	int (*power_off)(struct generic_pm_domain *domain);
- 	int (*power_on)(struct generic_pm_domain *domain);
-+	int (*dev_get_performance_state)(struct device *dev, unsigned long rate);
-+	int (*genpd_set_performance_state)(struct generic_pm_domain *genpd,
-+					   unsigned int state);
- 	struct gpd_dev_ops dev_ops;
- 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
- 	bool max_off_time_changed;
-@@ -102,6 +107,9 @@ struct gpd_link {
- 	struct list_head master_node;
- 	struct generic_pm_domain *slave;
- 	struct list_head slave_node;
-+
-+	/* Sub-domain's per-master domain performance state */
-+	unsigned int performance_state;
- };
- 
- struct gpd_timing_data {
-@@ -121,6 +129,7 @@ struct generic_pm_domain_data {
- 	struct pm_domain_data base;
- 	struct gpd_timing_data td;
- 	struct notifier_block nb;
-+	unsigned int performance_state;
- 	void *data;
- };
- 
-@@ -148,6 +157,9 @@ extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
- extern int pm_genpd_init(struct generic_pm_domain *genpd,
- 			 struct dev_power_governor *gov, bool is_off);
- extern int pm_genpd_remove(struct generic_pm_domain *genpd);
-+extern bool dev_pm_genpd_has_performance_state(struct device *dev);
-+extern int dev_pm_genpd_update_performance_state(struct device *dev,
-+						 unsigned long rate);
- 
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-@@ -188,6 +200,17 @@ static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
- 	return -ENOTSUPP;
- }
- 
-+static inline bool dev_pm_genpd_has_performance_state(struct device *dev)
-+{
-+	return false;
-+}
-+
-+static inline int dev_pm_genpd_update_performance_state(struct device *dev,
-+							unsigned long rate)
-+{
-+	return -ENOTSUPP;
-+}
-+
- #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
- #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
- #endif
+ 	int (*set_opp)(struct dev_pm_set_opp_data *data);
+ 	struct dev_pm_set_opp_data *set_opp_data;
 -- 
 2.13.0.71.gd7076ec9c9cb
