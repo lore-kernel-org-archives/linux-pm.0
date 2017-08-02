@@ -1,120 +1,79 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Subject: [PATCH] power: add const to bin_attribute structures
-Date: Wed,  2 Aug 2017 15:59:38 +0530
-Message-ID: <1501669778-25033-1-git-send-email-bhumirks@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:37377 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751997AbdHBKaQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2017 06:30:16 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC PATCH 1/5] dt-bindings: power: Add battery types
+Date: Wed, 2 Aug 2017 13:38:20 +0200
+Message-ID: <20170802113820.GA2765@amd>
+References: <1501620926-22669-1-git-send-email-marek.belisko@open-nandra.com>
+ <1501620926-22669-2-git-send-email-marek.belisko@open-nandra.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1501620926-22669-2-git-send-email-marek.belisko@open-nandra.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Marek Belisko <marek.belisko@open-nandra.com>
+Cc: sre@kernel.org, robh+dt@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hns@goldelico.com, Marek Belisko <marek.belisko@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: julia.lawall@lip6.fr, sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
 
-Add const to bin_attribute structures as they are only passed to the
-functions sysfs_{remove/create}_bin_file or
-device_{remove/create}_bin_file. The corresponding parameters
-passed are of type const, so declare the structures to be const.
 
-Done using Coccinelle:
+--OXfL5xGRrasGEqWY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-@m disable optional_qualifier@
-identifier s;
-position p;
-@@
-static struct bin_attribute s@p={...};
+On Tue 2017-08-01 22:55:22, Marek Belisko wrote:
+> From: Marek Belisko <marek.belisko@gmail.com>
+>=20
+> Signed-off-by: Marek Belisko <marek.belisko@gmail.com>
+> ---
+>  include/dt-bindings/power/power.h | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+>  create mode 100644 include/dt-bindings/power/power.h
+>=20
+> diff --git a/include/dt-bindings/power/power.h b/include/dt-bindings/powe=
+r/power.h
+> new file mode 100644
+> index 0000000..ea36d7f
+> --- /dev/null
+> +++ b/include/dt-bindings/power/power.h
+> @@ -0,0 +1,11 @@
+> +#ifndef _DT_BINDINGS_POWER_H
+> +#define _DT_BINDINGS_POWER_H
+> +
+> +#define POWER_SUPPLY_TECHNOLOGY_NiMH 1
+> +#define POWER_SUPPLY_TECHNOLOGY_LION 2
 
-@okay1@
-position p;
-identifier m.s;
-@@
-(
-sysfs_create_bin_file(...,&s@p,...)
-|
-sysfs_remove_bin_file(...,&s@p,...)
-)
+Nice animal :-), but I guess this should be "LiION" or something.
 
-@bad@
-position p!={m.p,okay1.p};
-identifier m.s;
-@@
-s@p
+> +#define POWER_SUPPLY_TECHNOLOGY_LIPO 3
 
-@change depends on !bad disable optional_qualifier@
-identifier m.s;
-@@
-static
-+const
-struct bin_attribute s={...};
+Make it "LiPo" for consistency.
 
-Same script was modified for device_{create/remove}_bin_file functions.
+There's no differnce between Li-ion and Li-Po from the software side,
+AFAICT, but I guess we can keep both..
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
-Could not find an architecture to cross compile olpc_battery.o file.
+> +#define POWER_SUPPLY_TECHNOLOGY_LiFe 4
+> +#define POWER_SUPPLY_TECHNOLOGY_NiCd 5
+> +#define POWER_SUPPLY_TECHNOLOGY_LiMn 6
+> +
+> +#endif /* _DT_BINDINGS_POWER_H */
 
- drivers/power/supply/ds2780_battery.c | 4 ++--
- drivers/power/supply/ds2781_battery.c | 4 ++--
- drivers/power/supply/olpc_battery.c   | 2 +-
- 3 files changed, 5 insertions(+), 5 deletions(-)
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-diff --git a/drivers/power/supply/ds2780_battery.c b/drivers/power/supply/ds2780_battery.c
-index 8edd4aa..e5d81b4 100644
---- a/drivers/power/supply/ds2780_battery.c
-+++ b/drivers/power/supply/ds2780_battery.c
-@@ -663,7 +663,7 @@ static ssize_t ds2780_write_param_eeprom_bin(struct file *filp,
- 	return count;
- }
- 
--static struct bin_attribute ds2780_param_eeprom_bin_attr = {
-+static const struct bin_attribute ds2780_param_eeprom_bin_attr = {
- 	.attr = {
- 		.name = "param_eeprom",
- 		.mode = S_IRUGO | S_IWUSR,
-@@ -708,7 +708,7 @@ static ssize_t ds2780_write_user_eeprom_bin(struct file *filp,
- 	return count;
- }
- 
--static struct bin_attribute ds2780_user_eeprom_bin_attr = {
-+static const struct bin_attribute ds2780_user_eeprom_bin_attr = {
- 	.attr = {
- 		.name = "user_eeprom",
- 		.mode = S_IRUGO | S_IWUSR,
-diff --git a/drivers/power/supply/ds2781_battery.c b/drivers/power/supply/ds2781_battery.c
-index 4400402..efe83ef 100644
---- a/drivers/power/supply/ds2781_battery.c
-+++ b/drivers/power/supply/ds2781_battery.c
-@@ -665,7 +665,7 @@ static ssize_t ds2781_write_param_eeprom_bin(struct file *filp,
- 	return count;
- }
- 
--static struct bin_attribute ds2781_param_eeprom_bin_attr = {
-+static const struct bin_attribute ds2781_param_eeprom_bin_attr = {
- 	.attr = {
- 		.name = "param_eeprom",
- 		.mode = S_IRUGO | S_IWUSR,
-@@ -711,7 +711,7 @@ static ssize_t ds2781_write_user_eeprom_bin(struct file *filp,
- 	return count;
- }
- 
--static struct bin_attribute ds2781_user_eeprom_bin_attr = {
-+static const struct bin_attribute ds2781_user_eeprom_bin_attr = {
- 	.attr = {
- 		.name = "user_eeprom",
- 		.mode = S_IRUGO | S_IWUSR,
-diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/olpc_battery.c
-index 9e29b13..fc20ca3 100644
---- a/drivers/power/supply/olpc_battery.c
-+++ b/drivers/power/supply/olpc_battery.c
-@@ -535,7 +535,7 @@ static ssize_t olpc_bat_eeprom_read(struct file *filp, struct kobject *kobj,
- 	return count;
- }
- 
--static struct bin_attribute olpc_bat_eeprom = {
-+static const struct bin_attribute olpc_bat_eeprom = {
- 	.attr = {
- 		.name = "eeprom",
- 		.mode = S_IRUGO,
--- 
-1.9.1
+--OXfL5xGRrasGEqWY
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlmBuawACgkQMOfwapXb+vIg2wCfYL98nQeICF78MuleooLt2SjE
+iH8An0NfgWelHvr9f65RbC7aicj3WUc9
+=MoxA
+-----END PGP SIGNATURE-----
+
+--OXfL5xGRrasGEqWY--
