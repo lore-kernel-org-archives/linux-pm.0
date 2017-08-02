@@ -1,62 +1,70 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: Improve IO performance
-Date: Tue,  1 Aug 2017 20:45:06 -0700
-Message-ID: <1501645506-29398-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/1] cpufreq: imx6q: imx6ull: use PLL1 for frequency
+ higher than 528MHz
+Date: Wed, 2 Aug 2017 09:19:51 +0530
+Message-ID: <20170802034951.GA31169@vireshk-i7>
+References: <1501230993-15812-1-git-send-email-sebastien.szymanski@armadeus.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:6510 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751768AbdHBDp2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 1 Aug 2017 23:45:28 -0400
+Received: from mail-pg0-f46.google.com ([74.125.83.46]:35988 "EHLO
+        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751696AbdHBDty (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Aug 2017 23:49:54 -0400
+Received: by mail-pg0-f46.google.com with SMTP id v77so10300981pgb.3
+        for <linux-pm@vger.kernel.org>; Tue, 01 Aug 2017 20:49:54 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1501230993-15812-1-git-send-email-sebastien.szymanski@armadeus.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, lenb@kernel.org
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Shawn Guo <shawnguo@kernel.org>, =?iso-8859-1?Q?S=E9bastien?= Szymanski <sebastien.szymanski@armadeus.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Fabio Estevam <fabio.estevam@nxp.com>, Julien Boibessot <julien.boibessot@armadeus.com>
 
-In the current implementation the latency from SCHED_CPUFREQ_IOWAIT is
-set to actual P-state adjustment can be upto 10ms. This can be improved
-by reacting to SCHED_CPUFREQ_IOWAIT by jumping to max P-state immediately
-. With this change the IO performance improves significantly.
+On 28-07-17, 10:36, Sébastien Szymanski wrote:
+> Setting the frequency higher than 528Mhz actually sets the ARM
+> clock to 528MHz. That's because PLL2 is used as the root clock when the
+> frequency is higher than 396MHz.
+> 
+> cpupower frequency-set -f 792000
+> 
+> arm_clk_root on the CCM_CLKO2 signal is 528MHz instead of 792MHz.
+> 
+> [   61.606383] cpu cpu0: 396 MHz, 1025 mV --> 792 MHz, 1225 mV
+> 
+> pll2                         1  1  528000000 0 0
+>    pll2_bypass               1  1  528000000 0 0
+>       pll2_bus               3  3  528000000 0 0
+> 	 ca7_secondary_sel   1  1  528000000 0 0
+> 	    step             1  1  528000000 0 0
+> 	       pll1_sw       1  1  528000000 0 0
+> 		  arm        1  1  528000000 0 0
+> 
+> Fixes this by using the PLL1 as the root clock when the frequency is
+> higher than 528MHz.
+> 
+> cpupower frequency-set -f 792000
+> 
+> arm_clk_root on the CCM_CLKO2 signal is now 792MHz as expected.
+> 
+> [   69.717987] cpu cpu0: 198 MHz, 950 mV --> 792 MHz, 1225 mV
+> 
+> pll1               1 1 792000000 0 0
+>    pll1_bypass     1 1 792000000 0 0
+>       pll1_sys     1 1 792000000 0 0
+> 	 pll1_sw   1 1 792000000 0 0
+> 	    arm    1 1 792000000 0 0
+> 
+> Signed-off-by: Sébastien Szymanski <sebastien.szymanski@armadeus.com>
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
 
-With a simple "grep -r . linux" (Here linux is kernel source folder) with
-dropped caches every time on a platform with per core P-states on a
-Broadwell Xeon workstation, the user and system time improves as much as
-30% to 40%.
+Looks fine to me:
 
-The same performance difference was not observed on clients, which don't
-have per core P-state support.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/cpufreq/intel_pstate.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+@Shawn: Can you also confirm if this looks fine to you ?
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 8c67b77..7762255 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1527,6 +1527,15 @@ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
- 
- 	if (flags & SCHED_CPUFREQ_IOWAIT) {
- 		cpu->iowait_boost = int_tofp(1);
-+		/*
-+		 * The last time the busy was 100% so P-state was max anyway
-+		 * so avoid overhead of computation.
-+		 */
-+		if (fp_toint(cpu->sample.busy_scaled) == 100) {
-+			cpu->last_update = time;
-+			return;
-+		}
-+		goto set_pstate;
- 	} else if (cpu->iowait_boost) {
- 		/* Clear iowait_boost if the CPU may have been idle. */
- 		delta_ns = time - cpu->last_update;
-@@ -1538,6 +1547,7 @@ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
- 	if ((s64)delta_ns < INTEL_PSTATE_DEFAULT_SAMPLING_INTERVAL)
- 		return;
- 
-+set_pstate:
- 	if (intel_pstate_sample(cpu, time)) {
- 		int target_pstate;
- 
 -- 
-2.7.4
+viresh
