@@ -1,45 +1,62 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [Eas-dev] [PATCH V5 2/2] cpufreq: Process remote callbacks from
- any CPU if the platform permits
-Date: Wed, 2 Aug 2017 09:14:08 +0530
-Message-ID: <20170802034408.GB26689@vireshk-i7>
-References: <cover.1501223897.git.viresh.kumar@linaro.org>
- <c121a20eff05565155852c070e83504bf117da3e.1501223897.git.viresh.kumar@linaro.org>
- <CAEU1=Pm5sdV3imHpx7J2dNqYs5Y_mHiNnQt_HccHsgG2P9NyHQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAEU1=Pm5sdV3imHpx7J2dNqYs5Y_mHiNnQt_HccHsgG2P9NyHQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavan Kondeti <pkondeti@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Peter Zijlstra <peterz@infradead.org>, joelaf@google.com, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, skannan@codeaurora.org, smuckle.linux@gmail.com, eas-dev@lists.linaro.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] cpufreq: intel_pstate: Improve IO performance
+Date: Tue,  1 Aug 2017 20:45:06 -0700
+Message-ID: <1501645506-29398-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga05.intel.com ([192.55.52.43]:6510 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751768AbdHBDp2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 1 Aug 2017 23:45:28 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, lenb@kernel.org
+Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On 01-08-17, 16:30, Pavan Kondeti wrote:
-> Currently sugov threads in the schedutil governor are pinned to the
-> policy CPUs. schedutil can now make use of this new
-> dvfs_possible_from_any_cpu flag and avoid the pinning, right?
+In the current implementation the latency from SCHED_CPUFREQ_IOWAIT is
+set to actual P-state adjustment can be upto 10ms. This can be improved
+by reacting to SCHED_CPUFREQ_IOWAIT by jumping to max P-state immediately
+. With this change the IO performance improves significantly.
 
-Actually yes and it would be something as simple as below. Will send a patch for
-this if no one reports any problems with this.
+With a simple "grep -r . linux" (Here linux is kernel source folder) with
+dropped caches every time on a platform with per core P-states on a
+Broadwell Xeon workstation, the user and system time improves as much as
+30% to 40%.
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 9deedd5f16a5..6ea12a8c8863 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -471,7 +471,10 @@ static int sugov_kthread_create(struct sugov_policy *sg_policy)
-        }
+The same performance difference was not observed on clients, which don't
+have per core P-state support.
+
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 8c67b77..7762255 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1527,6 +1527,15 @@ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
  
-        sg_policy->thread = thread;
--       kthread_bind_mask(thread, policy->related_cpus);
-+
-+       if (!policy->dvfs_possible_from_any_cpu)
-+               kthread_bind_mask(thread, policy->related_cpus);
-+
-        init_irq_work(&sg_policy->irq_work, sugov_irq_work);
-        mutex_init(&sg_policy->work_lock);
+ 	if (flags & SCHED_CPUFREQ_IOWAIT) {
+ 		cpu->iowait_boost = int_tofp(1);
++		/*
++		 * The last time the busy was 100% so P-state was max anyway
++		 * so avoid overhead of computation.
++		 */
++		if (fp_toint(cpu->sample.busy_scaled) == 100) {
++			cpu->last_update = time;
++			return;
++		}
++		goto set_pstate;
+ 	} else if (cpu->iowait_boost) {
+ 		/* Clear iowait_boost if the CPU may have been idle. */
+ 		delta_ns = time - cpu->last_update;
+@@ -1538,6 +1547,7 @@ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+ 	if ((s64)delta_ns < INTEL_PSTATE_DEFAULT_SAMPLING_INTERVAL)
+ 		return;
  
-
++set_pstate:
+ 	if (intel_pstate_sample(cpu, time)) {
+ 		int target_pstate;
+ 
 -- 
-viresh
+2.7.4
