@@ -1,36 +1,33 @@
-From: Jiri Kosina <jikos@kernel.org>
-Subject: Re: [linuxwifi] x86/thermal: AB-BA dependency between mvm->mutex
- and tz->lock
-Date: Thu, 3 Aug 2017 15:09:29 +0200 (CEST)
-Message-ID: <alpine.LSU.2.20.1708031507290.30597@cbobk.fhfr.pm>
-References: <alpine.LSU.2.20.1707311300440.4705@cbobk.fhfr.pm>  <alpine.LSU.2.20.1708031107230.30597@cbobk.fhfr.pm>  <1501753405.15969.43.camel@intel.com>  <87vam5nf4w.fsf@kamboji.qca.qualcomm.com> <1501759724.15969.49.camel@intel.com>
- <alpine.LSU.2.20.1708031330570.30597@cbobk.fhfr.pm>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 1/3] dt-bindings: soc: update the binding document for
+ SCPSYS on MediaTek MT7622 SoC
+Date: Thu, 3 Aug 2017 11:09:32 -0500
+Message-ID: <20170803160932.fgn6ia3jgo2ulh5z@rob-hp-laptop>
+References: <cover.1501581552.git.sean.wang@mediatek.com>
+ <978aad669c09316ee6d18f84e2b5ac8b161aa12c.1501581552.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.LSU.2.20.1708031330570.30597@cbobk.fhfr.pm>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Coelho, Luciano" <luciano.coelho@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linuxwifi <linuxwifi@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Weinehall, David" <david.weinehall@intel.com>, "Berg, Johannes" <johannes.berg@intel.com>, "kvalo@codeaurora.org" <kvalo@codeaurora.org>, "Sharon, Sara" <sara.sharon@intel.com>, "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, "Grumbach, Emmanuel" <emmanuel.grumbach@intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <978aad669c09316ee6d18f84e2b5ac8b161aa12c.1501581552.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
+Cc: matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Chen Zhong <chen.zhong-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 3 Aug 2017, Jiri Kosina wrote:
-
-> > I see the workqueue allocation you mentioned.  I'll try to move this 
-> > allocation out of the mutex and see how it goes.
+On Tue, Aug 01, 2017 at 06:06:11PM +0800, sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org wrote:
+> From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 > 
-> I have been briefly looking into this as well -- it'll basically have to 
-> be moved out of the trans_pcie->mutex context, but
+> Update the binding document for enabling SCPSYS on MediaTek MT7622 SoC.
 > 
-> (a) I'm not sure whether that's actually safe
-> (b) iwl_pcie_rx_reuse_rbd() (which is where corresponding work is being 
->     queued) is not a proper context either (it's atomic context)
+> Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> Signed-off-by: Chen Zhong <chen.zhong-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> ---
+>  Documentation/devicetree/bindings/soc/mediatek/scpsys.txt | 3 +++
+>  1 file changed, 3 insertions(+)
 
-Actually moving it out of trans_pcie->mutex is likely not to be enough, 
-the dependency would still be there, just the graph will have one vertex 
-less, with the dependency going directly from mvm mutex to 
-cpu_hotplug_lock.
-
--- 
-Jiri Kosina
-SUSE Labs
+Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
