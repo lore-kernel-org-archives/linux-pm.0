@@ -1,81 +1,109 @@
-From: Fengguang Wu <lkp@intel.com>
-Subject: Re: [kbuild-all] [PATCH v4 1/1] PM / OPP: Fix get sharing cpus when
- hotplug is used
-Date: Thu, 3 Aug 2017 09:50:56 +0800
-Message-ID: <20170803015056.egrj555tf4oips3y@wfg-t540p.sh.intel.com>
-References: <201707302248.x4bqfCKB%fengguang.wu@intel.com>
- <1881043.tatm6HIeku@aspire.rjw.lan>
- <CAHKzcEPQw=_mMr2-5TgU7FiPKvYfeHNCV=LjjKwEV1==y47y9g@mail.gmail.com>
- <CAJZ5v0jgU0tLQwz=rNZbU3jaRhz3J31zv5HwhZ4L=og7EErQAQ@mail.gmail.com>
- <20170801043708.GE5804@vireshk-i7>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH 1/1] cpufreq: imx6q: imx6ull: use PLL1 for frequency
+ higher than 528MHz
+Date: Thu, 3 Aug 2017 10:03:22 +0800
+Message-ID: <20170803020320.GG31819@dragon>
+References: <1501230993-15812-1-git-send-email-sebastien.szymanski@armadeus.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:2291 "EHLO mga07.intel.com"
+Received: from mail.kernel.org ([198.145.29.99]:34690 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751914AbdHCBvA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 2 Aug 2017 21:51:00 -0400
+        id S1751188AbdHCCE2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 2 Aug 2017 22:04:28 -0400
 Content-Disposition: inline
-In-Reply-To: <20170801043708.GE5804@vireshk-i7>
+In-Reply-To: <1501230993-15812-1-git-send-email-sebastien.szymanski@armadeus.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Nishanth Menon <nm@ti.com>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <vireshk@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, kbuild-all@01.org, Stephen Boyd <sboyd@codeaurora.org>
+To: =?iso-8859-1?Q?S=E9bastien?= Szymanski <sebastien.szymanski@armadeus.com>, Anson Huang <anson.huang@nxp.com>, Leonard Crestez <leonard.crestez@nxp.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Julien Boibessot <julien.boibessot@armadeus.com>, Fabio Estevam <fabio.estevam@nxp.com>, linux-arm-kernel@lists.infradead.org
 
-On Tue, Aug 01, 2017 at 10:07:08AM +0530, Viresh Kumar wrote:
->On 31-07-17, 20:50, Rafael J. Wysocki wrote:
->> On Mon, Jul 31, 2017 at 5:12 PM, Waldemar Rymarkiewicz
->> <waldemar.rymarkiewicz@gmail.com> wrote:
->> > On 31 July 2017 at 13:14, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> >> On Sunday, July 30, 2017 10:54:30 PM kbuild test robot wrote:
->> >>> Hi Waldemar,
->> >>>
->> >>> [auto build test ERROR on pm/linux-next]
->> >>> [also build test ERROR on v4.13-rc2 next-20170728]
->> >>> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->> >>
->> >> OK, I'm dropping this commit.
->> >>
->> >> Please make sure that the problem is fixed before sending a new version of it.
->> >
->> > I am a bit confused, it was already fixed and sent out in v5 [1], but
->> > I see v5 is in 'Not Applicable, archived' state. Why?
->> >
->> > [1] https://patchwork.kernel.org/patch/9866525/
->>
->> Because it was applied and still broke.
->
->Not actually.
->
->The bug report *wasn't* reported for the patch you applied, but how would be the
->build go if V4 is applied on top of pm/linux-next. And so buildbot replied to
->this thread.
->
->It can sometimes get a bit confusing seriously, I have to read it very carefully
->today after the discussions you two had :)
->
->You can re-apply the commit as that was doing the right thing:
->
->commit 63a48cf920c0 ("PM / OPP: Fix get sharing CPUs when hotplug is used")
->
->@Fengguang: We need to somehow indicate (in BOLD/CAPS?) that the report isn't
->for a commit in the tree.
+On Fri, Jul 28, 2017 at 10:36:33AM +0200, Sébastien Szymanski wrote:
+> Setting the frequency higher than 528Mhz actually sets the ARM
+> clock to 528MHz. That's because PLL2 is used as the root clock when the
+> frequency is higher than 396MHz.
+> 
+> cpupower frequency-set -f 792000
+> 
+> arm_clk_root on the CCM_CLKO2 signal is 528MHz instead of 792MHz.
+> 
+> [   61.606383] cpu cpu0: 396 MHz, 1025 mV --> 792 MHz, 1225 mV
+> 
+> pll2                         1  1  528000000 0 0
+>    pll2_bypass               1  1  528000000 0 0
+>       pll2_bus               3  3  528000000 0 0
+> 	 ca7_secondary_sel   1  1  528000000 0 0
+> 	    step             1  1  528000000 0 0
+> 	       pll1_sw       1  1  528000000 0 0
+> 		  arm        1  1  528000000 0 0
+> 
+> Fixes this by using the PLL1 as the root clock when the frequency is
+> higher than 528MHz.
+> 
+> cpupower frequency-set -f 792000
+> 
+> arm_clk_root on the CCM_CLKO2 signal is now 792MHz as expected.
+> 
+> [   69.717987] cpu cpu0: 198 MHz, 950 mV --> 792 MHz, 1225 mV
+> 
+> pll1               1 1 792000000 0 0
+>    pll1_bypass     1 1 792000000 0 0
+>       pll1_sys     1 1 792000000 0 0
+> 	 pll1_sw   1 1 792000000 0 0
+> 	    arm    1 1 792000000 0 0
+> 
+> Signed-off-by: Sébastien Szymanski <sebastien.szymanski@armadeus.com>
 
-For patch testing, the report will start with such a paragraph
+Can you please specify on which SoCs you are seeing this problem?  And I
+would like invite Anson and Leonard to review it.
 
-[auto build test ERROR on pm/linux-next]
-[also build test ERROR on v4.13-rc2 next-20170728]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+Shawn
 
-which should be obvious enough. How about you take them as indicators
-that it's a LKML patch instead of git tree commit? :)
-
->Yeah, you would normally include the commit sha in that case and so
->we can actually distinguish between the two cases. But practically,
->people are getting confused unless they read it very very carefully.
->Thanks for the great job btw :)
-
-You are welcome!
-
-Regards,
-Fengguang
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index b6edd3c..e5fba50 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -18,6 +18,7 @@
+>  
+>  #define PU_SOC_VOLTAGE_NORMAL	1250000
+>  #define PU_SOC_VOLTAGE_HIGH	1275000
+> +#define FREQ_528_MHZ		528000000
+>  #define FREQ_1P2_GHZ		1200000000
+>  
+>  static struct regulator *arm_reg;
+> @@ -110,14 +111,20 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+>  		 * voltage of 528MHz, so lower the CPU frequency to one
+>  		 * half before changing CPU frequency.
+>  		 */
+> -		clk_set_rate(arm_clk, (old_freq >> 1) * 1000);
+> -		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+> +		if ((old_freq * 1000) <= FREQ_528_MHZ) {
+> +			clk_set_rate(arm_clk, (old_freq >> 1) * 1000);
+> +			clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+> +		}
+>  		if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
+>  			clk_set_parent(secondary_sel_clk, pll2_bus_clk);
+>  		else
+>  			clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
+>  		clk_set_parent(step_clk, secondary_sel_clk);
+>  		clk_set_parent(pll1_sw_clk, step_clk);
+> +		if (freq_hz > FREQ_528_MHZ) {
+> +			clk_set_rate(pll1_sys_clk, freq_hz);
+> +			clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+> +		}
+>  	} else {
+>  		clk_set_parent(step_clk, pll2_pfd2_396m_clk);
+>  		clk_set_parent(pll1_sw_clk, step_clk);
+> -- 
+> 2.7.3
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
