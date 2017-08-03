@@ -1,93 +1,225 @@
-From: =?UTF-8?Q?S=c3=a9bastien_Szymanski?= <sebastien.szymanski@armadeus.com>
-Subject: Re: [PATCH 1/1] cpufreq: imx6q: imx6ull: use PLL1 for frequency
- higher than 528MHz
-Date: Thu, 3 Aug 2017 09:32:24 +0200
-Message-ID: <737b6166-1594-677b-1a08-4f9b795d9410@armadeus.com>
-References: <1501230993-15812-1-git-send-email-sebastien.szymanski@armadeus.com>
- <20170803020320.GG31819@dragon>
+From: Jiri Kosina <jikos@kernel.org>
+Subject: Re: x86/thermal: AB-BA dependency between mvm->mutex and tz->lock
+Date: Thu, 3 Aug 2017 11:10:14 +0200 (CEST)
+Message-ID: <alpine.LSU.2.20.1708031107230.30597@cbobk.fhfr.pm>
+References: <alpine.LSU.2.20.1707311300440.4705@cbobk.fhfr.pm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170803020320.GG31819@dragon>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Shawn Guo <shawnguo@kernel.org>, Anson Huang <anson.huang@nxp.com>, Leonard Crestez <leonard.crestez@nxp.com>
-Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Julien Boibessot <julien.boibessot@armadeus.com>, Fabio Estevam <fabio.estevam@nxp.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.LSU.2.20.1707311300440.4705@cbobk.fhfr.pm>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Kalle Valo <kvalo@codeaurora.org>, Sara Sharon <sara.sharon@intel.com>, Johannes Berg <johannes.berg@intel.com>, Emmanuel Grumbach <emmanuel.grumbach@intel.com>, Luca Coelho <luciano.coelho@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Intel Linux Wireless <linuxwifi@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-SGVsbG8sCgpPbiAwOC8wMy8yMDE3IDA0OjAzIEFNLCBTaGF3biBHdW8gd3JvdGU6Cj4gT24gRnJp
-LCBKdWwgMjgsIDIwMTcgYXQgMTA6MzY6MzNBTSArMDIwMCwgU8OpYmFzdGllbiBTenltYW5za2kg
-d3JvdGU6Cj4+IFNldHRpbmcgdGhlIGZyZXF1ZW5jeSBoaWdoZXIgdGhhbiA1MjhNaHogYWN0dWFs
-bHkgc2V0cyB0aGUgQVJNCj4+IGNsb2NrIHRvIDUyOE1Iei4gVGhhdCdzIGJlY2F1c2UgUExMMiBp
-cyB1c2VkIGFzIHRoZSByb290IGNsb2NrIHdoZW4gdGhlCj4+IGZyZXF1ZW5jeSBpcyBoaWdoZXIg
-dGhhbiAzOTZNSHouCj4+Cj4+IGNwdXBvd2VyIGZyZXF1ZW5jeS1zZXQgLWYgNzkyMDAwCj4+Cj4+
-IGFybV9jbGtfcm9vdCBvbiB0aGUgQ0NNX0NMS08yIHNpZ25hbCBpcyA1MjhNSHogaW5zdGVhZCBv
-ZiA3OTJNSHouCj4+Cj4+IFsgICA2MS42MDYzODNdIGNwdSBjcHUwOiAzOTYgTUh6LCAxMDI1IG1W
-IC0tPiA3OTIgTUh6LCAxMjI1IG1WCj4+Cj4+IHBsbDIgICAgICAgICAgICAgICAgICAgICAgICAg
-MSAgMSAgNTI4MDAwMDAwIDAgMAo+PiAgICBwbGwyX2J5cGFzcyAgICAgICAgICAgICAgIDEgIDEg
-IDUyODAwMDAwMCAwIDAKPj4gICAgICAgcGxsMl9idXMgICAgICAgICAgICAgICAzICAzICA1Mjgw
-MDAwMDAgMCAwCj4+IAkgY2E3X3NlY29uZGFyeV9zZWwgICAxICAxICA1MjgwMDAwMDAgMCAwCj4+
-IAkgICAgc3RlcCAgICAgICAgICAgICAxICAxICA1MjgwMDAwMDAgMCAwCj4+IAkgICAgICAgcGxs
-MV9zdyAgICAgICAxICAxICA1MjgwMDAwMDAgMCAwCj4+IAkJICBhcm0gICAgICAgIDEgIDEgIDUy
-ODAwMDAwMCAwIDAKPj4KPj4gRml4ZXMgdGhpcyBieSB1c2luZyB0aGUgUExMMSBhcyB0aGUgcm9v
-dCBjbG9jayB3aGVuIHRoZSBmcmVxdWVuY3kgaXMKPj4gaGlnaGVyIHRoYW4gNTI4TUh6Lgo+Pgo+
-PiBjcHVwb3dlciBmcmVxdWVuY3ktc2V0IC1mIDc5MjAwMAo+Pgo+PiBhcm1fY2xrX3Jvb3Qgb24g
-dGhlIENDTV9DTEtPMiBzaWduYWwgaXMgbm93IDc5Mk1IeiBhcyBleHBlY3RlZC4KPj4KPj4gWyAg
-IDY5LjcxNzk4N10gY3B1IGNwdTA6IDE5OCBNSHosIDk1MCBtViAtLT4gNzkyIE1IeiwgMTIyNSBt
-Vgo+Pgo+PiBwbGwxICAgICAgICAgICAgICAgMSAxIDc5MjAwMDAwMCAwIDAKPj4gICAgcGxsMV9i
-eXBhc3MgICAgIDEgMSA3OTIwMDAwMDAgMCAwCj4+ICAgICAgIHBsbDFfc3lzICAgICAxIDEgNzky
-MDAwMDAwIDAgMAo+PiAJIHBsbDFfc3cgICAxIDEgNzkyMDAwMDAwIDAgMAo+PiAJICAgIGFybSAg
-ICAxIDEgNzkyMDAwMDAwIDAgMAo+Pgo+PiBTaWduZWQtb2ZmLWJ5OiBTw6liYXN0aWVuIFN6eW1h
-bnNraSA8c2ViYXN0aWVuLnN6eW1hbnNraUBhcm1hZGV1cy5jb20+Cj4gCj4gQ2FuIHlvdSBwbGVh
-c2Ugc3BlY2lmeSBvbiB3aGljaCBTb0NzIHlvdSBhcmUgc2VlaW5nIHRoaXMgcHJvYmxlbT8gIEFu
-ZCBJCj4gd291bGQgbGlrZSBpbnZpdGUgQW5zb24gYW5kIExlb25hcmQgdG8gcmV2aWV3IGl0LgoK
-TXkgU29DIGlzIE1DSU1YNlkyQ1ZNMDhBQSB3aGljaCBpcyBhIDc5Mk1IeiBpLk1YNlVMTC4gSSBm
-b3Jnb3QgdG8KbWVudGlvbiB0aGF0IEkgYWRkZWQgdGhlIGZvbGxvd2luZyBvcGVyYXRpbmcgcG9p
-bnRzIGluIG15IGRldmljZSB0cmVlOgoKb3BlcmF0aW5nLXBvaW50czogNzkyMDAwICAxMjI1MDAw
-CmZzbCxzb2Mtb3BlcmF0aW5nLXBvaW50czogNzkyMDAwICAxMTc1MDAwCgpCZXN0IHJlZ2FyZHMs
-Cgo+IAo+IFNoYXduCj4gCj4+IC0tLQo+PiAgZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEu
-YyB8IDExICsrKysrKysrKy0tCj4+ICAxIGZpbGUgY2hhbmdlZCwgOSBpbnNlcnRpb25zKCspLCAy
-IGRlbGV0aW9ucygtKQo+Pgo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNw
-dWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9pbXg2cS1jcHVmcmVxLmMKPj4gaW5kZXggYjZlZGQz
-Yy4uZTVmYmE1MCAxMDA2NDQKPj4gLS0tIGEvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEu
-Ywo+PiArKysgYi9kcml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1ZnJlcS5jCj4+IEBAIC0xOCw2ICsx
-OCw3IEBACj4+ICAKPj4gICNkZWZpbmUgUFVfU09DX1ZPTFRBR0VfTk9STUFMCTEyNTAwMDAKPj4g
-ICNkZWZpbmUgUFVfU09DX1ZPTFRBR0VfSElHSAkxMjc1MDAwCj4+ICsjZGVmaW5lIEZSRVFfNTI4
-X01IWgkJNTI4MDAwMDAwCj4+ICAjZGVmaW5lIEZSRVFfMVAyX0dIWgkJMTIwMDAwMDAwMAo+PiAg
-Cj4+ICBzdGF0aWMgc3RydWN0IHJlZ3VsYXRvciAqYXJtX3JlZzsKPj4gQEAgLTExMCwxNCArMTEx
-LDIwIEBAIHN0YXRpYyBpbnQgaW14NnFfc2V0X3RhcmdldChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kg
-KnBvbGljeSwgdW5zaWduZWQgaW50IGluZGV4KQo+PiAgCQkgKiB2b2x0YWdlIG9mIDUyOE1Ieiwg
-c28gbG93ZXIgdGhlIENQVSBmcmVxdWVuY3kgdG8gb25lCj4+ICAJCSAqIGhhbGYgYmVmb3JlIGNo
-YW5naW5nIENQVSBmcmVxdWVuY3kuCj4+ICAJCSAqLwo+PiAtCQljbGtfc2V0X3JhdGUoYXJtX2Ns
-aywgKG9sZF9mcmVxID4+IDEpICogMTAwMCk7Cj4+IC0JCWNsa19zZXRfcGFyZW50KHBsbDFfc3df
-Y2xrLCBwbGwxX3N5c19jbGspOwo+PiArCQlpZiAoKG9sZF9mcmVxICogMTAwMCkgPD0gRlJFUV81
-MjhfTUhaKSB7Cj4+ICsJCQljbGtfc2V0X3JhdGUoYXJtX2NsaywgKG9sZF9mcmVxID4+IDEpICog
-MTAwMCk7Cj4+ICsJCQljbGtfc2V0X3BhcmVudChwbGwxX3N3X2NsaywgcGxsMV9zeXNfY2xrKTsK
-Pj4gKwkJfQo+PiAgCQlpZiAoZnJlcV9oeiA+IGNsa19nZXRfcmF0ZShwbGwyX3BmZDJfMzk2bV9j
-bGspKQo+PiAgCQkJY2xrX3NldF9wYXJlbnQoc2Vjb25kYXJ5X3NlbF9jbGssIHBsbDJfYnVzX2Ns
-ayk7Cj4+ICAJCWVsc2UKPj4gIAkJCWNsa19zZXRfcGFyZW50KHNlY29uZGFyeV9zZWxfY2xrLCBw
-bGwyX3BmZDJfMzk2bV9jbGspOwo+PiAgCQljbGtfc2V0X3BhcmVudChzdGVwX2Nsaywgc2Vjb25k
-YXJ5X3NlbF9jbGspOwo+PiAgCQljbGtfc2V0X3BhcmVudChwbGwxX3N3X2Nsaywgc3RlcF9jbGsp
-Owo+PiArCQlpZiAoZnJlcV9oeiA+IEZSRVFfNTI4X01IWikgewo+PiArCQkJY2xrX3NldF9yYXRl
-KHBsbDFfc3lzX2NsaywgZnJlcV9oeik7Cj4+ICsJCQljbGtfc2V0X3BhcmVudChwbGwxX3N3X2Ns
-aywgcGxsMV9zeXNfY2xrKTsKPj4gKwkJfQo+PiAgCX0gZWxzZSB7Cj4+ICAJCWNsa19zZXRfcGFy
-ZW50KHN0ZXBfY2xrLCBwbGwyX3BmZDJfMzk2bV9jbGspOwo+PiAgCQljbGtfc2V0X3BhcmVudChw
-bGwxX3N3X2Nsaywgc3RlcF9jbGspOwo+PiAtLSAKPj4gMi43LjMKPj4KPj4KPj4gX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPj4gbGludXgtYXJtLWtlcm5l
-bCBtYWlsaW5nIGxpc3QKPj4gbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCj4+
-IGh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtl
-cm5lbAoKCi0tIApTw6liYXN0aWVuIFN6eW1hbnNraQpTb2Z0d2FyZSBlbmdpbmVlciwgQXJtYWRl
-dXMgU3lzdGVtcwpUZWw6ICszMyAoMCk5IDcyIDI5IDQxIDQ0CkZheDogKzMzICgwKTkgNzIgMjgg
-NzkgMjYKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
-bnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFk
-ZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4
-LWFybS1rZXJuZWwK
+On Mon, 31 Jul 2017, Jiri Kosina wrote:
+
+> Hi,
+> 
+> booting current Linus' tree, I'm seeing lockdep splat (see the end of this 
+> mail).
+> 
+> Apparently, there is AB-BA between tz->lock and mvm->mutex through the CPU 
+> hotplug lock.
+> 
+> The obivous depency is: thermal_zone_get_temp() acquires tz->lock, and 
+> then calls iwl_mvm_tzone_get_temp() (through tz->ops->get_temp() 
+> callback), which acquires mvm->mutex
+> 
+> The less obvious dependency is primarily caused by iwl_op_mode_mvm_start() 
+> allocating workqueue (#2 stacktrace) while holding mvm->mutex (which is 
+> broken, because that mutex is being taken also from CPU hotplug callback 
+> path, hence the AB-BA).
+
+As the "central" part of the dependency is being added by iwlwifi driver 
+(_iwl_pcie_rx_init() allocating workqueue while holding 
+trans_pcie->mutex), I'm adding iwlwifi folks as well to CC.
+
+> 
+>  ======================================================
+>  WARNING: possible circular locking dependency detected
+>  4.13.0-rc2-00110-g0b5477d #347 Not tainted
+>  ------------------------------------------------------
+>  modprobe/881 is trying to acquire lock:
+>   (&mvm->mutex){+.+.+.}, at: [<ffffffffc0c504d2>] iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>  
+>  but task is already holding lock:
+>   (&tz->lock){+.+.+.}, at: [<ffffffff926a9351>] thermal_zone_get_temp+0x41/0x70
+>  
+>  which lock already depends on the new lock.
+> 
+>  
+>  the existing dependency chain (in reverse order) is:
+>  
+>  -> #5 (&tz->lock){+.+.+.}:
+>         lock_acquire+0xbd/0x220
+>         __mutex_lock+0x6e/0x900
+>         mutex_lock_nested+0x1b/0x20
+>         thermal_zone_get_temp+0x41/0x70
+>         thermal_zone_device_update+0x3c/0x280
+>         thermal_zone_device_register+0x3b8/0x610
+>         pkg_thermal_cpu_online+0x20b/0x284 [x86_pkg_temp_thermal]
+>         cpuhp_invoke_callback+0xac/0x900
+>         cpuhp_thread_fun+0x79/0x160
+>         smpboot_thread_fn+0x156/0x220
+>         kthread+0x114/0x150
+>         ret_from_fork+0x2a/0x40
+>  
+>  -> #4 (cpuhp_state){+.+.+.}:
+>         lock_acquire+0xbd/0x220
+>         cpuhp_issue_call+0xea/0x170
+>         __cpuhp_setup_state_cpuslocked+0x12a/0x190
+>         __cpuhp_setup_state+0x46/0xc0
+>         page_writeback_init+0x43/0x67
+>         pagecache_init+0x39/0x3c
+>         start_kernel+0x45a/0x4ae
+>         x86_64_start_reservations+0x24/0x26
+>         x86_64_start_kernel+0x13d/0x14c
+>         verify_cpu+0x0/0xf1
+>  
+>  -> #3 (cpuhp_state_mutex){+.+.+.}:
+>         lock_acquire+0xbd/0x220
+>         __mutex_lock+0x6e/0x900
+>         mutex_lock_nested+0x1b/0x20
+>         __cpuhp_setup_state_cpuslocked+0x4f/0x190
+>         __cpuhp_setup_state+0x46/0xc0
+>         page_alloc_init+0x28/0x30
+>         start_kernel+0x186/0x4ae
+>         x86_64_start_reservations+0x24/0x26
+>         x86_64_start_kernel+0x13d/0x14c
+>         verify_cpu+0x0/0xf1
+>  
+>  -> #2 (cpu_hotplug_lock.rw_sem){++++++}:
+>         lock_acquire+0xbd/0x220
+>         cpus_read_lock+0x46/0x90
+>         apply_workqueue_attrs+0x17/0x50
+>         __alloc_workqueue_key+0x195/0x4d0
+>         _iwl_pcie_rx_init+0x384/0x390 [iwlwifi]
+>         iwl_pcie_rx_init+0x1e/0x380 [iwlwifi]
+>         iwl_trans_pcie_start_fw+0x295/0x6f0 [iwlwifi]
+>         iwl_mvm_load_ucode_wait_alive+0xe7/0x390 [iwlmvm]
+>         iwl_run_init_mvm_ucode+0x84/0x320 [iwlmvm]
+>         iwl_op_mode_mvm_start+0x964/0xd30 [iwlmvm]
+>         _iwl_op_mode_start.isra.9+0x47/0xa0 [iwlwifi]
+>         iwl_opmode_register+0xaa/0xd0 [iwlwifi]
+>         iwl_mvm_init+0x37/0x1000 [iwlmvm]
+>         do_one_initcall+0x51/0x1a9
+>         do_init_module+0x60/0x20e
+>         load_module+0x203f/0x2b50
+>         SYSC_finit_module+0x96/0xd0
+>         SyS_finit_module+0xe/0x10
+>         entry_SYSCALL_64_fastpath+0x23/0xc2
+>  
+>  -> #1 (&trans_pcie->mutex){+.+.+.}:
+>         lock_acquire+0xbd/0x220
+>         __mutex_lock+0x6e/0x900
+>         mutex_lock_nested+0x1b/0x20
+>         iwl_trans_pcie_start_fw+0x130/0x6f0 [iwlwifi]
+>         iwl_mvm_load_ucode_wait_alive+0xe7/0x390 [iwlmvm]
+>         iwl_run_init_mvm_ucode+0x84/0x320 [iwlmvm]
+>         iwl_op_mode_mvm_start+0x964/0xd30 [iwlmvm]
+>         _iwl_op_mode_start.isra.9+0x47/0xa0 [iwlwifi]
+>         iwl_opmode_register+0xaa/0xd0 [iwlwifi]
+>         iwl_mvm_init+0x37/0x1000 [iwlmvm]
+>         do_one_initcall+0x51/0x1a9
+>         do_init_module+0x60/0x20e
+>         load_module+0x203f/0x2b50
+>         SYSC_finit_module+0x96/0xd0
+>         SyS_finit_module+0xe/0x10
+>         entry_SYSCALL_64_fastpath+0x23/0xc2
+>  
+>  -> #0 (&mvm->mutex){+.+.+.}:
+>         __lock_acquire+0x13e1/0x1400
+>         lock_acquire+0xbd/0x220
+>         __mutex_lock+0x6e/0x900
+>         mutex_lock_nested+0x1b/0x20
+>         iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>         thermal_zone_get_temp+0x51/0x70
+>         thermal_zone_device_update+0x3c/0x280
+>         thermal_zone_device_register+0x3b8/0x610
+>         iwl_mvm_thermal_initialize+0x1d1/0x3a0 [iwlmvm]
+>         iwl_op_mode_mvm_start+0xa1d/0xd30 [iwlmvm]
+>         _iwl_op_mode_start.isra.9+0x47/0xa0 [iwlwifi]
+>         iwl_opmode_register+0xaa/0xd0 [iwlwifi]
+>         iwl_mvm_init+0x37/0x1000 [iwlmvm]
+>         do_one_initcall+0x51/0x1a9
+>         do_init_module+0x60/0x20e
+>         load_module+0x203f/0x2b50
+>         SYSC_finit_module+0x96/0xd0
+>         SyS_finit_module+0xe/0x10
+>         entry_SYSCALL_64_fastpath+0x23/0xc2
+>  
+>  other info that might help us debug this:
+> 
+>  Chain exists of:
+>    &mvm->mutex --> cpuhp_state --> &tz->lock
+> 
+>   Possible unsafe locking scenario:
+> 
+>         CPU0                    CPU1
+>         ----                    ----
+>    lock(&tz->lock);
+>                                 lock(cpuhp_state);
+>                                 lock(&tz->lock);
+>    lock(&mvm->mutex);
+>  
+>   *** DEADLOCK ***
+> 
+>  2 locks held by modprobe/881:
+>   #0:  (&iwlwifi_opmode_table_mtx){+.+.+.}, at: [<ffffffffc0aa2df4>] iwl_opmode_register+0x24/0xd0 [iwlwifi]
+>   #1:  (&tz->lock){+.+.+.}, at: [<ffffffff926a9351>] thermal_zone_get_temp+0x41/0x70
+>  
+>  stack backtrace:
+>  CPU: 3 PID: 881 Comm: modprobe Not tainted 4.13.0-rc2-00110-g0b5477d #347
+>  Hardware name: LENOVO 20K5S22R00/20K5S22R00, BIOS R0IET38W (1.16 ) 05/31/2017
+>  Call Trace:
+>   dump_stack+0x85/0xc9
+>   print_circular_bug+0x1f9/0x207
+>   __lock_acquire+0x13e1/0x1400
+>   lock_acquire+0xbd/0x220
+>   ? iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>   ? iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>   __mutex_lock+0x6e/0x900
+>   ? iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>   ? thermal_zone_get_temp+0x41/0x70
+>   ? iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>   ? thermal_zone_get_temp+0x41/0x70
+>   ? find_held_lock+0x39/0xb0
+>   mutex_lock_nested+0x1b/0x20
+>   iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>   thermal_zone_get_temp+0x51/0x70
+>   thermal_zone_device_update+0x3c/0x280
+>   thermal_zone_device_register+0x3b8/0x610
+>   iwl_mvm_thermal_initialize+0x1d1/0x3a0 [iwlmvm]
+>   iwl_op_mode_mvm_start+0xa1d/0xd30 [iwlmvm]
+>   _iwl_op_mode_start.isra.9+0x47/0xa0 [iwlwifi]
+>   iwl_opmode_register+0xaa/0xd0 [iwlwifi]
+>   iwl_mvm_init+0x37/0x1000 [iwlmvm]
+>   ? 0xffffffffc0c87000
+>   do_one_initcall+0x51/0x1a9
+>   ? rcu_read_lock_sched_held+0x98/0xa0
+>   ? kmem_cache_alloc_trace+0x2a5/0x340
+>   do_init_module+0x60/0x20e
+>   load_module+0x203f/0x2b50
+>   ? __symbol_put+0x50/0x50
+>   SYSC_finit_module+0x96/0xd0
+>   SyS_finit_module+0xe/0x10
+>   entry_SYSCALL_64_fastpath+0x23/0xc2
+>  RIP: 0033:0x7f2ef067cc89
+>  RSP: 002b:00007ffea2ea3d78 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+>  RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 00007f2ef067cc89
+>  RDX: 0000000000000000 RSI: 000000000041af06 RDI: 0000000000000001
+>  RBP: 0000000000000005 R08: 0000000000000000 R09: 000000000096b230
+>  R10: 0000000000000001 R11: 0000000000000246 R12: 00007ffea2ea2d80
+>  R13: 00007ffea2ea2d60 R14: 0000000000000005 R15: 000000000096f3c0
+>  thermal thermal_zone3: failed to read out thermal zone (-5)
+> 
+> 
+> -- 
+> Jiri Kosina
+> SUSE Labs
+> 
+
+-- 
+Jiri Kosina
+SUSE Labs
