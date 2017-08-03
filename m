@@ -1,176 +1,246 @@
-From: "Coelho, Luciano" <luciano.coelho@intel.com>
-Subject: Re: [linuxwifi] x86/thermal: AB-BA dependency between mvm->mutex
- and tz->lock
-Date: Thu, 3 Aug 2017 09:43:26 +0000
-Message-ID: <1501753405.15969.43.camel@intel.com>
+From: Kalle Valo <kvalo@codeaurora.org>
+Subject: Re: [linuxwifi] x86/thermal: AB-BA dependency between mvm->mutex and tz->lock
+Date: Thu, 03 Aug 2017 13:02:07 +0300
+Message-ID: <87vam5nf4w.fsf@kamboji.qca.qualcomm.com>
 References: <alpine.LSU.2.20.1707311300440.4705@cbobk.fhfr.pm>
-         <alpine.LSU.2.20.1708031107230.30597@cbobk.fhfr.pm>
+        <alpine.LSU.2.20.1708031107230.30597@cbobk.fhfr.pm>
+        <1501753405.15969.43.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:56715 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751058AbdHCJnb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 3 Aug 2017 05:43:31 -0400
-In-Reply-To: <alpine.LSU.2.20.1708031107230.30597@cbobk.fhfr.pm>
-Content-Language: en-US
-Content-ID: <022BE1C1FEED5C45A6B96E98B221096A@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1501753405.15969.43.camel@intel.com> (Luciano Coelho's message
+        of "Thu, 3 Aug 2017 09:43:26 +0000")
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Coelho, Luciano" <luciano.coelho@intel.com>
+Cc: "jikos@kernel.org" <jikos@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "Sharon, Sara" <sara.sharon@intel.com>, "Berg, Johannes" <johannes.berg@intel.com>, "Grumbach, Emmanuel" <emmanuel.grumbach@intel.com>, linuxwifi <linuxwifi@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Weinehall, David" <david.weinehall@intel.com>, linux-wireless@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "jikos@kernel.org" <jikos@kernel.org>, "Zhang, Rui" <rui.zhang@intel.com>, "kvalo@codeaurora.org" <kvalo@codeaurora.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "Sharon, Sara" <sara.sharon@intel.com>, "Berg, Johannes" <johannes.berg@intel.com>, "Grumbach, Emmanuel" <emmanuel.grumbach@intel.com>
-Cc: linuxwifi <linuxwifi@intel.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Weinehall, David" <david.weinehall@intel.com>
 
-T24gVGh1LCAyMDE3LTA4LTAzIGF0IDExOjEwICswMjAwLCBKaXJpIEtvc2luYSB3cm90ZToNCj4g
-T24gTW9uLCAzMSBKdWwgMjAxNywgSmlyaSBLb3NpbmEgd3JvdGU6DQo+IA0KPiA+IEhpLA0KPiA+
-IA0KPiA+IGJvb3RpbmcgY3VycmVudCBMaW51cycgdHJlZSwgSSdtIHNlZWluZyBsb2NrZGVwIHNw
-bGF0IChzZWUgdGhlIGVuZCBvZiB0aGlzIA0KPiA+IG1haWwpLg0KPiA+IA0KPiA+IEFwcGFyZW50
-bHksIHRoZXJlIGlzIEFCLUJBIGJldHdlZW4gdHotPmxvY2sgYW5kIG12bS0+bXV0ZXggdGhyb3Vn
-aCB0aGUgQ1BVIA0KPiA+IGhvdHBsdWcgbG9jay4NCj4gPiANCj4gPiBUaGUgb2Jpdm91cyBkZXBl
-bmN5IGlzOiB0aGVybWFsX3pvbmVfZ2V0X3RlbXAoKSBhY3F1aXJlcyB0ei0+bG9jaywgYW5kIA0K
-PiA+IHRoZW4gY2FsbHMgaXdsX212bV90em9uZV9nZXRfdGVtcCgpICh0aHJvdWdoIHR6LT5vcHMt
-PmdldF90ZW1wKCkgDQo+ID4gY2FsbGJhY2spLCB3aGljaCBhY3F1aXJlcyBtdm0tPm11dGV4DQo+
-ID4gDQo+ID4gVGhlIGxlc3Mgb2J2aW91cyBkZXBlbmRlbmN5IGlzIHByaW1hcmlseSBjYXVzZWQg
-YnkgaXdsX29wX21vZGVfbXZtX3N0YXJ0KCkgDQo+ID4gYWxsb2NhdGluZyB3b3JrcXVldWUgKCMy
-IHN0YWNrdHJhY2UpIHdoaWxlIGhvbGRpbmcgbXZtLT5tdXRleCAod2hpY2ggaXMgDQo+ID4gYnJv
-a2VuLCBiZWNhdXNlIHRoYXQgbXV0ZXggaXMgYmVpbmcgdGFrZW4gYWxzbyBmcm9tIENQVSBob3Rw
-bHVnIGNhbGxiYWNrIA0KPiA+IHBhdGgsIGhlbmNlIHRoZSBBQi1CQSkuDQo+IA0KPiBBcyB0aGUg
-ImNlbnRyYWwiIHBhcnQgb2YgdGhlIGRlcGVuZGVuY3kgaXMgYmVpbmcgYWRkZWQgYnkgaXdsd2lm
-aSBkcml2ZXIgDQo+IChfaXdsX3BjaWVfcnhfaW5pdCgpIGFsbG9jYXRpbmcgd29ya3F1ZXVlIHdo
-aWxlIGhvbGRpbmcgDQo+IHRyYW5zX3BjaWUtPm11dGV4KSwgSSdtIGFkZGluZyBpd2x3aWZpIGZv
-bGtzIGFzIHdlbGwgdG8gQ0MuDQo+IA0KPiA+IA0KPiA+ICA9PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0NCj4gPiAgV0FSTklORzogcG9zc2libGUg
-Y2lyY3VsYXIgbG9ja2luZyBkZXBlbmRlbmN5IGRldGVjdGVkDQo+ID4gIDQuMTMuMC1yYzItMDAx
-MTAtZzBiNTQ3N2QgIzM0NyBOb3QgdGFpbnRlZA0KPiA+ICAtLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPiAgbW9kcHJvYmUvODgxIGlzIHRy
-eWluZyB0byBhY3F1aXJlIGxvY2s6DQo+ID4gICAoJm12bS0+bXV0ZXgpeysuKy4rLn0sIGF0OiBb
-PGZmZmZmZmZmYzBjNTA0ZDI+XSBpd2xfbXZtX3R6b25lX2dldF90ZW1wKzB4MzIvMHg4MCBbaXds
-bXZtXQ0KPiA+ICANCj4gPiAgYnV0IHRhc2sgaXMgYWxyZWFkeSBob2xkaW5nIGxvY2s6DQo+ID4g
-ICAoJnR6LT5sb2NrKXsrLisuKy59LCBhdDogWzxmZmZmZmZmZjkyNmE5MzUxPl0gdGhlcm1hbF96
-b25lX2dldF90ZW1wKzB4NDEvMHg3MA0KPiA+ICANCj4gPiAgd2hpY2ggbG9jayBhbHJlYWR5IGRl
-cGVuZHMgb24gdGhlIG5ldyBsb2NrLg0KPiA+IA0KPiA+ICANCj4gPiAgdGhlIGV4aXN0aW5nIGRl
-cGVuZGVuY3kgY2hhaW4gKGluIHJldmVyc2Ugb3JkZXIpIGlzOg0KPiA+ICANCj4gPiAgLT4gIzUg
-KCZ0ei0+bG9jayl7Ky4rLisufToNCj4gPiAgICAgICAgIGxvY2tfYWNxdWlyZSsweGJkLzB4MjIw
-DQo+ID4gICAgICAgICBfX211dGV4X2xvY2srMHg2ZS8weDkwMA0KPiA+ICAgICAgICAgbXV0ZXhf
-bG9ja19uZXN0ZWQrMHgxYi8weDIwDQo+ID4gICAgICAgICB0aGVybWFsX3pvbmVfZ2V0X3RlbXAr
-MHg0MS8weDcwDQo+ID4gICAgICAgICB0aGVybWFsX3pvbmVfZGV2aWNlX3VwZGF0ZSsweDNjLzB4
-MjgwDQo+ID4gICAgICAgICB0aGVybWFsX3pvbmVfZGV2aWNlX3JlZ2lzdGVyKzB4M2I4LzB4NjEw
-DQo+ID4gICAgICAgICBwa2dfdGhlcm1hbF9jcHVfb25saW5lKzB4MjBiLzB4Mjg0IFt4ODZfcGtn
-X3RlbXBfdGhlcm1hbF0NCj4gPiAgICAgICAgIGNwdWhwX2ludm9rZV9jYWxsYmFjaysweGFjLzB4
-OTAwDQo+ID4gICAgICAgICBjcHVocF90aHJlYWRfZnVuKzB4NzkvMHgxNjANCj4gPiAgICAgICAg
-IHNtcGJvb3RfdGhyZWFkX2ZuKzB4MTU2LzB4MjIwDQo+ID4gICAgICAgICBrdGhyZWFkKzB4MTE0
-LzB4MTUwDQo+ID4gICAgICAgICByZXRfZnJvbV9mb3JrKzB4MmEvMHg0MA0KPiA+ICANCj4gPiAg
-LT4gIzQgKGNwdWhwX3N0YXRlKXsrLisuKy59Og0KPiA+ICAgICAgICAgbG9ja19hY3F1aXJlKzB4
-YmQvMHgyMjANCj4gPiAgICAgICAgIGNwdWhwX2lzc3VlX2NhbGwrMHhlYS8weDE3MA0KPiA+ICAg
-ICAgICAgX19jcHVocF9zZXR1cF9zdGF0ZV9jcHVzbG9ja2VkKzB4MTJhLzB4MTkwDQo+ID4gICAg
-ICAgICBfX2NwdWhwX3NldHVwX3N0YXRlKzB4NDYvMHhjMA0KPiA+ICAgICAgICAgcGFnZV93cml0
-ZWJhY2tfaW5pdCsweDQzLzB4NjcNCj4gPiAgICAgICAgIHBhZ2VjYWNoZV9pbml0KzB4MzkvMHgz
-Yw0KPiA+ICAgICAgICAgc3RhcnRfa2VybmVsKzB4NDVhLzB4NGFlDQo+ID4gICAgICAgICB4ODZf
-NjRfc3RhcnRfcmVzZXJ2YXRpb25zKzB4MjQvMHgyNg0KPiA+ICAgICAgICAgeDg2XzY0X3N0YXJ0
-X2tlcm5lbCsweDEzZC8weDE0Yw0KPiA+ICAgICAgICAgdmVyaWZ5X2NwdSsweDAvMHhmMQ0KPiA+
-ICANCj4gPiAgLT4gIzMgKGNwdWhwX3N0YXRlX211dGV4KXsrLisuKy59Og0KPiA+ICAgICAgICAg
-bG9ja19hY3F1aXJlKzB4YmQvMHgyMjANCj4gPiAgICAgICAgIF9fbXV0ZXhfbG9jaysweDZlLzB4
-OTAwDQo+ID4gICAgICAgICBtdXRleF9sb2NrX25lc3RlZCsweDFiLzB4MjANCj4gPiAgICAgICAg
-IF9fY3B1aHBfc2V0dXBfc3RhdGVfY3B1c2xvY2tlZCsweDRmLzB4MTkwDQo+ID4gICAgICAgICBf
-X2NwdWhwX3NldHVwX3N0YXRlKzB4NDYvMHhjMA0KPiA+ICAgICAgICAgcGFnZV9hbGxvY19pbml0
-KzB4MjgvMHgzMA0KPiA+ICAgICAgICAgc3RhcnRfa2VybmVsKzB4MTg2LzB4NGFlDQo+ID4gICAg
-ICAgICB4ODZfNjRfc3RhcnRfcmVzZXJ2YXRpb25zKzB4MjQvMHgyNg0KPiA+ICAgICAgICAgeDg2
-XzY0X3N0YXJ0X2tlcm5lbCsweDEzZC8weDE0Yw0KPiA+ICAgICAgICAgdmVyaWZ5X2NwdSsweDAv
-MHhmMQ0KPiA+ICANCj4gPiAgLT4gIzIgKGNwdV9ob3RwbHVnX2xvY2sucndfc2VtKXsrKysrKyt9
-Og0KPiA+ICAgICAgICAgbG9ja19hY3F1aXJlKzB4YmQvMHgyMjANCj4gPiAgICAgICAgIGNwdXNf
-cmVhZF9sb2NrKzB4NDYvMHg5MA0KPiA+ICAgICAgICAgYXBwbHlfd29ya3F1ZXVlX2F0dHJzKzB4
-MTcvMHg1MA0KPiA+ICAgICAgICAgX19hbGxvY193b3JrcXVldWVfa2V5KzB4MTk1LzB4NGQwDQo+
-ID4gICAgICAgICBfaXdsX3BjaWVfcnhfaW5pdCsweDM4NC8weDM5MCBbaXdsd2lmaV0NCj4gPiAg
-ICAgICAgIGl3bF9wY2llX3J4X2luaXQrMHgxZS8weDM4MCBbaXdsd2lmaV0NCj4gPiAgICAgICAg
-IGl3bF90cmFuc19wY2llX3N0YXJ0X2Z3KzB4Mjk1LzB4NmYwIFtpd2x3aWZpXQ0KPiA+ICAgICAg
-ICAgaXdsX212bV9sb2FkX3Vjb2RlX3dhaXRfYWxpdmUrMHhlNy8weDM5MCBbaXdsbXZtXQ0KPiA+
-ICAgICAgICAgaXdsX3J1bl9pbml0X212bV91Y29kZSsweDg0LzB4MzIwIFtpd2xtdm1dDQo+ID4g
-ICAgICAgICBpd2xfb3BfbW9kZV9tdm1fc3RhcnQrMHg5NjQvMHhkMzAgW2l3bG12bV0NCj4gPiAg
-ICAgICAgIF9pd2xfb3BfbW9kZV9zdGFydC5pc3JhLjkrMHg0Ny8weGEwIFtpd2x3aWZpXQ0KPiA+
-ICAgICAgICAgaXdsX29wbW9kZV9yZWdpc3RlcisweGFhLzB4ZDAgW2l3bHdpZmldDQo+ID4gICAg
-ICAgICBpd2xfbXZtX2luaXQrMHgzNy8weDEwMDAgW2l3bG12bV0NCj4gPiAgICAgICAgIGRvX29u
-ZV9pbml0Y2FsbCsweDUxLzB4MWE5DQo+ID4gICAgICAgICBkb19pbml0X21vZHVsZSsweDYwLzB4
-MjBlDQo+ID4gICAgICAgICBsb2FkX21vZHVsZSsweDIwM2YvMHgyYjUwDQo+ID4gICAgICAgICBT
-WVNDX2Zpbml0X21vZHVsZSsweDk2LzB4ZDANCj4gPiAgICAgICAgIFN5U19maW5pdF9tb2R1bGUr
-MHhlLzB4MTANCj4gPiAgICAgICAgIGVudHJ5X1NZU0NBTExfNjRfZmFzdHBhdGgrMHgyMy8weGMy
-DQo+ID4gIA0KPiA+ICAtPiAjMSAoJnRyYW5zX3BjaWUtPm11dGV4KXsrLisuKy59Og0KPiA+ICAg
-ICAgICAgbG9ja19hY3F1aXJlKzB4YmQvMHgyMjANCj4gPiAgICAgICAgIF9fbXV0ZXhfbG9jaysw
-eDZlLzB4OTAwDQo+ID4gICAgICAgICBtdXRleF9sb2NrX25lc3RlZCsweDFiLzB4MjANCj4gPiAg
-ICAgICAgIGl3bF90cmFuc19wY2llX3N0YXJ0X2Z3KzB4MTMwLzB4NmYwIFtpd2x3aWZpXQ0KPiA+
-ICAgICAgICAgaXdsX212bV9sb2FkX3Vjb2RlX3dhaXRfYWxpdmUrMHhlNy8weDM5MCBbaXdsbXZt
-XQ0KPiA+ICAgICAgICAgaXdsX3J1bl9pbml0X212bV91Y29kZSsweDg0LzB4MzIwIFtpd2xtdm1d
-DQo+ID4gICAgICAgICBpd2xfb3BfbW9kZV9tdm1fc3RhcnQrMHg5NjQvMHhkMzAgW2l3bG12bV0N
-Cj4gPiAgICAgICAgIF9pd2xfb3BfbW9kZV9zdGFydC5pc3JhLjkrMHg0Ny8weGEwIFtpd2x3aWZp
-XQ0KPiA+ICAgICAgICAgaXdsX29wbW9kZV9yZWdpc3RlcisweGFhLzB4ZDAgW2l3bHdpZmldDQo+
-ID4gICAgICAgICBpd2xfbXZtX2luaXQrMHgzNy8weDEwMDAgW2l3bG12bV0NCj4gPiAgICAgICAg
-IGRvX29uZV9pbml0Y2FsbCsweDUxLzB4MWE5DQo+ID4gICAgICAgICBkb19pbml0X21vZHVsZSsw
-eDYwLzB4MjBlDQo+ID4gICAgICAgICBsb2FkX21vZHVsZSsweDIwM2YvMHgyYjUwDQo+ID4gICAg
-ICAgICBTWVNDX2Zpbml0X21vZHVsZSsweDk2LzB4ZDANCj4gPiAgICAgICAgIFN5U19maW5pdF9t
-b2R1bGUrMHhlLzB4MTANCj4gPiAgICAgICAgIGVudHJ5X1NZU0NBTExfNjRfZmFzdHBhdGgrMHgy
-My8weGMyDQo+ID4gIA0KPiA+ICAtPiAjMCAoJm12bS0+bXV0ZXgpeysuKy4rLn06DQo+ID4gICAg
-ICAgICBfX2xvY2tfYWNxdWlyZSsweDEzZTEvMHgxNDAwDQo+ID4gICAgICAgICBsb2NrX2FjcXVp
-cmUrMHhiZC8weDIyMA0KPiA+ICAgICAgICAgX19tdXRleF9sb2NrKzB4NmUvMHg5MDANCj4gPiAg
-ICAgICAgIG11dGV4X2xvY2tfbmVzdGVkKzB4MWIvMHgyMA0KPiA+ICAgICAgICAgaXdsX212bV90
-em9uZV9nZXRfdGVtcCsweDMyLzB4ODAgW2l3bG12bV0NCj4gPiAgICAgICAgIHRoZXJtYWxfem9u
-ZV9nZXRfdGVtcCsweDUxLzB4NzANCj4gPiAgICAgICAgIHRoZXJtYWxfem9uZV9kZXZpY2VfdXBk
-YXRlKzB4M2MvMHgyODANCj4gPiAgICAgICAgIHRoZXJtYWxfem9uZV9kZXZpY2VfcmVnaXN0ZXIr
-MHgzYjgvMHg2MTANCj4gPiAgICAgICAgIGl3bF9tdm1fdGhlcm1hbF9pbml0aWFsaXplKzB4MWQx
-LzB4M2EwIFtpd2xtdm1dDQo+ID4gICAgICAgICBpd2xfb3BfbW9kZV9tdm1fc3RhcnQrMHhhMWQv
-MHhkMzAgW2l3bG12bV0NCj4gPiAgICAgICAgIF9pd2xfb3BfbW9kZV9zdGFydC5pc3JhLjkrMHg0
-Ny8weGEwIFtpd2x3aWZpXQ0KPiA+ICAgICAgICAgaXdsX29wbW9kZV9yZWdpc3RlcisweGFhLzB4
-ZDAgW2l3bHdpZmldDQo+ID4gICAgICAgICBpd2xfbXZtX2luaXQrMHgzNy8weDEwMDAgW2l3bG12
-bV0NCj4gPiAgICAgICAgIGRvX29uZV9pbml0Y2FsbCsweDUxLzB4MWE5DQo+ID4gICAgICAgICBk
-b19pbml0X21vZHVsZSsweDYwLzB4MjBlDQo+ID4gICAgICAgICBsb2FkX21vZHVsZSsweDIwM2Yv
-MHgyYjUwDQo+ID4gICAgICAgICBTWVNDX2Zpbml0X21vZHVsZSsweDk2LzB4ZDANCj4gPiAgICAg
-ICAgIFN5U19maW5pdF9tb2R1bGUrMHhlLzB4MTANCj4gPiAgICAgICAgIGVudHJ5X1NZU0NBTExf
-NjRfZmFzdHBhdGgrMHgyMy8weGMyDQo+ID4gIA0KPiA+ICBvdGhlciBpbmZvIHRoYXQgbWlnaHQg
-aGVscCB1cyBkZWJ1ZyB0aGlzOg0KPiA+IA0KPiA+ICBDaGFpbiBleGlzdHMgb2Y6DQo+ID4gICAg
-Jm12bS0+bXV0ZXggLS0+IGNwdWhwX3N0YXRlIC0tPiAmdHotPmxvY2sNCj4gPiANCj4gPiAgIFBv
-c3NpYmxlIHVuc2FmZSBsb2NraW5nIHNjZW5hcmlvOg0KPiA+IA0KPiA+IMKgICAgICAgIENQVTAg
-ICAgICAgIMKgICAgICAgICAgICBDUFUxDQo+ID4gICAgICAgICAtLS0tICAgICAgICAgICAgICAg
-ICAgICAtLS0tDQo+ID4gICAgbG9jaygmdHotPmxvY2spOw0KPiA+ICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgbG9jayhjcHVocF9zdGF0ZSk7DQo+ID4gICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICBsb2NrKCZ0ei0+bG9jayk7DQo+ID4gICAgbG9jaygmbXZtLT5tdXRleCk7
-DQo+ID4gIA0KPiA+ICAgKioqIERFQURMT0NLICoqKg0KPiA+IA0KPiA+ICAyIGxvY2tzIGhlbGQg
-YnkgbW9kcHJvYmUvODgxOg0KPiA+ICAgIzA6ICAoJml3bHdpZmlfb3Btb2RlX3RhYmxlX210eCl7
-Ky4rLisufSwgYXQ6IFs8ZmZmZmZmZmZjMGFhMmRmND5dIGl3bF9vcG1vZGVfcmVnaXN0ZXIrMHgy
-NC8weGQwIFtpd2x3aWZpXQ0KPiA+ICAgIzE6ICAoJnR6LT5sb2NrKXsrLisuKy59LCBhdDogWzxm
-ZmZmZmZmZjkyNmE5MzUxPl0gdGhlcm1hbF96b25lX2dldF90ZW1wKzB4NDEvMHg3MA0KPiA+ICAN
-Cj4gPiAgc3RhY2sgYmFja3RyYWNlOg0KPiA+ICBDUFU6IDMgUElEOiA4ODEgQ29tbTogbW9kcHJv
-YmUgTm90IHRhaW50ZWQgNC4xMy4wLXJjMi0wMDExMC1nMGI1NDc3ZCAjMzQ3DQo+ID4gIEhhcmR3
-YXJlIG5hbWU6IExFTk9WTyAyMEs1UzIyUjAwLzIwSzVTMjJSMDAsIEJJT1MgUjBJRVQzOFcgKDEu
-MTYgKSAwNS8zMS8yMDE3DQo+ID4gIENhbGwgVHJhY2U6DQo+ID4gICBkdW1wX3N0YWNrKzB4ODUv
-MHhjOQ0KPiA+ICAgcHJpbnRfY2lyY3VsYXJfYnVnKzB4MWY5LzB4MjA3DQo+ID4gICBfX2xvY2tf
-YWNxdWlyZSsweDEzZTEvMHgxNDAwDQo+ID4gICBsb2NrX2FjcXVpcmUrMHhiZC8weDIyMA0KPiA+
-ICAgPyBpd2xfbXZtX3R6b25lX2dldF90ZW1wKzB4MzIvMHg4MCBbaXdsbXZtXQ0KPiA+ICAgPyBp
-d2xfbXZtX3R6b25lX2dldF90ZW1wKzB4MzIvMHg4MCBbaXdsbXZtXQ0KPiA+ICAgX19tdXRleF9s
-b2NrKzB4NmUvMHg5MDANCj4gPiAgID8gaXdsX212bV90em9uZV9nZXRfdGVtcCsweDMyLzB4ODAg
-W2l3bG12bV0NCj4gPiAgID8gdGhlcm1hbF96b25lX2dldF90ZW1wKzB4NDEvMHg3MA0KPiA+ICAg
-PyBpd2xfbXZtX3R6b25lX2dldF90ZW1wKzB4MzIvMHg4MCBbaXdsbXZtXQ0KPiA+ICAgPyB0aGVy
-bWFsX3pvbmVfZ2V0X3RlbXArMHg0MS8weDcwDQo+ID4gICA/IGZpbmRfaGVsZF9sb2NrKzB4Mzkv
-MHhiMA0KPiA+ICAgbXV0ZXhfbG9ja19uZXN0ZWQrMHgxYi8weDIwDQo+ID4gICBpd2xfbXZtX3R6
-b25lX2dldF90ZW1wKzB4MzIvMHg4MCBbaXdsbXZtXQ0KPiA+ICAgdGhlcm1hbF96b25lX2dldF90
-ZW1wKzB4NTEvMHg3MA0KPiA+ICAgdGhlcm1hbF96b25lX2RldmljZV91cGRhdGUrMHgzYy8weDI4
-MA0KPiA+ICAgdGhlcm1hbF96b25lX2RldmljZV9yZWdpc3RlcisweDNiOC8weDYxMA0KPiA+ICAg
-aXdsX212bV90aGVybWFsX2luaXRpYWxpemUrMHgxZDEvMHgzYTAgW2l3bG12bV0NCj4gPiAgIGl3
-bF9vcF9tb2RlX212bV9zdGFydCsweGExZC8weGQzMCBbaXdsbXZtXQ0KPiA+ICAgX2l3bF9vcF9t
-b2RlX3N0YXJ0LmlzcmEuOSsweDQ3LzB4YTAgW2l3bHdpZmldDQo+ID4gICBpd2xfb3Btb2RlX3Jl
-Z2lzdGVyKzB4YWEvMHhkMCBbaXdsd2lmaV0NCj4gPiAgIGl3bF9tdm1faW5pdCsweDM3LzB4MTAw
-MCBbaXdsbXZtXQ0KPiA+ICAgPyAweGZmZmZmZmZmYzBjODcwMDANCj4gPiAgIGRvX29uZV9pbml0
-Y2FsbCsweDUxLzB4MWE5DQo+ID4gICA/IHJjdV9yZWFkX2xvY2tfc2NoZWRfaGVsZCsweDk4LzB4
-YTANCj4gPiAgID8ga21lbV9jYWNoZV9hbGxvY190cmFjZSsweDJhNS8weDM0MA0KPiA+ICAgZG9f
-aW5pdF9tb2R1bGUrMHg2MC8weDIwZQ0KPiA+ICAgbG9hZF9tb2R1bGUrMHgyMDNmLzB4MmI1MA0K
-PiA+ICAgPyBfX3N5bWJvbF9wdXQrMHg1MC8weDUwDQo+ID4gICBTWVNDX2Zpbml0X21vZHVsZSsw
-eDk2LzB4ZDANCj4gPiAgIFN5U19maW5pdF9tb2R1bGUrMHhlLzB4MTANCj4gPiAgIGVudHJ5X1NZ
-U0NBTExfNjRfZmFzdHBhdGgrMHgyMy8weGMyDQo+ID4gIFJJUDogMDAzMzoweDdmMmVmMDY3Y2M4
-OQ0KPiA+ICBSU1A6IDAwMmI6MDAwMDdmZmVhMmVhM2Q3OCBFRkxBR1M6IDAwMDAwMjQ2IE9SSUdf
-UkFYOiAwMDAwMDAwMDAwMDAwMTM5DQo+ID4gIFJBWDogZmZmZmZmZmZmZmZmZmZkYSBSQlg6IDAw
-MDAwMDAwMDAwMDAwMDEgUkNYOiAwMDAwN2YyZWYwNjdjYzg5DQo+ID4gIFJEWDogMDAwMDAwMDAw
-MDAwMDAwMCBSU0k6IDAwMDAwMDAwMDA0MWFmMDYgUkRJOiAwMDAwMDAwMDAwMDAwMDAxDQo+ID4g
-IFJCUDogMDAwMDAwMDAwMDAwMDAwNSBSMDg6IDAwMDAwMDAwMDAwMDAwMDAgUjA5OiAwMDAwMDAw
-MDAwOTZiMjMwDQo+ID4gIFIxMDogMDAwMDAwMDAwMDAwMDAwMSBSMTE6IDAwMDAwMDAwMDAwMDAy
-NDYgUjEyOiAwMDAwN2ZmZWEyZWEyZDgwDQo+ID4gIFIxMzogMDAwMDdmZmVhMmVhMmQ2MCBSMTQ6
-IDAwMDAwMDAwMDAwMDAwMDUgUjE1OiAwMDAwMDAwMDAwOTZmM2MwDQo+ID4gIHRoZXJtYWwgdGhl
-cm1hbF96b25lMzogZmFpbGVkIHRvIHJlYWQgb3V0IHRoZXJtYWwgem9uZSAoLTUpDQoNCkNDaW5n
-IERhdmlkIFdlaW5laGFsbCB3aG8gYWxzbyBqdXN0IHJlcG9ydGVkIHRoaXMgdG8gbWUuDQoNCldl
-J2xsIGNoZWNrIHRoaXMgQVNBUC4gIFRoYW5rcyBmb3IgcmVwb3J0aW5nIQ0KDQotLQ0KTHVjYS4=
+"Coelho, Luciano" <luciano.coelho@intel.com> writes:
+
+> On Thu, 2017-08-03 at 11:10 +0200, Jiri Kosina wrote:
+>> On Mon, 31 Jul 2017, Jiri Kosina wrote:
+>>=20
+>> > Hi,
+>> >=20
+>> > booting current Linus' tree, I'm seeing lockdep splat (see the end of =
+this=20
+>> > mail).
+>> >=20
+>> > Apparently, there is AB-BA between tz->lock and mvm->mutex through the=
+ CPU=20
+>> > hotplug lock.
+>> >=20
+>> > The obivous depency is: thermal_zone_get_temp() acquires tz->lock, and=
+=20
+>> > then calls iwl_mvm_tzone_get_temp() (through tz->ops->get_temp()=20
+>> > callback), which acquires mvm->mutex
+>> >=20
+>> > The less obvious dependency is primarily caused by iwl_op_mode_mvm_sta=
+rt()=20
+>> > allocating workqueue (#2 stacktrace) while holding mvm->mutex (which i=
+s=20
+>> > broken, because that mutex is being taken also from CPU hotplug callba=
+ck=20
+>> > path, hence the AB-BA).
+>>=20
+>> As the "central" part of the dependency is being added by iwlwifi driver=
+=20
+>> (_iwl_pcie_rx_init() allocating workqueue while holding=20
+>> trans_pcie->mutex), I'm adding iwlwifi folks as well to CC.
+>>=20
+>> >=20
+>> >  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D
+>> >  WARNING: possible circular locking dependency detected
+>> >  4.13.0-rc2-00110-g0b5477d #347 Not tainted
+>> >  ------------------------------------------------------
+>> >  modprobe/881 is trying to acquire lock:
+>> >   (&mvm->mutex){+.+.+.}, at: [<ffffffffc0c504d2>] iwl_mvm_tzone_get_te=
+mp+0x32/0x80 [iwlmvm]
+>> >=20=20
+>> >  but task is already holding lock:
+>> >   (&tz->lock){+.+.+.}, at: [<ffffffff926a9351>] thermal_zone_get_temp+=
+0x41/0x70
+>> >=20=20
+>> >  which lock already depends on the new lock.
+>> >=20
+>> >=20=20
+>> >  the existing dependency chain (in reverse order) is:
+>> >=20=20
+>> >  -> #5 (&tz->lock){+.+.+.}:
+>> >         lock_acquire+0xbd/0x220
+>> >         __mutex_lock+0x6e/0x900
+>> >         mutex_lock_nested+0x1b/0x20
+>> >         thermal_zone_get_temp+0x41/0x70
+>> >         thermal_zone_device_update+0x3c/0x280
+>> >         thermal_zone_device_register+0x3b8/0x610
+>> >         pkg_thermal_cpu_online+0x20b/0x284 [x86_pkg_temp_thermal]
+>> >         cpuhp_invoke_callback+0xac/0x900
+>> >         cpuhp_thread_fun+0x79/0x160
+>> >         smpboot_thread_fn+0x156/0x220
+>> >         kthread+0x114/0x150
+>> >         ret_from_fork+0x2a/0x40
+>> >=20=20
+>> >  -> #4 (cpuhp_state){+.+.+.}:
+>> >         lock_acquire+0xbd/0x220
+>> >         cpuhp_issue_call+0xea/0x170
+>> >         __cpuhp_setup_state_cpuslocked+0x12a/0x190
+>> >         __cpuhp_setup_state+0x46/0xc0
+>> >         page_writeback_init+0x43/0x67
+>> >         pagecache_init+0x39/0x3c
+>> >         start_kernel+0x45a/0x4ae
+>> >         x86_64_start_reservations+0x24/0x26
+>> >         x86_64_start_kernel+0x13d/0x14c
+>> >         verify_cpu+0x0/0xf1
+>> >=20=20
+>> >  -> #3 (cpuhp_state_mutex){+.+.+.}:
+>> >         lock_acquire+0xbd/0x220
+>> >         __mutex_lock+0x6e/0x900
+>> >         mutex_lock_nested+0x1b/0x20
+>> >         __cpuhp_setup_state_cpuslocked+0x4f/0x190
+>> >         __cpuhp_setup_state+0x46/0xc0
+>> >         page_alloc_init+0x28/0x30
+>> >         start_kernel+0x186/0x4ae
+>> >         x86_64_start_reservations+0x24/0x26
+>> >         x86_64_start_kernel+0x13d/0x14c
+>> >         verify_cpu+0x0/0xf1
+>> >=20=20
+>> >  -> #2 (cpu_hotplug_lock.rw_sem){++++++}:
+>> >         lock_acquire+0xbd/0x220
+>> >         cpus_read_lock+0x46/0x90
+>> >         apply_workqueue_attrs+0x17/0x50
+>> >         __alloc_workqueue_key+0x195/0x4d0
+>> >         _iwl_pcie_rx_init+0x384/0x390 [iwlwifi]
+>> >         iwl_pcie_rx_init+0x1e/0x380 [iwlwifi]
+>> >         iwl_trans_pcie_start_fw+0x295/0x6f0 [iwlwifi]
+>> >         iwl_mvm_load_ucode_wait_alive+0xe7/0x390 [iwlmvm]
+>> >         iwl_run_init_mvm_ucode+0x84/0x320 [iwlmvm]
+>> >         iwl_op_mode_mvm_start+0x964/0xd30 [iwlmvm]
+>> >         _iwl_op_mode_start.isra.9+0x47/0xa0 [iwlwifi]
+>> >         iwl_opmode_register+0xaa/0xd0 [iwlwifi]
+>> >         iwl_mvm_init+0x37/0x1000 [iwlmvm]
+>> >         do_one_initcall+0x51/0x1a9
+>> >         do_init_module+0x60/0x20e
+>> >         load_module+0x203f/0x2b50
+>> >         SYSC_finit_module+0x96/0xd0
+>> >         SyS_finit_module+0xe/0x10
+>> >         entry_SYSCALL_64_fastpath+0x23/0xc2
+>> >=20=20
+>> >  -> #1 (&trans_pcie->mutex){+.+.+.}:
+>> >         lock_acquire+0xbd/0x220
+>> >         __mutex_lock+0x6e/0x900
+>> >         mutex_lock_nested+0x1b/0x20
+>> >         iwl_trans_pcie_start_fw+0x130/0x6f0 [iwlwifi]
+>> >         iwl_mvm_load_ucode_wait_alive+0xe7/0x390 [iwlmvm]
+>> >         iwl_run_init_mvm_ucode+0x84/0x320 [iwlmvm]
+>> >         iwl_op_mode_mvm_start+0x964/0xd30 [iwlmvm]
+>> >         _iwl_op_mode_start.isra.9+0x47/0xa0 [iwlwifi]
+>> >         iwl_opmode_register+0xaa/0xd0 [iwlwifi]
+>> >         iwl_mvm_init+0x37/0x1000 [iwlmvm]
+>> >         do_one_initcall+0x51/0x1a9
+>> >         do_init_module+0x60/0x20e
+>> >         load_module+0x203f/0x2b50
+>> >         SYSC_finit_module+0x96/0xd0
+>> >         SyS_finit_module+0xe/0x10
+>> >         entry_SYSCALL_64_fastpath+0x23/0xc2
+>> >=20=20
+>> >  -> #0 (&mvm->mutex){+.+.+.}:
+>> >         __lock_acquire+0x13e1/0x1400
+>> >         lock_acquire+0xbd/0x220
+>> >         __mutex_lock+0x6e/0x900
+>> >         mutex_lock_nested+0x1b/0x20
+>> >         iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>> >         thermal_zone_get_temp+0x51/0x70
+>> >         thermal_zone_device_update+0x3c/0x280
+>> >         thermal_zone_device_register+0x3b8/0x610
+>> >         iwl_mvm_thermal_initialize+0x1d1/0x3a0 [iwlmvm]
+>> >         iwl_op_mode_mvm_start+0xa1d/0xd30 [iwlmvm]
+>> >         _iwl_op_mode_start.isra.9+0x47/0xa0 [iwlwifi]
+>> >         iwl_opmode_register+0xaa/0xd0 [iwlwifi]
+>> >         iwl_mvm_init+0x37/0x1000 [iwlmvm]
+>> >         do_one_initcall+0x51/0x1a9
+>> >         do_init_module+0x60/0x20e
+>> >         load_module+0x203f/0x2b50
+>> >         SYSC_finit_module+0x96/0xd0
+>> >         SyS_finit_module+0xe/0x10
+>> >         entry_SYSCALL_64_fastpath+0x23/0xc2
+>> >=20=20
+>> >  other info that might help us debug this:
+>> >=20
+>> >  Chain exists of:
+>> >    &mvm->mutex --> cpuhp_state --> &tz->lock
+>> >=20
+>> >   Possible unsafe locking scenario:
+>> >=20
+>> > =C2=A0       CPU0        =C2=A0           CPU1
+>> >         ----                    ----
+>> >    lock(&tz->lock);
+>> >                                 lock(cpuhp_state);
+>> >                                 lock(&tz->lock);
+>> >    lock(&mvm->mutex);
+>> >=20=20
+>> >   *** DEADLOCK ***
+>> >=20
+>> >  2 locks held by modprobe/881:
+>> >   #0:  (&iwlwifi_opmode_table_mtx){+.+.+.}, at: [<ffffffffc0aa2df4>] i=
+wl_opmode_register+0x24/0xd0 [iwlwifi]
+>> >   #1:  (&tz->lock){+.+.+.}, at: [<ffffffff926a9351>] thermal_zone_get_=
+temp+0x41/0x70
+>> >=20=20
+>> >  stack backtrace:
+>> >  CPU: 3 PID: 881 Comm: modprobe Not tainted 4.13.0-rc2-00110-g0b5477d =
+#347
+>> >  Hardware name: LENOVO 20K5S22R00/20K5S22R00, BIOS R0IET38W (1.16 ) 05=
+/31/2017
+>> >  Call Trace:
+>> >   dump_stack+0x85/0xc9
+>> >   print_circular_bug+0x1f9/0x207
+>> >   __lock_acquire+0x13e1/0x1400
+>> >   lock_acquire+0xbd/0x220
+>> >   ? iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>> >   ? iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>> >   __mutex_lock+0x6e/0x900
+>> >   ? iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>> >   ? thermal_zone_get_temp+0x41/0x70
+>> >   ? iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>> >   ? thermal_zone_get_temp+0x41/0x70
+>> >   ? find_held_lock+0x39/0xb0
+>> >   mutex_lock_nested+0x1b/0x20
+>> >   iwl_mvm_tzone_get_temp+0x32/0x80 [iwlmvm]
+>> >   thermal_zone_get_temp+0x51/0x70
+>> >   thermal_zone_device_update+0x3c/0x280
+>> >   thermal_zone_device_register+0x3b8/0x610
+>> >   iwl_mvm_thermal_initialize+0x1d1/0x3a0 [iwlmvm]
+>> >   iwl_op_mode_mvm_start+0xa1d/0xd30 [iwlmvm]
+>> >   _iwl_op_mode_start.isra.9+0x47/0xa0 [iwlwifi]
+>> >   iwl_opmode_register+0xaa/0xd0 [iwlwifi]
+>> >   iwl_mvm_init+0x37/0x1000 [iwlmvm]
+>> >   ? 0xffffffffc0c87000
+>> >   do_one_initcall+0x51/0x1a9
+>> >   ? rcu_read_lock_sched_held+0x98/0xa0
+>> >   ? kmem_cache_alloc_trace+0x2a5/0x340
+>> >   do_init_module+0x60/0x20e
+>> >   load_module+0x203f/0x2b50
+>> >   ? __symbol_put+0x50/0x50
+>> >   SYSC_finit_module+0x96/0xd0
+>> >   SyS_finit_module+0xe/0x10
+>> >   entry_SYSCALL_64_fastpath+0x23/0xc2
+>> >  RIP: 0033:0x7f2ef067cc89
+>> >  RSP: 002b:00007ffea2ea3d78 EFLAGS: 00000246 ORIG_RAX: 0000000000000139
+>> >  RAX: ffffffffffffffda RBX: 0000000000000001 RCX: 00007f2ef067cc89
+>> >  RDX: 0000000000000000 RSI: 000000000041af06 RDI: 0000000000000001
+>> >  RBP: 0000000000000005 R08: 0000000000000000 R09: 000000000096b230
+>> >  R10: 0000000000000001 R11: 0000000000000246 R12: 00007ffea2ea2d80
+>> >  R13: 00007ffea2ea2d60 R14: 0000000000000005 R15: 000000000096f3c0
+>> >  thermal thermal_zone3: failed to read out thermal zone (-5)
+>
+> CCing David Weinehall who also just reported this to me.
+>
+> We'll check this ASAP.  Thanks for reporting!
+
+Adding linux-wireless also to the loop.
+
+--=20
+Kalle Valo
