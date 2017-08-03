@@ -1,50 +1,93 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [vireshk:opp/genpd-performance-state 8/8]
- drivers//remoteproc/qcom_q6v5_pil.c:1050:26: error: implicit declaration of
- function 'pm_genpd_has_performance_state'
-Date: Thu, 3 Aug 2017 08:34:41 +0530
-Message-ID: <20170803030441.GG31169@vireshk-i7>
-References: <201708030821.peNGem3G%fengguang.wu@intel.com>
+From: =?UTF-8?Q?S=c3=a9bastien_Szymanski?= <sebastien.szymanski@armadeus.com>
+Subject: Re: [PATCH 1/1] cpufreq: imx6q: imx6ull: use PLL1 for frequency
+ higher than 528MHz
+Date: Thu, 3 Aug 2017 09:32:24 +0200
+Message-ID: <737b6166-1594-677b-1a08-4f9b795d9410@armadeus.com>
+References: <1501230993-15812-1-git-send-email-sebastien.szymanski@armadeus.com>
+ <20170803020320.GG31819@dragon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f44.google.com ([74.125.83.44]:35238 "EHLO
-        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751345AbdHCDEp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Aug 2017 23:04:45 -0400
-Received: by mail-pg0-f44.google.com with SMTP id v189so850357pgd.2
-        for <linux-pm@vger.kernel.org>; Wed, 02 Aug 2017 20:04:45 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <201708030821.peNGem3G%fengguang.wu@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20170803020320.GG31819@dragon>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Shawn Guo <shawnguo@kernel.org>, Anson Huang <anson.huang@nxp.com>, Leonard Crestez <leonard.crestez@nxp.com>
+Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, Julien Boibessot <julien.boibessot@armadeus.com>, Fabio Estevam <fabio.estevam@nxp.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: kbuild test robot <fengguang.wu@intel.com>
-Cc: kbuild-all@01.org, linux-pm@vger.kernel.org
 
-On 03-08-17, 08:11, kbuild test robot wrote:
-> tree:   https://git.linaro.org/people/vireshk/linux opp/genpd-performance-state
-> head:   632eb4c9568177dd7a3f3c29ba88698616f6e4ad
-> commit: 632eb4c9568177dd7a3f3c29ba88698616f6e4ad [8/8] remoteproc: qcom: q6v5: Vote for proxy powerdomain performance state
-> config: arm-allmodconfig (attached as .config)
-> compiler: arm-linux-gnueabi-gcc (Debian 6.1.1-9) 6.1.1 20160705
-> reproduce:
->         wget https://raw.githubusercontent.com/01org/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         git checkout 632eb4c9568177dd7a3f3c29ba88698616f6e4ad
->         # save the attached .config to linux build tree
->         make.cross ARCH=arm 
-> 
-> All errors (new ones prefixed by >>):
-> 
->    drivers//remoteproc/qcom_q6v5_pil.c: In function 'q6v5_probe':
-> >> drivers//remoteproc/qcom_q6v5_pil.c:1050:26: error: implicit declaration of function 'pm_genpd_has_performance_state' [-Werror=implicit-function-declaration]
->      qproc->has_perf_state = pm_genpd_has_performance_state(&qproc->dev);
->                              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->    cc1: some warnings being treated as errors
-> 
-> vim +/pm_genpd_has_performance_state +1050 drivers//remoteproc/qcom_q6v5_pil.c
-
-It was just a testing patch, dropped it from the tree now. Thanks.
-
--- 
-viresh
+SGVsbG8sCgpPbiAwOC8wMy8yMDE3IDA0OjAzIEFNLCBTaGF3biBHdW8gd3JvdGU6Cj4gT24gRnJp
+LCBKdWwgMjgsIDIwMTcgYXQgMTA6MzY6MzNBTSArMDIwMCwgU8OpYmFzdGllbiBTenltYW5za2kg
+d3JvdGU6Cj4+IFNldHRpbmcgdGhlIGZyZXF1ZW5jeSBoaWdoZXIgdGhhbiA1MjhNaHogYWN0dWFs
+bHkgc2V0cyB0aGUgQVJNCj4+IGNsb2NrIHRvIDUyOE1Iei4gVGhhdCdzIGJlY2F1c2UgUExMMiBp
+cyB1c2VkIGFzIHRoZSByb290IGNsb2NrIHdoZW4gdGhlCj4+IGZyZXF1ZW5jeSBpcyBoaWdoZXIg
+dGhhbiAzOTZNSHouCj4+Cj4+IGNwdXBvd2VyIGZyZXF1ZW5jeS1zZXQgLWYgNzkyMDAwCj4+Cj4+
+IGFybV9jbGtfcm9vdCBvbiB0aGUgQ0NNX0NMS08yIHNpZ25hbCBpcyA1MjhNSHogaW5zdGVhZCBv
+ZiA3OTJNSHouCj4+Cj4+IFsgICA2MS42MDYzODNdIGNwdSBjcHUwOiAzOTYgTUh6LCAxMDI1IG1W
+IC0tPiA3OTIgTUh6LCAxMjI1IG1WCj4+Cj4+IHBsbDIgICAgICAgICAgICAgICAgICAgICAgICAg
+MSAgMSAgNTI4MDAwMDAwIDAgMAo+PiAgICBwbGwyX2J5cGFzcyAgICAgICAgICAgICAgIDEgIDEg
+IDUyODAwMDAwMCAwIDAKPj4gICAgICAgcGxsMl9idXMgICAgICAgICAgICAgICAzICAzICA1Mjgw
+MDAwMDAgMCAwCj4+IAkgY2E3X3NlY29uZGFyeV9zZWwgICAxICAxICA1MjgwMDAwMDAgMCAwCj4+
+IAkgICAgc3RlcCAgICAgICAgICAgICAxICAxICA1MjgwMDAwMDAgMCAwCj4+IAkgICAgICAgcGxs
+MV9zdyAgICAgICAxICAxICA1MjgwMDAwMDAgMCAwCj4+IAkJICBhcm0gICAgICAgIDEgIDEgIDUy
+ODAwMDAwMCAwIDAKPj4KPj4gRml4ZXMgdGhpcyBieSB1c2luZyB0aGUgUExMMSBhcyB0aGUgcm9v
+dCBjbG9jayB3aGVuIHRoZSBmcmVxdWVuY3kgaXMKPj4gaGlnaGVyIHRoYW4gNTI4TUh6Lgo+Pgo+
+PiBjcHVwb3dlciBmcmVxdWVuY3ktc2V0IC1mIDc5MjAwMAo+Pgo+PiBhcm1fY2xrX3Jvb3Qgb24g
+dGhlIENDTV9DTEtPMiBzaWduYWwgaXMgbm93IDc5Mk1IeiBhcyBleHBlY3RlZC4KPj4KPj4gWyAg
+IDY5LjcxNzk4N10gY3B1IGNwdTA6IDE5OCBNSHosIDk1MCBtViAtLT4gNzkyIE1IeiwgMTIyNSBt
+Vgo+Pgo+PiBwbGwxICAgICAgICAgICAgICAgMSAxIDc5MjAwMDAwMCAwIDAKPj4gICAgcGxsMV9i
+eXBhc3MgICAgIDEgMSA3OTIwMDAwMDAgMCAwCj4+ICAgICAgIHBsbDFfc3lzICAgICAxIDEgNzky
+MDAwMDAwIDAgMAo+PiAJIHBsbDFfc3cgICAxIDEgNzkyMDAwMDAwIDAgMAo+PiAJICAgIGFybSAg
+ICAxIDEgNzkyMDAwMDAwIDAgMAo+Pgo+PiBTaWduZWQtb2ZmLWJ5OiBTw6liYXN0aWVuIFN6eW1h
+bnNraSA8c2ViYXN0aWVuLnN6eW1hbnNraUBhcm1hZGV1cy5jb20+Cj4gCj4gQ2FuIHlvdSBwbGVh
+c2Ugc3BlY2lmeSBvbiB3aGljaCBTb0NzIHlvdSBhcmUgc2VlaW5nIHRoaXMgcHJvYmxlbT8gIEFu
+ZCBJCj4gd291bGQgbGlrZSBpbnZpdGUgQW5zb24gYW5kIExlb25hcmQgdG8gcmV2aWV3IGl0LgoK
+TXkgU29DIGlzIE1DSU1YNlkyQ1ZNMDhBQSB3aGljaCBpcyBhIDc5Mk1IeiBpLk1YNlVMTC4gSSBm
+b3Jnb3QgdG8KbWVudGlvbiB0aGF0IEkgYWRkZWQgdGhlIGZvbGxvd2luZyBvcGVyYXRpbmcgcG9p
+bnRzIGluIG15IGRldmljZSB0cmVlOgoKb3BlcmF0aW5nLXBvaW50czogNzkyMDAwICAxMjI1MDAw
+CmZzbCxzb2Mtb3BlcmF0aW5nLXBvaW50czogNzkyMDAwICAxMTc1MDAwCgpCZXN0IHJlZ2FyZHMs
+Cgo+IAo+IFNoYXduCj4gCj4+IC0tLQo+PiAgZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEu
+YyB8IDExICsrKysrKysrKy0tCj4+ICAxIGZpbGUgY2hhbmdlZCwgOSBpbnNlcnRpb25zKCspLCAy
+IGRlbGV0aW9ucygtKQo+Pgo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNw
+dWZyZXEuYyBiL2RyaXZlcnMvY3B1ZnJlcS9pbXg2cS1jcHVmcmVxLmMKPj4gaW5kZXggYjZlZGQz
+Yy4uZTVmYmE1MCAxMDA2NDQKPj4gLS0tIGEvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEu
+Ywo+PiArKysgYi9kcml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1ZnJlcS5jCj4+IEBAIC0xOCw2ICsx
+OCw3IEBACj4+ICAKPj4gICNkZWZpbmUgUFVfU09DX1ZPTFRBR0VfTk9STUFMCTEyNTAwMDAKPj4g
+ICNkZWZpbmUgUFVfU09DX1ZPTFRBR0VfSElHSAkxMjc1MDAwCj4+ICsjZGVmaW5lIEZSRVFfNTI4
+X01IWgkJNTI4MDAwMDAwCj4+ICAjZGVmaW5lIEZSRVFfMVAyX0dIWgkJMTIwMDAwMDAwMAo+PiAg
+Cj4+ICBzdGF0aWMgc3RydWN0IHJlZ3VsYXRvciAqYXJtX3JlZzsKPj4gQEAgLTExMCwxNCArMTEx
+LDIwIEBAIHN0YXRpYyBpbnQgaW14NnFfc2V0X3RhcmdldChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kg
+KnBvbGljeSwgdW5zaWduZWQgaW50IGluZGV4KQo+PiAgCQkgKiB2b2x0YWdlIG9mIDUyOE1Ieiwg
+c28gbG93ZXIgdGhlIENQVSBmcmVxdWVuY3kgdG8gb25lCj4+ICAJCSAqIGhhbGYgYmVmb3JlIGNo
+YW5naW5nIENQVSBmcmVxdWVuY3kuCj4+ICAJCSAqLwo+PiAtCQljbGtfc2V0X3JhdGUoYXJtX2Ns
+aywgKG9sZF9mcmVxID4+IDEpICogMTAwMCk7Cj4+IC0JCWNsa19zZXRfcGFyZW50KHBsbDFfc3df
+Y2xrLCBwbGwxX3N5c19jbGspOwo+PiArCQlpZiAoKG9sZF9mcmVxICogMTAwMCkgPD0gRlJFUV81
+MjhfTUhaKSB7Cj4+ICsJCQljbGtfc2V0X3JhdGUoYXJtX2NsaywgKG9sZF9mcmVxID4+IDEpICog
+MTAwMCk7Cj4+ICsJCQljbGtfc2V0X3BhcmVudChwbGwxX3N3X2NsaywgcGxsMV9zeXNfY2xrKTsK
+Pj4gKwkJfQo+PiAgCQlpZiAoZnJlcV9oeiA+IGNsa19nZXRfcmF0ZShwbGwyX3BmZDJfMzk2bV9j
+bGspKQo+PiAgCQkJY2xrX3NldF9wYXJlbnQoc2Vjb25kYXJ5X3NlbF9jbGssIHBsbDJfYnVzX2Ns
+ayk7Cj4+ICAJCWVsc2UKPj4gIAkJCWNsa19zZXRfcGFyZW50KHNlY29uZGFyeV9zZWxfY2xrLCBw
+bGwyX3BmZDJfMzk2bV9jbGspOwo+PiAgCQljbGtfc2V0X3BhcmVudChzdGVwX2Nsaywgc2Vjb25k
+YXJ5X3NlbF9jbGspOwo+PiAgCQljbGtfc2V0X3BhcmVudChwbGwxX3N3X2Nsaywgc3RlcF9jbGsp
+Owo+PiArCQlpZiAoZnJlcV9oeiA+IEZSRVFfNTI4X01IWikgewo+PiArCQkJY2xrX3NldF9yYXRl
+KHBsbDFfc3lzX2NsaywgZnJlcV9oeik7Cj4+ICsJCQljbGtfc2V0X3BhcmVudChwbGwxX3N3X2Ns
+aywgcGxsMV9zeXNfY2xrKTsKPj4gKwkJfQo+PiAgCX0gZWxzZSB7Cj4+ICAJCWNsa19zZXRfcGFy
+ZW50KHN0ZXBfY2xrLCBwbGwyX3BmZDJfMzk2bV9jbGspOwo+PiAgCQljbGtfc2V0X3BhcmVudChw
+bGwxX3N3X2Nsaywgc3RlcF9jbGspOwo+PiAtLSAKPj4gMi43LjMKPj4KPj4KPj4gX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KPj4gbGludXgtYXJtLWtlcm5l
+bCBtYWlsaW5nIGxpc3QKPj4gbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCj4+
+IGh0dHA6Ly9saXN0cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtl
+cm5lbAoKCi0tIApTw6liYXN0aWVuIFN6eW1hbnNraQpTb2Z0d2FyZSBlbmdpbmVlciwgQXJtYWRl
+dXMgU3lzdGVtcwpUZWw6ICszMyAoMCk5IDcyIDI5IDQxIDQ0CkZheDogKzMzICgwKTkgNzIgMjgg
+NzkgMjYKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxp
+bnV4LWFybS1rZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFk
+ZWFkLm9yZwpodHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4
+LWFybS1rZXJuZWwK
