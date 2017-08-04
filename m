@@ -1,65 +1,176 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2] cpufreq: intel_pstate: Improve IO performance
-Date: Thu,  3 Aug 2017 19:03:14 -0700
-Message-ID: <1501812194-55363-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH v4 3/3] power: wm831x_power: Support USB charger current
+ limit management
+Date: Fri, 4 Aug 2017 10:13:01 +0800
+Message-ID: <CAMz4kuLBK7RjnOw8s+jih9xVbSnyGLcV2UzACMcB__c1mcL0Kw@mail.gmail.com>
+References: <cover.1501132171.git.baolin.wang@linaro.org> <b25c3a5e595716c701091d848188585dbd95bb20.1501132173.git.baolin.wang@linaro.org>
+ <20170803191658.fksnm5iknwxlck7l@rob-hp-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:45394 "EHLO mga01.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751811AbdHDCDV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 3 Aug 2017 22:03:21 -0400
+Received: from mail-oi0-f42.google.com ([209.85.218.42]:34012 "EHLO
+        mail-oi0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751887AbdHDCND (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Aug 2017 22:13:03 -0400
+Received: by mail-oi0-f42.google.com with SMTP id x3so3853804oia.1
+        for <linux-pm@vger.kernel.org>; Thu, 03 Aug 2017 19:13:02 -0700 (PDT)
+In-Reply-To: <20170803191658.fksnm5iknwxlck7l@rob-hp-laptop>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, lenb@kernel.org
-Cc: linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Rob Herring <robh@kernel.org>
+Cc: Felipe Balbi <balbi@kernel.org>, Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Jun Li <jun.li@nxp.com>, Peter Chen <peter.chen@freescale.com>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, NeilBrown <neilb@suse.com>, patches@opensource.wolfsonmicro.com, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org
 
-In the current implementation the latency from SCHED_CPUFREQ_IOWAIT is
-set to actual P-state adjustment can be upto 10ms. This can be improved
-by reacting to SCHED_CPUFREQ_IOWAIT by jumping to max P-state immediately
-. With this change the IO performance improves significantly.
+On 4 August 2017 at 03:16, Rob Herring <robh@kernel.org> wrote:
+> On Thu, Jul 27, 2017 at 01:14:38PM +0800, Baolin Wang wrote:
+>> Integrate with the newly added USB charger interface to limit the current
+>> we draw from the USB input based on the input device configuration
+>> identified by the USB stack, allowing us to charge more quickly from high
+>> current inputs without drawing more current than specified from others.
+>>
+>> Signed-off-by: Mark Brown <broonie@kernel.org>
+>> Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+>> Acked-by: Lee Jones <lee.jones@linaro.org>
+>> Acked-by: Charles Keepax <ckeepax@opensource.wolfsonmicro.com>
+>> ---
+>>  Documentation/devicetree/bindings/mfd/wm831x.txt |    1 +
+>>  drivers/power/supply/wm831x_power.c              |   72 ++++++++++++++++++++++
+>>  2 files changed, 73 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/mfd/wm831x.txt b/Documentation/devicetree/bindings/mfd/wm831x.txt
+>> index 9f8b743..4e3bc07 100644
+>> --- a/Documentation/devicetree/bindings/mfd/wm831x.txt
+>> +++ b/Documentation/devicetree/bindings/mfd/wm831x.txt
+>> @@ -31,6 +31,7 @@ Required properties:
+>>      ../interrupt-controller/interrupts.txt
+>>
+>>  Optional sub-nodes:
+>> +  - usb-phy : Contains a phandle to the USB PHY.
+>
+> Use the phy binding ("phys") instead.
 
-With a simple "grep -r . linux" (Here linux is kernel source folder) with
-dropped caches every time on a platform with per core P-states on a
-Broadwell Xeon workstation, the user and system time improves as much as
-30% to 40%.
+OK. Will fix in next version. Thanks.
 
-The same performance difference was not observed on clients, which don't
-have per core P-state support.
+>
+>>    - regulators : Contains sub-nodes for each of the regulators supplied by
+>>      the device. The regulators are bound using their names listed below:
+>>
+>> diff --git a/drivers/power/supply/wm831x_power.c b/drivers/power/supply/wm831x_power.c
+>> index 7082301..dff6473 100644
+>> --- a/drivers/power/supply/wm831x_power.c
+>> +++ b/drivers/power/supply/wm831x_power.c
+>> @@ -13,6 +13,7 @@
+>>  #include <linux/platform_device.h>
+>>  #include <linux/power_supply.h>
+>>  #include <linux/slab.h>
+>> +#include <linux/usb/phy.h>
+>>
+>>  #include <linux/mfd/wm831x/core.h>
+>>  #include <linux/mfd/wm831x/auxadc.h>
+>> @@ -31,6 +32,8 @@ struct wm831x_power {
+>>       char usb_name[20];
+>>       char battery_name[20];
+>>       bool have_battery;
+>> +     struct usb_phy *usb_phy;
+>> +     struct notifier_block usb_notify;
+>>  };
+>>
+>>  static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
+>> @@ -125,6 +128,43 @@ static int wm831x_usb_get_prop(struct power_supply *psy,
+>>       POWER_SUPPLY_PROP_VOLTAGE_NOW,
+>>  };
+>>
+>> +/* In milliamps */
+>> +static const unsigned int wm831x_usb_limits[] = {
+>> +     0,
+>> +     2,
+>> +     100,
+>> +     500,
+>> +     900,
+>> +     1500,
+>> +     1800,
+>> +     550,
+>> +};
+>> +
+>> +static int wm831x_usb_limit_change(struct notifier_block *nb,
+>> +                                unsigned long limit, void *data)
+>> +{
+>> +     struct wm831x_power *wm831x_power = container_of(nb,
+>> +                                                      struct wm831x_power,
+>> +                                                      usb_notify);
+>> +     unsigned int i, best;
+>> +
+>> +     /* Find the highest supported limit */
+>> +     best = 0;
+>> +     for (i = 0; i < ARRAY_SIZE(wm831x_usb_limits); i++) {
+>> +             if (limit >= wm831x_usb_limits[i] &&
+>> +                 wm831x_usb_limits[best] < wm831x_usb_limits[i])
+>> +                     best = i;
+>> +     }
+>> +
+>> +     dev_dbg(wm831x_power->wm831x->dev,
+>> +             "Limiting USB current to %umA", wm831x_usb_limits[best]);
+>> +
+>> +     wm831x_set_bits(wm831x_power->wm831x, WM831X_POWER_STATE,
+>> +                     WM831X_USB_ILIM_MASK, best);
+>> +
+>> +     return 0;
+>> +}
+>> +
+>>  /*********************************************************************
+>>   *           Battery properties
+>>   *********************************************************************/
+>> @@ -607,6 +647,33 @@ static int wm831x_power_probe(struct platform_device *pdev)
+>>               }
+>>       }
+>>
+>> +     power->usb_phy = devm_usb_get_phy_by_phandle(&pdev->dev, "usb-phy", 0);
+>> +     ret = PTR_ERR_OR_ZERO(power->usb_phy);
+>> +
+>> +     switch (ret) {
+>> +     case 0:
+>> +             power->usb_notify.notifier_call = wm831x_usb_limit_change;
+>> +             ret = usb_register_notifier(power->usb_phy, &power->usb_notify);
+>> +             if (ret) {
+>> +                     dev_err(&pdev->dev, "Failed to register notifier: %d\n",
+>> +                             ret);
+>> +                     goto err_bat_irq;
+>> +             }
+>> +             break;
+>> +     case -EINVAL:
+>> +     case -ENODEV:
+>> +             /* ignore missing usb-phy, it's optional */
+>> +             power->usb_phy = NULL;
+>> +             ret = 0;
+>> +             break;
+>> +     default:
+>> +             dev_err(&pdev->dev, "Failed to find USB phy: %d\n", ret);
+>> +             /* fall-through */
+>> +     case -EPROBE_DEFER:
+>> +             goto err_bat_irq;
+>> +             break;
+>> +     }
+>> +
+>>       return ret;
+>>
+>>  err_bat_irq:
+>> @@ -637,6 +704,11 @@ static int wm831x_power_remove(struct platform_device *pdev)
+>>       struct wm831x *wm831x = wm831x_power->wm831x;
+>>       int irq, i;
+>>
+>> +     if (wm831x_power->usb_phy) {
+>> +             usb_unregister_notifier(wm831x_power->usb_phy,
+>> +                                     &wm831x_power->usb_notify);
+>> +     }
+>> +
+>>       for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
+>>               irq = wm831x_irq(wm831x,
+>>                                platform_get_irq_byname(pdev,
+>> --
+>> 1.7.9.5
+>>
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
-v2:
-As suggested by Rafael also updating  cpu->last_update time
 
- drivers/cpufreq/intel_pstate.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 90e8f2b..1cb318b 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1530,6 +1530,15 @@ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
- 
- 	if (flags & SCHED_CPUFREQ_IOWAIT) {
- 		cpu->iowait_boost = int_tofp(1);
-+		cpu->last_update = time;
-+		/*
-+		 * The last time the busy was 100% so P-state was max anyway
-+		 * so avoid overhead of computation.
-+		 */
-+		if (fp_toint(cpu->sample.busy_scaled) == 100)
-+			return;
-+
-+		goto set_pstate;
- 	} else if (cpu->iowait_boost) {
- 		/* Clear iowait_boost if the CPU may have been idle. */
- 		delta_ns = time - cpu->last_update;
-@@ -1541,6 +1550,7 @@ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
- 	if ((s64)delta_ns < INTEL_PSTATE_DEFAULT_SAMPLING_INTERVAL)
- 		return;
- 
-+set_pstate:
- 	if (intel_pstate_sample(cpu, time)) {
- 		int target_pstate;
- 
 -- 
-2.7.5
+Baolin.wang
+Best Regards
