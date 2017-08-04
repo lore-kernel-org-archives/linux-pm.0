@@ -1,113 +1,67 @@
-From: Rocky Hao <rocky.hao@rock-chips.com>
-Subject: [PATCH v2 4/5] arm64: dts: rockchip: add thermal nodes for rk3328 SoC
-Date: Fri,  4 Aug 2017 16:06:15 +0800
-Message-ID: <1501833976-1100-5-git-send-email-rocky.hao@rock-chips.com>
+From: Rocky Hao <rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [PATCH v2 3/5] arm64: dts: rockchip: add tsadc node for rk3328 SoC
+Date: Fri,  4 Aug 2017 16:06:14 +0800
+Message-ID: <1501833976-1100-4-git-send-email-rocky.hao@rock-chips.com>
 References: <1501833976-1100-1-git-send-email-rocky.hao@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1501833976-1100-1-git-send-email-rocky.hao@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com
-Cc: shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com, rocky.hao@rock-chips.com
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1501833976-1100-1-git-send-email-rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org
+Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, cl-TNX95d0MmH7DzftRWevZcw@public.gmane.org, william.wu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, xxx-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-add thermal zone and dynamic CPU power coefficients for rk3328
+add tsadc needed main information for rk3328 SoC.
+50000Hz is the max clock rate supported by tsadc module.
 
-Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
+Signed-off-by: Rocky Hao <rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 ---
 Change in v2:
 - remove gerrit Change-Id
 
- arch/arm64/boot/dts/rockchip/rk3328.dtsi | 43 ++++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
+ arch/arm64/boot/dts/rockchip/rk3328.dtsi | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/rockchip/rk3328.dtsi b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
-index 186fb93fdffd..68829f808320 100644
+index db4b2708084d..186fb93fdffd 100644
 --- a/arch/arm64/boot/dts/rockchip/rk3328.dtsi
 +++ b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
-@@ -47,6 +47,7 @@
- #include <dt-bindings/pinctrl/rockchip.h>
- #include <dt-bindings/power/rk3328-power.h>
- #include <dt-bindings/soc/rockchip,boot-mode.h>
-+#include <dt-bindings/thermal/thermal.h>
- 
- / {
- 	compatible = "rockchip,rk3328";
-@@ -74,6 +75,8 @@
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			reg = <0x0 0x0>;
- 			clocks = <&cru ARMCLK>;
-+			#cooling-cells = <2>; /* min followed by max */
-+			dynamic-power-coefficient = <120>;
- 			enable-method = "psci";
- 			next-level-cache = <&l2>;
- 		};
-@@ -83,6 +86,7 @@
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			reg = <0x0 0x1>;
- 			clocks = <&cru ARMCLK>;
-+			dynamic-power-coefficient = <120>;
- 			enable-method = "psci";
- 			next-level-cache = <&l2>;
- 		};
-@@ -92,6 +96,7 @@
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			reg = <0x0 0x2>;
- 			clocks = <&cru ARMCLK>;
-+			dynamic-power-coefficient = <120>;
- 			enable-method = "psci";
- 			next-level-cache = <&l2>;
- 		};
-@@ -101,6 +106,7 @@
- 			compatible = "arm,cortex-a53", "arm,armv8";
- 			reg = <0x0 0x3>;
- 			clocks = <&cru ARMCLK>;
-+			dynamic-power-coefficient = <120>;
- 			enable-method = "psci";
- 			next-level-cache = <&l2>;
- 		};
-@@ -308,6 +314,43 @@
+@@ -308,6 +308,26 @@
  		interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
  	};
  
-+	thermal-zones {
-+		soc_thermal: soc-thermal {
-+			polling-delay-passive = <20>; /* milliseconds */
-+			polling-delay = <1000>; /* milliseconds */
-+			sustainable-power = <1000>; /* milliwatts */
-+
-+			thermal-sensors = <&tsadc 0>;
-+
-+			trips {
-+				threshold: trip-point0 {
-+					temperature = <70000>; /* millicelsius */
-+					hysteresis = <2000>; /* millicelsius */
-+					type = "passive";
-+				};
-+				target: trip-point1 {
-+					temperature = <85000>; /* millicelsius */
-+					hysteresis = <2000>; /* millicelsius */
-+					type = "passive";
-+				};
-+				soc_crit: soc-crit {
-+					temperature = <95000>; /* millicelsius */
-+					hysteresis = <2000>; /* millicelsius */
-+					type = "critical";
-+				};
-+			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&target>;
-+					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+					contribution = <4096>;
-+				};
-+			};
-+		};
-+
++	tsadc: tsadc@ff250000 {
++		compatible = "rockchip,rk3328-tsadc";
++		reg = <0x0 0xff250000 0x0 0x100>;
++		interrupts = <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH 0>;
++		rockchip,grf = <&grf>;
++		clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
++		clock-names = "tsadc", "apb_pclk";
++		assigned-clocks = <&cru SCLK_TSADC>;
++		assigned-clock-rates = <50000>;
++		resets = <&cru SRST_TSADC>;
++		reset-names = "tsadc-apb";
++		pinctrl-names = "init", "default", "sleep";
++		pinctrl-0 = <&otp_gpio>;
++		pinctrl-1 = <&otp_out>;
++		pinctrl-2 = <&otp_gpio>;
++		#thermal-sensor-cells = <1>;
++		rockchip,hw-tshut-temp = <100000>;
++		status = "disabled";
 +	};
 +
- 	tsadc: tsadc@ff250000 {
- 		compatible = "rockchip,rk3328-tsadc";
- 		reg = <0x0 0xff250000 0x0 0x100>;
+ 	saradc: adc@ff280000 {
+ 		compatible = "rockchip,rk3328-saradc", "rockchip,rk3399-saradc";
+ 		reg = <0x0 0xff280000 0x0 0x100>;
 -- 
 1.9.1
