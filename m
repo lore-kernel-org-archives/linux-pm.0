@@ -1,41 +1,208 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: update timer frequencies
-Date: Fri, 4 Aug 2017 11:38:05 +0200
-Message-ID: <20170804093805.z5y2o6t6wp34ywln@hirez.programming.kicks-ass.net>
-References: <1489137441.2333.46.camel@synopsys.com>
- <alpine.DEB.2.20.1703101113370.3681@nanos>
- <cd7ddf4e-ecde-8450-99c4-80932a7952d8@synopsys.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH  v2] Fix header-name to read state name and adjust column
+ width
+Date: Fri, 4 Aug 2017 15:30:37 +0530
+Message-ID: <20170804100037.GA15605@in.ibm.com>
+References: <1501492822-28994-1-git-send-email-s1seetee@linux.vnet.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:55606 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751306AbdHDJiM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Aug 2017 05:38:12 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <cd7ddf4e-ecde-8450-99c4-80932a7952d8@synopsys.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1501492822-28994-1-git-send-email-s1seetee@linux.vnet.ibm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
+Cc: trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vineet Gupta <Vineet.Gupta1@synopsys.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Viresh Kumar <viresh.kumar@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>, "john.stultz@linaro.org" <john.stultz@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>, Alexey Brodkin <Alexey.Brodkin@synopsys.com>
 
-On Fri, Aug 04, 2017 at 12:28:43PM +0530, Vineet Gupta wrote:
+On Mon, Jul 31, 2017 at 02:50:22PM +0530, Seeteena Thoufeek wrote:
+> The names of the idle states in the output of cpupower monitor
+> command are truncated to 4 characters. Hence, On POWER9, since
+> the states are named "stop0, stop1, stop2, stop4, stop11",
+> this output is ambiguous
+> 
+> root:~# cpupower monitor
+>                |Idle_Stats
+>  PKG |CORE|CPU | snoo | stop | stop
+>     0|   8|   0|  0.00|  0.00|  2.79
+>     0|   8|   1|  0.00|  0.00| 70.68
+> 
+> In this patch, we modify the output to print the state name
+> and adjust the column width, that results in a legible output.
+> 
+> root:~#cpupower monitor
+>               |Idle_Stats
+> PKG |CORE|CPU |snooze|stop0_li|stop1_li
+>    0|   8|   0|  0.00|    0.00|   60.04
+>    0|   8|   1|  0.00|    0.00|   38.97
+>    0|   8|   2|  0.00|    0.00|    0.00
+>    0|   8|   3|  0.00|    0.00|    0.00
+>    0|  12|   4|  0.00|    0.00|   99.25
+>    0|  12|   5|  0.00|    0.00|    0.00
+>    0|  12|   6|  0.00|    0.00|   99.71
+>    0|  12|   7|  0.00|    0.00|   99.85
+>    8|2048|   8|  0.00|    0.00|   54.66
+>    8|2048|   9|  0.00|    0.00|    0.00
+>    8|2048|  10|  0.00|    0.00|    0.00
+>    8|2048|  11|  0.00|    0.00|   97.83
+>    8|2052|  12|  0.00|    0.00|    0.00
+>    8|2052|  13|  0.00|    0.00|    0.00
+>    8|2052|  14|  0.00|    0.00|    1.99
+>    8|2052|  15|  0.00|    0.00|   99.87
+> 
+> Tested on POWER8, POWER9 and x86.
 
-> The hardware is being changed and I had a couple of questions to help do it right:
+Some comments below.
 
-Awesome ;-)
+> 
+> Signed-off-by: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
+> ---
+>  .../cpupower/utils/idle_monitor/cpupower-monitor.c | 47 +++++++++++++++-------
+>  .../cpupower/utils/idle_monitor/cpupower-monitor.h |  7 +++-
+>  2 files changed, 37 insertions(+), 17 deletions(-)
+> 
+> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> index 05f953f..cf3a1ad 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+> @@ -21,7 +21,10 @@
+>  #include "idle_monitor/cpupower-monitor.h"
+>  #include "idle_monitor/idle_monitors.h"
+>  #include "helpers/helpers.h"
+> -
+> +#define xstr(s) str(s)
+> +#define str(s) #s
+> +#define COL_WIDTH_MIN   6
+> +#define COL_WIDTH_MAX   8
+>  /* Define pointers to all monitors.  */
+>  #define DEF(x) & x ## _monitor ,
+>  struct cpuidle_monitor *all_monitors[] = {
+> @@ -85,7 +88,7 @@ int fill_string_with_spaces(char *s, int n)
+>  void print_header(int topology_depth)
+>  {
+>  	int unsigned mon;
+> -	int state, need_len;
+> +	int state, need_len, name_len;
+>  	cstate_t s;
+>  	char buf[128] = "";
+>  	int percent_width = 4;
+> @@ -116,17 +119,19 @@ void print_header(int topology_depth)
+>  	for (mon = 0; mon < avail_monitors; mon++) {
+>  		if (mon != 0)
+>  			printf("|| ");
+> -		else
+> -			printf(" ");
+>  		for (state = 0; state < monitors[mon]->hw_states_num; state++) {
+>  			if (state != 0)
+> -				printf(" | ");
+> +				printf("|");
+>  			s = monitors[mon]->hw_states[state];
+> -			sprintf(buf, "%s", s.name);
+> +			name_len = strlen(s.name);
+> +			if (name_len <= COL_WIDTH_MIN)
+> +				percent_width = COL_WIDTH_MIN;
+> +			else
+> +				percent_width = COL_WIDTH_MAX;
+> +			sprintf(buf, "%.*s", percent_width, s.name);
+>  			fill_string_with_spaces(buf, percent_width);
+>  			printf("%s", buf);
+>  		}
+> -		printf(" ");
+>  	}
+>  	printf("\n");
+>  }
+> @@ -134,11 +139,12 @@ void print_header(int topology_depth)
+> 
+>  void print_results(int topology_depth, int cpu)
+>  {
+> -	unsigned int mon;
+> -	int state, ret;
+> +	unsigned int mon, percent_width, name_len, width;
+> +	int state, ret, i;
+>  	double percent;
+>  	unsigned long long result;
+>  	cstate_t s;
+> +	char buf[128] = "";
+> 
+>  	/* Be careful CPUs may got resorted for pkg value do not just use cpu */
+>  	if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
+> @@ -163,23 +169,34 @@ void print_results(int topology_depth, int cpu)
+>  				printf("|");
+> 
+>  			s = monitors[mon]->hw_states[state];
+> -
+> +			name_len = strlen(s.name);
+> +			if (name_len > COL_WIDTH_MIN) {
+> +				percent_width = COL_WIDTH_MAX;
+> +				width = percent_width - COL_WIDTH_MIN;
+> +				fill_string_with_spaces(buf, width);
+> +				printf("%s", buf);
+> +			}
+>  			if (s.get_count_percent) {
+>  				ret = s.get_count_percent(s.id, &percent,
+>  						  cpu_top.core_info[cpu].cpu);
+>  				if (ret)
+> -					printf("******");
+> +					for (i = 0; i < COL_WIDTH_MIN; i++)
+> +						printf("*");
 
-> 2. I'm not sure if the timer generating interrupts (periodic or oneshot)
-> needs to be fed invariant fixed clk or dynamic core clk. Naively it should
-> follow the core - but what happens to scheduled timers (say TCP timeouts):
-> if this clk changes - they need to be canceled/updated. If it doesn't then
-> the notion of timing is broken ? I'm likely not thinking this through
-> correctly.
+While this will compile, since the for loop spans over multiple lines,
+could you please use braces around the if block ?
 
-Please keep the timers on the very same clock as your clocksource.
-clockevent and clocksource having different (and possibly) drifting
-timelines is painful.
+>  				else if (percent >= 100.0)
+> -					printf("%6.1f", percent);
+> +					printf("%"xstr(COL_WIDTH_MIN)".1f",
+> +						  percent);
 
-Having them on the same clock makes everything so much easier, since you
-_know_ what time it is when they fire and won't have to recompute and
-possibly rearm the timer.
+Ditto.
+>  				else
+> -					printf("%6.2f", percent);
+> +					printf("%"xstr(COL_WIDTH_MIN)".2f",
+> +						  percent);
+
+Likewise.
+>  			} else if (s.get_count) {
+>  				ret = s.get_count(s.id, &result,
+>  						  cpu_top.core_info[cpu].cpu);
+>  				if (ret)
+> -					printf("******");
+> +					for (i = 0; i < COL_WIDTH_MIN; i++)
+> +						printf("*");
+
+Same here.
+>  				else
+> -					printf("%6llu", result);
+> +					printf("%"xstr(COL_WIDTH_MIN)"llu",
+> +						  result);
+
+... and here.
+>  			} else {
+>  				printf(_("Monitor %s, Counter %s has no count "
+>  					 "function. Implementation error\n"),
+> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+> index 9e43f33..1f6bc23 100644
+> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+> @@ -15,9 +15,12 @@
+> 
+>  #define MONITORS_MAX 20
+>  #define MONITOR_NAME_LEN 20
+> -#define CSTATE_NAME_LEN 5
+> +#define CSTATE_NAME_LEN 16
+>  #define CSTATE_DESC_LEN 60
+> -
+> +/*
+> + *  CSTATE_NAME_LEN is limited by the CPUIDLE_NAME_LEN defined
+> + *  in include/linux/cpuidle.h.
+> + */
+
+This comment should go above the definition of CSTATE_NAME_LEN.
+
+>  int cpu_count;
+> 
+>  /* Hard to define the right names ...: */
+
+Otherwise the patch looks good to me.
+> -- 
+> 1.8.3.1
+> 
