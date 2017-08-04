@@ -1,57 +1,92 @@
-From: Andy Lutomirski <luto@kernel.org>
-Subject: Re: [PATCH 3/3] platform/wmi: Expose the raw WDG data in sysfs
-Date: Fri, 4 Aug 2017 08:03:07 -0700
-Message-ID: <CALCETrVHGtA7nRaBCy9ZZ48Xu8hTKBgLdoGZeEHnHhPg3tdsxQ@mail.gmail.com>
-References: <cover.1501601667.git.luto@kernel.org> <e6df9d038af0a0ce4d4119395aaea58366ade26d.1501601667.git.luto@kernel.org>
- <20170801200313.GC3110@fury> <CALCETrX0zqq3xQgNBx41R9ZCT3_bB4EoXGrY3jWLK0e0Koo=EQ@mail.gmail.com>
- <20170801204040.GH25574@pali> <20170801211702.GF3110@fury>
- <20170801213112.GK25574@pali> <20170801223947.GH3110@fury>
- <CALCETrXFySnB3jq_EAn+NDTb6jsp__4Dc=0ipdFqCbaZEPSOfg@mail.gmail.com>
- <20170802022232.GA21551@fury> <20170802074903.GO25574@pali>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH] devfreq: replace sscanf with kstrtol
+Date: Sat, 5 Aug 2017 00:12:57 +0900
+Message-ID: <CAGTfZH06PFTBu4VE_5AQjmpKfhr=TD9Qj8wcHpxQubCRtRMzzA@mail.gmail.com>
+References: <a74af8cd71537efd19c5b7154d34ec65@codeaurora.org>
+Reply-To: cwchoi00@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:60396 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752177AbdHDPD3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 4 Aug 2017 11:03:29 -0400
-Received: from mail-vk0-f50.google.com (mail-vk0-f50.google.com [209.85.213.50])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 1E6B922DA8
-        for <linux-pm@vger.kernel.org>; Fri,  4 Aug 2017 15:03:29 +0000 (UTC)
-Received: by mail-vk0-f50.google.com with SMTP id d124so6886834vkf.2
-        for <linux-pm@vger.kernel.org>; Fri, 04 Aug 2017 08:03:29 -0700 (PDT)
-In-Reply-To: <20170802074903.GO25574@pali>
+Received: from mail-yw0-f195.google.com ([209.85.161.195]:34359 "EHLO
+        mail-yw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751944AbdHDPNi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Aug 2017 11:13:38 -0400
+In-Reply-To: <a74af8cd71537efd19c5b7154d34ec65@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>
-Cc: Darren Hart <dvhart@infradead.org>, Andy Lutomirski <luto@kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>
+To: gsantosh@codeaurora.org
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, gsantosh@qtil.qualcomm.com
 
-On Wed, Aug 2, 2017 at 12:49 AM, Pali Rohár <pali.rohar@gmail.com> wrote:
-> On Tuesday 01 August 2017 19:22:32 Darren Hart wrote:
+Hi,
 
->> Pali, how does the "magic number identifier" in the BMOF map to the object_id?
->> Have we retained that information in what we export today?
+On Fri, Aug 4, 2017 at 12:57 PM,  <gsantosh@codeaurora.org> wrote:
+> Hi,
 >
-> MOF describe C++ like object system and for particular structures or
-> methods there is GUID and WMI id.
+> Adding error checks to devfreq userspace governor, the current
+> implementation results in setting wrong
+> frequency when sscanf returns error.
 >
-> When you want to call WMI function implemented in ACPI you need to know:
-> * name of ACPI function
-> * instance number
-> * WMI id
-> * structure of input buffer
 >
-> Name of ACPI function is taken from _WDG where is mapping from GUID to
-> object_id and ACPI function consist of well-known prefix and object_id
-> as a suffix. GUID is present in MOF. Where to get correct instance
-> number is still question for me. WMI id and structure of input buffer is
-> described in MOF.
+> From 12e0a347addd70529b2c378299b27b65f0766f99 Mon Sep 17 00:00:00 2001
+> From: Santosh Mardi <gsantosh@codeaurora.org>
+> Date: Tue, 25 Jul 2017 18:47:11 +0530
+> Subject: [PATCH] devfreq: replace sscanf with kstrtol
+>
+> store_freq function of devfreq userspace governor
+> executes further, even if error is returned from sscanf,
+> this will result in setting up wrong frequency value.
+>
+> The usage for the sscanf is only for single variable so
+> replace sscanf with kstrtol along with error check to
+> bail out if any error is returned.
+>
+> Signed-off-by: Santosh Mardi <gsantosh@codeaurora.org>
+> ---
+>  drivers/devfreq/governor_userspace.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/devfreq/governor_userspace.c
+> b/drivers/devfreq/governor_userspace.c
+> index 77028c2..a84796d 100644
+> --- a/drivers/devfreq/governor_userspace.c
+> +++ b/drivers/devfreq/governor_userspace.c
+> @@ -53,12 +53,15 @@ static ssize_t store_freq(struct device *dev, struct
+> device_attribute *attr,
+>         mutex_lock(&devfreq->lock);
+>         data = devfreq->data;
+>
+> -       sscanf(buf, "%lu", &wanted);
+> +       err = kstrtol(buf, 0, &wanted);
+> +       if (err < 0)
+> +               goto out;
 
-I assume that any user API for making WMI calls will have userspace
-pass in either the GUID or maybe the MOF method name, not the object
-id.
+I think that just you can check the return value as following:
+The other point of devfreq already uses the following style
+to check the return value of sscanf. I think kstrtol is not necessary.
 
---Andy
+     err = sscanf(buf, "%lu", &wanted);
+     if (err != 1)
+          goto out;
+
+And please use the scripts/get_maintainer.pl
+in order to prevent the missing of the reviewer.
+
+>         data->user_frequency = wanted;
+>         data->valid = true;
+>         err = update_devfreq(devfreq);
+>         if (err == 0)
+>                 err = count;
+> +out:
+>         mutex_unlock(&devfreq->lock);
+>         return err;
+>  }
+> --
+>
+> Regards,
+> Santosh M G.
+> Qualcomm Innovation Center
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
