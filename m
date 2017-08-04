@@ -1,72 +1,42 @@
-From: gsantosh@codeaurora.org
-Subject: [PATCH] devfreq: replace sscanf with kstrtol
-Date: Fri, 04 Aug 2017 09:53:30 +0530
-Message-ID: <76b99c5399941998bf19e51795c404eb@codeaurora.org>
-References: <a74af8cd71537efd19c5b7154d34ec65@codeaurora.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: dt: Add rk3328 compatible to use generic
+ cpufreq driver
+Date: Fri, 4 Aug 2017 10:40:41 +0530
+Message-ID: <20170804051041.GB28857@vireshk-i7>
+References: <1501811551-39168-1-git-send-email-finley.xiao@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:56354 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750899AbdHDEXb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Aug 2017 00:23:31 -0400
-In-Reply-To: <a74af8cd71537efd19c5b7154d34ec65@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1501811551-39168-1-git-send-email-finley.xiao@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Finley Xiao <finley.xiao@rock-chips.com>
+Cc: heiko@sntech.de, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jay.xu@rock-chips.com, huangtao@rock-chips.coms, tony.xie@rock-chips.com, cl@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, gsantosh@qti.qualcomm.com
 
-Hi,
+On 04-08-17, 09:52, Finley Xiao wrote:
+> This patch adds the rk3328 compatible string for supporting
+> the generic cpufreq driver on RK3328.
+> 
+> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
+> ---
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index 096aea7..13c0c47 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -76,6 +76,7 @@ static const struct of_device_id machines[] __initconst = {
+>  	{ .compatible = "rockchip,rk3188", },
+>  	{ .compatible = "rockchip,rk3228", },
+>  	{ .compatible = "rockchip,rk3288", },
+> +	{ .compatible = "rockchip,rk3328", },
+>  	{ .compatible = "rockchip,rk3366", },
+>  	{ .compatible = "rockchip,rk3368", },
+>  	{ .compatible = "rockchip,rk3399", },
 
-Adding error checks to devfreq userspace governor, the current 
-implementation results in setting wrong
-frequency when sscanf returns error.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-
- From 12e0a347addd70529b2c378299b27b65f0766f99 Mon Sep 17 00:00:00 2001
- From: Santosh Mardi <gsantosh@codeaurora.org>
-Date: Tue, 25 Jul 2017 18:47:11 +0530
-Subject: [PATCH] devfreq: replace sscanf with kstrtol
-
-store_freq function of devfreq userspace governor
-executes further, even if error is returned from sscanf,
-this will result in setting up wrong frequency value.
-
-The usage for the sscanf is only for single variable so
-replace sscanf with kstrtol along with error check to
-bail out if any error is returned.
-
-Signed-off-by: Santosh Mardi <gsantosh@codeaurora.org>
----
-  drivers/devfreq/governor_userspace.c | 5 ++++-
-  1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/devfreq/governor_userspace.c 
-b/drivers/devfreq/governor_userspace.c
-index 77028c2..a84796d 100644
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -53,12 +53,15 @@ static ssize_t store_freq(struct device *dev, struct 
-device_attribute *attr,
-      mutex_lock(&devfreq->lock);
-      data = devfreq->data;
-
--    sscanf(buf, "%lu", &wanted);
-+    err = kstrtol(buf, 0, &wanted);
-+    if (err < 0)
-+        goto out;
-      data->user_frequency = wanted;
-      data->valid = true;
-      err = update_devfreq(devfreq);
-      if (err == 0)
-          err = count;
-+out:
-      mutex_unlock(&devfreq->lock);
-      return err;
-  }
 -- 
-
-Regards,
-Santosh M G.
-Qualcomm Innovation Center
+viresh
