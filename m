@@ -1,62 +1,59 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/2] cpufreq: intel_pstate: Simplify intel_pstate_adjust_pstate()
-Date: Fri, 04 Aug 2017 15:02:26 +0200
-Message-ID: <2178001.LRlMC5TT3K@aspire.rjw.lan>
-References: <1540190.Qr1f2614Kx@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1540190.Qr1f2614Kx@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: Simon Horman <horms+renesas@verge.net.au>
+Subject: [PATCH] cpufreq: rcar: Add support for R8A7795 SoC
+Date: Fri,  4 Aug 2017 15:18:00 +0200
+Message-ID: <1501852680-21127-1-git-send-email-horms+renesas@verge.net.au>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+From: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
 
-Since there is only one P-state selection routine in intel_pstate
-now, make intel_pstate_adjust_pstate() call it directly and drop
-the target_pstate argument from that function.
+After the commit "a399dc9fc50 cpufreq: shmobile: Use generic platdev
+driver", will use cpufreq-dt-platdev driver to enable cpufreq-dt support.
+Hence, follow the implementation to support new R8A7795 SoC.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
+Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
 ---
- drivers/cpufreq/intel_pstate.c |   12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -1495,13 +1495,15 @@ static void intel_pstate_update_pstate(s
- 	wrmsrl(MSR_IA32_PERF_CTL, pstate_funcs.get_val(cpu, pstate));
- }
+This is identical to a patch posted by Khiem last year.
+At the time it was asked if using opp-v2 was the preferred approach.
+
+https://patchwork.kernel.org/patch/9054011/
+
+An inspection of the current upstream kernel code seems to indicate
+that adding a binding as this patch does is compatibile with using opp-v2
+and I plan to post DTS patches separately which make use of the opp-v2
+bindings - they depend on this driver change to work.
+
+I have provided an integration patch with this patch, those DTS changes,
+and Renesas clock updates also depended on by the DTS changes. The result
+is working CPUFreq for the r8a7795 (R-Car H3) ES1.0.
+
+If this work is acceptable I plan to follow up with patches to
+enable CPUFreq on the r8a7796 (R-Car M3-W).
+
+https://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas.git topic/r8a7795-cpufreq
+
+A description of steps taken to lightly exercise the above can be found here:
+
+http://elinux.org/Tests:R-CAR-GEN3-CPUFreq
+
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 096aea7fcb67..13b72f3c420b 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -67,6 +67,7 @@ static const struct of_device_id machines[] __initconst = {
+ 	{ .compatible = "renesas,r8a7792", },
+ 	{ .compatible = "renesas,r8a7793", },
+ 	{ .compatible = "renesas,r8a7794", },
++	{ .compatible = "renesas,r8a7795", },
+ 	{ .compatible = "renesas,sh73a0", },
  
--static void intel_pstate_adjust_pstate(struct cpudata *cpu, int target_pstate)
-+static void intel_pstate_adjust_pstate(struct cpudata *cpu)
- {
- 	int from = cpu->pstate.current_pstate;
- 	struct sample *sample;
-+	int target_pstate;
- 
- 	update_turbo_state();
- 
-+	target_pstate = get_target_pstate_use_cpu_load(cpu);
- 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
- 	trace_cpu_frequency(target_pstate * cpu->pstate.scaling, cpu->cpu);
- 	intel_pstate_update_pstate(cpu, target_pstate);
-@@ -1541,12 +1543,8 @@ static void intel_pstate_update_util(str
- 	if ((s64)delta_ns < INTEL_PSTATE_DEFAULT_SAMPLING_INTERVAL)
- 		return;
- 
--	if (intel_pstate_sample(cpu, time)) {
--		int target_pstate;
--
--		target_pstate = get_target_pstate_use_cpu_load(cpu);
--		intel_pstate_adjust_pstate(cpu, target_pstate);
--	}
-+	if (intel_pstate_sample(cpu, time))
-+		intel_pstate_adjust_pstate(cpu);
- }
- 
- static struct pstate_funcs core_funcs = {
+ 	{ .compatible = "rockchip,rk2928", },
+-- 
+2.1.4
