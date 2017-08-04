@@ -1,42 +1,58 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v3 00/10] arm, arm64, cpufreq: frequency- and
- cpu-invariant accounting support for task scheduler
-Date: Fri, 4 Aug 2017 18:38:43 +0100
-Message-ID: <6dec7b60-e262-67ab-d29e-8537085dadcd@arm.com>
-References: <20170727193312.9849-1-dietmar.eggemann@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+Subject: [PATCH] Thermal/int340x: Fix few typos and kernel warn message
+Date: Fri,  4 Aug 2017 23:43:49 +0530
+Message-ID: <1501870429-10812-1-git-send-email-sumeet.r.pawnikar@intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:57698 "EHLO foss.arm.com"
+Received: from mga06.intel.com ([134.134.136.31]:50308 "EHLO mga06.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752808AbdHDRir (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 4 Aug 2017 13:38:47 -0400
-In-Reply-To: <20170727193312.9849-1-dietmar.eggemann@arm.com>
-Content-Language: en-GB
+        id S1751281AbdHDSM7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 4 Aug 2017 14:12:59 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+To: rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, srinivas.pandruvada@linux.intel.com, sumeet.r.pawnikar@intel.com
 
-Hi Rafael,
+This patch fix the few typos in trt structure. Also, update
+kernel warn message for failed to get device name from acpi
+handle.
 
-On 27/07/17 20:33, Dietmar Eggemann wrote:
+Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+---
+ drivers/thermal/int340x_thermal/acpi_thermal_rel.c |    2 +-
+ drivers/thermal/int340x_thermal/acpi_thermal_rel.h |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-[...]
-
-> Patch high level description:
-> 
->    [   01/10] Fix to free cpumask cpus_to_visit
->    [   02/10] Default (empty, weak) arch_set_freq_scale() implementation
->    [03,04/10] Call arch_set_freq_scale() from two cpufreq drivers
->               (arm_big_little and cpufreq-dt)
-
-Could you please have a look at patches 2-4 which touch the cpufreq
-subsystem.
-
-Thanks,
-
--- Dietmar
-
-[....]
+diff --git a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+index 51ceb80..c719167 100644
+--- a/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
++++ b/drivers/thermal/int340x_thermal/acpi_thermal_rel.c
+@@ -228,7 +228,7 @@ static void get_single_name(acpi_handle handle, char *name)
+ 	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER};
+ 
+ 	if (ACPI_FAILURE(acpi_get_name(handle, ACPI_SINGLE_NAME, &buffer)))
+-		pr_warn("Failed get name from handle\n");
++		pr_warn("Failed to get device name from acpi handle\n");
+ 	else {
+ 		memcpy(name, buffer.pointer, ACPI_NAME_SIZE);
+ 		kfree(buffer.pointer);
+diff --git a/drivers/thermal/int340x_thermal/acpi_thermal_rel.h b/drivers/thermal/int340x_thermal/acpi_thermal_rel.h
+index f00700b..65075b1 100644
+--- a/drivers/thermal/int340x_thermal/acpi_thermal_rel.h
++++ b/drivers/thermal/int340x_thermal/acpi_thermal_rel.h
+@@ -34,10 +34,10 @@ struct trt {
+ 	acpi_handle target;
+ 	u64 influence;
+ 	u64 sample_period;
+-	u64 reverved1;
+-	u64 reverved2;
+-	u64 reverved3;
+-	u64 reverved4;
++	u64 reserved1;
++	u64 reserved2;
++	u64 reserved3;
++	u64 reserved4;
+ } __packed;
+ 
+ #define ACPI_NR_ART_ELEMENTS 13
+-- 
+1.7.9.5
