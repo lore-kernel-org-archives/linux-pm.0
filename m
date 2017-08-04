@@ -1,92 +1,54 @@
-From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH] devfreq: replace sscanf with kstrtol
-Date: Sat, 5 Aug 2017 00:12:57 +0900
-Message-ID: <CAGTfZH06PFTBu4VE_5AQjmpKfhr=TD9Qj8wcHpxQubCRtRMzzA@mail.gmail.com>
-References: <a74af8cd71537efd19c5b7154d34ec65@codeaurora.org>
-Reply-To: cwchoi00@gmail.com
+From: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Subject: turbostat: fix Skylake server package
+Date: Fri,  4 Aug 2017 18:42:23 +0300
+Message-ID: <20170804154223.16223-1-artem.bityutskiy@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yw0-f195.google.com ([209.85.161.195]:34359 "EHLO
-        mail-yw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751944AbdHDPNi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Aug 2017 11:13:38 -0400
-In-Reply-To: <a74af8cd71537efd19c5b7154d34ec65@codeaurora.org>
+Received: from mga11.intel.com ([192.55.52.93]:65158 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752160AbdHDPm1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 4 Aug 2017 11:42:27 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: gsantosh@codeaurora.org
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, gsantosh@qtil.qualcomm.com
+To: Len Brown <len.brown@intel.com>
+Cc: linux-pm@vger.kernel.org
 
-Hi,
+This patch fixes the problem of turbostat not reporting any package C-states on
+Skylake Xeon processor when the deepest package C-stated is configured as "no
+limit" in the UEFI firmware configuration menu.
 
-On Fri, Aug 4, 2017 at 12:57 PM,  <gsantosh@codeaurora.org> wrote:
-> Hi,
->
-> Adding error checks to devfreq userspace governor, the current
-> implementation results in setting wrong
-> frequency when sscanf returns error.
->
->
-> From 12e0a347addd70529b2c378299b27b65f0766f99 Mon Sep 17 00:00:00 2001
-> From: Santosh Mardi <gsantosh@codeaurora.org>
-> Date: Tue, 25 Jul 2017 18:47:11 +0530
-> Subject: [PATCH] devfreq: replace sscanf with kstrtol
->
-> store_freq function of devfreq userspace governor
-> executes further, even if error is returned from sscanf,
-> this will result in setting up wrong frequency value.
->
-> The usage for the sscanf is only for single variable so
-> replace sscanf with kstrtol along with error check to
-> bail out if any error is returned.
->
-> Signed-off-by: Santosh Mardi <gsantosh@codeaurora.org>
-> ---
->  drivers/devfreq/governor_userspace.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/devfreq/governor_userspace.c
-> b/drivers/devfreq/governor_userspace.c
-> index 77028c2..a84796d 100644
-> --- a/drivers/devfreq/governor_userspace.c
-> +++ b/drivers/devfreq/governor_userspace.c
-> @@ -53,12 +53,15 @@ static ssize_t store_freq(struct device *dev, struct
-> device_attribute *attr,
->         mutex_lock(&devfreq->lock);
->         data = devfreq->data;
->
-> -       sscanf(buf, "%lu", &wanted);
-> +       err = kstrtol(buf, 0, &wanted);
-> +       if (err < 0)
-> +               goto out;
+The lowest 3 bits of the MSR_PKG_CST_CONFIG_CONTROL (0x000000e2) register
+contain 7 in this case, meaning "No Package C state limits" (see Intel SDM, vol
+4, Table 2-41 - MSRs Supported by Intel® Xeon® Processor Scalable Family with
+DisplayFamily_DisplayModel 06_55H).
 
-I think that just you can check the return value as following:
-The other point of devfreq already uses the following style
-to check the return value of sscanf. I think kstrtol is not necessary.
+The problem was that turbostat's internal array of supported package C-sates
+(skx_pkg_cstate_limits) marked position #7 as "PCLRSV" (reserved), instead of
+"PCLUNL" (not limited). Instead, position #8 was incorrectly marked as "PCLUNL"
+(probably due to a typo).
 
-     err = sscanf(buf, "%lu", &wanted);
-     if (err != 1)
-          goto out;
+This patch fixes the issue by marking position #7 as "not limited", and
+position #8 as "reserved".
 
-And please use the scripts/get_maintainer.pl
-in order to prevent the missing of the reviewer.
+Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+---
+ turbostat.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->         data->user_frequency = wanted;
->         data->valid = true;
->         err = update_devfreq(devfreq);
->         if (err == 0)
->                 err = count;
-> +out:
->         mutex_unlock(&devfreq->lock);
->         return err;
->  }
-> --
->
-> Regards,
-> Santosh M G.
-> Qualcomm Innovation Center
-
+diff --git a/turbostat.c b/turbostat.c
+index 6c185a9..1c4d3e2 100644
+--- a/turbostat.c
++++ b/turbostat.c
+@@ -1816,7 +1816,7 @@ int slv_pkg_cstate_limits[16] = {PCL__0, PCL__1, PCLRSV, PCLRSV, PCL__4, PCLRSV,
+ int amt_pkg_cstate_limits[16] = {PCLUNL, PCL__1, PCL__2, PCLRSV, PCLRSV, PCLRSV, PCL__6, PCL__7, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
+ int phi_pkg_cstate_limits[16] = {PCL__0, PCL__2, PCL_6N, PCL_6R, PCLRSV, PCLRSV, PCLRSV, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
+ int bxt_pkg_cstate_limits[16] = {PCL__0, PCL__2, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
+-int skx_pkg_cstate_limits[16] = {PCL__0, PCL__2, PCL_6N, PCL_6R, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
++int skx_pkg_cstate_limits[16] = {PCL__0, PCL__2, PCL_6N, PCL_6R, PCLRSV, PCLRSV, PCLRSV, PCLUNL, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV, PCLRSV};
+ 
+ 
+ static void
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.9.3
