@@ -1,66 +1,40 @@
-From: gsantosh@codeaurora.org
-Subject: [PATCH] devfreq: replace sscanf with kstrtol
-Date: Fri, 04 Aug 2017 09:27:56 +0530
-Message-ID: <a74af8cd71537efd19c5b7154d34ec65@codeaurora.org>
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: Re: [PATCH 05/10] clk: sunxi-ng: h3: gate then ungate
+ PLL CPU clk after rate change
+Date: Fri, 4 Aug 2017 12:09:22 +0800
+Message-ID: <CAGb2v67LWirnWuQzzkNx4MU6Z-pERJBr6vcVfdoddFwLC=FXoA@mail.gmail.com>
+References: <20170723102749.17323-1-icenowy@aosc.io> <20170723102749.17323-6-icenowy@aosc.io>
+ <CAGb2v66jK+iAbKVsv6=4tb0470KBdwU+AHjWDnWwKKTY+U+W6g@mail.gmail.com>
+Reply-To: wens-jdAy2FN1RRM@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, gsantosh@qtil.qualcomm.com
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-sunxi+bncBCMILY6JWQBBBCXHR7GAKGQE22TPWUQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <CAGb2v66jK+iAbKVsv6=4tb0470KBdwU+AHjWDnWwKKTY+U+W6g-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Cc: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-clk <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On Wed, Jul 26, 2017 at 3:14 PM, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org> wrote:
+> On Sun, Jul 23, 2017 at 6:27 PM, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org> wrote:
+>> From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+>>
+>> This patch utilizes the new PLL clk notifier to gate then ungate the
+>> PLL CPU clock after rate changes. This should prevent any system hangs
+>> resulting from cpufreq changes to the clk.
+>>
+>> Reported-by: Ondrej Jirman <megous-5qf/QAjKc83QT0dZR+AlfA@public.gmane.org>
+>> Signed-off-by: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+>> Tested-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+>
+> This is missing
+>
+> Fixes: 0577e4853bfb ("clk: sunxi-ng: Add H3 clocks")
 
-Adding error checks to devfreq userspace governor, the current 
-implementation results in setting wrong
-frequency when sscanf returns error.
-
-
- From 12e0a347addd70529b2c378299b27b65f0766f99 Mon Sep 17 00:00:00 2001
- From: Santosh Mardi <gsantosh@codeaurora.org>
-Date: Tue, 25 Jul 2017 18:47:11 +0530
-Subject: [PATCH] devfreq: replace sscanf with kstrtol
-
-store_freq function of devfreq userspace governor
-executes further, even if error is returned from sscanf,
-this will result in setting up wrong frequency value.
-
-The usage for the sscanf is only for single variable so
-replace sscanf with kstrtol along with error check to
-bail out if any error is returned.
-
-Signed-off-by: Santosh Mardi <gsantosh@codeaurora.org>
----
-  drivers/devfreq/governor_userspace.c | 5 ++++-
-  1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/devfreq/governor_userspace.c 
-b/drivers/devfreq/governor_userspace.c
-index 77028c2..a84796d 100644
---- a/drivers/devfreq/governor_userspace.c
-+++ b/drivers/devfreq/governor_userspace.c
-@@ -53,12 +53,15 @@ static ssize_t store_freq(struct device *dev, struct 
-device_attribute *attr,
-  	mutex_lock(&devfreq->lock);
-  	data = devfreq->data;
-
--	sscanf(buf, "%lu", &wanted);
-+	err = kstrtol(buf, 0, &wanted);
-+	if (err < 0)
-+		goto out;
-  	data->user_frequency = wanted;
-  	data->valid = true;
-  	err = update_devfreq(devfreq);
-  	if (err == 0)
-  		err = count;
-+out:
-  	mutex_unlock(&devfreq->lock);
-  	return err;
-  }
--- 
-
-Regards,
-Santosh M G.
-Qualcomm Innovation Center
+Applied for 4.14 with the Fixes tag and Stephen's ack.
