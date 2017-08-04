@@ -1,341 +1,57 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH v2 17/18] cpufreq: add support for CPU DVFS based on SCMI message protocol
-Date: Fri,  4 Aug 2017 15:31:43 +0100
-Message-ID: <1501857104-11279-18-git-send-email-sudeep.holla@arm.com>
-References: <1501857104-11279-1-git-send-email-sudeep.holla@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1501857104-11279-1-git-send-email-sudeep.holla@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Arnd Bergmann <arnd@arndb.de>, Loc Ho <lho@apm.com>, Alexey Klimov <alexey.klimov@arm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+From: Andy Lutomirski <luto@kernel.org>
+Subject: Re: [PATCH 3/3] platform/wmi: Expose the raw WDG data in sysfs
+Date: Fri, 4 Aug 2017 08:03:07 -0700
+Message-ID: <CALCETrVHGtA7nRaBCy9ZZ48Xu8hTKBgLdoGZeEHnHhPg3tdsxQ@mail.gmail.com>
+References: <cover.1501601667.git.luto@kernel.org> <e6df9d038af0a0ce4d4119395aaea58366ade26d.1501601667.git.luto@kernel.org>
+ <20170801200313.GC3110@fury> <CALCETrX0zqq3xQgNBx41R9ZCT3_bB4EoXGrY3jWLK0e0Koo=EQ@mail.gmail.com>
+ <20170801204040.GH25574@pali> <20170801211702.GF3110@fury>
+ <20170801213112.GK25574@pali> <20170801223947.GH3110@fury>
+ <CALCETrXFySnB3jq_EAn+NDTb6jsp__4Dc=0ipdFqCbaZEPSOfg@mail.gmail.com>
+ <20170802022232.GA21551@fury> <20170802074903.GO25574@pali>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:60396 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752177AbdHDPD3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 4 Aug 2017 11:03:29 -0400
+Received: from mail-vk0-f50.google.com (mail-vk0-f50.google.com [209.85.213.50])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 1E6B922DA8
+        for <linux-pm@vger.kernel.org>; Fri,  4 Aug 2017 15:03:29 +0000 (UTC)
+Received: by mail-vk0-f50.google.com with SMTP id d124so6886834vkf.2
+        for <linux-pm@vger.kernel.org>; Fri, 04 Aug 2017 08:03:29 -0700 (PDT)
+In-Reply-To: <20170802074903.GO25574@pali>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>
+Cc: Darren Hart <dvhart@infradead.org>, Andy Lutomirski <luto@kernel.org>, platform-driver-x86@vger.kernel.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>
 
-On some ARM based systems, a separate Cortex-M based System Control
-Processor(SCP) provides the overall power, clock, reset and system
-control including CPU DVFS. SCMI Message Protocol is used to
-communicate with the SCP.
+On Wed, Aug 2, 2017 at 12:49 AM, Pali Rohár <pali.rohar@gmail.com> wrote:
+> On Tuesday 01 August 2017 19:22:32 Darren Hart wrote:
 
-This patch adds a cpufreq driver for such systems using SCMI interface
-to drive CPU DVFS.
+>> Pali, how does the "magic number identifier" in the BMOF map to the object_id?
+>> Have we retained that information in what we export today?
+>
+> MOF describe C++ like object system and for particular structures or
+> methods there is GUID and WMI id.
+>
+> When you want to call WMI function implemented in ACPI you need to know:
+> * name of ACPI function
+> * instance number
+> * WMI id
+> * structure of input buffer
+>
+> Name of ACPI function is taken from _WDG where is mapping from GUID to
+> object_id and ACPI function consist of well-known prefix and object_id
+> as a suffix. GUID is present in MOF. Where to get correct instance
+> number is still question for me. WMI id and structure of input buffer is
+> described in MOF.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/cpufreq/Kconfig.arm    |  11 ++
- drivers/cpufreq/Makefile       |   1 +
- drivers/cpufreq/scmi-cpufreq.c | 268 +++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 280 insertions(+)
- create mode 100644 drivers/cpufreq/scmi-cpufreq.c
+I assume that any user API for making WMI calls will have userspace
+pass in either the GUID or maybe the MOF method name, not the object
+id.
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 2011fec2d6ad..c34633855bc7 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -215,6 +215,17 @@ config ARM_SA1100_CPUFREQ
- config ARM_SA1110_CPUFREQ
- 	bool
- 
-+config ARM_SCMI_CPUFREQ
-+        tristate "SCMI based CPUfreq driver"
-+	depends on ARM_SCMI_PROTOCOL || COMPILE_TEST
-+	select PM_OPP
-+        help
-+	  This adds the CPUfreq driver support for ARM platforms using SCMI
-+	  protocol for CPU power management.
-+
-+	  This driver uses SCMI Message Protocol driver to interact with the
-+	  firmware providing the CPU DVFS functionality.
-+
- config ARM_SCPI_CPUFREQ
-         tristate "SCPI based CPUfreq driver"
- 	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index ab3a42cd29ef..4810b45568d3 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -72,6 +72,7 @@ obj-$(CONFIG_ARM_S3C64XX_CPUFREQ)	+= s3c64xx-cpufreq.o
- obj-$(CONFIG_ARM_S5PV210_CPUFREQ)	+= s5pv210-cpufreq.o
- obj-$(CONFIG_ARM_SA1100_CPUFREQ)	+= sa1100-cpufreq.o
- obj-$(CONFIG_ARM_SA1110_CPUFREQ)	+= sa1110-cpufreq.o
-+obj-$(CONFIG_ARM_SCMI_CPUFREQ)		+= scmi-cpufreq.o
- obj-$(CONFIG_ARM_SCPI_CPUFREQ)		+= scpi-cpufreq.o
- obj-$(CONFIG_ARM_SPEAR_CPUFREQ)		+= spear-cpufreq.o
- obj-$(CONFIG_ARM_STI_CPUFREQ)		+= sti-cpufreq.o
-diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-new file mode 100644
-index 000000000000..034359cafea5
---- /dev/null
-+++ b/drivers/cpufreq/scmi-cpufreq.c
-@@ -0,0 +1,268 @@
-+/*
-+ * System Control and Power Interface (SCMI) based CPUFreq Interface driver
-+ *
-+ * Copyright (C) 2017 ARM Ltd.
-+ * Sudeep Holla <sudeep.holla@arm.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed "as is" WITHOUT ANY WARRANTY of any
-+ * kind, whether express or implied; without even the implied warranty
-+ * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/cpu.h>
-+#include <linux/cpufreq.h>
-+#include <linux/cpumask.h>
-+#include <linux/cpu_cooling.h>
-+#include <linux/export.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/slab.h>
-+#include <linux/scmi_protocol.h>
-+#include <linux/types.h>
-+
-+struct scmi_data {
-+	int domain_id;
-+	struct device *cpu_dev;
-+	struct thermal_cooling_device *cdev;
-+	const struct scmi_handle *handle;
-+};
-+
-+static const struct scmi_handle *handle;
-+
-+unsigned int scmi_cpufreq_get_rate(unsigned int cpu)
-+{
-+	int ret;
-+	unsigned long rate;
-+	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(cpu);
-+	struct scmi_data *priv = policy->driver_data;
-+	struct scmi_perf_ops *perf_ops = priv->handle->perf_ops;
-+
-+	ret = perf_ops->freq_get(priv->handle, priv->domain_id, &rate, false);
-+	if (ret)
-+		return CPUFREQ_ENTRY_INVALID;
-+	return rate / 1000;
-+}
-+
-+static int
-+scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
-+{
-+	struct scmi_data *priv = policy->driver_data;
-+	struct scmi_perf_ops *perf_ops = priv->handle->perf_ops;
-+	u64 freq = policy->freq_table[index].frequency * 1000;
-+
-+	return perf_ops->freq_set(priv->handle, priv->domain_id, freq, false);
-+}
-+
-+static int
-+scmi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
-+{
-+	int cpu, domain, ret = 0;
-+	struct device *tcpu_dev;
-+
-+	domain = handle->perf_ops->device_domain_id(cpu_dev);
-+	if (domain < 0)
-+		return domain;
-+
-+	cpumask_set_cpu(cpu_dev->id, cpumask);
-+
-+	for_each_possible_cpu(cpu) {
-+		if (cpu == cpu_dev->id)
-+			continue;
-+
-+		tcpu_dev = get_cpu_device(cpu);
-+		if (!tcpu_dev)
-+			continue;
-+
-+		ret = handle->perf_ops->device_domain_id(tcpu_dev);
-+		if (ret == domain)
-+			cpumask_set_cpu(cpu, cpumask);
-+	}
-+
-+	return 0;
-+}
-+
-+static int scmi_cpufreq_init(struct cpufreq_policy *policy)
-+{
-+	int ret;
-+	unsigned int latency;
-+	struct device *cpu_dev;
-+	struct scmi_data *priv;
-+	struct cpufreq_frequency_table *freq_table;
-+
-+	cpu_dev = get_cpu_device(policy->cpu);
-+	if (!cpu_dev) {
-+		pr_err("failed to get cpu%d device\n", policy->cpu);
-+		return -ENODEV;
-+	}
-+
-+	ret = handle->perf_ops->add_opps_to_device(cpu_dev);
-+	if (ret) {
-+		dev_warn(cpu_dev, "failed to add opps to the device\n");
-+		return ret;
-+	}
-+
-+	ret = scmi_get_sharing_cpus(cpu_dev, policy->cpus);
-+	if (ret) {
-+		dev_warn(cpu_dev, "failed to get sharing cpumask\n");
-+		return ret;
-+	}
-+
-+	ret = dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
-+	if (ret) {
-+		dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
-+			__func__, ret);
-+		return ret;
-+	}
-+
-+	/*
-+	 * But we need OPP table to function so if it is not there let's
-+	 * give platform code chance to provide it for us.
-+	 */
-+	ret = dev_pm_opp_get_opp_count(cpu_dev);
-+	if (ret <= 0) {
-+		dev_dbg(cpu_dev, "OPP table is not ready, deferring probe\n");
-+		ret = -EPROBE_DEFER;
-+		goto out_free_opp;
-+	}
-+
-+	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
-+	if (!priv) {
-+		ret = -ENOMEM;
-+		goto out_free_opp;
-+	}
-+
-+	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed to init cpufreq table: %d\n", ret);
-+		goto out_free_priv;
-+	}
-+
-+	priv->handle = handle;
-+	priv->cpu_dev = cpu_dev;
-+	priv->domain_id = handle->perf_ops->device_domain_id(cpu_dev);
-+
-+	policy->driver_data = priv;
-+
-+	ret = cpufreq_table_validate_and_show(policy, freq_table);
-+	if (ret) {
-+		dev_err(cpu_dev, "%s: invalid frequency table: %d\n", __func__,
-+			ret);
-+		goto out_free_cpufreq_table;
-+	}
-+
-+	latency = handle->perf_ops->get_transition_latency(cpu_dev);
-+	if (!latency)
-+		latency = CPUFREQ_ETERNAL;
-+
-+	policy->cpuinfo.transition_latency = latency;
-+
-+	return 0;
-+
-+out_free_cpufreq_table:
-+	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
-+out_free_priv:
-+	kfree(priv);
-+out_free_opp:
-+	dev_pm_opp_cpumask_remove_table(policy->cpus);
-+
-+	return ret;
-+}
-+
-+static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
-+{
-+	struct scmi_data *priv = policy->driver_data;
-+
-+	cpufreq_cooling_unregister(priv->cdev);
-+	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
-+	dev_pm_opp_cpumask_remove_table(policy->related_cpus);
-+	kfree(priv);
-+
-+	return 0;
-+}
-+
-+static void scmi_cpufreq_ready(struct cpufreq_policy *policy)
-+{
-+	struct scmi_data *priv = policy->driver_data;
-+	struct device_node *np = of_node_get(priv->cpu_dev->of_node);
-+
-+	if (WARN_ON(!np))
-+		return;
-+
-+	if (of_find_property(np, "#cooling-cells", NULL)) {
-+		u32 pcoeff = 0;
-+
-+		of_property_read_u32(np, "dynamic-power-coefficient",
-+				     &pcoeff);
-+
-+		priv->cdev = of_cpufreq_power_cooling_register(np, policy,
-+							       pcoeff, NULL);
-+		if (IS_ERR(priv->cdev)) {
-+			dev_err(priv->cpu_dev,
-+				"running cpufreq without cooling device: %ld\n",
-+				PTR_ERR(priv->cdev));
-+
-+			priv->cdev = NULL;
-+		}
-+	}
-+
-+	of_node_put(np);
-+}
-+
-+static struct cpufreq_driver scmi_cpufreq_driver = {
-+	.name			= "scmi",
-+	.flags			= CPUFREQ_STICKY |
-+					CPUFREQ_HAVE_GOVERNOR_PER_POLICY |
-+					CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+	.verify			= cpufreq_generic_frequency_table_verify,
-+	.attr			= cpufreq_generic_attr,
-+	.target_index		= scmi_cpufreq_set_target,
-+	.get			= scmi_cpufreq_get_rate,
-+	.init			= scmi_cpufreq_init,
-+	.exit			= scmi_cpufreq_exit,
-+	.ready			= scmi_cpufreq_ready,
-+};
-+
-+static int scmi_cpufreq_probe(struct platform_device *pdev)
-+{
-+	int ret;
-+
-+	handle = devm_scmi_handle_get(&pdev->dev);
-+
-+	if (IS_ERR_OR_NULL(handle) || !handle->perf_ops)
-+		return -EPROBE_DEFER;
-+
-+	ret = cpufreq_register_driver(&scmi_cpufreq_driver);
-+	if (ret) {
-+		dev_err(&pdev->dev, "%s: registering cpufreq failed, err: %d\n",
-+			__func__, ret);
-+	}
-+
-+	return ret;
-+}
-+
-+static int scmi_cpufreq_remove(struct platform_device *pdev)
-+{
-+	cpufreq_unregister_driver(&scmi_cpufreq_driver);
-+	return 0;
-+}
-+
-+static struct platform_driver scmi_cpufreq_platdrv = {
-+	.driver = {
-+		.name	= "scmi-cpufreq",
-+	},
-+	.probe		= scmi_cpufreq_probe,
-+	.remove		= scmi_cpufreq_remove,
-+};
-+module_platform_driver(scmi_cpufreq_platdrv);
-+
-+MODULE_AUTHOR("Sudeep Holla <sudeep.holla@arm.com>");
-+MODULE_DESCRIPTION("ARM SCMI CPUFreq interface driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.7.4
+--Andy
