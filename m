@@ -1,208 +1,77 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH  v2] Fix header-name to read state name and adjust column
- width
-Date: Fri, 4 Aug 2017 15:30:37 +0530
-Message-ID: <20170804100037.GA15605@in.ibm.com>
-References: <1501492822-28994-1-git-send-email-s1seetee@linux.vnet.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH 1/1] cpufreq: imx6q: imx6ull: use PLL1 for frequency
+ higher than 528MHz
+Date: Fri, 4 Aug 2017 14:17:28 +0300
+Message-ID: <1501845448.17254.31.camel@nxp.com>
+References: <1501230993-15812-1-git-send-email-sebastien.szymanski@armadeus.com>
+         <20170803020320.GG31819@dragon>
+         <737b6166-1594-677b-1a08-4f9b795d9410@armadeus.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1501492822-28994-1-git-send-email-s1seetee@linux.vnet.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
-Cc: trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-by2nam03on0069.outbound.protection.outlook.com ([104.47.42.69]:22208
+        "EHLO NAM03-BY2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751304AbdHDLRg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 4 Aug 2017 07:17:36 -0400
+In-Reply-To: <737b6166-1594-677b-1a08-4f9b795d9410@armadeus.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?ISO-8859-1?Q?S=E9bastien?= Szymanski <sebastien.szymanski@armadeus.com>, Shawn Guo <shawnguo@kernel.org>, Anson Huang <anson.huang@nxp.com>, Jacky Bai <ping.bai@nxp.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Julien Boibessot <julien.boibessot@armadeus.com>, Fabio Estevam <fabio.estevam@nxp.com>, linux-arm-kernel@lists.infradead.org
 
-On Mon, Jul 31, 2017 at 02:50:22PM +0530, Seeteena Thoufeek wrote:
-> The names of the idle states in the output of cpupower monitor
-> command are truncated to 4 characters. Hence, On POWER9, since
-> the states are named "stop0, stop1, stop2, stop4, stop11",
-> this output is ambiguous
+On Thu, 2017-08-03 at 09:32 +0200, Sébastien Szymanski wrote:
+> On 08/03/2017 04:03 AM, Shawn Guo wrote:
+> > On Fri, Jul 28, 2017 at 10:36:33AM +0200, Sébastien Szymanski wrote:
+> > > Setting the frequency higher than 528Mhz actually sets the ARM
+> > > clock to 528MHz. That's because PLL2 is used as the root clock when the
+> > > frequency is higher than 396MHz.
+> > > 
+> > > cpupower frequency-set -f 792000
+> > > 
+> > > arm_clk_root on the CCM_CLKO2 signal is 528MHz instead of 792MHz.
+> > > 
+> > > [   61.606383] cpu cpu0: 396 MHz, 1025 mV --> 792 MHz, 1225 mV
+> > > 
+> > > pll2                         1  1  528000000 0 0
+> > >    pll2_bypass               1  1  528000000 0 0
+> > >       pll2_bus               3  3  528000000 0 0
+> > > 	 ca7_secondary_sel   1  1  528000000 0 0
+> > > 	    step             1  1  528000000 0 0
+> > > 	       pll1_sw       1  1  528000000 0 0
+> > > 		  arm        1  1  528000000 0 0
+> > > 
+> > > Fixes this by using the PLL1 as the root clock when the frequency is
+> > > higher than 528MHz.
+> > > 
+> > > cpupower frequency-set -f 792000
+> > > 
+> > > arm_clk_root on the CCM_CLKO2 signal is now 792MHz as expected.
+> > > 
+> > > [   69.717987] cpu cpu0: 198 MHz, 950 mV --> 792 MHz, 1225 mV
+> > > 
+> > > pll1               1 1 792000000 0 0
+> > >    pll1_bypass     1 1 792000000 0 0
+> > >       pll1_sys     1 1 792000000 0 0
+> > > 	 pll1_sw   1 1 792000000 0 0
+> > > 	    arm    1 1 792000000 0 0
+> > > 
+> > > Signed-off-by: Sébastien Szymanski <sebastien.szymanski@armadeus.com>
+> > 
+> > Can you please specify on which SoCs you are seeing this problem?  And I
+> > would like invite Anson and Leonard to review it.
 > 
-> root:~# cpupower monitor
->                |Idle_Stats
->  PKG |CORE|CPU | snoo | stop | stop
->     0|   8|   0|  0.00|  0.00|  2.79
->     0|   8|   1|  0.00|  0.00| 70.68
+> My SoC is MCIMX6Y2CVM08AA which is a 792MHz i.MX6ULL. I forgot to
+> mention that I added the following operating points in my device tree:
 > 
-> In this patch, we modify the output to print the state name
-> and adjust the column width, that results in a legible output.
-> 
-> root:~#cpupower monitor
->               |Idle_Stats
-> PKG |CORE|CPU |snooze|stop0_li|stop1_li
->    0|   8|   0|  0.00|    0.00|   60.04
->    0|   8|   1|  0.00|    0.00|   38.97
->    0|   8|   2|  0.00|    0.00|    0.00
->    0|   8|   3|  0.00|    0.00|    0.00
->    0|  12|   4|  0.00|    0.00|   99.25
->    0|  12|   5|  0.00|    0.00|    0.00
->    0|  12|   6|  0.00|    0.00|   99.71
->    0|  12|   7|  0.00|    0.00|   99.85
->    8|2048|   8|  0.00|    0.00|   54.66
->    8|2048|   9|  0.00|    0.00|    0.00
->    8|2048|  10|  0.00|    0.00|    0.00
->    8|2048|  11|  0.00|    0.00|   97.83
->    8|2052|  12|  0.00|    0.00|    0.00
->    8|2052|  13|  0.00|    0.00|    0.00
->    8|2052|  14|  0.00|    0.00|    1.99
->    8|2052|  15|  0.00|    0.00|   99.87
-> 
-> Tested on POWER8, POWER9 and x86.
+> operating-points: 792000  1225000
+> fsl,soc-operating-points: 792000  1175000
 
-Some comments below.
+Yeah, I was wondering about that.
 
-> 
-> Signed-off-by: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
-> ---
->  .../cpupower/utils/idle_monitor/cpupower-monitor.c | 47 +++++++++++++++-------
->  .../cpupower/utils/idle_monitor/cpupower-monitor.h |  7 +++-
->  2 files changed, 37 insertions(+), 17 deletions(-)
-> 
-> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> index 05f953f..cf3a1ad 100644
-> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> @@ -21,7 +21,10 @@
->  #include "idle_monitor/cpupower-monitor.h"
->  #include "idle_monitor/idle_monitors.h"
->  #include "helpers/helpers.h"
-> -
-> +#define xstr(s) str(s)
-> +#define str(s) #s
-> +#define COL_WIDTH_MIN   6
-> +#define COL_WIDTH_MAX   8
->  /* Define pointers to all monitors.  */
->  #define DEF(x) & x ## _monitor ,
->  struct cpuidle_monitor *all_monitors[] = {
-> @@ -85,7 +88,7 @@ int fill_string_with_spaces(char *s, int n)
->  void print_header(int topology_depth)
->  {
->  	int unsigned mon;
-> -	int state, need_len;
-> +	int state, need_len, name_len;
->  	cstate_t s;
->  	char buf[128] = "";
->  	int percent_width = 4;
-> @@ -116,17 +119,19 @@ void print_header(int topology_depth)
->  	for (mon = 0; mon < avail_monitors; mon++) {
->  		if (mon != 0)
->  			printf("|| ");
-> -		else
-> -			printf(" ");
->  		for (state = 0; state < monitors[mon]->hw_states_num; state++) {
->  			if (state != 0)
-> -				printf(" | ");
-> +				printf("|");
->  			s = monitors[mon]->hw_states[state];
-> -			sprintf(buf, "%s", s.name);
-> +			name_len = strlen(s.name);
-> +			if (name_len <= COL_WIDTH_MIN)
-> +				percent_width = COL_WIDTH_MIN;
-> +			else
-> +				percent_width = COL_WIDTH_MAX;
-> +			sprintf(buf, "%.*s", percent_width, s.name);
->  			fill_string_with_spaces(buf, percent_width);
->  			printf("%s", buf);
->  		}
-> -		printf(" ");
->  	}
->  	printf("\n");
->  }
-> @@ -134,11 +139,12 @@ void print_header(int topology_depth)
-> 
->  void print_results(int topology_depth, int cpu)
->  {
-> -	unsigned int mon;
-> -	int state, ret;
-> +	unsigned int mon, percent_width, name_len, width;
-> +	int state, ret, i;
->  	double percent;
->  	unsigned long long result;
->  	cstate_t s;
-> +	char buf[128] = "";
-> 
->  	/* Be careful CPUs may got resorted for pkg value do not just use cpu */
->  	if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
-> @@ -163,23 +169,34 @@ void print_results(int topology_depth, int cpu)
->  				printf("|");
-> 
->  			s = monitors[mon]->hw_states[state];
-> -
-> +			name_len = strlen(s.name);
-> +			if (name_len > COL_WIDTH_MIN) {
-> +				percent_width = COL_WIDTH_MAX;
-> +				width = percent_width - COL_WIDTH_MIN;
-> +				fill_string_with_spaces(buf, width);
-> +				printf("%s", buf);
-> +			}
->  			if (s.get_count_percent) {
->  				ret = s.get_count_percent(s.id, &percent,
->  						  cpu_top.core_info[cpu].cpu);
->  				if (ret)
-> -					printf("******");
-> +					for (i = 0; i < COL_WIDTH_MIN; i++)
-> +						printf("*");
+Adding support for higher imx6ul/ull frequencies "properly" requires adding the extra OPPs to .dtsi (they are different between 6ul and 6ull) and reading the speed grading from OCOTP to check if they are supported.
 
-While this will compile, since the for loop spans over multiple lines,
-could you please use braces around the if block ?
+This patch can only work if you hack OPPs for a specific board.
 
->  				else if (percent >= 100.0)
-> -					printf("%6.1f", percent);
-> +					printf("%"xstr(COL_WIDTH_MIN)".1f",
-> +						  percent);
-
-Ditto.
->  				else
-> -					printf("%6.2f", percent);
-> +					printf("%"xstr(COL_WIDTH_MIN)".2f",
-> +						  percent);
-
-Likewise.
->  			} else if (s.get_count) {
->  				ret = s.get_count(s.id, &result,
->  						  cpu_top.core_info[cpu].cpu);
->  				if (ret)
-> -					printf("******");
-> +					for (i = 0; i < COL_WIDTH_MIN; i++)
-> +						printf("*");
-
-Same here.
->  				else
-> -					printf("%6llu", result);
-> +					printf("%"xstr(COL_WIDTH_MIN)"llu",
-> +						  result);
-
-... and here.
->  			} else {
->  				printf(_("Monitor %s, Counter %s has no count "
->  					 "function. Implementation error\n"),
-> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-> index 9e43f33..1f6bc23 100644
-> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-> @@ -15,9 +15,12 @@
-> 
->  #define MONITORS_MAX 20
->  #define MONITOR_NAME_LEN 20
-> -#define CSTATE_NAME_LEN 5
-> +#define CSTATE_NAME_LEN 16
->  #define CSTATE_DESC_LEN 60
-> -
-> +/*
-> + *  CSTATE_NAME_LEN is limited by the CPUIDLE_NAME_LEN defined
-> + *  in include/linux/cpuidle.h.
-> + */
-
-This comment should go above the definition of CSTATE_NAME_LEN.
-
->  int cpu_count;
-> 
->  /* Hard to define the right names ...: */
-
-Otherwise the patch looks good to me.
-> -- 
-> 1.8.3.1
-> 
+Reading the speed grading is essential because otherwise you risk causing random crashes while running at frequencies not supported by the hardware.
