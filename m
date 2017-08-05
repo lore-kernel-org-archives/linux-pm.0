@@ -1,57 +1,46 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] intel-vbtn: match power button on press rather than release
-Date: Sat, 05 Aug 2017 01:30:20 +0200
-Message-ID: <11471111.T3jHVeqpMT@aspire.rjw.lan>
-References: <1501866006-24811-1-git-send-email-mario.limonciello@dell.com> <20170804172953.GC21169@fury>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] turbostat: Running on virtual machine is not supported
+Date: Sat, 5 Aug 2017 02:50:12 -0400
+Message-ID: <CAJvTdKm-ypQxfoagy46A5uobt+QJAvcimg8hsfBxJs+3dN1bGA@mail.gmail.com>
+References: <1500987324-507-1-git-send-email-prarit@redhat.com>
+ <20170725155911.ihtjkz5cuwdpwoxp@khazad-dum.debian.net> <CAJvTdKmZqPkvUrgEJitYrBv7EJzpemLjN-nfYUnT3b127LNSQA@mail.gmail.com>
+ <8aa1f7ec-1d21-f027-f4c4-7c3d8e88b8d2@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <20170804172953.GC21169@fury>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Darren Hart <dvhart@infradead.org>
-Cc: Mario Limonciello <mario.limonciello@dell.com>, AceLan Kao <acelan.kao@canonical.com>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f176.google.com ([209.85.216.176]:35825 "EHLO
+        mail-qt0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751140AbdHEGuN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 5 Aug 2017 02:50:13 -0400
+Received: by mail-qt0-f176.google.com with SMTP id p3so19631854qtg.2
+        for <linux-pm@vger.kernel.org>; Fri, 04 Aug 2017 23:50:13 -0700 (PDT)
+In-Reply-To: <8aa1f7ec-1d21-f027-f4c4-7c3d8e88b8d2@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Len Brown <len.brown@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Friday, August 4, 2017 7:29:53 PM CEST Darren Hart wrote:
-> On Fri, Aug 04, 2017 at 12:00:06PM -0500, Mario Limonciello wrote:
-> > This fixes a problem where the system gets stuck in a loop
-> > unable to wakeup via power button in s2idle.
-> > 
-> > The problem happens because:
-> >  - press power button:
-> >    - system emits 0xc0 (power press), event ignored
-> >    - system emits 0xc1 (power release), event processed,
-> >      emited as KEY_POWER
-> >    - set wakeup_mode to true
-> >    - system goes to s2idle
-> >  - press power button
-> >    - system emits 0xc0 (power press), wakeup_mode is true,
-> >      system wakes
-> >    - system emits 0xc1 (power release), event processed,
-> >      emited as KEY_POWER
-> >    - system goes to s2idle again
-> > 
-> > To avoid this situation, process the presses (which matches what
-> > intel-hid does too).
-> > 
-> > Verified on an Dell XPS 9365
-> > 
-> > Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
-> 
-> This looks good to me - responding to the release is non-intuitive IMHO
-> anyway.  I'd like to see agreement from AceLan, but this should go into
-> the 4.13 rc cycle (at rc3 currently).
+>  perf does work (mostly) under virt.
 
-Yes, it should, and I'm not sure if the original author's opinion matters here.
+Let's hold off on this patch for a bit till the port to perf is ready,
+since this logic is going to change slightly.
 
-The patch makes sense to everyone involved and fixes an annoying issue, so
-I don't see any real arguments against applying it.
+I think something like this:
 
-Please feel free to add my ACK to it if that helps.
+1. make the debug info (the stuff hidden with --quiet) optional
+    don't bail out if it fails.  (but continue to bail out of anything
+    that is needed to provide a column fails)
 
-In any case, it has to go in before https://patchwork.kernel.org/patch/9873163/
-does, is if it doesn't go into 4.13-rc after all, please let me know.
+2. attempt the faster of /dev/msr or perf first, and try the 2nd
+    only when the 1st doesn't work.
 
-Thanks,
-Rafael
+   (currently /dev/msr is faster, but I'm not done w/ the perf work)
+
+3. When neither /dev/msr or perf work, then check for virt
+    to see if it may be the cause.
+
+   Print the error message about permissions for perf and /dev/msr and
+virt, as appropriate.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
