@@ -1,186 +1,92 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 04/18] staging: typec: tcpm: Add helpers for exporting
- current-limit through a psy
-Date: Sun, 6 Aug 2017 16:21:54 +0200
-Message-ID: <b27b0571-f888-ec26-19fe-0f82adb9d5b2@redhat.com>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 08/18] staging: typec: fusb302: Add support for USB2
+ charger detection through extcon
+Date: Sun, 6 Aug 2017 07:22:40 -0700
+Message-ID: <9de0a2f3-7316-5a7d-d715-29e83a278844@roeck-us.net>
 References: <20170806123555.5124-1-hdegoede@redhat.com>
- <20170806123555.5124-5-hdegoede@redhat.com>
- <49b98ec2-2282-2443-56d1-01d71b66d741@roeck-us.net>
+ <20170806123555.5124-9-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:57960 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751301AbdHFOV7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 6 Aug 2017 10:21:59 -0400
-In-Reply-To: <49b98ec2-2282-2443-56d1-01d71b66d741@roeck-us.net>
+Received: from bh-25.webhostbox.net ([208.91.199.152]:46979 "EHLO
+        bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751301AbdHFOWn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Aug 2017 10:22:43 -0400
+In-Reply-To: <20170806123555.5124-9-hdegoede@redhat.com>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>
+To: Hans de Goede <hdegoede@redhat.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>
 Cc: platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
 
-Hi,
-
-On 06-08-17 16:13, Guenter Roeck wrote:
-> On 08/06/2017 05:35 AM, Hans de Goede wrote:
->> Not all type-c port-controller can control the current-limit directly,
->> in cases where the current limit can not be controlled directly it needs
->> to be exported so that another driver (e.g. the charger driver) can pick
->> the limit up and configure the system accordingly.
->>
->> The power-supply subsys already provides infrastructure for this,
->> power-supply devices have the notion of being supplied by another
->> power-supply and have properties through which we can export the
->> current-limit.
->>
->> This commits adds 2 helper functions for use by port-controller drivers
->> which want to export the current-limit info in this way:
->>
->> int tcpm_register_psy(struct device *dev, struct tcpc_dev *tcpc,
->>               const char *name);
->> int tcpm_set_current_limit_psy(struct tcpc_dev *tcpc, u32 max_ma, u32 mv);
->>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> ---
->>   drivers/staging/typec/tcpm-helpers.c | 66 ++++++++++++++++++++++++++++++++++++
->>   drivers/staging/typec/tcpm.h         |  9 +++++
->>   2 files changed, 75 insertions(+)
->>
->> diff --git a/drivers/staging/typec/tcpm-helpers.c b/drivers/staging/typec/tcpm-helpers.c
->> index 0c87ec9936e1..8f7699576878 100644
->> --- a/drivers/staging/typec/tcpm-helpers.c
->> +++ b/drivers/staging/typec/tcpm-helpers.c
->> @@ -20,6 +20,60 @@
->>   #include "tcpm.h"
->> +static int tcpm_psy_get_property(struct power_supply *psy,
->> +                 enum power_supply_property psp,
->> +                 union power_supply_propval *val)
->> +{
->> +    struct tcpc_dev *tcpc = power_supply_get_drvdata(psy);
->> +
->> +    switch (psp) {
->> +    case POWER_SUPPLY_PROP_VOLTAGE_NOW:
->> +        val->intval = tcpc->supply_voltage * 1000; /* mV -> µV */
->> +        break;
->> +    case POWER_SUPPLY_PROP_CURRENT_MAX:
->> +        val->intval = tcpc->current_limit * 1000; /* mA -> µA */
->> +        break;
->> +    default:
->> +        return -ENODATA;
->> +    }
->> +
->> +    return 0;
->> +}
->> +
->> +static enum power_supply_property tcpm_psy_properties[] = {
->> +    POWER_SUPPLY_PROP_VOLTAGE_NOW,
->> +    POWER_SUPPLY_PROP_CURRENT_MAX,
->> +};
->> +
->> +int tcpm_register_psy(struct device *dev, struct tcpc_dev *tcpc,
->> +              const char *name)
+On 08/06/2017 05:35 AM, Hans de Goede wrote:
+> The fusb302 port-controller relies on an external device doing USB2
+> charger-type detection.
 > 
-> This is misleading since it relies on devm functions, and there is no unregister function.
-
-The reliance on devm functions is intentional, that makes cleanup on probe() failure for users
-of this a lot easier. I guess we could rename this tcpm_initialize_psy(), although it does
-actually register a psy, so maybe: devm_tcpm_register_psy() to explain why there is no
-unregister counter-part ?
-
-> Overall I am not too happy with tying this all into tcpm. The functions are not really tcpm
-> related. Not that I have a better idea how to handle this right now, but conceptually it
-> doesn't seem correct.
-
-Note that no changes are made to the tcpm core in this entire patch-set, with the exception
-of the first patch which adds the get_usb2_current_limit callback.
-
-This really only ties into the port-controller driver, and as such uses tcpc_dev to store some
-stuff. I could make this more clear by prefixing the helper function names with tcpc instead of
-tcpm if you think that is better ?
-
-Regards,
-
-Hans
-
-
+> The Intel Whiskey Cove PMIC with which the fusb302 is combined on some
+> X86/ACPI platforms already has a charger-type detection driver which
+> uses extcon to communicate the detected charger-type.
 > 
->> +{
->> +    struct power_supply_config psy_cfg = {};
->> +    struct power_supply_desc *desc;
->> +    int ret = 0;
->> +
->> +    desc = devm_kzalloc(dev, sizeof(*desc), GFP_KERNEL);
->> +    if (!desc)
->> +        return -ENOMEM;
->> +
->> +    desc->name        = name;
->> +    desc->type        = POWER_SUPPLY_TYPE_USB;
->> +    desc->properties    = tcpm_psy_properties;
->> +    desc->num_properties    = ARRAY_SIZE(tcpm_psy_properties);
->> +    desc->get_property    = tcpm_psy_get_property;
->> +    psy_cfg.drv_data    = tcpc;
->> +
->> +    tcpc->psy = devm_power_supply_register(dev, desc, &psy_cfg);
->> +    if (IS_ERR(tcpc->psy)) {
->> +        ret = PTR_ERR(tcpc->psy);
->> +        tcpc->psy = NULL;
->> +        dev_err(dev, "Error registering power-supply: %d\n", ret);
->> +    }
->> +
->> +    return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(tcpm_register_psy);
->> +
->>   /* Generic (helper) implementations for some tcpc_dev callbacks */
->>   int tcpm_get_usb2_current_limit_extcon(struct tcpc_dev *tcpc)
->>   {
->> @@ -58,3 +112,15 @@ int tcpm_get_usb2_current_limit_extcon(struct tcpc_dev *tcpc)
->>       return current_limit;
->>   }
->>   EXPORT_SYMBOL_GPL(tcpm_get_usb2_current_limit_extcon);
->> +
->> +int tcpm_set_current_limit_psy(struct tcpc_dev *tcpc, u32 max_ma, u32 mv)
->> +{
->> +    tcpc->supply_voltage = mv;
->> +    tcpc->current_limit = max_ma;
->> +
->> +    if (tcpc->psy)
->> +        power_supply_changed(tcpc->psy);
->> +
->> +    return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(tcpm_set_current_limit_psy);
->> diff --git a/drivers/staging/typec/tcpm.h b/drivers/staging/typec/tcpm.h
->> index 35e8c1e7dba0..1b1475b487b5 100644
->> --- a/drivers/staging/typec/tcpm.h
->> +++ b/drivers/staging/typec/tcpm.h
->> @@ -17,6 +17,7 @@
->>   #include <linux/bitops.h>
->>   #include <linux/extcon.h>
->> +#include <linux/power_supply.h>
->>   #include <linux/usb/typec.h>
->>   #include "pd.h"
->> @@ -129,6 +130,10 @@ struct tcpc_dev {
->>       struct tcpc_mux_dev *mux;
->>       /* Used by tcpm_get_usb2_current_limit_extcon helpers */
->>       struct extcon_dev *usb2_extcon;
->> +    /* Used by tcpm_set_current_limit_psy helpers */
->> +    struct power_supply *psy;
->> +    u32 current_limit;
->> +    u32 supply_voltage;
->>   };
->>   struct tcpm_port;
->> @@ -154,7 +159,11 @@ void tcpm_pd_transmit_complete(struct tcpm_port *port,
->>   void tcpm_pd_hard_reset(struct tcpm_port *port);
->>   void tcpm_tcpc_reset(struct tcpm_port *port);
->> +int tcpm_register_psy(struct device *dev, struct tcpc_dev *tcpc,
->> +              const char *name);
->> +
->>   /* Generic (helper) implementations for some tcpc_dev callbacks */
->>   int tcpm_get_usb2_current_limit_extcon(struct tcpc_dev *tcpc);
->> +int tcpm_set_current_limit_psy(struct tcpc_dev *tcpc, u32 max_ma, u32 mv);
->>   #endif /* __LINUX_USB_TCPM_H */
->>
+> This commit uses the tcpm_get_usb2_current_limit_extcon helper to enable
+> USB2 charger detection on these systems. Note that the "fcs,extcon-name"
+> property name is only for kernel internal use by X86/ACPI platform code
+> and as such is NOT documented in the devicetree bindings.
+> 
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+>   drivers/staging/typec/fusb302/fusb302.c | 16 ++++++++++++++++
+>   1 file changed, 16 insertions(+)
+> 
+> diff --git a/drivers/staging/typec/fusb302/fusb302.c b/drivers/staging/typec/fusb302/fusb302.c
+> index be454b5ff6c7..1d8c9b66df2f 100644
+> --- a/drivers/staging/typec/fusb302/fusb302.c
+> +++ b/drivers/staging/typec/fusb302/fusb302.c
+> @@ -1201,6 +1201,8 @@ static void init_tcpc_dev(struct tcpc_dev *fusb302_tcpc_dev)
+>   {
+>   	fusb302_tcpc_dev->init = tcpm_init;
+>   	fusb302_tcpc_dev->get_vbus = tcpm_get_vbus;
+> +	fusb302_tcpc_dev->get_usb2_current_limit =
+> +		tcpm_get_usb2_current_limit_extcon;
+>   	fusb302_tcpc_dev->set_cc = tcpm_set_cc;
+>   	fusb302_tcpc_dev->get_cc = tcpm_get_cc;
+>   	fusb302_tcpc_dev->set_polarity = tcpm_set_polarity;
+> @@ -1685,6 +1687,7 @@ static int fusb302_probe(struct i2c_client *client,
+>   	struct fusb302_chip *chip;
+>   	struct i2c_adapter *adapter;
+>   	struct device *dev = &client->dev;
+> +	const char *name;
+>   	int ret = 0;
+>   	u32 val;
+>   
+> @@ -1717,6 +1720,19 @@ static int fusb302_probe(struct i2c_client *client,
+>   	if (device_property_read_u32(dev, "fcs,operating-snk-mw", &val) == 0)
+>   		chip->tcpc_config.operating_snk_mw = val;
+>   
+> +	/*
+> +	 * Devicetree platforms should get extcon via phandle (not yet
+> +	 * supported). On ACPI platforms, we get the name from a device prop.
+> +	 * This device prop is for kernel internal use only and is expected
+> +	 * to be set by the platform code which also registers the i2c client
+> +	 * for the fusb302.
+> +	 */
+> +	if (device_property_read_string(dev, "fcs,extcon-name", &name) == 0) {
+
+Those new devicetree properties need to be documented and approved by dt maintainers.
+
+> +		chip->tcpc_dev.usb2_extcon = extcon_get_extcon_dev(name);
+> +		if (!chip->tcpc_dev.usb2_extcon)
+
+extcon_get_extcon_dev() can also return an ERR_PTR.
+
+As before, I am not really happy typing this into tcpm via tcpc_dev.
+Until we have a better solution, I would prefer for that code to stay with the fusb302
+code.
+
+> +			return -EPROBE_DEFER;
+> +	}
+> +
+>   	ret = fusb302_debugfs_init(chip);
+>   	if (ret < 0)
+>   		return ret;
 > 
