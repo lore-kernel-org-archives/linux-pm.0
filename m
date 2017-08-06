@@ -1,7 +1,7 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 02/18] staging: typec: tcpm: Add extcon helper functions for USB2 current limit detect
-Date: Sun,  6 Aug 2017 14:35:39 +0200
-Message-ID: <20170806123555.5124-3-hdegoede@redhat.com>
+Subject: [PATCH 01/18] staging: typec: tcpm: Add get_usb2_current_limit tcpc_dev callback
+Date: Sun,  6 Aug 2017 14:35:38 +0200
+Message-ID: <20170806123555.5124-2-hdegoede@redhat.com>
 References: <20170806123555.5124-1-hdegoede@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170806123555.5124-1-hdegoede@redhat.com>
@@ -10,116 +10,48 @@ To: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wo
 Cc: Hans de Goede <hdegoede@redhat.com>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
 List-Id: linux-pm@vger.kernel.org
 
-Some type-c port-controllers, such as the fusb302 port-controller, rely
-on an external device doing USB2 charger-type detection.
+A Rp signalling the default current limit indicates that we're possibly
+connected to an USB2 power-source. In some cases the type-c
+port-controller may provide the capability to detect the current-limit
+for USB2 power-sources (through e.g. BC1.2 detection).
 
-Existing PMIC (and charger) drivers already use extcon to communicate the
-detected charger-type from the PMIC (extcon) driver to the charger driver.
-
-Rather then inventing a new API for USB2 charger-type detection
-specifically for use with the tcpm code, lets simply re-use the existing
-support. This will also allow re-using existing PMIC extcon drivers such
-as the axp288 and Intel Whiskey Cove drivers as is on devices where these
-are combined with a fusb302 (or in the future another port-controller
-which relies on external USB2 charger-type detection).
-
-This commit adds a helper function which tcpc drivers can use to easily
-hook into existing PMIC extcon drivers for USB2 charger-type detection:
-
-int tcpm_get_usb2_current_limit_extcon(struct tcpc_dev *tcpc);
+This commit adds an optional get_usb2_current_limit tcpc_dev callback
+which allows the port-controller to return the detected current-limit
+if the CC pin is pulled up with Rp.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/staging/typec/tcpm.c | 40 ++++++++++++++++++++++++++++++++++++++++
- drivers/staging/typec/tcpm.h |  6 ++++++
- 2 files changed, 46 insertions(+)
+ drivers/staging/typec/tcpm.c | 5 ++++-
+ drivers/staging/typec/tcpm.h | 1 +
+ 2 files changed, 5 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/staging/typec/tcpm.c b/drivers/staging/typec/tcpm.c
-index 9f5adace4309..06bb0e640bcf 100644
+index 20eb4ebcf8c3..9f5adace4309 100644
 --- a/drivers/staging/typec/tcpm.c
 +++ b/drivers/staging/typec/tcpm.c
-@@ -16,6 +16,7 @@
+@@ -660,7 +660,10 @@ static u32 tcpm_get_current_limit(struct tcpm_port *port)
+ 		break;
+ 	case TYPEC_CC_RP_DEF:
+ 	default:
+-		limit = 0;
++		if (port->tcpc->get_usb2_current_limit)
++			limit = port->tcpc->get_usb2_current_limit(port->tcpc);
++		else
++			limit = 0;
+ 		break;
+ 	}
  
- #include <linux/completion.h>
- #include <linux/debugfs.h>
-+#include <linux/delay.h>
- #include <linux/device.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
-@@ -3532,6 +3533,45 @@ void tcpm_unregister_port(struct tcpm_port *port)
- }
- EXPORT_SYMBOL_GPL(tcpm_unregister_port);
- 
-+/* Generic (helper) implementations for some tcpc_dev callbacks */
-+int tcpm_get_usb2_current_limit_extcon(struct tcpc_dev *tcpc)
-+{
-+	struct extcon_dev *extcon = tcpc->usb2_extcon;
-+	int current_limit = 0;
-+	unsigned long timeout;
-+
-+	if (!extcon)
-+		return 0;
-+
-+	/*
-+	 * USB2 Charger detection may still be in progress when we get here,
-+	 * this can take upto 600ms, wait 800ms max.
-+	 */
-+	timeout = jiffies + msecs_to_jiffies(800);
-+	do {
-+		if (extcon_get_state(extcon, EXTCON_CHG_USB_SDP) == 1) {
-+			current_limit = 500;
-+			break;
-+		}
-+
-+		if (extcon_get_state(extcon, EXTCON_CHG_USB_CDP) == 1 ||
-+		    extcon_get_state(extcon, EXTCON_CHG_USB_ACA) == 1) {
-+			current_limit = 1500;
-+			break;
-+		}
-+
-+		if (extcon_get_state(extcon, EXTCON_CHG_USB_DCP) == 1) {
-+			current_limit = 2000;
-+			break;
-+		}
-+
-+		msleep(50);
-+	} while (time_before(jiffies, timeout));
-+
-+	return current_limit;
-+}
-+EXPORT_SYMBOL_GPL(tcpm_get_usb2_current_limit_extcon);
-+
- MODULE_AUTHOR("Guenter Roeck <groeck@chromium.org>");
- MODULE_DESCRIPTION("USB Type-C Port Manager");
- MODULE_LICENSE("GPL");
 diff --git a/drivers/staging/typec/tcpm.h b/drivers/staging/typec/tcpm.h
-index 01b7d89379a3..35e8c1e7dba0 100644
+index 19c307d31a5a..01b7d89379a3 100644
 --- a/drivers/staging/typec/tcpm.h
 +++ b/drivers/staging/typec/tcpm.h
-@@ -16,6 +16,7 @@
- #define __LINUX_USB_TCPM_H
+@@ -108,6 +108,7 @@ struct tcpc_dev {
  
- #include <linux/bitops.h>
-+#include <linux/extcon.h>
- #include <linux/usb/typec.h>
- #include "pd.h"
- 
-@@ -126,6 +127,8 @@ struct tcpc_dev {
- 	int (*pd_transmit)(struct tcpc_dev *dev, enum tcpm_transmit_type type,
- 			   const struct pd_message *msg);
- 	struct tcpc_mux_dev *mux;
-+	/* Used by tcpm_get_usb2_current_limit_extcon helpers */
-+	struct extcon_dev *usb2_extcon;
- };
- 
- struct tcpm_port;
-@@ -151,4 +154,7 @@ void tcpm_pd_transmit_complete(struct tcpm_port *port,
- void tcpm_pd_hard_reset(struct tcpm_port *port);
- void tcpm_tcpc_reset(struct tcpm_port *port);
- 
-+/* Generic (helper) implementations for some tcpc_dev callbacks */
-+int tcpm_get_usb2_current_limit_extcon(struct tcpc_dev *tcpc);
-+
- #endif /* __LINUX_USB_TCPM_H */
+ 	int (*init)(struct tcpc_dev *dev);
+ 	int (*get_vbus)(struct tcpc_dev *dev);
++	int (*get_usb2_current_limit)(struct tcpc_dev *dev); /* Optional */
+ 	int (*set_cc)(struct tcpc_dev *dev, enum typec_cc_status cc);
+ 	int (*get_cc)(struct tcpc_dev *dev, enum typec_cc_status *cc1,
+ 		      enum typec_cc_status *cc2);
 -- 
 2.13.3
