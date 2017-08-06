@@ -1,8 +1,8 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 06/18] staging: typec: fusb302: Get max snk mv/ma/mw from
- device-properties
-Date: Sun,  6 Aug 2017 14:35:43 +0200
-Message-ID: <20170806123555.5124-7-hdegoede@redhat.com>
+Subject: [PATCH 10/18] staging: typec: fusb302: Add support for fcs,
+ vbus-regulator-name device-property
+Date: Sun,  6 Aug 2017 14:35:47 +0200
+Message-ID: <20170806123555.5124-11-hdegoede@redhat.com>
 References: <20170806123555.5124-1-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,87 +22,63 @@ To: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wo
 Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-This is board specific info so it should come from board config, such
-as devicetree.
+On devicetree platforms the fusb302 dt-node will have a vbus regulator
+property with a phandle to the regulator.
 
-I've chosen to prefix these with "fcs," treating them as fusb302 driver
-specific. We may want to revisit to replace these with properties which
-are part of a (to be written) generic type-c controller devicetree
-binding.
+On ACPI platforms, there are no phandles and we need to get the vbus by a
+system wide unique name. Add support for a new "fcs,vbus-regulator-name"
+device-property which ACPI platform code can set to pass the name.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/staging/typec/TODO              |  5 +++++
- drivers/staging/typec/fusb302/fusb302.c | 18 +++++++++++++++++-
- 2 files changed, 22 insertions(+), 1 deletion(-)
+ drivers/staging/typec/fusb302/fusb302.c | 28 ++++++++++++++++++++++------
+ 1 file changed, 22 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/staging/typec/TODO b/drivers/staging/typec/TODO
-index bc1f97a2d1bf..98b0dbd5752b 100644
---- a/drivers/staging/typec/TODO
-+++ b/drivers/staging/typec/TODO
-@@ -11,5 +11,10 @@ tcpm:
- tcpci:
- - Test with real hardware
- 
-+fusb302:
-+- We may want to replace the  "fcs,max-snk-mv", "fcs,max-snk-ma",
-+  "fcs,max-snk-mw" and "fcs,operating-snk-mw" device(tree) properties with
-+  properties which are part of a generic type-c controller devicetree binding.
-+
- Please send patches to Guenter Roeck <linux@roeck-us.net> and copy
- Heikki Krogerus <heikki.krogerus@linux.intel.com>.
 diff --git a/drivers/staging/typec/fusb302/fusb302.c b/drivers/staging/typec/fusb302/fusb302.c
-index 6baed06a3c0d..8ceaef8ecf17 100644
+index e1e08f57af99..c3bcc5484ade 100644
 --- a/drivers/staging/typec/fusb302/fusb302.c
 +++ b/drivers/staging/typec/fusb302/fusb302.c
-@@ -90,6 +90,7 @@ struct fusb302_chip {
- 	struct i2c_client *i2c_client;
- 	struct tcpm_port *tcpm_port;
- 	struct tcpc_dev tcpc_dev;
-+	struct tcpc_config tcpc_config;
+@@ -1722,6 +1722,28 @@ static int fusb302_probe(struct i2c_client *client,
+ 			return -EPROBE_DEFER;
+ 	}
  
- 	struct regulator *vbus;
- 
-@@ -1198,7 +1199,6 @@ static const struct tcpc_config fusb302_tcpc_config = {
- 
- static void init_tcpc_dev(struct tcpc_dev *fusb302_tcpc_dev)
- {
--	fusb302_tcpc_dev->config = &fusb302_tcpc_config;
- 	fusb302_tcpc_dev->init = tcpm_init;
- 	fusb302_tcpc_dev->get_vbus = tcpm_get_vbus;
- 	fusb302_tcpc_dev->set_cc = tcpm_set_cc;
-@@ -1684,7 +1684,9 @@ static int fusb302_probe(struct i2c_client *client,
- {
- 	struct fusb302_chip *chip;
- 	struct i2c_adapter *adapter;
-+	struct device *dev = &client->dev;
- 	int ret = 0;
-+	u32 val;
- 
- 	adapter = to_i2c_adapter(client->dev.parent);
- 	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_I2C_BLOCK)) {
-@@ -1699,8 +1701,22 @@ static int fusb302_probe(struct i2c_client *client,
- 	chip->i2c_client = client;
- 	i2c_set_clientdata(client, chip);
- 	chip->dev = &client->dev;
-+	chip->tcpc_config = fusb302_tcpc_config;
-+	chip->tcpc_dev.config = &chip->tcpc_config;
- 	mutex_init(&chip->lock);
- 
-+	if (device_property_read_u32(dev, "fcs,max-snk-mv", &val) == 0)
-+		chip->tcpc_config.max_snk_mv = val;
++	/*
++	 * Devicetree platforms should get vbus from their dt-node.
++	 * On ACPI platforms, we need to get the vbus by a system wide unique
++	 * name, which is set in a device prop by the platform code.
++	 */
++	if (device_property_read_string(dev, "fcs,vbus-regulator-name",
++					&name) == 0) {
++		/*
++		 * Use regulator_get_optional so that we can detect if we need
++		 * to defer the probe rather then getting the dummy-regulator.
++		 */
++		chip->vbus = devm_regulator_get_optional(dev, name);
++		if (IS_ERR(chip->vbus)) {
++			ret = PTR_ERR(chip->vbus);
++			return (ret == -ENODEV) ? -EPROBE_DEFER : ret;
++		}
++	} else {
++		chip->vbus = devm_regulator_get(dev, "vbus");
++		if (IS_ERR(chip->vbus))
++			return PTR_ERR(chip->vbus);
++	}
 +
-+	if (device_property_read_u32(dev, "fcs,max-snk-ma", &val) == 0)
-+		chip->tcpc_config.max_snk_ma = val;
-+
-+	if (device_property_read_u32(dev, "fcs,max-snk-mw", &val) == 0)
-+		chip->tcpc_config.max_snk_mw = val;
-+
-+	if (device_property_read_u32(dev, "fcs,operating-snk-mw", &val) == 0)
-+		chip->tcpc_config.operating_snk_mw = val;
-+
- 	ret = fusb302_debugfs_init(chip);
+ 	ret = tcpm_register_psy(chip->dev, &chip->tcpc_dev,
+ 				"fusb302-typec-source");
  	if (ret < 0)
- 		return ret;
+@@ -1739,12 +1761,6 @@ static int fusb302_probe(struct i2c_client *client,
+ 	INIT_DELAYED_WORK(&chip->bc_lvl_handler, fusb302_bc_lvl_handler_work);
+ 	init_tcpc_dev(&chip->tcpc_dev);
+ 
+-	chip->vbus = devm_regulator_get(chip->dev, "vbus");
+-	if (IS_ERR(chip->vbus)) {
+-		ret = PTR_ERR(chip->vbus);
+-		goto destroy_workqueue;
+-	}
+-
+ 	if (client->irq) {
+ 		chip->gpio_int_n_irq = client->irq;
+ 	} else {
 -- 
 2.13.3
