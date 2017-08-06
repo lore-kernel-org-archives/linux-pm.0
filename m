@@ -1,8 +1,8 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 08/18] staging: typec: fusb302: Add support for USB2 charger
- detection through extcon
-Date: Sun,  6 Aug 2017 14:35:45 +0200
-Message-ID: <20170806123555.5124-9-hdegoede@redhat.com>
+Subject: [PATCH 13/18] power: supply: bq24190_charger: Export 5V boost
+ converter as regulator
+Date: Sun,  6 Aug 2017 14:35:50 +0200
+Message-ID: <20170806123555.5124-14-hdegoede@redhat.com>
 References: <20170806123555.5124-1-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,63 +22,162 @@ To: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wo
 Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The fusb302 port-controller relies on an external device doing USB2
-charger-type detection.
-
-The Intel Whiskey Cove PMIC with which the fusb302 is combined on some
-X86/ACPI platforms already has a charger-type detection driver which
-uses extcon to communicate the detected charger-type.
-
-This commit uses the tcpm_get_usb2_current_limit_extcon helper to enable
-USB2 charger detection on these systems. Note that the "fcs,extcon-name"
-property name is only for kernel internal use by X86/ACPI platform code
-and as such is NOT documented in the devicetree bindings.
+Register the 5V boost converter as a regulator named
+"regulator-bq24190-usb-vbus". Note the name includes "bq24190" because
+the bq24190 family is also used on ACPI devices where there are no
+device-tree phandles, so regulator_get will fallback to the name and thus
+it must be unique on the system.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/staging/typec/fusb302/fusb302.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ drivers/power/supply/bq24190_charger.c | 121 +++++++++++++++++++++++++++++++++
+ 1 file changed, 121 insertions(+)
 
-diff --git a/drivers/staging/typec/fusb302/fusb302.c b/drivers/staging/typec/fusb302/fusb302.c
-index be454b5ff6c7..1d8c9b66df2f 100644
---- a/drivers/staging/typec/fusb302/fusb302.c
-+++ b/drivers/staging/typec/fusb302/fusb302.c
-@@ -1201,6 +1201,8 @@ static void init_tcpc_dev(struct tcpc_dev *fusb302_tcpc_dev)
- {
- 	fusb302_tcpc_dev->init = tcpm_init;
- 	fusb302_tcpc_dev->get_vbus = tcpm_get_vbus;
-+	fusb302_tcpc_dev->get_usb2_current_limit =
-+		tcpm_get_usb2_current_limit_extcon;
- 	fusb302_tcpc_dev->set_cc = tcpm_set_cc;
- 	fusb302_tcpc_dev->get_cc = tcpm_get_cc;
- 	fusb302_tcpc_dev->set_polarity = tcpm_set_polarity;
-@@ -1685,6 +1687,7 @@ static int fusb302_probe(struct i2c_client *client,
- 	struct fusb302_chip *chip;
- 	struct i2c_adapter *adapter;
- 	struct device *dev = &client->dev;
-+	const char *name;
- 	int ret = 0;
- 	u32 val;
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index d5a707e14526..f25ea9c4acca 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -16,6 +16,8 @@
+ #include <linux/of_device.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/power_supply.h>
++#include <linux/regulator/driver.h>
++#include <linux/regulator/machine.h>
+ #include <linux/workqueue.h>
+ #include <linux/gpio.h>
+ #include <linux/i2c.h>
+@@ -504,6 +506,121 @@ static int bq24190_sysfs_create_group(struct bq24190_dev_info *bdi)
+ static inline void bq24190_sysfs_remove_group(struct bq24190_dev_info *bdi) {}
+ #endif
  
-@@ -1717,6 +1720,19 @@ static int fusb302_probe(struct i2c_client *client,
- 	if (device_property_read_u32(dev, "fcs,operating-snk-mw", &val) == 0)
- 		chip->tcpc_config.operating_snk_mw = val;
- 
-+	/*
-+	 * Devicetree platforms should get extcon via phandle (not yet
-+	 * supported). On ACPI platforms, we get the name from a device prop.
-+	 * This device prop is for kernel internal use only and is expected
-+	 * to be set by the platform code which also registers the i2c client
-+	 * for the fusb302.
-+	 */
-+	if (device_property_read_string(dev, "fcs,extcon-name", &name) == 0) {
-+		chip->tcpc_dev.usb2_extcon = extcon_get_extcon_dev(name);
-+		if (!chip->tcpc_dev.usb2_extcon)
-+			return -EPROBE_DEFER;
++#ifdef CONFIG_REGULATOR
++static int bq24190_vbus_enable(struct regulator_dev *dev)
++{
++	struct bq24190_dev_info *bdi = rdev_get_drvdata(dev);
++	int ret;
++
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0) {
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
++		pm_runtime_put_noidle(bdi->dev);
++		return ret;
 +	}
 +
- 	ret = fusb302_debugfs_init(chip);
- 	if (ret < 0)
- 		return ret;
++	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
++				 BQ24190_REG_POC_CHG_CONFIG_MASK,
++				 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
++				 BQ24190_REG_POC_CHG_CONFIG_OTG);
++
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
++	return ret;
++}
++
++static int bq24190_vbus_disable(struct regulator_dev *dev)
++{
++	struct bq24190_dev_info *bdi = rdev_get_drvdata(dev);
++	int ret;
++
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0) {
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
++		pm_runtime_put_noidle(bdi->dev);
++		return ret;
++	}
++
++	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
++				 BQ24190_REG_POC_CHG_CONFIG_MASK,
++				 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
++				 BQ24190_REG_POC_CHG_CONFIG_CHARGE);
++
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
++	return ret;
++}
++
++static int bq24190_vbus_is_enabled(struct regulator_dev *dev)
++{
++	struct bq24190_dev_info *bdi = rdev_get_drvdata(dev);
++	int ret;
++	u8 val;
++
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0) {
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
++		pm_runtime_put_noidle(bdi->dev);
++		return ret;
++	}
++
++	ret = bq24190_read_mask(bdi, BQ24190_REG_POC,
++				BQ24190_REG_POC_CHG_CONFIG_MASK,
++				BQ24190_REG_POC_CHG_CONFIG_SHIFT, &val);
++
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
++	return ret ? ret : val == BQ24190_REG_POC_CHG_CONFIG_OTG;
++}
++
++static const struct regulator_ops bq24190_vbus_ops = {
++	.enable = bq24190_vbus_enable,
++	.disable = bq24190_vbus_disable,
++	.is_enabled = bq24190_vbus_is_enabled,
++};
++
++static const struct regulator_desc bq24190_vbus_desc = {
++	.name = "regulator-bq24190-usb-vbus",
++	.type = REGULATOR_VOLTAGE,
++	.owner = THIS_MODULE,
++	.ops = &bq24190_vbus_ops,
++	.fixed_uV = 5000000,
++	.n_voltages = 1,
++};
++
++static const struct regulator_init_data bq24190_vbus_init_data = {
++	.constraints = {
++		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
++	},
++};
++
++static int bq24190_register_vbus_regulator(struct bq24190_dev_info *bdi)
++{
++	struct regulator_config cfg = { };
++	struct regulator_dev *reg;
++	int ret = 0;
++
++	cfg.dev = bdi->dev;
++	cfg.init_data = &bq24190_vbus_init_data;
++	cfg.driver_data = bdi;
++	reg = devm_regulator_register(bdi->dev, &bq24190_vbus_desc, &cfg);
++	if (IS_ERR(reg)) {
++		ret = PTR_ERR(reg);
++		dev_err(bdi->dev, "Can't register regulator: %d\n", ret);
++	}
++
++	return ret;
++}
++#else
++static int bq24190_register_vbus_regulator(struct bq24190_dev_info *bdi)
++{
++	return 0;
++}
++#endif
++
+ /*
+  * According to the "Host Mode and default Mode" section of the
+  * manual, a write to any register causes the bq24190 to switch
+@@ -1530,6 +1647,10 @@ static int bq24190_probe(struct i2c_client *client,
+ 		goto out_pmrt;
+ 	}
+ 
++	ret = bq24190_register_vbus_regulator(bdi);
++	if (ret < 0)
++		goto out_pmrt;
++
+ 	ret = bq24190_hw_init(bdi);
+ 	if (ret < 0) {
+ 		dev_err(dev, "Hardware init failed\n");
 -- 
 2.13.3
