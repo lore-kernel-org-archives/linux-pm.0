@@ -1,8 +1,8 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 11/18] power: supply: Fix power_supply_am_i_supplied to return
- -ENODEV when apropriate
-Date: Sun,  6 Aug 2017 14:35:48 +0200
-Message-ID: <20170806123555.5124-12-hdegoede@redhat.com>
+Subject: [PATCH 12/18] power: supply: Add
+ power_supply_set_input_current_limit_from_supplier helper
+Date: Sun,  6 Aug 2017 14:35:49 +0200
+Message-ID: <20170806123555.5124-13-hdegoede@redhat.com>
 References: <20170806123555.5124-1-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,40 +22,90 @@ To: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wo
 Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Commit 2848e039c562 ("power: supply: Make power_supply_am_i_supplied return
--ENODEV if there are no suppliers") was supposed to make
-power_supply_am_i_supplied() return -ENODEV when there are no supplies
-which supply the supply passed to it.
+On some devices the USB Type-C port power (USB PD 2.0) negotiation is
+done by a separate port-controller IC, while the current limit is
+controlled through another (charger) IC.
 
-But instead it will only return -ENODEV when there are no supplies at
-all as data->count++; is incremented on every call of the iterator, rather
-then only when __power_supply_is_supplied_by returns true. This commit
-fixes this.
+It has been decided to model this by modelling the external Type-C
+power brick (adapter/charger) as a power-supply class device which
+supplies the charger-IC, with its voltage-now and current-max representing
+the negotiated voltage and max current draw.
 
-Fixes: 2848e039c562 ("power: supply: Make power_supply_am_i_supplied ...")
+This commit adds a power_supply_set_input_current_limit_from_supplier
+helper function which charger power-supply drivers can call to get
+the max-current from their supplier and have this applied
+through their set_property call-back to their input-current-limit.
+
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/power_supply_core.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/power/supply/power_supply_core.c | 41 ++++++++++++++++++++++++++++++++
+ include/linux/power_supply.h             |  2 ++
+ 2 files changed, 43 insertions(+)
 
 diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 540d3e0aa011..0741fcef3b44 100644
+index 0741fcef3b44..3f92574222de 100644
 --- a/drivers/power/supply/power_supply_core.c
 +++ b/drivers/power/supply/power_supply_core.c
-@@ -314,11 +314,12 @@ static int __power_supply_am_i_supplied(struct device *dev, void *_data)
- 	struct power_supply *epsy = dev_get_drvdata(dev);
- 	struct psy_am_i_supplied_data *data = _data;
- 
--	data->count++;
--	if (__power_supply_is_supplied_by(epsy, data->psy))
-+	if (__power_supply_is_supplied_by(epsy, data->psy)) {
-+		data->count++;
- 		if (!epsy->desc->get_property(epsy, POWER_SUPPLY_PROP_ONLINE,
- 					&ret))
- 			return ret.intval;
-+	}
- 
- 	return 0;
+@@ -375,6 +375,47 @@ int power_supply_is_system_supplied(void)
  }
+ EXPORT_SYMBOL_GPL(power_supply_is_system_supplied);
+ 
++static int __power_supply_get_supplier_max_current(struct device *dev,
++						   void *data)
++{
++	union power_supply_propval ret = {0,};
++	struct power_supply *epsy = dev_get_drvdata(dev);
++	struct power_supply *psy = data;
++
++	if (__power_supply_is_supplied_by(epsy, psy))
++		if (!epsy->desc->get_property(epsy,
++					      POWER_SUPPLY_PROP_CURRENT_MAX,
++					      &ret))
++			return ret.intval;
++
++	return 0;
++}
++
++int power_supply_set_input_current_limit_from_supplier(struct power_supply *psy)
++{
++	union power_supply_propval val = {0,};
++	int curr;
++
++	if (!psy->desc->set_property)
++		return -EINVAL;
++
++	/*
++	 * This function is not intended for use with a supply with multiple
++	 * suppliers, we simply pick the first supply to report a non 0
++	 * max-current.
++	 */
++	curr = class_for_each_device(power_supply_class, NULL, psy,
++				      __power_supply_get_supplier_max_current);
++	if (curr <= 0)
++		return (curr == 0) ? -ENODEV : curr;
++
++	val.intval = curr;
++
++	return psy->desc->set_property(psy,
++				POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, &val);
++}
++EXPORT_SYMBOL_GPL(power_supply_set_input_current_limit_from_supplier);
++
+ int power_supply_set_battery_charged(struct power_supply *psy)
+ {
+ 	if (atomic_read(&psy->use_cnt) >= 0 &&
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index de89066b72b1..79e90b3d3288 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -332,6 +332,8 @@ extern int power_supply_get_battery_info(struct power_supply *psy,
+ 					 struct power_supply_battery_info *info);
+ extern void power_supply_changed(struct power_supply *psy);
+ extern int power_supply_am_i_supplied(struct power_supply *psy);
++extern int power_supply_set_input_current_limit_from_supplier(
++					 struct power_supply *psy);
+ extern int power_supply_set_battery_charged(struct power_supply *psy);
+ 
+ #ifdef CONFIG_POWER_SUPPLY
 -- 
 2.13.3
