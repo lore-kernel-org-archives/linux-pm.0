@@ -1,62 +1,67 @@
 From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 11/18] power: supply: Fix power_supply_am_i_supplied to
- return -ENODEV when apropriate
-Date: Sun, 6 Aug 2017 07:31:09 -0700
-Message-ID: <31e2a928-61f8-4706-9981-0d2e9ab2bc10@roeck-us.net>
+Subject: Re: [PATCH 18/18] i2c-cht-wc: Add device-properties for fusb302
+ integration
+Date: Sun, 6 Aug 2017 07:35:15 -0700
+Message-ID: <9ba933c6-daae-f30d-2c83-e9c2b756d27f@roeck-us.net>
 References: <20170806123555.5124-1-hdegoede@redhat.com>
- <20170806123555.5124-12-hdegoede@redhat.com>
+ <20170806123555.5124-19-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:56697 "EHLO
-        bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751358AbdHFObN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Aug 2017 10:31:13 -0400
-In-Reply-To: <20170806123555.5124-12-hdegoede@redhat.com>
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <20170806123555.5124-19-hdegoede@redhat.com>
 Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: platform-driver-x86-owner@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>
 Cc: platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
+List-Id: linux-pm@vger.kernel.org
 
 On 08/06/2017 05:35 AM, Hans de Goede wrote:
-> Commit 2848e039c562 ("power: supply: Make power_supply_am_i_supplied return
-> -ENODEV if there are no suppliers") was supposed to make
-> power_supply_am_i_supplied() return -ENODEV when there are no supplies
-> which supply the supply passed to it.
+> Add device-properties to make the bq24292i controller connected to
+> the bus get its input-current-limit from the fusb302 Type-C port
+> controller which is used on boards with the cht-wc PMIC.
 > 
-> But instead it will only return -ENODEV when there are no supplies at
-> all as data->count++; is incremented on every call of the iterator, rather
-> then only when __power_supply_is_supplied_by returns true. This commit
-> fixes this.
-> 
-> Fixes: 2848e039c562 ("power: supply: Make power_supply_am_i_supplied ...")
 > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-
-Independent of this series ?
-
 > ---
->   drivers/power/supply/power_supply_core.c | 5 +++--
->   1 file changed, 3 insertions(+), 2 deletions(-)
+>   drivers/i2c/busses/Kconfig      | 5 +++++
+>   drivers/i2c/busses/i2c-cht-wc.c | 5 ++++-
+>   2 files changed, 9 insertions(+), 1 deletion(-)
 > 
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-> index 540d3e0aa011..0741fcef3b44 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -314,11 +314,12 @@ static int __power_supply_am_i_supplied(struct device *dev, void *_data)
->   	struct power_supply *epsy = dev_get_drvdata(dev);
->   	struct psy_am_i_supplied_data *data = _data;
+> diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+> index f20b1f84013a..6de21a81b00b 100644
+> --- a/drivers/i2c/busses/Kconfig
+> +++ b/drivers/i2c/busses/Kconfig
+> @@ -197,6 +197,11 @@ config I2C_CHT_WC
+>   	  SMBus controller found in the Intel Cherry Trail Whiskey Cove PMIC
+>   	  found on some Intel Cherry Trail systems.
 >   
-> -	data->count++;
-> -	if (__power_supply_is_supplied_by(epsy, data->psy))
-> +	if (__power_supply_is_supplied_by(epsy, data->psy)) {
-> +		data->count++;
->   		if (!epsy->desc->get_property(epsy, POWER_SUPPLY_PROP_ONLINE,
->   					&ret))
->   			return ret.intval;
-> +	}
+> +	  Note this controller is hooked up to a TI bq24292i charger-IC,
+> +	  combined with a FUSB302 Type-C port-controller as such it is advised
+> +	  to also select CONFIG_CHARGER_BQ24190=m and CONFIG_TYPEC_FUSB302=m
+> +	  (the fusb302 driver currently is in drivers/staging).
+> +
+
+Just wondering - is this always the case ? What if someone builds a system with
+different charger and port controller ICs ?
+
+>   config I2C_NFORCE2
+>   	tristate "Nvidia nForce2, nForce3 and nForce4"
+>   	depends on PCI
+> diff --git a/drivers/i2c/busses/i2c-cht-wc.c b/drivers/i2c/busses/i2c-cht-wc.c
+> index ccf0785bcb75..08229fb12615 100644
+> --- a/drivers/i2c/busses/i2c-cht-wc.c
+> +++ b/drivers/i2c/busses/i2c-cht-wc.c
+> @@ -211,8 +211,11 @@ static const struct irq_chip cht_wc_i2c_irq_chip = {
+>   	.name			= "cht_wc_ext_chrg_irq_chip",
+>   };
 >   
->   	return 0;
->   }
+> +static const char * const bq24190_suppliers[] = { "fusb302-typec-source" };
+> +
+>   static const struct property_entry bq24190_props[] = {
+> -	PROPERTY_ENTRY_STRING("extcon-name", "cht_wcove_pwrsrc"),
+> +	PROPERTY_ENTRY_STRING_ARRAY("supplied-from", bq24190_suppliers),
+> +	PROPERTY_ENTRY_BOOL("input-current-limit-from-supplier"),
+>   	PROPERTY_ENTRY_BOOL("omit-battery-class"),
+>   	PROPERTY_ENTRY_BOOL("disable-reset"),
+>   	{ }
 > 
