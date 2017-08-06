@@ -1,55 +1,46 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2] power: supply: Fix power_supply_am_i_supplied to return -ENODEV when apropriate
-Date: Sun,  6 Aug 2017 18:23:52 +0200
-Message-ID: <20170806162352.12906-1-hdegoede@redhat.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH 18/18] i2c-cht-wc: Add device-properties for fusb302 integration
+Date: Sun, 6 Aug 2017 19:29:08 +0300
+Message-ID: <CAHp75VfM-cGzhng4amYs=Y3nJorFud6u6R_xj4C-rSJuHePicQ@mail.gmail.com>
+References: <20170806123555.5124-1-hdegoede@redhat.com> <20170806123555.5124-19-hdegoede@redhat.com>
+ <9ba933c6-daae-f30d-2c83-e9c2b756d27f@roeck-us.net> <ae6fcdce-1dd0-d29f-ce04-9d9c77f14730@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:39078 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751300AbdHFQXz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 6 Aug 2017 12:23:55 -0400
+Received: from mail-qk0-f194.google.com ([209.85.220.194]:34733 "EHLO
+        mail-qk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751300AbdHFQ3J (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Aug 2017 12:29:09 -0400
+In-Reply-To: <ae6fcdce-1dd0-d29f-ce04-9d9c77f14730@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Guenter Roeck <linux@roeck-us.net>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Platform Driver <platform-driver-x86@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-i2c <linux-i2c@vger.kernel.org>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, devel@driverdev.osuosl.org
 
-Commit 2848e039c562 ("power: supply: Make power_supply_am_i_supplied return
--ENODEV if there are no suppliers") was supposed to make
-power_supply_am_i_supplied() return -ENODEV when there are no supplies
-which supply the supply passed to it.
+On Sun, Aug 6, 2017 at 6:05 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+> On 06-08-17 16:35, Guenter Roeck wrote:
+>> On 08/06/2017 05:35 AM, Hans de Goede wrote:
 
-But instead it will only return -ENODEV when there are no supplies at
-all as data->count++; is incremented on every call of the iterator, rather
-then only when __power_supply_is_supplied_by returns true. This commit
-fixes this.
+> FWIW all DSTDs I've seen are all copy and paste and all declare a INT33FE
+> ACPI
+> device with identical i2c client addresses which strongly suggests the
+> use of the same combo. Note that on most devices this part of the DSTD is
+> not active (_STA returns 0) because they actually use a different config.
 
-Fixes: 2848e039c562 ("power: supply: Make power_supply_am_i_supplied ...")
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
-Changes in v2:
--Resend as a standalone patch rather then as part of an unrelated patch-set,
- no changes
----
- drivers/power/supply/power_supply_core.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+Which is quite likely just blindly copied from a reference BIOS code.
+(Reminds me that bug with GPIO pin setting for interrupt as output only)
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 0aacc721ebda..3f92574222de 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -314,11 +314,12 @@ static int __power_supply_am_i_supplied(struct device *dev, void *_data)
- 	struct power_supply *epsy = dev_get_drvdata(dev);
- 	struct psy_am_i_supplied_data *data = _data;
- 
--	data->count++;
--	if (__power_supply_is_supplied_by(epsy, data->psy))
-+	if (__power_supply_is_supplied_by(epsy, data->psy)) {
-+		data->count++;
- 		if (!epsy->desc->get_property(epsy, POWER_SUPPLY_PROP_ONLINE,
- 					&ret))
- 			return ret.intval;
-+	}
- 
- 	return 0;
- }
+> The only extra safe-guard I can come up with is a DMI string check, but that
+> is sub-optimal since the DMI strings on these devices contain useful values
+> as "Default String" still we could add it as an extra check.
+
+...and in worst cases CPU model ID.
+
+> Since I had the same concern I've done a web search and I've been unable
+> to find any other devices which seem to use a Whiskey Cove PMIC, but that
+> does not mean that there aren't any.
+
+
 -- 
-2.13.3
+With Best Regards,
+Andy Shevchenko
