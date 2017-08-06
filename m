@@ -1,31 +1,37 @@
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH 0/3] power: supply: charger-manager: 1 fix and 2 minor clean-ups
-Date: Mon,  7 Aug 2017 00:37:54 +0200
-Message-ID: <cover.1502058761.git.christophe.jaillet@wanadoo.fr>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp07.smtpout.orange.fr ([80.12.242.129]:35891 "EHLO
-        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751411AbdHFWiG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Aug 2017 18:38:06 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 1/3] power: supply: charger-manager: Fix a NULL pointer dereference in 'charger_manager_probe()'
+Date: Mon,  7 Aug 2017 00:37:55 +0200
+Message-ID: <09a9f8a61f784779d6127b83f9540ae1db4c25be.1502058761.git.christophe.jaillet@wanadoo.fr>
+References: <cover.1502058761.git.christophe.jaillet@wanadoo.fr>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1502058761.git.christophe.jaillet@wanadoo.fr>
+In-Reply-To: <cover.1502058761.git.christophe.jaillet@wanadoo.fr>
+References: <cover.1502058761.git.christophe.jaillet@wanadoo.fr>
+Sender: linux-kernel-owner@vger.kernel.org
 To: sre@kernel.org
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+List-Id: linux-pm@vger.kernel.org
 
-This patch series improves 'charger_manager_probe()'. The first patch is
-about a missing memory allocation failure test.
-The 2 others are just things spotted in this function:
-   - a comment that is no more up to date
-   - a style issue (which saves 1 line)
+'devm_kzalloc()' can return NULL. Return -ENOMEM in this case in order to
+avoid a NULL pointer dereference later on.
 
-Christophe JAILLET (3):
-  power: supply: charger-manager: Fix a NULL pointer dereference in
-    'charger_manager_probe()'
-  power: supply: charger-manager: Fix a comment
-  power: supply: charger-manager: Slighly simplify code
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+ drivers/power/supply/charger-manager.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
- drivers/power/supply/charger-manager.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index adc3761831e1..52a49857e20f 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -1645,6 +1645,8 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	/* Initialize alarm timer */
+ 	if (alarmtimer_get_rtcdev()) {
+ 		cm_timer = devm_kzalloc(cm->dev, sizeof(*cm_timer), GFP_KERNEL);
++		if (!cm_timer)
++			return -ENOMEM;
+ 		alarm_init(cm_timer, ALARM_BOOTTIME, cm_timer_func);
+ 	}
+ 
 -- 
 2.11.0
