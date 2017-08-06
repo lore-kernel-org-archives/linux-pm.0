@@ -1,38 +1,72 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH 3/3] power: supply: charger-manager: Slighly simplify code
-Date: Mon,  7 Aug 2017 00:37:57 +0200
-Message-ID: <4cf75823640aa667fc050e75b7a86a62aa2bdaa6.1502058761.git.christophe.jaillet@wanadoo.fr>
-References: <cover.1502058761.git.christophe.jaillet@wanadoo.fr>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1502058761.git.christophe.jaillet@wanadoo.fr>
-In-Reply-To: <cover.1502058761.git.christophe.jaillet@wanadoo.fr>
-References: <cover.1502058761.git.christophe.jaillet@wanadoo.fr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+From: Darren Hart <dvhart@infradead.org>
+Subject: Re: [PATCH] intel-vbtn: match power button on press rather than
+ release
+Date: Sun, 6 Aug 2017 16:24:18 -0700
+Message-ID: <20170806232418.GA29692@fury>
+References: <1501866006-24811-1-git-send-email-mario.limonciello@dell.com>
+ <11471111.T3jHVeqpMT@aspire.rjw.lan>
+ <20170805205753.GA1277@fury>
+ <1700343.1Fm4iKlbcW@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1700343.1Fm4iKlbcW@aspire.rjw.lan>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Mario Limonciello <mario.limonciello@dell.com>, AceLan Kao <acelan.kao@canonical.com>, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Use 'sizeof(*var)' instead of the equivalent 'sizeof(data structure type)'
-because it is less verbose.
+On Sun, Aug 06, 2017 at 12:20:22AM +0200, Rafael Wysocki wrote:
+> On Saturday, August 5, 2017 10:57:53 PM CEST Darren Hart wrote:
+> > On Sat, Aug 05, 2017 at 01:30:20AM +0200, Rafael Wysocki wrote:
+> > > On Friday, August 4, 2017 7:29:53 PM CEST Darren Hart wrote:
+> > > > On Fri, Aug 04, 2017 at 12:00:06PM -0500, Mario Limonciello wrote:
+> > > > > This fixes a problem where the system gets stuck in a loop
+> > > > > unable to wakeup via power button in s2idle.
+> > > > > 
+> > > > > The problem happens because:
+> > > > >  - press power button:
+> > > > >    - system emits 0xc0 (power press), event ignored
+> > > > >    - system emits 0xc1 (power release), event processed,
+> > > > >      emited as KEY_POWER
+> > > > >    - set wakeup_mode to true
+> > > > >    - system goes to s2idle
+> > > > >  - press power button
+> > > > >    - system emits 0xc0 (power press), wakeup_mode is true,
+> > > > >      system wakes
+> > > > >    - system emits 0xc1 (power release), event processed,
+> > > > >      emited as KEY_POWER
+> > > > >    - system goes to s2idle again
+> > > > > 
+> > > > > To avoid this situation, process the presses (which matches what
+> > > > > intel-hid does too).
+> > > > > 
+> > > > > Verified on an Dell XPS 9365
+> > > > > 
+> > > > > Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+> > > > 
+> > > > This looks good to me - responding to the release is non-intuitive IMHO
+> > > > anyway.  I'd like to see agreement from AceLan, but this should go into
+> > > > the 4.13 rc cycle (at rc3 currently).
+> > > 
+> > > Yes, it should, and I'm not sure if the original author's opinion matters here.
+> > > 
+> > > The patch makes sense to everyone involved and fixes an annoying issue, so
+> > > I don't see any real arguments against applying it.
+> > > 
+> > > Please feel free to add my ACK to it if that helps.
+> > 
+> > I always try to give those in MAINTAINERS a chance to respond, but I will queue
+> > this up to fixes now.
+> 
+> Thanks!
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
- drivers/power/supply/charger-manager.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Rafael,
 
-diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
-index 83c08c8e2c32..6502fa7c2106 100644
---- a/drivers/power/supply/charger-manager.c
-+++ b/drivers/power/supply/charger-manager.c
-@@ -1632,8 +1632,7 @@ static int charger_manager_probe(struct platform_device *pdev)
- 		return -ENODEV;
- 	}
- 
--	cm = devm_kzalloc(&pdev->dev,
--			sizeof(struct charger_manager),	GFP_KERNEL);
-+	cm = devm_kzalloc(&pdev->dev, sizeof(*cm), GFP_KERNEL);
- 	if (!cm)
- 		return -ENOMEM;
- 
+Merged to mainline (in case you were waiting on this for the dependent
+patch you mentioned).
+
 -- 
-2.11.0
+Darren Hart
+VMware Open Source Technology Center
