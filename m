@@ -1,33 +1,102 @@
-From: Darren Hart <dvhart@infradead.org>
-Subject: Re: [PATCH] intel-vbtn: match power button on press rather than
- release
-Date: Sun, 6 Aug 2017 20:54:28 -0700
-Message-ID: <20170807035428.GA14177@fury>
-References: <1501866006-24811-1-git-send-email-mario.limonciello@dell.com>
- <11471111.T3jHVeqpMT@aspire.rjw.lan>
- <20170805205753.GA1277@fury>
- <1700343.1Fm4iKlbcW@aspire.rjw.lan>
- <20170806232418.GA29692@fury>
- <CAJZ5v0g3v=fQ79P1WG-L7imNBMuvh30uHz0GcAnZJcwFKptYvQ@mail.gmail.com>
- <CAFv23QnYwe5Foms1Ck8-hHKnftxNLN0K3L3waVrprbd2MUgSKw@mail.gmail.com>
+From: gsantosh@codeaurora.org
+Subject: Re: [PATCH] devfreq: replace sscanf with kstrtol
+Date: Mon, 07 Aug 2017 10:17:45 +0530
+Message-ID: <a5453d63a9c82cc1ffd4c2963a563200@codeaurora.org>
+References: <a74af8cd71537efd19c5b7154d34ec65@codeaurora.org>
+ <CAGTfZH06PFTBu4VE_5AQjmpKfhr=TD9Qj8wcHpxQubCRtRMzzA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAFv23QnYwe5Foms1Ck8-hHKnftxNLN0K3L3waVrprbd2MUgSKw@mail.gmail.com>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: AceLan Kao <acelan.kao@canonical.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mario Limonciello <mario.limonciello@dell.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset=US-ASCII;
+ format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:33072 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751425AbdHGErr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2017 00:47:47 -0400
+In-Reply-To: <CAGTfZH06PFTBu4VE_5AQjmpKfhr=TD9Qj8wcHpxQubCRtRMzzA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: cwchoi00@gmail.com, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: gsantosh@qti.qualcomm.com, skannan@quicinc.com
 
-On Mon, Aug 07, 2017 at 08:59:30AM +0800, AceLan Kao wrote:
-> Looks like I'm one hour late to ack the patch.
-> Thanks any way for the quick response.
+On 2017-08-04 20:42, Chanwoo Choi wrote:
+> Hi,
+> 
+> On Fri, Aug 4, 2017 at 12:57 PM,  <gsantosh@codeaurora.org> wrote:
+>> Hi,
+>> 
+>> Adding error checks to devfreq userspace governor, the current
+>> implementation results in setting wrong
+>> frequency when sscanf returns error.
+>> 
+>> 
+>> From 12e0a347addd70529b2c378299b27b65f0766f99 Mon Sep 17 00:00:00 2001
+>> From: Santosh Mardi <gsantosh@codeaurora.org>
+>> Date: Tue, 25 Jul 2017 18:47:11 +0530
+>> Subject: [PATCH] devfreq: replace sscanf with kstrtol
+>> 
+>> store_freq function of devfreq userspace governor
+>> executes further, even if error is returned from sscanf,
+>> this will result in setting up wrong frequency value.
+>> 
+>> The usage for the sscanf is only for single variable so
+>> replace sscanf with kstrtol along with error check to
+>> bail out if any error is returned.
+>> 
+>> Signed-off-by: Santosh Mardi <gsantosh@codeaurora.org>
+>> ---
+>>  drivers/devfreq/governor_userspace.c | 5 ++++-
+>>  1 file changed, 4 insertions(+), 1 deletion(-)
+>> 
+>> diff --git a/drivers/devfreq/governor_userspace.c
+>> b/drivers/devfreq/governor_userspace.c
+>> index 77028c2..a84796d 100644
+>> --- a/drivers/devfreq/governor_userspace.c
+>> +++ b/drivers/devfreq/governor_userspace.c
+>> @@ -53,12 +53,15 @@ static ssize_t store_freq(struct device *dev, 
+>> struct
+>> device_attribute *attr,
+>>         mutex_lock(&devfreq->lock);
+>>         data = devfreq->data;
+>> 
+>> -       sscanf(buf, "%lu", &wanted);
+>> +       err = kstrtol(buf, 0, &wanted);
+>> +       if (err < 0)
+>> +               goto out;
+> 
+> I think that just you can check the return value as following:
+> The other point of devfreq already uses the following style
+> to check the return value of sscanf. I think kstrtol is not necessary.
+> 
+>      err = sscanf(buf, "%lu", &wanted);
+>      if (err != 1)
+>           goto out;
+> 
 
-Thanks for chiming in all the same - and normally I'd have provided for
-more time. In this case, I will be away for a few days, and it was
-important to get this in sooner rather than later in the RC cycle.
+[Santosh] - I Agree we need to have this error check as mentioned by you 
+if we are scanning an arrary from the sscanf,
+but in the above code we are only scanning one variable and there is a 
+rule in the checkpatch scripts, not to use sscanf if it is a single 
+variable, So I need to replace sscanf to strtol
 
--- 
-Darren Hart
-VMware Open Source Technology Center
+I have added all the mails I got as output from 
+scripts/get_maintainer.pl scripts in this mail.
+
+
+> And please use the scripts/get_maintainer.pl
+> in order to prevent the missing of the reviewer.
+> 
+>>         data->user_frequency = wanted;
+>>         data->valid = true;
+>>         err = update_devfreq(devfreq);
+>>         if (err == 0)
+>>                 err = count;
+>> +out:
+>>         mutex_unlock(&devfreq->lock);
+>>         return err;
+>>  }
+>> --
+>> 
+>> Regards,
+>> Santosh M G.
+>> Qualcomm Innovation Center
