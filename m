@@ -1,39 +1,59 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 196263] powersave broken
-Date: Mon, 07 Aug 2017 03:26:15 +0000
-Message-ID: <bug-196263-137361-8WaUHHvvR6@https.bugzilla.kernel.org/>
-References: <bug-196263-137361@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: Simplify cpufreq_can_do_remote_dvfs()
+Date: Mon, 7 Aug 2017 09:03:53 +0530
+Message-ID: <20170807033353.GD28857@vireshk-i7>
+References: <1957547.1DvPFJ11E3@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:60584 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751422AbdHGD0Q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Aug 2017 23:26:16 -0400
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 4CB2B2856B
-        for <linux-pm@vger.kernel.org>; Mon,  7 Aug 2017 03:26:16 +0000 (UTC)
-In-Reply-To: <bug-196263-137361@https.bugzilla.kernel.org/>
+Received: from mail-pg0-f47.google.com ([74.125.83.47]:34350 "EHLO
+        mail-pg0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751433AbdHGDd6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Aug 2017 23:33:58 -0400
+Received: by mail-pg0-f47.google.com with SMTP id u185so28764196pgb.1
+        for <linux-pm@vger.kernel.org>; Sun, 06 Aug 2017 20:33:57 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1957547.1DvPFJ11E3@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-https://bugzilla.kernel.org/show_bug.cgi?id=196263
+On 04-08-17, 14:57, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The if () in cpufreq_can_do_remote_dvfs() is superfluous, so drop
+> it and simply return the value of the expression under it.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> 
+> On top of the current linux-next.
+> 
+> ---
+>  include/linux/cpufreq.h |    7 ++-----
+>  1 file changed, 2 insertions(+), 5 deletions(-)
+> 
+> Index: linux-pm/include/linux/cpufreq.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/cpufreq.h
+> +++ linux-pm/include/linux/cpufreq.h
+> @@ -578,11 +578,8 @@ static inline bool cpufreq_can_do_remote
+>  	 * - dvfs_possible_from_any_cpu flag is set
+>  	 * - the local and remote CPUs share cpufreq policy
+>  	 */
+> -	if (policy->dvfs_possible_from_any_cpu ||
+> -	    cpumask_test_cpu(smp_processor_id(), policy->cpus))
+> -		return true;
+> -
+> -	return false;
+> +	return policy->dvfs_possible_from_any_cpu ||
+> +		cpumask_test_cpu(smp_processor_id(), policy->cpus);
+>  }
+>  
+>  /*********************************************************************
 
-Zhang Rui (rui.zhang@intel.com) changed:
-
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-             Status|NEEDINFO                    |CLOSED
-         Resolution|---                         |INSUFFICIENT_DATA
-
---- Comment #5 from Zhang Rui (rui.zhang@intel.com) ---
-Bug closed as there is no response from the bug reporter.
-Besides there are some justifications and workarounds provided in comment #1
-and #4, please feel free to reopen it if the problem still exists with these
-suggestions.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+viresh
