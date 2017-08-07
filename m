@@ -1,50 +1,53 @@
 From: <sean.wang@mediatek.com>
-Subject: [PATCH v3 0/4] add support of SCPSYS power domain for MediaTek MT7622
-Date: Mon, 7 Aug 2017 15:24:33 +0800
-Message-ID: <cover.1502090240.git.sean.wang@mediatek.com>
+Subject: [PATCH v3 1/4] dt-bindings: soc: update the binding document for SCPSYS on MediaTek MT7622 SoC
+Date: Mon, 7 Aug 2017 15:24:34 +0800
+Message-ID: <2f2be223a19d7dae859c7cf74b2f0c6dbaffedbc.1502090240.git.sean.wang@mediatek.com>
+References: <cover.1502090240.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailgw01.mediatek.com ([210.61.82.183]:9503 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751560AbdHGHYo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2017 03:24:44 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1502090240.git.sean.wang@mediatek.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: robh+dt@kernel.org, matthias.bgg@gmail.com, rjw@rjwysocki.net, khilman@baylibre.com
-Cc: ulf.hansson@linaro.org, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>
+Cc: ulf.hansson@linaro.org, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>, Chen Zhong <chen.zhong@mediatek.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Sean Wang <sean.wang@mediatek.com>
 
-Changes since v2:
-- reduce code duplication of scpsys_probe across all SoCs
+Update the binding document for enabling SCPSYS on MediaTek MT7622 SoC.
 
-Changes since v1:
-- rebase to Linux v4.13-rc1
+Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+Signed-off-by: Chen Zhong <chen.zhong@mediatek.com>
+Acked-by: Rob Herring <robh@kernel.org>
+---
+ Documentation/devicetree/bindings/soc/mediatek/scpsys.txt | 3 +++
+ 1 file changed, 3 insertions(+)
 
-There are four power domains on MediaTek MT7622 SoC which are respectively
-ETHSYS for Ethernet including extra embedded switch, HIF0SYS for PCI-E and
-SATA, HIF1SYS for USB and WBSYS for WIFI and Bluetooth.
-
-Those functions could be selectively powered gated when the corresponding
-function is no longer to use in order to reach more minimal power
-dissipation through the patch series introduced here.
-
-Chen Zhong (1):
-  soc: mediatek: add header files required for MT7622 SCPSYS dt-binding
-
-Sean Wang (3):
-  dt-bindings: soc: update the binding document for SCPSYS on MediaTek
-    MT7622 SoC
-  soc: mediatek: reduce code duplication of scpsys_probe across all SoCs
-  soc: mediatek: add SCPSYS power domain driver for MediaTek MT7622 SoC
-
- .../devicetree/bindings/soc/mediatek/scpsys.txt    |   3 +
- drivers/soc/mediatek/mtk-scpsys.c                  | 247 ++++++++++++---------
- include/dt-bindings/power/mt7622-power.h           |  22 ++
- include/linux/soc/mediatek/infracfg.h              |   7 +
- 4 files changed, 179 insertions(+), 100 deletions(-)
- create mode 100644 include/dt-bindings/power/mt7622-power.h
-
+diff --git a/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt b/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
+index b1d165b..40056f7 100644
+--- a/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
++++ b/Documentation/devicetree/bindings/soc/mediatek/scpsys.txt
+@@ -12,11 +12,13 @@ power/power_domain.txt. It provides the power domains defined in
+ - include/dt-bindings/power/mt8173-power.h
+ - include/dt-bindings/power/mt6797-power.h
+ - include/dt-bindings/power/mt2701-power.h
++- include/dt-bindings/power/mt7622-power.h
+ 
+ Required properties:
+ - compatible: Should be one of:
+ 	- "mediatek,mt2701-scpsys"
+ 	- "mediatek,mt6797-scpsys"
++	- "mediatek,mt7622-scpsys"
+ 	- "mediatek,mt8173-scpsys"
+ - #power-domain-cells: Must be 1
+ - reg: Address range of the SCPSYS unit
+@@ -26,6 +28,7 @@ Required properties:
+                       enabled before enabling certain power domains.
+ 	Required clocks for MT2701: "mm", "mfg", "ethif"
+ 	Required clocks for MT6797: "mm", "mfg", "vdec"
++	Required clocks for MT7622: "hif_sel"
+ 	Required clocks for MT8173: "mm", "mfg", "venc", "venc_lt"
+ 
+ Optional properties:
 -- 
 2.7.4
