@@ -1,15 +1,15 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v2 3/5] power: bq24190_charger: Enable devicetree config
-Date: Mon,  7 Aug 2017 12:54:18 -0700
-Message-ID: <20170807195420.20767-4-liam@networkimprov.net>
+Subject: [PATCH v2 4/5] power: bq24190_charger: Add property system-minimum-microvolt
+Date: Mon,  7 Aug 2017 12:54:19 -0700
+Message-ID: <20170807195420.20767-5-liam@networkimprov.net>
 References: <20170807195420.20767-1-liam@networkimprov.net>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:34162 "EHLO
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:33099 "EHLO
         mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751560AbdHGTyn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2017 15:54:43 -0400
-Received: by mail-pg0-f65.google.com with SMTP id y192so1240792pgd.1
-        for <linux-pm@vger.kernel.org>; Mon, 07 Aug 2017 12:54:42 -0700 (PDT)
+        with ESMTP id S1751921AbdHGTyo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2017 15:54:44 -0400
+Received: by mail-pg0-f65.google.com with SMTP id u185so1257762pgb.0
+        for <linux-pm@vger.kernel.org>; Mon, 07 Aug 2017 12:54:44 -0700 (PDT)
 In-Reply-To: <20170807195420.20767-1-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -18,141 +18,74 @@ Cc: Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>, Liam 
 
 From: Liam Breck <kernel@networkimprov.net>
 
-Add get_config(). Rename set_mode_host() to set_config().
-Call get_config() and hw_init() after power_supply_register().
-No functional changes.
+Set minimum system voltage limit obtained from device property.
 
 Cc: Tony Lindgren <tony@atomide.com>
 Cc: Hans de Goede <hdegoede@redhat.com>
 Signed-off-by: Liam Breck <kernel@networkimprov.net>
 ---
- drivers/power/supply/bq24190_charger.c | 63 +++++++++++++++++++++++-----------
- 1 file changed, 43 insertions(+), 20 deletions(-)
+ drivers/power/supply/bq24190_charger.c | 23 +++++++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
 diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index 3340ffa2..2ab580bf 100644
+index 2ab580bf..f20d2c68 100644
 --- a/drivers/power/supply/bq24190_charger.c
 +++ b/drivers/power/supply/bq24190_charger.c
-@@ -504,15 +504,7 @@ static int bq24190_sysfs_create_group(struct bq24190_dev_info *bdi)
- static inline void bq24190_sysfs_remove_group(struct bq24190_dev_info *bdi) {}
- #endif
+@@ -43,6 +43,8 @@
+ #define BQ24190_REG_POC_CHG_CONFIG_OTG			0x2
+ #define BQ24190_REG_POC_SYS_MIN_MASK		(BIT(3) | BIT(2) | BIT(1))
+ #define BQ24190_REG_POC_SYS_MIN_SHIFT		1
++#define BQ24190_REG_POC_SYS_MIN_MIN			3000
++#define BQ24190_REG_POC_SYS_MIN_MAX			3700
+ #define BQ24190_REG_POC_BOOST_LIM_MASK		BIT(0)
+ #define BQ24190_REG_POC_BOOST_LIM_SHIFT		0
  
--/*
-- * According to the "Host Mode and default Mode" section of the
-- * manual, a write to any register causes the bq24190 to switch
-- * from default mode to host mode.  It will switch back to default
-- * mode after a WDT timeout unless the WDT is turned off as well.
-- * So, by simply turning off the WDT, we accomplish both with the
-- * same write.
-- */
--static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
-+static int bq24190_set_config(struct bq24190_dev_info *bdi)
- {
- 	int ret;
- 	u8 v;
-@@ -523,9 +515,22 @@ static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
- 
- 	bdi->watchdog = ((v & BQ24190_REG_CTTC_WATCHDOG_MASK) >>
- 					BQ24190_REG_CTTC_WATCHDOG_SHIFT);
-+
-+	/*
-+	 * According to the "Host Mode and default Mode" section of the
-+	 * manual, a write to any register causes the bq24190 to switch
-+	 * from default mode to host mode.  It will switch back to default
-+	 * mode after a WDT timeout unless the WDT is turned off as well.
-+	 * So, by simply turning off the WDT, we accomplish both with the
-+	 * same write.
-+	 */
- 	v &= ~BQ24190_REG_CTTC_WATCHDOG_MASK;
- 
--	return bq24190_write(bdi, BQ24190_REG_CTTC, v);
-+	ret = bq24190_write(bdi, BQ24190_REG_CTTC, v);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
- }
- 
- static int bq24190_register_reset(struct bq24190_dev_info *bdi)
-@@ -1456,13 +1461,25 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+@@ -159,6 +161,7 @@ struct bq24190_dev_info {
+ 	char				model_name[I2C_NAME_SIZE];
+ 	bool				initialized;
+ 	bool				irq_event;
++	u16				sys_min;
+ 	struct mutex			f_reg_lock;
+ 	u8				f_reg;
+ 	u8				ss_reg;
+@@ -530,6 +533,16 @@ static int bq24190_set_config(struct bq24190_dev_info *bdi)
  	if (ret < 0)
  		return ret;
  
--	ret = bq24190_set_mode_host(bdi);
-+	ret = bq24190_set_config(bdi);
- 	if (ret < 0)
- 		return ret;
- 
- 	return bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
++	if (bdi->sys_min) {
++		v = bdi->sys_min / 100 - 30; // manual section 9.5.1.2, table 9
++		ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
++					 BQ24190_REG_POC_SYS_MIN_MASK,
++					 BQ24190_REG_POC_SYS_MIN_SHIFT,
++					 v);
++		if (ret < 0)
++			return ret;
++	}
++
+ 	return 0;
  }
  
-+static int bq24190_get_config(struct bq24190_dev_info *bdi)
-+{
-+#ifdef CONFIG_OF
-+	int v;
-+
-+	if (!bdi->dev->of_node)
-+		return -EINVAL;
-+
-+#endif
-+	return 0;
-+}
-+
- static int bq24190_probe(struct i2c_client *client,
- 		const struct i2c_device_id *id)
+@@ -1471,11 +1484,21 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+ static int bq24190_get_config(struct bq24190_dev_info *bdi)
  {
-@@ -1493,7 +1510,7 @@ static int bq24190_probe(struct i2c_client *client,
+ #ifdef CONFIG_OF
++	const char * const s = "ti,system-minimum-microvolt";
+ 	int v;
  
- 	i2c_set_clientdata(client, bdi);
- 
--	if (!client->irq) {
-+	if (client->irq <= 0) {
- 		dev_err(dev, "Can't get irq info\n");
+ 	if (!bdi->dev->of_node)
  		return -EINVAL;
- 	}
-@@ -1526,12 +1543,6 @@ static int bq24190_probe(struct i2c_client *client,
- 		goto out_pmrt;
- 	}
  
--	ret = bq24190_hw_init(bdi);
--	if (ret < 0) {
--		dev_err(dev, "Hardware init failed\n");
--		goto out_pmrt;
--	}
--
- 	charger_cfg.drv_data = bdi;
- 	charger_cfg.supplied_to = bq24190_charger_supplied_to;
- 	charger_cfg.num_supplicants = ARRAY_SIZE(bq24190_charger_supplied_to),
-@@ -1556,8 +1567,20 @@ static int bq24190_probe(struct i2c_client *client,
- 		}
- 	}
- 
-+	ret = bq24190_get_config(bdi);
-+	if (ret < 0) {
-+		dev_err(dev, "Can't get devicetree config\n");
-+		goto out_charger;
++	if (device_property_read_u32(bdi->dev, s, &v) == 0) {
++		v /= 1000;
++		if (v >= BQ24190_REG_POC_SYS_MIN_MIN
++		 && v <= BQ24190_REG_POC_SYS_MIN_MAX)
++			bdi->sys_min = v;
++		else
++			dev_warn(bdi->dev, "invalid value for %s: %u\n", s, v);
 +	}
 +
-+	ret = bq24190_hw_init(bdi);
-+	if (ret < 0) {
-+		dev_err(dev, "Hardware init failed\n");
-+		goto out_charger;
-+	}
-+
- 	ret = bq24190_sysfs_create_group(bdi);
--	if (ret) {
-+	if (ret < 0) {
- 		dev_err(dev, "Can't create sysfs entries\n");
- 		goto out_charger;
- 	}
-@@ -1700,7 +1723,7 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
- 	}
- 
- 	bq24190_register_reset(bdi);
--	bq24190_set_mode_host(bdi);
-+	bq24190_set_config(bdi);
- 	bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
- 
- 	if (error >= 0) {
+ #endif
+ 	return 0;
+ }
 -- 
 2.13.2
