@@ -1,65 +1,107 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [PATCH 3/4] thermal: exynos: constify
- thermal_zone_of_device_ops structures
-Date: Mon, 07 Aug 2017 17:21:26 +0200
-Message-ID: <2246245.2R0fntX3Po@amdc3058>
-References: <1501965437-30730-1-git-send-email-Julia.Lawall@lip6.fr>
-        <CGME20170805210250epcas2p2f6a808ee6e3e20cd1dc19457b96ddbf4@epcas2p2.samsung.com>
-        <1501965437-30730-4-git-send-email-Julia.Lawall@lip6.fr>
+From: Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 10/18] staging: typec: fusb302: Add support for
+ fcs,vbus-regulator-name device-property
+Date: Mon, 7 Aug 2017 16:41:52 +0100
+Message-ID: <20170807154152.wt5b4y3s3oe4cnam@sirena.org.uk>
+References: <20170806123555.5124-1-hdegoede@redhat.com>
+ <20170806123555.5124-11-hdegoede@redhat.com>
+ <2d04e538-0594-0073-939e-feb6c1a66cdf@roeck-us.net>
+ <85c668d5-c6f0-a94c-4dd5-1b425cdff339@redhat.com>
+ <20170807111054.4lp5rgc5vpnsmhim@sirena.org.uk>
+ <dcbddc43-e581-505e-915b-3bf16b477422@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1501965437-30730-4-git-send-email-Julia.Lawall@lip6.fr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Julia Lawall <Julia.Lawall@lip6.fr>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: bhumirks@gmail.com, kernel-janitors@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary="===============6206346871107004435=="
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <dcbddc43-e581-505e-915b-3bf16b477422@redhat.com>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: devel@driverdev.osuosl.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, linux-kernel@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Liam Breck <liam@networkimprov.net>, Guenter Roeck <linux@roeck-us.net>, Darren Hart <dvhart@infradead.org>, platform-driver-x86@vger.kernel.org, Andy Shevchenko <andy@infradead.org>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, August 05, 2017 10:37:16 PM Julia Lawall wrote:
-> The thermal_zone_of_device_ops structure is only passed as the fourth
-> argument to thermal_zone_of_sensor_register, which is declared as const.
-> Thus the thermal_zone_of_device_ops structure itself can be const.
-> 
-> Done with the help of Coccinelle.
-> 
-> // <smpl>
-> @r disable optional_qualifier@
-> identifier i;
-> position p;
-> @@
-> static struct thermal_zone_of_device_ops i@p = { ... };
-> 
-> @ok1@
-> identifier r.i;
-> expression e1,e2,e3;
-> position p;
-> @@
-> thermal_zone_of_sensor_register(e1,e2,e3,&i@p)
-> 
-> @bad@
-> position p != {r.p,ok1.p};
-> identifier r.i;
-> struct thermal_zone_of_device_ops e;
-> @@
-> e@i@p
-> 
-> @depends on !bad disable optional_qualifier@
-> identifier r.i;
-> @@
-> static
-> +const
->  struct thermal_zone_of_device_ops i = { ... };
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+--===============6206346871107004435==
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="3xhp6eecqwa65oob"
+Content-Disposition: inline
 
-Eduardo/Zhang, Please queue this patch for upstream, thanks!
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+--3xhp6eecqwa65oob
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Mon, Aug 07, 2017 at 04:41:18PM +0200, Hans de Goede wrote:
+> On 07-08-17 13:10, Mark Brown wrote:
+
+> Problem 1)
+
+> The regulator in question is part of the bq24292i charger-IC attached to
+> a private i2c bus between the PMIC and the charger. The driver for the i2c
+> controller inside the PMIC which drivers this bus currently also instantiates
+> the i2c-client for the charger:
+
+...
+
+> Note that the bq24190 driver is a generic driver, so to pass the
+> board specific regulator_init_data to it I would need to somehow
+> pass it here, but I don't see how, except by storing a pointer to
+> it in an u64 device-property which seems like a bad idea
+
+I2C has a perfectly good platform_data pointer in the board info for
+this stuff.
+
+> Problem 2)
+
+> Even if I could add the mapping through regulator_init_data
+> then it may well be too late, if the regulator_get happens
+> before the bq24190 driver registers its regulator (and thus
+> the mapping) the regulator_get for it may have already
+> happened and returned a dummy-regulator, or another regulator
+> with the rather generic vbus name.
+
+If you don't have control over the instantiation ordering but you have a
+firmware which claims to provide a complete description of regulators
+then you'd need to add an interface that allows mappings to be
+registered separately to regulator registration.
+
+Whatever you're doing the answer isn't to try to specify the name of the
+supply through some firmware binding, that's just obviously not sensible
+both in terms of a firmware abstraction and in terms of how the
+abstractions in Linux work.
+
+--3xhp6eecqwa65oob
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCAAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlmIij8ACgkQJNaLcl1U
+h9BNuwf+PWkLyNaHfN0NiBNfczWsNCL6qAEBsD7KWz+h8eroBWBoJhiS87B3uxwO
+dGzmtkpKFY/KcrvjNKmCD4lHJV3D9N9KPxfhQV69q4rWaMyfgelMyUudwvwOpgGL
+Vs0e8qxdwtCtnzZdg8dSS7tVMdxBqnnPMRFevlLRFHezriCKbCLT0ckw4yEnZebc
+sPMjQuApMZzZ0JBtWNwod4trkK3fJ2MK7QQhD4XpXEDTYPyfYAIs7yBNhtJGgkkM
+vbEokYgyXXsQ+u3wcEn8PJSVuK+8AaIrczZcv2lv7cD7jPpk5dK/3QDJeCnjx2Yc
+dz8Cc9ZVEljEbXm66bP7lOPccROlrw==
+=1mgV
+-----END PGP SIGNATURE-----
+
+--3xhp6eecqwa65oob--
+
+--===============6206346871107004435==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+devel mailing list
+devel@linuxdriverproject.org
+http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel
+
+--===============6206346871107004435==--
