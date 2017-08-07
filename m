@@ -1,122 +1,48 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] devfreq: replace sscanf with kstrtol
-Date: Mon, 07 Aug 2017 14:25:32 +0900
-Message-ID: <5987F9CC.1080105@samsung.com>
-References: <a74af8cd71537efd19c5b7154d34ec65@codeaurora.org>
-        <CAGTfZH06PFTBu4VE_5AQjmpKfhr=TD9Qj8wcHpxQubCRtRMzzA@mail.gmail.com>
-        <CGME20170807044753epcas3p25273149fa9751d026f4dce5aa48d21f8@epcas3p2.samsung.com>
-        <a5453d63a9c82cc1ffd4c2963a563200@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <a5453d63a9c82cc1ffd4c2963a563200@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: gsantosh@codeaurora.org, cwchoi00@gmail.com, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: gsantosh@qti.qualcomm.com, skannan@quicinc.com
+From: Liam Breck <liam@networkimprov.net>
+Subject: [RFC v2 0/5] bq27xxx_battery data memory update
+Date: Sun,  6 Aug 2017 23:22:11 -0700
+Message-ID: <20170807062216.19988-1-liam@networkimprov.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:38848 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751516AbdHGGXD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2017 02:23:03 -0400
+Received: by mail-pf0-f196.google.com with SMTP id h75so8129787pfh.5
+        for <linux-pm@vger.kernel.org>; Sun, 06 Aug 2017 23:23:03 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org
+Cc: Paul Kocialkowski <contact@paulk.fr>
 
-Hi,
+Overview:
+* Reorganizes chip data definitions
+* Enables features landed in these patches:
+  dt-bindings: power: supply: bq27xxx: Add monitored-battery documentation
+  power: supply: bq27xxx: Add chip data memory read/write support
+  power: supply: bq27xxx: Add power_supply_battery_info support
+* Supports the following chips (only BQ27425 is active)
+  BQ27500, 545, 425, 421, 441, 621
 
-On 2017년 08월 07일 13:47, gsantosh@codeaurora.org wrote:
-> On 2017-08-04 20:42, Chanwoo Choi wrote:
->> Hi,
->>
->> On Fri, Aug 4, 2017 at 12:57 PM,  <gsantosh@codeaurora.org> wrote:
->>> Hi,
->>>
->>> Adding error checks to devfreq userspace governor, the current
->>> implementation results in setting wrong
->>> frequency when sscanf returns error.
->>>
->>>
->>> From 12e0a347addd70529b2c378299b27b65f0766f99 Mon Sep 17 00:00:00 2001
->>> From: Santosh Mardi <gsantosh@codeaurora.org>
->>> Date: Tue, 25 Jul 2017 18:47:11 +0530
->>> Subject: [PATCH] devfreq: replace sscanf with kstrtol
->>>
->>> store_freq function of devfreq userspace governor
->>> executes further, even if error is returned from sscanf,
->>> this will result in setting up wrong frequency value.
->>>
->>> The usage for the sscanf is only for single variable so
->>> replace sscanf with kstrtol along with error check to
->>> bail out if any error is returned.
->>>
->>> Signed-off-by: Santosh Mardi <gsantosh@codeaurora.org>
->>> ---
->>>  drivers/devfreq/governor_userspace.c | 5 ++++-
->>>  1 file changed, 4 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/drivers/devfreq/governor_userspace.c
->>> b/drivers/devfreq/governor_userspace.c
->>> index 77028c2..a84796d 100644
->>> --- a/drivers/devfreq/governor_userspace.c
->>> +++ b/drivers/devfreq/governor_userspace.c
->>> @@ -53,12 +53,15 @@ static ssize_t store_freq(struct device *dev, struct
->>> device_attribute *attr,
->>>         mutex_lock(&devfreq->lock);
->>>         data = devfreq->data;
->>>
->>> -       sscanf(buf, "%lu", &wanted);
->>> +       err = kstrtol(buf, 0, &wanted);
->>> +       if (err < 0)
->>> +               goto out;
->>
->> I think that just you can check the return value as following:
->> The other point of devfreq already uses the following style
->> to check the return value of sscanf. I think kstrtol is not necessary.
->>
->>      err = sscanf(buf, "%lu", &wanted);
->>      if (err != 1)
->>           goto out;
->>
-> 
-> [Santosh] - I Agree we need to have this error check as mentioned by you if we are scanning an arrary from the sscanf,
-> but in the above code we are only scanning one variable and there is a rule in the checkpatch scripts, not to use sscanf if it is a single variable, So I need to replace sscanf to strtol
+Changes in v2:
+* Added di->opts flags for remaining chip features
+* Commented out untested bq27xxx_dm_regs parameters
+* Changed dbg_dupes to run only once
 
-IMHO, even if checkpatch shows the warning about sscanf,
-I'd like you to use 'sscanf' in order to maintain
-the consistency and readability when handling the sscanf.
+Notes on v1:
+* Not fully tested (hence RFC tag)
 
-For example, drivers/devfreq/devfreq.c and drivers/cpufreq/cpufreq.c
-have the same warnings on many points.
 
-> 
-> I have added all the mails I got as output from scripts/get_maintainer.pl scripts in this mail.
+Liam Breck (5):
+  power: supply: bq27xxx: Create single chip data table
+  power: supply: bq27xxx: Add chip IDs for previously shadowed chips
+  power: supply: bq27xxx: Enable data memory update for certain chips
+  power: supply: bq27xxx: Flag identical chip data when in debug mode
+  power: supply: bq27xxx: Remove duplicate chip data arrays
 
-Maybe, you missed including me (reviewer) to cc list.
-
-MyungJoo Ham <myungjoo.ham@samsung.com> (maintainer:DEVICE FREQUENCY (DEVFREQ))
-Kyungmin Park <kyungmin.park@samsung.com> (maintainer:DEVICE FREQUENCY (DEVFREQ))
-Chanwoo Choi <cw00.choi@samsung.com> (reviewer:DEVICE FREQUENCY (DEVFREQ))
-linux-pm@vger.kernel.org (open list:DEVICE FREQUENCY (DEVFREQ))
-linux-kernel@vger.kernel.org (open list)
-
-> 
-> 
->> And please use the scripts/get_maintainer.pl
->> in order to prevent the missing of the reviewer.
->>
->>>         data->user_frequency = wanted;
->>>         data->valid = true;
->>>         err = update_devfreq(devfreq);
->>>         if (err == 0)
->>>                 err = count;
->>> +out:
->>>         mutex_unlock(&devfreq->lock);
->>>         return err;
->>>  }
->>> -- 
->>>
->>> Regards,
->>> Santosh M G.
->>> Qualcomm Innovation Center
-> 
-> 
-> 
+ drivers/power/supply/bq27xxx_battery.c     | 477 +++++++++++++++--------------
+ drivers/power/supply/bq27xxx_battery_i2c.c |  16 +-
+ include/linux/power/bq27xxx_battery.h      |  10 +-
+ 3 files changed, 267 insertions(+), 236 deletions(-)
 
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.13.2
