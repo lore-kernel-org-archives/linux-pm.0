@@ -1,188 +1,234 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v2 5/5] power: bq24190_charger: Add power_supply_battery_info support
-Date: Mon,  7 Aug 2017 12:54:20 -0700
-Message-ID: <20170807195420.20767-6-liam@networkimprov.net>
-References: <20170807195420.20767-1-liam@networkimprov.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:35573 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751560AbdHGTyp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Aug 2017 15:54:45 -0400
-Received: by mail-pf0-f195.google.com with SMTP id j68so1293556pfc.2
-        for <linux-pm@vger.kernel.org>; Mon, 07 Aug 2017 12:54:45 -0700 (PDT)
-In-Reply-To: <20170807195420.20767-1-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] ACPI / Sleep: Check low power idle constraints for debug only
+Date: Mon,  7 Aug 2017 16:53:57 -0700
+Message-ID: <1502150037-32786-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: rjw@rjwysocki.net, lenb@kernel.org
+Cc: linux-pm@vger.kernel.org, mario.limonciello@dell.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>
 
-From: Liam Breck <kernel@networkimprov.net>
+For SoC to achieve its lowest power platform idle state a set of
+hardware preconditions must be met. These preconditions or constraints
+can be obtained by issuing a device specific method (_DSM) with
+function "1".  Refer to the document provided in the link below.
 
-Set pre-charge and charge-term current, obtained from power_supply_battery_info.
-Add sysfs attributes precharge_current & charge_term_current.
+Here during initialization (from attach() callback of LPS0 device, invoked
+function 1 to get the device constraints. Each enabled constraint is
+stored in a table. The devices in this table are used to check whether
+they were in required minimum state, while entering suspend. This check
+is done from platform freeze wake() callback. If any check fails then it
+prints the failed device information in dmesg.
 
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Liam Breck <kernel@networkimprov.net>
+Also if debug is enabled in acpi/sleep.c, the constraint table and state
+of each device on wake is dumped in dmesg.
+
+Link: http://www.uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/power/supply/bq24190_charger.c | 86 ++++++++++++++++++++++++++++++++++
- 1 file changed, 86 insertions(+)
+ drivers/acpi/sleep.c | 168 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 168 insertions(+)
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index f20d2c68..8a2120cc 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -59,9 +59,13 @@
- #define BQ24190_REG_PCTCC_IPRECHG_MASK		(BIT(7) | BIT(6) | BIT(5) | \
- 						 BIT(4))
- #define BQ24190_REG_PCTCC_IPRECHG_SHIFT		4
-+#define BQ24190_REG_PCTCC_IPRECHG_MIN			128
-+#define BQ24190_REG_PCTCC_IPRECHG_MAX			2048
- #define BQ24190_REG_PCTCC_ITERM_MASK		(BIT(3) | BIT(2) | BIT(1) | \
- 						 BIT(0))
- #define BQ24190_REG_PCTCC_ITERM_SHIFT		0
-+#define BQ24190_REG_PCTCC_ITERM_MIN			128
-+#define BQ24190_REG_PCTCC_ITERM_MAX			2048
+diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+index fa8243c5c062..f23f0473f1d8 100644
+--- a/drivers/acpi/sleep.c
++++ b/drivers/acpi/sleep.c
+@@ -669,6 +669,7 @@ static const struct acpi_device_id lps0_device_ids[] = {
  
- #define BQ24190_REG_CVC		0x04 /* Charge Voltage Control */
- #define BQ24190_REG_CVC_VREG_MASK		(BIT(7) | BIT(6) | BIT(5) | \
-@@ -162,6 +166,8 @@ struct bq24190_dev_info {
- 	bool				initialized;
- 	bool				irq_event;
- 	u16				sys_min;
-+	u16				iprechg;
-+	u16				iterm;
- 	struct mutex			f_reg_lock;
- 	u8				f_reg;
- 	u8				ss_reg;
-@@ -543,6 +549,26 @@ static int bq24190_set_config(struct bq24190_dev_info *bdi)
- 			return ret;
- 	}
+ #define ACPI_LPS0_DSM_UUID	"c4eb40a0-6cd2-11e2-bcfd-0800200c9a66"
  
-+	if (bdi->iprechg) {
-+		v = bdi->iprechg / 128 - 1; // manual section 9.5.1.4, table 11
-+		ret = bq24190_write_mask(bdi, BQ24190_REG_PCTCC,
-+					 BQ24190_REG_PCTCC_IPRECHG_MASK,
-+					 BQ24190_REG_PCTCC_IPRECHG_SHIFT,
-+					 v);
-+		if (ret < 0)
-+			return ret;
++#define ACPI_LPS0_GET_DEVICE_CONSTRAINTS	1
+ #define ACPI_LPS0_SCREEN_OFF	3
+ #define ACPI_LPS0_SCREEN_ON	4
+ #define ACPI_LPS0_ENTRY		5
+@@ -680,6 +681,169 @@ static acpi_handle lps0_device_handle;
+ static guid_t lps0_dsm_guid;
+ static char lps0_dsm_func_mask;
+ 
++/* Device constraint entry structure */
++struct lpi_device_info {
++	char *name;
++	int enabled;
++	union acpi_object *package;
++};
++
++/* Constraint package structure */
++struct lpi_device_constraint {
++	int uid;
++	int min_dstate;
++	int function_states;
++};
++
++struct lpi_constraints {
++	char *name;
++	int min_dstate;
++};
++
++static struct lpi_constraints *lpi_constraints_table;
++static int lpi_constraints_table_size;
++
++static void lpi_device_get_constraints(void)
++{
++	union acpi_object *out_obj;
++	int i;
++
++	out_obj = acpi_evaluate_dsm(lps0_device_handle, &lps0_dsm_guid,
++				    1, ACPI_LPS0_GET_DEVICE_CONSTRAINTS,
++				    NULL);
++
++	acpi_handle_debug(lps0_device_handle, "_DSM function 1 eval %s\n",
++			  out_obj ? "successful" : "failed");
++
++	if (!out_obj)
++		return;
++
++	if (out_obj->type != ACPI_TYPE_PACKAGE)
++		goto free_acpi_buffer;
++
++	lpi_constraints_table = kcalloc(out_obj->package.count,
++					sizeof(*lpi_constraints_table),
++					GFP_KERNEL);
++	if (!lpi_constraints_table)
++		goto free_acpi_buffer;
++
++	pr_debug("LPI: constraints dump begin\n");
++	for (i = 0; i < out_obj->package.count; i++) {
++		union acpi_object *package = &out_obj->package.elements[i];
++		struct lpi_device_info info;
++		int package_count = 0, j;
++
++		if (!package)
++			continue;
++
++		info.enabled = 0;
++		info.package = NULL;
++		info.name = NULL;
++
++		for (j = 0; j < package->package.count; ++j) {
++			union acpi_object *element =
++					&(package->package.elements[j]);
++
++			switch (element->type) {
++			case ACPI_TYPE_INTEGER:
++				info.enabled = element->integer.value;
++				break;
++			case ACPI_TYPE_STRING:
++				info.name = element->string.pointer;
++				break;
++			case ACPI_TYPE_PACKAGE:
++				package_count = element->package.count;
++				info.package = element->package.elements;
++				break;
++			}
++		}
++
++		if (!info.enabled || !info.package || !info.name)
++			continue;
++
++		lpi_constraints_table[lpi_constraints_table_size].name =
++						kstrdup(info.name, GFP_KERNEL);
++		if (!lpi_constraints_table[lpi_constraints_table_size].name)
++			goto free_constraints;
++
++		pr_debug("index:%d Name:%s\n", i, info.name);
++
++		for (j = 0; j < package_count; ++j) {
++			union acpi_object *info_obj = &info.package[j];
++			union acpi_object *cnstr_pkg;
++			union acpi_object *obj;
++			struct lpi_device_constraint dev_info;
++
++			switch (info_obj->type) {
++			case ACPI_TYPE_INTEGER:
++				/* version */
++				break;
++			case ACPI_TYPE_PACKAGE:
++				if (info_obj->package.count < 2)
++					break;
++
++				cnstr_pkg = info_obj->package.elements;
++				obj = &cnstr_pkg[0];
++				dev_info.uid = obj->integer.value;
++				obj = &cnstr_pkg[1];
++				dev_info.min_dstate = obj->integer.value;
++				pr_debug("uid %d min_dstate %d\n",
++					 dev_info.uid,
++					 dev_info.min_dstate);
++				lpi_constraints_table[
++					lpi_constraints_table_size].min_dstate =
++						dev_info.min_dstate;
++				break;
++			}
++		}
++
++		lpi_constraints_table_size++;
 +	}
 +
-+	if (bdi->iterm) {
-+		v = bdi->iterm / 128 - 1; // manual section 9.5.1.4, table 11
-+		ret = bq24190_write_mask(bdi, BQ24190_REG_PCTCC,
-+					 BQ24190_REG_PCTCC_ITERM_MASK,
-+					 BQ24190_REG_PCTCC_ITERM_SHIFT,
-+					 v);
-+		if (ret < 0)
-+			return ret;
++	pr_debug("LPI: constraints dump end\n");
++free_acpi_buffer:
++	ACPI_FREE(out_obj);
++	return;
++
++free_constraints:
++	ACPI_FREE(out_obj);
++	for (i = 0; i < lpi_constraints_table_size; ++i)
++		kfree(lpi_constraints_table[i].name);
++	kfree(lpi_constraints_table);
++	lpi_constraints_table_size = 0;
++}
++
++static void lpi_check_constraints(void)
++{
++	int i;
++
++	for (i = 0; i < lpi_constraints_table_size; ++i) {
++		acpi_handle handle;
++		struct acpi_device *adev;
++		int state, ret;
++
++		if (ACPI_FAILURE(acpi_get_handle(NULL,
++						 lpi_constraints_table[i].name,
++						 &handle)))
++			continue;
++
++		if (acpi_bus_get_device(handle, &adev))
++			continue;
++
++		ret = acpi_device_get_power(adev, &state);
++		if (!ret)
++			pr_debug("LPI: %s required min power state %d, current power state %d, real power state %d\n",
++				 lpi_constraints_table[i].name,
++				 lpi_constraints_table[i].min_dstate,
++				 adev->power.state, state);
++
++		if (adev->flags.power_manageable && adev->power.state <
++					lpi_constraints_table[i].min_dstate)
++			pr_info("LPI: Constraint [%s] not matched\n",
++				lpi_constraints_table[i].name);
 +	}
++}
++
+ static void acpi_sleep_run_lps0_dsm(unsigned int func)
+ {
+ 	union acpi_object *out_obj;
+@@ -723,6 +887,9 @@ static int lps0_device_attach(struct acpi_device *adev,
+ 				  "_DSM function 0 evaluation failed\n");
+ 	}
+ 	ACPI_FREE(out_obj);
++
++	lpi_device_get_constraints();
 +
  	return 0;
  }
  
-@@ -787,6 +813,38 @@ static int bq24190_charger_set_temp_alert_max(struct bq24190_dev_info *bdi,
- 	return bq24190_battery_set_temp_alert_max(bdi, val);
- }
- 
-+static int bq24190_charger_get_precharge(struct bq24190_dev_info *bdi,
-+		union power_supply_propval *val)
-+{
-+	u8 v;
-+	int ret;
-+
-+	ret = bq24190_read_mask(bdi, BQ24190_REG_PCTCC,
-+			BQ24190_REG_PCTCC_IPRECHG_MASK,
-+			BQ24190_REG_PCTCC_IPRECHG_SHIFT, &v);
-+	if (ret < 0)
-+		return ret;
-+
-+	val->intval = ++v * 128 * 1000;
-+	return 0;
-+}
-+
-+static int bq24190_charger_get_charge_term(struct bq24190_dev_info *bdi,
-+		union power_supply_propval *val)
-+{
-+	u8 v;
-+	int ret;
-+
-+	ret = bq24190_read_mask(bdi, BQ24190_REG_PCTCC,
-+			BQ24190_REG_PCTCC_ITERM_MASK,
-+			BQ24190_REG_PCTCC_ITERM_SHIFT, &v);
-+	if (ret < 0)
-+		return ret;
-+
-+	val->intval = ++v * 128 * 1000;
-+	return 0;
-+}
-+
- static int bq24190_charger_get_current(struct bq24190_dev_info *bdi,
- 		union power_supply_propval *val)
- {
-@@ -907,6 +965,12 @@ static int bq24190_charger_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
- 		ret =  bq24190_charger_get_temp_alert_max(bdi, val);
- 		break;
-+	case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
-+		ret = bq24190_charger_get_precharge(bdi, val);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
-+		ret = bq24190_charger_get_charge_term(bdi, val);
-+		break;
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
- 		ret = bq24190_charger_get_current(bdi, val);
- 		break;
-@@ -1006,6 +1070,8 @@ static enum power_supply_property bq24190_charger_properties[] = {
- 	POWER_SUPPLY_PROP_ONLINE,
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
-+	POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
-+	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
-@@ -1485,6 +1551,7 @@ static int bq24190_get_config(struct bq24190_dev_info *bdi)
- {
- #ifdef CONFIG_OF
- 	const char * const s = "ti,system-minimum-microvolt";
-+	struct power_supply_battery_info info = {};
- 	int v;
- 
- 	if (!bdi->dev->of_node)
-@@ -1499,6 +1566,24 @@ static int bq24190_get_config(struct bq24190_dev_info *bdi)
- 			dev_warn(bdi->dev, "invalid value for %s: %u\n", s, v);
+@@ -767,6 +934,7 @@ static void acpi_freeze_wake(void)
+ 	 */
+ 	if (acpi_sci_irq_valid() &&
+ 	    !irqd_is_wakeup_armed(irq_get_irq_data(acpi_sci_irq))) {
++		lpi_check_constraints();
+ 		pm_system_cancel_wakeup();
+ 		s2idle_wakeup = true;
  	}
- 
-+	if (!power_supply_get_battery_info(bdi->charger, &info)) {
-+		v = info.precharge_current_ua / 1000;
-+		if (v >= BQ24190_REG_PCTCC_IPRECHG_MIN
-+		 && v <= BQ24190_REG_PCTCC_IPRECHG_MAX)
-+			bdi->iprechg = v;
-+		else
-+			dev_warn(bdi->dev, "invalid value for battery:precharge-current-microamp: %d\n",
-+				 v);
-+
-+		v = info.charge_term_current_ua / 1000;
-+		if (v >= BQ24190_REG_PCTCC_ITERM_MIN
-+		 && v <= BQ24190_REG_PCTCC_ITERM_MAX)
-+			bdi->iterm = v;
-+		else
-+			dev_warn(bdi->dev, "invalid value for battery:charge-term-current-microamp: %d\n",
-+				 v);
-+	}
-+
- #endif
- 	return 0;
- }
-@@ -1567,6 +1652,7 @@ static int bq24190_probe(struct i2c_client *client,
- 	}
- 
- 	charger_cfg.drv_data = bdi;
-+	charger_cfg.of_node = dev->of_node;
- 	charger_cfg.supplied_to = bq24190_charger_supplied_to;
- 	charger_cfg.num_supplicants = ARRAY_SIZE(bq24190_charger_supplied_to),
- 	bdi->charger = power_supply_register(dev, &bq24190_charger_desc,
 -- 
-2.13.2
+2.11.0
+
