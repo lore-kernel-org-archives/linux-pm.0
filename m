@@ -1,100 +1,94 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: Re: [PATCH 2/3] thermal: core: Reorder
- 'thermal_zone_device_register()' error handling code
-Date: Tue, 8 Aug 2017 14:31:56 +0200
-Message-ID: <cee58c23-2fc4-4f60-2e51-731df97ff8fb@wanadoo.fr>
-References: <cover.1500187753.git.christophe.jaillet@wanadoo.fr>
- <1b2b2a818d356097d5f6092745086b79d43aeafe.1500187753.git.christophe.jaillet@wanadoo.fr>
- <1502182158.4296.21.camel@intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v3 1/4] Documentation: devicetree: add binding for
+ Broadcom STB AVS TMON
+Date: Tue, 08 Aug 2017 20:36:35 +0800
+Message-ID: <1502195795.4296.37.camel@intel.com>
+References: <20170731192633.58747-1-code@mmayer.net>
+         <20170731192633.58747-2-code@mmayer.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp02.smtpout.orange.fr ([80.12.242.124]:39545 "EHLO
-        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751880AbdHHMcH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2017 08:32:07 -0400
-In-Reply-To: <1502182158.4296.21.camel@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170731192633.58747-2-code@mmayer.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Markus Mayer <code@mmayer.net>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
+Cc: Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-Le 08/08/2017 à 10:49, Zhang Rui a écrit :
-> On Sun, 2017-07-16 at 08:59 +0200, Christophe JAILLET wrote:
->> Reorder code in the error handling path in order to match the way
->> resources
->> have been allocated.
->>
->> With this new order, we can avoid a call to 'device_unregister()' if
->> 'thermal_zone_create_device_groups'()' fails. At this point,
->> 'device_register()' has not been called yet.
->>
->> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
->> ---
->>   drivers/thermal/thermal_core.c | 5 +++--
->>   1 file changed, 3 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/thermal/thermal_core.c
->> b/drivers/thermal/thermal_core.c
->> index 9743f3e65eb0..c58714800660 100644
->> --- a/drivers/thermal/thermal_core.c
->> +++ b/drivers/thermal/thermal_core.c
->> @@ -1232,7 +1232,7 @@ thermal_zone_device_register(const char *type,
->> int trips, int mask,
->>   	/* Add nodes that are always present via .groups */
->>   	result = thermal_zone_create_device_groups(tz, mask);
->>   	if (result)
->> -		goto unregister;
->> +		goto remove_id;
->>
-> I agree we should release ida and free tz, like you did in this patch.
->
-> But the problem is in the code below, where device_register() fails,
-> we should free the resources allocated in
-> thermal_zone_create_device_groups() explicitly.
->
-> thanks,
-> rui
-Hi,
+On Mon, 2017-07-31 at 12:26 -0700, Markus Mayer wrote:
+> From: Brian Norris <computersforpeace@gmail.com>
+> 
+> Add binding for Broadcom STB thermal.
+> 
+> Signed-off-by: Brian Norris <computersforpeace@gmail.com>
+> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
 
-Thanks for the review.
+$ file v3-1-4-Documentation-devicetree-add-binding-for-Broadcom-STB-
+AVS-TMON.patch 
+unified diff output, UTF-8 Unicode text
 
+BTW, can you please rebase this patch set on top of v4.13-rc3?
+At least there are some conflicts in MAINTAINER file, introduced in
+-rc2.
 
-I will propose a v2 patch serie with some new helper functions:
-    void destroy_trip_attrs(struct thermal_zone_device *tz)
-    void thermal_zone_destroy_device_groups(struct thermal_zone_device *tz)
-
-'thermal_zone_destroy_device_groups()' will then be called in the error 
-handling path of 'thermal_zone_device_register()', when 
-'device_register()' fails.
-
-
-Would you like me to keep the same patch granularity:
-    - (new patch in the serie) - Add some new helper functions to free 
-resources
-    - add kfree(tz) in the actual error handling path    (despite your 
-comment on patch 1/3, I still think it is needed in thie error handling 
-path)
-    - reorder error handling code
-    - avoid code duplication
-
-Or the 3 last ones can be merged together under a generic "Fix resources 
-release in error paths in thermal_zone_device_register()" ?
-
-CJ
-
->>   	/* A new thermal zone needs to be updated anyway. */
->>   	atomic_set(&tz->need_update, 1);
->> @@ -1294,8 +1294,9 @@ thermal_zone_device_register(const char *type,
->> int trips, int mask,
->>   	return tz;
->>   
->>   unregister:
->> -	ida_simple_remove(&thermal_tz_ida, tz->id);
->>   	device_unregister(&tz->device);
->> +remove_id:
->> +	ida_simple_remove(&thermal_tz_ida, tz->id);
->>   	kfree(tz);
->>   	return ERR_PTR(result);
->>   }
+thanks,
+rui
+> ---
+>  .../devicetree/bindings/thermal/brcm,avs-tmon.txt    | 20
+> ++++++++++++++++++++
+>  MAINTAINERS                                          |  8 ++++++++
+>  2 files changed, 28 insertions(+)
+>  create mode 100644
+> Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/brcm,avs-
+> tmon.txt b/Documentation/devicetree/bindings/thermal/brcm,avs-
+> tmon.txt
+> new file mode 100644
+> index 0000000..9d43553
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
+> @@ -0,0 +1,20 @@
+> +* Broadcom STB thermal management
+> +
+> +Thermal management core, provided by the AVS TMON hardware block.
+> +
+> +Required properties:
+> +- compatible: must be "brcm,avs-tmon" and/or "brcm,avs-tmon-bcm7445"
+> +- reg: address range for the AVS TMON registers
+> +- interrupts: temperature monitor interrupt, for high/low threshold
+> triggers
+> +- interrupt-names: should be "tmon"
+> +- interrupt-parent: the parent interrupt controller
+> +
+> +Example:
+> +
+> +	thermal@f04d1500 {
+> +		compatible = "brcm,avs-tmon-bcm7445", "brcm,avs-
+> tmon";
+> +		reg = <0xf04d1500 0x28>;
+> +		interrupts = <0x6>;
+> +		interrupt-names = "tmon";
+> +		interrupt-parent = <&avs_host_l2_intc>;
+> +	};
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 205d397..a683d4c 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -2928,6 +2928,14 @@ S:	Maintained
+>  F:	Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-
+> cpu-freq.txt
+>  F:	drivers/cpufreq/brcmstb*
+>  
+> +BROADCOM STB AVS TMON DRIVER
+> +M:	Markus Mayer <mmayer@broadcom.com>
+> +M:	bcm-kernel-feedback-list@broadcom.com
+> +L:	linux-pm@vger.kernel.org
+> +S:	Maintained
+> +F:	Documentation/devicetree/bindings/thermal/brcm,avs-
+> tmon.txt
+> +F:	drivers/thermal/broadcom/brcmstb*
+> +
+>  BROADCOM SPECIFIC AMBA DRIVER (BCMA)
+>  M:	Rafał Miłecki <zajec5@gmail.com>
+>  L:	linux-wireless@vger.kernel.org
