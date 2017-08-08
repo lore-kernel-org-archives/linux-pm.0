@@ -1,139 +1,89 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/2] ACPI/thermal: support for thermal zone description
-Date: Tue, 08 Aug 2017 16:23:23 +0800
-Message-ID: <1502180603.4296.15.camel@intel.com>
-References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
-         <1500054535-975-3-git-send-email-pprakash@codeaurora.org>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH 15/18] power: supply: bq24190_charger: Get
+ input_current_limit from our supplier
+Date: Tue, 8 Aug 2017 01:24:50 -0700
+Message-ID: <CAKvHMgQiEBPpWS9xQQbW94Pz27wZ7ND-tLOCvmkURK0hg2Ptmw@mail.gmail.com>
+References: <20170806123555.5124-1-hdegoede@redhat.com> <20170806123555.5124-16-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:62481 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750818AbdHHIX2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Aug 2017 04:23:28 -0400
-In-Reply-To: <1500054535-975-3-git-send-email-pprakash@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <20170806123555.5124-16-hdegoede@redhat.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, platform-driver-x86@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, linux-i2c@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
 List-Id: linux-pm@vger.kernel.org
-To: Prashanth Prakash <pprakash@codeaurora.org>, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: edubezval@gmail.com
 
-On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
-> Per ACPI 6.2 spec, platforms can optionally add a string(_STR)
-> object within each thermal zone package which provides a user
-> friendly name/description.
-> 
-> Add support to parse the string object, which will be exposed
-> to userspace by thermal framework.
-> 
+Hallo Hans :-)
 
-is there any real request for this?
 
-_STR is a generic control method for all the ACPI devices.
-Thus I'm wondering, if really needed, should we expose this in acpi bus
-instead?
-
-thanks,
-rui
-
-> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
+On Sun, Aug 6, 2017 at 5:35 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+> On some devices the USB Type-C port power (USB PD 2.0) negotiation is
+> done by a separate port-controller IC, while the current limit is
+> controlled through another (charger) IC.
+>
+> It has been decided to model this by modelling the external Type-C
+> power brick (adapter/charger) as a power-supply class device which
+> supplies the charger-IC, with its voltage-now and current-max representing
+> the negotiated voltage and max current draw.
+>
+> This commit adds support for this to the bq24190_charger driver by calling
+> power_supply_set_input_current_limit_from_supplier helper if the
+> "input-current-limit-from-supplier" device-property is set.
+>
+> Note this replaces the functionality to get the current-limit from an
+> extcon device, which will be removed in a follow-up commit.
+>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 > ---
->  drivers/acpi/thermal.c | 38 ++++++++++++++++++++++++++++++++++++++
->  1 file changed, 38 insertions(+)
-> 
-> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> index 1d0417b..6ab6480 100644
-> --- a/drivers/acpi/thermal.c
-> +++ b/drivers/acpi/thermal.c
-> @@ -41,6 +41,7 @@
->  #include <linux/acpi.h>
->  #include <linux/workqueue.h>
->  #include <linux/uaccess.h>
-> +#include <linux/nls.h>
->  
->  #define PREFIX "ACPI: "
->  
-> @@ -188,6 +189,7 @@ struct acpi_thermal {
->  	int tz_enabled;
->  	int kelvin_offset;
->  	struct work_struct thermal_check_work;
-> +	char desc[THERMAL_MAX_DESC_STR_LEN];
->  };
->  
->  /* ---------------------------------------------------------------
-> -----------
-> @@ -543,6 +545,15 @@ static int thermal_get_temp(struct
-> thermal_zone_device *thermal, int *temp)
->  	return 0;
->  }
->  
-> +static int thermal_get_desc(struct thermal_zone_device *thermal,
-> char *desc,
-> +			int size)
+>  drivers/power/supply/bq24190_charger.c | 14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+>
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> index d78e2c6dc127..1f6424f0772f 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -161,6 +161,7 @@ struct bq24190_dev_info {
+>         char                            model_name[I2C_NAME_SIZE];
+>         bool                            initialized;
+>         bool                            irq_event;
+> +       bool                            input_current_limit_from_supplier;
+>         struct mutex                    f_reg_lock;
+>         u8                              f_reg;
+>         u8                              ss_reg;
+> @@ -1137,6 +1138,14 @@ static int bq24190_charger_property_is_writeable(struct power_supply *psy,
+>         return ret;
+>  }
+>
+> +static void bq24190_charger_external_power_changed(struct power_supply *psy)
 > +{
-> +	struct acpi_thermal *tz = thermal->devdata;
+> +       struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
 > +
-> +	strlcpy(desc, tz->desc, size);
-> +	return 0;
+> +       if (bdi->input_current_limit_from_supplier)
+> +               power_supply_set_input_current_limit_from_supplier(psy);
 > +}
 > +
->  static int thermal_get_mode(struct thermal_zone_device *thermal,
->  				enum thermal_device_mode *mode)
->  {
-> @@ -880,6 +891,7 @@ static int acpi_thermal_cooling_device_cb(struct
-> thermal_zone_device *thermal,
->  	.get_crit_temp = thermal_get_crit_temp,
->  	.get_trend = thermal_get_trend,
->  	.notify = thermal_notify,
-> +	.get_desc = thermal_get_desc,
->  };
->  
->  static int acpi_thermal_register_thermal_zone(struct acpi_thermal
-> *tz)
-> @@ -1014,6 +1026,29 @@ static void
-> acpi_thermal_aml_dependency_fix(struct acpi_thermal *tz)
->  	acpi_evaluate_integer(handle, "_TMP", NULL, &value);
->  }
->  
-> +static void acpi_thermal_get_desc(struct acpi_thermal *tz)
-> +{
-> +	acpi_handle handle = tz->device->handle;
-> +	acpi_status status;
-> +	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
-> +
-> +	status = acpi_evaluate_object(handle, "_STR", NULL,
-> &buffer);
-> +
-> +	if (ACPI_FAILURE(status))
-> +		strlcpy(tz->desc, "<not supported>",
-> THERMAL_MAX_DESC_STR_LEN);
-> +	else {
-> +		union acpi_object *str;
-> +		int result;
-> +
-> +		str = buffer.pointer;
-> +		result = utf16s_to_utf8s((wchar_t *)str-
-> >string.pointer,
-> +					str->string.length,
-> UTF16_LITTLE_ENDIAN,
-> +					tz->desc,
-> THERMAL_MAX_DESC_STR_LEN-1);
-> +		tz->desc[result] = 0;
-> +		kfree(buffer.pointer);
-> +	}
-> +}
-> +
->  static int acpi_thermal_get_info(struct acpi_thermal *tz)
->  {
->  	int result = 0;
-> @@ -1045,6 +1080,9 @@ static int acpi_thermal_get_info(struct
-> acpi_thermal *tz)
->  	else
->  		acpi_thermal_get_polling_frequency(tz);
->  
-> +	/* Get thermal zone description [_STR] (optional) */
-> +	acpi_thermal_get_desc(tz);
-> +
->  	return 0;
->  }
->  
+>  static enum power_supply_property bq24190_charger_properties[] = {
+>         POWER_SUPPLY_PROP_CHARGE_TYPE,
+>         POWER_SUPPLY_PROP_HEALTH,
+> @@ -1165,6 +1174,7 @@ static const struct power_supply_desc bq24190_charger_desc = {
+>         .get_property           = bq24190_charger_get_property,
+>         .set_property           = bq24190_charger_set_property,
+>         .property_is_writeable  = bq24190_charger_property_is_writeable,
+> +       .external_power_changed = bq24190_charger_external_power_changed,
+>  };
+>
+>  /* Battery power supply property routines */
+> @@ -1654,6 +1664,10 @@ static int bq24190_probe(struct i2c_client *client,
+>                 return -EINVAL;
+>         }
+>
+> +       bdi->input_current_limit_from_supplier =
+> +               device_property_read_bool(dev,
+> +                                         "input-current-limit-from-supplier");
+
+Since this invokes the new power_supply_class function, should this be
+a devicetree property, not just a driver-to-driver switch? If so, the
+property name should probably be defined in
+Doc...bindings/power/supply/power_supply.txt.
+
+My latest bq24190 series has a new DT doc, which should ref a new DT property.
