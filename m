@@ -1,55 +1,103 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH] ACPI / Sleep: Check low power idle constraints for debug
- only
-Date: Tue, 8 Aug 2017 09:51:20 +0200
-Message-ID: <20170808075120.GA9258@wunner.de>
-References: <1502150037-32786-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal/drivers/hisi: Remove confusing error message
+Date: Tue, 08 Aug 2017 15:55:56 +0800
+Message-ID: <1502178956.4296.7.camel@intel.com>
+References: <1499439833-32531-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1502150037-32786-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: rjw@rjwysocki.net, lenb@kernel.org, linux-pm@vger.kernel.org, mario.limonciello@dell.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga06.intel.com ([134.134.136.31]:14017 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750776AbdHHH4B (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Aug 2017 03:56:01 -0400
+In-Reply-To: <1499439833-32531-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, edubezval@gmail.com
+Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, kong.kongxinwei@hisilicon.com, leo.yan@linaro.org
 
-On Mon, Aug 07, 2017 at 04:53:57PM -0700, Srinivas Pandruvada wrote:
-> +	out_obj = acpi_evaluate_dsm(lps0_device_handle, &lps0_dsm_guid,
-> +				    1, ACPI_LPS0_GET_DEVICE_CONSTRAINTS,
-> +				    NULL);
+On Fri, 2017-07-07 at 17:03 +0200, Daniel Lezcano wrote:
+> The sensor id is unknown at init time and we use all id in the
+> authorized
+> MAX_SENSORS interval to register the sensor. On this SoC there is one
+> thermal-zone with one sensor on it. No need to spit on the console
+> everytime we
+> failed to register thermal sensors, information which is deliberaly
+> known as it
+> is part of the discovery process.
+> 
+>  hisi_thermal f7030700.tsensor: failed to register sensor id 0: -19
+>  hisi_thermal f7030700.tsensor: failed to register thermal sensor:
+> -19
+>  hisi_thermal f7030700.tsensor: failed to register sensor id 1: -19
+>  hisi_thermal f7030700.tsensor: failed to register thermal sensor:
+> -19
+>  hisi_thermal f7030700.tsensor: failed to register sensor id 3: -19
+>  hisi_thermal f7030700.tsensor: failed to register thermal sensor:
+> -19
+> 
+> Remove the error messages.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/thermal/hisi_thermal.c | 12 ++++++------
+>  1 file changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/thermal/hisi_thermal.c
+> b/drivers/thermal/hisi_thermal.c
+> index f642966..2cc98c6 100644
+> --- a/drivers/thermal/hisi_thermal.c
+> +++ b/drivers/thermal/hisi_thermal.c
+> @@ -187,6 +187,9 @@ static int hisi_thermal_get_temp(void *_sensor,
+> int *temp)
+>  
+>  	dev_dbg(&data->pdev->dev, "id=%d, irq=%d, temp=%d,
+> thres=%d\n",
+>  		sensor->id, data->irq_enabled, *temp, sensor-
+> >thres_temp);
 > +
-> +	acpi_handle_debug(lps0_device_handle, "_DSM function 1 eval %s\n",
-> +			  out_obj ? "successful" : "failed");
-> +
-> +	if (!out_obj)
-> +		return;
-> +
-> +	if (out_obj->type != ACPI_TYPE_PACKAGE)
-> +		goto free_acpi_buffer;
+> +	printk("id=%d, irq=%d, temp=%d, thres=%d\n",
+> +		sensor->id, data->irq_enabled, *temp, sensor-
+> >thres_temp);
 
-Using acpi_evaluate_dsm_typed() would avoid having to check the type here.
+what's this printk for?
 
-
-> +	for (i = 0; i < out_obj->package.count; i++) {
-> +		union acpi_object *package = &out_obj->package.elements[i];
-> +		struct lpi_device_info info;
-> +		int package_count = 0, j;
-> +
-> +		if (!package)
+>  	/*
+>  	 * Bind irq to sensor for two cases:
+>  	 *   Reenable alarm IRQ if temperature below threshold;
+> @@ -260,8 +263,6 @@ static int hisi_thermal_register_sensor(struct
+> platform_device *pdev,
+>  	if (IS_ERR(sensor->tzd)) {
+>  		ret = PTR_ERR(sensor->tzd);
+>  		sensor->tzd = NULL;
+> -		dev_err(&pdev->dev, "failed to register sensor id
+> %d: %d\n",
+> -			sensor->id, ret);
+>  		return ret;
+>  	}
+>  
+> @@ -352,10 +353,9 @@ static int hisi_thermal_probe(struct
+> platform_device *pdev)
+>  		ret = hisi_thermal_register_sensor(pdev, data,
+>  						   &data-
+> >sensors[i], i);
+>  		if (ret)
+> -			dev_err(&pdev->dev,
+> -				"failed to register thermal sensor:
+> %d\n", ret);
+> -		else
+> -			hisi_thermal_toggle_sensor(&data-
+> >sensors[i], true);
 > +			continue;
 > +
-> +		info.enabled = 0;
-> +		info.package = NULL;
-> +		info.name = NULL;
+> +		hisi_thermal_toggle_sensor(&data->sensors[i], true);
+>  	}
+>  
+>  	return 0;
 
-Using a declaration such as
+With these removed, is there any other information in dmesg that
+suggests this failure?
 
-		struct lpi_device_info info = { };
-
-would avoid having to zero the struct elements here.
-
-
-Thanks,
-
-Lukas
+thanks,
+rui
