@@ -1,88 +1,126 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2 3/5] thermal: imx: Add support for reading OCOTP
- through nvmem
-Date: Tue, 08 Aug 2017 20:58:20 +0800
-Message-ID: <1502197100.4296.45.camel@intel.com>
-References: <cover.1500041281.git.leonard.crestez@nxp.com>
-         <faf9c3e5f970b9609073c4c191a7af03d647ea51.1500041281.git.leonard.crestez@nxp.com>
-         <20170725080835.GD20064@dragon> <1502176915.4296.1.camel@intel.com>
-         <26407dd5-a9b1-67c0-c4ab-d97fa0b88b79@linaro.org>
-         <1502192287.24350.9.camel@nxp.com>
-         <9732c524-fbdc-d1be-cd03-089dbb2266c4@linaro.org>
+Subject: Re: [PATCH 2/3] thermal: core: Reorder
+ 'thermal_zone_device_register()' error handling code
+Date: Tue, 08 Aug 2017 21:05:41 +0800
+Message-ID: <1502197541.4296.51.camel@intel.com>
+References: <cover.1500187753.git.christophe.jaillet@wanadoo.fr>
+         <1b2b2a818d356097d5f6092745086b79d43aeafe.1500187753.git.christophe.jaillet@wanadoo.fr>
+         <1502182158.4296.21.camel@intel.com>
+         <cee58c23-2fc4-4f60-2e51-731df97ff8fb@wanadoo.fr>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <9732c524-fbdc-d1be-cd03-089dbb2266c4@linaro.org>
+In-Reply-To: <cee58c23-2fc4-4f60-2e51-731df97ff8fb@wanadoo.fr>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Leonard Crestez <leonard.crestez@nxp.com>, Shawn Guo <shawnguo@kernel.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>, Dong Aisheng <aisheng.dong@nxp.com>, Bai Ping <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2017-08-08 at 12:44 +0100, Srinivas Kandagatla wrote:
+On Tue, 2017-08-08 at 14:31 +0200, Christophe JAILLET wrote:
+> Le 08/08/2017 à 10:49, Zhang Rui a écrit :
 > > 
-
-
-> 
-> On 08/08/17 12:38, Leonard Crestez wrote:
+> > On Sun, 2017-07-16 at 08:59 +0200, Christophe JAILLET wrote:
+> > > 
+> > > Reorder code in the error handling path in order to match the way
+> > > resources
+> > > have been allocated.
+> > > 
+> > > With this new order, we can avoid a call to 'device_unregister()'
+> > > if
+> > > 'thermal_zone_create_device_groups'()' fails. At this point,
+> > > 'device_register()' has not been called yet.
+> > > 
+> > > Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> > > ---
+> > >   drivers/thermal/thermal_core.c | 5 +++--
+> > >   1 file changed, 3 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/drivers/thermal/thermal_core.c
+> > > b/drivers/thermal/thermal_core.c
+> > > index 9743f3e65eb0..c58714800660 100644
+> > > --- a/drivers/thermal/thermal_core.c
+> > > +++ b/drivers/thermal/thermal_core.c
+> > > @@ -1232,7 +1232,7 @@ thermal_zone_device_register(const char
+> > > *type,
+> > > int trips, int mask,
+> > >   	/* Add nodes that are always present via .groups */
+> > >   	result = thermal_zone_create_device_groups(tz, mask);
+> > >   	if (result)
+> > > -		goto unregister;
+> > > +		goto remove_id;
+> > > 
+> > I agree we should release ida and free tz, like you did in this
+> > patch.
 > > 
-> > On Tue, 2017-08-08 at 12:00 +0100, Srinivas Kandagatla wrote:
-> > > 
-> > > On 08/08/17 08:21, Zhang Rui wrote:
-> > > > 
-> > > > On Tue, 2017-07-25 at 16:08 +0800, Shawn Guo wrote:
-> > > > > 
-> > > > > On Fri, Jul 14, 2017 at 05:11:08PM +0300, Leonard Crestez
-> > > > > wrote:
-> > > 
-> > > > 
-> > > > > 
-> > > > > > 
-> > > > > > On newer imx SOCs accessing OCOTP directly is wrong because
-> > > > > > the
-> > > > > > ocotp clock
-> > > > > > needs to be enabled first. Add support for reading those
-> > > > > > same
-> > > > > > values through
-> > > > > > the nvmem API instead.
-> > > > > > 
-> > > > > > The older path is preserved for compatibility with older
-> > > > > > dts and
-> > > > > > because it
-> > > > > > works correctly on imx6qdl chips.
-> > > > > > 
-> > > > > > Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-> > > > > Acked-by: Shawn Guo <shawnguo@kernel.org>
-> > > 
-> > > > 
-> > > > I'm okay with the thermal change.
-> > > > We still need ACK for the nvmem changes in this patch series.
-> > > 
-> > > NVMEM changes are already sent to Greg K H with other patches
-> > > (https://lkml.org/lkml/2017/7/26/164), should appear in next.
-> > These patches have a compile-time dependency on each other.
-> > Wouldn't it
-> > make more sense for the whole series to go through a single
-> > maintainer
-> > tree, atomically? Most of the changes are in driver/thermal.
-> I was expecting that the nvmem change go in as fix in a rc release
-> so 
-> that you could apply the other patches after that.
+> > But the problem is in the code below, where device_register()
+> > fails,
+> > we should free the resources allocated in
+> > thermal_zone_create_device_groups() explicitly.
+> > 
+> > thanks,
+> > rui
+> Hi,
 > 
-> Let me ping Greg about this!!
+> Thanks for the review.
+> 
+> 
+> I will propose a v2 patch serie with some new helper functions:
+>     void destroy_trip_attrs(struct thermal_zone_device *tz)
+>     void thermal_zone_destroy_device_groups(struct
+> thermal_zone_device *tz)
+> 
+> 'thermal_zone_destroy_device_groups()' will then be called in the
+> error 
+> handling path of 'thermal_zone_device_register()', when 
+> 'device_register()' fails.
+> 
+> 
+> Would you like me to keep the same patch granularity:
+>     - (new patch in the serie) - Add some new helper functions to
+> free 
+> resources
 
-As Shawn is okay with patch 4/5 and 5/5, I guess I can queue patch 1/5,
-3/5, 4/5, 5/5 for 4.14-rc1, if the nvmem patch can catch 4.13, or I can
-queue the full patch set for 4.14, with Srinivas' ACK.
+agreed.
+
+>     - add kfree(tz) in the actual error handling path    (despite
+> your 
+> comment on patch 1/3, I still think it is needed in thie error
+> handling 
+> path)
+>     - reorder error handling code
+>     - avoid code duplication
+
+we don't need to invoke kfree(tz) after device unregistered.
+so if you want to share error handling code, there should be two error
+handling paths, one before device registered, which needs kfree(tz),
+and one after device registered.
 
 thanks,
 rui
+
+> 
+> Or the 3 last ones can be merged together under a generic "Fix
+> resources 
+> release in error paths in thermal_zone_device_register()" ?
+> 
+> CJ
+> 
 > > 
-> > I'm really very confused about how series that touch multiple areas
-> > are
-> > applied. It seems to be a mostly ad-hoc process.
-> > 
-> > --
-> > Regards,
-> > Leonard
-> > 
+> > > 
+> > >   	/* A new thermal zone needs to be updated anyway. */
+> > >   	atomic_set(&tz->need_update, 1);
+> > > @@ -1294,8 +1294,9 @@ thermal_zone_device_register(const char
+> > > *type,
+> > > int trips, int mask,
+> > >   	return tz;
+> > >   
+> > >   unregister:
+> > > -	ida_simple_remove(&thermal_tz_ida, tz->id);
+> > >   	device_unregister(&tz->device);
+> > > +remove_id:
+> > > +	ida_simple_remove(&thermal_tz_ida, tz->id);
+> > >   	kfree(tz);
+> > >   	return ERR_PTR(result);
+> > >   }
+> 
