@@ -1,88 +1,46 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 10/18] staging: typec: fusb302: Add support for
- fcs,vbus-regulator-name device-property
-Date: Tue, 8 Aug 2017 22:53:45 +0200
-Message-ID: <67c2ed8f-f89d-7c00-3e51-0b5f1e38442e@redhat.com>
-References: <5f3d7cfa-c993-0cda-fae6-a975f7d4ca1c@redhat.com>
- <20170808093947.ezczjb6stdgek4hy@sirena.org.uk>
- <0b75c318-0f71-c536-7c7f-9ba16b215690@redhat.com>
- <20170808144217.c2fm25uge75p4lo2@sirena.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20170808144217.c2fm25uge75p4lo2@sirena.org.uk>
-Content-Language: en-US
-Sender: linux-i2c-owner@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
-Cc: Guenter Roeck <linux@roeck-us.net>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Liam Girdwood <lgirdwood@gmail.com>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
+From: Doug Smythies <doug.smythies@gmail.com>
+Subject: [PATCH] cpufreq: intel_pstate: report correct CPU frequencies during trace.
+Date: Tue,  8 Aug 2017 14:05:12 -0700
+Message-ID: <1502226312-5451-1-git-send-email-dsmythies@telus.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:37190 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752280AbdHHVFf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2017 17:05:35 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: srinivas.pandruvada@linux.intel.com, rafael@kernel.org, len.brown@intel.com
+Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-<resend with the CC really added back>
+The intel_pstate cpu frequency scaling driver has always
+calculated CPU frequency incorrectly. Recent changes have
+eliminted most of the issues, however the frequency reported
+in the trace buffer, if used, is incorrect.
 
-Hi,
+It remains desireable that cpu->pstate.scaling still be a nice
+round number for things such as when setting max and min frequencies.
+So the proposal is to just fix the reported frequency in the trace data.
 
-On 08/08/2017 04:42 PM, Mark Brown wrote:
-> On Tue, Aug 08, 2017 at 02:56:46PM +0100, Hans de Goede wrote:
->> Hi,
-> 
-> Please don't take things off-list unless there is a really strong reason
-> to do so.  Sending things to the list ensures that everyone gets a
-> chance to read and comment on things.
+Fixes what remains of: https://bugzilla.kernel.org/show_bug.cgi?id=96521
 
-Sorry, that was unintentional I probably accidentally hit reply instead
-of reply-to-all.
+Signed-off-by: Doug Smythies <dsmythies@telus.net>
+---
+ drivers/cpufreq/intel_pstate.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-I've re-added the lists to the Cc.
-
->> On 08/08/2017 10:39 AM, Mark Brown wrote:
->>> On Mon, Aug 07, 2017 at 09:20:05PM +0200, Hans de Goede wrote:
-> 
->>> Why not?  This is just really standard usage of platform data.
-> 
->> Right, but in general in most cases we are trying to get rid of
->> platform data (where possible). So introducing new platform_data
->> is not going to be popular, but I agree that it likely is the
->> best solution here.
-> 
-> No, we aren't.  The majority of architectures are still platform data
-> only and x86 as you're finding uses it extensively along with ACPI.
-
-Ok.
-
->>>> Alternatively the entry could additionally contain a provider_supply_name
->>>> so that we can make arbitrary consumer-dev-name + consumer-supply-name
->>>> provider-dev-name + provider-supply-name matches. That would probably
->>>> be more flexible then requiring the supply name to match.
-> 
->>> I'm sorry but I can't follow what you mean here.  What do you mean by
->>> "provider_supply_name"?
-> 
->> The current "const char *supply" in regulator_map is the supply name
->> passed to regulator_get, so the rdev_get_name requested by the consumer
->> (assuming no mapping is in place)
-> 
-> The name on the parent is *NOT* something anything else should
-> reference, it's just some internal documentation intended exclusively
-> for human consmption and can be overridden by the platforms.  It should
-> never be referenced by anything outside the device.
-> 
->> One regulator parent-device can register multiple regulator names, iow
->> multiple supplies, basically what I want to do is have the map
->> (when not using the regulator pointer) match the following 2 pairs:
-> 
->> dev_name + supply
-> 
->> regulator_parent_dev_name + rdev_get_name
-> 
-> Have your platform register identifiers that are useful within your
-> platform, don't rely on the drivers.
-
-Ok, I need to think a bit about this. I think I've enough info to
-come up with a new patch-set not introducing the fcs,vbus-regulator-name
-device-property ugliness. But this is a side project and I'm rather busy with $dayjob
-atm, so it may take a while for me to come up with a new patch.
-
-Regards,
-
-Hans
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 0566455..65ee4fc 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1613,8 +1613,7 @@ static inline bool intel_pstate_sample(struct cpudata *cpu, u64 time)
+ 
+ static inline int32_t get_avg_frequency(struct cpudata *cpu)
+ {
+-	return mul_ext_fp(cpu->sample.core_avg_perf,
+-			  cpu->pstate.max_pstate_physical * cpu->pstate.scaling);
++	return mul_ext_fp(cpu->sample.core_avg_perf, cpu_khz);
+ }
+ 
+ static inline int32_t get_avg_pstate(struct cpudata *cpu)
+-- 
+2.7.4
