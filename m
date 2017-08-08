@@ -1,61 +1,70 @@
-From: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3 0/4] add support of SCPSYS power domain for MediaTek MT7622
-Date: Tue, 8 Aug 2017 13:41:12 +0200
-Message-ID: <CAPDyKFpDyhPc=T8SqWdh-mm4kOqFstHNMuRbL_qP04rynoLcsw@mail.gmail.com>
-References: <cover.1502090240.git.sean.wang@mediatek.com>
+From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Subject: Re: [PATCH v2 3/5] thermal: imx: Add support for reading OCOTP
+ through nvmem
+Date: Tue, 8 Aug 2017 12:44:45 +0100
+Message-ID: <9732c524-fbdc-d1be-cd03-089dbb2266c4@linaro.org>
+References: <cover.1500041281.git.leonard.crestez@nxp.com>
+ <faf9c3e5f970b9609073c4c191a7af03d647ea51.1500041281.git.leonard.crestez@nxp.com>
+ <20170725080835.GD20064@dragon> <1502176915.4296.1.camel@intel.com>
+ <26407dd5-a9b1-67c0-c4ab-d97fa0b88b79@linaro.org>
+ <1502192287.24350.9.camel@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <cover.1502090240.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f49.google.com ([74.125.82.49]:34886 "EHLO
+        mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751927AbdHHLos (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2017 07:44:48 -0400
+Received: by mail-wm0-f49.google.com with SMTP id m85so4988006wma.0
+        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2017 04:44:48 -0700 (PDT)
+In-Reply-To: <1502192287.24350.9.camel@nxp.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>, Zhang Rui <rui.zhang@intel.com>, Shawn Guo <shawnguo@kernel.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <LW@KARO-electronics.de>, Dong Aisheng <aisheng.dong@nxp.com>, Bai Ping <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 7 August 2017 at 09:24,  <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org> wrote:
-> From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
->
-> Changes since v2:
-> - reduce code duplication of scpsys_probe across all SoCs
->
-> Changes since v1:
-> - rebase to Linux v4.13-rc1
->
-> There are four power domains on MediaTek MT7622 SoC which are respectively
-> ETHSYS for Ethernet including extra embedded switch, HIF0SYS for PCI-E and
-> SATA, HIF1SYS for USB and WBSYS for WIFI and Bluetooth.
->
-> Those functions could be selectively powered gated when the corresponding
-> function is no longer to use in order to reach more minimal power
-> dissipation through the patch series introduced here.
->
-> Chen Zhong (1):
->   soc: mediatek: add header files required for MT7622 SCPSYS dt-binding
->
-> Sean Wang (3):
->   dt-bindings: soc: update the binding document for SCPSYS on MediaTek
->     MT7622 SoC
->   soc: mediatek: reduce code duplication of scpsys_probe across all SoCs
->   soc: mediatek: add SCPSYS power domain driver for MediaTek MT7622 SoC
->
->  .../devicetree/bindings/soc/mediatek/scpsys.txt    |   3 +
->  drivers/soc/mediatek/mtk-scpsys.c                  | 247 ++++++++++++---------
->  include/dt-bindings/power/mt7622-power.h           |  22 ++
->  include/linux/soc/mediatek/infracfg.h              |   7 +
->  4 files changed, 179 insertions(+), 100 deletions(-)
->  create mode 100644 include/dt-bindings/power/mt7622-power.h
->
+
+
+On 08/08/17 12:38, Leonard Crestez wrote:
+> On Tue, 2017-08-08 at 12:00 +0100, Srinivas Kandagatla wrote:
+>> On 08/08/17 08:21, Zhang Rui wrote:
+>>> On Tue, 2017-07-25 at 16:08 +0800, Shawn Guo wrote:
+>>>> On Fri, Jul 14, 2017 at 05:11:08PM +0300, Leonard Crestez wrote:
+> 
+>>>>> On newer imx SOCs accessing OCOTP directly is wrong because the
+>>>>> ocotp clock
+>>>>> needs to be enabled first. Add support for reading those same
+>>>>> values through
+>>>>> the nvmem API instead.
+>>>>>
+>>>>> The older path is preserved for compatibility with older dts and
+>>>>> because it
+>>>>> works correctly on imx6qdl chips.
+>>>>>
+>>>>> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+>>>> Acked-by: Shawn Guo <shawnguo@kernel.org>
+> 
+>>> I'm okay with the thermal change.
+>>> We still need ACK for the nvmem changes in this patch series.
+> 
+>> NVMEM changes are already sent to Greg K H with other patches
+>> (https://lkml.org/lkml/2017/7/26/164), should appear in next.
+> 
+> These patches have a compile-time dependency on each other. Wouldn't it
+> make more sense for the whole series to go through a single maintainer
+> tree, atomically? Most of the changes are in driver/thermal.
+
+I was expecting that the nvmem change go in as fix in a rc release so 
+that you could apply the other patches after that.
+
+Let me ping Greg about this!!
+> 
+> I'm really very confused about how series that touch multiple areas are
+> applied. It seems to be a mostly ad-hoc process.
+> 
 > --
-> 2.7.4
->
-
-Looks good to me! Feel free to add:
-
-Reviewed-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-
-Kind regards
-Uffe
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Regards,
+> Leonard
+> 
