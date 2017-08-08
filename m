@@ -1,70 +1,76 @@
-From: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
-Subject: Re: [PATCH v2 3/5] thermal: imx: Add support for reading OCOTP
- through nvmem
-Date: Tue, 8 Aug 2017 12:44:45 +0100
-Message-ID: <9732c524-fbdc-d1be-cd03-089dbb2266c4@linaro.org>
-References: <cover.1500041281.git.leonard.crestez@nxp.com>
- <faf9c3e5f970b9609073c4c191a7af03d647ea51.1500041281.git.leonard.crestez@nxp.com>
- <20170725080835.GD20064@dragon> <1502176915.4296.1.camel@intel.com>
- <26407dd5-a9b1-67c0-c4ab-d97fa0b88b79@linaro.org>
- <1502192287.24350.9.camel@nxp.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v3 0/4] thermal: add brcmstb AVS TMON driver
+Date: Tue, 08 Aug 2017 20:26:57 +0800
+Message-ID: <1502195217.4296.33.camel@intel.com>
+References: <20170731192633.58747-1-code@mmayer.net>
+         <a29d8aef-8d24-9e63-c078-48c3a1a6fccf@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f49.google.com ([74.125.82.49]:34886 "EHLO
-        mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751927AbdHHLos (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2017 07:44:48 -0400
-Received: by mail-wm0-f49.google.com with SMTP id m85so4988006wma.0
-        for <linux-pm@vger.kernel.org>; Tue, 08 Aug 2017 04:44:48 -0700 (PDT)
-In-Reply-To: <1502192287.24350.9.camel@nxp.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <a29d8aef-8d24-9e63-c078-48c3a1a6fccf@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>, Markus Mayer <code@mmayer.net>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
+Cc: Markus Mayer <mmayer@broadcom.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>, Zhang Rui <rui.zhang@intel.com>, Shawn Guo <shawnguo@kernel.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <LW@KARO-electronics.de>, Dong Aisheng <aisheng.dong@nxp.com>, Bai Ping <ping.bai@nxp.com>, Anson Huang <Anson.Huang@nxp.com>, Octavian Purdila <octavian.purdila@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On Mon, 2017-08-07 at 10:52 -0700, Florian Fainelli wrote:
+> On 07/31/2017 12:26 PM, Markus Mayer wrote:
+> > 
+> > From: Markus Mayer <mmayer@broadcom.com>
+> > 
+> > This series adds the brcmstb AVS TMON driver.
+> > 
+> > The driver was originally written by Brian Norris.
+> > 
+> > v1 of this series can be found at https://lkml.org/lkml/2017/6/5/92
+> > 1
+> > v2 of this series can be found at https://lkml.org/lkml/2017/7/21/5
+> > 85
+> FWIW, this looks good to me, Eduardo, Rui, can we get this moving?
+> 
+Usually, Eduardo will take the arm soc thermal patches. But he is not
+able to take it this time as he is really busy.
+To me, the thermal framework related code looks good, and I will queue
+it for next merge window, although I don't have the knowledge about the
+hardware details.
 
+thanks,
+rui
 
-On 08/08/17 12:38, Leonard Crestez wrote:
-> On Tue, 2017-08-08 at 12:00 +0100, Srinivas Kandagatla wrote:
->> On 08/08/17 08:21, Zhang Rui wrote:
->>> On Tue, 2017-07-25 at 16:08 +0800, Shawn Guo wrote:
->>>> On Fri, Jul 14, 2017 at 05:11:08PM +0300, Leonard Crestez wrote:
-> 
->>>>> On newer imx SOCs accessing OCOTP directly is wrong because the
->>>>> ocotp clock
->>>>> needs to be enabled first. Add support for reading those same
->>>>> values through
->>>>> the nvmem API instead.
->>>>>
->>>>> The older path is preserved for compatibility with older dts and
->>>>> because it
->>>>> works correctly on imx6qdl chips.
->>>>>
->>>>> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
->>>> Acked-by: Shawn Guo <shawnguo@kernel.org>
-> 
->>> I'm okay with the thermal change.
->>> We still need ACK for the nvmem changes in this patch series.
-> 
->> NVMEM changes are already sent to Greg K H with other patches
->> (https://lkml.org/lkml/2017/7/26/164), should appear in next.
-> 
-> These patches have a compile-time dependency on each other. Wouldn't it
-> make more sense for the whole series to go through a single maintainer
-> tree, atomically? Most of the changes are in driver/thermal.
-
-I was expecting that the nvmem change go in as fix in a rc release so 
-that you could apply the other patches after that.
-
-Let me ping Greg about this!!
-> 
-> I'm really very confused about how series that touch multiple areas are
-> applied. It seems to be a mostly ad-hoc process.
-> 
-> --
-> Regards,
-> Leonard
+> > 
+> > 
+> > Changes since v2:
+> > - replaced calls to pr_debug() with calls to dev_dbg() [PATCH 2/4
+> > only]
+> > - all other patches are unchanged from v2
+> > 
+> > Changes since v1:
+> > - Fixed wording in binding document
+> > - Fixed lincensing to consistently mention GPL v2
+> > - Use thermal_zone_get_slope() and thermal_zone_get_offset()
+> > - Some minor clean-ups
+> > 
+> > Brian Norris (2):
+> >   Documentation: devicetree: add binding for Broadcom STB AVS TMON
+> >   thermal: add brcmstb AVS TMON driver
+> > 
+> > Markus Mayer (2):
+> >   ARM: multi_v7_defconfig: add CONFIG_BRCMSTB_THERMAL
+> >   arm64: defconfig: add CONFIG_BRCMSTB_THERMAL
+> > 
+> >  .../devicetree/bindings/thermal/brcm,avs-tmon.txt  |  20 ++
+> >  MAINTAINERS                                        |   8 +
+> >  arch/arm/configs/multi_v7_defconfig                |   1 +
+> >  arch/arm64/configs/defconfig                       |   1 +
+> >  drivers/thermal/Kconfig                            |   2 +-
+> >  drivers/thermal/broadcom/Kconfig                   |   7 +
+> >  drivers/thermal/broadcom/Makefile                  |   1 +
+> >  drivers/thermal/broadcom/brcmstb_thermal.c         | 386
+> > +++++++++++++++++++++
+> >  8 files changed, 425 insertions(+), 1 deletion(-)
+> >  create mode 100644
+> > Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
+> >  create mode 100644 drivers/thermal/broadcom/brcmstb_thermal.c
+> > 
 > 
