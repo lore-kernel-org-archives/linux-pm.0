@@ -1,76 +1,100 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v3 0/4] thermal: add brcmstb AVS TMON driver
-Date: Tue, 08 Aug 2017 20:26:57 +0800
-Message-ID: <1502195217.4296.33.camel@intel.com>
-References: <20170731192633.58747-1-code@mmayer.net>
-         <a29d8aef-8d24-9e63-c078-48c3a1a6fccf@gmail.com>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: Re: [PATCH 2/3] thermal: core: Reorder
+ 'thermal_zone_device_register()' error handling code
+Date: Tue, 8 Aug 2017 14:31:56 +0200
+Message-ID: <cee58c23-2fc4-4f60-2e51-731df97ff8fb@wanadoo.fr>
+References: <cover.1500187753.git.christophe.jaillet@wanadoo.fr>
+ <1b2b2a818d356097d5f6092745086b79d43aeafe.1500187753.git.christophe.jaillet@wanadoo.fr>
+ <1502182158.4296.21.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <a29d8aef-8d24-9e63-c078-48c3a1a6fccf@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>, Markus Mayer <code@mmayer.net>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
-Cc: Markus Mayer <mmayer@broadcom.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp02.smtpout.orange.fr ([80.12.242.124]:39545 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751880AbdHHMcH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2017 08:32:07 -0400
+In-Reply-To: <1502182158.4296.21.camel@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-On Mon, 2017-08-07 at 10:52 -0700, Florian Fainelli wrote:
-> On 07/31/2017 12:26 PM, Markus Mayer wrote:
-> > 
-> > From: Markus Mayer <mmayer@broadcom.com>
-> > 
-> > This series adds the brcmstb AVS TMON driver.
-> > 
-> > The driver was originally written by Brian Norris.
-> > 
-> > v1 of this series can be found at https://lkml.org/lkml/2017/6/5/92
-> > 1
-> > v2 of this series can be found at https://lkml.org/lkml/2017/7/21/5
-> > 85
-> FWIW, this looks good to me, Eduardo, Rui, can we get this moving?
-> 
-Usually, Eduardo will take the arm soc thermal patches. But he is not
-able to take it this time as he is really busy.
-To me, the thermal framework related code looks good, and I will queue
-it for next merge window, although I don't have the knowledge about the
-hardware details.
+Le 08/08/2017 à 10:49, Zhang Rui a écrit :
+> On Sun, 2017-07-16 at 08:59 +0200, Christophe JAILLET wrote:
+>> Reorder code in the error handling path in order to match the way
+>> resources
+>> have been allocated.
+>>
+>> With this new order, we can avoid a call to 'device_unregister()' if
+>> 'thermal_zone_create_device_groups'()' fails. At this point,
+>> 'device_register()' has not been called yet.
+>>
+>> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+>> ---
+>>   drivers/thermal/thermal_core.c | 5 +++--
+>>   1 file changed, 3 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/thermal/thermal_core.c
+>> b/drivers/thermal/thermal_core.c
+>> index 9743f3e65eb0..c58714800660 100644
+>> --- a/drivers/thermal/thermal_core.c
+>> +++ b/drivers/thermal/thermal_core.c
+>> @@ -1232,7 +1232,7 @@ thermal_zone_device_register(const char *type,
+>> int trips, int mask,
+>>   	/* Add nodes that are always present via .groups */
+>>   	result = thermal_zone_create_device_groups(tz, mask);
+>>   	if (result)
+>> -		goto unregister;
+>> +		goto remove_id;
+>>
+> I agree we should release ida and free tz, like you did in this patch.
+>
+> But the problem is in the code below, where device_register() fails,
+> we should free the resources allocated in
+> thermal_zone_create_device_groups() explicitly.
+>
+> thanks,
+> rui
+Hi,
 
-thanks,
-rui
+Thanks for the review.
 
-> > 
-> > 
-> > Changes since v2:
-> > - replaced calls to pr_debug() with calls to dev_dbg() [PATCH 2/4
-> > only]
-> > - all other patches are unchanged from v2
-> > 
-> > Changes since v1:
-> > - Fixed wording in binding document
-> > - Fixed lincensing to consistently mention GPL v2
-> > - Use thermal_zone_get_slope() and thermal_zone_get_offset()
-> > - Some minor clean-ups
-> > 
-> > Brian Norris (2):
-> >   Documentation: devicetree: add binding for Broadcom STB AVS TMON
-> >   thermal: add brcmstb AVS TMON driver
-> > 
-> > Markus Mayer (2):
-> >   ARM: multi_v7_defconfig: add CONFIG_BRCMSTB_THERMAL
-> >   arm64: defconfig: add CONFIG_BRCMSTB_THERMAL
-> > 
-> >  .../devicetree/bindings/thermal/brcm,avs-tmon.txt  |  20 ++
-> >  MAINTAINERS                                        |   8 +
-> >  arch/arm/configs/multi_v7_defconfig                |   1 +
-> >  arch/arm64/configs/defconfig                       |   1 +
-> >  drivers/thermal/Kconfig                            |   2 +-
-> >  drivers/thermal/broadcom/Kconfig                   |   7 +
-> >  drivers/thermal/broadcom/Makefile                  |   1 +
-> >  drivers/thermal/broadcom/brcmstb_thermal.c         | 386
-> > +++++++++++++++++++++
-> >  8 files changed, 425 insertions(+), 1 deletion(-)
-> >  create mode 100644
-> > Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
-> >  create mode 100644 drivers/thermal/broadcom/brcmstb_thermal.c
-> > 
-> 
+
+I will propose a v2 patch serie with some new helper functions:
+    void destroy_trip_attrs(struct thermal_zone_device *tz)
+    void thermal_zone_destroy_device_groups(struct thermal_zone_device *tz)
+
+'thermal_zone_destroy_device_groups()' will then be called in the error 
+handling path of 'thermal_zone_device_register()', when 
+'device_register()' fails.
+
+
+Would you like me to keep the same patch granularity:
+    - (new patch in the serie) - Add some new helper functions to free 
+resources
+    - add kfree(tz) in the actual error handling path    (despite your 
+comment on patch 1/3, I still think it is needed in thie error handling 
+path)
+    - reorder error handling code
+    - avoid code duplication
+
+Or the 3 last ones can be merged together under a generic "Fix resources 
+release in error paths in thermal_zone_device_register()" ?
+
+CJ
+
+>>   	/* A new thermal zone needs to be updated anyway. */
+>>   	atomic_set(&tz->need_update, 1);
+>> @@ -1294,8 +1294,9 @@ thermal_zone_device_register(const char *type,
+>> int trips, int mask,
+>>   	return tz;
+>>   
+>>   unregister:
+>> -	ida_simple_remove(&thermal_tz_ida, tz->id);
+>>   	device_unregister(&tz->device);
+>> +remove_id:
+>> +	ida_simple_remove(&thermal_tz_ida, tz->id);
+>>   	kfree(tz);
+>>   	return ERR_PTR(result);
+>>   }
