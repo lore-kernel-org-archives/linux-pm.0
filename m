@@ -1,250 +1,139 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V1] thermal: qcom-spmi-temp-alarm: add support for GEN2
- PMIC peripherals
-Date: Tue, 08 Aug 2017 16:12:23 +0800
-Message-ID: <1502179943.4296.12.camel@intel.com>
-References: <1499947772-19199-1-git-send-email-kgunda@codeaurora.org>
+Subject: Re: [PATCH 2/2] ACPI/thermal: support for thermal zone description
+Date: Tue, 08 Aug 2017 16:23:23 +0800
+Message-ID: <1502180603.4296.15.camel@intel.com>
+References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
+         <1500054535-975-3-git-send-email-pprakash@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:23152 "EHLO mga02.intel.com"
+Received: from mga07.intel.com ([134.134.136.100]:62481 "EHLO mga07.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750818AbdHHIM3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Aug 2017 04:12:29 -0400
-In-Reply-To: <1499947772-19199-1-git-send-email-kgunda@codeaurora.org>
+        id S1750818AbdHHIX2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Aug 2017 04:23:28 -0400
+In-Reply-To: <1500054535-975-3-git-send-email-pprakash@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kiran Gunda <kgunda@codeaurora.org>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iivanov@mm-sol.com
-Cc: linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>
+To: Prashanth Prakash <pprakash@codeaurora.org>, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: edubezval@gmail.com
 
-On Thu, 2017-07-13 at 17:39 +0530, Kiran Gunda wrote:
-> From: David Collins <collinsd@codeaurora.org>
+On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
+> Per ACPI 6.2 spec, platforms can optionally add a string(_STR)
+> object within each thermal zone package which provides a user
+> friendly name/description.
 > 
-> Add support for the TEMP_ALARM GEN2 PMIC peripheral subtype.  The
-> GEN2 subtype defines an over temperature state with hysteresis
-> instead of stage in the status register.  There are two GEN2
-> states corresponding to stages 1 and 2.
+> Add support to parse the string object, which will be exposed
+> to userspace by thermal framework.
 > 
-> Signed-off-by: David Collins <collinsd@codeaurora.org>
-> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
 
-Ivan,
+is there any real request for this?
 
-can you please review this patch and let me know your opinion?
+_STR is a generic control method for all the ACPI devices.
+Thus I'm wondering, if really needed, should we expose this in acpi bus
+instead?
 
 thanks,
 rui
+
+> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
 > ---
->  drivers/thermal/qcom-spmi-temp-alarm.c | 92
-> ++++++++++++++++++++++++++--------
->  1 file changed, 71 insertions(+), 21 deletions(-)
+>  drivers/acpi/thermal.c | 38 ++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 38 insertions(+)
 > 
-> diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c
-> b/drivers/thermal/qcom-spmi-temp-alarm.c
-> index f502419..a5e17ba 100644
-> --- a/drivers/thermal/qcom-spmi-temp-alarm.c
-> +++ b/drivers/thermal/qcom-spmi-temp-alarm.c
-> @@ -1,5 +1,5 @@
->  /*
-> - * Copyright (c) 2011-2015, The Linux Foundation. All rights
-> reserved.
-> + * Copyright (c) 2011-2015, 2017, The Linux Foundation. All rights
-> reserved.
->   *
->   * This program is free software; you can redistribute it and/or
-> modify
->   * it under the terms of the GNU General Public License version 2
-> and
-> @@ -11,6 +11,7 @@
->   * GNU General Public License for more details.
->   */
+> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+> index 1d0417b..6ab6480 100644
+> --- a/drivers/acpi/thermal.c
+> +++ b/drivers/acpi/thermal.c
+> @@ -41,6 +41,7 @@
+>  #include <linux/acpi.h>
+>  #include <linux/workqueue.h>
+>  #include <linux/uaccess.h>
+> +#include <linux/nls.h>
 >  
-> +#include <linux/bitops.h>
->  #include <linux/delay.h>
->  #include <linux/err.h>
->  #include <linux/iio/consumer.h>
-> @@ -29,13 +30,17 @@
->  #define QPNP_TM_REG_ALARM_CTRL		0x46
+>  #define PREFIX "ACPI: "
 >  
->  #define QPNP_TM_TYPE			0x09
-> -#define QPNP_TM_SUBTYPE			0x08
-> +#define QPNP_TM_SUBTYPE_GEN1		0x08
-> +#define QPNP_TM_SUBTYPE_GEN2		0x09
->  
-> -#define STATUS_STAGE_MASK		0x03
-> +#define STATUS_GEN1_STAGE_MASK		GENMASK(1, 0)
-> +#define STATUS_GEN2_STATE_MASK		GENMASK(6, 4)
-> +#define STATUS_GEN2_STATE_SHIFT		4
->  
-> -#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
-> +#define SHUTDOWN_CTRL1_OVERRIDE_MASK	GENMASK(7, 6)
-> +#define SHUTDOWN_CTRL1_THRESHOLD_MASK	GENMASK(1, 0)
->  
-> -#define ALARM_CTRL_FORCE_ENABLE		0x80
-> +#define ALARM_CTRL_FORCE_ENABLE		BIT(7)
->  
->  /*
->   * Trip point values based on threshold control
-> @@ -58,6 +63,7 @@
->  struct qpnp_tm_chip {
->  	struct regmap			*map;
->  	struct thermal_zone_device	*tz_dev;
-> +	unsigned int			subtype;
->  	long				temp;
->  	unsigned int			thresh;
->  	unsigned int			stage;
-> @@ -66,6 +72,9 @@ struct qpnp_tm_chip {
->  	struct iio_channel		*adc;
+> @@ -188,6 +189,7 @@ struct acpi_thermal {
+>  	int tz_enabled;
+>  	int kelvin_offset;
+>  	struct work_struct thermal_check_work;
+> +	char desc[THERMAL_MAX_DESC_STR_LEN];
 >  };
 >  
-> +/* This array maps from GEN2 alarm state to GEN1 alarm stage */
-> +static const unsigned int alarm_state_map[8] = {0, 1, 1, 2, 2, 3, 3,
-> 3};
-> +
->  static int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr, u8
-> *data)
->  {
->  	unsigned int val;
-> @@ -84,30 +93,59 @@ static int qpnp_tm_write(struct qpnp_tm_chip
-> *chip, u16 addr, u8 data)
->  	return regmap_write(chip->map, chip->base + addr, data);
+>  /* ---------------------------------------------------------------
+> -----------
+> @@ -543,6 +545,15 @@ static int thermal_get_temp(struct
+> thermal_zone_device *thermal, int *temp)
+>  	return 0;
 >  }
 >  
-> +/**
-> + * qpnp_tm_get_temp_stage() - return over-temperature stage
-> + * @chip:		Pointer to the qpnp_tm chip
-> + *
-> + * Return: stage (GEN1) or state (GEN2) on success, or errno on
-> failure.
-> + */
-> +static int qpnp_tm_get_temp_stage(struct qpnp_tm_chip *chip)
+> +static int thermal_get_desc(struct thermal_zone_device *thermal,
+> char *desc,
+> +			int size)
 > +{
-> +	int ret;
-> +	u8 reg = 0;
+> +	struct acpi_thermal *tz = thermal->devdata;
 > +
-> +	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1)
-> +		ret = reg & STATUS_GEN1_STAGE_MASK;
-> +	else
-> +		ret = (reg & STATUS_GEN2_STATE_MASK) >>
-> STATUS_GEN2_STATE_SHIFT;
-> +
-> +	return ret;
+> +	strlcpy(desc, tz->desc, size);
+> +	return 0;
 > +}
 > +
->  /*
->   * This function updates the internal temp value based on the
->   * current thermal stage and threshold as well as the previous stage
->   */
->  static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
+>  static int thermal_get_mode(struct thermal_zone_device *thermal,
+>  				enum thermal_device_mode *mode)
 >  {
-> -	unsigned int stage;
-> +	unsigned int stage, stage_new, stage_old;
->  	int ret;
-> -	u8 reg = 0;
+> @@ -880,6 +891,7 @@ static int acpi_thermal_cooling_device_cb(struct
+> thermal_zone_device *thermal,
+>  	.get_crit_temp = thermal_get_crit_temp,
+>  	.get_trend = thermal_get_trend,
+>  	.notify = thermal_notify,
+> +	.get_desc = thermal_get_desc,
+>  };
 >  
-> -	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-> +	ret = qpnp_tm_get_temp_stage(chip);
->  	if (ret < 0)
->  		return ret;
-> +	stage = ret;
+>  static int acpi_thermal_register_thermal_zone(struct acpi_thermal
+> *tz)
+> @@ -1014,6 +1026,29 @@ static void
+> acpi_thermal_aml_dependency_fix(struct acpi_thermal *tz)
+>  	acpi_evaluate_integer(handle, "_TMP", NULL, &value);
+>  }
 >  
-> -	stage = reg & STATUS_STAGE_MASK;
-> +	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1) {
-> +		stage_new = stage;
-> +		stage_old = chip->stage;
-> +	} else {
-> +		stage_new = alarm_state_map[stage];
-> +		stage_old = alarm_state_map[chip->stage];
+> +static void acpi_thermal_get_desc(struct acpi_thermal *tz)
+> +{
+> +	acpi_handle handle = tz->device->handle;
+> +	acpi_status status;
+> +	struct acpi_buffer buffer = {ACPI_ALLOCATE_BUFFER, NULL};
+> +
+> +	status = acpi_evaluate_object(handle, "_STR", NULL,
+> &buffer);
+> +
+> +	if (ACPI_FAILURE(status))
+> +		strlcpy(tz->desc, "<not supported>",
+> THERMAL_MAX_DESC_STR_LEN);
+> +	else {
+> +		union acpi_object *str;
+> +		int result;
+> +
+> +		str = buffer.pointer;
+> +		result = utf16s_to_utf8s((wchar_t *)str-
+> >string.pointer,
+> +					str->string.length,
+> UTF16_LITTLE_ENDIAN,
+> +					tz->desc,
+> THERMAL_MAX_DESC_STR_LEN-1);
+> +		tz->desc[result] = 0;
+> +		kfree(buffer.pointer);
 > +	}
->  
-> -	if (stage > chip->stage) {
-> +	if (stage_new > stage_old) {
->  		/* increasing stage, use lower bound */
-> -		chip->temp = (stage - 1) * TEMP_STAGE_STEP +
-> +		chip->temp = (stage_new - 1) * TEMP_STAGE_STEP +
->  			     chip->thresh * TEMP_THRESH_STEP +
->  			     TEMP_STAGE_HYSTERESIS +
-> TEMP_THRESH_MIN;
-> -	} else if (stage < chip->stage) {
-> +	} else if (stage_new < stage_old) {
->  		/* decreasing stage, use upper bound */
-> -		chip->temp = stage * TEMP_STAGE_STEP +
-> +		chip->temp = stage_new * TEMP_STAGE_STEP +
->  			     chip->thresh * TEMP_THRESH_STEP -
->  			     TEMP_STAGE_HYSTERESIS +
-> TEMP_THRESH_MIN;
->  	}
-> @@ -162,28 +200,37 @@ static irqreturn_t qpnp_tm_isr(int irq, void
-> *data)
->   */
->  static int qpnp_tm_init(struct qpnp_tm_chip *chip)
+> +}
+> +
+>  static int acpi_thermal_get_info(struct acpi_thermal *tz)
 >  {
-> +	unsigned int stage;
->  	int ret;
-> -	u8 reg;
-> +	u8 reg = 0;
+>  	int result = 0;
+> @@ -1045,6 +1080,9 @@ static int acpi_thermal_get_info(struct
+> acpi_thermal *tz)
+>  	else
+>  		acpi_thermal_get_polling_frequency(tz);
 >  
-> -	chip->thresh = THRESH_MIN;
-> +	ret = qpnp_tm_read(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, &reg);
-> +	if (ret < 0)
-> +		return ret;
+> +	/* Get thermal zone description [_STR] (optional) */
+> +	acpi_thermal_get_desc(tz);
 > +
-> +	chip->thresh = reg & SHUTDOWN_CTRL1_THRESHOLD_MASK;
->  	chip->temp = DEFAULT_TEMP;
+>  	return 0;
+>  }
 >  
-> -	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-> +	ret = qpnp_tm_get_temp_stage(chip);
->  	if (ret < 0)
->  		return ret;
-> +	chip->stage = ret;
->  
-> -	chip->stage = reg & STATUS_STAGE_MASK;
-> +	stage = chip->subtype == QPNP_TM_SUBTYPE_GEN1
-> +		? chip->stage : alarm_state_map[chip->stage];
->  
-> -	if (chip->stage)
-> +	if (stage)
->  		chip->temp = chip->thresh * TEMP_THRESH_STEP +
-> -			     (chip->stage - 1) * TEMP_STAGE_STEP +
-> +			     (stage - 1) * TEMP_STAGE_STEP +
->  			     TEMP_THRESH_MIN;
->  
->  	/*
->  	 * Set threshold and disable software override of stage 2
-> and 3
->  	 * shutdowns.
->  	 */
-> -	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
-> +	chip->thresh = THRESH_MIN;
-> +	reg &= ~(SHUTDOWN_CTRL1_OVERRIDE_MASK |
-> SHUTDOWN_CTRL1_THRESHOLD_MASK);
-> +	reg |= chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
->  	ret = qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
->  	if (ret < 0)
->  		return ret;
-> @@ -242,13 +289,16 @@ static int qpnp_tm_probe(struct platform_device
-> *pdev)
->  		goto fail;
->  	}
->  
-> -	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
-> +	if (type != QPNP_TM_TYPE || (subtype != QPNP_TM_SUBTYPE_GEN1
-> +				     && subtype !=
-> QPNP_TM_SUBTYPE_GEN2)) {
->  		dev_err(&pdev->dev, "invalid type 0x%02x or subtype
-> 0x%02x\n",
->  			type, subtype);
->  		ret = -ENODEV;
->  		goto fail;
->  	}
->  
-> +	chip->subtype = subtype;
-> +
->  	ret = qpnp_tm_init(chip);
->  	if (ret < 0) {
->  		dev_err(&pdev->dev, "init failed\n");
