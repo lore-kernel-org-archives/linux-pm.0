@@ -1,73 +1,59 @@
-From: Saravana Kannan <skannan@codeaurora.org>
-Subject: Re: [PATCH] devfreq: add error check for sscanf in userspace governor
-Date: Tue, 08 Aug 2017 12:26:03 -0700
-Message-ID: <598A104B.4020101@codeaurora.org>
-References: <1502111205-22560-1-git-send-email-gsantosh@codeaurora.org> <1502111205-22560-2-git-send-email-gsantosh@codeaurora.org> <CAEU1=PmSq+UXO_zwrMSTbsejUi5G8BCKaqYA_cxmo4pcFO1z_Q@mail.gmail.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH 7/9 v2] thermal: bcm2835: constify
+ thermal_zone_of_device_ops structures
+Date: Tue, 8 Aug 2017 21:58:07 +0200 (CEST)
+Message-ID: <1239025469.165778.1502222287761@email.1und1.de>
+References: <1502204943-20075-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1502204943-20075-8-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:60474 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752441AbdHHT0F (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2017 15:26:05 -0400
-In-Reply-To: <CAEU1=PmSq+UXO_zwrMSTbsejUi5G8BCKaqYA_cxmo4pcFO1z_Q@mail.gmail.com>
+Received: from mout.kundenserver.de ([212.227.126.135]:59360 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752243AbdHHT67 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2017 15:58:59 -0400
+In-Reply-To: <1502204943-20075-8-git-send-email-Julia.Lawall@lip6.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavan Kondeti <pkondeti@codeaurora.org>
-Cc: Santosh Mardi <gsantosh@codeaurora.org>, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, rafael.j.wysocki@intel.com, cw00.choi@samsung.com, linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, gsantosh@qti.qualcomm.com, skannan@quicinc.com, rgottimu@qti.qualcomm.com
+To: Zhang Rui <rui.zhang@intel.com>, Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, Eric Anholt <eric@anholt.net>, bhumirks@gmail.com, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Eduardo Valentin <edubezval@gmail.com>
 
-On 08/07/2017 11:56 PM, Pavan Kondeti wrote:
-> Hi Santosh,
+
+> Julia Lawall <Julia.Lawall@lip6.fr> hat am 8. August 2017 um 17:09 geschrieben:
+> 
+> 
+> The thermal_zone_of_device_ops structure is only passed as the fourth
+> argument to thermal_zone_of_sensor_register, which is declared as const.
+> Thus the thermal_zone_of_device_ops structure itself can be const.
+> 
+> Done with the help of Coccinelle.
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
+Still
+
+Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+
+> 
+> ---
+> 
+> v2: This patch was present in the original series
+> 
+>  drivers/thermal/broadcom/bcm2835_thermal.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
+> index e6863c8..a4d6a0e 100644
+> --- a/drivers/thermal/broadcom/bcm2835_thermal.c
+> +++ b/drivers/thermal/broadcom/bcm2835_thermal.c
+> @@ -145,7 +145,7 @@ static void bcm2835_thermal_debugfs(struct platform_device *pdev)
+>  	debugfs_create_regset32("regset", 0444, data->debugfsdir, regset);
+>  }
+>  
+> -static struct thermal_zone_of_device_ops bcm2835_thermal_ops = {
+> +static const struct thermal_zone_of_device_ops bcm2835_thermal_ops = {
+>  	.get_temp = bcm2835_thermal_get_temp,
+>  };
+>  
 >
-> On Mon, Aug 7, 2017 at 6:36 PM, Santosh Mardi <gsantosh@codeaurora.org> wrote:
->> store_freq function of devfreq userspace governor
->> executes further, even if error is returned from sscanf,
->> this will result in setting up wrong frequency value.
->>
->> Add proper error check to bail out if any error is returned.
->>
->> Signed-off-by: Santosh Mardi <gsantosh@codeaurora.org>
->> ---
->>   drivers/devfreq/governor_userspace.c | 5 ++++-
->>   1 file changed, 4 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/devfreq/governor_userspace.c b/drivers/devfreq/governor_userspace.c
->> index 77028c2..1d0c9cc 100644
->> --- a/drivers/devfreq/governor_userspace.c
->> +++ b/drivers/devfreq/governor_userspace.c
->> @@ -53,12 +53,15 @@ static ssize_t store_freq(struct device *dev, struct device_attribute *attr,
->>          mutex_lock(&devfreq->lock);
->>          data = devfreq->data;
->>
->> -       sscanf(buf, "%lu", &wanted);
->> +       err = sscanf(buf, "%lu", &wanted);
-
-Also, we could just use kstroul().
-
->> +       if (err != 1)
->> +               goto out;
->
-> You can save this goto statement by moving this sscanf checking to
-> before taking the mutex.
->
->>          data->user_frequency = wanted;
->>          data->valid = true;
->>          err = update_devfreq(devfreq);
->>          if (err == 0)
->>                  err = count;
->> +out:
->>          mutex_unlock(&devfreq->lock);
->>          return err;
->>   }
->> --
->> 1.9.1
->>
-
--Saravana
-
-
--- 
-Qualcomm Innovation Center, Inc.
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
