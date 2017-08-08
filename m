@@ -1,94 +1,142 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v3 1/4] Documentation: devicetree: add binding for
- Broadcom STB AVS TMON
-Date: Tue, 08 Aug 2017 20:36:35 +0800
-Message-ID: <1502195795.4296.37.camel@intel.com>
-References: <20170731192633.58747-1-code@mmayer.net>
-         <20170731192633.58747-2-code@mmayer.net>
+Subject: Re: [PATCH] thermal/drivers/hisi: Remove confusing error message
+Date: Tue, 08 Aug 2017 20:48:51 +0800
+Message-ID: <1502196531.4296.41.camel@intel.com>
+References: <1499439833-32531-1-git-send-email-daniel.lezcano@linaro.org>
+         <1502178956.4296.7.camel@intel.com>
+         <46604862-fbb8-8ed1-8b0d-7a51543b3398@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170731192633.58747-2-code@mmayer.net>
+In-Reply-To: <46604862-fbb8-8ed1-8b0d-7a51543b3398@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Markus Mayer <code@mmayer.net>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
-Cc: Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, edubezval@gmail.com
+Cc: "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, kong.kongxinwei@hisilicon.com, leo.yan@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2017-07-31 at 12:26 -0700, Markus Mayer wrote:
-> From: Brian Norris <computersforpeace@gmail.com>
+On Tue, 2017-08-08 at 12:15 +0200, Daniel Lezcano wrote:
+> On 08/08/2017 09:55, Zhang Rui wrote:
+> > 
+> > On Fri, 2017-07-07 at 17:03 +0200, Daniel Lezcano wrote:
+> > > 
+> > > The sensor id is unknown at init time and we use all id in the
+> > > authorized
+> > > MAX_SENSORS interval to register the sensor. On this SoC there is
+> > > one
+> > > thermal-zone with one sensor on it. No need to spit on the
+> > > console
+> > > everytime we
+> > > failed to register thermal sensors, information which is
+> > > deliberaly
+> > > known as it
+> > > is part of the discovery process.
+> > > 
+> > >  hisi_thermal f7030700.tsensor: failed to register sensor id 0:
+> > > -19
+> > >  hisi_thermal f7030700.tsensor: failed to register thermal
+> > > sensor:
+> > > -19
+> > >  hisi_thermal f7030700.tsensor: failed to register sensor id 1:
+> > > -19
+> > >  hisi_thermal f7030700.tsensor: failed to register thermal
+> > > sensor:
+> > > -19
+> > >  hisi_thermal f7030700.tsensor: failed to register sensor id 3:
+> > > -19
+> > >  hisi_thermal f7030700.tsensor: failed to register thermal
+> > > sensor:
+> > > -19
+> > > 
+> > > Remove the error messages.
+> > > 
+> > > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > > ---
+> > >  drivers/thermal/hisi_thermal.c | 12 ++++++------
+> > >  1 file changed, 6 insertions(+), 6 deletions(-)
+> > > 
+> > > diff --git a/drivers/thermal/hisi_thermal.c
+> > > b/drivers/thermal/hisi_thermal.c
+> > > index f642966..2cc98c6 100644
+> > > --- a/drivers/thermal/hisi_thermal.c
+> > > +++ b/drivers/thermal/hisi_thermal.c
+> > > @@ -187,6 +187,9 @@ static int hisi_thermal_get_temp(void
+> > > *_sensor,
+> > > int *temp)
+> > >  
+> > >  	dev_dbg(&data->pdev->dev, "id=%d, irq=%d, temp=%d,
+> > > thres=%d\n",
+> > >  		sensor->id, data->irq_enabled, *temp, sensor-
+> > > > 
+> > > > thres_temp);
+> > > +
+> > > +	printk("id=%d, irq=%d, temp=%d, thres=%d\n",
+> > > +		sensor->id, data->irq_enabled, *temp, sensor-
+> > > > 
+> > > > thres_temp);
+> > what's this printk for?
+> Argh. It shouldn't be there.
 > 
-> Add binding for Broadcom STB thermal.
+> > 
+> > > 
+> > >  	/*
+> > >  	 * Bind irq to sensor for two cases:
+> > >  	 *   Reenable alarm IRQ if temperature below threshold;
+> > > @@ -260,8 +263,6 @@ static int
+> > > hisi_thermal_register_sensor(struct
+> > > platform_device *pdev,
+> > >  	if (IS_ERR(sensor->tzd)) {
+> > >  		ret = PTR_ERR(sensor->tzd);
+> > >  		sensor->tzd = NULL;
+> > > -		dev_err(&pdev->dev, "failed to register sensor
+> > > id
+> > > %d: %d\n",
+> > > -			sensor->id, ret);
+> > >  		return ret;
+> > >  	}
+> > >  
+> > > @@ -352,10 +353,9 @@ static int hisi_thermal_probe(struct
+> > > platform_device *pdev)
+> > >  		ret = hisi_thermal_register_sensor(pdev, data,
+> > >  						   &data-
+> > > > 
+> > > > sensors[i], i);
+> > >  		if (ret)
+> > > -			dev_err(&pdev->dev,
+> > > -				"failed to register thermal
+> > > sensor:
+> > > %d\n", ret);
+> > > -		else
+> > > -			hisi_thermal_toggle_sensor(&data-
+> > > > 
+> > > > sensors[i], true);
+> > > +			continue;
+> > > +
+> > > +		hisi_thermal_toggle_sensor(&data->sensors[i],
+> > > true);
+> > >  	}
+> > >  
+> > >  	return 0;
+> > With these removed, is there any other information in dmesg that
+> > suggests this failure?
+> The problem is there are always failures showed in dmesg. The init
+> function is based on the assumption there is HISI_MAX_SENSORS sensors
+> which is not true for the hi6220 and that raises at boot time errors.
 > 
-> Signed-off-by: Brian Norris <computersforpeace@gmail.com>
-> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+> Why HISI_MAX_SENSORS(=4) while there is only one on hi6220 AFAIK? and
+> this driver is only used for hi6220 (now).
+> 
+right, I think we should remove one error log, and then change the
+HISI_MAX_SENSORS to reflect the reality instead.
 
-$ file v3-1-4-Documentation-devicetree-add-binding-for-Broadcom-STB-
-AVS-TMON.patch 
-unified diff output, UTF-8 Unicode text
-
-BTW, can you please rebase this patch set on top of v4.13-rc3?
-At least there are some conflicts in MAINTAINER file, introduced in
--rc2.
+XinWei and Leo,
+can you please help check this?
 
 thanks,
 rui
-> ---
->  .../devicetree/bindings/thermal/brcm,avs-tmon.txt    | 20
-> ++++++++++++++++++++
->  MAINTAINERS                                          |  8 ++++++++
->  2 files changed, 28 insertions(+)
->  create mode 100644
-> Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
+> That ends up with 3 errors in dmesg for nothing.
 > 
-> diff --git a/Documentation/devicetree/bindings/thermal/brcm,avs-
-> tmon.txt b/Documentation/devicetree/bindings/thermal/brcm,avs-
-> tmon.txt
-> new file mode 100644
-> index 0000000..9d43553
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
-> @@ -0,0 +1,20 @@
-> +* Broadcom STB thermal management
-> +
-> +Thermal management core, provided by the AVS TMON hardware block.
-> +
-> +Required properties:
-> +- compatible: must be "brcm,avs-tmon" and/or "brcm,avs-tmon-bcm7445"
-> +- reg: address range for the AVS TMON registers
-> +- interrupts: temperature monitor interrupt, for high/low threshold
-> triggers
-> +- interrupt-names: should be "tmon"
-> +- interrupt-parent: the parent interrupt controller
-> +
-> +Example:
-> +
-> +	thermal@f04d1500 {
-> +		compatible = "brcm,avs-tmon-bcm7445", "brcm,avs-
-> tmon";
-> +		reg = <0xf04d1500 0x28>;
-> +		interrupts = <0x6>;
-> +		interrupt-names = "tmon";
-> +		interrupt-parent = <&avs_host_l2_intc>;
-> +	};
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 205d397..a683d4c 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2928,6 +2928,14 @@ S:	Maintained
->  F:	Documentation/devicetree/bindings/cpufreq/brcm,stb-avs-
-> cpu-freq.txt
->  F:	drivers/cpufreq/brcmstb*
->  
-> +BROADCOM STB AVS TMON DRIVER
-> +M:	Markus Mayer <mmayer@broadcom.com>
-> +M:	bcm-kernel-feedback-list@broadcom.com
-> +L:	linux-pm@vger.kernel.org
-> +S:	Maintained
-> +F:	Documentation/devicetree/bindings/thermal/brcm,avs-
-> tmon.txt
-> +F:	drivers/thermal/broadcom/brcmstb*
-> +
->  BROADCOM SPECIFIC AMBA DRIVER (BCMA)
->  M:	Rafał Miłecki <zajec5@gmail.com>
->  L:	linux-wireless@vger.kernel.org
+> 
+> 
+> 
+> 
