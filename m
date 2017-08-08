@@ -1,59 +1,88 @@
-From: Stefan Wahren <stefan.wahren@i2se.com>
-Subject: Re: [PATCH 7/9 v2] thermal: bcm2835: constify
- thermal_zone_of_device_ops structures
-Date: Tue, 8 Aug 2017 21:58:07 +0200 (CEST)
-Message-ID: <1239025469.165778.1502222287761@email.1und1.de>
-References: <1502204943-20075-1-git-send-email-Julia.Lawall@lip6.fr>
- <1502204943-20075-8-git-send-email-Julia.Lawall@lip6.fr>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH 10/18] staging: typec: fusb302: Add support for
+ fcs,vbus-regulator-name device-property
+Date: Tue, 8 Aug 2017 22:53:45 +0200
+Message-ID: <67c2ed8f-f89d-7c00-3e51-0b5f1e38442e@redhat.com>
+References: <5f3d7cfa-c993-0cda-fae6-a975f7d4ca1c@redhat.com>
+ <20170808093947.ezczjb6stdgek4hy@sirena.org.uk>
+ <0b75c318-0f71-c536-7c7f-9ba16b215690@redhat.com>
+ <20170808144217.c2fm25uge75p4lo2@sirena.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.kundenserver.de ([212.227.126.135]:59360 "EHLO
-        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752243AbdHHT67 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2017 15:58:59 -0400
-In-Reply-To: <1502204943-20075-8-git-send-email-Julia.Lawall@lip6.fr>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20170808144217.c2fm25uge75p4lo2@sirena.org.uk>
+Content-Language: en-US
+Sender: linux-i2c-owner@vger.kernel.org
+To: Mark Brown <broonie@kernel.org>
+Cc: Guenter Roeck <linux@roeck-us.net>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Liam Girdwood <lgirdwood@gmail.com>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Scott Branden <sbranden@broadcom.com>, Ray Jui <rjui@broadcom.com>, Eric Anholt <eric@anholt.net>, bhumirks@gmail.com, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com, Florian Fainelli <f.fainelli@gmail.com>, linux-rpi-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Eduardo Valentin <edubezval@gmail.com>
 
+<resend with the CC really added back>
 
-> Julia Lawall <Julia.Lawall@lip6.fr> hat am 8. August 2017 um 17:09 geschrieben:
-> 
-> 
-> The thermal_zone_of_device_ops structure is only passed as the fourth
-> argument to thermal_zone_of_sensor_register, which is declared as const.
-> Thus the thermal_zone_of_device_ops structure itself can be const.
-> 
-> Done with the help of Coccinelle.
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Hi,
 
-Still
+On 08/08/2017 04:42 PM, Mark Brown wrote:
+> On Tue, Aug 08, 2017 at 02:56:46PM +0100, Hans de Goede wrote:
+>> Hi,
+> 
+> Please don't take things off-list unless there is a really strong reason
+> to do so.  Sending things to the list ensures that everyone gets a
+> chance to read and comment on things.
 
-Acked-by: Stefan Wahren <stefan.wahren@i2se.com>
+Sorry, that was unintentional I probably accidentally hit reply instead
+of reply-to-all.
 
+I've re-added the lists to the Cc.
+
+>> On 08/08/2017 10:39 AM, Mark Brown wrote:
+>>> On Mon, Aug 07, 2017 at 09:20:05PM +0200, Hans de Goede wrote:
 > 
-> ---
+>>> Why not?  This is just really standard usage of platform data.
 > 
-> v2: This patch was present in the original series
+>> Right, but in general in most cases we are trying to get rid of
+>> platform data (where possible). So introducing new platform_data
+>> is not going to be popular, but I agree that it likely is the
+>> best solution here.
 > 
->  drivers/thermal/broadcom/bcm2835_thermal.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> No, we aren't.  The majority of architectures are still platform data
+> only and x86 as you're finding uses it extensively along with ACPI.
+
+Ok.
+
+>>>> Alternatively the entry could additionally contain a provider_supply_name
+>>>> so that we can make arbitrary consumer-dev-name + consumer-supply-name
+>>>> provider-dev-name + provider-supply-name matches. That would probably
+>>>> be more flexible then requiring the supply name to match.
 > 
-> diff --git a/drivers/thermal/broadcom/bcm2835_thermal.c b/drivers/thermal/broadcom/bcm2835_thermal.c
-> index e6863c8..a4d6a0e 100644
-> --- a/drivers/thermal/broadcom/bcm2835_thermal.c
-> +++ b/drivers/thermal/broadcom/bcm2835_thermal.c
-> @@ -145,7 +145,7 @@ static void bcm2835_thermal_debugfs(struct platform_device *pdev)
->  	debugfs_create_regset32("regset", 0444, data->debugfsdir, regset);
->  }
->  
-> -static struct thermal_zone_of_device_ops bcm2835_thermal_ops = {
-> +static const struct thermal_zone_of_device_ops bcm2835_thermal_ops = {
->  	.get_temp = bcm2835_thermal_get_temp,
->  };
->  
->
+>>> I'm sorry but I can't follow what you mean here.  What do you mean by
+>>> "provider_supply_name"?
+> 
+>> The current "const char *supply" in regulator_map is the supply name
+>> passed to regulator_get, so the rdev_get_name requested by the consumer
+>> (assuming no mapping is in place)
+> 
+> The name on the parent is *NOT* something anything else should
+> reference, it's just some internal documentation intended exclusively
+> for human consmption and can be overridden by the platforms.  It should
+> never be referenced by anything outside the device.
+> 
+>> One regulator parent-device can register multiple regulator names, iow
+>> multiple supplies, basically what I want to do is have the map
+>> (when not using the regulator pointer) match the following 2 pairs:
+> 
+>> dev_name + supply
+> 
+>> regulator_parent_dev_name + rdev_get_name
+> 
+> Have your platform register identifiers that are useful within your
+> platform, don't rely on the drivers.
+
+Ok, I need to think a bit about this. I think I've enough info to
+come up with a new patch-set not introducing the fcs,vbus-regulator-name
+device-property ugliness. But this is a side project and I'm rather busy with $dayjob
+atm, so it may take a while for me to come up with a new patch.
+
+Regards,
+
+Hans
