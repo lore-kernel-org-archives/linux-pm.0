@@ -1,67 +1,54 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/3] thermal: core: Reorder
- 'thermal_zone_device_register()' error handling code
-Date: Tue, 08 Aug 2017 16:49:18 +0800
-Message-ID: <1502182158.4296.21.camel@intel.com>
-References: <cover.1500187753.git.christophe.jaillet@wanadoo.fr>
-         <1b2b2a818d356097d5f6092745086b79d43aeafe.1500187753.git.christophe.jaillet@wanadoo.fr>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH 13/18] power: supply: bq24190_charger: Export 5V boost
+ converter as regulator
+Date: Tue, 8 Aug 2017 11:00:33 +0200
+Message-ID: <ddee22bd-7f0e-6065-8936-ce9a7e2f7a02@redhat.com>
+References: <20170806123555.5124-1-hdegoede@redhat.com>
+ <20170806123555.5124-14-hdegoede@redhat.com>
+ <CAKvHMgRJ4CVn43BnsB1odx_B3QvfFMMqeT3BrrwVtteXFszyAQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1b2b2a818d356097d5f6092745086b79d43aeafe.1500187753.git.christophe.jaillet@wanadoo.fr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <CAKvHMgRJ4CVn43BnsB1odx_B3QvfFMMqeT3BrrwVtteXFszyAQ@mail.gmail.com>
+Content-Language: en-US
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Liam Breck <liam@networkimprov.net>
+Cc: devel@driverdev.osuosl.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, linux-kernel <linux-kernel@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, platform-driver-x86@vger.kernel.org, Andy Shevchenko <andy@infradead.org>, Darren Hart <dvhart@infradead.org>, Guenter Roeck <linux@roeck-us.net>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Sun, 2017-07-16 at 08:59 +0200, Christophe JAILLET wrote:
-> Reorder code in the error handling path in order to match the way
-> resources
-> have been allocated.
-> 
-> With this new order, we can avoid a call to 'device_unregister()' if
-> 'thermal_zone_create_device_groups'()' fails. At this point,
-> 'device_register()' has not been called yet.
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
->  drivers/thermal/thermal_core.c | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c
-> b/drivers/thermal/thermal_core.c
-> index 9743f3e65eb0..c58714800660 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -1232,7 +1232,7 @@ thermal_zone_device_register(const char *type,
-> int trips, int mask,
->  	/* Add nodes that are always present via .groups */
->  	result = thermal_zone_create_device_groups(tz, mask);
->  	if (result)
-> -		goto unregister;
-> +		goto remove_id;
-> 
-I agree we should release ida and free tz, like you did in this patch.
+Hi,
 
-But the problem is in the code below, where device_register() fails,
-we should free the resources allocated in
-thermal_zone_create_device_groups() explicitly.
+On 08-08-17 10:39, Liam Breck wrote:
+> Hi Hans,
+> 
+> On Sun, Aug 6, 2017 at 5:35 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> Register the 5V boost converter as a regulator named
+>> "regulator-bq24190-usb-vbus". Note the name includes "bq24190" because
+>> the bq24190 family is also used on ACPI devices where there are no
+>> device-tree phandles, so regulator_get will fallback to the name and thus
+>> it must be unique on the system.
+> 
+> What we're enabling here is 5V boost for otg host mode, not vbus
+> generally, so maybe the name should indicate that...
+> 
+> regulator-bq24190-usb-5volt
+> regulator-bq24190-usb-host
+> regulator-bq24190-usb-otg-5v
 
-thanks,
-rui
+I picked vbus because that gets used a lot already in similar cases,
+but I agree that we should probably come up with a better name.
 
->  	/* A new thermal zone needs to be updated anyway. */
->  	atomic_set(&tz->need_update, 1);
-> @@ -1294,8 +1294,9 @@ thermal_zone_device_register(const char *type,
-> int trips, int mask,
->  	return tz;
->  
->  unregister:
-> -	ida_simple_remove(&thermal_tz_ida, tz->id);
->  	device_unregister(&tz->device);
-> +remove_id:
-> +	ida_simple_remove(&thermal_tz_ida, tz->id);
->  	kfree(tz);
->  	return ERR_PTR(result);
->  }
+I like "regulator-bq24190-usb-otg-5v", shall I use that for v2?
+
+Regards,
+
+Hans
