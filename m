@@ -1,52 +1,58 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH 5/9 v2] thermal: exynos: constify thermal_zone_of_device_ops
- structures
-Date: Tue,  8 Aug 2017 17:08:59 +0200
-Message-ID: <1502204943-20075-6-git-send-email-Julia.Lawall@lip6.fr>
-References: <1502204943-20075-1-git-send-email-Julia.Lawall@lip6.fr>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v7 1/4] clk: Add support for runtime PM
+Date: Tue, 8 Aug 2017 17:37:12 +0200
+Message-ID: <20170808153712.GA2646@kozik-book>
+References: <1501839294-478-1-git-send-email-m.szyprowski@samsung.com>
+ <CGME20170804093515eucas1p2226e597c155e5c4ca4ffea95c9e00392@eucas1p2.samsung.com>
+ <1501839294-478-2-git-send-email-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1502204943-20075-1-git-send-email-Julia.Lawall@lip6.fr>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Kukjin Kim <kgene@kernel.org>, linux-arm-kernel@lists.infradead.org, Zhang Rui <rui.zhang@intel.com>, bhumirks@gmail.com
+Content-Type: text/plain; charset=utf-8
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yw0-f194.google.com ([209.85.161.194]:37734 "EHLO
+        mail-yw0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752102AbdHHPhl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Aug 2017 11:37:41 -0400
+Content-Disposition: inline
+In-Reply-To: <1501839294-478-2-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-The thermal_zone_of_device_ops structure is only passed as the fourth
-argument to thermal_zone_of_sensor_register, which is declared as const.
-Thus the thermal_zone_of_device_ops structure itself can be const.
+On Fri, Aug 04, 2017 at 11:34:51AM +0200, Marek Szyprowski wrote:
+> Registers for some clocks might be located in the SOC area, which are under the
+> power domain. To enable access to those registers respective domain has to be
+> turned on. Additionally, registers for such clocks will usually loose its
+> contents when power domain is turned off, so additional saving and restoring of
+> them might be needed in the clock controller driver.
+> 
+> This patch adds basic infrastructure in the clocks core to allow implementing
+> driver for such clocks under power domains. Clock provider can supply a
+> struct device pointer, which is the used by clock core for tracking and managing
+> clock's controller runtime pm state. Each clk_prepare() operation
+> will first call pm_runtime_get_sync() on the supplied device, while
+> clk_unprepare() will do pm_runtime_put_sync() at the end.
+> 
+> Additional calls to pm_runtime_get/put functions are required to ensure that any
+> register access (like calculating/changing clock rates and unpreparing/disabling
+> unused clocks on boot) will be done with clock controller in runtime resumend
+> state.
+> 
+> When one wants to register clock controller, which make use of this feature, he
+> has to:
+> 1. Provide a struct device to the core when registering the provider.
+> 2. Ensure to enable runtime PM for that device before registering clocks.
+> 3. Make sure that the runtime PM status of the controller device reflects
+>    the HW state.
+> 
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/clk/clk.c | 129 +++++++++++++++++++++++++++++++++++++++++++++++-------
+>  1 file changed, 114 insertions(+), 15 deletions(-)
+> 
 
-Done with the help of Coccinelle.
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
----
-
-v2: This patch was present in the original series
-
- drivers/thermal/samsung/exynos_tmu.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/samsung/exynos_tmu.c b/drivers/thermal/samsung/exynos_tmu.c
-index 7b8ef09..ed805c7 100644
---- a/drivers/thermal/samsung/exynos_tmu.c
-+++ b/drivers/thermal/samsung/exynos_tmu.c
-@@ -1286,7 +1286,7 @@ static int exynos_map_dt_data(struct platform_device *pdev)
- 	return 0;
- }
- 
--static struct thermal_zone_of_device_ops exynos_sensor_ops = {
-+static const struct thermal_zone_of_device_ops exynos_sensor_ops = {
- 	.get_temp = exynos_get_temp,
- 	.set_emul_temp = exynos_tmu_set_emulation,
- };
+Best regards,
+Krzysztof
