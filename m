@@ -1,35 +1,42 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH v7 2/4] clk: samsung: Add support for runtime PM
-Date: Tue, 8 Aug 2017 17:44:04 +0200
-Message-ID: <20170808154404.GB2646@kozik-book>
-References: <1501839294-478-1-git-send-email-m.szyprowski@samsung.com>
- <CGME20170804093515eucas1p1cc2273ba02d86767c5b2533430577698@eucas1p1.samsung.com>
- <1501839294-478-3-git-send-email-m.szyprowski@samsung.com>
+From: "Prakash, Prashanth" <pprakash@codeaurora.org>
+Subject: Re: [PATCH 2/2] ACPI/thermal: support for thermal zone description
+Date: Tue, 8 Aug 2017 10:01:37 -0600
+Message-ID: <02b23d6b-a923-3790-5fce-222a11eac951@codeaurora.org>
+References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
+ <1500054535-975-3-git-send-email-pprakash@codeaurora.org>
+ <1502180603.4296.15.camel@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Return-path: <linux-clk-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1501839294-478-3-git-send-email-m.szyprowski@samsung.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1502180603.4296.15.camel@intel.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: edubezval@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Aug 04, 2017 at 11:34:52AM +0200, Marek Szyprowski wrote:
-> This patch adds struct device pointer to samsung_clk_provider and forwarding it
-> to clk_register_* functions, so drivers can register clocks, which use runtime
-> pm feature.
-> 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  drivers/clk/samsung/clk-pll.c |  2 +-
->  drivers/clk/samsung/clk.c     | 12 ++++++------
->  drivers/clk/samsung/clk.h     |  1 +
->  3 files changed, 8 insertions(+), 7 deletions(-)
+Hi Rui,
 
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+On 8/8/2017 2:23 AM, Zhang Rui wrote:
+> On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
+>> Per ACPI 6.2 spec, platforms can optionally add a string(_STR)
+>> object within each thermal zone package which provides a user
+>> friendly name/description.
+>>
+>> Add support to parse the string object, which will be exposed
+>> to userspace by thermal framework.
+>>
+> is there any real request for this?
 
-Best regards,
-Krzysztof
+Yes, Qualcomm server platforms adds these description strings.
+> _STR is a generic control method for all the ACPI devices.
+> Thus I'm wondering, if really needed, should we expose this in acpi bus
+> instead?
 
+AFAIK, adding a _STR to any package was not explicitly allowed by the spec.
+Updates in APCI 6.2 made it legal to add an _STR object to thermal zone
+specifically, so added this support only to thermal zone.
+
+Thanks,
+Prashanth
