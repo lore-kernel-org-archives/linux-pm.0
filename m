@@ -1,147 +1,115 @@
 From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH v8 0/5] Add runtime PM support for clocks (on Exynos SoC
- example)
-Date: Wed, 09 Aug 2017 12:35:02 +0200
-Message-ID: <1502274907-11931-1-git-send-email-m.szyprowski@samsung.com>
-References: <CGME20170809103512eucas1p2e12493a126ee10419f84ae9890e3450b@eucas1p2.samsung.com>
-Return-path: <linux-clk-owner@vger.kernel.org>
-Sender: linux-clk-owner@vger.kernel.org
+Subject: [PATCH v8 2/5] clk: samsung: Add support for runtime PM
+Date: Wed, 09 Aug 2017 12:35:04 +0200
+Message-ID: <1502274907-11931-3-git-send-email-m.szyprowski@samsung.com>
+References: <1502274907-11931-1-git-send-email-m.szyprowski@samsung.com>
+        <CGME20170809103513eucas1p25e142aac911838847e70a036c5d93131@eucas1p2.samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:48739 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752047AbdHIKfR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Aug 2017 06:35:17 -0400
+In-reply-to: <1502274907-11931-1-git-send-email-m.szyprowski@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Inki Dae <inki.dae@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-List-Id: linux-pm@vger.kernel.org
 
-Dear All,
+This patch adds struct device pointer to samsung_clk_provider and forwarding it
+to clk_register_* functions, so drivers can register clocks, which use runtime
+pm feature.
 
-This patchset adds runtime PM support to common clock framework. This is an
-attempt to implement support for clock controllers, which belongs to a power
-domain. This approach works surprisingly well on Exynos 5433 SoC, what allowed
-us to solve various freeze/crash issues related to power management.
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Tested-by: Chanwoo Choi <cw00.choi@samsung.com>
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ drivers/clk/samsung/clk-pll.c |  2 +-
+ drivers/clk/samsung/clk.c     | 12 ++++++------
+ drivers/clk/samsung/clk.h     |  1 +
+ 3 files changed, 8 insertions(+), 7 deletions(-)
 
-The main idea behind this patchset is to keep clock's controller power domain
-enabled every time when at least one of its clock is enabled or access to its
-registers is being made. Clock controller driver (clock provider) can
-supply a struct device pointer, which is the used by clock core for tracking and
-managing clock's controller runtime pm state. Each clk_prepare() operation will
-first call pm_runtime_get_sync() on the supplied device, while clk_unprepare()
-will do pm_runtime_put() at the end.
-
-This runtime PM feature has been tested with Exynos4412 (not included in this
-patchset) and Exynos5433 clocks drivers. Both have some clocks, which belongs to
-respective power domains and need special handling during power on/off
-procedures. Till now it wasn't handled at all, what caused various problems.
-
-Patches for clocks drivers change the way the clock provider is initialized.
-Instead of CLK_OF_DECLARE based initialization, a complete platform device driver
-infrastructure is being used. This is needed to let driver to use runtime PM
-feature and integrate with generic power domains. The side-effect of this change
-is a delay in clock provider registeration during system boot, so early
-initialized drivers might get EPROBEDEFER error when requesting their clocks.
-This was an issue for IOMMU drivers, but IOMMU deferred probe support has been
-finally merged to v4.13-rc1.
-
-Patches are based on v4.13-rc4.
-
-Stephen: this patchset finally got a review from Ulf (from PM point of
-view). Is also touches only the Exynos5433 and Exynos Audio Subsystem
-drivers, which both have separate DT nodes for each clock controllers and
-each clock controller is entirely only in the one power domain, so everything is
-clean from the current DT bindings perspective. Would it be okay to merge it?
-
-Best regards
-Marek Szyprowski
-Samsung R&D Institute Poland
-
-
-Changelog:
-
-v8:
-- fixed minor issues pointed by Krzysztof Kozlowski and added his 'Reviewed-by'
-  tags
-- added 'Reviewed-by' and 'Tested-by' tags from Chanwoo Choi
-- moved trivial changes in Exynos AudioSS driver to separate patch
-- added pm_runtime_get_noresume/pm_runtime_put_sync calls also to exynos-audss
-  driver (like it is already done for exynos5433 clocks driver)
-- still waiting for any comments from clk maintainers
-
-v7: https://www.spinics.net/lists/arm-kernel/msg598408.html
-- rebased onto v4.13-rc3
-- still waiting for any comments from clk maintainers
-
-v6: https://patches.linaro.org/cover/95713/
-- addressed comments from Ulf Hanson and added his 'Reviewed-by' tags
-- simplified exynos 5433 clock driver code a bit
-- fixes issues pointed by kbuild test robot
-
-v5: https://www.spinics.net/lists/linux-samsung-soc/msg57718.html
-- rebased onto next-20170125 kernel release
-- added two more calls to runtime PM in clock's core:
-	1. clk_recalc() should ensure active runtime pm state, because it might
-	   read registers (in case of dividers) to calculate the rate
-	2. clk_register() also needs to ensure active runtime pm state to read
-	   initial rate and status of the clocks
-- more fixes in Exynos5433 clocks drivers:
-	1. PLL in DISP CMU must be enabled for suspend
-	2. guard clocks registration with pm_runtime_get_sync/pm_runtime_put to
-	   avoid turning the power domain on and off many times for no good
-	   reason (registering each clock will call pm_runtime_get_sync(), then
-	   pm_runtime_put, what in turn might disable power domain)
-- still waiting for a review...
-
-v4: http://www.spinics.net/lists/arm-kernel/msg550747.html
-- Removed patch for Exynos4412 clocks from the patchset. DT bindings for power
-  domain for ISP sub-controller needs more discussion. It will be handled
-  separately when the runtime PM for clocks feature gets merged.
-- Added patch with runtime PM support for Exynos AudioSS clock controller driver
-  (needed to enable audio power domain on Exynos5 series).
-- Fixes in Exynos5433 driver:
-	1. added missing clock for Audio CMU
-	2. added support for FSYS CMU
-	3. improved support for DISP CMU (thanks to Andrzej Hajda for
-	   investigating that).
-- Rebased onto v4.10-rc1
-- Waiting for a review...
-
-v3: http://www.spinics.net/lists/arm-kernel/msg538122.html
-- Removed CLK_RUNTIME_PM flag, core now simply checks if runtime pm is enabled
-  for the provided device during clock registration as suggested by Ulf
-- Simplified code for exynos4412 isp clock driver registration
-- Resolved some other minor issues pointed by Ulf clk core code
-- Rebased onto v4.9-rc1 and new version of IOMMU deferred probe patchset
-
-v2: https://www.spinics.net/lists/arm-kernel/msg532798.html
-- Simplified clk_pm_runtime_get/put functions, removed workaround for devices
-  with disabled runtime pm. Such workaround is no longer needed since commit
-  4d23a5e84806b202d9231929c9507ef7cf7a0185 ("PM / Domains: Allow runtime PM
-  during system PM phases").
-- Added CLK_RUNTIME_PM flag to indicate clocks, for which clock core should
-  call runtime pm functions. This solves problem with clocks, for which struct
-  device is already registered, but no runtime pm is enabled.
-- Extended commit messages according to Ulf suggestions.
-- Fixed some style issues pointed by Barlomiej.
-
-v1: http://www.spinics.net/lists/arm-kernel/msg528128.html
-- initial version
-
-
-Patch summary:
-
-Marek Szyprowski (5):
-  clk: Add support for runtime PM
-  clk: samsung: Add support for runtime PM
-  clk: samsung: exynos5433: Add support for runtime PM
-  clk: samsung: exynos-audss: Use local variable for controller's device
-  clk: samsung: exynos-audss: Add support for runtime PM
-
- .../devicetree/bindings/clock/clk-exynos-audss.txt |   6 +
- .../devicetree/bindings/clock/exynos5433-clock.txt |  16 +
- drivers/clk/clk.c                                  | 129 ++++++-
- drivers/clk/samsung/clk-exynos-audss.c             |  76 ++--
- drivers/clk/samsung/clk-exynos5433.c               | 409 ++++++++++++++++-----
- drivers/clk/samsung/clk-pll.c                      |   2 +-
- drivers/clk/samsung/clk.c                          |  12 +-
- drivers/clk/samsung/clk.h                          |   7 +
- 8 files changed, 521 insertions(+), 136 deletions(-)
-
+diff --git a/drivers/clk/samsung/clk-pll.c b/drivers/clk/samsung/clk-pll.c
+index 037c61484098..41ebb94d2855 100644
+--- a/drivers/clk/samsung/clk-pll.c
++++ b/drivers/clk/samsung/clk-pll.c
+@@ -1388,7 +1388,7 @@ static void __init _samsung_clk_register_pll(struct samsung_clk_provider *ctx,
+ 	pll->lock_reg = base + pll_clk->lock_offset;
+ 	pll->con_reg = base + pll_clk->con_offset;
+ 
+-	ret = clk_hw_register(NULL, &pll->hw);
++	ret = clk_hw_register(ctx->dev, &pll->hw);
+ 	if (ret) {
+ 		pr_err("%s: failed to register pll clock %s : %d\n",
+ 			__func__, pll_clk->name, ret);
+diff --git a/drivers/clk/samsung/clk.c b/drivers/clk/samsung/clk.c
+index 7ce0fa86c5ff..aef97b091b50 100644
+--- a/drivers/clk/samsung/clk.c
++++ b/drivers/clk/samsung/clk.c
+@@ -134,7 +134,7 @@ void __init samsung_clk_register_fixed_rate(struct samsung_clk_provider *ctx,
+ 	unsigned int idx, ret;
+ 
+ 	for (idx = 0; idx < nr_clk; idx++, list++) {
+-		clk_hw = clk_hw_register_fixed_rate(NULL, list->name,
++		clk_hw = clk_hw_register_fixed_rate(ctx->dev, list->name,
+ 			list->parent_name, list->flags, list->fixed_rate);
+ 		if (IS_ERR(clk_hw)) {
+ 			pr_err("%s: failed to register clock %s\n", __func__,
+@@ -163,7 +163,7 @@ void __init samsung_clk_register_fixed_factor(struct samsung_clk_provider *ctx,
+ 	unsigned int idx;
+ 
+ 	for (idx = 0; idx < nr_clk; idx++, list++) {
+-		clk_hw = clk_hw_register_fixed_factor(NULL, list->name,
++		clk_hw = clk_hw_register_fixed_factor(ctx->dev, list->name,
+ 			list->parent_name, list->flags, list->mult, list->div);
+ 		if (IS_ERR(clk_hw)) {
+ 			pr_err("%s: failed to register clock %s\n", __func__,
+@@ -184,7 +184,7 @@ void __init samsung_clk_register_mux(struct samsung_clk_provider *ctx,
+ 	unsigned int idx, ret;
+ 
+ 	for (idx = 0; idx < nr_clk; idx++, list++) {
+-		clk_hw = clk_hw_register_mux(NULL, list->name,
++		clk_hw = clk_hw_register_mux(ctx->dev, list->name,
+ 			list->parent_names, list->num_parents, list->flags,
+ 			ctx->reg_base + list->offset,
+ 			list->shift, list->width, list->mux_flags, &ctx->lock);
+@@ -217,13 +217,13 @@ void __init samsung_clk_register_div(struct samsung_clk_provider *ctx,
+ 
+ 	for (idx = 0; idx < nr_clk; idx++, list++) {
+ 		if (list->table)
+-			clk_hw = clk_hw_register_divider_table(NULL,
++			clk_hw = clk_hw_register_divider_table(ctx->dev,
+ 				list->name, list->parent_name, list->flags,
+ 				ctx->reg_base + list->offset,
+ 				list->shift, list->width, list->div_flags,
+ 				list->table, &ctx->lock);
+ 		else
+-			clk_hw = clk_hw_register_divider(NULL, list->name,
++			clk_hw = clk_hw_register_divider(ctx->dev, list->name,
+ 				list->parent_name, list->flags,
+ 				ctx->reg_base + list->offset, list->shift,
+ 				list->width, list->div_flags, &ctx->lock);
+@@ -255,7 +255,7 @@ void __init samsung_clk_register_gate(struct samsung_clk_provider *ctx,
+ 	unsigned int idx, ret;
+ 
+ 	for (idx = 0; idx < nr_clk; idx++, list++) {
+-		clk_hw = clk_hw_register_gate(NULL, list->name, list->parent_name,
++		clk_hw = clk_hw_register_gate(ctx->dev, list->name, list->parent_name,
+ 				list->flags, ctx->reg_base + list->offset,
+ 				list->bit_idx, list->gate_flags, &ctx->lock);
+ 		if (IS_ERR(clk_hw)) {
+diff --git a/drivers/clk/samsung/clk.h b/drivers/clk/samsung/clk.h
+index b8ca0dd3a38b..f0acae4f5d1b 100644
+--- a/drivers/clk/samsung/clk.h
++++ b/drivers/clk/samsung/clk.h
+@@ -24,6 +24,7 @@
+  */
+ struct samsung_clk_provider {
+ 	void __iomem *reg_base;
++	struct device *dev;
+ 	spinlock_t lock;
+ 	/* clk_data must be the last entry due to variable lenght 'hws' array */
+ 	struct clk_hw_onecell_data clk_data;
 -- 
 1.9.1
-
