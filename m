@@ -1,66 +1,68 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: Return 0 from ->fast_switch() on errors
-Date: Wed,  9 Aug 2017 10:21:46 +0530
-Message-ID: <a219f5b42d06a78bd254ca1b23047d45702f12d2.1502254023.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sudeep.holla@arm.com, Dietmar.Eggemann@arm.com, linux-kernel@vger.kernel.org
+From: Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 0/3] Introduce USB charger support in USB phy
+Date: Wed, 9 Aug 2017 13:34:18 +0800
+Message-ID: <CAMz4kuKYOjHgapntbuNB9b6qz35osKetwJ8jmxb=TnDKgLEuDg@mail.gmail.com>
+References: <cover.1501132171.git.baolin.wang@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <cover.1501132171.git.baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg KH <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: Jun Li <jun.li-3arQi8VN3Tc@public.gmane.org>, Peter Chen <peter.chen-KZfg59tc24xl57MIdRCFDg@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, NeilBrown <neilb-IBi9RG/b67k@public.gmane.org>, patches-yzvPICuk2AATkU/dhu1WVueM+bqZidxxQQ4Iyu8u01E@public.gmane.org, Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, USB <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, device-mainlining-cunTk1MwBs98uUxBSJOaYoYkZiVZrdSR2LY78lusg7I@public.gmane.org, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-CPUFREQ_ENTRY_INVALID is a special symbol which is used to specify that
-an entry in the cpufreq table is invalid. But using it outside of the
-scope of the cpufreq table looks a bit incorrect.
+Hi Felipe,
 
-We can represent an invalid frequency by writing it as 0 instead if we
-need. Note that it is already done that way for the return value of the
-->get() callback.
+On 27 July 2017 at 13:14, Baolin Wang <baolin.wang-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> Currently the Linux kernel does not provide any standard integration of this
+> feature that integrates the USB subsystem with the system power regulation
+> provided by PMICs meaning that either vendors must add this in their kernels
+> or USB gadget devices based on Linux (such as mobile phones) may not behave
+> as they should. Thus provide a standard USB charger support in USB phy core
+> for doing this in kernel.
+>
+> Now introduce one user with wm831x_power to support and test the usb charger.
+> In future we will also cnvert below power drivers:
+> drivers/power/supply/axp288_charger.c
+> drivers/power/supply/bq24190_charger.c
+> drivers/power/supply/charger-manager.c
+> drivers/power/supply/qcom_smbb.c
+>
+> Changes since v3:
+>  - Bail out errors when failed to find usb phy for wm831x_power driver.
+> Changes since v2:
+>  - Add DT binding documentation for wm831x_power driver.
+>  - Change 'usb-phy' as one optional property for wm831x_power driver.
+> Changes since v1:
+>  - Fix building errors.
 
-Lets do the same for ->fast_switch() and not use CPUFREQ_ENTRY_INVALID
-outside of the scope of cpufreq table.
+Do you have any comments about usb charger support in usb phy core? Thanks.
 
-Also update the comment over cpufreq_driver_fast_switch() to clearly
-mention what this returns.
+>
+> Baolin Wang (3):
+>   include: uapi: usb: Introduce USB charger type and state definition
+>   usb: phy: Add USB charger support
+>   power: wm831x_power: Support USB charger current limit management
+>
+>  Documentation/devicetree/bindings/mfd/wm831x.txt |    1 +
+>  drivers/power/supply/wm831x_power.c              |   72 ++++++
+>  drivers/usb/phy/phy.c                            |  272 ++++++++++++++++++++++
+>  include/linux/usb/phy.h                          |   49 ++++
+>  include/uapi/linux/usb/charger.h                 |   31 +++
+>  5 files changed, 425 insertions(+)
+>  create mode 100644 include/uapi/linux/usb/charger.h
+>
+> --
+> 1.7.9.5
+>
 
-None of the drivers return CPUFREQ_ENTRY_INVALID as of now from
-->fast_switch() callback and so we don't need to update any of those.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq.c        | 7 ++++---
- kernel/sched/cpufreq_schedutil.c | 2 +-
- 2 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index b2cc98551fc3..9588e15da26b 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1832,9 +1832,10 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
-  * twice in parallel for the same policy and that it will never be called in
-  * parallel with either ->target() or ->target_index() for the same policy.
-  *
-- * If CPUFREQ_ENTRY_INVALID is returned by the driver's ->fast_switch()
-- * callback to indicate an error condition, the hardware configuration must be
-- * preserved.
-+ * Returns the actual frequency set for the CPU.
-+ *
-+ * If 0 is returned by the driver's ->fast_switch() callback to indicate an
-+ * error condition, the hardware configuration must be preserved.
-  */
- unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
- 					unsigned int target_freq)
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 5465bf221e8f..2e74c49776be 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -123,7 +123,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
- 
- 	if (policy->fast_switch_enabled) {
- 		next_freq = cpufreq_driver_fast_switch(policy, next_freq);
--		if (next_freq == CPUFREQ_ENTRY_INVALID)
-+		if (!next_freq)
- 			return;
- 
- 		policy->cur = next_freq;
 -- 
-2.13.0.71.gd7076ec9c9cb
+Baolin.wang
+Best Regards
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
