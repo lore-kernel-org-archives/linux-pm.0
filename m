@@ -1,35 +1,53 @@
-From: Markus Mayer <code@mmayer.net>
-Subject: [PATCH v3 3/4] ARM: multi_v7_defconfig: add CONFIG_BRCMSTB_THERMAL
-Date: Wed,  9 Aug 2017 14:56:31 -0700
-Message-ID: <20170809215632.4124-4-code@mmayer.net>
-References: <20170809215632.4124-1-code@mmayer.net>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170809215632.4124-1-code@mmayer.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal@milecki.pl>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
-Cc: Markus Mayer <mmayer@broadcom.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [Intel-wired-lan] [regression] wake on lan no longer works in
+ 4.13-rc3. was Re: Linux 4.13: Reported regressions as of Sunday, 2017-08-06
+Date: Wed, 9 Aug 2017 23:59:15 +0200
+Message-ID: <CAJZ5v0jykByXcFmYjOb_hmye2D1BBkK31vA7WFp4W+OAr52fuw@mail.gmail.com>
+References: <a6b015b1-a4da-c56b-89e4-629c873af4d0@leemhuis.info>
+ <15027171.LoAvHuklGv@aspire.rjw.lan> <20170809064231.GA19118@amd>
+ <25469991.213uJSqkO8@aspire.rjw.lan> <alpine.NEB.2.21.1.1708091415010.1455@chris.i8u.org>
+ <20170809215634.GA16992@amd>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f177.google.com ([209.85.223.177]:36842 "EHLO
+        mail-io0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752166AbdHIV7Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Aug 2017 17:59:16 -0400
+In-Reply-To: <20170809215634.GA16992@amd>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Hisashi T Fujinaka <htodd@twofifty.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thorsten Leemhuis <regressions@leemhuis.info>, intel-wired-lan@lists.osuosl.org, Linux PM <linux-pm@vger.kernel.org>
 
-From: Markus Mayer <mmayer@broadcom.com>
+On Wed, Aug 9, 2017 at 11:56 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> Hi!
+>
+>> >[You seem to have a stale linux-pm address in your address book,
+>> >I replaced it with the current one in the CC list.]
+>
+> Thanks, fixed.
+>
+>> >>ACPI S3, right. Machine still wakes up properly when I hit a key on
+>> >>USB keyboard.
+>> >
+>> >OK, so my guess would be a driver issue.  What driver is this, igb?
+>> >
+>> >>Does wake on LAN work on you, on any hardware?
+>> >
+>> >Yes it does, I checked two machines earlier today, both work.
+>> >
+>> >Can you enable dynamic debug in device_pm.c and send a dmesg output
+>> >with that covering a suspend-resume cycle?
+>>
+>> 82579 is e1000e
+>
+> Thanks for all the help.
+>
+> I now realized what was going on: I had badly inserted ethernet
+> cable; machine just connected to wifi, and everything worked... except
+> wake on LAN.
+>
+> Sorry for the noise,
 
-Turn on CONFIG_BRCMSTB_THERMAL as module.
-
-Signed-off-by: Markus Mayer <mmayer@broadcom.com>
----
- arch/arm/configs/multi_v7_defconfig | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
-index 4d19c1b..230f7fa 100644
---- a/arch/arm/configs/multi_v7_defconfig
-+++ b/arch/arm/configs/multi_v7_defconfig
-@@ -455,6 +455,7 @@ CONFIG_SENSORS_NTC_THERMISTOR=m
- CONFIG_SENSORS_PWM_FAN=m
- CONFIG_SENSORS_INA2XX=m
- CONFIG_CPU_THERMAL=y
-+CONFIG_BRCMSTB_THERMAL=m
- CONFIG_ROCKCHIP_THERMAL=y
- CONFIG_RCAR_THERMAL=y
- CONFIG_ARMADA_THERMAL=y
--- 
-2.7.4
+No worries. ;-)
