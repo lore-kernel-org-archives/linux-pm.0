@@ -1,119 +1,54 @@
-From: Brian Bian <brian.bian@linux.intel.com>
-Subject: [PATCH v3] thermal: int3400_thermal: process "thermal table changed" event
-Date: Wed,  9 Aug 2017 11:45:40 -0700
-Message-ID: <1502304340-18680-1-git-send-email-brian.bian@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:2900 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752119AbdHISps (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 9 Aug 2017 14:45:48 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [regression] wake on lan no longer works in 4.13-rc3. was Re: Linux 4.13: Reported regressions as of Sunday, 2017-08-06
+Date: Wed, 09 Aug 2017 22:35:37 +0200
+Message-ID: <25469991.213uJSqkO8@aspire.rjw.lan>
+References: <a6b015b1-a4da-c56b-89e4-629c873af4d0@leemhuis.info> <15027171.LoAvHuklGv@aspire.rjw.lan> <20170809064231.GA19118@amd>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170809064231.GA19118@amd>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Thorsten Leemhuis <regressions@leemhuis.info>, jeffrey.t.kirsher@intel.com, intel-wired-lan@lists.osuosl.org, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, Brian Bian <brian.bian@linux.intel.com>
 
-Some BIOS implement ACPI notification code 0x83 to indicate active
-relationship table(ART) and/or thermal relationship table(TRT) changes
-to INT3400 device. This event needs to be propagated to user space so
-that it can be handled by the user space thermal daemon.
+[You seem to have a stale linux-pm address in your address book,
+ I replaced it with the current one in the CC list.]
 
-Signed-off-by: Brian Bian <brian.bian@linux.intel.com>
----
-Changes in v2:
-  - Directly propagate the event to user space as a uevent instead of
-    calling thermal_zone_device_update().
+On Wednesday, August 9, 2017 8:42:31 AM CEST Pavel Machek wrote:
+> On Wed 2017-08-09 02:45:54, Rafael J. Wysocki wrote:
+> > On Tuesday, August 8, 2017 11:00:53 AM CEST Pavel Machek wrote:
+> > > Hi!
+> > > 
+> > > Perhaps you should get regressions@kernel.org alias, or something like that?
+> > > 
+> > > > As always: Are you aware of any other regressions? Then please let me
+> > > > know. For details see http://bit.ly/lnxregtrackid And please tell me if
+> > > > there is anything in the report that shouldn't be there.
+> > > 
+> > > I am using wake-on-lan quite a bit, and it stopped working. I'll move
+> > > to -rc4 and test there; but if anyone already has some ideas, let me
+> > > know.
+> > > 
+> > > Hardware is thinkpad X220
+> > > 
+> > > 00:19.0 Ethernet controller: Intel Corporation 82579LM Gigabit Network
+> > > Connection (rev 04)
+> > 
+> > I guess this is ACPI S3 suspend?
+> 
+> ACPI S3, right. Machine still wakes up properly when I hit a key on
+> USB keyboard.
 
-Changes in v3:
-  - Change commit message subject.
+OK, so my guess would be a driver issue.  What driver is this, igb?
 
- drivers/thermal/int340x_thermal/int3400_thermal.c | 41 +++++++++++++++++++++++
- include/linux/thermal.h                           |  1 +
- 2 files changed, 42 insertions(+)
+> Does wake on LAN work on you, on any hardware?
 
-diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index a9ec94e..0ba8fe6 100644
---- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -16,6 +16,8 @@
- #include <linux/thermal.h>
- #include "acpi_thermal_rel.h"
- 
-+#define INT3400_THERMAL_TABLE_CHANGED 0x83
-+
- enum int3400_thermal_uuid {
- 	INT3400_THERMAL_PASSIVE_1,
- 	INT3400_THERMAL_ACTIVE,
-@@ -185,6 +187,35 @@ static int int3400_thermal_run_osc(acpi_handle handle,
- 	return result;
- }
- 
-+static void int3400_notify(acpi_handle handle,
-+			u32 event,
-+			void *data)
-+{
-+	struct int3400_thermal_priv *priv = data;
-+	char *thermal_prop[5];
-+
-+	if (!priv)
-+		return;
-+
-+	switch (event) {
-+	case INT3400_THERMAL_TABLE_CHANGED:
-+		thermal_prop[0] = kasprintf(GFP_KERNEL, "NAME=%s",
-+				priv->thermal->type);
-+		thermal_prop[1] = kasprintf(GFP_KERNEL, "TEMP=%d",
-+				priv->thermal->temperature);
-+		thermal_prop[2] = kasprintf(GFP_KERNEL, "TRIP=");
-+		thermal_prop[3] = kasprintf(GFP_KERNEL, "EVENT=%d",
-+				THERMAL_TABLE_CHANGED);
-+		thermal_prop[4] = NULL;
-+		kobject_uevent_env(&priv->thermal->device.kobj, KOBJ_CHANGE,
-+				thermal_prop);
-+		break;
-+	default:
-+		dev_err(&priv->adev->dev, "Unsupported event [0x%x]\n", event);
-+		break;
-+	}
-+}
-+
- static int int3400_thermal_get_temp(struct thermal_zone_device *thermal,
- 			int *temp)
- {
-@@ -290,6 +321,12 @@ static int int3400_thermal_probe(struct platform_device *pdev)
- 	if (result)
- 		goto free_zone;
- 
-+	result = acpi_install_notify_handler(
-+			priv->adev->handle, ACPI_DEVICE_NOTIFY, int3400_notify,
-+			(void *)priv);
-+	if (result)
-+		goto free_zone;
-+
- 	return 0;
- 
- free_zone:
-@@ -306,6 +343,10 @@ static int int3400_thermal_remove(struct platform_device *pdev)
- {
- 	struct int3400_thermal_priv *priv = platform_get_drvdata(pdev);
- 
-+	acpi_remove_notify_handler(
-+			priv->adev->handle, ACPI_DEVICE_NOTIFY,
-+			int3400_notify);
-+
- 	if (!priv->rel_misc_dev_res)
- 		acpi_thermal_rel_misc_device_remove(priv->adev->handle);
- 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index dab11f9..fd5b959 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -102,6 +102,7 @@ enum thermal_notify_event {
- 	THERMAL_DEVICE_DOWN, /* Thermal device is down */
- 	THERMAL_DEVICE_UP, /* Thermal device is up after a down event */
- 	THERMAL_DEVICE_POWER_CAPABILITY_CHANGED, /* power capability changed */
-+	THERMAL_TABLE_CHANGED, /* Thermal table(s) changed */
- };
- 
- struct thermal_zone_device_ops {
--- 
-2.7.4
+Yes it does, I checked two machines earlier today, both work.
+
+Can you enable dynamic debug in device_pm.c and send a dmesg output
+with that covering a suspend-resume cycle?
+
+Thanks,
+Rafael
