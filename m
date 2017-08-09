@@ -1,79 +1,63 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Intel-wired-lan] [regression] wake on lan no longer works in
- 4.13-rc3. was Re: Linux 4.13: Reported regressions as of Sunday, 2017-08-06
-Date: Wed, 9 Aug 2017 23:56:34 +0200
-Message-ID: <20170809215634.GA16992@amd>
-References: <a6b015b1-a4da-c56b-89e4-629c873af4d0@leemhuis.info>
- <15027171.LoAvHuklGv@aspire.rjw.lan>
- <20170809064231.GA19118@amd>
- <25469991.213uJSqkO8@aspire.rjw.lan>
- <alpine.NEB.2.21.1.1708091415010.1455@chris.i8u.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="WIyZ46R2i8wDzkSu"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38742 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752022AbdHIV4g (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Aug 2017 17:56:36 -0400
-Content-Disposition: inline
-In-Reply-To: <alpine.NEB.2.21.1.1708091415010.1455@chris.i8u.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
+Subject: [PATCH v3 0/4] thermal: add brcmstb AVS TMON driver
+Date: Wed,  9 Aug 2017 14:56:28 -0700
+Message-ID: <20170809215632.4124-1-code@mmayer.net>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Doug Berger <opendmb-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory Fong <gregory.0xf0-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>
+Cc: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ARM Kernel List <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Hisashi T Fujinaka <htodd@twofifty.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thorsten Leemhuis <regressions@leemhuis.info>, intel-wired-lan@lists.osuosl.org, Linux PM <linux-pm@vger.kernel.org>
 
+From: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 
---WIyZ46R2i8wDzkSu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This series adds the brcmstb AVS TMON driver.
 
-Hi!
+The driver was originally written by Brian Norris.
 
-> >[You seem to have a stale linux-pm address in your address book,
-> >I replaced it with the current one in the CC list.]
+This series is also available at
+https://github.com/mmayer/linux/tree/brcmstb-thermal-4.13-v4.
 
-Thanks, fixed.
+v1 of this series can be found at https://lkml.org/lkml/2017/6/5/921
+v2 of this series can be found at https://lkml.org/lkml/2017/7/21/585
+v3 of this series can be found at https://lkml.org/lkml/2017/7/31/710
 
-> >>ACPI S3, right. Machine still wakes up properly when I hit a key on
-> >>USB keyboard.
-> >
-> >OK, so my guess would be a driver issue.  What driver is this, igb?
-> >
-> >>Does wake on LAN work on you, on any hardware?
-> >
-> >Yes it does, I checked two machines earlier today, both work.
-> >
-> >Can you enable dynamic debug in device_pm.c and send a dmesg output
-> >with that covering a suspend-resume cycle?
->=20
-> 82579 is e1000e
+Changes since v3:
+- Rebased on v4.13-rc3 to resolve conflicts in the MAINTAINERS file
 
-Thanks for all the help.
+Changes since v2:
+- replaced calls to pr_debug() with calls to dev_dbg() [PATCH 2/4 only]
+- all other patches are unchanged from v2
 
-I now realized what was going on: I had badly inserted ethernet
-cable; machine just connected to wifi, and everything worked... except
-wake on LAN.
+Changes since v1:
+- Fixed wording in binding document
+- Fixed lincensing to consistently mention GPL v2
+- Use thermal_zone_get_slope() and thermal_zone_get_offset()
+- Some minor clean-ups
 
-Sorry for the noise,
+Brian Norris (2):
+  Documentation: devicetree: add binding for Broadcom STB AVS TMON
+  thermal: add brcmstb AVS TMON driver
 
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Markus Mayer (2):
+  ARM: multi_v7_defconfig: add CONFIG_BRCMSTB_THERMAL
+  arm64: defconfig: add CONFIG_BRCMSTB_THERMAL
 
---WIyZ46R2i8wDzkSu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+ .../devicetree/bindings/thermal/brcm,avs-tmon.txt  |  20 ++
+ MAINTAINERS                                        |   8 +
+ arch/arm/configs/multi_v7_defconfig                |   1 +
+ arch/arm64/configs/defconfig                       |   1 +
+ drivers/thermal/Kconfig                            |   2 +-
+ drivers/thermal/broadcom/Kconfig                   |   7 +
+ drivers/thermal/broadcom/Makefile                  |   1 +
+ drivers/thermal/broadcom/brcmstb_thermal.c         | 386 +++++++++++++++++++++
+ 8 files changed, 425 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
+ create mode 100644 drivers/thermal/broadcom/brcmstb_thermal.c
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+-- 
+2.7.4
 
-iEYEARECAAYFAlmLhRIACgkQMOfwapXb+vJYDACfalkLEAwNh2ZPvLoHMKdGF5HH
-0bIAniuBS3Lf5H1qzmZQnf7p+TWQXsmh
-=8Y/i
------END PGP SIGNATURE-----
-
---WIyZ46R2i8wDzkSu--
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
