@@ -1,79 +1,117 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 17/18] cpufreq: add support for CPU DVFS based on SCMI
- message protocol
-Date: Wed, 9 Aug 2017 15:36:51 +0530
-Message-ID: <20170809100651.GA29383@vireshk-i7>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 18/18] cpufreq: scmi: add support for fast frequency
+ switching
+Date: Wed, 9 Aug 2017 11:09:02 +0100
+Message-ID: <0f89f543-39a9-30a5-4976-0c447f5fe843@arm.com>
 References: <1501857104-11279-1-git-send-email-sudeep.holla@arm.com>
- <1501857104-11279-18-git-send-email-sudeep.holla@arm.com>
- <20170809041840.GH28857@vireshk-i7>
- <97497123-2c24-6297-2d12-4f407d101b66@arm.com>
+ <1501857104-11279-19-git-send-email-sudeep.holla@arm.com>
+ <20170809042825.GI28857@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <97497123-2c24-6297-2d12-4f407d101b66@arm.com>
+In-Reply-To: <20170809042825.GI28857@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Arnd Bergmann <arnd@arndb.de>, Loc Ho <lho@apm.com>, Alexey Klimov <alexey.klimov@arm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Arnd Bergmann <arnd@arndb.de>, Loc Ho <lho@apm.com>, Alexey Klimov <alexey.klimov@arm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09-08-17, 10:59, Sudeep Holla wrote:
-> On 09/08/17 05:18, Viresh Kumar wrote:
 
-> > This stores the same handle pointer which is stored in the global variable
-> > below. Right? Why keep a local variable here at all ?
+
+On 09/08/17 05:28, Viresh Kumar wrote:
+> On 04-08-17, 15:31, Sudeep Holla wrote:
+>> The cpufreq core provides option for drivers to implement fast_switch
+>> callback which is invoked for frequency switching from interrupt context.
+>>
+>> This patch adds support for fast_switch callback in SCMI cpufreq driver
+>> by making use of polling based SCMI transfer. It also sets the flag
+>> fast_switch_possible.
+>>
+>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+>> Cc: linux-pm@vger.kernel.org
+>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+>> ---
+>>  drivers/cpufreq/scmi-cpufreq.c | 16 ++++++++++++++++
+>>  1 file changed, 16 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+>> index 034359cafea5..cb1084cb1ef1 100644
+>> --- a/drivers/cpufreq/scmi-cpufreq.c
+>> +++ b/drivers/cpufreq/scmi-cpufreq.c
+>> @@ -61,6 +61,19 @@ scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
+>>  	return perf_ops->freq_set(priv->handle, priv->domain_id, freq, false);
+>>  }
+>>  
+>> +static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+>> +					     unsigned int target_freq)
+>> +{
+>> +	struct scmi_data *priv = policy->driver_data;
+>> +	struct scmi_perf_ops *perf_ops = priv->handle->perf_ops;
+>> +
+>> +	if (!perf_ops->freq_set(priv->handle, priv->domain_id,
+>> +				target_freq * 1000, true))
+>> +		return target_freq;
+>> +
+>> +	return CPUFREQ_ENTRY_INVALID;
+>> +}
 > 
-> Yes, you are right. Initially, started with just private pointers and
-> then added global. I was thinking of calling devm_scmi_handle_get per
-> policy to reflect the refcount correctly and drop global variable. Let
-> me know what you think.
-
-A refcount of 1 should be fine as well, i.e. For the cpufreq driver. Why would
-SCMI care if we manage multiple policies here ? Unless it makes something within
-SCMI core better.
-
-> > This is something special which is used only when we are returning indexes and
-> > I am not sure if this will have benefit here. I will rather return 0 here.
-> > That's what other drivers are doing.
+> This is very much similar to the target routine, perhaps we should write another
+> local routine which is used by both target and fast switch.
 > 
-> Indeed had 0 initially but changed as per Juri's suggestion.
 
-Maybe he suggested doing that in the fast switch routine ? As that's the normal
-protocol there. Though I have sent a patch today to propose using 0 there as
-well (you cc'd).
+Just one difference, fast switch uses polling based mailbox while
+target_index uses interrupt based. I thought initially to reuse, but
+it's comes done to just perf_ops->freq_set, so dropped that idea.
 
-> But is 0
-> treated as failure and still running at current OPP ?
+> Do we guarantee that the frequency is changed by the time this routine returns?
 
-You have used that in the ->get() routine. So the OPP isn't changing, but we are
-just trying to fetch it. cpufreq core doesn't do a lot with the value returned
-from here, but at one place we break early if 0 is returned. And so all drivers
-are returning that.
+No, firmware may return acknowledging the request not it's completion.
 
-> and not 0KHz I assume.
-
-Yeah, 0 KHz is dead CPU really :)
-
-> > I suppose any CPU can change the frequency of any other CPU here, right? You
-> > must set policy->dvfs_possible_from_any_cpu = true, from ->init() then.
-> > 
+> Or we just send a SCMI request and return back ?
 > 
-> OK, I missed to see something like that exists, will do.
 
-Fairly recent stuff, present in pm/linux-next only.
+Yes, exactly.
 
-> >> +	/*
-> >> +	 * But we need OPP table to function so if it is not there let's
-> >> +	 * give platform code chance to provide it for us.
-> >> +	 */
-> > 
-> > How are we getting the OPPs? DT or non DT ?
-> > 
+> If we just send the request and don't wait for freq to get changed, what
+> protects another scmi_cpufreq_fast_switch() to get called before the first one
+> is finished? And what will happen on that call ?
+
+Firmware needs to serialize or override based on the timing of the two
+consecutive requests.
+
 > 
-> Non DT :), from the firmware.
+>>  static int
+>>  scmi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+>>  {
+>> @@ -164,6 +177,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+>>  
+>>  	policy->cpuinfo.transition_latency = latency;
+>>  
+>> +	policy->fast_switch_possible = true;
+>>  	return 0;
+>>  
+>>  out_free_cpufreq_table:
+>> @@ -180,6 +194,7 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
+>>  {
+>>  	struct scmi_data *priv = policy->driver_data;
+>>  
+>> +	policy->fast_switch_possible = false;
+>>  	cpufreq_cooling_unregister(priv->cdev);
+>>  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+>>  	dev_pm_opp_cpumask_remove_table(policy->related_cpus);
+>> @@ -228,6 +243,7 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
+>>  	.init			= scmi_cpufreq_init,
+>>  	.exit			= scmi_cpufreq_exit,
+>>  	.ready			= scmi_cpufreq_ready,
+>> +	.fast_switch		= scmi_cpufreq_fast_switch,
+> 
+> Maybe add it right after target_index ?
+> 
 
-I would improve the above comment in that case to clearly say that OPPs are
-added by the platform, lets wait for it.
+Done
 
 -- 
-viresh
+Regards,
+Sudeep
