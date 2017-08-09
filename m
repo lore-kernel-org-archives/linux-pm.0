@@ -1,70 +1,70 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: rcar: Add support for R8A7795 SoC
-Date: Thu, 10 Aug 2017 00:52:05 +0200
-Message-ID: <250419201.CH3uKmuKZU@aspire.rjw.lan>
-References: <1501852680-21127-1-git-send-email-horms+renesas@verge.net.au> <20170807033705.GE28857@vireshk-i7>
+Subject: Re: [PATCH v2 2/2] ACPI / Sleep: Check low power idle constraints for debug only
+Date: Thu, 10 Aug 2017 01:17:02 +0200
+Message-ID: <2200531.jeIBytVRuy@aspire.rjw.lan>
+References: <1502232075-23832-1-git-send-email-srinivas.pandruvada@linux.intel.com> <1502232075-23832-3-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20170807033705.GE28857@vireshk-i7>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Simon Horman <horms+renesas@verge.net.au>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1502232075-23832-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: lenb@kernel.org, linux-pm@vger.kernel.org, mario.limonciello@dell.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lukas@wunner.de
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, August 7, 2017 5:37:05 AM CEST Viresh Kumar wrote:
-> On 04-08-17, 15:18, Simon Horman wrote:
-> > From: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
-> > 
-> > After the commit "a399dc9fc50 cpufreq: shmobile: Use generic platdev
-> > driver", will use cpufreq-dt-platdev driver to enable cpufreq-dt support.
-> > Hence, follow the implementation to support new R8A7795 SoC.
-> > 
-> > Signed-off-by: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
-> > Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
-> > ---
-> >  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > This is identical to a patch posted by Khiem last year.
-> > At the time it was asked if using opp-v2 was the preferred approach.
-> > 
-> > https://patchwork.kernel.org/patch/9054011/
-> > 
-> > An inspection of the current upstream kernel code seems to indicate
-> > that adding a binding as this patch does is compatibile with using opp-v2
-> > and I plan to post DTS patches separately which make use of the opp-v2
-> > bindings - they depend on this driver change to work.
-> > 
-> > I have provided an integration patch with this patch, those DTS changes,
-> > and Renesas clock updates also depended on by the DTS changes. The result
-> > is working CPUFreq for the r8a7795 (R-Car H3) ES1.0.
-> > 
-> > If this work is acceptable I plan to follow up with patches to
-> > enable CPUFreq on the r8a7796 (R-Car M3-W).
-> > 
-> > https://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas.git topic/r8a7795-cpufreq
-> > 
-> > A description of steps taken to lightly exercise the above can be found here:
-> > 
-> > http://elinux.org/Tests:R-CAR-GEN3-CPUFreq
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > index 096aea7fcb67..13b72f3c420b 100644
-> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > @@ -67,6 +67,7 @@ static const struct of_device_id machines[] __initconst = {
-> >  	{ .compatible = "renesas,r8a7792", },
-> >  	{ .compatible = "renesas,r8a7793", },
-> >  	{ .compatible = "renesas,r8a7794", },
-> > +	{ .compatible = "renesas,r8a7795", },
-> >  	{ .compatible = "renesas,sh73a0", },
-> >  
-> >  	{ .compatible = "rockchip,rk2928", },
+On Wednesday, August 9, 2017 12:41:15 AM CEST Srinivas Pandruvada wrote:
+> For SoC to achieve its lowest power platform idle state a set of hardware
+> preconditions must be met. These preconditions or constraints can be
+> obtained by issuing a device specific method (_DSM) with function "1".
+> Refer to the document provided in the link below.
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Here during initialization (from attach() callback of LPS0 device), invoke
+> function 1 to get the device constraints. Each enabled constraint is
+> stored in a table.
 > 
+> The devices in this table are used to check whether they were in required
+> minimum state, while entering suspend. This check is done from platform
+> freeze wake() callback, only when /sys/power/pm_debug_messages attribute
+> is non zero.
+> 
+> If any constraint is not met and device is ACPI power managed then it
+> prints the device name to kernel logs.
+> 
+> Also if debug is enabled in acpi/sleep.c, the constraint table and state
+> of each device on wake is dumped in kernel logs.
+> 
+> Link: http://www.uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+> ---
+>  drivers/acpi/sleep.c | 162 +++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 162 insertions(+)
+> 
+> diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
+> index 2b881de..b3ef577 100644
+> --- a/drivers/acpi/sleep.c
+> +++ b/drivers/acpi/sleep.c
+> @@ -669,6 +669,7 @@ static const struct acpi_device_id lps0_device_ids[] = {
+
+[cut]
+
+>  
+> @@ -773,6 +933,8 @@ static void acpi_freeze_wake(void)
+>  	 */
+>  	if (acpi_sci_irq_valid() &&
+>  	    !irqd_is_wakeup_armed(irq_get_irq_data(acpi_sci_irq))) {
+> +		if (pm_debug_messages_enabled())
+> +			lpi_check_constraints();
+
+I'm not sure why you only want to check the constraints when we do the
+_cancel_wakeup() thing.
+
+IMO the check is relevant regardless of whether or not the wakeup was
+via ACPI.
+
+>  		pm_system_cancel_wakeup();
+>  		s2idle_wakeup = true;
+>  	}
 > 
 
-Applied, thanks!
+
