@@ -1,72 +1,70 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] cpufreq: intel_pstate: Improve IO performance
-Date: Thu, 10 Aug 2017 00:50:15 +0200
-Message-ID: <2483446.prUEGziT9n@aspire.rjw.lan>
-References: <1501812194-55363-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] cpufreq: rcar: Add support for R8A7795 SoC
+Date: Thu, 10 Aug 2017 00:52:05 +0200
+Message-ID: <250419201.CH3uKmuKZU@aspire.rjw.lan>
+References: <1501852680-21127-1-git-send-email-horms+renesas@verge.net.au> <20170807033705.GE28857@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:56753 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752225AbdHIW6d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Aug 2017 18:58:33 -0400
-In-Reply-To: <1501812194-55363-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <20170807033705.GE28857@vireshk-i7>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Simon Horman <horms+renesas@verge.net.au>
+Cc: Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: lenb@kernel.org, linux-pm@vger.kernel.org
 
-On Friday, August 4, 2017 4:03:14 AM CEST Srinivas Pandruvada wrote:
-> In the current implementation the latency from SCHED_CPUFREQ_IOWAIT is
-> set to actual P-state adjustment can be upto 10ms. This can be improved
-> by reacting to SCHED_CPUFREQ_IOWAIT by jumping to max P-state immediately
-> . With this change the IO performance improves significantly.
+On Monday, August 7, 2017 5:37:05 AM CEST Viresh Kumar wrote:
+> On 04-08-17, 15:18, Simon Horman wrote:
+> > From: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
+> > 
+> > After the commit "a399dc9fc50 cpufreq: shmobile: Use generic platdev
+> > driver", will use cpufreq-dt-platdev driver to enable cpufreq-dt support.
+> > Hence, follow the implementation to support new R8A7795 SoC.
+> > 
+> > Signed-off-by: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
+> > Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+> > ---
+> >  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > This is identical to a patch posted by Khiem last year.
+> > At the time it was asked if using opp-v2 was the preferred approach.
+> > 
+> > https://patchwork.kernel.org/patch/9054011/
+> > 
+> > An inspection of the current upstream kernel code seems to indicate
+> > that adding a binding as this patch does is compatibile with using opp-v2
+> > and I plan to post DTS patches separately which make use of the opp-v2
+> > bindings - they depend on this driver change to work.
+> > 
+> > I have provided an integration patch with this patch, those DTS changes,
+> > and Renesas clock updates also depended on by the DTS changes. The result
+> > is working CPUFreq for the r8a7795 (R-Car H3) ES1.0.
+> > 
+> > If this work is acceptable I plan to follow up with patches to
+> > enable CPUFreq on the r8a7796 (R-Car M3-W).
+> > 
+> > https://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas.git topic/r8a7795-cpufreq
+> > 
+> > A description of steps taken to lightly exercise the above can be found here:
+> > 
+> > http://elinux.org/Tests:R-CAR-GEN3-CPUFreq
+> > 
+> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > index 096aea7fcb67..13b72f3c420b 100644
+> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > @@ -67,6 +67,7 @@ static const struct of_device_id machines[] __initconst = {
+> >  	{ .compatible = "renesas,r8a7792", },
+> >  	{ .compatible = "renesas,r8a7793", },
+> >  	{ .compatible = "renesas,r8a7794", },
+> > +	{ .compatible = "renesas,r8a7795", },
+> >  	{ .compatible = "renesas,sh73a0", },
+> >  
+> >  	{ .compatible = "rockchip,rk2928", },
 > 
-> With a simple "grep -r . linux" (Here linux is kernel source folder) with
-> dropped caches every time on a platform with per core P-states on a
-> Broadwell Xeon workstation, the user and system time improves as much as
-> 30% to 40%.
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> The same performance difference was not observed on clients, which don't
-> have per core P-state support.
-> 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> ---
-> v2:
-> As suggested by Rafael also updating  cpu->last_update time
-> 
->  drivers/cpufreq/intel_pstate.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 90e8f2b..1cb318b 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1530,6 +1530,15 @@ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
->  
->  	if (flags & SCHED_CPUFREQ_IOWAIT) {
->  		cpu->iowait_boost = int_tofp(1);
-> +		cpu->last_update = time;
-> +		/*
-> +		 * The last time the busy was 100% so P-state was max anyway
-> +		 * so avoid overhead of computation.
-> +		 */
-> +		if (fp_toint(cpu->sample.busy_scaled) == 100)
-> +			return;
-> +
-> +		goto set_pstate;
->  	} else if (cpu->iowait_boost) {
->  		/* Clear iowait_boost if the CPU may have been idle. */
->  		delta_ns = time - cpu->last_update;
-> @@ -1541,6 +1550,7 @@ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
->  	if ((s64)delta_ns < INTEL_PSTATE_DEFAULT_SAMPLING_INTERVAL)
->  		return;
->  
-> +set_pstate:
->  	if (intel_pstate_sample(cpu, time)) {
->  		int target_pstate;
->  
 > 
 
 Applied, thanks!
