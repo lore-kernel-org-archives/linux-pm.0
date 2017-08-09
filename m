@@ -1,130 +1,110 @@
-From: <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-Subject: [PATCH 1/2] cpufreq: mediatek: add cleanups with the more generic
- naming
-Date: Wed, 9 Aug 2017 18:12:38 +0800
-Message-ID: <c658e5aa68d26c645a8ecd58da69576c9fe237c5.1502272372.git.sean.wang@mediatek.com>
-References: <cover.1502272372.git.sean.wang@mediatek.com>
+From: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH v2 17/18] cpufreq: add support for CPU DVFS based on SCMI
+ message protocol
+Date: Wed, 9 Aug 2017 11:15:49 +0100
+Message-ID: <d98703ce-7e66-4172-8d36-03c5200e3208@arm.com>
+References: <1501857104-11279-1-git-send-email-sudeep.holla@arm.com>
+ <1501857104-11279-18-git-send-email-sudeep.holla@arm.com>
+ <20170809041840.GH28857@vireshk-i7>
+ <97497123-2c24-6297-2d12-4f407d101b66@arm.com>
+ <20170809100651.GA29383@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-In-Reply-To: <cover.1502272372.git.sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-mediatek/>
-List-Post: <mailto:linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-List-Help: <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-mediatek>,
- <mailto:linux-mediatek-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
-Sender: "Linux-mediatek" <linux-mediatek-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
-Errors-To: linux-mediatek-bounces+glpam-linux-mediatek=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-To: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jdelvare-l3A5Bk7waGM@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170809100651.GA29383@vireshk-i7>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, ALKML <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DTML <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Roy Franz <roy.franz-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, Harb Abdulhamid <harba-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Loc Ho <lho-qTEPVZfXA3Y@public.gmane.org>, Alexey Klimov <alexey.klimov-5wv7dgnIgG8@public.gmane.org>, Ryan Harkin <Ryan.Harkin-5wv7dgnIgG8@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 
-Since more MediaTek SoCs can be supported with the cpufreq driver and not
-limited to MT8173, a couple of cleanups are done here with renaming those
-functions and related structures with "mtk" instead of "mt8173".
 
-Signed-off-by: Sean Wang <sean.wang-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
----
- drivers/cpufreq/mediatek-cpufreq.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+On 09/08/17 11:06, Viresh Kumar wrote:
+> On 09-08-17, 10:59, Sudeep Holla wrote:
+>> On 09/08/17 05:18, Viresh Kumar wrote:
+> 
+>>> This stores the same handle pointer which is stored in the global variable
+>>> below. Right? Why keep a local variable here at all ?
+>>
+>> Yes, you are right. Initially, started with just private pointers and
+>> then added global. I was thinking of calling devm_scmi_handle_get per
+>> policy to reflect the refcount correctly and drop global variable. Let
+>> me know what you think.
+> 
+> A refcount of 1 should be fine as well, i.e. For the cpufreq driver. Why would
+> SCMI care if we manage multiple policies here ? Unless it makes something within
+> SCMI core better.
+> 
 
-diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index 008e088..9fa9291 100644
---- a/drivers/cpufreq/mediatek-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -507,7 +507,7 @@ static int mtk_cpufreq_exit(struct cpufreq_policy *policy)
- 	return 0;
- }
- 
--static struct cpufreq_driver mt8173_cpufreq_driver = {
-+static struct cpufreq_driver mtk_cpufreq_driver = {
- 	.flags = CPUFREQ_STICKY | CPUFREQ_NEED_INITIAL_FREQ_CHECK |
- 		 CPUFREQ_HAVE_GOVERNOR_PER_POLICY,
- 	.verify = cpufreq_generic_frequency_table_verify,
-@@ -520,7 +520,7 @@ static struct cpufreq_driver mt8173_cpufreq_driver = {
- 	.attr = cpufreq_generic_attr,
- };
- 
--static int mt8173_cpufreq_probe(struct platform_device *pdev)
-+static int mtk_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct mtk_cpu_dvfs_info *info, *tmp;
- 	int cpu, ret;
-@@ -547,7 +547,7 @@ static int mt8173_cpufreq_probe(struct platform_device *pdev)
- 		list_add(&info->list_head, &dvfs_info_list);
- 	}
- 
--	ret = cpufreq_register_driver(&mt8173_cpufreq_driver);
-+	ret = cpufreq_register_driver(&mtk_cpufreq_driver);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to register mtk cpufreq driver\n");
- 		goto release_dvfs_info_list;
-@@ -564,15 +564,15 @@ static int mt8173_cpufreq_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
--static struct platform_driver mt8173_cpufreq_platdrv = {
-+static struct platform_driver mtk_cpufreq_platdrv = {
- 	.driver = {
--		.name	= "mt8173-cpufreq",
-+		.name	= "mtk-cpufreq",
- 	},
--	.probe		= mt8173_cpufreq_probe,
-+	.probe		= mtk_cpufreq_probe,
- };
- 
- /* List of machines supported by this driver */
--static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
-+static const struct of_device_id mtk_cpufreq_machines[] __initconst = {
- 	{ .compatible = "mediatek,mt2701", },
- 	{ .compatible = "mediatek,mt7623", },
- 	{ .compatible = "mediatek,mt817x", },
-@@ -582,7 +582,7 @@ static const struct of_device_id mt8173_cpufreq_machines[] __initconst = {
- 	{ }
- };
- 
--static int __init mt8173_cpufreq_driver_init(void)
-+static int __init mtk_cpufreq_driver_init(void)
- {
- 	struct device_node *np;
- 	const struct of_device_id *match;
-@@ -593,14 +593,14 @@ static int __init mt8173_cpufreq_driver_init(void)
- 	if (!np)
- 		return -ENODEV;
- 
--	match = of_match_node(mt8173_cpufreq_machines, np);
-+	match = of_match_node(mtk_cpufreq_machines, np);
- 	of_node_put(np);
- 	if (!match) {
--		pr_warn("Machine is not compatible with mt8173-cpufreq\n");
-+		pr_warn("Machine is not compatible with mtk-cpufreq\n");
- 		return -ENODEV;
- 	}
- 
--	err = platform_driver_register(&mt8173_cpufreq_platdrv);
-+	err = platform_driver_register(&mtk_cpufreq_platdrv);
- 	if (err)
- 		return err;
- 
-@@ -610,7 +610,7 @@ static int __init mt8173_cpufreq_driver_init(void)
- 	 * and the device registration codes are put here to handle defer
- 	 * probing.
- 	 */
--	pdev = platform_device_register_simple("mt8173-cpufreq", -1, NULL, 0);
-+	pdev = platform_device_register_simple("mtk-cpufreq", -1, NULL, 0);
- 	if (IS_ERR(pdev)) {
- 		pr_err("failed to register mtk-cpufreq platform device\n");
- 		return PTR_ERR(pdev);
-@@ -618,4 +618,4 @@ static int __init mt8173_cpufreq_driver_init(void)
- 
- 	return 0;
- }
--device_initcall(mt8173_cpufreq_driver_init);
-+device_initcall(mtk_cpufreq_driver_init);
+Not really, just we can get rid of global pointer which may be need in
+system with multiple scmi instances, but that's long way to go.
+
+>>> This is something special which is used only when we are returning indexes and
+>>> I am not sure if this will have benefit here. I will rather return 0 here.
+>>> That's what other drivers are doing.
+>>
+>> Indeed had 0 initially but changed as per Juri's suggestion.
+> 
+> Maybe he suggested doing that in the fast switch routine ? As that's the normal
+> protocol there. Though I have sent a patch today to propose using 0 there as
+> well (you cc'd).
+> 
+
+Yes, saw that. I have changed both to 0 for now. I will watch that
+thread and update if necessary before next posting.
+
+>> But is 0
+>> treated as failure and still running at current OPP ?
+> 
+> You have used that in the ->get() routine. So the OPP isn't changing, but we are
+> just trying to fetch it. cpufreq core doesn't do a lot with the value returned
+> from here, but at one place we break early if 0 is returned. And so all drivers
+> are returning that.
+>
+
+Agreed, I assumed _INVALID is new thing and changed at both target_indes
+and fast_switch.
+
+>> and not 0KHz I assume.
+> 
+> Yeah, 0 KHz is dead CPU really :)
+> 
+
+:)
+
+>>> I suppose any CPU can change the frequency of any other CPU here, right? You
+>>> must set policy->dvfs_possible_from_any_cpu = true, from ->init() then.
+>>>
+>>
+>> OK, I missed to see something like that exists, will do.
+> 
+> Fairly recent stuff, present in pm/linux-next only.
+> 
+
+Oh OK.
+
+>>>> +	/*
+>>>> +	 * But we need OPP table to function so if it is not there let's
+>>>> +	 * give platform code chance to provide it for us.
+>>>> +	 */
+>>>
+>>> How are we getting the OPPs? DT or non DT ?
+>>>
+>>
+>> Non DT :), from the firmware.
+> 
+> I would improve the above comment in that case to clearly say that OPPs are
+> added by the platform, lets wait for it.
+> 
+
+Done
+
 -- 
-2.7.4
+Regards,
+Sudeep
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
