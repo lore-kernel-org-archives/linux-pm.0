@@ -1,117 +1,39 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 18/18] cpufreq: scmi: add support for fast frequency
- switching
-Date: Wed, 9 Aug 2017 11:09:02 +0100
-Message-ID: <0f89f543-39a9-30a5-4976-0c447f5fe843@arm.com>
-References: <1501857104-11279-1-git-send-email-sudeep.holla@arm.com>
- <1501857104-11279-19-git-send-email-sudeep.holla@arm.com>
- <20170809042825.GI28857@vireshk-i7>
+From: <sean.wang@mediatek.com>
+Subject: [PATCH 2/2] cpufreq: mediatek: add support of cpufreq to MT7622 SoC
+Date: Wed, 9 Aug 2017 18:12:39 +0800
+Message-ID: <8d96863368adb8a0435de9739e458035e6a6233b.1502272372.git.sean.wang@mediatek.com>
+References: <cover.1502272372.git.sean.wang@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170809042825.GI28857@vireshk-i7>
-Content-Language: en-US
+In-Reply-To: <cover.1502272372.git.sean.wang@mediatek.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Arnd Bergmann <arnd@arndb.de>, Loc Ho <lho@apm.com>, Alexey Klimov <alexey.klimov@arm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, robh+dt@kernel.org, matthias.bgg@gmail.com, jdelvare@suse.de, devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, Sean Wang <sean.wang@mediatek.com>
 List-Id: linux-pm@vger.kernel.org
 
+From: Sean Wang <sean.wang@mediatek.com>
 
+MT7622 is a 64-bit ARMv8 based dual-core SoC (2 * Cortex-A53) with a
+single cluster. The hardware is also compatible with the current driver,
+so add MT7622 as one of the compatible string list.
 
-On 09/08/17 05:28, Viresh Kumar wrote:
-> On 04-08-17, 15:31, Sudeep Holla wrote:
->> The cpufreq core provides option for drivers to implement fast_switch
->> callback which is invoked for frequency switching from interrupt context.
->>
->> This patch adds support for fast_switch callback in SCMI cpufreq driver
->> by making use of polling based SCMI transfer. It also sets the flag
->> fast_switch_possible.
->>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>  drivers/cpufreq/scmi-cpufreq.c | 16 ++++++++++++++++
->>  1 file changed, 16 insertions(+)
->>
->> diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
->> index 034359cafea5..cb1084cb1ef1 100644
->> --- a/drivers/cpufreq/scmi-cpufreq.c
->> +++ b/drivers/cpufreq/scmi-cpufreq.c
->> @@ -61,6 +61,19 @@ scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
->>  	return perf_ops->freq_set(priv->handle, priv->domain_id, freq, false);
->>  }
->>  
->> +static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
->> +					     unsigned int target_freq)
->> +{
->> +	struct scmi_data *priv = policy->driver_data;
->> +	struct scmi_perf_ops *perf_ops = priv->handle->perf_ops;
->> +
->> +	if (!perf_ops->freq_set(priv->handle, priv->domain_id,
->> +				target_freq * 1000, true))
->> +		return target_freq;
->> +
->> +	return CPUFREQ_ENTRY_INVALID;
->> +}
-> 
-> This is very much similar to the target routine, perhaps we should write another
-> local routine which is used by both target and fast switch.
-> 
+Signed-off-by: Sean Wang <sean.wang@mediatek.com>
+---
+ drivers/cpufreq/mediatek-cpufreq.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Just one difference, fast switch uses polling based mailbox while
-target_index uses interrupt based. I thought initially to reuse, but
-it's comes done to just perf_ops->freq_set, so dropped that idea.
-
-> Do we guarantee that the frequency is changed by the time this routine returns?
-
-No, firmware may return acknowledging the request not it's completion.
-
-> Or we just send a SCMI request and return back ?
-> 
-
-Yes, exactly.
-
-> If we just send the request and don't wait for freq to get changed, what
-> protects another scmi_cpufreq_fast_switch() to get called before the first one
-> is finished? And what will happen on that call ?
-
-Firmware needs to serialize or override based on the timing of the two
-consecutive requests.
-
-> 
->>  static int
->>  scmi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
->>  {
->> @@ -164,6 +177,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
->>  
->>  	policy->cpuinfo.transition_latency = latency;
->>  
->> +	policy->fast_switch_possible = true;
->>  	return 0;
->>  
->>  out_free_cpufreq_table:
->> @@ -180,6 +194,7 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
->>  {
->>  	struct scmi_data *priv = policy->driver_data;
->>  
->> +	policy->fast_switch_possible = false;
->>  	cpufreq_cooling_unregister(priv->cdev);
->>  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
->>  	dev_pm_opp_cpumask_remove_table(policy->related_cpus);
->> @@ -228,6 +243,7 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
->>  	.init			= scmi_cpufreq_init,
->>  	.exit			= scmi_cpufreq_exit,
->>  	.ready			= scmi_cpufreq_ready,
->> +	.fast_switch		= scmi_cpufreq_fast_switch,
-> 
-> Maybe add it right after target_index ?
-> 
-
-Done
-
+diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+index 9fa9291..18c4bd9 100644
+--- a/drivers/cpufreq/mediatek-cpufreq.c
++++ b/drivers/cpufreq/mediatek-cpufreq.c
+@@ -574,6 +574,7 @@ static struct platform_driver mtk_cpufreq_platdrv = {
+ /* List of machines supported by this driver */
+ static const struct of_device_id mtk_cpufreq_machines[] __initconst = {
+ 	{ .compatible = "mediatek,mt2701", },
++	{ .compatible = "mediatek,mt7622", },
+ 	{ .compatible = "mediatek,mt7623", },
+ 	{ .compatible = "mediatek,mt817x", },
+ 	{ .compatible = "mediatek,mt8173", },
 -- 
-Regards,
-Sudeep
+2.7.4
