@@ -1,12 +1,12 @@
 From: Brian Bian <brian.bian@linux.intel.com>
-Subject: [PATCH v2] thermal: int339x_thermal: process "thermal table changed" event
-Date: Wed,  9 Aug 2017 10:53:00 -0700
-Message-ID: <1502301180-4325-1-git-send-email-brian.bian@linux.intel.com>
+Subject: [PATCH v3] thermal: int3400_thermal: process "thermal table changed" event
+Date: Wed,  9 Aug 2017 11:45:40 -0700
+Message-ID: <1502304340-18680-1-git-send-email-brian.bian@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:61088 "EHLO mga09.intel.com"
+Received: from mga11.intel.com ([192.55.52.93]:2900 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752705AbdHIRxH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 9 Aug 2017 13:53:07 -0400
+        id S1752119AbdHISps (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 9 Aug 2017 14:45:48 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com
@@ -22,6 +22,9 @@ Signed-off-by: Brian Bian <brian.bian@linux.intel.com>
 Changes in v2:
   - Directly propagate the event to user space as a uevent instead of
     calling thermal_zone_device_update().
+
+Changes in v3:
+  - Change commit message subject.
 
  drivers/thermal/int340x_thermal/int3400_thermal.c | 41 +++++++++++++++++++++++
  include/linux/thermal.h                           |  1 +
