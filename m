@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 1/4] PM / s2idle: Rename PM_SUSPEND_FREEZE to PM_SUSPEND_TO_IDLE
-Date: Thu, 10 Aug 2017 00:13:07 +0200
-Message-ID: <2659108.d1FCUcxIyi@aspire.rjw.lan>
+Subject: [PATCH v2 2/4] PM / s2idle: Rename freeze_state enum and related items
+Date: Thu, 10 Aug 2017 00:13:56 +0200
+Message-ID: <8922129.VdBnjzkN8y@aspire.rjw.lan>
 References: <1912685.WjJGzNPQ5e@aspire.rjw.lan> <4362123.MquenKSW7f@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,252 +15,219 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-To make it clear that the symbol in question refers to
-suspend-to-idle, rename it from PM_SUSPEND_FREEZE to
-PM_SUSPEND_TO_IDLE.
+Rename the freeze_state enum representing the suspend-to-idle state
+machine states to s2idle_states and rename the related variables and
+functions accordingly.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/sleep.c             |    2 -
- drivers/regulator/of_regulator.c |    2 -
- include/linux/suspend.h          |    4 +--
- kernel/power/suspend.c           |   44 +++++++++++++++++++--------------------
- kernel/power/suspend_test.c      |    4 +--
- 5 files changed, 28 insertions(+), 28 deletions(-)
+ drivers/base/power/wakeup.c |    2 -
+ include/linux/suspend.h     |   20 +++++++++---------
+ kernel/power/suspend.c      |   48 ++++++++++++++++++++++----------------------
+ kernel/sched/idle.c         |    6 ++---
+ 4 files changed, 38 insertions(+), 38 deletions(-)
 
-Index: linux-pm/include/linux/suspend.h
-===================================================================
---- linux-pm.orig/include/linux/suspend.h
-+++ linux-pm/include/linux/suspend.h
-@@ -33,10 +33,10 @@ static inline void pm_restore_console(vo
- typedef int __bitwise suspend_state_t;
- 
- #define PM_SUSPEND_ON		((__force suspend_state_t) 0)
--#define PM_SUSPEND_FREEZE	((__force suspend_state_t) 1)
-+#define PM_SUSPEND_TO_IDLE	((__force suspend_state_t) 1)
- #define PM_SUSPEND_STANDBY	((__force suspend_state_t) 2)
- #define PM_SUSPEND_MEM		((__force suspend_state_t) 3)
--#define PM_SUSPEND_MIN		PM_SUSPEND_FREEZE
-+#define PM_SUSPEND_MIN		PM_SUSPEND_TO_IDLE
- #define PM_SUSPEND_MAX		((__force suspend_state_t) 4)
- 
- enum suspend_stat_step {
 Index: linux-pm/kernel/power/suspend.c
 ===================================================================
 --- linux-pm.orig/kernel/power/suspend.c
 +++ linux-pm/kernel/power/suspend.c
-@@ -35,19 +35,19 @@
- #include "power.h"
+@@ -57,10 +57,10 @@ EXPORT_SYMBOL_GPL(pm_suspend_global_flag
  
- const char * const pm_labels[] = {
--	[PM_SUSPEND_FREEZE] = "freeze",
-+	[PM_SUSPEND_TO_IDLE] = "freeze",
- 	[PM_SUSPEND_STANDBY] = "standby",
- 	[PM_SUSPEND_MEM] = "mem",
- };
- const char *pm_states[PM_SUSPEND_MAX];
- static const char * const mem_sleep_labels[] = {
--	[PM_SUSPEND_FREEZE] = "s2idle",
-+	[PM_SUSPEND_TO_IDLE] = "s2idle",
- 	[PM_SUSPEND_STANDBY] = "shallow",
- 	[PM_SUSPEND_MEM] = "deep",
- };
- const char *mem_sleep_states[PM_SUSPEND_MAX];
+ static const struct platform_suspend_ops *suspend_ops;
+ static const struct platform_freeze_ops *freeze_ops;
+-static DECLARE_WAIT_QUEUE_HEAD(suspend_freeze_wait_head);
++static DECLARE_WAIT_QUEUE_HEAD(s2idle_wait_head);
  
--suspend_state_t mem_sleep_current = PM_SUSPEND_FREEZE;
-+suspend_state_t mem_sleep_current = PM_SUSPEND_TO_IDLE;
- suspend_state_t mem_sleep_default = PM_SUSPEND_MAX;
- suspend_state_t pm_suspend_target_state;
- EXPORT_SYMBOL_GPL(pm_suspend_target_state);
-@@ -76,7 +76,7 @@ static void freeze_begin(void)
+-enum freeze_state __read_mostly suspend_freeze_state;
+-static DEFINE_SPINLOCK(suspend_freeze_lock);
++enum s2idle_states __read_mostly s2idle_state;
++static DEFINE_SPINLOCK(s2idle_lock);
  
- static void freeze_enter(void)
+ void freeze_set_ops(const struct platform_freeze_ops *ops)
  {
--	trace_suspend_resume(TPS("machine_suspend"), PM_SUSPEND_FREEZE, true);
-+	trace_suspend_resume(TPS("machine_suspend"), PM_SUSPEND_TO_IDLE, true);
+@@ -69,21 +69,21 @@ void freeze_set_ops(const struct platfor
+ 	unlock_system_sleep();
+ }
  
- 	spin_lock_irq(&suspend_freeze_lock);
+-static void freeze_begin(void)
++static void s2idle_begin(void)
+ {
+-	suspend_freeze_state = FREEZE_STATE_NONE;
++	s2idle_state = S2IDLE_STATE_NONE;
+ }
+ 
+-static void freeze_enter(void)
++static void s2idle_enter(void)
+ {
+ 	trace_suspend_resume(TPS("machine_suspend"), PM_SUSPEND_TO_IDLE, true);
+ 
+-	spin_lock_irq(&suspend_freeze_lock);
++	spin_lock_irq(&s2idle_lock);
  	if (pm_wakeup_pending())
-@@ -103,7 +103,7 @@ static void freeze_enter(void)
- 	suspend_freeze_state = FREEZE_STATE_NONE;
- 	spin_unlock_irq(&suspend_freeze_lock);
+ 		goto out;
  
--	trace_suspend_resume(TPS("machine_suspend"), PM_SUSPEND_FREEZE, false);
-+	trace_suspend_resume(TPS("machine_suspend"), PM_SUSPEND_TO_IDLE, false);
+-	suspend_freeze_state = FREEZE_STATE_ENTER;
+-	spin_unlock_irq(&suspend_freeze_lock);
++	s2idle_state = S2IDLE_STATE_ENTER;
++	spin_unlock_irq(&s2idle_lock);
+ 
+ 	get_online_cpus();
+ 	cpuidle_resume();
+@@ -91,17 +91,17 @@ static void freeze_enter(void)
+ 	/* Push all the CPUs into the idle loop. */
+ 	wake_up_all_idle_cpus();
+ 	/* Make the current CPU wait so it can enter the idle loop too. */
+-	wait_event(suspend_freeze_wait_head,
+-		   suspend_freeze_state == FREEZE_STATE_WAKE);
++	wait_event(s2idle_wait_head,
++		   s2idle_state == S2IDLE_STATE_WAKE);
+ 
+ 	cpuidle_pause();
+ 	put_online_cpus();
+ 
+-	spin_lock_irq(&suspend_freeze_lock);
++	spin_lock_irq(&s2idle_lock);
+ 
+  out:
+-	suspend_freeze_state = FREEZE_STATE_NONE;
+-	spin_unlock_irq(&suspend_freeze_lock);
++	s2idle_state = S2IDLE_STATE_NONE;
++	spin_unlock_irq(&s2idle_lock);
+ 
+ 	trace_suspend_resume(TPS("machine_suspend"), PM_SUSPEND_TO_IDLE, false);
+ }
+@@ -118,12 +118,12 @@ static void s2idle_loop(void)
+ 		/*
+ 		 * Suspend-to-idle equals
+ 		 * frozen processes + suspended devices + idle processors.
+-		 * Thus freeze_enter() should be called right after
++		 * Thus s2idle_enter() should be called right after
+ 		 * all devices have been suspended.
+ 		 */
+ 		error = dpm_noirq_suspend_devices(PMSG_SUSPEND);
+ 		if (!error)
+-			freeze_enter();
++			s2idle_enter();
+ 
+ 		dpm_noirq_resume_devices(PMSG_RESUME);
+ 		if (error && (error != -EBUSY || !pm_wakeup_pending())) {
+@@ -148,18 +148,18 @@ static void s2idle_loop(void)
+ 	pm_pr_dbg("resume from suspend-to-idle\n");
  }
  
- static void s2idle_loop(void)
-@@ -175,19 +175,19 @@ void __init pm_states_init(void)
+-void freeze_wake(void)
++void s2idle_wake(void)
  {
- 	/* "mem" and "freeze" are always present in /sys/power/state. */
- 	pm_states[PM_SUSPEND_MEM] = pm_labels[PM_SUSPEND_MEM];
--	pm_states[PM_SUSPEND_FREEZE] = pm_labels[PM_SUSPEND_FREEZE];
-+	pm_states[PM_SUSPEND_TO_IDLE] = pm_labels[PM_SUSPEND_TO_IDLE];
- 	/*
- 	 * Suspend-to-idle should be supported even without any suspend_ops,
- 	 * initialize mem_sleep_states[] accordingly here.
- 	 */
--	mem_sleep_states[PM_SUSPEND_FREEZE] = mem_sleep_labels[PM_SUSPEND_FREEZE];
-+	mem_sleep_states[PM_SUSPEND_TO_IDLE] = mem_sleep_labels[PM_SUSPEND_TO_IDLE];
- }
+ 	unsigned long flags;
  
- static int __init mem_sleep_default_setup(char *str)
- {
- 	suspend_state_t state;
- 
--	for (state = PM_SUSPEND_FREEZE; state <= PM_SUSPEND_MEM; state++)
-+	for (state = PM_SUSPEND_TO_IDLE; state <= PM_SUSPEND_MEM; state++)
- 		if (mem_sleep_labels[state] &&
- 		    !strcmp(str, mem_sleep_labels[state])) {
- 			mem_sleep_default = state;
-@@ -239,48 +239,48 @@ EXPORT_SYMBOL_GPL(suspend_valid_only_mem
- 
- static bool sleep_state_supported(suspend_state_t state)
- {
--	return state == PM_SUSPEND_FREEZE || (suspend_ops && suspend_ops->enter);
-+	return state == PM_SUSPEND_TO_IDLE || (suspend_ops && suspend_ops->enter);
- }
- 
- static int platform_suspend_prepare(suspend_state_t state)
- {
--	return state != PM_SUSPEND_FREEZE && suspend_ops->prepare ?
-+	return state != PM_SUSPEND_TO_IDLE && suspend_ops->prepare ?
- 		suspend_ops->prepare() : 0;
- }
- 
- static int platform_suspend_prepare_late(suspend_state_t state)
- {
--	return state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->prepare ?
-+	return state == PM_SUSPEND_TO_IDLE && freeze_ops && freeze_ops->prepare ?
- 		freeze_ops->prepare() : 0;
- }
- 
- static int platform_suspend_prepare_noirq(suspend_state_t state)
- {
--	return state != PM_SUSPEND_FREEZE && suspend_ops->prepare_late ?
-+	return state != PM_SUSPEND_TO_IDLE && suspend_ops->prepare_late ?
- 		suspend_ops->prepare_late() : 0;
- }
- 
- static void platform_resume_noirq(suspend_state_t state)
- {
--	if (state != PM_SUSPEND_FREEZE && suspend_ops->wake)
-+	if (state != PM_SUSPEND_TO_IDLE && suspend_ops->wake)
- 		suspend_ops->wake();
- }
- 
- static void platform_resume_early(suspend_state_t state)
- {
--	if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->restore)
-+	if (state == PM_SUSPEND_TO_IDLE && freeze_ops && freeze_ops->restore)
- 		freeze_ops->restore();
- }
- 
- static void platform_resume_finish(suspend_state_t state)
- {
--	if (state != PM_SUSPEND_FREEZE && suspend_ops->finish)
-+	if (state != PM_SUSPEND_TO_IDLE && suspend_ops->finish)
- 		suspend_ops->finish();
- }
- 
- static int platform_suspend_begin(suspend_state_t state)
- {
--	if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->begin)
-+	if (state == PM_SUSPEND_TO_IDLE && freeze_ops && freeze_ops->begin)
- 		return freeze_ops->begin();
- 	else if (suspend_ops && suspend_ops->begin)
- 		return suspend_ops->begin(state);
-@@ -290,7 +290,7 @@ static int platform_suspend_begin(suspen
- 
- static void platform_resume_end(suspend_state_t state)
- {
--	if (state == PM_SUSPEND_FREEZE && freeze_ops && freeze_ops->end)
-+	if (state == PM_SUSPEND_TO_IDLE && freeze_ops && freeze_ops->end)
- 		freeze_ops->end();
- 	else if (suspend_ops && suspend_ops->end)
- 		suspend_ops->end();
-@@ -298,13 +298,13 @@ static void platform_resume_end(suspend_
- 
- static void platform_recover(suspend_state_t state)
- {
--	if (state != PM_SUSPEND_FREEZE && suspend_ops->recover)
-+	if (state != PM_SUSPEND_TO_IDLE && suspend_ops->recover)
- 		suspend_ops->recover();
- }
- 
- static bool platform_suspend_again(suspend_state_t state)
- {
--	return state != PM_SUSPEND_FREEZE && suspend_ops->suspend_again ?
-+	return state != PM_SUSPEND_TO_IDLE && suspend_ops->suspend_again ?
- 		suspend_ops->suspend_again() : false;
- }
- 
-@@ -400,7 +400,7 @@ static int suspend_enter(suspend_state_t
- 	if (error)
- 		goto Devices_early_resume;
- 
--	if (state == PM_SUSPEND_FREEZE && pm_test_level != TEST_PLATFORM) {
-+	if (state == PM_SUSPEND_TO_IDLE && pm_test_level != TEST_PLATFORM) {
- 		s2idle_loop();
- 		goto Platform_early_resume;
+-	spin_lock_irqsave(&suspend_freeze_lock, flags);
+-	if (suspend_freeze_state > FREEZE_STATE_NONE) {
+-		suspend_freeze_state = FREEZE_STATE_WAKE;
+-		wake_up(&suspend_freeze_wait_head);
++	spin_lock_irqsave(&s2idle_lock, flags);
++	if (s2idle_state > S2IDLE_STATE_NONE) {
++		s2idle_state = S2IDLE_STATE_WAKE;
++		wake_up(&s2idle_wait_head);
  	}
-@@ -538,7 +538,7 @@ static int enter_state(suspend_state_t s
- 	int error;
+-	spin_unlock_irqrestore(&suspend_freeze_lock, flags);
++	spin_unlock_irqrestore(&s2idle_lock, flags);
+ }
+-EXPORT_SYMBOL_GPL(freeze_wake);
++EXPORT_SYMBOL_GPL(s2idle_wake);
  
- 	trace_suspend_resume(TPS("suspend_enter"), state, true);
--	if (state == PM_SUSPEND_FREEZE) {
-+	if (state == PM_SUSPEND_TO_IDLE) {
- #ifdef CONFIG_PM_DEBUG
- 		if (pm_test_level != TEST_NONE && pm_test_level <= TEST_CPUS) {
- 			pr_warn("Unsupported test mode for suspend to idle, please choose none/freezer/devices/platform.\n");
-@@ -551,7 +551,7 @@ static int enter_state(suspend_state_t s
- 	if (!mutex_trylock(&pm_mutex))
+ static bool valid_state(suspend_state_t state)
+ {
+@@ -552,7 +552,7 @@ static int enter_state(suspend_state_t s
  		return -EBUSY;
  
--	if (state == PM_SUSPEND_FREEZE)
-+	if (state == PM_SUSPEND_TO_IDLE)
- 		freeze_begin();
+ 	if (state == PM_SUSPEND_TO_IDLE)
+-		freeze_begin();
++		s2idle_begin();
  
  #ifndef CONFIG_SUSPEND_SKIP_SYNC
-Index: linux-pm/kernel/power/suspend_test.c
+ 	trace_suspend_resume(TPS("sync_filesystems"), 0, true);
+Index: linux-pm/kernel/sched/idle.c
 ===================================================================
---- linux-pm.orig/kernel/power/suspend_test.c
-+++ linux-pm/kernel/power/suspend_test.c
-@@ -104,9 +104,9 @@ repeat:
- 		printk(info_test, pm_states[state]);
- 		status = pm_suspend(state);
- 		if (status < 0)
--			state = PM_SUSPEND_FREEZE;
-+			state = PM_SUSPEND_TO_IDLE;
+--- linux-pm.orig/kernel/sched/idle.c
++++ linux-pm/kernel/sched/idle.c
+@@ -158,7 +158,7 @@ static void cpuidle_idle_call(void)
  	}
--	if (state == PM_SUSPEND_FREEZE) {
-+	if (state == PM_SUSPEND_TO_IDLE) {
- 		printk(info_test, pm_states[state]);
- 		status = pm_suspend(state);
- 	}
-Index: linux-pm/drivers/regulator/of_regulator.c
-===================================================================
---- linux-pm.orig/drivers/regulator/of_regulator.c
-+++ linux-pm/drivers/regulator/of_regulator.c
-@@ -150,7 +150,7 @@ static void of_get_regulation_constraint
- 			suspend_state = &constraints->state_disk;
- 			break;
- 		case PM_SUSPEND_ON:
--		case PM_SUSPEND_FREEZE:
-+		case PM_SUSPEND_TO_IDLE:
- 		case PM_SUSPEND_STANDBY:
- 		default:
- 			continue;
-Index: linux-pm/drivers/acpi/sleep.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sleep.c
-+++ linux-pm/drivers/acpi/sleep.c
-@@ -719,7 +719,7 @@ static int lps0_device_attach(struct acp
- 			 * suspend mode was not set from the command line.
- 			 */
- 			if (mem_sleep_default > PM_SUSPEND_MEM)
--				mem_sleep_current = PM_SUSPEND_FREEZE;
-+				mem_sleep_current = PM_SUSPEND_TO_IDLE;
- 		}
  
- 		acpi_handle_debug(adev->handle, "_DSM function mask: 0x%x\n",
+ 	/*
+-	 * Suspend-to-idle ("freeze") is a system state in which all user space
++	 * Suspend-to-idle ("s2idle") is a system state in which all user space
+ 	 * has been frozen, all I/O devices have been suspended and the only
+ 	 * activity happens here and in iterrupts (if any).  In that case bypass
+ 	 * the cpuidle governor and go stratight for the deepest idle state
+@@ -167,8 +167,8 @@ static void cpuidle_idle_call(void)
+ 	 * until a proper wakeup interrupt happens.
+ 	 */
+ 
+-	if (idle_should_freeze() || dev->use_deepest_state) {
+-		if (idle_should_freeze()) {
++	if (idle_should_enter_s2idle() || dev->use_deepest_state) {
++		if (idle_should_enter_s2idle()) {
+ 			entered_state = cpuidle_enter_freeze(drv, dev);
+ 			if (entered_state > 0) {
+ 				local_irq_enable();
+Index: linux-pm/include/linux/suspend.h
+===================================================================
+--- linux-pm.orig/include/linux/suspend.h
++++ linux-pm/include/linux/suspend.h
+@@ -237,22 +237,22 @@ static inline bool pm_resume_via_firmwar
+ }
+ 
+ /* Suspend-to-idle state machnine. */
+-enum freeze_state {
+-	FREEZE_STATE_NONE,      /* Not suspended/suspending. */
+-	FREEZE_STATE_ENTER,     /* Enter suspend-to-idle. */
+-	FREEZE_STATE_WAKE,      /* Wake up from suspend-to-idle. */
++enum s2idle_states {
++	S2IDLE_STATE_NONE,      /* Not suspended/suspending. */
++	S2IDLE_STATE_ENTER,     /* Enter suspend-to-idle. */
++	S2IDLE_STATE_WAKE,      /* Wake up from suspend-to-idle. */
+ };
+ 
+-extern enum freeze_state __read_mostly suspend_freeze_state;
++extern enum s2idle_states __read_mostly s2idle_state;
+ 
+-static inline bool idle_should_freeze(void)
++static inline bool idle_should_enter_s2idle(void)
+ {
+-	return unlikely(suspend_freeze_state == FREEZE_STATE_ENTER);
++	return unlikely(s2idle_state == S2IDLE_STATE_ENTER);
+ }
+ 
+ extern void __init pm_states_init(void);
+ extern void freeze_set_ops(const struct platform_freeze_ops *ops);
+-extern void freeze_wake(void);
++extern void s2idle_wake(void);
+ 
+ /**
+  * arch_suspend_disable_irqs - disable IRQs for suspend
+@@ -284,10 +284,10 @@ static inline bool pm_resume_via_firmwar
+ 
+ static inline void suspend_set_ops(const struct platform_suspend_ops *ops) {}
+ static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
+-static inline bool idle_should_freeze(void) { return false; }
++static inline bool idle_should_enter_s2idle(void) { return false; }
+ static inline void __init pm_states_init(void) {}
+ static inline void freeze_set_ops(const struct platform_freeze_ops *ops) {}
+-static inline void freeze_wake(void) {}
++static inline void s2idle_wake(void) {}
+ #endif /* !CONFIG_SUSPEND */
+ 
+ /* struct pbe is used for creating lists of pages that should be restored
+Index: linux-pm/drivers/base/power/wakeup.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/wakeup.c
++++ linux-pm/drivers/base/power/wakeup.c
+@@ -865,7 +865,7 @@ bool pm_wakeup_pending(void)
+ void pm_system_wakeup(void)
+ {
+ 	atomic_inc(&pm_abort_suspend);
+-	freeze_wake();
++	s2idle_wake();
+ }
+ EXPORT_SYMBOL_GPL(pm_system_wakeup);
+ 
