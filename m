@@ -1,93 +1,66 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2 18/18] cpufreq: scmi: add support for fast frequency
- switching
-Date: Wed, 9 Aug 2017 09:58:25 +0530
-Message-ID: <20170809042825.GI28857@vireshk-i7>
-References: <1501857104-11279-1-git-send-email-sudeep.holla@arm.com>
- <1501857104-11279-19-git-send-email-sudeep.holla@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH] cpufreq: Return 0 from ->fast_switch() on errors
+Date: Wed,  9 Aug 2017 10:21:46 +0530
+Message-ID: <a219f5b42d06a78bd254ca1b23047d45702f12d2.1502254023.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1501857104-11279-19-git-send-email-sudeep.holla@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Arnd Bergmann <arnd@arndb.de>, Loc Ho <lho@apm.com>, Alexey Klimov <alexey.klimov@arm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sudeep.holla@arm.com, Dietmar.Eggemann@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 04-08-17, 15:31, Sudeep Holla wrote:
-> The cpufreq core provides option for drivers to implement fast_switch
-> callback which is invoked for frequency switching from interrupt context.
-> 
-> This patch adds support for fast_switch callback in SCMI cpufreq driver
-> by making use of polling based SCMI transfer. It also sets the flag
-> fast_switch_possible.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/cpufreq/scmi-cpufreq.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-> index 034359cafea5..cb1084cb1ef1 100644
-> --- a/drivers/cpufreq/scmi-cpufreq.c
-> +++ b/drivers/cpufreq/scmi-cpufreq.c
-> @@ -61,6 +61,19 @@ scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
->  	return perf_ops->freq_set(priv->handle, priv->domain_id, freq, false);
->  }
->  
-> +static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
-> +					     unsigned int target_freq)
-> +{
-> +	struct scmi_data *priv = policy->driver_data;
-> +	struct scmi_perf_ops *perf_ops = priv->handle->perf_ops;
-> +
-> +	if (!perf_ops->freq_set(priv->handle, priv->domain_id,
-> +				target_freq * 1000, true))
-> +		return target_freq;
-> +
-> +	return CPUFREQ_ENTRY_INVALID;
-> +}
+CPUFREQ_ENTRY_INVALID is a special symbol which is used to specify that
+an entry in the cpufreq table is invalid. But using it outside of the
+scope of the cpufreq table looks a bit incorrect.
 
-This is very much similar to the target routine, perhaps we should write another
-local routine which is used by both target and fast switch.
+We can represent an invalid frequency by writing it as 0 instead if we
+need. Note that it is already done that way for the return value of the
+->get() callback.
 
-Do we guarantee that the frequency is changed by the time this routine returns?
-Or we just send a SCMI request and return back ?
+Lets do the same for ->fast_switch() and not use CPUFREQ_ENTRY_INVALID
+outside of the scope of cpufreq table.
 
-If we just send the request and don't wait for freq to get changed, what
-protects another scmi_cpufreq_fast_switch() to get called before the first one
-is finished? And what will happen on that call ?
+Also update the comment over cpufreq_driver_fast_switch() to clearly
+mention what this returns.
 
->  static int
->  scmi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
->  {
-> @@ -164,6 +177,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
->  
->  	policy->cpuinfo.transition_latency = latency;
->  
-> +	policy->fast_switch_possible = true;
->  	return 0;
->  
->  out_free_cpufreq_table:
-> @@ -180,6 +194,7 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
->  {
->  	struct scmi_data *priv = policy->driver_data;
->  
-> +	policy->fast_switch_possible = false;
->  	cpufreq_cooling_unregister(priv->cdev);
->  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
->  	dev_pm_opp_cpumask_remove_table(policy->related_cpus);
-> @@ -228,6 +243,7 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
->  	.init			= scmi_cpufreq_init,
->  	.exit			= scmi_cpufreq_exit,
->  	.ready			= scmi_cpufreq_ready,
-> +	.fast_switch		= scmi_cpufreq_fast_switch,
+None of the drivers return CPUFREQ_ENTRY_INVALID as of now from
+->fast_switch() callback and so we don't need to update any of those.
 
-Maybe add it right after target_index ?
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/cpufreq.c        | 7 ++++---
+ kernel/sched/cpufreq_schedutil.c | 2 +-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b2cc98551fc3..9588e15da26b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1832,9 +1832,10 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
+  * twice in parallel for the same policy and that it will never be called in
+  * parallel with either ->target() or ->target_index() for the same policy.
+  *
+- * If CPUFREQ_ENTRY_INVALID is returned by the driver's ->fast_switch()
+- * callback to indicate an error condition, the hardware configuration must be
+- * preserved.
++ * Returns the actual frequency set for the CPU.
++ *
++ * If 0 is returned by the driver's ->fast_switch() callback to indicate an
++ * error condition, the hardware configuration must be preserved.
+  */
+ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+ 					unsigned int target_freq)
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 5465bf221e8f..2e74c49776be 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -123,7 +123,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+ 
+ 	if (policy->fast_switch_enabled) {
+ 		next_freq = cpufreq_driver_fast_switch(policy, next_freq);
+-		if (next_freq == CPUFREQ_ENTRY_INVALID)
++		if (!next_freq)
+ 			return;
+ 
+ 		policy->cur = next_freq;
 -- 
-viresh
+2.13.0.71.gd7076ec9c9cb
