@@ -1,41 +1,61 @@
-From: Mohammad ouattara <nadeemarkh@gmail.com>
-Subject: Assalamu`Alaikum.
-Date: Thu, 10 Aug 2017 10:09:37 +0200
-Message-ID: <CAHEh-C9bzf-mbC=F4ZTOwLDigGp4A0k5-VBX7-nkO1RpL8XWkw@mail.gmail.com>
-Reply-To: mohammad.ouattara3238@gmail.com
+From: Tao Wang <kevin.wangtao@hisilicon.com>
+Subject: [PATCH v3 0/3] thermal: add thermal sensor driver for Hi3660
+Date: Thu, 10 Aug 2017 16:32:12 +0800
+Message-ID: <1502353935-92924-1-git-send-email-kevin.wangtao@hisilicon.com>
+References: <1498102923-68481-1-git-send-email-kevin.wangtao@hisilicon.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f193.google.com ([209.85.216.193]:34316 "EHLO
-        mail-qt0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751373AbdHJIJj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Aug 2017 04:09:39 -0400
-Received: by mail-qt0-f193.google.com with SMTP id i19so34131qte.1
-        for <linux-pm@vger.kernel.org>; Thu, 10 Aug 2017 01:09:38 -0700 (PDT)
+Received: from szxga04-in.huawei.com ([45.249.212.190]:3489 "EHLO
+        szxga04-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751449AbdHJIh4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Aug 2017 04:37:56 -0400
+In-Reply-To: <1498102923-68481-1-git-send-email-kevin.wangtao@hisilicon.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, xuwei5@hisilicon.com, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com
+Cc: leo.yan@linaro.org, kevin.wangtao@linaro.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sunzhaosheng@hisilicon.com
 
-Greetings from Dr. mohammad ouattara.
+From: Tao Wang <kevin.wangtao@linaro.org>
 
-Assalamu`Alaikum.
+This series adds thermal support for Hi3660 Soc, which support
+all the hardware temperture sensors and two virtual sensors(one
+for maximum value of all and one for average value of all).
 
-My Name is Dr. mohammad ouattara, I am a banker by profession. I'm
-from Ouagadougou, Burkina Faso, West Africa. My reason for contacting
-you is to transfer an abandoned $14.6M to your account.
+Patch 1 add dt-binding document to describe how to config dt
+for the driver.
+Patch 2 introduces the thermal sensor driver.
+Patch 3 add dts for the thermal senor driver on Hi3660.
 
-The owner of this fund died since 2004 with his Next Of Kin. I want to
-present you to the bank as the Next of Kin/beneficiary of this fund.
+hardware document can be found on
+https://github.com/96boards/documentation/blob/master/ConsumerEdition/HiKey960/HardwareDocs/HiKey960_SoC_Reference_Manual.pdf
 
-Further details of the transaction shall be forwarded to you as soon
-as I receive your return mail indicating your interest.
+Changes in v2:
+- correct alphabet order
+- correct compatible name
+- remove redundant property
+- rebase changes on linux next
 
-1) YOUR FULL NAME...............................
-(2) YOUR AGE AND SEX............................
-(3) YOUR CONTACT ADDRESS..................
-(4) YOUR PRIVATE PHONE N0..........
-(5) FAX NUMBER..............
-(6) YOUR COUNTRY OF ORIGIN..................
-(7) YOUR OCCUPATION.........................
+Changes in v3:
+- remove unnecessary log print
+- described all platform related parameters in DT
+- make the driver forward compatible
 
-Have a great day,
-Dr. mohammad ouattara.
+Tao Wang (3):
+  dt-bindings: Document the hi3660 thermal sensor bindings
+  thermal: hisilicon: add thermal sensor driver for Hi3660
+  arm64: dts: register Hi3660's thermal sensor
+
+ .../devicetree/bindings/thermal/hisi-tsensor.txt   |  23 +++
+ arch/arm64/boot/dts/hisilicon/hi3660.dtsi          |  10 +
+ drivers/thermal/Kconfig                            |  13 ++
+ drivers/thermal/Makefile                           |   1 +
+ drivers/thermal/hisi_tsensor.c                     | 223 +++++++++++++++++++++
+ include/dt-bindings/thermal/hi3660-thermal.h       |  30 +++
+ 6 files changed, 300 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/hisi-tsensor.txt
+ create mode 100644 drivers/thermal/hisi_tsensor.c
+ create mode 100644 include/dt-bindings/thermal/hi3660-thermal.h
+
+-- 
+2.8.1
