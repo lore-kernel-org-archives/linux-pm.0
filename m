@@ -1,94 +1,77 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH v2 2/2] ACPI / Sleep: Check low power idle constraints
- for debug only
-Date: Thu, 10 Aug 2017 15:54:12 -0700
-Message-ID: <1502405652.20268.20.camel@linux.intel.com>
-References: <1502232075-23832-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <1502232075-23832-3-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <146e121b5db84fb8a8aa692cee01cb7b@ausx13mpc120.AMER.DELL.COM>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] cpufreq: Return 0 from ->fast_switch() on errors
+Date: Fri, 11 Aug 2017 01:13:10 +0200
+Message-ID: <8693637.6NBGkAB8Q9@aspire.rjw.lan>
+References: <a219f5b42d06a78bd254ca1b23047d45702f12d2.1502254023.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <146e121b5db84fb8a8aa692cee01cb7b@ausx13mpc120.AMER.DELL.COM>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Mario.Limonciello@dell.com, rjw@rjwysocki.net, lenb@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, lukas@wunner.de
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58400 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753089AbdHJXVa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Aug 2017 19:21:30 -0400
+In-Reply-To: <a219f5b42d06a78bd254ca1b23047d45702f12d2.1502254023.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, sudeep.holla@arm.com, Dietmar.Eggemann@arm.com, linux-kernel@vger.kernel.org
 
-On Thu, 2017-08-10 at 22:07 +0000, Mario.Limonciello@dell.com wrote:
+On Wednesday, August 9, 2017 6:51:46 AM CEST Viresh Kumar wrote:
+> CPUFREQ_ENTRY_INVALID is a special symbol which is used to specify that
+> an entry in the cpufreq table is invalid. But using it outside of the
+> scope of the cpufreq table looks a bit incorrect.
 > 
-> > 
-> > 
-[...]
-
-> > +
-> > +		ret = acpi_device_get_power(adev, &state);
-> > +		if (!ret)
-> > +			pr_debug("LPI: %s required min power state
-> > %d, current
-> > power state %d, real power state %d\n",
-> > +				 lpi_constraints_table[i].name,
-> > +				 lpi_constraints_table[i].min_dsta
-> > te,
-> > +				 adev->power.state, state);
-> Isn't this superfluous to be showing the state returned from
-> acpi_device_get_power and
-> also probing directly at the state? You can't just rely on the
-> information you got
-> back from apci_device_get_power?
-They can be different as one is real power state and the other is what
-was set.
-For example on Dell 9365 it shows
-
-[ 1924.393653] LPI: \_SB.PCI0.XHC required min power state 3, current
-power state 3, real power state 255 
-
+> We can represent an invalid frequency by writing it as 0 instead if we
+> need. Note that it is already done that way for the return value of the
+> ->get() callback.
 > 
-> > 
-> > +
-> > +		if (adev->flags.power_manageable && adev-
-> > >power.state <
-> > +					lpi_constraints_table[i].m
-> > in_dstate)
-> > +			pr_info("LPI: Constraint [%s] not
-> > matched\n",
-> > +				 lpi_constraints_table[i].name);
-> Similarly here, can't you just compare against &state instead?
+> Lets do the same for ->fast_switch() and not use CPUFREQ_ENTRY_INVALID
+> outside of the scope of cpufreq table.
 > 
-The problem then the check will fail for XHCI on Dell 9365. So not
-using "state".
+> Also update the comment over cpufreq_driver_fast_switch() to clearly
+> mention what this returns.
+> 
+> None of the drivers return CPUFREQ_ENTRY_INVALID as of now from
+> ->fast_switch() callback and so we don't need to update any of those.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq.c        | 7 ++++---
+>  kernel/sched/cpufreq_schedutil.c | 2 +-
+>  2 files changed, 5 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index b2cc98551fc3..9588e15da26b 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -1832,9 +1832,10 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
+>   * twice in parallel for the same policy and that it will never be called in
+>   * parallel with either ->target() or ->target_index() for the same policy.
+>   *
+> - * If CPUFREQ_ENTRY_INVALID is returned by the driver's ->fast_switch()
+> - * callback to indicate an error condition, the hardware configuration must be
+> - * preserved.
+> + * Returns the actual frequency set for the CPU.
+> + *
+> + * If 0 is returned by the driver's ->fast_switch() callback to indicate an
+> + * error condition, the hardware configuration must be preserved.
+>   */
+>  unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
+>  					unsigned int target_freq)
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 5465bf221e8f..2e74c49776be 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -123,7 +123,7 @@ static void sugov_update_commit(struct sugov_policy *sg_policy, u64 time,
+>  
+>  	if (policy->fast_switch_enabled) {
+>  		next_freq = cpufreq_driver_fast_switch(policy, next_freq);
+> -		if (next_freq == CPUFREQ_ENTRY_INVALID)
+> +		if (!next_freq)
+>  			return;
+>  
+>  		policy->cur = next_freq;
+> 
 
-Thanks,
-Srinivas
-> > 
-> > +	}
-> > +}
-> > +
-> >  static void acpi_sleep_run_lps0_dsm(unsigned int func)
-> >  {
-> >  	union acpi_object *out_obj;
-> > @@ -729,6 +886,9 @@ static int lps0_device_attach(struct
-> > acpi_device *adev,
-> >  				  "_DSM function 0 evaluation
-> > failed\n");
-> >  	}
-> >  	ACPI_FREE(out_obj);
-> > +
-> > +	lpi_device_get_constraints();
-> > +
-> >  	return 0;
-> >  }
-> > 
-> > @@ -773,6 +933,8 @@ static void acpi_freeze_wake(void)
-> >  	 */
-> >  	if (acpi_sci_irq_valid() &&
-> >  	    !irqd_is_wakeup_armed(irq_get_irq_data(acpi_sci_irq)))
-> > {
-> > +		if (pm_debug_messages_enabled())
-> > +			lpi_check_constraints();
-> >  		pm_system_cancel_wakeup();
-> >  		s2idle_wakeup = true;
-> >  	}
-> > --
-> > 2.7.5
+Applied, thanks!
