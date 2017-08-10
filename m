@@ -1,12 +1,16 @@
 From: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
 Subject: [PATCH v3] Fix header-name to read state name and adjust column width
-Date: Thu, 10 Aug 2017 18:24:54 +0530
-Message-ID: <1502369694-9720-1-git-send-email-s1seetee@linux.vnet.ibm.com>
+Date: Thu, 10 Aug 2017 18:31:34 +0530
+Message-ID: <1502370094-11323-1-git-send-email-s1seetee@linux.vnet.ibm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com
 Cc: s1seetee@linux.vnet.ibm.com
 List-Id: linux-pm@vger.kernel.org
+
+The names of the idle states in the output of cpupower monitor command are
+truncated to 4 characters. Hence, On POWER9, since the states are named
+"stop0, stop1, stop2, stop4, stop11", this output is ambiguous
 
 root:~# cpupower monitor
                |Idle_Stats
