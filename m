@@ -1,55 +1,138 @@
-From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH 2/4] ARM: dts: tps65217: Add power button interrupt to
- the common tps65217.dtsi file
-Date: Thu, 10 Aug 2017 09:24:46 -0700
-Message-ID: <20170810162446.GE8569@atomide.com>
-References: <20170612212412.22719-1-enric.balletbo@collabora.com>
- <20170612212412.22719-2-enric.balletbo@collabora.com>
- <20170613073519.GA3730@atomide.com>
- <CAFqH_50syu5aHBQtJkh-Dpz8Yc_6w0X853DO46T3ZAAJ10F-Pw@mail.gmail.com>
- <20170614045551.GB3730@atomide.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170614045551.GB3730-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Enric Balletbo Serra <eballetbo-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>, "linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Grygorii Strashko <grygorii.strashko-l0cyMroinI0@public.gmane.org>, Javier Martinez Canillas <javier-0uQlZySMnqxg9hUCZPvPmw@public.gmane.org>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: x86: PIE support and option to extend KASLR randomization
+Date: Thu, 10 Aug 2017 10:25:52 -0700
+Message-ID: <20170810172615.51965-1-thgarnie@google.com>
+Return-path: <kernel-hardening-return-9309-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Thomas Garnier <thgarnie@google.com>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?q?Radim=20Kr=C4=8Dm=C3=A1=C5=99?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel>
+Cc: x86@kernel.org, linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org, kvm@vger.kernel.org, linux-pm@vger.kernel.org, linux-arch@vger.kernel.org, linux-sparse@vger.kernel.org, kernel-hardening@lists.openwall.com
 List-Id: linux-pm@vger.kernel.org
 
-* Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org> [170613 22:00]:
-> * Enric Balletbo Serra <eballetbo-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> [170613 02:12]:
-> > Hi Tony,
-> > 
-> > 2017-06-13 9:35 GMT+02:00 Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>:
-> > > * Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org> [170612 14:28]:
-> > >> The interrupt for power button is static data that comes from the
-> > >> datasheet, there is no reason to need to define this value on every
-> > >> board so seams reasonable put this information into the common tps65217
-> > >> file.
-> > >
-> > > I think there's a problem with these patches where we no longer know
-> > > if the interrupts are wired up on a board. For example, if the USB PHY
-> > > VBUS interrupt is not connected, the phy driver needs poll the
-> > > cable state.
-> > >
-> > 
-> > Hmm, the tps65217 doesn't have a USB PHY like others tps, so not sure
-> > how could affect this patch. Did you see this issue in any board that
-> > uses tps65217 or any am335x based board which commonly uses this pmic?
-> 
-> Oh sorry I misread your patch. I thought you're removing
-> the interrupts from dts, but you're just moving the dts entries
-> to the common dtsi file :) So seems just fine with me.
+Changes:
+ - v2:
+   - Add support for global stack cookie while compiler default to fs without
+     mcmodel=kernel
+   - Change patch 7 to correctly jump out of the identity mapping on kexec load
+     preserve.
 
-Applying patches 1 and 2 of this series into omap-for-v4.14/dt
-thanks.
+These patches make the changes necessary to build the kernel as Position
+Independent Executable (PIE) on x86_64. A PIE kernel can be relocated below
+the top 2G of the virtual address space. It allows to optionally extend the
+KASLR randomization range from 1G to 3G.
 
-Regards,
+Thanks a lot to Ard Biesheuvel & Kees Cook on their feedback on compiler
+changes, PIE support and KASLR in general.
 
-Tony
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+The patches:
+ - 1-3, 5-15: Change in assembly code to be PIE compliant.
+ - 4: Add a new _ASM_GET_PTR macro to fetch a symbol address generically.
+ - 16: Adapt percpu design to work correctly when PIE is enabled.
+ - 17: Provide an option to default visibility to hidden except for key symbols.
+       It removes errors between compilation units.
+ - 18: Adapt relocation tool to handle PIE binary correctly.
+ - 19: Add support for global cookie
+ - 20: Add the CONFIG_X86_PIE option (off by default)
+ - 21: Adapt relocation tool to generate a 64-bit relocation table.
+ - 22: Add options to build modules as mcmodel=large and dynamically create a
+       PLT for relative references out of range (adapted from arm64).
+ - 23: Add the CONFIG_RANDOMIZE_BASE_LARGE option to increase relocation range
+       from 1G to 3G (off by default).
+
+Performance/Size impact:
+
+Hackbench (50% and 1600% loads):
+ - PIE disabled: no significant change (-0.50% / +0.50%)
+ - PIE enabled: 7% to 8% on half load, 10% on heavy load.
+
+These results are aligned with the different research on user-mode PIE
+impact on cpu intensive benchmarks (around 10% on x86_64).
+
+slab_test (average of 10 runs):
+ - PIE disabled: no significant change (-1% / +1%)
+ - PIE enabled: 3% to 4%
+
+Kernbench (average of 10 Half and Optimal runs):
+ Elapsed Time:
+ - PIE disabled: no significant change (-0.22% / +0.06%)
+ - PIE enabled: around 0.50%
+ System Time:
+ - PIE disabled: no significant change (-0.99% / -1.28%)
+ - PIE enabled: 5% to 6%
+
+Size of vmlinux (Ubuntu configuration):
+ File size:
+ - PIE disabled: 472928672 bytes (-0.000169% from baseline)
+ - PIE enabled: 216878461 bytes (-54.14% from baseline)
+ .text sections:
+ - PIE disabled: 9373572 bytes (+0.04% from baseline)
+ - PIE enabled: 9499138 bytes (+1.38% from baseline)
+
+The big decrease in vmlinux file size is due to the lower number of
+relocations appended to the file.
+
+diffstat:
+ arch/x86/Kconfig                             |   42 +++++
+ arch/x86/Makefile                            |   28 +++
+ arch/x86/boot/boot.h                         |    2 
+ arch/x86/boot/compressed/Makefile            |    5 
+ arch/x86/boot/compressed/misc.c              |   10 +
+ arch/x86/crypto/aes-x86_64-asm_64.S          |   45 +++---
+ arch/x86/crypto/aesni-intel_asm.S            |   14 +
+ arch/x86/crypto/aesni-intel_avx-x86_64.S     |    6 
+ arch/x86/crypto/camellia-aesni-avx-asm_64.S  |   42 ++---
+ arch/x86/crypto/camellia-aesni-avx2-asm_64.S |   44 +++---
+ arch/x86/crypto/camellia-x86_64-asm_64.S     |    8 -
+ arch/x86/crypto/cast5-avx-x86_64-asm_64.S    |   50 +++---
+ arch/x86/crypto/cast6-avx-x86_64-asm_64.S    |   44 +++---
+ arch/x86/crypto/des3_ede-asm_64.S            |   96 ++++++++-----
+ arch/x86/crypto/ghash-clmulni-intel_asm.S    |    4 
+ arch/x86/crypto/glue_helper-asm-avx.S        |    4 
+ arch/x86/crypto/glue_helper-asm-avx2.S       |    6 
+ arch/x86/entry/entry_32.S                    |    3 
+ arch/x86/entry/entry_64.S                    |   29 ++-
+ arch/x86/include/asm/asm.h                   |   13 +
+ arch/x86/include/asm/bug.h                   |    2 
+ arch/x86/include/asm/jump_label.h            |    8 -
+ arch/x86/include/asm/kvm_host.h              |    6 
+ arch/x86/include/asm/module.h                |   17 ++
+ arch/x86/include/asm/page_64_types.h         |    9 +
+ arch/x86/include/asm/paravirt_types.h        |   12 +
+ arch/x86/include/asm/percpu.h                |   25 ++-
+ arch/x86/include/asm/pm-trace.h              |    2 
+ arch/x86/include/asm/processor.h             |   11 -
+ arch/x86/include/asm/setup.h                 |    2 
+ arch/x86/include/asm/stackprotector.h        |   19 +-
+ arch/x86/kernel/Makefile                     |    2 
+ arch/x86/kernel/acpi/wakeup_64.S             |   31 ++--
+ arch/x86/kernel/asm-offsets.c                |    3 
+ arch/x86/kernel/asm-offsets_32.c             |    3 
+ arch/x86/kernel/asm-offsets_64.c             |    3 
+ arch/x86/kernel/cpu/common.c                 |    7 
+ arch/x86/kernel/head64.c                     |   30 +++-
+ arch/x86/kernel/head_32.S                    |    3 
+ arch/x86/kernel/head_64.S                    |   46 +++++-
+ arch/x86/kernel/kvm.c                        |    6 
+ arch/x86/kernel/module-plts.c                |  198 +++++++++++++++++++++++++++
+ arch/x86/kernel/module.c                     |   18 +-
+ arch/x86/kernel/module.lds                   |    4 
+ arch/x86/kernel/process.c                    |    5 
+ arch/x86/kernel/relocate_kernel_64.S         |    8 -
+ arch/x86/kernel/setup_percpu.c               |    2 
+ arch/x86/kernel/vmlinux.lds.S                |   13 +
+ arch/x86/kvm/svm.c                           |    4 
+ arch/x86/lib/cmpxchg16b_emu.S                |    8 -
+ arch/x86/power/hibernate_asm_64.S            |    4 
+ arch/x86/tools/relocs.c                      |  134 +++++++++++++++---
+ arch/x86/tools/relocs.h                      |    4 
+ arch/x86/tools/relocs_common.c               |   15 +-
+ arch/x86/xen/xen-asm.S                       |   12 -
+ arch/x86/xen/xen-asm.h                       |    3 
+ arch/x86/xen/xen-head.S                      |    9 -
+ include/asm-generic/sections.h               |    6 
+ include/linux/compiler.h                     |    8 +
+ init/Kconfig                                 |    9 +
+ kernel/kallsyms.c                            |   16 +-
+ 61 files changed, 923 insertions(+), 299 deletions(-)
