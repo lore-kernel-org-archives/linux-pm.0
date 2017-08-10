@@ -1,68 +1,66 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] cpufreq: schedutil: Always process remote callback with slow switching
-Date: Thu, 10 Aug 2017 09:50:56 +0530
-Message-ID: <2a395ea76235dce00828172a1129c46bf87a79c8.1502338812.git.viresh.kumar@linaro.org>
-References: <8dd297a6ed05ed3f6c33aeb3059e71a1d270c530.1502338812.git.viresh.kumar@linaro.org>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] cpufreq: x86: Disable interrupts during MSRs reading
+Date: Thu, 10 Aug 2017 01:05:15 -0400
+Message-ID: <CAJvTdKkntuTGQ81iHTn8mjxE4B8eniOEFceECr86K6j_uwq2Tw@mail.gmail.com>
+References: <1502226769-5670-1-git-send-email-dsmythies@telus.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <8dd297a6ed05ed3f6c33aeb3059e71a1d270c530.1502338812.git.viresh.kumar@linaro.org>
-In-Reply-To: <8dd297a6ed05ed3f6c33aeb3059e71a1d270c530.1502338812.git.viresh.kumar@linaro.org>
-References: <8dd297a6ed05ed3f6c33aeb3059e71a1d270c530.1502338812.git.viresh.kumar@linaro.org>
+In-Reply-To: <1502226769-5670-1-git-send-email-dsmythies@telus.net>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri Lelli <Juri.Lelli@arm.com>, joelaf@google.com, linux-kernel@vger.kernel.org
+To: Doug Smythies <doug.smythies@gmail.com>
+Cc: X86 ML <x86@kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rafael@kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The frequency update from the utilization update handlers can be divided
-into two parts:
+thanks, Doug!
 
-(A) Finding the next frequency
-(B) Updating the frequency
+Rafael,
 
-While any CPU can do (A), (B) can be restricted to a group of CPUs only,
-depending on the current platform.
+Reviewed-by: Len Brown <len.brown@intel.com>
 
-For platforms where fast cpufreq switching is possible, both (A) and (B)
-are always done from the same CPU and that CPU should be capable of
-changing the frequency of the target CPU.
 
-But for platforms where fast cpufreq switching isn't possible, after
-doing (A) we wake up a kthread which will eventually do (B). This
-kthread is already bound to the right set of CPUs, i.e. only those which
-can change the frequency of CPUs of a cpufreq policy. And so any CPU
-can actually do (A) in this case, as the frequency is updated from the
-right set of CPUs only.
+On Tue, Aug 8, 2017 at 5:12 PM, Doug Smythies <doug.smythies@gmail.com> wrote:
+> According to Intel 64 and IA-32 Architectures SDM, Volume 3,
+> Chapter 14.2, "Software needs to exercise care to avoid delays
+> between the two RDMSRs (for example interrupts)".
+>
+> So, disable interrupts during reading MSRs IA32_APERF and IA32_MPERF.
+>
+> See also:
+> commit 4ab60c3f32c721e46217e762bcd3e55a8f659c04
+> cpufreq: intel_pstate: Disable interrupts during MSRs reading
+>
+> Signed-off-by: Doug Smythies <dsmythies@telus.net>
+> ---
+>  arch/x86/kernel/cpu/aperfmperf.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/arch/x86/kernel/cpu/aperfmperf.c b/arch/x86/kernel/cpu/aperfmperf.c
+> index 7cf7c70..0ee8332 100644
+> --- a/arch/x86/kernel/cpu/aperfmperf.c
+> +++ b/arch/x86/kernel/cpu/aperfmperf.c
+> @@ -40,13 +40,16 @@ static void aperfmperf_snapshot_khz(void *dummy)
+>         struct aperfmperf_sample *s = this_cpu_ptr(&samples);
+>         ktime_t now = ktime_get();
+>         s64 time_delta = ktime_ms_delta(now, s->time);
+> +       unsigned long flags;
+>
+>         /* Don't bother re-computing within the cache threshold time. */
+>         if (time_delta < APERFMPERF_CACHE_THRESHOLD_MS)
+>                 return;
+>
+> +       local_irq_save(flags);
+>         rdmsrl(MSR_IA32_APERF, aperf);
+>         rdmsrl(MSR_IA32_MPERF, mperf);
+> +       local_irq_restore(flags);
+>
+>         aperf_delta = aperf - s->aperf;
+>         mperf_delta = mperf - s->mperf;
+> --
+> 2.7.4
+>
 
-Check cpufreq_can_do_remote_dvfs() only for the fast switching case.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- kernel/sched/cpufreq_schedutil.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 504d0752f8f2..cb21cb70e7dc 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -84,13 +84,18 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
- 	 *
- 	 * However, drivers cannot in general deal with cross-cpu
- 	 * requests, so while get_next_freq() will work, our
--	 * sugov_update_commit() call may not.
-+	 * sugov_update_commit() call may not for the fast switching platforms.
- 	 *
- 	 * Hence stop here for remote requests if they aren't supported
- 	 * by the hardware, as calculating the frequency is pointless if
- 	 * we cannot in fact act on it.
-+	 *
-+	 * For the slow switching platforms, the kthread is always scheduled on
-+	 * the right set of CPUs and any CPU can find the next frequency and
-+	 * schedule the kthread.
- 	 */
--	if (!cpufreq_can_do_remote_dvfs(sg_policy->policy))
-+	if (policy->fast_switch_enabled &&
-+	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
- 		return false;
- 
- 	if (sg_policy->work_in_progress)
 -- 
-2.13.0.71.gd7076ec9c9cb
+Len Brown, Intel Open Source Technology Center
