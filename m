@@ -1,92 +1,81 @@
-From: Tao Wang <kevin.wangtao@hisilicon.com>
-Subject: [PATCH v3 3/3] arm64: dts: register Hi3660's thermal sensor
-Date: Thu, 10 Aug 2017 16:32:15 +0800
-Message-ID: <1502353935-92924-4-git-send-email-kevin.wangtao@hisilicon.com>
-References: <1498102923-68481-1-git-send-email-kevin.wangtao@hisilicon.com>
- <1502353935-92924-1-git-send-email-kevin.wangtao@hisilicon.com>
+From: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Subject: Re: [PATCH] i2c: designware: Fix system suspend
+Date: Thu, 10 Aug 2017 13:25:33 +0300
+Message-ID: <7cf63e74-0ece-4af2-89e9-e08b52858195@linux.intel.com>
+References: <1502285302-21552-1-git-send-email-ulf.hansson@linaro.org>
+ <CALAqxLW31Huu3+BWUO3tO+bsKUv7_r4_2joBy8YpZfa81zJ5tw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1502353935-92924-1-git-send-email-kevin.wangtao@hisilicon.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, xuwei5@hisilicon.com, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com
-Cc: leo.yan@linaro.org, kevin.wangtao@linaro.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sunzhaosheng@hisilicon.com
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <CALAqxLW31Huu3+BWUO3tO+bsKUv7_r4_2joBy8YpZfa81zJ5tw@mail.gmail.com>
+Content-Language: en-US
+Sender: stable-owner@vger.kernel.org
+To: John Stultz <john.stultz@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-i2c@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "# v4 . 4+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Tao Wang <kevin.wangtao@linaro.org>
+On 08/09/2017 11:55 PM, John Stultz wrote:
+> On Wed, Aug 9, 2017 at 6:28 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> The commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming
+>> during system suspend"), may suggest to the PM core to try out the so
+>> called direct_complete path for system sleep. In this path, the PM core
+>> treats a runtime suspended device as it's already in a proper low power
+>> state for system sleep, which makes it skip calling the system sleep
+>> callbacks for the device, except for the ->prepare() and the ->complete()
+>> callbacks.
+>>
+>> However, the PM core may unset the direct_complete flag for a parent
+>> device, in case its child device are being system suspended before. In this
+>> scenario, the PM core invokes the system sleep callbacks, no matter if the
+>> device is runtime suspended or not.
+>>
+>> Particularly in cases of an existing i2c slave device, the above path is
+>> triggered, which breaks the assumption that the i2c device is always
+>> runtime resumed whenever the dw_i2c_plat_suspend() is being called.
+>>
+>> More precisely, dw_i2c_plat_suspend() calls clk_core_disable() and
+>> clk_core_unprepare(), for an already disabled/unprepared clock, leading to
+>> a splat in the log about clocks calls being wrongly balanced and breaking
+>> system sleep.
+>>
+>> To still allow the direct_complete path in cases when it's possible, but
+>> also to keep the fix simple, let's runtime resume the i2c device in the
+>> ->suspend() callback, before continuing to put the device into low power
+>> state.
+>>
+>> Note, in cases when the i2c device is attached to the ACPI PM domain, this
+>> problem doesn't occur, because ACPI's ->suspend() callback, assigned to
+>> acpi_subsys_suspend(), already calls pm_runtime_resume() for the device.
+>>
+>> It should also be noted that this change does not fix commit 8503ff166504
+>> ("i2c: designware: Avoid unnecessary resuming during system suspend").
+>> Because for the non-ACPI case, the system sleep support was already broken
+>> prior that point.
+>>
+>> Cc: <stable@vger.kernel.org> # v4.4+
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>
+>> I decided to post this as a separate change, instead of as earlier folding it
+>> in the series that extends the ACPI PM domain to cope with the runtime PM
+>> centric path for system sleep.
+>>
+>> This change applies on a fresh v4.4+. If someone wants it's applied for earlier
+>> version, please send a backport yourself.
+>>
+>> It's based on 4.13 rc4 and I assume it should go as a fix via the i2c tree.
+>>
+>> Changes in v2:
+>>          - Updated changelog.
+>>          - Runtime resume the device in ->suspend() instead of in ->prepare().
+> 
+> 
+> This avoids the suspend/resume warning I've seen w/o the patch on HiKey.
+> 
+> Tested-by: John Stultz <john.stultz@linaro.org>
+> 
+Cool, no issues from acpi_lpss.c nor mfd/intel-lpss.c platforms.
 
-Bind thermal sensor driver for Hi3660.
-
-Signed-off-by: Tao Wang <kevin.wangtao@linaro.org>
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
----
- arch/arm64/boot/dts/hisilicon/hi3660.dtsi    | 10 ++++++++++
- include/dt-bindings/thermal/hi3660-thermal.h | 30 ++++++++++++++++++++++++++++
- 2 files changed, 40 insertions(+)
- create mode 100644 include/dt-bindings/thermal/hi3660-thermal.h
-
-diff --git a/arch/arm64/boot/dts/hisilicon/hi3660.dtsi b/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
-index c6a1961..7e2081d 100644
---- a/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
-+++ b/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
-@@ -6,6 +6,7 @@
- 
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/clock/hi3660-clock.h>
-+#include <dt-bindings/thermal/hi3660-thermal.h>
- 
- / {
- 	compatible = "hisilicon,hi3660";
-@@ -848,5 +849,14 @@
- 				     &sdio_cfg_func>;
- 			status = "disabled";
- 		};
-+
-+		tsensor: tsensor@FFF3000 {
-+			compatible = "hisilicon,tsensor";
-+			reg = <0x0 0xfff30000 0x0 0x1000>;
-+			offset = <0x1c 0x5c 0x9c>;
-+			coefficients = <165000 (-40000)>;
-+			hisi,adc-range = <0x74 0x39A>;
-+			#thermal-sensor-cells = <1>;
-+		};
- 	};
- };
-diff --git a/include/dt-bindings/thermal/hi3660-thermal.h b/include/dt-bindings/thermal/hi3660-thermal.h
-new file mode 100644
-index 0000000..1efe625
---- /dev/null
-+++ b/include/dt-bindings/thermal/hi3660-thermal.h
-@@ -0,0 +1,30 @@
-+/*
-+ *  Copyright (c) 2017 Hisilicon Limited.
-+ *  Copyright (c) 2017 Linaro Limited.
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef __DTS_HI3660_THERMAL_H
-+#define __DTS_HI3660_THERMAL_H
-+
-+/* sensor id */
-+#define LITTLE_CPU_TEMP		0
-+#define BIG_CPU_TEMP		1
-+#define GPU_TEMP		2
-+#define MAX_TEMP		3
-+#define AVG_TEMP		4
-+
-+#define THERMAL_NO_LIMIT		(~0)
-+
-+#endif
--- 
-2.8.1
+Tested-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Acked-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
