@@ -1,65 +1,163 @@
 From: Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH 1/4] ARM: dts: augment Ux500 to use DT cpufreq
-Date: Thu, 10 Aug 2017 14:52:18 +0200
-Message-ID: <20170810125221.25818-2-linus.walleij@linaro.org>
+Subject: [PATCH 3/4] mfd: db8500-prcmu: Get rid of cpufreq dependency
+Date: Thu, 10 Aug 2017 14:52:20 +0200
+Message-ID: <20170810125221.25818-4-linus.walleij@linaro.org>
 References: <20170810125221.25818-1-linus.walleij@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f49.google.com ([209.85.215.49]:36547 "EHLO
-        mail-lf0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751387AbdHJMwe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Aug 2017 08:52:34 -0400
-Received: by mail-lf0-f49.google.com with SMTP id o85so3005476lff.3
-        for <linux-pm@vger.kernel.org>; Thu, 10 Aug 2017 05:52:33 -0700 (PDT)
+Received: from mail-lf0-f52.google.com ([209.85.215.52]:34728 "EHLO
+        mail-lf0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751387AbdHJMwn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Aug 2017 08:52:43 -0400
+Received: by mail-lf0-f52.google.com with SMTP id g25so3073333lfh.1
+        for <linux-pm@vger.kernel.org>; Thu, 10 Aug 2017 05:52:42 -0700 (PDT)
 In-Reply-To: <20170810125221.25818-1-linus.walleij@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>
 Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>, Linus Walleij <linus.walleij@linaro.org>
 
-This adds the operating points to the Ux500 device tree and
-deletes the old special-purpose cpufreq node, as we can now
-use the generic DT cpufreq driver.
+The ARMSS clock, also known as the operating point of the
+CPU, should not cross-depend on cpufreq like this. Move
+the code to use just frequencies and remove the false
+frequency (1GHz) and put in the actual frequency provided
+by the ARMSS clock (998400000 Hz) as part of the process.
 
+After this and the related cpufreq patch, the DB8500 will
+simply use the standard DT cpufreq driver to change the
+operating points through the common clock framework using
+the ARMSS clock.
+
+Cc: Lee Jones <lee.jones@linaro.org>
 Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
-Viresh et al: I will merge this into ARM SoC separately from
-the rest of the patches once we agree on this approach.
+Lee, this needs to be merged together with the other
+related cpufreq patches, so an ACK to take this through
+the cpufreq subsystem would be appreciated once you're
+pleased with it.
 ---
- arch/arm/boot/dts/ste-dbx5x0.dtsi | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ drivers/mfd/db8500-prcmu.c | 59 +++++++++++++---------------------------------
+ 1 file changed, 17 insertions(+), 42 deletions(-)
 
-diff --git a/arch/arm/boot/dts/ste-dbx5x0.dtsi b/arch/arm/boot/dts/ste-dbx5x0.dtsi
-index 6c5affe2d0f5..2310a4e97768 100644
---- a/arch/arm/boot/dts/ste-dbx5x0.dtsi
-+++ b/arch/arm/boot/dts/ste-dbx5x0.dtsi
-@@ -37,6 +37,14 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a9";
- 			reg = <0x300>;
-+			/* cpufreq controls */
-+			operating-points = <998400 0
-+					    800000 0
-+					    400000 0
-+					    200000 0>;
-+			clocks = <&prcmu_clk PRCMU_ARMSS>;
-+			clock-names = "cpu";
-+			clock-latency = <20000>;
- 		};
- 		CPU1: cpu@301 {
- 			device_type = "cpu";
-@@ -494,13 +502,6 @@
- 				reg = <0x80157450 0xC>;
- 			};
+diff --git a/drivers/mfd/db8500-prcmu.c b/drivers/mfd/db8500-prcmu.c
+index 5c739ac752e8..a66be0203ece 100644
+--- a/drivers/mfd/db8500-prcmu.c
++++ b/drivers/mfd/db8500-prcmu.c
+@@ -33,7 +33,6 @@
+ #include <linux/mfd/abx500/ab8500.h>
+ #include <linux/regulator/db8500-prcmu.h>
+ #include <linux/regulator/machine.h>
+-#include <linux/cpufreq.h>
+ #include <linux/platform_data/ux500_wdt.h>
+ #include <linux/platform_data/db8500_thermal.h>
+ #include "dbx500-prcmu-regs.h"
+@@ -1692,32 +1691,22 @@ static long round_clock_rate(u8 clock, unsigned long rate)
+ 	return rounded_rate;
+ }
  
--			cpufreq {
--				compatible = "stericsson,cpufreq-ux500";
--				clocks = <&prcmu_clk PRCMU_ARMSS>;
--				clock-names = "armss";
--				status = "disabled";
--			};
+-/* CPU FREQ table, may be changed due to if MAX_OPP is supported. */
+-static struct cpufreq_frequency_table db8500_cpufreq_table[] = {
+-	{ .frequency = 200000, .driver_data = ARM_EXTCLK,},
+-	{ .frequency = 400000, .driver_data = ARM_50_OPP,},
+-	{ .frequency = 800000, .driver_data = ARM_100_OPP,},
+-	{ .frequency = CPUFREQ_TABLE_END,}, /* To be used for MAX_OPP. */
+-	{ .frequency = CPUFREQ_TABLE_END,},
+-};
++static const unsigned long armss_freqs[] = { 200000000, 400000000, 800000000, 998400000 };
+ 
+ static long round_armss_rate(unsigned long rate)
+ {
+-	struct cpufreq_frequency_table *pos;
+-	long freq = 0;
 -
- 			thermal@801573c0 {
- 				compatible = "stericsson,db8500-thermal";
- 				reg = <0x801573c0 0x40>;
+-	/* cpufreq table frequencies is in KHz. */
+-	rate = rate / 1000;
++	unsigned long freq = 0;
++	int i;
+ 
+ 	/* Find the corresponding arm opp from the cpufreq table. */
+-	cpufreq_for_each_entry(pos, db8500_cpufreq_table) {
+-		freq = pos->frequency;
+-		if (freq == rate)
++	for (i = 0; i < ARRAY_SIZE(armss_freqs); i++) {
++		freq = armss_freqs[i];
++		if (rate <= freq)
+ 			break;
+ 	}
+ 
+ 	/* Return the last valid value, even if a match was not found. */
+-	return freq * 1000;
++	return freq;
+ }
+ 
+ #define MIN_PLL_VCO_RATE 600000000ULL
+@@ -1854,21 +1843,23 @@ static void set_clock_rate(u8 clock, unsigned long rate)
+ 
+ static int set_armss_rate(unsigned long rate)
+ {
+-	struct cpufreq_frequency_table *pos;
+-
+-	/* cpufreq table frequencies is in KHz. */
+-	rate = rate / 1000;
++	unsigned long freq;
++	u8 opps[] = { ARM_EXTCLK, ARM_50_OPP, ARM_100_OPP, ARM_MAX_OPP };
++	int i;
+ 
+ 	/* Find the corresponding arm opp from the cpufreq table. */
+-	cpufreq_for_each_entry(pos, db8500_cpufreq_table)
+-		if (pos->frequency == rate)
++	for (i = 0; i < ARRAY_SIZE(armss_freqs); i++) {
++		freq = armss_freqs[i];
++		if (rate == freq)
+ 			break;
++	}
+ 
+-	if (pos->frequency != rate)
++	if (rate != freq)
+ 		return -EINVAL;
+ 
+ 	/* Set the new arm opp. */
+-	return db8500_prcmu_set_arm_opp(pos->driver_data);
++	pr_debug("SET ARM OPP 0x%02x\n", opps[i]);
++	return db8500_prcmu_set_arm_opp(opps[i]);
+ }
+ 
+ static int set_plldsi_rate(unsigned long rate)
+@@ -3049,12 +3040,6 @@ static const struct mfd_cell db8500_prcmu_devs[] = {
+ 		.pdata_size = sizeof(db8500_regulators),
+ 	},
+ 	{
+-		.name = "cpufreq-ux500",
+-		.of_compatible = "stericsson,cpufreq-ux500",
+-		.platform_data = &db8500_cpufreq_table,
+-		.pdata_size = sizeof(db8500_cpufreq_table),
+-	},
+-	{
+ 		.name = "cpuidle-dbx500",
+ 		.of_compatible = "stericsson,cpuidle-dbx500",
+ 	},
+@@ -3067,14 +3052,6 @@ static const struct mfd_cell db8500_prcmu_devs[] = {
+ 	},
+ };
+ 
+-static void db8500_prcmu_update_cpufreq(void)
+-{
+-	if (prcmu_has_arm_maxopp()) {
+-		db8500_cpufreq_table[3].frequency = 1000000;
+-		db8500_cpufreq_table[3].driver_data = ARM_MAX_OPP;
+-	}
+-}
+-
+ static int db8500_prcmu_register_ab8500(struct device *parent)
+ {
+ 	struct device_node *np;
+@@ -3160,8 +3137,6 @@ static int db8500_prcmu_probe(struct platform_device *pdev)
+ 
+ 	prcmu_config_esram0_deep_sleep(ESRAM0_DEEP_SLEEP_STATE_RET);
+ 
+-	db8500_prcmu_update_cpufreq();
+-
+ 	err = mfd_add_devices(&pdev->dev, 0, common_prcmu_devs,
+ 			      ARRAY_SIZE(common_prcmu_devs), NULL, 0, db8500_irq_domain);
+ 	if (err) {
 -- 
 2.9.4
