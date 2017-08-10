@@ -1,65 +1,53 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH] cpufreq: remove setting of policy->cpu in policy->cpus during init
-Date: Thu, 10 Aug 2017 15:58:57 +0100
-Message-ID: <1502377137-9058-1-git-send-email-sudeep.holla@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:34034 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751972AbdHJO6q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Aug 2017 10:58:46 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH] ARM: OMAP2+: omap_device: drop broken RPM status update
+ from suspend_noirq
+Date: Thu, 10 Aug 2017 08:08:12 -0700
+Message-ID: <20170810150812.GB8569@atomide.com>
+References: <20170724095201.21601-1-johan@kernel.org>
+ <05ae4585-8da0-6fb1-8cfd-6b236ec3a8a2@ti.com>
+ <20170725082444.GL2729@localhost>
+ <3f0f8ed2-9466-d5c9-10e4-de95e5155653@ti.com>
+ <20170726075004.GD27516@localhost>
+ <20170726081716.GB10026@atomide.com>
+ <20170726083521.GE27516@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170726083521.GE27516@localhost>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Johan Hovold <johan@kernel.org>
+Cc: Grygorii Strashko <grygorii.strashko@ti.com>, Russell King <linux@armlinux.org.uk>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>, Dave Gerlach <d-gerlach@ti.com>, Kevin Hilman <khilman@baylibre.com>, Nishanth Menon <nm@ti.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 
-policy->cpu is copied into policy->cpus in cpufreq_online() before
-calling into cpufreq_driver->init(). So there's no need to set the
-same in the individual driver init() functions again.
+* Johan Hovold <johan@kernel.org> [170726 01:36]:
+> On Wed, Jul 26, 2017 at 01:17:17AM -0700, Tony Lindgren wrote: > * Johan Hovold <johan@kernel.org> [170726 00:51]:
+> > > On Tue, Jul 25, 2017 at 12:48:40PM -0500, Grygorii Strashko wrote:
+> > > > So, thank you for your patches and sorry for the noise.
+> > > > 
+> > > > Tested-by: Grygorii Strashko <grygorii.strashko@ti.com>
+> > > 
+> > > Thanks for testing.
+> > 
+> > So does the patch description need updating?
+> 
+> I don't think so.
+> 
+> I did notice that I left out a "would" in the final sentence
+> 
+> 	"and either way, any such calls *would* have been causing
+> 	crashes since 4.10"
+> 	
+> which perhaps you could add when applying?
+> 
+> > And this is needed as a fix for the -rc cycle in addition to your musb
+> > patch?
+> 
+> Unlike the musb patch, this one is not critical and could possibly wait
+> for 4.14. But since all it does is to get rid of a (since 4.10) broken
+> state update, and thereby those warning messages on suspend, I'd say
+> it's -rc material.
 
-This patch removes the redundant setting of policy->cpu in policy->cpus
-in intel_pstate and cppc drivers.
+Applying into omap-for-v4.13/fixes finally thanks.
 
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
----
- drivers/cpufreq/cppc_cpufreq.c | 1 -
- drivers/cpufreq/intel_pstate.c | 1 -
- 2 files changed, 2 deletions(-)
-
-Hi Viresh,
-
-I had copied the cpumask_set_cpu from one of these drivers and when you
-pointed out I thought it's better to remove the reference too. Let me
-know if it makes sense.
-
-Regards,
-Sudeep
-
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 10be285c9055..a1c3025f9df7 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -172,7 +172,6 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 		return -EFAULT;
- 	}
-
--	cpumask_set_cpu(policy->cpu, policy->cpus);
- 	cpu->cur_policy = policy;
-
- 	/* Set policy->cur to max now. The governors will adjust later. */
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 0566455f233e..d82429859103 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2133,7 +2133,6 @@ static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.max_freq *= cpu->pstate.scaling;
-
- 	intel_pstate_init_acpi_perf_limits(policy);
--	cpumask_set_cpu(policy->cpu, policy->cpus);
-
- 	policy->fast_switch_possible = true;
-
---
-2.7.4
+Tony
