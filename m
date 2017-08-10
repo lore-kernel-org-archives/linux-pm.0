@@ -1,26 +1,66 @@
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] i2c: designware: Fix system suspend
-Date: Thu, 10 Aug 2017 13:31:37 +0300
-Message-ID: <20170810103137.GT2369@lahna.fi.intel.com>
-References: <1502285302-21552-1-git-send-email-ulf.hansson@linaro.org>
- <CALAqxLW31Huu3+BWUO3tO+bsKUv7_r4_2joBy8YpZfa81zJ5tw@mail.gmail.com>
- <7cf63e74-0ece-4af2-89e9-e08b52858195@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <7cf63e74-0ece-4af2-89e9-e08b52858195@linux.intel.com>
-Sender: stable-owner@vger.kernel.org
-To: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-Cc: John Stultz <john.stultz@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-i2c@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM list <linux-pm@vger.kernel.org>, "# v4 . 4+" <stable@vger.kernel.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH] cpufreq: Kconfig: fix indentation in couple of entries
+Date: Thu, 10 Aug 2017 12:16:50 +0100
+Message-ID: <1502363810-20038-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:59684 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751914AbdHJLQk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 10 Aug 2017 07:16:40 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Thu, Aug 10, 2017 at 01:25:33PM +0300, Jarkko Nikula wrote:
-> Cool, no issues from acpi_lpss.c nor mfd/intel-lpss.c platforms.
-> 
-> Tested-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-> Acked-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+There are couple of places where 8 spaces are used instead of tabs.
+Replace former by latter. No functional change intended.
 
-Looks good to me as well,
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/cpufreq/Kconfig.arm | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Hi Viresh,
+
+I found I am the culprit for the indentation issue you pointed out in
+SCMI patch. Looks like I am always copy pasting from previous places
+I added and spreading it :)
+
+Regards,
+Sudeep
+
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 1f617143838c..753375c9d5dd 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -41,10 +41,10 @@ config ARM_DT_BL_CPUFREQ
+ 	  big.LITTLE platform. This gets frequency tables from DT.
+
+ config ARM_VEXPRESS_SPC_CPUFREQ
+-        tristate "Versatile Express SPC based CPUfreq driver"
++	tristate "Versatile Express SPC based CPUfreq driver"
+ 	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
+-        help
+-          This add the CPUfreq driver support for Versatile Express
++	help
++	  This add the CPUfreq driver support for Versatile Express
+ 	  big.LITTLE platforms using SPC for power management.
+
+ config ARM_EXYNOS5440_CPUFREQ
+@@ -227,9 +227,9 @@ config ARM_SCMI_CPUFREQ
+ 	  firmware providing the CPU DVFS functionality.
+
+ config ARM_SCPI_CPUFREQ
+-        tristate "SCPI based CPUfreq driver"
++	tristate "SCPI based CPUfreq driver"
+ 	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
+-        help
++	help
+ 	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
+ 	  using SCPI protocol for CPU power management.
+
+--
+2.7.4
