@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/2] ACPI / PM: Add debug statements to acpi_pm_notify_handler()
-Date: Fri, 11 Aug 2017 01:32:40 +0200
-Message-ID: <2095882.PNZ7KaMCX6@aspire.rjw.lan>
+Subject: [PATCH 1/2] ACPI: Add debug statements to acpi_global_event_handler()
+Date: Fri, 11 Aug 2017 01:31:54 +0200
+Message-ID: <1927989.koY9Kj8cp2@aspire.rjw.lan>
 References: <14884530.U9YM2D2TGn@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49025 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:60035 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750735AbdHJXlF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Aug 2017 19:41:05 -0400
+        by vger.kernel.org with ESMTP id S1750841AbdHJXlG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Aug 2017 19:41:06 -0400
 In-Reply-To: <14884530.U9YM2D2TGn@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,38 +19,44 @@ Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvad
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Add statements to trace invocations of the ACPI PM notify handler
-and the work functions called by it.
+It sometimes is useful to examine the timing of ACPI events during
+certain operations only, like during system suspend/resume, so add
+pr_debug() statements for that to acpi_global_event_handler().
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/device_pm.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/acpi/sysfs.c |   12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-Index: linux-pm/drivers/acpi/device_pm.c
+Index: linux-pm/drivers/acpi/sysfs.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -401,6 +401,8 @@ static void acpi_pm_notify_handler(acpi_
- 	if (val != ACPI_NOTIFY_DEVICE_WAKE)
- 		return;
+--- linux-pm.orig/drivers/acpi/sysfs.c
++++ linux-pm/drivers/acpi/sysfs.c
+@@ -2,6 +2,8 @@
+  * sysfs.c - ACPI sysfs interface to userspace.
+  */
  
-+	acpi_handle_debug(handle, "Wake notify\n");
++#define pr_fmt(fmt) "ACPI: " fmt
 +
- 	adev = acpi_bus_get_acpi_device(handle);
- 	if (!adev)
- 		return;
-@@ -409,8 +411,12 @@ static void acpi_pm_notify_handler(acpi_
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/moduleparam.h>
+@@ -552,11 +554,15 @@ static void fixed_event_count(u32 event_
+ static void acpi_global_event_handler(u32 event_type, acpi_handle device,
+ 	u32 event_number, void *context)
+ {
+-	if (event_type == ACPI_EVENT_TYPE_GPE)
++	if (event_type == ACPI_EVENT_TYPE_GPE) {
+ 		gpe_count(event_number);
+-
+-	if (event_type == ACPI_EVENT_TYPE_FIXED)
++		pr_debug("GPE event 0x%02x\n", event_number);
++	} else if (event_type == ACPI_EVENT_TYPE_FIXED) {
+ 		fixed_event_count(event_number);
++		pr_debug("Fixed event 0x%02x\n", event_number);
++	} else {
++		pr_debug("Other event 0x%02x\n", event_number);
++	}
+ }
  
- 	if (adev->wakeup.flags.notifier_present) {
- 		pm_wakeup_ws_event(adev->wakeup.ws, 0, acpi_s2idle_wakeup());
--		if (adev->wakeup.context.func)
-+		if (adev->wakeup.context.func) {
-+			acpi_handle_debug(handle, "Running %pF for %s\n",
-+					  adev->wakeup.context.func,
-+					  dev_name(adev->wakeup.context.dev));
- 			adev->wakeup.context.func(&adev->wakeup.context);
-+		}
- 	}
- 
- 	mutex_unlock(&acpi_pm_notifier_lock);
+ static int get_status(u32 index, acpi_event_status *status,
