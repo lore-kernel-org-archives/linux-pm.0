@@ -1,121 +1,111 @@
-From: Caesar Wang <wxt@rock-chips.com>
-Subject: Re: [PATCH v2 4/5] arm64: dts: rockchip: add thermal nodes for rk3328
- SoC
-Date: Fri, 11 Aug 2017 14:44:21 +0800
-Message-ID: <b9f85901-2fb5-d4ed-503c-1c4684d821e7@rock-chips.com>
-References: <1501833976-1100-1-git-send-email-rocky.hao@rock-chips.com>
- <1501833976-1100-5-git-send-email-rocky.hao@rock-chips.com>
+From: walter harms <wharms@bfs.de>
+Subject: Re: [PATCH 1/3 v2] thermal: core: Add some new helper functions to
+ free resources
+Date: Fri, 11 Aug 2017 09:30:25 +0200
+Message-ID: <598D5D11.4010703@bfs.de>
+References: <cover.1502201798.git.christophe.jaillet@wanadoo.fr> <98e96edd53ea3109ec127f82608c8d5df5437c9c.1502201798.git.christophe.jaillet@wanadoo.fr>
+Reply-To: wharms@bfs.de
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gbk; format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1501833976-1100-5-git-send-email-rocky.hao@rock-chips.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rocky Hao <rocky.hao@rock-chips.com>, rui.zhang@intel.com, edubezval@gmail.com, heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com
-Cc: huangtao@rock-chips.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, cl@rock-chips.com, william.wu@rock-chips.com, jay.xu@rock-chips.com, xxx@rock-chips.com, linux-arm-kernel@lists.infradead.org, wxt@rock-chips.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx02-sz.bfs.de ([194.94.69.103]:23299 "EHLO mx02-sz.bfs.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751370AbdHKHa3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 11 Aug 2017 03:30:29 -0400
+In-Reply-To: <98e96edd53ea3109ec127f82608c8d5df5437c9c.1502201798.git.christophe.jaillet@wanadoo.fr>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-在 2017年08月04日 16:06, Rocky Hao 写道:
-> add thermal zone and dynamic CPU power coefficients for rk3328
->
-> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
+
+
+Am 08.08.2017 16:39, schrieb Christophe JAILLET:
+> In order to easily free resources allocated by
+> 'thermal_zone_create_device_groups()' we need 2 new helper functions.
+> 
+> The first one undoes 'thermal_zone_create_device_groups()'.
+> The 2nd one undoes 'create_trip_attrs()', which is a function called by
+> 'thermal_zone_create_device_groups()'.
+> 
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 > ---
-> Change in v2:
-> - remove gerrit Change-Id
->
->   arch/arm64/boot/dts/rockchip/rk3328.dtsi | 43 ++++++++++++++++++++++++++++++++
->   1 file changed, 43 insertions(+)
->
-> diff --git a/arch/arm64/boot/dts/rockchip/rk3328.dtsi b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
-> index 186fb93fdffd..68829f808320 100644
-> --- a/arch/arm64/boot/dts/rockchip/rk3328.dtsi
-> +++ b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
-> @@ -47,6 +47,7 @@
->   #include <dt-bindings/pinctrl/rockchip.h>
->   #include <dt-bindings/power/rk3328-power.h>
->   #include <dt-bindings/soc/rockchip,boot-mode.h>
-> +#include <dt-bindings/thermal/thermal.h>
->   
->   / {
->   	compatible = "rockchip,rk3328";
-> @@ -74,6 +75,8 @@
->   			compatible = "arm,cortex-a53", "arm,armv8";
->   			reg = <0x0 0x0>;
->   			clocks = <&cru ARMCLK>;
-> +			#cooling-cells = <2>; /* min followed by max */
-> +			dynamic-power-coefficient = <120>;
->   			enable-method = "psci";
->   			next-level-cache = <&l2>;
->   		};
-> @@ -83,6 +86,7 @@
->   			compatible = "arm,cortex-a53", "arm,armv8";
->   			reg = <0x0 0x1>;
->   			clocks = <&cru ARMCLK>;
-> +			dynamic-power-coefficient = <120>;
->   			enable-method = "psci";
->   			next-level-cache = <&l2>;
->   		};
-> @@ -92,6 +96,7 @@
->   			compatible = "arm,cortex-a53", "arm,armv8";
->   			reg = <0x0 0x2>;
->   			clocks = <&cru ARMCLK>;
-> +			dynamic-power-coefficient = <120>;
->   			enable-method = "psci";
->   			next-level-cache = <&l2>;
->   		};
-> @@ -101,6 +106,7 @@
->   			compatible = "arm,cortex-a53", "arm,armv8";
->   			reg = <0x0 0x3>;
->   			clocks = <&cru ARMCLK>;
-> +			dynamic-power-coefficient = <120>;
->   			enable-method = "psci";
->   			next-level-cache = <&l2>;
->   		};
-> @@ -308,6 +314,43 @@
->   		interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
->   	};
->   
-> +	thermal-zones {
-> +		soc_thermal: soc-thermal {
-> +			polling-delay-passive = <20>; /* milliseconds */
-> +			polling-delay = <1000>; /* milliseconds */
-> +			sustainable-power = <1000>; /* milliwatts */
+> These functions will be used in patch 2/3 in order to simplify
+> 'thermal_release()'
+> I've tried to implement it as close a possible as the way the resources have
+> been allocated.
+> However, in 'thermal_release()', the code is simplier without some
+> additionnal 'if'.
+> No sure if we should prefer consistancy with allocation or simplicity of code.
+> ---
+>  drivers/thermal/thermal_core.h  |  1 +
+>  drivers/thermal/thermal_sysfs.c | 29 +++++++++++++++++++++++++++++
+>  2 files changed, 30 insertions(+)
+> 
+> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+> index 2412b3759e16..27e3b1df7360 100644
+> --- a/drivers/thermal/thermal_core.h
+> +++ b/drivers/thermal/thermal_core.h
+> @@ -71,6 +71,7 @@ int thermal_build_list_of_policies(char *buf);
+>  
+>  /* sysfs I/F */
+>  int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
+> +void thermal_zone_destroy_device_groups(struct thermal_zone_device *);
+>  void thermal_cooling_device_setup_sysfs(struct thermal_cooling_device *);
+>  /* used only at binding time */
+>  ssize_t
+> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+> index a694de907a26..eb95d64b9446 100644
+> --- a/drivers/thermal/thermal_sysfs.c
+> +++ b/drivers/thermal/thermal_sysfs.c
+> @@ -605,6 +605,24 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
+>  	return 0;
+>  }
+>  
+> +/**
+> + * destroy_trip_attrs() - create attributes for trip points
+> + * @tz:		the thermal zone device
+> + *
+> + * helper function to free resources alocated by create_trip_attrs()
+> + */
+> +static void destroy_trip_attrs(struct thermal_zone_device *tz)
+> +{
+> +	if (!tz)
+> +		return;
 > +
-> +			thermal-sensors = <&tsadc 0>;
+> +	kfree(tz->trip_type_attrs);
+> +	kfree(tz->trip_temp_attrs);
+> +	if (tz->ops->get_trip_hyst)
+> +		kfree(tz->trip_hyst_attrs);
+> +	kfree(tz->trips_attribute_group.attrs);
+> +}
 > +
-> +			trips {
-> +				threshold: trip-point0 {
-> +					temperature = <70000>; /* millicelsius */
-> +					hysteresis = <2000>; /* millicelsius */
-> +					type = "passive";
-> +				};
-> +				target: trip-point1 {
-> +					temperature = <85000>; /* millicelsius */
-> +					hysteresis = <2000>; /* millicelsius */
-> +					type = "passive";
-> +				};
-> +				soc_crit: soc-crit {
-> +					temperature = <95000>; /* millicelsius */
-> +					hysteresis = <2000>; /* millicelsius */
+>  int thermal_zone_create_device_groups(struct thermal_zone_device *tz,
+>  				      int mask)
+>  {
+> @@ -637,6 +655,17 @@ int thermal_zone_create_device_groups(struct thermal_zone_device *tz,
+>  	return 0;
+>  }
+>  
+> +void thermal_zone_destroy_device_groups(struct thermal_zone_device *tz)
+> +{
+> +	if (!tz)
+> +		return;
+> +
+> +	if (tz->trips)
+> +		destroy_trip_attrs(tz);
 
-The document had already described, maybe we should remove the 
-millicelsius/milliseconds/milliwatts here.
-> +					type = "critical";
-> +				};
-> +			};
+why the check for tz->trips ?
+destroy_trip_attrs does not access tz->trips->
+
+re,
+ wh
+
 > +
-> +			cooling-maps {
-> +				map0 {
-> +					trip = <&target>;
-> +					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-> +					contribution = <4096>;
-> +				};
-> +			};
-> +		};
+> +	kfree(tz->device.groups);
+> +}
 > +
-> +	};
-> +
->   	tsadc: tsadc@ff250000 {
->   		compatible = "rockchip,rk3328-tsadc";
->   		reg = <0x0 0xff250000 0x0 0x100>;
+>  /* sys I/F for cooling device */
+>  static ssize_t
+>  thermal_cooling_device_type_show(struct device *dev,
