@@ -1,61 +1,133 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2 0/5] thermal: rockchip: add tsadc support in thermal
- driver and IPA thermal control for rk3328 in dts
-Date: Fri, 11 Aug 2017 16:01:28 +0800
-Message-ID: <1502438488.2597.0.camel@intel.com>
-References: <1501833976-1100-1-git-send-email-rocky.hao@rock-chips.com>
-         <1502427095.2598.21.camel@intel.com> <3025917.NAhhjSz36M@phil>
+Subject: Re: [PATCH 1/3 v2] thermal: core: Add some new helper functions to
+ free resources
+Date: Fri, 11 Aug 2017 16:20:23 +0800
+Message-ID: <1502439623.2597.7.camel@intel.com>
+References: <cover.1502201798.git.christophe.jaillet@wanadoo.fr>
+         <98e96edd53ea3109ec127f82608c8d5df5437c9c.1502201798.git.christophe.jaillet@wanadoo.fr>
+         <598D5D11.4010703@bfs.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3025917.NAhhjSz36M@phil>
+In-Reply-To: <598D5D11.4010703@bfs.de>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Heiko Stuebner <heiko@sntech.de>
-Cc: Rocky Hao <rocky.hao@rock-chips.com>, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com
+To: wharms@bfs.de, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2017-08-11 at 08:27 +0200, Heiko Stuebner wrote:
-> Hi,
+On Fri, 2017-08-11 at 09:30 +0200, walter harms wrote:
 > 
-> Am Freitag, 11. August 2017, 12:51:35 CEST schrieb Zhang Rui:
+> Am 08.08.2017 16:39, schrieb Christophe JAILLET:
 > > 
-> > On Fri, 2017-08-04 at 16:06 +0800, Rocky Hao wrote:
-> > > 
-> > > This series patches add the tsadc support in thermal driver and
-> > > in
-> > > devicetree for rk3328.
-> > > Also add thermal control with Intelligent Power Allocation (IPA)
-> > > policy by default.  Please
-> > > refer to https://developer.arm.com/open-source/intelligent-power-
-> > > allo
-> > > cation for more information
-> > > about IPA.
-> > > 
-> > > Rocky Hao (5):
-> > >   dt-bindings: rockchip-thermal: Support the RK3328 SoC
-> > > compatible
-> > >   thermal: rockchip: Support the RK3328 SOC in thermal driver
-> > >   arm64: dts: rockchip: add tsadc node for rk3328 SoC
-> > >   arm64: dts: rockchip: add thermal nodes for rk3328 SoC
-> > >   arm64: dts: rockchip: Enable tsadc module on RK3328 eavluation
-> > > board
-> > > 
-> > I can take this patch set if we have ACK for patch 3, 4 and 5.
-> I would prefer if you would just apply patches 1+2 alone and I'd take
-> the devicetree patches through my tree.
+> > In order to easily free resources allocated by
+> > 'thermal_zone_create_device_groups()' we need 2 new helper
+> > functions.
+> > 
+> > The first one undoes 'thermal_zone_create_device_groups()'.
+> > The 2nd one undoes 'create_trip_attrs()', which is a function
+> > called by
+> > 'thermal_zone_create_device_groups()'.
+> > 
+> > Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+> > ---
+> > These functions will be used in patch 2/3 in order to simplify
+> > 'thermal_release()'
+> > I've tried to implement it as close a possible as the way the
+> > resources have
+> > been allocated.
+> > However, in 'thermal_release()', the code is simplier without some
+> > additionnal 'if'.
+> > No sure if we should prefer consistancy with allocation or
+> > simplicity of code.
+> > ---
+> >  drivers/thermal/thermal_core.h  |  1 +
+> >  drivers/thermal/thermal_sysfs.c | 29 +++++++++++++++++++++++++++++
+> >  2 files changed, 30 insertions(+)
+> > 
+> > diff --git a/drivers/thermal/thermal_core.h
+> > b/drivers/thermal/thermal_core.h
+> > index 2412b3759e16..27e3b1df7360 100644
+> > --- a/drivers/thermal/thermal_core.h
+> > +++ b/drivers/thermal/thermal_core.h
+> > @@ -71,6 +71,7 @@ int thermal_build_list_of_policies(char *buf);
+> >  
+> >  /* sysfs I/F */
+> >  int thermal_zone_create_device_groups(struct thermal_zone_device
+> > *, int);
+> > +void thermal_zone_destroy_device_groups(struct thermal_zone_device
+> > *);
+> >  void thermal_cooling_device_setup_sysfs(struct
+> > thermal_cooling_device *);
+> >  /* used only at binding time */
+> >  ssize_t
+> > diff --git a/drivers/thermal/thermal_sysfs.c
+> > b/drivers/thermal/thermal_sysfs.c
+> > index a694de907a26..eb95d64b9446 100644
+> > --- a/drivers/thermal/thermal_sysfs.c
+> > +++ b/drivers/thermal/thermal_sysfs.c
+> > @@ -605,6 +605,24 @@ static int create_trip_attrs(struct
+> > thermal_zone_device *tz, int mask)
+> >  	return 0;
+> >  }
+> >  
+> > +/**
+> > + * destroy_trip_attrs() - create attributes for trip points
+> > + * @tz:		the thermal zone device
+> > + *
+> > + * helper function to free resources alocated by
+> > create_trip_attrs()
+> > + */
+> > +static void(struct thermal_zone_device *tz)
+> > +{
+> > +	if (!tz)
+> > +		return;
+> > +
+> > +	kfree(tz->trip_type_attrs);
+> > +	kfree(tz->trip_temp_attrs);
+> > +	if (tz->ops->get_trip_hyst)
+> > +		kfree(tz->trip_hyst_attrs);
+> > +	kfree(tz->trips_attribute_group.attrs);
+> > +}
+> > +
+> >  int thermal_zone_create_device_groups(struct thermal_zone_device
+> > *tz,
+> >  				      int mask)
+> >  {
+> > @@ -637,6 +655,17 @@ int thermal_zone_create_device_groups(struct
+> > thermal_zone_device *tz,
+> >  	return 0;
+> >  }
+> >  
+> > +void thermal_zone_destroy_device_groups(struct thermal_zone_device
+> > *tz)
+> > +{
+> > +	if (!tz)
+> > +		return;
+> > +
+> > +	if (tz->trips)
+> > +		destroy_trip_attrs(tz);
+> why the check for tz->trips ?
+> destroy_trip_attrs does not access tz->trips->
 > 
-> Having devicetree stuff mingle in a lot of trees produces unnecessary
-> conflicts, so the general best practice is having code + binding.txt
-> going through the driver tree and devicetree stuff through the
-> platform
-> tree.
-> 
-OKay, I will take patch 1 and 2 and queue them for next merge window.
+tz->trips is an integer represents the number of trip points.
+
+We add this check because there is not any trips attributes if we don't
+have any trip points.
+It is true that the code also works if we don't have this check as
+destroy_trip_attrs() would be no-op when tz->trips equals 0.
+But I won't say this check is wrong.
 
 thanks,
 rui
+> re,
+>  wh
 > 
-> Thanks
-> Heiko
-> 
+> > 
+> > +
+> > +	kfree(tz->device.groups);
+> > +}
+> > +
+> >  /* sys I/F for cooling device */
+> >  static ssize_t
+> >  thermal_cooling_device_type_show(struct device *dev,
