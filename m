@@ -1,62 +1,30 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [RFC v2 13/23] x86/power/64: Adapt assembly for PIE support
-Date: Fri, 11 Aug 2017 08:09:41 -0700
-Message-ID: <CAJcbSZEiuMQ9+VOFywyRhs4sEZs9AHSzYqpg1yDZFxQ8vvgcWw@mail.gmail.com>
-References: <20170810172615.51965-1-thgarnie@google.com> <20170810172615.51965-14-thgarnie@google.com>
- <20170811123618.GC16126@amd>
+From: Heiko Stuebner <heiko@sntech.de>
+Subject: Re: [PATCH v2 3/5] arm64: dts: rockchip: add tsadc node for rk3328 SoC
+Date: Fri, 11 Aug 2017 17:18:40 +0200
+Message-ID: <1528258.s0pWTDbHAV@phil>
+References: <1501833976-1100-1-git-send-email-rocky.hao@rock-chips.com> <1501833976-1100-4-git-send-email-rocky.hao@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-9340-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <20170811123618.GC16126@amd>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@linux.com>, Paul
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from gloria.sntech.de ([95.129.55.99]:51230 "EHLO gloria.sntech.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752959AbdHKPS7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 11 Aug 2017 11:18:59 -0400
+In-Reply-To: <1501833976-1100-4-git-send-email-rocky.hao@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rocky Hao <rocky.hao@rock-chips.com>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com
 
-On Fri, Aug 11, 2017 at 5:36 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Thu 2017-08-10 10:26:05, Thomas Garnier wrote:
->> Change the assembly code to use only relative references of symbols for the
->> kernel to be PIE compatible.
->>
->> Position Independent Executable (PIE) support will allow to extended the
->> KASLR randomization range below the -2G memory limit.
->>
->> Signed-off-by: Thomas Garnier <thgarnie@google.com>
->
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+Am Freitag, 4. August 2017, 16:06:14 CEST schrieb Rocky Hao:
+> add tsadc needed main information for rk3328 SoC.
+> 50000Hz is the max clock rate supported by tsadc module.
+> 
+> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
 
-Thanks Pavel!
-
->
->> --- a/arch/x86/power/hibernate_asm_64.S
->> +++ b/arch/x86/power/hibernate_asm_64.S
->> @@ -24,7 +24,7 @@
->>  #include <asm/frame.h>
->>
->>  ENTRY(swsusp_arch_suspend)
->> -     movq    $saved_context, %rax
->> +     leaq    saved_context(%rip), %rax
->>       movq    %rsp, pt_regs_sp(%rax)
->>       movq    %rbp, pt_regs_bp(%rax)
->>       movq    %rsi, pt_regs_si(%rax)
->> @@ -115,7 +115,7 @@ ENTRY(restore_registers)
->>       movq    %rax, %cr4;  # turn PGE back on
->>
->>       /* We don't restore %rax, it must be 0 anyway */
->> -     movq    $saved_context, %rax
->> +     leaq    saved_context(%rip), %rax
->>       movq    pt_regs_sp(%rax), %rsp
->>       movq    pt_regs_bp(%rax), %rbp
->>       movq    pt_regs_si(%rax), %rsi
->
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+applied for 4.14 with some property reordering
 
 
-
--- 
-Thomas
+Thanks
+Heiko
