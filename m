@@ -1,76 +1,90 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: remove setting of policy->cpu in policy->cpus
- during init
-Date: Fri, 11 Aug 2017 10:39:02 +0530
-Message-ID: <20170811050902.GC3638@vireshk-i7>
-References: <1502377137-9058-1-git-send-email-sudeep.holla@arm.com>
+Subject: Re: [PATCH 1/4] ARM: dts: augment Ux500 to use DT cpufreq
+Date: Fri, 11 Aug 2017 10:45:15 +0530
+Message-ID: <20170811051515.GD3638@vireshk-i7>
+References: <20170810125221.25818-1-linus.walleij@linaro.org>
+ <20170810125221.25818-2-linus.walleij@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f54.google.com ([74.125.83.54]:36668 "EHLO
-        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750815AbdHKFJH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2017 01:09:07 -0400
-Received: by mail-pg0-f54.google.com with SMTP id v77so11348595pgb.3
-        for <linux-pm@vger.kernel.org>; Thu, 10 Aug 2017 22:09:07 -0700 (PDT)
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:34217 "EHLO
+        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751618AbdHKFPS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2017 01:15:18 -0400
+Received: by mail-pf0-f174.google.com with SMTP id o86so11706548pfj.1
+        for <linux-pm@vger.kernel.org>; Thu, 10 Aug 2017 22:15:18 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1502377137-9058-1-git-send-email-sudeep.holla@arm.com>
+In-Reply-To: <20170810125221.25818-2-linus.walleij@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On 10-08-17, 15:58, Sudeep Holla wrote:
-> policy->cpu is copied into policy->cpus in cpufreq_online() before
-> calling into cpufreq_driver->init(). So there's no need to set the
-> same in the individual driver init() functions again.
+On 10-08-17, 14:52, Linus Walleij wrote:
+> This adds the operating points to the Ux500 device tree and
+> deletes the old special-purpose cpufreq node, as we can now
+> use the generic DT cpufreq driver.
 > 
-> This patch removes the redundant setting of policy->cpu in policy->cpus
-> in intel_pstate and cppc drivers.
-> 
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 > ---
->  drivers/cpufreq/cppc_cpufreq.c | 1 -
->  drivers/cpufreq/intel_pstate.c | 1 -
->  2 files changed, 2 deletions(-)
-> 
-> Hi Viresh,
-> 
-> I had copied the cpumask_set_cpu from one of these drivers and when you
-> pointed out I thought it's better to remove the reference too. Let me
-> know if it makes sense.
-> 
-> Regards,
-> Sudeep
-> 
-> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-> index 10be285c9055..a1c3025f9df7 100644
-> --- a/drivers/cpufreq/cppc_cpufreq.c
-> +++ b/drivers/cpufreq/cppc_cpufreq.c
-> @@ -172,7 +172,6 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
->  		return -EFAULT;
->  	}
-> 
-> -	cpumask_set_cpu(policy->cpu, policy->cpus);
->  	cpu->cur_policy = policy;
-> 
->  	/* Set policy->cur to max now. The governors will adjust later. */
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 0566455f233e..d82429859103 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -2133,7 +2133,6 @@ static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
->  	policy->cpuinfo.max_freq *= cpu->pstate.scaling;
-> 
->  	intel_pstate_init_acpi_perf_limits(policy);
-> -	cpumask_set_cpu(policy->cpu, policy->cpus);
-> 
->  	policy->fast_switch_possible = true;
+> Viresh et al: I will merge this into ARM SoC separately from
+> the rest of the patches once we agree on this approach.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Sure, no worries.
+
+> ---
+>  arch/arm/boot/dts/ste-dbx5x0.dtsi | 15 ++++++++-------
+>  1 file changed, 8 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/arm/boot/dts/ste-dbx5x0.dtsi b/arch/arm/boot/dts/ste-dbx5x0.dtsi
+> index 6c5affe2d0f5..2310a4e97768 100644
+> --- a/arch/arm/boot/dts/ste-dbx5x0.dtsi
+> +++ b/arch/arm/boot/dts/ste-dbx5x0.dtsi
+> @@ -37,6 +37,14 @@
+>  			device_type = "cpu";
+>  			compatible = "arm,cortex-a9";
+>  			reg = <0x300>;
+> +			/* cpufreq controls */
+> +			operating-points = <998400 0
+> +					    800000 0
+> +					    400000 0
+> +					    200000 0>;
+> +			clocks = <&prcmu_clk PRCMU_ARMSS>;
+> +			clock-names = "cpu";
+> +			clock-latency = <20000>;
+>  		};
+>  		CPU1: cpu@301 {
+>  			device_type = "cpu";
+> @@ -494,13 +502,6 @@
+>  				reg = <0x80157450 0xC>;
+>  			};
+>  
+> -			cpufreq {
+> -				compatible = "stericsson,cpufreq-ux500";
+> -				clocks = <&prcmu_clk PRCMU_ARMSS>;
+> -				clock-names = "armss";
+> -				status = "disabled";
+> -			};
+> -
+
+This is relieving :)
+
+But this solution isn't the best really, though you may not face any
+issues with your use case.
+
+For example, below will fail cpufreq on your board. You can try that
+to make sure I am not dreaming.
+
+- Compile cpufreq-dt as a module.
+- Boot the board.
+- Offline CPU0 (i.e. Keep only CPU1 online).
+- Boom, cpufreq failed.
+
+This will happen because the CPU1 doesn't have the operating-points
+and other properties. We should have them in all the CPUs.
+
+In order to not repeat the OPP table for all CPUs, you can use the new
+operating-points-v2 bindings and mark the OPP table shared.
 
 -- 
 viresh
