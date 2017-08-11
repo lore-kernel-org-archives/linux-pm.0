@@ -1,49 +1,76 @@
-From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v2 0/5] thermal: rockchip: add tsadc support in thermal
- driver and IPA thermal control for rk3328 in dts
-Date: Fri, 11 Aug 2017 12:51:35 +0800
-Message-ID: <1502427095.2598.21.camel@intel.com>
-References: <1501833976-1100-1-git-send-email-rocky.hao@rock-chips.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: remove setting of policy->cpu in policy->cpus
+ during init
+Date: Fri, 11 Aug 2017 10:39:02 +0530
+Message-ID: <20170811050902.GC3638@vireshk-i7>
+References: <1502377137-9058-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1501833976-1100-1-git-send-email-rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rocky Hao <rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org
-Cc: shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org, cl-TNX95d0MmH7DzftRWevZcw@public.gmane.org, william.wu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, xxx-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org, huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f54.google.com ([74.125.83.54]:36668 "EHLO
+        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750815AbdHKFJH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2017 01:09:07 -0400
+Received: by mail-pg0-f54.google.com with SMTP id v77so11348595pgb.3
+        for <linux-pm@vger.kernel.org>; Thu, 10 Aug 2017 22:09:07 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1502377137-9058-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>
 
-On Fri, 2017-08-04 at 16:06 +0800, Rocky Hao wrote:
-> This series patches add the tsadc support in thermal driver and in
-> devicetree for rk3328.
-> Also add thermal control with Intelligent Power Allocation (IPA)
-> policy by default.  Please
-> refer to https://developer.arm.com/open-source/intelligent-power-allo
-> cation for more information
-> about IPA.
+On 10-08-17, 15:58, Sudeep Holla wrote:
+> policy->cpu is copied into policy->cpus in cpufreq_online() before
+> calling into cpufreq_driver->init(). So there's no need to set the
+> same in the individual driver init() functions again.
 > 
-> Rocky Hao (5):
->   dt-bindings: rockchip-thermal: Support the RK3328 SoC compatible
->   thermal: rockchip: Support the RK3328 SOC in thermal driver
->   arm64: dts: rockchip: add tsadc node for rk3328 SoC
->   arm64: dts: rockchip: add thermal nodes for rk3328 SoC
->   arm64: dts: rockchip: Enable tsadc module on RK3328 eavluation
-> board
+> This patch removes the redundant setting of policy->cpu in policy->cpus
+> in intel_pstate and cppc drivers.
 > 
-I can take this patch set if we have ACK for patch 3, 4 and 5.
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/cpufreq/cppc_cpufreq.c | 1 -
+>  drivers/cpufreq/intel_pstate.c | 1 -
+>  2 files changed, 2 deletions(-)
+> 
+> Hi Viresh,
+> 
+> I had copied the cpumask_set_cpu from one of these drivers and when you
+> pointed out I thought it's better to remove the reference too. Let me
+> know if it makes sense.
+> 
+> Regards,
+> Sudeep
+> 
+> diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> index 10be285c9055..a1c3025f9df7 100644
+> --- a/drivers/cpufreq/cppc_cpufreq.c
+> +++ b/drivers/cpufreq/cppc_cpufreq.c
+> @@ -172,7 +172,6 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+>  		return -EFAULT;
+>  	}
+> 
+> -	cpumask_set_cpu(policy->cpu, policy->cpus);
+>  	cpu->cur_policy = policy;
+> 
+>  	/* Set policy->cur to max now. The governors will adjust later. */
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> index 0566455f233e..d82429859103 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -2133,7 +2133,6 @@ static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
+>  	policy->cpuinfo.max_freq *= cpu->pstate.scaling;
+> 
+>  	intel_pstate_init_acpi_perf_limits(policy);
+> -	cpumask_set_cpu(policy->cpu, policy->cpus);
+> 
+>  	policy->fast_switch_possible = true;
 
-thanks,
-rui
->  .../bindings/thermal/rockchip-thermal.txt          |  1 +
->  arch/arm64/boot/dts/rockchip/rk3328-evb.dts        |  4 ++
->  arch/arm64/boot/dts/rockchip/rk3328.dtsi           | 63
-> +++++++++++++++++++++
->  drivers/thermal/rockchip_thermal.c                 | 65
-> ++++++++++++++++++++++
->  4 files changed, 133 insertions(+)
-> 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
