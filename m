@@ -1,383 +1,128 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2 5/5] thermal: Add Tegra BPMP thermal sensor driver
-Date: Fri, 11 Aug 2017 10:57:56 +0800
-Message-ID: <1502420276.2598.5.camel@intel.com>
-References: <20170724162918.21050-1-mperttunen@nvidia.com>
-         <20170724162918.21050-5-mperttunen@nvidia.com>
+Subject: Re: [PATCH 2/5] thermal: rockchip: Support the RK3328 SOC in
+ thermal driver
+Date: Fri, 11 Aug 2017 11:02:53 +0800
+Message-ID: <1502420573.2598.7.camel@intel.com>
+References: <1500973788-14627-1-git-send-email-rocky.hao@rock-chips.com>
+         <1500973788-14627-3-git-send-email-rocky.hao@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170724162918.21050-5-mperttunen@nvidia.com>
+In-Reply-To: <1500973788-14627-3-git-send-email-rocky.hao@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mikko Perttunen <mperttunen@nvidia.com>, edubezval@gmail.com, thierry.reding@gmail.com, jonathanh@nvidia.com, wni@nvidia.com
-Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Rocky Hao <rocky.hao@rock-chips.com>, edubezval@gmail.com, heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com
+Cc: shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 2017-07-24 at 19:29 +0300, Mikko Perttunen wrote:
-> On Tegra186, the BPMP (Boot and Power Management Processor) exposes
-> an
-> interface to thermal sensors on the system-on-chip. This driver
-> implements access to the interface. It supports reading the
-> temperature, setting trip points and receiving notification of a
-> tripped trip point.
+On Tue, 2017-07-25 at 17:09 +0800, Rocky Hao wrote:
+> RK3328 SOC has one Temperature Sensor for CPU.
 > 
-> Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+> Change-Id: I176c76bae1801d815a513986cfefcb55272c69a8
+> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
 
-Wei Ni,
+Caesar,
 
 what do you think of this patch?
 
 thanks,
 rui
+
 > ---
-> v2:
-> - don't allocate space for disabled zones
-> - allow compilation with COMPILE_TEST
+>  drivers/thermal/rockchip_thermal.c | 65
+> ++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 65 insertions(+)
 > 
->  drivers/thermal/Makefile             |   2 +-
->  drivers/thermal/tegra/Kconfig        |   7 +
->  drivers/thermal/tegra/Makefile       |   3 +-
->  drivers/thermal/tegra/bpmp-thermal.c | 263
-> +++++++++++++++++++++++++++++++++++
->  4 files changed, 273 insertions(+), 2 deletions(-)
->  create mode 100644 drivers/thermal/tegra/bpmp-thermal.c
-> 
-> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-> index 094d7039981c..c03dccdba7b8 100644
-> --- a/drivers/thermal/Makefile
-> +++ b/drivers/thermal/Makefile
-> @@ -54,7 +54,7 @@ obj-$(CONFIG_INTEL_BXT_PMIC_THERMAL) +=
-> intel_bxt_pmic_thermal.o
->  obj-$(CONFIG_INTEL_PCH_THERMAL)	+= intel_pch_thermal.o
->  obj-$(CONFIG_ST_THERMAL)	+= st/
->  obj-$(CONFIG_QCOM_TSENS)	+= qcom/
-> -obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra/
-> +obj-y				+= tegra/
->  obj-$(CONFIG_HISI_THERMAL)     += hisi_thermal.o
->  obj-$(CONFIG_MTK_THERMAL)	+= mtk_thermal.o
->  obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
-> diff --git a/drivers/thermal/tegra/Kconfig
-> b/drivers/thermal/tegra/Kconfig
-> index cec586ec7e4b..f8740f7852e3 100644
-> --- a/drivers/thermal/tegra/Kconfig
-> +++ b/drivers/thermal/tegra/Kconfig
-> @@ -10,4 +10,11 @@ config TEGRA_SOCTHERM
->  	  zones to manage temperatures. This option is also required
-> for the
->  	  emergency thermal reset (thermtrip) feature to function.
+> diff --git a/drivers/thermal/rockchip_thermal.c
+> b/drivers/thermal/rockchip_thermal.c
+> index 4c7796512453..206035139110 100644
+> --- a/drivers/thermal/rockchip_thermal.c
+> +++ b/drivers/thermal/rockchip_thermal.c
+> @@ -320,6 +320,44 @@ struct tsadc_table {
+>  	{0, 125000},
+>  };
 >  
-> +config TEGRA_BPMP_THERMAL
-> +	tristate "Tegra BPMP thermal sensing"
-> +	depends on TEGRA_BPMP || COMPILE_TEST
-> +	help
-> +	 Enable this option for support for sensing system
-> temperature of NVIDIA
-> +	 Tegra systems-on-chip with the BPMP coprocessor (Tegra186).
+> +static const struct tsadc_table rk3328_code_table[] = {
+> +	{0, -40000},
+> +	{296, -40000},
+> +	{304, -35000},
+> +	{313, -30000},
+> +	{331, -20000},
+> +	{340, -15000},
+> +	{349, -10000},
+> +	{359, -5000},
+> +	{368, 0},
+> +	{378, 5000},
+> +	{388, 10000},
+> +	{398, 15000},
+> +	{408, 20000},
+> +	{418, 25000},
+> +	{429, 30000},
+> +	{440, 35000},
+> +	{451, 40000},
+> +	{462, 45000},
+> +	{473, 50000},
+> +	{485, 55000},
+> +	{496, 60000},
+> +	{508, 65000},
+> +	{521, 70000},
+> +	{533, 75000},
+> +	{546, 80000},
+> +	{559, 85000},
+> +	{572, 90000},
+> +	{586, 95000},
+> +	{600, 100000},
+> +	{614, 105000},
+> +	{629, 110000},
+> +	{644, 115000},
+> +	{659, 120000},
+> +	{675, 125000},
+> +	{TSADCV2_DATA_MASK, 125000},
+> +};
 > +
->  endmenu
-> diff --git a/drivers/thermal/tegra/Makefile
-> b/drivers/thermal/tegra/Makefile
-> index 1ce1af2cf0f5..757abcd1feaf 100644
-> --- a/drivers/thermal/tegra/Makefile
-> +++ b/drivers/thermal/tegra/Makefile
-> @@ -1,4 +1,5 @@
-> -obj-$(CONFIG_TEGRA_SOCTHERM)	+= tegra-soctherm.o
-> +obj-$(CONFIG_TEGRA_SOCTHERM)		+= tegra-soctherm.o
-> +obj-$(CONFIG_TEGRA_BPMP_THERMAL)	+= bpmp-thermal.o
+>  static const struct tsadc_table rk3368_code_table[] = {
+>  	{0, -40000},
+>  	{106, -40000},
+> @@ -790,6 +828,29 @@ static void rk_tsadcv2_tshut_mode(int chn, void
+> __iomem *regs,
+>  	},
+>  };
 >  
->  tegra-soctherm-y				:= soctherm.o
-> soctherm-fuse.o
->  tegra-soctherm-$(CONFIG_ARCH_TEGRA_124_SOC)	+= tegra124-
-> soctherm.o
-> diff --git a/drivers/thermal/tegra/bpmp-thermal.c
-> b/drivers/thermal/tegra/bpmp-thermal.c
-> new file mode 100644
-> index 000000000000..b0980dbca3b3
-> --- /dev/null
-> +++ b/drivers/thermal/tegra/bpmp-thermal.c
-> @@ -0,0 +1,263 @@
-> +/*
-> + * Copyright (c) 2015-2017, NVIDIA CORPORATION.  All rights
-> reserved.
-> + *
-> + * Author:
-> + *	Mikko Perttunen <mperttunen@nvidia.com>
-> + *	Aapo Vienamo	<avienamo@nvidia.com>
-> + *
-> + * This software is licensed under the terms of the GNU General
-> Public
-> + * License version 2, as published by the Free Software Foundation,
-> and
-> + * may be copied, distributed, and modified under those terms.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + */
+> +static const struct rockchip_tsadc_chip rk3328_tsadc_data = {
+> +	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
+> +	.chn_num = 1, /* one channels for tsadc */
 > +
-> +#include <linux/err.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/thermal.h>
-> +#include <linux/workqueue.h>
+> +	.tshut_mode = TSHUT_MODE_CRU, /* default TSHUT via CRU */
+> +	.tshut_temp = 95000,
 > +
-> +#include <soc/tegra/bpmp.h>
-> +#include <soc/tegra/bpmp-abi.h>
+> +	.initialize = rk_tsadcv2_initialize,
+> +	.irq_ack = rk_tsadcv3_irq_ack,
+> +	.control = rk_tsadcv3_control,
+> +	.get_temp = rk_tsadcv2_get_temp,
+> +	.set_alarm_temp = rk_tsadcv2_alarm_temp,
+> +	.set_tshut_temp = rk_tsadcv2_tshut_temp,
+> +	.set_tshut_mode = rk_tsadcv2_tshut_mode,
 > +
-> +struct tegra_bpmp_thermal_zone {
-> +	struct tegra_bpmp_thermal *tegra;
-> +	struct thermal_zone_device *tzd;
-> +	struct work_struct tz_device_update_work;
-> +	unsigned int idx;
-> +};
-> +
-> +struct tegra_bpmp_thermal {
-> +	struct device *dev;
-> +	struct tegra_bpmp *bpmp;
-> +	unsigned int num_zones;
-> +	struct tegra_bpmp_thermal_zone **zones;
-> +};
-> +
-> +static int tegra_bpmp_thermal_get_temp(void *data, int *out_temp)
-> +{
-> +	struct tegra_bpmp_thermal_zone *zone = data;
-> +	struct mrq_thermal_host_to_bpmp_request req;
-> +	union mrq_thermal_bpmp_to_host_response reply;
-> +	struct tegra_bpmp_message msg;
-> +	int err;
-> +
-> +	memset(&req, 0, sizeof(req));
-> +	req.type = CMD_THERMAL_GET_TEMP;
-> +	req.get_temp.zone = zone->idx;
-> +
-> +	memset(&msg, 0, sizeof(msg));
-> +	msg.mrq = MRQ_THERMAL;
-> +	msg.tx.data = &req;
-> +	msg.tx.size = sizeof(req);
-> +	msg.rx.data = &reply;
-> +	msg.rx.size = sizeof(reply);
-> +
-> +	err = tegra_bpmp_transfer(zone->tegra->bpmp, &msg);
-> +	if (err)
-> +		return err;
-> +
-> +	*out_temp = reply.get_temp.temp;
-> +
-> +	return 0;
-> +}
-> +
-> +static int tegra_bpmp_thermal_set_trips(void *data, int low, int
-> high)
-> +{
-> +	struct tegra_bpmp_thermal_zone *zone = data;
-> +	struct mrq_thermal_host_to_bpmp_request req;
-> +	struct tegra_bpmp_message msg;
-> +
-> +	memset(&req, 0, sizeof(req));
-> +	req.type = CMD_THERMAL_SET_TRIP;
-> +	req.set_trip.zone = zone->idx;
-> +	req.set_trip.enabled = true;
-> +	req.set_trip.low = low;
-> +	req.set_trip.high = high;
-> +
-> +	memset(&msg, 0, sizeof(msg));
-> +	msg.mrq = MRQ_THERMAL;
-> +	msg.tx.data = &req;
-> +	msg.tx.size = sizeof(req);
-> +
-> +	return tegra_bpmp_transfer(zone->tegra->bpmp, &msg);
-> +}
-> +
-> +static void tz_device_update_work_fn(struct work_struct *work)
-> +{
-> +	struct tegra_bpmp_thermal_zone *zone;
-> +
-> +	zone = container_of(work, struct tegra_bpmp_thermal_zone,
-> +			    tz_device_update_work);
-> +
-> +	thermal_zone_device_update(zone->tzd,
-> THERMAL_TRIP_VIOLATED);
-> +}
-> +
-> +static void bpmp_mrq_thermal(unsigned int mrq, struct
-> tegra_bpmp_channel *ch,
-> +			     void *data)
-> +{
-> +	struct mrq_thermal_bpmp_to_host_request *req;
-> +	struct tegra_bpmp_thermal *tegra = data;
-> +	int i;
-> +
-> +	req = (struct mrq_thermal_bpmp_to_host_request *)ch->ib-
-> >data;
-> +
-> +	if (req->type != CMD_THERMAL_HOST_TRIP_REACHED) {
-> +		dev_err(tegra->dev, "%s: invalid request type:
-> %d\n",
-> +			__func__, req->type);
-> +		tegra_bpmp_mrq_return(ch, -EINVAL, NULL, 0);
-> +		return;
-> +	}
-> +
-> +	for (i = 0; i < tegra->num_zones; ++i) {
-> +		if (tegra->zones[i]->idx != req-
-> >host_trip_reached.zone)
-> +			continue;
-> +
-> +		schedule_work(&tegra->zones[i]-
-> >tz_device_update_work);
-> +		tegra_bpmp_mrq_return(ch, 0, NULL, 0);
-> +		return;
-> +	}
-> +
-> +	dev_err(tegra->dev, "%s: invalid thermal zone: %d\n",
-> __func__,
-> +		req->host_trip_reached.zone);
-> +	tegra_bpmp_mrq_return(ch, -EINVAL, NULL, 0);
-> +}
-> +
-> +static int tegra_bpmp_thermal_get_num_zones(struct tegra_bpmp *bpmp,
-> +					    int *num_zones)
-> +{
-> +	struct mrq_thermal_host_to_bpmp_request req;
-> +	union mrq_thermal_bpmp_to_host_response reply;
-> +	struct tegra_bpmp_message msg;
-> +	int err;
-> +
-> +	memset(&req, 0, sizeof(req));
-> +	req.type = CMD_THERMAL_GET_NUM_ZONES;
-> +
-> +	memset(&msg, 0, sizeof(msg));
-> +	msg.mrq = MRQ_THERMAL;
-> +	msg.tx.data = &req;
-> +	msg.tx.size = sizeof(req);
-> +	msg.rx.data = &reply;
-> +	msg.rx.size = sizeof(reply);
-> +
-> +	err = tegra_bpmp_transfer(bpmp, &msg);
-> +	if (err)
-> +		return err;
-> +
-> +	*num_zones = reply.get_num_zones.num;
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct thermal_zone_of_device_ops
-> tegra_bpmp_of_thermal_ops = {
-> +	.get_temp = tegra_bpmp_thermal_get_temp,
-> +	.set_trips = tegra_bpmp_thermal_set_trips,
-> +};
-> +
-> +static int tegra_bpmp_thermal_probe(struct platform_device *pdev)
-> +{
-> +	struct tegra_bpmp *bpmp = dev_get_drvdata(pdev->dev.parent);
-> +	struct tegra_bpmp_thermal *tegra;
-> +	struct thermal_zone_device *tzd;
-> +	unsigned int i, max_num_zones;
-> +	int err;
-> +
-> +	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra),
-> GFP_KERNEL);
-> +	if (!tegra)
-> +		return -ENOMEM;
-> +
-> +	tegra->dev = &pdev->dev;
-> +	tegra->bpmp = bpmp;
-> +
-> +	err = tegra_bpmp_thermal_get_num_zones(bpmp,
-> &max_num_zones);
-> +	if (err) {
-> +		dev_err(&pdev->dev, "failed to get the number of
-> zones: %d\n",
-> +			err);
-> +		return err;
-> +	}
-> +
-> +	tegra->zones = devm_kcalloc(&pdev->dev, max_num_zones,
-> +				    sizeof(*tegra->zones),
-> GFP_KERNEL);
-> +	if (!tegra->zones)
-> +		return -ENOMEM;
-> +
-> +	for (i = 0; i < max_num_zones; ++i) {
-> +		struct tegra_bpmp_thermal_zone *zone;
-> +		int temp;
-> +
-> +		zone = devm_kzalloc(&pdev->dev, sizeof(*zone),
-> GFP_KERNEL);
-> +		if (!zone)
-> +			return -ENOMEM;
-> +
-> +		zone->idx = i;
-> +		zone->tegra = tegra;
-> +
-> +		err = tegra_bpmp_thermal_get_temp(zone, &temp);
-> +		if (err < 0) {
-> +			devm_kfree(&pdev->dev, zone);
-> +			continue;
-> +		}
-> +
-> +		tzd = devm_thermal_zone_of_sensor_register(
-> +			&pdev->dev, i, zone,
-> &tegra_bpmp_of_thermal_ops);
-> +		if (IS_ERR(tzd)) {
-> +			if (PTR_ERR(tzd) == -EPROBE_DEFER)
-> +				return -EPROBE_DEFER;
-> +			devm_kfree(&pdev->dev, zone);
-> +			continue;
-> +		}
-> +
-> +		zone->tzd = tzd;
-> +		INIT_WORK(&zone->tz_device_update_work,
-> +			  tz_device_update_work_fn);
-> +
-> +		tegra->zones[tegra->num_zones++] = zone;
-> +	}
-> +
-> +	err = tegra_bpmp_request_mrq(bpmp, MRQ_THERMAL,
-> bpmp_mrq_thermal,
-> +				     tegra);
-> +	if (err) {
-> +		dev_err(&pdev->dev, "failed to register mrq handler:
-> %d\n",
-> +			err);
-> +		return err;
-> +	}
-> +
-> +	platform_set_drvdata(pdev, tegra);
-> +
-> +	return 0;
-> +}
-> +
-> +static int tegra_bpmp_thermal_remove(struct platform_device *pdev)
-> +{
-> +	struct tegra_bpmp_thermal *tegra =
-> platform_get_drvdata(pdev);
-> +
-> +	tegra_bpmp_free_mrq(tegra->bpmp, MRQ_THERMAL, tegra);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct of_device_id tegra_bpmp_thermal_of_match[] = {
-> +	{ .compatible = "nvidia,tegra186-bpmp-thermal" },
-> +	{ },
-> +};
-> +MODULE_DEVICE_TABLE(of, tegra_bpmp_thermal_of_match);
-> +
-> +static struct platform_driver tegra_bpmp_thermal_driver = {
-> +	.probe = tegra_bpmp_thermal_probe,
-> +	.remove = tegra_bpmp_thermal_remove,
-> +	.driver = {
-> +		.name = "tegra-bpmp-thermal",
-> +		.of_match_table = tegra_bpmp_thermal_of_match,
+> +	.table = {
+> +		.id = rk3328_code_table,
+> +		.length = ARRAY_SIZE(rk3328_code_table),
+> +		.data_mask = TSADCV2_DATA_MASK,
+> +		.mode = ADC_INCREMENT,
 > +	},
 > +};
-> +module_platform_driver(tegra_bpmp_thermal_driver);
 > +
-> +MODULE_AUTHOR("Mikko Perttunen <mperttunen@nvidia.com>");
-> +MODULE_DESCRIPTION("NVIDIA Tegra BPMP thermal sensor driver");
-> +MODULE_LICENSE("GPL v2");
+>  static const struct rockchip_tsadc_chip rk3366_tsadc_data = {
+>  	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
+>  	.chn_id[SENSOR_GPU] = 1, /* gpu sensor is channel 1 */
+> @@ -875,6 +936,10 @@ static void rk_tsadcv2_tshut_mode(int chn, void
+> __iomem *regs,
+>  		.data = (void *)&rk3288_tsadc_data,
+>  	},
+>  	{
+> +		.compatible = "rockchip,rk3328-tsadc",
+> +		.data = (void *)&rk3328_tsadc_data,
+> +	},
+> +	{
+>  		.compatible = "rockchip,rk3366-tsadc",
+>  		.data = (void *)&rk3366_tsadc_data,
+>  	},
