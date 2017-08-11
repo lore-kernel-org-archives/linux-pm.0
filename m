@@ -1,133 +1,87 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/3 v2] thermal: core: Add some new helper functions to
- free resources
-Date: Fri, 11 Aug 2017 16:20:23 +0800
-Message-ID: <1502439623.2597.7.camel@intel.com>
-References: <cover.1502201798.git.christophe.jaillet@wanadoo.fr>
-         <98e96edd53ea3109ec127f82608c8d5df5437c9c.1502201798.git.christophe.jaillet@wanadoo.fr>
-         <598D5D11.4010703@bfs.de>
+From: "rocky.hao" <rocky.hao@rock-chips.com>
+Subject: Re: [PATCH v2 3/5] arm64: dts: rockchip: add tsadc node for rk3328
+ SoC
+Date: Fri, 11 Aug 2017 17:45:00 +0800
+Message-ID: <903bc8ea-a597-80b9-a2bf-551c1b6288fb@rock-chips.com>
+References: <1501833976-1100-1-git-send-email-rocky.hao@rock-chips.com>
+ <1501833976-1100-4-git-send-email-rocky.hao@rock-chips.com>
+ <1ea7dab5-95c9-9d5f-5d4e-4c5a7f2a6254@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=gbk; format=flowed
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <598D5D11.4010703@bfs.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: wharms@bfs.de, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular1.263xmail.com ([211.150.99.132]:54879 "EHLO
+        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752642AbdHKJpO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2017 05:45:14 -0400
+In-Reply-To: <1ea7dab5-95c9-9d5f-5d4e-4c5a7f2a6254@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>, rui.zhang@intel.com, edubezval@gmail.com, heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com
+Cc: huangtao@rock-chips.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, cl@rock-chips.com, william.wu@rock-chips.com, jay.xu@rock-chips.com, xxx@rock-chips.com, linux-arm-kernel@lists.infradead.org
 
-On Fri, 2017-08-11 at 09:30 +0200, walter harms wrote:
-> 
-> Am 08.08.2017 16:39, schrieb Christophe JAILLET:
-> > 
-> > In order to easily free resources allocated by
-> > 'thermal_zone_create_device_groups()' we need 2 new helper
-> > functions.
-> > 
-> > The first one undoes 'thermal_zone_create_device_groups()'.
-> > The 2nd one undoes 'create_trip_attrs()', which is a function
-> > called by
-> > 'thermal_zone_create_device_groups()'.
-> > 
-> > Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> > ---
-> > These functions will be used in patch 2/3 in order to simplify
-> > 'thermal_release()'
-> > I've tried to implement it as close a possible as the way the
-> > resources have
-> > been allocated.
-> > However, in 'thermal_release()', the code is simplier without some
-> > additionnal 'if'.
-> > No sure if we should prefer consistancy with allocation or
-> > simplicity of code.
-> > ---
-> > 聽drivers/thermal/thermal_core.h聽聽|聽聽1 +
-> > 聽drivers/thermal/thermal_sysfs.c | 29 +++++++++++++++++++++++++++++
-> > 聽2 files changed, 30 insertions(+)
-> > 
-> > diff --git a/drivers/thermal/thermal_core.h
-> > b/drivers/thermal/thermal_core.h
-> > index 2412b3759e16..27e3b1df7360 100644
-> > --- a/drivers/thermal/thermal_core.h
-> > +++ b/drivers/thermal/thermal_core.h
-> > @@ -71,6 +71,7 @@ int thermal_build_list_of_policies(char *buf);
-> > 聽
-> > 聽/* sysfs I/F */
-> > 聽int thermal_zone_create_device_groups(struct thermal_zone_device
-> > *, int);
-> > +void thermal_zone_destroy_device_groups(struct thermal_zone_device
-> > *);
-> > 聽void thermal_cooling_device_setup_sysfs(struct
-> > thermal_cooling_device *);
-> > 聽/* used only at binding time */
-> > 聽ssize_t
-> > diff --git a/drivers/thermal/thermal_sysfs.c
-> > b/drivers/thermal/thermal_sysfs.c
-> > index a694de907a26..eb95d64b9446 100644
-> > --- a/drivers/thermal/thermal_sysfs.c
-> > +++ b/drivers/thermal/thermal_sysfs.c
-> > @@ -605,6 +605,24 @@ static int create_trip_attrs(struct
-> > thermal_zone_device *tz, int mask)
-> > 聽	return 0;
-> > 聽}
-> > 聽
-> > +/**
-> > + * destroy_trip_attrs() - create attributes for trip points
-> > + * @tz:		the thermal zone device
-> > + *
-> > + * helper function to free resources alocated by
-> > create_trip_attrs()
-> > + */
-> > +static void(struct thermal_zone_device *tz)
-> > +{
-> > +	if (!tz)
-> > +		return;
-> > +
-> > +	kfree(tz->trip_type_attrs);
-> > +	kfree(tz->trip_temp_attrs);
-> > +	if (tz->ops->get_trip_hyst)
-> > +		kfree(tz->trip_hyst_attrs);
-> > +	kfree(tz->trips_attribute_group.attrs);
-> > +}
-> > +
-> > 聽int thermal_zone_create_device_groups(struct thermal_zone_device
-> > *tz,
-> > 聽				聽聽聽聽聽聽int mask)
-> > 聽{
-> > @@ -637,6 +655,17 @@ int thermal_zone_create_device_groups(struct
-> > thermal_zone_device *tz,
-> > 聽	return 0;
-> > 聽}
-> > 聽
-> > +void thermal_zone_destroy_device_groups(struct thermal_zone_device
-> > *tz)
-> > +{
-> > +	if (!tz)
-> > +		return;
-> > +
-> > +	if (tz->trips)
-> > +		destroy_trip_attrs(tz);
-> why the check for tz->trips ?
-> destroy_trip_attrs does not access tz->trips->
-> 
-tz->trips is an integer represents the number of trip points.
 
-We add this check because there is not any trips attributes if we don't
-have any trip points.
-It is true that the code also works if we don't have this check as
-destroy_trip_attrs() would be no-op when tz->trips equals 0.
-But I won't say this check is wrong.
 
-thanks,
-rui
-> re,
-> 聽wh
+在 2017/8/11 14:38, Caesar Wang 写道:
+> 在 2017年08月04日 16:06, Rocky Hao 写道:
+>> add tsadc needed main information for rk3328 SoC.
+>> 50000Hz is the max clock rate supported by tsadc module.
+>>
+>> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
+>> ---
+>> Change in v2:
+>> - remove gerrit Change-Id
+>>
+>>   arch/arm64/boot/dts/rockchip/rk3328.dtsi | 20 ++++++++++++++++++++
+>>   1 file changed, 20 insertions(+)
+>>
+>> diff --git a/arch/arm64/boot/dts/rockchip/rk3328.dtsi 
+>> b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
+>> index db4b2708084d..186fb93fdffd 100644
+>> --- a/arch/arm64/boot/dts/rockchip/rk3328.dtsi
+>> +++ b/arch/arm64/boot/dts/rockchip/rk3328.dtsi
+>> @@ -308,6 +308,26 @@
+>>           interrupts = <GIC_SPI 40 IRQ_TYPE_LEVEL_HIGH>;
+>>       };
+>> +    tsadc: tsadc@ff250000 {
+>> +        compatible = "rockchip,rk3328-tsadc";
+>> +        reg = <0x0 0xff250000 0x0 0x100>;
+>> +        interrupts = <GIC_SPI 58 IRQ_TYPE_LEVEL_HIGH 0>;
+>> +        rockchip,grf = <&grf>;
+>> +        clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
+>> +        clock-names = "tsadc", "apb_pclk";
+>> +        assigned-clocks = <&cru SCLK_TSADC>;
+>> +        assigned-clock-rates = <50000>;
+>> +        resets = <&cru SRST_TSADC>;
+>> +        reset-names = "tsadc-apb";
+>> +        pinctrl-names = "init", "default", "sleep";
+>> +        pinctrl-0 = <&otp_gpio>;
+>> +        pinctrl-1 = <&otp_out>;
+>> +        pinctrl-2 = <&otp_gpio>;
+>> +        #thermal-sensor-cells = <1>;
 > 
-> > 
-> > +
-> > +	kfree(tz->device.groups);
-> > +}
-> > +
-> > 聽/* sys I/F for cooling device */
-> > 聽static ssize_t
-> > 聽thermal_cooling_device_type_show(struct device *dev,
+> Only one sensor, so maybe the value should be 0.
+Caesar, #thermal-sensor-cells means parameter counts used to match the 
+proper sensor registered. Both 0 and 1 work well.
+
+Case 0, i.e. #thermal-sensor-cells = <0>, it uses the default channel 
+number 0 to match tsadc channal.
+Case 1, i.e. #thermal-sensor-cells = <1>, it uses the setting 
+"thermal-sensors = <&tsadc 0>;" to match tsadc channal.
+
+Case 1 provides more readable info than case 0. By my understanding, 
+using the default value such as case 0, is not a good coding style.
+
+> 
+>> +        rockchip,hw-tshut-temp = <100000>;
+>> +        status = "disabled";
+>> +    };
+>> +
+>>       saradc: adc@ff280000 {
+>>           compatible = "rockchip,rk3328-saradc", 
+>> "rockchip,rk3399-saradc";
+>>           reg = <0x0 0xff280000 0x0 0x100>;
+> 
+> 
+> 
+> 
