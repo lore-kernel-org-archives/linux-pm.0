@@ -1,44 +1,58 @@
-From: "rocky.hao" <rocky.hao@rock-chips.com>
-Subject: Re: [PATCH v2 1/5] dt-bindings: rockchip-thermal: Support the RK3328
- SoC compatible
-Date: Fri, 11 Aug 2017 09:08:45 +0800
-Message-ID: <fc8bb9cd-af82-c9cb-39bd-043c8d080ada@rock-chips.com>
-References: <1501833976-1100-1-git-send-email-rocky.hao@rock-chips.com>
- <1501833976-1100-2-git-send-email-rocky.hao@rock-chips.com>
- <20170810174947.r2wl4c4zimkyhamj@rob-hp-laptop>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: Potential error pointer
+ dereferences
+Date: Fri, 11 Aug 2017 10:00:33 +0800
+Message-ID: <1502416833.2598.3.camel@intel.com>
+References: <20170710072422.rs25i5oawmiaofrp@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gbk; format=flowed
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170810174947.r2wl4c4zimkyhamj@rob-hp-laptop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, heiko@sntech.de, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+In-Reply-To: <20170710072422.rs25i5oawmiaofrp@mwanda>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Dan Carpenter <dan.carpenter@oracle.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+On Mon, 2017-07-10 at 10:24 +0300, Dan Carpenter wrote:
+> ti_bandgap_get_sensor_data() can return error pointers so we should
+> check for that.  There is no need to check "data->ti_thermal" for
+> NULL
+> and we removed that from the other cleanup function so we may as well
+> from it in ti_thermal_remove_sensor() to be consistent.
+> 
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> index c211a8e4a210..9fea354ca90c 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> @@ -210,7 +210,7 @@ int ti_thermal_remove_sensor(struct ti_bandgap
+> *bgp, int id)
+>  
+>  	data = ti_bandgap_get_sensor_data(bgp, id);
+>  
+> -	if (data && data->ti_thermal) {
+> +	if (data && !IS_ERR(data)) {
 
-Thank you very much for your reply, and your ack of course.
+what about
+	if (!IS_ERR_OR_NULL(data))
 
-Best Regards,
-Rocky
+thanks,
+rui
 
-�� 2017/8/11 1:49, Rob Herring д��:
-> On Fri, Aug 04, 2017 at 04:06:12PM +0800, Rocky Hao wrote:
->> attempt to new compatible for thermal founding on RK3328 SoC.
-> 
-> ? "Add a new compatible..."
-> 
->>
->> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
->> ---
->> Change in v2:
->> - remove gerrit Change-Id
->>
->>   Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 1 +
->>   1 file changed, 1 insertion(+)
-> 
-> Acked-by: Rob Herring <robh@kernel.org>
-> 
-> 
-> 
+>  		if (data->our_zone)
+>  			thermal_zone_device_unregister(data-
+> >ti_thermal);
+>  	}
+> @@ -276,7 +276,7 @@ int ti_thermal_unregister_cpu_cooling(struct
+> ti_bandgap *bgp, int id)
+>  
+>  	data = ti_bandgap_get_sensor_data(bgp, id);
+>  
+> -	if (data) {
+> +	if (data && !IS_ERR(data)) {
+>  		cpufreq_cooling_unregister(data->cool_dev);
+>  		cpufreq_cpu_put(data->policy);
+>  	}
