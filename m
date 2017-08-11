@@ -1,111 +1,53 @@
-From: walter harms <wharms@bfs.de>
-Subject: Re: [PATCH 1/3 v2] thermal: core: Add some new helper functions to
- free resources
-Date: Fri, 11 Aug 2017 09:30:25 +0200
-Message-ID: <598D5D11.4010703@bfs.de>
-References: <cover.1502201798.git.christophe.jaillet@wanadoo.fr> <98e96edd53ea3109ec127f82608c8d5df5437c9c.1502201798.git.christophe.jaillet@wanadoo.fr>
-Reply-To: wharms@bfs.de
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: Potential error pointer
+ dereferences
+Date: Fri, 11 Aug 2017 10:55:42 +0300
+Message-ID: <20170811075510.cnaisfliycev43w4@mwanda>
+References: <20170710072422.rs25i5oawmiaofrp@mwanda>
+ <1502416833.2598.3.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx02-sz.bfs.de ([194.94.69.103]:23299 "EHLO mx02-sz.bfs.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751370AbdHKHa3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 11 Aug 2017 03:30:29 -0400
-In-Reply-To: <98e96edd53ea3109ec127f82608c8d5df5437c9c.1502201798.git.christophe.jaillet@wanadoo.fr>
+Received: from userp1040.oracle.com ([156.151.31.81]:34803 "EHLO
+        userp1040.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751370AbdHKH50 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2017 03:57:26 -0400
+Content-Disposition: inline
+In-Reply-To: <1502416833.2598.3.camel@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>, linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-
-
-Am 08.08.2017 16:39, schrieb Christophe JAILLET:
-> In order to easily free resources allocated by
-> 'thermal_zone_create_device_groups()' we need 2 new helper functions.
+On Fri, Aug 11, 2017 at 10:00:33AM +0800, Zhang Rui wrote:
+> On Mon, 2017-07-10 at 10:24 +0300, Dan Carpenter wrote:
+> > ti_bandgap_get_sensor_data() can return error pointers so we should
+> > check for that.  There is no need to check "data->ti_thermal" for
+> > NULL
+> > and we removed that from the other cleanup function so we may as well
+> > from it in ti_thermal_remove_sensor() to be consistent.
+> > 
+> > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> > 
+> > diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> > b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> > index c211a8e4a210..9fea354ca90c 100644
+> > --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> > +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> > @@ -210,7 +210,7 @@ int ti_thermal_remove_sensor(struct ti_bandgap
+> > *bgp, int id)
+> >  
+> >  	data = ti_bandgap_get_sensor_data(bgp, id);
+> >  
+> > -	if (data && data->ti_thermal) {
+> > +	if (data && !IS_ERR(data)) {
 > 
-> The first one undoes 'thermal_zone_create_device_groups()'.
-> The 2nd one undoes 'create_trip_attrs()', which is a function called by
-> 'thermal_zone_create_device_groups()'.
+> what about
+> 	if (!IS_ERR_OR_NULL(data))
 > 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
-> These functions will be used in patch 2/3 in order to simplify
-> 'thermal_release()'
-> I've tried to implement it as close a possible as the way the resources have
-> been allocated.
-> However, in 'thermal_release()', the code is simplier without some
-> additionnal 'if'.
-> No sure if we should prefer consistancy with allocation or simplicity of code.
-> ---
->  drivers/thermal/thermal_core.h  |  1 +
->  drivers/thermal/thermal_sysfs.c | 29 +++++++++++++++++++++++++++++
->  2 files changed, 30 insertions(+)
-> 
-> diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-> index 2412b3759e16..27e3b1df7360 100644
-> --- a/drivers/thermal/thermal_core.h
-> +++ b/drivers/thermal/thermal_core.h
-> @@ -71,6 +71,7 @@ int thermal_build_list_of_policies(char *buf);
->  
->  /* sysfs I/F */
->  int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
-> +void thermal_zone_destroy_device_groups(struct thermal_zone_device *);
->  void thermal_cooling_device_setup_sysfs(struct thermal_cooling_device *);
->  /* used only at binding time */
->  ssize_t
-> diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-> index a694de907a26..eb95d64b9446 100644
-> --- a/drivers/thermal/thermal_sysfs.c
-> +++ b/drivers/thermal/thermal_sysfs.c
-> @@ -605,6 +605,24 @@ static int create_trip_attrs(struct thermal_zone_device *tz, int mask)
->  	return 0;
->  }
->  
-> +/**
-> + * destroy_trip_attrs() - create attributes for trip points
-> + * @tz:		the thermal zone device
-> + *
-> + * helper function to free resources alocated by create_trip_attrs()
-> + */
-> +static void destroy_trip_attrs(struct thermal_zone_device *tz)
-> +{
-> +	if (!tz)
-> +		return;
-> +
-> +	kfree(tz->trip_type_attrs);
-> +	kfree(tz->trip_temp_attrs);
-> +	if (tz->ops->get_trip_hyst)
-> +		kfree(tz->trip_hyst_attrs);
-> +	kfree(tz->trips_attribute_group.attrs);
-> +}
-> +
->  int thermal_zone_create_device_groups(struct thermal_zone_device *tz,
->  				      int mask)
->  {
-> @@ -637,6 +655,17 @@ int thermal_zone_create_device_groups(struct thermal_zone_device *tz,
->  	return 0;
->  }
->  
-> +void thermal_zone_destroy_device_groups(struct thermal_zone_device *tz)
-> +{
-> +	if (!tz)
-> +		return;
-> +
-> +	if (tz->trips)
-> +		destroy_trip_attrs(tz);
 
-why the check for tz->trips ?
-destroy_trip_attrs does not access tz->trips->
+Duh.  Of course, let me resend.
 
-re,
- wh
-
-> +
-> +	kfree(tz->device.groups);
-> +}
-> +
->  /* sys I/F for cooling device */
->  static ssize_t
->  thermal_cooling_device_type_show(struct device *dev,
+regards,
+dan carpenter
