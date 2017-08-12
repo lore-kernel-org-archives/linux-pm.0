@@ -1,497 +1,241 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [RFC v2 2/5] power: supply: bq27xxx: Add chip IDs for previously
- shadowed chips
-Date: Sat, 12 Aug 2017 17:02:43 +0200
-Message-ID: <20170812150243.yglsy42mpigff6gw@earth>
-References: <20170807062216.19988-1-liam@networkimprov.net>
- <20170807062216.19988-3-liam@networkimprov.net>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH v3] ACPI / Sleep: Check low power idle constraints for
+ debug only
+Date: Sat, 12 Aug 2017 08:59:16 -0700
+Message-ID: <1502553556.20268.47.camel@linux.intel.com>
+References: <1502475835-54818-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+         <18796717.B6iU8dePCh@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="psexgqba7megpyii"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:54036 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750774AbdHLPCp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 12 Aug 2017 11:02:45 -0400
-Content-Disposition: inline
-In-Reply-To: <20170807062216.19988-3-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <18796717.B6iU8dePCh@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: lenb@kernel.org, linux-pm@vger.kernel.org, mario.limonciello@dell.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
 
+On Sat, 2017-08-12 at 16:27 +0200, Rafael J. Wysocki wrote:
+[...]
 
---psexgqba7megpyii
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> > +
+> > +struct lpi_constraints {
+> > +	char *name;
+> > +	int min_dstate;
+> If you store the handle here as well, you won't need to
+> look it up every time _check_constraints() is called.
 
-Hi,
+The reason I didn't keep handle here, I thought handle can be stale or
+change for PnP device on plug in and out. Is this not true?
 
-On Sun, Aug 06, 2017 at 11:22:13PM -0700, Liam Breck wrote:
-> From: Liam Breck <kernel@networkimprov.net>
->=20
-> For the existing feature set, these chips act like ones already listed,
-> so they had been given false but functional IDs. We will be adding featur=
-es
-> which obsolete that shadowing, so the following IDs are added:
-> BQ2752X, 531, 542, 546, 742, 425, 441, 621
+> > 
+> > +};
+> > +
+> > +static struct lpi_constraints *lpi_constraints_table;
+> > +static int lpi_constraints_table_size;
+> > +
+> > +static void lpi_device_get_constraints(void)
+> > +{
+> > +	union acpi_object *out_obj;
+> > +	int i;
+> > +
+> > +	out_obj = acpi_evaluate_dsm_typed(lps0_device_handle,
+> > &lps0_dsm_guid,
+> > +					  1,
+> > ACPI_LPS0_GET_DEVICE_CONSTRAINTS,
+> > +					  NULL,
+> > ACPI_TYPE_PACKAGE);
+> > +
+> > +	acpi_handle_debug(lps0_device_handle, "_DSM function 1
+> > eval %s\n",
+> > +			  out_obj ? "successful" : "failed");
+> > +
+> > +	if (!out_obj)
+> > +		return;
+> > +
+> > +	lpi_constraints_table = kcalloc(out_obj->package.count,
+> > +					sizeof(*lpi_constraints_ta
+> > ble),
+> > +					GFP_KERNEL);
+> > +	if (!lpi_constraints_table)
+> > +		goto free_acpi_buffer;
+> > +
+> > +	pr_debug("LPI: constraints dump begin\n");
+> Please add an empty line after this.  Also something like
+> "constraints
+> list begin" would sound better IMO.
+> 
+OK.
 
-Patch looks ok, but the patch description does not match the patch?
+> > 
+> > +	for (i = 0; i < out_obj->package.count; i++) {
+> > +		union acpi_object *package = &out_obj-
+> > >package.elements[i];
+> > +		struct lpi_device_info info = { };
+> > +		int package_count = 0, j;
+> > +
+> > +		if (!package)
+> > +			continue;
+> > +
+> > +		for (j = 0; j < package->package.count; ++j) {
+> > +			union acpi_object *element =
+> > +					&(package-
+> > >package.elements[j]);
+> > +
+> > +			switch (element->type) {
+> > +			case ACPI_TYPE_INTEGER:
+> > +				info.enabled = element-
+> > >integer.value;
+> > +				break;
+> > +			case ACPI_TYPE_STRING:
+> > +				info.name = element-
+> > >string.pointer;
+> > +				break;
+> > +			case ACPI_TYPE_PACKAGE:
+> > +				package_count = element-
+> > >package.count;
+> > +				info.package = element-
+> > >package.elements;
+> > +				break;
+> > +			}
+> > +		}
+> > +
+> > +		if (!info.enabled || !info.package || !info.name)
+> > +			continue;
+> > +
+> I would evaluate acpi_get_handle() here and store the handle in the
+> constraints table (if persent).  And you can skip the entry
+> altogether
+> if not present, because you won't be printing it anyway.
+> 
+> > 
+> > +		lpi_constraints_table[lpi_constraints_table_size].
+> > name =
+> > +						kstrdup(info.name,
+> > GFP_KERNEL);
+> > +		if
+> > (!lpi_constraints_table[lpi_constraints_table_size].name)
+> > +			goto free_constraints;
+> > +
+> > +		pr_debug("index:%d Name:%s\n", i, info.name);
+> > +
+> > +		for (j = 0; j < package_count; ++j) {
+> > +			union acpi_object *info_obj =
+> > &info.package[j];
+> > +			union acpi_object *cnstr_pkg;
+> > +			union acpi_object *obj;
+> > +			struct lpi_device_constraint dev_info;
+> > +
+> > +			switch (info_obj->type) {
+> > +			case ACPI_TYPE_INTEGER:
+> > +				/* version */
+> > +				break;
+> > +			case ACPI_TYPE_PACKAGE:
+> > +				if (info_obj->package.count < 2)
+> > +					break;
+> > +
+> > +				cnstr_pkg = info_obj-
+> > >package.elements;
+> > +				obj = &cnstr_pkg[0];
+> > +				dev_info.uid = obj->integer.value;
+> > +				obj = &cnstr_pkg[1];
+> > +				dev_info.min_dstate = obj-
+> > >integer.value;
+> > +				pr_debug("uid %d min_dstate %d\n",
+> > +					 dev_info.uid,
+> > +					 dev_info.min_dstate);
+> > +				lpi_constraints_table[
+> > +					lpi_constraints_table_size
+> > ].min_dstate =
+> > +						dev_info.min_dstat
+> > e;
+> > +				break;
+> > +			}
+> > +		}
+> > +
+> > +		lpi_constraints_table_size++;
+> > +	}
+> > +
+> > +	pr_debug("LPI: constraints dump end\n");
+> > +free_acpi_buffer:
+> > +	ACPI_FREE(out_obj);
+> > +	return;
+> > +
+> > +free_constraints:
+> > +	ACPI_FREE(out_obj);
+> > +	for (i = 0; i < lpi_constraints_table_size; ++i)
+> > +		kfree(lpi_constraints_table[i].name);
+> > +	kfree(lpi_constraints_table);
+> > +	lpi_constraints_table_size = 0;
+> > +}
+> > +
+> > +static void lpi_check_constraints(void)
+> > +{
+> > +	int i;
+> > +
+> > +	for (i = 0; i < lpi_constraints_table_size; ++i) {
+> > +		acpi_handle handle;
+> > +		struct acpi_device *adev;
+> > +		int state, ret;
+> > +
+> > +		if (ACPI_FAILURE(acpi_get_handle(NULL,
+> > +						 lpi_constraints_t
+> > able[i].name,
+> > +						 &handle)))
+> > +			continue;
+> So if you store the handle, the above won't be necessary.
+> 
+> > 
+> > +
+> > +		if (acpi_bus_get_device(handle, &adev))
+> > +			continue;
+> > +
+> > +		ret = acpi_device_get_power(adev, &state);
+> > +		if (ret)
+> > +			pr_debug("LPI: %s required min power state
+> > %d, current power state %d, real power state [ERROR]\n",
+> > +				 lpi_constraints_table[i].name,
+> > +				 lpi_constraints_table[i].min_dsta
+> > te,
+> > +				 adev->power.state);
+> > +		else
+> > +			pr_debug("LPI: %s required min power state
+> > %d, current power state %d, real power state %d\n",
+> > +				 lpi_constraints_table[i].name,
+> > +				 lpi_constraints_table[i].min_dsta
+> > te,
+> > +				 adev->power.state, state);
+> I'm not convinced about the value of the above TBH.
+> 
+> Also in theory _PSC may go and access things like PCI config spaces
+> of devices
+> which isn't a good idea for devices in D3_cold, so maybe skip this?
+OK.
 
--- Sebastian
+> 
+> > 
+> > +
+> > +		if (adev->flags.power_manageable && adev-
+> > >power.state <
+> > +					lpi_constraints_table[i].m
+> > in_dstate)
+> > +			pr_info("LPI: Constraint [%s] not
+> > matched\n",
+> "Constrant [%s] not met"?
+> 
+> Also I'd use acpi_handle_info(adev->handle, ...) to print this.
+> 
+> > 
+> > +				 lpi_constraints_table[i].name);
+> I would print a message if !flags.power_manageable, because it means
+> we
+> can't get the constraint right in general.
+> 
+> Also I would print both power.state and min_state (possibly using
+> acpi_power_state_string()) in this message as that is valuable for
+> debugging.
+OK.
 
-> Chip-specific features are now tracked by BQ27XXX_O_* flags in di->opts.
->=20
-> No functional changes to the driver.
->=20
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> ---
->  drivers/power/supply/bq27xxx_battery.c     | 120 +++++++++++++++++------=
-------
->  drivers/power/supply/bq27xxx_battery_i2c.c |  16 ++--
->  include/linux/power/bq27xxx_battery.h      |   9 +++
->  3 files changed, 86 insertions(+), 59 deletions(-)
->=20
-> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/suppl=
-y/bq27xxx_battery.c
-> index dd84e3d9..b186216d 100644
-> --- a/drivers/power/supply/bq27xxx_battery.c
-> +++ b/drivers/power/supply/bq27xxx_battery.c
-> @@ -221,6 +221,7 @@ static u8
->  		[BQ27XXX_REG_AP] =3D INVALID_REG_ADDR,
->  		BQ27XXX_DM_REG_ROWS,
->  	},
-> +#define bq2752x_regs bq2751x_regs
->  	bq27500_regs[BQ27XXX_REG_MAX] =3D {
->  		[BQ27XXX_REG_CTRL] =3D 0x00,
->  		[BQ27XXX_REG_TEMP] =3D 0x06,
-> @@ -401,6 +402,7 @@ static u8
->  		[BQ27XXX_REG_AP] =3D 0x24,
->  		BQ27XXX_DM_REG_ROWS,
->  	},
-> +#define bq27531_regs bq27530_regs
->  	bq27541_regs[BQ27XXX_REG_MAX] =3D {
->  		[BQ27XXX_REG_CTRL] =3D 0x00,
->  		[BQ27XXX_REG_TEMP] =3D 0x06,
-> @@ -421,6 +423,9 @@ static u8
->  		[BQ27XXX_REG_AP] =3D 0x24,
->  		BQ27XXX_DM_REG_ROWS,
->  	},
-> +#define bq27542_regs bq27541_regs
-> +#define bq27546_regs bq27541_regs
-> +#define bq27742_regs bq27541_regs
->  	bq27545_regs[BQ27XXX_REG_MAX] =3D {
->  		[BQ27XXX_REG_CTRL] =3D 0x00,
->  		[BQ27XXX_REG_TEMP] =3D 0x06,
-> @@ -461,6 +466,9 @@ static u8
->  		[BQ27XXX_REG_AP] =3D 0x18,
->  		BQ27XXX_DM_REG_ROWS,
->  	};
-> +#define bq27425_regs bq27421_regs
-> +#define bq27441_regs bq27421_regs
-> +#define bq27621_regs bq27421_regs
-> =20
->  static enum power_supply_property bq27000_props[] =3D {
->  	POWER_SUPPLY_PROP_STATUS,
-> @@ -539,6 +547,7 @@ static enum power_supply_property bq2751x_props[] =3D=
- {
->  	POWER_SUPPLY_PROP_HEALTH,
->  	POWER_SUPPLY_PROP_MANUFACTURER,
->  };
-> +#define bq2752x_props bq2751x_props
-> =20
->  static enum power_supply_property bq27500_props[] =3D {
->  	POWER_SUPPLY_PROP_STATUS,
-> @@ -716,6 +725,7 @@ static enum power_supply_property bq27530_props[] =3D=
- {
->  	POWER_SUPPLY_PROP_CYCLE_COUNT,
->  	POWER_SUPPLY_PROP_MANUFACTURER,
->  };
-> +#define bq27531_props bq27530_props
-> =20
->  static enum power_supply_property bq27541_props[] =3D {
->  	POWER_SUPPLY_PROP_STATUS,
-> @@ -735,6 +745,9 @@ static enum power_supply_property bq27541_props[] =3D=
- {
->  	POWER_SUPPLY_PROP_HEALTH,
->  	POWER_SUPPLY_PROP_MANUFACTURER,
->  };
-> +#define bq27542_props bq27541_props
-> +#define bq27546_props bq27541_props
-> +#define bq27742_props bq27541_props
-> =20
->  static enum power_supply_property bq27545_props[] =3D {
->  	POWER_SUPPLY_PROP_STATUS,
-> @@ -768,33 +781,50 @@ static enum power_supply_property bq27421_props[] =
-=3D {
->  	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
->  	POWER_SUPPLY_PROP_MANUFACTURER,
->  };
-> +#define bq27425_props bq27421_props
-> +#define bq27441_props bq27421_props
-> +#define bq27621_props bq27421_props
-> =20
-> -#define BQ27XXX_DATA(ref) {			\
-> +#define BQ27XXX_O_ZERO	0x00000001
-> +#define BQ27XXX_O_OTDC	0x00000002
-> +#define BQ27XXX_O_UTOT  0x00000004
-> +
-> +#define BQ27XXX_DATA(ref, opt) {		\
-> +	.opts =3D (opt),				\
->  	.regs  =3D ref##_regs,			\
->  	.props =3D ref##_props,			\
->  	.props_size =3D ARRAY_SIZE(ref##_props) }
-> =20
->  static struct {
-> +	u32 opts;
->  	u8 *regs;
->  	enum power_supply_property *props;
->  	size_t props_size;
->  } bq27xxx_chip_data[] =3D {
-> -	[BQ27000]   =3D BQ27XXX_DATA(bq27000),
-> -	[BQ27010]   =3D BQ27XXX_DATA(bq27010),
-> -	[BQ2750X]   =3D BQ27XXX_DATA(bq2750x),
-> -	[BQ2751X]   =3D BQ27XXX_DATA(bq2751x),
-> -	[BQ27500]   =3D BQ27XXX_DATA(bq27500),
-> -	[BQ27510G1] =3D BQ27XXX_DATA(bq27510g1),
-> -	[BQ27510G2] =3D BQ27XXX_DATA(bq27510g2),
-> -	[BQ27510G3] =3D BQ27XXX_DATA(bq27510g3),
-> -	[BQ27520G1] =3D BQ27XXX_DATA(bq27520g1),
-> -	[BQ27520G2] =3D BQ27XXX_DATA(bq27520g2),
-> -	[BQ27520G3] =3D BQ27XXX_DATA(bq27520g3),
-> -	[BQ27520G4] =3D BQ27XXX_DATA(bq27520g4),
-> -	[BQ27530]   =3D BQ27XXX_DATA(bq27530),
-> -	[BQ27541]   =3D BQ27XXX_DATA(bq27541),
-> -	[BQ27545]   =3D BQ27XXX_DATA(bq27545),
-> -	[BQ27421]   =3D BQ27XXX_DATA(bq27421),
-> +	[BQ27000]   =3D BQ27XXX_DATA(bq27000,   BQ27XXX_O_ZERO),
-> +	[BQ27010]   =3D BQ27XXX_DATA(bq27010,   BQ27XXX_O_ZERO),
-> +	[BQ2750X]   =3D BQ27XXX_DATA(bq2750x,   BQ27XXX_O_OTDC),
-> +	[BQ2751X]   =3D BQ27XXX_DATA(bq2751x,   BQ27XXX_O_OTDC),
-> +	[BQ2752X]   =3D BQ27XXX_DATA(bq2752x,   BQ27XXX_O_OTDC),
-> +	[BQ27500]   =3D BQ27XXX_DATA(bq27500,   BQ27XXX_O_OTDC),
-> +	[BQ27510G1] =3D BQ27XXX_DATA(bq27510g1, BQ27XXX_O_OTDC),
-> +	[BQ27510G2] =3D BQ27XXX_DATA(bq27510g2, BQ27XXX_O_OTDC),
-> +	[BQ27510G3] =3D BQ27XXX_DATA(bq27510g3, BQ27XXX_O_OTDC),
-> +	[BQ27520G1] =3D BQ27XXX_DATA(bq27520g1, BQ27XXX_O_OTDC),
-> +	[BQ27520G2] =3D BQ27XXX_DATA(bq27520g2, BQ27XXX_O_OTDC),
-> +	[BQ27520G3] =3D BQ27XXX_DATA(bq27520g3, BQ27XXX_O_OTDC),
-> +	[BQ27520G4] =3D BQ27XXX_DATA(bq27520g4, BQ27XXX_O_OTDC),
-> +	[BQ27530]   =3D BQ27XXX_DATA(bq27530,   BQ27XXX_O_UTOT),
-> +	[BQ27531]   =3D BQ27XXX_DATA(bq27531,   BQ27XXX_O_UTOT),
-> +	[BQ27541]   =3D BQ27XXX_DATA(bq27541,   BQ27XXX_O_OTDC),
-> +	[BQ27542]   =3D BQ27XXX_DATA(bq27542,   BQ27XXX_O_OTDC),
-> +	[BQ27546]   =3D BQ27XXX_DATA(bq27546,   BQ27XXX_O_OTDC),
-> +	[BQ27742]   =3D BQ27XXX_DATA(bq27742,   BQ27XXX_O_OTDC),
-> +	[BQ27545]   =3D BQ27XXX_DATA(bq27545,   BQ27XXX_O_OTDC),
-> +	[BQ27421]   =3D BQ27XXX_DATA(bq27421,   BQ27XXX_O_UTOT),
-> +	[BQ27425]   =3D BQ27XXX_DATA(bq27425,   BQ27XXX_O_UTOT),
-> +	[BQ27441]   =3D BQ27XXX_DATA(bq27441,   BQ27XXX_O_UTOT),
-> +	[BQ27621]   =3D BQ27XXX_DATA(bq27621,   BQ27XXX_O_UTOT),
->  };
-> =20
->  static DEFINE_MUTEX(bq27xxx_list_lock);
-> @@ -1327,7 +1357,7 @@ static int bq27xxx_battery_read_soc(struct bq27xxx_=
-device_info *di)
->  {
->  	int soc;
-> =20
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
-> +	if (di->opts & BQ27XXX_O_ZERO)
->  		soc =3D bq27xxx_read(di, BQ27XXX_REG_SOC, true);
->  	else
->  		soc =3D bq27xxx_read(di, BQ27XXX_REG_SOC, false);
-> @@ -1353,7 +1383,7 @@ static int bq27xxx_battery_read_charge(struct bq27x=
-xx_device_info *di, u8 reg)
->  		return charge;
->  	}
-> =20
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
-> +	if (di->opts & BQ27XXX_O_ZERO)
->  		charge *=3D BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
->  	else
->  		charge *=3D 1000;
-> @@ -1369,7 +1399,7 @@ static inline int bq27xxx_battery_read_nac(struct b=
-q27xxx_device_info *di)
->  {
->  	int flags;
-> =20
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010) {
-> +	if (di->opts & BQ27XXX_O_ZERO) {
->  		flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, true);
->  		if (flags >=3D 0 && (flags & BQ27000_FLAG_CI))
->  			return -ENODATA;
-> @@ -1395,7 +1425,7 @@ static int bq27xxx_battery_read_dcap(struct bq27xxx=
-_device_info *di)
->  {
->  	int dcap;
-> =20
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
-> +	if (di->opts & BQ27XXX_O_ZERO)
->  		dcap =3D bq27xxx_read(di, BQ27XXX_REG_DCAP, true);
->  	else
->  		dcap =3D bq27xxx_read(di, BQ27XXX_REG_DCAP, false);
-> @@ -1405,7 +1435,7 @@ static int bq27xxx_battery_read_dcap(struct bq27xxx=
-_device_info *di)
->  		return dcap;
->  	}
-> =20
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
-> +	if (di->opts & BQ27XXX_O_ZERO)
->  		dcap =3D (dcap << 8) * BQ27XXX_CURRENT_CONSTANT / BQ27XXX_RS;
->  	else
->  		dcap *=3D 1000;
-> @@ -1427,7 +1457,7 @@ static int bq27xxx_battery_read_energy(struct bq27x=
-xx_device_info *di)
->  		return ae;
->  	}
-> =20
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
-> +	if (di->opts & BQ27XXX_O_ZERO)
->  		ae *=3D BQ27XXX_POWER_CONSTANT / BQ27XXX_RS;
->  	else
->  		ae *=3D 1000;
-> @@ -1449,7 +1479,7 @@ static int bq27xxx_battery_read_temperature(struct =
-bq27xxx_device_info *di)
->  		return temp;
->  	}
-> =20
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
-> +	if (di->opts & BQ27XXX_O_ZERO)
->  		temp =3D 5 * temp / 2;
-> =20
->  	return temp;
-> @@ -1506,7 +1536,7 @@ static int bq27xxx_battery_read_pwr_avg(struct bq27=
-xxx_device_info *di)
->  		return tval;
->  	}
-> =20
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
-> +	if (di->opts & BQ27XXX_O_ZERO)
->  		return (tval * BQ27XXX_POWER_CONSTANT) / BQ27XXX_RS;
->  	else
->  		return tval;
-> @@ -1517,26 +1547,12 @@ static int bq27xxx_battery_read_pwr_avg(struct bq=
-27xxx_device_info *di)
->   */
->  static bool bq27xxx_battery_overtemp(struct bq27xxx_device_info *di, u16=
- flags)
->  {
-> -	switch (di->chip) {
-> -	case BQ2750X:
-> -	case BQ2751X:
-> -	case BQ27500:
-> -	case BQ27510G1:
-> -	case BQ27510G2:
-> -	case BQ27510G3:
-> -	case BQ27520G1:
-> -	case BQ27520G2:
-> -	case BQ27520G3:
-> -	case BQ27520G4:
-> -	case BQ27541:
-> -	case BQ27545:
-> +	if (di->opts & BQ27XXX_O_OTDC)
->  		return flags & (BQ27XXX_FLAG_OTC | BQ27XXX_FLAG_OTD);
-> -	case BQ27530:
-> -	case BQ27421:
-> +        if (di->opts & BQ27XXX_O_UTOT)
->  		return flags & BQ27XXX_FLAG_OT;
-> -	default:
-> -		return false;
-> -	}
-> +
-> +	return false;
->  }
-> =20
->  /*
-> @@ -1544,7 +1560,7 @@ static bool bq27xxx_battery_overtemp(struct bq27xxx=
-_device_info *di, u16 flags)
->   */
->  static bool bq27xxx_battery_undertemp(struct bq27xxx_device_info *di, u1=
-6 flags)
->  {
-> -	if (di->chip =3D=3D BQ27530 || di->chip =3D=3D BQ27421)
-> +	if (di->opts & BQ27XXX_O_UTOT)
->  		return flags & BQ27XXX_FLAG_UT;
-> =20
->  	return false;
-> @@ -1555,7 +1571,7 @@ static bool bq27xxx_battery_undertemp(struct bq27xx=
-x_device_info *di, u16 flags)
->   */
->  static bool bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 fla=
-gs)
->  {
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010)
-> +	if (di->opts & BQ27XXX_O_ZERO)
->  		return flags & (BQ27000_FLAG_EDV1 | BQ27000_FLAG_EDVF);
->  	else
->  		return flags & (BQ27XXX_FLAG_SOC1 | BQ27XXX_FLAG_SOCF);
-> @@ -1568,7 +1584,7 @@ static bool bq27xxx_battery_dead(struct bq27xxx_dev=
-ice_info *di, u16 flags)
->  static int bq27xxx_battery_read_health(struct bq27xxx_device_info *di)
->  {
->  	int flags;
-> -	bool has_singe_flag =3D di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27=
-010;
-> +	bool has_singe_flag =3D di->opts & BQ27XXX_O_ZERO;
-> =20
->  	flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, has_singe_flag);
->  	if (flags < 0) {
-> @@ -1590,8 +1606,8 @@ static int bq27xxx_battery_read_health(struct bq27x=
-xx_device_info *di)
->  void bq27xxx_battery_update(struct bq27xxx_device_info *di)
->  {
->  	struct bq27xxx_reg_cache cache =3D {0, };
-> -	bool has_ci_flag =3D di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010;
-> -	bool has_singe_flag =3D di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27=
-010;
-> +	bool has_ci_flag =3D di->opts & BQ27XXX_O_ZERO;
-> +	bool has_singe_flag =3D di->opts & BQ27XXX_O_ZERO;
-> =20
->  	cache.flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, has_singe_flag);
->  	if ((cache.flags & 0xff) =3D=3D 0xff)
-> @@ -1669,7 +1685,7 @@ static int bq27xxx_battery_current(struct bq27xxx_d=
-evice_info *di,
->  		return curr;
->  	}
-> =20
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010) {
-> +	if (di->opts & BQ27XXX_O_ZERO) {
->  		flags =3D bq27xxx_read(di, BQ27XXX_REG_FLAGS, true);
->  		if (flags & BQ27000_FLAG_CHGS) {
->  			dev_dbg(di->dev, "negative current!\n");
-> @@ -1690,7 +1706,7 @@ static int bq27xxx_battery_status(struct bq27xxx_de=
-vice_info *di,
->  {
->  	int status;
-> =20
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010) {
-> +	if (di->opts & BQ27XXX_O_ZERO) {
->  		if (di->cache.flags & BQ27000_FLAG_FC)
->  			status =3D POWER_SUPPLY_STATUS_FULL;
->  		else if (di->cache.flags & BQ27000_FLAG_CHGS)
-> @@ -1718,7 +1734,7 @@ static int bq27xxx_battery_capacity_level(struct bq=
-27xxx_device_info *di,
->  {
->  	int level;
-> =20
-> -	if (di->chip =3D=3D BQ27000 || di->chip =3D=3D BQ27010) {
-> +	if (di->opts & BQ27XXX_O_ZERO) {
->  		if (di->cache.flags & BQ27000_FLAG_FC)
->  			level =3D POWER_SUPPLY_CAPACITY_LEVEL_FULL;
->  		else if (di->cache.flags & BQ27000_FLAG_EDV1)
-> @@ -1883,7 +1899,9 @@ int bq27xxx_battery_setup(struct bq27xxx_device_inf=
-o *di)
-> =20
->  	INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
->  	mutex_init(&di->lock);
-> +
->  	di->regs =3D bq27xxx_chip_data[di->chip].regs;
-> +	di->opts =3D bq27xxx_chip_data[di->chip].opts;
-> =20
->  	psy_desc =3D devm_kzalloc(di->dev, sizeof(*psy_desc), GFP_KERNEL);
->  	if (!psy_desc)
-> diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/s=
-upply/bq27xxx_battery_i2c.c
-> index a5972214..0b11ed47 100644
-> --- a/drivers/power/supply/bq27xxx_battery_i2c.c
-> +++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-> @@ -230,7 +230,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_tabl=
-e[] =3D {
->  	{ "bq27210", BQ27010 },
->  	{ "bq27500", BQ2750X },
->  	{ "bq27510", BQ2751X },
-> -	{ "bq27520", BQ2751X },
-> +	{ "bq27520", BQ2752X },
->  	{ "bq27500-1", BQ27500 },
->  	{ "bq27510g1", BQ27510G1 },
->  	{ "bq27510g2", BQ27510G2 },
-> @@ -240,16 +240,16 @@ static const struct i2c_device_id bq27xxx_i2c_id_ta=
-ble[] =3D {
->  	{ "bq27520g3", BQ27520G3 },
->  	{ "bq27520g4", BQ27520G4 },
->  	{ "bq27530", BQ27530 },
-> -	{ "bq27531", BQ27530 },
-> +	{ "bq27531", BQ27531 },
->  	{ "bq27541", BQ27541 },
-> -	{ "bq27542", BQ27541 },
-> -	{ "bq27546", BQ27541 },
-> -	{ "bq27742", BQ27541 },
-> +	{ "bq27542", BQ27542 },
-> +	{ "bq27546", BQ27546 },
-> +	{ "bq27742", BQ27742 },
->  	{ "bq27545", BQ27545 },
->  	{ "bq27421", BQ27421 },
-> -	{ "bq27425", BQ27421 },
-> -	{ "bq27441", BQ27421 },
-> -	{ "bq27621", BQ27421 },
-> +	{ "bq27425", BQ27425 },
-> +	{ "bq27441", BQ27441 },
-> +	{ "bq27621", BQ27621 },
->  	{},
->  };
->  MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
-> diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/=
-bq27xxx_battery.h
-> index 11e11685..77fe94f1 100644
-> --- a/include/linux/power/bq27xxx_battery.h
-> +++ b/include/linux/power/bq27xxx_battery.h
-> @@ -6,6 +6,7 @@ enum bq27xxx_chip {
->  	BQ27010, /* bq27010, bq27210 */
->  	BQ2750X, /* bq27500 deprecated alias */
->  	BQ2751X, /* bq27510, bq27520 deprecated alias */
-> +	BQ2752X,
->  	BQ27500, /* bq27500/1 */
->  	BQ27510G1, /* bq27510G1 */
->  	BQ27510G2, /* bq27510G2 */
-> @@ -15,9 +16,16 @@ enum bq27xxx_chip {
->  	BQ27520G3, /* bq27520G3 */
->  	BQ27520G4, /* bq27520G4 */
->  	BQ27530, /* bq27530, bq27531 */
-> +	BQ27531,
->  	BQ27541, /* bq27541, bq27542, bq27546, bq27742 */
-> +	BQ27542,
-> +	BQ27546,
-> +	BQ27742,
->  	BQ27545, /* bq27545 */
->  	BQ27421, /* bq27421, bq27425, bq27441, bq27621 */
-> +	BQ27425,
-> +	BQ27441,
-> +	BQ27621,
->  };
-> =20
->  /**
-> @@ -64,6 +72,7 @@ struct bq27xxx_device_info {
->  	int id;
->  	enum bq27xxx_chip chip;
->  	bool ram_chip;
-> +	u32 opts;
->  	const char *name;
->  	struct bq27xxx_dm_reg *dm_regs;
->  	u32 unseal_key;
-> --=20
-> 2.13.2
->=20
+Thanks,
+Srinivas
 
---psexgqba7megpyii
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmPGJAACgkQ2O7X88g7
-+ppVqA//ShrwQR/ZxFAqd2H6PBFAXUJ2P9IJ/0TXjQHMM/ofBnO0J/h6JOTf5FhR
-FseIBaMqF3MyE2GfYGr6LPn/DjRsLBhgDjIEIIIZHYcPxzjgX804s/Fgxfnk+Uqj
-jrSzGxbbfXELSjg260P8sY0qWxou6nQj8JdxeP1hyV+B1NFIizQ2knUTv0WPe3+I
-o+lNQG3zqEH2kCrGy3JmO+zbWvbIx1n+Z+howoeo6LCMVK2KdgUBdg8dv2twwTzQ
-t61iJpcKpTkbRwBQT3G2q6DAlPwG95OtUnd9epgXMqcXZf9ERFQQ4Vdc0UIaIl3H
-fFNDN50GcrimBlCDvV/U0F+7Y5qHHl3azN1toM5vPsPEhcjBRBffgaLeoEj4Uqo5
-A5AePOdgkUDi85EJtmRQPs5iJlrm8cxpzNNv8NMPRCUw+rcQb1vGv4fsB5SgTqPL
-+/eO6GIdtxb1w4g5GyBTu7L2uu7ooQPBnYAwWggftKCJIUL6ADWbPzDb+wgesCGh
-rtvnrTgPG/VMTHUReZ/lMGn7F4noC24GJ6FwOSLMoHYwEKA5GPK0Zer3KROWcQp+
-kpTPvUn75RVEtNCcBlEXPPXBUHmAaxrhiQDqLXUwqtIa1MGXqHQoqCearwsqr0JD
-s9Jnlp6Awf04sEQs6vLrihcAy5s5eBRvwl6HcXGxAHpoSy6XxkE=
-=p25q
------END PGP SIGNATURE-----
-
---psexgqba7megpyii--
