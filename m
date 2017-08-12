@@ -1,103 +1,46 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v2 2/5] devicetree: power: Add docs for TI BQ24190 battery charger
-Date: Fri, 11 Aug 2017 14:57:10 -0700
-Message-ID: <CAKvHMgSuwm5UFivbsq9dQn_wfd7kbs63UuuQSHVdGxDf_WReUA@mail.gmail.com>
-References: <20170807195420.20767-1-liam@networkimprov.net>
- <20170807195420.20767-3-liam@networkimprov.net> <20170811025038.5qnhbabyybx7rgu5@rob-hp-laptop>
+Subject: Re: [RFC v2 1/5] power: supply: bq27xxx: Create single chip data table
+Date: Fri, 11 Aug 2017 17:52:50 -0700
+Message-ID: <CAKvHMgRebOYrfM4gYGiEBwVhFCi28Q9wdrZ69hrg9n0PBbeZgg@mail.gmail.com>
+References: <20170807062216.19988-1-liam@networkimprov.net>
+ <20170807062216.19988-2-liam@networkimprov.net> <20170809160621.xcfwrerbe2ztehd4@earth>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f65.google.com ([209.85.214.65]:35000 "EHLO
-        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753742AbdHKV5L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2017 17:57:11 -0400
-In-Reply-To: <20170811025038.5qnhbabyybx7rgu5@rob-hp-laptop>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:36035 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751487AbdHLAwv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Aug 2017 20:52:51 -0400
+Received: by mail-it0-f68.google.com with SMTP id o72so42980ita.3
+        for <linux-pm@vger.kernel.org>; Fri, 11 Aug 2017 17:52:51 -0700 (PDT)
+In-Reply-To: <20170809160621.xcfwrerbe2ztehd4@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>, devicetree@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
 
-Hi Rob,
+Hi Sebastian,
 
-On Thu, Aug 10, 2017 at 7:50 PM, Rob Herring <robh@kernel.org> wrote:
-> On Mon, Aug 07, 2017 at 12:54:17PM -0700, Liam Breck wrote:
+On Wed, Aug 9, 2017 at 9:08 AM, Sebastian Reichel
+<sebastian.reichel@collabora.co.uk> wrote:
+> Hi,
+>
+> On Sun, Aug 06, 2017 at 11:22:12PM -0700, Liam Breck wrote:
 >> From: Liam Breck <kernel@networkimprov.net>
 >>
->> Document monitored-battery and ti,system-minimum-microvolt properties.
+>> To support new features which require different data for each chip, we
+>> unify the bq27xxx_regs and bq27xxx_battery_props tables into a single one.
 >>
->> Cc: Rob Herring <robh@kernel.org>
->> Cc: devicetree@vger.kernel.org
+>> No functional changes to the driver.
+>>
 >> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->> ---
->>  .../devicetree/bindings/power/supply/bq24190.txt   | 49 ++++++++++++++++++++++
->>  1 file changed, 49 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/power/supply/bq24190.txt
->>
->> diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b/Documentation/devicetree/bindings/power/supply/bq24190.txt
->> new file mode 100644
->> index 00000000..82a1c842
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
->> @@ -0,0 +1,49 @@
->> +TI BQ24190 Li-Ion Battery Charger
->> +
->> +Required properties:
->> +- compatible: contains one of the following:
->> +    * "ti,bq24190"
->> +    * "ti,bq24192i"
->> +- reg: integer, I2C address of the charger.
->> +- interrupts[-extended]: configuration for charger INT pin.
->> +
->> +Optional properties:
->> +- monitored-battery: phandle of battery characteristics devicetree node
->> +    The charger uses the following battery properties:
->> +    + precharge-current-microamp: maximum charge current during precharge
->> +      phase (typically 20% of battery capacity).
->> +    + charge-term-current-microamp: a charge cycle terminates when the
->> +      battery voltage is above recharge threshold, and the current is below
->> +      this setting (typically 10% of battery capacity).
->> +    See Documentation/devicetree/bindings/power/supply/battery.txt
->> +- ti,system-minimum-microvolt: when power is connected and the battery is below
->> +    minimum system voltage, the system will be regulated above this setting.
->> +
->> +Other features:
->> +- Use gpio-hog to set the OTG pin high to enable 500mA charge current on USB SDP port.
 >
-> Why doesn't the charger driver control this?
+> Looks fine to me.
 
-This pin/gpio has to be high when USB is plugged in to make the
-charger chip negotiate 500mA from a SDP port. It should generally be
-configured that way even if the driver is not loaded, as the chip does
-not require a driver to function. Some boards may do that with a
-pull-up. Also the user may want to change this via sysfs and not have
-the driver "fix" it.
+Regarding the whole series? If so, I'll post a fully-tested "PATCH" version...
 
->> +
->> +Example:
->> +
->> +     bat: battery {
->> +             compatible = "simple-battery";
->> +             precharge-current-microamp = <256000>;
->> +             charge-term-current-microamp = <128000>;
->> +             // etc.
->> +     };
->> +
->> +     bq24190: charger@6a {
->> +             compatible = "ti,bq24190";
->> +             reg = <0x6a>;
->> +             interrupts-extended = <&gpiochip 10 IRQ_TYPE_EDGE_FALLING>;
->> +             monitored-battery = <&bat>;
->> +             ti,system-minimum-microvolt = <3200000>;
->> +     };
->> +
->> +     &twl_gpio {
->> +             otg {
->> +                     gpio-hog;
->> +                     gpios = <6 0>;
->> +                     output-high;
->> +                     line-name = "otg-gpio";
->> +             };
->> +     };
->> --
->> 2.13.2
->>
+> -- Sebastian
+>
+>> ---
+>>  drivers/power/supply/bq27xxx_battery.c | 121 ++++++++++++++++-----------------
+>>  1 file changed, 60 insertions(+), 61 deletions(-)
