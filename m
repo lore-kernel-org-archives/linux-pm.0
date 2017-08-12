@@ -1,19 +1,19 @@
 From: Liam Breck <liam@networkimprov.net>
 Subject: Re: [RFC v2 4/5] power: supply: bq27xxx: Flag identical chip data
  when in debug mode
-Date: Sat, 12 Aug 2017 11:35:53 -0700
-Message-ID: <CAKvHMgQpSU2=aAs56T-BZ2sTGMT6DB-wvvU2th76he_do2jBuA@mail.gmail.com>
+Date: Sat, 12 Aug 2017 11:40:04 -0700
+Message-ID: <CAKvHMgR1Dn3smzBZETo761EyLhyzBAdR+gfU_u41N8Qf5jad6Q@mail.gmail.com>
 References: <20170807062216.19988-1-liam@networkimprov.net>
  <20170807062216.19988-5-liam@networkimprov.net> <20170812162548.tziieaxckzfq7eog@earth>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f195.google.com ([209.85.223.195]:38220 "EHLO
-        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750948AbdHLSfz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 12 Aug 2017 14:35:55 -0400
-Received: by mail-io0-f195.google.com with SMTP id o9so5337459iod.5
-        for <linux-pm@vger.kernel.org>; Sat, 12 Aug 2017 11:35:54 -0700 (PDT)
+Received: from mail-it0-f67.google.com ([209.85.214.67]:38233 "EHLO
+        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750864AbdHLSkG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 12 Aug 2017 14:40:06 -0400
+Received: by mail-it0-f67.google.com with SMTP id f16so5641037itb.5
+        for <linux-pm@vger.kernel.org>; Sat, 12 Aug 2017 11:40:06 -0700 (PDT)
 In-Reply-To: <20170812162548.tziieaxckzfq7eog@earth>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
