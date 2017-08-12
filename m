@@ -1,125 +1,97 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [RFC v2 4/5] power: supply: bq27xxx: Flag identical chip data
- when in debug mode
-Date: Sat, 12 Aug 2017 11:40:04 -0700
-Message-ID: <CAKvHMgR1Dn3smzBZETo761EyLhyzBAdR+gfU_u41N8Qf5jad6Q@mail.gmail.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [RFC v2 2/5] power: supply: bq27xxx: Add chip IDs for previously
+ shadowed chips
+Date: Sat, 12 Aug 2017 14:45:27 -0400
+Message-ID: <20170812184526.v5ewwm2q5vkm7eh4@earth>
 References: <20170807062216.19988-1-liam@networkimprov.net>
- <20170807062216.19988-5-liam@networkimprov.net> <20170812162548.tziieaxckzfq7eog@earth>
+ <20170807062216.19988-3-liam@networkimprov.net>
+ <20170812150243.yglsy42mpigff6gw@earth>
+ <CAKvHMgQciRY+v0prYsfcLUOGcgzz9RRmMawwBMuKF60qC8U4Rg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="o2vh4ahaxwvolpp7"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f67.google.com ([209.85.214.67]:38233 "EHLO
-        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750864AbdHLSkG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 12 Aug 2017 14:40:06 -0400
-Received: by mail-it0-f67.google.com with SMTP id f16so5641037itb.5
-        for <linux-pm@vger.kernel.org>; Sat, 12 Aug 2017 11:40:06 -0700 (PDT)
-In-Reply-To: <20170812162548.tziieaxckzfq7eog@earth>
+Received: from mail.kernel.org ([198.145.29.99]:35134 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750864AbdHLSp2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 12 Aug 2017 14:45:28 -0400
+Content-Disposition: inline
+In-Reply-To: <CAKvHMgQciRY+v0prYsfcLUOGcgzz9RRmMawwBMuKF60qC8U4Rg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
+To: Liam Breck <liam@networkimprov.net>
+Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
 
-Hi Sebastian,
 
-On Sat, Aug 12, 2017 at 9:25 AM, Sebastian Reichel <sre@kernel.org> wrote:
-> Hi,
+--o2vh4ahaxwvolpp7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Sat, Aug 12, 2017 at 10:56:09AM -0700, Liam Breck wrote:
+> Hi Sebastian,
+>=20
+> On Sat, Aug 12, 2017 at 8:02 AM, Sebastian Reichel <sre@kernel.org> wrote:
+> > Hi,
+> >
+> > On Sun, Aug 06, 2017 at 11:22:13PM -0700, Liam Breck wrote:
+> >> From: Liam Breck <kernel@networkimprov.net>
+> >>
+> >> For the existing feature set, these chips act like ones already listed,
+> >> so they had been given false but functional IDs. We will be adding fea=
+tures
+> >> which obsolete that shadowing, so the following IDs are added:
+> >> BQ2752X, 531, 542, 546, 742, 425, 441, 621
+> >
+> > Patch looks ok, but the patch description does not match the patch?
+>=20
+> Does this clarify it?
+>=20
+> For the existing driver features, the chips below act like others already=
+ ID'd,
+> so they had been given false but functional IDs. We will be adding featur=
+es
+> which obsolete that ID shadowing, so the following IDs are added:
+> BQ2752X, 531, 542, 546, 742, 425, 441, 621
 >
-> On Sun, Aug 06, 2017 at 11:22:15PM -0700, Liam Breck wrote:
->> From: Liam Breck <kernel@networkimprov.net>
->>
->> The driver has 13 unique register maps, several of which are shared
->> by multiple chips. When adding support for a new chip, it's easy to
->> add a duplicate map by mistake.
->>
->> In debug mode we now scan bq27xxx_chip_data[n].regs/props/dm_regs for
->> duplicates.
->>
->> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->> ---
->
-> This should be done by static code analysis using coccinelle or
-> something similar, so that it's catched by build bots and not by
-> users. Even worse the loop is called for each bq27xxx battery in the
-> system.
+> >> Chip-specific features are now tracked by BQ27XXX_O_* flags in di->opt=
+s.
+> >>
+> >> No functional changes to the driver.
 
-In your last feedback on this patch, you suggested a change to prevent
-looping for each bq27xxx battery in system. I added that, see "once"
-variable.
+I was too tired when I read that yesterday in the airplane. I'm
+fine with both texts and throw in a third suggestion:
 
->From that feedback, I inferred that you would accept this. I'm sorry I
-don't have cycles to learn coccinelle in the near-future. Could we
-upstream this and make a note to move it to static analysis later?
+Add explicit chip IDs for some chips, that are currently using a
+compatible chip ID. This is required due to incompatible advanced
+features, that will be added later. To keep chip handling simple,
+the chip features are now tracked using flags in di->opts. Driver
+functionality is not supposed to change.
 
->
->>  drivers/power/supply/bq27xxx_battery.c | 40 +++++++++++++++++++++++++++++++++-
->>  1 file changed, 39 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->> index 8e535890..d85f9ec2 100644
->> --- a/drivers/power/supply/bq27xxx_battery.c
->> +++ b/drivers/power/supply/bq27xxx_battery.c
->> @@ -885,7 +885,7 @@ static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
->>       .props = ref##_props,                   \
->>       .props_size = ARRAY_SIZE(ref##_props) }
->>
->> -static struct {
->> +static struct bq27xxx_chip_datum {
->>       u32 opts;
->>       u32 unseal_key;
->>       u8 *regs;
->> @@ -919,6 +919,40 @@ static struct {
->>       [BQ27621]   = BQ27XXX_DATA(bq27621,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
->>  };
->>
->> +static void __maybe_unused bq27xxx_battery_dbg_dupes(struct bq27xxx_device_info *di)
->> +{
->> +     static bool once = false;
->> +     const size_t max = ARRAY_SIZE(bq27xxx_chip_data);
->> +     const char * const msg = "bq27xxx_chip_data[%d].%s & [%d].%s are identical\n";
->> +     struct bq27xxx_chip_datum *a, *b;
->> +     int i, j;
->> +
->> +     if (once)
->> +             return;
->> +     once = true;
->> +
->> +     for (i = 1; i < max-1; i++) {
->> +             a = bq27xxx_chip_data + i;
->> +
->> +             for (j = i+1; j < max; j++) {
->> +                     b = bq27xxx_chip_data + j;
->> +
->> +                     if (a->regs != b->regs &&
->> +                         !memcmp(a->regs, b->regs, sizeof(bq27000_regs)))
->> +                             dev_warn(di->dev, msg, i, "regs", j, "regs");
->> +
->> +                     if (a->props != b->props &&
->> +                         a->props_size == b->props_size &&
->> +                         !memcmp(a->props, b->props, a->props_size))
->> +                             dev_warn(di->dev, msg, i, "props", j, "props");
->> +
->> +                     if (a->dm_regs != b->dm_regs &&
->> +                         !memcmp(a->dm_regs, b->dm_regs, sizeof(bq27500_dm_regs)))
->> +                             dev_warn(di->dev, msg, i, "dm_regs", j, "dm_regs");
->> +             }
->> +     }
->> +}
->> +
->>  static DEFINE_MUTEX(bq27xxx_list_lock);
->>  static LIST_HEAD(bq27xxx_battery_devices);
->>
->> @@ -1976,6 +2010,10 @@ int bq27xxx_battery_setup(struct bq27xxx_device_info *di)
->>               .drv_data = di,
->>       };
->>
->> +#ifdef DEBUG
->> +     bq27xxx_battery_dbg_dupes(di);
->> +#endif
->> +
->>       INIT_DELAYED_WORK(&di->work, bq27xxx_battery_poll);
->>       mutex_init(&di->lock);
->>
->> --
->> 2.13.2
->>
+Choose the one you like most.
+
+-- Sebastian
+
+--o2vh4ahaxwvolpp7
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmPTMQACgkQ2O7X88g7
++prapRAAkjCDfiRopsnc4vfcUrlpWjqynyJTk5avZBU+PGCN/41kYjuMSJDAc1h5
+Qj/UqZA5JUrFxBwDBSkCxn2vDRVmMxyaS6+OAPkLYafWg8kcBAQ2at0zTw+ndj1D
+1kkFJ3dmVMH1WECS8Cg5xRXA/DVbez+I+10wqlRilLThWHuD+nNY2STLtVYMxpSY
+IDnr09eQwbmFyims34wkx30jOU2Sxb6PRPBlcpdz/Z9bVzmOHzteeuw9/Rgp5eMS
+sO84LIPccxwij8WMzlYWzk6A0D8JLIxWUGjptGLWWQWrNxck1Vu1wmV865wfciF0
+M87pw2pKAUxXjAoujW0E639I0+nKoI2thgDC3j4ece8LwHiMtWwrPSb9DnmNyYxv
+W0C7Z91pNUWXAkvhNFV+jx4gF1H9jF94bZrNvcYIJJNqlC5BUYckMT2G8hRCIVM3
+Aue/K4IGjMCk0A4nfZke3UpXDewDkckQz1mdeTByJr3d8ZiKbG+/5qKYS9ns7bVP
+cuQ1Ss2nryyMwJtijoABTd7CXqX7kPOGQcgNuSKvZhvQKu426UtTyfkjT7rmYrGV
+0e3wTpbYRUs8PwjwVGFAKRHbjordOSx9dO5qlCyEHRD8T3wrO69TXSy9euBoPGP8
+DsqVjzzExHj382+T9wXAA1Ky590qoZ24sEVCWLZV6IaZYsgTLE0=
+=y0dQ
+-----END PGP SIGNATURE-----
+
+--o2vh4ahaxwvolpp7--
