@@ -1,76 +1,93 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [RFC v2 3/5] power: supply: bq27xxx: Enable data memory update
- for certain chips
-Date: Sat, 12 Aug 2017 14:57:55 -0400
-Message-ID: <20170812185755.e2hfkboiirsxyk3v@earth>
-References: <20170807062216.19988-1-liam@networkimprov.net>
- <20170807062216.19988-4-liam@networkimprov.net>
- <20170812160443.5fvelnzw5gzdgu5j@earth>
- <CAKvHMgRXAtgqzYOJg+NiWvS1-uDAx_YaOrqejGKyUedzzEZujQ@mail.gmail.com>
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: Re: [PATCH v2 2/5] devicetree: power: Add docs for TI BQ24190 battery charger
+Date: Sat, 12 Aug 2017 12:00:13 -0700
+Message-ID: <CAKvHMgR+GxSqhy+iwdYmku2600HzoF__oXV7_w72ZJg-aK7O-Q@mail.gmail.com>
+References: <20170807195420.20767-1-liam@networkimprov.net>
+ <20170807195420.20767-3-liam@networkimprov.net> <20170811025038.5qnhbabyybx7rgu5@rob-hp-laptop>
+ <CAKvHMgSuwm5UFivbsq9dQn_wfd7kbs63UuuQSHVdGxDf_WReUA@mail.gmail.com> <20170812164233.won7fairxmrnblps@earth>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="l5d7ifylmrlaorry"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:35768 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750864AbdHLS55 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 12 Aug 2017 14:57:57 -0400
-Content-Disposition: inline
-In-Reply-To: <CAKvHMgRXAtgqzYOJg+NiWvS1-uDAx_YaOrqejGKyUedzzEZujQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170812164233.won7fairxmrnblps@earth>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>, Liam Breck <kernel@networkimprov.net>
+
+Hi Sebastian,
 
 
---l5d7ifylmrlaorry
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, Aug 12, 2017 at 9:42 AM, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> Hi,
+>
+> On Fri, Aug 11, 2017 at 02:57:10PM -0700, Liam Breck wrote:
+>> On Thu, Aug 10, 2017 at 7:50 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>> > On Mon, Aug 07, 2017 at 12:54:17PM -0700, Liam Breck wrote:
+>> >> From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>> >>
+>> >> Document monitored-battery and ti,system-minimum-microvolt properties.
+>> >>
+>> >> Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+>> >> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+>> >> Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+>> >> ---
+>> >>  .../devicetree/bindings/power/supply/bq24190.txt   | 49 ++++++++++++++++++++++
+>> >>  1 file changed, 49 insertions(+)
+>> >>  create mode 100644 Documentation/devicetree/bindings/power/supply/bq24190.txt
+>> >>
+>> >> diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+>> >> new file mode 100644
+>> >> index 00000000..82a1c842
+>> >> --- /dev/null
+>> >> +++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+>> >> @@ -0,0 +1,49 @@
+>> >> +TI BQ24190 Li-Ion Battery Charger
+>> >> +
+>> >> +Required properties:
+>> >> +- compatible: contains one of the following:
+>> >> +    * "ti,bq24190"
+>> >> +    * "ti,bq24192i"
+>> >> +- reg: integer, I2C address of the charger.
+>> >> +- interrupts[-extended]: configuration for charger INT pin.
+>> >> +
+>> >> +Optional properties:
+>> >> +- monitored-battery: phandle of battery characteristics devicetree node
+>> >> +    The charger uses the following battery properties:
+>> >> +    + precharge-current-microamp: maximum charge current during precharge
+>> >> +      phase (typically 20% of battery capacity).
+>> >> +    + charge-term-current-microamp: a charge cycle terminates when the
+>> >> +      battery voltage is above recharge threshold, and the current is below
+>> >> +      this setting (typically 10% of battery capacity).
+>> >> +    See Documentation/devicetree/bindings/power/supply/battery.txt
+>> >> +- ti,system-minimum-microvolt: when power is connected and the battery is below
+>> >> +    minimum system voltage, the system will be regulated above this setting.
+>> >> +
+>> >> +Other features:
+>> >> +- Use gpio-hog to set the OTG pin high to enable 500mA charge current on USB SDP port.
+>> >
+>> > Why doesn't the charger driver control this?
+>>
+>> This pin/gpio has to be high when USB is plugged in to make the
+>> charger chip negotiate 500mA from a SDP port. It should generally be
+>> configured that way even if the driver is not loaded, as the chip does
+>> not require a driver to function. Some boards may do that with a
+>> pull-up. Also the user may want to change this via sysfs and not have
+>> the driver "fix" it.
+>
+> drivers/power/supply/qcom_smbb.c exposes the otg feature as
+> regulator. I think in this case it could be exposed as
+> gpio-regulator.
 
-Hi,
+Hans is doing that here:
+https://patchwork.kernel.org/patch/9883717/
 
-On Sat, Aug 12, 2017 at 11:00:46AM -0700, Liam Breck wrote:
-> >> +#if 0 /* not yet tested */
-> >> +static struct bq27xxx_dm_reg bq27500_dm_regs[] =3D {
-> >> +     [BQ27XXX_DM_DESIGN_CAPACITY]   =3D { 48, 10, 2,    0, 65535 },
-> >> +     [BQ27XXX_DM_DESIGN_ENERGY]     =3D { }, /* missing on chip */
-> >> +     [BQ27XXX_DM_TERMINATE_VOLTAGE] =3D { 80, 48, 2, 1000, 32767 },
-> >> +};
-> >> +#else
-> >> +#define bq27500_dm_regs 0
-> >> +#endif
-> >
-> > I guess we can just drop the untested bits and add them once
-> > somebody needs/tested them. The values are directly from the
-> > datasheet anyways, right?
->=20
-> These parameters are dispersed among lots of others in the datasheets,
-> and the dispersion varies by datasheet, so not that easy to find. Can
-> we leave them in?
+The datasheet labels one pin "OTG" but that's misleading; it really
+enables negotiation of 500mA input current, but does not turn on OTG
+mode. If this pin is low, it only prevents the driver from starting
+OTG mode via I2C msg.
 
-sure, if it's hard to obtain them.
-
--- Sebastian
-
---l5d7ifylmrlaorry
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmPT7AACgkQ2O7X88g7
-+prBVRAAmJSaPB2HoVsHTaTervUinJwGNj/oYCTJszt94VKOlu+jV4zIJb8bHueV
-h5E7CXK4eb+o3fQMRj305uPRr/9cFqMCM+uTVPG3QdfKEeZ/wrj5drw/t1dzyJDn
-NUpy4R3j5/KwKLUrUfSUFzG9aK6iDg0m7bwhlUO4yWnNmu+WRBkj0wsueKXKjKhS
-9kmAuDkUZJ9oGO84c1AY/Oa7sf6NWyFMFjfLVSEm9oYi8NK0i4JoxhOuq7laRkiC
-8dPXlTLnRlmaxWEj7/8tGwgvlAmlml6OkiSks5zXElzS0xNTgz9Ni5mqV1kCoz97
-ebHx/EliMwGq4nxowEh4Kn+YjM47Ma3hxDKZXBvk4F5jJcJMT07CgsK9hMs5KyNK
-e8Ti1rsEA8dtErjN9QcE32HuGHw1sBui4UjV7UoeMUMg/uq39pNcmmkaZbueneyw
-6Y+HbYZrGuhMK7w2VWuTqNdwFWYUzA1PTTczeStG3nhp3T7Jzd98dmZEmb33SIKK
-7fjx6/7SZ5/D3MdegHs/Yqbv16yNs8qPcWjGhCOnofUDQ5I/ZRZl3c1yWOl/Ew0d
-NcaYL+mBOpsKJ/F0mAM6gqjaLe1jqQCMthDSenWPKLsJPD59V9830NzZoowT8x0q
-XeFPywpflPCtv5ivTaChoUgH3O+/l0kwbQc6xUxWZ1/2QLsHtTg=
-=F9Sc
------END PGP SIGNATURE-----
-
---l5d7ifylmrlaorry--
+Tony & Matt & I discussed this at some length off-list.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
