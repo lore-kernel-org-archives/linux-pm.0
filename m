@@ -1,56 +1,79 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v3] ACPI / Sleep: Check low power idle constraints for
- debug only
-Date: Sun, 13 Aug 2017 02:54:56 +0200
-Message-ID: <CAJZ5v0hMBCayVfUxGZLBDyHbH3opXkFpr7H4YVZ_0s+bjigXzQ@mail.gmail.com>
-References: <1502475835-54818-1-git-send-email-srinivas.pandruvada@linux.intel.com>
- <18796717.B6iU8dePCh@aspire.rjw.lan> <1502553556.20268.47.camel@linux.intel.com>
- <CAJZ5v0iDkeCYigzY-jDyUonyDRhVuJtSmKa8qjSk0vdiPvV-EA@mail.gmail.com> <1502582422.20268.53.camel@linux.intel.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [Bug] ARM: cpuidle: possible memleak
+Date: Sun, 13 Aug 2017 11:50:40 +0800
+Message-ID: <20170813035040.GA13637@leoy-linaro>
+References: <1980049531.494543.1502543973258@email.1und1.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:36229 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752150AbdHMAy5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 12 Aug 2017 20:54:57 -0400
-In-Reply-To: <1502582422.20268.53.camel@linux.intel.com>
+Received: from mail-wm0-f41.google.com ([74.125.82.41]:34837 "EHLO
+        mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752227AbdHMDuu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 12 Aug 2017 23:50:50 -0400
+Received: by mail-wm0-f41.google.com with SMTP id m85so16598281wma.0
+        for <linux-pm@vger.kernel.org>; Sat, 12 Aug 2017 20:50:49 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1980049531.494543.1502543973258@email.1und1.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Mario Limonciello <mario.limonciello@dell.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+To: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On Sun, Aug 13, 2017 at 2:00 AM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> On Sun, 2017-08-13 at 00:37 +0200, Rafael J. Wysocki wrote:
->> On Sat, Aug 12, 2017 at 5:59 PM, Srinivas Pandruvada
->> <srinivas.pandruvada@linux.intel.com> wrote:
->> >
->> > On Sat, 2017-08-12 at 16:27 +0200, Rafael J. Wysocki wrote:
->> > [...]
->> >
->> > >
->> > > >
->> > > > +
->> > > > +struct lpi_constraints {
->> > > > +   char *name;
->> > > > +   int min_dstate;
->> > > If you store the handle here as well, you won't need to
->> > > look it up every time _check_constraints() is called.
->> > The reason I didn't keep handle here, I thought handle can be stale
->> > or
->> > change for PnP device on plug in and out. Is this not true?
->> The handles don't go away on hot remove as a rule.  That may only
->> happen if tables get unloaded, but basically the constraints should
->> not point to anything in a table that may go away.
->
-> So we don't need to worry about this case where tables gets unloaded
-> and replaced?
+Hi Stefan,
 
-I wouldn't. :-)
+On Sat, Aug 12, 2017 at 03:19:33PM +0200, Stefan Wahren wrote:
+> Hi,
+> 
+> if i additionally enable kmemleak (on top of multi_v7_defconfig) on RPi 3 (4 cores) with 4.13-rc4, i get the following output from kmemleak:
+> 
+> unreferenced object 0xede0dc00 (size 1024):
+>   comm "swapper/0", pid 1, jiffies 4294937431 (age 744.510s)
+>   hex dump (first 32 bytes):
+>     94 9e 0b c1 00 00 00 00 00 00 00 00 00 00 00 00  ................
+>     57 46 49 00 00 00 00 00 00 00 00 00 00 00 00 00  WFI.............
+>   backtrace:
+>     [<c1295f04>] arm_idle_init+0x44/0x1ac
+>     [<c0301e6c>] do_one_initcall+0x3c/0x16c
+>     [<c1200d70>] kernel_init_freeable+0x110/0x1d0
+>     [<c0cb3624>] kernel_init+0x8/0x114
+>     [<c0307a98>] ret_from_fork+0x14/0x3c
+>     [<ffffffff>] 0xffffffff
+> 
+> If i revert the last commit in cpuidle-arm d50a7d8acd78 ("ARM: cpuidle: Support asymmetric idle definition") then kmemleak stays calm.
 
-We generally don't support that case entirely, so why bother?
+I cannot reproduce the error at my side, I also tried to disable idle
+states but cannot trigger the failure. So first thing is to know the
+reason for registeration failure and finally introduce the memory
+leaking. Could you point out the dts you are using for idle states
+binding?
 
-> This is in a debug path, so additional overhead of path
-> to handle conversion may not be significant.
+Also reviewed a bit for the idle driver, it does have issue to handle
+failure case. I tweaked a bit for it, could you try it? Also would like
+to hear the comments from Daniel.
 
-Well, it still is wasted cycles ...
+diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+index 7080c38..80dc86f 100644
+--- a/drivers/cpuidle/cpuidle-arm.c
++++ b/drivers/cpuidle/cpuidle-arm.c
+@@ -152,11 +152,13 @@ static int __init arm_idle_init(void)
+ out_fail:
+        while (--cpu >= 0) {
+                dev = per_cpu(cpuidle_devices, cpu);
+-               cpuidle_unregister_device(dev);
+-               kfree(dev);
+-               drv = cpuidle_get_driver();
++               drv = cpuidle_get_cpu_driver(dev);
++
+                cpuidle_unregister_driver(drv);
+                kfree(drv);
++
++               cpuidle_unregister_device(dev);
++               kfree(dev);
+        }
+ 
+        return ret;
+
+
+> 
+> Best regards
+> Stefan
