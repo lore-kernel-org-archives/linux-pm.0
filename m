@@ -1,79 +1,50 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [Bug] ARM: cpuidle: possible memleak
-Date: Sun, 13 Aug 2017 11:50:40 +0800
-Message-ID: <20170813035040.GA13637@leoy-linaro>
-References: <1980049531.494543.1502543973258@email.1und1.de>
+From: Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v4 0/4] thermal: add brcmstb AVS TMON driver
+Date: Sat, 12 Aug 2017 21:57:44 -0700
+Message-ID: <F4FCB786-8A5F-49DA-B101-9493EC6D4C4C@gmail.com>
+References: <20170809220257.4234-1-code@mmayer.net> <1502429756.2470.9.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f41.google.com ([74.125.82.41]:34837 "EHLO
-        mail-wm0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752227AbdHMDuu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 12 Aug 2017 23:50:50 -0400
-Received: by mail-wm0-f41.google.com with SMTP id m85so16598281wma.0
-        for <linux-pm@vger.kernel.org>; Sat, 12 Aug 2017 20:50:49 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1980049531.494543.1502543973258@email.1und1.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1502429756.2470.9.camel-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Doug Berger <opendmb-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory Fong <gregory.0xf0-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>
+Cc: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ARM Kernel List <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hi Stefan,
+On August 10, 2017 10:35:56 PM PDT, Zhang Rui <rui=2Ezhang@intel=2Ecom> wro=
+te:
+>On Wed, 2017-08-09 at 15:02 -0700, Markus Mayer wrote:
+>> From: Markus Mayer <mmayer@broadcom=2Ecom>
+>>=20
+>> This series adds the brcmstb AVS TMON driver=2E
+>>=20
+>> The driver was originally written by Brian Norris=2E
+>>=20
+>> This series is also available at
+>> https://github=2Ecom/mmayer/linux/tree/brcmstb-thermal-4=2E13-v4=2E
+>>=20
+>> v1 of this series can be found at https://lkml=2Eorg/lkml/2017/6/5/921
+>> v2 of this series can be found at https://lkml=2Eorg/lkml/2017/7/21/585
+>> v3 of this series can be found at https://lkml=2Eorg/lkml/2017/7/31/710
+>>=20
+>> Changes since v3:
+>> - Rebased on v4=2E13-rc3 to resolve conflicts in the MAINTAINERS file
+>>=20
+>thanks, will apply this if we have ACK for patch 3 and 4=2E
 
-On Sat, Aug 12, 2017 at 03:19:33PM +0200, Stefan Wahren wrote:
-> Hi,
-> 
-> if i additionally enable kmemleak (on top of multi_v7_defconfig) on RPi 3 (4 cores) with 4.13-rc4, i get the following output from kmemleak:
-> 
-> unreferenced object 0xede0dc00 (size 1024):
->   comm "swapper/0", pid 1, jiffies 4294937431 (age 744.510s)
->   hex dump (first 32 bytes):
->     94 9e 0b c1 00 00 00 00 00 00 00 00 00 00 00 00  ................
->     57 46 49 00 00 00 00 00 00 00 00 00 00 00 00 00  WFI.............
->   backtrace:
->     [<c1295f04>] arm_idle_init+0x44/0x1ac
->     [<c0301e6c>] do_one_initcall+0x3c/0x16c
->     [<c1200d70>] kernel_init_freeable+0x110/0x1d0
->     [<c0cb3624>] kernel_init+0x8/0x114
->     [<c0307a98>] ret_from_fork+0x14/0x3c
->     [<ffffffff>] 0xffffffff
-> 
-> If i revert the last commit in cpuidle-arm d50a7d8acd78 ("ARM: cpuidle: Support asymmetric idle definition") then kmemleak stays calm.
+You can take patches 1-2 through your tree and I can take patches 3-4 thou=
+ght the Broadcom ARM/ARM64 pull requests if that works for you, or FWIW:
 
-I cannot reproduce the error at my side, I also tried to disable idle
-states but cannot trigger the failure. So first thing is to know the
-reason for registeration failure and finally introduce the memory
-leaking. Could you point out the dts you are using for idle states
-binding?
+Acked-by: Florian Fainelli <f=2Efainelli@gmail=2Ecom>
 
-Also reviewed a bit for the idle driver, it does have issue to handle
-failure case. I tweaked a bit for it, could you try it? Also would like
-to hear the comments from Daniel.
+Thanks!
 
-diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-index 7080c38..80dc86f 100644
---- a/drivers/cpuidle/cpuidle-arm.c
-+++ b/drivers/cpuidle/cpuidle-arm.c
-@@ -152,11 +152,13 @@ static int __init arm_idle_init(void)
- out_fail:
-        while (--cpu >= 0) {
-                dev = per_cpu(cpuidle_devices, cpu);
--               cpuidle_unregister_device(dev);
--               kfree(dev);
--               drv = cpuidle_get_driver();
-+               drv = cpuidle_get_cpu_driver(dev);
-+
-                cpuidle_unregister_driver(drv);
-                kfree(drv);
-+
-+               cpuidle_unregister_device(dev);
-+               kfree(dev);
-        }
- 
-        return ret;
-
-
-> 
-> Best regards
-> Stefan
+--=20
+Florian
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
