@@ -1,89 +1,53 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 2/2] power: supply: max17042_battery: Fix ACPI interrupt issues
-Date: Mon, 14 Aug 2017 22:18:11 +0200
-Message-ID: <20170814201811.21110-2-hdegoede@redhat.com>
-References: <20170814201811.21110-1-hdegoede@redhat.com>
+From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [PATCH] thermal: intel_pch_thermal: Fix enable check on
+ Broadwell-DE
+Date: Mon, 14 Aug 2017 23:39:06 +0000
+Message-ID: <1502753944.10633.1.camel@intel.com>
+References: <1500511480-52312-1-git-send-email-eswierk@skyportsystems.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:33334 "EHLO mx1.redhat.com"
+Received: from mga07.intel.com ([134.134.136.100]:16351 "EHLO mga07.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752246AbdHNUSO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 14 Aug 2017 16:18:14 -0400
-In-Reply-To: <20170814201811.21110-1-hdegoede@redhat.com>
+        id S1752651AbdHNXjU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 14 Aug 2017 19:39:20 -0400
+In-Reply-To: <1500511480-52312-1-git-send-email-eswierk@skyportsystems.com>
+Content-Language: en-US
+Content-ID: <79365E1993FCCD4EB3BA10245B8EE9B7@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eswierk@skyportsystems.com" <eswierk@skyportsystems.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On some x86/ACPI boards the DSDT defines an ACPI event handler for
-the max17047 IRQ, this causes several problems:
-
-1) We need to share the IRQ to avoid an error getting it
-
-2) Even of we are willing to share, we may fail to share because some
-   DSDTs claim it exclusivly
-
-3) If we are unable to share the IRQ, or the IRQ is only listed as an
-   ACPI event source and not in the max1704 firmware node, then the
-   charge threshold IRQ (which is used to give an IRQ every 1 percent
-   charge change) becomes a problem, the ACPI event handler will not
-   update this to the next 1 percent threshold, so the IRQ keeps firing
-   and we get an IRQ storm pegging 1 CPU core.
-
-   This happens despite the max17042 driver not setting the charge
-   threshold because Windows uses it and leaves it set on reboot.
-
-   So if we are unable to get the IRQ we need to reprogram the
-   charge threshold to its disabled setting.
-
-This commit fixes al of the above, while at it it also makes the error
-msg when being unable to get the IRQ consistent with other messages.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/max17042_battery.c | 20 +++++++++++++++-----
- 1 file changed, 15 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index b2ddb7eb69c6..18a44e4ed6ff 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -1050,11 +1050,18 @@ static int max17042_probe(struct i2c_client *client,
- 	}
- 
- 	if (client->irq) {
-+		unsigned int flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
-+
-+		/*
-+		 * On ACPI systems the IRQ may be handled by ACPI-event code,
-+		 * so we need to share (if the ACPI code is willing to share).
-+		 */
-+		if (acpi_id)
-+			flags |= IRQF_SHARED | IRQF_PROBE_SHARED;
-+
- 		ret = devm_request_threaded_irq(&client->dev, client->irq,
- 						NULL,
--						max17042_thread_handler,
--						IRQF_TRIGGER_FALLING |
--						IRQF_ONESHOT,
-+						max17042_thread_handler, flags,
- 						chip->battery->desc->name,
- 						chip);
- 		if (!ret) {
-@@ -1064,10 +1071,13 @@ static int max17042_probe(struct i2c_client *client,
- 			max17042_set_soc_threshold(chip, 1);
- 		} else {
- 			client->irq = 0;
--			dev_err(&client->dev, "%s(): cannot get IRQ\n",
--				__func__);
-+			if (ret != -EBUSY)
-+				dev_err(&client->dev, "Failed to get IRQ\n");
- 		}
- 	}
-+	/* Not able to update the charge threshold when exceeded? -> disable */
-+	if (!client->irq)
-+		regmap_write(chip->regmap, MAX17042_SALRT_Th, 0xff00);
- 
- 	regmap_read(chip->regmap, MAX17042_STATUS, &val);
- 	if (val & STATUS_POR_BIT) {
--- 
-2.13.4
+T24gV2VkLCAyMDE3LTA3LTE5IGF0IDE3OjQ0IC0wNzAwLCBFZCBTd2llcmsgd3JvdGU6DQo+IFVz
+aW5nIHRoZSBUU0RTUyBmbGFnIHRvIGRldGVybWluZSB3aGV0aGVyIHRoZSB0aGVybWFsIHNlbnNv
+ciBpcw0KPiBlbmFibGVkIGlzIHByb2JsZW1hdGljLiBCcm9hZHdlbGwtREUgKFhlb24gRC0xNTAw
+KSBkb2VzIG5vdCBzdXBwb3J0DQo+IGR5bmFtaWMgc2h1dGRvd24gYW5kIHRoZSBUU0RTUyBmbGFn
+IGFsd2F5cyByZWFkcyAwIChjb250cmFyeSB0byB0aGUNCj4gY3VycmVudCBkYXRhc2hlZXQpLiBF
+dmVuIG9uIGhhcmR3YXJlIHN1cHBvcnRpbmcgZHluYW1pYyBzaHV0ZG93biwgdGhlDQo+IGRyaXZl
+ciBkb2VzIG5vdGhpbmcgdG8gY29uZmlndXJlIGl0LCBhbmQgdGhlIGR5bmFtaWMgc2h1dGRvd24g
+c3RhdGUNCj4gc2hvdWxkIG5vdCBwcmV2ZW50IHRoZSBkcml2ZXIgZnJvbSBsb2FkaW5nLiBUaGUg
+RVRTIGZsYWcgaXRzZWxmDQo+IGluZGljYXRlcyB3aGV0aGVyIHRoZSB0aGVybWFsIHNlbnNvciBp
+cyBlbmFibGVkLCBzbyB1c2UgaXQgaW5zdGVhZCBvZg0KPiB0aGUgVFNEU1MgZmxhZyBvbiBhbGwg
+aGFyZHdhcmUgcGxhdGZvcm1zLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogRWQgU3dpZXJrIDxlc3dp
+ZXJrQHNreXBvcnRzeXN0ZW1zLmNvbT4NClJldmlld2VkLWJ5OiBTcmluaXZhcyBQYW5kcnV2YWRh
+IDxzcmluaXZhcy5wYW5kcnV2YWRhQGxpbnV4LmludGVsLmNvbT4NCg0KPiAtLS0NCj4gwqBkcml2
+ZXJzL3RoZXJtYWwvaW50ZWxfcGNoX3RoZXJtYWwuYyB8IDQgKystLQ0KPiDCoDEgZmlsZSBjaGFu
+Z2VkLCAyIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEv
+ZHJpdmVycy90aGVybWFsL2ludGVsX3BjaF90aGVybWFsLmMNCj4gYi9kcml2ZXJzL3RoZXJtYWwv
+aW50ZWxfcGNoX3RoZXJtYWwuYw0KPiBpbmRleCAyYjQ5ZThkLi45ODg5YzkwIDEwMDY0NA0KPiAt
+LS0gYS9kcml2ZXJzL3RoZXJtYWwvaW50ZWxfcGNoX3RoZXJtYWwuYw0KPiArKysgYi9kcml2ZXJz
+L3RoZXJtYWwvaW50ZWxfcGNoX3RoZXJtYWwuYw0KPiBAQCAtMTI1LDcgKzEyNSw3IEBAIHN0YXRp
+YyBpbnQgcGNoX3dwdF9pbml0KHN0cnVjdCBwY2hfdGhlcm1hbF9kZXZpY2UNCj4gKnB0ZCwgaW50
+ICpucl90cmlwcykNCj4gwqAJKm5yX3RyaXBzID0gMDsNCj4gwqANCj4gwqAJLyogQ2hlY2sgaWYg
+QklPUyBoYXMgYWxyZWFkeSBlbmFibGVkIHRoZXJtYWwgc2Vuc29yICovDQo+IC0JaWYgKFdQVF9U
+U1NfVFNEU1MgJiByZWFkYihwdGQtPmh3X2Jhc2UgKyBXUFRfVFNTKSkgew0KPiArCWlmIChXUFRf
+VFNFTF9FVFMgJiByZWFkYihwdGQtPmh3X2Jhc2UgKyBXUFRfVFNFTCkpIHsNCj4gwqAJCXB0ZC0+
+Ymlvc19lbmFibGVkID0gdHJ1ZTsNCj4gwqAJCWdvdG8gcmVhZF90cmlwczsNCj4gwqAJfQ0KPiBA
+QCAtMTQxLDcgKzE0MSw3IEBAIHN0YXRpYyBpbnQgcGNoX3dwdF9pbml0KHN0cnVjdCBwY2hfdGhl
+cm1hbF9kZXZpY2UNCj4gKnB0ZCwgaW50ICpucl90cmlwcykNCj4gwqAJfQ0KPiDCoA0KPiDCoAl3
+cml0ZWIodHNlbHxXUFRfVFNFTF9FVFMsIHB0ZC0+aHdfYmFzZSArIFdQVF9UU0VMKTsNCj4gLQlp
+ZiAoIShXUFRfVFNTX1RTRFNTICYgcmVhZGIocHRkLT5od19iYXNlICsgV1BUX1RTUykpKSB7DQo+
+ICsJaWYgKCEoV1BUX1RTRUxfRVRTICYgcmVhZGIocHRkLT5od19iYXNlICsgV1BUX1RTRUwpKSkg
+ew0KPiDCoAkJZGV2X2VycigmcHRkLT5wZGV2LT5kZXYsICJTZW5zb3IgY2FuJ3QgYmUNCj4gZW5h
+YmxlZFxuIik7DQo+IMKgCQlyZXR1cm4gLUVOT0RFVjsNCj4gwqAJfQ==
