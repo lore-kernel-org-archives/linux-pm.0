@@ -1,96 +1,103 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][RFC] PM / Hibernate: Feed NMI wathdog when creating snapshot
-Date: Tue, 15 Aug 2017 01:19:16 +0800
-Message-ID: <1502731156-24903-1-git-send-email-yu.c.chen@intel.com>
-Return-path: <owner-linux-mm@kvack.org>
-Sender: owner-linux-mm@kvack.org
-To: linux-mm@kvack.org, linux-pm@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Vlastimil Babka <vbabka@suse.cz>, Mel Gorman <mgorman@techsingularity.net>, linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH] i2c: designware: Fix system suspend
+Date: Mon, 14 Aug 2017 21:04:40 +0200
+Message-ID: <20170814190440.jaznldtdpr7trvz4@ninjato>
+References: <1502285302-21552-1-git-send-email-ulf.hansson@linaro.org>
+ <1776600.GWYGTRKWSN@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="p7m45mzjgk7zhkql"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from sauhun.de ([88.99.104.3]:50430 "EHLO pokefinder.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750753AbdHNTEm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 14 Aug 2017 15:04:42 -0400
+Content-Disposition: inline
+In-Reply-To: <1776600.GWYGTRKWSN@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-i2c@vger.kernel.org, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, "# v4 . 4+" <stable@vger.kernel.org>
 
-There is a problem that when counting the pages for creating
-the hibernation snapshot will take significant amount of
-time, especially on system with large memory. Since the counting
-job is performed with irq disabled, this might lead to NMI lockup.
-The following warning were found on a system with 1.5TB DRAM:
 
-[ 1124.758184] Freezing user space processes ... (elapsed 0.002 seconds) done.
-[ 1124.768721] OOM killer disabled.
-[ 1124.847009] PM: Preallocating image memory...
-[ 1139.392042] NMI watchdog: Watchdog detected hard LOCKUP on cpu 27
-[ 1139.392076] CPU: 27 PID: 3128 Comm: systemd-sleep Not tainted 4.13.0-0.rc2.git0.1.fc27.x86_64 #1
-[ 1139.392077] task: ffff9f01971ac000 task.stack: ffffb1a3f325c000
-[ 1139.392083] RIP: 0010:memory_bm_find_bit+0xf4/0x100
-[ 1139.392084] RSP: 0018:ffffb1a3f325fc20 EFLAGS: 00000006
-[ 1139.392084] RAX: 0000000000000000 RBX: 0000000013b83000 RCX: ffff9fbe89caf000
-[ 1139.392085] RDX: ffffb1a3f325fc30 RSI: 0000000000003200 RDI: ffff9fbeaffffe80
-[ 1139.392085] RBP: ffffb1a3f325fc40 R08: 0000000013b80000 R09: ffff9fbe89c54878
-[ 1139.392085] R10: ffffb1a3f325fc2c R11: 0000000013b83200 R12: 0000000000000400
-[ 1139.392086] R13: fffffd552e0c0000 R14: ffff9fc1bffd31e0 R15: 0000000000000202
-[ 1139.392086] FS:  00007f3189704180(0000) GS:ffff9fbec8ec0000(0000) knlGS:0000000000000000
-[ 1139.392087] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[ 1139.392087] CR2: 00000085da0f7398 CR3: 000001771cf9a000 CR4: 00000000007406e0
-[ 1139.392088] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[ 1139.392088] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-[ 1139.392088] PKRU: 55555554
-[ 1139.392089] Call Trace:
-[ 1139.392092]  ? memory_bm_set_bit+0x29/0x60
-[ 1139.392094]  swsusp_set_page_free+0x2b/0x30
-[ 1139.392098]  mark_free_pages+0x147/0x1c0
-[ 1139.392099]  count_data_pages+0x41/0xa0
-[ 1139.392101]  hibernate_preallocate_memory+0x80/0x450
-[ 1139.392102]  hibernation_snapshot+0x58/0x410
-[ 1139.392103]  hibernate+0x17c/0x310
-[ 1139.392104]  state_store+0xdf/0xf0
-[ 1139.392107]  kobj_attr_store+0xf/0x20
-[ 1139.392111]  sysfs_kf_write+0x37/0x40
-[ 1139.392113]  kernfs_fop_write+0x11c/0x1a0
-[ 1139.392117]  __vfs_write+0x37/0x170
-[ 1139.392121]  ? handle_mm_fault+0xd8/0x230
-[ 1139.392122]  vfs_write+0xb1/0x1a0
-[ 1139.392123]  SyS_write+0x55/0xc0
-[ 1139.392126]  entry_SYSCALL_64_fastpath+0x1a/0xa5
+--p7m45mzjgk7zhkql
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So avoid the NMI lockup by feeding the dog in the deepest level of loop.
+On Wed, Aug 09, 2017 at 10:43:22PM +0200, Rafael J. Wysocki wrote:
+> On Wednesday, August 9, 2017 3:28:22 PM CEST Ulf Hansson wrote:
+> > The commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming
+> > during system suspend"), may suggest to the PM core to try out the so
+> > called direct_complete path for system sleep. In this path, the PM core
+> > treats a runtime suspended device as it's already in a proper low power
+> > state for system sleep, which makes it skip calling the system sleep
+> > callbacks for the device, except for the ->prepare() and the ->complete=
+()
+> > callbacks.
+> >=20
+> > However, the PM core may unset the direct_complete flag for a parent
+> > device, in case its child device are being system suspended before. In =
+this
+> > scenario, the PM core invokes the system sleep callbacks, no matter if =
+the
+> > device is runtime suspended or not.
+> >=20
+> > Particularly in cases of an existing i2c slave device, the above path is
+> > triggered, which breaks the assumption that the i2c device is always
+> > runtime resumed whenever the dw_i2c_plat_suspend() is being called.
+> >=20
+> > More precisely, dw_i2c_plat_suspend() calls clk_core_disable() and
+> > clk_core_unprepare(), for an already disabled/unprepared clock, leading=
+ to
+> > a splat in the log about clocks calls being wrongly balanced and breaki=
+ng
+> > system sleep.
+> >=20
+> > To still allow the direct_complete path in cases when it's possible, but
+> > also to keep the fix simple, let's runtime resume the i2c device in the
+> > ->suspend() callback, before continuing to put the device into low power
+> > state.
+> >=20
+> > Note, in cases when the i2c device is attached to the ACPI PM domain, t=
+his
+> > problem doesn't occur, because ACPI's ->suspend() callback, assigned to
+> > acpi_subsys_suspend(), already calls pm_runtime_resume() for the device.
+> >=20
+> > It should also be noted that this change does not fix commit 8503ff1665=
+04
+> > ("i2c: designware: Avoid unnecessary resuming during system suspend").
+> > Because for the non-ACPI case, the system sleep support was already bro=
+ken
+> > prior that point.
+> >=20
+> > Cc: <stable@vger.kernel.org> # v4.4+
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>=20
+> Looks OK to me.
 
-Reported-by: Jan Filipcewicz <jan.filipcewicz@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
----
- mm/page_alloc.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+I read this as Acked-by. If so, using the real "Acked-by" tag would be
+helpful because patchwork collects them automatically.
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 6d00f74..4f7ac30 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -66,6 +66,7 @@
- #include <linux/kthread.h>
- #include <linux/memcontrol.h>
- #include <linux/ftrace.h>
-+#include <linux/nmi.h>
- 
- #include <asm/sections.h>
- #include <asm/tlbflush.h>
-@@ -2561,8 +2562,10 @@ void mark_free_pages(struct zone *zone)
- 			unsigned long i;
- 
- 			pfn = page_to_pfn(page);
--			for (i = 0; i < (1UL << order); i++)
-+			for (i = 0; i < (1UL << order); i++) {
- 				swsusp_set_page_free(pfn_to_page(pfn + i));
-+				touch_nmi_watchdog();
-+			}
- 		}
- 	}
- 	spin_unlock_irqrestore(&zone->lock, flags);
--- 
-2.7.4
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+--p7m45mzjgk7zhkql
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlmR9D8ACgkQFA3kzBSg
+Kbb+bQ//QFNzxQ9KcbeEMwx7vmVs9VGB1T7du/7Dnl8DOc1zhCgjm6V0Mv452OOu
+nQcvHNP7v2VZNayamG4Q0464qbuH4qLrd0CNoqnI0g1a5EAxERSmWwUiWch3XO1E
+fLny8OTGG8K0x5GDzvrXfVYFPrdZ4VHrXD33h0fFHiUmU2PmmegB4kv7MnqI48uV
+ocJijwO0AwMzFFwUVu6e97HBJp3lrsUhiF9MaOmFkzI37zUpEIxnrBBTVx7ybN7F
+duK0sTTEwPOEiR5P1uS4VXSxpmkipn7MaRzyKoirLr4QfHDbmLvPdNuGYdFSBZ+r
+DGVEY9DlLSLadETIys79/OOnb1iRWOTzW9zFhIB1SSsTyLHZFwKeg8+nNTEwNJr6
+8kugLicCsqobUnr+YVSlBgbglZSd3Up/DSS2ei1kja3Chg4lnta07cIInSil14fN
+o+186UmFvh7hUwWEV4M9eV97exWdTElQUweB4XeBJfsbOse6c+3Xz4/pvhF2cJnp
+ZlqTaXPPVafRzWKUXgBhUOu55+I0KFtLM7C/kkasD1UCDMGjOYpapokBG6jwgYFe
+HgXlw7tK0N7sFDRuB+kuwYdSOxpP617TxLnCn7sfCc/M836ebXk1aJkDjysBas8s
+yz3R7g5xwKWAhgwo3OKPebwY6tT3hYGtzdCqm8nzjdhsp2nzN3M=
+=s/Ae
+-----END PGP SIGNATURE-----
+
+--p7m45mzjgk7zhkql--
