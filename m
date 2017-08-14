@@ -1,69 +1,45 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 2/2] cpufreq: schedutil: Always process remote callback with slow switching
-Date: Mon, 14 Aug 2017 14:50:16 +0530
-Message-ID: <c31960d7db67bdf4fc578fa967d4699291879f43.1502701992.git.viresh.kumar@linaro.org>
-References: <2a395ea76235dce00828172a1129c46bf87a79c8.1502338812.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2a395ea76235dce00828172a1129c46bf87a79c8.1502338812.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri.Lelli@arm.com, joelaf@google.com, linux-kernel@vger.kernel.org
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Subject: Re: [PATCH v3 07/10] arm: wire frequency-invariant accounting
+ support up to the task scheduler
+Date: Mon, 14 Aug 2017 14:16:32 +0100
+Message-ID: <20170814131632.GH20805@n2100.armlinux.org.uk>
+References: <20170727193312.9849-1-dietmar.eggemann@arm.com>
+ <20170727193312.9849-8-dietmar.eggemann@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.armlinux.org.uk ([78.32.30.218]:49090 "EHLO
+        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753193AbdHNNQn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Aug 2017 09:16:43 -0400
+Content-Disposition: inline
+In-Reply-To: <20170727193312.9849-8-dietmar.eggemann@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
 
-The frequency update from the utilization update handlers can be divided
-into two parts:
+On Thu, Jul 27, 2017 at 08:33:09PM +0100, Dietmar Eggemann wrote:
+> Commit dfbca41f3479 ("sched: Optimize freq invariant accounting")
+> changed the wiring which now has to be done by associating
+> arch_scale_freq_capacity with the actual implementation provided
+> by the architecture.
+> 
+> Define arch_scale_freq_capacity to use the arch_topology "driver"
+> function topology_get_freq_scale() for the task scheduler's
+> frequency-invariant accounting instead of the default
+> arch_scale_freq_capacity() in kernel/sched/sched.h.
+> 
+> Cc: Russell King <linux@arm.linux.org.uk>
+> Cc: Juri Lelli <juri.lelli@arm.com>
+> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
+> Tested-by: Juri Lelli <juri.lelli@arm.com>
+> Reviewed-by: Juri Lelli <juri.lelli@arm.com>
 
-(A) Finding the next frequency
-(B) Updating the frequency
+Acked-by: Russell King <rmk+kernel@armlinux.org.uk>
 
-While any CPU can do (A), (B) can be restricted to a group of CPUs only,
-depending on the current platform.
-
-For platforms where fast cpufreq switching is possible, both (A) and (B)
-are always done from the same CPU and that CPU should be capable of
-changing the frequency of the target CPU.
-
-But for platforms where fast cpufreq switching isn't possible, after
-doing (A) we wake up a kthread which will eventually do (B). This
-kthread is already bound to the right set of CPUs, i.e. only those which
-can change the frequency of CPUs of a cpufreq policy. And so any CPU
-can actually do (A) in this case, as the frequency is updated from the
-right set of CPUs only.
-
-Check cpufreq_can_do_remote_dvfs() only for the fast switching case.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V2: s/policy/sg_policy->policy/, missed updating the commit with local
-updates earlier, noticed that just now.
-
- kernel/sched/cpufreq_schedutil.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 504d0752f8f2..9209d83ecdcf 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -84,13 +84,18 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
- 	 *
- 	 * However, drivers cannot in general deal with cross-cpu
- 	 * requests, so while get_next_freq() will work, our
--	 * sugov_update_commit() call may not.
-+	 * sugov_update_commit() call may not for the fast switching platforms.
- 	 *
- 	 * Hence stop here for remote requests if they aren't supported
- 	 * by the hardware, as calculating the frequency is pointless if
- 	 * we cannot in fact act on it.
-+	 *
-+	 * For the slow switching platforms, the kthread is always scheduled on
-+	 * the right set of CPUs and any CPU can find the next frequency and
-+	 * schedule the kthread.
- 	 */
--	if (!cpufreq_can_do_remote_dvfs(sg_policy->policy))
-+	if (sg_policy->policy->fast_switch_enabled &&
-+	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
- 		return false;
- 
- 	if (sg_policy->work_in_progress)
 -- 
-2.7.4
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
+According to speedtest.net: 8.21Mbps down 510kbps up
