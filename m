@@ -1,66 +1,58 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [PATCH v3 0/4] add support of SCPSYS power domain for MediaTek
- MT7622
-Date: Mon, 14 Aug 2017 17:30:21 +0200
-Message-ID: <2a112b79-20a0-e09d-28a9-24b412d20874@gmail.com>
-References: <cover.1502090240.git.sean.wang@mediatek.com>
- <CAPDyKFpDyhPc=T8SqWdh-mm4kOqFstHNMuRbL_qP04rynoLcsw@mail.gmail.com>
+From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
+Date: Mon, 14 Aug 2017 09:22:20 -0700
+Message-ID: <20170814162219.GX8569@atomide.com>
+References: <20170521220212.1404-1-wsa@the-dreams.de>
+ <20170521220212.1404-4-wsa@the-dreams.de>
+ <20170706064453.GH16144@ulmo.fritz.box>
+ <20170706070352.xdecvsnremwqed72@dell>
+ <20170813133700.tv4ka7anvbzcplr7@ninjato>
+ <20170814064247.qvggx4ito4vgjqvs@dell>
+ <20170814084340.65morabelapfegph@ninjato>
+Reply-To: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpDyhPc=T8SqWdh-mm4kOqFstHNMuRbL_qP04rynoLcsw@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, sean.wang@mediatek.com
-Cc: Rob Herring <robh+dt@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@baylibre.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, linux-mediatek@lists.infradead.org, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <rtc-linux+bncBCQPVKWLVAIRBRE4Y7GAKGQEQSRITUA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Disposition: inline
+In-Reply-To: <20170814084340.65morabelapfegph@ninjato>
+List-Post: <https://groups.google.com/group/rtc-linux/post>, <mailto:rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:rtc-linux+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/rtc-linux
+List-Subscribe: <https://groups.google.com/group/rtc-linux/subscribe>, <mailto:rtc-linux+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+712029733259+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/rtc-linux/subscribe>
+To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 08/08/2017 01:41 PM, Ulf Hansson wrote:
-> On 7 August 2017 at 09:24,  <sean.wang@mediatek.com> wrote:
->> From: Sean Wang <sean.wang@mediatek.com>
->>
->> Changes since v2:
->> - reduce code duplication of scpsys_probe across all SoCs
->>
->> Changes since v1:
->> - rebase to Linux v4.13-rc1
->>
->> There are four power domains on MediaTek MT7622 SoC which are respectively
->> ETHSYS for Ethernet including extra embedded switch, HIF0SYS for PCI-E and
->> SATA, HIF1SYS for USB and WBSYS for WIFI and Bluetooth.
->>
->> Those functions could be selectively powered gated when the corresponding
->> function is no longer to use in order to reach more minimal power
->> dissipation through the patch series introduced here.
->>
->> Chen Zhong (1):
->>    soc: mediatek: add header files required for MT7622 SCPSYS dt-binding
->>
->> Sean Wang (3):
->>    dt-bindings: soc: update the binding document for SCPSYS on MediaTek
->>      MT7622 SoC
->>    soc: mediatek: reduce code duplication of scpsys_probe across all SoCs
->>    soc: mediatek: add SCPSYS power domain driver for MediaTek MT7622 SoC
->>
->>   .../devicetree/bindings/soc/mediatek/scpsys.txt    |   3 +
->>   drivers/soc/mediatek/mtk-scpsys.c                  | 247 ++++++++++++---------
->>   include/dt-bindings/power/mt7622-power.h           |  22 ++
->>   include/linux/soc/mediatek/infracfg.h              |   7 +
->>   4 files changed, 179 insertions(+), 100 deletions(-)
->>   create mode 100644 include/dt-bindings/power/mt7622-power.h
->>
->> --
->> 2.7.4
->>
+* Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org> [170814 01:43]:
 > 
-> Looks good to me! Feel free to add:
+> > > Given the triviality of the change for non-MFD subsystems, can we apply
+> > > this for 4.14?
+> > 
+> > I can't apply anything without Acks for *all* of the subsystems above.
 > 
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> Well, there are cases when you can. Those should be exceptions and well
+> justified, of course.
 > 
+> > My suggestion would be to collect the Acks you've received up until
+> > this point and identify which SS's are still lacking in change log
+> > section of a RESEND.
+> 
+> I agree, though, that I can try a second round to get the acks.
 
-Pushed to v4.13-next/soc with the Reviewed-by.
+As long as it's been compile tested with omap2plus_defconfig:
 
-Thanks!
+Acked-by: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+
+
+-- 
+You received this message because you are subscribed to "rtc-linux".
+Membership options at http://groups.google.com/group/rtc-linux .
+Please read http://groups.google.com/group/rtc-linux/web/checklist
+before submitting a driver.
+--- 
+You received this message because you are subscribed to the Google Groups "rtc-linux" group.
+To unsubscribe from this group and stop receiving emails from it, send an email to rtc-linux+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
