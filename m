@@ -1,85 +1,89 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 1/2] power: supply: max17042_battery: Add support for ACPI enumeration
-Date: Mon, 14 Aug 2017 22:18:10 +0200
-Message-ID: <20170814201811.21110-1-hdegoede@redhat.com>
+Subject: [PATCH 2/2] power: supply: max17042_battery: Fix ACPI interrupt issues
+Date: Mon, 14 Aug 2017 22:18:11 +0200
+Message-ID: <20170814201811.21110-2-hdegoede@redhat.com>
+References: <20170814201811.21110-1-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:59718 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:33334 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752243AbdHNUSN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 14 Aug 2017 16:18:13 -0400
+        id S1752246AbdHNUSO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 14 Aug 2017 16:18:14 -0400
+In-Reply-To: <20170814201811.21110-1-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
 
-Some x86 devices enumerate a max17047 fuel-gauge through a MAX17047
-ACPI firmware-node, add support for this.
+On some x86/ACPI boards the DSDT defines an ACPI event handler for
+the max17047 IRQ, this causes several problems:
+
+1) We need to share the IRQ to avoid an error getting it
+
+2) Even of we are willing to share, we may fail to share because some
+   DSDTs claim it exclusivly
+
+3) If we are unable to share the IRQ, or the IRQ is only listed as an
+   ACPI event source and not in the max1704 firmware node, then the
+   charge threshold IRQ (which is used to give an IRQ every 1 percent
+   charge change) becomes a problem, the ACPI event handler will not
+   update this to the next 1 percent threshold, so the IRQ keeps firing
+   and we get an IRQ storm pegging 1 CPU core.
+
+   This happens despite the max17042 driver not setting the charge
+   threshold because Windows uses it and leaves it set on reboot.
+
+   So if we are unable to get the IRQ we need to reprogram the
+   charge threshold to its disabled setting.
+
+This commit fixes al of the above, while at it it also makes the error
+msg when being unable to get the IRQ consistent with other messages.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/max17042_battery.c | 22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
+ drivers/power/supply/max17042_battery.c | 20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index aecaaa2b0586..b2ddb7eb69c6 100644
+index b2ddb7eb69c6..18a44e4ed6ff 100644
 --- a/drivers/power/supply/max17042_battery.c
 +++ b/drivers/power/supply/max17042_battery.c
-@@ -22,6 +22,7 @@
-  * This driver is based on max17040_battery.c
-  */
+@@ -1050,11 +1050,18 @@ static int max17042_probe(struct i2c_client *client,
+ 	}
  
-+#include <linux/acpi.h>
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/slab.h>
-@@ -982,6 +983,8 @@ static int max17042_probe(struct i2c_client *client,
- 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
- 	const struct power_supply_desc *max17042_desc = &max17042_psy_desc;
- 	struct power_supply_config psy_cfg = {};
-+	const struct acpi_device_id *acpi_id;
-+	struct device *dev = &client->dev;
- 	struct max17042_chip *chip;
- 	int ret;
- 	int i;
-@@ -995,7 +998,15 @@ static int max17042_probe(struct i2c_client *client,
- 		return -ENOMEM;
- 
- 	chip->client = client;
--	chip->chip_type = id->driver_data;
-+	if (id) {
-+		chip->chip_type = id->driver_data;
-+	} else {
-+		acpi_id = acpi_match_device(dev->driver->acpi_match_table, dev);
-+		if (!acpi_id)
-+			return -ENODEV;
+ 	if (client->irq) {
++		unsigned int flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
 +
-+		chip->chip_type = acpi_id->driver_data;
-+	}
- 	chip->regmap = devm_regmap_init_i2c(client, &max17042_regmap_config);
- 	if (IS_ERR(chip->regmap)) {
- 		dev_err(&client->dev, "Failed to initialize regmap\n");
-@@ -1104,6 +1115,14 @@ static int max17042_resume(struct device *dev)
- static SIMPLE_DEV_PM_OPS(max17042_pm_ops, max17042_suspend,
- 			max17042_resume);
- 
-+#ifdef CONFIG_ACPI
-+static const struct acpi_device_id max17042_acpi_match[] = {
-+	{ "MAX17047", MAXIM_DEVICE_TYPE_MAX17047 },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(acpi, max17042_acpi_match);
-+#endif
++		/*
++		 * On ACPI systems the IRQ may be handled by ACPI-event code,
++		 * so we need to share (if the ACPI code is willing to share).
++		 */
++		if (acpi_id)
++			flags |= IRQF_SHARED | IRQF_PROBE_SHARED;
 +
- #ifdef CONFIG_OF
- static const struct of_device_id max17042_dt_match[] = {
- 	{ .compatible = "maxim,max17042" },
-@@ -1125,6 +1144,7 @@ MODULE_DEVICE_TABLE(i2c, max17042_id);
- static struct i2c_driver max17042_i2c_driver = {
- 	.driver	= {
- 		.name	= "max17042",
-+		.acpi_match_table = ACPI_PTR(max17042_acpi_match),
- 		.of_match_table = of_match_ptr(max17042_dt_match),
- 		.pm	= &max17042_pm_ops,
- 	},
+ 		ret = devm_request_threaded_irq(&client->dev, client->irq,
+ 						NULL,
+-						max17042_thread_handler,
+-						IRQF_TRIGGER_FALLING |
+-						IRQF_ONESHOT,
++						max17042_thread_handler, flags,
+ 						chip->battery->desc->name,
+ 						chip);
+ 		if (!ret) {
+@@ -1064,10 +1071,13 @@ static int max17042_probe(struct i2c_client *client,
+ 			max17042_set_soc_threshold(chip, 1);
+ 		} else {
+ 			client->irq = 0;
+-			dev_err(&client->dev, "%s(): cannot get IRQ\n",
+-				__func__);
++			if (ret != -EBUSY)
++				dev_err(&client->dev, "Failed to get IRQ\n");
+ 		}
+ 	}
++	/* Not able to update the charge threshold when exceeded? -> disable */
++	if (!client->irq)
++		regmap_write(chip->regmap, MAX17042_SALRT_Th, 0xff00);
+ 
+ 	regmap_read(chip->regmap, MAX17042_STATUS, &val);
+ 	if (val & STATUS_POR_BIT) {
 -- 
 2.13.4
