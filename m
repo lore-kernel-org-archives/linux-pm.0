@@ -1,50 +1,34 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: Re: [PATCH][RFC] PM / Hibernate: Feed NMI wathdog when creating
- snapshot
-Date: Wed, 16 Aug 2017 00:01:08 +0800
-Message-ID: <20170815160107.GA2541@yu-desktop-1.sh.intel.com>
-References: <1502731156-24903-1-git-send-email-yu.c.chen@intel.com>
- <20170815124119.GG29067@dhcp22.suse.cz>
+From: Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v4 3/4] ARM: multi_v7_defconfig: add
+ CONFIG_BRCMSTB_THERMAL
+Date: Tue, 15 Aug 2017 10:23:41 -0700
+Message-ID: <8311080b-a037-d7bf-7994-18deab135df7@gmail.com>
+References: <20170809220257.4234-1-code@mmayer.net>
+ <20170809220257.4234-4-code@mmayer.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170815124119.GG29067@dhcp22.suse.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Michal Hocko <mhocko@kernel.org>
-Cc: linux-mm@kvack.org, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>, Mel Gorman <mgorman@techsingularity.net>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170809220257.4234-4-code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Doug Berger <opendmb-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory Fong <gregory.0xf0-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Olof Johansson <olof-nZhT3qVonbNeoWH0uzbU5w@public.gmane.org>
+Cc: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ARM Kernel List <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Michal,
-On Tue, Aug 15, 2017 at 02:41:19PM +0200, Michal Hocko wrote:
-> On Tue 15-08-17 01:19:16, Chen Yu wrote:
-> [...]
-> > @@ -2561,8 +2562,10 @@ void mark_free_pages(struct zone *zone)
-> >  			unsigned long i;
-> >  
-> >  			pfn = page_to_pfn(page);
-> > -			for (i = 0; i < (1UL << order); i++)
-> > +			for (i = 0; i < (1UL << order); i++) {
-> >  				swsusp_set_page_free(pfn_to_page(pfn + i));
-> > +				touch_nmi_watchdog();
-> > +			}
-> 
-> this is rather excessive. Why don't you simply call touch_nmi_watchdog
-> once per every 1000 pages? Or once per free_list entry?
-> 
-Yes, this would be less costy, previously I thought that, since touch_nmi_watchdog()
-would only update very limited amount of percpu variables and it is not costy when
-comparing with the huge loop in radix tree searching by the swsusp_set_page_free(),
-thus I put it in the deepest level in this loop, as this might be a safer place to avoid NMI.
-> Moreover why don't you need to touch_nmi_watchdog in the loop over all
-> pfns in the zone (right above this loop)?
-As the NMI was triggered when checking the free_list rather than in the loop over
-all pfns, it seems that the former has more possibility to catch a NMI if the
-latter has already taken too much time. But yes, a safer way is to feed dog
-in the latter too. I'll modify the code according to your suggestion.
 
-Thanks,
-	Yu
-> -- 
-> Michal Hocko
-> SUSE Labs
+
+On 08/09/2017 03:02 PM, Markus Mayer wrote:
+> From: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+> 
+> Turn on CONFIG_BRCMSTB_THERMAL as module.
+> 
+> Signed-off-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+
+Applied to defconfig/next, thanks!
+-- 
+Florian
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
