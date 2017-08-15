@@ -1,8 +1,8 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 08/14] power: supply: Add
- power_supply_set_input_current_limit_from_supplier helper
-Date: Tue, 15 Aug 2017 22:04:56 +0200
-Message-ID: <20170815200502.17339-9-hdegoede@redhat.com>
+Subject: [PATCH v2 09/14] power: supply: bq24190_charger: Export 5V boost
+ converter as regulator
+Date: Tue, 15 Aug 2017 22:04:57 +0200
+Message-ID: <20170815200502.17339-10-hdegoede@redhat.com>
 References: <20170815200502.17339-1-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,90 +22,199 @@ To: Wolfram Sang <wsa@the-dreams.de>, Guenter Roeck <linux@roeck-us.net>, Heikki
 Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On some devices the USB Type-C port power (USB PD 2.0) negotiation is
-done by a separate port-controller IC, while the current limit is
-controlled through another (charger) IC.
+Register the 5V boost converter as a regulator named "usb_otg_vbus".
 
-It has been decided to model this by modelling the external Type-C
-power brick (adapter/charger) as a power-supply class device which
-supplies the charger-IC, with its voltage-now and current-max representing
-the negotiated voltage and max current draw.
-
-This commit adds a power_supply_set_input_current_limit_from_supplier
-helper function which charger power-supply drivers can call to get
-the max-current from their supplier and have this applied
-through their set_property call-back to their input-current-limit.
+This commit also adds support for bq24190_platform_data, through which
+non device-tree platforms can pass the regulator_init_data (containing
+mappings for the consumer amongst other things).
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/power_supply_core.c | 41 ++++++++++++++++++++++++++++++++
- include/linux/power_supply.h             |  2 ++
- 2 files changed, 43 insertions(+)
+Changes in v2:
+-Use "usb_otg_vbus" as default name for the regulator
+-Add support for passing regulator_init_data for non device-tree platforms
+-Register the regulator later, to avoid it showing up and shortly later
+ disappearing again on probe errors (e.g. -EPROBE_DEFER).
+---
+ drivers/power/supply/bq24190_charger.c | 126 +++++++++++++++++++++++++++++++++
+ include/linux/power/bq24190_charger.h  |  18 +++++
+ 2 files changed, 144 insertions(+)
+ create mode 100644 include/linux/power/bq24190_charger.h
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 0741fce..3f92574 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -375,6 +375,47 @@ int power_supply_is_system_supplied(void)
- }
- EXPORT_SYMBOL_GPL(power_supply_is_system_supplied);
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index d5a707e..073cd9d 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -16,6 +16,9 @@
+ #include <linux/of_device.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/power_supply.h>
++#include <linux/power/bq24190_charger.h>
++#include <linux/regulator/driver.h>
++#include <linux/regulator/machine.h>
+ #include <linux/workqueue.h>
+ #include <linux/gpio.h>
+ #include <linux/i2c.h>
+@@ -504,6 +507,125 @@ static int bq24190_sysfs_create_group(struct bq24190_dev_info *bdi)
+ static inline void bq24190_sysfs_remove_group(struct bq24190_dev_info *bdi) {}
+ #endif
  
-+static int __power_supply_get_supplier_max_current(struct device *dev,
-+						   void *data)
++#ifdef CONFIG_REGULATOR
++static int bq24190_vbus_enable(struct regulator_dev *dev)
 +{
-+	union power_supply_propval ret = {0,};
-+	struct power_supply *epsy = dev_get_drvdata(dev);
-+	struct power_supply *psy = data;
++	struct bq24190_dev_info *bdi = rdev_get_drvdata(dev);
++	int ret;
 +
-+	if (__power_supply_is_supplied_by(epsy, psy))
-+		if (!epsy->desc->get_property(epsy,
-+					      POWER_SUPPLY_PROP_CURRENT_MAX,
-+					      &ret))
-+			return ret.intval;
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0) {
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
++		pm_runtime_put_noidle(bdi->dev);
++		return ret;
++	}
 +
++	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
++				 BQ24190_REG_POC_CHG_CONFIG_MASK,
++				 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
++				 BQ24190_REG_POC_CHG_CONFIG_OTG);
++
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
++	return ret;
++}
++
++static int bq24190_vbus_disable(struct regulator_dev *dev)
++{
++	struct bq24190_dev_info *bdi = rdev_get_drvdata(dev);
++	int ret;
++
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0) {
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
++		pm_runtime_put_noidle(bdi->dev);
++		return ret;
++	}
++
++	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
++				 BQ24190_REG_POC_CHG_CONFIG_MASK,
++				 BQ24190_REG_POC_CHG_CONFIG_SHIFT,
++				 BQ24190_REG_POC_CHG_CONFIG_CHARGE);
++
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
++	return ret;
++}
++
++static int bq24190_vbus_is_enabled(struct regulator_dev *dev)
++{
++	struct bq24190_dev_info *bdi = rdev_get_drvdata(dev);
++	int ret;
++	u8 val;
++
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0) {
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
++		pm_runtime_put_noidle(bdi->dev);
++		return ret;
++	}
++
++	ret = bq24190_read_mask(bdi, BQ24190_REG_POC,
++				BQ24190_REG_POC_CHG_CONFIG_MASK,
++				BQ24190_REG_POC_CHG_CONFIG_SHIFT, &val);
++
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
++	return ret ? ret : val == BQ24190_REG_POC_CHG_CONFIG_OTG;
++}
++
++static const struct regulator_ops bq24190_vbus_ops = {
++	.enable = bq24190_vbus_enable,
++	.disable = bq24190_vbus_disable,
++	.is_enabled = bq24190_vbus_is_enabled,
++};
++
++static const struct regulator_desc bq24190_vbus_desc = {
++	.name = "usb_otg_vbus",
++	.type = REGULATOR_VOLTAGE,
++	.owner = THIS_MODULE,
++	.ops = &bq24190_vbus_ops,
++	.fixed_uV = 5000000,
++	.n_voltages = 1,
++};
++
++static const struct regulator_init_data bq24190_vbus_init_data = {
++	.constraints = {
++		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
++	},
++};
++
++static int bq24190_register_vbus_regulator(struct bq24190_dev_info *bdi)
++{
++	struct bq24190_platform_data *pdata = bdi->dev->platform_data;
++	struct regulator_config cfg = { };
++	struct regulator_dev *reg;
++	int ret = 0;
++
++	cfg.dev = bdi->dev;
++	if (pdata && pdata->regulator_init_data)
++		cfg.init_data = pdata->regulator_init_data;
++	else
++		cfg.init_data = &bq24190_vbus_init_data;
++	cfg.driver_data = bdi;
++	reg = devm_regulator_register(bdi->dev, &bq24190_vbus_desc, &cfg);
++	if (IS_ERR(reg)) {
++		ret = PTR_ERR(reg);
++		dev_err(bdi->dev, "Can't register regulator: %d\n", ret);
++	}
++
++	return ret;
++}
++#else
++static int bq24190_register_vbus_regulator(struct bq24190_dev_info *bdi)
++{
 +	return 0;
 +}
++#endif
 +
-+int power_supply_set_input_current_limit_from_supplier(struct power_supply *psy)
-+{
-+	union power_supply_propval val = {0,};
-+	int curr;
-+
-+	if (!psy->desc->set_property)
-+		return -EINVAL;
-+
-+	/*
-+	 * This function is not intended for use with a supply with multiple
-+	 * suppliers, we simply pick the first supply to report a non 0
-+	 * max-current.
-+	 */
-+	curr = class_for_each_device(power_supply_class, NULL, psy,
-+				      __power_supply_get_supplier_max_current);
-+	if (curr <= 0)
-+		return (curr == 0) ? -ENODEV : curr;
-+
-+	val.intval = curr;
-+
-+	return psy->desc->set_property(psy,
-+				POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, &val);
-+}
-+EXPORT_SYMBOL_GPL(power_supply_set_input_current_limit_from_supplier);
-+
- int power_supply_set_battery_charged(struct power_supply *psy)
- {
- 	if (atomic_read(&psy->use_cnt) >= 0 &&
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index de89066..79e90b3 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -332,6 +332,8 @@ extern int power_supply_get_battery_info(struct power_supply *psy,
- 					 struct power_supply_battery_info *info);
- extern void power_supply_changed(struct power_supply *psy);
- extern int power_supply_am_i_supplied(struct power_supply *psy);
-+extern int power_supply_set_input_current_limit_from_supplier(
-+					 struct power_supply *psy);
- extern int power_supply_set_battery_charged(struct power_supply *psy);
+ /*
+  * According to the "Host Mode and default Mode" section of the
+  * manual, a write to any register causes the bq24190 to switch
+@@ -1577,6 +1699,10 @@ static int bq24190_probe(struct i2c_client *client,
+ 		goto out_sysfs;
+ 	}
  
- #ifdef CONFIG_POWER_SUPPLY
++	ret = bq24190_register_vbus_regulator(bdi);
++	if (ret < 0)
++		goto out_sysfs;
++
+ 	if (bdi->extcon) {
+ 		INIT_DELAYED_WORK(&bdi->extcon_work, bq24190_extcon_work);
+ 		bdi->extcon_nb.notifier_call = bq24190_extcon_event;
+diff --git a/include/linux/power/bq24190_charger.h b/include/linux/power/bq24190_charger.h
+new file mode 100644
+index 0000000..45ce7f1
+--- /dev/null
++++ b/include/linux/power/bq24190_charger.h
+@@ -0,0 +1,18 @@
++/*
++ * Platform data for the TI bq24190 battery charger driver.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _BQ24190_CHARGER_H_
++#define _BQ24190_CHARGER_H_
++
++#include <linux/regulator/machine.h>
++
++struct bq24190_platform_data {
++	const struct regulator_init_data *regulator_init_data;
++};
++
++#endif
 -- 
 2.9.4
