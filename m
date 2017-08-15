@@ -1,77 +1,50 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: x86: PIE support and option to extend KASLR randomization
-Date: Tue, 15 Aug 2017 07:58:47 -0700
-Message-ID: <CAJcbSZHJ_Jy=dr4Pc3-o_Bz340cLRgu79Up5iWptwaiObwN3Hw@mail.gmail.com>
-References: <20170810172615.51965-1-thgarnie@google.com> <20170811124127.kkb5pnkljz4umxuj@gmail.com>
- <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
- <20170815075609.mmzbfwritjzvrpsn@gmail.com> <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
- <CA+DvKQLM-a-0z985o6NQtfLtxC-K_KSkns4MyfdMUmrq7Kbtjw@mail.gmail.com>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH][RFC] PM / Hibernate: Feed NMI wathdog when creating
+ snapshot
+Date: Wed, 16 Aug 2017 00:01:08 +0800
+Message-ID: <20170815160107.GA2541@yu-desktop-1.sh.intel.com>
+References: <1502731156-24903-1-git-send-email-yu.c.chen@intel.com>
+ <20170815124119.GG29067@dhcp22.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-9462-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CA+DvKQLM-a-0z985o6NQtfLtxC-K_KSkns4MyfdMUmrq7Kbtjw@mail.gmail.com>
-To: Daniel Micay <danielmicay@gmail.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170815124119.GG29067@dhcp22.suse.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Michal Hocko <mhocko@kernel.org>
+Cc: linux-mm@kvack.org, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>, Mel Gorman <mgorman@techsingularity.net>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 15, 2017 at 7:47 AM, Daniel Micay <danielmicay@gmail.com> wrote:
-> On 15 August 2017 at 10:20, Thomas Garnier <thgarnie@google.com> wrote:
->> On Tue, Aug 15, 2017 at 12:56 AM, Ingo Molnar <mingo@kernel.org> wrote:
->>>
->>> * Thomas Garnier <thgarnie@google.com> wrote:
->>>
->>>> > Do these changes get us closer to being able to build the kernel as truly
->>>> > position independent, i.e. to place it anywhere in the valid x86-64 address
->>>> > space? Or any other advantages?
->>>>
->>>> Yes, PIE allows us to put the kernel anywhere in memory. It will allow us to
->>>> have a full randomized address space where position and order of sections are
->>>> completely random. There is still some work to get there but being able to build
->>>> a PIE kernel is a significant step.
->>>
->>> So I _really_ dislike the whole PIE approach, because of the huge slowdown:
->>>
->>> +config RANDOMIZE_BASE_LARGE
->>> +       bool "Increase the randomization range of the kernel image"
->>> +       depends on X86_64 && RANDOMIZE_BASE
->>> +       select X86_PIE
->>> +       select X86_MODULE_PLTS if MODULES
->>> +       default n
->>> +       ---help---
->>> +         Build the kernel as a Position Independent Executable (PIE) and
->>> +         increase the available randomization range from 1GB to 3GB.
->>> +
->>> +         This option impacts performance on kernel CPU intensive workloads up
->>> +         to 10% due to PIE generated code. Impact on user-mode processes and
->>> +         typical usage would be significantly less (0.50% when you build the
->>> +         kernel).
->>> +
->>> +         The kernel and modules will generate slightly more assembly (1 to 2%
->>> +         increase on the .text sections). The vmlinux binary will be
->>> +         significantly smaller due to less relocations.
->>>
->>> To put 10% kernel overhead into perspective: enabling this option wipes out about
->>> 5-10 years worth of painstaking optimizations we've done to keep the kernel fast
->>> ... (!!)
->>
->> Note that 10% is the high-bound of a CPU intensive workload.
->
-> The cost can be reduced by using -fno-plt these days but some work
-> might be required to make that work with the kernel.
->
-> Where does that 10% estimate in the kernel config docs come from? I'd
-> be surprised if it really cost that much on x86_64. That's a realistic
-> cost for i386 with modern GCC (it used to be worse) but I'd expect
-> x86_64 to be closer to 2% even for CPU intensive workloads. It should
-> be very close to zero with -fno-plt.
+Hi Michal,
+On Tue, Aug 15, 2017 at 02:41:19PM +0200, Michal Hocko wrote:
+> On Tue 15-08-17 01:19:16, Chen Yu wrote:
+> [...]
+> > @@ -2561,8 +2562,10 @@ void mark_free_pages(struct zone *zone)
+> >  			unsigned long i;
+> >  
+> >  			pfn = page_to_pfn(page);
+> > -			for (i = 0; i < (1UL << order); i++)
+> > +			for (i = 0; i < (1UL << order); i++) {
+> >  				swsusp_set_page_free(pfn_to_page(pfn + i));
+> > +				touch_nmi_watchdog();
+> > +			}
+> 
+> this is rather excessive. Why don't you simply call touch_nmi_watchdog
+> once per every 1000 pages? Or once per free_list entry?
+> 
+Yes, this would be less costy, previously I thought that, since touch_nmi_watchdog()
+would only update very limited amount of percpu variables and it is not costy when
+comparing with the huge loop in radix tree searching by the swsusp_set_page_free(),
+thus I put it in the deepest level in this loop, as this might be a safer place to avoid NMI.
+> Moreover why don't you need to touch_nmi_watchdog in the loop over all
+> pfns in the zone (right above this loop)?
+As the NMI was triggered when checking the free_list rather than in the loop over
+all pfns, it seems that the former has more possibility to catch a NMI if the
+latter has already taken too much time. But yes, a safer way is to feed dog
+in the latter too. I'll modify the code according to your suggestion.
 
-I got 8 to 10% on hackbench. Other benchmarks were 4% or lower.
-
-I will do look at more recent compiler and no-plt as well.
-
--- 
-Thomas
+Thanks,
+	Yu
+> -- 
+> Michal Hocko
+> SUSE Labs
