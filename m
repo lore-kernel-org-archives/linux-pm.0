@@ -1,201 +1,515 @@
-From: <eumann@t-online.de>
-Subject: (unknown)
-Date: Tue, 15 Aug 2017 06:08:03 -0000
-Message-ID: <150277728363.15187.12466196347224648445@vnpt.vn>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v4 2/4] thermal: add brcmstb AVS TMON driver
+Date: Tue, 15 Aug 2017 14:08:18 +0800
+Message-ID: <1502777298.2591.1.camel@intel.com>
+References: <20170809220257.4234-1-code@mmayer.net>
+         <20170809220257.4234-3-code@mmayer.net>
 Mime-Version: 1.0
-Content-Type: application/zip; name="237594553.zip"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from static.vnpt.vn ([14.161.27.116]:51039 "HELO vnpt.vn"
-        rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with SMTP
-        id S1751781AbdHOGIH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 15 Aug 2017 02:08:07 -0400
-Subject: 
-Content-Disposition: attachment
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170809220257.4234-3-code@mmayer.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Markus Mayer <code@mmayer.net>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, =?UTF-8?Q?Rafa=C5=82_Mi=C5=82ecki?= <rafal@milecki.pl>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>
+Cc: Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
 
-UEsDBAoAAAAAACYwD0ss2YQoFigAABYoAAAJAAAAMTk3MzIuemlwUEsDBBQAAAAIACUwD0uygS5B
-gCcAAA8UAQAIAAAAMTk3MzIuanOsnVtvKzUQx9+R+A5VkcIpRkBIBScFHpxre+i9KbRFPOS2PUmb
-bNIkzQXx3dkDiP1Pdoa/N/BSOamza49nxuPbz19+2emdNdrnL7XL4+WP18Pn+9ZsMH167a4uHm4X
-je5Pw/py3b45vnz38+RkM3utxfePP3aaV73aanjZqTydnb+7bq1/bL5UX09/7r1vNdr+x81j7ebi
-LJ5Hi9W71+vl5d26/txurs/71YfL8aoRTX58d+O7Ty+t+kXvZPyybMzj02GlGo1W9bur9/ebp/Xx
-z9XW9L779O76cnizrp81OpPN88uPD/3GhZ/+uFmuJlft5lO19zz6ufPcu6o1Ztfd+dPd8fD9YHm/
-flhMGuP16Pr0+GbZ7jzVBvHqNprfNafdzcNsdF37uTm9W57X312eXLysnt7P29VJ93X1Mp106pv5
-4MfjWv/25Lrpn7uts+r7y8V4dlU57y+ufrp7WI+Xz7er+2rUbQ7jWXPte/f19yeXzz+f3dauq/Hk
-9fzjj366P9ksj301ml1Wbu4Gez/svfl03m70fo67dz9eT5tp8mWWpi/TZPc+TT/djtIP9TTZSZPH
-aTJOk69pMilB+mGcJvtLyOO784H6636avEuTF1CUoZq5O3+zn36Cmr6HajyryS/SZPsSRARZTrrt
-OXwCEZynaXj/wXd7ExB8mnwHFZmm6fvobgNFTpNreOsxSGFZS9Mg7h/2UOCQfc+DqNLkfICizynw
-NP1mfzmDp75A04IYWl9gs6gPfX7WxZkmv4N636la2WxgndRW6JxOb1ojtbYeFRnSQpFB4oZc0+TO
-at7Xn/dGldBNVQi9NVBN8BGUPlKL+AxFvAH9nM37oxi8gK4TVWjsfaPRogUUjYosVuuxd52mf0qT
-p/B6qCq8cAVqohb7DFrgCeoPZhg/Q2O8gHAh/22afHhtquJdq/X9EWz2DsqygiLWVIU5PVA9wm/q
-ty99VfCLF13coGfzF1StR/CdEfw4HoF0wdTbqjlW1fbu9VWlR4ljx5XI+XmNkpTyg4atXZwm/vl3
-qYm6GXNNVBWqDq2odqJ+8wAVbYF8VV3tq5oIRlCJo+M3av6RWuy2qvEt1VVtlqqbbYAWXneh3zzv
-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
+On Wed, 2017-08-09 at 15:02 -0700, Markus Mayer wrote:
+> From: Brian Norris <computersforpeace@gmail.com>
+> 
+> The AVS TMON core provides temperature readings, a pair of
+> configurable
+> high- and low-temperature threshold interrupts, and an emergency
+> over-temperature chip reset. The driver utilizes the first two to
+> provide temperature readings and high-temperature notifications to
+> applications. The over-temperature reset is not exposed to
+> applications; this reset threshold is critical to the system and
+> should
+> be set with care within the bootloader.
+> 
+> Applications may choose to utilize the notification mechanism, the
+> temperature reading mechanism (e.g., through polling), or both.
+> 
+> Signed-off-by: Brian Norris <computersforpeace@gmail.com>
+> Signed-off-by: Doug Berger <opendmb@gmail.com>
+> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+> ---
+>  drivers/thermal/Kconfig                    |   2 +-
+>  drivers/thermal/broadcom/Kconfig           |   7 +
+>  drivers/thermal/broadcom/Makefile          |   1 +
+>  drivers/thermal/broadcom/brcmstb_thermal.c | 386
+> +++++++++++++++++++++++++++++
+>  4 files changed, 395 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/thermal/broadcom/brcmstb_thermal.c
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index b5b5fac..396ad6b 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -408,7 +408,7 @@ config MTK_THERMAL
+>  	  controller present in Mediatek SoCs
+>  
+>  menu "Broadcom thermal drivers"
+> -depends on ARCH_BCM || COMPILE_TEST
+> +depends on ARCH_BCM || ARCH_BRCMSTB || COMPILE_TEST
+>  source "drivers/thermal/broadcom/Kconfig"
+>  endmenu
+>  
+> diff --git a/drivers/thermal/broadcom/Kconfig
+> b/drivers/thermal/broadcom/Kconfig
+> index 42c098e..c106a15 100644
+> --- a/drivers/thermal/broadcom/Kconfig
+> +++ b/drivers/thermal/broadcom/Kconfig
+> @@ -6,6 +6,13 @@ config BCM2835_THERMAL
+>  	help
+>  	  Support for thermal sensors on Broadcom bcm2835 SoCs.
+>  
+> +config BRCMSTB_THERMAL
+> +	tristate "Broadcom STB AVS TMON thermal driver"
+> +	depends on ARCH_BRCMSTB || COMPILE_TEST
+> +	help
+> +	  Enable this driver if you have a Broadcom STB SoC and
+> would like
+> +	  thermal framework support.
+> +
+
+I don't understand why I got the following checkpatch warning
+
+WARNING: please write a paragraph that describes the config symbol
+fully
+#73: FILE: drivers/thermal/broadcom/Kconfig:9:
++config BRCMSTB_THERMAL
+
+I didn't see this for other Kconfig changes.
+
+thanks,
+rui
+
+>  config BCM_NS_THERMAL
+>  	tristate "Northstar thermal driver"
+>  	depends on ARCH_BCM_IPROC || COMPILE_TEST
+> diff --git a/drivers/thermal/broadcom/Makefile
+> b/drivers/thermal/broadcom/Makefile
+> index c6f62e4..fae10ec 100644
+> --- a/drivers/thermal/broadcom/Makefile
+> +++ b/drivers/thermal/broadcom/Makefile
+> @@ -1,2 +1,3 @@
+>  obj-$(CONFIG_BCM2835_THERMAL)		+= bcm2835_thermal.o
+> +obj-$(CONFIG_BRCMSTB_THERMAL)		+= brcmstb_thermal.o
+>  obj-$(CONFIG_BCM_NS_THERMAL)		+= ns-thermal.o
+> diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c
+> b/drivers/thermal/broadcom/brcmstb_thermal.c
+> new file mode 100644
+> index 0000000..87b8e7a
+> --- /dev/null
+> +++ b/drivers/thermal/broadcom/brcmstb_thermal.c
+> @@ -0,0 +1,386 @@
+> +/*
+> + * Broadcom STB AVS TMON thermal sensor driver
+> + *
+> + * Copyright (c) 2015-2017 Broadcom
+> + *
+> + * This software is licensed under the terms of the GNU General
+> Public
+> + * License version 2, as published by the Free Software Foundation,
+> and
+> + * may be copied, distributed, and modified under those terms.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + *
+> + */
+> +
+> +#define DRV_NAME	"brcmstb_thermal"
+> +
+> +#define pr_fmt(fmt)	DRV_NAME ": " fmt
+> +
+> +#include <linux/bitops.h>
+> +#include <linux/device.h>
+> +#include <linux/err.h>
+> +#include <linux/io.h>
+> +#include <linux/irqreturn.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/of_device.h>
+> +#include <linux/thermal.h>
+> +
+> +#define AVS_TMON_STATUS			0x00
+> + #define AVS_TMON_STATUS_valid_msk	BIT(11)
+> + #define AVS_TMON_STATUS_data_msk	GENMASK(10, 1)
+> + #define AVS_TMON_STATUS_data_shift	1
+> +
+> +#define AVS_TMON_EN_OVERTEMP_RESET	0x04
+> + #define AVS_TMON_EN_OVERTEMP_RESET_msk	BIT(0)
+> +
+> +#define AVS_TMON_RESET_THRESH		0x08
+> + #define AVS_TMON_RESET_THRESH_msk	GENMASK(10, 1)
+> + #define AVS_TMON_RESET_THRESH_shift	1
+> +
+> +#define AVS_TMON_INT_IDLE_TIME		0x10
+> +
+> +#define AVS_TMON_EN_TEMP_INT_SRCS	0x14
+> + #define AVS_TMON_EN_TEMP_INT_SRCS_high	BIT(1)
+> + #define AVS_TMON_EN_TEMP_INT_SRCS_low	BIT(0)
+> +
+> +#define AVS_TMON_INT_THRESH		0x18
+> + #define AVS_TMON_INT_THRESH_high_msk	GENMASK(26, 17)
+> + #define AVS_TMON_INT_THRESH_high_shift	17
+> + #define AVS_TMON_INT_THRESH_low_msk	GENMASK(10, 1)
+> + #define AVS_TMON_INT_THRESH_low_shift	1
+> +
+> +#define AVS_TMON_TEMP_INT_CODE		0x1c
+> +#define AVS_TMON_TP_TEST_ENABLE		0x20
+> +
+> +/* Default coefficients */
+> +#define AVS_TMON_TEMP_SLOPE		-487
+> +#define AVS_TMON_TEMP_OFFSET		410040
+> +
+> +/* HW related temperature constants */
+> +#define AVS_TMON_TEMP_MAX		0x3ff
+> +#define AVS_TMON_TEMP_MIN		-88161
+> +#define AVS_TMON_TEMP_MASK		AVS_TMON_TEMP_MAX
+> +
+> +enum avs_tmon_trip_type {
+> +	TMON_TRIP_TYPE_LOW = 0,
+> +	TMON_TRIP_TYPE_HIGH,
+> +	TMON_TRIP_TYPE_RESET,
+> +	TMON_TRIP_TYPE_MAX,
+> +};
+> +
+> +struct avs_tmon_trip {
+> +	/* HW bit to enable the trip */
+> +	u32 enable_offs;
+> +	u32 enable_mask;
+> +
+> +	/* HW field to read the trip temperature */
+> +	u32 reg_offs;
+> +	u32 reg_msk;
+> +	int reg_shift;
+> +};
+> +
+> +static struct avs_tmon_trip avs_tmon_trips[] = {
+> +	/* Trips when temperature is below threshold */
+> +	[TMON_TRIP_TYPE_LOW] = {
+> +		.enable_offs	= AVS_TMON_EN_TEMP_INT_SRCS,
+> +		.enable_mask	= AVS_TMON_EN_TEMP_INT_SRCS_low,
+> +		.reg_offs	= AVS_TMON_INT_THRESH,
+> +		.reg_msk	= AVS_TMON_INT_THRESH_low_msk,
+> +		.reg_shift	= AVS_TMON_INT_THRESH_low_shift,
+> +	},
+> +	/* Trips when temperature is above threshold */
+> +	[TMON_TRIP_TYPE_HIGH] = {
+> +		.enable_offs	= AVS_TMON_EN_TEMP_INT_SRCS,
+> +		.enable_mask	=
+> AVS_TMON_EN_TEMP_INT_SRCS_high,
+> +		.reg_offs	= AVS_TMON_INT_THRESH,
+> +		.reg_msk	= AVS_TMON_INT_THRESH_high_msk,
+> +		.reg_shift	= AVS_TMON_INT_THRESH_high_shift,
+> +	},
+> +	/* Automatically resets chip when above threshold */
+> +	[TMON_TRIP_TYPE_RESET] = {
+> +		.enable_offs	= AVS_TMON_EN_OVERTEMP_RESET,
+> +		.enable_mask	=
+> AVS_TMON_EN_OVERTEMP_RESET_msk,
+> +		.reg_offs	= AVS_TMON_RESET_THRESH,
+> +		.reg_msk	= AVS_TMON_RESET_THRESH_msk,
+> +		.reg_shift	= AVS_TMON_RESET_THRESH_shift,
+> +	},
+> +};
+> +
+> +struct brcmstb_thermal_priv {
+> +	void __iomem *tmon_base;
+> +	struct device *dev;
+> +	struct thermal_zone_device *thermal;
+> +};
+> +
+> +static void avs_tmon_get_coeffs(struct thermal_zone_device *tz, int
+> *slope,
+> +				int *offset)
+> +{
+> +	*slope = thermal_zone_get_slope(tz);
+> +	*offset = thermal_zone_get_offset(tz);
+> +}
+> +
+> +/* Convert a HW code to a temperature reading (millidegree celsius)
+> */
+> +static inline int avs_tmon_code_to_temp(struct thermal_zone_device
+> *tz,
+> +					u32 code)
+> +{
+> +	const int val = code & AVS_TMON_TEMP_MASK;
+> +	int slope, offset;
+> +
+> +	avs_tmon_get_coeffs(tz, &slope, &offset);
+> +
+> +	return slope * val + offset;
+> +}
+> +
+> +/*
+> + * Convert a temperature value (millidegree celsius) to a HW code
+> + *
+> + * @temp: temperature to convert
+> + * @low: if true, round toward the low side
+> + */
+> +static inline u32 avs_tmon_temp_to_code(struct thermal_zone_device
+> *tz,
+> +					int temp, bool low)
+> +{
+> +	int slope, offset;
+> +
+> +	if (temp < AVS_TMON_TEMP_MIN)
+> +		return AVS_TMON_TEMP_MAX; /* Maximum code value */
+> +
+> +	avs_tmon_get_coeffs(tz, &slope, &offset);
+> +
+> +	if (temp >= offset)
+> +		return 0;	/* Minimum code value */
+> +
+> +	if (low)
+> +		return (u32)(DIV_ROUND_UP(offset - temp,
+> abs(slope)));
+> +	else
+> +		return (u32)((offset - temp) / abs(slope));
+> +}
+> +
+> +static int brcmstb_get_temp(void *data, int *temp)
+> +{
+> +	struct brcmstb_thermal_priv *priv = data;
+> +	u32 val;
+> +	long t;
+> +
+> +	val = __raw_readl(priv->tmon_base + AVS_TMON_STATUS);
+> +
+> +	if (!(val & AVS_TMON_STATUS_valid_msk)) {
+> +		dev_err(priv->dev, "reading not valid\n");
+> +		return -EIO;
+> +	}
+> +
+> +	val = (val & AVS_TMON_STATUS_data_msk) >>
+> AVS_TMON_STATUS_data_shift;
+> +
+> +	t = avs_tmon_code_to_temp(priv->thermal, val);
+> +	if (t < 0)
+> +		*temp = 0;
+> +	else
+> +		*temp = t;
+> +
+> +	return 0;
+> +}
+> +
+> +static void avs_tmon_trip_enable(struct brcmstb_thermal_priv *priv,
+> +				 enum avs_tmon_trip_type type, int
+> en)
+> +{
+> +	struct avs_tmon_trip *trip = &avs_tmon_trips[type];
+> +	u32 val = __raw_readl(priv->tmon_base + trip->enable_offs);
+> +
+> +	dev_dbg(priv->dev, "%sable trip, type %d\n", en ? "en" :
+> "dis", type);
+> +
+> +	if (en)
+> +		val |= trip->enable_mask;
+> +	else
+> +		val &= ~trip->enable_mask;
+> +
+> +	__raw_writel(val, priv->tmon_base + trip->enable_offs);
+> +}
+> +
+> +static int avs_tmon_get_trip_temp(struct brcmstb_thermal_priv *priv,
+> +				  enum avs_tmon_trip_type type)
+> +{
+> +	struct avs_tmon_trip *trip = &avs_tmon_trips[type];
+> +	u32 val = __raw_readl(priv->tmon_base + trip->reg_offs);
+> +
+> +	val &= trip->reg_msk;
+> +	val >>= trip->reg_shift;
+> +
+> +	return avs_tmon_code_to_temp(priv->thermal, val);
+> +}
+> +
+> +static void avs_tmon_set_trip_temp(struct brcmstb_thermal_priv
+> *priv,
+> +				   enum avs_tmon_trip_type type,
+> +				   int temp)
+> +{
+> +	struct avs_tmon_trip *trip = &avs_tmon_trips[type];
+> +	u32 val, orig;
+> +
+> +	dev_dbg(priv->dev, "set temp %d to %d\n", type, temp);
+> +
+> +	/* round toward low temp for the low interrupt */
+> +	val = avs_tmon_temp_to_code(priv->thermal, temp,
+> +				    type == TMON_TRIP_TYPE_LOW);
+> +
+> +	val <<= trip->reg_shift;
+> +	val &= trip->reg_msk;
+> +
+> +	orig = __raw_readl(priv->tmon_base + trip->reg_offs);
+> +	orig &= ~trip->reg_msk;
+> +	orig |= val;
+> +	__raw_writel(orig, priv->tmon_base + trip->reg_offs);
+> +}
+> +
+> +static int avs_tmon_get_intr_temp(struct brcmstb_thermal_priv *priv)
+> +{
+> +	u32 val;
+> +
+> +	val = __raw_readl(priv->tmon_base + AVS_TMON_TEMP_INT_CODE);
+> +	return avs_tmon_code_to_temp(priv->thermal, val);
+> +}
+> +
+> +static irqreturn_t brcmstb_tmon_irq_thread(int irq, void *data)
+> +{
+> +	struct brcmstb_thermal_priv *priv = data;
+> +	int low, high, intr;
+> +
+> +	low = avs_tmon_get_trip_temp(priv, TMON_TRIP_TYPE_LOW);
+> +	high = avs_tmon_get_trip_temp(priv, TMON_TRIP_TYPE_HIGH);
+> +	intr = avs_tmon_get_intr_temp(priv);
+> +
+> +	dev_dbg(priv->dev, "low/intr/high: %d/%d/%d\n",
+> +			low, intr, high);
+> +
+> +	/* Disable high-temp until next threshold shift */
+> +	if (intr >= high)
+> +		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_HIGH, 0);
+> +	/* Disable low-temp until next threshold shift */
+> +	if (intr <= low)
+> +		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_LOW, 0);
+> +
+> +	/*
+> +	 * Notify using the interrupt temperature, in case the
+> temperature
+> +	 * changes before it can next be read out
+> +	 */
+> +	thermal_zone_device_update(priv->thermal, intr);
+> +
+> +	return IRQ_HANDLED;
+> +}
+> +
+> +static int brcmstb_set_trips(void *data, int low, int high)
+> +{
+> +	struct brcmstb_thermal_priv *priv = data;
+> +
+> +	dev_dbg(priv->dev, "set trips %d <--> %d\n", low, high);
+> +
+> +	if (low) {
+> +		if (low > INT_MAX)
+> +			low = INT_MAX;
+> +		avs_tmon_set_trip_temp(priv, TMON_TRIP_TYPE_LOW,
+> low);
+> +		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_LOW, 1);
+> +	} else {
+> +		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_LOW, 0);
+> +	}
+> +
+> +	if (high < ULONG_MAX) {
+> +		if (high > INT_MAX)
+> +			high = INT_MAX;
+> +		avs_tmon_set_trip_temp(priv, TMON_TRIP_TYPE_HIGH,
+> high);
+> +		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_HIGH, 1);
+> +	} else {
+> +		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_HIGH, 0);
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static struct thermal_zone_of_device_ops of_ops = {
+> +	.get_temp	= brcmstb_get_temp,
+> +	.set_trips	= brcmstb_set_trips,
+> +};
+> +
+> +static const struct of_device_id brcmstb_thermal_id_table[] = {
+> +	{ .compatible = "brcm,avs-tmon" },
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, brcmstb_thermal_id_table);
+> +
+> +static int brcmstb_thermal_probe(struct platform_device *pdev)
+> +{
+> +	struct thermal_zone_device *thermal;
+> +	struct brcmstb_thermal_priv *priv;
+> +	struct resource *res;
+> +	int irq, ret;
+> +
+> +	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
+> +	if (!priv)
+> +		return -ENOMEM;
+> +
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	priv->tmon_base = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(priv->tmon_base))
+> +		return PTR_ERR(priv->tmon_base);
+> +
+> +	priv->dev = &pdev->dev;
+> +	platform_set_drvdata(pdev, priv);
+> +
+> +	thermal = thermal_zone_of_sensor_register(&pdev->dev, 0,
+> priv, &of_ops);
+> +	if (IS_ERR(thermal)) {
+> +		ret = PTR_ERR(thermal);
+> +		dev_err(&pdev->dev, "could not register sensor:
+> %d\n", ret);
+> +		return ret;
+> +	}
+> +
+> +	priv->thermal = thermal;
+> +
+> +	irq = platform_get_irq(pdev, 0);
+> +	if (irq < 0) {
+> +		dev_err(&pdev->dev, "could not get IRQ\n");
+> +		ret = irq;
+> +		goto err;
+> +	}
+> +	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+> +					brcmstb_tmon_irq_thread,
+> IRQF_ONESHOT,
+> +					DRV_NAME, priv);
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "could not request IRQ: %d\n",
+> ret);
+> +		goto err;
+> +	}
+> +
+> +	dev_info(&pdev->dev, "registered AVS TMON of-sensor
+> driver\n");
+> +
+> +	return 0;
+> +
+> +err:
+> +	thermal_zone_of_sensor_unregister(&pdev->dev, thermal);
+> +	return ret;
+> +}
+> +
+> +static int brcmstb_thermal_exit(struct platform_device *pdev)
+> +{
+> +	struct brcmstb_thermal_priv *priv =
+> platform_get_drvdata(pdev);
+> +	struct thermal_zone_device *thermal = priv->thermal;
+> +
+> +	if (thermal)
+> +		thermal_zone_of_sensor_unregister(&pdev->dev, priv-
+> >thermal);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver brcmstb_thermal_driver = {
+> +	.probe = brcmstb_thermal_probe,
+> +	.remove = brcmstb_thermal_exit,
+> +	.driver = {
+> +		.name = DRV_NAME,
+> +		.of_match_table = brcmstb_thermal_id_table,
+> +	},
+> +};
+> +module_platform_driver(brcmstb_thermal_driver);
+> +
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_AUTHOR("Brian Norris");
+> +MODULE_DESCRIPTION("Broadcom STB AVS TMON thermal driver");
