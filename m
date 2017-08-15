@@ -1,74 +1,83 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: x86: PIE support and option to extend KASLR randomization
-Date: Tue, 15 Aug 2017 09:56:09 +0200
-Message-ID: <20170815075609.mmzbfwritjzvrpsn@gmail.com>
-References: <20170810172615.51965-1-thgarnie@google.com>
- <20170811124127.kkb5pnkljz4umxuj@gmail.com>
- <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
+From: Felipe Balbi <balbi@kernel.org>
+Subject: Re: [PATCH v4 0/3] Introduce USB charger support in USB phy
+Date: Tue, 15 Aug 2017 12:53:14 +0300
+Message-ID: <87h8x96tth.fsf@linux.intel.com>
+References: <cover.1501132171.git.baolin.wang@linaro.org> <CAMz4kuKYOjHgapntbuNB9b6qz35osKetwJ8jmxb=TnDKgLEuDg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <kernel-hardening-return-9438-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Content-Disposition: inline
-In-Reply-To: <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
+Content-Type: multipart/signed; boundary="=-=-=";
+        micalg=pgp-sha256; protocol="application/pgp-signature"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:64590 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753327AbdHOJx3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 15 Aug 2017 05:53:29 -0400
+In-Reply-To: <CAMz4kuKYOjHgapntbuNB9b6qz35osKetwJ8jmxb=TnDKgLEuDg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg KH <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: Jun Li <jun.li@nxp.com>, Peter Chen <peter.chen@freescale.com>, Mark Brown <broonie@kernel.org>, John Stultz <john.stultz@linaro.org>, NeilBrown <neilb@suse.com>, patches@opensource.wolfsonmicro.com, Baolin Wang <baolin.wang@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, USB <linux-usb@vger.kernel.org>, device-mainlining@lists.linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org
+
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
 
-* Thomas Garnier <thgarnie@google.com> wrote:
+Hi,
 
-> > Do these changes get us closer to being able to build the kernel as truly 
-> > position independent, i.e. to place it anywhere in the valid x86-64 address 
-> > space? Or any other advantages?
-> 
-> Yes, PIE allows us to put the kernel anywhere in memory. It will allow us to 
-> have a full randomized address space where position and order of sections are 
-> completely random. There is still some work to get there but being able to build 
-> a PIE kernel is a significant step.
+Baolin Wang <baolin.wang@linaro.org> writes:
+>> Currently the Linux kernel does not provide any standard integration of =
+this
+>> feature that integrates the USB subsystem with the system power regulati=
+on
+>> provided by PMICs meaning that either vendors must add this in their ker=
+nels
+>> or USB gadget devices based on Linux (such as mobile phones) may not beh=
+ave
+>> as they should. Thus provide a standard USB charger support in USB phy c=
+ore
+>> for doing this in kernel.
+>>
+>> Now introduce one user with wm831x_power to support and test the usb cha=
+rger.
+>> In future we will also cnvert below power drivers:
+>> drivers/power/supply/axp288_charger.c
+>> drivers/power/supply/bq24190_charger.c
+>> drivers/power/supply/charger-manager.c
+>> drivers/power/supply/qcom_smbb.c
+>>
+>> Changes since v3:
+>>  - Bail out errors when failed to find usb phy for wm831x_power driver.
+>> Changes since v2:
+>>  - Add DT binding documentation for wm831x_power driver.
+>>  - Change 'usb-phy' as one optional property for wm831x_power driver.
+>> Changes since v1:
+>>  - Fix building errors.
+>
+> Do you have any comments about usb charger support in usb phy core? Thank=
+s.
 
-So I _really_ dislike the whole PIE approach, because of the huge slowdown:
+No more comments from me
 
-+config RANDOMIZE_BASE_LARGE
-+       bool "Increase the randomization range of the kernel image"
-+       depends on X86_64 && RANDOMIZE_BASE
-+       select X86_PIE
-+       select X86_MODULE_PLTS if MODULES
-+       default n
-+       ---help---
-+         Build the kernel as a Position Independent Executable (PIE) and
-+         increase the available randomization range from 1GB to 3GB.
-+
-+         This option impacts performance on kernel CPU intensive workloads up
-+         to 10% due to PIE generated code. Impact on user-mode processes and
-+         typical usage would be significantly less (0.50% when you build the
-+         kernel).
-+
-+         The kernel and modules will generate slightly more assembly (1 to 2%
-+         increase on the .text sections). The vmlinux binary will be
-+         significantly smaller due to less relocations.
+=2D-=20
+balbi
 
-To put 10% kernel overhead into perspective: enabling this option wipes out about 
-5-10 years worth of painstaking optimizations we've done to keep the kernel fast 
-... (!!)
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-I think the fundamental flaw is the assumption that we need a PIE executable to 
-have a freely relocatable kernel on 64-bit CPUs.
+-----BEGIN PGP SIGNATURE-----
 
-Have you considered a kernel with -mcmodel=small (or medium) instead of -fpie 
--mcmodel=large? We can pick a random 2GB window in the (non-kernel) canonical 
-x86-64 address space to randomize the location of kernel text. The location of 
-modules can be further randomized within that 2GB window.
-
-It should have far less performance impact than the register-losing and 
-overhead-inducing -fpie / -mcmodel=large (for modules) execution models.
-
-My quick guess is tha the performance impact might be close to zero in fact.
-
-Thanks,
-
-	Ingo
+iQIzBAEBCAAdFiEElLzh7wn96CXwjh2IzL64meEamQYFAlmSxIoACgkQzL64meEa
+mQYZ6hAAvPsIcUnGXEPC0A7+wvubHiy9sJbZJYyZCTC7aQ7+I4u/EWFGHz4dTrwv
+XXgj7ETal//D2vdZt751RVKQvoKd454bGiwUbEDGLIra1HLMRSKv3jziMuLAOYBT
+FbJ7I1zTyQ7MYZBwbk2P+vvSzQh85H/oNJJGYkCpmrQc9vVhONKrAMwA6kD6Gt4A
+K+nZSyvRbsUZqe65TUmeI9lMZ8oRwSjtTvd1JV3RIy0Xhs6lWLk5lr4cjvR7sXLG
+X3MA1kqQZ5rnRNiEwqH/7gbdoWtiW93M1a3InkGLg3tuT3hbsmuLHCToEMogPFUY
+NtkG46B4J9DwrTyz7rt0nzq8kzbU233g1WoTlwc/F6WvL0uUuYFekyQGURzZCVB9
+C1p29fwSbXKojukBLLB/pVt7MtgHPdJJ8wWJnJwQC9o6AXXSHxI4nuRccb7BZN0H
+889Kg8W5vMdICh0psCoO1rwoG7PFEtT3Q/miH6pAQOQ7fCSX9UaXLUCavTdTv6w9
+hFCOWdnUKZ5uVpv0wra57vY9dl/0nWZQbOT/V9/D4wIERZvXe8gRgI/GCyOT0wAZ
+CnyU7zX4+3+pUku7j90jLDkBBT4rlqVEQFbfEx0b95+C4Acal7bSGeEhFGpX2cgA
+eabc85JFDfNM8YFJ2fMCwBzEj9byifcXOTe2OoPWMqnKs+9Qh6Y=
+=1ozg
+-----END PGP SIGNATURE-----
+--=-=-=--
