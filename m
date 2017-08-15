@@ -1,127 +1,114 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 06/14] staging: typec: fusb302: Add support for USB2 charger detection through extcon
-Date: Tue, 15 Aug 2017 22:04:54 +0200
-Message-ID: <20170815200502.17339-7-hdegoede@redhat.com>
+Subject: [PATCH v2 07/14] staging: typec: fusb302: Export current-limit
+ through a power_supply class dev
+Date: Tue, 15 Aug 2017 22:04:55 +0200
+Message-ID: <20170815200502.17339-8-hdegoede@redhat.com>
 References: <20170815200502.17339-1-hdegoede@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
 In-Reply-To: <20170815200502.17339-1-hdegoede@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
 To: Wolfram Sang <wsa@the-dreams.de>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org, "Yueyao (Nathan) Zhu" <yueyao@google.com>
+Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Yueyao (Nathan) Zhu" <yueyao@google.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The fusb302 port-controller relies on an external device doing USB2
-charger-type detection.
-
-The Intel Whiskey Cove PMIC with which the fusb302 is combined on some
-X86/ACPI platforms already has a charger-type detection driver which
-uses extcon to communicate the detected charger-type.
-
-This commit uses the tcpm_get_usb2_current_limit_extcon helper to enable
-USB2 charger detection on these systems. Note that the "fcs,extcon-name"
-property name is only for kernel internal use by X86/ACPI platform code
-and as such is NOT documented in the devicetree bindings.
-
-Cc: "Yueyao (Nathan) Zhu" <yueyao@google.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/staging/typec/fusb302/fusb302.c | 49 +++++++++++++++++++++++++++++++++
- 1 file changed, 49 insertions(+)
-
-diff --git a/drivers/staging/typec/fusb302/fusb302.c b/drivers/staging/typec/fusb302/fusb302.c
-index dea88fd..870f8078 100644
---- a/drivers/staging/typec/fusb302/fusb302.c
-+++ b/drivers/staging/typec/fusb302/fusb302.c
-@@ -17,6 +17,7 @@
- #include <linux/debugfs.h>
- #include <linux/delay.h>
- #include <linux/errno.h>
-+#include <linux/extcon.h>
- #include <linux/gpio.h>
- #include <linux/i2c.h>
- #include <linux/interrupt.h>
-@@ -96,6 +97,7 @@ struct fusb302_chip {
- 
- 	int gpio_int_n;
- 	int gpio_int_n_irq;
-+	struct extcon_dev *extcon;
- 
- 	struct workqueue_struct *wq;
- 	struct delayed_work bc_lvl_handler;
-@@ -516,6 +518,38 @@ static int tcpm_get_vbus(struct tcpc_dev *dev)
- 	return ret;
- }
- 
-+static int tcpm_get_current_limit(struct tcpc_dev *dev)
-+{
-+	struct fusb302_chip *chip = container_of(dev, struct fusb302_chip,
-+						 tcpc_dev);
-+	int current_limit = 0;
-+	unsigned long timeout;
-+
-+	if (!chip->extcon)
-+		return 0;
-+
-+	/*
-+	 * USB2 Charger detection may still be in progress when we get here,
-+	 * this can take upto 600ms, wait 800ms max.
-+	 */
-+	timeout = jiffies + msecs_to_jiffies(800);
-+	do {
-+		if (extcon_get_state(chip->extcon, EXTCON_CHG_USB_SDP) == 1)
-+			current_limit = 500;
-+
-+		if (extcon_get_state(chip->extcon, EXTCON_CHG_USB_CDP) == 1 ||
-+		    extcon_get_state(chip->extcon, EXTCON_CHG_USB_ACA) == 1)
-+			current_limit = 1500;
-+
-+		if (extcon_get_state(chip->extcon, EXTCON_CHG_USB_DCP) == 1)
-+			current_limit = 2000;
-+
-+		msleep(50);
-+	} while (current_limit == 0 && time_before(jiffies, timeout));
-+
-+	return current_limit;
-+}
-+
- static int fusb302_set_cc_pull(struct fusb302_chip *chip,
- 			       bool pull_up, bool pull_down)
- {
-@@ -1201,6 +1235,7 @@ static void init_tcpc_dev(struct tcpc_dev *fusb302_tcpc_dev)
- {
- 	fusb302_tcpc_dev->init = tcpm_init;
- 	fusb302_tcpc_dev->get_vbus = tcpm_get_vbus;
-+	fusb302_tcpc_dev->get_current_limit = tcpm_get_current_limit;
- 	fusb302_tcpc_dev->set_cc = tcpm_set_cc;
- 	fusb302_tcpc_dev->get_cc = tcpm_get_cc;
- 	fusb302_tcpc_dev->set_polarity = tcpm_set_polarity;
-@@ -1685,6 +1720,7 @@ static int fusb302_probe(struct i2c_client *client,
- 	struct fusb302_chip *chip;
- 	struct i2c_adapter *adapter;
- 	struct device *dev = &client->dev;
-+	const char *name;
- 	int ret = 0;
- 	u32 val;
- 
-@@ -1717,6 +1753,19 @@ static int fusb302_probe(struct i2c_client *client,
- 	if (!device_property_read_u32(dev, "fcs,operating-snk-microwatt", &val))
- 		chip->tcpc_config.operating_snk_mw = val / 1000;
- 
-+	/*
-+	 * Devicetree platforms should get extcon via phandle (not yet
-+	 * supported). On ACPI platforms, we get the name from a device prop.
-+	 * This device prop is for kernel internal use only and is expected
-+	 * to be set by the platform code which also registers the i2c client
-+	 * for the fusb302.
-+	 */
-+	if (device_property_read_string(dev, "fcs,extcon-name", &name) == 0) {
-+		chip->extcon = extcon_get_extcon_dev(name);
-+		if (!chip->extcon)
-+			return -EPROBE_DEFER;
-+	}
-+
- 	ret = fusb302_debugfs_init(chip);
- 	if (ret < 0)
- 		return ret;
--- 
-2.9.4
+VGhlIGZ1c2IzMDIgVHlwZS1DIHBvcnQtY29udHJvbGxlciBjYW5ub3QgY29udHJvbCB0aGUgY3Vy
+cmVudC1saW1pdApkaXJlY3RseSwgc28gd2UgbmVlZCB0byBleHBvcnRlZCB0aGUgbGltaXQgc28g
+dGhhdCBhbm90aGVyIGRyaXZlcgooZS5nLiB0aGUgY2hhcmdlciBkcml2ZXIpIGNhbiBwaWNrIHRo
+ZSBsaW1pdCB1cCBhbmQgY29uZmlndXJlIHRoZQpzeXN0ZW0gYWNjb3JkaW5nbHkuCgpUaGUgcG93
+ZXItc3VwcGx5IHN1YnN5cyBhbHJlYWR5IHByb3ZpZGVzIGluZnJhc3RydWN0dXJlIGZvciB0aGlz
+LApwb3dlci1zdXBwbHkgZGV2aWNlcyBoYXZlIHRoZSBub3Rpb24gb2YgYmVpbmcgc3VwcGxpZWQg
+YnkgYW5vdGhlcgpwb3dlci1zdXBwbHkgYW5kIGhhdmUgcHJvcGVydGllcyB0aHJvdWdoIHdoaWNo
+IHdlIGNhbiBleHBvcnQgdGhlCmN1cnJlbnQtbGltaXQuCgpSZWdpc3RlciBhIHBvd2VyX3N1cHBs
+eSBhbmQgZXhwb3J0IHRoZSBjdXJyZW50LWxpbWl0IHRocm91Z2ggdGhlCnBvd2VyX3N1cHBseSdz
+IGN1cnJlbnQtbWF4IHByb3BlcnR5LgoKQ2M6ICJZdWV5YW8gKE5hdGhhbikgWmh1IiA8eXVleWFv
+QGdvb2dsZS5jb20+ClNpZ25lZC1vZmYtYnk6IEhhbnMgZGUgR29lZGUgPGhkZWdvZWRlQHJlZGhh
+dC5jb20+Ci0tLQpDaGFuZ2VzIGluIHYyOgotUHV0IHRoZSBwc3kgY2xhc3MgZGV2aWNlIGNvZGUg
+ZGlyZWN0bHkgaW4gZnVzYjMwMi5jIHJhdGhlciB0aGVuIGludHJvZHVjaW5nCiBoZWxwZXJzIHdo
+aWNoIGFyZSBvbmx5IHVzZWQgYnkgZnVzYjMwMi5jCi1BZGQgYW4gb25saW5lIHByb3BlcnR5IHRv
+IHRoZSBwc3kgc28gdGhhdCB1cG93ZXIgZG9lcyBub3QgbWlzdGFrZSBpdCBmb3IgYQogc2Vjb25k
+IGJhdHRlcnkgaW4gdGhlIHN5c3RlbQotLS0KIGRyaXZlcnMvc3RhZ2luZy90eXBlYy9mdXNiMzAy
+L0tjb25maWcgICB8ICAyICstCiBkcml2ZXJzL3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9mdXNiMzAy
+LmMgfCA2MyArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0KIDIgZmlsZXMgY2hhbmdl
+ZCwgNjIgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJz
+L3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9LY29uZmlnIGIvZHJpdmVycy9zdGFnaW5nL3R5cGVjL2Z1
+c2IzMDIvS2NvbmZpZwppbmRleCBmY2UwOTlmLi40OGE0ZjJmIDEwMDY0NAotLS0gYS9kcml2ZXJz
+L3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9LY29uZmlnCisrKyBiL2RyaXZlcnMvc3RhZ2luZy90eXBl
+Yy9mdXNiMzAyL0tjb25maWcKQEAgLTEsNiArMSw2IEBACiBjb25maWcgVFlQRUNfRlVTQjMwMgog
+CXRyaXN0YXRlICJGYWlyY2hpbGQgRlVTQjMwMiBUeXBlLUMgY2hpcCBkcml2ZXIiCi0JZGVwZW5k
+cyBvbiBJMkMKKwlkZXBlbmRzIG9uIEkyQyAmJiBQT1dFUl9TVVBQTFkKIAloZWxwCiAJICBUaGUg
+RmFpcmNoaWxkIEZVU0IzMDIgVHlwZS1DIGNoaXAgZHJpdmVyIHRoYXQgd29ya3Mgd2l0aAogCSAg
+VHlwZS1DIFBvcnQgQ29udHJvbGxlciBNYW5hZ2VyIHRvIHByb3ZpZGUgVVNCIFBEIGFuZCBVU0IK
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvc3RhZ2luZy90eXBlYy9mdXNiMzAyL2Z1c2IzMDIuYyBiL2Ry
+aXZlcnMvc3RhZ2luZy90eXBlYy9mdXNiMzAyL2Z1c2IzMDIuYwppbmRleCA4NzBmODA3OC4uMzZm
+ZGUzNiAxMDA2NDQKLS0tIGEvZHJpdmVycy9zdGFnaW5nL3R5cGVjL2Z1c2IzMDIvZnVzYjMwMi5j
+CisrKyBiL2RyaXZlcnMvc3RhZ2luZy90eXBlYy9mdXNiMzAyL2Z1c2IzMDIuYwpAQCAtMjgsNiAr
+MjgsNyBAQAogI2luY2x1ZGUgPGxpbnV4L29mX2RldmljZS5oPgogI2luY2x1ZGUgPGxpbnV4L29m
+X2dwaW8uaD4KICNpbmNsdWRlIDxsaW51eC9waW5jdHJsL2NvbnN1bWVyLmg+CisjaW5jbHVkZSA8
+bGludXgvcG93ZXJfc3VwcGx5Lmg+CiAjaW5jbHVkZSA8bGludXgvcHJvY19mcy5oPgogI2luY2x1
+ZGUgPGxpbnV4L3JlZ3VsYXRvci9jb25zdW1lci5oPgogI2luY2x1ZGUgPGxpbnV4L3NjaGVkL2Ns
+b2NrLmg+CkBAIC0xMDgsNiArMTA5LDExIEBAIHN0cnVjdCBmdXNiMzAyX2NoaXAgewogCS8qIGxv
+Y2sgZm9yIHNoYXJpbmcgY2hpcCBzdGF0ZXMgKi8KIAlzdHJ1Y3QgbXV0ZXggbG9jazsKIAorCS8q
+IHBzeSArIHBzeSBzdGF0dXMgKi8KKwlzdHJ1Y3QgcG93ZXJfc3VwcGx5ICpwc3k7CisJdTMyIGN1
+cnJlbnRfbGltaXQ7CisJdTMyIHN1cHBseV92b2x0YWdlOworCiAJLyogY2hpcCBzdGF0dXMgKi8K
+IAllbnVtIHRvZ2dsaW5nX21vZGUgdG9nZ2xpbmdfbW9kZTsKIAllbnVtIHNyY19jdXJyZW50X3N0
+YXR1cyBzcmNfY3VycmVudF9zdGF0dXM7CkBAIC04NzYsMTEgKzg4MiwxMyBAQCBzdGF0aWMgaW50
+IHRjcG1fc2V0X3ZidXMoc3RydWN0IHRjcGNfZGV2ICpkZXYsIGJvb2wgb24sIGJvb2wgY2hhcmdl
+KQogCQljaGlwLT52YnVzX29uID0gb247CiAJCWZ1c2IzMDJfbG9nKGNoaXAsICJ2YnVzIDo9ICVz
+Iiwgb24gPyAiT24iIDogIk9mZiIpOwogCX0KLQlpZiAoY2hpcC0+Y2hhcmdlX29uID09IGNoYXJn
+ZSkKKwlpZiAoY2hpcC0+Y2hhcmdlX29uID09IGNoYXJnZSkgewogCQlmdXNiMzAyX2xvZyhjaGlw
+LCAiY2hhcmdlIGlzIGFscmVhZHkgJXMiLAogCQkJICAgIGNoYXJnZSA/ICJPbiIgOiAiT2ZmIik7
+Ci0JZWxzZQorCX0gZWxzZSB7CiAJCWNoaXAtPmNoYXJnZV9vbiA9IGNoYXJnZTsKKwkJcG93ZXJf
+c3VwcGx5X2NoYW5nZWQoY2hpcC0+cHN5KTsKKwl9CiAKIGRvbmU6CiAJbXV0ZXhfdW5sb2NrKCZj
+aGlwLT5sb2NrKTsKQEAgLTg5Niw2ICs5MDQsMTEgQEAgc3RhdGljIGludCB0Y3BtX3NldF9jdXJy
+ZW50X2xpbWl0KHN0cnVjdCB0Y3BjX2RldiAqZGV2LCB1MzIgbWF4X21hLCB1MzIgbXYpCiAJZnVz
+YjMwMl9sb2coY2hpcCwgImN1cnJlbnQgbGltaXQ6ICVkIG1hLCAlZCBtdiAobm90IGltcGxlbWVu
+dGVkKSIsCiAJCSAgICBtYXhfbWEsIG12KTsKIAorCWNoaXAtPnN1cHBseV92b2x0YWdlID0gbXY7
+CisJY2hpcC0+Y3VycmVudF9saW1pdCA9IG1heF9tYTsKKworCXBvd2VyX3N1cHBseV9jaGFuZ2Vk
+KGNoaXAtPnBzeSk7CisKIAlyZXR1cm4gMDsKIH0KIApAQCAtMTY4MSw2ICsxNjk0LDQzIEBAIHN0
+YXRpYyBpcnFyZXR1cm5fdCBmdXNiMzAyX2lycV9pbnRuKGludCBpcnEsIHZvaWQgKmRldl9pZCkK
+IAlyZXR1cm4gSVJRX0hBTkRMRUQ7CiB9CiAKK3N0YXRpYyBpbnQgZnVzYjMwMl9wc3lfZ2V0X3By
+b3BlcnR5KHN0cnVjdCBwb3dlcl9zdXBwbHkgKnBzeSwKKwkJCQkgICAgZW51bSBwb3dlcl9zdXBw
+bHlfcHJvcGVydHkgcHNwLAorCQkJCSAgICB1bmlvbiBwb3dlcl9zdXBwbHlfcHJvcHZhbCAqdmFs
+KQoreworCXN0cnVjdCBmdXNiMzAyX2NoaXAgKmNoaXAgPSBwb3dlcl9zdXBwbHlfZ2V0X2RydmRh
+dGEocHN5KTsKKworCXN3aXRjaCAocHNwKSB7CisJY2FzZSBQT1dFUl9TVVBQTFlfUFJPUF9PTkxJ
+TkU6CisJCXZhbC0+aW50dmFsID0gY2hpcC0+Y2hhcmdlX29uOworCQlicmVhazsKKwljYXNlIFBP
+V0VSX1NVUFBMWV9QUk9QX1ZPTFRBR0VfTk9XOgorCQl2YWwtPmludHZhbCA9IGNoaXAtPnN1cHBs
+eV92b2x0YWdlICogMTAwMDsgLyogbVYgLT4gwrVWICovCisJCWJyZWFrOworCWNhc2UgUE9XRVJf
+U1VQUExZX1BST1BfQ1VSUkVOVF9NQVg6CisJCXZhbC0+aW50dmFsID0gY2hpcC0+Y3VycmVudF9s
+aW1pdCAqIDEwMDA7IC8qIG1BIC0+IMK1QSAqLworCQlicmVhazsKKwlkZWZhdWx0OgorCQlyZXR1
+cm4gLUVOT0RBVEE7CisJfQorCisJcmV0dXJuIDA7Cit9CisKK3N0YXRpYyBlbnVtIHBvd2VyX3N1
+cHBseV9wcm9wZXJ0eSBmdXNiMzAyX3BzeV9wcm9wZXJ0aWVzW10gPSB7CisJUE9XRVJfU1VQUExZ
+X1BST1BfT05MSU5FLAorCVBPV0VSX1NVUFBMWV9QUk9QX1ZPTFRBR0VfTk9XLAorCVBPV0VSX1NV
+UFBMWV9QUk9QX0NVUlJFTlRfTUFYLAorfTsKKworY29uc3Qgc3RydWN0IHBvd2VyX3N1cHBseV9k
+ZXNjIGZ1c2IzMDJfcHN5X2Rlc2MgPSB7CisJLm5hbWUJCT0gImZ1c2IzMDItdHlwZWMtc291cmNl
+IiwKKwkudHlwZQkJPSBQT1dFUl9TVVBQTFlfVFlQRV9VU0JfVFlQRV9DLAorCS5wcm9wZXJ0aWVz
+CT0gZnVzYjMwMl9wc3lfcHJvcGVydGllcywKKwkubnVtX3Byb3BlcnRpZXMJPSBBUlJBWV9TSVpF
+KGZ1c2IzMDJfcHN5X3Byb3BlcnRpZXMpLAorCS5nZXRfcHJvcGVydHkJPSBmdXNiMzAyX3BzeV9n
+ZXRfcHJvcGVydHksCit9OworCiBzdGF0aWMgaW50IGluaXRfZ3BpbyhzdHJ1Y3QgZnVzYjMwMl9j
+aGlwICpjaGlwKQogewogCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbm9kZTsKQEAgLTE3MjAsNiArMTc3
+MCw3IEBAIHN0YXRpYyBpbnQgZnVzYjMwMl9wcm9iZShzdHJ1Y3QgaTJjX2NsaWVudCAqY2xpZW50
+LAogCXN0cnVjdCBmdXNiMzAyX2NoaXAgKmNoaXA7CiAJc3RydWN0IGkyY19hZGFwdGVyICphZGFw
+dGVyOwogCXN0cnVjdCBkZXZpY2UgKmRldiA9ICZjbGllbnQtPmRldjsKKwlzdHJ1Y3QgcG93ZXJf
+c3VwcGx5X2NvbmZpZyBjZmcgPSB7fTsKIAljb25zdCBjaGFyICpuYW1lOwogCWludCByZXQgPSAw
+OwogCXUzMiB2YWw7CkBAIC0xNzY2LDYgKzE4MTcsMTQgQEAgc3RhdGljIGludCBmdXNiMzAyX3By
+b2JlKHN0cnVjdCBpMmNfY2xpZW50ICpjbGllbnQsCiAJCQlyZXR1cm4gLUVQUk9CRV9ERUZFUjsK
+IAl9CiAKKwljZmcuZHJ2X2RhdGEgPSBjaGlwOworCWNoaXAtPnBzeSA9IGRldm1fcG93ZXJfc3Vw
+cGx5X3JlZ2lzdGVyKGRldiwgJmZ1c2IzMDJfcHN5X2Rlc2MsICZjZmcpOworCWlmIChJU19FUlIo
+Y2hpcC0+cHN5KSkgeworCQlyZXQgPSBQVFJfRVJSKGNoaXAtPnBzeSk7CisJCWRldl9lcnIoY2hp
+cC0+ZGV2LCAiRXJyb3IgcmVnaXN0ZXJpbmcgcG93ZXItc3VwcGx5OiAlZFxuIiwgcmV0KTsKKwkJ
+cmV0dXJuIHJldDsKKwl9CisKIAlyZXQgPSBmdXNiMzAyX2RlYnVnZnNfaW5pdChjaGlwKTsKIAlp
+ZiAocmV0IDwgMCkKIAkJcmV0dXJuIHJldDsKLS0gCjIuOS40CgpfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkZXZlbCBtYWlsaW5nIGxpc3QKZGV2ZWxAbGlu
+dXhkcml2ZXJwcm9qZWN0Lm9yZwpodHRwOi8vZHJpdmVyZGV2LmxpbnV4ZHJpdmVycHJvamVjdC5v
+cmcvbWFpbG1hbi9saXN0aW5mby9kcml2ZXJkZXYtZGV2ZWwK
