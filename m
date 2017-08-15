@@ -1,12 +1,12 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v2 07/14] staging: typec: fusb302: Export current-limit
- through a power_supply class dev
-Date: Tue, 15 Aug 2017 22:04:55 +0200
-Message-ID: <20170815200502.17339-8-hdegoede@redhat.com>
+Subject: [PATCH v2 08/14] power: supply: Add
+ power_supply_set_input_current_limit_from_supplier helper
+Date: Tue, 15 Aug 2017 22:04:56 +0200
+Message-ID: <20170815200502.17339-9-hdegoede@redhat.com>
 References: <20170815200502.17339-1-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
 In-Reply-To: <20170815200502.17339-1-hdegoede@redhat.com>
 List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
@@ -19,96 +19,93 @@ List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driver
 Errors-To: driverdev-devel-bounces@linuxdriverproject.org
 Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
 To: Wolfram Sang <wsa@the-dreams.de>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Yueyao (Nathan) Zhu" <yueyao@google.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
+Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhlIGZ1c2IzMDIgVHlwZS1DIHBvcnQtY29udHJvbGxlciBjYW5ub3QgY29udHJvbCB0aGUgY3Vy
-cmVudC1saW1pdApkaXJlY3RseSwgc28gd2UgbmVlZCB0byBleHBvcnRlZCB0aGUgbGltaXQgc28g
-dGhhdCBhbm90aGVyIGRyaXZlcgooZS5nLiB0aGUgY2hhcmdlciBkcml2ZXIpIGNhbiBwaWNrIHRo
-ZSBsaW1pdCB1cCBhbmQgY29uZmlndXJlIHRoZQpzeXN0ZW0gYWNjb3JkaW5nbHkuCgpUaGUgcG93
-ZXItc3VwcGx5IHN1YnN5cyBhbHJlYWR5IHByb3ZpZGVzIGluZnJhc3RydWN0dXJlIGZvciB0aGlz
-LApwb3dlci1zdXBwbHkgZGV2aWNlcyBoYXZlIHRoZSBub3Rpb24gb2YgYmVpbmcgc3VwcGxpZWQg
-YnkgYW5vdGhlcgpwb3dlci1zdXBwbHkgYW5kIGhhdmUgcHJvcGVydGllcyB0aHJvdWdoIHdoaWNo
-IHdlIGNhbiBleHBvcnQgdGhlCmN1cnJlbnQtbGltaXQuCgpSZWdpc3RlciBhIHBvd2VyX3N1cHBs
-eSBhbmQgZXhwb3J0IHRoZSBjdXJyZW50LWxpbWl0IHRocm91Z2ggdGhlCnBvd2VyX3N1cHBseSdz
-IGN1cnJlbnQtbWF4IHByb3BlcnR5LgoKQ2M6ICJZdWV5YW8gKE5hdGhhbikgWmh1IiA8eXVleWFv
-QGdvb2dsZS5jb20+ClNpZ25lZC1vZmYtYnk6IEhhbnMgZGUgR29lZGUgPGhkZWdvZWRlQHJlZGhh
-dC5jb20+Ci0tLQpDaGFuZ2VzIGluIHYyOgotUHV0IHRoZSBwc3kgY2xhc3MgZGV2aWNlIGNvZGUg
-ZGlyZWN0bHkgaW4gZnVzYjMwMi5jIHJhdGhlciB0aGVuIGludHJvZHVjaW5nCiBoZWxwZXJzIHdo
-aWNoIGFyZSBvbmx5IHVzZWQgYnkgZnVzYjMwMi5jCi1BZGQgYW4gb25saW5lIHByb3BlcnR5IHRv
-IHRoZSBwc3kgc28gdGhhdCB1cG93ZXIgZG9lcyBub3QgbWlzdGFrZSBpdCBmb3IgYQogc2Vjb25k
-IGJhdHRlcnkgaW4gdGhlIHN5c3RlbQotLS0KIGRyaXZlcnMvc3RhZ2luZy90eXBlYy9mdXNiMzAy
-L0tjb25maWcgICB8ICAyICstCiBkcml2ZXJzL3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9mdXNiMzAy
-LmMgfCA2MyArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0KIDIgZmlsZXMgY2hhbmdl
-ZCwgNjIgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJz
-L3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9LY29uZmlnIGIvZHJpdmVycy9zdGFnaW5nL3R5cGVjL2Z1
-c2IzMDIvS2NvbmZpZwppbmRleCBmY2UwOTlmLi40OGE0ZjJmIDEwMDY0NAotLS0gYS9kcml2ZXJz
-L3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9LY29uZmlnCisrKyBiL2RyaXZlcnMvc3RhZ2luZy90eXBl
-Yy9mdXNiMzAyL0tjb25maWcKQEAgLTEsNiArMSw2IEBACiBjb25maWcgVFlQRUNfRlVTQjMwMgog
-CXRyaXN0YXRlICJGYWlyY2hpbGQgRlVTQjMwMiBUeXBlLUMgY2hpcCBkcml2ZXIiCi0JZGVwZW5k
-cyBvbiBJMkMKKwlkZXBlbmRzIG9uIEkyQyAmJiBQT1dFUl9TVVBQTFkKIAloZWxwCiAJICBUaGUg
-RmFpcmNoaWxkIEZVU0IzMDIgVHlwZS1DIGNoaXAgZHJpdmVyIHRoYXQgd29ya3Mgd2l0aAogCSAg
-VHlwZS1DIFBvcnQgQ29udHJvbGxlciBNYW5hZ2VyIHRvIHByb3ZpZGUgVVNCIFBEIGFuZCBVU0IK
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvc3RhZ2luZy90eXBlYy9mdXNiMzAyL2Z1c2IzMDIuYyBiL2Ry
-aXZlcnMvc3RhZ2luZy90eXBlYy9mdXNiMzAyL2Z1c2IzMDIuYwppbmRleCA4NzBmODA3OC4uMzZm
-ZGUzNiAxMDA2NDQKLS0tIGEvZHJpdmVycy9zdGFnaW5nL3R5cGVjL2Z1c2IzMDIvZnVzYjMwMi5j
-CisrKyBiL2RyaXZlcnMvc3RhZ2luZy90eXBlYy9mdXNiMzAyL2Z1c2IzMDIuYwpAQCAtMjgsNiAr
-MjgsNyBAQAogI2luY2x1ZGUgPGxpbnV4L29mX2RldmljZS5oPgogI2luY2x1ZGUgPGxpbnV4L29m
-X2dwaW8uaD4KICNpbmNsdWRlIDxsaW51eC9waW5jdHJsL2NvbnN1bWVyLmg+CisjaW5jbHVkZSA8
-bGludXgvcG93ZXJfc3VwcGx5Lmg+CiAjaW5jbHVkZSA8bGludXgvcHJvY19mcy5oPgogI2luY2x1
-ZGUgPGxpbnV4L3JlZ3VsYXRvci9jb25zdW1lci5oPgogI2luY2x1ZGUgPGxpbnV4L3NjaGVkL2Ns
-b2NrLmg+CkBAIC0xMDgsNiArMTA5LDExIEBAIHN0cnVjdCBmdXNiMzAyX2NoaXAgewogCS8qIGxv
-Y2sgZm9yIHNoYXJpbmcgY2hpcCBzdGF0ZXMgKi8KIAlzdHJ1Y3QgbXV0ZXggbG9jazsKIAorCS8q
-IHBzeSArIHBzeSBzdGF0dXMgKi8KKwlzdHJ1Y3QgcG93ZXJfc3VwcGx5ICpwc3k7CisJdTMyIGN1
-cnJlbnRfbGltaXQ7CisJdTMyIHN1cHBseV92b2x0YWdlOworCiAJLyogY2hpcCBzdGF0dXMgKi8K
-IAllbnVtIHRvZ2dsaW5nX21vZGUgdG9nZ2xpbmdfbW9kZTsKIAllbnVtIHNyY19jdXJyZW50X3N0
-YXR1cyBzcmNfY3VycmVudF9zdGF0dXM7CkBAIC04NzYsMTEgKzg4MiwxMyBAQCBzdGF0aWMgaW50
-IHRjcG1fc2V0X3ZidXMoc3RydWN0IHRjcGNfZGV2ICpkZXYsIGJvb2wgb24sIGJvb2wgY2hhcmdl
-KQogCQljaGlwLT52YnVzX29uID0gb247CiAJCWZ1c2IzMDJfbG9nKGNoaXAsICJ2YnVzIDo9ICVz
-Iiwgb24gPyAiT24iIDogIk9mZiIpOwogCX0KLQlpZiAoY2hpcC0+Y2hhcmdlX29uID09IGNoYXJn
-ZSkKKwlpZiAoY2hpcC0+Y2hhcmdlX29uID09IGNoYXJnZSkgewogCQlmdXNiMzAyX2xvZyhjaGlw
-LCAiY2hhcmdlIGlzIGFscmVhZHkgJXMiLAogCQkJICAgIGNoYXJnZSA/ICJPbiIgOiAiT2ZmIik7
-Ci0JZWxzZQorCX0gZWxzZSB7CiAJCWNoaXAtPmNoYXJnZV9vbiA9IGNoYXJnZTsKKwkJcG93ZXJf
-c3VwcGx5X2NoYW5nZWQoY2hpcC0+cHN5KTsKKwl9CiAKIGRvbmU6CiAJbXV0ZXhfdW5sb2NrKCZj
-aGlwLT5sb2NrKTsKQEAgLTg5Niw2ICs5MDQsMTEgQEAgc3RhdGljIGludCB0Y3BtX3NldF9jdXJy
-ZW50X2xpbWl0KHN0cnVjdCB0Y3BjX2RldiAqZGV2LCB1MzIgbWF4X21hLCB1MzIgbXYpCiAJZnVz
-YjMwMl9sb2coY2hpcCwgImN1cnJlbnQgbGltaXQ6ICVkIG1hLCAlZCBtdiAobm90IGltcGxlbWVu
-dGVkKSIsCiAJCSAgICBtYXhfbWEsIG12KTsKIAorCWNoaXAtPnN1cHBseV92b2x0YWdlID0gbXY7
-CisJY2hpcC0+Y3VycmVudF9saW1pdCA9IG1heF9tYTsKKworCXBvd2VyX3N1cHBseV9jaGFuZ2Vk
-KGNoaXAtPnBzeSk7CisKIAlyZXR1cm4gMDsKIH0KIApAQCAtMTY4MSw2ICsxNjk0LDQzIEBAIHN0
-YXRpYyBpcnFyZXR1cm5fdCBmdXNiMzAyX2lycV9pbnRuKGludCBpcnEsIHZvaWQgKmRldl9pZCkK
-IAlyZXR1cm4gSVJRX0hBTkRMRUQ7CiB9CiAKK3N0YXRpYyBpbnQgZnVzYjMwMl9wc3lfZ2V0X3By
-b3BlcnR5KHN0cnVjdCBwb3dlcl9zdXBwbHkgKnBzeSwKKwkJCQkgICAgZW51bSBwb3dlcl9zdXBw
-bHlfcHJvcGVydHkgcHNwLAorCQkJCSAgICB1bmlvbiBwb3dlcl9zdXBwbHlfcHJvcHZhbCAqdmFs
-KQoreworCXN0cnVjdCBmdXNiMzAyX2NoaXAgKmNoaXAgPSBwb3dlcl9zdXBwbHlfZ2V0X2RydmRh
-dGEocHN5KTsKKworCXN3aXRjaCAocHNwKSB7CisJY2FzZSBQT1dFUl9TVVBQTFlfUFJPUF9PTkxJ
-TkU6CisJCXZhbC0+aW50dmFsID0gY2hpcC0+Y2hhcmdlX29uOworCQlicmVhazsKKwljYXNlIFBP
-V0VSX1NVUFBMWV9QUk9QX1ZPTFRBR0VfTk9XOgorCQl2YWwtPmludHZhbCA9IGNoaXAtPnN1cHBs
-eV92b2x0YWdlICogMTAwMDsgLyogbVYgLT4gwrVWICovCisJCWJyZWFrOworCWNhc2UgUE9XRVJf
-U1VQUExZX1BST1BfQ1VSUkVOVF9NQVg6CisJCXZhbC0+aW50dmFsID0gY2hpcC0+Y3VycmVudF9s
-aW1pdCAqIDEwMDA7IC8qIG1BIC0+IMK1QSAqLworCQlicmVhazsKKwlkZWZhdWx0OgorCQlyZXR1
-cm4gLUVOT0RBVEE7CisJfQorCisJcmV0dXJuIDA7Cit9CisKK3N0YXRpYyBlbnVtIHBvd2VyX3N1
-cHBseV9wcm9wZXJ0eSBmdXNiMzAyX3BzeV9wcm9wZXJ0aWVzW10gPSB7CisJUE9XRVJfU1VQUExZ
-X1BST1BfT05MSU5FLAorCVBPV0VSX1NVUFBMWV9QUk9QX1ZPTFRBR0VfTk9XLAorCVBPV0VSX1NV
-UFBMWV9QUk9QX0NVUlJFTlRfTUFYLAorfTsKKworY29uc3Qgc3RydWN0IHBvd2VyX3N1cHBseV9k
-ZXNjIGZ1c2IzMDJfcHN5X2Rlc2MgPSB7CisJLm5hbWUJCT0gImZ1c2IzMDItdHlwZWMtc291cmNl
-IiwKKwkudHlwZQkJPSBQT1dFUl9TVVBQTFlfVFlQRV9VU0JfVFlQRV9DLAorCS5wcm9wZXJ0aWVz
-CT0gZnVzYjMwMl9wc3lfcHJvcGVydGllcywKKwkubnVtX3Byb3BlcnRpZXMJPSBBUlJBWV9TSVpF
-KGZ1c2IzMDJfcHN5X3Byb3BlcnRpZXMpLAorCS5nZXRfcHJvcGVydHkJPSBmdXNiMzAyX3BzeV9n
-ZXRfcHJvcGVydHksCit9OworCiBzdGF0aWMgaW50IGluaXRfZ3BpbyhzdHJ1Y3QgZnVzYjMwMl9j
-aGlwICpjaGlwKQogewogCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbm9kZTsKQEAgLTE3MjAsNiArMTc3
-MCw3IEBAIHN0YXRpYyBpbnQgZnVzYjMwMl9wcm9iZShzdHJ1Y3QgaTJjX2NsaWVudCAqY2xpZW50
-LAogCXN0cnVjdCBmdXNiMzAyX2NoaXAgKmNoaXA7CiAJc3RydWN0IGkyY19hZGFwdGVyICphZGFw
-dGVyOwogCXN0cnVjdCBkZXZpY2UgKmRldiA9ICZjbGllbnQtPmRldjsKKwlzdHJ1Y3QgcG93ZXJf
-c3VwcGx5X2NvbmZpZyBjZmcgPSB7fTsKIAljb25zdCBjaGFyICpuYW1lOwogCWludCByZXQgPSAw
-OwogCXUzMiB2YWw7CkBAIC0xNzY2LDYgKzE4MTcsMTQgQEAgc3RhdGljIGludCBmdXNiMzAyX3By
-b2JlKHN0cnVjdCBpMmNfY2xpZW50ICpjbGllbnQsCiAJCQlyZXR1cm4gLUVQUk9CRV9ERUZFUjsK
-IAl9CiAKKwljZmcuZHJ2X2RhdGEgPSBjaGlwOworCWNoaXAtPnBzeSA9IGRldm1fcG93ZXJfc3Vw
-cGx5X3JlZ2lzdGVyKGRldiwgJmZ1c2IzMDJfcHN5X2Rlc2MsICZjZmcpOworCWlmIChJU19FUlIo
-Y2hpcC0+cHN5KSkgeworCQlyZXQgPSBQVFJfRVJSKGNoaXAtPnBzeSk7CisJCWRldl9lcnIoY2hp
-cC0+ZGV2LCAiRXJyb3IgcmVnaXN0ZXJpbmcgcG93ZXItc3VwcGx5OiAlZFxuIiwgcmV0KTsKKwkJ
-cmV0dXJuIHJldDsKKwl9CisKIAlyZXQgPSBmdXNiMzAyX2RlYnVnZnNfaW5pdChjaGlwKTsKIAlp
-ZiAocmV0IDwgMCkKIAkJcmV0dXJuIHJldDsKLS0gCjIuOS40CgpfX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkZXZlbCBtYWlsaW5nIGxpc3QKZGV2ZWxAbGlu
-dXhkcml2ZXJwcm9qZWN0Lm9yZwpodHRwOi8vZHJpdmVyZGV2LmxpbnV4ZHJpdmVycHJvamVjdC5v
-cmcvbWFpbG1hbi9saXN0aW5mby9kcml2ZXJkZXYtZGV2ZWwK
+On some devices the USB Type-C port power (USB PD 2.0) negotiation is
+done by a separate port-controller IC, while the current limit is
+controlled through another (charger) IC.
+
+It has been decided to model this by modelling the external Type-C
+power brick (adapter/charger) as a power-supply class device which
+supplies the charger-IC, with its voltage-now and current-max representing
+the negotiated voltage and max current draw.
+
+This commit adds a power_supply_set_input_current_limit_from_supplier
+helper function which charger power-supply drivers can call to get
+the max-current from their supplier and have this applied
+through their set_property call-back to their input-current-limit.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/power/supply/power_supply_core.c | 41 ++++++++++++++++++++++++++++++++
+ include/linux/power_supply.h             |  2 ++
+ 2 files changed, 43 insertions(+)
+
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 0741fce..3f92574 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -375,6 +375,47 @@ int power_supply_is_system_supplied(void)
+ }
+ EXPORT_SYMBOL_GPL(power_supply_is_system_supplied);
+ 
++static int __power_supply_get_supplier_max_current(struct device *dev,
++						   void *data)
++{
++	union power_supply_propval ret = {0,};
++	struct power_supply *epsy = dev_get_drvdata(dev);
++	struct power_supply *psy = data;
++
++	if (__power_supply_is_supplied_by(epsy, psy))
++		if (!epsy->desc->get_property(epsy,
++					      POWER_SUPPLY_PROP_CURRENT_MAX,
++					      &ret))
++			return ret.intval;
++
++	return 0;
++}
++
++int power_supply_set_input_current_limit_from_supplier(struct power_supply *psy)
++{
++	union power_supply_propval val = {0,};
++	int curr;
++
++	if (!psy->desc->set_property)
++		return -EINVAL;
++
++	/*
++	 * This function is not intended for use with a supply with multiple
++	 * suppliers, we simply pick the first supply to report a non 0
++	 * max-current.
++	 */
++	curr = class_for_each_device(power_supply_class, NULL, psy,
++				      __power_supply_get_supplier_max_current);
++	if (curr <= 0)
++		return (curr == 0) ? -ENODEV : curr;
++
++	val.intval = curr;
++
++	return psy->desc->set_property(psy,
++				POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, &val);
++}
++EXPORT_SYMBOL_GPL(power_supply_set_input_current_limit_from_supplier);
++
+ int power_supply_set_battery_charged(struct power_supply *psy)
+ {
+ 	if (atomic_read(&psy->use_cnt) >= 0 &&
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index de89066..79e90b3 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -332,6 +332,8 @@ extern int power_supply_get_battery_info(struct power_supply *psy,
+ 					 struct power_supply_battery_info *info);
+ extern void power_supply_changed(struct power_supply *psy);
+ extern int power_supply_am_i_supplied(struct power_supply *psy);
++extern int power_supply_set_input_current_limit_from_supplier(
++					 struct power_supply *psy);
+ extern int power_supply_set_battery_charged(struct power_supply *psy);
+ 
+ #ifdef CONFIG_POWER_SUPPLY
+-- 
+2.9.4
