@@ -1,53 +1,74 @@
-From: "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
-Subject: Re: [PATCH] thermal: intel_pch_thermal: Fix enable check on
- Broadwell-DE
-Date: Mon, 14 Aug 2017 23:39:06 +0000
-Message-ID: <1502753944.10633.1.camel@intel.com>
-References: <1500511480-52312-1-git-send-email-eswierk@skyportsystems.com>
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: Re: [PATCH 07/10] cpufreq: dt: Add support for some new Allwinner SoCs
+Date: Tue, 15 Aug 2017 13:42:19 +0800
+Message-ID: <CAGb2v640an6X75PTbNTnMqhnEREekX97uJZ4sFsfqTAgcDinQg@mail.gmail.com>
+References: <20170723102749.17323-1-icenowy@aosc.io> <20170723102749.17323-8-icenowy@aosc.io>
+ <20170724085349.GT352@vireshk-i7> <2436327.OLdY8skjMP@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:16351 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752651AbdHNXjU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 14 Aug 2017 19:39:20 -0400
-In-Reply-To: <1500511480-52312-1-git-send-email-eswierk@skyportsystems.com>
-Content-Language: en-US
-Content-ID: <79365E1993FCCD4EB3BA10245B8EE9B7@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <2436327.OLdY8skjMP-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-clk <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "eswierk@skyportsystems.com" <eswierk@skyportsystems.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-T24gV2VkLCAyMDE3LTA3LTE5IGF0IDE3OjQ0IC0wNzAwLCBFZCBTd2llcmsgd3JvdGU6DQo+IFVz
-aW5nIHRoZSBUU0RTUyBmbGFnIHRvIGRldGVybWluZSB3aGV0aGVyIHRoZSB0aGVybWFsIHNlbnNv
-ciBpcw0KPiBlbmFibGVkIGlzIHByb2JsZW1hdGljLiBCcm9hZHdlbGwtREUgKFhlb24gRC0xNTAw
-KSBkb2VzIG5vdCBzdXBwb3J0DQo+IGR5bmFtaWMgc2h1dGRvd24gYW5kIHRoZSBUU0RTUyBmbGFn
-IGFsd2F5cyByZWFkcyAwIChjb250cmFyeSB0byB0aGUNCj4gY3VycmVudCBkYXRhc2hlZXQpLiBF
-dmVuIG9uIGhhcmR3YXJlIHN1cHBvcnRpbmcgZHluYW1pYyBzaHV0ZG93biwgdGhlDQo+IGRyaXZl
-ciBkb2VzIG5vdGhpbmcgdG8gY29uZmlndXJlIGl0LCBhbmQgdGhlIGR5bmFtaWMgc2h1dGRvd24g
-c3RhdGUNCj4gc2hvdWxkIG5vdCBwcmV2ZW50IHRoZSBkcml2ZXIgZnJvbSBsb2FkaW5nLiBUaGUg
-RVRTIGZsYWcgaXRzZWxmDQo+IGluZGljYXRlcyB3aGV0aGVyIHRoZSB0aGVybWFsIHNlbnNvciBp
-cyBlbmFibGVkLCBzbyB1c2UgaXQgaW5zdGVhZCBvZg0KPiB0aGUgVFNEU1MgZmxhZyBvbiBhbGwg
-aGFyZHdhcmUgcGxhdGZvcm1zLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogRWQgU3dpZXJrIDxlc3dp
-ZXJrQHNreXBvcnRzeXN0ZW1zLmNvbT4NClJldmlld2VkLWJ5OiBTcmluaXZhcyBQYW5kcnV2YWRh
-IDxzcmluaXZhcy5wYW5kcnV2YWRhQGxpbnV4LmludGVsLmNvbT4NCg0KPiAtLS0NCj4gwqBkcml2
-ZXJzL3RoZXJtYWwvaW50ZWxfcGNoX3RoZXJtYWwuYyB8IDQgKystLQ0KPiDCoDEgZmlsZSBjaGFu
-Z2VkLCAyIGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEv
-ZHJpdmVycy90aGVybWFsL2ludGVsX3BjaF90aGVybWFsLmMNCj4gYi9kcml2ZXJzL3RoZXJtYWwv
-aW50ZWxfcGNoX3RoZXJtYWwuYw0KPiBpbmRleCAyYjQ5ZThkLi45ODg5YzkwIDEwMDY0NA0KPiAt
-LS0gYS9kcml2ZXJzL3RoZXJtYWwvaW50ZWxfcGNoX3RoZXJtYWwuYw0KPiArKysgYi9kcml2ZXJz
-L3RoZXJtYWwvaW50ZWxfcGNoX3RoZXJtYWwuYw0KPiBAQCAtMTI1LDcgKzEyNSw3IEBAIHN0YXRp
-YyBpbnQgcGNoX3dwdF9pbml0KHN0cnVjdCBwY2hfdGhlcm1hbF9kZXZpY2UNCj4gKnB0ZCwgaW50
-ICpucl90cmlwcykNCj4gwqAJKm5yX3RyaXBzID0gMDsNCj4gwqANCj4gwqAJLyogQ2hlY2sgaWYg
-QklPUyBoYXMgYWxyZWFkeSBlbmFibGVkIHRoZXJtYWwgc2Vuc29yICovDQo+IC0JaWYgKFdQVF9U
-U1NfVFNEU1MgJiByZWFkYihwdGQtPmh3X2Jhc2UgKyBXUFRfVFNTKSkgew0KPiArCWlmIChXUFRf
-VFNFTF9FVFMgJiByZWFkYihwdGQtPmh3X2Jhc2UgKyBXUFRfVFNFTCkpIHsNCj4gwqAJCXB0ZC0+
-Ymlvc19lbmFibGVkID0gdHJ1ZTsNCj4gwqAJCWdvdG8gcmVhZF90cmlwczsNCj4gwqAJfQ0KPiBA
-QCAtMTQxLDcgKzE0MSw3IEBAIHN0YXRpYyBpbnQgcGNoX3dwdF9pbml0KHN0cnVjdCBwY2hfdGhl
-cm1hbF9kZXZpY2UNCj4gKnB0ZCwgaW50ICpucl90cmlwcykNCj4gwqAJfQ0KPiDCoA0KPiDCoAl3
-cml0ZWIodHNlbHxXUFRfVFNFTF9FVFMsIHB0ZC0+aHdfYmFzZSArIFdQVF9UU0VMKTsNCj4gLQlp
-ZiAoIShXUFRfVFNTX1RTRFNTICYgcmVhZGIocHRkLT5od19iYXNlICsgV1BUX1RTUykpKSB7DQo+
-ICsJaWYgKCEoV1BUX1RTRUxfRVRTICYgcmVhZGIocHRkLT5od19iYXNlICsgV1BUX1RTRUwpKSkg
-ew0KPiDCoAkJZGV2X2VycigmcHRkLT5wZGV2LT5kZXYsICJTZW5zb3IgY2FuJ3QgYmUNCj4gZW5h
-YmxlZFxuIik7DQo+IMKgCQlyZXR1cm4gLUVOT0RFVjsNCj4gwqAJfQ==
+On Mon, Jul 24, 2017 at 7:46 PM, Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> wrote:
+> On Monday, July 24, 2017 02:23:49 PM Viresh Kumar wrote:
+>> On 23-07-17, 18:27, Icenowy Zheng wrote:
+>> > Some new Allwinner SoCs get supported in the kernel after the
+>> > compatibles are added to cpufreq-dt-platdev driver.
+>> >
+>> > Add their compatible strings in the cpufreq-dt-platdev driver.
+>> >
+>> > Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+>> > Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>> > Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+>> > ---
+>> >  drivers/cpufreq/cpufreq-dt-platdev.c | 6 ++++++
+>> >  1 file changed, 6 insertions(+)
+>> >
+>> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+>> > index 2eb40d46d357..c3851453e84a 100644
+>> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+>> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+>> > @@ -24,7 +24,11 @@ static const struct of_device_id machines[] __initconst = {
+>> >     { .compatible = "allwinner,sun8i-a23", },
+>> >     { .compatible = "allwinner,sun8i-a33", },
+>> >     { .compatible = "allwinner,sun8i-a83t", },
+>> > +   { .compatible = "allwinner,sun8i-h2-plus", },
+>> >     { .compatible = "allwinner,sun8i-h3", },
+>> > +   { .compatible = "allwinner,sun8i-v3s", },
+>> > +   { .compatible = "allwinner,sun50i-a64", },
+>> > +   { .compatible = "allwinner,sun50i-h5", },
+>> >
+>> >     { .compatible = "apm,xgene-shadowcat", },
+>> >
+>> > @@ -43,6 +47,8 @@ static const struct of_device_id machines[] __initconst = {
+>> >     { .compatible = "marvell,pxa250", },
+>> >     { .compatible = "marvell,pxa270", },
+>> >
+>> > +   { .compatible = "nextthing,gr8", },
+>> > +
+>> >     { .compatible = "samsung,exynos3250", },
+>> >     { .compatible = "samsung,exynos4210", },
+>> >     { .compatible = "samsung,exynos4212", },
+>>
+>> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>>
+>>
+>
+> OK
+>
+> I'm assuming this will go in via arm-soc along with the rest of the series.
+
+The rest of the series, except for the clk patches I've already taken,
+doesn't seem to be going anywhere just yet. Is there a cpufreq or pm tree
+this can be merged through?
+
+Thanks
+ChenYu
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
