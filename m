@@ -1,44 +1,45 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] CPUFREQ: Loongson2: constify platform_device_id
-Date: Wed, 16 Aug 2017 08:55:59 +0530
-Message-ID: <20170816032559.GB4233@vireshk-i7>
-References: <38726390c030dc256d7dd169a416bc4a9814cbf7.1502617113.git.arvind.yadav.cs@gmail.com>
+Subject: Re: [PATCH 1/4] ARM: dts: augment Ux500 to use DT cpufreq
+Date: Wed, 16 Aug 2017 08:56:56 +0530
+Message-ID: <20170816032656.GC4233@vireshk-i7>
+References: <20170810125221.25818-1-linus.walleij@linaro.org>
+ <20170810125221.25818-2-linus.walleij@linaro.org>
+ <20170811051515.GD3638@vireshk-i7>
+ <CACRpkdZ-7yHA4Xz62K53_XM28pTNf1dNLV42Fo-Jzzx5Y7in8g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f169.google.com ([209.85.192.169]:35305 "EHLO
+        mail-pf0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752255AbdHPD07 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Aug 2017 23:26:59 -0400
+Received: by mail-pf0-f169.google.com with SMTP id t86so803214pfe.2
+        for <linux-pm@vger.kernel.org>; Tue, 15 Aug 2017 20:26:59 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <38726390c030dc256d7dd169a416bc4a9814cbf7.1502617113.git.arvind.yadav.cs@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <CACRpkdZ-7yHA4Xz62K53_XM28pTNf1dNLV42Fo-Jzzx5Y7in8g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Lee Jones <lee.jones@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On 13-08-17, 15:10, Arvind Yadav wrote:
-> platform_device_id are not supposed to change at runtime. All functions
-> working with platform_device_id provided by <linux/platform_device.h>
-> work with const platform_device_id. So mark the non-const structs as
-> const.
+On 13-08-17, 14:23, Linus Walleij wrote:
+> On Fri, Aug 11, 2017 at 7:15 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
-> ---
->  drivers/cpufreq/loongson2_cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> > For example, below will fail cpufreq on your board. You can try that
+> > to make sure I am not dreaming.
+> >
+> > - Compile cpufreq-dt as a module.
+> > - Boot the board.
+> > - Offline CPU0 (i.e. Keep only CPU1 online).
+> > - Boom, cpufreq failed.
+> >
+> > This will happen because the CPU1 doesn't have the operating-points
+> > and other properties. We should have them in all the CPUs.
 > 
-> diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
-> index 9ac27b2..da34469 100644
-> --- a/drivers/cpufreq/loongson2_cpufreq.c
-> +++ b/drivers/cpufreq/loongson2_cpufreq.c
-> @@ -114,7 +114,7 @@ static struct cpufreq_driver loongson2_cpufreq_driver = {
->  	.attr = cpufreq_generic_attr,
->  };
->  
-> -static struct platform_device_id platform_device_ids[] = {
-> +static const struct platform_device_id platform_device_ids[] = {
->  	{
->  		.name = "loongson2_cpufreq",
->  	},
+> I don't think that will be a problem because CPU0 cannot be
+> taken offline on this system.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Should be fine then.
 
 -- 
 viresh
