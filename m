@@ -1,40 +1,49 @@
-From: Michal Hocko <mhocko@kernel.org>
-Subject: Re: [PATCH][RFC] PM / Hibernate: Feed NMI wathdog when creating
- snapshot
-Date: Wed, 16 Aug 2017 13:17:32 +0200
-Message-ID: <20170816111731.GA32161@dhcp22.suse.cz>
-References: <1502731156-24903-1-git-send-email-yu.c.chen@intel.com>
- <20170815124119.GG29067@dhcp22.suse.cz>
- <20170815160107.GA2541@yu-desktop-1.sh.intel.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/2] cpufreq: dt-platdev: Automatically create cpufreq
+ device with OPP v2
+Date: Wed, 16 Aug 2017 16:53:22 +0530
+Message-ID: <20170816112322.GC24299@vireshk-i7>
+References: <e93c74a19ebf6d7ee687ef8b71b3150a96527f7c.1502861444.git.viresh.kumar@linaro.org>
+ <CAGb2v65arhOb3-zLuHj3MM38vT8OJHXoi=k3RG+F4Lou0N3VTw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170815160107.GA2541@yu-desktop-1.sh.intel.com>
-Sender: owner-linux-mm@kvack.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: linux-mm@kvack.org, linux-pm@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Vlastimil Babka <vbabka@suse.cz>, Mel Gorman <mgorman@techsingularity.net>, linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>
+In-Reply-To: <CAGb2v65arhOb3-zLuHj3MM38vT8OJHXoi=k3RG+F4Lou0N3VTw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Wei Xu <xuwei5@hisilicon.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, jun.nie@linaro.org, Baoyou Xie <baoyou.xie@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed 16-08-17 00:01:08, Chen Yu wrote:
-> Hi Michal,
-> On Tue, Aug 15, 2017 at 02:41:19PM +0200, Michal Hocko wrote:
-[...]
-> > Moreover why don't you need to touch_nmi_watchdog in the loop over all
-> > pfns in the zone (right above this loop)?
-> As the NMI was triggered when checking the free_list rather than in the loop over
-> all pfns, it seems that the former has more possibility to catch a NMI if the
-> latter has already taken too much time. But yes, a safer way is to feed dog
-> in the latter too. I'll modify the code according to your suggestion.
+On 16-08-17, 16:49, Chen-Yu Tsai wrote:
+> On Wed, Aug 16, 2017 at 1:37 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > The initial idea of creating the cpufreq-dt-platdev.c file was to keep a
+> > list of platforms that use the "operating-points" (V1) bindings and
+> > create cpufreq device for them only, as we weren't sure which platforms
+> > would want the device to get created automatically as some had their own
+> > cpufreq drivers as well, or wanted to initialize cpufreq after doing
+> > some stuff from platform code.
+> >
+> > But that wasn't the case with platforms using "operating-points-v2"
+> > property. We wanted the device to get created automatically without the
+> > need of adding them to the whitelist. Though, we will still have some
+> > exceptions where we don't want to create the device automatically.
+> >
+> > Rename the earlier platform list as *whitelist* and create a new
+> > *blacklist* as well.
+> >
+> > The cpufreq-dt device will get created if:
+> > - The platform is there in the whitelist OR
+> > - The platform has "operating-points-v2" property in CPU0's DT node and
+> >   isn't part of the blacklist .
+> >
+> > Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> Does this mean "cpufreq: dt: Add support for some new Allwinner SoCs",
+> or any other patch adding new SoCs to the list, isn't needed anymore?
 
-This is a wrong approach IMHO. The whole thing has IRQ disabled.
+For SoCs using OPP-v2, yeah, we don't need any more patches in future.
 
 -- 
-Michal Hocko
-SUSE Labs
-
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+viresh
