@@ -1,62 +1,68 @@
-From: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
-Subject: Re: [PATCH v2 3/5] thermal: imx: Add support for reading OCOTP
- through nvmem
-Date: Wed, 16 Aug 2017 18:33:41 +0300
-Message-ID: <1502897621.23210.41.camel@nxp.com>
-References: <cover.1500041281.git.leonard.crestez@nxp.com>
-         <faf9c3e5f970b9609073c4c191a7af03d647ea51.1500041281.git.leonard.crestez@nxp.com>
-         <20170725080835.GD20064@dragon> <1502176915.4296.1.camel@intel.com>
-         <26407dd5-a9b1-67c0-c4ab-d97fa0b88b79@linaro.org>
-         <1502192287.24350.9.camel@nxp.com>
-         <9732c524-fbdc-d1be-cd03-089dbb2266c4@linaro.org>
-         <1502197100.4296.45.camel@intel.com>
+From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v2 2/5] devicetree: power: Add docs for TI BQ24190
+ battery charger
+Date: Wed, 16 Aug 2017 08:47:02 -0700
+Message-ID: <20170816154701.GR3930@atomide.com>
+References: <20170807195420.20767-1-liam@networkimprov.net>
+ <20170807195420.20767-3-liam@networkimprov.net>
+ <20170811025038.5qnhbabyybx7rgu5@rob-hp-laptop>
+ <CAKvHMgSuwm5UFivbsq9dQn_wfd7kbs63UuuQSHVdGxDf_WReUA@mail.gmail.com>
+ <20170812164233.won7fairxmrnblps@earth>
+ <CAKvHMgR+GxSqhy+iwdYmku2600HzoF__oXV7_w72ZJg-aK7O-Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1502197100.4296.45.camel-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAKvHMgR+GxSqhy+iwdYmku2600HzoF__oXV7_w72ZJg-aK7O-Q-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>, Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2017-08-08 at 20:58 +0800, Zhang Rui wrote:
-> On Tue, 2017-08-08 at 12:44 +0100, Srinivas Kandagatla wrote:
-> > On 08/08/17 12:38, Leonard Crestez wrote:
-> > > On Tue, 2017-08-08 at 12:00 +0100, Srinivas Kandagatla wrote:
-> > > > On 08/08/17 08:21, Zhang Rui wrote:
+* Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> [170812 12:00]:
+> On Sat, Aug 12, 2017 at 9:42 AM, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> > On Fri, Aug 11, 2017 at 02:57:10PM -0700, Liam Breck wrote:
+> >> >> +Other features:
+> >> >> +- Use gpio-hog to set the OTG pin high to enable 500mA charge current on USB SDP port.
+> >> >
+> >> > Why doesn't the charger driver control this?
+> >>
+> >> This pin/gpio has to be high when USB is plugged in to make the
+> >> charger chip negotiate 500mA from a SDP port. It should generally be
+> >> configured that way even if the driver is not loaded, as the chip does
+> >> not require a driver to function. Some boards may do that with a
+> >> pull-up. Also the user may want to change this via sysfs and not have
+> >> the driver "fix" it.
+> >
+> > drivers/power/supply/qcom_smbb.c exposes the otg feature as
+> > regulator. I think in this case it could be exposed as
+> > gpio-regulator.
+> 
+> Hans is doing that here:
+> https://patchwork.kernel.org/patch/9883717/
+> 
+> The datasheet labels one pin "OTG" but that's misleading; it really
+> enables negotiation of 500mA input current, but does not turn on OTG
+> mode. If this pin is low, it only prevents the driver from starting
+> OTG mode via I2C msg.
 
-> > > > > I'm okay with the thermal change.
-> > > > > We still need ACK for the nvmem changes in this patch series.
+Yeah so before the device has enumerated this pin keeps the
+max current at 100mA as required by the USB spec. This pin
+should be only toggled after enumerating in bootloader or
+by the kernel driver. I tink the USB PHY driver can also
+be wired to control this line.
 
-> > > > NVMEM changes are already sent to Greg K H with other patches
-> > > > https://lkml.org/lkml/2017/8/8/436, should appear in next.
+Probably best to set it up as just a GPIO that the bq24190
+driver controls optionally.
 
-> > > These patches have a compile-time dependency on each other.
-> > > Wouldn't it make more sense for the whole series to go through a single
-> > > maintainer tree, atomically? Most of the changes are in driver/thermal.
+Then later on we should have some Linux generic way for
+USB gadget subsystem to tell the charger that we have
+enumerated, and then bq24190 driver can toggle this GPIO
+to enable higher charge rates.
 
-> > I was expecting that the nvmem change go in as fix in a rc release
-> > so that you could apply the other patches after that.
-> > 
-> > Let me ping Greg about this!!
-
-> As Shawn is okay with patch 4/5 and 5/5, I guess I can queue patch 1/5,
-> 3/5, 4/5, 5/5 for 4.14-rc1, if the nvmem patch can catch 4.13, or I can
-> queue the full patch set for 4.14, with Srinivas' ACK.
-
-It's been a week since the last email and it seems that nothing
-happened. I can't find any of these patches in either torvalds/master
-or linux-next. It seems to me that the nvmem series linked above was
-not picked up after all?
-
-It's not clear how to proceed. It's been more a month since the series
-was sent so maybe I should resend it but it's not clear who would pick
-it up.
-
---
 Regards,
-Leonard
+
+Tony
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
