@@ -1,80 +1,42 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/2] cpufreq: dt-platdev: Drop few entries from whitelist
-Date: Wed, 16 Aug 2017 11:07:28 +0530
-Message-ID: <7182e308a552d37064f61e724c709667a6fa098d.1502861444.git.viresh.kumar@linaro.org>
-References: <e93c74a19ebf6d7ee687ef8b71b3150a96527f7c.1502861444.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <e93c74a19ebf6d7ee687ef8b71b3150a96527f7c.1502861444.git.viresh.kumar@linaro.org>
-In-Reply-To: <e93c74a19ebf6d7ee687ef8b71b3150a96527f7c.1502861444.git.viresh.kumar@linaro.org>
-References: <e93c74a19ebf6d7ee687ef8b71b3150a96527f7c.1502861444.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, geert@linux-m68k.org, maxime.ripard@free-electrons.com, wens@csie.org, xuwei5@hisilicon.com, kgene@kernel.org, krzk@kernel.org, yamada.masahiro@socionext.com, jun.nie@linaro.org, baoyou.xie@linaro.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: rcar: Add support for R8A7795 SoC
+Date: Wed, 16 Aug 2017 11:08:34 +0530
+Message-ID: <20170816053834.GA24299@vireshk-i7>
+References: <1501852680-21127-1-git-send-email-horms+renesas@verge.net.au>
+ <20170807033705.GE28857@vireshk-i7>
+ <CAMuHMdWVYFBOHyBxbOZ7FHu0DHW4vWR9WnxfvwP4yGQGcZf19g@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f44.google.com ([74.125.83.44]:37463 "EHLO
+        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751224AbdHPFih (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2017 01:38:37 -0400
+Received: by mail-pg0-f44.google.com with SMTP id y129so18318058pgy.4
+        for <linux-pm@vger.kernel.org>; Tue, 15 Aug 2017 22:38:37 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdWVYFBOHyBxbOZ7FHu0DHW4vWR9WnxfvwP4yGQGcZf19g@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Simon Horman <horms+renesas@verge.net.au>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Magnus Damm <magnus.damm@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-Drop few ARM (32 and 64 bit) platforms from the whitelist which always
-use "operating-points-v2" property from their DT. They should continue
-to work after this patch.
+On 14-08-17, 15:36, Geert Uytterhoeven wrote:
+> I'm still a bit confused about your original comment when introducing this
+> file with the ever-growing table of SoCs:
+> 
+>     "And for new platforms we may do things differently as they are going
+>      to use opp-v2 bindings."
+> 
+> Hence I was under the impression the growing would be mitigated by new SoCs
+> using the opp-v2 bindings instead, and not needing an entry in the table.
+> 
+> Perhaps I have misunderstood that comment?
 
-Tested on Hikey platform (only the "hisilicon,hi6220" entry).
+Not really.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq-dt-platdev.c | 11 -----------
- 1 file changed, 11 deletions(-)
+I have sent two patches to take care of your concerns. Do let me know if you
+have any concerns with them.
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 061b468512a2..45f2ec3b7f7a 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -27,7 +27,6 @@ static const struct of_device_id whitelist[] __initconst = {
- 	{ .compatible = "allwinner,sun6i-a31s", },
- 	{ .compatible = "allwinner,sun7i-a20", },
- 	{ .compatible = "allwinner,sun8i-a23", },
--	{ .compatible = "allwinner,sun8i-a33", },
- 	{ .compatible = "allwinner,sun8i-a83t", },
- 	{ .compatible = "allwinner,sun8i-h3", },
- 
-@@ -37,7 +36,6 @@ static const struct of_device_id whitelist[] __initconst = {
- 	{ .compatible = "arm,integrator-cp", },
- 
- 	{ .compatible = "hisilicon,hi3660", },
--	{ .compatible = "hisilicon,hi6220", },
- 
- 	{ .compatible = "fsl,imx27", },
- 	{ .compatible = "fsl,imx51", },
-@@ -51,11 +49,8 @@ static const struct of_device_id whitelist[] __initconst = {
- 	{ .compatible = "samsung,exynos3250", },
- 	{ .compatible = "samsung,exynos4210", },
- 	{ .compatible = "samsung,exynos4212", },
--	{ .compatible = "samsung,exynos4412", },
- 	{ .compatible = "samsung,exynos5250", },
- #ifndef CONFIG_BL_SWITCHER
--	{ .compatible = "samsung,exynos5420", },
--	{ .compatible = "samsung,exynos5433", },
- 	{ .compatible = "samsung,exynos5800", },
- #endif
- 
-@@ -87,11 +82,7 @@ static const struct of_device_id whitelist[] __initconst = {
- 	{ .compatible = "rockchip,rk3368", },
- 	{ .compatible = "rockchip,rk3399", },
- 
--	{ .compatible = "socionext,uniphier-pro5", },
--	{ .compatible = "socionext,uniphier-pxs2", },
- 	{ .compatible = "socionext,uniphier-ld6b", },
--	{ .compatible = "socionext,uniphier-ld11", },
--	{ .compatible = "socionext,uniphier-ld20", },
- 
- 	{ .compatible = "ti,omap2", },
- 	{ .compatible = "ti,omap3", },
-@@ -101,8 +92,6 @@ static const struct of_device_id whitelist[] __initconst = {
- 	{ .compatible = "xlnx,zynq-7000", },
- 	{ .compatible = "xlnx,zynqmp", },
- 
--	{ .compatible = "zte,zx296718", },
--
- 	{ }
- };
- 
 -- 
-2.7.4
+viresh
