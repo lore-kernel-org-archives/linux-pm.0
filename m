@@ -1,52 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 3/9] cpufreq: Cap the default transition delay value
- to 10 ms
-Date: Wed, 16 Aug 2017 12:04:31 +0530
-Message-ID: <20170816063431.GB24299@vireshk-i7>
-References: <cover.1500373914.git.viresh.kumar@linaro.org>
- <1b93c94cb8b4914314e4f50304c3cb11c53d8b14.1500373914.git.viresh.kumar@linaro.org>
- <1500983686.30745.28.camel@nxp.com>
- <20170726060634.GY352@vireshk-i7>
- <1501174453.7957.30.camel@nxp.com>
- <20170728052843.GT352@vireshk-i7>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2/2] cpufreq: dt-platdev: Drop few entries from whitelist
+Date: Wed, 16 Aug 2017 08:51:04 +0200
+Message-ID: <CAMuHMdW-_3_p_sv_B0dx1R_0YiwkY0MtgG1Kv1-4_qXb6eiTqA@mail.gmail.com>
+References: <e93c74a19ebf6d7ee687ef8b71b3150a96527f7c.1502861444.git.viresh.kumar@linaro.org>
+ <7182e308a552d37064f61e724c709667a6fa098d.1502861444.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f170.google.com ([209.85.192.170]:36210 "EHLO
-        mail-pf0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751159AbdHPGee (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2017 02:34:34 -0400
-Received: by mail-pf0-f170.google.com with SMTP id c28so2431767pfe.3
-        for <linux-pm@vger.kernel.org>; Tue, 15 Aug 2017 23:34:34 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20170728052843.GT352@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <7182e308a552d37064f61e724c709667a6fa098d.1502861444.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Wei Xu <xuwei5@hisilicon.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, baoyou.xie@linaro.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Simon Horman <horms@verge.net.au>
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux@dominikbrodowski.net, linux-kernel@vger.kernel.org, Rafael Wysocki <rjw@rjwysocki.net>
 
-On 28-07-17, 10:58, Viresh Kumar wrote:
-> At this point I really feel that this is a hardware specific problem
-> and it was working by chance until now. And I am not sure if we
-> shouldn't be stopping this patch from getting merged just because of
-> that.
-> 
-> At least you can teach your distribution to go increase the sampling
-> rate from userspace to make it all work.
+Hi Viresh,
 
-Its been 3 weeks since my last email on this thread and no reply yet
-from any of the IMX maintainers. Can someone please help here ?
+On Wed, Aug 16, 2017 at 7:37 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Drop few ARM (32 and 64 bit) platforms from the whitelist which always
+> use "operating-points-v2" property from their DT. They should continue
+> to work after this patch.
+>
+> Tested on Hikey platform (only the "hisilicon,hi6220" entry).
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 11 -----------
+>  1 file changed, 11 deletions(-)
+>
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index 061b468512a2..45f2ec3b7f7a 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -27,7 +27,6 @@ static const struct of_device_id whitelist[] __initconst = {
+>         { .compatible = "allwinner,sun6i-a31s", },
+>         { .compatible = "allwinner,sun7i-a20", },
+>         { .compatible = "allwinner,sun8i-a23", },
+> -       { .compatible = "allwinner,sun8i-a33", },
+>         { .compatible = "allwinner,sun8i-a83t", },
+>         { .compatible = "allwinner,sun8i-h3", },
 
-@Shawn: Can you help debugging a bit here, to see what's get screwed
-up due to this commit ? Its just that your platform isn't able to
-change freq at 10 ms rate.
+I think "renesas,r8a7795" can be removed again, too.
+Simon?
 
-@Rafael: I am not sure, but should we be stopping this patch because
-some hardware isn't able to change freq at 10ms interval and is just
-faking the transition delay to start with ?
+Gr{oetje,eeting}s,
 
-Maybe we get this merged again and the IMX guys can figure out what's
-wrong on their platform and how to fix it ?
+                        Geert
 
--- 
-viresh
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
