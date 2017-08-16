@@ -1,296 +1,219 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v5] ACPI / Sleep: Check low power idle constraints for debug only
-Date: Tue, 15 Aug 2017 18:16:59 -0700
-Message-ID: <1502846219-19192-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, lenb@kernel.org
-Cc: linux-pm@vger.kernel.org, mario.limonciello@dell.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: Chris Mi <chrism-VPRAkNaXOzVWk0Htik3J/w@public.gmane.org>
+Subject: [patch net-next 0/3] net/sched: Improve getting objects by
+ indexes
+Date: Tue, 15 Aug 2017 22:12:15 -0400
+Message-ID: <1502849538-14284-1-git-send-email-chrism@mellanox.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <nbd-general-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/options/nbd-general>,
+ <mailto:nbd-general-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=nbd-general>
+List-Post: <mailto:nbd-general-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+List-Help: <mailto:nbd-general-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/nbd-general>,
+ <mailto:nbd-general-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
+Errors-To: nbd-general-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+To: netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: lucho-OnYtXJJ0/fesTnJN9+BGXg@public.gmane.org, sergey.senozhatsky.work-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, snitzer-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, markb-VPRAkNaXOzVWk0Htik3J/w@public.gmane.org, tom.leiming-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org, zhi.a.wang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, nsekhar-l0cyMroinI0@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, bfields-uC3wQj2KruNg9hUCZPvPmw@public.gmane.org, linux-sctp-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, paulus-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org, jinpu.wang-EIkl63zCoXaH+58JC4qpiA@public.gmane.org, pshelar-LZ6Gd1LRuIk@public.gmane.org, sumit.semwal-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, AlexBin.Xie-5C7GfCeVMHo@public.gmane.org, david1.zhou-5C7GfCeVMHo@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, maximlevitsky-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, sudarsana.kalluru-h88ZbnxC6KDQT0dZR+AlfA@public.gmane.org, marek.vasut-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, linux-atm-general-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, dtwlin-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, michel.daenzer-5C7GfCeVMHo@public.gmane.org, dledford-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, tpmdd-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org, longman-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, niranjana.vishwanathapura-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, philipp.reisner-63ez5xqkn6DQT0dZR+AlfA@public.gmane.org, shli-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, ohad-Ix1uc/W3ht7QT0dZR+AlfA@public.gmane.org, pmladek-IBi9RG/b67k@public.gmane.org, dick.kennedy-dY08KVG/lbpWk0Htik3J/w@public.gmane.orglinux-
 List-Id: linux-pm@vger.kernel.org
 
-For SoC to achieve its lowest power platform idle state a set of hardware
-preconditions must be met. These preconditions or constraints can be
-obtained by issuing a device specific method (_DSM) with function "1".
-Refer to the document provided in the link below.
+Using current TC code, it is very slow to insert a lot of rules.
 
-Here during initialization (from attach() callback of LPS0 device), invoke
-function 1 to get the device constraints. Each enabled constraint is
-stored in a table.
+In order to improve the rules update rate in TC,
+we introduced the following two changes:
+        1) changed cls_flower to use IDR to manage the filters.
+        2) changed all act_xxx modules to use IDR instead of
+           a small hash table
 
-The devices in this table are used to check whether they were in required
-minimum state, while entering suspend. This check is done from platform
-freeze wake() callback, only when /sys/power/pm_debug_messages attribute
-is non zero.
+But IDR has a limitation that it uses int. TC handle uses u32.
+To make sure there is no regression, we also changed IDR to use
+unsigned long. All clients of IDR are changed to use new IDR API.
 
-If any constraint is not met and device is ACPI power managed then it
-prints the device information to kernel logs.
+Chris Mi (3):
+  idr: Use unsigned long instead of int
+  net/sched: Change cls_flower to use IDR
+  net/sched: Change act_api and act_xxx modules to use IDR
 
-Also if debug is enabled in acpi/sleep.c, the constraint table and state
-of each device on wake is dumped in kernel logs.
+ block/bsg.c                                     |   8 +-
+ block/genhd.c                                   |  12 +-
+ drivers/atm/nicstar.c                           |  11 +-
+ drivers/block/drbd/drbd_main.c                  |  31 +--
+ drivers/block/drbd/drbd_nl.c                    |  22 ++-
+ drivers/block/drbd/drbd_proc.c                  |   3 +-
+ drivers/block/drbd/drbd_receiver.c              |  15 +-
+ drivers/block/drbd/drbd_state.c                 |  34 ++--
+ drivers/block/drbd/drbd_worker.c                |   6 +-
+ drivers/block/loop.c                            |  17 +-
+ drivers/block/nbd.c                             |  20 +-
+ drivers/block/zram/zram_drv.c                   |   9 +-
+ drivers/char/tpm/tpm-chip.c                     |  10 +-
+ drivers/char/tpm/tpm.h                          |   2 +-
+ drivers/dca/dca-sysfs.c                         |   9 +-
+ drivers/firewire/core-cdev.c                    |  18 +-
+ drivers/firewire/core-device.c                  |  15 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_bo_list.c     |   8 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_ctx.c         |   9 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_gem.c         |   6 +-
+ drivers/gpu/drm/amd/amdgpu/amdgpu_kms.c         |   2 +-
+ drivers/gpu/drm/drm_auth.c                      |   9 +-
+ drivers/gpu/drm/drm_connector.c                 |  10 +-
+ drivers/gpu/drm/drm_context.c                   |  20 +-
+ drivers/gpu/drm/drm_dp_aux_dev.c                |  11 +-
+ drivers/gpu/drm/drm_drv.c                       |   6 +-
+ drivers/gpu/drm/drm_gem.c                       |  19 +-
+ drivers/gpu/drm/drm_info.c                      |   2 +-
+ drivers/gpu/drm/drm_mode_object.c               |  11 +-
+ drivers/gpu/drm/drm_syncobj.c                   |  18 +-
+ drivers/gpu/drm/exynos/exynos_drm_ipp.c         |  25 ++-
+ drivers/gpu/drm/i915/gvt/display.c              |   2 +-
+ drivers/gpu/drm/i915/gvt/kvmgt.c                |   2 +-
+ drivers/gpu/drm/i915/gvt/vgpu.c                 |   9 +-
+ drivers/gpu/drm/i915/i915_debugfs.c             |   6 +-
+ drivers/gpu/drm/i915/i915_gem_context.c         |   9 +-
+ drivers/gpu/drm/qxl/qxl_cmd.c                   |   8 +-
+ drivers/gpu/drm/qxl/qxl_release.c               |  14 +-
+ drivers/gpu/drm/sis/sis_mm.c                    |   8 +-
+ drivers/gpu/drm/tegra/drm.c                     |  10 +-
+ drivers/gpu/drm/tilcdc/tilcdc_slave_compat.c    |   3 +-
+ drivers/gpu/drm/vgem/vgem_fence.c               |  12 +-
+ drivers/gpu/drm/via/via_mm.c                    |   8 +-
+ drivers/gpu/drm/virtio/virtgpu_kms.c            |   5 +-
+ drivers/gpu/drm/virtio/virtgpu_vq.c             |   5 +-
+ drivers/gpu/drm/vmwgfx/vmwgfx_resource.c        |   9 +-
+ drivers/i2c/i2c-core-base.c                     |  19 +-
+ drivers/infiniband/core/cm.c                    |   8 +-
+ drivers/infiniband/core/cma.c                   |  12 +-
+ drivers/infiniband/core/rdma_core.c             |   9 +-
+ drivers/infiniband/core/sa_query.c              |  23 +--
+ drivers/infiniband/core/ucm.c                   |   7 +-
+ drivers/infiniband/core/ucma.c                  |  14 +-
+ drivers/infiniband/hw/cxgb3/iwch.c              |   4 +-
+ drivers/infiniband/hw/cxgb3/iwch.h              |   4 +-
+ drivers/infiniband/hw/cxgb4/device.c            |  18 +-
+ drivers/infiniband/hw/cxgb4/iw_cxgb4.h          |   4 +-
+ drivers/infiniband/hw/hfi1/init.c               |   9 +-
+ drivers/infiniband/hw/hfi1/vnic_main.c          |   6 +-
+ drivers/infiniband/hw/mlx4/cm.c                 |  13 +-
+ drivers/infiniband/hw/ocrdma/ocrdma_main.c      |   7 +-
+ drivers/infiniband/hw/qib/qib_init.c            |   9 +-
+ drivers/infiniband/ulp/opa_vnic/opa_vnic_vema.c |  10 +-
+ drivers/iommu/intel-svm.c                       |   9 +-
+ drivers/md/dm.c                                 |  13 +-
+ drivers/memstick/core/memstick.c                |  10 +-
+ drivers/memstick/core/ms_block.c                |   9 +-
+ drivers/memstick/core/mspro_block.c             |  12 +-
+ drivers/mfd/rtsx_pcr.c                          |   9 +-
+ drivers/misc/c2port/core.c                      |   7 +-
+ drivers/misc/cxl/context.c                      |   8 +-
+ drivers/misc/cxl/main.c                         |  15 +-
+ drivers/misc/mei/main.c                         |   8 +-
+ drivers/misc/mic/scif/scif_api.c                |  11 +-
+ drivers/misc/mic/scif/scif_ports.c              |  18 +-
+ drivers/misc/tifm_core.c                        |   9 +-
+ drivers/mtd/mtdcore.c                           |   9 +-
+ drivers/mtd/mtdcore.h                           |   2 +-
+ drivers/mtd/ubi/block.c                         |   7 +-
+ drivers/net/ppp/ppp_generic.c                   |  27 +--
+ drivers/net/tap.c                               |  10 +-
+ drivers/net/wireless/ath/ath10k/htt.h           |   3 +-
+ drivers/net/wireless/ath/ath10k/htt_tx.c        |  22 ++-
+ drivers/net/wireless/ath/ath10k/mac.c           |   2 +-
+ drivers/net/wireless/marvell/mwifiex/main.c     |  13 +-
+ drivers/net/wireless/marvell/mwifiex/wmm.c      |   2 +-
+ drivers/of/overlay.c                            |  15 +-
+ drivers/of/unittest.c                           |  25 ++-
+ drivers/power/supply/bq2415x_charger.c          |  16 +-
+ drivers/power/supply/bq27xxx_battery_i2c.c      |  15 +-
+ drivers/power/supply/ds2782_battery.c           |   9 +-
+ drivers/powercap/powercap_sys.c                 |   8 +-
+ drivers/pps/pps.c                               |  10 +-
+ drivers/rapidio/rio_cm.c                        |  17 +-
+ drivers/remoteproc/remoteproc_core.c            |   8 +-
+ drivers/rpmsg/virtio_rpmsg_bus.c                |   8 +-
+ drivers/scsi/bfa/bfad_im.c                      |   8 +-
+ drivers/scsi/ch.c                               |   8 +-
+ drivers/scsi/lpfc/lpfc_crtn.h                   |   2 +-
+ drivers/scsi/lpfc/lpfc_init.c                   |  11 +-
+ drivers/scsi/lpfc/lpfc_vport.c                  |   8 +-
+ drivers/scsi/sg.c                               |  10 +-
+ drivers/scsi/st.c                               |   8 +-
+ drivers/staging/greybus/uart.c                  |  22 +--
+ drivers/staging/unisys/visorhba/visorhba_main.c |   7 +-
+ drivers/target/iscsi/iscsi_target.c             |   7 +-
+ drivers/target/iscsi/iscsi_target_login.c       |   9 +-
+ drivers/target/target_core_device.c             |   9 +-
+ drivers/target/target_core_user.c               |  13 +-
+ drivers/tee/tee_shm.c                           |   8 +-
+ drivers/uio/uio.c                               |   9 +-
+ drivers/usb/class/cdc-acm.c                     |  24 +--
+ drivers/usb/core/devices.c                      |   2 +-
+ drivers/usb/core/hcd.c                          |   7 +-
+ drivers/usb/mon/mon_main.c                      |   3 +-
+ drivers/usb/serial/usb-serial.c                 |  11 +-
+ drivers/vfio/vfio.c                             |  15 +-
+ fs/dlm/lock.c                                   |   9 +-
+ fs/dlm/lockspace.c                              |   6 +-
+ fs/dlm/recover.c                                |  10 +-
+ fs/nfs/nfs4client.c                             |   9 +-
+ fs/nfsd/nfs4state.c                             |   8 +-
+ fs/notify/inotify/inotify_fsnotify.c            |   4 +-
+ fs/notify/inotify/inotify_user.c                |   9 +-
+ fs/ocfs2/cluster/tcp.c                          |  10 +-
+ include/linux/idr.h                             |  26 +--
+ include/linux/of.h                              |   4 +-
+ include/linux/radix-tree.h                      |   2 +-
+ include/net/9p/9p.h                             |   2 +-
+ include/net/act_api.h                           |  76 +++-----
+ ipc/msg.c                                       |   2 +-
+ ipc/sem.c                                       |   2 +-
+ ipc/shm.c                                       |   4 +-
+ ipc/util.c                                      |  17 +-
+ kernel/bpf/syscall.c                            |  20 +-
+ kernel/cgroup/cgroup.c                          |  57 +++---
+ kernel/events/core.c                            |  10 +-
+ kernel/workqueue.c                              |  15 +-
+ lib/idr.c                                       |  38 ++--
+ lib/radix-tree.c                                |   5 +-
+ mm/memcontrol.c                                 |  11 +-
+ net/9p/client.c                                 |  17 +-
+ net/9p/util.c                                   |  14 +-
+ net/core/net_namespace.c                        |  23 ++-
+ net/mac80211/cfg.c                              |  23 +--
+ net/mac80211/iface.c                            |   3 +-
+ net/mac80211/main.c                             |   2 +-
+ net/mac80211/tx.c                               |   7 +-
+ net/mac80211/util.c                             |   3 +-
+ net/netlink/genetlink.c                         |  18 +-
+ net/qrtr/qrtr.c                                 |  21 +-
+ net/rxrpc/conn_client.c                         |  15 +-
+ net/sched/act_api.c                             | 249 +++++++++++-------------
+ net/sched/act_bpf.c                             |  17 +-
+ net/sched/act_connmark.c                        |  16 +-
+ net/sched/act_csum.c                            |  16 +-
+ net/sched/act_gact.c                            |  16 +-
+ net/sched/act_ife.c                             |  20 +-
+ net/sched/act_ipt.c                             |  26 ++-
+ net/sched/act_mirred.c                          |  19 +-
+ net/sched/act_nat.c                             |  16 +-
+ net/sched/act_pedit.c                           |  18 +-
+ net/sched/act_police.c                          |  18 +-
+ net/sched/act_sample.c                          |  17 +-
+ net/sched/act_simple.c                          |  20 +-
+ net/sched/act_skbedit.c                         |  18 +-
+ net/sched/act_skbmod.c                          |  18 +-
+ net/sched/act_tunnel_key.c                      |  20 +-
+ net/sched/act_vlan.c                            |  22 +--
+ net/sched/cls_flower.c                          |  55 +++---
+ net/sctp/associola.c                            |   8 +-
+ net/tipc/server.c                               |   7 +-
+ 172 files changed, 1256 insertions(+), 1113 deletions(-)
 
-Since pm_debug_messages_on setting is used as condition to check
-constraints outside kernel/power/main.c, pm_debug_messages_on is changed
-to a global variable.
-
-Link: http://www.uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
-
-v5
-- No change except rebase to today's linux-next.
-
-v4
-- Storing handle in the lpi_constraints table.
-- Print formatting
-- Don't call acpi_device_get_power()
-- use acpi_handle_info/debug
-
-v3
-- Removed the patch 0001 for exporting pm_debug_messages_on via a function.
-As suggested by Rafael, made the pm_debug_messages_on a global variable instead.
-- Moved the constraint check outside if() block and valid for all calls to
-acpi_freeze_wakeup()
-- Dumping irrespective of return value of acpi_device_get_power().
-- Rebased to linux-next as of today
-
-v2
-- Changes as suggested by Lukas Wunner.
-- Using pm_debug_messages_on attribute to prevent constraints check to
-save some cycles on wake.
-
- drivers/acpi/sleep.c    | 168 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/suspend.h |   2 +
- kernel/power/main.c     |   2 +-
- 3 files changed, 171 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-index 84f2408..6804dda 100644
---- a/drivers/acpi/sleep.c
-+++ b/drivers/acpi/sleep.c
-@@ -669,6 +669,7 @@ static const struct acpi_device_id lps0_device_ids[] = {
- 
- #define ACPI_LPS0_DSM_UUID	"c4eb40a0-6cd2-11e2-bcfd-0800200c9a66"
- 
-+#define ACPI_LPS0_GET_DEVICE_CONSTRAINTS	1
- #define ACPI_LPS0_SCREEN_OFF	3
- #define ACPI_LPS0_SCREEN_ON	4
- #define ACPI_LPS0_ENTRY		5
-@@ -680,6 +681,166 @@ static acpi_handle lps0_device_handle;
- static guid_t lps0_dsm_guid;
- static char lps0_dsm_func_mask;
- 
-+/* Device constraint entry structure */
-+struct lpi_device_info {
-+	char *name;
-+	int enabled;
-+	union acpi_object *package;
-+};
-+
-+/* Constraint package structure */
-+struct lpi_device_constraint {
-+	int uid;
-+	int min_dstate;
-+	int function_states;
-+};
-+
-+struct lpi_constraints {
-+	acpi_handle handle;
-+	int min_dstate;
-+};
-+
-+static struct lpi_constraints *lpi_constraints_table;
-+static int lpi_constraints_table_size;
-+
-+static void lpi_device_get_constraints(void)
-+{
-+	union acpi_object *out_obj;
-+	int i;
-+
-+	out_obj = acpi_evaluate_dsm_typed(lps0_device_handle, &lps0_dsm_guid,
-+					  1, ACPI_LPS0_GET_DEVICE_CONSTRAINTS,
-+					  NULL, ACPI_TYPE_PACKAGE);
-+
-+	acpi_handle_debug(lps0_device_handle, "_DSM function 1 eval %s\n",
-+			  out_obj ? "successful" : "failed");
-+
-+	if (!out_obj)
-+		return;
-+
-+	lpi_constraints_table = kcalloc(out_obj->package.count,
-+					sizeof(*lpi_constraints_table),
-+					GFP_KERNEL);
-+	if (!lpi_constraints_table)
-+		goto free_acpi_buffer;
-+
-+	acpi_handle_debug(lps0_device_handle, "LPI: constraints list begin:\n");
-+
-+	for (i = 0; i < out_obj->package.count; i++) {
-+		struct lpi_constraints *constraint;
-+		acpi_status status;
-+		union acpi_object *package = &out_obj->package.elements[i];
-+		struct lpi_device_info info = { };
-+		int package_count = 0, j;
-+
-+		if (!package)
-+			continue;
-+
-+		for (j = 0; j < package->package.count; ++j) {
-+			union acpi_object *element =
-+					&(package->package.elements[j]);
-+
-+			switch (element->type) {
-+			case ACPI_TYPE_INTEGER:
-+				info.enabled = element->integer.value;
-+				break;
-+			case ACPI_TYPE_STRING:
-+				info.name = element->string.pointer;
-+				break;
-+			case ACPI_TYPE_PACKAGE:
-+				package_count = element->package.count;
-+				info.package = element->package.elements;
-+				break;
-+			}
-+		}
-+
-+		if (!info.enabled || !info.package || !info.name)
-+			continue;
-+
-+		constraint = &lpi_constraints_table[lpi_constraints_table_size];
-+
-+		status = acpi_get_handle(NULL, info.name, &constraint->handle);
-+		if (ACPI_FAILURE(status))
-+			continue;
-+
-+		acpi_handle_debug(lps0_device_handle,
-+				  "index:%d Name:%s\n", i, info.name);
-+
-+		constraint->min_dstate = -1;
-+
-+		for (j = 0; j < package_count; ++j) {
-+			union acpi_object *info_obj = &info.package[j];
-+			union acpi_object *cnstr_pkg;
-+			union acpi_object *obj;
-+			struct lpi_device_constraint dev_info;
-+
-+			switch (info_obj->type) {
-+			case ACPI_TYPE_INTEGER:
-+				/* version */
-+				break;
-+			case ACPI_TYPE_PACKAGE:
-+				if (info_obj->package.count < 2)
-+					break;
-+
-+				cnstr_pkg = info_obj->package.elements;
-+				obj = &cnstr_pkg[0];
-+				dev_info.uid = obj->integer.value;
-+				obj = &cnstr_pkg[1];
-+				dev_info.min_dstate = obj->integer.value;
-+
-+				acpi_handle_debug(lps0_device_handle,
-+					"uid:%d min_dstate:%s\n",
-+					dev_info.uid,
-+					acpi_power_state_string(dev_info.min_dstate));
-+
-+				constraint->min_dstate = dev_info.min_dstate;
-+				break;
-+			}
-+		}
-+
-+		if (constraint->min_dstate < 0) {
-+			acpi_handle_debug(lps0_device_handle,
-+					  "Incomplete constraint defined\n");
-+			continue;
-+		}
-+
-+		lpi_constraints_table_size++;
-+	}
-+
-+	acpi_handle_debug(lps0_device_handle, "LPI: constraints list end\n");
-+
-+free_acpi_buffer:
-+	ACPI_FREE(out_obj);
-+}
-+
-+static void lpi_check_constraints(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < lpi_constraints_table_size; ++i) {
-+		struct acpi_device *adev;
-+
-+		if (acpi_bus_get_device(lpi_constraints_table[i].handle, &adev))
-+			continue;
-+
-+		acpi_handle_debug(adev->handle,
-+			"LPI: required min power state:%s current power state:%s\n",
-+			acpi_power_state_string(lpi_constraints_table[i].min_dstate),
-+			acpi_power_state_string(adev->power.state));
-+
-+		if (!adev->flags.power_manageable) {
-+			acpi_handle_info(adev->handle, "LPI: Device not power manageble\n");
-+			continue;
-+		}
-+
-+		if (adev->power.state < lpi_constraints_table[i].min_dstate)
-+			acpi_handle_info(adev->handle,
-+				"LPI: Constraint not met; min power state:%s current power state:%s\n",
-+				acpi_power_state_string(lpi_constraints_table[i].min_dstate),
-+				acpi_power_state_string(adev->power.state));
-+	}
-+}
-+
- static void acpi_sleep_run_lps0_dsm(unsigned int func)
- {
- 	union acpi_object *out_obj;
-@@ -729,6 +890,9 @@ static int lps0_device_attach(struct acpi_device *adev,
- 				  "_DSM function 0 evaluation failed\n");
- 	}
- 	ACPI_FREE(out_obj);
-+
-+	lpi_device_get_constraints();
-+
- 	return 0;
- }
- 
-@@ -766,6 +930,10 @@ static int acpi_s2idle_prepare(void)
- 
- static void acpi_s2idle_wake(void)
- {
-+
-+	if (pm_debug_messages_on)
-+		lpi_check_constraints();
-+
- 	/*
- 	 * If IRQD_WAKEUP_ARMED is not set for the SCI at this point, it means
- 	 * that the SCI has triggered while suspended, so cancel the wakeup in
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 0d41daf..d10b798 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -495,9 +495,11 @@ static inline void unlock_system_sleep(void) {}
- 
- #ifdef CONFIG_PM_SLEEP_DEBUG
- extern bool pm_print_times_enabled;
-+extern bool pm_debug_messages_on;
- extern __printf(2, 3) void __pm_pr_dbg(bool defer, const char *fmt, ...);
- #else
- #define pm_print_times_enabled	(false)
-+#define pm_debug_messages_on	(false)
- 
- #include <linux/printk.h>
- 
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 3074ea4..3a2ca90 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -361,7 +361,7 @@ static ssize_t pm_wakeup_irq_show(struct kobject *kobj,
- 
- power_attr_ro(pm_wakeup_irq);
- 
--static bool pm_debug_messages_on __read_mostly;
-+bool pm_debug_messages_on __read_mostly;
- 
- static ssize_t pm_debug_messages_show(struct kobject *kobj,
- 				      struct kobj_attribute *attr, char *buf)
 -- 
-2.7.5
+1.8.3.1
+
+
+------------------------------------------------------------------------------
+Check out the vibrant tech community on one of the world's most
+engaging tech sites, Slashdot.org! http://sdm.link/slashdot
