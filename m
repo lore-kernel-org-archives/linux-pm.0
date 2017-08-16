@@ -1,79 +1,114 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH v2 02/14] staging: typec: tcpm: Add get_current_limit
- tcpc_dev callback
-Date: Wed, 16 Aug 2017 08:11:18 -0700
-Message-ID: <655b5cd9-76df-c99d-39d9-efe31ad5849d@roeck-us.net>
-References: <20170815200502.17339-1-hdegoede@redhat.com>
- <20170815200502.17339-3-hdegoede@redhat.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: x86: PIE support and option to extend KASLR randomization
+Date: Wed, 16 Aug 2017 17:12:35 +0200
+Message-ID: <20170816151235.oamkdva6cwpc4cex@gmail.com>
+References: <20170810172615.51965-1-thgarnie@google.com>
+ <20170811124127.kkb5pnkljz4umxuj@gmail.com>
+ <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
+ <20170815075609.mmzbfwritjzvrpsn@gmail.com>
+ <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bh-25.webhostbox.net ([208.91.199.152]:55534 "EHLO
-        bh-25.webhostbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751517AbdHPPLW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2017 11:11:22 -0400
-In-Reply-To: <20170815200502.17339-3-hdegoede@redhat.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <kernel-hardening-return-9475-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>, Wolfram Sang <wsa@the-dreams.de>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
 
-On 08/15/2017 01:04 PM, Hans de Goede wrote:
-> A Rp signalling the default current limit indicates that we're possibly
-> connected to an USB2 power-source. In some cases the type-c port-controller
-> may provide the capability to detect the current-limit in this case,
-> through e.g. BC1.2 detection.
-> 
-> This commit adds an optional get_current_limit tcpc_dev callback which
-> allows the port-controller to provide current-limit detection for when
-> the CC pin is pulled up with Rp.
-> 
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+* Thomas Garnier <thgarnie@google.com> wrote:
 
-> ---
-> Changes in v2:
-> -s/get_usb2_current_limit/get_current_limit/
-> ---
->   drivers/staging/typec/tcpm.c | 5 ++++-
->   drivers/staging/typec/tcpm.h | 7 +++++++
->   2 files changed, 11 insertions(+), 1 deletion(-)
+> On Tue, Aug 15, 2017 at 12:56 AM, Ingo Molnar <mingo@kernel.org> wrote:
+> >
+> > * Thomas Garnier <thgarnie@google.com> wrote:
+> >
+> >> > Do these changes get us closer to being able to build the kernel as truly
+> >> > position independent, i.e. to place it anywhere in the valid x86-64 address
+> >> > space? Or any other advantages?
+> >>
+> >> Yes, PIE allows us to put the kernel anywhere in memory. It will allow us to
+> >> have a full randomized address space where position and order of sections are
+> >> completely random. There is still some work to get there but being able to build
+> >> a PIE kernel is a significant step.
+> >
+> > So I _really_ dislike the whole PIE approach, because of the huge slowdown:
+> >
+> > +config RANDOMIZE_BASE_LARGE
+> > +       bool "Increase the randomization range of the kernel image"
+> > +       depends on X86_64 && RANDOMIZE_BASE
+> > +       select X86_PIE
+> > +       select X86_MODULE_PLTS if MODULES
+> > +       default n
+> > +       ---help---
+> > +         Build the kernel as a Position Independent Executable (PIE) and
+> > +         increase the available randomization range from 1GB to 3GB.
+> > +
+> > +         This option impacts performance on kernel CPU intensive workloads up
+> > +         to 10% due to PIE generated code. Impact on user-mode processes and
+> > +         typical usage would be significantly less (0.50% when you build the
+> > +         kernel).
+> > +
+> > +         The kernel and modules will generate slightly more assembly (1 to 2%
+> > +         increase on the .text sections). The vmlinux binary will be
+> > +         significantly smaller due to less relocations.
+> >
+> > To put 10% kernel overhead into perspective: enabling this option wipes out about
+> > 5-10 years worth of painstaking optimizations we've done to keep the kernel fast
+> > ... (!!)
 > 
-> diff --git a/drivers/staging/typec/tcpm.c b/drivers/staging/typec/tcpm.c
-> index 20eb4eb..8e823af 100644
-> --- a/drivers/staging/typec/tcpm.c
-> +++ b/drivers/staging/typec/tcpm.c
-> @@ -660,7 +660,10 @@ static u32 tcpm_get_current_limit(struct tcpm_port *port)
->   		break;
->   	case TYPEC_CC_RP_DEF:
->   	default:
-> -		limit = 0;
-> +		if (port->tcpc->get_current_limit)
-> +			limit = port->tcpc->get_current_limit(port->tcpc);
-> +		else
-> +			limit = 0;
->   		break;
->   	}
->   
-> diff --git a/drivers/staging/typec/tcpm.h b/drivers/staging/typec/tcpm.h
-> index 19c307d..1465668 100644
-> --- a/drivers/staging/typec/tcpm.h
-> +++ b/drivers/staging/typec/tcpm.h
-> @@ -108,6 +108,13 @@ struct tcpc_dev {
->   
->   	int (*init)(struct tcpc_dev *dev);
->   	int (*get_vbus)(struct tcpc_dev *dev);
-> +	/*
-> +	 * This optional callback gets called by the tcpm core when configured
-> +	 * as a snk and cc=Rp-def. This allows the tcpm to provide a fallback
-> +	 * current-limit detection method for the cc=Rp-def case. E.g. some
-> +	 * tcpcs may include BC1.2 charger detection and use that in this case.
-> +	 */
-> +	int (*get_current_limit)(struct tcpc_dev *dev);
->   	int (*set_cc)(struct tcpc_dev *dev, enum typec_cc_status cc);
->   	int (*get_cc)(struct tcpc_dev *dev, enum typec_cc_status *cc1,
->   		      enum typec_cc_status *cc2);
+> Note that 10% is the high-bound of a CPU intensive workload.
+
+Note that the 8-10% hackbench or even a 2%-4% range would be 'huge' in terms of 
+modern kernel performance. In many cases we are literally applying cycle level 
+optimizations that are barely measurable. A 0.1% speedup in linear execution speed 
+is already a big success.
+
+> I am going to start doing performance testing on -mcmodel=large to see if it is 
+> faster than -fPIE.
+
+Unfortunately mcmodel=large looks pretty heavy too AFAICS, at the machine 
+instruction level.
+
+Function calls look like this:
+
+ -mcmodel=medium:
+
+   757:   e8 98 ff ff ff          callq  6f4 <test_code>
+
+ -mcmodel=large
+
+   77b:   48 b8 10 f7 df ff ff    movabs $0xffffffffffdff710,%rax
+   782:   ff ff ff 
+   785:   48 8d 04 03             lea    (%rbx,%rax,1),%rax
+   789:   ff d0                   callq  *%rax
+
+And we'd do this for _EVERY_ function call in the kernel. That kind of crap is 
+totally unacceptable.
+
+> > I think the fundamental flaw is the assumption that we need a PIE executable 
+> > to have a freely relocatable kernel on 64-bit CPUs.
+> >
+> > Have you considered a kernel with -mcmodel=small (or medium) instead of -fpie 
+> > -mcmodel=large? We can pick a random 2GB window in the (non-kernel) canonical 
+> > x86-64 address space to randomize the location of kernel text. The location of 
+> > modules can be further randomized within that 2GB window.
 > 
+> -model=small/medium assume you are on the low 32-bit. It generates instructions 
+> where the virtual addresses have the high 32-bit to be zero.
+
+How are these assumptions hardcoded by GCC? Most of the instructions should be 
+relocatable straight away, as most call/jump/branch instructions are RIP-relative.
+
+I.e. is there no GCC code generation mode where code can be placed anywhere in the 
+canonical address space, yet call and jump distance is within 31 bits so that the 
+generated code is fast?
+
+Thanks,
+
+	Ingo
