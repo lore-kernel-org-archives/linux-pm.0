@@ -1,61 +1,77 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v2 08/14] power: supply: Add
- power_supply_set_input_current_limit_from_supplier helper
-Date: Wed, 16 Aug 2017 12:21:33 -0700
-Message-ID: <20170816192132.GV3930@atomide.com>
-References: <20170815200502.17339-1-hdegoede@redhat.com>
- <20170815200502.17339-9-hdegoede@redhat.com>
- <20170816155443.GH8569@atomide.com>
- <327357a2-3491-fa7c-f715-eb1c321c3c38@redhat.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v2 2/5] devicetree: power: Add docs for TI BQ24190 battery charger
+Date: Wed, 16 Aug 2017 13:11:39 -0700
+Message-ID: <CAKvHMgTvVMsvmyi0o89m1SfS9A4U1GbNuU05Tkt6C0ARR9NyWw@mail.gmail.com>
+References: <20170807195420.20767-1-liam@networkimprov.net>
+ <20170807195420.20767-3-liam@networkimprov.net> <20170811025038.5qnhbabyybx7rgu5@rob-hp-laptop>
+ <CAKvHMgSuwm5UFivbsq9dQn_wfd7kbs63UuuQSHVdGxDf_WReUA@mail.gmail.com>
+ <20170812164233.won7fairxmrnblps@earth> <CAKvHMgR+GxSqhy+iwdYmku2600HzoF__oXV7_w72ZJg-aK7O-Q@mail.gmail.com>
+ <20170816154701.GR3930@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <327357a2-3491-fa7c-f715-eb1c321c3c38@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Sebastian Reichel <sre@kernel.org>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:35154 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752219AbdHPULk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2017 16:11:40 -0400
+In-Reply-To: <20170816154701.GR3930@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, linux-pm@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, devicetree@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-* Hans de Goede <hdegoede@redhat.com> [170816 10:38]:
-> Hi,
-> 
-> On 16-08-17 17:54, Tony Lindgren wrote:
-> > * Hans de Goede <hdegoede@redhat.com> [170815 13:06]:
-> > > On some devices the USB Type-C port power (USB PD 2.0) negotiation is
-> > > done by a separate port-controller IC, while the current limit is
-> > > controlled through another (charger) IC.
-> > > 
-> > > It has been decided to model this by modelling the external Type-C
-> > > power brick (adapter/charger) as a power-supply class device which
-> > > supplies the charger-IC, with its voltage-now and current-max representing
-> > > the negotiated voltage and max current draw.
-> > > 
-> > > This commit adds a power_supply_set_input_current_limit_from_supplier
-> > > helper function which charger power-supply drivers can call to get
-> > > the max-current from their supplier and have this applied
-> > > through their set_property call-back to their input-current-limit.
-> > 
-> > Hmm so can this also be used for the USB gadget subsystem
-> > to tell charge controller when it's OK to enable 500mA
-> > charging after enumeration?
-> 
-> I'm not sure that that would be best modeled this way. Perhaps
-> the phy-driver can directly control the gpio you have for that,
-> that seems better then trying to solve this with cross subsystem
-> calls which are always tricky.
+On Wed, Aug 16, 2017 at 8:47 AM, Tony Lindgren <tony@atomide.com> wrote:
+> * Liam Breck <liam@networkimprov.net> [170812 12:00]:
+>> On Sat, Aug 12, 2017 at 9:42 AM, Sebastian Reichel <sre@kernel.org> wrote:
+>> > On Fri, Aug 11, 2017 at 02:57:10PM -0700, Liam Breck wrote:
+>> >> >> +Other features:
+>> >> >> +- Use gpio-hog to set the OTG pin high to enable 500mA charge current on USB SDP port.
+>> >> >
+>> >> > Why doesn't the charger driver control this?
+>> >>
+>> >> This pin/gpio has to be high when USB is plugged in to make the
+>> >> charger chip negotiate 500mA from a SDP port. It should generally be
+>> >> configured that way even if the driver is not loaded, as the chip does
+>> >> not require a driver to function. Some boards may do that with a
+>> >> pull-up. Also the user may want to change this via sysfs and not have
+>> >> the driver "fix" it.
+>> >
+>> > drivers/power/supply/qcom_smbb.c exposes the otg feature as
+>> > regulator. I think in this case it could be exposed as
+>> > gpio-regulator.
+>>
+>> Hans is doing that here:
+>> https://patchwork.kernel.org/patch/9883717/
+>>
+>> The datasheet labels one pin "OTG" but that's misleading; it really
+>> enables negotiation of 500mA input current, but does not turn on OTG
+>> mode. If this pin is low, it only prevents the driver from starting
+>> OTG mode via I2C msg.
+>
+> Yeah so before the device has enumerated this pin keeps the
+> max current at 100mA as required by the USB spec. This pin
+> should be only toggled after enumerating in bootloader or
+> by the kernel driver. I tink the USB PHY driver can also
+> be wired to control this line.
+>
+> Probably best to set it up as just a GPIO that the bq24190
+> driver controls optionally.
+>
+> Then later on we should have some Linux generic way for
+> USB gadget subsystem to tell the charger that we have
+> enumerated, and then bq24190 driver can toggle this GPIO
+> to enable higher charge rates.
 
-I don't think the phy driver knows either when the system
-has enumerated as a gadget..
+I discovered a few months ago that setting this pin high after USB
+connect has NO effect on iinlim. It has to be high at connect to
+auto-negotiate 500mA. There is no point in making the driver control
+this pin; we already tried that.
 
-> > FYI, that's controlled by the bq24190 pin named OTG that should
-> > be only set high after enumeration. Any ideas how that is wired
-> > on your device? Does it connect to the USB PHY or to a GPIO
-> > line?
-> 
-> I believe it is just hardwired to be logical high all the time
-> on my board.
+Here we are just documenting how the DT can enable this pin via gpio-hog.
 
-OK thanks for checking.
-
-Tony
+I believe the only way to defer 500mA negotiation is to leave this pin
+off and set iinlim via I2C msg to chip. We can do that in a gadget
+script via sysfs input_current_limit. Hans does not have to enable
+this pin to start OTG-host on his x86 device, perhaps because it is
+wired high there. Our script can set the linked gpio high if nec for
+OTG-host.
