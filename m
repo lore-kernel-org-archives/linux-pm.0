@@ -1,114 +1,63 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: x86: PIE support and option to extend KASLR randomization
-Date: Wed, 16 Aug 2017 17:12:35 +0200
-Message-ID: <20170816151235.oamkdva6cwpc4cex@gmail.com>
-References: <20170810172615.51965-1-thgarnie@google.com>
- <20170811124127.kkb5pnkljz4umxuj@gmail.com>
- <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
- <20170815075609.mmzbfwritjzvrpsn@gmail.com>
- <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
+From: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+Subject: Re: [PATCH v2 3/5] thermal: imx: Add support for reading OCOTP
+ through nvmem
+Date: Wed, 16 Aug 2017 18:33:41 +0300
+Message-ID: <1502897621.23210.41.camel@nxp.com>
+References: <cover.1500041281.git.leonard.crestez@nxp.com>
+         <faf9c3e5f970b9609073c4c191a7af03d647ea51.1500041281.git.leonard.crestez@nxp.com>
+         <20170725080835.GD20064@dragon> <1502176915.4296.1.camel@intel.com>
+         <26407dd5-a9b1-67c0-c4ab-d97fa0b88b79@linaro.org>
+         <1502192287.24350.9.camel@nxp.com>
+         <9732c524-fbdc-d1be-cd03-089dbb2266c4@linaro.org>
+         <1502197100.4296.45.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <kernel-hardening-return-9475-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Content-Disposition: inline
-In-Reply-To: <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1502197100.4296.45.camel-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>, Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tue, 2017-08-08 at 20:58 +0800, Zhang Rui wrote:
+> On Tue, 2017-08-08 at 12:44 +0100, Srinivas Kandagatla wrote:
+> > On 08/08/17 12:38, Leonard Crestez wrote:
+> > > On Tue, 2017-08-08 at 12:00 +0100, Srinivas Kandagatla wrote:
+> > > > On 08/08/17 08:21, Zhang Rui wrote:
 
-* Thomas Garnier <thgarnie@google.com> wrote:
+> > > > > I'm okay with the thermal change.
+> > > > > We still need ACK for the nvmem changes in this patch series.
 
-> On Tue, Aug 15, 2017 at 12:56 AM, Ingo Molnar <mingo@kernel.org> wrote:
-> >
-> > * Thomas Garnier <thgarnie@google.com> wrote:
-> >
-> >> > Do these changes get us closer to being able to build the kernel as truly
-> >> > position independent, i.e. to place it anywhere in the valid x86-64 address
-> >> > space? Or any other advantages?
-> >>
-> >> Yes, PIE allows us to put the kernel anywhere in memory. It will allow us to
-> >> have a full randomized address space where position and order of sections are
-> >> completely random. There is still some work to get there but being able to build
-> >> a PIE kernel is a significant step.
-> >
-> > So I _really_ dislike the whole PIE approach, because of the huge slowdown:
-> >
-> > +config RANDOMIZE_BASE_LARGE
-> > +       bool "Increase the randomization range of the kernel image"
-> > +       depends on X86_64 && RANDOMIZE_BASE
-> > +       select X86_PIE
-> > +       select X86_MODULE_PLTS if MODULES
-> > +       default n
-> > +       ---help---
-> > +         Build the kernel as a Position Independent Executable (PIE) and
-> > +         increase the available randomization range from 1GB to 3GB.
-> > +
-> > +         This option impacts performance on kernel CPU intensive workloads up
-> > +         to 10% due to PIE generated code. Impact on user-mode processes and
-> > +         typical usage would be significantly less (0.50% when you build the
-> > +         kernel).
-> > +
-> > +         The kernel and modules will generate slightly more assembly (1 to 2%
-> > +         increase on the .text sections). The vmlinux binary will be
-> > +         significantly smaller due to less relocations.
-> >
-> > To put 10% kernel overhead into perspective: enabling this option wipes out about
-> > 5-10 years worth of painstaking optimizations we've done to keep the kernel fast
-> > ... (!!)
-> 
-> Note that 10% is the high-bound of a CPU intensive workload.
+> > > > NVMEM changes are already sent to Greg K H with other patches
+> > > > https://lkml.org/lkml/2017/8/8/436, should appear in next.
 
-Note that the 8-10% hackbench or even a 2%-4% range would be 'huge' in terms of 
-modern kernel performance. In many cases we are literally applying cycle level 
-optimizations that are barely measurable. A 0.1% speedup in linear execution speed 
-is already a big success.
+> > > These patches have a compile-time dependency on each other.
+> > > Wouldn't it make more sense for the whole series to go through a single
+> > > maintainer tree, atomically? Most of the changes are in driver/thermal.
 
-> I am going to start doing performance testing on -mcmodel=large to see if it is 
-> faster than -fPIE.
+> > I was expecting that the nvmem change go in as fix in a rc release
+> > so that you could apply the other patches after that.
+> > 
+> > Let me ping Greg about this!!
 
-Unfortunately mcmodel=large looks pretty heavy too AFAICS, at the machine 
-instruction level.
+> As Shawn is okay with patch 4/5 and 5/5, I guess I can queue patch 1/5,
+> 3/5, 4/5, 5/5 for 4.14-rc1, if the nvmem patch can catch 4.13, or I can
+> queue the full patch set for 4.14, with Srinivas' ACK.
 
-Function calls look like this:
+It's been a week since the last email and it seems that nothing
+happened. I can't find any of these patches in either torvalds/master
+or linux-next. It seems to me that the nvmem series linked above was
+not picked up after all?
 
- -mcmodel=medium:
+It's not clear how to proceed. It's been more a month since the series
+was sent so maybe I should resend it but it's not clear who would pick
+it up.
 
-   757:   e8 98 ff ff ff          callq  6f4 <test_code>
-
- -mcmodel=large
-
-   77b:   48 b8 10 f7 df ff ff    movabs $0xffffffffffdff710,%rax
-   782:   ff ff ff 
-   785:   48 8d 04 03             lea    (%rbx,%rax,1),%rax
-   789:   ff d0                   callq  *%rax
-
-And we'd do this for _EVERY_ function call in the kernel. That kind of crap is 
-totally unacceptable.
-
-> > I think the fundamental flaw is the assumption that we need a PIE executable 
-> > to have a freely relocatable kernel on 64-bit CPUs.
-> >
-> > Have you considered a kernel with -mcmodel=small (or medium) instead of -fpie 
-> > -mcmodel=large? We can pick a random 2GB window in the (non-kernel) canonical 
-> > x86-64 address space to randomize the location of kernel text. The location of 
-> > modules can be further randomized within that 2GB window.
-> 
-> -model=small/medium assume you are on the low 32-bit. It generates instructions 
-> where the virtual addresses have the high 32-bit to be zero.
-
-How are these assumptions hardcoded by GCC? Most of the instructions should be 
-relocatable straight away, as most call/jump/branch instructions are RIP-relative.
-
-I.e. is there no GCC code generation mode where code can be placed anywhere in the 
-canonical address space, yet call and jump distance is within 31 bits so that the 
-generated code is fast?
-
-Thanks,
-
-	Ingo
+--
+Regards,
+Leonard
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
