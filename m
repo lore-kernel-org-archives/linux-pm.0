@@ -1,260 +1,48 @@
-From: kgunda@codeaurora.org
-Subject: Re: [PATCH V1] thermal: qcom-spmi-temp-alarm: add support for GEN2
- PMIC peripherals
-Date: Wed, 16 Aug 2017 17:53:16 +0530
-Message-ID: <f5c6c5f73b78c407684482cdeed30294@codeaurora.org>
-References: <1499947772-19199-1-git-send-email-kgunda@codeaurora.org>
- <1502179943.4296.12.camel@intel.com>
+From: Michal Hocko <mhocko@kernel.org>
+Subject: Re: [PATCH][RFC v2] PM / Hibernate: Disable wathdog when creating
+ snapshot
+Date: Wed, 16 Aug 2017 14:33:59 +0200
+Message-ID: <20170816123359.GC32161@dhcp22.suse.cz>
+References: <1502859218-13099-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1502179943.4296.12.camel@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iivanov@mm-sol.com, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, linux-arm-msm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <1502859218-13099-1-git-send-email-yu.c.chen@intel.com>
+Sender: owner-linux-mm@kvack.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2017-08-08 13:42, Zhang Rui wrote:
-> On Thu, 2017-07-13 at 17:39 +0530, Kiran Gunda wrote:
->> From: David Collins <collinsd@codeaurora.org>
->> 
->> Add support for the TEMP_ALARM GEN2 PMIC peripheral subtype.  The
->> GEN2 subtype defines an over temperature state with hysteresis
->> instead of stage in the status register.  There are two GEN2
->> states corresponding to stages 1 and 2.
->> 
->> Signed-off-by: David Collins <collinsd@codeaurora.org>
->> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
-> 
-> Ivan,
-> 
-> can you please review this patch and let me know your opinion?
-> 
-> thanks,
-> rui
+On Wed 16-08-17 12:53:38, Chen Yu wrote:
+[...]
+> @@ -2537,10 +2538,15 @@ void mark_free_pages(struct zone *zone)
+>  	unsigned long flags;
+>  	unsigned int order, t;
+>  	struct page *page;
+> +	bool wd_suspended;
+>  
+>  	if (zone_is_empty(zone))
+>  		return;
+>  
+> +	wd_suspended = lockup_detector_suspend() ? false : true;
+> +	if (!wd_suspended)
+> +		pr_warn_once("Failed to disable lockup detector during hibernation.\n");
+> +
+>  	spin_lock_irqsave(&zone->lock, flags);
+>  
+>  	max_zone_pfn = zone_end_pfn(zone);
 
-Ivan,
-Could you please review this patch ?
+I am not maintainer of this code so I am not very familiar with the full
+context of this function but lockup_detector_suspend is just too heavy
+for the purpose you are trying to achive. Really why don't you just
+poke the watchdog every N pages?
+-- 
+Michal Hocko
+SUSE Labs
 
-Thanks,
-Kiran
->> ---
->>  drivers/thermal/qcom-spmi-temp-alarm.c | 92
->> ++++++++++++++++++++++++++--------
->>  1 file changed, 71 insertions(+), 21 deletions(-)
->> 
->> diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c
->> b/drivers/thermal/qcom-spmi-temp-alarm.c
->> index f502419..a5e17ba 100644
->> --- a/drivers/thermal/qcom-spmi-temp-alarm.c
->> +++ b/drivers/thermal/qcom-spmi-temp-alarm.c
->> @@ -1,5 +1,5 @@
->>  /*
->> - * Copyright (c) 2011-2015, The Linux Foundation. All rights
->> reserved.
->> + * Copyright (c) 2011-2015, 2017, The Linux Foundation. All rights
->> reserved.
->>   *
->>   * This program is free software; you can redistribute it and/or
->> modify
->>   * it under the terms of the GNU General Public License version 2
->> and
->> @@ -11,6 +11,7 @@
->>   * GNU General Public License for more details.
->>   */
->>  
->> +#include <linux/bitops.h>
->>  #include <linux/delay.h>
->>  #include <linux/err.h>
->>  #include <linux/iio/consumer.h>
->> @@ -29,13 +30,17 @@
->>  #define QPNP_TM_REG_ALARM_CTRL		0x46
->>  
->>  #define QPNP_TM_TYPE			0x09
->> -#define QPNP_TM_SUBTYPE			0x08
->> +#define QPNP_TM_SUBTYPE_GEN1		0x08
->> +#define QPNP_TM_SUBTYPE_GEN2		0x09
->>  
->> -#define STATUS_STAGE_MASK		0x03
->> +#define STATUS_GEN1_STAGE_MASK		GENMASK(1, 0)
->> +#define STATUS_GEN2_STATE_MASK		GENMASK(6, 4)
->> +#define STATUS_GEN2_STATE_SHIFT		4
->>  
->> -#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
->> +#define SHUTDOWN_CTRL1_OVERRIDE_MASK	GENMASK(7, 6)
->> +#define SHUTDOWN_CTRL1_THRESHOLD_MASK	GENMASK(1, 0)
->>  
->> -#define ALARM_CTRL_FORCE_ENABLE		0x80
->> +#define ALARM_CTRL_FORCE_ENABLE		BIT(7)
->>  
->>  /*
->>   * Trip point values based on threshold control
->> @@ -58,6 +63,7 @@
->>  struct qpnp_tm_chip {
->>  	struct regmap			*map;
->>  	struct thermal_zone_device	*tz_dev;
->> +	unsigned int			subtype;
->>  	long				temp;
->>  	unsigned int			thresh;
->>  	unsigned int			stage;
->> @@ -66,6 +72,9 @@ struct qpnp_tm_chip {
->>  	struct iio_channel		*adc;
->>  };
->>  
->> +/* This array maps from GEN2 alarm state to GEN1 alarm stage */
->> +static const unsigned int alarm_state_map[8] = {0, 1, 1, 2, 2, 3, 3,
->> 3};
->> +
->>  static int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr, u8
->> *data)
->>  {
->>  	unsigned int val;
->> @@ -84,30 +93,59 @@ static int qpnp_tm_write(struct qpnp_tm_chip
->> *chip, u16 addr, u8 data)
->>  	return regmap_write(chip->map, chip->base + addr, data);
->>  }
->>  
->> +/**
->> + * qpnp_tm_get_temp_stage() - return over-temperature stage
->> + * @chip:		Pointer to the qpnp_tm chip
->> + *
->> + * Return: stage (GEN1) or state (GEN2) on success, or errno on
->> failure.
->> + */
->> +static int qpnp_tm_get_temp_stage(struct qpnp_tm_chip *chip)
->> +{
->> +	int ret;
->> +	u8 reg = 0;
->> +
->> +	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
->> +	if (ret < 0)
->> +		return ret;
->> +
->> +	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1)
->> +		ret = reg & STATUS_GEN1_STAGE_MASK;
->> +	else
->> +		ret = (reg & STATUS_GEN2_STATE_MASK) >>
->> STATUS_GEN2_STATE_SHIFT;
->> +
->> +	return ret;
->> +}
->> +
->>  /*
->>   * This function updates the internal temp value based on the
->>   * current thermal stage and threshold as well as the previous stage
->>   */
->>  static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
->>  {
->> -	unsigned int stage;
->> +	unsigned int stage, stage_new, stage_old;
->>  	int ret;
->> -	u8 reg = 0;
->>  
->> -	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
->> +	ret = qpnp_tm_get_temp_stage(chip);
->>  	if (ret < 0)
->>  		return ret;
->> +	stage = ret;
->>  
->> -	stage = reg & STATUS_STAGE_MASK;
->> +	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1) {
->> +		stage_new = stage;
->> +		stage_old = chip->stage;
->> +	} else {
->> +		stage_new = alarm_state_map[stage];
->> +		stage_old = alarm_state_map[chip->stage];
->> +	}
->>  
->> -	if (stage > chip->stage) {
->> +	if (stage_new > stage_old) {
->>  		/* increasing stage, use lower bound */
->> -		chip->temp = (stage - 1) * TEMP_STAGE_STEP +
->> +		chip->temp = (stage_new - 1) * TEMP_STAGE_STEP +
->>  			     chip->thresh * TEMP_THRESH_STEP +
->>  			     TEMP_STAGE_HYSTERESIS +
->> TEMP_THRESH_MIN;
->> -	} else if (stage < chip->stage) {
->> +	} else if (stage_new < stage_old) {
->>  		/* decreasing stage, use upper bound */
->> -		chip->temp = stage * TEMP_STAGE_STEP +
->> +		chip->temp = stage_new * TEMP_STAGE_STEP +
->>  			     chip->thresh * TEMP_THRESH_STEP -
->>  			     TEMP_STAGE_HYSTERESIS +
->> TEMP_THRESH_MIN;
->>  	}
->> @@ -162,28 +200,37 @@ static irqreturn_t qpnp_tm_isr(int irq, void
->> *data)
->>   */
->>  static int qpnp_tm_init(struct qpnp_tm_chip *chip)
->>  {
->> +	unsigned int stage;
->>  	int ret;
->> -	u8 reg;
->> +	u8 reg = 0;
->>  
->> -	chip->thresh = THRESH_MIN;
->> +	ret = qpnp_tm_read(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, &reg);
->> +	if (ret < 0)
->> +		return ret;
->> +
->> +	chip->thresh = reg & SHUTDOWN_CTRL1_THRESHOLD_MASK;
->>  	chip->temp = DEFAULT_TEMP;
->>  
->> -	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
->> +	ret = qpnp_tm_get_temp_stage(chip);
->>  	if (ret < 0)
->>  		return ret;
->> +	chip->stage = ret;
->>  
->> -	chip->stage = reg & STATUS_STAGE_MASK;
->> +	stage = chip->subtype == QPNP_TM_SUBTYPE_GEN1
->> +		? chip->stage : alarm_state_map[chip->stage];
->>  
->> -	if (chip->stage)
->> +	if (stage)
->>  		chip->temp = chip->thresh * TEMP_THRESH_STEP +
->> -			     (chip->stage - 1) * TEMP_STAGE_STEP +
->> +			     (stage - 1) * TEMP_STAGE_STEP +
->>  			     TEMP_THRESH_MIN;
->>  
->>  	/*
->>  	 * Set threshold and disable software override of stage 2
->> and 3
->>  	 * shutdowns.
->>  	 */
->> -	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
->> +	chip->thresh = THRESH_MIN;
->> +	reg &= ~(SHUTDOWN_CTRL1_OVERRIDE_MASK |
->> SHUTDOWN_CTRL1_THRESHOLD_MASK);
->> +	reg |= chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
->>  	ret = qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
->>  	if (ret < 0)
->>  		return ret;
->> @@ -242,13 +289,16 @@ static int qpnp_tm_probe(struct platform_device
->> *pdev)
->>  		goto fail;
->>  	}
->>  
->> -	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
->> +	if (type != QPNP_TM_TYPE || (subtype != QPNP_TM_SUBTYPE_GEN1
->> +				     && subtype !=
->> QPNP_TM_SUBTYPE_GEN2)) {
->>  		dev_err(&pdev->dev, "invalid type 0x%02x or subtype
->> 0x%02x\n",
->>  			type, subtype);
->>  		ret = -ENODEV;
->>  		goto fail;
->>  	}
->>  
->> +	chip->subtype = subtype;
->> +
->>  	ret = qpnp_tm_init(chip);
->>  	if (ret < 0) {
->>  		dev_err(&pdev->dev, "init failed\n");
-> --
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-arm-msm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
