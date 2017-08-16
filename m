@@ -1,49 +1,65 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: CPU frequency governor problem
-Date: Wed, 16 Aug 2017 08:48:52 +0530
-Message-ID: <CAOh2x==Wtv2o2cVST2hRMqXn76NC+P3hN0HnYKukHLiLPVws5w@mail.gmail.com>
-References: <CAMn+H1sk267Er5zS2jRmDUE_s+f8Fguq8K40ZpDQG656LcLnBg@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: dt: Add r8a7796 support to to use generic
+ cpufreq driver
+Date: Wed, 16 Aug 2017 08:55:18 +0530
+Message-ID: <20170816032518.GA4233@vireshk-i7>
+References: <1502465817-19804-1-git-send-email-horms+renesas@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f180.google.com ([209.85.223.180]:37939 "EHLO
-        mail-io0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753209AbdHPDSx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Aug 2017 23:18:53 -0400
-Received: by mail-io0-f180.google.com with SMTP id g71so9257839ioe.5
-        for <linux-pm@vger.kernel.org>; Tue, 15 Aug 2017 20:18:53 -0700 (PDT)
-In-Reply-To: <CAMn+H1sk267Er5zS2jRmDUE_s+f8Fguq8K40ZpDQG656LcLnBg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1502465817-19804-1-git-send-email-horms+renesas@verge.net.au>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Simon Horman <horms+renesas@verge.net.au>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
 List-Id: linux-pm@vger.kernel.org
-To: Edward Statham <edward.statham@gmail.com>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-Adding PM list instead.
+On 11-08-17, 17:36, Simon Horman wrote:
+> From: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
+> 
+> This patch adds the r8a7796 support the generic cpufreq driver
+> by adding an appropriate compat string. This is in keeping
+> with support for other Renesas ARM and arm64 based SoCs.
+> 
+> Signed-off-by: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
+> [simon: new changelog]
+> Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+> ---
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> This is a follow-up for a similar change that has already been accepted
+> for the r8a7795.
+> 
+> 
+> I have provided an integration branch that includes with this patch, those
+> DTS updates that make use of opp-v2 bindings that depend on this change,
+> and Renesas clock updates also depended on by the DTS changes.  The result
+> is working CPUFreq for the r8a7796 (R-Car M3-W).
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas.git topic/r8a7796-cpufreq
+> 
+> A description of steps taken to lightly exercise the same feature for the
+> r88a7795 the above can be found at the link below. The results are the same
+> for the r8a7796 with the exception that it has two active CPU cores rather
+> than four.
+> 
+> http://elinux.org/Tests:R-CAR-GEN3-CPUFreq
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index bcee384b3251..233e18ad3948 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -68,6 +68,7 @@ static const struct of_device_id machines[] __initconst = {
+>  	{ .compatible = "renesas,r8a7793", },
+>  	{ .compatible = "renesas,r8a7794", },
+>  	{ .compatible = "renesas,r8a7795", },
+> +	{ .compatible = "renesas,r8a7796", },
+>  	{ .compatible = "renesas,sh73a0", },
+>  
+>  	{ .compatible = "rockchip,rk2928", },
 
-On Tue, Aug 15, 2017 at 8:17 AM, Edward Statham
-<edward.statham@gmail.com> wrote:
-> Hi, sorry for the direct email but I=E2=80=99ve been unable to find a res=
-olution
-> to this in forums etc.  I have a laptop with a Intel i7-7700HQ CPU and am
-> running Linux Mint 18.  The frequency governor is set to performance but
-> it keeps on throttling down to 70% or even 50% and getting stuck there,
-> for example:
->
-> cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
-> 70
->
-> I can=E2=80=99t find a way to get it to throttle sensibly i.e. lower the =
-max
-> when required but revert to full speed when other conditions allow. I=E2=
-=80=99ve
-> tried the ondemand and performance governors.
->
-> Any suggestions would be much appreciated.
->
-> thanks,
-> Ed
-> --
-> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
