@@ -1,273 +1,51 @@
-From: kgunda@codeaurora.org
-Subject: Re: [PATCH V1] thermal: qcom-spmi-temp-alarm: add support for GEN2
- PMIC peripherals
-Date: Thu, 17 Aug 2017 13:12:00 +0530
-Message-ID: <5d3f612dca4181b2038e442cfba5594e@codeaurora.org>
-References: <1499947772-19199-1-git-send-email-kgunda@codeaurora.org>
- <1502179943.4296.12.camel@intel.com>
- <f5c6c5f73b78c407684482cdeed30294@codeaurora.org>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH 2/2] cpufreq: dt-platdev: Drop few entries from whitelist
+Date: Thu, 17 Aug 2017 09:53:02 +0200
+Message-ID: <20170817075301.GA26170@verge.net.au>
+References: <e93c74a19ebf6d7ee687ef8b71b3150a96527f7c.1502861444.git.viresh.kumar@linaro.org>
+ <7182e308a552d37064f61e724c709667a6fa098d.1502861444.git.viresh.kumar@linaro.org>
+ <CAMuHMdW-_3_p_sv_B0dx1R_0YiwkY0MtgG1Kv1-4_qXb6eiTqA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <f5c6c5f73b78c407684482cdeed30294@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iivanov@mm-sol.com, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, linux-arm-msm-owner@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Jean Delvare <jdelvare@suse.de>, Lukasz Majewski <l.majewski@samsung.com>, Darren Hart <dvhart@linux.intel.com>, Heiko Stuebner <heiko@sntech.de>, Peter Feuerer <peter@piie.net>, bjorn.andersson@linaro.org, sboyd@codeaurora.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdW-_3_p_sv_B0dx1R_0YiwkY0MtgG1Kv1-4_qXb6eiTqA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Wei Xu <xuwei5@hisilicon.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, baoyou.xie@linaro.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2017-08-16 17:53, kgunda@codeaurora.org wrote:
-> On 2017-08-08 13:42, Zhang Rui wrote:
->> On Thu, 2017-07-13 at 17:39 +0530, Kiran Gunda wrote:
->>> From: David Collins <collinsd@codeaurora.org>
->>> 
->>> Add support for the TEMP_ALARM GEN2 PMIC peripheral subtype.  The
->>> GEN2 subtype defines an over temperature state with hysteresis
->>> instead of stage in the status register.  There are two GEN2
->>> states corresponding to stages 1 and 2.
->>> 
->>> Signed-off-by: David Collins <collinsd@codeaurora.org>
->>> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
->> 
->> Ivan,
->> 
->> can you please review this patch and let me know your opinion?
->> 
->> thanks,
->> rui
+On Wed, Aug 16, 2017 at 08:51:04AM +0200, Geert Uytterhoeven wrote:
+> Hi Viresh,
 > 
-> Ivan,
-> Could you please review this patch ?
+> On Wed, Aug 16, 2017 at 7:37 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > Drop few ARM (32 and 64 bit) platforms from the whitelist which always
+> > use "operating-points-v2" property from their DT. They should continue
+> > to work after this patch.
+> >
+> > Tested on Hikey platform (only the "hisilicon,hi6220" entry).
+> >
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> >  drivers/cpufreq/cpufreq-dt-platdev.c | 11 -----------
+> >  1 file changed, 11 deletions(-)
+> >
+> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > index 061b468512a2..45f2ec3b7f7a 100644
+> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> > @@ -27,7 +27,6 @@ static const struct of_device_id whitelist[] __initconst = {
+> >         { .compatible = "allwinner,sun6i-a31s", },
+> >         { .compatible = "allwinner,sun7i-a20", },
+> >         { .compatible = "allwinner,sun8i-a23", },
+> > -       { .compatible = "allwinner,sun8i-a33", },
+> >         { .compatible = "allwinner,sun8i-a83t", },
+> >         { .compatible = "allwinner,sun8i-h3", },
 > 
-> Thanks,
-> Kiran
+> I think "renesas,r8a7795" can be removed again, too.
+> Simon?
 
-Looks like Ivan is no more reviewing the patches for qcom.
-Adding Bjorn and Stephen Boyd for the review.
-
-Thanks,
-Kiran
->>> ---
->>>  drivers/thermal/qcom-spmi-temp-alarm.c | 92
->>> ++++++++++++++++++++++++++--------
->>>  1 file changed, 71 insertions(+), 21 deletions(-)
->>> 
->>> diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c
->>> b/drivers/thermal/qcom-spmi-temp-alarm.c
->>> index f502419..a5e17ba 100644
->>> --- a/drivers/thermal/qcom-spmi-temp-alarm.c
->>> +++ b/drivers/thermal/qcom-spmi-temp-alarm.c
->>> @@ -1,5 +1,5 @@
->>>  /*
->>> - * Copyright (c) 2011-2015, The Linux Foundation. All rights
->>> reserved.
->>> + * Copyright (c) 2011-2015, 2017, The Linux Foundation. All rights
->>> reserved.
->>>   *
->>>   * This program is free software; you can redistribute it and/or
->>> modify
->>>   * it under the terms of the GNU General Public License version 2
->>> and
->>> @@ -11,6 +11,7 @@
->>>   * GNU General Public License for more details.
->>>   */
->>>  
->>> +#include <linux/bitops.h>
->>>  #include <linux/delay.h>
->>>  #include <linux/err.h>
->>>  #include <linux/iio/consumer.h>
->>> @@ -29,13 +30,17 @@
->>>  #define QPNP_TM_REG_ALARM_CTRL		0x46
->>>  
->>>  #define QPNP_TM_TYPE			0x09
->>> -#define QPNP_TM_SUBTYPE			0x08
->>> +#define QPNP_TM_SUBTYPE_GEN1		0x08
->>> +#define QPNP_TM_SUBTYPE_GEN2		0x09
->>>  
->>> -#define STATUS_STAGE_MASK		0x03
->>> +#define STATUS_GEN1_STAGE_MASK		GENMASK(1, 0)
->>> +#define STATUS_GEN2_STATE_MASK		GENMASK(6, 4)
->>> +#define STATUS_GEN2_STATE_SHIFT		4
->>>  
->>> -#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
->>> +#define SHUTDOWN_CTRL1_OVERRIDE_MASK	GENMASK(7, 6)
->>> +#define SHUTDOWN_CTRL1_THRESHOLD_MASK	GENMASK(1, 0)
->>>  
->>> -#define ALARM_CTRL_FORCE_ENABLE		0x80
->>> +#define ALARM_CTRL_FORCE_ENABLE		BIT(7)
->>>  
->>>  /*
->>>   * Trip point values based on threshold control
->>> @@ -58,6 +63,7 @@
->>>  struct qpnp_tm_chip {
->>>  	struct regmap			*map;
->>>  	struct thermal_zone_device	*tz_dev;
->>> +	unsigned int			subtype;
->>>  	long				temp;
->>>  	unsigned int			thresh;
->>>  	unsigned int			stage;
->>> @@ -66,6 +72,9 @@ struct qpnp_tm_chip {
->>>  	struct iio_channel		*adc;
->>>  };
->>>  
->>> +/* This array maps from GEN2 alarm state to GEN1 alarm stage */
->>> +static const unsigned int alarm_state_map[8] = {0, 1, 1, 2, 2, 3, 3,
->>> 3};
->>> +
->>>  static int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr, u8
->>> *data)
->>>  {
->>>  	unsigned int val;
->>> @@ -84,30 +93,59 @@ static int qpnp_tm_write(struct qpnp_tm_chip
->>> *chip, u16 addr, u8 data)
->>>  	return regmap_write(chip->map, chip->base + addr, data);
->>>  }
->>>  
->>> +/**
->>> + * qpnp_tm_get_temp_stage() - return over-temperature stage
->>> + * @chip:		Pointer to the qpnp_tm chip
->>> + *
->>> + * Return: stage (GEN1) or state (GEN2) on success, or errno on
->>> failure.
->>> + */
->>> +static int qpnp_tm_get_temp_stage(struct qpnp_tm_chip *chip)
->>> +{
->>> +	int ret;
->>> +	u8 reg = 0;
->>> +
->>> +	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
->>> +	if (ret < 0)
->>> +		return ret;
->>> +
->>> +	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1)
->>> +		ret = reg & STATUS_GEN1_STAGE_MASK;
->>> +	else
->>> +		ret = (reg & STATUS_GEN2_STATE_MASK) >>
->>> STATUS_GEN2_STATE_SHIFT;
->>> +
->>> +	return ret;
->>> +}
->>> +
->>>  /*
->>>   * This function updates the internal temp value based on the
->>>   * current thermal stage and threshold as well as the previous stage
->>>   */
->>>  static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip *chip)
->>>  {
->>> -	unsigned int stage;
->>> +	unsigned int stage, stage_new, stage_old;
->>>  	int ret;
->>> -	u8 reg = 0;
->>>  
->>> -	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
->>> +	ret = qpnp_tm_get_temp_stage(chip);
->>>  	if (ret < 0)
->>>  		return ret;
->>> +	stage = ret;
->>>  
->>> -	stage = reg & STATUS_STAGE_MASK;
->>> +	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1) {
->>> +		stage_new = stage;
->>> +		stage_old = chip->stage;
->>> +	} else {
->>> +		stage_new = alarm_state_map[stage];
->>> +		stage_old = alarm_state_map[chip->stage];
->>> +	}
->>>  
->>> -	if (stage > chip->stage) {
->>> +	if (stage_new > stage_old) {
->>>  		/* increasing stage, use lower bound */
->>> -		chip->temp = (stage - 1) * TEMP_STAGE_STEP +
->>> +		chip->temp = (stage_new - 1) * TEMP_STAGE_STEP +
->>>  			     chip->thresh * TEMP_THRESH_STEP +
->>>  			     TEMP_STAGE_HYSTERESIS +
->>> TEMP_THRESH_MIN;
->>> -	} else if (stage < chip->stage) {
->>> +	} else if (stage_new < stage_old) {
->>>  		/* decreasing stage, use upper bound */
->>> -		chip->temp = stage * TEMP_STAGE_STEP +
->>> +		chip->temp = stage_new * TEMP_STAGE_STEP +
->>>  			     chip->thresh * TEMP_THRESH_STEP -
->>>  			     TEMP_STAGE_HYSTERESIS +
->>> TEMP_THRESH_MIN;
->>>  	}
->>> @@ -162,28 +200,37 @@ static irqreturn_t qpnp_tm_isr(int irq, void
->>> *data)
->>>   */
->>>  static int qpnp_tm_init(struct qpnp_tm_chip *chip)
->>>  {
->>> +	unsigned int stage;
->>>  	int ret;
->>> -	u8 reg;
->>> +	u8 reg = 0;
->>>  
->>> -	chip->thresh = THRESH_MIN;
->>> +	ret = qpnp_tm_read(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, &reg);
->>> +	if (ret < 0)
->>> +		return ret;
->>> +
->>> +	chip->thresh = reg & SHUTDOWN_CTRL1_THRESHOLD_MASK;
->>>  	chip->temp = DEFAULT_TEMP;
->>>  
->>> -	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
->>> +	ret = qpnp_tm_get_temp_stage(chip);
->>>  	if (ret < 0)
->>>  		return ret;
->>> +	chip->stage = ret;
->>>  
->>> -	chip->stage = reg & STATUS_STAGE_MASK;
->>> +	stage = chip->subtype == QPNP_TM_SUBTYPE_GEN1
->>> +		? chip->stage : alarm_state_map[chip->stage];
->>>  
->>> -	if (chip->stage)
->>> +	if (stage)
->>>  		chip->temp = chip->thresh * TEMP_THRESH_STEP +
->>> -			     (chip->stage - 1) * TEMP_STAGE_STEP +
->>> +			     (stage - 1) * TEMP_STAGE_STEP +
->>>  			     TEMP_THRESH_MIN;
->>>  
->>>  	/*
->>>  	 * Set threshold and disable software override of stage 2
->>> and 3
->>>  	 * shutdowns.
->>>  	 */
->>> -	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
->>> +	chip->thresh = THRESH_MIN;
->>> +	reg &= ~(SHUTDOWN_CTRL1_OVERRIDE_MASK |
->>> SHUTDOWN_CTRL1_THRESHOLD_MASK);
->>> +	reg |= chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
->>>  	ret = qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1, reg);
->>>  	if (ret < 0)
->>>  		return ret;
->>> @@ -242,13 +289,16 @@ static int qpnp_tm_probe(struct platform_device
->>> *pdev)
->>>  		goto fail;
->>>  	}
->>>  
->>> -	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
->>> +	if (type != QPNP_TM_TYPE || (subtype != QPNP_TM_SUBTYPE_GEN1
->>> +				     && subtype !=
->>> QPNP_TM_SUBTYPE_GEN2)) {
->>>  		dev_err(&pdev->dev, "invalid type 0x%02x or subtype
->>> 0x%02x\n",
->>>  			type, subtype);
->>>  		ret = -ENODEV;
->>>  		goto fail;
->>>  	}
->>>  
->>> +	chip->subtype = subtype;
->>> +
->>>  	ret = qpnp_tm_init(chip);
->>>  	if (ret < 0) {
->>>  		dev_err(&pdev->dev, "init failed\n");
->> --
->> To unsubscribe from this list: send the line "unsubscribe 
->> linux-arm-msm" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> --
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-arm-msm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I assume you are referring to "[PATCH 1/2] cpufreq: dt-platdev:
+Automatically create cpufreq device with OPP v2" (which you kindly
+forwarded me). If so, yes, that seems likely. I'll do some testing to
+confirm this.
