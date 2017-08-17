@@ -1,43 +1,75 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V3 3/9] cpufreq: Cap the default transition delay value
- to 10 ms
-Date: Thu, 17 Aug 2017 09:08:02 +0530
-Message-ID: <20170817033802.GE24299@vireshk-i7>
-References: <cover.1500373914.git.viresh.kumar@linaro.org>
- <1b93c94cb8b4914314e4f50304c3cb11c53d8b14.1500373914.git.viresh.kumar@linaro.org>
- <1500983686.30745.28.camel@nxp.com>
- <20170726060634.GY352@vireshk-i7>
- <1501174453.7957.30.camel@nxp.com>
- <20170728052843.GT352@vireshk-i7>
- <20170816063431.GB24299@vireshk-i7>
- <1502876565.23210.15.camel@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f42.google.com ([74.125.83.42]:37105 "EHLO
-        mail-pg0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752064AbdHQDiG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Aug 2017 23:38:06 -0400
-Received: by mail-pg0-f42.google.com with SMTP id y129so33811399pgy.4
-        for <linux-pm@vger.kernel.org>; Wed, 16 Aug 2017 20:38:06 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1502876565.23210.15.camel@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: [PATCH V3 resend] cpufreq: Cap the default transition delay value to 10 ms
+Date: Thu, 17 Aug 2017 09:12:27 +0530
+Message-ID: <00a3cebb2febc73dd275cbff2a24c73fb11ff255.1502941122.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, leonard.crestez@nxp.com, kernel@pengutronix.de, shawnguo@kernel.org, fabio.estevam@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux@dominikbrodowski.net, linux-kernel@vger.kernel.org
 
-On 16-08-17, 12:42, Leonard Crestez wrote:
-> I reported the initial issue but did not have the time to do a more
-> thorough investigation, this is more complicated than it seems. I said
-> this before but maybe it got lost:
-> 
-> I don't think the odd behavior I noticed justifies keeping the patch
-> from merging.
+If transition_delay_us isn't defined by the cpufreq driver, the default
+value of transition delay (time after which the cpufreq governor will
+try updating the frequency again) is currently calculated by multiplying
+transition_latency (nsec) with LATENCY_MULTIPLIER (1000) and then
+converting this time to usec. That gives the exact same value as
+transition_latency, just that the time unit is usec instead of nsec.
 
-Thanks for that.
+With acpi-cpufreq for example, transition_latency is set to around 10
+usec and we get transition delay as 10 ms. Which seems to be a
+reasonable amount of time to reevaluate the frequency again.
 
-I will resend this patch now.
+But for platforms where frequency switching isn't that fast (like ARM),
+the transition_latency varies from 500 usec to 3 ms, and the transition
+delay becomes 500 ms to 3 seconds. Of course, that is a pretty bad
+default value to start with.
 
+We can try to come across a better formula (instead of multiplying with
+LATENCY_MULTIPLIER) to solve this problem, but will that be worth it ?
+
+This patch tries a simple approach and caps the maximum value of default
+transition delay to 10 ms. Of course, userspace can still come in and
+change this value anytime or individual drivers can rather provide
+transition_delay_us instead.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+One of the IMX shows odd behavior after this patch is applied and stays
+at max freq for little longer. More detailed debugging is required to be
+done by some IMX guys (who haven't replied for the last 3 weeks on that
+email thread, apart from Leonard).
+
+As per Leonard as well, we shouldn't stop this patch from getting merged
+and so sending it again.
+
+ drivers/cpufreq/cpufreq.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index b2cc98551fc3..c7ae67d6886d 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -532,8 +532,19 @@ unsigned int cpufreq_policy_transition_delay_us(struct cpufreq_policy *policy)
+ 		return policy->transition_delay_us;
+ 
+ 	latency = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
+-	if (latency)
+-		return latency * LATENCY_MULTIPLIER;
++	if (latency) {
++		/*
++		 * For platforms that can change the frequency very fast (< 10
++		 * us), the above formula gives a decent transition delay. But
++		 * for platforms where transition_latency is in milliseconds, it
++		 * ends up giving unrealistic values.
++		 *
++		 * Cap the default transition delay to 10 ms, which seems to be
++		 * a reasonable amount of time after which we should reevaluate
++		 * the frequency.
++		 */
++		return min(latency * LATENCY_MULTIPLIER, (unsigned int)10000);
++	}
+ 
+ 	return LATENCY_MULTIPLIER;
+ }
 -- 
-viresh
+2.14.1.202.g24db08a6e8fe
