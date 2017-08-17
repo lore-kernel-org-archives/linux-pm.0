@@ -1,38 +1,70 @@
-From: "Coelho, Luciano" <luciano.coelho@intel.com>
-Subject: Re: [linuxwifi] x86/thermal: AB-BA dependency between mvm->mutex
- and tz->lock
-Date: Thu, 17 Aug 2017 14:02:47 +0000
-Message-ID: <1502978566.15969.308.camel@intel.com>
-References: <alpine.LSU.2.20.1707311300440.4705@cbobk.fhfr.pm>
-          <alpine.LSU.2.20.1708031107230.30597@cbobk.fhfr.pm>
-          <1501753405.15969.43.camel@intel.com>
-          <87vam5nf4w.fsf@kamboji.qca.qualcomm.com>
-         <1501759724.15969.49.camel@intel.com>
-         <alpine.LSU.2.20.1708031330570.30597@cbobk.fhfr.pm>
-         <alpine.LSU.2.20.1708031507290.30597@cbobk.fhfr.pm>
-         <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: x86: PIE support and option to extend KASLR randomization
+Date: Thu, 17 Aug 2017 07:10:31 -0700
+Message-ID: <CAJcbSZGbtc-i0X1NiBAvZA7cxpGkwSLKNB7oDNCsFxOCdhkR_g@mail.gmail.com>
+References: <20170810172615.51965-1-thgarnie@google.com> <20170811124127.kkb5pnkljz4umxuj@gmail.com>
+ <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
+ <20170815075609.mmzbfwritjzvrpsn@gmail.com> <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
+ <20170816151235.oamkdva6cwpc4cex@gmail.com> <CAJcbSZFM_zpL1av1JVaow8NdsGeH+6oZKeDnMPdXR0PGfynzsg@mail.gmail.com>
+ <20170817080920.5ljlkktngw2cisfg@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:21169 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751620AbdHQOCw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Aug 2017 10:02:52 -0400
-In-Reply-To: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
-Content-Language: en-US
-Content-ID: <275144CB299C4A47946F33707D33D65A@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <kernel-hardening-return-9500-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20170817080920.5ljlkktngw2cisfg@gmail.com>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
 List-Id: linux-pm@vger.kernel.org
-To: "jikos@kernel.org" <jikos@kernel.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linuxwifi <linuxwifi@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "Weinehall, David" <david.weinehall@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "edubezval@gmail.com" <edubezval@gmail.com>, "Berg, Johannes" <johannes.berg@intel.com>, "kvalo@codeaurora.org" <kvalo@codeaurora.org>, "Sharon, Sara" <sara.sharon@intel.com>, "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, "Grumbach, Emmanuel" <emmanuel.grumbach@intel.com>
 
-T24gVGh1LCAyMDE3LTA4LTE3IGF0IDE1OjM4ICswMjAwLCBKaXJpIEtvc2luYSB3cm90ZToNCj4g
-SGksDQo+IA0KPiBhbnl0aGluZyBuZXcgb24gdGhpcyBmcm9udCBwbGVhc2U/DQo+IA0KPiBUaGUg
-c3BsYXQgKGFuZCB0aGVyZWZvcmUgZGVhZGxvY2sgcG90ZW50aWFsKSBpcyBzdGlsbCB0aGVyZSB3
-aXRoIGN1cnJlbnQgDQo+IExpbnVzJyB0cmVlLg0KDQpTb3JyeSwgaGF2ZW4ndCBoYWQgbW9yZSB0
-aW1lIHRvIHNwZW5kIG9uIGl0LiAgSSdsbCBkbyBpdCB0aGlzIGV2ZW5pbmcuDQoNCkJ1dCwganVz
-dCB0byBjbGFyaWZ5LCB0aGUgZGVhZGxvY2sgcG90ZW50aWFsIGhhcyBiZWVuIHRoZXJlIGZvciBh
-IHdoaWxlLA0KcmlnaHQ/IFRoZSBvbmx5IGRpZmZlcmVuY2UgaXMgdGhhdCBub3cgd2UgZ2V0IHRo
-ZSBzcGxhdC4NCg0KTm90IHNheWluZyB3ZSBzaG91bGRuJ3QgZml4IGl0IHRob3VnaC4gOykNCg0K
-LS0NCkx1Y2Eu
+On Thu, Aug 17, 2017 at 1:09 AM, Ingo Molnar <mingo@kernel.org> wrote:
+>
+>
+> * Thomas Garnier <thgarnie@google.com> wrote:
+>
+> > > > -model=small/medium assume you are on the low 32-bit. It generates
+> > > > instructions where the virtual addresses have the high 32-bit to be zero.
+> > >
+> > > How are these assumptions hardcoded by GCC? Most of the instructions should be
+> > > relocatable straight away, as most call/jump/branch instructions are
+> > > RIP-relative.
+> >
+> > I think PIE is capable to use relative instructions well. mcmodel=large assumes
+> > symbols can be anywhere.
+>
+> So if the numbers in your changelog and Kconfig text cannot be trusted, there's
+> this description of the size impact which I suspect is less susceptible to
+> measurement error:
+>
+> +         The kernel and modules will generate slightly more assembly (1 to 2%
+> +         increase on the .text sections). The vmlinux binary will be
+> +         significantly smaller due to less relocations.
+>
+> ... but describing a 1-2% kernel text size increase as "slightly more assembly"
+> shows a gratituous disregard to kernel code generation quality! In reality that's
+> a huge size increase that in most cases will almost directly transfer to a 1-2%
+> slowdown for kernel intense workloads.
+>
+>
+> Where does that size increase come from, if PIE is capable of using relative
+> instructins well? Does it come from the loss of a generic register and the
+> resulting increase in register pressure, stack spills, etc.?
+
+I will try to gather more information on the size increase. The size
+increase might be smaller with gcc 4.9 given performance was much
+better.
+
+>
+> So I'm still unhappy about this all, and about the attitude surrounding it.
+>
+> Thanks,
+>
+>         Ingo
+
+
+
+
+-- 
+Thomas
