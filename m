@@ -1,65 +1,93 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: dt-platdev: Drop few entries from whitelist
-Date: Thu, 17 Aug 2017 14:10:09 +0530
-Message-ID: <20170817084009.GF24299@vireshk-i7>
-References: <e93c74a19ebf6d7ee687ef8b71b3150a96527f7c.1502861444.git.viresh.kumar@linaro.org>
- <7182e308a552d37064f61e724c709667a6fa098d.1502861444.git.viresh.kumar@linaro.org>
- <CAMuHMdW-_3_p_sv_B0dx1R_0YiwkY0MtgG1Kv1-4_qXb6eiTqA@mail.gmail.com>
- <20170817075301.GA26170@verge.net.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: David Wu <david.wu@rock-chips.com>
+Subject: [PATCH] PM / AVS: rockchip-io: add io selectors and supplies for rv1108
+Date: Thu, 17 Aug 2017 18:37:46 +0800
+Message-ID: <1502966266-15215-1-git-send-email-david.wu@rock-chips.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f45.google.com ([74.125.83.45]:38896 "EHLO
-        mail-pg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751575AbdHQIkN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Aug 2017 04:40:13 -0400
-Received: by mail-pg0-f45.google.com with SMTP id t80so10900533pgb.5
-        for <linux-pm@vger.kernel.org>; Thu, 17 Aug 2017 01:40:12 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20170817075301.GA26170@verge.net.au>
+Received: from lucky1.263xmail.com ([211.157.147.130]:46173 "EHLO
+        lucky1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750939AbdHQKdB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Aug 2017 06:33:01 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Wei Xu <xuwei5@hisilicon.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, baoyou.xie@linaro.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: khilman@baylibre.com, rafael.j.wysocki@intel.com, nm@ti.com, heiko@sntech.de
+Cc: huangtao@rock-chips.com, andy.yan@rock-chips.com, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, David Wu <david.wu@rock-chips.com>
 
-On 17-08-17, 09:53, Simon Horman wrote:
-> On Wed, Aug 16, 2017 at 08:51:04AM +0200, Geert Uytterhoeven wrote:
-> > Hi Viresh,
-> > 
-> > On Wed, Aug 16, 2017 at 7:37 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > > Drop few ARM (32 and 64 bit) platforms from the whitelist which always
-> > > use "operating-points-v2" property from their DT. They should continue
-> > > to work after this patch.
-> > >
-> > > Tested on Hikey platform (only the "hisilicon,hi6220" entry).
-> > >
-> > > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > ---
-> > >  drivers/cpufreq/cpufreq-dt-platdev.c | 11 -----------
-> > >  1 file changed, 11 deletions(-)
-> > >
-> > > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > > index 061b468512a2..45f2ec3b7f7a 100644
-> > > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> > > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > > @@ -27,7 +27,6 @@ static const struct of_device_id whitelist[] __initconst = {
-> > >         { .compatible = "allwinner,sun6i-a31s", },
-> > >         { .compatible = "allwinner,sun7i-a20", },
-> > >         { .compatible = "allwinner,sun8i-a23", },
-> > > -       { .compatible = "allwinner,sun8i-a33", },
-> > >         { .compatible = "allwinner,sun8i-a83t", },
-> > >         { .compatible = "allwinner,sun8i-h3", },
-> > 
-> > I think "renesas,r8a7795" can be removed again, too.
-> > Simon?
-> 
-> I assume you are referring to "[PATCH 1/2] cpufreq: dt-platdev:
-> Automatically create cpufreq device with OPP v2" (which you kindly
-> forwarded me). If so, yes, that seems likely. I'll do some testing to
-> confirm this.
+This adds the necessary data for handling io voltage domains on the rv1108.
 
-Yeah, and he probably meant that renesas bits can be removed and
-included in this patch 2/2 only.
+Signed-off-by: David Wu <david.wu@rock-chips.com>
+---
+ .../bindings/power/rockchip-io-domain.txt          |  2 ++
+ drivers/power/avs/rockchip-io-domain.c             | 38 ++++++++++++++++++++++
+ 2 files changed, 40 insertions(+)
 
+diff --git a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+index 43c21fb..d9d96fd 100644
+--- a/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
++++ b/Documentation/devicetree/bindings/power/rockchip-io-domain.txt
+@@ -31,6 +31,8 @@ SoC is on the same page.
+ 
+ Required properties:
+ - compatible: should be one of:
++  - "rockchip,rv1108-io-voltage-domain" for rv1108
++  - "rockchip,rv1108-pmu-io-voltage-domain" for rv1108 pmu-domains
+   - "rockchip,rk3188-io-voltage-domain" for rk3188
+   - "rockchip,rk3228-io-voltage-domain" for rk3228
+   - "rockchip,rk3288-io-voltage-domain" for rk3288
+diff --git a/drivers/power/avs/rockchip-io-domain.c b/drivers/power/avs/rockchip-io-domain.c
+index 031a343..a55205eb 100644
+--- a/drivers/power/avs/rockchip-io-domain.c
++++ b/drivers/power/avs/rockchip-io-domain.c
+@@ -227,6 +227,36 @@ static void rk3399_pmu_iodomain_init(struct rockchip_iodomain *iod)
+ 		dev_warn(iod->dev, "couldn't update pmu io iodomain ctrl\n");
+ }
+ 
++static const struct rockchip_iodomain_soc_data soc_data_rv1108 = {
++	.grf_offset = 0x404,
++	.supply_names = {
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		NULL,
++		"vccio1",
++		"vccio2",
++		"vccio3",
++		"vccio5",
++		"vccio6",
++	},
++
++};
++
++static const struct rockchip_iodomain_soc_data soc_data_rv1108_pmu = {
++	.grf_offset = 0x104,
++	.supply_names = {
++		"pmu",
++	},
++};
++
+ /*
+  * On the rk3188 the io-domains are handled by a shared register with the
+  * lower 8 bits being still being continuing drive-strength settings.
+@@ -351,6 +381,14 @@ static void rk3399_pmu_iodomain_init(struct rockchip_iodomain *iod)
+ 
+ static const struct of_device_id rockchip_iodomain_match[] = {
+ 	{
++		.compatible = "rockchip,rv1108-io-voltage-domain",
++		.data = (void *)&soc_data_rv1108
++	},
++	{
++		.compatible = "rockchip,rv1108-pmu-io-voltage-domain",
++		.data = (void *)&soc_data_rv1108_pmu
++	},
++	{
+ 		.compatible = "rockchip,rk3188-io-voltage-domain",
+ 		.data = (void *)&soc_data_rk3188
+ 	},
 -- 
-viresh
+1.9.1
