@@ -1,60 +1,93 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Subject: Re: [PATCH 2/2] cpufreq: dt-platdev: Drop few entries from whitelist
-Date: Fri, 18 Aug 2017 01:00:59 +0800
-Message-ID: <CAGb2v64fNymu6J0xjbqC5C2b7sYZEPUrMKXP-mV8oLpmr9e5FQ@mail.gmail.com>
-References: <e93c74a19ebf6d7ee687ef8b71b3150a96527f7c.1502861444.git.viresh.kumar@linaro.org>
- <7182e308a552d37064f61e724c709667a6fa098d.1502861444.git.viresh.kumar@linaro.org>
- <CAGb2v65DokoXaJp=hdFpg0GgTs50ZMR=JrZB7zNwQntH14zj3Q@mail.gmail.com> <20170816112416.GD24299@vireshk-i7>
+From: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Subject: Re: [PATCH 07/10] cpufreq: dt: Add support for some new
+ Allwinner SoCs
+Date: Fri, 18 Aug 2017 01:03:19 +0800
+Message-ID: <CAGb2v65rP_+qCvW5vJuwGxB8ebQZD462M3naPMxJ_8LeA0YMww@mail.gmail.com>
+References: <20170723102749.17323-1-icenowy@aosc.io> <2436327.OLdY8skjMP@aspire.rjw.lan>
+ <CAGb2v640an6X75PTbNTnMqhnEREekX97uJZ4sFsfqTAgcDinQg@mail.gmail.com>
+ <4537884.Ku45nQGoFt@aspire.rjw.lan> <CAGb2v67zenaLQaK+df_oN1BebH_7LhTOtSr6dGyaLPN-k3fZow@mail.gmail.com>
+Reply-To: wens-jdAy2FN1RRM@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.csie.ntu.edu.tw ([140.112.30.61]:50678 "EHLO
-        smtp.csie.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751575AbdHQRBY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Aug 2017 13:01:24 -0400
-In-Reply-To: <20170816112416.GD24299@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-sunxi+bncBCMILY6JWQBBB4EY27GAKGQEX66GGUQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <CAGb2v67zenaLQaK+df_oN1BebH_7LhTOtSr6dGyaLPN-k3fZow-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-kernel <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-arm-kernel <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-clk <linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "open list:THERMAL" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Chen-Yu Tsai <wens@csie.org>, Rafael Wysocki <rjw@rjwysocki.net>, "open list:THERMAL" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Wei Xu <xuwei5@hisilicon.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, jun.nie@linaro.org, Baoyou Xie <baoyou.xie@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>
 
-On Wed, Aug 16, 2017 at 7:24 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 16-08-17, 16:53, Chen-Yu Tsai wrote:
->> On Wed, Aug 16, 2017 at 1:37 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > Drop few ARM (32 and 64 bit) platforms from the whitelist which always
->> > use "operating-points-v2" property from their DT. They should continue
->> > to work after this patch.
->> >
->> > Tested on Hikey platform (only the "hisilicon,hi6220" entry).
->> >
->> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> > ---
->> >  drivers/cpufreq/cpufreq-dt-platdev.c | 11 -----------
->> >  1 file changed, 11 deletions(-)
->> >
->> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
->> > index 061b468512a2..45f2ec3b7f7a 100644
->> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
->> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
->> > @@ -27,7 +27,6 @@ static const struct of_device_id whitelist[] __initconst = {
->> >         { .compatible = "allwinner,sun6i-a31s", },
->> >         { .compatible = "allwinner,sun7i-a20", },
->> >         { .compatible = "allwinner,sun8i-a23", },
->> > -       { .compatible = "allwinner,sun8i-a33", },
->> >         { .compatible = "allwinner,sun8i-a83t", },
->> >         { .compatible = "allwinner,sun8i-h3", },
->> >
+On Tue, Aug 15, 2017 at 8:39 PM, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org> wrote:
+> On Tue, Aug 15, 2017 at 8:25 PM, Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> wrote:
+>> On Tuesday, August 15, 2017 7:42:19 AM CEST Chen-Yu Tsai wrote:
+>>> On Mon, Jul 24, 2017 at 7:46 PM, Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> wrote:
+>>> > On Monday, July 24, 2017 02:23:49 PM Viresh Kumar wrote:
+>>> >> On 23-07-17, 18:27, Icenowy Zheng wrote:
+>>> >> > Some new Allwinner SoCs get supported in the kernel after the
+>>> >> > compatibles are added to cpufreq-dt-platdev driver.
+>>> >> >
+>>> >> > Add their compatible strings in the cpufreq-dt-platdev driver.
+>>> >> >
+>>> >> > Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+>>> >> > Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>>> >> > Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+>>> >> > ---
+>>> >> >  drivers/cpufreq/cpufreq-dt-platdev.c | 6 ++++++
+>>> >> >  1 file changed, 6 insertions(+)
+>>> >> >
+>>> >> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+>>> >> > index 2eb40d46d357..c3851453e84a 100644
+>>> >> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+>>> >> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+>>> >> > @@ -24,7 +24,11 @@ static const struct of_device_id machines[] __initconst = {
+>>> >> >     { .compatible = "allwinner,sun8i-a23", },
+>>> >> >     { .compatible = "allwinner,sun8i-a33", },
+>>> >> >     { .compatible = "allwinner,sun8i-a83t", },
+>>> >> > +   { .compatible = "allwinner,sun8i-h2-plus", },
+>>> >> >     { .compatible = "allwinner,sun8i-h3", },
+>>> >> > +   { .compatible = "allwinner,sun8i-v3s", },
+>>> >> > +   { .compatible = "allwinner,sun50i-a64", },
+>>> >> > +   { .compatible = "allwinner,sun50i-h5", },
+>>> >> >
+>>> >> >     { .compatible = "apm,xgene-shadowcat", },
+>>> >> >
+>>> >> > @@ -43,6 +47,8 @@ static const struct of_device_id machines[] __initconst = {
+>>> >> >     { .compatible = "marvell,pxa250", },
+>>> >> >     { .compatible = "marvell,pxa270", },
+>>> >> >
+>>> >> > +   { .compatible = "nextthing,gr8", },
+>>> >> > +
+>>> >> >     { .compatible = "samsung,exynos3250", },
+>>> >> >     { .compatible = "samsung,exynos4210", },
+>>> >> >     { .compatible = "samsung,exynos4212", },
+>>> >>
+>>> >> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>>> >>
+>>> >>
+>>> >
+>>> > OK
+>>> >
+>>> > I'm assuming this will go in via arm-soc along with the rest of the series.
+>>>
+>>> The rest of the series, except for the clk patches I've already taken,
+>>> doesn't seem to be going anywhere just yet. Is there a cpufreq or pm tree
+>>> this can be merged through?
 >>
->> Acked-by: Chen-Yu Tsai <wens@csie.org>
+>> You mean this particular patch or the whole series?
 >>
->> In fact, we can drop all the sun8i entries. Of them, only sun8i-a33 has
->> cpufreq implemented. All the other ones are missing thermal sensor support,
->> and no OPP tables have been added yet.
+>> If the former, then yes, there is.
 >
-> Then, why did you guys add all those SoCs there ? :)
+> Just this patch. As I mentioned the rest of the series still needs some
+> work, and likely won't make it in this cycle. If you could take this
+> through the tree it would normally go through, avoiding any conflicts,
+> that'd be great.
 
-The idea was to add all the SoCs to the cpufreq driver first, and sort out
-the thermal sensor and device tree parts later. Obviously this progressed
-very slowly.
+This patch has been obsoleted by Viresh's "cpufreq: dt-platdev:
+Automatically create cpufreq device with OPP v2" patch.
 
 ChenYu
