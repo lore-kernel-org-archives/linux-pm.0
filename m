@@ -1,51 +1,60 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH 2/2] cpufreq: dt-platdev: Drop few entries from whitelist
-Date: Thu, 17 Aug 2017 09:53:02 +0200
-Message-ID: <20170817075301.GA26170@verge.net.au>
-References: <e93c74a19ebf6d7ee687ef8b71b3150a96527f7c.1502861444.git.viresh.kumar@linaro.org>
- <7182e308a552d37064f61e724c709667a6fa098d.1502861444.git.viresh.kumar@linaro.org>
- <CAMuHMdW-_3_p_sv_B0dx1R_0YiwkY0MtgG1Kv1-4_qXb6eiTqA@mail.gmail.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: x86: PIE support and option to extend KASLR randomization
+Date: Thu, 17 Aug 2017 10:09:20 +0200
+Message-ID: <20170817080920.5ljlkktngw2cisfg@gmail.com>
+References: <20170810172615.51965-1-thgarnie@google.com>
+ <20170811124127.kkb5pnkljz4umxuj@gmail.com>
+ <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
+ <20170815075609.mmzbfwritjzvrpsn@gmail.com>
+ <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
+ <20170816151235.oamkdva6cwpc4cex@gmail.com>
+ <CAJcbSZFM_zpL1av1JVaow8NdsGeH+6oZKeDnMPdXR0PGfynzsg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <kernel-hardening-return-9498-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdW-_3_p_sv_B0dx1R_0YiwkY0MtgG1Kv1-4_qXb6eiTqA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Wei Xu <xuwei5@hisilicon.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Jun Nie <jun.nie@linaro.org>, baoyou.xie@linaro.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <CAJcbSZFM_zpL1av1JVaow8NdsGeH+6oZKeDnMPdXR0PGfynzsg@mail.gmail.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 16, 2017 at 08:51:04AM +0200, Geert Uytterhoeven wrote:
-> Hi Viresh,
-> 
-> On Wed, Aug 16, 2017 at 7:37 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> > Drop few ARM (32 and 64 bit) platforms from the whitelist which always
-> > use "operating-points-v2" property from their DT. They should continue
-> > to work after this patch.
-> >
-> > Tested on Hikey platform (only the "hisilicon,hi6220" entry).
-> >
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  drivers/cpufreq/cpufreq-dt-platdev.c | 11 -----------
-> >  1 file changed, 11 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > index 061b468512a2..45f2ec3b7f7a 100644
-> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > @@ -27,7 +27,6 @@ static const struct of_device_id whitelist[] __initconst = {
-> >         { .compatible = "allwinner,sun6i-a31s", },
-> >         { .compatible = "allwinner,sun7i-a20", },
-> >         { .compatible = "allwinner,sun8i-a23", },
-> > -       { .compatible = "allwinner,sun8i-a33", },
-> >         { .compatible = "allwinner,sun8i-a83t", },
-> >         { .compatible = "allwinner,sun8i-h3", },
-> 
-> I think "renesas,r8a7795" can be removed again, too.
-> Simon?
 
-I assume you are referring to "[PATCH 1/2] cpufreq: dt-platdev:
-Automatically create cpufreq device with OPP v2" (which you kindly
-forwarded me). If so, yes, that seems likely. I'll do some testing to
-confirm this.
+* Thomas Garnier <thgarnie@google.com> wrote:
+
+> > > -model=small/medium assume you are on the low 32-bit. It generates 
+> > > instructions where the virtual addresses have the high 32-bit to be zero.
+> >
+> > How are these assumptions hardcoded by GCC? Most of the instructions should be 
+> > relocatable straight away, as most call/jump/branch instructions are 
+> > RIP-relative.
+> 
+> I think PIE is capable to use relative instructions well. mcmodel=large assumes 
+> symbols can be anywhere.
+
+So if the numbers in your changelog and Kconfig text cannot be trusted, there's 
+this description of the size impact which I suspect is less susceptible to 
+measurement error:
+
++         The kernel and modules will generate slightly more assembly (1 to 2%
++         increase on the .text sections). The vmlinux binary will be
++         significantly smaller due to less relocations.
+
+... but describing a 1-2% kernel text size increase as "slightly more assembly" 
+shows a gratituous disregard to kernel code generation quality! In reality that's 
+a huge size increase that in most cases will almost directly transfer to a 1-2% 
+slowdown for kernel intense workloads.
+
+Where does that size increase come from, if PIE is capable of using relative 
+instructins well? Does it come from the loss of a generic register and the 
+resulting increase in register pressure, stack spills, etc.?
+
+So I'm still unhappy about this all, and about the attitude surrounding it.
+
+Thanks,
+
+	Ingo
