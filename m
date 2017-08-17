@@ -1,43 +1,32 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH 0/7 RESEND] turbostat: Fix AMD output by making turbostat
- aware of nodes
-Date: Thu, 17 Aug 2017 09:29:31 -0400
-Message-ID: <c3434ee6-bd0b-1860-6293-2061fe238b91@redhat.com>
-References: <1501243581-31491-1-git-send-email-prarit@redhat.com>
- <CAJvTdKm3oMEX7uyRJy3G5BR91SmjJKmj1oZAB9xcpBwC2BdYAA@mail.gmail.com>
+From: Jiri Kosina <jikos@kernel.org>
+Subject: Re: [linuxwifi] x86/thermal: AB-BA dependency between mvm->mutex
+ and tz->lock
+Date: Thu, 17 Aug 2017 15:38:05 +0200 (CEST)
+Message-ID: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
+References: <alpine.LSU.2.20.1707311300440.4705@cbobk.fhfr.pm>  <alpine.LSU.2.20.1708031107230.30597@cbobk.fhfr.pm>  <1501753405.15969.43.camel@intel.com>  <87vam5nf4w.fsf@kamboji.qca.qualcomm.com> <1501759724.15969.49.camel@intel.com>
+ <alpine.LSU.2.20.1708031330570.30597@cbobk.fhfr.pm> <alpine.LSU.2.20.1708031507290.30597@cbobk.fhfr.pm>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:55176 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752609AbdHQN3c (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Aug 2017 09:29:32 -0400
-In-Reply-To: <CAJvTdKm3oMEX7uyRJy3G5BR91SmjJKmj1oZAB9xcpBwC2BdYAA@mail.gmail.com>
+Received: from mx2.suse.de ([195.135.220.15]:38540 "EHLO mx1.suse.de"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1750988AbdHQNiI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 17 Aug 2017 09:38:08 -0400
+In-Reply-To: <alpine.LSU.2.20.1708031507290.30597@cbobk.fhfr.pm>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>
+To: "Coelho, Luciano" <luciano.coelho@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linuxwifi <linuxwifi@intel.com>, "Zhang, Rui" <rui.zhang@intel.com>, "edubezval@gmail.com" <edubezval@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "Weinehall, David" <david.weinehall@intel.com>, "Berg, Johannes" <johannes.berg@intel.com>, "kvalo@codeaurora.org" <kvalo@codeaurora.org>, "Sharon, Sara" <sara.sharon@intel.com>, "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, "Grumbach, Emmanuel" <emmanuel.grumbach@intel.com>
 
+Hi,
 
+anything new on this front please?
 
-On 08/05/2017 03:06 AM, Len Brown wrote:
-> Hi Prarit,
-> Thanks for re-sending to linux-pm -- much easier to track patches there:-)
-> 
-> three suggestions.
-> 
-> the package,core,cpu columns in turbostat are helpful for
-> understanding topology.
-> Now that you've taught turbostat about nodes, I think it would make sense
-> to expose that knowledge in an additional "Node" column.
+The splat (and therefore deadlock potential) is still there with current 
+Linus' tree.
 
-Will do.
+Thanks,
 
-> 
-> In testing this patch series, I found that it now visits HT siblings
-> in reverse order.
-
-Interesting, I had not noticed that.  I'll fix that.
-
-P.
+-- 
+Jiri Kosina
+SUSE Labs
