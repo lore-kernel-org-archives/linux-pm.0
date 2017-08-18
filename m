@@ -1,93 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] ACPI/thermal: support for thermal zone description
-Date: Fri, 18 Aug 2017 14:34:35 +0200
-Message-ID: <2914243.eTDoGm6UPx@aspire.rjw.lan>
-References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org> <CAJZ5v0iR5eJHPOf2ptL9WPO9TFXthER2awVLFSRvSgYqhSj3wA@mail.gmail.com> <1503022487.31913.4.camel@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1503022487.31913.4.camel@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Prakash, Prashanth" <pprakash@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: [PATCH 0/8 v2]: turbostat: Fix AMD output by making turbostat aware of nodes
+Date: Fri, 18 Aug 2017 09:08:21 -0400
+Message-ID: <1503061709-4319-1-git-send-email-prarit@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:47030 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750709AbdHRNIf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 18 Aug 2017 09:08:35 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: lenb@kernel.org, Prarit Bhargava <prarit@redhat.com>, Len Brown <len.brown@intel.com>
 
-On Friday, August 18, 2017 4:14:47 AM CEST Zhang Rui wrote:
-> On Fri, 2017-08-18 at 02:09 +0200, Rafael J. Wysocki wrote:
-> > On Wed, Aug 9, 2017 at 4:27 PM, Zhang Rui <rui.zhang@intel.com>
-> > wrote:
-> > > 
-> > > Hi, Prakash,
-> > > 
-> > > On Tue, 2017-08-08 at 10:01 -0600, Prakash, Prashanth wrote:
-> > > > 
-> > > > Hi Rui,
-> > > > 
-> > > > On 8/8/2017 2:23 AM, Zhang Rui wrote:
-> > > > > 
-> > > > > 
-> > > > > On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
-> > > > > > 
-> > > > > > 
-> > > > > > Per ACPI 6.2 spec, platforms can optionally add a
-> > > > > > string(_STR)
-> > > > > > object within each thermal zone package which provides a user
-> > > > > > friendly name/description.
-> > > > > > 
-> > > > > > Add support to parse the string object, which will be exposed
-> > > > > > to userspace by thermal framework.
-> > > > > > 
-> > > > > is there any real request for this?
-> > > > Yes, Qualcomm server platforms adds these description strings.
-> > > > > 
-> > > > > 
-> > > > > _STR is a generic control method for all the ACPI devices.
-> > > > > Thus I'm wondering, if really needed, should we expose this in
-> > > > > acpi
-> > > > > bus
-> > > > > instead?
-> > > > AFAIK, adding a _STR to any package was not explicitly allowed by
-> > > > the
-> > > > spec.
-> > > > Updates in APCI 6.2 made it legal to add an _STR object to
-> > > > thermal
-> > > > zone
-> > > > specifically, so added this support only to thermal zone.
-> > > > 
-> > > I see that _STR is stated explicitly in 11.4.14, ACPI spec 6.2, but
-> > > according to section 6.1.10, "The _STR object evaluates to a
-> > > Unicode
-> > > string that describes the device or thermal zone. "
-> > > _STR is still a generic control method that can exist in any other
-> > > device scope.
-> > > 
-> > > so to me, this is a optional but generic feature for all the ACPI
-> > > devices, and we don't have a solid reason that it should be part of
-> > > thermal sysfs I/F, thus a better solution to me is to expose this
-> > > as an
-> > > attribute of ACPI device, and we can link to the ACPI device from
-> > > thermal sysfs I/F in userspace.
-> > > 
-> > > what do you think, Rafael?
-> > Since you have a ->get_desc method, I don't have a big problem with
-> > the approach here.
-> > 
-> > I'm not particularly liking the "<not supported>" thing returned if
-> > _STR is not present, though.
-> 
-> No, actually I mean adding a new sysfs attribute under ACPI device
-> node, just like path/hid/status/adr, etc.
+AMD family processors do not show all cores in the output of turbostat.  This
+occurs because AMD has multiple nodes per socket and enumerates cores
+within each node from 0.  For example, socket 0 may have two nodes (0 and 1)
+and those nodes both have cores enumerated from 0 through 7.  turbostat cannot
+handle this configuration, and as a result only shows 1/2 the cores in its
+output.
 
-Yes, I understood that, but since the power supply framework has a
-description callback, why not to use it really?
+This patchset makes turbostate aware of nodes.  It has been tested on
+various AMD and Intel systems and no issues have been found.
 
-> Of course the attribute should be optional, depends on if the _STR
-> control methods exist or not.
+v2: Fix overwriting of thread_id in 3/8.  Add Node output to turbostat (patch
+    8/8).  Various checkpatch.pl cleanups.
 
-So what's the exact benefit from doing this over the approach the $subject
-patch?
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: Len Brown <len.brown@intel.com>
 
-Thanks,
-Rafael
+Prarit Bhargava (8):
+  turbostat: set max_num_cpus equal to the cpumask length
+  turbostat: Fix node and siblings lookup data
+  turbostat: Calculate additional node information for a package
+  turbostat: track thread ID in cpu_topology
+  turbostat: rename num_cores_per_pkg to num_cores_per_node
+  turbostat: remove num_ from cpu_topology struct
+  turbostat: add node information into turbostat calculations
+  turbostat: Add Node in output
 
+ tools/power/x86/turbostat/turbostat.c | 450 ++++++++++++++++++++++------------
+ 1 file changed, 290 insertions(+), 160 deletions(-)
+
+-- 
+1.8.5.5
