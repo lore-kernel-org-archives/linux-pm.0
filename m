@@ -1,69 +1,44 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] ACPI/thermal: support for thermal zone description
-Date: Fri, 18 Aug 2017 02:09:32 +0200
-Message-ID: <CAJZ5v0iR5eJHPOf2ptL9WPO9TFXthER2awVLFSRvSgYqhSj3wA@mail.gmail.com>
-References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
- <1500054535-975-3-git-send-email-pprakash@codeaurora.org> <1502180603.4296.15.camel@intel.com>
- <02b23d6b-a923-3790-5fce-222a11eac951@codeaurora.org> <1502288876.5343.19.camel@intel.com>
+From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
+Subject: Re: [PATCH v2 2/5] devicetree: power: Add docs for TI BQ24190
+ battery charger
+Date: Thu, 17 Aug 2017 17:16:48 -0700
+Message-ID: <20170818001648.GD3930@atomide.com>
+References: <20170807195420.20767-1-liam@networkimprov.net>
+ <20170807195420.20767-3-liam@networkimprov.net>
+ <20170811025038.5qnhbabyybx7rgu5@rob-hp-laptop>
+ <CAKvHMgSuwm5UFivbsq9dQn_wfd7kbs63UuuQSHVdGxDf_WReUA@mail.gmail.com>
+ <20170812164233.won7fairxmrnblps@earth>
+ <CAKvHMgR+GxSqhy+iwdYmku2600HzoF__oXV7_w72ZJg-aK7O-Q@mail.gmail.com>
+ <20170816154701.GR3930@atomide.com>
+ <CAKvHMgTvVMsvmyi0o89m1SfS9A4U1GbNuU05Tkt6C0ARR9NyWw@mail.gmail.com>
+ <20170816210644.GX3930@atomide.com>
+ <CAKvHMgTJjTxffoP4Kt=KzGvCQ-BihLeQn3i4TaF4OBSXV7i6TA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1502288876.5343.19.camel@intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: "Prakash, Prashanth" <pprakash@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAKvHMgTJjTxffoP4Kt=KzGvCQ-BihLeQn3i4TaF4OBSXV7i6TA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 9, 2017 at 4:27 PM, Zhang Rui <rui.zhang@intel.com> wrote:
-> Hi, Prakash,
->
-> On Tue, 2017-08-08 at 10:01 -0600, Prakash, Prashanth wrote:
->> Hi Rui,
->>
->> On 8/8/2017 2:23 AM, Zhang Rui wrote:
->> >
->> > On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
->> > >
->> > > Per ACPI 6.2 spec, platforms can optionally add a string(_STR)
->> > > object within each thermal zone package which provides a user
->> > > friendly name/description.
->> > >
->> > > Add support to parse the string object, which will be exposed
->> > > to userspace by thermal framework.
->> > >
->> > is there any real request for this?
->> Yes, Qualcomm server platforms adds these description strings.
->> >
->> > _STR is a generic control method for all the ACPI devices.
->> > Thus I'm wondering, if really needed, should we expose this in acpi
->> > bus
->> > instead?
->> AFAIK, adding a _STR to any package was not explicitly allowed by the
->> spec.
->> Updates in APCI 6.2 made it legal to add an _STR object to thermal
->> zone
->> specifically, so added this support only to thermal zone.
->>
->
-> I see that _STR is stated explicitly in 11.4.14, ACPI spec 6.2, but
-> according to section 6.1.10, "The _STR object evaluates to a Unicode
-> string that describes the device or thermal zone. "
-> _STR is still a generic control method that can exist in any other
-> device scope.
->
-> so to me, this is a optional but generic feature for all the ACPI
-> devices, and we don't have a solid reason that it should be part of
-> thermal sysfs I/F, thus a better solution to me is to expose this as an
-> attribute of ACPI device, and we can link to the ACPI device from
-> thermal sysfs I/F in userspace.
->
-> what do you think, Rafael?
+* Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> [170816 14:16]:
+> On Wed, Aug 16, 2017 at 2:06 PM, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org> wrote:
+> 
+> > If the kernel does not need to do anything about it, how about
+> > just leave it out of the binding docs then?
+> 
+> It seemed useful to document the OTG pin DT config for boards that
+> have it wired to a gpio... Is that not wise?
 
-Since you have a ->get_desc method, I don't have a big problem with
-the approach here.
+Well maybe just add a comment to the driver about it until we know
+how we want to handle it?
 
-I'm not particularly liking the "<not supported>" thing returned if
-_STR is not present, though.
+Regards,
 
-Thanks,
-Rafael
+Tony
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
