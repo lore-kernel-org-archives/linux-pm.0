@@ -1,91 +1,69 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 04/14] staging: typec: fusb302: Get max snk mv/ma/mw
- from device-properties
-Date: Thu, 17 Aug 2017 16:41:31 -0500
-Message-ID: <20170817214131.63vetzuove7dz5pi@rob-hp-laptop>
-References: <20170815200502.17339-1-hdegoede@redhat.com>
- <20170815200502.17339-5-hdegoede@redhat.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/2] ACPI/thermal: support for thermal zone description
+Date: Fri, 18 Aug 2017 02:09:32 +0200
+Message-ID: <CAJZ5v0iR5eJHPOf2ptL9WPO9TFXthER2awVLFSRvSgYqhSj3wA@mail.gmail.com>
+References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
+ <1500054535-975-3-git-send-email-pprakash@codeaurora.org> <1502180603.4296.15.camel@intel.com>
+ <02b23d6b-a923-3790-5fce-222a11eac951@codeaurora.org> <1502288876.5343.19.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170815200502.17339-5-hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Heikki Krogerus <heikki.krogerus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "Yueyao (Nathan) Zhu" <yueyao-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1502288876.5343.19.camel@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: "Prakash, Prashanth" <pprakash@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 15, 2017 at 10:04:52PM +0200, Hans de Goede wrote:
-> This is board specific info so it should come from board config, such
-> as devicetree.
-> 
-> I've chosen to prefix these with "fcs," treating them as fusb302 driver
-> specific for now. We may want to revisit this and replace these with
-> properties which are part of a (to be written) generic type-c controller
-> devicetree binding.
-> 
-> Since this commit adds new dt-properties it also adds devicetree-bindings
-> documentation (which so far was absent for the fusb302 driver).
-> 
-> Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Cc: "Yueyao (Nathan) Zhu" <yueyao-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
-> Signed-off-by: Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-> ---
-> Changes in v2:
-> -Use micro... instead of mili...
-> -Add devicetree bindings documentation
-> ---
->  .../devicetree/bindings/usb/fcs,fusb302.txt        | 29 ++++++++++++++++++++++
->  drivers/staging/typec/fusb302/TODO                 |  4 +++
->  drivers/staging/typec/fusb302/fusb302.c            | 18 +++++++++++++-
->  3 files changed, 50 insertions(+), 1 deletion(-)
->  create mode 100644 Documentation/devicetree/bindings/usb/fcs,fusb302.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/usb/fcs,fusb302.txt b/Documentation/devicetree/bindings/usb/fcs,fusb302.txt
-> new file mode 100644
-> index 0000000..ffc6c87
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/usb/fcs,fusb302.txt
-> @@ -0,0 +1,29 @@
-> +Fairchild FUSB302 Type-C Port controllers
-> +
-> +Required properties :
-> +- compatible            : "fcs,fusb302"
-> +- reg                   : I2C slave address
-> +- interrupts            : Interrupt specifier
-> +
-> +Optional properties :
-> +- fcs,max-snk-microvolt : Maximum voltage to negotiate when configured as sink
-> +- fcs,max-snk-microamp  : Maximum current to negotiate when configured as sink
-> +- fcs,max-snk-microwatt : Maximum power to negotiate when configured as sink
-> +			  If this is less then max-snk-microvolt *
-> +			  max-snk-microamp then the configured current will
-> +			  be clamped.
-> +- fcs,operating-snk-microwatt :
+On Wed, Aug 9, 2017 at 4:27 PM, Zhang Rui <rui.zhang@intel.com> wrote:
+> Hi, Prakash,
+>
+> On Tue, 2017-08-08 at 10:01 -0600, Prakash, Prashanth wrote:
+>> Hi Rui,
+>>
+>> On 8/8/2017 2:23 AM, Zhang Rui wrote:
+>> >
+>> > On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
+>> > >
+>> > > Per ACPI 6.2 spec, platforms can optionally add a string(_STR)
+>> > > object within each thermal zone package which provides a user
+>> > > friendly name/description.
+>> > >
+>> > > Add support to parse the string object, which will be exposed
+>> > > to userspace by thermal framework.
+>> > >
+>> > is there any real request for this?
+>> Yes, Qualcomm server platforms adds these description strings.
+>> >
+>> > _STR is a generic control method for all the ACPI devices.
+>> > Thus I'm wondering, if really needed, should we expose this in acpi
+>> > bus
+>> > instead?
+>> AFAIK, adding a _STR to any package was not explicitly allowed by the
+>> spec.
+>> Updates in APCI 6.2 made it legal to add an _STR object to thermal
+>> zone
+>> specifically, so added this support only to thermal zone.
+>>
+>
+> I see that _STR is stated explicitly in 11.4.14, ACPI spec 6.2, but
+> according to section 6.1.10, "The _STR object evaluates to a Unicode
+> string that describes the device or thermal zone. "
+> _STR is still a generic control method that can exist in any other
+> device scope.
+>
+> so to me, this is a optional but generic feature for all the ACPI
+> devices, and we don't have a solid reason that it should be part of
+> thermal sysfs I/F, thus a better solution to me is to expose this as an
+> attribute of ACPI device, and we can link to the ACPI device from
+> thermal sysfs I/F in userspace.
+>
+> what do you think, Rafael?
 
-Might as well spell out sink.
+Since you have a ->get_desc method, I don't have a big problem with
+the approach here.
 
-Otherwise,
+I'm not particularly liking the "<not supported>" thing returned if
+_STR is not present, though.
 
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-
-> +                          Minimum amount of power accepted from a sink
-> +			  when negotiating
-> +
-> +Example:
-> +
-> +fusb302: typec-portc@54 {
-> +	compatible = "fcs,fusb302";
-> +	reg = <0x54>;
-> +	interrupt-parent = <&nmi_intc>;
-> +	interrupts = <0 IRQ_TYPE_LEVEL_LOW>;
-> +	fcs,max-snk-microvolt = <12000000>;
-> +	fcs,max-snk-microamp = <3000000>;
-> +	fcs,max-snk-microwatt = <36000000>;
-> +};
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Rafael
