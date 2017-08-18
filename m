@@ -1,66 +1,93 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: Don't send callback pointer to cpufreq_add_update_util_hook()
-Date: Fri, 18 Aug 2017 14:20:44 +0200
-Message-ID: <6633140.4621GLIDvq@aspire.rjw.lan>
-References: <fb914a5aef386f7c3ae6ea5ed53e1fc299f47869.1502971486.git.viresh.kumar@linaro.org> <2692371.TLU4a4PDeX@aspire.rjw.lan> <20170818041944.GH24299@vireshk-i7>
+Subject: Re: [PATCH 2/2] ACPI/thermal: support for thermal zone description
+Date: Fri, 18 Aug 2017 14:34:35 +0200
+Message-ID: <2914243.eTDoGm6UPx@aspire.rjw.lan>
+References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org> <CAJZ5v0iR5eJHPOf2ptL9WPO9TFXthER2awVLFSRvSgYqhSj3wA@mail.gmail.com> <1503022487.31913.4.camel@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170818041944.GH24299@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1503022487.31913.4.camel@intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Prakash, Prashanth" <pprakash@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 18, 2017 6:19:44 AM CEST Viresh Kumar wrote:
-> On 17-08-17, 17:31, Rafael J. Wysocki wrote:
-> > On Thursday, August 17, 2017 2:04:48 PM CEST Viresh Kumar wrote:
-> > > The callers already have the structure (struct update_util_data) where
-> > > the function pointer is saved by cpufreq_add_update_util_hook(). And its
-> > > better if the callers fill it themselves, as they can do it from the
-> > > governor->init() callback then, which is called only once per policy
-> > > lifetime rather than doing it from governor->start which can get called
-> > > multiple times.
+On Friday, August 18, 2017 4:14:47 AM CEST Zhang Rui wrote:
+> On Fri, 2017-08-18 at 02:09 +0200, Rafael J. Wysocki wrote:
+> > On Wed, Aug 9, 2017 at 4:27 PM, Zhang Rui <rui.zhang@intel.com>
+> > wrote:
+> > > 
+> > > Hi, Prakash,
+> > > 
+> > > On Tue, 2017-08-08 at 10:01 -0600, Prakash, Prashanth wrote:
+> > > > 
+> > > > Hi Rui,
+> > > > 
+> > > > On 8/8/2017 2:23 AM, Zhang Rui wrote:
+> > > > > 
+> > > > > 
+> > > > > On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
+> > > > > > 
+> > > > > > 
+> > > > > > Per ACPI 6.2 spec, platforms can optionally add a
+> > > > > > string(_STR)
+> > > > > > object within each thermal zone package which provides a user
+> > > > > > friendly name/description.
+> > > > > > 
+> > > > > > Add support to parse the string object, which will be exposed
+> > > > > > to userspace by thermal framework.
+> > > > > > 
+> > > > > is there any real request for this?
+> > > > Yes, Qualcomm server platforms adds these description strings.
+> > > > > 
+> > > > > 
+> > > > > _STR is a generic control method for all the ACPI devices.
+> > > > > Thus I'm wondering, if really needed, should we expose this in
+> > > > > acpi
+> > > > > bus
+> > > > > instead?
+> > > > AFAIK, adding a _STR to any package was not explicitly allowed by
+> > > > the
+> > > > spec.
+> > > > Updates in APCI 6.2 made it legal to add an _STR object to
+> > > > thermal
+> > > > zone
+> > > > specifically, so added this support only to thermal zone.
+> > > > 
+> > > I see that _STR is stated explicitly in 11.4.14, ACPI spec 6.2, but
+> > > according to section 6.1.10, "The _STR object evaluates to a
+> > > Unicode
+> > > string that describes the device or thermal zone. "
+> > > _STR is still a generic control method that can exist in any other
+> > > device scope.
+> > > 
+> > > so to me, this is a optional but generic feature for all the ACPI
+> > > devices, and we don't have a solid reason that it should be part of
+> > > thermal sysfs I/F, thus a better solution to me is to expose this
+> > > as an
+> > > attribute of ACPI device, and we can link to the ACPI device from
+> > > thermal sysfs I/F in userspace.
+> > > 
+> > > what do you think, Rafael?
+> > Since you have a ->get_desc method, I don't have a big problem with
+> > the approach here.
 > > 
-> > So what problem exactly is this addressing?
+> > I'm not particularly liking the "<not supported>" thing returned if
+> > _STR is not present, though.
 > 
-> Its not fixing any problem really, but is rather just a cleanup patch.
-> I had a look at include/linux/sched/cpufreq.h and got confused for a
-> moment:
-> 
-> struct update_util_data {
->        void (*func)(struct update_util_data *data, u64 time, unsigned int flags);
-> };
-> 
-> void cpufreq_add_update_util_hook(int cpu, struct update_util_data *data,
->                        void (*func)(struct update_util_data *data, u64 time,
->                                     unsigned int flags));
-> 
-> 
-> It wasn't quite straight-forward to understand why we needed to pass
-> both "data" and "func", while "data" should already have "func" set
-> within it. And then I realized that cpufreq_add_update_util_hook() is
-> actually setting that field.
-> 
-> Filling the pointer from the callers is probably better because:
-> - It makes it more readable.
-> - We have to pass one less argument and the function prototype becomes
->   quite short.
-> - The callers don't have to set the data->func pointer from the
->   governor->start() callback now and can do it only once from
->   governor->init(). ->start(), stop() callbacks can get called a lot,
->   for example with CPU hotplug.
-> 
-> But yeah, its all trivial stuff. No big problem solved.
+> No, actually I mean adding a new sysfs attribute under ACPI device
+> node, just like path/hid/status/adr, etc.
 
-Well, there is a reason to do it this way, at least for me.
+Yes, I understood that, but since the power supply framework has a
+description callback, why not to use it really?
 
-If you want to look for all of the governor callbacks that can be
-used with _update_util(), it is now sufficient to grep for
-cpufreq_add_update_util_hook(), basically, but with the change you'd
-need to find the initialization of the update_util structure in there
-and see what function it points to.
+> Of course the attribute should be optional, depends on if the _STR
+> control methods exist or not.
+
+So what's the exact benefit from doing this over the approach the $subject
+patch?
 
 Thanks,
 Rafael
+
