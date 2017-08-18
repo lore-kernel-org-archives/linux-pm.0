@@ -1,118 +1,115 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH 5/8 v2] turbostat: rename num_cores_per_pkg to num_cores_per_node
-Date: Fri, 18 Aug 2017 09:08:26 -0400
-Message-ID: <1503061709-4319-6-git-send-email-prarit@redhat.com>
-References: <1503061709-4319-1-git-send-email-prarit@redhat.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:47212 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751007AbdHRNIk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 18 Aug 2017 09:08:40 -0400
-In-Reply-To: <1503061709-4319-1-git-send-email-prarit@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: "Prakash, Prashanth" <pprakash@codeaurora.org>
+Subject: Re: [PATCH 2/2] ACPI/thermal: support for thermal zone description
+Date: Fri, 18 Aug 2017 16:31:52 -0600
+Message-ID: <c572741f-8714-45f8-d389-9e258464e091@codeaurora.org>
+References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
+ <1500054535-975-3-git-send-email-pprakash@codeaurora.org>
+ <1502180603.4296.15.camel@intel.com>
+ <02b23d6b-a923-3790-5fce-222a11eac951@codeaurora.org>
+ <1502288876.5343.19.camel@intel.com>
+ <CAJZ5v0iR5eJHPOf2ptL9WPO9TFXthER2awVLFSRvSgYqhSj3wA@mail.gmail.com>
+ <1503022487.31913.4.camel@intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1503022487.31913.4.camel@intel.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: lenb@kernel.org, Prarit Bhargava <prarit@redhat.com>, Len Brown <len.brown@intel.com>
 
-turbostat incorrectly assumes that there is one node per package.  As a
-result num_cores_per_pkg is not correctly named and is actually
-num_cores_per_node.
+Hi Rafael/Rui,
 
-Rename num_cores_per_pkg to num_cores_per_node.
+On 8/17/2017 8:14 PM, Zhang Rui wrote:
+> On Fri, 2017-08-18 at 02:09 +0200, Rafael J. Wysocki wrote:
+>> On Wed, Aug 9, 2017 at 4:27 PM, Zhang Rui <rui.zhang@intel.com>
+>> wrote:
+>>> Hi, Prakash,
+>>>
+>>> On Tue, 2017-08-08 at 10:01 -0600, Prakash, Prashanth wrote:
+>>>> Hi Rui,
+>>>>
+>>>> On 8/8/2017 2:23 AM, Zhang Rui wrote:
+>>>>>
+>>>>> On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
+>>>>>>
+>>>>>> Per ACPI 6.2 spec, platforms can optionally add a
+>>>>>> string(_STR)
+>>>>>> object within each thermal zone package which provides a user
+>>>>>> friendly name/description.
+>>>>>>
+>>>>>> Add support to parse the string object, which will be exposed
+>>>>>> to userspace by thermal framework.
+>>>>>>
+>>>>> is there any real request for this?
+>>>> Yes, Qualcomm server platforms adds these description strings.
+>>>>>
+>>>>> _STR is a generic control method for all the ACPI devices.
+>>>>> Thus I'm wondering, if really needed, should we expose this in
+>>>>> acpi
+>>>>> bus
+>>>>> instead?
+>>>> AFAIK, adding a _STR to any package was not explicitly allowed by
+>>>> the
+>>>> spec.
+>>>> Updates in APCI 6.2 made it legal to add an _STR object to
+>>>> thermal
+>>>> zone
+>>>> specifically, so added this support only to thermal zone.
+>>>>
+>>> I see that _STR is stated explicitly in 11.4.14, ACPI spec 6.2, but
+>>> according to section 6.1.10, "The _STR object evaluates to a
+>>> Unicode
+>>> string that describes the device or thermal zone. "
+>>> _STR is still a generic control method that can exist in any other
+>>> device scope.
+>>>
+>>> so to me, this is a optional but generic feature for all the ACPI
+>>> devices, and we don't have a solid reason that it should be part of
+>>> thermal sysfs I/F, thus a better solution to me is to expose this
+>>> as an
+>>> attribute of ACPI device, and we can link to the ACPI device from
+>>> thermal sysfs I/F in userspace.
+>>>
+>>> what do you think, Rafael?
+>> Since you have a ->get_desc method, I don't have a big problem with
+>> the approach here.
+>>
+>> I'm not particularly liking the "<not supported>" thing returned if
+>> _STR is not present, though.
+I will change the implementation such that if _STR object was not found then
+thermal_get_desc would return -ENXIO (or should it be different errno?).
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Cc: Len Brown <len.brown@intel.com>
----
- tools/power/x86/turbostat/turbostat.c | 26 ++++++++++++++------------
- 1 file changed, 14 insertions(+), 12 deletions(-)
+> No, actually I mean adding a new sysfs attribute under ACPI device
+> node, just like path/hid/status/adr, etc.
+Sorry Rui, I didn't read your earlier comment correctly. Thermal zone's _STR is
+useful in couple of scenarios(even if ACPI device containing the thermal_zone
+had a _STR object):
+- When we have more than 1 thermal sensors/zones under a device then this will
+allow us to differentiate them
+- When we have some thermal sensors that doesn't have ACPI device associated
+with it. For example: a shared L3 cache, an abstract region on SoC. In these cases
+we can add a thermal zone object in an appropriate place in dsdt and the
+associated _STR will allow us to provide a user friendly name/description.
+> Of course the attribute should be optional, depends on if the _STR
+> control methods exist or not.
+>
+> thanks,
+> rui
+>> Thanks,
+>> Rafael
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 03af557d46b4..52911b429526 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -206,11 +206,11 @@ struct pkg_data {
- #define EVEN_COUNTERS thread_even, core_even, package_even
- 
- #define GET_THREAD(thread_base, thread_no, core_no, pkg_no) \
--	(thread_base + (pkg_no) * topo.num_cores_per_pkg * \
-+	(thread_base + (pkg_no) * topo.num_cores_per_node * \
- 		topo.num_threads_per_core + \
- 		(core_no) * topo.num_threads_per_core + (thread_no))
- #define GET_CORE(core_base, core_no, pkg_no) \
--	(core_base + (pkg_no) * topo.num_cores_per_pkg + (core_no))
-+	(core_base + (pkg_no) * topo.num_cores_per_node + (core_no))
- #define GET_PKG(pkg_base, pkg_no) (pkg_base + pkg_no)
- 
- enum counter_scope {SCOPE_CPU, SCOPE_CORE, SCOPE_PACKAGE};
-@@ -263,7 +263,7 @@ struct topo_params {
- 	int max_cpu_num;
- 	int max_node_num;
- 	int num_nodes_per_pkg;
--	int num_cores_per_pkg;
-+	int num_cores_per_node;
- 	int num_threads_per_core;
- } topo;
- 
-@@ -289,7 +289,8 @@ int for_all_cpus(int (func)(struct thread_data *, struct core_data *, struct pkg
- 	int retval, pkg_no, core_no, thread_no;
- 
- 	for (pkg_no = 0; pkg_no < topo.num_packages; ++pkg_no) {
--		for (core_no = 0; core_no < topo.num_cores_per_pkg; ++core_no) {
-+		for (core_no = 0; core_no < topo.num_cores_per_node;
-+		     ++core_no) {
- 			for (thread_no = 0; thread_no <
- 				topo.num_threads_per_core; ++thread_no) {
- 				struct thread_data *t;
-@@ -2406,7 +2407,8 @@ int for_all_cpus_2(int (func)(struct thread_data *, struct core_data *,
- 	int retval, pkg_no, core_no, thread_no;
- 
- 	for (pkg_no = 0; pkg_no < topo.num_packages; ++pkg_no) {
--		for (core_no = 0; core_no < topo.num_cores_per_pkg; ++core_no) {
-+		for (core_no = 0; core_no < topo.num_cores_per_node;
-+		     ++core_no) {
- 			for (thread_no = 0; thread_no <
- 				topo.num_threads_per_core; ++thread_no) {
- 				struct thread_data *t, *t2;
-@@ -4482,11 +4484,11 @@ void topology_probe()
- 				cpus[i].thread_id);
- 	}
- 
--	topo.num_cores_per_pkg = max_core_id + 1;
-+	topo.num_cores_per_node = max_core_id + 1;
- 	if (debug > 1)
- 		fprintf(outf, "max_core_id %d, sizing for %d cores per package\n",
--			max_core_id, topo.num_cores_per_pkg);
--	if (!summary_only && topo.num_cores_per_pkg > 1)
-+			max_core_id, topo.num_cores_per_node);
-+	if (!summary_only && topo.num_cores_per_node > 1)
- 		BIC_PRESENT(BIC_Core);
- 
- 	topo.num_packages = max_package_id + 1;
-@@ -4510,21 +4512,21 @@ void topology_probe()
- {
- 	int i;
- 
--	*t = calloc(topo.num_threads_per_core * topo.num_cores_per_pkg *
-+	*t = calloc(topo.num_threads_per_core * topo.num_cores_per_node *
- 		topo.num_packages, sizeof(struct thread_data));
- 	if (*t == NULL)
- 		goto error;
- 
- 	for (i = 0; i < topo.num_threads_per_core *
--		topo.num_cores_per_pkg * topo.num_packages; i++)
-+		topo.num_cores_per_node * topo.num_packages; i++)
- 		(*t)[i].cpu_id = -1;
- 
--	*c = calloc(topo.num_cores_per_pkg * topo.num_packages,
-+	*c = calloc(topo.num_cores_per_node * topo.num_packages,
- 		sizeof(struct core_data));
- 	if (*c == NULL)
- 		goto error;
- 
--	for (i = 0; i < topo.num_cores_per_pkg * topo.num_packages; i++)
-+	for (i = 0; i < topo.num_cores_per_node * topo.num_packages; i++)
- 		(*c)[i].core_id = -1;
- 
- 	*p = calloc(topo.num_packages, sizeof(struct pkg_data));
--- 
-1.8.5.5
+Thanks for your feedback!
+
+--
+Regards,
+Prashanth
+
