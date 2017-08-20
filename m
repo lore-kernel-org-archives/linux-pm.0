@@ -1,388 +1,64 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/2] PM: docs: Describe high-level PM strategies and sleep states
-Date: Sun, 20 Aug 2017 18:05:05 +0200
-Message-ID: <2269280.4Jsh6Gf7ai@aspire.rjw.lan>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH 1/2] PM: docs: Describe high-level PM strategies and
+ sleep states
+Date: Sun, 20 Aug 2017 20:23:26 +0200
+Message-ID: <20170820182326.GA29793@wunner.de>
 References: <3053012.25nKXRPPaK@aspire.rjw.lan>
+ <2269280.4Jsh6Gf7ai@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3053012.25nKXRPPaK@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation <linux-doc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2269280.4Jsh6Gf7ai@aspire.rjw.lan>
+Sender: linux-doc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation <linux-doc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Sun, Aug 20, 2017 at 06:05:05PM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Reorganize the power management part of admin-guide by adding a
+> description of major power management strategies supported by the
+> kernel (system-wide and working-state power management) to it and
+> dividing the rest of the material into the system-wide PM and
+> working-state PM chapters.
+> 
+> On top of that, add a description of system sleep states to the
+> system-wide PM chapter.
 
-Reorganize the power management part of admin-guide by adding a
-description of major power management strategies supported by the
-kernel (system-wide and working-state power management) to it and
-dividing the rest of the material into the system-wide PM and
-working-state PM chapters.
+Found no typos and no factual inaccuracies, the only thing that
+irritated me a bit was the part about "working state" power
+management:
 
-On top of that, add a description of system sleep states to the
-system-wide PM chapter.
+> +The other strategy, referred to as the
+> +:doc:`working-state power management <working-state>`, is based on adjusting the
+> +power states of individual hardware components of the system, as needed, in the
+> +working state.  In consequence, if this strategy is in use, the working state
+> +of the system usually does not correspond to any particular physical
+> +configuration of it, but can be treated as a metastate covering a range of
+> +different power states of the system in which the individual components of it
+> +can be either ``active`` (in use) or ``inactive`` (idle).  If they are active,
+> +they have to be in power states allowing them to process data and to be accessed
+> +by software.  In turn, if they are inactive, they are expected to be in
+> +low-power states in which they may not be accessible.
+> +
+> +If all of the system components are active, the system as a whole is regarded as
+> +``runtime active`` and that situation typically corresponds to the maximum power
+> +draw (or maximum energy usage) of it.  If all of them are inactive, the system
+> +as a whole is regarded as ``runtime idle`` which may be very close to a sleep
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- Documentation/admin-guide/pm/index.rst         |    5 
- Documentation/admin-guide/pm/sleep-states.rst  |  234 +++++++++++++++++++++++++
- Documentation/admin-guide/pm/strategies.rst    |   52 +++++
- Documentation/admin-guide/pm/system-wide.rst   |   15 +
- Documentation/admin-guide/pm/working-state.rst |   16 +
- 5 files changed, 320 insertions(+), 2 deletions(-)
+The code uses the terms pm_runtime_active() and pm_runtime_suspended(),
+not "runtime idle".  Taking the ->runtime_idle callback as guidance,
+"runtime idle" would mean that a component is runtime active, but idling
+and could thus be transitioned to runtime suspended state.  However above
+it says that if it's idle, it's already "in low-power states and may
+not be accessible".  For someone reading this it may be difficult to
+reconcile it with the terminology used in the code.
 
-Index: linux-pm/Documentation/admin-guide/pm/index.rst
-===================================================================
---- linux-pm.orig/Documentation/admin-guide/pm/index.rst
-+++ linux-pm/Documentation/admin-guide/pm/index.rst
-@@ -5,8 +5,9 @@ Power Management
- .. toctree::
-    :maxdepth: 2
- 
--   cpufreq
--   intel_pstate
-+   strategies
-+   system-wide
-+   working-state
- 
- .. only::  subproject and html
- 
-Index: linux-pm/Documentation/admin-guide/pm/sleep-states.rst
-===================================================================
---- /dev/null
-+++ linux-pm/Documentation/admin-guide/pm/sleep-states.rst
-@@ -0,0 +1,234 @@
-+===================
-+System Sleep States
-+===================
-+
-+::
-+
-+ Copyright (c) 2017 Intel Corp., Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+
-+Sleep states are global low-power states of the entire system in which user
-+space code cannot be executed and the overall system activity is significantly
-+reduced.
-+
-+
-+Sleep States That Can Be Supported
-+==================================
-+
-+Depending on its configuration and the capabilities of the platform it runs on,
-+the Linux kernel can support up to four system sleep states, includig
-+hibernation and up to three variants of system suspend.  The sleep states that
-+can be supported by the kernel are listed below.
-+
-+Suspend-to-Idle
-+---------------
-+
-+This is a generic, pure software, light-weight variant of system suspend (also
-+referred to as S2I or S2Idle).  It allows more energy to be saved relative to
-+runtime idle by freezing user space, suspending the timekeeping and putting all
-+I/O devices into low-power states (possibly lower-power than available in the
-+working state), such that the processors can spend time in their deepest idle
-+states while the system is suspended.
-+
-+The system is woken up from this state by in-band interrupts, so theoretically
-+any devices that can cause interrupts to be generated in the working state can
-+also be set up as wakeup devices for S2Idle.
-+
-+This state can be used on platforms without support for `Standby`_ or
-+`Suspend-to-RAM`_, or it can be used in addition to any of the deeper system
-+suspend variants to provide reduced resume latency.  It is always supported if
-+the :c:macro:`CONFIG_SUSPEND` kernel configuration option is set.
-+
-+Standby
-+-------
-+
-+This state, if supported, offers moderate, but real, energy savings, while
-+providing a relatively straightforward transition back to the working state.  No
-+operating state is lost (the system core logic retains power), so the system can
-+go back to where it left off easily enough.
-+
-+In addition to freezing user space, suspending the timekeeping and putting all
-+I/O devices into low-power states, which is done for `Suspend-to-Idle`_ too,
-+nonboot CPUs are taken offline and all low-level system functions are suspended
-+during transitions into this state.  For this reason, it should allow more
-+energy to be saved relative to `Suspend-to-Idle`_, but the resume latency will
-+generally be greater than for that state.
-+
-+The set of devices that can wake up the system from this state usually is
-+reduced relative to `Suspend-to-Idle`_ and it may be necessary to rely on the
-+platform for setting up the wakeup functionality as appropriate.
-+
-+This state is supported if the :c:macro:`CONFIG_SUSPEND` kernel configuration
-+option is set and the support for it is registered by the platform with the
-+core system suspend subsystem.  On ACPI-based systems this state is mapped to
-+the S1 system state defined by ACPI.
-+
-+Suspend-to-RAM
-+--------------
-+
-+This state (also referred to as STR or S2RAM), if supported, offers significant
-+energy savings as everything in the system is put into a low-power state, except
-+for memory, which should be placed into the self-refresh mode to retain its
-+contents.  All of the steps carried out when entering `Standby`_ are also
-+carried out during transitions to S2RAM.  Additional operations may take place
-+depending on the platform capabilities.  In particular, on ACPI-based systems
-+the kernel passes control to the platform firmware (BIOS) as the last step
-+during S2RAM transitions and that usually results in powering down some more
-+low-level components that are not directly controlled by the kernel.
-+
-+The state of devices and CPUs is saved and held in memory.  All devices are
-+suspended and put into low-power states.  In many cases, all peripheral buses
-+lose power when entering S2RAM, so devices must be able to handle the transition
-+back to the "on" state.
-+
-+On ACPI-based systems S2RAM requires some minimal boot-strapping code in the
-+platform firmware to resume the system from it.  This may be the case on other
-+platforms too.
-+
-+The set of devices that can wake up the system from S2RAM usually is reduced
-+relative to `Suspend-to-Idle`_ and `Standby`_ and it may be necessary to rely on
-+the platform for setting up the wakeup functionality as appropriate.
-+
-+S2RAM is supported if the :c:macro:`CONFIG_SUSPEND` kernel configuration option
-+is set and the support for it is registered by the platform with the core system
-+suspend subsystem.  On ACPI-based systems it is mapped to the S3 system state
-+defined by ACPI.
-+
-+Hibernation
-+-----------
-+
-+This state (also referred to as Suspend-to-Disk or STD) offers the greatest
-+energy savings and can be used even in the absence of low-level platform support
-+for system suspend.  However, it requires some low-level code for resuming the
-+system to be present for the underlying CPU architecture.
-+
-+Hibernation is significantly different from any of the system suspend variants.
-+It takes three system state changes to put it into hibernation and two system
-+state changes to resume it.
-+
-+First, when hibernation is triggered, the kernel stops all system activity and
-+creates a snapshot image of memory to be written into persistent storage.  Next,
-+the system goes into a state in which the snapshot image can be saved, the image
-+is written out and finally the system goes into the target low-power state in
-+which power is cut from almost all of its hardware components, including memory,
-+except for a limited set of wakeup devices.
-+
-+Once the snapshot image has been written out, the system may either enter a
-+special low-power state (like ACPI S4), or it may simply power down itself.
-+Powering down means minimum power draw and it allows this mechanism to work on
-+any system.  However, entering a special low-power state may allow additional
-+means of system wakeup to be used  (e.g. pressing a key on the keyboard or
-+opening a laptop lid).
-+
-+After wakeup, control goes to the platform firmware that runs a boot loader
-+which boots a fresh instance of the kernel (control may also go directly to
-+the boot loader, depending on the system configuration, but anyway it causes
-+a fresh instance of the kernel to be booted).  That new instance of the kernel
-+(referred to as the ``restore kernel``) looks for a hibernation image in
-+persistent storage and if one is found, it is loaded into memory.  Next, all
-+activity in the system is stopped and the restore kernel overwrites itself with
-+the image contents and jumps into a special trampoline area in the original
-+kernel stored in the image (referred to as the ``image kernel``), which is where
-+the special architecture-specific low-level code is needed.  Finally, the
-+image kernel restores the system to the pre-hibernation state and allows user
-+space to run again.
-+
-+Hibernation is supported if the :c:macro:`CONFIG_HIBERNATION` kernel
-+configuration option is set.  However, this option can only be set if support
-+for the given CPU architecture includes the low-level code for system resume.
-+
-+
-+Basic ``sysfs`` Interfaces for System Suspend and Hibernation
-+=============================================================
-+
-+The following files located in the :file:`/sys/power/` directory can be used by
-+user space for sleep states control.
-+
-+``state``
-+	This file contains a list of strings representing sleep states supported
-+	by the kernel.  Writing one of these strings into it causes the kernel
-+	to start a transition of the system into the sleep state represented by
-+	that string.
-+
-+	In particular, the strings "disk", "freeze" and "standby" represent the
-+	`Hibernation`_, `Suspend-to-Idle`_ and `Standby`_ sleep states,
-+	respectively.  The string "mem" is interpreted in accordance with
-+	the contents of the ``mem_sleep`` file described below.
-+
-+	If the kernel does not support any system sleep states, this file is
-+	not present.
-+
-+``mem_sleep``
-+	This file contains a list of strings representing supported system
-+	suspend	variants and allows user space to select the variant to be
-+	associated with the "mem" string in the ``state`` file described above.
-+
-+	The strings that may be present in this file are "s2idle", "shallow"
-+	and "deep".  The string "s2idle" always represents `Suspend-to-Idle`_
-+	and, by convention, "shallow" and "deep" represent `Standby`_ and
-+	`Suspend-to-RAM`_, respectively.
-+
-+	Writing one of the listed strings into this file causes the system
-+	suspend variant represented by it to be associated with the "mem" string
-+	in the ``state`` file.  The string representing the suspend variant
-+	currently associated with the "mem" string in the ``state`` file
-+	is listed in square brackets.
-+
-+	If the kernel does not support system suspend, this file is not present.
-+
-+``disk``
-+	This file contains a list of strings representing different operations
-+	that can be carried out after the hibernation image has been saved.  The
-+	possible options are as follows:
-+
-+	``platform``
-+		Put the system into a special low-power state (e.g. ACPI S4) to
-+		make additional wakeup options available and possibly allow the
-+		platform firmware to take a simplified initialization path after
-+		wakeup.
-+
-+	``shutdown``
-+		Power off the system.
-+
-+	``reboot``
-+		Reboot the system (useful for diagnostics mostly).
-+
-+	``suspend``
-+		Hybrid system suspend.  Put the system into the suspend sleep
-+		state selected through the ``mem_sleep`` file described above.
-+		If the system is successfully woken up from that state, discard
-+		the hibernation image and continue.  Otherwise, use the image
-+		to restore the previous state of the system.
-+
-+	``test_resume``
-+		Diagnostic operation.  Load the image as though the system had
-+		just woken up from hibernation and the currently running kernel
-+		instance was a restore kernel and follow up with full system
-+		resume.
-+
-+	Writing one of the listed strings into this file causes the option
-+	represented by it to be selected.
-+
-+	The currently selected option is shown in square brackets which means
-+	that the operation represented by it will be carried out after creating
-+	and saving the image next time hibernation is triggered by writing
-+	``disk`` to :file:`/sys/power/state`.
-+
-+	If the kernel does not support hibernation, this file is not present.
-+
-+According to the above, there are two ways to make the system go into the
-+`Suspend-to-Idle`_ state.  The first one is to write "freeze" directly to
-+:file:`/sys/power/state`.  The second one is to write "s2idle" to
-+:file:`/sys/power/mem_sleep` and then to write "mem" to
-+:file:`/sys/power/state`.  Likewise, there are two ways to make the system go
-+into the `Standby`_ state (the strings to write to the control files in that
-+case are "standby" or "shallow" and "mem", respectively) if that state is
-+supported by the platform.  However, there is only one way to make the system go
-+into the `Suspend-to-RAM`_ state (write "deep" into
-+:file:`/sys/power/mem_sleep` and "mem" into :file:`/sys/power/state`).
-+
-+The default suspend variant (ie. the one to be used without writing anything
-+into :file:`/sys/power/mem_sleep`) is either "deep" (on the majority of systems
-+supporting `Suspend-to-RAM`_) or "s2idle", but it can be overridden by the value
-+of the "mem_sleep_default" parameter in the kernel command line.  On some
-+ACPI-based systems, depending on the information in the ACPI tables, the default
-+may be "s2idle" even if `Suspend-to-RAM`_ is supported.
-Index: linux-pm/Documentation/admin-guide/pm/system-wide.rst
-===================================================================
---- /dev/null
-+++ linux-pm/Documentation/admin-guide/pm/system-wide.rst
-@@ -0,0 +1,15 @@
-+============================
-+System-Wide Power Management
-+============================
-+
-+.. toctree::
-+   :maxdepth: 2
-+
-+   sleep-states
-+
-+.. only::  subproject and html
-+
-+   Indices
-+   =======
-+
-+   * :ref:`genindex`
-Index: linux-pm/Documentation/admin-guide/pm/working-state.rst
-===================================================================
---- /dev/null
-+++ linux-pm/Documentation/admin-guide/pm/working-state.rst
-@@ -0,0 +1,16 @@
-+==============================
-+Working-State Power Management
-+==============================
-+
-+.. toctree::
-+   :maxdepth: 2
-+
-+   cpufreq
-+   intel_pstate
-+
-+.. only::  subproject and html
-+
-+   Indices
-+   =======
-+
-+   * :ref:`genindex`
-Index: linux-pm/Documentation/admin-guide/pm/strategies.rst
-===================================================================
---- /dev/null
-+++ linux-pm/Documentation/admin-guide/pm/strategies.rst
-@@ -0,0 +1,52 @@
-+===========================
-+Power Management Strategies
-+===========================
-+
-+::
-+
-+ Copyright (c) 2017 Intel Corp., Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+
-+The Linux kernel supports two major high-level power management strategies.
-+
-+One of them is based on using global low-power states of the whole system in
-+which user space code cannot be executed and the overall system activity is
-+significantly reduced, referred to as :doc:`sleep states <sleep-states>`.  The
-+kernel puts the system into one of these states when requested by user space
-+and the system stays in it until a special signal is received from one of
-+designated devices, triggering a transition to the ``working state`` in which
-+user space code can run.  Because sleep states are global and the whole system
-+is affected by the state changes, this strategy is referred to as the
-+:doc:`system-wide power management <system-wide>`.
-+
-+The other strategy, referred to as the
-+:doc:`working-state power management <working-state>`, is based on adjusting the
-+power states of individual hardware components of the system, as needed, in the
-+working state.  In consequence, if this strategy is in use, the working state
-+of the system usually does not correspond to any particular physical
-+configuration of it, but can be treated as a metastate covering a range of
-+different power states of the system in which the individual components of it
-+can be either ``active`` (in use) or ``inactive`` (idle).  If they are active,
-+they have to be in power states allowing them to process data and to be accessed
-+by software.  In turn, if they are inactive, they are expected to be in
-+low-power states in which they may not be accessible.
-+
-+If all of the system components are active, the system as a whole is regarded as
-+``runtime active`` and that situation typically corresponds to the maximum power
-+draw (or maximum energy usage) of it.  If all of them are inactive, the system
-+as a whole is regarded as ``runtime idle`` which may be very close to a sleep
-+state from the physical system configuration and power draw perspective, but
-+then it takes much less time and effort to start executing user space code than
-+for the same system in a sleep state.  However, transitions from sleep states
-+back to the working state can only be started by a limited set of devices, so
-+typically the system can spend much more time in a sleep state than it can be
-+runtime idle in one go.  For this reason, systems usually use less energy in
-+sleep states than when they are runtime idle most of the time.
-+
-+Moreover, the two power management strategies address different usage scenarios.
-+Namely, if the user indicates that the system will not be in use going forward,
-+for example by closing its lid (if the system is a laptop), it probably should
-+go into a sleep state at that point.  On the other hand, if the user simply goes
-+away from the laptop keyboard, it probably should stay in the working state and
-+use the working-state power management in case it becomes idle, because the user
-+may come back to it at any time and then may want the system to be immediately
-+accessible.
+Otherwise,
+Reviewed-by: Lukas Wunner <lukas@wunner.de>
+
+Thanks,
+
+Lukas
