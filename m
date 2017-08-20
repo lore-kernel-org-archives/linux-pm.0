@@ -1,54 +1,159 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: ti: Fix 'of_node_put' being called twice in
- error handling path
-Date: Sun, 20 Aug 2017 18:51:06 +0530
-Message-ID: <20170820132106.GA21417@ubuntu>
-References: <20170819202246.18415-1-christophe.jaillet@wanadoo.fr>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 2/2] PM: docs: Delete the obsolete states.txt document
+Date: Sun, 20 Aug 2017 18:06:04 +0200
+Message-ID: <3193680.qV6TYsC78G@aspire.rjw.lan>
+References: <3053012.25nKXRPPaK@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170819202246.18415-1-christophe.jaillet@wanadoo.fr>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <3053012.25nKXRPPaK@aspire.rjw.lan>
+Sender: linux-doc-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation <linux-doc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 19-08-17, 22:22, Christophe JAILLET wrote:
-> If 'dev_pm_opp_set_supported_hw()' fails, 'opp_data->opp_node' refcount
-> will be decremented 2 times.
-> One, just a few lines above, and another one in the error handling path.
-> 
-> Fix it by simply moving the 'of_node_put' call of the normal path.
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
->  drivers/cpufreq/ti-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-> index a7b5658c0460..b29cd3398463 100644
-> --- a/drivers/cpufreq/ti-cpufreq.c
-> +++ b/drivers/cpufreq/ti-cpufreq.c
-> @@ -245,8 +245,6 @@ static int ti_cpufreq_init(void)
->  	if (ret)
->  		goto fail_put_node;
->  
-> -	of_node_put(opp_data->opp_node);
-> -
->  	ret = PTR_ERR_OR_ZERO(dev_pm_opp_set_supported_hw(opp_data->cpu_dev,
->  							  version, VERSION_COUNT));
->  	if (ret) {
-> @@ -255,6 +253,8 @@ static int ti_cpufreq_init(void)
->  		goto fail_put_node;
->  	}
->  
-> +	of_node_put(opp_data->opp_node);
-> +
->  register_cpufreq_dt:
->  	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+The Documentation/power/states.txt document is now redundant and
+sonewhat outdated, so delete it.
 
--- 
-viresh
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ Documentation/power/states.txt |  127 -----------------------------------------
+ 1 file changed, 127 deletions(-)
+
+Index: linux-pm/Documentation/power/states.txt
+===================================================================
+--- linux-pm.orig/Documentation/power/states.txt
++++ /dev/null
+@@ -1,127 +0,0 @@
+-System Power Management Sleep States
+-
+-(C) 2014 Intel Corp., Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+-
+-The kernel supports up to four system sleep states generically, although three
+-of them depend on the platform support code to implement the low-level details
+-for each state.
+-
+-The states are represented by strings that can be read or written to the
+-/sys/power/state file.  Those strings may be "mem", "standby", "freeze" and
+-"disk", where the last three always represent Power-On Suspend (if supported),
+-Suspend-To-Idle and hibernation (Suspend-To-Disk), respectively.
+-
+-The meaning of the "mem" string is controlled by the /sys/power/mem_sleep file.
+-It contains strings representing the available modes of system suspend that may
+-be triggered by writing "mem" to /sys/power/state.  These modes are "s2idle"
+-(Suspend-To-Idle), "shallow" (Power-On Suspend) and "deep" (Suspend-To-RAM).
+-The "s2idle" mode is always available, while the other ones are only available
+-if supported by the platform (if not supported, the strings representing them
+-are not present in /sys/power/mem_sleep).  The string representing the suspend
+-mode to be used subsequently is enclosed in square brackets.  Writing one of
+-the other strings present in /sys/power/mem_sleep to it causes the suspend mode
+-to be used subsequently to change to the one represented by that string.
+-
+-Consequently, there are two ways to cause the system to go into the
+-Suspend-To-Idle sleep state.  The first one is to write "freeze" directly to
+-/sys/power/state.  The second one is to write "s2idle" to /sys/power/mem_sleep
+-and then to write "mem" to /sys/power/state.  Similarly, there are two ways
+-to cause the system to go into the Power-On Suspend sleep state (the strings to
+-write to the control files in that case are "standby" or "shallow" and "mem",
+-respectively) if that state is supported by the platform.  In turn, there is
+-only one way to cause the system to go into the Suspend-To-RAM state (write
+-"deep" into /sys/power/mem_sleep and "mem" into /sys/power/state).
+-
+-The default suspend mode (ie. the one to be used without writing anything into
+-/sys/power/mem_sleep) is either "deep" (if Suspend-To-RAM is supported) or
+-"s2idle", but it can be overridden by the value of the "mem_sleep_default"
+-parameter in the kernel command line.  On some ACPI-based systems, depending on
+-the information in the FADT, the default may be "s2idle" even if Suspend-To-RAM
+-is supported.
+-
+-The properties of all of the sleep states are described below.
+-
+-
+-State:		Suspend-To-Idle
+-ACPI state:	S0
+-Label:		"s2idle" ("freeze")
+-
+-This state is a generic, pure software, light-weight, system sleep state.
+-It allows more energy to be saved relative to runtime idle by freezing user
+-space and putting all I/O devices into low-power states (possibly
+-lower-power than available at run time), such that the processors can
+-spend more time in their idle states.
+-
+-This state can be used for platforms without Power-On Suspend/Suspend-to-RAM
+-support, or it can be used in addition to Suspend-to-RAM to provide reduced
+-resume latency.  It is always supported.
+-
+-
+-State:		Standby / Power-On Suspend
+-ACPI State:	S1
+-Label:		"shallow" ("standby")
+-
+-This state, if supported, offers moderate, though real, power savings, while
+-providing a relatively low-latency transition back to a working system.  No
+-operating state is lost (the CPU retains power), so the system easily starts up
+-again where it left off. 
+-
+-In addition to freezing user space and putting all I/O devices into low-power
+-states, which is done for Suspend-To-Idle too, nonboot CPUs are taken offline
+-and all low-level system functions are suspended during transitions into this
+-state.  For this reason, it should allow more energy to be saved relative to
+-Suspend-To-Idle, but the resume latency will generally be greater than for that
+-state.
+-
+-
+-State:		Suspend-to-RAM
+-ACPI State:	S3
+-Label:		"deep"
+-
+-This state, if supported, offers significant power savings as everything in the
+-system is put into a low-power state, except for memory, which should be placed
+-into the self-refresh mode to retain its contents.  All of the steps carried out
+-when entering Power-On Suspend are also carried out during transitions to STR.
+-Additional operations may take place depending on the platform capabilities.  In
+-particular, on ACPI systems the kernel passes control to the BIOS (platform
+-firmware) as the last step during STR transitions and that usually results in
+-powering down some more low-level components that aren't directly controlled by
+-the kernel.
+-
+-System and device state is saved and kept in memory.  All devices are suspended
+-and put into low-power states.  In many cases, all peripheral buses lose power
+-when entering STR, so devices must be able to handle the transition back to the
+-"on" state.
+-
+-For at least ACPI, STR requires some minimal boot-strapping code to resume the
+-system from it.  This may be the case on other platforms too.
+-
+-
+-State:		Suspend-to-disk
+-ACPI State:	S4
+-Label:		"disk"
+-
+-This state offers the greatest power savings, and can be used even in
+-the absence of low-level platform support for power management. This
+-state operates similarly to Suspend-to-RAM, but includes a final step
+-of writing memory contents to disk. On resume, this is read and memory
+-is restored to its pre-suspend state. 
+-
+-STD can be handled by the firmware or the kernel. If it is handled by
+-the firmware, it usually requires a dedicated partition that must be
+-setup via another operating system for it to use. Despite the
+-inconvenience, this method requires minimal work by the kernel, since
+-the firmware will also handle restoring memory contents on resume. 
+-
+-For suspend-to-disk, a mechanism called 'swsusp' (Swap Suspend) is used
+-to write memory contents to free swap space. swsusp has some restrictive
+-requirements, but should work in most cases. Some, albeit outdated,
+-documentation can be found in Documentation/power/swsusp.txt.
+-Alternatively, userspace can do most of the actual suspend to disk work,
+-see userland-swsusp.txt.
+-
+-Once memory state is written to disk, the system may either enter a
+-low-power state (like ACPI S4), or it may simply power down. Powering
+-down offers greater savings, and allows this mechanism to work on any
+-system. However, entering a real low-power state allows the user to
+-trigger wake up events (e.g. pressing a key or opening a laptop lid).
+
+
