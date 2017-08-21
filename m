@@ -1,147 +1,120 @@
-From: "Prakash, Prashanth" <pprakash@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH 2/2] ACPI/thermal: support for thermal zone description
-Date: Mon, 21 Aug 2017 15:21:48 -0600
-Message-ID: <f6a1930f-2991-81a1-905d-938848d63f38@codeaurora.org>
+Date: Mon, 21 Aug 2017 23:53:28 +0200
+Message-ID: <CAJZ5v0gA-Doe25b+3suUjRY4hNPCZcLX0hmMxwBp6cOjF5Z0Mg@mail.gmail.com>
 References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
- <1500054535-975-3-git-send-email-pprakash@codeaurora.org>
- <1502180603.4296.15.camel@intel.com>
- <02b23d6b-a923-3790-5fce-222a11eac951@codeaurora.org>
- <1502288876.5343.19.camel@intel.com>
  <CAJZ5v0iR5eJHPOf2ptL9WPO9TFXthER2awVLFSRvSgYqhSj3wA@mail.gmail.com>
- <1503022487.31913.4.camel@intel.com>
- <c572741f-8714-45f8-d389-9e258464e091@codeaurora.org>
- <1503326230.2619.52.camel@intel.com>
+ <1503022487.31913.4.camel@intel.com> <2914243.eTDoGm6UPx@aspire.rjw.lan> <1503325719.2619.46.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1503326230.2619.52.camel@intel.com>
-Content-Language: en-US
+In-Reply-To: <1503325719.2619.46.camel@intel.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, "Prakash, Prashanth" <pprakash@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rui,
-
-On 8/21/2017 8:37 AM, Zhang Rui wrote:
-> On Fri, 2017-08-18 at 16:31 -0600, Prakash, Prashanth wrote:
->> Hi Rafael/Rui,
+On Mon, Aug 21, 2017 at 4:28 PM, Zhang Rui <rui.zhang@intel.com> wrote:
+> On Fri, 2017-08-18 at 14:34 +0200, Rafael J. Wysocki wrote:
+>> On Friday, August 18, 2017 4:14:47 AM CEST Zhang Rui wrote:
+>> >
+>> > On Fri, 2017-08-18 at 02:09 +0200, Rafael J. Wysocki wrote:
+>> > >
+>> > > On Wed, Aug 9, 2017 at 4:27 PM, Zhang Rui <rui.zhang@intel.com>
+>> > > wrote:
+>> > > >
+>> > > >
+>> > > > Hi, Prakash,
+>> > > >
+>> > > > On Tue, 2017-08-08 at 10:01 -0600, Prakash, Prashanth wrote:
+>> > > > >
+>> > > > >
+>> > > > > Hi Rui,
+>> > > > >
+>> > > > > On 8/8/2017 2:23 AM, Zhang Rui wrote:
+>> > > > > >
+>> > > > > >
+>> > > > > >
+>> > > > > > On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
+>> > > > > > >
+>> > > > > > >
+>> > > > > > >
+>> > > > > > > Per ACPI 6.2 spec, platforms can optionally add a
+>> > > > > > > string(_STR)
+>> > > > > > > object within each thermal zone package which provides a
+>> > > > > > > user
+>> > > > > > > friendly name/description.
+>> > > > > > >
+>> > > > > > > Add support to parse the string object, which will be
+>> > > > > > > exposed
+>> > > > > > > to userspace by thermal framework.
+>> > > > > > >
+>> > > > > > is there any real request for this?
+>> > > > > Yes, Qualcomm server platforms adds these description
+>> > > > > strings.
+>> > > > > >
+>> > > > > >
+>> > > > > >
+>> > > > > > _STR is a generic control method for all the ACPI devices.
+>> > > > > > Thus I'm wondering, if really needed, should we expose this
+>> > > > > > in
+>> > > > > > acpi
+>> > > > > > bus
+>> > > > > > instead?
+>> > > > > AFAIK, adding a _STR to any package was not explicitly
+>> > > > > allowed by
+>> > > > > the
+>> > > > > spec.
+>> > > > > Updates in APCI 6.2 made it legal to add an _STR object to
+>> > > > > thermal
+>> > > > > zone
+>> > > > > specifically, so added this support only to thermal zone.
+>> > > > >
+>> > > > I see that _STR is stated explicitly in 11.4.14, ACPI spec 6.2,
+>> > > > but
+>> > > > according to section 6.1.10, "The _STR object evaluates to a
+>> > > > Unicode
+>> > > > string that describes the device or thermal zone. "
+>> > > > _STR is still a generic control method that can exist in any
+>> > > > other
+>> > > > device scope.
+>> > > >
+>> > > > so to me, this is a optional but generic feature for all the
+>> > > > ACPI
+>> > > > devices, and we don't have a solid reason that it should be
+>> > > > part of
+>> > > > thermal sysfs I/F, thus a better solution to me is to expose
+>> > > > this
+>> > > > as an
+>> > > > attribute of ACPI device, and we can link to the ACPI device
+>> > > > from
+>> > > > thermal sysfs I/F in userspace.
+>> > > >
+>> > > > what do you think, Rafael?
+>> > > Since you have a ->get_desc method, I don't have a big problem
+>> > > with
+>> > > the approach here.
+>> > >
+>> > > I'm not particularly liking the "<not supported>" thing returned
+>> > > if
+>> > > _STR is not present, though.
+>> > No, actually I mean adding a new sysfs attribute under ACPI device
+>> > node, just like path/hid/status/adr, etc.
+>> Yes, I understood that, but since the power supply framework has a
+>> description callback, why not to use it really?
 >>
->> On 8/17/2017 8:14 PM, Zhang Rui wrote:
->>> On Fri, 2017-08-18 at 02:09 +0200, Rafael J. Wysocki wrote:
->>>> On Wed, Aug 9, 2017 at 4:27 PM, Zhang Rui <rui.zhang@intel.com>
->>>> wrote:
->>>>> Hi, Prakash,
->>>>>
->>>>> On Tue, 2017-08-08 at 10:01 -0600, Prakash, Prashanth wrote:
->>>>>> Hi Rui,
->>>>>>
->>>>>> On 8/8/2017 2:23 AM, Zhang Rui wrote:
->>>>>>>
->>>>>>> On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
->>>>>>>>
->>>>>>>> Per ACPI 6.2 spec, platforms can optionally add a
->>>>>>>> string(_STR)
->>>>>>>> object within each thermal zone package which provides a
->>>>>>>> user
->>>>>>>> friendly name/description.
->>>>>>>>
->>>>>>>> Add support to parse the string object, which will be
->>>>>>>> exposed
->>>>>>>> to userspace by thermal framework.
->>>>>>>>
->>>>>>> is there any real request for this?
->>>>>> Yes, Qualcomm server platforms adds these description
->>>>>> strings.
->>>>>>>
->>>>>>> _STR is a generic control method for all the ACPI devices.
->>>>>>> Thus I'm wondering, if really needed, should we expose this
->>>>>>> in
->>>>>>> acpi
->>>>>>> bus
->>>>>>> instead?
->>>>>> AFAIK, adding a _STR to any package was not explicitly
->>>>>> allowed by
->>>>>> the
->>>>>> spec.
->>>>>> Updates in APCI 6.2 made it legal to add an _STR object to
->>>>>> thermal
->>>>>> zone
->>>>>> specifically, so added this support only to thermal zone.
->>>>>>
->>>>> I see that _STR is stated explicitly in 11.4.14, ACPI spec 6.2,
->>>>> but
->>>>> according to section 6.1.10, "The _STR object evaluates to a
->>>>> Unicode
->>>>> string that describes the device or thermal zone. "
->>>>> _STR is still a generic control method that can exist in any
->>>>> other
->>>>> device scope.
->>>>>
->>>>> so to me, this is a optional but generic feature for all the
->>>>> ACPI
->>>>> devices, and we don't have a solid reason that it should be
->>>>> part of
->>>>> thermal sysfs I/F, thus a better solution to me is to expose
->>>>> this
->>>>> as an
->>>>> attribute of ACPI device, and we can link to the ACPI device
->>>>> from
->>>>> thermal sysfs I/F in userspace.
->>>>>
->>>>> what do you think, Rafael?
->>>> Since you have a ->get_desc method, I don't have a big problem
->>>> with
->>>> the approach here.
->>>>
->>>> I'm not particularly liking the "<not supported>" thing returned
->>>> if
->>>> _STR is not present, though.
->> I will change the implementation such that if _STR object was not
->> found then
->> thermal_get_desc would return -ENXIO (or should it be different
->> errno?).
->>
->>> No, actually I mean adding a new sysfs attribute under ACPI device
->>> node, just like path/hid/status/adr, etc.
->> Sorry Rui, I didn't read your earlier comment correctly. Thermal
->> zone's _STR is
->> useful in couple of scenarios(even if ACPI device containing the
->> thermal_zone
->> had a _STR object):
->> - When we have more than 1 thermal sensors/zones under a device then
->> this will
->> allow us to differentiate them
-> Yes I agree.
-> From userspace point of view,
-> with you patch, userspace can get the content of _STR by
-> cat /sys/class/thermal/thermal_zoneX/desc
->
-> And what I mean is that, userspace can already get the same information
-> by
-> cat /sys/class/thermal/thermal_zoneX/device/description
-> even without the patch.
->
->
->> - When we have some thermal sensors that doesn't have ACPI device
->> associated
->> with it. For example: a shared L3 cache, an abstract region on SoC.
->> In these cases
->> we can add a thermal zone object in an appropriate place in dsdt and
->> the
->> associated _STR will allow us to provide a user friendly
->> name/description.
-> if the sensor is registered by native driver, I think .get_desc() is
-> useful.
-> But if you want to hack the dsdt to get it enumerated via ACPI, then my
-> approach still works without the patch. :)
+> I just checked the code, and ACPI devices indeed have 'description'
+> sysfs attribute if there is _STR. Cool, that's what I'm proposing.
 
-Yes, it works :) and agree we should drop these patch.
-Sorry, I should have checked more thoroughly before posting.
+OK
 
-Thanks for the feedback :)
+> But your statement, "the power supply framework has a description
+> callback" still confuses me.
 
---
-Regards,
-Prashanth
+That's because I was confused, sorry about that.
+
+But as you said, since we have the description thing already, it
+should be sufficient for the use case at hand.
+
+Thanks,
+Rafael
