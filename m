@@ -1,202 +1,133 @@
-From: Markus Heiser <markus.heiser@darmarit.de>
-Subject: Re: [PATCH 1/2] PM: docs: Describe high-level PM strategies and sleep
- states
-Date: Mon, 21 Aug 2017 11:51:48 +0200
-Message-ID: <7AD24A87-C1E0-44B5-9650-CD53F2AE13FB@darmarit.de>
-References: <3053012.25nKXRPPaK@aspire.rjw.lan>
- <2269280.4Jsh6Gf7ai@aspire.rjw.lan>
-Mime-Version: 1.0 (Mac OS X Mail 10.3 \(3273\))
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <2269280.4Jsh6Gf7ai@aspire.rjw.lan>
-Sender: linux-doc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jonathan Corbet <corbet@lwn.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux Doc Mailing List <linux-doc@vger.kernel.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal/drivers/hisi: Remove confusing error message
+Date: Mon, 21 Aug 2017 12:06:17 +0200
+Message-ID: <8f58bd6d-0561-7383-6be4-04ee3704099a@linaro.org>
+References: <1499439833-32531-1-git-send-email-daniel.lezcano@linaro.org>
+ <1502178956.4296.7.camel@intel.com>
+ <46604862-fbb8-8ed1-8b0d-7a51543b3398@linaro.org>
+ <1502196531.4296.41.camel@intel.com>
+ <20170808132955.GB32732@leoy-ThinkPad-T440>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f171.google.com ([209.85.128.171]:36275 "EHLO
+        mail-wr0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753012AbdHUKGV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Aug 2017 06:06:21 -0400
+Received: by mail-wr0-f171.google.com with SMTP id f8so58456989wrf.3
+        for <linux-pm@vger.kernel.org>; Mon, 21 Aug 2017 03:06:20 -0700 (PDT)
+In-Reply-To: <20170808132955.GB32732@leoy-ThinkPad-T440>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Leo Yan <leo.yan@linaro.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: edubezval@gmail.com, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, kong.kongxinwei@hisilicon.com
 
-Hi Rafael,
-
-great work, helps me and the world saving fossil fuels ;)
-
-> Am 20.08.2017 um 18:05 schrieb Rafael J. Wysocki <rjw@rjwysocki.net>:
+On 08/08/2017 15:29, Leo Yan wrote:
+> On Tue, Aug 08, 2017 at 08:48:51PM +0800, Zhang Rui wrote:
 > 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> [...]
 > 
-> Reorganize the power management part of admin-guide by adding a
-> description of major power management strategies supported by the
-> kernel (system-wide and working-state power management) to it and
-> dividing the rest of the material into the system-wide PM and
-> working-state PM chapters.
+>>>>> @@ -352,10 +353,9 @@ static int hisi_thermal_probe(struct
+>>>>> platform_device *pdev)
+>>>>>  		ret = hisi_thermal_register_sensor(pdev, data,
+>>>>>  						   &data-
+>>>>>>
+>>>>>> sensors[i], i);
+>>>>>  		if (ret)
+>>>>> -			dev_err(&pdev->dev,
+>>>>> -				"failed to register thermal
+>>>>> sensor:
+>>>>> %d\n", ret);
+>>>>> -		else
+>>>>> -			hisi_thermal_toggle_sensor(&data-
+>>>>>>
+>>>>>> sensors[i], true);
+>>>>> +			continue;
+>>>>> +
+>>>>> +		hisi_thermal_toggle_sensor(&data->sensors[i],
+>>>>> true);
+>>>>>  	}
+>>>>>  
+>>>>>  	return 0;
+>>>> With these removed, is there any other information in dmesg that
+>>>> suggests this failure?
+>>> The problem is there are always failures showed in dmesg. The init
+>>> function is based on the assumption there is HISI_MAX_SENSORS sensors
+>>> which is not true for the hi6220 and that raises at boot time errors.
+>>>
+>>> Why HISI_MAX_SENSORS(=4) while there is only one on hi6220 AFAIK? and
+>>> this driver is only used for hi6220 (now).
+>>>
+>> right, I think we should remove one error log, and then change the
+>> HISI_MAX_SENSORS to reflect the reality instead.
+>>
+>> XinWei and Leo,
+>> can you please help check this?
 > 
-> On top of that, add a description of system sleep states to the
-> system-wide PM chapter.
+> Sure.
 > 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> Documentation/admin-guide/pm/index.rst         |    5 
-> Documentation/admin-guide/pm/sleep-states.rst  |  234 +++++++++++++++++++++++++
-> Documentation/admin-guide/pm/strategies.rst    |   52 +++++
-> Documentation/admin-guide/pm/system-wide.rst   |   15 +
-> Documentation/admin-guide/pm/working-state.rst |   16 +
-> 5 files changed, 320 insertions(+), 2 deletions(-)
+> Here I am a bit confusion and I think this is a common question for
+> SoC thermal driver.
 > 
-> Index: linux-pm/Documentation/admin-guide/pm/index.rst
-> ===================================================================
-> --- linux-pm.orig/Documentation/admin-guide/pm/index.rst
-> +++ linux-pm/Documentation/admin-guide/pm/index.rst
-> @@ -5,8 +5,9 @@ Power Management
-> .. toctree::
->    :maxdepth: 2
+> Hi6220 does has 4 thermal sensors, but we now only use one sensor of
+> them (thermal sensor id 2) to bind with thermal zone and other three
+> sensors are not bound to any thermal zone. So this is the reason the
+> booting reports the failure.
 > 
-> -   cpufreq
-> -   intel_pstate
-> +   strategies
-> +   system-wide
-> +   working-state
+> I think changing HISI_MAX_SENSORS value cannot resolve this issue, due
+> we are using thermal id 2. How about below change? We change to use
+> warning for sensors without binding, and remove redundant log.
+
+Hi Leo,
+
+a cleanest solution would be either:
+
+ - add the 3 missing thermal sensors in the DT and default to the id 2
+
+or
+
+ - remove all the code assuming 4 sensors and deal with the one unique
+sensor
+
+No ?
+
+
+> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+> index 9c3ce34..6d34980 100644
+> --- a/drivers/thermal/hisi_thermal.c
+> +++ b/drivers/thermal/hisi_thermal.c
+> @@ -260,8 +260,6 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+>         if (IS_ERR(sensor->tzd)) {
+>                 ret = PTR_ERR(sensor->tzd);
+>                 sensor->tzd = NULL;
+> -               dev_err(&pdev->dev, "failed to register sensor id %d: %d\n",
+> -                       sensor->id, ret);
+>                 return ret;
+>         }
+>  
+> @@ -351,7 +349,10 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>         for (i = 0; i < HISI_MAX_SENSORS; ++i) {
+>                 ret = hisi_thermal_register_sensor(pdev, data,
+>                                                    &data->sensors[i], i);
+> -               if (ret)
+> +               if (ret == -ENODEV)
+> +                       dev_warn(&pdev->dev,
+> +                                "thermal sensor %d has not bound\n", i);
+> +               else if (ret)
+>                         dev_err(&pdev->dev,
+>                                 "failed to register thermal sensor: %d\n", ret);
+>                 else
 > 
-> .. only::  subproject and html
-
-BTW: lets drop this C&P 'only' block here. Subprojects are only where a
-Documentation/*/conf.py exists. The build does not have sub-sub-projects
-at Documentation/*/*/conf.py level.
+> Thanks,
+> Leo Yan
+> 
 
 
-> Index: linux-pm/Documentation/admin-guide/pm/sleep-states.rst
-> ===================================================================
-> --- /dev/null
-> +++ linux-pm/Documentation/admin-guide/pm/sleep-states.rst
-> @@ -0,0 +1,234 @@
-> +===================
-> +System Sleep States
-> +===================
-> +
-> +::
-> +
-> + Copyright (c) 2017 Intel Corp., Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> +
-> +Sleep states are global low-power states of the entire system in which user
-> +space code cannot be executed and the overall system activity is significantly
-> +reduced.
-> +
-> +
-> +
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-[...]
-> Index: linux-pm/Documentation/admin-guide/pm/system-wide.rst
-> ===================================================================
-> --- /dev/null
-> +++ linux-pm/Documentation/admin-guide/pm/system-wide.rst
-> @@ -0,0 +1,15 @@
-> +============================
-> +System-Wide Power Management
-> +============================
-> +
-> +.. toctree::
-> +   :maxdepth: 2
-> +
-> +   sleep-states
-> +
-> +.. only::  subproject and html
-> +
-> +   Indices
-> +   =======
-> +
-> +   * :ref:`genindex`
-
-Same here, lets drop the 'only' block.
-
-
-> Index: linux-pm/Documentation/admin-guide/pm/working-state.rst
-> ===================================================================
-> --- /dev/null
-> +++ linux-pm/Documentation/admin-guide/pm/working-state.rst
-> @@ -0,0 +1,16 @@
-> +==============================
-> +Working-State Power Management
-> +==============================
-> +
-> +.. toctree::
-> +   :maxdepth: 2
-> +
-> +   cpufreq
-> +   intel_pstate
-> +
-> +.. only::  subproject and html
-> +
-> +   Indices
-> +   =======
-> +
-> +   * :ref:`genindex`
-
-Same here, lets drop the 'only' block.
-
-> Index: linux-pm/Documentation/admin-guide/pm/strategies.rst
-> ===================================================================
-> --- /dev/null
-> +++ linux-pm/Documentation/admin-guide/pm/strategies.rst
-> @@ -0,0 +1,52 @@
-> +===========================
-> +Power Management Strategies
-> +===========================
-> +
-> +::
-> +
-> + Copyright (c) 2017 Intel Corp., Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> +
-> +The Linux kernel supports two major high-level power management strategies.
-> +
-> +One of them is based on using global low-power states of the whole system in
-> +which user space code cannot be executed and the overall system activity is
-> +significantly reduced, referred to as :doc:`sleep states <sleep-states>`.  The
-> +kernel puts the system into one of these states when requested by user space
-> +and the system stays in it until a special signal is received from one of
-> +designated devices, triggering a transition to the ``working state`` in which
-> +user space code can run.  Because sleep states are global and the whole system
-> +is affected by the state changes, this strategy is referred to as the
-> +:doc:`system-wide power management <system-wide>`.
-
-I really appreciate your hyper-ref markup using :doc:`Foo <foo>` and `Bar`_
-it is very clear when reading the raw text files in the source tree. I think
-this has its value, but it also has its drawbacks when chapters are renamed
-or moved from one file to another. Thats, why I recommend using explicitly
-anchors / may be the maintainer Jon can give us his assessment. What I mean::
-
-.. _foo:
-
-Foo
-===
-
-lorem see :ref:`bar`
-
-.. _bar:
-
-Bar
-===
-
-ipsum see :ref:`foo`
-
-With explicitly anchors:
-
-- there is no need to track when a chapter is renamed
-- or moved to another file,
-- same to renaming files
-- with intersphinx [1] other projects can link to such anchors
-
-[1] http://www.sphinx-doc.org/en/stable/ext/intersphinx.html
-
-
-> +
-> +The other strategy, referred to as the
-> +:doc:`working-state power management <working-state>`,
-
-Even if you use :ref: or :doc: both are line-break-safe ...
-
-+The other strategy, referred to as the :doc:`working-state power
-+management <working-state>`, ...
-
-.. should work.
-
-Thanks!
-
--- Markus 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
