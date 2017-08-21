@@ -1,48 +1,75 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: OPP: how to get the all frequency list?
-Date: Mon, 21 Aug 2017 17:53:33 +0900
-Message-ID: <599A9F8D.6080508@samsung.com>
-References: <CGME20170821085332epcas2p2e06a9d81a79ab5e71804db41bf349833@epcas2p2.samsung.com>
+From: Thierry Reding <treding@nvidia.com>
+Subject: Re: [PATCH] kbuild: use $(abspath ...) instead of $(shell cd ... &&
+ /bin/pwd)
+Date: Mon, 21 Aug 2017 10:49:30 +0200
+Message-ID: <20170821084930.GA7678@ulmo>
+References: <1503209051-16477-1-git-send-email-yamada.masahiro@socionext.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:25013 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751069AbdHUIxe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Aug 2017 04:53:34 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="BOKacYhQ+x31HxR3"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1503209051-16477-1-git-send-email-yamada.masahiro@socionext.com>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: linux-kbuild@vger.kernel.org, =?utf-8?B?QmrDuHJu?= Forsman <bjorn.forsman@gmail.com>, Sam Ravnborg <sam@ravnborg.org>, Michal Marek <mmarek@suse.com>, linux-pm@vger.kernel.org, Kieran Bingham <kieran@bingham.xyz>, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.com>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnaldo Carvalho de Melo <acme@redhat.com>, Jan Kiszka <jan.kiszka@siemens.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <vireshk@kernel.org>, "nm@ti.com" <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, =?UTF-8?B?7ZWo?= =?UTF-8?B?66qF7KO8?= <myungjoo.ham@samsung.com>
 
-Dear all,
+--BOKacYhQ+x31HxR3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I have a question that how to get the all frequency list
-by using the OPP interface. (It doesn't matter whether frequency is available or not.)
+On Sun, Aug 20, 2017 at 03:04:11PM +0900, Masahiro Yamada wrote:
+> Kbuild conventionally uses $(shell cd ... && /bin/pwd) idiom to get
+> the absolute path of the directory because GNU Make 3.80, the minimal
+> supported version at that time, did not support $(abspath ...) or
+> $(realpath ...).
+>=20
+> Commit 37d69ee30808 ("docs: bump minimal GNU Make version to 3.81")
+> dropped the GNU Make 3.80 support, so we are now allowed to use those
+> make-builtin helpers.
+>=20
+> This conversion will provide better portability without relying on
+> the pwd command or its location /bin/pwd.
+>=20
+> I am intentionally using $(realpath ...) instead $(abspath ...) in
+> some places.  The difference between the two is $(realpath ...)
+> returns an empty string if the given path does not exist.  It is
+> convenient in places where we need to error-out if the makefile fails
+> to create an output directory.
+>=20
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> ---
+>=20
+>  Makefile                       | 12 ++++++------
+>  scripts/gdb/linux/Makefile     |  2 +-
+>  tools/power/cpupower/Makefile  |  2 +-
+>  tools/scripts/Makefile.include |  6 +++---
+>  4 files changed, 11 insertions(+), 11 deletions(-)
 
-OPP has following three functions in order to find the proper frequency.
-- dev_pm_opp_find_freq_exact(struct device *dev, unsigned long freq, bool available);
-- dev_pm_opp_find_freq_floor(struct device *dev, unsigned long freq);
-	: Search for a rounded floor freq (if opp->available is true)
-- dev_pm_opp_find_freq_ceil(struct device *dev, unsigned long freq);
-	: Search for a rounded ceil freq if (opp->available is true)
+This looks very similar to a patch I had written a long time ago:
 
-In this case,
-when the device using OPP tries to find the all frequencies,
-the device can't find them. The device can just find the available frequencies.
+Acked-by: Thierry Reding <treding@nvidia.com>
 
-If the some frequency of the device might be disabled by dev_pm_opp_disable()
-and also the device doesn't know the correct frequency value,
-the device cannot find the all frequencies by using the dev_pm_opp_find_freq_floor/ceil()
+--BOKacYhQ+x31HxR3
+Content-Type: application/pgp-signature; name="signature.asc"
 
-It is just able to find the available frequencies if opp->available is true.
+-----BEGIN PGP SIGNATURE-----
 
-Or
-When proving the device driver and then before disabling the OPP by dev_pm_opp_disable(),
-each device driver have to store the frequency lists on the private data structure.
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlmanpcACgkQ3SOs138+
+s6E41w//XaIYnoRQswXyc2L8SpJTW3Rm0BJIgfrzKNvvAdtfdPOvwVyX6/0KCCOS
+Q5+VLAUXOM6Iv4m6n+2FIz+0/wiUBPaxhgirlaS5vGU1f2xpjGw6uWdrOeW7EDOH
+sOExltQtcu5KSdJKjBo8Rlqk74NOCghpAf4a8FR+kaHBx14yLqAoWhefzyYx0Ku9
+WICJIi8+6fItarHuVgIKwLc+8ZiOuV/KwExFnPn9bT3QrTF9YlihkYiZfEanZvvq
+1C9dA4ZaC78wOuFpifyl+GjlvDrH3ec20qr08yQ8+dm5J4JbWTkuQ0SJHur+QOR2
+nSWPfHwErmcuv2+WMmHIIiLyOt9OjMMKzqnsI1056GXRYazhlUM8e5LKZV4IoaTF
+NeDQmrkBLtalwVNbktu09Dug92SN7c2R5fRwPKhmwl7cRqrZI6rm6zgAVKWGIdGx
+2gtmLe2O+Wn/uWqzxYBcrunyn7DfqQDAsoX43tv6WQYfsjm86M4Kw83dP5yO7oql
+ZccEiSM3eOOw8nElaij3cpO8egT11qKL2nN1s/beMAm7GVYotpgyf6hGRBl4DFAf
+gzSFvEq/WaGhwxVqMA7zsiKD0pzfE6IkTXDCBmMcF1+4Z7TYA8YLmTatxXlnDApk
+b0qnwGq/0GXqRi0ja/WVzGAM7segXBqa65rbdrH0o70N/KzUi5g=
+=5n/b
+-----END PGP SIGNATURE-----
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+--BOKacYhQ+x31HxR3--
