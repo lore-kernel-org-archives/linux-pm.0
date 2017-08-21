@@ -1,84 +1,147 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] PM / Hibernate: Feed the wathdog when creating snapshot
-Date: Mon, 21 Aug 2017 13:26:00 -0700
-Message-ID: <20170821132600.c8a509bcacce123e3f51d989@linux-foundation.org>
-References: <1503328098-5120-1-git-send-email-yu.c.chen@intel.com>
+From: "Prakash, Prashanth" <pprakash@codeaurora.org>
+Subject: Re: [PATCH 2/2] ACPI/thermal: support for thermal zone description
+Date: Mon, 21 Aug 2017 15:21:48 -0600
+Message-ID: <f6a1930f-2991-81a1-905d-938848d63f38@codeaurora.org>
+References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
+ <1500054535-975-3-git-send-email-pprakash@codeaurora.org>
+ <1502180603.4296.15.camel@intel.com>
+ <02b23d6b-a923-3790-5fce-222a11eac951@codeaurora.org>
+ <1502288876.5343.19.camel@intel.com>
+ <CAJZ5v0iR5eJHPOf2ptL9WPO9TFXthER2awVLFSRvSgYqhSj3wA@mail.gmail.com>
+ <1503022487.31913.4.camel@intel.com>
+ <c572741f-8714-45f8-d389-9e258464e091@codeaurora.org>
+ <1503326230.2619.52.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:43164 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753648AbdHUU0C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Aug 2017 16:26:02 -0400
-In-Reply-To: <1503328098-5120-1-git-send-email-yu.c.chen@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1503326230.2619.52.camel@intel.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: linux-mm@kvack.org, Michal Hocko <mhocko@kernel.org>, Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 21 Aug 2017 23:08:18 +0800 Chen Yu <yu.c.chen@intel.com> wrote:
+Hi Rui,
 
-> There is a problem that when counting the pages for creating
-> the hibernation snapshot will take significant amount of
-> time, especially on system with large memory. Since the counting
-> job is performed with irq disabled, this might lead to NMI lockup.
-> The following warning were found on a system with 1.5TB DRAM:
-> 
-> ...
-> 
-> It has taken nearly 20 seconds(2.10GHz CPU) thus the NMI lockup
-> was triggered. In case the timeout of the NMI watch dog has been
-> set to 1 second, a safe interval should be 6590003/20 = 320k pages
-> in theory. However there might also be some platforms running at a
-> lower frequency, so feed the watchdog every 100k pages.
-> 
-> ...
+On 8/21/2017 8:37 AM, Zhang Rui wrote:
+> On Fri, 2017-08-18 at 16:31 -0600, Prakash, Prashanth wrote:
+>> Hi Rafael/Rui,
+>>
+>> On 8/17/2017 8:14 PM, Zhang Rui wrote:
+>>> On Fri, 2017-08-18 at 02:09 +0200, Rafael J. Wysocki wrote:
+>>>> On Wed, Aug 9, 2017 at 4:27 PM, Zhang Rui <rui.zhang@intel.com>
+>>>> wrote:
+>>>>> Hi, Prakash,
+>>>>>
+>>>>> On Tue, 2017-08-08 at 10:01 -0600, Prakash, Prashanth wrote:
+>>>>>> Hi Rui,
+>>>>>>
+>>>>>> On 8/8/2017 2:23 AM, Zhang Rui wrote:
+>>>>>>>
+>>>>>>> On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
+>>>>>>>>
+>>>>>>>> Per ACPI 6.2 spec, platforms can optionally add a
+>>>>>>>> string(_STR)
+>>>>>>>> object within each thermal zone package which provides a
+>>>>>>>> user
+>>>>>>>> friendly name/description.
+>>>>>>>>
+>>>>>>>> Add support to parse the string object, which will be
+>>>>>>>> exposed
+>>>>>>>> to userspace by thermal framework.
+>>>>>>>>
+>>>>>>> is there any real request for this?
+>>>>>> Yes, Qualcomm server platforms adds these description
+>>>>>> strings.
+>>>>>>>
+>>>>>>> _STR is a generic control method for all the ACPI devices.
+>>>>>>> Thus I'm wondering, if really needed, should we expose this
+>>>>>>> in
+>>>>>>> acpi
+>>>>>>> bus
+>>>>>>> instead?
+>>>>>> AFAIK, adding a _STR to any package was not explicitly
+>>>>>> allowed by
+>>>>>> the
+>>>>>> spec.
+>>>>>> Updates in APCI 6.2 made it legal to add an _STR object to
+>>>>>> thermal
+>>>>>> zone
+>>>>>> specifically, so added this support only to thermal zone.
+>>>>>>
+>>>>> I see that _STR is stated explicitly in 11.4.14, ACPI spec 6.2,
+>>>>> but
+>>>>> according to section 6.1.10, "The _STR object evaluates to a
+>>>>> Unicode
+>>>>> string that describes the device or thermal zone. "
+>>>>> _STR is still a generic control method that can exist in any
+>>>>> other
+>>>>> device scope.
+>>>>>
+>>>>> so to me, this is a optional but generic feature for all the
+>>>>> ACPI
+>>>>> devices, and we don't have a solid reason that it should be
+>>>>> part of
+>>>>> thermal sysfs I/F, thus a better solution to me is to expose
+>>>>> this
+>>>>> as an
+>>>>> attribute of ACPI device, and we can link to the ACPI device
+>>>>> from
+>>>>> thermal sysfs I/F in userspace.
+>>>>>
+>>>>> what do you think, Rafael?
+>>>> Since you have a ->get_desc method, I don't have a big problem
+>>>> with
+>>>> the approach here.
+>>>>
+>>>> I'm not particularly liking the "<not supported>" thing returned
+>>>> if
+>>>> _STR is not present, though.
+>> I will change the implementation such that if _STR object was not
+>> found then
+>> thermal_get_desc would return -ENXIO (or should it be different
+>> errno?).
+>>
+>>> No, actually I mean adding a new sysfs attribute under ACPI device
+>>> node, just like path/hid/status/adr, etc.
+>> Sorry Rui, I didn't read your earlier comment correctly. Thermal
+>> zone's _STR is
+>> useful in couple of scenarios(even if ACPI device containing the
+>> thermal_zone
+>> had a _STR object):
+>> - When we have more than 1 thermal sensors/zones under a device then
+>> this will
+>> allow us to differentiate them
+> Yes I agree.
+> From userspace point of view,
+> with you patch, userspace can get the content of _STR by
+> cat /sys/class/thermal/thermal_zoneX/desc
 >
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -2531,9 +2532,12 @@ void drain_all_pages(struct zone *zone)
->  
->  #ifdef CONFIG_HIBERNATION
->  
-> +/* Touch watchdog for every WD_INTERVAL_PAGE pages. */
-> +#define WD_INTERVAL_PAGE	(100*1024)
-> +
->  void mark_free_pages(struct zone *zone)
->  {
-> -	unsigned long pfn, max_zone_pfn;
-> +	unsigned long pfn, max_zone_pfn, page_num = 0;
->  	unsigned long flags;
->  	unsigned int order, t;
->  	struct page *page;
-> @@ -2548,6 +2552,9 @@ void mark_free_pages(struct zone *zone)
->  		if (pfn_valid(pfn)) {
->  			page = pfn_to_page(pfn);
->  
-> +			if (!((page_num++) % WD_INTERVAL_PAGE))
-> +				touch_nmi_watchdog();
-> +
->  			if (page_zone(page) != zone)
->  				continue;
->  
-> @@ -2561,8 +2568,11 @@ void mark_free_pages(struct zone *zone)
->  			unsigned long i;
->  
->  			pfn = page_to_pfn(page);
-> -			for (i = 0; i < (1UL << order); i++)
-> +			for (i = 0; i < (1UL << order); i++) {
-> +				if (!((page_num++) % WD_INTERVAL_PAGE))
-> +					touch_nmi_watchdog();
->  				swsusp_set_page_free(pfn_to_page(pfn + i));
-> +			}
->  		}
->  	}
->  	spin_unlock_irqrestore(&zone->lock, flags);
+> And what I mean is that, userspace can already get the same information
+> by
+> cat /sys/class/thermal/thermal_zoneX/device/description
+> even without the patch.
+>
+>
+>> - When we have some thermal sensors that doesn't have ACPI device
+>> associated
+>> with it. For example: a shared L3 cache, an abstract region on SoC.
+>> In these cases
+>> we can add a thermal zone object in an appropriate place in dsdt and
+>> the
+>> associated _STR will allow us to provide a user friendly
+>> name/description.
+> if the sensor is registered by native driver, I think .get_desc() is
+> useful.
+> But if you want to hack the dsdt to get it enumerated via ACPI, then my
+> approach still works without the patch. :)
 
-hm, is it really worth all the WD_INTERVAL_PAGE stuff? 
-touch_nmi_watchdog() is pretty efficient and calling it once-per-page
-may not have a measurable effect.
+Yes, it works :) and agree we should drop these patch.
+Sorry, I should have checked more thoroughly before posting.
 
-And if we're really concerned about the performance impact it would be
-better to make WD_INTERVAL_PAGE a power of 2 (128*1024?) to avoid the
-modulus operation.
+Thanks for the feedback :)
+
+--
+Regards,
+Prashanth
