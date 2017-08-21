@@ -1,95 +1,89 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/2] PM: docs: Describe high-level PM strategies and sleep states
-Date: Mon, 21 Aug 2017 02:51:29 +0200
-Message-ID: <CAJZ5v0isuXmwCKsQZtOCsseJa7MW=CiEXMhQVnFSu6SMYykUcA@mail.gmail.com>
-References: <3053012.25nKXRPPaK@aspire.rjw.lan> <2269280.4Jsh6Gf7ai@aspire.rjw.lan>
- <20170820182326.GA29793@wunner.de>
+From: "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
+Subject: Re: [PATCH v3 1/3] dt-bindings: Document the hi3660 thermal sensor
+ bindings
+Date: Mon, 21 Aug 2017 10:17:48 +0800
+Message-ID: <e313015d-11d5-91b8-aa64-37e9410cb882@hisilicon.com>
+References: <1498102923-68481-1-git-send-email-kevin.wangtao@hisilicon.com>
+ <1502353935-92924-1-git-send-email-kevin.wangtao@hisilicon.com>
+ <1502353935-92924-2-git-send-email-kevin.wangtao@hisilicon.com>
+ <20170817141517.izhteflvfwtoovqv@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="gbk"; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f174.google.com ([209.85.223.174]:37568 "EHLO
-        mail-io0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753439AbdHUAvb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 20 Aug 2017 20:51:31 -0400
-In-Reply-To: <20170820182326.GA29793@wunner.de>
+Received: from szxga05-in.huawei.com ([45.249.212.191]:4084 "EHLO
+        szxga05-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753467AbdHUCSR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 20 Aug 2017 22:18:17 -0400
+In-Reply-To: <20170817141517.izhteflvfwtoovqv@rob-hp-laptop>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation <linux-doc@vger.kernel.org>
+To: Rob Herring <robh@kernel.org>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, xuwei5@hisilicon.com, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, leo.yan@linaro.org, kevin.wangtao@linaro.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, sunzhaosheng@hisilicon.com
 
-On Sun, Aug 20, 2017 at 8:23 PM, Lukas Wunner <lukas@wunner.de> wrote:
-> On Sun, Aug 20, 2017 at 06:05:05PM +0200, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+
+ÔÚ 2017/8/17 23:10, Rob Herring Ð´µÀ:
+> On Thu, Aug 10, 2017 at 04:32:13PM +0800, Tao Wang wrote:
+>> From: Tao Wang <kevin.wangtao@linaro.org>
 >>
->> Reorganize the power management part of admin-guide by adding a
->> description of major power management strategies supported by the
->> kernel (system-wide and working-state power management) to it and
->> dividing the rest of the material into the system-wide PM and
->> working-state PM chapters.
+>> This adds documentation of device tree bindings for the
+>> thermal sensor controller of hi3660 SoC.
 >>
->> On top of that, add a description of system sleep states to the
->> system-wide PM chapter.
->
-> Found no typos and no factual inaccuracies, the only thing that
-> irritated me a bit was the part about "working state" power
-> management:
->
->> +The other strategy, referred to as the
->> +:doc:`working-state power management <working-state>`, is based on adjusting the
->> +power states of individual hardware components of the system, as needed, in the
->> +working state.  In consequence, if this strategy is in use, the working state
->> +of the system usually does not correspond to any particular physical
->> +configuration of it, but can be treated as a metastate covering a range of
->> +different power states of the system in which the individual components of it
->> +can be either ``active`` (in use) or ``inactive`` (idle).  If they are active,
->> +they have to be in power states allowing them to process data and to be accessed
->> +by software.  In turn, if they are inactive, they are expected to be in
->> +low-power states in which they may not be accessible.
+>> Signed-off-by: Tao Wang <kevin.wangtao@linaro.org>
+>> ---
+>>   .../devicetree/bindings/thermal/hisi-tsensor.txt   | 23 ++++++++++++++++++++++
+>>   1 file changed, 23 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/thermal/hisi-tsensor.txt
+>>
+>> diff --git a/Documentation/devicetree/bindings/thermal/hisi-tsensor.txt b/Documentation/devicetree/bindings/thermal/hisi-tsensor.txt
+>> new file mode 100644
+>> index 0000000..2ab0eb9
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/thermal/hisi-tsensor.txt
+>> @@ -0,0 +1,23 @@
+>> +* Temperature Sensor on hisilicon SoC
 >> +
->> +If all of the system components are active, the system as a whole is regarded as
->> +``runtime active`` and that situation typically corresponds to the maximum power
->> +draw (or maximum energy usage) of it.  If all of them are inactive, the system
->> +as a whole is regarded as ``runtime idle`` which may be very close to a sleep
->
-> The code uses the terms pm_runtime_active() and pm_runtime_suspended(),
-> not "runtime idle".
-
-Well, the phrase "runtime idle" in the document is (quite clearly)
-used with respect to the system as a whole, so I'm not sure how this
-is related to the runtime PM framework.
-
-> Taking the ->runtime_idle callback as guidance,
-> "runtime idle" would mean that a component is runtime active, but idling
-
-Well, no.  At least that wasn't the intention and now it turns out to
-be confusing ...
-
-->runtime_idle is for cases when the device looks idle to a piece of
-the kernel code and then it can use this callback to request the
-devices driver/bus type and so on to take care of this situation.
-
-Also the prefix "runtime" is there to distinguish the callback from
-the other callbacks, related to system suspend and hibernation, in the
-same data type.
-
-And, of course, "suspended" implies "idle", but not the other way
-around, in general.
-
-> and could thus be transitioned to runtime suspended state.  However above
-> it says that if it's idle, it's already "in low-power states and may
-> not be accessible".
-
-No, it doesn't say that.  It talks about expectations which may not be
-what actually happens.
-
-> For someone reading this it may be difficult to
-> reconcile it with the terminology used in the code.
-
-Anyway, the point here is to note the difference between sleep states
-and a completely idle system in the working state.
-
->
-> Otherwise,
-> Reviewed-by: Lukas Wunner <lukas@wunner.de>
-
-Thanks!
+>> +** Required properties :
+>> +
+>> +- compatible: "hisilicon,thermal-tsensor".
+> 
+> Needs an SoC specific compatible.
+OK
+> 
+>> +- reg: physical base address of thermal sensor and length of memory mapped
+>> +  region.
+>> +- offset: reg offset of each sensor.
+> 
+> Should be implied by the compatible.
+Do you mean that the reg offset should not in dts?
+> 
+>> +- coefficients:	An array of integers (one signed cell) containing
+>> +		coefficients to turn adc value to temperture.
+> 
+> Needs a vendor prefix.
+OK
+> 
+>> +- hisi,adc-range: adc value range, minimum value is followed by maximum value.
+>> +- #thermal-sensor-cells: Should be 1. See ./thermal.txt for a description.
+>> +
+>> +Example :
+>> +
+>> +tsensor: tsensor@FFF3000 {
+>> +	compatible = "hisilicon,tsensor";
+>> +	reg = <0x0 0xfff30000 0x0 0x1000>;
+>> +	offset = <0x1c 0x5c 0x9c>;
+>> +	coefficients = <165000 (-40000)>;
+>> +	hisi,adc-range = <0x74 0x39A>;
+>> +	#thermal-sensor-cells = <1>;
+>> +};
+>> -- 
+>> 2.8.1
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe devicetree" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> .
+> 
