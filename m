@@ -1,173 +1,136 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/2] ACPI/thermal: support for thermal zone description
-Date: Mon, 21 Aug 2017 22:37:10 +0800
-Message-ID: <1503326230.2619.52.camel@intel.com>
-References: <1500054535-975-1-git-send-email-pprakash@codeaurora.org>
-         <1500054535-975-3-git-send-email-pprakash@codeaurora.org>
-         <1502180603.4296.15.camel@intel.com>
-         <02b23d6b-a923-3790-5fce-222a11eac951@codeaurora.org>
-         <1502288876.5343.19.camel@intel.com>
-         <CAJZ5v0iR5eJHPOf2ptL9WPO9TFXthER2awVLFSRvSgYqhSj3wA@mail.gmail.com>
-         <1503022487.31913.4.camel@intel.com>
-         <c572741f-8714-45f8-d389-9e258464e091@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <c572741f-8714-45f8-d389-9e258464e091@codeaurora.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Prakash, Prashanth" <pprakash@codeaurora.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: [PATCH] PM / Hibernate: Feed the wathdog when creating snapshot
+Date: Mon, 21 Aug 2017 23:08:18 +0800
+Message-ID: <1503328098-5120-1-git-send-email-yu.c.chen@intel.com>
+Return-path: <owner-linux-mm@kvack.org>
+Sender: owner-linux-mm@kvack.org
+To: linux-mm@kvack.org
+Cc: Chen Yu <yu.c.chen@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>, Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 2017-08-18 at 16:31 -0600, Prakash, Prashanth wrote:
-> Hi Rafael/Rui,
-> 
-> On 8/17/2017 8:14 PM, Zhang Rui wrote:
-> > 
-> > On Fri, 2017-08-18 at 02:09 +0200, Rafael J. Wysocki wrote:
-> > > 
-> > > On Wed, Aug 9, 2017 at 4:27 PM, Zhang Rui <rui.zhang@intel.com>
-> > > wrote:
-> > > > 
-> > > > Hi, Prakash,
-> > > > 
-> > > > On Tue, 2017-08-08 at 10:01 -0600, Prakash, Prashanth wrote:
-> > > > > 
-> > > > > Hi Rui,
-> > > > > 
-> > > > > On 8/8/2017 2:23 AM, Zhang Rui wrote:
-> > > > > > 
-> > > > > > 
-> > > > > > On Fri, 2017-07-14 at 11:48 -0600, Prashanth Prakash wrote:
-> > > > > > > 
-> > > > > > > 
-> > > > > > > Per ACPI 6.2 spec, platforms can optionally add a
-> > > > > > > string(_STR)
-> > > > > > > object within each thermal zone package which provides a
-> > > > > > > user
-> > > > > > > friendly name/description.
-> > > > > > > 
-> > > > > > > Add support to parse the string object, which will be
-> > > > > > > exposed
-> > > > > > > to userspace by thermal framework.
-> > > > > > > 
-> > > > > > is there any real request for this?
-> > > > > Yes, Qualcomm server platforms adds these description
-> > > > > strings.
-> > > > > > 
-> > > > > > 
-> > > > > > _STR is a generic control method for all the ACPI devices.
-> > > > > > Thus I'm wondering, if really needed, should we expose this
-> > > > > > in
-> > > > > > acpi
-> > > > > > bus
-> > > > > > instead?
-> > > > > AFAIK, adding a _STR to any package was not explicitly
-> > > > > allowed by
-> > > > > the
-> > > > > spec.
-> > > > > Updates in APCI 6.2 made it legal to add an _STR object to
-> > > > > thermal
-> > > > > zone
-> > > > > specifically, so added this support only to thermal zone.
-> > > > > 
-> > > > I see that _STR is stated explicitly in 11.4.14, ACPI spec 6.2,
-> > > > but
-> > > > according to section 6.1.10, "The _STR object evaluates to a
-> > > > Unicode
-> > > > string that describes the device or thermal zone. "
-> > > > _STR is still a generic control method that can exist in any
-> > > > other
-> > > > device scope.
-> > > > 
-> > > > so to me, this is a optional but generic feature for all the
-> > > > ACPI
-> > > > devices, and we don't have a solid reason that it should be
-> > > > part of
-> > > > thermal sysfs I/F, thus a better solution to me is to expose
-> > > > this
-> > > > as an
-> > > > attribute of ACPI device, and we can link to the ACPI device
-> > > > from
-> > > > thermal sysfs I/F in userspace.
-> > > > 
-> > > > what do you think, Rafael?
-> > > Since you have a ->get_desc method, I don't have a big problem
-> > > with
-> > > the approach here.
-> > > 
-> > > I'm not particularly liking the "<not supported>" thing returned
-> > > if
-> > > _STR is not present, though.
-> I will change the implementation such that if _STR object was not
-> found then
-> thermal_get_desc would return -ENXIO (or should it be different
-> errno?).
-> 
-> > 
-> > No, actually I mean adding a new sysfs attribute under ACPI device
-> > node, just like path/hid/status/adr, etc.
-> Sorry Rui, I didn't read your earlier comment correctly. Thermal
-> zone's _STR is
-> useful in couple of scenarios(even if ACPI device containing the
-> thermal_zone
-> had a _STR object):
-> - When we have more than 1 thermal sensors/zones under a device then
-> this will
-> allow us to differentiate them
+There is a problem that when counting the pages for creating
+the hibernation snapshot will take significant amount of
+time, especially on system with large memory. Since the counting
+job is performed with irq disabled, this might lead to NMI lockup.
+The following warning were found on a system with 1.5TB DRAM:
 
-Yes I agree.
->From userspace point of view,
-with you patch, userspace can get the content of _STR by
-cat /sys/class/thermal/thermal_zoneX/desc
+[ 1124.758184] Freezing user space processes ... (elapsed 0.002 seconds) done.
+[ 1124.768721] OOM killer disabled.
+[ 1124.847009] PM: Preallocating image memory...
+[ 1139.392042] NMI watchdog: Watchdog detected hard LOCKUP on cpu 27
+[ 1139.392076] CPU: 27 PID: 3128 Comm: systemd-sleep Not tainted 4.13.0-0.rc2.git0.1.fc27.x86_64 #1
+[ 1139.392077] task: ffff9f01971ac000 task.stack: ffffb1a3f325c000
+[ 1139.392083] RIP: 0010:memory_bm_find_bit+0xf4/0x100
+[ 1139.392084] RSP: 0018:ffffb1a3f325fc20 EFLAGS: 00000006
+[ 1139.392084] RAX: 0000000000000000 RBX: 0000000013b83000 RCX: ffff9fbe89caf000
+[ 1139.392085] RDX: ffffb1a3f325fc30 RSI: 0000000000003200 RDI: ffff9fbeaffffe80
+[ 1139.392085] RBP: ffffb1a3f325fc40 R08: 0000000013b80000 R09: ffff9fbe89c54878
+[ 1139.392085] R10: ffffb1a3f325fc2c R11: 0000000013b83200 R12: 0000000000000400
+[ 1139.392086] R13: fffffd552e0c0000 R14: ffff9fc1bffd31e0 R15: 0000000000000202
+[ 1139.392086] FS:  00007f3189704180(0000) GS:ffff9fbec8ec0000(0000) knlGS:0000000000000000
+[ 1139.392087] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+[ 1139.392087] CR2: 00000085da0f7398 CR3: 000001771cf9a000 CR4: 00000000007406e0
+[ 1139.392088] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[ 1139.392088] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+[ 1139.392088] PKRU: 55555554
+[ 1139.392089] Call Trace:
+[ 1139.392092]  ? memory_bm_set_bit+0x29/0x60
+[ 1139.392094]  swsusp_set_page_free+0x2b/0x30
+[ 1139.392098]  mark_free_pages+0x147/0x1c0
+[ 1139.392099]  count_data_pages+0x41/0xa0
+[ 1139.392101]  hibernate_preallocate_memory+0x80/0x450
+[ 1139.392102]  hibernation_snapshot+0x58/0x410
+[ 1139.392103]  hibernate+0x17c/0x310
+[ 1139.392104]  state_store+0xdf/0xf0
+[ 1139.392107]  kobj_attr_store+0xf/0x20
+[ 1139.392111]  sysfs_kf_write+0x37/0x40
+[ 1139.392113]  kernfs_fop_write+0x11c/0x1a0
+[ 1139.392117]  __vfs_write+0x37/0x170
+[ 1139.392121]  ? handle_mm_fault+0xd8/0x230
+[ 1139.392122]  vfs_write+0xb1/0x1a0
+[ 1139.392123]  SyS_write+0x55/0xc0
+[ 1139.392126]  entry_SYSCALL_64_fastpath+0x1a/0xa5
+...
+[ 1144.690405] done (allocated 6590003 pages)
+[ 1144.694971] PM: Allocated 26360012 kbytes in 19.89 seconds (1325.28 MB/s)
 
-And what I mean is that, userspace can already get the same information
-by
-cat /sys/class/thermal/thermal_zoneX/device/description
-even without the patch.
+It has taken nearly 20 seconds(2.10GHz CPU) thus the NMI lockup
+was triggered. In case the timeout of the NMI watch dog has been
+set to 1 second, a safe interval should be 6590003/20 = 320k pages
+in theory. However there might also be some platforms running at a
+lower frequency, so feed the watchdog every 100k pages.
 
+Reported-by: Jan Filipcewicz <jan.filipcewicz@intel.com>
+Suggested-by: Michal Hocko <mhocko@suse.com>
+Reviewed-by: Michal Hocko <mhocko@suse.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Michal Hocko <mhocko@kernel.org>
+Cc: Mel Gorman <mgorman@techsingularity.net>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ mm/page_alloc.c | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
 
-> - When we have some thermal sensors that doesn't have ACPI device
-> associated
-> with it. For example: a shared L3 cache, an abstract region on SoC.
-> In these cases
-> we can add a thermal zone object in an appropriate place in dsdt and
-> the
-> associated _STR will allow us to provide a user friendly
-> name/description.
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 6d00f74..543726a 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -66,6 +66,7 @@
+ #include <linux/kthread.h>
+ #include <linux/memcontrol.h>
+ #include <linux/ftrace.h>
++#include <linux/nmi.h>
+ 
+ #include <asm/sections.h>
+ #include <asm/tlbflush.h>
+@@ -2531,9 +2532,12 @@ void drain_all_pages(struct zone *zone)
+ 
+ #ifdef CONFIG_HIBERNATION
+ 
++/* Touch watchdog for every WD_INTERVAL_PAGE pages. */
++#define WD_INTERVAL_PAGE	(100*1024)
++
+ void mark_free_pages(struct zone *zone)
+ {
+-	unsigned long pfn, max_zone_pfn;
++	unsigned long pfn, max_zone_pfn, page_num = 0;
+ 	unsigned long flags;
+ 	unsigned int order, t;
+ 	struct page *page;
+@@ -2548,6 +2552,9 @@ void mark_free_pages(struct zone *zone)
+ 		if (pfn_valid(pfn)) {
+ 			page = pfn_to_page(pfn);
+ 
++			if (!((page_num++) % WD_INTERVAL_PAGE))
++				touch_nmi_watchdog();
++
+ 			if (page_zone(page) != zone)
+ 				continue;
+ 
+@@ -2561,8 +2568,11 @@ void mark_free_pages(struct zone *zone)
+ 			unsigned long i;
+ 
+ 			pfn = page_to_pfn(page);
+-			for (i = 0; i < (1UL << order); i++)
++			for (i = 0; i < (1UL << order); i++) {
++				if (!((page_num++) % WD_INTERVAL_PAGE))
++					touch_nmi_watchdog();
+ 				swsusp_set_page_free(pfn_to_page(pfn + i));
++			}
+ 		}
+ 	}
+ 	spin_unlock_irqrestore(&zone->lock, flags);
+-- 
+2.7.4
 
-if the sensor is registered by native driver, I think .get_desc() is
-useful.
-But if you want to hack the dsdt to get it enumerated via ACPI, then my
-approach still works without the patch. :)
-
-thanks,
-rui
-> > 
-> > Of course the attribute should be optional, depends on if the _STR
-> > control methods exist or not.
-> > 
-> > thanks,
-> > rui
-> > > 
-> > > Thanks,
-> > > Rafael
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-
-> > acpi" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > 
-> > 
-> Thanks for your feedback!
-> 
-> --
-> Regards,
-> Prashanth
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" 
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
