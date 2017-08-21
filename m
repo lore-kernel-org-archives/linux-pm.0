@@ -1,39 +1,84 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Subject: Re: [PATCH 4/6] qlogic: make device_attribute const
-Date: Mon, 21 Aug 2017 22:56:56 +0530
-Message-ID: <CAOH+1jEieKFo0=+xb-8FUJgaQpa_FNyvipCuokeFQmYANby2iw@mail.gmail.com>
-References: <1503315792-14837-1-git-send-email-bhumirks@gmail.com>
- <1503315792-14837-5-git-send-email-bhumirks@gmail.com> <20170821.102506.1119648270525550825.davem@davemloft.net>
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] PM / Hibernate: Feed the wathdog when creating snapshot
+Date: Mon, 21 Aug 2017 13:26:00 -0700
+Message-ID: <20170821132600.c8a509bcacce123e3f51d989@linux-foundation.org>
+References: <1503328098-5120-1-git-send-email-yu.c.chen@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <20170821.102506.1119648270525550825.davem@davemloft.net>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: David Miller <davem@davemloft.net>
-Cc: Julia Lawall <julia.lawall@lip6.fr>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, jbacik@fb.com, Jiri Kosina <jikos@kernel.org>, Benjamin Tissoires <benjamin.tissoires@redhat.com>, manish.chopra@cavium.com, rahul.verma@cavium.com, Dept-GELinuxNICDev@cavium.com, harish.patil@cavium.com, cascardo@holoscopio.com, don@syst.com.br, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Sebastian Reichel <sre@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-block@vger.kernel.org, nbd-general@lists.sourceforge.net, linux-input@vger.kernel.org, netdev@vger.kernel.org, Platform Driver <platform-driver-x86@vger.kernel.org>, Linux PM <linux-pm@vg>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:43164 "EHLO
+        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753648AbdHUU0C (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Aug 2017 16:26:02 -0400
+In-Reply-To: <1503328098-5120-1-git-send-email-yu.c.chen@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: linux-mm@kvack.org, Michal Hocko <mhocko@kernel.org>, Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Aug 21, 2017 at 10:55 PM, David Miller <davem@davemloft.net> wrote:
-> From: Bhumika Goyal <bhumirks@gmail.com>
-> Date: Mon, 21 Aug 2017 17:13:10 +0530
->
->> Make these const as they are only passed as an argument to the
->> function device_create_file and device_remove_file and the corresponding
->> arguments are of type const.
->> Done using Coccinelle
->>
->> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
->
-> Applied.
->
-> But I would seriously suggest that when you have to cross subsystems
-> like this, just send the patches individually to the respective
-> maintainers rather than trying to make a "series" out of it.
->
+On Mon, 21 Aug 2017 23:08:18 +0800 Chen Yu <yu.c.chen@intel.com> wrote:
 
-Yes, noted. Thanks for the pointer.
+> There is a problem that when counting the pages for creating
+> the hibernation snapshot will take significant amount of
+> time, especially on system with large memory. Since the counting
+> job is performed with irq disabled, this might lead to NMI lockup.
+> The following warning were found on a system with 1.5TB DRAM:
+> 
+> ...
+> 
+> It has taken nearly 20 seconds(2.10GHz CPU) thus the NMI lockup
+> was triggered. In case the timeout of the NMI watch dog has been
+> set to 1 second, a safe interval should be 6590003/20 = 320k pages
+> in theory. However there might also be some platforms running at a
+> lower frequency, so feed the watchdog every 100k pages.
+> 
+> ...
+>
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -2531,9 +2532,12 @@ void drain_all_pages(struct zone *zone)
+>  
+>  #ifdef CONFIG_HIBERNATION
+>  
+> +/* Touch watchdog for every WD_INTERVAL_PAGE pages. */
+> +#define WD_INTERVAL_PAGE	(100*1024)
+> +
+>  void mark_free_pages(struct zone *zone)
+>  {
+> -	unsigned long pfn, max_zone_pfn;
+> +	unsigned long pfn, max_zone_pfn, page_num = 0;
+>  	unsigned long flags;
+>  	unsigned int order, t;
+>  	struct page *page;
+> @@ -2548,6 +2552,9 @@ void mark_free_pages(struct zone *zone)
+>  		if (pfn_valid(pfn)) {
+>  			page = pfn_to_page(pfn);
+>  
+> +			if (!((page_num++) % WD_INTERVAL_PAGE))
+> +				touch_nmi_watchdog();
+> +
+>  			if (page_zone(page) != zone)
+>  				continue;
+>  
+> @@ -2561,8 +2568,11 @@ void mark_free_pages(struct zone *zone)
+>  			unsigned long i;
+>  
+>  			pfn = page_to_pfn(page);
+> -			for (i = 0; i < (1UL << order); i++)
+> +			for (i = 0; i < (1UL << order); i++) {
+> +				if (!((page_num++) % WD_INTERVAL_PAGE))
+> +					touch_nmi_watchdog();
+>  				swsusp_set_page_free(pfn_to_page(pfn + i));
+> +			}
+>  		}
+>  	}
+>  	spin_unlock_irqrestore(&zone->lock, flags);
 
-Thanks,
-Bhumika
+hm, is it really worth all the WD_INTERVAL_PAGE stuff? 
+touch_nmi_watchdog() is pretty efficient and calling it once-per-page
+may not have a measurable effect.
 
-> Thanks.
+And if we're really concerned about the performance impact it would be
+better to make WD_INTERVAL_PAGE a power of 2 (128*1024?) to avoid the
+modulus operation.
