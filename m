@@ -1,78 +1,75 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2 2/2] cpufreq: schedutil: Always process remote callback with slow switching
-Date: Tue, 22 Aug 2017 15:27:10 +0200
-Message-ID: <2514808.4A5PPQc5Ab@aspire.rjw.lan>
-References: <2a395ea76235dce00828172a1129c46bf87a79c8.1502338812.git.viresh.kumar@linaro.org> <c31960d7db67bdf4fc578fa967d4699291879f43.1502701992.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: remove setting of policy->cpu in policy->cpus during init
+Date: Tue, 22 Aug 2017 15:28:44 +0200
+Message-ID: <3370743.J1RHLWftxj@aspire.rjw.lan>
+References: <1502377137-9058-1-git-send-email-sudeep.holla@arm.com> <20170811050902.GC3638@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:51425 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:60543 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S932825AbdHVNfm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2017 09:35:42 -0400
-In-Reply-To: <c31960d7db67bdf4fc578fa967d4699291879f43.1502701992.git.viresh.kumar@linaro.org>
+        by vger.kernel.org with ESMTP id S932863AbdHVNhQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2017 09:37:16 -0400
+In-Reply-To: <20170811050902.GC3638@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Juri.Lelli@arm.com, joelaf@google.com, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org
 
-On Monday, August 14, 2017 11:20:16 AM CEST Viresh Kumar wrote:
-> The frequency update from the utilization update handlers can be divided
-> into two parts:
+On Friday, August 11, 2017 7:09:02 AM CEST Viresh Kumar wrote:
+> On 10-08-17, 15:58, Sudeep Holla wrote:
+> > policy->cpu is copied into policy->cpus in cpufreq_online() before
+> > calling into cpufreq_driver->init(). So there's no need to set the
+> > same in the individual driver init() functions again.
+> > 
+> > This patch removes the redundant setting of policy->cpu in policy->cpus
+> > in intel_pstate and cppc drivers.
+> > 
+> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > Reported-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> > ---
+> >  drivers/cpufreq/cppc_cpufreq.c | 1 -
+> >  drivers/cpufreq/intel_pstate.c | 1 -
+> >  2 files changed, 2 deletions(-)
+> > 
+> > Hi Viresh,
+> > 
+> > I had copied the cpumask_set_cpu from one of these drivers and when you
+> > pointed out I thought it's better to remove the reference too. Let me
+> > know if it makes sense.
+> > 
+> > Regards,
+> > Sudeep
+> > 
+> > diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
+> > index 10be285c9055..a1c3025f9df7 100644
+> > --- a/drivers/cpufreq/cppc_cpufreq.c
+> > +++ b/drivers/cpufreq/cppc_cpufreq.c
+> > @@ -172,7 +172,6 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
+> >  		return -EFAULT;
+> >  	}
+> > 
+> > -	cpumask_set_cpu(policy->cpu, policy->cpus);
+> >  	cpu->cur_policy = policy;
+> > 
+> >  	/* Set policy->cur to max now. The governors will adjust later. */
+> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+> > index 0566455f233e..d82429859103 100644
+> > --- a/drivers/cpufreq/intel_pstate.c
+> > +++ b/drivers/cpufreq/intel_pstate.c
+> > @@ -2133,7 +2133,6 @@ static int __intel_pstate_cpu_init(struct cpufreq_policy *policy)
+> >  	policy->cpuinfo.max_freq *= cpu->pstate.scaling;
+> > 
+> >  	intel_pstate_init_acpi_perf_limits(policy);
+> > -	cpumask_set_cpu(policy->cpu, policy->cpus);
+> > 
+> >  	policy->fast_switch_possible = true;
 > 
-> (A) Finding the next frequency
-> (B) Updating the frequency
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
-> While any CPU can do (A), (B) can be restricted to a group of CPUs only,
-> depending on the current platform.
-> 
-> For platforms where fast cpufreq switching is possible, both (A) and (B)
-> are always done from the same CPU and that CPU should be capable of
-> changing the frequency of the target CPU.
-> 
-> But for platforms where fast cpufreq switching isn't possible, after
-> doing (A) we wake up a kthread which will eventually do (B). This
-> kthread is already bound to the right set of CPUs, i.e. only those which
-> can change the frequency of CPUs of a cpufreq policy. And so any CPU
-> can actually do (A) in this case, as the frequency is updated from the
-> right set of CPUs only.
-> 
-> Check cpufreq_can_do_remote_dvfs() only for the fast switching case.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
-> V2: s/policy/sg_policy->policy/, missed updating the commit with local
-> updates earlier, noticed that just now.
-> 
->  kernel/sched/cpufreq_schedutil.c | 9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 504d0752f8f2..9209d83ecdcf 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -84,13 +84,18 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
->  	 *
->  	 * However, drivers cannot in general deal with cross-cpu
->  	 * requests, so while get_next_freq() will work, our
-> -	 * sugov_update_commit() call may not.
-> +	 * sugov_update_commit() call may not for the fast switching platforms.
->  	 *
->  	 * Hence stop here for remote requests if they aren't supported
->  	 * by the hardware, as calculating the frequency is pointless if
->  	 * we cannot in fact act on it.
-> +	 *
-> +	 * For the slow switching platforms, the kthread is always scheduled on
-> +	 * the right set of CPUs and any CPU can find the next frequency and
-> +	 * schedule the kthread.
->  	 */
-> -	if (!cpufreq_can_do_remote_dvfs(sg_policy->policy))
-> +	if (sg_policy->policy->fast_switch_enabled &&
-> +	    !cpufreq_can_do_remote_dvfs(sg_policy->policy))
->  		return false;
->  
->  	if (sg_policy->work_in_progress)
 > 
 
 Applied, thanks!
