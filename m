@@ -1,63 +1,47 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: dt: Add r8a7796 support to to use generic cpufreq driver
-Date: Tue, 22 Aug 2017 15:29:39 +0200
-Message-ID: <300711551.YezXHKMQbv@aspire.rjw.lan>
-References: <1502465817-19804-1-git-send-email-horms+renesas@verge.net.au> <20170816032518.GA4233@vireshk-i7>
+Subject: Re: [PATCH] CPUFREQ: Loongson2: constify platform_device_id
+Date: Tue, 22 Aug 2017 15:30:33 +0200
+Message-ID: <1667536.6Dg5FN45O3@aspire.rjw.lan>
+References: <38726390c030dc256d7dd169a416bc4a9814cbf7.1502617113.git.arvind.yadav.cs@gmail.com> <20170816032559.GB4233@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20170816032518.GA4233@vireshk-i7>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Simon Horman <horms+renesas@verge.net.au>
-Cc: Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54769 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S932833AbdHVNjG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2017 09:39:06 -0400
+In-Reply-To: <20170816032559.GB4233@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Arvind Yadav <arvind.yadav.cs@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wednesday, August 16, 2017 5:25:18 AM CEST Viresh Kumar wrote:
-> On 11-08-17, 17:36, Simon Horman wrote:
-> > From: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
+On Wednesday, August 16, 2017 5:25:59 AM CEST Viresh Kumar wrote:
+> On 13-08-17, 15:10, Arvind Yadav wrote:
+> > platform_device_id are not supposed to change at runtime. All functions
+> > working with platform_device_id provided by <linux/platform_device.h>
+> > work with const platform_device_id. So mark the non-const structs as
+> > const.
 > > 
-> > This patch adds the r8a7796 support the generic cpufreq driver
-> > by adding an appropriate compat string. This is in keeping
-> > with support for other Renesas ARM and arm64 based SoCs.
-> > 
-> > Signed-off-by: Khiem Nguyen <khiem.nguyen.xt@rvc.renesas.com>
-> > [simon: new changelog]
-> > Signed-off-by: Simon Horman <horms+renesas@verge.net.au>
+> > Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 > > ---
-> >  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
-> >  1 file changed, 1 insertion(+)
+> >  drivers/cpufreq/loongson2_cpufreq.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
 > > 
-> > This is a follow-up for a similar change that has already been accepted
-> > for the r8a7795.
-> > 
-> > 
-> > I have provided an integration branch that includes with this patch, those
-> > DTS updates that make use of opp-v2 bindings that depend on this change,
-> > and Renesas clock updates also depended on by the DTS changes.  The result
-> > is working CPUFreq for the r8a7796 (R-Car M3-W).
-> > 
-> > https://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas.git topic/r8a7796-cpufreq
-> > 
-> > A description of steps taken to lightly exercise the same feature for the
-> > r88a7795 the above can be found at the link below. The results are the same
-> > for the r8a7796 with the exception that it has two active CPU cores rather
-> > than four.
-> > 
-> > http://elinux.org/Tests:R-CAR-GEN3-CPUFreq
-> > 
-> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > index bcee384b3251..233e18ad3948 100644
-> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > @@ -68,6 +68,7 @@ static const struct of_device_id machines[] __initconst = {
-> >  	{ .compatible = "renesas,r8a7793", },
-> >  	{ .compatible = "renesas,r8a7794", },
-> >  	{ .compatible = "renesas,r8a7795", },
-> > +	{ .compatible = "renesas,r8a7796", },
-> >  	{ .compatible = "renesas,sh73a0", },
+> > diff --git a/drivers/cpufreq/loongson2_cpufreq.c b/drivers/cpufreq/loongson2_cpufreq.c
+> > index 9ac27b2..da34469 100644
+> > --- a/drivers/cpufreq/loongson2_cpufreq.c
+> > +++ b/drivers/cpufreq/loongson2_cpufreq.c
+> > @@ -114,7 +114,7 @@ static struct cpufreq_driver loongson2_cpufreq_driver = {
+> >  	.attr = cpufreq_generic_attr,
+> >  };
 > >  
-> >  	{ .compatible = "rockchip,rk2928", },
+> > -static struct platform_device_id platform_device_ids[] = {
+> > +static const struct platform_device_id platform_device_ids[] = {
+> >  	{
+> >  		.name = "loongson2_cpufreq",
+> >  	},
 > 
 > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 > 
