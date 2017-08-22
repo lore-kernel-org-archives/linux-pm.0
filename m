@@ -1,128 +1,100 @@
-From: Luca Coelho <luca@coelho.fi>
-Subject: [PATCH v2] iwlwifi: pcie: move rx workqueue initialization to iwl_trans_pcie_alloc()
-Date: Tue, 22 Aug 2017 10:37:29 +0300
-Message-ID: <20170822073729.4856-1-luca@coelho.fi>
-References: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH] thermal/drivers/hisi: Remove confusing error message
+Date: Tue, 22 Aug 2017 16:04:27 +0800
+Message-ID: <20170822080427.GB13910@leoy-ThinkPad-T440>
+References: <1499439833-32531-1-git-send-email-daniel.lezcano@linaro.org>
+ <1502178956.4296.7.camel@intel.com>
+ <46604862-fbb8-8ed1-8b0d-7a51543b3398@linaro.org>
+ <1502196531.4296.41.camel@intel.com>
+ <20170808132955.GB32732@leoy-ThinkPad-T440>
+ <8f58bd6d-0561-7383-6be4-04ee3704099a@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from paleale.coelho.fi ([176.9.41.70]:45056 "EHLO
-        farmhouse.coelho.fi" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1754728AbdHVHhs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2017 03:37:48 -0400
-In-Reply-To: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
+Received: from mail-wr0-f178.google.com ([209.85.128.178]:35719 "EHLO
+        mail-wr0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932165AbdHVIEg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2017 04:04:36 -0400
+Received: by mail-wr0-f178.google.com with SMTP id k46so43330555wre.2
+        for <linux-pm@vger.kernel.org>; Tue, 22 Aug 2017 01:04:36 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <8f58bd6d-0561-7383-6be4-04ee3704099a@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jikos@kernel.org, linux-wireless@vger.kernel.org
-Cc: luciano.coelho@intel.com, linux-kernel@vger.kernel.org, linuxwifi@intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, david.weinehall@intel.com, johannes.berg@intel.com, kvalo@codeaurora.org, sara.sharon@intel.com, emmanuel.grumbach@intel.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, edubezval@gmail.com, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, kong.kongxinwei@hisilicon.com
 
-From: Luca Coelho <luciano.coelho@intel.com>
+Hi Daniel,
 
-Work queues cannot be allocated when a mutex is held because the mutex
-may be in use and that would make it sleep.  Doing so generates the
-following splat with 4.13+:
+On Mon, Aug 21, 2017 at 12:06:17PM +0200, Daniel Lezcano wrote:
 
-[   19.513298] ======================================================
-[   19.513429] WARNING: possible circular locking dependency detected
-[   19.513557] 4.13.0-rc5+ #6 Not tainted
-[   19.513638] ------------------------------------------------------
-[   19.513767] cpuhp/0/12 is trying to acquire lock:
-[   19.513867]  (&tz->lock){+.+.+.}, at: [<ffffffff924afebb>] thermal_zone_get_temp+0x5b/0xb0
-[   19.514047]
-[   19.514047] but task is already holding lock:
-[   19.514166]  (cpuhp_state){+.+.+.}, at: [<ffffffff91cc4baa>] cpuhp_thread_fun+0x3a/0x210
-[   19.514338]
-[   19.514338] which lock already depends on the new lock.
+[...]
 
-This lock dependency already existed with previous kernel versions,
-but it was not detected until commit 49dfe2a67797 ("cpuhotplug: Link
-lock stacks for hotplug callbacks") was introduced.
+> Hi Leo,
+> 
+> a cleanest solution would be either:
+> 
+>  - add the 3 missing thermal sensors in the DT and default to the id 2
 
-Reported-by: David Weinehall <david.weinehall@intel.com>
-Reported-by: Jiri Kosina <jikos@kernel.org>
-Signed-off-by: Luca Coelho <luciano.coelho@intel.com>
----
-In v2:
-   - updated the commit message to a new version, with a grammar fix
-     and the actual commit that exposed the problem;
+Yeah, so do you think below change works for you?
 
- drivers/net/wireless/intel/iwlwifi/pcie/internal.h |  2 ++
- drivers/net/wireless/intel/iwlwifi/pcie/rx.c       | 10 +---------
- drivers/net/wireless/intel/iwlwifi/pcie/trans.c    |  9 +++++++++
- 3 files changed, 12 insertions(+), 9 deletions(-)
+---8<---
 
-diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/internal.h b/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
-index fa315d84e98e..a1ea9ef97ed9 100644
---- a/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
-+++ b/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
-@@ -787,6 +787,8 @@ int iwl_pci_fw_enter_d0i3(struct iwl_trans *trans);
+    ARM64: dts: hisilicon: add missed thermal sensors for Hi6220
+
+    The thermal driver tries to register four sensors but the DT only binds
+    one sensor (sensor ID 2) with thermal zone, as result the thermal driver
+    reports failure for missed thermal sensor binding.
+
+    This patch adds missed thermal sensor for Hi6220, so can dismiss the
+    booting failure log.
+
+diff --git a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+index eacbe0d..44c2bc7 100644
+--- a/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
++++ b/arch/arm64/boot/dts/hisilicon/hi6220.dtsi
+@@ -833,6 +833,18 @@
  
- void iwl_pcie_enable_rx_wake(struct iwl_trans *trans, bool enable);
+                thermal-zones {
  
-+void iwl_pcie_rx_allocator_work(struct work_struct *data);
++                       local: local {
++                               polling-delay = <0>;
++                               polling-delay-passive = <0>;
++                               thermal-sensors = <&tsensor 0>;
++                       };
 +
- /* common functions that are used by gen2 transport */
- void iwl_pcie_apm_config(struct iwl_trans *trans);
- int iwl_pcie_prepare_card_hw(struct iwl_trans *trans);
-diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/rx.c b/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
-index 351c4423125a..942736d3fa75 100644
---- a/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
-+++ b/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
-@@ -597,7 +597,7 @@ static void iwl_pcie_rx_allocator_get(struct iwl_trans *trans,
- 	rxq->free_count += RX_CLAIM_REQ_ALLOC;
- }
- 
--static void iwl_pcie_rx_allocator_work(struct work_struct *data)
-+void iwl_pcie_rx_allocator_work(struct work_struct *data)
- {
- 	struct iwl_rb_allocator *rba_p =
- 		container_of(data, struct iwl_rb_allocator, rx_alloc);
-@@ -900,10 +900,6 @@ static int _iwl_pcie_rx_init(struct iwl_trans *trans)
- 			return err;
- 	}
- 	def_rxq = trans_pcie->rxq;
--	if (!rba->alloc_wq)
--		rba->alloc_wq = alloc_workqueue("rb_allocator",
--						WQ_HIGHPRI | WQ_UNBOUND, 1);
--	INIT_WORK(&rba->rx_alloc, iwl_pcie_rx_allocator_work);
- 
- 	spin_lock(&rba->lock);
- 	atomic_set(&rba->req_pending, 0);
-@@ -1017,10 +1013,6 @@ void iwl_pcie_rx_free(struct iwl_trans *trans)
- 	}
- 
- 	cancel_work_sync(&rba->rx_alloc);
--	if (rba->alloc_wq) {
--		destroy_workqueue(rba->alloc_wq);
--		rba->alloc_wq = NULL;
--	}
- 
- 	iwl_pcie_free_rbs_pool(trans);
- 
-diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/trans.c b/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
-index f95eec52508e..3927bbf04f72 100644
---- a/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
-+++ b/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
-@@ -1786,6 +1786,11 @@ void iwl_trans_pcie_free(struct iwl_trans *trans)
- 		iwl_pcie_tx_free(trans);
- 	iwl_pcie_rx_free(trans);
- 
-+	if (trans_pcie->rba.alloc_wq) {
-+		destroy_workqueue(trans_pcie->rba.alloc_wq);
-+		trans_pcie->rba.alloc_wq = NULL;
-+	}
++                       cls1: cls1 {
++                               polling-delay = <0>;
++                               polling-delay-passive = <0>;
++                               thermal-sensors = <&tsensor 1>;
++                       };
 +
- 	if (trans_pcie->msix_enabled) {
- 		for (i = 0; i < trans_pcie->alloc_vecs; i++) {
- 			irq_set_affinity_hint(
-@@ -3169,6 +3174,10 @@ struct iwl_trans *iwl_trans_pcie_alloc(struct pci_dev *pdev,
- 		trans_pcie->inta_mask = CSR_INI_SET_MASK;
- 	 }
- 
-+	trans_pcie->rba.alloc_wq = alloc_workqueue("rb_allocator",
-+						   WQ_HIGHPRI | WQ_UNBOUND, 1);
-+	INIT_WORK(&trans_pcie->rba.rx_alloc, iwl_pcie_rx_allocator_work);
+                        cls0: cls0 {
+                                polling-delay = <1000>;
+                                polling-delay-passive = <100>;
+@@ -862,6 +874,12 @@
+                                        };
+                                };
+                        };
 +
- #ifdef CONFIG_IWLWIFI_PCIE_RTPM
- 	trans->runtime_pm_mode = IWL_PLAT_PM_MODE_D0I3;
- #else
--- 
-2.14.1
++                       gpu: gpu {
++                               polling-delay = <0>;
++                               polling-delay-passive = <0>;
++                               thermal-sensors = <&tsensor 3>;
++                       };
+                };
+ 
+
+> or
+> 
+>  - remove all the code assuming 4 sensors and deal with the one unique
+> sensor
+
+I personally prefer to avoid doing this, if only register one unique
+sensor this will let us have no flexiblity for trying multiple sensors
+on this platform.
+
+[...]
+
+Thanks,
+Leo Yan
