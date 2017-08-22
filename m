@@ -1,33 +1,45 @@
-From: Michal Hocko <mhocko@kernel.org>
-Subject: Re: [PATCH][v2] PM / Hibernate: Feed the wathdog when creating
- snapshot
-Date: Tue, 22 Aug 2017 15:16:50 +0200
-Message-ID: <20170822131649.GL9729@dhcp22.suse.cz>
-References: <1503372002-13310-1-git-send-email-yu.c.chen@intel.com>
- <1595884.XH9dSsijkg@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v5] ACPI / Sleep: Check low power idle constraints for debug only
+Date: Tue, 22 Aug 2017 15:08:44 +0200
+Message-ID: <2237482.YGg0anG1lD@aspire.rjw.lan>
+References: <1502846219-19192-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <1595884.XH9dSsijkg@aspire.rjw.lan>
-Sender: owner-linux-mm@kvack.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Chen Yu <yu.c.chen@intel.com>, linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1502846219-19192-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: lenb@kernel.org, linux-pm@vger.kernel.org, mario.limonciello@dell.com, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue 22-08-17 14:55:39, Rafael J. Wysocki wrote:
-[...]
-> And you may want to touch the watchdog at the end too in case
-> page_count is small then.
+On Wednesday, August 16, 2017 3:16:59 AM CEST Srinivas Pandruvada wrote:
+> For SoC to achieve its lowest power platform idle state a set of hardware
+> preconditions must be met. These preconditions or constraints can be
+> obtained by issuing a device specific method (_DSM) with function "1".
+> Refer to the document provided in the link below.
+> 
+> Here during initialization (from attach() callback of LPS0 device), invoke
+> function 1 to get the device constraints. Each enabled constraint is
+> stored in a table.
+> 
+> The devices in this table are used to check whether they were in required
+> minimum state, while entering suspend. This check is done from platform
+> freeze wake() callback, only when /sys/power/pm_debug_messages attribute
+> is non zero.
+> 
+> If any constraint is not met and device is ACPI power managed then it
+> prints the device information to kernel logs.
+> 
+> Also if debug is enabled in acpi/sleep.c, the constraint table and state
+> of each device on wake is dumped in kernel logs.
+> 
+> Since pm_debug_messages_on setting is used as condition to check
+> constraints outside kernel/power/main.c, pm_debug_messages_on is changed
+> to a global variable.
+> 
+> Link: http://www.uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
+> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-Why would that be needed? If the number of pages is slow then we will
-release the IRQ lock early and won't need to care about watchdog at all.
--- 
-Michal Hocko
-SUSE Labs
+Applied, thanks!
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
