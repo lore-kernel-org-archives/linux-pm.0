@@ -1,74 +1,62 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 2/2] net: smsc911x: Quiten netif during suspend
-Date: Tue, 22 Aug 2017 20:37:26 +0200
-Message-ID: <1503427046-17618-3-git-send-email-geert+renesas@glider.be>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH 0/2] net: Fix crashes due to activity during suspend
+Date: Tue, 22 Aug 2017 11:49:53 -0700
+Message-ID: <757f672b-d3cf-9189-0533-cb45e325c6b8@gmail.com>
 References: <1503427046-17618-1-git-send-email-geert+renesas@glider.be>
-Return-path: <netdev-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f194.google.com ([209.85.220.194]:37798 "EHLO
+        mail-qk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751889AbdHVSuB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2017 14:50:01 -0400
 In-Reply-To: <1503427046-17618-1-git-send-email-geert+renesas@glider.be>
-Sender: netdev-owner@vger.kernel.org
-To: "David S . Miller" <davem@davemloft.net>, Steve Glendinning <steve.glendinning@shawell.net>, Andrew Lunn <andrew@lunn.ch>, Florian Fainelli <f.fainelli@gmail.com>
-Cc: Lukas Wunner <lukas@wunner.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, netdev@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>, "David S . Miller" <davem@davemloft.net>, Steve Glendinning <steve.glendinning@shawell.net>, Andrew Lunn <andrew@lunn.ch>
+Cc: Lukas Wunner <lukas@wunner.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, netdev@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-If the network interface is kept running during suspend, the net core
-may call net_device_ops.ndo_start_xmit() while the Ethernet device is
-still suspended, which may lead to a system crash.
+On 08/22/2017 11:37 AM, Geert Uytterhoeven wrote:
+> 	Hi all,
+> 
+> If an Ethernet device is used while the device is suspended, the system may
+> crash.
+> 
+> E.g. on sh73a0/kzm9g and r8a73a4/ape6evm, the external Ethernet chip is
+> driven by a PM controlled clock.  If the Ethernet registers are accessed
+> while the clock is not running, the system will crash with an imprecise
+> external abort.
+> 
+> This patch series fixes two of such crashes:
+>   1. The first patch prevents the PHY polling state machine from accessing
+>      PHY registers while a device is suspended,
+>   2. The second patch prevents the net core from trying to transmit packets
+>      when an smsc911x device is suspended.
+> 
+> Both crashes can be reproduced on sh73a0/kzm9g and r8a73a4/ape6evm during
+> s2ram (rarely), or by using pm_test (more likely to trigger):
+> 
+>     # echo 0 > /sys/module/printk/parameters/console_suspend
+>     # echo platform > /sys/power/pm_test
+>     # echo mem > /sys/power/state
+> 
+> With this series applied, my test systems survive a loop of 100 test
+> suspends.
 
-E.g. on sh73a0/kzm9g and r8a73a4/ape6evm, the external Ethernet chip is
-driven by a PM controlled clock.  If the Ethernet registers are accessed
-while the clock is not running, the system will crash with an imprecise
-external abort.
+It seems to me like part, if not the entire problem is that smsc91xx's
+suspend and resume functions are way too simplistic and absolutely do
+not manage the PHY during suspend/resume, the PHY state machine is not
+even stopped, so of course, this will cause bus errors if you access
+those registers.
 
-As this is a race condition with a small time window, it is not so easy
-to trigger at will.  Using pm_test may increase your chances:
+You are addressing this as part of patch 2, but this seems to me like
+this is still a bit incomplete and you'd need at least phy_stop() and/or
+phy_suspend() (does a power down of the PHY) and phy_start() and/or
+phy_resume() calls to complete the PHY state machine shutdown during
+suspend.
 
-    # echo 0 > /sys/module/printk/parameters/console_suspend
-    # echo platform > /sys/power/pm_test
-    # echo mem > /sys/power/state
-
-To fix this, make sure the network interface is quitened during suspend.
-
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-No stacktrace is provided, as the imprecise external abort is usually
-reported from an innocent looking and unrelated function like
-__loop_delay(), cpu_idle_poll(), or arch_timer_read_counter_long().
----
- drivers/net/ethernet/smsc/smsc911x.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/smsc/smsc911x.c b/drivers/net/ethernet/smsc/smsc911x.c
-index 0b6a39b003a4e188..012fb66eed8dd618 100644
---- a/drivers/net/ethernet/smsc/smsc911x.c
-+++ b/drivers/net/ethernet/smsc/smsc911x.c
-@@ -2595,6 +2595,11 @@ static int smsc911x_suspend(struct device *dev)
- 	struct net_device *ndev = dev_get_drvdata(dev);
- 	struct smsc911x_data *pdata = netdev_priv(ndev);
- 
-+	if (netif_running(ndev)) {
-+		netif_stop_queue(ndev);
-+		netif_device_detach(ndev);
-+	}
-+
- 	/* enable wake on LAN, energy detection and the external PME
- 	 * signal. */
- 	smsc911x_reg_write(pdata, PMT_CTRL,
-@@ -2628,7 +2633,15 @@ static int smsc911x_resume(struct device *dev)
- 	while (!(smsc911x_reg_read(pdata, PMT_CTRL) & PMT_CTRL_READY_) && --to)
- 		udelay(1000);
- 
--	return (to == 0) ? -EIO : 0;
-+	if (to == 0)
-+		return -EIO;
-+
-+	if (netif_running(ndev)) {
-+		netif_device_attach(ndev);
-+		netif_start_queue(ndev);
-+	}
-+
-+	return 0;
- }
- 
- static const struct dev_pm_ops smsc911x_pm_ops = {
+Have you tried that?
 -- 
-2.7.4
+Florian
