@@ -1,46 +1,82 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: Re: [PATCH 2/3 v3] mfd: db8500-prcmu: Get rid of cpufreq dependency
-Date: Tue, 22 Aug 2017 15:44:18 +0200
-Message-ID: <CACRpkdZ91zUPE8Oyf+ZALekCUbAakM=PX6DiYTO-VZewGGNFmg@mail.gmail.com>
-References: <20170822131741.23473-1-linus.walleij@linaro.org>
- <20170822131741.23473-2-linus.walleij@linaro.org> <7661350.vR4F4a82RE@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V3 resend] cpufreq: Cap the default transition delay value to 10 ms
+Date: Tue, 22 Aug 2017 15:31:14 +0200
+Message-ID: <2949076.nmXvTJI3EO@aspire.rjw.lan>
+References: <00a3cebb2febc73dd275cbff2a24c73fb11ff255.1502941122.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f43.google.com ([209.85.218.43]:34107 "EHLO
-        mail-oi0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932856AbdHVNoT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2017 09:44:19 -0400
-Received: by mail-oi0-f43.google.com with SMTP id j144so58023861oib.1
-        for <linux-pm@vger.kernel.org>; Tue, 22 Aug 2017 06:44:19 -0700 (PDT)
-In-Reply-To: <7661350.vR4F4a82RE@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <00a3cebb2febc73dd275cbff2a24c73fb11ff255.1502941122.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, leonard.crestez@nxp.com, kernel@pengutronix.de, shawnguo@kernel.org, fabio.estevam@nxp.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Tue, Aug 22, 2017 at 3:25 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, August 22, 2017 3:17:40 PM CEST Linus Walleij wrote:
->> The ARMSS clock, also known as the operating point of the
->> CPU, should not cross-depend on cpufreq like this. Move
->> the code to use just frequencies and remove the false
->> frequency (1GHz) and put in the actual frequency provided
->> by the ARMSS clock (998400000 Hz) as part of the process.
->>
->> After this and the related cpufreq patch, the DB8500 will
->> simply use the standard DT cpufreq driver to change the
->> operating points through the common clock framework using
->> the ARMSS clock.
->>
->> Acked-by: Lee Jones <lee.jones@linaro.org>
->> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
->
-> Well, I've already applied the v2, so do you want me to replace the
-> commit with this patch?
+On Thursday, August 17, 2017 5:42:27 AM CEST Viresh Kumar wrote:
+> If transition_delay_us isn't defined by the cpufreq driver, the default
+> value of transition delay (time after which the cpufreq governor will
+> try updating the frequency again) is currently calculated by multiplying
+> transition_latency (nsec) with LATENCY_MULTIPLIER (1000) and then
+> converting this time to usec. That gives the exact same value as
+> transition_latency, just that the time unit is usec instead of nsec.
+> 
+> With acpi-cpufreq for example, transition_latency is set to around 10
+> usec and we get transition delay as 10 ms. Which seems to be a
+> reasonable amount of time to reevaluate the frequency again.
+> 
+> But for platforms where frequency switching isn't that fast (like ARM),
+> the transition_latency varies from 500 usec to 3 ms, and the transition
+> delay becomes 500 ms to 3 seconds. Of course, that is a pretty bad
+> default value to start with.
+> 
+> We can try to come across a better formula (instead of multiplying with
+> LATENCY_MULTIPLIER) to solve this problem, but will that be worth it ?
+> 
+> This patch tries a simple approach and caps the maximum value of default
+> transition delay to 10 ms. Of course, userspace can still come in and
+> change this value anytime or individual drivers can rather provide
+> transition_delay_us instead.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+> One of the IMX shows odd behavior after this patch is applied and stays
+> at max freq for little longer. More detailed debugging is required to be
+> done by some IMX guys (who haven't replied for the last 3 weeks on that
+> email thread, apart from Leonard).
+> 
+> As per Leonard as well, we shouldn't stop this patch from getting merged
+> and so sending it again.
+> 
+>  drivers/cpufreq/cpufreq.c | 15 +++++++++++++--
+>  1 file changed, 13 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index b2cc98551fc3..c7ae67d6886d 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+> @@ -532,8 +532,19 @@ unsigned int cpufreq_policy_transition_delay_us(struct cpufreq_policy *policy)
+>  		return policy->transition_delay_us;
+>  
+>  	latency = policy->cpuinfo.transition_latency / NSEC_PER_USEC;
+> -	if (latency)
+> -		return latency * LATENCY_MULTIPLIER;
+> +	if (latency) {
+> +		/*
+> +		 * For platforms that can change the frequency very fast (< 10
+> +		 * us), the above formula gives a decent transition delay. But
+> +		 * for platforms where transition_latency is in milliseconds, it
+> +		 * ends up giving unrealistic values.
+> +		 *
+> +		 * Cap the default transition delay to 10 ms, which seems to be
+> +		 * a reasonable amount of time after which we should reevaluate
+> +		 * the frequency.
+> +		 */
+> +		return min(latency * LATENCY_MULTIPLIER, (unsigned int)10000);
+> +	}
+>  
+>  	return LATENCY_MULTIPLIER;
+>  }
+> 
 
-If you can, else tell me and I can send a fixup patch.
-
-I want to keep Lee happy!
-
-Yours,
-Linus Walleij
+Applied, thanks!
