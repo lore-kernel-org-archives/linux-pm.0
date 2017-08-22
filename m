@@ -1,26 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2 3/3] cpufreq: dt: add support for rockchip rv1108
-Date: Tue, 22 Aug 2017 15:44:21 +0200
-Message-ID: <1949899.3GLvcOh6S6@aspire.rjw.lan>
-References: <1503407515-13943-1-git-send-email-andy.yan@rock-chips.com> <1503407722-14056-1-git-send-email-andy.yan@rock-chips.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1503407722-14056-1-git-send-email-andy.yan@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Andy Yan <andy.yan@rock-chips.com>
-Cc: viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 0/2] net: Fix crashes due to activity during suspend
+Date: Tue, 22 Aug 2017 20:37:24 +0200
+Message-ID: <1503427046-17618-1-git-send-email-geert+renesas@glider.be>
+Return-path: <netdev-owner@vger.kernel.org>
+Sender: netdev-owner@vger.kernel.org
+To: "David S . Miller" <davem@davemloft.net>, Steve Glendinning <steve.glendinning@shawell.net>, Andrew Lunn <andrew@lunn.ch>, Florian Fainelli <f.fainelli@gmail.com>
+Cc: Lukas Wunner <lukas@wunner.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, netdev@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 22, 2017 3:15:22 PM CEST Andy Yan wrote:
-> Add the compatible string to support the generic device tree
-> cpufreq-dt driver on rockchip rv1108 soc.
-> 
-> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
+	Hi all,
 
-This is a [3/3] in a series, so presumably it depends on something, so I guess
-it should be applied along with the thing it depends on.  Right?
+If an Ethernet device is used while the device is suspended, the system may
+crash.
 
-Thanks,
-Rafael
+E.g. on sh73a0/kzm9g and r8a73a4/ape6evm, the external Ethernet chip is
+driven by a PM controlled clock.  If the Ethernet registers are accessed
+while the clock is not running, the system will crash with an imprecise
+external abort.
+
+This patch series fixes two of such crashes:
+  1. The first patch prevents the PHY polling state machine from accessing
+     PHY registers while a device is suspended,
+  2. The second patch prevents the net core from trying to transmit packets
+     when an smsc911x device is suspended.
+
+Both crashes can be reproduced on sh73a0/kzm9g and r8a73a4/ape6evm during
+s2ram (rarely), or by using pm_test (more likely to trigger):
+
+    # echo 0 > /sys/module/printk/parameters/console_suspend
+    # echo platform > /sys/power/pm_test
+    # echo mem > /sys/power/state
+
+With this series applied, my test systems survive a loop of 100 test
+suspends.
+
+Thanks for your comments!
+
+Geert Uytterhoeven (2):
+  net: phy: Freeze PHY polling before suspending devices
+  net: smsc911x: Quiten netif during suspend
+
+ drivers/net/ethernet/smsc/smsc911x.c | 15 ++++++++++++++-
+ drivers/net/phy/phy.c                | 12 +++++++-----
+ 2 files changed, 21 insertions(+), 6 deletions(-)
+
+-- 
+2.7.4
+
+Gr{oetje,eeting}s,
+
+						Geert
