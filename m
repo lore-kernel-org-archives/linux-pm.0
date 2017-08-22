@@ -1,46 +1,30 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH 1/3 v3] cpufreq: enable the DT cpufreq driver on the Ux500
-Date: Tue, 22 Aug 2017 15:17:39 +0200
-Message-ID: <20170822131741.23473-1-linus.walleij@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH][v2] PM / Hibernate: Feed the wathdog when creating snapshot
+Date: Tue, 22 Aug 2017 15:18:08 +0200
+Message-ID: <2871816.XzHRS8c6tY@aspire.rjw.lan>
+References: <1503372002-13310-1-git-send-email-yu.c.chen@intel.com> <1595884.XH9dSsijkg@aspire.rjw.lan> <20170822131649.GL9729@dhcp22.suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f49.google.com ([209.85.215.49]:36116 "EHLO
-        mail-lf0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932657AbdHVNRr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2017 09:17:47 -0400
-Received: by mail-lf0-f49.google.com with SMTP id l137so3952776lfg.3
-        for <linux-pm@vger.kernel.org>; Tue, 22 Aug 2017 06:17:47 -0700 (PDT)
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53307 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S932791AbdHVN0m (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2017 09:26:42 -0400
+In-Reply-To: <20170822131649.GL9729@dhcp22.suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J . Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Lee Jones <lee.jones@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>, Ulf Hansson <ulf.hansson@linaro.org>, Linus Walleij <linus.walleij@linaro.org>
+To: Michal Hocko <mhocko@kernel.org>
+Cc: Chen Yu <yu.c.chen@intel.com>, linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This enables the generic DT and OPP-based cpufreq driver on the
-ST-Ericsson Ux500 series.
+On Tuesday, August 22, 2017 3:16:50 PM CEST Michal Hocko wrote:
+> On Tue 22-08-17 14:55:39, Rafael J. Wysocki wrote:
+> [...]
+> > And you may want to touch the watchdog at the end too in case
+> > page_count is small then.
+> 
+> Why would that be needed? If the number of pages is slow then we will
+> release the IRQ lock early and won't need to care about watchdog at all.
+> 
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
-ChangeLog v2->v3:
-- No changes, just resending
----
- drivers/cpufreq/cpufreq-dt-platdev.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 1c262923fe58..d80300251bc4 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -88,6 +88,11 @@ static const struct of_device_id machines[] __initconst = {
- 	{ .compatible = "socionext,uniphier-ld11", },
- 	{ .compatible = "socionext,uniphier-ld20", },
- 
-+	{ .compatible = "st-ericsson,u8500", },
-+	{ .compatible = "st-ericsson,u8540", },
-+	{ .compatible = "st-ericsson,u9500", },
-+	{ .compatible = "st-ericsson,u9540", },
-+
- 	{ .compatible = "ti,omap2", },
- 	{ .compatible = "ti,omap3", },
- 	{ .compatible = "ti,omap4", },
--- 
-2.13.5
+Fair enough.
