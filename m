@@ -1,20 +1,24 @@
 From: Luca Coelho <luca@coelho.fi>
-Subject: [PATCH] iwlwifi: pcie: move rx workqueue initialization to iwl_trans_pcie_alloc()
-Date: Tue, 22 Aug 2017 10:32:26 +0300
-Message-ID: <20170822073226.4660-1-luca@coelho.fi>
+Subject: [PATCH v2] iwlwifi: pcie: move rx workqueue initialization to iwl_trans_pcie_alloc()
+Date: Tue, 22 Aug 2017 10:37:29 +0300
+Message-ID: <20170822073729.4856-1-luca@coelho.fi>
 References: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from paleale.coelho.fi ([176.9.41.70]:45056 "EHLO
+        farmhouse.coelho.fi" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1754728AbdHVHhs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Aug 2017 03:37:48 -0400
 In-Reply-To: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: jikos@kernel.org, linux-wireless@vger.kernel.org
 Cc: luciano.coelho@intel.com, linux-kernel@vger.kernel.org, linuxwifi@intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, david.weinehall@intel.com, johannes.berg@intel.com, kvalo@codeaurora.org, sara.sharon@intel.com, emmanuel.grumbach@intel.com
-List-Id: linux-pm@vger.kernel.org
 
 From: Luca Coelho <luciano.coelho@intel.com>
 
-Work queues cannot be allocated in when a mutex is held because the
-mutex may be in use and that would make it sleep.  Doing so generates
-the following splat with 4.13+:
+Work queues cannot be allocated when a mutex is held because the mutex
+may be in use and that would make it sleep.  Doing so generates the
+following splat with 4.13+:
 
 [   19.513298] ======================================================
 [   19.513429] WARNING: possible circular locking dependency detected
@@ -29,12 +33,17 @@ the following splat with 4.13+:
 [   19.514338] which lock already depends on the new lock.
 
 This lock dependency already existed with previous kernel versions,
-but it was not detected until commit ... was introduced.
+but it was not detected until commit 49dfe2a67797 ("cpuhotplug: Link
+lock stacks for hotplug callbacks") was introduced.
 
 Reported-by: David Weinehall <david.weinehall@intel.com>
 Reported-by: Jiri Kosina <jikos@kernel.org>
 Signed-off-by: Luca Coelho <luciano.coelho@intel.com>
 ---
+In v2:
+   - updated the commit message to a new version, with a grammar fix
+     and the actual commit that exposed the problem;
+
  drivers/net/wireless/intel/iwlwifi/pcie/internal.h |  2 ++
  drivers/net/wireless/intel/iwlwifi/pcie/rx.c       | 10 +---------
  drivers/net/wireless/intel/iwlwifi/pcie/trans.c    |  9 +++++++++
