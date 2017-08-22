@@ -1,137 +1,119 @@
-From: Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH][v2] PM / Hibernate: Feed the wathdog when creating snapshot
-Date: Tue, 22 Aug 2017 11:20:02 +0800
-Message-ID: <1503372002-13310-1-git-send-email-yu.c.chen@intel.com>
+From: Luca Coelho <luca@coelho.fi>
+Subject: [PATCH] iwlwifi: pcie: move rx workqueue initialization to iwl_trans_pcie_alloc()
+Date: Tue, 22 Aug 2017 10:32:26 +0300
+Message-ID: <20170822073226.4660-1-luca@coelho.fi>
+References: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-mm@kvack.org
-Cc: Chen Yu <yu.c.chen@intel.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>, Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: jikos@kernel.org, linux-wireless@vger.kernel.org
+Cc: luciano.coelho@intel.com, linux-kernel@vger.kernel.org, linuxwifi@intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, david.weinehall@intel.com, johannes.berg@intel.com, kvalo@codeaurora.org, sara.sharon@intel.com, emmanuel.grumbach@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-There is a problem that when counting the pages for creating
-the hibernation snapshot will take significant amount of
-time, especially on system with large memory. Since the counting
-job is performed with irq disabled, this might lead to NMI lockup.
-The following warning were found on a system with 1.5TB DRAM:
+From: Luca Coelho <luciano.coelho@intel.com>
 
-[ 1124.758184] Freezing user space processes ... (elapsed 0.002 seconds) done.
-[ 1124.768721] OOM killer disabled.
-[ 1124.847009] PM: Preallocating image memory...
-[ 1139.392042] NMI watchdog: Watchdog detected hard LOCKUP on cpu 27
-[ 1139.392076] CPU: 27 PID: 3128 Comm: systemd-sleep Not tainted 4.13.0-0.rc2.git0.1.fc27.x86_64 #1
-[ 1139.392077] task: ffff9f01971ac000 task.stack: ffffb1a3f325c000
-[ 1139.392083] RIP: 0010:memory_bm_find_bit+0xf4/0x100
-[ 1139.392084] RSP: 0018:ffffb1a3f325fc20 EFLAGS: 00000006
-[ 1139.392084] RAX: 0000000000000000 RBX: 0000000013b83000 RCX: ffff9fbe89caf000
-[ 1139.392085] RDX: ffffb1a3f325fc30 RSI: 0000000000003200 RDI: ffff9fbeaffffe80
-[ 1139.392085] RBP: ffffb1a3f325fc40 R08: 0000000013b80000 R09: ffff9fbe89c54878
-[ 1139.392085] R10: ffffb1a3f325fc2c R11: 0000000013b83200 R12: 0000000000000400
-[ 1139.392086] R13: fffffd552e0c0000 R14: ffff9fc1bffd31e0 R15: 0000000000000202
-[ 1139.392086] FS:  00007f3189704180(0000) GS:ffff9fbec8ec0000(0000) knlGS:0000000000000000
-[ 1139.392087] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[ 1139.392087] CR2: 00000085da0f7398 CR3: 000001771cf9a000 CR4: 00000000007406e0
-[ 1139.392088] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-[ 1139.392088] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-[ 1139.392088] PKRU: 55555554
-[ 1139.392089] Call Trace:
-[ 1139.392092]  ? memory_bm_set_bit+0x29/0x60
-[ 1139.392094]  swsusp_set_page_free+0x2b/0x30
-[ 1139.392098]  mark_free_pages+0x147/0x1c0
-[ 1139.392099]  count_data_pages+0x41/0xa0
-[ 1139.392101]  hibernate_preallocate_memory+0x80/0x450
-[ 1139.392102]  hibernation_snapshot+0x58/0x410
-[ 1139.392103]  hibernate+0x17c/0x310
-[ 1139.392104]  state_store+0xdf/0xf0
-[ 1139.392107]  kobj_attr_store+0xf/0x20
-[ 1139.392111]  sysfs_kf_write+0x37/0x40
-[ 1139.392113]  kernfs_fop_write+0x11c/0x1a0
-[ 1139.392117]  __vfs_write+0x37/0x170
-[ 1139.392121]  ? handle_mm_fault+0xd8/0x230
-[ 1139.392122]  vfs_write+0xb1/0x1a0
-[ 1139.392123]  SyS_write+0x55/0xc0
-[ 1139.392126]  entry_SYSCALL_64_fastpath+0x1a/0xa5
-...
-[ 1144.690405] done (allocated 6590003 pages)
-[ 1144.694971] PM: Allocated 26360012 kbytes in 19.89 seconds (1325.28 MB/s)
+Work queues cannot be allocated in when a mutex is held because the
+mutex may be in use and that would make it sleep.  Doing so generates
+the following splat with 4.13+:
 
-It has taken nearly 20 seconds(2.10GHz CPU) thus the NMI lockup
-was triggered. In case the timeout of the NMI watch dog has been
-set to 1 second, a safe interval should be 6590003/20 = 320k pages
-in theory. However there might also be some platforms running at a
-lower frequency, so feed the watchdog every 128k pages(per Andrew's
-suggestion, this should avoid the modulus operation).
+[   19.513298] ======================================================
+[   19.513429] WARNING: possible circular locking dependency detected
+[   19.513557] 4.13.0-rc5+ #6 Not tainted
+[   19.513638] ------------------------------------------------------
+[   19.513767] cpuhp/0/12 is trying to acquire lock:
+[   19.513867]  (&tz->lock){+.+.+.}, at: [<ffffffff924afebb>] thermal_zone_get_temp+0x5b/0xb0
+[   19.514047]
+[   19.514047] but task is already holding lock:
+[   19.514166]  (cpuhp_state){+.+.+.}, at: [<ffffffff91cc4baa>] cpuhp_thread_fun+0x3a/0x210
+[   19.514338]
+[   19.514338] which lock already depends on the new lock.
 
-Reported-by: Jan Filipcewicz <jan.filipcewicz@intel.com>
-Suggested-by: Michal Hocko <mhocko@suse.com>
-Reviewed-by: Michal Hocko <mhocko@suse.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Hocko <mhocko@kernel.org>
-Cc: Mel Gorman <mgorman@techsingularity.net>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+This lock dependency already existed with previous kernel versions,
+but it was not detected until commit ... was introduced.
+
+Reported-by: David Weinehall <david.weinehall@intel.com>
+Reported-by: Jiri Kosina <jikos@kernel.org>
+Signed-off-by: Luca Coelho <luciano.coelho@intel.com>
 ---
-v2: Use an interval of 128k instead of 100k to
-    avoid the modulus operation.
---
- mm/page_alloc.c | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+ drivers/net/wireless/intel/iwlwifi/pcie/internal.h |  2 ++
+ drivers/net/wireless/intel/iwlwifi/pcie/rx.c       | 10 +---------
+ drivers/net/wireless/intel/iwlwifi/pcie/trans.c    |  9 +++++++++
+ 3 files changed, 12 insertions(+), 9 deletions(-)
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 1bad301..3cf4201 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -66,6 +66,7 @@
- #include <linux/kthread.h>
- #include <linux/memcontrol.h>
- #include <linux/ftrace.h>
-+#include <linux/nmi.h>
+diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/internal.h b/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
+index fa315d84e98e..a1ea9ef97ed9 100644
+--- a/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
++++ b/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
+@@ -787,6 +787,8 @@ int iwl_pci_fw_enter_d0i3(struct iwl_trans *trans);
  
- #include <asm/sections.h>
- #include <asm/tlbflush.h>
-@@ -2535,9 +2536,15 @@ void drain_all_pages(struct zone *zone)
+ void iwl_pcie_enable_rx_wake(struct iwl_trans *trans, bool enable);
  
- #ifdef CONFIG_HIBERNATION
- 
-+/*
-+ * Touch the watchdog for every WD_INTERVAL_PAGE pages,
-+ * choose a power of 2 to avoid the modulus operation.
-+ */
-+#define WD_INTERVAL_PAGE	(128*1024)
++void iwl_pcie_rx_allocator_work(struct work_struct *data);
 +
- void mark_free_pages(struct zone *zone)
+ /* common functions that are used by gen2 transport */
+ void iwl_pcie_apm_config(struct iwl_trans *trans);
+ int iwl_pcie_prepare_card_hw(struct iwl_trans *trans);
+diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/rx.c b/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
+index 351c4423125a..942736d3fa75 100644
+--- a/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
++++ b/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
+@@ -597,7 +597,7 @@ static void iwl_pcie_rx_allocator_get(struct iwl_trans *trans,
+ 	rxq->free_count += RX_CLAIM_REQ_ALLOC;
+ }
+ 
+-static void iwl_pcie_rx_allocator_work(struct work_struct *data)
++void iwl_pcie_rx_allocator_work(struct work_struct *data)
  {
--	unsigned long pfn, max_zone_pfn;
-+	unsigned long pfn, max_zone_pfn, page_num = 0;
- 	unsigned long flags;
- 	unsigned int order, t;
- 	struct page *page;
-@@ -2552,6 +2559,9 @@ void mark_free_pages(struct zone *zone)
- 		if (pfn_valid(pfn)) {
- 			page = pfn_to_page(pfn);
- 
-+			if (!((page_num++) % WD_INTERVAL_PAGE))
-+				touch_nmi_watchdog();
-+
- 			if (page_zone(page) != zone)
- 				continue;
- 
-@@ -2565,8 +2575,11 @@ void mark_free_pages(struct zone *zone)
- 			unsigned long i;
- 
- 			pfn = page_to_pfn(page);
--			for (i = 0; i < (1UL << order); i++)
-+			for (i = 0; i < (1UL << order); i++) {
-+				if (!((page_num++) % WD_INTERVAL_PAGE))
-+					touch_nmi_watchdog();
- 				swsusp_set_page_free(pfn_to_page(pfn + i));
-+			}
- 		}
+ 	struct iwl_rb_allocator *rba_p =
+ 		container_of(data, struct iwl_rb_allocator, rx_alloc);
+@@ -900,10 +900,6 @@ static int _iwl_pcie_rx_init(struct iwl_trans *trans)
+ 			return err;
  	}
- 	spin_unlock_irqrestore(&zone->lock, flags);
+ 	def_rxq = trans_pcie->rxq;
+-	if (!rba->alloc_wq)
+-		rba->alloc_wq = alloc_workqueue("rb_allocator",
+-						WQ_HIGHPRI | WQ_UNBOUND, 1);
+-	INIT_WORK(&rba->rx_alloc, iwl_pcie_rx_allocator_work);
+ 
+ 	spin_lock(&rba->lock);
+ 	atomic_set(&rba->req_pending, 0);
+@@ -1017,10 +1013,6 @@ void iwl_pcie_rx_free(struct iwl_trans *trans)
+ 	}
+ 
+ 	cancel_work_sync(&rba->rx_alloc);
+-	if (rba->alloc_wq) {
+-		destroy_workqueue(rba->alloc_wq);
+-		rba->alloc_wq = NULL;
+-	}
+ 
+ 	iwl_pcie_free_rbs_pool(trans);
+ 
+diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/trans.c b/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
+index f95eec52508e..3927bbf04f72 100644
+--- a/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
++++ b/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
+@@ -1786,6 +1786,11 @@ void iwl_trans_pcie_free(struct iwl_trans *trans)
+ 		iwl_pcie_tx_free(trans);
+ 	iwl_pcie_rx_free(trans);
+ 
++	if (trans_pcie->rba.alloc_wq) {
++		destroy_workqueue(trans_pcie->rba.alloc_wq);
++		trans_pcie->rba.alloc_wq = NULL;
++	}
++
+ 	if (trans_pcie->msix_enabled) {
+ 		for (i = 0; i < trans_pcie->alloc_vecs; i++) {
+ 			irq_set_affinity_hint(
+@@ -3169,6 +3174,10 @@ struct iwl_trans *iwl_trans_pcie_alloc(struct pci_dev *pdev,
+ 		trans_pcie->inta_mask = CSR_INI_SET_MASK;
+ 	 }
+ 
++	trans_pcie->rba.alloc_wq = alloc_workqueue("rb_allocator",
++						   WQ_HIGHPRI | WQ_UNBOUND, 1);
++	INIT_WORK(&trans_pcie->rba.rx_alloc, iwl_pcie_rx_allocator_work);
++
+ #ifdef CONFIG_IWLWIFI_PCIE_RTPM
+ 	trans->runtime_pm_mode = IWL_PLAT_PM_MODE_D0I3;
+ #else
 -- 
-2.7.4
+2.14.1
