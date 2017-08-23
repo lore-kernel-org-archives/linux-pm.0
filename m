@@ -1,154 +1,91 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH][v3] PM / Hibernate: Feed the wathdog when creating snapshot
-Date: Wed, 23 Aug 2017 18:22:52 +0200
-Message-ID: <CAJZ5v0ikXKDr_JebnWieCVXKW5nCU9-yiHsw+qJ=MEcWje3jFA@mail.gmail.com>
-References: <1503460079-29721-1-git-send-email-yu.c.chen@intel.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH 0/2] net: Fix crashes due to activity during suspend
+Date: Wed, 23 Aug 2017 10:13:10 -0700
+Message-ID: <5a1b6f23-6fce-1a68-f9c3-ca0d709979e7@gmail.com>
+References: <1503427046-17618-1-git-send-email-geert+renesas@glider.be>
+ <757f672b-d3cf-9189-0533-cb45e325c6b8@gmail.com>
+ <CAMuHMdVMuW+5UQc3Tg5bWkix_PLEaxsoGA6sgSdVz0fV6UsO6Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <1503460079-29721-1-git-send-email-yu.c.chen@intel.com>
-Sender: owner-linux-mm@kvack.org
-To: Chen Yu <yu.c.chen@intel.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>, Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdVMuW+5UQc3Tg5bWkix_PLEaxsoGA6sgSdVz0fV6UsO6Q@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>, marc_gonzalez@sigmadesigns.com, slash.tmp@free.fr
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "David S . Miller" <davem@davemloft.net>, Steve Glendinning <steve.glendinning@shawell.net>, Andrew Lunn <andrew@lunn.ch>, Lukas Wunner <lukas@wunner.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 23, 2017 at 5:47 AM, Chen Yu <yu.c.chen@intel.com> wrote:
-> There is a problem that when counting the pages for creating
-> the hibernation snapshot will take significant amount of
-> time, especially on system with large memory. Since the counting
-> job is performed with irq disabled, this might lead to NMI lockup.
-> The following warning were found on a system with 1.5TB DRAM:
->
-> [ 1124.758184] Freezing user space processes ... (elapsed 0.002 seconds) done.
-> [ 1124.768721] OOM killer disabled.
-> [ 1124.847009] PM: Preallocating image memory...
-> [ 1139.392042] NMI watchdog: Watchdog detected hard LOCKUP on cpu 27
-> [ 1139.392076] CPU: 27 PID: 3128 Comm: systemd-sleep Not tainted 4.13.0-0.rc2.git0.1.fc27.x86_64 #1
-> [ 1139.392077] task: ffff9f01971ac000 task.stack: ffffb1a3f325c000
-> [ 1139.392083] RIP: 0010:memory_bm_find_bit+0xf4/0x100
-> [ 1139.392084] RSP: 0018:ffffb1a3f325fc20 EFLAGS: 00000006
-> [ 1139.392084] RAX: 0000000000000000 RBX: 0000000013b83000 RCX: ffff9fbe89caf000
-> [ 1139.392085] RDX: ffffb1a3f325fc30 RSI: 0000000000003200 RDI: ffff9fbeaffffe80
-> [ 1139.392085] RBP: ffffb1a3f325fc40 R08: 0000000013b80000 R09: ffff9fbe89c54878
-> [ 1139.392085] R10: ffffb1a3f325fc2c R11: 0000000013b83200 R12: 0000000000000400
-> [ 1139.392086] R13: fffffd552e0c0000 R14: ffff9fc1bffd31e0 R15: 0000000000000202
-> [ 1139.392086] FS:  00007f3189704180(0000) GS:ffff9fbec8ec0000(0000) knlGS:0000000000000000
-> [ 1139.392087] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [ 1139.392087] CR2: 00000085da0f7398 CR3: 000001771cf9a000 CR4: 00000000007406e0
-> [ 1139.392088] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> [ 1139.392088] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
-> [ 1139.392088] PKRU: 55555554
-> [ 1139.392089] Call Trace:
-> [ 1139.392092]  ? memory_bm_set_bit+0x29/0x60
-> [ 1139.392094]  swsusp_set_page_free+0x2b/0x30
-> [ 1139.392098]  mark_free_pages+0x147/0x1c0
-> [ 1139.392099]  count_data_pages+0x41/0xa0
-> [ 1139.392101]  hibernate_preallocate_memory+0x80/0x450
-> [ 1139.392102]  hibernation_snapshot+0x58/0x410
-> [ 1139.392103]  hibernate+0x17c/0x310
-> [ 1139.392104]  state_store+0xdf/0xf0
-> [ 1139.392107]  kobj_attr_store+0xf/0x20
-> [ 1139.392111]  sysfs_kf_write+0x37/0x40
-> [ 1139.392113]  kernfs_fop_write+0x11c/0x1a0
-> [ 1139.392117]  __vfs_write+0x37/0x170
-> [ 1139.392121]  ? handle_mm_fault+0xd8/0x230
-> [ 1139.392122]  vfs_write+0xb1/0x1a0
-> [ 1139.392123]  SyS_write+0x55/0xc0
-> [ 1139.392126]  entry_SYSCALL_64_fastpath+0x1a/0xa5
-> ...
-> [ 1144.690405] done (allocated 6590003 pages)
-> [ 1144.694971] PM: Allocated 26360012 kbytes in 19.89 seconds (1325.28 MB/s)
->
-> It has taken nearly 20 seconds(2.10GHz CPU) thus the NMI lockup
-> was triggered. In case the timeout of the NMI watch dog has been
-> set to 1 second, a safe interval should be 6590003/20 = 320k pages
-> in theory. However there might also be some platforms running at a
-> lower frequency, so feed the watchdog every 128k pages.
->
-> Reported-by: Jan Filipcewicz <jan.filipcewicz@intel.com>
-> Suggested-by: Michal Hocko <mhocko@suse.com>
-> Suggested-by: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Reviewed-by: Michal Hocko <mhocko@suse.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Michal Hocko <mhocko@kernel.org>
-> Cc: Mel Gorman <mgorman@techsingularity.net>
-> Cc: Vlastimil Babka <vbabka@suse.cz>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Len Brown <lenb@kernel.org>
-> Cc: Dan Williams <dan.j.williams@intel.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+On 08/23/2017 04:45 AM, Geert Uytterhoeven wrote:
+> Hi Florian,
+> 
+> On Tue, Aug 22, 2017 at 8:49 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+>> On 08/22/2017 11:37 AM, Geert Uytterhoeven wrote:
+>>> If an Ethernet device is used while the device is suspended, the system may
+>>> crash.
+>>>
+>>> E.g. on sh73a0/kzm9g and r8a73a4/ape6evm, the external Ethernet chip is
+>>> driven by a PM controlled clock.  If the Ethernet registers are accessed
+>>> while the clock is not running, the system will crash with an imprecise
+>>> external abort.
+>>>
+>>> This patch series fixes two of such crashes:
+>>>   1. The first patch prevents the PHY polling state machine from accessing
+>>>      PHY registers while a device is suspended,
+>>>   2. The second patch prevents the net core from trying to transmit packets
+>>>      when an smsc911x device is suspended.
+>>>
+>>> Both crashes can be reproduced on sh73a0/kzm9g and r8a73a4/ape6evm during
+>>> s2ram (rarely), or by using pm_test (more likely to trigger):
+>>>
+>>>     # echo 0 > /sys/module/printk/parameters/console_suspend
+>>>     # echo platform > /sys/power/pm_test
+>>>     # echo mem > /sys/power/state
+>>>
+>>> With this series applied, my test systems survive a loop of 100 test
+>>> suspends.
+>>
+>> It seems to me like part, if not the entire problem is that smsc91xx's
+>> suspend and resume functions are way too simplistic and absolutely do
+>> not manage the PHY during suspend/resume, the PHY state machine is not
+>> even stopped, so of course, this will cause bus errors if you access
+>> those registers.
+>>
+>> You are addressing this as part of patch 2, but this seems to me like
+>> this is still a bit incomplete and you'd need at least phy_stop() and/or
+>> phy_suspend() (does a power down of the PHY) and phy_start() and/or
+>> phy_resume() calls to complete the PHY state machine shutdown during
+>> suspend.
+>>
+>> Have you tried that?
+> 
+> Unfortunately that doesn't help.
+> In state PHY_HALTED, the PHY state machine still calls the .adjust_link()
+> callback while the device is suspended.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Humm that is correct yes.
 
-or please let me know if I should pick it up.
+> 
+> Do you have a clue? This is too far beyond my phy-foo...
 
-> ---
->  mm/page_alloc.c | 20 ++++++++++++++++++--
->  1 file changed, 18 insertions(+), 2 deletions(-)
->
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index 1bad301..7a58eb5 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -66,6 +66,7 @@
->  #include <linux/kthread.h>
->  #include <linux/memcontrol.h>
->  #include <linux/ftrace.h>
-> +#include <linux/nmi.h>
->
->  #include <asm/sections.h>
->  #include <asm/tlbflush.h>
-> @@ -2535,9 +2536,14 @@ void drain_all_pages(struct zone *zone)
->
->  #ifdef CONFIG_HIBERNATION
->
-> +/*
-> + * Touch the watchdog for every WD_PAGE_COUNT pages.
-> + */
-> +#define WD_PAGE_COUNT  (128*1024)
-> +
->  void mark_free_pages(struct zone *zone)
->  {
-> -       unsigned long pfn, max_zone_pfn;
-> +       unsigned long pfn, max_zone_pfn, page_count = WD_PAGE_COUNT;
->         unsigned long flags;
->         unsigned int order, t;
->         struct page *page;
-> @@ -2552,6 +2558,11 @@ void mark_free_pages(struct zone *zone)
->                 if (pfn_valid(pfn)) {
->                         page = pfn_to_page(pfn);
->
-> +                       if (!--page_count) {
-> +                               touch_nmi_watchdog();
-> +                               page_count = WD_PAGE_COUNT;
-> +                       }
-> +
->                         if (page_zone(page) != zone)
->                                 continue;
->
-> @@ -2565,8 +2576,13 @@ void mark_free_pages(struct zone *zone)
->                         unsigned long i;
->
->                         pfn = page_to_pfn(page);
-> -                       for (i = 0; i < (1UL << order); i++)
-> +                       for (i = 0; i < (1UL << order); i++) {
-> +                               if (!--page_count) {
-> +                                       touch_nmi_watchdog();
-> +                                       page_count = WD_PAGE_COUNT;
-> +                               }
->                                 swsusp_set_page_free(pfn_to_page(pfn + i));
-> +                       }
->                 }
->         }
->         spin_unlock_irqrestore(&zone->lock, flags);
-> --
-> 2.7.4
->
+I was initially contemplating a revert of
+7ad813f208533cebfcc32d3d7474dc1677d1b09a ("net: phy: Correctly process
+PHY_HALTED in phy_stop_machine()") but this is not the root of the
+problem. The problem really is that phy_stop() does not wait for the PHY
+state machine to be stopped so you cannot rely on that and past the
+function return be offered any guarantees that adjust_link is not called.
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+We seem to be getting away with that in most drivers because when we see
+phydev->link = 0, we either do nothing or actually turn of the HW block.
+
+How about we export phy_stop_machine() to drivers which would provide a
+synchronization point that would ensure that no HW accesses are done
+past this point?
+
+I am absolutely not clear on the implications of using a freezable
+workqueue with respect to the PHY state machine and how devices are
+going to wind-up being powered down or not...
+
+Thanks!
+-- 
+Florian
