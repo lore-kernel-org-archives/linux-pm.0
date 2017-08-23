@@ -1,67 +1,50 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] devfreq: Convert to using %pOF instead of full_name
-Date: Thu, 24 Aug 2017 08:18:29 +0900
-Message-ID: <599E0D45.7030001@samsung.com>
-References: <20170718214339.7774-17-robh@kernel.org>
-        <CGME20170718214411epcas2p43fc1475c80245889737ba9e731497e38@epcms1p2>
-        <596EB809.7050605@samsung.com>
-        <20170720052553epcms1p24dc190a0d51f2e447a76e417e519bd28@epcms1p2>
-        <CAL_JsqL9x16Z76VSAkDUiyEddafYuiH4mFTUur=8LgrJehrFLw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2 5/9] PM / ACPI: Provide option to disable
+ direct_complete for ACPI devices
+Date: Thu, 24 Aug 2017 01:39:44 +0200
+Message-ID: <CAJZ5v0gJn=SzNFGUT7Zb+CfhQBZ7KNDK2GTSSXGexD8GObjGOw@mail.gmail.com>
+References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org> <1503499329-28834-6-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <CAL_JsqL9x16Z76VSAkDUiyEddafYuiH4mFTUur=8LgrJehrFLw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1503499329-28834-6-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
+On Wed, Aug 23, 2017 at 4:42 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> In some cases a driver for an ACPI device needs to be able to prevent the
+> ACPI PM domain from using the direct_complete path during system sleep.
+>
+> One typical case is when the driver for the device needs its device to stay
+> runtime enabled, during the __device_suspend phase. This isn't the case
+> when the direct_complete path is being executed by the PM core, as it then
+> disables runtime PM for the device in __device_suspend(). Any following
+> attempts to runtime resume the device after that point, just fails.
 
-On 2017년 08월 24일 03:09, Rob Herring wrote:
-> On Thu, Jul 20, 2017 at 12:25 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->>> On 2017년 07월 19일 06:42, Rob Herring wrote:
->>>> Now that we have a custom printf format specifier, convert users of
->>>> full_name to use %pOF instead. This is preparation to remove storing
->>>> of the full path string for each node.
->>>>
->>>> Signed-off-by: Rob Herring <robh@kernel.org>
->>>> Cc: Chanwoo Choi <cw00.choi@samsung.com>
->>>> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
->>>> Cc: Kyungmin Park <kyungmin.park@samsung.com>
->>>> Cc: linux-pm@vger.kernel.org
->>>> ---
->>>>  drivers/devfreq/devfreq-event.c | 4 ++--
->>>>  1 file changed, 2 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
->>>> index 8648b32ebc89..d67242d87744 100644
->>>> --- a/drivers/devfreq/devfreq-event.c
->>>> +++ b/drivers/devfreq/devfreq-event.c
->>>> @@ -277,8 +277,8 @@ int devfreq_event_get_edev_count(struct device *dev)
->>>>                                             sizeof(u32));
->>>>     if (count < 0) {
->>>>             dev_err(dev,
->>>> -                   "failed to get the count of devfreq-event in %s node\n",
->>>> -                   dev->of_node->full_name);
->>>> +                   "failed to get the count of devfreq-event in %pOF node\n",
->>>> +                   dev->of_node);
->>>>             return count;
->>>>     }
->>>>
->>>
->>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>
->>
->> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
-> 
-> Please take this thru the devfreq tree.
+OK, that is a problem.
 
-This patch was merged on devfreq tree.
-https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=for-next&id=7f46535e8a2e3c3e415e55eaadcb9d9a153a5300
+> A workaround to this problem is to let the driver runtime resume its device
+> from its ->prepare() callback, as that would prevent the direct_complete
+> path from being executed. However, that may often be a waste, especially if
+> it turned out that no one really needed the device.
+>
+> For this reason, invent acpi_dev_disable|enable_direct_complete(), to allow
+> drivers to inform the ACPI PM domain to change its default behaviour during
+> system sleep, and thus control whether it may use the direct_complete path
+> or not.
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+But I'm not sure this is the right place to address it as it very well
+may affect a PCI device too.
+
+Also, this is about the device and not about its ACPI companion
+object, so putting the flag in there is somewhat unclean, so to speak.
+
+It looks like we need a flag in dev_pm_info saying something along the
+lines of "my system suspend callback can deal with runtime PM" that
+will cause the direct_complete update to occur in
+__device_suspend_late() instead of __device_suspend().
+
+Thanks,
+Rafael
