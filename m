@@ -1,315 +1,231 @@
 From: Dong Aisheng <aisheng.dong@nxp.com>
-Subject: [PATCH 7/7] cpufreq: add imx7ulp cpufreq driver
-Date: Thu, 24 Aug 2017 00:10:10 +0800
-Message-ID: <1503504610-12880-8-git-send-email-aisheng.dong@nxp.com>
+Subject: [PATCH 1/7] PM / OPP: Add platform specific set_clk function
+Date: Thu, 24 Aug 2017 00:10:04 +0800
+Message-ID: <1503504610-12880-2-git-send-email-aisheng.dong@nxp.com>
 References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com, Dong Aisheng <aisheng.dong@nxp.com>
+Cc: nm@ti.com, rjw@rjwysocki.net, ping.bai@nxp.com, Anson.Huang@nxp.com, vireshk@kernel.org, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, shawnguo@kernel.org, Dong Aisheng <aisheng.dong@nxp.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-MX7ULP supports HSRUN mode (528 Mhz), RUN mode (413 Mhz) and VLPR mode
-(restricted to FIRC clock, usually 48 Mhz). This patch adds the cpufreq
-driver support for HSRUN and RUN mode.
-When in different modes, the A7 core is using different clocks:
-RUN:	clk run_divcore
-HSRUN:	clk hsrun_divcore
+This is useful to support platforms which only the clk setting is
+different from the generic OPP set rate but others like voltage
+setting are still the same.
 
-Thus, this driver replies on the newly added features in OPP core framework
-in former patches:
-"PM / OPP: use OPP node clock to set CPU frequency"
-
-And since IMX7ULP CPU clock setting is different from the generic
-set OPP clock, we also implemented a private set_clk function.
+Users can use this function to register a custom OPP set clk helper
+working in place of the default simple clk setting in the generic
+dev_pm_opp_set_rate(). Then user can still use dev_pm_opp_set_rate()
+with .set_clk() to save a lot duplicated work.
 
 Cc: Viresh Kumar <vireshk@kernel.org>
 Cc: Nishanth Menon <nm@ti.com>
 Cc: Stephen Boyd <sboyd@codeaurora.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Anson Huang <Anson.Huang@nxp.com>
-Cc: Bai Ping <ping.bai@nxp.com>
 Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 ---
- drivers/cpufreq/Kconfig.arm       |   8 ++
- drivers/cpufreq/Makefile          |   1 +
- drivers/cpufreq/imx7ulp-cpufreq.c | 234 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 243 insertions(+)
- create mode 100644 drivers/cpufreq/imx7ulp-cpufreq.c
+ drivers/base/power/opp/core.c | 90 ++++++++++++++++++++++++++++++++++++++++---
+ drivers/base/power/opp/opp.h  |  4 ++
+ include/linux/pm_opp.h        | 13 +++++++
+ 3 files changed, 102 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 2011fec..53664b5 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -90,6 +90,14 @@ config ARM_IMX6Q_CPUFREQ
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index a8cc14f..37cf970 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -521,12 +521,15 @@ static int _set_opp_voltage(struct device *dev, struct regulator *reg,
+ }
  
- 	  If in doubt, say N.
+ static inline int
+-_generic_set_opp_clk_only(struct device *dev, struct clk *clk,
++_generic_set_opp_clk_only(const struct opp_table *opp_table, struct device *dev,
+ 			  unsigned long old_freq, unsigned long freq)
+ {
+ 	int ret;
  
-+config ARM_IMX7ULP_CPUFREQ
-+	tristate "NXP i.MX7ULP cpufreq support"
-+	depends on ARCH_MXC
-+	help
-+	  This adds cpufreq driver support for NXP i.MX7ULP series SoCs.
+-	ret = clk_set_rate(clk, freq);
++	if (opp_table->set_clk)
++		return opp_table->set_clk(dev, opp_table->clk, old_freq, freq);
 +
-+	  If in doubt, say N.
-+
- config ARM_KIRKWOOD_CPUFREQ
- 	def_bool MACH_KIRKWOOD
- 	help
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index ab3a42c..25a1ebd 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -57,6 +57,7 @@ obj-$(CONFIG_ARM_DB8500_CPUFREQ)	+= dbx500-cpufreq.o
- obj-$(CONFIG_ARM_EXYNOS5440_CPUFREQ)	+= exynos5440-cpufreq.o
- obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
- obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
-+obj-$(CONFIG_ARM_IMX7ULP_CPUFREQ)	+= imx7ulp-cpufreq.o
- obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
- obj-$(CONFIG_ARM_MT8173_CPUFREQ)	+= mt8173-cpufreq.o
- obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
-diff --git a/drivers/cpufreq/imx7ulp-cpufreq.c b/drivers/cpufreq/imx7ulp-cpufreq.c
-new file mode 100644
-index 0000000..92374c6
---- /dev/null
-+++ b/drivers/cpufreq/imx7ulp-cpufreq.c
-@@ -0,0 +1,234 @@
-+/*
-+ * Copyright 2017 NXP.
++	ret = clk_set_rate(opp_table->clk, freq);
+ 	if (ret) {
+ 		dev_err(dev, "%s: failed to set clock rate: %d\n", __func__,
+ 			ret);
+@@ -559,7 +562,7 @@ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
+ 	}
+ 
+ 	/* Change frequency */
+-	ret = _generic_set_opp_clk_only(dev, opp_table->clk, old_freq, freq);
++	ret = _generic_set_opp_clk_only(opp_table, dev, old_freq, freq);
+ 	if (ret)
+ 		goto restore_voltage;
+ 
+@@ -573,7 +576,7 @@ static int _generic_set_opp_regulator(const struct opp_table *opp_table,
+ 	return 0;
+ 
+ restore_freq:
+-	if (_generic_set_opp_clk_only(dev, opp_table->clk, freq, old_freq))
++	if (_generic_set_opp_clk_only(opp_table, dev, freq, old_freq))
+ 		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
+ 			__func__, old_freq);
+ restore_voltage:
+@@ -653,7 +656,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 
+ 	/* Only frequency scaling */
+ 	if (!opp_table->regulators) {
+-		ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
++		ret = _generic_set_opp_clk_only(opp_table, dev, old_freq, freq);
+ 	} else if (!opp_table->set_opp) {
+ 		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
+ 						 IS_ERR(old_opp) ? NULL : old_opp->supplies,
+@@ -1500,6 +1503,83 @@ void dev_pm_opp_register_put_opp_helper(struct opp_table *opp_table)
+ EXPORT_SYMBOL_GPL(dev_pm_opp_register_put_opp_helper);
+ 
+ /**
++ * dev_pm_opp_register_set_clk_helper() - Register custom OPP set clk helper
++ * @dev: Device for which the helper is getting registered.
++ * @set_clk: Custom OPP set clk helper.
 + *
-+ * Author: Dong Aisheng <aisheng.dong@nxp.com>
++ * This is useful to support complex platforms which only the clk setting
++ * is different from the generic OPP set rate but others like voltage
++ * setting are still the same.
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * Users can use this function to register a custom OPP set clk helper
++ * working in place of the default simple clk setting in the generic
++ * dev_pm_opp_set_rate().
++ *
++ * This must be called before any OPPs are initialized for the device.
 + */
-+#include <linux/clk.h>
-+#include <linux/clk-provider.h>
-+#include <linux/cpu.h>
-+#include <linux/cpufreq.h>
-+#include <linux/err.h>
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/pm_opp.h>
-+#include <linux/pm_qos.h>
-+#include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
-+#include <linux/suspend.h>
-+
-+#define HSRUN_FREQ	528000000
-+#define SMC_PMPROT	0x8
-+#define SMC_PMCTRL	0x10
-+
-+static void __iomem *smc_base;
-+
-+static struct device *cpu_dev;
-+static struct opp_table *opp_table;
-+static struct cpufreq_frequency_table *freq_table;
-+
-+enum IMX7ULP_CPUFREQ_CLKS {
-+	RUN_DIVCORE,
-+	RUN_SCS_SEL,
-+	HSRUN_DIVCORE,
-+	HSRUN_SCS_SEL,
-+	SPLL_PFD0,
-+	SPLL_SEL,
-+	FIRC,
-+};
-+
-+static struct clk_bulk_data clks[] = {
-+	{ .id = "run_divcore" },
-+	{ .id = "run_scs_sel" },
-+	{ .id = "hsrun_divcore" },
-+	{ .id = "hsrun_scs_sel" },
-+	{ .id = "spll_pfd0" },
-+	{ .id = "spll_sel" },
-+	{ .id = "firc" },
-+};
-+
-+static int imx7ulp_set_clk(struct device *dev, struct clk *clk,
-+			   unsigned long old_freq, unsigned long new_freq)
++struct opp_table *dev_pm_opp_register_set_clk_helper(struct device *dev,
++		int (*set_clk)(struct device *dev, struct clk *clk,
++			       unsigned long old_freq, unsigned long freq))
 +{
-+	u32 val;
-+
-+	/*
-+	 * Before changing the ARM core PLL, change the ARM clock soure
-+	 * to FIRC first.
-+	 */
-+	if (new_freq >= HSRUN_FREQ) {
-+		clk_set_parent(clks[RUN_SCS_SEL].clk, clks[FIRC].clk);
-+
-+		/* switch to HSRUN mode */
-+		val = readl_relaxed(smc_base + SMC_PMCTRL);
-+		val |= (0x3 << 8);
-+		writel_relaxed(val, smc_base + SMC_PMCTRL);
-+
-+		/* change the clock rate in HSRUN */
-+		clk_set_rate(clks[SPLL_PFD0].clk, new_freq);
-+		clk_set_parent(clks[HSRUN_SCS_SEL].clk, clks[SPLL_SEL].clk);
-+	} else {
-+		/* change the HSRUN clock to firc */
-+		clk_set_parent(clks[HSRUN_SCS_SEL].clk, clks[FIRC].clk);
-+
-+		/* switch to RUN mode */
-+		val = readl_relaxed(smc_base + SMC_PMCTRL);
-+		val &= ~(0x3 << 8);
-+		writel_relaxed(val, smc_base + SMC_PMCTRL);
-+
-+		clk_set_rate(clks[SPLL_PFD0].clk, new_freq);
-+		clk_set_parent(clks[RUN_SCS_SEL].clk, clks[SPLL_SEL].clk);
-+	}
-+
-+	return 0;
-+}
-+
-+static int imx7ulp_set_target(struct cpufreq_policy *policy, unsigned int index)
-+{
++	struct opp_table *opp_table;
 +	int ret;
 +
-+	ret = dev_pm_opp_set_rate(cpu_dev,
-+				  policy->freq_table[index].frequency * 1000);
-+	if (ret)
-+		return ret;
++	if (!set_clk)
++		return ERR_PTR(-EINVAL);
 +
-+	policy->clk = dev_pm_opp_get_cur_clk(cpu_dev);
-+	if (IS_ERR(policy->clk))
-+		ret = PTR_ERR(policy->clk);
++	opp_table = dev_pm_opp_get_opp_table(dev);
++	if (!opp_table)
++		return ERR_PTR(-ENOMEM);
 +
-+	return ret;
++	/* This should be called before OPPs are initialized */
++	if (WARN_ON(!list_empty(&opp_table->opp_list))) {
++		ret = -EBUSY;
++		goto err;
++	}
++
++	/* Already have custom set_clk helper */
++	if (WARN_ON(opp_table->set_clk)) {
++		ret = -EBUSY;
++		goto err;
++	}
++
++	opp_table->set_clk = set_clk;
++
++	return opp_table;
++
++err:
++	dev_pm_opp_put_opp_table(opp_table);
++
++	return ERR_PTR(ret);
 +}
++EXPORT_SYMBOL_GPL(dev_pm_opp_register_set_clk_helper);
 +
-+static int imx7ulp_cpufreq_init(struct cpufreq_policy *policy)
++/**
++ * dev_pm_opp_register_put_clk_helper() - Releases resources blocked for
++ *					   set_clk helper
++ * @opp_table: OPP table returned from dev_pm_opp_register_set_clk_helper().
++ *
++ * Release resources blocked for platform specific set_clk helper.
++ */
++void dev_pm_opp_register_put_clk_helper(struct opp_table *opp_table)
 +{
-+	unsigned int transition_latency;
-+	int ret;
-+
-+	policy->clk = clks[RUN_DIVCORE].clk;
-+	policy->suspend_freq = dev_pm_opp_get_suspend_opp_freq(cpu_dev) / 1000;
-+	transition_latency = dev_pm_opp_get_max_transition_latency(cpu_dev);
-+	if (!transition_latency)
-+		transition_latency = CPUFREQ_ETERNAL;
-+
-+	ret = cpufreq_generic_init(policy, freq_table, transition_latency);
-+	if (ret) {
-+		dev_err(cpu_dev, "imx7ulp cpufreq init failed\n");
-+		return ret;
++	if (!opp_table->set_clk) {
++		pr_err("%s: Doesn't have custom set_clk helper set\n",
++		       __func__);
++		return;
 +	}
 +
-+	return 0;
++	/* Make sure there are no concurrent readers while updating opp_table */
++	WARN_ON(!list_empty(&opp_table->opp_list));
++
++	opp_table->set_clk = NULL;
++
++	dev_pm_opp_put_opp_table(opp_table);
 +}
++EXPORT_SYMBOL_GPL(dev_pm_opp_register_put_clk_helper);
 +
-+static struct cpufreq_driver imx7ulp_cpufreq_driver = {
-+	.flags = CPUFREQ_NEED_INITIAL_FREQ_CHECK,
-+	.verify = cpufreq_generic_frequency_table_verify,
-+	.target_index = imx7ulp_set_target,
-+	.get = cpufreq_generic_get,
-+	.init = imx7ulp_cpufreq_init,
-+	.name = "imx7ulp-cpufreq",
-+	.attr = cpufreq_generic_attr,
-+	.suspend = cpufreq_generic_suspend,
-+};
 +
-+static int imx7ulp_cpufreq_probe(struct platform_device *pdev)
++/**
+  * dev_pm_opp_add()  - Add an OPP table from a table definitions
+  * @dev:	device for which we do this operation
+  * @freq:	Frequency in Hz for this OPP
+diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
+index 166eef9..c85405e 100644
+--- a/drivers/base/power/opp/opp.h
++++ b/drivers/base/power/opp/opp.h
+@@ -137,6 +137,8 @@ enum opp_table_access {
+  * @regulator_count: Number of power supply regulators
+  * @set_opp: Platform specific set_opp callback
+  * @set_opp_data: Data to be passed to set_opp callback
++ * @set_clk:	Platform specific set_clk callback. Different from @set_opp,
++		@set_clk only handles the clk part setting.
+  * @dentry:	debugfs dentry pointer of the real device directory (not links).
+  * @dentry_name: Name of the real dentry.
+  *
+@@ -174,6 +176,8 @@ struct opp_table {
+ 	int (*set_opp)(struct dev_pm_set_opp_data *data);
+ 	struct dev_pm_set_opp_data *set_opp_data;
+ 
++	int (*set_clk)(struct device *dev, struct clk *clk, unsigned long old_freq, unsigned long freq);
++
+ #ifdef CONFIG_DEBUG_FS
+ 	struct dentry *dentry;
+ 	char dentry_name[NAME_MAX];
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 51ec727..a8b1e4d 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -125,6 +125,9 @@ struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char * name);
+ void dev_pm_opp_put_clkname(struct opp_table *opp_table);
+ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*set_opp)(struct dev_pm_set_opp_data *data));
+ void dev_pm_opp_register_put_opp_helper(struct opp_table *opp_table);
++struct opp_table *dev_pm_opp_register_set_clk_helper(struct device *dev, int (*set_clk)(struct device *dev, struct clk *clk,
++											unsigned long old_freq, unsigned long freq));
++void dev_pm_opp_register_put_clk_helper(struct opp_table *opp_table);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+@@ -245,6 +248,16 @@ static inline struct opp_table *dev_pm_opp_register_set_opp_helper(struct device
+ 
+ static inline void dev_pm_opp_register_put_opp_helper(struct opp_table *opp_table) {}
+ 
++
++static inline struct opp_table *dev_pm_opp_register_set_clk_helper(struct device *dev,
++			int (*set_clk)(struct device *dev, struct clk *clk,
++				       unsigned long old_freq, unsigned long freq))
 +{
-+	const char *name = "cpu";
-+	struct device_node *np;
-+	int ret;
-+
-+	cpu_dev = get_cpu_device(0);
-+	if (!cpu_dev) {
-+		pr_err("failed to get cpu0 device\n");
-+		return -ENOENT;
-+	}
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,imx7ulp-smc1");
-+	smc_base = of_iomap(np, 0);
-+	of_node_put(np);
-+	if (!smc_base)
-+		return -ENOMEM;
-+
-+	ret = clk_bulk_get(cpu_dev, ARRAY_SIZE(clks), clks);
-+	if (ret)
-+		return ret;
-+
-+	opp_table = dev_pm_opp_set_regulators(cpu_dev, &name, 1);
-+	if (IS_ERR(opp_table)) {
-+		ret = PTR_ERR(opp_table);
-+		dev_err(cpu_dev, "failed to set regulator %d\n", ret);
-+		goto put_clk;
-+	}
-+
-+	opp_table = dev_pm_opp_register_set_clk_helper(cpu_dev,
-+						       imx7ulp_set_clk);
-+	if (IS_ERR(opp_table)) {
-+		ret = PTR_ERR(opp_table);
-+		dev_err(cpu_dev, "failed to set opp clk %d\n", ret);
-+		goto put_reg;
-+	}
-+
-+	ret = dev_pm_opp_of_add_table(cpu_dev);
-+	if (ret < 0) {
-+		dev_err(cpu_dev, "failed to init OPP table: %d\n", ret);
-+		goto put_clk_helper;
-+	}
-+
-+	ret = dev_pm_opp_init_cpufreq_table(cpu_dev, &freq_table);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed to init cpufreq table\n");
-+		goto free_opp_table;
-+	}
-+
-+	ret = cpufreq_register_driver(&imx7ulp_cpufreq_driver);
-+	if (ret) {
-+		dev_err(cpu_dev, "failed to register cpufreq driver\n");
-+		goto free_freq_table;
-+	}
-+
-+	return 0;
-+
-+free_freq_table:
-+	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
-+free_opp_table:
-+	dev_pm_opp_of_remove_table(cpu_dev);
-+put_clk_helper:
-+	dev_pm_opp_register_put_clk_helper(opp_table);
-+put_reg:
-+	dev_pm_opp_put_regulators(opp_table);
-+put_clk:
-+	clk_bulk_put(ARRAY_SIZE(clks), clks);
-+
-+	return ret;
++	return ERR_PTR(-ENOTSUPP);
 +}
 +
-+static int imx7ulp_cpufreq_remove(struct platform_device *pdev)
-+{
-+	cpufreq_unregister_driver(&imx7ulp_cpufreq_driver);
-+	dev_pm_opp_free_cpufreq_table(cpu_dev, &freq_table);
-+	dev_pm_opp_of_remove_table(cpu_dev);
-+	dev_pm_opp_register_put_clk_helper(opp_table);
-+	dev_pm_opp_put_regulators(opp_table);
-+	clk_bulk_put(ARRAY_SIZE(clks), clks);
++static inline void dev_pm_opp_register_put_clk_helper(struct opp_table *opp_table) {}
 +
-+	return 0;
-+}
-+
-+static struct platform_driver imx7ulp_cpufreq_platdrv = {
-+	.driver = {
-+		.name	= "imx7ulp-cpufreq",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= imx7ulp_cpufreq_probe,
-+	.remove		= imx7ulp_cpufreq_remove,
-+};
-+
-+module_platform_driver(imx7ulp_cpufreq_platdrv);
-+
-+MODULE_AUTHOR("Dong Aisheng <aisheng.dong@nxp.org>");
-+MODULE_DESCRIPTION("NXP i.MX7ULP cpufreq driver");
-+MODULE_LICENSE("GPL v2");
+ static inline struct opp_table *dev_pm_opp_set_prop_name(struct device *dev, const char *name)
+ {
+ 	return ERR_PTR(-ENOTSUPP);
 -- 
 2.7.4
