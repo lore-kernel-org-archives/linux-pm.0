@@ -1,132 +1,153 @@
-From: Dong Aisheng <aisheng.dong@nxp.com>
-Subject: [PATCH 3/7] PM / OPP: rename opp_table->clk to opp_table->cur_clk
-Date: Thu, 24 Aug 2017 00:10:06 +0800
-Message-ID: <1503504610-12880-4-git-send-email-aisheng.dong@nxp.com>
-References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH][v2] PM / Hibernate: Feed the wathdog when creating snapshot
+Date: Wed, 23 Aug 2017 18:21:42 +0200
+Message-ID: <CAJZ5v0ibzuU=pzYZUTaLF7zGPU=CXU+H5HD+gy=ag6rKLyuL1A@mail.gmail.com>
+References: <1503372002-13310-1-git-send-email-yu.c.chen@intel.com>
+ <1595884.XH9dSsijkg@aspire.rjw.lan> <20170823034439.GA29634@yu-desktop-1.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
+In-Reply-To: <20170823034439.GA29634@yu-desktop-1.sh.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com, Dong Aisheng <aisheng.dong@nxp.com>
+To: Chen Yu <yu.c.chen@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Memory Management List <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>, Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Since we now support per OPP clocks, we rename opp_table->clk to
-opp_table->cur_clk to make it less confusing as the opp_table->clk
-will become only represent the current clock of the current OPP
-on which the device is running.
+On Wed, Aug 23, 2017 at 5:44 AM, Chen Yu <yu.c.chen@intel.com> wrote:
+> On Tue, Aug 22, 2017 at 02:55:39PM +0200, Rafael J. Wysocki wrote:
+>> On Tuesday, August 22, 2017 5:20:02 AM CEST Chen Yu wrote:
+>> > There is a problem that when counting the pages for creating
+>> > the hibernation snapshot will take significant amount of
+>> > time, especially on system with large memory. Since the counting
+>> > job is performed with irq disabled, this might lead to NMI lockup.
+>> > The following warning were found on a system with 1.5TB DRAM:
+>> >
+>> > [ 1124.758184] Freezing user space processes ... (elapsed 0.002 seconds) done.
+>> > [ 1124.768721] OOM killer disabled.
+>> > [ 1124.847009] PM: Preallocating image memory...
+>> > [ 1139.392042] NMI watchdog: Watchdog detected hard LOCKUP on cpu 27
+>> > [ 1139.392076] CPU: 27 PID: 3128 Comm: systemd-sleep Not tainted 4.13.0-0.rc2.git0.1.fc27.x86_64 #1
+>> > [ 1139.392077] task: ffff9f01971ac000 task.stack: ffffb1a3f325c000
+>> > [ 1139.392083] RIP: 0010:memory_bm_find_bit+0xf4/0x100
+>> > [ 1139.392084] RSP: 0018:ffffb1a3f325fc20 EFLAGS: 00000006
+>> > [ 1139.392084] RAX: 0000000000000000 RBX: 0000000013b83000 RCX: ffff9fbe89caf000
+>> > [ 1139.392085] RDX: ffffb1a3f325fc30 RSI: 0000000000003200 RDI: ffff9fbeaffffe80
+>> > [ 1139.392085] RBP: ffffb1a3f325fc40 R08: 0000000013b80000 R09: ffff9fbe89c54878
+>> > [ 1139.392085] R10: ffffb1a3f325fc2c R11: 0000000013b83200 R12: 0000000000000400
+>> > [ 1139.392086] R13: fffffd552e0c0000 R14: ffff9fc1bffd31e0 R15: 0000000000000202
+>> > [ 1139.392086] FS:  00007f3189704180(0000) GS:ffff9fbec8ec0000(0000) knlGS:0000000000000000
+>> > [ 1139.392087] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>> > [ 1139.392087] CR2: 00000085da0f7398 CR3: 000001771cf9a000 CR4: 00000000007406e0
+>> > [ 1139.392088] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>> > [ 1139.392088] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+>> > [ 1139.392088] PKRU: 55555554
+>> > [ 1139.392089] Call Trace:
+>> > [ 1139.392092]  ? memory_bm_set_bit+0x29/0x60
+>> > [ 1139.392094]  swsusp_set_page_free+0x2b/0x30
+>> > [ 1139.392098]  mark_free_pages+0x147/0x1c0
+>> > [ 1139.392099]  count_data_pages+0x41/0xa0
+>> > [ 1139.392101]  hibernate_preallocate_memory+0x80/0x450
+>> > [ 1139.392102]  hibernation_snapshot+0x58/0x410
+>> > [ 1139.392103]  hibernate+0x17c/0x310
+>> > [ 1139.392104]  state_store+0xdf/0xf0
+>> > [ 1139.392107]  kobj_attr_store+0xf/0x20
+>> > [ 1139.392111]  sysfs_kf_write+0x37/0x40
+>> > [ 1139.392113]  kernfs_fop_write+0x11c/0x1a0
+>> > [ 1139.392117]  __vfs_write+0x37/0x170
+>> > [ 1139.392121]  ? handle_mm_fault+0xd8/0x230
+>> > [ 1139.392122]  vfs_write+0xb1/0x1a0
+>> > [ 1139.392123]  SyS_write+0x55/0xc0
+>> > [ 1139.392126]  entry_SYSCALL_64_fastpath+0x1a/0xa5
+>> > ...
+>> > [ 1144.690405] done (allocated 6590003 pages)
+>> > [ 1144.694971] PM: Allocated 26360012 kbytes in 19.89 seconds (1325.28 MB/s)
+>> >
+>> > It has taken nearly 20 seconds(2.10GHz CPU) thus the NMI lockup
+>> > was triggered. In case the timeout of the NMI watch dog has been
+>> > set to 1 second, a safe interval should be 6590003/20 = 320k pages
+>> > in theory. However there might also be some platforms running at a
+>> > lower frequency, so feed the watchdog every 128k pages(per Andrew's
+>> > suggestion, this should avoid the modulus operation).
+>> >
+>> > Reported-by: Jan Filipcewicz <jan.filipcewicz@intel.com>
+>> > Suggested-by: Michal Hocko <mhocko@suse.com>
+>> > Reviewed-by: Michal Hocko <mhocko@suse.com>
+>> > Cc: Andrew Morton <akpm@linux-foundation.org>
+>> > Cc: Michal Hocko <mhocko@kernel.org>
+>> > Cc: Mel Gorman <mgorman@techsingularity.net>
+>> > Cc: Vlastimil Babka <vbabka@suse.cz>
+>> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> > Cc: Len Brown <lenb@kernel.org>
+>> > Cc: Dan Williams <dan.j.williams@intel.com>
+>> > Cc: linux-pm@vger.kernel.org
+>> > Cc: linux-kernel@vger.kernel.org
+>> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+>> > ---
+>> > v2: Use an interval of 128k instead of 100k to
+>> >     avoid the modulus operation.
+>> > --
+>> >  mm/page_alloc.c | 17 +++++++++++++++--
+>> >  1 file changed, 15 insertions(+), 2 deletions(-)
+>> >
+>> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+>> > index 1bad301..3cf4201 100644
+>> > --- a/mm/page_alloc.c
+>> > +++ b/mm/page_alloc.c
+>> > @@ -66,6 +66,7 @@
+>> >  #include <linux/kthread.h>
+>> >  #include <linux/memcontrol.h>
+>> >  #include <linux/ftrace.h>
+>> > +#include <linux/nmi.h>
+>> >
+>> >  #include <asm/sections.h>
+>> >  #include <asm/tlbflush.h>
+>> > @@ -2535,9 +2536,15 @@ void drain_all_pages(struct zone *zone)
+>> >
+>> >  #ifdef CONFIG_HIBERNATION
+>> >
+>> > +/*
+>> > + * Touch the watchdog for every WD_INTERVAL_PAGE pages,
+>> > + * choose a power of 2 to avoid the modulus operation.
+>> > + */
+>> > +#define WD_INTERVAL_PAGE   (128*1024)
+>>
+>> Sort of on a second thought I would define
+>>
+>> #define WD_PAGE_COUNT         (128*1024)
+>>
+>> and then ->
+>>
+>> > +
+>> >  void mark_free_pages(struct zone *zone)
+>> >  {
+>> > -   unsigned long pfn, max_zone_pfn;
+>> > +   unsigned long pfn, max_zone_pfn, page_num = 0;
+>>
+>> +     unsigned long pfn, max_zone_pfn, page_count = WD_PAGE_COUNT;
+>>
+>> >     unsigned long flags;
+>> >     unsigned int order, t;
+>> >     struct page *page;
+>> > @@ -2552,6 +2559,9 @@ void mark_free_pages(struct zone *zone)
+>> >             if (pfn_valid(pfn)) {
+>> >                     page = pfn_to_page(pfn);
+>> >
+>> > +                   if (!((page_num++) % WD_INTERVAL_PAGE))
+>> > +                           touch_nmi_watchdog();
+>> > +
+>>
+>> ->
+>>
+>>       if (!--page_count) {
+>>               touch_nmi_watchdog();
+>>               page_count = WD_PAGE_COUNT;
+>>       }
+>>
+> I guess this is to avoid the possible overflow if the page number is too large?
+> I'll send another version out.
 
-Cc: Viresh Kumar <vireshk@kernel.org>
-Cc: Nishanth Menon <nm@ti.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
----
- drivers/base/power/opp/core.c | 30 +++++++++++++++---------------
- drivers/base/power/opp/opp.h  |  4 ++--
- 2 files changed, 17 insertions(+), 17 deletions(-)
+No, it's just one (a % b) evaluation per page less.  The assignments
+are every WD_PAGE_COUNT pages, so much less frequent.
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 37cf970..2579401 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -527,9 +527,9 @@ _generic_set_opp_clk_only(const struct opp_table *opp_table, struct device *dev,
- 	int ret;
- 
- 	if (opp_table->set_clk)
--		return opp_table->set_clk(dev, opp_table->clk, old_freq, freq);
-+		return opp_table->set_clk(dev, opp_table->cur_clk, old_freq, freq);
- 
--	ret = clk_set_rate(opp_table->clk, freq);
-+	ret = clk_set_rate(opp_table->cur_clk, freq);
- 	if (ret) {
- 		dev_err(dev, "%s: failed to set clock rate: %d\n", __func__,
- 			ret);
-@@ -615,7 +615,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 		return PTR_ERR(opp_table);
- 	}
- 
--	clk = opp_table->clk;
-+	clk = opp_table->cur_clk;
- 	if (IS_ERR(clk)) {
- 		dev_err(dev, "%s: No clock available for the device\n",
- 			__func__);
-@@ -750,9 +750,9 @@ static struct opp_table *_allocate_opp_table(struct device *dev)
- 	_of_init_opp_table(opp_table, dev);
- 
- 	/* Find clk for the device */
--	opp_table->clk = clk_get(dev, NULL);
--	if (IS_ERR(opp_table->clk)) {
--		ret = PTR_ERR(opp_table->clk);
-+	opp_table->cur_clk = clk_get(dev, NULL);
-+	if (IS_ERR(opp_table->cur_clk)) {
-+		ret = PTR_ERR(opp_table->cur_clk);
- 		if (ret != -EPROBE_DEFER)
- 			dev_dbg(dev, "%s: Couldn't find clock: %d\n", __func__,
- 				ret);
-@@ -799,8 +799,8 @@ static void _opp_table_kref_release(struct kref *kref)
- 	struct opp_device *opp_dev;
- 
- 	/* Release clk */
--	if (!IS_ERR(opp_table->clk))
--		clk_put(opp_table->clk);
-+	if (!IS_ERR(opp_table->cur_clk))
-+		clk_put(opp_table->cur_clk);
- 
- 	opp_dev = list_first_entry(&opp_table->dev_list, struct opp_device,
- 				   node);
-@@ -1393,13 +1393,13 @@ struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char *name)
- 	}
- 
- 	/* Already have default clk set, free it */
--	if (!IS_ERR(opp_table->clk))
--		clk_put(opp_table->clk);
-+	if (!IS_ERR(opp_table->cur_clk))
-+		clk_put(opp_table->cur_clk);
- 
- 	/* Find clk for the device */
--	opp_table->clk = clk_get(dev, name);
--	if (IS_ERR(opp_table->clk)) {
--		ret = PTR_ERR(opp_table->clk);
-+	opp_table->cur_clk = clk_get(dev, name);
-+	if (IS_ERR(opp_table->cur_clk)) {
-+		ret = PTR_ERR(opp_table->cur_clk);
- 		if (ret != -EPROBE_DEFER) {
- 			dev_err(dev, "%s: Couldn't find clock: %d\n", __func__,
- 				ret);
-@@ -1425,8 +1425,8 @@ void dev_pm_opp_put_clkname(struct opp_table *opp_table)
- 	/* Make sure there are no concurrent readers while updating opp_table */
- 	WARN_ON(!list_empty(&opp_table->opp_list));
- 
--	clk_put(opp_table->clk);
--	opp_table->clk = ERR_PTR(-EINVAL);
-+	clk_put(opp_table->cur_clk);
-+	opp_table->cur_clk = ERR_PTR(-EINVAL);
- 
- 	dev_pm_opp_put_opp_table(opp_table);
- }
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index c85405e..30a637c 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -132,7 +132,7 @@ enum opp_table_access {
-  * @supported_hw: Array of version number to support.
-  * @supported_hw_count: Number of elements in supported_hw array.
-  * @prop_name: A name to postfix to many DT properties, while parsing them.
-- * @clk: Device's clock handle
-+ * @cur_clk: Current device's clock handle
-  * @regulators: Supply regulators
-  * @regulator_count: Number of power supply regulators
-  * @set_opp: Platform specific set_opp callback
-@@ -169,7 +169,7 @@ struct opp_table {
- 	unsigned int *supported_hw;
- 	unsigned int supported_hw_count;
- 	const char *prop_name;
--	struct clk *clk;
-+	struct clk *cur_clk;
- 	struct regulator **regulators;
- 	unsigned int regulator_count;
- 
--- 
-2.7.4
+Thanks,
+Rafael
