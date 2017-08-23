@@ -1,78 +1,86 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 0/2] net: Fix crashes due to activity during suspend
-Date: Wed, 23 Aug 2017 13:45:57 +0200
-Message-ID: <CAMuHMdVMuW+5UQc3Tg5bWkix_PLEaxsoGA6sgSdVz0fV6UsO6Q@mail.gmail.com>
-References: <1503427046-17618-1-git-send-email-geert+renesas@glider.be> <757f672b-d3cf-9189-0533-cb45e325c6b8@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v2 0/9] PM / ACPI / i2c: Deploy runtime PM centric path for system sleep
+Date: Wed, 23 Aug 2017 16:42:00 +0200
+Message-ID: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:36203 "EHLO
-        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753768AbdHWLp6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2017 07:45:58 -0400
-In-Reply-To: <757f672b-d3cf-9189-0533-cb45e325c6b8@gmail.com>
+Received: from mail-lf0-f44.google.com ([209.85.215.44]:38782 "EHLO
+        mail-lf0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754053AbdHWOmR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2017 10:42:17 -0400
+Received: by mail-lf0-f44.google.com with SMTP id y15so1333997lfd.5
+        for <linux-pm@vger.kernel.org>; Wed, 23 Aug 2017 07:42:17 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "David S . Miller" <davem@davemloft.net>, Steve Glendinning <steve.glendinning@shawell.net>, Andrew Lunn <andrew@lunn.ch>, Lukas Wunner <lukas@wunner.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 
-Hi Florian,
+The i2c designware platform driver, drivers/i2c/busses/i2c-designware-platdrv.c,
+isn't well optimized for system sleep.
 
-On Tue, Aug 22, 2017 at 8:49 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
-> On 08/22/2017 11:37 AM, Geert Uytterhoeven wrote:
->> If an Ethernet device is used while the device is suspended, the system may
->> crash.
->>
->> E.g. on sh73a0/kzm9g and r8a73a4/ape6evm, the external Ethernet chip is
->> driven by a PM controlled clock.  If the Ethernet registers are accessed
->> while the clock is not running, the system will crash with an imprecise
->> external abort.
->>
->> This patch series fixes two of such crashes:
->>   1. The first patch prevents the PHY polling state machine from accessing
->>      PHY registers while a device is suspended,
->>   2. The second patch prevents the net core from trying to transmit packets
->>      when an smsc911x device is suspended.
->>
->> Both crashes can be reproduced on sh73a0/kzm9g and r8a73a4/ape6evm during
->> s2ram (rarely), or by using pm_test (more likely to trigger):
->>
->>     # echo 0 > /sys/module/printk/parameters/console_suspend
->>     # echo platform > /sys/power/pm_test
->>     # echo mem > /sys/power/state
->>
->> With this series applied, my test systems survive a loop of 100 test
->> suspends.
->
-> It seems to me like part, if not the entire problem is that smsc91xx's
-> suspend and resume functions are way too simplistic and absolutely do
-> not manage the PHY during suspend/resume, the PHY state machine is not
-> even stopped, so of course, this will cause bus errors if you access
-> those registers.
->
-> You are addressing this as part of patch 2, but this seems to me like
-> this is still a bit incomplete and you'd need at least phy_stop() and/or
-> phy_suspend() (does a power down of the PHY) and phy_start() and/or
-> phy_resume() calls to complete the PHY state machine shutdown during
-> suspend.
->
-> Have you tried that?
+What makes this driver particularly interesting is because it's a cross-SoC
+driver, which sometimes means there is an ACPI PM domain attached to the i2c
+device and sometimes not. The driver is being used on both x86 and ARM.
 
-Unfortunately that doesn't help.
-In state PHY_HALTED, the PHY state machine still calls the .adjust_link()
-callback while the device is suspended.
+In principle, to optimize the system sleep support in i2c driver, this series
+enables the proven runtime PM centric path for the i2c driver. However, to do
+that the ACPI PM domain also have to collaborate and understand this behaviour.
+Therefore a number of changes, patch 1 to patch 7, makes the needed changes to
+the ACPI PM domain. In patch8 and patch 9, the i2c driver gets optimized and is
+converted to the runtime PM centric path for system sleep.
 
-Do you have a clue? This is too far beyond my phy-foo...
+It shall be noted, the behaviour of the ACPI PM domain should remain intact,
+still taking benefit of using the direct_complete path during system sleep,
+except for those drivers that explicitly request it not to (via a new ACPI API
+added in this series).
 
-Thanks!
+This series has been tested on an ARM64 Hikey board, which isn't having the
+i2c device attached to the ACPI PM domain. This means that the ACPI changes
+needs to be tested on some relevant Intel SoCs and it's greatly appreciated
+is someone could help out with this, so is of course review comments.
 
-Gr{oetje,eeting}s,
+Some news in v2:
+	- The v1 contained a fix for the i2c driver, this has been sent
+	separately [1] and picked up for fixes by Wolfram for v4.13-rcs. However
+	the fix has not yet reached Linus' tree. The changes on i2c driver
+	are based upon that change.
+	- To simplify for testers, I have published a branch [2] based upon
+	Rafael's pm tree and linux-next branch, which also includes the above
+	patch.
+	- Rephrased the coverletter to clarify the intent of this series.
+	- Addressed review comments from v1.
 
-                        Geert
+[1]
+http://patchwork.ozlabs.org/patch/799803/
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+[2]
+git://git.kernel.org/pub/scm/linux/kernel/git/ulfh/mmc.git acpi_pm_i2c_rpm_path_v2
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Kind regards
+Ulf Hansson
+
+
+Ulf Hansson (9):
+  PM / ACPI: Restore acpi_subsys_complete()
+  PM / Sleep: Remove pm_complete_with_resume_check()
+  PM / ACPI: Split code validating need for runtime resume in
+    ->prepare()
+  PM / ACPI: Split acpi_lpss_suspend_late|resume_early()
+  PM / ACPI: Provide option to disable direct_complete for ACPI devices
+  PM / ACPI: Enable the runtime PM centric approach for system sleep
+  PM / ACPI: Avoid runtime resuming device in
+    acpi_subsys_suspend|freeze()
+  i2c: designware: Don't resume device in the ->complete() callback
+  i2c: designware: Deploy the runtime PM centric approach for system
+    sleep
+
+ drivers/acpi/acpi_lpss.c                    |  81 +++++++++----
+ drivers/acpi/device_pm.c                    | 169 ++++++++++++++++++++++++----
+ drivers/base/power/generic_ops.c            |  23 ----
+ drivers/i2c/busses/i2c-designware-platdrv.c |  35 +-----
+ include/acpi/acpi_bus.h                     |   1 +
+ include/linux/acpi.h                        |   4 +
+ include/linux/pm.h                          |   1 -
+ 7 files changed, 218 insertions(+), 96 deletions(-)
+
+-- 
+2.7.4
