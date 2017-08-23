@@ -1,155 +1,78 @@
-From: Shawn Lin <shawn.lin@rock-chips.com>
-Subject: Re: [PATCH v1 1/3] arm64: dts: rockchip: add mmc nodes for rk3328
- evaluation board
-Date: Wed, 23 Aug 2017 17:58:10 +0800
-Message-ID: <70373b2e-2b2f-215e-04e3-1559a00950f0@rock-chips.com>
-References: <1503477632-9661-1-git-send-email-cl@rock-chips.com>
- <1503477632-9661-2-git-send-email-cl@rock-chips.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 0/2] net: Fix crashes due to activity during suspend
+Date: Wed, 23 Aug 2017 13:45:57 +0200
+Message-ID: <CAMuHMdVMuW+5UQc3Tg5bWkix_PLEaxsoGA6sgSdVz0fV6UsO6Q@mail.gmail.com>
+References: <1503427046-17618-1-git-send-email-geert+renesas@glider.be> <757f672b-d3cf-9189-0533-cb45e325c6b8@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gbk; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1503477632-9661-2-git-send-email-cl@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: cl@rock-chips.com
-Cc: heiko@sntech.de, shawn.lin@rock-chips.com, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, shawnguo@kernel.org, rocky.hao@rock-chips.com, afaerber@suse.de, fabio.estevam@nxp.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, kever.yang@rock-chips.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:36203 "EHLO
+        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753768AbdHWLp6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2017 07:45:58 -0400
+In-Reply-To: <757f672b-d3cf-9189-0533-cb45e325c6b8@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "David S . Miller" <davem@davemloft.net>, Steve Glendinning <steve.glendinning@shawell.net>, Andrew Lunn <andrew@lunn.ch>, Lukas Wunner <lukas@wunner.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
+Hi Florian,
 
-On 2017/8/23 16:40, cl@rock-chips.com wrote:
-> From: Liang Chen <cl@rock-chips.com>
-> 
-> Rockchip's rk3328 evaluation board has 3 mmc controllers for
-> sdio/sdmmc/emmc, let's enable them.
-> 
-> Signed-off-by: Liang Chen <cl@rock-chips.com>
-> ---
->   arch/arm64/boot/dts/rockchip/rk3328-evb.dts | 74 +++++++++++++++++++++++++++++
->   1 file changed, 74 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/rockchip/rk3328-evb.dts b/arch/arm64/boot/dts/rockchip/rk3328-evb.dts
-> index 86605ae..479f9d9 100644
-> --- a/arch/arm64/boot/dts/rockchip/rk3328-evb.dts
-> +++ b/arch/arm64/boot/dts/rockchip/rk3328-evb.dts
-> @@ -60,6 +60,20 @@
->   		regulator-max-microvolt = <12000000>;
->   	};
->   
-> +	sdio_pwrseq: sdio-pwrseq {
-> +		compatible = "mmc-pwrseq-simple";
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&wifi_enable_h>;
-> +
-> +		/*
-> +		 * On the module itself this is one of these (depending
-> +		 * on the actual card populated):
-> +		 * - SDIO_RESET_L_WL_REG_ON
-> +		 * - PDN (power down when low)
-> +		 */
-> +		reset-gpios = <&gpio1 18 GPIO_ACTIVE_LOW>;
-> +	};
-> +
->   	vcc_sys: vcc-sys {
->   		compatible = "regulator-fixed";
->   		regulator-name = "vcc_sys";
-> @@ -69,6 +83,29 @@
->   		regulator-max-microvolt = <5000000>;
->   		vin-supply = <&dc_12v>;
->   	};
-> +
-> +	vcc_sd: sdmmc-regulator {
-> +		compatible = "regulator-fixed";
-> +		gpio = <&gpio0 30 GPIO_ACTIVE_LOW>;
-> +		pinctrl-names = "default";
-> +		pinctrl-0 = <&sdmmc0m1_gpio>;
-> +		regulator-name = "vcc_sd";
-> +		regulator-min-microvolt = <3300000>;
-> +		regulator-max-microvolt = <3300000>;
-> +		vin-supply = <&vcc_io>;
-> +	};
-> +};
-> +
-> +&emmc {
-> +	bus-width = <8>;
-> +	cap-mmc-highspeed;
-> +	supports-emmc;
-> +	disable-wp;
+On Tue, Aug 22, 2017 at 8:49 PM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+> On 08/22/2017 11:37 AM, Geert Uytterhoeven wrote:
+>> If an Ethernet device is used while the device is suspended, the system may
+>> crash.
+>>
+>> E.g. on sh73a0/kzm9g and r8a73a4/ape6evm, the external Ethernet chip is
+>> driven by a PM controlled clock.  If the Ethernet registers are accessed
+>> while the clock is not running, the system will crash with an imprecise
+>> external abort.
+>>
+>> This patch series fixes two of such crashes:
+>>   1. The first patch prevents the PHY polling state machine from accessing
+>>      PHY registers while a device is suspended,
+>>   2. The second patch prevents the net core from trying to transmit packets
+>>      when an smsc911x device is suspended.
+>>
+>> Both crashes can be reproduced on sh73a0/kzm9g and r8a73a4/ape6evm during
+>> s2ram (rarely), or by using pm_test (more likely to trigger):
+>>
+>>     # echo 0 > /sys/module/printk/parameters/console_suspend
+>>     # echo platform > /sys/power/pm_test
+>>     # echo mem > /sys/power/state
+>>
+>> With this series applied, my test systems survive a loop of 100 test
+>> suspends.
+>
+> It seems to me like part, if not the entire problem is that smsc91xx's
+> suspend and resume functions are way too simplistic and absolutely do
+> not manage the PHY during suspend/resume, the PHY state machine is not
+> even stopped, so of course, this will cause bus errors if you access
+> those registers.
+>
+> You are addressing this as part of patch 2, but this seems to me like
+> this is still a bit incomplete and you'd need at least phy_stop() and/or
+> phy_suspend() (does a power down of the PHY) and phy_start() and/or
+> phy_resume() calls to complete the PHY state machine shutdown during
+> suspend.
+>
+> Have you tried that?
 
-Please remove supports-{emmc,sd, sdio} for all mmc node.
+Unfortunately that doesn't help.
+In state PHY_HALTED, the PHY state machine still calls the .adjust_link()
+callback while the device is suspended.
 
-And disable-wp is for SD *only*.
+Do you have a clue? This is too far beyond my phy-foo...
 
-> +	non-removable;
-> +	num-slots = <1>;
+Thanks!
 
-num-slots is deprecated.
+Gr{oetje,eeting}s,
 
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&emmc_clk &emmc_cmd &emmc_bus8>;
-> +	status = "okay";
->   };
->   
->   &i2c1 {
-> @@ -186,6 +223,43 @@
->   			rockchip,pins = <2 RK_PA6 RK_FUNC_GPIO &pcfg_pull_up>;
->   		};
->   	};
-> +
-> +	sdio-pwrseq {
-> +		wifi_enable_h: wifi-enable-h {
-> +		rockchip,pins =
-> +			<1 18 RK_FUNC_GPIO &pcfg_pull_none>;
-> +		};
-> +	};
-> +};
-> +
-> +&sdio {
-> +	bus-width = <4>;
-> +	cap-sd-highspeed;
-> +	cap-sdio-irq;
-> +	disable-wp;
+                        Geert
 
-Ditto
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> +	keep-power-in-suspend;
-> +	max-frequency = <150000000>;
-> +	mmc-pwrseq = <&sdio_pwrseq>;
-> +	non-removable;
-> +	num-slots = <1>;
-
-Ditto
-
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&sdmmc1_bus4 &sdmmc1_cmd &sdmmc1_clk>;
-> +	supports-sdio;
-
-Ditto
-
-> +	status = "okay";
-> +};
-> +
-> +&sdmmc {
-> +	bus-width = <4>;
-> +	cap-mmc-highspeed;
-> +	cap-sd-highspeed;
-
-Ditto
-
-> +	disable-wp;
-> +	max-frequency = <150000000>;
-> +	num-slots = <1>;
-
-Ditto
-
-> +	pinctrl-names = "default";
-> +	pinctrl-0 = <&sdmmc0_clk &sdmmc0_cmd &sdmmc0_dectn &sdmmc0_bus4>;
-> +	supports-sd;
-
-Ditto
-
-> +	vmmc-supply = <&vcc_sd>;
-> +	status = "okay";
->   };
->   
->   &tsadc {
-> 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
