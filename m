@@ -1,143 +1,120 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 2/3] cpuidle: Move polling state initialization code to separate file
-Date: Wed, 23 Aug 2017 23:21:07 +0200
-Message-ID: <1851353.ppnzGx1n5b@aspire.rjw.lan>
+Subject: [PATCH 3/3] cpuidle: Make drivers initialize polling state
+Date: Wed, 23 Aug 2017 23:22:20 +0200
+Message-ID: <3097942.7PMynB0Xpq@aspire.rjw.lan>
 References: <21794463.WNaOdcSnfv@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50548 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750715AbdHWVb2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2017 17:31:28 -0400
 In-Reply-To: <21794463.WNaOdcSnfv@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
-List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Move the polling state initialization code to a separate file built
-conditionally on CONFIG_ARCH_HAS_CPU_RELAX to get rid of the #ifdef
-in driver.c.
+Make the drivers that want to include the polling state into their
+states table initialize it explicitly and drop the initialization of
+it (which in fact is conditional, but that is not obvious from the
+code) from the core.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/cpuidle/Makefile     |    1 +
- drivers/cpuidle/driver.c     |   31 -------------------------------
- drivers/cpuidle/poll_state.c |   36 ++++++++++++++++++++++++++++++++++++
- include/linux/cpuidle.h      |    6 ++++++
- 4 files changed, 43 insertions(+), 31 deletions(-)
+ drivers/acpi/processor_idle.c |    9 ++++++++-
+ drivers/cpuidle/driver.c      |    2 --
+ drivers/cpuidle/poll_state.c  |    3 ++-
+ drivers/idle/intel_idle.c     |    1 +
+ include/linux/cpuidle.h       |    4 +---
+ 5 files changed, 12 insertions(+), 7 deletions(-)
 
-Index: linux-pm/drivers/cpuidle/Makefile
+Index: linux-pm/drivers/acpi/processor_idle.c
 ===================================================================
---- linux-pm.orig/drivers/cpuidle/Makefile
-+++ linux-pm/drivers/cpuidle/Makefile
-@@ -5,6 +5,7 @@
- obj-y += cpuidle.o driver.o governor.o sysfs.o governors/
- obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
- obj-$(CONFIG_DT_IDLE_STATES)		  += dt_idle_states.o
-+obj-$(CONFIG_ARCH_HAS_CPU_RELAX)	  += poll_state.o
+--- linux-pm.orig/drivers/acpi/processor_idle.c
++++ linux-pm/drivers/acpi/processor_idle.c
+@@ -842,7 +842,7 @@ static int acpi_processor_setup_cpuidle_
  
- ##################################################################################
- # ARM SoC drivers
-Index: linux-pm/drivers/cpuidle/poll_state.c
-===================================================================
---- /dev/null
-+++ linux-pm/drivers/cpuidle/poll_state.c
-@@ -0,0 +1,36 @@
-+/*
-+ * poll_state.c - Polling idle state
-+ *
-+ * This file is released under the GPLv2.
-+ */
-+
-+#include <linux/cpuidle.h>
-+#include <linux/sched.h>
-+#include <linux/sched/idle.h>
-+
-+static int __cpuidle poll_idle(struct cpuidle_device *dev,
-+			       struct cpuidle_driver *drv, int index)
-+{
-+	local_irq_enable();
-+	if (!current_set_polling_and_test()) {
-+		while (!need_resched())
-+			cpu_relax();
+ static int acpi_processor_setup_cstates(struct acpi_processor *pr)
+ {
+-	int i, count = ACPI_IDLE_STATE_START;
++	int i, count;
+ 	struct acpi_processor_cx *cx;
+ 	struct cpuidle_state *state;
+ 	struct cpuidle_driver *drv = &acpi_idle_driver;
+@@ -850,6 +850,13 @@ static int acpi_processor_setup_cstates(
+ 	if (max_cstate == 0)
+ 		max_cstate = 1;
+ 
++	if (IS_ENABLED(CONFIG_ARCH_HAS_CPU_RELAX)) {
++		cpuidle_poll_state_init(drv);
++		count = 1;
++	} else {
++		count = 0;
 +	}
-+	current_clr_polling();
 +
-+	return index;
-+}
-+
-+void poll_idle_init(struct cpuidle_driver *drv)
-+{
-+	struct cpuidle_state *state = &drv->states[0];
-+
-+	snprintf(state->name, CPUIDLE_NAME_LEN, "POLL");
-+	snprintf(state->desc, CPUIDLE_DESC_LEN, "CPUIDLE CORE POLL IDLE");
-+	state->exit_latency = 0;
-+	state->target_residency = 0;
-+	state->power_usage = -1;
-+	state->enter = poll_idle;
-+	state->disabled = false;
-+	state->flags = CPUIDLE_FLAG_POLLING;
-+}
-Index: linux-pm/include/linux/cpuidle.h
-===================================================================
---- linux-pm.orig/include/linux/cpuidle.h
-+++ linux-pm/include/linux/cpuidle.h
-@@ -225,6 +225,12 @@ static inline void cpuidle_coupled_paral
- }
- #endif
+ 	for (i = 1; i < ACPI_PROCESSOR_MAX_POWER && i <= max_cstate; i++) {
+ 		cx = &pr->power.states[i];
  
-+#ifdef CONFIG_ARCH_HAS_CPU_RELAX
-+void poll_idle_init(struct cpuidle_driver *drv);
-+#else
-+static void poll_idle_init(struct cpuidle_driver *drv) {}
-+#endif
-+
- /******************************
-  * CPUIDLE GOVERNOR INTERFACE *
-  ******************************/
 Index: linux-pm/drivers/cpuidle/driver.c
 ===================================================================
 --- linux-pm.orig/drivers/cpuidle/driver.c
 +++ linux-pm/drivers/cpuidle/driver.c
-@@ -179,37 +179,6 @@ static void __cpuidle_driver_init(struct
- 	}
+@@ -216,8 +216,6 @@ static int __cpuidle_register_driver(str
+ 		on_each_cpu_mask(drv->cpumask, cpuidle_setup_broadcast_timer,
+ 				 (void *)1, 1);
+ 
+-	poll_idle_init(drv);
+-
+ 	return 0;
  }
  
--#ifdef CONFIG_ARCH_HAS_CPU_RELAX
--static int __cpuidle poll_idle(struct cpuidle_device *dev,
--			       struct cpuidle_driver *drv, int index)
--{
--	local_irq_enable();
--	if (!current_set_polling_and_test()) {
--		while (!need_resched())
--			cpu_relax();
--	}
--	current_clr_polling();
--
--	return index;
--}
--
--static void poll_idle_init(struct cpuidle_driver *drv)
--{
--	struct cpuidle_state *state = &drv->states[0];
--
--	snprintf(state->name, CPUIDLE_NAME_LEN, "POLL");
--	snprintf(state->desc, CPUIDLE_DESC_LEN, "CPUIDLE CORE POLL IDLE");
--	state->exit_latency = 0;
--	state->target_residency = 0;
--	state->power_usage = -1;
--	state->enter = poll_idle;
--	state->disabled = false;
--	state->flags = CPUIDLE_FLAG_POLLING;
--}
+Index: linux-pm/drivers/cpuidle/poll_state.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/poll_state.c
++++ linux-pm/drivers/cpuidle/poll_state.c
+@@ -21,7 +21,7 @@ static int __cpuidle poll_idle(struct cp
+ 	return index;
+ }
+ 
+-void poll_idle_init(struct cpuidle_driver *drv)
++void cpuidle_poll_state_init(struct cpuidle_driver *drv)
+ {
+ 	struct cpuidle_state *state = &drv->states[0];
+ 
+@@ -34,3 +34,4 @@ void poll_idle_init(struct cpuidle_drive
+ 	state->disabled = false;
+ 	state->flags = CPUIDLE_FLAG_POLLING;
+ }
++EXPORT_SYMBOL_GPL(cpuidle_poll_state_init);
+Index: linux-pm/include/linux/cpuidle.h
+===================================================================
+--- linux-pm.orig/include/linux/cpuidle.h
++++ linux-pm/include/linux/cpuidle.h
+@@ -226,9 +226,7 @@ static inline void cpuidle_coupled_paral
+ #endif
+ 
+ #ifdef CONFIG_ARCH_HAS_CPU_RELAX
+-void poll_idle_init(struct cpuidle_driver *drv);
 -#else
 -static void poll_idle_init(struct cpuidle_driver *drv) {}
--#endif /* !CONFIG_ARCH_HAS_CPU_RELAX */
--
- /**
-  * __cpuidle_register_driver: register the driver
-  * @drv: a valid pointer to a struct cpuidle_driver
-
-
++void cpuidle_poll_state_init(struct cpuidle_driver *drv);
+ #endif
+ 
+ /******************************
+Index: linux-pm/drivers/idle/intel_idle.c
+===================================================================
+--- linux-pm.orig/drivers/idle/intel_idle.c
++++ linux-pm/drivers/idle/intel_idle.c
+@@ -1331,6 +1331,7 @@ static void __init intel_idle_cpuidle_dr
+ 
+ 	intel_idle_state_table_update();
+ 
++	cpuidle_poll_state_init(drv);
+ 	drv->state_count = 1;
+ 
+ 	for (cstate = 0; cstate < CPUIDLE_STATE_MAX; ++cstate) {
