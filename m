@@ -1,83 +1,155 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH 2/2] cpufreq: dt-platdev: Drop few entries from whitelist
-Date: Wed, 23 Aug 2017 12:33:31 +0900
-Message-ID: <CAK7LNAStx37ExGUErCz1WDJKA=tjX4D4_FfMQwprLMGG7bib6w@mail.gmail.com>
-References: <e93c74a19ebf6d7ee687ef8b71b3150a96527f7c.1502861444.git.viresh.kumar@linaro.org>
- <7182e308a552d37064f61e724c709667a6fa098d.1502861444.git.viresh.kumar@linaro.org>
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH][v2] PM / Hibernate: Feed the wathdog when creating
+ snapshot
+Date: Wed, 23 Aug 2017 11:44:39 +0800
+Message-ID: <20170823034439.GA29634@yu-desktop-1.sh.intel.com>
+References: <1503372002-13310-1-git-send-email-yu.c.chen@intel.com>
+ <1595884.XH9dSsijkg@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7182e308a552d37064f61e724c709667a6fa098d.1502861444.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, Wei Xu <xuwei5@hisilicon.com>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Jun Nie <jun.nie@linaro.org>, baoyou.xie@linaro.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:53805 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753057AbdHWDnB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 22 Aug 2017 23:43:01 -0400
+Content-Disposition: inline
+In-Reply-To: <1595884.XH9dSsijkg@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@kernel.org>, Mel Gorman <mgorman@techsingularity.net>, Vlastimil Babka <vbabka@suse.cz>, Len Brown <lenb@kernel.org>, Dan Williams <dan.j.williams@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Viresh,
-
-
-2017-08-16 14:37 GMT+09:00 Viresh Kumar <viresh.kumar@linaro.org>:
-> Drop few ARM (32 and 64 bit) platforms from the whitelist which always
-> use "operating-points-v2" property from their DT. They should continue
-> to work after this patch.
+On Tue, Aug 22, 2017 at 02:55:39PM +0200, Rafael J. Wysocki wrote:
+> On Tuesday, August 22, 2017 5:20:02 AM CEST Chen Yu wrote:
+> > There is a problem that when counting the pages for creating
+> > the hibernation snapshot will take significant amount of
+> > time, especially on system with large memory. Since the counting
+> > job is performed with irq disabled, this might lead to NMI lockup.
+> > The following warning were found on a system with 1.5TB DRAM:
+> > 
+> > [ 1124.758184] Freezing user space processes ... (elapsed 0.002 seconds) done.
+> > [ 1124.768721] OOM killer disabled.
+> > [ 1124.847009] PM: Preallocating image memory...
+> > [ 1139.392042] NMI watchdog: Watchdog detected hard LOCKUP on cpu 27
+> > [ 1139.392076] CPU: 27 PID: 3128 Comm: systemd-sleep Not tainted 4.13.0-0.rc2.git0.1.fc27.x86_64 #1
+> > [ 1139.392077] task: ffff9f01971ac000 task.stack: ffffb1a3f325c000
+> > [ 1139.392083] RIP: 0010:memory_bm_find_bit+0xf4/0x100
+> > [ 1139.392084] RSP: 0018:ffffb1a3f325fc20 EFLAGS: 00000006
+> > [ 1139.392084] RAX: 0000000000000000 RBX: 0000000013b83000 RCX: ffff9fbe89caf000
+> > [ 1139.392085] RDX: ffffb1a3f325fc30 RSI: 0000000000003200 RDI: ffff9fbeaffffe80
+> > [ 1139.392085] RBP: ffffb1a3f325fc40 R08: 0000000013b80000 R09: ffff9fbe89c54878
+> > [ 1139.392085] R10: ffffb1a3f325fc2c R11: 0000000013b83200 R12: 0000000000000400
+> > [ 1139.392086] R13: fffffd552e0c0000 R14: ffff9fc1bffd31e0 R15: 0000000000000202
+> > [ 1139.392086] FS:  00007f3189704180(0000) GS:ffff9fbec8ec0000(0000) knlGS:0000000000000000
+> > [ 1139.392087] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+> > [ 1139.392087] CR2: 00000085da0f7398 CR3: 000001771cf9a000 CR4: 00000000007406e0
+> > [ 1139.392088] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > [ 1139.392088] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+> > [ 1139.392088] PKRU: 55555554
+> > [ 1139.392089] Call Trace:
+> > [ 1139.392092]  ? memory_bm_set_bit+0x29/0x60
+> > [ 1139.392094]  swsusp_set_page_free+0x2b/0x30
+> > [ 1139.392098]  mark_free_pages+0x147/0x1c0
+> > [ 1139.392099]  count_data_pages+0x41/0xa0
+> > [ 1139.392101]  hibernate_preallocate_memory+0x80/0x450
+> > [ 1139.392102]  hibernation_snapshot+0x58/0x410
+> > [ 1139.392103]  hibernate+0x17c/0x310
+> > [ 1139.392104]  state_store+0xdf/0xf0
+> > [ 1139.392107]  kobj_attr_store+0xf/0x20
+> > [ 1139.392111]  sysfs_kf_write+0x37/0x40
+> > [ 1139.392113]  kernfs_fop_write+0x11c/0x1a0
+> > [ 1139.392117]  __vfs_write+0x37/0x170
+> > [ 1139.392121]  ? handle_mm_fault+0xd8/0x230
+> > [ 1139.392122]  vfs_write+0xb1/0x1a0
+> > [ 1139.392123]  SyS_write+0x55/0xc0
+> > [ 1139.392126]  entry_SYSCALL_64_fastpath+0x1a/0xa5
+> > ...
+> > [ 1144.690405] done (allocated 6590003 pages)
+> > [ 1144.694971] PM: Allocated 26360012 kbytes in 19.89 seconds (1325.28 MB/s)
+> > 
+> > It has taken nearly 20 seconds(2.10GHz CPU) thus the NMI lockup
+> > was triggered. In case the timeout of the NMI watch dog has been
+> > set to 1 second, a safe interval should be 6590003/20 = 320k pages
+> > in theory. However there might also be some platforms running at a
+> > lower frequency, so feed the watchdog every 128k pages(per Andrew's
+> > suggestion, this should avoid the modulus operation).
+> > 
+> > Reported-by: Jan Filipcewicz <jan.filipcewicz@intel.com>
+> > Suggested-by: Michal Hocko <mhocko@suse.com>
+> > Reviewed-by: Michal Hocko <mhocko@suse.com>
+> > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > Cc: Michal Hocko <mhocko@kernel.org>
+> > Cc: Mel Gorman <mgorman@techsingularity.net>
+> > Cc: Vlastimil Babka <vbabka@suse.cz>
+> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > Cc: Len Brown <lenb@kernel.org>
+> > Cc: Dan Williams <dan.j.williams@intel.com>
+> > Cc: linux-pm@vger.kernel.org
+> > Cc: linux-kernel@vger.kernel.org
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > ---
+> > v2: Use an interval of 128k instead of 100k to
+> >     avoid the modulus operation.
+> > --
+> >  mm/page_alloc.c | 17 +++++++++++++++--
+> >  1 file changed, 15 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> > index 1bad301..3cf4201 100644
+> > --- a/mm/page_alloc.c
+> > +++ b/mm/page_alloc.c
+> > @@ -66,6 +66,7 @@
+> >  #include <linux/kthread.h>
+> >  #include <linux/memcontrol.h>
+> >  #include <linux/ftrace.h>
+> > +#include <linux/nmi.h>
+> >  
+> >  #include <asm/sections.h>
+> >  #include <asm/tlbflush.h>
+> > @@ -2535,9 +2536,15 @@ void drain_all_pages(struct zone *zone)
+> >  
+> >  #ifdef CONFIG_HIBERNATION
+> >  
+> > +/*
+> > + * Touch the watchdog for every WD_INTERVAL_PAGE pages,
+> > + * choose a power of 2 to avoid the modulus operation.
+> > + */
+> > +#define WD_INTERVAL_PAGE	(128*1024)
+> 
+> Sort of on a second thought I would define
+> 
+> #define WD_PAGE_COUNT		(128*1024)
+> 
+> and then ->
+> 
+> > +
+> >  void mark_free_pages(struct zone *zone)
+> >  {
+> > -	unsigned long pfn, max_zone_pfn;
+> > +	unsigned long pfn, max_zone_pfn, page_num = 0;
+> 
+> +	unsigned long pfn, max_zone_pfn, page_count = WD_PAGE_COUNT;
+> 
+> >  	unsigned long flags;
+> >  	unsigned int order, t;
+> >  	struct page *page;
+> > @@ -2552,6 +2559,9 @@ void mark_free_pages(struct zone *zone)
+> >  		if (pfn_valid(pfn)) {
+> >  			page = pfn_to_page(pfn);
+> >  
+> > +			if (!((page_num++) % WD_INTERVAL_PAGE))
+> > +				touch_nmi_watchdog();
+> > +
+> 
+> ->
+> 
+> 	if (!--page_count) {
+> 		touch_nmi_watchdog();
+> 		page_count = WD_PAGE_COUNT;
+> 	}
 >
-> Tested on Hikey platform (only the "hisilicon,hi6220" entry).
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq-dt-platdev.c | 11 -----------
->  1 file changed, 11 deletions(-)
->
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 061b468512a2..45f2ec3b7f7a 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -27,7 +27,6 @@ static const struct of_device_id whitelist[] __initconst = {
->         { .compatible = "allwinner,sun6i-a31s", },
->         { .compatible = "allwinner,sun7i-a20", },
->         { .compatible = "allwinner,sun8i-a23", },
-> -       { .compatible = "allwinner,sun8i-a33", },
->         { .compatible = "allwinner,sun8i-a83t", },
->         { .compatible = "allwinner,sun8i-h3", },
->
-> @@ -37,7 +36,6 @@ static const struct of_device_id whitelist[] __initconst = {
->         { .compatible = "arm,integrator-cp", },
->
->         { .compatible = "hisilicon,hi3660", },
-> -       { .compatible = "hisilicon,hi6220", },
->
->         { .compatible = "fsl,imx27", },
->         { .compatible = "fsl,imx51", },
-> @@ -51,11 +49,8 @@ static const struct of_device_id whitelist[] __initconst = {
->         { .compatible = "samsung,exynos3250", },
->         { .compatible = "samsung,exynos4210", },
->         { .compatible = "samsung,exynos4212", },
-> -       { .compatible = "samsung,exynos4412", },
->         { .compatible = "samsung,exynos5250", },
->  #ifndef CONFIG_BL_SWITCHER
-> -       { .compatible = "samsung,exynos5420", },
-> -       { .compatible = "samsung,exynos5433", },
->         { .compatible = "samsung,exynos5800", },
->  #endif
->
-> @@ -87,11 +82,7 @@ static const struct of_device_id whitelist[] __initconst = {
->         { .compatible = "rockchip,rk3368", },
->         { .compatible = "rockchip,rk3399", },
->
-> -       { .compatible = "socionext,uniphier-pro5", },
-> -       { .compatible = "socionext,uniphier-pxs2", },
->         { .compatible = "socionext,uniphier-ld6b", },
-> -       { .compatible = "socionext,uniphier-ld11", },
-> -       { .compatible = "socionext,uniphier-ld20", },
+I guess this is to avoid the possible overflow if the page number is too large?
+I'll send another version out.
 
-
-Please remove "socionext,uniphier-ld6b" as well.
-
-It includes the same silicon die
-of "socionext,uniphier-pxs2".
-
-
-
--- 
-Best Regards
-Masahiro Yamada
+Thanks,
+	Yu
