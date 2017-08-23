@@ -1,56 +1,32 @@
 From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: Re: [PATCH] devfreq: Convert to using %pOF instead of full_name
-Date: Wed, 23 Aug 2017 13:09:53 -0500
-Message-ID: <CAL_JsqL9x16Z76VSAkDUiyEddafYuiH4mFTUur=8LgrJehrFLw@mail.gmail.com>
-References: <20170718214339.7774-17-robh@kernel.org> <CGME20170718214411epcas2p43fc1475c80245889737ba9e731497e38@epcms1p2>
- <596EB809.7050605@samsung.com> <20170720052553epcms1p24dc190a0d51f2e447a76e417e519bd28@epcms1p2>
+Subject: Re: [PATCH] cpuidle: Convert to using %pOF instead of full_name
+Date: Wed, 23 Aug 2017 13:14:51 -0500
+Message-ID: <CAL_JsqJVrCHsj23GQrbsAuVkwsnMEOA0QFLN5hjBNrSBZ=yZog@mail.gmail.com>
+References: <20170718214339.7774-15-robh@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170720052553epcms1p24dc190a0d51f2e447a76e417e519bd28@epcms1p2>
+In-Reply-To: <20170718214339.7774-15-robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Jul 20, 2017 at 12:25 AM, MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org> wrote:
->> On 2017년 07월 19일 06:42, Rob Herring wrote:
->> > Now that we have a custom printf format specifier, convert users of
->> > full_name to use %pOF instead. This is preparation to remove storing
->> > of the full path string for each node.
->> >
->> > Signed-off-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
->> > Cc: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> > Cc: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> > Cc: Kyungmin Park <kyungmin.park-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->> > Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
->> > ---
->> >  drivers/devfreq/devfreq-event.c | 4 ++--
->> >  1 file changed, 2 insertions(+), 2 deletions(-)
->> >
->> > diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
->> > index 8648b32ebc89..d67242d87744 100644
->> > --- a/drivers/devfreq/devfreq-event.c
->> > +++ b/drivers/devfreq/devfreq-event.c
->> > @@ -277,8 +277,8 @@ int devfreq_event_get_edev_count(struct device *dev)
->> >                                             sizeof(u32));
->> >     if (count < 0) {
->> >             dev_err(dev,
->> > -                   "failed to get the count of devfreq-event in %s node\n",
->> > -                   dev->of_node->full_name);
->> > +                   "failed to get the count of devfreq-event in %pOF node\n",
->> > +                   dev->of_node);
->> >             return count;
->> >     }
->> >
->>
->> Reviewed-by: Chanwoo Choi <cw00.choi-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
->>
+On Tue, Jul 18, 2017 at 4:42 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> Now that we have a custom printf format specifier, convert users of
+> full_name to use %pOF instead. This is preparation to remove storing
+> of the full path string for each node.
 >
-> Acked-by: MyungJoo Ham <myungjoo.ham-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+> Signed-off-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+> Cc: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> ---
+>  drivers/cpuidle/dt_idle_states.c | 20 ++++++++++----------
+>  1 file changed, 10 insertions(+), 10 deletions(-)
 
-Please take this thru the devfreq tree.
+Rafael, Ping. Please apply this one and 2 others for cpufreq and
+PM-domains which haven't been applied yet.
 
 Rob
 --
