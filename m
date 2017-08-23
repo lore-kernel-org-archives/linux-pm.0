@@ -1,118 +1,99 @@
 From: Dong Aisheng <aisheng.dong@nxp.com>
-Subject: [PATCH 4/7] PM / OPP: use OPP node clock to set CPU frequency
-Date: Thu, 24 Aug 2017 00:10:07 +0800
-Message-ID: <1503504610-12880-5-git-send-email-aisheng.dong@nxp.com>
+Subject: [PATCH 2/7] dt-bindings: PM / OPP: add clocks per OPP node support
+Date: Thu, 24 Aug 2017 00:10:05 +0800
+Message-ID: <1503504610-12880-3-git-send-email-aisheng.dong@nxp.com>
 References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-sn1nam02on0077.outbound.protection.outlook.com ([104.47.36.77]:24576
-        "EHLO NAM02-SN1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S932204AbdHWQKc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 23 Aug 2017 12:10:32 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com, Dong Aisheng <aisheng.dong@nxp.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com, Dong Aisheng <aisheng.dong@nxp.com>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, devicetree@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-If OPP node has a valid clock, we use this corresponding OPP clock to
-set the device clock frequency instead of the default opp_table->clk which
-is shared by all OPPs.
+It's used for platforms where different OPPs may use different clocks.
+With this extended binding, user could specify the correct clock for each
+OPP node.
 
 Cc: Viresh Kumar <vireshk@kernel.org>
 Cc: Nishanth Menon <nm@ti.com>
 Cc: Stephen Boyd <sboyd@codeaurora.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Frank Rowand <frowand.list@gmail.com>
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
 ---
- drivers/base/power/opp/core.c | 10 +++++++++-
- drivers/base/power/opp/of.c   |  8 ++++++++
- drivers/base/power/opp/opp.h  |  3 +++
- 3 files changed, 20 insertions(+), 1 deletion(-)
+ Documentation/devicetree/bindings/opp/opp.txt | 52 +++++++++++++++++++++++++++
+ 1 file changed, 52 insertions(+)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 2579401..d4656cc 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -600,7 +600,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 	struct opp_table *opp_table;
- 	unsigned long freq, old_freq;
- 	struct dev_pm_opp *old_opp, *opp;
--	struct clk *clk;
-+	struct clk *clk, *old_clk = NULL;
- 	int ret, size;
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index e36d261..40a4340 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -152,6 +152,11 @@ Optional properties:
+   hierarchy can be contained in multiple 32 bit values. i.e. <X Y Z1 Z2> in the
+   above example, Z1 & Z2 refer to the version hierarchy Z.
  
- 	if (unlikely(!target_freq)) {
-@@ -651,6 +651,11 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 		goto put_old_opp;
- 	}
- 
-+	if (!IS_ERR_OR_NULL(opp->clk)) {
-+		old_clk = opp_table->cur_clk;
-+		opp_table->cur_clk = opp->clk;
-+	}
++- clocks: Clock phandle and specifier used for this opp.
 +
- 	dev_dbg(dev, "%s: switching OPP: %lu Hz --> %lu Hz\n", __func__,
- 		old_freq, freq);
- 
-@@ -683,6 +688,9 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 		ret = opp_table->set_opp(data);
- 	}
- 
-+	if (ret && !IS_ERR_OR_NULL(opp->clk))
-+		opp_table->cur_clk = old_clk;
++- clock-names: clock names for this opp. The valid clock names are platform
++	       specific.
 +
- 	dev_pm_opp_put(opp);
- put_old_opp:
- 	if (!IS_ERR(old_opp))
-diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
-index 57eec1c..64909e7 100644
---- a/drivers/base/power/opp/of.c
-+++ b/drivers/base/power/opp/of.c
-@@ -13,6 +13,7 @@
+ - status: Marks the node enabled/disabled.
  
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
-+#include <linux/clk.h>
- #include <linux/cpu.h>
- #include <linux/errno.h>
- #include <linux/device.h>
-@@ -314,6 +315,13 @@ static int _opp_add_static_v2(struct opp_table *opp_table, struct device *dev,
- 	new_opp->dynamic = false;
- 	new_opp->available = true;
- 
-+	new_opp->clk = of_clk_get(np, 0);
-+	if (IS_ERR(new_opp->clk)) {
-+		ret = PTR_ERR(new_opp->clk);
-+		if (ret == -EPROBE_DEFER)
-+			return -EPROBE_DEFER;
-+	}
+ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+@@ -528,3 +533,50 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
+ 		};
+ 	};
+ };
 +
- 	if (!of_property_read_u32(np, "clock-latency-ns", &val))
- 		new_opp->clock_latency_ns = val;
- 
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index 30a637c..dbe8ec6 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -60,6 +60,7 @@ extern struct list_head opp_tables;
-  * @suspend:	true if suspend OPP
-  * @rate:	Frequency in hertz
-  * @supplies:	Power supplies voltage/current values
-+ * @clk:	Clock used for this OPP
-  * @clock_latency_ns: Latency (in nanoseconds) of switching to this OPP's
-  *		frequency from any other OPP's frequency.
-  * @opp_table:	points back to the opp_table struct this opp belongs to
-@@ -80,6 +81,8 @@ struct dev_pm_opp {
- 
- 	struct dev_pm_opp_supply *supplies;
- 
-+	struct clk *clk;
++Example 7: Single core ARM cortex A7, switch separate clocks for each OPP:
 +
- 	unsigned long clock_latency_ns;
- 
- 	struct opp_table *opp_table;
++/ {
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		cpu@0 {
++			compatible = "arm,cortex-a7";
++			reg = <0>;
++			next-level-cache = <&L2>;
++			clocks = <&clk_controller 0>;
++			clock-names = "cpu";
++			cpu-supply = <&cpu_supply0>;
++			operating-points-v2 = <&cpu0_opp_table>;
++		};
++	};
++
++	cpu0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++		opp-shared;
++
++		opp-1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++			opp-microvolt = <975000 970000 985000>;
++			opp-microamp = <70000>;
++			clock-latency-ns = <300000>;
++			clocks = <&clk_controller 0>;
++			opp-suspend;
++		};
++		opp-1100000000 {
++			opp-hz = /bits/ 64 <1100000000>;
++			opp-microvolt = <1000000 980000 1010000>;
++			opp-microamp = <80000>;
++			clocks = <&clk_controller 1>;
++			clock-latency-ns = <310000>;
++		};
++		opp-1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			opp-microvolt = <1025000>;
++			clocks = <&clk_controller 2>;
++			clock-latency-ns = <290000>;
++			turbo-mode;
++		};
++	};
++};
 -- 
 2.7.4
