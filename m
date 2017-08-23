@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2 1/9] PM / ACPI: Restore acpi_subsys_complete()
-Date: Wed, 23 Aug 2017 16:42:01 +0200
-Message-ID: <1503499329-28834-2-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v2 7/9] PM / ACPI: Avoid runtime resuming device in acpi_subsys_suspend|freeze()
+Date: Wed, 23 Aug 2017 16:42:07 +0200
+Message-ID: <1503499329-28834-8-git-send-email-ulf.hansson@linaro.org>
 References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org>
@@ -10,86 +10,79 @@ To: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, 
 Cc: Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have
-been reset by firmware"), made PCI's and ACPI's ->complete() callbacks to
-be assigned to a new API called pm_complete_with_resume_check(), which was
-introduced in the same change.
+In the case when the no_direct_complete flag is set for the ACPI device, we
+can under some conditions during system sleep, avoid runtime resuming the
+device in acpi_subsys_suspend|freeze(). This means we can decrease the time
+needed for the device to enter its system sleep state, but also that we can
+avoid to waste power.
 
-Later it turned out that using pm_complete_with_resume_check() isn't good
-enough for PCI, as it needs additional PCI specific checks, before deciding
-whether runtime resuming the device is needed when running the ->complete()
-callback.
-
-This leaves ACPI being the only user of pm_complete_with_resume_check().
-Therefore let's restore ACPI's acpi_subsys_complete(), which was dropped in
-commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have been
-reset by firmware").
-
-This enables us to remove the pm_complete_with_resume_check() API in a
-following change, but it also enables ACPI to add more ACPI specific checks
-in acpi_subsys_complete() if it turns out that is needed.
+More precisely, calling acpi_dev_needs_resume() from the
+acpi_subsys_suspend|freeze() in cases when the no_direct_complete flag has
+been set for the device, tells us if a runtime resume of the device is
+needed. Thus it may allow us to avoid it.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v2:
-	- None.
+	- Clarified changelog.
+	- Improved comments is code.
+	- Rebased.
+	- Improved change to avoid open-coding.
 
 ---
- drivers/acpi/acpi_lpss.c |  2 +-
- drivers/acpi/device_pm.c | 19 ++++++++++++++++++-
- 2 files changed, 19 insertions(+), 2 deletions(-)
+ drivers/acpi/device_pm.c | 23 +++++++++++++++++++----
+ 1 file changed, 19 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/acpi/acpi_lpss.c b/drivers/acpi/acpi_lpss.c
-index 032ae44..0c84d15 100644
---- a/drivers/acpi/acpi_lpss.c
-+++ b/drivers/acpi/acpi_lpss.c
-@@ -894,7 +894,7 @@ static struct dev_pm_domain acpi_lpss_pm_domain = {
- #ifdef CONFIG_PM
- #ifdef CONFIG_PM_SLEEP
- 		.prepare = acpi_subsys_prepare,
--		.complete = pm_complete_with_resume_check,
-+		.complete = acpi_subsys_complete,
- 		.suspend = acpi_subsys_suspend,
- 		.suspend_late = acpi_lpss_suspend_late,
- 		.resume_early = acpi_lpss_resume_early,
 diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
-index fbcc73f..632f214 100644
+index b595968..5dd23de 100644
 --- a/drivers/acpi/device_pm.c
 +++ b/drivers/acpi/device_pm.c
-@@ -1020,6 +1020,23 @@ int acpi_subsys_prepare(struct device *dev)
- EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
- 
- /**
-+ * acpi_subsys_complete - Finalize device's resume during system resume.
-+ * @dev: Device to handle.
-+ */
-+void acpi_subsys_complete(struct device *dev)
-+{
-+	pm_generic_complete(dev);
-+	/*
-+	 * If the device had been runtime-suspended before the system went into
-+	 * the sleep state it is going out of and it has never been resumed till
-+	 * now, resume it in case the firmware powered it up.
-+	 */
-+	if (dev->power.direct_complete && pm_resume_via_firmware())
-+		pm_request_resume(dev);
-+}
-+EXPORT_SYMBOL_GPL(acpi_subsys_complete);
-+
-+/**
-  * acpi_subsys_suspend - Run the device driver's suspend callback.
+@@ -1117,11 +1117,19 @@ EXPORT_SYMBOL_GPL(acpi_subsys_complete);
   * @dev: Device to handle.
   *
-@@ -1087,7 +1104,7 @@ static struct dev_pm_domain acpi_general_pm_domain = {
- 		.runtime_resume = acpi_subsys_runtime_resume,
- #ifdef CONFIG_PM_SLEEP
- 		.prepare = acpi_subsys_prepare,
--		.complete = pm_complete_with_resume_check,
-+		.complete = acpi_subsys_complete,
- 		.suspend = acpi_subsys_suspend,
- 		.suspend_late = acpi_subsys_suspend_late,
- 		.resume_early = acpi_subsys_resume_early,
+  * Follow PCI and resume devices suspended at run time before running their
+- * system suspend callbacks.
++ * system suspend callbacks. However, try to avoid it when no_direct_complete
++ * is set.
+  */
+ int acpi_subsys_suspend(struct device *dev)
+ {
+-	pm_runtime_resume(dev);
++	struct acpi_device *adev = ACPI_COMPANION(dev);
++
++	if (!adev)
++		return 0;
++
++	if (!adev->power.no_direct_complete || acpi_dev_needs_resume(dev, adev))
++		pm_runtime_resume(dev);
++
+ 	return pm_generic_suspend(dev);
+ }
+ EXPORT_SYMBOL_GPL(acpi_subsys_suspend);
+@@ -1178,13 +1186,20 @@ EXPORT_SYMBOL_GPL(acpi_subsys_resume_early);
+  */
+ int acpi_subsys_freeze(struct device *dev)
+ {
++	struct acpi_device *adev = ACPI_COMPANION(dev);
++
++	if (!adev)
++		return 0;
++
+ 	/*
+ 	 * This used to be done in acpi_subsys_prepare() for all devices and
+ 	 * some drivers may depend on it, so do it here.  Ideally, however,
+ 	 * runtime-suspended devices should not be touched during freeze/thaw
+-	 * transitions.
++	 * transitions. In case the no_direct_complete is set, try to avoid it.
+ 	 */
+-	pm_runtime_resume(dev);
++	if (!adev->power.no_direct_complete || acpi_dev_needs_resume(dev, adev))
++		pm_runtime_resume(dev);
++
+ 	return pm_generic_freeze(dev);
+ }
+ EXPORT_SYMBOL_GPL(acpi_subsys_freeze);
 -- 
 2.7.4
 
