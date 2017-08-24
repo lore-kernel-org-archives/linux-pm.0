@@ -1,54 +1,67 @@
-From: Luca Coelho <luca@coelho.fi>
-Subject: Re: [PATCH v2] iwlwifi: pcie: move rx workqueue initialization to
- iwl_trans_pcie_alloc()
-Date: Thu, 24 Aug 2017 09:00:32 +0300
-Message-ID: <1503554432.15969.415.camel@coelho.fi>
-References: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
-         <20170822073729.4856-1-luca@coelho.fi>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 5/9] PM / ACPI: Provide option to disable
+ direct_complete for ACPI devices
+Date: Thu, 24 Aug 2017 10:19:43 +0200
+Message-ID: <CAPDyKFrGvqhBdenSyQ8Qr76DbfEvc74_dKZAjraA5qL63Mm2rg@mail.gmail.com>
+References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org>
+ <1503499329-28834-6-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0gJn=SzNFGUT7Zb+CfhQBZ7KNDK2GTSSXGexD8GObjGOw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from paleale.coelho.fi ([176.9.41.70]:45468 "EHLO
-        farmhouse.coelho.fi" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751283AbdHXGAl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Aug 2017 02:00:41 -0400
-In-Reply-To: <20170822073729.4856-1-luca@coelho.fi>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0gJn=SzNFGUT7Zb+CfhQBZ7KNDK2GTSSXGexD8GObjGOw@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: jikos@kernel.org, linux-wireless@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linuxwifi@intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, david.weinehall@intel.com, johannes.berg@intel.com, kvalo@codeaurora.org, sara.sharon@intel.com, emmanuel.grumbach@intel.com
 
-On Tue, 2017-08-22 at 10:37 +0300, Luca Coelho wrote:
-> From: Luca Coelho <luciano.coelho@intel.com>
-> 
-> Work queues cannot be allocated when a mutex is held because the mutex
-> may be in use and that would make it sleep.  Doing so generates the
-> following splat with 4.13+:
-> 
-> [   19.513298] ======================================================
-> [   19.513429] WARNING: possible circular locking dependency detected
-> [   19.513557] 4.13.0-rc5+ #6 Not tainted
-> [   19.513638] ------------------------------------------------------
-> [   19.513767] cpuhp/0/12 is trying to acquire lock:
-> [   19.513867]  (&tz->lock){+.+.+.}, at: [<ffffffff924afebb>] thermal_zone_get_temp+0x5b/0xb0
-> [   19.514047]
-> [   19.514047] but task is already holding lock:
-> [   19.514166]  (cpuhp_state){+.+.+.}, at: [<ffffffff91cc4baa>] cpuhp_thread_fun+0x3a/0x210
-> [   19.514338]
-> [   19.514338] which lock already depends on the new lock.
-> 
-> This lock dependency already existed with previous kernel versions,
-> but it was not detected until commit 49dfe2a67797 ("cpuhotplug: Link
-> lock stacks for hotplug callbacks") was introduced.
-> 
-> Reported-by: David Weinehall <david.weinehall@intel.com>
-> Reported-by: Jiri Kosina <jikos@kernel.org>
-> Signed-off-by: Luca Coelho <luciano.coelho@intel.com>
+On 24 August 2017 at 01:39, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Aug 23, 2017 at 4:42 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> In some cases a driver for an ACPI device needs to be able to prevent the
+>> ACPI PM domain from using the direct_complete path during system sleep.
+>>
+>> One typical case is when the driver for the device needs its device to stay
+>> runtime enabled, during the __device_suspend phase. This isn't the case
+>> when the direct_complete path is being executed by the PM core, as it then
+>> disables runtime PM for the device in __device_suspend(). Any following
+>> attempts to runtime resume the device after that point, just fails.
+>
+> OK, that is a problem.
+>
+>> A workaround to this problem is to let the driver runtime resume its device
+>> from its ->prepare() callback, as that would prevent the direct_complete
+>> path from being executed. However, that may often be a waste, especially if
+>> it turned out that no one really needed the device.
+>>
+>> For this reason, invent acpi_dev_disable|enable_direct_complete(), to allow
+>> drivers to inform the ACPI PM domain to change its default behaviour during
+>> system sleep, and thus control whether it may use the direct_complete path
+>> or not.
+>
+> But I'm not sure this is the right place to address it as it very well
+> may affect a PCI device too.
+>
+> Also, this is about the device and not about its ACPI companion
+> object, so putting the flag in there is somewhat unclean, so to speak.
+>
+> It looks like we need a flag in dev_pm_info saying something along the
+> lines of "my system suspend callback can deal with runtime PM" that
+> will cause the direct_complete update to occur in
+> __device_suspend_late() instead of __device_suspend().
 
-Jiri, did you have a chance to try this out? I'm about to ask Kalle to
-merge this so it gets in in time for 4.13-rc7.
+I realize that in the end this turns out to be a comparison between
+the runtime PM centric path and the direct_complete path while
+implementing system sleep. In patch 9, there is some more explanation
+around this, however if you like I can elaborate even more about
+this!?
 
---
-Cheers,
-Luca.
+Regarding making changes to the PM core and adding more flags to the
+dev_pm_info etc, I am not sure we really want that. Isn't it already
+complex enough?
+
+My point is, that I am trying to improve the behavior of the ACPI PM
+domain by enabling the runtime PM centric path for it, and even if
+there is something similar that could be done for PCI, I don't think
+we should need involvement by the PM core.
+
+Kind regards
+Uffe
