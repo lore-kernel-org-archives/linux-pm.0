@@ -1,40 +1,54 @@
-From: <cl@rock-chips.com>
-Subject: [PATCH v2 3/3] arm64: dts: rockchip: add cpu regulator for rk3328 evaluation board
-Date: Thu, 24 Aug 2017 10:37:03 +0800
-Message-ID: <1503542223-21044-4-git-send-email-cl@rock-chips.com>
-References: <1503542223-21044-1-git-send-email-cl@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1503542223-21044-1-git-send-email-cl@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: heiko@sntech.de
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, shawnguo@kernel.org, rocky.hao@rock-chips.com, afaerber@suse.de, fabio.estevam@nxp.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, shawn.lin@rock-chips.com, kever.yang@rock-chips.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-pm@vger.kernel.org, Liang Chen <cl@rock-chips.com>
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v3 0/5] bq27xxx_battery data memory update
+Date: Wed, 23 Aug 2017 20:36:12 -0700
+Message-ID: <20170824033617.20840-1-liam@networkimprov.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:36843 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751038AbdHXDgx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2017 23:36:53 -0400
+Received: by mail-pg0-f68.google.com with SMTP id m7so1961188pga.3
+        for <linux-pm@vger.kernel.org>; Wed, 23 Aug 2017 20:36:53 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org
+Cc: Paul Kocialkowski <contact@paulk.fr>
 
-From: Liang Chen <cl@rock-chips.com>
+Overview:
+* Reorganizes chip data definitions
+* Enables features landed in these patches:
+  dt-bindings: power: supply: bq27xxx: Add monitored-battery documentation
+  power: supply: bq27xxx: Add chip data memory read/write support
+  power: supply: bq27xxx: Add power_supply_battery_info support
+* Supports the following chips (only BQ27425 is active)
+  BQ27500, 545, 425, 421, 441, 621
 
-RK3328 Evaluation Board use rk805 pmic, and one of the DCDCs in
-rk805 is for cpu regulator, assign the cpu regulator, so the
-cpufreq can work fine.
+Changes in v3:
+* BQ27425 tested; workaround minor chip bug
+* Dropped driver_version
+* Fixed dbg_dupes logic for .props & .dm_regs
+* Dropped two props array dupes
 
-Signed-off-by: Liang Chen <cl@rock-chips.com>
----
- arch/arm64/boot/dts/rockchip/rk3328-evb.dts | 4 ++++
- 1 file changed, 4 insertions(+)
+Changes in v2:
+* Added di->opts flags for remaining chip features
+* Commented out untested bq27xxx_dm_regs parameters
+* Changed dbg_dupes to run only once
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3328-evb.dts b/arch/arm64/boot/dts/rockchip/rk3328-evb.dts
-index 30816c1..f82b2d0 100644
---- a/arch/arm64/boot/dts/rockchip/rk3328-evb.dts
-+++ b/arch/arm64/boot/dts/rockchip/rk3328-evb.dts
-@@ -96,6 +96,10 @@
- 	};
- };
- 
-+&cpu0 {
-+	cpu-supply = <&vdd_arm>;
-+};
-+
- &emmc {
- 	bus-width = <8>;
- 	cap-mmc-highspeed;
+Notes on v1:
+* Not fully tested (hence RFC tag)
+
+
+Liam Breck (5):
+  power: supply: bq27xxx: Create single chip data table
+  power: supply: bq27xxx: Add chip IDs for previously shadowed chips
+  power: supply: bq27xxx: Enable data memory update for certain chips
+  power: supply: bq27xxx: Flag identical chip data when in debug mode
+  power: supply: bq27xxx: Remove duplicate chip data arrays
+
+ drivers/power/supply/bq27xxx_battery.c     | 514 ++++++++++++++---------------
+ drivers/power/supply/bq27xxx_battery_i2c.c |  16 +-
+ include/linux/power/bq27xxx_battery.h      |  10 +-
+ 3 files changed, 265 insertions(+), 275 deletions(-)
+
 -- 
-1.9.1
+2.13.2
