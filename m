@@ -1,71 +1,111 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 03/12] PM / devfreq: Move private devfreq_update_stats()
- into devfreq
-Date: Thu, 24 Aug 2017 10:42:50 +0900
-Message-ID: <1503538979-22693-4-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH 06/12] PM / devfreq: Check the entered min/max_freq is
+ supported or not
+Date: Thu, 24 Aug 2017 10:42:53 +0900
+Message-ID: <1503538979-22693-7-git-send-email-cw00.choi@samsung.com>
 References: <1503538979-22693-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20170824014259epcas2p174f90081b192ae5239f0130413ba3845@epcas2p1.samsung.com>
+        <CGME20170824014259epcas2p1c8618349053a9aab5d8774234e322848@epcas2p1.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:29200 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751102AbdHXBnB (ORCPT
+Received: from mailout4.samsung.com ([203.254.224.34]:45174 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751101AbdHXBnB (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2017 21:43:01 -0400
 In-reply-to: <1503538979-22693-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
-Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Chanwoo Choi <cwchoi00@gmail.com>
+Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-From: Chanwoo Choi <cwchoi00@gmail.com>
+The existing {min|max}_freq_store() only check the range of
+entered frequency. If the unsupported frequency is entered
+and the entered frequency is within the ranges, {min|max}_freq_store()
+will store it to devfreq->{min|max}_freq. And then when some user
+try to read the {min|max}_freq, the devfreq show the unsupported
+frequency value.
 
-THe devfreq_update_stats() updates the 'struct devfreq_dev_status'
-in order to get current status of devfreq device. It is only used
-for the governors.
+In order to fix this issue, this patch checks whether the entered
+frequency is supported or not by OPP interface.
 
-This patch moves the devfreq_update_stats() into devfreq directory.
-
-Signed-off-by: Chanwoo Choi <cwchoi00@gmail.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/governor.h |  4 ++++
- include/linux/devfreq.h    | 13 -------------
- 2 files changed, 4 insertions(+), 13 deletions(-)
+ drivers/devfreq/devfreq.c | 35 +++++++++++++++++++++++++++++++----
+ 1 file changed, 31 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index a4f2fa1091e4..cfc50a61a90d 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -69,4 +69,8 @@ extern void devfreq_interval_update(struct devfreq *devfreq,
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 56f8a0473834..f10017fe400f 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -97,6 +97,25 @@ static unsigned long find_available_max_freq(struct devfreq *devfreq)
+ 	return max_freq;
+ }
  
- extern int devfreq_update_status(struct devfreq *devfreq, unsigned long freq);
- 
-+static inline int devfreq_update_stats(struct devfreq *df)
++static int is_supported_freq(struct devfreq *devfreq, unsigned long freq)
 +{
-+	return df->profile->get_dev_status(df->dev.parent, &df->last_status);
++	struct device *dev = devfreq->dev.parent;
++	struct dev_pm_opp *opp;
++	int ret = 0;
++
++	/* Check whether entered frequency is supported or not */
++	opp = dev_pm_opp_find_freq_exact(dev, freq, true);
++	if (PTR_ERR(opp) == -ERANGE)
++		opp = dev_pm_opp_find_freq_exact(dev, freq, false);
++
++	if (IS_ERR(opp))
++		ret = PTR_ERR(opp);
++
++	dev_pm_opp_put(opp);
++
++	return ret;
 +}
- #endif /* _GOVERNOR_H */
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 6c220e4ebb6b..597294e0cc40 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -214,19 +214,6 @@ extern void devm_devfreq_unregister_notifier(struct device *dev,
- extern struct devfreq *devfreq_get_devfreq_by_phandle(struct device *dev,
- 						int index);
- 
--/**
-- * devfreq_update_stats() - update the last_status pointer in struct devfreq
-- * @df:		the devfreq instance whose status needs updating
-- *
-- *  Governors are recommended to use this function along with last_status,
-- * which allows other entities to reuse the last_status without affecting
-- * the values fetched later by governors.
-- */
--static inline int devfreq_update_stats(struct devfreq *df)
--{
--	return df->profile->get_dev_status(df->dev.parent, &df->last_status);
--}
--
- #if IS_ENABLED(CONFIG_DEVFREQ_GOV_SIMPLE_ONDEMAND)
++
  /**
-  * struct devfreq_simple_ondemand_data - void *data fed to struct devfreq
+  * devfreq_get_freq_level() - Lookup freq_table for the frequency
+  * @devfreq:	the devfreq instance
+@@ -1099,9 +1118,8 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+ 			      const char *buf, size_t count)
+ {
+ 	struct devfreq *df = to_devfreq(dev);
+-	unsigned long value;
++	unsigned long value, max;
+ 	int ret;
+-	unsigned long max;
+ 
+ 	ret = sscanf(buf, "%lu", &value);
+ 	if (ret != 1)
+@@ -1114,6 +1132,11 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+ 		goto unlock;
+ 	}
+ 
++	/* Check whether entered frequency is supported or not */
++	ret = is_supported_freq(df, value);
++	if (ret < 0)
++		goto unlock;
++
+ 	df->min_freq = value;
+ 	update_devfreq(df);
+ 	ret = count;
+@@ -1126,9 +1149,8 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ 			      const char *buf, size_t count)
+ {
+ 	struct devfreq *df = to_devfreq(dev);
+-	unsigned long value;
++	unsigned long value, min;
+ 	int ret;
+-	unsigned long min;
+ 
+ 	ret = sscanf(buf, "%lu", &value);
+ 	if (ret != 1)
+@@ -1141,6 +1163,11 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ 		goto unlock;
+ 	}
+ 
++	/* Check whether entered frequency is supported or not */
++	ret = is_supported_freq(df, value);
++	if (ret < 0)
++		goto unlock;
++
+ 	df->max_freq = value;
+ 	update_devfreq(df);
+ 	ret = count;
 -- 
 1.9.1
