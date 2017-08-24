@@ -1,125 +1,97 @@
-From: Rocky Hao <rocky.hao@rock-chips.com>
-Subject: [PATCH 2/5] thermal: rockchip: Support the RV1108 SoC in thermal
- driver
-Date: Thu, 24 Aug 2017 18:27:52 +0800
-Message-ID: <1503570475-7850-3-git-send-email-rocky.hao@rock-chips.com>
+From: Rocky Hao <rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [PATCH 4/5] arm: dts: rockchip: add thermal nodes for RV1108 SoC
+Date: Thu, 24 Aug 2017 18:27:54 +0800
+Message-ID: <1503570475-7850-5-git-send-email-rocky.hao@rock-chips.com>
 References: <1503570475-7850-1-git-send-email-rocky.hao@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1503570475-7850-1-git-send-email-rocky.hao@rock-chips.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: rui.zhang@intel.com, edubezval@gmail.com, heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com
-Cc: huangtao@rock-chips.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, cl@rock-chips.com, william.wu@rock-chips.com, rocky.hao@rock-chips.com, jay.xu@rock-chips.com, xxx@rock-chips.com, linux-arm-kernel@lists.infradead.org, wxt@rock-chips.com
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1503570475-7850-1-git-send-email-rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org
+Cc: huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, cl-TNX95d0MmH7DzftRWevZcw@public.gmane.org, william.wu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, xxx-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-RV1108 SOC has one Temperature Sensor for CPU.
+Add thermal zone and dynamic CPU power coefficients for RV1108
 
-Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
+Signed-off-by: Rocky Hao <rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 ---
- drivers/thermal/rockchip_thermal.c | 67 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 67 insertions(+)
+ arch/arm/boot/dts/rv1108.dtsi | 40 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
-diff --git a/drivers/thermal/rockchip_thermal.c b/drivers/thermal/rockchip_thermal.c
-index 9da3e1819210..299a8ade71fa 100644
---- a/drivers/thermal/rockchip_thermal.c
-+++ b/drivers/thermal/rockchip_thermal.c
-@@ -242,6 +242,45 @@ struct tsadc_table {
- 	int temp;
- };
+diff --git a/arch/arm/boot/dts/rv1108.dtsi b/arch/arm/boot/dts/rv1108.dtsi
+index dbdd8c2180e7..cae920b6a145 100644
+--- a/arch/arm/boot/dts/rv1108.dtsi
++++ b/arch/arm/boot/dts/rv1108.dtsi
+@@ -43,6 +43,7 @@
+ #include <dt-bindings/interrupt-controller/arm-gic.h>
+ #include <dt-bindings/clock/rv1108-cru.h>
+ #include <dt-bindings/pinctrl/rockchip.h>
++#include <dt-bindings/thermal/thermal.h>
+ / {
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+@@ -69,6 +70,8 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a7";
+ 			reg = <0xf00>;
++			#cooling-cells = <2>; /* min followed by max */
++			dynamic-power-coefficient = <75>;
+ 		};
+ 	};
  
-+static const struct tsadc_table rv1108_table[] = {
-+	{0, -40000},
-+	{374, -40000},
-+	{382, -35000},
-+	{389, -30000},
-+	{397, -25000},
-+	{405, -20000},
-+	{413, -15000},
-+	{421, -10000},
-+	{429, -5000},
-+	{436, 0},
-+	{444, 5000},
-+	{452, 10000},
-+	{460, 15000},
-+	{468, 20000},
-+	{476, 25000},
-+	{483, 30000},
-+	{491, 35000},
-+	{499, 40000},
-+	{507, 45000},
-+	{515, 50000},
-+	{523, 55000},
-+	{531, 60000},
-+	{539, 65000},
-+	{547, 70000},
-+	{555, 75000},
-+	{562, 80000},
-+	{570, 85000},
-+	{578, 90000},
-+	{586, 95000},
-+	{594, 100000},
-+	{602, 105000},
-+	{610, 110000},
-+	{618, 115000},
-+	{626, 120000},
-+	{634, 125000},
-+	{TSADCV2_DATA_MASK, 125000},
-+};
-+
- static const struct tsadc_table rk3228_code_table[] = {
- 	{0, -40000},
- 	{588, -40000},
-@@ -779,6 +818,30 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
- 	writel_relaxed(val, regs + TSADCV2_INT_EN);
- }
+@@ -275,6 +278,43 @@
+ 		status = "disabled";
+ 	};
  
-+static const struct rockchip_tsadc_chip rv1108_tsadc_data = {
-+	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
-+	.chn_num = 1, /* one channel for tsadc */
++	thermal-zones {
++		soc_thermal: soc-thermal {
++			polling-delay-passive = <20>;
++			polling-delay = <1000>;
++			sustainable-power = <50>;
 +
-+	.tshut_mode = TSHUT_MODE_GPIO, /* default TSHUT via GPIO give PMIC */
-+	.tshut_polarity = TSHUT_LOW_ACTIVE, /* default TSHUT LOW ACTIVE */
-+	.tshut_temp = 95000,
++			thermal-sensors = <&tsadc 0>;
 +
-+	.initialize = rk_tsadcv2_initialize,
-+	.irq_ack = rk_tsadcv3_irq_ack,
-+	.control = rk_tsadcv3_control,
-+	.get_temp = rk_tsadcv2_get_temp,
-+	.set_alarm_temp = rk_tsadcv2_alarm_temp,
-+	.set_tshut_temp = rk_tsadcv2_tshut_temp,
-+	.set_tshut_mode = rk_tsadcv2_tshut_mode,
++			trips {
++				threshold: trip-point0 {
++					temperature = <70000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++				target: trip-point1 {
++					temperature = <85000>;
++					hysteresis = <2000>;
++					type = "passive";
++				};
++				soc_crit: soc-crit {
++					temperature = <95000>;
++					hysteresis = <2000>;
++					type = "critical";
++				};
++			};
 +
-+	.table = {
-+		.id = rv1108_table,
-+		.length = ARRAY_SIZE(rv1108_table),
-+		.data_mask = TSADCV2_DATA_MASK,
-+		.mode = ADC_INCREMENT,
-+	},
-+};
++			cooling-maps {
++				map0 {
++					trip = <&target>;
++					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++					contribution = <4096>;
++				};
++			};
++		};
 +
- static const struct rockchip_tsadc_chip rk3228_tsadc_data = {
- 	.chn_id[SENSOR_CPU] = 0, /* cpu sensor is channel 0 */
- 	.chn_num = 1, /* one channel for tsadc */
-@@ -928,6 +991,10 @@ static void rk_tsadcv2_tshut_mode(int chn, void __iomem *regs,
- 
- static const struct of_device_id of_rockchip_thermal_match[] = {
- 	{
-+		.compatible = "rockchip,rv1108-tsadc",
-+		.data = (void *)&rv1108_tsadc_data,
-+	},
-+	{
- 		.compatible = "rockchip,rk3228-tsadc",
- 		.data = (void *)&rk3228_tsadc_data,
- 	},
++	};
++
+ 	tsadc: tsadc@10370000 {
+ 		compatible = "rockchip,rv1108-tsadc";
+ 		reg = <0x10370000 0x100>;
 -- 
 1.9.1
