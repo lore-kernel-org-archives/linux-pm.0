@@ -1,11 +1,13 @@
 From: <cl@rock-chips.com>
-Subject: [PATCH v1 0/3] Enable some devices for rk3328 evaluation board
-Date: Thu, 24 Aug 2017 10:37:00 +0800
-Message-ID: <1503542223-21044-1-git-send-email-cl@rock-chips.com>
+Subject: [PATCH v2 2/3] cpufreq: rockchip: add support for rk3328 soc
+Date: Thu, 24 Aug 2017 10:37:02 +0800
+Message-ID: <1503542223-21044-3-git-send-email-cl@rock-chips.com>
+References: <1503542223-21044-1-git-send-email-cl@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <1503542223-21044-1-git-send-email-cl@rock-chips.com>
 List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
  <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
 List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
@@ -21,21 +23,25 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Liang Chen <cl@rock-chips.com>
 
-1. enalbe sdio/sdmmc/emmc.
-2. enable cpufreq.
+Add compatible rockchip,rk3328 to the machines table to
+launch cpufreq-dt driver for rk3328 soc.
 
-change in v2:
+Signed-off-by: Liang Chen <cl@rock-chips.com>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-1. remove useless properties in mmc nodes.
-
-Liang Chen (3):
-  arm64: dts: rockchip: add mmc nodes for rk3328 evaluation board
-  cpufreq: rockchip: add support for rk3328 soc
-  arm64: dts: rockchip: add cpu regulator for rk3328 evaluation board
-
- arch/arm64/boot/dts/rockchip/rk3328-evb.dts | 70 +++++++++++++++++++++++++++++
- drivers/cpufreq/cpufreq-dt-platdev.c        |  1 +
- 2 files changed, 71 insertions(+)
-
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 1c26292..f16c3ba 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -76,6 +76,7 @@
+ 	{ .compatible = "rockchip,rk3188", },
+ 	{ .compatible = "rockchip,rk3228", },
+ 	{ .compatible = "rockchip,rk3288", },
++	{ .compatible = "rockchip,rk3328", },
+ 	{ .compatible = "rockchip,rk3366", },
+ 	{ .compatible = "rockchip,rk3368", },
+ 	{ .compatible = "rockchip,rk3399", },
 -- 
 1.9.1
