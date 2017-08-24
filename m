@@ -1,70 +1,57 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [RFCv4 6/6] cpufreq: schedutil: add util clamp for RT/DL tasks
-Date: Thu, 24 Aug 2017 19:08:57 +0100
-Message-ID: <20170824180857.32103-7-patrick.bellasi@arm.com>
-References: <20170824180857.32103-1-patrick.bellasi@arm.com>
+From: Jiri Kosina <jikos@kernel.org>
+Subject: Re: [PATCH v2] iwlwifi: pcie: move rx workqueue initialization to
+ iwl_trans_pcie_alloc()
+Date: Thu, 24 Aug 2017 21:56:26 +0200 (CEST)
+Message-ID: <alpine.LSU.2.20.1708242153000.3581@cbobk.fhfr.pm>
+References: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>  <20170822073729.4856-1-luca@coelho.fi> <1503554432.15969.415.camel@coelho.fi>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170824180857.32103-1-patrick.bellasi@arm.com>
+In-Reply-To: <1503554432.15969.415.camel@coelho.fi>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Tejun Heo <tj@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@arm.com>, Tim Murray <timmurray@google.com>, Todd Kjos <tkjos@android.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Luca Coelho <luca@coelho.fi>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linuxwifi@intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, david.weinehall@intel.com, johannes.berg@intel.com, kvalo@codeaurora.org, sara.sharon@intel.com, emmanuel.grumbach@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-Currently schedutil enforces a maximum frequency when RT/DL tasks are
-RUNNABLE.  Such a mandatory policy can be made more tunable from
-userspace thus allowing for example to define a max frequency which is
-still reasonable for the execution of a specific RT/DL workload. This
-will contribute to make the RT class more friendly for power/energy
-sensitive use-cases.
+On Thu, 24 Aug 2017, Luca Coelho wrote:
 
-This patch extends the usage of util_{min,max} to the RT/DL classes.
-Whenever a task in these classes is RUNNABLE, the util required is
-defined by the constraints of the CPU control group the task belongs to.
+> > Work queues cannot be allocated when a mutex is held because the mutex
+> > may be in use and that would make it sleep.  Doing so generates the
+> > following splat with 4.13+:
+> > 
+> > [   19.513298] ======================================================
+> > [   19.513429] WARNING: possible circular locking dependency detected
+> > [   19.513557] 4.13.0-rc5+ #6 Not tainted
+> > [   19.513638] ------------------------------------------------------
+> > [   19.513767] cpuhp/0/12 is trying to acquire lock:
+> > [   19.513867]  (&tz->lock){+.+.+.}, at: [<ffffffff924afebb>] thermal_zone_get_temp+0x5b/0xb0
+> > [   19.514047]
+> > [   19.514047] but task is already holding lock:
+> > [   19.514166]  (cpuhp_state){+.+.+.}, at: [<ffffffff91cc4baa>] cpuhp_thread_fun+0x3a/0x210
+> > [   19.514338]
+> > [   19.514338] which lock already depends on the new lock.
+> > 
+> > This lock dependency already existed with previous kernel versions,
+> > but it was not detected until commit 49dfe2a67797 ("cpuhotplug: Link
+> > lock stacks for hotplug callbacks") was introduced.
+> > 
+> > Reported-by: David Weinehall <david.weinehall@intel.com>
+> > Reported-by: Jiri Kosina <jikos@kernel.org>
+> > Signed-off-by: Luca Coelho <luciano.coelho@intel.com>
+> 
+> Jiri, did you have a chance to try this out? I'm about to ask Kalle to
+> merge this so it gets in in time for 4.13-rc7.
 
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
----
- kernel/sched/cpufreq_schedutil.c | 16 ++++++++++++----
- 1 file changed, 12 insertions(+), 4 deletions(-)
+Sorry, I am almost completely offline for one more week (vacation), and 
+will not have access to the affected system before that. But this indeed 
+looks like a correct fix to me, so feel free to add
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index f67c26bbade4..feca60c107bc 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -227,7 +227,10 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 	busy = sugov_cpu_is_busy(sg_cpu);
- 
- 	if (flags & SCHED_CPUFREQ_RT_DL) {
--		next_f = policy->cpuinfo.max_freq;
-+		util = uclamp_util(smp_processor_id(), SCHED_CAPACITY_SCALE);
-+		next_f = (uclamp_enabled && util < SCHED_CAPACITY_SCALE)
-+			? get_next_freq(sg_policy, util, policy->cpuinfo.max_freq)
-+			: policy->cpuinfo.max_freq;
- 	} else {
- 		sugov_get_util(&util, &max);
- 		sugov_iowait_boost(sg_cpu, &util, &max);
-@@ -276,10 +279,15 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
- 			j_sg_cpu->iowait_boost = 0;
- 			continue;
- 		}
--		if (j_sg_cpu->flags & SCHED_CPUFREQ_RT_DL)
--			return policy->cpuinfo.max_freq;
- 
--		j_util = j_sg_cpu->util;
-+		if (j_sg_cpu->flags & SCHED_CPUFREQ_RT_DL) {
-+			if (!uclamp_enabled)
-+				return policy->cpuinfo.max_freq;
-+			j_util = uclamp_util(j, SCHED_CAPACITY_SCALE);
-+		} else {
-+			j_util = j_sg_cpu->util;
-+		}
-+
- 		j_max = j_sg_cpu->max;
- 		if (j_util * max > j_max * util) {
- 			util = j_util;
+	Acked-by: Jiri Kosina <jkosina@suse.cz>
+
+I'll be able to provide my Tested-by: eventually only in ~10 days.
+
+Thanks,
+
 -- 
-2.14.1
+Jiri Kosina
+SUSE Labs
