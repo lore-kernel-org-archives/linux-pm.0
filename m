@@ -1,52 +1,65 @@
-From: Kalle Valo <kvalo@codeaurora.org>
-Subject: Re: [v2] iwlwifi: pcie: move rx workqueue initialization to
- iwl_trans_pcie_alloc()
-Date: Thu, 24 Aug 2017 13:50:23 +0000 (UTC)
-Message-ID: <20170824135023.EB43F60712@smtp.codeaurora.org>
-References: <20170822073729.4856-1-luca@coelho.fi>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH] devfreq: Convert to using %pOF instead of full_name
+Date: Thu, 24 Aug 2017 09:23:08 -0500
+Message-ID: <CAL_Jsq+LW8ZmE_J0B9Cea_Y0iDkBX46cXWnAF882C9-7SB_T=A@mail.gmail.com>
+References: <20170718214339.7774-17-robh@kernel.org> <CGME20170718214411epcas2p43fc1475c80245889737ba9e731497e38@epcms1p2>
+ <596EB809.7050605@samsung.com> <20170720052553epcms1p24dc190a0d51f2e447a76e417e519bd28@epcms1p2>
+ <CAL_JsqL9x16Z76VSAkDUiyEddafYuiH4mFTUur=8LgrJehrFLw@mail.gmail.com> <599E0D45.7030001@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170822073729.4856-1-luca@coelho.fi>
+In-Reply-To: <599E0D45.7030001@samsung.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Luciano Coelho <luca@coelho.fi>
-Cc: jikos@kernel.org, linux-wireless@vger.kernel.org, luciano.coelho@intel.com, linux-kernel@vger.kernel.org, linuxwifi@intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, david.weinehall@intel.com, johannes.berg@intel.com, sara.sharon@intel.com, emmanuel.grumbach@intel.com
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Luciano Coelho <luca@coelho.fi> wrote:
+On Wed, Aug 23, 2017 at 6:18 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> Hi Rob,
+>
+> On 2017년 08월 24일 03:09, Rob Herring wrote:
+>> On Thu, Jul 20, 2017 at 12:25 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+>>>> On 2017년 07월 19일 06:42, Rob Herring wrote:
+>>>>> Now that we have a custom printf format specifier, convert users of
+>>>>> full_name to use %pOF instead. This is preparation to remove storing
+>>>>> of the full path string for each node.
+>>>>>
+>>>>> Signed-off-by: Rob Herring <robh@kernel.org>
+>>>>> Cc: Chanwoo Choi <cw00.choi@samsung.com>
+>>>>> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+>>>>> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+>>>>> Cc: linux-pm@vger.kernel.org
+>>>>> ---
+>>>>>  drivers/devfreq/devfreq-event.c | 4 ++--
+>>>>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
+>>>>> index 8648b32ebc89..d67242d87744 100644
+>>>>> --- a/drivers/devfreq/devfreq-event.c
+>>>>> +++ b/drivers/devfreq/devfreq-event.c
+>>>>> @@ -277,8 +277,8 @@ int devfreq_event_get_edev_count(struct device *dev)
+>>>>>                                             sizeof(u32));
+>>>>>     if (count < 0) {
+>>>>>             dev_err(dev,
+>>>>> -                   "failed to get the count of devfreq-event in %s node\n",
+>>>>> -                   dev->of_node->full_name);
+>>>>> +                   "failed to get the count of devfreq-event in %pOF node\n",
+>>>>> +                   dev->of_node);
+>>>>>             return count;
+>>>>>     }
+>>>>>
+>>>>
+>>>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>>
+>>>
+>>> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+>>
+>> Please take this thru the devfreq tree.
+>
+> This patch was merged on devfreq tree.
+> https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=for-next&id=7f46535e8a2e3c3e415e55eaadcb9d9a153a5300
 
-> From: Luca Coelho <luciano.coelho@intel.com>
-> 
-> Work queues cannot be allocated when a mutex is held because the mutex
-> may be in use and that would make it sleep.  Doing so generates the
-> following splat with 4.13+:
-> 
-> [   19.513298] ======================================================
-> [   19.513429] WARNING: possible circular locking dependency detected
-> [   19.513557] 4.13.0-rc5+ #6 Not tainted
-> [   19.513638] ------------------------------------------------------
-> [   19.513767] cpuhp/0/12 is trying to acquire lock:
-> [   19.513867]  (&tz->lock){+.+.+.}, at: [<ffffffff924afebb>] thermal_zone_get_temp+0x5b/0xb0
-> [   19.514047]
-> [   19.514047] but task is already holding lock:
-> [   19.514166]  (cpuhp_state){+.+.+.}, at: [<ffffffff91cc4baa>] cpuhp_thread_fun+0x3a/0x210
-> [   19.514338]
-> [   19.514338] which lock already depends on the new lock.
-> 
-> This lock dependency already existed with previous kernel versions,
-> but it was not detected until commit 49dfe2a67797 ("cpuhotplug: Link
-> lock stacks for hotplug callbacks") was introduced.
-> 
-> Reported-by: David Weinehall <david.weinehall@intel.com>
-> Reported-by: Jiri Kosina <jikos@kernel.org>
-> Signed-off-by: Luca Coelho <luciano.coelho@intel.com>
+Okay, it's not showing up in linux-next which is why I asked.
 
-Patch applied to wireless-drivers.git, thanks.
-
-10a54d8196d1 iwlwifi: pcie: move rx workqueue initialization to iwl_trans_pcie_alloc()
-
--- 
-https://patchwork.kernel.org/patch/9914349/
-
-https://wireless.wiki.kernel.org/en/developers/documentation/submittingpatches
+Rob
