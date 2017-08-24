@@ -1,65 +1,41 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH 09/12] PM / devfreq: Show whole available frequencies
-Date: Thu, 24 Aug 2017 10:42:56 +0900
-Message-ID: <1503538979-22693-10-git-send-email-cw00.choi@samsung.com>
-References: <1503538979-22693-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20170824014300epcas2p2642c98590f3592ba814e421c6584a7b5@epcas2p2.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:45180 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751152AbdHXBnC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Aug 2017 21:43:02 -0400
-In-reply-to: <1503538979-22693-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: <cl@rock-chips.com>
+Subject: [PATCH v1 0/3] Enable some devices for rk3328 evaluation board
+Date: Thu, 24 Aug 2017 10:37:00 +0800
+Message-ID: <1503542223-21044-1-git-send-email-cl@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: heiko@sntech.de
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, rjw@rjwysocki.net, catalin.marinas@arm.com, shawn.lin@rock-chips.com, linux-pm@vger.kernel.org, will.deacon@arm.com, linux-kernel@vger.kernel.org, kever.yang@rock-chips.com, linux-rockchip@lists.infradead.org, robh+dt@kernel.org, Liang Chen <cl@rock-chips.com>, viresh.kumar@linaro.org, fabio.estevam@nxp.com, rocky.hao@rock-chips.com, shawnguo@kernel.org, afaerber@suse.de, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
-Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-The commit a76caf55e5b35 ("thermal: Add devfreq cooling") allows
-the devfreq device to use the cooling device. When the cooling down
-are required, the devfreq_cooling.c disables the OPP entry with
-the dev_pm_opp_disable(). In result, 'available_frequencies'[1]
-sysfs node never came to show the whole available frequencies.
-[1] /sys/class/devfreq/.../available_frequencies
+From: Liang Chen <cl@rock-chips.com>
 
-So, this patch uses the 'freq_table' in the 'struct devfreq_dev_profile'
-in order to show the whole available frequencies.
-- If 'freq_table' is NULL, devfreq core initializes them by using OPP values.
-- If 'freq_table' is initialized, devfreq core just uses the 'freq_table'.
+1. enalbe sdio/sdmmc/emmc.
+2. enable cpufreq.
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c | 15 +++------------
- 1 file changed, 3 insertions(+), 12 deletions(-)
+change in v2:
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 8b0bbfa0a50b..d8ff16419452 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -1209,21 +1209,12 @@ static ssize_t available_frequencies_show(struct device *d,
- 					  char *buf)
- {
- 	struct devfreq *df = to_devfreq(d);
--	struct device *dev = df->dev.parent;
--	struct dev_pm_opp *opp;
- 	ssize_t count = 0;
--	unsigned long freq = 0;
--
--	do {
--		opp = dev_pm_opp_find_freq_ceil(dev, &freq);
--		if (IS_ERR(opp))
--			break;
-+	int i;
- 
--		dev_pm_opp_put(opp);
-+	for (i = 0; i < df->profile->max_state; i++)
- 		count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
--				   "%lu ", freq);
--		freq++;
--	} while (1);
-+				   "%lu ", df->profile->freq_table[i]);
- 
- 	/* Truncate the trailing space */
- 	if (count)
+1. remove useless properties in mmc nodes.
+
+Liang Chen (3):
+  arm64: dts: rockchip: add mmc nodes for rk3328 evaluation board
+  cpufreq: rockchip: add support for rk3328 soc
+  arm64: dts: rockchip: add cpu regulator for rk3328 evaluation board
+
+ arch/arm64/boot/dts/rockchip/rk3328-evb.dts | 70 +++++++++++++++++++++++++++++
+ drivers/cpufreq/cpufreq-dt-platdev.c        |  1 +
+ 2 files changed, 71 insertions(+)
+
 -- 
 1.9.1
