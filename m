@@ -1,80 +1,54 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/powernv/idle: Round up latency and residency
- values
-Date: Thu, 24 Aug 2017 10:05:24 +0530
-Message-ID: <20170824043524.GA5695@in.ibm.com>
-References: <20170823185841.25286-1-svaidy@linux.vnet.ibm.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Luca Coelho <luca@coelho.fi>
+Subject: Re: [PATCH v2] iwlwifi: pcie: move rx workqueue initialization to
+ iwl_trans_pcie_alloc()
+Date: Thu, 24 Aug 2017 09:00:32 +0300
+Message-ID: <1503554432.15969.415.camel@coelho.fi>
+References: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
+         <20170822073729.4856-1-luca@coelho.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:48700 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751038AbdHXEfd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Aug 2017 00:35:33 -0400
-Received: from pps.filterd (m0098394.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id v7O4ZX1C104011
-        for <linux-pm@vger.kernel.org>; Thu, 24 Aug 2017 00:35:33 -0400
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2chgmssg8a-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Thu, 24 Aug 2017 00:35:32 -0400
-Received: from localhost
-        by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-        Wed, 23 Aug 2017 22:35:32 -0600
-Content-Disposition: inline
-In-Reply-To: <20170823185841.25286-1-svaidy@linux.vnet.ibm.com>
+Received: from paleale.coelho.fi ([176.9.41.70]:45468 "EHLO
+        farmhouse.coelho.fi" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1751283AbdHXGAl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Aug 2017 02:00:41 -0400
+In-Reply-To: <20170822073729.4856-1-luca@coelho.fi>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: jikos@kernel.org, linux-wireless@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linuxwifi@intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, david.weinehall@intel.com, johannes.berg@intel.com, kvalo@codeaurora.org, sara.sharon@intel.com, emmanuel.grumbach@intel.com
 
-Hi Vaidy,
-On Thu, Aug 24, 2017 at 12:28:41AM +0530, Vaidyanathan Srinivasan
-wrote:
+On Tue, 2017-08-22 at 10:37 +0300, Luca Coelho wrote:
+> From: Luca Coelho <luciano.coelho@intel.com>
+> 
+> Work queues cannot be allocated when a mutex is held because the mutex
+> may be in use and that would make it sleep.  Doing so generates the
+> following splat with 4.13+:
+> 
+> [   19.513298] ======================================================
+> [   19.513429] WARNING: possible circular locking dependency detected
+> [   19.513557] 4.13.0-rc5+ #6 Not tainted
+> [   19.513638] ------------------------------------------------------
+> [   19.513767] cpuhp/0/12 is trying to acquire lock:
+> [   19.513867]  (&tz->lock){+.+.+.}, at: [<ffffffff924afebb>] thermal_zone_get_temp+0x5b/0xb0
+> [   19.514047]
+> [   19.514047] but task is already holding lock:
+> [   19.514166]  (cpuhp_state){+.+.+.}, at: [<ffffffff91cc4baa>] cpuhp_thread_fun+0x3a/0x210
+> [   19.514338]
+> [   19.514338] which lock already depends on the new lock.
+> 
+> This lock dependency already existed with previous kernel versions,
+> but it was not detected until commit 49dfe2a67797 ("cpuhotplug: Link
+> lock stacks for hotplug callbacks") was introduced.
+> 
+> Reported-by: David Weinehall <david.weinehall@intel.com>
+> Reported-by: Jiri Kosina <jikos@kernel.org>
+> Signed-off-by: Luca Coelho <luciano.coelho@intel.com>
 
-Cc'ing Rafael and linux-pm list.
+Jiri, did you have a chance to try this out? I'm about to ask Kalle to
+merge this so it gets in in time for 4.13-rc7.
 
-> On PowerNV platforms, firmware provides exit latency and
-> target residency for each of the idle states in nano
-> seconds.  Cpuidle framework expects the values in micro
-> seconds.  Round up to nearest micro seconds to avoid errors
-> in cases where the values are defined as fractional micro
-> seconds.
-> 
-> Default idle state of 'snooze' has exit latency of zero.  If
-> other states have fractional micro second exit latency, they
-> would get rounded down to zero micro second and make cpuidle
-> framework choose deeper idle state when snooze loop is the
-> right choice.
-> 
-> Reported-by: Anton Blanchard <anton@samba.org>
-> Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-
-This looks good to me.
-
-Reviewed-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  drivers/cpuidle/cpuidle-powernv.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-> index 42896a67aeae..5f3922392059 100644
-> --- a/drivers/cpuidle/cpuidle-powernv.c
-> +++ b/drivers/cpuidle/cpuidle-powernv.c
-> @@ -383,9 +383,9 @@ static int powernv_add_idle_states(void)
->  		 * Firmware passes residency and latency values in ns.
->  		 * cpuidle expects it in us.
->  		 */
-> -		exit_latency = latency_ns[i] / 1000;
-> +		exit_latency = DIV_ROUND_UP(latency_ns[i], 1000);
->  		if (!rc)
-> -			target_residency = residency_ns[i] / 1000;
-> +			target_residency = DIV_ROUND_UP(residency_ns[i], 1000);
->  		else
->  			target_residency = 0;
-> 
-> -- 
-> 2.13.5
-> 
+--
+Cheers,
+Luca.
