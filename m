@@ -1,94 +1,197 @@
-From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v2 3/5] thermal: imx: Add support for reading OCOTP
- through nvmem
-Date: Fri, 25 Aug 2017 10:20:49 +0800
-Message-ID: <1503627649.2774.6.camel@intel.com>
-References: <cover.1500041281.git.leonard.crestez@nxp.com>
-         <faf9c3e5f970b9609073c4c191a7af03d647ea51.1500041281.git.leonard.crestez@nxp.com>
-         <20170725080835.GD20064@dragon> <1502176915.4296.1.camel@intel.com>
-         <26407dd5-a9b1-67c0-c4ab-d97fa0b88b79@linaro.org>
-         <1502192287.24350.9.camel@nxp.com>
-         <9732c524-fbdc-d1be-cd03-089dbb2266c4@linaro.org>
-         <1502197100.4296.45.camel@intel.com> <1502897621.23210.41.camel@nxp.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v2 2/4] thermal: mediatek: add Mediatek thermal driver
+ for mt2712
+Date: Fri, 25 Aug 2017 10:30:45 +0800
+Message-ID: <1503628245.2774.8.camel@intel.com>
+References: <1501572513-7958-1-git-send-email-louis.yu@mediatek.com>
+         <1501572513-7958-3-git-send-email-louis.yu@mediatek.com>
+         <1502198610.4296.58.camel@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1502897621.23210.41.camel-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>, Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>, Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga05.intel.com ([192.55.52.43]:13408 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754191AbdHYCaa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 24 Aug 2017 22:30:30 -0400
+In-Reply-To: <1502198610.4296.58.camel@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Louis Yu <louis.yu@mediatek.com>, Eduardo Valentin <edubezval@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, hanyi.wu@mediatek.com, s.hauer@pengutronix.de, dawei.chien@mediatek.com
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Fan Chen <fan.chen@mediatek.com>, Eddie Huang <eddie.huang@mediatek.com>, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com
 
-On Wed, 2017-08-16 at 18:33 +0300, Leonard Crestez wrote:
-> On Tue, 2017-08-08 at 20:58 +0800, Zhang Rui wrote:
+On Tue, 2017-08-08 at 21:23 +0800, Zhang Rui wrote:
+> On Tue, 2017-08-01 at 15:28 +0800, Louis Yu wrote:
 > > 
-> > On Tue, 2017-08-08 at 12:44 +0100, Srinivas Kandagatla wrote:
-> > > 
-> > > On 08/08/17 12:38, Leonard Crestez wrote:
-> > > > 
-> > > > On Tue, 2017-08-08 at 12:00 +0100, Srinivas Kandagatla wrote:
-> > > > > 
-> > > > > On 08/08/17 08:21, Zhang Rui wrote:
+> > This patch adds support for mt2712 chip to mtk_thermal,
+> > and integrate mt2712 into the same mediatek thermal driver.
+> > MT2712 has only 1 bank and 4 sensors.
 > > 
-> > > 
-> > > > 
-> > > > > 
-> > > > > > 
-> > > > > > I'm okay with the thermal change.
-> > > > > > We still need ACK for the nvmem changes in this patch
-> > > > > > series.
+> > Signed-off-by: Louis Yu <louis.yu@mediatek.com>
+> > ---
+> >  drivers/thermal/mtk_thermal.c | 70
+> > ++++++++++++++++++++++++++++++++++++++++---
+> >  1 file changed, 66 insertions(+), 4 deletions(-)
 > > 
-> > > 
-> > > > 
-> > > > > 
-> > > > > NVMEM changes are already sent to Greg K H with other patches
-> > > > > https://lkml.org/lkml/2017/8/8/436, should appear in next.
-> > 
-> > > 
-> > > > 
-> > > > These patches have a compile-time dependency on each other.
-> > > > Wouldn't it make more sense for the whole series to go through
-> > > > a single
-> > > > maintainer tree, atomically? Most of the changes are in
-> > > > driver/thermal.
-> > 
-> > > 
-> > > I was expecting that the nvmem change go in as fix in a rc
-> > > release
-> > > so that you could apply the other patches after that.
-> > > 
-> > > Let me ping Greg about this!!
-> > 
+> > diff --git a/drivers/thermal/mtk_thermal.c
+> > b/drivers/thermal/mtk_thermal.c
+> > index 7737f14..e35d28d 100644
+> > --- a/drivers/thermal/mtk_thermal.c
+> > +++ b/drivers/thermal/mtk_thermal.c
+> > @@ -3,6 +3,7 @@
+> >   * Author: Hanyi Wu <hanyi.wu@mediatek.com>
+> >   *         Sascha Hauer <s.hauer@pengutronix.de>
+> >   *         Dawei Chien <dawei.chien@mediatek.com>
+> > + *         Louis Yu <louis.yu@mediatek.com>
+> I need the feedback from the previous authors for the changes in all
+> this patch set.
+> 
+Hanyi, Sascha and Dawei,
 
-Srinivas,
-
-Will you take patch 2/5?
-Only after that, we can push the other changes.
+can you please review this patch and let me know your opinion?
 
 thanks,
 rui
-
-> > As Shawn is okay with patch 4/5 and 5/5, I guess I can queue patch
-> > 1/5,
-> > 3/5, 4/5, 5/5 for 4.14-rc1, if the nvmem patch can catch 4.13, or I
-> > can
-> > queue the full patch set for 4.14, with Srinivas' ACK.
-> It's been a week since the last email and it seems that nothing
-> happened. I can't find any of these patches in either torvalds/master
-> or linux-next. It seems to me that the nvmem series linked above was
-> not picked up after all?
+> > 
+> >   *
+> >   * This program is free software; you can redistribute it and/or
+> > modify
+> >   * it under the terms of the GNU General Public License version 2
+> > as
+> > @@ -111,9 +112,10 @@
+> >  
+> >  /*
+> >   * Layout of the fuses providing the calibration data
+> > - * These macros could be used for both MT8173 and MT2701.
+> > + * These macros could be used for both MT8173, MT2701, and MT2712.
+> >   * MT8173 has five sensors and need five VTS calibration data,
+> > - * and MT2701 has three sensors and need three VTS calibration
+> > data.
+> > + * and MT2701 has three sensors and need three VTS calibration
+> > data,
+> > + * and MT2712 has four sensors and need four VTS calibration data.
+> >   */
+> why bother change these comments again in patch 3/4?
 > 
-> It's not clear how to proceed. It's been more a month since the
-> series
-> was sent so maybe I should resend it but it's not clear who would
-> pick
-> it up.
-> 
-> --
-> Regards,
-> Leonard
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> thanks,
+> rui
+> > 
+> >  #define MT8173_CALIB_BUF0_VALID		BIT(0)
+> >  #define MT8173_CALIB_BUF1_ADC_GE(x)	(((x) >> 22) & 0x3ff)
+> > @@ -136,11 +138,26 @@
+> >  /* The total number of temperature sensors in the MT2701 */
+> >  #define MT2701_NUM_SENSORS	3
+> >  
+> > -#define THERMAL_NAME    "mtk-thermal"
+> > -
+> >  /* The number of sensing points per bank */
+> >  #define MT2701_NUM_SENSORS_PER_ZONE	3
+> >  
+> > +/* MT2712 thermal sensors */
+> > +#define MT2712_TS1	0
+> > +#define MT2712_TS2	1
+> > +#define MT2712_TS3	2
+> > +#define MT2712_TS4	3
+> > +
+> > +/* AUXADC channel 11 is used for the temperature sensors */
+> > +#define MT2712_TEMP_AUXADC_CHANNEL	11
+> > +
+> > +/* The total number of temperature sensors in the MT2712 */
+> > +#define MT2712_NUM_SENSORS	4
+> > +
+> > +/* The number of sensing points per bank */
+> > +#define MT2712_NUM_SENSORS_PER_ZONE	4
+> > +
+> > +#define THERMAL_NAME    "mtk-thermal"
+> > +
+> >  struct mtk_thermal;
+> >  
+> >  struct thermal_bank_cfg {
+> > @@ -215,6 +232,21 @@ struct mtk_thermal {
+> >  
+> >  static const int mt2701_mux_values[MT2701_NUM_SENSORS] = { 0, 1,
+> > 16
+> > };
+> >  
+> > +/* MT2712 thermal sensor data */
+> > +static const int mt2712_bank_data[MT2712_NUM_SENSORS] = {
+> > +	MT2712_TS1, MT2712_TS2, MT2712_TS3, MT2712_TS4
+> > +};
+> > +
+> > +static const int mt2712_msr[MT2712_NUM_SENSORS_PER_ZONE] = {
+> > +	TEMP_MSR0, TEMP_MSR1, TEMP_MSR2, TEMP_MSR3
+> > +};
+> > +
+> > +static const int mt2712_adcpnp[MT2712_NUM_SENSORS_PER_ZONE] = {
+> > +	TEMP_ADCPNP0, TEMP_ADCPNP1, TEMP_ADCPNP2, TEMP_ADCPNP3
+> > +};
+> > +
+> > +static const int mt2712_mux_values[MT2712_NUM_SENSORS] = { 0, 1,
+> > 2,
+> > 3 };
+> > +
+> >  /**
+> >   * The MT8173 thermal controller has four banks. Each bank can
+> > read
+> > up to
+> >   * four temperature sensors simultaneously. The MT8173 has a total
+> > of 5
+> > @@ -278,6 +310,31 @@ struct mtk_thermal {
+> >  };
+> >  
+> >  /**
+> > + * The MT2712 thermal controller has one bank, which can read up
+> > to
+> > + * four temperature sensors simultaneously. The MT2712 has a total
+> > of 4
+> > + * temperature sensors.
+> > + *
+> > + * The thermal core only gets the maximum temperature of this one
+> > bank,
+> > + * so the bank concept wouldn't be necessary here. However, the
+> > SVS
+> > (Smart
+> > + * Voltage Scaling) unit makes its decisions based on the same
+> > bank
+> > + * data.
+> > + */
+> > +static const struct mtk_thermal_data mt2712_thermal_data = {
+> > +	.auxadc_channel = MT2712_TEMP_AUXADC_CHANNEL,
+> > +	.num_banks = 1,
+> > +	.num_sensors = MT2712_NUM_SENSORS,
+> > +	.bank_data = {
+> > +		{
+> > +			.num_sensors = 4,
+> > +			.sensors = mt2712_bank_data,
+> > +		},
+> > +	},
+> > +	.msr = mt2712_msr,
+> > +	.adcpnp = mt2712_adcpnp,
+> > +	.sensor_mux_values = mt2712_mux_values,
+> > +};
+> > +
+> > +/**
+> >   * raw_to_mcelsius - convert a raw ADC value to mcelsius
+> >   * @mt:		The thermal controller
+> >   * @raw:	raw ADC value
+> > @@ -571,6 +628,10 @@ static int
+> > mtk_thermal_get_calibration_data(struct device *dev,
+> >  	{
+> >  		.compatible = "mediatek,mt2701-thermal",
+> >  		.data = (void *)&mt2701_thermal_data,
+> > +	},
+> > +	{
+> > +		.compatible = "mediatek,mt2712-thermal",
+> > +		.data = (void *)&mt2712_thermal_data,
+> >  	}, {
+> >  	},
+> >  };
+> > @@ -705,6 +766,7 @@ static int mtk_thermal_remove(struct
+> > platform_device *pdev)
+> >  
+> >  module_platform_driver(mtk_thermal_driver);
+> >  
+> > +MODULE_AUTHOR("Louis Yu <louis.yu@mediatek.com>");
+> >  MODULE_AUTHOR("Dawei Chien <dawei.chien@mediatek.com>");
+> >  MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de>");
+> >  MODULE_AUTHOR("Hanyi Wu <hanyi.wu@mediatek.com>");
