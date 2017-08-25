@@ -1,118 +1,189 @@
-From: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 2/5] nvmem: core: Add nvmem_cell_read_u32
-Date: Fri, 25 Aug 2017 10:07:48 +0100
-Message-ID: <2744539a-d729-2568-47f0-42ba90036639@linaro.org>
-References: <cover.1500041281.git.leonard.crestez@nxp.com>
- <eedf98ecb5d9d47f3c8b9ffbf58e03c7a2fb8db4.1500041281.git.leonard.crestez@nxp.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 5/9] PM / ACPI: Provide option to disable
+ direct_complete for ACPI devices
+Date: Fri, 25 Aug 2017 11:28:25 +0200
+Message-ID: <CAPDyKFrFUgE0FJE==ht4Z5utj+Pht=9UGn-LYBR9hP4ncofreg@mail.gmail.com>
+References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org>
+ <1726767.L8TO24juDO@aspire.rjw.lan> <CAPDyKFrj6RdsG4Qf847OvLQMgqHeyh1=YyeKZMeaGgQ2du3cNA@mail.gmail.com>
+ <12333551.k204JYSgao@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <eedf98ecb5d9d47f3c8b9ffbf58e03c7a2fb8db4.1500041281.git.leonard.crestez-3arQi8VN3Tc@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>
-Cc: Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <12333551.k204JYSgao@aspire.rjw.lan>
+Sender: linux-i2c-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+[...]
 
+>>
+>> The above change would offer an improvement, however there are more
+>> benefits from the runtime PM centric path that it doesn't cover.
+>
+> The idea, though, is not to make it instead of, but in addition to the
+> runtime PM centric path.
+>
+> So a driver using the runtime PM centric (or rather runtime PM aware)
+> callbacks can set power.force_suspend and benefit from having direct_complete
+> set conditional on whether or not the device is runtime resumed before the
+> late suspend.
+>
+> If device_complete remains set in __device_suspend_late(), no system
+> suspend/resume callbacks will be invoked from that point on.  If it isn't
+> set, pm_runtime_force_suspend() should work just fine and then
+> pm_runtime_force_resume() should do the right thing on the way back.
+>
+> All boils down to (a) setting a flag and (b) using the right callbacks
+> for system suspend which is the case with your patches either.
 
-On 14/07/17 15:11, Leonard Crestez wrote:
-> This function does a quick and easy read of an u32 value without any
-> kind of resource management code on the consumer side.
-> 
-> Signed-off-by: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+You make it sound simple. :-)
+
+I try to get inspired of your ideas and see what I can come up with.
+However, I really want us to avoid making it more difficult to
+understand the behavior of the core, so I probably look start changing
+the ACPI PM domain first, then trying to adopt the behavior of the
+core on top of those changes. Does that sound reasonable to you?
+
+>
+>> The below is pasted from the changelog for patch9 (I will make sure to
+>> fold in this in the changelog for $subject patch next version).
+>>
+>> In case the device is/gets runtime resumed before the device_suspend()
+>> phase is entered, the PM core doesn't run the direct_complete path for
+>> the device during system sleep. During system resume, this lead to
+>> that the device will always be brought back to full power when the
+>> i2c-dw-plat driver's ->resume() callback is invoked. This may not be
+>> necessary, thus increasing the resume time for the device and wasting
+>> power.
+>
+> Well, I guess that depends on what is there in its resume callbacks.
+>
+>> In the runtime PM centric path, the pm_runtime_force_resume() helper
+>> takes better care, as it resumes the device only in case it's really
+>> needed. Normally this means it can be postponed to be dealt with via
+>> regular calls to runtime PM (pm_runtime_get*()) instead. In other
+>> words, the device remains in its low power state until someone request
+>> a new i2c transfer, whenever that may be.
+>>
+>> As far as I can think of, the direct_complete path can't be adjusted
+>> to support this. Or can it?
+>
+> It surely can, it's just software. :-)  The question is how complicated that
+> is going to be in the end, however.
+>
+> So the patch I sent didn't address the dependency issue, but it allows the
+> core to deal with the issue which is a core issue, not an ACPI PM domain
+> issue, because the core disables runtime PM for devices with direct_complete
+> set, not the ACPI PM domain or PCI etc.
+>
+> [BTW, it is not entirely clear to me why it ever is necessary to runtime resume
+> a device with direct_complete set after __device_suspend(), because it can only
+> have direct_complete set at that point if all of the hierarchy below it has
+> this flag set too and so runtime PM has to be disabled for all of those
+> devices as well.]
+>
+> It can be made slightly better by adding a piece to avoid clearing the
+> parent's direct_complete if it had the new flag set, so below is a new
+> version (with the new flag renamed to safe_suspend which seemed better to
+> me).
+>
+> Of course, having safe_suspend set will still cause the parent's
+> direct_complete to be cleared unless the parent has safe_suspend set too,
+> but that's better than not allowing the parent to use direct_complete at all.
+
+Well, as I replied in the earlier response, deploying the runtime PM
+centric path also for the parent, offers additional optimizations
+while comparing to try to make the direct_complete path still to work.
+
+We could also pick that approach, which would mean additional
+arguments of moving drivers to the runtime PM centric path, of course
+only where it makes sense.
+
+>
 > ---
-Sorry about the long delay, I was expecting this patch to go via Greg KH 
-tree to an rc, which seems to be very late now, so here is my Ack so 
-that you could pick this patch from other tree along with this series.
-
-I will resend my fixes to Greg without this patch.
-
-
-
-Acked-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-
->   drivers/nvmem/core.c           | 37 +++++++++++++++++++++++++++++++++++++
->   include/linux/nvmem-consumer.h |  8 ++++++++
->   2 files changed, 45 insertions(+)
-> 
-> diff --git a/drivers/nvmem/core.c b/drivers/nvmem/core.c
-> index 4c49285..cf2d645 100644
-> --- a/drivers/nvmem/core.c
-> +++ b/drivers/nvmem/core.c
-> @@ -1111,6 +1111,43 @@ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len)
->   EXPORT_SYMBOL_GPL(nvmem_cell_write);
->   
->   /**
-> + * nvmem_cell_read_u32() - Read a cell value as an u32
+>  drivers/acpi/device_pm.c  |    8 ++++++++
+>  drivers/base/power/main.c |   15 ++++++++++++---
+>  include/linux/pm.h        |    1 +
+>  3 files changed, 21 insertions(+), 3 deletions(-)
+>
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -1271,9 +1271,16 @@ static int __device_suspend_late(struct
+>                 goto Complete;
+>         }
+>
+> -       if (dev->power.syscore || dev->power.direct_complete)
+> +       if (dev->power.syscore)
+>                 goto Complete;
+>
+> +       if (dev->power.direct_complete) {
+> +               if (pm_runtime_status_suspended(dev))
+> +                       goto Complete;
+> +
+> +               dev->power.direct_complete = false;
+> +       }
+> +
+>         if (dev->pm_domain) {
+>                 info = "late power domain ";
+>                 callback = pm_late_early_op(&dev->pm_domain->ops, state);
+> @@ -1482,7 +1489,7 @@ static int __device_suspend(struct devic
+>         if (dev->power.syscore)
+>                 goto Complete;
+>
+> -       if (dev->power.direct_complete) {
+> +       if (dev->power.direct_complete && !dev->power.safe_suspend) {
+>                 if (pm_runtime_status_suspended(dev)) {
+>                         pm_runtime_disable(dev);
+>                         if (pm_runtime_status_suspended(dev))
+> @@ -1549,7 +1556,9 @@ static int __device_suspend(struct devic
+>                 if (parent) {
+>                         spin_lock_irq(&parent->power.lock);
+>
+> -                       dev->parent->power.direct_complete = false;
+> +                       if (!dev->parent->power.safe_suspend)
+> +                               dev->parent->power.direct_complete = false;
+> +
+>                         if (dev->power.wakeup_path
+>                             && !dev->parent->power.ignore_children)
+>                                 dev->parent->power.wakeup_path = true;
+> Index: linux-pm/include/linux/pm.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/pm.h
+> +++ linux-pm/include/linux/pm.h
+> @@ -554,6 +554,7 @@ struct dev_pm_info {
+>         pm_message_t            power_state;
+>         unsigned int            can_wakeup:1;
+>         unsigned int            async_suspend:1;
+> +       unsigned int            safe_suspend:1;
+>         bool                    in_dpm_list:1;  /* Owned by the PM core */
+>         bool                    is_prepared:1;  /* Owned by the PM core */
+>         bool                    is_suspended:1; /* Ditto */
+> Index: linux-pm/drivers/acpi/device_pm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/device_pm.c
+> +++ linux-pm/drivers/acpi/device_pm.c
+> @@ -1025,9 +1025,17 @@ EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
+>   *
+>   * Follow PCI and resume devices suspended at run time before running their
+>   * system suspend callbacks.
 > + *
-> + * @dev: Device that requests the nvmem cell.
-> + * @cell_id: Name of nvmem cell to read.
-> + * @val: pointer to output value.
-> + *
-> + * Return: 0 on success or negative errno.
-> + */
-> +int nvmem_cell_read_u32(struct device* dev, const char *cell_id, u32 *val)
-> +{
-> +	struct nvmem_cell *cell;
-> +	void *buf;
-> +	size_t len;
+> + * If the power.direct_complete flag is set for the device, though, skip all
+> + * that, because the device doesn't need to be resumed then and if it is
+> + * resumed via runtime PM, the core will notice that and will carry out the
+> + * late suspend for it.
+>   */
+>  int acpi_subsys_suspend(struct device *dev)
+>  {
+> +       if (dev->power.direct_complete)
+> +               return 0;
 > +
-> +	cell = nvmem_cell_get(dev, cell_id);
-> +	if (IS_ERR(cell))
-> +		return PTR_ERR(cell);
-> +
-> +	buf = nvmem_cell_read(cell, &len);
-> +	if (IS_ERR(buf)) {
-> +		nvmem_cell_put(cell);
-> +		return PTR_ERR(buf);
-> +	}
-> +	if (len != sizeof(*val)) {
-> +		kfree(buf);
-> +		nvmem_cell_put(cell);
-> +		return -EINVAL;
-> +	}
-> +	memcpy(val, buf, sizeof(*val));
-> +
-> +	kfree(buf);
-> +	nvmem_cell_put(cell);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(nvmem_cell_read_u32);
-> +
-> +/**
->    * nvmem_device_cell_read() - Read a given nvmem device and cell
->    *
->    * @nvmem: nvmem device to read from.
-> diff --git a/include/linux/nvmem-consumer.h b/include/linux/nvmem-consumer.h
-> index c2256d7..a402522 100644
-> --- a/include/linux/nvmem-consumer.h
-> +++ b/include/linux/nvmem-consumer.h
-> @@ -36,6 +36,8 @@ void devm_nvmem_cell_put(struct device *dev, struct nvmem_cell *cell);
->   void *nvmem_cell_read(struct nvmem_cell *cell, size_t *len);
->   int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len);
->   
-> +int nvmem_cell_read_u32(struct device* dev, const char *cell_id, u32 *val);
-> +
->   /* direct nvmem device read/write interface */
->   struct nvmem_device *nvmem_device_get(struct device *dev, const char *name);
->   struct nvmem_device *devm_nvmem_device_get(struct device *dev,
-> @@ -85,6 +87,12 @@ static inline int nvmem_cell_write(struct nvmem_cell *cell,
->   	return -ENOSYS;
->   }
->   
-> +static inline int nvmem_cell_read_u32(struct device* dev,
-> +				      const char *cell_id, u32 *val)
-> +{
-> +	return -ENOSYS;
-> +}
-> +
->   static inline struct nvmem_device *nvmem_device_get(struct device *dev,
->   						    const char *name)
->   {
-> 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>         pm_runtime_resume(dev);
+>         return pm_generic_suspend(dev);
+>  }
+>
+
+Kind regards
+Uffe
