@@ -1,86 +1,305 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] devfreq: Convert to using %pOF instead of full_name
-Date: Fri, 25 Aug 2017 10:26:32 +0900
-Message-ID: <599F7CC8.1040406@samsung.com>
-References: <20170718214339.7774-17-robh@kernel.org>
-        <CGME20170718214411epcas2p43fc1475c80245889737ba9e731497e38@epcms1p2>
-        <596EB809.7050605@samsung.com>
-        <20170720052553epcms1p24dc190a0d51f2e447a76e417e519bd28@epcms1p2>
-        <CAL_JsqL9x16Z76VSAkDUiyEddafYuiH4mFTUur=8LgrJehrFLw@mail.gmail.com>
-        <599E0D45.7030001@samsung.com>
-        <CAL_Jsq+LW8ZmE_J0B9Cea_Y0iDkBX46cXWnAF882C9-7SB_T=A@mail.gmail.com>
+From: Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH V1] thermal: qcom-spmi-temp-alarm: add support for GEN2
+ PMIC peripherals
+Date: Fri, 25 Aug 2017 10:13:09 +0800
+Message-ID: <1503627189.2774.3.camel@intel.com>
+References: <1499947772-19199-1-git-send-email-kgunda@codeaurora.org>
+         <1502179943.4296.12.camel@intel.com>
+         <f5c6c5f73b78c407684482cdeed30294@codeaurora.org>
+         <5d3f612dca4181b2038e442cfba5594e@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:19221 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753627AbdHYB0f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Aug 2017 21:26:35 -0400
-In-reply-to: <CAL_Jsq+LW8ZmE_J0B9Cea_Y0iDkBX46cXWnAF882C9-7SB_T=A@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <5d3f612dca4181b2038e442cfba5594e@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: kgunda@codeaurora.org
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iivanov@mm-sol.com, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, linux-arm-msm-owner@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Jean Delvare <jdelvare@suse.de>, Lukasz Majewski <l.majewski@samsung.com>, Darren Hart <dvhart@linux.intel.com>, Heiko Stuebner <heiko@sntech.de>, Peter Feuerer <peter@piie.net>, bjorn.andersson@linaro.org, sboyd@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 2017년 08월 24일 23:23, Rob Herring wrote:
-> On Wed, Aug 23, 2017 at 6:18 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->> Hi Rob,
->>
->> On 2017년 08월 24일 03:09, Rob Herring wrote:
->>> On Thu, Jul 20, 2017 at 12:25 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->>>>> On 2017년 07월 19일 06:42, Rob Herring wrote:
->>>>>> Now that we have a custom printf format specifier, convert users of
->>>>>> full_name to use %pOF instead. This is preparation to remove storing
->>>>>> of the full path string for each node.
->>>>>>
->>>>>> Signed-off-by: Rob Herring <robh@kernel.org>
->>>>>> Cc: Chanwoo Choi <cw00.choi@samsung.com>
->>>>>> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
->>>>>> Cc: Kyungmin Park <kyungmin.park@samsung.com>
->>>>>> Cc: linux-pm@vger.kernel.org
->>>>>> ---
->>>>>>  drivers/devfreq/devfreq-event.c | 4 ++--
->>>>>>  1 file changed, 2 insertions(+), 2 deletions(-)
->>>>>>
->>>>>> diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
->>>>>> index 8648b32ebc89..d67242d87744 100644
->>>>>> --- a/drivers/devfreq/devfreq-event.c
->>>>>> +++ b/drivers/devfreq/devfreq-event.c
->>>>>> @@ -277,8 +277,8 @@ int devfreq_event_get_edev_count(struct device *dev)
->>>>>>                                             sizeof(u32));
->>>>>>     if (count < 0) {
->>>>>>             dev_err(dev,
->>>>>> -                   "failed to get the count of devfreq-event in %s node\n",
->>>>>> -                   dev->of_node->full_name);
->>>>>> +                   "failed to get the count of devfreq-event in %pOF node\n",
->>>>>> +                   dev->of_node);
->>>>>>             return count;
->>>>>>     }
->>>>>>
->>>>>
->>>>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>>>
->>>>
->>>> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
->>>
->>> Please take this thru the devfreq tree.
->>
->> This patch was merged on devfreq tree.
->> https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=for-next&id=7f46535e8a2e3c3e415e55eaadcb9d9a153a5300
+On Thu, 2017-08-17 at 13:12 +0530, kgunda@codeaurora.org wrote:
+> On 2017-08-16 17:53, kgunda@codeaurora.org wrote:
+> > 
+> > On 2017-08-08 13:42, Zhang Rui wrote:
+> > > 
+> > > On Thu, 2017-07-13 at 17:39 +0530, Kiran Gunda wrote:
+> > > > 
+> > > > From: David Collins <collinsd@codeaurora.org>
+> > > > 
+> > > > Add support for the TEMP_ALARM GEN2 PMIC peripheral
+> > > > subtype.  The
+> > > > GEN2 subtype defines an over temperature state with hysteresis
+> > > > instead of stage in the status register.  There are two GEN2
+> > > > states corresponding to stages 1 and 2.
+> > > > 
+> > > > Signed-off-by: David Collins <collinsd@codeaurora.org>
+> > > > Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+> > > Ivan,
+> > > 
+> > > can you please review this patch and let me know your opinion?
+> > > 
+> > > thanks,
+> > > rui
+> > Ivan,
+> > Could you please review this patch ?
+> > 
+> > Thanks,
+> > Kiran
+> Looks like Ivan is no more reviewing the patches for qcom.
+> Adding Bjorn and Stephen Boyd for the review.
 > 
-> Okay, it's not showing up in linux-next which is why I asked.
+Given this is a platform specific change, I will queue it for next
+merge window, and let's see if there is any problem reported.
 
-As I knew, devfreq maintainer has not yet asked
-the inclusion of devfreq tree in linux-next.
-
-To Myungjoo,
-You can ask to 'Stephen Rothwell <sfr@canb.auug.org.au>'
-for the inclusion of devfreq tree in linux-next.
-
-git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-next
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+thanks,
+rui
+> Thanks,
+> Kiran
+> > 
+> > > 
+> > > > 
+> > > > ---
+> > > >  drivers/thermal/qcom-spmi-temp-alarm.c | 92
+> > > > ++++++++++++++++++++++++++--------
+> > > >  1 file changed, 71 insertions(+), 21 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c
+> > > > b/drivers/thermal/qcom-spmi-temp-alarm.c
+> > > > index f502419..a5e17ba 100644
+> > > > --- a/drivers/thermal/qcom-spmi-temp-alarm.c
+> > > > +++ b/drivers/thermal/qcom-spmi-temp-alarm.c
+> > > > @@ -1,5 +1,5 @@
+> > > >  /*
+> > > > - * Copyright (c) 2011-2015, The Linux Foundation. All rights
+> > > > reserved.
+> > > > + * Copyright (c) 2011-2015, 2017, The Linux Foundation. All
+> > > > rights
+> > > > reserved.
+> > > >   *
+> > > >   * This program is free software; you can redistribute it
+> > > > and/or
+> > > > modify
+> > > >   * it under the terms of the GNU General Public License
+> > > > version 2
+> > > > and
+> > > > @@ -11,6 +11,7 @@
+> > > >   * GNU General Public License for more details.
+> > > >   */
+> > > >  
+> > > > +#include <linux/bitops.h>
+> > > >  #include <linux/delay.h>
+> > > >  #include <linux/err.h>
+> > > >  #include <linux/iio/consumer.h>
+> > > > @@ -29,13 +30,17 @@
+> > > >  #define QPNP_TM_REG_ALARM_CTRL		0x46
+> > > >  
+> > > >  #define QPNP_TM_TYPE			0x09
+> > > > -#define QPNP_TM_SUBTYPE			0x08
+> > > > +#define QPNP_TM_SUBTYPE_GEN1		0x08
+> > > > +#define QPNP_TM_SUBTYPE_GEN2		0x09
+> > > >  
+> > > > -#define STATUS_STAGE_MASK		0x03
+> > > > +#define STATUS_GEN1_STAGE_MASK		GENMASK(1, 0)
+> > > > +#define STATUS_GEN2_STATE_MASK		GENMASK(6, 4)
+> > > > +#define STATUS_GEN2_STATE_SHIFT		4
+> > > >  
+> > > > -#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
+> > > > +#define SHUTDOWN_CTRL1_OVERRIDE_MASK	GENMASK(7, 6)
+> > > > +#define SHUTDOWN_CTRL1_THRESHOLD_MASK	GENMASK(1, 0)
+> > > >  
+> > > > -#define ALARM_CTRL_FORCE_ENABLE		0x80
+> > > > +#define ALARM_CTRL_FORCE_ENABLE		BIT(7)
+> > > >  
+> > > >  /*
+> > > >   * Trip point values based on threshold control
+> > > > @@ -58,6 +63,7 @@
+> > > >  struct qpnp_tm_chip {
+> > > >  	struct regmap			*map;
+> > > >  	struct thermal_zone_device	*tz_dev;
+> > > > +	unsigned int			subtype;
+> > > >  	long				temp;
+> > > >  	unsigned int			thresh;
+> > > >  	unsigned int			stage;
+> > > > @@ -66,6 +72,9 @@ struct qpnp_tm_chip {
+> > > >  	struct iio_channel		*adc;
+> > > >  };
+> > > >  
+> > > > +/* This array maps from GEN2 alarm state to GEN1 alarm stage
+> > > > */
+> > > > +static const unsigned int alarm_state_map[8] = {0, 1, 1, 2, 2,
+> > > > 3, 3,
+> > > > 3};
+> > > > +
+> > > >  static int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr,
+> > > > u8
+> > > > *data)
+> > > >  {
+> > > >  	unsigned int val;
+> > > > @@ -84,30 +93,59 @@ static int qpnp_tm_write(struct
+> > > > qpnp_tm_chip
+> > > > *chip, u16 addr, u8 data)
+> > > >  	return regmap_write(chip->map, chip->base + addr,
+> > > > data);
+> > > >  }
+> > > >  
+> > > > +/**
+> > > > + * qpnp_tm_get_temp_stage() - return over-temperature stage
+> > > > + * @chip:		Pointer to the qpnp_tm chip
+> > > > + *
+> > > > + * Return: stage (GEN1) or state (GEN2) on success, or errno
+> > > > on
+> > > > failure.
+> > > > + */
+> > > > +static int qpnp_tm_get_temp_stage(struct qpnp_tm_chip *chip)
+> > > > +{
+> > > > +	int ret;
+> > > > +	u8 reg = 0;
+> > > > +
+> > > > +	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
+> > > > +	if (ret < 0)
+> > > > +		return ret;
+> > > > +
+> > > > +	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1)
+> > > > +		ret = reg & STATUS_GEN1_STAGE_MASK;
+> > > > +	else
+> > > > +		ret = (reg & STATUS_GEN2_STATE_MASK) >>
+> > > > STATUS_GEN2_STATE_SHIFT;
+> > > > +
+> > > > +	return ret;
+> > > > +}
+> > > > +
+> > > >  /*
+> > > >   * This function updates the internal temp value based on the
+> > > >   * current thermal stage and threshold as well as the previous
+> > > > stage
+> > > >   */
+> > > >  static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip
+> > > > *chip)
+> > > >  {
+> > > > -	unsigned int stage;
+> > > > +	unsigned int stage, stage_new, stage_old;
+> > > >  	int ret;
+> > > > -	u8 reg = 0;
+> > > >  
+> > > > -	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
+> > > > +	ret = qpnp_tm_get_temp_stage(chip);
+> > > >  	if (ret < 0)
+> > > >  		return ret;
+> > > > +	stage = ret;
+> > > >  
+> > > > -	stage = reg & STATUS_STAGE_MASK;
+> > > > +	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1) {
+> > > > +		stage_new = stage;
+> > > > +		stage_old = chip->stage;
+> > > > +	} else {
+> > > > +		stage_new = alarm_state_map[stage];
+> > > > +		stage_old = alarm_state_map[chip->stage];
+> > > > +	}
+> > > >  
+> > > > -	if (stage > chip->stage) {
+> > > > +	if (stage_new > stage_old) {
+> > > >  		/* increasing stage, use lower bound */
+> > > > -		chip->temp = (stage - 1) * TEMP_STAGE_STEP +
+> > > > +		chip->temp = (stage_new - 1) * TEMP_STAGE_STEP
+> > > > +
+> > > >  			     chip->thresh * TEMP_THRESH_STEP +
+> > > >  			     TEMP_STAGE_HYSTERESIS +
+> > > > TEMP_THRESH_MIN;
+> > > > -	} else if (stage < chip->stage) {
+> > > > +	} else if (stage_new < stage_old) {
+> > > >  		/* decreasing stage, use upper bound */
+> > > > -		chip->temp = stage * TEMP_STAGE_STEP +
+> > > > +		chip->temp = stage_new * TEMP_STAGE_STEP +
+> > > >  			     chip->thresh * TEMP_THRESH_STEP -
+> > > >  			     TEMP_STAGE_HYSTERESIS +
+> > > > TEMP_THRESH_MIN;
+> > > >  	}
+> > > > @@ -162,28 +200,37 @@ static irqreturn_t qpnp_tm_isr(int irq,
+> > > > void
+> > > > *data)
+> > > >   */
+> > > >  static int qpnp_tm_init(struct qpnp_tm_chip *chip)
+> > > >  {
+> > > > +	unsigned int stage;
+> > > >  	int ret;
+> > > > -	u8 reg;
+> > > > +	u8 reg = 0;
+> > > >  
+> > > > -	chip->thresh = THRESH_MIN;
+> > > > +	ret = qpnp_tm_read(chip, QPNP_TM_REG_SHUTDOWN_CTRL1,
+> > > > &reg);
+> > > > +	if (ret < 0)
+> > > > +		return ret;
+> > > > +
+> > > > +	chip->thresh = reg & SHUTDOWN_CTRL1_THRESHOLD_MASK;
+> > > >  	chip->temp = DEFAULT_TEMP;
+> > > >  
+> > > > -	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
+> > > > +	ret = qpnp_tm_get_temp_stage(chip);
+> > > >  	if (ret < 0)
+> > > >  		return ret;
+> > > > +	chip->stage = ret;
+> > > >  
+> > > > -	chip->stage = reg & STATUS_STAGE_MASK;
+> > > > +	stage = chip->subtype == QPNP_TM_SUBTYPE_GEN1
+> > > > +		? chip->stage : alarm_state_map[chip->stage];
+> > > >  
+> > > > -	if (chip->stage)
+> > > > +	if (stage)
+> > > >  		chip->temp = chip->thresh * TEMP_THRESH_STEP +
+> > > > -			     (chip->stage - 1) *
+> > > > TEMP_STAGE_STEP +
+> > > > +			     (stage - 1) * TEMP_STAGE_STEP +
+> > > >  			     TEMP_THRESH_MIN;
+> > > >  
+> > > >  	/*
+> > > >  	 * Set threshold and disable software override of
+> > > > stage 2
+> > > > and 3
+> > > >  	 * shutdowns.
+> > > >  	 */
+> > > > -	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
+> > > > +	chip->thresh = THRESH_MIN;
+> > > > +	reg &= ~(SHUTDOWN_CTRL1_OVERRIDE_MASK |
+> > > > SHUTDOWN_CTRL1_THRESHOLD_MASK);
+> > > > +	reg |= chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
+> > > >  	ret = qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1,
+> > > > reg);
+> > > >  	if (ret < 0)
+> > > >  		return ret;
+> > > > @@ -242,13 +289,16 @@ static int qpnp_tm_probe(struct
+> > > > platform_device
+> > > > *pdev)
+> > > >  		goto fail;
+> > > >  	}
+> > > >  
+> > > > -	if (type != QPNP_TM_TYPE || subtype !=
+> > > > QPNP_TM_SUBTYPE) {
+> > > > +	if (type != QPNP_TM_TYPE || (subtype !=
+> > > > QPNP_TM_SUBTYPE_GEN1
+> > > > +				     && subtype !=
+> > > > QPNP_TM_SUBTYPE_GEN2)) {
+> > > >  		dev_err(&pdev->dev, "invalid type 0x%02x or
+> > > > subtype
+> > > > 0x%02x\n",
+> > > >  			type, subtype);
+> > > >  		ret = -ENODEV;
+> > > >  		goto fail;
+> > > >  	}
+> > > >  
+> > > > +	chip->subtype = subtype;
+> > > > +
+> > > >  	ret = qpnp_tm_init(chip);
+> > > >  	if (ret < 0) {
+> > > >  		dev_err(&pdev->dev, "init failed\n");
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe 
+> > > linux-arm-msm" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.htm
+> > > l
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe 
+> > linux-arm-msm" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
