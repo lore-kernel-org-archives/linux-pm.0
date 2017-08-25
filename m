@@ -1,44 +1,58 @@
-From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [PATCH v2 2/5] devicetree: power: Add docs for TI BQ24190
- battery charger
-Date: Fri, 25 Aug 2017 13:29:22 -0700
-Message-ID: <20170825202920.GU3930@atomide.com>
-References: <20170807195420.20767-1-liam@networkimprov.net>
- <20170807195420.20767-3-liam@networkimprov.net>
- <20170811025038.5qnhbabyybx7rgu5@rob-hp-laptop>
- <CAKvHMgSuwm5UFivbsq9dQn_wfd7kbs63UuuQSHVdGxDf_WReUA@mail.gmail.com>
- <20170812164233.won7fairxmrnblps@earth>
- <CAKvHMgR+GxSqhy+iwdYmku2600HzoF__oXV7_w72ZJg-aK7O-Q@mail.gmail.com>
- <20170816154701.GR3930@atomide.com>
- <CAKvHMgTvVMsvmyi0o89m1SfS9A4U1GbNuU05Tkt6C0ARR9NyWw@mail.gmail.com>
- <20170816210644.GX3930@atomide.com>
- <CAKvHMgTJjTxffoP4Kt=KzGvCQ-BihLeQn3i4TaF4OBSXV7i6TA@mail.gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH 0/2][RFC] ACPI / PM: Disable MSR T-state after resumed
+Date: Fri, 25 Aug 2017 14:40:19 -0700
+Message-ID: <001b01d31dea$c116dc50$434494f0$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAKvHMgTJjTxffoP4Kt=KzGvCQ-BihLeQn3i4TaF4OBSXV7i6TA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
-Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta16.telus.net ([209.171.16.89]:60346 "EHLO cmta16.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S933269AbdHYVkY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 25 Aug 2017 17:40:24 -0400
+References: lHgGdsvEp8Qk9lHgId179V
+In-Reply-To: lHgGdsvEp8Qk9lHgId179V
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Chen Yu' <yu.c.chen@intel.com>, linux-acpi@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Len Brown' <lenb@kernel.org>
 
-* Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org> [170816 14:16]:
-> On Wed, Aug 16, 2017 at 2:06 PM, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org> wrote:
-> > If the kernel does not need to do anything about it, how about
-> > just leave it out of the binding docs then?
-> 
-> It seemed useful to document the OTG pin DT config for boards that
-> have it wired to a gpio... Is that not wise?
+On 2017.08.25 09:43 Chen Yu wrote:
 
-Well maybe add it as a note to the description rather than
-a binding. It might be actually best to document it in both
-places.
+> There is a growing number of reports that the MSR throttling has
+> been enabled after resumed back from suspend to ram, which impacts
+> the system performance. This patchset tries to address this issue
+> by turning off the T-state after resumed back.
+>
+> Chen Yu (2):
+>  ACPI / PM: Reuse the acpi_sleep_syscore_ops for future requirement
+>  ACPI / PM: Disable the MSR T-state during CPU online
+>
+> drivers/acpi/sleep.c | 60 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+> 1 file changed, 58 insertions(+), 2 deletions(-)
 
-Regards,
+Hi Chen,
 
-Tony
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I'll just copy and paste what I wrote in a couple of the bug reports ([1] for example) a couple of days ago:
+
+> I believe that pending changes to the intel-pstate CPU frequency scaling driver,
+> proposed by Rafael, I think for kernel 4.14-rc1, will eliminate the ongoing
+> troubles with Clock Modulation and the driver.
+>
+> I'm saying that the issue will no longer exist, and that the intel_pstate
+> CPU frequency scaling driver will respond "properly" to Clock Modulation events.
+> Of course, I'll check when kernel 4.14-rc1 becomes available, or before if I can
+> apply all the patches.
+>
+> For reference see the patch set related to:
+>
+> [PATCH 0/2] cpufreq: intel_pstate: Eliminate the PID controller
+> 2017.07.24 03:22 (or 10:22 UTC, I think)
+>
+> https://marc.info/?l=linux-pm&m=150093486908759&w=2
+> https://marc.info/?l=linux-pm&m=150093484308751&w=2
+> https://marc.info/?l=linux-pm&m=150093486808758&w=2
+
+[1] https://bugzilla.kernel.org/show_bug.cgi?id=189861
