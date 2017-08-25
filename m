@@ -1,305 +1,94 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V1] thermal: qcom-spmi-temp-alarm: add support for GEN2
- PMIC peripherals
-Date: Fri, 25 Aug 2017 10:13:09 +0800
-Message-ID: <1503627189.2774.3.camel@intel.com>
-References: <1499947772-19199-1-git-send-email-kgunda@codeaurora.org>
-         <1502179943.4296.12.camel@intel.com>
-         <f5c6c5f73b78c407684482cdeed30294@codeaurora.org>
-         <5d3f612dca4181b2038e442cfba5594e@codeaurora.org>
+From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 3/5] thermal: imx: Add support for reading OCOTP
+ through nvmem
+Date: Fri, 25 Aug 2017 10:20:49 +0800
+Message-ID: <1503627649.2774.6.camel@intel.com>
+References: <cover.1500041281.git.leonard.crestez@nxp.com>
+         <faf9c3e5f970b9609073c4c191a7af03d647ea51.1500041281.git.leonard.crestez@nxp.com>
+         <20170725080835.GD20064@dragon> <1502176915.4296.1.camel@intel.com>
+         <26407dd5-a9b1-67c0-c4ab-d97fa0b88b79@linaro.org>
+         <1502192287.24350.9.camel@nxp.com>
+         <9732c524-fbdc-d1be-cd03-089dbb2266c4@linaro.org>
+         <1502197100.4296.45.camel@intel.com> <1502897621.23210.41.camel@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5d3f612dca4181b2038e442cfba5594e@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: kgunda@codeaurora.org
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iivanov@mm-sol.com, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, linux-arm-msm-owner@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Jean Delvare <jdelvare@suse.de>, Lukasz Majewski <l.majewski@samsung.com>, Darren Hart <dvhart@linux.intel.com>, Heiko Stuebner <heiko@sntech.de>, Peter Feuerer <peter@piie.net>, bjorn.andersson@linaro.org, sboyd@codeaurora.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1502897621.23210.41.camel-3arQi8VN3Tc@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>, Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>
+Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>, Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2017-08-17 at 13:12 +0530, kgunda@codeaurora.org wrote:
-> On 2017-08-16 17:53, kgunda@codeaurora.org wrote:
+On Wed, 2017-08-16 at 18:33 +0300, Leonard Crestez wrote:
+> On Tue, 2017-08-08 at 20:58 +0800, Zhang Rui wrote:
 > > 
-> > On 2017-08-08 13:42, Zhang Rui wrote:
+> > On Tue, 2017-08-08 at 12:44 +0100, Srinivas Kandagatla wrote:
 > > > 
-> > > On Thu, 2017-07-13 at 17:39 +0530, Kiran Gunda wrote:
+> > > On 08/08/17 12:38, Leonard Crestez wrote:
 > > > > 
-> > > > From: David Collins <collinsd@codeaurora.org>
-> > > > 
-> > > > Add support for the TEMP_ALARM GEN2 PMIC peripheral
-> > > > subtype.  The
-> > > > GEN2 subtype defines an over temperature state with hysteresis
-> > > > instead of stage in the status register.  There are two GEN2
-> > > > states corresponding to stages 1 and 2.
-> > > > 
-> > > > Signed-off-by: David Collins <collinsd@codeaurora.org>
-> > > > Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
-> > > Ivan,
-> > > 
-> > > can you please review this patch and let me know your opinion?
-> > > 
-> > > thanks,
-> > > rui
-> > Ivan,
-> > Could you please review this patch ?
+> > > > On Tue, 2017-08-08 at 12:00 +0100, Srinivas Kandagatla wrote:
+> > > > > 
+> > > > > On 08/08/17 08:21, Zhang Rui wrote:
 > > 
-> > Thanks,
-> > Kiran
-> Looks like Ivan is no more reviewing the patches for qcom.
-> Adding Bjorn and Stephen Boyd for the review.
-> 
-Given this is a platform specific change, I will queue it for next
-merge window, and let's see if there is any problem reported.
+> > > 
+> > > > 
+> > > > > 
+> > > > > > 
+> > > > > > I'm okay with the thermal change.
+> > > > > > We still need ACK for the nvmem changes in this patch
+> > > > > > series.
+> > 
+> > > 
+> > > > 
+> > > > > 
+> > > > > NVMEM changes are already sent to Greg K H with other patches
+> > > > > https://lkml.org/lkml/2017/8/8/436, should appear in next.
+> > 
+> > > 
+> > > > 
+> > > > These patches have a compile-time dependency on each other.
+> > > > Wouldn't it make more sense for the whole series to go through
+> > > > a single
+> > > > maintainer tree, atomically? Most of the changes are in
+> > > > driver/thermal.
+> > 
+> > > 
+> > > I was expecting that the nvmem change go in as fix in a rc
+> > > release
+> > > so that you could apply the other patches after that.
+> > > 
+> > > Let me ping Greg about this!!
+> > 
+
+Srinivas,
+
+Will you take patch 2/5?
+Only after that, we can push the other changes.
 
 thanks,
 rui
-> Thanks,
-> Kiran
-> > 
-> > > 
-> > > > 
-> > > > ---
-> > > >  drivers/thermal/qcom-spmi-temp-alarm.c | 92
-> > > > ++++++++++++++++++++++++++--------
-> > > >  1 file changed, 71 insertions(+), 21 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c
-> > > > b/drivers/thermal/qcom-spmi-temp-alarm.c
-> > > > index f502419..a5e17ba 100644
-> > > > --- a/drivers/thermal/qcom-spmi-temp-alarm.c
-> > > > +++ b/drivers/thermal/qcom-spmi-temp-alarm.c
-> > > > @@ -1,5 +1,5 @@
-> > > >  /*
-> > > > - * Copyright (c) 2011-2015, The Linux Foundation. All rights
-> > > > reserved.
-> > > > + * Copyright (c) 2011-2015, 2017, The Linux Foundation. All
-> > > > rights
-> > > > reserved.
-> > > >   *
-> > > >   * This program is free software; you can redistribute it
-> > > > and/or
-> > > > modify
-> > > >   * it under the terms of the GNU General Public License
-> > > > version 2
-> > > > and
-> > > > @@ -11,6 +11,7 @@
-> > > >   * GNU General Public License for more details.
-> > > >   */
-> > > >  
-> > > > +#include <linux/bitops.h>
-> > > >  #include <linux/delay.h>
-> > > >  #include <linux/err.h>
-> > > >  #include <linux/iio/consumer.h>
-> > > > @@ -29,13 +30,17 @@
-> > > >  #define QPNP_TM_REG_ALARM_CTRL		0x46
-> > > >  
-> > > >  #define QPNP_TM_TYPE			0x09
-> > > > -#define QPNP_TM_SUBTYPE			0x08
-> > > > +#define QPNP_TM_SUBTYPE_GEN1		0x08
-> > > > +#define QPNP_TM_SUBTYPE_GEN2		0x09
-> > > >  
-> > > > -#define STATUS_STAGE_MASK		0x03
-> > > > +#define STATUS_GEN1_STAGE_MASK		GENMASK(1, 0)
-> > > > +#define STATUS_GEN2_STATE_MASK		GENMASK(6, 4)
-> > > > +#define STATUS_GEN2_STATE_SHIFT		4
-> > > >  
-> > > > -#define SHUTDOWN_CTRL1_THRESHOLD_MASK	0x03
-> > > > +#define SHUTDOWN_CTRL1_OVERRIDE_MASK	GENMASK(7, 6)
-> > > > +#define SHUTDOWN_CTRL1_THRESHOLD_MASK	GENMASK(1, 0)
-> > > >  
-> > > > -#define ALARM_CTRL_FORCE_ENABLE		0x80
-> > > > +#define ALARM_CTRL_FORCE_ENABLE		BIT(7)
-> > > >  
-> > > >  /*
-> > > >   * Trip point values based on threshold control
-> > > > @@ -58,6 +63,7 @@
-> > > >  struct qpnp_tm_chip {
-> > > >  	struct regmap			*map;
-> > > >  	struct thermal_zone_device	*tz_dev;
-> > > > +	unsigned int			subtype;
-> > > >  	long				temp;
-> > > >  	unsigned int			thresh;
-> > > >  	unsigned int			stage;
-> > > > @@ -66,6 +72,9 @@ struct qpnp_tm_chip {
-> > > >  	struct iio_channel		*adc;
-> > > >  };
-> > > >  
-> > > > +/* This array maps from GEN2 alarm state to GEN1 alarm stage
-> > > > */
-> > > > +static const unsigned int alarm_state_map[8] = {0, 1, 1, 2, 2,
-> > > > 3, 3,
-> > > > 3};
-> > > > +
-> > > >  static int qpnp_tm_read(struct qpnp_tm_chip *chip, u16 addr,
-> > > > u8
-> > > > *data)
-> > > >  {
-> > > >  	unsigned int val;
-> > > > @@ -84,30 +93,59 @@ static int qpnp_tm_write(struct
-> > > > qpnp_tm_chip
-> > > > *chip, u16 addr, u8 data)
-> > > >  	return regmap_write(chip->map, chip->base + addr,
-> > > > data);
-> > > >  }
-> > > >  
-> > > > +/**
-> > > > + * qpnp_tm_get_temp_stage() - return over-temperature stage
-> > > > + * @chip:		Pointer to the qpnp_tm chip
-> > > > + *
-> > > > + * Return: stage (GEN1) or state (GEN2) on success, or errno
-> > > > on
-> > > > failure.
-> > > > + */
-> > > > +static int qpnp_tm_get_temp_stage(struct qpnp_tm_chip *chip)
-> > > > +{
-> > > > +	int ret;
-> > > > +	u8 reg = 0;
-> > > > +
-> > > > +	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-> > > > +	if (ret < 0)
-> > > > +		return ret;
-> > > > +
-> > > > +	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1)
-> > > > +		ret = reg & STATUS_GEN1_STAGE_MASK;
-> > > > +	else
-> > > > +		ret = (reg & STATUS_GEN2_STATE_MASK) >>
-> > > > STATUS_GEN2_STATE_SHIFT;
-> > > > +
-> > > > +	return ret;
-> > > > +}
-> > > > +
-> > > >  /*
-> > > >   * This function updates the internal temp value based on the
-> > > >   * current thermal stage and threshold as well as the previous
-> > > > stage
-> > > >   */
-> > > >  static int qpnp_tm_update_temp_no_adc(struct qpnp_tm_chip
-> > > > *chip)
-> > > >  {
-> > > > -	unsigned int stage;
-> > > > +	unsigned int stage, stage_new, stage_old;
-> > > >  	int ret;
-> > > > -	u8 reg = 0;
-> > > >  
-> > > > -	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-> > > > +	ret = qpnp_tm_get_temp_stage(chip);
-> > > >  	if (ret < 0)
-> > > >  		return ret;
-> > > > +	stage = ret;
-> > > >  
-> > > > -	stage = reg & STATUS_STAGE_MASK;
-> > > > +	if (chip->subtype == QPNP_TM_SUBTYPE_GEN1) {
-> > > > +		stage_new = stage;
-> > > > +		stage_old = chip->stage;
-> > > > +	} else {
-> > > > +		stage_new = alarm_state_map[stage];
-> > > > +		stage_old = alarm_state_map[chip->stage];
-> > > > +	}
-> > > >  
-> > > > -	if (stage > chip->stage) {
-> > > > +	if (stage_new > stage_old) {
-> > > >  		/* increasing stage, use lower bound */
-> > > > -		chip->temp = (stage - 1) * TEMP_STAGE_STEP +
-> > > > +		chip->temp = (stage_new - 1) * TEMP_STAGE_STEP
-> > > > +
-> > > >  			     chip->thresh * TEMP_THRESH_STEP +
-> > > >  			     TEMP_STAGE_HYSTERESIS +
-> > > > TEMP_THRESH_MIN;
-> > > > -	} else if (stage < chip->stage) {
-> > > > +	} else if (stage_new < stage_old) {
-> > > >  		/* decreasing stage, use upper bound */
-> > > > -		chip->temp = stage * TEMP_STAGE_STEP +
-> > > > +		chip->temp = stage_new * TEMP_STAGE_STEP +
-> > > >  			     chip->thresh * TEMP_THRESH_STEP -
-> > > >  			     TEMP_STAGE_HYSTERESIS +
-> > > > TEMP_THRESH_MIN;
-> > > >  	}
-> > > > @@ -162,28 +200,37 @@ static irqreturn_t qpnp_tm_isr(int irq,
-> > > > void
-> > > > *data)
-> > > >   */
-> > > >  static int qpnp_tm_init(struct qpnp_tm_chip *chip)
-> > > >  {
-> > > > +	unsigned int stage;
-> > > >  	int ret;
-> > > > -	u8 reg;
-> > > > +	u8 reg = 0;
-> > > >  
-> > > > -	chip->thresh = THRESH_MIN;
-> > > > +	ret = qpnp_tm_read(chip, QPNP_TM_REG_SHUTDOWN_CTRL1,
-> > > > &reg);
-> > > > +	if (ret < 0)
-> > > > +		return ret;
-> > > > +
-> > > > +	chip->thresh = reg & SHUTDOWN_CTRL1_THRESHOLD_MASK;
-> > > >  	chip->temp = DEFAULT_TEMP;
-> > > >  
-> > > > -	ret = qpnp_tm_read(chip, QPNP_TM_REG_STATUS, &reg);
-> > > > +	ret = qpnp_tm_get_temp_stage(chip);
-> > > >  	if (ret < 0)
-> > > >  		return ret;
-> > > > +	chip->stage = ret;
-> > > >  
-> > > > -	chip->stage = reg & STATUS_STAGE_MASK;
-> > > > +	stage = chip->subtype == QPNP_TM_SUBTYPE_GEN1
-> > > > +		? chip->stage : alarm_state_map[chip->stage];
-> > > >  
-> > > > -	if (chip->stage)
-> > > > +	if (stage)
-> > > >  		chip->temp = chip->thresh * TEMP_THRESH_STEP +
-> > > > -			     (chip->stage - 1) *
-> > > > TEMP_STAGE_STEP +
-> > > > +			     (stage - 1) * TEMP_STAGE_STEP +
-> > > >  			     TEMP_THRESH_MIN;
-> > > >  
-> > > >  	/*
-> > > >  	 * Set threshold and disable software override of
-> > > > stage 2
-> > > > and 3
-> > > >  	 * shutdowns.
-> > > >  	 */
-> > > > -	reg = chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
-> > > > +	chip->thresh = THRESH_MIN;
-> > > > +	reg &= ~(SHUTDOWN_CTRL1_OVERRIDE_MASK |
-> > > > SHUTDOWN_CTRL1_THRESHOLD_MASK);
-> > > > +	reg |= chip->thresh & SHUTDOWN_CTRL1_THRESHOLD_MASK;
-> > > >  	ret = qpnp_tm_write(chip, QPNP_TM_REG_SHUTDOWN_CTRL1,
-> > > > reg);
-> > > >  	if (ret < 0)
-> > > >  		return ret;
-> > > > @@ -242,13 +289,16 @@ static int qpnp_tm_probe(struct
-> > > > platform_device
-> > > > *pdev)
-> > > >  		goto fail;
-> > > >  	}
-> > > >  
-> > > > -	if (type != QPNP_TM_TYPE || subtype !=
-> > > > QPNP_TM_SUBTYPE) {
-> > > > +	if (type != QPNP_TM_TYPE || (subtype !=
-> > > > QPNP_TM_SUBTYPE_GEN1
-> > > > +				     && subtype !=
-> > > > QPNP_TM_SUBTYPE_GEN2)) {
-> > > >  		dev_err(&pdev->dev, "invalid type 0x%02x or
-> > > > subtype
-> > > > 0x%02x\n",
-> > > >  			type, subtype);
-> > > >  		ret = -ENODEV;
-> > > >  		goto fail;
-> > > >  	}
-> > > >  
-> > > > +	chip->subtype = subtype;
-> > > > +
-> > > >  	ret = qpnp_tm_init(chip);
-> > > >  	if (ret < 0) {
-> > > >  		dev_err(&pdev->dev, "init failed\n");
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe 
-> > > linux-arm-msm" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.htm
-> > > l
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe 
-> > linux-arm-msm" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+> > As Shawn is okay with patch 4/5 and 5/5, I guess I can queue patch
+> > 1/5,
+> > 3/5, 4/5, 5/5 for 4.14-rc1, if the nvmem patch can catch 4.13, or I
+> > can
+> > queue the full patch set for 4.14, with Srinivas' ACK.
+> It's been a week since the last email and it seems that nothing
+> happened. I can't find any of these patches in either torvalds/master
+> or linux-next. It seems to me that the nvmem series linked above was
+> not picked up after all?
+> 
+> It's not clear how to proceed. It's been more a month since the
+> series
+> was sent so maybe I should resend it but it's not clear who would
+> pick
+> it up.
+> 
+> --
+> Regards,
+> Leonard
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
