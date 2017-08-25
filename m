@@ -1,128 +1,57 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [RFC 2/3] sched/fair: use util_est in LB
-Date: Fri, 25 Aug 2017 11:20:07 +0100
-Message-ID: <20170825102008.4626-3-patrick.bellasi@arm.com>
-References: <20170825102008.4626-1-patrick.bellasi@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170825102008.4626-1-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@arm.com>, Tim Murray <timmurray@google.com>, Todd Kjos <tkjos@android.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Viresh Kumar <viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 5/9] PM / ACPI: Provide option to disable direct_complete for ACPI devices
+Date: Fri, 25 Aug 2017 14:23:59 +0200
+Message-ID: <2514819.i36HWVUm2E@aspire.rjw.lan>
+References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org> <12333551.k204JYSgao@aspire.rjw.lan> <CAPDyKFrFUgE0FJE==ht4Z5utj+Pht=9UGn-LYBR9hP4ncofreg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFrFUgE0FJE==ht4Z5utj+Pht=9UGn-LYBR9hP4ncofreg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-When the scheduler looks at the CPU utlization, the current PELT value
-for a CPU is returned straight away. In certain scenarios this can have
-undesired side effects on task placement.
+On Friday, August 25, 2017 11:28:25 AM CEST Ulf Hansson wrote:
+> [...]
+> 
+> >>
+> >> The above change would offer an improvement, however there are more
+> >> benefits from the runtime PM centric path that it doesn't cover.
+> >
+> > The idea, though, is not to make it instead of, but in addition to the
+> > runtime PM centric path.
+> >
+> > So a driver using the runtime PM centric (or rather runtime PM aware)
+> > callbacks can set power.force_suspend and benefit from having direct_complete
+> > set conditional on whether or not the device is runtime resumed before the
+> > late suspend.
+> >
+> > If device_complete remains set in __device_suspend_late(), no system
+> > suspend/resume callbacks will be invoked from that point on.  If it isn't
+> > set, pm_runtime_force_suspend() should work just fine and then
+> > pm_runtime_force_resume() should do the right thing on the way back.
+> >
+> > All boils down to (a) setting a flag and (b) using the right callbacks
+> > for system suspend which is the case with your patches either.
+> 
+> You make it sound simple. :-)
+> 
+> I try to get inspired of your ideas and see what I can come up with.
+> However, I really want us to avoid making it more difficult to
+> understand the behavior of the core, so I probably look start changing
+> the ACPI PM domain first, then trying to adopt the behavior of the
+> core on top of those changes. Does that sound reasonable to you?
 
-For example, since the task utilization is decayed at wakeup time, when
-a long sleeping big task is enqueued it does not add immediately a
-significant contribution to the target CPU.
-As a result we generate a race condition where other tasks can be placed
-on the same CPU which is still considered relatively empty.
+Well, I don't think we need to change the ACPI PM domain at all. :-)
 
-In order to reduce these kind of race conditions, this patch introduces the
-required support to integrate the usage of the CPU's estimated utilization
-in some load balancer path.
+However, let me contiune in a reply to
 
-The estimated utilization of a CPU is defined to be the maximum between
-its PELT's utilization and the sum of the estimated utilization of the
-tasks currently RUNNABLE on that CPU.
-This allows to properly represent the expected utilization of a CPU which,
-for example it has just got a big task running since a long sleep
-period.
+https://marc.info/?l=linux-arm-kernel&m=150361200030186&w=2
 
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Paul Turner <pjt@google.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
----
- kernel/sched/fair.c     | 38 ++++++++++++++++++++++++++++++++++++--
- kernel/sched/features.h |  4 ++++
- 2 files changed, 40 insertions(+), 2 deletions(-)
+for more complete context.
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index a4ec1b8c4755..2593da1d1465 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -5985,6 +5985,32 @@ static int cpu_util(int cpu)
- 	return (util >= capacity) ? capacity : util;
- }
- 
-+/**
-+ * cpu_util_est: estimated utilization for the specified CPU
-+ * @cpu: the CPU to get the estimated utilization for
-+ *
-+ * The estimated utilization of a CPU is defined to be the maximum between its
-+ * PELT's utilization and the sum of the estimated utilization of the tasks
-+ * currently RUNNABLE on that CPU.
-+ *
-+ * This allows to properly represent the expected utilization of a CPU which
-+ * has just got a big task running since a long sleep period. At the same time
-+ * however it preserves the benefits of the "blocked load" in describing the
-+ * potential for other tasks waking up on the same CPU.
-+ *
-+ * Return: the estimated utlization for the specified CPU
-+ */
-+static inline unsigned long cpu_util_est(int cpu)
-+{
-+	struct sched_avg *sa = &cpu_rq(cpu)->cfs.avg;
-+	unsigned long util = cpu_util(cpu);
-+
-+	if (!sched_feat(UTIL_EST))
-+		return util;
-+
-+	return max(util, util_est(sa, UTIL_EST_LAST));
-+}
-+
- static inline int task_util(struct task_struct *p)
- {
- 	return p->se.avg.util_avg;
-@@ -6007,11 +6033,19 @@ static int cpu_util_wake(int cpu, struct task_struct *p)
- 
- 	/* Task has no contribution or is new */
- 	if (cpu != task_cpu(p) || !p->se.avg.last_update_time)
--		return cpu_util(cpu);
-+		return cpu_util_est(cpu);
- 
- 	capacity = capacity_orig_of(cpu);
- 	util = max_t(long, cpu_rq(cpu)->cfs.avg.util_avg - task_util(p), 0);
- 
-+	/*
-+	 * Estimated utilization tracks only tasks already enqueued, but still
-+	 * sometimes can return a bigger value than PELT, for example when the
-+	 * blocked load is negligible wrt the estimated utilization of the
-+	 * already enqueued tasks.
-+	 */
-+	util = max_t(long, util, cpu_util_est(cpu));
-+
- 	return (util >= capacity) ? capacity : util;
- }
- 
-@@ -7539,7 +7573,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
- 			load = source_load(i, load_idx);
- 
- 		sgs->group_load += load;
--		sgs->group_util += cpu_util(i);
-+		sgs->group_util += cpu_util_est(i);
- 		sgs->sum_nr_running += rq->cfs.h_nr_running;
- 
- 		nr_running = rq->nr_running;
-diff --git a/kernel/sched/features.h b/kernel/sched/features.h
-index d3fb15555291..dadae44be2ab 100644
---- a/kernel/sched/features.h
-+++ b/kernel/sched/features.h
-@@ -81,3 +81,7 @@ SCHED_FEAT(RT_RUNTIME_SHARE, true)
- SCHED_FEAT(LB_MIN, false)
- SCHED_FEAT(ATTACH_AGE_LOAD, true)
- 
-+/*
-+ * UtilEstimation. Use estimated CPU utiliation.
-+ */
-+SCHED_FEAT(UTIL_EST, false)
--- 
-2.14.1
+Thanks,
+Rafael
+
