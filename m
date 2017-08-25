@@ -1,7 +1,7 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v4 03/10] cpufreq: arm_big_little: invoke frequency-invariance setter function
-Date: Fri, 25 Aug 2017 15:31:59 +0100
-Message-ID: <20170825143206.30467-4-dietmar.eggemann@arm.com>
+Subject: [PATCH v4 01/10] drivers base/arch_topology: free cpumask cpus_to_visit
+Date: Fri, 25 Aug 2017 15:31:57 +0100
+Message-ID: <20170825143206.30467-2-dietmar.eggemann@arm.com>
 References: <20170825143206.30467-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170825143206.30467-1-dietmar.eggemann@arm.com>
@@ -10,46 +10,59 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Call the frequency-invariance setter function arch_set_freq_scale()
-if the new frequency has been successfully set which is indicated by
-bL_cpufreq_set_rate() returning 0.
+Free cpumask cpus_to_visit in case registering
+init_cpu_capacity_notifier has failed or the parsing of the cpu
+capacity-dmips-mhz property is done. The cpumask cpus_to_visit is
+only used inside the notifier call init_cpu_capacity_callback.
 
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Juri Lelli <juri.lelli@arm.com>
+Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Tested-by: Juri Lelli <juri.lelli@arm.com>
+Reviewed-by: Juri Lelli <juri.lelli@arm.com>
 ---
- drivers/cpufreq/arm_big_little.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ drivers/base/arch_topology.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index ea6d62547b10..8880f8d9d09d 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -213,6 +213,7 @@ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
+diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+index d1c33a85059e..562e0c93ae52 100644
+--- a/drivers/base/arch_topology.c
++++ b/drivers/base/arch_topology.c
+@@ -206,6 +206,8 @@ static struct notifier_block init_cpu_capacity_notifier = {
+ 
+ static int __init register_cpufreq_notifier(void)
  {
- 	u32 cpu = policy->cpu, cur_cluster, new_cluster, actual_cluster;
- 	unsigned int freqs_new;
 +	int ret;
- 
- 	cur_cluster = cpu_to_cluster(cpu);
- 	new_cluster = actual_cluster = per_cpu(physical_cluster, cpu);
-@@ -229,7 +230,14 @@ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
- 		}
- 	}
- 
--	return bL_cpufreq_set_rate(cpu, actual_cluster, new_cluster, freqs_new);
-+	ret = bL_cpufreq_set_rate(cpu, actual_cluster, new_cluster, freqs_new);
 +
-+	if (!ret) {
-+		arch_set_freq_scale(policy->related_cpus, freqs_new,
-+				    policy->cpuinfo.max_freq);
-+	}
+ 	/*
+ 	 * on ACPI-based systems we need to use the default cpu capacity
+ 	 * until we have the necessary code to parse the cpu capacity, so
+@@ -221,8 +223,13 @@ static int __init register_cpufreq_notifier(void)
+ 
+ 	cpumask_copy(cpus_to_visit, cpu_possible_mask);
+ 
+-	return cpufreq_register_notifier(&init_cpu_capacity_notifier,
+-					 CPUFREQ_POLICY_NOTIFIER);
++	ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
++					CPUFREQ_POLICY_NOTIFIER);
++
++	if (ret)
++		free_cpumask_var(cpus_to_visit);
 +
 +	return ret;
  }
+ core_initcall(register_cpufreq_notifier);
  
- static inline u32 get_table_count(struct cpufreq_frequency_table *table)
+@@ -230,6 +237,7 @@ static void parsing_done_workfn(struct work_struct *work)
+ {
+ 	cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
+ 					 CPUFREQ_POLICY_NOTIFIER);
++	free_cpumask_var(cpus_to_visit);
+ }
+ 
+ #else
 -- 
 2.11.0
