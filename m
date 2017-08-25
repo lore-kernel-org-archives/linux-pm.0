@@ -1,68 +1,51 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v4 01/10] drivers base/arch_topology: free cpumask cpus_to_visit
-Date: Fri, 25 Aug 2017 15:31:57 +0100
-Message-ID: <20170825143206.30467-2-dietmar.eggemann@arm.com>
-References: <20170825143206.30467-1-dietmar.eggemann@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170825143206.30467-1-dietmar.eggemann@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: x86: PIE support and option to extend KASLR randomization
+Date: Fri, 25 Aug 2017 08:05:52 -0700
+Message-ID: <CAJcbSZFJQMKw21kLwr4QGoSM7DMgKRzzjWxkYBF2c1HciCzvGg@mail.gmail.com>
+References: <20170810172615.51965-1-thgarnie@google.com> <20170811124127.kkb5pnkljz4umxuj@gmail.com>
+ <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
+ <20170815075609.mmzbfwritjzvrpsn@gmail.com> <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
+ <20170816151235.oamkdva6cwpc4cex@gmail.com> <CAJcbSZFM_zpL1av1JVaow8NdsGeH+6oZKeDnMPdXR0PGfynzsg@mail.gmail.com>
+ <20170817080920.5ljlkktngw2cisfg@gmail.com> <CAJcbSZGbtc-i0X1NiBAvZA7cxpGkwSLKNB7oDNCsFxOCdhkR_g@mail.gmail.com>
+ <CAJcbSZGhvwt=5ERtBHLJnwS=6AXBZLTMfrafzeUCqYy=-MKWDg@mail.gmail.com> <20170825080443.tvvr6wzs362cjcuu@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <kernel-hardening-return-9563-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20170825080443.tvvr6wzs362cjcuu@gmail.com>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
 List-Id: linux-pm@vger.kernel.org
 
-Free cpumask cpus_to_visit in case registering
-init_cpu_capacity_notifier has failed or the parsing of the cpu
-capacity-dmips-mhz property is done. The cpumask cpus_to_visit is
-only used inside the notifier call init_cpu_capacity_callback.
+On Fri, Aug 25, 2017 at 1:04 AM, Ingo Molnar <mingo@kernel.org> wrote:
+>
+> * Thomas Garnier <thgarnie@google.com> wrote:
+>
+>> With the fix for function tracing, the hackbench results have an
+>> average of +0.8 to +1.4% (from +8% to +10% before). With a default
+>> configuration, the numbers are closer to 0.8%.
+>>
+>> On the .text size, with gcc 4.9 I see +0.8% on default configuration
+>> and +1.180% on the ubuntu configuration.
+>
+> A 1% text size increase is still significant. Could you look at the disassembly,
+> where does the size increase come from?
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Juri Lelli <juri.lelli@arm.com>
-Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Tested-by: Juri Lelli <juri.lelli@arm.com>
-Reviewed-by: Juri Lelli <juri.lelli@arm.com>
----
- drivers/base/arch_topology.c | 12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+I will take a look, in this current iteration I added the .got and
+.got.plt so removing them will remove a big (even if they are small,
+we don't use them to increase perf).
 
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index d1c33a85059e..562e0c93ae52 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -206,6 +206,8 @@ static struct notifier_block init_cpu_capacity_notifier = {
- 
- static int __init register_cpufreq_notifier(void)
- {
-+	int ret;
-+
- 	/*
- 	 * on ACPI-based systems we need to use the default cpu capacity
- 	 * until we have the necessary code to parse the cpu capacity, so
-@@ -221,8 +223,13 @@ static int __init register_cpufreq_notifier(void)
- 
- 	cpumask_copy(cpus_to_visit, cpu_possible_mask);
- 
--	return cpufreq_register_notifier(&init_cpu_capacity_notifier,
--					 CPUFREQ_POLICY_NOTIFIER);
-+	ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
-+					CPUFREQ_POLICY_NOTIFIER);
-+
-+	if (ret)
-+		free_cpumask_var(cpus_to_visit);
-+
-+	return ret;
- }
- core_initcall(register_cpufreq_notifier);
- 
-@@ -230,6 +237,7 @@ static void parsing_done_workfn(struct work_struct *work)
- {
- 	cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
- 					 CPUFREQ_POLICY_NOTIFIER);
-+	free_cpumask_var(cpus_to_visit);
- }
- 
- #else
+What do you think about the perf numbers in general so far?
+
+>
+> Thanks,
+>
+>         Ingo
+
+
+
 -- 
-2.11.0
+Thomas
