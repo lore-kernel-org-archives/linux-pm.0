@@ -1,44 +1,86 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: x86: PIE support and option to extend KASLR
-	randomization
-Date: Thu, 24 Aug 2017 21:07:00 -0400
-Message-ID: <20170824210700.5fd3b5a0@gandalf.local.home>
-References: <20170810172615.51965-1-thgarnie@google.com>
- <20170811124127.kkb5pnkljz4umxuj@gmail.com>
- <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
- <20170815075609.mmzbfwritjzvrpsn@gmail.com>
- <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
- <20170816151235.oamkdva6cwpc4cex@gmail.com>
- <CAJcbSZFM_zpL1av1JVaow8NdsGeH+6oZKeDnMPdXR0PGfynzsg@mail.gmail.com>
- <20170817080920.5ljlkktngw2cisfg@gmail.com>
- <CAJcbSZGbtc-i0X1NiBAvZA7cxpGkwSLKNB7oDNCsFxOCdhkR_g@mail.gmail.com>
- <CAJcbSZGhvwt=5ERtBHLJnwS=6AXBZLTMfrafzeUCqYy=-MKWDg@mail.gmail.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] devfreq: Convert to using %pOF instead of full_name
+Date: Fri, 25 Aug 2017 10:26:32 +0900
+Message-ID: <599F7CC8.1040406@samsung.com>
+References: <20170718214339.7774-17-robh@kernel.org>
+        <CGME20170718214411epcas2p43fc1475c80245889737ba9e731497e38@epcms1p2>
+        <596EB809.7050605@samsung.com>
+        <20170720052553epcms1p24dc190a0d51f2e447a76e417e519bd28@epcms1p2>
+        <CAL_JsqL9x16Z76VSAkDUiyEddafYuiH4mFTUur=8LgrJehrFLw@mail.gmail.com>
+        <599E0D45.7030001@samsung.com>
+        <CAL_Jsq+LW8ZmE_J0B9Cea_Y0iDkBX46cXWnAF882C9-7SB_T=A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xen.org>
-In-Reply-To: <CAJcbSZGhvwt=5ERtBHLJnwS=6AXBZLTMfrafzeUCqYy=-MKWDg@mail.gmail.com>
-List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xen.org>
-List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
-List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xen.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>, Michal Hocko <mhocko@suse.com>, kvm list <kvm@vger.kernel.org>, Radim =?UTF-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Catalin Marinas <catalin.marinas@arm.com>, Christopher Li <sparse@chrisli.org>, Alexei Starovoitov <ast@kernel.org>, David Howells <dhowells@redhat.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Christoph Lameter <cl@linux.com>, Ingo Molnar <mingo@kernel.org>, Kees Cook <keescook@chromium.org>, the arch/x86 maintainers <x86@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, Daniel Borkmann <daniel@iogearbox.net>, Matthew Wilcox <mawilcox@microsoft.com>, Peter Foley <pefoley2@pefoley.com>, Joerg Roedel <joro>
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:19221 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753627AbdHYB0f (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Aug 2017 21:26:35 -0400
+In-reply-to: <CAL_Jsq+LW8ZmE_J0B9Cea_Y0iDkBX46cXWnAF882C9-7SB_T=A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: MyungJoo Ham <myungjoo.ham@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Kyungmin Park <kyungmin.park@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-T24gVGh1LCAyNCBBdWcgMjAxNyAxNDoxMzozOCAtMDcwMApUaG9tYXMgR2FybmllciA8dGhnYXJu
-aWVAZ29vZ2xlLmNvbT4gd3JvdGU6Cgo+IFdpdGggdGhlIGZpeCBmb3IgZnVuY3Rpb24gdHJhY2lu
-ZywgdGhlIGhhY2tiZW5jaCByZXN1bHRzIGhhdmUgYW4KPiBhdmVyYWdlIG9mICswLjggdG8gKzEu
-NCUgKGZyb20gKzglIHRvICsxMCUgYmVmb3JlKS4gV2l0aCBhIGRlZmF1bHQKPiBjb25maWd1cmF0
-aW9uLCB0aGUgbnVtYmVycyBhcmUgY2xvc2VyIHRvIDAuOCUuCgpXb3csIGFuIGVtcHR5IGZlbnRy
-eSBmdW5jdGlvbiBub3QgIm5vcCJlZCBvdXQgb25seSBhZGRlZCA4JSB0byAxMCUKb3ZlcmhlYWQu
-IEkgbmV2ZXIgZGlkIHRoZSBiZW5jaG1hcmtzIG9mIHRoYXQgc2luY2UgSSBkaWQgaXQgYmVmb3Jl
-CmZlbnRyeSB3YXMgaW50cm9kdWNlZCwgd2hpY2ggd2FzIHdpdGggdGhlIG9sZCAibWNvdW50Ii4g
-VGhhdCBnYXZlIGFuCmF2ZXJhZ2Ugb2YgMTMlIG92ZXJoZWFkIGluIGhhY2tiZW5jaC4KCi0tIFN0
-ZXZlCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpYZW4t
-ZGV2ZWwgbWFpbGluZyBsaXN0Clhlbi1kZXZlbEBsaXN0cy54ZW4ub3JnCmh0dHBzOi8vbGlzdHMu
-eGVuLm9yZy94ZW4tZGV2ZWwK
+On 2017년 08월 24일 23:23, Rob Herring wrote:
+> On Wed, Aug 23, 2017 at 6:18 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>> Hi Rob,
+>>
+>> On 2017년 08월 24일 03:09, Rob Herring wrote:
+>>> On Thu, Jul 20, 2017 at 12:25 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+>>>>> On 2017년 07월 19일 06:42, Rob Herring wrote:
+>>>>>> Now that we have a custom printf format specifier, convert users of
+>>>>>> full_name to use %pOF instead. This is preparation to remove storing
+>>>>>> of the full path string for each node.
+>>>>>>
+>>>>>> Signed-off-by: Rob Herring <robh@kernel.org>
+>>>>>> Cc: Chanwoo Choi <cw00.choi@samsung.com>
+>>>>>> Cc: MyungJoo Ham <myungjoo.ham@samsung.com>
+>>>>>> Cc: Kyungmin Park <kyungmin.park@samsung.com>
+>>>>>> Cc: linux-pm@vger.kernel.org
+>>>>>> ---
+>>>>>>  drivers/devfreq/devfreq-event.c | 4 ++--
+>>>>>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>>>>>
+>>>>>> diff --git a/drivers/devfreq/devfreq-event.c b/drivers/devfreq/devfreq-event.c
+>>>>>> index 8648b32ebc89..d67242d87744 100644
+>>>>>> --- a/drivers/devfreq/devfreq-event.c
+>>>>>> +++ b/drivers/devfreq/devfreq-event.c
+>>>>>> @@ -277,8 +277,8 @@ int devfreq_event_get_edev_count(struct device *dev)
+>>>>>>                                             sizeof(u32));
+>>>>>>     if (count < 0) {
+>>>>>>             dev_err(dev,
+>>>>>> -                   "failed to get the count of devfreq-event in %s node\n",
+>>>>>> -                   dev->of_node->full_name);
+>>>>>> +                   "failed to get the count of devfreq-event in %pOF node\n",
+>>>>>> +                   dev->of_node);
+>>>>>>             return count;
+>>>>>>     }
+>>>>>>
+>>>>>
+>>>>> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+>>>>>
+>>>>
+>>>> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+>>>
+>>> Please take this thru the devfreq tree.
+>>
+>> This patch was merged on devfreq tree.
+>> https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git/commit/?h=for-next&id=7f46535e8a2e3c3e415e55eaadcb9d9a153a5300
+> 
+> Okay, it's not showing up in linux-next which is why I asked.
+
+As I knew, devfreq maintainer has not yet asked
+the inclusion of devfreq tree in linux-next.
+
+To Myungjoo,
+You can ask to 'Stephen Rothwell <sfr@canb.auug.org.au>'
+for the inclusion of devfreq tree in linux-next.
+
+git://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-next
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
