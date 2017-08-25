@@ -1,121 +1,118 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 5/9] PM / ACPI: Provide option to disable
- direct_complete for ACPI devices
-Date: Fri, 25 Aug 2017 11:04:53 +0200
-Message-ID: <CAPDyKFpznYWU3NcuUfUD3=isR_w=it995+=GTaF8OU2Ho-GOQg@mail.gmail.com>
-References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0gJn=SzNFGUT7Zb+CfhQBZ7KNDK2GTSSXGexD8GObjGOw@mail.gmail.com>
- <CAPDyKFrGvqhBdenSyQ8Qr76DbfEvc74_dKZAjraA5qL63Mm2rg@mail.gmail.com> <4050921.GfHh1Z5NrX@aspire.rjw.lan>
+From: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 2/5] nvmem: core: Add nvmem_cell_read_u32
+Date: Fri, 25 Aug 2017 10:07:48 +0100
+Message-ID: <2744539a-d729-2568-47f0-42ba90036639@linaro.org>
+References: <cover.1500041281.git.leonard.crestez@nxp.com>
+ <eedf98ecb5d9d47f3c8b9ffbf58e03c7a2fb8db4.1500041281.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f178.google.com ([209.85.220.178]:38429 "EHLO
-        mail-qk0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755000AbdHYJEy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Aug 2017 05:04:54 -0400
-Received: by mail-qk0-f178.google.com with SMTP id o184so8650318qkc.5
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2017 02:04:54 -0700 (PDT)
-In-Reply-To: <4050921.GfHh1Z5NrX@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <eedf98ecb5d9d47f3c8b9ffbf58e03c7a2fb8db4.1500041281.git.leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>
+Cc: Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 
-On 24 August 2017 at 16:57, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, August 24, 2017 10:19:43 AM CEST Ulf Hansson wrote:
->> On 24 August 2017 at 01:39, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> > On Wed, Aug 23, 2017 at 4:42 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> >> In some cases a driver for an ACPI device needs to be able to prevent the
->> >> ACPI PM domain from using the direct_complete path during system sleep.
->> >>
->> >> One typical case is when the driver for the device needs its device to stay
->> >> runtime enabled, during the __device_suspend phase. This isn't the case
->> >> when the direct_complete path is being executed by the PM core, as it then
->> >> disables runtime PM for the device in __device_suspend(). Any following
->> >> attempts to runtime resume the device after that point, just fails.
->> >
->> > OK, that is a problem.
->> >
->> >> A workaround to this problem is to let the driver runtime resume its device
->> >> from its ->prepare() callback, as that would prevent the direct_complete
->> >> path from being executed. However, that may often be a waste, especially if
->> >> it turned out that no one really needed the device.
->> >>
->> >> For this reason, invent acpi_dev_disable|enable_direct_complete(), to allow
->> >> drivers to inform the ACPI PM domain to change its default behaviour during
->> >> system sleep, and thus control whether it may use the direct_complete path
->> >> or not.
->> >
->> > But I'm not sure this is the right place to address it as it very well
->> > may affect a PCI device too.
->> >
->> > Also, this is about the device and not about its ACPI companion
->> > object, so putting the flag in there is somewhat unclean, so to speak.
->> >
->> > It looks like we need a flag in dev_pm_info saying something along the
->> > lines of "my system suspend callback can deal with runtime PM" that
->> > will cause the direct_complete update to occur in
->> > __device_suspend_late() instead of __device_suspend().
->>
->> I realize that in the end this turns out to be a comparison between
->> the runtime PM centric path and the direct_complete path while
->> implementing system sleep. In patch 9, there is some more explanation
->> around this, however if you like I can elaborate even more about
->> this!?
->>
->> Regarding making changes to the PM core and adding more flags to the
->> dev_pm_info etc, I am not sure we really want that. Isn't it already
->> complex enough?
->
-> Maybe it is.
->
->> My point is, that I am trying to improve the behavior of the ACPI PM
->> domain by enabling the runtime PM centric path for it, and even if
->> there is something similar that could be done for PCI, I don't think
->> we should need involvement by the PM core.
->
-> Well, this generally simply doesn't work.
->
-> The whole "runtime PM centric approach" idea is generally fine by me,
-> but the fact today is that there are drivers not ready for it.  Which
-> is why there is the direct_complete thing (it may be regarded as a
-> sort-of workaround for the unreadiness of drivers if you will).
 
-This is how I see it:
 
-The runtime PM centric path is being widely deployed, however it takes
-time to convert drivers.
+On 14/07/17 15:11, Leonard Crestez wrote:
+> This function does a quick and easy read of an u32 value without any
+> kind of resource management code on the consumer side.
+> 
+> Signed-off-by: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
+> ---
+Sorry about the long delay, I was expecting this patch to go via Greg KH 
+tree to an rc, which seems to be very late now, so here is my Ack so 
+that you could pick this patch from other tree along with this series.
 
-The direct_complete path offers a great intermediate step for the ACPI
-PM domain as it affects all its devices - while we wait for further
-optimizations being deployed using the runtime PM centric path.
+I will resend my fixes to Greg without this patch.
 
->
-> Now, buy adding the no_direct_complete flag just to the ACPI PM domain
-> you basically overlook the fact that this potentially affects the parents
-> of the devices in question by preventing direct_complete from being set
-> for them.  And those parents may not be in the ACPI PM domain in principle,
-> so the problem needs to be addressed in the core.
 
-Okay, let's move the flag to the dev_pm* structures, to not limit this
-to the ACPI PM domain.
 
-However in the current approach taken in this series, as it's coded as
-opt-in to use for drivers, I am questioning how big of a problem
-parent devices not being able to use the direct_complete path could
-be!?
-Couldn't it be good enough to just adopt the behavior of the ACPI PM
-domain and more or less leave the core out of it - at least for now!?
+Acked-by: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-I am also thinking, that for those parent devices that potentially may
-suffer from not be able to use the direct_complete path, those can be
-fixed by deploying the runtime PM centric path in their
-subsystems/drivers. That would even mean that the parent devices get
-the additional benefits that the runtime PM centric path offers. So,
-in the end we would end up having a better optimized solution than we
-had before.
-
-What do you think?
-
-Kind regards
-Uffe
+>   drivers/nvmem/core.c           | 37 +++++++++++++++++++++++++++++++++++++
+>   include/linux/nvmem-consumer.h |  8 ++++++++
+>   2 files changed, 45 insertions(+)
+> 
+> diff --git a/drivers/nvmem/core.c b/drivers/nvmem/core.c
+> index 4c49285..cf2d645 100644
+> --- a/drivers/nvmem/core.c
+> +++ b/drivers/nvmem/core.c
+> @@ -1111,6 +1111,43 @@ int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len)
+>   EXPORT_SYMBOL_GPL(nvmem_cell_write);
+>   
+>   /**
+> + * nvmem_cell_read_u32() - Read a cell value as an u32
+> + *
+> + * @dev: Device that requests the nvmem cell.
+> + * @cell_id: Name of nvmem cell to read.
+> + * @val: pointer to output value.
+> + *
+> + * Return: 0 on success or negative errno.
+> + */
+> +int nvmem_cell_read_u32(struct device* dev, const char *cell_id, u32 *val)
+> +{
+> +	struct nvmem_cell *cell;
+> +	void *buf;
+> +	size_t len;
+> +
+> +	cell = nvmem_cell_get(dev, cell_id);
+> +	if (IS_ERR(cell))
+> +		return PTR_ERR(cell);
+> +
+> +	buf = nvmem_cell_read(cell, &len);
+> +	if (IS_ERR(buf)) {
+> +		nvmem_cell_put(cell);
+> +		return PTR_ERR(buf);
+> +	}
+> +	if (len != sizeof(*val)) {
+> +		kfree(buf);
+> +		nvmem_cell_put(cell);
+> +		return -EINVAL;
+> +	}
+> +	memcpy(val, buf, sizeof(*val));
+> +
+> +	kfree(buf);
+> +	nvmem_cell_put(cell);
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(nvmem_cell_read_u32);
+> +
+> +/**
+>    * nvmem_device_cell_read() - Read a given nvmem device and cell
+>    *
+>    * @nvmem: nvmem device to read from.
+> diff --git a/include/linux/nvmem-consumer.h b/include/linux/nvmem-consumer.h
+> index c2256d7..a402522 100644
+> --- a/include/linux/nvmem-consumer.h
+> +++ b/include/linux/nvmem-consumer.h
+> @@ -36,6 +36,8 @@ void devm_nvmem_cell_put(struct device *dev, struct nvmem_cell *cell);
+>   void *nvmem_cell_read(struct nvmem_cell *cell, size_t *len);
+>   int nvmem_cell_write(struct nvmem_cell *cell, void *buf, size_t len);
+>   
+> +int nvmem_cell_read_u32(struct device* dev, const char *cell_id, u32 *val);
+> +
+>   /* direct nvmem device read/write interface */
+>   struct nvmem_device *nvmem_device_get(struct device *dev, const char *name);
+>   struct nvmem_device *devm_nvmem_device_get(struct device *dev,
+> @@ -85,6 +87,12 @@ static inline int nvmem_cell_write(struct nvmem_cell *cell,
+>   	return -ENOSYS;
+>   }
+>   
+> +static inline int nvmem_cell_read_u32(struct device* dev,
+> +				      const char *cell_id, u32 *val)
+> +{
+> +	return -ENOSYS;
+> +}
+> +
+>   static inline struct nvmem_device *nvmem_device_get(struct device *dev,
+>   						    const char *name)
+>   {
+> 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
