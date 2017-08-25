@@ -1,58 +1,64 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH 0/2][RFC] ACPI / PM: Disable MSR T-state after resumed
-Date: Fri, 25 Aug 2017 14:40:19 -0700
-Message-ID: <001b01d31dea$c116dc50$434494f0$@net>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V1] thermal: qcom-spmi-temp-alarm: add support for GEN2
+ PMIC peripherals
+Date: Fri, 25 Aug 2017 16:19:48 -0700
+Message-ID: <20170825231948.GQ21656@codeaurora.org>
+References: <1499947772-19199-1-git-send-email-kgunda@codeaurora.org>
+ <1502179943.4296.12.camel@intel.com>
+ <f5c6c5f73b78c407684482cdeed30294@codeaurora.org>
+ <5d3f612dca4181b2038e442cfba5594e@codeaurora.org>
+ <1503627189.2774.3.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta16.telus.net ([209.171.16.89]:60346 "EHLO cmta16.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S933269AbdHYVkY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 25 Aug 2017 17:40:24 -0400
-References: lHgGdsvEp8Qk9lHgId179V
-In-Reply-To: lHgGdsvEp8Qk9lHgId179V
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1503627189.2774.3.camel@intel.com>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: kgunda@codeaurora.org, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iivanov@mm-sol.com, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, linux-arm-msm-owner@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Jean Delvare <jdelvare@suse.de>, Lukasz Majewski <l.majewski@samsung.com>, Darren Hart <dvhart@linux.intel.com>, Heiko Stuebner <heiko@sntech.de>, Peter Feuerer <peter@piie.net>, bjorn.andersson@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Chen Yu' <yu.c.chen@intel.com>, linux-acpi@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Len Brown' <lenb@kernel.org>
 
-On 2017.08.25 09:43 Chen Yu wrote:
+On 08/25, Zhang Rui wrote:
+> On Thu, 2017-08-17 at 13:12 +0530, kgunda@codeaurora.org wrote:
+> > On 2017-08-16 17:53, kgunda@codeaurora.org wrote:
+> > > 
+> > > On 2017-08-08 13:42, Zhang Rui wrote:
+> > > > 
+> > > > On Thu, 2017-07-13 at 17:39 +0530, Kiran Gunda wrote:
+> > > > > 
+> > > > > From: David Collins <collinsd@codeaurora.org>
+> > > > > 
+> > > > > Add support for the TEMP_ALARM GEN2 PMIC peripheral
+> > > > > subtype.  The
+> > > > > GEN2 subtype defines an over temperature state with hysteresis
+> > > > > instead of stage in the status register.  There are two GEN2
+> > > > > states corresponding to stages 1 and 2.
+> > > > > 
+> > > > > Signed-off-by: David Collins <collinsd@codeaurora.org>
+> > > > > Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+> > > > Ivan,
+> > > > 
+> > > > can you please review this patch and let me know your opinion?
+> > > > 
+> > > > thanks,
+> > > > rui
+> > > Ivan,
+> > > Could you please review this patch ?
+> > > 
+> > > Thanks,
+> > > Kiran
+> > Looks like Ivan is no more reviewing the patches for qcom.
+> > Adding Bjorn and Stephen Boyd for the review.
+> > 
+> Given this is a platform specific change, I will queue it for next
+> merge window, and let's see if there is any problem reported.
+> 
 
-> There is a growing number of reports that the MSR throttling has
-> been enabled after resumed back from suspend to ram, which impacts
-> the system performance. This patchset tries to address this issue
-> by turning off the T-state after resumed back.
->
-> Chen Yu (2):
->  ACPI / PM: Reuse the acpi_sleep_syscore_ops for future requirement
->  ACPI / PM: Disable the MSR T-state during CPU online
->
-> drivers/acpi/sleep.c | 60 ++++++++++++++++++++++++++++++++++++++++++++++++++--
-> 1 file changed, 58 insertions(+), 2 deletions(-)
+FWIW,
 
-Hi Chen,
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
-I'll just copy and paste what I wrote in a couple of the bug reports ([1] for example) a couple of days ago:
-
-> I believe that pending changes to the intel-pstate CPU frequency scaling driver,
-> proposed by Rafael, I think for kernel 4.14-rc1, will eliminate the ongoing
-> troubles with Clock Modulation and the driver.
->
-> I'm saying that the issue will no longer exist, and that the intel_pstate
-> CPU frequency scaling driver will respond "properly" to Clock Modulation events.
-> Of course, I'll check when kernel 4.14-rc1 becomes available, or before if I can
-> apply all the patches.
->
-> For reference see the patch set related to:
->
-> [PATCH 0/2] cpufreq: intel_pstate: Eliminate the PID controller
-> 2017.07.24 03:22 (or 10:22 UTC, I think)
->
-> https://marc.info/?l=linux-pm&m=150093486908759&w=2
-> https://marc.info/?l=linux-pm&m=150093484308751&w=2
-> https://marc.info/?l=linux-pm&m=150093486808758&w=2
-
-[1] https://bugzilla.kernel.org/show_bug.cgi?id=189861
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
