@@ -1,7 +1,7 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v4 05/10] drivers base/arch_topology: provide frequency-invariant accounting support
-Date: Fri, 25 Aug 2017 15:32:01 +0100
-Message-ID: <20170825143206.30467-6-dietmar.eggemann@arm.com>
+Subject: [PATCH v4 03/10] cpufreq: arm_big_little: invoke frequency-invariance setter function
+Date: Fri, 25 Aug 2017 15:31:59 +0100
+Message-ID: <20170825143206.30467-4-dietmar.eggemann@arm.com>
 References: <20170825143206.30467-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170825143206.30467-1-dietmar.eggemann@arm.com>
@@ -10,79 +10,46 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Implements the arch-specific (arm and arm64) frequency-invariance setter
-function arch_set_freq_scale() which provides the following frequency
-scaling factor:
+Call the frequency-invariance setter function arch_set_freq_scale()
+if the new frequency has been successfully set which is indicated by
+bL_cpufreq_set_rate() returning 0.
 
-  current_freq(cpu) << SCHED_CAPACITY_SHIFT / max_supported_freq(cpu)
-
-One possible consumer of the frequency-invariance getter function
-topology_get_freq_scale() is the Per-Entity Load Tracking (PELT)
-mechanism of the task scheduler.
-
-Allow inlining of topology_get_freq_scale() into the task scheduler
-fast path (e.g. __update_load_avg_se()) by coding it as a static inline
-function in the arch topology header file.
-
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Juri Lelli <juri.lelli@arm.com>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/arch_topology.c  | 14 ++++++++++++++
- include/linux/arch_topology.h | 10 ++++++++++
- 2 files changed, 24 insertions(+)
+ drivers/cpufreq/arm_big_little.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index 562e0c93ae52..af9ab98a233e 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -22,6 +22,20 @@
- #include <linux/string.h>
- #include <linux/sched/topology.h>
+diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
+index ea6d62547b10..8880f8d9d09d 100644
+--- a/drivers/cpufreq/arm_big_little.c
++++ b/drivers/cpufreq/arm_big_little.c
+@@ -213,6 +213,7 @@ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
+ {
+ 	u32 cpu = policy->cpu, cur_cluster, new_cluster, actual_cluster;
+ 	unsigned int freqs_new;
++	int ret;
  
-+DEFINE_PER_CPU(unsigned long, freq_scale) = SCHED_CAPACITY_SCALE;
-+
-+void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
-+			 unsigned long max_freq)
-+{
-+	unsigned long scale;
-+	int i;
-+
-+	scale = (cur_freq << SCHED_CAPACITY_SHIFT) / max_freq;
-+
-+	for_each_cpu(i, cpus)
-+		per_cpu(freq_scale, i) = scale;
-+}
-+
- static DEFINE_MUTEX(cpu_scale_mutex);
- static DEFINE_PER_CPU(unsigned long, cpu_scale) = SCHED_CAPACITY_SCALE;
+ 	cur_cluster = cpu_to_cluster(cpu);
+ 	new_cluster = actual_cluster = per_cpu(physical_cluster, cpu);
+@@ -229,7 +230,14 @@ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
+ 		}
+ 	}
  
-diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
-index 9af3c174c03a..3e3c2657c9a1 100644
---- a/include/linux/arch_topology.h
-+++ b/include/linux/arch_topology.h
-@@ -4,6 +4,8 @@
- #ifndef _LINUX_ARCH_TOPOLOGY_H_
- #define _LINUX_ARCH_TOPOLOGY_H_
- 
-+#include <linux/percpu.h>
+-	return bL_cpufreq_set_rate(cpu, actual_cluster, new_cluster, freqs_new);
++	ret = bL_cpufreq_set_rate(cpu, actual_cluster, new_cluster, freqs_new);
 +
- void topology_normalize_cpu_scale(void);
- 
- struct device_node;
-@@ -14,4 +16,12 @@ unsigned long topology_get_cpu_scale(struct sched_domain *sd, int cpu);
- 
- void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
- 
-+DECLARE_PER_CPU(unsigned long, freq_scale);
++	if (!ret) {
++		arch_set_freq_scale(policy->related_cpus, freqs_new,
++				    policy->cpuinfo.max_freq);
++	}
 +
-+static inline
-+unsigned long topology_get_freq_scale(struct sched_domain *sd, int cpu)
-+{
-+	return per_cpu(freq_scale, cpu);
-+}
-+
- #endif /* _LINUX_ARCH_TOPOLOGY_H_ */
++	return ret;
+ }
+ 
+ static inline u32 get_table_count(struct cpufreq_frequency_table *table)
 -- 
 2.11.0
