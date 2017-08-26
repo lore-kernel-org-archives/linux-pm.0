@@ -1,51 +1,88 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v3 0/5] BQ24190 devicetree config
-Date: Fri, 25 Aug 2017 22:14:08 -0700
-Message-ID: <20170826051413.24569-1-liam@networkimprov.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f68.google.com ([74.125.83.68]:33952 "EHLO
-        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750736AbdHZFOs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Aug 2017 01:14:48 -0400
-Received: by mail-pg0-f68.google.com with SMTP id 63so2162488pgc.1
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2017 22:14:48 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Liam Breck <liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Subject: [PATCH v3 2/5] devicetree: power: Add docs for TI BQ24190 battery charger
+Date: Fri, 25 Aug 2017 22:14:10 -0700
+Message-ID: <20170826051413.24569-3-liam@networkimprov.net>
+References: <20170826051413.24569-1-liam@networkimprov.net>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170826051413.24569-1-liam-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>
 
-Hi Sebastian, here is this series that was waiting on the power_supply_battery_info
-patchset. Thanks!
+From: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
 
-Overview:
-BQ24190 uses power_supply_battery_info fields for precharge & charge-termination 
-current and a DT property for system min voltage. A new DT binding documents these.
+Document monitored-battery and ti,system-minimum-microvolt properties.
 
-Changes in v3:
-* clarify gpio-hog use in DT binding doc
-* drop unrelated change from DT table patch
-
-Changes in v2:
-* new patch adds bq24192i to DT table
-* dropped patches for power_supply precharge-current; they moved to bq27xxx series
-* dropped patches for recently-applied fixes
-* rebased to -next
-
-Issues in v1:
-* power_supply_prop_precharge & endcharge are added at end of enum to avoid sysfs breakage
-* "Set bq24190-battery device .type=unknown" is a temporary workaround to be fixed in v2
-
-Liam Breck (5):
-  power: bq24190_charger: Add ti,bq24192i to devicetree table
-  devicetree: power: Add docs for TI BQ24190 battery charger
-  power: bq24190_charger: Enable devicetree config
-  power: bq24190_charger: Add property system-minimum-microvolt
-  power: bq24190_charger: Add power_supply_battery_info support
-
- .../devicetree/bindings/power/supply/bq24190.txt   |  51 ++++++
- drivers/power/supply/bq24190_charger.c             | 173 ++++++++++++++++++---
- 2 files changed, 204 insertions(+), 20 deletions(-)
+Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Signed-off-by: Liam Breck <kernel-RYWXG+zxWwBdeoIcmNTgJF6hYfS7NtTn@public.gmane.org>
+---
+ .../devicetree/bindings/power/supply/bq24190.txt   | 51 ++++++++++++++++++++++
+ 1 file changed, 51 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/power/supply/bq24190.txt
 
+diff --git a/Documentation/devicetree/bindings/power/supply/bq24190.txt b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+new file mode 100644
+index 00000000..9e517d30
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/bq24190.txt
+@@ -0,0 +1,51 @@
++TI BQ24190 Li-Ion Battery Charger
++
++Required properties:
++- compatible: contains one of the following:
++    * "ti,bq24190"
++    * "ti,bq24192i"
++- reg: integer, I2C address of the charger.
++- interrupts[-extended]: configuration for charger INT pin.
++
++Optional properties:
++- monitored-battery: phandle of battery characteristics devicetree node
++  The charger uses the following battery properties:
++    + precharge-current-microamp: maximum charge current during precharge
++      phase (typically 20% of battery capacity).
++    + charge-term-current-microamp: a charge cycle terminates when the
++      battery voltage is above recharge threshold, and the current is below
++      this setting (typically 10% of battery capacity).
++  See also Documentation/devicetree/bindings/power/supply/battery.txt
++- ti,system-minimum-microvolt: when power is connected and the battery is below
++  minimum system voltage, the system will be regulated above this setting.
++
++Notes:
++- Some circuit boards wire the chip's "OTG" pin high (enabling 500mA default
++  charge current on USB SDP ports, among other features). To simulate this on
++  boards that wire the pin to a GPIO, set a gpio-hog.
++
++Example:
++
++	bat: battery {
++		compatible = "simple-battery";
++		precharge-current-microamp = <256000>;
++		charge-term-current-microamp = <128000>;
++		// etc.
++	};
++
++	bq24190: charger@6a {
++		compatible = "ti,bq24190";
++		reg = <0x6a>;
++		interrupts-extended = <&gpiochip 10 IRQ_TYPE_EDGE_FALLING>;
++		monitored-battery = <&bat>;
++		ti,system-minimum-microvolt = <3200000>;
++	};
++
++	&twl_gpio {
++		otg {
++			gpio-hog;
++			gpios = <6 0>;
++			output-high;
++			line-name = "otg-gpio";
++		};
++	};
 -- 
 2.13.2
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
