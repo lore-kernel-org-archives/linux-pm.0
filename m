@@ -1,188 +1,63 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: [PATCH v3 5/5] power: bq24190_charger: Add power_supply_battery_info support
-Date: Fri, 25 Aug 2017 22:14:13 -0700
-Message-ID: <20170826051413.24569-6-liam@networkimprov.net>
-References: <20170826051413.24569-1-liam@networkimprov.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:36679 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751302AbdHZFOx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Aug 2017 01:14:53 -0400
-Received: by mail-pf0-f195.google.com with SMTP id a2so351140pfj.3
-        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2017 22:14:53 -0700 (PDT)
-In-Reply-To: <20170826051413.24569-1-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+From: Chen Yu <yu.c.chen@intel.com>
+Subject: Re: [PATCH 0/2][RFC] ACPI / PM: Disable MSR T-state after resumed
+Date: Sat, 26 Aug 2017 14:08:14 +0800
+Message-ID: <20170826060813.GA18633@yu-desktop-1.sh.intel.com>
+References: <001b01d31dea$c116dc50$434494f0$@net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <001b01d31dea$c116dc50$434494f0$@net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Len Brown' <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>
 
-From: Liam Breck <kernel@networkimprov.net>
+Hi Doug,
+On Fri, Aug 25, 2017 at 02:40:19PM -0700, Doug Smythies wrote:
+> On 2017.08.25 09:43 Chen Yu wrote:
+> 
+> > There is a growing number of reports that the MSR throttling has
+> > been enabled after resumed back from suspend to ram, which impacts
+> > the system performance. This patchset tries to address this issue
+> > by turning off the T-state after resumed back.
+> >
+> > Chen Yu (2):
+> >  ACPI / PM: Reuse the acpi_sleep_syscore_ops for future requirement
+> >  ACPI / PM: Disable the MSR T-state during CPU online
+> >
+> > drivers/acpi/sleep.c | 60 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+> > 1 file changed, 58 insertions(+), 2 deletions(-)
+> 
+> Hi Chen,
+> 
+> I'll just copy and paste what I wrote in a couple of the bug reports ([1] for example) a couple of days ago:
+> 
+> > I believe that pending changes to the intel-pstate CPU frequency scaling driver,
+> > proposed by Rafael, I think for kernel 4.14-rc1, will eliminate the ongoing
+> > troubles with Clock Modulation and the driver.
+> >
+> > I'm saying that the issue will no longer exist, and that the intel_pstate
+> > CPU frequency scaling driver will respond "properly" to Clock Modulation events.
+> > Of course, I'll check when kernel 4.14-rc1 becomes available, or before if I can
+> > apply all the patches.
+> >
+> > For reference see the patch set related to:
+> >
+> > [PATCH 0/2] cpufreq: intel_pstate: Eliminate the PID controller
+> > 2017.07.24 03:22 (or 10:22 UTC, I think)
+> >
+> > https://marc.info/?l=linux-pm&m=150093486908759&w=2
+> > https://marc.info/?l=linux-pm&m=150093484308751&w=2
+> > https://marc.info/?l=linux-pm&m=150093486808758&w=2
+> 
+> [1] https://bugzilla.kernel.org/show_bug.cgi?id=189861
+> 
+> 
+I did not quite catup with the relationship between the intel_pstate
+patch and the tstate patch here, if the Clock Modulation is enabled,
+will the 'performance' governor be able to reach the maximum freq?
+Besides, what if the user is using acpi-freq rather than intel_pstate?
 
-Set pre-charge and charge-term current, obtained from power_supply_battery_info.
-Add sysfs attributes precharge_current & charge_term_current.
-
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Signed-off-by: Liam Breck <kernel@networkimprov.net>
----
- drivers/power/supply/bq24190_charger.c | 86 ++++++++++++++++++++++++++++++++++
- 1 file changed, 86 insertions(+)
-
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index 450f3ab3..7681a67a 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -59,9 +59,13 @@
- #define BQ24190_REG_PCTCC_IPRECHG_MASK		(BIT(7) | BIT(6) | BIT(5) | \
- 						 BIT(4))
- #define BQ24190_REG_PCTCC_IPRECHG_SHIFT		4
-+#define BQ24190_REG_PCTCC_IPRECHG_MIN			128
-+#define BQ24190_REG_PCTCC_IPRECHG_MAX			2048
- #define BQ24190_REG_PCTCC_ITERM_MASK		(BIT(3) | BIT(2) | BIT(1) | \
- 						 BIT(0))
- #define BQ24190_REG_PCTCC_ITERM_SHIFT		0
-+#define BQ24190_REG_PCTCC_ITERM_MIN			128
-+#define BQ24190_REG_PCTCC_ITERM_MAX			2048
- 
- #define BQ24190_REG_CVC		0x04 /* Charge Voltage Control */
- #define BQ24190_REG_CVC_VREG_MASK		(BIT(7) | BIT(6) | BIT(5) | \
-@@ -162,6 +166,8 @@ struct bq24190_dev_info {
- 	bool				initialized;
- 	bool				irq_event;
- 	u16				sys_min;
-+	u16				iprechg;
-+	u16				iterm;
- 	struct mutex			f_reg_lock;
- 	u8				f_reg;
- 	u8				ss_reg;
-@@ -543,6 +549,26 @@ static int bq24190_set_config(struct bq24190_dev_info *bdi)
- 			return ret;
- 	}
- 
-+	if (bdi->iprechg) {
-+		v = bdi->iprechg / 128 - 1; // manual section 9.5.1.4, table 11
-+		ret = bq24190_write_mask(bdi, BQ24190_REG_PCTCC,
-+					 BQ24190_REG_PCTCC_IPRECHG_MASK,
-+					 BQ24190_REG_PCTCC_IPRECHG_SHIFT,
-+					 v);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
-+	if (bdi->iterm) {
-+		v = bdi->iterm / 128 - 1; // manual section 9.5.1.4, table 11
-+		ret = bq24190_write_mask(bdi, BQ24190_REG_PCTCC,
-+					 BQ24190_REG_PCTCC_ITERM_MASK,
-+					 BQ24190_REG_PCTCC_ITERM_SHIFT,
-+					 v);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
- 	return 0;
- }
- 
-@@ -787,6 +813,38 @@ static int bq24190_charger_set_temp_alert_max(struct bq24190_dev_info *bdi,
- 	return bq24190_battery_set_temp_alert_max(bdi, val);
- }
- 
-+static int bq24190_charger_get_precharge(struct bq24190_dev_info *bdi,
-+		union power_supply_propval *val)
-+{
-+	u8 v;
-+	int ret;
-+
-+	ret = bq24190_read_mask(bdi, BQ24190_REG_PCTCC,
-+			BQ24190_REG_PCTCC_IPRECHG_MASK,
-+			BQ24190_REG_PCTCC_IPRECHG_SHIFT, &v);
-+	if (ret < 0)
-+		return ret;
-+
-+	val->intval = ++v * 128 * 1000;
-+	return 0;
-+}
-+
-+static int bq24190_charger_get_charge_term(struct bq24190_dev_info *bdi,
-+		union power_supply_propval *val)
-+{
-+	u8 v;
-+	int ret;
-+
-+	ret = bq24190_read_mask(bdi, BQ24190_REG_PCTCC,
-+			BQ24190_REG_PCTCC_ITERM_MASK,
-+			BQ24190_REG_PCTCC_ITERM_SHIFT, &v);
-+	if (ret < 0)
-+		return ret;
-+
-+	val->intval = ++v * 128 * 1000;
-+	return 0;
-+}
-+
- static int bq24190_charger_get_current(struct bq24190_dev_info *bdi,
- 		union power_supply_propval *val)
- {
-@@ -907,6 +965,12 @@ static int bq24190_charger_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
- 		ret =  bq24190_charger_get_temp_alert_max(bdi, val);
- 		break;
-+	case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
-+		ret = bq24190_charger_get_precharge(bdi, val);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
-+		ret = bq24190_charger_get_charge_term(bdi, val);
-+		break;
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
- 		ret = bq24190_charger_get_current(bdi, val);
- 		break;
-@@ -1006,6 +1070,8 @@ static enum power_supply_property bq24190_charger_properties[] = {
- 	POWER_SUPPLY_PROP_ONLINE,
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
-+	POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
-+	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
-@@ -1485,6 +1551,7 @@ static int bq24190_get_config(struct bq24190_dev_info *bdi)
- {
- #ifdef CONFIG_OF
- 	const char * const s = "ti,system-minimum-microvolt";
-+	struct power_supply_battery_info info = {};
- 	int v;
- 
- 	if (!bdi->dev->of_node)
-@@ -1499,6 +1566,24 @@ static int bq24190_get_config(struct bq24190_dev_info *bdi)
- 			dev_warn(bdi->dev, "invalid value for %s: %u\n", s, v);
- 	}
- 
-+	if (!power_supply_get_battery_info(bdi->charger, &info)) {
-+		v = info.precharge_current_ua / 1000;
-+		if (v >= BQ24190_REG_PCTCC_IPRECHG_MIN
-+		 && v <= BQ24190_REG_PCTCC_IPRECHG_MAX)
-+			bdi->iprechg = v;
-+		else
-+			dev_warn(bdi->dev, "invalid value for battery:precharge-current-microamp: %d\n",
-+				 v);
-+
-+		v = info.charge_term_current_ua / 1000;
-+		if (v >= BQ24190_REG_PCTCC_ITERM_MIN
-+		 && v <= BQ24190_REG_PCTCC_ITERM_MAX)
-+			bdi->iterm = v;
-+		else
-+			dev_warn(bdi->dev, "invalid value for battery:charge-term-current-microamp: %d\n",
-+				 v);
-+	}
-+
- #endif
- 	return 0;
- }
-@@ -1567,6 +1652,7 @@ static int bq24190_probe(struct i2c_client *client,
- 	}
- 
- 	charger_cfg.drv_data = bdi;
-+	charger_cfg.of_node = dev->of_node;
- 	charger_cfg.supplied_to = bq24190_charger_supplied_to;
- 	charger_cfg.num_supplicants = ARRAY_SIZE(bq24190_charger_supplied_to),
- 	bdi->charger = power_supply_register(dev, &bq24190_charger_desc,
--- 
-2.13.2
+Thanks,
+	Yu
