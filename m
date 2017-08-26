@@ -1,64 +1,43 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH V1] thermal: qcom-spmi-temp-alarm: add support for GEN2
- PMIC peripherals
-Date: Fri, 25 Aug 2017 16:19:48 -0700
-Message-ID: <20170825231948.GQ21656@codeaurora.org>
-References: <1499947772-19199-1-git-send-email-kgunda@codeaurora.org>
- <1502179943.4296.12.camel@intel.com>
- <f5c6c5f73b78c407684482cdeed30294@codeaurora.org>
- <5d3f612dca4181b2038e442cfba5594e@codeaurora.org>
- <1503627189.2774.3.camel@intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1503627189.2774.3.camel@intel.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: kgunda@codeaurora.org, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, iivanov@mm-sol.com, linux-arm-msm@vger.kernel.org, David Collins <collinsd@codeaurora.org>, linux-arm-msm-owner@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Jean Delvare <jdelvare@suse.de>, Lukasz Majewski <l.majewski@samsung.com>, Darren Hart <dvhart@linux.intel.com>, Heiko Stuebner <heiko@sntech.de>, Peter Feuerer <peter@piie.net>, bjorn.andersson@linaro.org
+From: Liam Breck <liam@networkimprov.net>
+Subject: [PATCH v3 1/5] power: bq24190_charger: Add ti,bq24192i to devicetree table
+Date: Fri, 25 Aug 2017 22:14:09 -0700
+Message-ID: <20170826051413.24569-2-liam@networkimprov.net>
+References: <20170826051413.24569-1-liam@networkimprov.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:33955 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750736AbdHZFOt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Aug 2017 01:14:49 -0400
+Received: by mail-pg0-f68.google.com with SMTP id 63so2162509pgc.1
+        for <linux-pm@vger.kernel.org>; Fri, 25 Aug 2017 22:14:49 -0700 (PDT)
+In-Reply-To: <20170826051413.24569-1-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>, Liam Breck <kernel@networkimprov.net>
 
-On 08/25, Zhang Rui wrote:
-> On Thu, 2017-08-17 at 13:12 +0530, kgunda@codeaurora.org wrote:
-> > On 2017-08-16 17:53, kgunda@codeaurora.org wrote:
-> > > 
-> > > On 2017-08-08 13:42, Zhang Rui wrote:
-> > > > 
-> > > > On Thu, 2017-07-13 at 17:39 +0530, Kiran Gunda wrote:
-> > > > > 
-> > > > > From: David Collins <collinsd@codeaurora.org>
-> > > > > 
-> > > > > Add support for the TEMP_ALARM GEN2 PMIC peripheral
-> > > > > subtype.  The
-> > > > > GEN2 subtype defines an over temperature state with hysteresis
-> > > > > instead of stage in the status register.  There are two GEN2
-> > > > > states corresponding to stages 1 and 2.
-> > > > > 
-> > > > > Signed-off-by: David Collins <collinsd@codeaurora.org>
-> > > > > Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
-> > > > Ivan,
-> > > > 
-> > > > can you please review this patch and let me know your opinion?
-> > > > 
-> > > > thanks,
-> > > > rui
-> > > Ivan,
-> > > Could you please review this patch ?
-> > > 
-> > > Thanks,
-> > > Kiran
-> > Looks like Ivan is no more reviewing the patches for qcom.
-> > Adding Bjorn and Stephen Boyd for the review.
-> > 
-> Given this is a platform specific change, I will queue it for next
-> merge window, and let's see if there is any problem reported.
-> 
+From: Liam Breck <kernel@networkimprov.net>
 
-FWIW,
+bq24192i was previously only in ID table, so add it to DT table.
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Liam Breck <kernel@networkimprov.net>
+---
+ drivers/power/supply/bq24190_charger.c | 1 +
+ 1 file changed, 1 insertion(+)
 
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index 14199561..40b4bba7 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -1732,6 +1732,7 @@ MODULE_DEVICE_TABLE(i2c, bq24190_i2c_ids);
+ #ifdef CONFIG_OF
+ static const struct of_device_id bq24190_of_match[] = {
+ 	{ .compatible = "ti,bq24190", },
++	{ .compatible = "ti,bq24192i", },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, bq24190_of_match);
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.13.2
