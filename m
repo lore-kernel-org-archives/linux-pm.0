@@ -1,297 +1,169 @@
-From: Dong Aisheng <aisheng.dong@nxp.com>
-Subject: [PATCH 1/1] ARM: imx7ulp: add cpuidle support
-Date: Sun, 27 Aug 2017 21:43:41 +0800
-Message-ID: <1503841421-17677-1-git-send-email-aisheng.dong@nxp.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH 0/2][RFC] ACPI / PM: Disable MSR T-state after resumed
+Date: Sun, 27 Aug 2017 11:52:02 -0700
+Message-ID: <000301d31f65$936dc940$ba495bc0$@net>
+References: <001b01d31dea$c116dc50$434494f0$@net> <000701d31e77$49676250$dc3626f0$@net> ldamdH5BMWJpbldaodG7sa
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-dm3nam03on0072.outbound.protection.outlook.com ([104.47.41.72]:41121
-        "EHLO NAM03-DM3-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1751338AbdH0NoS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 27 Aug 2017 09:44:18 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: ldamdH5BMWJpbldaodG7sa
+Content-Language: en-ca
+Sender: linux-acpi-owner@vger.kernel.org
+To: 'Chen Yu' <yu.c.chen@intel.com>
+Cc: linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Len Brown' <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, Dong Aisheng <aisheng.dong@nxp.com>
 
-i.MX7ULP support 3 levels idle as below:
-1. patial stop mode 3;
-2. patial stop mode 2;
-3. patial stop mode 1.
+Hi Yu,
+On 2017.08.26 09:07 Chen Yu wrote:
+> On Sat, Aug 26, 2017 at 07:26:18AM -0700, Doug Smythies wrote:
+>> On 2017.08.25 23:08 Chen Yu wrote:
+>>> Hi Doug,
+>>> On Fri, Aug 25, 2017 at 02:40:19PM -0700, Doug Smythies wrote:
+>>>> On 2017.08.25 09:43 Chen Yu wrote:
+>>>> 
+>>>>> There is a growing number of reports that the MSR throttling has
+>>>>> been enabled after resumed back from suspend to ram, which impacts
+>>>>> the system performance. This patchset tries to address this issue
+>>>>> by turning off the T-state after resumed back.
+>>>>>
+>>>>> Chen Yu (2):
+>>>>>  ACPI / PM: Reuse the acpi_sleep_syscore_ops for future requirement
+>>>>>  ACPI / PM: Disable the MSR T-state during CPU online
+>>>>>
+>>>>> drivers/acpi/sleep.c | 60 ++++++++++++++++++++++++++++++++++++++++++++++++++--
+>>>>> 1 file changed, 58 insertions(+), 2 deletions(-)
+>>>> 
+>>>> Hi Chen,
+>>>> 
+>>>> I'll just copy and paste what I wrote in a couple of the bug reports
+>>>> ([1] for example) a couple of days ago:
+>>>> 
+>>>>> I believe that pending changes to the intel-pstate CPU frequency scaling driver,
+>>>>> proposed by Rafael, I think for kernel 4.14-rc1, will eliminate the ongoing
+>>>>> troubles with Clock Modulation and the driver.
+>>>>>
+>>>>> I'm saying that the issue will no longer exist, and that the intel_pstate
+>>>>> CPU frequency scaling driver will respond "properly" to Clock Modulation events.
+>>>>> Of course, I'll check when kernel 4.14-rc1 becomes available, or before if I can
+>>>>> apply all the patches.
+>>>>>
+>>>>> For reference see the patch set related to:
+>>>>>
+>>>>> [PATCH 0/2] cpufreq: intel_pstate: Eliminate the PID controller
+>>>>> 2017.07.24 03:22 (or 10:22 UTC, I think)
+>>>>>
+>>>>> https://marc.info/?l=linux-pm&m=150093486908759&w=2
+>>>>> https://marc.info/?l=linux-pm&m=150093484308751&w=2
+>>>>> https://marc.info/?l=linux-pm&m=150093486808758&w=2
+>>>> 
+>>>> [1] https://bugzilla.kernel.org/show_bug.cgi?id=189861
+>>>> 
+>>>> 
+>>> I did not quite catup with the relationship between the intel_pstate
+>>> patch and the tstate patch here, if the Clock Modulation is enabled,
+>>> will the 'performance' governor be able to reach the maximum freq?
+>> 
+>> No, it'll only reach the max * modulation %.
+>> However, I submit that has never been the problem.
+>> The problem, and why the complaints started, is with the intel_pstate
+>> "powersave" governor and the "get_target_pstate_use_performance" path
+>> therein.
+>> 
+> Ok, I think I get the point now: The current PID prediction algorithom
+> does not take tstate into consideration, so it might behave wrong.
 
-PSTOP1 - Partial Stop with system and bus clock disabled
-PSTOP2 - Partial Stop with system clock disabled and bus clock enabled
-PSTOP3 - Partial Stop with system clock enabled and bus clock enabled
+There is no "might" about it. It does behave wrong. We went through
+all of this almost 2 years ago. The CPU frequency will basically
+freeze at the minimum * the modulation setting.
 
-For PSTOP 1/2 mode, as the system and bus clock will be disabled, the
-devices working inprogress may not be able to work anymore, driver needs
-to use pm_qos API to prevent system enter those modes.
+What does this mean? Let's say, for example, the processor minimum
+pstate is 8 and the maximum pstate is 37. At 75% Clock Modulation
+the system will lock at 600 MHz, whereas it would normally be expected
+to still be able to get to 2.7 GHz. Another way to say it is that the
+performance becomes limited to 16.2% of the normal maximum instead of
+the expected 75%.
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Shawn Guo <shawnguo@kernel.org>
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
----
- arch/arm/mach-imx/Makefile          |  1 +
- arch/arm/mach-imx/common.h          | 12 +++++++
- arch/arm/mach-imx/cpuidle-imx7ulp.c | 69 +++++++++++++++++++++++++++++++++++++
- arch/arm/mach-imx/cpuidle.h         |  5 +++
- arch/arm/mach-imx/mach-imx7ulp.c    |  7 ++++
- arch/arm/mach-imx/pm-imx7ulp.c      | 65 +++++++++++++++++++++++++++++++---
- 6 files changed, 155 insertions(+), 4 deletions(-)
- create mode 100644 arch/arm/mach-imx/cpuidle-imx7ulp.c
+> And according to my understanding, the problem in PID does not
+> involve with the suspend/resume process. However my concern is
+> that, why did the BIOS enable the tstate during S3?
 
-diff --git a/arch/arm/mach-imx/Makefile b/arch/arm/mach-imx/Makefile
-index c5948b7..a3f55a9 100644
---- a/arch/arm/mach-imx/Makefile
-+++ b/arch/arm/mach-imx/Makefile
-@@ -28,6 +28,7 @@ obj-$(CONFIG_SOC_IMX6Q) += cpuidle-imx6q.o
- obj-$(CONFIG_SOC_IMX6SL) += cpuidle-imx6sl.o
- obj-$(CONFIG_SOC_IMX6SX) += cpuidle-imx6sx.o
- obj-$(CONFIG_SOC_IMX6UL) += cpuidle-imx6sx.o
-+obj-$(CONFIG_SOC_IMX7ULP) += cpuidle-imx7ulp.o
- endif
- 
- ifdef CONFIG_SND_IMX_SOC
-diff --git a/arch/arm/mach-imx/common.h b/arch/arm/mach-imx/common.h
-index b0e85df..9b78902 100644
---- a/arch/arm/mach-imx/common.h
-+++ b/arch/arm/mach-imx/common.h
-@@ -78,6 +78,17 @@ enum mx3_cpu_pwr_mode {
- 	MX3_SLEEP,
- };
- 
-+enum imx7ulp_cpu_pwr_mode {
-+	HSRUN,
-+	RUN,
-+	VLPR,
-+	WAIT,
-+	VLPW,
-+	STOP,
-+	VLPS,
-+	VLLS,
-+};
-+
- void mx3_cpu_lp_set(enum mx3_cpu_pwr_mode mode);
- 
- void imx_enable_cpu(int cpu, bool enable);
-@@ -106,6 +117,7 @@ int imx6_set_lpm(enum mxc_cpu_pwr_mode mode);
- void imx6_set_int_mem_clk_lpm(bool enable);
- void imx6sl_set_wait_clk(bool enter);
- int imx_mmdc_get_ddr_type(void);
-+int imx7ulp_set_lpm(enum imx7ulp_cpu_pwr_mode mode);
- 
- void imx_cpu_die(unsigned int cpu);
- int imx_cpu_kill(unsigned int cpu);
-diff --git a/arch/arm/mach-imx/cpuidle-imx7ulp.c b/arch/arm/mach-imx/cpuidle-imx7ulp.c
-new file mode 100644
-index 0000000..f165d85
---- /dev/null
-+++ b/arch/arm/mach-imx/cpuidle-imx7ulp.c
-@@ -0,0 +1,69 @@
-+/*
-+ * Copyright (C) 2016 Freescale Semiconductor, Inc.
-+ * Copyright (C) 2017 NXP.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/cpuidle.h>
-+#include <linux/module.h>
-+#include <asm/cpuidle.h>
-+
-+#include "common.h"
-+#include "cpuidle.h"
-+#include "hardware.h"
-+
-+static int imx7ulp_enter_idle(struct cpuidle_device *dev,
-+			      struct cpuidle_driver *drv, int index)
-+{
-+	switch (index) {
-+	case 1:
-+		imx7ulp_set_lpm(WAIT);
-+		break;
-+	case 2:
-+		imx7ulp_set_lpm(STOP);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	cpu_do_idle();
-+
-+	imx7ulp_set_lpm(RUN);
-+
-+	return index;
-+}
-+
-+static struct cpuidle_driver imx7ulp_cpuidle_driver = {
-+	.name = "imx7ulp_cpuidle",
-+	.owner = THIS_MODULE,
-+	.states = {
-+		/* WFI */
-+		ARM_CPUIDLE_WFI_STATE,
-+		/* WAIT */
-+		{
-+			.exit_latency = 50,
-+			.target_residency = 75,
-+			.enter = imx7ulp_enter_idle,
-+			.name = "WAIT",
-+			.desc = "PSTOP2",
-+		},
-+		/* STOP */
-+		{
-+			.exit_latency = 100,
-+			.target_residency = 150,
-+			.enter = imx7ulp_enter_idle,
-+			.name = "STOP",
-+			.desc = "PSTOP1",
-+		},
-+	},
-+	.state_count = 3,
-+	.safe_state_index = 0,
-+};
-+
-+int __init imx7ulp_cpuidle_init(void)
-+{
-+	return cpuidle_register(&imx7ulp_cpuidle_driver, NULL);
-+}
-diff --git a/arch/arm/mach-imx/cpuidle.h b/arch/arm/mach-imx/cpuidle.h
-index f914012..7694c8f 100644
---- a/arch/arm/mach-imx/cpuidle.h
-+++ b/arch/arm/mach-imx/cpuidle.h
-@@ -15,6 +15,7 @@ extern int imx5_cpuidle_init(void);
- extern int imx6q_cpuidle_init(void);
- extern int imx6sl_cpuidle_init(void);
- extern int imx6sx_cpuidle_init(void);
-+extern int imx7ulp_cpuidle_init(void);
- #else
- static inline int imx5_cpuidle_init(void)
- {
-@@ -32,4 +33,8 @@ static inline int imx6sx_cpuidle_init(void)
- {
- 	return 0;
- }
-+static inline int imx7ulp_cpuidle_init(void)
-+{
-+	return 0;
-+}
- #endif
-diff --git a/arch/arm/mach-imx/mach-imx7ulp.c b/arch/arm/mach-imx/mach-imx7ulp.c
-index 9f7a25c..1d8fe71 100644
---- a/arch/arm/mach-imx/mach-imx7ulp.c
-+++ b/arch/arm/mach-imx/mach-imx7ulp.c
-@@ -15,8 +15,14 @@
- #include <asm/mach/arch.h>
- 
- #include "common.h"
-+#include "cpuidle.h"
- #include "hardware.h"
- 
-+static void __init imx7ulp_init_late(void)
-+{
-+	imx7ulp_cpuidle_init();
-+}
-+
- static void __init imx7ulp_init_machine(void)
- {
- 	imx7ulp_pm_init();
-@@ -33,5 +39,6 @@ static const char *const imx7ulp_dt_compat[] __initconst = {
- 
- DT_MACHINE_START(IMX7ulp, "Freescale i.MX7ULP (Device Tree)")
- 	.init_machine	= imx7ulp_init_machine,
-+	.init_late	= imx7ulp_init_late,
- 	.dt_compat	= imx7ulp_dt_compat,
- MACHINE_END
-diff --git a/arch/arm/mach-imx/pm-imx7ulp.c b/arch/arm/mach-imx/pm-imx7ulp.c
-index df5d6b6..5f85040 100644
---- a/arch/arm/mach-imx/pm-imx7ulp.c
-+++ b/arch/arm/mach-imx/pm-imx7ulp.c
-@@ -14,20 +14,77 @@
- #include <linux/of.h>
- #include <linux/of_address.h>
- 
-+#include "common.h"
-+
-+/* SMC registers */
-+#define SMC_PMPROT		0x8
- #define SMC_PMCTRL		0x10
-+#define SMC_PMSTAT		0x18
-+#define SMC_SRS			0x20
-+#define SMC_RPC			0x24
-+#define SMC_SSRS		0x28
-+#define SMC_SRIE		0x2c
-+#define SMC_SRIF		0x30
-+#define SMC_CSRE		0x34
-+#define SMC_MR			0x40
-+#define SMC_FM			0x40
-+
-+/* PMPROT */
-+#define BM_PMPROT_AHSRUN        BIT(7)
-+#define BM_PMPROT_AVLP          BIT(5)
-+#define BM_PMPROT_ALLS          BIT(3)
-+#define BM_PMPROT_AVLLS         BIT(1)
-+
-+/* PMCTRL */
-+#define BM_PMCTRL_STOPA         (0x1 << 24)
- #define BP_PMCTRL_PSTOPO        16
-+#define BM_PMCTRL_PSTOPO        (0x3 << BP_PMCTRL_PSTOPO)
-+#define BP_PMCTRL_RUNM		8
-+#define BM_PMCTRL_RUNM          (0x3 << BP_PMCTRL_RUNM)
-+#define BP_PMCTRL_STOPM		0
-+#define BM_PMCTRL_STOPM         (0x7 << BP_PMCTRL_STOPM)
-+
- #define PSTOPO_PSTOP3		0x3
-+#define PSTOPO_PSTOP2		0x2
-+#define PSTOPO_PSTOP1		0x1
-+
-+static void __iomem *smc1_base;
-+
-+int imx7ulp_set_lpm(enum imx7ulp_cpu_pwr_mode mode)
-+{
-+	u32 smc_ctrl = readl_relaxed(smc1_base + SMC_PMCTRL);
-+
-+	smc_ctrl &= ~(BM_PMCTRL_RUNM | BM_PMCTRL_STOPM | BM_PMCTRL_PSTOPO);
-+
-+	switch (mode) {
-+	case RUN:
-+		/* system/bus clock enabled */
-+		smc_ctrl |= PSTOPO_PSTOP3 << BP_PMCTRL_PSTOPO;
-+		break;
-+	case WAIT:
-+		/* system clock disabled, bus clock enabled */
-+		smc_ctrl |= PSTOPO_PSTOP2 << BP_PMCTRL_PSTOPO;
-+		break;
-+	case STOP:
-+		/* system/bus clock disabled */
-+		smc_ctrl |= PSTOPO_PSTOP1 << BP_PMCTRL_PSTOPO;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	writel_relaxed(smc_ctrl, smc1_base + SMC_PMCTRL);
-+
-+	return 0;
-+}
- 
- void __init imx7ulp_pm_init(void)
- {
- 	struct device_node *np;
--	void __iomem *smc1_base;
- 
- 	np = of_find_compatible_node(NULL, NULL, "fsl,imx7ulp-smc1");
- 	smc1_base = of_iomap(np, 0);
- 	WARN_ON(!smc1_base);
- 
--	/* Partial Stop mode 3 with system/bus clock enabled */
--	writel_relaxed(PSTOPO_PSTOP3 << BP_PMCTRL_PSTOPO,
--		       smc1_base + SMC_PMCTRL);
-+	imx7ulp_set_lpm(RUN);
- }
--- 
-2.7.4
+I'm saying that in some cases (some Dell LapTops, in particular),
+it is changed on purpose and as a function of emerging from S3 on
+AC power or DC power.
+
+However, and having reviewed all the notes and e-mails from almost
+2 years ago, I do now recall that you had a case, where the Clock
+Modulation was set to an undefined value, with different results on
+different processors. At the time we (O.K. I) concluded (from [1]):
+
+"Yu's specific example is special, because the Clock Modulation
+percent is undefined (reserved), and thus clearly unintentional,
+or just plain wrong if it is intentional."
+
+> And if the
+> BIOS has enabled the tstate, does the kernel have a chance to
+> adjust it? 
+>
+> bugzilla 189861 and 90041(also reported on another server) have shown
+> that the kernel failed to re-evaluate the tstate after resumed, and
+> keep it throttled all the time. Actually in current code there is a
+> chance the kernel could re-evaluate the tstate once resumed back, but
+> due to the insufficient ACPI information provided by the BIOS on these
+> platforms, the tstate keeps un-touched after resumed back.
+>
+> Thus this appears to be BIOS issue.
+
+Is it?
+I am saying that sometimes the manufacturer has done it on purpose.
+
+> To work around the BIOS issue, we can manipulate the MSR by msr-tools,
+> but it might not be a robusty solution, instead we can clear the tstate
+> after resumed back, that is to say, we do not trust the modification during
+> S3 by the BIOS, and let the OS decide if it wants the throttling or not.
+
+If indeed, we do not want to trust the change, then O.K I'll stop bothering
+you about it.
+
+>> Recall 1: At one time the "get_target_pstate_use_performance" path was
+>> the only path through the driver, and that many of the complaints date
+>> back to then. i.e. for many users that would now use the
+>> "get_target_pstate_use_cpu_load" path by default, their reason for complaining
+>> has already been solved.
+>> 
+>> Recall 2: The "get_target_pstate_use_performance" path in the intel_pstate
+>> CPU scaling driver is fundamentally incompatible with Clock Modulation and will
+>> never, under any conditions, raise the CPU frequency above the minimum * the
+>> modulation %. This is where the complaining came from.
+>> 
+>>> Besides, what if the user is using acpi-freq rather than intel_pstate?
+>> 
+>> As with any "load" based algorithm, it works fine with Clock Modulation,
+>> resulting in desired frequency * modulation percent.
+>> I submit that this is what the various manufacturers (Dell, in particular)
+>> that mess with Clock Modulation want. 
+>> 
+>> Conclusion:
+>> Since the above referenced Rafael patch set removes the
+>> "get_target_pstate_use_performance" path entirely, there is no longer
+>> a problem that needs to be solved.
+>> 
+> Well, it's hard to say that if our customers would be happy if the throttling
+> is enabled wrongly by the BIOS,
+
+Wrongly or because that is what the manufacturer wants?
+And should we override that?
+
+> and they don't know why they can not get good
+> performance : )
+
+Keep in mind how dramatic the reduction in performance was with
+the "get_target_pstate_use_performance" algorithm verses the others.
+The difference is enormous.
+
+[1] https://marc.info/?l=linux-kernel&m=144441695612734&w=2
+
+... Doug
+
+
