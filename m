@@ -1,193 +1,89 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v2 11/14] power: supply: bq24190_charger: Get
- input_current_limit from our supplier
-Date: Mon, 28 Aug 2017 11:07:31 -0700
-Message-ID: <CAKvHMgSkuwJKeSQGVgmsvt=rEtN8qhHFoouewy8=7XuG9odVbQ@mail.gmail.com>
-References: <20170815200502.17339-1-hdegoede@redhat.com>
- <20170815200502.17339-12-hdegoede@redhat.com>
- <CAKvHMgQMgkA=b_jGFMhs7-Ta=+WYjh2u8YNjON3MapA8tTju9w@mail.gmail.com>
- <3c3c65dd-fb5f-becd-0d04-f22f103baeb0@redhat.com>
+From: Tejun Heo <tj@kernel.org>
+Subject: Re: [RFCv4 1/6] sched/core: add utilization clamping to CPU
+ controller
+Date: Mon, 28 Aug 2017 11:23:03 -0700
+Message-ID: <20170828182303.GZ491396@devbig577.frc2.facebook.com>
+References: <20170824180857.32103-1-patrick.bellasi@arm.com>
+ <20170824180857.32103-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <3c3c65dd-fb5f-becd-0d04-f22f103baeb0@redhat.com>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: devel@driverdev.osuosl.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, linux-kernel <linux-kernel@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, platform-driver-x86@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, linux-i2c@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f195.google.com ([209.85.216.195]:34380 "EHLO
+        mail-qt0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751306AbdH1SXI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2017 14:23:08 -0400
+Content-Disposition: inline
+In-Reply-To: <20170824180857.32103-2-patrick.bellasi@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@arm.com>, Tim Murray <timmurray@google.com>, Todd Kjos <tkjos@android.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-Hi Hans, I sent too soon...
+Hello,
 
-On Mon, Aug 28, 2017 at 9:04 AM, Hans de Goede <hdegoede@redhat.com> wrote:
-> Hi,
->
->
-> On 16-08-17 22:28, Liam Breck wrote:
->>
->> Hi Hans,
->>
->> On Tue, Aug 15, 2017 at 1:04 PM, Hans de Goede <hdegoede@redhat.com>
->> wrote:
->>>
->>> On some devices the USB Type-C port power (USB PD 2.0) negotiation is
->>> done by a separate port-controller IC, while the current limit is
->>> controlled through another (charger) IC.
->>>
->>> It has been decided to model this by modelling the external Type-C
->>> power brick (adapter/charger) as a power-supply class device which
->>> supplies the charger-IC, with its voltage-now and current-max
->>> representing
->>> the negotiated voltage and max current draw.
->>>
->>> This commit adds support for this to the bq24190_charger driver by
->>> calling
->>> power_supply_set_input_current_limit_from_supplier helper if the
->>> "input-current-limit-from-supplier" device-property is set.
->>>
->>> Note this replaces the functionality to get the current-limit from an
->>> extcon device, which will be removed in a follow-up commit.
->>>
->>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->>> ---
->>> Changes in v2:
->>> -Wait a bit before applying current-max from our supplier as
->>> input-current-limit
->>>   the bq24190 may still be in its power-good wait-state while our
->>> supplier is
->>>   done negotating current-max and if we apply the limit to early then the
->>>   input-current-limit will be reset to 0.5A by the bq24190 after its
->>>   power-good wait is done.
->>> ---
->>>   drivers/power/supply/bq24190_charger.c | 35
->>> ++++++++++++++++++++++++++++++++++
->>>   1 file changed, 35 insertions(+)
->>>
->>> diff --git a/drivers/power/supply/bq24190_charger.c
->>> b/drivers/power/supply/bq24190_charger.c
->>> index f13f892..6f75c8e 100644
->>> --- a/drivers/power/supply/bq24190_charger.c
->>> +++ b/drivers/power/supply/bq24190_charger.c
->>> @@ -159,9 +159,11 @@ struct bq24190_dev_info {
->>>          struct extcon_dev               *extcon;
->>>          struct notifier_block           extcon_nb;
->>>          struct delayed_work             extcon_work;
->>> +       struct delayed_work             input_current_limit_work;
->>>          char                            model_name[I2C_NAME_SIZE];
->>>          bool                            initialized;
->>>          bool                            irq_event;
->>> +       bool
->>> input_current_limit_from_supplier;
->>>          struct mutex                    f_reg_lock;
->>>          u8                              f_reg;
->>>          u8                              ss_reg;
->>> @@ -1142,6 +1144,32 @@ static int
->>> bq24190_charger_property_is_writeable(struct power_supply *psy,
->>>          return ret;
->>>   }
->>>
->>> +static void bq24190_input_current_limit_work(struct work_struct *work)
->>> +{
->>> +       struct bq24190_dev_info *bdi =
->>> +               container_of(work, struct bq24190_dev_info,
->>> +                            input_current_limit_work.work);
->>> +
->>> +       power_supply_set_input_current_limit_from_supplier(bdi->charger);
->>> +}
->>> +
->>> +static void bq24190_charger_external_power_changed(struct power_supply
->>> *psy)
->>> +{
->>> +       struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
->>> +
->>> +       /*
->>> +        * The Power-Good detection may take up to 220ms, sometimes
->>> +        * the external charger detection is quicker, and the bq24190
->>> will
->>> +        * reset to iinlim based on its own charger detection (which is
->>> not
->>> +        * hooked up when using external charger detection) resulting in
->>> a
->>> +        * too low default 500mA iinlim. Delay setting the
->>> input-current-limit
->>> +        * for 300ms to avoid this.
->>> +        */
->>> +       if (bdi->input_current_limit_from_supplier)
->>> +               queue_delayed_work(system_wq,
->>> &bdi->input_current_limit_work,
->>> +                                  msecs_to_jiffies(300));
->>> +}
->>> +
->>>   static enum power_supply_property bq24190_charger_properties[] = {
->>>          POWER_SUPPLY_PROP_CHARGE_TYPE,
->>>          POWER_SUPPLY_PROP_HEALTH,
->>> @@ -1170,6 +1198,7 @@ static const struct power_supply_desc
->>> bq24190_charger_desc = {
->>>          .get_property           = bq24190_charger_get_property,
->>>          .set_property           = bq24190_charger_set_property,
->>>          .property_is_writeable  = bq24190_charger_property_is_writeable,
->>> +       .external_power_changed = bq24190_charger_external_power_changed,
->>>   };
->>>
->>>   /* Battery power supply property routines */
->>> @@ -1651,6 +1680,8 @@ static int bq24190_probe(struct i2c_client *client,
->>>          mutex_init(&bdi->f_reg_lock);
->>>          bdi->f_reg = 0;
->>>          bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state
->>> */
->>> +       INIT_DELAYED_WORK(&bdi->input_current_limit_work,
->>> +                         bq24190_input_current_limit_work);
->>>
->>>          i2c_set_clientdata(client, bdi);
->>>
->>> @@ -1659,6 +1690,10 @@ static int bq24190_probe(struct i2c_client
->>> *client,
->>>                  return -EINVAL;
->>>          }
->>>
->>> +       bdi->input_current_limit_from_supplier =
->>> +               device_property_read_bool(dev,
->>> +
->>> "input-current-limit-from-supplier");
->>> +
->>
->>
->> Maybe
->>    if (device_property_read_bool(dev,
->> "linux,input-current-limit-from-supplier")) {
->>         INIT_DELAYED_WORK(&bdi->input_current_limit_work,
->>                           bq24190_input_current_limit_work);
->>        bdi->input_current_limit_from_supplier = true; // or use a field
->> in bdi->input_current_limit_work as the flag?
->>     }
->
->
-> Done, except for making the flag a field in input_current_limit_work,
-> input_current_limit_work is of type struct delayed_work so I cannot just
-> add a field.
->
->> Also should document property for DT use assuming Sebastian is ok with
->> new power_supply method.
->
->
-> Also done for v3 of this patch.
->
->> And can you rebase to my pending series in next pass? There's nothing
->> controversial in it :-)
->
->
-> I've cherry-picked v3 of the patch adding the dt-binding-doc to my tree so
-> that I could add the documentation for the property on top. I will make sure
-> to rebase on top of the rest once the rest is merged by Sebastian (otherwise
-> I need to rebase after each revision of the patch-set).
+No idea whether this makes sense overall.  I'll just comment on the
+cgroup interface part.
 
-If the property is linux,input-current-limit-from-supplier should it
-also be documented elsewhere in DT bindings?
+On Thu, Aug 24, 2017 at 07:08:52PM +0100, Patrick Bellasi wrote:
+> This patch extends the CPU controller by adding a couple of new attributes,
+> util_min and util_max, which can be used to enforce frequency boosting and
+> capping. Specifically:
+> 
+> - util_min: defines the minimum CPU utilization which should be considered,
+> 	    e.g. when  schedutil selects the frequency for a CPU while a
+> 	    task in this group is RUNNABLE.
+> 	    i.e. the task will run at least at a minimum frequency which
+> 	         corresponds to the min_util utilization
+> 
+> - util_max: defines the maximum CPU utilization which should be considered,
+> 	    e.g. when schedutil selects the frequency for a CPU while a
+> 	    task in this group is RUNNABLE.
+> 	    i.e. the task will run up to a maximum frequency which
+> 	         corresponds to the max_util utilization
+
+I'm not sure min/max are the right names here.  min/low/high/max are
+used to designate guarantees and limits on resources and the above is
+more restricting the range of an attribute.  I'll think more about
+what'd be better names here.
+
+> These attributes:
+> a) are tunable at all hierarchy levels, i.e. at root group level too, thus
+>    allowing to defined minimum and maximum frequency constraints for all
+>    otherwise non-classified tasks (e.g. autogroups)
+
+The problem with doing the above is two-fold.
+
+1. The feature becomes inaccessible without cgroup even though it
+   doesn't have much to do with cgroup at system level.
+
+2. For the above and other historical reasons, most other features
+   have a separate way to configure at the system level.
+
+I think it'd be better to keep the root level control outside cgorup.
+
+> b) allow to create subgroups of tasks which are not violating the
+>    utilization constraints defined by the parent group.
+
+The problem with doing the above is that it ties the configs of a
+cgroup with its ancestors and that gets weird across delegation
+boundaries.  Other resource knobs don't behave this way - a descendant
+cgroup can have any memory.low/high/max values and an ancestor
+changing config doesn't destory its descendants' configs.  Please
+follow the same convention.
+
+> Tasks on a subgroup can only be more boosted and/or capped, which is
+> matching with the "limits" schema proposed by the "Resource Distribution
+> Model (RDM)" suggested by the CGroups v2 documentation:
+>    Documentation/cgroup-v2.txt
+
+So, the guarantee side (min / low) shouldn't allow the descendants to
+have more.  ie. if memory.low is 512M at the parent, its children can
+never have more than 512M of low protection.  Given that "boosting"
+means more CPU consumption, I think it'd make more sense to follow
+such semantics - ie. a descendant cannot have higher boosting than the
+lowest of its ancestors.
+
+Thanks.
+
+-- 
+tejun
