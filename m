@@ -1,185 +1,138 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH v3 3/5] power: bq24190_charger: Enable devicetree config
-Date: Mon, 28 Aug 2017 14:13:05 +0200
-Message-ID: <5087e892-e90f-5868-9b3d-01edba6f101b@redhat.com>
-References: <20170826051413.24569-1-liam@networkimprov.net>
- <20170826051413.24569-4-liam@networkimprov.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2 5/9] PM / ACPI: Provide option to disable direct_complete for ACPI devices
+Date: Mon, 28 Aug 2017 14:39:03 +0200
+Message-ID: <26411805.tiHaCQcaUh@aspire.rjw.lan>
+References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org> <35832703.Y3V01Ybc1Y@aspire.rjw.lan> <CAPDyKFrRW3BLetxGW=89_Ksoxn4GW_7ebcADT1pyUrAT4ySpjA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:40528 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751146AbdH1MNI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 28 Aug 2017 08:13:08 -0400
-In-Reply-To: <20170826051413.24569-4-liam@networkimprov.net>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFrRW3BLetxGW=89_Ksoxn4GW_7ebcADT1pyUrAT4ySpjA@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-Hi,
-
-On 26-08-17 07:14, Liam Breck wrote:
-> From: Liam Breck <kernel@networkimprov.net>
+On Monday, August 28, 2017 10:31:44 AM CEST Ulf Hansson wrote:
+> On 28 August 2017 at 03:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Friday, August 25, 2017 3:42:35 PM CEST Rafael J. Wysocki wrote:
+> >> On Thursday, August 24, 2017 11:50:40 PM CEST Rafael J. Wysocki wrote:
+> >> > On Thursday, August 24, 2017 6:35:49 PM CEST Rafael J. Wysocki wrote:
+> >> > > On Thursday, August 24, 2017 11:15:26 AM CEST Ulf Hansson wrote:
+> >> >
+> >> > [cut]
+> >> >
+> >> > > [BTW, it is not entirely clear to me why it ever is necessary to runtime resume
+> >> > > a device with direct_complete set after __device_suspend(), because it can only
+> >> > > have direct_complete set at that point if all of the hierarchy below it has
+> >> > > this flag set too and so runtime PM has to be disabled for all of those
+> >> > > devices as well.]
+> >> >
+> >> > Which makes me realize that we should take a step back and look at what
+> >> > problems there are.
+> >> >
+> >> > First, there are devices (I know about two examples so far and both are PCI)
+> >> > that may need to be runtime resumed during system suspend for reasons other
+> >> > than the ones checked by the ACPI PM domain (or the PCI bus type).  There needs
+> >> > to be a way to indicate that from the driver side.
+> >> >
+> >> > However, it still may be valuable to check the power-related conditions for
+> >> > leaving the device in runtime suspend over system suspend/resume in case
+> >> > it actually doesn't need to be runtime resumed during system suspend after
+> >> > all.  That's what the majority of my patch was about.
+> >> >
+> >> > The second problem is that the ACPI PM domain (and the PCI bus type)
+> >> > runtime resumes all devices unconditionally in its ->suspend callback,
+> >> > even though that may not be necessary for some devices.  Therefore there
+> >> > needs to be a way to indicate that too.  That still would be good to
+> >> > have *regardless* of the direct_complete mechanism, because the direct_complete
+> >> > flag may not be set very often due to dependencies and then the
+> >> > resume-during-suspend will take place unnecessarily.
+> >> >
+> >> > Accordingly, it looks like we need a "no need to resume me" flag in the first
+> >> > place.  That would indicate to interested pieces of code that, from the
+> >> > driver perspective, the device doesn't need to be runtime resumed before
+> >> > invoking its system suspend callbacks.  This should be clear enough to everyone
+> >> > IMO.
+> >> >
+> >> > [Note that if that flag is set for all devices, we may drop it along with
+> >> > direct_complete, but before that happens both are needed.]
+> >>
+> >> I think we are in agreement that direct_complete will not be necessary any
+> >> more when all drivers/bus types/PM domains and so on can do the "safe
+> >> suspend", but we're not there yet. :-)
+> >>
+> >> > To address the first issue I would add something like the flag in the patches
+> >> > I sent (but without the ACPI PM domain part which should be covered by the
+> >> > "no need to resume me" flag above), because that allows the device's ->suspend
+> >> > callback to run in principle and the driver may use that callback even to
+> >> > runtime resume the device if that's what it wants to do.  So something like
+> >> > "run my ->suspend callback even though I might stay in runtime suspend".
+> >> >
+> >> > I would probably add driver_flags to dev_pm_info for that to set at the probe
+> >> > time (and I would make the core clear that on driver removal).
+> >> >
+> >> > The complexity concern is there, but honestly I don't see a better way at
+> >> > this point.
+> >>
+> >> So below is a prototype patch.  It still is missing a documentation update, but
+> >> other than that it should be complete unless I missed something.
+> >>
+> >> The way it works is that the SAFE_SUSPEND flag is not looked at by the core
+> >> at all.  The ACPI PM domain looks at it and the PCI bus type can be modified
+> >> to take it into account in the future.  That is what causes the "runtime resume
+> >> during system suspend" to be skipped.
+> >>
+> >> In turn, the ALWAYS_SUSPEND flag is only looked at by the core and it causes
+> >> the decision on whether or not to use direct_complete to be deferred to the
+> >> __device_suspend_late() time.  If you set it for a PCI device, the effect is
+> >> equivalent to "no direct_complete".  If you set it for a device in the ACPI
+> >> PM domain, that depends on whether or not SAFE_SUSPEND is set.  If it isn't
+> >> set, the effect is equivalent to "no direct_complete" too, but if it is set,
+> >> the core may still try to use direct_complete for the device, but it will
+> >> make the decision on it in __device_suspend_late() and then it will not invoke
+> >> the ->suspend_late callback for the device if it is still runtime suspended.
+> >> [Note that you cannot runtime resume and runtime suspend again a device during
+> >> system suspend, so if it is runtime suspended in __device_suspend_late(), it
+> >> has been runtime suspend all the way since device_prepare().]
+> >>
+> >> So say you point the ->suspend_late and ->resume_early callbacks of
+> >> the designware i2c driver to pm_runtime_force_suspend() and
+> >> pm_runtime_force_resume(), respectively, and set both the SAFE_SUSPEND
+> >> and ALWAYS_SUSPEND flags for the device.
+> >>
+> >> If system suspend is started and the device is not runtime suspended,
+> >> direct_complete is not set for it and everything works as usual, so say
+> >> the device is runtime suspended in device_prepare().  Then, the ACPI PM
+> >> domain checks the other conditions for leaving it in runtime suspend and
+> >> returns either 0 or a positive number from acpi_subsys_prepare().
+> >>
+> >> If 0 is returned, direct_complete is not set by the core and
+> >> acpi_subsys_suspend() is called.  It checks the SAFE_SUSPEND flag and sees
+> >> that the device need not be runtime resumed, so it invokes the driver's
+> >> ->suspend callback (which is not present, so it doesn't do anything).
+> >> Next, in __device_suspend_late(), acpi_subsys_suspend_late() is invoked
+> >> and it calls pm_runtime_force_suspend(), which executes the driver's
+> >> ->runtime_suspend() callback, and then (if successful) calls
+> >> acpi_dev_suspend_late() to put the device into a low-power state.  The
+> >> resume path is a reverse of the above in this case.  So far, so good.
+> >
+> > Well, not really, because if the device remains runtime suspended,
+> > ->runtime_suspend() will not be called by pm_runtime_force_suspend() and
+> > acpi_dev_suspend_late() should not be called then.
+> >
+> > So more changes in the ACPI PM domain are needed after all.
 > 
-> Add get_config(). Rename set_mode_host() to set_config().
-> Call get_config() and hw_init() after power_supply_register().
-> No functional changes.
-
-Doing hw_init after power_supply_register() means that userspace
-can get/set power_supply properties before hw_init has run, this
-generally is not a good idea.
-
+> Yes, that's what I thought as well.
 > 
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: Hans de Goede <hdegoede@redhat.com>
-> Signed-off-by: Liam Breck <kernel@networkimprov.net>
-> ---
->   drivers/power/supply/bq24190_charger.c | 63 +++++++++++++++++++++++-----------
->   1 file changed, 43 insertions(+), 20 deletions(-)
-> 
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-> index 40b4bba7..c6be00d7 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -504,15 +504,7 @@ static int bq24190_sysfs_create_group(struct bq24190_dev_info *bdi)
->   static inline void bq24190_sysfs_remove_group(struct bq24190_dev_info *bdi) {}
->   #endif
->   
-> -/*
-> - * According to the "Host Mode and default Mode" section of the
-> - * manual, a write to any register causes the bq24190 to switch
-> - * from default mode to host mode.  It will switch back to default
-> - * mode after a WDT timeout unless the WDT is turned off as well.
-> - * So, by simply turning off the WDT, we accomplish both with the
-> - * same write.
-> - */
-> -static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
-> +static int bq24190_set_config(struct bq24190_dev_info *bdi)
->   {
->   	int ret;
->   	u8 v;
-> @@ -523,9 +515,22 @@ static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
->   
->   	bdi->watchdog = ((v & BQ24190_REG_CTTC_WATCHDOG_MASK) >>
->   					BQ24190_REG_CTTC_WATCHDOG_SHIFT);
-> +
-> +	/*
-> +	 * According to the "Host Mode and default Mode" section of the
-> +	 * manual, a write to any register causes the bq24190 to switch
-> +	 * from default mode to host mode.  It will switch back to default
-> +	 * mode after a WDT timeout unless the WDT is turned off as well.
-> +	 * So, by simply turning off the WDT, we accomplish both with the
-> +	 * same write.
-> +	 */
->   	v &= ~BQ24190_REG_CTTC_WATCHDOG_MASK;
->   
-> -	return bq24190_write(bdi, BQ24190_REG_CTTC, v);
-> +	ret = bq24190_write(bdi, BQ24190_REG_CTTC, v);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	return 0;
->   }
->   
->   static int bq24190_register_reset(struct bq24190_dev_info *bdi)
-> @@ -1456,13 +1461,25 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
->   	if (ret < 0)
->   		return ret;
->   
-> -	ret = bq24190_set_mode_host(bdi);
-> +	ret = bq24190_set_config(bdi);
->   	if (ret < 0)
->   		return ret;
->   
->   	return bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
->   }
->   
-> +static int bq24190_get_config(struct bq24190_dev_info *bdi)
-> +{
-> +#ifdef CONFIG_OF
-> +	int v;
+> Anyway, let me cook a new version of the series - trying to address
+> the first bits you have pointed out. Then we can continue with
+> fine-tuning on top, addressing further optimizations of the ACPI PM
+> domain.
 
-This variable is unused (in this patch)
+Actually, please hold on and let me show you what I would like to do
+first.
 
-> +
-> +	if (!bdi->dev->of_node)
-> +		return -EINVAL;
+Thanks,
+Rafael
 
-I don't think that this is a good idea, at least on ARM
-(AFAIK) a kernel can be configured to support both DT and
-ACPI, just having CONFIG_OF enabled as such is not a good
-reason to fail to probe when there is no of_node.
-
-IMHO it would be better to instead put the reading of the
-"ti,system-minimum-microvolt" property introduced in the next
-patch inside a: if (bdi->dev->of_node) { ... } block.
-
-> +
-> +#endif
-> +	return 0;
-> +}
-> +
->   static int bq24190_probe(struct i2c_client *client,
->   		const struct i2c_device_id *id)
->   {
-> @@ -1493,7 +1510,7 @@ static int bq24190_probe(struct i2c_client *client,
->   
->   	i2c_set_clientdata(client, bdi);
->   
-> -	if (!client->irq) {
-> +	if (client->irq <= 0) {
->   		dev_err(dev, "Can't get irq info\n");
->   		return -EINVAL;
->   	}
-> @@ -1526,12 +1543,6 @@ static int bq24190_probe(struct i2c_client *client,
->   		goto out_pmrt;
->   	}
->   
-> -	ret = bq24190_hw_init(bdi);
-> -	if (ret < 0) {
-> -		dev_err(dev, "Hardware init failed\n");
-> -		goto out_pmrt;
-> -	}
-> -
->   	charger_cfg.drv_data = bdi;
->   	charger_cfg.supplied_to = bq24190_charger_supplied_to;
->   	charger_cfg.num_supplicants = ARRAY_SIZE(bq24190_charger_supplied_to),
-> @@ -1556,8 +1567,20 @@ static int bq24190_probe(struct i2c_client *client,
->   		}
->   	}
->   
-> +	ret = bq24190_get_config(bdi);
-> +	if (ret < 0) {
-> +		dev_err(dev, "Can't get devicetree config\n");
-> +		goto out_charger;
-> +	}
-> +
-> +	ret = bq24190_hw_init(bdi);
-> +	if (ret < 0) {
-> +		dev_err(dev, "Hardware init failed\n");
-> +		goto out_charger;
-> +	}
-> +
->   	ret = bq24190_sysfs_create_group(bdi);
-> -	if (ret) {
-> +	if (ret < 0) {
->   		dev_err(dev, "Can't create sysfs entries\n");
->   		goto out_charger;
->   	}
-> @@ -1700,7 +1723,7 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
->   	}
->   
->   	bq24190_register_reset(bdi);
-> -	bq24190_set_mode_host(bdi);
-> +	bq24190_set_config(bdi);
->   	bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
->   
->   	if (error >= 0) {
-> 
-
-Regards,
-
-Hans
