@@ -1,83 +1,185 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH] cpufreq: imx6q: Fix imx6sx low frequency support
-Date: Mon, 28 Aug 2017 14:07:51 +0200
-Message-ID: <1503922071.2347.0.camel@pengutronix.de>
-References: <4304e578a343c9acaed46b7e205d49bb63323f80.1503918257.git.leonard.crestez@nxp.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v3 3/5] power: bq24190_charger: Enable devicetree config
+Date: Mon, 28 Aug 2017 14:13:05 +0200
+Message-ID: <5087e892-e90f-5868-9b3d-01edba6f101b@redhat.com>
+References: <20170826051413.24569-1-liam@networkimprov.net>
+ <20170826051413.24569-4-liam@networkimprov.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:38307 "EHLO
-        metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750866AbdH1MH6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2017 08:07:58 -0400
-In-Reply-To: <4304e578a343c9acaed46b7e205d49bb63323f80.1503918257.git.leonard.crestez@nxp.com>
+Received: from mx1.redhat.com ([209.132.183.28]:40528 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751146AbdH1MNI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 28 Aug 2017 08:13:08 -0400
+In-Reply-To: <20170826051413.24569-4-liam@networkimprov.net>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Shawn Guo <shawnguo@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Anson Huang <Anson.Huang@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Dong Aisheng <aisheng.dong@nxp.com>, Bai Ping <ping.bai@nxp.com>, kernel@pengutronix.de, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Cc: Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
 
-Am Montag, den 28.08.2017, 14:05 +0300 schrieb Leonard Crestez:
-> This patch contains the minimal changes required to support imx6sx OPP
-> of 198 Mhz. Without this patch cpufreq still reports success but the
-> frequency is not changed, the "arm" clock will still be at 396000000 in
-> clk_summary.
-> 
-> In order to do this PLL1 needs to be still kept enabled while changing
-> the ARM clock. This is a hardware requirement: when ARM_PODF is changed
-> in CCM we need to check the busy bit of CCM_CDHIPR bit 16 arm_podf_busy,
-> and this bit is sync with PLL1 clock, so if PLL1 NOT enabled, this
-> bit will never get clear.
-> 
-> Keep pll1_sys explicitly enabled until after the rate is change to deal
-> with this. Otherwise from the clk framework perspective pll1_sys is
-> unused and gets turned off.
-> 
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+Hi,
 
-Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
+On 26-08-17 07:14, Liam Breck wrote:
+> From: Liam Breck <kernel@networkimprov.net>
+> 
+> Add get_config(). Rename set_mode_host() to set_config().
+> Call get_config() and hw_init() after power_supply_register().
+> No functional changes.
 
+Doing hw_init after power_supply_register() means that userspace
+can get/set power_supply properties before hw_init has run, this
+generally is not a good idea.
+
+> 
+> Cc: Tony Lindgren <tony@atomide.com>
+> Cc: Hans de Goede <hdegoede@redhat.com>
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
 > ---
-> Changes since v1:
->  - Link: https://lkml.org/lkml/2017/7/19/302
->  - Only keep pll1_sys enabled until after ARM rate is changed.
->  - Incorporate more elaborate explanation from Anson
->  - Do not add new clocks or bypass PLL1. Just let it get disabled.
+>   drivers/power/supply/bq24190_charger.c | 63 +++++++++++++++++++++++-----------
+>   1 file changed, 43 insertions(+), 20 deletions(-)
 > 
->  drivers/cpufreq/imx6q-cpufreq.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index b6edd3c..14466a9 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -47,6 +47,7 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  	struct dev_pm_opp *opp;
->  	unsigned long freq_hz, volt, volt_old;
->  	unsigned int old_freq, new_freq;
-> +	bool pll1_sys_temp_enabled = false;
->  	int ret;
->  
->  	new_freq = freq_table[index].frequency;
-> @@ -124,6 +125,10 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  		if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
->  			clk_set_rate(pll1_sys_clk, new_freq * 1000);
->  			clk_set_parent(pll1_sw_clk, pll1_sys_clk);
-> +		} else {
-> +			/* pll1_sys needs to be enabled for divider rate change to work. */
-> +			pll1_sys_temp_enabled = true;
-> +			clk_prepare_enable(pll1_sys_clk);
->  		}
->  	}
->  
-> @@ -135,6 +140,10 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->  		return ret;
->  	}
->  
-> +	/* PLL1 is only needed until after ARM-PODF is set. */
-> +	if (pll1_sys_temp_enabled)
-> +		clk_disable_unprepare(pll1_sys_clk);
+> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+> index 40b4bba7..c6be00d7 100644
+> --- a/drivers/power/supply/bq24190_charger.c
+> +++ b/drivers/power/supply/bq24190_charger.c
+> @@ -504,15 +504,7 @@ static int bq24190_sysfs_create_group(struct bq24190_dev_info *bdi)
+>   static inline void bq24190_sysfs_remove_group(struct bq24190_dev_info *bdi) {}
+>   #endif
+>   
+> -/*
+> - * According to the "Host Mode and default Mode" section of the
+> - * manual, a write to any register causes the bq24190 to switch
+> - * from default mode to host mode.  It will switch back to default
+> - * mode after a WDT timeout unless the WDT is turned off as well.
+> - * So, by simply turning off the WDT, we accomplish both with the
+> - * same write.
+> - */
+> -static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
+> +static int bq24190_set_config(struct bq24190_dev_info *bdi)
+>   {
+>   	int ret;
+>   	u8 v;
+> @@ -523,9 +515,22 @@ static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
+>   
+>   	bdi->watchdog = ((v & BQ24190_REG_CTTC_WATCHDOG_MASK) >>
+>   					BQ24190_REG_CTTC_WATCHDOG_SHIFT);
 > +
->  	/* scaling down?  scale voltage after frequency */
->  	if (new_freq < old_freq) {
->  		ret = regulator_set_voltage_tol(arm_reg, volt, 0);
+> +	/*
+> +	 * According to the "Host Mode and default Mode" section of the
+> +	 * manual, a write to any register causes the bq24190 to switch
+> +	 * from default mode to host mode.  It will switch back to default
+> +	 * mode after a WDT timeout unless the WDT is turned off as well.
+> +	 * So, by simply turning off the WDT, we accomplish both with the
+> +	 * same write.
+> +	 */
+>   	v &= ~BQ24190_REG_CTTC_WATCHDOG_MASK;
+>   
+> -	return bq24190_write(bdi, BQ24190_REG_CTTC, v);
+> +	ret = bq24190_write(bdi, BQ24190_REG_CTTC, v);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return 0;
+>   }
+>   
+>   static int bq24190_register_reset(struct bq24190_dev_info *bdi)
+> @@ -1456,13 +1461,25 @@ static int bq24190_hw_init(struct bq24190_dev_info *bdi)
+>   	if (ret < 0)
+>   		return ret;
+>   
+> -	ret = bq24190_set_mode_host(bdi);
+> +	ret = bq24190_set_config(bdi);
+>   	if (ret < 0)
+>   		return ret;
+>   
+>   	return bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+>   }
+>   
+> +static int bq24190_get_config(struct bq24190_dev_info *bdi)
+> +{
+> +#ifdef CONFIG_OF
+> +	int v;
+
+This variable is unused (in this patch)
+
+> +
+> +	if (!bdi->dev->of_node)
+> +		return -EINVAL;
+
+I don't think that this is a good idea, at least on ARM
+(AFAIK) a kernel can be configured to support both DT and
+ACPI, just having CONFIG_OF enabled as such is not a good
+reason to fail to probe when there is no of_node.
+
+IMHO it would be better to instead put the reading of the
+"ti,system-minimum-microvolt" property introduced in the next
+patch inside a: if (bdi->dev->of_node) { ... } block.
+
+> +
+> +#endif
+> +	return 0;
+> +}
+> +
+>   static int bq24190_probe(struct i2c_client *client,
+>   		const struct i2c_device_id *id)
+>   {
+> @@ -1493,7 +1510,7 @@ static int bq24190_probe(struct i2c_client *client,
+>   
+>   	i2c_set_clientdata(client, bdi);
+>   
+> -	if (!client->irq) {
+> +	if (client->irq <= 0) {
+>   		dev_err(dev, "Can't get irq info\n");
+>   		return -EINVAL;
+>   	}
+> @@ -1526,12 +1543,6 @@ static int bq24190_probe(struct i2c_client *client,
+>   		goto out_pmrt;
+>   	}
+>   
+> -	ret = bq24190_hw_init(bdi);
+> -	if (ret < 0) {
+> -		dev_err(dev, "Hardware init failed\n");
+> -		goto out_pmrt;
+> -	}
+> -
+>   	charger_cfg.drv_data = bdi;
+>   	charger_cfg.supplied_to = bq24190_charger_supplied_to;
+>   	charger_cfg.num_supplicants = ARRAY_SIZE(bq24190_charger_supplied_to),
+> @@ -1556,8 +1567,20 @@ static int bq24190_probe(struct i2c_client *client,
+>   		}
+>   	}
+>   
+> +	ret = bq24190_get_config(bdi);
+> +	if (ret < 0) {
+> +		dev_err(dev, "Can't get devicetree config\n");
+> +		goto out_charger;
+> +	}
+> +
+> +	ret = bq24190_hw_init(bdi);
+> +	if (ret < 0) {
+> +		dev_err(dev, "Hardware init failed\n");
+> +		goto out_charger;
+> +	}
+> +
+>   	ret = bq24190_sysfs_create_group(bdi);
+> -	if (ret) {
+> +	if (ret < 0) {
+>   		dev_err(dev, "Can't create sysfs entries\n");
+>   		goto out_charger;
+>   	}
+> @@ -1700,7 +1723,7 @@ static __maybe_unused int bq24190_pm_resume(struct device *dev)
+>   	}
+>   
+>   	bq24190_register_reset(bdi);
+> -	bq24190_set_mode_host(bdi);
+> +	bq24190_set_config(bdi);
+>   	bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
+>   
+>   	if (error >= 0) {
+> 
+
+Regards,
+
+Hans
