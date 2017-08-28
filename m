@@ -1,200 +1,193 @@
 From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v3 3/5] power: bq24190_charger: Enable devicetree config
-Date: Mon, 28 Aug 2017 10:59:26 -0700
-Message-ID: <CAKvHMgRVzG39rbR4_TNOUMqdgA9g1dxXGK2DkngMe_NkRVDPFA@mail.gmail.com>
-References: <20170826051413.24569-1-liam@networkimprov.net>
- <20170826051413.24569-4-liam@networkimprov.net> <5087e892-e90f-5868-9b3d-01edba6f101b@redhat.com>
+Subject: Re: [PATCH v2 11/14] power: supply: bq24190_charger: Get
+ input_current_limit from our supplier
+Date: Mon, 28 Aug 2017 11:07:31 -0700
+Message-ID: <CAKvHMgSkuwJKeSQGVgmsvt=rEtN8qhHFoouewy8=7XuG9odVbQ@mail.gmail.com>
+References: <20170815200502.17339-1-hdegoede@redhat.com>
+ <20170815200502.17339-12-hdegoede@redhat.com>
+ <CAKvHMgQMgkA=b_jGFMhs7-Ta=+WYjh2u8YNjON3MapA8tTju9w@mail.gmail.com>
+ <3c3c65dd-fb5f-becd-0d04-f22f103baeb0@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f194.google.com ([209.85.223.194]:35097 "EHLO
-        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750735AbdH1R72 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2017 13:59:28 -0400
-Received: by mail-io0-f194.google.com with SMTP id c18so888694ioj.2
-        for <linux-pm@vger.kernel.org>; Mon, 28 Aug 2017 10:59:28 -0700 (PDT)
-In-Reply-To: <5087e892-e90f-5868-9b3d-01edba6f101b@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <3c3c65dd-fb5f-becd-0d04-f22f103baeb0@redhat.com>
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
 To: Hans de Goede <hdegoede@redhat.com>
-Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Liam Breck <kernel@networkimprov.net>
+Cc: devel@driverdev.osuosl.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, linux-kernel <linux-kernel@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, platform-driver-x86@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, linux-i2c@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Hi Hans, thanks for the input...
+Hi Hans, I sent too soon...
 
-On Mon, Aug 28, 2017 at 5:13 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+On Mon, Aug 28, 2017 at 9:04 AM, Hans de Goede <hdegoede@redhat.com> wrote:
 > Hi,
 >
-> On 26-08-17 07:14, Liam Breck wrote:
+>
+> On 16-08-17 22:28, Liam Breck wrote:
 >>
->> From: Liam Breck <kernel@networkimprov.net>
+>> Hi Hans,
 >>
->> Add get_config(). Rename set_mode_host() to set_config().
->> Call get_config() and hw_init() after power_supply_register().
->> No functional changes.
->
->
-> Doing hw_init after power_supply_register() means that userspace
-> can get/set power_supply properties before hw_init has run, this
-> generally is not a good idea.
-
-hw_init() needs data from DT, and power_supply_get_battery_info()
-(called by get_config() in later patch) gets the DT data. It takes a
-power_supply argument, hence the new ordering.
-
-Is there a way to defer availability of a registered power_supply to
-userspace during probe()? I recall looking into this when I wrote that
-and concluding that it was safe, but I don't recall why :-/
-
->
+>> On Tue, Aug 15, 2017 at 1:04 PM, Hans de Goede <hdegoede@redhat.com>
+>> wrote:
+>>>
+>>> On some devices the USB Type-C port power (USB PD 2.0) negotiation is
+>>> done by a separate port-controller IC, while the current limit is
+>>> controlled through another (charger) IC.
+>>>
+>>> It has been decided to model this by modelling the external Type-C
+>>> power brick (adapter/charger) as a power-supply class device which
+>>> supplies the charger-IC, with its voltage-now and current-max
+>>> representing
+>>> the negotiated voltage and max current draw.
+>>>
+>>> This commit adds support for this to the bq24190_charger driver by
+>>> calling
+>>> power_supply_set_input_current_limit_from_supplier helper if the
+>>> "input-current-limit-from-supplier" device-property is set.
+>>>
+>>> Note this replaces the functionality to get the current-limit from an
+>>> extcon device, which will be removed in a follow-up commit.
+>>>
+>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>>> ---
+>>> Changes in v2:
+>>> -Wait a bit before applying current-max from our supplier as
+>>> input-current-limit
+>>>   the bq24190 may still be in its power-good wait-state while our
+>>> supplier is
+>>>   done negotating current-max and if we apply the limit to early then the
+>>>   input-current-limit will be reset to 0.5A by the bq24190 after its
+>>>   power-good wait is done.
+>>> ---
+>>>   drivers/power/supply/bq24190_charger.c | 35
+>>> ++++++++++++++++++++++++++++++++++
+>>>   1 file changed, 35 insertions(+)
+>>>
+>>> diff --git a/drivers/power/supply/bq24190_charger.c
+>>> b/drivers/power/supply/bq24190_charger.c
+>>> index f13f892..6f75c8e 100644
+>>> --- a/drivers/power/supply/bq24190_charger.c
+>>> +++ b/drivers/power/supply/bq24190_charger.c
+>>> @@ -159,9 +159,11 @@ struct bq24190_dev_info {
+>>>          struct extcon_dev               *extcon;
+>>>          struct notifier_block           extcon_nb;
+>>>          struct delayed_work             extcon_work;
+>>> +       struct delayed_work             input_current_limit_work;
+>>>          char                            model_name[I2C_NAME_SIZE];
+>>>          bool                            initialized;
+>>>          bool                            irq_event;
+>>> +       bool
+>>> input_current_limit_from_supplier;
+>>>          struct mutex                    f_reg_lock;
+>>>          u8                              f_reg;
+>>>          u8                              ss_reg;
+>>> @@ -1142,6 +1144,32 @@ static int
+>>> bq24190_charger_property_is_writeable(struct power_supply *psy,
+>>>          return ret;
+>>>   }
+>>>
+>>> +static void bq24190_input_current_limit_work(struct work_struct *work)
+>>> +{
+>>> +       struct bq24190_dev_info *bdi =
+>>> +               container_of(work, struct bq24190_dev_info,
+>>> +                            input_current_limit_work.work);
+>>> +
+>>> +       power_supply_set_input_current_limit_from_supplier(bdi->charger);
+>>> +}
+>>> +
+>>> +static void bq24190_charger_external_power_changed(struct power_supply
+>>> *psy)
+>>> +{
+>>> +       struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
+>>> +
+>>> +       /*
+>>> +        * The Power-Good detection may take up to 220ms, sometimes
+>>> +        * the external charger detection is quicker, and the bq24190
+>>> will
+>>> +        * reset to iinlim based on its own charger detection (which is
+>>> not
+>>> +        * hooked up when using external charger detection) resulting in
+>>> a
+>>> +        * too low default 500mA iinlim. Delay setting the
+>>> input-current-limit
+>>> +        * for 300ms to avoid this.
+>>> +        */
+>>> +       if (bdi->input_current_limit_from_supplier)
+>>> +               queue_delayed_work(system_wq,
+>>> &bdi->input_current_limit_work,
+>>> +                                  msecs_to_jiffies(300));
+>>> +}
+>>> +
+>>>   static enum power_supply_property bq24190_charger_properties[] = {
+>>>          POWER_SUPPLY_PROP_CHARGE_TYPE,
+>>>          POWER_SUPPLY_PROP_HEALTH,
+>>> @@ -1170,6 +1198,7 @@ static const struct power_supply_desc
+>>> bq24190_charger_desc = {
+>>>          .get_property           = bq24190_charger_get_property,
+>>>          .set_property           = bq24190_charger_set_property,
+>>>          .property_is_writeable  = bq24190_charger_property_is_writeable,
+>>> +       .external_power_changed = bq24190_charger_external_power_changed,
+>>>   };
+>>>
+>>>   /* Battery power supply property routines */
+>>> @@ -1651,6 +1680,8 @@ static int bq24190_probe(struct i2c_client *client,
+>>>          mutex_init(&bdi->f_reg_lock);
+>>>          bdi->f_reg = 0;
+>>>          bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state
+>>> */
+>>> +       INIT_DELAYED_WORK(&bdi->input_current_limit_work,
+>>> +                         bq24190_input_current_limit_work);
+>>>
+>>>          i2c_set_clientdata(client, bdi);
+>>>
+>>> @@ -1659,6 +1690,10 @@ static int bq24190_probe(struct i2c_client
+>>> *client,
+>>>                  return -EINVAL;
+>>>          }
+>>>
+>>> +       bdi->input_current_limit_from_supplier =
+>>> +               device_property_read_bool(dev,
+>>> +
+>>> "input-current-limit-from-supplier");
+>>> +
 >>
->> Cc: Tony Lindgren <tony@atomide.com>
->> Cc: Hans de Goede <hdegoede@redhat.com>
->> Signed-off-by: Liam Breck <kernel@networkimprov.net>
->> ---
->>   drivers/power/supply/bq24190_charger.c | 63
->> +++++++++++++++++++++++-----------
->>   1 file changed, 43 insertions(+), 20 deletions(-)
 >>
->> diff --git a/drivers/power/supply/bq24190_charger.c
->> b/drivers/power/supply/bq24190_charger.c
->> index 40b4bba7..c6be00d7 100644
->> --- a/drivers/power/supply/bq24190_charger.c
->> +++ b/drivers/power/supply/bq24190_charger.c
->> @@ -504,15 +504,7 @@ static int bq24190_sysfs_create_group(struct
->> bq24190_dev_info *bdi)
->>   static inline void bq24190_sysfs_remove_group(struct bq24190_dev_info
->> *bdi) {}
->>   #endif
->>   -/*
->> - * According to the "Host Mode and default Mode" section of the
->> - * manual, a write to any register causes the bq24190 to switch
->> - * from default mode to host mode.  It will switch back to default
->> - * mode after a WDT timeout unless the WDT is turned off as well.
->> - * So, by simply turning off the WDT, we accomplish both with the
->> - * same write.
->> - */
->> -static int bq24190_set_mode_host(struct bq24190_dev_info *bdi)
->> +static int bq24190_set_config(struct bq24190_dev_info *bdi)
->>   {
->>         int ret;
->>         u8 v;
->> @@ -523,9 +515,22 @@ static int bq24190_set_mode_host(struct
->> bq24190_dev_info *bdi)
->>         bdi->watchdog = ((v & BQ24190_REG_CTTC_WATCHDOG_MASK) >>
->>                                         BQ24190_REG_CTTC_WATCHDOG_SHIFT);
->> +
->> +       /*
->> +        * According to the "Host Mode and default Mode" section of the
->> +        * manual, a write to any register causes the bq24190 to switch
->> +        * from default mode to host mode.  It will switch back to default
->> +        * mode after a WDT timeout unless the WDT is turned off as well.
->> +        * So, by simply turning off the WDT, we accomplish both with the
->> +        * same write.
->> +        */
->>         v &= ~BQ24190_REG_CTTC_WATCHDOG_MASK;
->>   -     return bq24190_write(bdi, BQ24190_REG_CTTC, v);
->> +       ret = bq24190_write(bdi, BQ24190_REG_CTTC, v);
->> +       if (ret < 0)
->> +               return ret;
->> +
->> +       return 0;
->>   }
->>     static int bq24190_register_reset(struct bq24190_dev_info *bdi)
->> @@ -1456,13 +1461,25 @@ static int bq24190_hw_init(struct bq24190_dev_info
->> *bdi)
->>         if (ret < 0)
->>                 return ret;
->>   -     ret = bq24190_set_mode_host(bdi);
->> +       ret = bq24190_set_config(bdi);
->>         if (ret < 0)
->>                 return ret;
->>         return bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
->>   }
->>   +static int bq24190_get_config(struct bq24190_dev_info *bdi)
->> +{
->> +#ifdef CONFIG_OF
->> +       int v;
+>> Maybe
+>>    if (device_property_read_bool(dev,
+>> "linux,input-current-limit-from-supplier")) {
+>>         INIT_DELAYED_WORK(&bdi->input_current_limit_work,
+>>                           bq24190_input_current_limit_work);
+>>        bdi->input_current_limit_from_supplier = true; // or use a field
+>> in bdi->input_current_limit_work as the flag?
+>>     }
 >
 >
-> This variable is unused (in this patch)
+> Done, except for making the flag a field in input_current_limit_work,
+> input_current_limit_work is of type struct delayed_work so I cannot just
+> add a field.
 >
->> +
->> +       if (!bdi->dev->of_node)
->> +               return -EINVAL;
+>> Also should document property for DT use assuming Sebastian is ok with
+>> new power_supply method.
 >
 >
-> I don't think that this is a good idea, at least on ARM
-> (AFAIK) a kernel can be configured to support both DT and
-> ACPI, just having CONFIG_OF enabled as such is not a good
-> reason to fail to probe when there is no of_node.
+> Also done for v3 of this patch.
 >
-> IMHO it would be better to instead put the reading of the
-> "ti,system-minimum-microvolt" property introduced in the next
-> patch inside a: if (bdi->dev->of_node) { ... } block.
+>> And can you rebase to my pending series in next pass? There's nothing
+>> controversial in it :-)
+>
+>
+> I've cherry-picked v3 of the patch adding the dt-binding-doc to my tree so
+> that I could add the documentation for the property on top. I will make sure
+> to rebase on top of the rest once the rest is merged by Sebastian (otherwise
+> I need to rebase after each revision of the patch-set).
 
-Well that one is read with device_property_read_ so mebbe I should
-drop ifdef config_of and only check dev->of_node before
-_get_battery_info() which requires DT.
-
->> +
->> +#endif
->> +       return 0;
->> +}
->> +
->>   static int bq24190_probe(struct i2c_client *client,
->>                 const struct i2c_device_id *id)
->>   {
->> @@ -1493,7 +1510,7 @@ static int bq24190_probe(struct i2c_client *client,
->>         i2c_set_clientdata(client, bdi);
->>   -     if (!client->irq) {
->> +       if (client->irq <= 0) {
->>                 dev_err(dev, "Can't get irq info\n");
->>                 return -EINVAL;
->>         }
->> @@ -1526,12 +1543,6 @@ static int bq24190_probe(struct i2c_client *client,
->>                 goto out_pmrt;
->>         }
->>   -     ret = bq24190_hw_init(bdi);
->> -       if (ret < 0) {
->> -               dev_err(dev, "Hardware init failed\n");
->> -               goto out_pmrt;
->> -       }
->> -
->>         charger_cfg.drv_data = bdi;
->>         charger_cfg.supplied_to = bq24190_charger_supplied_to;
->>         charger_cfg.num_supplicants =
->> ARRAY_SIZE(bq24190_charger_supplied_to),
->> @@ -1556,8 +1567,20 @@ static int bq24190_probe(struct i2c_client *client,
->>                 }
->>         }
->>   +     ret = bq24190_get_config(bdi);
->> +       if (ret < 0) {
->> +               dev_err(dev, "Can't get devicetree config\n");
->> +               goto out_charger;
->> +       }
->> +
->> +       ret = bq24190_hw_init(bdi);
->> +       if (ret < 0) {
->> +               dev_err(dev, "Hardware init failed\n");
->> +               goto out_charger;
->> +       }
->> +
->>         ret = bq24190_sysfs_create_group(bdi);
->> -       if (ret) {
->> +       if (ret < 0) {
->>                 dev_err(dev, "Can't create sysfs entries\n");
->>                 goto out_charger;
->>         }
->> @@ -1700,7 +1723,7 @@ static __maybe_unused int bq24190_pm_resume(struct
->> device *dev)
->>         }
->>         bq24190_register_reset(bdi);
->> -       bq24190_set_mode_host(bdi);
->> +       bq24190_set_config(bdi);
->>         bq24190_read(bdi, BQ24190_REG_SS, &bdi->ss_reg);
->>         if (error >= 0) {
->>
->
-> Regards,
->
-> Hans
+If the property is linux,input-current-limit-from-supplier should it
+also be documented elsewhere in DT bindings?
