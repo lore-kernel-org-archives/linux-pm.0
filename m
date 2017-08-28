@@ -1,48 +1,51 @@
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: x86: PIE support and option to extend KASLR randomization
-Date: Sun, 27 Aug 2017 18:26:05 -0700
-Message-ID: <728a9499-67e9-0828-bb7a-f9b441a220b5@zytor.com>
-References: <20170810172615.51965-1-thgarnie@google.com>
- <20170811124127.kkb5pnkljz4umxuj@gmail.com>
- <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
- <20170815075609.mmzbfwritjzvrpsn@gmail.com>
- <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
- <20170821143117.22sekggxizt3mhze@hirez.programming.kicks-ass.net>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 10/12] PM / devfreq: Remove 'devfreq' prefix from helper
+ function
+Date: Mon, 28 Aug 2017 11:24:45 +0900
+Message-ID: <59A37EED.5090608@samsung.com>
+References: <1503538979-22693-11-git-send-email-cw00.choi@samsung.com>
+        <1503538979-22693-1-git-send-email-cw00.choi@samsung.com>
+        <CGME20170824014300epcas2p452c864106cf4fd9754d075d57b8a9ca1@epcms1p1>
+        <20170828013730epcms1p1d71f5a81bb83fe1db15f36ee73da7109@epcms1p1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <kernel-hardening-return-9570-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <20170821143117.22sekggxizt3mhze@hirez.programming.kicks-ass.net>
-Content-Language: en-US
-To: Peter Zijlstra <peterz@infradead.org>, Thomas Garnier <thgarnie@google.com>
-Cc: Ingo Molnar <mingo@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.c>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:27089 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751711AbdH1CYt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 27 Aug 2017 22:24:49 -0400
+In-reply-to: <20170828013730epcms1p1d71f5a81bb83fe1db15f36ee73da7109@epcms1p1>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>
+Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "chanwoo@kernel.org" <chanwoo@kernel.org>, Inki Dae <inki.dae@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On 08/21/17 07:31, Peter Zijlstra wrote:
-> On Tue, Aug 15, 2017 at 07:20:38AM -0700, Thomas Garnier wrote:
->> On Tue, Aug 15, 2017 at 12:56 AM, Ingo Molnar <mingo@kernel.org> wrote:
-> 
->>> Have you considered a kernel with -mcmodel=small (or medium) instead of -fpie
->>> -mcmodel=large? We can pick a random 2GB window in the (non-kernel) canonical
->>> x86-64 address space to randomize the location of kernel text. The location of
->>> modules can be further randomized within that 2GB window.
+On 2017년 08월 28일 10:37, MyungJoo Ham wrote:
+>> This patch just removes the 'devfreq' prefix from internal helper
+>> function in order to clarify the role of the following functions.
+>> - devfreq_get_freq_level() - get_freq_level()
+>> - devfreq_set_freq_table() - set_freq_table()
 >>
->> -model=small/medium assume you are on the low 32-bit. It generates
->> instructions where the virtual addresses have the high 32-bit to be
->> zero.
+>> Also, this patch changes the return value of set_freq_table()
+>> from 'void' to 'int' and then removes the function description
+>> of internal helper function. Because the internal helper function
+>> is used by the devfreq core.
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  drivers/devfreq/devfreq.c | 34 ++++++++++++++++------------------
+>>  1 file changed, 16 insertions(+), 18 deletions(-)
+>>
 > 
-> That's a compiler fail, right? Because the SDM states that for "CALL
-> rel32" the 32bit displacement is sign extended on x86_64.
+> Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 > 
+> 
+> (note that you are alternating betgween two email addresses, gmail.com/samsung.com in a single series of commits)
 
-No.  It is about whether you can do something like:
+It is my mistake. On v2 patchset, I'll use the samsung.com account. Thanks.
 
-	movl $variable, %eax		/* rax = &variable; */
-
-or
-
-	addl %ecx,variable(,%rsi,4)	/* variable[rsi] += ecx */
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
