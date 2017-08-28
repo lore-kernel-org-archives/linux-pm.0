@@ -1,134 +1,95 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 5/9] PM / ACPI: Provide option to disable
- direct_complete for ACPI devices
-Date: Mon, 28 Aug 2017 10:31:44 +0200
-Message-ID: <CAPDyKFrRW3BLetxGW=89_Ksoxn4GW_7ebcADT1pyUrAT4ySpjA@mail.gmail.com>
-References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org>
- <6003495.864qntojfu@aspire.rjw.lan> <2333939.YcVPemMPxH@aspire.rjw.lan> <35832703.Y3V01Ybc1Y@aspire.rjw.lan>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Re: x86: PIE support and option to extend
+ KASLR randomization
+Date: Mon, 28 Aug 2017 11:59:23 +0200
+Message-ID: <20170828095922.GA18012@amd>
+References: <20170810172615.51965-1-thgarnie@google.com>
+ <20170811124127.kkb5pnkljz4umxuj@gmail.com>
+ <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
+ <20170815075609.mmzbfwritjzvrpsn@gmail.com>
+ <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
+ <20170816151235.oamkdva6cwpc4cex@gmail.com>
+ <CAJcbSZFM_zpL1av1JVaow8NdsGeH+6oZKeDnMPdXR0PGfynzsg@mail.gmail.com>
+ <20170817080920.5ljlkktngw2cisfg@gmail.com>
+ <CAFUG7CdUEFYANSGRuNX0Xt1TJ0Z7f+M_ERgR03dUVxVqLENLpw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <35832703.Y3V01Ybc1Y@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, linux-i2c <linux-i2c@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="WIyZ46R2i8wDzkSu"
+Return-path: <kernel-hardening-return-9576-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Content-Disposition: inline
+In-Reply-To: <CAFUG7CdUEFYANSGRuNX0Xt1TJ0Z7f+M_ERgR03dUVxVqLENLpw@mail.gmail.com>
+To: Boris Lukashev <blukashev@sempervictus.com>
+Cc: Ingo Molnar <mingo@kernel.org>, Thomas Garnier <thgarnie@google.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Te
 List-Id: linux-pm@vger.kernel.org
 
-On 28 August 2017 at 03:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Friday, August 25, 2017 3:42:35 PM CEST Rafael J. Wysocki wrote:
->> On Thursday, August 24, 2017 11:50:40 PM CEST Rafael J. Wysocki wrote:
->> > On Thursday, August 24, 2017 6:35:49 PM CEST Rafael J. Wysocki wrote:
->> > > On Thursday, August 24, 2017 11:15:26 AM CEST Ulf Hansson wrote:
->> >
->> > [cut]
->> >
->> > > [BTW, it is not entirely clear to me why it ever is necessary to runtime resume
->> > > a device with direct_complete set after __device_suspend(), because it can only
->> > > have direct_complete set at that point if all of the hierarchy below it has
->> > > this flag set too and so runtime PM has to be disabled for all of those
->> > > devices as well.]
->> >
->> > Which makes me realize that we should take a step back and look at what
->> > problems there are.
->> >
->> > First, there are devices (I know about two examples so far and both are PCI)
->> > that may need to be runtime resumed during system suspend for reasons other
->> > than the ones checked by the ACPI PM domain (or the PCI bus type).  There needs
->> > to be a way to indicate that from the driver side.
->> >
->> > However, it still may be valuable to check the power-related conditions for
->> > leaving the device in runtime suspend over system suspend/resume in case
->> > it actually doesn't need to be runtime resumed during system suspend after
->> > all.  That's what the majority of my patch was about.
->> >
->> > The second problem is that the ACPI PM domain (and the PCI bus type)
->> > runtime resumes all devices unconditionally in its ->suspend callback,
->> > even though that may not be necessary for some devices.  Therefore there
->> > needs to be a way to indicate that too.  That still would be good to
->> > have *regardless* of the direct_complete mechanism, because the direct_complete
->> > flag may not be set very often due to dependencies and then the
->> > resume-during-suspend will take place unnecessarily.
->> >
->> > Accordingly, it looks like we need a "no need to resume me" flag in the first
->> > place.  That would indicate to interested pieces of code that, from the
->> > driver perspective, the device doesn't need to be runtime resumed before
->> > invoking its system suspend callbacks.  This should be clear enough to everyone
->> > IMO.
->> >
->> > [Note that if that flag is set for all devices, we may drop it along with
->> > direct_complete, but before that happens both are needed.]
->>
->> I think we are in agreement that direct_complete will not be necessary any
->> more when all drivers/bus types/PM domains and so on can do the "safe
->> suspend", but we're not there yet. :-)
->>
->> > To address the first issue I would add something like the flag in the patches
->> > I sent (but without the ACPI PM domain part which should be covered by the
->> > "no need to resume me" flag above), because that allows the device's ->suspend
->> > callback to run in principle and the driver may use that callback even to
->> > runtime resume the device if that's what it wants to do.  So something like
->> > "run my ->suspend callback even though I might stay in runtime suspend".
->> >
->> > I would probably add driver_flags to dev_pm_info for that to set at the probe
->> > time (and I would make the core clear that on driver removal).
->> >
->> > The complexity concern is there, but honestly I don't see a better way at
->> > this point.
->>
->> So below is a prototype patch.  It still is missing a documentation update, but
->> other than that it should be complete unless I missed something.
->>
->> The way it works is that the SAFE_SUSPEND flag is not looked at by the core
->> at all.  The ACPI PM domain looks at it and the PCI bus type can be modified
->> to take it into account in the future.  That is what causes the "runtime resume
->> during system suspend" to be skipped.
->>
->> In turn, the ALWAYS_SUSPEND flag is only looked at by the core and it causes
->> the decision on whether or not to use direct_complete to be deferred to the
->> __device_suspend_late() time.  If you set it for a PCI device, the effect is
->> equivalent to "no direct_complete".  If you set it for a device in the ACPI
->> PM domain, that depends on whether or not SAFE_SUSPEND is set.  If it isn't
->> set, the effect is equivalent to "no direct_complete" too, but if it is set,
->> the core may still try to use direct_complete for the device, but it will
->> make the decision on it in __device_suspend_late() and then it will not invoke
->> the ->suspend_late callback for the device if it is still runtime suspended.
->> [Note that you cannot runtime resume and runtime suspend again a device during
->> system suspend, so if it is runtime suspended in __device_suspend_late(), it
->> has been runtime suspend all the way since device_prepare().]
->>
->> So say you point the ->suspend_late and ->resume_early callbacks of
->> the designware i2c driver to pm_runtime_force_suspend() and
->> pm_runtime_force_resume(), respectively, and set both the SAFE_SUSPEND
->> and ALWAYS_SUSPEND flags for the device.
->>
->> If system suspend is started and the device is not runtime suspended,
->> direct_complete is not set for it and everything works as usual, so say
->> the device is runtime suspended in device_prepare().  Then, the ACPI PM
->> domain checks the other conditions for leaving it in runtime suspend and
->> returns either 0 or a positive number from acpi_subsys_prepare().
->>
->> If 0 is returned, direct_complete is not set by the core and
->> acpi_subsys_suspend() is called.  It checks the SAFE_SUSPEND flag and sees
->> that the device need not be runtime resumed, so it invokes the driver's
->> ->suspend callback (which is not present, so it doesn't do anything).
->> Next, in __device_suspend_late(), acpi_subsys_suspend_late() is invoked
->> and it calls pm_runtime_force_suspend(), which executes the driver's
->> ->runtime_suspend() callback, and then (if successful) calls
->> acpi_dev_suspend_late() to put the device into a low-power state.  The
->> resume path is a reverse of the above in this case.  So far, so good.
->
-> Well, not really, because if the device remains runtime suspended,
-> ->runtime_suspend() will not be called by pm_runtime_force_suspend() and
-> acpi_dev_suspend_late() should not be called then.
->
-> So more changes in the ACPI PM domain are needed after all.
 
-Yes, that's what I thought as well.
+--WIyZ46R2i8wDzkSu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Anyway, let me cook a new version of the series - trying to address
-the first bits you have pointed out. Then we can continue with
-fine-tuning on top, addressing further optimizations of the ACPI PM
-domain.
+Hi!
 
-Kind regards
-Uffe
+> > +         The kernel and modules will generate slightly more assembly (=
+1 to 2%
+> > +         increase on the .text sections). The vmlinux binary will be
+> > +         significantly smaller due to less relocations.
+> >
+> > ... but describing a 1-2% kernel text size increase as "slightly more a=
+ssembly"
+> > shows a gratituous disregard to kernel code generation quality! In real=
+ity that's
+> > a huge size increase that in most cases will almost directly transfer t=
+o a 1-2%
+> > slowdown for kernel intense workloads.
+> >
+> > Where does that size increase come from, if PIE is capable of using rel=
+ative
+> > instructins well? Does it come from the loss of a generic register and =
+the
+> > resulting increase in register pressure, stack spills, etc.?
+> >
+> > So I'm still unhappy about this all, and about the attitude surrounding=
+ it.
+>=20
+> Is the expectation then to have security functions also decrease size
+> and operational latency? Seems a bit unrealistic if so.
+> 1-2% performance hit on systems which have become at least several
+> hundred % faster over recent years is not a significant performance
+> regression compared to the baseline before.
+
+We are probably willing to trade security for 2% performance impact...
+if you can show that same security advantage can't be achieved without
+the impact (and it is opt-in and documented and so on).
+
+Kernel is not really a bottleneck for many people. For me, even CPUs
+are not bottleneck, disk is.
+
+But what is not okay is "hey, this is security, I can slow things
+down. Merge it, because... security!".
+
+Best regards,
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--WIyZ46R2i8wDzkSu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlmj6XoACgkQMOfwapXb+vKoAQCgxGEhuA4qK9TP8Gv7ryOV8XoZ
+v6QAoLsAwustidDVeUK6439ZUkIuqVMe
+=EZIN
+-----END PGP SIGNATURE-----
+
+--WIyZ46R2i8wDzkSu--
