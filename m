@@ -1,55 +1,170 @@
-From: "A.s. Dong" <aisheng.dong@nxp.com>
-Subject: RE: [PATCH 1/1] ARM: imx7ulp: add cpuidle support
-Date: Tue, 29 Aug 2017 09:32:40 +0000
-Message-ID: <AM3PR04MB30646BD7272372A182F22DA809F0@AM3PR04MB306.eurprd04.prod.outlook.com>
-References: <1503841421-17677-1-git-send-email-aisheng.dong@nxp.com>
- <b8d1f428-a4f5-5a02-8aa4-379b5c85e8d7@linaro.org>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [RFC PATCH 2/5] power: generic-adc-battery: Parse more
+ properties from DT
+Date: Tue, 29 Aug 2017 11:45:52 +0200
+Message-ID: <20170829094552.5tywehtwq374b7hw@earth>
+References: <1501620926-22669-1-git-send-email-marek.belisko@open-nandra.com>
+ <1501620926-22669-3-git-send-email-marek.belisko@open-nandra.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-he1eur01on0080.outbound.protection.outlook.com ([104.47.0.80]:58873
-        "EHLO EUR01-HE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1751218AbdH2Jcn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 29 Aug 2017 05:32:43 -0400
-In-Reply-To: <b8d1f428-a4f5-5a02-8aa4-379b5c85e8d7@linaro.org>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="nfnk7tht56soaopo"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1501620926-22669-3-git-send-email-marek.belisko@open-nandra.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Marek Belisko <marek.belisko@open-nandra.com>
+Cc: robh+dt@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hns@goldelico.com, pavel@ucw.cz, Marek Belisko <marek.belisko@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "shawnguo@kernel.org" <shawnguo@kernel.org>, Anson Huang <anson.huang@nxp.com>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBEYW5pZWwgTGV6Y2FubyBbbWFp
-bHRvOmRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmddDQo+IFNlbnQ6IFR1ZXNkYXksIEF1Z3VzdCAy
-OSwgMjAxNyA0OjMwIFBNDQo+IFRvOiBBLnMuIERvbmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
-Zw0KPiBDYzogbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyByandAcmp3eXNv
-Y2tpLm5ldDsNCj4gc2hhd25ndW9Aa2VybmVsLm9yZzsgQW5zb24gSHVhbmcNCj4gU3ViamVjdDog
-UmU6IFtQQVRDSCAxLzFdIEFSTTogaW14N3VscDogYWRkIGNwdWlkbGUgc3VwcG9ydA0KPiANCj4g
-T24gMjcvMDgvMjAxNyAxNTo0MywgRG9uZyBBaXNoZW5nIHdyb3RlOg0KPiA+IGkuTVg3VUxQIHN1
-cHBvcnQgMyBsZXZlbHMgaWRsZSBhcyBiZWxvdzoNCj4gPiAxLiBwYXRpYWwgc3RvcCBtb2RlIDM7
-DQo+ID4gMi4gcGF0aWFsIHN0b3AgbW9kZSAyOw0KPiA+IDMuIHBhdGlhbCBzdG9wIG1vZGUgMS4N
-Cj4gPg0KPiA+IFBTVE9QMSAtIFBhcnRpYWwgU3RvcCB3aXRoIHN5c3RlbSBhbmQgYnVzIGNsb2Nr
-IGRpc2FibGVkDQo+ID4gUFNUT1AyIC0gUGFydGlhbCBTdG9wIHdpdGggc3lzdGVtIGNsb2NrIGRp
-c2FibGVkIGFuZCBidXMgY2xvY2sgZW5hYmxlZA0KPiA+IFBTVE9QMyAtIFBhcnRpYWwgU3RvcCB3
-aXRoIHN5c3RlbSBjbG9jayBlbmFibGVkIGFuZCBidXMgY2xvY2sgZW5hYmxlZA0KPiA+DQo+ID4g
-Rm9yIFBTVE9QIDEvMiBtb2RlLCBhcyB0aGUgc3lzdGVtIGFuZCBidXMgY2xvY2sgd2lsbCBiZSBk
-aXNhYmxlZCwgdGhlDQo+ID4gZGV2aWNlcyB3b3JraW5nIGlucHJvZ3Jlc3MgbWF5IG5vdCBiZSBh
-YmxlIHRvIHdvcmsgYW55bW9yZSwgZHJpdmVyDQo+ID4gbmVlZHMgdG8gdXNlIHBtX3FvcyBBUEkg
-dG8gcHJldmVudCBzeXN0ZW0gZW50ZXIgdGhvc2UgbW9kZXMuDQo+ID4NCj4gPiBDYzogIlJhZmFl
-bCBKLiBXeXNvY2tpIiA8cmp3QHJqd3lzb2NraS5uZXQ+DQo+ID4gQ2M6IERhbmllbCBMZXpjYW5v
-IDxkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnPg0KPiA+IENjOiBTaGF3biBHdW8gPHNoYXduZ3Vv
-QGtlcm5lbC5vcmc+DQo+ID4gU2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29uLkh1YW5n
-QG54cC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogRG9uZyBBaXNoZW5nIDxhaXNoZW5nLmRvbmdA
-bnhwLmNvbT4NCj4gPiAtLS0NCj4gDQo+IEFja2VkLWJ5OiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVs
-LmxlemNhbm9AbGluYXJvLm9yZz4NCj4gDQo+IFdpbGwgeW91IGNvbnNpZGVyIGluIHRoZSBmdXR1
-cmUgdG8gbW92ZSB0aGUgZHJpdmVyIHRvIGEgRFQgYmFzZWQNCj4gZGVzY3JpcHRpb24gYW5kIHRv
-IHRoZSBjcHVpZGxlLWFybSBkcml2ZXIgPw0KPiANCg0KVGhhbmtzIGZvciB0aGUgc3VnZ2VzdGlv
-bi4NCkkgd2lsbCBpbnZlc3RpZ2F0ZSBpdCBsYXRlciB3aGVuIEknbSBmcmVlLg0KDQpTaGF3biwN
-ClRoaXMgaXMgYmFzZWQgb24gdGhlIGZvcm1lciBpbXg3dWxwIGFyY2ggcGF0Y2ggc2VyaWVzLg0K
-V2lsbCBub3RpZnkgeW91IG9uY2UgdGhleSdyZSBtZXJnZWQuDQoNClJlZ2FyZHMNCkRvbmcgQWlz
-aGVuZw0KDQo+IC0tDQo+ICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIg
-T3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzDQo+IA0KPiBGb2xsb3cgTGluYXJvOiAg
-PGh0dHA6Ly93d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfA0KPiA8aHR0
-cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8IDxodHRwOi8vd3d3LmxpbmFy
-by5vcmcvbGluYXJvLQ0KPiBibG9nLz4gQmxvZw0KDQo=
+
+--nfnk7tht56soaopo
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Tue, Aug 01, 2017 at 10:55:23PM +0200, Marek Belisko wrote:
+> From: Marek Belisko <marek.belisko@gmail.com>
+>=20
+> Signed-off-by: Marek Belisko <marek.belisko@gmail.com>
+
+This should use the infrastructure described here:
+
+Documentation/devicetree/bindings/power/supply/battery.txt
+
+-- Sebastian
+
+> ---
+>  drivers/power/supply/generic-adc-battery.c | 68 ++++++++++++++++++++++++=
+++++++
+>  1 file changed, 68 insertions(+)
+>=20
+> diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/s=
+upply/generic-adc-battery.c
+> index b5e9208..d4daa6a 100644
+> --- a/drivers/power/supply/generic-adc-battery.c
+> +++ b/drivers/power/supply/generic-adc-battery.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/iio/consumer.h>
+>  #include <linux/iio/types.h>
+>  #include <linux/power/generic-adc-battery.h>
+> +#include <linux/of_gpio.h>
+> =20
+>  #define JITTER_DEFAULT 10 /* hope 10ms is enough */
+> =20
+> @@ -241,6 +242,69 @@ static irqreturn_t gab_charged(int irq, void *dev_id)
+>  	return IRQ_HANDLED;
+>  }
+> =20
+> +#ifdef CONFIG_OF
+> +static struct gab_platform_data *gab_dt_probe(struct platform_device *pd=
+ev)
+> +{
+> +	struct gab_platform_data *pdata;
+> +	struct device_node *np =3D pdev->dev.of_node;
+> +	const char *name;
+> +	u32 val;
+> +	int err;
+> +
+> +	pdata =3D devm_kzalloc(&pdev->dev,
+> +			sizeof(struct gab_platform_data),
+> +			GFP_KERNEL);
+> +	if (!pdata)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	pdata->gpio_charge_finished  =3D of_get_gpio(np, 0);
+> +
+> +	/* parse and fill power_supply_info struct */
+> +	err =3D of_property_read_u32(np, "technology", &val);
+> +	if (err) {
+> +		dev_info(&pdev->dev, "Battery technology unknown\n");
+> +		val =3D 0;
+> +	}
+> +	pdata->battery_info.technology =3D val;
+> +
+> +	err =3D of_property_read_string(np, "battery-name", &name);
+> +	if (err) {
+> +		dev_info(&pdev->dev, "Battery name empty, setting default\n");
+> +	}
+> +	pdata->battery_info.name =3D name;
+> +
+> +	val =3D 0;
+> +	err =3D of_property_read_u32(np, "charge_empty_design", &val);
+> +	pdata->battery_info.charge_empty_design =3D val;
+> +
+> +	val =3D 0;
+> +	err =3D of_property_read_u32(np, "charge_full_design", &val);
+> +	pdata->battery_info.charge_full_design =3D val;
+> +
+> +	val =3D 0;
+> +	err =3D of_property_read_u32(np, "voltage_min_design", &val);
+> +	pdata->battery_info.voltage_min_design =3D val;
+> +
+> +	val =3D 0;
+> +	err =3D of_property_read_u32(np, "voltage_max-design", &val);
+> +	pdata->battery_info.voltage_max_design =3D val;
+> +
+> +	return pdata;
+> +}
+> +
+> +static const struct of_device_id of_gab_match[] =3D {
+> +	{ .compatible =3D "linux,generic-adc-battery", },
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, of_gab_match);
+> +
+> +#else
+> +static struct gab_platform_data gab_dt_probe(struct platform_device *pde=
+v)
+> +{
+> +	ERR_PTR(-ENODEV);
+> +}
+> +#endif
+> +
+>  static int gab_probe(struct platform_device *pdev)
+>  {
+>  	struct gab *adc_bat;
+> @@ -258,6 +322,9 @@ static int gab_probe(struct platform_device *pdev)
+>  		return -ENOMEM;
+>  	}
+> =20
+> +	if (pdata =3D=3D NULL)
+> +		pdata =3D gab_dt_probe(pdev);
+> +
+>  	psy_cfg.drv_data =3D adc_bat;
+>  	psy_desc =3D &adc_bat->psy_desc;
+>  	psy_desc->name =3D "generic-adc-batt";//pdata->battery_info.name;
+> @@ -418,6 +485,7 @@ static struct platform_driver gab_driver =3D {
+>  	.driver		=3D {
+>  		.name	=3D "generic-adc-battery",
+>  		.pm	=3D &gab_pm_ops,
+> +		.of_match_table =3D of_gab_match,
+>  	},
+>  	.probe		=3D gab_probe,
+>  	.remove		=3D gab_remove,
+> --=20
+> 2.7.4
+>=20
+
+--nfnk7tht56soaopo
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlN80ACgkQ2O7X88g7
++ppQBg//cevsupxeqe9BXROK1caLg/nMqNl9YuwoCoV0Kt/NVnO6rGtNwW54mYUD
+laqtQymr4nFOcPvx9AszOVKabKhSxHyt7kfLuJCeI7Xabo74lLR7qhlwZqjGAdQI
+fk/6hD/4m9kub5QZ/mlpUm8+1lM1iE8gwU25kgLHhx/pH1iTgUr0ggigUfIVw4jc
+spXdPwPXAXIFwE4bIis+1+44x8/o4V4ANGYCXsdwmJqIbDYf0lHnW+CDejNqPMUT
+MyY7in4ChUmzpTSAKyHFg/sq2a2KmE6bg4IbCJMXqt1VOeJuXrBOV2HzzuNVj3At
+OUEPhTirGW3XKNoNu6h5Ph05xcC4VNbaigDcu5zTzajMNcs1GDTDVtzdeVM5CM/f
+gwtbq8iDkRo7rMqPEY5+n2XaXT9oIrLwdWyCSwFfi8pEOo7QrNrPqSI6X6Oqutw/
+Kuz45GUXbODFe6nEnO/9Ix0mHykaLQFXKHyBbxk9TRGLzTvq7duW6bGc0zqK4qVh
+Wbh3Pj73Bftv2ViRD0iaQMLQ71znGVj/PrGselIAaVQlFR6hnWxBEYGSK+UR+qbA
+GMVmFNgFyID8vla5EE96mdy0pk6M7maEbvRqTjj967OQZW7g1BAKOh7xB0zYlXhX
+ZM2iWoJXa7peyMd/9oKmzlwnfwzLlTYC2TAoX/gdJXujzuZCm6E=
+=Dnce
+-----END PGP SIGNATURE-----
+
+--nfnk7tht56soaopo--
