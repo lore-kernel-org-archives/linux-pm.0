@@ -1,94 +1,145 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v3 0/5] bq27xxx_battery data memory update
-Date: Tue, 29 Aug 2017 12:54:13 +0200
-Message-ID: <20170829105413.6wbejdaxxxd6hk7b@earth>
-References: <20170824033617.20840-1-liam@networkimprov.net>
+Subject: Re: [PATCH v2 08/14] power: supply: Add
+ power_supply_set_input_current_limit_from_supplier helper
+Date: Tue, 29 Aug 2017 12:54:47 +0200
+Message-ID: <20170829105447.icwb5fjwnivnbtts@earth>
+References: <20170815200502.17339-1-hdegoede@redhat.com>
+ <20170815200502.17339-9-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="2t3fv33v4nfrg3yj"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:56164 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750909AbdH2KyR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 06:54:17 -0400
+        protocol="application/pgp-signature"; boundary="kukzqbsxlhlacb6h"
+Return-path: <linux-i2c-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170824033617.20840-1-liam@networkimprov.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170815200502.17339-9-hdegoede@redhat.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Wolfram Sang <wsa@the-dreams.de>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Pali =?iso-8859-1?Q?Roh=E1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>
 
 
---2t3fv33v4nfrg3yj
+--kukzqbsxlhlacb6h
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Aug 23, 2017 at 08:36:12PM -0700, Liam Breck wrote:
-> Overview:
-> * Reorganizes chip data definitions
-> * Enables features landed in these patches:
->   dt-bindings: power: supply: bq27xxx: Add monitored-battery documentation
->   power: supply: bq27xxx: Add chip data memory read/write support
->   power: supply: bq27xxx: Add power_supply_battery_info support
-> * Supports the following chips (only BQ27425 is active)
->   BQ27500, 545, 425, 421, 441, 621
+On Tue, Aug 15, 2017 at 10:04:56PM +0200, Hans de Goede wrote:
+> On some devices the USB Type-C port power (USB PD 2.0) negotiation is
+> done by a separate port-controller IC, while the current limit is
+> controlled through another (charger) IC.
 >=20
-> Changes in v3:
-> * BQ27425 tested; workaround minor chip bug
-> * Dropped driver_version
-> * Fixed dbg_dupes logic for .props & .dm_regs
-> * Dropped two props array dupes
+> It has been decided to model this by modelling the external Type-C
+> power brick (adapter/charger) as a power-supply class device which
+> supplies the charger-IC, with its voltage-now and current-max representing
+> the negotiated voltage and max current draw.
 >=20
-> Changes in v2:
-> * Added di->opts flags for remaining chip features
-> * Commented out untested bq27xxx_dm_regs parameters
-> * Changed dbg_dupes to run only once
+> This commit adds a power_supply_set_input_current_limit_from_supplier
+> helper function which charger power-supply drivers can call to get
+> the max-current from their supplier and have this applied
+> through their set_property call-back to their input-current-limit.
 >=20
-> Notes on v1:
-> * Not fully tested (hence RFC tag)
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-Thanks, full series queued.
+Thanks, queued.
 
 -- Sebastian
 
-> Liam Breck (5):
->   power: supply: bq27xxx: Create single chip data table
->   power: supply: bq27xxx: Add chip IDs for previously shadowed chips
->   power: supply: bq27xxx: Enable data memory update for certain chips
->   power: supply: bq27xxx: Flag identical chip data when in debug mode
->   power: supply: bq27xxx: Remove duplicate chip data arrays
+>  drivers/power/supply/power_supply_core.c | 41 ++++++++++++++++++++++++++=
+++++++
+>  include/linux/power_supply.h             |  2 ++
+>  2 files changed, 43 insertions(+)
 >=20
->  drivers/power/supply/bq27xxx_battery.c     | 514 ++++++++++++++---------=
-------
->  drivers/power/supply/bq27xxx_battery_i2c.c |  16 +-
->  include/linux/power/bq27xxx_battery.h      |  10 +-
->  3 files changed, 265 insertions(+), 275 deletions(-)
->=20
+> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
+ply/power_supply_core.c
+> index 0741fce..3f92574 100644
+> --- a/drivers/power/supply/power_supply_core.c
+> +++ b/drivers/power/supply/power_supply_core.c
+> @@ -375,6 +375,47 @@ int power_supply_is_system_supplied(void)
+>  }
+>  EXPORT_SYMBOL_GPL(power_supply_is_system_supplied);
+> =20
+> +static int __power_supply_get_supplier_max_current(struct device *dev,
+> +						   void *data)
+> +{
+> +	union power_supply_propval ret =3D {0,};
+> +	struct power_supply *epsy =3D dev_get_drvdata(dev);
+> +	struct power_supply *psy =3D data;
+> +
+> +	if (__power_supply_is_supplied_by(epsy, psy))
+> +		if (!epsy->desc->get_property(epsy,
+> +					      POWER_SUPPLY_PROP_CURRENT_MAX,
+> +					      &ret))
+> +			return ret.intval;
+> +
+> +	return 0;
+> +}
+> +
+> +int power_supply_set_input_current_limit_from_supplier(struct power_supp=
+ly *psy)
+> +{
+> +	union power_supply_propval val =3D {0,};
+> +	int curr;
+> +
+> +	if (!psy->desc->set_property)
+> +		return -EINVAL;
+> +
+> +	/*
+> +	 * This function is not intended for use with a supply with multiple
+> +	 * suppliers, we simply pick the first supply to report a non 0
+> +	 * max-current.
+> +	 */
+> +	curr =3D class_for_each_device(power_supply_class, NULL, psy,
+> +				      __power_supply_get_supplier_max_current);
+> +	if (curr <=3D 0)
+> +		return (curr =3D=3D 0) ? -ENODEV : curr;
+> +
+> +	val.intval =3D curr;
+> +
+> +	return psy->desc->set_property(psy,
+> +				POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, &val);
+> +}
+> +EXPORT_SYMBOL_GPL(power_supply_set_input_current_limit_from_supplier);
+> +
+>  int power_supply_set_battery_charged(struct power_supply *psy)
+>  {
+>  	if (atomic_read(&psy->use_cnt) >=3D 0 &&
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index de89066..79e90b3 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -332,6 +332,8 @@ extern int power_supply_get_battery_info(struct power=
+_supply *psy,
+>  					 struct power_supply_battery_info *info);
+>  extern void power_supply_changed(struct power_supply *psy);
+>  extern int power_supply_am_i_supplied(struct power_supply *psy);
+> +extern int power_supply_set_input_current_limit_from_supplier(
+> +					 struct power_supply *psy);
+>  extern int power_supply_set_battery_charged(struct power_supply *psy);
+> =20
+>  #ifdef CONFIG_POWER_SUPPLY
 > --=20
-> 2.13.2
+> 2.9.4
 >=20
 
---2t3fv33v4nfrg3yj
+--kukzqbsxlhlacb6h
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlR9IACgkQ2O7X88g7
-+pqejw/+JQg41jPOb1fuu9zAba6QBtn76jSOoGwRV5y7pamVYEmtpOUsY6K+e4cf
-cCwBLWVE7DpQpoAle6/qGYA4qQZZb3SWfiYw5lMeU5MErBUX4fqfvL8C5aaaMYvs
-BmaRYy5t7snaRyZwC4IWAD9janvr1bONw4HsVvadLIXGZoDjidfv1n4uPSA4lJLo
-sETpESEdLS8cQWwmfYAh1kCZG5qWvRJDE+kqqSjH0BDHSpGlhoH8e7lYzLl0oC61
-/Cj1XSwqSC0vTPUXZwcYkdBVl8eLahp85zcqc/EJARPqrcQRa/QuBUB57oc9J08P
-x/HJgOc/OUM9oPsnAKOxM+5lnq18btVh9yoceYIGt+/JJEpl96roDLEHj/JmuyVw
-8ztFOBWLGPi2gzt9tMLL/ZJ23HHhJkeBNY45qdDvRaG3PkWg9FYMPk7aZp0UhEeX
-gVn8F11kzLFZ0LXi6KIRqHHJ5WvpFq/u14i2Rgz65NRz3bXOkLkfEISqOFnN0yPl
-eYZFhpXVTSXSdzYsA3MzebrT58M+sNrcraQIIRMEqzscNcjuDEFyXS0V+FzYy7uP
-KCU1TaWl7SrigXk73iEZ9mm6UaEaScCvuAz/2HLp0uwf4WIK7GSDB2iL3KBkK3bg
-3czKWLOLB+UX89O8u+4XYbX5xU9YJ+804Uwf5TQuhaRxOOKcBJA=
-=I72i
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlR/cACgkQ2O7X88g7
++pphgQ/+NCzJfHFapIZvnNiB1l6sMqydvkxVw6wVdCTFm6bxpYr3WDYm7+YdiR9R
+fVdSy2XYage7CeFdp9LWiVJw9CH+QJnu+UPZERudXwysXbcOknrMkS9zPSAaXJyr
+qHvchada9GsfEzZCIx2raCZuPEwzL/NEDBv1LwGxfB11djJM/JL49ydAoVMTfWWT
+SQUc8hYzwqcjWFBA+D3Y5TtVCCEpS/HAmgh8tb1km1xcN9k0J9pQ9A8SC66WdLaD
+nk5erb8WQGwwTT58whkjP/95mjJAbCRQyuKFURS3b3ZVEH7jduyw8Ldkf+UZtwj4
+T9f0RE7Uf0y8DNFBJAaU+ZDhOd0uEop+h8S11w5HimMxrQf0rUpqYuOLqtmn5MMS
+rfIe9hWBZSHBe7+6v3th1HGB1NUFe370mcQx5sE8U7flYf/lvlhivai5dj7/eTUQ
+omGtohX+VHYlm7H7j2Z6ZKRqon+TpAODieeNGWv+h4ZtPxZY3iMY0kupHHzkvqxG
+Xw3lxWN9V1dOtVKqWoJRONi/nkLESidQHJd1JC4IREAEUnOwkNfXDZ/tSanP6Z04
+8liRpIgp4I7THtFoIaz0zKqHNQiaEi/MbUfPl06ozRtOoQ+7ehgW1VkHQwYymRCZ
+VwkycJ955vnrdH0oGmDAyWF3j1yagIyokWRz00Bm4ApLxgdgJHE=
+=pqTw
 -----END PGP SIGNATURE-----
 
---2t3fv33v4nfrg3yj--
+--kukzqbsxlhlacb6h--
