@@ -1,82 +1,64 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v2 11/14] power: supply: bq24190_charger: Get
- input_current_limit from our supplier
-Date: Tue, 29 Aug 2017 13:40:03 +0200
-Message-ID: <20170829114003.rcj6l5up4277urxq@earth>
-References: <20170815200502.17339-1-hdegoede@redhat.com>
- <20170815200502.17339-12-hdegoede@redhat.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/3] PM / ACPI / i2c: Runtime PM aware system sleep handling
+Date: Tue, 29 Aug 2017 13:44:11 +0200
+Message-ID: <CAPDyKFp5dpuUeRjmmSSA3sZzFVwJihmzteyCDzqG33s2Xb1ewA@mail.gmail.com>
+References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org>
+ <4245176.X6JjkhnUAM@aspire.rjw.lan> <20170829102927.5lpjkfj2jbtpxadm@sig21.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="2hyh4nsrt7j57ide"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:56290 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751332AbdH2LkI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 07:40:08 -0400
-Content-Disposition: inline
-In-Reply-To: <20170815200502.17339-12-hdegoede@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20170829102927.5lpjkfj2jbtpxadm@sig21.net>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Johannes Stezenbach <js@sig21.net>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfounda>
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
 
+On 29 August 2017 at 12:29, Johannes Stezenbach <js@sig21.net> wrote:
+> Hi,
+>
+> On Tue, Aug 29, 2017 at 02:18:13AM +0200, Rafael J. Wysocki wrote:
+>> On Wednesday, August 23, 2017 4:42:00 PM CEST Ulf Hansson wrote:
+>> > The i2c designware platform driver, drivers/i2c/busses/i2c-designware-platdrv.c,
+>> > isn't well optimized for system sleep.
+>> >
+>> > What makes this driver particularly interesting is because it's a cross-SoC
+>> > driver, which sometimes means there is an ACPI PM domain attached to the i2c
+>> > device and sometimes not. The driver is being used on both x86 and ARM.
+> ...
+>> Basically, the point is to allow i2c-designware-platdrv to point its late
+>> suspend and early resume callbacks, respectively, to pm_runtime_force_suspend()
+>> and pm_runtime_force_resume() which then will do the right thing regardless of
+>> whether or not the device is runtime suspended when system suspend starts.
+>
+> I'd like to point out a comment added by Hans de Goede in
+> https://bugzilla.kernel.org/show_bug.cgi?id=193891#c99
+>
+>   The D0 / D3 methods of some devices use ACPI OpRegions on the PMIC which is
+>   attached to I2C7, these methods get executed by acpi_dev_suspend_late /
+>   acpi_dev_resume_early. Since the i2c-designware driver uses regular suspend /
+>   resume callbacks it is already suspended at the time those calls happen,
+>   leading to a device-suspend error and the system not suspending at all.
 
---2hyh4nsrt7j57ide
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes, that's why I moved those operation to be managed at the
+->suspend_late() in my series, and at the same time prevent the
+direct_complete patch from executed for this device.
 
-Hi,
+>
+> It's the reason for the Cherrytrail I2C7 special treatment in
+> i2c-designware-platdrv.c and pm_disabled = true in i2c-designware-baytrail.c,
+> however pm_disabled seems to be a problem for S0ix support.
+> To solve it, i2c-designware-platdrv needs to suspend after all
+> devices using ACPI OpRegions for suspend.
+>
+>
+> Johannes
 
-On Tue, Aug 15, 2017 at 10:04:59PM +0200, Hans de Goede wrote:
-> On some devices the USB Type-C port power (USB PD 2.0) negotiation is
-> done by a separate port-controller IC, while the current limit is
-> controlled through another (charger) IC.
->=20
-> It has been decided to model this by modelling the external Type-C
-> power brick (adapter/charger) as a power-supply class device which
-> supplies the charger-IC, with its voltage-now and current-max representing
-> the negotiated voltage and max current draw.
->=20
-> This commit adds support for this to the bq24190_charger driver by calling
-> power_supply_set_input_current_limit_from_supplier helper if the
-> "input-current-limit-from-supplier" device-property is set.
->=20
-> Note this replaces the functionality to get the current-limit from an
-> extcon device, which will be removed in a follow-up commit.
+Did you try out my series (v2) if that could fix this problem in a
+more flexible manner?
 
-I'm fine with the general approach, but ...
+In other words, is it fine if the device remains runtime PM enabled
+during the entire device_suspend() phase, and also not being suspended
+until ->suspend_late()?
 
-> [...]
-> +	bdi->input_current_limit_from_supplier =3D
-> +		device_property_read_bool(dev,
-> +					  "input-current-limit-from-supplier");
-> [...]
-
-I wonder if we actually need this. I think we can just enable it
-unconditionally when we have a parent power supply providing the
-information.
-
--- Sebastian
-
---2hyh4nsrt7j57ide
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlUpAACgkQ2O7X88g7
-+ppuGBAAkLr6i2NQ89qrmrMC08EH4j0jvVt9KNacP6efL7+O9sx9XUaOMbjWoJdn
-BjOHkxHEjk/tL+u031hJwrp859+yM3WD4x0iWTPiCu4ugCJhVe7Lw27Oyan3Qtga
-yYNIP4Ib+6OsSsWXbcy2RS4hNdnACZCPuhmzmcdD4StZYSHOlrjIsY01lckeM7yX
-7AN/vz9WdYWjTFzqXJWWU734MrpbA7gv1QY9TzWjcTBEB0QRvAyeQkBv+t6Cumeo
-QuQxdVTbsKX71CUh5Ad6ihBPgJIJQdWdUsVdEV8Y0LdviBJmBU2DBvOidlKMs1ZF
-mV7m6cQjCPhIDNLHG6+360kyptxn7KJv2hjfFTkUvmY9mzD6r4dpM61iV/L3lpd9
-z9l1+DPCEmkl5qndWcQ7gZLCX+bLA05zPrK+JNm1BRf+rciQG4aTMmtFSmydXUXN
-L3MIoaJbonJerbCs8AokLtCCkwOuFrMq28dM++pDN0cyFPklQT1NPEkXVM794g7p
-2sl4ThRWWAdgII1204dS7Zf1dtwv8/LjC46HI3Nyf70qs8dY14ZPHaqGR0lg3SG/
-UX6l5ZCbS1QX/6vw6m2g4u2DJgdx2J1fv4jyeH5ZfOwIhleCfJjKKvi6hhtzXop4
-MKEYihT76vTNPEPdoSZvQsKuHntfxeswJwzoqwxz+AAI2fI8t7g=
-=CW+c
------END PGP SIGNATURE-----
-
---2hyh4nsrt7j57ide--
+Kind regards
+Uffe
