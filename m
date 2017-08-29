@@ -1,67 +1,55 @@
-From: Pavan Kondeti <pkondeti@codeaurora.org>
-Subject: Re: [RFC 1/3] sched/fair: add util_est on top of PELT
-Date: Tue, 29 Aug 2017 12:11:15 +0530
-Message-ID: <CAEU1=PmgWSi7hrLpQ2nQUi_Ki5Z6JsJMi-fV5ke1B26aC0kqSg@mail.gmail.com>
-References: <20170825102008.4626-1-patrick.bellasi@arm.com> <20170825102008.4626-2-patrick.bellasi@arm.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 0/3] cpuidle: Rework the handling of the poll state
+Date: Tue, 29 Aug 2017 09:13:20 +0200
+Message-ID: <335d33b3-832a-1588-c007-16110dbef33e@linaro.org>
+References: <21794463.WNaOdcSnfv@aspire.rjw.lan>
+ <1350530b-bed8-ab45-d5d2-dcaf4178320d@arm.com>
+ <8432156.DIvYQkV4Qe@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:57018 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750909AbdH2GlS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 02:41:18 -0400
-In-Reply-To: <20170825102008.4626-2-patrick.bellasi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <8432156.DIvYQkV4Qe@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Jacob Pan <jacob.jun.pan@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@arm.com>, Tim Murray <timmurray@google.com>, Todd Kjos <tkjos@android.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On Fri, Aug 25, 2017 at 3:50 PM, Patrick Bellasi
-<patrick.bellasi@arm.com> wrote:
-> The util_avg signal computed by PELT is too variable for some use-cases.
-> For example, a big task waking up after a long sleep period will have its
-> utilization almost completely decayed. This introduces some latency before
-> schedutil will be able to pick the best frequency to run a task.
->
+On 28/08/2017 23:17, Rafael J. Wysocki wrote:
+> On Thursday, August 24, 2017 11:48:19 AM CEST Sudeep Holla wrote:
+>>
+>> On 23/08/17 22:18, Rafael J. Wysocki wrote:
+>>> Hi,
+>>>
+>>> On x86 the fist idle state is a polling one, but the way it is set up is far
+>>> from straightforward and then it is avoided by governors in rather somewhat
+>>> convoluted fashion.
+>>>
+>>> Make this more clear by explicitly flagging that state as "polling" and
+>>> checking its flag where it needs to be avoided instead of using
+>>> arch-dependent numbering of idle states (patch [1/3]), move the
+>>> polling state code from driver.c to a separate C file (patch [2/3]) and
+>>> move the initialization of it from the core to the relevant cpuidle drivers -
+>>> ACPI and intel_idle (patch [3/3]).
+>>>
+>>
+>> Tested this on ARM64 platform(both DT and ACPI/LPI) and everything
+>> continues to work fine.
+>> Tested-by: Sudeep Holla <sudeep.holla@arm.com>
+> 
+> Thanks Sudeep!
+> 
+> I haven't seen any more comments on this which I'm taking as a green light for
+> it, so I'm going to queue it up for 4.14.
 
-<snip>
-
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index c28b182c9833..8d7bc55f68d5 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -26,6 +26,7 @@
->  #include <linux/signal_types.h>
->  #include <linux/mm_types_task.h>
->  #include <linux/task_io_accounting.h>
-> +#include <linux/average.h>
->
->  /* task_struct member predeclarations (sorted alphabetically): */
->  struct audit_context;
-> @@ -277,6 +278,16 @@ struct load_weight {
->         u32                             inv_weight;
->  };
->
-> +/**
-> + * Utilizaton's Exponential Weighted Moving Average (EWMA)
-> + *
-> + * Support functions to track an EWMA for the utilization of SEs and RQs. New
-> + * samples will be added to the moving average each time a task completes an
-> + * activation. Thus the weight is chosen so that the EWMA wil be relatively
-> + * insensitive to transient changes to the task's workload.
-> + */
-> +DECLARE_EWMA(util, 0, 4);
-> +
->  /*
-
-Should the factor be 1 instead of 0? i.e 25% contribution from the
-recent sample.
-
-Thanks,
-Pavan
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 
 -- 
-Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a
-Linux Foundation Collaborative Project
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
+
