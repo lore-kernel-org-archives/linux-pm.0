@@ -1,103 +1,84 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [RFC PATCH 5/5] power: generic-adc-battery: Add capacity handling
-Date: Tue, 29 Aug 2017 12:11:47 +0200
-Message-ID: <20170829101147.debhadzyfrxhkrvt@earth>
-References: <1501620926-22669-1-git-send-email-marek.belisko@open-nandra.com>
- <1501620926-22669-6-git-send-email-marek.belisko@open-nandra.com>
+Subject: Re: [PATCH] power: supply: max17042_battery: Fix compiler warning
+Date: Tue, 29 Aug 2017 12:13:37 +0200
+Message-ID: <20170829101337.7spvvle4zcvpaija@earth>
+References: <20170829092728.15039-1-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ttrkynuklo57xaqr"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="acrnoi5faxiko7vf"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:56072 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751843AbdH2KNl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 06:13:41 -0400
 Content-Disposition: inline
-In-Reply-To: <1501620926-22669-6-git-send-email-marek.belisko@open-nandra.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Marek Belisko <marek.belisko@open-nandra.com>
-Cc: robh+dt@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hns@goldelico.com, pavel@ucw.cz, Marek Belisko <marek.belisko@gmail.com>
+In-Reply-To: <20170829092728.15039-1-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: linux-pm@vger.kernel.org
 
 
---ttrkynuklo57xaqr
+--acrnoi5faxiko7vf
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Aug 01, 2017 at 10:55:26PM +0200, Marek Belisko wrote:
-> From: Marek Belisko <marek.belisko@gmail.com>
+On Tue, Aug 29, 2017 at 11:27:28AM +0200, Hans de Goede wrote:
+> Fix drivers/power/supply/max17042_battery.c:1059:6:
+> warning: 'acpi_id' may be used uninitialized in this function.
 >=20
-> Signed-off-by: Marek Belisko <marek.belisko@gmail.com>
+> No idea why my gcc version did not catch this.
+>
+> Reported-by: kbuild test robot <fengguang.wu@intel.com>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 > ---
->  drivers/power/supply/generic-adc-battery.c | 14 ++++++++++++++
->  1 file changed, 14 insertions(+)
->=20
-> diff --git a/drivers/power/supply/generic-adc-battery.c b/drivers/power/s=
-upply/generic-adc-battery.c
-> index 0d27b59..9ce51d2 100644
-> --- a/drivers/power/supply/generic-adc-battery.c
-> +++ b/drivers/power/supply/generic-adc-battery.c
-> @@ -24,6 +24,7 @@
->  #include <linux/iio/types.h>
->  #include <linux/power/generic-adc-battery.h>
->  #include <linux/of_gpio.h>
-> +#include <linux/power/generic-fuel-gauge.h>
-> =20
->  #define JITTER_DEFAULT 10 /* hope 10ms is enough */
-> =20
-> @@ -81,6 +82,7 @@ static const enum power_supply_property gab_props[] =3D=
- {
->  	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
->  	POWER_SUPPLY_PROP_MODEL_NAME,
->  	POWER_SUPPLY_PROP_TEMP,
-> +	POWER_SUPPLY_PROP_CAPACITY,
->  };
-> =20
->  /*
-> @@ -202,6 +204,18 @@ static int gab_get_property(struct power_supply *psy,
->  	case POWER_SUPPLY_PROP_MODEL_NAME:
->  		val->strval =3D bat_info->name;
->  		break;
-> +	case POWER_SUPPLY_PROP_CAPACITY:
-> +		{
-> +		int ret, curr, voltage;
-> +
-> +		ret =3D read_channel(adc_bat, POWER_SUPPLY_PROP_CURRENT_NOW, &curr);
-> +		ret |=3D read_channel(adc_bat, POWER_SUPPLY_PROP_VOLTAGE_NOW, &voltage=
-);
-> +		if (ret < 0)
-> +			goto err;
-> +
-> +		val->intval =3D fuel_level_LiIon(voltage, curr, 10);
-> +		}
-> +		break;
->  	default:
->  		return -EINVAL;
->  	}
 
-Without patch description: See Last Question in
-
-Documentation/power/power_supply_class.txt
+Thanks, queued.
 
 -- Sebastian
 
---ttrkynuklo57xaqr
+>  drivers/power/supply/max17042_battery.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supp=
+ly/max17042_battery.c
+> index 18a44e4ed6ff..5b556a13f517 100644
+> --- a/drivers/power/supply/max17042_battery.c
+> +++ b/drivers/power/supply/max17042_battery.c
+> @@ -983,7 +983,7 @@ static int max17042_probe(struct i2c_client *client,
+>  	struct i2c_adapter *adapter =3D to_i2c_adapter(client->dev.parent);
+>  	const struct power_supply_desc *max17042_desc =3D &max17042_psy_desc;
+>  	struct power_supply_config psy_cfg =3D {};
+> -	const struct acpi_device_id *acpi_id;
+> +	const struct acpi_device_id *acpi_id =3D NULL;
+>  	struct device *dev =3D &client->dev;
+>  	struct max17042_chip *chip;
+>  	int ret;
+> --=20
+> 2.13.4
+>=20
+
+--acrnoi5faxiko7vf
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlPeAACgkQ2O7X88g7
-+prqRA//aZhp5YFpO5SE7OSboboSWkmn9WbD+eWJhF9r3HpuukZ65XuQEcOODldL
-jNUdO4LUSxCZ9qfLXnIvvAwk0HyIh0G/T0gzEt6vhdOCeuqgmoPqwBFCtXPfyb0+
-6n6nyzSLVCinHL0iPOfOWT3dB9DwmI14dDqkJC2qkc0Wn/zqQqOQ3x7H4hS3/aKL
-quReqmP60zmCavil+oDdY1PYic2pgpogDqgD7kS4LFseww6VrjN5auBuGRA/VKa7
-FxNo4y7LQxJDXHaMpM6XQkdfQbkXXrqkUqwpcmtDohEAkQohUzCfc3nj7yJwo5s+
-JtjBHk3asd8h5rJdUrH5iU/bxR3iKwyf9q5cChHDCuG/joqenLR00DTHkjE6ea4X
-lxgyN4poFT+vwmhf71QFHB1V8rqE8j54x8I62inCHJbxO0tvKZyoIbEUTryvZjRj
-uh51ODJD2GYKLgE33122MjpE0hHlaJGyZDrtDqFcevqNgF/cQuk6g0+M3EpK6u1r
-KG4jJ3ktN+iSr0uT082P7AUrQn8tsa5teLyXDfLtKUmhgmmC8auzosr8AoweTTB4
-NFsagRkjgwCaBqfEii/uG/dkw+xRFSMZHw4VOa5G9UhNcFMUxlIkpkbVUWnIKbL6
-sDHFQh7SGaLDWbASORZJUd5phjVfqNfTD1UYMOjrAyeswWBKRZM=
-=E3Gy
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlPlEACgkQ2O7X88g7
++prukw//cmZUEzJtLIr3GISb/rYkJfc+KGhKb/1+gUXQPF8egrlcj5dxWPGDmvEL
+ytKiuM+zQ9lcZHS8bc73GYlZEpQK1AG9I/DOYVBfpj/ywj9Fn2ADN5Mj0sS2CFYt
+WpivOFSV4f2CjbiYwYDVpcG1H+MarXXOZbSuk0VobMDzGzlbzi8eKY+huDzz1raI
+e4V4+Q52blleCmso62NVsX58Xduq8Tuv6cJ+AGY6QGUxaiyAmNIHL4xp03GMHLyI
+0sCwBF4KnmeA7CE5cnGYP8rhjCgmjd0wSQ3E7IAGifHWvFMRhgfJ7cJVE9X7DrWq
+dwbMFNy9BBGg2lyqCPvyhYJPRQS3p3a5o4bUmNbFkzY0YByjB4B9rv/Xtc0Dp0EZ
+Lw07nNBAouZuTOTheOiHlo3GVGeYwTBGafBbFMdUN+cUAp2/tFgRnLqPcailrYP8
+GlDf3Rm3l0gCIdVlN1dlIYfoghdy1TkM5RwUAXs8/wXNOdB6h9Oc2djjUnq3XzYc
+pSXYZRGg9Y15TGXtDNpDCci9F5D0vY9KPbPI7nFqabXjl79FvSLa0Hr5XhV9IPFf
+2EElUvdYEdT0JfFvpF7jsS85KKmDU+15BJoHQmdVeVa6Csm+ziLQSz8ItfItYYe/
+AhC3mFFFE41TnrNSvHsoEaZ+laGgJ73ui0FftmgFXhgZ2s1yTMU=
+=MVaB
 -----END PGP SIGNATURE-----
 
---ttrkynuklo57xaqr--
+--acrnoi5faxiko7vf--
