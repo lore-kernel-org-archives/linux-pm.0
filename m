@@ -1,40 +1,55 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH] power: supply: max17042_battery: Fix compiler warning
-Date: Tue, 29 Aug 2017 11:27:28 +0200
-Message-ID: <20170829092728.15039-1-hdegoede@redhat.com>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Subject: RE: [PATCH 1/1] ARM: imx7ulp: add cpuidle support
+Date: Tue, 29 Aug 2017 09:32:40 +0000
+Message-ID: <AM3PR04MB30646BD7272372A182F22DA809F0@AM3PR04MB306.eurprd04.prod.outlook.com>
+References: <1503841421-17677-1-git-send-email-aisheng.dong@nxp.com>
+ <b8d1f428-a4f5-5a02-8aa4-379b5c85e8d7@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:45052 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751966AbdH2J1b (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 29 Aug 2017 05:27:31 -0400
+Received: from mail-he1eur01on0080.outbound.protection.outlook.com ([104.47.0.80]:58873
+        "EHLO EUR01-HE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751218AbdH2Jcn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 29 Aug 2017 05:32:43 -0400
+In-Reply-To: <b8d1f428-a4f5-5a02-8aa4-379b5c85e8d7@linaro.org>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "shawnguo@kernel.org" <shawnguo@kernel.org>, Anson Huang <anson.huang@nxp.com>
 
-Fix drivers/power/supply/max17042_battery.c:1059:6:
-warning: 'acpi_id' may be used uninitialized in this function.
-
-No idea why my gcc version did not catch this.
-
-Reported-by: kbuild test robot <fengguang.wu@intel.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/max17042_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/max17042_battery.c b/drivers/power/supply/max17042_battery.c
-index 18a44e4ed6ff..5b556a13f517 100644
---- a/drivers/power/supply/max17042_battery.c
-+++ b/drivers/power/supply/max17042_battery.c
-@@ -983,7 +983,7 @@ static int max17042_probe(struct i2c_client *client,
- 	struct i2c_adapter *adapter = to_i2c_adapter(client->dev.parent);
- 	const struct power_supply_desc *max17042_desc = &max17042_psy_desc;
- 	struct power_supply_config psy_cfg = {};
--	const struct acpi_device_id *acpi_id;
-+	const struct acpi_device_id *acpi_id = NULL;
- 	struct device *dev = &client->dev;
- 	struct max17042_chip *chip;
- 	int ret;
--- 
-2.13.4
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBEYW5pZWwgTGV6Y2FubyBbbWFp
+bHRvOmRhbmllbC5sZXpjYW5vQGxpbmFyby5vcmddDQo+IFNlbnQ6IFR1ZXNkYXksIEF1Z3VzdCAy
+OSwgMjAxNyA0OjMwIFBNDQo+IFRvOiBBLnMuIERvbmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
+Zw0KPiBDYzogbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyByandAcmp3eXNv
+Y2tpLm5ldDsNCj4gc2hhd25ndW9Aa2VybmVsLm9yZzsgQW5zb24gSHVhbmcNCj4gU3ViamVjdDog
+UmU6IFtQQVRDSCAxLzFdIEFSTTogaW14N3VscDogYWRkIGNwdWlkbGUgc3VwcG9ydA0KPiANCj4g
+T24gMjcvMDgvMjAxNyAxNTo0MywgRG9uZyBBaXNoZW5nIHdyb3RlOg0KPiA+IGkuTVg3VUxQIHN1
+cHBvcnQgMyBsZXZlbHMgaWRsZSBhcyBiZWxvdzoNCj4gPiAxLiBwYXRpYWwgc3RvcCBtb2RlIDM7
+DQo+ID4gMi4gcGF0aWFsIHN0b3AgbW9kZSAyOw0KPiA+IDMuIHBhdGlhbCBzdG9wIG1vZGUgMS4N
+Cj4gPg0KPiA+IFBTVE9QMSAtIFBhcnRpYWwgU3RvcCB3aXRoIHN5c3RlbSBhbmQgYnVzIGNsb2Nr
+IGRpc2FibGVkDQo+ID4gUFNUT1AyIC0gUGFydGlhbCBTdG9wIHdpdGggc3lzdGVtIGNsb2NrIGRp
+c2FibGVkIGFuZCBidXMgY2xvY2sgZW5hYmxlZA0KPiA+IFBTVE9QMyAtIFBhcnRpYWwgU3RvcCB3
+aXRoIHN5c3RlbSBjbG9jayBlbmFibGVkIGFuZCBidXMgY2xvY2sgZW5hYmxlZA0KPiA+DQo+ID4g
+Rm9yIFBTVE9QIDEvMiBtb2RlLCBhcyB0aGUgc3lzdGVtIGFuZCBidXMgY2xvY2sgd2lsbCBiZSBk
+aXNhYmxlZCwgdGhlDQo+ID4gZGV2aWNlcyB3b3JraW5nIGlucHJvZ3Jlc3MgbWF5IG5vdCBiZSBh
+YmxlIHRvIHdvcmsgYW55bW9yZSwgZHJpdmVyDQo+ID4gbmVlZHMgdG8gdXNlIHBtX3FvcyBBUEkg
+dG8gcHJldmVudCBzeXN0ZW0gZW50ZXIgdGhvc2UgbW9kZXMuDQo+ID4NCj4gPiBDYzogIlJhZmFl
+bCBKLiBXeXNvY2tpIiA8cmp3QHJqd3lzb2NraS5uZXQ+DQo+ID4gQ2M6IERhbmllbCBMZXpjYW5v
+IDxkYW5pZWwubGV6Y2Fub0BsaW5hcm8ub3JnPg0KPiA+IENjOiBTaGF3biBHdW8gPHNoYXduZ3Vv
+QGtlcm5lbC5vcmc+DQo+ID4gU2lnbmVkLW9mZi1ieTogQW5zb24gSHVhbmcgPEFuc29uLkh1YW5n
+QG54cC5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogRG9uZyBBaXNoZW5nIDxhaXNoZW5nLmRvbmdA
+bnhwLmNvbT4NCj4gPiAtLS0NCj4gDQo+IEFja2VkLWJ5OiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVs
+LmxlemNhbm9AbGluYXJvLm9yZz4NCj4gDQo+IFdpbGwgeW91IGNvbnNpZGVyIGluIHRoZSBmdXR1
+cmUgdG8gbW92ZSB0aGUgZHJpdmVyIHRvIGEgRFQgYmFzZWQNCj4gZGVzY3JpcHRpb24gYW5kIHRv
+IHRoZSBjcHVpZGxlLWFybSBkcml2ZXIgPw0KPiANCg0KVGhhbmtzIGZvciB0aGUgc3VnZ2VzdGlv
+bi4NCkkgd2lsbCBpbnZlc3RpZ2F0ZSBpdCBsYXRlciB3aGVuIEknbSBmcmVlLg0KDQpTaGF3biwN
+ClRoaXMgaXMgYmFzZWQgb24gdGhlIGZvcm1lciBpbXg3dWxwIGFyY2ggcGF0Y2ggc2VyaWVzLg0K
+V2lsbCBub3RpZnkgeW91IG9uY2UgdGhleSdyZSBtZXJnZWQuDQoNClJlZ2FyZHMNCkRvbmcgQWlz
+aGVuZw0KDQo+IC0tDQo+ICA8aHR0cDovL3d3dy5saW5hcm8ub3JnLz4gTGluYXJvLm9yZyDilIIg
+T3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzDQo+IA0KPiBGb2xsb3cgTGluYXJvOiAg
+PGh0dHA6Ly93d3cuZmFjZWJvb2suY29tL3BhZ2VzL0xpbmFybz4gRmFjZWJvb2sgfA0KPiA8aHR0
+cDovL3R3aXR0ZXIuY29tLyMhL2xpbmFyb29yZz4gVHdpdHRlciB8IDxodHRwOi8vd3d3LmxpbmFy
+by5vcmcvbGluYXJvLQ0KPiBibG9nLz4gQmxvZw0KDQo=
