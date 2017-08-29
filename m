@@ -1,147 +1,82 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v2 10/14] power: supply: bq24190_charger: Add
- input_current_limit property
-Date: Tue, 29 Aug 2017 13:29:10 +0200
-Message-ID: <20170829112910.u2wazizuhos7vr27@earth>
+Subject: Re: [PATCH v2 11/14] power: supply: bq24190_charger: Get
+ input_current_limit from our supplier
+Date: Tue, 29 Aug 2017 13:40:03 +0200
+Message-ID: <20170829114003.rcj6l5up4277urxq@earth>
 References: <20170815200502.17339-1-hdegoede@redhat.com>
- <20170815200502.17339-11-hdegoede@redhat.com>
+ <20170815200502.17339-12-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="me2qw5rrp37axfko"
-Return-path: <linux-i2c-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="2hyh4nsrt7j57ide"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:56290 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751332AbdH2LkI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 07:40:08 -0400
 Content-Disposition: inline
-In-Reply-To: <20170815200502.17339-11-hdegoede@redhat.com>
-Sender: linux-i2c-owner@vger.kernel.org
+In-Reply-To: <20170815200502.17339-12-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Hans de Goede <hdegoede@redhat.com>
 Cc: Wolfram Sang <wsa@the-dreams.de>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
-List-Id: linux-pm@vger.kernel.org
 
 
---me2qw5rrp37axfko
+--2hyh4nsrt7j57ide
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Aug 15, 2017 at 10:04:58PM +0200, Hans de Goede wrote:
-> Export the input current limit of the charger as a
-> POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT property on the charger
-> power_supply class device.
+On Tue, Aug 15, 2017 at 10:04:59PM +0200, Hans de Goede wrote:
+> On some devices the USB Type-C port power (USB PD 2.0) negotiation is
+> done by a separate port-controller IC, while the current limit is
+> controlled through another (charger) IC.
 >=20
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
+> It has been decided to model this by modelling the external Type-C
+> power brick (adapter/charger) as a power-supply class device which
+> supplies the charger-IC, with its voltage-now and current-max representing
+> the negotiated voltage and max current draw.
+>=20
+> This commit adds support for this to the bq24190_charger driver by calling
+> power_supply_set_input_current_limit_from_supplier helper if the
+> "input-current-limit-from-supplier" device-property is set.
+>=20
+> Note this replaces the functionality to get the current-limit from an
+> extcon device, which will be removed in a follow-up commit.
 
-Thanks, queued.
+I'm fine with the general approach, but ...
+
+> [...]
+> +	bdi->input_current_limit_from_supplier =3D
+> +		device_property_read_bool(dev,
+> +					  "input-current-limit-from-supplier");
+> [...]
+
+I wonder if we actually need this. I think we can just enable it
+unconditionally when we have a parent power supply providing the
+information.
 
 -- Sebastian
 
->  drivers/power/supply/bq24190_charger.c | 35 ++++++++++++++++++++++++++++=
-++++++
->  1 file changed, 35 insertions(+)
->=20
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/suppl=
-y/bq24190_charger.c
-> index 073cd9d..f13f892 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -987,6 +987,33 @@ static int bq24190_charger_set_voltage(struct bq2419=
-0_dev_info *bdi,
->  			ARRAY_SIZE(bq24190_cvc_vreg_values), val->intval);
->  }
-> =20
-> +static int bq24190_charger_get_iinlimit(struct bq24190_dev_info *bdi,
-> +		union power_supply_propval *val)
-> +{
-> +	int iinlimit, ret;
-> +
-> +	ret =3D bq24190_get_field_val(bdi, BQ24190_REG_ISC,
-> +			BQ24190_REG_ISC_IINLIM_MASK,
-> +			BQ24190_REG_ISC_IINLIM_SHIFT,
-> +			bq24190_isc_iinlim_values,
-> +			ARRAY_SIZE(bq24190_isc_iinlim_values), &iinlimit);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	val->intval =3D iinlimit;
-> +	return 0;
-> +}
-> +
-> +static int bq24190_charger_set_iinlimit(struct bq24190_dev_info *bdi,
-> +		const union power_supply_propval *val)
-> +{
-> +	return bq24190_set_field_val(bdi, BQ24190_REG_ISC,
-> +			BQ24190_REG_ISC_IINLIM_MASK,
-> +			BQ24190_REG_ISC_IINLIM_SHIFT,
-> +			bq24190_isc_iinlim_values,
-> +			ARRAY_SIZE(bq24190_isc_iinlim_values), val->intval);
-> +}
-> +
->  static int bq24190_charger_get_property(struct power_supply *psy,
->  		enum power_supply_property psp, union power_supply_propval *val)
->  {
-> @@ -1027,6 +1054,9 @@ static int bq24190_charger_get_property(struct powe=
-r_supply *psy,
->  	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
->  		ret =3D bq24190_charger_get_voltage_max(bdi, val);
->  		break;
-> +	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +		ret =3D bq24190_charger_get_iinlimit(bdi, val);
-> +		break;
->  	case POWER_SUPPLY_PROP_SCOPE:
->  		val->intval =3D POWER_SUPPLY_SCOPE_SYSTEM;
->  		ret =3D 0;
-> @@ -1078,6 +1108,9 @@ static int bq24190_charger_set_property(struct powe=
-r_supply *psy,
->  	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
->  		ret =3D bq24190_charger_set_voltage(bdi, val);
->  		break;
-> +	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> +		ret =3D bq24190_charger_set_iinlimit(bdi, val);
-> +		break;
->  	default:
->  		ret =3D -EINVAL;
->  	}
-> @@ -1099,6 +1132,7 @@ static int bq24190_charger_property_is_writeable(st=
-ruct power_supply *psy,
->  	case POWER_SUPPLY_PROP_CHARGE_TYPE:
->  	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
->  	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
-> +	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
->  		ret =3D 1;
->  		break;
->  	default:
-> @@ -1118,6 +1152,7 @@ static enum power_supply_property bq24190_charger_p=
-roperties[] =3D {
->  	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
->  	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
->  	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
-> +	POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
->  	POWER_SUPPLY_PROP_SCOPE,
->  	POWER_SUPPLY_PROP_MODEL_NAME,
->  	POWER_SUPPLY_PROP_MANUFACTURER,
-> --=20
-> 2.9.4
->=20
-
---me2qw5rrp37axfko
+--2hyh4nsrt7j57ide
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlUAYACgkQ2O7X88g7
-+pofgQ//Xw0Qr0p6GfkgEW89/tkvNHx5Ne7mGf97jxJrF9PPr2G+Ff+69VwR30eR
-EILTnx6IDvkI+s/41qnB3FeiDVjXKOVU0Ru1lXqlQLM5dhLvsp8BOjUdFiQ2QZ0U
-B4VL7nYVTPJ03avr1DEhSBgVkOYGc+Z/faghEnZ0lF0q/yY5DPlHQyV9i9m/5lF+
-Z22bkyB0qwcGR1QCTNo9xoKEGlgAtwhvnn6u72U+797Vj8Dw2+YR+Yt0h1r4SD8X
-15OwyBf4DuGbJgSIv/GQw+Ceg5eSELPEUjaShespGy0AbfSFo2yMbvRyJxPDR6T3
-KQtdg/+gN6ZDXoyi5cA72KtCKzKvFvwF4nuRgezQ6MRu/IKelYCnA7UtO0/wAvAj
-ROiQFBevTWQEWVDhBTrtP4+gDux9OHEO9VeVJ7TRSgjwYN9fSTHPzyrHvx9ayWnv
-4mYDmoNa6peVhlawd5ePGHkwyF7SkCPEmwnpIwaXFMbzEYqjvvuHvKUYctZYm2xz
-U7W+MC7ukLEdB2QyusOLCrwY08iaDPJuex7GdF2rkJAWZyH42TfJCHW6fMeVGPZn
-f8662BKCCQ5RRvFMXLkmFV/VpxvusiFk7aGSm9+eDz4yWIliBayPN/cN5/AQ5T0q
-OcNeGvxAoiR/wb4DFeSSkDaOujWH0uPiRzTkA5zbvR0fTw7EgDU=
-=O+TF
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlUpAACgkQ2O7X88g7
++ppuGBAAkLr6i2NQ89qrmrMC08EH4j0jvVt9KNacP6efL7+O9sx9XUaOMbjWoJdn
+BjOHkxHEjk/tL+u031hJwrp859+yM3WD4x0iWTPiCu4ugCJhVe7Lw27Oyan3Qtga
+yYNIP4Ib+6OsSsWXbcy2RS4hNdnACZCPuhmzmcdD4StZYSHOlrjIsY01lckeM7yX
+7AN/vz9WdYWjTFzqXJWWU734MrpbA7gv1QY9TzWjcTBEB0QRvAyeQkBv+t6Cumeo
+QuQxdVTbsKX71CUh5Ad6ihBPgJIJQdWdUsVdEV8Y0LdviBJmBU2DBvOidlKMs1ZF
+mV7m6cQjCPhIDNLHG6+360kyptxn7KJv2hjfFTkUvmY9mzD6r4dpM61iV/L3lpd9
+z9l1+DPCEmkl5qndWcQ7gZLCX+bLA05zPrK+JNm1BRf+rciQG4aTMmtFSmydXUXN
+L3MIoaJbonJerbCs8AokLtCCkwOuFrMq28dM++pDN0cyFPklQT1NPEkXVM794g7p
+2sl4ThRWWAdgII1204dS7Zf1dtwv8/LjC46HI3Nyf70qs8dY14ZPHaqGR0lg3SG/
+UX6l5ZCbS1QX/6vw6m2g4u2DJgdx2J1fv4jyeH5ZfOwIhleCfJjKKvi6hhtzXop4
+MKEYihT76vTNPEPdoSZvQsKuHntfxeswJwzoqwxz+AAI2fI8t7g=
+=CW+c
 -----END PGP SIGNATURE-----
 
---me2qw5rrp37axfko--
+--2hyh4nsrt7j57ide--
