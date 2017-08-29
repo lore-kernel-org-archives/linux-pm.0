@@ -1,145 +1,102 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v2 08/14] power: supply: Add
- power_supply_set_input_current_limit_from_supplier helper
-Date: Tue, 29 Aug 2017 12:54:47 +0200
-Message-ID: <20170829105447.icwb5fjwnivnbtts@earth>
-References: <20170815200502.17339-1-hdegoede@redhat.com>
- <20170815200502.17339-9-hdegoede@redhat.com>
+Subject: Re: [PATCH v4 0/5] BQ24190 devicetree config
+Date: Tue, 29 Aug 2017 13:18:13 +0200
+Message-ID: <20170829111812.z2grlfs6f5xjrejl@earth>
+References: <20170828212349.19037-1-liam@networkimprov.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="kukzqbsxlhlacb6h"
-Return-path: <linux-i2c-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="y4wwt5tg5tbzvt7m"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:56218 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751392AbdH2LSR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 07:18:17 -0400
 Content-Disposition: inline
-In-Reply-To: <20170815200502.17339-9-hdegoede@redhat.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
+In-Reply-To: <20170828212349.19037-1-liam@networkimprov.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>
 
 
---kukzqbsxlhlacb6h
+--y4wwt5tg5tbzvt7m
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Aug 15, 2017 at 10:04:56PM +0200, Hans de Goede wrote:
-> On some devices the USB Type-C port power (USB PD 2.0) negotiation is
-> done by a separate port-controller IC, while the current limit is
-> controlled through another (charger) IC.
->=20
-> It has been decided to model this by modelling the external Type-C
-> power brick (adapter/charger) as a power-supply class device which
-> supplies the charger-IC, with its voltage-now and current-max representing
-> the negotiated voltage and max current draw.
->=20
-> This commit adds a power_supply_set_input_current_limit_from_supplier
-> helper function which charger power-supply drivers can call to get
-> the max-current from their supplier and have this applied
-> through their set_property call-back to their input-current-limit.
->=20
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+On Mon, Aug 28, 2017 at 02:23:44PM -0700, Liam Breck wrote:
+> Hi Sebastian, here is this series that was waiting on the power_supply_ba=
+ttery_info
+> patchset. Thanks!
 
 Thanks, queued.
 
 -- Sebastian
 
->  drivers/power/supply/power_supply_core.c | 41 ++++++++++++++++++++++++++=
-++++++
->  include/linux/power_supply.h             |  2 ++
->  2 files changed, 43 insertions(+)
+> Overview:
+> BQ24190 uses power_supply_battery_info fields for precharge & charge-term=
+ination=20
+> current and a DT property for system min voltage. A new DT binding docume=
+nts these.
 >=20
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
-ply/power_supply_core.c
-> index 0741fce..3f92574 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -375,6 +375,47 @@ int power_supply_is_system_supplied(void)
->  }
->  EXPORT_SYMBOL_GPL(power_supply_is_system_supplied);
-> =20
-> +static int __power_supply_get_supplier_max_current(struct device *dev,
-> +						   void *data)
-> +{
-> +	union power_supply_propval ret =3D {0,};
-> +	struct power_supply *epsy =3D dev_get_drvdata(dev);
-> +	struct power_supply *psy =3D data;
-> +
-> +	if (__power_supply_is_supplied_by(epsy, psy))
-> +		if (!epsy->desc->get_property(epsy,
-> +					      POWER_SUPPLY_PROP_CURRENT_MAX,
-> +					      &ret))
-> +			return ret.intval;
-> +
-> +	return 0;
-> +}
-> +
-> +int power_supply_set_input_current_limit_from_supplier(struct power_supp=
-ly *psy)
-> +{
-> +	union power_supply_propval val =3D {0,};
-> +	int curr;
-> +
-> +	if (!psy->desc->set_property)
-> +		return -EINVAL;
-> +
-> +	/*
-> +	 * This function is not intended for use with a supply with multiple
-> +	 * suppliers, we simply pick the first supply to report a non 0
-> +	 * max-current.
-> +	 */
-> +	curr =3D class_for_each_device(power_supply_class, NULL, psy,
-> +				      __power_supply_get_supplier_max_current);
-> +	if (curr <=3D 0)
-> +		return (curr =3D=3D 0) ? -ENODEV : curr;
-> +
-> +	val.intval =3D curr;
-> +
-> +	return psy->desc->set_property(psy,
-> +				POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT, &val);
-> +}
-> +EXPORT_SYMBOL_GPL(power_supply_set_input_current_limit_from_supplier);
-> +
->  int power_supply_set_battery_charged(struct power_supply *psy)
->  {
->  	if (atomic_read(&psy->use_cnt) >=3D 0 &&
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index de89066..79e90b3 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -332,6 +332,8 @@ extern int power_supply_get_battery_info(struct power=
-_supply *psy,
->  					 struct power_supply_battery_info *info);
->  extern void power_supply_changed(struct power_supply *psy);
->  extern int power_supply_am_i_supplied(struct power_supply *psy);
-> +extern int power_supply_set_input_current_limit_from_supplier(
-> +					 struct power_supply *psy);
->  extern int power_supply_set_battery_charged(struct power_supply *psy);
-> =20
->  #ifdef CONFIG_POWER_SUPPLY
+> Changes in v4:
+> * drop ifdef config_of
+>=20
+> Changes in v3:
+> * clarify gpio-hog use in DT binding doc
+> * drop unrelated change from DT table patch
+>=20
+> Changes in v2:
+> * new patch adds bq24192i to DT table
+> * dropped patches for power_supply precharge-current; they moved to bq27x=
+xx series
+> * dropped patches for recently-applied fixes
+> * rebased to -next
+>=20
+> Issues in v1:
+> * power_supply_prop_precharge & endcharge are added at end of enum to avo=
+id sysfs breakage
+> * "Set bq24190-battery device .type=3Dunknown" is a temporary workaround =
+to be fixed in v2
+>=20
+> Liam Breck (5):
+>   power: bq24190_charger: Add ti,bq24192i to devicetree table
+>   devicetree: power: Add docs for TI BQ24190 battery charger
+>   power: bq24190_charger: Enable devicetree config
+>   power: bq24190_charger: Add property system-minimum-microvolt
+>   power: bq24190_charger: Add power_supply_battery_info support
+>=20
+>  .../devicetree/bindings/power/supply/bq24190.txt   |  51 +++++++
+>  drivers/power/supply/bq24190_charger.c             | 169 +++++++++++++++=
++++---
+>  2 files changed, 200 insertions(+), 20 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/bq2419=
+0.txt
+>=20
 > --=20
-> 2.9.4
+> 2.13.2
 >=20
 
---kukzqbsxlhlacb6h
+--y4wwt5tg5tbzvt7m
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlR/cACgkQ2O7X88g7
-+pphgQ/+NCzJfHFapIZvnNiB1l6sMqydvkxVw6wVdCTFm6bxpYr3WDYm7+YdiR9R
-fVdSy2XYage7CeFdp9LWiVJw9CH+QJnu+UPZERudXwysXbcOknrMkS9zPSAaXJyr
-qHvchada9GsfEzZCIx2raCZuPEwzL/NEDBv1LwGxfB11djJM/JL49ydAoVMTfWWT
-SQUc8hYzwqcjWFBA+D3Y5TtVCCEpS/HAmgh8tb1km1xcN9k0J9pQ9A8SC66WdLaD
-nk5erb8WQGwwTT58whkjP/95mjJAbCRQyuKFURS3b3ZVEH7jduyw8Ldkf+UZtwj4
-T9f0RE7Uf0y8DNFBJAaU+ZDhOd0uEop+h8S11w5HimMxrQf0rUpqYuOLqtmn5MMS
-rfIe9hWBZSHBe7+6v3th1HGB1NUFe370mcQx5sE8U7flYf/lvlhivai5dj7/eTUQ
-omGtohX+VHYlm7H7j2Z6ZKRqon+TpAODieeNGWv+h4ZtPxZY3iMY0kupHHzkvqxG
-Xw3lxWN9V1dOtVKqWoJRONi/nkLESidQHJd1JC4IREAEUnOwkNfXDZ/tSanP6Z04
-8liRpIgp4I7THtFoIaz0zKqHNQiaEi/MbUfPl06ozRtOoQ+7ehgW1VkHQwYymRCZ
-VwkycJ955vnrdH0oGmDAyWF3j1yagIyokWRz00Bm4ApLxgdgJHE=
-=pqTw
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlTXIACgkQ2O7X88g7
++pqpgw/+M3ERwlZYnb3GFBrETp1UJeNLOSPPtsB3FfQdWEezW46RWpoDQk622DH7
+4v1VwgzP18O0SdgMETISaTkzc+kUSm2PiyJoGguJXGzhgi6bWjue7W8pywOozvb2
+MfpZ3JDTfeR2sk8uQkmYkyzHWfY5C4os1SvPgDlMAKUk+lnskdYi4J6S/FjpwDPJ
+G6QAf8neWXniIpx02mmjV4tOO3EMyYZn2YE69yxQtXuzP68znfaeeTTZYuU2nijv
+z8xQnZtQdwMZv0HHJZ766YssU/KkAidPi1NmUppfllLvO8bf4tnu1xZnvJ0yB9WI
+GS56PSDCVkEcLzyERVtwfRKhlb3vFjL1l5XUKeiIMkGBoQrUpeeolKIVKvSLkgPS
+E69VHiWf8Ms15a4LRw6YG0fYNVgblfvOXad4bKGyAoD69O/slPv4oPr5Q79qMlYL
+/gI0H65TA6J4L9jHL/MNA1v09fiq2gMDy9iyr6yoB8WT9FB5v0EPF1xTwJU15B/c
+wgk8SYheqYebbuhRbpzMxgMkGf/qWZbL8l7HjcNsuP4p97pj8F8KiC75K496gvQN
+GPE5rs66JqFjPD0i+M6/pGXJ0Zqc3oP5Bh+fUgk9TZ09VcuIvF2mbrA6Jd4OYKFk
+dDFu3hER0epfgfSyB24fk4pRpIDdJkMhBFmTG8sh6+KfnSxoM8k=
+=KoC9
 -----END PGP SIGNATURE-----
 
---kukzqbsxlhlacb6h--
+--y4wwt5tg5tbzvt7m--
