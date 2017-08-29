@@ -1,50 +1,26 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: OPP: how to get the all frequency list?
-Date: Tue, 29 Aug 2017 12:08:26 +0200
-Message-ID: <20170829100826.GD3101@ubuntu>
-References: <CGME20170821085332epcas2p2e06a9d81a79ab5e71804db41bf349833@epcas2p2.samsung.com>
- <599A9F8D.6080508@samsung.com>
+Subject: Re: [1/2] cpufreq: dt-platdev: Automatically create cpufreq device
+ with OPP v2
+Date: Tue, 29 Aug 2017 12:11:46 +0200
+Message-ID: <20170829101146.GF3101@ubuntu>
+References: <20170821131332.GA14662@verge.net.au>
+ <20170821131735.GB14662@verge.net.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f43.google.com ([74.125.82.43]:34366 "EHLO
-        mail-wm0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751399AbdH2KIg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 06:08:36 -0400
-Received: by mail-wm0-f43.google.com with SMTP id f13so18866021wme.1
-        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2017 03:08:36 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <599A9F8D.6080508@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170821131735.GB14662@verge.net.au>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, geert@linux-m68k.org, maxime.ripard@free-electrons.com, wens@csie.org, xuwei5@hisilicon.com, kgene@kernel.org, krzk@kernel.org, yamada.masahiro@socionext.com, jun.nie@linaro.org, baoyou.xie@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Viresh Kumar <vireshk@kernel.org>, "nm@ti.com" <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, =?utf-8?B?7ZWo66qF7KO8?= <myungjoo.ham@samsung.com>
 
-On 21-08-17, 17:53, Chanwoo Choi wrote:
-> Dear all,
-> 
-> I have a question that how to get the all frequency list
-> by using the OPP interface. (It doesn't matter whether frequency is available or not.)
-> 
-> OPP has following three functions in order to find the proper frequency.
-> - dev_pm_opp_find_freq_exact(struct device *dev, unsigned long freq, bool available);
-> - dev_pm_opp_find_freq_floor(struct device *dev, unsigned long freq);
-> 	: Search for a rounded floor freq (if opp->available is true)
-> - dev_pm_opp_find_freq_ceil(struct device *dev, unsigned long freq);
-> 	: Search for a rounded ceil freq if (opp->available is true)
-> 
-> In this case,
-> when the device using OPP tries to find the all frequencies,
-> the device can't find them. The device can just find the available frequencies.
-> 
-> If the some frequency of the device might be disabled by dev_pm_opp_disable()
-> and also the device doesn't know the correct frequency value,
-> the device cannot find the all frequencies by using the dev_pm_opp_find_freq_floor/ceil()
-> 
-> It is just able to find the available frequencies if opp->available is true.
+On 21-08-17, 15:17, Simon Horman wrote:
+> Sorry, I seem to have accidently sent this email as Virish rather than
+> myself. I will try again.
 
-You can add the 'available' argument to the other APIs as well, just that you
-need to justify them with proper examples.
+No issues. I see that Rafael has already applied my patches, you can send
+additional patches over that to make sure everything is clear.
 
 -- 
 viresh
