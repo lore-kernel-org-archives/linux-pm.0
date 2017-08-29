@@ -1,128 +1,36 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: x86: PIE support and option to extend KASLR randomization
-Date: Tue, 29 Aug 2017 12:34:04 -0700
-Message-ID: <CAJcbSZH6hwaWKrvUZR33ExYaZaWKMSv4tJJA3yZkniLvLbTFMw@mail.gmail.com>
-References: <20170810172615.51965-1-thgarnie@google.com> <20170811124127.kkb5pnkljz4umxuj@gmail.com>
- <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
- <20170815075609.mmzbfwritjzvrpsn@gmail.com> <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
- <20170816151235.oamkdva6cwpc4cex@gmail.com> <CAJcbSZFM_zpL1av1JVaow8NdsGeH+6oZKeDnMPdXR0PGfynzsg@mail.gmail.com>
- <20170817080920.5ljlkktngw2cisfg@gmail.com> <CAJcbSZGbtc-i0X1NiBAvZA7cxpGkwSLKNB7oDNCsFxOCdhkR_g@mail.gmail.com>
- <CAJcbSZGhvwt=5ERtBHLJnwS=6AXBZLTMfrafzeUCqYy=-MKWDg@mail.gmail.com>
- <20170825080443.tvvr6wzs362cjcuu@gmail.com> <CAJcbSZFJQMKw21kLwr4QGoSM7DMgKRzzjWxkYBF2c1HciCzvGg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-9625-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAJcbSZFJQMKw21kLwr4QGoSM7DMgKRzzjWxkYBF2c1HciCzvGg@mail.gmail.com>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: [PATCH resend v2] power: supply: bq27xxx: enable writing capacity values for bq27421
+Date: Tue, 29 Aug 2017 22:10:47 +0200
+Message-ID: <be410e440d889b2e46208b523bdb890e860c5046.1504037446.git.hns@goldelico.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.163]:20342 "EHLO
+        mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751186AbdH2UMw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 16:12:52 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Liam Breck <liam@networkimprov.net>
+Cc: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Discussions about the Letux Kernel <letux-kernel@openphoenux.org>, kernel@pyra-handheld.com, "H. Nikolaus Schaller" <hns@goldelico.com>
 
-On Fri, Aug 25, 2017 at 8:05 AM, Thomas Garnier <thgarnie@google.com> wrote:
-> On Fri, Aug 25, 2017 at 1:04 AM, Ingo Molnar <mingo@kernel.org> wrote:
->>
->> * Thomas Garnier <thgarnie@google.com> wrote:
->>
->>> With the fix for function tracing, the hackbench results have an
->>> average of +0.8 to +1.4% (from +8% to +10% before). With a default
->>> configuration, the numbers are closer to 0.8%.
->>>
->>> On the .text size, with gcc 4.9 I see +0.8% on default configuration
->>> and +1.180% on the ubuntu configuration.
->>
->> A 1% text size increase is still significant. Could you look at the disassembly,
->> where does the size increase come from?
->
-> I will take a look, in this current iteration I added the .got and
-> .got.plt so removing them will remove a big (even if they are small,
-> we don't use them to increase perf).
->
-> What do you think about the perf numbers in general so far?
+Tested on Pyra prototype with bq27421.
 
-I looked at the size increase. I could identify two common cases:
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+---
+ drivers/power/supply/bq27xxx_battery.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-1) PIE sometime needs two instructions to represent a single
-instruction on mcmodel=kernel.
-
-For example, this instruction plays on the sign extension (mcmodel=kernel):
-
-mov    r9,QWORD PTR [r11*8-0x7e3da060] (8 bytes)
-
-The address 0xffffffff81c25fa0 can be represented as -0x7e3da060 using
-a 32S relocation.
-
-with PIE:
-
-lea    rbx,[rip+<off>] (7 bytes)
-mov    r9,QWORD PTR [rbx+r11*8] (6 bytes)
-
-2) GCC does not optimize switches in PIE in order to reduce relocations:
-
-For example the switch in phy_modes [1]:
-
-static inline const char *phy_modes(phy_interface_t interface)
-{
-    switch (interface) {
-    case PHY_INTERFACE_MODE_NA:
-        return "";
-    case PHY_INTERFACE_MODE_INTERNAL:
-        return "internal";
-    case PHY_INTERFACE_MODE_MII:
-        return "mii";
-
-Without PIE (gcc 7.2.0), the whole table is optimize to be one instruction:
-
-   0x000000000040045b <+27>:    mov    rdi,QWORD PTR [rax*8+0x400660]
-
-With PIE (gcc 7.2.0):
-
-   0x0000000000000641 <+33>:    movsxd rax,DWORD PTR [rdx+rax*4]
-   0x0000000000000645 <+37>:    add    rax,rdx
-   0x0000000000000648 <+40>:    jmp    rax
-....
-   0x000000000000065d <+61>:    lea    rdi,[rip+0x264]        # 0x8c8
-   0x0000000000000664 <+68>:    jmp    0x651 <main+49>
-   0x0000000000000666 <+70>:    lea    rdi,[rip+0x2bc]        # 0x929
-   0x000000000000066d <+77>:    jmp    0x651 <main+49>
-   0x000000000000066f <+79>:    lea    rdi,[rip+0x2a8]        # 0x91e
-   0x0000000000000676 <+86>:    jmp    0x651 <main+49>
-   0x0000000000000678 <+88>:    lea    rdi,[rip+0x294]        # 0x913
-   0x000000000000067f <+95>:    jmp    0x651 <main+49>
-
-That's a deliberate choice, clang is able to optimize it (clang-3.8):
-
-   0x0000000000000963 <+19>:    lea    rcx,[rip+0x200406]        # 0x200d70
-   0x000000000000096a <+26>:    mov    rdi,QWORD PTR [rcx+rax*8]
-
-I checked gcc and the code deciding to fold the switch basically do
-not do it for pic to reduce relocations [2].
-
-The switches are the biggest increase on small functions but I don't
-think they represent a large portion of the difference (number 1 is).
-
-A side note, while testing gcc 7.2.0 on hackbench I have seen the PIE
-kernel being faster by 1% across multiple runs (comparing 50 runs done
-across 5 reboots twice). I don't think PIE is faster than a
-mcmodel=kernel but recent versions of gcc makes them fairly similar.
-
-[1] http://elixir.free-electrons.com/linux/v4.13-rc7/source/include/linux/phy.h#L113
-[2] https://github.com/gcc-mirror/gcc/blob/7977b0509f07e42fbe0f06efcdead2b7e4a5135f/gcc/tree-switch-conversion.c#L828
-
->
->>
->> Thanks,
->>
->>         Ingo
->
->
->
-> --
-> Thomas
-
-
-
+diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+index b6c3120ca5ad..e3c878ef7c7e 100644
+--- a/drivers/power/supply/bq27xxx_battery.c
++++ b/drivers/power/supply/bq27xxx_battery.c
+@@ -688,7 +688,7 @@ static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
+ #define bq27545_dm_regs 0
+ #endif
+ 
+-#if 0 /* not yet tested */
++#if 1 /* tested on Pyra */
+ static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
+ 	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
+ 	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
 -- 
-Thomas
+2.12.2
