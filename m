@@ -1,112 +1,61 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 1/3] PM / core: Add SAFE_SUSPEND driver flag
-Date: Tue, 29 Aug 2017 02:20:11 +0200
-Message-ID: <35841101.LqGbCjJMGH@aspire.rjw.lan>
-References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org> <4245176.X6JjkhnUAM@aspire.rjw.lan>
+From: Pavan Kondeti <pkondeti@codeaurora.org>
+Subject: Re: [RFC 1/3] sched/fair: add util_est on top of PELT
+Date: Tue, 29 Aug 2017 10:06:44 +0530
+Message-ID: <CAEU1=PnypZ7V5yL6K3fT_OpfTosK15ju0vcztk8NpDj9xVu4xw@mail.gmail.com>
+References: <20170825102008.4626-1-patrick.bellasi@arm.com> <20170825102008.4626-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57114 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751227AbdH2BKD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Aug 2017 21:10:03 -0400
-In-Reply-To: <4245176.X6JjkhnUAM@aspire.rjw.lan>
+Received: from smtp.codeaurora.org ([198.145.29.96]:54590 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750779AbdH2Egr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 00:36:47 -0400
+In-Reply-To: <20170825102008.4626-2-patrick.bellasi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@arm.com>, Tim Murray <timmurray@google.com>, Todd Kjos <tkjos@android.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Patrick,
 
-Add a driver_flags field to struct dev_pm_info for flags that can be
-set by device drivers at the probe time to inform the PM core and/or
-bus types, PM domains and so on on the capabilities and/or
-preferences of device drivers.  It is anticipated that more than one
-flag of this kind will be necessary going forward.
+On Fri, Aug 25, 2017 at 3:50 PM, Patrick Bellasi
+<patrick.bellasi@arm.com> wrote:
+> The util_avg signal computed by PELT is too variable for some use-cases.
+> For example, a big task waking up after a long sleep period will have its
+> utilization almost completely decayed. This introduces some latency before
+> schedutil will be able to pick the best frequency to run a task.
+>
+> The same issue can affect task placement. Indeed, since the task
+> utilization is already decayed at wakeup, when the task is enqueued in a
+> CPU, this can results in a CPU running a big task as being temporarily
+> represented as being almost empty. This leads to a race condition where
+> other tasks can be potentially allocated on a CPU which just started to run
+> a big task which slept for a relatively long period.
+>
+> Moreover, the utilization of a task is, by PELT definition, a continuously
+> changing metrics. This contributes in making almost instantly outdated some
+> decisions based on the value of the PELT's utilization.
+>
+> For all these reasons, a more stable signal could probably do a better job
+> of representing the expected/estimated utilization of a SE/RQ. Such a
+> signal can be easily created on top of PELT by still using it as an
+> estimator which produces values to be aggregated once meaningful events
+> happens.
+>
+> This patch adds a simple implementation of util_est, a new signal built on
+> top of PELT's util_avg where:
+>
+>     util_est(se) = max(se::util_avg, f(se::util_avg@dequeue_times))
+>
 
-Define and document a SAFE_SUSPEND flag to instruct bus types and PM
-domains that the system suspend callbacks provided by the driver can
-cope with runtime suspended devices, so from the driver's perspective
-it should be safe to leave devices in runtime suspend during system
-suspend.
+I don't see any wrapper function in this patch that implements this
+signal. You want to use this signal in the task placement path as a
+replacement of task_util(), right?
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- Documentation/driver-api/pm/devices.rst |    7 +++++++
- drivers/base/dd.c                       |    2 ++
- include/linux/pm.h                      |   16 ++++++++++++++++
- 3 files changed, 25 insertions(+)
+Thanks,
+Pavan
 
-Index: linux-pm/include/linux/pm.h
-===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -550,6 +550,21 @@ struct pm_subsys_data {
- #endif
- };
- 
-+/*
-+ * Driver flags to control system suspend/resume behavior.
-+ *
-+ * These flags can be set by device drivers at the probe time.  They need not be
-+ * cleared by the drivers as the driver core will take care of that.
-+ *
-+ * SAFE_SUSPEND: No need to runtime resume the device during system suspend.
-+ *
-+ * Setting SAFE_SUSPEND instructs bus types and PM domains which may want to
-+ * runtime resume the device upfront during system suspend that doing so is not
-+ * necessary from the driver's perspective, because the system suspend callbacks
-+ * provided by it can cope with a runtime suspended device.
-+ */
-+#define DPM_FLAG_SAFE_SUSPEND	BIT(0)
-+
- struct dev_pm_info {
- 	pm_message_t		power_state;
- 	unsigned int		can_wakeup:1;
-@@ -561,6 +576,7 @@ struct dev_pm_info {
- 	bool			is_late_suspended:1;
- 	bool			early_init:1;	/* Owned by the PM core */
- 	bool			direct_complete:1;	/* Owned by the PM core */
-+	unsigned int		driver_flags;
- 	spinlock_t		lock;
- #ifdef CONFIG_PM_SLEEP
- 	struct list_head	entry;
-Index: linux-pm/drivers/base/dd.c
-===================================================================
---- linux-pm.orig/drivers/base/dd.c
-+++ linux-pm/drivers/base/dd.c
-@@ -436,6 +436,7 @@ pinctrl_bind_failed:
- 	if (dev->pm_domain && dev->pm_domain->dismiss)
- 		dev->pm_domain->dismiss(dev);
- 	pm_runtime_reinit(dev);
-+	dev->power.driver_flags = 0;
- 
- 	switch (ret) {
- 	case -EPROBE_DEFER:
-@@ -841,6 +842,7 @@ static void __device_release_driver(stru
- 		if (dev->pm_domain && dev->pm_domain->dismiss)
- 			dev->pm_domain->dismiss(dev);
- 		pm_runtime_reinit(dev);
-+		dev->power.driver_flags = 0;
- 
- 		klist_remove(&dev->p->knode_driver);
- 		device_pm_check_callbacks(dev);
-Index: linux-pm/Documentation/driver-api/pm/devices.rst
-===================================================================
---- linux-pm.orig/Documentation/driver-api/pm/devices.rst
-+++ linux-pm/Documentation/driver-api/pm/devices.rst
-@@ -729,6 +729,13 @@ state temporarily, for example so that i
- disabled.  This all depends on the hardware and the design of the subsystem and
- device driver in question.
- 
-+Some bus types and PM domains have a policy to runtime resume all
-+devices upfront in their ``->suspend`` callbacks, but that may not be really
-+necessary if the system suspend-resume callbacks provided by the device's
-+driver can cope with a runtime-suspended device.  The driver can indicate that
-+by setting ``DPM_FLAG_SAFE_SUSPEND`` in :c:member:`power.driver_flags` at the
-+probe time.
-+
- During system-wide resume from a sleep state it's easiest to put devices into
- the full-power state, as explained in :file:`Documentation/power/runtime_pm.txt`.
- Refer to that document for more information regarding this particular issue as
+-- 
+Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a
+Linux Foundation Collaborative Project
