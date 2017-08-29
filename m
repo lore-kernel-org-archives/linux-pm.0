@@ -1,64 +1,79 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/3] PM / ACPI / i2c: Runtime PM aware system sleep handling
-Date: Tue, 29 Aug 2017 13:44:11 +0200
-Message-ID: <CAPDyKFp5dpuUeRjmmSSA3sZzFVwJihmzteyCDzqG33s2Xb1ewA@mail.gmail.com>
-References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org>
- <4245176.X6JjkhnUAM@aspire.rjw.lan> <20170829102927.5lpjkfj2jbtpxadm@sig21.net>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v2 11/14] power: supply: bq24190_charger: Get
+ input_current_limit from our supplier
+Date: Tue, 29 Aug 2017 13:53:24 +0200
+Message-ID: <b5d695fc-49dc-c4fd-7470-19e82a859bf5@redhat.com>
+References: <20170815200502.17339-1-hdegoede@redhat.com>
+ <20170815200502.17339-12-hdegoede@redhat.com>
+ <20170829114003.rcj6l5up4277urxq@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20170829102927.5lpjkfj2jbtpxadm@sig21.net>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Johannes Stezenbach <js@sig21.net>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfounda>
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
+Content-Transfer-Encoding: 7bit
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
+In-Reply-To: <20170829114003.rcj6l5up4277urxq@earth>
+Content-Language: en-US
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: devel@driverdev.osuosl.org, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Tony Lindgren <tony@atomide.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Liam Breck <liam@networkimprov.net>, Guenter Roeck <linux@roeck-us.net>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 29 August 2017 at 12:29, Johannes Stezenbach <js@sig21.net> wrote:
+Hi,
+
+Thank you for your reviews / queuing!
+
+On 29-08-17 13:40, Sebastian Reichel wrote:
 > Hi,
->
-> On Tue, Aug 29, 2017 at 02:18:13AM +0200, Rafael J. Wysocki wrote:
->> On Wednesday, August 23, 2017 4:42:00 PM CEST Ulf Hansson wrote:
->> > The i2c designware platform driver, drivers/i2c/busses/i2c-designware-platdrv.c,
->> > isn't well optimized for system sleep.
->> >
->> > What makes this driver particularly interesting is because it's a cross-SoC
->> > driver, which sometimes means there is an ACPI PM domain attached to the i2c
->> > device and sometimes not. The driver is being used on both x86 and ARM.
-> ...
->> Basically, the point is to allow i2c-designware-platdrv to point its late
->> suspend and early resume callbacks, respectively, to pm_runtime_force_suspend()
->> and pm_runtime_force_resume() which then will do the right thing regardless of
->> whether or not the device is runtime suspended when system suspend starts.
->
-> I'd like to point out a comment added by Hans de Goede in
-> https://bugzilla.kernel.org/show_bug.cgi?id=193891#c99
->
->   The D0 / D3 methods of some devices use ACPI OpRegions on the PMIC which is
->   attached to I2C7, these methods get executed by acpi_dev_suspend_late /
->   acpi_dev_resume_early. Since the i2c-designware driver uses regular suspend /
->   resume callbacks it is already suspended at the time those calls happen,
->   leading to a device-suspend error and the system not suspending at all.
+> 
+> On Tue, Aug 15, 2017 at 10:04:59PM +0200, Hans de Goede wrote:
+>> On some devices the USB Type-C port power (USB PD 2.0) negotiation is
+>> done by a separate port-controller IC, while the current limit is
+>> controlled through another (charger) IC.
+>>
+>> It has been decided to model this by modelling the external Type-C
+>> power brick (adapter/charger) as a power-supply class device which
+>> supplies the charger-IC, with its voltage-now and current-max representing
+>> the negotiated voltage and max current draw.
+>>
+>> This commit adds support for this to the bq24190_charger driver by calling
+>> power_supply_set_input_current_limit_from_supplier helper if the
+>> "input-current-limit-from-supplier" device-property is set.
+>>
+>> Note this replaces the functionality to get the current-limit from an
+>> extcon device, which will be removed in a follow-up commit.
+> 
+> I'm fine with the general approach, but ...
+> 
+>> [...]
+>> +	bdi->input_current_limit_from_supplier =
+>> +		device_property_read_bool(dev,
+>> +					  "input-current-limit-from-supplier");
+>> [...]
+> 
+> I wonder if we actually need this. I think we can just enable it
+> unconditionally when we have a parent power supply providing the
+> information.
 
-Yes, that's why I moved those operation to be managed at the
-->suspend_late() in my series, and at the same time prevent the
-direct_complete patch from executed for this device.
+I was thinking the same when implementing this, so this is fine with
+me. I think it is best to just unconditionally call
+power_supply_set_input_current_limit_from_supplier from the
+external_power_changed callback, that will only get called if we've
+a parent supply and that function will check that the parent has
+a current-max property itself.
 
->
-> It's the reason for the Cherrytrail I2C7 special treatment in
-> i2c-designware-platdrv.c and pm_disabled = true in i2c-designware-baytrail.c,
-> however pm_disabled seems to be a problem for S0ix support.
-> To solve it, i2c-designware-platdrv needs to suspend after all
-> devices using ACPI OpRegions for suspend.
->
->
-> Johannes
+Please let me know if just unconditionally calling
+power_supply_set_input_current_limit_from_supplier from the
+external_power_changed callback is ok with you then I will do that
+for v3 of the patch-set (from which I will drop the patches you've
+already queued).
 
-Did you try out my series (v2) if that could fix this problem in a
-more flexible manner?
+Regards,
 
-In other words, is it fine if the device remains runtime PM enabled
-during the entire device_suspend() phase, and also not being suspended
-until ->suspend_late()?
-
-Kind regards
-Uffe
+Hans
