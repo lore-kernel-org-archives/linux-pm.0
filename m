@@ -1,138 +1,61 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/3] PM / core: Add SAFE_SUSPEND driver flag
-Date: Tue, 29 Aug 2017 16:57:28 +0200
-Message-ID: <CAPDyKFrYd4ViFfouM8wd7xkg2L9B0neHt7kTOxLqcGtqBFun5A@mail.gmail.com>
-References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org>
- <4245176.X6JjkhnUAM@aspire.rjw.lan> <35841101.LqGbCjJMGH@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/3] PM / ACPI / i2c: Runtime PM aware system sleep handling
+Date: Tue, 29 Aug 2017 16:49:12 +0200
+Message-ID: <2534922.secN4LtMtD@aspire.rjw.lan>
+References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org> <4245176.X6JjkhnUAM@aspire.rjw.lan> <20170829102927.5lpjkfj2jbtpxadm@sig21.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f171.google.com ([209.85.223.171]:37743 "EHLO
-        mail-io0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754662AbdH2O53 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 10:57:29 -0400
-Received: by mail-io0-f171.google.com with SMTP id d81so20928413ioj.4
-        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2017 07:57:29 -0700 (PDT)
-In-Reply-To: <35841101.LqGbCjJMGH@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170829102927.5lpjkfj2jbtpxadm@sig21.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Johannes Stezenbach <js@sig21.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On 29 August 2017 at 02:20, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Add a driver_flags field to struct dev_pm_info for flags that can be
-> set by device drivers at the probe time to inform the PM core and/or
-> bus types, PM domains and so on on the capabilities and/or
-> preferences of device drivers.  It is anticipated that more than one
-> flag of this kind will be necessary going forward.
->
-> Define and document a SAFE_SUSPEND flag to instruct bus types and PM
-> domains that the system suspend callbacks provided by the driver can
-> cope with runtime suspended devices, so from the driver's perspective
-> it should be safe to leave devices in runtime suspend during system
-> suspend.
+On Tuesday, August 29, 2017 12:29:27 PM CEST Johannes Stezenbach wrote:
+> Hi,
+> 
+> On Tue, Aug 29, 2017 at 02:18:13AM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, August 23, 2017 4:42:00 PM CEST Ulf Hansson wrote:
+> > > The i2c designware platform driver, drivers/i2c/busses/i2c-designware-platdrv.c,
+> > > isn't well optimized for system sleep.
+> > > 
+> > > What makes this driver particularly interesting is because it's a cross-SoC
+> > > driver, which sometimes means there is an ACPI PM domain attached to the i2c
+> > > device and sometimes not. The driver is being used on both x86 and ARM.
+> ...
+> > Basically, the point is to allow i2c-designware-platdrv to point its late
+> > suspend and early resume callbacks, respectively, to pm_runtime_force_suspend()
+> > and pm_runtime_force_resume() which then will do the right thing regardless of
+> > whether or not the device is runtime suspended when system suspend starts.
+> 
+> I'd like to point out a comment added by Hans de Goede in
+> https://bugzilla.kernel.org/show_bug.cgi?id=193891#c99
+> 
+>   The D0 / D3 methods of some devices use ACPI OpRegions on the PMIC which is
+>   attached to I2C7, these methods get executed by acpi_dev_suspend_late /
+>   acpi_dev_resume_early. Since the i2c-designware driver uses regular suspend /
+>   resume callbacks it is already suspended at the time those calls happen,
+>   leading to a device-suspend error and the system not suspending at all.
+> 
+> It's the reason for the Cherrytrail I2C7 special treatment in
+> i2c-designware-platdrv.c and pm_disabled = true in i2c-designware-baytrail.c,
+> however pm_disabled seems to be a problem for S0ix support.
+> To solve it, i2c-designware-platdrv needs to suspend after all
+> devices using ACPI OpRegions for suspend.
 
-This changelog is a bit too vague to me. Wouldn't it be more clear if
-also adding something along the lines that this also means that
-runtime resuming a device isn't needed by the subsystem/PM domain
-during system sleep? Because ideally that is what you want to avoid,
-right?
+That's a totally different issue from the one at hand.
 
-Moreover I am also not convinced that this solution really is the
-right path. It seems like we might end up adding more bits for the
-"driver_flag" field and it gets complicated. Do we really need to
-distinguish between all different cases in such detail?
+It simply means that the devices using I2C for suspend/resume need to be
+suspended *before* the I2C controller and resumed *after* it.
 
-I will continue to review this tomorrow, however in the meantime I
-have finalized a re-spin of my v3 series so I decided to post it
-anyway. I am adding only one new flag to the PM core, perhaps I am
-over-simplifying things, but please have look once more. I think I
-have addressed all your concerns you have raised so far.
+So this is a system suspend/resume *ordering* issue and not a runtime PM
+vs system suspend issue.
 
-Kind regards
-Uffe
+It can be addressed, for example, by doing the I2C controller's
+suspend/resume at the noirq stage.  Has anyone tried that?
 
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  Documentation/driver-api/pm/devices.rst |    7 +++++++
->  drivers/base/dd.c                       |    2 ++
->  include/linux/pm.h                      |   16 ++++++++++++++++
->  3 files changed, 25 insertions(+)
->
-> Index: linux-pm/include/linux/pm.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/pm.h
-> +++ linux-pm/include/linux/pm.h
-> @@ -550,6 +550,21 @@ struct pm_subsys_data {
->  #endif
->  };
->
-> +/*
-> + * Driver flags to control system suspend/resume behavior.
-> + *
-> + * These flags can be set by device drivers at the probe time.  They need not be
-> + * cleared by the drivers as the driver core will take care of that.
-> + *
-> + * SAFE_SUSPEND: No need to runtime resume the device during system suspend.
-> + *
-> + * Setting SAFE_SUSPEND instructs bus types and PM domains which may want to
-> + * runtime resume the device upfront during system suspend that doing so is not
-> + * necessary from the driver's perspective, because the system suspend callbacks
-> + * provided by it can cope with a runtime suspended device.
-> + */
-> +#define DPM_FLAG_SAFE_SUSPEND  BIT(0)
-> +
->  struct dev_pm_info {
->         pm_message_t            power_state;
->         unsigned int            can_wakeup:1;
-> @@ -561,6 +576,7 @@ struct dev_pm_info {
->         bool                    is_late_suspended:1;
->         bool                    early_init:1;   /* Owned by the PM core */
->         bool                    direct_complete:1;      /* Owned by the PM core */
-> +       unsigned int            driver_flags;
->         spinlock_t              lock;
->  #ifdef CONFIG_PM_SLEEP
->         struct list_head        entry;
-> Index: linux-pm/drivers/base/dd.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/dd.c
-> +++ linux-pm/drivers/base/dd.c
-> @@ -436,6 +436,7 @@ pinctrl_bind_failed:
->         if (dev->pm_domain && dev->pm_domain->dismiss)
->                 dev->pm_domain->dismiss(dev);
->         pm_runtime_reinit(dev);
-> +       dev->power.driver_flags = 0;
->
->         switch (ret) {
->         case -EPROBE_DEFER:
-> @@ -841,6 +842,7 @@ static void __device_release_driver(stru
->                 if (dev->pm_domain && dev->pm_domain->dismiss)
->                         dev->pm_domain->dismiss(dev);
->                 pm_runtime_reinit(dev);
-> +               dev->power.driver_flags = 0;
->
->                 klist_remove(&dev->p->knode_driver);
->                 device_pm_check_callbacks(dev);
-> Index: linux-pm/Documentation/driver-api/pm/devices.rst
-> ===================================================================
-> --- linux-pm.orig/Documentation/driver-api/pm/devices.rst
-> +++ linux-pm/Documentation/driver-api/pm/devices.rst
-> @@ -729,6 +729,13 @@ state temporarily, for example so that i
->  disabled.  This all depends on the hardware and the design of the subsystem and
->  device driver in question.
->
-> +Some bus types and PM domains have a policy to runtime resume all
-> +devices upfront in their ``->suspend`` callbacks, but that may not be really
-> +necessary if the system suspend-resume callbacks provided by the device's
-> +driver can cope with a runtime-suspended device.  The driver can indicate that
-> +by setting ``DPM_FLAG_SAFE_SUSPEND`` in :c:member:`power.driver_flags` at the
-> +probe time.
-> +
->  During system-wide resume from a sleep state it's easiest to put devices into
->  the full-power state, as explained in :file:`Documentation/power/runtime_pm.txt`.
->  Refer to that document for more information regarding this particular issue as
->
->
+Thanks,
+Rafael
+
