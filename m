@@ -1,80 +1,96 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH 6/6] power: supply: make device_attribute const
-Date: Tue, 29 Aug 2017 10:44:21 +0200
-Message-ID: <20170829084421.4nm3uoswlx2ftc5m@earth>
-References: <1503315792-14837-1-git-send-email-bhumirks@gmail.com>
- <1503315792-14837-7-git-send-email-bhumirks@gmail.com>
+Subject: Re: [PATCH] power: supply: core: Delete two error messages for a
+ failed memory allocation in power_supply_check_supplies()
+Date: Tue, 29 Aug 2017 10:45:18 +0200
+Message-ID: <20170829084518.l5dk3yfflgiagv7g@earth>
+References: <5f2600b3-e498-af9f-32b3-b41ebd81159b@users.sourceforge.net>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="iboistu4ap57qf3f"
-Return-path: <netdev-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="mpgk5xl4qcszlf4m"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1503315792-14837-7-git-send-email-bhumirks@gmail.com>
-Sender: netdev-owner@vger.kernel.org
-To: Bhumika Goyal <bhumirks@gmail.com>
-Cc: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, jbacik@fb.com, jikos@kernel.org, benjamin.tissoires@redhat.com, manish.chopra@cavium.com, rahul.verma@cavium.com, Dept-GELinuxNICDev@cavium.com, harish.patil@cavium.com, cascardo@holoscopio.com, don@syst.com.br, dvhart@infradead.org, andy@infradead.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, nbd-general@lists.sourceforge.net, linux-input@vger.kernel.org, netdev@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <5f2600b3-e498-af9f-32b3-b41ebd81159b@users.sourceforge.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---iboistu4ap57qf3f
+--mpgk5xl4qcszlf4m
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Aug 21, 2017 at 05:13:12PM +0530, Bhumika Goyal wrote:
-> Make these const as they are only passed as an argument to the
-> function device_create_file and device_remove_file and the corresponding
-> arguments are of type const.
-> Done using Coccinelle.
+On Sat, Aug 26, 2017 at 07:37:00PM +0200, SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sat, 26 Aug 2017 19:22:32 +0200
 >=20
-> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+> Omit extra messages for a memory allocation failure in this function.
+>=20
+> This issue was detected by using the Coccinelle software.
+>=20
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 > ---
 
 Thanks, queued.
 
 -- Sebastian
 
->  drivers/power/supply/olpc_battery.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/power/supply/power_supply_core.c | 8 ++------
+>  1 file changed, 2 insertions(+), 6 deletions(-)
 >=20
-> diff --git a/drivers/power/supply/olpc_battery.c b/drivers/power/supply/o=
-lpc_battery.c
-> index fc20ca3..3bc2eea 100644
-> --- a/drivers/power/supply/olpc_battery.c
-> +++ b/drivers/power/supply/olpc_battery.c
-> @@ -559,7 +559,7 @@ static ssize_t olpc_bat_error_read(struct device *dev,
->  	return sprintf(buf, "%d\n", ec_byte);
->  }
+> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
+ply/power_supply_core.c
+> index 540d3e0aa011..3d46863baa52 100644
+> --- a/drivers/power/supply/power_supply_core.c
+> +++ b/drivers/power/supply/power_supply_core.c
+> @@ -259,18 +259,14 @@ static int power_supply_check_supplies(struct power=
+_supply *psy)
+>  	/* All supplies found, allocate char ** array for filling */
+>  	psy->supplied_from =3D devm_kzalloc(&psy->dev, sizeof(psy->supplied_fro=
+m),
+>  					  GFP_KERNEL);
+> -	if (!psy->supplied_from) {
+> -		dev_err(&psy->dev, "Couldn't allocate memory for supply list\n");
+> +	if (!psy->supplied_from)
+>  		return -ENOMEM;
+> -	}
 > =20
-> -static struct device_attribute olpc_bat_error =3D {
-> +static const struct device_attribute olpc_bat_error =3D {
->  	.attr =3D {
->  		.name =3D "error",
->  		.mode =3D S_IRUGO,
+>  	*psy->supplied_from =3D devm_kzalloc(&psy->dev,
+>  					   sizeof(char *) * (cnt - 1),
+>  					   GFP_KERNEL);
+> -	if (!*psy->supplied_from) {
+> -		dev_err(&psy->dev, "Couldn't allocate memory for supply list\n");
+> +	if (!*psy->supplied_from)
+>  		return -ENOMEM;
+> -	}
+> =20
+>  	return power_supply_populate_supplied_from(psy);
+>  }
 > --=20
-> 1.9.1
+> 2.14.0
 >=20
 
---iboistu4ap57qf3f
+--mpgk5xl4qcszlf4m
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlKWUACgkQ2O7X88g7
-+pojrA//WxkyTMch/7SoNoIGVqwKBdT4Xv7H5s/rB2lDnXCBsBlvFDm2vskHQJjQ
-RAoHXz6vAsaYLdbG5pcgvOy4sV4jir2syPPv+GNoXAIuBkP5cx1jXJ1ZN81pWB65
-BDhCe9i27V+HUm7iNqbkXDxILcpPoQki+skr9EvDgku2sgb3XIi9/zK+Gr42THct
-APqsXxFSjDckjlZGJoyb7uS9Uo3SfP58rNaCf5jMHZ1s5IWwuvb9rEb3v6wKAcT9
-uN2/hWOr2EAvS7dCcSOMn/fpWUqx5sf2U+Gm3ki+wU71JpKEvUnpoWNiiOQ1HZ3m
-u3plo2L107xl9JYlJvxMG8dri3nyFTf9hypAqa1vtKI0oRnS10o6CiKtXSzcDHaP
-Yyto1hwy1+1gq9mUrcy3Y754/h/Rtblz3uN7Mnlg9ZHgAYm4sq+z36hVwCvDNRIi
-QspbkoBT0sYILb00j2mqiWDT5iGfGUAN1ybexqE996M3g8Ghja8BioOjO23SoxD/
-SZfWT/Mbz+fkF9ZgyH2dMEWXKPXZoUrhuZGEUzWBU8BPRCoTQEY/zIJyK+Ojguxj
-54GGUP5qq4kmUPZTj2BDzq1F03IgoFnuA7w3TqcKME920VCB/sdnfBV4wXmE4ccB
-TNpI7Ow0/V8ZPXcFxny2GdyBSDjDJbRTQ+3tsQDzhVzx3kzDs5k=
-=hkX3
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmlKZ4ACgkQ2O7X88g7
++po/LQ/9FmiRimB0OY5/gtpVu1lN6dkhrqh3QlAf3tab8h2hbiqH2/oRqgmHb80b
+J3dkv1kt5Iuzlcpo03IpwD/aveXU+rCgbhXxjErjrlwNwMIgck8suHWY8ddYwFWl
+BTpnNdv3TbZa7UBl89QNLg74K5+T1a3MujU93SMH2QNszx9d45xRuymcH7an3AO0
+13TndxsDnwSmuBL57HOIxKIfm6V1cfXmXAIOhr8O10XnbTIwM+mE7qf4piuOWaag
+i4BUnBHVLlYUB/F28cxQPqjvt9MUp0MQ3phfOpbGHOkIECzzFfrW4vuEhssNBH3i
+Rd/odeT5VsFaTlT9iiR9YGz+diGO3Ll/UhY7WZc1V/wj+gi+eIfvTYB+ysrEh5ut
+K5xp2vTL7OEfAisZREb5KL6r7Wl//zwjcYo1xpbu6Xd/nk4BUnp9qIeG50tMgV2w
+lxDf73UKotFwvJiOC8dbIiD3Zkj5s423Wg5nVCbJmiJetAK9jA1H29ZJ5mGNPnX3
+/mJQ9QO5z+FtDFzWXZf5sYsu49SrEG0cFZKTRNXCNKVZ+YGirs1khLqeQdRHgrYA
+vrj1717q8k+qo2ZHu+3IEfc+Rn56bKUsNLeQ2VD7fUvRC7VlUI8f4rjFjjk0nzdU
+zw7R6wGpqGdOY994YjvzBd/XO44QtH54exMt3zk7dawJSR2JQP8=
+=0hDl
 -----END PGP SIGNATURE-----
 
---iboistu4ap57qf3f--
+--mpgk5xl4qcszlf4m--
