@@ -1,36 +1,39 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: [PATCH resend v2] power: supply: bq27xxx: enable writing capacity values for bq27421
-Date: Tue, 29 Aug 2017 22:10:47 +0200
-Message-ID: <be410e440d889b2e46208b523bdb890e860c5046.1504037446.git.hns@goldelico.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.163]:20342 "EHLO
-        mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751186AbdH2UMw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 16:12:52 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH resend v2] power: supply: bq27xxx: enable writing capacity
+ values for bq27421
+Date: Tue, 29 Aug 2017 13:20:27 -0700
+Message-ID: <CAKvHMgQDcgabM3UogXE3L07n9yiHgD3FfJ5GCOqkAk1=SA2A=Q@mail.gmail.com>
+References: <be410e440d889b2e46208b523bdb890e860c5046.1504037446.git.hns@goldelico.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <be410e440d889b2e46208b523bdb890e860c5046.1504037446.git.hns@goldelico.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Sebastian Reichel <sre@kernel.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Discussions about the Letux Kernel <letux-kernel@openphoenux.org>, kernel@pyra-handheld.com
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, Liam Breck <liam@networkimprov.net>
-Cc: =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F. Davis" <afd@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Discussions about the Letux Kernel <letux-kernel@openphoenux.org>, kernel@pyra-handheld.com, "H. Nikolaus Schaller" <hns@goldelico.com>
 
-Tested on Pyra prototype with bq27421.
+Hi Nikolaus, thanks for the patch...
 
-Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
----
- drivers/power/supply/bq27xxx_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Tue, Aug 29, 2017 at 1:10 PM, H. Nikolaus Schaller <hns@goldelico.com> wrote:
+> Tested on Pyra prototype with bq27421.
+>
+> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+> ---
+>  drivers/power/supply/bq27xxx_battery.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index b6c3120ca5ad..e3c878ef7c7e 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -688,7 +688,7 @@ static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
+>  #define bq27545_dm_regs 0
+>  #endif
+>
+> -#if 0 /* not yet tested */
+> +#if 1 /* tested on Pyra */
+>  static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index b6c3120ca5ad..e3c878ef7c7e 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -688,7 +688,7 @@ static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
- #define bq27545_dm_regs 0
- #endif
- 
--#if 0 /* not yet tested */
-+#if 1 /* tested on Pyra */
- static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
- 	[BQ27XXX_DM_DESIGN_CAPACITY]   = { 82, 10, 2,    0,  8000 },
- 	[BQ27XXX_DM_DESIGN_ENERGY]     = { 82, 12, 2,    0, 32767 },
--- 
-2.12.2
+I think we can drop the #if and #else...#endif so it's just the
+dm_regs table, as with bq27425.
