@@ -1,70 +1,88 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 3/3] PM: i2c-designware-platdrv: System sleep handling rework
-Date: Tue, 29 Aug 2017 18:40:27 +0200
-Message-ID: <3516258.tZRHLsck48@aspire.rjw.lan>
-References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org> <6543072.R9SdZCE16v@aspire.rjw.lan> <2533904.WxKdIHdxQJ@aspire.rjw.lan>
+Subject: Re: [PATCH 0/3] PM / ACPI / i2c: Runtime PM aware system sleep handling
+Date: Tue, 29 Aug 2017 18:44:02 +0200
+Message-ID: <5440066.jm2MzmQIeF@aspire.rjw.lan>
+References: <1503499329-28834-1-git-send-email-ulf.hansson@linaro.org> <1512684.bFXWtdU0Ox@aspire.rjw.lan> <CAPDyKFq-XDYE0xr2qONwO7_w8_jHfv5=iCwx4QdH7OHWqJ1e-Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61298 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751684AbdH2QtI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 12:49:08 -0400
-In-Reply-To: <2533904.WxKdIHdxQJ@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFq-XDYE0xr2qONwO7_w8_jHfv5=iCwx4QdH7OHWqJ1e-Q@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Johannes Stezenbach <js@sig21.net>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.>
+List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, August 29, 2017 6:38:11 PM CEST Rafael J. Wysocki wrote:
-> On Tuesday, August 29, 2017 2:59:49 AM CEST Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > Rework the power management part of the i2c-designware-platdrv driver
-> > so that its ->suspend and ->resume callbacks do not point to the
-> > callback routines used by it for runtime PM.  Instead, point its late
-> > suspend and early resume callbacks to pm_runtime_force_suspend() and
-> > pm_runtime_force_resume(), respectively, and make it set the
-> > SAFE_SUSPEND driver flag (introduced earlier) to instruct the generic
-> > ACPI PM domain code that the driver can cope with runtime suspended
-> > devices in its system sleep callbacks.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/i2c/busses/i2c-designware-platdrv.c |    4 +++-
-> >  1 file changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-pm/drivers/i2c/busses/i2c-designware-platdrv.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/i2c/busses/i2c-designware-platdrv.c
-> > +++ linux-pm/drivers/i2c/busses/i2c-designware-platdrv.c
-> > @@ -358,6 +358,7 @@ static int dw_i2c_plat_probe(struct plat
-> >  	if (dev->pm_disabled) {
-> >  		pm_runtime_forbid(&pdev->dev);
-> >  	} else {
-> > +		dev->power.driver_flags = DPM_FLAG_SAFE_SUSPEND;
-> >  		pm_runtime_set_autosuspend_delay(&pdev->dev, 1000);
-> >  		pm_runtime_use_autosuspend(&pdev->dev);
-> >  		pm_runtime_set_active(&pdev->dev);
-> > @@ -455,7 +456,8 @@ static int dw_i2c_plat_resume(struct dev
-> >  static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
-> >  	.prepare = dw_i2c_plat_prepare,
-> >  	.complete = dw_i2c_plat_complete,
-> > -	SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
-> > +	SET_LATE_SYSTEM_SLEEP_PM_OPS(pm_runtime_force_suspend,
-> > +				     pm_runtime_force_resume)
-> >  	SET_RUNTIME_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume, NULL)
-> >  };
+On Tuesday, August 29, 2017 5:05:20 PM CEST Ulf Hansson wrote:
+> On 29 August 2017 at 16:43, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Tuesday, August 29, 2017 1:44:11 PM CEST Ulf Hansson wrote:
+> >> On 29 August 2017 at 12:29, Johannes Stezenbach <js@sig21.net> wrote:
+> >> > Hi,
+> >> >
+> >> > On Tue, Aug 29, 2017 at 02:18:13AM +0200, Rafael J. Wysocki wrote:
+> >> >> On Wednesday, August 23, 2017 4:42:00 PM CEST Ulf Hansson wrote:
+> >> >> > The i2c designware platform driver, drivers/i2c/busses/i2c-designware-platdrv.c,
+> >> >> > isn't well optimized for system sleep.
+> >> >> >
+> >> >> > What makes this driver particularly interesting is because it's a cross-SoC
+> >> >> > driver, which sometimes means there is an ACPI PM domain attached to the i2c
+> >> >> > device and sometimes not. The driver is being used on both x86 and ARM.
+> >> > ...
+> >> >> Basically, the point is to allow i2c-designware-platdrv to point its late
+> >> >> suspend and early resume callbacks, respectively, to pm_runtime_force_suspend()
+> >> >> and pm_runtime_force_resume() which then will do the right thing regardless of
+> >> >> whether or not the device is runtime suspended when system suspend starts.
+> >> >
+> >> > I'd like to point out a comment added by Hans de Goede in
+> >> > https://bugzilla.kernel.org/show_bug.cgi?id=193891#c99
+> >> >
+> >> >   The D0 / D3 methods of some devices use ACPI OpRegions on the PMIC which is
+> >> >   attached to I2C7, these methods get executed by acpi_dev_suspend_late /
+> >> >   acpi_dev_resume_early. Since the i2c-designware driver uses regular suspend /
+> >> >   resume callbacks it is already suspended at the time those calls happen,
+> >> >   leading to a device-suspend error and the system not suspending at all.
+> >>
+> >> Yes, that's why I moved those operation to be managed at the
+> >> ->suspend_late() in my series, and at the same time prevent the
+> >> direct_complete patch from executed for this device.
+> >>
+> >> >
+> >> > It's the reason for the Cherrytrail I2C7 special treatment in
+> >> > i2c-designware-platdrv.c and pm_disabled = true in i2c-designware-baytrail.c,
+> >> > however pm_disabled seems to be a problem for S0ix support.
+> >> > To solve it, i2c-designware-platdrv needs to suspend after all
+> >> > devices using ACPI OpRegions for suspend.
+> >> >
+> >> >
+> >> > Johannes
+> >>
+> >> Did you try out my series (v2) if that could fix this problem in a
+> >> more flexible manner?
+> >>
+> >> In other words, is it fine if the device remains runtime PM enabled
+> >> during the entire device_suspend() phase, and also not being suspended
+> >> until ->suspend_late()?
+> >
+> > Ulf, please, this is a *different* problem.
 > 
-> This isn't going to work, because pm_runtime_force_suspend() will invoke
-> the bus type callback and not the driver's one.
+> Yes, it is!
 > 
-> So scratch this, please.
+> Just wanted to point out that if the device remains runtime PM enabled
+> the entire device_suspend() phase, that *could* solve the problem.
+> 
+> >
+> > Can we focus on one problem at a time?
+> 
+> Yes!
+> 
+> However, there is lots of things following when we try to enable the
+> runtime PM centric path for ACPI. :-)
 
-BTW, I don't think it is OK to mess up with bus type _runtime_suspend and
-_runtime_resume and try to make them magically handle the system suspend
-case as well.  There has to be a different way ...
+Which, I guess, we won't do after all ...
+
+So I would prefer to think about addressing problems instead of trying to
+"enable the runtime PM centric path for ACPI" just for the sake of it.
 
 Thanks,
 Rafael
+
