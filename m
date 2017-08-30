@@ -1,12 +1,12 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v3 07/11] staging: typec: fusb302: Export current-limit
- through a power_supply class dev
-Date: Wed, 30 Aug 2017 11:48:10 +0200
-Message-ID: <20170830094814.17758-8-hdegoede@redhat.com>
+Subject: [PATCH v3 10/11] i2c-cht-wc: Add device-properties for fusb302
+ integration
+Date: Wed, 30 Aug 2017 11:48:13 +0200
+Message-ID: <20170830094814.17758-11-hdegoede@redhat.com>
 References: <20170830094814.17758-1-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
 In-Reply-To: <20170830094814.17758-1-hdegoede@redhat.com>
 List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
@@ -19,96 +19,149 @@ List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driver
 Errors-To: driverdev-devel-bounces@linuxdriverproject.org
 Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
 To: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>
-Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Yueyao (Nathan) Zhu" <yueyao@google.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
+Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-VGhlIGZ1c2IzMDIgVHlwZS1DIHBvcnQtY29udHJvbGxlciBjYW5ub3QgY29udHJvbCB0aGUgY3Vy
-cmVudC1saW1pdApkaXJlY3RseSwgc28gd2UgbmVlZCB0byBleHBvcnRlZCB0aGUgbGltaXQgc28g
-dGhhdCBhbm90aGVyIGRyaXZlcgooZS5nLiB0aGUgY2hhcmdlciBkcml2ZXIpIGNhbiBwaWNrIHRo
-ZSBsaW1pdCB1cCBhbmQgY29uZmlndXJlIHRoZQpzeXN0ZW0gYWNjb3JkaW5nbHkuCgpUaGUgcG93
-ZXItc3VwcGx5IHN1YnN5cyBhbHJlYWR5IHByb3ZpZGVzIGluZnJhc3RydWN0dXJlIGZvciB0aGlz
-LApwb3dlci1zdXBwbHkgZGV2aWNlcyBoYXZlIHRoZSBub3Rpb24gb2YgYmVpbmcgc3VwcGxpZWQg
-YnkgYW5vdGhlcgpwb3dlci1zdXBwbHkgYW5kIGhhdmUgcHJvcGVydGllcyB0aHJvdWdoIHdoaWNo
-IHdlIGNhbiBleHBvcnQgdGhlCmN1cnJlbnQtbGltaXQuCgpSZWdpc3RlciBhIHBvd2VyX3N1cHBs
-eSBhbmQgZXhwb3J0IHRoZSBjdXJyZW50LWxpbWl0IHRocm91Z2ggdGhlCnBvd2VyX3N1cHBseSdz
-IGN1cnJlbnQtbWF4IHByb3BlcnR5LgoKQ2M6ICJZdWV5YW8gKE5hdGhhbikgWmh1IiA8eXVleWFv
-QGdvb2dsZS5jb20+ClNpZ25lZC1vZmYtYnk6IEhhbnMgZGUgR29lZGUgPGhkZWdvZWRlQHJlZGhh
-dC5jb20+Ci0tLQpDaGFuZ2VzIGluIHYyOgotUHV0IHRoZSBwc3kgY2xhc3MgZGV2aWNlIGNvZGUg
-ZGlyZWN0bHkgaW4gZnVzYjMwMi5jIHJhdGhlciB0aGVuIGludHJvZHVjaW5nCiBoZWxwZXJzIHdo
-aWNoIGFyZSBvbmx5IHVzZWQgYnkgZnVzYjMwMi5jCi1BZGQgYW4gb25saW5lIHByb3BlcnR5IHRv
-IHRoZSBwc3kgc28gdGhhdCB1cG93ZXIgZG9lcyBub3QgbWlzdGFrZSBpdCBmb3IgYQogc2Vjb25k
-IGJhdHRlcnkgaW4gdGhlIHN5c3RlbQotLS0KIGRyaXZlcnMvc3RhZ2luZy90eXBlYy9mdXNiMzAy
-L0tjb25maWcgICB8ICAyICstCiBkcml2ZXJzL3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9mdXNiMzAy
-LmMgfCA2MyArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0KIDIgZmlsZXMgY2hhbmdl
-ZCwgNjIgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJz
-L3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9LY29uZmlnIGIvZHJpdmVycy9zdGFnaW5nL3R5cGVjL2Z1
-c2IzMDIvS2NvbmZpZwppbmRleCBmY2UwOTlmZjM5ZmUuLjQ4YTRmMmZjZWUwMyAxMDA2NDQKLS0t
-IGEvZHJpdmVycy9zdGFnaW5nL3R5cGVjL2Z1c2IzMDIvS2NvbmZpZworKysgYi9kcml2ZXJzL3N0
-YWdpbmcvdHlwZWMvZnVzYjMwMi9LY29uZmlnCkBAIC0xLDYgKzEsNiBAQAogY29uZmlnIFRZUEVD
-X0ZVU0IzMDIKIAl0cmlzdGF0ZSAiRmFpcmNoaWxkIEZVU0IzMDIgVHlwZS1DIGNoaXAgZHJpdmVy
-IgotCWRlcGVuZHMgb24gSTJDCisJZGVwZW5kcyBvbiBJMkMgJiYgUE9XRVJfU1VQUExZCiAJaGVs
-cAogCSAgVGhlIEZhaXJjaGlsZCBGVVNCMzAyIFR5cGUtQyBjaGlwIGRyaXZlciB0aGF0IHdvcmtz
-IHdpdGgKIAkgIFR5cGUtQyBQb3J0IENvbnRyb2xsZXIgTWFuYWdlciB0byBwcm92aWRlIFVTQiBQ
-RCBhbmQgVVNCCmRpZmYgLS1naXQgYS9kcml2ZXJzL3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9mdXNi
-MzAyLmMgYi9kcml2ZXJzL3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9mdXNiMzAyLmMKaW5kZXggNmYw
-MDdmNjZkNTk3Li5jZjYzNTVmNTljZDkgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvc3RhZ2luZy90eXBl
-Yy9mdXNiMzAyL2Z1c2IzMDIuYworKysgYi9kcml2ZXJzL3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9m
-dXNiMzAyLmMKQEAgLTI4LDYgKzI4LDcgQEAKICNpbmNsdWRlIDxsaW51eC9vZl9kZXZpY2UuaD4K
-ICNpbmNsdWRlIDxsaW51eC9vZl9ncGlvLmg+CiAjaW5jbHVkZSA8bGludXgvcGluY3RybC9jb25z
-dW1lci5oPgorI2luY2x1ZGUgPGxpbnV4L3Bvd2VyX3N1cHBseS5oPgogI2luY2x1ZGUgPGxpbnV4
-L3Byb2NfZnMuaD4KICNpbmNsdWRlIDxsaW51eC9yZWd1bGF0b3IvY29uc3VtZXIuaD4KICNpbmNs
-dWRlIDxsaW51eC9zY2hlZC9jbG9jay5oPgpAQCAtMTA4LDYgKzEwOSwxMSBAQCBzdHJ1Y3QgZnVz
-YjMwMl9jaGlwIHsKIAkvKiBsb2NrIGZvciBzaGFyaW5nIGNoaXAgc3RhdGVzICovCiAJc3RydWN0
-IG11dGV4IGxvY2s7CiAKKwkvKiBwc3kgKyBwc3kgc3RhdHVzICovCisJc3RydWN0IHBvd2VyX3N1
-cHBseSAqcHN5OworCXUzMiBjdXJyZW50X2xpbWl0OworCXUzMiBzdXBwbHlfdm9sdGFnZTsKKwog
-CS8qIGNoaXAgc3RhdHVzICovCiAJZW51bSB0b2dnbGluZ19tb2RlIHRvZ2dsaW5nX21vZGU7CiAJ
-ZW51bSBzcmNfY3VycmVudF9zdGF0dXMgc3JjX2N1cnJlbnRfc3RhdHVzOwpAQCAtODc2LDExICs4
-ODIsMTMgQEAgc3RhdGljIGludCB0Y3BtX3NldF92YnVzKHN0cnVjdCB0Y3BjX2RldiAqZGV2LCBi
-b29sIG9uLCBib29sIGNoYXJnZSkKIAkJY2hpcC0+dmJ1c19vbiA9IG9uOwogCQlmdXNiMzAyX2xv
-ZyhjaGlwLCAidmJ1cyA6PSAlcyIsIG9uID8gIk9uIiA6ICJPZmYiKTsKIAl9Ci0JaWYgKGNoaXAt
-PmNoYXJnZV9vbiA9PSBjaGFyZ2UpCisJaWYgKGNoaXAtPmNoYXJnZV9vbiA9PSBjaGFyZ2UpIHsK
-IAkJZnVzYjMwMl9sb2coY2hpcCwgImNoYXJnZSBpcyBhbHJlYWR5ICVzIiwKIAkJCSAgICBjaGFy
-Z2UgPyAiT24iIDogIk9mZiIpOwotCWVsc2UKKwl9IGVsc2UgewogCQljaGlwLT5jaGFyZ2Vfb24g
-PSBjaGFyZ2U7CisJCXBvd2VyX3N1cHBseV9jaGFuZ2VkKGNoaXAtPnBzeSk7CisJfQogCiBkb25l
-OgogCW11dGV4X3VubG9jaygmY2hpcC0+bG9jayk7CkBAIC04OTYsNiArOTA0LDExIEBAIHN0YXRp
-YyBpbnQgdGNwbV9zZXRfY3VycmVudF9saW1pdChzdHJ1Y3QgdGNwY19kZXYgKmRldiwgdTMyIG1h
-eF9tYSwgdTMyIG12KQogCWZ1c2IzMDJfbG9nKGNoaXAsICJjdXJyZW50IGxpbWl0OiAlZCBtYSwg
-JWQgbXYgKG5vdCBpbXBsZW1lbnRlZCkiLAogCQkgICAgbWF4X21hLCBtdik7CiAKKwljaGlwLT5z
-dXBwbHlfdm9sdGFnZSA9IG12OworCWNoaXAtPmN1cnJlbnRfbGltaXQgPSBtYXhfbWE7CisKKwlw
-b3dlcl9zdXBwbHlfY2hhbmdlZChjaGlwLT5wc3kpOworCiAJcmV0dXJuIDA7CiB9CiAKQEAgLTE2
-ODEsNiArMTY5NCw0MyBAQCBzdGF0aWMgaXJxcmV0dXJuX3QgZnVzYjMwMl9pcnFfaW50bihpbnQg
-aXJxLCB2b2lkICpkZXZfaWQpCiAJcmV0dXJuIElSUV9IQU5ETEVEOwogfQogCitzdGF0aWMgaW50
-IGZ1c2IzMDJfcHN5X2dldF9wcm9wZXJ0eShzdHJ1Y3QgcG93ZXJfc3VwcGx5ICpwc3ksCisJCQkJ
-ICAgIGVudW0gcG93ZXJfc3VwcGx5X3Byb3BlcnR5IHBzcCwKKwkJCQkgICAgdW5pb24gcG93ZXJf
-c3VwcGx5X3Byb3B2YWwgKnZhbCkKK3sKKwlzdHJ1Y3QgZnVzYjMwMl9jaGlwICpjaGlwID0gcG93
-ZXJfc3VwcGx5X2dldF9kcnZkYXRhKHBzeSk7CisKKwlzd2l0Y2ggKHBzcCkgeworCWNhc2UgUE9X
-RVJfU1VQUExZX1BST1BfT05MSU5FOgorCQl2YWwtPmludHZhbCA9IGNoaXAtPmNoYXJnZV9vbjsK
-KwkJYnJlYWs7CisJY2FzZSBQT1dFUl9TVVBQTFlfUFJPUF9WT0xUQUdFX05PVzoKKwkJdmFsLT5p
-bnR2YWwgPSBjaGlwLT5zdXBwbHlfdm9sdGFnZSAqIDEwMDA7IC8qIG1WIC0+IMK1ViAqLworCQli
-cmVhazsKKwljYXNlIFBPV0VSX1NVUFBMWV9QUk9QX0NVUlJFTlRfTUFYOgorCQl2YWwtPmludHZh
-bCA9IGNoaXAtPmN1cnJlbnRfbGltaXQgKiAxMDAwOyAvKiBtQSAtPiDCtUEgKi8KKwkJYnJlYWs7
-CisJZGVmYXVsdDoKKwkJcmV0dXJuIC1FTk9EQVRBOworCX0KKworCXJldHVybiAwOworfQorCitz
-dGF0aWMgZW51bSBwb3dlcl9zdXBwbHlfcHJvcGVydHkgZnVzYjMwMl9wc3lfcHJvcGVydGllc1td
-ID0geworCVBPV0VSX1NVUFBMWV9QUk9QX09OTElORSwKKwlQT1dFUl9TVVBQTFlfUFJPUF9WT0xU
-QUdFX05PVywKKwlQT1dFUl9TVVBQTFlfUFJPUF9DVVJSRU5UX01BWCwKK307CisKK2NvbnN0IHN0
-cnVjdCBwb3dlcl9zdXBwbHlfZGVzYyBmdXNiMzAyX3BzeV9kZXNjID0geworCS5uYW1lCQk9ICJm
-dXNiMzAyLXR5cGVjLXNvdXJjZSIsCisJLnR5cGUJCT0gUE9XRVJfU1VQUExZX1RZUEVfVVNCX1RZ
-UEVfQywKKwkucHJvcGVydGllcwk9IGZ1c2IzMDJfcHN5X3Byb3BlcnRpZXMsCisJLm51bV9wcm9w
-ZXJ0aWVzCT0gQVJSQVlfU0laRShmdXNiMzAyX3BzeV9wcm9wZXJ0aWVzKSwKKwkuZ2V0X3Byb3Bl
-cnR5CT0gZnVzYjMwMl9wc3lfZ2V0X3Byb3BlcnR5LAorfTsKKwogc3RhdGljIGludCBpbml0X2dw
-aW8oc3RydWN0IGZ1c2IzMDJfY2hpcCAqY2hpcCkKIHsKIAlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5v
-ZGU7CkBAIC0xNzIwLDYgKzE3NzAsNyBAQCBzdGF0aWMgaW50IGZ1c2IzMDJfcHJvYmUoc3RydWN0
-IGkyY19jbGllbnQgKmNsaWVudCwKIAlzdHJ1Y3QgZnVzYjMwMl9jaGlwICpjaGlwOwogCXN0cnVj
-dCBpMmNfYWRhcHRlciAqYWRhcHRlcjsKIAlzdHJ1Y3QgZGV2aWNlICpkZXYgPSAmY2xpZW50LT5k
-ZXY7CisJc3RydWN0IHBvd2VyX3N1cHBseV9jb25maWcgY2ZnID0ge307CiAJY29uc3QgY2hhciAq
-bmFtZTsKIAlpbnQgcmV0ID0gMDsKIAl1MzIgdjsKQEAgLTE3NjYsNiArMTgxNywxNCBAQCBzdGF0
-aWMgaW50IGZ1c2IzMDJfcHJvYmUoc3RydWN0IGkyY19jbGllbnQgKmNsaWVudCwKIAkJCXJldHVy
-biAtRVBST0JFX0RFRkVSOwogCX0KIAorCWNmZy5kcnZfZGF0YSA9IGNoaXA7CisJY2hpcC0+cHN5
-ID0gZGV2bV9wb3dlcl9zdXBwbHlfcmVnaXN0ZXIoZGV2LCAmZnVzYjMwMl9wc3lfZGVzYywgJmNm
-Zyk7CisJaWYgKElTX0VSUihjaGlwLT5wc3kpKSB7CisJCXJldCA9IFBUUl9FUlIoY2hpcC0+cHN5
-KTsKKwkJZGV2X2VycihjaGlwLT5kZXYsICJFcnJvciByZWdpc3RlcmluZyBwb3dlci1zdXBwbHk6
-ICVkXG4iLCByZXQpOworCQlyZXR1cm4gcmV0OworCX0KKwogCXJldCA9IGZ1c2IzMDJfZGVidWdm
-c19pbml0KGNoaXApOwogCWlmIChyZXQgPCAwKQogCQlyZXR1cm4gcmV0OwotLSAKMi4xMy40Cgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkZXZlbCBtYWls
-aW5nIGxpc3QKZGV2ZWxAbGludXhkcml2ZXJwcm9qZWN0Lm9yZwpodHRwOi8vZHJpdmVyZGV2Lmxp
-bnV4ZHJpdmVycHJvamVjdC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcml2ZXJkZXYtZGV2ZWwK
+Add device-properties to make the bq24292i charger connected to
+the bus get its input-current-limit from the fusb302 Type-C port
+controller which is used on boards with the cht-wc PMIC,
+as well as regulator_init_data for the 5V boost converter on
+the bq24292i.
+
+Since this means we now hook-up the bq24292i to the fusb302 Type-C port
+controller add a check for the ACPI device which instantiates the fusb302.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+Changes in v2:
+-Set board_info.dev_name
+-Define and pass regulator_init_data for the bq24292i
+-Add a check for the ACPI device which instantiates the fusb302
+---
+ drivers/i2c/busses/Kconfig      |  5 ++++
+ drivers/i2c/busses/i2c-cht-wc.c | 52 +++++++++++++++++++++++++++++++++++------
+ 2 files changed, 50 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index 79c33817e412..272ef10fb629 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -197,6 +197,11 @@ config I2C_CHT_WC
+ 	  SMBus controller found in the Intel Cherry Trail Whiskey Cove PMIC
+ 	  found on some Intel Cherry Trail systems.
+ 
++	  Note this controller is hooked up to a TI bq24292i charger-IC,
++	  combined with a FUSB302 Type-C port-controller as such it is advised
++	  to also select CONFIG_CHARGER_BQ24190=m and CONFIG_TYPEC_FUSB302=m
++	  (the fusb302 driver currently is in drivers/staging).
++
+ config I2C_NFORCE2
+ 	tristate "Nvidia nForce2, nForce3 and nForce4"
+ 	depends on PCI
+diff --git a/drivers/i2c/busses/i2c-cht-wc.c b/drivers/i2c/busses/i2c-cht-wc.c
+index 21312eed09e4..69a159fc661a 100644
+--- a/drivers/i2c/busses/i2c-cht-wc.c
++++ b/drivers/i2c/busses/i2c-cht-wc.c
+@@ -16,6 +16,7 @@
+  * GNU General Public License for more details.
+  */
+ 
++#include <linux/acpi.h>
+ #include <linux/completion.h>
+ #include <linux/delay.h>
+ #include <linux/i2c.h>
+@@ -25,6 +26,7 @@
+ #include <linux/mfd/intel_soc_pmic.h>
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
++#include <linux/power/bq24190_charger.h>
+ #include <linux/slab.h>
+ 
+ #define CHT_WC_I2C_CTRL			0x5e24
+@@ -232,13 +234,36 @@ static const struct irq_chip cht_wc_i2c_irq_chip = {
+ 	.name			= "cht_wc_ext_chrg_irq_chip",
+ };
+ 
++static const char * const bq24190_suppliers[] = { "fusb302-typec-source" };
++
+ static const struct property_entry bq24190_props[] = {
+-	PROPERTY_ENTRY_STRING("extcon-name", "cht_wcove_pwrsrc"),
++	PROPERTY_ENTRY_STRING_ARRAY("supplied-from", bq24190_suppliers),
++	PROPERTY_ENTRY_BOOL("ti,input-current-limit-from-supplier"),
+ 	PROPERTY_ENTRY_BOOL("omit-battery-class"),
+ 	PROPERTY_ENTRY_BOOL("disable-reset"),
+ 	{ }
+ };
+ 
++static struct regulator_consumer_supply fusb302_consumer = {
++	.supply = "vbus",
++	/* Must match fusb302 dev_name in intel_cht_int33fe.c */
++	.dev_name = "i2c-fusb302",
++};
++
++static const struct regulator_init_data bq24190_vbus_init_data = {
++	.constraints = {
++		/* The name is used in intel_cht_int33fe.c do not change. */
++		.name = "cht_wc_usb_typec_vbus",
++		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
++	},
++	.consumer_supplies = &fusb302_consumer,
++	.num_consumer_supplies = 1,
++};
++
++static struct bq24190_platform_data bq24190_pdata = {
++	.regulator_init_data = &bq24190_vbus_init_data,
++};
++
+ static int cht_wc_i2c_adap_i2c_probe(struct platform_device *pdev)
+ {
+ 	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
+@@ -246,7 +271,9 @@ static int cht_wc_i2c_adap_i2c_probe(struct platform_device *pdev)
+ 	struct i2c_board_info board_info = {
+ 		.type = "bq24190",
+ 		.addr = 0x6b,
++		.dev_name = "bq24190",
+ 		.properties = bq24190_props,
++		.platform_data = &bq24190_pdata,
+ 	};
+ 	int ret, reg, irq;
+ 
+@@ -314,11 +341,21 @@ static int cht_wc_i2c_adap_i2c_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto remove_irq_domain;
+ 
+-	board_info.irq = adap->client_irq;
+-	adap->client = i2c_new_device(&adap->adapter, &board_info);
+-	if (!adap->client) {
+-		ret = -ENOMEM;
+-		goto del_adapter;
++	/*
++	 * Normally the Whiskey Cove PMIC is paired with a TI bq24292i charger,
++	 * connected to this i2c bus, and a max17047 fuel-gauge and a fusb302
++	 * USB Type-C controller connected to another i2c bus. In this setup
++	 * the max17047 and fusb302 devices are enumerated through an INT33FE
++	 * ACPI device. If this device is present register an i2c-client for
++	 * the TI bq24292i charger.
++	 */
++	if (acpi_dev_present("INT33FE", NULL, -1)) {
++		board_info.irq = adap->client_irq;
++		adap->client = i2c_new_device(&adap->adapter, &board_info);
++		if (!adap->client) {
++			ret = -ENOMEM;
++			goto del_adapter;
++		}
+ 	}
+ 
+ 	platform_set_drvdata(pdev, adap);
+@@ -335,7 +372,8 @@ static int cht_wc_i2c_adap_i2c_remove(struct platform_device *pdev)
+ {
+ 	struct cht_wc_i2c_adap *adap = platform_get_drvdata(pdev);
+ 
+-	i2c_unregister_device(adap->client);
++	if (adap->client)
++		i2c_unregister_device(adap->client);
+ 	i2c_del_adapter(&adap->adapter);
+ 	irq_domain_remove(adap->irq_domain);
+ 
+-- 
+2.13.4
