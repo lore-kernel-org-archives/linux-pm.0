@@ -1,58 +1,77 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 01/13] thermal/drivers/hisi: Fix missing interrupt enablement
-Date: Wed, 30 Aug 2017 10:47:25 +0200
-Message-ID: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f173.google.com ([209.85.128.173]:37651 "EHLO
-        mail-wr0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751271AbdH3Isp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2017 04:48:45 -0400
-Received: by mail-wr0-f173.google.com with SMTP id k9so4227329wre.4
-        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2017 01:48:44 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 05/13] thermal/drivers/hisi: Fix multiple alarm interrupts firing
+Date: Wed, 30 Aug 2017 10:47:29 +0200
+Message-ID: <1504082857-21702-5-git-send-email-daniel.lezcano@linaro.org>
+References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, leo.yan@linaro.org, open list <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-The interrupt for the temperature threshold is not enabled at the end of the
-probe function, enable it after the setup is complete.
+The DT specifies a threshold of 65000, we setup the register with a value in
+the temperature resolution for the controller, 64656.
 
-On the other side, the irq_enabled is not correctly set as we are checking if
-the interrupt is masked where 'yes' means irq_enabled=false.
+When we reach 64656, the interrupt fires, the interrupt is disabled. Then the
+irq thread runs and calls thermal_zone_device_update() which will call in turn
+hisi_thermal_get_temp().
 
-	irq_get_irqchip_state(data->irq, IRQCHIP_STATE_MASKED,
-				&data->irq_enabled);
+The function will look if the temperature decreased, assuming it was more than
+65000, but that is not the case because the current temperature is 64656
+(because of the rounding when setting the threshold). This condition being
+true, we re-enable the interrupt which fires immediately after exiting the irq
+thread. That happens again and again until the temperature goes to more than
+65000.
 
-As we are always enabling the interrupt, it is pointless to check if
-the interrupt is masked or not, just set irq_enabled to 'true'.
+Potentially, there is here an interrupt storm if the temperature stabilizes at
+this temperature. A very unlikely case but possible.
+
+In any case, it does not make sense to handle dozens of alarm interrupt for
+nothing.
+
+Fix this by rounding the threshold value to the controller resolution so the
+check against the threshold is consistent with the one set in the controller.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ drivers/thermal/hisi_thermal.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index bd3572c..8381696 100644
+index b58ad40..524310d 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -345,8 +345,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- 	}
- 
- 	hisi_thermal_enable_bind_irq_sensor(data);
--	irq_get_irqchip_state(data->irq, IRQCHIP_STATE_MASKED,
--			      &data->irq_enabled);
-+	data->irq_enabled = true;
- 
- 	for (i = 0; i < HISI_MAX_SENSORS; ++i) {
- 		ret = hisi_thermal_register_sensor(pdev, data,
-@@ -358,6 +357,8 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- 			hisi_thermal_toggle_sensor(&data->sensors[i], true);
- 	}
- 
-+	enable_irq(data->irq);
-+
- 	return 0;
+@@ -90,6 +90,12 @@ static inline long hisi_thermal_temp_to_step(long temp)
+ 	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
  }
  
++static inline long hisi_thermal_round_temp(int temp)
++{
++	return hisi_thermal_step_to_temp(
++		hisi_thermal_temp_to_step(temp));
++}
++
+ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+ 					 struct hisi_thermal_sensor *sensor)
+ {
+@@ -221,7 +227,7 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
+ 	sensor = &data->sensors;
+ 
+ 	dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
+-		 sensor->thres_temp / 1000);
++		 sensor->thres_temp);
+ 	mutex_unlock(&data->thermal_lock);
+ 
+ 	thermal_zone_device_update(data->sensors.tzd,
+@@ -255,7 +261,7 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+ 
+ 	for (i = 0; i < of_thermal_get_ntrips(sensor->tzd); i++) {
+ 		if (trip[i].type == THERMAL_TRIP_PASSIVE) {
+-			sensor->thres_temp = trip[i].temperature;
++			sensor->thres_temp = hisi_thermal_round_temp(trip[i].temperature);
+ 			break;
+ 		}
+ 	}
 -- 
 2.7.4
