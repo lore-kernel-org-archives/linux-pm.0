@@ -1,38 +1,139 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH v3 09/11] power: supply: bq24190_charger: Get
- input_current_limit from our supplier
-Date: Wed, 30 Aug 2017 07:47:46 -0700
-Message-ID: <20170830144746.GG6008@atomide.com>
-References: <20170830094814.17758-1-hdegoede@redhat.com>
- <20170830094814.17758-10-hdegoede@redhat.com>
+From: David Weinehall <david.weinehall@linux.intel.com>
+Subject: Re: [PATCH v2] iwlwifi: pcie: move rx workqueue initialization to
+ iwl_trans_pcie_alloc()
+Date: Wed, 30 Aug 2017 17:57:26 +0300
+Message-ID: <20170830145726.eq7qs4jtdsqa74lu@boom>
+References: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
+ <20170822073729.4856-1-luca@coelho.fi>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170830094814.17758-10-hdegoede@redhat.com>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
+In-Reply-To: <20170822073729.4856-1-luca@coelho.fi>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Luca Coelho <luca@coelho.fi>
+Cc: jikos@kernel.org, linux-wireless@vger.kernel.org, luciano.coelho@intel.com, linux-kernel@vger.kernel.org, linuxwifi@intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, david.weinehall@intel.com, johannes.berg@intel.com, kvalo@codeaurora.org, sara.sharon@intel.com, emmanuel.grumbach@intel.com
 List-Id: linux-pm@vger.kernel.org
 
-* Hans de Goede <hdegoede@redhat.com> [170830 02:49]:
-> On some devices the USB Type-C port power (USB PD 2.0) negotiation is
-> done by a separate port-controller IC, while the current limit is
-> controlled through another (charger) IC.
+On Tue, Aug 22, 2017 at 10:37:29AM +0300, Luca Coelho wrote:
+> From: Luca Coelho <luciano.coelho@intel.com>
 > 
-> It has been decided to model this by modelling the external Type-C
-> power brick (adapter/charger) as a power-supply class device which
-> supplies the charger-IC, with its voltage-now and current-max representing
-> the negotiated voltage and max current draw.
+> Work queues cannot be allocated when a mutex is held because the mutex
+> may be in use and that would make it sleep.  Doing so generates the
+> following splat with 4.13+:
 > 
-> This commit adds support for this to the bq24190_charger driver by adding
-> an external_power_changed callback and calling
-> power_supply_set_input_current_limit_from_supplier from this callback.
-> This callback will only get called if the bq24190 has a parent-supply.
+> [   19.513298] ======================================================
+> [   19.513429] WARNING: possible circular locking dependency detected
+> [   19.513557] 4.13.0-rc5+ #6 Not tainted
+> [   19.513638] ------------------------------------------------------
+> [   19.513767] cpuhp/0/12 is trying to acquire lock:
+> [   19.513867]  (&tz->lock){+.+.+.}, at: [<ffffffff924afebb>] thermal_zone_get_temp+0x5b/0xb0
+> [   19.514047]
+> [   19.514047] but task is already holding lock:
+> [   19.514166]  (cpuhp_state){+.+.+.}, at: [<ffffffff91cc4baa>] cpuhp_thread_fun+0x3a/0x210
+> [   19.514338]
+> [   19.514338] which lock already depends on the new lock.
 > 
-> Note this replaces the functionality to get the current-limit from an
-> extcon device, which will be removed in a follow-up commit.
+> This lock dependency already existed with previous kernel versions,
+> but it was not detected until commit 49dfe2a67797 ("cpuhotplug: Link
+> lock stacks for hotplug callbacks") was introduced.
 > 
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> Reported-by: David Weinehall <david.weinehall@intel.com>
+> Reported-by: Jiri Kosina <jikos@kernel.org>
+> Signed-off-by: Luca Coelho <luciano.coelho@intel.com>
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+With this patch I no longer get the lockdep warning,
+and the driver seems to work just as well as before.
+
+Thanks!
+
+Tested-by: David Weinehall <david.weinehall@linux.intel.com>
+
+> ---
+> In v2:
+>    - updated the commit message to a new version, with a grammar fix
+>      and the actual commit that exposed the problem;
+> 
+>  drivers/net/wireless/intel/iwlwifi/pcie/internal.h |  2 ++
+>  drivers/net/wireless/intel/iwlwifi/pcie/rx.c       | 10 +---------
+>  drivers/net/wireless/intel/iwlwifi/pcie/trans.c    |  9 +++++++++
+>  3 files changed, 12 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/internal.h b/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
+> index fa315d84e98e..a1ea9ef97ed9 100644
+> --- a/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
+> +++ b/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
+> @@ -787,6 +787,8 @@ int iwl_pci_fw_enter_d0i3(struct iwl_trans *trans);
+>  
+>  void iwl_pcie_enable_rx_wake(struct iwl_trans *trans, bool enable);
+>  
+> +void iwl_pcie_rx_allocator_work(struct work_struct *data);
+> +
+>  /* common functions that are used by gen2 transport */
+>  void iwl_pcie_apm_config(struct iwl_trans *trans);
+>  int iwl_pcie_prepare_card_hw(struct iwl_trans *trans);
+> diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/rx.c b/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
+> index 351c4423125a..942736d3fa75 100644
+> --- a/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
+> +++ b/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
+> @@ -597,7 +597,7 @@ static void iwl_pcie_rx_allocator_get(struct iwl_trans *trans,
+>  	rxq->free_count += RX_CLAIM_REQ_ALLOC;
+>  }
+>  
+> -static void iwl_pcie_rx_allocator_work(struct work_struct *data)
+> +void iwl_pcie_rx_allocator_work(struct work_struct *data)
+>  {
+>  	struct iwl_rb_allocator *rba_p =
+>  		container_of(data, struct iwl_rb_allocator, rx_alloc);
+> @@ -900,10 +900,6 @@ static int _iwl_pcie_rx_init(struct iwl_trans *trans)
+>  			return err;
+>  	}
+>  	def_rxq = trans_pcie->rxq;
+> -	if (!rba->alloc_wq)
+> -		rba->alloc_wq = alloc_workqueue("rb_allocator",
+> -						WQ_HIGHPRI | WQ_UNBOUND, 1);
+> -	INIT_WORK(&rba->rx_alloc, iwl_pcie_rx_allocator_work);
+>  
+>  	spin_lock(&rba->lock);
+>  	atomic_set(&rba->req_pending, 0);
+> @@ -1017,10 +1013,6 @@ void iwl_pcie_rx_free(struct iwl_trans *trans)
+>  	}
+>  
+>  	cancel_work_sync(&rba->rx_alloc);
+> -	if (rba->alloc_wq) {
+> -		destroy_workqueue(rba->alloc_wq);
+> -		rba->alloc_wq = NULL;
+> -	}
+>  
+>  	iwl_pcie_free_rbs_pool(trans);
+>  
+> diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/trans.c b/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
+> index f95eec52508e..3927bbf04f72 100644
+> --- a/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
+> +++ b/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
+> @@ -1786,6 +1786,11 @@ void iwl_trans_pcie_free(struct iwl_trans *trans)
+>  		iwl_pcie_tx_free(trans);
+>  	iwl_pcie_rx_free(trans);
+>  
+> +	if (trans_pcie->rba.alloc_wq) {
+> +		destroy_workqueue(trans_pcie->rba.alloc_wq);
+> +		trans_pcie->rba.alloc_wq = NULL;
+> +	}
+> +
+>  	if (trans_pcie->msix_enabled) {
+>  		for (i = 0; i < trans_pcie->alloc_vecs; i++) {
+>  			irq_set_affinity_hint(
+> @@ -3169,6 +3174,10 @@ struct iwl_trans *iwl_trans_pcie_alloc(struct pci_dev *pdev,
+>  		trans_pcie->inta_mask = CSR_INI_SET_MASK;
+>  	 }
+>  
+> +	trans_pcie->rba.alloc_wq = alloc_workqueue("rb_allocator",
+> +						   WQ_HIGHPRI | WQ_UNBOUND, 1);
+> +	INIT_WORK(&trans_pcie->rba.rx_alloc, iwl_pcie_rx_allocator_work);
+> +
+>  #ifdef CONFIG_IWLWIFI_PCIE_RTPM
+>  	trans->runtime_pm_mode = IWL_PLAT_PM_MODE_D0I3;
+>  #else
+> -- 
+> 2.14.1
+> 
