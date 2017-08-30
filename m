@@ -1,262 +1,115 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFT][PATCH v2 2/3] PM / ACPI: Use SAFE_SUSPEND in the generic ACPI PM domain
-Date: Wed, 30 Aug 2017 02:04:23 +0200
-Message-ID: <1668024.TYSJ14SKLf@aspire.rjw.lan>
-References: <1551534.5XKjjnxbAy@aspire.rjw.lan>
+Subject: [RFT][PATCH v2 0/3] PM / ACPI / i2c: Runtime PM aware system sleep handling
+Date: Wed, 30 Aug 2017 02:00:27 +0200
+Message-ID: <1551534.5XKjjnxbAy@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1551534.5XKjjnxbAy@aspire.rjw.lan>
-Sender: linux-i2c-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: Wolfram Sang <wsa@the-dreams.de>, linux-acpi@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, linux-i2c@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
 
-Make the generic ACPI PM domain and the ACPI LPSS driver take the
-SAFE_SUSPEND driver flag into consideration when deciding whether
-or not to runtime resume devices during system suspend.
+The point here is to avoid runtime resuming i2c designware devices during
+system suspend in the generic ACPI PM domain and the ACPI LPSS driver if
+that is not necessary.  The ordering issue between i2c designware and
+other devices relying on it for their PM is not addressed here (but it can
+be addressed on top of this to some extent).
 
-Namely, if the flag is set, acpi_subsys_suspend() will not attempt
-to runtime resume the device unless acpi_subsys_prepare() has found
-that the power state of the device has to be updated.  Accordingly,
-acpi_subsys_suspend_late(), acpi_subsys_resume_late(),
-acpi_lpss_suspend_late(), and acpi_lpss_resume_late() will only
-try to update the power state of the device and its wakeup settings
-if the device has been runtime resumed beforehand.
+For this to work, the ACPI PM domain and the LPSS driver (which also has to
+work with i2c-designware-platdrv) have to track the status of the device in
+order to handle it correctly regardless of whether or not the device is
+runtime-suspended when system suspend starts.
 
-Also, if the flag is set, acpi_subsys_freeze() will not attempt
-to runtime resume the device at all.
+The primary problem with that is that acpi_subsys_suspend() has to decide
+whether or not to runtime resume the device and then
+acpi_subsys_suspend_late/resume_early() (and their counterparts in the ACPI
+LPSS driver) need to know whether or not to run acpi_dev_suspend_late/resume_early(), respectively.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+In order to make that decision, acpi_subsys_suspend() needs to know (a) if
+the power state of the device has to be updated (in which case the device
+should be runtime resumed) and (b) if the driver's callbacks that will be
+run subsequently can cope with a runtime suspended device.  The former can
+be figured out from the check done in acpi_subsys_prepare() (the result of it
+needs to be saved), but the latter is only known to the driver, so it needs a
+way to tell the code above it about that.  Hence, the SAFE_SUSPEND flag
+introduced by the first patch.
 
--> v2: Also check SAFE_SUSPEND in acpi_subsys_freeze().
+The second patch simply reworks the ACPI PM domain and the ACPI LPSS driver
+to carry out all the checks etc as needed.
 
----
- drivers/acpi/acpi_lpss.c |   20 ++++++---
- drivers/acpi/device_pm.c |  101 +++++++++++++++++++++++++++++++++++------------
- include/acpi/acpi_bus.h  |    1 
- 3 files changed, 90 insertions(+), 32 deletions(-)
+The third one finally updates i2c-designware-platdrv (details in the changelog).
 
-Index: linux-pm/include/acpi/acpi_bus.h
-===================================================================
---- linux-pm.orig/include/acpi/acpi_bus.h
-+++ linux-pm/include/acpi/acpi_bus.h
-@@ -287,6 +287,7 @@ struct acpi_device_power {
- 	int state;		/* Current state */
- 	struct acpi_device_power_flags flags;
- 	struct acpi_device_power_state states[ACPI_D_STATE_COUNT];	/* Power states (D0-D3Cold) */
-+	bool update_state;
- };
- 
- /* Performance Management */
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -899,6 +899,7 @@ int acpi_dev_runtime_resume(struct devic
- 
- 	error = acpi_dev_pm_full_power(adev);
- 	acpi_device_wakeup_disable(adev);
-+	adev->power.update_state = true;
- 	return error;
- }
- EXPORT_SYMBOL_GPL(acpi_dev_runtime_resume);
-@@ -989,33 +990,47 @@ int acpi_dev_resume_early(struct device
- }
- EXPORT_SYMBOL_GPL(acpi_dev_resume_early);
- 
--/**
-- * acpi_subsys_prepare - Prepare device for system transition to a sleep state.
-- * @dev: Device to prepare.
-- */
--int acpi_subsys_prepare(struct device *dev)
-+static bool acpi_dev_state_update_needed(struct device *dev)
- {
- 	struct acpi_device *adev = ACPI_COMPANION(dev);
- 	u32 sys_target;
- 	int ret, state;
- 
--	ret = pm_generic_prepare(dev);
--	if (ret < 0)
--		return ret;
-+	if (!pm_runtime_suspended(dev))
-+		return true;
- 
--	if (!adev || !pm_runtime_suspended(dev)
--	    || device_may_wakeup(dev) != !!adev->wakeup.prepare_count)
--		return 0;
-+	if (device_may_wakeup(dev) != !!adev->wakeup.prepare_count)
-+		return true;
- 
- 	sys_target = acpi_target_system_state();
- 	if (sys_target == ACPI_STATE_S0)
--		return 1;
-+		return false;
- 
- 	if (adev->power.flags.dsw_present)
--		return 0;
-+		return true;
- 
- 	ret = acpi_dev_pm_get_state(dev, adev, sys_target, NULL, &state);
--	return !ret && state == adev->power.state;
-+	if (ret)
-+		return true;
-+
-+	return state != adev->power.state;
-+}
-+
-+/**
-+ * acpi_subsys_prepare - Prepare device for system transition to a sleep state.
-+ * @dev: Device to prepare.
-+ */
-+int acpi_subsys_prepare(struct device *dev)
-+{
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
-+	int ret;
-+
-+	ret = pm_generic_prepare(dev);
-+	if (ret < 0 || !adev)
-+		return ret;
-+
-+	adev->power.update_state = acpi_dev_state_update_needed(dev);
-+	return !adev->power.update_state;
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
- 
-@@ -1024,11 +1039,30 @@ EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
-  * @dev: Device to handle.
-  *
-  * Follow PCI and resume devices suspended at run time before running their
-- * system suspend callbacks.
-+ * system suspend callbacks, unless the DPM_FLAG_SAFE_SUSPEND driver flag is
-+ * set for them.
-  */
- int acpi_subsys_suspend(struct device *dev)
- {
--	pm_runtime_resume(dev);
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
-+	bool resume = !(dev->power.driver_flags & DPM_FLAG_SAFE_SUSPEND);
-+
-+	if (adev) {
-+		/* The device may have resumed in the meantime. */
-+		if (pm_runtime_suspended(dev)) {
-+			resume = resume || adev->power.update_state;
-+		} else {
-+			/*
-+			 * Work around a super-theoretical race between runtime
-+			 * resume and acpi_dev_state_update_needed().
-+			 */
-+			adev->power.update_state = true;
-+			resume = false;
-+		}
-+	}
-+	if (resume)
-+		pm_runtime_resume(dev);
-+
- 	return pm_generic_suspend(dev);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_suspend);
-@@ -1042,8 +1076,17 @@ EXPORT_SYMBOL_GPL(acpi_subsys_suspend);
-  */
- int acpi_subsys_suspend_late(struct device *dev)
- {
--	int ret = pm_generic_suspend_late(dev);
--	return ret ? ret : acpi_dev_suspend_late(dev);
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
-+	int ret;
-+
-+	ret = pm_generic_suspend_late(dev);
-+	if (ret)
-+		return ret;
-+
-+	if (adev && adev->power.update_state)
-+		return acpi_dev_suspend_late(dev);
-+
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_suspend_late);
- 
-@@ -1057,8 +1100,15 @@ EXPORT_SYMBOL_GPL(acpi_subsys_suspend_la
-  */
- int acpi_subsys_resume_early(struct device *dev)
- {
--	int ret = acpi_dev_resume_early(dev);
--	return ret ? ret : pm_generic_resume_early(dev);
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
-+
-+	if (adev && adev->power.update_state) {
-+		int ret = acpi_dev_resume_early(dev);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return pm_generic_resume_early(dev);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_resume_early);
- 
-@@ -1069,12 +1119,13 @@ EXPORT_SYMBOL_GPL(acpi_subsys_resume_ear
- int acpi_subsys_freeze(struct device *dev)
- {
- 	/*
--	 * This used to be done in acpi_subsys_prepare() for all devices and
--	 * some drivers may depend on it, so do it here.  Ideally, however,
--	 * runtime-suspended devices should not be touched during freeze/thaw
--	 * transitions.
-+	 * The drivers of devices without the DPM_FLAG_SAFE_SUSPEND flag set
-+	 * may not be able to handle runtime-suspended devices going forward, so
-+	 * resume them here here.
- 	 */
--	pm_runtime_resume(dev);
-+	if (!(dev->power.driver_flags & DPM_FLAG_SAFE_SUSPEND))
-+		pm_runtime_resume(dev);
-+
- 	return pm_generic_freeze(dev);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_freeze);
-Index: linux-pm/drivers/acpi/acpi_lpss.c
-===================================================================
---- linux-pm.orig/drivers/acpi/acpi_lpss.c
-+++ linux-pm/drivers/acpi/acpi_lpss.c
-@@ -719,7 +719,8 @@ static void acpi_lpss_dismiss(struct dev
- #ifdef CONFIG_PM_SLEEP
- static int acpi_lpss_suspend_late(struct device *dev)
- {
--	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
-+	struct lpss_private_data *pdata = acpi_driver_data(adev);
- 	int ret;
- 
- 	ret = pm_generic_suspend_late(dev);
-@@ -729,17 +730,22 @@ static int acpi_lpss_suspend_late(struct
- 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
- 		acpi_lpss_save_ctx(dev, pdata);
- 
--	return acpi_dev_suspend_late(dev);
-+	if (adev->power.update_state)
-+		return acpi_dev_suspend_late(dev);
-+
-+	return 0;
- }
- 
- static int acpi_lpss_resume_early(struct device *dev)
- {
--	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
--	int ret;
-+	struct acpi_device *adev = ACPI_COMPANION(dev);
-+	struct lpss_private_data *pdata = acpi_driver_data(adev);
- 
--	ret = acpi_dev_resume_early(dev);
--	if (ret)
--		return ret;
-+	if (adev->power.update_state) {
-+		int ret = acpi_dev_resume_early(dev);
-+		if (ret)
-+			return ret;
-+	}
- 
- 	acpi_lpss_d3_to_d0_delay(pdata);
- 
+The cases to consider are the following: i2c-designware-platdrv without ACPI
+(either the ACPI PM domain or the ACPI LPSS driver), i2c-designware-platdrv
+with the generic ACPI PM domain (direct_complete set or unset) and
+i2c-designware-platdrv with the ACPI LPSS driver (direct_complete set or unset).
+
+First, for i2c-designware-platdrv without ACPI, the first two patches don't
+matter and the third one moves the callbacks to a later phase of suspend
+and an earlier phase of resume and drops ->prepare and ->complete.  The effect
+of dropping ->prepare is that it will not return 1 any more, so the core will
+never set power.direct_complete for this device.  The effect of the other
+change is that system suspend will always call dw_i2c_plat_suspend() after
+all invocations of dw_i2c_plat_resume() by runtime resume and system resume
+will always call the latter before any post-resume runtime PM operations.
+If the device is not runtime-suspended before system suspend, dw_i2c_plat_suspend()
+(executed as the ->suspend_late callback) will see the "suspended" flag unset
+and it will suspend the device.  Otherwise, it will see the "suspended" flag set
+and it will return early, but it will set "suspend_skipped".  During system resume,
+dw_i2c_plat_resume() will always see "suspended" set (it won't see "suspended"
+set when invoked as the runtime resume callback), but if it sees "suspend_skipped"
+set (which can only be set during system suspend), it will return early (it
+needs to clear "suspend_skipped" then in case it is invoked shortly as the
+runtime resume callback).  Otherwise, it will resume the device.
+
+Next, consider i2c-designware-platdrv with the ACPI PM domain and say that the
+device is not runtime-suspended when system suspend is started.  In that case
+the core will not set power.direct_complete for the device and
+acpi_subsys_suspend() will run.  It will see that the device is not runtime-
+suspended, so it will only update power.update_state (the driver's ->suspend
+callback could be run too, but it is not present).  During late suspend,
+acpi_subsys_suspend_late() will be called.  It will run the driver's
+->suspend_late callback (which will suspend the device, because it will see
+"suspended" unset) and because power.update_state is set,
+acpi_dev_suspend_late() will be called to change the power state and wakeup
+settings of the device.  During resume, acpi_subsys_resume_early() will
+see power.update_state set, so it will call acpi_dev_resume_early() to power-up
+the device and it will call the driver's ->resume_early (which will see
+"suspend_skipped" unset, so it will resume the device).
+
+If the device is runtime-suspended when system suspend starts, there are a
+few possibilities.  If the device's power state doesn't need to be updated,
+the PM domain's ->prepare will return 1 and the core may or may not set
+power.direct_complete for the device.  If it is set, the callbacks will
+not be invoked and the PM domain's ->complete will queue up runtime resume
+of the device to update its power state.  If power.direct_complete is not set,
+acpi_subsys_suspend() will run again, but this time the device *is* runtime-
+suspended.  Then, as a rule, power.update_state will not be set and the
+function will return without doing anything (so far, so good).  Next, (unless
+the device is runtime resumed in the meantime) acpi_dev_suspend_late() will
+call the driver's ->suspend_late (which will see "suspended" set, so it will
+return early) and then it will return early because of power.update_state
+unset.  During resume, acpi_subsys_resume_early() will skip powering up
+the device and will call the driver's ->resume_early (which will see
+"suspend_skipped" set and will return early), so still OK.
+
+If the device is runtime-suspended when system suspend starts, but its power
+settings need to be updated, the bus type's ->prepare will return 0 and
+power.direct_complete will not be set for the device, so acpi_subsys_suspend()
+will run.  However, this time it will see power.update_state set, so it will
+runtime resume the device.  From this point on, this case is analogous to the
+one when the device was not runtime-suspended to start with.
+
+The "i2c-designware-platdrv with the ACPI LPSS driver" case should be analogous
+to the one with the generic ACPI PM domain if I haven't overlooked anything,
+so to my eyes it should work.
+
+Please test if you can and let me know if anything breaks.
+
+Thanks,
+Rafael
+
