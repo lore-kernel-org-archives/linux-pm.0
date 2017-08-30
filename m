@@ -1,44 +1,114 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v3 05/11] staging: typec: fusb302: Use client->irq as irq if set
-Date: Wed, 30 Aug 2017 11:48:08 +0200
-Message-ID: <20170830094814.17758-6-hdegoede@redhat.com>
+Subject: [PATCH v3 07/11] staging: typec: fusb302: Export current-limit
+ through a power_supply class dev
+Date: Wed, 30 Aug 2017 11:48:10 +0200
+Message-ID: <20170830094814.17758-8-hdegoede@redhat.com>
 References: <20170830094814.17758-1-hdegoede@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
 In-Reply-To: <20170830094814.17758-1-hdegoede@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
+List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
+List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
+List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
+List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
+ <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
+Errors-To: driverdev-devel-bounces@linuxdriverproject.org
+Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
 To: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org, "Yueyao (Nathan) Zhu" <yueyao@google.com>
+Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Yueyao (Nathan) Zhu" <yueyao@google.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The fusb302 is also used on x86 systems where the platform code sets
-the irq in client->irq and there is no gpio named fcs,int_n.
-
-Cc: "Yueyao (Nathan) Zhu" <yueyao@google.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/staging/typec/fusb302/fusb302.c | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/staging/typec/fusb302/fusb302.c b/drivers/staging/typec/fusb302/fusb302.c
-index 1c1751c994db..675161cf4f3a 100644
---- a/drivers/staging/typec/fusb302/fusb302.c
-+++ b/drivers/staging/typec/fusb302/fusb302.c
-@@ -1735,9 +1735,13 @@ static int fusb302_probe(struct i2c_client *client,
- 		goto destroy_workqueue;
- 	}
- 
--	ret = init_gpio(chip);
--	if (ret < 0)
--		goto destroy_workqueue;
-+	if (client->irq) {
-+		chip->gpio_int_n_irq = client->irq;
-+	} else {
-+		ret = init_gpio(chip);
-+		if (ret < 0)
-+			goto destroy_workqueue;
-+	}
- 
- 	chip->tcpm_port = tcpm_register_port(&client->dev, &chip->tcpc_dev);
- 	if (IS_ERR(chip->tcpm_port)) {
--- 
-2.13.4
+VGhlIGZ1c2IzMDIgVHlwZS1DIHBvcnQtY29udHJvbGxlciBjYW5ub3QgY29udHJvbCB0aGUgY3Vy
+cmVudC1saW1pdApkaXJlY3RseSwgc28gd2UgbmVlZCB0byBleHBvcnRlZCB0aGUgbGltaXQgc28g
+dGhhdCBhbm90aGVyIGRyaXZlcgooZS5nLiB0aGUgY2hhcmdlciBkcml2ZXIpIGNhbiBwaWNrIHRo
+ZSBsaW1pdCB1cCBhbmQgY29uZmlndXJlIHRoZQpzeXN0ZW0gYWNjb3JkaW5nbHkuCgpUaGUgcG93
+ZXItc3VwcGx5IHN1YnN5cyBhbHJlYWR5IHByb3ZpZGVzIGluZnJhc3RydWN0dXJlIGZvciB0aGlz
+LApwb3dlci1zdXBwbHkgZGV2aWNlcyBoYXZlIHRoZSBub3Rpb24gb2YgYmVpbmcgc3VwcGxpZWQg
+YnkgYW5vdGhlcgpwb3dlci1zdXBwbHkgYW5kIGhhdmUgcHJvcGVydGllcyB0aHJvdWdoIHdoaWNo
+IHdlIGNhbiBleHBvcnQgdGhlCmN1cnJlbnQtbGltaXQuCgpSZWdpc3RlciBhIHBvd2VyX3N1cHBs
+eSBhbmQgZXhwb3J0IHRoZSBjdXJyZW50LWxpbWl0IHRocm91Z2ggdGhlCnBvd2VyX3N1cHBseSdz
+IGN1cnJlbnQtbWF4IHByb3BlcnR5LgoKQ2M6ICJZdWV5YW8gKE5hdGhhbikgWmh1IiA8eXVleWFv
+QGdvb2dsZS5jb20+ClNpZ25lZC1vZmYtYnk6IEhhbnMgZGUgR29lZGUgPGhkZWdvZWRlQHJlZGhh
+dC5jb20+Ci0tLQpDaGFuZ2VzIGluIHYyOgotUHV0IHRoZSBwc3kgY2xhc3MgZGV2aWNlIGNvZGUg
+ZGlyZWN0bHkgaW4gZnVzYjMwMi5jIHJhdGhlciB0aGVuIGludHJvZHVjaW5nCiBoZWxwZXJzIHdo
+aWNoIGFyZSBvbmx5IHVzZWQgYnkgZnVzYjMwMi5jCi1BZGQgYW4gb25saW5lIHByb3BlcnR5IHRv
+IHRoZSBwc3kgc28gdGhhdCB1cG93ZXIgZG9lcyBub3QgbWlzdGFrZSBpdCBmb3IgYQogc2Vjb25k
+IGJhdHRlcnkgaW4gdGhlIHN5c3RlbQotLS0KIGRyaXZlcnMvc3RhZ2luZy90eXBlYy9mdXNiMzAy
+L0tjb25maWcgICB8ICAyICstCiBkcml2ZXJzL3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9mdXNiMzAy
+LmMgfCA2MyArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0KIDIgZmlsZXMgY2hhbmdl
+ZCwgNjIgaW5zZXJ0aW9ucygrKSwgMyBkZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9kcml2ZXJz
+L3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9LY29uZmlnIGIvZHJpdmVycy9zdGFnaW5nL3R5cGVjL2Z1
+c2IzMDIvS2NvbmZpZwppbmRleCBmY2UwOTlmZjM5ZmUuLjQ4YTRmMmZjZWUwMyAxMDA2NDQKLS0t
+IGEvZHJpdmVycy9zdGFnaW5nL3R5cGVjL2Z1c2IzMDIvS2NvbmZpZworKysgYi9kcml2ZXJzL3N0
+YWdpbmcvdHlwZWMvZnVzYjMwMi9LY29uZmlnCkBAIC0xLDYgKzEsNiBAQAogY29uZmlnIFRZUEVD
+X0ZVU0IzMDIKIAl0cmlzdGF0ZSAiRmFpcmNoaWxkIEZVU0IzMDIgVHlwZS1DIGNoaXAgZHJpdmVy
+IgotCWRlcGVuZHMgb24gSTJDCisJZGVwZW5kcyBvbiBJMkMgJiYgUE9XRVJfU1VQUExZCiAJaGVs
+cAogCSAgVGhlIEZhaXJjaGlsZCBGVVNCMzAyIFR5cGUtQyBjaGlwIGRyaXZlciB0aGF0IHdvcmtz
+IHdpdGgKIAkgIFR5cGUtQyBQb3J0IENvbnRyb2xsZXIgTWFuYWdlciB0byBwcm92aWRlIFVTQiBQ
+RCBhbmQgVVNCCmRpZmYgLS1naXQgYS9kcml2ZXJzL3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9mdXNi
+MzAyLmMgYi9kcml2ZXJzL3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9mdXNiMzAyLmMKaW5kZXggNmYw
+MDdmNjZkNTk3Li5jZjYzNTVmNTljZDkgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvc3RhZ2luZy90eXBl
+Yy9mdXNiMzAyL2Z1c2IzMDIuYworKysgYi9kcml2ZXJzL3N0YWdpbmcvdHlwZWMvZnVzYjMwMi9m
+dXNiMzAyLmMKQEAgLTI4LDYgKzI4LDcgQEAKICNpbmNsdWRlIDxsaW51eC9vZl9kZXZpY2UuaD4K
+ICNpbmNsdWRlIDxsaW51eC9vZl9ncGlvLmg+CiAjaW5jbHVkZSA8bGludXgvcGluY3RybC9jb25z
+dW1lci5oPgorI2luY2x1ZGUgPGxpbnV4L3Bvd2VyX3N1cHBseS5oPgogI2luY2x1ZGUgPGxpbnV4
+L3Byb2NfZnMuaD4KICNpbmNsdWRlIDxsaW51eC9yZWd1bGF0b3IvY29uc3VtZXIuaD4KICNpbmNs
+dWRlIDxsaW51eC9zY2hlZC9jbG9jay5oPgpAQCAtMTA4LDYgKzEwOSwxMSBAQCBzdHJ1Y3QgZnVz
+YjMwMl9jaGlwIHsKIAkvKiBsb2NrIGZvciBzaGFyaW5nIGNoaXAgc3RhdGVzICovCiAJc3RydWN0
+IG11dGV4IGxvY2s7CiAKKwkvKiBwc3kgKyBwc3kgc3RhdHVzICovCisJc3RydWN0IHBvd2VyX3N1
+cHBseSAqcHN5OworCXUzMiBjdXJyZW50X2xpbWl0OworCXUzMiBzdXBwbHlfdm9sdGFnZTsKKwog
+CS8qIGNoaXAgc3RhdHVzICovCiAJZW51bSB0b2dnbGluZ19tb2RlIHRvZ2dsaW5nX21vZGU7CiAJ
+ZW51bSBzcmNfY3VycmVudF9zdGF0dXMgc3JjX2N1cnJlbnRfc3RhdHVzOwpAQCAtODc2LDExICs4
+ODIsMTMgQEAgc3RhdGljIGludCB0Y3BtX3NldF92YnVzKHN0cnVjdCB0Y3BjX2RldiAqZGV2LCBi
+b29sIG9uLCBib29sIGNoYXJnZSkKIAkJY2hpcC0+dmJ1c19vbiA9IG9uOwogCQlmdXNiMzAyX2xv
+ZyhjaGlwLCAidmJ1cyA6PSAlcyIsIG9uID8gIk9uIiA6ICJPZmYiKTsKIAl9Ci0JaWYgKGNoaXAt
+PmNoYXJnZV9vbiA9PSBjaGFyZ2UpCisJaWYgKGNoaXAtPmNoYXJnZV9vbiA9PSBjaGFyZ2UpIHsK
+IAkJZnVzYjMwMl9sb2coY2hpcCwgImNoYXJnZSBpcyBhbHJlYWR5ICVzIiwKIAkJCSAgICBjaGFy
+Z2UgPyAiT24iIDogIk9mZiIpOwotCWVsc2UKKwl9IGVsc2UgewogCQljaGlwLT5jaGFyZ2Vfb24g
+PSBjaGFyZ2U7CisJCXBvd2VyX3N1cHBseV9jaGFuZ2VkKGNoaXAtPnBzeSk7CisJfQogCiBkb25l
+OgogCW11dGV4X3VubG9jaygmY2hpcC0+bG9jayk7CkBAIC04OTYsNiArOTA0LDExIEBAIHN0YXRp
+YyBpbnQgdGNwbV9zZXRfY3VycmVudF9saW1pdChzdHJ1Y3QgdGNwY19kZXYgKmRldiwgdTMyIG1h
+eF9tYSwgdTMyIG12KQogCWZ1c2IzMDJfbG9nKGNoaXAsICJjdXJyZW50IGxpbWl0OiAlZCBtYSwg
+JWQgbXYgKG5vdCBpbXBsZW1lbnRlZCkiLAogCQkgICAgbWF4X21hLCBtdik7CiAKKwljaGlwLT5z
+dXBwbHlfdm9sdGFnZSA9IG12OworCWNoaXAtPmN1cnJlbnRfbGltaXQgPSBtYXhfbWE7CisKKwlw
+b3dlcl9zdXBwbHlfY2hhbmdlZChjaGlwLT5wc3kpOworCiAJcmV0dXJuIDA7CiB9CiAKQEAgLTE2
+ODEsNiArMTY5NCw0MyBAQCBzdGF0aWMgaXJxcmV0dXJuX3QgZnVzYjMwMl9pcnFfaW50bihpbnQg
+aXJxLCB2b2lkICpkZXZfaWQpCiAJcmV0dXJuIElSUV9IQU5ETEVEOwogfQogCitzdGF0aWMgaW50
+IGZ1c2IzMDJfcHN5X2dldF9wcm9wZXJ0eShzdHJ1Y3QgcG93ZXJfc3VwcGx5ICpwc3ksCisJCQkJ
+ICAgIGVudW0gcG93ZXJfc3VwcGx5X3Byb3BlcnR5IHBzcCwKKwkJCQkgICAgdW5pb24gcG93ZXJf
+c3VwcGx5X3Byb3B2YWwgKnZhbCkKK3sKKwlzdHJ1Y3QgZnVzYjMwMl9jaGlwICpjaGlwID0gcG93
+ZXJfc3VwcGx5X2dldF9kcnZkYXRhKHBzeSk7CisKKwlzd2l0Y2ggKHBzcCkgeworCWNhc2UgUE9X
+RVJfU1VQUExZX1BST1BfT05MSU5FOgorCQl2YWwtPmludHZhbCA9IGNoaXAtPmNoYXJnZV9vbjsK
+KwkJYnJlYWs7CisJY2FzZSBQT1dFUl9TVVBQTFlfUFJPUF9WT0xUQUdFX05PVzoKKwkJdmFsLT5p
+bnR2YWwgPSBjaGlwLT5zdXBwbHlfdm9sdGFnZSAqIDEwMDA7IC8qIG1WIC0+IMK1ViAqLworCQli
+cmVhazsKKwljYXNlIFBPV0VSX1NVUFBMWV9QUk9QX0NVUlJFTlRfTUFYOgorCQl2YWwtPmludHZh
+bCA9IGNoaXAtPmN1cnJlbnRfbGltaXQgKiAxMDAwOyAvKiBtQSAtPiDCtUEgKi8KKwkJYnJlYWs7
+CisJZGVmYXVsdDoKKwkJcmV0dXJuIC1FTk9EQVRBOworCX0KKworCXJldHVybiAwOworfQorCitz
+dGF0aWMgZW51bSBwb3dlcl9zdXBwbHlfcHJvcGVydHkgZnVzYjMwMl9wc3lfcHJvcGVydGllc1td
+ID0geworCVBPV0VSX1NVUFBMWV9QUk9QX09OTElORSwKKwlQT1dFUl9TVVBQTFlfUFJPUF9WT0xU
+QUdFX05PVywKKwlQT1dFUl9TVVBQTFlfUFJPUF9DVVJSRU5UX01BWCwKK307CisKK2NvbnN0IHN0
+cnVjdCBwb3dlcl9zdXBwbHlfZGVzYyBmdXNiMzAyX3BzeV9kZXNjID0geworCS5uYW1lCQk9ICJm
+dXNiMzAyLXR5cGVjLXNvdXJjZSIsCisJLnR5cGUJCT0gUE9XRVJfU1VQUExZX1RZUEVfVVNCX1RZ
+UEVfQywKKwkucHJvcGVydGllcwk9IGZ1c2IzMDJfcHN5X3Byb3BlcnRpZXMsCisJLm51bV9wcm9w
+ZXJ0aWVzCT0gQVJSQVlfU0laRShmdXNiMzAyX3BzeV9wcm9wZXJ0aWVzKSwKKwkuZ2V0X3Byb3Bl
+cnR5CT0gZnVzYjMwMl9wc3lfZ2V0X3Byb3BlcnR5LAorfTsKKwogc3RhdGljIGludCBpbml0X2dw
+aW8oc3RydWN0IGZ1c2IzMDJfY2hpcCAqY2hpcCkKIHsKIAlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5v
+ZGU7CkBAIC0xNzIwLDYgKzE3NzAsNyBAQCBzdGF0aWMgaW50IGZ1c2IzMDJfcHJvYmUoc3RydWN0
+IGkyY19jbGllbnQgKmNsaWVudCwKIAlzdHJ1Y3QgZnVzYjMwMl9jaGlwICpjaGlwOwogCXN0cnVj
+dCBpMmNfYWRhcHRlciAqYWRhcHRlcjsKIAlzdHJ1Y3QgZGV2aWNlICpkZXYgPSAmY2xpZW50LT5k
+ZXY7CisJc3RydWN0IHBvd2VyX3N1cHBseV9jb25maWcgY2ZnID0ge307CiAJY29uc3QgY2hhciAq
+bmFtZTsKIAlpbnQgcmV0ID0gMDsKIAl1MzIgdjsKQEAgLTE3NjYsNiArMTgxNywxNCBAQCBzdGF0
+aWMgaW50IGZ1c2IzMDJfcHJvYmUoc3RydWN0IGkyY19jbGllbnQgKmNsaWVudCwKIAkJCXJldHVy
+biAtRVBST0JFX0RFRkVSOwogCX0KIAorCWNmZy5kcnZfZGF0YSA9IGNoaXA7CisJY2hpcC0+cHN5
+ID0gZGV2bV9wb3dlcl9zdXBwbHlfcmVnaXN0ZXIoZGV2LCAmZnVzYjMwMl9wc3lfZGVzYywgJmNm
+Zyk7CisJaWYgKElTX0VSUihjaGlwLT5wc3kpKSB7CisJCXJldCA9IFBUUl9FUlIoY2hpcC0+cHN5
+KTsKKwkJZGV2X2VycihjaGlwLT5kZXYsICJFcnJvciByZWdpc3RlcmluZyBwb3dlci1zdXBwbHk6
+ICVkXG4iLCByZXQpOworCQlyZXR1cm4gcmV0OworCX0KKwogCXJldCA9IGZ1c2IzMDJfZGVidWdm
+c19pbml0KGNoaXApOwogCWlmIChyZXQgPCAwKQogCQlyZXR1cm4gcmV0OwotLSAKMi4xMy40Cgpf
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkZXZlbCBtYWls
+aW5nIGxpc3QKZGV2ZWxAbGludXhkcml2ZXJwcm9qZWN0Lm9yZwpodHRwOi8vZHJpdmVyZGV2Lmxp
+bnV4ZHJpdmVycHJvamVjdC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcml2ZXJkZXYtZGV2ZWwK
