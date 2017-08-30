@@ -1,55 +1,50 @@
-From: Chris Brandt <Chris.Brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Subject: RE: [PATCH v2 3/3] ARM: dts: r7s72100: Add reset handler
-Date: Wed, 30 Aug 2017 13:22:32 +0000
-Message-ID: <SG2PR06MB1165B8B815327A6768AE681A8A9C0@SG2PR06MB1165.apcprd06.prod.outlook.com>
-References: <20170216172320.10897-1-chris.brandt@renesas.com>
- <20170216172320.10897-4-chris.brandt@renesas.com>
- <CAMuHMdVMBo9fNMTqz_XdU27FF5TX98r-OE5pJ5atJ1s4XLxcTw@mail.gmail.com>
- <20170830082940.GR10398@verge.net.au>
+From: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH v3 03/11] staging: typec: fusb302: Set max supply voltage
+ to 5V
+Date: Wed, 30 Aug 2017 06:37:22 -0700
+Message-ID: <cb509efe-58e9-906b-af4a-bc080a410aea@roeck-us.net>
+References: <20170830094814.17758-1-hdegoede@redhat.com>
+ <20170830094814.17758-4-hdegoede@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170830082940.GR10398-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <20170830094814.17758-4-hdegoede@redhat.com>
 Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Cc: Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Linux-Renesas <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Watchdog Mailing List <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Cc: platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org, "Yueyao (Nathan) Zhu" <yueyao@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Simon,
+On 08/30/2017 02:48 AM, Hans de Goede wrote:
+> Anything higher then 5V may damage hardware not capable of it, so
+> the only sane default here is 5V. If a board is able to handle a
+> higher voltage that should come from board specific data such as
+> device-tree and not be hard coded into the fusb302 code.
+> 
+> Cc: "Yueyao (Nathan) Zhu" <yueyao@google.com>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-On Wednesday, August 30, 2017, Simon Horman wrote:
-> On Fri, Feb 17, 2017 at 11:29:25AM +0100, Geert Uytterhoeven wrote:
-> > On Thu, Feb 16, 2017 at 6:23 PM, Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org=
->
-> wrote:
-> > > For the RZ/A1, the only way to do a reset is to overflow the WDT.
-> > >
-> > > Signed-off-by: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-> >
-> > Reviewed-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
->=20
-> Hi Chris,
->=20
-> while going through old patches I noticed that I seem to have missed this
-> one. It looks like it needs a rebase. If it is still applicable could you
-> please consider doing so and reposting.
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
 
-
-It's in -next already:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/=
-arch/arm/boot/dts/r7s72100.dtsi?h=3Dnext-20170829&id=3D69ed50de582eff6307fd=
-3fa050fdc505731f0a2d
-
-Doesn't that mean it's queued up for 4.14?
-
-Or, somehow it didn't make it into the pull request for Arnd's tree?
-
-
-Chris
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> ---
+>   drivers/staging/typec/fusb302/fusb302.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/staging/typec/fusb302/fusb302.c b/drivers/staging/typec/fusb302/fusb302.c
+> index 03a3809d18f0..6baed06a3c0d 100644
+> --- a/drivers/staging/typec/fusb302/fusb302.c
+> +++ b/drivers/staging/typec/fusb302/fusb302.c
+> @@ -1187,9 +1187,9 @@ static const struct tcpc_config fusb302_tcpc_config = {
+>   	.nr_src_pdo = ARRAY_SIZE(src_pdo),
+>   	.snk_pdo = snk_pdo,
+>   	.nr_snk_pdo = ARRAY_SIZE(snk_pdo),
+> -	.max_snk_mv = 9000,
+> +	.max_snk_mv = 5000,
+>   	.max_snk_ma = 3000,
+> -	.max_snk_mw = 27000,
+> +	.max_snk_mw = 15000,
+>   	.operating_snk_mw = 2500,
+>   	.type = TYPEC_PORT_DRP,
+>   	.default_role = TYPEC_SINK,
+> 
