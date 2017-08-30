@@ -1,53 +1,66 @@
-From: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
-Subject: Re: [PATCH v2 3/3] ARM: dts: r7s72100: Add reset handler
-Date: Wed, 30 Aug 2017 17:57:10 +0200
-Message-ID: <20170830155700.GA28162@verge.net.au>
-References: <20170216172320.10897-1-chris.brandt@renesas.com>
- <20170216172320.10897-4-chris.brandt@renesas.com>
- <CAMuHMdVMBo9fNMTqz_XdU27FF5TX98r-OE5pJ5atJ1s4XLxcTw@mail.gmail.com>
- <20170830082940.GR10398@verge.net.au>
- <SG2PR06MB1165B8B815327A6768AE681A8A9C0@SG2PR06MB1165.apcprd06.prod.outlook.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH v3 08/11] power: supply: bq24190_charger: Export 5V boost
+ converter as regulator
+Date: Wed, 30 Aug 2017 18:32:27 +0200
+Message-ID: <20170830163227.ew3jon24s3mdajiv@earth>
+References: <20170830094814.17758-1-hdegoede@redhat.com>
+ <20170830094814.17758-9-hdegoede@redhat.com>
+ <20170830144649.GF6008@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="ysqxn6cyw6biivfy"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <SG2PR06MB1165B8B815327A6768AE681A8A9C0-ESzmfEwOt/xoAsOJh7vwSm0DtJ1/0DrXvxpqHgZTriW3zl9H0oFU5g@public.gmane.org>
-Sender: linux-watchdog-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Chris Brandt <Chris.Brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Cc: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Wim Van Sebroeck <wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Linux-Renesas <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM list <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Watchdog Mailing List <linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170830144649.GF6008@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 30, 2017 at 01:22:32PM +0000, Chris Brandt wrote:
-> Hi Simon,
-> 
-> On Wednesday, August 30, 2017, Simon Horman wrote:
-> > On Fri, Feb 17, 2017 at 11:29:25AM +0100, Geert Uytterhoeven wrote:
-> > > On Thu, Feb 16, 2017 at 6:23 PM, Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-> > wrote:
-> > > > For the RZ/A1, the only way to do a reset is to overflow the WDT.
-> > > >
-> > > > Signed-off-by: Chris Brandt <chris.brandt-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-> > >
-> > > Reviewed-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-> > 
-> > Hi Chris,
-> > 
-> > while going through old patches I noticed that I seem to have missed this
-> > one. It looks like it needs a rebase. If it is still applicable could you
-> > please consider doing so and reposting.
-> 
-> 
-> It's in -next already:
-> 
-> https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/arch/arm/boot/dts/r7s72100.dtsi?h=next-20170829&id=69ed50de582eff6307fd3fa050fdc505731f0a2d
-> 
-> Doesn't that mean it's queued up for 4.14?
-> 
-> Or, somehow it didn't make it into the pull request for Arnd's tree?
 
-Thanks, I now see that it is included in v4.12.
-Sorry for the noise.
---
-To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--ysqxn6cyw6biivfy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Wed, Aug 30, 2017 at 07:46:50AM -0700, Tony Lindgren wrote:
+> * Hans de Goede <hdegoede@redhat.com> [170830 02:49]:
+> > Register the 5V boost converter as a regulator named "usb_otg_vbus".
+> >=20
+> > This commit also adds support for bq24190_platform_data, through which
+> > non device-tree platforms can pass the regulator_init_data (containing
+> > mappings for the consumer amongst other things).
+> >=20
+> > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>=20
+> This will make it easy for USB PHY drivers to implement USB host mode:
+>=20
+> Acked-by: Tony Lindgren <tony@atomide.com>
+
+Thanks, queued.
+
+-- Sebastian
+
+--ysqxn6cyw6biivfy
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmm6JgACgkQ2O7X88g7
++prGjg/+JaamhKJCKsMpNmHofemdPOvZlbmiMMGxLh6fh8CF9+xsNfyNPpHxDz9T
+IOzj5BnFJh+HyPSvxzpI44SUvmGpiUg9KTZObpnrt9aJRxX98llfj/t0t0x5jivH
+L+t0qCBk6sF5HSdan0HIpdWQisilBIeDDDYAtxZRD+7K5Tg+P2jHyJMFiD1f2f7o
+ZYClCteNHtFfFyMSKnphSnJGQEYVGYc1KzwUIxhpvre5W1tfoJtRn7muux+pGQYl
+P0LH1uOLL68QN9tvn66G3VnvlGfkGWeoew7PzxeaRofNO8PG9o+4KnMqqcif3C/e
+Q6lSQ0rnXzrNmgmU66V3pBCvVp0z6x6yIFg/+VG62sW32yP49OA2PHtOq1whCnI3
+UagpSZYQKvwMlPUKOMpP8H7A/lTwujUCP7zBnmCXlN6/gvqCVhdhlMuKHzc1xM+E
+6jD8EOs8yrBqsXoyyxfCEFgs1CSzXbmLjYCVTeVOg8EbTkkuiml5WFhSCyTbG99r
+vJ8oBl1nrXQvCnS5VUdXP3fRIsd45lnqZ6DsWT4IxaTSC6HZe2NOkSusUvrXn790
+sf3CyXjdg8gSgxDam03VTRzZdWmBIQgrMr0mehF2YXa2xylOdjnGvXjoBl5eJ/Ei
+qcNfW7qrRigIjQjb3fiPxcqZE1BbwsD41TnB6GYep9YaatWimfg=
+=0Sj2
+-----END PGP SIGNATURE-----
+
+--ysqxn6cyw6biivfy--
