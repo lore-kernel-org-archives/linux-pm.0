@@ -1,110 +1,154 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v3 09/11] power: supply: bq24190_charger: Get input_current_limit from our supplier
-Date: Wed, 30 Aug 2017 11:48:12 +0200
-Message-ID: <20170830094814.17758-10-hdegoede@redhat.com>
+Subject: [PATCH v3 11/11] platform/x86: intel_cht_int33fe: Update fusb302 type string, add properties
+Date: Wed, 30 Aug 2017 11:48:14 +0200
+Message-ID: <20170830094814.17758-12-hdegoede@redhat.com>
 References: <20170830094814.17758-1-hdegoede@redhat.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-i2c-owner@vger.kernel.org>
 In-Reply-To: <20170830094814.17758-1-hdegoede@redhat.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-i2c-owner@vger.kernel.org
 To: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>
 Cc: Hans de Goede <hdegoede@redhat.com>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
 List-Id: linux-pm@vger.kernel.org
 
-On some devices the USB Type-C port power (USB PD 2.0) negotiation is
-done by a separate port-controller IC, while the current limit is
-controlled through another (charger) IC.
+The fusb302 driver as merged in staging uses "typec_fusb302" as i2c-id
+rather then just "fusb302" and needs us to set a number of device-
+properties, adjust the intel_cht_int33fe driver accordingly.
 
-It has been decided to model this by modelling the external Type-C
-power brick (adapter/charger) as a power-supply class device which
-supplies the charger-IC, with its voltage-now and current-max representing
-the negotiated voltage and max current draw.
-
-This commit adds support for this to the bq24190_charger driver by adding
-an external_power_changed callback and calling
-power_supply_set_input_current_limit_from_supplier from this callback.
-This callback will only get called if the bq24190 has a parent-supply.
-
-Note this replaces the functionality to get the current-limit from an
-extcon device, which will be removed in a follow-up commit.
+One of the properties set is max-snk-mv which makes the fusb302 driver
+negotiate up to 12V charging voltage, which is a bad idea on boards
+which are not setup to handle this, so this commit also adds 2 extra
+sanity checks to make sure that the expected Whiskey Cove PMIC +
+TI bq24292i charger combo, which can handle 12V, is present.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
 Changes in v2:
--Wait a bit before applying current-max from our supplier as input-current-limit
- the bq24190 may still be in its power-good wait-state while our supplier is
- done negotating current-max and if we apply the limit to early then the
- input-current-limit will be reset to 0.5A by the bq24190 after its
- power-good wait is done.
-
-Changes in v3:
--Drop the input-current-limit-from-supplier device-property, simply always
- sync the input-current-limit with the parent-supply if a parent-supply is
- present
+-Set board_info.dev_name
+-Adjust for changes in other patches in this patch-set
 ---
- drivers/power/supply/bq24190_charger.c | 30 ++++++++++++++++++++++++++++++
- 1 file changed, 30 insertions(+)
+ drivers/platform/x86/Kconfig             |  6 ++++-
+ drivers/platform/x86/intel_cht_int33fe.c | 44 +++++++++++++++++++++++++++++++-
+ 2 files changed, 48 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
-index e606a078b0dd..35ff406aca48 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -165,6 +165,7 @@ struct bq24190_dev_info {
- 	struct extcon_dev		*extcon;
- 	struct notifier_block		extcon_nb;
- 	struct delayed_work		extcon_work;
-+	struct delayed_work		input_current_limit_work;
- 	char				model_name[I2C_NAME_SIZE];
- 	bool				initialized;
- 	bool				irq_event;
-@@ -1210,6 +1211,32 @@ static int bq24190_charger_property_is_writeable(struct power_supply *psy,
- 	return ret;
- }
+diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
+index 80b87954f6dd..c5554577681a 100644
+--- a/drivers/platform/x86/Kconfig
++++ b/drivers/platform/x86/Kconfig
+@@ -793,7 +793,7 @@ config ACPI_CMPC
  
-+static void bq24190_input_current_limit_work(struct work_struct *work)
-+{
-+	struct bq24190_dev_info *bdi =
-+		container_of(work, struct bq24190_dev_info,
-+			     input_current_limit_work.work);
+ config INTEL_CHT_INT33FE
+ 	tristate "Intel Cherry Trail ACPI INT33FE Driver"
+-	depends on X86 && ACPI && I2C
++	depends on X86 && ACPI && I2C && REGULATOR
+ 	---help---
+ 	  This driver add support for the INT33FE ACPI device found on
+ 	  some Intel Cherry Trail devices.
+@@ -804,6 +804,10 @@ config INTEL_CHT_INT33FE
+ 	  This driver instantiates i2c-clients for these, so that standard
+ 	  i2c drivers for these chips can bind to the them.
+ 
++	  If you enable this driver it is advised to also select
++	  CONFIG_CHARGER_BQ24190=m, CONFIG_BATTERY_MAX17042=m and
++	  CONFIG_TYPEC_FUSB302=m (currently in drivers/staging).
 +
-+	power_supply_set_input_current_limit_from_supplier(bdi->charger);
-+}
-+
-+/* Sync the input-current-limit with our parent supply (if we have one) */
-+static void bq24190_charger_external_power_changed(struct power_supply *psy)
-+{
-+	struct bq24190_dev_info *bdi = power_supply_get_drvdata(psy);
-+
-+	/*
-+	 * The Power-Good detection may take up to 220ms, sometimes
-+	 * the external charger detection is quicker, and the bq24190 will
-+	 * reset to iinlim based on its own charger detection (which is not
-+	 * hooked up when using external charger detection) resulting in a
-+	 * too low default 500mA iinlim. Delay setting the input-current-limit
-+	 * for 300ms to avoid this.
-+	 */
-+	queue_delayed_work(system_wq, &bdi->input_current_limit_work,
-+			   msecs_to_jiffies(300));
-+}
-+
- static enum power_supply_property bq24190_charger_properties[] = {
- 	POWER_SUPPLY_PROP_CHARGE_TYPE,
- 	POWER_SUPPLY_PROP_HEALTH,
-@@ -1240,6 +1267,7 @@ static const struct power_supply_desc bq24190_charger_desc = {
- 	.get_property		= bq24190_charger_get_property,
- 	.set_property		= bq24190_charger_set_property,
- 	.property_is_writeable	= bq24190_charger_property_is_writeable,
-+	.external_power_changed	= bq24190_charger_external_power_changed,
+ config INTEL_INT0002_VGPIO
+ 	tristate "Intel ACPI INT0002 Virtual GPIO driver"
+ 	depends on GPIOLIB && ACPI
+diff --git a/drivers/platform/x86/intel_cht_int33fe.c b/drivers/platform/x86/intel_cht_int33fe.c
+index 5f1924fb3190..24a1662be81d 100644
+--- a/drivers/platform/x86/intel_cht_int33fe.c
++++ b/drivers/platform/x86/intel_cht_int33fe.c
+@@ -24,6 +24,7 @@
+ #include <linux/i2c.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
++#include <linux/regulator/consumer.h>
+ #include <linux/slab.h>
+ 
+ #define EXPECTED_PTYPE		4
+@@ -70,12 +71,21 @@ static const struct property_entry max17047_props[] = {
+ 	{ }
  };
  
- /* Battery power supply property routines */
-@@ -1758,6 +1786,8 @@ static int bq24190_probe(struct i2c_client *client,
- 	mutex_init(&bdi->f_reg_lock);
- 	bdi->f_reg = 0;
- 	bdi->ss_reg = BQ24190_REG_SS_VBUS_STAT_MASK; /* impossible state */
-+	INIT_DELAYED_WORK(&bdi->input_current_limit_work,
-+			  bq24190_input_current_limit_work);
++static const struct property_entry fusb302_props[] = {
++	PROPERTY_ENTRY_STRING("fcs,extcon-name", "cht_wcove_pwrsrc"),
++	PROPERTY_ENTRY_U32("fcs,max-sink-microvolt", 12000000),
++	PROPERTY_ENTRY_U32("fcs,max-sink-microamp",   3000000),
++	PROPERTY_ENTRY_U32("fcs,max-sink-microwatt", 36000000),
++	{ }
++};
++
+ static int cht_int33fe_probe(struct i2c_client *client)
+ {
+ 	struct device *dev = &client->dev;
+ 	struct i2c_board_info board_info;
+ 	struct cht_int33fe_data *data;
+ 	struct i2c_client *max17047;
++	struct regulator *regulator;
+ 	unsigned long long ptyp;
+ 	acpi_status status;
+ 	int ret, fusb302_irq;
+@@ -93,6 +103,34 @@ static int cht_int33fe_probe(struct i2c_client *client)
+ 	if (ptyp != EXPECTED_PTYPE)
+ 		return -ENODEV;
  
- 	i2c_set_clientdata(client, bdi);
++	/* Check presence of INT34D3 (hardware-rev 3) expected for ptype == 4 */
++	if (!acpi_dev_present("INT34D3", "1", 3)) {
++		dev_err(dev, "Error PTYPE == %d, but no INT34D3 device\n",
++			EXPECTED_PTYPE);
++		return -ENODEV;
++	}
++
++	/*
++	 * We expect the WC PMIC to be paired with a TI bq24292i charger-IC.
++	 * We check for the bq24292i vbus regulator here, this has 2 purposes:
++	 * 1) The bq24292i allows charging with up to 12V, setting the fusb302's
++	 *    max-snk voltage to 12V with another charger-IC is not good.
++	 * 2) For the fusb302 driver to get the bq24292i vbus regulator, the
++	 *    regulator-map, which is part of the bq24292i regulator_init_data,
++	 *    must be registered before the fusb302 is instantiated, otherwise
++	 *    it will end up with a dummy-regulator.
++	 * Note "cht_wc_usb_typec_vbus" comes from the regulator_init_data
++	 * which is defined in i2c-cht-wc.c from where the bq24292i i2c-client
++	 * gets instantiated. We use regulator_get_optional here so that we
++	 * don't end up getting a dummy-regulator ourselves.
++	 */
++	regulator = regulator_get_optional(dev, "cht_wc_usb_typec_vbus");
++	if (IS_ERR(regulator)) {
++		ret = PTR_ERR(regulator);
++		return (ret == -ENODEV) ? -EPROBE_DEFER : ret;
++	}
++	regulator_put(regulator);
++
+ 	/* The FUSB302 uses the irq at index 1 and is the only irq user */
+ 	fusb302_irq = acpi_dev_gpio_irq_get(ACPI_COMPANION(dev), 1);
+ 	if (fusb302_irq < 0) {
+@@ -119,6 +157,7 @@ static int cht_int33fe_probe(struct i2c_client *client)
+ 	} else {
+ 		memset(&board_info, 0, sizeof(board_info));
+ 		strlcpy(board_info.type, "max17047", I2C_NAME_SIZE);
++		board_info.dev_name = "max17047";
+ 		board_info.properties = max17047_props;
+ 		data->max17047 = i2c_acpi_new_device(dev, 1, &board_info);
+ 		if (!data->max17047)
+@@ -126,7 +165,9 @@ static int cht_int33fe_probe(struct i2c_client *client)
+ 	}
  
+ 	memset(&board_info, 0, sizeof(board_info));
+-	strlcpy(board_info.type, "fusb302", I2C_NAME_SIZE);
++	strlcpy(board_info.type, "typec_fusb302", I2C_NAME_SIZE);
++	board_info.dev_name = "fusb302";
++	board_info.properties = fusb302_props;
+ 	board_info.irq = fusb302_irq;
+ 
+ 	data->fusb302 = i2c_acpi_new_device(dev, 2, &board_info);
+@@ -134,6 +175,7 @@ static int cht_int33fe_probe(struct i2c_client *client)
+ 		goto out_unregister_max17047;
+ 
+ 	memset(&board_info, 0, sizeof(board_info));
++	board_info.dev_name = "pi3usb30532";
+ 	strlcpy(board_info.type, "pi3usb30532", I2C_NAME_SIZE);
+ 
+ 	data->pi3usb30532 = i2c_acpi_new_device(dev, 3, &board_info);
 -- 
 2.13.4
