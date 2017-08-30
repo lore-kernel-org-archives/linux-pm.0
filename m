@@ -1,139 +1,102 @@
-From: David Weinehall <david.weinehall@linux.intel.com>
-Subject: Re: [PATCH v2] iwlwifi: pcie: move rx workqueue initialization to
- iwl_trans_pcie_alloc()
-Date: Wed, 30 Aug 2017 17:57:26 +0300
-Message-ID: <20170830145726.eq7qs4jtdsqa74lu@boom>
-References: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
- <20170822073729.4856-1-luca@coelho.fi>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Subject: RE: [PATCH] cpufreq: imx6q: Fix imx6sx low frequency support
+Date: Wed, 30 Aug 2017 15:26:43 +0000
+Message-ID: <AM3PR04MB306B15744B7A42B55A69C8A809C0@AM3PR04MB306.eurprd04.prod.outlook.com>
+References: <4304e578a343c9acaed46b7e205d49bb63323f80.1503918257.git.leonard.crestez@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170822073729.4856-1-luca@coelho.fi>
+In-Reply-To: <4304e578a343c9acaed46b7e205d49bb63323f80.1503918257.git.leonard.crestez@nxp.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Luca Coelho <luca@coelho.fi>
-Cc: jikos@kernel.org, linux-wireless@vger.kernel.org, luciano.coelho@intel.com, linux-kernel@vger.kernel.org, linuxwifi@intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, david.weinehall@intel.com, johannes.berg@intel.com, kvalo@codeaurora.org, sara.sharon@intel.com, emmanuel.grumbach@intel.com
+To: Leonard Crestez <leonard.crestez@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Anson Huang <anson.huang@nxp.com>, Fabio Estevam <fabio.estevam@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, Jacky Bai <ping.bai@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Aug 22, 2017 at 10:37:29AM +0300, Luca Coelho wrote:
-> From: Luca Coelho <luciano.coelho@intel.com>
-> 
-> Work queues cannot be allocated when a mutex is held because the mutex
-> may be in use and that would make it sleep.  Doing so generates the
-> following splat with 4.13+:
-> 
-> [   19.513298] ======================================================
-> [   19.513429] WARNING: possible circular locking dependency detected
-> [   19.513557] 4.13.0-rc5+ #6 Not tainted
-> [   19.513638] ------------------------------------------------------
-> [   19.513767] cpuhp/0/12 is trying to acquire lock:
-> [   19.513867]  (&tz->lock){+.+.+.}, at: [<ffffffff924afebb>] thermal_zone_get_temp+0x5b/0xb0
-> [   19.514047]
-> [   19.514047] but task is already holding lock:
-> [   19.514166]  (cpuhp_state){+.+.+.}, at: [<ffffffff91cc4baa>] cpuhp_thread_fun+0x3a/0x210
-> [   19.514338]
-> [   19.514338] which lock already depends on the new lock.
-> 
-> This lock dependency already existed with previous kernel versions,
-> but it was not detected until commit 49dfe2a67797 ("cpuhotplug: Link
-> lock stacks for hotplug callbacks") was introduced.
-> 
-> Reported-by: David Weinehall <david.weinehall@intel.com>
-> Reported-by: Jiri Kosina <jikos@kernel.org>
-> Signed-off-by: Luca Coelho <luciano.coelho@intel.com>
+> -----Original Message-----
+> From: Leonard Crestez [mailto:leonard.crestez@nxp.com]
+> Sent: Monday, August 28, 2017 7:05 PM
+> To: Shawn Guo; Viresh Kumar; Rafael J. Wysocki
+> Cc: Anson Huang; Fabio Estevam; A.s. Dong; Lucas Stach; Jacky Bai;
+> kernel@pengutronix.de; linux-pm@vger.kernel.org; linux-arm-
+> kernel@lists.infradead.org; linux-kernel@vger.kernel.org
+> Subject: [PATCH] cpufreq: imx6q: Fix imx6sx low frequency support
+>=20
+> This patch contains the minimal changes required to support imx6sx OPP of
+> 198 Mhz. Without this patch cpufreq still reports success but the
+> frequency is not changed, the "arm" clock will still be at 396000000 in
+> clk_summary.
+>=20
+> In order to do this PLL1 needs to be still kept enabled while changing th=
+e
+> ARM clock. This is a hardware requirement: when ARM_PODF is changed in CC=
+M
+> we need to check the busy bit of CCM_CDHIPR bit 16 arm_podf_busy, and thi=
+s
+> bit is sync with PLL1 clock, so if PLL1 NOT enabled, this bit will never
+> get clear.
+>=20
+> Keep pll1_sys explicitly enabled until after the rate is change to deal
+> with this. Otherwise from the clk framework perspective pll1_sys is unuse=
+d
+> and gets turned off.
+>=20
 
-With this patch I no longer get the lockdep warning,
-and the driver seems to work just as well as before.
+Seems like a clever method to me.
+So:
+Acked-by: Dong Aisheng <aisheng.dong@nxp.com>
 
-Thanks!
+Regards
+Dong Aisheng
 
-Tested-by: David Weinehall <david.weinehall@linux.intel.com>
-
+> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 > ---
-> In v2:
->    - updated the commit message to a new version, with a grammar fix
->      and the actual commit that exposed the problem;
-> 
->  drivers/net/wireless/intel/iwlwifi/pcie/internal.h |  2 ++
->  drivers/net/wireless/intel/iwlwifi/pcie/rx.c       | 10 +---------
->  drivers/net/wireless/intel/iwlwifi/pcie/trans.c    |  9 +++++++++
->  3 files changed, 12 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/internal.h b/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
-> index fa315d84e98e..a1ea9ef97ed9 100644
-> --- a/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
-> +++ b/drivers/net/wireless/intel/iwlwifi/pcie/internal.h
-> @@ -787,6 +787,8 @@ int iwl_pci_fw_enter_d0i3(struct iwl_trans *trans);
->  
->  void iwl_pcie_enable_rx_wake(struct iwl_trans *trans, bool enable);
->  
-> +void iwl_pcie_rx_allocator_work(struct work_struct *data);
-> +
->  /* common functions that are used by gen2 transport */
->  void iwl_pcie_apm_config(struct iwl_trans *trans);
->  int iwl_pcie_prepare_card_hw(struct iwl_trans *trans);
-> diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/rx.c b/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
-> index 351c4423125a..942736d3fa75 100644
-> --- a/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
-> +++ b/drivers/net/wireless/intel/iwlwifi/pcie/rx.c
-> @@ -597,7 +597,7 @@ static void iwl_pcie_rx_allocator_get(struct iwl_trans *trans,
->  	rxq->free_count += RX_CLAIM_REQ_ALLOC;
->  }
->  
-> -static void iwl_pcie_rx_allocator_work(struct work_struct *data)
-> +void iwl_pcie_rx_allocator_work(struct work_struct *data)
->  {
->  	struct iwl_rb_allocator *rba_p =
->  		container_of(data, struct iwl_rb_allocator, rx_alloc);
-> @@ -900,10 +900,6 @@ static int _iwl_pcie_rx_init(struct iwl_trans *trans)
->  			return err;
+> Changes since v1:
+>  - Link: https://lkml.org/lkml/2017/7/19/302
+>  - Only keep pll1_sys enabled until after ARM rate is changed.
+>  - Incorporate more elaborate explanation from Anson
+>  - Do not add new clocks or bypass PLL1. Just let it get disabled.
+>=20
+>  drivers/cpufreq/imx6q-cpufreq.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
+>=20
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-
+> cpufreq.c index b6edd3c..14466a9 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -47,6 +47,7 @@ static int imx6q_set_target(struct cpufreq_policy
+> *policy, unsigned int index)
+>  	struct dev_pm_opp *opp;
+>  	unsigned long freq_hz, volt, volt_old;
+>  	unsigned int old_freq, new_freq;
+> +	bool pll1_sys_temp_enabled =3D false;
+>  	int ret;
+>=20
+>  	new_freq =3D freq_table[index].frequency; @@ -124,6 +125,10 @@ static
+> int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+>  		if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
+>  			clk_set_rate(pll1_sys_clk, new_freq * 1000);
+>  			clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+> +		} else {
+> +			/* pll1_sys needs to be enabled for divider rate change
+> to work. */
+> +			pll1_sys_temp_enabled =3D true;
+> +			clk_prepare_enable(pll1_sys_clk);
+>  		}
 >  	}
->  	def_rxq = trans_pcie->rxq;
-> -	if (!rba->alloc_wq)
-> -		rba->alloc_wq = alloc_workqueue("rb_allocator",
-> -						WQ_HIGHPRI | WQ_UNBOUND, 1);
-> -	INIT_WORK(&rba->rx_alloc, iwl_pcie_rx_allocator_work);
->  
->  	spin_lock(&rba->lock);
->  	atomic_set(&rba->req_pending, 0);
-> @@ -1017,10 +1013,6 @@ void iwl_pcie_rx_free(struct iwl_trans *trans)
+>=20
+> @@ -135,6 +140,10 @@ static int imx6q_set_target(struct cpufreq_policy
+> *policy, unsigned int index)
+>  		return ret;
 >  	}
->  
->  	cancel_work_sync(&rba->rx_alloc);
-> -	if (rba->alloc_wq) {
-> -		destroy_workqueue(rba->alloc_wq);
-> -		rba->alloc_wq = NULL;
-> -	}
->  
->  	iwl_pcie_free_rbs_pool(trans);
->  
-> diff --git a/drivers/net/wireless/intel/iwlwifi/pcie/trans.c b/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
-> index f95eec52508e..3927bbf04f72 100644
-> --- a/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
-> +++ b/drivers/net/wireless/intel/iwlwifi/pcie/trans.c
-> @@ -1786,6 +1786,11 @@ void iwl_trans_pcie_free(struct iwl_trans *trans)
->  		iwl_pcie_tx_free(trans);
->  	iwl_pcie_rx_free(trans);
->  
-> +	if (trans_pcie->rba.alloc_wq) {
-> +		destroy_workqueue(trans_pcie->rba.alloc_wq);
-> +		trans_pcie->rba.alloc_wq = NULL;
-> +	}
+>=20
+> +	/* PLL1 is only needed until after ARM-PODF is set. */
+> +	if (pll1_sys_temp_enabled)
+> +		clk_disable_unprepare(pll1_sys_clk);
 > +
->  	if (trans_pcie->msix_enabled) {
->  		for (i = 0; i < trans_pcie->alloc_vecs; i++) {
->  			irq_set_affinity_hint(
-> @@ -3169,6 +3174,10 @@ struct iwl_trans *iwl_trans_pcie_alloc(struct pci_dev *pdev,
->  		trans_pcie->inta_mask = CSR_INI_SET_MASK;
->  	 }
->  
-> +	trans_pcie->rba.alloc_wq = alloc_workqueue("rb_allocator",
-> +						   WQ_HIGHPRI | WQ_UNBOUND, 1);
-> +	INIT_WORK(&trans_pcie->rba.rx_alloc, iwl_pcie_rx_allocator_work);
-> +
->  #ifdef CONFIG_IWLWIFI_PCIE_RTPM
->  	trans->runtime_pm_mode = IWL_PLAT_PM_MODE_D0I3;
->  #else
-> -- 
-> 2.14.1
-> 
+>  	/* scaling down?  scale voltage after frequency */
+>  	if (new_freq < old_freq) {
+>  		ret =3D regulator_set_voltage_tol(arm_reg, volt, 0);
+> --
+> 2.7.4
