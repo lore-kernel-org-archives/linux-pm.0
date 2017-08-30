@@ -1,7 +1,8 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v3 03/11] staging: typec: fusb302: Set max supply voltage to 5V
-Date: Wed, 30 Aug 2017 11:48:06 +0200
-Message-ID: <20170830094814.17758-4-hdegoede@redhat.com>
+Subject: [PATCH v3 06/11] staging: typec: fusb302: Add support for USB2
+ charger detection through extcon
+Date: Wed, 30 Aug 2017 11:48:09 +0200
+Message-ID: <20170830094814.17758-7-hdegoede@redhat.com>
 References: <20170830094814.17758-1-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,32 +22,128 @@ To: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wo
 Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Yueyao (Nathan) Zhu" <yueyao@google.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Anything higher then 5V may damage hardware not capable of it, so
-the only sane default here is 5V. If a board is able to handle a
-higher voltage that should come from board specific data such as
-device-tree and not be hard coded into the fusb302 code.
+The fusb302 port-controller relies on an external device doing USB2
+charger-type detection.
+
+The Intel Whiskey Cove PMIC with which the fusb302 is combined on some
+X86/ACPI platforms already has a charger-type detection driver which
+uses extcon to communicate the detected charger-type.
+
+Rather then inventing a new API for USB2 charger-type detection
+specifically for use with the tcpm code, this commit simply re-uses the
+existing extcon API and uses that do USB2 charger detection.
+
+Note that the "fcs,extcon-name" property name is only for kernel internal
+use by X86/ACPI platform code and as such is NOT documented in
+the fusb302 devicetree bindings.
 
 Cc: "Yueyao (Nathan) Zhu" <yueyao@google.com>
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/staging/typec/fusb302/fusb302.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Changes in v2:
+-Put extcon code directly in fusb302.c rather then introducing helpers
+ which are only used by fusb302.c
+
+Changes in v3:
+-Improve commit message
+---
+ drivers/staging/typec/fusb302/fusb302.c | 49 +++++++++++++++++++++++++++++++++
+ 1 file changed, 49 insertions(+)
 
 diff --git a/drivers/staging/typec/fusb302/fusb302.c b/drivers/staging/typec/fusb302/fusb302.c
-index 03a3809d18f0..6baed06a3c0d 100644
+index 675161cf4f3a..6f007f66d597 100644
 --- a/drivers/staging/typec/fusb302/fusb302.c
 +++ b/drivers/staging/typec/fusb302/fusb302.c
-@@ -1187,9 +1187,9 @@ static const struct tcpc_config fusb302_tcpc_config = {
- 	.nr_src_pdo = ARRAY_SIZE(src_pdo),
- 	.snk_pdo = snk_pdo,
- 	.nr_snk_pdo = ARRAY_SIZE(snk_pdo),
--	.max_snk_mv = 9000,
-+	.max_snk_mv = 5000,
- 	.max_snk_ma = 3000,
--	.max_snk_mw = 27000,
-+	.max_snk_mw = 15000,
- 	.operating_snk_mw = 2500,
- 	.type = TYPEC_PORT_DRP,
- 	.default_role = TYPEC_SINK,
+@@ -17,6 +17,7 @@
+ #include <linux/debugfs.h>
+ #include <linux/delay.h>
+ #include <linux/errno.h>
++#include <linux/extcon.h>
+ #include <linux/gpio.h>
+ #include <linux/i2c.h>
+ #include <linux/interrupt.h>
+@@ -96,6 +97,7 @@ struct fusb302_chip {
+ 
+ 	int gpio_int_n;
+ 	int gpio_int_n_irq;
++	struct extcon_dev *extcon;
+ 
+ 	struct workqueue_struct *wq;
+ 	struct delayed_work bc_lvl_handler;
+@@ -516,6 +518,38 @@ static int tcpm_get_vbus(struct tcpc_dev *dev)
+ 	return ret;
+ }
+ 
++static int tcpm_get_current_limit(struct tcpc_dev *dev)
++{
++	struct fusb302_chip *chip = container_of(dev, struct fusb302_chip,
++						 tcpc_dev);
++	int current_limit = 0;
++	unsigned long timeout;
++
++	if (!chip->extcon)
++		return 0;
++
++	/*
++	 * USB2 Charger detection may still be in progress when we get here,
++	 * this can take upto 600ms, wait 800ms max.
++	 */
++	timeout = jiffies + msecs_to_jiffies(800);
++	do {
++		if (extcon_get_state(chip->extcon, EXTCON_CHG_USB_SDP) == 1)
++			current_limit = 500;
++
++		if (extcon_get_state(chip->extcon, EXTCON_CHG_USB_CDP) == 1 ||
++		    extcon_get_state(chip->extcon, EXTCON_CHG_USB_ACA) == 1)
++			current_limit = 1500;
++
++		if (extcon_get_state(chip->extcon, EXTCON_CHG_USB_DCP) == 1)
++			current_limit = 2000;
++
++		msleep(50);
++	} while (current_limit == 0 && time_before(jiffies, timeout));
++
++	return current_limit;
++}
++
+ static int fusb302_set_cc_pull(struct fusb302_chip *chip,
+ 			       bool pull_up, bool pull_down)
+ {
+@@ -1201,6 +1235,7 @@ static void init_tcpc_dev(struct tcpc_dev *fusb302_tcpc_dev)
+ {
+ 	fusb302_tcpc_dev->init = tcpm_init;
+ 	fusb302_tcpc_dev->get_vbus = tcpm_get_vbus;
++	fusb302_tcpc_dev->get_current_limit = tcpm_get_current_limit;
+ 	fusb302_tcpc_dev->set_cc = tcpm_set_cc;
+ 	fusb302_tcpc_dev->get_cc = tcpm_get_cc;
+ 	fusb302_tcpc_dev->set_polarity = tcpm_set_polarity;
+@@ -1685,6 +1720,7 @@ static int fusb302_probe(struct i2c_client *client,
+ 	struct fusb302_chip *chip;
+ 	struct i2c_adapter *adapter;
+ 	struct device *dev = &client->dev;
++	const char *name;
+ 	int ret = 0;
+ 	u32 v;
+ 
+@@ -1717,6 +1753,19 @@ static int fusb302_probe(struct i2c_client *client,
+ 	if (!device_property_read_u32(dev, "fcs,operating-sink-microwatt", &v))
+ 		chip->tcpc_config.operating_snk_mw = v / 1000;
+ 
++	/*
++	 * Devicetree platforms should get extcon via phandle (not yet
++	 * supported). On ACPI platforms, we get the name from a device prop.
++	 * This device prop is for kernel internal use only and is expected
++	 * to be set by the platform code which also registers the i2c client
++	 * for the fusb302.
++	 */
++	if (device_property_read_string(dev, "fcs,extcon-name", &name) == 0) {
++		chip->extcon = extcon_get_extcon_dev(name);
++		if (!chip->extcon)
++			return -EPROBE_DEFER;
++	}
++
+ 	ret = fusb302_debugfs_init(chip);
+ 	if (ret < 0)
+ 		return ret;
 -- 
 2.13.4
