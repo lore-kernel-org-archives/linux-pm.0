@@ -1,7 +1,7 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 10/13] thermal/drivers/hisi: Rename and remove unused field
-Date: Wed, 30 Aug 2017 10:47:34 +0200
-Message-ID: <1504082857-21702-10-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 12/13] thermal/drivers/hisi: Remove thermal data back pointer
+Date: Wed, 30 Aug 2017 10:47:36 +0200
+Message-ID: <1504082857-21702-12-git-send-email-daniel.lezcano@linaro.org>
 References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
@@ -10,92 +10,55 @@ To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, leo.yan@linaro.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Rename the 'sensors' field to 'sensor' as we describe only one sensor.
-Remove the 'sensor_temp' as it is no longer used.
+The presence of the thermal data pointer in the sensor structure has the unique
+purpose of accessing the thermal data in the interrupt handler.
+
+The sensor pointer is passed when registering the interrupt handler, replace the
+cookie by the thermal data pointer, so the back pointer is no longer needed.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ drivers/thermal/hisi_thermal.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index b038d8a..68b625c 100644
+index 9eee82b..b1b086ab 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -47,8 +47,6 @@
+@@ -45,7 +45,6 @@
+ #define HISI_DEFAULT_SENSOR		2
+ 
  struct hisi_thermal_sensor {
- 	struct hisi_thermal_data *thermal;
+-	struct hisi_thermal_data *thermal;
  	struct thermal_zone_device *tzd;
--
--	long sensor_temp;
  	uint32_t id;
  	uint32_t thres_temp;
- };
-@@ -57,9 +55,9 @@ struct hisi_thermal_data {
- 	struct mutex thermal_lock;    /* protects register data */
- 	struct platform_device *pdev;
- 	struct clk *clk;
--	struct hisi_thermal_sensor sensors;
--	int irq;
-+	struct hisi_thermal_sensor sensor;
- 	void __iomem *regs;
-+	int irq;
- };
- 
- /*
-@@ -229,7 +227,7 @@ static const struct thermal_zone_of_device_ops hisi_of_thermal_ops = {
- static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
- {
- 	struct hisi_thermal_data *data = dev;
--	struct hisi_thermal_sensor *sensor = &data->sensors;
-+	struct hisi_thermal_sensor *sensor = &data->sensor;
- 	int temp;
- 
- 	hisi_thermal_alarm_clear(data->regs, 1);
-@@ -240,7 +238,7 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
- 		dev_crit(&data->pdev->dev, "THERMAL ALARM: %d > %d\n",
- 			 temp, sensor->thres_temp);
- 
--		thermal_zone_device_update(data->sensors.tzd,
-+		thermal_zone_device_update(data->sensor.tzd,
- 					   THERMAL_EVENT_UNSPECIFIED);
- 
- 	} else if (temp < sensor->thres_temp) {
-@@ -303,7 +301,7 @@ static int hisi_thermal_setup(struct hisi_thermal_data *data)
- {
- 	struct hisi_thermal_sensor *sensor;
- 
--	sensor = &data->sensors;
-+	sensor = &data->sensor;
- 
- 	/* disable module firstly */
- 	hisi_thermal_reset_enable(data->regs, 0);
-@@ -376,7 +374,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- 	}
- 
- 	ret = hisi_thermal_register_sensor(pdev, data,
--					   &data->sensors,
-+					   &data->sensor,
- 					   HISI_DEFAULT_SENSOR);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to register thermal sensor: %d\n",
-@@ -398,7 +396,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	hisi_thermal_toggle_sensor(&data->sensors, true);
-+	hisi_thermal_toggle_sensor(&data->sensor, true);
- 
- 	return 0;
+@@ -207,10 +206,10 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
+ 	mutex_unlock(&data->thermal_lock);
  }
-@@ -406,7 +404,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- static int hisi_thermal_remove(struct platform_device *pdev)
+ 
+-static int hisi_thermal_get_temp(void *_sensor, int *temp)
++static int hisi_thermal_get_temp(void *__data, int *temp)
  {
- 	struct hisi_thermal_data *data = platform_get_drvdata(pdev);
--	struct hisi_thermal_sensor *sensor = &data->sensors;
+-	struct hisi_thermal_sensor *sensor = _sensor;
+-	struct hisi_thermal_data *data = sensor->thermal;
++	struct hisi_thermal_data *data = __data;
 +	struct hisi_thermal_sensor *sensor = &data->sensor;
  
- 	hisi_thermal_toggle_sensor(sensor, false);
- 	hisi_thermal_disable_sensor(data);
+ 	*temp = hisi_thermal_get_temperature(data->regs);
+ 
+@@ -258,10 +257,10 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+ 	const struct thermal_trip *trip;
+ 
+ 	sensor->id = index;
+-	sensor->thermal = data;
+ 
+ 	sensor->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
+-				sensor->id, sensor, &hisi_of_thermal_ops);
++							   sensor->id, data,
++							   &hisi_of_thermal_ops);
+ 	if (IS_ERR(sensor->tzd)) {
+ 		ret = PTR_ERR(sensor->tzd);
+ 		sensor->tzd = NULL;
 -- 
 2.7.4
