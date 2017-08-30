@@ -1,8 +1,8 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v3 10/11] i2c-cht-wc: Add device-properties for fusb302
- integration
-Date: Wed, 30 Aug 2017 11:48:13 +0200
-Message-ID: <20170830094814.17758-11-hdegoede@redhat.com>
+Subject: [PATCH v3 08/11] power: supply: bq24190_charger: Export 5V boost
+ converter as regulator
+Date: Wed, 30 Aug 2017 11:48:11 +0200
+Message-ID: <20170830094814.17758-9-hdegoede@redhat.com>
 References: <20170830094814.17758-1-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,146 +22,189 @@ To: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wo
 Cc: devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Add device-properties to make the bq24292i charger connected to
-the bus get its input-current-limit from the fusb302 Type-C port
-controller which is used on boards with the cht-wc PMIC,
-as well as regulator_init_data for the 5V boost converter on
-the bq24292i.
+Register the 5V boost converter as a regulator named "usb_otg_vbus".
 
-Since this means we now hook-up the bq24292i to the fusb302 Type-C port
-controller add a check for the ACPI device which instantiates the fusb302.
+This commit also adds support for bq24190_platform_data, through which
+non device-tree platforms can pass the regulator_init_data (containing
+mappings for the consumer amongst other things).
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
 Changes in v2:
--Set board_info.dev_name
--Define and pass regulator_init_data for the bq24292i
--Add a check for the ACPI device which instantiates the fusb302
----
- drivers/i2c/busses/Kconfig      |  5 ++++
- drivers/i2c/busses/i2c-cht-wc.c | 52 +++++++++++++++++++++++++++++++++++------
- 2 files changed, 50 insertions(+), 7 deletions(-)
+-Use "usb_otg_vbus" as default name for the regulator
+-Add support for passing regulator_init_data for non device-tree platforms
+-Register the regulator later, to avoid it showing up and shortly later
+ disappearing again on probe errors (e.g. -EPROBE_DEFER).
 
-diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index 79c33817e412..272ef10fb629 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -197,6 +197,11 @@ config I2C_CHT_WC
- 	  SMBus controller found in the Intel Cherry Trail Whiskey Cove PMIC
- 	  found on some Intel Cherry Trail systems.
- 
-+	  Note this controller is hooked up to a TI bq24292i charger-IC,
-+	  combined with a FUSB302 Type-C port-controller as such it is advised
-+	  to also select CONFIG_CHARGER_BQ24190=m and CONFIG_TYPEC_FUSB302=m
-+	  (the fusb302 driver currently is in drivers/staging).
-+
- config I2C_NFORCE2
- 	tristate "Nvidia nForce2, nForce3 and nForce4"
- 	depends on PCI
-diff --git a/drivers/i2c/busses/i2c-cht-wc.c b/drivers/i2c/busses/i2c-cht-wc.c
-index 21312eed09e4..69a159fc661a 100644
---- a/drivers/i2c/busses/i2c-cht-wc.c
-+++ b/drivers/i2c/busses/i2c-cht-wc.c
-@@ -16,6 +16,7 @@
-  * GNU General Public License for more details.
-  */
- 
-+#include <linux/acpi.h>
- #include <linux/completion.h>
- #include <linux/delay.h>
- #include <linux/i2c.h>
-@@ -25,6 +26,7 @@
- #include <linux/mfd/intel_soc_pmic.h>
- #include <linux/module.h>
- #include <linux/platform_device.h>
+Changes in v3:
+-Add a bq24190_set_charge_mode helper and use that for the vbus_enable
+ and vbus_disable callbacks to reduce code duplication
+---
+ drivers/power/supply/bq24190_charger.c | 112 +++++++++++++++++++++++++++++++++
+ include/linux/power/bq24190_charger.h  |  18 ++++++
+ 2 files changed, 130 insertions(+)
+ create mode 100644 include/linux/power/bq24190_charger.h
+
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/bq24190_charger.c
+index fa711c106b63..e606a078b0dd 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -16,6 +16,9 @@
+ #include <linux/of_device.h>
+ #include <linux/pm_runtime.h>
+ #include <linux/power_supply.h>
 +#include <linux/power/bq24190_charger.h>
- #include <linux/slab.h>
++#include <linux/regulator/driver.h>
++#include <linux/regulator/machine.h>
+ #include <linux/workqueue.h>
+ #include <linux/gpio.h>
+ #include <linux/i2c.h>
+@@ -513,6 +516,111 @@ static int bq24190_sysfs_create_group(struct bq24190_dev_info *bdi)
+ static inline void bq24190_sysfs_remove_group(struct bq24190_dev_info *bdi) {}
+ #endif
  
- #define CHT_WC_I2C_CTRL			0x5e24
-@@ -232,13 +234,36 @@ static const struct irq_chip cht_wc_i2c_irq_chip = {
- 	.name			= "cht_wc_ext_chrg_irq_chip",
- };
- 
-+static const char * const bq24190_suppliers[] = { "fusb302-typec-source" };
++#ifdef CONFIG_REGULATOR
++static int bq24190_set_charge_mode(struct regulator_dev *dev, u8 val)
++{
++	struct bq24190_dev_info *bdi = rdev_get_drvdata(dev);
++	int ret;
 +
- static const struct property_entry bq24190_props[] = {
--	PROPERTY_ENTRY_STRING("extcon-name", "cht_wcove_pwrsrc"),
-+	PROPERTY_ENTRY_STRING_ARRAY("supplied-from", bq24190_suppliers),
-+	PROPERTY_ENTRY_BOOL("ti,input-current-limit-from-supplier"),
- 	PROPERTY_ENTRY_BOOL("omit-battery-class"),
- 	PROPERTY_ENTRY_BOOL("disable-reset"),
- 	{ }
- };
- 
-+static struct regulator_consumer_supply fusb302_consumer = {
-+	.supply = "vbus",
-+	/* Must match fusb302 dev_name in intel_cht_int33fe.c */
-+	.dev_name = "i2c-fusb302",
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0) {
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
++		pm_runtime_put_noidle(bdi->dev);
++		return ret;
++	}
++
++	ret = bq24190_write_mask(bdi, BQ24190_REG_POC,
++				 BQ24190_REG_POC_CHG_CONFIG_MASK,
++				 BQ24190_REG_POC_CHG_CONFIG_SHIFT, val);
++
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
++	return ret;
++}
++
++static int bq24190_vbus_enable(struct regulator_dev *dev)
++{
++	return bq24190_set_charge_mode(dev, BQ24190_REG_POC_CHG_CONFIG_OTG);
++}
++
++static int bq24190_vbus_disable(struct regulator_dev *dev)
++{
++	return bq24190_set_charge_mode(dev, BQ24190_REG_POC_CHG_CONFIG_CHARGE);
++}
++
++static int bq24190_vbus_is_enabled(struct regulator_dev *dev)
++{
++	struct bq24190_dev_info *bdi = rdev_get_drvdata(dev);
++	int ret;
++	u8 val;
++
++	ret = pm_runtime_get_sync(bdi->dev);
++	if (ret < 0) {
++		dev_warn(bdi->dev, "pm_runtime_get failed: %i\n", ret);
++		pm_runtime_put_noidle(bdi->dev);
++		return ret;
++	}
++
++	ret = bq24190_read_mask(bdi, BQ24190_REG_POC,
++				BQ24190_REG_POC_CHG_CONFIG_MASK,
++				BQ24190_REG_POC_CHG_CONFIG_SHIFT, &val);
++
++	pm_runtime_mark_last_busy(bdi->dev);
++	pm_runtime_put_autosuspend(bdi->dev);
++
++	return ret ? ret : val == BQ24190_REG_POC_CHG_CONFIG_OTG;
++}
++
++static const struct regulator_ops bq24190_vbus_ops = {
++	.enable = bq24190_vbus_enable,
++	.disable = bq24190_vbus_disable,
++	.is_enabled = bq24190_vbus_is_enabled,
++};
++
++static const struct regulator_desc bq24190_vbus_desc = {
++	.name = "usb_otg_vbus",
++	.type = REGULATOR_VOLTAGE,
++	.owner = THIS_MODULE,
++	.ops = &bq24190_vbus_ops,
++	.fixed_uV = 5000000,
++	.n_voltages = 1,
 +};
 +
 +static const struct regulator_init_data bq24190_vbus_init_data = {
 +	.constraints = {
-+		/* The name is used in intel_cht_int33fe.c do not change. */
-+		.name = "cht_wc_usb_typec_vbus",
 +		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
 +	},
-+	.consumer_supplies = &fusb302_consumer,
-+	.num_consumer_supplies = 1,
 +};
 +
-+static struct bq24190_platform_data bq24190_pdata = {
-+	.regulator_init_data = &bq24190_vbus_init_data,
-+};
++static int bq24190_register_vbus_regulator(struct bq24190_dev_info *bdi)
++{
++	struct bq24190_platform_data *pdata = bdi->dev->platform_data;
++	struct regulator_config cfg = { };
++	struct regulator_dev *reg;
++	int ret = 0;
 +
- static int cht_wc_i2c_adap_i2c_probe(struct platform_device *pdev)
++	cfg.dev = bdi->dev;
++	if (pdata && pdata->regulator_init_data)
++		cfg.init_data = pdata->regulator_init_data;
++	else
++		cfg.init_data = &bq24190_vbus_init_data;
++	cfg.driver_data = bdi;
++	reg = devm_regulator_register(bdi->dev, &bq24190_vbus_desc, &cfg);
++	if (IS_ERR(reg)) {
++		ret = PTR_ERR(reg);
++		dev_err(bdi->dev, "Can't register regulator: %d\n", ret);
++	}
++
++	return ret;
++}
++#else
++static int bq24190_register_vbus_regulator(struct bq24190_dev_info *bdi)
++{
++	return 0;
++}
++#endif
++
+ static int bq24190_set_config(struct bq24190_dev_info *bdi)
  {
- 	struct intel_soc_pmic *pmic = dev_get_drvdata(pdev->dev.parent);
-@@ -246,7 +271,9 @@ static int cht_wc_i2c_adap_i2c_probe(struct platform_device *pdev)
- 	struct i2c_board_info board_info = {
- 		.type = "bq24190",
- 		.addr = 0x6b,
-+		.dev_name = "bq24190",
- 		.properties = bq24190_props,
-+		.platform_data = &bq24190_pdata,
- 	};
- 	int ret, reg, irq;
- 
-@@ -314,11 +341,21 @@ static int cht_wc_i2c_adap_i2c_probe(struct platform_device *pdev)
- 	if (ret)
- 		goto remove_irq_domain;
- 
--	board_info.irq = adap->client_irq;
--	adap->client = i2c_new_device(&adap->adapter, &board_info);
--	if (!adap->client) {
--		ret = -ENOMEM;
--		goto del_adapter;
-+	/*
-+	 * Normally the Whiskey Cove PMIC is paired with a TI bq24292i charger,
-+	 * connected to this i2c bus, and a max17047 fuel-gauge and a fusb302
-+	 * USB Type-C controller connected to another i2c bus. In this setup
-+	 * the max17047 and fusb302 devices are enumerated through an INT33FE
-+	 * ACPI device. If this device is present register an i2c-client for
-+	 * the TI bq24292i charger.
-+	 */
-+	if (acpi_dev_present("INT33FE", NULL, -1)) {
-+		board_info.irq = adap->client_irq;
-+		adap->client = i2c_new_device(&adap->adapter, &board_info);
-+		if (!adap->client) {
-+			ret = -ENOMEM;
-+			goto del_adapter;
-+		}
+ 	int ret;
+@@ -1740,6 +1848,10 @@ static int bq24190_probe(struct i2c_client *client,
+ 		goto out_sysfs;
  	}
  
- 	platform_set_drvdata(pdev, adap);
-@@ -335,7 +372,8 @@ static int cht_wc_i2c_adap_i2c_remove(struct platform_device *pdev)
- {
- 	struct cht_wc_i2c_adap *adap = platform_get_drvdata(pdev);
- 
--	i2c_unregister_device(adap->client);
-+	if (adap->client)
-+		i2c_unregister_device(adap->client);
- 	i2c_del_adapter(&adap->adapter);
- 	irq_domain_remove(adap->irq_domain);
- 
++	ret = bq24190_register_vbus_regulator(bdi);
++	if (ret < 0)
++		goto out_sysfs;
++
+ 	if (bdi->extcon) {
+ 		INIT_DELAYED_WORK(&bdi->extcon_work, bq24190_extcon_work);
+ 		bdi->extcon_nb.notifier_call = bq24190_extcon_event;
+diff --git a/include/linux/power/bq24190_charger.h b/include/linux/power/bq24190_charger.h
+new file mode 100644
+index 000000000000..45ce7f116a91
+--- /dev/null
++++ b/include/linux/power/bq24190_charger.h
+@@ -0,0 +1,18 @@
++/*
++ * Platform data for the TI bq24190 battery charger driver.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _BQ24190_CHARGER_H_
++#define _BQ24190_CHARGER_H_
++
++#include <linux/regulator/machine.h>
++
++struct bq24190_platform_data {
++	const struct regulator_init_data *regulator_init_data;
++};
++
++#endif
 -- 
 2.13.4
