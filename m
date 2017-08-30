@@ -1,154 +1,104 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH v3 11/11] platform/x86: intel_cht_int33fe: Update fusb302 type string, add properties
-Date: Wed, 30 Aug 2017 11:48:14 +0200
-Message-ID: <20170830094814.17758-12-hdegoede@redhat.com>
-References: <20170830094814.17758-1-hdegoede@redhat.com>
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20170830094814.17758-1-hdegoede@redhat.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Liam Breck <liam@networkimprov.net>, Tony Lindgren <tony@atomide.com>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3 0/8] PM / ACPI / i2c: Deploy runtime PM centric path
+ for system sleep
+Date: Wed, 30 Aug 2017 11:57:28 +0200
+Message-ID: <CAPDyKFosu8RYUUCiBn7+03b3TNmND-aCTqR=+svcvzCwhxw9+A@mail.gmail.com>
+References: <1504018610-10822-1-git-send-email-ulf.hansson@linaro.org> <1957183.ZU1CWrAZoR@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1957183.ZU1CWrAZoR@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The fusb302 driver as merged in staging uses "typec_fusb302" as i2c-id
-rather then just "fusb302" and needs us to set a number of device-
-properties, adjust the intel_cht_int33fe driver accordingly.
+On 29 August 2017 at 22:19, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, August 29, 2017 4:56:42 PM CEST Ulf Hansson wrote:
+>> The i2c designware platform driver, drivers/i2c/busses/i2c-designware-platdrv.c,
+>> isn't well optimized for system sleep.
+>>
+>> What makes this driver particularly interesting is because it's a cross-SoC
+>> driver, which sometimes means there is an ACPI PM domain attached to the i2c
+>> device and sometimes not. The driver is being used on both x86 and ARM.
+>>
+>> In principle, to optimize the system sleep support in i2c driver, this series
+>> enables the proven runtime PM centric path for the i2c driver. However, to do
+>> that the ACPI PM domain also have to collaborate and understand this behaviour.
+>> From earlier versions, Rafael has also pointed out that also the PM core needs
+>> to be involved.
+>
+> Earlier today I realized that drivers pointing their ->suspend_late and
+> ->resume_early callbacks, respectively, to pm_runtime_force_suspend() and
+> pm_runtime_force_resume(), are fundamentally incompatible with any bus type
+> doing nontrivial PM and with almost any nontrivial PM domains, for two reasons.
+>
+> First, it basically requires the bus type or PM domain to expect that its
+> ->runtime_suspend callback may or may not be indirectly invoked from its
+> own ->suspend_late callback, depending on the driver (and analogously
+> for ->runtime_resume and ->resume early), which is insane.
+>
+> Second, it is a layering violation, because it makes the driver effectively
+> override the upper layer's decisions about what code to run.
 
-One of the properties set is max-snk-mv which makes the fusb302 driver
-negotiate up to 12V charging voltage, which is a bad idea on boards
-which are not setup to handle this, so this commit also adds 2 extra
-sanity checks to make sure that the expected Whiskey Cove PMIC +
-TI bq24292i charger combo, which can handle 12V, is present.
+You are right that for more complex bus types and PM domains, those
+needs to play along. So that is what I am trying to implement for the
+ACPI PM domain in this series.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
-Changes in v2:
--Set board_info.dev_name
--Adjust for changes in other patches in this patch-set
----
- drivers/platform/x86/Kconfig             |  6 ++++-
- drivers/platform/x86/intel_cht_int33fe.c | 44 +++++++++++++++++++++++++++++++-
- 2 files changed, 48 insertions(+), 2 deletions(-)
+The generic PM domain, is simple in this regards. There is only a
+minor adaptation for the ->runtime_suspend|resume() callbacks, which
+avoids validating dev_pm_qos constraints during system sleep. Nothing
+special is needed in ->suspend_late|noirq callbacks, etc.
 
-diff --git a/drivers/platform/x86/Kconfig b/drivers/platform/x86/Kconfig
-index 80b87954f6dd..c5554577681a 100644
---- a/drivers/platform/x86/Kconfig
-+++ b/drivers/platform/x86/Kconfig
-@@ -793,7 +793,7 @@ config ACPI_CMPC
- 
- config INTEL_CHT_INT33FE
- 	tristate "Intel Cherry Trail ACPI INT33FE Driver"
--	depends on X86 && ACPI && I2C
-+	depends on X86 && ACPI && I2C && REGULATOR
- 	---help---
- 	  This driver add support for the INT33FE ACPI device found on
- 	  some Intel Cherry Trail devices.
-@@ -804,6 +804,10 @@ config INTEL_CHT_INT33FE
- 	  This driver instantiates i2c-clients for these, so that standard
- 	  i2c drivers for these chips can bind to the them.
- 
-+	  If you enable this driver it is advised to also select
-+	  CONFIG_CHARGER_BQ24190=m, CONFIG_BATTERY_MAX17042=m and
-+	  CONFIG_TYPEC_FUSB302=m (currently in drivers/staging).
-+
- config INTEL_INT0002_VGPIO
- 	tristate "Intel ACPI INT0002 Virtual GPIO driver"
- 	depends on GPIOLIB && ACPI
-diff --git a/drivers/platform/x86/intel_cht_int33fe.c b/drivers/platform/x86/intel_cht_int33fe.c
-index 5f1924fb3190..24a1662be81d 100644
---- a/drivers/platform/x86/intel_cht_int33fe.c
-+++ b/drivers/platform/x86/intel_cht_int33fe.c
-@@ -24,6 +24,7 @@
- #include <linux/i2c.h>
- #include <linux/interrupt.h>
- #include <linux/module.h>
-+#include <linux/regulator/consumer.h>
- #include <linux/slab.h>
- 
- #define EXPECTED_PTYPE		4
-@@ -70,12 +71,21 @@ static const struct property_entry max17047_props[] = {
- 	{ }
- };
- 
-+static const struct property_entry fusb302_props[] = {
-+	PROPERTY_ENTRY_STRING("fcs,extcon-name", "cht_wcove_pwrsrc"),
-+	PROPERTY_ENTRY_U32("fcs,max-sink-microvolt", 12000000),
-+	PROPERTY_ENTRY_U32("fcs,max-sink-microamp",   3000000),
-+	PROPERTY_ENTRY_U32("fcs,max-sink-microwatt", 36000000),
-+	{ }
-+};
-+
- static int cht_int33fe_probe(struct i2c_client *client)
- {
- 	struct device *dev = &client->dev;
- 	struct i2c_board_info board_info;
- 	struct cht_int33fe_data *data;
- 	struct i2c_client *max17047;
-+	struct regulator *regulator;
- 	unsigned long long ptyp;
- 	acpi_status status;
- 	int ret, fusb302_irq;
-@@ -93,6 +103,34 @@ static int cht_int33fe_probe(struct i2c_client *client)
- 	if (ptyp != EXPECTED_PTYPE)
- 		return -ENODEV;
- 
-+	/* Check presence of INT34D3 (hardware-rev 3) expected for ptype == 4 */
-+	if (!acpi_dev_present("INT34D3", "1", 3)) {
-+		dev_err(dev, "Error PTYPE == %d, but no INT34D3 device\n",
-+			EXPECTED_PTYPE);
-+		return -ENODEV;
-+	}
-+
-+	/*
-+	 * We expect the WC PMIC to be paired with a TI bq24292i charger-IC.
-+	 * We check for the bq24292i vbus regulator here, this has 2 purposes:
-+	 * 1) The bq24292i allows charging with up to 12V, setting the fusb302's
-+	 *    max-snk voltage to 12V with another charger-IC is not good.
-+	 * 2) For the fusb302 driver to get the bq24292i vbus regulator, the
-+	 *    regulator-map, which is part of the bq24292i regulator_init_data,
-+	 *    must be registered before the fusb302 is instantiated, otherwise
-+	 *    it will end up with a dummy-regulator.
-+	 * Note "cht_wc_usb_typec_vbus" comes from the regulator_init_data
-+	 * which is defined in i2c-cht-wc.c from where the bq24292i i2c-client
-+	 * gets instantiated. We use regulator_get_optional here so that we
-+	 * don't end up getting a dummy-regulator ourselves.
-+	 */
-+	regulator = regulator_get_optional(dev, "cht_wc_usb_typec_vbus");
-+	if (IS_ERR(regulator)) {
-+		ret = PTR_ERR(regulator);
-+		return (ret == -ENODEV) ? -EPROBE_DEFER : ret;
-+	}
-+	regulator_put(regulator);
-+
- 	/* The FUSB302 uses the irq at index 1 and is the only irq user */
- 	fusb302_irq = acpi_dev_gpio_irq_get(ACPI_COMPANION(dev), 1);
- 	if (fusb302_irq < 0) {
-@@ -119,6 +157,7 @@ static int cht_int33fe_probe(struct i2c_client *client)
- 	} else {
- 		memset(&board_info, 0, sizeof(board_info));
- 		strlcpy(board_info.type, "max17047", I2C_NAME_SIZE);
-+		board_info.dev_name = "max17047";
- 		board_info.properties = max17047_props;
- 		data->max17047 = i2c_acpi_new_device(dev, 1, &board_info);
- 		if (!data->max17047)
-@@ -126,7 +165,9 @@ static int cht_int33fe_probe(struct i2c_client *client)
- 	}
- 
- 	memset(&board_info, 0, sizeof(board_info));
--	strlcpy(board_info.type, "fusb302", I2C_NAME_SIZE);
-+	strlcpy(board_info.type, "typec_fusb302", I2C_NAME_SIZE);
-+	board_info.dev_name = "fusb302";
-+	board_info.properties = fusb302_props;
- 	board_info.irq = fusb302_irq;
- 
- 	data->fusb302 = i2c_acpi_new_device(dev, 2, &board_info);
-@@ -134,6 +175,7 @@ static int cht_int33fe_probe(struct i2c_client *client)
- 		goto out_unregister_max17047;
- 
- 	memset(&board_info, 0, sizeof(board_info));
-+	board_info.dev_name = "pi3usb30532";
- 	strlcpy(board_info.type, "pi3usb30532", I2C_NAME_SIZE);
- 
- 	data->pi3usb30532 = i2c_acpi_new_device(dev, 3, &board_info);
--- 
-2.13.4
+For most other simple bus types, like the platform bus, spi, i2c,
+amba, no particular adoptions is needed at all. Instead those just
+trust the drivers to do the right thing.
+
+Before we had the direct_complete path, using the
+pm_runtime_force_suspend|resume() helpers, was the only good way for
+these kind of drivers, to in an optimized manner, deal with system
+sleep when runtime PM also was enabled for their devices. Now this
+method has become widely deployed, unfortunate whether you like it or
+not.
+
+Besides the slightly better optimizations you get when using
+pm_runtime_force_suspend|resume(), comparing to the direct_complete
+path - I think it's also worth to consider, how easy it becomes for
+drivers to deploy system sleep support. In many cases, only two lines
+of code is needed to add system sleep support in a driver.
+
+Now, some complex code always needs to be implemented somewhere. When
+using the runtime PM centric path, that code consist of the
+pm_runtime_force_suspend|resume() helpers itself - and some
+adaptations in buses/PM domains in cases when those needs special
+care.
+
+My point is, the runtime PM centric path, allows us to keep the
+complex part of the code at a few centralized places, instead of
+having it spread/duplicated into drivers.
+
+So yes, you could consider it insane, but to me and many others, it
+seems to work out quite well.
+
+Yeah, and the laying violation is undoubtedly the most controversial
+part of the runtime PM centric path - I agree to that! The
+direct_complete path don't have this, as you implemented it. :-)
+
+On the other hand, one could consider that these upper layers, in many
+cases anyway needs to play along with the behavior of the driver. So,
+I guess it depends on how one see it.
+
+>
+> That's why I'm afraid that we've reached a dead end here. :-(
+
+That's said news. Is was really hoping I could find a way to move this
+forward. You don't have any other ideas on how I can adjust the series
+to make you happy?
+
+>
+> Thanks,
+> Rafael
+>
+
+Kind regards
+Uffe
