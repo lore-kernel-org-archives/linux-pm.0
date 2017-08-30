@@ -1,104 +1,106 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 0/8] PM / ACPI / i2c: Deploy runtime PM centric path
- for system sleep
-Date: Wed, 30 Aug 2017 11:57:28 +0200
-Message-ID: <CAPDyKFosu8RYUUCiBn7+03b3TNmND-aCTqR=+svcvzCwhxw9+A@mail.gmail.com>
-References: <1504018610-10822-1-git-send-email-ulf.hansson@linaro.org> <1957183.ZU1CWrAZoR@aspire.rjw.lan>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH resend v2] power: supply: bq27xxx: enable writing capacity
+ values for bq27421
+Date: Wed, 30 Aug 2017 04:24:37 -0700
+Message-ID: <CAKvHMgT8MDpussUYJ_AKELXzCbQxz2BYrF0ZM-S_on=9+oatEQ@mail.gmail.com>
+References: <be410e440d889b2e46208b523bdb890e860c5046.1504037446.git.hns@goldelico.com>
+ <CAKvHMgQDcgabM3UogXE3L07n9yiHgD3FfJ5GCOqkAk1=SA2A=Q@mail.gmail.com> <7428DD60-FE09-41C4-9DBC-FFDCB9D0B591@goldelico.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1957183.ZU1CWrAZoR@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f193.google.com ([209.85.223.193]:38104 "EHLO
+        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751282AbdH3LYj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2017 07:24:39 -0400
+In-Reply-To: <7428DD60-FE09-41C4-9DBC-FFDCB9D0B591@goldelico.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Sebastian Reichel <sre@kernel.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F. Davis" <afd@ti.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Discussions about the Letux Kernel <letux-kernel@openphoenux.org>, kernel@pyra-handheld.com
 
-On 29 August 2017 at 22:19, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, August 29, 2017 4:56:42 PM CEST Ulf Hansson wrote:
->> The i2c designware platform driver, drivers/i2c/busses/i2c-designware-platdrv.c,
->> isn't well optimized for system sleep.
+Hi Nikolaus,
+
+On Wed, Aug 30, 2017 at 2:30 AM, H. Nikolaus Schaller <hns@goldelico.com> wrote:
+> Hi Liam and Sebastian,
+>
+>> Am 29.08.2017 um 22:20 schrieb Liam Breck <liam@networkimprov.net>:
 >>
->> What makes this driver particularly interesting is because it's a cross-SoC
->> driver, which sometimes means there is an ACPI PM domain attached to the i2c
->> device and sometimes not. The driver is being used on both x86 and ARM.
+>> Hi Nikolaus, thanks for the patch...
 >>
->> In principle, to optimize the system sleep support in i2c driver, this series
->> enables the proven runtime PM centric path for the i2c driver. However, to do
->> that the ACPI PM domain also have to collaborate and understand this behaviour.
->> From earlier versions, Rafael has also pointed out that also the PM core needs
->> to be involved.
+>> On Tue, Aug 29, 2017 at 1:10 PM, H. Nikolaus Schaller <hns@goldelico.com> wrote:
+>>> Tested on Pyra prototype with bq27421.
+>>>
+>>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+>>> ---
+>>> drivers/power/supply/bq27xxx_battery.c | 2 +-
+>>> 1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+>>> index b6c3120ca5ad..e3c878ef7c7e 100644
+>>> --- a/drivers/power/supply/bq27xxx_battery.c
+>>> +++ b/drivers/power/supply/bq27xxx_battery.c
+>>> @@ -688,7 +688,7 @@ static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
+>>> #define bq27545_dm_regs 0
+>>> #endif
+>>>
+>>> -#if 0 /* not yet tested */
+>>> +#if 1 /* tested on Pyra */
+>>> static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
+>>
+>> I think we can drop the #if and #else...#endif so it's just the
+>> dm_regs table, as with bq27425.
 >
-> Earlier today I realized that drivers pointing their ->suspend_late and
-> ->resume_early callbacks, respectively, to pm_runtime_force_suspend() and
-> pm_runtime_force_resume(), are fundamentally incompatible with any bus type
-> doing nontrivial PM and with almost any nontrivial PM domains, for two reasons.
+> I have fixed that and did take the chance to update my OpenPandora
+> kernel so that I also could test and make the bq27500 working.
+
+Is this gauge on the board or in the battery? If in the battery,
+monitored-battery should not be used.
+
+For a gauge on the board, if a user changes the battery to a different
+type, they need to update the dtb.
+
+I assume you built with config_battery_bq27xxx_dt_updates_nvm?
+
+> The biggest hurdle was to find out that I have to change the
+> compatible string to "ti,bq27500-1" to get non-NULL dm_regs...
 >
-> First, it basically requires the bus type or PM domain to expect that its
-> ->runtime_suspend callback may or may not be indirectly invoked from its
-> own ->suspend_late callback, depending on the driver (and analogously
-> for ->runtime_resume and ->resume early), which is insane.
+> [   12.765930] bq27xxx_battery_i2c_probe name=bq27500-1-0
+> [   12.771392] bq27xxx_battery_i2c_probe call setup
+> [   12.874816] bq27xxx_battery_setup
+> [   12.904266] bq27xxx_battery_setup: dm_regs=bf0520e0
+> [   12.933380] (NULL device *): hwmon: 'bq27500-1-0' is not a valid name attribute, please fix
+> [   13.234893] bq27xxx_battery_settings
+> [   13.238891] bq27xxx-battery 2-0055: invalid battery:energy-full-design-microwatt-hours 14800000
+
+The chip does not support this param, so it should be zero, as it has
+to be set if charge-full-design-* is set. Can you try that?
+
+> [   13.312469] bq27xxx_battery_set_config
+> [   13.407745] bq27xxx_battery_unseal
+> [   13.455993] bq27xxx_battery_update_dm_block
+> [   13.460418] bq27xxx-battery 2-0055: update terminate-voltage to 3200
+> [   13.694885] bq27xxx_battery_seal
+
+We need to see output after a reboot. Note that this chip has NVM so
+these settings persist without power.
+
+> Does this look ok for
 >
-> Second, it is a layering violation, because it makes the driver effectively
-> override the upper layer's decisions about what code to run.
-
-You are right that for more complex bus types and PM domains, those
-needs to play along. So that is what I am trying to implement for the
-ACPI PM domain in this series.
-
-The generic PM domain, is simple in this regards. There is only a
-minor adaptation for the ->runtime_suspend|resume() callbacks, which
-avoids validating dev_pm_qos constraints during system sleep. Nothing
-special is needed in ->suspend_late|noirq callbacks, etc.
-
-For most other simple bus types, like the platform bus, spi, i2c,
-amba, no particular adoptions is needed at all. Instead those just
-trust the drivers to do the right thing.
-
-Before we had the direct_complete path, using the
-pm_runtime_force_suspend|resume() helpers, was the only good way for
-these kind of drivers, to in an optimized manner, deal with system
-sleep when runtime PM also was enabled for their devices. Now this
-method has become widely deployed, unfortunate whether you like it or
-not.
-
-Besides the slightly better optimizations you get when using
-pm_runtime_force_suspend|resume(), comparing to the direct_complete
-path - I think it's also worth to consider, how easy it becomes for
-drivers to deploy system sleep support. In many cases, only two lines
-of code is needed to add system sleep support in a driver.
-
-Now, some complex code always needs to be implemented somewhere. When
-using the runtime PM centric path, that code consist of the
-pm_runtime_force_suspend|resume() helpers itself - and some
-adaptations in buses/PM domains in cases when those needs special
-care.
-
-My point is, the runtime PM centric path, allows us to keep the
-complex part of the code at a few centralized places, instead of
-having it spread/duplicated into drivers.
-
-So yes, you could consider it insane, but to me and many others, it
-seems to work out quite well.
-
-Yeah, and the laying violation is undoubtedly the most controversial
-part of the runtime PM centric path - I agree to that! The
-direct_complete path don't have this, as you implemented it. :-)
-
-On the other hand, one could consider that these upper layers, in many
-cases anyway needs to play along with the behavior of the driver. So,
-I guess it depends on how one see it.
-
+>         bat: battery {
+>                 compatible = "simple-battery", "openpandora-battery";
+>                 voltage-min-design-microvolt = <3200000>;
+>                 energy-full-design-microwatt-hours = <14800000>;
+>                 charge-full-design-microamp-hours = <4000000>;
+>         };
 >
-> That's why I'm afraid that we've reached a dead end here. :-(
-
-That's said news. Is was really hoping I could find a way to move this
-forward. You don't have any other ideas on how I can adjust the series
-to make you happy?
-
+> ?
 >
-> Thanks,
-> Rafael
->
+> I will send a patch for enabling both fuel gauges and the omap3-pandora-common.dtsi asap.
 
-Kind regards
-Uffe
+You probably don't want this in upstream dts, as it only programs the
+gauge if the kernel has the above config option. If the box runs a
+stock distro, it won't work. A custom-built kernel with the above dts
+programs the gauge unless the user sets the module param
+dt_monitored_battery_updates_nvm=0. The requisite dtb should be
+packaged with the custom-built kernel, and deployed with awareness of
+the actual battery present.
