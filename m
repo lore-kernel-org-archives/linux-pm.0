@@ -1,41 +1,52 @@
 From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH v3 08/11] power: supply: bq24190_charger: Export 5V boost
- converter as regulator
-Date: Wed, 30 Aug 2017 18:32:27 +0200
-Message-ID: <20170830163227.ew3jon24s3mdajiv@earth>
+Subject: Re: [PATCH v3 09/11] power: supply: bq24190_charger: Get
+ input_current_limit from our supplier
+Date: Wed, 30 Aug 2017 18:32:54 +0200
+Message-ID: <20170830163253.ay6qjpld5i2bwmgs@earth>
 References: <20170830094814.17758-1-hdegoede@redhat.com>
- <20170830094814.17758-9-hdegoede@redhat.com>
- <20170830144649.GF6008@atomide.com>
+ <20170830094814.17758-10-hdegoede@redhat.com>
+ <20170830144746.GG6008@atomide.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ysqxn6cyw6biivfy"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="t2ce6ual62q36b7d"
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170830144649.GF6008@atomide.com>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <20170830144746.GG6008@atomide.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
 To: Tony Lindgren <tony@atomide.com>
 Cc: Hans de Goede <hdegoede@redhat.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Liam Breck <liam@networkimprov.net>, linux-pm@vger.kernel.org, devel@driverdev.osuosl.org
 List-Id: linux-pm@vger.kernel.org
 
 
---ysqxn6cyw6biivfy
+--t2ce6ual62q36b7d
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Aug 30, 2017 at 07:46:50AM -0700, Tony Lindgren wrote:
+On Wed, Aug 30, 2017 at 07:47:46AM -0700, Tony Lindgren wrote:
 > * Hans de Goede <hdegoede@redhat.com> [170830 02:49]:
-> > Register the 5V boost converter as a regulator named "usb_otg_vbus".
+> > On some devices the USB Type-C port power (USB PD 2.0) negotiation is
+> > done by a separate port-controller IC, while the current limit is
+> > controlled through another (charger) IC.
 > >=20
-> > This commit also adds support for bq24190_platform_data, through which
-> > non device-tree platforms can pass the regulator_init_data (containing
-> > mappings for the consumer amongst other things).
+> > It has been decided to model this by modelling the external Type-C
+> > power brick (adapter/charger) as a power-supply class device which
+> > supplies the charger-IC, with its voltage-now and current-max represent=
+ing
+> > the negotiated voltage and max current draw.
+> >=20
+> > This commit adds support for this to the bq24190_charger driver by addi=
+ng
+> > an external_power_changed callback and calling
+> > power_supply_set_input_current_limit_from_supplier from this callback.
+> > This callback will only get called if the bq24190 has a parent-supply.
+> >=20
+> > Note this replaces the functionality to get the current-limit from an
+> > extcon device, which will be removed in a follow-up commit.
 > >=20
 > > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->=20
-> This will make it easy for USB PHY drivers to implement USB host mode:
 >=20
 > Acked-by: Tony Lindgren <tony@atomide.com>
 
@@ -43,24 +54,24 @@ Thanks, queued.
 
 -- Sebastian
 
---ysqxn6cyw6biivfy
+--t2ce6ual62q36b7d
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmm6JgACgkQ2O7X88g7
-+prGjg/+JaamhKJCKsMpNmHofemdPOvZlbmiMMGxLh6fh8CF9+xsNfyNPpHxDz9T
-IOzj5BnFJh+HyPSvxzpI44SUvmGpiUg9KTZObpnrt9aJRxX98llfj/t0t0x5jivH
-L+t0qCBk6sF5HSdan0HIpdWQisilBIeDDDYAtxZRD+7K5Tg+P2jHyJMFiD1f2f7o
-ZYClCteNHtFfFyMSKnphSnJGQEYVGYc1KzwUIxhpvre5W1tfoJtRn7muux+pGQYl
-P0LH1uOLL68QN9tvn66G3VnvlGfkGWeoew7PzxeaRofNO8PG9o+4KnMqqcif3C/e
-Q6lSQ0rnXzrNmgmU66V3pBCvVp0z6x6yIFg/+VG62sW32yP49OA2PHtOq1whCnI3
-UagpSZYQKvwMlPUKOMpP8H7A/lTwujUCP7zBnmCXlN6/gvqCVhdhlMuKHzc1xM+E
-6jD8EOs8yrBqsXoyyxfCEFgs1CSzXbmLjYCVTeVOg8EbTkkuiml5WFhSCyTbG99r
-vJ8oBl1nrXQvCnS5VUdXP3fRIsd45lnqZ6DsWT4IxaTSC6HZe2NOkSusUvrXn790
-sf3CyXjdg8gSgxDam03VTRzZdWmBIQgrMr0mehF2YXa2xylOdjnGvXjoBl5eJ/Ei
-qcNfW7qrRigIjQjb3fiPxcqZE1BbwsD41TnB6GYep9YaatWimfg=
-=0Sj2
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlmm6LUACgkQ2O7X88g7
++po7lxAAkCj3GJhbz6mqDmbPlklpZ+xO1THvQXSo7E6ZSCXpyysl2cGqGdBJ6jHs
+UDjtnozsCFjsJK7cPohB40GYJ1v0q5r21ewAa9QQh6F6jrXpAP8xMIvFNgxriOIP
+4VseYXwYrVHGZETumbAi2b22EBtFrvwij/VmKkdyAoq4WkmG7AV1k4+DBum2kK+P
+Qb7fqarmuNvnA1DjhBvMgXf4pz3PRQobPjOrEoOI3QB/eA4Su/dbWdJVbkOs+B+I
+l9Z44LnSt/CV5IBy5EJRvr1UaqFWQUV2aI1JE5lGzOf4T2mT2zkLj5fs98w+9gxo
+MVWU6+6uhjwwJapZWrZfUFaSw7ump0kd1/pHNxysfcVRjG69gskwwmVagBWTzSfn
+So9xybn9rbdlAjr/mdSzj9/FrL/uvgqIdvHQq2SwWqzAOJvfVvFzY60XBjHLTgEs
+F7+nmYIUIaFaVPZyk/Ti05lwBOR6yCekdlxAea4rr7JIH23jlFwRKdjmlsQwafBI
+6vo6/ktp/GP8lk7IWLtZ9lanLuW7Od0hMcvFgQRrdMw0GK0/lOIIzymked3NJ9Ue
+t3b2YsMhEi1SOPCtJEc2568KFWZZISlb1Gm7SZJk7rjwhnx+vfzEnVnPfguaQohI
+cW8MNqPIVd9/7cTlTrMSX3PARiYKTX92cLuo4KlN1uPv5WRekb0=
+=WIkY
 -----END PGP SIGNATURE-----
 
---ysqxn6cyw6biivfy--
+--t2ce6ual62q36b7d--
