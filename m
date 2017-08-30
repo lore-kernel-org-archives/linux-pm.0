@@ -1,99 +1,144 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v3 0/5] bq27xxx_battery data memory update
-Date: Tue, 29 Aug 2017 16:07:12 -0700
-Message-ID: <CAKvHMgTEe_xBP2ENMTU5BNwWaRjfqbAuRJC32sHYL_Mh5oJOsQ@mail.gmail.com>
-References: <20170824033617.20840-1-liam@networkimprov.net>
- <20170829105413.6wbejdaxxxd6hk7b@earth> <0bf4ba2f-18f9-1204-8241-8acb6ac6f490@ti.com>
- <20170829212259.gs4bljwscrprsfjl@earth>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [RFT][PATCH v2 3/3] PM: i2c-designware-platdrv: System sleep handling rework
+Date: Wed, 30 Aug 2017 02:07:20 +0200
+Message-ID: <3521168.PErTxbFMEc@aspire.rjw.lan>
+References: <1551534.5XKjjnxbAy@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f67.google.com ([209.85.214.67]:32809 "EHLO
-        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751374AbdH2XHO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Aug 2017 19:07:14 -0400
-Received: by mail-it0-f67.google.com with SMTP id 77so32413itj.0
-        for <linux-pm@vger.kernel.org>; Tue, 29 Aug 2017 16:07:14 -0700 (PDT)
-In-Reply-To: <20170829212259.gs4bljwscrprsfjl@earth>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1551534.5XKjjnxbAy@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Wolfram Sang <wsa@the-dreams.de>, linux-acpi@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, linux-i2c@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: "Andrew F. Davis" <afd@ti.com>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org, Paul Kocialkowski <contact@paulk.fr>
 
-Hi Sebastian,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I don't see a Julia in CC list...
+Rework the power management part of the i2c-designware-platdrv driver
+so that it need not be runtime resumed by the generic ACPI PM domain
+and the ACPI LPSS driver during system suspend.
 
-On Tue, Aug 29, 2017 at 2:22 PM, Sebastian Reichel
-<sebastian.reichel@collabora.co.uk> wrote:
-> [adding Julia to Cc for Coccinelle question]
->
-> Hi,
->
-> On Tue, Aug 29, 2017 at 10:31:57AM -0500, Andrew F. Davis wrote:
->> On 08/29/2017 05:54 AM, Sebastian Reichel wrote:
->> > On Wed, Aug 23, 2017 at 08:36:12PM -0700, Liam Breck wrote:
->> >> Overview:
->> >> * Reorganizes chip data definitions
->> >> * Enables features landed in these patches:
->> >>   dt-bindings: power: supply: bq27xxx: Add monitored-battery documentation
->> >>   power: supply: bq27xxx: Add chip data memory read/write support
->> >>   power: supply: bq27xxx: Add power_supply_battery_info support
->> >> * Supports the following chips (only BQ27425 is active)
->> >>   BQ27500, 545, 425, 421, 441, 621
->> >>
->> >> Changes in v3:
->> >> * BQ27425 tested; workaround minor chip bug
->> >> * Dropped driver_version
->> >> * Fixed dbg_dupes logic for .props & .dm_regs
->> >> * Dropped two props array dupes
->> >>
->> >> Changes in v2:
->> >> * Added di->opts flags for remaining chip features
->> >> * Commented out untested bq27xxx_dm_regs parameters
->> >> * Changed dbg_dupes to run only once
->> >>
->> >> Notes on v1:
->> >> * Not fully tested (hence RFC tag)
->> >
->> > Thanks, full series queued.
->> >
->> > -- Sebastian
->> >
->>
->> Hold up, I'm just now seeing this series, looks like Liam left me out of
->> the CC despite being a reviewer in the MAINTAINERS file.. (possibly due
->> to me actually reviewing these patches and making him fix shit). I've
->> actively NACK'd some of these changes previously, making this all the
->> sneakier -_-
->
-> oh, I did not notice, that you are no longer Cc'd.
+First, add a "suspended" and "suspend_skipped" flags to struct
+dw_i2c_dev and make dw_i2c_plat_suspend() and dw_i2c_plat_resume()
+use them to avoid suspending or resuming the device twice in a row
+and to avoid resuming a previously runtime-suspended device during
+system resume.
 
-Not that it matters, but Andrew told me he does not work in the TI
-department that makes these battery chips, and that TI has not
-requested he do bq27xxx maintenance. I had to post on the TI E2E
-support forum to resolve questions that arose during the dm-update
-series. I suspect I have read more of the BQ27* docs than Andrew has
-at this point :-)
+Second, point the driver's ->late_suspend and ->early_resume
+callbacks, rather than its ->suspend and ->resume callbacks,
+to dw_i2c_plat_suspend() and dw_i2c_plat_resume(), respectively,
+so that they are not executed in parallel with each other, for
+example if runtime resume of the device takes place during system
+suspend.
 
->> Anyway, I've not got the time to fight these changes anymore, but at
->> very least could you drop 4/5, it's static analysis code made into a
->> runtime check built into a kernel driver, if not at least add my
->> nacked-by. :)
->
-> Since it's not critical at all and nobody depends on it, I dropped 4/5
-> for now. I agree, that checking it at runtime is not nice. On the other
-> hand I do think a duplication check makes sense. Doing a static
-> check should be possible, but I have no idea how to implement this
-> (without much effort). I suspect Coccinelle can do it, so I added
-> Julia.
->
-> For reference this is the runtime check:
-> https://patchwork.kernel.org/patch/9918953/
+Next, make the driver set the SAFE_SUSPEND driver flag (introduced
+earlier) to inform the upper code layers that from the driver's
+perspective it is fine to leave the device in runtime suspend over
+system suspend and resume.
 
-If someone can rewrite this as static analysis in the immediate
-future, I'm all for it. If not, pls keep the patch until it can be
-replaced.
+Finally, drop the driver's ->prepare and ->complete PM callbacks
+that aren't necessary any more, because the driver is now able to
+cope with devices left in runtime suspend over system suspend and
+resume and need not indicate to the PM core that its suspend
+and resume callbacks may be skipped (and need not clean up if the
+core actually does that).
 
-It has already flagged 160 lines of duplicate data, from a previous
-total of 660. And it only runs during ifdef DEBUG.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/i2c/busses/i2c-designware-core.h    |    2 +
+ drivers/i2c/busses/i2c-designware-platdrv.c |   36 +++++++++++++---------------
+ 2 files changed, 19 insertions(+), 19 deletions(-)
+
+Index: linux-pm/drivers/i2c/busses/i2c-designware-platdrv.c
+===================================================================
+--- linux-pm.orig/drivers/i2c/busses/i2c-designware-platdrv.c
++++ linux-pm/drivers/i2c/busses/i2c-designware-platdrv.c
+@@ -358,6 +358,7 @@ static int dw_i2c_plat_probe(struct plat
+ 	if (dev->pm_disabled) {
+ 		pm_runtime_forbid(&pdev->dev);
+ 	} else {
++		pdev->dev.power.driver_flags = DPM_FLAG_SAFE_SUSPEND;
+ 		pm_runtime_set_autosuspend_delay(&pdev->dev, 1000);
+ 		pm_runtime_use_autosuspend(&pdev->dev);
+ 		pm_runtime_set_active(&pdev->dev);
+@@ -413,31 +414,23 @@ static const struct of_device_id dw_i2c_
+ MODULE_DEVICE_TABLE(of, dw_i2c_of_match);
+ #endif
+ 
+-#ifdef CONFIG_PM_SLEEP
+-static int dw_i2c_plat_prepare(struct device *dev)
+-{
+-	return pm_runtime_suspended(dev);
+-}
+-
+-static void dw_i2c_plat_complete(struct device *dev)
+-{
+-	if (dev->power.direct_complete)
+-		pm_request_resume(dev);
+-}
+-#else
+-#define dw_i2c_plat_prepare	NULL
+-#define dw_i2c_plat_complete	NULL
+-#endif
+-
+ #ifdef CONFIG_PM
+ static int dw_i2c_plat_suspend(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct dw_i2c_dev *i_dev = platform_get_drvdata(pdev);
+ 
++	if (i_dev->suspended) {
++		i_dev->suspend_skipped = true;
++		return 0;
++	}
++
+ 	i_dev->disable(i_dev);
+ 	i2c_dw_plat_prepare_clk(i_dev, false);
+ 
++	i_dev->suspended = true;
++	i_dev->suspend_skipped = false;
++
+ 	return 0;
+ }
+ 
+@@ -446,6 +439,13 @@ static int dw_i2c_plat_resume(struct dev
+ 	struct platform_device *pdev = to_platform_device(dev);
+ 	struct dw_i2c_dev *i_dev = platform_get_drvdata(pdev);
+ 
++	if (!i_dev->suspended || i_dev->suspend_skipped) {
++		i_dev->suspend_skipped = false;
++		return 0;
++	}
++
++	i_dev->suspended = false;
++
+ 	i2c_dw_plat_prepare_clk(i_dev, true);
+ 	i_dev->init(i_dev);
+ 
+@@ -453,9 +453,7 @@ static int dw_i2c_plat_resume(struct dev
+ }
+ 
+ static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
+-	.prepare = dw_i2c_plat_prepare,
+-	.complete = dw_i2c_plat_complete,
+-	SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
++	SET_LATE_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
+ 	SET_RUNTIME_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume, NULL)
+ };
+ 
+Index: linux-pm/drivers/i2c/busses/i2c-designware-core.h
+===================================================================
+--- linux-pm.orig/drivers/i2c/busses/i2c-designware-core.h
++++ linux-pm/drivers/i2c/busses/i2c-designware-core.h
+@@ -280,6 +280,8 @@ struct dw_i2c_dev {
+ 	int			(*acquire_lock)(struct dw_i2c_dev *dev);
+ 	void			(*release_lock)(struct dw_i2c_dev *dev);
+ 	bool			pm_disabled;
++	bool			suspended;
++	bool			suspend_skipped;
+ 	void			(*disable)(struct dw_i2c_dev *dev);
+ 	void			(*disable_int)(struct dw_i2c_dev *dev);
+ 	int			(*init)(struct dw_i2c_dev *dev);
+
+
