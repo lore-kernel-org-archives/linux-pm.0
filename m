@@ -1,36 +1,58 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH v2 3/3] ARM: dts: r7s72100: Add reset handler
-Date: Wed, 30 Aug 2017 10:29:41 +0200
-Message-ID: <20170830082940.GR10398@verge.net.au>
-References: <20170216172320.10897-1-chris.brandt@renesas.com>
- <20170216172320.10897-4-chris.brandt@renesas.com>
- <CAMuHMdVMBo9fNMTqz_XdU27FF5TX98r-OE5pJ5atJ1s4XLxcTw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH 01/13] thermal/drivers/hisi: Fix missing interrupt enablement
+Date: Wed, 30 Aug 2017 10:47:25 +0200
+Message-ID: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:54816 "EHLO
-        kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751300AbdH3I3q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2017 04:29:46 -0400
-Content-Disposition: inline
-In-Reply-To: <CAMuHMdVMBo9fNMTqz_XdU27FF5TX98r-OE5pJ5atJ1s4XLxcTw@mail.gmail.com>
+Received: from mail-wr0-f173.google.com ([209.85.128.173]:37651 "EHLO
+        mail-wr0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751271AbdH3Isp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Aug 2017 04:48:45 -0400
+Received: by mail-wr0-f173.google.com with SMTP id k9so4227329wre.4
+        for <linux-pm@vger.kernel.org>; Wed, 30 Aug 2017 01:48:44 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Chris Brandt <chris.brandt@renesas.com>, Wim Van Sebroeck <wim@iguana.be>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux Watchdog Mailing List <linux-watchdog@vger.kernel.org>
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, leo.yan@linaro.org, open list <linux-kernel@vger.kernel.org>
 
-On Fri, Feb 17, 2017 at 11:29:25AM +0100, Geert Uytterhoeven wrote:
-> On Thu, Feb 16, 2017 at 6:23 PM, Chris Brandt <chris.brandt@renesas.com> wrote:
-> > For the RZ/A1, the only way to do a reset is to overflow the WDT.
-> >
-> > Signed-off-by: Chris Brandt <chris.brandt@renesas.com>
-> 
-> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+The interrupt for the temperature threshold is not enabled at the end of the
+probe function, enable it after the setup is complete.
 
-Hi Chris,
+On the other side, the irq_enabled is not correctly set as we are checking if
+the interrupt is masked where 'yes' means irq_enabled=false.
 
-while going through old patches I noticed that I seem to have missed this
-one. It looks like it needs a rebase. If it is still applicable could you
-please consider doing so and reposting.
+	irq_get_irqchip_state(data->irq, IRQCHIP_STATE_MASKED,
+				&data->irq_enabled);
 
-Thanks
+As we are always enabling the interrupt, it is pointless to check if
+the interrupt is masked or not, just set irq_enabled to 'true'.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/thermal/hisi_thermal.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index bd3572c..8381696 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -345,8 +345,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	hisi_thermal_enable_bind_irq_sensor(data);
+-	irq_get_irqchip_state(data->irq, IRQCHIP_STATE_MASKED,
+-			      &data->irq_enabled);
++	data->irq_enabled = true;
+ 
+ 	for (i = 0; i < HISI_MAX_SENSORS; ++i) {
+ 		ret = hisi_thermal_register_sensor(pdev, data,
+@@ -358,6 +357,8 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ 			hisi_thermal_toggle_sensor(&data->sensors[i], true);
+ 	}
+ 
++	enable_irq(data->irq);
++
+ 	return 0;
+ }
+ 
+-- 
+2.7.4
