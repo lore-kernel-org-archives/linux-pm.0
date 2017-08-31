@@ -1,38 +1,66 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH] thermal : Remove const to make same prototype
-Date: Thu, 31 Aug 2017 11:30:45 +0530
-Message-ID: <29cf6375f8b1c667de1387e4e865aaa288a125ac.1504159021.git.arvind.yadav.cs@gmail.com>
+From: Luca Coelho <luca@coelho.fi>
+Subject: Re: [PATCH v2] iwlwifi: pcie: move rx workqueue initialization to
+ iwl_trans_pcie_alloc()
+Date: Thu, 31 Aug 2017 09:11:42 +0300
+Message-ID: <1504159902.31031.11.camel@coelho.fi>
+References: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>
+         <20170822073729.4856-1-luca@coelho.fi>
+         <20170830145726.eq7qs4jtdsqa74lu@boom>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:33986 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750867AbdHaGBN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Aug 2017 02:01:13 -0400
+Received: from paleale.coelho.fi ([176.9.41.70]:46442 "EHLO
+        farmhouse.coelho.fi" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1750757AbdHaGLs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Aug 2017 02:11:48 -0400
+In-Reply-To: <20170830145726.eq7qs4jtdsqa74lu@boom>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com, hch@lst.de
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: David Weinehall <david.weinehall@linux.intel.com>
+Cc: jikos@kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linuxwifi@intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, david.weinehall@intel.com, johannes.berg@intel.com, kvalo@codeaurora.org, sara.sharon@intel.com, emmanuel.grumbach@intel.com
 
-Here, prototype of thermal_zone_device_register is not matching
-with static inline thermal_zone_device_register. One is using
-const thermal_zone_params. Other is using non-const.
+On Wed, 2017-08-30 at 17:57 +0300, David Weinehall wrote:
+> On Tue, Aug 22, 2017 at 10:37:29AM +0300, Luca Coelho wrote:
+> > From: Luca Coelho <luciano.coelho@intel.com>
+> > 
+> > Work queues cannot be allocated when a mutex is held because the mutex
+> > may be in use and that would make it sleep.  Doing so generates the
+> > following splat with 4.13+:
+> > 
+> > [   19.513298] ======================================================
+> > [   19.513429] WARNING: possible circular locking dependency detected
+> > [   19.513557] 4.13.0-rc5+ #6 Not tainted
+> > [   19.513638] ------------------------------------------------------
+> > [   19.513767] cpuhp/0/12 is trying to acquire lock:
+> > [   19.513867]  (&tz->lock){+.+.+.}, at: [<ffffffff924afebb>] thermal_zone_get_temp+0x5b/0xb0
+> > [   19.514047]
+> > [   19.514047] but task is already holding lock:
+> > [   19.514166]  (cpuhp_state){+.+.+.}, at: [<ffffffff91cc4baa>] cpuhp_thread_fun+0x3a/0x210
+> > [   19.514338]
+> > [   19.514338] which lock already depends on the new lock.
+> > 
+> > This lock dependency already existed with previous kernel versions,
+> > but it was not detected until commit 49dfe2a67797 ("cpuhotplug: Link
+> > lock stacks for hotplug callbacks") was introduced.
+> > 
+> > Reported-by: David Weinehall <david.weinehall@intel.com>
+> > Reported-by: Jiri Kosina <jikos@kernel.org>
+> > Signed-off-by: Luca Coelho <luciano.coelho@intel.com>
+> 
+> With this patch I no longer get the lockdep warning,
+> and the driver seems to work just as well as before.
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- include/linux/thermal.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Great! Thanks for reporting and testing, David!
 
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index dab11f9..8ba77ff 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -487,7 +487,7 @@ static inline int power_actor_set_power(struct thermal_cooling_device *cdev,
- static inline struct thermal_zone_device *thermal_zone_device_register(
- 	const char *type, int trips, int mask, void *devdata,
- 	struct thermal_zone_device_ops *ops,
--	const struct thermal_zone_params *tzp,
-+	struct thermal_zone_params *tzp,
- 	int passive_delay, int polling_delay)
- { return ERR_PTR(-ENODEV); }
- static inline void thermal_zone_device_unregister(
--- 
-1.9.1
+
+> Thanks!
+> 
+> Tested-by: David Weinehall <david.weinehall@linux.intel.com>
+
+Thanks for this too, but unfortunately it's too late to add it, since
+the patch is already in net tree.
+
+--
+Cheers,
+Luca.
