@@ -1,196 +1,180 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH resend v2] power: supply: bq27xxx: enable writing capacity
- values for bq27421
-Date: Thu, 31 Aug 2017 01:58:09 -0700
-Message-ID: <CAKvHMgT6AHfjnXvD5jeWP_9wAm_GQNJxm=Nm1jH32NeaVZjdYw@mail.gmail.com>
-References: <be410e440d889b2e46208b523bdb890e860c5046.1504037446.git.hns@goldelico.com>
- <CAKvHMgQDcgabM3UogXE3L07n9yiHgD3FfJ5GCOqkAk1=SA2A=Q@mail.gmail.com>
- <7428DD60-FE09-41C4-9DBC-FFDCB9D0B591@goldelico.com> <CAKvHMgT8MDpussUYJ_AKELXzCbQxz2BYrF0ZM-S_on=9+oatEQ@mail.gmail.com>
- <3A487394-3755-4EA0-86C6-6855DA0AC547@goldelico.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v3 1/8] PM / Sleep: Make the runtime PM centric path known
+ to the PM core
+Date: Thu, 31 Aug 2017 11:06:05 +0200
+Message-ID: <CAPDyKFoOJzciMNMWkc+ci+Fn2iD8vwsg25TQjcx=xw2ftg5rug@mail.gmail.com>
+References: <1504018610-10822-1-git-send-email-ulf.hansson@linaro.org>
+ <13933269.sbLfAJfmVU@aspire.rjw.lan> <CAPDyKFqujAbw9RAxG-kRhgnhEtAZeojBiL=v5F+JS3T9eaxfgQ@mail.gmail.com>
+ <2403318.HVB4k3qRsK@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3A487394-3755-4EA0-86C6-6855DA0AC547@goldelico.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Sebastian Reichel <sre@kernel.org>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F. Davis" <afd@ti.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Discussions about the Letux Kernel <letux-kernel@openphoenux.org>, kernel@pyra-handheld.com
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <2403318.HVB4k3qRsK@aspire.rjw.lan>
+Sender: linux-i2c-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 30, 2017 at 11:58 PM, H. Nikolaus Schaller
-<hns@goldelico.com> wrote:
-> Hi Liam,
->
->> Am 30.08.2017 um 13:24 schrieb Liam Breck <liam@networkimprov.net>:
->>
->> Hi Nikolaus,
->>
->> On Wed, Aug 30, 2017 at 2:30 AM, H. Nikolaus Schaller <hns@goldelico.com> wrote:
->>> Hi Liam and Sebastian,
->>>
->>>> Am 29.08.2017 um 22:20 schrieb Liam Breck <liam@networkimprov.net>:
->>>>
->>>> Hi Nikolaus, thanks for the patch...
->>>>
->>>> On Tue, Aug 29, 2017 at 1:10 PM, H. Nikolaus Schaller <hns@goldelico.com> wrote:
->>>>> Tested on Pyra prototype with bq27421.
->>>>>
->>>>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
->>>>> ---
->>>>> drivers/power/supply/bq27xxx_battery.c | 2 +-
->>>>> 1 file changed, 1 insertion(+), 1 deletion(-)
->>>>>
->>>>> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
->>>>> index b6c3120ca5ad..e3c878ef7c7e 100644
->>>>> --- a/drivers/power/supply/bq27xxx_battery.c
->>>>> +++ b/drivers/power/supply/bq27xxx_battery.c
->>>>> @@ -688,7 +688,7 @@ static struct bq27xxx_dm_reg bq27545_dm_regs[] = {
->>>>> #define bq27545_dm_regs 0
->>>>> #endif
->>>>>
->>>>> -#if 0 /* not yet tested */
->>>>> +#if 1 /* tested on Pyra */
->>>>> static struct bq27xxx_dm_reg bq27421_dm_regs[] = {
->>>>
->>>> I think we can drop the #if and #else...#endif so it's just the
->>>> dm_regs table, as with bq27425.
->>>
->>> I have fixed that and did take the chance to update my OpenPandora
->>> kernel so that I also could test and make the bq27500 working.
->>
->> Is this gauge on the board or in the battery?
->
-> It is on the board.
->
->> If in the battery,
->> monitored-battery should not be used.
->>
->> For a gauge on the board, if a user changes the battery to a different
->> type, they need to update the dtb.
->
-> Well, that is a little difficult to control, but here we have only
-> one standard Pandora cell. There may exist replacements with different
-> capacity, but that should not be our problem...
->
->>
->> I assume you built with config_battery_bq27xxx_dt_updates_nvm?
->
-> Yes.
->
->>
->>> The biggest hurdle was to find out that I have to change the
->>> compatible string to "ti,bq27500-1" to get non-NULL dm_regs...
->>>
->>> [   12.765930] bq27xxx_battery_i2c_probe name=bq27500-1-0
->>> [   12.771392] bq27xxx_battery_i2c_probe call setup
->>> [   12.874816] bq27xxx_battery_setup
->>> [   12.904266] bq27xxx_battery_setup: dm_regs=bf0520e0
->>> [   12.933380] (NULL device *): hwmon: 'bq27500-1-0' is not a valid name attribute, please fix
->>> [   13.234893] bq27xxx_battery_settings
->>> [   13.238891] bq27xxx-battery 2-0055: invalid battery:energy-full-design-microwatt-hours 14800000
->>
->> The chip does not support this param, so it should be zero, as it has
->> to be set if charge-full-design-* is set. Can you try that?
->
-> Hm. IMHO the DT should describe what the battery has and the driver should simply ignore
-> values it can't handle or reject them but do the best out of it. Telling the driver to ignore
-> a value by setting to 0 would IMHO be the wrong approach.
+[...]
 
-The driver requires that if either charge- or energy-full-design is
-set, then the other must be. Setting one and leaving the other at
-default would be an error. Allowing any value for a field unsupported
-by the chip, when supported field values must be within a range, isn't
-useful for hw development or production scenarios. The solution for
-shipped equipment is to drop the monitored-battery ref; see below.
-
-> We are also working on the generic-adc-battery driver that makes use of the same battery DT
-> node so that people can choose if they want to configure a kernel for fuel gauge or
-> g-a-b or even both.
->
+>> >> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>> >> index ea1732e..865737a 100644
+>> >> --- a/drivers/base/power/main.c
+>> >> +++ b/drivers/base/power/main.c
+>> >> @@ -1549,14 +1549,16 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>> >>               if (parent) {
+>> >>                       spin_lock_irq(&parent->power.lock);
+>> >>
+>> >> -                     dev->parent->power.direct_complete = false;
+>> >> +                     if (!dev->power.is_rpm_sleep)
+>> >> +                             dev->parent->power.direct_complete = false;
+>> >
+>> > This doesn't look good to me at all.
+>> >
+>> > It potentially breaks the fundamental assumption of the direct_complete
+>> > mechanism that no devices with that flag set will ever be runtime resumed
+>> > during system suspend.
+>> >
+>> > Which can happen with this change if a device with power.is_rpm_sleep is
+>> > resumed causing the parent to be resumed too.
 >>
->>> [   13.312469] bq27xxx_battery_set_config
->>> [   13.407745] bq27xxx_battery_unseal
->>> [   13.455993] bq27xxx_battery_update_dm_block
->>> [   13.460418] bq27xxx-battery 2-0055: update terminate-voltage to 3200
->>> [   13.694885] bq27xxx_battery_seal
+>> Doesn't the exact same problem you describe, already exist prior my change!?
+>
+> No, it doesn't.
+>
+>> That is, if the current device is runtime suspended and the
+>> direct_complete flag is set for it, then __device_suspend() has
+>> already disabled runtime PM for the device, when we reach this point.
+>> That means, a following attempts to runtime resume the device will
+>> fail and thus also to runtime resume its parent.
+>
+> That's because any devices with direct_complete set *cannot* be runtime
+> resumed after __device_suspend().  That's intentional and how the thing
+> is designed.  It cannot work differently, sorry.
+>
+>> So to me, this is a different problem, related how to work out the
+>> correct order of how to suspend devices.
+>
+> The ordering matters here, but it is not the problem.
+>
+> Setting direct_complete means that PM callbacks for this device won't be
+> invoked going forward.  However, if the state of the device was to change
+> (like as a result of runtime PM resume), it would be necessary to run those
+> callbacks after all, but after __device_suspend() it may be too late for
+> that, because the ->suspend callback may have been skipped already.
+>
+> The only way to address that is to prevent runtime PM resume of the device
+> from happening at the point the PM core decides to use direct_complete for it,
+> but that requires runtime PM to be disabled for it.  Moreover, since the
+> device is now suspended with runtime PM disabled and its children might rely
+> on it if they were active, the children must be suspended with runtime PM
+> disabled at this point too.  That's why direct_complete can only be set
+> for a device if it is set for the entire hierarchy below it.
+
+Thanks, this was a very nice description of the direct_complete path!
+
+>
+> Summary: If you allow a device to be runtime resumed during system susped,
+> direct_complete cannot be set for it and it cannot be set for its parent and
+> so on.
+
+Yes, this is what it seems to boils done to!
+
+Perhaps the ACPI PM domain is special in this case, because in its
+->prepare() callback it asks the ACPI FW about whether the
+direct_complete path is possible for a device. In other words, the
+ACPI FW seems to be capable of providing information about if a device
+may become runtime resumed during system suspend. But, really, isn't
+that just a best guess? No?
+
+On those ARM SoCs I am working on, non-ACPI, the information about
+whether a device may become runtime resumed during system suspend,
+most often can't be find out in a deterministic way. That's because
+this information depends on how a device is being used by other
+devices, which changes dynamically and from one system suspend
+sequence to another. In cases like the i2c-designware-plat driver used
+in Hikey (ARM64 board), it can't ever know before hand, if someone is
+going to request an i2c transfer during system suspend or not.
+
+To really deal with these devices properly, we have to suspend them in
+the correct order.
+
+My point is, doesn't the ordering problem exists also for a device,
+which the PM core runs the direct_complete path for, even if the ACPI
+PM domain is attached to the device? Just because runtime PM is
+disabled for a device, doesn't mean the ordering issue disappears,
+right?
+
+>
+> [cut]
+>
+>> >> @@ -1709,11 +1711,14 @@ static int device_prepare(struct device *dev, pm_message_t state)
+>> >>        * A positive return value from ->prepare() means "this device appears
+>> >>        * to be runtime-suspended and its state is fine, so if it really is
+>> >>        * runtime-suspended, you can leave it in that state provided that you
+>> >> -      * will do the same thing with all of its descendants".  This only
+>> >> -      * applies to suspend transitions, however.
+>> >> +      * will do the same thing with all of its descendants". To allow this,
+>> >> +      * the is_rpm_sleep flag must not be set, which is default false, but
+>> >> +      * may have been changed by a driver. This only applies to suspend
+>> >> +      * transitions, however.
+>> >>        */
+>> >>       spin_lock_irq(&dev->power.lock);
+>> >> -     dev->power.direct_complete = ret > 0 && state.event == PM_EVENT_SUSPEND;
+>> >> +     dev->power.direct_complete = ret > 0 && !dev->power.is_rpm_sleep &&
+>> >> +                             state.event == PM_EVENT_SUSPEND;
+>> >
+>> > The only problem addressed by avoiding direct_complete is when runtime PM needs
+>> > to work during __device_suspend() for devices with direct_complete set.  You
+>> > said that this was not the case with the i2c designware driver, so I'm not sure
+>> > what the purpose of this is.
 >>
->> We need to see output after a reboot.
->
-> This was the value after first boot with the new driver enabled.
->
-> A second boot after removing and reinserting battery shows:
->
-> [   11.256713] bq27xxx_battery_setup
-> [   11.256744] bq27xxx_battery_setup: dm_regs=bf05b0e0
-> [   11.257690] (NULL device *): hwmon: 'bq27500-1-0' is not a valid name attribute, please fix
-> [   11.258056] bq27xxx_battery_settings
-> [   11.258300] bq27xxx-battery 2-0055: invalid battery:energy-full-design-microwatt-hours 14800000
-> [   11.258300] bq27xxx_battery_set_config
-> [   11.258331] bq27xxx_battery_unseal
-
-No mention of terminate-voltage in that run? Or is this truncated?
-Looks like you didn't set energy-* to zero, so I can't tell if charge-* works.
-
->> Note that this chip has NVM so
->> these settings persist without power.
->
-> Yes I know. Up to now the bq27500 has been programmed during production test
-> by some special flashing tool. Now as the kernel driver has this capability,
-> we should make (optionally) use of it.
-
-The kernel driver has this feature primarily for gauges that lack NVM.
-It sets those without config_battery_bq27xxx_dt_updates_nvm. The NVM
-programming feature is for hw development and/or production. I don't
-recommend it for shipped equipment.
-
+>> I should probably work more on my changelog, because I tried to
+>> explain it there.
 >>
->>> Does this look ok for
->>>
->>>        bat: battery {
->>>                compatible = "simple-battery", "openpandora-battery";
->>>                voltage-min-design-microvolt = <3200000>;
->>>                energy-full-design-microwatt-hours = <14800000>;
->>>                charge-full-design-microamp-hours = <4000000>;
->>>        };
->>>
->>> ?
->
-> I mainly had some initial doubts that it did not tell something like
-> "update design-capacity" to 4000 or "design-capacity has 4000"
->
-> Ah, I see:
->
->                 /* assume design energy & capacity are in same block */
->
-> This means the bq27500 never programs capacity because we can't specify energy.
-> So I't suggest to revise this rule and coupling of energy and capacity setting.
-
-No, it failed to set charge-* because energy-* is out of range. Fix
-that and it should just emit a warning about energy-* "buffer does not
-match dm spec"
-
->>>
->>> I will send a patch for enabling both fuel gauges and the omap3-pandora-common.dtsi asap.
+>> Anyway, let me quote the important parts, and this is not specific for
+>> the i2c-designware-driver, but generic to drivers using
+>> pm_runtime_force_suspend|resume().
 >>
->> You probably don't want this in upstream dts, as it only programs the
->> gauge if the kernel has the above config option. If the box runs a
->> stock distro, it won't work. A custom-built kernel with the above dts
->> programs the gauge unless the user sets the module param
->> dt_monitored_battery_updates_nvm=0. The requisite dtb should be
->> packaged with the custom-built kernel, and deployed with awareness of
->> the actual battery present.
+>> "In the runtime PM centric path, the driver is expected to make use of
+>> the pm_runtime_force_suspend|resume() helpers, to deploy system sleep
+>> support. More precisely it may assign the system sleep callbacks to
+>> these helpers or may call them from its own callbacks, in case it
+>> needs to perform additional actions during system sleep.
+>>
+>> In other words, the PM core must always invoke the system sleep
+>> callbacks for the device when they are present, to allow the driver to
+>> deal with the system sleep operations."
+>>
+>> A concrete example is drivers/spi/spi-fsl-espi.c, but one can easily find more.
 >
-> Imho, DT can and should describe all properties of the standard OpenPandora
-> battery (and not missing registers of the bq27500).
+> In fact, the new flag introduced here means "assume that that the driver of this
+> device points ->late_suspend and ->early_resume to pm_runtime_force_suspend()
+> and pm_runtime_force_resume(), respectively."  Which then implies that
+> direct_complete cannot be used with it and (and with its parent and so on)
+> and that it is not necessary to runtime resume it during system suspend.
 >
-> Using this information or not should be defined by different defconfigs.
+> However, there are (or at least there may be) devices that need not be
+> runtime resumed during system suspend even though their drivers don't use
+> _force_suspend/resume().
+>
+> Also there are devices whose drivers don't want direct_complete to be used with
+> them, even though they don't use _force_suspend/resume() and they *do* need
+> their devices to be runtime resumed during system suspend.
+>
+> Moreover, some drivers may not mind direct_complete even though their devices
+> need not be runtime resumed during system suspend.  All of that doesn't have
+> to be related to using _force_suspend/resume() at all.
+>
+> So I don't see any reason whatever for combining all of these three *different*
+> conditions under one flag.
 
-Just omit monitored-battery from the bq27500 node on shipped devices.
-We shall not program NVM on a stock kernel. And unfortunately you
-can't send an NVM gauge temporary params.
+Okay!
 
-NB: the DT battery node is new and all the implications have not been
-discovered.
+>
+> Thanks,
+> Rafael
+>
 
-This BQ27 feature was begun in December of last year, and I'm a little
-tired of thinking about it. Feel free to suggest improvements, but be
-aware that we might have already considered and rejected them :-)
+Kind regards
+Uffe
