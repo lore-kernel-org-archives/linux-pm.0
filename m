@@ -1,216 +1,160 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 00/10] arm, arm64, cpufreq: frequency- and cpu-invariant accounting support for task scheduler
-Date: Thu, 31 Aug 2017 01:34:56 +0200
-Message-ID: <11249770.4iDhbWWonU@aspire.rjw.lan>
-References: <20170825143206.30467-1-dietmar.eggemann@arm.com>
+Subject: Re: [PATCH v3 0/8] PM / ACPI / i2c: Deploy runtime PM centric path for system sleep
+Date: Thu, 31 Aug 2017 02:17:41 +0200
+Message-ID: <3033151.kbPpEQGlRq@aspire.rjw.lan>
+References: <1504018610-10822-1-git-send-email-ulf.hansson@linaro.org> <1957183.ZU1CWrAZoR@aspire.rjw.lan> <CAPDyKFosu8RYUUCiBn7+03b3TNmND-aCTqR=+svcvzCwhxw9+A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170825143206.30467-1-dietmar.eggemann@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFosu8RYUUCiBn7+03b3TNmND-aCTqR=+svcvzCwhxw9+A@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, August 25, 2017 4:31:56 PM CEST Dietmar Eggemann wrote:
-> For a more accurate (i.e. frequency- and cpu-invariant) accounting
-> the task scheduler needs a frequency-scaling and on a heterogeneous
-> system a cpu-scaling correction factor.
-> 
-> This patch-set implements a Frequency Invariance Engine (FIE)
-> based on the ratio of current frequency and maximum supported frequency
-> (topology_get_freq_scale()) in the arch topology driver (arm, arm64) to
-> provide such a frequency-scaling correction factor.
-> This is a solution to get frequency-invariant accounting support for
-> platforms without hardware-based performance tracking.
-> 
-> The Cpu Invariance Engine (CIE) (topology_get_cpu_scale()) providing a
-> cpu-scaling correction factor was already introduced by the "Fix issues
-> and factorize arm/arm64 capacity information code" patch-set [1] and is
-> currently part of v4.13-rc6.
-> 
-> This patch-set also enables the frequency- and cpu-invariant accounting
-> support. Enabling here means to associate (wire) the task scheduler
-> function name arch_scale_freq_capacity and arch_scale_cpu_capacity with
-> the FIE and CIE function names from drivers/base/arch_topology.c. This
-> replaces the scheduler's default FIE and CIE in kernel/sched/sched.h.
-> 
-> v3: review results:
-> 
-> Viresh Kumar asked me during the v3 [2] review to move the definition
-> of the default frequency-invariance setter arch_set_freq_scale() in
-> front of cpufreq_generic_init() and to get rid of the fancy function
-> header.
-> 
-> v2: review results:
-> 
-> During the v2 [3] review we agreed that cpufreq core is not the right
-> place to drive this kind of FIE. In case of a future fast-switching
-> arm/arm64 cpufreq driver, a return value other than
-> CPUFREQ_ENTRY_INVALID of the '->fast_switch' driver callback does not
-> indicate that the new frequency has been set. So calling the FIE's
-> setter function (arch_set_freq_scale()) in cpufreq_driver_fast_switch()
-> would not be correct.
-> 
-> Instead this version of the patch-set assumes that the FIE setter
-> function is provided by the cpufreq driver (slow- or fast-switching).
-> 
-> Slow-switching driver:
-> 
-> For a slow-switching driver the FIE setter function can be called in its
-> '->target_index' driver callback, after a non-error return value from
-> the (blocking) firmware call has been received.
-> Two slow-switching cpufreq drivers (arm-big-little (exclusively used in
-> arm/arm64) and cpufreq-dt) have been changed accordingly.
-> 
-> Fast-switching driver:
-> 
-> For a fast-switching driver the ARM System Control and Management
-> Interface (SCMI) document [4] (4.5 Performance domain management
-> protocol) provides an example for such a driver how to communicate with
-> the firmware.
-> It defines an optional performance domain related notification which
-> indicates that the requested frequency has been changed. So the FIE
-> setter function could be implemented here.
-> In case the firmware does not implement this notification or the driver
-> makes no use of it, the FIE setter would have to be placed in the
-> '->fast_switch' driver callback assuming that the firmware has set the
-> frequency.
-> 
-> Weak arch_set_freq_scale() interface:
-> 
-> Since a cpufreq driver (e.g. cpufreq-dt) can be build for different
-> arch's a default (empty) implementation of the FIE setter function in
-> cpufreq core is still needed for those arch's which do not implement it.
-> 
-> FIE/CIE inlining:
-> 
-> The FIE (topology_get_freq_scale()) and CIE (topology_get_cpu_scale())
-> getter functions have been coded as static inline functions so they can
-> be inlined into the scheduler fast path (e.g. __update_load_avg_se()).
-> 
-> +------------------------------+       +------------------------------+
-> |                              |       |                              |
-> | cpufreq:                     |       | arch:                        |
-> |                              |       |                              |
-> | weak arch_set_freq_scale() {}|       |                              |
-> |                              |       |                              |
-> +------------------------------+       |                              |
->                                        |                              |
-> +------------------------------+       |                              |
-> |                              |       |                              |
-> | cpufreq driver:              |       |                              |
-> |                              |       |                              |
-> |                            +-----------> arch_set_freq_scale()      |
-> |                              |       |                              |
-> +------------------------------+       |   topology_set_cpu_scale()   |
->                                        |                              |
-> +------------------------------+       |                              |
-> |                              |       |                              |
-> | task scheduler:              |       |                              |
-> |                              |       |                              |
-> | arch_scale_freq_capacity() +-----------> topology_get_freq_scale()  |
-> |                              |       |                              |
-> | arch_scale_cpu_capacity()  +-----------> topology_get_cpu_scale()   |
-> |                              |       |                              |
-> +------------------------------+       +------------------------------+
-> 
-> v1 review results:
-> 
-> During the v1 [5] review Viresh Kumar pointed out that such a FIE based
-> on cpufreq transition notifier will not work with future cpufreq
-> policies supporting fast frequency switching.
-> To include support for fast frequency switching policies the FIE
-> implementation has been changed. Whenever there is a frequency change
-> cpufreq now calls the arch specific function arch_set_freq_scale() which
-> has to be implemented by the architecture. In case the arch does not
-> specify this function FIE support is compiled out of cpufreq.
-> The advantage is that this would support fast frequency switching since
-> it does not rely on cpufreq transition (or policy) notifier anymore.
-> 
-> Patch high level description:
-> 
->    [   01/10] Fix to free cpumask cpus_to_visit
->    [   02/10] Default (empty, weak) arch_set_freq_scale() implementation
->    [03,04/10] Call arch_set_freq_scale() from two cpufreq drivers
->               (arm_big_little and cpufreq-dt)
->    [   05/10] FIE
->    [   06/10] Allow CIE inlining
->    [07,08/10] Enable frequency- and cpu-invariant accounting on arm
->    [09,10/10] Enable frequency- and cpu-invariant accounting on arm64
-> 
-> Changes v3->v4:
-> 
->    - Rebase on top of v4.13-rc6
->    - Move definition of arch_set_freq_scale() in cpufreq.c [02/10]
->    - Add Acked-by for [01/10, 03-08/10]
-> 
-> Changes v2->v3:
-> 
->    - Rebase on top of v4.13-rc2
->    - Fix 'notifier unregister'-'free cpumask' order in
->      parsing_done_workfn() in [01/10]
->    - Call arch_set_freq_scale() from cpufreq drivers (arm-big-little
->      and cpufreq-dt) [02-04/10]
->    - Allow inlining of topology_get_freq_scale() and    
->      topology_get_cpu_scale() into task scheduler fastpath [05,06/10]
-> 
-> Changes v1->v2:
->    - Rebase on top of next-20170630
->    - Add fixup patch to free cpumask cpus_to_visit [01/10]
->    - Propose solution to support fast frequency switching [02-04,07/10]
->    - Add patch to allow CIE and FIE inlining [10/10]
-> 
-> The patch-set is based on top of v4.13-rc6 and is also available from:
-> 
->    git://linux-arm.org/linux-de.git upstream/freq_and_cpu_inv_v4
-> 
-> Testing:
-> 
-> The patch-set has been tested on TC2 (arm, arm-big-little driver), JUNO
-> (arm64, arm-big-little driver) and Hikey620 (arm64, cpufreq-dt driver)
-> by running a ramp-up rt-app task pinned to a cpu with the ondemand
-> cpufreq governor and checking the load-tracking signals of this task.
-> 
-> Driver module loading has been tested on TC2, JUNO and Hikey620 as well.
-> 
-> [1] https://marc.info/?l=linux-kernel&m=149625018223002&w=2
-> [2] https://marc.info/?l=linux-kernel&m=150118402232039&w=2
-> [3] https://marc.info/?l=linux-pm&m=149933474313566&w=2
-> [4] http://arminfo.emea.arm.com/help/topic/com.arm.doc.den0056a/DEN0056A_System_Control_and_Management_Interface.pdf
-> [5] https://marc.info/?l=linux-kernel&m=149690865010019&w=2
-> 
-> Dietmar Eggemann (10):
->   drivers base/arch_topology: free cpumask cpus_to_visit
->   cpufreq: provide default frequency-invariance setter function
->   cpufreq: arm_big_little: invoke frequency-invariance setter function
->   cpufreq: dt: invoke frequency-invariance setter function
->   drivers base/arch_topology: provide frequency-invariant accounting
->     support
->   drivers base/arch_topology: allow inlining cpu-invariant accounting
->     support
->   arm: wire frequency-invariant accounting support up to the task
->     scheduler
->   arm: wire cpu-invariant accounting support up to the task scheduler
->   arm64: wire frequency-invariant accounting support up to the task
->     scheduler
->   arm64: wire cpu-invariant accounting support up to the task scheduler
-> 
->  arch/arm/include/asm/topology.h   |  8 ++++++++
->  arch/arm64/include/asm/topology.h |  8 ++++++++
->  drivers/base/arch_topology.c      | 29 +++++++++++++++++++++++------
->  drivers/cpufreq/arm_big_little.c  | 10 +++++++++-
->  drivers/cpufreq/cpufreq-dt.c      | 12 ++++++++++--
->  drivers/cpufreq/cpufreq.c         |  6 ++++++
->  include/linux/arch_topology.h     | 18 +++++++++++++++++-
->  include/linux/cpufreq.h           |  3 +++
->  8 files changed, 84 insertions(+), 10 deletions(-)
-> 
-> 
+Disclaimer: I'm falling asleep, so I probably shouldn't reply to email right
+now, but tomorrow I may not be able to get to email at all, so I'll try anyway.
 
-FWIW, patches [2-4/10] in this series are fine by me, but I guess you
-need to talk to Viresh about the [3-4/10] anyway.
+On Wednesday, August 30, 2017 11:57:28 AM CEST Ulf Hansson wrote:
+> On 29 August 2017 at 22:19, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Tuesday, August 29, 2017 4:56:42 PM CEST Ulf Hansson wrote:
+> >> The i2c designware platform driver, drivers/i2c/busses/i2c-designware-platdrv.c,
+> >> isn't well optimized for system sleep.
+> >>
+> >> What makes this driver particularly interesting is because it's a cross-SoC
+> >> driver, which sometimes means there is an ACPI PM domain attached to the i2c
+> >> device and sometimes not. The driver is being used on both x86 and ARM.
+> >>
+> >> In principle, to optimize the system sleep support in i2c driver, this series
+> >> enables the proven runtime PM centric path for the i2c driver. However, to do
+> >> that the ACPI PM domain also have to collaborate and understand this behaviour.
+> >> From earlier versions, Rafael has also pointed out that also the PM core needs
+> >> to be involved.
+> >
+> > Earlier today I realized that drivers pointing their ->suspend_late and
+> > ->resume_early callbacks, respectively, to pm_runtime_force_suspend() and
+> > pm_runtime_force_resume(), are fundamentally incompatible with any bus type
+> > doing nontrivial PM and with almost any nontrivial PM domains, for two reasons.
+> >
+> > First, it basically requires the bus type or PM domain to expect that its
+> > ->runtime_suspend callback may or may not be indirectly invoked from its
+> > own ->suspend_late callback, depending on the driver (and analogously
+> > for ->runtime_resume and ->resume early), which is insane.
+> >
+> > Second, it is a layering violation, because it makes the driver effectively
+> > override the upper layer's decisions about what code to run.
+> 
+> You are right that for more complex bus types and PM domains, those
+> needs to play along. So that is what I am trying to implement for the
+> ACPI PM domain in this series.
+
+Well, "play along" is a bit of an understatement here.
+
+They would need to turn into horrible mess and that's not going to happen.
+
+> The generic PM domain, is simple in this regards. There is only a
+> minor adaptation for the ->runtime_suspend|resume() callbacks, which
+> avoids validating dev_pm_qos constraints during system sleep. Nothing
+> special is needed in ->suspend_late|noirq callbacks, etc.
+> 
+> For most other simple bus types, like the platform bus, spi, i2c,
+> amba, no particular adoptions is needed at all. Instead those just
+> trust the drivers to do the right thing.
+
+They are the trivial ones.
+
+> Before we had the direct_complete path, using the
+> pm_runtime_force_suspend|resume() helpers, was the only good way for
+> these kind of drivers, to in an optimized manner, deal with system
+> sleep when runtime PM also was enabled for their devices. Now this
+> method has become widely deployed, unfortunate whether you like it or
+> not.
+
+So can you please remind me why the _force_ wrappers are needed?
+
+In particular, why can't drivers arrange their callbacks the way I did that
+in https://patchwork.kernel.org/patch/9928583/ ?
+
+> Besides the slightly better optimizations you get when using
+> pm_runtime_force_suspend|resume(), comparing to the direct_complete
+> path - I think it's also worth to consider, how easy it becomes for
+> drivers to deploy system sleep support. In many cases, only two lines
+> of code is needed to add system sleep support in a driver.
+
+You are doing a wrong comparison here IMO.  You essentially are comparing two
+bandaids with each other and arguing that one of them somehow is better.
+
+What about doing something which is not a bandaid instead?
+
+> Now, some complex code always needs to be implemented somewhere. When
+> using the runtime PM centric path, that code consist of the
+> pm_runtime_force_suspend|resume() helpers itself - and some
+> adaptations in buses/PM domains in cases when those needs special
+> care.
+> 
+> My point is, the runtime PM centric path, allows us to keep the
+> complex part of the code at a few centralized places, instead of
+> having it spread/duplicated into drivers.
+> 
+> So yes, you could consider it insane, but to me and many others, it
+> seems to work out quite well.
+
+Because it only has been used with trivial middle layer code so far
+and I'm quite disappointed that you don't seem to see a problem here. :-/
+
+I mean something like
+
+PM core => bus type / PM domain ->suspend_late => driver ->suspend_late
+
+is far more straightforward than
+
+PM core => bus type / PM domain ->suspend_late => driver ->suspend_late =>
+	bus type / PM domain ->runtime_suspend => driver ->runtime_suspend
+
+with the bus type / PM domain having to figure out somehow at the
+->suspend_late time whether or not its ->runtume_suspend is going to be invoked
+in the middle of it.
+
+Apart from this just being aesthetically disgusting to me, which admittedly is
+a matter of personal opinion, it makes debugging new driver code harder (if it
+happens to not work) and reviewing it almost impossible, because now you need
+to take all of the tangling between callbacks into accont and sometimes not
+just for one bus type / PM domain.
+
+> Yeah, and the laying violation is undoubtedly the most controversial
+> part of the runtime PM centric path - I agree to that! The
+> direct_complete path don't have this, as you implemented it. :-)
+> 
+> On the other hand, one could consider that these upper layers, in many
+> cases anyway needs to play along with the behavior of the driver. So,
+> I guess it depends on how one see it.
+> 
+> >
+> > That's why I'm afraid that we've reached a dead end here. :-(
+> 
+> That's said news. Is was really hoping I could find a way to move this
+> forward. You don't have any other ideas on how I can adjust the series
+> to make you happy?
+
+So to be precise, patches [2-3/8] are basically fine by me.  Patch [4/8]
+sort of works too, but I'd do the splitting slightly differently and I don't
+see much value in it alone.
+
+The rest of the ACPI changes is mostly not acceptable to me, mostly because
+of what is done to the PM domain's ->runtime_suspend/resume and
+->suspend_late/->resume_early callbacks.
+
+I guess the only way that could be made work for me would be by not using
+_force_suspend/resume() at all, but that would defeat the point, right?
+
+I don't like the flag too, but that might be worked out.
+
+Also, when I looked at _force_suspend/resume() again, I got concerned.
+There is stuff in there that shouldn't be necessary in a driver's
+->late_suspend/->early_resume and some things in there just made me
+scratch my head.
 
 Thanks,
 Rafael
+
