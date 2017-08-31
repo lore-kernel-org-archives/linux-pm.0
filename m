@@ -1,70 +1,26 @@
 From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 2/7] dt-bindings: PM / OPP: add clocks per OPP node
- support
-Date: Thu, 31 Aug 2017 12:39:20 -0500
-Message-ID: <20170831173920.4emtr5vkgvjcx6ac@rob-hp-laptop>
-References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
- <1503504610-12880-3-git-send-email-aisheng.dong@nxp.com>
+Subject: Re: [PATCH 1/5] dt-bindings: rockchip-thermal: Support the RV1108
+ SoC compatible
+Date: Thu, 31 Aug 2017 12:57:50 -0500
+Message-ID: <20170831175750.ypsnrktdet3uarr7@rob-hp-laptop>
+References: <1503570475-7850-1-git-send-email-rocky.hao@rock-chips.com>
+ <1503570475-7850-2-git-send-email-rocky.hao@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1503504610-12880-3-git-send-email-aisheng.dong@nxp.com>
+In-Reply-To: <1503570475-7850-2-git-send-email-rocky.hao@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dong Aisheng <aisheng.dong@nxp.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com, Frank Rowand <frowand.list@gmail.com>, devicetree@vger.kernel.org
+To: Rocky Hao <rocky.hao@rock-chips.com>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, heiko@sntech.de, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 24, 2017 at 12:10:05AM +0800, Dong Aisheng wrote:
-> It's used for platforms where different OPPs may use different clocks.
-> With this extended binding, user could specify the correct clock for each
-> OPP node.
+On Thu, Aug 24, 2017 at 06:27:51PM +0800, Rocky Hao wrote:
+> Add a new compatible for thermal founding on RV1108 SoCs.
 > 
-> Cc: Viresh Kumar <vireshk@kernel.org>
-> Cc: Nishanth Menon <nm@ti.com>
-> Cc: Stephen Boyd <sboyd@codeaurora.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: Frank Rowand <frowand.list@gmail.com>
-> Cc: devicetree@vger.kernel.org
-> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
 > ---
->  Documentation/devicetree/bindings/opp/opp.txt | 52 +++++++++++++++++++++++++++
->  1 file changed, 52 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-> index e36d261..40a4340 100644
-> --- a/Documentation/devicetree/bindings/opp/opp.txt
-> +++ b/Documentation/devicetree/bindings/opp/opp.txt
-> @@ -152,6 +152,11 @@ Optional properties:
->    hierarchy can be contained in multiple 32 bit values. i.e. <X Y Z1 Z2> in the
->    above example, Z1 & Z2 refer to the version hierarchy Z.
->  
-> +- clocks: Clock phandle and specifier used for this opp.
-> +
-> +- clock-names: clock names for this opp. The valid clock names are platform
-> +	       specific.
+>  Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 1 +
+>  1 file changed, 1 insertion(+)
 
-You don't need -names if there's only 1 clock. But then how long until 
-we have a list of any random clocks some how associated with an OPP.
-
-I think this should really be solved within the clock framework. What 
-you really need is "set my parent clock to the source that can provide X 
-Hz". Could the assigned-clocks property work here (in the OPP nodes 
-rather than the cpu nodes)?
-
-> +
->  - status: Marks the node enabled/disabled.
->  
->  Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
-> @@ -528,3 +533,50 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
->  		};
->  	};
->  };
-> +
-> +Example 7: Single core ARM cortex A7, switch separate clocks for each OPP:
-
-Can't you add this to an existing example? We don't need to enumerate 
-every possible option.
-
-Rob
+Acked-by: Rob Herring <robh@kernel.org>
