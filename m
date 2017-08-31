@@ -1,26 +1,42 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: [PATCH 31/31] timer: Switch to testing for .function instead of .data
-Date: Thu, 31 Aug 2017 16:45:37 -0700
-Message-ID: <CAKdAkRTSgs+JTKRa2nvcSPD+zQ5OhsLx_aM8WaZyg304QQN3hA@mail.gmail.com>
-References: <1504222183-61202-1-git-send-email-keescook@chromium.org> <1504222183-61202-32-git-send-email-keescook@chromium.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+Subject: [PATCH] thermal: tegra: dereference the pointer after null check
+Date: Thu, 31 Aug 2017 16:52:29 -0700
+Message-ID: <1504223549-4152-1-git-send-email-nicoleotsuka@gmail.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1504222183-61202-32-git-send-email-keescook@chromium.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Dennis Dalessandro <dennis.dalessandro@intel.com>, Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock <hal.rosenstock@gmail.com>, Jeff Kirsher <jeffrey.t.kirsher@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-rdma@vger.kernel.org, "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>, intel-wired-lan@lists.osuosl.org, netdev <netdev@vger.kernel.org>, lkml <linux-kernel@vger.kernel.org>
+To: rui.zhang@intel.com
+Cc: edubezval@gmail.com, thierry.reding@gmail.com, jonathanh@nvidia.com, wni@nvidia.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, srikars@nvidia.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 31, 2017 at 4:29 PM, Kees Cook <keescook@chromium.org> wrote:
-> In several places, .data is checked for initialization to gate early
-> calls to del_timer_sync(). Checking for .function is equally valid, so
-> switch to this in all callers.
+The dev pointer is going through a null check after a dereference.
+So this patch just reverses that.
 
-Not seeing the rest of patches it is unclear from the patch
-description why this is needed/wanted.
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+---
+ drivers/thermal/tegra/soctherm.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Thanks.
-
+diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
+index 7d2db23..6718799 100644
+--- a/drivers/thermal/tegra/soctherm.c
++++ b/drivers/thermal/tegra/soctherm.c
+@@ -478,7 +478,7 @@ static int throttrip_program(struct device *dev,
+ 			     struct soctherm_throt_cfg *stc,
+ 			     int trip_temp)
+ {
+-	struct tegra_soctherm *ts = dev_get_drvdata(dev);
++	struct tegra_soctherm *ts;
+ 	int temp, cpu_throt, gpu_throt;
+ 	unsigned int throt;
+ 	u32 r, reg_off;
+@@ -486,6 +486,8 @@ static int throttrip_program(struct device *dev,
+ 	if (!dev || !sg || !stc || !stc->init)
+ 		return -EINVAL;
+ 
++	ts = dev_get_drvdata(dev);
++
+ 	temp = enforce_temp_range(dev, trip_temp) / ts->soc->thresh_grain;
+ 
+ 	/* Hardcode LIGHT on LEVEL1 and HEAVY on LEVEL2 */
 -- 
-Dmitry
+2.1.4
