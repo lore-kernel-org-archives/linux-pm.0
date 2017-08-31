@@ -1,302 +1,103 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: Re: [PATCH resend v2] power: supply: bq27xxx: enable writing capacity values for bq27421
-Date: Thu, 31 Aug 2017 11:35:33 +0200
-Message-ID: <A3715C96-BA15-4F3F-B0F1-017A5D31FFB0@goldelico.com>
-References: <be410e440d889b2e46208b523bdb890e860c5046.1504037446.git.hns@goldelico.com> <CAKvHMgQDcgabM3UogXE3L07n9yiHgD3FfJ5GCOqkAk1=SA2A=Q@mail.gmail.com> <7428DD60-FE09-41C4-9DBC-FFDCB9D0B591@goldelico.com> <CAKvHMgT8MDpussUYJ_AKELXzCbQxz2BYrF0ZM-S_on=9+oatEQ@mail.gmail.com> <3A487394-3755-4EA0-86C6-6855DA0AC547@goldelico.com> <CAKvHMgT6AHfjnXvD5jeWP_9wAm_GQNJxm=Nm1jH32NeaVZjdYw@mail.gmail.com>
-Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+From: Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [PATCH v3 0/5] bq27xxx_battery data memory update
+Date: Thu, 31 Aug 2017 11:54:00 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1708311150440.3243@hadrien>
+References: <20170824033617.20840-1-liam@networkimprov.net> <20170829105413.6wbejdaxxxd6hk7b@earth> <0bf4ba2f-18f9-1204-8241-8acb6ac6f490@ti.com> <20170829212259.gs4bljwscrprsfjl@earth> <CAKvHMgTEe_xBP2ENMTU5BNwWaRjfqbAuRJC32sHYL_Mh5oJOsQ@mail.gmail.com>
+ <20170830002939.ns43wldvffmwqhuv@earth> <CAKvHMgSyr8aZ1cVd-Zf6WHNkwyTcSBvRaVuDWuHEnuNM=MStUA@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mo4-p00-ob.smtp.rzone.de ([81.169.146.218]:31353 "EHLO
-        mo4-p00-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750772AbdHaJfo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Aug 2017 05:35:44 -0400
-In-Reply-To: <CAKvHMgT6AHfjnXvD5jeWP_9wAm_GQNJxm=Nm1jH32NeaVZjdYw@mail.gmail.com>
+Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:33665
+        "EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750898AbdHaJy3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Aug 2017 05:54:29 -0400
+In-Reply-To: <CAKvHMgSyr8aZ1cVd-Zf6WHNkwyTcSBvRaVuDWuHEnuNM=MStUA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>
-Cc: =?utf-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, "Andrew F. Davis" <afd@ti.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Discussions about the Letux Kernel <letux-kernel@openphoenux.org>, kernel@pyra-handheld.com
-
-Hi Liam,
-
-> Am 31.08.2017 um 10:58 schrieb Liam Breck <liam@networkimprov.net>:
->=20
-> On Wed, Aug 30, 2017 at 11:58 PM, H. Nikolaus Schaller
-> <hns@goldelico.com> wrote:
->> Hi Liam,
->>=20
->>> Am 30.08.2017 um 13:24 schrieb Liam Breck <liam@networkimprov.net>:
->>>=20
->>> Hi Nikolaus,
->>>=20
->>> On Wed, Aug 30, 2017 at 2:30 AM, H. Nikolaus Schaller =
-<hns@goldelico.com> wrote:
->>>> Hi Liam and Sebastian,
->>>>=20
->>>>> Am 29.08.2017 um 22:20 schrieb Liam Breck =
-<liam@networkimprov.net>:
->>>>>=20
->>>>> Hi Nikolaus, thanks for the patch...
->>>>>=20
->>>>> On Tue, Aug 29, 2017 at 1:10 PM, H. Nikolaus Schaller =
-<hns@goldelico.com> wrote:
->>>>>> Tested on Pyra prototype with bq27421.
->>>>>>=20
->>>>>> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
->>>>>> ---
->>>>>> drivers/power/supply/bq27xxx_battery.c | 2 +-
->>>>>> 1 file changed, 1 insertion(+), 1 deletion(-)
->>>>>>=20
->>>>>> diff --git a/drivers/power/supply/bq27xxx_battery.c =
-b/drivers/power/supply/bq27xxx_battery.c
->>>>>> index b6c3120ca5ad..e3c878ef7c7e 100644
->>>>>> --- a/drivers/power/supply/bq27xxx_battery.c
->>>>>> +++ b/drivers/power/supply/bq27xxx_battery.c
->>>>>> @@ -688,7 +688,7 @@ static struct bq27xxx_dm_reg =
-bq27545_dm_regs[] =3D {
->>>>>> #define bq27545_dm_regs 0
->>>>>> #endif
->>>>>>=20
->>>>>> -#if 0 /* not yet tested */
->>>>>> +#if 1 /* tested on Pyra */
->>>>>> static struct bq27xxx_dm_reg bq27421_dm_regs[] =3D {
->>>>>=20
->>>>> I think we can drop the #if and #else...#endif so it's just the
->>>>> dm_regs table, as with bq27425.
->>>>=20
->>>> I have fixed that and did take the chance to update my OpenPandora
->>>> kernel so that I also could test and make the bq27500 working.
->>>=20
->>> Is this gauge on the board or in the battery?
->>=20
->> It is on the board.
->>=20
->>> If in the battery,
->>> monitored-battery should not be used.
->>>=20
->>> For a gauge on the board, if a user changes the battery to a =
-different
->>> type, they need to update the dtb.
->>=20
->> Well, that is a little difficult to control, but here we have only
->> one standard Pandora cell. There may exist replacements with =
-different
->> capacity, but that should not be our problem...
->>=20
->>>=20
->>> I assume you built with config_battery_bq27xxx_dt_updates_nvm?
->>=20
->> Yes.
->>=20
->>>=20
->>>> The biggest hurdle was to find out that I have to change the
->>>> compatible string to "ti,bq27500-1" to get non-NULL dm_regs...
->>>>=20
->>>> [   12.765930] bq27xxx_battery_i2c_probe name=3Dbq27500-1-0
->>>> [   12.771392] bq27xxx_battery_i2c_probe call setup
->>>> [   12.874816] bq27xxx_battery_setup
->>>> [   12.904266] bq27xxx_battery_setup: dm_regs=3Dbf0520e0
->>>> [   12.933380] (NULL device *): hwmon: 'bq27500-1-0' is not a valid =
-name attribute, please fix
->>>> [   13.234893] bq27xxx_battery_settings
->>>> [   13.238891] bq27xxx-battery 2-0055: invalid =
-battery:energy-full-design-microwatt-hours 14800000
->>>=20
->>> The chip does not support this param, so it should be zero, as it =
-has
->>> to be set if charge-full-design-* is set. Can you try that?
->>=20
->> Hm. IMHO the DT should describe what the battery has and the driver =
-should simply ignore
->> values it can't handle or reject them but do the best out of it. =
-Telling the driver to ignore
->> a value by setting to 0 would IMHO be the wrong approach.
->=20
-> The driver requires that if either charge- or energy-full-design is
-> set, then the other must be. Setting one and leaving the other at
-> default would be an error. Allowing any value for a field unsupported
-> by the chip, when supported field values must be within a range, isn't
-> useful for hw development or production scenarios. The solution for
-> shipped equipment is to drop the monitored-battery ref; see below.
->=20
->> We are also working on the generic-adc-battery driver that makes use =
-of the same battery DT
->> node so that people can choose if they want to configure a kernel for =
-fuel gauge or
->> g-a-b or even both.
->>=20
->>>=20
->>>> [   13.312469] bq27xxx_battery_set_config
->>>> [   13.407745] bq27xxx_battery_unseal
->>>> [   13.455993] bq27xxx_battery_update_dm_block
->>>> [   13.460418] bq27xxx-battery 2-0055: update terminate-voltage to =
-3200
->>>> [   13.694885] bq27xxx_battery_seal
->>>=20
->>> We need to see output after a reboot.
->>=20
->> This was the value after first boot with the new driver enabled.
->>=20
->> A second boot after removing and reinserting battery shows:
->>=20
->> [   11.256713] bq27xxx_battery_setup
->> [   11.256744] bq27xxx_battery_setup: dm_regs=3Dbf05b0e0
->> [   11.257690] (NULL device *): hwmon: 'bq27500-1-0' is not a valid =
-name attribute, please fix
->> [   11.258056] bq27xxx_battery_settings
->> [   11.258300] bq27xxx-battery 2-0055: invalid =
-battery:energy-full-design-microwatt-hours 14800000
->> [   11.258300] bq27xxx_battery_set_config
->> [   11.258331] bq27xxx_battery_unseal
->=20
-> No mention of terminate-voltage in that run?
-
-No, I didn't see it again.
-
-> Or is this truncated?
-> Looks like you didn't set energy-* to zero, so I can't tell if =
-charge-* works.
-
-Seems to need more experimentation (and more time for it).
-
->=20
->>> Note that this chip has NVM so
->>> these settings persist without power.
->>=20
->> Yes I know. Up to now the bq27500 has been programmed during =
-production test
->> by some special flashing tool. Now as the kernel driver has this =
-capability,
->> we should make (optionally) use of it.
->=20
-> The kernel driver has this feature primarily for gauges that lack NVM.
-> It sets those without config_battery_bq27xxx_dt_updates_nvm. The NVM
-> programming feature is for hw development and/or production. I don't
-> recommend it for shipped equipment.
-
-Mostly agreed...
-
->=20
->>>=20
->>>> Does this look ok for
->>>>=20
->>>>       bat: battery {
->>>>               compatible =3D "simple-battery", =
-"openpandora-battery";
->>>>               voltage-min-design-microvolt =3D <3200000>;
->>>>               energy-full-design-microwatt-hours =3D <14800000>;
->>>>               charge-full-design-microamp-hours =3D <4000000>;
->>>>       };
->>>>=20
->>>> ?
->>=20
->> I mainly had some initial doubts that it did not tell something like
->> "update design-capacity" to 4000 or "design-capacity has 4000"
->>=20
->> Ah, I see:
->>=20
->>                /* assume design energy & capacity are in same block =
-*/
->>=20
->> This means the bq27500 never programs capacity because we can't =
-specify energy.
->> So I't suggest to revise this rule and coupling of energy and =
-capacity setting.
->=20
-> No, it failed to set charge-* because energy-* is out of range. Fix
-> that and it should just emit a warning about energy-* "buffer does not
-> match dm spec"
-
-Here I strongly disagree. The DT property should describe the battery =
-and not
-a limitation of the fuel gauge chip or the value is not in the range of =
-what
-the chip expects.
-
-IMHO, if the fuel gauge driver can't handle, it should not require to =
-tamper
-with the battery DT description making it wrong and unuseable for other =
-purposes.
-
->=20
->>>>=20
->>>> I will send a patch for enabling both fuel gauges and the =
-omap3-pandora-common.dtsi asap.
->>>=20
->>> You probably don't want this in upstream dts, as it only programs =
-the
->>> gauge if the kernel has the above config option. If the box runs a
->>> stock distro, it won't work. A custom-built kernel with the above =
-dts
->>> programs the gauge unless the user sets the module param
->>> dt_monitored_battery_updates_nvm=3D0. The requisite dtb should be
->>> packaged with the custom-built kernel, and deployed with awareness =
-of
->>> the actual battery present.
->>=20
->> Imho, DT can and should describe all properties of the standard =
-OpenPandora
->> battery (and not missing registers of the bq27500).
->>=20
->> Using this information or not should be defined by different =
-defconfigs.
->=20
-> Just omit monitored-battery from the bq27500 node on shipped devices.
-> We shall not program NVM on a stock kernel.
-> And unfortunately you can't send an NVM gauge temporary params.
-
-Isn't this what the defconfigs are for?
-
-A stock kernel should keep CONFIG_BATTERY_BQ27XXX_DT_UPDATES_NVM =
-disabled
-and I haven't seen that it is enabled in a stock defconfig.
-
-A production kernel (or user wanting to play with it) can enable. But
-should not change the DTB.
-
-I have done the same mistake to mis-use DT as "configuration" or ask =
-users to
-install different DTB several times myself and was heavily criticized,
-because maintainers clearly said DT should *describe* hardware and not =
-configure
-kernel features. I.e. there should be only one DTB for each board.
-
-Hence I would expect them to say: if the bq27500 monitors the battery
-it should be described by the DT. And if the battery has some
-energy-full-design-microwatt-hours, it should be there and not a "0" or
-omission.
-
-But that is just *my* 2ct. DT maintainers should finally say something.
-
->=20
-> NB: the DT battery node is new and all the implications have not been
-> discovered.
->=20
-> This BQ27 feature was begun in December of last year, and I'm a little
-> tired of thinking about it.
-
-I fully understand :) I have some patches in tiresome discussion since =
-ca. 3 years...
-
->  Feel free to suggest improvements, but be
-> aware that we might have already considered and rejected them :-)
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, "Andrew F. Davis" <afd@ti.com>, =?ISO-8859-15?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org
 
 
-We had observed this issue for the RAM only fuel gauge bq27421 a while =
-ago
-(I think even before December) and had started our own patch set. =
-Grazvydas
-recently had made it working on some older kernel which is now =
-superseded by
-your patch set. So you were faster in submitting a solution (and yours =
-is
-even more general than what we had ever thought about).
 
-So I am very pleased with that we have a big step forward for the =
-bq27421
-based device. Making the bq27500 in the OpenPandora fool proof isn't =
-that important
-for the moment so we can postpone it.
+On Tue, 29 Aug 2017, Liam Breck wrote:
 
-BR and thanks for all the work,
-Nikolaus
+> Coccinelle folks,
+>
+> On Tue, Aug 29, 2017 at 5:29 PM, Sebastian Reichel
+> <sebastian.reichel@collabora.co.uk> wrote:
+> > Hi,
+> >
+> > On Tue, Aug 29, 2017 at 04:07:12PM -0700, Liam Breck wrote:
+> >> I don't see a Julia in CC list...
+> >
+> > <_< let's try that again.
+> >
+> >> On Tue, Aug 29, 2017 at 2:22 PM, Sebastian Reichel
+> >> <sebastian.reichel@collabora.co.uk> wrote:
+> >> > [adding Julia to Cc for Coccinelle question]
+> >> >
+> >> > Hi,
+> >> >
+> >> > On Tue, Aug 29, 2017 at 10:31:57AM -0500, Andrew F. Davis wrote:
+> >> >> On 08/29/2017 05:54 AM, Sebastian Reichel wrote:
+> >> >> > On Wed, Aug 23, 2017 at 08:36:12PM -0700, Liam Breck wrote:
+> >> >> >> Overview:
+> >> >> >> * Reorganizes chip data definitions
+> >> >> >> * Enables features landed in these patches:
+> >> >> >>   dt-bindings: power: supply: bq27xxx: Add monitored-battery documentation
+> >> >> >>   power: supply: bq27xxx: Add chip data memory read/write support
+> >> >> >>   power: supply: bq27xxx: Add power_supply_battery_info support
+> >> >> >> * Supports the following chips (only BQ27425 is active)
+> >> >> >>   BQ27500, 545, 425, 421, 441, 621
+> >> >> >>
+> >> >> >> Changes in v3:
+> >> >> >> * BQ27425 tested; workaround minor chip bug
+> >> >> >> * Dropped driver_version
+> >> >> >> * Fixed dbg_dupes logic for .props & .dm_regs
+> >> >> >> * Dropped two props array dupes
+> >> >> >>
+> >> >> >> Changes in v2:
+> >> >> >> * Added di->opts flags for remaining chip features
+> >> >> >> * Commented out untested bq27xxx_dm_regs parameters
+> >> >> >> * Changed dbg_dupes to run only once
+> >> >> >>
+> >> >> >> Notes on v1:
+> >> >> >> * Not fully tested (hence RFC tag)
+> >> >> >
+> >> >> > Thanks, full series queued.
+> >> >> >
+> >> >> > -- Sebastian
+> >> >>
+> >> >> Anyway, I've not got the time to fight these changes anymore, but at
+> >> >> very least could you drop 4/5, it's static analysis code made into a
+> >> >> runtime check built into a kernel driver, if not at least add my
+> >> >> nacked-by. :)
+> >> >
+> >> > Since it's not critical at all and nobody depends on it, I dropped 4/5
+> >> > for now. I agree, that checking it at runtime is not nice. On the other
+> >> > hand I do think a duplication check makes sense. Doing a static
+> >> > check should be possible, but I have no idea how to implement this
+> >> > (without much effort). I suspect Coccinelle can do it, so I added
+> >> > Julia.
+> >> >
+> >> > For reference this is the runtime check:
+> >> > https://patchwork.kernel.org/patch/9918953/
+>
+> The data structures being checked start here:
+> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n138
+>
+> And are aggregated here:
+> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n743
+
+I worked a bit on this, but unfortunately there is a major parsing
+problem, and most of the definitions are ignored.  Specifically, the
+definitions of the regs variables are interspersed with eg:
+
+#define bq27510g1_regs bq27500_regs
+
+I'm not sure whether this would be convenient to fix, since parsing is
+rather delicate.  Coccinelle doesn't run cpp first.  It tries to parse
+macros definitions so that their code can be transformed as needed t the
+place of the definition.
+
+julia
