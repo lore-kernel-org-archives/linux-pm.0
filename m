@@ -1,74 +1,129 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v4 00/10] arm, arm64, cpufreq: frequency- and
- cpu-invariant accounting support for task scheduler
-Date: Thu, 31 Aug 2017 12:27:16 +0100
-Message-ID: <38de527f-7a4e-7344-bba0-906c7920d03f@arm.com>
-References: <20170825143206.30467-1-dietmar.eggemann@arm.com>
- <11249770.4iDhbWWonU@aspire.rjw.lan>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [PATCH v3 0/5] bq27xxx_battery data memory update
+Date: Thu, 31 Aug 2017 13:33:25 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1708311330570.3243@hadrien>
+References: <20170824033617.20840-1-liam@networkimprov.net> <20170829105413.6wbejdaxxxd6hk7b@earth> <0bf4ba2f-18f9-1204-8241-8acb6ac6f490@ti.com> <20170829212259.gs4bljwscrprsfjl@earth> <CAKvHMgTEe_xBP2ENMTU5BNwWaRjfqbAuRJC32sHYL_Mh5oJOsQ@mail.gmail.com>
+ <20170830002939.ns43wldvffmwqhuv@earth> <CAKvHMgSyr8aZ1cVd-Zf6WHNkwyTcSBvRaVuDWuHEnuNM=MStUA@mail.gmail.com> <alpine.DEB.2.20.1708311150440.3243@hadrien> <CAKvHMgSkuzi_BuicT7edYrM8Q87pnPJcgHRMDJEB21wdNKf8ow@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <11249770.4iDhbWWonU@aspire.rjw.lan>
-Content-Language: en-GB
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:63941
+        "EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750828AbdHaLdx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Aug 2017 07:33:53 -0400
+In-Reply-To: <CAKvHMgSkuzi_BuicT7edYrM8Q87pnPJcgHRMDJEB21wdNKf8ow@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, "Andrew F. Davis" <afd@ti.com>, =?ISO-8859-15?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
-Hi Raphael,
 
-On 31/08/17 00:34, Rafael J. Wysocki wrote:
-> On Friday, August 25, 2017 4:31:56 PM CEST Dietmar Eggemann wrote:
 
-[...]
+On Thu, 31 Aug 2017, Liam Breck wrote:
 
->> [1] https://marc.info/?l=linux-kernel&m=149625018223002&w=2
->> [2] https://marc.info/?l=linux-kernel&m=150118402232039&w=2
->> [3] https://marc.info/?l=linux-pm&m=149933474313566&w=2
->> [4] http://arminfo.emea.arm.com/help/topic/com.arm.doc.den0056a/DEN0056A_System_Control_and_Management_Interface.pdf
->> [5] https://marc.info/?l=linux-kernel&m=149690865010019&w=2
->>
->> Dietmar Eggemann (10):
->>   drivers base/arch_topology: free cpumask cpus_to_visit
->>   cpufreq: provide default frequency-invariance setter function
->>   cpufreq: arm_big_little: invoke frequency-invariance setter function
->>   cpufreq: dt: invoke frequency-invariance setter function
->>   drivers base/arch_topology: provide frequency-invariant accounting
->>     support
->>   drivers base/arch_topology: allow inlining cpu-invariant accounting
->>     support
->>   arm: wire frequency-invariant accounting support up to the task
->>     scheduler
->>   arm: wire cpu-invariant accounting support up to the task scheduler
->>   arm64: wire frequency-invariant accounting support up to the task
->>     scheduler
->>   arm64: wire cpu-invariant accounting support up to the task scheduler
->>
->>  arch/arm/include/asm/topology.h   |  8 ++++++++
->>  arch/arm64/include/asm/topology.h |  8 ++++++++
->>  drivers/base/arch_topology.c      | 29 +++++++++++++++++++++++------
->>  drivers/cpufreq/arm_big_little.c  | 10 +++++++++-
->>  drivers/cpufreq/cpufreq-dt.c      | 12 ++++++++++--
->>  drivers/cpufreq/cpufreq.c         |  6 ++++++
->>  include/linux/arch_topology.h     | 18 +++++++++++++++++-
->>  include/linux/cpufreq.h           |  3 +++
->>  8 files changed, 84 insertions(+), 10 deletions(-)
->>
->>
-> 
-> FWIW, patches [2-4/10] in this series are fine by me, but I guess you
-> need to talk to Viresh about the [3-4/10] anyway.
+> On Thu, Aug 31, 2017 at 2:54 AM, Julia Lawall <julia.lawall@lip6.fr> wrote:
+> >
+> >
+> > On Tue, 29 Aug 2017, Liam Breck wrote:
+> >
+> >> Coccinelle folks,
+> >>
+> >> On Tue, Aug 29, 2017 at 5:29 PM, Sebastian Reichel
+> >> <sebastian.reichel@collabora.co.uk> wrote:
+> >> > Hi,
+> >> >
+> >> > On Tue, Aug 29, 2017 at 04:07:12PM -0700, Liam Breck wrote:
+> >> >> I don't see a Julia in CC list...
+> >> >
+> >> > <_< let's try that again.
+> >> >
+> >> >> On Tue, Aug 29, 2017 at 2:22 PM, Sebastian Reichel
+> >> >> <sebastian.reichel@collabora.co.uk> wrote:
+> >> >> > [adding Julia to Cc for Coccinelle question]
+> >> >> >
+> >> >> > Hi,
+> >> >> >
+> >> >> > On Tue, Aug 29, 2017 at 10:31:57AM -0500, Andrew F. Davis wrote:
+> >> >> >> On 08/29/2017 05:54 AM, Sebastian Reichel wrote:
+> >> >> >> > On Wed, Aug 23, 2017 at 08:36:12PM -0700, Liam Breck wrote:
+> >> >> >> >> Overview:
+> >> >> >> >> * Reorganizes chip data definitions
+> >> >> >> >> * Enables features landed in these patches:
+> >> >> >> >>   dt-bindings: power: supply: bq27xxx: Add monitored-battery documentation
+> >> >> >> >>   power: supply: bq27xxx: Add chip data memory read/write support
+> >> >> >> >>   power: supply: bq27xxx: Add power_supply_battery_info support
+> >> >> >> >> * Supports the following chips (only BQ27425 is active)
+> >> >> >> >>   BQ27500, 545, 425, 421, 441, 621
+> >> >> >> >>
+> >> >> >> >> Changes in v3:
+> >> >> >> >> * BQ27425 tested; workaround minor chip bug
+> >> >> >> >> * Dropped driver_version
+> >> >> >> >> * Fixed dbg_dupes logic for .props & .dm_regs
+> >> >> >> >> * Dropped two props array dupes
+> >> >> >> >>
+> >> >> >> >> Changes in v2:
+> >> >> >> >> * Added di->opts flags for remaining chip features
+> >> >> >> >> * Commented out untested bq27xxx_dm_regs parameters
+> >> >> >> >> * Changed dbg_dupes to run only once
+> >> >> >> >>
+> >> >> >> >> Notes on v1:
+> >> >> >> >> * Not fully tested (hence RFC tag)
+> >> >> >> >
+> >> >> >> > Thanks, full series queued.
+> >> >> >> >
+> >> >> >> > -- Sebastian
+> >> >> >>
+> >> >> >> Anyway, I've not got the time to fight these changes anymore, but at
+> >> >> >> very least could you drop 4/5, it's static analysis code made into a
+> >> >> >> runtime check built into a kernel driver, if not at least add my
+> >> >> >> nacked-by. :)
+> >> >> >
+> >> >> > Since it's not critical at all and nobody depends on it, I dropped 4/5
+> >> >> > for now. I agree, that checking it at runtime is not nice. On the other
+> >> >> > hand I do think a duplication check makes sense. Doing a static
+> >> >> > check should be possible, but I have no idea how to implement this
+> >> >> > (without much effort). I suspect Coccinelle can do it, so I added
+> >> >> > Julia.
+> >> >> >
+> >> >> > For reference this is the runtime check:
+> >> >> > https://patchwork.kernel.org/patch/9918953/
+> >>
+> >> The data structures being checked start here:
+> >> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n138
+> >>
+> >> And are aggregated here:
+> >> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n743
+> >
+> > I worked a bit on this, but unfortunately there is a major parsing
+> > problem, and most of the definitions are ignored.  Specifically, the
+> > definitions of the regs variables are interspersed with eg:
+> >
+> > #define bq27510g1_regs bq27500_regs
+>
+> You can transform the macros with sed to either of:
+>
+> static u8 *bq27510g1_regs = 0 // skip comparison if x == 0
+>
+> static u8 bq27510g1_regs[BQ27XXX_REG_MAX] = { 0xFF } // skip
+> comparison if x[0] == 0xff
+>
+> Does that help?
 
-Thanks for the review! Viresh already gave me his 'Acked-by' for
-[3-4/10] during the v3 review.
+Not quite, because it's really a list of variable declarations, like
 
-Since this patch-set touches different subsystems I wonder via which
-tree it should go upstream? Could it go via your linux-pm tree or should
-I ask Greg K-H?
+int a, b, c, d;
 
-Thanks,
+The following could be fine:
 
--- Dietmar
+*bq27510g1_regs = 0,
 
-[...]
+julia
+
+
+
+>
+> > I'm not sure whether this would be convenient to fix, since parsing is
+> > rather delicate.  Coccinelle doesn't run cpp first.  It tries to parse
+> > macros definitions so that their code can be transformed as needed t the
+> > place of the definition.
+>
