@@ -1,40 +1,70 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v3 00/11] Hookup typec power-negotation to the PMIC and
- charger
-Date: Thu, 31 Aug 2017 18:26:37 +0200
-Message-ID: <20170831162637.GA8353@kroah.com>
-References: <20170830094814.17758-1-hdegoede@redhat.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH 2/7] dt-bindings: PM / OPP: add clocks per OPP node
+ support
+Date: Thu, 31 Aug 2017 12:39:20 -0500
+Message-ID: <20170831173920.4emtr5vkgvjcx6ac@rob-hp-laptop>
+References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
+ <1503504610-12880-3-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170830094814.17758-1-hdegoede@redhat.com>
+In-Reply-To: <1503504610-12880-3-git-send-email-aisheng.dong@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sre@kernel.org>, Guenter Roeck <linux@roeck-us.net>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, devel@driverdev.osuosl.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-kernel@vger.kernel.org, platform-driver-x86@vger.kernel.org, Liam Breck <liam@networkimprov.net>, linux-i2c@vger.kernel.org
+To: Dong Aisheng <aisheng.dong@nxp.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com, Frank Rowand <frowand.list@gmail.com>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 30, 2017 at 11:48:03AM +0200, Hans de Goede wrote:
-> Hi All,
+On Thu, Aug 24, 2017 at 12:10:05AM +0800, Dong Aisheng wrote:
+> It's used for platforms where different OPPs may use different clocks.
+> With this extended binding, user could specify the correct clock for each
+> OPP node.
 > 
-> Here is v3 of my typec power-negotation hookup series. New this version:
-> - Drop a few patches merged into linux-power-supply.git/for-next
-> - Drop the "power: supply: bq24190_charger: Remove extcon handling"
->   patch *for now*, this can only be merged once all the other patches are
->   in place (and extcon handling is no longer needed)
-> - Address some review comments in some of the other patches, see the
->   per patch changelogs inside the commit messages
+> Cc: Viresh Kumar <vireshk@kernel.org>
+> Cc: Nishanth Menon <nm@ti.com>
+> Cc: Stephen Boyd <sboyd@codeaurora.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: Frank Rowand <frowand.list@gmail.com>
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> ---
+>  Documentation/devicetree/bindings/opp/opp.txt | 52 +++++++++++++++++++++++++++
+>  1 file changed, 52 insertions(+)
 > 
-> I believe that this series is ready for merging now and I would like to
-> ask the various subsys maintainers to pick up and merge these patches.
-> All the patches can be merged independent of eachother with the exception
-> of the last 2 patches:
-> 
-> i2c-cht-wc: Add device-properties for fusb302 integration
-> platform/x86: intel_cht_int33fe: Update fusb302 type string, add properties
-> 
-> Which should not be merged until all the other patches are in place.
+> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> index e36d261..40a4340 100644
+> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> @@ -152,6 +152,11 @@ Optional properties:
+>    hierarchy can be contained in multiple 32 bit values. i.e. <X Y Z1 Z2> in the
+>    above example, Z1 & Z2 refer to the version hierarchy Z.
+>  
+> +- clocks: Clock phandle and specifier used for this opp.
+> +
+> +- clock-names: clock names for this opp. The valid clock names are platform
+> +	       specific.
 
-staging patches all now merged, thanks!
+You don't need -names if there's only 1 clock. But then how long until 
+we have a list of any random clocks some how associated with an OPP.
 
-greg k-h
+I think this should really be solved within the clock framework. What 
+you really need is "set my parent clock to the source that can provide X 
+Hz". Could the assigned-clocks property work here (in the OPP nodes 
+rather than the cpu nodes)?
+
+> +
+>  - status: Marks the node enabled/disabled.
+>  
+>  Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+> @@ -528,3 +533,50 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
+>  		};
+>  	};
+>  };
+> +
+> +Example 7: Single core ARM cortex A7, switch separate clocks for each OPP:
+
+Can't you add this to an existing example? We don't need to enumerate 
+every possible option.
+
+Rob
