@@ -1,108 +1,73 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 02/13] thermal/drivers/hisi: Remove the multiple sensors
- support
-Date: Fri, 1 Sep 2017 22:48:47 +0200
-Message-ID: <2f333866-9001-9a67-4ae1-7dc92fc28b26@linaro.org>
-References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
- <1504082857-21702-2-git-send-email-daniel.lezcano@linaro.org>
- <20170901140523.GB26177@leoy-linaro>
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: Re: [PATCH 31/31] timer: Switch to testing for .function instead of
+ .data
+Date: Fri, 01 Sep 2017 14:34:17 -0700
+Message-ID: <1504301657.3922.47.camel@intel.com>
+References: <1504222183-61202-1-git-send-email-keescook@chromium.org>
+         <1504222183-61202-32-git-send-email-keescook@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170901140523.GB26177@leoy-linaro>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+        protocol="application/pgp-signature"; boundary="=-r9bmlAtWiFfE64fwCMV8"
+Return-path: <linux-input-owner@vger.kernel.org>
+In-Reply-To: <1504222183-61202-32-git-send-email-keescook@chromium.org>
+Sender: linux-input-owner@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>, Thomas Gleixner <tglx@linutronix.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mike Marciniszyn <mike.marciniszyn@intel.com>, Dennis Dalessandro <dennis.dalessandro@intel.com>, Doug Ledford <dledford@redhat.com>, Sean Hefty <sean.hefty@intel.com>, Hal Rosenstock <hal.rosenstock@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-pm@vger.kernel.org, linux-rdma@vger.kernel.org, linux-input@vger.kernel.org, intel-wired-lan@lists.osuosl.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 01/09/2017 16:05, Leo Yan wrote:
-> Hi Daniel,
-> 
-> On Wed, Aug 30, 2017 at 10:47:26AM +0200, Daniel Lezcano wrote:
->> By essence, the tsensor does not really support multiple sensor at the same
->> time. It allows to set a sensor and use it to get the temperature, another
->> sensor could be switched but with a delay of 3-5ms. It is difficult to read
->> simultaneously several sensors without a big delay.
->>
->> Today, just one sensor is used, it is not necessary to deal with multiple
->> sensors in the code. Remove them and if it is needed in the future add them
->> on top of a code which will be clean up in the meantime.
->>
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
->> ---
->>  drivers/thermal/hisi_thermal.c | 77 +++++++++++-------------------------------
->>  1 file changed, 20 insertions(+), 57 deletions(-)
->>
->> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
->> index 8381696..92b6889 100644
->> --- a/drivers/thermal/hisi_thermal.c
->> +++ b/drivers/thermal/hisi_thermal.c
->> @@ -39,6 +39,7 @@
->>  #define HISI_TEMP_RESET			(100000)
->>  
->>  #define HISI_MAX_SENSORS		4
->> +#define HISI_DEFAULT_SENSOR		2
-> 
-> So if we always set the sensor id 2 as default sensor, that means it's
-> pointless to bind sensor id in dts. E.g. I change to bind thermal
-> sensor 0, then it's impossible to bind successfully:
-> 
-> -                               thermal-sensors = <&tsensor 2>;
-> +                               thermal-sensors = <&tsensor 0>;
-> 
-> It's okay for this change, do you think we need reflect this in DT
-> binding doc [1] ?
-> 
-> [1] Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
 
-Actually, the current behavior is to go through all the sensors and
-register them. By side effect, we end up by registering a sensor with an
-id matching the one specified in the DT, others are failing.
+--=-r9bmlAtWiFfE64fwCMV8
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-That is because there is something missing in the of-thermal API where
-we can't call thermal_zone_of_sensor_register() without a matching index.
+On Thu, 2017-08-31 at 16:29 -0700, Kees Cook wrote:
+> In several places, .data is checked for initialization to gate early
+> calls to del_timer_sync(). Checking for .function is equally valid,
+> so
+> switch to this in all callers.
+>=20
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Mike Marciniszyn <mike.marciniszyn@intel.com>
+> Cc: Dennis Dalessandro <dennis.dalessandro@intel.com>
+> Cc: Doug Ledford <dledford@redhat.com>
+> Cc: Sean Hefty <sean.hefty@intel.com>
+> Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+> Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> Cc: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-rdma@vger.kernel.org
+> Cc: linux-input@vger.kernel.org
+> Cc: intel-wired-lan@lists.osuosl.org
+> Cc: netdev@vger.kernel.org
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 
-That is probably why we have in the drivers/thermal/qoriq_thermal.c file
-the qoriq_tmu_get_sensor_id() which inspect the thermal-zone DT
-structure for the thermal-sensors and read the sensor's id from there in
-order to reuse it for thermal_zone_of_sensor_register(). Needless to say
-that is not the right place to do that.
+For the changes to i40e...
 
-IMHO, as nothing gets changed for the moment on hi6220, we can live with
-HISI_DEFAULT_SENSOR until we sort out what to do with
-thermal_zone_of_sensor_register().
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+--=-r9bmlAtWiFfE64fwCMV8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
+-----BEGIN PGP SIGNATURE-----
 
->>  struct hisi_thermal_sensor {
->>  	struct hisi_thermal_data *thermal;
->> @@ -53,11 +54,10 @@ struct hisi_thermal_data {
->>  	struct mutex thermal_lock;    /* protects register data */
->>  	struct platform_device *pdev;
->>  	struct clk *clk;
->> -	struct hisi_thermal_sensor sensors[HISI_MAX_SENSORS];
->> -
->> -	int irq, irq_bind_sensor;
->> +	struct hisi_thermal_sensor sensors;
->> +	int irq;
->>  	bool irq_enabled;
->> -
->> +	
-> 
-> Repots whitespace error when I apply patch.
+iQIzBAABCAAdFiEEiTyZWz+nnTrOJ1LZ5W/vlVpL7c4FAlmp0lkACgkQ5W/vlVpL
+7c64JhAAnNOjvCkziBlORy2Of97GbgFpmxmjNsLPzxNoH/8R3Y6vD3PTDHcwPEGM
+Yks7MMLwKEWn3yctxB6GyswNAS/+4BUlnlXveQ11DiZ3O5mmHamNkj4Gtn2fvbML
+vfjaUDKBtNRPw6M+R8cQ59XasrykDEPmeS3L1WoLOec9z4Xe6MLkznvVMDXUlb6V
+pEfCDKcsFsHt2MYgHqSoVWJuprnsnXElrHjGoxVqJZVuEPqWmbXj+4Qka+2vkNw9
+yiS4qW48E77QsAmIkORvpYi60D9jYF3WYkPsZ/Eqi1MtzIEmiDBJZanfcdQJH/WL
+U8QUXkSiQXxz6wcbIOEXStNhM8avvjNjziisJAK05OpAmkQV9hBwD3sysRBthK5G
+5JI6RjJRCp41Xg3PD5JzoJ+/OTBywbro8iqr7njKo6KpuiBL+KtXWIznEamLcu3/
+2YTgjZzF+eIUOBhDF8cOT3OFs88c8YPRHjuydPBzkPlmIdOM4QjWPpz9ZFeB2itX
+cHig4zcZ733chcWEhXCaUIT+TY5QkAZCRueH6ed+sWzFYdnFiFdsWgNxhRKNjRru
+cTnF70LBOSMyccRYdC1ZOmcga8g4algS1cPradjAkQU10Y/+3aUx17pRy4SqJNOR
+lLvSAXqqM4iYmaZsGj+W/X23T9lYsseZHtvktGDLZioQibhg7rw=
+=Myq9
+-----END PGP SIGNATURE-----
 
-Ok, I will fix that.
+--=-r9bmlAtWiFfE64fwCMV8--
 
-[ ... ]
-
-Thanks for the review.
-
-  -- Daniel
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
