@@ -1,209 +1,102 @@
 From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH 02/13] thermal/drivers/hisi: Remove the multiple sensors
- support
-Date: Fri, 1 Sep 2017 22:05:24 +0800
-Message-ID: <20170901140523.GB26177@leoy-linaro>
+Subject: Re: [PATCH 03/13] thermal/drivers/hisi: Fix kernel panic on alarm
+ interrupt
+Date: Fri, 1 Sep 2017 22:14:17 +0800
+Message-ID: <20170901141417.GA11198@leoy-linaro>
 References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
- <1504082857-21702-2-git-send-email-daniel.lezcano@linaro.org>
+ <1504082857-21702-3-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1504082857-21702-2-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <1504082857-21702-3-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Daniel,
-
-On Wed, Aug 30, 2017 at 10:47:26AM +0200, Daniel Lezcano wrote:
-> By essence, the tsensor does not really support multiple sensor at the same
-> time. It allows to set a sensor and use it to get the temperature, another
-> sensor could be switched but with a delay of 3-5ms. It is difficult to read
-> simultaneously several sensors without a big delay.
+On Wed, Aug 30, 2017 at 10:47:27AM +0200, Daniel Lezcano wrote:
+> The threaded interrupt for the alarm interrupt is requested before the
+> temperature controller is setup. This one can fire an interrupt immediately
+> leading to a kernel panic as the sensor data is not initialized.
 > 
-> Today, just one sensor is used, it is not necessary to deal with multiple
-> sensors in the code. Remove them and if it is needed in the future add them
-> on top of a code which will be clean up in the meantime.
+> In order to prevent that, move the threaded irq after the Tsensor is setup.
 > 
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+Reviewed-by: Leo Yan <leo.yan@linaro.org>
+Tested-by: Leo Yan <leo.yan@linaro.org>
+
 > ---
->  drivers/thermal/hisi_thermal.c | 77 +++++++++++-------------------------------
->  1 file changed, 20 insertions(+), 57 deletions(-)
+>  drivers/thermal/hisi_thermal.c | 18 +++++++++---------
+>  1 file changed, 9 insertions(+), 9 deletions(-)
 > 
 > diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index 8381696..92b6889 100644
+> index 92b6889..67db523 100644
 > --- a/drivers/thermal/hisi_thermal.c
 > +++ b/drivers/thermal/hisi_thermal.c
-> @@ -39,6 +39,7 @@
->  #define HISI_TEMP_RESET			(100000)
+> @@ -287,15 +287,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  	if (data->irq < 0)
+>  		return data->irq;
 >  
->  #define HISI_MAX_SENSORS		4
-> +#define HISI_DEFAULT_SENSOR		2
-
-So if we always set the sensor id 2 as default sensor, that means it's
-pointless to bind sensor id in dts. E.g. I change to bind thermal
-sensor 0, then it's impossible to bind successfully:
-
--                               thermal-sensors = <&tsensor 2>;
-+                               thermal-sensors = <&tsensor 0>;
-
-It's okay for this change, do you think we need reflect this in DT
-binding doc [1] ?
-
-[1] Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
-
->  struct hisi_thermal_sensor {
->  	struct hisi_thermal_data *thermal;
-> @@ -53,11 +54,10 @@ struct hisi_thermal_data {
->  	struct mutex thermal_lock;    /* protects register data */
->  	struct platform_device *pdev;
->  	struct clk *clk;
-> -	struct hisi_thermal_sensor sensors[HISI_MAX_SENSORS];
-> -
-> -	int irq, irq_bind_sensor;
-> +	struct hisi_thermal_sensor sensors;
-> +	int irq;
->  	bool irq_enabled;
-> -
-> +	
-
-Repots whitespace error when I apply patch.
-
->  	void __iomem *regs;
->  };
->  
-> @@ -113,7 +113,7 @@ static void hisi_thermal_enable_bind_irq_sensor
->  
->  	mutex_lock(&data->thermal_lock);
->  
-> -	sensor = &data->sensors[data->irq_bind_sensor];
-> +	sensor = &data->sensors;
->  
->  	/* setting the hdak time */
->  	writel(0x0, data->regs + TEMP0_CFG);
-> @@ -160,31 +160,8 @@ static int hisi_thermal_get_temp(void *_sensor, int *temp)
->  	struct hisi_thermal_sensor *sensor = _sensor;
->  	struct hisi_thermal_data *data = sensor->thermal;
->  
-> -	int sensor_id = -1, i;
-> -	long max_temp = 0;
-> -
->  	*temp = hisi_thermal_get_sensor_temp(data, sensor);
->  
-> -	sensor->sensor_temp = *temp;
-> -
-> -	for (i = 0; i < HISI_MAX_SENSORS; i++) {
-> -		if (!data->sensors[i].tzd)
-> -			continue;
-> -
-> -		if (data->sensors[i].sensor_temp >= max_temp) {
-> -			max_temp = data->sensors[i].sensor_temp;
-> -			sensor_id = i;
-> -		}
+> -	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
+> -					hisi_thermal_alarm_irq,
+> -					hisi_thermal_alarm_irq_thread,
+> -					0, "hisi_thermal", data);
+> -	if (ret < 0) {
+> -		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
+> -		return ret;
 > -	}
 > -
-> -	/* If no sensor has been enabled, then skip to enable irq */
-> -	if (sensor_id == -1)
-> -		return 0;
-> -
-> -	mutex_lock(&data->thermal_lock);
-> -	data->irq_bind_sensor = sensor_id;
-> -	mutex_unlock(&data->thermal_lock);
-> -
->  	dev_dbg(&data->pdev->dev, "id=%d, irq=%d, temp=%d, thres=%d\n",
->  		sensor->id, data->irq_enabled, *temp, sensor->thres_temp);
->  	/*
-> @@ -197,7 +174,7 @@ static int hisi_thermal_get_temp(void *_sensor, int *temp)
->  		return 0;
->  	}
+>  	platform_set_drvdata(pdev, data);
 >  
-> -	if (max_temp < sensor->thres_temp) {
-> +	if (*temp < sensor->thres_temp) {
->  		data->irq_enabled = true;
->  		hisi_thermal_enable_bind_irq_sensor(data);
->  		enable_irq(data->irq);
-> @@ -224,22 +201,16 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
->  {
->  	struct hisi_thermal_data *data = dev;
->  	struct hisi_thermal_sensor *sensor;
-> -	int i;
+>  	data->clk = devm_clk_get(&pdev->dev, "thermal_clk");
+> @@ -328,6 +319,15 @@ static int hisi_thermal_probe(struct platform_device *pdev)
 >  
->  	mutex_lock(&data->thermal_lock);
-> -	sensor = &data->sensors[data->irq_bind_sensor];
-> +	sensor = &data->sensors;
+>  	hisi_thermal_toggle_sensor(&data->sensors, true);
 >  
->  	dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
->  		 sensor->thres_temp / 1000);
->  	mutex_unlock(&data->thermal_lock);
->  
-> -	for (i = 0; i < HISI_MAX_SENSORS; i++) {
-> -		if (!data->sensors[i].tzd)
-> -			continue;
-> -
-> -		thermal_zone_device_update(data->sensors[i].tzd,
-> -					   THERMAL_EVENT_UNSPECIFIED);
-> -	}
-> +	thermal_zone_device_update(data->sensors.tzd,
-> +				   THERMAL_EVENT_UNSPECIFIED);
->  
->  	return IRQ_HANDLED;
->  }
-> @@ -296,7 +267,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->  {
->  	struct hisi_thermal_data *data;
->  	struct resource *res;
-> -	int i;
->  	int ret;
->  
->  	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-> @@ -347,16 +317,17 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->  	hisi_thermal_enable_bind_irq_sensor(data);
->  	data->irq_enabled = true;
->  
-> -	for (i = 0; i < HISI_MAX_SENSORS; ++i) {
-> -		ret = hisi_thermal_register_sensor(pdev, data,
-> -						   &data->sensors[i], i);
-> -		if (ret)
-> -			dev_err(&pdev->dev,
-> -				"failed to register thermal sensor: %d\n", ret);
-> -		else
-> -			hisi_thermal_toggle_sensor(&data->sensors[i], true);
-> +	ret = hisi_thermal_register_sensor(pdev, data,
-> +					   &data->sensors,
-> +					   HISI_DEFAULT_SENSOR);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "failed to register thermal sensor: %d\n",
-> +			ret);
+> +	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
+> +					hisi_thermal_alarm_irq,
+> +					hisi_thermal_alarm_irq_thread,
+> +					0, "hisi_thermal", data);
+> +	if (ret < 0) {
+> +		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
 > +		return ret;
->  	}
->  
-> +	hisi_thermal_toggle_sensor(&data->sensors, true);
+> +	}
 > +
+
+Just reminding for the initialization sequence, could we also move
+hisi_thermal_enable_bind_irq_sensor(data) after function
+hisi_thermal_register_sensor()? The reason is after we registser
+sensor with specified sensor ID, then we can bind irq for the
+specified ID, otherwise it will wrongly to bind irq to sensor 0. So
+finally we can get result as below:
+
+        ret = hisi_thermal_register_sensor(pdev, data,
+                                           &data->sensors,
+                                           HISI_DEFAULT_SENSOR);
+        if (ret) {
+                dev_err(&pdev->dev, "failed to register thermal sensor: %d\n",
+                        ret);
+                return ret;
+        }
+
+        hisi_thermal_enable_bind_irq_sensor(data);
+        hisi_thermal_toggle_sensor(&data->sensors, true);
+        data->irq_enabled = true;
+
+        ret = devm_request_threaded_irq(&pdev->dev, data->irq,
+                                        hisi_thermal_alarm_irq,
+                                        hisi_thermal_alarm_irq_thread,
+                                        0, "hisi_thermal", data);
+        if (ret < 0) {
+                dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
+                return ret;
+        }
+
 >  	enable_irq(data->irq);
 >  
 >  	return 0;
-> @@ -365,17 +336,9 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->  static int hisi_thermal_remove(struct platform_device *pdev)
->  {
->  	struct hisi_thermal_data *data = platform_get_drvdata(pdev);
-> -	int i;
-> -
-> -	for (i = 0; i < HISI_MAX_SENSORS; i++) {
-> -		struct hisi_thermal_sensor *sensor = &data->sensors[i];
-> -
-> -		if (!sensor->tzd)
-> -			continue;
-> -
-> -		hisi_thermal_toggle_sensor(sensor, false);
-> -	}
-> +	struct hisi_thermal_sensor *sensor = &data->sensors;
->  
-> +	hisi_thermal_toggle_sensor(sensor, false);
->  	hisi_thermal_disable_sensor(data);
->  	clk_disable_unprepare(data->clk);
->  
 > -- 
 > 2.7.4
 > 
