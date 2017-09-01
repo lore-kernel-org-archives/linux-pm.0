@@ -1,263 +1,97 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 0/8] PM / ACPI / i2c: Deploy runtime PM centric path
- for system sleep
-Date: Fri, 1 Sep 2017 12:42:35 +0200
-Message-ID: <CAPDyKFqAqiDcdwEOwEu1m7icnP8MijYf4UNrMqN9YhNbug_upg@mail.gmail.com>
-References: <1504018610-10822-1-git-send-email-ulf.hansson@linaro.org>
- <1957183.ZU1CWrAZoR@aspire.rjw.lan> <CAPDyKFosu8RYUUCiBn7+03b3TNmND-aCTqR=+svcvzCwhxw9+A@mail.gmail.com>
- <3033151.kbPpEQGlRq@aspire.rjw.lan>
+From: Dong Aisheng <dongas86@gmail.com>
+Subject: Re: [PATCH 2/7] dt-bindings: PM / OPP: add clocks per OPP node
+ support
+Date: Fri, 1 Sep 2017 21:01:32 +0800
+Message-ID: <20170901130132.GA22788@b29396-OptiPlex-7040>
+References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
+ <1503504610-12880-3-git-send-email-aisheng.dong@nxp.com>
+ <20170831173920.4emtr5vkgvjcx6ac@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <3033151.kbPpEQGlRq@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20170831173920.4emtr5vkgvjcx6ac@rob-hp-laptop>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com, Frank Rowand <frowand.list@gmail.com>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 31 August 2017 at 02:17, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> Disclaimer: I'm falling asleep, so I probably shouldn't reply to email right
-> now, but tomorrow I may not be able to get to email at all, so I'll try anyway.
->
-> On Wednesday, August 30, 2017 11:57:28 AM CEST Ulf Hansson wrote:
->> On 29 August 2017 at 22:19, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Tuesday, August 29, 2017 4:56:42 PM CEST Ulf Hansson wrote:
->> >> The i2c designware platform driver, drivers/i2c/busses/i2c-designware-platdrv.c,
->> >> isn't well optimized for system sleep.
->> >>
->> >> What makes this driver particularly interesting is because it's a cross-SoC
->> >> driver, which sometimes means there is an ACPI PM domain attached to the i2c
->> >> device and sometimes not. The driver is being used on both x86 and ARM.
->> >>
->> >> In principle, to optimize the system sleep support in i2c driver, this series
->> >> enables the proven runtime PM centric path for the i2c driver. However, to do
->> >> that the ACPI PM domain also have to collaborate and understand this behaviour.
->> >> From earlier versions, Rafael has also pointed out that also the PM core needs
->> >> to be involved.
->> >
->> > Earlier today I realized that drivers pointing their ->suspend_late and
->> > ->resume_early callbacks, respectively, to pm_runtime_force_suspend() and
->> > pm_runtime_force_resume(), are fundamentally incompatible with any bus type
->> > doing nontrivial PM and with almost any nontrivial PM domains, for two reasons.
->> >
->> > First, it basically requires the bus type or PM domain to expect that its
->> > ->runtime_suspend callback may or may not be indirectly invoked from its
->> > own ->suspend_late callback, depending on the driver (and analogously
->> > for ->runtime_resume and ->resume early), which is insane.
->> >
->> > Second, it is a layering violation, because it makes the driver effectively
->> > override the upper layer's decisions about what code to run.
->>
->> You are right that for more complex bus types and PM domains, those
->> needs to play along. So that is what I am trying to implement for the
->> ACPI PM domain in this series.
->
-> Well, "play along" is a bit of an understatement here.
->
-> They would need to turn into horrible mess and that's not going to happen.
+On Thu, Aug 31, 2017 at 12:39:20PM -0500, Rob Herring wrote:
+> On Thu, Aug 24, 2017 at 12:10:05AM +0800, Dong Aisheng wrote:
+> > It's used for platforms where different OPPs may use different clocks.
+> > With this extended binding, user could specify the correct clock for each
+> > OPP node.
+> > 
+> > Cc: Viresh Kumar <vireshk@kernel.org>
+> > Cc: Nishanth Menon <nm@ti.com>
+> > Cc: Stephen Boyd <sboyd@codeaurora.org>
+> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > Cc: Rob Herring <robh+dt@kernel.org>
+> > Cc: Frank Rowand <frowand.list@gmail.com>
+> > Cc: devicetree@vger.kernel.org
+> > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> > ---
+> >  Documentation/devicetree/bindings/opp/opp.txt | 52 +++++++++++++++++++++++++++
+> >  1 file changed, 52 insertions(+)
+> > 
+> > diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> > index e36d261..40a4340 100644
+> > --- a/Documentation/devicetree/bindings/opp/opp.txt
+> > +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> > @@ -152,6 +152,11 @@ Optional properties:
+> >    hierarchy can be contained in multiple 32 bit values. i.e. <X Y Z1 Z2> in the
+> >    above example, Z1 & Z2 refer to the version hierarchy Z.
+> >  
+> > +- clocks: Clock phandle and specifier used for this opp.
+> > +
+> > +- clock-names: clock names for this opp. The valid clock names are platform
+> > +	       specific.
+> 
+> You don't need -names if there's only 1 clock.
 
-I absolutely agree, there must be no mess what so ever!
+Got it, will remove -name.
 
-But, I don't want to give up yet, I still believe I can make this
-series into a nice couple of changes for the ACPI PM domain.
-Especially if you continue giving me your guidance.
+> But then how long until 
+> we have a list of any random clocks some how associated with an OPP.
+> 
 
->
->> The generic PM domain, is simple in this regards. There is only a
->> minor adaptation for the ->runtime_suspend|resume() callbacks, which
->> avoids validating dev_pm_qos constraints during system sleep. Nothing
->> special is needed in ->suspend_late|noirq callbacks, etc.
->>
->> For most other simple bus types, like the platform bus, spi, i2c,
->> amba, no particular adoptions is needed at all. Instead those just
->> trust the drivers to do the right thing.
->
-> They are the trivial ones.
+Not sure whether it will really happen in the future. Even it happens,
+as we usually only need the device parent clock, then probably better to
+handle the left complicated things in clock driver or OPP device driver.
 
-Yes.
+> I think this should really be solved within the clock framework. What 
+> you really need is "set my parent clock to the source that can provide X 
+> Hz". Could the assigned-clocks property work here (in the OPP nodes 
+> rather than the cpu nodes)?
+> 
 
-However, the platform bus is also very commonly used in kernel. I
-think that's an important thing to consider.
+I'm not quite sure i got your point. assigned-clocks seems a bit like function
+the same as clocks property here, both are used to specifying the device
+parent clock which provide X hz.
 
->
->> Before we had the direct_complete path, using the
->> pm_runtime_force_suspend|resume() helpers, was the only good way for
->> these kind of drivers, to in an optimized manner, deal with system
->> sleep when runtime PM also was enabled for their devices. Now this
->> method has become widely deployed, unfortunate whether you like it or
->> not.
->
-> So can you please remind me why the _force_ wrappers are needed?
+Or are you suggesting using assigned-clocks/assigned-clocks-rates instread
+of clocks/opp-hz? Would you please clarify a bit more?
 
-See below.
+> > +
+> >  - status: Marks the node enabled/disabled.
+> >  
+> >  Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+> > @@ -528,3 +533,50 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
+> >  		};
+> >  	};
+> >  };
+> > +
+> > +Example 7: Single core ARM cortex A7, switch separate clocks for each OPP:
+> 
+> Can't you add this to an existing example? We don't need to enumerate 
+> every possible option.
 
->
-> In particular, why can't drivers arrange their callbacks the way I did that
-> in https://patchwork.kernel.org/patch/9928583/ ?
+Okay, Will merge it.
 
-I was preparing a reply to that patch, but let me summarize that here instead.
+Thanks
 
-Let me be clear, the patch is an improvement of the behavior of the
-driver and it addresses the issues you point out in the change log.
-Re-using the runtime PM callbacks for system sleep, is nice as it
-avoids open coding, which is of curse also one of the reason of using
-pm_runtime_force_suspend|resume().
+Regards
+Dong Aisheng
 
-Still there are a couple of things I am worried about in this patch.
-*)
-To be able to re-use the same callbacks for system sleep and runtime
-PM, some boilerplate code is added to the driver, as to cope with the
-different conditions inside the callbacks. That pattern would become
-repeated to many drivers dealing with similar issues.
-
-**)
-The ->resume_early() callback powers on the device, in case it was
-runtime resumed when the ->suspend_late() callback was invoked. That
-is in many cases completely unnecessary, causing us to waste power and
-increase system resume time, for absolutely no reason. However, I
-understand the patch didn't try to address this, but to really fix
-this, there has to be an even closer collaboration between runtime PM
-and the system sleep callbacks.
-
-So, to remind you why the pm_runtime_force_suspend|resume() helpers is
-preferred, that's because both of the above two things becomes taken
-care of.
-
->
->> Besides the slightly better optimizations you get when using
->> pm_runtime_force_suspend|resume(), comparing to the direct_complete
->> path - I think it's also worth to consider, how easy it becomes for
->> drivers to deploy system sleep support. In many cases, only two lines
->> of code is needed to add system sleep support in a driver.
->
-> You are doing a wrong comparison here IMO.  You essentially are comparing two
-> bandaids with each other and arguing that one of them somehow is better.
-
-I just wanted to compare against something...
-
->
-> What about doing something which is not a bandaid instead?
-
-I don't have a problem working on something new, but I am not sure
-what that should be.
-
-Unless you re-consider moving forward in some form, with the current
-suggested approach for the ACPI PM domain, can you give me some
-pointers on what you have in mind?
-
-To remind you of my current view, the direct_complete path is useful
-for PM domains, like the ACPI PM domain as it impacts all its devices.
-Using pm_runtime_force_suspend|resume() offers the next steps to
-achieve a fully optimized behavior of a device during system sleep, as
-already been proven by now. It would be great to both options
-supported by the ACPI PM domain.
-
-Another related thing that is causing lots of problems during system
-sleep of devices, but not related to optimizations, is to have the
-correct order of how to suspend/resume the devices. We have talked
-about this, but it's a separate problem and it's rather a deployment
-issue, than having to implements something entirely new (we have
-supplies/consumers links you invented for this).
-
->
->> Now, some complex code always needs to be implemented somewhere. When
->> using the runtime PM centric path, that code consist of the
->> pm_runtime_force_suspend|resume() helpers itself - and some
->> adaptations in buses/PM domains in cases when those needs special
->> care.
->>
->> My point is, the runtime PM centric path, allows us to keep the
->> complex part of the code at a few centralized places, instead of
->> having it spread/duplicated into drivers.
->>
->> So yes, you could consider it insane, but to me and many others, it
->> seems to work out quite well.
->
-> Because it only has been used with trivial middle layer code so far
-> and I'm quite disappointed that you don't seem to see a problem here. :-/
->
-> I mean something like
->
-> PM core => bus type / PM domain ->suspend_late => driver ->suspend_late
->
-> is far more straightforward than
->
-> PM core => bus type / PM domain ->suspend_late => driver ->suspend_late =>
->         bus type / PM domain ->runtime_suspend => driver ->runtime_suspend
->
-> with the bus type / PM domain having to figure out somehow at the
-> ->suspend_late time whether or not its ->runtume_suspend is going to be invoked
-> in the middle of it.
->
-> Apart from this just being aesthetically disgusting to me, which admittedly is
-> a matter of personal opinion, it makes debugging new driver code harder (if it
-> happens to not work) and reviewing it almost impossible, because now you need
-> to take all of the tangling between callbacks into accont and sometimes not
-> just for one bus type / PM domain.
-
-I am wondering that perhaps you may be overlooking some of the
-internals of runtime PM. Or maybe not? :-)
-
-I mean, the hole thing is build upon that anyone can call runtime PM
-functions to runtime resume/suspend a device. Doing that, makes the
-hierarchy of the runtime PM callbacks being walked and invoked, of
-course properly managed by the runtime PM core.
-
-My point is that, the runtime PM core still controls this behavior,
-even when the pm_runtime_force_suspend|resume() helpers are being
-invoked. The only difference is that it allows runtime PM for the
-device to be disabled, and still correctly invoked the callbacks. That
-is what it is all about.
-
->
->> Yeah, and the laying violation is undoubtedly the most controversial
->> part of the runtime PM centric path - I agree to that! The
->> direct_complete path don't have this, as you implemented it. :-)
->>
->> On the other hand, one could consider that these upper layers, in many
->> cases anyway needs to play along with the behavior of the driver. So,
->> I guess it depends on how one see it.
->>
->> >
->> > That's why I'm afraid that we've reached a dead end here. :-(
->>
->> That's said news. Is was really hoping I could find a way to move this
->> forward. You don't have any other ideas on how I can adjust the series
->> to make you happy?
->
-> So to be precise, patches [2-3/8] are basically fine by me.  Patch [4/8]
-> sort of works too, but I'd do the splitting slightly differently and I don't
-> see much value in it alone.
->
-> The rest of the ACPI changes is mostly not acceptable to me, mostly because
-> of what is done to the PM domain's ->runtime_suspend/resume and
-> ->suspend_late/->resume_early callbacks.
->
-> I guess the only way that could be made work for me would be by not using
-> _force_suspend/resume() at all, but that would defeat the point, right?
-
-Yes, it would.
-
->
-> I don't like the flag too, but that might be worked out.
-
-Yeah, I am open to any suggestion.
-
->
-> Also, when I looked at _force_suspend/resume() again, I got concerned.
-> There is stuff in there that shouldn't be necessary in a driver's
-> ->late_suspend/->early_resume and some things in there just made me
-> scratch my head.
-
-Yes, there are some complexity in there, I will be happy to answer any
-specific question about it.
-
-The main thing is, that it tries to conform to the regular rules set
-by the runtime PM core when runtime PM is enabled for the device - and
-then apply those to the device when runtime PM has been disabled for
-it.
-
-Again, thanks for being patient and reviewing!
-
-Kind regards
-Uffe
+> 
+> Rob
