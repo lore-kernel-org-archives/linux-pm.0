@@ -1,92 +1,67 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 6/8] PM / ACPI: Enable the runtime PM centric approach
- for system sleep
-Date: Fri, 1 Sep 2017 10:27:05 +0200
-Message-ID: <CAPDyKFq5ic+bAVRoEC58oSO-8VTGnfipJndLmR6YLXgEhZ+RWw@mail.gmail.com>
-References: <1504018610-10822-1-git-send-email-ulf.hansson@linaro.org>
- <1504018610-10822-7-git-send-email-ulf.hansson@linaro.org> <2855684.NY3Ly9PzrE@aspire.rjw.lan>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH 01/13] thermal/drivers/hisi: Fix missing interrupt
+ enablement
+Date: Fri, 1 Sep 2017 16:31:33 +0800
+Message-ID: <20170901083133.GA26177@leoy-linaro>
+References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <2855684.NY3Ly9PzrE@aspire.rjw.lan>
-Sender: linux-i2c-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 29 August 2017 at 17:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, August 29, 2017 4:56:48 PM CEST Ulf Hansson wrote:
->> This change enables the ACPI PM domain to cope with drivers that deploys
->> the runtime PM centric path for system sleep.
->
-> [cut]
->
->> @@ -1052,11 +1066,20 @@ EXPORT_SYMBOL_GPL(acpi_subsys_complete);
->>   * @dev: Device to handle.
->>   *
->>   * Follow PCI and resume devices suspended at run time before running their
->> - * system suspend callbacks.
->> + * system suspend callbacks. However, try to avoid it in case the runtime PM
->> + * centric path is used for the device and then trust the driver to do the
->> + * right thing.
->>   */
->>  int acpi_subsys_suspend(struct device *dev)
->>  {
->> -     pm_runtime_resume(dev);
->> +     struct acpi_device *adev = ACPI_COMPANION(dev);
->> +
->> +     if (!adev)
->> +             return 0;
->> +
->> +     if (!dev_pm_is_rpm_sleep(dev) || acpi_dev_needs_resume(dev, adev))
->> +             pm_runtime_resume(dev);
->> +
->>       return pm_generic_suspend(dev);
->>  }
->>  EXPORT_SYMBOL_GPL(acpi_subsys_suspend);
->
-> Well, I tried to avoid calling acpi_dev_needs_resume() for multiple times
-> and that's why I added the update_state thing.
->
-> Moreover, the is_rpm_sleep flag here has to mean not only that
-> direct_complete should not be used with the device, but also that its driver
-> is fine with not resuming it.
+On Wed, Aug 30, 2017 at 10:47:25AM +0200, Daniel Lezcano wrote:
+> The interrupt for the temperature threshold is not enabled at the end of the
+> probe function, enable it after the setup is complete.
+> 
+> On the other side, the irq_enabled is not correctly set as we are checking if
+> the interrupt is masked where 'yes' means irq_enabled=false.
+> 
+> 	irq_get_irqchip_state(data->irq, IRQCHIP_STATE_MASKED,
+> 				&data->irq_enabled);
+> 
+> As we are always enabling the interrupt, it is pointless to check if
+> the interrupt is masked or not, just set irq_enabled to 'true'.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Let me try to explain this better. I realize the changelog is
-misleading around this particular section! Huh, apologize for that!
+Thanks for patch series, I will verify them one by one. I verified the
+interrupt can work well with this patch:
 
-First, patch1 makes the PM core treat the is_rpm_sleep flag as the
-direct_complete isn't allowed for the device.
+Reviewed-by: Leo Yan <leo.yan@linaro.org>
+Tested-by: Leo Yan <leo.yan@linaro.org>
 
-For that reason, when the is_rpm_sleep is set, there is no point
-calling acpi_dev_needs_resume() from acpi_subsys_prepare(), but
-instead that can be deferred to acpi_subsys_suspend() - because it
-doesn't matter if acpi_subsys_prepare() returns 0 or 1, in either case
-the acpi_subsys_suspend() will be called. That's really what goes on
-here.
-
-The end result is the same. If the acpi_dev_needs_resume() thinks that
-the device needs to be runtime resumed, pm_runtime_resume() is called
-for the device in acpi_subsys_suspend().
-
-So, this has nothing to do with whether the driver "is fine with not
-resuming it" thing.
-
->
-> IMO it is not a good idea to use one flag for these two different things at the
-> same time at all.
-
-Yeah, I guess my upper comment addresses your immediate concern here?
-
-However, there is one other thing the is_rpm_flag means. That is that
-the driver has informed the ACPI PM domain, to trust the driver to
-deal with system sleep, via re-using the runtime PM callbacks.
-So the flag does still have two meanings, but that we can change - of course.
-
->
-> Thanks,
-> Rafael
->
-
-Kind regards
-Uffe
+> ---
+>  drivers/thermal/hisi_thermal.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+> index bd3572c..8381696 100644
+> --- a/drivers/thermal/hisi_thermal.c
+> +++ b/drivers/thermal/hisi_thermal.c
+> @@ -345,8 +345,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	hisi_thermal_enable_bind_irq_sensor(data);
+> -	irq_get_irqchip_state(data->irq, IRQCHIP_STATE_MASKED,
+> -			      &data->irq_enabled);
+> +	data->irq_enabled = true;
+>  
+>  	for (i = 0; i < HISI_MAX_SENSORS; ++i) {
+>  		ret = hisi_thermal_register_sensor(pdev, data,
+> @@ -358,6 +357,8 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  			hisi_thermal_toggle_sensor(&data->sensors[i], true);
+>  	}
+>  
+> +	enable_irq(data->irq);
+> +
+>  	return 0;
+>  }
+>  
+> -- 
+> 2.7.4
+> 
