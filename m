@@ -1,87 +1,43 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH] ARM: cpuidle: Avoid memleak if init fail
-Date: Fri, 1 Sep 2017 09:33:17 +0800
-Message-ID: <20170901013317.GA516@leoy-ThinkPad-T440>
-References: <1504211076-2331-1-git-send-email-stefan.wahren@i2se.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Nicholas Piggin <npiggin@gmail.com>
+Subject: [PATCH] cpuidle: fix broadcast control when broadcast can not be entered
+Date: Fri,  1 Sep 2017 14:29:56 +1000
+Message-ID: <20170901042956.29594-1-npiggin@gmail.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f178.google.com ([209.85.192.178]:33533 "EHLO
-        mail-pf0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750955AbdIABdZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 31 Aug 2017 21:33:25 -0400
-Received: by mail-pf0-f178.google.com with SMTP id n73so3852937pfj.0
-        for <linux-pm@vger.kernel.org>; Thu, 31 Aug 2017 18:33:25 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1504211076-2331-1-git-send-email-stefan.wahren@i2se.com>
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:33018 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750707AbdIAEaI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Sep 2017 00:30:08 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Stefan Wahren <stefan.wahren@i2se.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
 
-Hi Stefan,
+When failing to enter broadcast timer mode for an idle state that
+requires it, a new state is selected that does not require broadcast,
+but the broadcast variable remains set. This causes
+tick_broadcast_exit to be called despite not having entered broadcast
+mode.
 
-On Thu, Aug 31, 2017 at 10:24:36PM +0200, Stefan Wahren wrote:
-> In case there are no DT idle states defined or
-> cpuidle_register_driver() fails, the copy of the idle driver is leaked:
-> 
->     unreferenced object 0xede0dc00 (size 1024):
->     comm "swapper/0", pid 1, jiffies 4294937431 (age 744.510s)
->     hex dump (first 32 bytes):
->     94 9e 0b c1 00 00 00 00 00 00 00 00 00 00 00 00 ................
->     57 46 49 00 00 00 00 00 00 00 00 00 00 00 00 00 WFI.............
->     backtrace:
->     [<c1295f04>] arm_idle_init+0x44/0x1ac
->     [<c0301e6c>] do_one_initcall+0x3c/0x16c
->     [<c1200d70>] kernel_init_freeable+0x110/0x1d0
->     [<c0cb3624>] kernel_init+0x8/0x114
->     [<c0307a98>] ret_from_fork+0x14/0x3c
-> 
-> So fix this by freeing the unregistered copy in error case.
-> 
-> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
-> Fixes: d50a7d8acd78 ("ARM: cpuidle: Support asymmetric idle definition")
-> ---
->  drivers/cpuidle/cpuidle-arm.c | 6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-> index 7080c38..52a7505 100644
-> --- a/drivers/cpuidle/cpuidle-arm.c
-> +++ b/drivers/cpuidle/cpuidle-arm.c
-> @@ -104,13 +104,13 @@ static int __init arm_idle_init(void)
->  		ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
->  		if (ret <= 0) {
->  			ret = ret ? : -ENODEV;
-> -			goto out_fail;
-> +			goto init_fail;
->  		}
->  
->  		ret = cpuidle_register_driver(drv);
->  		if (ret) {
->  			pr_err("Failed to register cpuidle driver\n");
-> -			goto out_fail;
-> +			goto init_fail;
->  		}
->  
->  		/*
-> @@ -149,6 +149,8 @@ static int __init arm_idle_init(void)
->  	}
->  
->  	return 0;
-> +init_fail:
-> +	kfree(drv);
+This causes the WARN_ON_ONCE(!irqs_disabled()) to trigger in some
+cases. It does not appear to cause problems for code today, but seems
+to violate the interface so should be fixed.
 
-The below loop only releases resource for previous CPUs, so should check
-two variables 'drv' and 'dev'. If 'dev != NULL', we also need to release
-it.
+Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+---
+ drivers/cpuidle/cpuidle.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Thanks,
-Leo Yan
-
->  out_fail:
->  	while (--cpu >= 0) {
->  		dev = per_cpu(cpuidle_devices, cpu);
-> -- 
-> 2.7.4
-> 
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 60bb64f4329d..4453e27f855e 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -208,6 +208,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 			return -EBUSY;
+ 		}
+ 		target_state = &drv->states[index];
++		broadcast = false;
+ 	}
+ 
+ 	/* Take note of the planned idle state. */
+-- 
+2.13.3
