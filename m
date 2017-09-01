@@ -1,43 +1,36 @@
-From: gaurav jindal <gauravjindal1104@gmail.com>
-Subject: [PATCH] cpudile: optimize cpuidle_enable_device error handling
-Date: Fri, 1 Sep 2017 20:37:26 +0530
-Message-ID: <20170901150726.GC7569@spreadtrum.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 2/5] devicetree: power: Add docs for TI BQ24190
+ battery charger
+Date: Fri, 1 Sep 2017 10:38:56 -0500
+Message-ID: <20170901153856.f3ea3pteny7zii47@rob-hp-laptop>
+References: <20170828212349.19037-1-liam@networkimprov.net>
+ <20170828212349.19037-3-liam@networkimprov.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:37097 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750952AbdIAPHa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Sep 2017 11:07:30 -0400
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:34742 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751270AbdIAPi6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Sep 2017 11:38:58 -0400
 Content-Disposition: inline
+In-Reply-To: <20170828212349.19037-3-liam@networkimprov.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, daniel.lezcano@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>
+Cc: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Hans de Goede <hdegoede@redhat.com>, devicetree@vger.kernel.org, Liam Breck <kernel@networkimprov.net>
 
-do not fetch per cpu drv id cpuidle_curr_governor is NULL.
-if cpuidle_enable_device is NULL return -EIO. it prevents
-the addtional per cpu processing
+On Mon, Aug 28, 2017 at 02:23:46PM -0700, Liam Breck wrote:
+> From: Liam Breck <kernel@networkimprov.net>
+> 
+> Document monitored-battery and ti,system-minimum-microvolt properties.
+> 
+> Cc: Rob Herring <robh@kernel.org>
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Liam Breck <kernel@networkimprov.net>
+> Acked-by: Tony Lindgren <tony@atomide.com>
+> ---
+>  .../devicetree/bindings/power/supply/bq24190.txt   | 51 ++++++++++++++++++++++
+>  1 file changed, 51 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/bq24190.txt
 
-Signed-off-by: Gaurav Jindal<gauravjindal1104@gmail.com>
-
----
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 1519716..6464e09 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -367,9 +367,12 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
- 	if (dev->enabled)
- 		return 0;
-
-+	if (!cpuidle_curr_governor)
-+		return -EIO;
-+
- 	drv = cpuidle_get_cpu_driver(dev);
-
--	if (!drv || !cpuidle_curr_governor)
-+	if (!drv)
- 		return -EIO;
-
- 	if (!dev->registered)
+Acked-by: Rob Herring <robh@kernel.org>
