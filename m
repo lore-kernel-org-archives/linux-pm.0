@@ -1,97 +1,209 @@
-From: Dong Aisheng <dongas86@gmail.com>
-Subject: Re: [PATCH 2/7] dt-bindings: PM / OPP: add clocks per OPP node
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH 02/13] thermal/drivers/hisi: Remove the multiple sensors
  support
-Date: Fri, 1 Sep 2017 21:01:32 +0800
-Message-ID: <20170901130132.GA22788@b29396-OptiPlex-7040>
-References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
- <1503504610-12880-3-git-send-email-aisheng.dong@nxp.com>
- <20170831173920.4emtr5vkgvjcx6ac@rob-hp-laptop>
+Date: Fri, 1 Sep 2017 22:05:24 +0800
+Message-ID: <20170901140523.GB26177@leoy-linaro>
+References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
+ <1504082857-21702-2-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170831173920.4emtr5vkgvjcx6ac@rob-hp-laptop>
+In-Reply-To: <1504082857-21702-2-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com, Frank Rowand <frowand.list@gmail.com>, devicetree@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Aug 31, 2017 at 12:39:20PM -0500, Rob Herring wrote:
-> On Thu, Aug 24, 2017 at 12:10:05AM +0800, Dong Aisheng wrote:
-> > It's used for platforms where different OPPs may use different clocks.
-> > With this extended binding, user could specify the correct clock for each
-> > OPP node.
-> > 
-> > Cc: Viresh Kumar <vireshk@kernel.org>
-> > Cc: Nishanth Menon <nm@ti.com>
-> > Cc: Stephen Boyd <sboyd@codeaurora.org>
-> > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > Cc: Rob Herring <robh+dt@kernel.org>
-> > Cc: Frank Rowand <frowand.list@gmail.com>
-> > Cc: devicetree@vger.kernel.org
-> > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> > ---
-> >  Documentation/devicetree/bindings/opp/opp.txt | 52 +++++++++++++++++++++++++++
-> >  1 file changed, 52 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-> > index e36d261..40a4340 100644
-> > --- a/Documentation/devicetree/bindings/opp/opp.txt
-> > +++ b/Documentation/devicetree/bindings/opp/opp.txt
-> > @@ -152,6 +152,11 @@ Optional properties:
-> >    hierarchy can be contained in multiple 32 bit values. i.e. <X Y Z1 Z2> in the
-> >    above example, Z1 & Z2 refer to the version hierarchy Z.
-> >  
-> > +- clocks: Clock phandle and specifier used for this opp.
-> > +
-> > +- clock-names: clock names for this opp. The valid clock names are platform
-> > +	       specific.
+Hi Daniel,
+
+On Wed, Aug 30, 2017 at 10:47:26AM +0200, Daniel Lezcano wrote:
+> By essence, the tsensor does not really support multiple sensor at the same
+> time. It allows to set a sensor and use it to get the temperature, another
+> sensor could be switched but with a delay of 3-5ms. It is difficult to read
+> simultaneously several sensors without a big delay.
 > 
-> You don't need -names if there's only 1 clock.
-
-Got it, will remove -name.
-
-> But then how long until 
-> we have a list of any random clocks some how associated with an OPP.
+> Today, just one sensor is used, it is not necessary to deal with multiple
+> sensors in the code. Remove them and if it is needed in the future add them
+> on top of a code which will be clean up in the meantime.
 > 
-
-Not sure whether it will really happen in the future. Even it happens,
-as we usually only need the device parent clock, then probably better to
-handle the left complicated things in clock driver or OPP device driver.
-
-> I think this should really be solved within the clock framework. What 
-> you really need is "set my parent clock to the source that can provide X 
-> Hz". Could the assigned-clocks property work here (in the OPP nodes 
-> rather than the cpu nodes)?
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/thermal/hisi_thermal.c | 77 +++++++++++-------------------------------
+>  1 file changed, 20 insertions(+), 57 deletions(-)
 > 
+> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+> index 8381696..92b6889 100644
+> --- a/drivers/thermal/hisi_thermal.c
+> +++ b/drivers/thermal/hisi_thermal.c
+> @@ -39,6 +39,7 @@
+>  #define HISI_TEMP_RESET			(100000)
+>  
+>  #define HISI_MAX_SENSORS		4
+> +#define HISI_DEFAULT_SENSOR		2
 
-I'm not quite sure i got your point. assigned-clocks seems a bit like function
-the same as clocks property here, both are used to specifying the device
-parent clock which provide X hz.
+So if we always set the sensor id 2 as default sensor, that means it's
+pointless to bind sensor id in dts. E.g. I change to bind thermal
+sensor 0, then it's impossible to bind successfully:
 
-Or are you suggesting using assigned-clocks/assigned-clocks-rates instread
-of clocks/opp-hz? Would you please clarify a bit more?
+-                               thermal-sensors = <&tsensor 2>;
++                               thermal-sensors = <&tsensor 0>;
 
-> > +
-> >  - status: Marks the node enabled/disabled.
-> >  
-> >  Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
-> > @@ -528,3 +533,50 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
-> >  		};
-> >  	};
-> >  };
-> > +
-> > +Example 7: Single core ARM cortex A7, switch separate clocks for each OPP:
+It's okay for this change, do you think we need reflect this in DT
+binding doc [1] ?
+
+[1] Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
+
+>  struct hisi_thermal_sensor {
+>  	struct hisi_thermal_data *thermal;
+> @@ -53,11 +54,10 @@ struct hisi_thermal_data {
+>  	struct mutex thermal_lock;    /* protects register data */
+>  	struct platform_device *pdev;
+>  	struct clk *clk;
+> -	struct hisi_thermal_sensor sensors[HISI_MAX_SENSORS];
+> -
+> -	int irq, irq_bind_sensor;
+> +	struct hisi_thermal_sensor sensors;
+> +	int irq;
+>  	bool irq_enabled;
+> -
+> +	
+
+Repots whitespace error when I apply patch.
+
+>  	void __iomem *regs;
+>  };
+>  
+> @@ -113,7 +113,7 @@ static void hisi_thermal_enable_bind_irq_sensor
+>  
+>  	mutex_lock(&data->thermal_lock);
+>  
+> -	sensor = &data->sensors[data->irq_bind_sensor];
+> +	sensor = &data->sensors;
+>  
+>  	/* setting the hdak time */
+>  	writel(0x0, data->regs + TEMP0_CFG);
+> @@ -160,31 +160,8 @@ static int hisi_thermal_get_temp(void *_sensor, int *temp)
+>  	struct hisi_thermal_sensor *sensor = _sensor;
+>  	struct hisi_thermal_data *data = sensor->thermal;
+>  
+> -	int sensor_id = -1, i;
+> -	long max_temp = 0;
+> -
+>  	*temp = hisi_thermal_get_sensor_temp(data, sensor);
+>  
+> -	sensor->sensor_temp = *temp;
+> -
+> -	for (i = 0; i < HISI_MAX_SENSORS; i++) {
+> -		if (!data->sensors[i].tzd)
+> -			continue;
+> -
+> -		if (data->sensors[i].sensor_temp >= max_temp) {
+> -			max_temp = data->sensors[i].sensor_temp;
+> -			sensor_id = i;
+> -		}
+> -	}
+> -
+> -	/* If no sensor has been enabled, then skip to enable irq */
+> -	if (sensor_id == -1)
+> -		return 0;
+> -
+> -	mutex_lock(&data->thermal_lock);
+> -	data->irq_bind_sensor = sensor_id;
+> -	mutex_unlock(&data->thermal_lock);
+> -
+>  	dev_dbg(&data->pdev->dev, "id=%d, irq=%d, temp=%d, thres=%d\n",
+>  		sensor->id, data->irq_enabled, *temp, sensor->thres_temp);
+>  	/*
+> @@ -197,7 +174,7 @@ static int hisi_thermal_get_temp(void *_sensor, int *temp)
+>  		return 0;
+>  	}
+>  
+> -	if (max_temp < sensor->thres_temp) {
+> +	if (*temp < sensor->thres_temp) {
+>  		data->irq_enabled = true;
+>  		hisi_thermal_enable_bind_irq_sensor(data);
+>  		enable_irq(data->irq);
+> @@ -224,22 +201,16 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
+>  {
+>  	struct hisi_thermal_data *data = dev;
+>  	struct hisi_thermal_sensor *sensor;
+> -	int i;
+>  
+>  	mutex_lock(&data->thermal_lock);
+> -	sensor = &data->sensors[data->irq_bind_sensor];
+> +	sensor = &data->sensors;
+>  
+>  	dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
+>  		 sensor->thres_temp / 1000);
+>  	mutex_unlock(&data->thermal_lock);
+>  
+> -	for (i = 0; i < HISI_MAX_SENSORS; i++) {
+> -		if (!data->sensors[i].tzd)
+> -			continue;
+> -
+> -		thermal_zone_device_update(data->sensors[i].tzd,
+> -					   THERMAL_EVENT_UNSPECIFIED);
+> -	}
+> +	thermal_zone_device_update(data->sensors.tzd,
+> +				   THERMAL_EVENT_UNSPECIFIED);
+>  
+>  	return IRQ_HANDLED;
+>  }
+> @@ -296,7 +267,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  {
+>  	struct hisi_thermal_data *data;
+>  	struct resource *res;
+> -	int i;
+>  	int ret;
+>  
+>  	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
+> @@ -347,16 +317,17 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  	hisi_thermal_enable_bind_irq_sensor(data);
+>  	data->irq_enabled = true;
+>  
+> -	for (i = 0; i < HISI_MAX_SENSORS; ++i) {
+> -		ret = hisi_thermal_register_sensor(pdev, data,
+> -						   &data->sensors[i], i);
+> -		if (ret)
+> -			dev_err(&pdev->dev,
+> -				"failed to register thermal sensor: %d\n", ret);
+> -		else
+> -			hisi_thermal_toggle_sensor(&data->sensors[i], true);
+> +	ret = hisi_thermal_register_sensor(pdev, data,
+> +					   &data->sensors,
+> +					   HISI_DEFAULT_SENSOR);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "failed to register thermal sensor: %d\n",
+> +			ret);
+> +		return ret;
+>  	}
+>  
+> +	hisi_thermal_toggle_sensor(&data->sensors, true);
+> +
+>  	enable_irq(data->irq);
+>  
+>  	return 0;
+> @@ -365,17 +336,9 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  static int hisi_thermal_remove(struct platform_device *pdev)
+>  {
+>  	struct hisi_thermal_data *data = platform_get_drvdata(pdev);
+> -	int i;
+> -
+> -	for (i = 0; i < HISI_MAX_SENSORS; i++) {
+> -		struct hisi_thermal_sensor *sensor = &data->sensors[i];
+> -
+> -		if (!sensor->tzd)
+> -			continue;
+> -
+> -		hisi_thermal_toggle_sensor(sensor, false);
+> -	}
+> +	struct hisi_thermal_sensor *sensor = &data->sensors;
+>  
+> +	hisi_thermal_toggle_sensor(sensor, false);
+>  	hisi_thermal_disable_sensor(data);
+>  	clk_disable_unprepare(data->clk);
+>  
+> -- 
+> 2.7.4
 > 
-> Can't you add this to an existing example? We don't need to enumerate 
-> every possible option.
-
-Okay, Will merge it.
-
-Thanks
-
-Regards
-Dong Aisheng
-
-> 
-> Rob
