@@ -1,26 +1,29 @@
 From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH 03/13] thermal/drivers/hisi: Fix kernel panic on alarm
- interrupt
-Date: Fri, 1 Sep 2017 22:14:17 +0800
-Message-ID: <20170901141417.GA11198@leoy-linaro>
+Subject: Re: [PATCH 04/13] thermal/drivers/hisi: Simplify the
+ temperature/step computation
+Date: Fri, 1 Sep 2017 22:24:48 +0800
+Message-ID: <20170901142448.GB11198@leoy-linaro>
 References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
- <1504082857-21702-3-git-send-email-daniel.lezcano@linaro.org>
+ <1504082857-21702-4-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1504082857-21702-3-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <1504082857-21702-4-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 30, 2017 at 10:47:27AM +0200, Daniel Lezcano wrote:
-> The threaded interrupt for the alarm interrupt is requested before the
-> temperature controller is setup. This one can fire an interrupt immediately
-> leading to a kernel panic as the sensor data is not initialized.
+On Wed, Aug 30, 2017 at 10:47:28AM +0200, Daniel Lezcano wrote:
+> The step and the base temperature are fixed values, we can simplify the
+> computation by converting the base temperature to milli celsius and use a
+> pre-computed step value. That saves us a lot of mult + div for nothing at
+> runtime.
 > 
-> In order to prevent that, move the threaded irq after the Tsensor is setup.
+> Take also the opportunity to change the function names to be consistent with
+> the rest of the code.
 > 
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
@@ -28,75 +31,89 @@ Reviewed-by: Leo Yan <leo.yan@linaro.org>
 Tested-by: Leo Yan <leo.yan@linaro.org>
 
 > ---
->  drivers/thermal/hisi_thermal.c | 18 +++++++++---------
->  1 file changed, 9 insertions(+), 9 deletions(-)
+>  drivers/thermal/hisi_thermal.c | 41 ++++++++++++++++++++++++++++-------------
+>  1 file changed, 28 insertions(+), 13 deletions(-)
 > 
 > diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index 92b6889..67db523 100644
+> index 67db523..b58ad40 100644
 > --- a/drivers/thermal/hisi_thermal.c
 > +++ b/drivers/thermal/hisi_thermal.c
-> @@ -287,15 +287,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->  	if (data->irq < 0)
->  		return data->irq;
+> @@ -35,8 +35,9 @@
+>  #define TEMP0_RST_MSK			(0x1C)
+>  #define TEMP0_VALUE			(0x28)
 >  
-> -	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
-> -					hisi_thermal_alarm_irq,
-> -					hisi_thermal_alarm_irq_thread,
-> -					0, "hisi_thermal", data);
-> -	if (ret < 0) {
-> -		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
-> -		return ret;
-> -	}
-> -
->  	platform_set_drvdata(pdev, data);
+> -#define HISI_TEMP_BASE			(-60)
+> +#define HISI_TEMP_BASE			(-60000)
+>  #define HISI_TEMP_RESET			(100000)
+> +#define HISI_TEMP_STEP			(784)
 >  
->  	data->clk = devm_clk_get(&pdev->dev, "thermal_clk");
-> @@ -328,6 +319,15 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  #define HISI_MAX_SENSORS		4
+>  #define HISI_DEFAULT_SENSOR		2
+> @@ -61,19 +62,32 @@ struct hisi_thermal_data {
+>  	void __iomem *regs;
+>  };
 >  
->  	hisi_thermal_toggle_sensor(&data->sensors, true);
+> -/* in millicelsius */
+> -static inline int _step_to_temp(int step)
+> +/*
+> + * The temperature computation on the tsensor is as follow:
+> + *	Unit: millidegree Celsius
+> + *	Step: 255/200 (0.7843)
+> + *	Temperature base: -60°C
+> + *
+> + * The register is programmed in temperature steps, every step is 784
+> + * millidegree and begins at -60 000 m°C
+> + *
+> + * The temperature from the steps:
+> + *
+> + *	Temp = TempBase + (steps x 784)
+> + *
+> + * and the steps from the temperature:
+> + *
+> + *	steps = (Temp - TempBase) / 784
+> + *
+> + */
+> +static inline int hisi_thermal_step_to_temp(int step)
+>  {
+> -	/*
+> -	 * Every step equals (1 * 200) / 255 celsius, and finally
+> -	 * need convert to millicelsius.
+> -	 */
+> -	return (HISI_TEMP_BASE * 1000 + (step * 200000 / 255));
+> +	return HISI_TEMP_BASE + (step * HISI_TEMP_STEP);
+>  }
 >  
-> +	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
-> +					hisi_thermal_alarm_irq,
-> +					hisi_thermal_alarm_irq_thread,
-> +					0, "hisi_thermal", data);
-> +	if (ret < 0) {
-> +		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
-> +		return ret;
-> +	}
-> +
-
-Just reminding for the initialization sequence, could we also move
-hisi_thermal_enable_bind_irq_sensor(data) after function
-hisi_thermal_register_sensor()? The reason is after we registser
-sensor with specified sensor ID, then we can bind irq for the
-specified ID, otherwise it will wrongly to bind irq to sensor 0. So
-finally we can get result as below:
-
-        ret = hisi_thermal_register_sensor(pdev, data,
-                                           &data->sensors,
-                                           HISI_DEFAULT_SENSOR);
-        if (ret) {
-                dev_err(&pdev->dev, "failed to register thermal sensor: %d\n",
-                        ret);
-                return ret;
-        }
-
-        hisi_thermal_enable_bind_irq_sensor(data);
-        hisi_thermal_toggle_sensor(&data->sensors, true);
-        data->irq_enabled = true;
-
-        ret = devm_request_threaded_irq(&pdev->dev, data->irq,
-                                        hisi_thermal_alarm_irq,
-                                        hisi_thermal_alarm_irq_thread,
-                                        0, "hisi_thermal", data);
-        if (ret < 0) {
-                dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
-                return ret;
-        }
-
->  	enable_irq(data->irq);
+> -static inline long _temp_to_step(long temp)
+> +static inline long hisi_thermal_temp_to_step(long temp)
+>  {
+> -	return ((temp - HISI_TEMP_BASE * 1000) * 255) / 200000;
+> +	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
+>  }
 >  
->  	return 0;
+>  static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+> @@ -99,7 +113,7 @@ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+>  	usleep_range(3000, 5000);
+>  
+>  	val = readl(data->regs + TEMP0_VALUE);
+> -	val = _step_to_temp(val);
+> +	val = hisi_thermal_step_to_temp(val);
+>  
+>  	mutex_unlock(&data->thermal_lock);
+>  
+> @@ -126,10 +140,11 @@ static void hisi_thermal_enable_bind_irq_sensor
+>  	writel((sensor->id << 12), data->regs + TEMP0_CFG);
+>  
+>  	/* enable for interrupt */
+> -	writel(_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
+> +	writel(hisi_thermal_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
+>  	       data->regs + TEMP0_TH);
+>  
+> -	writel(_temp_to_step(HISI_TEMP_RESET), data->regs + TEMP0_RST_TH);
+> +	writel(hisi_thermal_temp_to_step(HISI_TEMP_RESET),
+> +	       data->regs + TEMP0_RST_TH);
+>  
+>  	/* enable module */
+>  	writel(0x1, data->regs + TEMP0_RST_MSK);
 > -- 
 > 2.7.4
 > 
