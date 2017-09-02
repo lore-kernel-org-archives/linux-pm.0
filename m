@@ -1,98 +1,83 @@
-From: Michael Tatarinov <kukabu@gmail.com>
-Subject: Re: of: thermal: Introduce "hwmon" optional property
-Date: Sat, 2 Sep 2017 09:53:43 +0400
-Message-ID: <CABrG=Zzf46SR4a3w5Sxqp_4QaF9Rgxe0_DYL7Usu0-ibkROJMQ@mail.gmail.com>
-References: <20170710115146.27313-1-kukabu@gmail.com> <20170831150802.GA16971@roeck-us.net>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 08/13] thermal/drivers/hisi: Fix configuration register
+ setting
+Date: Sat, 2 Sep 2017 10:34:34 +0200
+Message-ID: <e5775d5d-bd5d-5472-31e6-a0751a9aa0ce@linaro.org>
+References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
+ <1504082857-21702-8-git-send-email-daniel.lezcano@linaro.org>
+ <20170902025426.GA3841@leoy-linaro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f67.google.com ([74.125.82.67]:38067 "EHLO
-        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750946AbdIBFxp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 2 Sep 2017 01:53:45 -0400
-Received: by mail-wm0-f67.google.com with SMTP id u26so1821221wma.5
-        for <linux-pm@vger.kernel.org>; Fri, 01 Sep 2017 22:53:44 -0700 (PDT)
-In-Reply-To: <20170831150802.GA16971@roeck-us.net>
+Received: from mail-wm0-f54.google.com ([74.125.82.54]:38270 "EHLO
+        mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751603AbdIBIeh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 2 Sep 2017 04:34:37 -0400
+Received: by mail-wm0-f54.google.com with SMTP id 187so12248723wmn.1
+        for <linux-pm@vger.kernel.org>; Sat, 02 Sep 2017 01:34:37 -0700 (PDT)
+In-Reply-To: <20170902025426.GA3841@leoy-linaro>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Guenter Roeck <linux@roeck-us.net>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+To: Leo Yan <leo.yan@linaro.org>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>
 
-Hello
-Thanks for you comments.
-
-2017-08-31 19:08 GMT+04:00, Guenter Roeck <linux@roeck-us.net>:
-> On Mon, Jul 10, 2017 at 03:51:46PM +0400, Michael Tatarinov wrote:
->> Introduce an optional property called, hwmon, which enable
->> registration in hwmon subsystems.
+On 02/09/2017 04:54, Leo Yan wrote:
+> On Wed, Aug 30, 2017 at 10:47:32AM +0200, Daniel Lezcano wrote:
+>> The TEMP0_CFG configuration register contains different field to set up the
+>> temperature controller. However in the code, nothing prevents a setup to
+>> overwrite the previous one: eg. writing the hdak value overwrites the sensor
+>> selection, the sensor selection overwrites the hdak value.
 >>
->> Cc: Zhang Rui <rui.zhang@intel.com>
->> Cc: Eduardo Valentin <edubezval@gmail.com>
->> Signed-off-by: Michael Tatarinov <kukabu@gmail.com>
+>> In order to prevent such thing, use a regmap-like mechanism by reading the
+>> value before, set the corresponding bits and write the result.
+>>
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 >> ---
->>  Documentation/devicetree/bindings/thermal/thermal.txt | 6 ++++++
->>  drivers/thermal/of-thermal.c                          | 3 +--
->>  2 files changed, 7 insertions(+), 2 deletions(-)
+>>  drivers/thermal/hisi_thermal.c | 30 +++++++++++++++++++++++++-----
+>>  1 file changed, 25 insertions(+), 5 deletions(-)
 >>
->> diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt
->> b/Documentation/devicetree/bindings/thermal/thermal.txt
->> index 88b6ea1ad290..4e51fbd4efa2 100644
->> --- a/Documentation/devicetree/bindings/thermal/thermal.txt
->> +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
->> @@ -175,6 +175,10 @@ Optional property:
->>  			2000mW, while on a 10'' tablet is around
->>  			4500mW.
->>
->> +- hwmon:		Register the thermal zone in hwmon subsystems
->> +  Type: boolean 	(requires CONFIG_THERMAL_HWMON).
->> +  Size: one cell
->> +
->
-> That will probably be unacceptable since it is not a hardware description
-> or configuration flag but an implementation problem.
+>> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+>> index d77a938..3e03908 100644
+>> --- a/drivers/thermal/hisi_thermal.c
+>> +++ b/drivers/thermal/hisi_thermal.c
+>> @@ -132,19 +132,39 @@ static inline void hisi_thermal_enable(void __iomem *addr, int value)
+>>  	writel(value, addr + TEMP0_EN);
+>>  }
+>>  
+>> -static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
+>> +static inline int hisi_thermal_get_temperature(void __iomem *addr)
+>>  {
+>> -	writel((sensor << 12), addr + TEMP0_CFG);
+>> +	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
+>>  }
+>>  
+>> -static inline int hisi_thermal_get_temperature(void __iomem *addr)
+>> +/*
+>> + * Temperature configuration register - Sensor selection
+>> + *
+>> + * Bits [19:12]
+>> + *
+>> + * 0x0: local sensor (default)
+>> + * 0x1: remote sensor 1 (ACPU cluster 1)
+>> + * 0x2: remote sensor 2 (ACPU cluster 0)
+>> + * 0x3: remote sensor 3 (G3D)
+>> + */
+>> +static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
+>>  {
+>> -	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
+>> +	writel(readl(addr + TEMP0_CFG) | (sensor << 12), addr + TEMP0_CFG);
+> 
+> nitpick: maybe it's better to firstly clear related bits and then set
+> value?
 
-I didn't know it. I agree with change "hwmon" to "linux,hwmon".
+Sorry, I don't get the comment. Can you elaborate ?
 
-> What might be acceptable is to use a device property such as "linux,no-hwmon",
-> set it in hwmon drivers prior to calling the registration function, then use
-> device_property_present() in the thermal code to check it and assign the flag
-> to no_hwmon. An alternative might be to add a "no_hwmon" parameter to the
-> thermal registration function, but that would be much more invasive and,
-> in my opinion, much less desirable.
 
-I think it should be a thermal driver option. Comment says that the
-registration is disabled to prevent dual registration (native hwmon
-driver and imported thermal driver).
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-> Rui, Eduardo, any thoughts ?
->
-> Thanks,
-> Guenter
->
->>  Note: The delay properties are bound to the maximum dT/dt (temperature
->>  derivative over time) in two situations for a thermal zone:
->>  (i)  - when passive cooling is activated (polling-delay-passive); and
->> @@ -556,6 +560,8 @@ thermal-zones {
->>
->>  		sustainable-power = <2500>;
->>
->> +		hwmon;
->> +
->>  		trips {
->>  			/* Trips are based on resulting linear equation */
->>  			cpu_trip: cpu-trip {
->> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
->> index d04ec3b9e5ff..ce580a57313b 100644
->> --- a/drivers/thermal/of-thermal.c
->> +++ b/drivers/thermal/of-thermal.c
->> @@ -994,8 +994,7 @@ int __init of_parse_thermal_zones(void)
->>  			goto exit_free;
->>  		}
->>
->> -		/* No hwmon because there might be hwmon drivers registering */
->> -		tzp->no_hwmon = true;
->> +		tzp->no_hwmon = !of_property_read_bool(child, "hwmon");
->>
->>  		if (!of_property_read_u32(child, "sustainable-power", &prop))
->>  			tzp->sustainable_power = prop;
->
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
