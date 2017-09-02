@@ -1,143 +1,105 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 1/8] PM / Sleep: Make the runtime PM centric path known to the PM core
-Date: Sat, 02 Sep 2017 16:48:26 +0200
-Message-ID: <1702559.yU4llTGfcI@aspire.rjw.lan>
-References: <1504018610-10822-1-git-send-email-ulf.hansson@linaro.org> <2403318.HVB4k3qRsK@aspire.rjw.lan> <CAPDyKFoOJzciMNMWkc+ci+Fn2iD8vwsg25TQjcx=xw2ftg5rug@mail.gmail.com>
+Subject: Re: [PATCH v3 6/8] PM / ACPI: Enable the runtime PM centric approach for system sleep
+Date: Sat, 02 Sep 2017 17:38:04 +0200
+Message-ID: <2209426.5Z3u1iKN4i@aspire.rjw.lan>
+References: <1504018610-10822-1-git-send-email-ulf.hansson@linaro.org> <2855684.NY3Ly9PzrE@aspire.rjw.lan> <CAPDyKFq5ic+bAVRoEC58oSO-8VTGnfipJndLmR6YLXgEhZ+RWw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFoOJzciMNMWkc+ci+Fn2iD8vwsg25TQjcx=xw2ftg5rug@mail.gmail.com>
+In-Reply-To: <CAPDyKFq5ic+bAVRoEC58oSO-8VTGnfipJndLmR6YLXgEhZ+RWw@mail.gmail.com>
 Sender: linux-acpi-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, August 31, 2017 11:06:05 AM CEST Ulf Hansson wrote:
-> [...]
+On Friday, September 1, 2017 10:27:05 AM CEST Ulf Hansson wrote:
+> On 29 August 2017 at 17:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Tuesday, August 29, 2017 4:56:48 PM CEST Ulf Hansson wrote:
+> >> This change enables the ACPI PM domain to cope with drivers that deploys
+> >> the runtime PM centric path for system sleep.
+> >
+> > [cut]
+> >
+> >> @@ -1052,11 +1066,20 @@ EXPORT_SYMBOL_GPL(acpi_subsys_complete);
+> >>   * @dev: Device to handle.
+> >>   *
+> >>   * Follow PCI and resume devices suspended at run time before running their
+> >> - * system suspend callbacks.
+> >> + * system suspend callbacks. However, try to avoid it in case the runtime PM
+> >> + * centric path is used for the device and then trust the driver to do the
+> >> + * right thing.
+> >>   */
+> >>  int acpi_subsys_suspend(struct device *dev)
+> >>  {
+> >> -     pm_runtime_resume(dev);
+> >> +     struct acpi_device *adev = ACPI_COMPANION(dev);
+> >> +
+> >> +     if (!adev)
+> >> +             return 0;
+> >> +
+> >> +     if (!dev_pm_is_rpm_sleep(dev) || acpi_dev_needs_resume(dev, adev))
+> >> +             pm_runtime_resume(dev);
+> >> +
+> >>       return pm_generic_suspend(dev);
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(acpi_subsys_suspend);
+> >
+> > Well, I tried to avoid calling acpi_dev_needs_resume() for multiple times
+> > and that's why I added the update_state thing.
+> >
+> > Moreover, the is_rpm_sleep flag here has to mean not only that
+> > direct_complete should not be used with the device, but also that its driver
+> > is fine with not resuming it.
 > 
-> >> >> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> >> >> index ea1732e..865737a 100644
-> >> >> --- a/drivers/base/power/main.c
-> >> >> +++ b/drivers/base/power/main.c
-> >> >> @@ -1549,14 +1549,16 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
-> >> >>               if (parent) {
-> >> >>                       spin_lock_irq(&parent->power.lock);
-> >> >>
-> >> >> -                     dev->parent->power.direct_complete = false;
-> >> >> +                     if (!dev->power.is_rpm_sleep)
-> >> >> +                             dev->parent->power.direct_complete = false;
-> >> >
-> >> > This doesn't look good to me at all.
-> >> >
-> >> > It potentially breaks the fundamental assumption of the direct_complete
-> >> > mechanism that no devices with that flag set will ever be runtime resumed
-> >> > during system suspend.
-> >> >
-> >> > Which can happen with this change if a device with power.is_rpm_sleep is
-> >> > resumed causing the parent to be resumed too.
-> >>
-> >> Doesn't the exact same problem you describe, already exist prior my change!?
-> >
-> > No, it doesn't.
-> >
-> >> That is, if the current device is runtime suspended and the
-> >> direct_complete flag is set for it, then __device_suspend() has
-> >> already disabled runtime PM for the device, when we reach this point.
-> >> That means, a following attempts to runtime resume the device will
-> >> fail and thus also to runtime resume its parent.
-> >
-> > That's because any devices with direct_complete set *cannot* be runtime
-> > resumed after __device_suspend().  That's intentional and how the thing
-> > is designed.  It cannot work differently, sorry.
-> >
-> >> So to me, this is a different problem, related how to work out the
-> >> correct order of how to suspend devices.
-> >
-> > The ordering matters here, but it is not the problem.
-> >
-> > Setting direct_complete means that PM callbacks for this device won't be
-> > invoked going forward.  However, if the state of the device was to change
-> > (like as a result of runtime PM resume), it would be necessary to run those
-> > callbacks after all, but after __device_suspend() it may be too late for
-> > that, because the ->suspend callback may have been skipped already.
-> >
-> > The only way to address that is to prevent runtime PM resume of the device
-> > from happening at the point the PM core decides to use direct_complete for it,
-> > but that requires runtime PM to be disabled for it.  Moreover, since the
-> > device is now suspended with runtime PM disabled and its children might rely
-> > on it if they were active, the children must be suspended with runtime PM
-> > disabled at this point too.  That's why direct_complete can only be set
-> > for a device if it is set for the entire hierarchy below it.
+> Let me try to explain this better. I realize the changelog is
+> misleading around this particular section! Huh, apologize for that!
 > 
-> Thanks, this was a very nice description of the direct_complete path!
+> First, patch1 makes the PM core treat the is_rpm_sleep flag as the
+> direct_complete isn't allowed for the device.
 > 
+> For that reason, when the is_rpm_sleep is set, there is no point
+> calling acpi_dev_needs_resume() from acpi_subsys_prepare(), but
+> instead that can be deferred to acpi_subsys_suspend() - because it
+> doesn't matter if acpi_subsys_prepare() returns 0 or 1, in either case
+> the acpi_subsys_suspend() will be called. That's really what goes on
+> here.
+> 
+> The end result is the same. If the acpi_dev_needs_resume() thinks that
+> the device needs to be runtime resumed, pm_runtime_resume() is called
+> for the device in acpi_subsys_suspend().
+> 
+> So, this has nothing to do with whether the driver "is fine with not
+> resuming it" thing.
+
+No, sorry.
+
+If is_rpm_sleep was not set, the ACPI PM domain would resume the device in
+acpi_subsys_suspend() regardless of the acpi_dev_needs_resume() return value.
+That's what's there in the patch.  So clearly, setting is_rpm_sleep means
+"this device does not need to be resumed in acpi_subsys_suspend() unless
+acpi_dev_needs_resume() returns true".  Which clearly means that the driver
+*is* fine with not resuming it, because if is_rpm_sleep is set, the device
+in fact may not be resumed and then the driver will need to cope with that.
+
+And note that this meaning of is_rpm_sleep is different from what it is
+expected to mean to the core.
+
 > >
-> > Summary: If you allow a device to be runtime resumed during system susped,
-> > direct_complete cannot be set for it and it cannot be set for its parent and
-> > so on.
+> > IMO it is not a good idea to use one flag for these two different things at the
+> > same time at all.
 > 
-> Yes, this is what it seems to boils done to!
-> 
-> Perhaps the ACPI PM domain is special in this case, because in its
-> ->prepare() callback it asks the ACPI FW about whether the
-> direct_complete path is possible for a device. In other words, the
-> ACPI FW seems to be capable of providing information about if a device
-> may become runtime resumed during system suspend. But, really, isn't
-> that just a best guess? No?
+> Yeah, I guess my upper comment addresses your immediate concern here?
 
-I wouldn't call it a guess, but it may go too far.
+No, they don't.
 
-The part that the ACPI PM domain can figure out is whether or not the power
-state of the device needs to be updated due to differences between runtime
-PM and system suspend configuration requirements.  If it doesn't need to be
-updated, acpi_subsys_prepare() returns 1 which may me overoptimistic.
+> However, there is one other thing the is_rpm_flag means. That is that
+> the driver has informed the ACPI PM domain, to trust the driver to
+> deal with system sleep, via re-using the runtime PM callbacks.
+> So the flag does still have two meanings, but that we can change - of course.
 
-For many devices that works, because the only possible reason why they may
-need to be accessed during system suspend is to update their power state.
-
-It may not work for some devices, though, because there may be other reasons
-for accessing them during system suspend and that's where some opt-out way
-is needed.
-
-> On those ARM SoCs I am working on, non-ACPI, the information about
-> whether a device may become runtime resumed during system suspend,
-> most often can't be find out in a deterministic way. That's because
-> this information depends on how a device is being used by other
-> devices, which changes dynamically and from one system suspend
-> sequence to another. In cases like the i2c-designware-plat driver used
-> in Hikey (ARM64 board), it can't ever know before hand, if someone is
-> going to request an i2c transfer during system suspend or not.
-
-Well, I2C is somewhat special in that respect, because dependencies between
-devices in there are not tracked AFAICS. 
-
-> To really deal with these devices properly, we have to suspend them in
-> the correct order.
-
-Right, but in order to achieve that the right ordering actually needs
-to be known.  If it is not known, there is no way to get that right in
-general. :-)
-
-The problem basically is that during system suspend you need to disable
-the controller at one point, sooner or later, and keep it disabled from
-that point on.   Of course, that should happen when it is guaranteed that
-there won't be any new transactions going forward, but you cannot actually
-guaranee that without knowing that all of its "consumers" have already
-been suspended.
-
-> My point is, doesn't the ordering problem exists also for a device,
-> which the PM core runs the direct_complete path for, even if the ACPI
-> PM domain is attached to the device? Just because runtime PM is
-> disabled for a device, doesn't mean the ordering issue disappears,
-> right?
-
-The ordering issue is there if there are dependencies between devices the
-PM core doesn't know about.  Otherwise, the rule that direct_complete can
-only be used for a given device if it also is used for the entire hierarchy
-below it (and for all of the device's "consumers" and everything that depends
-on them too for that matter) makes it go away (it serves as a guarantee that
-all of the device's "consumers" have already been suspended).
+I guess that you are referring to the use of dev_pm_is_rpm_sleep() in
+acpi_subsys_suspend_late()?  That's the third thing this flag means ...
 
 Thanks,
 Rafael
