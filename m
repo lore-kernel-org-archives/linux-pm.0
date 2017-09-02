@@ -1,197 +1,108 @@
 From: Leo Yan <leo.yan@linaro.org>
 Subject: Re: [PATCH 07/13] thermal/drivers/hisi: Encapsulate register writes
  into helpers
-Date: Sat, 2 Sep 2017 10:09:15 +0800
-Message-ID: <20170902020915.GC19958@leoy-linaro>
+Date: Sat, 2 Sep 2017 10:17:10 +0800
+Message-ID: <20170902021710.GD19958@leoy-linaro>
 References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
  <1504082857-21702-7-git-send-email-daniel.lezcano@linaro.org>
+ <20170902020915.GC19958@leoy-linaro>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1504082857-21702-7-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <20170902020915.GC19958@leoy-linaro>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Aug 30, 2017 at 10:47:31AM +0200, Daniel Lezcano wrote:
-> Hopefully, the function name can help to clarify the semantic of the operations
-> when writing in the register.
+On Sat, Sep 02, 2017 at 10:09:15AM +0800, Leo Yan wrote:
+> On Wed, Aug 30, 2017 at 10:47:31AM +0200, Daniel Lezcano wrote:
+> > Hopefully, the function name can help to clarify the semantic of the operations
+> > when writing in the register.
+> > 
+> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> > ---
+> >  drivers/thermal/hisi_thermal.c | 96 +++++++++++++++++++++++++++++++-----------
+> >  1 file changed, 72 insertions(+), 24 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+> > index 6f0dab1..d77a938 100644
+> > --- a/drivers/thermal/hisi_thermal.c
+> > +++ b/drivers/thermal/hisi_thermal.c
+> > @@ -26,6 +26,7 @@
+> >  
+> >  #include "thermal_core.h"
+> >  
+> > +#define TEMP0_LAG			(0x0)
+> >  #define TEMP0_TH			(0x4)
+> >  #define TEMP0_RST_TH			(0x8)
+> >  #define TEMP0_CFG			(0xC)
+> > @@ -96,6 +97,56 @@ static inline long hisi_thermal_round_temp(int temp)
+> >  		hisi_thermal_temp_to_step(temp));
+> >  }
+> >  
+> > +static inline void hisi_thermal_set_lag(void __iomem *addr, int value)
+> > +{
+> > +	writel(value, addr + TEMP0_LAG);
+> > +}
+> > +
+> > +static inline void hisi_thermal_alarm_clear(void __iomem *addr, int value)
+> > +{
+> > +	writel(value, addr + TEMP0_INT_CLR);
+> > +}
+> > +
+> > +static inline void hisi_thermal_alarm_enable(void __iomem *addr, int value)
+> > +{
+> > +	writel(value, addr + TEMP0_INT_EN);
+> > +}
+> > +
+> > +static inline void hisi_thermal_alarm_set(void __iomem *addr, int temp)
+> > +{
+> > +	writel(hisi_thermal_temp_to_step(temp) | 0x0FFFFFF00, addr + TEMP0_TH);
+> > +}
+> > +
+> > +static inline void hisi_thermal_reset_set(void __iomem *addr, int temp)
+> > +{
+> > +        writel(hisi_thermal_temp_to_step(temp), addr + TEMP0_RST_TH);
+> > +}
+> > +
+> > +static inline void hisi_thermal_reset_enable(void __iomem *addr, int value)
+> > +{
+> > +        writel(value, addr + TEMP0_RST_MSK);
+> > +}
+> > +
+> > +static inline void hisi_thermal_enable(void __iomem *addr, int value)
+> > +{
+> > +	writel(value, addr + TEMP0_EN);
+> > +}
+> > +
+> > +static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
+> > +{
+> > +	writel((sensor << 12), addr + TEMP0_CFG);
+> > +}
+> > +
+> > +static inline int hisi_thermal_get_temperature(void __iomem *addr)
+> > +{
+> > +	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
+> > +}
+> > +
+> > +static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
+> > +{
+> > +	writel(value, addr + TEMP0_CFG);
+> > +}
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/thermal/hisi_thermal.c | 96 +++++++++++++++++++++++++++++++-----------
->  1 file changed, 72 insertions(+), 24 deletions(-)
+> hdak and sensor id setting share the same one register, so it's
+> possible to overwrite their value with each other. And for hdak
+> setting, it should offset 4 bits.
 > 
-> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index 6f0dab1..d77a938 100644
-> --- a/drivers/thermal/hisi_thermal.c
-> +++ b/drivers/thermal/hisi_thermal.c
-> @@ -26,6 +26,7 @@
->  
->  #include "thermal_core.h"
->  
-> +#define TEMP0_LAG			(0x0)
->  #define TEMP0_TH			(0x4)
->  #define TEMP0_RST_TH			(0x8)
->  #define TEMP0_CFG			(0xC)
-> @@ -96,6 +97,56 @@ static inline long hisi_thermal_round_temp(int temp)
->  		hisi_thermal_temp_to_step(temp));
->  }
->  
-> +static inline void hisi_thermal_set_lag(void __iomem *addr, int value)
-> +{
-> +	writel(value, addr + TEMP0_LAG);
-> +}
-> +
-> +static inline void hisi_thermal_alarm_clear(void __iomem *addr, int value)
-> +{
-> +	writel(value, addr + TEMP0_INT_CLR);
-> +}
-> +
-> +static inline void hisi_thermal_alarm_enable(void __iomem *addr, int value)
-> +{
-> +	writel(value, addr + TEMP0_INT_EN);
-> +}
-> +
-> +static inline void hisi_thermal_alarm_set(void __iomem *addr, int temp)
-> +{
-> +	writel(hisi_thermal_temp_to_step(temp) | 0x0FFFFFF00, addr + TEMP0_TH);
-> +}
-> +
-> +static inline void hisi_thermal_reset_set(void __iomem *addr, int temp)
-> +{
-> +        writel(hisi_thermal_temp_to_step(temp), addr + TEMP0_RST_TH);
-> +}
-> +
-> +static inline void hisi_thermal_reset_enable(void __iomem *addr, int value)
-> +{
-> +        writel(value, addr + TEMP0_RST_MSK);
-> +}
-> +
-> +static inline void hisi_thermal_enable(void __iomem *addr, int value)
-> +{
-> +	writel(value, addr + TEMP0_EN);
-> +}
-> +
-> +static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
-> +{
-> +	writel((sensor << 12), addr + TEMP0_CFG);
-> +}
-> +
-> +static inline int hisi_thermal_get_temperature(void __iomem *addr)
-> +{
-> +	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
-> +}
-> +
-> +static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
-> +{
-> +	writel(value, addr + TEMP0_CFG);
-> +}
+> The issues are exists in old code yet but not introduce by this
+> patch. Could fix these issues as well in this patch?
 
-hdak and sensor id setting share the same one register, so it's
-possible to overwrite their value with each other. And for hdak
-setting, it should offset 4 bits.
+Have seen the mentioned issues have been fixed in patch 0008. So have
+no more question at here.
 
-The issues are exists in old code yet but not introduce by this
-patch. Could fix these issues as well in this patch?
+[...]
 
-> +
->  static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
->  					 struct hisi_thermal_sensor *sensor)
->  {
-> @@ -104,22 +155,21 @@ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
->  	mutex_lock(&data->thermal_lock);
->  
->  	/* disable interrupt */
-> -	writel(0x0, data->regs + TEMP0_INT_EN);
-> -	writel(0x1, data->regs + TEMP0_INT_CLR);
-> +	hisi_thermal_alarm_enable(data->regs, 0);
-> +	hisi_thermal_alarm_clear(data->regs, 1);
->  
->  	/* disable module firstly */
-> -	writel(0x0, data->regs + TEMP0_EN);
-> +	hisi_thermal_enable(data->regs, 0);
->  
->  	/* select sensor id */
-> -	writel((sensor->id << 12), data->regs + TEMP0_CFG);
-> +	hisi_thermal_sensor_select(data->regs, sensor->id);
->  
->  	/* enable module */
-> -	writel(0x1, data->regs + TEMP0_EN);
-> +	hisi_thermal_enable(data->regs, 1);
->  
->  	usleep_range(3000, 5000);
->  
-> -	val = readl(data->regs + TEMP0_VALUE);
-> -	val = hisi_thermal_step_to_temp(val);
-> +	val = hisi_thermal_get_temperature(data->regs);
->  
->  	mutex_unlock(&data->thermal_lock);
->  
-> @@ -136,29 +186,27 @@ static void hisi_thermal_enable_bind_irq_sensor
->  	sensor = &data->sensors;
->  
->  	/* setting the hdak time */
-> -	writel(0x0, data->regs + TEMP0_CFG);
-> +	hisi_thermal_hdak_set(data->regs, 0);
->  
->  	/* disable module firstly */
-> -	writel(0x0, data->regs + TEMP0_RST_MSK);
-> -	writel(0x0, data->regs + TEMP0_EN);
-> +	hisi_thermal_reset_enable(data->regs, 0);
-> +	hisi_thermal_enable(data->regs, 0);
->  
->  	/* select sensor id */
-> -	writel((sensor->id << 12), data->regs + TEMP0_CFG);
-> +	hisi_thermal_sensor_select(data->regs, sensor->id);
->  
->  	/* enable for interrupt */
-> -	writel(hisi_thermal_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
-> -	       data->regs + TEMP0_TH);
-> +	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
->  
-> -	writel(hisi_thermal_temp_to_step(HISI_TEMP_RESET),
-> -	       data->regs + TEMP0_RST_TH);
-> +	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
->  
->  	/* enable module */
-> -	writel(0x1, data->regs + TEMP0_RST_MSK);
-> -	writel(0x1, data->regs + TEMP0_EN);
-> -
-> -	writel(0x0, data->regs + TEMP0_INT_CLR);
-> -	writel(0x1, data->regs + TEMP0_INT_EN);
-> +	hisi_thermal_reset_enable(data->regs, 1);
-> +	hisi_thermal_enable(data->regs, 1);
->  
-> +	hisi_thermal_alarm_clear(data->regs, 0);
-> +	hisi_thermal_alarm_enable(data->regs, 1);
-> +	
-
-whitespace error.
-
->  	usleep_range(3000, 5000);
->  
->  	mutex_unlock(&data->thermal_lock);
-> @@ -169,10 +217,10 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
->  	mutex_lock(&data->thermal_lock);
->  
->  	/* disable sensor module */
-> -	writel(0x0, data->regs + TEMP0_INT_EN);
-> -	writel(0x0, data->regs + TEMP0_RST_MSK);
-> -	writel(0x0, data->regs + TEMP0_EN);
-> -
-> +	hisi_thermal_enable(data->regs, 0);
-> +	hisi_thermal_alarm_enable(data->regs, 0);
-> +	hisi_thermal_reset_enable(data->regs, 0);
-> +	
-
-whitespace error.
-
->  	mutex_unlock(&data->thermal_lock);
->  }
->  
-> -- 
-> 2.7.4
-> 
+Thanks,
+Leo Yan
