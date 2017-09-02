@@ -1,44 +1,58 @@
-From: Allen Wild <allenwild93@gmail.com>
-Subject: [PATCH v2] thermal: enable broadcom menu for arm64 bcm2835
-Date: Fri,  1 Sep 2017 23:36:39 -0400
-Message-ID: <20170902033639.26774-1-allenwild93@gmail.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH 11/13] thermal/drivers/hisi: Convert long to int
+Date: Sat, 2 Sep 2017 11:41:56 +0800
+Message-ID: <20170902034156.GD3841@leoy-linaro>
+References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
+ <1504082857-21702-11-git-send-email-daniel.lezcano@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:37360 "EHLO
-        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752646AbdIBDgu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Sep 2017 23:36:50 -0400
-Received: by mail-oi0-f66.google.com with SMTP id b184so1538842oih.4
-        for <linux-pm@vger.kernel.org>; Fri, 01 Sep 2017 20:36:50 -0700 (PDT)
+Received: from mail-pg0-f45.google.com ([74.125.83.45]:33361 "EHLO
+        mail-pg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751323AbdIBDmF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Sep 2017 23:42:05 -0400
+Received: by mail-pg0-f45.google.com with SMTP id t3so5383223pgt.0
+        for <linux-pm@vger.kernel.org>; Fri, 01 Sep 2017 20:42:05 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1504082857-21702-11-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Allen Wild <allenwild93@gmail.com>, linux-rpi-kernel@lists.infradead.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>
 
-Moving the bcm2835 thermal driver to the broadcom directory prevented it
-from getting enabled for arm64 builds, since the broadcom directory is only
-available when 32-bit specific ARCH_BCM is set.
+On Wed, Aug 30, 2017 at 10:47:35AM +0200, Daniel Lezcano wrote:
+> There is no point to specify the temperature as long variable, the int is
+> enough.
+> 
+> Replace all long variables to int, so making the code consistent.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-Fix this by enabling the Broadcom menu for ARCH_BCM or ARCH_BCM2835.
+Reviewed-by: Leo Yan <leo.yan@linaro.org>
 
-Fixes: 6892cf07e733 ("thermal: bcm2835: move to the broadcom subdirectory")
-Cc: linux-rpi-kernel@lists.infradead.org
-Signed-off-by: Allen Wild <allenwild93@gmail.com>
----
- drivers/thermal/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index b5b5facb8747..962620925878 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -408,7 +408,7 @@ config MTK_THERMAL
- 	  controller present in Mediatek SoCs
- 
- menu "Broadcom thermal drivers"
--depends on ARCH_BCM || COMPILE_TEST
-+depends on ARCH_BCM || ARCH_BCM2835 || COMPILE_TEST
- source "drivers/thermal/broadcom/Kconfig"
- endmenu
- 
--- 
-2.14.1
+> ---
+>  drivers/thermal/hisi_thermal.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+> index 68b625c..9eee82b 100644
+> --- a/drivers/thermal/hisi_thermal.c
+> +++ b/drivers/thermal/hisi_thermal.c
+> @@ -83,12 +83,12 @@ static inline int hisi_thermal_step_to_temp(int step)
+>  	return HISI_TEMP_BASE + (step * HISI_TEMP_STEP);
+>  }
+>  
+> -static inline long hisi_thermal_temp_to_step(long temp)
+> +static inline int hisi_thermal_temp_to_step(int temp)
+>  {
+>  	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
+>  }
+>  
+> -static inline long hisi_thermal_round_temp(int temp)
+> +static inline int hisi_thermal_round_temp(int temp)
+>  {
+>  	return hisi_thermal_step_to_temp(
+>  		hisi_thermal_temp_to_step(temp));
+> -- 
+> 2.7.4
+> 
