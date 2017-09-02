@@ -1,80 +1,197 @@
-From: jeffy <jeffy.chen@rock-chips.com>
-Subject: Re: [PATCH] CHROMIUM: devfreq: rk3399: Clear edev->dev drvdata before
- enabling dfi
-Date: Sat, 02 Sep 2017 09:51:41 +0800
-Message-ID: <59AA0EAD.3030305@rock-chips.com>
-References: <20170901235237.18390-1-jeffy.chen@rock-chips.com> <20170902004659.GA105370@google.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH 07/13] thermal/drivers/hisi: Encapsulate register writes
+ into helpers
+Date: Sat, 2 Sep 2017 10:09:15 +0800
+Message-ID: <20170902020915.GC19958@leoy-linaro>
+References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
+ <1504082857-21702-7-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.131]:38860 "EHLO
-        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750907AbdIBBvy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Sep 2017 21:51:54 -0400
-In-Reply-To: <20170902004659.GA105370@google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1504082857-21702-7-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: linux-kernel@vger.kernel.org, dbasehore@chromium.org, dianders@chromium.org, Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, linux-pm@vger.kernel.org
 
-hi brian,
-On 09/02/2017 08:47 AM, Brian Norris wrote:
-> On Sat, Sep 02, 2017 at 07:52:37AM +0800, Jeffy Chen wrote:
->> Currently we are using edev->dev drvdata to get rk3399-dmc data, but
->> it would be inited to edev in devfreq_event_add_edev.
->>
->> So we need to clear the edev->dev drvdata before enabling dfi, to
->> prevent dfi from getting the wrong rk3399-dmc data when the irq
->> triggered too early.
->
-> Your description doesn't match your code. You say you're clearing
-> evdev->dev driver data but...
->
->> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
->> ---
->>
->>   drivers/devfreq/rk3399_dmc.c | 1 +
->>   1 file changed, 1 insertion(+)
->>
->> diff --git a/drivers/devfreq/rk3399_dmc.c b/drivers/devfreq/rk3399_dmc.c
->> index 1b89ebbad02c..12f9f03f349f 100644
->> --- a/drivers/devfreq/rk3399_dmc.c
->> +++ b/drivers/devfreq/rk3399_dmc.c
->> @@ -429,6 +429,7 @@ static int rk3399_dmcfreq_probe(struct platform_device *pdev)
->>
->>   	rk3399_devfreq_dmc_profile.initial_freq = data->rate;
->>
->> +	platform_set_drvdata(pdev, NULL);
->
-> ...here you're only clearing the drvdata for the platform device. Is
-> that a mistake? (Hint: that's not what you uploaded on the Chromium OS
-> instance, where you presumably tested this.)
->
-> And if you're really trying to do what your commit message says:
->
-> We're having two different files fight over who owns the edev drvdata?
-> That seems like a big no-no.
->
-> We should work out who's the real owner of 'drvdata', and find some
-> other solution for the others.
+On Wed, Aug 30, 2017 at 10:47:31AM +0200, Daniel Lezcano wrote:
+> Hopefully, the function name can help to clarify the semantic of the operations
+> when writing in the register.
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/thermal/hisi_thermal.c | 96 +++++++++++++++++++++++++++++++-----------
+>  1 file changed, 72 insertions(+), 24 deletions(-)
+> 
+> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+> index 6f0dab1..d77a938 100644
+> --- a/drivers/thermal/hisi_thermal.c
+> +++ b/drivers/thermal/hisi_thermal.c
+> @@ -26,6 +26,7 @@
+>  
+>  #include "thermal_core.h"
+>  
+> +#define TEMP0_LAG			(0x0)
+>  #define TEMP0_TH			(0x4)
+>  #define TEMP0_RST_TH			(0x8)
+>  #define TEMP0_CFG			(0xC)
+> @@ -96,6 +97,56 @@ static inline long hisi_thermal_round_temp(int temp)
+>  		hisi_thermal_temp_to_step(temp));
+>  }
+>  
+> +static inline void hisi_thermal_set_lag(void __iomem *addr, int value)
+> +{
+> +	writel(value, addr + TEMP0_LAG);
+> +}
+> +
+> +static inline void hisi_thermal_alarm_clear(void __iomem *addr, int value)
+> +{
+> +	writel(value, addr + TEMP0_INT_CLR);
+> +}
+> +
+> +static inline void hisi_thermal_alarm_enable(void __iomem *addr, int value)
+> +{
+> +	writel(value, addr + TEMP0_INT_EN);
+> +}
+> +
+> +static inline void hisi_thermal_alarm_set(void __iomem *addr, int temp)
+> +{
+> +	writel(hisi_thermal_temp_to_step(temp) | 0x0FFFFFF00, addr + TEMP0_TH);
+> +}
+> +
+> +static inline void hisi_thermal_reset_set(void __iomem *addr, int temp)
+> +{
+> +        writel(hisi_thermal_temp_to_step(temp), addr + TEMP0_RST_TH);
+> +}
+> +
+> +static inline void hisi_thermal_reset_enable(void __iomem *addr, int value)
+> +{
+> +        writel(value, addr + TEMP0_RST_MSK);
+> +}
+> +
+> +static inline void hisi_thermal_enable(void __iomem *addr, int value)
+> +{
+> +	writel(value, addr + TEMP0_EN);
+> +}
+> +
+> +static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
+> +{
+> +	writel((sensor << 12), addr + TEMP0_CFG);
+> +}
+> +
+> +static inline int hisi_thermal_get_temperature(void __iomem *addr)
+> +{
+> +	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
+> +}
+> +
+> +static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
+> +{
+> +	writel(value, addr + TEMP0_CFG);
+> +}
 
-sorry, indeed...it turns out the upstream dmc driver is not using 
-dfi(it's simple_onfemand below ;)...
+hdak and sensor id setting share the same one register, so it's
+possible to overwrite their value with each other. And for hdak
+setting, it should offset 4 bits.
 
-so we don't need thus patch for upstream kernel...or maybe we should 
-submit other cros patches(contains the one causes this issue, and this 
-patch)
->
-> Brian
->
->>   	data->devfreq = devm_devfreq_add_device(dev,
->>   					   &rk3399_devfreq_dmc_profile,
->>   					   "simple_ondemand",
->> --
->> 2.11.0
->>
->>
->
->
->
+The issues are exists in old code yet but not introduce by this
+patch. Could fix these issues as well in this patch?
+
+> +
+>  static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+>  					 struct hisi_thermal_sensor *sensor)
+>  {
+> @@ -104,22 +155,21 @@ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+>  	mutex_lock(&data->thermal_lock);
+>  
+>  	/* disable interrupt */
+> -	writel(0x0, data->regs + TEMP0_INT_EN);
+> -	writel(0x1, data->regs + TEMP0_INT_CLR);
+> +	hisi_thermal_alarm_enable(data->regs, 0);
+> +	hisi_thermal_alarm_clear(data->regs, 1);
+>  
+>  	/* disable module firstly */
+> -	writel(0x0, data->regs + TEMP0_EN);
+> +	hisi_thermal_enable(data->regs, 0);
+>  
+>  	/* select sensor id */
+> -	writel((sensor->id << 12), data->regs + TEMP0_CFG);
+> +	hisi_thermal_sensor_select(data->regs, sensor->id);
+>  
+>  	/* enable module */
+> -	writel(0x1, data->regs + TEMP0_EN);
+> +	hisi_thermal_enable(data->regs, 1);
+>  
+>  	usleep_range(3000, 5000);
+>  
+> -	val = readl(data->regs + TEMP0_VALUE);
+> -	val = hisi_thermal_step_to_temp(val);
+> +	val = hisi_thermal_get_temperature(data->regs);
+>  
+>  	mutex_unlock(&data->thermal_lock);
+>  
+> @@ -136,29 +186,27 @@ static void hisi_thermal_enable_bind_irq_sensor
+>  	sensor = &data->sensors;
+>  
+>  	/* setting the hdak time */
+> -	writel(0x0, data->regs + TEMP0_CFG);
+> +	hisi_thermal_hdak_set(data->regs, 0);
+>  
+>  	/* disable module firstly */
+> -	writel(0x0, data->regs + TEMP0_RST_MSK);
+> -	writel(0x0, data->regs + TEMP0_EN);
+> +	hisi_thermal_reset_enable(data->regs, 0);
+> +	hisi_thermal_enable(data->regs, 0);
+>  
+>  	/* select sensor id */
+> -	writel((sensor->id << 12), data->regs + TEMP0_CFG);
+> +	hisi_thermal_sensor_select(data->regs, sensor->id);
+>  
+>  	/* enable for interrupt */
+> -	writel(hisi_thermal_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
+> -	       data->regs + TEMP0_TH);
+> +	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
+>  
+> -	writel(hisi_thermal_temp_to_step(HISI_TEMP_RESET),
+> -	       data->regs + TEMP0_RST_TH);
+> +	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
+>  
+>  	/* enable module */
+> -	writel(0x1, data->regs + TEMP0_RST_MSK);
+> -	writel(0x1, data->regs + TEMP0_EN);
+> -
+> -	writel(0x0, data->regs + TEMP0_INT_CLR);
+> -	writel(0x1, data->regs + TEMP0_INT_EN);
+> +	hisi_thermal_reset_enable(data->regs, 1);
+> +	hisi_thermal_enable(data->regs, 1);
+>  
+> +	hisi_thermal_alarm_clear(data->regs, 0);
+> +	hisi_thermal_alarm_enable(data->regs, 1);
+> +	
+
+whitespace error.
+
+>  	usleep_range(3000, 5000);
+>  
+>  	mutex_unlock(&data->thermal_lock);
+> @@ -169,10 +217,10 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
+>  	mutex_lock(&data->thermal_lock);
+>  
+>  	/* disable sensor module */
+> -	writel(0x0, data->regs + TEMP0_INT_EN);
+> -	writel(0x0, data->regs + TEMP0_RST_MSK);
+> -	writel(0x0, data->regs + TEMP0_EN);
+> -
+> +	hisi_thermal_enable(data->regs, 0);
+> +	hisi_thermal_alarm_enable(data->regs, 0);
+> +	hisi_thermal_reset_enable(data->regs, 0);
+> +	
+
+whitespace error.
+
+>  	mutex_unlock(&data->thermal_lock);
+>  }
+>  
+> -- 
+> 2.7.4
+> 
