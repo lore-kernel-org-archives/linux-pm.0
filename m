@@ -1,108 +1,90 @@
 From: Leo Yan <leo.yan@linaro.org>
-Subject: Re: [PATCH 07/13] thermal/drivers/hisi: Encapsulate register writes
- into helpers
-Date: Sat, 2 Sep 2017 10:17:10 +0800
-Message-ID: <20170902021710.GD19958@leoy-linaro>
+Subject: Re: [PATCH 08/13] thermal/drivers/hisi: Fix configuration register
+ setting
+Date: Sat, 2 Sep 2017 10:54:26 +0800
+Message-ID: <20170902025426.GA3841@leoy-linaro>
 References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
- <1504082857-21702-7-git-send-email-daniel.lezcano@linaro.org>
- <20170902020915.GC19958@leoy-linaro>
+ <1504082857-21702-8-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170902020915.GC19958@leoy-linaro>
+In-Reply-To: <1504082857-21702-8-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Sep 02, 2017 at 10:09:15AM +0800, Leo Yan wrote:
-> On Wed, Aug 30, 2017 at 10:47:31AM +0200, Daniel Lezcano wrote:
-> > Hopefully, the function name can help to clarify the semantic of the operations
-> > when writing in the register.
-> > 
-> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> > ---
-> >  drivers/thermal/hisi_thermal.c | 96 +++++++++++++++++++++++++++++++-----------
-> >  1 file changed, 72 insertions(+), 24 deletions(-)
-> > 
-> > diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> > index 6f0dab1..d77a938 100644
-> > --- a/drivers/thermal/hisi_thermal.c
-> > +++ b/drivers/thermal/hisi_thermal.c
-> > @@ -26,6 +26,7 @@
-> >  
-> >  #include "thermal_core.h"
-> >  
-> > +#define TEMP0_LAG			(0x0)
-> >  #define TEMP0_TH			(0x4)
-> >  #define TEMP0_RST_TH			(0x8)
-> >  #define TEMP0_CFG			(0xC)
-> > @@ -96,6 +97,56 @@ static inline long hisi_thermal_round_temp(int temp)
-> >  		hisi_thermal_temp_to_step(temp));
-> >  }
-> >  
-> > +static inline void hisi_thermal_set_lag(void __iomem *addr, int value)
-> > +{
-> > +	writel(value, addr + TEMP0_LAG);
-> > +}
-> > +
-> > +static inline void hisi_thermal_alarm_clear(void __iomem *addr, int value)
-> > +{
-> > +	writel(value, addr + TEMP0_INT_CLR);
-> > +}
-> > +
-> > +static inline void hisi_thermal_alarm_enable(void __iomem *addr, int value)
-> > +{
-> > +	writel(value, addr + TEMP0_INT_EN);
-> > +}
-> > +
-> > +static inline void hisi_thermal_alarm_set(void __iomem *addr, int temp)
-> > +{
-> > +	writel(hisi_thermal_temp_to_step(temp) | 0x0FFFFFF00, addr + TEMP0_TH);
-> > +}
-> > +
-> > +static inline void hisi_thermal_reset_set(void __iomem *addr, int temp)
-> > +{
-> > +        writel(hisi_thermal_temp_to_step(temp), addr + TEMP0_RST_TH);
-> > +}
-> > +
-> > +static inline void hisi_thermal_reset_enable(void __iomem *addr, int value)
-> > +{
-> > +        writel(value, addr + TEMP0_RST_MSK);
-> > +}
-> > +
-> > +static inline void hisi_thermal_enable(void __iomem *addr, int value)
-> > +{
-> > +	writel(value, addr + TEMP0_EN);
-> > +}
-> > +
-> > +static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
-> > +{
-> > +	writel((sensor << 12), addr + TEMP0_CFG);
-> > +}
-> > +
-> > +static inline int hisi_thermal_get_temperature(void __iomem *addr)
-> > +{
-> > +	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
-> > +}
-> > +
-> > +static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
-> > +{
-> > +	writel(value, addr + TEMP0_CFG);
-> > +}
+On Wed, Aug 30, 2017 at 10:47:32AM +0200, Daniel Lezcano wrote:
+> The TEMP0_CFG configuration register contains different field to set up the
+> temperature controller. However in the code, nothing prevents a setup to
+> overwrite the previous one: eg. writing the hdak value overwrites the sensor
+> selection, the sensor selection overwrites the hdak value.
 > 
-> hdak and sensor id setting share the same one register, so it's
-> possible to overwrite their value with each other. And for hdak
-> setting, it should offset 4 bits.
+> In order to prevent such thing, use a regmap-like mechanism by reading the
+> value before, set the corresponding bits and write the result.
 > 
-> The issues are exists in old code yet but not introduce by this
-> patch. Could fix these issues as well in this patch?
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/thermal/hisi_thermal.c | 30 +++++++++++++++++++++++++-----
+>  1 file changed, 25 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+> index d77a938..3e03908 100644
+> --- a/drivers/thermal/hisi_thermal.c
+> +++ b/drivers/thermal/hisi_thermal.c
+> @@ -132,19 +132,39 @@ static inline void hisi_thermal_enable(void __iomem *addr, int value)
+>  	writel(value, addr + TEMP0_EN);
+>  }
+>  
+> -static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
+> +static inline int hisi_thermal_get_temperature(void __iomem *addr)
+>  {
+> -	writel((sensor << 12), addr + TEMP0_CFG);
+> +	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
+>  }
+>  
+> -static inline int hisi_thermal_get_temperature(void __iomem *addr)
+> +/*
+> + * Temperature configuration register - Sensor selection
+> + *
+> + * Bits [19:12]
+> + *
+> + * 0x0: local sensor (default)
+> + * 0x1: remote sensor 1 (ACPU cluster 1)
+> + * 0x2: remote sensor 2 (ACPU cluster 0)
+> + * 0x3: remote sensor 3 (G3D)
+> + */
+> +static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
+>  {
+> -	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
+> +	writel(readl(addr + TEMP0_CFG) | (sensor << 12), addr + TEMP0_CFG);
 
-Have seen the mentioned issues have been fixed in patch 0008. So have
-no more question at here.
+nitpick: maybe it's better to firstly clear related bits and then set
+value?
 
-[...]
+>  }
+>  
+> +/*
+> + * Temperature configuration register - Hdak conversion polling interval
+> + *
+> + * Bits [5:4]
+> + *
+> + * 0x0 :   0.768 ms
+> + * 0x1 :   6.144 ms
+> + * 0x2 :  49.152 ms
+> + * 0x3 : 393.216 ms
+> + */
+>  static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
+>  {
+> -	writel(value, addr + TEMP0_CFG);
+> +	writel(readl(addr + TEMP0_CFG) | (value << 4), addr + TEMP0_CFG);
 
-Thanks,
-Leo Yan
+Ditto.
+
+>  }
+>  
+>  static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+> -- 
+> 2.7.4
+> 
