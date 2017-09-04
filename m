@@ -1,40 +1,43 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH 09/13] thermal/drivers/hisi: Remove costly sensor
- inspection
-Date: Mon, 4 Sep 2017 13:29:19 +0200
-Message-ID: <881b622a-5815-8859-90fe-6a3075cf1085@linaro.org>
-References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
- <1504082857-21702-9-git-send-email-daniel.lezcano@linaro.org>
- <20170902032924.GB3841@leoy-linaro>
- <30efb5b7-fdb4-cbdc-56a3-d06e90720a75@linaro.org>
- <20170904005036.GG3841@leoy-linaro>
+From: Jiri Kosina <jikos@kernel.org>
+Subject: Re: [PATCH v2] iwlwifi: pcie: move rx workqueue initialization to
+ iwl_trans_pcie_alloc()
+Date: Mon, 4 Sep 2017 13:43:02 +0200 (CEST)
+Message-ID: <nycvar.YFH.7.76.1709041342130.18231@jbgna.fhfr.qr>
+References: <alpine.LSU.2.20.1708171537380.3581@cbobk.fhfr.pm>   <20170822073729.4856-1-luca@coelho.fi>  <1503554432.15969.415.camel@coelho.fi>  <alpine.LSU.2.20.1708242153000.3581@cbobk.fhfr.pm> <1503604818.15969.433.camel@coelho.fi>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170904005036.GG3841@leoy-linaro>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>, ionela.voinescu@arm.com
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:38177 "EHLO mx1.suse.de"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1753477AbdIDLnF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 4 Sep 2017 07:43:05 -0400
+In-Reply-To: <1503604818.15969.433.camel@coelho.fi>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Luca Coelho <luca@coelho.fi>
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, linuxwifi@intel.com, rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, david.weinehall@intel.com, johannes.berg@intel.com, kvalo@codeaurora.org, sara.sharon@intel.com, emmanuel.grumbach@intel.com
 
-On 04/09/2017 02:50, Leo Yan wrote:
+On Thu, 24 Aug 2017, Luca Coelho wrote:
 
-[ ... ]
-
->> That is something I asked myself but I finally decided to not change the
->> current behavior and let that be added in a separate patch.
+> > looks like a correct fix to me, so feel free to add
+> > 
+> > 	Acked-by: Jiri Kosina <jkosina@suse.cz>
+> > 
+> > I'll be able to provide my Tested-by: eventually only in ~10 days.
 > 
-> This is fine.
+> 
+> Kalle already picked it up in wireless-drivers and this should make it's
+> way to 4.13-rc7 (we hope).
+> 
+> In any case, thanks for reporting and the help debugging it.
 
-Hi Leo,
+I know it's pretty late for this to be added to the commit, but I don't 
+want this to be left in the void, so for the sake of completness:
 
-can you tag this patch if you agree with it?
+	Tested-by: Jiri Kosina <jkosina@suse.cz>
+
+Thanks,
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Jiri Kosina
+SUSE Labs
