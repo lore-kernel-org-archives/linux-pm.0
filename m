@@ -1,124 +1,137 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 6/8] PM / ACPI: Enable the runtime PM centric approach
- for system sleep
-Date: Mon, 4 Sep 2017 15:21:15 +0200
-Message-ID: <CAPDyKFoTz3fFJwpJgmmwLfHQTzmWpyZL+NcVPY8D254nR2Mzag@mail.gmail.com>
-References: <1504018610-10822-1-git-send-email-ulf.hansson@linaro.org>
- <2855684.NY3Ly9PzrE@aspire.rjw.lan> <CAPDyKFq5ic+bAVRoEC58oSO-8VTGnfipJndLmR6YLXgEhZ+RWw@mail.gmail.com>
- <2209426.5Z3u1iKN4i@aspire.rjw.lan>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [RFC 2/3] sched/fair: use util_est in LB
+Date: Mon, 4 Sep 2017 15:18:17 +0100
+Message-ID: <20170904141817.GD2618@e110439-lin>
+References: <20170825102008.4626-1-patrick.bellasi@arm.com>
+ <20170825102008.4626-3-patrick.bellasi@arm.com>
+ <CAEU1=P=EWa78hM0Wha=38qC7AqqVzhWahmhHNTrAco=nG=Ou9w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2209426.5Z3u1iKN4i@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:58564 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753566AbdIDOSX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 4 Sep 2017 10:18:23 -0400
+Content-Disposition: inline
+In-Reply-To: <CAEU1=P=EWa78hM0Wha=38qC7AqqVzhWahmhHNTrAco=nG=Ou9w@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Pavan Kondeti <pkondeti@codeaurora.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@arm.com>, Tim Murray <timmurray@google.com>, Todd Kjos <tkjos@android.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 2 September 2017 at 17:38, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Friday, September 1, 2017 10:27:05 AM CEST Ulf Hansson wrote:
->> On 29 August 2017 at 17:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Tuesday, August 29, 2017 4:56:48 PM CEST Ulf Hansson wrote:
->> >> This change enables the ACPI PM domain to cope with drivers that deploys
->> >> the runtime PM centric path for system sleep.
->> >
->> > [cut]
->> >
->> >> @@ -1052,11 +1066,20 @@ EXPORT_SYMBOL_GPL(acpi_subsys_complete);
->> >>   * @dev: Device to handle.
->> >>   *
->> >>   * Follow PCI and resume devices suspended at run time before running their
->> >> - * system suspend callbacks.
->> >> + * system suspend callbacks. However, try to avoid it in case the runtime PM
->> >> + * centric path is used for the device and then trust the driver to do the
->> >> + * right thing.
->> >>   */
->> >>  int acpi_subsys_suspend(struct device *dev)
->> >>  {
->> >> -     pm_runtime_resume(dev);
->> >> +     struct acpi_device *adev = ACPI_COMPANION(dev);
->> >> +
->> >> +     if (!adev)
->> >> +             return 0;
->> >> +
->> >> +     if (!dev_pm_is_rpm_sleep(dev) || acpi_dev_needs_resume(dev, adev))
->> >> +             pm_runtime_resume(dev);
->> >> +
->> >>       return pm_generic_suspend(dev);
->> >>  }
->> >>  EXPORT_SYMBOL_GPL(acpi_subsys_suspend);
->> >
->> > Well, I tried to avoid calling acpi_dev_needs_resume() for multiple times
->> > and that's why I added the update_state thing.
->> >
->> > Moreover, the is_rpm_sleep flag here has to mean not only that
->> > direct_complete should not be used with the device, but also that its driver
->> > is fine with not resuming it.
->>
->> Let me try to explain this better. I realize the changelog is
->> misleading around this particular section! Huh, apologize for that!
->>
->> First, patch1 makes the PM core treat the is_rpm_sleep flag as the
->> direct_complete isn't allowed for the device.
->>
->> For that reason, when the is_rpm_sleep is set, there is no point
->> calling acpi_dev_needs_resume() from acpi_subsys_prepare(), but
->> instead that can be deferred to acpi_subsys_suspend() - because it
->> doesn't matter if acpi_subsys_prepare() returns 0 or 1, in either case
->> the acpi_subsys_suspend() will be called. That's really what goes on
->> here.
->>
->> The end result is the same. If the acpi_dev_needs_resume() thinks that
->> the device needs to be runtime resumed, pm_runtime_resume() is called
->> for the device in acpi_subsys_suspend().
->>
->> So, this has nothing to do with whether the driver "is fine with not
->> resuming it" thing.
->
-> No, sorry.
->
-> If is_rpm_sleep was not set, the ACPI PM domain would resume the device in
-> acpi_subsys_suspend() regardless of the acpi_dev_needs_resume() return value.
+On 29-Aug 10:15, Pavan Kondeti wrote:
+> On Fri, Aug 25, 2017 at 3:50 PM, Patrick Bellasi
+> <patrick.bellasi@arm.com> wrote:
+> > When the scheduler looks at the CPU utlization, the current PELT value
+> > for a CPU is returned straight away. In certain scenarios this can have
+> > undesired side effects on task placement.
+> >
+> 
+> <snip>
+> 
+> > +/**
+> > + * cpu_util_est: estimated utilization for the specified CPU
+> > + * @cpu: the CPU to get the estimated utilization for
+> > + *
+> > + * The estimated utilization of a CPU is defined to be the maximum between its
+> > + * PELT's utilization and the sum of the estimated utilization of the tasks
+> > + * currently RUNNABLE on that CPU.
+> > + *
+> > + * This allows to properly represent the expected utilization of a CPU which
+> > + * has just got a big task running since a long sleep period. At the same time
+> > + * however it preserves the benefits of the "blocked load" in describing the
+> > + * potential for other tasks waking up on the same CPU.
+> > + *
+> > + * Return: the estimated utlization for the specified CPU
+> > + */
+> > +static inline unsigned long cpu_util_est(int cpu)
+> > +{
+> > +       struct sched_avg *sa = &cpu_rq(cpu)->cfs.avg;
+> > +       unsigned long util = cpu_util(cpu);
+> > +
+> > +       if (!sched_feat(UTIL_EST))
+> > +               return util;
+> > +
+> > +       return max(util, util_est(sa, UTIL_EST_LAST));
+> > +}
+> > +
+> >  static inline int task_util(struct task_struct *p)
+> >  {
+> >         return p->se.avg.util_avg;
+> > @@ -6007,11 +6033,19 @@ static int cpu_util_wake(int cpu, struct task_struct *p)
+> >
+> >         /* Task has no contribution or is new */
+> >         if (cpu != task_cpu(p) || !p->se.avg.last_update_time)
+> > -               return cpu_util(cpu);
+> > +               return cpu_util_est(cpu);
+> >
+> >         capacity = capacity_orig_of(cpu);
+> >         util = max_t(long, cpu_rq(cpu)->cfs.avg.util_avg - task_util(p), 0);
+> >
+> > +       /*
+> > +        * Estimated utilization tracks only tasks already enqueued, but still
+> > +        * sometimes can return a bigger value than PELT, for example when the
+> > +        * blocked load is negligible wrt the estimated utilization of the
+> > +        * already enqueued tasks.
+> > +        */
+> > +       util = max_t(long, util, cpu_util_est(cpu));
+> > +
+> 
+> We are supposed to discount the task's util from its CPU. But the
+> cpu_util_est() can potentially return cpu_util() which includes the
+> task's utilization.
 
-Yes, I believe I forgot about one scenario, when the direct_complete
-path has been abandoned by the PM core, because a child device was
-suspend before and it couldn't run the direct_complete path for it?
+You right, this instead should cover all the cases:
 
-Just to be sure, that's the case you also had in mind?
+---8<---
+ static int cpu_util_wake(int cpu, struct task_struct *p)
+ {
+-       unsigned long util, capacity;
++       unsigned long util_est = cpu_util_est(cpu);
++       unsigned long capacity;
+ 
+        /* Task has no contribution or is new */
+        if (cpu != task_cpu(p) || !p->se.avg.last_update_time)
+-               return cpu_util(cpu);
++               return util_est;
+ 
+        capacity = capacity_orig_of(cpu);
+-       util = max_t(long, cpu_rq(cpu)->cfs.avg.util_avg - task_util(p), 0);
++       if (cpu_util(cpu) > util_est)
++               util = max_t(long, cpu_util(cpu) - task_util(p), 0);
++       else
++               util = util_est;
+ 
+        return (util >= capacity) ? capacity : util;
+ }
+---8<---
 
-> That's what's there in the patch.  So clearly, setting is_rpm_sleep means
-> "this device does not need to be resumed in acpi_subsys_suspend() unless
-> acpi_dev_needs_resume() returns true".  Which clearly means that the driver
-> *is* fine with not resuming it, because if is_rpm_sleep is set, the device
-> in fact may not be resumed and then the driver will need to cope with that.
+Indeed:
 
-Yes, I understand your concern, because we may break the default
-behavior of the ACPI PM domain.
+- if *p is the only task sleeping on that CPU, then:
+      (cpu_util == task_util) > (cpu_util_est == 0)
+  and thus we return:
+      (cpu_util - task_util) == 0
 
-So, *if* there will be a next version, I will make sure to be better
-safe than sorry, and add one flag per use case.
+- if other tasks are SLEEPING on the same CPU, which however is IDLE, then:
+      cpu_util > (cpu_util_est == 0)
+  and thus we discount *p's blocked load by returning:
+      (cpu_util - task_util) >= 0
 
->
-> And note that this meaning of is_rpm_sleep is different from what it is
-> expected to mean to the core.
->
->> >
->> > IMO it is not a good idea to use one flag for these two different things at the
->> > same time at all.
->>
->> Yeah, I guess my upper comment addresses your immediate concern here?
->
-> No, they don't.
->
->> However, there is one other thing the is_rpm_flag means. That is that
->> the driver has informed the ACPI PM domain, to trust the driver to
->> deal with system sleep, via re-using the runtime PM callbacks.
->> So the flag does still have two meanings, but that we can change - of course.
->
-> I guess that you are referring to the use of dev_pm_is_rpm_sleep() in
-> acpi_subsys_suspend_late()?  That's the third thing this flag means ...
+- if other tasks are RUNNABLE on that CPU and
+      (cpu_util_est > cpu_util)
+  then we wanna use cpu_util_est since it returns a more restrictive
+  estimation of the spare capacity on that CPU, by just considering
+  the expected utilization of tasks already runnable on that CPU.
 
-Yes.
+What do you think?
 
-Kind regards
-Uffe
+> Thanks,
+> Pavan
+
+Cheers Patrick
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
