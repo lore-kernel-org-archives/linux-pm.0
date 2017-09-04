@@ -1,103 +1,178 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V2 10/13] thermal/drivers/hisi: Rename and remove unused field
-Date: Mon,  4 Sep 2017 21:56:09 +0200
-Message-ID: <1504554972-2624-10-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH V2 07/13] thermal/drivers/hisi: Encapsulate register writes into helpers
+Date: Mon,  4 Sep 2017 21:56:06 +0200
+Message-ID: <1504554972-2624-7-git-send-email-daniel.lezcano@linaro.org>
 References: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f170.google.com ([209.85.128.170]:38641 "EHLO
+        mail-wr0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753988AbdIDT5n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Sep 2017 15:57:43 -0400
+Received: by mail-wr0-f170.google.com with SMTP id 108so3966801wra.5
+        for <linux-pm@vger.kernel.org>; Mon, 04 Sep 2017 12:57:43 -0700 (PDT)
 In-Reply-To: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-Rename the 'sensors' field to 'sensor' as we describe only one sensor.
-Remove the 'sensor_temp' as it is no longer used.
+Hopefully, the function name can help to clarify the semantic of the operations
+when writing in the register.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Leo Yan <leo.yan@linaro.org>
-Tested-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+ drivers/thermal/hisi_thermal.c | 92 ++++++++++++++++++++++++++++++++----------
+ 1 file changed, 70 insertions(+), 22 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 3ce9a4f..4c47b4d 100644
+index 9ec5f29..7747b96 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -49,8 +49,6 @@
- struct hisi_thermal_sensor {
- 	struct hisi_thermal_data *thermal;
- 	struct thermal_zone_device *tzd;
--
--	long sensor_temp;
- 	uint32_t id;
- 	uint32_t thres_temp;
- };
-@@ -59,9 +57,9 @@ struct hisi_thermal_data {
- 	struct mutex thermal_lock;    /* protects register data */
- 	struct platform_device *pdev;
- 	struct clk *clk;
--	struct hisi_thermal_sensor sensors;
--	int irq;
-+	struct hisi_thermal_sensor sensor;
- 	void __iomem *regs;
-+	int irq;
- };
+@@ -26,6 +26,7 @@
  
- /*
-@@ -233,7 +231,7 @@ static const struct thermal_zone_of_device_ops hisi_of_thermal_ops = {
- static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
+ #include "thermal_core.h"
+ 
++#define TEMP0_LAG			(0x0)
+ #define TEMP0_TH			(0x4)
+ #define TEMP0_RST_TH			(0x8)
+ #define TEMP0_CFG			(0xC)
+@@ -96,6 +97,56 @@ static inline long hisi_thermal_round_temp(int temp)
+ 		hisi_thermal_temp_to_step(temp));
+ }
+ 
++static inline void hisi_thermal_set_lag(void __iomem *addr, int value)
++{
++	writel(value, addr + TEMP0_LAG);
++}
++
++static inline void hisi_thermal_alarm_clear(void __iomem *addr, int value)
++{
++	writel(value, addr + TEMP0_INT_CLR);
++}
++
++static inline void hisi_thermal_alarm_enable(void __iomem *addr, int value)
++{
++	writel(value, addr + TEMP0_INT_EN);
++}
++
++static inline void hisi_thermal_alarm_set(void __iomem *addr, int temp)
++{
++	writel(hisi_thermal_temp_to_step(temp) | 0x0FFFFFF00, addr + TEMP0_TH);
++}
++
++static inline void hisi_thermal_reset_set(void __iomem *addr, int temp)
++{
++	writel(hisi_thermal_temp_to_step(temp), addr + TEMP0_RST_TH);
++}
++
++static inline void hisi_thermal_reset_enable(void __iomem *addr, int value)
++{
++	writel(value, addr + TEMP0_RST_MSK);
++}
++
++static inline void hisi_thermal_enable(void __iomem *addr, int value)
++{
++	writel(value, addr + TEMP0_EN);
++}
++
++static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
++{
++	writel((sensor << 12), addr + TEMP0_CFG);
++}
++
++static inline int hisi_thermal_get_temperature(void __iomem *addr)
++{
++	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
++}
++
++static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
++{
++	writel(value, addr + TEMP0_CFG);
++}
++
+ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+ 					 struct hisi_thermal_sensor *sensor)
  {
- 	struct hisi_thermal_data *data = dev;
--	struct hisi_thermal_sensor *sensor = &data->sensors;
-+	struct hisi_thermal_sensor *sensor = &data->sensor;
- 	int temp;
+@@ -104,22 +155,21 @@ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+ 	mutex_lock(&data->thermal_lock);
  
- 	hisi_thermal_alarm_clear(data->regs, 1);
-@@ -244,7 +242,7 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
- 		dev_crit(&data->pdev->dev, "THERMAL ALARM: %d > %d\n",
- 			 temp, sensor->thres_temp);
- 
--		thermal_zone_device_update(data->sensors.tzd,
-+		thermal_zone_device_update(data->sensor.tzd,
- 					   THERMAL_EVENT_UNSPECIFIED);
- 
- 	} else if (temp < sensor->thres_temp) {
-@@ -307,7 +305,7 @@ static int hisi_thermal_setup(struct hisi_thermal_data *data)
- {
- 	struct hisi_thermal_sensor *sensor;
- 
--	sensor = &data->sensors;
-+	sensor = &data->sensor;
+ 	/* disable interrupt */
+-	writel(0x0, data->regs + TEMP0_INT_EN);
+-	writel(0x1, data->regs + TEMP0_INT_CLR);
++	hisi_thermal_alarm_enable(data->regs, 0);
++	hisi_thermal_alarm_clear(data->regs, 1);
  
  	/* disable module firstly */
- 	hisi_thermal_reset_enable(data->regs, 0);
-@@ -380,7 +378,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- 	}
+-	writel(0x0, data->regs + TEMP0_EN);
++	hisi_thermal_enable(data->regs, 0);
  
- 	ret = hisi_thermal_register_sensor(pdev, data,
--					   &data->sensors,
-+					   &data->sensor,
- 					   HISI_DEFAULT_SENSOR);
- 	if (ret) {
- 		dev_err(&pdev->dev, "failed to register thermal sensor: %d\n",
-@@ -402,7 +400,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- 		return ret;
- 	}
+ 	/* select sensor id */
+-	writel((sensor->id << 12), data->regs + TEMP0_CFG);
++	hisi_thermal_sensor_select(data->regs, sensor->id);
  
--	hisi_thermal_toggle_sensor(&data->sensors, true);
-+	hisi_thermal_toggle_sensor(&data->sensor, true);
+ 	/* enable module */
+-	writel(0x1, data->regs + TEMP0_EN);
++	hisi_thermal_enable(data->regs, 1);
  
- 	return 0;
+ 	usleep_range(3000, 5000);
+ 
+-	val = readl(data->regs + TEMP0_VALUE);
+-	val = hisi_thermal_step_to_temp(val);
++	val = hisi_thermal_get_temperature(data->regs);
+ 
+ 	mutex_unlock(&data->thermal_lock);
+ 
+@@ -136,28 +186,26 @@ static void hisi_thermal_enable_bind_irq_sensor
+ 	sensor = &data->sensors;
+ 
+ 	/* setting the hdak time */
+-	writel(0x0, data->regs + TEMP0_CFG);
++	hisi_thermal_hdak_set(data->regs, 0);
+ 
+ 	/* disable module firstly */
+-	writel(0x0, data->regs + TEMP0_RST_MSK);
+-	writel(0x0, data->regs + TEMP0_EN);
++	hisi_thermal_reset_enable(data->regs, 0);
++	hisi_thermal_enable(data->regs, 0);
+ 
+ 	/* select sensor id */
+-	writel((sensor->id << 12), data->regs + TEMP0_CFG);
++	hisi_thermal_sensor_select(data->regs, sensor->id);
+ 
+ 	/* enable for interrupt */
+-	writel(hisi_thermal_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
+-	       data->regs + TEMP0_TH);
++	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
+ 
+-	writel(hisi_thermal_temp_to_step(HISI_TEMP_RESET),
+-	       data->regs + TEMP0_RST_TH);
++	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
+ 
+ 	/* enable module */
+-	writel(0x1, data->regs + TEMP0_RST_MSK);
+-	writel(0x1, data->regs + TEMP0_EN);
++	hisi_thermal_reset_enable(data->regs, 1);
++	hisi_thermal_enable(data->regs, 1);
+ 
+-	writel(0x0, data->regs + TEMP0_INT_CLR);
+-	writel(0x1, data->regs + TEMP0_INT_EN);
++	hisi_thermal_alarm_clear(data->regs, 0);
++	hisi_thermal_alarm_enable(data->regs, 1);
+ 
+ 	usleep_range(3000, 5000);
+ 
+@@ -169,9 +217,9 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
+ 	mutex_lock(&data->thermal_lock);
+ 
+ 	/* disable sensor module */
+-	writel(0x0, data->regs + TEMP0_INT_EN);
+-	writel(0x0, data->regs + TEMP0_RST_MSK);
+-	writel(0x0, data->regs + TEMP0_EN);
++	hisi_thermal_enable(data->regs, 0);
++	hisi_thermal_alarm_enable(data->regs, 0);
++	hisi_thermal_reset_enable(data->regs, 0);
+ 
+ 	mutex_unlock(&data->thermal_lock);
  }
-@@ -410,7 +408,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- static int hisi_thermal_remove(struct platform_device *pdev)
- {
- 	struct hisi_thermal_data *data = platform_get_drvdata(pdev);
--	struct hisi_thermal_sensor *sensor = &data->sensors;
-+	struct hisi_thermal_sensor *sensor = &data->sensor;
- 
- 	hisi_thermal_toggle_sensor(sensor, false);
- 	hisi_thermal_disable_sensor(data);
 -- 
 2.7.4
