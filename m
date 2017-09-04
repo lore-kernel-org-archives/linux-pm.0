@@ -1,7 +1,7 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V2 06/13] thermal/drivers/hisi: Remove pointless lock
-Date: Mon,  4 Sep 2017 21:56:05 +0200
-Message-ID: <1504554972-2624-6-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH V2 03/13] thermal/drivers/hisi: Fix kernel panic on alarm interrupt
+Date: Mon,  4 Sep 2017 21:56:02 +0200
+Message-ID: <1504554972-2624-3-git-send-email-daniel.lezcano@linaro.org>
 References: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
@@ -10,36 +10,54 @@ To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The threaded interrupt inspect the sensors structure to look in the temp
-threshold field, but this field is read-only in all the code, except in the
-probe function before the threaded interrupt is set. In other words there
-is not race window in the threaded interrupt when reading the field value.
+The threaded interrupt for the alarm interrupt is requested before the
+temperature controller is setup. This one can fire an interrupt immediately
+leading to a kernel panic as the sensor data is not initialized.
+
+In order to prevent that, move the threaded irq after the Tsensor is setup.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Reviewed-by: Leo Yan <leo.yan@linaro.org>
+Tested-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/thermal/hisi_thermal.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index f523197..9ec5f29 100644
+index 725d0d4..f69aea0 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -221,14 +221,10 @@ static irqreturn_t hisi_thermal_alarm_irq(int irq, void *dev)
- static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
- {
- 	struct hisi_thermal_data *data = dev;
--	struct hisi_thermal_sensor *sensor;
+@@ -287,15 +287,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ 	if (data->irq < 0)
+ 		return data->irq;
+ 
+-	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
+-					hisi_thermal_alarm_irq,
+-					hisi_thermal_alarm_irq_thread,
+-					0, "hisi_thermal", data);
+-	if (ret < 0) {
+-		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
+-		return ret;
+-	}
 -
--	mutex_lock(&data->thermal_lock);
--	sensor = &data->sensors;
-+	struct hisi_thermal_sensor *sensor = &data->sensors;
+ 	platform_set_drvdata(pdev, data);
  
- 	dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
- 		 sensor->thres_temp);
--	mutex_unlock(&data->thermal_lock);
+ 	data->clk = devm_clk_get(&pdev->dev, "thermal_clk");
+@@ -328,6 +319,15 @@ static int hisi_thermal_probe(struct platform_device *pdev)
  
- 	thermal_zone_device_update(data->sensors.tzd,
- 				   THERMAL_EVENT_UNSPECIFIED);
+ 	hisi_thermal_toggle_sensor(&data->sensors, true);
+ 
++	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
++					hisi_thermal_alarm_irq,
++					hisi_thermal_alarm_irq_thread,
++					0, "hisi_thermal", data);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
++		return ret;
++	}
++
+ 	enable_irq(data->irq);
+ 
+ 	return 0;
 -- 
 2.7.4
