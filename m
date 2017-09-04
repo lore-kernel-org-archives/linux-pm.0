@@ -1,161 +1,36 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFT][PATCH v2 2/2] PM / i2c: designware: Clean up system sleep handling without ACPI
-Date: Mon, 04 Sep 2017 12:01:54 +0200
-Message-ID: <1729594.8Da7J7iljp@aspire.rjw.lan>
-References: <3023226.l5IfJK6GIc@aspire.rjw.lan> <6044272.h4jTMoqRfC@aspire.rjw.lan>
+Subject: Re: [PATCH v3 0/8] PM / ACPI / i2c: Deploy runtime PM centric path for system sleep
+Date: Mon, 04 Sep 2017 12:04:58 +0200
+Message-ID: <3410095.RTqPGnhnfq@aspire.rjw.lan>
+References: <1504018610-10822-1-git-send-email-ulf.hansson@linaro.org> <1668277.7DWLdgHGid@aspire.rjw.lan> <20170904054637.GA23707@wunner.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <6044272.h4jTMoqRfC@aspire.rjw.lan>
+In-Reply-To: <20170904054637.GA23707@wunner.de>
 Sender: linux-acpi-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org
-Cc: Wolfram Sang <wsa@the-dreams.de>, linux-acpi@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Monday, September 4, 2017 7:46:37 AM CEST Lukas Wunner wrote:
+> On Mon, Sep 04, 2017 at 02:17:21AM +0200, Rafael J. Wysocki wrote:
+> > OTOH I'm starting to think that direct_complete is only theoretically
+> > useful and may not be actually set very often in practice, whereas it
+> > adds significant complexity to the code, so I'm not sure about it any
+> > more.
+> 
+> That makes me come out of the woodwork as a direct_complete fan:
+> 
+> Runtime resuming a discrete GPU on a modern dual GPU laptop takes about
+> 1.5 sec, runtime resuming Thunderbolt controllers more than 2 sec.
+> A discrete GPU easily consumes 10W, a Thunderbolt controller 2W.
+> 
+> So not having direct_complete would noticeably delay system suspend and
+> resume as well as reduce battery life.
 
-After commit a23318feeff6 (i2c: designware: Fix system suspend)
-the i2c-designware-platdrv driver always resumes the device in its
-system sleep ->suspend callback which isn't particularly nice,
-even though it is technically correct.
+Well, that's a good reason for having it. :-)
 
-A better approach would be to make the driver track the PM state of
-the device so that it doesn't need to resume it in ->suspend and
-to drop its ->prepare and ->complete callbacks which are only
-marginally useful, so implement that.
-
-First, drop dw_i2c_plat_suspend() added by commit a23318feeff6 and
-rename dw_i2c_plat_runtime_suspend() back to dw_i2c_plat_suspend().
-
-Second, point the driver's ->late_suspend and ->early_resume
-callbacks, rather than its ->suspend and ->resume callbacks,
-to dw_i2c_plat_suspend() and dw_i2c_plat_resume(), respectively,
-so that they are not executed in parallel with each other, for
-example if runtime resume of the device takes place during system
-suspend.
-
-Next, add "suspended" and "skip_resume" flags to struct dw_i2c_dev
-and make dw_i2c_plat_suspend() and dw_i2c_plat_resume() use them to
-avoid suspending or resuming the device twice in a row and to avoid
-resuming a previously runtime-suspended device during system resume.
-
-Finally, drop the driver's ->prepare and ->complete PM callbacks,
-because returning "true" from ->prepare for runtime-suspended
-devices is marginally useful (the PM core may still ignore that
-return value and invoke the driver's ->suspend callback anyway)
-and ->complete is only needed because of what ->prepare does.
-
-Overrides: a23318feeff6 (i2c: designware: Fix system suspend)
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
--> v2: Add the "suspended" flag, which is needed, because
-       dw_i2c_plat_suspend() doesn't update the runtime PM
-       status of the device, so dw_i2c_plat_resume() can't
-       rely on the pm_runtime_status_suspended() check
-       during system resume.
-
----
- drivers/i2c/busses/i2c-designware-core.h    |    2 +
- drivers/i2c/busses/i2c-designware-platdrv.c |   51 ++++++++++------------------
- 2 files changed, 22 insertions(+), 31 deletions(-)
-
-Index: linux-pm/drivers/i2c/busses/i2c-designware-core.h
-===================================================================
---- linux-pm.orig/drivers/i2c/busses/i2c-designware-core.h
-+++ linux-pm/drivers/i2c/busses/i2c-designware-core.h
-@@ -280,6 +280,8 @@ struct dw_i2c_dev {
- 	int			(*acquire_lock)(struct dw_i2c_dev *dev);
- 	void			(*release_lock)(struct dw_i2c_dev *dev);
- 	bool			pm_disabled;
-+	bool			suspended;
-+	bool			skip_resume;
- 	void			(*disable)(struct dw_i2c_dev *dev);
- 	void			(*disable_int)(struct dw_i2c_dev *dev);
- 	int			(*init)(struct dw_i2c_dev *dev);
-Index: linux-pm/drivers/i2c/busses/i2c-designware-platdrv.c
-===================================================================
---- linux-pm.orig/drivers/i2c/busses/i2c-designware-platdrv.c
-+++ linux-pm/drivers/i2c/busses/i2c-designware-platdrv.c
-@@ -434,31 +434,22 @@ static const struct of_device_id dw_i2c_
- MODULE_DEVICE_TABLE(of, dw_i2c_of_match);
- #endif
- 
--#ifdef CONFIG_PM_SLEEP
--static int dw_i2c_plat_prepare(struct device *dev)
--{
--	return pm_runtime_suspended(dev);
--}
--
--static void dw_i2c_plat_complete(struct device *dev)
--{
--	if (dev->power.direct_complete)
--		pm_request_resume(dev);
--}
--#else
--#define dw_i2c_plat_prepare	NULL
--#define dw_i2c_plat_complete	NULL
--#endif
--
- #ifdef CONFIG_PM
--static int dw_i2c_plat_runtime_suspend(struct device *dev)
-+static int dw_i2c_plat_suspend(struct device *dev)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct dw_i2c_dev *i_dev = platform_get_drvdata(pdev);
- 
-+	if (i_dev->suspended) {
-+		i_dev->skip_resume = true;
-+		return 0;
-+	}
-+
- 	i_dev->disable(i_dev);
- 	i2c_dw_plat_prepare_clk(i_dev, false);
- 
-+	i_dev->suspended = true;
-+
- 	return 0;
- }
- 
-@@ -467,27 +458,25 @@ static int dw_i2c_plat_resume(struct dev
- 	struct platform_device *pdev = to_platform_device(dev);
- 	struct dw_i2c_dev *i_dev = platform_get_drvdata(pdev);
- 
-+	if (!i_dev->suspended)
-+		return 0;
-+
-+	if (i_dev->skip_resume) {
-+		i_dev->skip_resume = false;
-+		return 0;
-+	}
-+
- 	i2c_dw_plat_prepare_clk(i_dev, true);
- 	i_dev->init(i_dev);
- 
--	return 0;
--}
-+	i_dev->suspended = false;
- 
--#ifdef CONFIG_PM_SLEEP
--static int dw_i2c_plat_suspend(struct device *dev)
--{
--	pm_runtime_resume(dev);
--	return dw_i2c_plat_runtime_suspend(dev);
-+	return 0;
- }
--#endif
- 
- static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
--	.prepare = dw_i2c_plat_prepare,
--	.complete = dw_i2c_plat_complete,
--	SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
--	SET_RUNTIME_PM_OPS(dw_i2c_plat_runtime_suspend,
--			   dw_i2c_plat_resume,
--			   NULL)
-+	SET_LATE_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
-+	SET_RUNTIME_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume, NULL)
- };
- 
- #define DW_I2C_DEV_PMOPS (&dw_i2c_dev_pm_ops)
+Thanks,
+Rafael
 
