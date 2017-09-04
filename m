@@ -1,70 +1,40 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [RFC 1/3] sched/fair: add util_est on top of PELT
-Date: Mon, 4 Sep 2017 12:13:40 +0100
-Message-ID: <20170904111340.GC2618@e110439-lin>
-References: <20170825102008.4626-1-patrick.bellasi@arm.com>
- <20170825102008.4626-2-patrick.bellasi@arm.com>
- <CAEU1=PnypZ7V5yL6K3fT_OpfTosK15ju0vcztk8NpDj9xVu4xw@mail.gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 09/13] thermal/drivers/hisi: Remove costly sensor
+ inspection
+Date: Mon, 4 Sep 2017 13:29:19 +0200
+Message-ID: <881b622a-5815-8859-90fe-6a3075cf1085@linaro.org>
+References: <1504082857-21702-1-git-send-email-daniel.lezcano@linaro.org>
+ <1504082857-21702-9-git-send-email-daniel.lezcano@linaro.org>
+ <20170902032924.GB3841@leoy-linaro>
+ <30efb5b7-fdb4-cbdc-56a3-d06e90720a75@linaro.org>
+ <20170904005036.GG3841@leoy-linaro>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAEU1=PnypZ7V5yL6K3fT_OpfTosK15ju0vcztk8NpDj9xVu4xw@mail.gmail.com>
+In-Reply-To: <20170904005036.GG3841@leoy-linaro>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pavan Kondeti <pkondeti@codeaurora.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Paul Turner <pjt@google.com>, Vincent Guittot <vincent.guittot@linaro.org>, John Stultz <john.stultz@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Juri Lelli <juri.lelli@arm.com>, Tim Murray <timmurray@google.com>, Todd Kjos <tkjos@android.com>, Andres Oportus <andresoportus@google.com>, Joel Fernandes <joelaf@google.com>, Viresh Kumar <viresh.kumar@linaro.org>
+To: Leo Yan <leo.yan@linaro.org>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, open list <linux-kernel@vger.kernel.org>, ionela.voinescu@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On 29-Aug 10:06, Pavan Kondeti wrote:
-> Hi Patrick,
+On 04/09/2017 02:50, Leo Yan wrote:
+
+[ ... ]
+
+>> That is something I asked myself but I finally decided to not change the
+>> current behavior and let that be added in a separate patch.
 > 
-> On Fri, Aug 25, 2017 at 3:50 PM, Patrick Bellasi
-> <patrick.bellasi@arm.com> wrote:
-> > The util_avg signal computed by PELT is too variable for some use-cases.
-> > For example, a big task waking up after a long sleep period will have its
-> > utilization almost completely decayed. This introduces some latency before
-> > schedutil will be able to pick the best frequency to run a task.
-> >
-> > The same issue can affect task placement. Indeed, since the task
-> > utilization is already decayed at wakeup, when the task is enqueued in a
-> > CPU, this can results in a CPU running a big task as being temporarily
-> > represented as being almost empty. This leads to a race condition where
-> > other tasks can be potentially allocated on a CPU which just started to run
-> > a big task which slept for a relatively long period.
-> >
-> > Moreover, the utilization of a task is, by PELT definition, a continuously
-> > changing metrics. This contributes in making almost instantly outdated some
-> > decisions based on the value of the PELT's utilization.
-> >
-> > For all these reasons, a more stable signal could probably do a better job
-> > of representing the expected/estimated utilization of a SE/RQ. Such a
-> > signal can be easily created on top of PELT by still using it as an
-> > estimator which produces values to be aggregated once meaningful events
-> > happens.
-> >
-> > This patch adds a simple implementation of util_est, a new signal built on
-> > top of PELT's util_avg where:
-> >
-> >     util_est(se) = max(se::util_avg, f(se::util_avg@dequeue_times))
-> >
-> 
-> I don't see any wrapper function in this patch that implements this
-> signal. You want to use this signal in the task placement path as a
-> replacement of task_util(), right?
+> This is fine.
 
-You right, I should update this changelog which is a bit misleading.
+Hi Leo,
 
-What I'm writing above is the way we combine a task's estimated
-utilization with its util_avg. That's what you find in the code of the
-following patches, but strictly speacking we do not have a wrapper
-function.
-
-> Thanks,
-> Pavan
-
-Cheers Patrick
+can you tag this patch if you agree with it?
 
 -- 
-#include <best/regards.h>
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-Patrick Bellasi
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
