@@ -1,118 +1,45 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V2 04/13] thermal/drivers/hisi: Simplify the temperature/step computation
-Date: Mon,  4 Sep 2017 21:56:03 +0200
-Message-ID: <1504554972-2624-4-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH V2 06/13] thermal/drivers/hisi: Remove pointless lock
+Date: Mon,  4 Sep 2017 21:56:05 +0200
+Message-ID: <1504554972-2624-6-git-send-email-daniel.lezcano@linaro.org>
 References: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f54.google.com ([74.125.82.54]:35191 "EHLO
-        mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753957AbdIDT5i (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Sep 2017 15:57:38 -0400
-Received: by mail-wm0-f54.google.com with SMTP id v2so9982447wmf.0
-        for <linux-pm@vger.kernel.org>; Mon, 04 Sep 2017 12:57:38 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-The step and the base temperature are fixed values, we can simplify the
-computation by converting the base temperature to milli celsius and use a
-pre-computed step value. That saves us a lot of mult + div for nothing at
-runtime.
-
-Take also the opportunity to change the function names to be consistent with
-the rest of the code.
+The threaded interrupt inspect the sensors structure to look in the temp
+threshold field, but this field is read-only in all the code, except in the
+probe function before the threaded interrupt is set. In other words there
+is not race window in the threaded interrupt when reading the field value.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Reviewed-by: Leo Yan <leo.yan@linaro.org>
-Tested-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 41 ++++++++++++++++++++++++++++-------------
- 1 file changed, 28 insertions(+), 13 deletions(-)
+ drivers/thermal/hisi_thermal.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index f69aea0..583bc19 100644
+index f523197..9ec5f29 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -35,8 +35,9 @@
- #define TEMP0_RST_MSK			(0x1C)
- #define TEMP0_VALUE			(0x28)
- 
--#define HISI_TEMP_BASE			(-60)
-+#define HISI_TEMP_BASE			(-60000)
- #define HISI_TEMP_RESET			(100000)
-+#define HISI_TEMP_STEP			(784)
- 
- #define HISI_MAX_SENSORS		4
- #define HISI_DEFAULT_SENSOR		2
-@@ -61,19 +62,32 @@ struct hisi_thermal_data {
- 	void __iomem *regs;
- };
- 
--/* in millicelsius */
--static inline int _step_to_temp(int step)
-+/*
-+ * The temperature computation on the tsensor is as follow:
-+ *	Unit: millidegree Celsius
-+ *	Step: 255/200 (0.7843)
-+ *	Temperature base: -60°C
-+ *
-+ * The register is programmed in temperature steps, every step is 784
-+ * millidegree and begins at -60 000 m°C
-+ *
-+ * The temperature from the steps:
-+ *
-+ *	Temp = TempBase + (steps x 784)
-+ *
-+ * and the steps from the temperature:
-+ *
-+ *	steps = (Temp - TempBase) / 784
-+ *
-+ */
-+static inline int hisi_thermal_step_to_temp(int step)
+@@ -221,14 +221,10 @@ static irqreturn_t hisi_thermal_alarm_irq(int irq, void *dev)
+ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
  {
--	/*
--	 * Every step equals (1 * 200) / 255 celsius, and finally
--	 * need convert to millicelsius.
--	 */
--	return (HISI_TEMP_BASE * 1000 + (step * 200000 / 255));
-+	return HISI_TEMP_BASE + (step * HISI_TEMP_STEP);
- }
+ 	struct hisi_thermal_data *data = dev;
+-	struct hisi_thermal_sensor *sensor;
+-
+-	mutex_lock(&data->thermal_lock);
+-	sensor = &data->sensors;
++	struct hisi_thermal_sensor *sensor = &data->sensors;
  
--static inline long _temp_to_step(long temp)
-+static inline long hisi_thermal_temp_to_step(long temp)
- {
--	return ((temp - HISI_TEMP_BASE * 1000) * 255) / 200000;
-+	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
- }
+ 	dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
+ 		 sensor->thres_temp);
+-	mutex_unlock(&data->thermal_lock);
  
- static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
-@@ -99,7 +113,7 @@ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
- 	usleep_range(3000, 5000);
- 
- 	val = readl(data->regs + TEMP0_VALUE);
--	val = _step_to_temp(val);
-+	val = hisi_thermal_step_to_temp(val);
- 
- 	mutex_unlock(&data->thermal_lock);
- 
-@@ -126,10 +140,11 @@ static void hisi_thermal_enable_bind_irq_sensor
- 	writel((sensor->id << 12), data->regs + TEMP0_CFG);
- 
- 	/* enable for interrupt */
--	writel(_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
-+	writel(hisi_thermal_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
- 	       data->regs + TEMP0_TH);
- 
--	writel(_temp_to_step(HISI_TEMP_RESET), data->regs + TEMP0_RST_TH);
-+	writel(hisi_thermal_temp_to_step(HISI_TEMP_RESET),
-+	       data->regs + TEMP0_RST_TH);
- 
- 	/* enable module */
- 	writel(0x1, data->regs + TEMP0_RST_MSK);
+ 	thermal_zone_device_update(data->sensors.tzd,
+ 				   THERMAL_EVENT_UNSPECIFIED);
 -- 
 2.7.4
