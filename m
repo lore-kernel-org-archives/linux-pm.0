@@ -1,7 +1,7 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V2 11/13] thermal/drivers/hisi: Convert long to int
-Date: Mon,  4 Sep 2017 21:56:10 +0200
-Message-ID: <1504554972-2624-11-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH V2 12/13] thermal/drivers/hisi: Remove thermal data back pointer
+Date: Mon,  4 Sep 2017 21:56:11 +0200
+Message-ID: <1504554972-2624-12-git-send-email-daniel.lezcano@linaro.org>
 References: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
@@ -10,35 +10,55 @@ To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-There is no point to specify the temperature as long variable, the int is
-enough.
+The presence of the thermal data pointer in the sensor structure has the unique
+purpose of accessing the thermal data in the interrupt handler.
 
-Replace all long variables to int, so making the code consistent.
+The sensor pointer is passed when registering the interrupt handler, replace the
+cookie by the thermal data pointer, so the back pointer is no longer needed.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/thermal/hisi_thermal.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 4c47b4d..0c06d14 100644
+index 0c06d14..cce3d10 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -85,12 +85,12 @@ static inline int hisi_thermal_step_to_temp(int step)
- 	return HISI_TEMP_BASE + (step * HISI_TEMP_STEP);
+@@ -47,7 +47,6 @@
+ #define HISI_DEFAULT_SENSOR		2
+ 
+ struct hisi_thermal_sensor {
+-	struct hisi_thermal_data *thermal;
+ 	struct thermal_zone_device *tzd;
+ 	uint32_t id;
+ 	uint32_t thres_temp;
+@@ -211,10 +210,10 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
+ 	mutex_unlock(&data->thermal_lock);
  }
  
--static inline long hisi_thermal_temp_to_step(long temp)
-+static inline int hisi_thermal_temp_to_step(int temp)
+-static int hisi_thermal_get_temp(void *_sensor, int *temp)
++static int hisi_thermal_get_temp(void *__data, int *temp)
  {
- 	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
- }
+-	struct hisi_thermal_sensor *sensor = _sensor;
+-	struct hisi_thermal_data *data = sensor->thermal;
++	struct hisi_thermal_data *data = __data;
++	struct hisi_thermal_sensor *sensor = &data->sensor;
  
--static inline long hisi_thermal_round_temp(int temp)
-+static inline int hisi_thermal_round_temp(int temp)
- {
- 	return hisi_thermal_step_to_temp(
- 		hisi_thermal_temp_to_step(temp));
+ 	*temp = hisi_thermal_get_temperature(data->regs);
+ 
+@@ -262,10 +261,10 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+ 	const struct thermal_trip *trip;
+ 
+ 	sensor->id = index;
+-	sensor->thermal = data;
+ 
+ 	sensor->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
+-				sensor->id, sensor, &hisi_of_thermal_ops);
++							   sensor->id, data,
++							   &hisi_of_thermal_ops);
+ 	if (IS_ERR(sensor->tzd)) {
+ 		ret = PTR_ERR(sensor->tzd);
+ 		sensor->tzd = NULL;
 -- 
 2.7.4
