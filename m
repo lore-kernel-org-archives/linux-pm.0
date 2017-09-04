@@ -1,7 +1,7 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V2 03/13] thermal/drivers/hisi: Fix kernel panic on alarm interrupt
-Date: Mon,  4 Sep 2017 21:56:02 +0200
-Message-ID: <1504554972-2624-3-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH V2 13/13] thermal/drivers/hisi: Remove mutex_lock in the code
+Date: Mon,  4 Sep 2017 21:56:12 +0200
+Message-ID: <1504554972-2624-13-git-send-email-daniel.lezcano@linaro.org>
 References: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
@@ -10,54 +10,64 @@ To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: daniel.lezcano@linaro.org, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The threaded interrupt for the alarm interrupt is requested before the
-temperature controller is setup. This one can fire an interrupt immediately
-leading to a kernel panic as the sensor data is not initialized.
+The mutex is used to protect against writes in the configuration register.
 
-In order to prevent that, move the threaded irq after the Tsensor is setup.
+That happens at probe time, with no possible race yet.
+
+Then when the module is unloaded and at suspend/resume.
+
+When the module is unloaded, it is an userspace operation, thus via a process.
+Suspending the system goes through the freezer to suspend all the tasks
+synchronously before continuing. So it is not possible to hit the suspend ops
+in this driver while we are unloading it.
+
+The resume is the same situation than the probe.
+
+In other words, even if there are several places where we write the
+configuration register, there is no situation where we can write it at the same
+time, so far as I can judge
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Reviewed-by: Leo Yan <leo.yan@linaro.org>
 Tested-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/thermal/hisi_thermal.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 725d0d4..f69aea0 100644
+index cce3d10..39f4627 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -287,15 +287,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- 	if (data->irq < 0)
- 		return data->irq;
+@@ -53,7 +53,6 @@ struct hisi_thermal_sensor {
+ };
  
--	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
--					hisi_thermal_alarm_irq,
--					hisi_thermal_alarm_irq_thread,
--					0, "hisi_thermal", data);
--	if (ret < 0) {
--		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
--		return ret;
--	}
+ struct hisi_thermal_data {
+-	struct mutex thermal_lock;    /* protects register data */
+ 	struct platform_device *pdev;
+ 	struct clk *clk;
+ 	struct hisi_thermal_sensor sensor;
+@@ -200,14 +199,10 @@ static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
+ 
+ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
+ {
+-	mutex_lock(&data->thermal_lock);
 -
- 	platform_set_drvdata(pdev, data);
+ 	/* disable sensor module */
+ 	hisi_thermal_enable(data->regs, 0);
+ 	hisi_thermal_alarm_enable(data->regs, 0);
+ 	hisi_thermal_reset_enable(data->regs, 0);
+-
+-	mutex_unlock(&data->thermal_lock);
+ }
  
- 	data->clk = devm_clk_get(&pdev->dev, "thermal_clk");
-@@ -328,6 +319,15 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ static int hisi_thermal_get_temp(void *__data, int *temp)
+@@ -344,7 +339,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ 	if (!data)
+ 		return -ENOMEM;
  
- 	hisi_thermal_toggle_sensor(&data->sensors, true);
+-	mutex_init(&data->thermal_lock);
+ 	data->pdev = pdev;
  
-+	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
-+					hisi_thermal_alarm_irq,
-+					hisi_thermal_alarm_irq_thread,
-+					0, "hisi_thermal", data);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
-+		return ret;
-+	}
-+
- 	enable_irq(data->irq);
- 
- 	return 0;
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 -- 
 2.7.4
