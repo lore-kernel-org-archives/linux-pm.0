@@ -1,39 +1,116 @@
-From: Nicolin Chen <nicoleotsuka-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: [PATCH v2] thermal: tegra: remove null check for dev pointer
-Date: Tue,  5 Sep 2017 00:41:16 -0700
-Message-ID: <1504597276-22924-1-git-send-email-nicoleotsuka@gmail.com>
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
-Cc: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, wni-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org
+From: "Wangtao (Kevin, Kirin)" <kevin.wangtao-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
+Subject: Re: [PATCH v4 2/3] thermal: hisilicon: add thermal sensor driver for
+ Hi3660
+Date: Tue, 5 Sep 2017 15:56:23 +0800
+Message-ID: <d63cc431-6daa-48e7-eed5-b16709276b0f@hisilicon.com>
+References: <e313015d-11d5-91b8-aa64-37e9410cb882@hisilicon.com>
+ <1503994666-13954-1-git-send-email-kevin.wangtao@hisilicon.com>
+ <1503994666-13954-3-git-send-email-kevin.wangtao@hisilicon.com>
+ <77ceb395-57bb-8de7-7b1a-3218baa5d5f3@linaro.org>
+ <b884f2ca-86e1-0df3-0cbf-99b13232ee03@hisilicon.com>
+ <8fe3ad22-59db-40c6-18db-7b6859f05a95@linaro.org>
+ <20170904150621.GC24156@leoy-ThinkPad-T440>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170904150621.GC24156@leoy-ThinkPad-T440>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, kevin.wangtao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, sunzhaosheng-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, gengyanping-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The dev pointer is going through a null check after a dereference.
-So this patch removes that useless check since the driver does not
-pass a null dev pointer in any case.
 
-Signed-off-by: Nicolin Chen <nicoleotsuka-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
----
-Changelog
-v2:
- * By following Thierry's comments, changed to remove the null pointer
-   check directly and revised the patch subject according.
 
- drivers/thermal/tegra/soctherm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+在 2017/9/4 23:06, Leo Yan 写道:
+> On Mon, Sep 04, 2017 at 01:06:39PM +0200, Daniel Lezcano wrote:
+>>
+>> Hi Kevin,
+>>
+>>
+>> On 04/09/2017 09:56, Wangtao (Kevin, Kirin) wrote:
+>>>
+>>>
+>>> 在 2017/9/1 5:17, Daniel Lezcano 写道:
+>>>>
+>>>> Hi Kevin,
+>>>>
+>>>>
+>>>> On 29/08/2017 10:17, Tao Wang wrote:
+>>>>> From: Tao Wang <kevin.wangtao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>>>>>
+>>>>> This patch adds the support for thermal sensor of Hi3660 SoC.
+>>>>
+>>>> for the Hi3660 SoC thermal sensor.
+>>>>
+>>>>> this will register sensors for thermal framework and use device
+>>>>> tree to bind cooling device.
+>>>>
+>>>> Is it possible to give a pointer to some documentation or to describe
+>>>> the hardware?
+>>> Yes, there used to be on patch V3, I removed it on V4.
+>>>>
+>>>> An explanation of the adc min max coef[] range[] conversion would be
+>>>> nice.
+>>> OK
+>>>>
+>>>> In addition, having the rational behind the average and the max would be
+>>>> nice. Do we really need both avg and max as virtual sensor?
+>>> We only need max currently.
+>>>>
+>>>>> Signed-off-by: Tao Wang <kevin.wangtao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>>>>> Signed-off-by: Leo Yan <leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>>>>> ---
+>>>>>    drivers/thermal/Kconfig        |  13 +++
+>>>>>    drivers/thermal/Makefile       |   1 +
+>>>>>    drivers/thermal/hisi_tsensor.c | 209
+>>>>> +++++++++++++++++++++++++++++++++++++++++
+>>>>
+>>>>
+>>>> IMO, we don't need a new file, but merge this code with the current
+>>>> hisi_thermal.c driver. BTW, the hi6220 has also a tsensor which is
+>>>> different from this one.
+>>>>
+>>>> I suggest to base the hi3660 thermal driver on top of the cleanup I sent
+>>>> for the hi6220.
+>>> The tsensor of hi3660 is a different one, merging the code with hi6220
+>>> will need a lot of change.
+>>
+>> Have a look at the hisi_thermal.c at:
+>>
+>> https://git.linaro.org/people/daniel.lezcano/linux.git/tree/drivers/thermal/hisi_thermal.c?h=thermal/hikey-4.14
+>>
+>> after the cleanup I recently sent.
+>>
+>> I'm pretty sure, with a little effort, we can merge both.
+>>
+>> Especially if the virtual things is separated.
+>>
+>> At the end, what do we do ? Read a register.
+> 
+> Just more input at here. I agree currently Hi3660 thermal driver
+> is quite similiar with Hi6220, before we wrote a dedicated Hi3660
+> thermal driver due we used mailbox method rather than shared
+> memory modeThere are no shared memory mode in thermal driver, I think you mix it up with clock driver.
+> 
+> If we merge two thermal drivers, this means Hi3660 register layout
+> should be adjusted as same with Hi6220; I am not sure if this is
+> feasible and need Kevin to confirm for this.
+Hi3660's register layout is different from Hi6220, and Hi3660's tsensors are configed by MCU, Kernel driver only need to read the temperature.
+> 
+> And does this mean we need provide interrupt mode for Hi3660? Or
+> we can extend the driver to only support pollig mode?
 
-diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index 7d2db23..075db1d 100644
---- a/drivers/thermal/tegra/soctherm.c
-+++ b/drivers/thermal/tegra/soctherm.c
-@@ -483,7 +483,7 @@ static int throttrip_program(struct device *dev,
- 	unsigned int throt;
- 	u32 r, reg_off;
- 
--	if (!dev || !sg || !stc || !stc->init)
-+	if (!sg || !stc || !stc->init)
- 		return -EINVAL;
- 
- 	temp = enforce_temp_range(dev, trip_temp) / ts->soc->thresh_grain;
--- 
-2.1.4
+> 
+> [...]
+> 
+> Thanks,
+> Leo Yan
+> 
+> .
+> 
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
