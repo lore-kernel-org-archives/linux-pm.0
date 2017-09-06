@@ -1,57 +1,26 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 0/8] PM / ACPI / i2c: Deploy runtime PM centric path for system sleep
-Date: Wed, 06 Sep 2017 12:46:34 +0200
-Message-ID: <8456507.jc97SKmauk@aspire.rjw.lan>
-References: <1504018610-10822-1-git-send-email-ulf.hansson@linaro.org> <CAPDyKFpX3Owk4H=0SqgfspXZd9TmdL_ANOZftXRq6HPjrT2ctQ@mail.gmail.com> <1883292.VFru06qUYG@aspire.rjw.lan>
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Subject: Re: [RFT][PATCH v3 0/3] i2c: designware: Runtime PM aware system
+ sleep handling
+Date: Wed, 6 Sep 2017 14:06:41 +0300
+Message-ID: <20170906110641.GT2477@lahna.fi.intel.com>
+References: <3023226.l5IfJK6GIc@aspire.rjw.lan>
+ <3958866.l2qnKDbinI@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1883292.VFru06qUYG@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <3958866.l2qnKDbinI@aspire.rjw.lan>
 Sender: linux-i2c-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Wolfram Sang <wsa@the-dreams.de>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, linux-acpi@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, Ulf Hansson <ulf.hansson@linaro.org>, Lee Jones <lee@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, September 6, 2017 2:52:59 AM CEST Rafael J. Wysocki wrote:
-> On Monday, September 4, 2017 2:55:37 PM CEST Ulf Hansson wrote:
-> > [...]
+On Wed, Sep 06, 2017 at 01:41:37AM +0200, Rafael J. Wysocki wrote:
+> > Please test if you can and let me know if anything breaks.
+> 
+> That still applies. :-)
 
-I guess I can wrap it up, because all of the points seem to have been stated
-and repeating them would not be useful.
+Tested on Dell XPS 9550 which is using intel-lpss and everything still
+works fine :)
 
-My summary of the discussion is as follows.
-
-It only is valid to use pm_runtime_force_suspend/resume() as *driver*
-callbacks for system suspend/resume if both the driver itself and all of
-the middle layers it has to work with carry out the same sequence of
-operations in order to suspend the device both in runtime PM and for
-system sleep (and analogously for resuming).  [The middle layers need
-to meet additional conditions, but that's less relevant.]
-
-Unfortunately, for the ACPI PM domain and the PCI bus type the situation is
-different, because they generally need to do different things to suspend
-devices for system sleep than they do for runtime PM (which mostly is
-related to the handling of ACPI-defined sleep states and device/system
-wakeup, but not limited to that).  This clearly means that drivers needing
-to work with the ACPI PM domain and PCI drivers cannot use
-pm_runtime_force_suspend/resume() as their PM callbacks for system
-suspend/resume (quite fundamentally).
-
-[Note that for i2c-designware-platdrv the situation is even more complicated,
-because on some platforms it has to work with the ACPI PM domain (or the
-ACPI LPSS driver), on some platforms its parent is a PCI device and on
-some other platforms there's none of them.]
-
-However, for drivers that need to work with the ACPI PM domain and
-PCI drivers the differences in the device handling between runtime PM and
-system suspend/resume are *very* often (even though not always) covered
-entirely by the middle layer code.  Then, the driver itself actually
-always carries out the same sequence of operations in order to suspend
-the device (or to resume it, analogously).  The driver then can re-use
-its runtime PM callbacks for system suspend/resume (but at the driver
-level only) and it would be good to make that easy (or easier) for these
-drivers somehow.
-
-Thanks,
-Rafael
+Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
