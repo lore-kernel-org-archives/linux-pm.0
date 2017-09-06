@@ -1,45 +1,57 @@
-From: Carlo Caione <carlo@endlessm.com>
-Subject: Re: S0ix failure due to "clk: x86: Do not gate clocks enabled by the firmware"
-Date: Wed, 6 Sep 2017 23:14:54 +0200
-Message-ID: <CAL9uMOGf6vsMfsp4wFX+LNxR_UTiYyWpFWPW7L8nGivLi-0uQg@mail.gmail.com>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFT][PATCH v3 0/3] i2c: designware: Runtime PM aware system sleep handling
+Date: Wed, 06 Sep 2017 23:37:43 +0200
+Message-ID: <2416864.pQXFeuuTqe@aspire.rjw.lan>
+References: <3023226.l5IfJK6GIc@aspire.rjw.lan> <4508230.n88h0dPXoy@aspire.rjw.lan> <20170906195916.mo3mccgzcn7csbrc@sig21.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
-Sender: linux-clk-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170906195916.mo3mccgzcn7csbrc@sig21.net>
+Sender: linux-acpi-owner@vger.kernel.org
 To: Johannes Stezenbach <js@sig21.net>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, linux-acpi@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Lee Jones <lee@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 6, 2017 at 10:42 PM, Johannes Stezenbach <js@sig21.net> wrote:
-> Hi,
->
-> I'm poking around on Asus E200HA, based on Atom x5-Z8300 (Cherrytrail),
-> trying to get S0ix working, atm with gross hacks that are recorded in
-> https://bugzilla.kernel.org/show_bug.cgi?id=193891
->
->
-> I found commit d31fd43c0f9a4 "clk: x86: Do not gate clocks enabled by the firmware"
-> prevents S0i3 entry.  Unfortunately the commit message doesn't explain
-> the problem it fixes, nor does it mention the platform.
+On Wednesday, September 6, 2017 9:59:16 PM CEST Johannes Stezenbach wrote:
+> On Wed, Sep 06, 2017 at 11:55:01AM +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, September 6, 2017 11:16:46 AM CEST Johannes Stezenbach wrote:
+> > 
+> > > In case it matters, what I tested was v4.13 + sound/topic/dollar-cove-ti-4.13-v5
+> > > (PMIC etc) + sound/topic/soc-cx2072x-4.13 (sound codec driver)
+> > > + "S0ix blocker debug patch v3" from https://bugzilla.kernel.org/show_bug.cgi?id=193891
+> > > + your 3 patches.
+> > > 
+> > > I suspend + resume a few times, no problems.  (Of course S0ix
+> > > still doesn't work according to /sys/kernel/debug/pmc_atom/sleep_state.)
+> > > 
+> > 
+> > Well, we'll need to address the S0ix thing, but that will require some
+> > investigation.
+> > 
+> > Can you please open a bug entry for that at bugzilla.kernel.org
+> > (against Power Management -> Hibernation/Suspend) and CC it to me
+> > so that it doesn't fall of the radar?
+> 
+> I'll do that tomorrow, TIA for your interest in the issue.
+> 
+> Today I spent several hours to bisect the S0ix "regression"
+> on Asus E200HA, I put regression in quotes because S0ix
+> only ever worked with gross hacks like poking registers
+> using busybox devmem.  Anyway, the gross hack worked
+> on v4.12 and stopped working in v4.13-rc and the
+> culprit is d31fd43c0f9a4 "clk: x86: Do not gate clocks
+> enabled by the firmware" (I'll report this properly in a seperate mail).
 
-Just to add on top of Pierre-Louis reply.
+Thanks!
 
-The problem it fixes is that one of the PMC clocks enabled by the
-firmware is being gated by the clock framework since no driver is
-claiming it, causing the platform I'm working on to hang at boot. You
-can read the whole discussion about this fix in [0].
+> But I guess that's not the part you're interested in,
+> the bug entry should cover interaction of dw i2c, acpi pm,
+> acpi-lpss and ACPI OpRegion, right?
 
-Also I will probably send an email tomorrow about this but today
-(coincidentally) I discovered that this fix is not working anymore on
-my platform. This is due to commit a49d25364df ("staging/atomisp: Add
-support for the Intel IPU v2"). I haven't had a chance yet to
-investigated why though.
+Right.  Whatever information you have already and is likely to be useful in
+diagnosing this.
 
-Cheers,
+Thanks,
+Rafael
 
-[0] https://www.spinics.net/lists/platform-driver-x86/msg12092.html
-
--- 
-Carlo Caione  |  +39.340.80.30.096  |  Endless
