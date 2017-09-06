@@ -1,45 +1,32 @@
-From: Jiri Kosina <jikos@kernel.org>
-Subject: Re: [PATCH 3/6] hid: make device_attribute const
-Date: Wed, 6 Sep 2017 10:57:29 +0200 (CEST)
-Message-ID: <nycvar.YFH.7.76.1709061057200.4077@jbgna.fhfr.qr>
-References: <1503315792-14837-1-git-send-email-bhumirks@gmail.com> <1503315792-14837-4-git-send-email-bhumirks@gmail.com>
+From: Johannes Stezenbach <js@sig21.net>
+Subject: Re: [RFT][PATCH v3 0/3] i2c: designware: Runtime PM aware system
+ sleep handling
+Date: Wed, 6 Sep 2017 11:16:46 +0200
+Message-ID: <20170906091646.oqkcul7oxddf3yr6@sig21.net>
+References: <3023226.l5IfJK6GIc@aspire.rjw.lan>
+ <3958866.l2qnKDbinI@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-input-owner@vger.kernel.org>
-In-Reply-To: <1503315792-14837-4-git-send-email-bhumirks@gmail.com>
-Sender: linux-input-owner@vger.kernel.org
-To: Bhumika Goyal <bhumirks@gmail.com>
-Cc: julia.lawall@lip6.fr, rjw@rjwysocki.net, lenb@kernel.org, jbacik@fb.com, benjamin.tissoires@redhat.com, manish.chopra@cavium.com, rahul.verma@cavium.com, Dept-GELinuxNICDev@cavium.com, harish.patil@cavium.com, cascardo@holoscopio.com, don@syst.com.br, dvhart@infradead.org, andy@infradead.org, sre@kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, linux-block@vger.kernel.org, nbd-general@lists.sourceforge.net, linux-input@vger.kernel.org, netdev@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <3958866.l2qnKDbinI@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, linux-acpi@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Lee Jones <lee@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 21 Aug 2017, Bhumika Goyal wrote:
-
-> Make this const as it is only passed as an argument to the
-> function device_create_file and device_remove_file and the corresponding
-> arguments are of type const.
-> Done using Coccinelle
+On Wed, Sep 06, 2017 at 01:41:37AM +0200, Rafael J. Wysocki wrote:
+> On Monday, September 4, 2017 1:05:57 AM CEST Rafael J. Wysocki wrote:
+> > Please test if you can and let me know if anything breaks.
 > 
-> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
-> ---
->  drivers/hid/hid-core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-> index 9bc9116..24e929c 100644
-> --- a/drivers/hid/hid-core.c
-> +++ b/drivers/hid/hid-core.c
-> @@ -1662,7 +1662,7 @@ static bool hid_hiddev(struct hid_device *hdev)
->  	.size = HID_MAX_DESCRIPTOR_SIZE,
->  };
->  
-> -static struct device_attribute dev_attr_country = {
-> +static const struct device_attribute dev_attr_country = {
->  	.attr = { .name = "country", .mode = 0444 },
->  	.show = show_country,
+> That still applies. :-)
 
-Applied, thanks.
+Done, works for me on Asus E200HA.
 
--- 
-Jiri Kosina
-SUSE Labs
+In case it matters, what I tested was v4.13 + sound/topic/dollar-cove-ti-4.13-v5
+(PMIC etc) + sound/topic/soc-cx2072x-4.13 (sound codec driver)
++ "S0ix blocker debug patch v3" from https://bugzilla.kernel.org/show_bug.cgi?id=193891
++ your 3 patches.
 
+I suspend + resume a few times, no problems.  (Of course S0ix
+still doesn't work according to /sys/kernel/debug/pmc_atom/sleep_state.)
