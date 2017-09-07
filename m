@@ -1,80 +1,81 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC] PM: Using runtime PM callbacks for system suspend/resume
-Date: Thu, 07 Sep 2017 12:48:33 +0200
-Message-ID: <2938821.IWU2Kxf5Jd@aspire.rjw.lan>
-References: <5559236.6K256zbtpK@aspire.rjw.lan> <CAPDyKFqb2hXgdqaz-whXcqDRy-F=cHqM7SEV9iWPQUEvaaoYHA@mail.gmail.com>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH v4 00/10] arm, arm64, cpufreq: frequency- and
+ cpu-invariant accounting support for task scheduler
+Date: Thu, 7 Sep 2017 13:04:29 +0100
+Message-ID: <0f8306ce-e1e9-bc54-e9a2-6c4a9679ed17@arm.com>
+References: <20170825143206.30467-1-dietmar.eggemann@arm.com>
+ <11249770.4iDhbWWonU@aspire.rjw.lan>
+ <38de527f-7a4e-7344-bba0-906c7920d03f@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqb2hXgdqaz-whXcqDRy-F=cHqM7SEV9iWPQUEvaaoYHA@mail.gmail.com>
+In-Reply-To: <38de527f-7a4e-7344-bba0-906c7920d03f@arm.com>
+Content-Language: en-GB
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 7, 2017 8:56:07 AM CEST Ulf Hansson wrote:
-> On 7 September 2017 at 00:14, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > Hi,
-> >
-> > It occurred to me earlier today that it should be possible to modify the
-> > PM core to get the functionality of pm_runtime_force_suspend/resume() from it
-> > in a somewhat nicer way which should be possible to extend to middle layers
-> > (bus types, PM domains etc).
-> >
-> > Say we have a flag telling the PM core to use the runtime PM path at the
-> > late suspend and early resume stages of system suspend/resume directly if
-> > it can't find "proper" callbacks for that.  It is called DPM_FLAG_USE_RPM in
-> > the prototype patch below.
-> >
-> > The idea is to set only ->runtime_suspend and ->runtime_resume in the driver's
-> > dev_pm_ops and then set that flag in ->probe and be done.  If the core sees
-> > the flag and doesn't see any "original" system sleep callbacks at the stages
-> > in question, it will automatically switch over to the runtime PM path and
-> > leave the device alone if it is already runtime-suspended.
-> >
-> > One nice thing about it is that it will happen at the core level and not in
-> > a driver callback, so all of the concerns regarding layering violations are
-> > simply not relevant any more.  Also, at least in principle, it should be
-> > possible to extend this to middle layers that need to do some non-trivial PM
-> > handling, simply by making them look at that flag and honor in the same way
-> > as the core does that.  This way drivers may still be able to reuse their
-> > runtime PM stuff for handling system sleep transitions even if the middle
-> > layers they need to work with have different things to do for runtime PM
-> > and system suspend/resume.  Even modifying *all* middle layers in the tree to
-> > do take DPM_FLAG_USE_RPM into accout if set is not out of the question as far
-> > as I'm concerned.
-> >
-> > On top of this it should be possible to add the optimization allowing devices
-> > to stay suspended after system resume even if they were not suspended before.
-> > IMO it is better to add a separate flag for enabling it in case some drivers
-> > don't want it, though.
-> >
-> > So the below is just the core part and mostly a prototype to illustrate the
-> > idea, but at this point it looks promising to me.
-> >
-> > Comments?  Concerns?
+Hi Rafael,
+
+On 31/08/17 12:27, Dietmar Eggemann wrote:
+> Hi Raphael,
 > 
-> Yes, a couple so far.
+> On 31/08/17 00:34, Rafael J. Wysocki wrote:
+>> On Friday, August 25, 2017 4:31:56 PM CEST Dietmar Eggemann wrote:
 > 
-> 1) I like the overall idea, which means the PM core gets the knowledge
-> of what to do, based on some instructions by the driver. Yeah, it's a
-> great idea I think.
-> 2) We need also a way to allow drivers to deal with additional
-> operations during system suspend (and resume etc), besides making it
-> possible to re-use the RPM callbacks to put the device into a low
-> power state. Could we allow the system sleep callbacks to be present
-> as well when using this flag?
+> [...]
+> 
+>>> [1] https://marc.info/?l=linux-kernel&m=149625018223002&w=2
+>>> [2] https://marc.info/?l=linux-kernel&m=150118402232039&w=2
+>>> [3] https://marc.info/?l=linux-pm&m=149933474313566&w=2
+>>> [4] http://arminfo.emea.arm.com/help/topic/com.arm.doc.den0056a/DEN0056A_System_Control_and_Management_Interface.pdf
+>>> [5] https://marc.info/?l=linux-kernel&m=149690865010019&w=2
+>>>
+>>> Dietmar Eggemann (10):
+>>>   drivers base/arch_topology: free cpumask cpus_to_visit
+>>>   cpufreq: provide default frequency-invariance setter function
+>>>   cpufreq: arm_big_little: invoke frequency-invariance setter function
+>>>   cpufreq: dt: invoke frequency-invariance setter function
+>>>   drivers base/arch_topology: provide frequency-invariant accounting
+>>>     support
+>>>   drivers base/arch_topology: allow inlining cpu-invariant accounting
+>>>     support
+>>>   arm: wire frequency-invariant accounting support up to the task
+>>>     scheduler
+>>>   arm: wire cpu-invariant accounting support up to the task scheduler
+>>>   arm64: wire frequency-invariant accounting support up to the task
+>>>     scheduler
+>>>   arm64: wire cpu-invariant accounting support up to the task scheduler
+>>>
+>>>  arch/arm/include/asm/topology.h   |  8 ++++++++
+>>>  arch/arm64/include/asm/topology.h |  8 ++++++++
+>>>  drivers/base/arch_topology.c      | 29 +++++++++++++++++++++++------
+>>>  drivers/cpufreq/arm_big_little.c  | 10 +++++++++-
+>>>  drivers/cpufreq/cpufreq-dt.c      | 12 ++++++++++--
+>>>  drivers/cpufreq/cpufreq.c         |  6 ++++++
+>>>  include/linux/arch_topology.h     | 18 +++++++++++++++++-
+>>>  include/linux/cpufreq.h           |  3 +++
+>>>  8 files changed, 84 insertions(+), 10 deletions(-)
+>>>
+>>>
+>>
+>> FWIW, patches [2-4/10] in this series are fine by me, but I guess you
+>> need to talk to Viresh about the [3-4/10] anyway.
+> 
+> Thanks for the review! Viresh already gave me his 'Acked-by' for
+> [3-4/10] during the v3 review.
+> 
+> Since this patch-set touches different subsystems I wonder via which
+> tree it should go upstream? Could it go via your linux-pm tree or should
+> I ask Greg K-H?
 
-Yes, we could.  It's perfectly fine to do that with the patch I posted.
+Ping.
 
-One can even provide ->suspend_late or ->resume_early and set this flag
-even though that wouldn't make a lot of sense. :-)
-
-> Let's bring up this also at LPC next week, we can make it a part of
-> the ACPI slot, if needed.
-
-Agreed, and we will.
+I don't expect any more review on this patch-set. It's only patch PATCH
+v4 02/10] which has no Acked-By yet.
 
 Thanks,
-Rafael
+
+-- Dietmar
