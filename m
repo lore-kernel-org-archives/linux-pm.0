@@ -1,81 +1,138 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: Re: [PATCH v4 00/10] arm, arm64, cpufreq: frequency- and
- cpu-invariant accounting support for task scheduler
-Date: Thu, 7 Sep 2017 13:04:29 +0100
-Message-ID: <0f8306ce-e1e9-bc54-e9a2-6c4a9679ed17@arm.com>
-References: <20170825143206.30467-1-dietmar.eggemann@arm.com>
- <11249770.4iDhbWWonU@aspire.rjw.lan>
- <38de527f-7a4e-7344-bba0-906c7920d03f@arm.com>
+From: gaurav jindal <gauravjindal1104@gmail.com>
+Subject: Re: [PATCH] drivers: cpuidle: Fix checkpatch error and warnings
+Date: Thu, 7 Sep 2017 18:10:10 +0530
+Message-ID: <20170907124010.GB6427@kernel>
+References: <20170907102325.GA6427@kernel>
+ <1504780406.7546.19.camel@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <38de527f-7a4e-7344-bba0-906c7920d03f@arm.com>
-Content-Language: en-GB
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:37246 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754219AbdIGMkT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2017 08:40:19 -0400
+Content-Disposition: inline
+In-Reply-To: <1504780406.7546.19.camel@perches.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Joe Perches <joe@perches.com>, rjw@rjwysocki.net, daniel.lezcano@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, toddpoynor@google.com
 
-Hi Rafael,
+this patch fixes the below checkpatch errors and warnings in
+drivers/cpuidle/cpuidle.c
 
-On 31/08/17 12:27, Dietmar Eggemann wrote:
-> Hi Raphael,
-> 
-> On 31/08/17 00:34, Rafael J. Wysocki wrote:
->> On Friday, August 25, 2017 4:31:56 PM CEST Dietmar Eggemann wrote:
-> 
-> [...]
-> 
->>> [1] https://marc.info/?l=linux-kernel&m=149625018223002&w=2
->>> [2] https://marc.info/?l=linux-kernel&m=150118402232039&w=2
->>> [3] https://marc.info/?l=linux-pm&m=149933474313566&w=2
->>> [4] http://arminfo.emea.arm.com/help/topic/com.arm.doc.den0056a/DEN0056A_System_Control_and_Management_Interface.pdf
->>> [5] https://marc.info/?l=linux-kernel&m=149690865010019&w=2
->>>
->>> Dietmar Eggemann (10):
->>>   drivers base/arch_topology: free cpumask cpus_to_visit
->>>   cpufreq: provide default frequency-invariance setter function
->>>   cpufreq: arm_big_little: invoke frequency-invariance setter function
->>>   cpufreq: dt: invoke frequency-invariance setter function
->>>   drivers base/arch_topology: provide frequency-invariant accounting
->>>     support
->>>   drivers base/arch_topology: allow inlining cpu-invariant accounting
->>>     support
->>>   arm: wire frequency-invariant accounting support up to the task
->>>     scheduler
->>>   arm: wire cpu-invariant accounting support up to the task scheduler
->>>   arm64: wire frequency-invariant accounting support up to the task
->>>     scheduler
->>>   arm64: wire cpu-invariant accounting support up to the task scheduler
->>>
->>>  arch/arm/include/asm/topology.h   |  8 ++++++++
->>>  arch/arm64/include/asm/topology.h |  8 ++++++++
->>>  drivers/base/arch_topology.c      | 29 +++++++++++++++++++++++------
->>>  drivers/cpufreq/arm_big_little.c  | 10 +++++++++-
->>>  drivers/cpufreq/cpufreq-dt.c      | 12 ++++++++++--
->>>  drivers/cpufreq/cpufreq.c         |  6 ++++++
->>>  include/linux/arch_topology.h     | 18 +++++++++++++++++-
->>>  include/linux/cpufreq.h           |  3 +++
->>>  8 files changed, 84 insertions(+), 10 deletions(-)
->>>
->>>
->>
->> FWIW, patches [2-4/10] in this series are fine by me, but I guess you
->> need to talk to Viresh about the [3-4/10] anyway.
-> 
-> Thanks for the review! Viresh already gave me his 'Acked-by' for
-> [3-4/10] during the v3 review.
-> 
-> Since this patch-set touches different subsystems I wonder via which
-> tree it should go upstream? Could it go via your linux-pm tree or should
-> I ask Greg K-H?
+WARNING: line over 80 characters
+#311: FILE: drivers/cpuidle/cpuidle.c:311:
++		/* Make sure all changes finished before we switch to new idle */
 
-Ping.
+WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+#343: FILE: drivers/cpuidle/cpuidle.c:343:
++EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
 
-I don't expect any more review on this patch-set. It's only patch PATCH
-v4 02/10] which has no Acked-By yet.
+WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+#354: FILE: drivers/cpuidle/cpuidle.c:354:
++EXPORT_SYMBOL_GPL(cpuidle_resume_and_unlock);
 
-Thanks,
+ERROR: do not use assignment in if condition
+#402: FILE: drivers/cpuidle/cpuidle.c:402:
++	if (cpuidle_curr_governor->enable &&
 
--- Dietmar
+WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+#419: FILE: drivers/cpuidle/cpuidle.c:419:
++EXPORT_SYMBOL_GPL(cpuidle_enable_device);
+
+WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+#447: FILE: drivers/cpuidle/cpuidle.c:447:
++EXPORT_SYMBOL_GPL(cpuidle_disable_device);
+
+WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+#537: FILE: drivers/cpuidle/cpuidle.c:537:
++EXPORT_SYMBOL_GPL(cpuidle_register_device);
+
+WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+#561: FILE: drivers/cpuidle/cpuidle.c:561:
++EXPORT_SYMBOL_GPL(cpuidle_unregister_device);
+
+Signed-off-by:gaurav jindal<gauravjindal1104@gmail.com>
+
+---
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 60bb64f..a42148e 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -308,7 +308,10 @@ void cpuidle_reflect(struct cpuidle_device *dev, int index)
+ void cpuidle_install_idle_handler(void)
+ {
+ 	if (enabled_devices) {
+-		/* Make sure all changes finished before we switch to new idle */
++		/*
++		 * Make sure all changes finished before we switch to
++		 * new idle
++		 */
+ 		smp_wmb();
+ 		initialized = 1;
+ 	}
+@@ -339,7 +342,6 @@ void cpuidle_pause_and_lock(void)
+ 	mutex_lock(&cpuidle_lock);
+ 	cpuidle_uninstall_idle_handler();
+ }
+-
+ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
+
+ /**
+@@ -350,7 +352,6 @@ void cpuidle_resume_and_unlock(void)
+ 	cpuidle_install_idle_handler();
+ 	mutex_unlock(&cpuidle_lock);
+ }
+-
+ EXPORT_SYMBOL_GPL(cpuidle_resume_and_unlock);
+
+ /* Currently used in suspend/resume path to suspend cpuidle */
+@@ -399,9 +400,12 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
+ 	if (ret)
+ 		return ret;
+
+-	if (cpuidle_curr_governor->enable &&
+-	    (ret = cpuidle_curr_governor->enable(drv, dev)))
+-		goto fail_sysfs;
++	if (cpuidle_curr_governor->enable) {
++		ret = cpuidle_curr_governor->enable(drv, dev);
++		if (ret)
++			goto fail_sysfs;
++	}
+
+ 	smp_wmb();
+
+@@ -415,7 +419,6 @@ int cpuidle_enable_device(struct cpuidle_device *dev)
+
+ 	return ret;
+ }
+-
+ EXPORT_SYMBOL_GPL(cpuidle_enable_device);
+
+ /**
+@@ -443,7 +446,6 @@ void cpuidle_disable_device(struct cpuidle_device *dev)
+ 	cpuidle_remove_device_sysfs(dev);
+ 	enabled_devices--;
+ }
+-
+ EXPORT_SYMBOL_GPL(cpuidle_disable_device);
+
+ static void __cpuidle_unregister_device(struct cpuidle_device *dev)
+@@ -533,7 +535,6 @@ int cpuidle_register_device(struct cpuidle_device *dev)
+ 	__cpuidle_unregister_device(dev);
+ 	goto out_unlock;
+ }
+-
+ EXPORT_SYMBOL_GPL(cpuidle_register_device);
+
+ /**
+@@ -557,7 +558,6 @@ void cpuidle_unregister_device(struct cpuidle_device *dev)
+
+ 	cpuidle_resume_and_unlock();
+ }
+-
+ EXPORT_SYMBOL_GPL(cpuidle_unregister_device);
+
+ /**
