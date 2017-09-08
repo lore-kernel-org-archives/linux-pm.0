@@ -1,75 +1,201 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: libbattery was Re: [RFC PATCH 5/5] power: generic-adc-battery: Add
- capacity handling
-Date: Fri, 8 Sep 2017 13:32:31 +0200
-Message-ID: <20170908113231.GJ18365@amd>
-References: <1501620926-22669-1-git-send-email-marek.belisko@open-nandra.com>
- <1501620926-22669-6-git-send-email-marek.belisko@open-nandra.com>
- <20170829101147.debhadzyfrxhkrvt@earth>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2] thermal/drivers/step_wise: Fix temperature regulation
+ misbehavior
+Date: Fri, 8 Sep 2017 13:47:18 +0200
+Message-ID: <620ae07f-fd37-d97b-ad0c-5d11a3022084@linaro.org>
+References: <20170908030513.GC2755@localhost.localdomain>
+ <1504861502-4093-1-git-send-email-daniel.lezcano@linaro.org>
+ <2ed0c54f-4e86-308e-92c8-19b8a852286d@ti.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="M9pltayyoy9lWEMH"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170829101147.debhadzyfrxhkrvt@earth>
+In-Reply-To: <2ed0c54f-4e86-308e-92c8-19b8a852286d@ti.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: Marek Belisko <marek.belisko@open-nandra.com>, robh+dt@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hns@goldelico.com, Marek Belisko <marek.belisko@gmail.com>
+To: Keerthy <j-keerthy@ti.com>, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, john.stultz@linaro.org, leo.yan@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
+On 08/09/2017 11:49, Keerthy wrote:
+> 
+> 
+> On Friday 08 September 2017 02:35 PM, Daniel Lezcano wrote:
+>> There is a particular situation when the cooling device is cpufreq and the heat
+>> dissipation is not efficient enough where the temperature increases little by
+>> little until reaching the critical threshold and leading to a SoC reset.
+>>
+>> The behavior is reproducible on a hikey6220 with bad heat dissipation (eg.
+>> stacked with other boards).
+>>
+>> Running a simple C program doing while(1); for each CPU of the SoC makes the
+>> temperature to reach the passive regulation trip point and ends up to the
+>> maximum allowed temperature followed by a reset.
+>>
+>> This issue has been also reported by running the libhugetlbfs test suite.
+>>
+>> What is observed is a ping pong between two cpu frequencies, 1.2GHz and 900MHz
+>> while the temperature continues to grow.
+>>
+>> It appears the step wise governor calls get_target_state() the first time with
+>> the throttle set to true and the trend to 'raising'. The code selects logically
+>> the next state, so the cpu frequency decreases from 1.2GHz to 900MHz, so far so
+>> good. The temperature decreases immediately but still stays greater than the
+>> trip point, then get_target_state() is called again, this time with the
+>> throttle set to true *and* the trend to 'dropping'. From there the algorithm
+>> assumes we have to step down the state and the cpu frequency jumps back to
+>> 1.2GHz. But the temperature is still higher than the trip point, so
+>> get_target_state() is called with throttle=1 and trend='raising' again, we jump
+>> to 900MHz, then get_target_state() is called with throttle=1 and
+>> trend='dropping', we jump to 1.2GHz, etc ... but the temperature does not
+>> stabilizes and continues to increase.
+>>
+>> [  237.922654] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+>> [  237.922678] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+>> [  237.922690] thermal cooling_device0: cur_state=0
+>> [  237.922701] thermal cooling_device0: old_target=0, target=1
+>> [  238.026656] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+>> [  238.026680] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
+>> [  238.026694] thermal cooling_device0: cur_state=1
+>> [  238.026707] thermal cooling_device0: old_target=1, target=0
+>> [  238.134647] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+>> [  238.134667] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+>> [  238.134679] thermal cooling_device0: cur_state=0
+>> [  238.134690] thermal cooling_device0: old_target=0, target=1
+>>
+>> In this situation the temperature continues to increase while the trend is
+>> oscillating between 'dropping' and 'raising'. We need to keep the current state
+>> untouched if the throttle is set, so the temperature can decrease or a higher
+>> state could be selected, thus prevening this oscillation.
+>>
+>> Keeping the next_target untouched when 'throttle' is true at 'dropping' time
+>> fixes the issue.
+>>
+>> The following traces show the governor does not change the next state if
+>> trend==2 (dropping) and throttle==1.
+>>
+>> [ 2306.127987] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+>> [ 2306.128009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+>> [ 2306.128021] thermal cooling_device0: cur_state=0
+>> [ 2306.128031] thermal cooling_device0: old_target=0, target=1
+>> [ 2306.231991] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+>> [ 2306.232016] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
+>> [ 2306.232030] thermal cooling_device0: cur_state=1
+>> [ 2306.232042] thermal cooling_device0: old_target=1, target=1
+>> [ 2306.335982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+>> [ 2306.336006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=1
+>> [ 2306.336021] thermal cooling_device0: cur_state=1
+>> [ 2306.336034] thermal cooling_device0: old_target=1, target=1
+>> [ 2306.439984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+>> [ 2306.440008] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
+>> [ 2306.440022] thermal cooling_device0: cur_state=1
+>> [ 2306.440034] thermal cooling_device0: old_target=1, target=0
+>>
+>> [ ... ]
+>>
+>> After a while, if the temperature continues to increase, the next state becomes
+>> 2 which is 720MHz on the hikey. That results in the temperature stabilizing
+>> around the trip point.
+>>
+>> [ 2455.831982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+>> [ 2455.832006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=0
+>> [ 2455.832019] thermal cooling_device0: cur_state=1
+>> [ 2455.832032] thermal cooling_device0: old_target=1, target=1
+>> [ 2455.935985] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+>> [ 2455.936013] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
+>> [ 2455.936027] thermal cooling_device0: cur_state=1
+>> [ 2455.936040] thermal cooling_device0: old_target=1, target=1
+>> [ 2456.043984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+>> [ 2456.044009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
+>> [ 2456.044023] thermal cooling_device0: cur_state=1
+>> [ 2456.044036] thermal cooling_device0: old_target=1, target=1
+>> [ 2456.148001] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+>> [ 2456.148028] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+>> [ 2456.148042] thermal cooling_device0: cur_state=1
+>> [ 2456.148055] thermal cooling_device0: old_target=1, target=2
+>> [ 2456.252009] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+>> [ 2456.252041] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
+>> [ 2456.252058] thermal cooling_device0: cur_state=2
+>> [ 2456.252075] thermal cooling_device0: old_target=2, target=1
+>>
+>> IOW, this change is needed to keep the state for a cooling device if the
+>> temperature trend is oscillating while the temperature increases slightly.
+>>
+>> Without this change, the situation above leads to a catastrophic crash by a
+>> hardware reset on hikey.
+> 
+> Daniel,
+> 
+> By design this governor is throttling and un-throttling based on the
+> computed trend.
 
---M9pltayyoy9lWEMH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Keerthy,
 
-Hi!
+that was true until commit 3dbfff3d (Nov 2012) but now the function has:
 
-> > +	case POWER_SUPPLY_PROP_CAPACITY:
-> > +		{
-> > +		int ret, curr, voltage;
-> > +
-> > +		ret =3D read_channel(adc_bat, POWER_SUPPLY_PROP_CURRENT_NOW, &curr);
-> > +		ret |=3D read_channel(adc_bat, POWER_SUPPLY_PROP_VOLTAGE_NOW, &volta=
-ge);
-> > +		if (ret < 0)
-> > +			goto err;
-> > +
-> > +		val->intval =3D fuel_level_LiIon(voltage, curr, 10);
-> > +		}
-> > +		break;
-> >  	default:
-> >  		return -EINVAL;
-> >  	}
->=20
-> Without patch description: See Last Question in
->=20
-> Documentation/power/power_supply_class.txt
+[ ... ]
 
-=2E..should be done in libbattery, yet to be written. :-).
+        case THERMAL_TREND_RAISING:
+                if (throttle) {
+                        next_target = cur_state < instance->upper ?
+                                    (cur_state + 1) : instance->upper;
+                        if (next_target < instance->lower)
+                                next_target = instance->lower;
+                }
+                break;
 
-Do you have specific guidance what you'd like to see in libbattery?
+  If "the trend is raising and we have to throttle" then state++
 
-I was thinking about creating lib_pocket_hardware -- that would hide
-battery details, plus other phone-related stuff such as LEDs,
-backlights, temperatures, ...
+The change I'm proposing is an action which is the mirror of the one above.
 
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+  If "the trend is dropping and we don't have to throttle" then state--
 
---M9pltayyoy9lWEMH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+> Why not add an intermediate trip point with the highest cooling enabled.
+> Say High alert trip point that allows only the lowest OPP for cpufreq to
+> operate.
+> 
+> For example: alert trip is at 100C (where cpufreq cooling kicks in)
+>              critical trip is at 125C(shutdown temperature).
+> 
+> We have Something like below @110C which allows only the lowest
+> frequency or lowest 2 frequencies based on experimentation:
+> 
+> +&cpu_trips {
+> +	cpu_high_alert: cpu_high_alert {
+> +		temperature = <110000>; /* millicelsius */
+> +		hysteresis = <2000>; /* millicelsius */
+> +		type = "passive";
+> +	};
+> +};
+> +
+> +&cpu_cooling_maps {
+> +	map1: map1 {
+> +		trip = <&cpu_high_alert>;
+> +		cooling-device =
+> +				<&cpu0 2 THERMAL_NO_LIMIT>;
+> +	};
+> +};
+> +
+> 
+> I have seen this problem myself on dra7 platforms. The above will cool
+> the device post 110C by keeping the cpu frequency at the lowest or lower
+> values. That way when you are in between 100 - 110C you can still get
+> highest performance depending on the trend computed and post 110C.
 
-iEYEARECAAYFAlmyf88ACgkQMOfwapXb+vLoFwCguazvtEGTH+GyeBeH0AEp1qw/
-LFEAoJ3ETBktPxp4mdaKaSfPFh+ZSbs4
-=96kB
------END PGP SIGNATURE-----
+Yeah, so we can drop the graveyard legendary card at clash royal without
+any lag and boil our hands ;)
 
---M9pltayyoy9lWEMH--
+Seriously, from my POV, that is a hack to workaround a governor which is
+unable to stabilize the temperature in a specific situation.
+
+This patch fixes this.
+
+  -- Daniel
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
