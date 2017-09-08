@@ -1,85 +1,82 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal/drivers/generic-iio-adc: Switch tz request to
- devm version
-Date: Thu, 7 Sep 2017 19:56:07 -0700
-Message-ID: <20170908025606.GA2755@localhost.localdomain>
-References: <1504808230-12288-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: Re: [PATCH][thermal-next] thermal: brcmstb: remove two redundant
+ integer range checks
+Date: Thu, 7 Sep 2017 19:59:36 -0700
+Message-ID: <20170908025935.GB2755@localhost.localdomain>
+References: <20170903131619.6857-1-colin.king@canonical.com>
+ <20170906184046.GB35422@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:34003 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753439AbdIHC4K (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Sep 2017 22:56:10 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1504808230-12288-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20170906184046.GB35422@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Brian Norris <computersforpeace@gmail.com>
+Cc: Colin King <colin.king@canonical.com>, Markus Mayer <mmayer@broadcom.com>, bcm-kernel-feedback-list@broadcom.com, Zhang Rui <rui.zhang@intel.com>, Gregory Fong <gregory.0xf0@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: ldewangan@nvidia.com, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, open list <linux-kernel@vger.kernel.org>
 
-Hey Daniel,
+Hello,
 
-On Thu, Sep 07, 2017 at 08:17:10PM +0200, Daniel Lezcano wrote:
-> Everything mentionned here:
->  https://lkml.org/lkml/2016/4/20/850
+On Wed, Sep 06, 2017 at 11:40:46AM -0700, Brian Norris wrote:
+> Hi,
 > 
-> This driver was added before the devm_iio_channel_get() function version was
-> merged. The sensor should be released before the iio channel, thus we had to
-> use the non-devm version of thermal_zone_of_sensor_register().
+> On Sun, Sep 03, 2017 at 02:16:19PM +0100, Colin King wrote:
+> > From: Colin Ian King <colin.king@canonical.com>
+> > 
+> > The comparisons for integer low on low > INT_MAX and also
+> > integer high > INT_MAX are never going to be true since an
+> > int type cannot be greater than INT_MAX.  Remove these redundant
+> > checks.
+> > 
+> > Detected by: CoverityScan CID#1455245, 1455248 ("Operands don't affect
+> >   result (CONSTANT_EXPRESSION_RESULT)")
+> > 
+> > Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> > ---
+> >  drivers/thermal/broadcom/brcmstb_thermal.c | 4 ----
+> >  1 file changed, 4 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
+> > index 87b8e7a86ee3..bcb3945feea6 100644
+> > --- a/drivers/thermal/broadcom/brcmstb_thermal.c
+> > +++ b/drivers/thermal/broadcom/brcmstb_thermal.c
+> > @@ -278,8 +278,6 @@ static int brcmstb_set_trips(void *data, int low, int high)
+> >  	dev_dbg(priv->dev, "set trips %d <--> %d\n", low, high);
+> >  
+> >  	if (low) {
+> > -		if (low > INT_MAX)
+> > -			low = INT_MAX;
+> >  		avs_tmon_set_trip_temp(priv, TMON_TRIP_TYPE_LOW, low);
+> >  		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_LOW, 1);
+> >  	} else {
+> > @@ -287,8 +285,6 @@ static int brcmstb_set_trips(void *data, int low, int high)
+> >  	}
+> >  
+> >  	if (high < ULONG_MAX) {
 > 
-> Now the devm_iio_channel_get() is available, do the corresponding change in
-> this driver.
+> Dan's robots noticed that the above condition is not useful either (on
+> architectures where INT_MAX < ULONG_MAX -- i.e., all?), since 'high' is
+> 'int', not 'unsigned long'.
 > 
-> [Compiled tested only]
+> Should probably fix that
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/thermal/thermal-generic-adc.c | 13 ++++---------
->  1 file changed, 4 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
-> index 73f55d6..71d0365 100644
-> --- a/drivers/thermal/thermal-generic-adc.c
-> +++ b/drivers/thermal/thermal-generic-adc.c
-> @@ -126,28 +126,23 @@ static int gadc_thermal_probe(struct platform_device *pdev)
->  	gti->dev = &pdev->dev;
->  	platform_set_drvdata(pdev, gti);
->  
-> -	gti->channel = iio_channel_get(&pdev->dev, "sensor-channel");
-> +	gti->channel = devm_iio_channel_get(&pdev->dev, "sensor-channel");
->  	if (IS_ERR(gti->channel)) {
->  		ret = PTR_ERR(gti->channel);
->  		dev_err(&pdev->dev, "IIO channel not found: %d\n", ret);
->  		return ret;
->  	}
->  
-> -	gti->tz_dev = thermal_zone_of_sensor_register(&pdev->dev, 0,
-> -						      gti, &gadc_thermal_ops);
-> +	gti->tz_dev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, gti,
-> +							   &gadc_thermal_ops);
->  	if (IS_ERR(gti->tz_dev)) {
->  		ret = PTR_ERR(gti->tz_dev);
->  		dev_err(&pdev->dev, "Thermal zone sensor register failed: %d\n",
->  			ret);
-> -		goto sensor_fail;
-> +		return ret;
->  	}
->  
->  	return 0;
-> -
-> -sensor_fail:
-> -	iio_channel_release(gti->channel);
-> -
-> -	return ret;
->  }
->  
->  static int gadc_thermal_remove(struct platform_device *pdev)
+> s/ULONG_MAX/INT_MAX/
 
-Any particular reason why this patch does not include a removal of
-gadc_thermal_remove()?
+Yeah, that would probably make sense. I might be also the case that the
+driver was considering long because that was the type used to represent
+temperature some time back in the thermal subsystem. So, the limits on
+the driver may be outdated.
 
-
-> -- 
-> 2.7.4
 > 
+> ?
+> 
+> Brian
+> 
+> > -		if (high > INT_MAX)
+> > -			high = INT_MAX;
+> >  		avs_tmon_set_trip_temp(priv, TMON_TRIP_TYPE_HIGH, high);
+> >  		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_HIGH, 1);
+> >  	} else {
+> > -- 
+> > 2.14.1
+> > 
