@@ -1,365 +1,99 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V2 09/13] thermal/drivers/hisi: Remove costly sensor
- inspection
-Date: Thu, 7 Sep 2017 20:22:29 -0700
-Message-ID: <20170908032227.GE2755@localhost.localdomain>
-References: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
- <1504554972-2624-9-git-send-email-daniel.lezcano@linaro.org>
+From: "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
+Subject: Re: [1/9] i2c: designware: Fix system suspend
+Date: Fri, 8 Sep 2017 11:23:28 +0800
+Message-ID: <5597d9a7-8b1a-d45d-e8d5-d1c0b46ddb7a@hisilicon.com>
+References: <1498072888-14782-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1504554972-2624-9-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <1498072888-14782-2-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>, Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, stable@vger.linux.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 04, 2017 at 09:56:08PM +0200, Daniel Lezcano wrote:
-> The sensor is all setup, bind, resetted, acked, etc... every single second.
-> 
-> That was the way to workaround a problem with the interrupt bouncing again and
-> again.
-> 
-> With the following changes, we fix all in one:
-> 
->  - Do the setup, one time, at probe time
-> 
->  - Add the IRQF_ONESHOT, ack the interrupt in the threaded handler
-> 
->  - Remove the interrupt handler
-> 
->  - Set the correct value for the LAG register
-> 
->  - Remove all the irq_enabled stuff in the code as the interruption
->    handling is fixed
-> 
->  - Remove the 3ms delay
-> 
->  - Reorder the initialization routine to be in the right order
-> 
-> It ends up to a nicer code and more efficient, the 3-5ms delay is removed from
-> the get_temp() path.
 
-It would be good if you could include in your commit message why before
-the 3-5ms was needed and now you dont need it. These delays are typical
-on ADC conversion time in order to get the proper temperature read. One
-side effect of removing the delay could be that you would be caching
-previously converted value stored in the register interface, which,
-depending on your policy and polling setup, could be bad. Say you have a
-polling setup for 1s, you would wait 2s to see read temperature, which,
-depending on how the zone behaves could be enough to miss a spike.
+This patch can fix the issue we found on hikey960 that i2c doesn't skip system suspend when it is runtime suspended.
 
+åœ¨ 2017/6/22 3:21, Ulf Hansson å†™é“:
+> The commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming
+> during system suspend"), may suggest to the PM core to try out the so
+> called direct_complete path for system sleep. In this path, the PM core
+> treats a runtime suspended device as it's already in a proper low power
+> state for system sleep, which makes it skip calling the system sleep
+> callbacks for the device, except for the ->prepare() and the ->complete()
+> callback.
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Reviewed-by: Leo Yan <leo.yan@linaro.org>
-> Tested-by: Leo Yan <leo.yan@linaro.org>
+> Moreover, under certain circumstances the PM core may unset the
+> direct_complete flag for a parent device, in case its child device are
+> being system suspended before. In other words, the PM core doesn't skip
+> calling the system sleep callbacks, no matter if the device is runtime
+> suspended or not.
+> 
+> In cases of an i2c slave device, the above situation is triggered.
+> Unfortunate, this also breaks the assumption that the i2c device is always
+> runtime resumed, whenever the dw_i2c_plat_suspend() callback is being
+> invoked, which then leads to a regression.
+> 
+> More precisely, dw_i2c_plat_suspend() then calls clk_core_disable() and
+> clk_core_unprepare(), for an already disabled/unprepared clock, leading to
+> complaints about clocks calls being wrongly balanced.
+> 
+> In cases when the i2c device is attached to the ACPI PM domain, the problem
+> doesn't occur. That's because ACPI's ->suspend() callback, assigned to
+> acpi_subsys_suspend(), calls pm_runtime_resume() for the i2c device.
+> 
+> To make a simple fix for this regression, let's runtime resume the i2c
+> device in the ->prepare() callback, assigned to dw_i2c_plat_prepare(). This
+> prevents the direct_complete path from being executed by the PM core and
+> guarantees the dw_i2c_plat_suspend() is called with the i2c device always
+> being runtime resumed.
+> 
+> Of course this change is suboptimal, because to always force a runtime
+> resume of the i2c device in ->prepare() is a waste, especially in those
+> cases when it could have remained runtime suspended during the entire
+> system sleep sequence. However, to accomplish that behaviour a bigger
+> change is needed, so defer that to future changes not applicable as fixes
+> or for stable.
+> 
+> Fixes: 8503ff166504 ("i2c: designware: Avoid unnecessary resuming...")
+> Cc: stable@vger.linux.org
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > ---
->  drivers/thermal/hisi_thermal.c | 203 +++++++++++++++++++----------------------
->  1 file changed, 93 insertions(+), 110 deletions(-)
+>   drivers/i2c/busses/i2c-designware-platdrv.c | 11 ++---------
+>   1 file changed, 2 insertions(+), 9 deletions(-)
 > 
-> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index 10ef6bc..3ce9a4f 100644
-> --- a/drivers/thermal/hisi_thermal.c
-> +++ b/drivers/thermal/hisi_thermal.c
-> @@ -41,6 +41,7 @@
->  #define HISI_TEMP_BASE			(-60000)
->  #define HISI_TEMP_RESET			(100000)
->  #define HISI_TEMP_STEP			(784)
-> +#define HISI_TEMP_LAG			(3500)
->  
->  #define HISI_MAX_SENSORS		4
->  #define HISI_DEFAULT_SENSOR		2
-> @@ -60,8 +61,6 @@ struct hisi_thermal_data {
->  	struct clk *clk;
->  	struct hisi_thermal_sensor sensors;
->  	int irq;
-> -	bool irq_enabled;
-> -
->  	void __iomem *regs;
->  };
->  
-> @@ -99,9 +98,40 @@ static inline long hisi_thermal_round_temp(int temp)
->  		hisi_thermal_temp_to_step(temp));
->  }
->  
-> +/*
-> + * The lag register contains 5 bits encoding the temperature in steps.
-> + *
-> + * Each time the temperature crosses the threshold boundary, an
-> + * interrupt is raised. It could be when the temperature is going
-> + * above the threshold or below. However, if the temperature is
-> + * fluctuating around this value due to the load, we can receive
-> + * several interrupts which may not desired.
-> + *
-> + * We can setup a temperature representing the delta between the
-> + * threshold and the current temperature when the temperature is
-> + * decreasing.
-> + *
-> + * For instance: the lag register is 5°C, the threshold is 65°C, when
-> + * the temperature reaches 65°C an interrupt is raised and when the
-> + * temperature decrease to 65°C - 5°C another interrupt is raised.
-> + *
-> + * A very short lag can lead to an interrupt storm, a long lag
-> + * increase the latency to react to the temperature changes.  In our
-> + * case, that is not really a problem as we are polling the
-> + * temperature.
-> + *
-> + * [0:4] : lag register
-> + *
-> + * The temperature is coded in steps, cf. HISI_TEMP_STEP.
-> + *
-> + * Min : 0x00 :  0.0 °C
-> + * Max : 0x1F : 24.3 °C
-> + *
-> + * The 'value' parameter is in milliCelsius.
-> + */
->  static inline void hisi_thermal_set_lag(void __iomem *addr, int value)
->  {
-> -	writel(value, addr + TEMP0_LAG);
-> +	writel((value / HISI_TEMP_STEP) & 0x1F, addr + TEMP0_LAG);
->  }
->  
->  static inline void hisi_thermal_alarm_clear(void __iomem *addr, int value)
-> @@ -171,71 +201,6 @@ static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
->  	       (value << 4), addr + TEMP0_CFG);
->  }
->  
-> -static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
-> -					 struct hisi_thermal_sensor *sensor)
-> -{
-> -	long val;
-> -
-> -	mutex_lock(&data->thermal_lock);
-> -
-> -	/* disable interrupt */
-> -	hisi_thermal_alarm_enable(data->regs, 0);
-> -	hisi_thermal_alarm_clear(data->regs, 1);
-> -
-> -	/* disable module firstly */
-> -	hisi_thermal_enable(data->regs, 0);
-> -
-> -	/* select sensor id */
-> -	hisi_thermal_sensor_select(data->regs, sensor->id);
-> -
-> -	/* enable module */
-> -	hisi_thermal_enable(data->regs, 1);
-> -
-> -	usleep_range(3000, 5000);
-> -
-> -	val = hisi_thermal_get_temperature(data->regs);
-> -
-> -	mutex_unlock(&data->thermal_lock);
-> -
-> -	return val;
+> diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/busses/i2c-designware-platdrv.c
+> index d1263b8..2b7fa75 100644
+> --- a/drivers/i2c/busses/i2c-designware-platdrv.c
+> +++ b/drivers/i2c/busses/i2c-designware-platdrv.c
+> @@ -375,17 +375,11 @@ MODULE_DEVICE_TABLE(of, dw_i2c_of_match);
+>   #ifdef CONFIG_PM_SLEEP
+>   static int dw_i2c_plat_prepare(struct device *dev)
+>   {
+> -	return pm_runtime_suspended(dev);
 > -}
 > -
-> -static void hisi_thermal_enable_bind_irq_sensor
-> -			(struct hisi_thermal_data *data)
+> -static void dw_i2c_plat_complete(struct device *dev)
 > -{
-> -	struct hisi_thermal_sensor *sensor;
-> -
-> -	mutex_lock(&data->thermal_lock);
-> -
-> -	sensor = &data->sensors;
-> -
-> -	/* setting the hdak time */
-> -	hisi_thermal_hdak_set(data->regs, 0);
-> -
-> -	/* disable module firstly */
-> -	hisi_thermal_reset_enable(data->regs, 0);
-> -	hisi_thermal_enable(data->regs, 0);
-> -
-> -	/* select sensor id */
-> -	hisi_thermal_sensor_select(data->regs, sensor->id);
-> -
-> -	/* enable for interrupt */
-> -	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
-> -
-> -	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
-> -
-> -	/* enable module */
-> -	hisi_thermal_reset_enable(data->regs, 1);
-> -	hisi_thermal_enable(data->regs, 1);
-> -
-> -	hisi_thermal_alarm_clear(data->regs, 0);
-> -	hisi_thermal_alarm_enable(data->regs, 1);
-> -
-> -	usleep_range(3000, 5000);
-> -
-> -	mutex_unlock(&data->thermal_lock);
-> -}
-> -
->  static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
->  {
->  	mutex_lock(&data->thermal_lock);
-> @@ -253,25 +218,10 @@ static int hisi_thermal_get_temp(void *_sensor, int *temp)
->  	struct hisi_thermal_sensor *sensor = _sensor;
->  	struct hisi_thermal_data *data = sensor->thermal;
->  
-> -	*temp = hisi_thermal_get_sensor_temp(data, sensor);
-> -
-> -	dev_dbg(&data->pdev->dev, "id=%d, irq=%d, temp=%d, thres=%d\n",
-> -		sensor->id, data->irq_enabled, *temp, sensor->thres_temp);
-> -	/*
-> -	 * Bind irq to sensor for two cases:
-> -	 *   Reenable alarm IRQ if temperature below threshold;
-> -	 *   if irq has been enabled, always set it;
-> -	 */
-> -	if (data->irq_enabled) {
-> -		hisi_thermal_enable_bind_irq_sensor(data);
-> -		return 0;
-> -	}
-> +	*temp = hisi_thermal_get_temperature(data->regs);
->  
-> -	if (*temp < sensor->thres_temp) {
-> -		data->irq_enabled = true;
-> -		hisi_thermal_enable_bind_irq_sensor(data);
-> -		enable_irq(data->irq);
-> -	}
-> +	dev_dbg(&data->pdev->dev, "id=%d, temp=%d, thres=%d\n",
-> +		sensor->id, *temp, sensor->thres_temp);
->  
->  	return 0;
->  }
-> @@ -280,26 +230,27 @@ static const struct thermal_zone_of_device_ops hisi_of_thermal_ops = {
->  	.get_temp = hisi_thermal_get_temp,
->  };
->  
-> -static irqreturn_t hisi_thermal_alarm_irq(int irq, void *dev)
-> +static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
->  {
->  	struct hisi_thermal_data *data = dev;
-> +	struct hisi_thermal_sensor *sensor = &data->sensors;
-> +	int temp;
->  
-> -	disable_irq_nosync(irq);
-> -	data->irq_enabled = false;
-> +	hisi_thermal_alarm_clear(data->regs, 1);
->  
-> -	return IRQ_WAKE_THREAD;
-> -}
-> +	temp = hisi_thermal_get_temperature(data->regs);
->  
-> -static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
-> -{
-> -	struct hisi_thermal_data *data = dev;
-> -	struct hisi_thermal_sensor *sensor = &data->sensors;
-> +	if (temp >= sensor->thres_temp) {
-> +		dev_crit(&data->pdev->dev, "THERMAL ALARM: %d > %d\n",
-> +			 temp, sensor->thres_temp);
->  
-> -	dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
-> -		 sensor->thres_temp);
-> +		thermal_zone_device_update(data->sensors.tzd,
-> +					   THERMAL_EVENT_UNSPECIFIED);
->  
-> -	thermal_zone_device_update(data->sensors.tzd,
-> -				   THERMAL_EVENT_UNSPECIFIED);
-> +	} else if (temp < sensor->thres_temp) {
-> +		dev_crit(&data->pdev->dev, "THERMAL ALARM stopped: %d < %d\n",
-> +			 temp, sensor->thres_temp);
-> +	}
->  
->  	return IRQ_HANDLED;
->  }
-> @@ -352,6 +303,40 @@ static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
->  		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
->  }
->  
-> +static int hisi_thermal_setup(struct hisi_thermal_data *data)
-> +{
-> +	struct hisi_thermal_sensor *sensor;
-> +
-> +	sensor = &data->sensors;
-> +
-> +	/* disable module firstly */
-> +	hisi_thermal_reset_enable(data->regs, 0);
-> +	hisi_thermal_enable(data->regs, 0);
-> +
-> +	/* select sensor id */
-> +	hisi_thermal_sensor_select(data->regs, sensor->id);
-> +
-> +	/* setting the hdak time */
-> +	hisi_thermal_hdak_set(data->regs, 0);
-> +
-> +	/* setting lag value between current temp and the threshold */
-> +	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
-> +
-> +	/* enable for interrupt */
-> +	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
-> +
-> +	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
-> +
-> +	/* enable module */
-> +	hisi_thermal_reset_enable(data->regs, 1);
-> +	hisi_thermal_enable(data->regs, 1);
-> +
-> +	hisi_thermal_alarm_clear(data->regs, 0);
-> +	hisi_thermal_alarm_enable(data->regs, 1);
-> +
+> -	if (dev->power.direct_complete)
+> -		pm_request_resume(dev);
+> +	pm_runtime_resume(dev);
 > +	return 0;
-> +}
-> +
->  static int hisi_thermal_probe(struct platform_device *pdev)
->  {
->  	struct hisi_thermal_data *data;
-> @@ -394,9 +379,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->  		return ret;
->  	}
->  
-> -	hisi_thermal_enable_bind_irq_sensor(data);
-> -	data->irq_enabled = true;
-> -
->  	ret = hisi_thermal_register_sensor(pdev, data,
->  					   &data->sensors,
->  					   HISI_DEFAULT_SENSOR);
-> @@ -406,18 +388,21 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->  		return ret;
->  	}
->  
-> -	hisi_thermal_toggle_sensor(&data->sensors, true);
-> +	ret = hisi_thermal_setup(data);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "Failed to setup the sensor: %d\n", ret);
-> +		return ret;
-> +	}
->  
-> -	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
-> -					hisi_thermal_alarm_irq,
-> +	ret = devm_request_threaded_irq(&pdev->dev, data->irq, NULL,
->  					hisi_thermal_alarm_irq_thread,
-> -					0, "hisi_thermal", data);
-> +					IRQF_ONESHOT, "hisi_thermal", data);
->  	if (ret < 0) {
->  		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
->  		return ret;
->  	}
->  
-> -	enable_irq(data->irq);
-> +	hisi_thermal_toggle_sensor(&data->sensors, true);
->  
->  	return 0;
->  }
-> @@ -440,7 +425,6 @@ static int hisi_thermal_suspend(struct device *dev)
->  	struct hisi_thermal_data *data = dev_get_drvdata(dev);
->  
->  	hisi_thermal_disable_sensor(data);
-> -	data->irq_enabled = false;
->  
->  	clk_disable_unprepare(data->clk);
->  
-> @@ -456,8 +440,7 @@ static int hisi_thermal_resume(struct device *dev)
->  	if (ret)
->  		return ret;
->  
-> -	data->irq_enabled = true;
-> -	hisi_thermal_enable_bind_irq_sensor(data);
-> +	hisi_thermal_setup(data);
->  
->  	return 0;
->  }
-> -- 
-> 2.7.4
+>   }
+>   #else
+>   #define dw_i2c_plat_prepare	NULL
+> -#define dw_i2c_plat_complete	NULL
+>   #endif
+>   
+>   #ifdef CONFIG_PM
+> @@ -413,7 +407,6 @@ static int dw_i2c_plat_resume(struct device *dev)
+>   
+>   static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
+>   	.prepare = dw_i2c_plat_prepare,
+> -	.complete = dw_i2c_plat_complete,
+>   	SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
+>   	SET_RUNTIME_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume, NULL)
+>   };
 > 
