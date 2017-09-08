@@ -1,38 +1,77 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: Re: [PATCH resend v2] power: supply: bq27xxx: enable writing capacity values for bq27421
-Date: Fri, 8 Sep 2017 19:44:00 +0200
-Message-ID: <584BDB47-100E-4DB6-B5F5-A701FFC8C096@goldelico.com>
-References: <be410e440d889b2e46208b523bdb890e860c5046.1504037446.git.hns@goldelico.com> <CAKvHMgQDcgabM3UogXE3L07n9yiHgD3FfJ5GCOqkAk1=SA2A=Q@mail.gmail.com> <7428DD60-FE09-41C4-9DBC-FFDCB9D0B591@goldelico.com> <CAKvHMgT8MDpussUYJ_AKELXzCbQxz2BYrF0ZM-S_on=9+oatEQ@mail.gmail.com> <3A487394-3755-4EA0-86C6-6855DA0AC547@goldelico.com> <CAKvHMgT6AHfjnXvD5jeWP_9wAm_GQNJxm=Nm1jH32NeaVZjdYw@mail.gmail.com> <A3715C96-BA15-4F3F-B0F1-017A5D31FFB0@goldelico.com> <CAKvHMgTGDb=JVCMpTo4ZXwRVc9s4BweAFzwGGNoewZwaT3=4LA@mail.gmail.com> <9903AE74-6BAA-4051-ADFC-0DB5972AF26E@goldelico.com> <20170908174033.GC23140@pali>
-Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC v3 2/3] interconnect: Add basic event tracing
+Date: Fri, 8 Sep 2017 14:13:21 -0400
+Message-ID: <20170908141321.02f51e92@gandalf.local.home>
+References: <20170908171830.13813-1-georgi.djakov@linaro.org>
+        <20170908171830.13813-3-georgi.djakov@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170908174033.GC23140@pali>
+In-Reply-To: <20170908171830.13813-3-georgi.djakov@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: =?utf-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>
-Cc: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sre@kernel.org>, "Andrew F. Davis" <afd@ti.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Discussions about the Letux Kernel <letux-kernel@openphoenux.org>, kernel@pyra-handheld.com
+To: Georgi Djakov <georgi.djakov@linaro.org>
+Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, khilman@baylibre.com, mturquette@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, sboyd@codeaurora.org, andy.gross@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, Ingo Molnar <mingo@redhat.com>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri,  8 Sep 2017 20:18:29 +0300
+Georgi Djakov <georgi.djakov@linaro.org> wrote:
 
-> Am 08.09.2017 um 19:40 schrieb Pali Roh=C3=A1r <pali.rohar@gmail.com>:
->=20
-> On Friday 08 September 2017 19:38:37 H. Nikolaus Schaller wrote:
->> and here is the result:
->>=20
->>> root@letux:~# dmesg|fgrep bq27
->>> [   10.391235] bq27xxx_battery_setup
->>> [   10.391265] bq27xxx_battery_setup: dm_regs=3Dbf0520e0
->>> [   10.393798] (NULL device *): hwmon: 'bq27500-1-0' is not a valid =
-name attribute, please fix
->=20
-> Hi! IIRC hwmon name cannot contain '-'. Use '_' instead.
+> diff --git a/include/trace/events/interconnect.h b/include/trace/events/interconnect.h
+> new file mode 100644
+> index 000000000000..c4a72163873c
+> --- /dev/null
+> +++ b/include/trace/events/interconnect.h
+> @@ -0,0 +1,45 @@
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM interconnect
+> +
+> +#if !defined(_TRACE_INTERCONNECT_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_INTERCONNECT_H
+> +
+> +#include <linux/tracepoint.h>
+> +
+> +struct interconnect_path;
+> +
+> +DECLARE_EVENT_CLASS(interconnect_path,
+> +
+> +	TP_PROTO(struct interconnect_path *path),
+> +
+> +	TP_ARGS(path),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(struct interconnect_path *, path)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->path = path;
+> +	),
+> +
+> +	TP_printk("INTERCONNECT: %p", __entry->path)
 
-Yes. I'd like to see it fixed as well...
+You're passing in an interconnect_path and only recording the pointer
+to it? Wouldn't it be useful to record other aspects? Like the number
+of nodes, the avg and peak bw of each node?
 
-AFAIR it is a general problem outside of battery drivers and IMHO there =
-is some note somewhere.
-Nobody "uses" a '-'. It is some logic that automatically creates node =
-names which hwmon rejects.
+-- Steve
 
-BR,
-Nikolaus
+> +);
+> +
+> +DEFINE_EVENT(interconnect_path, interconnect_set,
+> +
+> +	TP_PROTO(struct interconnect_path *path),
+> +
+> +	TP_ARGS(path)
+> +);
+> +
+> +DEFINE_EVENT(interconnect_path, interconnect_set_complete,
+> +
+> +	TP_PROTO(struct interconnect_path *path),
+> +
+> +	TP_ARGS(path)
+> +);
+> +
+> +#endif /* _TRACE_INTERCONNECT_H */
+> +
+> +/* This part must be outside protection */
+> +#include <trace/define_trace.h>
