@@ -1,87 +1,47 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V2 13/13] thermal/drivers/hisi: Remove mutex_lock in the
- code
-Date: Thu, 7 Sep 2017 20:25:43 -0700
-Message-ID: <20170908032542.GF2755@localhost.localdomain>
-References: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
- <1504554972-2624-13-git-send-email-daniel.lezcano@linaro.org>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal/drivers/generic-iio-adc: Switch tz request to
+ devm version
+Date: Fri, 8 Sep 2017 09:02:24 +0200
+Message-ID: <957821eb-262c-2845-db29-f5d83a685884@linaro.org>
+References: <1504808230-12288-1-git-send-email-daniel.lezcano@linaro.org>
+ <20170908025606.GA2755@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1504554972-2624-13-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f179.google.com ([209.85.128.179]:38384 "EHLO
+        mail-wr0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753804AbdIHHC2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2017 03:02:28 -0400
+Received: by mail-wr0-f179.google.com with SMTP id 108so2828988wra.5
+        for <linux-pm@vger.kernel.org>; Fri, 08 Sep 2017 00:02:28 -0700 (PDT)
+In-Reply-To: <20170908025606.GA2755@localhost.localdomain>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: ldewangan@nvidia.com, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, open list <linux-kernel@vger.kernel.org>
 
-On Mon, Sep 04, 2017 at 09:56:12PM +0200, Daniel Lezcano wrote:
-> The mutex is used to protect against writes in the configuration register.
-> 
-> That happens at probe time, with no possible race yet.
-> 
-> Then when the module is unloaded and at suspend/resume.
-> 
-> When the module is unloaded, it is an userspace operation, thus via a process.
-> Suspending the system goes through the freezer to suspend all the tasks
-> synchronously before continuing. So it is not possible to hit the suspend ops
-> in this driver while we are unloading it.
-> 
-> The resume is the same situation than the probe.
-> 
-> In other words, even if there are several places where we write the
-> configuration register, there is no situation where we can write it at the same
-> time, so far as I can judge
+On 08/09/2017 04:56, Eduardo Valentin wrote:
+> Hey Daniel,
 
-To me is good to trend towards removal of a lock. Also keep in mind that
-the thermal zone has a lock of its own. However, remember that get temp
-may be called also from sysfs interaction, from your threaded irq and
-from the workqueue in the thermal core that does the polling state
-machine.
+Hi Valentin,
 
+>>  static int gadc_thermal_remove(struct platform_device *pdev)
 > 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Reviewed-by: Leo Yan <leo.yan@linaro.org>
-> Tested-by: Leo Yan <leo.yan@linaro.org>
-> ---
->  drivers/thermal/hisi_thermal.c | 6 ------
->  1 file changed, 6 deletions(-)
-> 
-> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index cce3d10..39f4627 100644
-> --- a/drivers/thermal/hisi_thermal.c
-> +++ b/drivers/thermal/hisi_thermal.c
-> @@ -53,7 +53,6 @@ struct hisi_thermal_sensor {
->  };
->  
->  struct hisi_thermal_data {
-> -	struct mutex thermal_lock;    /* protects register data */
->  	struct platform_device *pdev;
->  	struct clk *clk;
->  	struct hisi_thermal_sensor sensor;
-> @@ -200,14 +199,10 @@ static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
->  
->  static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
->  {
-> -	mutex_lock(&data->thermal_lock);
-> -
->  	/* disable sensor module */
->  	hisi_thermal_enable(data->regs, 0);
->  	hisi_thermal_alarm_enable(data->regs, 0);
->  	hisi_thermal_reset_enable(data->regs, 0);
-> -
-> -	mutex_unlock(&data->thermal_lock);
->  }
->  
->  static int hisi_thermal_get_temp(void *__data, int *temp)
-> @@ -344,7 +339,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->  	if (!data)
->  		return -ENOMEM;
->  
-> -	mutex_init(&data->thermal_lock);
->  	data->pdev = pdev;
->  
->  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> -- 
-> 2.7.4
-> 
+> Any particular reason why this patch does not include a removal of
+> gadc_thermal_remove()?
+
+Ah, yes. Missed it.
+
+Thanks.
+
+  -- Daniel
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
