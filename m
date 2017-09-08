@@ -1,56 +1,365 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH V2 06/13] thermal/drivers/hisi: Remove pointless lock
-Date: Thu, 7 Sep 2017 20:16:43 -0700
-Message-ID: <20170908031641.GD2755@localhost.localdomain>
+Subject: Re: [PATCH V2 09/13] thermal/drivers/hisi: Remove costly sensor
+ inspection
+Date: Thu, 7 Sep 2017 20:22:29 -0700
+Message-ID: <20170908032227.GE2755@localhost.localdomain>
 References: <1504554972-2624-1-git-send-email-daniel.lezcano@linaro.org>
- <1504554972-2624-6-git-send-email-daniel.lezcano@linaro.org>
+ <1504554972-2624-9-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1504554972-2624-6-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <1504554972-2624-9-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 04, 2017 at 09:56:05PM +0200, Daniel Lezcano wrote:
-> The threaded interrupt inspect the sensors structure to look in the temp
-> threshold field, but this field is read-only in all the code, except in the
-> probe function before the threaded interrupt is set. In other words there
-> is not race window in the threaded interrupt when reading the field value.
+On Mon, Sep 04, 2017 at 09:56:08PM +0200, Daniel Lezcano wrote:
+> The sensor is all setup, bind, resetted, acked, etc... every single second.
+> 
+> That was the way to workaround a problem with the interrupt bouncing again and
+> again.
+> 
+> With the following changes, we fix all in one:
+> 
+>  - Do the setup, one time, at probe time
+> 
+>  - Add the IRQF_ONESHOT, ack the interrupt in the threaded handler
+> 
+>  - Remove the interrupt handler
+> 
+>  - Set the correct value for the LAG register
+> 
+>  - Remove all the irq_enabled stuff in the code as the interruption
+>    handling is fixed
+> 
+>  - Remove the 3ms delay
+> 
+>  - Reorder the initialization routine to be in the right order
+> 
+> It ends up to a nicer code and more efficient, the 3-5ms delay is removed from
+> the get_temp() path.
 
-
-Sure? Not even if you have a userspace process read the zone temp via
-sysfs and the polling workqueue reading the temp too?
+It would be good if you could include in your commit message why before
+the 3-5ms was needed and now you dont need it. These delays are typical
+on ADC conversion time in order to get the proper temperature read. One
+side effect of removing the delay could be that you would be caching
+previously converted value stored in the register interface, which,
+depending on your policy and polling setup, could be bad. Say you have a
+polling setup for 1s, you would wait 2s to see read temperature, which,
+depending on how the zone behaves could be enough to miss a spike.
 
 > 
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > Reviewed-by: Leo Yan <leo.yan@linaro.org>
+> Tested-by: Leo Yan <leo.yan@linaro.org>
 > ---
->  drivers/thermal/hisi_thermal.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
+>  drivers/thermal/hisi_thermal.c | 203 +++++++++++++++++++----------------------
+>  1 file changed, 93 insertions(+), 110 deletions(-)
 > 
 > diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index f523197..9ec5f29 100644
+> index 10ef6bc..3ce9a4f 100644
 > --- a/drivers/thermal/hisi_thermal.c
 > +++ b/drivers/thermal/hisi_thermal.c
-> @@ -221,14 +221,10 @@ static irqreturn_t hisi_thermal_alarm_irq(int irq, void *dev)
->  static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
+> @@ -41,6 +41,7 @@
+>  #define HISI_TEMP_BASE			(-60000)
+>  #define HISI_TEMP_RESET			(100000)
+>  #define HISI_TEMP_STEP			(784)
+> +#define HISI_TEMP_LAG			(3500)
+>  
+>  #define HISI_MAX_SENSORS		4
+>  #define HISI_DEFAULT_SENSOR		2
+> @@ -60,8 +61,6 @@ struct hisi_thermal_data {
+>  	struct clk *clk;
+>  	struct hisi_thermal_sensor sensors;
+>  	int irq;
+> -	bool irq_enabled;
+> -
+>  	void __iomem *regs;
+>  };
+>  
+> @@ -99,9 +98,40 @@ static inline long hisi_thermal_round_temp(int temp)
+>  		hisi_thermal_temp_to_step(temp));
+>  }
+>  
+> +/*
+> + * The lag register contains 5 bits encoding the temperature in steps.
+> + *
+> + * Each time the temperature crosses the threshold boundary, an
+> + * interrupt is raised. It could be when the temperature is going
+> + * above the threshold or below. However, if the temperature is
+> + * fluctuating around this value due to the load, we can receive
+> + * several interrupts which may not desired.
+> + *
+> + * We can setup a temperature representing the delta between the
+> + * threshold and the current temperature when the temperature is
+> + * decreasing.
+> + *
+> + * For instance: the lag register is 5°C, the threshold is 65°C, when
+> + * the temperature reaches 65°C an interrupt is raised and when the
+> + * temperature decrease to 65°C - 5°C another interrupt is raised.
+> + *
+> + * A very short lag can lead to an interrupt storm, a long lag
+> + * increase the latency to react to the temperature changes.  In our
+> + * case, that is not really a problem as we are polling the
+> + * temperature.
+> + *
+> + * [0:4] : lag register
+> + *
+> + * The temperature is coded in steps, cf. HISI_TEMP_STEP.
+> + *
+> + * Min : 0x00 :  0.0 °C
+> + * Max : 0x1F : 24.3 °C
+> + *
+> + * The 'value' parameter is in milliCelsius.
+> + */
+>  static inline void hisi_thermal_set_lag(void __iomem *addr, int value)
 >  {
->  	struct hisi_thermal_data *data = dev;
+> -	writel(value, addr + TEMP0_LAG);
+> +	writel((value / HISI_TEMP_STEP) & 0x1F, addr + TEMP0_LAG);
+>  }
+>  
+>  static inline void hisi_thermal_alarm_clear(void __iomem *addr, int value)
+> @@ -171,71 +201,6 @@ static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
+>  	       (value << 4), addr + TEMP0_CFG);
+>  }
+>  
+> -static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+> -					 struct hisi_thermal_sensor *sensor)
+> -{
+> -	long val;
+> -
+> -	mutex_lock(&data->thermal_lock);
+> -
+> -	/* disable interrupt */
+> -	hisi_thermal_alarm_enable(data->regs, 0);
+> -	hisi_thermal_alarm_clear(data->regs, 1);
+> -
+> -	/* disable module firstly */
+> -	hisi_thermal_enable(data->regs, 0);
+> -
+> -	/* select sensor id */
+> -	hisi_thermal_sensor_select(data->regs, sensor->id);
+> -
+> -	/* enable module */
+> -	hisi_thermal_enable(data->regs, 1);
+> -
+> -	usleep_range(3000, 5000);
+> -
+> -	val = hisi_thermal_get_temperature(data->regs);
+> -
+> -	mutex_unlock(&data->thermal_lock);
+> -
+> -	return val;
+> -}
+> -
+> -static void hisi_thermal_enable_bind_irq_sensor
+> -			(struct hisi_thermal_data *data)
+> -{
 > -	struct hisi_thermal_sensor *sensor;
 > -
 > -	mutex_lock(&data->thermal_lock);
+> -
 > -	sensor = &data->sensors;
-> +	struct hisi_thermal_sensor *sensor = &data->sensors;
->  
->  	dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
->  		 sensor->thres_temp);
+> -
+> -	/* setting the hdak time */
+> -	hisi_thermal_hdak_set(data->regs, 0);
+> -
+> -	/* disable module firstly */
+> -	hisi_thermal_reset_enable(data->regs, 0);
+> -	hisi_thermal_enable(data->regs, 0);
+> -
+> -	/* select sensor id */
+> -	hisi_thermal_sensor_select(data->regs, sensor->id);
+> -
+> -	/* enable for interrupt */
+> -	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
+> -
+> -	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
+> -
+> -	/* enable module */
+> -	hisi_thermal_reset_enable(data->regs, 1);
+> -	hisi_thermal_enable(data->regs, 1);
+> -
+> -	hisi_thermal_alarm_clear(data->regs, 0);
+> -	hisi_thermal_alarm_enable(data->regs, 1);
+> -
+> -	usleep_range(3000, 5000);
+> -
 > -	mutex_unlock(&data->thermal_lock);
+> -}
+> -
+>  static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
+>  {
+>  	mutex_lock(&data->thermal_lock);
+> @@ -253,25 +218,10 @@ static int hisi_thermal_get_temp(void *_sensor, int *temp)
+>  	struct hisi_thermal_sensor *sensor = _sensor;
+>  	struct hisi_thermal_data *data = sensor->thermal;
 >  
->  	thermal_zone_device_update(data->sensors.tzd,
->  				   THERMAL_EVENT_UNSPECIFIED);
+> -	*temp = hisi_thermal_get_sensor_temp(data, sensor);
+> -
+> -	dev_dbg(&data->pdev->dev, "id=%d, irq=%d, temp=%d, thres=%d\n",
+> -		sensor->id, data->irq_enabled, *temp, sensor->thres_temp);
+> -	/*
+> -	 * Bind irq to sensor for two cases:
+> -	 *   Reenable alarm IRQ if temperature below threshold;
+> -	 *   if irq has been enabled, always set it;
+> -	 */
+> -	if (data->irq_enabled) {
+> -		hisi_thermal_enable_bind_irq_sensor(data);
+> -		return 0;
+> -	}
+> +	*temp = hisi_thermal_get_temperature(data->regs);
+>  
+> -	if (*temp < sensor->thres_temp) {
+> -		data->irq_enabled = true;
+> -		hisi_thermal_enable_bind_irq_sensor(data);
+> -		enable_irq(data->irq);
+> -	}
+> +	dev_dbg(&data->pdev->dev, "id=%d, temp=%d, thres=%d\n",
+> +		sensor->id, *temp, sensor->thres_temp);
+>  
+>  	return 0;
+>  }
+> @@ -280,26 +230,27 @@ static const struct thermal_zone_of_device_ops hisi_of_thermal_ops = {
+>  	.get_temp = hisi_thermal_get_temp,
+>  };
+>  
+> -static irqreturn_t hisi_thermal_alarm_irq(int irq, void *dev)
+> +static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
+>  {
+>  	struct hisi_thermal_data *data = dev;
+> +	struct hisi_thermal_sensor *sensor = &data->sensors;
+> +	int temp;
+>  
+> -	disable_irq_nosync(irq);
+> -	data->irq_enabled = false;
+> +	hisi_thermal_alarm_clear(data->regs, 1);
+>  
+> -	return IRQ_WAKE_THREAD;
+> -}
+> +	temp = hisi_thermal_get_temperature(data->regs);
+>  
+> -static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
+> -{
+> -	struct hisi_thermal_data *data = dev;
+> -	struct hisi_thermal_sensor *sensor = &data->sensors;
+> +	if (temp >= sensor->thres_temp) {
+> +		dev_crit(&data->pdev->dev, "THERMAL ALARM: %d > %d\n",
+> +			 temp, sensor->thres_temp);
+>  
+> -	dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
+> -		 sensor->thres_temp);
+> +		thermal_zone_device_update(data->sensors.tzd,
+> +					   THERMAL_EVENT_UNSPECIFIED);
+>  
+> -	thermal_zone_device_update(data->sensors.tzd,
+> -				   THERMAL_EVENT_UNSPECIFIED);
+> +	} else if (temp < sensor->thres_temp) {
+> +		dev_crit(&data->pdev->dev, "THERMAL ALARM stopped: %d < %d\n",
+> +			 temp, sensor->thres_temp);
+> +	}
+>  
+>  	return IRQ_HANDLED;
+>  }
+> @@ -352,6 +303,40 @@ static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
+>  		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+>  }
+>  
+> +static int hisi_thermal_setup(struct hisi_thermal_data *data)
+> +{
+> +	struct hisi_thermal_sensor *sensor;
+> +
+> +	sensor = &data->sensors;
+> +
+> +	/* disable module firstly */
+> +	hisi_thermal_reset_enable(data->regs, 0);
+> +	hisi_thermal_enable(data->regs, 0);
+> +
+> +	/* select sensor id */
+> +	hisi_thermal_sensor_select(data->regs, sensor->id);
+> +
+> +	/* setting the hdak time */
+> +	hisi_thermal_hdak_set(data->regs, 0);
+> +
+> +	/* setting lag value between current temp and the threshold */
+> +	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
+> +
+> +	/* enable for interrupt */
+> +	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
+> +
+> +	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
+> +
+> +	/* enable module */
+> +	hisi_thermal_reset_enable(data->regs, 1);
+> +	hisi_thermal_enable(data->regs, 1);
+> +
+> +	hisi_thermal_alarm_clear(data->regs, 0);
+> +	hisi_thermal_alarm_enable(data->regs, 1);
+> +
+> +	return 0;
+> +}
+> +
+>  static int hisi_thermal_probe(struct platform_device *pdev)
+>  {
+>  	struct hisi_thermal_data *data;
+> @@ -394,9 +379,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  		return ret;
+>  	}
+>  
+> -	hisi_thermal_enable_bind_irq_sensor(data);
+> -	data->irq_enabled = true;
+> -
+>  	ret = hisi_thermal_register_sensor(pdev, data,
+>  					   &data->sensors,
+>  					   HISI_DEFAULT_SENSOR);
+> @@ -406,18 +388,21 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  		return ret;
+>  	}
+>  
+> -	hisi_thermal_toggle_sensor(&data->sensors, true);
+> +	ret = hisi_thermal_setup(data);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "Failed to setup the sensor: %d\n", ret);
+> +		return ret;
+> +	}
+>  
+> -	ret = devm_request_threaded_irq(&pdev->dev, data->irq,
+> -					hisi_thermal_alarm_irq,
+> +	ret = devm_request_threaded_irq(&pdev->dev, data->irq, NULL,
+>  					hisi_thermal_alarm_irq_thread,
+> -					0, "hisi_thermal", data);
+> +					IRQF_ONESHOT, "hisi_thermal", data);
+>  	if (ret < 0) {
+>  		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
+>  		return ret;
+>  	}
+>  
+> -	enable_irq(data->irq);
+> +	hisi_thermal_toggle_sensor(&data->sensors, true);
+>  
+>  	return 0;
+>  }
+> @@ -440,7 +425,6 @@ static int hisi_thermal_suspend(struct device *dev)
+>  	struct hisi_thermal_data *data = dev_get_drvdata(dev);
+>  
+>  	hisi_thermal_disable_sensor(data);
+> -	data->irq_enabled = false;
+>  
+>  	clk_disable_unprepare(data->clk);
+>  
+> @@ -456,8 +440,7 @@ static int hisi_thermal_resume(struct device *dev)
+>  	if (ret)
+>  		return ret;
+>  
+> -	data->irq_enabled = true;
+> -	hisi_thermal_enable_bind_irq_sensor(data);
+> +	hisi_thermal_setup(data);
+>  
+>  	return 0;
+>  }
 > -- 
 > 2.7.4
 > 
