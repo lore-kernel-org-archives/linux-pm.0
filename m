@@ -1,65 +1,154 @@
-From: Mika Westerberg <mika.westerberg@intel.com>
-Subject: Re: [PATCH 1/1] device property: Align return codes of
- acpi_fwnode_get_reference_with_args
-Date: Fri, 8 Sep 2017 17:54:50 +0300
-Message-ID: <20170908145450.GE2477@lahna.fi.intel.com>
-References: <20170908122156.2493-1-sakari.ailus@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga02.intel.com ([134.134.136.20]:47451 "EHLO mga02.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750966AbdIHO7P (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 8 Sep 2017 10:59:15 -0400
-Content-Disposition: inline
-In-Reply-To: <20170908122156.2493-1-sakari.ailus@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: [PATCH v3 0/3] Introduce on-chip interconnect API
+Date: Fri,  8 Sep 2017 20:18:27 +0300
+Message-ID: <20170908171830.13813-1-georgi.djakov@linaro.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: rjw@rjwysocki.net, robh+dt@kernel.org, khilman@baylibre.com, mturquette@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, sboyd@codeaurora.org, andy.gross@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com, georgi.djakov@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Sakari Ailus <sakari.ailus@linux.intel.com>
-Cc: linux-pm@vger.kernel.org
 
-On Fri, Sep 08, 2017 at 03:21:56PM +0300, Sakari Ailus wrote:
-> acpi_fwnode_get_reference_with_args(), the function implementing ACPI
-> support for fwnode_property_get_reference_with_args(), returns directly
-> error codes from __acpi_node_get_property_reference(). The latter uses
-> different error codes than the OF implementation. In particular, the OF
-> implementation uses -ENOENT to indicate there are no more entries whereas
-> the former uses -ENODATA for the purpose.
-> 
-> To make matters more complicated, the ACPI implementation uses -ENOENT but
-> for a different purpose --- when an entry exists but contains no
-> reference. This isn't recognised by OF.
-> 
-> Document and align the error codes for property for
-> fwnode_property_get_reference_with_args() so that they match with
-> of_parse_phandle_with_args(), with the difference that -ENODATA is
-> returned whenever an entry exists but contains no reference.
-> 
-> Fixes: 3e3119d3088f ("device property: Introduce fwnode_property_get_reference_args")
-> Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+Modern SoCs have multiple processors and various dedicated cores (video, gpu,
+graphics, modem). These cores are talking to each other and can generate a lot
+of data flowing through the on-chip interconnects. These interconnect buses
+could form different topologies such as crossbar, point to point buses,
+hierarchical buses or use the network-on-chip concept.
 
-You should CC Rafael and linux-acpi.
+These buses have been sized usually to handle use cases with high data
+throughput but it is not necessary all the time and consume a lot of power.
+Furthermore, the priority between masters can vary depending on the running
+use case like video playback or cpu intensive tasks.
 
-Also why not follow ACPI error codes and convert the corresponding DT
-function to return those instead?
+Having an API to control the requirement of the system in term of bandwidth
+and QoS, so we can adapt the interconnect configuration to match those by
+scaling the frequencies, setting link priority and tuning QoS parameters.
+This configuration can be a static, one-time operation done at boot for some
+platforms or a dynamic set of operations that happen at run-time.
 
-> ---
->  drivers/acpi/property.c | 4 ++++
->  drivers/base/property.c | 4 ++++
->  2 files changed, 8 insertions(+)
-> 
-> diff --git a/drivers/acpi/property.c b/drivers/acpi/property.c
-> index a65c09cc223f..17d760b89908 100644
-> --- a/drivers/acpi/property.c
-> +++ b/drivers/acpi/property.c
-> @@ -1207,6 +1207,10 @@ acpi_fwnode_get_reference_args(const struct fwnode_handle *fwnode,
->  
->  	ret = __acpi_node_get_property_reference(fwnode, prop, index,
->  						 args_count, &acpi_args);
-> +	if (ret == -ENODATA)
-> +		return -ENOENT;
-> +	if (ret == -ENOENT)
-> +		return -ENODATA;
+This patchset introduce a new API to get the requirement and configure the
+interconnect buses across the entire chipset to fit with the current demand.
+The API is NOT for changing the performance of the endpoint devices, but only
+the interconnect path in between them.
 
-This kind of construct without any comments explaining why this is
-needed, looks suspicious.
+The API is using a consumer/provider-based model, where the providers are
+the interconnect buses and the consumers could be various drivers.
+The consumers request interconnect resources (path) to an endpoint and set
+the desired constraints on this data flow path. The provider(s) receive
+requests from consumers and aggregate these requests for all master-slave
+pairs on that path. Then the providers configure each participating in the
+topology node according to the requested data flow path, physical links and
+constraints. The topology could be complicated and multi-tiered and is SoC
+specific.
+
+Below is a simplified diagram of a real-world SoC topology. The interconnect
+providers are the NoCs.
+
+ +----------------+    +----------------+
+ | HW Accelerator |--->|      M NoC     |<---------------+
+ +----------------+    +----------------+                |
+                         |      |                    +------------+
+  +-----+  +-------------+      V       +------+     |            |
+  | DDR |  |                +--------+  | PCIe |     |            |
+  +-----+  |                | Slaves |  +------+     |            |
+    ^ ^    |                +--------+     |         |   C NoC    |
+    | |    V                               V         |            |
+ +------------------+   +------------------------+   |            |   +-----+
+ |                  |-->|                        |-->|            |-->| CPU |
+ |                  |-->|                        |<--|            |   +-----+
+ |     Mem NoC      |   |         S NoC          |   +------------+
+ |                  |<--|                        |---------+    |
+ |                  |<--|                        |<------+ |    |   +--------+
+ +------------------+   +------------------------+       | |    +-->| Slaves |
+   ^  ^    ^    ^          ^                             | |        +--------+
+   |  |    |    |          |                             | V
+ +------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
+ | CPUs |  |  | GPU |   | DSP |  | Masters |-->|       P NoC    |-->| Slaves |
+ +------+  |  +-----+   +-----+  +---------+   +----------------+   +--------+
+           |
+       +-------+                                                                                                                                                          
+       | Modem |
+       +-------+
+
+This patchset does not implement all features but only main skeleton to check
+the validity of the proposal.
+
+TODO:
+ * Constraints are currently stored in internal data structure. Should PM QoS
+ be used instead?
+ * Extend interconect_set() to handle parameters such as latency and other QoS
+   values.
+ * Cache the path between the nodes instead of walking the graph on each get().
+ * Sync interconnect requests with the idle state of the device.
+ * Replace dev_id string names resource lookups with integer ids.
+
+Summary of the patches:
+Patch 1 introduces the interconnect API.
+Patch 2 add basic support for tracepoints
+Patch 3 creates the first vendor specific interconnect bus driver.
+
+Changes since patchset v2 (https://lkml.org/lkml/2017/7/20/825)
+* Split the aggregation into per node and per provider. Cache the
+  aggregated values.
+* Various small refactorings and cleanups in the framework.
+* Added a patch introducing basic tracepoint support for monitoring
+  the time required to update the interconnect nodes.
+
+Changes since patchset v1 (https://lkml.org/lkml/2017/6/27/890)
+* Updates in the documentation.
+* Changes in request aggregation, locking.
+* Dropped the aggregate() callback and use the default as it currently
+  sufficient for the single vendor driver. Will add it later when needed.
+* Dropped the dt-bindings draft patch for now.
+
+Changes since RFC v2 (https://lkml.org/lkml/2017/6/12/316)
+* Converted documentation to rst format.
+* Fixed an incorrect call to mutex_lock. Renamed max_bw to peak_bw.
+
+Changes since RFC v1 (https://lkml.org/lkml/2017/5/15/605)
+* Refactored code into shorter functions.
+* Added a new aggregate() API function.
+* Rearranged some structs to reduce padding bytes.
+
+Changes since RFC v0 (https://lkml.org/lkml/2017/3/1/599)
+* Removed DT support and added optional Patch 3 with new bindings proposal.
+* Converted the topology into internal driver data.
+* Made the framework modular.
+* interconnect_get() now takes (src and dst ports as arguments).
+* Removed public declarations of some structs.
+* Now passing prev/next nodes to the vendor driver.
+* Properly remove requests on _put().
+* Added refcounting.
+* Updated documentation.
+* Changed struct interconnect_path to use array instead of linked list.
+
+
+Georgi Djakov (3):
+  interconnect: Add generic on-chip interconnect API
+  interconnect: Add basic event tracing
+  interconnect: Add Qualcomm msm8916 interconnect provider driver
+
+ Documentation/interconnect/interconnect.rst      |  93 ++++++
+ drivers/Kconfig                                  |   2 +
+ drivers/Makefile                                 |   1 +
+ drivers/interconnect/Kconfig                     |  15 +
+ drivers/interconnect/Makefile                    |   2 +
+ drivers/interconnect/interconnect.c              | 389 +++++++++++++++++++++++
+ drivers/interconnect/qcom/Kconfig                |  11 +
+ drivers/interconnect/qcom/Makefile               |   1 +
+ drivers/interconnect/qcom/interconnect_msm8916.c | 375 ++++++++++++++++++++++
+ include/linux/interconnect-consumer.h            |  73 +++++
+ include/linux/interconnect-provider.h            | 119 +++++++
+ include/linux/interconnect/qcom-msm8916.h        |  92 ++++++
+ include/trace/events/interconnect.h              |  45 +++
+ 13 files changed, 1218 insertions(+)
+ create mode 100644 Documentation/interconnect/interconnect.rst
+ create mode 100644 drivers/interconnect/Kconfig
+ create mode 100644 drivers/interconnect/Makefile
+ create mode 100644 drivers/interconnect/interconnect.c
+ create mode 100644 drivers/interconnect/qcom/Kconfig
+ create mode 100644 drivers/interconnect/qcom/Makefile
+ create mode 100644 drivers/interconnect/qcom/interconnect_msm8916.c
+ create mode 100644 include/linux/interconnect-consumer.h
+ create mode 100644 include/linux/interconnect-provider.h
+ create mode 100644 include/linux/interconnect/qcom-msm8916.h
+ create mode 100644 include/trace/events/interconnect.h
