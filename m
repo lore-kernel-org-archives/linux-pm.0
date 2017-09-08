@@ -1,158 +1,65 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V3] thermal/drivers/step_wise: Fix temperature regulation misbehavior
-Date: Fri,  8 Sep 2017 16:12:19 +0200
-Message-ID: <1504879940-11591-1-git-send-email-daniel.lezcano@linaro.org>
-References: <d2fc01f9-c9d9-4247-2baf-6e544e5ef172@ti.com>
+From: Mika Westerberg <mika.westerberg@intel.com>
+Subject: Re: [PATCH 1/1] device property: Align return codes of
+ acpi_fwnode_get_reference_with_args
+Date: Fri, 8 Sep 2017 17:54:50 +0300
+Message-ID: <20170908145450.GE2477@lahna.fi.intel.com>
+References: <20170908122156.2493-1-sakari.ailus@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <d2fc01f9-c9d9-4247-2baf-6e544e5ef172@ti.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, daniel.lezcano@linaro.org, Keerthy <j-keerthy@ti.com>, John Stultz <john.stultz@linaro.org>, Leo Yan <leo.yan@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:47451 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750966AbdIHO7P (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 8 Sep 2017 10:59:15 -0400
+Content-Disposition: inline
+In-Reply-To: <20170908122156.2493-1-sakari.ailus@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sakari Ailus <sakari.ailus@linux.intel.com>
+Cc: linux-pm@vger.kernel.org
 
-There is a particular situation when the cooling device is cpufreq and the heat
-dissipation is not efficient enough where the temperature increases little by
-little until reaching the critical threshold and leading to a SoC reset.
+On Fri, Sep 08, 2017 at 03:21:56PM +0300, Sakari Ailus wrote:
+> acpi_fwnode_get_reference_with_args(), the function implementing ACPI
+> support for fwnode_property_get_reference_with_args(), returns directly
+> error codes from __acpi_node_get_property_reference(). The latter uses
+> different error codes than the OF implementation. In particular, the OF
+> implementation uses -ENOENT to indicate there are no more entries whereas
+> the former uses -ENODATA for the purpose.
+> 
+> To make matters more complicated, the ACPI implementation uses -ENOENT but
+> for a different purpose --- when an entry exists but contains no
+> reference. This isn't recognised by OF.
+> 
+> Document and align the error codes for property for
+> fwnode_property_get_reference_with_args() so that they match with
+> of_parse_phandle_with_args(), with the difference that -ENODATA is
+> returned whenever an entry exists but contains no reference.
+> 
+> Fixes: 3e3119d3088f ("device property: Introduce fwnode_property_get_reference_args")
+> Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
 
-The behavior is reproducible on a hikey6220 with bad heat dissipation (eg.
-stacked with other boards).
+You should CC Rafael and linux-acpi.
 
-Running a simple C program doing while(1); for each CPU of the SoC makes the
-temperature to reach the passive regulation trip point and ends up to the
-maximum allowed temperature followed by a reset.
+Also why not follow ACPI error codes and convert the corresponding DT
+function to return those instead?
 
-This issue has been also reported by running the libhugetlbfs test suite.
+> ---
+>  drivers/acpi/property.c | 4 ++++
+>  drivers/base/property.c | 4 ++++
+>  2 files changed, 8 insertions(+)
+> 
+> diff --git a/drivers/acpi/property.c b/drivers/acpi/property.c
+> index a65c09cc223f..17d760b89908 100644
+> --- a/drivers/acpi/property.c
+> +++ b/drivers/acpi/property.c
+> @@ -1207,6 +1207,10 @@ acpi_fwnode_get_reference_args(const struct fwnode_handle *fwnode,
+>  
+>  	ret = __acpi_node_get_property_reference(fwnode, prop, index,
+>  						 args_count, &acpi_args);
+> +	if (ret == -ENODATA)
+> +		return -ENOENT;
+> +	if (ret == -ENOENT)
+> +		return -ENODATA;
 
-What is observed is a ping pong between two cpu frequencies, 1.2GHz and 900MHz
-while the temperature continues to grow.
-
-It appears the step wise governor calls get_target_state() the first time with
-the throttle set to true and the trend to 'raising'. The code selects logically
-the next state, so the cpu frequency decreases from 1.2GHz to 900MHz, so far so
-good. The temperature decreases immediately but still stays greater than the
-trip point, then get_target_state() is called again, this time with the
-throttle set to true *and* the trend to 'dropping'. From there the algorithm
-assumes we have to step down the state and the cpu frequency jumps back to
-1.2GHz. But the temperature is still higher than the trip point, so
-get_target_state() is called with throttle=1 and trend='raising' again, we jump
-to 900MHz, then get_target_state() is called with throttle=1 and
-trend='dropping', we jump to 1.2GHz, etc ... but the temperature does not
-stabilizes and continues to increase.
-
-[  237.922654] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
-[  237.922678] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
-[  237.922690] thermal cooling_device0: cur_state=0
-[  237.922701] thermal cooling_device0: old_target=0, target=1
-[  238.026656] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
-[  238.026680] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
-[  238.026694] thermal cooling_device0: cur_state=1
-[  238.026707] thermal cooling_device0: old_target=1, target=0
-[  238.134647] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
-[  238.134667] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
-[  238.134679] thermal cooling_device0: cur_state=0
-[  238.134690] thermal cooling_device0: old_target=0, target=1
-
-In this situation the temperature continues to increase while the trend is
-oscillating between 'dropping' and 'raising'. We need to keep the current state
-untouched if the throttle is set, so the temperature can decrease or a higher
-state could be selected, thus preventing this oscillation.
-
-Keeping the next_target untouched when 'throttle' is true at 'dropping' time
-fixes the issue.
-
-The following traces show the governor does not change the next state if
-trend==2 (dropping) and throttle==1.
-
-[ 2306.127987] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
-[ 2306.128009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
-[ 2306.128021] thermal cooling_device0: cur_state=0
-[ 2306.128031] thermal cooling_device0: old_target=0, target=1
-[ 2306.231991] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
-[ 2306.232016] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
-[ 2306.232030] thermal cooling_device0: cur_state=1
-[ 2306.232042] thermal cooling_device0: old_target=1, target=1
-[ 2306.335982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
-[ 2306.336006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=1
-[ 2306.336021] thermal cooling_device0: cur_state=1
-[ 2306.336034] thermal cooling_device0: old_target=1, target=1
-[ 2306.439984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
-[ 2306.440008] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
-[ 2306.440022] thermal cooling_device0: cur_state=1
-[ 2306.440034] thermal cooling_device0: old_target=1, target=0
-
-[ ... ]
-
-After a while, if the temperature continues to increase, the next state becomes
-2 which is 720MHz on the hikey. That results in the temperature stabilizing
-around the trip point.
-
-[ 2455.831982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
-[ 2455.832006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=0
-[ 2455.832019] thermal cooling_device0: cur_state=1
-[ 2455.832032] thermal cooling_device0: old_target=1, target=1
-[ 2455.935985] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
-[ 2455.936013] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
-[ 2455.936027] thermal cooling_device0: cur_state=1
-[ 2455.936040] thermal cooling_device0: old_target=1, target=1
-[ 2456.043984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
-[ 2456.044009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
-[ 2456.044023] thermal cooling_device0: cur_state=1
-[ 2456.044036] thermal cooling_device0: old_target=1, target=1
-[ 2456.148001] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
-[ 2456.148028] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
-[ 2456.148042] thermal cooling_device0: cur_state=1
-[ 2456.148055] thermal cooling_device0: old_target=1, target=2
-[ 2456.252009] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
-[ 2456.252041] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
-[ 2456.252058] thermal cooling_device0: cur_state=2
-[ 2456.252075] thermal cooling_device0: old_target=2, target=1
-
-IOW, this change is needed to keep the state for a cooling device if the
-temperature trend is oscillating while the temperature increases slightly.
-
-Without this change, the situation above leads to a catastrophic crash by a
-hardware reset on hikey. This issue has been reported to happen on an OMAP
-dra7xx also.
-
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Keerthy <j-keerthy@ti.com>
-Cc: John Stultz <john.stultz@linaro.org>
-Cc: Leo Yan <leo.yan@linaro.org>
----
- drivers/thermal/step_wise.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index be95826..ee047ca 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -31,8 +31,7 @@
-  * If the temperature is higher than a trip point,
-  *    a. if the trend is THERMAL_TREND_RAISING, use higher cooling
-  *       state for this trip point
-- *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
-- *       state for this trip point
-+ *    b. if the trend is THERMAL_TREND_DROPPING, do nothing
-  *    c. if the trend is THERMAL_TREND_RAISE_FULL, use upper limit
-  *       for this trip point
-  *    d. if the trend is THERMAL_TREND_DROP_FULL, use lower limit
-@@ -94,9 +93,11 @@ static unsigned long get_target_state(struct thermal_instance *instance,
- 			if (!throttle)
- 				next_target = THERMAL_NO_TARGET;
- 		} else {
--			next_target = cur_state - 1;
--			if (next_target > instance->upper)
--				next_target = instance->upper;
-+			if (!throttle) {
-+				next_target = cur_state - 1;
-+				if (next_target > instance->upper)
-+					next_target = instance->upper;
-+			}
- 		}
- 		break;
- 	case THERMAL_TREND_DROP_FULL:
--- 
-2.7.4
+This kind of construct without any comments explaining why this is
+needed, looks suspicious.
