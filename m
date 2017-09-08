@@ -1,128 +1,150 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [1/9] i2c: designware: Fix system suspend
-Date: Fri, 8 Sep 2017 10:29:53 +0200
-Message-ID: <CAPDyKFq0W2NXXGzNgKq2xeiFsj=kt8JG+LzEzOb=38RWBqi+YA@mail.gmail.com>
-References: <1498072888-14782-2-git-send-email-ulf.hansson@linaro.org> <5597d9a7-8b1a-d45d-e8d5-d1c0b46ddb7a@hisilicon.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH V2] thermal/drivers/step_wise: Fix temperature regulation misbehavior
+Date: Fri,  8 Sep 2017 11:05:02 +0200
+Message-ID: <1504861502-4093-1-git-send-email-daniel.lezcano@linaro.org>
+References: <20170908030513.GC2755@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f182.google.com ([209.85.223.182]:36849 "EHLO
-        mail-io0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754657AbdIHI3y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2017 04:29:54 -0400
-Received: by mail-io0-f182.google.com with SMTP id d16so4246325ioj.3
-        for <linux-pm@vger.kernel.org>; Fri, 08 Sep 2017 01:29:54 -0700 (PDT)
-In-Reply-To: <5597d9a7-8b1a-d45d-e8d5-d1c0b46ddb7a@hisilicon.com>
+Received: from mail-wm0-f51.google.com ([74.125.82.51]:45490 "EHLO
+        mail-wm0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750850AbdIHJGX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2017 05:06:23 -0400
+Received: by mail-wm0-f51.google.com with SMTP id f199so955395wme.0
+        for <linux-pm@vger.kernel.org>; Fri, 08 Sep 2017 02:06:22 -0700 (PDT)
+In-Reply-To: <20170908030513.GC2755@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
-Cc: Wolfram Sang <wsa@the-dreams.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, stable@vger.linux.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, john.stultz@linaro.org, leo.yan@linaro.org, daniel.lezcano@linaro.org
 
-On 8 September 2017 at 05:23, Wangtao (Kevin, Kirin)
-<kevin.wangtao@hisilicon.com> wrote:
->
-> This patch can fix the issue we found on hikey960 that i2c doesn't skip
-> system suspend when it is runtime suspended.
+There is a particular situation when the cooling device is cpufreq and the heat
+dissipation is not efficient enough where the temperature increases little by
+little until reaching the critical threshold and leading to a SoC reset.
 
-We decided to go with a slightly different version. You may try out
-the below and see if that also fixes your problem.
+The behavior is reproducible on a hikey6220 with bad heat dissipation (eg.
+stacked with other boards).
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?=
-id=3Da23318feeff662c8d25d21623daebdd2e55ec221
+Running a simple C program doing while(1); for each CPU of the SoC makes the
+temperature to reach the passive regulation trip point and ends up to the
+maximum allowed temperature followed by a reset.
 
-Kind regards
-Uffe
+This issue has been also reported by running the libhugetlbfs test suite.
 
->
->
-> =E5=9C=A8 2017/6/22 3:21, Ulf Hansson =E5=86=99=E9=81=93:
->>
->> The commit 8503ff166504 ("i2c: designware: Avoid unnecessary resuming
->> during system suspend"), may suggest to the PM core to try out the so
->> called direct_complete path for system sleep. In this path, the PM core
->> treats a runtime suspended device as it's already in a proper low power
->> state for system sleep, which makes it skip calling the system sleep
->> callbacks for the device, except for the ->prepare() and the ->complete(=
-)
->> callback.
->>
->> Moreover, under certain circumstances the PM core may unset the
->> direct_complete flag for a parent device, in case its child device are
->> being system suspended before. In other words, the PM core doesn't skip
->> calling the system sleep callbacks, no matter if the device is runtime
->> suspended or not.
->>
->> In cases of an i2c slave device, the above situation is triggered.
->> Unfortunate, this also breaks the assumption that the i2c device is alwa=
-ys
->> runtime resumed, whenever the dw_i2c_plat_suspend() callback is being
->> invoked, which then leads to a regression.
->>
->> More precisely, dw_i2c_plat_suspend() then calls clk_core_disable() and
->> clk_core_unprepare(), for an already disabled/unprepared clock, leading =
-to
->> complaints about clocks calls being wrongly balanced.
->>
->> In cases when the i2c device is attached to the ACPI PM domain, the
->> problem
->> doesn't occur. That's because ACPI's ->suspend() callback, assigned to
->> acpi_subsys_suspend(), calls pm_runtime_resume() for the i2c device.
->>
->> To make a simple fix for this regression, let's runtime resume the i2c
->> device in the ->prepare() callback, assigned to dw_i2c_plat_prepare().
->> This
->> prevents the direct_complete path from being executed by the PM core and
->> guarantees the dw_i2c_plat_suspend() is called with the i2c device alway=
-s
->> being runtime resumed.
->>
->> Of course this change is suboptimal, because to always force a runtime
->> resume of the i2c device in ->prepare() is a waste, especially in those
->> cases when it could have remained runtime suspended during the entire
->> system sleep sequence. However, to accomplish that behaviour a bigger
->> change is needed, so defer that to future changes not applicable as fixe=
-s
->> or for stable.
->>
->> Fixes: 8503ff166504 ("i2c: designware: Avoid unnecessary resuming...")
->> Cc: stable@vger.linux.org
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>   drivers/i2c/busses/i2c-designware-platdrv.c | 11 ++---------
->>   1 file changed, 2 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c
->> b/drivers/i2c/busses/i2c-designware-platdrv.c
->> index d1263b8..2b7fa75 100644
->> --- a/drivers/i2c/busses/i2c-designware-platdrv.c
->> +++ b/drivers/i2c/busses/i2c-designware-platdrv.c
->> @@ -375,17 +375,11 @@ MODULE_DEVICE_TABLE(of, dw_i2c_of_match);
->>   #ifdef CONFIG_PM_SLEEP
->>   static int dw_i2c_plat_prepare(struct device *dev)
->>   {
->> -       return pm_runtime_suspended(dev);
->> -}
->> -
->> -static void dw_i2c_plat_complete(struct device *dev)
->> -{
->> -       if (dev->power.direct_complete)
->> -               pm_request_resume(dev);
->> +       pm_runtime_resume(dev);
->> +       return 0;
->>   }
->>   #else
->>   #define dw_i2c_plat_prepare   NULL
->> -#define dw_i2c_plat_complete   NULL
->>   #endif
->>     #ifdef CONFIG_PM
->> @@ -413,7 +407,6 @@ static int dw_i2c_plat_resume(struct device *dev)
->>     static const struct dev_pm_ops dw_i2c_dev_pm_ops =3D {
->>         .prepare =3D dw_i2c_plat_prepare,
->> -       .complete =3D dw_i2c_plat_complete,
->>         SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
->>         SET_RUNTIME_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume, NULL=
-)
->>   };
->>
->
+What is observed is a ping pong between two cpu frequencies, 1.2GHz and 900MHz
+while the temperature continues to grow.
+
+It appears the step wise governor calls get_target_state() the first time with
+the throttle set to true and the trend to 'raising'. The code selects logically
+the next state, so the cpu frequency decreases from 1.2GHz to 900MHz, so far so
+good. The temperature decreases immediately but still stays greater than the
+trip point, then get_target_state() is called again, this time with the
+throttle set to true *and* the trend to 'dropping'. From there the algorithm
+assumes we have to step down the state and the cpu frequency jumps back to
+1.2GHz. But the temperature is still higher than the trip point, so
+get_target_state() is called with throttle=1 and trend='raising' again, we jump
+to 900MHz, then get_target_state() is called with throttle=1 and
+trend='dropping', we jump to 1.2GHz, etc ... but the temperature does not
+stabilizes and continues to increase.
+
+[  237.922654] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+[  237.922678] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+[  237.922690] thermal cooling_device0: cur_state=0
+[  237.922701] thermal cooling_device0: old_target=0, target=1
+[  238.026656] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+[  238.026680] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
+[  238.026694] thermal cooling_device0: cur_state=1
+[  238.026707] thermal cooling_device0: old_target=1, target=0
+[  238.134647] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+[  238.134667] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+[  238.134679] thermal cooling_device0: cur_state=0
+[  238.134690] thermal cooling_device0: old_target=0, target=1
+
+In this situation the temperature continues to increase while the trend is
+oscillating between 'dropping' and 'raising'. We need to keep the current state
+untouched if the throttle is set, so the temperature can decrease or a higher
+state could be selected, thus prevening this oscillation.
+
+Keeping the next_target untouched when 'throttle' is true at 'dropping' time
+fixes the issue.
+
+The following traces show the governor does not change the next state if
+trend==2 (dropping) and throttle==1.
+
+[ 2306.127987] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+[ 2306.128009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+[ 2306.128021] thermal cooling_device0: cur_state=0
+[ 2306.128031] thermal cooling_device0: old_target=0, target=1
+[ 2306.231991] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+[ 2306.232016] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
+[ 2306.232030] thermal cooling_device0: cur_state=1
+[ 2306.232042] thermal cooling_device0: old_target=1, target=1
+[ 2306.335982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+[ 2306.336006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=1
+[ 2306.336021] thermal cooling_device0: cur_state=1
+[ 2306.336034] thermal cooling_device0: old_target=1, target=1
+[ 2306.439984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+[ 2306.440008] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
+[ 2306.440022] thermal cooling_device0: cur_state=1
+[ 2306.440034] thermal cooling_device0: old_target=1, target=0
+
+[ ... ]
+
+After a while, if the temperature continues to increase, the next state becomes
+2 which is 720MHz on the hikey. That results in the temperature stabilizing
+around the trip point.
+
+[ 2455.831982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+[ 2455.832006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=0
+[ 2455.832019] thermal cooling_device0: cur_state=1
+[ 2455.832032] thermal cooling_device0: old_target=1, target=1
+[ 2455.935985] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+[ 2455.936013] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
+[ 2455.936027] thermal cooling_device0: cur_state=1
+[ 2455.936040] thermal cooling_device0: old_target=1, target=1
+[ 2456.043984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+[ 2456.044009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
+[ 2456.044023] thermal cooling_device0: cur_state=1
+[ 2456.044036] thermal cooling_device0: old_target=1, target=1
+[ 2456.148001] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+[ 2456.148028] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+[ 2456.148042] thermal cooling_device0: cur_state=1
+[ 2456.148055] thermal cooling_device0: old_target=1, target=2
+[ 2456.252009] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+[ 2456.252041] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
+[ 2456.252058] thermal cooling_device0: cur_state=2
+[ 2456.252075] thermal cooling_device0: old_target=2, target=1
+
+IOW, this change is needed to keep the state for a cooling device if the
+temperature trend is oscillating while the temperature increases slightly.
+
+Without this change, the situation above leads to a catastrophic crash by a
+hardware reset on hikey.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/thermal/step_wise.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+index bd2f133..703bd0d 100644
+--- a/drivers/thermal/step_wise.c
++++ b/drivers/thermal/step_wise.c
+@@ -95,9 +95,11 @@ static unsigned long get_target_state(struct thermal_instance *instance,
+ 			if (!throttle)
+ 				next_target = THERMAL_NO_TARGET;
+ 		} else {
+-			next_target = cur_state - 1;
+-			if (next_target > instance->upper)
+-				next_target = instance->upper;
++			if (!throttle) {
++				next_target = cur_state - 1;
++				if (next_target > instance->upper)
++					next_target = instance->upper;
++			}
+ 		}
+ 		break;
+ 	case THERMAL_TREND_DROP_FULL:
+-- 
+2.7.4
