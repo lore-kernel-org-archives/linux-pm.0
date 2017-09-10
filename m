@@ -1,38 +1,27 @@
-From: Nishanth Menon <nm@ti.com>
-Subject: Re: [PATCH 07/14] power/avs: Use %pS printk format for direct
- addresses
-Date: Fri, 8 Sep 2017 18:37:41 -0500
-Message-ID: <20170908233740.btg2zvor2ajxc6u5@kahuna>
-References: <1504729681-3504-1-git-send-email-deller@gmx.de>
- <1504729681-3504-8-git-send-email-deller@gmx.de>
+From: mackenzie <antoine.touze@univ-tours.fr>
+Subject: [SUSPECTED SPAM] Can you be our Supplier
+Date: Sun, 10 Sep 2017 11:40:21 +0200 (CEST)
+Message-ID: <1093485825.45464970.1505036421295.JavaMail.zimbra@univ-tours.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:32177 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753011AbdIHXhu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Sep 2017 19:37:50 -0400
-Content-Disposition: inline
-In-Reply-To: <1504729681-3504-8-git-send-email-deller@gmx.de>
+Received: from angelia.univ-tours.fr ([193.52.209.20]:42475 "EHLO
+        angelia.univ-tours.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751315AbdIJJuR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 10 Sep 2017 05:50:17 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Helge Deller <deller@gmx.de>
-Cc: linux-kernel@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Petr Mladek <pmladek@suse.com>, Andrew Morton <akpm@linux-foundation.org>, Kevin Hilman <khilman@kernel.org>, linux-pm@vger.kernel.org
 
-On 20:27-20170906, Helge Deller wrote:
-> Use the %pS instead of the %pF printk format specifier for printing symbols
-> from direct addresses. This is needed for the ia64, ppc64 and parisc64
-> architectures.
-> 
-> Signed-off-by: Helge Deller <deller@gmx.de>
-> Cc: Kevin Hilman <khilman@kernel.org>
-> Cc: Nishanth Menon <nm@ti.com>
-> Cc: linux-pm@vger.kernel.org
 
-Looks fine to me at least. Kevin/Rafael if you'd like to pick this up in
-some rc or later cycle..
 
-Acked-by: Nishanth Menon <nm@ti.com>
--- 
-Regards,
-Nishanth Menon
+Dear Sir/Madam,
+
+I am Becca MacKenzie, We are interested in your products and want to make you and your company our major suppliers but first we would like your to send us your best price list and Catalog if possible.
+
+We will be ordering in large quantity so we are looking forward in making a good relationship with you and your company.
+
+My contact email: becca.mackenzie100@outlook.com
+
+Regards
+Becca MacKenzie
