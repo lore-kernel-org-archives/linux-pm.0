@@ -1,127 +1,72 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: Re: [1/2] cpufreq: dt-platdev: Automatically create cpufreq device
- with OPP v2
-Date: Mon, 11 Sep 2017 17:43:58 +0530
-Message-ID: <9f37e244-7c6d-d556-ee7c-a5f3c9d5f756@ti.com>
-References: <20170821131332.GA14662@verge.net.au>
- <20170821131735.GB14662@verge.net.au> <20170829101146.GF3101@ubuntu>
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: Re: [PATCH v9 0/5] Add runtime PM support for clocks (on Exynos SoC
+ example)
+Date: Mon, 11 Sep 2017 14:57:49 +0200
+Message-ID: <426d5e2d-a6e8-a409-635e-71b543b7fb2a@samsung.com>
+References: <CGME20170821080538eucas1p1e273ef22920493ee406ef546bcc230e5@eucas1p1.samsung.com>
+ <1503302703-13801-1-git-send-email-m.szyprowski@samsung.com>
+ <150483237153.48525.1363518996437790191@resonance>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset="us-ascii"; Format="flowed"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170829101146.GF3101@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Simon Horman <horms@verge.net.au>, Dave Gerlach <d-gerlach@ti.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, geert@linux-m68k.org, maxime.ripard@free-electrons.com, wens@csie.org, xuwei5@hisilicon.com, kgene@kernel.org, krzk@kernel.org, yamada.masahiro@socionext.com, jun.nie@linaro.org, baoyou.xie@linaro.org, linux-kernel@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-reply-to: <150483237153.48525.1363518996437790191@resonance>
+Content-language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Michael Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stephen Boyd <sboyd@codeaurora.org>, Krzysztof Kozlowski <krzk@kernel.org>, Inki Dae <inki.dae@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
+Hi Michael,
 
+On 2017-09-08 02:59, Michael Turquette wrote:
+> Hi Marek,
+>
+> Quoting Marek Szyprowski (2017-08-21 01:04:58)
+>> Dear All,
+>>
+>> This patchset adds runtime PM support to common clock framework. This is an
+>> attempt to implement support for clock controllers, which belongs to a power
+>> domain. This approach works surprisingly well on Exynos 5433 SoC, what allowed
+>> us to solve various freeze/crash issues related to power management.
+>>
+>> The main idea behind this patchset is to keep clock's controller power domain
+>> enabled every time when at least one of its clock is enabled or access to its
+>> registers is being made. Clock controller driver (clock provider) can
+>> supply a struct device pointer, which is the used by clock core for tracking and
+>> managing clock's controller runtime pm state. Each clk_prepare() operation will
+>> first call pm_runtime_get_sync() on the supplied device, while clk_unprepare()
+>> will do pm_runtime_put() at the end.
+>>
+>> This runtime PM feature has been tested with Exynos4412 (not included in this
+>> patchset) and Exynos5433 clocks drivers. Both have some clocks, which belongs to
+>> respective power domains and need special handling during power on/off
+>> procedures. Till now it wasn't handled at all, what caused various problems.
+>>
+>> Patches for clocks drivers change the way the clock provider is initialized.
+>> Instead of CLK_OF_DECLARE based initialization, a complete platform device driver
+>> infrastructure is being used. This is needed to let driver to use runtime PM
+>> feature and integrate with generic power domains. The side-effect of this change
+>> is a delay in clock provider registeration during system boot, so early
+>> initialized drivers might get EPROBEDEFER error when requesting their clocks.
+>> This was an issue for IOMMU drivers, but IOMMU deferred probe support has been
+>> finally merged to v4.13-rc1 and now it is handled correctly.
+>>
+>> Patches are based and tested on v4.13-rc5, but applies fine also on v4.13-rc1.
+> Patches look good to me. It's too late for the v4.14 PR, but I'll merge
+> this to clk-next after -rc1 drops.
 
-On Tuesday 29 August 2017 03:41 PM, Viresh Kumar wrote:
-> On 21-08-17, 15:17, Simon Horman wrote:
->> Sorry, I seem to have accidently sent this email as Virish rather than
->> myself. I will try again.
-> 
-> No issues. I see that Rafael has already applied my patches, you can send
-> additional patches over that to make sure everything is clear.
+Thanks! There will be a plenty of time to test them in linux-next then! :)
 
-Viresh,
-
-I see below warning with this patch on am57xx-beagle
-
-[    3.545247] WARNING: CPU: 1 PID: 1 at fs/sysfs/dir.c:31
-sysfs_warn_dup+0x58/0x78
-[    3.553099] sysfs: cannot create duplicate filename
-'/devices/platform/cpufreq-dt'
-[    3.561126] Modules linked in:
-[    3.564402] CPU: 1 PID: 1 Comm: swapper/0 Tainted: G        W
-4.13.0-next-20170911-12690-ga31cc45-dirty #7
-[    3.575071] Hardware name: Generic DRA74X (Flattened Device Tree)
-[    3.581484] [<c0110a88>] (unwind_backtrace) from [<c010cae4>]
-(show_stack+0x10/0x14)
-[    3.589620] [<c010cae4>] (show_stack) from [<c0828184>]
-(dump_stack+0xac/0xe0)
-[    3.597209] [<c0828184>] (dump_stack) from [<c01374d0>]
-(__warn+0xd8/0x104)
-[    3.604532] [<c01374d0>] (__warn) from [<c0137530>]
-(warn_slowpath_fmt+0x34/0x44)
-[    3.612390] [<c0137530>] (warn_slowpath_fmt) from [<c0345b30>]
-(sysfs_warn_dup+0x58/0x78)
-[    3.620988] [<c0345b30>] (sysfs_warn_dup) from [<c0345c18>]
-(sysfs_create_dir_ns+0x80/0x98)
-[    3.629773] [<c0345c18>] (sysfs_create_dir_ns) from [<c082c974>]
-(kobject_add_internal+0x9c/0x2d4)
-[    3.639177] [<c082c974>] (kobject_add_internal) from [<c082cbf8>]
-(kobject_add+0x4c/0x9c)
-[    3.647764] [<c082cbf8>] (kobject_add) from [<c05805a8>]
-(device_add+0xcc/0x57c)
-[    3.655542] [<c05805a8>] (device_add) from [<c0584d38>]
-(platform_device_add+0x100/0x220)
-[    3.664138] [<c0584d38>] (platform_device_add) from [<c058576c>]
-(platform_device_register_full+0xf4/0x118)
-[    3.674378] [<c058576c>] (platform_device_register_full) from
-[<c0670514>] (ti_cpufreq_init+0x150/0x22c)
-[    3.684326] [<c0670514>] (ti_cpufreq_init) from [<c0101df4>]
-(do_one_initcall+0x3c/0x170)
-[    3.692916] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>]
-(kernel_init_freeable+0x1fc/0x2c4)
-[    3.702049] [<c0c00eb4>] (kernel_init_freeable) from [<c083c0cc>]
-(kernel_init+0x8/0x110)
-[    3.710639] [<c083c0cc>] (kernel_init) from [<c0107d78>]
-(ret_from_fork+0x14/0x3c)
-[    3.718680] ---[ end trace 33482508cbb50156 ]---
-[    3.720850] ata1: SATA link down (SStatus 0 SControl 300)
-[    3.729278] ------------[ cut here ]------------
-[    3.734147] WARNING: CPU: 1 PID: 1 at lib/kobject.c:240
-kobject_add_internal+0x254/0x2d4
-[    3.742709] kobject_add_internal failed for cpufreq-dt with -EEXIST,
-don't try to register things with the same name in the same directory.
-[    3.755900] Modules linked in:
-[    3.759239] CPU: 1 PID: 1 Comm: swapper/0 Tainted: G        W
-4.13.0-next-20170911-12690-ga31cc45-dirty #7
-[    3.769907] Hardware name: Generic DRA74X (Flattened Device Tree)
-[    3.776321] [<c0110a88>] (unwind_backtrace) from [<c010cae4>]
-(show_stack+0x10/0x14)
-[    3.784454] [<c010cae4>] (show_stack) from [<c0828184>]
-(dump_stack+0xac/0xe0)
-[    3.792043] [<c0828184>] (dump_stack) from [<c01374d0>]
-(__warn+0xd8/0x104)
-[    3.799364] [<c01374d0>] (__warn) from [<c0137530>]
-(warn_slowpath_fmt+0x34/0x44)
-[    3.807227] [<c0137530>] (warn_slowpath_fmt) from [<c082cb2c>]
-(kobject_add_internal+0x254/0x2d4)
-[    3.816552] [<c082cb2c>] (kobject_add_internal) from [<c082cbf8>]
-(kobject_add+0x4c/0x9c)
-[    3.825139] [<c082cbf8>] (kobject_add) from [<c05805a8>]
-(device_add+0xcc/0x57c)
-[    3.832913] [<c05805a8>] (device_add) from [<c0584d38>]
-(platform_device_add+0x100/0x220)
-[    3.841504] [<c0584d38>] (platform_device_add) from [<c058576c>]
-(platform_device_register_full+0xf4/0x118)
-[    3.851729] [<c058576c>] (platform_device_register_full) from
-[<c0670514>] (ti_cpufreq_init+0x150/0x22c)
-[    3.861686] [<c0670514>] (ti_cpufreq_init) from [<c0101df4>]
-(do_one_initcall+0x3c/0x170)
-[    3.870273] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>]
-(kernel_init_freeable+0x1fc/0x2c4)
-[    3.879412] [<c0c00eb4>] (kernel_init_freeable) from [<c083c0cc>]
-(kernel_init+0x8/0x110)
-[    3.888002] [<c083c0cc>] (kernel_init) from [<c0107d78>]
-(ret_from_fork+0x14/0x3c)
-[    3.896035] ---[ end trace 33482508cbb50157 ]---
-
-I believe in two places platform_device_register_* calls are made with
-the same name 'cpufreq-dt'
-
-First place is: cpufreq_dt_platdev_init and the other i believe is
-ti_cpufreq_init.
-
-Dave,
-
-Should the ti-cpufreq driver also be calling
-platform_device_register_simple?
-
-Regards,
-Keerthy
-
-> 
+Best regards
+-- 
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
