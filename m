@@ -1,75 +1,177 @@
-From: Dong Aisheng <dongas86@gmail.com>
-Subject: Re: [PATCH 0/7] PM / OPP: per OPP node clock support and imx7ulp
- cpufreq driver
-Date: Mon, 11 Sep 2017 15:28:06 +0800
-Message-ID: <20170911072806.GB19297@b29396-OptiPlex-7040>
-References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
+From: Keerthy <j-keerthy@ti.com>
+Subject: Re: [PATCH V3] thermal/drivers/step_wise: Fix temperature regulation
+ misbehavior
+Date: Mon, 11 Sep 2017 15:34:32 +0530
+Message-ID: <698c0ea9-c83a-9a4f-d8ef-fc479888b675@ti.com>
+References: <d2fc01f9-c9d9-4247-2baf-6e544e5ef172@ti.com>
+ <1504879940-11591-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:35522 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751037AbdIKH2P (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2017 03:28:15 -0400
-Content-Disposition: inline
-In-Reply-To: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
+Received: from lelnx194.ext.ti.com ([198.47.27.80]:40780 "EHLO
+        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751289AbdIKKEj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2017 06:04:39 -0400
+In-Reply-To: <1504879940-11591-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dong Aisheng <aisheng.dong@nxp.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, John Stultz <john.stultz@linaro.org>, Leo Yan <leo.yan@linaro.org>
 
-Hi Viresh and Rafael,
 
-On Thu, Aug 24, 2017 at 12:10:03AM +0800, Dong Aisheng wrote:
-> This patch series does three things:
-> 1) Add platform specific set_clk function
-> 2) Add per OPP node clock support
-> 3) Add imx7ulp cpufreq driver support
-> 
-> 3 is depends on 1 & 2.
-> 
-> MX7ULP supports HSRUN mode (528 Mhz), RUN mode (413 Mhz) and VLPR mode
-> (restricted to FIRC clock, usually 48 Mhz). This patch adds the cpufreq
-> driver support for HSRUN and RUN mode.
-> When in different modes, the A7 core is using different clocks:
-> RUN:	clk run_divcore
-> HSRUN:	clk hsrun_divcore
-> 
-> Thus, this driver replies on the newly added features in OPP core framework
-> patch 1~6: e.g.
-> "PM / OPP: use OPP node clock to set CPU frequency"
-> 
-> And since IMX7ULP CPU clock setting is different from the generic
-> set OPP clock, we also implemented a private set_clk function.
-> 
-> Dong Aisheng (7):
->   PM / OPP: Add platform specific set_clk function
->   dt-bindings: PM / OPP: add clocks per OPP node support
->   PM / OPP: rename opp_table->clk to opp_table->cur_clk
->   PM / OPP: use OPP node clock to set CPU frequency
->   PM / OPP: Add dev_pm_opp_get_cur_clk()
->   cpufreq: make cpufreq_generic_init transition_latency default to
->     CPUFREQ_ETERNAL
->   cpufreq: add imx7ulp cpufreq driver
-> 
 
-Do you have any comments about this series?
-
-Regards
-Dong Aisheng
-
->  Documentation/devicetree/bindings/opp/opp.txt |  52 ++++++
->  drivers/base/power/opp/core.c                 | 155 ++++++++++++++---
->  drivers/base/power/opp/of.c                   |   8 +
->  drivers/base/power/opp/opp.h                  |  11 +-
->  drivers/cpufreq/Kconfig.arm                   |   8 +
->  drivers/cpufreq/Makefile                      |   1 +
->  drivers/cpufreq/cpufreq.c                     |   2 +
->  drivers/cpufreq/imx7ulp-cpufreq.c             | 234 ++++++++++++++++++++++++++
->  include/linux/pm_opp.h                        |  16 ++
->  9 files changed, 466 insertions(+), 21 deletions(-)
->  create mode 100644 drivers/cpufreq/imx7ulp-cpufreq.c
+On Friday 08 September 2017 07:42 PM, Daniel Lezcano wrote:
+> There is a particular situation when the cooling device is cpufreq and the heat
+> dissipation is not efficient enough where the temperature increases little by
+> little until reaching the critical threshold and leading to a SoC reset.
 > 
-> -- 
-> 2.7.4
+> The behavior is reproducible on a hikey6220 with bad heat dissipation (eg.
+> stacked with other boards).
+> 
+> Running a simple C program doing while(1); for each CPU of the SoC makes the
+> temperature to reach the passive regulation trip point and ends up to the
+> maximum allowed temperature followed by a reset.
+> 
+> This issue has been also reported by running the libhugetlbfs test suite.
+> 
+> What is observed is a ping pong between two cpu frequencies, 1.2GHz and 900MHz
+> while the temperature continues to grow.
+> 
+> It appears the step wise governor calls get_target_state() the first time with
+> the throttle set to true and the trend to 'raising'. The code selects logically
+> the next state, so the cpu frequency decreases from 1.2GHz to 900MHz, so far so
+> good. The temperature decreases immediately but still stays greater than the
+> trip point, then get_target_state() is called again, this time with the
+> throttle set to true *and* the trend to 'dropping'. From there the algorithm
+> assumes we have to step down the state and the cpu frequency jumps back to
+> 1.2GHz. But the temperature is still higher than the trip point, so
+> get_target_state() is called with throttle=1 and trend='raising' again, we jump
+> to 900MHz, then get_target_state() is called with throttle=1 and
+> trend='dropping', we jump to 1.2GHz, etc ... but the temperature does not
+> stabilizes and continues to increase.
+> 
+> [  237.922654] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+> [  237.922678] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+> [  237.922690] thermal cooling_device0: cur_state=0
+> [  237.922701] thermal cooling_device0: old_target=0, target=1
+> [  238.026656] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+> [  238.026680] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
+> [  238.026694] thermal cooling_device0: cur_state=1
+> [  238.026707] thermal cooling_device0: old_target=1, target=0
+> [  238.134647] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+> [  238.134667] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+> [  238.134679] thermal cooling_device0: cur_state=0
+> [  238.134690] thermal cooling_device0: old_target=0, target=1
+> 
+> In this situation the temperature continues to increase while the trend is
+> oscillating between 'dropping' and 'raising'. We need to keep the current state
+> untouched if the throttle is set, so the temperature can decrease or a higher
+> state could be selected, thus preventing this oscillation.
+> 
+> Keeping the next_target untouched when 'throttle' is true at 'dropping' time
+> fixes the issue.
+> 
+> The following traces show the governor does not change the next state if
+> trend==2 (dropping) and throttle==1.
+> 
+> [ 2306.127987] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+> [ 2306.128009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+> [ 2306.128021] thermal cooling_device0: cur_state=0
+> [ 2306.128031] thermal cooling_device0: old_target=0, target=1
+> [ 2306.231991] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+> [ 2306.232016] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
+> [ 2306.232030] thermal cooling_device0: cur_state=1
+> [ 2306.232042] thermal cooling_device0: old_target=1, target=1
+> [ 2306.335982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+> [ 2306.336006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=1
+> [ 2306.336021] thermal cooling_device0: cur_state=1
+> [ 2306.336034] thermal cooling_device0: old_target=1, target=1
+> [ 2306.439984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+> [ 2306.440008] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
+> [ 2306.440022] thermal cooling_device0: cur_state=1
+> [ 2306.440034] thermal cooling_device0: old_target=1, target=0
+> 
+> [ ... ]
+> 
+> After a while, if the temperature continues to increase, the next state becomes
+> 2 which is 720MHz on the hikey. That results in the temperature stabilizing
+> around the trip point.
+> 
+> [ 2455.831982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+> [ 2455.832006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=0
+> [ 2455.832019] thermal cooling_device0: cur_state=1
+> [ 2455.832032] thermal cooling_device0: old_target=1, target=1
+> [ 2455.935985] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+> [ 2455.936013] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
+> [ 2455.936027] thermal cooling_device0: cur_state=1
+> [ 2455.936040] thermal cooling_device0: old_target=1, target=1
+> [ 2456.043984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+> [ 2456.044009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
+> [ 2456.044023] thermal cooling_device0: cur_state=1
+> [ 2456.044036] thermal cooling_device0: old_target=1, target=1
+> [ 2456.148001] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+> [ 2456.148028] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+> [ 2456.148042] thermal cooling_device0: cur_state=1
+> [ 2456.148055] thermal cooling_device0: old_target=1, target=2
+> [ 2456.252009] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+> [ 2456.252041] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
+> [ 2456.252058] thermal cooling_device0: cur_state=2
+> [ 2456.252075] thermal cooling_device0: old_target=2, target=1
+> 
+> IOW, this change is needed to keep the state for a cooling device if the
+> temperature trend is oscillating while the temperature increases slightly.
+> 
+> Without this change, the situation above leads to a catastrophic crash by a
+> hardware reset on hikey. This issue has been reported to happen on an OMAP
+> dra7xx also.
+
+Tested on am57xx-evm and saw that cooling level was not reduced even
+when temperatures dropped(Negative trend) when the current temperature
+was above trip point.
+
+The cooling level was only reduced when the current temperature fell
+below the trip point.
+
+Tested-by: Keerthy <j-keerthy@ti.com>
+Reviewed-by: Keerthy <j-keerthy@ti.com>
+
+> 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Keerthy <j-keerthy@ti.com>
+> Cc: John Stultz <john.stultz@linaro.org>
+> Cc: Leo Yan <leo.yan@linaro.org>
+> ---
+>  drivers/thermal/step_wise.c | 11 ++++++-----
+>  1 file changed, 6 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+> index be95826..ee047ca 100644
+> --- a/drivers/thermal/step_wise.c
+> +++ b/drivers/thermal/step_wise.c
+> @@ -31,8 +31,7 @@
+>   * If the temperature is higher than a trip point,
+>   *    a. if the trend is THERMAL_TREND_RAISING, use higher cooling
+>   *       state for this trip point
+> - *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
+> - *       state for this trip point
+> + *    b. if the trend is THERMAL_TREND_DROPPING, do nothing
+>   *    c. if the trend is THERMAL_TREND_RAISE_FULL, use upper limit
+>   *       for this trip point
+>   *    d. if the trend is THERMAL_TREND_DROP_FULL, use lower limit
+> @@ -94,9 +93,11 @@ static unsigned long get_target_state(struct thermal_instance *instance,
+>  			if (!throttle)
+>  				next_target = THERMAL_NO_TARGET;
+>  		} else {
+> -			next_target = cur_state - 1;
+> -			if (next_target > instance->upper)
+> -				next_target = instance->upper;
+> +			if (!throttle) {
+> +				next_target = cur_state - 1;
+> +				if (next_target > instance->upper)
+> +					next_target = instance->upper;
+> +			}
+>  		}
+>  		break;
+>  	case THERMAL_TREND_DROP_FULL:
 > 
