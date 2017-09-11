@@ -1,177 +1,127 @@
 From: Keerthy <j-keerthy@ti.com>
-Subject: Re: [PATCH V3] thermal/drivers/step_wise: Fix temperature regulation
- misbehavior
-Date: Mon, 11 Sep 2017 15:34:32 +0530
-Message-ID: <698c0ea9-c83a-9a4f-d8ef-fc479888b675@ti.com>
-References: <d2fc01f9-c9d9-4247-2baf-6e544e5ef172@ti.com>
- <1504879940-11591-1-git-send-email-daniel.lezcano@linaro.org>
+Subject: Re: [1/2] cpufreq: dt-platdev: Automatically create cpufreq device
+ with OPP v2
+Date: Mon, 11 Sep 2017 17:43:58 +0530
+Message-ID: <9f37e244-7c6d-d556-ee7c-a5f3c9d5f756@ti.com>
+References: <20170821131332.GA14662@verge.net.au>
+ <20170821131735.GB14662@verge.net.au> <20170829101146.GF3101@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:40780 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751289AbdIKKEj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Sep 2017 06:04:39 -0400
-In-Reply-To: <1504879940-11591-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170829101146.GF3101@ubuntu>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Simon Horman <horms@verge.net.au>, Dave Gerlach <d-gerlach@ti.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, geert@linux-m68k.org, maxime.ripard@free-electrons.com, wens@csie.org, xuwei5@hisilicon.com, kgene@kernel.org, krzk@kernel.org, yamada.masahiro@socionext.com, jun.nie@linaro.org, baoyou.xie@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, John Stultz <john.stultz@linaro.org>, Leo Yan <leo.yan@linaro.org>
 
 
 
-On Friday 08 September 2017 07:42 PM, Daniel Lezcano wrote:
-> There is a particular situation when the cooling device is cpufreq and the heat
-> dissipation is not efficient enough where the temperature increases little by
-> little until reaching the critical threshold and leading to a SoC reset.
+On Tuesday 29 August 2017 03:41 PM, Viresh Kumar wrote:
+> On 21-08-17, 15:17, Simon Horman wrote:
+>> Sorry, I seem to have accidently sent this email as Virish rather than
+>> myself. I will try again.
 > 
-> The behavior is reproducible on a hikey6220 with bad heat dissipation (eg.
-> stacked with other boards).
-> 
-> Running a simple C program doing while(1); for each CPU of the SoC makes the
-> temperature to reach the passive regulation trip point and ends up to the
-> maximum allowed temperature followed by a reset.
-> 
-> This issue has been also reported by running the libhugetlbfs test suite.
-> 
-> What is observed is a ping pong between two cpu frequencies, 1.2GHz and 900MHz
-> while the temperature continues to grow.
-> 
-> It appears the step wise governor calls get_target_state() the first time with
-> the throttle set to true and the trend to 'raising'. The code selects logically
-> the next state, so the cpu frequency decreases from 1.2GHz to 900MHz, so far so
-> good. The temperature decreases immediately but still stays greater than the
-> trip point, then get_target_state() is called again, this time with the
-> throttle set to true *and* the trend to 'dropping'. From there the algorithm
-> assumes we have to step down the state and the cpu frequency jumps back to
-> 1.2GHz. But the temperature is still higher than the trip point, so
-> get_target_state() is called with throttle=1 and trend='raising' again, we jump
-> to 900MHz, then get_target_state() is called with throttle=1 and
-> trend='dropping', we jump to 1.2GHz, etc ... but the temperature does not
-> stabilizes and continues to increase.
-> 
-> [  237.922654] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
-> [  237.922678] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
-> [  237.922690] thermal cooling_device0: cur_state=0
-> [  237.922701] thermal cooling_device0: old_target=0, target=1
-> [  238.026656] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
-> [  238.026680] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
-> [  238.026694] thermal cooling_device0: cur_state=1
-> [  238.026707] thermal cooling_device0: old_target=1, target=0
-> [  238.134647] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
-> [  238.134667] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
-> [  238.134679] thermal cooling_device0: cur_state=0
-> [  238.134690] thermal cooling_device0: old_target=0, target=1
-> 
-> In this situation the temperature continues to increase while the trend is
-> oscillating between 'dropping' and 'raising'. We need to keep the current state
-> untouched if the throttle is set, so the temperature can decrease or a higher
-> state could be selected, thus preventing this oscillation.
-> 
-> Keeping the next_target untouched when 'throttle' is true at 'dropping' time
-> fixes the issue.
-> 
-> The following traces show the governor does not change the next state if
-> trend==2 (dropping) and throttle==1.
-> 
-> [ 2306.127987] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
-> [ 2306.128009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
-> [ 2306.128021] thermal cooling_device0: cur_state=0
-> [ 2306.128031] thermal cooling_device0: old_target=0, target=1
-> [ 2306.231991] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
-> [ 2306.232016] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
-> [ 2306.232030] thermal cooling_device0: cur_state=1
-> [ 2306.232042] thermal cooling_device0: old_target=1, target=1
-> [ 2306.335982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
-> [ 2306.336006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=1
-> [ 2306.336021] thermal cooling_device0: cur_state=1
-> [ 2306.336034] thermal cooling_device0: old_target=1, target=1
-> [ 2306.439984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
-> [ 2306.440008] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
-> [ 2306.440022] thermal cooling_device0: cur_state=1
-> [ 2306.440034] thermal cooling_device0: old_target=1, target=0
-> 
-> [ ... ]
-> 
-> After a while, if the temperature continues to increase, the next state becomes
-> 2 which is 720MHz on the hikey. That results in the temperature stabilizing
-> around the trip point.
-> 
-> [ 2455.831982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
-> [ 2455.832006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=0
-> [ 2455.832019] thermal cooling_device0: cur_state=1
-> [ 2455.832032] thermal cooling_device0: old_target=1, target=1
-> [ 2455.935985] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
-> [ 2455.936013] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
-> [ 2455.936027] thermal cooling_device0: cur_state=1
-> [ 2455.936040] thermal cooling_device0: old_target=1, target=1
-> [ 2456.043984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
-> [ 2456.044009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
-> [ 2456.044023] thermal cooling_device0: cur_state=1
-> [ 2456.044036] thermal cooling_device0: old_target=1, target=1
-> [ 2456.148001] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
-> [ 2456.148028] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
-> [ 2456.148042] thermal cooling_device0: cur_state=1
-> [ 2456.148055] thermal cooling_device0: old_target=1, target=2
-> [ 2456.252009] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
-> [ 2456.252041] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
-> [ 2456.252058] thermal cooling_device0: cur_state=2
-> [ 2456.252075] thermal cooling_device0: old_target=2, target=1
-> 
-> IOW, this change is needed to keep the state for a cooling device if the
-> temperature trend is oscillating while the temperature increases slightly.
-> 
-> Without this change, the situation above leads to a catastrophic crash by a
-> hardware reset on hikey. This issue has been reported to happen on an OMAP
-> dra7xx also.
+> No issues. I see that Rafael has already applied my patches, you can send
+> additional patches over that to make sure everything is clear.
 
-Tested on am57xx-evm and saw that cooling level was not reduced even
-when temperatures dropped(Negative trend) when the current temperature
-was above trip point.
+Viresh,
 
-The cooling level was only reduced when the current temperature fell
-below the trip point.
+I see below warning with this patch on am57xx-beagle
 
-Tested-by: Keerthy <j-keerthy@ti.com>
-Reviewed-by: Keerthy <j-keerthy@ti.com>
+[    3.545247] WARNING: CPU: 1 PID: 1 at fs/sysfs/dir.c:31
+sysfs_warn_dup+0x58/0x78
+[    3.553099] sysfs: cannot create duplicate filename
+'/devices/platform/cpufreq-dt'
+[    3.561126] Modules linked in:
+[    3.564402] CPU: 1 PID: 1 Comm: swapper/0 Tainted: G        W
+4.13.0-next-20170911-12690-ga31cc45-dirty #7
+[    3.575071] Hardware name: Generic DRA74X (Flattened Device Tree)
+[    3.581484] [<c0110a88>] (unwind_backtrace) from [<c010cae4>]
+(show_stack+0x10/0x14)
+[    3.589620] [<c010cae4>] (show_stack) from [<c0828184>]
+(dump_stack+0xac/0xe0)
+[    3.597209] [<c0828184>] (dump_stack) from [<c01374d0>]
+(__warn+0xd8/0x104)
+[    3.604532] [<c01374d0>] (__warn) from [<c0137530>]
+(warn_slowpath_fmt+0x34/0x44)
+[    3.612390] [<c0137530>] (warn_slowpath_fmt) from [<c0345b30>]
+(sysfs_warn_dup+0x58/0x78)
+[    3.620988] [<c0345b30>] (sysfs_warn_dup) from [<c0345c18>]
+(sysfs_create_dir_ns+0x80/0x98)
+[    3.629773] [<c0345c18>] (sysfs_create_dir_ns) from [<c082c974>]
+(kobject_add_internal+0x9c/0x2d4)
+[    3.639177] [<c082c974>] (kobject_add_internal) from [<c082cbf8>]
+(kobject_add+0x4c/0x9c)
+[    3.647764] [<c082cbf8>] (kobject_add) from [<c05805a8>]
+(device_add+0xcc/0x57c)
+[    3.655542] [<c05805a8>] (device_add) from [<c0584d38>]
+(platform_device_add+0x100/0x220)
+[    3.664138] [<c0584d38>] (platform_device_add) from [<c058576c>]
+(platform_device_register_full+0xf4/0x118)
+[    3.674378] [<c058576c>] (platform_device_register_full) from
+[<c0670514>] (ti_cpufreq_init+0x150/0x22c)
+[    3.684326] [<c0670514>] (ti_cpufreq_init) from [<c0101df4>]
+(do_one_initcall+0x3c/0x170)
+[    3.692916] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>]
+(kernel_init_freeable+0x1fc/0x2c4)
+[    3.702049] [<c0c00eb4>] (kernel_init_freeable) from [<c083c0cc>]
+(kernel_init+0x8/0x110)
+[    3.710639] [<c083c0cc>] (kernel_init) from [<c0107d78>]
+(ret_from_fork+0x14/0x3c)
+[    3.718680] ---[ end trace 33482508cbb50156 ]---
+[    3.720850] ata1: SATA link down (SStatus 0 SControl 300)
+[    3.729278] ------------[ cut here ]------------
+[    3.734147] WARNING: CPU: 1 PID: 1 at lib/kobject.c:240
+kobject_add_internal+0x254/0x2d4
+[    3.742709] kobject_add_internal failed for cpufreq-dt with -EEXIST,
+don't try to register things with the same name in the same directory.
+[    3.755900] Modules linked in:
+[    3.759239] CPU: 1 PID: 1 Comm: swapper/0 Tainted: G        W
+4.13.0-next-20170911-12690-ga31cc45-dirty #7
+[    3.769907] Hardware name: Generic DRA74X (Flattened Device Tree)
+[    3.776321] [<c0110a88>] (unwind_backtrace) from [<c010cae4>]
+(show_stack+0x10/0x14)
+[    3.784454] [<c010cae4>] (show_stack) from [<c0828184>]
+(dump_stack+0xac/0xe0)
+[    3.792043] [<c0828184>] (dump_stack) from [<c01374d0>]
+(__warn+0xd8/0x104)
+[    3.799364] [<c01374d0>] (__warn) from [<c0137530>]
+(warn_slowpath_fmt+0x34/0x44)
+[    3.807227] [<c0137530>] (warn_slowpath_fmt) from [<c082cb2c>]
+(kobject_add_internal+0x254/0x2d4)
+[    3.816552] [<c082cb2c>] (kobject_add_internal) from [<c082cbf8>]
+(kobject_add+0x4c/0x9c)
+[    3.825139] [<c082cbf8>] (kobject_add) from [<c05805a8>]
+(device_add+0xcc/0x57c)
+[    3.832913] [<c05805a8>] (device_add) from [<c0584d38>]
+(platform_device_add+0x100/0x220)
+[    3.841504] [<c0584d38>] (platform_device_add) from [<c058576c>]
+(platform_device_register_full+0xf4/0x118)
+[    3.851729] [<c058576c>] (platform_device_register_full) from
+[<c0670514>] (ti_cpufreq_init+0x150/0x22c)
+[    3.861686] [<c0670514>] (ti_cpufreq_init) from [<c0101df4>]
+(do_one_initcall+0x3c/0x170)
+[    3.870273] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>]
+(kernel_init_freeable+0x1fc/0x2c4)
+[    3.879412] [<c0c00eb4>] (kernel_init_freeable) from [<c083c0cc>]
+(kernel_init+0x8/0x110)
+[    3.888002] [<c083c0cc>] (kernel_init) from [<c0107d78>]
+(ret_from_fork+0x14/0x3c)
+[    3.896035] ---[ end trace 33482508cbb50157 ]---
 
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Keerthy <j-keerthy@ti.com>
-> Cc: John Stultz <john.stultz@linaro.org>
-> Cc: Leo Yan <leo.yan@linaro.org>
-> ---
->  drivers/thermal/step_wise.c | 11 ++++++-----
->  1 file changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-> index be95826..ee047ca 100644
-> --- a/drivers/thermal/step_wise.c
-> +++ b/drivers/thermal/step_wise.c
-> @@ -31,8 +31,7 @@
->   * If the temperature is higher than a trip point,
->   *    a. if the trend is THERMAL_TREND_RAISING, use higher cooling
->   *       state for this trip point
-> - *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
-> - *       state for this trip point
-> + *    b. if the trend is THERMAL_TREND_DROPPING, do nothing
->   *    c. if the trend is THERMAL_TREND_RAISE_FULL, use upper limit
->   *       for this trip point
->   *    d. if the trend is THERMAL_TREND_DROP_FULL, use lower limit
-> @@ -94,9 +93,11 @@ static unsigned long get_target_state(struct thermal_instance *instance,
->  			if (!throttle)
->  				next_target = THERMAL_NO_TARGET;
->  		} else {
-> -			next_target = cur_state - 1;
-> -			if (next_target > instance->upper)
-> -				next_target = instance->upper;
-> +			if (!throttle) {
-> +				next_target = cur_state - 1;
-> +				if (next_target > instance->upper)
-> +					next_target = instance->upper;
-> +			}
->  		}
->  		break;
->  	case THERMAL_TREND_DROP_FULL:
+I believe in two places platform_device_register_* calls are made with
+the same name 'cpufreq-dt'
+
+First place is: cpufreq_dt_platdev_init and the other i believe is
+ti_cpufreq_init.
+
+Dave,
+
+Should the ti-cpufreq driver also be calling
+platform_device_register_simple?
+
+Regards,
+Keerthy
+
 > 
