@@ -1,106 +1,82 @@
-From: "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
-Subject: Re: [1/9] i2c: designware: Fix system suspend
-Date: Tue, 12 Sep 2017 17:44:55 +0800
-Message-ID: <e14d2021-b385-c0ac-603a-d0acccc8b8f3@hisilicon.com>
-References: <1498072888-14782-2-git-send-email-ulf.hansson@linaro.org>
- <5597d9a7-8b1a-d45d-e8d5-d1c0b46ddb7a@hisilicon.com>
- <CAPDyKFq0W2NXXGzNgKq2xeiFsj=kt8JG+LzEzOb=38RWBqi+YA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAPDyKFq0W2NXXGzNgKq2xeiFsj=kt8JG+LzEzOb=38RWBqi+YA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Jisheng Zhang <jszhang@marvell.com>, stable@vger.linux.org, Guodong Xu <guodong.xu@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Haojian Zhuang <haojian.zhuang@linaro.org>, John Stultz <john.stultz@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Sumit Semwal <sumit.semwal@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Len Brown <lenb@kernel.org>
+From: Sakari Ailus <sakari.ailus@linux.intel.com>
+Subject: [PATCH v2 1/1] device property: Align return codes of acpi_fwnode_get_reference_with_args
+Date: Tue, 12 Sep 2017 17:15:12 +0300
+Message-ID: <20170912141512.21634-1-sakari.ailus@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from nblzone-211-213.nblnetworks.fi ([83.145.211.213]:37082 "EHLO
+        hillosipuli.retiisi.org.uk" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1751395AbdILOPO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Sep 2017 10:15:14 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: mika.westerberg@intel.com
 
-T0ssIHRoaXMgcGF0Y2ggY2FuIGFsc28gZml4IHRoZSBwcm9ibGVtLgpPbiAyMDE3LzkvOCAxNjoy
-OSwgVWxmIEhhbnNzb24gd3JvdGU6Cj4gT24gOCBTZXB0ZW1iZXIgMjAxNyBhdCAwNToyMywgV2Fu
-Z3RhbyAoS2V2aW4sIEtpcmluKQo+IDxrZXZpbi53YW5ndGFvQGhpc2lsaWNvbi5jb20+IHdyb3Rl
-Ogo+Pgo+PiBUaGlzIHBhdGNoIGNhbiBmaXggdGhlIGlzc3VlIHdlIGZvdW5kIG9uIGhpa2V5OTYw
-IHRoYXQgaTJjIGRvZXNuJ3Qgc2tpcAo+PiBzeXN0ZW0gc3VzcGVuZCB3aGVuIGl0IGlzIHJ1bnRp
-bWUgc3VzcGVuZGVkLgo+IAo+IFdlIGRlY2lkZWQgdG8gZ28gd2l0aCBhIHNsaWdodGx5IGRpZmZl
-cmVudCB2ZXJzaW9uLiBZb3UgbWF5IHRyeSBvdXQKPiB0aGUgYmVsb3cgYW5kIHNlZSBpZiB0aGF0
-IGFsc28gZml4ZXMgeW91ciBwcm9ibGVtLgo+IAo+IGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvcHVi
-L3NjbS9saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LmdpdC9jb21taXQvP2lkPWEyMzMx
-OGZlZWZmNjYyYzhkMjVkMjE2MjNkYWViZGQyZTU1ZWMyMjEKPiAKPiBLaW5kIHJlZ2FyZHMKPiBV
-ZmZlCj4gCj4+Cj4+Cj4+IOWcqCAyMDE3LzYvMjIgMzoyMSwgVWxmIEhhbnNzb24g5YaZ6YGTOgo+
-Pj4KPj4+IFRoZSBjb21taXQgODUwM2ZmMTY2NTA0ICgiaTJjOiBkZXNpZ253YXJlOiBBdm9pZCB1
-bm5lY2Vzc2FyeSByZXN1bWluZwo+Pj4gZHVyaW5nIHN5c3RlbSBzdXNwZW5kIiksIG1heSBzdWdn
-ZXN0IHRvIHRoZSBQTSBjb3JlIHRvIHRyeSBvdXQgdGhlIHNvCj4+PiBjYWxsZWQgZGlyZWN0X2Nv
-bXBsZXRlIHBhdGggZm9yIHN5c3RlbSBzbGVlcC4gSW4gdGhpcyBwYXRoLCB0aGUgUE0gY29yZQo+
-Pj4gdHJlYXRzIGEgcnVudGltZSBzdXNwZW5kZWQgZGV2aWNlIGFzIGl0J3MgYWxyZWFkeSBpbiBh
-IHByb3BlciBsb3cgcG93ZXIKPj4+IHN0YXRlIGZvciBzeXN0ZW0gc2xlZXAsIHdoaWNoIG1ha2Vz
-IGl0IHNraXAgY2FsbGluZyB0aGUgc3lzdGVtIHNsZWVwCj4+PiBjYWxsYmFja3MgZm9yIHRoZSBk
-ZXZpY2UsIGV4Y2VwdCBmb3IgdGhlIC0+cHJlcGFyZSgpIGFuZCB0aGUgLT5jb21wbGV0ZSgpCj4+
-PiBjYWxsYmFjay4KPj4+Cj4+PiBNb3Jlb3ZlciwgdW5kZXIgY2VydGFpbiBjaXJjdW1zdGFuY2Vz
-IHRoZSBQTSBjb3JlIG1heSB1bnNldCB0aGUKPj4+IGRpcmVjdF9jb21wbGV0ZSBmbGFnIGZvciBh
-IHBhcmVudCBkZXZpY2UsIGluIGNhc2UgaXRzIGNoaWxkIGRldmljZSBhcmUKPj4+IGJlaW5nIHN5
-c3RlbSBzdXNwZW5kZWQgYmVmb3JlLiBJbiBvdGhlciB3b3JkcywgdGhlIFBNIGNvcmUgZG9lc24n
-dCBza2lwCj4+PiBjYWxsaW5nIHRoZSBzeXN0ZW0gc2xlZXAgY2FsbGJhY2tzLCBubyBtYXR0ZXIg
-aWYgdGhlIGRldmljZSBpcyBydW50aW1lCj4+PiBzdXNwZW5kZWQgb3Igbm90Lgo+Pj4KPj4+IElu
-IGNhc2VzIG9mIGFuIGkyYyBzbGF2ZSBkZXZpY2UsIHRoZSBhYm92ZSBzaXR1YXRpb24gaXMgdHJp
-Z2dlcmVkLgo+Pj4gVW5mb3J0dW5hdGUsIHRoaXMgYWxzbyBicmVha3MgdGhlIGFzc3VtcHRpb24g
-dGhhdCB0aGUgaTJjIGRldmljZSBpcyBhbHdheXMKPj4+IHJ1bnRpbWUgcmVzdW1lZCwgd2hlbmV2
-ZXIgdGhlIGR3X2kyY19wbGF0X3N1c3BlbmQoKSBjYWxsYmFjayBpcyBiZWluZwo+Pj4gaW52b2tl
-ZCwgd2hpY2ggdGhlbiBsZWFkcyB0byBhIHJlZ3Jlc3Npb24uCj4+Pgo+Pj4gTW9yZSBwcmVjaXNl
-bHksIGR3X2kyY19wbGF0X3N1c3BlbmQoKSB0aGVuIGNhbGxzIGNsa19jb3JlX2Rpc2FibGUoKSBh
-bmQKPj4+IGNsa19jb3JlX3VucHJlcGFyZSgpLCBmb3IgYW4gYWxyZWFkeSBkaXNhYmxlZC91bnBy
-ZXBhcmVkIGNsb2NrLCBsZWFkaW5nIHRvCj4+PiBjb21wbGFpbnRzIGFib3V0IGNsb2NrcyBjYWxs
-cyBiZWluZyB3cm9uZ2x5IGJhbGFuY2VkLgo+Pj4KPj4+IEluIGNhc2VzIHdoZW4gdGhlIGkyYyBk
-ZXZpY2UgaXMgYXR0YWNoZWQgdG8gdGhlIEFDUEkgUE0gZG9tYWluLCB0aGUKPj4+IHByb2JsZW0K
-Pj4+IGRvZXNuJ3Qgb2NjdXIuIFRoYXQncyBiZWNhdXNlIEFDUEkncyAtPnN1c3BlbmQoKSBjYWxs
-YmFjaywgYXNzaWduZWQgdG8KPj4+IGFjcGlfc3Vic3lzX3N1c3BlbmQoKSwgY2FsbHMgcG1fcnVu
-dGltZV9yZXN1bWUoKSBmb3IgdGhlIGkyYyBkZXZpY2UuCj4+Pgo+Pj4gVG8gbWFrZSBhIHNpbXBs
-ZSBmaXggZm9yIHRoaXMgcmVncmVzc2lvbiwgbGV0J3MgcnVudGltZSByZXN1bWUgdGhlIGkyYwo+
-Pj4gZGV2aWNlIGluIHRoZSAtPnByZXBhcmUoKSBjYWxsYmFjaywgYXNzaWduZWQgdG8gZHdfaTJj
-X3BsYXRfcHJlcGFyZSgpLgo+Pj4gVGhpcwo+Pj4gcHJldmVudHMgdGhlIGRpcmVjdF9jb21wbGV0
-ZSBwYXRoIGZyb20gYmVpbmcgZXhlY3V0ZWQgYnkgdGhlIFBNIGNvcmUgYW5kCj4+PiBndWFyYW50
-ZWVzIHRoZSBkd19pMmNfcGxhdF9zdXNwZW5kKCkgaXMgY2FsbGVkIHdpdGggdGhlIGkyYyBkZXZp
-Y2UgYWx3YXlzCj4+PiBiZWluZyBydW50aW1lIHJlc3VtZWQuCj4+Pgo+Pj4gT2YgY291cnNlIHRo
-aXMgY2hhbmdlIGlzIHN1Ym9wdGltYWwsIGJlY2F1c2UgdG8gYWx3YXlzIGZvcmNlIGEgcnVudGlt
-ZQo+Pj4gcmVzdW1lIG9mIHRoZSBpMmMgZGV2aWNlIGluIC0+cHJlcGFyZSgpIGlzIGEgd2FzdGUs
-IGVzcGVjaWFsbHkgaW4gdGhvc2UKPj4+IGNhc2VzIHdoZW4gaXQgY291bGQgaGF2ZSByZW1haW5l
-ZCBydW50aW1lIHN1c3BlbmRlZCBkdXJpbmcgdGhlIGVudGlyZQo+Pj4gc3lzdGVtIHNsZWVwIHNl
-cXVlbmNlLiBIb3dldmVyLCB0byBhY2NvbXBsaXNoIHRoYXQgYmVoYXZpb3VyIGEgYmlnZ2VyCj4+
-PiBjaGFuZ2UgaXMgbmVlZGVkLCBzbyBkZWZlciB0aGF0IHRvIGZ1dHVyZSBjaGFuZ2VzIG5vdCBh
-cHBsaWNhYmxlIGFzIGZpeGVzCj4+PiBvciBmb3Igc3RhYmxlLgo+Pj4KPj4+IEZpeGVzOiA4NTAz
-ZmYxNjY1MDQgKCJpMmM6IGRlc2lnbndhcmU6IEF2b2lkIHVubmVjZXNzYXJ5IHJlc3VtaW5nLi4u
-IikKPj4+IENjOiBzdGFibGVAdmdlci5saW51eC5vcmcKPj4+IFNpZ25lZC1vZmYtYnk6IFVsZiBI
-YW5zc29uIDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPgo+Pj4gLS0tCj4+PiAgICBkcml2ZXJzL2ky
-Yy9idXNzZXMvaTJjLWRlc2lnbndhcmUtcGxhdGRydi5jIHwgMTEgKystLS0tLS0tLS0KPj4+ICAg
-IDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDkgZGVsZXRpb25zKC0pCj4+Pgo+Pj4g
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvaTJjL2J1c3Nlcy9pMmMtZGVzaWdud2FyZS1wbGF0ZHJ2LmMK
-Pj4+IGIvZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1kZXNpZ253YXJlLXBsYXRkcnYuYwo+Pj4gaW5k
-ZXggZDEyNjNiOC4uMmI3ZmE3NSAxMDA2NDQKPj4+IC0tLSBhL2RyaXZlcnMvaTJjL2J1c3Nlcy9p
-MmMtZGVzaWdud2FyZS1wbGF0ZHJ2LmMKPj4+ICsrKyBiL2RyaXZlcnMvaTJjL2J1c3Nlcy9pMmMt
-ZGVzaWdud2FyZS1wbGF0ZHJ2LmMKPj4+IEBAIC0zNzUsMTcgKzM3NSwxMSBAQCBNT0RVTEVfREVW
-SUNFX1RBQkxFKG9mLCBkd19pMmNfb2ZfbWF0Y2gpOwo+Pj4gICAgI2lmZGVmIENPTkZJR19QTV9T
-TEVFUAo+Pj4gICAgc3RhdGljIGludCBkd19pMmNfcGxhdF9wcmVwYXJlKHN0cnVjdCBkZXZpY2Ug
-KmRldikKPj4+ICAgIHsKPj4+IC0gICAgICAgcmV0dXJuIHBtX3J1bnRpbWVfc3VzcGVuZGVkKGRl
-dik7Cj4+PiAtfQo+Pj4gLQo+Pj4gLXN0YXRpYyB2b2lkIGR3X2kyY19wbGF0X2NvbXBsZXRlKHN0
-cnVjdCBkZXZpY2UgKmRldikKPj4+IC17Cj4+PiAtICAgICAgIGlmIChkZXYtPnBvd2VyLmRpcmVj
-dF9jb21wbGV0ZSkKPj4+IC0gICAgICAgICAgICAgICBwbV9yZXF1ZXN0X3Jlc3VtZShkZXYpOwo+
-Pj4gKyAgICAgICBwbV9ydW50aW1lX3Jlc3VtZShkZXYpOwo+Pj4gKyAgICAgICByZXR1cm4gMDsK
-Pj4+ICAgIH0KPj4+ICAgICNlbHNlCj4+PiAgICAjZGVmaW5lIGR3X2kyY19wbGF0X3ByZXBhcmUg
-ICBOVUxMCj4+PiAtI2RlZmluZSBkd19pMmNfcGxhdF9jb21wbGV0ZSAgIE5VTEwKPj4+ICAgICNl
-bmRpZgo+Pj4gICAgICAjaWZkZWYgQ09ORklHX1BNCj4+PiBAQCAtNDEzLDcgKzQwNyw2IEBAIHN0
-YXRpYyBpbnQgZHdfaTJjX3BsYXRfcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikKPj4+ICAgICAg
-c3RhdGljIGNvbnN0IHN0cnVjdCBkZXZfcG1fb3BzIGR3X2kyY19kZXZfcG1fb3BzID0gewo+Pj4g
-ICAgICAgICAgLnByZXBhcmUgPSBkd19pMmNfcGxhdF9wcmVwYXJlLAo+Pj4gLSAgICAgICAuY29t
-cGxldGUgPSBkd19pMmNfcGxhdF9jb21wbGV0ZSwKPj4+ICAgICAgICAgIFNFVF9TWVNURU1fU0xF
-RVBfUE1fT1BTKGR3X2kyY19wbGF0X3N1c3BlbmQsIGR3X2kyY19wbGF0X3Jlc3VtZSkKPj4+ICAg
-ICAgICAgIFNFVF9SVU5USU1FX1BNX09QUyhkd19pMmNfcGxhdF9zdXNwZW5kLCBkd19pMmNfcGxh
-dF9yZXN1bWUsIE5VTEwpCj4+PiAgICB9Owo+Pj4KPj4KPiAKPiAuCj4gCgoKX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWls
-aW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0
-cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
+acpi_fwnode_get_reference_with_args(), the function implementing ACPI
+support for fwnode_property_get_reference_with_args(), returns directly
+error codes from __acpi_node_get_property_reference(). The latter uses
+different error codes than the OF implementation. In particular, the OF
+implementation uses -ENOENT to indicate there are no more entries whereas
+the former uses -ENODATA for the purpose.
+
+To make matters more complicated, the ACPI implementation uses -ENOENT but
+for a different purpose --- when an entry exists but contains no
+reference. This isn't recognised by OF.
+
+Document and align the error codes for property for
+fwnode_property_get_reference_with_args() so that they match with
+of_parse_phandle_with_args(), with the difference that -ENODATA is
+returned whenever an entry exists but contains no reference.
+
+Also return -ENOENT if the property does not exist, which is what the DT
+equivalent does.
+
+Fixes: 3e3119d3088f ("device property: Introduce fwnode_property_get_reference_args")
+Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+---
+since v1:
+
+- Return -ENOENT if the property is not found.
+
+ drivers/acpi/property.c | 7 +++++++
+ drivers/base/property.c | 5 +++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/drivers/acpi/property.c b/drivers/acpi/property.c
+index a65c09cc223f..8970dd288d9d 100644
+--- a/drivers/acpi/property.c
++++ b/drivers/acpi/property.c
+@@ -1205,8 +1205,15 @@ acpi_fwnode_get_reference_args(const struct fwnode_handle *fwnode,
+ 	unsigned int i;
+ 	int ret;
+ 
++	if (acpi_node_prop_get(fwnode, prop, NULL))
++		return -ENOENT;
++
+ 	ret = __acpi_node_get_property_reference(fwnode, prop, index,
+ 						 args_count, &acpi_args);
++	if (ret == -ENODATA)
++		return -ENOENT;
++	if (ret == -ENOENT)
++		return -ENODATA;
+ 	if (ret < 0)
+ 		return ret;
+ 	if (!args)
+diff --git a/drivers/base/property.c b/drivers/base/property.c
+index d0b65bbe7e15..79b07ed83304 100644
+--- a/drivers/base/property.c
++++ b/drivers/base/property.c
+@@ -682,6 +682,11 @@ EXPORT_SYMBOL_GPL(fwnode_property_match_string);
+  * Caller is responsible to call fwnode_handle_put() on the returned
+  * args->fwnode pointer.
+  *
++ * Returns: %0 on success
++ *	    %-ENOENT when the index is out of bounds, or the property was not
++ *		     found
++ *	    %-EINVAL on parse error
++ *	    %-ENODATA when an entry exists but contains no reference
+  */
+ int fwnode_property_get_reference_args(const struct fwnode_handle *fwnode,
+ 				       const char *prop, const char *nargs_prop,
+-- 
+2.11.0
