@@ -1,146 +1,106 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: [GIT PULL] Thermal management updates for v4.14-rc1
-Date: Tue, 12 Sep 2017 10:50:19 +0800
-Message-ID: <1505184619.3596.20.camel@intel.com>
+From: "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
+Subject: Re: [1/9] i2c: designware: Fix system suspend
+Date: Tue, 12 Sep 2017 17:44:55 +0800
+Message-ID: <e14d2021-b385-c0ac-603a-d0acccc8b8f3@hisilicon.com>
+References: <1498072888-14782-2-git-send-email-ulf.hansson@linaro.org>
+ <5597d9a7-8b1a-d45d-e8d5-d1c0b46ddb7a@hisilicon.com>
+ <CAPDyKFq0W2NXXGzNgKq2xeiFsj=kt8JG+LzEzOb=38RWBqi+YA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:52230 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750969AbdILCuW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 11 Sep 2017 22:50:22 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"; Format="flowed"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <CAPDyKFq0W2NXXGzNgKq2xeiFsj=kt8JG+LzEzOb=38RWBqi+YA@mail.gmail.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Jisheng Zhang <jszhang@marvell.com>, stable@vger.linux.org, Guodong Xu <guodong.xu@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Kevin Hilman <khilman@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Haojian Zhuang <haojian.zhuang@linaro.org>, John Stultz <john.stultz@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Sumit Semwal <sumit.semwal@linaro.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi, Linus,
-
-Please pull from
-  git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git next
-
-to receive the latest Thermal Management updates for v4.14-rc1 with
-top-most commit b32b5e14b4e0d40e06f094d2593b447e00acdf37:
-
-  Merge branches 'thermal-core', 'thermal-soc', 'thermal-intel' and
-'const-thermal-zone-structure' into next (2017-09-08 11:20:04 +0800)
-
-on top of commit 16f73eb02d7e1765ccab3d2018e0bd98eb93d973:
-
-  Linux 4.13-rc3 (2017-07-30 12:40:36 -0700)
-
-Specifics:
-
-- Fix resources release in error paths when registering thermal zone.
-(Christophe Jaillet)
-
-- Introduce a new thermal driver for on-chip PVT (Process, Voltage and
-Temperature) monitoring unit implemented on UniPhier SoCs. This driver
-supports temperature monitoring and alert function. (Kunihiko Hayashi)
-
-- Add support for mt2712 chip in the mtk_thermal driver. (Louis Yu)
-
-- Add support for RK3328 SOC in rockchip_thermal driver. (Rocky Hao)
-
-- cleanup a couple of platform thermal drivers to constify
-thermal_zone_of_device_ops structures. (Julia Lawall)
-
-- a couple of fixes in int340x and intel_pch_thermal thermal
-driver.(Arvind Yadav, Sumeet Pawnikar, Brian Bian, Ed Swierk, Zhang
-Rui)
-
-thanks,
-rui
-
-----------------------------------------------------------------
-Arnd Bergmann (1):
-      thermal: fix INTEL_SOC_DTS_IOSF_CORE dependencies
-
-Arvind Yadav (3):
-      thermal: int340x: constify attribute_group structures.
-      thermal: int340x_thermal: Constify attribute_group structures.
-      thermal: intel_pch_thermal: constify pci_device_id.
-
-Brian Bian (1):
-      thermal: int3400_thermal: process "thermal table changed" event
-
-Christophe Jaillet (3):
-      thermal: core: Add some new helper functions to free resources
-      thermal: core: Use the new 'thermal_zone_destroy_device_groups()'
-helper function
-      thermal: core: Fix resources release in error paths in
-thermal_zone_device_register()
-
-Ed Swierk (2):
-      thermal: intel_pch_thermal: Read large temp values correctly
-      thermal: intel_pch_thermal: Fix enable check on Broadwell-DE
-
-Icenowy Zheng (1):
-      thermal: core: fix some format issues on critical shutdown string
-
-Julia Lawall (6):
-      thermal: hisilicon: constify thermal_zone_of_device_ops
-structures
-      thermal: qoriq: constify thermal_zone_of_device_ops structures
-      thermal: rcar_gen3_thermal: constify thermal_zone_of_device_ops
-structures
-      thermal: zx2967: constify thermal_zone_of_device_ops structures
-      thermal: exynos: constify thermal_zone_of_device_ops structures
-      thermal: bcm2835: constify thermal_zone_of_device_ops structures
-
-Kunihiko Hayashi (2):
-      dt-bindings: thermal: add binding documentation for UniPhier
-thermal monitor
-      thermal: uniphier: add UniPhier thermal driver
-
-Louis Yu (4):
-      dt-bindings: thermal: Add binding document for Mediatek thermal
-controller
-      thermal: mediatek: add Mediatek thermal driver for mt2712
-      thermal: mediatek: extend calibration data for mt2712 chip
-      thermal: mediatek: minor mtk_thermal.c cleanups
-
-Rocky Hao (2):
-      dt-bindings: rockchip-thermal: Support the RK3328 SoC compatible
-      thermal: rockchip: Support the RK3328 SOC in thermal driver
-
-Sumeet Pawnikar (1):
-      Thermal/int340x: Fix few typos and kernel warn message
-
-Zhang Rui (3):
-      Thermal: int3406_thermal: fix thermal sysfs I/F
-      Merge branches 'mediatek-mt2712', 'rockchip-rk3328' and
-'uniphier-thermal' into thermal-soc
-      Merge branches 'thermal-core', 'thermal-soc', 'thermal-intel' and
-'const-thermal-zone-structure' into next
-
- .../bindings/thermal/mediatek-thermal.txt          |   1 +
- .../bindings/thermal/rockchip-thermal.txt          |   1 +
- .../bindings/thermal/uniphier-thermal.txt          |  64 ++++
- drivers/thermal/Kconfig                            |  12 +-
- drivers/thermal/Makefile                           |   1 +
- drivers/thermal/broadcom/bcm2835_thermal.c         |   2 +-
- drivers/thermal/hisi_thermal.c                     |   2 +-
- drivers/thermal/int340x_thermal/acpi_thermal_rel.c |   2 +-
- drivers/thermal/int340x_thermal/acpi_thermal_rel.h |   8 +-
- drivers/thermal/int340x_thermal/int3400_thermal.c  |  43 ++-
- drivers/thermal/int340x_thermal/int3406_thermal.c  |  96 ++----
- .../int340x_thermal/processor_thermal_device.c     |   2 +-
- drivers/thermal/intel_pch_thermal.c                |  12 +-
- drivers/thermal/mtk_thermal.c                      |  88 ++++-
- drivers/thermal/qoriq_thermal.c                    |   2 +-
- drivers/thermal/rcar_gen3_thermal.c                |   2 +-
- drivers/thermal/rockchip_thermal.c                 |  65 ++++
- drivers/thermal/samsung/exynos_tmu.c               |   2 +-
- drivers/thermal/thermal_core.c                     |  31 +-
- drivers/thermal/thermal_core.h                     |   1 +
- drivers/thermal/thermal_sysfs.c                    |  29 ++
- drivers/thermal/uniphier_thermal.c                 | 384
-+++++++++++++++++++++
- drivers/thermal/zx2967_thermal.c                   |   2 +-
- include/linux/thermal.h                            |   1 +
- 24 files changed, 747 insertions(+), 106 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/uniphier-
-thermal.txt
- create mode 100644 drivers/thermal/uniphier_thermal.c
+T0ssIHRoaXMgcGF0Y2ggY2FuIGFsc28gZml4IHRoZSBwcm9ibGVtLgpPbiAyMDE3LzkvOCAxNjoy
+OSwgVWxmIEhhbnNzb24gd3JvdGU6Cj4gT24gOCBTZXB0ZW1iZXIgMjAxNyBhdCAwNToyMywgV2Fu
+Z3RhbyAoS2V2aW4sIEtpcmluKQo+IDxrZXZpbi53YW5ndGFvQGhpc2lsaWNvbi5jb20+IHdyb3Rl
+Ogo+Pgo+PiBUaGlzIHBhdGNoIGNhbiBmaXggdGhlIGlzc3VlIHdlIGZvdW5kIG9uIGhpa2V5OTYw
+IHRoYXQgaTJjIGRvZXNuJ3Qgc2tpcAo+PiBzeXN0ZW0gc3VzcGVuZCB3aGVuIGl0IGlzIHJ1bnRp
+bWUgc3VzcGVuZGVkLgo+IAo+IFdlIGRlY2lkZWQgdG8gZ28gd2l0aCBhIHNsaWdodGx5IGRpZmZl
+cmVudCB2ZXJzaW9uLiBZb3UgbWF5IHRyeSBvdXQKPiB0aGUgYmVsb3cgYW5kIHNlZSBpZiB0aGF0
+IGFsc28gZml4ZXMgeW91ciBwcm9ibGVtLgo+IAo+IGh0dHBzOi8vZ2l0Lmtlcm5lbC5vcmcvcHVi
+L3NjbS9saW51eC9rZXJuZWwvZ2l0L3RvcnZhbGRzL2xpbnV4LmdpdC9jb21taXQvP2lkPWEyMzMx
+OGZlZWZmNjYyYzhkMjVkMjE2MjNkYWViZGQyZTU1ZWMyMjEKPiAKPiBLaW5kIHJlZ2FyZHMKPiBV
+ZmZlCj4gCj4+Cj4+Cj4+IOWcqCAyMDE3LzYvMjIgMzoyMSwgVWxmIEhhbnNzb24g5YaZ6YGTOgo+
+Pj4KPj4+IFRoZSBjb21taXQgODUwM2ZmMTY2NTA0ICgiaTJjOiBkZXNpZ253YXJlOiBBdm9pZCB1
+bm5lY2Vzc2FyeSByZXN1bWluZwo+Pj4gZHVyaW5nIHN5c3RlbSBzdXNwZW5kIiksIG1heSBzdWdn
+ZXN0IHRvIHRoZSBQTSBjb3JlIHRvIHRyeSBvdXQgdGhlIHNvCj4+PiBjYWxsZWQgZGlyZWN0X2Nv
+bXBsZXRlIHBhdGggZm9yIHN5c3RlbSBzbGVlcC4gSW4gdGhpcyBwYXRoLCB0aGUgUE0gY29yZQo+
+Pj4gdHJlYXRzIGEgcnVudGltZSBzdXNwZW5kZWQgZGV2aWNlIGFzIGl0J3MgYWxyZWFkeSBpbiBh
+IHByb3BlciBsb3cgcG93ZXIKPj4+IHN0YXRlIGZvciBzeXN0ZW0gc2xlZXAsIHdoaWNoIG1ha2Vz
+IGl0IHNraXAgY2FsbGluZyB0aGUgc3lzdGVtIHNsZWVwCj4+PiBjYWxsYmFja3MgZm9yIHRoZSBk
+ZXZpY2UsIGV4Y2VwdCBmb3IgdGhlIC0+cHJlcGFyZSgpIGFuZCB0aGUgLT5jb21wbGV0ZSgpCj4+
+PiBjYWxsYmFjay4KPj4+Cj4+PiBNb3Jlb3ZlciwgdW5kZXIgY2VydGFpbiBjaXJjdW1zdGFuY2Vz
+IHRoZSBQTSBjb3JlIG1heSB1bnNldCB0aGUKPj4+IGRpcmVjdF9jb21wbGV0ZSBmbGFnIGZvciBh
+IHBhcmVudCBkZXZpY2UsIGluIGNhc2UgaXRzIGNoaWxkIGRldmljZSBhcmUKPj4+IGJlaW5nIHN5
+c3RlbSBzdXNwZW5kZWQgYmVmb3JlLiBJbiBvdGhlciB3b3JkcywgdGhlIFBNIGNvcmUgZG9lc24n
+dCBza2lwCj4+PiBjYWxsaW5nIHRoZSBzeXN0ZW0gc2xlZXAgY2FsbGJhY2tzLCBubyBtYXR0ZXIg
+aWYgdGhlIGRldmljZSBpcyBydW50aW1lCj4+PiBzdXNwZW5kZWQgb3Igbm90Lgo+Pj4KPj4+IElu
+IGNhc2VzIG9mIGFuIGkyYyBzbGF2ZSBkZXZpY2UsIHRoZSBhYm92ZSBzaXR1YXRpb24gaXMgdHJp
+Z2dlcmVkLgo+Pj4gVW5mb3J0dW5hdGUsIHRoaXMgYWxzbyBicmVha3MgdGhlIGFzc3VtcHRpb24g
+dGhhdCB0aGUgaTJjIGRldmljZSBpcyBhbHdheXMKPj4+IHJ1bnRpbWUgcmVzdW1lZCwgd2hlbmV2
+ZXIgdGhlIGR3X2kyY19wbGF0X3N1c3BlbmQoKSBjYWxsYmFjayBpcyBiZWluZwo+Pj4gaW52b2tl
+ZCwgd2hpY2ggdGhlbiBsZWFkcyB0byBhIHJlZ3Jlc3Npb24uCj4+Pgo+Pj4gTW9yZSBwcmVjaXNl
+bHksIGR3X2kyY19wbGF0X3N1c3BlbmQoKSB0aGVuIGNhbGxzIGNsa19jb3JlX2Rpc2FibGUoKSBh
+bmQKPj4+IGNsa19jb3JlX3VucHJlcGFyZSgpLCBmb3IgYW4gYWxyZWFkeSBkaXNhYmxlZC91bnBy
+ZXBhcmVkIGNsb2NrLCBsZWFkaW5nIHRvCj4+PiBjb21wbGFpbnRzIGFib3V0IGNsb2NrcyBjYWxs
+cyBiZWluZyB3cm9uZ2x5IGJhbGFuY2VkLgo+Pj4KPj4+IEluIGNhc2VzIHdoZW4gdGhlIGkyYyBk
+ZXZpY2UgaXMgYXR0YWNoZWQgdG8gdGhlIEFDUEkgUE0gZG9tYWluLCB0aGUKPj4+IHByb2JsZW0K
+Pj4+IGRvZXNuJ3Qgb2NjdXIuIFRoYXQncyBiZWNhdXNlIEFDUEkncyAtPnN1c3BlbmQoKSBjYWxs
+YmFjaywgYXNzaWduZWQgdG8KPj4+IGFjcGlfc3Vic3lzX3N1c3BlbmQoKSwgY2FsbHMgcG1fcnVu
+dGltZV9yZXN1bWUoKSBmb3IgdGhlIGkyYyBkZXZpY2UuCj4+Pgo+Pj4gVG8gbWFrZSBhIHNpbXBs
+ZSBmaXggZm9yIHRoaXMgcmVncmVzc2lvbiwgbGV0J3MgcnVudGltZSByZXN1bWUgdGhlIGkyYwo+
+Pj4gZGV2aWNlIGluIHRoZSAtPnByZXBhcmUoKSBjYWxsYmFjaywgYXNzaWduZWQgdG8gZHdfaTJj
+X3BsYXRfcHJlcGFyZSgpLgo+Pj4gVGhpcwo+Pj4gcHJldmVudHMgdGhlIGRpcmVjdF9jb21wbGV0
+ZSBwYXRoIGZyb20gYmVpbmcgZXhlY3V0ZWQgYnkgdGhlIFBNIGNvcmUgYW5kCj4+PiBndWFyYW50
+ZWVzIHRoZSBkd19pMmNfcGxhdF9zdXNwZW5kKCkgaXMgY2FsbGVkIHdpdGggdGhlIGkyYyBkZXZp
+Y2UgYWx3YXlzCj4+PiBiZWluZyBydW50aW1lIHJlc3VtZWQuCj4+Pgo+Pj4gT2YgY291cnNlIHRo
+aXMgY2hhbmdlIGlzIHN1Ym9wdGltYWwsIGJlY2F1c2UgdG8gYWx3YXlzIGZvcmNlIGEgcnVudGlt
+ZQo+Pj4gcmVzdW1lIG9mIHRoZSBpMmMgZGV2aWNlIGluIC0+cHJlcGFyZSgpIGlzIGEgd2FzdGUs
+IGVzcGVjaWFsbHkgaW4gdGhvc2UKPj4+IGNhc2VzIHdoZW4gaXQgY291bGQgaGF2ZSByZW1haW5l
+ZCBydW50aW1lIHN1c3BlbmRlZCBkdXJpbmcgdGhlIGVudGlyZQo+Pj4gc3lzdGVtIHNsZWVwIHNl
+cXVlbmNlLiBIb3dldmVyLCB0byBhY2NvbXBsaXNoIHRoYXQgYmVoYXZpb3VyIGEgYmlnZ2VyCj4+
+PiBjaGFuZ2UgaXMgbmVlZGVkLCBzbyBkZWZlciB0aGF0IHRvIGZ1dHVyZSBjaGFuZ2VzIG5vdCBh
+cHBsaWNhYmxlIGFzIGZpeGVzCj4+PiBvciBmb3Igc3RhYmxlLgo+Pj4KPj4+IEZpeGVzOiA4NTAz
+ZmYxNjY1MDQgKCJpMmM6IGRlc2lnbndhcmU6IEF2b2lkIHVubmVjZXNzYXJ5IHJlc3VtaW5nLi4u
+IikKPj4+IENjOiBzdGFibGVAdmdlci5saW51eC5vcmcKPj4+IFNpZ25lZC1vZmYtYnk6IFVsZiBI
+YW5zc29uIDx1bGYuaGFuc3NvbkBsaW5hcm8ub3JnPgo+Pj4gLS0tCj4+PiAgICBkcml2ZXJzL2ky
+Yy9idXNzZXMvaTJjLWRlc2lnbndhcmUtcGxhdGRydi5jIHwgMTEgKystLS0tLS0tLS0KPj4+ICAg
+IDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMoKyksIDkgZGVsZXRpb25zKC0pCj4+Pgo+Pj4g
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvaTJjL2J1c3Nlcy9pMmMtZGVzaWdud2FyZS1wbGF0ZHJ2LmMK
+Pj4+IGIvZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1kZXNpZ253YXJlLXBsYXRkcnYuYwo+Pj4gaW5k
+ZXggZDEyNjNiOC4uMmI3ZmE3NSAxMDA2NDQKPj4+IC0tLSBhL2RyaXZlcnMvaTJjL2J1c3Nlcy9p
+MmMtZGVzaWdud2FyZS1wbGF0ZHJ2LmMKPj4+ICsrKyBiL2RyaXZlcnMvaTJjL2J1c3Nlcy9pMmMt
+ZGVzaWdud2FyZS1wbGF0ZHJ2LmMKPj4+IEBAIC0zNzUsMTcgKzM3NSwxMSBAQCBNT0RVTEVfREVW
+SUNFX1RBQkxFKG9mLCBkd19pMmNfb2ZfbWF0Y2gpOwo+Pj4gICAgI2lmZGVmIENPTkZJR19QTV9T
+TEVFUAo+Pj4gICAgc3RhdGljIGludCBkd19pMmNfcGxhdF9wcmVwYXJlKHN0cnVjdCBkZXZpY2Ug
+KmRldikKPj4+ICAgIHsKPj4+IC0gICAgICAgcmV0dXJuIHBtX3J1bnRpbWVfc3VzcGVuZGVkKGRl
+dik7Cj4+PiAtfQo+Pj4gLQo+Pj4gLXN0YXRpYyB2b2lkIGR3X2kyY19wbGF0X2NvbXBsZXRlKHN0
+cnVjdCBkZXZpY2UgKmRldikKPj4+IC17Cj4+PiAtICAgICAgIGlmIChkZXYtPnBvd2VyLmRpcmVj
+dF9jb21wbGV0ZSkKPj4+IC0gICAgICAgICAgICAgICBwbV9yZXF1ZXN0X3Jlc3VtZShkZXYpOwo+
+Pj4gKyAgICAgICBwbV9ydW50aW1lX3Jlc3VtZShkZXYpOwo+Pj4gKyAgICAgICByZXR1cm4gMDsK
+Pj4+ICAgIH0KPj4+ICAgICNlbHNlCj4+PiAgICAjZGVmaW5lIGR3X2kyY19wbGF0X3ByZXBhcmUg
+ICBOVUxMCj4+PiAtI2RlZmluZSBkd19pMmNfcGxhdF9jb21wbGV0ZSAgIE5VTEwKPj4+ICAgICNl
+bmRpZgo+Pj4gICAgICAjaWZkZWYgQ09ORklHX1BNCj4+PiBAQCAtNDEzLDcgKzQwNyw2IEBAIHN0
+YXRpYyBpbnQgZHdfaTJjX3BsYXRfcmVzdW1lKHN0cnVjdCBkZXZpY2UgKmRldikKPj4+ICAgICAg
+c3RhdGljIGNvbnN0IHN0cnVjdCBkZXZfcG1fb3BzIGR3X2kyY19kZXZfcG1fb3BzID0gewo+Pj4g
+ICAgICAgICAgLnByZXBhcmUgPSBkd19pMmNfcGxhdF9wcmVwYXJlLAo+Pj4gLSAgICAgICAuY29t
+cGxldGUgPSBkd19pMmNfcGxhdF9jb21wbGV0ZSwKPj4+ICAgICAgICAgIFNFVF9TWVNURU1fU0xF
+RVBfUE1fT1BTKGR3X2kyY19wbGF0X3N1c3BlbmQsIGR3X2kyY19wbGF0X3Jlc3VtZSkKPj4+ICAg
+ICAgICAgIFNFVF9SVU5USU1FX1BNX09QUyhkd19pMmNfcGxhdF9zdXNwZW5kLCBkd19pMmNfcGxh
+dF9yZXN1bWUsIE5VTEwpCj4+PiAgICB9Owo+Pj4KPj4KPiAKPiAuCj4gCgoKX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KbGludXgtYXJtLWtlcm5lbCBtYWls
+aW5nIGxpc3QKbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnCmh0dHA6Ly9saXN0
+cy5pbmZyYWRlYWQub3JnL21haWxtYW4vbGlzdGluZm8vbGludXgtYXJtLWtlcm5lbAo=
