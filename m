@@ -1,45 +1,97 @@
-From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
-        <niklas.soderlund+renesas@ragnatech.se>
-Subject: [RFC 2/3] arm64: dts: r8a7795: update register size for thermal
-Date: Wed, 13 Sep 2017 13:01:36 +0200
-Message-ID: <20170913110137.13490-3-niklas.soderlund+renesas@ragnatech.se>
-References: <20170913110137.13490-1-niklas.soderlund+renesas@ragnatech.se>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] thermal: rcar_gen3_thermal: fix initialization sequence
+ for H3 ES2.0
+Date: Wed, 13 Sep 2017 15:37:31 +0200
+Message-ID: <CAMuHMdVEbUx5N02eGYembN8-ZSRbfkeHgThA70TntdcC2MQhxg@mail.gmail.com>
+References: <20170913105522.12880-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp-3.sys.kth.se ([130.237.48.192]:42154 "EHLO
-        smtp-3.sys.kth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751940AbdIMLCH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Sep 2017 07:02:07 -0400
-In-Reply-To: <20170913110137.13490-1-niklas.soderlund+renesas@ragnatech.se>
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:37148 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750993AbdIMNhc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Sep 2017 09:37:32 -0400
+In-Reply-To: <20170913105522.12880-1-niklas.soderlund+renesas@ragnatech.se>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Simon Horman <horms@verge.net.au>, Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-renesas-soc@vger.kernel.org, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+To: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-To be able to read fused calibration values from hardware the size of
-the register resource of TSC1 needs to be incremented to cover one more
-register which holds the information if the calibration values have been
-fused or not.
+Hi Niklas,
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
----
- arch/arm64/boot/dts/renesas/r8a7795.dtsi | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Wed, Sep 13, 2017 at 12:55 PM, Niklas S=C3=B6derlund
+<niklas.soderlund+renesas@ragnatech.se> wrote:
+> The initialization sequence for H3 (r8a7795) ES1.x and ES2.0 is
+> different. H3 ES2.0 and later uses the same sequence as M3 (r8a7796)
+> ES1.0. Fix this by swapping place of the two initialization functions
+> and calling the r8a7796 init function from the r8a7795 init function if
+> the ES version is not "ES1.*".
+>
+> Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.=
+se>
 
-diff --git a/arch/arm64/boot/dts/renesas/r8a7795.dtsi b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-index 1818fd20660d0315..be3c7ff6999af57e 100644
---- a/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-+++ b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-@@ -2805,7 +2805,7 @@
- 
- 		tsc: thermal@e6198000 {
- 			compatible = "renesas,r8a7795-thermal";
--			reg = <0 0xe6198000 0 0x68>,
-+			reg = <0 0xe6198000 0 0x6c>,
- 			      <0 0xe61a0000 0 0x5c>,
- 			      <0 0xe61a8000 0 0x5c>;
- 			interrupts = <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>,
--- 
-2.14.1
+Thanks for your patch!
+
+> --- a/drivers/thermal/rcar_gen3_thermal.c
+> +++ b/drivers/thermal/rcar_gen3_thermal.c
+
+> -static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
+> +static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
+>  {
+> -       u32 reg_val;
+> +       /* H3 ES2.0 and later uses same initialization sequence as M3 ES1=
+.0 */
+
+... use the same ...
+
+> +       if (!soc_device_match(r8a7795es1)) {
+> +               r8a7796_thermal_init(tsc);
+> +               return;
+> +       }
+
+In general, I prefer soc_device_match() tests for pre-production SoCs to
+use positive tests, not negative tests. That makes it easier to drop the
+tests and the related code when support for these pre-production SoCs is
+dropped later.
+
+I.e.
+
+        static void rcar_gen3_thermal_init(struct rcar_gen3_thermal_tsc *ts=
+c)
+        {
+                if (soc_device_match(r8a7795es1))
+                        return r8a7795es1_thermal_init(tsc);
+
+                [... common init code ...]
+        }
+
+Notes:
+  - The above naming ("rcar_gen3_thermal_init") assumes other R-Car Gen3
+    SoCs need the same initialization sequence.
+  - Yes, you can call and return from a void function like that ;-)
+
+However, that still leaves the test in the .thermal_init() callback, so it
+will be evaluated multiple times, during probe and during each and every
+resume.
+
+You can avoid that by using a separate rcar_gen3_thermal_data structure for
+H3 ES1.x, and changing the probe function like:
+
+     priv->data =3D of_device_get_match_data(dev);
++       if (soc_device_match(r8a7795es1))
++               priv->data =3D &r8a7795es_data;
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
