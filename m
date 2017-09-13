@@ -1,120 +1,141 @@
 From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
-        <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH] thermal: rcar_gen3_thermal: fix initialization sequence for H3 ES2.0
-Date: Wed, 13 Sep 2017 12:55:22 +0200
-Message-ID: <20170913105522.12880-1-niklas.soderlund+renesas@ragnatech.se>
+        <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
+Subject: [PATCH 1/2] arm64: dts: r8a7795: add thermal cooling management
+Date: Wed, 13 Sep 2017 12:59:08 +0200
+Message-ID: <20170913105909.13230-2-niklas.soderlund+renesas@ragnatech.se>
+References: <20170913105909.13230-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170913105909.13230-1-niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The initialization sequence for H3 (r8a7795) ES1.x and ES2.0 is
-different. H3 ES2.0 and later uses the same sequence as M3 (r8a7796)
-ES1.0. Fix this by swapping place of the two initialization functions
-and calling the r8a7796 init function from the r8a7795 init function if
-the ES version is not "ES1.*".
+Add nodes and properties for thermal cooling management support.
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
 ---
- drivers/thermal/rcar_gen3_thermal.c | 54 ++++++++++++++++++++++---------------
- 1 file changed, 33 insertions(+), 21 deletions(-)
+ arch/arm64/boot/dts/renesas/r8a7795.dtsi | 40 ++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 203aca44a2bb4bdf..528a65b05b304ca3 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -24,6 +24,7 @@
- #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
- #include <linux/spinlock.h>
-+#include <linux/sys_soc.h>
- #include <linux/thermal.h>
+diff --git a/arch/arm64/boot/dts/renesas/r8a7795.dtsi b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+index 0ccac86bccc6b6f0..1818fd20660d0315 100644
+--- a/arch/arm64/boot/dts/renesas/r8a7795.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
+@@ -53,6 +53,7 @@
+ 				<&cluster0_opp_tb3>, <&cluster0_opp_tb4>,
+ 				<&cluster0_opp_tb5>, <&cluster0_opp_tb6>,
+ 				<&cluster0_opp_tb7>;
++			#cooling-cells = <2>;
+ 		};
  
- #include "thermal_core.h"
-@@ -278,48 +279,59 @@ static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
- 	return IRQ_HANDLED;
- }
+ 		a57_1: cpu@1 {
+@@ -67,6 +68,7 @@
+ 				<&cluster0_opp_tb3>, <&cluster0_opp_tb4>,
+ 				<&cluster0_opp_tb5>, <&cluster0_opp_tb6>,
+ 				<&cluster0_opp_tb7>;
++			#cooling-cells = <2>;
+ 		};
  
--static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
-+static const struct soc_device_attribute r8a7795es1[] = {
-+	{ .soc_id = "r8a7795", .revision = "ES1.*" },
-+	{ /* sentinel */ }
-+};
+ 		a57_2: cpu@2 {
+@@ -81,6 +83,7 @@
+ 				<&cluster0_opp_tb3>, <&cluster0_opp_tb4>,
+ 				<&cluster0_opp_tb5>, <&cluster0_opp_tb6>,
+ 				<&cluster0_opp_tb7>;
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		a57_3: cpu@3 {
+@@ -95,6 +98,7 @@
+ 				<&cluster0_opp_tb3>, <&cluster0_opp_tb4>,
+ 				<&cluster0_opp_tb5>, <&cluster0_opp_tb6>,
+ 				<&cluster0_opp_tb7>;
++			#cooling-cells = <2>;
+ 		};
+ 
+ 		a53_0: cpu@100 {
+@@ -2821,12 +2825,24 @@
+ 				thermal-sensors = <&tsc 0>;
+ 
+ 				trips {
++					sensor1_passive: sensor1-passive {
++						temperature = <95000>;
++						hysteresis = <2000>;
++						type = "passive";
++					};
+ 					sensor1_crit: sensor1-crit {
+ 						temperature = <120000>;
+ 						hysteresis = <2000>;
+ 						type = "critical";
+ 					};
+ 				};
 +
-+static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
- {
--	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  CTSR_THBGR);
--	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  0x0);
-+	u32 reg_val;
++				cooling-maps {
++					map0 {
++						trip = <&sensor1_passive>;
++						cooling-device = <&a57_0 4 4>;
++					};
++				};
+ 			};
  
--	usleep_range(1000, 2000);
-+	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
-+	reg_val &= ~THCTR_PONM;
-+	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
+ 			sensor_thermal2: sensor-thermal2 {
+@@ -2835,12 +2851,24 @@
+ 				thermal-sensors = <&tsc 1>;
  
--	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR, CTSR_PONM);
-+	usleep_range(1000, 2000);
- 
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN, IRQ_TEMPD1 | IRQ_TEMP2);
- 
--	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
--				CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN);
--
--	usleep_range(100, 200);
--
--	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
--				CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN |
--				CTSR_VMST | CTSR_THSST);
-+	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
-+	reg_val |= THCTR_THSST;
-+	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
- 
- 	usleep_range(1000, 2000);
- }
- 
--static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
-+static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
- {
--	u32 reg_val;
-+	/* H3 ES2.0 and later uses same initialization sequence as M3 ES1.0 */
-+	if (!soc_device_match(r8a7795es1)) {
-+		r8a7796_thermal_init(tsc);
-+		return;
-+	}
- 
--	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
--	reg_val &= ~THCTR_PONM;
--	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
-+	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  CTSR_THBGR);
-+	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  0x0);
- 
- 	usleep_range(1000, 2000);
- 
-+	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR, CTSR_PONM);
+ 				trips {
++					sensor2_passive: sensor2-passive {
++						temperature = <95000>;
++						hysteresis = <2000>;
++						type = "passive";
++					};
+ 					sensor2_crit: sensor2-crit {
+ 						temperature = <120000>;
+ 						hysteresis = <2000>;
+ 						type = "critical";
+ 					};
+ 				};
 +
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN, IRQ_TEMPD1 | IRQ_TEMP2);
++				cooling-maps {
++					map0 {
++						trip = <&sensor2_passive>;
++						cooling-device = <&a57_0 4 4>;
++					};
++				};
+ 			};
  
--	reg_val = rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
--	reg_val |= THCTR_THSST;
--	rcar_gen3_thermal_write(tsc, REG_GEN3_THCTR, reg_val);
-+	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
-+				CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN);
-+
-+	usleep_range(100, 200);
-+
-+	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
-+				CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN |
-+				CTSR_VMST | CTSR_THSST);
+ 			sensor_thermal3: sensor-thermal3 {
+@@ -2849,12 +2877,24 @@
+ 				thermal-sensors = <&tsc 2>;
  
- 	usleep_range(1000, 2000);
- }
+ 				trips {
++					sensor3_passive: sensor3-passive {
++						temperature = <95000>;
++						hysteresis = <2000>;
++						type = "passive";
++					};
+ 					sensor3_crit: sensor3-crit {
+ 						temperature = <120000>;
+ 						hysteresis = <2000>;
+ 						type = "critical";
+ 					};
+ 				};
++
++				cooling-maps {
++					map0 {
++						trip = <&sensor3_passive>;
++						cooling-device = <&a57_0 4 4>;
++					};
++				};
+ 			};
+ 		};
+ 	};
 -- 
 2.14.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
