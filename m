@@ -1,125 +1,47 @@
 From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
-        <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
-Subject: [PATCH 2/2] arm64: dts: r8a7796: add thermal cooling management
-Date: Wed, 13 Sep 2017 12:59:09 +0200
-Message-ID: <20170913105909.13230-3-niklas.soderlund+renesas@ragnatech.se>
-References: <20170913105909.13230-1-niklas.soderlund+renesas@ragnatech.se>
+        <niklas.soderlund+renesas@ragnatech.se>
+Subject: [RFC 0/3] thermal: rcar_gen3_thermal: read calibration from hardware
+Date: Wed, 13 Sep 2017 13:01:34 +0200
+Message-ID: <20170913110137.13490-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170913105909.13230-1-niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp-3.sys.kth.se ([130.237.48.192]:42018 "EHLO
+        smtp-3.sys.kth.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751148AbdIMLB6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Sep 2017 07:01:58 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, Simon Horman <horms@verge.net.au>, Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: linux-renesas-soc@vger.kernel.org, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
 
-Add nodes and properties for thermal cooling management support.
+Hi,
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
----
- arch/arm64/boot/dts/renesas/r8a7796.dtsi | 38 ++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+This series extend the Renesas R-Car Gen3 thermal driver to try and read 
+its calibration constants from hardware instead of using pseudo values 
+hard-coded in the driver.
 
-diff --git a/arch/arm64/boot/dts/renesas/r8a7796.dtsi b/arch/arm64/boot/dts/renesas/r8a7796.dtsi
-index 2905a3b953aab145..0b805dc30925e9be 100644
---- a/arch/arm64/boot/dts/renesas/r8a7796.dtsi
-+++ b/arch/arm64/boot/dts/renesas/r8a7796.dtsi
-@@ -53,6 +53,7 @@
- 				<&cluster0_opp_tb3>, <&cluster0_opp_tb4>,
- 				<&cluster0_opp_tb5>, <&cluster0_opp_tb6>,
- 				<&cluster0_opp_tb7>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		a57_1: cpu@1 {
-@@ -67,6 +68,7 @@
- 				<&cluster0_opp_tb3>, <&cluster0_opp_tb4>,
- 				<&cluster0_opp_tb5>, <&cluster0_opp_tb6>,
- 				<&cluster0_opp_tb7>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		a53_0: cpu@100 {
-@@ -2116,12 +2118,24 @@
- 				thermal-sensors = <&tsc 0>;
- 
- 				trips {
-+					sensor1_passive: sensor1-passive {
-+						temperature = <95000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
- 					sensor1_crit: sensor1-crit {
- 						temperature = <120000>;
- 						hysteresis = <2000>;
- 						type = "critical";
- 					};
- 				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&sensor1_passive>;
-+						cooling-device = <&a57_0 5 5>;
-+					};
-+				};
- 			};
- 
- 			sensor_thermal2: sensor-thermal2 {
-@@ -2130,12 +2144,24 @@
- 				thermal-sensors = <&tsc 1>;
- 
- 				trips {
-+					sensor2_passive: sensor2-passive {
-+						temperature = <95000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
- 					sensor2_crit: sensor2-crit {
- 						temperature = <120000>;
- 						hysteresis = <2000>;
- 						type = "critical";
- 					};
- 				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&sensor2_passive>;
-+						cooling-device = <&a57_0 5 5>;
-+					};
-+				};
- 			};
- 
- 			sensor_thermal3: sensor-thermal3 {
-@@ -2144,12 +2170,24 @@
- 				thermal-sensors = <&tsc 2>;
- 
- 				trips {
-+					sensor3_passive: sensor3-passive {
-+						temperature = <95000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
- 					sensor3_crit: sensor3-crit {
- 						temperature = <120000>;
- 						hysteresis = <2000>;
- 						type = "critical";
- 					};
- 				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&sensor3_passive>;
-+						cooling-device = <&a57_0 5 5>;
-+					};
-+				};
- 			};
- 		};
- 
+Unfortunately one registers involved in are not yet documented in 
+datasheets and I don't have access to any board where the calibration 
+data is fused. For the not documented register the BSP code was used as 
+a reference. I do believe the code is ready for upstream consumption but 
+pending new datasheet and/or access to hardware where calibration is 
+fused to test it marked it as RFC. Once I have addressed one or both of 
+these concerns I will resend without the RFC prefix.
+
+The code is tested on H3 and M3-W where the calibration registers are 
+not fused so only the fallback logic to pseudo values are truly tested.
+
+Niklas Söderlund (3):
+  thermal: rcar_gen3_thermal: read calibration from hardware
+  arm64: dts: r8a7795: update register size for thermal
+  arm64: dts: r8a7796: update register size for thermal
+
+ arch/arm64/boot/dts/renesas/r8a7795.dtsi |  2 +-
+ arch/arm64/boot/dts/renesas/r8a7796.dtsi |  2 +-
+ drivers/thermal/rcar_gen3_thermal.c      | 70 +++++++++++++++++++++++++++++++-
+ 3 files changed, 70 insertions(+), 4 deletions(-)
+
 -- 
 2.14.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
