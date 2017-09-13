@@ -1,141 +1,49 @@
 From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
-        <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
-Subject: [PATCH 1/2] arm64: dts: r8a7795: add thermal cooling management
-Date: Wed, 13 Sep 2017 12:59:08 +0200
-Message-ID: <20170913105909.13230-2-niklas.soderlund+renesas@ragnatech.se>
-References: <20170913105909.13230-1-niklas.soderlund+renesas@ragnatech.se>
+        <niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH 0/2] arm64: dts: r8a7795: r8a7796: add thermal cooling management
+Date: Wed, 13 Sep 2017 12:59:07 +0200
+Message-ID: <20170913105909.13230-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170913105909.13230-1-niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>
+Cc: linux-renesas-soc@vger.kernel.org, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
 List-Id: linux-pm@vger.kernel.org
 
-Add nodes and properties for thermal cooling management support.
+Hi,
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
----
+This series adds support for for using CPUFreq as a cooling device for 
+the A57 CUP:s on Renesas H3 and M3-W SoC:s. It depends on Simon Horman's 
+topic/rcar-gen3-cpufreq branch [1] and is tested on-top the latest 
+renesas-drivers on H3 and M3-W. For test results and test procedure 
+please see:
+
+   http://elinux.org/R-Car/Tests:rcar_gen3_thermal
+
+Few notes on the specific values used in this series and why they might 
+need to be changed.
+
+- The trip point temperature of 95000 used is the most conservative one 
+  from the BSP and maybe should be set at 110000 which is the most 
+  aggressive one in the BSP.
+
+- The cooling states described in all cooling-maps nodes might be 
+  subject to change depending on the out-come of the ongoing review 
+  process of Simon's work. It should use the highest possible cooling 
+  state so if the number of states change due review of his work this 
+  should be reflected in this series.
+
+1.  https://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas.git
+
+Niklas Söderlund (2):
+  arm64: dts: r8a7795: add thermal cooling management
+  arm64: dts: r8a7796: add thermal cooling management
+
  arch/arm64/boot/dts/renesas/r8a7795.dtsi | 40 ++++++++++++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+ arch/arm64/boot/dts/renesas/r8a7796.dtsi | 38 ++++++++++++++++++++++++++++++
+ 2 files changed, 78 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/renesas/r8a7795.dtsi b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-index 0ccac86bccc6b6f0..1818fd20660d0315 100644
---- a/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-+++ b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-@@ -53,6 +53,7 @@
- 				<&cluster0_opp_tb3>, <&cluster0_opp_tb4>,
- 				<&cluster0_opp_tb5>, <&cluster0_opp_tb6>,
- 				<&cluster0_opp_tb7>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		a57_1: cpu@1 {
-@@ -67,6 +68,7 @@
- 				<&cluster0_opp_tb3>, <&cluster0_opp_tb4>,
- 				<&cluster0_opp_tb5>, <&cluster0_opp_tb6>,
- 				<&cluster0_opp_tb7>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		a57_2: cpu@2 {
-@@ -81,6 +83,7 @@
- 				<&cluster0_opp_tb3>, <&cluster0_opp_tb4>,
- 				<&cluster0_opp_tb5>, <&cluster0_opp_tb6>,
- 				<&cluster0_opp_tb7>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		a57_3: cpu@3 {
-@@ -95,6 +98,7 @@
- 				<&cluster0_opp_tb3>, <&cluster0_opp_tb4>,
- 				<&cluster0_opp_tb5>, <&cluster0_opp_tb6>,
- 				<&cluster0_opp_tb7>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		a53_0: cpu@100 {
-@@ -2821,12 +2825,24 @@
- 				thermal-sensors = <&tsc 0>;
- 
- 				trips {
-+					sensor1_passive: sensor1-passive {
-+						temperature = <95000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
- 					sensor1_crit: sensor1-crit {
- 						temperature = <120000>;
- 						hysteresis = <2000>;
- 						type = "critical";
- 					};
- 				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&sensor1_passive>;
-+						cooling-device = <&a57_0 4 4>;
-+					};
-+				};
- 			};
- 
- 			sensor_thermal2: sensor-thermal2 {
-@@ -2835,12 +2851,24 @@
- 				thermal-sensors = <&tsc 1>;
- 
- 				trips {
-+					sensor2_passive: sensor2-passive {
-+						temperature = <95000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
- 					sensor2_crit: sensor2-crit {
- 						temperature = <120000>;
- 						hysteresis = <2000>;
- 						type = "critical";
- 					};
- 				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&sensor2_passive>;
-+						cooling-device = <&a57_0 4 4>;
-+					};
-+				};
- 			};
- 
- 			sensor_thermal3: sensor-thermal3 {
-@@ -2849,12 +2877,24 @@
- 				thermal-sensors = <&tsc 2>;
- 
- 				trips {
-+					sensor3_passive: sensor3-passive {
-+						temperature = <95000>;
-+						hysteresis = <2000>;
-+						type = "passive";
-+					};
- 					sensor3_crit: sensor3-crit {
- 						temperature = <120000>;
- 						hysteresis = <2000>;
- 						type = "critical";
- 					};
- 				};
-+
-+				cooling-maps {
-+					map0 {
-+						trip = <&sensor3_passive>;
-+						cooling-device = <&a57_0 4 4>;
-+					};
-+				};
- 			};
- 		};
- 	};
 -- 
 2.14.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
