@@ -1,38 +1,50 @@
-From: Baruch Siach <baruch@tkos.co.il>
-Subject: [PATCH] thermal: armada: fix formula documentation comment
-Date: Thu, 14 Sep 2017 18:06:57 +0300
-Message-ID: <53d5154c1a52b9b973c4386df8b851d10c97f9ad.1505401617.git.baruch@tkos.co.il>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v1 2/3] cpufreq: rockchip: add support for rk3328 soc
+Date: Thu, 14 Sep 2017 14:24:37 -0700
+Message-ID: <20170914212437.GC11836@ubuntu>
+References: <1503477632-9661-1-git-send-email-cl@rock-chips.com>
+ <1503477632-9661-3-git-send-email-cl@rock-chips.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from guitar.tcltek.co.il ([192.115.133.116]:48996 "EHLO
-        mx.tkos.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751131AbdINPHc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 14 Sep 2017 11:07:32 -0400
+Received: from mail-pf0-f175.google.com ([209.85.192.175]:44830 "EHLO
+        mail-pf0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751564AbdINVYp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Sep 2017 17:24:45 -0400
+Received: by mail-pf0-f175.google.com with SMTP id e1so346196pfk.1
+        for <linux-pm@vger.kernel.org>; Thu, 14 Sep 2017 14:24:45 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1503477632-9661-3-git-send-email-cl@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+To: cl@rock-chips.com
+Cc: heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, shawnguo@kernel.org, rocky.hao@rock-chips.com, afaerber@suse.de, fabio.estevam@nxp.com, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, shawn.lin@rock-chips.com, kever.yang@rock-chips.com, rjw@rjwysocki.net, linux-pm@vger.kernel.org
 
-The formula implementation at armada_get_temp() indicates that the sign
-in the formula is inverted.
+On 23-08-17, 16:40, cl@rock-chips.com wrote:
+> From: Liang Chen <cl@rock-chips.com>
+> 
+> Add compatible rockchip,rk3328 to the machines table to
+> launch cpufreq-dt driver for rk3328 soc.
+> 
+> Signed-off-by: Liang Chen <cl@rock-chips.com>
+> ---
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index 1c26292..f16c3ba 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -76,6 +76,7 @@
+>  	{ .compatible = "rockchip,rk3188", },
+>  	{ .compatible = "rockchip,rk3228", },
+>  	{ .compatible = "rockchip,rk3288", },
+> +	{ .compatible = "rockchip,rk3328", },
+>  	{ .compatible = "rockchip,rk3366", },
+>  	{ .compatible = "rockchip,rk3368", },
+>  	{ .compatible = "rockchip,rk3399", },
 
-Cc: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
----
- drivers/thermal/armada_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index ae75328945f7..706d74798cbe 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -58,7 +58,7 @@ struct armada_thermal_data {
- 	/* Test for a valid sensor value (optional) */
- 	bool (*is_valid)(struct armada_thermal_priv *);
- 
--	/* Formula coeficients: temp = (b + m * reg) / div */
-+	/* Formula coeficients: temp = (b - m * reg) / div */
- 	unsigned long coef_b;
- 	unsigned long coef_m;
- 	unsigned long coef_div;
 -- 
-2.14.1
+viresh
