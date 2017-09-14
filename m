@@ -1,52 +1,38 @@
-From: Pedro Ribeiro <pedrib@gmail.com>
-Subject: Hibernate unreliable since 4.4.X / 4.5
-Date: Thu, 14 Sep 2017 11:57:11 +0100
-Message-ID: <edbd6341-1f85-b09a-9540-07df18585f77@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+From: Baruch Siach <baruch@tkos.co.il>
+Subject: [PATCH] thermal: armada: fix formula documentation comment
+Date: Thu, 14 Sep 2017 18:06:57 +0300
+Message-ID: <53d5154c1a52b9b973c4386df8b851d10c97f9ad.1505401617.git.baruch@tkos.co.il>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f175.google.com ([209.85.128.175]:43770 "EHLO
-        mail-wr0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751784AbdINK5O (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Sep 2017 06:57:14 -0400
-Received: by mail-wr0-f175.google.com with SMTP id a43so5573819wrc.0
-        for <linux-pm@vger.kernel.org>; Thu, 14 Sep 2017 03:57:13 -0700 (PDT)
-Received: from [10.5.223.15] ([194.42.227.53])
-        by smtp.gmail.com with ESMTPSA id f188sm1526094wme.21.2017.09.14.03.57.11
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 14 Sep 2017 03:57:12 -0700 (PDT)
-Content-Language: en-GB
+Received: from guitar.tcltek.co.il ([192.115.133.116]:48996 "EHLO
+        mx.tkos.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751131AbdINPHc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 14 Sep 2017 11:07:32 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
 
-Hi,
+The formula implementation at armada_get_temp() indicates that the sign
+in the formula is inverted.
 
-I've been trying to chase away a bug that exists at least since 4.5 (and
-some point release in 4.4), which is a crash when hibernating or
-resuming my Thinkpad X230.
+Cc: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+---
+ drivers/thermal/armada_thermal.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-It happens randomly, I can't find any specific trigger or operation that
-causes it, but every 10-30 hibernations it just hangs when hibernating
-(more commonly) and sometimes when resuming from hibernation. I think it
-might be related to the graphics card, as it seems to happen more
-frequently when I have my laptop in the dock, although it also happens
-outside of the dock. The only out of tree modules are the virtualbox ones.
-When the crash happens, the screen is black but sometimes the laptop
-will still respond to commands. Other times, the screen is frozen, and
-the cpu fan is pumping at full speed.
-
-Every time a new kernel or point release is out I update the kernel, but
-the bug is still there. Before 4.4, and probably in the earlier 4.4
-point releases (can't remember for sure), hibernation was super reliable.
-
-It's a tricky bug to reproduce because it takes up to 10 / 15 days of
-normal usage for the hang to happe.
-
-So now, how do I start debugging this? git bisect the whole tree since
-4.3 or 4.4? Should I do it up to 4.9 to reduce the search space?
-
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index ae75328945f7..706d74798cbe 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -58,7 +58,7 @@ struct armada_thermal_data {
+ 	/* Test for a valid sensor value (optional) */
+ 	bool (*is_valid)(struct armada_thermal_priv *);
+ 
+-	/* Formula coeficients: temp = (b + m * reg) / div */
++	/* Formula coeficients: temp = (b - m * reg) / div */
+ 	unsigned long coef_b;
+ 	unsigned long coef_m;
+ 	unsigned long coef_div;
 -- 
-Pedro Ribeiro
+2.14.1
