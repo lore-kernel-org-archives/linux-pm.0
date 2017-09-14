@@ -1,53 +1,78 @@
-From: Andy Yan <andy.yan@rock-chips.com>
-Subject: Re: [PATCH 2/2] cpufreq: dt: add support for rockchip rv1108
-Date: Thu, 14 Sep 2017 08:52:42 +0800
-Message-ID: <00893ba9-5d67-fd08-6a5a-945fd4fb6583@rock-chips.com>
-References: <1503306404-28876-1-git-send-email-andy.yan@rock-chips.com>
- <1503306624-28937-1-git-send-email-andy.yan@rock-chips.com>
- <20170913191840.GB11836@ubuntu>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2] net: smsc911x: Quieten netif during suspend
+Date: Thu, 14 Sep 2017 11:09:54 +0200
+Message-ID: <CAMuHMdXev3_a_RY2GRGtj9ck2+FYg0pwdtfMu_v+62J7xaXXnw@mail.gmail.com>
+References: <1505324525-9998-1-git-send-email-geert+renesas@glider.be> <16f16af0-383b-9089-93c7-75494ec5031e@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.132]:41764 "EHLO
-        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751179AbdINAw7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Sep 2017 20:52:59 -0400
-In-Reply-To: <20170913191840.GB11836@ubuntu>
-Content-Language: en-US
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:36193 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751385AbdINJJz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Sep 2017 05:09:55 -0400
+In-Reply-To: <16f16af0-383b-9089-93c7-75494ec5031e@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, heiko@sntech.de
+To: Florian Fainelli <f.fainelli@gmail.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "David S . Miller" <davem@davemloft.net>, Steve Glendinning <steve.glendinning@shawell.net>, Andrew Lunn <andrew@lunn.ch>, "netdev@vger.kernel.org" <netdev@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Viresh:
+Hi Florian,
 
-
-On 2017年09月14日 03:18, Viresh Kumar wrote:
-> On 21-08-17, 17:10, Andy Yan wrote:
->> Add the compatible string to support the generic device tree
->> cpufreq-dt driver on rockchip rv1108 soc.
+On Thu, Sep 14, 2017 at 1:28 AM, Florian Fainelli <f.fainelli@gmail.com> wrote:
+> On 09/13/2017 10:42 AM, Geert Uytterhoeven wrote:
+>> If the network interface is kept running during suspend, the net core
+>> may call net_device_ops.ndo_start_xmit() while the Ethernet device is
+>> still suspended, which may lead to a system crash.
 >>
->> Signed-off-by: Andy Yan <andy.yan@rock-chips.com>
->> ---
+>> E.g. on sh73a0/kzm9g and r8a73a4/ape6evm, the external Ethernet chip is
+>> driven by a PM controlled clock.  If the Ethernet registers are accessed
+>> while the clock is not running, the system will crash with an imprecise
+>> external abort.
 >>
->>   drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
->>   1 file changed, 1 insertion(+)
+>> As this is a race condition with a small time window, it is not so easy
+>> to trigger at will.  Using pm_test may increase your chances:
 >>
->> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
->> index 1c26292..2d71c09 100644
->> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
->> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
->> @@ -69,6 +69,7 @@ static const struct of_device_id machines[] __initconst = {
->>   	{ .compatible = "renesas,r8a7794", },
->>   	{ .compatible = "renesas,sh73a0", },
->>   
->> +	{ .compatible = "rockchip,rv1108", },
->>   	{ .compatible = "rockchip,rk2928", },
->>   	{ .compatible = "rockchip,rk3036", },
->>   	{ .compatible = "rockchip,rk3066a", },
-> You use operating-points-v2 or the V1 bindings for this SoC? The SoCs using
-> operating-points-v2 don't need such changes anymore.
+>>     # echo 0 > /sys/module/printk/parameters/console_suspend
+>>     # echo platform > /sys/power/pm_test
+>>     # echo mem > /sys/power/state
+>>
+>> To fix this, make sure the network interface is quietened during
+>> suspend.
+>>
+>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-     Yes, I use operating-points-v2.
->
+> Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
+
+Thank you!
+
+> You may want to take the opportunity to suspend the PHY device
+> (conversely resume it) if WoL is not enabled on this device.
+
+Despite the WoL comment visible in the context below, I believe this driver
+doesn't support WoL yet (ethtool_ops.[gs]et_wol() not implemented).
+
+>> --- a/drivers/net/ethernet/smsc/smsc911x.c
+>> +++ b/drivers/net/ethernet/smsc/smsc911x.c
+>> @@ -2595,6 +2595,11 @@ static int smsc911x_suspend(struct device *dev)
+>>       struct net_device *ndev = dev_get_drvdata(dev);
+>>       struct smsc911x_data *pdata = netdev_priv(ndev);
+>>
+>> +     if (netif_running(ndev)) {
+>> +             netif_stop_queue(ndev);
+>> +             netif_device_detach(ndev);
+>> +     }
+>> +
+>>       /* enable wake on LAN, energy detection and the external PME
+>>        * signal. */
+>>       smsc911x_reg_write(pdata, PMT_CTRL,
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
