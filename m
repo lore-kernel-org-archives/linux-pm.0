@@ -1,43 +1,71 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Subject: cpufreq(-dt) with two clocks but one regulator
-Date: Fri, 15 Sep 2017 00:53:42 +0200
-Message-ID: <1515316.mHJbnBRRvK@phil>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:43596 "EHLO gloria.sntech.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751520AbdINWxp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 14 Sep 2017 18:53:45 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Markus Mayer <code@mmayer.net>
+Subject: [PATCH] thermal: brcmstb: disable trip points properly when needed
+Date: Thu, 14 Sep 2017 16:19:27 -0700
+Message-ID: <20170914231928.45542-1-code@mmayer.net>
+References: <CAGt4E5vbM-eyQVH5X3EK_6sUg7iOeYYoh72oG=+pAsTnu8dr0w@mail.gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAGt4E5vbM-eyQVH5X3EK_6sUg7iOeYYoh72oG=+pAsTnu8dr0w@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Dan Carpenter <dan.carpenter@oracle.com>, Colin King <colin.king@canonical.com>
+Cc: Markus Mayer <mmayer@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, linux-rockchip@lists.infradead.org, Klaus Goger <klaus.goger@theobroma-systems.com>
 
-Hi Viresh,
+From: Markus Mayer <mmayer@broadcom.com>
 
-if possible I'd like a pointer in the right direction for the following
-situation:
+The code checking for low and high temperature points was still based
+on an earlier implementation of the driver. It wasn't working properly
+with the data types currently being used.
 
-The rk3368 has two cpu clusters of 4 Cortex-A53 cores each, with separate
-clock supplies but sharing its supplying regulator. It looks like it was
-originally meant for some switched big-little system, with the little
-cluster maxing out at 1.2GHz while the big cluster can reach 1.5GHz.
+We fix this by disabling the high trip point if our high temperature is
+INT_MAX and disabling the low trip point if our low temperature is -INT_MAX
+(or lower).
 
-This of course fails miserably with current cpufreq, as the two sets
-of operating points fight over control of the regulator and after talking
-with real-life users of the soc it seems most desireable to have all
-8 cores available at 1.2GHz than only 4 at 1.5GHz max.
+Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+---
 
-But as the clock seems to be bound to the opp table itself simply sharing
-the table of course also doesn't work, as only the first clock would be set.
+Here is my patch for the issue described. Please let me know if I should be
+squashing this into the driver patch and re-submit the entire series.
 
+ drivers/thermal/broadcom/brcmstb_thermal.c | 21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
 
-I'm currently only seeing somehow hacky options to solve this, so if you
-have some direction on how to solve something like this I would be really
-grateful :-)
-
-
-Thanks
-Heiko
+diff --git a/drivers/thermal/broadcom/brcmstb_thermal.c b/drivers/thermal/broadcom/brcmstb_thermal.c
+index 87b8e7a..1919f91 100644
+--- a/drivers/thermal/broadcom/brcmstb_thermal.c
++++ b/drivers/thermal/broadcom/brcmstb_thermal.c
+@@ -277,22 +277,23 @@ static int brcmstb_set_trips(void *data, int low, int high)
+ 
+ 	dev_dbg(priv->dev, "set trips %d <--> %d\n", low, high);
+ 
+-	if (low) {
+-		if (low > INT_MAX)
+-			low = INT_MAX;
++	/*
++	 * Disable low-temp if "low" is too small. As per thermal framework
++	 * API, we use -INT_MAX rather than INT_MIN.
++	 */
++	if (low <= -INT_MAX) {
++		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_LOW, 0);
++	} else {
+ 		avs_tmon_set_trip_temp(priv, TMON_TRIP_TYPE_LOW, low);
+ 		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_LOW, 1);
+-	} else {
+-		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_LOW, 0);
+ 	}
+ 
+-	if (high < ULONG_MAX) {
+-		if (high > INT_MAX)
+-			high = INT_MAX;
++	/* Disable high-temp if "high" is too big. */
++	if (high == INT_MAX) {
++		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_HIGH, 0);
++	} else {
+ 		avs_tmon_set_trip_temp(priv, TMON_TRIP_TYPE_HIGH, high);
+ 		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_HIGH, 1);
+-	} else {
+-		avs_tmon_trip_enable(priv, TMON_TRIP_TYPE_HIGH, 0);
+ 	}
+ 
+ 	return 0;
+-- 
+2.7.4
