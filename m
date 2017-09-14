@@ -1,49 +1,36 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: dt-platdev: drop socionext,uniphier-ld6b from
- whitelist
-Date: Thu, 14 Sep 2017 14:26:55 -0700
-Message-ID: <20170914212655.GD11836@ubuntu>
-References: <1504021023-12459-1-git-send-email-yamada.masahiro@socionext.com>
+Subject: Re: [PATCH RESEND 1/1] cpufreq: imx6q: switch to Use clk_bulk_get to
+ refine clk operations
+Date: Thu, 14 Sep 2017 14:40:32 -0700
+Message-ID: <20170914214032.GE11836@ubuntu>
+References: <1504179837-18842-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:55724 "EHLO
-        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751797AbdINV1M (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Sep 2017 17:27:12 -0400
-Received: by mail-pf0-f179.google.com with SMTP id r71so328731pfe.12
-        for <linux-pm@vger.kernel.org>; Thu, 14 Sep 2017 14:27:12 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1504021023-12459-1-git-send-email-yamada.masahiro@socionext.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1504179837-18842-1-git-send-email-aisheng.dong@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dong Aisheng <aisheng.dong@nxp.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, vireshk@kernel.org, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, Leonard Crestez <leonard.crestez@nxp.com>
 List-Id: linux-pm@vger.kernel.org
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org
 
-On 30-08-17, 00:37, Masahiro Yamada wrote:
-> As you see arch/arm/boot/dts/uniphier-ld6b.dtsi, it includes
-> uniphier-pxs2.dtsi, which uses "operating-points-v2" property
-> and whose cpufreq device is automatically created.
+On 31-08-17, 19:43, Dong Aisheng wrote:
+> Use clk_bulk_get to ease the driver clocks handling.
 > 
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Shawn Guo <shawnguo@kernel.org>
+> Cc: Anson Huang <anson.huang@nxp.com>
+> Cc: Leonard Crestez <leonard.crestez@nxp.com>
+> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> --
+> The original one is here which depends on clk_bulk APIs.
+> https://patchwork.kernel.org/patch/9737337/
+> Now the clk_bulk APIs are already in kernel, so resend the patch.
+> (Patch title changed a bit to be more specific.)
 > ---
-> 
->  drivers/cpufreq/cpufreq-dt-platdev.c | 2 --
->  1 file changed, 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index a020da7940d6..c344fc1c4eb8 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -83,8 +83,6 @@ static const struct of_device_id whitelist[] __initconst = {
->  	{ .compatible = "rockchip,rk3368", },
->  	{ .compatible = "rockchip,rk3399", },
->  
-> -	{ .compatible = "socionext,uniphier-ld6b", },
-> -
->  	{ .compatible = "st-ericsson,u8500", },
->  	{ .compatible = "st-ericsson,u8540", },
->  	{ .compatible = "st-ericsson,u9500", },
+>  drivers/cpufreq/imx6q-cpufreq.c | 125 ++++++++++++++++++----------------------
+>  1 file changed, 56 insertions(+), 69 deletions(-)
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
