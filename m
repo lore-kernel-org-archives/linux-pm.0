@@ -1,111 +1,62 @@
-From: "rocky.hao" <rocky.hao@rock-chips.com>
-Subject: Re: [PATCH 4/5] arm: dts: rockchip: add thermal nodes for RV1108 SoC
-Date: Fri, 15 Sep 2017 14:32:07 +0800
-Message-ID: <71ddf0e0-c980-90c3-a7b2-dfaf805e1c37@rock-chips.com>
-References: <1503570475-7850-1-git-send-email-rocky.hao@rock-chips.com>
- <1503570475-7850-5-git-send-email-rocky.hao@rock-chips.com>
+From: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+Subject: Re: [PATCH 0/2] arm64: dts: r8a7795: r8a7796: add thermal cooling
+ management
+Date: Fri, 15 Sep 2017 09:37:22 +0200
+Message-ID: <20170915073722.GE3924@verge.net.au>
+References: <20170913105909.13230-1-niklas.soderlund+renesas@ragnatech.se>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gbk; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1503570475-7850-5-git-send-email-rocky.hao@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com, heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com
-Cc: shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20170913105909.13230-1-niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-ÔÚ 2017/8/24 18:27, Rocky Hao Ð´µÀ:
-> Add thermal zone and dynamic CPU power coefficients for RV1108
+On Wed, Sep 13, 2017 at 12:59:07PM +0200, Niklas SÃ¶derlund wrote:
+> Hi,
 > 
-> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
-> ---
->   arch/arm/boot/dts/rv1108.dtsi | 40 ++++++++++++++++++++++++++++++++++++++++
->   1 file changed, 40 insertions(+)
+> This series adds support for for using CPUFreq as a cooling device for 
+> the A57 CUP:s on Renesas H3 and M3-W SoC:s. It depends on Simon Horman's 
+> topic/rcar-gen3-cpufreq branch [1] and is tested on-top the latest 
+> renesas-drivers on H3 and M3-W. For test results and test procedure 
+> please see:
 > 
-> diff --git a/arch/arm/boot/dts/rv1108.dtsi b/arch/arm/boot/dts/rv1108.dtsi
-> index dbdd8c2180e7..cae920b6a145 100644
-> --- a/arch/arm/boot/dts/rv1108.dtsi
-> +++ b/arch/arm/boot/dts/rv1108.dtsi
-> @@ -43,6 +43,7 @@
->   #include <dt-bindings/interrupt-controller/arm-gic.h>
->   #include <dt-bindings/clock/rv1108-cru.h>
->   #include <dt-bindings/pinctrl/rockchip.h>
-> +#include <dt-bindings/thermal/thermal.h>
->   / {
->   	#address-cells = <1>;
->   	#size-cells = <1>;
-> @@ -69,6 +70,8 @@
->   			device_type = "cpu";
->   			compatible = "arm,cortex-a7";
->   			reg = <0xf00>;
-> +			#cooling-cells = <2>; /* min followed by max */
-> +			dynamic-power-coefficient = <75>;
->   		};
->   	};
->   
-> @@ -275,6 +278,43 @@
->   		status = "disabled";
->   	};
->   
-> +	thermal-zones {
-> +		soc_thermal: soc-thermal {
-> +			polling-delay-passive = <20>;
-> +			polling-delay = <1000>;
-> +			sustainable-power = <50>;
-> +
-> +			thermal-sensors = <&tsadc 0>;
-> +
-> +			trips {
-> +				threshold: trip-point0 {
-> +					temperature = <70000>;
-> +					hysteresis = <2000>;
-> +					type = "passive";
-> +				};
-> +				target: trip-point1 {
-> +					temperature = <85000>;
-> +					hysteresis = <2000>;
-> +					type = "passive";
-> +				};
-> +				soc_crit: soc-crit {
-> +					temperature = <95000>;
-Hi Caesar,
+>    http://elinux.org/R-Car/Tests:rcar_gen3_thermal
 
-For now, dsp is not supported by upstream code, 95000 is proper setting 
-for arm core. Arm core is the only cooling device controlled by IPA(a 
-good thermal control policy) policy. Once dsp is supported by upstream 
-code one day in the feature, its heating is controlled by userspace 
-code, initially. So we should change soc-crit from 95000 to 115000.
+My cpufreq work needs revising to address review from both Geert and
+yourself. I will try to address this in the near future. In the mean time
+I have marked this series as Deferred.
 
-If dsp is added and control also by IPA(thermal control policy ) policy 
-in kernel space, we should update threshold, target, soc_crit settings.
-
-Hi Heiko,
-Considering the dsp may be supported, changing soc_crit from 95000 to 
-115000 is okay for me. Still it looks strange why target is 85000 but 
-soc_crit is 115000.
-
-Thanks & Best Wishes,
-Rocky
-
-> +					hysteresis = <2000>;
-> +					type = "critical";
-> +				};
-> +			};
-> +
-> +			cooling-maps {
-> +				map0 {
-> +					trip = <&target>;
-> +					cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-> +					contribution = <4096>;
-> +				};
-> +			};
-> +		};
-> +
-> +	};
-> +
->   	tsadc: tsadc@10370000 {
->   		compatible = "rockchip,rv1108-tsadc";
->   		reg = <0x10370000 0x100>;
+> Few notes on the specific values used in this series and why they might 
+> need to be changed.
 > 
+> - The trip point temperature of 95000 used is the most conservative one 
+>   from the BSP and maybe should be set at 110000 which is the most 
+>   aggressive one in the BSP.
+> 
+> - The cooling states described in all cooling-maps nodes might be 
+>   subject to change depending on the out-come of the ongoing review 
+>   process of Simon's work. It should use the highest possible cooling 
+>   state so if the number of states change due review of his work this 
+>   should be reflected in this series.
+> 
+> 1.  https://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas.git
+> 
+> Niklas SÃ¶derlund (2):
+>   arm64: dts: r8a7795: add thermal cooling management
+>   arm64: dts: r8a7796: add thermal cooling management
+> 
+>  arch/arm64/boot/dts/renesas/r8a7795.dtsi | 40 ++++++++++++++++++++++++++++++++
+>  arch/arm64/boot/dts/renesas/r8a7796.dtsi | 38 ++++++++++++++++++++++++++++++
+>  2 files changed, 78 insertions(+)
+> 
+> -- 
+> 2.14.1
+> 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
