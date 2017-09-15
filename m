@@ -1,62 +1,79 @@
-From: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
-Subject: Re: [PATCH 0/2] arm64: dts: r8a7795: r8a7796: add thermal cooling
- management
-Date: Fri, 15 Sep 2017 09:37:22 +0200
-Message-ID: <20170915073722.GE3924@verge.net.au>
-References: <20170913105909.13230-1-niklas.soderlund+renesas@ragnatech.se>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20170913105909.13230-1-niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: [PATCH 1/8 v2 RESEND] turbostat: set max_num_cpus equal to the cpumask length
+Date: Fri, 15 Sep 2017 09:15:31 -0400
+Message-ID: <1505481338-19770-2-git-send-email-prarit@redhat.com>
+References: <1505481338-19770-1-git-send-email-prarit@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:41546 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751207AbdIONPl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 15 Sep 2017 09:15:41 -0400
+In-Reply-To: <1505481338-19770-1-git-send-email-prarit@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Prarit Bhargava <prarit@redhat.com>, Len Brown <len.brown@intel.com>
 
-On Wed, Sep 13, 2017 at 12:59:07PM +0200, Niklas Söderlund wrote:
-> Hi,
-> 
-> This series adds support for for using CPUFreq as a cooling device for 
-> the A57 CUP:s on Renesas H3 and M3-W SoC:s. It depends on Simon Horman's 
-> topic/rcar-gen3-cpufreq branch [1] and is tested on-top the latest 
-> renesas-drivers on H3 and M3-W. For test results and test procedure 
-> please see:
-> 
->    http://elinux.org/R-Car/Tests:rcar_gen3_thermal
+Future fixes will use sysfs files that contain cpumask output.  The code
+needs to know the length of the cpumask in order to determine which cpus
+are set in a cpumask.  Currently topo.max_cpu_num is the maximum cpu
+number.  It can be increased the the maximum value of cpus represented in
+cpumasks.
 
-My cpufreq work needs revising to address review from both Geert and
-yourself. I will try to address this in the near future. In the mean time
-I have marked this series as Deferred.
+Set max_num_cpus to the length of a cpumask.
 
-> Few notes on the specific values used in this series and why they might 
-> need to be changed.
-> 
-> - The trip point temperature of 95000 used is the most conservative one 
->   from the BSP and maybe should be set at 110000 which is the most 
->   aggressive one in the BSP.
-> 
-> - The cooling states described in all cooling-maps nodes might be 
->   subject to change depending on the out-come of the ongoing review 
->   process of Simon's work. It should use the highest possible cooling 
->   state so if the number of states change due review of his work this 
->   should be reflected in this series.
-> 
-> 1.  https://git.kernel.org/pub/scm/linux/kernel/git/horms/renesas.git
-> 
-> Niklas Söderlund (2):
->   arm64: dts: r8a7795: add thermal cooling management
->   arm64: dts: r8a7796: add thermal cooling management
-> 
->  arch/arm64/boot/dts/renesas/r8a7795.dtsi | 40 ++++++++++++++++++++++++++++++++
->  arch/arm64/boot/dts/renesas/r8a7796.dtsi | 38 ++++++++++++++++++++++++++++++
->  2 files changed, 78 insertions(+)
-> 
-> -- 
-> 2.14.1
-> 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: Len Brown <len.brown@intel.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 0dafba2c1e7d..6135aa99f8ad 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -2413,6 +2413,20 @@ void re_initialize(void)
+ 	printf("turbostat: re-initialized with num_cpus %d\n", topo.num_cpus);
+ }
+ 
++void set_max_cpu_num(void)
++{
++	FILE *filep;
++	unsigned long dummy;
++
++	topo.max_cpu_num = 0;
++	filep = fopen_or_die(
++			"/sys/devices/system/cpu/cpu0/topology/thread_siblings",
++			"r");
++	while (fscanf(filep, "%lx,", &dummy) == 1)
++		topo.max_cpu_num += 32;
++	fclose(filep);
++	topo.max_cpu_num--; /* 0 based */
++}
+ 
+ /*
+  * count_cpus()
+@@ -2420,10 +2434,7 @@ void re_initialize(void)
+  */
+ int count_cpus(int cpu)
+ {
+-	if (topo.max_cpu_num < cpu)
+-		topo.max_cpu_num = cpu;
+-
+-	topo.num_cpus += 1;
++	topo.num_cpus++;
+ 	return 0;
+ }
+ int mark_cpu_present(int cpu)
+@@ -4320,8 +4331,8 @@ void topology_probe()
+ 	} *cpus;
+ 
+ 	/* Initialize num_cpus, max_cpu_num */
++	set_max_cpu_num();
+ 	topo.num_cpus = 0;
+-	topo.max_cpu_num = 0;
+ 	for_all_proc_cpus(count_cpus);
+ 	if (!summary_only && topo.num_cpus > 1)
+ 		BIC_PRESENT(BIC_CPU);
+-- 
+1.8.5.5
