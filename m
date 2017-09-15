@@ -1,12 +1,12 @@
 From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH 7/8 v2 RESEND] turbostat: add node information into turbostat calculations
-Date: Fri, 15 Sep 2017 09:15:37 -0400
-Message-ID: <1505481338-19770-8-git-send-email-prarit@redhat.com>
+Subject: [PATCH 8/8 v2 RESEND] turbostat: Add Node in output
+Date: Fri, 15 Sep 2017 09:15:38 -0400
+Message-ID: <1505481338-19770-9-git-send-email-prarit@redhat.com>
 References: <1505481338-19770-1-git-send-email-prarit@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:18918 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:52396 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751352AbdIONPp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S1751207AbdIONPp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Fri, 15 Sep 2017 09:15:45 -0400
 In-Reply-To: <1505481338-19770-1-git-send-email-prarit@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -14,221 +14,68 @@ List-Id: linux-pm@vger.kernel.org
 To: linux-pm@vger.kernel.org
 Cc: Prarit Bhargava <prarit@redhat.com>, Len Brown <len.brown@intel.com>
 
-The previous patches have added node information to turbostat, but the
-counters code does not take it into account.
-
-Add node information from cpu_topology calculations to turbostat
-counters.
+Output a Node column if there is more than one node/socket.
 
 Signed-off-by: Prarit Bhargava <prarit@redhat.com>
 Cc: Len Brown <len.brown@intel.com>
 ---
- tools/power/x86/turbostat/turbostat.c | 143 ++++++++++++++++++++--------------
- 1 file changed, 85 insertions(+), 58 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 076c28b2726b..219fc8a5c335 100644
+index 219fc8a5c335..01e3e71ac52e 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -205,12 +205,21 @@ struct pkg_data {
- #define ODD_COUNTERS thread_odd, core_odd, package_odd
- #define EVEN_COUNTERS thread_even, core_even, package_even
+@@ -468,6 +468,7 @@ struct msr_counter bic[] = {
+ #define	BIC_Any_c0	(1ULL << 40)
+ #define	BIC_GFX_c0	(1ULL << 41)
+ #define	BIC_CPUGFX	(1ULL << 42)
++#define	BIC_Node	(1ULL << 43)
  
--#define GET_THREAD(thread_base, thread_no, core_no, pkg_no) \
--	(thread_base + (pkg_no) * topo.cores_per_node * \
--		topo.threads_per_core + \
--		(core_no) * topo.threads_per_core + (thread_no))
--#define GET_CORE(core_base, core_no, pkg_no) \
--	(core_base + (pkg_no) * topo.cores_per_node + (core_no))
-+#define GET_THREAD(thread_base, thread_no, core_no, node_no, pkg_no)	      \
-+	((thread_base) +						      \
-+	 ((pkg_no) *							      \
-+	  topo.nodes_per_pkg * topo.cores_per_node * topo.threads_per_core) + \
-+	 ((node_no) * topo.cores_per_node * topo.threads_per_core) +	      \
-+	 ((core_no) * topo.threads_per_core) +				      \
-+	 (thread_no))
-+
-+#define GET_CORE(core_base, core_no, node_no, pkg_no)			\
-+	((core_base) +							\
-+	 ((pkg_no) *  topo.nodes_per_pkg * topo.cores_per_node) +	\
-+	 ((node_no) * topo.cores_per_node) +				\
-+	 (core_no))
-+
-+
- #define GET_PKG(pkg_base, pkg_no) (pkg_base + pkg_no)
- 
- enum counter_scope {SCOPE_CPU, SCOPE_CORE, SCOPE_PACKAGE};
-@@ -286,27 +295,33 @@ int cpu_is_not_present(int cpu)
- int for_all_cpus(int (func)(struct thread_data *, struct core_data *, struct pkg_data *),
- 	struct thread_data *thread_base, struct core_data *core_base, struct pkg_data *pkg_base)
- {
--	int retval, pkg_no, core_no, thread_no;
-+	int retval, pkg_no, core_no, thread_no, node_no;
- 
- 	for (pkg_no = 0; pkg_no < topo.num_packages; ++pkg_no) {
- 		for (core_no = 0; core_no < topo.cores_per_node; ++core_no) {
--			for (thread_no = 0; thread_no <
--				topo.threads_per_core; ++thread_no) {
--				struct thread_data *t;
--				struct core_data *c;
--				struct pkg_data *p;
--
--				t = GET_THREAD(thread_base, thread_no, core_no, pkg_no);
--
--				if (cpu_is_not_present(t->cpu_id))
--					continue;
--
--				c = GET_CORE(core_base, core_no, pkg_no);
--				p = GET_PKG(pkg_base, pkg_no);
--
--				retval = func(t, c, p);
--				if (retval)
--					return retval;
-+			for (node_no = 0; node_no < topo.nodes_per_pkg;
-+			     node_no++) {
-+				for (thread_no = 0; thread_no <
-+					topo.threads_per_core; ++thread_no) {
-+					struct thread_data *t;
-+					struct core_data *c;
-+					struct pkg_data *p;
-+
-+					t = GET_THREAD(thread_base, thread_no,
-+						       core_no, node_no,
-+						       pkg_no);
-+
-+					if (cpu_is_not_present(t->cpu_id))
-+						continue;
-+
-+					c = GET_CORE(core_base, core_no,
-+						     node_no, pkg_no);
-+					p = GET_PKG(pkg_base, pkg_no);
-+
-+					retval = func(t, c, p);
-+					if (retval)
-+						return retval;
-+				}
- 			}
+ unsigned long long bic_enabled = 0xFFFFFFFFFFFFFFFFULL;
+ unsigned long long bic_present = BIC_sysfs;
+@@ -567,6 +568,8 @@ void print_header(char *delim)
+ 		outp += sprintf(outp, "usec %s", delim);
+ 	if (DO_BIC(BIC_Package))
+ 		outp += sprintf(outp, "%sPackage", (printed++ ? delim : ""));
++	if (DO_BIC(BIC_Node))
++		outp += sprintf(outp, "%sNode", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_Core))
+ 		outp += sprintf(outp, "%sCore", (printed++ ? delim : ""));
+ 	if (DO_BIC(BIC_CPU))
+@@ -833,6 +836,8 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 	if (t == &average.threads) {
+ 		if (DO_BIC(BIC_Package))
+ 			outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
++		if (DO_BIC(BIC_Node))
++			outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_Core))
+ 			outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
+ 		if (DO_BIC(BIC_CPU))
+@@ -844,6 +849,15 @@ int format_counters(struct thread_data *t, struct core_data *c,
+ 			else
+ 				outp += sprintf(outp, "%s-", (printed++ ? delim : ""));
  		}
- 	}
-@@ -2403,32 +2418,42 @@ int for_all_cpus_2(int (func)(struct thread_data *, struct core_data *,
- 	struct thread_data *thread_base2, struct core_data *core_base2,
- 	struct pkg_data *pkg_base2)
- {
--	int retval, pkg_no, core_no, thread_no;
-+	int retval, pkg_no, node_no, core_no, thread_no;
++		if (DO_BIC(BIC_Node)) {
++			if (t)
++				outp += sprintf(outp, "%s%d",
++						(printed++ ? delim : ""),
++					      cpus[t->cpu_id].physical_node_id);
++			else
++				outp += sprintf(outp, "%s-",
++						(printed++ ? delim : ""));
++		}
+ 		if (DO_BIC(BIC_Core)) {
+ 			if (c)
+ 				outp += sprintf(outp, "%s%d", (printed++ ? delim : ""), c->core_id);
+@@ -4524,6 +4538,8 @@ void topology_probe()
+ 	set_node_data();
+ 	if (debug > 1)
+ 		fprintf(outf, "nodes_per_pkg %d\n", topo.nodes_per_pkg);
++	if (!summary_only && topo.nodes_per_pkg > 1)
++		BIC_PRESENT(BIC_Node);
  
- 	for (pkg_no = 0; pkg_no < topo.num_packages; ++pkg_no) {
--		for (core_no = 0; core_no < topo.cores_per_node; ++core_no) {
--			for (thread_no = 0; thread_no <
--				topo.threads_per_core; ++thread_no) {
--				struct thread_data *t, *t2;
--				struct core_data *c, *c2;
--				struct pkg_data *p, *p2;
--
--				t = GET_THREAD(thread_base, thread_no, core_no, pkg_no);
--
--				if (cpu_is_not_present(t->cpu_id))
--					continue;
--
--				t2 = GET_THREAD(thread_base2, thread_no, core_no, pkg_no);
--
--				c = GET_CORE(core_base, core_no, pkg_no);
--				c2 = GET_CORE(core_base2, core_no, pkg_no);
--
--				p = GET_PKG(pkg_base, pkg_no);
--				p2 = GET_PKG(pkg_base2, pkg_no);
--
--				retval = func(t, c, p, t2, c2, p2);
--				if (retval)
--					return retval;
-+		for (node_no = 0; node_no < topo.nodes_per_pkg; ++node_no) {
-+			for (core_no = 0; core_no < topo.cores_per_node;
-+			     ++core_no) {
-+				for (thread_no = 0; thread_no <
-+					topo.threads_per_core; ++thread_no) {
-+					struct thread_data *t, *t2;
-+					struct core_data *c, *c2;
-+					struct pkg_data *p, *p2;
-+
-+					t = GET_THREAD(thread_base, thread_no,
-+						       core_no, node_no,
-+						       pkg_no);
-+
-+					if (cpu_is_not_present(t->cpu_id))
-+						continue;
-+
-+					t2 = GET_THREAD(thread_base2, thread_no,
-+							core_no, node_no,
-+							pkg_no);
-+
-+					c = GET_CORE(core_base, core_no,
-+						     node_no, pkg_no);
-+					c2 = GET_CORE(core_base2, core_no,
-+						      node_no,
-+						      pkg_no);
-+
-+					p = GET_PKG(pkg_base, pkg_no);
-+					p2 = GET_PKG(pkg_base2, pkg_no);
-+
-+					retval = func(t, c, p, t2, c2, p2);
-+					if (retval)
-+						return retval;
-+				}
- 			}
- 		}
- 	}
-@@ -4506,25 +4531,26 @@ void topology_probe()
- }
- 
- void
--allocate_counters(struct thread_data **t, struct core_data **c, struct pkg_data **p)
-+allocate_counters(struct thread_data **t, struct core_data **c,
-+		  struct pkg_data **p)
- {
- 	int i;
-+	int num_cores = topo.cores_per_node * topo.nodes_per_pkg *
-+			topo.num_packages;
-+	int num_threads = topo.threads_per_core * num_cores;
- 
--	*t = calloc(topo.threads_per_core * topo.cores_per_node *
--		topo.num_packages, sizeof(struct thread_data));
-+	*t = calloc(num_threads, sizeof(struct thread_data));
- 	if (*t == NULL)
- 		goto error;
- 
--	for (i = 0; i < topo.threads_per_core *
--		topo.cores_per_node * topo.num_packages; i++)
-+	for (i = 0; i < num_threads; i++)
- 		(*t)[i].cpu_id = -1;
- 
--	*c = calloc(topo.cores_per_node * topo.num_packages,
--		sizeof(struct core_data));
-+	*c = calloc(num_cores, sizeof(struct core_data));
- 	if (*c == NULL)
- 		goto error;
- 
--	for (i = 0; i < topo.cores_per_node * topo.num_packages; i++)
-+	for (i = 0; i < num_cores; i++)
- 		(*c)[i].core_id = -1;
- 
- 	*p = calloc(topo.num_packages, sizeof(struct pkg_data));
-@@ -4547,14 +4573,15 @@ void init_counter(struct thread_data *thread_base, struct core_data *core_base,
- 	struct pkg_data *pkg_base, int cpu_id)
- {
- 	int pkg_id = cpus[cpu_id].physical_package_id;
-+	int node_id = cpus[cpu_id].logical_node_id;
- 	int core_id = cpus[cpu_id].physical_core_id;
- 	int thread_id = cpus[cpu_id].thread_id;
- 	struct thread_data *t;
- 	struct core_data *c;
- 	struct pkg_data *p;
- 
--	t = GET_THREAD(thread_base, thread_id, core_id, pkg_id);
--	c = GET_CORE(core_base, core_id, pkg_id);
-+	t = GET_THREAD(thread_base, thread_id, core_id, node_id, pkg_id);
-+	c = GET_CORE(core_base, core_id, node_id, pkg_id);
- 	p = GET_PKG(pkg_base, pkg_id);
- 
- 	t->cpu_id = cpu_id;
+ 	topo.threads_per_core = max_siblings;
+ 	if (debug > 1)
 -- 
 1.8.5.5
