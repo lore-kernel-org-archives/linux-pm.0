@@ -1,39 +1,52 @@
-From: Moritz Fischer <mdf@kernel.org>
-Subject: [PATCH] thermal: of: Fix doc string phy mode -> trip type
-Date: Fri, 15 Sep 2017 09:32:47 -0700
-Message-ID: <20170915163247.12065-1-mdf@kernel.org>
+From: Bo Yan <byan@nvidia.com>
+Subject: [PATCH] cpufreq: cpufreq_stats: make last_index signed int
+Date: Fri, 15 Sep 2017 13:13:22 -0700
+Message-ID: <1505506402-11497-1-git-send-email-byan@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f50.google.com ([74.125.83.50]:45376 "EHLO
-        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750865AbdIOQdF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2017 12:33:05 -0400
-Received: by mail-pg0-f50.google.com with SMTP id 188so1809281pgb.2
-        for <linux-pm@vger.kernel.org>; Fri, 15 Sep 2017 09:33:04 -0700 (PDT)
+Received: from hqemgate15.nvidia.com ([216.228.121.64]:7086 "EHLO
+        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751593AbdIOUPj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2017 16:15:39 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rui.zhang@intel.com, edubezval@gmail.com, linux-kernel@vger.kernel.org, Moritz Fischer <mdf@kernel.org>
+To: viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Bo Yan <byan@nvidia.com>
 
-This function does not look for a phy mode, but a
-trip type.
+It is possible for last_index to get a -1 if current frequency
+is not found in the freq table when stats is created. If the
+function "cpufreq_stats_update" is called before last_index is
+updated with a valid value, the "-1" will be used as index to
+update stats->time_in_state, triggering an exception.
 
-Signed-off-by: Moritz Fischer <mdf@kernel.org>
+Change the type of last_index of cpufreq_stats from unsigned int
+to signed int.
+
+Move last_time to location right before time_in_state. This helps
+save 4 bytes in a LP64 programming model.
+
+Signed-off-by: Bo Yan <byan@nvidia.com>
 ---
- drivers/thermal/of-thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq_stats.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index d04ec3b9e5ff..4e23a09d8f63 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -730,7 +730,7 @@ static const char * const trip_types[] = {
- };
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index e75880eb037d..a6838f5a2004 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -18,10 +18,10 @@ static DEFINE_SPINLOCK(cpufreq_stats_lock);
  
- /**
-- * thermal_of_get_trip_type - Get phy mode for given device_node
-+ * thermal_of_get_trip_type - Get trip type for given device_node
-  * @np:	Pointer to the given device_node
-  * @type: Pointer to resulting trip type
-  *
+ struct cpufreq_stats {
+ 	unsigned int total_trans;
+-	unsigned long long last_time;
+ 	unsigned int max_state;
+ 	unsigned int state_num;
+-	unsigned int last_index;
++	int last_index;
++	unsigned long long last_time;
+ 	u64 *time_in_state;
+ 	unsigned int *freq_table;
+ 	unsigned int *trans_table;
 -- 
-2.14.1
+2.7.4
