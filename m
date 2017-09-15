@@ -1,86 +1,81 @@
 From: Caesar Wang <wxt@rock-chips.com>
-Subject: Re: [PATCH 2/5] thermal: rockchip: Support the RV1108 SoC in thermal
- driver
-Date: Fri, 15 Sep 2017 10:10:03 +0800
-Message-ID: <341e8e9b-21c7-f418-b744-8c18737cb026@rock-chips.com>
+Subject: Re: [PATCH 3/5] arm: dts: rockchip: add tsadc node for RV1108 SoC
+Date: Fri, 15 Sep 2017 10:25:35 +0800
+Message-ID: <89384e20-94d8-c698-135e-f48924c20493@rock-chips.com>
 References: <1503570475-7850-1-git-send-email-rocky.hao@rock-chips.com>
- <1503570475-7850-3-git-send-email-rocky.hao@rock-chips.com>
+ <1503570475-7850-4-git-send-email-rocky.hao@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; Format="flowed"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1503570475-7850-3-git-send-email-rocky.hao@rock-chips.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1503570475-7850-4-git-send-email-rocky.hao@rock-chips.com>
 Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rocky Hao <rocky.hao@rock-chips.com>
-Cc: mark.rutland@arm.com, huangtao@rock-chips.com, heiko@sntech.de, devicetree@vger.kernel.org, catalin.marinas@arm.com, shawn.lin@rock-chips.com, linux-pm@vger.kernel.org, will.deacon@arm.com, linux-kernel@vger.kernel.org, edubezval@gmail.com, linux-rockchip@lists.infradead.org, robh+dt@kernel.org, linux-arm-kernel@lists.infradead.org, william.wu@rock-chips.com, rui.zhang@intel.com, jay.xu@rock-chips.com, xxx@rock-chips.com, cl@rock-chips.com, wxt@rock-chips.com
+Cc: rui.zhang@intel.com, edubezval@gmail.com, heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, huangtao@rock-chips.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, cl@rock-chips.com, william.wu@rock-chips.com, jay.xu@rock-chips.com, xxx@rock-chips.com, linux-arm-kernel@lists.infradead.org, wxt@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUm9ja3ksCgrlnKggMjAxN+W5tDA45pyIMjTml6UgMTg6MjcsIFJvY2t5IEhhbyDlhpnpgZM6
-Cj4gUlYxMTA4IFNPQyBoYXMgb25lIFRlbXBlcmF0dXJlIFNlbnNvciBmb3IgQ1BVLgo+Cj4gU2ln
-bmVkLW9mZi1ieTogUm9ja3kgSGFvIDxyb2NreS5oYW9Acm9jay1jaGlwcy5jb20+Cj4gLS0tCj4g
-ICBkcml2ZXJzL3RoZXJtYWwvcm9ja2NoaXBfdGhlcm1hbC5jIHwgNjcgKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysKPiAgIDEgZmlsZSBjaGFuZ2VkLCA2NyBpbnNlcnRpb25z
-KCspCj4KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYyBi
-L2RyaXZlcnMvdGhlcm1hbC9yb2NrY2hpcF90aGVybWFsLmMKPiBpbmRleCA5ZGEzZTE4MTkyMTAu
-LjI5OWE4YWRlNzFmYSAxMDA2NDQKPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvcm9ja2NoaXBfdGhl
-cm1hbC5jCj4gKysrIGIvZHJpdmVycy90aGVybWFsL3JvY2tjaGlwX3RoZXJtYWwuYwo+IEBAIC0y
-NDIsNiArMjQyLDQ1IEBAIHN0cnVjdCB0c2FkY190YWJsZSB7Cj4gICAJaW50IHRlbXA7Cj4gICB9
-Owo+ICAgCj4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgdHNhZGNfdGFibGUgcnYxMTA4X3RhYmxlW10g
-PSB7Cj4gKwl7MCwgLTQwMDAwfSwKPiArCXszNzQsIC00MDAwMH0sCj4gKwl7MzgyLCAtMzUwMDB9
-LAo+ICsJezM4OSwgLTMwMDAwfSwKPiArCXszOTcsIC0yNTAwMH0sCj4gKwl7NDA1LCAtMjAwMDB9
-LAo+ICsJezQxMywgLTE1MDAwfSwKPiArCXs0MjEsIC0xMDAwMH0sCj4gKwl7NDI5LCAtNTAwMH0s
-Cj4gKwl7NDM2LCAwfSwKPiArCXs0NDQsIDUwMDB9LAo+ICsJezQ1MiwgMTAwMDB9LAo+ICsJezQ2
-MCwgMTUwMDB9LAo+ICsJezQ2OCwgMjAwMDB9LAo+ICsJezQ3NiwgMjUwMDB9LAo+ICsJezQ4Mywg
-MzAwMDB9LAo+ICsJezQ5MSwgMzUwMDB9LAo+ICsJezQ5OSwgNDAwMDB9LAo+ICsJezUwNywgNDUw
-MDB9LAo+ICsJezUxNSwgNTAwMDB9LAo+ICsJezUyMywgNTUwMDB9LAo+ICsJezUzMSwgNjAwMDB9
-LAo+ICsJezUzOSwgNjUwMDB9LAo+ICsJezU0NywgNzAwMDB9LAo+ICsJezU1NSwgNzUwMDB9LAo+
-ICsJezU2MiwgODAwMDB9LAo+ICsJezU3MCwgODUwMDB9LAo+ICsJezU3OCwgOTAwMDB9LAo+ICsJ
-ezU4NiwgOTUwMDB9LAo+ICsJezU5NCwgMTAwMDAwfSwKPiArCXs2MDIsIDEwNTAwMH0sCj4gKwl7
-NjEwLCAxMTAwMDB9LAo+ICsJezYxOCwgMTE1MDAwfSwKPiArCXs2MjYsIDEyMDAwMH0sCj4gKwl7
-NjM0LCAxMjUwMDB9LAo+ICsJe1RTQURDVjJfREFUQV9NQVNLLCAxMjUwMDB9LAo+ICt9Owo+ICsK
-CiBGcm9tIHRoZSBSVjExMDggVFJNIHNhaWQsICB0aGlzIHRhYmxlIHdhcyB1c2VkIGZvciAgdGhl
-IG5lZ2F0aXZlIAp0ZW1wZXJhdHVyZSBjb2VmZmljaWVudC4KQnV0IHRoZSBkZWZhdWx0IHRhYmxl
-IGlzIHBvc2l0aXZlIHRlbXBlcmF0dXJlIGNvZWZmaWNpZW50LCB3aHk/CkkgdGhpbmsgeW91IGRv
-bid0IG5lZWQgdG8gdXNlIHRoZSBuZWdhdGl2ZSB0ZW1wZXJhdHVyZSBjb2VmZmljaWVudC4KCj4g
-ICBzdGF0aWMgY29uc3Qgc3RydWN0IHRzYWRjX3RhYmxlIHJrMzIyOF9jb2RlX3RhYmxlW10gPSB7
-Cj4gICAJezAsIC00MDAwMH0sCj4gICAJezU4OCwgLTQwMDAwfSwKPiBAQCAtNzc5LDYgKzgxOCwz
-MCBAQCBzdGF0aWMgdm9pZCBya190c2FkY3YyX3RzaHV0X21vZGUoaW50IGNobiwgdm9pZCBfX2lv
-bWVtICpyZWdzLAo+ICAgCXdyaXRlbF9yZWxheGVkKHZhbCwgcmVncyArIFRTQURDVjJfSU5UX0VO
-KTsKPiAgIH0KPiAgIAo+ICtzdGF0aWMgY29uc3Qgc3RydWN0IHJvY2tjaGlwX3RzYWRjX2NoaXAg
-cnYxMTA4X3RzYWRjX2RhdGEgPSB7Cj4gKwkuY2huX2lkW1NFTlNPUl9DUFVdID0gMCwgLyogY3B1
-IHNlbnNvciBpcyBjaGFubmVsIDAgKi8KPiArCS5jaG5fbnVtID0gMSwgLyogb25lIGNoYW5uZWwg
-Zm9yIHRzYWRjICovCj4gKwo+ICsJLnRzaHV0X21vZGUgPSBUU0hVVF9NT0RFX0dQSU8sIC8qIGRl
-ZmF1bHQgVFNIVVQgdmlhIEdQSU8gZ2l2ZSBQTUlDICovCj4gKwkudHNodXRfcG9sYXJpdHkgPSBU
-U0hVVF9MT1dfQUNUSVZFLCAvKiBkZWZhdWx0IFRTSFVUIExPVyBBQ1RJVkUgKi8KPiArCS50c2h1
-dF90ZW1wID0gOTUwMDAsCj4gKwo+ICsJLmluaXRpYWxpemUgPSBya190c2FkY3YyX2luaXRpYWxp
-emUsCj4gKwkuaXJxX2FjayA9IHJrX3RzYWRjdjNfaXJxX2FjaywKPiArCS5jb250cm9sID0gcmtf
-dHNhZGN2M19jb250cm9sLAoKSWYgeW91IHdpbGwgdXNlIHRoZSBwb3NpdGl2ZSB0ZW1wZXJhdHVy
-ZSBjb2VmZmljaWVudCwgd2UgbmVlZCBjaGFuZ2UgaXQuCgouY29udHJvbCA9IHJrX3RzYWRjdjJf
-Y29udHJvbCwKCgoKPiArCS5nZXRfdGVtcCA9IHJrX3RzYWRjdjJfZ2V0X3RlbXAsCj4gKwkuc2V0
-X2FsYXJtX3RlbXAgPSBya190c2FkY3YyX2FsYXJtX3RlbXAsCj4gKwkuc2V0X3RzaHV0X3RlbXAg
-PSBya190c2FkY3YyX3RzaHV0X3RlbXAsCj4gKwkuc2V0X3RzaHV0X21vZGUgPSBya190c2FkY3Yy
-X3RzaHV0X21vZGUsCj4gKwo+ICsJLnRhYmxlID0gewo+ICsJCS5pZCA9IHJ2MTEwOF90YWJsZSwK
-PiArCQkubGVuZ3RoID0gQVJSQVlfU0laRShydjExMDhfdGFibGUpLAo+ICsJCS5kYXRhX21hc2sg
-PSBUU0FEQ1YyX0RBVEFfTUFTSywKPiArCQkubW9kZSA9IEFEQ19JTkNSRU1FTlQsCgpEaXR0bwoK
-LUNhZXNhcgoKCj4gKwl9LAo+ICt9Owo+ICsKPiAgIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgcm9ja2No
-aXBfdHNhZGNfY2hpcCByazMyMjhfdHNhZGNfZGF0YSA9IHsKPiAgIAkuY2huX2lkW1NFTlNPUl9D
-UFVdID0gMCwgLyogY3B1IHNlbnNvciBpcyBjaGFubmVsIDAgKi8KPiAgIAkuY2huX251bSA9IDEs
-IC8qIG9uZSBjaGFubmVsIGZvciB0c2FkYyAqLwo+IEBAIC05MjgsNiArOTkxLDEwIEBAIHN0YXRp
-YyB2b2lkIHJrX3RzYWRjdjJfdHNodXRfbW9kZShpbnQgY2huLCB2b2lkIF9faW9tZW0gKnJlZ3Ms
-Cj4gICAKPiAgIHN0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIG9mX3JvY2tjaGlwX3Ro
-ZXJtYWxfbWF0Y2hbXSA9IHsKPiAgIAl7Cj4gKwkJLmNvbXBhdGlibGUgPSAicm9ja2NoaXAscnYx
-MTA4LXRzYWRjIiwKPiArCQkuZGF0YSA9ICh2b2lkICopJnJ2MTEwOF90c2FkY19kYXRhLAo+ICsJ
-fSwKPiArCXsKPiAgIAkJLmNvbXBhdGlibGUgPSAicm9ja2NoaXAscmszMjI4LXRzYWRjIiwKPiAg
-IAkJLmRhdGEgPSAodm9pZCAqKSZyazMyMjhfdHNhZGNfZGF0YSwKPiAgIAl9LAoKCgpfX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2VybmVs
-IG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0cDov
-L2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVsCg==
+Rocky,
+
+在 2017年08月24日 18:27, Rocky Hao 写道:
+> Add tsadc needed main information for RV1108 SoC.
+> 750000Hz is the max clock rate supported by tsadc module.
+>
+> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
+> ---
+>   arch/arm/boot/dts/rv1108.dtsi | 29 +++++++++++++++++++++++++++++
+>   1 file changed, 29 insertions(+)
+>
+> diff --git a/arch/arm/boot/dts/rv1108.dtsi b/arch/arm/boot/dts/rv1108.dtsi
+> index 25fab0b80f53..dbdd8c2180e7 100644
+> --- a/arch/arm/boot/dts/rv1108.dtsi
+> +++ b/arch/arm/boot/dts/rv1108.dtsi
+> @@ -275,6 +275,25 @@
+>   		status = "disabled";
+>   	};
+>   
+> +	tsadc: tsadc@10370000 {
+> +		compatible = "rockchip,rv1108-tsadc";
+> +		reg = <0x10370000 0x100>;
+> +		interrupts = <GIC_SPI 47 IRQ_TYPE_LEVEL_HIGH>;
+> +		assigned-clocks = <&cru SCLK_TSADC>;
+> +		assigned-clock-rates = <750000>;
+> +		clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
+> +		clock-names = "tsadc", "apb_pclk";
+> +		pinctrl-names = "init", "default", "sleep";
+> +		pinctrl-0 = <&otp_gpio>;
+> +		pinctrl-1 = <&otp_out>;
+> +		pinctrl-2 = <&otp_gpio>;
+> +		resets = <&cru SRST_TSADC>;
+> +		reset-names = "tsadc-apb";
+> +		rockchip,hw-tshut-temp = <120000>;
+
+ From the Patch[4/5], you set the critial temperature is 95 degree. I 
+will suggest the Tshut temperature is 100 degree.
+Think about the the peripherial devices,  the 120 degree will damage 
+some chips.
+
+> +		#thermal-sensor-cells = <1>;
+> +		status = "disabled";
+> +	};
+> +
+>   	adc: adc@1038c000 {
+>   		compatible = "rockchip,rv1108-saradc", "rockchip,rk3399-saradc";
+>   		reg = <0x1038c000 0x100>;
+> @@ -642,6 +661,16 @@
+>   			};
+>   		};
+>   
+> +		tsadc {
+> +			otp_out: otp-out {
+> +				rockchip,pins = <0 RK_PB7 RK_FUNC_1 &pcfg_pull_none>;
+> +			};
+> +
+> +			otp_gpio: otp-gpio {
+> +				rockchip,pins = <0 RK_PB7 RK_FUNC_GPIO &pcfg_pull_none>;
+> +			};
+> +		};
+> +
+>   		uart0 {
+>   			uart0_xfer: uart0-xfer {
+>   				rockchip,pins = <3 RK_PA6 RK_FUNC_1 &pcfg_pull_up>,
