@@ -1,59 +1,99 @@
-From: "rocky.hao" <rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: Re: [PATCH 1/5] dt-bindings: rockchip-thermal: Support the RV1108 SoC
- compatible
-Date: Fri, 15 Sep 2017 11:20:33 +0800
-Message-ID: <ce37b9e1-2095-f5ad-e414-2663b4b43755@rock-chips.com>
+From: "rocky.hao" <rocky.hao@rock-chips.com>
+Subject: Re: [PATCH 3/5] arm: dts: rockchip: add tsadc node for RV1108 SoC
+Date: Fri, 15 Sep 2017 11:52:37 +0800
+Message-ID: <8ae300de-b1a0-c399-fcd1-cdbaf408ab1b@rock-chips.com>
 References: <1503570475-7850-1-git-send-email-rocky.hao@rock-chips.com>
- <1503570475-7850-2-git-send-email-rocky.hao@rock-chips.com>
- <12073627-41af-3480-6379-839e07f5e8f3@rock-chips.com>
+ <1503570475-7850-4-git-send-email-rocky.hao@rock-chips.com>
+ <89384e20-94d8-c698-135e-f48924c20493@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <12073627-41af-3480-6379-839e07f5e8f3-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, huangtao-TNX95d0MmH7DzftRWevZcw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, cl-TNX95d0MmH7DzftRWevZcw@public.gmane.org, william.wu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, jay.xu-TNX95d0MmH7DzftRWevZcw@public.gmane.org, xxx-TNX95d0MmH7DzftRWevZcw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular1.263xmail.com ([211.150.99.134]:47773 "EHLO
+        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751797AbdIODxD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Sep 2017 23:53:03 -0400
+In-Reply-To: <89384e20-94d8-c698-135e-f48924c20493@rock-chips.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Caesar Wang <wxt@rock-chips.com>
+Cc: rui.zhang@intel.com, edubezval@gmail.com, heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, huangtao@rock-chips.com, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, linux-kernel@vger.kernel.org, linux-rockchip@lists.infradead.org, cl@rock-chips.com, william.wu@rock-chips.com, jay.xu@rock-chips.com, xxx@rock-chips.com, linux-arm-kernel@lists.infradead.org
 
 Hi Caesar,
 
 Thanks for the reply.
 
-在 2017/9/15 9:49, Caesar Wang 写道:
-> Hi Rocky,
+在 2017/9/15 10:25, Caesar Wang 写道:
+> Rocky,
 > 
 > 在 2017年08月24日 18:27, Rocky Hao 写道:
->> Add a new compatible for thermal founding on RV1108 SoCs.
+>> Add tsadc needed main information for RV1108 SoC.
+>> 750000Hz is the max clock rate supported by tsadc module.
 >>
->> Signed-off-by: Rocky Hao <rocky.hao-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+>> Signed-off-by: Rocky Hao <rocky.hao@rock-chips.com>
 >> ---
->>   Documentation/devicetree/bindings/thermal/rockchip-thermal.txt | 1 +
->>   1 file changed, 1 insertion(+)
+>>   arch/arm/boot/dts/rv1108.dtsi | 29 +++++++++++++++++++++++++++++
+>>   1 file changed, 29 insertions(+)
 >>
->> diff --git 
->> a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt 
->> b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->> index e3a6234fb1ac..43d744e5305e 100644
->> --- a/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->> +++ b/Documentation/devicetree/bindings/thermal/rockchip-thermal.txt
->> @@ -2,6 +2,7 @@
->>   Required properties:
->>   - compatible : should be "rockchip,<name>-tsadc"
->> +   "rockchip,rv1108-tsadc": found on RV1108 SoCs
+>> diff --git a/arch/arm/boot/dts/rv1108.dtsi 
+>> b/arch/arm/boot/dts/rv1108.dtsi
+>> index 25fab0b80f53..dbdd8c2180e7 100644
+>> --- a/arch/arm/boot/dts/rv1108.dtsi
+>> +++ b/arch/arm/boot/dts/rv1108.dtsi
+>> @@ -275,6 +275,25 @@
+>>           status = "disabled";
+>>       };
+>> +    tsadc: tsadc@10370000 {
+>> +        compatible = "rockchip,rv1108-tsadc";
+>> +        reg = <0x10370000 0x100>;
+>> +        interrupts = <GIC_SPI 47 IRQ_TYPE_LEVEL_HIGH>;
+>> +        assigned-clocks = <&cru SCLK_TSADC>;
+>> +        assigned-clock-rates = <750000>;
+>> +        clocks = <&cru SCLK_TSADC>, <&cru PCLK_TSADC>;
+>> +        clock-names = "tsadc", "apb_pclk";
+>> +        pinctrl-names = "init", "default", "sleep";
+>> +        pinctrl-0 = <&otp_gpio>;
+>> +        pinctrl-1 = <&otp_out>;
+>> +        pinctrl-2 = <&otp_gpio>;
+>> +        resets = <&cru SRST_TSADC>;
+>> +        reset-names = "tsadc-apb";
+>> +        rockchip,hw-tshut-temp = <120000>;
 > 
-> According to the order,  we should put the string after the 
-> "rockchip,rk3399-tsadc"..., not here.
-It is okay for me.
->>      "rockchip,rk3228-tsadc": found on RK3228 SoCs
->>      "rockchip,rk3288-tsadc": found on RK3288 SoCs
->>      "rockchip,rk3328-tsadc": found on RK3328 SoCs
+>  From the Patch[4/5], you set the critial temperature is 95 degree. I 
+> will suggest the Tshut temperature is 100 degree.
+Setting rockchip,hw-tshut-temp = <120000>; is not a problem.
+Maybe we should change the critial temperature (soc_crit: soc-crit) to 
+115 degree. I will explain more in another thread Patch[4/5] arm: dts: 
+rockchip: add thermal nodes for RV1108 SoC @ 
+https://patchwork.kernel.org/patch/9919757/
+> Think about the the peripherial devices,  the 120 degree will damage 
+> some chips.
+> 
+>> +        #thermal-sensor-cells = <1>;
+>> +        status = "disabled";
+>> +    };
+>> +
+>>       adc: adc@1038c000 {
+>>           compatible = "rockchip,rv1108-saradc", 
+>> "rockchip,rk3399-saradc";
+>>           reg = <0x1038c000 0x100>;
+>> @@ -642,6 +661,16 @@
+>>               };
+>>           };
+>> +        tsadc {
+>> +            otp_out: otp-out {
+>> +                rockchip,pins = <0 RK_PB7 RK_FUNC_1 &pcfg_pull_none>;
+>> +            };
+>> +
+>> +            otp_gpio: otp-gpio {
+>> +                rockchip,pins = <0 RK_PB7 RK_FUNC_GPIO &pcfg_pull_none>;
+>> +            };
+>> +        };
+>> +
+>>           uart0 {
+>>               uart0_xfer: uart0-xfer {
+>>                   rockchip,pins = <3 RK_PA6 RK_FUNC_1 &pcfg_pull_up>,
 > 
 > 
 > 
 > 
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
