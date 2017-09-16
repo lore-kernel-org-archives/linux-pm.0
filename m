@@ -1,44 +1,92 @@
-From: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH v2] net: smsc911x: Quieten netif during suspend
-Date: Fri, 15 Sep 2017 14:26:22 -0700 (PDT)
-Message-ID: <20170915.142622.1357636170906048191.davem@davemloft.net>
-References: <1505324525-9998-1-git-send-email-geert+renesas@glider.be>
+From: Pali =?utf-8?q?Roh=C3=A1r?= <pali.rohar@gmail.com>
+Subject: Re: intel-vbtn: match power button on press rather than release
+Date: Sat, 16 Sep 2017 15:45:38 +0200
+Message-ID: <201709161545.39058@pali>
+References: <1501866006-24811-1-git-send-email-mario.limonciello@dell.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: multipart/signed;
+  boundary="nextPart2168745.4ung4HuQjD";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from shards.monkeyblade.net ([184.105.139.130]:57290 "EHLO
-        shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751705AbdIOV0X (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Sep 2017 17:26:23 -0400
-In-Reply-To: <1505324525-9998-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <1501866006-24811-1-git-send-email-mario.limonciello@dell.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Mario Limonciello <mario.limonciello@dell.com>, dvhart@infradead.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: AceLan Kao <acelan.kao@canonical.com>, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, platform-driver-x86@vger.kernel.org, Len Brown <lenb@kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: geert+renesas@glider.be
-Cc: steve.glendinning@shawell.net, andrew@lunn.ch, f.fainelli@gmail.com, netdev@vger.kernel.org, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Date: Wed, 13 Sep 2017 19:42:05 +0200
+--nextPart2168745.4ung4HuQjD
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-> If the network interface is kept running during suspend, the net core
-> may call net_device_ops.ndo_start_xmit() while the Ethernet device is
-> still suspended, which may lead to a system crash.
-> 
-> E.g. on sh73a0/kzm9g and r8a73a4/ape6evm, the external Ethernet chip is
-> driven by a PM controlled clock.  If the Ethernet registers are accessed
-> while the clock is not running, the system will crash with an imprecise
-> external abort.
-> 
-> As this is a race condition with a small time window, it is not so easy
-> to trigger at will.  Using pm_test may increase your chances:
-> 
->     # echo 0 > /sys/module/printk/parameters/console_suspend
->     # echo platform > /sys/power/pm_test
->     # echo mem > /sys/power/state
-> 
-> To fix this, make sure the network interface is quietened during
-> suspend.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+On Friday 04 August 2017 19:00:06 Mario Limonciello wrote:
+> This fixes a problem where the system gets stuck in a loop
+> unable to wakeup via power button in s2idle.
+>=20
+> The problem happens because:
+>  - press power button:
+>    - system emits 0xc0 (power press), event ignored
+>    - system emits 0xc1 (power release), event processed,
+>      emited as KEY_POWER
+>    - set wakeup_mode to true
+>    - system goes to s2idle
+>  - press power button
+>    - system emits 0xc0 (power press), wakeup_mode is true,
+>      system wakes
+>    - system emits 0xc1 (power release), event processed,
+>      emited as KEY_POWER
+>    - system goes to s2idle again
+>=20
+> To avoid this situation, process the presses (which matches what
+> intel-hid does too).
+>=20
+> Verified on an Dell XPS 9365
+>=20
+> Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+> ---
+>  drivers/platform/x86/intel-vbtn.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/platform/x86/intel-vbtn.c
+> b/drivers/platform/x86/intel-vbtn.c index 61f1063..4809267 100644
+> --- a/drivers/platform/x86/intel-vbtn.c
+> +++ b/drivers/platform/x86/intel-vbtn.c
+> @@ -36,8 +36,8 @@ static const struct acpi_device_id intel_vbtn_ids[]
+> =3D {
+>=20
+>  /* In theory, these are HID usages. */
+>  static const struct key_entry intel_vbtn_keymap[] =3D {
+> -	{ KE_IGNORE, 0xC0, { KEY_POWER } },	/* power key press */
+> -	{ KE_KEY, 0xC1, { KEY_POWER } },	/* power key release */
+> +	{ KE_KEY, 0xC0, { KEY_POWER } },	/* power key press */
+> +	{ KE_IGNORE, 0xC1, { KEY_POWER } },	/* power key release */
+>  	{ KE_KEY, 0xC4, { KEY_VOLUMEUP } },		/* volume-up key press */
+>  	{ KE_IGNORE, 0xC5, { KEY_VOLUMEUP } },		/* volume-up key release=20
+*/
+>  	{ KE_KEY, 0xC6, { KEY_VOLUMEDOWN } },		/* volume-down key press */
 
-Applied.
+Hello, maybe a stupid question, but why to not report both events "key=20
+pressed" and "key released" to userspace? IIRC kernel input layer can=20
+distinguish between these two type of events. But in intel-vbtn.c source=20
+code I see that all "release" ACPI events are ignored and just "press"=20
+are processed.
+
+=2D-=20
+Pali Roh=C3=A1r
+pali.rohar@gmail.com
+
+--nextPart2168745.4ung4HuQjD
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+iEYEABECAAYFAlm9KwMACgkQi/DJPQPkQ1I/ywCgsSDL6U10qql0ZQnOSk+sI8HQ
+SUcAn3ZBMMD5LtR8GPIuqhavWwG36SyV
+=0spM
+-----END PGP SIGNATURE-----
+
+--nextPart2168745.4ung4HuQjD--
