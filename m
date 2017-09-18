@@ -1,38 +1,34 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: S0ix failure due to "clk: x86: Do not gate clocks enabled by
- the firmware"
-Date: Mon, 18 Sep 2017 11:00:29 +0300
-Message-ID: <1505721629.25945.273.camel@linux.intel.com>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
-         <CAL9uMOGf6vsMfsp4wFX+LNxR_UTiYyWpFWPW7L8nGivLi-0uQg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga07.intel.com ([134.134.136.100]:34643 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752315AbdIRIAc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 18 Sep 2017 04:00:32 -0400
-In-Reply-To: <CAL9uMOGf6vsMfsp4wFX+LNxR_UTiYyWpFWPW7L8nGivLi-0uQg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH] cpupowerutils: bench - Fix cpu online check
+Date: Mon, 18 Sep 2017 17:14:26 +0530
+Message-ID: <20170918114426.96911-1-huntbag@linux.vnet.ibm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Carlo Caione <carlo@endlessm.com>, Johannes Stezenbach <js@sig21.net>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
-On Wed, 2017-09-06 at 23:14 +0200, Carlo Caione wrote:
-> On Wed, Sep 6, 2017 at 10:42 PM, Johannes Stezenbach <js@sig21.net>
-> wrote:
+cpupower_is_cpu_online returns 1 when cpu is online. But in function
+set_cpufreq_governor, it was incorrectly checking for 0 in case cpu is
+online.
 
-> Also I will probably send an email tomorrow about this but today
-> (coincidentally) I discovered that this fix is not working anymore on
-> my platform. This is due to commit a49d25364df ("staging/atomisp: Add
-> support for the Intel IPU v2"). I haven't had a chance yet to
-> investigated why though.
+Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+---
+ tools/power/cpupower/bench/system.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-When you are going to do, check as well my clean up series to atomisp.
-I noticed the driver messes up the things it shouldn't touch at all.
-I removed Intel MID related parts from it, so, I hope it will help you.
-
+diff --git a/tools/power/cpupower/bench/system.c b/tools/power/cpupower/bench/system.c
+index c25a74a..2bb3eef 100644
+--- a/tools/power/cpupower/bench/system.c
++++ b/tools/power/cpupower/bench/system.c
+@@ -61,7 +61,7 @@ int set_cpufreq_governor(char *governor, unsigned int cpu)
+ 
+ 	dprintf("set %s as cpufreq governor\n", governor);
+ 
+-	if (cpupower_is_cpu_online(cpu) != 0) {
++	if (cpupower_is_cpu_online(cpu) != 1) {
+ 		perror("cpufreq_cpu_exists");
+ 		fprintf(stderr, "error: cpu %u does not exist\n", cpu);
+ 		return -1;
 -- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+2.9.3
