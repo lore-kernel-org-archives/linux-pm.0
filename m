@@ -1,104 +1,46 @@
-From: sunil.m@techveda.org
-Subject: [PATCH v2] drivers: cpufreq: Fix sysfs duplicate filename creation for platform-device
-Date: Tue, 19 Sep 2017 00:48:05 +0530
-Message-ID: <1505762285-16161-1-git-send-email-sunil.m@techveda.org>
-References: <20170918011503.GA17030@ubuntu>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170918011503.GA17030@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: viresh.kumar@linaro.org
-Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, karthik@techveda.org, Suniel Mahesh <sunil.m@techveda.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] thermal: imx: add NVMEM dependency
+Date: Mon, 18 Sep 2017 22:48:16 +0200
+Message-ID: <20170918204825.159177-1-arnd@arndb.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.17.10]:53547 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750747AbdIRUsk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Sep 2017 16:48:40 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Leonard Crestez <leonard.crestez@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Arnd Bergmann <arnd@arndb.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Suniel Mahesh <sunil.m@techveda.org>
+The driver now fails to link into vmlinux when CONFIG_NVMEM is a loadable
+module:
 
-ti-cpufreq and cpufreq-dt-platdev drivers are registering platform-device
-with same name "cpufreq-dt" using platform_device_register_*() routines.
-This is leading to build warnings appended below.
+drivers/thermal/imx_thermal.o: In function `imx_thermal_probe':
+imx_thermal.c:(.text+0x360): undefined reference to `nvmem_cell_read_u32'
+imx_thermal.c:(.text+0x360): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `nvmem_cell_read_u32'
+imx_thermal.c:(.text+0x388): undefined reference to `nvmem_cell_read_u32'
+imx_thermal.c:(.text+0x388): relocation truncated to fit: R_AARCH64_CALL26 against undefined symbol `nvmem_cell_read_u32'
 
-Providing hardware information to OPP framework along with the platform-
-device creation should be done by ti-cpufreq driver before cpufreq-dt
-driver comes into place.
+This adds a Kconfig dependency to force it to be a module as well
+when its dependency is loadable.
 
-This patch add's TI SoC am33xx (uses opp-v2 property) in the blacklist of
-devices in cpufreq-dt-platform driver to avoid creating platform-device
-twice and remove build warnings (suggested by Viresh Kumar).
-
-[    2.370167] ------------[ cut here ]------------
-[    2.375087] WARNING: CPU: 0 PID: 1 at fs/sysfs/dir.c:31 sysfs_warn_dup+0x58/0x78
-[    2.383112] sysfs: cannot create duplicate filename '/devices/platform/cpufreq-dt'
-[    2.391219] Modules linked in:
-[    2.394506] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.13.0-next-20170912 #1
-[    2.402006] Hardware name: Generic AM33XX (Flattened Device Tree)
-[    2.408437] [<c0110a28>] (unwind_backtrace) from [<c010ca84>] (show_stack+0x10/0x14)
-[    2.416568] [<c010ca84>] (show_stack) from [<c0827d64>] (dump_stack+0xac/0xe0)
-[    2.424165] [<c0827d64>] (dump_stack) from [<c0137470>] (__warn+0xd8/0x104)
-[    2.431488] [<c0137470>] (__warn) from [<c01374d0>] (warn_slowpath_fmt+0x34/0x44)
-[    2.439351] [<c01374d0>] (warn_slowpath_fmt) from [<c03459d0>] (sysfs_warn_dup+0x58/0x78)
-[    2.447938] [<c03459d0>] (sysfs_warn_dup) from [<c0345ab8>] (sysfs_create_dir_ns+0x80/0x98)
-[    2.456719] [<c0345ab8>] (sysfs_create_dir_ns) from [<c082c554>] (kobject_add_internal+0x9c/0x2d4)
-[    2.466124] [<c082c554>] (kobject_add_internal) from [<c082c7d8>] (kobject_add+0x4c/0x9c)
-[    2.474712] [<c082c7d8>] (kobject_add) from [<c05803e4>] (device_add+0xcc/0x57c)
-[    2.482489] [<c05803e4>] (device_add) from [<c0584b74>] (platform_device_add+0x100/0x220)
-[    2.491085] [<c0584b74>] (platform_device_add) from [<c05855a8>] (platform_device_register_full+0xf4/0x118)
-[    2.501305] [<c05855a8>] (platform_device_register_full) from [<c067023c>] (ti_cpufreq_init+0x150/0x22c)
-[    2.511253] [<c067023c>] (ti_cpufreq_init) from [<c0101df4>] (do_one_initcall+0x3c/0x170)
-[    2.519838] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>] (kernel_init_freeable+0x1fc/0x2c4)
-[    2.528974] [<c0c00eb4>] (kernel_init_freeable) from [<c083bcac>] (kernel_init+0x8/0x110)
-[    2.537565] [<c083bcac>] (kernel_init) from [<c0107d18>] (ret_from_fork+0x14/0x3c)
-[    2.545981] ---[ end trace 2fc00e213c13ab20 ]---
-[    2.551051] ------------[ cut here ]------------
-[    2.555931] WARNING: CPU: 0 PID: 1 at lib/kobject.c:240 kobject_add_internal+0x254/0x2d4
-[    2.564578] kobject_add_internal failed for cpufreq-dt with -EEXIST, don't try to register
-things with the same name in the same directory.
-[    2.577977] Modules linked in:
-[    2.581261] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G        W       4.13.0-next-20170912 #1
-[    2.590013] Hardware name: Generic AM33XX (Flattened Device Tree)
-[    2.596437] [<c0110a28>] (unwind_backtrace) from [<c010ca84>] (show_stack+0x10/0x14)
-[    2.604573] [<c010ca84>] (show_stack) from [<c0827d64>] (dump_stack+0xac/0xe0)
-[    2.612172] [<c0827d64>] (dump_stack) from [<c0137470>] (__warn+0xd8/0x104)
-[    2.619494] [<c0137470>] (__warn) from [<c01374d0>] (warn_slowpath_fmt+0x34/0x44)
-[    2.627362] [<c01374d0>] (warn_slowpath_fmt) from [<c082c70c>] (kobject_add_internal+0x254/0x2d4)
-[    2.636666] [<c082c70c>] (kobject_add_internal) from [<c082c7d8>] (kobject_add+0x4c/0x9c)
-[    2.645255] [<c082c7d8>] (kobject_add) from [<c05803e4>] (device_add+0xcc/0x57c)
-[    2.653027] [<c05803e4>] (device_add) from [<c0584b74>] (platform_device_add+0x100/0x220)
-[    2.661615] [<c0584b74>] (platform_device_add) from [<c05855a8>] (platform_device_register_full+0xf4/0x118)
-[    2.671833] [<c05855a8>] (platform_device_register_full) from [<c067023c>] (ti_cpufreq_init+0x150/0x22c)
-[    2.681779] [<c067023c>] (ti_cpufreq_init) from [<c0101df4>] (do_one_initcall+0x3c/0x170)
-[    2.690377] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>] (kernel_init_freeable+0x1fc/0x2c4)
-[    2.699510] [<c0c00eb4>] (kernel_init_freeable) from [<c083bcac>] (kernel_init+0x8/0x110)
-[    2.708106] [<c083bcac>] (kernel_init) from [<c0107d18>] (ret_from_fork+0x14/0x3c)
-[    2.716217] ---[ end trace 2fc00e213c13ab21 ]---
-
-Fixes: edeec420de24 ("cpufreq: dt-cpufreq: platdev Automatically create device with OPP v2")
-Signed-off-by: Suniel Mahesh <sunil.m@techveda.org>
+Fixes: 7fe5ba04fcdc ("thermal: imx: Add support for reading OCOTP through nvmem")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
-Changes for v2:
-- The approach (as a result patch decsription) was changed as per
-  inputs given by Viresh.
-- Patch was compile tested and built(ARCH=arm) on next-20170918.
----
-Note:
-- Patch was hardware tested on AM335x SOC based board.
-- cpufreq-dt driver got probed and entries related to Dynamic Voltage
-  and Frequency scaling were created in
-  sysfs @ sys/devices/system/cpu/cpu0/cpufreq.
-- No build/run-time issues reported.
----
- drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ drivers/thermal/Kconfig | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index a020da7..61fe7ee 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -106,6 +106,7 @@
-  * platforms using "operating-points-v2" property.
-  */
- static const struct of_device_id blacklist[] __initconst = {
-+	{ .compatible = "ti,am33xx", },
- 	{ }
- };
- 
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 07002df4f83a..cb14f1ec5953 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -206,6 +206,7 @@ config HISI_THERMAL
+ config IMX_THERMAL
+ 	tristate "Temperature sensor driver for Freescale i.MX SoCs"
+ 	depends on (ARCH_MXC && CPU_THERMAL) || COMPILE_TEST
++	depends on NVMEM || !NVMEM
+ 	depends on MFD_SYSCON
+ 	depends on OF
+ 	help
 -- 
-1.9.1
+2.9.0
