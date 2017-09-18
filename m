@@ -1,114 +1,149 @@
-From: sunil.m@techveda.org
-Subject: [PATCH] drivers: cpufreq: Fix sysfs duplicate filename creation for platform-device
-Date: Sun, 17 Sep 2017 00:04:54 +0530
-Message-ID: <1505586894-20823-1-git-send-email-sunil.m@techveda.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, karthik@techveda.org, Suniel Mahesh <sunil.m@techveda.org>
+From: Liam Breck <liam@networkimprov.net>
+Subject: Re: [PATCH v3 0/5] bq27xxx_battery data memory update
+Date: Sun, 17 Sep 2017 17:45:38 -0700
+Message-ID: <CAKvHMgTE-vypWKjhR7QgQNHFbVNdg99MgARmC-cTv6vfjgzZFg@mail.gmail.com>
+References: <20170824033617.20840-1-liam@networkimprov.net>
+ <20170829105413.6wbejdaxxxd6hk7b@earth> <0bf4ba2f-18f9-1204-8241-8acb6ac6f490@ti.com>
+ <20170829212259.gs4bljwscrprsfjl@earth> <CAKvHMgTEe_xBP2ENMTU5BNwWaRjfqbAuRJC32sHYL_Mh5oJOsQ@mail.gmail.com>
+ <20170830002939.ns43wldvffmwqhuv@earth> <CAKvHMgSyr8aZ1cVd-Zf6WHNkwyTcSBvRaVuDWuHEnuNM=MStUA@mail.gmail.com>
+ <alpine.DEB.2.20.1708311150440.3243@hadrien> <CAKvHMgSkuzi_BuicT7edYrM8Q87pnPJcgHRMDJEB21wdNKf8ow@mail.gmail.com>
+ <alpine.DEB.2.20.1708311330570.3243@hadrien> <CAKvHMgSKLJk2wB9pefYuGyMG2aNp7bCCaOMABGRxXZ9ju-ivHw@mail.gmail.com>
+ <CAKvHMgRzFpueUccSL1iu_-EazCe76cF8iSAPyYgcxJ3dNOZejA@mail.gmail.com> <alpine.DEB.2.20.1709052214030.2058@hadrien>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:35784 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752218AbdIRApj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Sep 2017 20:45:39 -0400
+Received: by mail-it0-f68.google.com with SMTP id u2so4060774itb.2
+        for <linux-pm@vger.kernel.org>; Sun, 17 Sep 2017 17:45:39 -0700 (PDT)
+In-Reply-To: <alpine.DEB.2.20.1709052214030.2058@hadrien>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Julia Lawall <julia.lawall@lip6.fr>
+Cc: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, "Andrew F. Davis" <afd@ti.com>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
-From: Suniel Mahesh <sunil.m@techveda.org>
+Hi Julia, checking back...
 
-ti-cpufreq.c and cpufreq-dt-platdev.c are registering
-platform device with same name "cpufreq-dt" using
-platform_device_register_*() routines.
-This is leading to build warnings appended below.
 
-This patch does the following:
-(a) Remove platform-device registration routine from
-ti-cpufreq.c, it appears unnecessary as per CPUfreq framework
-kernel Documentation. The ti-cpufreq driver main task is to use
-revision and an efuse value from the SoC and provide the OPP
-framework with supported hardware information.
-Platform-device creation is taken care by cpufreq-dt-platdev.c.
-(b) In case if OPP-v2 is not supported just return without
-registering the platorm-device.
-(c) Rename the goto label
 
-[    2.370167] ------------[ cut here ]------------
-[    2.375087] WARNING: CPU: 0 PID: 1 at fs/sysfs/dir.c:31 sysfs_warn_dup+0x58/0x78
-[    2.383112] sysfs: cannot create duplicate filename '/devices/platform/cpufreq-dt'
-[    2.391219] Modules linked in:
-[    2.394506] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.13.0-next-20170912 #1
-[    2.402006] Hardware name: Generic AM33XX (Flattened Device Tree)
-[    2.408437] [<c0110a28>] (unwind_backtrace) from [<c010ca84>] (show_stack+0x10/0x14)
-[    2.416568] [<c010ca84>] (show_stack) from [<c0827d64>] (dump_stack+0xac/0xe0)
-[    2.424165] [<c0827d64>] (dump_stack) from [<c0137470>] (__warn+0xd8/0x104)
-[    2.431488] [<c0137470>] (__warn) from [<c01374d0>] (warn_slowpath_fmt+0x34/0x44)
-[    2.439351] [<c01374d0>] (warn_slowpath_fmt) from [<c03459d0>] (sysfs_warn_dup+0x58/0x78)
-[    2.447938] [<c03459d0>] (sysfs_warn_dup) from [<c0345ab8>] (sysfs_create_dir_ns+0x80/0x98)
-[    2.456719] [<c0345ab8>] (sysfs_create_dir_ns) from [<c082c554>] (kobject_add_internal+0x9c/0x2d4)
-[    2.466124] [<c082c554>] (kobject_add_internal) from [<c082c7d8>] (kobject_add+0x4c/0x9c)
-[    2.474712] [<c082c7d8>] (kobject_add) from [<c05803e4>] (device_add+0xcc/0x57c)
-[    2.482489] [<c05803e4>] (device_add) from [<c0584b74>] (platform_device_add+0x100/0x220)
-[    2.491085] [<c0584b74>] (platform_device_add) from [<c05855a8>] (platform_device_register_full+0xf4/0x118)
-[    2.501305] [<c05855a8>] (platform_device_register_full) from [<c067023c>] (ti_cpufreq_init+0x150/0x22c)
-[    2.511253] [<c067023c>] (ti_cpufreq_init) from [<c0101df4>] (do_one_initcall+0x3c/0x170)
-[    2.519838] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>] (kernel_init_freeable+0x1fc/0x2c4)
-[    2.528974] [<c0c00eb4>] (kernel_init_freeable) from [<c083bcac>] (kernel_init+0x8/0x110)
-[    2.537565] [<c083bcac>] (kernel_init) from [<c0107d18>] (ret_from_fork+0x14/0x3c)
-[    2.545981] ---[ end trace 2fc00e213c13ab20 ]---
-[    2.551051] ------------[ cut here ]------------
-[    2.555931] WARNING: CPU: 0 PID: 1 at lib/kobject.c:240 kobject_add_internal+0x254/0x2d4
-[    2.564578] kobject_add_internal failed for cpufreq-dt with -EEXIST, don't try to register
-things with the same name in the same directory.
-[    2.577977] Modules linked in:
-[    2.581261] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G        W       4.13.0-next-20170912 #1
-[    2.590013] Hardware name: Generic AM33XX (Flattened Device Tree)
-[    2.596437] [<c0110a28>] (unwind_backtrace) from [<c010ca84>] (show_stack+0x10/0x14)
-[    2.604573] [<c010ca84>] (show_stack) from [<c0827d64>] (dump_stack+0xac/0xe0)
-[    2.612172] [<c0827d64>] (dump_stack) from [<c0137470>] (__warn+0xd8/0x104)
-[    2.619494] [<c0137470>] (__warn) from [<c01374d0>] (warn_slowpath_fmt+0x34/0x44)
-[    2.627362] [<c01374d0>] (warn_slowpath_fmt) from [<c082c70c>] (kobject_add_internal+0x254/0x2d4)
-[    2.636666] [<c082c70c>] (kobject_add_internal) from [<c082c7d8>] (kobject_add+0x4c/0x9c)
-[    2.645255] [<c082c7d8>] (kobject_add) from [<c05803e4>] (device_add+0xcc/0x57c)
-[    2.653027] [<c05803e4>] (device_add) from [<c0584b74>] (platform_device_add+0x100/0x220)
-[    2.661615] [<c0584b74>] (platform_device_add) from [<c05855a8>] (platform_device_register_full+0xf4/0x118)
-[    2.671833] [<c05855a8>] (platform_device_register_full) from [<c067023c>] (ti_cpufreq_init+0x150/0x22c)
-[    2.681779] [<c067023c>] (ti_cpufreq_init) from [<c0101df4>] (do_one_initcall+0x3c/0x170)
-[    2.690377] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>] (kernel_init_freeable+0x1fc/0x2c4)
-[    2.699510] [<c0c00eb4>] (kernel_init_freeable) from [<c083bcac>] (kernel_init+0x8/0x110)
-[    2.708106] [<c083bcac>] (kernel_init) from [<c0107d18>] (ret_from_fork+0x14/0x3c)
-[    2.716217] ---[ end trace 2fc00e213c13ab21 ]---
-
-Signed-off-by: Suniel Mahesh <sunil.m@techveda.org>
-Tested-by: Suniel Mahesh <sunil.m@techveda.org>
----
-Note:
-- Patch was compile tested and built(ARCH=arm) on next-20170915.
-- Patch was hardware tested on AM335x SOC based board.
-- cpufreq-dt.c driver got probed and entries related to Dynamic Voltage
-  and Frequency scaling were created in
-  sysfs @ sys/devices/system/cpu/cpu0/cpufreq.
-- No build/run-time issues reported.
----
- drivers/cpufreq/ti-cpufreq.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-index b29cd33..97c086a 100644
---- a/drivers/cpufreq/ti-cpufreq.c
-+++ b/drivers/cpufreq/ti-cpufreq.c
-@@ -224,7 +224,7 @@ static int ti_cpufreq_init(void)
- 	if (!opp_data->opp_node) {
- 		dev_info(opp_data->cpu_dev,
- 			 "OPP-v2 not supported, cpufreq-dt will attempt to use legacy tables.\n");
--		goto register_cpufreq_dt;
-+		goto ti_cpufreq_exit;
- 	}
- 
- 	ret = ti_cpufreq_setup_syscon_register(opp_data);
-@@ -255,9 +255,7 @@ static int ti_cpufreq_init(void)
- 
- 	of_node_put(opp_data->opp_node);
- 
--register_cpufreq_dt:
--	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
--
-+ti_cpufreq_exit:
- 	return 0;
- 
- fail_put_node:
--- 
-1.9.1
+On Tue, Sep 5, 2017 at 1:14 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
+>
+>
+> On Tue, 5 Sep 2017, Liam Breck wrote:
+>
+>> Hi Julia, any luck on this?
+>
+> I was trying to improve the parser, but it seems that my improvements
+> don't have a sufficient effect so I will try your suggestion of just
+> seding out the offending code.
+>
+> julia
+>
+>>
+>> On Thu, Aug 31, 2017 at 4:43 AM, Liam Breck <liam@networkimprov.net> wrote:
+>> > On Thu, Aug 31, 2017 at 4:33 AM, Julia Lawall <julia.lawall@lip6.fr> wrote:
+>> >>
+>> >>
+>> >> On Thu, 31 Aug 2017, Liam Breck wrote:
+>> >>
+>> >>> On Thu, Aug 31, 2017 at 2:54 AM, Julia Lawall <julia.lawall@lip6.fr> wrote:
+>> >>> >
+>> >>> >
+>> >>> > On Tue, 29 Aug 2017, Liam Breck wrote:
+>> >>> >
+>> >>> >> Coccinelle folks,
+>> >>> >>
+>> >>> >> On Tue, Aug 29, 2017 at 5:29 PM, Sebastian Reichel
+>> >>> >> <sebastian.reichel@collabora.co.uk> wrote:
+>> >>> >> > Hi,
+>> >>> >> >
+>> >>> >> > On Tue, Aug 29, 2017 at 04:07:12PM -0700, Liam Breck wrote:
+>> >>> >> >> I don't see a Julia in CC list...
+>> >>> >> >
+>> >>> >> > <_< let's try that again.
+>> >>> >> >
+>> >>> >> >> On Tue, Aug 29, 2017 at 2:22 PM, Sebastian Reichel
+>> >>> >> >> <sebastian.reichel@collabora.co.uk> wrote:
+>> >>> >> >> > [adding Julia to Cc for Coccinelle question]
+>> >>> >> >> >
+>> >>> >> >> > Hi,
+>> >>> >> >> >
+>> >>> >> >> > On Tue, Aug 29, 2017 at 10:31:57AM -0500, Andrew F. Davis wrote:
+>> >>> >> >> >> On 08/29/2017 05:54 AM, Sebastian Reichel wrote:
+>> >>> >> >> >> > On Wed, Aug 23, 2017 at 08:36:12PM -0700, Liam Breck wrote:
+>> >>> >> >> >> >> Overview:
+>> >>> >> >> >> >> * Reorganizes chip data definitions
+>> >>> >> >> >> >> * Enables features landed in these patches:
+>> >>> >> >> >> >>   dt-bindings: power: supply: bq27xxx: Add monitored-battery documentation
+>> >>> >> >> >> >>   power: supply: bq27xxx: Add chip data memory read/write support
+>> >>> >> >> >> >>   power: supply: bq27xxx: Add power_supply_battery_info support
+>> >>> >> >> >> >> * Supports the following chips (only BQ27425 is active)
+>> >>> >> >> >> >>   BQ27500, 545, 425, 421, 441, 621
+>> >>> >> >> >> >>
+>> >>> >> >> >> >> Changes in v3:
+>> >>> >> >> >> >> * BQ27425 tested; workaround minor chip bug
+>> >>> >> >> >> >> * Dropped driver_version
+>> >>> >> >> >> >> * Fixed dbg_dupes logic for .props & .dm_regs
+>> >>> >> >> >> >> * Dropped two props array dupes
+>> >>> >> >> >> >>
+>> >>> >> >> >> >> Changes in v2:
+>> >>> >> >> >> >> * Added di->opts flags for remaining chip features
+>> >>> >> >> >> >> * Commented out untested bq27xxx_dm_regs parameters
+>> >>> >> >> >> >> * Changed dbg_dupes to run only once
+>> >>> >> >> >> >>
+>> >>> >> >> >> >> Notes on v1:
+>> >>> >> >> >> >> * Not fully tested (hence RFC tag)
+>> >>> >> >> >> >
+>> >>> >> >> >> > Thanks, full series queued.
+>> >>> >> >> >> >
+>> >>> >> >> >> > -- Sebastian
+>> >>> >> >> >>
+>> >>> >> >> >> Anyway, I've not got the time to fight these changes anymore, but at
+>> >>> >> >> >> very least could you drop 4/5, it's static analysis code made into a
+>> >>> >> >> >> runtime check built into a kernel driver, if not at least add my
+>> >>> >> >> >> nacked-by. :)
+>> >>> >> >> >
+>> >>> >> >> > Since it's not critical at all and nobody depends on it, I dropped 4/5
+>> >>> >> >> > for now. I agree, that checking it at runtime is not nice. On the other
+>> >>> >> >> > hand I do think a duplication check makes sense. Doing a static
+>> >>> >> >> > check should be possible, but I have no idea how to implement this
+>> >>> >> >> > (without much effort). I suspect Coccinelle can do it, so I added
+>> >>> >> >> > Julia.
+>> >>> >> >> >
+>> >>> >> >> > For reference this is the runtime check:
+>> >>> >> >> > https://patchwork.kernel.org/patch/9918953/
+>> >>> >>
+>> >>> >> The data structures being checked start here:
+>> >>> >> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n138
+>> >>> >>
+>> >>> >> And are aggregated here:
+>> >>> >> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n743
+>> >>> >
+>> >>> > I worked a bit on this, but unfortunately there is a major parsing
+>> >>> > problem, and most of the definitions are ignored.  Specifically, the
+>> >>> > definitions of the regs variables are interspersed with eg:
+>> >>> >
+>> >>> > #define bq27510g1_regs bq27500_regs
+>> >>>
+>> >>> You can transform the macros with sed to either of:
+>> >>>
+>> >>> static u8 *bq27510g1_regs = 0 // skip comparison if x == 0
+>> >>>
+>> >>> static u8 bq27510g1_regs[BQ27XXX_REG_MAX] = { 0xFF } // skip
+>> >>> comparison if x[0] == 0xff
+>> >>>
+>> >>> Does that help?
+>> >>
+>> >> Not quite, because it's really a list of variable declarations, like
+>> >>
+>> >> int a, b, c, d;
+>> >>
+>> >> The following could be fine:
+>> >>
+>> >> *bq27510g1_regs = 0,
+>> >
+>> > i forgot about the static u8 at the top of the array set. But yes,
+>> > just drop static u8 from either of the alternatives I gave.
+>>
