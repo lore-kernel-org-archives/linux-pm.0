@@ -1,215 +1,190 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [PATCH v3 0/5] bq27xxx_battery data memory update
-Date: Wed, 20 Sep 2017 00:00:42 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1709192355160.2518@hadrien>
-References: <20170824033617.20840-1-liam@networkimprov.net> <20170829105413.6wbejdaxxxd6hk7b@earth> <0bf4ba2f-18f9-1204-8241-8acb6ac6f490@ti.com> <20170829212259.gs4bljwscrprsfjl@earth> <CAKvHMgTEe_xBP2ENMTU5BNwWaRjfqbAuRJC32sHYL_Mh5oJOsQ@mail.gmail.com>
- <20170830002939.ns43wldvffmwqhuv@earth> <CAKvHMgSyr8aZ1cVd-Zf6WHNkwyTcSBvRaVuDWuHEnuNM=MStUA@mail.gmail.com> <alpine.DEB.2.20.1708311150440.3243@hadrien> <CAKvHMgSkuzi_BuicT7edYrM8Q87pnPJcgHRMDJEB21wdNKf8ow@mail.gmail.com> <alpine.DEB.2.20.1708311330570.3243@hadrien>
- <CAKvHMgSKLJk2wB9pefYuGyMG2aNp7bCCaOMABGRxXZ9ju-ivHw@mail.gmail.com> <CAKvHMgRzFpueUccSL1iu_-EazCe76cF8iSAPyYgcxJ3dNOZejA@mail.gmail.com> <alpine.DEB.2.20.1709052214030.2058@hadrien> <CAKvHMgTE-vypWKjhR7QgQNHFbVNdg99MgARmC-cTv6vfjgzZFg@mail.gmail.com>
- <alpine.DEB.2.20.1709180731060.2547@hadrien> <CAKvHMgSnULnEAtW5Axi1fyJG_2YW7hD3K_-N5P3Xdq_Gn72z4A@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V10 0/3] PM / Domains: Performance state support
+Date: Tue, 19 Sep 2017 15:32:16 -0700
+Message-ID: <cover.1505859768.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:38111
-        "EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751391AbdISWAp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Sep 2017 18:00:45 -0400
-In-Reply-To: <CAKvHMgSnULnEAtW5Axi1fyJG_2YW7hD3K_-N5P3Xdq_Gn72z4A@mail.gmail.com>
+Received: from mail-pf0-f179.google.com ([209.85.192.179]:51094 "EHLO
+        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751636AbdISWch (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Sep 2017 18:32:37 -0400
+Received: by mail-pf0-f179.google.com with SMTP id m63so537916pfk.7
+        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2017 15:32:37 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, "Andrew F. Davis" <afd@ti.com>, =?ISO-8859-15?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 
+Hi Ulf,
 
+This version contains the changes we discussed during the LPC.
 
-On Tue, 19 Sep 2017, Liam Breck wrote:
+Some platforms have the capability to configure the performance state of
+their power domains. The process of configuring the performance state is
+pretty much platform dependent and we may need to work with a wide range
+of configurables.  For some platforms, like Qcom, it can be a positive
+integer value alone, while in other cases it can be voltage levels, etc.
 
-> Hi Julia,
->
-> I think Sebastian referred this to you in hopes of receiving a script
-> that would find duplicate arrays, similarly to the way
-> bq27xxx_battery_dbg_dupes does in the running code. Did you interpret
-> his request differently?
->
-> bq27xxx_battery_dbg_dupes:
-> https://patchwork.kernel.org/patch/9918953/
->
-> The data structures being checked start here:
-> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n138
->
-> And are aggregated here:
-> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n743
->
-> The defines can be sed'd to pointers with 0 value, and array
-> comparisons where 1 pointer is 0 can be skipped.
+The power-domain framework until now was only designed for the idle
+state management of the device and this needs to change in order to
+reuse the power-domain framework for active state management of the
+devices.
 
-I followed the spirit of the runtime testing code.  But Coccinelle doesn't
-normally unfold the definitions of macros.  All it can do is take the
-different lists of fields and see if they are textually the same.
+The first patch updates the genpd framework to supply new APIs to
+support active state management and the second patch uses them from the
+OPP core. The third patch adds some more checks to the genpd core to
+catch bugs.
 
-I've attached the script and some fake data that I made to test it.  The
-fake data has some added cases where I have replaced 27 in the structure
-name by 07.  For my test data I get:
+Rest of the patches [4-7/7] are included just to show how user drivers
+would end up using the new APIs and these patches aren't there to get
+merged and are marked clearly like that.
 
-bq07421_regs and bq27421_regs have the same registers
-bq07000_regs and bq27000_regs have the same registers
-bq07421_dm_regs and bq27421_dm_regs have the same registers
-bq07421_props and bq27421_props have the same properties
-bq07000_props and bq27000_props have the same properties
+The ideal way is still to get the relation between device and domain
+states via the DT instead of platform code, but that can be done
+incrementally later once we have some users for it upstream.
 
-You won't get this currently; I needed to make some improvements to the
-Coccinelle C code parser.
+This is currently tested by:
+- /me by hacking the kernel a bit with virtual power-domains for the ARM
+  64 hikey platform. I have also tested the complex cases where the
+  device's parent power domain doesn't have set_performance_state()
+  callback set, but parents of that domains have it. Lockdep configs
+  were enabled for these tests.
+- Rajendra Nayak, on msm8996 platform (Qcom) with MMC controller.
 
-julia
+Thanks Rajendra for helping me testing this out.
 
->
-> Thanks
->
->
-> On Sun, Sep 17, 2017 at 10:33 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
-> >
-> >
-> > On Sun, 17 Sep 2017, Liam Breck wrote:
-> >
-> >> Hi Julia, checking back...
-> >
-> > Hi, I have something that works in terms of the names of the macros.  Ie
-> > if there is
-> >
-> > #define XXX 12
-> >
-> > and
-> >
-> > #define YYY 12
-> >
-> > it doesn't know that XXX and YYY are the same thing.
-> >
-> > I haven't posted it because I needed to make a change to the parser of
-> > Coccinelle and Coccinelle is a bit unstable at the moment.  But things
-> > should converge soon.
-> >
-> > julia
-> >
-> >>
-> >>
-> >>
-> >> On Tue, Sep 5, 2017 at 1:14 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
-> >> >
-> >> >
-> >> > On Tue, 5 Sep 2017, Liam Breck wrote:
-> >> >
-> >> >> Hi Julia, any luck on this?
-> >> >
-> >> > I was trying to improve the parser, but it seems that my improvements
-> >> > don't have a sufficient effect so I will try your suggestion of just
-> >> > seding out the offending code.
-> >> >
-> >> > julia
-> >> >
-> >> >>
-> >> >> On Thu, Aug 31, 2017 at 4:43 AM, Liam Breck <liam@networkimprov.net> wrote:
-> >> >> > On Thu, Aug 31, 2017 at 4:33 AM, Julia Lawall <julia.lawall@lip6.fr> wrote:
-> >> >> >>
-> >> >> >>
-> >> >> >> On Thu, 31 Aug 2017, Liam Breck wrote:
-> >> >> >>
-> >> >> >>> On Thu, Aug 31, 2017 at 2:54 AM, Julia Lawall <julia.lawall@lip6.fr> wrote:
-> >> >> >>> >
-> >> >> >>> >
-> >> >> >>> > On Tue, 29 Aug 2017, Liam Breck wrote:
-> >> >> >>> >
-> >> >> >>> >> Coccinelle folks,
-> >> >> >>> >>
-> >> >> >>> >> On Tue, Aug 29, 2017 at 5:29 PM, Sebastian Reichel
-> >> >> >>> >> <sebastian.reichel@collabora.co.uk> wrote:
-> >> >> >>> >> > Hi,
-> >> >> >>> >> >
-> >> >> >>> >> > On Tue, Aug 29, 2017 at 04:07:12PM -0700, Liam Breck wrote:
-> >> >> >>> >> >> I don't see a Julia in CC list...
-> >> >> >>> >> >
-> >> >> >>> >> > <_< let's try that again.
-> >> >> >>> >> >
-> >> >> >>> >> >> On Tue, Aug 29, 2017 at 2:22 PM, Sebastian Reichel
-> >> >> >>> >> >> <sebastian.reichel@collabora.co.uk> wrote:
-> >> >> >>> >> >> > [adding Julia to Cc for Coccinelle question]
-> >> >> >>> >> >> >
-> >> >> >>> >> >> > Hi,
-> >> >> >>> >> >> >
-> >> >> >>> >> >> > On Tue, Aug 29, 2017 at 10:31:57AM -0500, Andrew F. Davis wrote:
-> >> >> >>> >> >> >> On 08/29/2017 05:54 AM, Sebastian Reichel wrote:
-> >> >> >>> >> >> >> > On Wed, Aug 23, 2017 at 08:36:12PM -0700, Liam Breck wrote:
-> >> >> >>> >> >> >> >> Overview:
-> >> >> >>> >> >> >> >> * Reorganizes chip data definitions
-> >> >> >>> >> >> >> >> * Enables features landed in these patches:
-> >> >> >>> >> >> >> >>   dt-bindings: power: supply: bq27xxx: Add monitored-battery documentation
-> >> >> >>> >> >> >> >>   power: supply: bq27xxx: Add chip data memory read/write support
-> >> >> >>> >> >> >> >>   power: supply: bq27xxx: Add power_supply_battery_info support
-> >> >> >>> >> >> >> >> * Supports the following chips (only BQ27425 is active)
-> >> >> >>> >> >> >> >>   BQ27500, 545, 425, 421, 441, 621
-> >> >> >>> >> >> >> >>
-> >> >> >>> >> >> >> >> Changes in v3:
-> >> >> >>> >> >> >> >> * BQ27425 tested; workaround minor chip bug
-> >> >> >>> >> >> >> >> * Dropped driver_version
-> >> >> >>> >> >> >> >> * Fixed dbg_dupes logic for .props & .dm_regs
-> >> >> >>> >> >> >> >> * Dropped two props array dupes
-> >> >> >>> >> >> >> >>
-> >> >> >>> >> >> >> >> Changes in v2:
-> >> >> >>> >> >> >> >> * Added di->opts flags for remaining chip features
-> >> >> >>> >> >> >> >> * Commented out untested bq27xxx_dm_regs parameters
-> >> >> >>> >> >> >> >> * Changed dbg_dupes to run only once
-> >> >> >>> >> >> >> >>
-> >> >> >>> >> >> >> >> Notes on v1:
-> >> >> >>> >> >> >> >> * Not fully tested (hence RFC tag)
-> >> >> >>> >> >> >> >
-> >> >> >>> >> >> >> > Thanks, full series queued.
-> >> >> >>> >> >> >> >
-> >> >> >>> >> >> >> > -- Sebastian
-> >> >> >>> >> >> >>
-> >> >> >>> >> >> >> Anyway, I've not got the time to fight these changes anymore, but at
-> >> >> >>> >> >> >> very least could you drop 4/5, it's static analysis code made into a
-> >> >> >>> >> >> >> runtime check built into a kernel driver, if not at least add my
-> >> >> >>> >> >> >> nacked-by. :)
-> >> >> >>> >> >> >
-> >> >> >>> >> >> > Since it's not critical at all and nobody depends on it, I dropped 4/5
-> >> >> >>> >> >> > for now. I agree, that checking it at runtime is not nice. On the other
-> >> >> >>> >> >> > hand I do think a duplication check makes sense. Doing a static
-> >> >> >>> >> >> > check should be possible, but I have no idea how to implement this
-> >> >> >>> >> >> > (without much effort). I suspect Coccinelle can do it, so I added
-> >> >> >>> >> >> > Julia.
-> >> >> >>> >> >> >
-> >> >> >>> >> >> > For reference this is the runtime check:
-> >> >> >>> >> >> > https://patchwork.kernel.org/patch/9918953/
-> >> >> >>> >>
-> >> >> >>> >> The data structures being checked start here:
-> >> >> >>> >> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n138
-> >> >> >>> >>
-> >> >> >>> >> And are aggregated here:
-> >> >> >>> >> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n743
-> >> >> >>> >
-> >> >> >>> > I worked a bit on this, but unfortunately there is a major parsing
-> >> >> >>> > problem, and most of the definitions are ignored.  Specifically, the
-> >> >> >>> > definitions of the regs variables are interspersed with eg:
-> >> >> >>> >
-> >> >> >>> > #define bq27510g1_regs bq27500_regs
-> >> >> >>>
-> >> >> >>> You can transform the macros with sed to either of:
-> >> >> >>>
-> >> >> >>> static u8 *bq27510g1_regs = 0 // skip comparison if x == 0
-> >> >> >>>
-> >> >> >>> static u8 bq27510g1_regs[BQ27XXX_REG_MAX] = { 0xFF } // skip
-> >> >> >>> comparison if x[0] == 0xff
-> >> >> >>>
-> >> >> >>> Does that help?
-> >> >> >>
-> >> >> >> Not quite, because it's really a list of variable declarations, like
-> >> >> >>
-> >> >> >> int a, b, c, d;
-> >> >> >>
-> >> >> >> The following could be fine:
-> >> >> >>
-> >> >> >> *bq27510g1_regs = 0,
-> >> >> >
-> >> >> > i forgot about the static u8 at the top of the array set. But yes,
-> >> >> > just drop static u8 from either of the alternatives I gave.
-> >> >>
-> >>
->
+I also had a chat with Rajendra and we should be able to get a Qualcomm
+specific power domain driver (which uses these changes) in coming weeks.
+Though it wouldn't solve all the problems around corners they have, as
+they need more updates later on (Like support for multiple masters for a
+device, etc).
+
+Pushed here as well:
+
+https://git.linaro.org/people/viresh.kumar/linux.git/log/?h=opp/genpd-performance-state
+
+Rebased over: 4.14-rc1
+
+V9->V10:
+- Performance state of masters is updated before the state of the genpd
+  (Ulf).
+- 2/7 and 3/7 are swapped.
+
+V8->V9:
+- Renamed genpd callbacks and internal routines.
+- dev_pm_genpd_has_performance_state() simplified a lot and doesn't
+  check master hierarchy now. Rather a new patch (2/7) is added to
+  take care of that and WARN if no master has set
+  genpd_set_performance_state() callback.
+- Update is propagated to the masters even if the genpd's callback is
+  already called.
+- Exit _genpd_reeval_performance_state() early if no state change is
+  required and it gets an additional argument (new state of the
+  device/subdomain).
+- Taken care of genpd on/off cases.
+- s/parent/master everywhere in comments and logs.
+- Better explanations in logs, comments etc.
+- All the other patches (3-7/7) are same as V8. (Just minor update in
+  5/7 to use the updated callback names).
+
+V7->V8:
+- Ulf helped a lot in reviewing V7 and pointed out couple of issues,
+  specially in locking while dealing with a hierarchy of power domains.
+- All those locking issues are sorted out now, even for the complex
+  cases.
+- genpd_lookup_dev() is used in pm_genpd_has_performance_state() to make
+  sure we have a valid genpd available for the device.
+- Validation of performance state callbacks isn't done anymore in
+  pm_genpd_init() as it gets called very early and the binding of
+  subdomains to their parent domains happens later. This is handled in
+  pm_genpd_has_performance_state() now, which is called from user
+  drivers.
+- User driver changes (not to be merged) are included for the first time
+  here, to demonstrate how changes would look finally.
+
+V6->V7:
+- Almost a rewrite, only two patches against 9 in earlier version.
+- No bindings updated now and domain's performance state aren't passed
+  via DT for now (until we know how users are going to use it).
+- We also skipped the QoS framework completely and new APIs are provided
+  directly by genpd.
+
+V5->V6:
+- Use freq/voltage in OPP table as it is for power domain and don't
+  create "domain-performance-level" property
+- Create new "power-domain-opp" property for the devices.
+- Take care of domain providers that provide multiple domains and extend
+  "operating-points-v2" property to contain a list of phandles
+- Update code according to those bindings.
+
+V4->V5:
+- Only 3 patches were resent and 2 of them are Acked from Ulf.
+
+V3->V4:
+- Use OPP table for genpd devices as well.
+- Add struct device to genpd, in order to reuse OPP infrastructure.
+- Based over: https://marc.info/?l=linux-kernel&m=148972988002317&w=2
+- Fixed examples in DT document to have voltage in target,min,max order.
+
+V2->V3:
+- Based over latest pm/linux-next
+- Bindings and code are merged together
+- Lots of updates in bindings
+  - the performance-states node is present within the power-domain now,
+    instead of its phandle.
+  - performance-level property is replaced by "reg".
+  - domain-performance-state property of the consumers contain an
+    integer value now instead of phandle.
+- Lots of updates to the code as well
+  - Patch "PM / QOS: Add default case to the switch" is merged with
+    other patches and the code is changed a bit as well.
+  - Don't pass 'type' to dev_pm_qos_add_notifier(), rather handle all
+    notifiers with a single list. A new patch is added for that.
+  - The OPP framework patch can be applied now and has proper SoB from
+    me.
+  - Dropped "PM / domain: Save/restore performance state at runtime
+    suspend/resume".
+  - Drop all WARN().
+  - Tested-by Rajendra nayak.
+
+V1->V2:
+- Based over latest pm/linux-next
+- It is mostly a resend of what is sent earlier as this series hasn't
+  got any reviews so far and Rafael suggested that its better I resend
+  it.
+- Only the 4/6 patch got an update, which was shared earlier as reply to
+  V1 as well. It has got several fixes for taking care of power domain
+  hierarchy, etc.
+
+--
+viresh
+
+Rajendra Nayak (4):
+  soc: qcom: rpmpd: Add a powerdomain driver to model cx/mx powerdomains
+  soc: qcom: rpmpd: Add support for get/set performance state
+  mmc: sdhci-msm: Adapt the driver to use OPPs to set clocks/performance
+    state
+  remoteproc: qcom: q6v5: Vote for proxy powerdomain performance state
+
+Viresh Kumar (3):
+  PM / Domains: Add support to select performance-state of domains
+  PM / OPP: Support updating performance state of device's power domains
+  PM / Domains: Catch missing genpd_set_performance_state() in masters
+
+ .../devicetree/bindings/power/qcom,rpmpd.txt       |  10 +
+ arch/arm64/boot/dts/qcom/msm8996.dtsi              |  39 ++
+ drivers/base/power/domain.c                        | 293 ++++++++++++++-
+ drivers/base/power/opp/core.c                      |  48 ++-
+ drivers/base/power/opp/opp.h                       |   2 +
+ drivers/clk/qcom/gcc-msm8996.c                     |   8 +-
+ drivers/mmc/host/sdhci-msm.c                       |  39 +-
+ drivers/remoteproc/qcom_q6v5_pil.c                 |  20 +-
+ drivers/soc/qcom/Kconfig                           |   9 +
+ drivers/soc/qcom/Makefile                          |   1 +
+ drivers/soc/qcom/rpmpd.c                           | 412 +++++++++++++++++++++
+ include/linux/pm_domain.h                          |  23 ++
+ 12 files changed, 880 insertions(+), 24 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/power/qcom,rpmpd.txt
+ create mode 100644 drivers/soc/qcom/rpmpd.c
+
+-- 
+2.7.4
