@@ -1,79 +1,45 @@
-From: Liam Breck <liam@networkimprov.net>
-Subject: Re: [PATCH v3 0/5] bq27xxx_battery data memory update
-Date: Tue, 19 Sep 2017 15:36:28 -0700
-Message-ID: <CAKvHMgTF8C+7xcO31MvVeepCmSiP4V6tvvC4uVfcA4_JAfFHsw@mail.gmail.com>
-References: <20170824033617.20840-1-liam@networkimprov.net>
- <20170829105413.6wbejdaxxxd6hk7b@earth> <0bf4ba2f-18f9-1204-8241-8acb6ac6f490@ti.com>
- <20170829212259.gs4bljwscrprsfjl@earth> <CAKvHMgTEe_xBP2ENMTU5BNwWaRjfqbAuRJC32sHYL_Mh5oJOsQ@mail.gmail.com>
- <20170830002939.ns43wldvffmwqhuv@earth> <CAKvHMgSyr8aZ1cVd-Zf6WHNkwyTcSBvRaVuDWuHEnuNM=MStUA@mail.gmail.com>
- <alpine.DEB.2.20.1708311150440.3243@hadrien> <CAKvHMgSkuzi_BuicT7edYrM8Q87pnPJcgHRMDJEB21wdNKf8ow@mail.gmail.com>
- <alpine.DEB.2.20.1708311330570.3243@hadrien> <CAKvHMgSKLJk2wB9pefYuGyMG2aNp7bCCaOMABGRxXZ9ju-ivHw@mail.gmail.com>
- <CAKvHMgRzFpueUccSL1iu_-EazCe76cF8iSAPyYgcxJ3dNOZejA@mail.gmail.com>
- <alpine.DEB.2.20.1709052214030.2058@hadrien> <CAKvHMgTE-vypWKjhR7QgQNHFbVNdg99MgARmC-cTv6vfjgzZFg@mail.gmail.com>
- <alpine.DEB.2.20.1709180731060.2547@hadrien> <CAKvHMgSnULnEAtW5Axi1fyJG_2YW7hD3K_-N5P3Xdq_Gn72z4A@mail.gmail.com>
- <alpine.DEB.2.20.1709192355160.2518@hadrien>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] drivers: cpufreq: Fix sysfs duplicate filename
+ creation for platform-device
+Date: Tue, 19 Sep 2017 15:36:45 -0700
+Message-ID: <20170919223645.GD30848@ubuntu>
+References: <20170918011503.GA17030@ubuntu>
+ <1505762285-16161-1-git-send-email-sunil.m@techveda.org>
+ <8a57f05a-598f-440e-f8d0-ddde5627d075@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f66.google.com ([209.85.214.66]:33738 "EHLO
-        mail-it0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751520AbdISWga (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Sep 2017 18:36:30 -0400
-Received: by mail-it0-f66.google.com with SMTP id g18so558817itg.0
-        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2017 15:36:30 -0700 (PDT)
-In-Reply-To: <alpine.DEB.2.20.1709192355160.2518@hadrien>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <8a57f05a-598f-440e-f8d0-ddde5627d075@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: sunil.m@techveda.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, karthik@techveda.org
 List-Id: linux-pm@vger.kernel.org
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, "Andrew F. Davis" <afd@ti.com>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
-On Tue, Sep 19, 2017 at 3:00 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
->
->
-> On Tue, 19 Sep 2017, Liam Breck wrote:
->
->> Hi Julia,
->>
->> I think Sebastian referred this to you in hopes of receiving a script
->> that would find duplicate arrays, similarly to the way
->> bq27xxx_battery_dbg_dupes does in the running code. Did you interpret
->> his request differently?
->>
->> bq27xxx_battery_dbg_dupes:
->> https://patchwork.kernel.org/patch/9918953/
->>
->> The data structures being checked start here:
->> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n138
->>
->> And are aggregated here:
->> https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git/tree/drivers/power/supply/bq27xxx_battery.c?h=for-next#n743
->>
->> The defines can be sed'd to pointers with 0 value, and array
->> comparisons where 1 pointer is 0 can be skipped.
->
-> I followed the spirit of the runtime testing code.  But Coccinelle doesn't
-> normally unfold the definitions of macros.  All it can do is take the
-> different lists of fields and see if they are textually the same.
+On 19-09-17, 10:12, Dave Gerlach wrote:
+> Hi,
+> On 09/18/2017 02:18 PM, sunil.m@techveda.org wrote:
+> > From: Suniel Mahesh <sunil.m@techveda.org>
+> > 
+> > ti-cpufreq and cpufreq-dt-platdev drivers are registering platform-device
+> > with same name "cpufreq-dt" using platform_device_register_*() routines.
+> > This is leading to build warnings appended below.
+> > 
+> > Providing hardware information to OPP framework along with the platform-
+> > device creation should be done by ti-cpufreq driver before cpufreq-dt
+> > driver comes into place.
+> > 
+> > This patch add's TI SoC am33xx (uses opp-v2 property) in the blacklist of
+> > devices in cpufreq-dt-platform driver to avoid creating platform-device
+> > twice and remove build warnings (suggested by Viresh Kumar).
+> 
+> This looks good to me, but this also affects "ti,am43" and "ti,dra7" platforms,
+> care to add those to the blacklist as well with this patch? Thanks.
 
-There's no need to unfold macros. If you did, you would get false
-positives. You do need to skip them somehow, hence the idea of sed'ing
-to null pointers.
+Also please rebase on top of the pm/linux-next branch as I have pushed
+a similar patch there. (Actually its applied to pm/bleeding-edge
+branch for now and may take a day to get to pm/linux-next. You can
+wait in that case.).
 
-> I've attached the script and some fake data that I made to test it.  The
-> fake data has some added cases where I have replaced 27 in the structure
-> name by 07.  For my test data I get:
->
-> bq07421_regs and bq27421_regs have the same registers
-> bq07000_regs and bq27000_regs have the same registers
-> bq07421_dm_regs and bq27421_dm_regs have the same registers
-> bq07421_props and bq27421_props have the same properties
-> bq07000_props and bq27000_props have the same properties
->
-> You won't get this currently; I needed to make some improvements to the
-> Coccinelle C code parser.
-
-I didn't see anything attached, script or data.
-
-The script should compare each object with only those objects that
-follow it in sequence, so it doesn't repeat comparisons or compare to
-self.
+-- 
+viresh
