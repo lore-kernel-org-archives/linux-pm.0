@@ -1,56 +1,94 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Understanding suspend() vs suspend_late() for I2c devices
-Date: Tue, 19 Sep 2017 22:30:37 +0200
-Message-ID: <30144911.QDmLjpI35A@aspire.rjw.lan>
-References: <CACK8Z6EF+cHAh=7HQ2Z14wyRFTxRODYFZ-iV_MDp5=AqW=vNFw@mail.gmail.com>
+Subject: Re: [PATCH v2 1/1] device property: Align return codes of acpi_fwnode_get_reference_with_args
+Date: Tue, 19 Sep 2017 23:16:10 +0200
+Message-ID: <1824834.2vbqGCFIt3@aspire.rjw.lan>
+References: <20170912141512.21634-1-sakari.ailus@linux.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CACK8Z6EF+cHAh=7HQ2Z14wyRFTxRODYFZ-iV_MDp5=AqW=vNFw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rajat Jain <rajatja@google.com>
-Cc: "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, Furquan Shaikh <furquan@google.com>, Rajat Jain <rajatxjain@gmail.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170912141512.21634-1-sakari.ailus@linux.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Sakari Ailus <sakari.ailus@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, mika.westerberg@intel.com, Linux ACPI <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, September 19, 2017 7:35:18 PM CEST Rajat Jain wrote:
-> Hello folks,
+On Tuesday, September 12, 2017 4:15:12 PM CEST Sakari Ailus wrote:
+> acpi_fwnode_get_reference_with_args(), the function implementing ACPI
+> support for fwnode_property_get_reference_with_args(), returns directly
+> error codes from __acpi_node_get_property_reference(). The latter uses
+> different error codes than the OF implementation. In particular, the OF
+> implementation uses -ENOENT to indicate there are no more entries whereas
+> the former uses -ENODATA for the purpose.
 > 
-> I'm trying to understand the valid expectations from i2c drivers
-> standpoint, from suspend() callback vs suspend_late() callback. The
-> Documentation/power/devices.txt states that:
+> To make matters more complicated, the ACPI implementation uses -ENOENT but
+> for a different purpose --- when an entry exists but contains no
+> reference. This isn't recognised by OF.
 > 
-> ==================================================
-> For a number of devices it is convenient to split suspend into the
-> "quiesce device" and "save device state" phases, in which cases
-> suspend_late is meant to do the latter.
-> ==================================================
+> Document and align the error codes for property for
+> fwnode_property_get_reference_with_args() so that they match with
+> of_parse_phandle_with_args(), with the difference that -ENODATA is
+> returned whenever an entry exists but contains no reference.
 > 
-> 1) So it seems that it is fair expectation from a driver, to be able
-> to access its own device and its registers in
-> suspend_late()/resume_early() call backs?
+> Also return -ENOENT if the property does not exist, which is what the DT
+> equivalent does.
 > 
-> 2) For the drivers that provide a controller to a bus (e.g.
-> i2c_adapter drivers), is it correct that they should make sure that
-> bus operation continues to stay OK even after their suspend() callback
-> is executed?(This is because the drivers for the downstream devices -
-> eg i2c_client drivers may want to talk to their device in *their*
-> suspend_late() callbacks). So bus operations should be suspended by
-> the adapter drivers only in their suspend_late() callback routines,
-> and not suspend() routines?
+> Fixes: 3e3119d3088f ("device property: Introduce fwnode_property_get_reference_args")
+> Signed-off-by: Sakari Ailus <sakari.ailus@linux.intel.com>
+> ---
+> since v1:
+> 
+> - Return -ENOENT if the property is not found.
+> 
+>  drivers/acpi/property.c | 7 +++++++
+>  drivers/base/property.c | 5 +++++
+>  2 files changed, 12 insertions(+)
+> 
+> diff --git a/drivers/acpi/property.c b/drivers/acpi/property.c
+> index a65c09cc223f..8970dd288d9d 100644
+> --- a/drivers/acpi/property.c
+> +++ b/drivers/acpi/property.c
+> @@ -1205,8 +1205,15 @@ acpi_fwnode_get_reference_args(const struct fwnode_handle *fwnode,
+>  	unsigned int i;
+>  	int ret;
+>  
+> +	if (acpi_node_prop_get(fwnode, prop, NULL))
+> +		return -ENOENT;
+> +
+>  	ret = __acpi_node_get_property_reference(fwnode, prop, index,
+>  						 args_count, &acpi_args);
+> +	if (ret == -ENODATA)
+> +		return -ENOENT;
+> +	if (ret == -ENOENT)
+> +		return -ENODATA;
 
-Basically, yes, although there seems to be quite a bit of confusion around
-that in i2c.
+I agree with Mika that it would be good to have a comment describing what is
+going on here.
 
-Generally speaking, a parent (or a supplier) device can only be fully
-suspended if all of its child (or consumer) devices already have been
-fully suspended.
+Or maybe better, why don't you change __acpi_node_get_property_reference()
+itself?
 
-Accordingly, it is better to suspend all of the bus controllers in the
-"late suspend" phase and resume them in the "early resume" one.  Then, the
-dependent devices can be suspended either in the "suspend" or in the
-"late suspend" phase and the PM core should get the dependencies right
-(and analogously for resume).
+>  	if (ret < 0)
+>  		return ret;
+>  	if (!args)
+> diff --git a/drivers/base/property.c b/drivers/base/property.c
+> index d0b65bbe7e15..79b07ed83304 100644
+> --- a/drivers/base/property.c
+> +++ b/drivers/base/property.c
+> @@ -682,6 +682,11 @@ EXPORT_SYMBOL_GPL(fwnode_property_match_string);
+>   * Caller is responsible to call fwnode_handle_put() on the returned
+>   * args->fwnode pointer.
+>   *
+> + * Returns: %0 on success
+> + *	    %-ENOENT when the index is out of bounds, or the property was not
+> + *		     found
+> + *	    %-EINVAL on parse error
+> + *	    %-ENODATA when an entry exists but contains no reference
+>   */
+>  int fwnode_property_get_reference_args(const struct fwnode_handle *fwnode,
+>  				       const char *prop, const char *nargs_prop,
+> 
 
 Thanks,
 Rafael
+
