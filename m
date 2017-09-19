@@ -1,45 +1,44 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] drivers: cpufreq: Fix sysfs duplicate filename
- creation for platform-device
-Date: Tue, 19 Sep 2017 15:36:45 -0700
-Message-ID: <20170919223645.GD30848@ubuntu>
-References: <20170918011503.GA17030@ubuntu>
- <1505762285-16161-1-git-send-email-sunil.m@techveda.org>
- <8a57f05a-598f-440e-f8d0-ddde5627d075@ti.com>
+Subject: Re: [PATCH] cpufreq: ti-cpufreq: Support additional am43xx platforms
+Date: Tue, 19 Sep 2017 15:38:22 -0700
+Message-ID: <20170919223822.GE30848@ubuntu>
+References: <20170919200613.31625-1-d-gerlach@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <8a57f05a-598f-440e-f8d0-ddde5627d075@ti.com>
+In-Reply-To: <20170919200613.31625-1-d-gerlach@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Dave Gerlach <d-gerlach@ti.com>
-Cc: sunil.m@techveda.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, karthik@techveda.org
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 19-09-17, 10:12, Dave Gerlach wrote:
-> Hi,
-> On 09/18/2017 02:18 PM, sunil.m@techveda.org wrote:
-> > From: Suniel Mahesh <sunil.m@techveda.org>
-> > 
-> > ti-cpufreq and cpufreq-dt-platdev drivers are registering platform-device
-> > with same name "cpufreq-dt" using platform_device_register_*() routines.
-> > This is leading to build warnings appended below.
-> > 
-> > Providing hardware information to OPP framework along with the platform-
-> > device creation should be done by ti-cpufreq driver before cpufreq-dt
-> > driver comes into place.
-> > 
-> > This patch add's TI SoC am33xx (uses opp-v2 property) in the blacklist of
-> > devices in cpufreq-dt-platform driver to avoid creating platform-device
-> > twice and remove build warnings (suggested by Viresh Kumar).
+On 19-09-17, 15:06, Dave Gerlach wrote:
+> Rather than letting the ti-cpufreq driver match against 'ti,am4372'
+> machine compatible during probe let's match against 'ti,am43' so that we
+> can support both 'ti,am4372' and 'ti,am438x' platforms which both match
+> to this compatible.
 > 
-> This looks good to me, but this also affects "ti,am43" and "ti,dra7" platforms,
-> care to add those to the blacklist as well with this patch? Thanks.
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+> ---
+>  drivers/cpufreq/ti-cpufreq.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+> index b29cd3398463..4bf47de6101f 100644
+> --- a/drivers/cpufreq/ti-cpufreq.c
+> +++ b/drivers/cpufreq/ti-cpufreq.c
+> @@ -190,7 +190,7 @@ static int ti_cpufreq_setup_syscon_register(struct ti_cpufreq_data *opp_data)
+>  
+>  static const struct of_device_id ti_cpufreq_of_match[] = {
+>  	{ .compatible = "ti,am33xx", .data = &am3x_soc_data, },
+> -	{ .compatible = "ti,am4372", .data = &am4x_soc_data, },
+> +	{ .compatible = "ti,am43", .data = &am4x_soc_data, },
+>  	{ .compatible = "ti,dra7", .data = &dra7_soc_data },
+>  	{},
+>  };
 
-Also please rebase on top of the pm/linux-next branch as I have pushed
-a similar patch there. (Actually its applied to pm/bleeding-edge
-branch for now and may take a day to get to pm/linux-next. You can
-wait in that case.).
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
 viresh
