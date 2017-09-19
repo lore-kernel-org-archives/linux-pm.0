@@ -1,44 +1,24 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: ti-cpufreq: Support additional am43xx platforms
-Date: Tue, 19 Sep 2017 15:38:22 -0700
-Message-ID: <20170919223822.GE30848@ubuntu>
-References: <20170919200613.31625-1-d-gerlach@ti.com>
+Subject: Re: [PATCH 0/7] PM / OPP: per OPP node clock support and imx7ulp
+ cpufreq driver
+Date: Tue, 19 Sep 2017 15:54:10 -0700
+Message-ID: <20170919225410.GH30848@ubuntu>
+References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
+ <20170911072806.GB19297@b29396-OptiPlex-7040>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170919200613.31625-1-d-gerlach@ti.com>
+In-Reply-To: <20170911072806.GB19297@b29396-OptiPlex-7040>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Dave Gerlach <d-gerlach@ti.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+To: Dong Aisheng <dongas86@gmail.com>
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com
 List-Id: linux-pm@vger.kernel.org
 
-On 19-09-17, 15:06, Dave Gerlach wrote:
-> Rather than letting the ti-cpufreq driver match against 'ti,am4372'
-> machine compatible during probe let's match against 'ti,am43' so that we
-> can support both 'ti,am4372' and 'ti,am438x' platforms which both match
-> to this compatible.
-> 
-> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
-> ---
->  drivers/cpufreq/ti-cpufreq.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-> index b29cd3398463..4bf47de6101f 100644
-> --- a/drivers/cpufreq/ti-cpufreq.c
-> +++ b/drivers/cpufreq/ti-cpufreq.c
-> @@ -190,7 +190,7 @@ static int ti_cpufreq_setup_syscon_register(struct ti_cpufreq_data *opp_data)
->  
->  static const struct of_device_id ti_cpufreq_of_match[] = {
->  	{ .compatible = "ti,am33xx", .data = &am3x_soc_data, },
-> -	{ .compatible = "ti,am4372", .data = &am4x_soc_data, },
-> +	{ .compatible = "ti,am43", .data = &am4x_soc_data, },
->  	{ .compatible = "ti,dra7", .data = &dra7_soc_data },
->  	{},
->  };
+On 11-09-17, 15:28, Dong Aisheng wrote:
+> Do you have any comments about this series?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I wasn't around for last 3-4 weeks and so couldn't get to these.
 
 -- 
 viresh
