@@ -1,7 +1,7 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V10 5/7] soc: qcom: rpmpd: Add support for get/set performance state
-Date: Tue, 19 Sep 2017 15:32:21 -0700
-Message-ID: <678142c5519947b9f51a652e22fd293ac6766838.1505859768.git.viresh.kumar@linaro.org>
+Subject: [PATCH V10 7/7] remoteproc: qcom: q6v5: Vote for proxy powerdomain performance state
+Date: Tue, 19 Sep 2017 15:32:23 -0700
+Message-ID: <50dd4d69098783bd844a55a321beaa94d216242d.1505859768.git.viresh.kumar@linaro.org>
 References: <cover.1505859768.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1505859768.git.viresh.kumar@linaro.org>
@@ -16,147 +16,110 @@ From: Rajendra Nayak <rnayak@codeaurora.org>
 
 THIS IS TEST CODE, SHOULDN'T BE MERGED.
 
-With genpd now expecting powerdomain drivers supporting performance
-state to support get/set performance state callbacks, add support for it
-in the rpmpd driver.
+This patch just demonstrates the usage of pm_genpd_update_performance_state()
+api in cases where users need to set performance state of a powerdomain without
+having to do it via the OPP framework.
+
+q6v5 remoteproc driver needs to proxy vote for performance states of multiple
+powerdomains (but we currently only demonstate how it can be done for
+one powerdomain, as there is no way to associate multiple powerdomains
+to a device at this time) while it loads the firmware, and then releases
+the vote, once the firmware is up and can vote for itself.
+
+This is not a functional patch since rpmpd driver only supports msm8996
+and there is no msm8996 support in the q6v5 remoteproc driver at this
+point in mainline.
+
+This patch is not tested as well.
 
 Not-signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
 Not-signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/soc/qcom/rpmpd.c | 100 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 100 insertions(+)
+ drivers/remoteproc/qcom_q6v5_pil.c | 20 +++++++++++++-------
+ drivers/soc/qcom/rpmpd.c           |  5 +++++
+ 2 files changed, 18 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/remoteproc/qcom_q6v5_pil.c b/drivers/remoteproc/qcom_q6v5_pil.c
+index 2d3d5ac92c06..dcb865b13c5c 100644
+--- a/drivers/remoteproc/qcom_q6v5_pil.c
++++ b/drivers/remoteproc/qcom_q6v5_pil.c
+@@ -18,6 +18,7 @@
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
++#include <linux/pm_domain.h>
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/mfd/syscon.h>
+@@ -152,6 +153,8 @@ struct q6v5 {
+ 	void *mpss_region;
+ 	size_t mpss_size;
+ 
++	bool has_perf_state;
++
+ 	struct qcom_rproc_subdev smd_subdev;
+ 	struct qcom_rproc_ssr ssr_subdev;
+ };
+@@ -604,11 +607,12 @@ static int q6v5_start(struct rproc *rproc)
+ 	struct q6v5 *qproc = (struct q6v5 *)rproc->priv;
+ 	int ret;
+ 
+-	ret = q6v5_regulator_enable(qproc, qproc->proxy_regs,
+-				    qproc->proxy_reg_count);
+-	if (ret) {
+-		dev_err(qproc->dev, "failed to enable proxy supplies\n");
+-		return ret;
++	if (qproc->has_perf_state) {
++		ret = dev_pm_genpd_update_performance_state(qproc->dev, INT_MAX);
++		if (ret) {
++			dev_err(qproc->dev, "Failed to set performance state.\n");
++			return ret;
++		}
+ 	}
+ 
+ 	ret = q6v5_clk_enable(qproc->dev, qproc->proxy_clks,
+@@ -672,8 +676,8 @@ static int q6v5_start(struct rproc *rproc)
+ 
+ 	q6v5_clk_disable(qproc->dev, qproc->proxy_clks,
+ 			 qproc->proxy_clk_count);
+-	q6v5_regulator_disable(qproc, qproc->proxy_regs,
+-			       qproc->proxy_reg_count);
++	if (qproc->has_perf_state)
++		dev_pm_genpd_update_performance_state(qproc->dev, 0);
+ 
+ 	return 0;
+ 
+@@ -1046,6 +1050,8 @@ static int q6v5_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto free_rproc;
+ 
++	qproc->has_perf_state = pm_genpd_has_performance_state(&qproc->dev);
++
+ 	return 0;
+ 
+ free_rproc:
 diff --git a/drivers/soc/qcom/rpmpd.c b/drivers/soc/qcom/rpmpd.c
-index d34d9c363815..4e4f5cda9ce2 100644
+index 4e4f5cda9ce2..c1733da8a7c8 100644
 --- a/drivers/soc/qcom/rpmpd.c
 +++ b/drivers/soc/qcom/rpmpd.c
-@@ -101,6 +101,20 @@ struct rpmpd_desc {
- 	size_t num_pds;
+@@ -145,6 +145,7 @@ enum msm8996_devices {
+ 	UFS,
+ 	PCIE,
+ 	USB3,
++	Q6V5_PIL,
  };
  
-+enum rpmpd_levels {
-+	NONE,
-+	LOWER,          /* SVS2 */
-+	LOW,            /* SVS */
-+	NOMINAL,        /* NOMINAL */
-+	HIGH,           /* Turbo */
-+	MAX_LEVEL,
-+};
-+
-+struct rpmpd_freq_map {
-+	struct rpmpd *pd;
-+	unsigned long freq[MAX_LEVEL];
-+};
-+
- static DEFINE_MUTEX(rpmpd_lock);
- 
- /* msm8996 RPM powerdomains */
-@@ -126,6 +140,47 @@ static const struct rpmpd_desc msm8996_desc = {
- 	.num_pds = ARRAY_SIZE(msm8996_rpmpds),
+ static struct rpmpd_freq_map msm8996_rpmpd_freq_map[] = {
+@@ -171,6 +172,10 @@ static struct rpmpd_freq_map msm8996_rpmpd_freq_map[] = {
+ 		.freq[LOW] = 120000000,
+ 		.freq[NOMINAL] = 150000000,
+ 	},
++	[Q6V5_PIL] = {
++		.pd = &msm8996_vddcx,
++		.freq[HIGH] = INT_MAX,
++	},
  };
  
-+enum msm8996_devices {
-+	SDHCI,
-+	UFS,
-+	PCIE,
-+	USB3,
-+};
-+
-+static struct rpmpd_freq_map msm8996_rpmpd_freq_map[] = {
-+	[SDHCI] = {
-+		.pd = &msm8996_vddcx,
-+		.freq[LOWER] = 19200000,
-+		.freq[LOW] = 200000000,
-+		.freq[NOMINAL] = 400000000,
-+	},
-+	[UFS] = {
-+		.pd = &msm8996_vddcx,
-+		.freq[LOWER] = 19200000,
-+		.freq[LOW] = 100000000,
-+		.freq[NOMINAL] = 200000000,
-+		.freq[HIGH] = 240000000,
-+	},
-+	[PCIE] = {
-+		.pd = &msm8996_vddcx,
-+		.freq[LOWER] = 1011000,
-+	},
-+	[USB3] = {
-+		.pd = &msm8996_vddcx,
-+		.freq[LOWER] = 60000000,
-+		.freq[LOW] = 120000000,
-+		.freq[NOMINAL] = 150000000,
-+	},
-+};
-+
-+static const struct of_device_id rpmpd_performance_table[] = {
-+	{ .compatible = "qcom,sdhci-msm-v4", .data = (void *)SDHCI },
-+	{ .compatible = "qcom,ufshc", .data = (void *)UFS },
-+	{ .compatible = "qcom,pcie-msm8996", .data = (void *)PCIE },
-+	{ .compatible = "qcom,dwc3", .data = (void *)USB3 },
-+	{ }
-+};
-+
- static const struct of_device_id rpmpd_match_table[] = {
- 	{ .compatible = "qcom,rpmpd-msm8996", .data = &msm8996_desc },
- 	{ }
-@@ -230,6 +285,49 @@ static int rpmpd_power_off(struct generic_pm_domain *domain)
- 	return ret;
- }
- 
-+static int rpmpd_set_performance(struct generic_pm_domain *domain,
-+			     unsigned int state)
-+{
-+	int ret = 0;
-+	struct rpmpd *pd = domain_to_rpmpd(domain);
-+
-+	mutex_lock(&rpmpd_lock);
-+
-+	pd->corner = state;
-+
-+	if (!pd->enabled && (pd->key != KEY_FLOOR_CORNER))
-+		goto out;
-+
-+	ret = rpmpd_aggregate_corner(pd);
-+
-+out:
-+	mutex_unlock(&rpmpd_lock);
-+
-+	return ret;
-+}
-+
-+
-+static int rpmpd_get_performance(struct device *dev, unsigned long rate)
-+{
-+	int i;
-+	unsigned long index;
-+	const struct of_device_id *id;
-+
-+	if (!rate)
-+		return 0;
-+
-+	id = of_match_device(rpmpd_performance_table, dev);
-+	if (!id)
-+		return -EINVAL;
-+
-+	index = (unsigned long)id->data;
-+	for (i = 0; i < MAX_LEVEL; i++)
-+		if (msm8996_rpmpd_freq_map[index].freq[i] >= rate)
-+			return i;
-+
-+	return MAX_LEVEL;
-+}
-+
- static int rpmpd_probe(struct platform_device *pdev)
- {
- 	int i;
-@@ -267,6 +365,8 @@ static int rpmpd_probe(struct platform_device *pdev)
- 		rpmpds[i]->rpm = rpm;
- 		rpmpds[i]->pd.power_off = rpmpd_power_off;
- 		rpmpds[i]->pd.power_on = rpmpd_power_on;
-+		rpmpds[i]->pd.genpd_set_performance_state = rpmpd_set_performance;
-+		rpmpds[i]->pd.dev_get_performance_state = rpmpd_get_performance;
- 		pm_genpd_init(&rpmpds[i]->pd, NULL, true);
- 
- 		data->domains[i] = &rpmpds[i]->pd;
+ static const struct of_device_id rpmpd_performance_table[] = {
 -- 
 2.7.4
