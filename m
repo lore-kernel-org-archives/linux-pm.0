@@ -1,118 +1,98 @@
 From: Jeremy Linton <jeremy.linton@arm.com>
-Subject: [PATCH v2 4/6] Topology: Add cluster on die macros and arm64 decoding
-Date: Tue, 19 Sep 2017 13:47:49 -0500
-Message-ID: <20170919184751.25110-5-jeremy.linton@arm.com>
-References: <20170919184751.25110-1-jeremy.linton@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170919184751.25110-1-jeremy.linton@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH v2 0/6] Support PPTT for ARM64
+Date: Tue, 19 Sep 2017 13:47:45 -0500
+Message-ID: <20170919184751.25110-1-jeremy.linton@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-acpi@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, mturquette@baylibre.com, sboyd@codeaurora.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jeremy Linton <jeremy.linton@arm.com>
+Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, jhugo@codeaurora.org, rjw@rjwysocki.net, mturquette@baylibre.com, linux-pm@vger.kernel.org, will.deacon@arm.com, linux-kernel@vger.kernel.org, Jeremy Linton <jeremy.linton@arm.com>, linux-clk@vger.kernel.org, wangxiongfeng2@huawei.com, viresh.kumar@linaro.org, hanjun.guo@linaro.org, ahs3@redhat.com, sudeep.holla@arm.com, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Many modern machines have cluster on die (COD) non-uniformity
-as well as the traditional multi-socket architectures. Reusing
-the multi-socket or NUMA on die concepts for these (as arm64 does)
-breaks down when presented with actual multi-socket/COD machines.
-Similar, problems are also visible on some x86 machines so it
-seems appropriate to start abstracting and making these topologies
-visible.
+ACPI 6.2 adds the Processor Properties Topology Table (PPTT), which is
+used to describe the processor and cache topology. Ideally it is
+used to extend/override information provided by the hardware, but
+right now ARM64 is entirely dependent on firmware provided tables.
 
-To start, a topology_cod_id() macro is added which defaults to returning
-the same information as topology_physical_package_id(). Moving forward
-we can start to spit out the differences.
+This patch parses the table for the cache topology and CPU topology.
+For the latter we also add an additional topology_cod_id() macro,
+and a package_id for arm64. Initially the physical id will match
+the cluster id, but we update users of the cluster to utilize
+the new macro. When we enable ACPI/PPTT for arm64 we map the socket
+to the physical id as the remainder of the kernel expects.
 
-For arm64, an additional package_id is added to the cpu_topology array.
-Initially this will be equal to the cluster_id as well.
+For example on juno:
+[root@mammon-juno-rh topology]# lstopo-no-graphics
+  Package L#0
+    L2 L#0 (1024KB)
+      L1d L#0 (32KB) + L1i L#0 (32KB) + Core L#0 + PU L#0 (P#0)
+      L1d L#1 (32KB) + L1i L#1 (32KB) + Core L#1 + PU L#1 (P#1)
+      L1d L#2 (32KB) + L1i L#2 (32KB) + Core L#2 + PU L#2 (P#2)
+      L1d L#3 (32KB) + L1i L#3 (32KB) + Core L#3 + PU L#3 (P#3)
+    L2 L#1 (2048KB)
+      L1d L#4 (32KB) + L1i L#4 (48KB) + Core L#4 + PU L#4 (P#4)
+      L1d L#5 (32KB) + L1i L#5 (48KB) + Core L#5 + PU L#5 (P#5)
+  HostBridge L#0
+    PCIBridge
+      PCIBridge
+        PCIBridge
+          PCI 1095:3132
+            Block(Disk) L#0 "sda"
+        PCIBridge
+          PCI 1002:68f9
+            GPU L#1 "renderD128"
+            GPU L#2 "card0"
+            GPU L#3 "controlD64"
+        PCIBridge
+          PCI 11ab:4380
+            Net L#4 "enp8s0"
 
-Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
----
- arch/arm64/include/asm/topology.h | 4 +++-
- arch/arm64/kernel/topology.c      | 8 ++++++--
- include/linux/topology.h          | 3 +++
- 3 files changed, 12 insertions(+), 3 deletions(-)
+v1->v2:
 
-diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
-index 8b57339823e9..bd7517960d39 100644
---- a/arch/arm64/include/asm/topology.h
-+++ b/arch/arm64/include/asm/topology.h
-@@ -7,13 +7,15 @@ struct cpu_topology {
- 	int thread_id;
- 	int core_id;
- 	int cluster_id;
-+	int package_id;
- 	cpumask_t thread_sibling;
- 	cpumask_t core_sibling;
- };
- 
- extern struct cpu_topology cpu_topology[NR_CPUS];
- 
--#define topology_physical_package_id(cpu)	(cpu_topology[cpu].cluster_id)
-+#define topology_physical_package_id(cpu)	(cpu_topology[cpu].package_id)
-+#define topology_cod_id(cpu)		(cpu_topology[cpu].cluster_id)
- #define topology_core_id(cpu)		(cpu_topology[cpu].core_id)
- #define topology_core_cpumask(cpu)	(&cpu_topology[cpu].core_sibling)
- #define topology_sibling_cpumask(cpu)	(&cpu_topology[cpu].thread_sibling)
-diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index 8d48b233e6ce..9147e5b6326d 100644
---- a/arch/arm64/kernel/topology.c
-+++ b/arch/arm64/kernel/topology.c
-@@ -67,6 +67,8 @@ static int __init parse_core(struct device_node *core, int cluster_id,
- 			leaf = false;
- 			cpu = get_cpu_for_node(t);
- 			if (cpu >= 0) {
-+				/* maintain DT cluster == package behavior */
-+				cpu_topology[cpu].package_id = cluster_id;
- 				cpu_topology[cpu].cluster_id = cluster_id;
- 				cpu_topology[cpu].core_id = core_id;
- 				cpu_topology[cpu].thread_id = i;
-@@ -88,7 +90,7 @@ static int __init parse_core(struct device_node *core, int cluster_id,
- 			       core);
- 			return -EINVAL;
- 		}
--
-+		cpu_topology[cpu].package_id = cluster_id;
- 		cpu_topology[cpu].cluster_id = cluster_id;
- 		cpu_topology[cpu].core_id = core_id;
- 	} else if (leaf) {
-@@ -228,7 +230,7 @@ static void update_siblings_masks(unsigned int cpuid)
- 	for_each_possible_cpu(cpu) {
- 		cpu_topo = &cpu_topology[cpu];
- 
--		if (cpuid_topo->cluster_id != cpu_topo->cluster_id)
-+		if (cpuid_topo->package_id != cpu_topo->package_id)
- 			continue;
- 
- 		cpumask_set_cpu(cpuid, &cpu_topo->core_sibling);
-@@ -273,6 +275,7 @@ void store_cpu_topology(unsigned int cpuid)
- 					 MPIDR_AFFINITY_LEVEL(mpidr, 2) << 8 |
- 					 MPIDR_AFFINITY_LEVEL(mpidr, 3) << 16;
- 	}
-+	cpuid_topo->package_id = cpuid_topo->cluster_id;
- 
- 	pr_debug("CPU%u: cluster %d core %d thread %d mpidr %#016llx\n",
- 		 cpuid, cpuid_topo->cluster_id, cpuid_topo->core_id,
-@@ -292,6 +295,7 @@ static void __init reset_cpu_topology(void)
- 		cpu_topo->thread_id = -1;
- 		cpu_topo->core_id = 0;
- 		cpu_topo->cluster_id = -1;
-+		cpu_topo->package_id = -1;
- 
- 		cpumask_clear(&cpu_topo->core_sibling);
- 		cpumask_set_cpu(cpu, &cpu_topo->core_sibling);
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index cb0775e1ee4b..4660749a7303 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -184,6 +184,9 @@ static inline int cpu_to_mem(int cpu)
- #ifndef topology_physical_package_id
- #define topology_physical_package_id(cpu)	((void)(cpu), -1)
- #endif
-+#ifndef topology_cod_id				/* cluster on die */
-+#define topology_cod_id(cpu)			topology_physical_package_id(cpu)
-+#endif
- #ifndef topology_core_id
- #define topology_core_id(cpu)			((void)(cpu), 0)
- #endif
+The parser keys off the acpi_pptt_processor node to determine
+  unique cache's rather than the acpi_pptt_cache referenced by the
+  processor node. This allows PPTT tables which "share" cache nodes
+  across cpu nodes despite not being a shared cache.
+
+Normalize the socket, cluster and thread mapping so that they match
+  linux's traditional mapping for the physical id, and thread id.
+  Adding explicit scheduler knowledge of clusters (rather than just
+  their cache sharing attributes) is a subject for a future patch.
+
+Jeremy Linton (6):
+  ACPI/PPTT: Add Processor Properties Topology Table parsing
+  ACPI: Enable PPTT support on ARM64
+  drivers: base: cacheinfo: arm64: Add support for ACPI based firmware
+    tables
+  Topology: Add cluster on die macros and arm64 decoding
+  arm64: Fixup users of topology_physical_package_id
+  arm64: topology: Enable ACPI/PPTT based CPU topology.
+
+ arch/arm64/Kconfig                |   1 +
+ arch/arm64/include/asm/topology.h |   4 +-
+ arch/arm64/kernel/cacheinfo.c     |  23 +-
+ arch/arm64/kernel/topology.c      |  62 ++++-
+ drivers/acpi/Makefile             |   1 +
+ drivers/acpi/arm64/Kconfig        |   3 +
+ drivers/acpi/pptt.c               | 459 ++++++++++++++++++++++++++++++++++++++
+ drivers/base/cacheinfo.c          |  17 +-
+ drivers/clk/clk-mb86s7x.c         |   2 +-
+ drivers/cpufreq/arm_big_little.c  |   2 +-
+ drivers/firmware/psci_checker.c   |   2 +-
+ include/linux/cacheinfo.h         |  10 +-
+ include/linux/topology.h          |   4 +
+ 13 files changed, 570 insertions(+), 20 deletions(-)
+ create mode 100644 drivers/acpi/pptt.c
+
 -- 
 2.13.5
