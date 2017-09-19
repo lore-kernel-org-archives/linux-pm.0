@@ -1,135 +1,226 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V10 2/7] PM / OPP: Support updating performance state of device's power domains
-Date: Tue, 19 Sep 2017 15:32:18 -0700
-Message-ID: <8850bb5088dc6fec4463247b0ec5040ce6415f2d.1505859768.git.viresh.kumar@linaro.org>
+Subject: [PATCH V10 6/7] mmc: sdhci-msm: Adapt the driver to use OPPs to set clocks/performance state
+Date: Tue, 19 Sep 2017 15:32:22 -0700
+Message-ID: <a68f6fab6c90a13ffb2e565599ceeeae6c51aa35.1505859768.git.viresh.kumar@linaro.org>
 References: <cover.1505859768.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f54.google.com ([74.125.83.54]:53637 "EHLO
+        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751710AbdISWcr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Sep 2017 18:32:47 -0400
+Received: by mail-pg0-f54.google.com with SMTP id j70so600673pgc.10
+        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2017 15:32:46 -0700 (PDT)
 In-Reply-To: <cover.1505859768.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1505859768.git.viresh.kumar@linaro.org>
 References: <cover.1505859768.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-The genpd framework now provides an API to request device's power
-domain to update its performance state based on a particular target
-frequency for the device.
+From: Rajendra Nayak <rnayak@codeaurora.org>
 
-Use that interface from the OPP core for devices whose power domains
-support performance states.
+THIS IS TEST CODE, SHOULDN'T BE MERGED.
 
-Note that the current implementation is restricted to the case where the
-device doesn't have separate regulators for itself. We shouldn't
-over engineer the code before we have real use case for them. We can
-always come back and add more code to support such cases later on.
+SDHCI driver needs to set a performance state along with scaling its
+clocks. Modify the driver to use the newly introducded powerdomain
+performance state based OPPs to scale clocks as well as set an
+appropriate powerdomain performance state.
 
-Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+The patch also adds OPPs for sdhci device on msm8996.
+
+The changes have to be validated by populating similar OPP tables
+on all other devices which use the sdhci driver. This is for now
+validated only on msm8996 and with missing OPP tables for other
+devices is known to break those platforms.
+
+Not-signed-off-by: Rajendra Nayak <rnayak@codeaurora.org>
+Not-signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/base/power/opp/core.c | 48 ++++++++++++++++++++++++++++++++++++++++++-
- drivers/base/power/opp/opp.h  |  2 ++
- 2 files changed, 49 insertions(+), 1 deletion(-)
+ arch/arm64/boot/dts/qcom/msm8996.dtsi | 34 ++++++++++++++++++++++++++++++
+ drivers/clk/qcom/gcc-msm8996.c        |  8 +++----
+ drivers/mmc/host/sdhci-msm.c          | 39 ++++++++++++++++++++++++++---------
+ 3 files changed, 67 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index a8cc14fd8ae4..4360b4efcd4c 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -19,6 +19,7 @@
+diff --git a/arch/arm64/boot/dts/qcom/msm8996.dtsi b/arch/arm64/boot/dts/qcom/msm8996.dtsi
+index 0be1db559d61..71183c009c58 100644
+--- a/arch/arm64/boot/dts/qcom/msm8996.dtsi
++++ b/arch/arm64/boot/dts/qcom/msm8996.dtsi
+@@ -515,8 +515,42 @@
+ 			 <&gcc GCC_SDCC2_APPS_CLK>,
+ 			 <&xo_board>;
+ 			 bus-width = <4>;
++			power-domains = <&rpmpd 0>;
++			operating-points-v2 = <&sdhc_opp_table>;
+ 		 };
+ 
++		sdhc_opp_table: opp_table {
++			compatible = "operating-points-v2";
++
++			opp@400000 {
++				opp-hz = /bits/ 64 <400000>;
++			};
++
++			opp@20000000 {
++				opp-hz = /bits/ 64 <20000000>;
++			};
++
++			opp@25000000 {
++				opp-hz = /bits/ 64 <25000000>;
++			};
++
++			opp@50000000 {
++				opp-hz = /bits/ 64 <50000000>;
++			};
++
++			opp@96000000 {
++				opp-hz = /bits/ 64 <96000000>;
++			};
++
++			opp@192000000 {
++				opp-hz = /bits/ 64 <192000000>;
++			};
++
++			opp@384000000 {
++				opp-hz = /bits/ 64 <384000000>;
++			};
++		};
++
+ 		msmgpio: pinctrl@1010000 {
+ 			compatible = "qcom,msm8996-pinctrl";
+ 			reg = <0x01010000 0x300000>;
+diff --git a/drivers/clk/qcom/gcc-msm8996.c b/drivers/clk/qcom/gcc-msm8996.c
+index 7ddec886fcd3..38034692f5aa 100644
+--- a/drivers/clk/qcom/gcc-msm8996.c
++++ b/drivers/clk/qcom/gcc-msm8996.c
+@@ -460,7 +460,7 @@ static struct clk_rcg2 sdcc1_apps_clk_src = {
+ 		.name = "sdcc1_apps_clk_src",
+ 		.parent_names = gcc_xo_gpll0_gpll4_gpll0_early_div,
+ 		.num_parents = 4,
+-		.ops = &clk_rcg2_floor_ops,
++		.ops = &clk_rcg2_ops,
+ 	},
+ };
+ 
+@@ -505,7 +505,7 @@ static struct clk_rcg2 sdcc2_apps_clk_src = {
+ 		.name = "sdcc2_apps_clk_src",
+ 		.parent_names = gcc_xo_gpll0_gpll4,
+ 		.num_parents = 3,
+-		.ops = &clk_rcg2_floor_ops,
++		.ops = &clk_rcg2_ops,
+ 	},
+ };
+ 
+@@ -519,7 +519,7 @@ static struct clk_rcg2 sdcc3_apps_clk_src = {
+ 		.name = "sdcc3_apps_clk_src",
+ 		.parent_names = gcc_xo_gpll0_gpll4,
+ 		.num_parents = 3,
+-		.ops = &clk_rcg2_floor_ops,
++		.ops = &clk_rcg2_ops,
+ 	},
+ };
+ 
+@@ -543,7 +543,7 @@ static struct clk_rcg2 sdcc4_apps_clk_src = {
+ 		.name = "sdcc4_apps_clk_src",
+ 		.parent_names = gcc_xo_gpll0,
+ 		.num_parents = 2,
+-		.ops = &clk_rcg2_floor_ops,
++		.ops = &clk_rcg2_ops,
+ 	},
+ };
+ 
+diff --git a/drivers/mmc/host/sdhci-msm.c b/drivers/mmc/host/sdhci-msm.c
+index fc73e56eb1e2..cbc5a12af772 100644
+--- a/drivers/mmc/host/sdhci-msm.c
++++ b/drivers/mmc/host/sdhci-msm.c
+@@ -21,6 +21,7 @@
+ #include <linux/pm_runtime.h>
  #include <linux/slab.h>
- #include <linux/device.h>
- #include <linux/export.h>
-+#include <linux/pm_domain.h>
- #include <linux/regulator/consumer.h>
+ #include <linux/iopoll.h>
++#include <linux/pm_opp.h>
  
- #include "opp.h"
-@@ -535,6 +536,42 @@ _generic_set_opp_clk_only(struct device *dev, struct clk *clk,
- 	return ret;
- }
+ #include "sdhci-pltfm.h"
  
-+static inline int
-+_generic_set_opp_domain(struct device *dev, struct clk *clk,
-+			unsigned long old_freq, unsigned long freq)
-+{
-+	int ret;
-+
-+	/* Scaling up? Scale domain performance state before frequency */
-+	if (freq > old_freq) {
-+		ret = dev_pm_genpd_update_performance_state(dev, freq);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
-+	if (ret)
-+		goto restore_domain_state;
-+
-+	/* Scaling down? Scale domain performance state after frequency */
-+	if (freq < old_freq) {
-+		ret = dev_pm_genpd_update_performance_state(dev, freq);
-+		if (ret)
-+			goto restore_freq;
-+	}
-+
-+	return 0;
-+
-+restore_freq:
-+	if (_generic_set_opp_clk_only(dev, clk, freq, old_freq))
-+		dev_err(dev, "%s: failed to restore old-freq (%lu Hz)\n",
-+			__func__, old_freq);
-+restore_domain_state:
-+	dev_pm_genpd_update_performance_state(dev, old_freq);
-+
-+	return ret;
-+}
-+
- static int _generic_set_opp_regulator(const struct opp_table *opp_table,
- 				      struct device *dev,
- 				      unsigned long old_freq,
-@@ -653,7 +690,14 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+@@ -131,6 +132,7 @@ struct sdhci_msm_host {
+ 	struct clk *pclk;	/* SDHC peripheral bus clock */
+ 	struct clk *bus_clk;	/* SDHC bus voter clock */
+ 	struct clk *xo_clk;	/* TCXO clk needed for FLL feature of cm_dll*/
++	struct opp_table *opp_table;
+ 	unsigned long clk_rate;
+ 	struct mmc_host *mmc;
+ 	bool use_14lpp_dll_reset;
+@@ -140,7 +142,7 @@ struct sdhci_msm_host {
+ 	bool use_cdclp533;
+ };
  
- 	/* Only frequency scaling */
- 	if (!opp_table->regulators) {
--		ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
-+		/*
-+		 * We don't support devices with both regulator and
-+		 * domain performance-state for now.
-+		 */
-+		if (opp_table->genpd_performance_state)
-+			ret = _generic_set_opp_domain(dev, clk, old_freq, freq);
-+		else
-+			ret = _generic_set_opp_clk_only(dev, clk, old_freq, freq);
- 	} else if (!opp_table->set_opp) {
- 		ret = _generic_set_opp_regulator(opp_table, dev, old_freq, freq,
- 						 IS_ERR(old_opp) ? NULL : old_opp->supplies,
-@@ -755,6 +799,8 @@ static struct opp_table *_allocate_opp_table(struct device *dev)
- 				ret);
+-static unsigned int msm_get_clock_rate_for_bus_mode(struct sdhci_host *host,
++static long unsigned int msm_get_clock_rate_for_bus_mode(struct sdhci_host *host,
+ 						    unsigned int clock)
+ {
+ 	struct mmc_ios ios = host->mmc->ios;
+@@ -165,16 +167,22 @@ static void msm_set_clock_rate_for_bus_mode(struct sdhci_host *host,
+ 	struct sdhci_msm_host *msm_host = sdhci_pltfm_priv(pltfm_host);
+ 	struct mmc_ios curr_ios = host->mmc->ios;
+ 	int rc;
++	struct device *dev = &msm_host->pdev->dev;
++	struct dev_pm_opp *opp;
++	long unsigned int freq;
++
++	freq = msm_get_clock_rate_for_bus_mode(host, clock);
++	opp = dev_pm_opp_find_freq_floor(dev, &freq);
++	if (IS_ERR(opp))
++		pr_err("%s: failed to find OPP for %u at timing %d\n",
++				mmc_hostname(host->mmc), clock, curr_ios.timing);
++
++	rc = dev_pm_opp_set_rate(dev, freq);
++	if (rc)
++		pr_err("%s: error in setting opp\n", __func__);
++
++	msm_host->clk_rate = freq;
+ 
+-	clock = msm_get_clock_rate_for_bus_mode(host, clock);
+-	rc = clk_set_rate(msm_host->clk, clock);
+-	if (rc) {
+-		pr_err("%s: Failed to set clock at rate %u at timing %d\n",
+-		       mmc_hostname(host->mmc), clock,
+-		       curr_ios.timing);
+-		return;
+-	}
+-	msm_host->clk_rate = clock;
+ 	pr_debug("%s: Setting clock at rate %lu at timing %d\n",
+ 		 mmc_hostname(host->mmc), clk_get_rate(msm_host->clk),
+ 		 curr_ios.timing);
+@@ -1268,6 +1276,13 @@ static int sdhci_msm_probe(struct platform_device *pdev)
+ 		goto clk_disable;
  	}
  
-+	opp_table->genpd_performance_state = dev_pm_genpd_has_performance_state(dev);
++	/* Set up the OPP table */
++	msm_host->opp_table = dev_pm_opp_set_clkname(&pdev->dev, "core");
 +
- 	BLOCKING_INIT_NOTIFIER_HEAD(&opp_table->head);
- 	INIT_LIST_HEAD(&opp_table->opp_list);
- 	mutex_init(&opp_table->lock);
-diff --git a/drivers/base/power/opp/opp.h b/drivers/base/power/opp/opp.h
-index 166eef990599..1efa253e1934 100644
---- a/drivers/base/power/opp/opp.h
-+++ b/drivers/base/power/opp/opp.h
-@@ -135,6 +135,7 @@ enum opp_table_access {
-  * @clk: Device's clock handle
-  * @regulators: Supply regulators
-  * @regulator_count: Number of power supply regulators
-+ * @genpd_performance_state: Device's power domain support performance state.
-  * @set_opp: Platform specific set_opp callback
-  * @set_opp_data: Data to be passed to set_opp callback
-  * @dentry:	debugfs dentry pointer of the real device directory (not links).
-@@ -170,6 +171,7 @@ struct opp_table {
- 	struct clk *clk;
- 	struct regulator **regulators;
- 	unsigned int regulator_count;
-+	bool genpd_performance_state;
++	ret = dev_pm_opp_of_add_table(&pdev->dev);
++	if (ret)
++		dev_warn(&pdev->dev, "%s: No OPP table specified\n", __func__);
++
+ 	pm_runtime_get_noresume(&pdev->dev);
+ 	pm_runtime_set_active(&pdev->dev);
+ 	pm_runtime_enable(&pdev->dev);
+@@ -1289,6 +1304,8 @@ static int sdhci_msm_probe(struct platform_device *pdev)
+ 	pm_runtime_disable(&pdev->dev);
+ 	pm_runtime_set_suspended(&pdev->dev);
+ 	pm_runtime_put_noidle(&pdev->dev);
++	dev_pm_opp_of_remove_table(&pdev->dev);
++	dev_pm_opp_put_clkname(msm_host->opp_table);
+ clk_disable:
+ 	clk_disable_unprepare(msm_host->clk);
+ pclk_disable:
+@@ -1314,6 +1331,8 @@ static int sdhci_msm_remove(struct platform_device *pdev)
+ 	pm_runtime_get_sync(&pdev->dev);
+ 	pm_runtime_disable(&pdev->dev);
+ 	pm_runtime_put_noidle(&pdev->dev);
++	dev_pm_opp_of_remove_table(&pdev->dev);
++	dev_pm_opp_put_clkname(msm_host->opp_table);
  
- 	int (*set_opp)(struct dev_pm_set_opp_data *data);
- 	struct dev_pm_set_opp_data *set_opp_data;
+ 	clk_disable_unprepare(msm_host->clk);
+ 	clk_disable_unprepare(msm_host->pclk);
 -- 
 2.7.4
