@@ -1,67 +1,57 @@
-From: Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-Subject: Re: cpufreq(-dt) with two clocks but one regulator
-Date: Tue, 19 Sep 2017 11:19:45 +0200
-Message-ID: <2997079.BKPG7M6LVv@diego>
-References: <1515316.mHJbnBRRvK@phil> <2224473.GjtbWfbYHk@phil> <CAD=FV=W+rvgJuNO0gEPN02bYkkJt6i6um=YGjUoaKmyrFhhSiw@mail.gmail.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH] thermal: imx: add NVMEM dependency
+Date: Tue, 19 Sep 2017 13:53:14 +0300
+Message-ID: <1505818394.29684.13.camel@nxp.com>
+References: <20170918204825.159177-1-arnd@arndb.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from gloria.sntech.de ([95.129.55.99]:32792 "EHLO gloria.sntech.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750895AbdISJT4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 19 Sep 2017 05:19:56 -0400
-In-Reply-To: <CAD=FV=W+rvgJuNO0gEPN02bYkkJt6i6um=YGjUoaKmyrFhhSiw@mail.gmail.com>
+Received: from mail-sn1nam01on0063.outbound.protection.outlook.com ([104.47.32.63]:37275
+        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751205AbdISKxT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 19 Sep 2017 06:53:19 -0400
+In-Reply-To: <20170918204825.159177-1-arnd@arndb.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Anderson <dianders@chromium.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Klaus Goger <klaus.goger@theobroma-systems.com>, Vincent Guittot <vincent.guittot@linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Doug,
-
-Am Montag, 18. September 2017, 16:37:56 CEST schrieb Doug Anderson:
-> On Mon, Sep 18, 2017 at 3:40 PM, Heiko Stuebner <heiko@sntech.de> wrote:
-> > Current submitted OPPs can be found at
-> > https://patchwork.kernel.org/patch/9908519/
-> > 
-> > There were still issues with higher frequencies, so they don't list the
-> > 1.2 or 1.5GHz yet.
-> > 
-> > But opp sets pretty tight constraints. I.e. OPPs have of course one
-> > preferred voltage, so you end up with u_volt_min = u_volt_max for each
-> > operating point, thus the regulator also gets set in this way, removing
-> > any
-> > intersection and thus making the regulator framework fail to set a voltage
-> > for one of the clusters.
-> > 
-> > So for example, you have one cluster running at 600MHz@0.95V and the
-> > other cluster running at 1008MHz@1.05V this results in regulator
-> > constraints being
-> > 
-> >         0.95V-0.95V
-> > 
-> > and
-> > 
-> >         1.05V-1.05V
-> > 
-> > thus no intersection and whoever comes second looses.
+On Mon, 2017-09-18 at 22:48 +0200, Arnd Bergmann wrote:
+> The driver now fails to link into vmlinux when CONFIG_NVMEM is a loadable
+> module:
 > 
-> (Untested) Can't you change the opp table and use the fancier
-> operating point descriptions that give <target min max>?
+> drivers/thermal/imx_thermal.o: In function `imx_thermal_probe':
+> imx_thermal.c:(.text+0x360): undefined reference to
+> `nvmem_cell_read_u32'
+> imx_thermal.c:(.text+0x360): relocation truncated to fit:
+> R_AARCH64_CALL26 against undefined symbol `nvmem_cell_read_u32'
+> imx_thermal.c:(.text+0x388): undefined reference to
+> `nvmem_cell_read_u32'
+> imx_thermal.c:(.text+0x388): relocation truncated to fit:
+> R_AARCH64_CALL26 against undefined symbol `nvmem_cell_read_u32'
+> 
+> This adds a Kconfig dependency to force it to be a module as well
+> when its dependency is loadable.
 
-funny, that I never noticed that opps are also specified for
-(target, min, max) values.
+This must be a very strange config with NVMEM=m and IMX_THERMAL=y on
+arm64. Still, it makes sense that it should work at least at the
+Kconfig level.
 
-Thanks for pointing me to the right direction and this seems to
-actually work. Although I noticed that obviously the max value
-needs to always be the global maximum (1125000 here) for both
-opp tables, to make the regulator framework happy.
+> Fixes: 7fe5ba04fcdc ("thermal: imx: Add support for reading OCOTP through nvmem")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
+Reviewed-by: Leonard Crestez <leonard.crestez@nxp.com>
 
-> In theory the above is a more proper hardware description: AKA you're
-> describing that it's OK to use the higher voltage even at lower
-> operating points.
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 07002df4f83a..cb14f1ec5953 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -206,6 +206,7 @@ config HISI_THERMAL
+>  config IMX_THERMAL
+>  	tristate "Temperature sensor driver for Freescale i.MX SoCs"
+>  	depends on (ARCH_MXC && CPU_THERMAL) || COMPILE_TEST
+> +	depends on NVMEM || !NVMEM
 
-
-Thanks
-Heiko
+The || !NVMEM part is so that it also works when NVMEM=n, right?
