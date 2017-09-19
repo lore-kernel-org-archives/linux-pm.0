@@ -1,65 +1,71 @@
 From: Jeremy Linton <jeremy.linton@arm.com>
-Subject: [PATCH v2 5/6] arm64: Fixup users of topology_physical_package_id
-Date: Tue, 19 Sep 2017 13:47:50 -0500
-Message-ID: <20170919184751.25110-6-jeremy.linton@arm.com>
+Subject: [PATCH v2 2/6] ACPI: Enable PPTT support on ARM64
+Date: Tue, 19 Sep 2017 13:47:47 -0500
+Message-ID: <20170919184751.25110-3-jeremy.linton@arm.com>
 References: <20170919184751.25110-1-jeremy.linton@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <20170919184751.25110-1-jeremy.linton@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: linux-acpi@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, mturquette@baylibre.com, sboyd@codeaurora.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jeremy Linton <jeremy.linton@arm.com>
+Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, jhugo@codeaurora.org, rjw@rjwysocki.net, mturquette@baylibre.com, linux-pm@vger.kernel.org, will.deacon@arm.com, linux-kernel@vger.kernel.org, Jeremy Linton <jeremy.linton@arm.com>, linux-clk@vger.kernel.org, wangxiongfeng2@huawei.com, viresh.kumar@linaro.org, hanjun.guo@linaro.org, ahs3@redhat.com, sudeep.holla@arm.com, sboyd@codeaurora.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-There are a few arm64 specific users (cpufreq, psci, etc) which really
-want the cluster rather than the topology_physical_package_id(). Lets
-convert those users to topology_cod_id(). That way when we start
-differentiating the socket/cluster they will continue to behave correctly.
+Now that we have a PPTT parser, in preparation for its use
+on arm64, lets build it.
 
 Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
 ---
- drivers/clk/clk-mb86s7x.c        | 2 +-
- drivers/cpufreq/arm_big_little.c | 2 +-
- drivers/firmware/psci_checker.c  | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ arch/arm64/Kconfig         | 1 +
+ drivers/acpi/Makefile      | 1 +
+ drivers/acpi/arm64/Kconfig | 3 +++
+ 3 files changed, 5 insertions(+)
 
-diff --git a/drivers/clk/clk-mb86s7x.c b/drivers/clk/clk-mb86s7x.c
-index 2a83a3ff1d09..da4b456f9afc 100644
---- a/drivers/clk/clk-mb86s7x.c
-+++ b/drivers/clk/clk-mb86s7x.c
-@@ -338,7 +338,7 @@ static struct clk_hw *mb86s7x_clclk_register(struct device *cpu_dev)
- 		return ERR_PTR(-ENOMEM);
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 0df64a6a56d4..68c9d1289735 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -7,6 +7,7 @@ config ARM64
+ 	select ACPI_REDUCED_HARDWARE_ONLY if ACPI
+ 	select ACPI_MCFG if ACPI
+ 	select ACPI_SPCR_TABLE if ACPI
++	select ACPI_PPTT if ACPI
+ 	select ARCH_CLOCKSOURCE_DATA
+ 	select ARCH_HAS_DEBUG_VIRTUAL
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+index 90265ab4437a..c92a0c937551 100644
+--- a/drivers/acpi/Makefile
++++ b/drivers/acpi/Makefile
+@@ -85,6 +85,7 @@ obj-$(CONFIG_ACPI_BGRT)		+= bgrt.o
+ obj-$(CONFIG_ACPI_CPPC_LIB)	+= cppc_acpi.o
+ obj-$(CONFIG_ACPI_SPCR_TABLE)	+= spcr.o
+ obj-$(CONFIG_ACPI_DEBUGGER_USER) += acpi_dbg.o
++obj-$(CONFIG_ACPI_PPTT) 	+= pptt.o
  
- 	clc->hw.init = &init;
--	clc->cluster = topology_physical_package_id(cpu_dev->id);
-+	clc->cluster = topology_cod_id(cpu_dev->id);
+ # processor has its own "processor." module_param namespace
+ processor-y			:= processor_driver.o
+diff --git a/drivers/acpi/arm64/Kconfig b/drivers/acpi/arm64/Kconfig
+index 5a6f80fce0d6..74b855a669ea 100644
+--- a/drivers/acpi/arm64/Kconfig
++++ b/drivers/acpi/arm64/Kconfig
+@@ -7,3 +7,6 @@ config ACPI_IORT
  
- 	init.name = dev_name(cpu_dev);
- 	init.ops = &clk_clc_ops;
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 17504129fd77..6ee69b3820de 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -72,7 +72,7 @@ static struct mutex cluster_lock[MAX_CLUSTERS];
- 
- static inline int raw_cpu_to_cluster(int cpu)
- {
--	return topology_physical_package_id(cpu);
-+	return topology_cod_id(cpu);
- }
- 
- static inline int cpu_to_cluster(int cpu)
-diff --git a/drivers/firmware/psci_checker.c b/drivers/firmware/psci_checker.c
-index 6523ce962865..a9465f5d344a 100644
---- a/drivers/firmware/psci_checker.c
-+++ b/drivers/firmware/psci_checker.c
-@@ -202,7 +202,7 @@ static int hotplug_tests(void)
- 	 */
- 	for (i = 0; i < nb_cluster; ++i) {
- 		int cluster_id =
--			topology_physical_package_id(cpumask_any(clusters[i]));
-+			topology_cod_id(cpumask_any(clusters[i]));
- 		ssize_t len = cpumap_print_to_pagebuf(true, page_buf,
- 						      clusters[i]);
- 		/* Remove trailing newline. */
+ config ACPI_GTDT
+ 	bool
++
++config ACPI_PPTT
++	bool
+\ No newline at end of file
 -- 
 2.13.5
