@@ -1,58 +1,37 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: cpufreq_stats: make last_index signed int
-Date: Tue, 19 Sep 2017 11:54:47 -0700
-Message-ID: <20170919185447.GC30848@ubuntu>
-References: <1505506402-11497-1-git-send-email-byan@nvidia.com>
- <20170918015017.GC17030@ubuntu>
- <961bce0a-5162-5e8d-3474-5b2161cf92c4@nvidia.com>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [PATCH] cpufreq: ti-cpufreq: Support additional am43xx platforms
+Date: Tue, 19 Sep 2017 15:06:13 -0500
+Message-ID: <20170919200613.31625-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <961bce0a-5162-5e8d-3474-5b2161cf92c4@nvidia.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bo Yan <byan@nvidia.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Dave Gerlach <d-gerlach@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 18-09-17, 10:39, Bo Yan wrote:
-> Currently, the "last_index" is being checked before
-> cpufreq_stats_update(stats) inside function
-> "cpufreq_stats_record_transition", so it's taken care of.
-> 
-> However, the function "show_time_in_state" also calls cpufreq_stats_update,
-> the similar check should be done there too, like this:
+Rather than letting the ti-cpufreq driver match against 'ti,am4372'
+machine compatible during probe let's match against 'ti,am43' so that we
+can support both 'ti,am4372' and 'ti,am438x' platforms which both match
+to this compatible.
 
-Yeah, that's what I suggested.
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+---
+ drivers/cpufreq/ti-cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> diff --git a/drivers/cpufreq/cpufreq_stats.c
-> b/drivers/cpufreq/cpufreq_stats.c
-> index e75880eb037d..15305b5ec322 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -62,7 +62,8 @@ static ssize_t show_time_in_state(struct cpufreq_policy
-> *policy, char *buf)
->         if (policy->fast_switch_enabled)
->                 return 0;
-> 
-> -       cpufreq_stats_update(stats);
-> +       if ((int)stats->last_index >= 0)
-
-You can rather do:
-
-        if (stats->last_index != -1)
-
-> +               cpufreq_stats_update(stats);
->         for (i = 0; i < stats->state_num; i++) {
->                 len += sprintf(buf + len, "%u %llu\n", stats->freq_table[i],
->                         (unsigned long long)
-> 
-> 
-> This is only needed when policy->cur is not in frequency table when stats
-> table is created, in which case, stats->last_index will get -1, then user
-> does a "cat time_in_state" before any frequency transition.
-> 
-> Does this make sense?
-
+diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+index b29cd3398463..4bf47de6101f 100644
+--- a/drivers/cpufreq/ti-cpufreq.c
++++ b/drivers/cpufreq/ti-cpufreq.c
+@@ -190,7 +190,7 @@ static int ti_cpufreq_setup_syscon_register(struct ti_cpufreq_data *opp_data)
+ 
+ static const struct of_device_id ti_cpufreq_of_match[] = {
+ 	{ .compatible = "ti,am33xx", .data = &am3x_soc_data, },
+-	{ .compatible = "ti,am4372", .data = &am4x_soc_data, },
++	{ .compatible = "ti,am43", .data = &am4x_soc_data, },
+ 	{ .compatible = "ti,dra7", .data = &dra7_soc_data },
+ 	{},
+ };
 -- 
-viresh
+2.13.4
