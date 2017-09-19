@@ -1,51 +1,39 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 02/10] cpufreq: provide default frequency-invariance
- setter function
-Date: Tue, 19 Sep 2017 11:39:17 -0700
-Message-ID: <20170919183917.GC2792@ubuntu>
-References: <20170825143206.30467-1-dietmar.eggemann@arm.com>
- <20170825143206.30467-3-dietmar.eggemann@arm.com>
+Subject: Re: [1/2] cpufreq: dt-platdev: Automatically create cpufreq device
+ with OPP v2
+Date: Tue, 19 Sep 2017 11:46:35 -0700
+Message-ID: <20170919184635.GA30848@ubuntu>
+References: <20170821131332.GA14662@verge.net.au>
+ <20170821131735.GB14662@verge.net.au>
+ <20170829101146.GF3101@ubuntu>
+ <9f37e244-7c6d-d556-ee7c-a5f3c9d5f756@ti.com>
+ <7c607393-2a3d-1e5e-7b54-3745cee416e3@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f54.google.com ([74.125.83.54]:47811 "EHLO
-        mail-pg0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751074AbdISSjU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Sep 2017 14:39:20 -0400
-Received: by mail-pg0-f54.google.com with SMTP id d8so292938pgt.4
-        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2017 11:39:19 -0700 (PDT)
+Received: from mail-pf0-f179.google.com ([209.85.192.179]:56429 "EHLO
+        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751394AbdISSqh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Sep 2017 14:46:37 -0400
+Received: by mail-pf0-f179.google.com with SMTP id g65so254226pfe.13
+        for <linux-pm@vger.kernel.org>; Tue, 19 Sep 2017 11:46:37 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20170825143206.30467-3-dietmar.eggemann@arm.com>
+In-Reply-To: <7c607393-2a3d-1e5e-7b54-3745cee416e3@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: Keerthy <j-keerthy@ti.com>, Simon Horman <horms@verge.net.au>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, geert@linux-m68k.org, maxime.ripard@free-electrons.com, wens@csie.org, xuwei5@hisilicon.com, kgene@kernel.org, krzk@kernel.org, yamada.masahiro@socionext.com, jun.nie@linaro.org, baoyou.xie@linaro.org, linux-kernel@vger.kernel.org
 
-On 25-08-17, 15:31, Dietmar Eggemann wrote:
-> Frequency-invariant accounting support based on the ratio of current
-> frequency and maximum supported frequency is an optional feature an arch
-> can implement.
-> 
-> Since there are cpufreq drivers (e.g. cpufreq-dt) which can be build for
-> different arch's a default implementation of the frequency-invariance
-> setter function arch_set_freq_scale() is needed.
-> 
-> This default implementation is an empty weak function which will be
-> overwritten by a strong function in case the arch provides one.
-> 
-> The setter function passes the cpumask of related (to the frequency
-> change) cpus (online and offline cpus), the (new) current frequency and
-> the maximum supported frequency.
-> 
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> ---
->  drivers/cpufreq/cpufreq.c | 6 ++++++
->  include/linux/cpufreq.h   | 3 +++
->  2 files changed, 9 insertions(+)
+On 11-09-17, 09:18, Dave Gerlach wrote:
+> Yes, ti-cpufreq registers the cpufreq-dt platdev in order to ensure the
+> ti-cpufreq driver probes first and provides the necessary opp-supported-hw for
+> cpufreq-dt. This applies to am335x, am437x, dra7xx, and am57xx. I suppose these
+> platforms will need to be added to the 'blacklist' to prevent the cpufreq-dt
+> platdev from being created automatically, unless there is a better way to handle
+> this dependency...
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Right. Patches are already on the list to fix all platforms that had such
+issues.
 
 -- 
 viresh
