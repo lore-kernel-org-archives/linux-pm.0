@@ -1,35 +1,52 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] thermal: imx: add NVMEM dependency
-Date: Tue, 19 Sep 2017 14:22:36 +0200
-Message-ID: <CAK8P3a3=bGhjwvyMCEAz3UrBZmEst+XBFpAdYsyrr+ppHg2t7w@mail.gmail.com>
-References: <20170918204825.159177-1-arnd@arndb.de> <1505818394.29684.13.camel@nxp.com>
+From: Dave Gerlach <d-gerlach@ti.com>
+Subject: [PATCH] cpufreq: dt-platdev: Add devices covered by ti-cpufreq to blacklist
+Date: Tue, 19 Sep 2017 09:57:30 -0500
+Message-ID: <20170919145730.8981-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1505818394.29684.13.camel@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Shawn Guo <shawnguo@kernel.org>, linux-pm@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:18973 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750862AbdISO6L (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Sep 2017 10:58:11 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Dave Gerlach <d-gerlach@ti.com>
 
-On Tue, Sep 19, 2017 at 12:53 PM, Leonard Crestez
-<leonard.crestez@nxp.com> wrote:
-> On Mon, 2017-09-18 at 22:48 +0200, Arnd Bergmann wrote:
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index 07002df4f83a..cb14f1ec5953 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -206,6 +206,7 @@ config HISI_THERMAL
->>  config IMX_THERMAL
->>       tristate "Temperature sensor driver for Freescale i.MX SoCs"
->>       depends on (ARCH_MXC && CPU_THERMAL) || COMPILE_TEST
->> +     depends on NVMEM || !NVMEM
->
-> The || !NVMEM part is so that it also works when NVMEM=n, right?
+Commit edeec420de24 ("cpufreq: dt-platdev: Automatically create cpufreq
+device with OPP v2") causes a cpufreq-dt platform device to be
+automatically created for any platform with an OPP v2 node defined.
+However, ti-cpufreq registers the cpufreq-dt platdev at the end of probe
+in order to ensure the ti-cpufreq driver probes first and provides the
+necessary opp-supported-hw for cpufreq-dt. With this new patch now a
+dupluicate cpufreq-dt is created, which we do not want. To avoid this,
+add the platforms handled by ti-cpufreq to the blacklist provided in the
+aforementioned commit to allow ti-cpufreq to continue creating the
+cpufreq-dt platdev.
 
-Correct, this is a very strange Kconfig expression when you see it the
-first time, but we do the same thing in a lot of places that can either
-use another subsystem when it is enabled (but have a link-time
-dependency), or can work fine without it.
+This applies to am335x, am437x, dra7xx, and am57xx.
 
-      Arnd
+Fixes: edeec420de24 ("cpufreq: dt-cpufreq: platdev Automatically create device with OPP v2")
+Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index a020da7940d6..c6f554ba9bb3 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -106,6 +106,10 @@ static const struct of_device_id whitelist[] __initconst = {
+  * platforms using "operating-points-v2" property.
+  */
+ static const struct of_device_id blacklist[] __initconst = {
++	{ .compatible = "ti,am33xx", },
++	{ .compatible = "ti,am43", },
++	{ .compatible = "ti,dra7", },
++
+ 	{ }
+ };
+ 
+-- 
+2.13.4
