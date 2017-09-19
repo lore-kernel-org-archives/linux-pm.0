@@ -1,71 +1,117 @@
 From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH] cpufreq: dt-platdev: Add devices covered by ti-cpufreq to
- blacklist
-Date: Tue, 19 Sep 2017 10:08:00 -0500
-Message-ID: <95578149-903c-a063-ef75-3dae24646e97@ti.com>
-References: <20170919145730.8981-1-d-gerlach@ti.com>
- <CAKohpo=8BBdoxLEzBHqy=jtcxhfy_7SC4Ez-qjPNoQWz=pN4qA@mail.gmail.com>
+Subject: Re: [PATCH v2] drivers: cpufreq: Fix sysfs duplicate filename
+ creation for platform-device
+Date: Tue, 19 Sep 2017 10:12:13 -0500
+Message-ID: <8a57f05a-598f-440e-f8d0-ddde5627d075@ti.com>
+References: <20170918011503.GA17030@ubuntu>
+ <1505762285-16161-1-git-send-email-sunil.m@techveda.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <CAKohpo=8BBdoxLEzBHqy=jtcxhfy_7SC4Ez-qjPNoQWz=pN4qA@mail.gmail.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1505762285-16161-1-git-send-email-sunil.m@techveda.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: sunil.m@techveda.org, viresh.kumar@linaro.org
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, karthik@techveda.org
 List-Id: linux-pm@vger.kernel.org
 
-On 09/19/2017 10:02 AM, Viresh Kumar wrote:
-> On 19 September 2017 at 07:57, Dave Gerlach <d-gerlach@ti.com> wrote:
->> Commit edeec420de24 ("cpufreq: dt-platdev: Automatically create cpufreq
->> device with OPP v2") causes a cpufreq-dt platform device to be
->> automatically created for any platform with an OPP v2 node defined.
->> However, ti-cpufreq registers the cpufreq-dt platdev at the end of probe
->> in order to ensure the ti-cpufreq driver probes first and provides the
->> necessary opp-supported-hw for cpufreq-dt. With this new patch now a
->> dupluicate cpufreq-dt is created, which we do not want. To avoid this,
->> add the platforms handled by ti-cpufreq to the blacklist provided in the
->> aforementioned commit to allow ti-cpufreq to continue creating the
->> cpufreq-dt platdev.
->>
->> This applies to am335x, am437x, dra7xx, and am57xx.
->>
->> Fixes: edeec420de24 ("cpufreq: dt-cpufreq: platdev Automatically create device with OPP v2")
->> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
->> ---
->>  drivers/cpufreq/cpufreq-dt-platdev.c | 4 ++++
->>  1 file changed, 4 insertions(+)
->>
->> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
->> index a020da7940d6..c6f554ba9bb3 100644
->> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
->> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
->> @@ -106,6 +106,10 @@ static const struct of_device_id whitelist[] __initconst = {
->>   * platforms using "operating-points-v2" property.
->>   */
->>  static const struct of_device_id blacklist[] __initconst = {
->> +       { .compatible = "ti,am33xx", },
->> +       { .compatible = "ti,am43", },
->> +       { .compatible = "ti,dra7", },
->> +
->>         { }
->>  };
+Hi,
+On 09/18/2017 02:18 PM, sunil.m@techveda.org wrote:
+> From: Suniel Mahesh <sunil.m@techveda.org>
 > 
-> Perhaps you should ask Sunil to improve his patch.
+> ti-cpufreq and cpufreq-dt-platdev drivers are registering platform-device
+> with same name "cpufreq-dt" using platform_device_register_*() routines.
+> This is leading to build warnings appended below.
 > 
-> https://marc.info/?l=linux-kernel&m=150576233031387&w=2
+> Providing hardware information to OPP framework along with the platform-
+> device creation should be done by ti-cpufreq driver before cpufreq-dt
+> driver comes into place.
 > 
+> This patch add's TI SoC am33xx (uses opp-v2 property) in the blacklist of
+> devices in cpufreq-dt-platform driver to avoid creating platform-device
+> twice and remove build warnings (suggested by Viresh Kumar).
 
-Ah, did not see that. Somebody added me to a thread last week about this and I
-just got around to making a fix now, I will jump on to that thread thanks.
+This looks good to me, but this also affects "ti,am43" and "ti,dra7" platforms,
+care to add those to the blacklist as well with this patch? Thanks.
 
 Regards,
 Dave
+
+> 
+> [    2.370167] ------------[ cut here ]------------
+> [    2.375087] WARNING: CPU: 0 PID: 1 at fs/sysfs/dir.c:31 sysfs_warn_dup+0x58/0x78
+> [    2.383112] sysfs: cannot create duplicate filename '/devices/platform/cpufreq-dt'
+> [    2.391219] Modules linked in:
+> [    2.394506] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.13.0-next-20170912 #1
+> [    2.402006] Hardware name: Generic AM33XX (Flattened Device Tree)
+> [    2.408437] [<c0110a28>] (unwind_backtrace) from [<c010ca84>] (show_stack+0x10/0x14)
+> [    2.416568] [<c010ca84>] (show_stack) from [<c0827d64>] (dump_stack+0xac/0xe0)
+> [    2.424165] [<c0827d64>] (dump_stack) from [<c0137470>] (__warn+0xd8/0x104)
+> [    2.431488] [<c0137470>] (__warn) from [<c01374d0>] (warn_slowpath_fmt+0x34/0x44)
+> [    2.439351] [<c01374d0>] (warn_slowpath_fmt) from [<c03459d0>] (sysfs_warn_dup+0x58/0x78)
+> [    2.447938] [<c03459d0>] (sysfs_warn_dup) from [<c0345ab8>] (sysfs_create_dir_ns+0x80/0x98)
+> [    2.456719] [<c0345ab8>] (sysfs_create_dir_ns) from [<c082c554>] (kobject_add_internal+0x9c/0x2d4)
+> [    2.466124] [<c082c554>] (kobject_add_internal) from [<c082c7d8>] (kobject_add+0x4c/0x9c)
+> [    2.474712] [<c082c7d8>] (kobject_add) from [<c05803e4>] (device_add+0xcc/0x57c)
+> [    2.482489] [<c05803e4>] (device_add) from [<c0584b74>] (platform_device_add+0x100/0x220)
+> [    2.491085] [<c0584b74>] (platform_device_add) from [<c05855a8>] (platform_device_register_full+0xf4/0x118)
+> [    2.501305] [<c05855a8>] (platform_device_register_full) from [<c067023c>] (ti_cpufreq_init+0x150/0x22c)
+> [    2.511253] [<c067023c>] (ti_cpufreq_init) from [<c0101df4>] (do_one_initcall+0x3c/0x170)
+> [    2.519838] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>] (kernel_init_freeable+0x1fc/0x2c4)
+> [    2.528974] [<c0c00eb4>] (kernel_init_freeable) from [<c083bcac>] (kernel_init+0x8/0x110)
+> [    2.537565] [<c083bcac>] (kernel_init) from [<c0107d18>] (ret_from_fork+0x14/0x3c)
+> [    2.545981] ---[ end trace 2fc00e213c13ab20 ]---
+> [    2.551051] ------------[ cut here ]------------
+> [    2.555931] WARNING: CPU: 0 PID: 1 at lib/kobject.c:240 kobject_add_internal+0x254/0x2d4
+> [    2.564578] kobject_add_internal failed for cpufreq-dt with -EEXIST, don't try to register
+> things with the same name in the same directory.
+> [    2.577977] Modules linked in:
+> [    2.581261] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G        W       4.13.0-next-20170912 #1
+> [    2.590013] Hardware name: Generic AM33XX (Flattened Device Tree)
+> [    2.596437] [<c0110a28>] (unwind_backtrace) from [<c010ca84>] (show_stack+0x10/0x14)
+> [    2.604573] [<c010ca84>] (show_stack) from [<c0827d64>] (dump_stack+0xac/0xe0)
+> [    2.612172] [<c0827d64>] (dump_stack) from [<c0137470>] (__warn+0xd8/0x104)
+> [    2.619494] [<c0137470>] (__warn) from [<c01374d0>] (warn_slowpath_fmt+0x34/0x44)
+> [    2.627362] [<c01374d0>] (warn_slowpath_fmt) from [<c082c70c>] (kobject_add_internal+0x254/0x2d4)
+> [    2.636666] [<c082c70c>] (kobject_add_internal) from [<c082c7d8>] (kobject_add+0x4c/0x9c)
+> [    2.645255] [<c082c7d8>] (kobject_add) from [<c05803e4>] (device_add+0xcc/0x57c)
+> [    2.653027] [<c05803e4>] (device_add) from [<c0584b74>] (platform_device_add+0x100/0x220)
+> [    2.661615] [<c0584b74>] (platform_device_add) from [<c05855a8>] (platform_device_register_full+0xf4/0x118)
+> [    2.671833] [<c05855a8>] (platform_device_register_full) from [<c067023c>] (ti_cpufreq_init+0x150/0x22c)
+> [    2.681779] [<c067023c>] (ti_cpufreq_init) from [<c0101df4>] (do_one_initcall+0x3c/0x170)
+> [    2.690377] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>] (kernel_init_freeable+0x1fc/0x2c4)
+> [    2.699510] [<c0c00eb4>] (kernel_init_freeable) from [<c083bcac>] (kernel_init+0x8/0x110)
+> [    2.708106] [<c083bcac>] (kernel_init) from [<c0107d18>] (ret_from_fork+0x14/0x3c)
+> [    2.716217] ---[ end trace 2fc00e213c13ab21 ]---
+> 
+> Fixes: edeec420de24 ("cpufreq: dt-cpufreq: platdev Automatically create device with OPP v2")
+> Signed-off-by: Suniel Mahesh <sunil.m@techveda.org>
+> ---
+> Changes for v2:
+> - The approach (as a result patch decsription) was changed as per
+>   inputs given by Viresh.
+> - Patch was compile tested and built(ARCH=arm) on next-20170918.
+> ---
+> Note:
+> - Patch was hardware tested on AM335x SOC based board.
+> - cpufreq-dt driver got probed and entries related to Dynamic Voltage
+>   and Frequency scaling were created in
+>   sysfs @ sys/devices/system/cpu/cpu0/cpufreq.
+> - No build/run-time issues reported.
+> ---
+>  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+> index a020da7..61fe7ee 100644
+> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
+> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+> @@ -106,6 +106,7 @@
+>   * platforms using "operating-points-v2" property.
+>   */
+>  static const struct of_device_id blacklist[] __initconst = {
+> +	{ .compatible = "ti,am33xx", },
+>  	{ }
+>  };
+>  
+> 
