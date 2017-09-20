@@ -1,49 +1,54 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Handle return value of kasprintf
-Date: Wed, 20 Sep 2017 07:49:02 -0700
-Message-ID: <20170920144902.GL30848@ubuntu>
-References: <15cec6eac63ffc9f12f1d16aff913eccad670f77.1505817563.git.arvind.yadav.cs@gmail.com>
- <1505906255.2153.3.camel@perches.com>
+From: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+Subject: [RFC PATCH 0/7] AXP803 AC/Battery support
+Date: Wed, 20 Sep 2017 23:18:07 +0800
+Message-ID: <20170920151814.22461-1-icenowy@aosc.io>
+Reply-To: icenowy-h8G6r0blFSE@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f45.google.com ([74.125.83.45]:53298 "EHLO
-        mail-pg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751570AbdITOtE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2017 10:49:04 -0400
-Received: by mail-pg0-f45.google.com with SMTP id j70so1792357pgc.10
-        for <linux-pm@vger.kernel.org>; Wed, 20 Sep 2017 07:49:04 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1505906255.2153.3.camel@perches.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-sunxi+bncBDS6XAN6ZADRBSMNRLHAKGQEOLMOC4Y-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Arvind Yadav <arvind.yadav.cs@gmail.com>, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 20-09-17, 04:17, Joe Perches wrote:
-> On Wed, 2017-09-20 at 12:29 +0530, Arvind Yadav wrote:
-> > kasprintf() can fail here and we must check its return value.
-> []
-> > diff --git a/drivers/base/power/opp/debugfs.c b/drivers/base/power/opp/debugfs.c
-> []
-> > @@ -45,7 +45,8 @@ static bool opp_debug_create_supplies(struct dev_pm_opp *opp,
-> >  
-> >  	for (i = 0; i < opp_table->regulator_count; i++) {
-> >  		name = kasprintf(GFP_KERNEL, "supply-%d", i);
-> > -
-> > +		if (!name)
-> > +			return false;
-> >  		/* Create per-opp directory */
-> >  		d = debugfs_create_dir(name, pdentry);
-> 
-> Probably more sensible to avoid the kasprintf/kfree
-> and just have
-> 	char name[20];
-> on the stack
+The AXP803 PMIC, used by most Allwinner A64 boards, features 3 power inputs:
+AC, USB and Battery.
 
-Sure.
+This patchset adds support for the AC and Battery supplies, which is useful
+for the boards from Pine64 (Pine64, SoPine w/ baseboard model A, Pinebook).
 
-@Arvind: I will let you write that patch.
+The USB supply is not yet supported in this patchset because it's not
+present on Pine series boards.
+
+In order to enable battery monitoring the ADC for battery is also enabled
+for AXs.
+
+In order to enable battery monitoring the ADC for battery is also enabled
+for AXP803.
+
+Icenowy Zheng (7):
+  dt-bindings: add compatibles for AXP803 Battery/USB power supplies
+  iio: adc: axp20x-adc: allow to skip ADC rate setup now
+  iio: adc: axp20x-adc: add support for AXP803
+  power: supply: axp20x-battery: support AXP803
+  mfd: axp20x: add cells for AXP803 ADC/AC Power/Battery
+  arm64: allwinner: a64: add power supply nodes in AXP803 DTSI
+  arm64: allwinner: a64: enable AC and Battery for Pine64
+
+ .../bindings/power/supply/axp20x_battery.txt       |   1 +
+ .../bindings/power/supply/axp20x_usb_power.txt     |   1 +
+ arch/arm64/boot/dts/allwinner/axp803.dtsi          |  15 +++
+ .../arm64/boot/dts/allwinner/sun50i-a64-pine64.dts |   8 ++
+ drivers/iio/adc/axp20x_adc.c                       | 114 ++++++++++++++++++++-
+ drivers/mfd/axp20x.c                               |  11 ++
+ drivers/power/supply/axp20x_battery.c              |  88 ++++++++++++++--
+ 7 files changed, 226 insertions(+), 12 deletions(-)
 
 -- 
-viresh
+2.13.5
