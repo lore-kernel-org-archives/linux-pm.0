@@ -1,45 +1,51 @@
-From: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v2 0/5] thermal: imx: Add nvmem-cells binding on imx6sx
-Date: Wed, 20 Sep 2017 09:40:58 +0800
-Message-ID: <1505871658.2571.4.camel@intel.com>
-References: <cover.1500041281.git.leonard.crestez@nxp.com>
-         <20170831084817.GC3787@dragon> <1504185083.2749.2.camel@intel.com>
+From: Suniel Mahesh <sunil.m@techveda.org>
+Subject: Re: [PATCH v2] drivers: cpufreq: Fix sysfs duplicate filename
+ creation for platform-device
+Date: Wed, 20 Sep 2017 09:46:45 +0530
+Message-ID: <a4ac9c9c-c362-5df4-6876-121c82b37087@techveda.org>
+References: <20170918011503.GA17030@ubuntu>
+ <1505762285-16161-1-git-send-email-sunil.m@techveda.org>
+ <8a57f05a-598f-440e-f8d0-ddde5627d075@ti.com> <20170919223645.GD30848@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1504185083.2749.2.camel-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
-Cc: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lothar =?ISO-8859-1?Q?Wa=DFmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>, Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170919223645.GD30848@ubuntu>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Dave Gerlach <d-gerlach@ti.com>
+Cc: rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, karthik@techveda.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, 2017-08-31 at 21:11 +0800, Zhang Rui wrote:
-> On Thu, 2017-08-31 at 16:48 +0800, Shawn Guo wrote:
-> > 
-> > On Fri, Jul 14, 2017 at 05:11:05PM +0300, Leonard Crestez wrote:
-> > > 
-> > > 
-> > > Leonard Crestez (5):
-> > >   thermal: imx: Add nvmem-cells alternate binding for OCOTP
-> > > access
-> > >   nvmem: core: Add nvmem_cell_read_u32
-> > >   thermal: imx: Add support for reading OCOTP through nvmem
-> > >   ARM: dts: imx6sx: Use nvmem-cells for tempmon
-> > >   ARM: dts: imx6ul: Add imx6ul-tempmon
-> > For last two dts patches,
-> > 
-> > Acked-by: Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> thanks.
-> I will push patch 1,3,4,5 after patch 2/5 merged.
+On Wednesday 20 September 2017 04:06 AM, Viresh Kumar wrote:
+> On 19-09-17, 10:12, Dave Gerlach wrote:
+>> Hi,
+>> On 09/18/2017 02:18 PM, sunil.m@techveda.org wrote:
+>>> From: Suniel Mahesh <sunil.m@techveda.org>
+>>>
+>>> ti-cpufreq and cpufreq-dt-platdev drivers are registering platform-device
+>>> with same name "cpufreq-dt" using platform_device_register_*() routines.
+>>> This is leading to build warnings appended below.
+>>>
+>>> Providing hardware information to OPP framework along with the platform-
+>>> device creation should be done by ti-cpufreq driver before cpufreq-dt
+>>> driver comes into place.
+>>>
+>>> This patch add's TI SoC am33xx (uses opp-v2 property) in the blacklist of
+>>> devices in cpufreq-dt-platform driver to avoid creating platform-device
+>>> twice and remove build warnings (suggested by Viresh Kumar).
+>>
+>> This looks good to me, but this also affects "ti,am43" and "ti,dra7" platforms,
+>> care to add those to the blacklist as well with this patch? Thanks.
+
+Thanks and will also add those platforms.
+ 
 > 
-sorry that this patch set didn't catch this merge window.
-I've rebased it on top of 4.14-rc1 and queued for 4.15.
+> Also please rebase on top of the pm/linux-next branch as I have pushed
+> a similar patch there. (Actually its applied to pm/bleeding-edge
+> branch for now and may take a day to get to pm/linux-next. You can
+> wait in that case.).
+> 
 
-thanks,
-rui
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Will check both pm/linux-next and pm/bleeding-edge branches, will wait 
+in that case and then rebase. Thanks
