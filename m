@@ -1,214 +1,168 @@
-From: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Subject: [RFC PATCH 3/7] iio: adc: axp20x-adc: add support for AXP803
-Date: Wed, 20 Sep 2017 23:18:10 +0800
-Message-ID: <20170920151814.22461-4-icenowy@aosc.io>
+From: Icenowy Zheng <icenowy@aosc.io>
+Subject: [RFC PATCH 4/7] power: supply: axp20x-battery: support AXP803
+Date: Wed, 20 Sep 2017 23:18:11 +0800
+Message-ID: <20170920151814.22461-5-icenowy@aosc.io>
 References: <20170920151814.22461-1-icenowy@aosc.io>
-Reply-To: icenowy-h8G6r0blFSE@public.gmane.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBDS6XAN6ZADRBZENRLHAKGQEBQTXCJQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
-In-Reply-To: <20170920151814.22461-1-icenowy-h8G6r0blFSE@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hermes.aosc.io ([199.195.250.187]:41696 "EHLO hermes.aosc.io"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751921AbdITPTI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 20 Sep 2017 11:19:08 -0400
+In-Reply-To: <20170920151814.22461-1-icenowy@aosc.io>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Lee Jones <lee.jones@linaro.org>, Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-iio@vger.kernel.org, linux-sunxi@googlegroups.com, Icenowy Zheng <icenowy@aosc.io>
 
-AXP803 SoC features an ADC part including these channels: GPADC (GPIO0)
-and TS pins, PMIC internal temperature sensor, battery voltage, battery
-charge/discharge current.
+The AXP803 PMIC has battery support like other AXP PMICs, but with
+different definition of max target charging voltage and constant
+charging current.
 
-Add support for the battery-related channels and internal temperature
-channel in order to allow battery monitoring. The TS and GPADC channels
-are complex and will be support after more investigation.
+Add support for AXP803 battery in axp20x-battery driver.
 
-Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+Signed-off-by: Icenowy Zheng <icenowy@aosc.io>
 ---
- drivers/iio/adc/axp20x_adc.c | 108 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 108 insertions(+)
+ drivers/power/supply/axp20x_battery.c | 88 +++++++++++++++++++++++++++++++----
+ 1 file changed, 78 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
-index 93dd6b80059e..4f0cd98cf6ea 100644
---- a/drivers/iio/adc/axp20x_adc.c
-+++ b/drivers/iio/adc/axp20x_adc.c
-@@ -28,6 +28,8 @@
+diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
+index 7494f0f0eadb..c9a9fb320c92 100644
+--- a/drivers/power/supply/axp20x_battery.c
++++ b/drivers/power/supply/axp20x_battery.c
+@@ -49,6 +49,8 @@
+ #define AXP22X_CHRG_CTRL1_TGT_4_22V	(1 << 5)
+ #define AXP22X_CHRG_CTRL1_TGT_4_24V	(3 << 5)
  
- #define AXP20X_ADC_EN2_MASK			(GENMASK(3, 2) | BIT(7))
- #define AXP22X_ADC_EN1_MASK			(GENMASK(7, 5) | BIT(0))
-+/* TODO: Enable TS and GPADC when supporting them */
-+#define AXP803_ADC_EN1_MASK			GENMASK(7, 5)
- 
- #define AXP20X_GPIO10_IN_RANGE_GPIO0		BIT(0)
- #define AXP20X_GPIO10_IN_RANGE_GPIO1		BIT(1)
-@@ -95,6 +97,17 @@ enum axp22x_adc_channel_i {
- 	AXP22X_BATT_DISCHRG_I,
- };
- 
-+enum axp803_adc_channel_v {
-+	AXP803_TS_IN = 0,
-+	AXP803_GPADC_IN,
-+	AXP803_BATT_V,
-+};
++#define AXP803_CHRG_CTRL1_TGT_4_35V	(3 << 5)
 +
-+enum axp803_adc_channel_i {
-+	AXP803_BATT_CHRG_I = 2,
-+	AXP803_BATT_DISCHRG_I,
-+};
-+
- static struct iio_map axp20x_maps[] = {
- 	{
- 		.consumer_dev_name = "axp20x-usb-power-supply",
-@@ -144,6 +157,11 @@ static struct iio_map axp22x_maps[] = {
- };
+ #define AXP20X_CHRG_CTRL1_TGT_CURR	GENMASK(3, 0)
  
- /*
-+ * AXP803 shares the same consumer map with AXP22x, as it has no ADC for
-+ * VBUS and ACIN inputs either.
-+ */
-+
-+/*
-  * Channels are mapped by physical system. Their channels share the same index.
-  * i.e. acin_i is in_current0_raw and acin_v is in_voltage0_raw.
-  * The only exception is for the battery. batt_v will be in_voltage6_raw and
-@@ -197,6 +215,23 @@ static const struct iio_chan_spec axp22x_adc_channels[] = {
- 			   AXP20X_BATT_DISCHRG_I_H),
- };
- 
-+static const struct iio_chan_spec axp803_adc_channels[] = {
-+	{
-+		.type = IIO_TEMP,
-+		.address = AXP288_PMIC_ADC_H,
-+		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |
-+				      BIT(IIO_CHAN_INFO_SCALE) |
-+				      BIT(IIO_CHAN_INFO_OFFSET),
-+		.datasheet_name = "pmic_temp",
-+	},
-+	AXP20X_ADC_CHANNEL(AXP803_BATT_V, "batt_v", IIO_VOLTAGE,
-+			   AXP20X_BATT_V_H),
-+	AXP20X_ADC_CHANNEL(AXP803_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
-+			   AXP20X_BATT_CHRG_I_H),
-+	AXP20X_ADC_CHANNEL(AXP803_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
-+			   AXP20X_BATT_DISCHRG_I_H),
-+};
-+
- static int axp20x_adc_raw(struct iio_dev *indio_dev,
- 			  struct iio_chan_spec const *chan, int *val)
- {
-@@ -243,6 +278,19 @@ static int axp22x_adc_raw(struct iio_dev *indio_dev,
- 	return IIO_VAL_INT;
+ #define AXP20X_V_OFF_MASK		GENMASK(2, 0)
+@@ -123,20 +125,71 @@ static int axp22x_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
+ 	return 0;
  }
  
-+static int axp803_adc_raw(struct iio_dev *indio_dev,
-+			  struct iio_chan_spec const *chan, int *val)
++static int axp803_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
++					  int *val)
 +{
-+	struct axp20x_adc_iio *info = iio_priv(indio_dev);
++	int ret, reg;
 +
-+	/* All channels on AXP803 are stored on 12 bits. */
-+	*val = axp20x_read_variable_width(info->regmap, chan->address, 12);
-+	if (*val < 0)
-+		return *val;
++	ret = regmap_read(axp20x_batt->regmap, AXP20X_CHRG_CTRL1, &reg);
++	if (ret)
++		return ret;
 +
-+	return IIO_VAL_INT;
++	switch (reg & AXP20X_CHRG_CTRL1_TGT_VOLT) {
++	case AXP20X_CHRG_CTRL1_TGT_4_1V:
++		*val = 4100000;
++		break;
++	case AXP20X_CHRG_CTRL1_TGT_4_15V:
++		*val = 4150000;
++		break;
++	case AXP20X_CHRG_CTRL1_TGT_4_2V:
++		*val = 4200000;
++		break;
++	case AXP803_CHRG_CTRL1_TGT_4_35V:
++		*val = 4350000;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
 +}
 +
- static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
+ static void raw_to_constant_charge_current(struct axp20x_batt_ps *axp, int *val)
  {
- 	switch (channel) {
-@@ -342,6 +390,31 @@ static int axp22x_adc_scale(struct iio_chan_spec const *chan, int *val,
- 	}
+-	if (axp->axp_id == AXP209_ID)
++	switch (axp->axp_id) {
++	case AXP209_ID:
+ 		*val = *val * 100000 + 300000;
+-	else
++		break;
++	case AXP221_ID:
+ 		*val = *val * 150000 + 300000;
++		break;
++	case AXP803_ID:
++		*val = *val * 200000 + 200000;
++		break;
++	}
  }
  
-+static int axp803_adc_scale(struct iio_chan_spec const *chan, int *val,
-+			    int *val2)
-+{
-+	switch (chan->type) {
-+	case IIO_VOLTAGE:
-+		if (chan->channel != AXP803_BATT_V)
+ static void constant_charge_current_to_raw(struct axp20x_batt_ps *axp, int *val)
+ {
+-	if (axp->axp_id == AXP209_ID)
++	switch (axp->axp_id) {
++	case AXP209_ID:
+ 		*val = (*val - 300000) / 100000;
+-	else
++		break;
++	case AXP221_ID:
+ 		*val = (*val - 300000) / 150000;
++		break;
++	case AXP803_ID:
++		*val = (*val - 200000) / 200000;
++		/*
++		 * The maximum charge current on AXP803 is 2.8A, and the
++		 * datasheet says "1110-1111 reserved" in this part.
++		 * So we return an invalid value -1 in this situation,
++		 * which will be dealed by the caller of this function,
++		 */
++		if (*val > 13)
++			*val = -1;
++		break;
++	}
+ }
+ 
+ static int axp20x_get_constant_charge_current(struct axp20x_batt_ps *axp,
+@@ -269,9 +322,13 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+ 		if (ret)
+ 			return ret;
+ 
+-		if (axp20x_batt->axp_id == AXP221_ID &&
+-		    !(reg & AXP22X_FG_VALID))
+-			return -EINVAL;
++		switch (axp20x_batt->axp_id) {
++		case AXP221_ID:
++		case AXP803_ID:
++			if (!(reg & AXP22X_FG_VALID))
++				return -EINVAL;
++			break;
++		};
+ 
+ 		/*
+ 		 * Fuel Gauge data takes 7 bits but the stored value seems to be
+@@ -281,11 +338,19 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+ 		break;
+ 
+ 	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+-		if (axp20x_batt->axp_id == AXP209_ID)
++		switch (axp20x_batt->axp_id) {
++		case AXP209_ID:
+ 			return axp20x_battery_get_max_voltage(axp20x_batt,
+ 							      &val->intval);
+-		return axp22x_battery_get_max_voltage(axp20x_batt,
+-						      &val->intval);
++		case AXP221_ID:
++			return axp22x_battery_get_max_voltage(axp20x_batt,
++							      &val->intval);
++		case AXP803_ID:
++			return axp803_battery_get_max_voltage(axp20x_batt,
++							      &val->intval);
++		default:
 +			return -EINVAL;
-+
-+		*val = 1;
-+		*val2 = 100000;
-+		return IIO_VAL_INT_PLUS_MICRO;
-+
-+	case IIO_CURRENT:
-+		*val = 1;
-+		return IIO_VAL_INT;
-+
-+	case IIO_TEMP:
-+		*val = 106;
-+		return IIO_VAL_INT;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
- static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
- 				     int *val)
- {
-@@ -425,6 +498,26 @@ static int axp22x_read_raw(struct iio_dev *indio_dev,
- 	}
- }
++		}
  
-+static int axp803_read_raw(struct iio_dev *indio_dev,
-+			   struct iio_chan_spec const *chan, int *val,
-+			   int *val2, long mask)
-+{
-+	switch (mask) {
-+	case IIO_CHAN_INFO_OFFSET:
-+		*val = -2525;
-+		return IIO_VAL_INT;
-+
-+	case IIO_CHAN_INFO_SCALE:
-+		return axp803_adc_scale(chan, val, val2);
-+
-+	case IIO_CHAN_INFO_RAW:
-+		return axp803_adc_raw(indio_dev, chan, val);
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
- static int axp20x_write_raw(struct iio_dev *indio_dev,
- 			    struct iio_chan_spec const *chan, int val, int val2,
- 			    long mask)
-@@ -472,6 +565,11 @@ static const struct iio_info axp22x_adc_iio_info = {
- 	.driver_module = THIS_MODULE,
+ 	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+ 		ret = regmap_read(axp20x_batt->regmap, AXP20X_V_OFF, &reg);
+@@ -467,6 +532,9 @@ static const struct of_device_id axp20x_battery_ps_id[] = {
+ 	}, {
+ 		.compatible = "x-powers,axp221-battery-power-supply",
+ 		.data = (void *)AXP221_ID,
++	}, {
++		.compatible = "x-powers,axp803-battery-power-supply",
++		.data = (void *)AXP803_ID,
+ 	}, { /* sentinel */ },
  };
- 
-+static const struct iio_info axp803_adc_iio_info = {
-+	.read_raw = axp803_read_raw,
-+	.driver_module = THIS_MODULE,
-+};
-+
- static int axp20x_adc_rate(int rate)
- {
- 	return AXP20X_ADC_RATE_HZ(rate);
-@@ -512,9 +610,19 @@ static const struct axp_data axp22x_data = {
- 	.maps = axp22x_maps,
- };
- 
-+static const struct axp_data axp803_data = {
-+	.iio_info = &axp803_adc_iio_info,
-+	.num_channels = ARRAY_SIZE(axp803_adc_channels),
-+	.channels = axp803_adc_channels,
-+	.adc_en1_mask = AXP803_ADC_EN1_MASK,
-+	.adc_en2 = false,
-+	.maps = axp22x_maps,
-+};
-+
- static const struct platform_device_id axp20x_adc_id_match[] = {
- 	{ .name = "axp20x-adc", .driver_data = (kernel_ulong_t)&axp20x_data, },
- 	{ .name = "axp22x-adc", .driver_data = (kernel_ulong_t)&axp22x_data, },
-+	{ .name = "axp803-adc", .driver_data = (kernel_ulong_t)&axp803_data, },
- 	{ /* sentinel */ },
- };
- MODULE_DEVICE_TABLE(platform, axp20x_adc_id_match);
+ MODULE_DEVICE_TABLE(of, axp20x_battery_ps_id);
 -- 
 2.13.5
