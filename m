@@ -1,62 +1,95 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2] PM / OPP: Call notifier without holding opp_table->lock
-Date: Wed, 20 Sep 2017 13:25:28 -0700
-Message-ID: <5b70f7bdf12975f869a83f77e36bf3a40e0fa4b9.1505939072.git.viresh.kumar@linaro.org>
-References: <59C2414E.6020803@samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <59C2414E.6020803@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, cw00.choi@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, myungjoo.ham@samsung.com, inki.dae@samsung.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/7] PM / OPP: Add platform specific set_clk function
+Date: Wed, 20 Sep 2017 13:30:33 -0700
+Message-ID: <20170920203033.GD3001@ubuntu>
+References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
+ <1503504610-12880-2-git-send-email-aisheng.dong@nxp.com>
+ <20170919225840.GI30848@ubuntu>
+ <20170920070343.GA32187@b29396-OptiPlex-7040>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f44.google.com ([74.125.83.44]:43999 "EHLO
+        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751390AbdITUag (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2017 16:30:36 -0400
+Received: by mail-pg0-f44.google.com with SMTP id u18so2324249pgo.0
+        for <linux-pm@vger.kernel.org>; Wed, 20 Sep 2017 13:30:36 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20170920070343.GA32187@b29396-OptiPlex-7040>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Dong Aisheng <dongas86@gmail.com>
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com
 
-The notifier callbacks may want to call some OPP helper routines which
-may try to take the same opp_table->lock again and cause a deadlock. One
-such usecase was reported by Chanwoo Choi, where calling
-dev_pm_opp_disable() leads us to the devfreq's OPP notifier handler,
-which further calls dev_pm_opp_find_freq_floor() and it deadlocks.
+On 20-09-17, 15:03, Dong Aisheng wrote:
+> I've been thinking of that before.
+> Actually IMX already does some similar thing for MX5 (no for MX6).
+> See: clk_cpu_set_rate() in drivers/clk/imx/clk-cpu.c.
+> 
+> After some diggings, it seems MX7ULP is a bit more complicated than before
+> mainly due to two reasons:
+> 1) It requires to switch to different CPU mode accordingly when setting
+> clocks rate. That means we need handle this in clock driver as well
+> which looks not quite suitable although we could do if really want.
+> 
+> 2) It uses different clocks for different CPU mode (RUN 416M or
+> HSRUN 528M), and those clocks have some dependency.
+> e.g. when setting HSRUN clock, we need change RUN clock parent to make sure
+> the SPLL_PFD is got disabled before changing rate, as both CPU mode using
+> the same parent SPLL_PFD clock. Doing this in clock driver also make things
+> a bit more complicated.
+> 
+> The whole follow would be something like below:
+> static int imx7ulp_set_clk(struct device *dev, struct clk *clk,
+>                            unsigned long old_freq, unsigned long new_freq)
+> {
+>         u32 val;
+> 
+>         /*
+>          * Before changing the ARM core PLL, change the ARM clock soure
+>          * to FIRC first.
+>          */
+>         if (new_freq >= HSRUN_FREQ) {
+>                 clk_set_parent(clks[RUN_SCS_SEL].clk, clks[FIRC].clk);
+> 
+>                 /* switch to HSRUN mode */
+>                 val = readl_relaxed(smc_base + SMC_PMCTRL);
+>                 val |= (0x3 << 8);
+>                 writel_relaxed(val, smc_base + SMC_PMCTRL);
+> 
+>                 /* change the clock rate in HSRUN */
+>                 clk_set_rate(clks[SPLL_PFD0].clk, new_freq);
+>                 clk_set_parent(clks[HSRUN_SCS_SEL].clk, clks[SPLL_SEL].clk);
+>         } else {
+>                 /* change the HSRUN clock to firc */
+>                 clk_set_parent(clks[HSRUN_SCS_SEL].clk, clks[FIRC].clk);
+> 
+>                 /* switch to RUN mode */
+>                 val = readl_relaxed(smc_base + SMC_PMCTRL);
+>                 val &= ~(0x3 << 8);
+>                 writel_relaxed(val, smc_base + SMC_PMCTRL);
+> 
+>                 clk_set_rate(clks[SPLL_PFD0].clk, new_freq);
+>                 clk_set_parent(clks[RUN_SCS_SEL].clk, clks[SPLL_SEL].clk);
+>         }
+> 
+>         return 0;
+> }
 
-We don't really need the opp_table->lock to be held across the notifier
-call though, all we want to make sure is that the 'opp' doesn't get
-freed while being used from within the notifier chain. We can do it with
-help of dev_pm_opp_get/put() as well. Let's do it.
+Right and we have the same thing in the cpufreq driver now. It will
+stay at some place and we need to find the best one, keeping in mind
+that we may or may not want to solve this problem in a generic way.
 
-Reported-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V1->V2:
-- s/Lets/Let's/ in commit log and added Stephen's tag.
+> That's why i thought if we can make OPP core provide a way to handle such
+> complicated things in platform specific cpufreq driver.
+> 
+> How would you suggest for this issue?
 
- drivers/base/power/opp/core.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+I wouldn't add an API into the OPP framework if I were you. There is
+just too much code to add to the core to handle such platform specific
+stuff, which you are anyway going to keep somewhere as it is. IMHO,
+keeping that in the clock driver is a better thing to do than this.
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 4360b4efcd4c..668fd940d362 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -1627,6 +1627,9 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
- 
- 	opp->available = availability_req;
- 
-+	dev_pm_opp_get(opp);
-+	mutex_unlock(&opp_table->lock);
-+
- 	/* Notify the change of the OPP availability */
- 	if (availability_req)
- 		blocking_notifier_call_chain(&opp_table->head, OPP_EVENT_ENABLE,
-@@ -1635,8 +1638,12 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
- 		blocking_notifier_call_chain(&opp_table->head,
- 					     OPP_EVENT_DISABLE, opp);
- 
-+	dev_pm_opp_put(opp);
-+	goto put_table;
-+
- unlock:
- 	mutex_unlock(&opp_table->lock);
-+put_table:
- 	dev_pm_opp_put_opp_table(opp_table);
- 	return r;
- }
 -- 
-2.7.4
+viresh
