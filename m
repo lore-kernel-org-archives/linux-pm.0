@@ -1,49 +1,63 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] PM / OPP: Call notifier without holding opp_table->lock
-Date: Wed, 20 Sep 2017 10:07:55 -0700
-Message-ID: <20170920170755.GA3001@ubuntu>
-References: <59C2414E.6020803@samsung.com>
- <45c7e892a69c4936993c65c9987981dbe4433148.1505920911.git.viresh.kumar@linaro.org>
- <20170920170000.GA457@codeaurora.org>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 197009] New: /proc/cpuinfo does not update frequency
+Date: Wed, 20 Sep 2017 18:55:27 +0000
+Message-ID: <bug-197009-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170920170000.GA457@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, cw00.choi@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, myungjoo.ham@samsung.com, inki.dae@samsung.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:52410 "EHLO
+        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751462AbdITSz3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2017 14:55:29 -0400
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 8870A29210
+        for <linux-pm@vger.kernel.org>; Wed, 20 Sep 2017 18:55:28 +0000 (UTC)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@kernel.org
 
-On 20-09-17, 10:00, Stephen Boyd wrote:
-> On 09/20, Viresh Kumar wrote:
+https://bugzilla.kernel.org/show_bug.cgi?id=197009
 
-> > diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-> > index 4360b4efcd4c..668fd940d362 100644
-> > --- a/drivers/base/power/opp/core.c
-> > +++ b/drivers/base/power/opp/core.c
-> > @@ -1627,6 +1627,9 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
-> >  
-> >  	opp->available = availability_req;
-> >  
-> > +	dev_pm_opp_get(opp);
-> > +	mutex_unlock(&opp_table->lock);
-> 
-> Does this prevent the OPP from changing while the lock is
-> released?
+            Bug ID: 197009
+           Summary: /proc/cpuinfo does not update frequency
+           Product: Power Management
+           Version: 2.5
+    Kernel Version: 4.13
+          Hardware: x86-64
+                OS: Linux
+              Tree: Mainline
+            Status: NEW
+          Severity: normal
+          Priority: P1
+         Component: cpufreq
+          Assignee: linux-pm@vger.kernel.org
+          Reporter: aleksey@rybalkin.org
+        Regression: No
 
-No, its just ref counting and will only prevent it from getting freed.
+Created attachment 258537
+  --> https://bugzilla.kernel.org/attachment.cgi?id=258537&action=edit
+kernel config
 
-There is only one thing that can change for an OPP though after it is
-created, its availability.
+The 4.13 kernel with intel_pstate=passive (or active) does not appear to
+correctly update the CPU frequency in /proc/cpuinfo
 
-> That would be the only difference from before. It's
-> possible that nobody cares about this situation though.
+After booting the reported frequency (but not the real frequency) is stuck on
+one value and does not update:
 
-I am not sure if its worth caring for right now :)
+$ grep MHz /proc/cpuinfo
+cpu MHz         : 2194.859
+cpu MHz         : 2194.859
+cpu MHz         : 2194.859
+cpu MHz         : 2194.859
 
-Also the notifier chain will not start again until the previous call
-chain is finished. So we are kind of synchronized here.
+hardware: ThinkPad X250
+cpu: Intel(R) Core(TM) i5-5200U CPU @ 2.20GHz
+kernel: 4.13.3 vanilla (config attached)
+
+As far as I remember this worked in 4.11 and broke after 4.12, I can double
+check if needed.
 
 -- 
-viresh
+You are receiving this mail because:
+You are the assignee for the bug.
