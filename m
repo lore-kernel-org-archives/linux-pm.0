@@ -1,65 +1,49 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 6/7] cpufreq: make cpufreq_generic_init
- transition_latency default to CPUFREQ_ETERNAL
-Date: Wed, 20 Sep 2017 07:45:38 -0700
-Message-ID: <20170920144538.GK30848@ubuntu>
-References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
- <1503504610-12880-7-git-send-email-aisheng.dong@nxp.com>
- <20170919231007.GJ30848@ubuntu>
- <20170920070450.GB32187@b29396-OptiPlex-7040>
+Subject: Re: [PATCH] PM / OPP: Handle return value of kasprintf
+Date: Wed, 20 Sep 2017 07:49:02 -0700
+Message-ID: <20170920144902.GL30848@ubuntu>
+References: <15cec6eac63ffc9f12f1d16aff913eccad670f77.1505817563.git.arvind.yadav.cs@gmail.com>
+ <1505906255.2153.3.camel@perches.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f45.google.com ([74.125.83.45]:53298 "EHLO
+        mail-pg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751570AbdITOtE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2017 10:49:04 -0400
+Received: by mail-pg0-f45.google.com with SMTP id j70so1792357pgc.10
+        for <linux-pm@vger.kernel.org>; Wed, 20 Sep 2017 07:49:04 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20170920070450.GB32187@b29396-OptiPlex-7040>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dong Aisheng <dongas86@gmail.com>
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sboyd@codeaurora.org, vireshk@kernel.org, nm@ti.com, rjw@rjwysocki.net, shawnguo@kernel.org, Anson.Huang@nxp.com, ping.bai@nxp.com
+In-Reply-To: <1505906255.2153.3.camel@perches.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Joe Perches <joe@perches.com>
+Cc: Arvind Yadav <arvind.yadav.cs@gmail.com>, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 20-09-17, 15:04, Dong Aisheng wrote:
-> On Tue, Sep 19, 2017 at 04:10:07PM -0700, Viresh Kumar wrote:
-> > On 24-08-17, 00:10, Dong Aisheng wrote:
-> > > If no valid transition_latency specified, let's make it default to
-> > > CPUFREQ_ETERNAL which is consistent with its definition.
-> > > 
-> > > This can save some of the same checkings like this:
-> > >         transition_latency = dev_pm_opp_get_max_transition_latency(cpu_dev);
-> > > -       if (!transition_latency)
-> > > -               transition_latency = CPUFREQ_ETERNAL;
-> > >         ret = cpufreq_generic_init(policy, freq_table, transition_latency);
-> > > 
-> > > Cc: Viresh Kumar <vireshk@kernel.org>
-> > > Cc: Nishanth Menon <nm@ti.com>
-> > > Cc: Stephen Boyd <sboyd@codeaurora.org>
-> > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> > > ---
-> > >  drivers/cpufreq/cpufreq.c | 2 ++
-> > >  1 file changed, 2 insertions(+)
-> > > 
-> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > > index 9bf97a3..da07de6 100644
-> > > --- a/drivers/cpufreq/cpufreq.c
-> > > +++ b/drivers/cpufreq/cpufreq.c
-> > > @@ -180,6 +180,8 @@ int cpufreq_generic_init(struct cpufreq_policy *policy,
-> > >  		return ret;
-> > >  	}
-> > >  
-> > > +	if (!transition_latency)
-> > > +		transition_latency = CPUFREQ_ETERNAL;
-> > >  	policy->cpuinfo.transition_latency = transition_latency;
-> > >  
-> > >  	/*
-> > 
-> > Can you update all the existing drivers as well (in the same patch)
-> > who can benefit from it?
+On 20-09-17, 04:17, Joe Perches wrote:
+> On Wed, 2017-09-20 at 12:29 +0530, Arvind Yadav wrote:
+> > kasprintf() can fail here and we must check its return value.
+> []
+> > diff --git a/drivers/base/power/opp/debugfs.c b/drivers/base/power/opp/debugfs.c
+> []
+> > @@ -45,7 +45,8 @@ static bool opp_debug_create_supplies(struct dev_pm_opp *opp,
+> >  
+> >  	for (i = 0; i < opp_table->regulator_count; i++) {
+> >  		name = kasprintf(GFP_KERNEL, "supply-%d", i);
+> > -
+> > +		if (!name)
+> > +			return false;
+> >  		/* Create per-opp directory */
+> >  		d = debugfs_create_dir(name, pdentry);
 > 
-> Yes, of course.
-> Will do it in the updated version later.
+> Probably more sensible to avoid the kasprintf/kfree
+> and just have
+> 	char name[20];
+> on the stack
 
-Perhaps you can send it separately if you want as your series is
-surely going to take some time to get merged.
+Sure.
+
+@Arvind: I will let you write that patch.
 
 -- 
 viresh
