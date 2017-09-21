@@ -1,75 +1,85 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 2/2] mfd: intel-lpss: switch to
- suspend_late()/resume_early()
-Date: Thu, 21 Sep 2017 09:41:33 +0100
-Message-ID: <20170921084133.pptabevkolnwv2wy@dell>
-References: <20170920223152.100641-1-rajatja@google.com>
- <20170920223152.100641-2-rajatja@google.com>
- <CAJZ5v0iB6=C953zPBYW8fB+XW7fq4fwyP2W4S=ocgNwWic+gPg@mail.gmail.com>
+From: Johannes Stezenbach <js@sig21.net>
+Subject: Re: [PATCH] PM: Document rules on using pm_runtime_resume() in
+ system suspend callbacks
+Date: Thu, 21 Sep 2017 11:27:13 +0200
+Message-ID: <20170921092713.tqnclpljoraesene@sig21.net>
+References: <1849600.vI30ccvhCD@aspire.rjw.lan>
+ <CAPDyKFrPGA9OproyQHwVTY5EfAQJnLZuHL+cnJv+1fPYXLLW2w@mail.gmail.com>
+ <CAJZ5v0h2gZJbtF2E=+9Ya5NtZCRy+5eVh=OaJJA81rTZR0907g@mail.gmail.com>
+ <20170920162731.wopbh7iwggu2xouk@sig21.net>
+ <CAJZ5v0h6Fv=myGM8hxbyXedcaz8EvmQss528g=yDtK0nSTydew@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f171.google.com ([209.85.128.171]:45215 "EHLO
-        mail-wr0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751606AbdIUIlg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2017 04:41:36 -0400
-Received: by mail-wr0-f171.google.com with SMTP id m18so3960445wrm.2
-        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2017 01:41:36 -0700 (PDT)
+Received: from mail.sig21.net ([80.244.240.74]:44105 "EHLO mail.sig21.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751387AbdIUJ1X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 21 Sep 2017 05:27:23 -0400
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iB6=C953zPBYW8fB+XW7fq4fwyP2W4S=ocgNwWic+gPg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0h6Fv=myGM8hxbyXedcaz8EvmQss528g=yDtK0nSTydew@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Rajat Jain <rajatja@google.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, furquan@google.com, rajatxjain@gmail.com
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Thu, 21 Sep 2017, Rafael J. Wysocki wrote:
-
-> On Thu, Sep 21, 2017 at 12:31 AM, Rajat Jain <rajatja@google.com> wrote:
-> > Ref: https://lkml.org/lkml/2017/9/19/649
+On Thu, Sep 21, 2017 at 02:39:30AM +0200, Rafael J. Wysocki wrote:
+> On Wed, Sep 20, 2017 at 6:27 PM, Johannes Stezenbach <js@sig21.net> wrote:
 > >
-> > The intel-lpss hosts the designware i2c controller device, which
-> > needs to be up and running until all its i2c child devices have
-> > suspended (child devices need to be accessible over i2c until
-> > suspend_late() has been called for all those devices).
-> >
-> > So lets delay the resetting of the controller until suspend_late().
-> > I thought of renaming function to say *_late / *_early but that
-> > might cause confusion since the same function is also used for runtime
-> > suspend/resume.
-> >
-> > Fixes: 0b471aaa0e1a ("Put I2C and SPI controllers into reset state on suspend")
-> > Signed-off-by: Rajat Jain <rajatja@google.com>
-> > ---
-> >  drivers/mfd/intel-lpss.h | 7 +------
-> >  1 file changed, 1 insertion(+), 6 deletions(-)
-> >
-> > diff --git a/drivers/mfd/intel-lpss.h b/drivers/mfd/intel-lpss.h
-> > index 694116630ffa..865bbeaaf00c 100644
-> > --- a/drivers/mfd/intel-lpss.h
-> > +++ b/drivers/mfd/intel-lpss.h
-> > @@ -38,12 +38,7 @@ int intel_lpss_resume(struct device *dev);
-> >  #ifdef CONFIG_PM_SLEEP
-> >  #define INTEL_LPSS_SLEEP_PM_OPS                        \
-> >         .prepare = intel_lpss_prepare,          \
-> > -       .suspend = intel_lpss_suspend,          \
-> > -       .resume = intel_lpss_resume,            \
-> > -       .freeze = intel_lpss_suspend,           \
-> > -       .thaw = intel_lpss_resume,              \
-> > -       .poweroff = intel_lpss_suspend,         \
-> > -       .restore = intel_lpss_resume,
-> > +       SET_LATE_SYSTEM_SLEEP_PM_OPS(intel_lpss_suspend, intel_lpss_resume)
-> >  #else
-> >  #define INTEL_LPSS_SLEEP_PM_OPS
-> >  #endif
+> >  E.g. an audio codec could keep running
+> > while the i2c bus used to program its registers can be runtime suspended.
+> > If this is correct I think it would be useful to spell it out explicitly
+> > in the documentation.
 > 
-> So I sent this exact patch several days ago:
-> https://patchwork.kernel.org/patch/9939809/
+> That's because the i2c bus uses the ignore_children flag that allows
+> it to override the general rules. :-)
 
-You did?  Any reason you didn't send it to me?
+Ah!  I was looking at Documentation/driver-api/pm only (which is
+changed by your patch), but this is documented in Documentation/power
+(and obviously I hadn't checked the code, shame on me).
 
--- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+> direct_complete has nothing to do with this.
+
+Oh?  Reading again, do I get this right:
+
+1. simple method: always call pm_runtime_resume() in ->suspend(),
+   then suspend the driver again
+2. optimization: if pm_runtime_suspended(), the driver's ->suspend()
+   can possibly do nothing if conditions permit, otherwise it calls
+   pm_runtime_resume() and then suspends
+3. optimization: tell pm core to skip ->suspend() via return value
+   from ->prepare() which sets direct_complete
+
+...and your patch only deals with 1 and 2.
+
+Sorry to hijack your thread for side discussion, it was
+inadvertant due to my lack of understanding.
+
+
+> First off, the PM core does check the direct_complete flag in
+> __device_suspend() and does more-or-less what you are saying.
+> 
+> However, that flag is initialized in device_prepare() with the help of
+> the ->suspend() return value, because whether or not it makes sense to
+
+you mean ->prepare(), right?
+
+> set that flag depends on some conditions that may change between
+> consecutive system suspend-resume cycles in general and need to be
+> checked in advance before setting it.
+> 
+> HTH
+
+It does, however the question remains *why* it needs to check
+it in ->prepare() and not right before calling ->suspend().
+Using ->prepare() for the purpose seems wrong since it traverses
+the hierarchy in the "wrong" order.  Only right before
+calling ->suspend() the driver knows if its current state
+allows it to skip any further actions for suspend, because
+suspending children or other users may cause pm_runtime_resume()
+for it.  (In the back of my head I have the scenario of
+bug #196861, some completely different driver uses
+i2c via ACPI OpRegion during its suspend.)
+
+
+Thanks,
+Johannes
