@@ -1,79 +1,88 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 4/8] PM / devfreq: Show the all available frequencies
-Date: Thu, 21 Sep 2017 09:33:48 +0900
-Message-ID: <1505954032-3327-5-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v2 8/8] PM / devfreq: exynos-bus: Register cooling device
+Date: Thu, 21 Sep 2017 09:33:52 +0900
+Message-ID: <1505954032-3327-9-git-send-email-cw00.choi@samsung.com>
 References: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20170921003356epcas1p4c6e4da1fab6f56468ecca9e5889faa43@epcas1p4.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:55654 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751937AbdIUAd6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2017 20:33:58 -0400
+ <CGME20170921003356epcas1p34bf88ccd1b9630577a83f14f0c291b1d@epcas1p3.samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-reply-to: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
-Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, inki.dae@samsung.com, Kukjin Kim <kgene@kernel.org>, chanwoo@kernel.org, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-The commit a76caf55e5b35 ("thermal: Add devfreq cooling") allows
-the devfreq device to use the cooling device. When the cooling down
-are required, the devfreq_cooling.c disables the OPP entry with
-the dev_pm_opp_disable(). In result, 'available_frequencies'[1]
-sysfs node never came to show the all available frequencies.
-[1] /sys/class/devfreq/.../available_frequencies
-
-So, this patch uses the 'freq_table' in the 'struct devfreq_dev_profile'
-in order to show the all available frequencies.
-- If 'freq_table' is NULL, devfreq core initializes them by using OPP values.
-- If 'freq_table' is initialized, devfreq core just uses the 'freq_table'.
+This patch registers the Exynos Bus-Frequency scaling device
+as a cooling device of thermal management.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
 ---
- drivers/devfreq/devfreq.c | 28 ++++++++++++++++------------
- 1 file changed, 16 insertions(+), 12 deletions(-)
+ drivers/devfreq/Kconfig      |  1 +
+ drivers/devfreq/exynos-bus.c | 11 +++++++++++
+ 2 files changed, 12 insertions(+)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 799a0cf75d39..1c4b377cacfb 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -1185,22 +1185,26 @@ static ssize_t available_frequencies_show(struct device *d,
- 					  char *buf)
- {
- 	struct devfreq *df = to_devfreq(d);
--	struct device *dev = df->dev.parent;
--	struct dev_pm_opp *opp;
- 	ssize_t count = 0;
--	unsigned long freq = 0;
-+	unsigned long *freq_table;
-+	int i, max_state;
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 6a172d338f6d..eb8128e08b2c 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -81,6 +81,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
+ 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
+ 	select DEVFREQ_GOV_PASSIVE
+ 	select DEVFREQ_EVENT_EXYNOS_PPMU
++	select DEVFREQ_THERMAL
+ 	select PM_DEVFREQ_EVENT
+ 	select PM_OPP
+ 	help
+diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+index c25658b26598..200ca0d11834 100644
+--- a/drivers/devfreq/exynos-bus.c
++++ b/drivers/devfreq/exynos-bus.c
+@@ -15,6 +15,7 @@
+ #include <linux/clk.h>
+ #include <linux/devfreq.h>
+ #include <linux/devfreq-event.h>
++#include <linux/devfreq_cooling.h>
+ #include <linux/device.h>
+ #include <linux/export.h>
+ #include <linux/module.h>
+@@ -41,6 +42,8 @@ struct exynos_bus {
+ 	struct clk *clk;
+ 	unsigned int voltage_tolerance;
+ 	unsigned int ratio;
++
++	struct thermal_cooling_device *cdev;
+ };
  
--	do {
--		opp = dev_pm_opp_find_freq_ceil(dev, &freq);
--		if (IS_ERR(opp))
--			break;
-+	mutex_lock(&df->lock);
+ /*
+@@ -468,6 +471,14 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 		goto err;
+ 	}
  
--		dev_pm_opp_put(opp);
--		count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
--				   "%lu ", freq);
--		freq++;
--	} while (1);
-+	freq_table = df->profile->freq_table;
-+	max_state = df->profile->max_state;
- 
-+	if (freq_table[0] < freq_table[max_state - 1]) {
-+		for (i = 0; i < max_state; i++)
-+			count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
-+					"%lu ", freq_table[i]);
-+	} else {
-+		for (i = max_state - 1; i >= 0 ; i--)
-+			count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
-+					"%lu ", freq_table[i]);
++	/* Register devfreq cooling device */
++	bus->cdev = of_devfreq_cooling_register(np, bus->devfreq);
++	if (IS_ERR(bus->cdev) < 0) {
++		dev_err(dev, "failed to register cooling device\n");
++		ret = PTR_ERR(bus->cdev);
++		goto err;
 +	}
 +
-+	mutex_unlock(&df->lock);
- 	/* Truncate the trailing space */
- 	if (count)
- 		count--;
+ 	goto out;
+ passive:
+ 	/* Initialize the struct profile and governor data for passive device */
 -- 
 1.9.1
