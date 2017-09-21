@@ -1,60 +1,52 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 1/2] i2c: designware: switch to suspend_late/resume_early
-Date: Thu, 21 Sep 2017 16:11:19 +0200
-Message-ID: <2747669.9xpxs90BZc@aspire.rjw.lan>
-References: <20170920223152.100641-1-rajatja@google.com> <CAJZ5v0jJ-WQ15BNHrno_DFqyJU1Rn4KaBnaA5bbK8WmmmWfNgw@mail.gmail.com> <CACK8Z6HQRyjFOgubBm02zZSz_o3LOgxsNbMj0VkpwN0thfZzzg@mail.gmail.com>
+Subject: Re: S0ix failure due to "clk: x86: Do not gate clocks enabled by the firmware"
+Date: Thu, 21 Sep 2017 16:21:46 +0200
+Message-ID: <4036229.gTT6xKEFIS@aspire.rjw.lan>
+References: <20170906204237.24x6fzlfmq7jmuce@sig21.net> <20170908134920.qia2bdjvpahe3zvi@sig21.net> <20170921094013.hznamkxx5md4yhgf@sig21.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <CACK8Z6HQRyjFOgubBm02zZSz_o3LOgxsNbMj0VkpwN0thfZzzg@mail.gmail.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Rajat Jain <rajatja@google.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Furquan Shaikh <furquan@google.com>, Rajat Jain <rajatxjain@gmail.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170921094013.hznamkxx5md4yhgf@sig21.net>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Johannes Stezenbach <js@sig21.net>
+Cc: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 21, 2017 3:13:56 AM CEST Rajat Jain wrote:
-> On Wed, Sep 20, 2017 at 5:24 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Thu, Sep 21, 2017 at 12:31 AM, Rajat Jain <rajatja@google.com> wrote:
-> >> Ref: https://lkml.org/lkml/2017/9/19/649
-> >>
-> >> The bus controllers should suspend the bus operations only after
-> >> all of the devices on the bus have suspended their device
-> >> completely. Since the i2c_client drivers could be talking to
-> >> their devices in their suspend_late() calls, lets ensure that the
-> >> bus is alive by that time. Thus moving the controller suspend logic to
-> >> suspend_late().
-> >>
-> >> Signed-off-by: Rajat Jain <rajatja@google.com>
-> >> ---
-> >>  drivers/i2c/busses/i2c-designware-platdrv.c | 2 +-
-> >>  1 file changed, 1 insertion(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/busses/i2c-designware-platdrv.c
-> >> index 0e65b97842b4..66dd7f844c40 100644
-> >> --- a/drivers/i2c/busses/i2c-designware-platdrv.c
-> >> +++ b/drivers/i2c/busses/i2c-designware-platdrv.c
-> >> @@ -468,7 +468,7 @@ static int dw_i2c_plat_suspend(struct device *dev)
-> >>  static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
-> >>         .prepare = dw_i2c_plat_prepare,
-> >>         .complete = dw_i2c_plat_complete,
-> >> -       SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
-> >> +       SET_LATE_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
-> >>         SET_RUNTIME_PM_OPS(dw_i2c_plat_runtime_suspend,
-> >>                            dw_i2c_plat_resume,
-> >>                            NULL)
-> >
-> > No, you can't just do that.
-> >
-> > I sent patches to do it properly before my trip to LA last week, it
-> > shouldn't be overly difficult to find them in the mailing list
-> > archives.  I can look them up tomorrow if need be.
+On Thursday, September 21, 2017 11:40:13 AM CEST Johannes Stezenbach wrote:
+> Hi,
 > 
-> Thanks, I am guessing you mean this?
+> TL;DR: ACPI 6.1 spec interpretation question:
 > 
-> https://patchwork.kernel.org/patch/9939807/
+>   7.2 Declaring a Power Resource Object
+>   ...
+>   Power resource objects can appear wherever is convenient in the namespace.
+>   ...
+>   Systemlevel is the deepest system sleep level OSPM must maintain to keep this
+>   power resource on (0 equates to S0, 1 equates to S1, and so on).
+> 
+> Does it imply the OS should turn Power Resources off when changing
+> the system level below the systemlevel of the PowerResource?
 
-Yes, that's what I mean.
+You can interpret that this way I guess.
+
+However, so far we have not had to deal with "dangling" power resources.
+
+> Otherwise, what purpose do PowerResource objects have that are not
+> mentioned in any device _PR[0-3W]?  Or is it BIOS bug?
+
+There also is _RDI that may refer to power resources, but I'm not aware of
+anyone using it in practice ATM.
+
+Other than that, I don't see why it would ever be necessary to declare
+a power resource that is not pointed to by any of the above.
+
+At least when the "power level" is changing from S0 to anything like S3,
+the firmware gets control anyway at one point and then it is free to
+manipulate whatever power resources it needs to turn off at that point.
+
+So I would be inclined to think of that as a BIOS issue.
 
 Thanks,
 Rafael
+
