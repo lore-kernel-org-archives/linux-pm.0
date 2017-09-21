@@ -1,84 +1,73 @@
-From: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
-Subject: Re: [RFC PATCH 0/7] AXP803 AC/Battery support
-Date: Thu, 21 Sep 2017 23:20:11 +0800
-Message-ID: <CF74A2A9-B9F4-4413-975B-A0F4B24686A3@aosc.io>
-References: <20170920151814.22461-1-icenowy@aosc.io> <20170921154621.0000328d@huawei.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: x86: PIE support and option to extend KASLR randomization
+Date: Thu, 21 Sep 2017 17:59:19 +0200
+Message-ID: <20170921155919.skpyt7dutod5ul4t@gmail.com>
+References: <20170815075609.mmzbfwritjzvrpsn@gmail.com>
+ <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
+ <20170816151235.oamkdva6cwpc4cex@gmail.com>
+ <CAJcbSZFM_zpL1av1JVaow8NdsGeH+6oZKeDnMPdXR0PGfynzsg@mail.gmail.com>
+ <20170817080920.5ljlkktngw2cisfg@gmail.com>
+ <CAJcbSZGbtc-i0X1NiBAvZA7cxpGkwSLKNB7oDNCsFxOCdhkR_g@mail.gmail.com>
+ <CAJcbSZGhvwt=5ERtBHLJnwS=6AXBZLTMfrafzeUCqYy=-MKWDg@mail.gmail.com>
+ <20170825080443.tvvr6wzs362cjcuu@gmail.com>
+ <CAJcbSZFJQMKw21kLwr4QGoSM7DMgKRzzjWxkYBF2c1HciCzvGg@mail.gmail.com>
+ <CAJcbSZH6hwaWKrvUZR33ExYaZaWKMSv4tJJA3yZkniLvLbTFMw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20170921154621.0000328d-hv44wF8Li93QT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jonathan Cameron <Jonathan.Cameron-hv44wF8Li93QT0dZR+AlfA@public.gmane.org>
-Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <kernel-hardening-return-9906-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Content-Disposition: inline
+In-Reply-To: <CAJcbSZH6hwaWKrvUZR33ExYaZaWKMSv4tJJA3yZkniLvLbTFMw@mail.gmail.com>
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
 List-Id: linux-pm@vger.kernel.org
 
 
+( Sorry about the delay in answering this. I could blame the delay on the merge 
+  window, but in reality I've been procrastinating this is due to the permanent,
+  non-trivial impact PIE has on generated C code. )
 
-于 2017年9月21日 GMT+08:00 下午10:46:21, Jonathan Cameron <Jonathan.Cameron-hv44wF8Li93QT0dZR+AlfA@public.gmane.org> 写到:
->On Wed, 20 Sep 2017 23:18:07 +0800
->Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org> wrote:
->
->> The AXP803 PMIC, used by most Allwinner A64 boards, features 3 power
->inputs:
->> AC, USB and Battery.
->> 
->> This patchset adds support for the AC and Battery supplies, which is
->useful
->> for the boards from Pine64 (Pine64, SoPine w/ baseboard model A,
->Pinebook).
->> 
->> The USB supply is not yet supported in this patchset because it's not
->> present on Pine series boards.
->> 
->> In order to enable battery monitoring the ADC for battery is also
->enabled
->> for AXs.
->> 
->> In order to enable battery monitoring the ADC for battery is also
->enabled
->> for AXP803.
->
->I'll go with the obvious question...
->
->Why an RFC rather than a standard patch submission? I'm not immediately
->seeing what is controversial!
+* Thomas Garnier <thgarnie@google.com> wrote:
 
-Oh I am just not confident about this patchset,
-especially the IIO part.
+> 1) PIE sometime needs two instructions to represent a single
+> instruction on mcmodel=kernel.
 
->
->Jonathan
->
->> 
->> Icenowy Zheng (7):
->>   dt-bindings: add compatibles for AXP803 Battery/USB power supplies
->>   iio: adc: axp20x-adc: allow to skip ADC rate setup now
->>   iio: adc: axp20x-adc: add support for AXP803
->>   power: supply: axp20x-battery: support AXP803
->>   mfd: axp20x: add cells for AXP803 ADC/AC Power/Battery
->>   arm64: allwinner: a64: add power supply nodes in AXP803 DTSI
->>   arm64: allwinner: a64: enable AC and Battery for Pine64
->> 
->>  .../bindings/power/supply/axp20x_battery.txt       |   1 +
->>  .../bindings/power/supply/axp20x_usb_power.txt     |   1 +
->>  arch/arm64/boot/dts/allwinner/axp803.dtsi          |  15 +++
->>  .../arm64/boot/dts/allwinner/sun50i-a64-pine64.dts |   8 ++
->>  drivers/iio/adc/axp20x_adc.c                       | 114
->++++++++++++++++++++-
->>  drivers/mfd/axp20x.c                               |  11 ++
->>  drivers/power/supply/axp20x_battery.c              |  88
->++++++++++++++--
->>  7 files changed, 226 insertions(+), 12 deletions(-)
->> 
->
->
->_______________________________________________
->linux-arm-kernel mailing list
->linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
->http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+What again is the typical frequency of this occurring in an x86-64 defconfig 
+kernel, with the very latest GCC?
+
+Also, to make sure: which unwinder did you use for your measurements, 
+frame-pointers or ORC? Please use ORC only for future numbers, as
+frame-pointers is obsolete from a performance measurement POV.
+
+> 2) GCC does not optimize switches in PIE in order to reduce relocations:
+
+Hopefully this can either be fixed in GCC or at least influenced via a compiler 
+switch in the future.
+
+> The switches are the biggest increase on small functions but I don't
+> think they represent a large portion of the difference (number 1 is).
+
+Ok.
+
+> A side note, while testing gcc 7.2.0 on hackbench I have seen the PIE
+> kernel being faster by 1% across multiple runs (comparing 50 runs done
+> across 5 reboots twice). I don't think PIE is faster than a
+> mcmodel=kernel but recent versions of gcc makes them fairly similar.
+
+So I think we are down to an overhead range where the inherent noise (both random 
+and systematic one) in 'hackbench' overwhelms the signal we are trying to measure.
+
+So I think it's the kernel .text size change that is the best noise-free proxy for 
+the overhead impact of PIE.
+
+It doesn't hurt to double check actual real performance as well, just don't expect 
+there to be much of a signal for anything but fully cached microbenchmark 
+workloads.
+
+Thanks,
+
+	Ingo
