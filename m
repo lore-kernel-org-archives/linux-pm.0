@@ -1,113 +1,114 @@
-From: Johannes Stezenbach <js@sig21.net>
-Subject: Re: S0ix failure due to "clk: x86: Do not gate clocks enabled by the
- firmware"
-Date: Thu, 21 Sep 2017 11:40:13 +0200
-Message-ID: <20170921094013.hznamkxx5md4yhgf@sig21.net>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
- <5bb7e3ca-38fc-1184-3bca-f666275c6180@linux.intel.com>
- <20170908134920.qia2bdjvpahe3zvi@sig21.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170908134920.qia2bdjvpahe3zvi@sig21.net>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
-Cc: linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: sunil.m@techveda.org
+Subject: [PATCH v3] drivers: cpufreq: Fix sysfs duplicate filename creation for platform-device
+Date: Thu, 21 Sep 2017 19:09:03 +0530
+Message-ID: <1506001143-20175-1-git-send-email-sunil.m@techveda.org>
+References: <20170919223645.GD30848@ubuntu>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170919223645.GD30848@ubuntu>
+Sender: linux-kernel-owner@vger.kernel.org
+To: viresh.kumar@linaro.org
+Cc: d-gerlach@ti.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, karthik@techveda.org, Suniel Mahesh <sunil.m@techveda.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+From: Suniel Mahesh <sunil.m@techveda.org>
 
-TL;DR: ACPI 6.1 spec interpretation question:
+ti-cpufreq and cpufreq-dt-platdev drivers are registering platform-device
+with same name "cpufreq-dt" using platform_device_register_*() routines.
+This is leading to build warnings appended below.
 
-  7.2 Declaring a Power Resource Object
-  ...
-  Power resource objects can appear wherever is convenient in the namespace.
-  ...
-  Systemlevel is the deepest system sleep level OSPM must maintain to keep this
-  power resource on (0 equates to S0, 1 equates to S1, and so on).
+Providing hardware information to OPP framework along with the platform-
+device creation should be done by ti-cpufreq driver before cpufreq-dt
+driver comes into place.
 
-Does it imply the OS should turn Power Resources off when changing
-the system level below the systemlevel of the PowerResource?
+This patch add's TI am33xx, am43 and dra7 platforms (which use opp-v2
+property) to the blacklist of devices in cpufreq-dt-platform driver to
+avoid creating platform-device twice and remove build warnings.
 
-Otherwise, what purpose do PowerResource objects have that are not
-mentioned in any device _PR[0-3W]?  Or is it BIOS bug?
+[    2.370167] ------------[ cut here ]------------
+[    2.375087] WARNING: CPU: 0 PID: 1 at fs/sysfs/dir.c:31 sysfs_warn_dup+0x58/0x78
+[    2.383112] sysfs: cannot create duplicate filename '/devices/platform/cpufreq-dt'
+[    2.391219] Modules linked in:
+[    2.394506] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.13.0-next-20170912 #1
+[    2.402006] Hardware name: Generic AM33XX (Flattened Device Tree)
+[    2.408437] [<c0110a28>] (unwind_backtrace) from [<c010ca84>] (show_stack+0x10/0x14)
+[    2.416568] [<c010ca84>] (show_stack) from [<c0827d64>] (dump_stack+0xac/0xe0)
+[    2.424165] [<c0827d64>] (dump_stack) from [<c0137470>] (__warn+0xd8/0x104)
+[    2.431488] [<c0137470>] (__warn) from [<c01374d0>] (warn_slowpath_fmt+0x34/0x44)
+[    2.439351] [<c01374d0>] (warn_slowpath_fmt) from [<c03459d0>] (sysfs_warn_dup+0x58/0x78)
+[    2.447938] [<c03459d0>] (sysfs_warn_dup) from [<c0345ab8>] (sysfs_create_dir_ns+0x80/0x98)
+[    2.456719] [<c0345ab8>] (sysfs_create_dir_ns) from [<c082c554>] (kobject_add_internal+0x9c/0x2d4)
+[    2.466124] [<c082c554>] (kobject_add_internal) from [<c082c7d8>] (kobject_add+0x4c/0x9c)
+[    2.474712] [<c082c7d8>] (kobject_add) from [<c05803e4>] (device_add+0xcc/0x57c)
+[    2.482489] [<c05803e4>] (device_add) from [<c0584b74>] (platform_device_add+0x100/0x220)
+[    2.491085] [<c0584b74>] (platform_device_add) from [<c05855a8>] (platform_device_register_full+0xf4/0x118)
+[    2.501305] [<c05855a8>] (platform_device_register_full) from [<c067023c>] (ti_cpufreq_init+0x150/0x22c)
+[    2.511253] [<c067023c>] (ti_cpufreq_init) from [<c0101df4>] (do_one_initcall+0x3c/0x170)
+[    2.519838] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>] (kernel_init_freeable+0x1fc/0x2c4)
+[    2.528974] [<c0c00eb4>] (kernel_init_freeable) from [<c083bcac>] (kernel_init+0x8/0x110)
+[    2.537565] [<c083bcac>] (kernel_init) from [<c0107d18>] (ret_from_fork+0x14/0x3c)
+[    2.545981] ---[ end trace 2fc00e213c13ab20 ]---
+[    2.551051] ------------[ cut here ]------------
+[    2.555931] WARNING: CPU: 0 PID: 1 at lib/kobject.c:240 kobject_add_internal+0x254/0x2d4
+[    2.564578] kobject_add_internal failed for cpufreq-dt with -EEXIST, don't try to register
+things with the same name in the same directory.
+[    2.577977] Modules linked in:
+[    2.581261] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G        W       4.13.0-next-20170912 #1
+[    2.590013] Hardware name: Generic AM33XX (Flattened Device Tree)
+[    2.596437] [<c0110a28>] (unwind_backtrace) from [<c010ca84>] (show_stack+0x10/0x14)
+[    2.604573] [<c010ca84>] (show_stack) from [<c0827d64>] (dump_stack+0xac/0xe0)
+[    2.612172] [<c0827d64>] (dump_stack) from [<c0137470>] (__warn+0xd8/0x104)
+[    2.619494] [<c0137470>] (__warn) from [<c01374d0>] (warn_slowpath_fmt+0x34/0x44)
+[    2.627362] [<c01374d0>] (warn_slowpath_fmt) from [<c082c70c>] (kobject_add_internal+0x254/0x2d4)
+[    2.636666] [<c082c70c>] (kobject_add_internal) from [<c082c7d8>] (kobject_add+0x4c/0x9c)
+[    2.645255] [<c082c7d8>] (kobject_add) from [<c05803e4>] (device_add+0xcc/0x57c)
+[    2.653027] [<c05803e4>] (device_add) from [<c0584b74>] (platform_device_add+0x100/0x220)
+[    2.661615] [<c0584b74>] (platform_device_add) from [<c05855a8>] (platform_device_register_full+0xf4/0x118)
+[    2.671833] [<c05855a8>] (platform_device_register_full) from [<c067023c>] (ti_cpufreq_init+0x150/0x22c)
+[    2.681779] [<c067023c>] (ti_cpufreq_init) from [<c0101df4>] (do_one_initcall+0x3c/0x170)
+[    2.690377] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>] (kernel_init_freeable+0x1fc/0x2c4)
+[    2.699510] [<c0c00eb4>] (kernel_init_freeable) from [<c083bcac>] (kernel_init+0x8/0x110)
+[    2.708106] [<c083bcac>] (kernel_init) from [<c0107d18>] (ret_from_fork+0x14/0x3c)
+[    2.716217] ---[ end trace 2fc00e213c13ab21 ]---
 
+Fixes: edeec420de24 ("cpufreq: dt-cpufreq: platdev Automatically create device with OPP v2")
+Signed-off-by: Suniel Mahesh <sunil.m@techveda.org>
+---
+Changes for v3:
+- Added ti,am43 and ti,dra7 platforms to the blacklist as requested
+  by Dave Gerlach.
+- Patch Description modified a bit.
+- Patch was rebased on pm/linux-next as suggested by Viresh, compile
+  tested and built(ARCH=arm) on both linux/pm-next and next-20170918.
+---
+Changes for v2:
+- The approach (as a result patch decsription) was changed as per
+  inputs given by Viresh.
+- Patch was compile tested and built(ARCH=arm) on next-20170918.
+---
+Note:
+- Patch was hardware tested on AM335x SOC based board.
+- cpufreq-dt driver got probed and entries related to Dynamic Voltage
+  and Frequency scaling were created in
+  sysfs @ sys/devices/system/cpu/cpu0/cpufreq.
+- No build/run-time issues reported.
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Thanks,
-Johannes
-
-On Fri, Sep 08, 2017 at 03:49:20PM +0200, Johannes Stezenbach wrote:
-> (adding linux-acpi)
-> 
-> On Wed, Sep 06, 2017 at 04:02:10PM -0500, Pierre-Louis Bossart wrote:
-> > On 9/6/17 3:42 PM, Johannes Stezenbach wrote:
-> > > I'm poking around on Asus E200HA, based on Atom x5-Z8300 (Cherrytrail),
-> > > trying to get S0ix working, atm with gross hacks that are recorded in
-> > > https://bugzilla.kernel.org/show_bug.cgi?id=193891
-> > > 
-> > > 
-> > > I found commit d31fd43c0f9a4 "clk: x86: Do not gate clocks enabled by the firmware"
-> > > prevents S0i3 entry.  Unfortunately the commit message doesn't explain
-> > > the problem it fixes, nor does it mention the platform.
-> > > 
-> > > How can we fix d31fd43c0f9a4 to not break S0i3?
-> > 
-> > In the existing audio machine drivers, I only use the clock framework for
-> > Baytrail. on Cherrytrail, the pmc_platform_clk3 used for the audio MCLK is
-> > actually managed by the BIOS (look for CLK3 in the DSDT) so there is no
-> > activity in the drivers, the audio don't even get/prepare/enable the
-> > pmc_platform_clk3 so I would guess there is an issue with a non-audio driver
-> > or the BIOS. Put differently, it may be so that by allowing the drivers to
-> > gate an unused clock we allowed you to enter S0i3 even if the bios didn't
-> > enable this mode. I would remove all pmc-clock related stuff and see what
-> > happens.
-> 
-> Thanks for this info and Carlo's reply.  I've been busy reading
-> source code, DSDT and ACPI spec, and now I'm confused. ;-/
-> 
-> As you say, these clocks are managed by BIOS and
-> clk-pmc-atom.c shouldn't mess with them, thus
-> d31fd43c0f9a4 is correct.  Nothing else in the
-> system besides sound/soc/intel/boards/ uses
-> pmc_plt_clk_3 (or other pmc_plt_clk*).
-> 
-> Now the question is why ACPI doesn't handle the clocks.
-> 
-> E200HA DSDT https://bugzilla.kernel.org/attachment.cgi?id=253921
-> has PowerResource defintions for the clocks
-> (where _ON and _OFF just set the same registers that
-> clk-pmc-atom.c uses, e.g. CKC3 at 0x6c for CLK3).
-> However, these PowerResources are only listed as child nodes
-> of the devices that use them, but are not referenced by _PR[0-3],
-> with the exception of CLK3 used by the audio codec.
-> 
-> The power resources exist in /sys as LNXPOWER:xx subnodes
-> of the device (e.g. i2c 809622C1:02/LNXPOWER:05) and are
-> also listed during boot.
-> 
-> acpi_bus_init_power_state() sets device->power.flags.power_resources = 1
-> only if _PR[0-3] exist.  Then acpi_device_set_power() only
-> calls acpi_power_transition() if power_resource == 1,
-> and acpi_power_transition() would only call acpi_power_off_list()
-> for the resources according to _PR[0-3].
-> 
-> I think this is all OK, maybe the BIOS is not optimal in
-> making the clocks available for device runtime pm.
-> What doesn't seem to happen, though, is that the PowerResources
-> are turned _OFF when system transitions to S0ix.  The PowerResources
-> have systemlevel == 0, meaning they should be turned off when the
-> system transitions out of S0, if I'm understanding the ACPI (6.1)
-> spec correctly in section 7.2 Declaring a Power Resource Object.
-> Well, actually I'm not sure, the wording of the ACPI spec is:
-> 
->   "Systemlevel is the deepest system sleep level OSPM must maintain to keep
->   this power resource on (0 equates to S0, 1 equates to S1, and so on)."
-> 
-> FWIW, I used "echo 0x00800000 >/sys/module/acpi/parameters/debug_layer"
-> to confirm devices transition between D0 and D3hot, but clock
-> resources are never turned off.
-> 
-> 
-> Johannes
-> 
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 430edad..a753c50 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -118,6 +118,10 @@
+ 
+ 	{ .compatible = "sigma,tango4", },
+ 
++	{ .compatible = "ti,am33xx", },
++	{ .compatible = "ti,am43", },
++	{ .compatible = "ti,dra7", },
++
+ 	{ }
+ };
+ 
+-- 
+1.9.1
