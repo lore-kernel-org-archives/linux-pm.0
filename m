@@ -1,75 +1,84 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] mfd: intel-lpss: switch to suspend_late()/resume_early()
-Date: Thu, 21 Sep 2017 17:18:56 +0200
-Message-ID: <CAJZ5v0hnOxRUYt-ze-DUGxwbdQH3nmNnWt4GEGpiRHsggGkZDg@mail.gmail.com>
-References: <20170920223152.100641-1-rajatja@google.com> <CAJZ5v0iB6=C953zPBYW8fB+XW7fq4fwyP2W4S=ocgNwWic+gPg@mail.gmail.com>
- <20170921084133.pptabevkolnwv2wy@dell> <1817408.bhcOjT5fdi@aspire.rjw.lan> <20170921151734.x5vfsmfycm73wtdw@dell>
+From: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
+Subject: Re: [RFC PATCH 0/7] AXP803 AC/Battery support
+Date: Thu, 21 Sep 2017 23:20:11 +0800
+Message-ID: <CF74A2A9-B9F4-4413-975B-A0F4B24686A3@aosc.io>
+References: <20170920151814.22461-1-icenowy@aosc.io> <20170921154621.0000328d@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20170921151734.x5vfsmfycm73wtdw@dell>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Rajat Jain <rajatja@google.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, furquan@google.com, rajatxjain@gmail.com
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20170921154621.0000328d-hv44wF8Li93QT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jonathan Cameron <Jonathan.Cameron-hv44wF8Li93QT0dZR+AlfA@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Sep 21, 2017 at 5:17 PM, Lee Jones <lee.jones@linaro.org> wrote:
-> On Thu, 21 Sep 2017, Rafael J. Wysocki wrote:
->
->> On Thursday, September 21, 2017 10:41:33 AM CEST Lee Jones wrote:
->> > On Thu, 21 Sep 2017, Rafael J. Wysocki wrote:
->> >
->> > > On Thu, Sep 21, 2017 at 12:31 AM, Rajat Jain <rajatja@google.com> wrote:
->> > > > Ref: https://lkml.org/lkml/2017/9/19/649
->> > > >
->> > > > The intel-lpss hosts the designware i2c controller device, which
->> > > > needs to be up and running until all its i2c child devices have
->> > > > suspended (child devices need to be accessible over i2c until
->> > > > suspend_late() has been called for all those devices).
->> > > >
->> > > > So lets delay the resetting of the controller until suspend_late().
->> > > > I thought of renaming function to say *_late / *_early but that
->> > > > might cause confusion since the same function is also used for runtime
->> > > > suspend/resume.
->> > > >
->> > > > Fixes: 0b471aaa0e1a ("Put I2C and SPI controllers into reset state on suspend")
->> > > > Signed-off-by: Rajat Jain <rajatja@google.com>
->> > > > ---
->> > > >  drivers/mfd/intel-lpss.h | 7 +------
->> > > >  1 file changed, 1 insertion(+), 6 deletions(-)
->> > > >
->> > > > diff --git a/drivers/mfd/intel-lpss.h b/drivers/mfd/intel-lpss.h
->> > > > index 694116630ffa..865bbeaaf00c 100644
->> > > > --- a/drivers/mfd/intel-lpss.h
->> > > > +++ b/drivers/mfd/intel-lpss.h
->> > > > @@ -38,12 +38,7 @@ int intel_lpss_resume(struct device *dev);
->> > > >  #ifdef CONFIG_PM_SLEEP
->> > > >  #define INTEL_LPSS_SLEEP_PM_OPS                        \
->> > > >         .prepare = intel_lpss_prepare,          \
->> > > > -       .suspend = intel_lpss_suspend,          \
->> > > > -       .resume = intel_lpss_resume,            \
->> > > > -       .freeze = intel_lpss_suspend,           \
->> > > > -       .thaw = intel_lpss_resume,              \
->> > > > -       .poweroff = intel_lpss_suspend,         \
->> > > > -       .restore = intel_lpss_resume,
->> > > > +       SET_LATE_SYSTEM_SLEEP_PM_OPS(intel_lpss_suspend, intel_lpss_resume)
->> > > >  #else
->> > > >  #define INTEL_LPSS_SLEEP_PM_OPS
->> > > >  #endif
->> > >
->> > > So I sent this exact patch several days ago:
->> > > https://patchwork.kernel.org/patch/9939809/
->> >
->> > You did?
->>
->> Yes, I did.
->>
->> > Any reason you didn't send it to me?
->>
->> Well, Lee Jones <lee@kernel.org> is very much in the CC list of it.
->>
->> Was I expected to use a different e-mail address for that?
->
-> I don't monitor that one.  Better to use the one in MAINTAINERS.
 
-OK, I will in the future.
+
+于 2017年9月21日 GMT+08:00 下午10:46:21, Jonathan Cameron <Jonathan.Cameron-hv44wF8Li93QT0dZR+AlfA@public.gmane.org> 写到:
+>On Wed, 20 Sep 2017 23:18:07 +0800
+>Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org> wrote:
+>
+>> The AXP803 PMIC, used by most Allwinner A64 boards, features 3 power
+>inputs:
+>> AC, USB and Battery.
+>> 
+>> This patchset adds support for the AC and Battery supplies, which is
+>useful
+>> for the boards from Pine64 (Pine64, SoPine w/ baseboard model A,
+>Pinebook).
+>> 
+>> The USB supply is not yet supported in this patchset because it's not
+>> present on Pine series boards.
+>> 
+>> In order to enable battery monitoring the ADC for battery is also
+>enabled
+>> for AXs.
+>> 
+>> In order to enable battery monitoring the ADC for battery is also
+>enabled
+>> for AXP803.
+>
+>I'll go with the obvious question...
+>
+>Why an RFC rather than a standard patch submission? I'm not immediately
+>seeing what is controversial!
+
+Oh I am just not confident about this patchset,
+especially the IIO part.
+
+>
+>Jonathan
+>
+>> 
+>> Icenowy Zheng (7):
+>>   dt-bindings: add compatibles for AXP803 Battery/USB power supplies
+>>   iio: adc: axp20x-adc: allow to skip ADC rate setup now
+>>   iio: adc: axp20x-adc: add support for AXP803
+>>   power: supply: axp20x-battery: support AXP803
+>>   mfd: axp20x: add cells for AXP803 ADC/AC Power/Battery
+>>   arm64: allwinner: a64: add power supply nodes in AXP803 DTSI
+>>   arm64: allwinner: a64: enable AC and Battery for Pine64
+>> 
+>>  .../bindings/power/supply/axp20x_battery.txt       |   1 +
+>>  .../bindings/power/supply/axp20x_usb_power.txt     |   1 +
+>>  arch/arm64/boot/dts/allwinner/axp803.dtsi          |  15 +++
+>>  .../arm64/boot/dts/allwinner/sun50i-a64-pine64.dts |   8 ++
+>>  drivers/iio/adc/axp20x_adc.c                       | 114
+>++++++++++++++++++++-
+>>  drivers/mfd/axp20x.c                               |  11 ++
+>>  drivers/power/supply/axp20x_battery.c              |  88
+>++++++++++++++--
+>>  7 files changed, 226 insertions(+), 12 deletions(-)
+>> 
+>
+>
+>_______________________________________________
+>linux-arm-kernel mailing list
+>linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+>http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
