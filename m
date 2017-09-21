@@ -1,56 +1,51 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH V2] PM / OPP: Call notifier without holding
- opp_table->lock
-Date: Thu, 21 Sep 2017 08:58:37 +0900
-Message-ID: <59C300AD.6000309@samsung.com>
-References: <59C2414E.6020803@samsung.com>
-        <CGME20170920202534epcas3p4c5f11e910684af4974e114e3c057901d@epcas3p4.samsung.com>
-        <5b70f7bdf12975f869a83f77e36bf3a40e0fa4b9.1505939072.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/2] i2c: designware: switch to suspend_late/resume_early
+Date: Thu, 21 Sep 2017 02:24:59 +0200
+Message-ID: <CAJZ5v0jJ-WQ15BNHrno_DFqyJU1Rn4KaBnaA5bbK8WmmmWfNgw@mail.gmail.com>
+References: <20170920223152.100641-1-rajatja@google.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:63826 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751584AbdITX6l (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2017 19:58:41 -0400
-In-reply-to: <5b70f7bdf12975f869a83f77e36bf3a40e0fa4b9.1505939072.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170920223152.100641-1-rajatja@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rajat Jain <rajatja@google.com>
+Cc: Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, furquan@google.com, rajatxjain@gmail.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, myungjoo.ham@samsung.com, inki.dae@samsung.com, linux-kernel@vger.kernel.org
 
-Hi Viresh,
-
-On 2017년 09월 21일 05:25, Viresh Kumar wrote:
-> The notifier callbacks may want to call some OPP helper routines which
-> may try to take the same opp_table->lock again and cause a deadlock. One
-> such usecase was reported by Chanwoo Choi, where calling
-> dev_pm_opp_disable() leads us to the devfreq's OPP notifier handler,
-> which further calls dev_pm_opp_find_freq_floor() and it deadlocks.
-> 
-> We don't really need the opp_table->lock to be held across the notifier
-> call though, all we want to make sure is that the 'opp' doesn't get
-> freed while being used from within the notifier chain. We can do it with
-> help of dev_pm_opp_get/put() as well. Let's do it.
-> 
-> Reported-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Thu, Sep 21, 2017 at 12:31 AM, Rajat Jain <rajatja@google.com> wrote:
+> Ref: https://lkml.org/lkml/2017/9/19/649
+>
+> The bus controllers should suspend the bus operations only after
+> all of the devices on the bus have suspended their device
+> completely. Since the i2c_client drivers could be talking to
+> their devices in their suspend_late() calls, lets ensure that the
+> bus is alive by that time. Thus moving the controller suspend logic to
+> suspend_late().
+>
+> Signed-off-by: Rajat Jain <rajatja@google.com>
 > ---
-> V1->V2:
-> - s/Lets/Let's/ in commit log and added Stephen's tag.
-> 
+>  drivers/i2c/busses/i2c-designware-platdrv.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/busses/i2c-designware-platdrv.c
+> index 0e65b97842b4..66dd7f844c40 100644
+> --- a/drivers/i2c/busses/i2c-designware-platdrv.c
+> +++ b/drivers/i2c/busses/i2c-designware-platdrv.c
+> @@ -468,7 +468,7 @@ static int dw_i2c_plat_suspend(struct device *dev)
+>  static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
+>         .prepare = dw_i2c_plat_prepare,
+>         .complete = dw_i2c_plat_complete,
+> -       SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
+> +       SET_LATE_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
+>         SET_RUNTIME_PM_OPS(dw_i2c_plat_runtime_suspend,
+>                            dw_i2c_plat_resume,
+>                            NULL)
 
-Thanks for your fixup. Looks good to me.
-IMHO, this patch should be posted to stable@vger.kernel.org.
+No, you can't just do that.
 
-Tested-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+I sent patches to do it properly before my trip to LA last week, it
+shouldn't be overly difficult to find them in the mailing list
+archives.  I can look them up tomorrow if need be.
 
-[snip] 
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Thanks,
+Rafael
