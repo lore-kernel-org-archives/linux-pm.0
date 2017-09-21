@@ -1,13 +1,14 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 6/8] PM / devfreq: Remove unneeded conditional statement
-Date: Thu, 21 Sep 2017 09:33:50 +0900
-Message-ID: <1505954032-3327-7-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v2 3/8] PM / devfreq: Show the available min/max frequency
+ through sysfs node
+Date: Thu, 21 Sep 2017 09:33:47 +0900
+Message-ID: <1505954032-3327-4-git-send-email-cw00.choi@samsung.com>
 References: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20170921003356epcas1p246204a12c12e4c9ed94771dc25ce143d@epcas1p2.samsung.com>
+        <CGME20170921003355epcas1p24e2126b498dedf4c1112bac783de187b@epcas1p2.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:40373 "EHLO
+Received: from mailout2.samsung.com ([203.254.224.25]:40367 "EHLO
         mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751976AbdIUAd6 (ORCPT
+        with ESMTP id S1751938AbdIUAd6 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2017 20:33:58 -0400
 In-reply-to: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -15,33 +16,54 @@ List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
 Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The commit 0ec09ac2cebe9 ("PM / devfreq: Set the freq_table of devfreq
-device") initializes the freq_table array of each devfreq device always.
-In result, it is unneeded to check whether profile->freq_table is NULL
-or not.
+The existing {min|max}_freq sysfs nodes don't consider whether min/max_freq
+are available or not. Those sysfs nodes show just the stored value
+in the struct devfreq.
+
+The devfreq uses the OPP interface and then dev_pm_opp_{disable|add}()
+might change the state of the device's supported frequency. This patch
+shows the available minimum and maximum frequency through sysfs node.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/devfreq.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/devfreq/devfreq.c | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 3b9662ffe603..b28810cae7ee 100644
+index 2ce1fd0a1324..799a0cf75d39 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -315,10 +315,9 @@ int update_devfreq(struct devfreq *devfreq)
- 	freqs.new = freq;
- 	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
+@@ -1128,7 +1128,14 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+ static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
+ 			     char *buf)
+ {
+-	return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
++	struct devfreq *df = to_devfreq(dev);
++	unsigned long min_freq = to_devfreq(dev)->min_freq;
++	unsigned long available_min_freq = find_available_min_freq(df);
++
++	if (available_min_freq != 0 && min_freq < available_min_freq)
++		min_freq = available_min_freq;
++
++	return sprintf(buf, "%lu\n", min_freq);
+ }
  
--	if (devfreq->profile->freq_table)
--		if (devfreq_update_status(devfreq, freq))
--			dev_err(&devfreq->dev,
--				"Couldn't update frequency transition information.\n");
-+	if (devfreq_update_status(devfreq, freq))
-+		dev_err(&devfreq->dev,
-+			"Couldn't update frequency transition information.\n");
+ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+@@ -1162,7 +1169,14 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
+ 			     char *buf)
+ {
+-	return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
++	struct devfreq *df = to_devfreq(dev);
++	unsigned long max_freq = to_devfreq(dev)->max_freq;
++	unsigned long available_max_freq = find_available_max_freq(df);
++
++	if (available_max_freq != 0 && max_freq > available_max_freq)
++		max_freq = available_max_freq;
++
++	return sprintf(buf, "%lu\n", max_freq);
+ }
+ static DEVICE_ATTR_RW(max_freq);
  
- 	devfreq->previous_freq = freq;
- 	return err;
 -- 
 1.9.1
