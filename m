@@ -1,90 +1,50 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 8/8] PM / devfreq: exynos-bus: Register cooling
- device
-Date: Thu, 21 Sep 2017 13:57:51 +0900
-Message-ID: <59C346CF.6010105@samsung.com>
-References: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20170921003356epcas1p34bf88ccd1b9630577a83f14f0c291b1d@epcas1p3.samsung.com>
-        <1505954032-3327-9-git-send-email-cw00.choi@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-reply-to: <1505954032-3327-9-git-send-email-cw00.choi@samsung.com>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [PATCH v2] PM / OPP: Use snprintf to avoid kasprintf and kfree
+Date: Thu, 21 Sep 2017 11:15:36 +0530
+Message-ID: <6cdcf0c59a9a045941188356a2c4973c876c9fc6.1505972576.git.arvind.yadav.cs@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:37114 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751387AbdIUFqh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2017 01:46:37 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Dear all,
+Use snprintf to avoid unnecessary initializations, avoid calling kfree.
 
-Please ignore this patch. It has some problem.
-I'll fix and resend this patch on v2.
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+changes in v2:
+             Remove kasprintf instead of error checking.
 
-Chanwoo Choi
-Samsung Electronics
+ drivers/base/power/opp/debugfs.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-On 2017년 09월 21일 09:33, Chanwoo Choi wrote:
-> This patch registers the Exynos Bus-Frequency scaling device
-> as a cooling device of thermal management.
-> 
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: Krzysztof Kozlowski <krzk@kernel.org>
-> Cc: linux-samsung-soc@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-kernel@vger.kernel.org
-> ---
->  drivers/devfreq/Kconfig      |  1 +
->  drivers/devfreq/exynos-bus.c | 11 +++++++++++
->  2 files changed, 12 insertions(+)
-> 
-> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-> index 6a172d338f6d..eb8128e08b2c 100644
-> --- a/drivers/devfreq/Kconfig
-> +++ b/drivers/devfreq/Kconfig
-> @@ -81,6 +81,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
->  	select DEVFREQ_GOV_SIMPLE_ONDEMAND
->  	select DEVFREQ_GOV_PASSIVE
->  	select DEVFREQ_EVENT_EXYNOS_PPMU
-> +	select DEVFREQ_THERMAL
->  	select PM_DEVFREQ_EVENT
->  	select PM_OPP
->  	help
-> diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-> index c25658b26598..200ca0d11834 100644
-> --- a/drivers/devfreq/exynos-bus.c
-> +++ b/drivers/devfreq/exynos-bus.c
-> @@ -15,6 +15,7 @@
->  #include <linux/clk.h>
->  #include <linux/devfreq.h>
->  #include <linux/devfreq-event.h>
-> +#include <linux/devfreq_cooling.h>
->  #include <linux/device.h>
->  #include <linux/export.h>
->  #include <linux/module.h>
-> @@ -41,6 +42,8 @@ struct exynos_bus {
->  	struct clk *clk;
->  	unsigned int voltage_tolerance;
->  	unsigned int ratio;
-> +
-> +	struct thermal_cooling_device *cdev;
->  };
->  
->  /*
-> @@ -468,6 +471,14 @@ static int exynos_bus_probe(struct platform_device *pdev)
->  		goto err;
->  	}
->  
-> +	/* Register devfreq cooling device */
-> +	bus->cdev = of_devfreq_cooling_register(np, bus->devfreq);
-> +	if (IS_ERR(bus->cdev) < 0) {
-> +		dev_err(dev, "failed to register cooling device\n");
-> +		ret = PTR_ERR(bus->cdev);
-> +		goto err;
-> +	}
-> +
->  	goto out;
->  passive:
->  	/* Initialize the struct profile and governor data for passive device */
-> 
+diff --git a/drivers/base/power/opp/debugfs.c b/drivers/base/power/opp/debugfs.c
+index 81cf120..a2fa785 100644
+--- a/drivers/base/power/opp/debugfs.c
++++ b/drivers/base/power/opp/debugfs.c
+@@ -41,16 +41,15 @@ static bool opp_debug_create_supplies(struct dev_pm_opp *opp,
+ {
+ 	struct dentry *d;
+ 	int i;
+-	char *name;
+ 
+ 	for (i = 0; i < opp_table->regulator_count; i++) {
+-		name = kasprintf(GFP_KERNEL, "supply-%d", i);
++		char name[15];
++
++		snprintf(name, sizeof(name), "supply-%d", i);
+ 
+ 		/* Create per-opp directory */
+ 		d = debugfs_create_dir(name, pdentry);
+ 
+-		kfree(name);
+-
+ 		if (!d)
+ 			return false;
+ 
+-- 
+1.9.1
