@@ -1,42 +1,66 @@
-From: Johannes Stezenbach <js@sig21.net>
-Subject: Re: S0ix failure due to "clk: x86: Do not gate clocks enabled by the
- firmware"
-Date: Thu, 21 Sep 2017 18:23:07 +0200
-Message-ID: <20170921162307.amdz2uyei7eackhs@sig21.net>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
- <20170908134920.qia2bdjvpahe3zvi@sig21.net>
- <20170921094013.hznamkxx5md4yhgf@sig21.net>
- <4036229.gTT6xKEFIS@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4036229.gTT6xKEFIS@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH V3] PM / OPP: Call notifier without holding opp_table->lock
+Date: Thu, 21 Sep 2017 10:44:36 -0700
+Message-ID: <a6e29a1fb9b5fa50f57c76e78287d321e2d26a4a.1506015797.git.viresh.kumar@linaro.org>
+References: <59C2414E.6020803@samsung.com>
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <59C2414E.6020803@samsung.com>
+Sender: stable-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, cw00.choi@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, myungjoo.ham@samsung.com, inki.dae@samsung.com, "4 . 11+ # 4 . 11+" <stable@vger.kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Sep 21, 2017 at 04:21:46PM +0200, Rafael J. Wysocki wrote:
-> So I would be inclined to think of that as a BIOS issue.
+The notifier callbacks may want to call some OPP helper routines which
+may try to take the same opp_table->lock again and cause a deadlock. One
+such usecase was reported by Chanwoo Choi, where calling
+dev_pm_opp_disable() leads us to the devfreq's OPP notifier handler,
+which further calls dev_pm_opp_find_freq_floor() and it deadlocks.
 
-OK, wrt $Subject it sparks the question how to fix the
-issue exposed by commit d31fd43c0f9a4 "clk: x86: Do not
-gate clocks enabled by the firmware".  Add quirks to
-the drivers for the devices that have the dangling
-PowerResources and manually call _OFF/_ON during suspend/resume?
+We don't really need the opp_table->lock to be held across the notifier
+call though, all we want to make sure is that the 'opp' doesn't get
+freed while being used from within the notifier chain. We can do it with
+help of dev_pm_opp_get/put() as well. Let's do it.
 
-I must admit I haven't looked deeper into the issue yet,
-i.e. I don't know which clock causes S0ix failure.
-If I understand correctly, before d31fd43c0f9a4 the
-clk framework would just disable all unused clocks
-registered by clk-pmc-atom.c, which are all of then except
-CLK3 which is used by the audio codec. And the audio codec
-would disable CLK3 during suspend.
-After d31fd43c0f9a4 all clocks that BIOS had enabled during boot
-are kept running.  Presumably we could also add the quirk to
-clk-pmc-atom.c to bypass what d31fd43c0f9a4 added on Asus E200HA?
+Cc: 4.11+ <stable@vger.kernel.org> # 4.11+
+Fixes: 5b650b388844 ("PM / OPP: Take kref from _find_opp_table()")
+Reported-by: Chanwoo Choi <cw00.choi@samsung.com>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Tested-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V2->V3:
+- Added fixes, Cc and tags from Chanwoo.
 
+ drivers/base/power/opp/core.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-Thanks,
-Johannes
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index 4360b4efcd4c..668fd940d362 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -1627,6 +1627,9 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
+ 
+ 	opp->available = availability_req;
+ 
++	dev_pm_opp_get(opp);
++	mutex_unlock(&opp_table->lock);
++
+ 	/* Notify the change of the OPP availability */
+ 	if (availability_req)
+ 		blocking_notifier_call_chain(&opp_table->head, OPP_EVENT_ENABLE,
+@@ -1635,8 +1638,12 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
+ 		blocking_notifier_call_chain(&opp_table->head,
+ 					     OPP_EVENT_DISABLE, opp);
+ 
++	dev_pm_opp_put(opp);
++	goto put_table;
++
+ unlock:
+ 	mutex_unlock(&opp_table->lock);
++put_table:
+ 	dev_pm_opp_put_opp_table(opp_table);
+ 	return r;
+ }
+-- 
+2.7.4
