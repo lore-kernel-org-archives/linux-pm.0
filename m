@@ -1,98 +1,79 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 0/8] PM / devfreq: Use OPP interface to handle the
- frequency
-Date: Thu, 21 Sep 2017 09:33:44 +0900
-Message-ID: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-References: <CGME20170921003355epcas1p1d1bbb04ff7a7c46946f62a91883bd6a6@epcas1p1.samsung.com>
+Subject: [PATCH v2 4/8] PM / devfreq: Show the all available frequencies
+Date: Thu, 21 Sep 2017 09:33:48 +0900
+Message-ID: <1505954032-3327-5-git-send-email-cw00.choi@samsung.com>
+References: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
+        <CGME20170921003356epcas1p4c6e4da1fab6f56468ecca9e5889faa43@epcas1p4.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:55647 "EHLO
+Received: from mailout1.samsung.com ([203.254.224.24]:55654 "EHLO
         mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751873AbdIUAd6 (ORCPT
+        with ESMTP id S1751937AbdIUAd6 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2017 20:33:58 -0400
+In-reply-to: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
 Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-These patches makes the devfreq to use the OPP interface and clean-up codes.
-- patch 1~5 are related to the OPP interfaces. 
-- patch 6 removes the unneeded code.
-- patch 7 clean-up for the governor name.
-- patch 8 registers the cooling device for exynos-bus.
+The commit a76caf55e5b35 ("thermal: Add devfreq cooling") allows
+the devfreq device to use the cooling device. When the cooling down
+are required, the devfreq_cooling.c disables the OPP entry with
+the dev_pm_opp_disable(). In result, 'available_frequencies'[1]
+sysfs node never came to show the all available frequencies.
+[1] /sys/class/devfreq/.../available_frequencies
 
-[Detaild Descripion]
-The commit a76caf55e5b3 ("thermal: Add devfreq cooling") provides
-the devfreq cooling device by using the OPP interface such as
-dev_pm_opp_disable() and dev_pm_opp_enable(). It means that
-the OPP interface is able to change the available status of the frequency.
+So, this patch uses the 'freq_table' in the 'struct devfreq_dev_profile'
+in order to show the all available frequencies.
+- If 'freq_table' is NULL, devfreq core initializes them by using OPP values.
+- If 'freq_table' is initialized, devfreq core just uses the 'freq_table'.
 
-Firstly, the existing devfreq doesn't use the OPP interface when showing
-the minimum and maximum frequency through the following sysfs nodes:
-It shows the wrong frequency value because min_freq/max_freq don't
-consider the frequency status by handling OPP interface
-(opp_dev_pm_opp_{disable|add}()). So, these patches fix this issue.
-- /sys/class/devfreq/devfreqX/min_freq
-- /sys/class/devfreq/devfreqX/max_freq
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ drivers/devfreq/devfreq.c | 28 ++++++++++++++++------------
+ 1 file changed, 16 insertions(+), 12 deletions(-)
 
-Second, the 'available_frequencies' should show the all supported frequencis
-even if the specific frequency is not available. It doesn't matter whether
-frequneyc is available or not. Because the role of 'available_frequencies'
-shows the all frequencies. Also, these patches fix this issue.
-- /sys/class/devfreq/devfreqX/available_frequencies
-
-Third, update_devfreq() get the available next frequency by using
-the devfreq_recommended_opp() in order to consider the disabled OPP.
-
-For example,
-- devfreq's min_freq is 100Mhz and max_freq is 700Mhz.
-- OPP disabled 500/600/700Mhz due to devfreq-cooling.c.
-- simple_ondemand govenor decided the next target_freq (600Mhz)
-|----------|-------------------------------------------------------------|
-|Freq(MHz) |100     |200    |300    |400     |500     |600      |70 0    |
-|Devfreq   |min_freq|       |       |        |        |         |max_freq|
-|OPP avail |enabled |enabled|enabled|enabled |Disabled| Disabled|Disabled|
-|Ondmenad  |        |       |       |        |        |next_freq|        |
-|------------------------------------------------------------------------|
-
-In result,
-- Before this patch, target_freq is 600Mhz
-  and TRANSITION_NOTIFIER sends the next_freq is 600Mhz to the notifiee.
-- After this patch, target_freq is 400Mhz because 500/600 were disabled by OPP.
-  And TRANSITION_NOTIFIER sends the next_freq is 400Mhz to the notifiee.
-
-Lastly,
-- patch6/7 fix the minor issue and cleanup codes.
-- patch8 register the cooling device. It depends on opp patch[1].
-[1] https://patchwork.kernel.org/patch/9962387/
-
-Changes from v1:
-(https://lkml.org/lkml/2017/8/23/785)
-- Show the available frequencies as an ascending order
-- Change the author info from cwchoi00@gmail.com to cw00.choi@samsung.com
-- Drop the patches related to opp_notifier
-- Add new patch5/6/7/8
-
-Chanwoo Choi (8):
-  PM / devfreq: Set min/max_freq when adding the devfreq device
-  Revert "PM / devfreq: Add show_one macro to delete the duplicate code"
-  PM / devfreq: Show the available min/max frequency through sysfs node
-  PM / devfreq: Show the all available frequencies
-  PM / devfreq: Get the available next frequency on update_devfreq()
-  PM / devfreq: Remove unneeded conditional statement
-  PM / devfreq: Define the constant governor name
-  PM / devfreq: exynos-bus: Register cooling device
-
- drivers/devfreq/Kconfig                   |   1 +
- drivers/devfreq/devfreq.c                 | 121 +++++++++++++++++++++++-------
- drivers/devfreq/exynos-bus.c              |  16 +++-
- drivers/devfreq/governor_passive.c        |   2 +-
- drivers/devfreq/governor_performance.c    |   2 +-
- drivers/devfreq/governor_powersave.c      |   2 +-
- drivers/devfreq/governor_simpleondemand.c |   2 +-
- drivers/devfreq/governor_userspace.c      |   2 +-
- drivers/devfreq/rk3399_dmc.c              |   2 +-
- include/linux/devfreq.h                   |   7 ++
- 10 files changed, 123 insertions(+), 34 deletions(-)
-
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 799a0cf75d39..1c4b377cacfb 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -1185,22 +1185,26 @@ static ssize_t available_frequencies_show(struct device *d,
+ 					  char *buf)
+ {
+ 	struct devfreq *df = to_devfreq(d);
+-	struct device *dev = df->dev.parent;
+-	struct dev_pm_opp *opp;
+ 	ssize_t count = 0;
+-	unsigned long freq = 0;
++	unsigned long *freq_table;
++	int i, max_state;
+ 
+-	do {
+-		opp = dev_pm_opp_find_freq_ceil(dev, &freq);
+-		if (IS_ERR(opp))
+-			break;
++	mutex_lock(&df->lock);
+ 
+-		dev_pm_opp_put(opp);
+-		count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
+-				   "%lu ", freq);
+-		freq++;
+-	} while (1);
++	freq_table = df->profile->freq_table;
++	max_state = df->profile->max_state;
+ 
++	if (freq_table[0] < freq_table[max_state - 1]) {
++		for (i = 0; i < max_state; i++)
++			count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
++					"%lu ", freq_table[i]);
++	} else {
++		for (i = max_state - 1; i >= 0 ; i--)
++			count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
++					"%lu ", freq_table[i]);
++	}
++
++	mutex_unlock(&df->lock);
+ 	/* Truncate the trailing space */
+ 	if (count)
+ 		count--;
 -- 
 1.9.1
