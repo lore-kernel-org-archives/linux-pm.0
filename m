@@ -1,62 +1,108 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 5/8] PM / devfreq: Get the available next frequency on
- update_devfreq()
-Date: Thu, 21 Sep 2017 09:33:49 +0900
-Message-ID: <1505954032-3327-6-git-send-email-cw00.choi@samsung.com>
-References: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20170921003356epcas1p3de34905f87bca5760f80d196a004e1a0@epcas1p3.samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
-Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM: Document rules on using pm_runtime_resume() in system
+ suspend callbacks
+Date: Thu, 21 Sep 2017 02:39:30 +0200
+Message-ID: <CAJZ5v0h6Fv=myGM8hxbyXedcaz8EvmQss528g=yDtK0nSTydew@mail.gmail.com>
+References: <1849600.vI30ccvhCD@aspire.rjw.lan> <CAPDyKFrPGA9OproyQHwVTY5EfAQJnLZuHL+cnJv+1fPYXLLW2w@mail.gmail.com>
+ <CAJZ5v0h2gZJbtF2E=+9Ya5NtZCRy+5eVh=OaJJA81rTZR0907g@mail.gmail.com> <20170920162731.wopbh7iwggu2xouk@sig21.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f173.google.com ([209.85.223.173]:48105 "EHLO
+        mail-io0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751652AbdIUAjc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2017 20:39:32 -0400
+In-Reply-To: <20170920162731.wopbh7iwggu2xouk@sig21.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Johannes Stezenbach <js@sig21.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-The update_devfreq() considers only user frequency (min_freq/max_freq)
-and the next target_freq provided by the governor. But,  The commit
-a76caf55e5b35 ("thermal: Add devfreq cooling") is able to disable
-OPP as a cooling device. In result, the update_devfreq() have to
-consider the 'opp->available' status in order to decicde the next freq
-by the devfreq_recommended_opp().
+On Wed, Sep 20, 2017 at 6:27 PM, Johannes Stezenbach <js@sig21.net> wrote:
+> On Wed, Sep 20, 2017 at 04:01:32PM +0200, Rafael J. Wysocki wrote:
+>> On Wed, Sep 20, 2017 at 2:28 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> > On 20 September 2017 at 02:26, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> >>
+>> >> Second, leaving devices in runtime suspend in the "suspend" phase of system
+>> >> suspend is fishy even when their runtime PM is disabled, because that doesn't
+>> >> guarantee anything regarding their children or possible consumers.  Runtime
+>> >> PM may still be enabled for those devices at that time and runtime resume may
+>> >> be triggered for them later, in which case it all quickly falls apart.
+>> >
+>> > This is true, although to me this is a about a different problem and
+>> > has very little to do with pm_runtime_force_suspend().
+>> >
+>> > More precisely, whether runtime PM becomes disabled in the suspend
+>> > phase or suspend_late phase, really doesn't matter. Because in the end
+>> > this is about suspending/resuming devices in the correct order.
+>>
+>> Yes, it is, but this is not my point (I didn't make it clear enough I guess).
+>>
+>> At the time you make the decision to disable runtime PM for a parent
+>> (say) and leave it in runtime suspend, all of its children are
+>> suspended just fine (otherwise the parent wouldn't have been suspended
+>> too).  However, you *also* need to make sure that there will be no
+>> attempts to resume any of them *after* that point, which practically
+>> means that either runtime PM has to have been disabled already for all
+>> of them at the time it is disabled for the parent, or there has to be
+>> another guarantee in place.
+>>
+>> That's why the core tries to enforce the "runtime PM disabled for the
+>> entire hierarchy below" guarantee for the devices with direct_complete
+>> set, but that may just be overkill in many cases.  I guess it may be
+>> better to use WARN_ON() to catch the cases in which things may really
+>> go wrong.
+>
+> I read this half a dozen times and I'm still confused.
+> Moreover, Documentation/driver-api/pm/devices.rst says:
+>
+>     Runtime Power Management model:
+>
+>         Devices may also be put into low-power states while the system is
+>         running, independently of other power management activity in principle.
+>         However, devices are not generally independent of each other (for
+>         example, a parent device cannot be suspended unless all of its child
+>         devices have been suspended).  ...
+>
+> However, isn't this a fundamental difference of runtime suspend
+> vs. system suspend that parent devices *can* be runtime suspended
+> before their children?
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+No, it isn't.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 1c4b377cacfb..3b9662ffe603 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -255,6 +255,7 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
- int update_devfreq(struct devfreq *devfreq)
- {
- 	struct devfreq_freqs freqs;
-+	struct dev_pm_opp *opp;
- 	unsigned long freq, cur_freq;
- 	int err = 0;
- 	u32 flags = 0;
-@@ -273,7 +274,7 @@ int update_devfreq(struct devfreq *devfreq)
- 		return err;
- 
- 	/*
--	 * Adjust the frequency with user freq and QoS.
-+	 * Adjust the frequency with user freq, QoS and available freq.
- 	 *
- 	 * List from the highest priority
- 	 * max_freq
-@@ -289,6 +290,12 @@ int update_devfreq(struct devfreq *devfreq)
- 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
- 	}
- 
-+	opp = devfreq_recommended_opp(devfreq->dev.parent, &freq, flags);
-+	if (IS_ERR(opp))
-+		return PTR_ERR(opp);
-+	freq = dev_pm_opp_get_freq(opp);
-+	dev_pm_opp_put(opp);
-+
- 	if (devfreq->profile->get_cur_freq)
- 		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
- 	else
--- 
-1.9.1
+>  E.g. an audio codec could keep running
+> while the i2c bus used to program its registers can be runtime suspended.
+> If this is correct I think it would be useful to spell it out explicitly
+> in the documentation.
+
+That's because the i2c bus uses the ignore_children flag that allows
+it to override the general rules. :-)
+
+> During system suspend, pm core will suspend children first,
+> and if the child's ->suspend hook uses the i2c bus to access registers,
+> it will implicitly runtime resume the i2c bus (e.g. due to pm_runtime_get_sync()
+> in i2c_dw_xfer()).  Later pm core will ->suspend the i2c bus.
+
+Yup.
+
+> I have a hunch the root of the problem is that ->prepare walks the tree
+> in top-down order, and its return value is used to decide about
+> direct-complete.  Why does it do that?  Shouldn't pm core check
+> the direct_complete flag during ->suspend if the device
+> is in runtime suspend, to decide whether to skip runtime resume + ->suspend
+> for *this* device?
+
+direct_complete has nothing to do with this.
+
+First off, the PM core does check the direct_complete flag in
+__device_suspend() and does more-or-less what you are saying.
+
+However, that flag is initialized in device_prepare() with the help of
+the ->suspend() return value, because whether or not it makes sense to
+set that flag depends on some conditions that may change between
+consecutive system suspend-resume cycles in general and need to be
+checked in advance before setting it.
+
+HTH
+
+Rafael
