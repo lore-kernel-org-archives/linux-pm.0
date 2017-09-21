@@ -1,57 +1,73 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/2] mfd: intel-lpss: switch to suspend_late()/resume_early()
-Date: Thu, 21 Sep 2017 02:27:19 +0200
-Message-ID: <CAJZ5v0iB6=C953zPBYW8fB+XW7fq4fwyP2W4S=ocgNwWic+gPg@mail.gmail.com>
-References: <20170920223152.100641-1-rajatja@google.com> <20170920223152.100641-2-rajatja@google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20170920223152.100641-2-rajatja@google.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Rajat Jain <rajatja@google.com>
-Cc: Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, furquan@google.com, rajatxjain@gmail.com
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v2 2/8] Revert
+ "PM / devfreq: Add show_one macro to delete the duplicate code"
+Date: Thu, 21 Sep 2017 09:33:46 +0900
+Message-ID: <1505954032-3327-3-git-send-email-cw00.choi@samsung.com>
+References: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
+        <CGME20170921003355epcas1p4ecc54d2b7437b4e0d052d9b99647930e@epcas1p4.samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:55650 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751858AbdIUAd6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2017 20:33:58 -0400
+In-reply-to: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
+Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Sep 21, 2017 at 12:31 AM, Rajat Jain <rajatja@google.com> wrote:
-> Ref: https://lkml.org/lkml/2017/9/19/649
->
-> The intel-lpss hosts the designware i2c controller device, which
-> needs to be up and running until all its i2c child devices have
-> suspended (child devices need to be accessible over i2c until
-> suspend_late() has been called for all those devices).
->
-> So lets delay the resetting of the controller until suspend_late().
-> I thought of renaming function to say *_late / *_early but that
-> might cause confusion since the same function is also used for runtime
-> suspend/resume.
->
-> Fixes: 0b471aaa0e1a ("Put I2C and SPI controllers into reset state on suspend")
-> Signed-off-by: Rajat Jain <rajatja@google.com>
-> ---
->  drivers/mfd/intel-lpss.h | 7 +------
->  1 file changed, 1 insertion(+), 6 deletions(-)
->
-> diff --git a/drivers/mfd/intel-lpss.h b/drivers/mfd/intel-lpss.h
-> index 694116630ffa..865bbeaaf00c 100644
-> --- a/drivers/mfd/intel-lpss.h
-> +++ b/drivers/mfd/intel-lpss.h
-> @@ -38,12 +38,7 @@ int intel_lpss_resume(struct device *dev);
->  #ifdef CONFIG_PM_SLEEP
->  #define INTEL_LPSS_SLEEP_PM_OPS                        \
->         .prepare = intel_lpss_prepare,          \
-> -       .suspend = intel_lpss_suspend,          \
-> -       .resume = intel_lpss_resume,            \
-> -       .freeze = intel_lpss_suspend,           \
-> -       .thaw = intel_lpss_resume,              \
-> -       .poweroff = intel_lpss_suspend,         \
-> -       .restore = intel_lpss_resume,
-> +       SET_LATE_SYSTEM_SLEEP_PM_OPS(intel_lpss_suspend, intel_lpss_resume)
->  #else
->  #define INTEL_LPSS_SLEEP_PM_OPS
->  #endif
+This reverts commit 3104fa3081126c9bda35793af5f335d0ee0d5818.
 
-So I sent this exact patch several days ago:
-https://patchwork.kernel.org/patch/9939809/
+The {min|max}_freq_show() show the stored value of the struct devfreq.
+But, if the drivers/thermal/devfreq_cooling.c disables the specific
+frequency value, {min|max}_freq_show() have to check this situation
+before showing the stored value. So, this patch revert the macro
+in order to add the additional codes.
 
-Thanks,
-Rafael
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ drivers/devfreq/devfreq.c | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index ae8717a6eee1..2ce1fd0a1324 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -1125,6 +1125,12 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+ 	return ret;
+ }
+ 
++static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
++			     char *buf)
++{
++	return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
++}
++
+ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ 			      const char *buf, size_t count)
+ {
+@@ -1151,17 +1157,13 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ 	mutex_unlock(&df->lock);
+ 	return ret;
+ }
++static DEVICE_ATTR_RW(min_freq);
+ 
+-#define show_one(name)						\
+-static ssize_t name##_show					\
+-(struct device *dev, struct device_attribute *attr, char *buf)	\
+-{								\
+-	return sprintf(buf, "%lu\n", to_devfreq(dev)->name);	\
++static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
++			     char *buf)
++{
++	return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
+ }
+-show_one(min_freq);
+-show_one(max_freq);
+-
+-static DEVICE_ATTR_RW(min_freq);
+ static DEVICE_ATTR_RW(max_freq);
+ 
+ static ssize_t available_frequencies_show(struct device *d,
+-- 
+1.9.1
