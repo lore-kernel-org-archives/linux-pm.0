@@ -1,63 +1,111 @@
-From: Rajat Jain <rajatja@google.com>
-Subject: Re: [PATCH 2/2] mfd: intel-lpss: switch to suspend_late()/resume_early()
-Date: Wed, 20 Sep 2017 18:14:50 -0700
-Message-ID: <CACK8Z6GmwC_YHhqRqpa6DNZt0e+BFHsARM8gBe5x-iWaZL1pgA@mail.gmail.com>
-References: <20170920223152.100641-1-rajatja@google.com> <20170920223152.100641-2-rajatja@google.com>
- <CAJZ5v0iB6=C953zPBYW8fB+XW7fq4fwyP2W4S=ocgNwWic+gPg@mail.gmail.com>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Subject: RE: [PATCH 1/7] PM / OPP: Add platform specific set_clk function
+Date: Thu, 21 Sep 2017 02:17:10 +0000
+Message-ID: <AM3PR04MB3063900BE634FABE8668F3380660@AM3PR04MB306.eurprd04.prod.outlook.com>
+References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
+ <1503504610-12880-2-git-send-email-aisheng.dong@nxp.com>
+ <20170919225840.GI30848@ubuntu> <20170920070343.GA32187@b29396-OptiPlex-7040>
+ <20170920203033.GD3001@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iB6=C953zPBYW8fB+XW7fq4fwyP2W4S=ocgNwWic+gPg@mail.gmail.com>
-Sender: linux-i2c-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Furquan Shaikh <furquan@google.com>, Rajat Jain <rajatxjain@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170920203033.GD3001@ubuntu>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Dong Aisheng <dongas86@gmail.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "vireshk@kernel.org" <vireshk@kernel.org>, "nm@ti.com" <nm@ti.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "shawnguo@kernel.org" <shawnguo@kernel.org>, Anson Huang <anson.huang@nxp.com>, Jacky Bai <ping.bai@nxp.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Sep 20, 2017 at 5:27 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Thu, Sep 21, 2017 at 12:31 AM, Rajat Jain <rajatja@google.com> wrote:
->> Ref: https://lkml.org/lkml/2017/9/19/649
->>
->> The intel-lpss hosts the designware i2c controller device, which
->> needs to be up and running until all its i2c child devices have
->> suspended (child devices need to be accessible over i2c until
->> suspend_late() has been called for all those devices).
->>
->> So lets delay the resetting of the controller until suspend_late().
->> I thought of renaming function to say *_late / *_early but that
->> might cause confusion since the same function is also used for runtime
->> suspend/resume.
->>
->> Fixes: 0b471aaa0e1a ("Put I2C and SPI controllers into reset state on suspend")
->> Signed-off-by: Rajat Jain <rajatja@google.com>
->> ---
->>  drivers/mfd/intel-lpss.h | 7 +------
->>  1 file changed, 1 insertion(+), 6 deletions(-)
->>
->> diff --git a/drivers/mfd/intel-lpss.h b/drivers/mfd/intel-lpss.h
->> index 694116630ffa..865bbeaaf00c 100644
->> --- a/drivers/mfd/intel-lpss.h
->> +++ b/drivers/mfd/intel-lpss.h
->> @@ -38,12 +38,7 @@ int intel_lpss_resume(struct device *dev);
->>  #ifdef CONFIG_PM_SLEEP
->>  #define INTEL_LPSS_SLEEP_PM_OPS                        \
->>         .prepare = intel_lpss_prepare,          \
->> -       .suspend = intel_lpss_suspend,          \
->> -       .resume = intel_lpss_resume,            \
->> -       .freeze = intel_lpss_suspend,           \
->> -       .thaw = intel_lpss_resume,              \
->> -       .poweroff = intel_lpss_suspend,         \
->> -       .restore = intel_lpss_resume,
->> +       SET_LATE_SYSTEM_SLEEP_PM_OPS(intel_lpss_suspend, intel_lpss_resume)
->>  #else
->>  #define INTEL_LPSS_SLEEP_PM_OPS
->>  #endif
->
-> So I sent this exact patch several days ago:
-> https://patchwork.kernel.org/patch/9939809/
+> -----Original Message-----
+> From: Viresh Kumar [mailto:viresh.kumar@linaro.org]
+> Sent: Thursday, September 21, 2017 4:31 AM
+> To: Dong Aisheng
+> Cc: A.s. Dong; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
+> linux-arm-kernel@lists.infradead.org; sboyd@codeaurora.org;
+> vireshk@kernel.org; nm@ti.com; rjw@rjwysocki.net; shawnguo@kernel.org;
+> Anson Huang; Jacky Bai
+> Subject: Re: [PATCH 1/7] PM / OPP: Add platform specific set_clk function
+>=20
+> On 20-09-17, 15:03, Dong Aisheng wrote:
+> > I've been thinking of that before.
+> > Actually IMX already does some similar thing for MX5 (no for MX6).
+> > See: clk_cpu_set_rate() in drivers/clk/imx/clk-cpu.c.
+> >
+> > After some diggings, it seems MX7ULP is a bit more complicated than
+> > before mainly due to two reasons:
+> > 1) It requires to switch to different CPU mode accordingly when
+> > setting clocks rate. That means we need handle this in clock driver as
+> > well which looks not quite suitable although we could do if really want=
+.
+> >
+> > 2) It uses different clocks for different CPU mode (RUN 416M or HSRUN
+> > 528M), and those clocks have some dependency.
+> > e.g. when setting HSRUN clock, we need change RUN clock parent to make
+> > sure the SPLL_PFD is got disabled before changing rate, as both CPU
+> > mode using the same parent SPLL_PFD clock. Doing this in clock driver
+> > also make things a bit more complicated.
+> >
+> > The whole follow would be something like below:
+> > static int imx7ulp_set_clk(struct device *dev, struct clk *clk,
+> >                            unsigned long old_freq, unsigned long
+> > new_freq) {
+> >         u32 val;
+> >
+> >         /*
+> >          * Before changing the ARM core PLL, change the ARM clock soure
+> >          * to FIRC first.
+> >          */
+> >         if (new_freq >=3D HSRUN_FREQ) {
+> >                 clk_set_parent(clks[RUN_SCS_SEL].clk, clks[FIRC].clk);
+> >
+> >                 /* switch to HSRUN mode */
+> >                 val =3D readl_relaxed(smc_base + SMC_PMCTRL);
+> >                 val |=3D (0x3 << 8);
+> >                 writel_relaxed(val, smc_base + SMC_PMCTRL);
+> >
+> >                 /* change the clock rate in HSRUN */
+> >                 clk_set_rate(clks[SPLL_PFD0].clk, new_freq);
+> >                 clk_set_parent(clks[HSRUN_SCS_SEL].clk,
+> clks[SPLL_SEL].clk);
+> >         } else {
+> >                 /* change the HSRUN clock to firc */
+> >                 clk_set_parent(clks[HSRUN_SCS_SEL].clk,
+> > clks[FIRC].clk);
+> >
+> >                 /* switch to RUN mode */
+> >                 val =3D readl_relaxed(smc_base + SMC_PMCTRL);
+> >                 val &=3D ~(0x3 << 8);
+> >                 writel_relaxed(val, smc_base + SMC_PMCTRL);
+> >
+> >                 clk_set_rate(clks[SPLL_PFD0].clk, new_freq);
+> >                 clk_set_parent(clks[RUN_SCS_SEL].clk,
+> clks[SPLL_SEL].clk);
+> >         }
+> >
+> >         return 0;
+> > }
+>=20
+> Right and we have the same thing in the cpufreq driver now. It will stay
+> at some place and we need to find the best one, keeping in mind that we
+> may or may not want to solve this problem in a generic way.
+>=20
+> > That's why i thought if we can make OPP core provide a way to handle
+> > such complicated things in platform specific cpufreq driver.
+> >
+> > How would you suggest for this issue?
+>=20
+> I wouldn't add an API into the OPP framework if I were you. There is just
+> too much code to add to the core to handle such platform specific stuff,
+> which you are anyway going to keep somewhere as it is. IMHO, keeping that
+> in the clock driver is a better thing to do than this.
+>=20
 
-Sorry, I missed it. Please consider my patch withdrawn / self-nack'ed
-in favor of Rafael's patch.
+Okay, I will give a try in CLK driver.
+Thanks for the suggestion.
 
->
-> Thanks,
-> Rafael
+Regards
+Dong Aisheng
+
+> --
+> viresh
