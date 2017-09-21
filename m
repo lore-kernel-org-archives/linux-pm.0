@@ -1,114 +1,71 @@
-From: sunil.m@techveda.org
-Subject: [PATCH v3] drivers: cpufreq: Fix sysfs duplicate filename creation for platform-device
-Date: Thu, 21 Sep 2017 19:09:03 +0530
-Message-ID: <1506001143-20175-1-git-send-email-sunil.m@techveda.org>
-References: <20170919223645.GD30848@ubuntu>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170919223645.GD30848@ubuntu>
-Sender: linux-kernel-owner@vger.kernel.org
-To: viresh.kumar@linaro.org
-Cc: d-gerlach@ti.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, karthik@techveda.org, Suniel Mahesh <sunil.m@techveda.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] mfd: intel-lpss: switch to suspend_late()/resume_early()
+Date: Thu, 21 Sep 2017 16:10:13 +0200
+Message-ID: <1817408.bhcOjT5fdi@aspire.rjw.lan>
+References: <20170920223152.100641-1-rajatja@google.com> <CAJZ5v0iB6=C953zPBYW8fB+XW7fq4fwyP2W4S=ocgNwWic+gPg@mail.gmail.com> <20170921084133.pptabevkolnwv2wy@dell>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20170921084133.pptabevkolnwv2wy@dell>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rajat Jain <rajatja@google.com>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, furquan@google.com, rajatxjain@gmail.com
 List-Id: linux-pm@vger.kernel.org
 
-From: Suniel Mahesh <sunil.m@techveda.org>
+On Thursday, September 21, 2017 10:41:33 AM CEST Lee Jones wrote:
+> On Thu, 21 Sep 2017, Rafael J. Wysocki wrote:
+> 
+> > On Thu, Sep 21, 2017 at 12:31 AM, Rajat Jain <rajatja@google.com> wrote:
+> > > Ref: https://lkml.org/lkml/2017/9/19/649
+> > >
+> > > The intel-lpss hosts the designware i2c controller device, which
+> > > needs to be up and running until all its i2c child devices have
+> > > suspended (child devices need to be accessible over i2c until
+> > > suspend_late() has been called for all those devices).
+> > >
+> > > So lets delay the resetting of the controller until suspend_late().
+> > > I thought of renaming function to say *_late / *_early but that
+> > > might cause confusion since the same function is also used for runtime
+> > > suspend/resume.
+> > >
+> > > Fixes: 0b471aaa0e1a ("Put I2C and SPI controllers into reset state on suspend")
+> > > Signed-off-by: Rajat Jain <rajatja@google.com>
+> > > ---
+> > >  drivers/mfd/intel-lpss.h | 7 +------
+> > >  1 file changed, 1 insertion(+), 6 deletions(-)
+> > >
+> > > diff --git a/drivers/mfd/intel-lpss.h b/drivers/mfd/intel-lpss.h
+> > > index 694116630ffa..865bbeaaf00c 100644
+> > > --- a/drivers/mfd/intel-lpss.h
+> > > +++ b/drivers/mfd/intel-lpss.h
+> > > @@ -38,12 +38,7 @@ int intel_lpss_resume(struct device *dev);
+> > >  #ifdef CONFIG_PM_SLEEP
+> > >  #define INTEL_LPSS_SLEEP_PM_OPS                        \
+> > >         .prepare = intel_lpss_prepare,          \
+> > > -       .suspend = intel_lpss_suspend,          \
+> > > -       .resume = intel_lpss_resume,            \
+> > > -       .freeze = intel_lpss_suspend,           \
+> > > -       .thaw = intel_lpss_resume,              \
+> > > -       .poweroff = intel_lpss_suspend,         \
+> > > -       .restore = intel_lpss_resume,
+> > > +       SET_LATE_SYSTEM_SLEEP_PM_OPS(intel_lpss_suspend, intel_lpss_resume)
+> > >  #else
+> > >  #define INTEL_LPSS_SLEEP_PM_OPS
+> > >  #endif
+> > 
+> > So I sent this exact patch several days ago:
+> > https://patchwork.kernel.org/patch/9939809/
+> 
+> You did?
 
-ti-cpufreq and cpufreq-dt-platdev drivers are registering platform-device
-with same name "cpufreq-dt" using platform_device_register_*() routines.
-This is leading to build warnings appended below.
+Yes, I did.
 
-Providing hardware information to OPP framework along with the platform-
-device creation should be done by ti-cpufreq driver before cpufreq-dt
-driver comes into place.
+> Any reason you didn't send it to me?
 
-This patch add's TI am33xx, am43 and dra7 platforms (which use opp-v2
-property) to the blacklist of devices in cpufreq-dt-platform driver to
-avoid creating platform-device twice and remove build warnings.
+Well, Lee Jones <lee@kernel.org> is very much in the CC list of it.
 
-[    2.370167] ------------[ cut here ]------------
-[    2.375087] WARNING: CPU: 0 PID: 1 at fs/sysfs/dir.c:31 sysfs_warn_dup+0x58/0x78
-[    2.383112] sysfs: cannot create duplicate filename '/devices/platform/cpufreq-dt'
-[    2.391219] Modules linked in:
-[    2.394506] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.13.0-next-20170912 #1
-[    2.402006] Hardware name: Generic AM33XX (Flattened Device Tree)
-[    2.408437] [<c0110a28>] (unwind_backtrace) from [<c010ca84>] (show_stack+0x10/0x14)
-[    2.416568] [<c010ca84>] (show_stack) from [<c0827d64>] (dump_stack+0xac/0xe0)
-[    2.424165] [<c0827d64>] (dump_stack) from [<c0137470>] (__warn+0xd8/0x104)
-[    2.431488] [<c0137470>] (__warn) from [<c01374d0>] (warn_slowpath_fmt+0x34/0x44)
-[    2.439351] [<c01374d0>] (warn_slowpath_fmt) from [<c03459d0>] (sysfs_warn_dup+0x58/0x78)
-[    2.447938] [<c03459d0>] (sysfs_warn_dup) from [<c0345ab8>] (sysfs_create_dir_ns+0x80/0x98)
-[    2.456719] [<c0345ab8>] (sysfs_create_dir_ns) from [<c082c554>] (kobject_add_internal+0x9c/0x2d4)
-[    2.466124] [<c082c554>] (kobject_add_internal) from [<c082c7d8>] (kobject_add+0x4c/0x9c)
-[    2.474712] [<c082c7d8>] (kobject_add) from [<c05803e4>] (device_add+0xcc/0x57c)
-[    2.482489] [<c05803e4>] (device_add) from [<c0584b74>] (platform_device_add+0x100/0x220)
-[    2.491085] [<c0584b74>] (platform_device_add) from [<c05855a8>] (platform_device_register_full+0xf4/0x118)
-[    2.501305] [<c05855a8>] (platform_device_register_full) from [<c067023c>] (ti_cpufreq_init+0x150/0x22c)
-[    2.511253] [<c067023c>] (ti_cpufreq_init) from [<c0101df4>] (do_one_initcall+0x3c/0x170)
-[    2.519838] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>] (kernel_init_freeable+0x1fc/0x2c4)
-[    2.528974] [<c0c00eb4>] (kernel_init_freeable) from [<c083bcac>] (kernel_init+0x8/0x110)
-[    2.537565] [<c083bcac>] (kernel_init) from [<c0107d18>] (ret_from_fork+0x14/0x3c)
-[    2.545981] ---[ end trace 2fc00e213c13ab20 ]---
-[    2.551051] ------------[ cut here ]------------
-[    2.555931] WARNING: CPU: 0 PID: 1 at lib/kobject.c:240 kobject_add_internal+0x254/0x2d4
-[    2.564578] kobject_add_internal failed for cpufreq-dt with -EEXIST, don't try to register
-things with the same name in the same directory.
-[    2.577977] Modules linked in:
-[    2.581261] CPU: 0 PID: 1 Comm: swapper/0 Tainted: G        W       4.13.0-next-20170912 #1
-[    2.590013] Hardware name: Generic AM33XX (Flattened Device Tree)
-[    2.596437] [<c0110a28>] (unwind_backtrace) from [<c010ca84>] (show_stack+0x10/0x14)
-[    2.604573] [<c010ca84>] (show_stack) from [<c0827d64>] (dump_stack+0xac/0xe0)
-[    2.612172] [<c0827d64>] (dump_stack) from [<c0137470>] (__warn+0xd8/0x104)
-[    2.619494] [<c0137470>] (__warn) from [<c01374d0>] (warn_slowpath_fmt+0x34/0x44)
-[    2.627362] [<c01374d0>] (warn_slowpath_fmt) from [<c082c70c>] (kobject_add_internal+0x254/0x2d4)
-[    2.636666] [<c082c70c>] (kobject_add_internal) from [<c082c7d8>] (kobject_add+0x4c/0x9c)
-[    2.645255] [<c082c7d8>] (kobject_add) from [<c05803e4>] (device_add+0xcc/0x57c)
-[    2.653027] [<c05803e4>] (device_add) from [<c0584b74>] (platform_device_add+0x100/0x220)
-[    2.661615] [<c0584b74>] (platform_device_add) from [<c05855a8>] (platform_device_register_full+0xf4/0x118)
-[    2.671833] [<c05855a8>] (platform_device_register_full) from [<c067023c>] (ti_cpufreq_init+0x150/0x22c)
-[    2.681779] [<c067023c>] (ti_cpufreq_init) from [<c0101df4>] (do_one_initcall+0x3c/0x170)
-[    2.690377] [<c0101df4>] (do_one_initcall) from [<c0c00eb4>] (kernel_init_freeable+0x1fc/0x2c4)
-[    2.699510] [<c0c00eb4>] (kernel_init_freeable) from [<c083bcac>] (kernel_init+0x8/0x110)
-[    2.708106] [<c083bcac>] (kernel_init) from [<c0107d18>] (ret_from_fork+0x14/0x3c)
-[    2.716217] ---[ end trace 2fc00e213c13ab21 ]---
+Was I expected to use a different e-mail address for that?
 
-Fixes: edeec420de24 ("cpufreq: dt-cpufreq: platdev Automatically create device with OPP v2")
-Signed-off-by: Suniel Mahesh <sunil.m@techveda.org>
----
-Changes for v3:
-- Added ti,am43 and ti,dra7 platforms to the blacklist as requested
-  by Dave Gerlach.
-- Patch Description modified a bit.
-- Patch was rebased on pm/linux-next as suggested by Viresh, compile
-  tested and built(ARCH=arm) on both linux/pm-next and next-20170918.
----
-Changes for v2:
-- The approach (as a result patch decsription) was changed as per
-  inputs given by Viresh.
-- Patch was compile tested and built(ARCH=arm) on next-20170918.
----
-Note:
-- Patch was hardware tested on AM335x SOC based board.
-- cpufreq-dt driver got probed and entries related to Dynamic Voltage
-  and Frequency scaling were created in
-  sysfs @ sys/devices/system/cpu/cpu0/cpufreq.
-- No build/run-time issues reported.
----
- drivers/cpufreq/cpufreq-dt-platdev.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 430edad..a753c50 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -118,6 +118,10 @@
- 
- 	{ .compatible = "sigma,tango4", },
- 
-+	{ .compatible = "ti,am33xx", },
-+	{ .compatible = "ti,am43", },
-+	{ .compatible = "ti,dra7", },
-+
- 	{ }
- };
- 
--- 
-1.9.1
+Thanks,
+Rafael
