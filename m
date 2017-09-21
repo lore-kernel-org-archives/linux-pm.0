@@ -1,66 +1,63 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V3] PM / OPP: Call notifier without holding opp_table->lock
-Date: Thu, 21 Sep 2017 10:44:36 -0700
-Message-ID: <a6e29a1fb9b5fa50f57c76e78287d321e2d26a4a.1506015797.git.viresh.kumar@linaro.org>
-References: <59C2414E.6020803@samsung.com>
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <59C2414E.6020803@samsung.com>
-Sender: stable-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, cw00.choi@samsung.com, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, myungjoo.ham@samsung.com, inki.dae@samsung.com, "4 . 11+ # 4 . 11+" <stable@vger.kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] PM / OPP: Use snprintf to avoid kasprintf and kfree
+Date: Thu, 21 Sep 2017 10:48:32 -0700
+Message-ID: <20170921174832.GA17243@ubuntu>
+References: <6cdcf0c59a9a045941188356a2c4973c876c9fc6.1505972576.git.arvind.yadav.cs@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f45.google.com ([74.125.83.45]:49955 "EHLO
+        mail-pg0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751636AbdIURse (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Sep 2017 13:48:34 -0400
+Received: by mail-pg0-f45.google.com with SMTP id m30so3903334pgn.6
+        for <linux-pm@vger.kernel.org>; Thu, 21 Sep 2017 10:48:34 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <6cdcf0c59a9a045941188356a2c4973c876c9fc6.1505972576.git.arvind.yadav.cs@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Cc: vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The notifier callbacks may want to call some OPP helper routines which
-may try to take the same opp_table->lock again and cause a deadlock. One
-such usecase was reported by Chanwoo Choi, where calling
-dev_pm_opp_disable() leads us to the devfreq's OPP notifier handler,
-which further calls dev_pm_opp_find_freq_floor() and it deadlocks.
+On 21-09-17, 11:15, Arvind Yadav wrote:
+> Use snprintf to avoid unnecessary initializations, avoid calling kfree.
+> 
 
-We don't really need the opp_table->lock to be held across the notifier
-call though, all we want to make sure is that the 'opp' doesn't get
-freed while being used from within the notifier chain. We can do it with
-help of dev_pm_opp_get/put() as well. Let's do it.
+Suggested-by: Joe Perches <joe@perches.com>
 
-Cc: 4.11+ <stable@vger.kernel.org> # 4.11+
-Fixes: 5b650b388844 ("PM / OPP: Take kref from _find_opp_table()")
-Reported-by: Chanwoo Choi <cw00.choi@samsung.com>
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Tested-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V2->V3:
-- Added fixes, Cc and tags from Chanwoo.
+> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+> ---
+> changes in v2:
+>              Remove kasprintf instead of error checking.
+> 
+>  drivers/base/power/opp/debugfs.c | 7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/base/power/opp/debugfs.c b/drivers/base/power/opp/debugfs.c
+> index 81cf120..a2fa785 100644
+> --- a/drivers/base/power/opp/debugfs.c
+> +++ b/drivers/base/power/opp/debugfs.c
+> @@ -41,16 +41,15 @@ static bool opp_debug_create_supplies(struct dev_pm_opp *opp,
+>  {
+>  	struct dentry *d;
+>  	int i;
+> -	char *name;
+>  
+>  	for (i = 0; i < opp_table->regulator_count; i++) {
+> -		name = kasprintf(GFP_KERNEL, "supply-%d", i);
+> +		char name[15];
+> +
+> +		snprintf(name, sizeof(name), "supply-%d", i);
+>  
+>  		/* Create per-opp directory */
+>  		d = debugfs_create_dir(name, pdentry);
+>  
+> -		kfree(name);
+> -
+>  		if (!d)
+>  			return false;
 
- drivers/base/power/opp/core.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-index 4360b4efcd4c..668fd940d362 100644
---- a/drivers/base/power/opp/core.c
-+++ b/drivers/base/power/opp/core.c
-@@ -1627,6 +1627,9 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
- 
- 	opp->available = availability_req;
- 
-+	dev_pm_opp_get(opp);
-+	mutex_unlock(&opp_table->lock);
-+
- 	/* Notify the change of the OPP availability */
- 	if (availability_req)
- 		blocking_notifier_call_chain(&opp_table->head, OPP_EVENT_ENABLE,
-@@ -1635,8 +1638,12 @@ static int _opp_set_availability(struct device *dev, unsigned long freq,
- 		blocking_notifier_call_chain(&opp_table->head,
- 					     OPP_EVENT_DISABLE, opp);
- 
-+	dev_pm_opp_put(opp);
-+	goto put_table;
-+
- unlock:
- 	mutex_unlock(&opp_table->lock);
-+put_table:
- 	dev_pm_opp_put_opp_table(opp_table);
- 	return r;
- }
 -- 
-2.7.4
+viresh
