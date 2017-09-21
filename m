@@ -1,111 +1,90 @@
-From: "A.s. Dong" <aisheng.dong@nxp.com>
-Subject: RE: [PATCH 1/7] PM / OPP: Add platform specific set_clk function
-Date: Thu, 21 Sep 2017 02:17:10 +0000
-Message-ID: <AM3PR04MB3063900BE634FABE8668F3380660@AM3PR04MB306.eurprd04.prod.outlook.com>
-References: <1503504610-12880-1-git-send-email-aisheng.dong@nxp.com>
- <1503504610-12880-2-git-send-email-aisheng.dong@nxp.com>
- <20170919225840.GI30848@ubuntu> <20170920070343.GA32187@b29396-OptiPlex-7040>
- <20170920203033.GD3001@ubuntu>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v2 8/8] PM / devfreq: exynos-bus: Register cooling
+ device
+Date: Thu, 21 Sep 2017 13:57:51 +0900
+Message-ID: <59C346CF.6010105@samsung.com>
+References: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
+        <CGME20170921003356epcas1p34bf88ccd1b9630577a83f14f0c291b1d@epcas1p3.samsung.com>
+        <1505954032-3327-9-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170920203033.GD3001@ubuntu>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Dong Aisheng <dongas86@gmail.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "sboyd@codeaurora.org" <sboyd@codeaurora.org>, "vireshk@kernel.org" <vireshk@kernel.org>, "nm@ti.com" <nm@ti.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "shawnguo@kernel.org" <shawnguo@kernel.org>, Anson Huang <anson.huang@nxp.com>, Jacky Bai <ping.bai@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-samsung-soc-owner@vger.kernel.org>
+In-reply-to: <1505954032-3327-9-git-send-email-cw00.choi@samsung.com>
+Sender: linux-samsung-soc-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-> -----Original Message-----
-> From: Viresh Kumar [mailto:viresh.kumar@linaro.org]
-> Sent: Thursday, September 21, 2017 4:31 AM
-> To: Dong Aisheng
-> Cc: A.s. Dong; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org;
-> linux-arm-kernel@lists.infradead.org; sboyd@codeaurora.org;
-> vireshk@kernel.org; nm@ti.com; rjw@rjwysocki.net; shawnguo@kernel.org;
-> Anson Huang; Jacky Bai
-> Subject: Re: [PATCH 1/7] PM / OPP: Add platform specific set_clk function
->=20
-> On 20-09-17, 15:03, Dong Aisheng wrote:
-> > I've been thinking of that before.
-> > Actually IMX already does some similar thing for MX5 (no for MX6).
-> > See: clk_cpu_set_rate() in drivers/clk/imx/clk-cpu.c.
-> >
-> > After some diggings, it seems MX7ULP is a bit more complicated than
-> > before mainly due to two reasons:
-> > 1) It requires to switch to different CPU mode accordingly when
-> > setting clocks rate. That means we need handle this in clock driver as
-> > well which looks not quite suitable although we could do if really want=
-.
-> >
-> > 2) It uses different clocks for different CPU mode (RUN 416M or HSRUN
-> > 528M), and those clocks have some dependency.
-> > e.g. when setting HSRUN clock, we need change RUN clock parent to make
-> > sure the SPLL_PFD is got disabled before changing rate, as both CPU
-> > mode using the same parent SPLL_PFD clock. Doing this in clock driver
-> > also make things a bit more complicated.
-> >
-> > The whole follow would be something like below:
-> > static int imx7ulp_set_clk(struct device *dev, struct clk *clk,
-> >                            unsigned long old_freq, unsigned long
-> > new_freq) {
-> >         u32 val;
-> >
-> >         /*
-> >          * Before changing the ARM core PLL, change the ARM clock soure
-> >          * to FIRC first.
-> >          */
-> >         if (new_freq >=3D HSRUN_FREQ) {
-> >                 clk_set_parent(clks[RUN_SCS_SEL].clk, clks[FIRC].clk);
-> >
-> >                 /* switch to HSRUN mode */
-> >                 val =3D readl_relaxed(smc_base + SMC_PMCTRL);
-> >                 val |=3D (0x3 << 8);
-> >                 writel_relaxed(val, smc_base + SMC_PMCTRL);
-> >
-> >                 /* change the clock rate in HSRUN */
-> >                 clk_set_rate(clks[SPLL_PFD0].clk, new_freq);
-> >                 clk_set_parent(clks[HSRUN_SCS_SEL].clk,
-> clks[SPLL_SEL].clk);
-> >         } else {
-> >                 /* change the HSRUN clock to firc */
-> >                 clk_set_parent(clks[HSRUN_SCS_SEL].clk,
-> > clks[FIRC].clk);
-> >
-> >                 /* switch to RUN mode */
-> >                 val =3D readl_relaxed(smc_base + SMC_PMCTRL);
-> >                 val &=3D ~(0x3 << 8);
-> >                 writel_relaxed(val, smc_base + SMC_PMCTRL);
-> >
-> >                 clk_set_rate(clks[SPLL_PFD0].clk, new_freq);
-> >                 clk_set_parent(clks[RUN_SCS_SEL].clk,
-> clks[SPLL_SEL].clk);
-> >         }
-> >
-> >         return 0;
-> > }
->=20
-> Right and we have the same thing in the cpufreq driver now. It will stay
-> at some place and we need to find the best one, keeping in mind that we
-> may or may not want to solve this problem in a generic way.
->=20
-> > That's why i thought if we can make OPP core provide a way to handle
-> > such complicated things in platform specific cpufreq driver.
-> >
-> > How would you suggest for this issue?
->=20
-> I wouldn't add an API into the OPP framework if I were you. There is just
-> too much code to add to the core to handle such platform specific stuff,
-> which you are anyway going to keep somewhere as it is. IMHO, keeping that
-> in the clock driver is a better thing to do than this.
->=20
+Dear all,
 
-Okay, I will give a try in CLK driver.
-Thanks for the suggestion.
+Please ignore this patch. It has some problem.
+I'll fix and resend this patch on v2.
 
-Regards
-Dong Aisheng
+Chanwoo Choi
+Samsung Electronics
 
-> --
-> viresh
+On 2017년 09월 21일 09:33, Chanwoo Choi wrote:
+> This patch registers the Exynos Bus-Frequency scaling device
+> as a cooling device of thermal management.
+> 
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Krzysztof Kozlowski <krzk@kernel.org>
+> Cc: linux-samsung-soc@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-kernel@vger.kernel.org
+> ---
+>  drivers/devfreq/Kconfig      |  1 +
+>  drivers/devfreq/exynos-bus.c | 11 +++++++++++
+>  2 files changed, 12 insertions(+)
+> 
+> diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+> index 6a172d338f6d..eb8128e08b2c 100644
+> --- a/drivers/devfreq/Kconfig
+> +++ b/drivers/devfreq/Kconfig
+> @@ -81,6 +81,7 @@ config ARM_EXYNOS_BUS_DEVFREQ
+>  	select DEVFREQ_GOV_SIMPLE_ONDEMAND
+>  	select DEVFREQ_GOV_PASSIVE
+>  	select DEVFREQ_EVENT_EXYNOS_PPMU
+> +	select DEVFREQ_THERMAL
+>  	select PM_DEVFREQ_EVENT
+>  	select PM_OPP
+>  	help
+> diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+> index c25658b26598..200ca0d11834 100644
+> --- a/drivers/devfreq/exynos-bus.c
+> +++ b/drivers/devfreq/exynos-bus.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/clk.h>
+>  #include <linux/devfreq.h>
+>  #include <linux/devfreq-event.h>
+> +#include <linux/devfreq_cooling.h>
+>  #include <linux/device.h>
+>  #include <linux/export.h>
+>  #include <linux/module.h>
+> @@ -41,6 +42,8 @@ struct exynos_bus {
+>  	struct clk *clk;
+>  	unsigned int voltage_tolerance;
+>  	unsigned int ratio;
+> +
+> +	struct thermal_cooling_device *cdev;
+>  };
+>  
+>  /*
+> @@ -468,6 +471,14 @@ static int exynos_bus_probe(struct platform_device *pdev)
+>  		goto err;
+>  	}
+>  
+> +	/* Register devfreq cooling device */
+> +	bus->cdev = of_devfreq_cooling_register(np, bus->devfreq);
+> +	if (IS_ERR(bus->cdev) < 0) {
+> +		dev_err(dev, "failed to register cooling device\n");
+> +		ret = PTR_ERR(bus->cdev);
+> +		goto err;
+> +	}
+> +
+>  	goto out;
+>  passive:
+>  	/* Initialize the struct profile and governor data for passive device */
+> 
