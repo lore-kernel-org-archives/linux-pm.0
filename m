@@ -1,69 +1,62 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2 3/8] PM / devfreq: Show the available min/max frequency
- through sysfs node
-Date: Thu, 21 Sep 2017 09:33:47 +0900
-Message-ID: <1505954032-3327-4-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v2 5/8] PM / devfreq: Get the available next frequency on
+ update_devfreq()
+Date: Thu, 21 Sep 2017 09:33:49 +0900
+Message-ID: <1505954032-3327-6-git-send-email-cw00.choi@samsung.com>
 References: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20170921003355epcas1p24e2126b498dedf4c1112bac783de187b@epcas1p2.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:40367 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751938AbdIUAd6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Sep 2017 20:33:58 -0400
+        <CGME20170921003356epcas1p3de34905f87bca5760f80d196a004e1a0@epcas1p3.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
 Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-The existing {min|max}_freq sysfs nodes don't consider whether min/max_freq
-are available or not. Those sysfs nodes show just the stored value
-in the struct devfreq.
-
-The devfreq uses the OPP interface and then dev_pm_opp_{disable|add}()
-might change the state of the device's supported frequency. This patch
-shows the available minimum and maximum frequency through sysfs node.
+The update_devfreq() considers only user frequency (min_freq/max_freq)
+and the next target_freq provided by the governor. But,  The commit
+a76caf55e5b35 ("thermal: Add devfreq cooling") is able to disable
+OPP as a cooling device. In result, the update_devfreq() have to
+consider the 'opp->available' status in order to decicde the next freq
+by the devfreq_recommended_opp().
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 ---
- drivers/devfreq/devfreq.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ drivers/devfreq/devfreq.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 2ce1fd0a1324..799a0cf75d39 100644
+index 1c4b377cacfb..3b9662ffe603 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -1128,7 +1128,14 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
- static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
+@@ -255,6 +255,7 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
+ int update_devfreq(struct devfreq *devfreq)
  {
--	return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
-+	struct devfreq *df = to_devfreq(dev);
-+	unsigned long min_freq = to_devfreq(dev)->min_freq;
-+	unsigned long available_min_freq = find_available_min_freq(df);
-+
-+	if (available_min_freq != 0 && min_freq < available_min_freq)
-+		min_freq = available_min_freq;
-+
-+	return sprintf(buf, "%lu\n", min_freq);
- }
+ 	struct devfreq_freqs freqs;
++	struct dev_pm_opp *opp;
+ 	unsigned long freq, cur_freq;
+ 	int err = 0;
+ 	u32 flags = 0;
+@@ -273,7 +274,7 @@ int update_devfreq(struct devfreq *devfreq)
+ 		return err;
  
- static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
-@@ -1162,7 +1169,14 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
--	return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
-+	struct devfreq *df = to_devfreq(dev);
-+	unsigned long max_freq = to_devfreq(dev)->max_freq;
-+	unsigned long available_max_freq = find_available_max_freq(df);
-+
-+	if (available_max_freq != 0 && max_freq > available_max_freq)
-+		max_freq = available_max_freq;
-+
-+	return sprintf(buf, "%lu\n", max_freq);
- }
- static DEVICE_ATTR_RW(max_freq);
+ 	/*
+-	 * Adjust the frequency with user freq and QoS.
++	 * Adjust the frequency with user freq, QoS and available freq.
+ 	 *
+ 	 * List from the highest priority
+ 	 * max_freq
+@@ -289,6 +290,12 @@ int update_devfreq(struct devfreq *devfreq)
+ 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+ 	}
  
++	opp = devfreq_recommended_opp(devfreq->dev.parent, &freq, flags);
++	if (IS_ERR(opp))
++		return PTR_ERR(opp);
++	freq = dev_pm_opp_get_freq(opp);
++	dev_pm_opp_put(opp);
++
+ 	if (devfreq->profile->get_cur_freq)
+ 		devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
+ 	else
 -- 
 1.9.1
