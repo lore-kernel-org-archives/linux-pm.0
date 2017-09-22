@@ -1,54 +1,143 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: S0ix failure due to "clk: x86: Do not gate clocks enabled by the firmware"
-Date: Fri, 22 Sep 2017 00:35:15 +0200
-Message-ID: <4254964.MfDMP6QAfg@aspire.rjw.lan>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net> <4036229.gTT6xKEFIS@aspire.rjw.lan> <20170921162307.amdz2uyei7eackhs@sig21.net>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: x86: PIE support and option to extend KASLR randomization
+Date: Thu, 21 Sep 2017 17:06:15 -0700
+Message-ID: <CAJcbSZEuQqK-LNBC0psG-Md9JZiyb2+p0ikh2_C7Jgr2o_GVEA@mail.gmail.com>
+References: <20170815075609.mmzbfwritjzvrpsn@gmail.com> <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
+ <20170816151235.oamkdva6cwpc4cex@gmail.com> <CAJcbSZFM_zpL1av1JVaow8NdsGeH+6oZKeDnMPdXR0PGfynzsg@mail.gmail.com>
+ <20170817080920.5ljlkktngw2cisfg@gmail.com> <CAJcbSZGbtc-i0X1NiBAvZA7cxpGkwSLKNB7oDNCsFxOCdhkR_g@mail.gmail.com>
+ <CAJcbSZGhvwt=5ERtBHLJnwS=6AXBZLTMfrafzeUCqYy=-MKWDg@mail.gmail.com>
+ <20170825080443.tvvr6wzs362cjcuu@gmail.com> <CAJcbSZFJQMKw21kLwr4QGoSM7DMgKRzzjWxkYBF2c1HciCzvGg@mail.gmail.com>
+ <CAJcbSZH6hwaWKrvUZR33ExYaZaWKMSv4tJJA3yZkniLvLbTFMw@mail.gmail.com>
+ <20170921155919.skpyt7dutod5ul4t@gmail.com> <CAJcbSZHOuxy5BVxD0xJUdQfB-OMgbvfiP-2CJzf52K-7JZAy-A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170921162307.amdz2uyei7eackhs@sig21.net>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Johannes Stezenbach <js@sig21.net>
-Cc: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <kernel-hardening-return-9920-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <CAJcbSZHOuxy5BVxD0xJUdQfB-OMgbvfiP-2CJzf52K-7JZAy-A@mail.gmail.com>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, September 21, 2017 6:23:07 PM CEST Johannes Stezenbach wrote:
-> On Thu, Sep 21, 2017 at 04:21:46PM +0200, Rafael J. Wysocki wrote:
-> > So I would be inclined to think of that as a BIOS issue.
-> 
-> OK, wrt $Subject it sparks the question how to fix the
-> issue exposed by commit d31fd43c0f9a4 "clk: x86: Do not
-> gate clocks enabled by the firmware".  Add quirks to
-> the drivers for the devices that have the dangling
-> PowerResources and manually call _OFF/_ON during suspend/resume?
-> 
-> I must admit I haven't looked deeper into the issue yet,
-> i.e. I don't know which clock causes S0ix failure.
-> If I understand correctly, before d31fd43c0f9a4 the
-> clk framework would just disable all unused clocks
-> registered by clk-pmc-atom.c, which are all of then except
-> CLK3 which is used by the audio codec. And the audio codec
-> would disable CLK3 during suspend.
-> After d31fd43c0f9a4 all clocks that BIOS had enabled during boot
-> are kept running.  Presumably we could also add the quirk to
-> clk-pmc-atom.c to bypass what d31fd43c0f9a4 added on Asus E200HA?
+On Thu, Sep 21, 2017 at 2:16 PM, Thomas Garnier <thgarnie@google.com> wrote:
+>
+> On Thu, Sep 21, 2017 at 8:59 AM, Ingo Molnar <mingo@kernel.org> wrote:
+> >
+> > ( Sorry about the delay in answering this. I could blame the delay on the merge
+> >   window, but in reality I've been procrastinating this is due to the permanent,
+> >   non-trivial impact PIE has on generated C code. )
+> >
+> > * Thomas Garnier <thgarnie@google.com> wrote:
+> >
+> >> 1) PIE sometime needs two instructions to represent a single
+> >> instruction on mcmodel=kernel.
+> >
+> > What again is the typical frequency of this occurring in an x86-64 defconfig
+> > kernel, with the very latest GCC?
+>
+> I am not sure what is the best way to measure that.
 
-Since this is S0ix, the "system level" is 0 all the time (as I said in a
-previous message).
+A very approximate approach would be to look at each instruction using
+the signed trick with a _32S relocation. All _32S relocations won't be
+translated to more instructions because some are just relocating part
+of an absolute mov which would be actually smaller if relative.
 
-So there seem to be two possible ways to address this, unfortunately both
-based on white- or blacklisting.
+Used this command to get a relative estimate:
 
-One of them would be to only do the d31fd43c0f9a4 approach for selected
-systems where it needs to be done to avoid breakage.  The other one would
-be to do it for all systems by default and blacklist the ones where that
-leads to problems.
+objdump -dr ./baseline/vmlinux | egrep -A 2 '\-0x[0-9a-f]{8}' | grep
+_32S | wc -l
 
-IMO it is better to disable clocks over suspend-resume, because that reduces
-the system's power draw while suspended.  So that's what I would do and then
-keep the clocks running only if that is known to be necessary.
+Got 6130 places, if you assume each add at least 7 bytes. It adds at
+least 42910 bytes on the .text section. The text section is 78599
+bytes bigger from baseline to PIE. That's at least 54% of the size
+difference. Assuming we found all of them and we can't factor the
+impact on using an additional register.
 
-Thanks,
-Rafael
+Similar approach with the switch table but a bit more complex:
 
+1) Find all constructs as with an lea (%rip) followed by a jmp
+instruction inside a function (typical unfolded switch case).
+2) Remove occurrences of less than 4 for the destination address
+
+Result: 480 switch cases in 49 functions. Each case take at least 9
+bytes and the switch itself takes 16 bytes (assuming one per
+function).
+
+That's 5104 bytes for easy to identify switches (less than 7% of the increase).
+
+I am certainly missing a lot of differences. I checked if the percpu
+changes impacted the size and it doesn't (only 3 bytes added on PIE).
+
+I also tried different ways to compare the .text section like size of
+symbols or number of bytes on full disassembly but the results are
+really off from the whole .text size so I am not sure if it is the
+right way to go about it.
+
+>
+> >
+> > Also, to make sure: which unwinder did you use for your measurements,
+> > frame-pointers or ORC? Please use ORC only for future numbers, as
+> > frame-pointers is obsolete from a performance measurement POV.
+>
+> I used the default configuration which uses frame-pointer. I built all
+> the different binaries with ORC and I see an improvement in size:
+>
+> On latest revision (just built and ran performance tests this week):
+>
+> With framepointer: PIE .text is 0.837324% than baseline
+>
+> With ORC: PIE .text is 0.814224% than baseline
+>
+> Comparing baselines only, ORC is -2.849832% than frame-pointers.
+>
+> >
+> >> 2) GCC does not optimize switches in PIE in order to reduce relocations:
+> >
+> > Hopefully this can either be fixed in GCC or at least influenced via a compiler
+> > switch in the future.
+> >
+> >> The switches are the biggest increase on small functions but I don't
+> >> think they represent a large portion of the difference (number 1 is).
+> >
+> > Ok.
+> >
+> >> A side note, while testing gcc 7.2.0 on hackbench I have seen the PIE
+> >> kernel being faster by 1% across multiple runs (comparing 50 runs done
+> >> across 5 reboots twice). I don't think PIE is faster than a
+> >> mcmodel=kernel but recent versions of gcc makes them fairly similar.
+> >
+> > So I think we are down to an overhead range where the inherent noise (both random
+> > and systematic one) in 'hackbench' overwhelms the signal we are trying to measure.
+> >
+> > So I think it's the kernel .text size change that is the best noise-free proxy for
+> > the overhead impact of PIE.
+>
+> I agree but it might be hard to measure the exact impact. What is
+> acceptable and what is not?
+>
+> >
+> > It doesn't hurt to double check actual real performance as well, just don't expect
+> > there to be much of a signal for anything but fully cached microbenchmark
+> > workloads.
+>
+> That's aligned with what I see in the latest performance testing.
+> Performance is close enough that it is hard to get exact numbers (pie
+> is just a bit slower than baseline on hackench (~1%)).
+>
+> >
+> > Thanks,
+> >
+> >         Ingo
+>
+>
+>
+> --
+> Thomas
+
+
+
+
+-- 
+Thomas
