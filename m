@@ -1,114 +1,83 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM: Document rules on using pm_runtime_resume() in system
- suspend callbacks
-Date: Fri, 22 Sep 2017 09:22:47 +0200
-Message-ID: <CAPDyKFoEexNtj02S2y-HxpL2rnLnX8MrRMnZ4kO6sKfofrLO9Q@mail.gmail.com>
-References: <1849600.vI30ccvhCD@aspire.rjw.lan> <CAPDyKFrPGA9OproyQHwVTY5EfAQJnLZuHL+cnJv+1fPYXLLW2w@mail.gmail.com>
- <CAJZ5v0h2gZJbtF2E=+9Ya5NtZCRy+5eVh=OaJJA81rTZR0907g@mail.gmail.com>
+From: Johannes Stezenbach <js@sig21.net>
+Subject: Re: S0ix failure due to "clk: x86: Do not gate clocks enabled by the
+ firmware"
+Date: Fri, 22 Sep 2017 10:04:53 +0200
+Message-ID: <20170922080453.3bwad4ale4zizf42@sig21.net>
+References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
+ <4036229.gTT6xKEFIS@aspire.rjw.lan>
+ <20170921162307.amdz2uyei7eackhs@sig21.net>
+ <4254964.MfDMP6QAfg@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f180.google.com ([209.85.223.180]:47662 "EHLO
-        mail-io0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751864AbdIVHWt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Sep 2017 03:22:49 -0400
-Received: by mail-io0-f180.google.com with SMTP id e189so1138582ioa.4
-        for <linux-pm@vger.kernel.org>; Fri, 22 Sep 2017 00:22:49 -0700 (PDT)
-In-Reply-To: <CAJZ5v0h2gZJbtF2E=+9Ya5NtZCRy+5eVh=OaJJA81rTZR0907g@mail.gmail.com>
+Received: from mail.sig21.net ([80.244.240.74]:40503 "EHLO mail.sig21.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751795AbdIVIFM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 22 Sep 2017 04:05:12 -0400
+Content-Disposition: inline
+In-Reply-To: <4254964.MfDMP6QAfg@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
 
-[...]
+On Fri, Sep 22, 2017 at 12:35:15AM +0200, Rafael J. Wysocki wrote:
+> On Thursday, September 21, 2017 6:23:07 PM CEST Johannes Stezenbach wrote:
+> > On Thu, Sep 21, 2017 at 04:21:46PM +0200, Rafael J. Wysocki wrote:
+> > > So I would be inclined to think of that as a BIOS issue.
+> > 
+> > OK, wrt $Subject it sparks the question how to fix the
+> > issue exposed by commit d31fd43c0f9a4 "clk: x86: Do not
+> > gate clocks enabled by the firmware".  Add quirks to
+> > the drivers for the devices that have the dangling
+> > PowerResources and manually call _OFF/_ON during suspend/resume?
+> > 
+> > I must admit I haven't looked deeper into the issue yet,
+> > i.e. I don't know which clock causes S0ix failure.
+> > If I understand correctly, before d31fd43c0f9a4 the
+> > clk framework would just disable all unused clocks
+> > registered by clk-pmc-atom.c, which are all of then except
+> > CLK3 which is used by the audio codec. And the audio codec
+> > would disable CLK3 during suspend.
+> > After d31fd43c0f9a4 all clocks that BIOS had enabled during boot
+> > are kept running.  Presumably we could also add the quirk to
+> > clk-pmc-atom.c to bypass what d31fd43c0f9a4 added on Asus E200HA?
+> 
+> Since this is S0ix, the "system level" is 0 all the time (as I said in a
+> previous message).
 
->>> Second, leaving devices in runtime suspend in the "suspend" phase of system
->>> suspend is fishy even when their runtime PM is disabled, because that doesn't
->>> guarantee anything regarding their children or possible consumers.  Runtime
->>> PM may still be enabled for those devices at that time and runtime resume may
->>> be triggered for them later, in which case it all quickly falls apart.
->>
->> This is true, although to me this is a about a different problem and
->> has very little to do with pm_runtime_force_suspend().
->>
->> More precisely, whether runtime PM becomes disabled in the suspend
->> phase or suspend_late phase, really doesn't matter. Because in the end
->> this is about suspending/resuming devices in the correct order.
->
-> Yes, it is, but this is not my point (I didn't make it clear enough I guess).
->
-> At the time you make the decision to disable runtime PM for a parent
-> (say) and leave it in runtime suspend, all of its children are
-> suspended just fine (otherwise the parent wouldn't have been suspended
-> too).  However, you *also* need to make sure that there will be no
-> attempts to resume any of them *after* that point, which practically
-> means that either runtime PM has to have been disabled already for all
-> of them at the time it is disabled for the parent, or there has to be
-> another guarantee in place.
->
-> That's why the core tries to enforce the "runtime PM disabled for the
-> entire hierarchy below" guarantee for the devices with direct_complete
-> set, but that may just be overkill in many cases.  I guess it may be
-> better to use WARN_ON() to catch the cases in which things may really
-> go wrong.
+Damn.  Reading ACPI spec (6.1 and 6.2), it talks about _LPI and _RDI
+but E200HA doesn't have that in any ACPI table.
+The table in section 7.1 Power Resource Objects and the Power Management Models
+says "Choose a supported device state to enable a targeted system sleep or
+Low- power Idle state ... [use] _PRx".
 
-Yes, using WARN_ON() is some clever way, seems like a great idea.
+> So there seem to be two possible ways to address this, unfortunately both
+> based on white- or blacklisting.
+> 
+> One of them would be to only do the d31fd43c0f9a4 approach for selected
+> systems where it needs to be done to avoid breakage.  The other one would
+> be to do it for all systems by default and blacklist the ones where that
+> leads to problems.
+> 
+> IMO it is better to disable clocks over suspend-resume, because that reduces
+> the system's power draw while suspended.  So that's what I would do and then
+> keep the clocks running only if that is known to be necessary.
 
-My point is, disabling runtime PM in a hierarchical manner, isn't a
-solution to the suspend/resume ordering problem.
+d31fd43c0f9a4 was added to fix a "hard hangup on boot" issue,
+so I guess the default should be to keep clocks enabled.
 
->
->>> IOW, there are reasons why the PM core bumps up the runtime PM usage counters
->>> of all devices during system suspend and they also apply to runtime suspend
->>> callbacks being invoked directly with runtime PM disabled for the given device.
->>> Frankly, it generally is only safe to leave a device in runtime suspend during
->>> system suspend if it can be guarateed that the system suspend callbacks in the
->>> subsequent suspend phases will not be invoked for it at all.
->>
->> I understand this is perfectly true for some of the non-trivial middle
->> layers, however just to be clear, this statement don't have to serve
->> as a general rule for all cases, right?
->
-> Well, a really general version of it is something like "it is only
-> safe to leave a device in runtime suspend during system suspend if it
-> can be guaranteed that the system suspend callbacks in the subsequent
-> suspend phases will not change its state" and the most effective way
-> to make that guarantee is to prevent them from being invoked at all.
-> :-)
->
->> Moreover, bumping the runtime PM usage count
->> (pm_runtime_get_noresume()) in the device_prepare/suspend() phase, was
->> originally added to prevent the runtime PM core from runtime
->> suspending a device, in cases when runtime PM has been enabled for it.
->> Preventing the ->runtime_suspend() callback from being invoked when
->> runtime PM is disabled, just doesn't make any sense to me.
->
-> The problem is that the functionality of ->runtime_suspend() in
-> principle overlaps with the functionality of ->suspend(),
-> ->suspend_late() and ->suspend_noirq() combined, but it need not be
-> entirely the same.  Therefore if you invoke ->runtime_suspend()
-> anywhere between the beginning of ->suspend() and the end of
-> ->suspend_noirq(), the remaining code in the system sleep callbacks
-> needs to know about that in order to avoid, for example, attempting to
-> power down the device for the second time in a row, which very well
-> may kill the system in some extreme cases.
+BTW, in E200HA DSDT, the PowerResources in question are children of
+the I2Cx devices, presumably it means these clocks are to be used by
+devices connected to the i2c busses.  Maybe it's a left over from devices
+that are not present in E200HA, and we should ignore them.
 
-Agree, this may be a bit tricky to deal with for the more complex middle layers.
+In conclusion the BIOS bug is that it enables these clocks at boot,
+and the correct quirk is to make clk-pmc-atom.c disable them during init,
+but leave the _PRx handling for the used clocks (CLK3) to ACPI.
 
-However, this is also very good reason to why it's useful keep the
-runtime PM status up to date, always reflecting the HW status of the
-device - even during system suspend phases.
+Right?
 
->
-> Of course, if those callbacks are trivial, this problem goes away, but
-> they need not be trivial and if you are a platform driver (or an
-> i2c/spi driver too for that matter), you aren't guaranteed that they
-> will always be trivial.  That is quite a bit of an issue to me.
 
-I understand your concern, but I don't share it. :-)
-
-To me, I would rather keep things as simple as possible, then deal
-with the complexity once we have a valid case for it.
-
-Kind regards
-Uffe
+Thanks,
+Johannes
