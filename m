@@ -1,42 +1,104 @@
-From: Tao Wang <kevin.wangtao-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>
-Subject: [PATCH 0/9] add support for Hi3660 tsensor
-Date: Fri, 22 Sep 2017 17:42:03 +0800
-Message-ID: <1506073332-92438-1-git-send-email-kevin.wangtao@hisilicon.com>
+From: Tao Wang <kevin.wangtao@hisilicon.com>
+Subject: [PATCH 1/9] thermal/drivers/hisi: move clk operation to related function
+Date: Fri, 22 Sep 2017 17:42:04 +0800
+Message-ID: <1506073332-92438-2-git-send-email-kevin.wangtao@hisilicon.com>
+References: <1506073332-92438-1-git-send-email-kevin.wangtao@hisilicon.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, catalin.marinas-5wv7dgnIgG8@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org
-Cc: leo.yan-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, lonela.Voinescu-5wv7dgnIgG8@public.gmane.org, Valentin.Schneider-5wv7dgnIgG8@public.gmane.org, vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sunzhaosheng-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, gengyanping-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Kevin Wangtao <kevin.wangtao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1506073332-92438-1-git-send-email-kevin.wangtao@hisilicon.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, xuwei5@hisilicon.com, catalin.marinas@arm.com, will.deacon@arm.com
+Cc: leo.yan@linaro.org, lonela.Voinescu@arm.com, Valentin.Schneider@arm.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, sunzhaosheng@hisilicon.com, gengyanping@hisilicon.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kevin Wangtao <kevin.wangtao@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Kevin Wangtao <kevin.wangtao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+From: Kevin Wangtao <kevin.wangtao@linaro.org>
 
-This patchset reorganize hisi thermal driver and make it both
-support Hi6220 and Hi3660.
-This patchset is based on Daniel thermal patch V2.
-https://lkml.org/lkml/2017/9/4/432
+The sensor's clock is enabled and disabled outside of the probe and
+disable function. Moving the corresponding action in the
+hisi_thermal_setup() and hisi_thermal_disable_sensor(), factors out
+some lines of code and makes the code more symmetric.
 
-Kevin Wangtao (9):
-  thermal/drivers/hisi: move clk operation to related function
-  thermal/drivers/hisi: use round up step value
-  thermal/drivers/hisi: put platform code together
-  thermal/drivers/hisi: add platform prefix to function name
-  thermal/drivers/hisi: perpare to add support for other hisi platform
-  thermal/drivers/hisi: add support for multi temp threshold
-  dt-bindings: Document the hi3660 thermal sensor binding
-  thermal/drivers/hisi: add support for hi3660 SoC
-  arm64: dts: register Hi3660's thermal sensor
+Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
+---
+ drivers/thermal/hisi_thermal.c | 29 +++++++++--------------------
+ 1 file changed, 9 insertions(+), 20 deletions(-)
 
- .../bindings/thermal/hisilicon-thermal.txt         |   9 +
- arch/arm64/boot/dts/hisilicon/hi3660.dtsi          |   8 +
- drivers/thermal/hisi_thermal.c                     | 494 ++++++++++++++-------
- 3 files changed, 351 insertions(+), 160 deletions(-)
-
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index 39f4627..c43e3df 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -203,6 +203,8 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
+ 	hisi_thermal_enable(data->regs, 0);
+ 	hisi_thermal_alarm_enable(data->regs, 0);
+ 	hisi_thermal_reset_enable(data->regs, 0);
++
++	clk_disable_unprepare(data->clk);
+ }
+ 
+ static int hisi_thermal_get_temp(void *__data, int *temp)
+@@ -297,9 +299,13 @@ static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
+ 
+ static int hisi_thermal_setup(struct hisi_thermal_data *data)
+ {
+-	struct hisi_thermal_sensor *sensor;
++	struct hisi_thermal_sensor *sensor = &data->sensor;
++	int ret;
+ 
+-	sensor = &data->sensor;
++	/* enable clock for tsensor */
++	ret = clk_prepare_enable(data->clk);
++	if (ret)
++		return ret;
+ 
+ 	/* disable module firstly */
+ 	hisi_thermal_reset_enable(data->regs, 0);
+@@ -363,13 +369,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	/* enable clock for thermal */
+-	ret = clk_prepare_enable(data->clk);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
+-		return ret;
+-	}
+-
+ 	ret = hisi_thermal_register_sensor(pdev, data,
+ 					   &data->sensor,
+ 					   HISI_DEFAULT_SENSOR);
+@@ -405,7 +404,6 @@ static int hisi_thermal_remove(struct platform_device *pdev)
+ 
+ 	hisi_thermal_toggle_sensor(sensor, false);
+ 	hisi_thermal_disable_sensor(data);
+-	clk_disable_unprepare(data->clk);
+ 
+ 	return 0;
+ }
+@@ -417,23 +415,14 @@ static int hisi_thermal_suspend(struct device *dev)
+ 
+ 	hisi_thermal_disable_sensor(data);
+ 
+-	clk_disable_unprepare(data->clk);
+-
+ 	return 0;
+ }
+ 
+ static int hisi_thermal_resume(struct device *dev)
+ {
+ 	struct hisi_thermal_data *data = dev_get_drvdata(dev);
+-	int ret;
+ 
+-	ret = clk_prepare_enable(data->clk);
+-	if (ret)
+-		return ret;
+-
+-	hisi_thermal_setup(data);
+-
+-	return 0;
++	return hisi_thermal_setup(data);
+ }
+ #endif
+ 
 -- 
 2.8.1
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
