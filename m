@@ -1,50 +1,128 @@
 From: Tao Wang <kevin.wangtao@hisilicon.com>
-Subject: [PATCH 7/9] dt-bindings: Document the hi3660 thermal sensor binding
-Date: Fri, 22 Sep 2017 17:42:10 +0800
-Message-ID: <1506073332-92438-8-git-send-email-kevin.wangtao@hisilicon.com>
+Subject: [PATCH 3/9] thermal/drivers/hisi: put platform code together
+Date: Fri, 22 Sep 2017 17:42:06 +0800
+Message-ID: <1506073332-92438-4-git-send-email-kevin.wangtao@hisilicon.com>
 References: <1506073332-92438-1-git-send-email-kevin.wangtao@hisilicon.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
 In-Reply-To: <1506073332-92438-1-git-send-email-kevin.wangtao@hisilicon.com>
-Sender: linux-kernel-owner@vger.kernel.org
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, xuwei5@hisilicon.com, catalin.marinas@arm.com, will.deacon@arm.com
-Cc: leo.yan@linaro.org, lonela.Voinescu@arm.com, Valentin.Schneider@arm.com, vincent.guittot@linaro.org, daniel.lezcano@linaro.org, sunzhaosheng@hisilicon.com, gengyanping@hisilicon.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kevin Wangtao <kevin.wangtao@linaro.org>
+Cc: devicetree@vger.kernel.org, vincent.guittot@linaro.org, gengyanping@hisilicon.com, linux-pm@vger.kernel.org, daniel.lezcano@linaro.org, lonela.Voinescu@arm.com, linux-kernel@vger.kernel.org, Kevin Wangtao <kevin.wangtao@linaro.org>, leo.yan@linaro.org, sunzhaosheng@hisilicon.com, Valentin.Schneider@arm.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Kevin Wangtao <kevin.wangtao@linaro.org>
 
-This adds documentation of device tree bindings for the
-thermal sensor controller of hi3660 SoC.
+reorganize code for follow-up patch, there is no functional change here.
 
 Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
 ---
- Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/thermal/hisi_thermal.c | 76 +++++++++++++++++++++---------------------
+ 1 file changed, 38 insertions(+), 38 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
-index d48fc52..cef716a 100644
---- a/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt
-@@ -13,6 +13,7 @@
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index c8b651d..96904b4 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -201,6 +201,44 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
+ 	clk_disable_unprepare(data->clk);
+ }
  
- Example :
- 
-+for Hi6220:
- 	tsensor: tsensor@0,f7030700 {
- 		compatible = "hisilicon,tsensor";
- 		reg = <0x0 0xf7030700 0x0 0x1000>;
-@@ -21,3 +22,11 @@ Example :
- 		clock-names = "thermal_clk";
- 		#thermal-sensor-cells = <1>;
- 	}
 +
-+for Hi3660:
-+	tsensor: tsensor@fff30000 {
-+		compatible = "hisilicon,hi3660-tsensor";
-+		reg = <0x0 0xfff30000 0x0 0x1000>;
-+		interrupts = <GIC_SPI 145 IRQ_TYPE_LEVEL_HIGH>;
-+		#thermal-sensor-cells = <1>;
-+	};
++static int hisi_thermal_setup(struct hisi_thermal_data *data)
++{
++	struct hisi_thermal_sensor *sensor = &data->sensor;
++	int ret;
++
++	/* enable clock for tsensor */
++	ret = clk_prepare_enable(data->clk);
++	if (ret)
++		return ret;
++
++	/* disable module firstly */
++	hisi_thermal_reset_enable(data->regs, 0);
++	hisi_thermal_enable(data->regs, 0);
++
++	/* select sensor id */
++	hisi_thermal_sensor_select(data->regs, sensor->id);
++
++	/* setting the hdak time */
++	hisi_thermal_hdak_set(data->regs, 0);
++
++	/* setting lag value between current temp and the threshold */
++	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
++
++	/* enable for interrupt */
++	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
++
++	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
++
++	/* enable module */
++	hisi_thermal_reset_enable(data->regs, 1);
++	hisi_thermal_enable(data->regs, 1);
++
++	hisi_thermal_alarm_clear(data->regs, 0);
++	hisi_thermal_alarm_enable(data->regs, 1);
++
++	return 0;
++}
+ static int hisi_thermal_get_temp(void *__data, int *temp)
+ {
+ 	struct hisi_thermal_data *data = __data;
+@@ -291,44 +329,6 @@ static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
+ 		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+ }
+ 
+-static int hisi_thermal_setup(struct hisi_thermal_data *data)
+-{
+-	struct hisi_thermal_sensor *sensor = &data->sensor;
+-	int ret;
+-
+-	/* enable clock for tsensor */
+-	ret = clk_prepare_enable(data->clk);
+-	if (ret)
+-		return ret;
+-
+-	/* disable module firstly */
+-	hisi_thermal_reset_enable(data->regs, 0);
+-	hisi_thermal_enable(data->regs, 0);
+-
+-	/* select sensor id */
+-	hisi_thermal_sensor_select(data->regs, sensor->id);
+-
+-	/* setting the hdak time */
+-	hisi_thermal_hdak_set(data->regs, 0);
+-
+-	/* setting lag value between current temp and the threshold */
+-	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
+-
+-	/* enable for interrupt */
+-	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
+-
+-	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
+-
+-	/* enable module */
+-	hisi_thermal_reset_enable(data->regs, 1);
+-	hisi_thermal_enable(data->regs, 1);
+-
+-	hisi_thermal_alarm_clear(data->regs, 0);
+-	hisi_thermal_alarm_enable(data->regs, 1);
+-
+-	return 0;
+-}
+-
+ static int hisi_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct hisi_thermal_data *data;
 -- 
 2.8.1
