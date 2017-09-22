@@ -1,143 +1,126 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: x86: PIE support and option to extend KASLR randomization
-Date: Thu, 21 Sep 2017 17:06:15 -0700
-Message-ID: <CAJcbSZEuQqK-LNBC0psG-Md9JZiyb2+p0ikh2_C7Jgr2o_GVEA@mail.gmail.com>
-References: <20170815075609.mmzbfwritjzvrpsn@gmail.com> <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
- <20170816151235.oamkdva6cwpc4cex@gmail.com> <CAJcbSZFM_zpL1av1JVaow8NdsGeH+6oZKeDnMPdXR0PGfynzsg@mail.gmail.com>
- <20170817080920.5ljlkktngw2cisfg@gmail.com> <CAJcbSZGbtc-i0X1NiBAvZA7cxpGkwSLKNB7oDNCsFxOCdhkR_g@mail.gmail.com>
- <CAJcbSZGhvwt=5ERtBHLJnwS=6AXBZLTMfrafzeUCqYy=-MKWDg@mail.gmail.com>
- <20170825080443.tvvr6wzs362cjcuu@gmail.com> <CAJcbSZFJQMKw21kLwr4QGoSM7DMgKRzzjWxkYBF2c1HciCzvGg@mail.gmail.com>
- <CAJcbSZH6hwaWKrvUZR33ExYaZaWKMSv4tJJA3yZkniLvLbTFMw@mail.gmail.com>
- <20170921155919.skpyt7dutod5ul4t@gmail.com> <CAJcbSZHOuxy5BVxD0xJUdQfB-OMgbvfiP-2CJzf52K-7JZAy-A@mail.gmail.com>
+From: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+Subject: Re: [PATCH v2 1/6] ACPI/PPTT: Add Processor Properties Topology Table
+ parsing
+Date: Fri, 22 Sep 2017 09:15:21 +0800
+Message-ID: <f1752bf4-b62e-e41a-bd58-783c15bba868@huawei.com>
+References: <20170919184751.25110-1-jeremy.linton@arm.com>
+ <20170919184751.25110-2-jeremy.linton@arm.com>
+ <4c9cfa18-507b-01c4-7464-ff2b149fbb68@huawei.com>
+ <03912538-f7bf-f235-c87f-3ba275502db0@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-9920-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <CAJcbSZHOuxy5BVxD0xJUdQfB-OMgbvfiP-2CJzf52K-7JZAy-A@mail.gmail.com>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <03912538-f7bf-f235-c87f-3ba275502db0@arm.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, mturquette@baylibre.com, sboyd@codeaurora.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, Jonathan.Zhang@cavium.com, ahs3@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Sep 21, 2017 at 2:16 PM, Thomas Garnier <thgarnie@google.com> wrote:
->
-> On Thu, Sep 21, 2017 at 8:59 AM, Ingo Molnar <mingo@kernel.org> wrote:
-> >
-> > ( Sorry about the delay in answering this. I could blame the delay on the merge
-> >   window, but in reality I've been procrastinating this is due to the permanent,
-> >   non-trivial impact PIE has on generated C code. )
-> >
-> > * Thomas Garnier <thgarnie@google.com> wrote:
-> >
-> >> 1) PIE sometime needs two instructions to represent a single
-> >> instruction on mcmodel=kernel.
-> >
-> > What again is the typical frequency of this occurring in an x86-64 defconfig
-> > kernel, with the very latest GCC?
->
-> I am not sure what is the best way to measure that.
+Hi Jeremy,
 
-A very approximate approach would be to look at each instruction using
-the signed trick with a _32S relocation. All _32S relocations won't be
-translated to more instructions because some are just relocating part
-of an absolute mov which would be actually smaller if relative.
+On 2017/9/22 2:48, Jeremy Linton wrote:
+> Hi,
+> 
+> On 09/20/2017 02:15 AM, Xiongfeng Wang wrote:
+>> Hi Jeremy,
+>>
+>> On 2017/9/20 2:47, Jeremy Linton wrote:
+>>> ACPI 6.2 adds a new table, which describes how processing units
+>>> are related to each other in tree like fashion. Caches are
+>>> also sprinkled throughout the tree and describe the properties
+>>> of the caches in relation to other caches and processing units.
+>>>
+>>> Add the code to parse the cache hierarchy and report the total
+>>> number of levels of cache for a given core using
+>>> acpi_find_last_cache_level() as well as fill out the individual
+>>> cores cache information with cache_setup_acpi() once the
+>>> cpu_cacheinfo structure has been populated by the arch specific
+>>> code.
+>>>
+>>> Further, report peers in the topology using setup_acpi_cpu_topology()
+>>> to report a unique ID for each processing unit at a given level
+>>> in the tree. These unique id's can then be used to match related
+>>> processing units which exist as threads, COD (clusters
+>>> on die), within a given package, etc.
+>>>
+>>> +
+>>> +static int topology_setup_acpi_cpu(struct acpi_table_header *table,
+>>> +                    unsigned int cpu, int level)
+>>> +{
+>>> +    struct acpi_pptt_processor *cpu_node;
+>>> +    u32 acpi_cpu_id = acpi_cpu_get_madt_gicc(cpu)->uid;
+>>> +
+>>> +    cpu_node = acpi_find_processor_node(table, acpi_cpu_id);
+>>> +    if (cpu_node) {
+>>> +        cpu_node = acpi_find_processor_package_id(table, cpu_node, level);
+>>> +        return (int)((u8 *)cpu_node - (u8 *)table);
+>>> +    }
+>>> +    pr_err_once("PPTT table found, but unable to locate core for %d\n",
+>>> +            cpu);
+>>> +    return -ENOENT;
+>>
+>> Can we return -1 when PPTT doesn't exist? So that we can still get topo info from MPIDR.
+>> 'store_cpu_topology()' determine whether cpu topology has been populated by checking
+>> whether cluster_id is -1. If cluster_id is not -1, it won't read cpu topo info from MPIDR.
+>> Or maybe we can change 'store_cpu_topology()' as well. If cluster_id is less than zero,
+>> we read cpu topo info from MPIDR.
+> 
+> ? I will retest this, but any negative return from setup_acpi_topology() for the initial node (subsequent requests should minimally duplicate the cpu node rather than failing) request, should result in a call to reset_cpu_topology(), and the information being sourced from the MPIDR in store_cpu_topology(). There are various ways the tree could be "damaged" but if all the system cpus have matching valid acpi_id/cpu nodes, then that reflects a valid topology and there really isn't enough information to decide if its damaged. The one case where this isn't accurate is missing socket identifiers, but the code actually handles this as well as the lack of missing cluster/thread ids (which don't exist in the standard).
+> 
+Yes, you are right. I didn't notice the function reset_cpu_topology() before. Thanks for your explanation.
+>>
+>>> +}
+>>> +
+>>> +/*
+>>> + * simply assign a ACPI cache entry to each known CPU cache entry
+>>> + * determining which entries are shared is done later.
+>>> + */
+>>> +int cache_setup_acpi(unsigned int cpu)
+>>> +{
+>>> +    struct acpi_table_header *table;
+>>> +    acpi_status status;
+>>> +
+>>> +    pr_debug("Cache Setup ACPI cpu %d\n", cpu);
+>>> +
+>>> +    status = acpi_get_table(ACPI_SIG_PPTT, 0, &table);
+>>> +    if (ACPI_FAILURE(status)) {
+>>> +        pr_err_once("No PPTT table found, cache topology may be inaccurate\n");
+>>> +        return -ENOENT;
+>>> +    }
+>>> +
+>>> +    cache_setup_acpi_cpu(table, cpu);
+>>> +    acpi_put_table(table);
+>>> +
+>>> +    return status;
+>>> +}
+>>> +
+>>> +/*
+>>> + * Determine a topology unique ID for each thread/core/cluster/socket/etc.
+>>> + * This ID can then be used to group peers.
+>>> + */
+>>> +int setup_acpi_cpu_topology(unsigned int cpu, int level)
+>>> +{
+>>> +    struct acpi_table_header *table;
+>>> +    acpi_status status;
+>>> +    int retval;
+>>
+>> Can we add a static int array to record already assigned id for each level?
+>> So that we can count the id starting from zero. And also the id can be successive.
+> 
+> I don't like the idea of a node<->generated_id array/map in this module, although I've considered a number of ways to create more normalized values. Particularly, the one area that might be useful is utilizing the acpi id for the cores, which is problematic in the MT case. One of my other alternative ideas was to plug a unique node id into a reserved field in the table as the node is traversed. That idea is a little evil, and really should be part of the ACPI standard so the firmware is providing the ID's rather than dependent on the traversal order of the tree.
+> 
+> If it turns out that these ID's need to be zero based, or some other limitation I would prefer just renumbering them in update_siblings_mask() or parse_acpi_topology(). I hacked together a patch to renumber the package_id yesterday, but i'm pretty sure I've seen (non arm) machines with odd package/core ids in the past, and I don't really see anything in the ABI the dictating this. Let me clean it up a bit and I can post it as an additional patch on top of the PPTT patches.
+> 
+Yes, I agree. Renumbering the IDs in parse_acpi_topology() is better.
 
-Used this command to get a relative estimate:
+> So, is this an actual use case/problem, or its just an "appearance" type of thing?
+> 
+It is not an actual use problem, just an "appearance".
 
-objdump -dr ./baseline/vmlinux | egrep -A 2 '\-0x[0-9a-f]{8}' | grep
-_32S | wc -l
 
-Got 6130 places, if you assume each add at least 7 bytes. It adds at
-least 42910 bytes on the .text section. The text section is 78599
-bytes bigger from baseline to PIE. That's at least 54% of the size
-difference. Assuming we found all of them and we can't factor the
-impact on using an additional register.
-
-Similar approach with the switch table but a bit more complex:
-
-1) Find all constructs as with an lea (%rip) followed by a jmp
-instruction inside a function (typical unfolded switch case).
-2) Remove occurrences of less than 4 for the destination address
-
-Result: 480 switch cases in 49 functions. Each case take at least 9
-bytes and the switch itself takes 16 bytes (assuming one per
-function).
-
-That's 5104 bytes for easy to identify switches (less than 7% of the increase).
-
-I am certainly missing a lot of differences. I checked if the percpu
-changes impacted the size and it doesn't (only 3 bytes added on PIE).
-
-I also tried different ways to compare the .text section like size of
-symbols or number of bytes on full disassembly but the results are
-really off from the whole .text size so I am not sure if it is the
-right way to go about it.
-
->
-> >
-> > Also, to make sure: which unwinder did you use for your measurements,
-> > frame-pointers or ORC? Please use ORC only for future numbers, as
-> > frame-pointers is obsolete from a performance measurement POV.
->
-> I used the default configuration which uses frame-pointer. I built all
-> the different binaries with ORC and I see an improvement in size:
->
-> On latest revision (just built and ran performance tests this week):
->
-> With framepointer: PIE .text is 0.837324% than baseline
->
-> With ORC: PIE .text is 0.814224% than baseline
->
-> Comparing baselines only, ORC is -2.849832% than frame-pointers.
->
-> >
-> >> 2) GCC does not optimize switches in PIE in order to reduce relocations:
-> >
-> > Hopefully this can either be fixed in GCC or at least influenced via a compiler
-> > switch in the future.
-> >
-> >> The switches are the biggest increase on small functions but I don't
-> >> think they represent a large portion of the difference (number 1 is).
-> >
-> > Ok.
-> >
-> >> A side note, while testing gcc 7.2.0 on hackbench I have seen the PIE
-> >> kernel being faster by 1% across multiple runs (comparing 50 runs done
-> >> across 5 reboots twice). I don't think PIE is faster than a
-> >> mcmodel=kernel but recent versions of gcc makes them fairly similar.
-> >
-> > So I think we are down to an overhead range where the inherent noise (both random
-> > and systematic one) in 'hackbench' overwhelms the signal we are trying to measure.
-> >
-> > So I think it's the kernel .text size change that is the best noise-free proxy for
-> > the overhead impact of PIE.
->
-> I agree but it might be hard to measure the exact impact. What is
-> acceptable and what is not?
->
-> >
-> > It doesn't hurt to double check actual real performance as well, just don't expect
-> > there to be much of a signal for anything but fully cached microbenchmark
-> > workloads.
->
-> That's aligned with what I see in the latest performance testing.
-> Performance is close enough that it is hard to get exact numbers (pie
-> is just a bit slower than baseline on hackench (~1%)).
->
-> >
-> > Thanks,
-> >
-> >         Ingo
->
->
->
-> --
-> Thomas
+Thanks,
+Xiongfeng Wang
 
 
 
-
--- 
-Thomas
