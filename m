@@ -1,59 +1,64 @@
-From: Ingo Molnar <mingo@kernel.org>
-Subject: Re: x86: PIE support and option to extend KASLR randomization
-Date: Sat, 23 Sep 2017 12:00:29 +0200
-Message-ID: <20170923100029.6nzpui6c3ke76bbs@gmail.com>
-References: <20170810172615.51965-1-thgarnie@google.com>
- <20170811124127.kkb5pnkljz4umxuj@gmail.com>
- <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
- <20170815075609.mmzbfwritjzvrpsn@gmail.com>
- <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
- <20170816151235.oamkdva6cwpc4cex@gmail.com>
- <20170821133222.2ek6bhqgdeoymxsg@hirez.programming.kicks-ass.net>
- <20170821142854.dmuusnbc2tsrai3v@hirez.programming.kicks-ass.net>
- <c830ba59-65d3-187f-3868-732059269f28@zytor.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH v2] thermal: enable broadcom menu for arm64 bcm2835
+Date: Sat, 23 Sep 2017 13:22:52 +0200 (CEST)
+Message-ID: <743012766.209822.1506165772416@email.1und1.de>
+References: <20170902033639.26774-1-allenwild93@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <kernel-hardening-return-9945-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Content-Disposition: inline
-In-Reply-To: <c830ba59-65d3-187f-3868-732059269f28@zytor.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Thomas Garnier <thgarnie@google.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.kundenserver.de ([212.227.126.187]:60726 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750916AbdIWLXU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 Sep 2017 07:23:20 -0400
+In-Reply-To: <20170902033639.26774-1-allenwild93@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Allen Wild <allenwild93@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-rpi-kernel@lists.infradead.org
 
+Hi Allen,
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+> Allen Wild <allenwild93@gmail.com> hat am 2. September 2017 um 05:36 geschrieben:
+> 
+> 
+> Moving the bcm2835 thermal driver to the broadcom directory prevented it
+> from getting enabled for arm64 builds, since the broadcom directory is only
+> available when 32-bit specific ARCH_BCM is set.
+> 
+> Fix this by enabling the Broadcom menu for ARCH_BCM or ARCH_BCM2835.
+> 
+> Fixes: 6892cf07e733 ("thermal: bcm2835: move to the broadcom subdirectory")
+> Cc: linux-rpi-kernel@lists.infradead.org
+> Signed-off-by: Allen Wild <allenwild93@gmail.com>
 
-> We do need to consider how we want modules to fit into whatever model we
-> choose, though.  They can be adjacent, or we could go with a more
-> traditional dynamic link model where the modules can be separate, and
-> chained together with the main kernel via the GOT.
+could you please resend your patch with thermal maintainers in CC?
 
-So I believe we should start with 'adjacent'. The thing is, having modules 
-separately randomized mostly helps if any of the secret locations fails and
-we want to prevent hopping from one to the other. But if one the kernel-privileged
-secret location fails then KASLR has already failed to a significant degree...
+Thanks
+Stefan
 
-So I think the large-PIC model for modules does not buy us any real advantages in 
-practice, and the disadvantages of large-PIC are real and most Linux users have to 
-pay that cost unconditionally, as distro kernels have half of their kernel 
-functionality living in modules.
-
-But I do see fundamental value in being able to hide the kernel somewhere in a ~48 
-bits address space, especially if we also implement Linus's suggestion to utilize 
-the lower bits as well. 0..281474976710656 is a nicely large range and will get 
-larger with time.
-
-But it should all be done smartly and carefully:
-
-For example, there would be collision with regular user-space mappings, right?
-Can local unprivileged users use mmap(MAP_FIXED) probing to figure out where
-the kernel lives?
-
-Thanks,
-
-	Ingo
+> ---
+>  drivers/thermal/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index b5b5facb8747..962620925878 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -408,7 +408,7 @@ config MTK_THERMAL
+>  	  controller present in Mediatek SoCs
+>  
+>  menu "Broadcom thermal drivers"
+> -depends on ARCH_BCM || COMPILE_TEST
+> +depends on ARCH_BCM || ARCH_BCM2835 || COMPILE_TEST
+>  source "drivers/thermal/broadcom/Kconfig"
+>  endmenu
+>  
+> -- 
+> 2.14.1
+> 
+> 
+> _______________________________________________
+> linux-rpi-kernel mailing list
+> linux-rpi-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-rpi-kernel
