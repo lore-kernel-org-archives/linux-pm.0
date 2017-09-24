@@ -1,38 +1,56 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] MAINTAINERS: Hibernation or S2R doesn't cover entire
- power directory
-Date: Mon, 25 Sep 2017 00:44:20 +0200
-Message-ID: <CAJZ5v0hv3T7L0c5URrVHC=H5V3h+W7OLRXVMVXLQf-VuTT-E+Q@mail.gmail.com>
-References: <18e729501c1ebe4798d17b8d8a60ba102ebc2837.1505922834.git.viresh.kumar@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH v4 2/3] PM / mfd: intel-lpss: Push system sleep callbacks to late/early stages
+Date: Mon, 25 Sep 2017 01:20:35 +0200
+Message-ID: <4332008.kXBLY0K23i@aspire.rjw.lan>
+References: <3023226.l5IfJK6GIc@aspire.rjw.lan> <3958866.l2qnKDbinI@aspire.rjw.lan> <65494652.vEfz4tCBDb@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:36801 "EHLO
-        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753122AbdIXWoV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 24 Sep 2017 18:44:21 -0400
-In-Reply-To: <18e729501c1ebe4798d17b8d8a60ba102ebc2837.1505922834.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <65494652.vEfz4tCBDb@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>
+Cc: linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, Ulf Hansson <ulf.hansson@linaro.org>, Rajat Jain <rajatja@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, Sep 20, 2017 at 5:58 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> The command:
->
->  $ scripts/get_maintainer.pl -f drivers/base/power/opp/core.c
->
-> is incorrectly picking maintainers from Hibernation and Suspend to RAM
-> as well, simply because the entries in MAINTAINERS file contains the
-> entire power directory. Though the only concerning file is main.c
-> really.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-No, it is not the only one.  The others are common.c, trace.c,
-wakeup.c, wakeirq.c, sysfs.c, generic_ops.c and power.h (if I have not
-overlooked any).
+Push the system suspend/resume callbacks of intel-lpss to the late
+suspend/early resume stages to allow child device callbacks to be
+pushed to the late/early stages of suspend/resume too, so as to
+make it possible to avoid resuming the children if they are runtime-
+suspended during system suspend going forward.
 
-I'm not actually sure how to fix this issue other than by listing all
-of the files in question directly in there.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Tested-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+Tested-by: Johannes Stezenbach <js@sig21.net>
+Tested-by: Rajat Jain <rajatja@google.com>
+---
 
-Thanks,
-Rafael
+v3 -> v4: Added Tested-by tags.
+
+---
+ drivers/mfd/intel-lpss.h |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+Index: linux-pm/drivers/mfd/intel-lpss.h
+===================================================================
+--- linux-pm.orig/drivers/mfd/intel-lpss.h
++++ linux-pm/drivers/mfd/intel-lpss.h
+@@ -38,12 +38,7 @@ int intel_lpss_resume(struct device *dev
+ #ifdef CONFIG_PM_SLEEP
+ #define INTEL_LPSS_SLEEP_PM_OPS			\
+ 	.prepare = intel_lpss_prepare,		\
+-	.suspend = intel_lpss_suspend,		\
+-	.resume = intel_lpss_resume,		\
+-	.freeze = intel_lpss_suspend,		\
+-	.thaw = intel_lpss_resume,		\
+-	.poweroff = intel_lpss_suspend,		\
+-	.restore = intel_lpss_resume,
++	SET_LATE_SYSTEM_SLEEP_PM_OPS(intel_lpss_suspend, intel_lpss_resume)
+ #else
+ #define INTEL_LPSS_SLEEP_PM_OPS
+ #endif
+
+
