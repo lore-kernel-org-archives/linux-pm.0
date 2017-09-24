@@ -1,7 +1,7 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v4 3/3] PM: i2c-designware-platdrv: Suspend/resume at the late/early stages
-Date: Mon, 25 Sep 2017 01:30:51 +0200
-Message-ID: <7572899.CfQ69SdO4W@aspire.rjw.lan>
+Subject: [PATCH v4 1/3] PM: i2c-designware-platdrv: Clean up PM handling in probe
+Date: Mon, 25 Sep 2017 01:17:56 +0200
+Message-ID: <2813826.3DA0fVXnVa@aspire.rjw.lan>
 References: <3023226.l5IfJK6GIc@aspire.rjw.lan> <3958866.l2qnKDbinI@aspire.rjw.lan> <65494652.vEfz4tCBDb@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,32 +15,20 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-As reported by Rajat Jain, there are problems when ACPI operation
-region handlers or similar, called at the ->resume_early() time, for
-I2C client devices try to access an I2C controller that has already
-been suspended at that point.  To avoid that, move the suspend/resume
-of i2c-designware-platdrv to the late/early stages, respectively.
+The power management handling in dw_i2c_plat_probe() is somewhat
+messy and it is rather hard to figure out the code intention for
+the case when pm_disabled is set.  In that case, the driver doesn't
+enable runtime PM at all, but in addition to that it calls
+pm_runtime_forbid() as though it wasn't sure if runtime PM might
+be enabled for the device later by someone else.
 
-While at it, avoid resuming the device from runtime suspend in the
-driver's ->suspend callback which isn't particularly nice.  [A better
-approach would be to make the driver track the PM state of the device
-so that it doesn't need to resume it in ->suspend, so implement it.]
+Although that concern doesn't seem to be actually valid, the
+device is clearly still expected to be PM-capable even in the
+pm_disabled set case, so a better approach would be to enable
+runtime PM for it unconditionally and then prevent it from
+being runtime-suspended by using pm_runtime_forbid().
 
-First, drop dw_i2c_plat_suspend() added by commit a23318feeff6 (i2c:
-designware: Fix system suspend) and rename dw_i2c_plat_runtime_suspend()
-back to dw_i2c_plat_suspend().
-
-Second, point the driver's ->late_suspend and ->early_resume
-callbacks, rather than its ->suspend and ->resume callbacks,
-to dw_i2c_plat_suspend() and dw_i2c_plat_resume(), respectively,
-so that they are not executed in parallel with each other, for
-example if runtime resume of the device takes place during system
-suspend.
-
-Finally, add "suspended" and "skip_resume" flags to struct dw_i2c_dev
-and make dw_i2c_plat_suspend() and dw_i2c_plat_resume() use them to
-avoid suspending or resuming the device twice in a row and to avoid
-resuming a previously runtime-suspended device during system resume.
+Make the driver do that.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Tested-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
@@ -49,103 +37,82 @@ Tested-by: Johannes Stezenbach <js@sig21.net>
 Tested-by: Rajat Jain <rajatja@google.com>
 ---
 
-v3 ->v4: Modify changelog to mention the problem addressed by this
-  patch, rebase on top of 4.14-rc1 and add Tested-by tags.
+v3 -> v4: Added Tested-by tags.
 
-v2 -> v3:
-  Do not drop ->prepare and ->complete system sleep callbacks as
-  direct_complete is still useful for helping to avoid resuming
-  the parent of this device in the intel-lpss case.
-
--> v2:
-  Add the "suspended" flag, which is needed, because
-  dw_i2c_plat_suspend() doesn't update the runtime PM status of
-  the device, so dw_i2c_plat_resume() can't rely on this check
-  during system resume.
+-> v3: Small update of the changelog.
 
 ---
- drivers/i2c/busses/i2c-designware-core.h    |    2 +
- drivers/i2c/busses/i2c-designware-platdrv.c |   33 ++++++++++++++++------------
- 2 files changed, 22 insertions(+), 13 deletions(-)
+ drivers/i2c/busses/i2c-designware-platdrv.c |   36 +++++++++++++++++++---------
+ 1 file changed, 25 insertions(+), 11 deletions(-)
 
-Index: linux-pm/drivers/i2c/busses/i2c-designware-core.h
-===================================================================
---- linux-pm.orig/drivers/i2c/busses/i2c-designware-core.h
-+++ linux-pm/drivers/i2c/busses/i2c-designware-core.h
-@@ -280,6 +280,8 @@ struct dw_i2c_dev {
- 	int			(*acquire_lock)(struct dw_i2c_dev *dev);
- 	void			(*release_lock)(struct dw_i2c_dev *dev);
- 	bool			pm_disabled;
-+	bool			suspended;
-+	bool			skip_resume;
- 	void			(*disable)(struct dw_i2c_dev *dev);
- 	void			(*disable_int)(struct dw_i2c_dev *dev);
- 	int			(*init)(struct dw_i2c_dev *dev);
 Index: linux-pm/drivers/i2c/busses/i2c-designware-platdrv.c
 ===================================================================
 --- linux-pm.orig/drivers/i2c/busses/i2c-designware-platdrv.c
 +++ linux-pm/drivers/i2c/busses/i2c-designware-platdrv.c
-@@ -451,13 +451,20 @@ static void dw_i2c_plat_complete(struct
- #endif
- 
- #ifdef CONFIG_PM
--static int dw_i2c_plat_runtime_suspend(struct device *dev)
-+static int dw_i2c_plat_suspend(struct device *dev)
- {
- 	struct dw_i2c_dev *i_dev = dev_get_drvdata(dev);
- 
-+	if (i_dev->suspended) {
-+		i_dev->skip_resume = true;
-+		return 0;
-+	}
-+
- 	i_dev->disable(i_dev);
- 	i2c_dw_plat_prepare_clk(i_dev, false);
- 
-+	i_dev->suspended = true;
-+
- 	return 0;
+@@ -249,6 +249,16 @@ static void dw_i2c_set_fifo_size(struct
+ 	}
  }
  
-@@ -465,27 +472,27 @@ static int dw_i2c_plat_resume(struct dev
++static void dw_i2c_plat_pm_cleanup(struct dw_i2c_dev *dev)
++{
++	pm_runtime_get_noresume(dev->dev);
++	if (dev->pm_disabled)
++		pm_runtime_allow(dev->dev);
++
++	pm_runtime_disable(dev->dev);
++	pm_runtime_put_noidle(dev->dev);
++}
++
+ static int dw_i2c_plat_probe(struct platform_device *pdev)
  {
- 	struct dw_i2c_dev *i_dev = dev_get_drvdata(dev);
+ 	struct dw_i2c_platform_data *pdata = dev_get_platdata(&pdev->dev);
+@@ -362,14 +372,19 @@ static int dw_i2c_plat_probe(struct plat
+ 	ACPI_COMPANION_SET(&adap->dev, ACPI_COMPANION(&pdev->dev));
+ 	adap->dev.of_node = pdev->dev.of_node;
  
-+	if (!i_dev->suspended)
-+		return 0;
+-	if (dev->pm_disabled) {
++	/* The code below assumes runtime PM to be disabled. */
++	WARN_ON(pm_runtime_enabled(&pdev->dev));
 +
-+	if (i_dev->skip_resume) {
-+		i_dev->skip_resume = false;
-+		return 0;
-+	}
++	pm_runtime_set_autosuspend_delay(&pdev->dev, 1000);
++	pm_runtime_use_autosuspend(&pdev->dev);
++	pm_runtime_set_active(&pdev->dev);
 +
- 	i2c_dw_plat_prepare_clk(i_dev, true);
- 	i_dev->init(i_dev);
++	pm_runtime_get_noresume(&pdev->dev);
++	pm_runtime_enable(&pdev->dev);
++	if (dev->pm_disabled)
+ 		pm_runtime_forbid(&pdev->dev);
+-	} else {
+-		pm_runtime_set_autosuspend_delay(&pdev->dev, 1000);
+-		pm_runtime_use_autosuspend(&pdev->dev);
+-		pm_runtime_set_active(&pdev->dev);
+-		pm_runtime_enable(&pdev->dev);
+-	}
++
++	pm_runtime_put_noidle(&pdev->dev);
  
--	return 0;
--}
-+	i_dev->suspended = false;
+ 	if (dev->mode == DW_IC_SLAVE)
+ 		ret = i2c_dw_probe_slave(dev);
+@@ -382,8 +397,7 @@ static int dw_i2c_plat_probe(struct plat
+ 	return ret;
  
--#ifdef CONFIG_PM_SLEEP
--static int dw_i2c_plat_suspend(struct device *dev)
--{
--	pm_runtime_resume(dev);
--	return dw_i2c_plat_runtime_suspend(dev);
-+	return 0;
- }
--#endif
+ exit_probe:
+-	if (!dev->pm_disabled)
+-		pm_runtime_disable(&pdev->dev);
++	dw_i2c_plat_pm_cleanup(dev);
+ exit_reset:
+ 	if (!IS_ERR_OR_NULL(dev->rst))
+ 		reset_control_assert(dev->rst);
+@@ -402,8 +416,8 @@ static int dw_i2c_plat_remove(struct pla
  
- static const struct dev_pm_ops dw_i2c_dev_pm_ops = {
- 	.prepare = dw_i2c_plat_prepare,
- 	.complete = dw_i2c_plat_complete,
--	SET_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
--	SET_RUNTIME_PM_OPS(dw_i2c_plat_runtime_suspend,
--			   dw_i2c_plat_resume,
--			   NULL)
-+	SET_LATE_SYSTEM_SLEEP_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume)
-+	SET_RUNTIME_PM_OPS(dw_i2c_plat_suspend, dw_i2c_plat_resume, NULL)
- };
+ 	pm_runtime_dont_use_autosuspend(&pdev->dev);
+ 	pm_runtime_put_sync(&pdev->dev);
+-	if (!dev->pm_disabled)
+-		pm_runtime_disable(&pdev->dev);
++	dw_i2c_plat_pm_cleanup(dev);
++
+ 	if (!IS_ERR_OR_NULL(dev->rst))
+ 		reset_control_assert(dev->rst);
  
- #define DW_I2C_DEV_PMOPS (&dw_i2c_dev_pm_ops)
 
 
