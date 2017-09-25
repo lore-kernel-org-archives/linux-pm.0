@@ -1,45 +1,48 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: powernow-k8: pr_err() strings should end with
- newlines
-Date: Mon, 25 Sep 2017 16:11:48 -0700
-Message-ID: <20170925231148.GB3053@ubuntu>
-References: <113fdc7d136811950c78a7cb2f11f9d98eeb26dc.1506332261.git.arvind.yadav.cs@gmail.com>
+Subject: Re: [PATCH] cpufreq: SPEAr: pr_err() strings should end with newlines
+Date: Mon, 25 Sep 2017 16:12:00 -0700
+Message-ID: <20170925231200.GC3053@ubuntu>
+References: <511e2c0f9a2dd23aceb8c0fc39184bfaca1f98c9.1506334381.git.arvind.yadav.cs@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f181.google.com ([209.85.192.181]:47787 "EHLO
-        mail-pf0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S936426AbdIYXLu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Sep 2017 19:11:50 -0400
-Received: by mail-pf0-f181.google.com with SMTP id u12so4590062pfl.4
-        for <linux-pm@vger.kernel.org>; Mon, 25 Sep 2017 16:11:49 -0700 (PDT)
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <113fdc7d136811950c78a7cb2f11f9d98eeb26dc.1506332261.git.arvind.yadav.cs@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <511e2c0f9a2dd23aceb8c0fc39184bfaca1f98c9.1506334381.git.arvind.yadav.cs@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Arvind Yadav <arvind.yadav.cs@gmail.com>
 Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 25-09-17, 15:10, Arvind Yadav wrote:
+On 25-09-17, 15:43, Arvind Yadav wrote:
 > pr_err() messages should terminated with a new-line to avoid
 > other messages being concatenated onto the end.
 > 
 > Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 > ---
->  drivers/cpufreq/powernow-k8.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/cpufreq/spear-cpufreq.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-> index 062d714..b01e31d 100644
-> --- a/drivers/cpufreq/powernow-k8.c
-> +++ b/drivers/cpufreq/powernow-k8.c
-> @@ -1043,7 +1043,7 @@ static int powernowk8_cpu_init(struct cpufreq_policy *pol)
+> diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
+> index 4894924..195f27f 100644
+> --- a/drivers/cpufreq/spear-cpufreq.c
+> +++ b/drivers/cpufreq/spear-cpufreq.c
+> @@ -177,7 +177,7 @@ static int spear_cpufreq_probe(struct platform_device *pdev)
 >  
->  	data = kzalloc(sizeof(*data), GFP_KERNEL);
->  	if (!data) {
-> -		pr_err("unable to alloc powernow_k8_data");
-> +		pr_err("unable to alloc powernow_k8_data\n");
->  		return -ENOMEM;
+>  	np = of_cpu_device_node_get(0);
+>  	if (!np) {
+> -		pr_err("No cpu node found");
+> +		pr_err("No cpu node found\n");
+>  		return -ENODEV;
+>  	}
+>  
+> @@ -187,7 +187,7 @@ static int spear_cpufreq_probe(struct platform_device *pdev)
+>  
+>  	prop = of_find_property(np, "cpufreq_tbl", NULL);
+>  	if (!prop || !prop->value) {
+> -		pr_err("Invalid cpufreq_tbl");
+> +		pr_err("Invalid cpufreq_tbl\n");
+>  		ret = -ENODEV;
+>  		goto out_put_node;
 >  	}
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
