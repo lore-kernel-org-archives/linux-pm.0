@@ -1,58 +1,48 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v4 2/3] PM / mfd: intel-lpss: Push system sleep callbacks
- to late/early stages
-Date: Mon, 25 Sep 2017 16:24:28 +0200
-Message-ID: <20170925142428.2favzil5upydpusw@katana>
-References: <3023226.l5IfJK6GIc@aspire.rjw.lan>
- <4332008.kXBLY0K23i@aspire.rjw.lan>
- <20170925072847.nl2a6feqzrzdcxwz@ninjato>
- <3654965.TWMXy0zEsZ@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / core: Drop legacy class suspend/resume operations
+Date: Mon, 25 Sep 2017 17:17:58 +0200
+Message-ID: <55793765.lp3oEIVgtE@aspire.rjw.lan>
+References: <6823681.sfkuFdUyaG@aspire.rjw.lan> <20170925132443.GA5325@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="ctrcamb2jfx2mqmn"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from www.zeus03.de ([194.117.254.33]:41096 "EHLO mail.zeus03.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S935317AbdIYOYc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 25 Sep 2017 10:24:32 -0400
-Content-Disposition: inline
-In-Reply-To: <3654965.TWMXy0zEsZ@aspire.rjw.lan>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64378 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S964908AbdIYP1K (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Sep 2017 11:27:10 -0400
+In-Reply-To: <20170925132443.GA5325@kroah.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, Ulf Hansson <ulf.hansson@linaro.org>, Rajat Jain <rajatja@google.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, LKML <linux-kernel@vger.kernel.org>
 
+On Monday, September 25, 2017 3:24:43 PM CEST Greg Kroah-Hartman wrote:
+> On Mon, Sep 25, 2017 at 02:56:44PM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > There are no classes using the legacy suspend/resume operations in
+> > the tree any more, so drop these operations and update the code
+> > referring to them accordingly.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > ---
+> >  drivers/base/power/main.c |   32 +++++++++-----------------------
+> >  include/linux/device.h    |    5 -----
+> >  2 files changed, 9 insertions(+), 28 deletions(-)
+> 
+> Yeah!!!
+> 
+> Do you want me to take this now, for -rc2, in my tree (as I'll gladly do
+> so, I have some other api removals queued up already), or do you want to
+> do it through yours?
+> 
+> Either is fine with me, if you want to take it:
+> 	Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> 
 
---ctrcamb2jfx2mqmn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+There likely will be more patches going in this direction from me shortly, so
+I'll handle it. :-)
 
-
-> Well, it may be slightly late for that.  Realistically, the earliest -rc it
-> can get into seems to be -rc4 and I'd prefer it to get a bit more exposure
-> before it gets into a release.  It's up to you, though. :-)
-
-Fine with me, I'll schedule it for v4.15 then.
-
-
---ctrcamb2jfx2mqmn
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlnJEZgACgkQFA3kzBSg
-KbZ57RAAkuRVb6uAlZdyFRk8wq88sv0aPAWzD/wgNQTEjNz6/+Cln+nGGNwNmP5o
-1BTBkw7nMWGL5oQHNtZve2QnMk1j29VQ73QvAwMtbwUfLWtpX2qJr7w0iUWt3TF3
-OiImVegkPMZkJLGtrnqPntLG/gJynXSvXnbdKHFEvprnTk1t/vJZdbflLH5kDB6i
-ZPae8sBVvQTz2DKcdsvn864a0IB3IXR9q5MpYiikwVlR21SQiQL10cgWjGE9IgSo
-V6J/yMsbyv8XwMSHarSA4IH2/LPguiDG/MA/aYNh6WYBbHbi0TW3itZ3azajqVmY
-lxaXUeWL4kYNBh7Bzspfyv11EZfCCEz+LVAr5AwZ18O5JTxeR9wWoLhu0E7O9fX3
-hMbiHA5S/mH/oeTCUu6K9rXW/G2Z1QgP5BbweuNtALjUtxeHh7lcPqb6YfRJN2Pe
-h7ESFpL0sxGMYVSeXvArkXQkXGcvWRcZXMP3fylzqDgyNwiP5fZ29crbXW3S7N6v
-m0VNmtVvuzh8DaGq0IBBhZgeZLolCqODwJRPZCdfHFjnHIbgfaGYVgLpbXpKyiAw
-fXIaWPmvWamCGWU6QDt+emTqnluc58/jQ+03KCzVkaQJh0L3ppmk0Cy+q0uG8RDa
-urTnVTNU+puR8oBlEEnfEw0lMOxTpcGf7AdfaL5hQWj/JgYPz5M=
-=Y1nT
------END PGP SIGNATURE-----
-
---ctrcamb2jfx2mqmn--
+Thanks,
+Rafael
