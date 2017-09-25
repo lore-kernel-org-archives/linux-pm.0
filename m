@@ -1,46 +1,48 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH] cpufreq: SPEAr: pr_err() strings should end with newlines
-Date: Mon, 25 Sep 2017 15:43:49 +0530
-Message-ID: <511e2c0f9a2dd23aceb8c0fc39184bfaca1f98c9.1506334381.git.arvind.yadav.cs@gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 2/3] PM / mfd: intel-lpss: Push system sleep callbacks to late/early stages
+Date: Mon, 25 Sep 2017 14:50:56 +0200
+Message-ID: <3654965.TWMXy0zEsZ@aspire.rjw.lan>
+References: <3023226.l5IfJK6GIc@aspire.rjw.lan> <4332008.kXBLY0K23i@aspire.rjw.lan> <20170925072847.nl2a6feqzrzdcxwz@ninjato>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:35971 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752805AbdIYKOy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Sep 2017 06:14:54 -0400
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50581 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S934840AbdIYNAH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Sep 2017 09:00:07 -0400
+In-Reply-To: <20170925072847.nl2a6feqzrzdcxwz@ninjato>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-pm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, Ulf Hansson <ulf.hansson@linaro.org>, Rajat Jain <rajatja@google.com>
 
-pr_err() messages should terminated with a new-line to avoid
-other messages being concatenated onto the end.
+On Monday, September 25, 2017 9:28:47 AM CEST Wolfram Sang wrote:
+> On Mon, Sep 25, 2017 at 01:20:35AM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > Push the system suspend/resume callbacks of intel-lpss to the late
+> > suspend/early resume stages to allow child device callbacks to be
+> > pushed to the late/early stages of suspend/resume too, so as to
+> > make it possible to avoid resuming the children if they are runtime-
+> > suspended during system suspend going forward.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Tested-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+> > Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> > Tested-by: Johannes Stezenbach <js@sig21.net>
+> > Tested-by: Rajat Jain <rajatja@google.com>
+> 
+> If this series shall go in via I2C, I'd need an ack from Lee for this
+> one.
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/cpufreq/spear-cpufreq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Sure.
 
-diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-index 4894924..195f27f 100644
---- a/drivers/cpufreq/spear-cpufreq.c
-+++ b/drivers/cpufreq/spear-cpufreq.c
-@@ -177,7 +177,7 @@ static int spear_cpufreq_probe(struct platform_device *pdev)
- 
- 	np = of_cpu_device_node_get(0);
- 	if (!np) {
--		pr_err("No cpu node found");
-+		pr_err("No cpu node found\n");
- 		return -ENODEV;
- 	}
- 
-@@ -187,7 +187,7 @@ static int spear_cpufreq_probe(struct platform_device *pdev)
- 
- 	prop = of_find_property(np, "cpufreq_tbl", NULL);
- 	if (!prop || !prop->value) {
--		pr_err("Invalid cpufreq_tbl");
-+		pr_err("Invalid cpufreq_tbl\n");
- 		ret = -ENODEV;
- 		goto out_put_node;
- 	}
--- 
-1.9.1
+> Also, I'd assume this should go in for v4.14 already?
+
+Well, it may be slightly late for that.  Realistically, the earliest -rc it
+can get into seems to be -rc4 and I'd prefer it to get a bit more exposure
+before it gets into a release.  It's up to you, though. :-)
+
+Thanks,
+Rafael
