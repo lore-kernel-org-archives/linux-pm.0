@@ -1,122 +1,49 @@
-From: Johannes Stezenbach <js@sig21.net>
-Subject: [RFC PATCH 2/2] clk: x86: Disable unused clocks to fix S0ix
-Date: Mon, 25 Sep 2017 21:23:52 +0200
-Message-ID: <20170925192352.ihzakshd7yofowdd@sig21.net>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
- <4254964.MfDMP6QAfg@aspire.rjw.lan>
- <20170922080453.3bwad4ale4zizf42@sig21.net>
- <1555462.9U3gvkyXAX@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 1/3] PM: i2c-designware-platdrv: Clean up PM handling in probe
+Date: Mon, 25 Sep 2017 22:45:31 +0200
+Message-ID: <3491198.ZaBooUSjR1@aspire.rjw.lan>
+References: <3023226.l5IfJK6GIc@aspire.rjw.lan> <2813826.3DA0fVXnVa@aspire.rjw.lan> <CAPDyKFo_E79POLCuV_0Dd3tDL_Ko-WY_oZ4zLyf=y3GLf52ajg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1555462.9U3gvkyXAX@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54000 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S934254AbdIYUyn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Sep 2017 16:54:43 -0400
+In-Reply-To: <CAPDyKFo_E79POLCuV_0Dd3tDL_Ko-WY_oZ4zLyf=y3GLf52ajg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, Lee Jones <lee.jones@linaro.org>, Rajat Jain <rajatja@google.com>
 
-d31fd43c0f9a "clk: x86: Do not gate clocks enabled by the firmware"
-exposed an issue on Asus E200HA where BIOS enables unused
-Atom PMC clocks which prevent the system from entering S0ix.
-Add a quirk to disable these clocks on E200HA.
+On Monday, September 25, 2017 9:12:28 PM CEST Ulf Hansson wrote:
+> On 25 September 2017 at 01:17, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > The power management handling in dw_i2c_plat_probe() is somewhat
+> > messy and it is rather hard to figure out the code intention for
+> > the case when pm_disabled is set.  In that case, the driver doesn't
+> > enable runtime PM at all, but in addition to that it calls
+> > pm_runtime_forbid() as though it wasn't sure if runtime PM might
+> > be enabled for the device later by someone else.
+> >
+> > Although that concern doesn't seem to be actually valid, the
+> > device is clearly still expected to be PM-capable even in the
+> > pm_disabled set case, so a better approach would be to enable
+> > runtime PM for it unconditionally and then prevent it from
+> > being runtime-suspended by using pm_runtime_forbid().
+> 
+> This is nice cleanup! However I have one suggestion/comment.
+> 
+> Using pm_runtime_forbid() to prevent the device from being runtime
+> suspended may be a bit fragile, as userspace can then still change to
+> "allow" it. Wouldn't it be better to bump the runtime PM usage count
+> (pm_runtime_get_noresume()) instead?
 
-Signed-off-by: Johannes Stezenbach <js@sig21.net>
----
- drivers/clk/x86/clk-pmc-atom.c                 | 10 +++++++---
- drivers/platform/x86/pmc_atom.c                |  7 ++++++-
- include/linux/platform_data/x86/clk-pmc-atom.h |  2 ++
- 3 files changed, 15 insertions(+), 4 deletions(-)
+Right, this is not a PCI driver. :-)
 
-diff --git a/drivers/clk/x86/clk-pmc-atom.c b/drivers/clk/x86/clk-pmc-atom.c
-index 08ef69945ffb..213e71b905eb 100644
---- a/drivers/clk/x86/clk-pmc-atom.c
-+++ b/drivers/clk/x86/clk-pmc-atom.c
-@@ -166,7 +166,8 @@ static const struct clk_ops plt_clk_ops = {
- static struct clk_plt *plt_clk_register(struct platform_device *pdev, int id,
- 					void __iomem *base,
- 					const char **parent_names,
--					int num_parents)
-+					int num_parents,
-+					bool disable_unused)
- {
- 	struct clk_plt *pclk;
- 	struct clk_init_data init;
-@@ -190,7 +191,7 @@ static struct clk_plt *plt_clk_register(struct platform_device *pdev, int id,
- 	 * If the clock was already enabled by the firmware mark it as critical
- 	 * to avoid it being gated by the clock framework if no driver owns it.
- 	 */
--	if (plt_clk_is_enabled(&pclk->hw))
-+	if (!disable_unused && plt_clk_is_enabled(&pclk->hw))
- 		init.flags |= CLK_IS_CRITICAL;
- 
- 	ret = devm_clk_hw_register(&pdev->dev, &pclk->hw);
-@@ -324,6 +325,7 @@ static int plt_clk_probe(struct platform_device *pdev)
- 	struct clk_plt_data *data;
- 	unsigned int i;
- 	int err;
-+	bool disable_unused;
- 
- 	pmc_data = dev_get_platdata(&pdev->dev);
- 	if (!pmc_data || !pmc_data->clks)
-@@ -337,9 +339,11 @@ static int plt_clk_probe(struct platform_device *pdev)
- 	if (IS_ERR(parent_names))
- 		return PTR_ERR(parent_names);
- 
-+	disable_unused = !!(pmc_data->flags & PMC_CLK_DATA_DISABLE_UNUSED);
- 	for (i = 0; i < PMC_CLK_NUM; i++) {
- 		data->clks[i] = plt_clk_register(pdev, i, pmc_data->base,
--						 parent_names, data->nparents);
-+						 parent_names, data->nparents,
-+						 disable_unused);
- 		if (IS_ERR(data->clks[i])) {
- 			err = PTR_ERR(data->clks[i]);
- 			goto err_unreg_clk_plt;
-diff --git a/drivers/platform/x86/pmc_atom.c b/drivers/platform/x86/pmc_atom.c
-index b5dd38712268..d81ada1a6f27 100644
---- a/drivers/platform/x86/pmc_atom.c
-+++ b/drivers/platform/x86/pmc_atom.c
-@@ -59,7 +59,8 @@ static struct pmc_dev pmc_device;
- static u32 acpi_base_addr;
- 
- static u32 quirks;
--#define QUIRK_DISABLE_SATA BIT(0)
-+#define QUIRK_DISABLE_SATA		BIT(0)
-+#define QUIRK_DISABLE_UNUSED_CLOCKS	BIT(1)
- 
- static const struct pmc_clk byt_clks[] = {
- 	{
-@@ -447,6 +448,8 @@ static int pmc_setup_clks(struct pci_dev *pdev, void __iomem *pmc_regmap,
- 
- 	clk_data->base = pmc_regmap; /* offset is added by client */
- 	clk_data->clks = pmc_data->clks;
-+	if (quirks & QUIRK_DISABLE_UNUSED_CLOCKS)
-+		clk_data->flags = PMC_CLK_DATA_DISABLE_UNUSED;
- 
- 	clkdev = platform_device_register_data(&pdev->dev, "clk-pmc-atom",
- 					       PLATFORM_DEVID_NONE,
-@@ -517,6 +520,8 @@ static int cht_asus_e200ha_cb(const struct dmi_system_id *id)
- {
- 	pr_info("pmc: Asus E200HA detected\n");
- 	quirks |= QUIRK_DISABLE_SATA;
-+	/* BIOS enables some clocks at boot which are not needed but block S0ix */
-+	quirks |= QUIRK_DISABLE_UNUSED_CLOCKS;
- 	return 1;
- }
- 
-diff --git a/include/linux/platform_data/x86/clk-pmc-atom.h b/include/linux/platform_data/x86/clk-pmc-atom.h
-index 3ab892208343..e481878ef238 100644
---- a/include/linux/platform_data/x86/clk-pmc-atom.h
-+++ b/include/linux/platform_data/x86/clk-pmc-atom.h
-@@ -37,6 +37,8 @@ struct pmc_clk {
-  * @clks:	pointer to set of registered clocks, typically 0..5
-  */
- struct pmc_clk_data {
-+	int flags;
-+#define PMC_CLK_DATA_DISABLE_UNUSED 1
- 	void __iomem *base;
- 	const struct pmc_clk *clks;
- };
--- 
-2.14.1
+I'll send an update of this patch shortly.
 
+Thanks,
+Rafael
