@@ -1,43 +1,42 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v4 1/3] PM: i2c-designware-platdrv: Clean up PM handling
- in probe
-Date: Mon, 25 Sep 2017 21:12:28 +0200
-Message-ID: <CAPDyKFo_E79POLCuV_0Dd3tDL_Ko-WY_oZ4zLyf=y3GLf52ajg@mail.gmail.com>
-References: <3023226.l5IfJK6GIc@aspire.rjw.lan> <3958866.l2qnKDbinI@aspire.rjw.lan>
- <65494652.vEfz4tCBDb@aspire.rjw.lan> <2813826.3DA0fVXnVa@aspire.rjw.lan>
+From: Johannes Stezenbach <js@sig21.net>
+Subject: Re: S0ix failure due to "clk: x86: Do not gate clocks enabled by the
+ firmware"
+Date: Mon, 25 Sep 2017 21:17:49 +0200
+Message-ID: <20170925191749.2oamusbajgs6clcg@sig21.net>
+References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
+ <4254964.MfDMP6QAfg@aspire.rjw.lan>
+ <20170922080453.3bwad4ale4zizf42@sig21.net>
+ <1555462.9U3gvkyXAX@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2813826.3DA0fVXnVa@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <1555462.9U3gvkyXAX@aspire.rjw.lan>
 Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, Lee Jones <lee.jones@linaro.org>, Rajat Jain <rajatja@google.com>
+Cc: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 25 September 2017 at 01:17, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> The power management handling in dw_i2c_plat_probe() is somewhat
-> messy and it is rather hard to figure out the code intention for
-> the case when pm_disabled is set.  In that case, the driver doesn't
-> enable runtime PM at all, but in addition to that it calls
-> pm_runtime_forbid() as though it wasn't sure if runtime PM might
-> be enabled for the device later by someone else.
->
-> Although that concern doesn't seem to be actually valid, the
-> device is clearly still expected to be PM-capable even in the
-> pm_disabled set case, so a better approach would be to enable
-> runtime PM for it unconditionally and then prevent it from
-> being runtime-suspended by using pm_runtime_forbid().
+On Sat, Sep 23, 2017 at 12:09:32AM +0200, Rafael J. Wysocki wrote:
+> On Friday, September 22, 2017 10:04:53 AM CEST Johannes Stezenbach wrote:
+> > In conclusion the BIOS bug is that it enables these clocks at boot,
+> > and the correct quirk is to make clk-pmc-atom.c disable them during init,
+> > but leave the _PRx handling for the used clocks (CLK3) to ACPI.
+> > 
+> > Right?
+> 
+> Well, depending.  The BIOS may need them for something, we just don't know.
+> 
+> But if the above works, that would be the cleanest way I suppose.
 
-This is nice cleanup! However I have one suggestion/comment.
+I had a previous quirk patch attached to
+https://bugzilla.kernel.org/show_bug.cgi?id=193891
+which disables the SATA controller.  I decided to
+do the clk quirk on top of it and sending both as RFC.
 
-Using pm_runtime_forbid() to prevent the device from being runtime
-suspended may be a bit fragile, as userspace can then still change to
-"allow" it. Wouldn't it be better to bump the runtime PM usage count
-(pm_runtime_get_noresume()) instead?
+I test with v4.14-rc2 + sound/topic/dollar-cove-ti-4.13-v5
++ sound/topic/soc-cx2072x-4.13 + your v4 i2c: designware
+patches + some more out of tree patches that allow me to enter S0ix.
 
-[...]
-
-Kind regards
-Uffe
+Thanks,
+Johannes
