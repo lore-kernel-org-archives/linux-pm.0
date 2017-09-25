@@ -1,51 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: SPEAr: pr_err() strings should end with newlines
-Date: Mon, 25 Sep 2017 16:12:00 -0700
-Message-ID: <20170925231200.GC3053@ubuntu>
-References: <511e2c0f9a2dd23aceb8c0fc39184bfaca1f98c9.1506334381.git.arvind.yadav.cs@gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] MAINTAINERS: Hibernation or S2R doesn't cover entire
+ power directory
+Date: Tue, 26 Sep 2017 01:18:14 +0200
+Message-ID: <CAJZ5v0h65Xo+jFffHE9j2bY=BAOfNvV5DWLtxsx4Bxc2y1dRsw@mail.gmail.com>
+References: <18e729501c1ebe4798d17b8d8a60ba102ebc2837.1505922834.git.viresh.kumar@linaro.org>
+ <CAJZ5v0hv3T7L0c5URrVHC=H5V3h+W7OLRXVMVXLQf-VuTT-E+Q@mail.gmail.com> <20170925231055.GA3053@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <511e2c0f9a2dd23aceb8c0fc39184bfaca1f98c9.1506334381.git.arvind.yadav.cs@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:33988 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S965663AbdIYXSP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Sep 2017 19:18:15 -0400
+In-Reply-To: <20170925231055.GA3053@ubuntu>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 25-09-17, 15:43, Arvind Yadav wrote:
-> pr_err() messages should terminated with a new-line to avoid
-> other messages being concatenated onto the end.
-> 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
-> ---
->  drivers/cpufreq/spear-cpufreq.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/spear-cpufreq.c b/drivers/cpufreq/spear-cpufreq.c
-> index 4894924..195f27f 100644
-> --- a/drivers/cpufreq/spear-cpufreq.c
-> +++ b/drivers/cpufreq/spear-cpufreq.c
-> @@ -177,7 +177,7 @@ static int spear_cpufreq_probe(struct platform_device *pdev)
->  
->  	np = of_cpu_device_node_get(0);
->  	if (!np) {
-> -		pr_err("No cpu node found");
-> +		pr_err("No cpu node found\n");
->  		return -ENODEV;
->  	}
->  
-> @@ -187,7 +187,7 @@ static int spear_cpufreq_probe(struct platform_device *pdev)
->  
->  	prop = of_find_property(np, "cpufreq_tbl", NULL);
->  	if (!prop || !prop->value) {
-> -		pr_err("Invalid cpufreq_tbl");
-> +		pr_err("Invalid cpufreq_tbl\n");
->  		ret = -ENODEV;
->  		goto out_put_node;
->  	}
+On Tue, Sep 26, 2017 at 1:10 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 25-09-17, 00:44, Rafael J. Wysocki wrote:
+>> On Wed, Sep 20, 2017 at 5:58 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > The command:
+>> >
+>> >  $ scripts/get_maintainer.pl -f drivers/base/power/opp/core.c
+>> >
+>> > is incorrectly picking maintainers from Hibernation and Suspend to RAM
+>> > as well, simply because the entries in MAINTAINERS file contains the
+>> > entire power directory. Though the only concerning file is main.c
+>> > really.
+>>
+>> No, it is not the only one.  The others are common.c, trace.c,
+>> wakeup.c, wakeirq.c, sysfs.c, generic_ops.c and power.h (if I have not
+>> overlooked any).
+>>
+>> I'm not actually sure how to fix this issue other than by listing all
+>> of the files in question directly in there.
+>
+> Should I just use *.c for now? Yeah, that will still cover lot more files, but
+> at least the directories, like OPP, are not going to show those maintainers.
+>
+> Or I was actually thinking of moving the entire OPP directory out of
+> drivers/base/power, and move to drivers/opp, just like cpufreq and cpuidle. Will
+> that be okay?
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
+Yes, that should be fine.
