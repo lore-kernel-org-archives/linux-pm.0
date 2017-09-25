@@ -1,188 +1,72 @@
-From: seeteena <s1seetee@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] Fix header-name to read state name and adjust column
- width
-Date: Mon, 25 Sep 2017 14:08:49 +0530
-Message-ID: <47263229-67d8-8555-3dff-017c7543788a@linux.vnet.ibm.com>
-References: <1501491779-24235-1-git-send-email-s1seetee@linux.vnet.ibm.com>
+From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [RFC PATCH 3/7] iio: adc: axp20x-adc: add support
+ for AXP803
+Date: Mon, 25 Sep 2017 10:48:54 +0200
+Message-ID: <1ba65180-9f13-0ef4-9213-1b20f15b5bdb@free-electrons.com>
+References: <20170920151814.22461-1-icenowy@aosc.io>
+ <20170920151814.22461-4-icenowy@aosc.io>
+Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1501491779-24235-1-git-send-email-s1seetee@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBAUGUPHAKGQESPQPE5Y-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <20170920151814.22461-4-icenowy-h8G6r0blFSE@public.gmane.org>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Icenowy,
 
-Any update on this patch ?
-
-
-On 07/31/2017 02:32 PM, Seeteena Thoufeek wrote:
-> The names of the idle states in the output of cpupower monitor
-> command are truncated to 4 characters. Hence, On POWER9, since
-> the states are named "stop0, stop1, stop2, stop4, stop11",
-> this output is ambiguous
->
-> root:~# cpupower monitor
->                 |Idle_Stats
->   PKG |CORE|CPU | snoo | stop | stop
->      0|   8|   0|  0.00|  0.00|  2.79
->      0|   8|   1|  0.00|  0.00| 70.68
->
-> In this patch, we modify the output to print the state name
-> and adjust the column width, that results in a legible output.
->
-> root:~#cpupower monitor
->                |Idle_Stats
-> PKG |CORE|CPU |snooze|stop0_li|stop1_li
->     0|   8|   0|  0.00|    0.00|   60.04
->     0|   8|   1|  0.00|    0.00|   38.97
->     0|   8|   2|  0.00|    0.00|    0.00
->     0|   8|   3|  0.00|    0.00|    0.00
->     0|  12|   4|  0.00|    0.00|   99.25
->     0|  12|   5|  0.00|    0.00|    0.00
->     0|  12|   6|  0.00|    0.00|   99.71
->     0|  12|   7|  0.00|    0.00|   99.85
->     8|2048|   8|  0.00|    0.00|   54.66
->     8|2048|   9|  0.00|    0.00|    0.00
->     8|2048|  10|  0.00|    0.00|    0.00
->     8|2048|  11|  0.00|    0.00|   97.83
->     8|2052|  12|  0.00|    0.00|    0.00
->     8|2052|  13|  0.00|    0.00|    0.00
->     8|2052|  14|  0.00|    0.00|    1.99
->     8|2052|  15|  0.00|    0.00|   99.87
->
-> Tested on POWER8, POWER9 and x86.
->
-> Signed-off-by: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
+On 20/09/2017 17:18, Icenowy Zheng wrote:
+> AXP803 SoC features an ADC part including these channels: GPADC (GPIO0)
+> and TS pins, PMIC internal temperature sensor, battery voltage, battery
+> charge/discharge current.
+> 
+> Add support for the battery-related channels and internal temperature
+> channel in order to allow battery monitoring. The TS and GPADC channels
+> are complex and will be support after more investigation.
+> 
+> Signed-off-by: Icenowy Zheng <icenowy-h8G6r0blFSE@public.gmane.org>
 > ---
->   .../cpupower/utils/idle_monitor/cpupower-monitor.c | 47 +++++++++++++++-------
->   .../cpupower/utils/idle_monitor/cpupower-monitor.h |  7 +++-
->   2 files changed, 37 insertions(+), 17 deletions(-)
->
-> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> index 05f953f..cf3a1ad 100644
-> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-> @@ -21,7 +21,10 @@
->   #include "idle_monitor/cpupower-monitor.h"
->   #include "idle_monitor/idle_monitors.h"
->   #include "helpers/helpers.h"
-> -
-> +#define xstr(s) str(s)
-> +#define str(s) #s
-> +#define COL_WIDTH_MIN   6
-> +#define COL_WIDTH_MAX   8
->   /* Define pointers to all monitors.  */
->   #define DEF(x) & x ## _monitor ,
->   struct cpuidle_monitor *all_monitors[] = {
-> @@ -85,7 +88,7 @@ int fill_string_with_spaces(char *s, int n)
->   void print_header(int topology_depth)
->   {
->   	int unsigned mon;
-> -	int state, need_len;
-> +	int state, need_len, name_len;
->   	cstate_t s;
->   	char buf[128] = "";
->   	int percent_width = 4;
-> @@ -116,17 +119,19 @@ void print_header(int topology_depth)
->   	for (mon = 0; mon < avail_monitors; mon++) {
->   		if (mon != 0)
->   			printf("|| ");
-> -		else
-> -			printf(" ");
->   		for (state = 0; state < monitors[mon]->hw_states_num; state++) {
->   			if (state != 0)
-> -				printf(" | ");
-> +				printf("|");
->   			s = monitors[mon]->hw_states[state];
-> -			sprintf(buf, "%s", s.name);
-> +			name_len = strlen(s.name);
-> +			if (name_len <= COL_WIDTH_MIN)
-> +				percent_width = COL_WIDTH_MIN;
-> +			else
-> +				percent_width = COL_WIDTH_MAX;
-> +			sprintf(buf, "%.*s", percent_width, s.name);
->   			fill_string_with_spaces(buf, percent_width);
->   			printf("%s", buf);
->   		}
-> -		printf(" ");
->   	}
->   	printf("\n");
->   }
-> @@ -134,11 +139,12 @@ void print_header(int topology_depth)
->
->   void print_results(int topology_depth, int cpu)
->   {
-> -	unsigned int mon;
-> -	int state, ret;
-> +	unsigned int mon, percent_width, name_len, width;
-> +	int state, ret, i;
->   	double percent;
->   	unsigned long long result;
->   	cstate_t s;
-> +	char buf[128] = "";
->
->   	/* Be careful CPUs may got resorted for pkg value do not just use cpu */
->   	if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
-> @@ -163,23 +169,34 @@ void print_results(int topology_depth, int cpu)
->   				printf("|");
->
->   			s = monitors[mon]->hw_states[state];
-> -
-> +			name_len = strlen(s.name);
-> +			if (name_len > COL_WIDTH_MIN) {
-> +				percent_width = COL_WIDTH_MAX;
-> +				width = percent_width - COL_WIDTH_MIN;
-> +				fill_string_with_spaces(buf, width);
-> +				printf("%s", buf);
-> +			}
->   			if (s.get_count_percent) {
->   				ret = s.get_count_percent(s.id, &percent,
->   						  cpu_top.core_info[cpu].cpu);
->   				if (ret)
-> -					printf("******");
-> +					for (i = 0; i < COL_WIDTH_MIN; i++)
-> +						printf("*");
->   				else if (percent >= 100.0)
-> -					printf("%6.1f", percent);
-> +					printf("%"xstr(COL_WIDTH_MIN)".1f",
-> +						  percent);
->   				else
-> -					printf("%6.2f", percent);
-> +					printf("%"xstr(COL_WIDTH_MIN)".2f",
-> +						  percent);
->   			} else if (s.get_count) {
->   				ret = s.get_count(s.id, &result,
->   						  cpu_top.core_info[cpu].cpu);
->   				if (ret)
-> -					printf("******");
-> +					for (i = 0; i < COL_WIDTH_MIN; i++)
-> +						printf("*");
->   				else
-> -					printf("%6llu", result);
-> +					printf("%"xstr(COL_WIDTH_MIN)"llu",
-> +						  result);
->   			} else {
->   				printf(_("Monitor %s, Counter %s has no count "
->   					 "function. Implementation error\n"),
-> diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-> index 9e43f33..1f6bc23 100644
-> --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-> +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-> @@ -15,9 +15,12 @@
->
->   #define MONITORS_MAX 20
->   #define MONITOR_NAME_LEN 20
-> -#define CSTATE_NAME_LEN 5
-> +#define CSTATE_NAME_LEN 16
->   #define CSTATE_DESC_LEN 60
-> -
-> +/*
-> + *  CSTATE_NAME_LEN is limited by the CPUIDLE_NAME_LEN defined
-> + *  in include/linux/cpuidle.h.
+>  drivers/iio/adc/axp20x_adc.c | 108 +++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 108 insertions(+)
+> 
+> diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
+> index 93dd6b80059e..4f0cd98cf6ea 100644
+> --- a/drivers/iio/adc/axp20x_adc.c
+> +++ b/drivers/iio/adc/axp20x_adc.c
+> @@ -28,6 +28,8 @@
+[...]>  /*
+> + * AXP803 shares the same consumer map with AXP22x, as it has no ADC for
+> + * VBUS and ACIN inputs either.
 > + */
->   int cpu_count;
->
->   /* Hard to define the right names ...: */
+> +
+> +/*
+
+Put that in the commit log?
+If we add a comment for each newly supported PMIC we will end up with
+more comments than code :)
+
+[...]>
+> +static const struct axp_data axp803_data = {
+> +	.iio_info = &axp803_adc_iio_info,
+> +	.num_channels = ARRAY_SIZE(axp803_adc_channels),
+> +	.channels = axp803_adc_channels,
+> +	.adc_en1_mask = AXP803_ADC_EN1_MASK,
+> +	.adc_en2 = false,
+
+Not required I guess, by default it is false.
+
+Thanks,
+Quentin
+-- 
+Quentin Schulz, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
