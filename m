@@ -1,92 +1,87 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] PM / OPP: Move the OPP directory out of power/
-Date: Mon, 25 Sep 2017 17:05:24 -0700
-Message-ID: <2767b448493ca16f064618d36387ac56dfec0e56.1506384278.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f50.google.com ([74.125.83.50]:46642 "EHLO
-        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S966655AbdIZAFf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Sep 2017 20:05:35 -0400
-Received: by mail-pg0-f50.google.com with SMTP id i130so4940040pgc.3
-        for <linux-pm@vger.kernel.org>; Mon, 25 Sep 2017 17:05:35 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v2.1] PM / devfreq: exynos-bus: Register cooling device
+Date: Tue, 26 Sep 2017 11:31:48 +0900
+Message-ID: <1506393108-17456-1-git-send-email-cw00.choi@samsung.com>
+References: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
+        <CGME20170926023151epcas1p41f999f2804facb4548b2d42ac3a00601@epcas1p4.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
+Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, linux-kernel@vger.kernel.org
 
-The drivers/base/power/ directory is special and contains code related
-to power management core like system suspend/resume, hibernation, etc.
-It was fine to keep the OPP code inside it when we had just one file for
-it, but it is growing now and already has a directory for itself.
+This patch registers the Exynos Bus-Frequency scaling device
+as a cooling device of thermal management.
 
-Lets move it directly under drivers/ directory, just like cpufreq and
-cpuidle.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
 ---
- drivers/Makefile                       | 1 +
- drivers/base/power/Makefile            | 1 -
- drivers/{base/power => }/opp/Makefile  | 0
- drivers/{base/power => }/opp/core.c    | 0
- drivers/{base/power => }/opp/cpu.c     | 0
- drivers/{base/power => }/opp/debugfs.c | 0
- drivers/{base/power => }/opp/of.c      | 0
- drivers/{base/power => }/opp/opp.h     | 0
- 8 files changed, 1 insertion(+), 1 deletion(-)
- rename drivers/{base/power => }/opp/Makefile (100%)
- rename drivers/{base/power => }/opp/core.c (100%)
- rename drivers/{base/power => }/opp/cpu.c (100%)
- rename drivers/{base/power => }/opp/debugfs.c (100%)
- rename drivers/{base/power => }/opp/of.c (100%)
- rename drivers/{base/power => }/opp/opp.h (100%)
+ drivers/devfreq/exynos-bus.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/drivers/Makefile b/drivers/Makefile
-index d90fdc413648..dd718a3007e9 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -125,6 +125,7 @@ obj-$(CONFIG_ACCESSIBILITY)	+= accessibility/
- obj-$(CONFIG_ISDN)		+= isdn/
- obj-$(CONFIG_EDAC)		+= edac/
- obj-$(CONFIG_EISA)		+= eisa/
-+obj-$(CONFIG_PM_OPP)		+= opp/
- obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
- obj-$(CONFIG_CPU_IDLE)		+= cpuidle/
- obj-y				+= mmc/
-diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-index 5998c53280f5..73a1cffc0a5f 100644
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -1,7 +1,6 @@
- obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o qos.o runtime.o wakeirq.o
- obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
- obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
--obj-$(CONFIG_PM_OPP)	+= opp/
- obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o domain_governor.o
- obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
+diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+index c25658b26598..fe9ef6a3238b 100644
+--- a/drivers/devfreq/exynos-bus.c
++++ b/drivers/devfreq/exynos-bus.c
+@@ -15,6 +15,7 @@
+ #include <linux/clk.h>
+ #include <linux/devfreq.h>
+ #include <linux/devfreq-event.h>
++#include <linux/devfreq_cooling.h>
+ #include <linux/device.h>
+ #include <linux/export.h>
+ #include <linux/module.h>
+@@ -41,6 +42,8 @@ struct exynos_bus {
+ 	struct clk *clk;
+ 	unsigned int voltage_tolerance;
+ 	unsigned int ratio;
++
++	struct thermal_cooling_device *cdev;
+ };
  
-diff --git a/drivers/base/power/opp/Makefile b/drivers/opp/Makefile
-similarity index 100%
-rename from drivers/base/power/opp/Makefile
-rename to drivers/opp/Makefile
-diff --git a/drivers/base/power/opp/core.c b/drivers/opp/core.c
-similarity index 100%
-rename from drivers/base/power/opp/core.c
-rename to drivers/opp/core.c
-diff --git a/drivers/base/power/opp/cpu.c b/drivers/opp/cpu.c
-similarity index 100%
-rename from drivers/base/power/opp/cpu.c
-rename to drivers/opp/cpu.c
-diff --git a/drivers/base/power/opp/debugfs.c b/drivers/opp/debugfs.c
-similarity index 100%
-rename from drivers/base/power/opp/debugfs.c
-rename to drivers/opp/debugfs.c
-diff --git a/drivers/base/power/opp/of.c b/drivers/opp/of.c
-similarity index 100%
-rename from drivers/base/power/opp/of.c
-rename to drivers/opp/of.c
-diff --git a/drivers/base/power/opp/opp.h b/drivers/opp/opp.h
-similarity index 100%
-rename from drivers/base/power/opp/opp.h
-rename to drivers/opp/opp.h
+ /*
+@@ -468,6 +471,13 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 		goto err;
+ 	}
+ 
++	/* Register devfreq cooling device */
++	bus->cdev = of_devfreq_cooling_register(np, bus->devfreq);
++	if (IS_ERR(bus->cdev)) {
++		dev_err(dev, "running exynos-bus without cooling device\n");
++		bus->cdev = NULL;
++	}
++
+ 	goto out;
+ passive:
+ 	/* Initialize the struct profile and governor data for passive device */
+@@ -514,6 +524,15 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
++static int exynos_bus_remove(struct platform_device *pdev)
++{
++	struct exynos_bus *bus = platform_get_drvdata(pdev);
++
++	devfreq_cooling_unregister(bus->cdev);
++
++	return 0;
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ static int exynos_bus_resume(struct device *dev)
+ {
+@@ -556,6 +575,7 @@ static int exynos_bus_suspend(struct device *dev)
+ 
+ static struct platform_driver exynos_bus_platdrv = {
+ 	.probe		= exynos_bus_probe,
++	.remove		= exynos_bus_remove,
+ 	.driver = {
+ 		.name	= "exynos-bus",
+ 		.pm	= &exynos_bus_pm,
 -- 
-2.7.4
+1.9.1
