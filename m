@@ -1,84 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM: ARM: sa1111: Drop suspend and resume bus type callbacks
-Date: Tue, 26 Sep 2017 22:47:10 +0200
-Message-ID: <2654085.Tx1JnNWXkX@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:59822 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1030665AbdIZU4Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2017 16:56:24 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
+Subject: [PATCH v5 0/2] thermal: add brcmstb AVS TMON driver
+Date: Tue, 26 Sep 2017 14:27:57 -0700
+Message-ID: <20170926212800.4879-1-code@mmayer.net>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Doug Berger <opendmb-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory Fong <gregory.0xf0-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?UTF-8?q?Rafa=C5=82=20Mi=C5=82ecki?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>
+Cc: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ARM Kernel List <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Russell King <linux@armlinux.org.uk>, Linux PM <linux-pm@vger.kernel.org>
-Cc: linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+From: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 
-None of the sa1111 drivers in the tree implements the suspend and
-resume callbacks from struct sa1111_driver, so drop them and drop
-the corresponding callbacks from sa1111_bus_type.
+This series adds the brcmstb AVS TMON driver.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- arch/arm/common/sa1111.c               |   24 ------------------------
- arch/arm/include/asm/hardware/sa1111.h |    2 --
- 2 files changed, 26 deletions(-)
+The driver was originally written by Brian Norris.
 
-Index: linux-pm/arch/arm/include/asm/hardware/sa1111.h
-===================================================================
---- linux-pm.orig/arch/arm/include/asm/hardware/sa1111.h
-+++ linux-pm/arch/arm/include/asm/hardware/sa1111.h
-@@ -430,8 +430,6 @@ struct sa1111_driver {
- 	unsigned int		devid;
- 	int (*probe)(struct sa1111_dev *);
- 	int (*remove)(struct sa1111_dev *);
--	int (*suspend)(struct sa1111_dev *, pm_message_t);
--	int (*resume)(struct sa1111_dev *);
- 	void (*shutdown)(struct sa1111_dev *);
- };
- 
-Index: linux-pm/arch/arm/common/sa1111.c
-===================================================================
---- linux-pm.orig/arch/arm/common/sa1111.c
-+++ linux-pm/arch/arm/common/sa1111.c
-@@ -1379,28 +1379,6 @@ static int sa1111_match(struct device *_
- 	return !!(dev->devid & drv->devid);
- }
- 
--static int sa1111_bus_suspend(struct device *dev, pm_message_t state)
--{
--	struct sa1111_dev *sadev = to_sa1111_device(dev);
--	struct sa1111_driver *drv = SA1111_DRV(dev->driver);
--	int ret = 0;
--
--	if (drv && drv->suspend)
--		ret = drv->suspend(sadev, state);
--	return ret;
--}
--
--static int sa1111_bus_resume(struct device *dev)
--{
--	struct sa1111_dev *sadev = to_sa1111_device(dev);
--	struct sa1111_driver *drv = SA1111_DRV(dev->driver);
--	int ret = 0;
--
--	if (drv && drv->resume)
--		ret = drv->resume(sadev);
--	return ret;
--}
--
- static void sa1111_bus_shutdown(struct device *dev)
- {
- 	struct sa1111_driver *drv = SA1111_DRV(dev->driver);
-@@ -1436,8 +1414,6 @@ struct bus_type sa1111_bus_type = {
- 	.match		= sa1111_match,
- 	.probe		= sa1111_bus_probe,
- 	.remove		= sa1111_bus_remove,
--	.suspend	= sa1111_bus_suspend,
--	.resume		= sa1111_bus_resume,
- 	.shutdown	= sa1111_bus_shutdown,
- };
- EXPORT_SYMBOL(sa1111_bus_type);
+Changes since v4:
+- disable trip points properly when needed; there was code left-over
+  from an older iteration of this driver that used long ints, which
+  resulted in code that was incorrect now that we are using ints
+- rebased on v4.14-rc1
+- patches 3 & 4 (turning on CONFIG_BRCMSTB_THERMAL for arm/arm64) are no
+  longer part of the series, because they were already picked up for 4.14
+
+Changes since v3:
+- Rebased on v4.13-rc3 to resolve conflicts in the MAINTAINERS file
+
+Changes since v2:
+- replaced calls to pr_debug() with calls to dev_dbg() [PATCH 2/4 only]
+- all other patches are unchanged from v2
+
+Changes since v1:
+- Fixed wording in binding document
+- Fixed lincensing to consistently mention GPL v2
+- Use thermal_zone_get_slope() and thermal_zone_get_offset()
+- Some minor clean-ups
+
+Brian Norris (2):
+  Documentation: devicetree: add binding for Broadcom STB AVS TMON
+  thermal: add brcmstb AVS TMON driver
+
+ .../devicetree/bindings/thermal/brcm,avs-tmon.txt  |  20 ++
+ MAINTAINERS                                        |   8 +
+ drivers/thermal/Kconfig                            |   2 +-
+ drivers/thermal/broadcom/Kconfig                   |   7 +
+ drivers/thermal/broadcom/Makefile                  |   1 +
+ drivers/thermal/broadcom/brcmstb_thermal.c         | 387 +++++++++++++++++++++
+ 6 files changed, 424 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
+ create mode 100644 drivers/thermal/broadcom/brcmstb_thermal.c
+
+-- 
+2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
