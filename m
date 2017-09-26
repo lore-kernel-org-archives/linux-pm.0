@@ -1,162 +1,85 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2] PM / OPP: Move the OPP directory out of power/
-Date: Tue, 26 Sep 2017 15:12:40 -0700
-Message-ID: <3eaed52523d54bdc7b43b335d5aefda9b4d1b4a8.1506463860.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
+From: Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v5 2/2] thermal: add brcmstb AVS TMON driver
+Date: Tue, 26 Sep 2017 15:14:25 -0700
+Message-ID: <9587b134-9727-d7cb-7a46-6df5ee4a0494@gmail.com>
+References: <20170926212800.4879-1-code@mmayer.net>
+ <20170926212800.4879-3-code@mmayer.net>
+ <4cb98266-6936-7668-fc88-199ac907b437@broadcom.com>
+ <CANEuBv7pij+szVQZHZxNr4kXcCT0miTsYzG7g28zOmF9MqXKJQ@mail.gmail.com>
+ <9bdd9959-da47-9adb-e550-31bf06254310@broadcom.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <9bdd9959-da47-9adb-e550-31bf06254310-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Scott Branden <scott.branden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Markus Mayer <code-7CzEARzsJhSsTnJN9+BGXg@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Doug Berger <opendmb-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory Fong <gregory.0xf0-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Florian Fainelli <f.fainelli-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal-g1n6cQUeyibVItvQsEIGlw@public.gmane.org>, Broadcom Kernel List <bcm-kernel-feedback-list-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>, Power Management List <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Device Tree List <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, ARM Kernel List <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The drivers/base/power/ directory is special and contains code related
-to power management core like system suspend/resume, hibernation, etc.
-It was fine to keep the OPP code inside it when we had just one file for
-it, but it is growing now and already has a directory for itself.
+On 09/26/2017 03:08 PM, Scott Branden wrote:
+> 
+> 
+> On 17-09-26 02:38 PM, Markus Mayer wrote:
+>> On 26 September 2017 at 14:32, Scott Branden
+>> <scott.branden-dY08KVG/lbpWk0Htik3J/w@public.gmane.org> wrote:
+>>> Hi Markus,
+>>>
+>>>
+>>> On 17-09-26 02:27 PM, Markus Mayer wrote:
+>>>> From: Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>>>>
+>>>> The AVS TMON core provides temperature readings, a pair of configurable
+>>>> high- and low-temperature threshold interrupts, and an emergency
+>>>> over-temperature chip reset. The driver utilizes the first two to
+>>>> provide temperature readings and high-temperature notifications to
+>>>> applications. The over-temperature reset is not exposed to
+>>>> applications; this reset threshold is critical to the system and should
+>>>> be set with care within the bootloader.
+>>>>
+>>>> Applications may choose to utilize the notification mechanism, the
+>>>> temperature reading mechanism (e.g., through polling), or both.
+>>>>
+>>>> Signed-off-by: Brian Norris <computersforpeace-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>>>> Signed-off-by: Doug Berger <opendmb-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+>>>> Signed-off-by: Markus Mayer <mmayer-dY08KVG/lbpWk0Htik3J/w@public.gmane.org>
+>>>> ---
+>>>>    drivers/thermal/Kconfig                    |   2 +-
+>>>>    drivers/thermal/broadcom/Kconfig           |   7 +
+>>>>    drivers/thermal/broadcom/Makefile          |   1 +
+>>>>    drivers/thermal/broadcom/brcmstb_thermal.c | 387
+>>>> +++++++++++++++++++++++++++++
+>>>>    4 files changed, 396 insertions(+), 1 deletion(-)
+>>>>    create mode 100644 drivers/thermal/broadcom/brcmstb_thermal.c
+>>>>
+>>>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+>>>> index 07002df..96774a7 100644
+>>>> --- a/drivers/thermal/Kconfig
+>>>> +++ b/drivers/thermal/Kconfig
+>>>> @@ -408,7 +408,7 @@ config MTK_THERMAL
+>>>>            controller present in Mediatek SoCs
+>>>>      menu "Broadcom thermal drivers"
+>>>> -depends on ARCH_BCM || COMPILE_TEST
+>>>> +depends on ARCH_BCM || ARCH_BRCMSTB || COMPILE_TEST
+>>> No need for this additional depends.  ARCH_BCM is always defined before
+>>> ARCH_BRCMSTB can be selected.
+>> ARCH_BCM does not exist in arch/arm64/configs/defconfig. ARCH_BRCMSTB
+>> does. So, we do need both or the driver won't be built on ARM64.
+>> (After internal discussions we went with that approach rather than
+>> defining ARCH_BCM on ARM64.)
+> Got it.  Looking at our internal iproc tree I see we've done exactly the
+> same with ARCH_BCM_IPROC needing to be added.  We haven't upstreamed
+> the thermal driver needing it yet.
+> 
+> Perhaps we should add ARCH_BCM to ARM64....
 
-Lets move it directly under drivers/ directory, just like cpufreq and
-cpuidle.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
-V1->V2:
-- Update maintainers and add a Kconfig file in drivers/opp/.
-
- MAINTAINERS                            |  2 +-
- drivers/Kconfig                        |  2 ++
- drivers/Makefile                       |  1 +
- drivers/base/power/Makefile            |  1 -
- drivers/opp/Kconfig                    | 13 +++++++++++++
- drivers/{base/power => }/opp/Makefile  |  0
- drivers/{base/power => }/opp/core.c    |  0
- drivers/{base/power => }/opp/cpu.c     |  0
- drivers/{base/power => }/opp/debugfs.c |  0
- drivers/{base/power => }/opp/of.c      |  0
- drivers/{base/power => }/opp/opp.h     |  0
- kernel/power/Kconfig                   | 14 --------------
- 12 files changed, 17 insertions(+), 16 deletions(-)
- create mode 100644 drivers/opp/Kconfig
- rename drivers/{base/power => }/opp/Makefile (100%)
- rename drivers/{base/power => }/opp/core.c (100%)
- rename drivers/{base/power => }/opp/cpu.c (100%)
- rename drivers/{base/power => }/opp/debugfs.c (100%)
- rename drivers/{base/power => }/opp/of.c (100%)
- rename drivers/{base/power => }/opp/opp.h (100%)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6671f375f7fc..d4efd224c967 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10037,7 +10037,7 @@ M:	Stephen Boyd <sboyd@codeaurora.org>
- L:	linux-pm@vger.kernel.org
- S:	Maintained
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git
--F:	drivers/base/power/opp/
-+F:	drivers/opp/
- F:	include/linux/pm_opp.h
- F:	Documentation/power/opp.txt
- F:	Documentation/devicetree/bindings/opp/
-diff --git a/drivers/Kconfig b/drivers/Kconfig
-index 505c676fa9c7..9e264d410c23 100644
---- a/drivers/Kconfig
-+++ b/drivers/Kconfig
-@@ -208,4 +208,6 @@ source "drivers/tee/Kconfig"
- 
- source "drivers/mux/Kconfig"
- 
-+source "drivers/opp/Kconfig"
-+
- endmenu
-diff --git a/drivers/Makefile b/drivers/Makefile
-index d90fdc413648..dd718a3007e9 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -125,6 +125,7 @@ obj-$(CONFIG_ACCESSIBILITY)	+= accessibility/
- obj-$(CONFIG_ISDN)		+= isdn/
- obj-$(CONFIG_EDAC)		+= edac/
- obj-$(CONFIG_EISA)		+= eisa/
-+obj-$(CONFIG_PM_OPP)		+= opp/
- obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
- obj-$(CONFIG_CPU_IDLE)		+= cpuidle/
- obj-y				+= mmc/
-diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
-index 5998c53280f5..73a1cffc0a5f 100644
---- a/drivers/base/power/Makefile
-+++ b/drivers/base/power/Makefile
-@@ -1,7 +1,6 @@
- obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o qos.o runtime.o wakeirq.o
- obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
- obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
--obj-$(CONFIG_PM_OPP)	+= opp/
- obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o domain_governor.o
- obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
- 
-diff --git a/drivers/opp/Kconfig b/drivers/opp/Kconfig
-new file mode 100644
-index 000000000000..a7fbb93f302c
---- /dev/null
-+++ b/drivers/opp/Kconfig
-@@ -0,0 +1,13 @@
-+config PM_OPP
-+	bool
-+	select SRCU
-+	---help---
-+	  SOCs have a standard set of tuples consisting of frequency and
-+	  voltage pairs that the device will support per voltage domain. This
-+	  is called Operating Performance Point or OPP. The actual definitions
-+	  of OPP varies over silicon within the same family of devices.
-+
-+	  OPP layer organizes the data internally using device pointers
-+	  representing individual voltage domains and provides SOC
-+	  implementations a ready to use framework to manage OPPs.
-+	  For more information, read <file:Documentation/power/opp.txt>
-diff --git a/drivers/base/power/opp/Makefile b/drivers/opp/Makefile
-similarity index 100%
-rename from drivers/base/power/opp/Makefile
-rename to drivers/opp/Makefile
-diff --git a/drivers/base/power/opp/core.c b/drivers/opp/core.c
-similarity index 100%
-rename from drivers/base/power/opp/core.c
-rename to drivers/opp/core.c
-diff --git a/drivers/base/power/opp/cpu.c b/drivers/opp/cpu.c
-similarity index 100%
-rename from drivers/base/power/opp/cpu.c
-rename to drivers/opp/cpu.c
-diff --git a/drivers/base/power/opp/debugfs.c b/drivers/opp/debugfs.c
-similarity index 100%
-rename from drivers/base/power/opp/debugfs.c
-rename to drivers/opp/debugfs.c
-diff --git a/drivers/base/power/opp/of.c b/drivers/opp/of.c
-similarity index 100%
-rename from drivers/base/power/opp/of.c
-rename to drivers/opp/of.c
-diff --git a/drivers/base/power/opp/opp.h b/drivers/opp/opp.h
-similarity index 100%
-rename from drivers/base/power/opp/opp.h
-rename to drivers/opp/opp.h
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index e8517b63eb37..e880ca22c5a5 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -259,20 +259,6 @@ config APM_EMULATION
- 	  anything, try disabling/enabling this option (or disabling/enabling
- 	  APM in your BIOS).
- 
--config PM_OPP
--	bool
--	select SRCU
--	---help---
--	  SOCs have a standard set of tuples consisting of frequency and
--	  voltage pairs that the device will support per voltage domain. This
--	  is called Operating Performance Point or OPP. The actual definitions
--	  of OPP varies over silicon within the same family of devices.
--
--	  OPP layer organizes the data internally using device pointers
--	  representing individual voltage domains and provides SOC
--	  implementations a ready to use framework to manage OPPs.
--	  For more information, read <file:Documentation/power/opp.txt>
--
- config PM_CLK
- 	def_bool y
- 	depends on PM && HAVE_CLK
+If it is just added to satisfy dependencies, I don't see much value in
+doing that. It does make sense in the ARM v7 multiplatform context, but
+outside of that, not so sur.
 -- 
-2.7.4
+Florian
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
