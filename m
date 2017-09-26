@@ -1,87 +1,83 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v2.1] PM / devfreq: exynos-bus: Register cooling device
-Date: Tue, 26 Sep 2017 11:31:48 +0900
-Message-ID: <1506393108-17456-1-git-send-email-cw00.choi@samsung.com>
-References: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20170926023151epcas1p41f999f2804facb4548b2d42ac3a00601@epcas1p4.samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
-Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [PATCH v4 2/4] thermal: add brcmstb AVS TMON driver
+Date: Tue, 26 Sep 2017 03:02:09 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B9092636BE1FB55@SHSMSX101.ccr.corp.intel.com>
+References: <20170809220257.4234-1-code@mmayer.net>
+ <20170809220257.4234-3-code@mmayer.net> <1502777298.2591.1.camel@intel.com>
+ <95da51df3cadbb05f721f2e5b8d59f8d@milecki.pl>
+ <1502779721.2591.4.camel@intel.com>
+ <4ec0715e-fcd7-3aec-3589-96426575c373@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <4ec0715e-fcd7-3aec-3589-96426575c373@gmail.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Florian Fainelli <f.fainelli@gmail.com>, Rafal Milecki <rafal@milecki.pl>
+Cc: Mark Rutland <mark.rutland@arm.com>, Device Tree List <devicetree@vger.kernel.org>, Doug Berger <opendmb@gmail.com>, Markus Mayer <mmayer@broadcom.com>, Arnd Bergmann <arnd@arndb.de>, Power Management List <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Olof Johansson <olof@lixom.net>, Rob Herring <robh+dt@kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Gregory Fong <gregory.0xf0@gmail.com>, Markus Mayer <code@mmayer.net>, Brian Norris <computersforpeace@gmail.com>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch registers the Exynos Bus-Frequency scaling device
-as a cooling device of thermal management.
-
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Cc: Kukjin Kim <kgene@kernel.org>
-Cc: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: linux-samsung-soc@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
----
- drivers/devfreq/exynos-bus.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
-
-diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-index c25658b26598..fe9ef6a3238b 100644
---- a/drivers/devfreq/exynos-bus.c
-+++ b/drivers/devfreq/exynos-bus.c
-@@ -15,6 +15,7 @@
- #include <linux/clk.h>
- #include <linux/devfreq.h>
- #include <linux/devfreq-event.h>
-+#include <linux/devfreq_cooling.h>
- #include <linux/device.h>
- #include <linux/export.h>
- #include <linux/module.h>
-@@ -41,6 +42,8 @@ struct exynos_bus {
- 	struct clk *clk;
- 	unsigned int voltage_tolerance;
- 	unsigned int ratio;
-+
-+	struct thermal_cooling_device *cdev;
- };
- 
- /*
-@@ -468,6 +471,13 @@ static int exynos_bus_probe(struct platform_device *pdev)
- 		goto err;
- 	}
- 
-+	/* Register devfreq cooling device */
-+	bus->cdev = of_devfreq_cooling_register(np, bus->devfreq);
-+	if (IS_ERR(bus->cdev)) {
-+		dev_err(dev, "running exynos-bus without cooling device\n");
-+		bus->cdev = NULL;
-+	}
-+
- 	goto out;
- passive:
- 	/* Initialize the struct profile and governor data for passive device */
-@@ -514,6 +524,15 @@ static int exynos_bus_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
-+static int exynos_bus_remove(struct platform_device *pdev)
-+{
-+	struct exynos_bus *bus = platform_get_drvdata(pdev);
-+
-+	devfreq_cooling_unregister(bus->cdev);
-+
-+	return 0;
-+}
-+
- #ifdef CONFIG_PM_SLEEP
- static int exynos_bus_resume(struct device *dev)
- {
-@@ -556,6 +575,7 @@ static int exynos_bus_suspend(struct device *dev)
- 
- static struct platform_driver exynos_bus_platdrv = {
- 	.probe		= exynos_bus_probe,
-+	.remove		= exynos_bus_remove,
- 	.driver = {
- 		.name	= "exynos-bus",
- 		.pm	= &exynos_bus_pm,
--- 
-1.9.1
+SGksIEZsb3JpYW4sDQoNClRoaXMgcGF0Y2ggc2V0IHdhcyBkcm9wcGVkIGluIHRoZSBsYXN0IG1p
+bnV0ZSBiZWNhdXNlIG9mIHRoaXMgZGlzY3Vzc2lvbg0KaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVs
+Lm9yZy9wYXRjaC85OTM2MzI1Lw0KYXMgSSBkb27igJl0IHdhbnQgdG8gcmViYXNlIHRoZSBwYXRj
+aCBiZWZvcmUgc2VuZGluZyB0aGUgcHVsbCByZXF1ZXN0Lg0KDQpJIGRvbuKAmXQgdGhpbmsgd2Ug
+Y2FuIG1ha2UgaXQgZm9yIDQuMTQuDQpFZHVhcmRvIHdpbGwgYmUgYmFjayBhbmQgcGljayB0aGUg
+c29jIHBhdGNoZXMgZm9yIDQuMTUuDQoNClRoYW5rcywNCnJ1aQ0KDQoNCg0KLS0tLS1PcmlnaW5h
+bCBNZXNzYWdlLS0tLS0NCkZyb206IEZsb3JpYW4gRmFpbmVsbGkgW21haWx0bzpmLmZhaW5lbGxp
+QGdtYWlsLmNvbV0gDQpTZW50OiBNb25kYXksIFNlcHRlbWJlciAyNSwgMjAxNyA1OjExIEFNDQpU
+bzogWmhhbmcsIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNvbT47IFJhZmHFgiBNacWCZWNraSA8cmFm
+YWxAbWlsZWNraS5wbD4NCkNjOiBNYXJrdXMgTWF5ZXIgPGNvZGVAbW1heWVyLm5ldD47IEVkdWFy
+ZG8gVmFsZW50aW4gPGVkdWJlenZhbEBnbWFpbC5jb20+OyBSb2IgSGVycmluZyA8cm9iaCtkdEBr
+ZXJuZWwub3JnPjsgTWFyayBSdXRsYW5kIDxtYXJrLnJ1dGxhbmRAYXJtLmNvbT47IERvdWcgQmVy
+Z2VyIDxvcGVuZG1iQGdtYWlsLmNvbT47IEJyaWFuIE5vcnJpcyA8Y29tcHV0ZXJzZm9ycGVhY2VA
+Z21haWwuY29tPjsgR3JlZ29yeSBGb25nIDxncmVnb3J5LjB4ZjBAZ21haWwuY29tPjsgUnVzc2Vs
+bCBLaW5nIDxsaW51eEBhcm1saW51eC5vcmcudWs+OyBDYXRhbGluIE1hcmluYXMgPGNhdGFsaW4u
+bWFyaW5hc0Bhcm0uY29tPjsgV2lsbCBEZWFjb24gPHdpbGwuZGVhY29uQGFybS5jb20+OyBBcm5k
+IEJlcmdtYW5uIDxhcm5kQGFybmRiLmRlPjsgT2xvZiBKb2hhbnNzb24gPG9sb2ZAbGl4b20ubmV0
+PjsgQnJvYWRjb20gS2VybmVsIExpc3QgPGJjbS1rZXJuZWwtZmVlZGJhY2stbGlzdEBicm9hZGNv
+bS5jb20+OyBQb3dlciBNYW5hZ2VtZW50IExpc3QgPGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz47
+IERldmljZSBUcmVlIExpc3QgPGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnPjsgQVJNIEtlcm5l
+bCBMaXN0IDxsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc+OyBMaW51eCBLZXJu
+ZWwgTWFpbGluZyBMaXN0IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgTWFya3VzIE1h
+eWVyIDxtbWF5ZXJAYnJvYWRjb20uY29tPg0KU3ViamVjdDogUmU6IFtQQVRDSCB2NCAyLzRdIHRo
+ZXJtYWw6IGFkZCBicmNtc3RiIEFWUyBUTU9OIGRyaXZlcg0KSW1wb3J0YW5jZTogSGlnaA0KDQpM
+ZSAwOC8xNC8xNyDDoCAyMzo0OCwgWmhhbmcgUnVpIGEgw6ljcml0wqA6DQo+IE9uIFR1ZSwgMjAx
+Ny0wOC0xNSBhdCAwODo0MiArMDIwMCwgUmFmYcWCIE1pxYJlY2tpIHdyb3RlOg0KPj4gT24gMjAx
+Ny0wOC0xNSAwODowOCwgWmhhbmcgUnVpIHdyb3RlOg0KPj4+DQo+Pj4+DQo+Pj4+IGRpZmYgLS1n
+aXQgYS9kcml2ZXJzL3RoZXJtYWwvYnJvYWRjb20vS2NvbmZpZw0KPj4+PiBiL2RyaXZlcnMvdGhl
+cm1hbC9icm9hZGNvbS9LY29uZmlnDQo+Pj4+IGluZGV4IDQyYzA5OGUuLmMxMDZhMTUgMTAwNjQ0
+DQo+Pj4+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9icm9hZGNvbS9LY29uZmlnDQo+Pj4+ICsrKyBi
+L2RyaXZlcnMvdGhlcm1hbC9icm9hZGNvbS9LY29uZmlnDQo+Pj4+IEBAIC02LDYgKzYsMTMgQEAg
+Y29uZmlnIEJDTTI4MzVfVEhFUk1BTA0KPj4+PiDCoAloZWxwDQo+Pj4+IMKgCcKgwqBTdXBwb3J0
+IGZvciB0aGVybWFsIHNlbnNvcnMgb24gQnJvYWRjb20gYmNtMjgzNSBTb0NzLg0KPj4+PiDCoA0K
+Pj4+PiArY29uZmlnIEJSQ01TVEJfVEhFUk1BTA0KPj4+PiArCXRyaXN0YXRlICJCcm9hZGNvbSBT
+VEIgQVZTIFRNT04gdGhlcm1hbCBkcml2ZXIiDQo+Pj4+ICsJZGVwZW5kcyBvbiBBUkNIX0JSQ01T
+VEIgfHwgQ09NUElMRV9URVNUDQo+Pj4+ICsJaGVscA0KPj4+PiArCcKgwqBFbmFibGUgdGhpcyBk
+cml2ZXIgaWYgeW91IGhhdmUgYSBCcm9hZGNvbSBTVEIgU29DIGFuZA0KPj4+PiB3b3VsZCBsaWtl
+DQo+Pj4+ICsJwqDCoHRoZXJtYWwgZnJhbWV3b3JrIHN1cHBvcnQuDQo+Pj4+ICsNCj4+PiBJIGRv
+bid0IHVuZGVyc3RhbmQgd2h5IEkgZ290IHRoZSBmb2xsb3dpbmcgY2hlY2twYXRjaCB3YXJuaW5n
+DQo+Pj4NCj4+PiBXQVJOSU5HOiBwbGVhc2Ugd3JpdGUgYSBwYXJhZ3JhcGggdGhhdCBkZXNjcmli
+ZXMgdGhlIGNvbmZpZyBzeW1ib2wgDQo+Pj4gZnVsbHkNCj4+PiAjNzM6IEZJTEU6IGRyaXZlcnMv
+dGhlcm1hbC9icm9hZGNvbS9LY29uZmlnOjk6DQo+Pj4gK2NvbmZpZyBCUkNNU1RCX1RIRVJNQUwN
+Cj4+Pg0KPj4+IEkgZGlkbid0IHNlZSB0aGlzIGZvciBvdGhlciBLY29uZmlnIGNoYW5nZXMuDQo+
+PiBJdCdzIGJlY2F1c2UgeW91ciBoZWxwIG1lc3NhZ2UgaXMgb25seSAyIGxpbmVzIGxvbmcgKGlu
+c3RlYWQgb2YgMykuDQo+Pg0KPj4gU29tZSAobWFueT8pIG1haW50YWluZXJzIGFyZW4ndCBwZWRh
+bnRpYyBhYm91dCB0aGF0LCBhIGNvbW1vbiBzZW5zZSANCj4+IHNob3VsZCBiZSBhcHBsaWVkIDsp
+DQo+IA0KPiB0aGFua3MgZm9yIGV4cGxhaW5pbmcuDQo+IFBhdGNoIDEgYW5kIDIgcXVldWVkIGZv
+ciBuZXh0IG1lcmdlIHdpbmRvdy4NCg0KSHVtbSwgSSBkb24ndCBzZWUgdGhpcyBkcml2ZXIgaW4g
+eW91ciBsYXRlc3QgNC4xNCBwdWxsIHJlcXVlc3QgdG8gTGludXMsIHNvIHdoYXQgaGFwcGVuZWQg
+aGVyZSBleGFjdGx5PyBDYW4gd2UgZXhwZWN0IHRoaXMgZHJpdmVyIHRvIGJlIHN1Ym1pdHRlZCBm
+b3IgNC4xNCBvciB3ZSBqdXN0IGhhcHBlbmVkIHRvIGhhdmUgbWlzc2VkIHRoaXMgd2luZG93IG5v
+dz8NCi0tDQpGbG9yaWFuDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxp
+c3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0
+aW5mby9saW51eC1hcm0ta2VybmVsCg==
