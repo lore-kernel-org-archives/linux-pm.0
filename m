@@ -1,74 +1,68 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v5 02/10] cpufreq: provide default frequency-invariance setter function
-Date: Tue, 26 Sep 2017 17:41:07 +0100
-Message-ID: <20170926164115.32367-3-dietmar.eggemann@arm.com>
+Subject: [PATCH v5 01/10] drivers base/arch_topology: free cpumask cpus_to_visit
+Date: Tue, 26 Sep 2017 17:41:06 +0100
+Message-ID: <20170926164115.32367-2-dietmar.eggemann@arm.com>
 References: <20170926164115.32367-1-dietmar.eggemann@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:36014 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1030638AbdIZQm0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 26 Sep 2017 12:42:26 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170926164115.32367-1-dietmar.eggemann@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
-Frequency-invariant accounting support based on the ratio of current
-frequency and maximum supported frequency is an optional feature an arch
-can implement.
+Free cpumask cpus_to_visit in case registering
+init_cpu_capacity_notifier has failed or the parsing of the cpu
+capacity-dmips-mhz property is done. The cpumask cpus_to_visit is
+only used inside the notifier call init_cpu_capacity_callback.
 
-Since there are cpufreq drivers (e.g. cpufreq-dt) which can be build for
-different arch's a default implementation of the frequency-invariance
-setter function arch_set_freq_scale() is needed.
-
-This default implementation is an empty weak function which will be
-overwritten by a strong function in case the arch provides one.
-
-The setter function passes the cpumask of related (to the frequency
-change) cpus (online and offline cpus), the (new) current frequency and
-the maximum supported frequency.
-
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Juri Lelli <juri.lelli@arm.com>
+Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Tested-by: Juri Lelli <juri.lelli@arm.com>
+Reviewed-by: Juri Lelli <juri.lelli@arm.com>
 ---
- drivers/cpufreq/cpufreq.c | 6 ++++++
- include/linux/cpufreq.h   | 3 +++
- 2 files changed, 9 insertions(+)
+ drivers/base/arch_topology.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index ea43b147a7fe..41d148af7748 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -161,6 +161,12 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
+diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+index 41be9ff7d70a..e9bb368f32b3 100644
+--- a/drivers/base/arch_topology.c
++++ b/drivers/base/arch_topology.c
+@@ -212,6 +212,8 @@ static struct notifier_block init_cpu_capacity_notifier = {
+ 
+ static int __init register_cpufreq_notifier(void)
+ {
++	int ret;
++
+ 	/*
+ 	 * on ACPI-based systems we need to use the default cpu capacity
+ 	 * until we have the necessary code to parse the cpu capacity, so
+@@ -227,8 +229,13 @@ static int __init register_cpufreq_notifier(void)
+ 
+ 	cpumask_copy(cpus_to_visit, cpu_possible_mask);
+ 
+-	return cpufreq_register_notifier(&init_cpu_capacity_notifier,
+-					 CPUFREQ_POLICY_NOTIFIER);
++	ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
++					CPUFREQ_POLICY_NOTIFIER);
++
++	if (ret)
++		free_cpumask_var(cpus_to_visit);
++
++	return ret;
  }
- EXPORT_SYMBOL_GPL(get_cpu_idle_time);
+ core_initcall(register_cpufreq_notifier);
  
-+__weak void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
-+		unsigned long max_freq)
-+{
-+}
-+EXPORT_SYMBOL_GPL(arch_set_freq_scale);
-+
- /*
-  * This is a generic cpufreq init() routine which can be used by cpufreq
-  * drivers of SMP systems. It will do following:
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 537ff842ff73..28734ee185a7 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -919,6 +919,9 @@ static inline bool policy_has_boost_freq(struct cpufreq_policy *policy)
+@@ -236,6 +243,7 @@ static void parsing_done_workfn(struct work_struct *work)
+ {
+ 	cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
+ 					 CPUFREQ_POLICY_NOTIFIER);
++	free_cpumask_var(cpus_to_visit);
+ }
  
- extern unsigned int arch_freq_get_on_cpu(int cpu);
- 
-+extern void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
-+				unsigned long max_freq);
-+
- /* the following are really really optional */
- extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
- extern struct freq_attr cpufreq_freq_attr_scaling_boost_freqs;
+ #else
 -- 
 2.11.0
