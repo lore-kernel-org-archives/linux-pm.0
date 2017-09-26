@@ -1,7 +1,7 @@
 From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v5 01/10] drivers base/arch_topology: free cpumask cpus_to_visit
-Date: Tue, 26 Sep 2017 17:41:06 +0100
-Message-ID: <20170926164115.32367-2-dietmar.eggemann@arm.com>
+Subject: [PATCH v5 04/10] cpufreq: dt: invoke frequency-invariance setter function
+Date: Tue, 26 Sep 2017 17:41:09 +0100
+Message-ID: <20170926164115.32367-5-dietmar.eggemann@arm.com>
 References: <20170926164115.32367-1-dietmar.eggemann@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170926164115.32367-1-dietmar.eggemann@arm.com>
@@ -10,59 +10,41 @@ To: linux-kernel@vger.kernel.org
 Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Free cpumask cpus_to_visit in case registering
-init_cpu_capacity_notifier has failed or the parsing of the cpu
-capacity-dmips-mhz property is done. The cpumask cpus_to_visit is
-only used inside the notifier call init_cpu_capacity_callback.
+Call the frequency-invariance setter function arch_set_freq_scale()
+if the new frequency has been successfully set which is indicated by
+dev_pm_opp_set_rate() returning 0.
 
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Juri Lelli <juri.lelli@arm.com>
-Reported-by: Vincent Guittot <vincent.guittot@linaro.org>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Acked-by: Vincent Guittot <vincent.guittot@linaro.org>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Tested-by: Juri Lelli <juri.lelli@arm.com>
-Reviewed-by: Juri Lelli <juri.lelli@arm.com>
 ---
- drivers/base/arch_topology.c | 12 ++++++++++--
+ drivers/cpufreq/cpufreq-dt.c | 12 ++++++++++--
  1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index 41be9ff7d70a..e9bb368f32b3 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -212,6 +212,8 @@ static struct notifier_block init_cpu_capacity_notifier = {
- 
- static int __init register_cpufreq_notifier(void)
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index d83ab94d041a..545946ad0752 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -43,9 +43,17 @@ static struct freq_attr *cpufreq_dt_attr[] = {
+ static int set_target(struct cpufreq_policy *policy, unsigned int index)
  {
+ 	struct private_data *priv = policy->driver_data;
++	unsigned long freq = policy->freq_table[index].frequency;
 +	int ret;
 +
- 	/*
- 	 * on ACPI-based systems we need to use the default cpu capacity
- 	 * until we have the necessary code to parse the cpu capacity, so
-@@ -227,8 +229,13 @@ static int __init register_cpufreq_notifier(void)
++	ret = dev_pm_opp_set_rate(priv->cpu_dev, freq * 1000);
  
- 	cpumask_copy(cpus_to_visit, cpu_possible_mask);
- 
--	return cpufreq_register_notifier(&init_cpu_capacity_notifier,
--					 CPUFREQ_POLICY_NOTIFIER);
-+	ret = cpufreq_register_notifier(&init_cpu_capacity_notifier,
-+					CPUFREQ_POLICY_NOTIFIER);
-+
-+	if (ret)
-+		free_cpumask_var(cpus_to_visit);
+-	return dev_pm_opp_set_rate(priv->cpu_dev,
+-				   policy->freq_table[index].frequency * 1000);
++	if (!ret) {
++		arch_set_freq_scale(policy->related_cpus, freq,
++				    policy->cpuinfo.max_freq);
++	}
 +
 +	return ret;
  }
- core_initcall(register_cpufreq_notifier);
  
-@@ -236,6 +243,7 @@ static void parsing_done_workfn(struct work_struct *work)
- {
- 	cpufreq_unregister_notifier(&init_cpu_capacity_notifier,
- 					 CPUFREQ_POLICY_NOTIFIER);
-+	free_cpumask_var(cpus_to_visit);
- }
- 
- #else
+ /*
 -- 
 2.11.0
