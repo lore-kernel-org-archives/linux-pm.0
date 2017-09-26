@@ -1,83 +1,102 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Subject: RE: [PATCH v4 2/4] thermal: add brcmstb AVS TMON driver
-Date: Tue, 26 Sep 2017 03:02:09 +0000
-Message-ID: <744357E9AAD1214791ACBA4B0B9092636BE1FB55@SHSMSX101.ccr.corp.intel.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH v4 2/4] thermal: add brcmstb AVS TMON driver
+Date: Mon, 25 Sep 2017 21:13:57 -0700
+Message-ID: <1e23383c-7c63-04fc-0f07-21b0e418e3de@gmail.com>
 References: <20170809220257.4234-1-code@mmayer.net>
  <20170809220257.4234-3-code@mmayer.net> <1502777298.2591.1.camel@intel.com>
  <95da51df3cadbb05f721f2e5b8d59f8d@milecki.pl>
  <1502779721.2591.4.camel@intel.com>
  <4ec0715e-fcd7-3aec-3589-96426575c373@gmail.com>
+ <744357E9AAD1214791ACBA4B0B9092636BE1FB55@SHSMSX101.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <4ec0715e-fcd7-3aec-3589-96426575c373@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f53.google.com ([209.85.218.53]:55888 "EHLO
+        mail-oi0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754090AbdIZEOC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2017 00:14:02 -0400
+In-Reply-To: <744357E9AAD1214791ACBA4B0B9092636BE1FB55@SHSMSX101.ccr.corp.intel.com>
 Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Florian Fainelli <f.fainelli@gmail.com>, Rafal Milecki <rafal@milecki.pl>
-Cc: Mark Rutland <mark.rutland@arm.com>, Device Tree List <devicetree@vger.kernel.org>, Doug Berger <opendmb@gmail.com>, Markus Mayer <mmayer@broadcom.com>, Arnd Bergmann <arnd@arndb.de>, Power Management List <linux-pm@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Russell King <linux@armlinux.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Olof Johansson <olof@lixom.net>, Rob Herring <robh+dt@kernel.org>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Gregory Fong <gregory.0xf0@gmail.com>, Markus Mayer <code@mmayer.net>, Brian Norris <computersforpeace@gmail.com>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Zhang, Rui" <rui.zhang@intel.com>, Rafal Milecki <rafal@milecki.pl>
+Cc: Markus Mayer <code@mmayer.net>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
 
-SGksIEZsb3JpYW4sDQoNClRoaXMgcGF0Y2ggc2V0IHdhcyBkcm9wcGVkIGluIHRoZSBsYXN0IG1p
-bnV0ZSBiZWNhdXNlIG9mIHRoaXMgZGlzY3Vzc2lvbg0KaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVs
-Lm9yZy9wYXRjaC85OTM2MzI1Lw0KYXMgSSBkb27igJl0IHdhbnQgdG8gcmViYXNlIHRoZSBwYXRj
-aCBiZWZvcmUgc2VuZGluZyB0aGUgcHVsbCByZXF1ZXN0Lg0KDQpJIGRvbuKAmXQgdGhpbmsgd2Ug
-Y2FuIG1ha2UgaXQgZm9yIDQuMTQuDQpFZHVhcmRvIHdpbGwgYmUgYmFjayBhbmQgcGljayB0aGUg
-c29jIHBhdGNoZXMgZm9yIDQuMTUuDQoNClRoYW5rcywNCnJ1aQ0KDQoNCg0KLS0tLS1PcmlnaW5h
-bCBNZXNzYWdlLS0tLS0NCkZyb206IEZsb3JpYW4gRmFpbmVsbGkgW21haWx0bzpmLmZhaW5lbGxp
-QGdtYWlsLmNvbV0gDQpTZW50OiBNb25kYXksIFNlcHRlbWJlciAyNSwgMjAxNyA1OjExIEFNDQpU
-bzogWmhhbmcsIFJ1aSA8cnVpLnpoYW5nQGludGVsLmNvbT47IFJhZmHFgiBNacWCZWNraSA8cmFm
-YWxAbWlsZWNraS5wbD4NCkNjOiBNYXJrdXMgTWF5ZXIgPGNvZGVAbW1heWVyLm5ldD47IEVkdWFy
-ZG8gVmFsZW50aW4gPGVkdWJlenZhbEBnbWFpbC5jb20+OyBSb2IgSGVycmluZyA8cm9iaCtkdEBr
-ZXJuZWwub3JnPjsgTWFyayBSdXRsYW5kIDxtYXJrLnJ1dGxhbmRAYXJtLmNvbT47IERvdWcgQmVy
-Z2VyIDxvcGVuZG1iQGdtYWlsLmNvbT47IEJyaWFuIE5vcnJpcyA8Y29tcHV0ZXJzZm9ycGVhY2VA
-Z21haWwuY29tPjsgR3JlZ29yeSBGb25nIDxncmVnb3J5LjB4ZjBAZ21haWwuY29tPjsgUnVzc2Vs
-bCBLaW5nIDxsaW51eEBhcm1saW51eC5vcmcudWs+OyBDYXRhbGluIE1hcmluYXMgPGNhdGFsaW4u
-bWFyaW5hc0Bhcm0uY29tPjsgV2lsbCBEZWFjb24gPHdpbGwuZGVhY29uQGFybS5jb20+OyBBcm5k
-IEJlcmdtYW5uIDxhcm5kQGFybmRiLmRlPjsgT2xvZiBKb2hhbnNzb24gPG9sb2ZAbGl4b20ubmV0
-PjsgQnJvYWRjb20gS2VybmVsIExpc3QgPGJjbS1rZXJuZWwtZmVlZGJhY2stbGlzdEBicm9hZGNv
-bS5jb20+OyBQb3dlciBNYW5hZ2VtZW50IExpc3QgPGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz47
-IERldmljZSBUcmVlIExpc3QgPGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnPjsgQVJNIEtlcm5l
-bCBMaXN0IDxsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc+OyBMaW51eCBLZXJu
-ZWwgTWFpbGluZyBMaXN0IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnPjsgTWFya3VzIE1h
-eWVyIDxtbWF5ZXJAYnJvYWRjb20uY29tPg0KU3ViamVjdDogUmU6IFtQQVRDSCB2NCAyLzRdIHRo
-ZXJtYWw6IGFkZCBicmNtc3RiIEFWUyBUTU9OIGRyaXZlcg0KSW1wb3J0YW5jZTogSGlnaA0KDQpM
-ZSAwOC8xNC8xNyDDoCAyMzo0OCwgWmhhbmcgUnVpIGEgw6ljcml0wqA6DQo+IE9uIFR1ZSwgMjAx
-Ny0wOC0xNSBhdCAwODo0MiArMDIwMCwgUmFmYcWCIE1pxYJlY2tpIHdyb3RlOg0KPj4gT24gMjAx
-Ny0wOC0xNSAwODowOCwgWmhhbmcgUnVpIHdyb3RlOg0KPj4+DQo+Pj4+DQo+Pj4+IGRpZmYgLS1n
-aXQgYS9kcml2ZXJzL3RoZXJtYWwvYnJvYWRjb20vS2NvbmZpZw0KPj4+PiBiL2RyaXZlcnMvdGhl
-cm1hbC9icm9hZGNvbS9LY29uZmlnDQo+Pj4+IGluZGV4IDQyYzA5OGUuLmMxMDZhMTUgMTAwNjQ0
-DQo+Pj4+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9icm9hZGNvbS9LY29uZmlnDQo+Pj4+ICsrKyBi
-L2RyaXZlcnMvdGhlcm1hbC9icm9hZGNvbS9LY29uZmlnDQo+Pj4+IEBAIC02LDYgKzYsMTMgQEAg
-Y29uZmlnIEJDTTI4MzVfVEhFUk1BTA0KPj4+PiDCoAloZWxwDQo+Pj4+IMKgCcKgwqBTdXBwb3J0
-IGZvciB0aGVybWFsIHNlbnNvcnMgb24gQnJvYWRjb20gYmNtMjgzNSBTb0NzLg0KPj4+PiDCoA0K
-Pj4+PiArY29uZmlnIEJSQ01TVEJfVEhFUk1BTA0KPj4+PiArCXRyaXN0YXRlICJCcm9hZGNvbSBT
-VEIgQVZTIFRNT04gdGhlcm1hbCBkcml2ZXIiDQo+Pj4+ICsJZGVwZW5kcyBvbiBBUkNIX0JSQ01T
-VEIgfHwgQ09NUElMRV9URVNUDQo+Pj4+ICsJaGVscA0KPj4+PiArCcKgwqBFbmFibGUgdGhpcyBk
-cml2ZXIgaWYgeW91IGhhdmUgYSBCcm9hZGNvbSBTVEIgU29DIGFuZA0KPj4+PiB3b3VsZCBsaWtl
-DQo+Pj4+ICsJwqDCoHRoZXJtYWwgZnJhbWV3b3JrIHN1cHBvcnQuDQo+Pj4+ICsNCj4+PiBJIGRv
-bid0IHVuZGVyc3RhbmQgd2h5IEkgZ290IHRoZSBmb2xsb3dpbmcgY2hlY2twYXRjaCB3YXJuaW5n
-DQo+Pj4NCj4+PiBXQVJOSU5HOiBwbGVhc2Ugd3JpdGUgYSBwYXJhZ3JhcGggdGhhdCBkZXNjcmli
-ZXMgdGhlIGNvbmZpZyBzeW1ib2wgDQo+Pj4gZnVsbHkNCj4+PiAjNzM6IEZJTEU6IGRyaXZlcnMv
-dGhlcm1hbC9icm9hZGNvbS9LY29uZmlnOjk6DQo+Pj4gK2NvbmZpZyBCUkNNU1RCX1RIRVJNQUwN
-Cj4+Pg0KPj4+IEkgZGlkbid0IHNlZSB0aGlzIGZvciBvdGhlciBLY29uZmlnIGNoYW5nZXMuDQo+
-PiBJdCdzIGJlY2F1c2UgeW91ciBoZWxwIG1lc3NhZ2UgaXMgb25seSAyIGxpbmVzIGxvbmcgKGlu
-c3RlYWQgb2YgMykuDQo+Pg0KPj4gU29tZSAobWFueT8pIG1haW50YWluZXJzIGFyZW4ndCBwZWRh
-bnRpYyBhYm91dCB0aGF0LCBhIGNvbW1vbiBzZW5zZSANCj4+IHNob3VsZCBiZSBhcHBsaWVkIDsp
-DQo+IA0KPiB0aGFua3MgZm9yIGV4cGxhaW5pbmcuDQo+IFBhdGNoIDEgYW5kIDIgcXVldWVkIGZv
-ciBuZXh0IG1lcmdlIHdpbmRvdy4NCg0KSHVtbSwgSSBkb24ndCBzZWUgdGhpcyBkcml2ZXIgaW4g
-eW91ciBsYXRlc3QgNC4xNCBwdWxsIHJlcXVlc3QgdG8gTGludXMsIHNvIHdoYXQgaGFwcGVuZWQg
-aGVyZSBleGFjdGx5PyBDYW4gd2UgZXhwZWN0IHRoaXMgZHJpdmVyIHRvIGJlIHN1Ym1pdHRlZCBm
-b3IgNC4xNCBvciB3ZSBqdXN0IGhhcHBlbmVkIHRvIGhhdmUgbWlzc2VkIHRoaXMgd2luZG93IG5v
-dz8NCi0tDQpGbG9yaWFuDQpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fXwpsaW51eC1hcm0ta2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxp
-c3RzLmluZnJhZGVhZC5vcmcKaHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0
-aW5mby9saW51eC1hcm0ta2VybmVsCg==
+On 09/25/2017 08:02 PM, Zhang, Rui wrote:
+> Hi, Florian,
+> 
+> This patch set was dropped in the last minute because of this discussion
+> https://patchwork.kernel.org/patch/9936325/
+> as I don’t want to rebase the patch before sending the pull request.
+
+Ah, you wanted to squash that patch into the initial submission?
+
+> 
+> I don’t think we can make it for 4.14.
+> Eduardo will be back and pick the soc patches for 4.15.
+
+I assume you would want to get that particular patch squashed into a
+clean submission targeting 4.15 now, right?
+
+Thanks
+
+> 
+> Thanks,
+> rui
+> 
+> 
+> 
+> -----Original Message-----
+> From: Florian Fainelli [mailto:f.fainelli@gmail.com] 
+> Sent: Monday, September 25, 2017 5:11 AM
+> To: Zhang, Rui <rui.zhang@intel.com>; Rafał Miłecki <rafal@milecki.pl>
+> Cc: Markus Mayer <code@mmayer.net>; Eduardo Valentin <edubezval@gmail.com>; Rob Herring <robh+dt@kernel.org>; Mark Rutland <mark.rutland@arm.com>; Doug Berger <opendmb@gmail.com>; Brian Norris <computersforpeace@gmail.com>; Gregory Fong <gregory.0xf0@gmail.com>; Russell King <linux@armlinux.org.uk>; Catalin Marinas <catalin.marinas@arm.com>; Will Deacon <will.deacon@arm.com>; Arnd Bergmann <arnd@arndb.de>; Olof Johansson <olof@lixom.net>; Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>; Power Management List <linux-pm@vger.kernel.org>; Device Tree List <devicetree@vger.kernel.org>; ARM Kernel List <linux-arm-kernel@lists.infradead.org>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; Markus Mayer <mmayer@broadcom.com>
+> Subject: Re: [PATCH v4 2/4] thermal: add brcmstb AVS TMON driver
+> Importance: High
+> 
+> Le 08/14/17 à 23:48, Zhang Rui a écrit :
+>> On Tue, 2017-08-15 at 08:42 +0200, Rafał Miłecki wrote:
+>>> On 2017-08-15 08:08, Zhang Rui wrote:
+>>>>
+>>>>>
+>>>>> diff --git a/drivers/thermal/broadcom/Kconfig
+>>>>> b/drivers/thermal/broadcom/Kconfig
+>>>>> index 42c098e..c106a15 100644
+>>>>> --- a/drivers/thermal/broadcom/Kconfig
+>>>>> +++ b/drivers/thermal/broadcom/Kconfig
+>>>>> @@ -6,6 +6,13 @@ config BCM2835_THERMAL
+>>>>>  	help
+>>>>>  	  Support for thermal sensors on Broadcom bcm2835 SoCs.
+>>>>>  
+>>>>> +config BRCMSTB_THERMAL
+>>>>> +	tristate "Broadcom STB AVS TMON thermal driver"
+>>>>> +	depends on ARCH_BRCMSTB || COMPILE_TEST
+>>>>> +	help
+>>>>> +	  Enable this driver if you have a Broadcom STB SoC and
+>>>>> would like
+>>>>> +	  thermal framework support.
+>>>>> +
+>>>> I don't understand why I got the following checkpatch warning
+>>>>
+>>>> WARNING: please write a paragraph that describes the config symbol 
+>>>> fully
+>>>> #73: FILE: drivers/thermal/broadcom/Kconfig:9:
+>>>> +config BRCMSTB_THERMAL
+>>>>
+>>>> I didn't see this for other Kconfig changes.
+>>> It's because your help message is only 2 lines long (instead of 3).
+>>>
+>>> Some (many?) maintainers aren't pedantic about that, a common sense 
+>>> should be applied ;)
+>>
+>> thanks for explaining.
+>> Patch 1 and 2 queued for next merge window.
+> 
+> Humm, I don't see this driver in your latest 4.14 pull request to Linus, so what happened here exactly? Can we expect this driver to be submitted for 4.14 or we just happened to have missed this window now?
+> --
+> Florian
+> 
+
+-- 
+Florian
