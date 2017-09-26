@@ -1,88 +1,126 @@
-From: Scott Branden <scott.branden@broadcom.com>
-Subject: Re: [PATCH v5 2/2] thermal: add brcmstb AVS TMON driver
-Date: Tue, 26 Sep 2017 15:17:40 -0700
-Message-ID: <5245cf8e-d35f-c1fd-b7ea-e3a58c468688@broadcom.com>
-References: <20170926212800.4879-1-code@mmayer.net>
- <20170926212800.4879-3-code@mmayer.net>
- <4cb98266-6936-7668-fc88-199ac907b437@broadcom.com>
- <CANEuBv7pij+szVQZHZxNr4kXcCT0miTsYzG7g28zOmF9MqXKJQ@mail.gmail.com>
- <9bdd9959-da47-9adb-e550-31bf06254310@broadcom.com>
- <9587b134-9727-d7cb-7a46-6df5ee4a0494@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f48.google.com ([74.125.82.48]:49682 "EHLO
-        mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S969684AbdIZWRs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2017 18:17:48 -0400
-Received: by mail-wm0-f48.google.com with SMTP id r74so12284622wme.4
-        for <linux-pm@vger.kernel.org>; Tue, 26 Sep 2017 15:17:47 -0700 (PDT)
-In-Reply-To: <9587b134-9727-d7cb-7a46-6df5ee4a0494@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: [PATCH] thermal/drivers/qcom-spmi: Use devm_iio_channel_get
+Date: Wed, 27 Sep 2017 01:50:55 +0200
+Message-ID: <1506469855-12497-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: edubezval@gmail.com
+Cc: Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Florian Fainelli <f.fainelli@gmail.com>, Markus Mayer <code@mmayer.net>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
 
+The iio_channel_get() function has now its devm_ version.
 
+Use it and remove all the rollback code for iio_channel_release() as well
+as the .remove ops.
 
-On 17-09-26 03:14 PM, Florian Fainelli wrote:
-> On 09/26/2017 03:08 PM, Scott Branden wrote:
->>
->> On 17-09-26 02:38 PM, Markus Mayer wrote:
->>> On 26 September 2017 at 14:32, Scott Branden
->>> <scott.branden@broadcom.com> wrote:
->>>> Hi Markus,
->>>>
->>>>
->>>> On 17-09-26 02:27 PM, Markus Mayer wrote:
->>>>> From: Brian Norris <computersforpeace@gmail.com>
->>>>>
->>>>> The AVS TMON core provides temperature readings, a pair of configurable
->>>>> high- and low-temperature threshold interrupts, and an emergency
->>>>> over-temperature chip reset. The driver utilizes the first two to
->>>>> provide temperature readings and high-temperature notifications to
->>>>> applications. The over-temperature reset is not exposed to
->>>>> applications; this reset threshold is critical to the system and should
->>>>> be set with care within the bootloader.
->>>>>
->>>>> Applications may choose to utilize the notification mechanism, the
->>>>> temperature reading mechanism (e.g., through polling), or both.
->>>>>
->>>>> Signed-off-by: Brian Norris <computersforpeace@gmail.com>
->>>>> Signed-off-by: Doug Berger <opendmb@gmail.com>
->>>>> Signed-off-by: Markus Mayer <mmayer@broadcom.com>
->>>>> ---
->>>>>     drivers/thermal/Kconfig                    |   2 +-
->>>>>     drivers/thermal/broadcom/Kconfig           |   7 +
->>>>>     drivers/thermal/broadcom/Makefile          |   1 +
->>>>>     drivers/thermal/broadcom/brcmstb_thermal.c | 387
->>>>> +++++++++++++++++++++++++++++
->>>>>     4 files changed, 396 insertions(+), 1 deletion(-)
->>>>>     create mode 100644 drivers/thermal/broadcom/brcmstb_thermal.c
->>>>>
->>>>> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->>>>> index 07002df..96774a7 100644
->>>>> --- a/drivers/thermal/Kconfig
->>>>> +++ b/drivers/thermal/Kconfig
->>>>> @@ -408,7 +408,7 @@ config MTK_THERMAL
->>>>>             controller present in Mediatek SoCs
->>>>>       menu "Broadcom thermal drivers"
->>>>> -depends on ARCH_BCM || COMPILE_TEST
->>>>> +depends on ARCH_BCM || ARCH_BRCMSTB || COMPILE_TEST
->>>> No need for this additional depends.  ARCH_BCM is always defined before
->>>> ARCH_BRCMSTB can be selected.
->>> ARCH_BCM does not exist in arch/arm64/configs/defconfig. ARCH_BRCMSTB
->>> does. So, we do need both or the driver won't be built on ARM64.
->>> (After internal discussions we went with that approach rather than
->>> defining ARCH_BCM on ARM64.)
->> Got it.  Looking at our internal iproc tree I see we've done exactly the
->> same with ARCH_BCM_IPROC needing to be added.  We haven't upstreamed
->> the thermal driver needing it yet.
->>
->> Perhaps we should add ARCH_BCM to ARM64....
-> If it is just added to satisfy dependencies, I don't see much value in
-> doing that. It does make sense in the ARM v7 multiplatform context, but
-> outside of that, not so sur.
-OK - we'll just continue to add ARCH_BCM_IPROC || ARCH_BRCMSTB 
-everywhere as needed.
+[Compiled tested only]
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+---
+ drivers/thermal/qcom-spmi-temp-alarm.c | 43 +++++++++++-----------------------
+ 1 file changed, 14 insertions(+), 29 deletions(-)
+
+diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
+index f502419..95f987d 100644
+--- a/drivers/thermal/qcom-spmi-temp-alarm.c
++++ b/drivers/thermal/qcom-spmi-temp-alarm.c
+@@ -125,7 +125,7 @@ static int qpnp_tm_get_temp(void *data, int *temp)
+ 	if (!temp)
+ 		return -EINVAL;
+ 
+-	if (IS_ERR(chip->adc)) {
++	if (!chip->adc) {
+ 		ret = qpnp_tm_update_temp_no_adc(chip);
+ 		if (ret < 0)
+ 			return ret;
+@@ -224,67 +224,53 @@ static int qpnp_tm_probe(struct platform_device *pdev)
+ 		return irq;
+ 
+ 	/* ADC based measurements are optional */
+-	chip->adc = iio_channel_get(&pdev->dev, "thermal");
+-	if (PTR_ERR(chip->adc) == -EPROBE_DEFER)
+-		return PTR_ERR(chip->adc);
++	chip->adc = devm_iio_channel_get(&pdev->dev, "thermal");
++	if (IS_ERR(chip->adc)) {
++		ret = PTR_ERR(chip->adc);
++		chip->adc = NULL;
++		if (ret == -EPROBE_DEFER)
++			return ret;
++	}
+ 
+ 	chip->base = res;
+ 
+ 	ret = qpnp_tm_read(chip, QPNP_TM_REG_TYPE, &type);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "could not read type\n");
+-		goto fail;
++		return ret;
+ 	}
+ 
+ 	ret = qpnp_tm_read(chip, QPNP_TM_REG_SUBTYPE, &subtype);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "could not read subtype\n");
+-		goto fail;
++		return ret;
+ 	}
+ 
+ 	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
+ 		dev_err(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
+ 			type, subtype);
+-		ret = -ENODEV;
+-		goto fail;
++		return -ENODEV;
+ 	}
+ 
+ 	ret = qpnp_tm_init(chip);
+ 	if (ret < 0) {
+ 		dev_err(&pdev->dev, "init failed\n");
+-		goto fail;
++		return ret;
+ 	}
+ 
+ 	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL, qpnp_tm_isr,
+ 					IRQF_ONESHOT, node->name, chip);
+ 	if (ret < 0)
+-		goto fail;
++		return ret;
+ 
+ 	chip->tz_dev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, chip,
+ 							&qpnp_tm_sensor_ops);
+ 	if (IS_ERR(chip->tz_dev)) {
+ 		dev_err(&pdev->dev, "failed to register sensor\n");
+-		ret = PTR_ERR(chip->tz_dev);
+-		goto fail;
++		return PTR_ERR(chip->tz_dev);
+ 	}
+ 
+ 	return 0;
+-
+-fail:
+-	if (!IS_ERR(chip->adc))
+-		iio_channel_release(chip->adc);
+-
+-	return ret;
+-}
+-
+-static int qpnp_tm_remove(struct platform_device *pdev)
+-{
+-	struct qpnp_tm_chip *chip = dev_get_drvdata(&pdev->dev);
+-
+-	if (!IS_ERR(chip->adc))
+-		iio_channel_release(chip->adc);
+-
+-	return 0;
+ }
+ 
+ static const struct of_device_id qpnp_tm_match_table[] = {
+@@ -299,7 +285,6 @@ static struct platform_driver qpnp_tm_driver = {
+ 		.of_match_table = qpnp_tm_match_table,
+ 	},
+ 	.probe  = qpnp_tm_probe,
+-	.remove = qpnp_tm_remove,
+ };
+ module_platform_driver(qpnp_tm_driver);
+ 
+-- 
+2.7.4
