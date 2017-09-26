@@ -1,55 +1,40 @@
-From: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v5 03/10] cpufreq: arm_big_little: invoke frequency-invariance setter function
-Date: Tue, 26 Sep 2017 17:41:08 +0100
-Message-ID: <20170926164115.32367-4-dietmar.eggemann@arm.com>
-References: <20170926164115.32367-1-dietmar.eggemann@arm.com>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: [PATCH] thermal: enable broadcom menu for arm64 bcm2835
+Date: Tue, 26 Sep 2017 19:37:44 +0200
+Message-ID: <1506447464-3234-1-git-send-email-stefan.wahren@i2se.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20170926164115.32367-1-dietmar.eggemann@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Allen Wild <allenwild93@gmail.com>, Stefan Wahren <stefan.wahren@i2se.com>
 List-Id: linux-pm@vger.kernel.org
 
-Call the frequency-invariance setter function arch_set_freq_scale()
-if the new frequency has been successfully set which is indicated by
-bL_cpufreq_set_rate() returning 0.
+From: Allen Wild <allenwild93@gmail.com>
 
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>
-Signed-off-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Moving the bcm2835 thermal driver to the broadcom directory prevented it
+from getting enabled for arm64 builds, since the broadcom directory is only
+available when 32-bit specific ARCH_BCM is set.
+
+Fix this by enabling the Broadcom menu for ARCH_BCM or ARCH_BCM2835.
+
+Fixes: 6892cf07e733 ("thermal: bcm2835: move to the broadcom subdirectory")
+Signed-off-by: Allen Wild <allenwild93@gmail.com>
+Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
 ---
- drivers/cpufreq/arm_big_little.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+ drivers/thermal/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index 17504129fd77..0c41ab3b16eb 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -213,6 +213,7 @@ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
- {
- 	u32 cpu = policy->cpu, cur_cluster, new_cluster, actual_cluster;
- 	unsigned int freqs_new;
-+	int ret;
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 07002df..e3f0d1f 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -408,7 +408,7 @@ config MTK_THERMAL
+ 	  controller present in Mediatek SoCs
  
- 	cur_cluster = cpu_to_cluster(cpu);
- 	new_cluster = actual_cluster = per_cpu(physical_cluster, cpu);
-@@ -229,7 +230,14 @@ static int bL_cpufreq_set_target(struct cpufreq_policy *policy,
- 		}
- 	}
+ menu "Broadcom thermal drivers"
+-depends on ARCH_BCM || COMPILE_TEST
++depends on ARCH_BCM || ARCH_BCM2835 || COMPILE_TEST
+ source "drivers/thermal/broadcom/Kconfig"
+ endmenu
  
--	return bL_cpufreq_set_rate(cpu, actual_cluster, new_cluster, freqs_new);
-+	ret = bL_cpufreq_set_rate(cpu, actual_cluster, new_cluster, freqs_new);
-+
-+	if (!ret) {
-+		arch_set_freq_scale(policy->related_cpus, freqs_new,
-+				    policy->cpuinfo.max_freq);
-+	}
-+
-+	return ret;
- }
- 
- static inline u32 get_table_count(struct cpufreq_frequency_table *table)
 -- 
-2.11.0
+2.7.4
