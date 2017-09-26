@@ -1,52 +1,106 @@
-From: Sekhar Nori <nsekhar@ti.com>
-Subject: Re: [PATCH] PM / OPP: Move the OPP directory out of power/
-Date: Tue, 26 Sep 2017 10:41:06 +0530
-Message-ID: <2cdd51f6-c5ac-9fe3-60df-d83a06ec85d0@ti.com>
-References: <2767b448493ca16f064618d36387ac56dfec0e56.1506384278.git.viresh.kumar@linaro.org>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Subject: RE: [PATCH v4 2/4] thermal: add brcmstb AVS TMON driver
+Date: Tue, 26 Sep 2017 06:17:54 +0000
+Message-ID: <744357E9AAD1214791ACBA4B0B9092636BE1FEEB@SHSMSX101.ccr.corp.intel.com>
+References: <20170809220257.4234-1-code@mmayer.net>
+ <20170809220257.4234-3-code@mmayer.net> <1502777298.2591.1.camel@intel.com>
+ <95da51df3cadbb05f721f2e5b8d59f8d@milecki.pl>
+ <1502779721.2591.4.camel@intel.com>
+ <4ec0715e-fcd7-3aec-3589-96426575c373@gmail.com>
+ <744357E9AAD1214791ACBA4B0B9092636BE1FB55@SHSMSX101.ccr.corp.intel.com>
+ <1e23383c-7c63-04fc-0f07-21b0e418e3de@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx193.ext.ti.com ([198.47.27.77]:35619 "EHLO
-        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934183AbdIZFLP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2017 01:11:15 -0400
-In-Reply-To: <2767b448493ca16f064618d36387ac56dfec0e56.1506384278.git.viresh.kumar@linaro.org>
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1e23383c-7c63-04fc-0f07-21b0e418e3de@gmail.com>
 Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>, Rafal Milecki <rafal@milecki.pl>
+Cc: Markus Mayer <code@mmayer.net>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Doug Berger <opendmb@gmail.com>, Brian Norris <computersforpeace@gmail.com>, Gregory Fong <gregory.0xf0@gmail.com>, Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Device Tree List <devicetree@vger.kernel.org>, ARM Kernel List <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Markus Mayer <mmayer@broadcom.com>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, linux-kernel@vger.kernel.org
 
-On Tuesday 26 September 2017 05:35 AM, Viresh Kumar wrote:
-> The drivers/base/power/ directory is special and contains code related
-> to power management core like system suspend/resume, hibernation, etc.
-> It was fine to keep the OPP code inside it when we had just one file for
-> it, but it is growing now and already has a directory for itself.
-> 
-> Lets move it directly under drivers/ directory, just like cpufreq and
-> cpuidle.
-> 
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/Makefile                       | 1 +
->  drivers/base/power/Makefile            | 1 -
->  drivers/{base/power => }/opp/Makefile  | 0
->  drivers/{base/power => }/opp/core.c    | 0
->  drivers/{base/power => }/opp/cpu.c     | 0
->  drivers/{base/power => }/opp/debugfs.c | 0
->  drivers/{base/power => }/opp/of.c      | 0
->  drivers/{base/power => }/opp/opp.h     | 0
->  8 files changed, 1 insertion(+), 1 deletion(-)
->  rename drivers/{base/power => }/opp/Makefile (100%)
->  rename drivers/{base/power => }/opp/core.c (100%)
->  rename drivers/{base/power => }/opp/cpu.c (100%)
->  rename drivers/{base/power => }/opp/debugfs.c (100%)
->  rename drivers/{base/power => }/opp/of.c (100%)
->  rename drivers/{base/power => }/opp/opp.h (100%)
-
-MAINTAINERS needs update too. Also, shouldn't PM_OPP now find a home in
-drivers/opp/Kconfig?
-
-Thanks,
-Sekhar
+SGksIEZsb3JpYW4sDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogRmxv
+cmlhbiBGYWluZWxsaSBbbWFpbHRvOmYuZmFpbmVsbGlAZ21haWwuY29tXQ0KPiBTZW50OiBUdWVz
+ZGF5LCBTZXB0ZW1iZXIgMjYsIDIwMTcgMTI6MTQgUE0NCj4gVG86IFpoYW5nLCBSdWkgPHJ1aS56
+aGFuZ0BpbnRlbC5jb20+OyBSYWZhbCBNaWxlY2tpIDxyYWZhbEBtaWxlY2tpLnBsPg0KPiBDYzog
+TWFya3VzIE1heWVyIDxjb2RlQG1tYXllci5uZXQ+OyBFZHVhcmRvIFZhbGVudGluDQo+IDxlZHVi
+ZXp2YWxAZ21haWwuY29tPjsgUm9iIEhlcnJpbmcgPHJvYmgrZHRAa2VybmVsLm9yZz47IE1hcmsg
+UnV0bGFuZA0KPiA8bWFyay5ydXRsYW5kQGFybS5jb20+OyBEb3VnIEJlcmdlciA8b3BlbmRtYkBn
+bWFpbC5jb20+OyBCcmlhbg0KPiBOb3JyaXMgPGNvbXB1dGVyc2ZvcnBlYWNlQGdtYWlsLmNvbT47
+IEdyZWdvcnkgRm9uZw0KPiA8Z3JlZ29yeS4weGYwQGdtYWlsLmNvbT47IFJ1c3NlbGwgS2luZyA8
+bGludXhAYXJtbGludXgub3JnLnVrPjsgQ2F0YWxpbg0KPiBNYXJpbmFzIDxjYXRhbGluLm1hcmlu
+YXNAYXJtLmNvbT47IFdpbGwgRGVhY29uIDx3aWxsLmRlYWNvbkBhcm0uY29tPjsNCj4gQXJuZCBC
+ZXJnbWFubiA8YXJuZEBhcm5kYi5kZT47IE9sb2YgSm9oYW5zc29uIDxvbG9mQGxpeG9tLm5ldD47
+DQo+IEJyb2FkY29tIEtlcm5lbCBMaXN0IDxiY20ta2VybmVsLWZlZWRiYWNrLWxpc3RAYnJvYWRj
+b20uY29tPjsgUG93ZXINCj4gTWFuYWdlbWVudCBMaXN0IDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5v
+cmc+OyBEZXZpY2UgVHJlZSBMaXN0DQo+IDxkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZz47IEFS
+TSBLZXJuZWwgTGlzdCA8bGludXgtYXJtLQ0KPiBrZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZz47
+IExpbnV4IEtlcm5lbCBNYWlsaW5nIExpc3QgPGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5rZXJuZWwu
+b3JnPjsgTWFya3VzIE1heWVyIDxtbWF5ZXJAYnJvYWRjb20uY29tPg0KPiBTdWJqZWN0OiBSZTog
+W1BBVENIIHY0IDIvNF0gdGhlcm1hbDogYWRkIGJyY21zdGIgQVZTIFRNT04gZHJpdmVyDQo+IElt
+cG9ydGFuY2U6IEhpZ2gNCj4gDQo+IE9uIDA5LzI1LzIwMTcgMDg6MDIgUE0sIFpoYW5nLCBSdWkg
+d3JvdGU6DQo+ID4gSGksIEZsb3JpYW4sDQo+ID4NCj4gPiBUaGlzIHBhdGNoIHNldCB3YXMgZHJv
+cHBlZCBpbiB0aGUgbGFzdCBtaW51dGUgYmVjYXVzZSBvZiB0aGlzDQo+ID4gZGlzY3Vzc2lvbiBo
+dHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzk5MzYzMjUvDQo+ID4gYXMgSSBkb27i
+gJl0IHdhbnQgdG8gcmViYXNlIHRoZSBwYXRjaCBiZWZvcmUgc2VuZGluZyB0aGUgcHVsbCByZXF1
+ZXN0Lg0KPiANCj4gQWgsIHlvdSB3YW50ZWQgdG8gc3F1YXNoIHRoYXQgcGF0Y2ggaW50byB0aGUg
+aW5pdGlhbCBzdWJtaXNzaW9uPw0KPiANCj4gPg0KPiA+IEkgZG9u4oCZdCB0aGluayB3ZSBjYW4g
+bWFrZSBpdCBmb3IgNC4xNC4NCj4gPiBFZHVhcmRvIHdpbGwgYmUgYmFjayBhbmQgcGljayB0aGUg
+c29jIHBhdGNoZXMgZm9yIDQuMTUuDQo+IA0KPiBJIGFzc3VtZSB5b3Ugd291bGQgd2FudCB0byBn
+ZXQgdGhhdCBwYXJ0aWN1bGFyIHBhdGNoIHNxdWFzaGVkIGludG8gYSBjbGVhbg0KPiBzdWJtaXNz
+aW9uIHRhcmdldGluZyA0LjE1IG5vdywgcmlnaHQ/DQo+IA0KWWVzLiBBcyB0aGUgcGF0Y2ggaW4g
+dGhpcyB0aHJlYWQgaGFzIG5vdCBiZWVuIGluIHVwc3RyZWFtIHlldCwgSSdkIHByZWZlciB0aGUN
+CmZpeC9jbGVhbnVwIG1lbGQgaW50byB0aGUgb3JpZ2luYWwgcGF0Y2ggYmVmb3JlIHNlbmRpbmcg
+dXBzdHJlYW0uDQoNClRoYW5rcywNClJ1aQ0KDQo+IFRoYW5rcw0KPiANCj4gPg0KPiA+IFRoYW5r
+cywNCj4gPiBydWkNCj4gPg0KPiA+DQo+ID4NCj4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
+LQ0KPiA+IEZyb206IEZsb3JpYW4gRmFpbmVsbGkgW21haWx0bzpmLmZhaW5lbGxpQGdtYWlsLmNv
+bV0NCj4gPiBTZW50OiBNb25kYXksIFNlcHRlbWJlciAyNSwgMjAxNyA1OjExIEFNDQo+ID4gVG86
+IFpoYW5nLCBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+OyBSYWZhxYIgTWnFgmVja2kgPHJhZmFs
+QG1pbGVja2kucGw+DQo+ID4gQ2M6IE1hcmt1cyBNYXllciA8Y29kZUBtbWF5ZXIubmV0PjsgRWR1
+YXJkbyBWYWxlbnRpbg0KPiA+IDxlZHViZXp2YWxAZ21haWwuY29tPjsgUm9iIEhlcnJpbmcgPHJv
+YmgrZHRAa2VybmVsLm9yZz47IE1hcmsNCj4gUnV0bGFuZA0KPiA+IDxtYXJrLnJ1dGxhbmRAYXJt
+LmNvbT47IERvdWcgQmVyZ2VyIDxvcGVuZG1iQGdtYWlsLmNvbT47IEJyaWFuDQo+IE5vcnJpcw0K
+PiA+IDxjb21wdXRlcnNmb3JwZWFjZUBnbWFpbC5jb20+OyBHcmVnb3J5IEZvbmcNCj4gPGdyZWdv
+cnkuMHhmMEBnbWFpbC5jb20+Ow0KPiA+IFJ1c3NlbGwgS2luZyA8bGludXhAYXJtbGludXgub3Jn
+LnVrPjsgQ2F0YWxpbiBNYXJpbmFzDQo+ID4gPGNhdGFsaW4ubWFyaW5hc0Bhcm0uY29tPjsgV2ls
+bCBEZWFjb24gPHdpbGwuZGVhY29uQGFybS5jb20+OyBBcm5kDQo+ID4gQmVyZ21hbm4gPGFybmRA
+YXJuZGIuZGU+OyBPbG9mIEpvaGFuc3NvbiA8b2xvZkBsaXhvbS5uZXQ+Ow0KPiBCcm9hZGNvbQ0K
+PiA+IEtlcm5lbCBMaXN0IDxiY20ta2VybmVsLWZlZWRiYWNrLWxpc3RAYnJvYWRjb20uY29tPjsg
+UG93ZXINCj4gTWFuYWdlbWVudA0KPiA+IExpc3QgPGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZz47
+IERldmljZSBUcmVlIExpc3QNCj4gPiA8ZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc+OyBBUk0g
+S2VybmVsIExpc3QNCj4gPiA8bGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnPjsg
+TGludXggS2VybmVsIE1haWxpbmcgTGlzdA0KPiA+IDxsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwu
+b3JnPjsgTWFya3VzIE1heWVyIDxtbWF5ZXJAYnJvYWRjb20uY29tPg0KPiA+IFN1YmplY3Q6IFJl
+OiBbUEFUQ0ggdjQgMi80XSB0aGVybWFsOiBhZGQgYnJjbXN0YiBBVlMgVE1PTiBkcml2ZXINCj4g
+PiBJbXBvcnRhbmNlOiBIaWdoDQo+ID4NCj4gPiBMZSAwOC8xNC8xNyDDoCAyMzo0OCwgWmhhbmcg
+UnVpIGEgw6ljcml0wqA6DQo+ID4+IE9uIFR1ZSwgMjAxNy0wOC0xNSBhdCAwODo0MiArMDIwMCwg
+UmFmYcWCIE1pxYJlY2tpIHdyb3RlOg0KPiA+Pj4gT24gMjAxNy0wOC0xNSAwODowOCwgWmhhbmcg
+UnVpIHdyb3RlOg0KPiA+Pj4+DQo+ID4+Pj4+DQo+ID4+Pj4+IGRpZmYgLS1naXQgYS9kcml2ZXJz
+L3RoZXJtYWwvYnJvYWRjb20vS2NvbmZpZw0KPiA+Pj4+PiBiL2RyaXZlcnMvdGhlcm1hbC9icm9h
+ZGNvbS9LY29uZmlnDQo+ID4+Pj4+IGluZGV4IDQyYzA5OGUuLmMxMDZhMTUgMTAwNjQ0DQo+ID4+
+Pj4+IC0tLSBhL2RyaXZlcnMvdGhlcm1hbC9icm9hZGNvbS9LY29uZmlnDQo+ID4+Pj4+ICsrKyBi
+L2RyaXZlcnMvdGhlcm1hbC9icm9hZGNvbS9LY29uZmlnDQo+ID4+Pj4+IEBAIC02LDYgKzYsMTMg
+QEAgY29uZmlnIEJDTTI4MzVfVEhFUk1BTA0KPiA+Pj4+PiDCoAloZWxwDQo+ID4+Pj4+IMKgCcKg
+wqBTdXBwb3J0IGZvciB0aGVybWFsIHNlbnNvcnMgb24gQnJvYWRjb20gYmNtMjgzNSBTb0NzLg0K
+PiA+Pj4+Pg0KPiA+Pj4+PiArY29uZmlnIEJSQ01TVEJfVEhFUk1BTA0KPiA+Pj4+PiArCXRyaXN0
+YXRlICJCcm9hZGNvbSBTVEIgQVZTIFRNT04gdGhlcm1hbCBkcml2ZXIiDQo+ID4+Pj4+ICsJZGVw
+ZW5kcyBvbiBBUkNIX0JSQ01TVEIgfHwgQ09NUElMRV9URVNUDQo+ID4+Pj4+ICsJaGVscA0KPiA+
+Pj4+PiArCcKgwqBFbmFibGUgdGhpcyBkcml2ZXIgaWYgeW91IGhhdmUgYSBCcm9hZGNvbSBTVEIg
+U29DIGFuZA0KPiA+Pj4+PiB3b3VsZCBsaWtlDQo+ID4+Pj4+ICsJwqDCoHRoZXJtYWwgZnJhbWV3
+b3JrIHN1cHBvcnQuDQo+ID4+Pj4+ICsNCj4gPj4+PiBJIGRvbid0IHVuZGVyc3RhbmQgd2h5IEkg
+Z290IHRoZSBmb2xsb3dpbmcgY2hlY2twYXRjaCB3YXJuaW5nDQo+ID4+Pj4NCj4gPj4+PiBXQVJO
+SU5HOiBwbGVhc2Ugd3JpdGUgYSBwYXJhZ3JhcGggdGhhdCBkZXNjcmliZXMgdGhlIGNvbmZpZyBz
+eW1ib2wNCj4gPj4+PiBmdWxseQ0KPiA+Pj4+ICM3MzogRklMRTogZHJpdmVycy90aGVybWFsL2Jy
+b2FkY29tL0tjb25maWc6OToNCj4gPj4+PiArY29uZmlnIEJSQ01TVEJfVEhFUk1BTA0KPiA+Pj4+
+DQo+ID4+Pj4gSSBkaWRuJ3Qgc2VlIHRoaXMgZm9yIG90aGVyIEtjb25maWcgY2hhbmdlcy4NCj4g
+Pj4+IEl0J3MgYmVjYXVzZSB5b3VyIGhlbHAgbWVzc2FnZSBpcyBvbmx5IDIgbGluZXMgbG9uZyAo
+aW5zdGVhZCBvZiAzKS4NCj4gPj4+DQo+ID4+PiBTb21lIChtYW55PykgbWFpbnRhaW5lcnMgYXJl
+bid0IHBlZGFudGljIGFib3V0IHRoYXQsIGEgY29tbW9uIHNlbnNlDQo+ID4+PiBzaG91bGQgYmUg
+YXBwbGllZCA7KQ0KPiA+Pg0KPiA+PiB0aGFua3MgZm9yIGV4cGxhaW5pbmcuDQo+ID4+IFBhdGNo
+IDEgYW5kIDIgcXVldWVkIGZvciBuZXh0IG1lcmdlIHdpbmRvdy4NCj4gPg0KPiA+IEh1bW0sIEkg
+ZG9uJ3Qgc2VlIHRoaXMgZHJpdmVyIGluIHlvdXIgbGF0ZXN0IDQuMTQgcHVsbCByZXF1ZXN0IHRv
+IExpbnVzLCBzbw0KPiB3aGF0IGhhcHBlbmVkIGhlcmUgZXhhY3RseT8gQ2FuIHdlIGV4cGVjdCB0
+aGlzIGRyaXZlciB0byBiZSBzdWJtaXR0ZWQgZm9yDQo+IDQuMTQgb3Igd2UganVzdCBoYXBwZW5l
+ZCB0byBoYXZlIG1pc3NlZCB0aGlzIHdpbmRvdyBub3c/DQo+ID4gLS0NCj4gPiBGbG9yaWFuDQo+
+ID4NCj4gDQo+IC0tDQo+IEZsb3JpYW4NCg==
