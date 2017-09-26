@@ -1,47 +1,92 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] MAINTAINERS: Hibernation or S2R doesn't cover entire
- power directory
-Date: Tue, 26 Sep 2017 01:18:14 +0200
-Message-ID: <CAJZ5v0h65Xo+jFffHE9j2bY=BAOfNvV5DWLtxsx4Bxc2y1dRsw@mail.gmail.com>
-References: <18e729501c1ebe4798d17b8d8a60ba102ebc2837.1505922834.git.viresh.kumar@linaro.org>
- <CAJZ5v0hv3T7L0c5URrVHC=H5V3h+W7OLRXVMVXLQf-VuTT-E+Q@mail.gmail.com> <20170925231055.GA3053@ubuntu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] PM / OPP: Move the OPP directory out of power/
+Date: Mon, 25 Sep 2017 17:05:24 -0700
+Message-ID: <2767b448493ca16f064618d36387ac56dfec0e56.1506384278.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:33988 "EHLO
-        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965663AbdIYXSP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Sep 2017 19:18:15 -0400
-In-Reply-To: <20170925231055.GA3053@ubuntu>
+Received: from mail-pg0-f50.google.com ([74.125.83.50]:46642 "EHLO
+        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S966655AbdIZAFf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Sep 2017 20:05:35 -0400
+Received: by mail-pg0-f50.google.com with SMTP id i130so4940040pgc.3
+        for <linux-pm@vger.kernel.org>; Mon, 25 Sep 2017 17:05:35 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, linux-kernel@vger.kernel.org
 
-On Tue, Sep 26, 2017 at 1:10 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 25-09-17, 00:44, Rafael J. Wysocki wrote:
->> On Wed, Sep 20, 2017 at 5:58 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> > The command:
->> >
->> >  $ scripts/get_maintainer.pl -f drivers/base/power/opp/core.c
->> >
->> > is incorrectly picking maintainers from Hibernation and Suspend to RAM
->> > as well, simply because the entries in MAINTAINERS file contains the
->> > entire power directory. Though the only concerning file is main.c
->> > really.
->>
->> No, it is not the only one.  The others are common.c, trace.c,
->> wakeup.c, wakeirq.c, sysfs.c, generic_ops.c and power.h (if I have not
->> overlooked any).
->>
->> I'm not actually sure how to fix this issue other than by listing all
->> of the files in question directly in there.
->
-> Should I just use *.c for now? Yeah, that will still cover lot more files, but
-> at least the directories, like OPP, are not going to show those maintainers.
->
-> Or I was actually thinking of moving the entire OPP directory out of
-> drivers/base/power, and move to drivers/opp, just like cpufreq and cpuidle. Will
-> that be okay?
+The drivers/base/power/ directory is special and contains code related
+to power management core like system suspend/resume, hibernation, etc.
+It was fine to keep the OPP code inside it when we had just one file for
+it, but it is growing now and already has a directory for itself.
 
-Yes, that should be fine.
+Lets move it directly under drivers/ directory, just like cpufreq and
+cpuidle.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/Makefile                       | 1 +
+ drivers/base/power/Makefile            | 1 -
+ drivers/{base/power => }/opp/Makefile  | 0
+ drivers/{base/power => }/opp/core.c    | 0
+ drivers/{base/power => }/opp/cpu.c     | 0
+ drivers/{base/power => }/opp/debugfs.c | 0
+ drivers/{base/power => }/opp/of.c      | 0
+ drivers/{base/power => }/opp/opp.h     | 0
+ 8 files changed, 1 insertion(+), 1 deletion(-)
+ rename drivers/{base/power => }/opp/Makefile (100%)
+ rename drivers/{base/power => }/opp/core.c (100%)
+ rename drivers/{base/power => }/opp/cpu.c (100%)
+ rename drivers/{base/power => }/opp/debugfs.c (100%)
+ rename drivers/{base/power => }/opp/of.c (100%)
+ rename drivers/{base/power => }/opp/opp.h (100%)
+
+diff --git a/drivers/Makefile b/drivers/Makefile
+index d90fdc413648..dd718a3007e9 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -125,6 +125,7 @@ obj-$(CONFIG_ACCESSIBILITY)	+= accessibility/
+ obj-$(CONFIG_ISDN)		+= isdn/
+ obj-$(CONFIG_EDAC)		+= edac/
+ obj-$(CONFIG_EISA)		+= eisa/
++obj-$(CONFIG_PM_OPP)		+= opp/
+ obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
+ obj-$(CONFIG_CPU_IDLE)		+= cpuidle/
+ obj-y				+= mmc/
+diff --git a/drivers/base/power/Makefile b/drivers/base/power/Makefile
+index 5998c53280f5..73a1cffc0a5f 100644
+--- a/drivers/base/power/Makefile
++++ b/drivers/base/power/Makefile
+@@ -1,7 +1,6 @@
+ obj-$(CONFIG_PM)	+= sysfs.o generic_ops.o common.o qos.o runtime.o wakeirq.o
+ obj-$(CONFIG_PM_SLEEP)	+= main.o wakeup.o
+ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+-obj-$(CONFIG_PM_OPP)	+= opp/
+ obj-$(CONFIG_PM_GENERIC_DOMAINS)	+=  domain.o domain_governor.o
+ obj-$(CONFIG_HAVE_CLK)	+= clock_ops.o
+ 
+diff --git a/drivers/base/power/opp/Makefile b/drivers/opp/Makefile
+similarity index 100%
+rename from drivers/base/power/opp/Makefile
+rename to drivers/opp/Makefile
+diff --git a/drivers/base/power/opp/core.c b/drivers/opp/core.c
+similarity index 100%
+rename from drivers/base/power/opp/core.c
+rename to drivers/opp/core.c
+diff --git a/drivers/base/power/opp/cpu.c b/drivers/opp/cpu.c
+similarity index 100%
+rename from drivers/base/power/opp/cpu.c
+rename to drivers/opp/cpu.c
+diff --git a/drivers/base/power/opp/debugfs.c b/drivers/opp/debugfs.c
+similarity index 100%
+rename from drivers/base/power/opp/debugfs.c
+rename to drivers/opp/debugfs.c
+diff --git a/drivers/base/power/opp/of.c b/drivers/opp/of.c
+similarity index 100%
+rename from drivers/base/power/opp/of.c
+rename to drivers/opp/of.c
+diff --git a/drivers/base/power/opp/opp.h b/drivers/opp/opp.h
+similarity index 100%
+rename from drivers/base/power/opp/opp.h
+rename to drivers/opp/opp.h
+-- 
+2.7.4
