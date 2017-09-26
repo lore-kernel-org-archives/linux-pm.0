@@ -1,14 +1,14 @@
 From: Bjorn Helgaas <helgaas@kernel.org>
 Subject: Re: [PATCH] PM / PCI: Do not resume any devices in pci_pm_prepare()
-Date: Tue, 26 Sep 2017 16:34:55 -0500
-Message-ID: <20170926213455.GU15970@bhelgaas-glaptop.roam.corp.google.com>
+Date: Tue, 26 Sep 2017 16:35:47 -0500
+Message-ID: <20170926213547.GV15970@bhelgaas-glaptop.roam.corp.google.com>
 References: <1877076.QiUpNxchJO@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
 In-Reply-To: <1877076.QiUpNxchJO@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PCI <linux-pci@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
@@ -18,19 +18,13 @@ On Mon, Sep 25, 2017 at 01:33:13AM +0200, Rafael J. Wysocki wrote:
 > 
 > It should not be necessary to resume devices with ignore_children set
 > in pci_pm_prepare(), because they should be resumed explcitly by
-
-s/explcitly/explicitly/
-
 > their children drivers during suspend if need be and they will be
 > resumed by pci_pm_suspend() after that anyway, so avoid doing that.
 > 
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-
-I think your previous patches to this file mostly used a "PCI / PM"
-subject line prefix (as opposed to the "PM / PCI" here).  But maybe
-the difference means something?
+Oh, and I meant to also say that you've merged the PM-related things
+here in the past, so I assume you'll take this one :)
 
 > ---
 >  drivers/pci/pci-driver.c |    7 -------
