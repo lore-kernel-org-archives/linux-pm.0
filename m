@@ -1,7 +1,7 @@
 From: Markus Mayer <code@mmayer.net>
-Subject: [PATCH 1/3] tools/thermal: tmon: use "-fstack-protector" only if supported
-Date: Wed, 27 Sep 2017 16:02:35 -0700
-Message-ID: <20170927230237.62199-2-code@mmayer.net>
+Subject: [PATCH 2/3] tools/thermal: tmon: allow $(CC) to be defined externally
+Date: Wed, 27 Sep 2017 16:02:36 -0700
+Message-ID: <20170927230237.62199-3-code@mmayer.net>
 References: <20170927230237.62199-1-code@mmayer.net>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20170927230237.62199-1-code@mmayer.net>
@@ -12,33 +12,26 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Markus Mayer <mmayer@broadcom.com>
 
-Most, but not all, toolchains support the "-fstack-protector" flag. We
-check if the compiler supports the flag before using it. This allows
-tmon to be compiled for more environments.
+It can be helpful, especially when using a build system, to set the C
+compiler externally.
 
 Signed-off-by: Markus Mayer <mmayer@broadcom.com>
 ---
- tools/thermal/tmon/Makefile | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ tools/thermal/tmon/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/thermal/tmon/Makefile b/tools/thermal/tmon/Makefile
-index 3a961e9..5777bc7 100644
+index 5777bc7..581da71 100644
 --- a/tools/thermal/tmon/Makefile
 +++ b/tools/thermal/tmon/Makefile
-@@ -1,8 +1,13 @@
-+# We need this for the "cc-option" macro.
-+include ../../../scripts/Kbuild.include
-+
- VERSION = 1.0
- 
- BINDIR=usr/bin
- WARNFLAGS=-Wall -Wshadow -W -Wformat -Wimplicit-function-declaration -Wimplicit-int
--CFLAGS+= -O1 ${WARNFLAGS} -fstack-protector
-+CFLAGS+= -O1 ${WARNFLAGS}
-+# Add "-fstack-protector" only if toolchain supports it.
-+CFLAGS+= $(call cc-option,-fstack-protector)
- CC=$(CROSS_COMPILE)gcc
+@@ -8,7 +8,7 @@ WARNFLAGS=-Wall -Wshadow -W -Wformat -Wimplicit-function-declaration -Wimplicit-
+ CFLAGS+= -O1 ${WARNFLAGS}
+ # Add "-fstack-protector" only if toolchain supports it.
+ CFLAGS+= $(call cc-option,-fstack-protector)
+-CC=$(CROSS_COMPILE)gcc
++CC?= $(CROSS_COMPILE)gcc
  
  CFLAGS+=-D VERSION=\"$(VERSION)\"
+ LDFLAGS+=
 -- 
 2.7.4
