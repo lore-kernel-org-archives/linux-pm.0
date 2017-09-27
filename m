@@ -1,86 +1,51 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH ] cpufreq: ti-cpufreq: kfree opp_data when failure
-Date: Wed, 27 Sep 2017 10:40:26 -0700
-Message-ID: <20170927174026.GB12211@ubuntu>
-References: <1506496097-30852-1-git-send-email-zumeng.chen@windriver.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V2] PM / OPP: Move the OPP directory out of power/
+Date: Wed, 27 Sep 2017 19:49:58 +0200
+Message-ID: <CAJZ5v0jM5nJ-WyA1M7Ce7a7XyGTSsxxXSYop3Ah7d+K1F3KPuQ@mail.gmail.com>
+References: <3eaed52523d54bdc7b43b335d5aefda9b4d1b4a8.1506463860.git.viresh.kumar@linaro.org>
+ <CAJZ5v0hcg5bYfhUR2cLZo5bB8gL8F3UeD9Wrbp8TLLQU_agx-A@mail.gmail.com> <20170927172705.GA12211@ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f50.google.com ([74.125.83.50]:55597 "EHLO
-        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752008AbdI0Rk2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 13:40:28 -0400
-Received: by mail-pg0-f50.google.com with SMTP id b11so8153492pgn.12
-        for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2017 10:40:28 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1506496097-30852-1-git-send-email-zumeng.chen@windriver.com>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:33273 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751016AbdI0RuA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 13:50:00 -0400
+In-Reply-To: <20170927172705.GA12211@ubuntu>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zumeng Chen <zumeng.chen@windriver.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, rjw@rjwysocki.net, d-gerlach@ti.com, tony@atomide.com
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 27-09-17, 15:08, Zumeng Chen wrote:
-> From: Zumeng Chen <zumeng.chen@gmail.com>
-> 
-> memory leakage was found by kmemleak. opp_data needs to be freed
-> when failure, including fail_put_node.
-> 
-> unreferenced object 0xccdd4c40 (size 64):
->   comm "swapper", pid 1, jiffies 4294938465 (age 888.520s)
->   hex dump (first 32 bytes):
->     00 7c 00 c1 98 69 d8 ce 00 24 03 ce 00 24 03 ce  .|...i...$...$..
->     20 35 23 c1 00 00 00 00 00 00 00 00 00 00 00 00   5#.............
->   backtrace:
->     [<c028fb64>] kmem_cache_alloc_trace+0x2c4/0x3cc
->     [<c076d5f0>] ti_cpufreq_probe+0x6c/0x334
->     [<c068d6e4>] platform_drv_probe+0x60/0xc0
->     [<c068b384>] driver_probe_device+0x218/0x2c4
->     [<c068b5a4>] __device_attach_driver+0xa8/0xdc
->     [<c0689340>] bus_for_each_drv+0x70/0xa4
->     [<c068b020>] __device_attach+0xc0/0x124
->     [<c068b634>] device_initial_probe+0x1c/0x20
->     [<c068a3b8>] bus_probe_device+0x94/0x9c
->     [<c0688300>] device_add+0x404/0x590
->     [<c068d408>] platform_device_add+0x11c/0x230
->     [<c068df40>] platform_device_register_full+0x10c/0x128
->     [<c076d578>] ti_cpufreq_init+0x44/0x50
->     [<c01017c4>] do_one_initcall+0x54/0x180
->     [<c0e00fe0>] kernel_init_freeable+0x270/0x33c
->     [<c093f2bc>] kernel_init+0x18/0x124
-> 
-> Signed-off-by: Zumeng Chen <zumeng.chen@gmail.com>
-> ---
->  drivers/cpufreq/ti-cpufreq.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-> index 4bf47de..ffcddcd 100644
-> --- a/drivers/cpufreq/ti-cpufreq.c
-> +++ b/drivers/cpufreq/ti-cpufreq.c
-> @@ -217,7 +217,8 @@ static int ti_cpufreq_init(void)
->  	opp_data->cpu_dev = get_cpu_device(0);
->  	if (!opp_data->cpu_dev) {
->  		pr_err("%s: Failed to get device for CPU0\n", __func__);
-> -		return -ENODEV;
-> +		ret = ENODEV;
-> +		goto free_opp_data;
->  	}
->  
->  	opp_data->opp_node = dev_pm_opp_of_get_opp_desc_node(opp_data->cpu_dev);
-> @@ -262,6 +263,8 @@ static int ti_cpufreq_init(void)
->  
->  fail_put_node:
->  	of_node_put(opp_data->opp_node);
-> +free_opp_data:
-> +	kfree(opp_data);
->  
->  	return ret;
->  }
+On Wed, Sep 27, 2017 at 7:27 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 27-09-17, 19:22, Rafael J. Wysocki wrote:
+>> On Wed, Sep 27, 2017 at 12:12 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> > The drivers/base/power/ directory is special and contains code related
+>> > to power management core like system suspend/resume, hibernation, etc.
+>> > It was fine to keep the OPP code inside it when we had just one file for
+>> > it, but it is growing now and already has a directory for itself.
+>> >
+>> > Lets move it directly under drivers/ directory, just like cpufreq and
+>> > cpuidle.
+>> >
+>> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> > ---
+>> > V1->V2:
+>> > - Update maintainers and add a Kconfig file in drivers/opp/.
+>>
+>> OK, but I need an ACK from Stephen here.
+>
+> Sure.
+>
+>> And while we are at it, you, Stephen and Nishanth Menon are listed as
+>> maintainers for it and I'm not, but I still apply OPP patches, so
+>> maybe one of you can set up a git repo for this and send pull requests
+>> to me instead?
+>
+> Yeah, I will setup one.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Actually, it is even listed in that MAINTAINERS entry already, unless
+you prefer to use a different one that is. :-)
 
-I also see that you are missing an of_node_put(np) in the driver. Maybe you
-want to fix that as well (in a separate patch) ?
-
--- 
-viresh
+Thanks,
+Rafael
