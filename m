@@ -1,116 +1,79 @@
-From: Daniel Drake <drake@endlessm.com>
-Subject: Huawei integrated modem causes instant resume from suspend on Acer P648-G3
-Date: Wed, 27 Sep 2017 14:14:46 +0800
-Message-ID: <20170927061446.15512-1-drake@endlessm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f46.google.com ([74.125.83.46]:49551 "EHLO
-        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750739AbdI0GO4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 02:14:56 -0400
-Received: by mail-pg0-f46.google.com with SMTP id m30so7218957pgn.6
-        for <linux-pm@vger.kernel.org>; Tue, 26 Sep 2017 23:14:56 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+From: Zumeng Chen <zumeng.chen@windriver.com>
+Subject: [PATCH ] cpufreq: ti-cpufreq: kfree opp_data when failure
+Date: Wed, 27 Sep 2017 15:08:17 +0800
+Message-ID: <1506496097-30852-1-git-send-email-zumeng.chen@windriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
+Cc: tony@atomide.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, d-gerlach@ti.com
 List-Id: linux-pm@vger.kernel.org
-To: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: linux@endlessm.com
 
-Hi,
+From: Zumeng Chen <zumeng.chen@gmail.com>
 
-The Acer TravelMate P648-G3 laptop includes this integrated Huawei 4G modem
-on the USB bus:
+memory leakage was found by kmemleak. opp_data needs to be freed
+when failure, including fail_put_node.
 
-T:  Bus=01 Lev=01 Prnt=01 Port=08 Cnt=04 Dev#=  5 Spd=480  MxCh= 0
-D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=ff MxPS=64 #Cfgs=  3
-P:  Vendor=12d1 ProdID=15c3 Rev= 1.02
-S:  Manufacturer=Huawei Technologies Co., Ltd.
-S:  Product=HUAWEI Mobile
-S:  SerialNumber=0123456789ABCDEF
-C:  #Ifs= 5 Cfg#= 1 Atr=a0 MxPwr=  2mA
+unreferenced object 0xccdd4c40 (size 64):
+  comm "swapper", pid 1, jiffies 4294938465 (age 888.520s)
+  hex dump (first 32 bytes):
+    00 7c 00 c1 98 69 d8 ce 00 24 03 ce 00 24 03 ce  .|...i...$...$..
+    20 35 23 c1 00 00 00 00 00 00 00 00 00 00 00 00   5#.............
+  backtrace:
+    [<c028fb64>] kmem_cache_alloc_trace+0x2c4/0x3cc
+    [<c076d5f0>] ti_cpufreq_probe+0x6c/0x334
+    [<c068d6e4>] platform_drv_probe+0x60/0xc0
+    [<c068b384>] driver_probe_device+0x218/0x2c4
+    [<c068b5a4>] __device_attach_driver+0xa8/0xdc
+    [<c0689340>] bus_for_each_drv+0x70/0xa4
+    [<c068b020>] __device_attach+0xc0/0x124
+    [<c068b634>] device_initial_probe+0x1c/0x20
+    [<c068a3b8>] bus_probe_device+0x94/0x9c
+    [<c0688300>] device_add+0x404/0x590
+    [<c068d408>] platform_device_add+0x11c/0x230
+    [<c068df40>] platform_device_register_full+0x10c/0x128
+    [<c076d578>] ti_cpufreq_init+0x44/0x50
+    [<c01017c4>] do_one_initcall+0x54/0x180
+    [<c0e00fe0>] kernel_init_freeable+0x270/0x33c
+    [<c093f2bc>] kernel_init+0x18/0x124
 
-Under Linux, this system has an issue where it will automatically resume
-3-4 seconds after going into suspend. After some experimentation we realised
-that it is related to this 4G modem.
-
-The problem can be worked around with:
-
-  echo 1-9 > /sys/bus/usb/drivers/usb/unbind
-
-or the attached hacky patch which does something similar. Now the system
-goes into suspend and stays asleep.
-
-The problem happens even though we are not using the modem at all (checked
-from rescue.target/runlevel1). Under Windows the system can suspend fine.
-
-Seeking a better fix, we've tried a lot of things, including:
- - Unbind usb serial interface(ttyUSB0-3) and cdc-eth interface (instead of
-the whole port)
- - Check that the device's power/wakeup is disabled
- - All the quirks in drivers/usb/core/quirks.c e.g. USB_QUIRK_RESET_RESUME,
-   USB_QUIRK_RESET, USB_QUIRK_IGNORE_REMOTE_WAKEUP, USB_QUIRK_NO_LPM.
- - Check usb_port_suspend() to see if the do_remote_wakeup path is followed
-   (it's not)
-
-but none of that makes any difference.
-
-There are no errors in the logs showing any suspend/resume-related issues.
-When the system wakes up due to the modem, log-wise it appears to be a
-normal resume.
-
-Does anyone have any suggestions for how we can investigate further, or how
-we should workaround this issue in upstreamable form?
-
-Thanks
-Daniel
-
+Signed-off-by: Zumeng Chen <zumeng.chen@gmail.com>
 ---
- drivers/usb/core/hub.c     | 4 ++++
- drivers/usb/core/quirks.c  | 4 ++++
- include/linux/usb/quirks.h | 5 +++++
- 3 files changed, 13 insertions(+)
+ drivers/cpufreq/ti-cpufreq.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index 822f8c50e423..ac9ceacdc76c 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -3160,6 +3160,10 @@ int usb_port_suspend(struct usb_device *udev, pm_message_t msg)
- 			goto err_ltm;
+diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+index 4bf47de..ffcddcd 100644
+--- a/drivers/cpufreq/ti-cpufreq.c
++++ b/drivers/cpufreq/ti-cpufreq.c
+@@ -217,7 +217,8 @@ static int ti_cpufreq_init(void)
+ 	opp_data->cpu_dev = get_cpu_device(0);
+ 	if (!opp_data->cpu_dev) {
+ 		pr_err("%s: Failed to get device for CPU0\n", __func__);
+-		return -ENODEV;
++		ret = ENODEV;
++		goto free_opp_data;
  	}
  
-+	if (udev->quirks & USB_QUIRK_DISCONNECT_SUSPEND) {
-+		usb_clear_port_feature(hub->hdev, port1, USB_PORT_FEAT_ENABLE);
-+	}
-+
- 	/* see 7.1.7.6 */
- 	if (hub_is_superspeed(hub->hdev))
- 		status = hub_set_port_link_state(hub, port1, USB_SS_PORT_LS_U3);
-diff --git a/drivers/usb/core/quirks.c b/drivers/usb/core/quirks.c
-index 82806e311202..9325be88bb02 100644
---- a/drivers/usb/core/quirks.c
-+++ b/drivers/usb/core/quirks.c
-@@ -203,6 +203,10 @@ static const struct usb_device_id usb_quirk_list[] = {
- 	{ USB_DEVICE(0x10d6, 0x2200), .driver_info =
- 			USB_QUIRK_STRING_FETCH_255 },
+ 	opp_data->opp_node = dev_pm_opp_of_get_opp_desc_node(opp_data->cpu_dev);
+@@ -262,6 +263,8 @@ static int ti_cpufreq_init(void)
  
-+	/* Huawei 4G LTE module */
-+	{ USB_DEVICE(0x12d1, 0x15c3), .driver_info = USB_QUIRK_DISCONNECT_SUSPEND},
-+	{ USB_DEVICE(0x12d1, 0x15bb), .driver_info = USB_QUIRK_DISCONNECT_SUSPEND},
-+
- 	/* SKYMEDI USB_DRIVE */
- 	{ USB_DEVICE(0x1516, 0x8628), .driver_info = USB_QUIRK_RESET_RESUME },
+ fail_put_node:
+ 	of_node_put(opp_data->opp_node);
++free_opp_data:
++	kfree(opp_data);
  
-diff --git a/include/linux/usb/quirks.h b/include/linux/usb/quirks.h
-index de2a722fe3cf..45ad360dfa21 100644
---- a/include/linux/usb/quirks.h
-+++ b/include/linux/usb/quirks.h
-@@ -56,4 +56,9 @@
-  */
- #define USB_QUIRK_LINEAR_FRAME_INTR_BINTERVAL	BIT(11)
- 
-+/* device need to be disconnect before suspend to prevent from unexpected
-+ * wakeup.
-+ */
-+#define USB_QUIRK_DISCONNECT_SUSPEND		BIT(12)
-+
- #endif /* __LINUX_USB_QUIRKS_H */
+ 	return ret;
+ }
 -- 
-2.11.0
+2.7.4
