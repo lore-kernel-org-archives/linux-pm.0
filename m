@@ -1,36 +1,44 @@
 From: Markus Mayer <code@mmayer.net>
-Subject: [PATCH 0/3] tools/thermal: tmon: Makefile improvements
-Date: Wed, 27 Sep 2017 16:02:34 -0700
-Message-ID: <20170927230237.62199-1-code@mmayer.net>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp-out-no.shaw.ca ([64.59.134.9]:57243 "EHLO
-        smtp-out-no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751671AbdI0XCt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 19:02:49 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH 1/3] tools/thermal: tmon: use "-fstack-protector" only if supported
+Date: Wed, 27 Sep 2017 16:02:35 -0700
+Message-ID: <20170927230237.62199-2-code@mmayer.net>
+References: <20170927230237.62199-1-code@mmayer.net>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170927230237.62199-1-code@mmayer.net>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>
 Cc: Markus Mayer <mmayer@broadcom.com>, Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>, Power Management List <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
 From: Markus Mayer <mmayer@broadcom.com>
 
-This series introduces a number of improvements to tmon's Makefile. The
-changes are meant to make it easier to cross-compile tmon on a greater
-number of platforms by giving more control to the person performing the
-build.
+Most, but not all, toolchains support the "-fstack-protector" flag. We
+check if the compiler supports the flag before using it. This allows
+tmon to be compiled for more environments.
 
-At the same time, sensible defaults are retained so that building tmon
-will continue to work without any customizations on platforms on which
-it currently builds.
+Signed-off-by: Markus Mayer <mmayer@broadcom.com>
+---
+ tools/thermal/tmon/Makefile | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Markus Mayer (3):
-  tools/thermal: tmon: use "-fstack-protector" only if supported
-  tools/thermal: tmon: allow $(CC) to be defined externally
-  tools/thermal: tmon: use $(PKG_CONFIG) instead of hard-coding
-    pkg-config
-
- tools/thermal/tmon/Makefile | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
-
+diff --git a/tools/thermal/tmon/Makefile b/tools/thermal/tmon/Makefile
+index 3a961e9..5777bc7 100644
+--- a/tools/thermal/tmon/Makefile
++++ b/tools/thermal/tmon/Makefile
+@@ -1,8 +1,13 @@
++# We need this for the "cc-option" macro.
++include ../../../scripts/Kbuild.include
++
+ VERSION = 1.0
+ 
+ BINDIR=usr/bin
+ WARNFLAGS=-Wall -Wshadow -W -Wformat -Wimplicit-function-declaration -Wimplicit-int
+-CFLAGS+= -O1 ${WARNFLAGS} -fstack-protector
++CFLAGS+= -O1 ${WARNFLAGS}
++# Add "-fstack-protector" only if toolchain supports it.
++CFLAGS+= $(call cc-option,-fstack-protector)
+ CC=$(CROSS_COMPILE)gcc
+ 
+ CFLAGS+=-D VERSION=\"$(VERSION)\"
 -- 
 2.7.4
