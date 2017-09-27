@@ -1,93 +1,112 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH] thermal/drivers/hisi: Switch to interrupt mode
-Date: Wed, 27 Sep 2017 01:54:09 +0200
-Message-ID: <1506470049-12597-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com
-Cc: leo.yan@linaro.org, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v2 0/8] PM / devfreq: Use OPP interface to handle the
+ frequency
+Date: Wed, 27 Sep 2017 10:28:07 +0900
+Message-ID: <59CAFEA7.10007@samsung.com>
+References: <CGME20170921003355epcas1p1d1bbb04ff7a7c46946f62a91883bd6a6@epcas1p1.samsung.com>
+        <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:41877 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934797AbdI0B2I (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2017 21:28:08 -0400
+In-reply-to: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-At this moment, we have both the interrupt setup and the polling enabled. The
-interrupt does nothing more than forcing an update while the temperature is
-polled every second.
+Hi Myungjoo,
 
-We can do much better than that, threshold is set to 65C in the DT and the
-passive ooling device enters in the dance when 75C is reached. We need to
-sample the temperature at 65C in order to let the IPA gather enough values for
-the PID computation. If the SoC is running at a temperature below 65C, we will
-be constantly polling for nothing.
+Could you please review this patchset?
 
-This patch disables the sensor when the temperature is below the temperature
-and enables it when passing the threshold. It resuls the sensor thermal sensor
-driver will have no activity most of the time.
+On 2017년 09월 21일 09:33, Chanwoo Choi wrote:
+> These patches makes the devfreq to use the OPP interface and clean-up codes.
+> - patch 1~5 are related to the OPP interfaces. 
+> - patch 6 removes the unneeded code.
+> - patch 7 clean-up for the governor name.
+> - patch 8 registers the cooling device for exynos-bus.
+> 
+> [Detaild Descripion]
+> The commit a76caf55e5b3 ("thermal: Add devfreq cooling") provides
+> the devfreq cooling device by using the OPP interface such as
+> dev_pm_opp_disable() and dev_pm_opp_enable(). It means that
+> the OPP interface is able to change the available status of the frequency.
+> 
+> Firstly, the existing devfreq doesn't use the OPP interface when showing
+> the minimum and maximum frequency through the following sysfs nodes:
+> It shows the wrong frequency value because min_freq/max_freq don't
+> consider the frequency status by handling OPP interface
+> (opp_dev_pm_opp_{disable|add}()). So, these patches fix this issue.
+> - /sys/class/devfreq/devfreqX/min_freq
+> - /sys/class/devfreq/devfreqX/max_freq
+> 
+> Second, the 'available_frequencies' should show the all supported frequencis
+> even if the specific frequency is not available. It doesn't matter whether
+> frequneyc is available or not. Because the role of 'available_frequencies'
+> shows the all frequencies. Also, these patches fix this issue.
+> - /sys/class/devfreq/devfreqX/available_frequencies
+> 
+> Third, update_devfreq() get the available next frequency by using
+> the devfreq_recommended_opp() in order to consider the disabled OPP.
+> 
+> For example,
+> - devfreq's min_freq is 100Mhz and max_freq is 700Mhz.
+> - OPP disabled 500/600/700Mhz due to devfreq-cooling.c.
+> - simple_ondemand govenor decided the next target_freq (600Mhz)
+> |----------|-------------------------------------------------------------|
+> |Freq(MHz) |100     |200    |300    |400     |500     |600      |70 0    |
+> |Devfreq   |min_freq|       |       |        |        |         |max_freq|
+> |OPP avail |enabled |enabled|enabled|enabled |Disabled| Disabled|Disabled|
+> |Ondmenad  |        |       |       |        |        |next_freq|        |
+> |------------------------------------------------------------------------|
+> 
+> In result,
+> - Before this patch, target_freq is 600Mhz
+>   and TRANSITION_NOTIFIER sends the next_freq is 600Mhz to the notifiee.
+> - After this patch, target_freq is 400Mhz because 500/600 were disabled by OPP.
+>   And TRANSITION_NOTIFIER sends the next_freq is 400Mhz to the notifiee.
+> 
+> Lastly,
+> - patch6/7 fix the minor issue and cleanup codes.
+> - patch8 register the cooling device. It depends on opp patch[1].
+> [1] https://patchwork.kernel.org/patch/9962387/
+> 
+> Changes from v1:
+> (https://lkml.org/lkml/2017/8/23/785)
+> - Show the available frequencies as an ascending order
+> - Change the author info from cwchoi00@gmail.com to cw00.choi@samsung.com
+> - Drop the patches related to opp_notifier
+> - Add new patch5/6/7/8
+> 
+> Chanwoo Choi (8):
+>   PM / devfreq: Set min/max_freq when adding the devfreq device
+>   Revert "PM / devfreq: Add show_one macro to delete the duplicate code"
+>   PM / devfreq: Show the available min/max frequency through sysfs node
+>   PM / devfreq: Show the all available frequencies
+>   PM / devfreq: Get the available next frequency on update_devfreq()
+>   PM / devfreq: Remove unneeded conditional statement
+>   PM / devfreq: Define the constant governor name
+>   PM / devfreq: exynos-bus: Register cooling device
+> 
+>  drivers/devfreq/Kconfig                   |   1 +
+>  drivers/devfreq/devfreq.c                 | 121 +++++++++++++++++++++++-------
+>  drivers/devfreq/exynos-bus.c              |  16 +++-
+>  drivers/devfreq/governor_passive.c        |   2 +-
+>  drivers/devfreq/governor_performance.c    |   2 +-
+>  drivers/devfreq/governor_powersave.c      |   2 +-
+>  drivers/devfreq/governor_simpleondemand.c |   2 +-
+>  drivers/devfreq/governor_userspace.c      |   2 +-
+>  drivers/devfreq/rk3399_dmc.c              |   2 +-
+>  include/linux/devfreq.h                   |   7 ++
+>  10 files changed, 123 insertions(+), 34 deletions(-)
+> 
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/hisi_thermal.c | 24 ++++++++++++++----------
- 1 file changed, 14 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 39f4627..74ea70d 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -218,6 +218,15 @@ static int hisi_thermal_get_temp(void *__data, int *temp)
- 	return 0;
- }
- 
-+static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
-+				       bool on)
-+{
-+	struct thermal_zone_device *tzd = sensor->tzd;
-+
-+	tzd->ops->set_mode(tzd,
-+		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
-+}
-+
- static const struct thermal_zone_of_device_ops hisi_of_thermal_ops = {
- 	.get_temp = hisi_thermal_get_temp,
- };
-@@ -236,12 +245,16 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
- 		dev_crit(&data->pdev->dev, "THERMAL ALARM: %d > %d\n",
- 			 temp, sensor->thres_temp);
- 
-+		hisi_thermal_toggle_sensor(&data->sensor, true);
-+
- 		thermal_zone_device_update(data->sensor.tzd,
- 					   THERMAL_EVENT_UNSPECIFIED);
- 
- 	} else if (temp < sensor->thres_temp) {
- 		dev_crit(&data->pdev->dev, "THERMAL ALARM stopped: %d < %d\n",
- 			 temp, sensor->thres_temp);
-+
-+		hisi_thermal_toggle_sensor(&data->sensor, false);
- 	}
- 
- 	return IRQ_HANDLED;
-@@ -286,15 +299,6 @@ static const struct of_device_id of_hisi_thermal_match[] = {
- };
- MODULE_DEVICE_TABLE(of, of_hisi_thermal_match);
- 
--static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
--				       bool on)
--{
--	struct thermal_zone_device *tzd = sensor->tzd;
--
--	tzd->ops->set_mode(tzd,
--		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
--}
--
- static int hisi_thermal_setup(struct hisi_thermal_data *data)
- {
- 	struct hisi_thermal_sensor *sensor;
-@@ -393,7 +397,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
--	hisi_thermal_toggle_sensor(&data->sensor, true);
-+	hisi_thermal_toggle_sensor(&data->sensor, false);
- 
- 	return 0;
- }
 -- 
-2.7.4
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
