@@ -1,58 +1,36 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] power: Use a more common logging style
-Date: Wed, 27 Sep 2017 21:27:37 +0200
-Message-ID: <20170927192737.GA30251@amd>
-References: <601f12130753cff63677db1655587ad9682f4165.1506532371.git.joe@perches.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH V2] PM / OPP: Move the OPP directory out of power/
+Date: Wed, 27 Sep 2017 15:15:11 -0700
+Message-ID: <20170927221511.GH457@codeaurora.org>
+References: <3eaed52523d54bdc7b43b335d5aefda9b4d1b4a8.1506463860.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41382 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750805AbdI0T1k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 15:27:40 -0400
+Received: from smtp.codeaurora.org ([198.145.29.96]:40748 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752065AbdI0WPN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 18:15:13 -0400
 Content-Disposition: inline
-In-Reply-To: <601f12130753cff63677db1655587ad9682f4165.1506532371.git.joe@perches.com>
+In-Reply-To: <3eaed52523d54bdc7b43b335d5aefda9b4d1b4a8.1506463860.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org
 
+On 09/26, Viresh Kumar wrote:
+> The drivers/base/power/ directory is special and contains code related
+> to power management core like system suspend/resume, hibernation, etc.
+> It was fine to keep the OPP code inside it when we had just one file for
+> it, but it is growing now and already has a directory for itself.
+> 
+> Lets move it directly under drivers/ directory, just like cpufreq and
+> cpuidle.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
---gKMricLos+KVdGMg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Stephen Boyd <sboyd@codeaurora.org>
 
-On Wed 2017-09-27 10:17:57, Joe Perches wrote:
-> Convert printks to pr_<level>.
->=20
-> Miscellanea:
->=20
-> o Use pr_fmt with "PM:" and remove "PM: " from format strings
-> o Coalesce format strings and realign format arguments
-> o Convert an embedded incorrect function name to "%s: ", __func__
-> o Convert a couple multi-line formats to multiple pr_<level> calls
->=20
-> Signed-off-by: Joe Perches <joe@perches.com>
-
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---gKMricLos+KVdGMg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlnL+6kACgkQMOfwapXb+vJBoACgjUthT4X3lPp+nCEkZYCmDbvE
-HR0An2DyzTG+Rjp0zUvk93mspyzZs4DQ
-=VRt+
------END PGP SIGNATURE-----
-
---gKMricLos+KVdGMg--
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
