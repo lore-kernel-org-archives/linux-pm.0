@@ -1,106 +1,80 @@
-From: Zumeng Chen <zumeng.chen@windriver.com>
-Subject: Re: [PATCH ] cpufreq: ti-cpufreq: kfree opp_data when failure
-Date: Thu, 28 Sep 2017 07:49:15 +0800
-Message-ID: <7b7315f0-c2e4-a09e-8769-2d15a167fa73@windriver.com>
-References: <1506496097-30852-1-git-send-email-zumeng.chen@windriver.com>
- <20170927174026.GB12211@ubuntu>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / s2idle: Invoke the ->wake() platform callback earlier
+Date: Thu, 28 Sep 2017 01:45:10 +0200
+Message-ID: <2377821.5zBMHogt8n@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170927174026.GB12211@ubuntu>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: d-gerlach@ti.com, tony@atomide.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Linux ACPI <linux-acpi@vger.kernel.org>, Mario Limonciello <mario.limonciello@dell.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/28/2017 01:40 AM, Viresh Kumar wrote:
-> On 27-09-17, 15:08, Zumeng Chen wrote:
->> From: Zumeng Chen <zumeng.chen@gmail.com>
->>
->> memory leakage was found by kmemleak. opp_data needs to be freed
->> when failure, including fail_put_node.
->>
->> unreferenced object 0xccdd4c40 (size 64):
->>    comm "swapper", pid 1, jiffies 4294938465 (age 888.520s)
->>    hex dump (first 32 bytes):
->>      00 7c 00 c1 98 69 d8 ce 00 24 03 ce 00 24 03 ce  .|...i...$...$..
->>      20 35 23 c1 00 00 00 00 00 00 00 00 00 00 00 00   5#.............
->>    backtrace:
->>      [<c028fb64>] kmem_cache_alloc_trace+0x2c4/0x3cc
->>      [<c076d5f0>] ti_cpufreq_probe+0x6c/0x334
->>      [<c068d6e4>] platform_drv_probe+0x60/0xc0
->>      [<c068b384>] driver_probe_device+0x218/0x2c4
->>      [<c068b5a4>] __device_attach_driver+0xa8/0xdc
->>      [<c0689340>] bus_for_each_drv+0x70/0xa4
->>      [<c068b020>] __device_attach+0xc0/0x124
->>      [<c068b634>] device_initial_probe+0x1c/0x20
->>      [<c068a3b8>] bus_probe_device+0x94/0x9c
->>      [<c0688300>] device_add+0x404/0x590
->>      [<c068d408>] platform_device_add+0x11c/0x230
->>      [<c068df40>] platform_device_register_full+0x10c/0x128
->>      [<c076d578>] ti_cpufreq_init+0x44/0x50
->>      [<c01017c4>] do_one_initcall+0x54/0x180
->>      [<c0e00fe0>] kernel_init_freeable+0x270/0x33c
->>      [<c093f2bc>] kernel_init+0x18/0x124
->>
->> Signed-off-by: Zumeng Chen <zumeng.chen@gmail.com>
->> ---
->>   drivers/cpufreq/ti-cpufreq.c | 5 ++++-
->>   1 file changed, 4 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
->> index 4bf47de..ffcddcd 100644
->> --- a/drivers/cpufreq/ti-cpufreq.c
->> +++ b/drivers/cpufreq/ti-cpufreq.c
->> @@ -217,7 +217,8 @@ static int ti_cpufreq_init(void)
->>   	opp_data->cpu_dev = get_cpu_device(0);
->>   	if (!opp_data->cpu_dev) {
->>   		pr_err("%s: Failed to get device for CPU0\n", __func__);
->> -		return -ENODEV;
->> +		ret = ENODEV;
->> +		goto free_opp_data;
->>   	}
->>   
->>   	opp_data->opp_node = dev_pm_opp_of_get_opp_desc_node(opp_data->cpu_dev);
->> @@ -262,6 +263,8 @@ static int ti_cpufreq_init(void)
->>   
->>   fail_put_node:
->>   	of_node_put(opp_data->opp_node);
->> +free_opp_data:
->> +	kfree(opp_data);
->>   
->>   	return ret;
->>   }
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->
-> I also see that you are missing an of_node_put(np) in the driver. Maybe you
-> want to fix that as well (in a separate patch) ?
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Ha, thanks, I'm not sure if I follow your meanings.
+The role of the ->wake() platform callback for suspend-to-idle is to
+deal with possible spurious wakeups, among other things.  The ACPI
+implementation of it, acpi_s2idle_wake(), additionally checks the
+conditions for entering the Low Power S0 Idle state by the platform
+and reports the ones that have not been met.
 
-opp_data->opp_node will be set after goto free_opp_data, so are we safe 
-here?
+However, the ->wake() platform callback is invoked after calling
+dpm_noirq_resume_devices(), which means that the power states of some
+devices may have changed since s2idle_enter() returned, so some unmet
+Low Power S0 Idle conditions may be reported incorrectly as a result
+of that.
 
-         opp_data->cpu_dev = get_cpu_device(0);
-         if (!opp_data->cpu_dev) {
-                 pr_err("%s: Failed to get device for CPU0\n", __func__);
-                 ret = ENODEV;
-                 goto free_opp_data;
-         }
+To avoid these false positives, reorder the invocations of the
+dpm_noirq_resume_devices() routine and the ->wake() platform callback
+in s2idle_loop().
 
-         opp_data->opp_node = 
-dev_pm_opp_of_get_opp_desc_node(opp_data->cpu_dev);
+Fixes: 726fb6b4f2a8 (ACPI / PM: Check low power idle constraints for debug only)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Cheers,
-Zumeng
+Tested on Dell XPS13 9360.
 
->
+---
+ kernel/power/suspend.c |   18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
+
+Index: linux-pm/kernel/power/suspend.c
+===================================================================
+--- linux-pm.orig/kernel/power/suspend.c
++++ linux-pm/kernel/power/suspend.c
+@@ -120,22 +120,26 @@ static void s2idle_loop(void)
+ 		 * frozen processes + suspended devices + idle processors.
+ 		 * Thus s2idle_enter() should be called right after
+ 		 * all devices have been suspended.
++		 *
++		 * Wakeups during the noirq suspend of devices may be spurious,
++		 * so prevent them from terminating the loop right away.
+ 		 */
+ 		error = dpm_noirq_suspend_devices(PMSG_SUSPEND);
+ 		if (!error)
+ 			s2idle_enter();
++		else if (error == -EBUSY && pm_wakeup_pending())
++			error = 0;
+ 
+-		dpm_noirq_resume_devices(PMSG_RESUME);
+-		if (error && (error != -EBUSY || !pm_wakeup_pending())) {
+-			dpm_noirq_end();
+-			break;
+-		}
+-
+-		if (s2idle_ops && s2idle_ops->wake)
++		if (!error && s2idle_ops && s2idle_ops->wake)
+ 			s2idle_ops->wake();
+ 
++		dpm_noirq_resume_devices(PMSG_RESUME);
++
+ 		dpm_noirq_end();
+ 
++		if (error)
++			break;
++
+ 		if (s2idle_ops && s2idle_ops->sync)
+ 			s2idle_ops->sync();
+ 
+
