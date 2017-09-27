@@ -1,79 +1,39 @@
-From: Zumeng Chen <zumeng.chen@windriver.com>
-Subject: [PATCH ] cpufreq: ti-cpufreq: kfree opp_data when failure
-Date: Wed, 27 Sep 2017 15:08:17 +0800
-Message-ID: <1506496097-30852-1-git-send-email-zumeng.chen@windriver.com>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: Huawei integrated modem causes instant resume from suspend on
+ Acer P648-G3
+Date: Wed, 27 Sep 2017 09:12:59 +0200
+Message-ID: <1506496379.28482.1.camel@suse.com>
+References: <20170927061446.15512-1-drake@endlessm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org
-Cc: tony@atomide.com, viresh.kumar@linaro.org, rjw@rjwysocki.net, d-gerlach@ti.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:58597 "EHLO mx1.suse.de"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1751021AbdI0HNH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 27 Sep 2017 03:13:07 -0400
+In-Reply-To: <20170927061446.15512-1-drake@endlessm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Drake <drake@endlessm.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: linux@endlessm.com
 
-From: Zumeng Chen <zumeng.chen@gmail.com>
+Am Mittwoch, den 27.09.2017, 14:14 +0800 schrieb Daniel Drake:
+> There are no errors in the logs showing any suspend/resume-related issues.
+> When the system wakes up due to the modem, log-wise it appears to be a
+> normal resume.
+> 
+> Does anyone have any suggestions for how we can investigate further, or how
+> we should workaround this issue in upstreamable form?
 
-memory leakage was found by kmemleak. opp_data needs to be freed
-when failure, including fail_put_node.
+Hi,
 
-unreferenced object 0xccdd4c40 (size 64):
-  comm "swapper", pid 1, jiffies 4294938465 (age 888.520s)
-  hex dump (first 32 bytes):
-    00 7c 00 c1 98 69 d8 ce 00 24 03 ce 00 24 03 ce  .|...i...$...$..
-    20 35 23 c1 00 00 00 00 00 00 00 00 00 00 00 00   5#.............
-  backtrace:
-    [<c028fb64>] kmem_cache_alloc_trace+0x2c4/0x3cc
-    [<c076d5f0>] ti_cpufreq_probe+0x6c/0x334
-    [<c068d6e4>] platform_drv_probe+0x60/0xc0
-    [<c068b384>] driver_probe_device+0x218/0x2c4
-    [<c068b5a4>] __device_attach_driver+0xa8/0xdc
-    [<c0689340>] bus_for_each_drv+0x70/0xa4
-    [<c068b020>] __device_attach+0xc0/0x124
-    [<c068b634>] device_initial_probe+0x1c/0x20
-    [<c068a3b8>] bus_probe_device+0x94/0x9c
-    [<c0688300>] device_add+0x404/0x590
-    [<c068d408>] platform_device_add+0x11c/0x230
-    [<c068df40>] platform_device_register_full+0x10c/0x128
-    [<c076d578>] ti_cpufreq_init+0x44/0x50
-    [<c01017c4>] do_one_initcall+0x54/0x180
-    [<c0e00fe0>] kernel_init_freeable+0x270/0x33c
-    [<c093f2bc>] kernel_init+0x18/0x124
+unfortunately you left out the most important information
 
-Signed-off-by: Zumeng Chen <zumeng.chen@gmail.com>
----
- drivers/cpufreq/ti-cpufreq.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+1) kernel version?
+2) driver used?
+3) device descriptors (lsusb)
+4) s2idle or S3?
 
-diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-index 4bf47de..ffcddcd 100644
---- a/drivers/cpufreq/ti-cpufreq.c
-+++ b/drivers/cpufreq/ti-cpufreq.c
-@@ -217,7 +217,8 @@ static int ti_cpufreq_init(void)
- 	opp_data->cpu_dev = get_cpu_device(0);
- 	if (!opp_data->cpu_dev) {
- 		pr_err("%s: Failed to get device for CPU0\n", __func__);
--		return -ENODEV;
-+		ret = ENODEV;
-+		goto free_opp_data;
- 	}
- 
- 	opp_data->opp_node = dev_pm_opp_of_get_opp_desc_node(opp_data->cpu_dev);
-@@ -262,6 +263,8 @@ static int ti_cpufreq_init(void)
- 
- fail_put_node:
- 	of_node_put(opp_data->opp_node);
-+free_opp_data:
-+	kfree(opp_data);
- 
- 	return ret;
- }
--- 
-2.7.4
+	Regards
+		Oliver
