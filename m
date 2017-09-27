@@ -1,112 +1,116 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 0/8] PM / devfreq: Use OPP interface to handle the
- frequency
-Date: Wed, 27 Sep 2017 10:28:07 +0900
-Message-ID: <59CAFEA7.10007@samsung.com>
-References: <CGME20170921003355epcas1p1d1bbb04ff7a7c46946f62a91883bd6a6@epcas1p1.samsung.com>
-        <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+From: Daniel Drake <drake@endlessm.com>
+Subject: Huawei integrated modem causes instant resume from suspend on Acer P648-G3
+Date: Wed, 27 Sep 2017 14:14:46 +0800
+Message-ID: <20170927061446.15512-1-drake@endlessm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:41877 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934797AbdI0B2I (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Sep 2017 21:28:08 -0400
-In-reply-to: <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
+Received: from mail-pg0-f46.google.com ([74.125.83.46]:49551 "EHLO
+        mail-pg0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750739AbdI0GO4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 02:14:56 -0400
+Received: by mail-pg0-f46.google.com with SMTP id m30so7218957pgn.6
+        for <linux-pm@vger.kernel.org>; Tue, 26 Sep 2017 23:14:56 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: linux@endlessm.com
 
-Hi Myungjoo,
+Hi,
 
-Could you please review this patchset?
+The Acer TravelMate P648-G3 laptop includes this integrated Huawei 4G modem
+on the USB bus:
 
-On 2017년 09월 21일 09:33, Chanwoo Choi wrote:
-> These patches makes the devfreq to use the OPP interface and clean-up codes.
-> - patch 1~5 are related to the OPP interfaces. 
-> - patch 6 removes the unneeded code.
-> - patch 7 clean-up for the governor name.
-> - patch 8 registers the cooling device for exynos-bus.
-> 
-> [Detaild Descripion]
-> The commit a76caf55e5b3 ("thermal: Add devfreq cooling") provides
-> the devfreq cooling device by using the OPP interface such as
-> dev_pm_opp_disable() and dev_pm_opp_enable(). It means that
-> the OPP interface is able to change the available status of the frequency.
-> 
-> Firstly, the existing devfreq doesn't use the OPP interface when showing
-> the minimum and maximum frequency through the following sysfs nodes:
-> It shows the wrong frequency value because min_freq/max_freq don't
-> consider the frequency status by handling OPP interface
-> (opp_dev_pm_opp_{disable|add}()). So, these patches fix this issue.
-> - /sys/class/devfreq/devfreqX/min_freq
-> - /sys/class/devfreq/devfreqX/max_freq
-> 
-> Second, the 'available_frequencies' should show the all supported frequencis
-> even if the specific frequency is not available. It doesn't matter whether
-> frequneyc is available or not. Because the role of 'available_frequencies'
-> shows the all frequencies. Also, these patches fix this issue.
-> - /sys/class/devfreq/devfreqX/available_frequencies
-> 
-> Third, update_devfreq() get the available next frequency by using
-> the devfreq_recommended_opp() in order to consider the disabled OPP.
-> 
-> For example,
-> - devfreq's min_freq is 100Mhz and max_freq is 700Mhz.
-> - OPP disabled 500/600/700Mhz due to devfreq-cooling.c.
-> - simple_ondemand govenor decided the next target_freq (600Mhz)
-> |----------|-------------------------------------------------------------|
-> |Freq(MHz) |100     |200    |300    |400     |500     |600      |70 0    |
-> |Devfreq   |min_freq|       |       |        |        |         |max_freq|
-> |OPP avail |enabled |enabled|enabled|enabled |Disabled| Disabled|Disabled|
-> |Ondmenad  |        |       |       |        |        |next_freq|        |
-> |------------------------------------------------------------------------|
-> 
-> In result,
-> - Before this patch, target_freq is 600Mhz
->   and TRANSITION_NOTIFIER sends the next_freq is 600Mhz to the notifiee.
-> - After this patch, target_freq is 400Mhz because 500/600 were disabled by OPP.
->   And TRANSITION_NOTIFIER sends the next_freq is 400Mhz to the notifiee.
-> 
-> Lastly,
-> - patch6/7 fix the minor issue and cleanup codes.
-> - patch8 register the cooling device. It depends on opp patch[1].
-> [1] https://patchwork.kernel.org/patch/9962387/
-> 
-> Changes from v1:
-> (https://lkml.org/lkml/2017/8/23/785)
-> - Show the available frequencies as an ascending order
-> - Change the author info from cwchoi00@gmail.com to cw00.choi@samsung.com
-> - Drop the patches related to opp_notifier
-> - Add new patch5/6/7/8
-> 
-> Chanwoo Choi (8):
->   PM / devfreq: Set min/max_freq when adding the devfreq device
->   Revert "PM / devfreq: Add show_one macro to delete the duplicate code"
->   PM / devfreq: Show the available min/max frequency through sysfs node
->   PM / devfreq: Show the all available frequencies
->   PM / devfreq: Get the available next frequency on update_devfreq()
->   PM / devfreq: Remove unneeded conditional statement
->   PM / devfreq: Define the constant governor name
->   PM / devfreq: exynos-bus: Register cooling device
-> 
->  drivers/devfreq/Kconfig                   |   1 +
->  drivers/devfreq/devfreq.c                 | 121 +++++++++++++++++++++++-------
->  drivers/devfreq/exynos-bus.c              |  16 +++-
->  drivers/devfreq/governor_passive.c        |   2 +-
->  drivers/devfreq/governor_performance.c    |   2 +-
->  drivers/devfreq/governor_powersave.c      |   2 +-
->  drivers/devfreq/governor_simpleondemand.c |   2 +-
->  drivers/devfreq/governor_userspace.c      |   2 +-
->  drivers/devfreq/rk3399_dmc.c              |   2 +-
->  include/linux/devfreq.h                   |   7 ++
->  10 files changed, 123 insertions(+), 34 deletions(-)
-> 
+T:  Bus=01 Lev=01 Prnt=01 Port=08 Cnt=04 Dev#=  5 Spd=480  MxCh= 0
+D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=ff MxPS=64 #Cfgs=  3
+P:  Vendor=12d1 ProdID=15c3 Rev= 1.02
+S:  Manufacturer=Huawei Technologies Co., Ltd.
+S:  Product=HUAWEI Mobile
+S:  SerialNumber=0123456789ABCDEF
+C:  #Ifs= 5 Cfg#= 1 Atr=a0 MxPwr=  2mA
 
+Under Linux, this system has an issue where it will automatically resume
+3-4 seconds after going into suspend. After some experimentation we realised
+that it is related to this 4G modem.
 
+The problem can be worked around with:
+
+  echo 1-9 > /sys/bus/usb/drivers/usb/unbind
+
+or the attached hacky patch which does something similar. Now the system
+goes into suspend and stays asleep.
+
+The problem happens even though we are not using the modem at all (checked
+from rescue.target/runlevel1). Under Windows the system can suspend fine.
+
+Seeking a better fix, we've tried a lot of things, including:
+ - Unbind usb serial interface(ttyUSB0-3) and cdc-eth interface (instead of
+the whole port)
+ - Check that the device's power/wakeup is disabled
+ - All the quirks in drivers/usb/core/quirks.c e.g. USB_QUIRK_RESET_RESUME,
+   USB_QUIRK_RESET, USB_QUIRK_IGNORE_REMOTE_WAKEUP, USB_QUIRK_NO_LPM.
+ - Check usb_port_suspend() to see if the do_remote_wakeup path is followed
+   (it's not)
+
+but none of that makes any difference.
+
+There are no errors in the logs showing any suspend/resume-related issues.
+When the system wakes up due to the modem, log-wise it appears to be a
+normal resume.
+
+Does anyone have any suggestions for how we can investigate further, or how
+we should workaround this issue in upstreamable form?
+
+Thanks
+Daniel
+
+---
+ drivers/usb/core/hub.c     | 4 ++++
+ drivers/usb/core/quirks.c  | 4 ++++
+ include/linux/usb/quirks.h | 5 +++++
+ 3 files changed, 13 insertions(+)
+
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index 822f8c50e423..ac9ceacdc76c 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -3160,6 +3160,10 @@ int usb_port_suspend(struct usb_device *udev, pm_message_t msg)
+ 			goto err_ltm;
+ 	}
+ 
++	if (udev->quirks & USB_QUIRK_DISCONNECT_SUSPEND) {
++		usb_clear_port_feature(hub->hdev, port1, USB_PORT_FEAT_ENABLE);
++	}
++
+ 	/* see 7.1.7.6 */
+ 	if (hub_is_superspeed(hub->hdev))
+ 		status = hub_set_port_link_state(hub, port1, USB_SS_PORT_LS_U3);
+diff --git a/drivers/usb/core/quirks.c b/drivers/usb/core/quirks.c
+index 82806e311202..9325be88bb02 100644
+--- a/drivers/usb/core/quirks.c
++++ b/drivers/usb/core/quirks.c
+@@ -203,6 +203,10 @@ static const struct usb_device_id usb_quirk_list[] = {
+ 	{ USB_DEVICE(0x10d6, 0x2200), .driver_info =
+ 			USB_QUIRK_STRING_FETCH_255 },
+ 
++	/* Huawei 4G LTE module */
++	{ USB_DEVICE(0x12d1, 0x15c3), .driver_info = USB_QUIRK_DISCONNECT_SUSPEND},
++	{ USB_DEVICE(0x12d1, 0x15bb), .driver_info = USB_QUIRK_DISCONNECT_SUSPEND},
++
+ 	/* SKYMEDI USB_DRIVE */
+ 	{ USB_DEVICE(0x1516, 0x8628), .driver_info = USB_QUIRK_RESET_RESUME },
+ 
+diff --git a/include/linux/usb/quirks.h b/include/linux/usb/quirks.h
+index de2a722fe3cf..45ad360dfa21 100644
+--- a/include/linux/usb/quirks.h
++++ b/include/linux/usb/quirks.h
+@@ -56,4 +56,9 @@
+  */
+ #define USB_QUIRK_LINEAR_FRAME_INTR_BINTERVAL	BIT(11)
+ 
++/* device need to be disconnect before suspend to prevent from unexpected
++ * wakeup.
++ */
++#define USB_QUIRK_DISCONNECT_SUSPEND		BIT(12)
++
+ #endif /* __LINUX_USB_QUIRKS_H */
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.11.0
