@@ -1,97 +1,116 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v2 0/8] PM / devfreq: Use OPP interface to handle the
- frequency
-Date: Wed, 27 Sep 2017 17:15:00 +0900
-Message-ID: <59CB5E04.6050001@samsung.com>
-References: <59CAFEA7.10007@samsung.com>
-        <1505954032-3327-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20170921003355epcas1p1d1bbb04ff7a7c46946f62a91883bd6a6@epcms1p3>
-        <20170927080922epcms1p3c8f87f8f55d753f57afe053d5750ebfc@epcms1p3>
+From: Keerthy <j-keerthy@ti.com>
+Subject: Re: [PATCH] thermal/drivers/hisi: Switch to interrupt mode
+Date: Wed, 27 Sep 2017 13:56:20 +0530
+Message-ID: <1bfd974e-3dc1-e99b-d0dd-50102cee762d@ti.com>
+References: <1506470049-12597-1-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:14019 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751787AbdI0IPB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 04:15:01 -0400
-In-reply-to: <20170927080922epcms1p3c8f87f8f55d753f57afe053d5750ebfc@epcms1p3>
+Received: from fllnx209.ext.ti.com ([198.47.19.16]:40097 "EHLO
+        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752491AbdI0I1L (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 04:27:11 -0400
+In-Reply-To: <1506470049-12597-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "chanwoo@kernel.org" <chanwoo@kernel.org>, Inki Dae <inki.dae@samsung.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-
-On 2017년 09월 27일 17:09, MyungJoo Ham wrote:
->> Hi Myungjoo,
->>
->> Could you please review this patchset?
-> 
-> 
-> I ignored your v2 patchset because of the follow-up message:
-> 
-> | Re: [PATCH v2 8/8] PM / devfreq: exynos-bus: Register cooling device
-> |
-> | Dear all,
-> |
-> | Please ignore this patch. It has some problem.
-> | I'll fix and resend this patch on v2.
-> 
-> I thought you'd send another series with [PATCH v3 x/8]...
-
-I'm sorry. It is my mistake about the ambiguous my comment.
-(The 'ignore' comment was only for patch8.)
-
-> 
-> (I've just noticed that [PATCH v2.1] was sent yesterday.
->  Is the patchsetv2 ready with the replacement of 8th commit?)
-
-Yes. I modified the patch8 on 'patch v2.1'.
-
-> 
-> Cheers,
-> MyungJoo
-> 
-> ps. you know I'm going to be away for a long vacation
->  starting this week.
->  I can't gurantee that I'll see all of the set before the vacation.
-
-I knew of the vacation. Thanks for reply. 
-
-Regards,
-Chanwoo Choi
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, edubezval@gmail.com
+Cc: leo.yan@linaro.org, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
 
+
+On Wednesday 27 September 2017 05:24 AM, Daniel Lezcano wrote:
+> At this moment, we have both the interrupt setup and the polling enabled. The
+> interrupt does nothing more than forcing an update while the temperature is
+> polled every second.
 > 
->>
->> On 2017년 09월 21일 09:33, Chanwoo Choi wrote:
->>> These patches makes the devfreq to use the OPP interface and clean-up codes.
->>> - patch 1~5 are related to the OPP interfaces. 
->>> - patch 6 removes the unneeded code.
->>> - patch 7 clean-up for the governor name.
->>> - patch 8 registers the cooling device for exynos-bus.
->>>
->>> [Detaild Descripion]
->>> The commit a76caf55e5b3 ("thermal: Add devfreq cooling") provides
->>> the devfreq cooling device by using the OPP interface such as
->>> dev_pm_opp_disable() and dev_pm_opp_enable(). It means that
->>> the OPP interface is able to change the available status of the frequency.
->>>
->>> Firstly, the existing devfreq doesn't use the OPP interface when showing
->>> the minimum and maximum frequency through the following sysfs nodes:
->>> It shows the wrong frequency value because min_freq/max_freq don't
->>> consider the frequency status by handling OPP interface
->>> (opp_dev_pm_opp_{disable|add}()). So, these patches fix this issue.
->>> - /sys/class/devfreq/devfreqX/min_freq
->>> - /sys/class/devfreq/devfreqX/max_freq
->>>
->>> Second, the 'available_frequencies' should show the all supported frequencis
->>> even if the specific frequency is not available. It doesn't matter whether
->>> frequneyc is available or not. Because the role of 'available_frequencies'
->>> shows the all frequencies. Also, these patches fix this issue.
->>> - /sys/class/devfreq/devfreqX/available_frequencies
->>>
->>> Third, update_devfreq() get the available next frequency by using
->>> the devfreq_recommended_opp() in order to consider the disabled OPP.
+> We can do much better than that, threshold is set to 65C in the DT and the
+> passive ooling device enters in the dance when 75C is reached. We need to
+
+/s/ooling/cooling
+
+> sample the temperature at 65C in order to let the IPA gather enough values for
+> the PID computation. If the SoC is running at a temperature below 65C, we will
+> be constantly polling for nothing.
 > 
+> This patch disables the sensor when the temperature is below the temperature
+
+temperature below 65C you mean?
+
+> and enables it when passing the threshold. It resuls the sensor thermal sensor
+
+/s/resuls/results
+
+> driver will have no activity most of the time.
+
+By chance you miss the interrupt you will never have cooling on again?
+
 > 
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/thermal/hisi_thermal.c | 24 ++++++++++++++----------
+>  1 file changed, 14 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+> index 39f4627..74ea70d 100644
+> --- a/drivers/thermal/hisi_thermal.c
+> +++ b/drivers/thermal/hisi_thermal.c
+> @@ -218,6 +218,15 @@ static int hisi_thermal_get_temp(void *__data, int *temp)
+>  	return 0;
+>  }
+>  
+> +static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
+> +				       bool on)
+> +{
+> +	struct thermal_zone_device *tzd = sensor->tzd;
+> +
+> +	tzd->ops->set_mode(tzd,
+> +		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+> +}
+> +
+>  static const struct thermal_zone_of_device_ops hisi_of_thermal_ops = {
+>  	.get_temp = hisi_thermal_get_temp,
+>  };
+> @@ -236,12 +245,16 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
+>  		dev_crit(&data->pdev->dev, "THERMAL ALARM: %d > %d\n",
+>  			 temp, sensor->thres_temp);
+>  
+> +		hisi_thermal_toggle_sensor(&data->sensor, true);
+> +
+>  		thermal_zone_device_update(data->sensor.tzd,
+>  					   THERMAL_EVENT_UNSPECIFIED);
+>  
+>  	} else if (temp < sensor->thres_temp) {
+>  		dev_crit(&data->pdev->dev, "THERMAL ALARM stopped: %d < %d\n",
+>  			 temp, sensor->thres_temp);
+> +
+> +		hisi_thermal_toggle_sensor(&data->sensor, false);
+>  	}
+>  
+>  	return IRQ_HANDLED;
+> @@ -286,15 +299,6 @@ static const struct of_device_id of_hisi_thermal_match[] = {
+>  };
+>  MODULE_DEVICE_TABLE(of, of_hisi_thermal_match);
+>  
+> -static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
+> -				       bool on)
+> -{
+> -	struct thermal_zone_device *tzd = sensor->tzd;
+> -
+> -	tzd->ops->set_mode(tzd,
+> -		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+> -}
+> -
+>  static int hisi_thermal_setup(struct hisi_thermal_data *data)
+>  {
+>  	struct hisi_thermal_sensor *sensor;
+> @@ -393,7 +397,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+>  		return ret;
+>  	}
+>  
+> -	hisi_thermal_toggle_sensor(&data->sensor, true);
+> +	hisi_thermal_toggle_sensor(&data->sensor, false);
+>  
+>  	return 0;
+>  }
 > 
