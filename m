@@ -1,116 +1,67 @@
-From: Keerthy <j-keerthy@ti.com>
-Subject: Re: [PATCH] thermal/drivers/hisi: Switch to interrupt mode
-Date: Wed, 27 Sep 2017 13:56:20 +0530
-Message-ID: <1bfd974e-3dc1-e99b-d0dd-50102cee762d@ti.com>
-References: <1506470049-12597-1-git-send-email-daniel.lezcano@linaro.org>
+From: Michael Nazzareno Trimarchi <michael@amarulasolutions.com>
+Subject: power_supply_core freezable change_work
+Date: Wed, 27 Sep 2017 11:18:13 +0200
+Message-ID: <CAOf5uwn=FwQB3hpi3Hw+=fRZmUPeoWZS_5Q=8sgx36AT0NYkUg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx209.ext.ti.com ([198.47.19.16]:40097 "EHLO
-        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752491AbdI0I1L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 04:27:11 -0400
-In-Reply-To: <1506470049-12597-1-git-send-email-daniel.lezcano@linaro.org>
+Received: from mail-it0-f46.google.com ([209.85.214.46]:49885 "EHLO
+        mail-it0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752292AbdI0JSP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 05:18:15 -0400
+Received: by mail-it0-f46.google.com with SMTP id c195so6264882itb.4
+        for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2017 02:18:15 -0700 (PDT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, edubezval@gmail.com
-Cc: leo.yan@linaro.org, Zhang Rui <rui.zhang@intel.com>, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: linux-pm@vger.kernel.org
+Cc: Mark Brown <broonie@linaro.org>
 
+Hi
 
+<4>[13502.656095] [<c0419264>] (sbs_read_word_data+0x0/0x70) from
+[<c04192f8>] (sbs_set_battery_mode+0x24/0x6c)
+<4>[13502.656095]  r6:d79b0800 r5:d7123408 r4:00000001 r3:c04194ac
+<4>[13502.656125] [<c04192d4>] (sbs_set_battery_mode+0x0/0x6c) from
+[<c041962c>] (sbs_get_property+0x180/0x6e4)
+<4>[13502.656125]  r6:0000001b r5:d7123408 r4:d79b0800 r3:c04194ac
+<4>[13502.656156] [<c04194ac>] (sbs_get_property+0x0/0x6e4) from
+[<c0417e2c>] (power_supply_show_property+0x4c/0x1c8)
+<4>[13502.656186] [<c0417de0>] (power_supply_show_property+0x0/0x1c8)
+from [<c0418098>] (power_supply_uevent+0xa8/0x1d4)
+<4>[13502.656186]  r8:ca4b1000 r7:0000001b r6:d7123408 r5:0000000e r4:c068d3dc
+<4>[13502.656217] [<c0417ff0>] (power_supply_uevent+0x0/0x1d4) from
+[<c0324f58>] (dev_uevent+0xc8/0x18c)
+<4>[13502.656247] [<c0324e90>] (dev_uevent+0x0/0x18c) from
+[<c025ce18>] (kobject_uevent_env+0x1d4/0x4c4)
+<4>[13502.656247]  r7:d7882880 r6:00000000 r5:c069cda4 r4:00000002
+<4>[13502.656278] [<c025cc44>] (kobject_uevent_env+0x0/0x4c4) from
+[<c025d11c>] (kobject_uevent+0x14/0x18)
+<4>[13502.656308] [<c025d108>] (kobject_uevent+0x0/0x18) from
+[<c04178d0>] (power_supply_changed_work+0x94/0xb8)
+<4>[13502.656308] [<c041783c>] (power_supply_changed_work+0x0/0xb8)
+from [<c00603e8>] (process_one_work+0x158/0x474)
+<4>[13502.656339]  r7:c1ae9e00 r6:c1ae4880 r5:cc480000 r4:ce655e00
+<4>[13502.656369] [<c0060290>] (process_one_work+0x0/0x474) from
+[<c0060a50>] (worker_thread+0x144/0x324)
+<4>[13502.656369] [<c006090c>] (worker_thread+0x0/0x324) from
+[<c00655c4>] (kthread+0x98/0xa4)
+<4>[13502.656400] [<c006552c>] (kthread+0x0/0xa4) from [<c0047b6c>]
+(do_exit+0x0/0x7c4)
 
-On Wednesday 27 September 2017 05:24 AM, Daniel Lezcano wrote:
-> At this moment, we have both the interrupt setup and the polling enabled. The
-> interrupt does nothing more than forcing an update while the temperature is
-> polled every second.
-> 
-> We can do much better than that, threshold is set to 65C in the DT and the
-> passive ooling device enters in the dance when 75C is reached. We need to
+According to this stack I would like to know if I can queue
 
-/s/ooling/cooling
+diff --git a/drivers/power/power_supply_core.c
+b/drivers/power/power_supply_core.c
+index f58d1805..3dae683 100644
+--- a/drivers/power/power_supply_core.c
++++ b/drivers/power/power_supply_core.c
+@@ -75,7 +75,7 @@ void power_supply_changed(struct power_supply *psy)
+        psy->changed = true;
+        wake_lock(&psy->work_wake_lock);
+        spin_unlock_irqrestore(&psy->changed_lock, flags);
+-       schedule_work(&psy->changed_work);
++       queue_work(system_freezable_wq, &psy->chaged_work);
+ }
+ EXPORT_SYMBOL_GPL(power_supply_changed);
 
-> sample the temperature at 65C in order to let the IPA gather enough values for
-> the PID computation. If the SoC is running at a temperature below 65C, we will
-> be constantly polling for nothing.
-> 
-> This patch disables the sensor when the temperature is below the temperature
-
-temperature below 65C you mean?
-
-> and enables it when passing the threshold. It resuls the sensor thermal sensor
-
-/s/resuls/results
-
-> driver will have no activity most of the time.
-
-By chance you miss the interrupt you will never have cooling on again?
-
-> 
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/thermal/hisi_thermal.c | 24 ++++++++++++++----------
->  1 file changed, 14 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index 39f4627..74ea70d 100644
-> --- a/drivers/thermal/hisi_thermal.c
-> +++ b/drivers/thermal/hisi_thermal.c
-> @@ -218,6 +218,15 @@ static int hisi_thermal_get_temp(void *__data, int *temp)
->  	return 0;
->  }
->  
-> +static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
-> +				       bool on)
-> +{
-> +	struct thermal_zone_device *tzd = sensor->tzd;
-> +
-> +	tzd->ops->set_mode(tzd,
-> +		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
-> +}
-> +
->  static const struct thermal_zone_of_device_ops hisi_of_thermal_ops = {
->  	.get_temp = hisi_thermal_get_temp,
->  };
-> @@ -236,12 +245,16 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
->  		dev_crit(&data->pdev->dev, "THERMAL ALARM: %d > %d\n",
->  			 temp, sensor->thres_temp);
->  
-> +		hisi_thermal_toggle_sensor(&data->sensor, true);
-> +
->  		thermal_zone_device_update(data->sensor.tzd,
->  					   THERMAL_EVENT_UNSPECIFIED);
->  
->  	} else if (temp < sensor->thres_temp) {
->  		dev_crit(&data->pdev->dev, "THERMAL ALARM stopped: %d < %d\n",
->  			 temp, sensor->thres_temp);
-> +
-> +		hisi_thermal_toggle_sensor(&data->sensor, false);
->  	}
->  
->  	return IRQ_HANDLED;
-> @@ -286,15 +299,6 @@ static const struct of_device_id of_hisi_thermal_match[] = {
->  };
->  MODULE_DEVICE_TABLE(of, of_hisi_thermal_match);
->  
-> -static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
-> -				       bool on)
-> -{
-> -	struct thermal_zone_device *tzd = sensor->tzd;
-> -
-> -	tzd->ops->set_mode(tzd,
-> -		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
-> -}
-> -
->  static int hisi_thermal_setup(struct hisi_thermal_data *data)
->  {
->  	struct hisi_thermal_sensor *sensor;
-> @@ -393,7 +397,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
->  		return ret;
->  	}
->  
-> -	hisi_thermal_toggle_sensor(&data->sensor, true);
-> +	hisi_thermal_toggle_sensor(&data->sensor, false);
->  
->  	return 0;
->  }
-> 
+Michael
