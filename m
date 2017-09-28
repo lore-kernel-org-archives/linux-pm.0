@@ -1,57 +1,77 @@
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-Subject: Re: [PATCH] PM: ARM: sa1111: Drop suspend and resume bus type
- callbacks
-Date: Thu, 28 Sep 2017 10:49:36 +0100
-Message-ID: <20170928094936.GV20805@n2100.armlinux.org.uk>
-References: <2654085.Tx1JnNWXkX@aspire.rjw.lan>
- <20170926212812.GS20805@n2100.armlinux.org.uk>
- <CAJZ5v0i1iwBpkUYN=DbpbtVDu+xMKwza=4EbjYNyGr5rs7-D8Q@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from pandora.armlinux.org.uk ([78.32.30.218]:53748 "EHLO
-        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751088AbdI1Jtr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2017 05:49:47 -0400
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0i1iwBpkUYN=DbpbtVDu+xMKwza=4EbjYNyGr5rs7-D8Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v3 22/22] cpufreq: scmi: add support for fast frequency switching
+Date: Thu, 28 Sep 2017 14:11:46 +0100
+Message-ID: <1506604306-20739-23-git-send-email-sudeep.holla@arm.com>
+References: <1506604306-20739-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1506604306-20739-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Arnd Bergmann <arnd@arndb.de>, Loc Ho <lho@apm.com>, Alexey Klimov <alexey.klimov@arm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Tue, Sep 26, 2017 at 11:37:40PM +0200, Rafael J. Wysocki wrote:
-> On Tue, Sep 26, 2017 at 11:28 PM, Russell King - ARM Linux
-> <linux@armlinux.org.uk> wrote:
-> > On Tue, Sep 26, 2017 at 10:47:10PM +0200, Rafael J. Wysocki wrote:
-> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>
-> >> None of the sa1111 drivers in the tree implements the suspend and
-> >> resume callbacks from struct sa1111_driver, so drop them and drop
-> >> the corresponding callbacks from sa1111_bus_type.
-> >>
-> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > This will conflict with some patches I have - would you like me to queue
-> > it along with my changes?
-> 
-> Yes, please.
-> 
-> >  When would you like to get this merged?
-> 
-> When possible. :-)
-> 
-> I would like to drop the legacy suspend/resume callbacks from struct
-> bus_type eventually, as that's long overdue, and this is needed for
-> that purpose.  Not too urgent, though.
+The cpufreq core provides option for drivers to implement fast_switch
+callback which is invoked for frequency switching from interrupt context.
 
-Sorry, I'd forgotten that I already had a similar patch:
+This patch adds support for fast_switch callback in SCMI cpufreq driver
+by making use of polling based SCMI transfer. It also sets the flag
+fast_switch_possible.
 
-http://git.armlinux.org.uk/cgit/linux-arm.git/commit/?h=sa1100&id=0e4ec3edb1c7e44aba1f48b924ab0c77431fd155
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/cpufreq/scmi-cpufreq.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-so no need to merge your veresion... I just need to get my version merged.
-
+diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+index bc5385638eb4..067a39bd5167 100644
+--- a/drivers/cpufreq/scmi-cpufreq.c
++++ b/drivers/cpufreq/scmi-cpufreq.c
+@@ -65,6 +65,19 @@ scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 	return perf_ops->freq_set(handle, priv->domain_id, freq, false);
+ }
+ 
++static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
++					     unsigned int target_freq)
++{
++	struct scmi_data *priv = policy->driver_data;
++	struct scmi_perf_ops *perf_ops = handle->perf_ops;
++
++	if (!perf_ops->freq_set(handle, priv->domain_id,
++				target_freq * 1000, true))
++		return target_freq;
++
++	return 0;
++}
++
+ static int
+ scmi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+ {
+@@ -168,6 +181,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 
+ 	policy->cpuinfo.transition_latency = latency;
+ 
++	policy->fast_switch_possible = true;
+ 	return 0;
+ 
+ out_free_cpufreq_table:
+@@ -184,6 +198,7 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
+ {
+ 	struct scmi_data *priv = policy->driver_data;
+ 
++	policy->fast_switch_possible = false;
+ 	cpufreq_cooling_unregister(priv->cdev);
+ 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+ 	kfree(priv);
+@@ -227,6 +242,7 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
+ 	.verify	= cpufreq_generic_frequency_table_verify,
+ 	.attr	= cpufreq_generic_attr,
+ 	.target_index	= scmi_cpufreq_set_target,
++	.fast_switch	= scmi_cpufreq_fast_switch,
+ 	.get	= scmi_cpufreq_get_rate,
+ 	.init	= scmi_cpufreq_init,
+ 	.exit	= scmi_cpufreq_exit,
 -- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
-According to speedtest.net: 8.21Mbps down 510kbps up
+2.7.4
