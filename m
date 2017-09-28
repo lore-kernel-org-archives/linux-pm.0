@@ -1,70 +1,53 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.14-rc3
-Date: Thu, 28 Sep 2017 23:32:00 +0200
-Message-ID: <CAJZ5v0g641jR5jz9GdsS5CvQ4rrx53N2oa6YJQ4tQZgKKPVVCg@mail.gmail.com>
+Subject: Re: [PATCH] Bug fix for PME interrupt handler, add Root Status check
+Date: Fri, 29 Sep 2017 01:13:02 +0200
+Message-ID: <CAJZ5v0izo1xeCMqDx2wmn+aC=CntWEV6f9kDupXx=Rgx9uZVPw@mail.gmail.com>
+References: <1506570874-136126-1-git-send-email-zhengqiang10@huawei.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:34476 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751058AbdI1VcB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2017 17:32:01 -0400
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:49629 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750821AbdI1XND (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2017 19:13:03 -0400
+In-Reply-To: <1506570874-136126-1-git-send-email-zhengqiang10@huawei.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Qiang <zhengqiang10@huawei.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Gabriele Paoloni <gabriele.paoloni@huawei.com>, Linuxarm <linuxarm@huawei.com>
 
-Hi Linus,
+On Thu, Sep 28, 2017 at 5:54 AM, Qiang <zhengqiang10@huawei.com> wrote:
+> PCIe PME and hot plug share same interrupt number. In some special case,
+> Link down event cause hot plug interrupt, devices is not disconnected,
+> But read config will return 0xff.
+>
+> In that case, PME work function will run and not return Because
+> Root Status PME bit always 1 and can not be cleared.
+>
+> This patch add Root Status check in PME interrupt handler,
+> Just do same as pciehp isr Slot status check.
+>
+> Signed-off-by: Qiang Zheng <zhengqiang10@huawei.com>
+> ---
+>  drivers/pci/pcie/pme.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/pci/pcie/pme.c b/drivers/pci/pcie/pme.c
+> index fafdb16..67144f5 100644
+> --- a/drivers/pci/pcie/pme.c
+> +++ b/drivers/pci/pcie/pme.c
+> @@ -273,7 +273,7 @@ static irqreturn_t pcie_pme_irq(int irq, void *context)
+>         spin_lock_irqsave(&data->lock, flags);
+>         pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
+>
+> -       if (!(rtsta & PCI_EXP_RTSTA_PME)) {
+> +       if (rtsta == (u32)(~0) || !(rtsta & PCI_EXP_RTSTA_PME)) {
+>                 spin_unlock_irqrestore(&data->lock, flags);
+>                 return IRQ_NONE;
+>         }
 
-Please pull from the tag
+OK, but isn't there a symbol for all ones in u32?  And if there isn't,
+what about adding it?
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.14-rc3
-
-with top-most commit abeb19a219dce5c021c759d01434f82924354df7
-
- Merge branches 'pm-opp' and 'pm-cpufreq'
-
-on top of commit e19b205be43d11bff638cad4487008c48d21c103
-
- Linux 4.14-rc2
-
-to receive power management fixes for v4.14-rc3.
-
-These fix a deadlock in the operating performance points (OPP)
-framework introduced during the 4.11 cycle, more issues with
-duplicate device objects for cpufreq-dt and cpufreq documentation.
-
-Specifics:
-
- - Fix a deadlock in the operating performance points (OPP)
-   framework caused by a notifier callback taking a lock that's
-   already held by its caller (Viresh Kumar).
-
- - Prevent the ti-cpufreq and cpufreq-dt-platdev drivers from
-   attempting to register conflicting device objects which
-   triggers a warning from sysfs (Suniel Mahesh).
-
- - Drop a stale reference to a piece of intel_pstate documentation
-   that's not in the tree any more (Rafael Wysocki).
-
-Thanks!
-
-
----------------
-
-Rafael J. Wysocki (1):
-      cpufreq: docs: Drop intel-pstate.txt from index.txt
-
-Suniel Mahesh (1):
-      cpufreq: dt: Fix sysfs duplicate filename creation for platform-device
-
-Viresh Kumar (1):
-      PM / OPP: Call notifier without holding opp_table->lock
-
----------------
-
- Documentation/cpu-freq/index.txt     | 2 --
- drivers/base/power/opp/core.c        | 7 +++++++
- drivers/cpufreq/cpufreq-dt-platdev.c | 4 ++++
- 3 files changed, 11 insertions(+), 2 deletions(-)
+Thanks,
+Rafael
