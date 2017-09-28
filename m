@@ -1,114 +1,627 @@
-From: Zumeng Chen <zumeng.chen@windriver.com>
-Subject: Re: [PATCH ] cpufreq: ti-cpufreq: kfree opp_data when failure
-Date: Thu, 28 Sep 2017 13:00:42 +0800
-Message-ID: <7a2171a3-d594-7fd7-2ccf-75ef7110dd98@windriver.com>
-References: <1506496097-30852-1-git-send-email-zumeng.chen@windriver.com>
- <20170927174026.GB12211@ubuntu>
- <7b7315f0-c2e4-a09e-8769-2d15a167fa73@windriver.com>
- <20170928041933.GG12211@ubuntu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20170928041933.GG12211@ubuntu>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: d-gerlach@ti.com, tony@atomide.com, linux-pm@vger.kernel.org, rjw@rjwysocki.net, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+From: Joe Perches <joe@perches.com>
+Subject: [PATCH V2] power: Use a more common logging style
+Date: Wed, 27 Sep 2017 22:01:34 -0700
+Message-ID: <ae83325e672d2c7ef15d31af6f742b32b4fe00bf.1506574319.git.joe@perches.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtprelay0077.hostedemail.com ([216.40.44.77]:60085 "EHLO
+        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1751591AbdI1FBj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2017 01:01:39 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/28/2017 12:19 PM, Viresh Kumar wrote:
-> On 28-09-17, 07:49, Zumeng Chen wrote:
->> On 09/28/2017 01:40 AM, Viresh Kumar wrote:
->>> On 27-09-17, 15:08, Zumeng Chen wrote:
->>>> From: Zumeng Chen <zumeng.chen@gmail.com>
->>>>
->>>> memory leakage was found by kmemleak. opp_data needs to be freed
->>>> when failure, including fail_put_node.
->>>>
->>>> unreferenced object 0xccdd4c40 (size 64):
->>>>    comm "swapper", pid 1, jiffies 4294938465 (age 888.520s)
->>>>    hex dump (first 32 bytes):
->>>>      00 7c 00 c1 98 69 d8 ce 00 24 03 ce 00 24 03 ce  .|...i...$...$..
->>>>      20 35 23 c1 00 00 00 00 00 00 00 00 00 00 00 00   5#.............
->>>>    backtrace:
->>>>      [<c028fb64>] kmem_cache_alloc_trace+0x2c4/0x3cc
->>>>      [<c076d5f0>] ti_cpufreq_probe+0x6c/0x334
->>>>      [<c068d6e4>] platform_drv_probe+0x60/0xc0
->>>>      [<c068b384>] driver_probe_device+0x218/0x2c4
->>>>      [<c068b5a4>] __device_attach_driver+0xa8/0xdc
->>>>      [<c0689340>] bus_for_each_drv+0x70/0xa4
->>>>      [<c068b020>] __device_attach+0xc0/0x124
->>>>      [<c068b634>] device_initial_probe+0x1c/0x20
->>>>      [<c068a3b8>] bus_probe_device+0x94/0x9c
->>>>      [<c0688300>] device_add+0x404/0x590
->>>>      [<c068d408>] platform_device_add+0x11c/0x230
->>>>      [<c068df40>] platform_device_register_full+0x10c/0x128
->>>>      [<c076d578>] ti_cpufreq_init+0x44/0x50
->>>>      [<c01017c4>] do_one_initcall+0x54/0x180
->>>>      [<c0e00fe0>] kernel_init_freeable+0x270/0x33c
->>>>      [<c093f2bc>] kernel_init+0x18/0x124
->>>>
->>>> Signed-off-by: Zumeng Chen <zumeng.chen@gmail.com>
->>>> ---
->>>>   drivers/cpufreq/ti-cpufreq.c | 5 ++++-
->>>>   1 file changed, 4 insertions(+), 1 deletion(-)
->>>>
->>>> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
->>>> index 4bf47de..ffcddcd 100644
->>>> --- a/drivers/cpufreq/ti-cpufreq.c
->>>> +++ b/drivers/cpufreq/ti-cpufreq.c
->>>> @@ -217,7 +217,8 @@ static int ti_cpufreq_init(void)
->>>>   	opp_data->cpu_dev = get_cpu_device(0);
->>>>   	if (!opp_data->cpu_dev) {
->>>>   		pr_err("%s: Failed to get device for CPU0\n", __func__);
->>>> -		return -ENODEV;
->>>> +		ret = ENODEV;
->>>> +		goto free_opp_data;
->>>>   	}
->>>>   	opp_data->opp_node = dev_pm_opp_of_get_opp_desc_node(opp_data->cpu_dev);
->>>> @@ -262,6 +263,8 @@ static int ti_cpufreq_init(void)
->>>>   fail_put_node:
->>>>   	of_node_put(opp_data->opp_node);
->>>> +free_opp_data:
->>>> +	kfree(opp_data);
->>>>   	return ret;
->>>>   }
->>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>>
->>> I also see that you are missing an of_node_put(np) in the driver. Maybe you
->>> want to fix that as well (in a separate patch) ?
->> Ha, thanks, I'm not sure if I follow your meanings.
->>
->> opp_data->opp_node will be set after goto free_opp_data, so are we safe
->> here?
->>
->>          opp_data->cpu_dev = get_cpu_device(0);
->>          if (!opp_data->cpu_dev) {
->>                  pr_err("%s: Failed to get device for CPU0\n", __func__);
->>                  ret = ENODEV;
->>                  goto free_opp_data;
->>          }
->>
->>          opp_data->opp_node =
->> dev_pm_opp_of_get_opp_desc_node(opp_data->cpu_dev);
-> I was talking about this one.
->
->          np = of_find_node_by_path("/");
->
-> There is no counterpart of this one.
+Convert printks to pr_<level>.
 
-Yes, you are right, it seems of_node_put(np) that you mentioned were
-ignored by both paths. If you don't mind I can deliver a separate patch
-to fix this based on some testing later.
+Miscellanea:
 
-Cheers,
-Zumeng
->
+o Use pr_fmt with "PM:" and remove "PM: " from format strings
+o Coalesce format strings and realign format arguments
+o Convert an embedded incorrect function name to "%s: ", __func__
+o Convert a couple multi-line formats to multiple pr_<level> calls
+
+Signed-off-by: Joe Perches <joe@perches.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+
+V2: Remove "PM: " prefixes from already existing pr_debug/pm_info uses
+    Keeping Pavel's ack.
+
+V1:
+
+There is an oddity in swap.c:swap_writer_finish() where pr_info is done
+with "S" then mark_swapfiles() is called, then a printk (now: pr_cont) line
+ending termination.
+
+AFAICT: mark_swapfiles does no logging
+
+Perhaps mark_swapfiles once did logging or still does.
+Perhaps this block could be modified.
+
+
+ kernel/power/qos.c      |   4 +-
+ kernel/power/snapshot.c |  35 ++++++-------
+ kernel/power/swap.c     | 128 +++++++++++++++++++++---------------------------
+ 3 files changed, 77 insertions(+), 90 deletions(-)
+
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 97b0df71303e..9d7503910ce2 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -701,8 +701,8 @@ static int __init pm_qos_power_init(void)
+ 	for (i = PM_QOS_CPU_DMA_LATENCY; i < PM_QOS_NUM_CLASSES; i++) {
+ 		ret = register_pm_qos_misc(pm_qos_array[i], d);
+ 		if (ret < 0) {
+-			printk(KERN_ERR "pm_qos_param: %s setup failed\n",
+-			       pm_qos_array[i]->name);
++			pr_err("%s: %s setup failed\n",
++			       __func__, pm_qos_array[i]->name);
+ 			return ret;
+ 		}
+ 	}
+diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+index 0972a8e09d08..a917a301e201 100644
+--- a/kernel/power/snapshot.c
++++ b/kernel/power/snapshot.c
+@@ -10,6 +10,8 @@
+  *
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/version.h>
+ #include <linux/module.h>
+ #include <linux/mm.h>
+@@ -967,7 +969,7 @@ void __init __register_nosave_region(unsigned long start_pfn,
+ 	region->end_pfn = end_pfn;
+ 	list_add_tail(&region->list, &nosave_regions);
+  Report:
+-	printk(KERN_INFO "PM: Registered nosave memory: [mem %#010llx-%#010llx]\n",
++	pr_info("Registered nosave memory: [mem %#010llx-%#010llx]\n",
+ 		(unsigned long long) start_pfn << PAGE_SHIFT,
+ 		((unsigned long long) end_pfn << PAGE_SHIFT) - 1);
+ }
+@@ -1039,7 +1041,7 @@ static void mark_nosave_pages(struct memory_bitmap *bm)
+ 	list_for_each_entry(region, &nosave_regions, list) {
+ 		unsigned long pfn;
+ 
+-		pr_debug("PM: Marking nosave pages: [mem %#010llx-%#010llx]\n",
++		pr_debug("Marking nosave pages: [mem %#010llx-%#010llx]\n",
+ 			 (unsigned long long) region->start_pfn << PAGE_SHIFT,
+ 			 ((unsigned long long) region->end_pfn << PAGE_SHIFT)
+ 				- 1);
+@@ -1095,7 +1097,7 @@ int create_basic_memory_bitmaps(void)
+ 	free_pages_map = bm2;
+ 	mark_nosave_pages(forbidden_pages_map);
+ 
+-	pr_debug("PM: Basic memory bitmaps created\n");
++	pr_debug("Basic memory bitmaps created\n");
+ 
+ 	return 0;
+ 
+@@ -1131,7 +1133,7 @@ void free_basic_memory_bitmaps(void)
+ 	memory_bm_free(bm2, PG_UNSAFE_CLEAR);
+ 	kfree(bm2);
+ 
+-	pr_debug("PM: Basic memory bitmaps freed\n");
++	pr_debug("Basic memory bitmaps freed\n");
+ }
+ 
+ void clear_free_pages(void)
+@@ -1152,7 +1154,7 @@ void clear_free_pages(void)
+ 		pfn = memory_bm_next_pfn(bm);
+ 	}
+ 	memory_bm_position_reset(bm);
+-	pr_info("PM: free pages cleared after restore\n");
++	pr_info("free pages cleared after restore\n");
+ #endif /* PAGE_POISONING_ZERO */
+ }
+ 
+@@ -1690,7 +1692,7 @@ int hibernate_preallocate_memory(void)
+ 	ktime_t start, stop;
+ 	int error;
+ 
+-	printk(KERN_INFO "PM: Preallocating image memory... ");
++	pr_info("Preallocating image memory... ");
+ 	start = ktime_get();
+ 
+ 	error = memory_bm_create(&orig_bm, GFP_IMAGE, PG_ANY);
+@@ -1821,13 +1823,13 @@ int hibernate_preallocate_memory(void)
+ 
+  out:
+ 	stop = ktime_get();
+-	printk(KERN_CONT "done (allocated %lu pages)\n", pages);
++	pr_cont("done (allocated %lu pages)\n", pages);
+ 	swsusp_show_speed(start, stop, pages, "Allocated");
+ 
+ 	return 0;
+ 
+  err_out:
+-	printk(KERN_CONT "\n");
++	pr_cont("\n");
+ 	swsusp_free();
+ 	return -ENOMEM;
+ }
+@@ -1867,8 +1869,8 @@ static int enough_free_mem(unsigned int nr_pages, unsigned int nr_highmem)
+ 			free += zone_page_state(zone, NR_FREE_PAGES);
+ 
+ 	nr_pages += count_pages_for_highmem(nr_highmem);
+-	pr_debug("PM: Normal pages needed: %u + %u, available pages: %u\n",
+-		nr_pages, PAGES_FOR_IO, free);
++	pr_debug("Normal pages needed: %u + %u, available pages: %u\n",
++		 nr_pages, PAGES_FOR_IO, free);
+ 
+ 	return free > nr_pages + PAGES_FOR_IO;
+ }
+@@ -1961,20 +1963,20 @@ asmlinkage __visible int swsusp_save(void)
+ {
+ 	unsigned int nr_pages, nr_highmem;
+ 
+-	printk(KERN_INFO "PM: Creating hibernation image:\n");
++	pr_info("Creating hibernation image:\n");
+ 
+ 	drain_local_pages(NULL);
+ 	nr_pages = count_data_pages();
+ 	nr_highmem = count_highmem_pages();
+-	printk(KERN_INFO "PM: Need to copy %u pages\n", nr_pages + nr_highmem);
++	pr_info("Need to copy %u pages\n", nr_pages + nr_highmem);
+ 
+ 	if (!enough_free_mem(nr_pages, nr_highmem)) {
+-		printk(KERN_ERR "PM: Not enough free memory\n");
++		pr_err("Not enough free memory\n");
+ 		return -ENOMEM;
+ 	}
+ 
+ 	if (swsusp_alloc(&copy_bm, nr_pages, nr_highmem)) {
+-		printk(KERN_ERR "PM: Memory allocation failed\n");
++		pr_err("Memory allocation failed\n");
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -1995,8 +1997,7 @@ asmlinkage __visible int swsusp_save(void)
+ 	nr_copy_pages = nr_pages;
+ 	nr_meta_pages = DIV_ROUND_UP(nr_pages * sizeof(long), PAGE_SIZE);
+ 
+-	printk(KERN_INFO "PM: Hibernation image created (%d pages copied)\n",
+-		nr_pages);
++	pr_info("Hibernation image created (%d pages copied)\n", nr_pages);
+ 
+ 	return 0;
+ }
+@@ -2170,7 +2171,7 @@ static int check_header(struct swsusp_info *info)
+ 	if (!reason && info->num_physpages != get_num_physpages())
+ 		reason = "memory size";
+ 	if (reason) {
+-		printk(KERN_ERR "PM: Image mismatch: %s\n", reason);
++		pr_err("Image mismatch: %s\n", reason);
+ 		return -EPERM;
+ 	}
+ 	return 0;
+diff --git a/kernel/power/swap.c b/kernel/power/swap.c
+index d7cdc426ee38..293ead59eccc 100644
+--- a/kernel/power/swap.c
++++ b/kernel/power/swap.c
+@@ -12,6 +12,8 @@
+  *
+  */
+ 
++#define pr_fmt(fmt) "PM: " fmt
++
+ #include <linux/module.h>
+ #include <linux/file.h>
+ #include <linux/delay.h>
+@@ -241,9 +243,9 @@ static void hib_end_io(struct bio *bio)
+ 	struct page *page = bio->bi_io_vec[0].bv_page;
+ 
+ 	if (bio->bi_status) {
+-		printk(KERN_ALERT "Read-error on swap-device (%u:%u:%Lu)\n",
+-				MAJOR(bio_dev(bio)), MINOR(bio_dev(bio)),
+-				(unsigned long long)bio->bi_iter.bi_sector);
++		pr_alert("Read-error on swap-device (%u:%u:%Lu)\n",
++			 MAJOR(bio_dev(bio)), MINOR(bio_dev(bio)),
++			 (unsigned long long)bio->bi_iter.bi_sector);
+ 	}
+ 
+ 	if (bio_data_dir(bio) == WRITE)
+@@ -273,8 +275,8 @@ static int hib_submit_io(int op, int op_flags, pgoff_t page_off, void *addr,
+ 	bio_set_op_attrs(bio, op, op_flags);
+ 
+ 	if (bio_add_page(bio, page, PAGE_SIZE, 0) < PAGE_SIZE) {
+-		printk(KERN_ERR "PM: Adding page to bio failed at %llu\n",
+-			(unsigned long long)bio->bi_iter.bi_sector);
++		pr_err("Adding page to bio failed at %llu\n",
++		       (unsigned long long)bio->bi_iter.bi_sector);
+ 		bio_put(bio);
+ 		return -EFAULT;
+ 	}
+@@ -319,7 +321,7 @@ static int mark_swapfiles(struct swap_map_handle *handle, unsigned int flags)
+ 		error = hib_submit_io(REQ_OP_WRITE, REQ_SYNC,
+ 				      swsusp_resume_block, swsusp_header, NULL);
+ 	} else {
+-		printk(KERN_ERR "PM: Swap header not found!\n");
++		pr_err("Swap header not found!\n");
+ 		error = -ENODEV;
+ 	}
+ 	return error;
+@@ -413,8 +415,7 @@ static int get_swap_writer(struct swap_map_handle *handle)
+ 	ret = swsusp_swap_check();
+ 	if (ret) {
+ 		if (ret != -ENOSPC)
+-			printk(KERN_ERR "PM: Cannot find swap device, try "
+-					"swapon -a.\n");
++			pr_err("Cannot find swap device, try swapon -a\n");
+ 		return ret;
+ 	}
+ 	handle->cur = (struct swap_map_page *)get_zeroed_page(GFP_KERNEL);
+@@ -491,9 +492,9 @@ static int swap_writer_finish(struct swap_map_handle *handle,
+ {
+ 	if (!error) {
+ 		flush_swap_writer(handle);
+-		printk(KERN_INFO "PM: S");
++		pr_info("S");
+ 		error = mark_swapfiles(handle, flags);
+-		printk("|\n");
++		pr_cont("|\n");
+ 	}
+ 
+ 	if (error)
+@@ -542,7 +543,7 @@ static int save_image(struct swap_map_handle *handle,
+ 
+ 	hib_init_batch(&hb);
+ 
+-	printk(KERN_INFO "PM: Saving image data pages (%u pages)...\n",
++	pr_info("Saving image data pages (%u pages)...\n",
+ 		nr_to_write);
+ 	m = nr_to_write / 10;
+ 	if (!m)
+@@ -557,8 +558,8 @@ static int save_image(struct swap_map_handle *handle,
+ 		if (ret)
+ 			break;
+ 		if (!(nr_pages % m))
+-			printk(KERN_INFO "PM: Image saving progress: %3d%%\n",
+-			       nr_pages / m * 10);
++			pr_info("Image saving progress: %3d%%\n",
++				nr_pages / m * 10);
+ 		nr_pages++;
+ 	}
+ 	err2 = hib_wait_io(&hb);
+@@ -566,7 +567,7 @@ static int save_image(struct swap_map_handle *handle,
+ 	if (!ret)
+ 		ret = err2;
+ 	if (!ret)
+-		printk(KERN_INFO "PM: Image saving done.\n");
++		pr_info("Image saving done\n");
+ 	swsusp_show_speed(start, stop, nr_to_write, "Wrote");
+ 	return ret;
+ }
+@@ -692,14 +693,14 @@ static int save_image_lzo(struct swap_map_handle *handle,
+ 
+ 	page = (void *)__get_free_page(__GFP_RECLAIM | __GFP_HIGH);
+ 	if (!page) {
+-		printk(KERN_ERR "PM: Failed to allocate LZO page\n");
++		pr_err("Failed to allocate LZO page\n");
+ 		ret = -ENOMEM;
+ 		goto out_clean;
+ 	}
+ 
+ 	data = vmalloc(sizeof(*data) * nr_threads);
+ 	if (!data) {
+-		printk(KERN_ERR "PM: Failed to allocate LZO data\n");
++		pr_err("Failed to allocate LZO data\n");
+ 		ret = -ENOMEM;
+ 		goto out_clean;
+ 	}
+@@ -708,7 +709,7 @@ static int save_image_lzo(struct swap_map_handle *handle,
+ 
+ 	crc = kmalloc(sizeof(*crc), GFP_KERNEL);
+ 	if (!crc) {
+-		printk(KERN_ERR "PM: Failed to allocate crc\n");
++		pr_err("Failed to allocate crc\n");
+ 		ret = -ENOMEM;
+ 		goto out_clean;
+ 	}
+@@ -726,8 +727,7 @@ static int save_image_lzo(struct swap_map_handle *handle,
+ 		                            "image_compress/%u", thr);
+ 		if (IS_ERR(data[thr].thr)) {
+ 			data[thr].thr = NULL;
+-			printk(KERN_ERR
+-			       "PM: Cannot start compression threads\n");
++			pr_err("Cannot start compression threads\n");
+ 			ret = -ENOMEM;
+ 			goto out_clean;
+ 		}
+@@ -749,7 +749,7 @@ static int save_image_lzo(struct swap_map_handle *handle,
+ 	crc->thr = kthread_run(crc32_threadfn, crc, "image_crc32");
+ 	if (IS_ERR(crc->thr)) {
+ 		crc->thr = NULL;
+-		printk(KERN_ERR "PM: Cannot start CRC32 thread\n");
++		pr_err("Cannot start CRC32 thread\n");
+ 		ret = -ENOMEM;
+ 		goto out_clean;
+ 	}
+@@ -760,10 +760,9 @@ static int save_image_lzo(struct swap_map_handle *handle,
+ 	 */
+ 	handle->reqd_free_pages = reqd_free_pages();
+ 
+-	printk(KERN_INFO
+-		"PM: Using %u thread(s) for compression.\n"
+-		"PM: Compressing and saving image data (%u pages)...\n",
+-		nr_threads, nr_to_write);
++	pr_info("Using %u thread(s) for compression\n", nr_threads);
++	pr_info("Compressing and saving image data (%u pages)...\n",
++		nr_to_write);
+ 	m = nr_to_write / 10;
+ 	if (!m)
+ 		m = 1;
+@@ -783,10 +782,8 @@ static int save_image_lzo(struct swap_map_handle *handle,
+ 				       data_of(*snapshot), PAGE_SIZE);
+ 
+ 				if (!(nr_pages % m))
+-					printk(KERN_INFO
+-					       "PM: Image saving progress: "
+-					       "%3d%%\n",
+-				               nr_pages / m * 10);
++					pr_info("Image saving progress: %3d%%\n",
++						nr_pages / m * 10);
+ 				nr_pages++;
+ 			}
+ 			if (!off)
+@@ -813,15 +810,14 @@ static int save_image_lzo(struct swap_map_handle *handle,
+ 			ret = data[thr].ret;
+ 
+ 			if (ret < 0) {
+-				printk(KERN_ERR "PM: LZO compression failed\n");
++				pr_err("LZO compression failed\n");
+ 				goto out_finish;
+ 			}
+ 
+ 			if (unlikely(!data[thr].cmp_len ||
+ 			             data[thr].cmp_len >
+ 			             lzo1x_worst_compress(data[thr].unc_len))) {
+-				printk(KERN_ERR
+-				       "PM: Invalid LZO compressed length\n");
++				pr_err("Invalid LZO compressed length\n");
+ 				ret = -1;
+ 				goto out_finish;
+ 			}
+@@ -857,7 +853,7 @@ static int save_image_lzo(struct swap_map_handle *handle,
+ 	if (!ret)
+ 		ret = err2;
+ 	if (!ret)
+-		printk(KERN_INFO "PM: Image saving done.\n");
++		pr_info("Image saving done\n");
+ 	swsusp_show_speed(start, stop, nr_to_write, "Wrote");
+ out_clean:
+ 	if (crc) {
+@@ -888,7 +884,7 @@ static int enough_swap(unsigned int nr_pages, unsigned int flags)
+ 	unsigned int free_swap = count_swap_pages(root_swap, 1);
+ 	unsigned int required;
+ 
+-	pr_debug("PM: Free swap pages: %u\n", free_swap);
++	pr_debug("Free swap pages: %u\n", free_swap);
+ 
+ 	required = PAGES_FOR_IO + nr_pages;
+ 	return free_swap > required;
+@@ -915,12 +911,12 @@ int swsusp_write(unsigned int flags)
+ 	pages = snapshot_get_image_size();
+ 	error = get_swap_writer(&handle);
+ 	if (error) {
+-		printk(KERN_ERR "PM: Cannot get swap writer\n");
++		pr_err("Cannot get swap writer\n");
+ 		return error;
+ 	}
+ 	if (flags & SF_NOCOMPRESS_MODE) {
+ 		if (!enough_swap(pages, flags)) {
+-			printk(KERN_ERR "PM: Not enough free swap\n");
++			pr_err("Not enough free swap\n");
+ 			error = -ENOSPC;
+ 			goto out_finish;
+ 		}
+@@ -1068,8 +1064,7 @@ static int load_image(struct swap_map_handle *handle,
+ 	hib_init_batch(&hb);
+ 
+ 	clean_pages_on_read = true;
+-	printk(KERN_INFO "PM: Loading image data pages (%u pages)...\n",
+-		nr_to_read);
++	pr_info("Loading image data pages (%u pages)...\n", nr_to_read);
+ 	m = nr_to_read / 10;
+ 	if (!m)
+ 		m = 1;
+@@ -1087,8 +1082,8 @@ static int load_image(struct swap_map_handle *handle,
+ 		if (ret)
+ 			break;
+ 		if (!(nr_pages % m))
+-			printk(KERN_INFO "PM: Image loading progress: %3d%%\n",
+-			       nr_pages / m * 10);
++			pr_info("Image loading progress: %3d%%\n",
++				nr_pages / m * 10);
+ 		nr_pages++;
+ 	}
+ 	err2 = hib_wait_io(&hb);
+@@ -1096,7 +1091,7 @@ static int load_image(struct swap_map_handle *handle,
+ 	if (!ret)
+ 		ret = err2;
+ 	if (!ret) {
+-		printk(KERN_INFO "PM: Image loading done.\n");
++		pr_info("Image loading done\n");
+ 		snapshot_write_finalize(snapshot);
+ 		if (!snapshot_image_loaded(snapshot))
+ 			ret = -ENODATA;
+@@ -1190,14 +1185,14 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 
+ 	page = vmalloc(sizeof(*page) * LZO_MAX_RD_PAGES);
+ 	if (!page) {
+-		printk(KERN_ERR "PM: Failed to allocate LZO page\n");
++		pr_err("Failed to allocate LZO page\n");
+ 		ret = -ENOMEM;
+ 		goto out_clean;
+ 	}
+ 
+ 	data = vmalloc(sizeof(*data) * nr_threads);
+ 	if (!data) {
+-		printk(KERN_ERR "PM: Failed to allocate LZO data\n");
++		pr_err("Failed to allocate LZO data\n");
+ 		ret = -ENOMEM;
+ 		goto out_clean;
+ 	}
+@@ -1206,7 +1201,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 
+ 	crc = kmalloc(sizeof(*crc), GFP_KERNEL);
+ 	if (!crc) {
+-		printk(KERN_ERR "PM: Failed to allocate crc\n");
++		pr_err("Failed to allocate crc\n");
+ 		ret = -ENOMEM;
+ 		goto out_clean;
+ 	}
+@@ -1226,8 +1221,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 		                            "image_decompress/%u", thr);
+ 		if (IS_ERR(data[thr].thr)) {
+ 			data[thr].thr = NULL;
+-			printk(KERN_ERR
+-			       "PM: Cannot start decompression threads\n");
++			pr_err("Cannot start decompression threads\n");
+ 			ret = -ENOMEM;
+ 			goto out_clean;
+ 		}
+@@ -1249,7 +1243,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 	crc->thr = kthread_run(crc32_threadfn, crc, "image_crc32");
+ 	if (IS_ERR(crc->thr)) {
+ 		crc->thr = NULL;
+-		printk(KERN_ERR "PM: Cannot start CRC32 thread\n");
++		pr_err("Cannot start CRC32 thread\n");
+ 		ret = -ENOMEM;
+ 		goto out_clean;
+ 	}
+@@ -1274,8 +1268,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 		if (!page[i]) {
+ 			if (i < LZO_CMP_PAGES) {
+ 				ring_size = i;
+-				printk(KERN_ERR
+-				       "PM: Failed to allocate LZO pages\n");
++				pr_err("Failed to allocate LZO pages\n");
+ 				ret = -ENOMEM;
+ 				goto out_clean;
+ 			} else {
+@@ -1285,10 +1278,9 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 	}
+ 	want = ring_size = i;
+ 
+-	printk(KERN_INFO
+-		"PM: Using %u thread(s) for decompression.\n"
+-		"PM: Loading and decompressing image data (%u pages)...\n",
+-		nr_threads, nr_to_read);
++	pr_info("Using %u thread(s) for decompression\n", nr_threads);
++	pr_info("Loading and decompressing image data (%u pages)...\n",
++		nr_to_read);
+ 	m = nr_to_read / 10;
+ 	if (!m)
+ 		m = 1;
+@@ -1348,8 +1340,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 			if (unlikely(!data[thr].cmp_len ||
+ 			             data[thr].cmp_len >
+ 			             lzo1x_worst_compress(LZO_UNC_SIZE))) {
+-				printk(KERN_ERR
+-				       "PM: Invalid LZO compressed length\n");
++				pr_err("Invalid LZO compressed length\n");
+ 				ret = -1;
+ 				goto out_finish;
+ 			}
+@@ -1400,16 +1391,14 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 			ret = data[thr].ret;
+ 
+ 			if (ret < 0) {
+-				printk(KERN_ERR
+-				       "PM: LZO decompression failed\n");
++				pr_err("LZO decompression failed\n");
+ 				goto out_finish;
+ 			}
+ 
+ 			if (unlikely(!data[thr].unc_len ||
+ 			             data[thr].unc_len > LZO_UNC_SIZE ||
+ 			             data[thr].unc_len & (PAGE_SIZE - 1))) {
+-				printk(KERN_ERR
+-				       "PM: Invalid LZO uncompressed length\n");
++				pr_err("Invalid LZO uncompressed length\n");
+ 				ret = -1;
+ 				goto out_finish;
+ 			}
+@@ -1420,10 +1409,8 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 				       data[thr].unc + off, PAGE_SIZE);
+ 
+ 				if (!(nr_pages % m))
+-					printk(KERN_INFO
+-					       "PM: Image loading progress: "
+-					       "%3d%%\n",
+-					       nr_pages / m * 10);
++					pr_info("Image loading progress: %3d%%\n",
++						nr_pages / m * 10);
+ 				nr_pages++;
+ 
+ 				ret = snapshot_write_next(snapshot);
+@@ -1448,15 +1435,14 @@ static int load_image_lzo(struct swap_map_handle *handle,
+ 	}
+ 	stop = ktime_get();
+ 	if (!ret) {
+-		printk(KERN_INFO "PM: Image loading done.\n");
++		pr_info("Image loading done\n");
+ 		snapshot_write_finalize(snapshot);
+ 		if (!snapshot_image_loaded(snapshot))
+ 			ret = -ENODATA;
+ 		if (!ret) {
+ 			if (swsusp_header->flags & SF_CRC32_MODE) {
+ 				if(handle->crc32 != swsusp_header->crc32) {
+-					printk(KERN_ERR
+-					       "PM: Invalid image CRC32!\n");
++					pr_err("Invalid image CRC32!\n");
+ 					ret = -ENODATA;
+ 				}
+ 			}
+@@ -1513,9 +1499,9 @@ int swsusp_read(unsigned int *flags_p)
+ 	swap_reader_finish(&handle);
+ end:
+ 	if (!error)
+-		pr_debug("PM: Image successfully loaded\n");
++		pr_debug("Image successfully loaded\n");
+ 	else
+-		pr_debug("PM: Error %d resuming\n", error);
++		pr_debug("Error %d resuming\n", error);
+ 	return error;
+ }
+ 
+@@ -1552,13 +1538,13 @@ int swsusp_check(void)
+ 		if (error)
+ 			blkdev_put(hib_resume_bdev, FMODE_READ);
+ 		else
+-			pr_debug("PM: Image signature found, resuming\n");
++			pr_debug("Image signature found, resuming\n");
+ 	} else {
+ 		error = PTR_ERR(hib_resume_bdev);
+ 	}
+ 
+ 	if (error)
+-		pr_debug("PM: Image not found (code %d)\n", error);
++		pr_debug("Image not found (code %d)\n", error);
+ 
+ 	return error;
+ }
+@@ -1570,7 +1556,7 @@ int swsusp_check(void)
+ void swsusp_close(fmode_t mode)
+ {
+ 	if (IS_ERR(hib_resume_bdev)) {
+-		pr_debug("PM: Image device not initialised\n");
++		pr_debug("Image device not initialised\n");
+ 		return;
+ 	}
+ 
+@@ -1594,7 +1580,7 @@ int swsusp_unmark(void)
+ 					swsusp_resume_block,
+ 					swsusp_header, NULL);
+ 	} else {
+-		printk(KERN_ERR "PM: Cannot find swsusp signature!\n");
++		pr_err("Cannot find swsusp signature!\n");
+ 		error = -ENODEV;
+ 	}
+ 
+-- 
+2.10.0.rc2.1.g053435c
