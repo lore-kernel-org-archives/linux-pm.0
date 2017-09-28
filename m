@@ -1,11 +1,11 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [RFC][PATCH] ACPI / LPIT: Add LPIT table support
-Date: Wed, 27 Sep 2017 19:30:00 -0700
-Message-ID: <1506565800-63405-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Subject: [RFC Resend][PATCH] ACPI / LPIT: Add LPIT table support
+Date: Wed, 27 Sep 2017 19:36:02 -0700
+Message-ID: <1506566162-63967-1-git-send-email-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-acpi-owner@vger.kernel.org>
 Sender: linux-acpi-owner@vger.kernel.org
 To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, len.brown@kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, len.brown@intel.com, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 Added functionality to read LPIT table, which provides:
@@ -40,6 +40,8 @@ This is utilized by intel_pmc_core driver to print more debug information.
 Link: http://www.uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
+Resend to correct email address.
+
  drivers/acpi/Kconfig     |   5 ++
  drivers/acpi/Makefile    |   1 +
  drivers/acpi/acpi_lpit.c | 162 +++++++++++++++++++++++++++++++++++++++++++++++
