@@ -1,46 +1,107 @@
-From: Qiang <zhengqiang10@huawei.com>
-Subject: [PATCH] Bug fix for PME interrupt handler, add Root Status check
-Date: Thu, 28 Sep 2017 11:54:34 +0800
-Message-ID: <1506570874-136126-1-git-send-email-zhengqiang10@huawei.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH ] cpufreq: ti-cpufreq: kfree opp_data when failure
+Date: Wed, 27 Sep 2017 21:19:33 -0700
+Message-ID: <20170928041933.GG12211@ubuntu>
+References: <1506496097-30852-1-git-send-email-zumeng.chen@windriver.com>
+ <20170927174026.GB12211@ubuntu>
+ <7b7315f0-c2e4-a09e-8769-2d15a167fa73@windriver.com>
 Mime-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga04-in.huawei.com ([45.249.212.190]:7452 "EHLO
-        szxga04-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750905AbdI1DzN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Sep 2017 23:55:13 -0400
+Received: from mail-pg0-f43.google.com ([74.125.83.43]:50261 "EHLO
+        mail-pg0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750881AbdI1ETf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2017 00:19:35 -0400
+Received: by mail-pg0-f43.google.com with SMTP id p5so250839pgn.7
+        for <linux-pm@vger.kernel.org>; Wed, 27 Sep 2017 21:19:35 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <7b7315f0-c2e4-a09e-8769-2d15a167fa73@windriver.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: helgaas@kernel.org
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, gabriele.paoloni@huawei.com, linuxarm@huawei.com
+To: Zumeng Chen <zumeng.chen@windriver.com>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, rjw@rjwysocki.net, d-gerlach@ti.com, tony@atomide.com
 
-PCIe PME and hot plug share same interrupt number. In some special case,
-Link down event cause hot plug interrupt, devices is not disconnected,
-But read config will return 0xff.
+On 28-09-17, 07:49, Zumeng Chen wrote:
+> On 09/28/2017 01:40 AM, Viresh Kumar wrote:
+> >On 27-09-17, 15:08, Zumeng Chen wrote:
+> >>From: Zumeng Chen <zumeng.chen@gmail.com>
+> >>
+> >>memory leakage was found by kmemleak. opp_data needs to be freed
+> >>when failure, including fail_put_node.
+> >>
+> >>unreferenced object 0xccdd4c40 (size 64):
+> >>   comm "swapper", pid 1, jiffies 4294938465 (age 888.520s)
+> >>   hex dump (first 32 bytes):
+> >>     00 7c 00 c1 98 69 d8 ce 00 24 03 ce 00 24 03 ce  .|...i...$...$..
+> >>     20 35 23 c1 00 00 00 00 00 00 00 00 00 00 00 00   5#.............
+> >>   backtrace:
+> >>     [<c028fb64>] kmem_cache_alloc_trace+0x2c4/0x3cc
+> >>     [<c076d5f0>] ti_cpufreq_probe+0x6c/0x334
+> >>     [<c068d6e4>] platform_drv_probe+0x60/0xc0
+> >>     [<c068b384>] driver_probe_device+0x218/0x2c4
+> >>     [<c068b5a4>] __device_attach_driver+0xa8/0xdc
+> >>     [<c0689340>] bus_for_each_drv+0x70/0xa4
+> >>     [<c068b020>] __device_attach+0xc0/0x124
+> >>     [<c068b634>] device_initial_probe+0x1c/0x20
+> >>     [<c068a3b8>] bus_probe_device+0x94/0x9c
+> >>     [<c0688300>] device_add+0x404/0x590
+> >>     [<c068d408>] platform_device_add+0x11c/0x230
+> >>     [<c068df40>] platform_device_register_full+0x10c/0x128
+> >>     [<c076d578>] ti_cpufreq_init+0x44/0x50
+> >>     [<c01017c4>] do_one_initcall+0x54/0x180
+> >>     [<c0e00fe0>] kernel_init_freeable+0x270/0x33c
+> >>     [<c093f2bc>] kernel_init+0x18/0x124
+> >>
+> >>Signed-off-by: Zumeng Chen <zumeng.chen@gmail.com>
+> >>---
+> >>  drivers/cpufreq/ti-cpufreq.c | 5 ++++-
+> >>  1 file changed, 4 insertions(+), 1 deletion(-)
+> >>
+> >>diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+> >>index 4bf47de..ffcddcd 100644
+> >>--- a/drivers/cpufreq/ti-cpufreq.c
+> >>+++ b/drivers/cpufreq/ti-cpufreq.c
+> >>@@ -217,7 +217,8 @@ static int ti_cpufreq_init(void)
+> >>  	opp_data->cpu_dev = get_cpu_device(0);
+> >>  	if (!opp_data->cpu_dev) {
+> >>  		pr_err("%s: Failed to get device for CPU0\n", __func__);
+> >>-		return -ENODEV;
+> >>+		ret = ENODEV;
+> >>+		goto free_opp_data;
+> >>  	}
+> >>  	opp_data->opp_node = dev_pm_opp_of_get_opp_desc_node(opp_data->cpu_dev);
+> >>@@ -262,6 +263,8 @@ static int ti_cpufreq_init(void)
+> >>  fail_put_node:
+> >>  	of_node_put(opp_data->opp_node);
+> >>+free_opp_data:
+> >>+	kfree(opp_data);
+> >>  	return ret;
+> >>  }
+> >Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> >
+> >I also see that you are missing an of_node_put(np) in the driver. Maybe you
+> >want to fix that as well (in a separate patch) ?
+> 
+> Ha, thanks, I'm not sure if I follow your meanings.
+> 
+> opp_data->opp_node will be set after goto free_opp_data, so are we safe
+> here?
+> 
+>         opp_data->cpu_dev = get_cpu_device(0);
+>         if (!opp_data->cpu_dev) {
+>                 pr_err("%s: Failed to get device for CPU0\n", __func__);
+>                 ret = ENODEV;
+>                 goto free_opp_data;
+>         }
+> 
+>         opp_data->opp_node =
+> dev_pm_opp_of_get_opp_desc_node(opp_data->cpu_dev);
 
-In that case, PME work function will run and not return Because
-Root Status PME bit always 1 and can not be cleared.
+I was talking about this one.
 
-This patch add Root Status check in PME interrupt handler,
-Just do same as pciehp isr Slot status check.
+        np = of_find_node_by_path("/");
 
-Signed-off-by: Qiang Zheng <zhengqiang10@huawei.com>
----
- drivers/pci/pcie/pme.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+There is no counterpart of this one.
 
-diff --git a/drivers/pci/pcie/pme.c b/drivers/pci/pcie/pme.c
-index fafdb16..67144f5 100644
---- a/drivers/pci/pcie/pme.c
-+++ b/drivers/pci/pcie/pme.c
-@@ -273,7 +273,7 @@ static irqreturn_t pcie_pme_irq(int irq, void *context)
- 	spin_lock_irqsave(&data->lock, flags);
- 	pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
- 
--	if (!(rtsta & PCI_EXP_RTSTA_PME)) {
-+	if (rtsta == (u32)(~0) || !(rtsta & PCI_EXP_RTSTA_PME)) {
- 		spin_unlock_irqrestore(&data->lock, flags);
- 		return IRQ_NONE;
- 	}
 -- 
-1.9.1
+viresh
