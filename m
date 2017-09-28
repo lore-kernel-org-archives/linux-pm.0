@@ -1,58 +1,79 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM: ARM: sa1111: Drop suspend and resume bus type callbacks
-Date: Thu, 28 Sep 2017 21:09:42 +0200
-Message-ID: <CAJZ5v0iuzDk+gT=6KG3fX1d4C9dfzp0s8t-Y0pAM4SsVgaU=0A@mail.gmail.com>
-References: <2654085.Tx1JnNWXkX@aspire.rjw.lan> <20170926212812.GS20805@n2100.armlinux.org.uk>
- <CAJZ5v0i1iwBpkUYN=DbpbtVDu+xMKwza=4EbjYNyGr5rs7-D8Q@mail.gmail.com> <20170928094936.GV20805@n2100.armlinux.org.uk>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH v4 2/3] PM / mfd: intel-lpss: Push system sleep callbacks
+ to late/early stages
+Date: Thu, 28 Sep 2017 20:19:09 +0100
+Message-ID: <20170928191909.ftpm5ktabe6fnufv@dell>
+References: <3023226.l5IfJK6GIc@aspire.rjw.lan>
+ <3958866.l2qnKDbinI@aspire.rjw.lan>
+ <65494652.vEfz4tCBDb@aspire.rjw.lan>
+ <4332008.kXBLY0K23i@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:53438 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750759AbdI1TJn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2017 15:09:43 -0400
-In-Reply-To: <20170928094936.GV20805@n2100.armlinux.org.uk>
+Received: from mail-pg0-f50.google.com ([74.125.83.50]:54901 "EHLO
+        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750832AbdI1TTO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 Sep 2017 15:19:14 -0400
+Received: by mail-pg0-f50.google.com with SMTP id c137so1451944pga.11
+        for <linux-pm@vger.kernel.org>; Thu, 28 Sep 2017 12:19:14 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <4332008.kXBLY0K23i@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, Ulf Hansson <ulf.hansson@linaro.org>, Rajat Jain <rajatja@google.com>
 
-On Thu, Sep 28, 2017 at 11:49 AM, Russell King - ARM Linux
-<linux@armlinux.org.uk> wrote:
-> On Tue, Sep 26, 2017 at 11:37:40PM +0200, Rafael J. Wysocki wrote:
->> On Tue, Sep 26, 2017 at 11:28 PM, Russell King - ARM Linux
->> <linux@armlinux.org.uk> wrote:
->> > On Tue, Sep 26, 2017 at 10:47:10PM +0200, Rafael J. Wysocki wrote:
->> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >>
->> >> None of the sa1111 drivers in the tree implements the suspend and
->> >> resume callbacks from struct sa1111_driver, so drop them and drop
->> >> the corresponding callbacks from sa1111_bus_type.
->> >>
->> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >
->> > This will conflict with some patches I have - would you like me to queue
->> > it along with my changes?
->>
->> Yes, please.
->>
->> >  When would you like to get this merged?
->>
->> When possible. :-)
->>
->> I would like to drop the legacy suspend/resume callbacks from struct
->> bus_type eventually, as that's long overdue, and this is needed for
->> that purpose.  Not too urgent, though.
->
-> Sorry, I'd forgotten that I already had a similar patch:
->
-> http://git.armlinux.org.uk/cgit/linux-arm.git/commit/?h=sa1100&id=0e4ec3edb1c7e44aba1f48b924ab0c77431fd155
->
-> so no need to merge your veresion... I just need to get my version merged.
+On Mon, 25 Sep 2017, Rafael J. Wysocki wrote:
 
-OK
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Push the system suspend/resume callbacks of intel-lpss to the late
+> suspend/early resume stages to allow child device callbacks to be
+> pushed to the late/early stages of suspend/resume too, so as to
+> make it possible to avoid resuming the children if they are runtime-
+> suspended during system suspend going forward.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Tested-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+> Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+> Tested-by: Johannes Stezenbach <js@sig21.net>
+> Tested-by: Rajat Jain <rajatja@google.com>
+> ---
+> 
+> v3 -> v4: Added Tested-by tags.
+> 
+> ---
+>  drivers/mfd/intel-lpss.h |    7 +------
+>  1 file changed, 1 insertion(+), 6 deletions(-)
+> 
+> Index: linux-pm/drivers/mfd/intel-lpss.h
+> ===================================================================
+> --- linux-pm.orig/drivers/mfd/intel-lpss.h
+> +++ linux-pm/drivers/mfd/intel-lpss.h
 
-What about the locomo one?
+Weird.  What format is this?
 
-Thanks,
-Rafael
+Don't you use `git format-patch` and `git send-email`?
+
+> @@ -38,12 +38,7 @@ int intel_lpss_resume(struct device *dev
+>  #ifdef CONFIG_PM_SLEEP
+>  #define INTEL_LPSS_SLEEP_PM_OPS			\
+>  	.prepare = intel_lpss_prepare,		\
+> -	.suspend = intel_lpss_suspend,		\
+> -	.resume = intel_lpss_resume,		\
+> -	.freeze = intel_lpss_suspend,		\
+> -	.thaw = intel_lpss_resume,		\
+> -	.poweroff = intel_lpss_suspend,		\
+> -	.restore = intel_lpss_resume,
+> +	SET_LATE_SYSTEM_SLEEP_PM_OPS(intel_lpss_suspend, intel_lpss_resume)
+
+For the diff:
+
+Acked-by: Lee Jones <lee.jones@linaro.org>
+
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
