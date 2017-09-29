@@ -1,65 +1,92 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] extcon: Split out extcon header file for consumer and
- provider device
-Date: Fri, 29 Sep 2017 13:55:58 +0900
-Message-ID: <59CDD25E.9050202@samsung.com>
-References: <CGME20170929000148epcas2p200e56186b067ec626a033c7ae2d4bbdb@epcas2p2.samsung.com>
-        <1506643305-4581-1-git-send-email-cw00.choi@samsung.com>
-        <TY1PR06MB0992097F0FBBE04CD282EEE7D87E0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+From: Zhengqiang <zhengqiang10@huawei.com>
+Subject: Re: [PATCH] Bug fix for PME interrupt handler, add Root Status check
+Date: Fri, 29 Sep 2017 14:10:48 +0800
+Message-ID: <59CDE3E8.7050702@huawei.com>
+References: <1506570874-136126-1-git-send-email-zhengqiang10@huawei.com>
+ <CAJZ5v0izo1xeCMqDx2wmn+aC=CntWEV6f9kDupXx=Rgx9uZVPw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <TY1PR06MB0992097F0FBBE04CD282EEE7D87E0@TY1PR06MB0992.apcprd06.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, "balbi@kernel.org" <balbi@kernel.org>, "kishon@ti.com" <kishon@ti.com>, "sre@kernel.org" <sre@kernel.org>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "lee.jones@linaro.org" <lee.jones@linaro.org>
-Cc: "heiko@sntech.de" <heiko@sntech.de>, "krzk@kernel.org" <krzk@kernel.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "maxime.ripard@free-electrons.com" <maxime.ripard@free-electrons.com>, "wens@csie.org" <wens@csie.org>, "chanwoo@kernel.org" <chanwoo@kernel.org>, "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from szxga05-in.huawei.com ([45.249.212.191]:7506 "EHLO
+        szxga05-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751004AbdI2GLH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Sep 2017 02:11:07 -0400
+In-Reply-To: <CAJZ5v0izo1xeCMqDx2wmn+aC=CntWEV6f9kDupXx=Rgx9uZVPw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Gabriele Paoloni <gabriele.paoloni@huawei.com>, Linuxarm <linuxarm@huawei.com>
 
-Hi,
+Hi,Rafael, thanks for you reply.
+please see my comment.
 
-On 2017년 09월 29일 11:03, Yoshihiro Shimoda wrote:
-> Hi,
-> 
->> From: Chanwoo Choi
->> Sent: Friday, September 29, 2017 9:02 AM
+On 2017/9/29 7:13, Rafael J. Wysocki wrote:
+> On Thu, Sep 28, 2017 at 5:54 AM, Qiang <zhengqiang10@huawei.com> wrote:
+>> PCIe PME and hot plug share same interrupt number. In some special case,
+>> Link down event cause hot plug interrupt, devices is not disconnected,
+>> But read config will return 0xff.
 >>
-> < snip >
->>  drivers/phy/renesas/phy-rcar-gen3-usb2.c      |   2 +-
-> < snip >
->>  drivers/usb/gadget/udc/renesas_usb3.c         |   2 +-
-> 
-> These two drivers need the modification.
-> But...
-> 
-> < snip >
->> diff --git a/drivers/usb/renesas_usbhs/common.h b/drivers/usb/renesas_usbhs/common.h
->> index 8c5fc12ad778..a78764bc23eb 100644
->> --- a/drivers/usb/renesas_usbhs/common.h
->> +++ b/drivers/usb/renesas_usbhs/common.h
->> @@ -17,7 +17,7 @@
->>  #ifndef RENESAS_USB_DRIVER_H
->>  #define RENESAS_USB_DRIVER_H
+>> In that case, PME work function will run and not return Because
+>> Root Status PME bit always 1 and can not be cleared.
 >>
->> -#include <linux/extcon.h>
->> +#include <linux/extcon-provider.h>
+>> This patch add Root Status check in PME interrupt handler,
+>> Just do same as pciehp isr Slot status check.
+>>
+>> Signed-off-by: Qiang Zheng <zhengqiang10@huawei.com>
+>> ---
+>>  drivers/pci/pcie/pme.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/pci/pcie/pme.c b/drivers/pci/pcie/pme.c
+>> index fafdb16..67144f5 100644
+>> --- a/drivers/pci/pcie/pme.c
+>> +++ b/drivers/pci/pcie/pme.c
+>> @@ -273,7 +273,7 @@ static irqreturn_t pcie_pme_irq(int irq, void *context)
+>>         spin_lock_irqsave(&data->lock, flags);
+>>         pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
+>>
+>> -       if (!(rtsta & PCI_EXP_RTSTA_PME)) {
+>> +       if (rtsta == (u32)(~0) || !(rtsta & PCI_EXP_RTSTA_PME)) {
+>>                 spin_unlock_irqrestore(&data->lock, flags);
+>>                 return IRQ_NONE;
+>>         }
 > 
-> Since this driver doesn't use any extcon-provider APIs for now,
-> we doesn't need the modification, IIUC.
+> OK, but isn't there a symbol for all ones in u32?  And if there isn't,
+> what about adding it?
+> 
+Here is Root Status register definitions.
 
-I don't modify 'drivers/usb/renesas_usbhs/common.h'
-on v2 patch. Thanks for your comment.
+Bit Location    Register Description        					Attributes
+15:0            PME Requester ID – 						RO
+		This field indicates the PCI Requester ID of the
+		last PME Requester. This field is only valid
+		when the PME Status bit is Set.
 
-> 
-> Best regards,
-> Yoshihiro Shimoda
-> 
-> 
-> 
-> 
+16              PME Status – This bit RW1C					RW1C
+		indicates that PME was asserted by the PME Requester
+		indicated in the PME Requester ID field. Subsequent PMEs
+		are kept pending until the status register is cleared by
+		software by writing a 1b.
+		Default value of this bit is 0b.
 
+17              PME Pending – 							RO
+		This bit indicates that another PME is pending 		
+		when the PME Status bit is Set. When the PME Status bit is
+		cleared by software; the PME is delivered by hardware by
+		setting the PME Status bit again and updating the PME
+		Requester ID field appropriately. The PME Pending bit is
+		cleared by hardware if no more PMEs are pending.
+31:18		RsvdZ
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Bit[31:18] is RsvdZ, read only and must return zero when read.
+
+So, i guess there is no a symbol for all ones in u32.
+If read Root Status return 0xff, perhaps RC is disconnected or accessed timeout.
+
+> Thanks,
+> Rafael
+> 
+> .
+> 
+Thanks
