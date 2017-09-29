@@ -1,92 +1,82 @@
-From: Zhengqiang <zhengqiang10@huawei.com>
-Subject: Re: [PATCH] Bug fix for PME interrupt handler, add Root Status check
-Date: Fri, 29 Sep 2017 14:10:48 +0800
-Message-ID: <59CDE3E8.7050702@huawei.com>
-References: <1506570874-136126-1-git-send-email-zhengqiang10@huawei.com>
- <CAJZ5v0izo1xeCMqDx2wmn+aC=CntWEV6f9kDupXx=Rgx9uZVPw@mail.gmail.com>
+From: Michael Trimarchi <michael@amarulasolutions.com>
+Subject: [RFC PATCH V2] power: supply: Use system freezable queue for power
+ supply change event
+Date: Fri, 29 Sep 2017 10:36:44 +0200
+Message-ID: <20170929083642.GA20189@panicking>
+References: <1506583986-4527-1-git-send-email-michael@amarulasolutions.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga05-in.huawei.com ([45.249.212.191]:7506 "EHLO
-        szxga05-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751004AbdI2GLH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Sep 2017 02:11:07 -0400
-In-Reply-To: <CAJZ5v0izo1xeCMqDx2wmn+aC=CntWEV6f9kDupXx=Rgx9uZVPw@mail.gmail.com>
+Received: from mail-wm0-f44.google.com ([74.125.82.44]:43710 "EHLO
+        mail-wm0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751692AbdI2Igs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Sep 2017 04:36:48 -0400
+Received: by mail-wm0-f44.google.com with SMTP id m72so4340744wmc.0
+        for <linux-pm@vger.kernel.org>; Fri, 29 Sep 2017 01:36:48 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1506583986-4527-1-git-send-email-michael@amarulasolutions.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Gabriele Paoloni <gabriele.paoloni@huawei.com>, Linuxarm <linuxarm@huawei.com>
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org
 
-Hi,Rafael, thanks for you reply.
-please see my comment.
+Just before suspend we can get the situation that a user process
+is trying to access the sysfs attribute of power supply. During resume
+we can hit the situation to have an invalid access to i2c bus that
+is still suspended. Make more sense to freeze the workqueue too
 
-On 2017/9/29 7:13, Rafael J. Wysocki wrote:
-> On Thu, Sep 28, 2017 at 5:54 AM, Qiang <zhengqiang10@huawei.com> wrote:
->> PCIe PME and hot plug share same interrupt number. In some special case,
->> Link down event cause hot plug interrupt, devices is not disconnected,
->> But read config will return 0xff.
->>
->> In that case, PME work function will run and not return Because
->> Root Status PME bit always 1 and can not be cleared.
->>
->> This patch add Root Status check in PME interrupt handler,
->> Just do same as pciehp isr Slot status check.
->>
->> Signed-off-by: Qiang Zheng <zhengqiang10@huawei.com>
->> ---
->>  drivers/pci/pcie/pme.c | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/pci/pcie/pme.c b/drivers/pci/pcie/pme.c
->> index fafdb16..67144f5 100644
->> --- a/drivers/pci/pcie/pme.c
->> +++ b/drivers/pci/pcie/pme.c
->> @@ -273,7 +273,7 @@ static irqreturn_t pcie_pme_irq(int irq, void *context)
->>         spin_lock_irqsave(&data->lock, flags);
->>         pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
->>
->> -       if (!(rtsta & PCI_EXP_RTSTA_PME)) {
->> +       if (rtsta == (u32)(~0) || !(rtsta & PCI_EXP_RTSTA_PME)) {
->>                 spin_unlock_irqrestore(&data->lock, flags);
->>                 return IRQ_NONE;
->>         }
-> 
-> OK, but isn't there a symbol for all ones in u32?  And if there isn't,
-> what about adding it?
-> 
-Here is Root Status register definitions.
+<4>[13502.656095] [<c0419264>] (sbs_read_word_data+0x0/0x70) from
+[<c04192f8>] (sbs_set_battery_mode+0x24/0x6c)
+<4>[13502.656095]  r6:d79b0800 r5:d7123408 r4:00000001 r3:c04194ac
+<4>[13502.656125] [<c04192d4>] (sbs_set_battery_mode+0x0/0x6c) from
+[<c041962c>] (sbs_get_property+0x180/0x6e4)
+<4>[13502.656125]  r6:0000001b r5:d7123408 r4:d79b0800 r3:c04194ac
+<4>[13502.656156] [<c04194ac>] (sbs_get_property+0x0/0x6e4) from
+[<c0417e2c>] (power_supply_show_property+0x4c/0x1c8)
+<4>[13502.656186] [<c0417de0>] (power_supply_show_property+0x0/0x1c8)
+from [<c0418098>] (power_supply_uevent+0xa8/0x1d4)
+<4>[13502.656186]  r8:ca4b1000 r7:0000001b r6:d7123408 r5:0000000e r4:c068d3dc
+<4>[13502.656217] [<c0417ff0>] (power_supply_uevent+0x0/0x1d4) from
+[<c0324f58>] (dev_uevent+0xc8/0x18c)
+<4>[13502.656247] [<c0324e90>] (dev_uevent+0x0/0x18c) from
+[<c025ce18>] (kobject_uevent_env+0x1d4/0x4c4)
+<4>[13502.656247]  r7:d7882880 r6:00000000 r5:c069cda4 r4:00000002
+<4>[13502.656278] [<c025cc44>] (kobject_uevent_env+0x0/0x4c4) from
+[<c025d11c>] (kobject_uevent+0x14/0x18)
+<4>[13502.656308] [<c025d108>] (kobject_uevent+0x0/0x18) from
+[<c04178d0>] (power_supply_changed_work+0x94/0xb8)
+<4>[13502.656308] [<c041783c>] (power_supply_changed_work+0x0/0xb8)
+from [<c00603e8>] (process_one_work+0x158/0x474)
+<4>[13502.656339]  r7:c1ae9e00 r6:c1ae4880 r5:cc480000 r4:ce655e00
+<4>[13502.656369] [<c0060290>] (process_one_work+0x0/0x474) from
+[<c0060a50>] (worker_thread+0x144/0x324)
+<4>[13502.656369] [<c006090c>] (worker_thread+0x0/0x324) from
+[<c00655c4>] (kthread+0x98/0xa4)
+<4>[13502.656400] [<c006552c>] (kthread+0x0/0xa4) from [<c0047b6c>]
+(do_exit+0x0/0x7c4)
 
-Bit Location    Register Description        					Attributes
-15:0            PME Requester ID – 						RO
-		This field indicates the PCI Requester ID of the
-		last PME Requester. This field is only valid
-		when the PME Status bit is Set.
+Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
+---
+Changes V1:
+- fix typo in the code
+- Add more information in the description
 
-16              PME Status – This bit RW1C					RW1C
-		indicates that PME was asserted by the PME Requester
-		indicated in the PME Requester ID field. Subsequent PMEs
-		are kept pending until the status register is cleared by
-		software by writing a 1b.
-		Default value of this bit is 0b.
-
-17              PME Pending – 							RO
-		This bit indicates that another PME is pending 		
-		when the PME Status bit is Set. When the PME Status bit is
-		cleared by software; the PME is delivered by hardware by
-		setting the PME Status bit again and updating the PME
-		Requester ID field appropriately. The PME Pending bit is
-		cleared by hardware if no more PMEs are pending.
-31:18		RsvdZ
-
-Bit[31:18] is RsvdZ, read only and must return zero when read.
-
-So, i guess there is no a symbol for all ones in u32.
-If read Root Status return 0xff, perhaps RC is disconnected or accessed timeout.
-
-> Thanks,
-> Rafael
-> 
-> .
-> 
-Thanks
+---
+ drivers/power/supply/power_supply_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+-
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 1e0960b..aa70853 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -119,7 +119,7 @@ void power_supply_changed(struct power_supply *psy)
+ 	psy->changed = true;
+ 	pm_stay_awake(&psy->dev);
+ 	spin_unlock_irqrestore(&psy->changed_lock, flags);
+-	schedule_work(&psy->changed_work);
++	queue_work(system_freezable_wq, &psy->changed_work);
+ }
+ EXPORT_SYMBOL_GPL(power_supply_changed);
+ 
+-- 
+2.7.4
