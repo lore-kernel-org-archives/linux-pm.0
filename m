@@ -1,67 +1,188 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [PATCH v3 0/5] bq27xxx_battery data memory update
-Date: Sun, 1 Oct 2017 13:59:45 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1710011359070.2031@hadrien>
-References: <20170824033617.20840-1-liam@networkimprov.net> <alpine.DEB.2.20.1708311330570.3243@hadrien> <CAKvHMgSKLJk2wB9pefYuGyMG2aNp7bCCaOMABGRxXZ9ju-ivHw@mail.gmail.com> <CAKvHMgRzFpueUccSL1iu_-EazCe76cF8iSAPyYgcxJ3dNOZejA@mail.gmail.com>
- <alpine.DEB.2.20.1709052214030.2058@hadrien> <CAKvHMgTE-vypWKjhR7QgQNHFbVNdg99MgARmC-cTv6vfjgzZFg@mail.gmail.com> <alpine.DEB.2.20.1709180731060.2547@hadrien> <CAKvHMgSnULnEAtW5Axi1fyJG_2YW7hD3K_-N5P3Xdq_Gn72z4A@mail.gmail.com> <alpine.DEB.2.20.1709192355160.2518@hadrien>
- <CAKvHMgTF8C+7xcO31MvVeepCmSiP4V6tvvC4uVfcA4_JAfFHsw@mail.gmail.com> <alpine.DEB.2.20.1709201108070.3290@hadrien> <CAKvHMgTUrdF_ZmJYOB3jn020BMv-70MLpUBosBLstDrBN_KY9w@mail.gmail.com> <alpine.DEB.2.20.1709271154400.3186@hadrien>
- <CAKvHMgR9kKj+3DPpoRkk52B7caA7OBf1B0Rjv1q5KxmxpFU=3Q@mail.gmail.com> <alpine.DEB.2.20.1709271414310.3186@hadrien> <CAKvHMgTm0JvnawzTSVJx43y-bnO-Rmh0ZPBQL0z3aYFUh=PjLw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail3-relais-sop.national.inria.fr ([192.134.164.104]:11030
-        "EHLO mail3-relais-sop.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750965AbdJAL7r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 1 Oct 2017 07:59:47 -0400
-In-Reply-To: <CAKvHMgTm0JvnawzTSVJx43y-bnO-Rmh0ZPBQL0z3aYFUh=PjLw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Subject: [PATCH] coccinelle: api: detect duplicate chip data arrays
+Date: Sun,  1 Oct 2017 14:42:48 +0200
+Message-ID: <1506861768-5734-1-git-send-email-Julia.Lawall@lip6.fr>
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sebastian.reichel@collabora.co.uk>, pali.rohar@gmail.com, Linux PM mailing list <linux-pm@vger.kernel.org>
+Cc: kernel-janitors@vger.kernel.org, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, linux-kernel@vger.kernel.org, kbuild test robot <fengguang.wu@intel.com>, Masahiro Yamada <yamada.masahiro@socionext.com>
 List-Id: linux-pm@vger.kernel.org
-To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, "Andrew F. Davis" <afd@ti.com>, =?ISO-8859-15?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>
 
+This semantic patch detects duplicate arrays declared using BQ27XXX_DATA
+within a single structure.  It is currently specific to the file
+drivers/power/supply/bq27xxx_battery.c.
 
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-On Wed, 27 Sep 2017, Liam Breck wrote:
+---
+ scripts/coccinelle/api/battery.cocci |  161 +++++++++++++++++++++++++++++++++++
+ 1 file changed, 161 insertions(+)
 
-> On Wed, Sep 27, 2017 at 5:16 AM, Julia Lawall <julia.lawall@lip6.fr> wrote:
-> >
-> >
-> > On Wed, 27 Sep 2017, Liam Breck wrote:
-> >
-> >> Hi Julia, thanks so much for your help!
-> >>
-> >> On Wed, Sep 27, 2017 at 3:02 AM, Julia Lawall <julia.lawall@lip6.fr> wrote:
-> >> > The github version of Coccinelle finally supports the semantic patch for
-> >> > your code.  I have attached the semantic patch.  I wonder what should be
-> >> > done with this?  Do you want to use it locally with make coccicheck?  Do
-> >> > you want it to be integrated into the kernel?  Everything in the semantic
-> >>
-> >> Yes, our intent is to push it upstream. Can you submit a patch?
-> >>
-> >> Did you test with 4.13? That should show a handful of dupes...
-> >
-> > Are you sure?  I did a git checkout v4.13 and there aren't any occurrences
-> > of BQ27XXX_DATA.
->
-> Sorry, that macro landed in 4.14. If you revert this commit, you
-> should see dupes:
-> power: supply: bq27xxx: Remove duplicate chip data arrays
+diff --git a/scripts/coccinelle/api/battery.cocci b/scripts/coccinelle/api/battery.cocci
+new file mode 100644
+index 0000000..77c145a
+--- /dev/null
++++ b/scripts/coccinelle/api/battery.cocci
+@@ -0,0 +1,161 @@
++/// Detect BQ27XXX_DATA structures with identical registers, dm registers or
++/// properties.
++//# Doesn't unfold macros used in register or property fields.
++//# Requires OCaml scripting
++///
++// Confidence: High
++// Copyright: (C) 2017 Julia Lawall, Inria/LIP6, GPLv2.
++// URL: http://coccinelle.lip6.fr/
++// Requires: 1.0.7
++// Keywords: BQ27XXX_DATA
++
++virtual report
++
++@initialize:ocaml@
++@@
++
++let print_report p msg =
++  let p = List.hd p in
++  Printf.printf "%s:%d:%d-%d: %s" p.file p.line p.col p.col_end msg
++
++@str depends on report@
++type t;
++identifier i,i1,i2;
++expression e1,e2;
++@@
++
++t i[] = {
++  ...,
++  [e1] = BQ27XXX_DATA(i1,...),
++  ...,
++  [e2] = BQ27XXX_DATA(i2,...),
++  ...,
++};
++
++@script:ocaml tocheck@
++i1 << str.i1;
++i2 << str.i2;
++i1regs; i2regs;
++i1dmregs; i2dmregs;
++i1props; i2props;
++@@
++
++if not(i1 = i2)
++then
++  begin
++    i1regs := make_ident (i1 ^ "_regs");
++    i2regs := make_ident (i2 ^ "_regs");
++    i1dmregs := make_ident (i1 ^ "_dm_regs");
++    i2dmregs := make_ident (i2 ^ "_dm_regs");
++    i1props := make_ident (i1 ^ "_props");
++    i2props := make_ident (i2 ^ "_props")
++  end
++
++(* ---------------------------------------------------------------- *)
++
++@getregs1@
++typedef u8;
++identifier tocheck.i1regs;
++initializer list i1regs_vals;
++position p1;
++@@
++
++u8 i1regs@p1[...] = { i1regs_vals, };
++
++@getregs2@
++identifier tocheck.i2regs;
++initializer list i2regs_vals;
++position p2;
++@@
++
++u8 i2regs@p2[...] = { i2regs_vals, };
++
++@script:ocaml@
++(_,i1regs_vals) << getregs1.i1regs_vals;
++(_,i2regs_vals) << getregs2.i2regs_vals;
++i1regs << tocheck.i1regs;
++i2regs << tocheck.i2regs;
++p1 << getregs1.p1;
++p2 << getregs2.p2;
++@@
++
++if i1regs < i2regs &&
++   List.sort compare i1regs_vals = List.sort compare i2regs_vals
++then
++  let msg =
++    Printf.sprintf
++      "WARNING %s and %s (line %d) have the same registers\n"
++      i1regs i2regs (List.hd p2).line in
++  print_report p1 msg
++
++(* ---------------------------------------------------------------- *)
++
++@getdmregs1@
++identifier tocheck.i1dmregs;
++initializer list i1dmregs_vals;
++position p1;
++@@
++
++struct bq27xxx_dm_reg i1dmregs@p1[] = { i1dmregs_vals, };
++
++@getdmregs2@
++identifier tocheck.i2dmregs;
++initializer list i2dmregs_vals;
++position p2;
++@@
++
++struct bq27xxx_dm_reg i2dmregs@p2[] = { i2dmregs_vals, };
++
++@script:ocaml@
++(_,i1dmregs_vals) << getdmregs1.i1dmregs_vals;
++(_,i2dmregs_vals) << getdmregs2.i2dmregs_vals;
++i1dmregs << tocheck.i1dmregs;
++i2dmregs << tocheck.i2dmregs;
++p1 << getdmregs1.p1;
++p2 << getdmregs2.p2;
++@@
++
++if i1dmregs < i2dmregs &&
++   List.sort compare i1dmregs_vals = List.sort compare i2dmregs_vals
++then
++  let msg =
++    Printf.sprintf
++      "WARNING %s and %s (line %d) have the same dm registers\n"
++      i1dmregs i2dmregs (List.hd p2).line in
++  print_report p1 msg
++
++(* ---------------------------------------------------------------- *)
++
++@getprops1@
++identifier tocheck.i1props;
++initializer list[n1] i1props_vals;
++position p1;
++@@
++
++enum power_supply_property i1props@p1[] = { i1props_vals, };
++
++@getprops2@
++identifier tocheck.i2props;
++initializer list[n2] i2props_vals;
++position p2;
++@@
++
++enum power_supply_property i2props@p2[] = { i2props_vals, };
++
++@script:ocaml@
++(_,i1props_vals) << getprops1.i1props_vals;
++(_,i2props_vals) << getprops2.i2props_vals;
++i1props << tocheck.i1props;
++i2props << tocheck.i2props;
++p1 << getprops1.p1;
++p2 << getprops2.p2;
++@@
++
++if i1props < i2props &&
++   List.sort compare i1props_vals = List.sort compare i2props_vals
++then
++  let msg =
++    Printf.sprintf
++      "WARNING %s and %s (line %d) have the same properties\n"
++      i1props i2props (List.hd p2).line in
++  print_report p1 msg
 
-Thanks for the pointer to this commit.  I get the results described in the
-commit log:
-
-bq27500_regs and bq27510g1_regs have the same registers
-bq27500_regs and bq27510g2_regs have the same registers
-bq27510g1_regs and bq27510g2_regs have the same registers
-bq27510g3_regs and bq2751x_regs have the same registers
-bq2750x_props and bq27510g3_props have the same properties
-bq2750x_props and bq2751x_props have the same properties
-bq27510g3_props and bq2751x_props have the same properties
-bq27500_props and bq27510g1_props have the same properties
-bq27500_props and bq27510g2_props have the same properties
-bq27500_props and bq27520g2_props have the same properties
-bq27510g1_props and bq27510g2_props have the same properties
-bq27510g1_props and bq27520g2_props have the same properties
-bq27510g2_props and bq27520g2_props have the same properties
-
-julia
