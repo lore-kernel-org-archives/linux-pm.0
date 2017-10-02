@@ -1,34 +1,49 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH v2 5/6] arm64: Fixup users of topology_physical_package_id
-Date: Mon, 2 Oct 2017 14:56:21 -0700
-Message-ID: <20171002215621.GS457@codeaurora.org>
-References: <20170919184751.25110-1-jeremy.linton@arm.com>
- <20170919184751.25110-6-jeremy.linton@arm.com>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] PCI / PM: Add dev_dbg() to print device suspend power
+ states
+Date: Mon, 2 Oct 2017 18:29:41 -0500
+Message-ID: <20171002232941.GF5407@bhelgaas-glaptop.roam.corp.google.com>
+References: <8776535.A6PtrVU7Ea@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-clk-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20170919184751.25110-6-jeremy.linton@arm.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, mturquette@baylibre.com, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com
+In-Reply-To: <8776535.A6PtrVU7Ea@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/19, Jeremy Linton wrote:
-> There are a few arm64 specific users (cpufreq, psci, etc) which really
-> want the cluster rather than the topology_physical_package_id(). Lets
-> convert those users to topology_cod_id(). That way when we start
-> differentiating the socket/cluster they will continue to behave correctly.
+On Sat, Sep 30, 2017 at 01:31:15AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+> It sometimes is useful to know what power states the kernel thinks
+> it puts PCI devices into during system suspend, so add a dev_dbg()
+> statement for that.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+
+I think you have other pending changes in this path, so can you take
+this one as well?
+
 > ---
-
-For:
-
->  drivers/clk/clk-mb86s7x.c        | 2 +-
-
-Acked-by: Stephen Boyd <sboyd@codeaurora.org>
-
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+>  drivers/pci/pci-driver.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-pm/drivers/pci/pci-driver.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-driver.c
+> +++ linux-pm/drivers/pci/pci-driver.c
+> @@ -798,6 +798,9 @@ static int pci_pm_suspend_noirq(struct d
+>  			pci_prepare_to_sleep(pci_dev);
+>  	}
+>  
+> +	dev_dbg(dev, "PCI PM: Suspend power state: %s\n",
+> +		pci_power_name(pci_dev->current_state));
+> +
+>  	pci_pm_set_unknown_state(pci_dev);
+>  
+>  	/*
+> 
