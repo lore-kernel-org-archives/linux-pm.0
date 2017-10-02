@@ -1,34 +1,41 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PCI / PM: Add dev_dbg() to print device suspend power states
-Date: Tue, 3 Oct 2017 01:45:34 +0200
-Message-ID: <CAJZ5v0gMPBgt_sAHL243oU4eZ6E32JemomTgN0pADB_s6-vkmg@mail.gmail.com>
-References: <8776535.A6PtrVU7Ea@aspire.rjw.lan> <20171002232941.GF5407@bhelgaas-glaptop.roam.corp.google.com>
+Subject: Re: [PATCH v4 2/3] PM / mfd: intel-lpss: Push system sleep callbacks
+ to late/early stages
+Date: Tue, 3 Oct 2017 01:58:04 +0200
+Message-ID: <CAJZ5v0gvn=JMGzCEUr750zXDQAHEEcnGzpJQ-_BBwTa1-2L4nw@mail.gmail.com>
+References: <3023226.l5IfJK6GIc@aspire.rjw.lan> <3958866.l2qnKDbinI@aspire.rjw.lan>
+ <65494652.vEfz4tCBDb@aspire.rjw.lan> <4332008.kXBLY0K23i@aspire.rjw.lan> <20170925072847.nl2a6feqzrzdcxwz@ninjato>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f65.google.com ([209.85.218.65]:35486 "EHLO
-        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750981AbdJBXpf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Oct 2017 19:45:35 -0400
-In-Reply-To: <20171002232941.GF5407@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20170925072847.nl2a6feqzrzdcxwz@ninjato>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-i2c <linux-i2c@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, Ulf Hansson <ulf.hansson@linaro.org>, Rajat Jain <rajatja@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Tue, Oct 3, 2017 at 1:29 AM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> On Sat, Sep 30, 2017 at 01:31:15AM +0200, Rafael J. Wysocki wrote:
+On Mon, Sep 25, 2017 at 9:28 AM, Wolfram Sang <wsa@the-dreams.de> wrote:
+> On Mon, Sep 25, 2017 at 01:20:35AM +0200, Rafael J. Wysocki wrote:
 >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >>
->> It sometimes is useful to know what power states the kernel thinks
->> it puts PCI devices into during system suspend, so add a dev_dbg()
->> statement for that.
+>> Push the system suspend/resume callbacks of intel-lpss to the late
+>> suspend/early resume stages to allow child device callbacks to be
+>> pushed to the late/early stages of suspend/resume too, so as to
+>> make it possible to avoid resuming the children if they are runtime-
+>> suspended during system suspend going forward.
 >>
 >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Tested-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
+>> Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
+>> Tested-by: Johannes Stezenbach <js@sig21.net>
+>> Tested-by: Rajat Jain <rajatja@google.com>
 >
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
->
-> I think you have other pending changes in this path, so can you take
-> this one as well?
+> If this series shall go in via I2C, I'd need an ack from Lee for this
+> one.
 
-Yes, I can, thanks!
+So this one has been ACKed now, so the series should be good to go.
+
+Do you need me to resend it (because of the v5 of patch [1/3])?
+
+Thanks,
+Rafael
