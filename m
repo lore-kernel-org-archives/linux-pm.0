@@ -1,115 +1,75 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2] thermal/drivers/hisi: Switch to interrupt mode
-Date: Mon, 2 Oct 2017 22:02:09 +0200
-Message-ID: <959c3078-20e7-477b-455e-6577b4773c69@linaro.org>
-References: <1bfd974e-3dc1-e99b-d0dd-50102cee762d@ti.com>
- <1506575625-20388-1-git-send-email-daniel.lezcano@linaro.org>
- <4ce2e445-d846-e032-5677-36dcbce7bed4@arm.com>
- <552ee23d-48b0-a9cf-8981-4584282a4f9c@linaro.org>
- <38a297b3-1855-695d-f641-02f2753597d1@arm.com>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: x86: PIE support and option to extend KASLR randomization
+Date: Mon, 2 Oct 2017 13:28:52 -0700
+Message-ID: <CAJcbSZEOtx6PMhgmpwkLvcqSgZr1F41PgQRx3yGkZCjRWb8z-Q@mail.gmail.com>
+References: <20170817080920.5ljlkktngw2cisfg@gmail.com> <CAJcbSZGbtc-i0X1NiBAvZA7cxpGkwSLKNB7oDNCsFxOCdhkR_g@mail.gmail.com>
+ <CAJcbSZGhvwt=5ERtBHLJnwS=6AXBZLTMfrafzeUCqYy=-MKWDg@mail.gmail.com>
+ <20170825080443.tvvr6wzs362cjcuu@gmail.com> <CAJcbSZFJQMKw21kLwr4QGoSM7DMgKRzzjWxkYBF2c1HciCzvGg@mail.gmail.com>
+ <CAJcbSZH6hwaWKrvUZR33ExYaZaWKMSv4tJJA3yZkniLvLbTFMw@mail.gmail.com>
+ <20170921155919.skpyt7dutod5ul4t@gmail.com> <CAJcbSZHOuxy5BVxD0xJUdQfB-OMgbvfiP-2CJzf52K-7JZAy-A@mail.gmail.com>
+ <20170922163225.bfrd5myl6d7deiim@gmail.com> <CAJcbSZFbNACVrSQ7yFkDMs+4L56_4e73kvdesSdD5W4bdBoOpg@mail.gmail.com>
+ <20170923094312.td3mrfos6konic6g@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f179.google.com ([209.85.128.179]:46701 "EHLO
-        mail-wr0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751055AbdJBUCN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Oct 2017 16:02:13 -0400
-Received: by mail-wr0-f179.google.com with SMTP id t76so4644391wrc.3
-        for <linux-pm@vger.kernel.org>; Mon, 02 Oct 2017 13:02:12 -0700 (PDT)
-In-Reply-To: <38a297b3-1855-695d-f641-02f2753597d1@arm.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <kernel-hardening-return-9989-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20170923094312.td3mrfos6konic6g@gmail.com>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Tejun Heo <tj@kernel.org>, Christoph
 List-Id: linux-pm@vger.kernel.org
-To: Valentin Schneider <valentin.schneider@arm.com>, linux-pm@vger.kernel.org, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>
 
+On Sat, Sep 23, 2017 at 2:43 AM, Ingo Molnar <mingo@kernel.org> wrote:
+>
+> * Thomas Garnier <thgarnie@google.com> wrote:
+>
+>> >   2) we first implement the additional entropy bits that Linus suggested.
+>> >
+>> > does this work for you?
+>>
+>> Sure, I can look at how feasible that is. If it is, can I send
+>> everything as part of the same patch set? The additional entropy would
+>> be enabled for all KASLR but PIE will be off-by-default of course.
+>
+> Sure, can all be part of the same series.
 
-Oh, I noticed Kevin is not in the loop, Cc'ing him.
+I looked deeper in the change Linus proposed (moving the .text section
+based on the cacheline). I think the complexity is too high for the
+value of this change.
 
-Sorry Kevin.
+To move only the .text section would require at least the following changes:
+ - Overall change on how relocations are processed, need to separate
+relocations in and outside of the .text section.
+ - Break assumptions on _text alignment while keeping calculation on
+size accurate (for example _end - _text).
 
-On 29/09/2017 19:26, Valentin Schneider wrote:
-> 
-> 
-> On 09/29/2017 05:46 PM, Daniel Lezcano wrote:
->> Hi Valentin,
->>
->> On 29/09/2017 13:07, Valentin Schneider wrote:
->>
->> [ ... ]
->>
->>> I've tested this on HiKey960 (Android 4.9 + upstream patches to apply
->>> your thermal/drivers/hisi series + Kevin's hi3600 support).
->>> I ran a video workload, and noticed I get several interrupts while
->>> passive cooling is already in effect
->>> (I might move part of this discussion to Kevin's posting, but I think
->>> it's still relevant to be here):
->>>
->>> [  118.107357] hisi_thermal fff30000.tsensor: THERMAL ALARM: 70495 >
->>> 65000
->>> [  119.182531] hisi_thermal fff30000.tsensor: THERMAL ALARM: 76235 >
->>> 65000
->>> [  119.361964] hisi_thermal fff30000.tsensor: THERMAL ALARM: 70495 >
->>> 65000
->>> [  119.907865] hisi_thermal fff30000.tsensor: THERMAL ALARM: 75620 >
->>> 65000
->>> [  119.959076] hisi_thermal fff30000.tsensor: THERMAL ALARM: 70700 >
->>> 65000
->>>
->>> This isn't optimal for IPA, as the PID is supposed to use a specific
->>> sampling rate, but those interrupts
->>> forced a re-trigger of power_allocator_throttle which changes the PID's
->>> actual sampling rate.
->>> IPA isn't expecting this kind of scenarios, as I can see a
->>> tz->passive_delay in the computation
->>> of the derivative term (although the derivative coefficient defaults to
->>> 0...).
->> Interesting. This patch actually is for the hikey, not for the hikey960.
->> I didn't tested with Kevin's patches.
->>
->> The thermal characteristics are very different on hi960. For example,
->> the temperature increase is must faster on hikey960. So I guess, the
->> driver itself should be fine tuned to prevent this kind of scenario.
-> 
-> True
-> 
->>> In a perfect world I would see those interrupts being toggled by the
->>> thermal governor, as that is
->>> where we know what to do with each trip point - we could still want the
->>> interrupts, but in the case
->>> of IPA we'd like to disable them while the PID controller is active, and
->>> we would know when to re-enable them
->>> (as soon as IPA is toggled off).
->> Yes, that is true the thermal framework could be enhanced to support
->> this.
-> 
-> If you're up for it, it could be an interesting discussion. In any case,
-> I might spend a little bit of time looking into making such an
-> interrupt-toggling work (at least as a prototype just on the HiKey960).
-> 
->>
->> Do you have an hikey (not 960) to test this patch?
-> 
-> I do have one but I'm currently lending it to someone else in my team,
-> I'll have to track it down (probably next week).
-> I'm actually quite interested in having IPA triggered by interrupt
-> because of the HiKey960's tendency to heat up insanely fast, which leads
-> to IPA starting when the temperature is already way too high. I started
-> toying around with Kevin's patches but saw your own patch and thought it
-> was related, so I figured I would share some of my thoughts before
-> starting to work on something someone else might already be working on.
-> 
-> I should perhaps move some of those comments to Kevin's posting - sorry
-> for the noise.
-> 
->>
->>
-> 
+With a rough attempt at this, I managed to pass early boot and still
+crash later on.
+
+This change would be valuable if you leak the address of a section
+other than .text and you want to know where .text is. Meaning the main
+bug that you are trying to exploit only allow you to execute code (and
+you are trying to ROP in .text). I would argue that a better
+mitigation for this type of bugs is moving function pointer to
+read-only sections and using stack cookies (for ret address). This
+change won't prevent other type of attacks, like data corruption.
+
+I think it would be more valuable to look at something like selfrando
+/ pagerando [1] but maybe wait a bit for it to be more mature
+(especially on the debugging side).
+
+What do you think?
+
+[1] http://lists.llvm.org/pipermail/llvm-dev/2017-June/113794.html
+
+>
+> Thanks,
+>
+>         Ingo
+
 
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Thomas
