@@ -1,121 +1,118 @@
-From: Julien Grall <julien.grall@arm.com>
-Subject: Re: [PATCH] kbuild: revert $(realpath ...) to $(shell cd ... &&
- /bin/pwd)
-Date: Mon, 2 Oct 2017 12:27:22 +0100
-Message-ID: <ea8b93e6-2ce3-2c32-fbe3-f6570c523f1b@arm.com>
-References: <1506931648-15511-1-git-send-email-yamada.masahiro@socionext.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v4 23/27] x86_64: assembly, change all ENTRY+ENDPROC to SYM_FUNC_*
+Date: Mon, 02 Oct 2017 14:30:44 +0200
+Message-ID: <2385272.r5rgpIyQDx@aspire.rjw.lan>
+References: <20171002091246.28432-1-jslaby@suse.cz> <20171002091246.28432-23-jslaby@suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:35760 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750962AbdJBL10 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 2 Oct 2017 07:27:26 -0400
-In-Reply-To: <1506931648-15511-1-git-send-email-yamada.masahiro@socionext.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171002091246.28432-23-jslaby@suse.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>, "David S. Miller" <davem@davemloft.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Matt Fleming <matt@codeblueprint.co.uk>, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, linux-crypto@vger.kernel.org, linux-pm@vger.kernel.org, linux-efi@vger.kernel.org, xen-devel@lists.xenproject.org
 List-Id: linux-pm@vger.kernel.org
-To: Masahiro Yamada <yamada.masahiro@socionext.com>, linux-kbuild@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Michal Marek <mmarek@suse.com>, David Carrillo-Cisneros <davidcc@google.com>, linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.com>, Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Olsa <jolsa@kernel.org>, Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Hello,
-
-On 02/10/17 09:07, Masahiro Yamada wrote:
-> I thought commit 8e9b46679923 ("kbuild: use $(abspath ...) instead of
-> $(shell cd ... && /bin/pwd)") was a safe conversion, but it changed
-> the behavior.
+On Monday, October 2, 2017 11:12:42 AM CEST Jiri Slaby wrote:
+> These are all functions which are invoked from elsewhere, so we annotate
+> them as global using the new SYM_FUNC_START. And their ENDPROC's by
+> SYM_FUNC_END.
 > 
-> $(abspath ...) / $(realpath ...) does not expand shell special
-> characters, such as '~'.
+> And make sure ENTRY/ENDPROC is not defined on X86_64, given these were
+> the last users.
 > 
-> Here is a simple Makefile example:
-> 
->    ---------------->8----------------
->    $(info /bin/pwd: $(shell cd ~/; /bin/pwd))
->    $(info abspath: $(abspath ~/))
->    $(info realpath: $(realpath ~/))
->    all:
->            @:
->    ---------------->8----------------
-> 
->    $ make
->    /bin/pwd: /home/masahiro
->    abspath: /home/masahiro/workspace/~
->    realpath:
-> 
-> This can be a real problem if 'make O=~/foo' is invoked from another
-> Makefile or primitive shell like dash.
-> 
-> This commit partially reverts 8e9b46679923.
-> 
-> Fixes: 8e9b46679923 ("kbuild: use $(abspath ...) instead of $(shell cd ... && /bin/pwd)")
-> Reported-by: Julien Grall <julien.grall@arm.com>
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-
-Tested-by: Julien Grall <julien.grall@arm.com>
-
-Regards,
-
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: x86@kernel.org
+> Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Matt Fleming <matt@codeblueprint.co.uk>
+> Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+> Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+> Cc: Juergen Gross <jgross@suse.com>
+> Cc: linux-crypto@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-efi@vger.kernel.org
+> Cc: xen-devel@lists.xenproject.org
 > ---
-> 
->   Makefile                       | 4 ++--
->   tools/power/cpupower/Makefile  | 2 +-
->   tools/scripts/Makefile.include | 6 +++---
->   3 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index cf007a3..1b48717 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -130,8 +130,8 @@ endif
->   ifneq ($(KBUILD_OUTPUT),)
->   # check that the output directory actually exists
->   saved-output := $(KBUILD_OUTPUT)
-> -$(shell [ -d $(KBUILD_OUTPUT) ] || mkdir -p $(KBUILD_OUTPUT))
-> -KBUILD_OUTPUT := $(realpath $(KBUILD_OUTPUT))
-> +KBUILD_OUTPUT := $(shell mkdir -p $(KBUILD_OUTPUT) && cd $(KBUILD_OUTPUT) \
-> +								&& /bin/pwd)
->   $(if $(KBUILD_OUTPUT),, \
->        $(error failed to create output directory "$(saved-output)"))
->   
-> diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefile
-> index 4c5a481..d6e1c02 100644
-> --- a/tools/power/cpupower/Makefile
-> +++ b/tools/power/cpupower/Makefile
-> @@ -26,7 +26,7 @@ endif
->   
->   ifneq ($(OUTPUT),)
->   # check that the output directory actually exists
-> -OUTDIR := $(realpath $(OUTPUT))
-> +OUTDIR := $(shell cd $(OUTPUT) && /bin/pwd)
->   $(if $(OUTDIR),, $(error output directory "$(OUTPUT)" does not exist))
->   endif
->   
-> diff --git a/tools/scripts/Makefile.include b/tools/scripts/Makefile.include
-> index 9dc8f07..1e8b611 100644
-> --- a/tools/scripts/Makefile.include
-> +++ b/tools/scripts/Makefile.include
-> @@ -1,7 +1,7 @@
->   ifneq ($(O),)
->   ifeq ($(origin O), command line)
-> -	ABSOLUTE_O := $(realpath $(O))
-> -	dummy := $(if $(ABSOLUTE_O),,$(error O=$(O) does not exist))
-> +	dummy := $(if $(shell test -d $(O) || echo $(O)),$(error O=$(O) does not exist),)
-> +	ABSOLUTE_O := $(shell cd $(O) ; pwd)
->   	OUTPUT := $(ABSOLUTE_O)/$(if $(subdir),$(subdir)/)
->   	COMMAND_O := O=$(ABSOLUTE_O)
->   ifeq ($(objtree),)
-> @@ -12,7 +12,7 @@ endif
->   
->   # check that the output directory actually exists
->   ifneq ($(OUTPUT),)
-> -OUTDIR := $(realpath $(OUTPUT))
-> +OUTDIR := $(shell cd $(OUTPUT) && /bin/pwd)
->   $(if $(OUTDIR),, $(error output directory "$(OUTPUT)" does not exist))
->   endif
->   
-> 
+>  arch/x86/boot/compressed/efi_thunk_64.S            |  4 +-
+>  arch/x86/boot/compressed/head_64.S                 | 16 ++++----
+>  arch/x86/crypto/aes-i586-asm_32.S                  |  8 ++--
+>  arch/x86/crypto/aes-x86_64-asm_64.S                |  4 +-
+>  arch/x86/crypto/aes_ctrby8_avx-x86_64.S            | 12 +++---
+>  arch/x86/crypto/aesni-intel_asm.S                  | 44 +++++++++++-----------
+>  arch/x86/crypto/aesni-intel_avx-x86_64.S           | 24 ++++++------
+>  arch/x86/crypto/blowfish-x86_64-asm_64.S           | 16 ++++----
+>  arch/x86/crypto/camellia-aesni-avx-asm_64.S        | 24 ++++++------
+>  arch/x86/crypto/camellia-aesni-avx2-asm_64.S       | 24 ++++++------
+>  arch/x86/crypto/camellia-x86_64-asm_64.S           | 16 ++++----
+>  arch/x86/crypto/cast5-avx-x86_64-asm_64.S          | 16 ++++----
+>  arch/x86/crypto/cast6-avx-x86_64-asm_64.S          | 24 ++++++------
+>  arch/x86/crypto/chacha20-avx2-x86_64.S             |  4 +-
+>  arch/x86/crypto/chacha20-ssse3-x86_64.S            |  8 ++--
+>  arch/x86/crypto/crc32-pclmul_asm.S                 |  4 +-
+>  arch/x86/crypto/crc32c-pcl-intel-asm_64.S          |  4 +-
+>  arch/x86/crypto/crct10dif-pcl-asm_64.S             |  4 +-
+>  arch/x86/crypto/des3_ede-asm_64.S                  |  8 ++--
+>  arch/x86/crypto/ghash-clmulni-intel_asm.S          |  8 ++--
+>  arch/x86/crypto/poly1305-avx2-x86_64.S             |  4 +-
+>  arch/x86/crypto/poly1305-sse2-x86_64.S             |  8 ++--
+>  arch/x86/crypto/salsa20-x86_64-asm_64.S            | 12 +++---
+>  arch/x86/crypto/serpent-avx-x86_64-asm_64.S        | 24 ++++++------
+>  arch/x86/crypto/serpent-avx2-asm_64.S              | 24 ++++++------
+>  arch/x86/crypto/serpent-sse2-x86_64-asm_64.S       |  8 ++--
+>  arch/x86/crypto/sha1-mb/sha1_mb_mgr_flush_avx2.S   |  8 ++--
+>  arch/x86/crypto/sha1-mb/sha1_mb_mgr_submit_avx2.S  |  4 +-
+>  arch/x86/crypto/sha1-mb/sha1_x8_avx2.S             |  4 +-
+>  arch/x86/crypto/sha1_avx2_x86_64_asm.S             |  4 +-
+>  arch/x86/crypto/sha1_ni_asm.S                      |  4 +-
+>  arch/x86/crypto/sha1_ssse3_asm.S                   |  4 +-
+>  arch/x86/crypto/sha256-avx-asm.S                   |  4 +-
+>  arch/x86/crypto/sha256-avx2-asm.S                  |  4 +-
+>  .../crypto/sha256-mb/sha256_mb_mgr_flush_avx2.S    |  8 ++--
+>  .../crypto/sha256-mb/sha256_mb_mgr_submit_avx2.S   |  4 +-
+>  arch/x86/crypto/sha256-mb/sha256_x8_avx2.S         |  4 +-
+>  arch/x86/crypto/sha256-ssse3-asm.S                 |  4 +-
+>  arch/x86/crypto/sha256_ni_asm.S                    |  4 +-
+>  arch/x86/crypto/sha512-avx-asm.S                   |  4 +-
+>  arch/x86/crypto/sha512-avx2-asm.S                  |  4 +-
+>  .../crypto/sha512-mb/sha512_mb_mgr_flush_avx2.S    |  8 ++--
+>  .../crypto/sha512-mb/sha512_mb_mgr_submit_avx2.S   |  4 +-
+>  arch/x86/crypto/sha512-mb/sha512_x4_avx2.S         |  4 +-
+>  arch/x86/crypto/sha512-ssse3-asm.S                 |  4 +-
+>  arch/x86/crypto/twofish-avx-x86_64-asm_64.S        | 24 ++++++------
+>  arch/x86/crypto/twofish-x86_64-asm_64-3way.S       |  8 ++--
+>  arch/x86/crypto/twofish-x86_64-asm_64.S            |  8 ++--
+>  arch/x86/entry/entry_64.S                          | 10 ++---
+>  arch/x86/entry/entry_64_compat.S                   |  8 ++--
+>  arch/x86/kernel/acpi/wakeup_64.S                   |  8 ++--
+>  arch/x86/kernel/head_64.S                          | 12 +++---
+>  arch/x86/lib/checksum_32.S                         |  8 ++--
+>  arch/x86/lib/clear_page_64.S                       | 12 +++---
+>  arch/x86/lib/cmpxchg16b_emu.S                      |  4 +-
+>  arch/x86/lib/cmpxchg8b_emu.S                       |  4 +-
+>  arch/x86/lib/copy_page_64.S                        |  4 +-
+>  arch/x86/lib/copy_user_64.S                        | 16 ++++----
+>  arch/x86/lib/csum-copy_64.S                        |  4 +-
+>  arch/x86/lib/getuser.S                             | 16 ++++----
+>  arch/x86/lib/hweight.S                             |  8 ++--
+>  arch/x86/lib/iomap_copy_64.S                       |  4 +-
+>  arch/x86/lib/memcpy_64.S                           |  4 +-
+>  arch/x86/lib/memmove_64.S                          |  4 +-
+>  arch/x86/lib/memset_64.S                           |  4 +-
+>  arch/x86/lib/msr-reg.S                             |  8 ++--
+>  arch/x86/lib/putuser.S                             | 16 ++++----
+>  arch/x86/lib/rwsem.S                               | 20 +++++-----
+>  arch/x86/mm/mem_encrypt_boot.S                     |  8 ++--
+>  arch/x86/platform/efi/efi_stub_64.S                |  4 +-
+>  arch/x86/platform/efi/efi_thunk_64.S               |  4 +-
+>  arch/x86/power/hibernate_asm_64.S                  |  8 ++--
 
--- 
-Julien Grall
+For the hibernate changes:
+
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
