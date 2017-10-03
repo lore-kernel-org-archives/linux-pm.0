@@ -1,65 +1,84 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH RFC hack dont apply] intel_idle: support running within
- a VM
-Date: Tue, 3 Oct 2017 23:02:55 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1710032254020.2278@nanos>
-References: <20170930005046-mutt-send-email-mst@kernel.org> <CAJZ5v0hz+KDGVdz+X=98p51fOpk6AAa3CmL-asWw3uZg12X-Lw@mail.gmail.com> <20171002101249.69b5611a@jacob-builder>
+From: Dave Chinner <david@fromorbit.com>
+Subject: Re: [RFC 5/5] pm: remove kernel thread freezing
+Date: Wed, 4 Oct 2017 08:04:49 +1100
+Message-ID: <20171003210449.GO3666@dastard>
+References: <20171003185313.1017-1-mcgrof@kernel.org>
+ <20171003185313.1017-6-mcgrof@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:54891 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751133AbdJCVDL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Oct 2017 17:03:11 -0400
-In-Reply-To: <20171002101249.69b5611a@jacob-builder>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171003185313.1017-6-mcgrof@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Michael S. Tsirkin" <mst@redhat.com>, Yang Zhang <yang.zhang.wz@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org, Wanpeng Li <wanpeng.li@hotmail.com>, Paolo Bonzini <pbonzini@redhat.com>, rkrcmar@redhat.com, dmatlack@google.com, agraf@suse.de, Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Mon, 2 Oct 2017, Jacob Pan wrote:
-> On Sat, 30 Sep 2017 01:21:43 +0200
-> "Rafael J. Wysocki" <rafael@kernel.org> wrote:
-> 
-> > On Sat, Sep 30, 2017 at 12:01 AM, Michael S. Tsirkin <mst@redhat.com>
-> > wrote:
-> > > intel idle driver does not DTRT when running within a VM:
-> > > when going into a deep power state, the right thing to
-> > > do is to exit to hypervisor rather than to keep polling
-> > > within guest using mwait.
-> > >
-> > > Currently the solution is just to exit to hypervisor each time we go
-> > > idle - this is why kvm does not expose the mwait leaf to guests even
-> > > when it allows guests to do mwait.
-> > >
-> > > But that's not ideal - it seems better to use the idle driver to
-> > > guess when will the next interrupt arrive.  
-> > 
-> > The idle driver alone is not sufficient for that, though.
-> > 
-> I second that. Why try to solve this problem at vendor specific driver
-> level? perhaps just a pv idle driver that decide whether to vmexit
-> based on something like local per vCPU timer expiration? I guess we
-> can't predict other wake events such as interrupts.
-> e.g.
-> if (get_next_timer_interrupt() > kvm_halt_target_residency)
+On Tue, Oct 03, 2017 at 11:53:13AM -0700, Luis R. Rodriguez wrote:
+> Now that all filesystems which used to rely on kthread
+> freezing have been converted to filesystem freeze/thawing
+> we can remove the kernel kthread freezer.
 
-Bah. no. get_next_timer_interrupt() is not available for abuse in random
-cpuidle driver code. It has state and its tied to the nohz code.
+Really? There's no other subsystem that relies on kernel thread
+and workqueue freezing to function correctly on suspend?
 
-There is the series from Audrey which makes use of the various idle
-prediction mechanisms, scheduler, irq timings, idle governor to get an idea
-about the estimated idle time. Exactly this information can be fed to the
-kvmidle driver which can act accordingly.
+> -/**
+> - * freeze_kernel_threads - Make freezable kernel threads go to the refrigerator.
+> - *
+> - * On success, returns 0.  On failure, -errno and only the kernel threads are
+> - * thawed, so as to give a chance to the caller to do additional cleanups
+> - * (if any) before thawing the userspace tasks. So, it is the responsibility
+> - * of the caller to thaw the userspace tasks, when the time is right.
+> - */
+> -int freeze_kernel_threads(void)
+> -{
+> -	int error;
+> -
+> -	pr_info("Freezing remaining freezable tasks ... ");
+> -
+> -	pm_nosig_freezing = true;
+> -	error = try_to_freeze_tasks(false);
 
-Hacking a random hardware specific idle driver is definitely the wrong
-approach. It might be useful to chain the kvmidle driver and hardware
-specific drivers at some point, i.e. if the kvmdriver decides not to exit
-it delegates the mwait decision to the proper hardware driver in order not
-to reimplement all the required logic again. But that's a different story.
+This freezes workqueues as well as kernel threads, so this affects
+any subsystem that uses WQ_FREEZABLE. A quick glance tells me this
+includes graphics drivers, spi devices, usb hubs, power management,
+and a few filesystems, too.
 
-See http://lkml.kernel.org/r/1506756034-6340-1-git-send-email-aubrey.li@intel.com
+> -	if (!error)
+> -		pr_cont("done.");
+> -
+> -	pr_cont("\n");
+> -	BUG_ON(in_atomic());
+> -
+> -	if (error)
+> -		thaw_kernel_threads();
+> -	return error;
+> -}
+> -
+>  void thaw_processes(void)
+>  {
+>  	struct task_struct *g, *p;
+> @@ -234,23 +207,3 @@ void thaw_processes(void)
+>  	pr_cont("done.\n");
+>  	trace_suspend_resume(TPS("thaw_processes"), 0, false);
+>  }
+> -
+> -void thaw_kernel_threads(void)
+> -{
+> -	struct task_struct *g, *p;
+> -
+> -	pm_nosig_freezing = false;
+> -	pr_info("Restarting kernel threads ... ");
+> -
+> -	thaw_workqueues();
 
-Thanks,
+And this is where the workqueues are thawed.
 
-	tglx
+So I doubt we can safely remove all this code like this...
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
