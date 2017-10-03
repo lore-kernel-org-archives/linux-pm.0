@@ -1,49 +1,72 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] ARM: cpuidle: Avoid memleak if init fail
-Date: Tue, 3 Oct 2017 15:21:27 +0200
-Message-ID: <d785929a-a6af-b803-d34d-a7138102f55f@linaro.org>
-References: <1504211076-2331-1-git-send-email-stefan.wahren@i2se.com>
+From: "sakari.ailus@iki.fi" <sakari.ailus@iki.fi>
+Subject: Re: [PATCH v6 3/3] eeprom: at24: enable runtime pm support
+Date: Tue, 3 Oct 2017 16:51:09 +0300
+Message-ID: <20171003135109.v7ch7oc4fvjwzl7w@valkosipuli.retiisi.org.uk>
+References: <1504520928-5191-1-git-send-email-divagar.mohandass@intel.com>
+ <1504520928-5191-4-git-send-email-divagar.mohandass@intel.com>
+ <6F87890CF0F5204F892DEA1EF0D77A5972FC1278@FMSMSX114.amr.corp.intel.com>
+ <CAAFQd5DUNHJ7fqWy5iD_fb=TBUqGy3AQ3uGXr-TdQ5v39f_hsw@mail.gmail.com>
+ <20170920084519.asyfjxo6upt36woz@valkosipuli.retiisi.org.uk>
+ <CAAFQd5B65bJHsZkMgtjGgyd3btuoWzJwYQRQb5j2kSaefxCZ7Q@mail.gmail.com>
+ <20170920093222.yzfw2ctrupep5iqx@valkosipuli.retiisi.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <1504211076-2331-1-git-send-email-stefan.wahren@i2se.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Stefan Wahren <stefan.wahren@i2se.com>, Leo Yan <leo.yan@linaro.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from nblzone-211-213.nblnetworks.fi ([83.145.211.213]:50142 "EHLO
+        hillosipuli.retiisi.org.uk" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1751719AbdJCNvN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Oct 2017 09:51:13 -0400
+Content-Disposition: inline
+In-Reply-To: <20170920093222.yzfw2ctrupep5iqx@valkosipuli.retiisi.org.uk>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tomasz Figa <tfiga@chromium.org>
+Cc: "Mani, Rajmohan" <rajmohan.mani@intel.com>, "Mohandass, Divagar" <divagar.mohandass@intel.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "wsa@the-dreams.de" <wsa@the-dreams.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, mika.westerberg@linux.intel.com, linux-pm@vger.kernel.org
 
-T24gMzEvMDgvMjAxNyAyMjoyNCwgU3RlZmFuIFdhaHJlbiB3cm90ZToKPiBJbiBjYXNlIHRoZXJl
-IGFyZSBubyBEVCBpZGxlIHN0YXRlcyBkZWZpbmVkIG9yCj4gY3B1aWRsZV9yZWdpc3Rlcl9kcml2
-ZXIoKSBmYWlscywgdGhlIGNvcHkgb2YgdGhlIGlkbGUgZHJpdmVyIGlzIGxlYWtlZDoKPiAKPiAg
-ICAgdW5yZWZlcmVuY2VkIG9iamVjdCAweGVkZTBkYzAwIChzaXplIDEwMjQpOgo+ICAgICBjb21t
-ICJzd2FwcGVyLzAiLCBwaWQgMSwgamlmZmllcyA0Mjk0OTM3NDMxIChhZ2UgNzQ0LjUxMHMpCj4g
-ICAgIGhleCBkdW1wIChmaXJzdCAzMiBieXRlcyk6Cj4gICAgIDk0IDllIDBiIGMxIDAwIDAwIDAw
-IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIC4uLi4uLi4uLi4uLi4uLi4KPiAgICAgNTcgNDYg
-NDkgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgV0ZJLi4uLi4uLi4uLi4u
-Lgo+ICAgICBiYWNrdHJhY2U6Cj4gICAgIFs8YzEyOTVmMDQ+XSBhcm1faWRsZV9pbml0KzB4NDQv
-MHgxYWMKPiAgICAgWzxjMDMwMWU2Yz5dIGRvX29uZV9pbml0Y2FsbCsweDNjLzB4MTZjCj4gICAg
-IFs8YzEyMDBkNzA+XSBrZXJuZWxfaW5pdF9mcmVlYWJsZSsweDExMC8weDFkMAo+ICAgICBbPGMw
-Y2IzNjI0Pl0ga2VybmVsX2luaXQrMHg4LzB4MTE0Cj4gICAgIFs8YzAzMDdhOTg+XSByZXRfZnJv
-bV9mb3JrKzB4MTQvMHgzYwo+IAo+IFNvIGZpeCB0aGlzIGJ5IGZyZWVpbmcgdGhlIHVucmVnaXN0
-ZXJlZCBjb3B5IGluIGVycm9yIGNhc2UuCj4gCj4gU2lnbmVkLW9mZi1ieTogU3RlZmFuIFdhaHJl
-biA8c3RlZmFuLndhaHJlbkBpMnNlLmNvbT4KPiBGaXhlczogZDUwYTdkOGFjZDc4ICgiQVJNOiBj
-cHVpZGxlOiBTdXBwb3J0IGFzeW1tZXRyaWMgaWRsZSBkZWZpbml0aW9uIikKPiAtLS0KCkFja2Vk
-LWJ5OiBEYW5pZWwgTGV6Y2FubyA8ZGFuaWVsLmxlemNhbm9AbGluYXJvLm9yZz4KCgotLSAKIDxo
-dHRwOi8vd3d3LmxpbmFyby5vcmcvPiBMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2Fy
-ZSBmb3IgQVJNIFNvQ3MKCkZvbGxvdyBMaW5hcm86ICA8aHR0cDovL3d3dy5mYWNlYm9vay5jb20v
-cGFnZXMvTGluYXJvPiBGYWNlYm9vayB8CjxodHRwOi8vdHdpdHRlci5jb20vIyEvbGluYXJvb3Jn
-PiBUd2l0dGVyIHwKPGh0dHA6Ly93d3cubGluYXJvLm9yZy9saW5hcm8tYmxvZy8+IEJsb2cKCgpf
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0t
-a2VybmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcK
-aHR0cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2Vy
-bmVsCg==
+Hi Tomasz,
+
+On Wed, Sep 20, 2017 at 12:32:22PM +0300, sakari.ailus@iki.fi wrote:
+> > >> >> @@ -743,11 +770,17 @@ static int at24_probe(struct i2c_client *client, const
+> > >> >> struct i2c_device_id *id)
+> > >> >>
+> > >> >>       i2c_set_clientdata(client, at24);
+> > >> >>
+> > >> >> +     /* enable runtime pm */
+> > >> >> +     pm_runtime_get_noresume(&client->dev);
+> > >> >> +     pm_runtime_set_active(&client->dev);
+> > >> >> +     pm_runtime_enable(&client->dev);
+> > >>
+> > >> Do we need this get_noresume/set_active dance? I remember it was for
+> > >> some reason needed for PCI devices, but I don't see why for I2C
+> > >> anything else than just pm_runtime_enable() would be necessary.
+> > >
+> > > You specifically do not need (all) this for PCI devices, but AFAIU for I涎
+> > > devices you do. The runtime PM status of a device is disabled by default
+> > > and the use count is zero, but on ACPI based systems the device is still
+> > > powered on.
+> > 
+> > Okay, so _get_noresume() and _set_active() would do the thing for ACPI
+> > indeed, but not sure about other platforms. Perhaps _enable(),
+> > _get_sync() would be more general?
+> 
+> What I ended up doing in e.g. the smiapp driver was to explicitly power the
+> device on first and then enable runtime PM. (See
+> drivers/media/i2c/smiapp/smiapp-core.c .) This approach works even if
+> CONFIG_PM is disabled, both on DT and ACPI.
+
+pm_runtime_get_noresume() + pm_runtime_put() can be replaced by a single
+pm_runtime_idle() call (where pm_runtime_put() was). pm_runtime_enable() is
+required to enable runtime PM for a device.
+
+pm_runtime_allow() may be omitted but then to make the runtime PM framework
+to make the power state transitions this needs to be configured from the
+user space --- which I don't think is intended.
+
+Cc linux-pm, too.
+
+-- 
+Regards,
+
+Sakari Ailus
+e-mail: sakari.ailus@iki.fi
