@@ -1,65 +1,58 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC 5/5] pm: remove kernel thread freezing
-Date: Tue, 3 Oct 2017 22:12:04 +0200
-Message-ID: <20171003201204.GA23521@amd>
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Subject: Re: [RFC 4/5] ext4: add fs freezing support on suspend/hibernation
+Date: Tue, 3 Oct 2017 22:13:21 +0200
+Message-ID: <20171003201321.GE2294@wotan.suse.de>
 References: <20171003185313.1017-1-mcgrof@kernel.org>
- <20171003185313.1017-6-mcgrof@kernel.org>
+ <20171003185313.1017-5-mcgrof@kernel.org>
+ <20171003195930.ivgaccdabxczar62@thunk.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="AqsLC8rIMeq19msA"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45811 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751115AbdJCUMH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Oct 2017 16:12:07 -0400
-Content-Disposition: inline
-In-Reply-To: <20171003185313.1017-6-mcgrof@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
-
-
---AqsLC8rIMeq19msA
 Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20171003195930.ivgaccdabxczar62@thunk.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Theodore Ts'o <tytso@mit.edu>, "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On Tue 2017-10-03 11:53:13, Luis R. Rodriguez wrote:
-> Now that all filesystems which used to rely on kthread
-> freezing have been converted to filesystem freeze/thawing
-> we can remove the kernel kthread freezer.
+On Tue, Oct 03, 2017 at 03:59:30PM -0400, Theodore Ts'o wrote:
+> On Tue, Oct 03, 2017 at 11:53:12AM -0700, Luis R. Rodriguez wrote:
+> > @@ -4926,7 +4926,7 @@ static int ext4_unfreeze(struct super_block *sb)
+> >  		ext4_set_feature_journal_needs_recovery(sb);
+> >  	}
+> >  
+> > -	ext4_commit_super(sb, 1);
+> > +	ext4_commit_super(sb, 0);
+> >  	return 0;
+> >  }
+> >
+> 
+> After we remove add the NEEDS_RECOVERY flag, we need to make sure
+> recovery flag is pushed out to disk before any other changes are
+> allowed to be pushed out to disk.  That's why we originally did the
+> update synchronously.
 
-Are you surely-sure? You mentioned other in kernel sources of writes;
-what about those?
+I see. I had to try to dig through linux-history to see why this was done, and
+I actually could not find an exact commit which explained what you just did.
+Thanks!
 
-Can knfsd be a problem?
+Hrm, so on freeze we issue the same commit as well, so is a sync *really* needed
+on thaw?
 
-Can memory management doing background writes be a problem?
+> There are other ways we could fulfill this requirements, but doing a
+> synchronous update is the simplest way to handle this.  Was it
+> necessary to change this given the other changes you are making the fs
+> freeze implementation?
 
-Did you do some hibernation testing?
+No, it was am empirical evaluation done at testing, I observed bio_submit()
+stalls, we never get completion from the device. Even if we call thaw at the
+very end of resume, after the devices should be up, we still end up in the same
+situation. Given how I order freezing filesystems after freezing userspace I do
+believe we should thaw filesystems prior unfreezing userspace, its why I placed
+the call where it is now.
 
-> Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
+So this is something I was hoping others could help grok/iron out. I'd prefer
+if we could live with thaw'ing unchanged, but this requires to figure this
+issue out. Why we can't implicate bio_submit() on fs thaw as-is in this
+implementation.
 
-Please don't apply this just yet.
-
-									Pavel
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---AqsLC8rIMeq19msA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlnT7xQACgkQMOfwapXb+vK4qgCcDxGX3eUe+PcZPHNiVxFML35E
-slcAoJNxB4zJFlTZarJuhrPcwJiZQFAx
-=eLRH
------END PGP SIGNATURE-----
-
---AqsLC8rIMeq19msA--
+  Luis
