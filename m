@@ -1,97 +1,94 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V10 0/3] PM / Domains: Performance state support
-Date: Tue, 3 Oct 2017 09:52:50 +0200
-Message-ID: <CAPDyKFoG7MovwoSfagw-CTo7WBGcQGjHgNtornNKGXNJ_AxLag@mail.gmail.com>
-References: <cover.1505859768.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM: ARM: locomo: Drop suspend and resume bus type callbacks
+Date: Tue, 3 Oct 2017 10:09:21 +0200
+Message-ID: <CAPDyKFrkUW7S7hkEsYH9UWex3F=1QHFLozxyMey1e+XT2a8JGg@mail.gmail.com>
+References: <2826985.0zUqx1lpzM@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f174.google.com ([209.85.223.174]:46769 "EHLO
-        mail-io0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750846AbdJCHwv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Oct 2017 03:52:51 -0400
-Received: by mail-io0-f174.google.com with SMTP id d16so6863990ioj.3
-        for <linux-pm@vger.kernel.org>; Tue, 03 Oct 2017 00:52:51 -0700 (PDT)
-In-Reply-To: <cover.1505859768.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2826985.0zUqx1lpzM@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Russell King <linux@armlinux.org.uk>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 
-On 20 September 2017 at 00:32, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Hi Ulf,
+On 26 September 2017 at 22:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> This version contains the changes we discussed during the LPC.
+> None of the locomo drivers in the tree implements the suspend and
+> resume callbacks from struct locomo_driver, so drop them and drop
+> the corresponding callbacks from locomo_bus_type.
 >
-> Some platforms have the capability to configure the performance state of
-> their power domains. The process of configuring the performance state is
-> pretty much platform dependent and we may need to work with a wide range
-> of configurables.  For some platforms, like Qcom, it can be a positive
-> integer value alone, while in other cases it can be voltage levels, etc.
->
-> The power-domain framework until now was only designed for the idle
-> state management of the device and this needs to change in order to
-> reuse the power-domain framework for active state management of the
-> devices.
->
-> The first patch updates the genpd framework to supply new APIs to
-> support active state management and the second patch uses them from the
-> OPP core. The third patch adds some more checks to the genpd core to
-> catch bugs.
->
-> Rest of the patches [4-7/7] are included just to show how user drivers
-> would end up using the new APIs and these patches aren't there to get
-> merged and are marked clearly like that.
->
-> The ideal way is still to get the relation between device and domain
-> states via the DT instead of platform code, but that can be done
-> incrementally later once we have some users for it upstream.
->
-> This is currently tested by:
-> - /me by hacking the kernel a bit with virtual power-domains for the ARM
->   64 hikey platform. I have also tested the complex cases where the
->   device's parent power domain doesn't have set_performance_state()
->   callback set, but parents of that domains have it. Lockdep configs
->   were enabled for these tests.
-> - Rajendra Nayak, on msm8996 platform (Qcom) with MMC controller.
->
-> Thanks Rajendra for helping me testing this out.
->
-> I also had a chat with Rajendra and we should be able to get a Qualcomm
-> specific power domain driver (which uses these changes) in coming weeks.
-> Though it wouldn't solve all the problems around corners they have, as
-> they need more updates later on (Like support for multiple masters for a
-> device, etc).
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-We sorted out things at LPC!
+FWIW:
 
-However, the last weeks discussions at Linaro connect, raised a couple
-of more concerns with the current approach. Let me summarize them
-here.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-1)
-The ->dev_get_performance_state(), which currently translates
-frequency for a device to a performance index of its PM domain, is too
-closely integrated with genpd. Instead this kind of translation rather
-belongs as a part of the OPP core, because of not limiting this only
-to translate frequencies, but perhaps *later* also voltages.
-
-2)
-Propagating an aggregated increased requested performance state index
-for a genpd, upwards in the hierarchy of its master domains, is
-currently not needed by any existing SoCs.
-
-3) If some day the need for 2) becomes required, we must not assume a
-1 to 1 mapping of the supported performance state index for a
-master/subdomain. For example a domain may support 1-5, while its
-master may support 1-8.
-
-Taking this into consideration, this series need yet another round of
-re-spin. The ->dev_get_performance_state() part should be move to the
-OPP layer and the code dealing with the aggregation of the performance
-state index can be greatly simplified.
-
-[...]
+Do you also plan to convert the locomo_device_driver (platform_driver)
+to be converted to the modern PM callbacks for suspend/resume?
 
 Kind regards
 Uffe
+
+> ---
+>  arch/arm/common/locomo.c               |   24 ------------------------
+>  arch/arm/include/asm/hardware/locomo.h |    2 --
+>  2 files changed, 26 deletions(-)
+>
+> Index: linux-pm/arch/arm/include/asm/hardware/locomo.h
+> ===================================================================
+> --- linux-pm.orig/arch/arm/include/asm/hardware/locomo.h
+> +++ linux-pm/arch/arm/include/asm/hardware/locomo.h
+> @@ -189,8 +189,6 @@ struct locomo_driver {
+>         unsigned int            devid;
+>         int (*probe)(struct locomo_dev *);
+>         int (*remove)(struct locomo_dev *);
+> -       int (*suspend)(struct locomo_dev *, pm_message_t);
+> -       int (*resume)(struct locomo_dev *);
+>  };
+>
+>  #define LOCOMO_DRV(_d) container_of((_d), struct locomo_driver, drv)
+> Index: linux-pm/arch/arm/common/locomo.c
+> ===================================================================
+> --- linux-pm.orig/arch/arm/common/locomo.c
+> +++ linux-pm/arch/arm/common/locomo.c
+> @@ -826,28 +826,6 @@ static int locomo_match(struct device *_
+>         return dev->devid == drv->devid;
+>  }
+>
+> -static int locomo_bus_suspend(struct device *dev, pm_message_t state)
+> -{
+> -       struct locomo_dev *ldev = LOCOMO_DEV(dev);
+> -       struct locomo_driver *drv = LOCOMO_DRV(dev->driver);
+> -       int ret = 0;
+> -
+> -       if (drv && drv->suspend)
+> -               ret = drv->suspend(ldev, state);
+> -       return ret;
+> -}
+> -
+> -static int locomo_bus_resume(struct device *dev)
+> -{
+> -       struct locomo_dev *ldev = LOCOMO_DEV(dev);
+> -       struct locomo_driver *drv = LOCOMO_DRV(dev->driver);
+> -       int ret = 0;
+> -
+> -       if (drv && drv->resume)
+> -               ret = drv->resume(ldev);
+> -       return ret;
+> -}
+> -
+>  static int locomo_bus_probe(struct device *dev)
+>  {
+>         struct locomo_dev *ldev = LOCOMO_DEV(dev);
+> @@ -875,8 +853,6 @@ struct bus_type locomo_bus_type = {
+>         .match          = locomo_match,
+>         .probe          = locomo_bus_probe,
+>         .remove         = locomo_bus_remove,
+> -       .suspend        = locomo_bus_suspend,
+> -       .resume         = locomo_bus_resume,
+>  };
+>
+>  int locomo_driver_register(struct locomo_driver *driver)
+>
