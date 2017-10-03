@@ -1,53 +1,65 @@
-From: Jiri Kosina <jikos@kernel.org>
-Subject: Re: [RFC 2/5] fs: freeze on suspend and thaw on resume
-Date: Tue, 3 Oct 2017 22:06:14 +0200 (CEST)
-Message-ID: <nycvar.YFH.7.76.1710032203580.17517@jbgna.fhfr.qr>
-References: <20171003185313.1017-1-mcgrof@kernel.org> <20171003185313.1017-3-mcgrof@kernel.org>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [RFC 5/5] pm: remove kernel thread freezing
+Date: Tue, 3 Oct 2017 22:12:04 +0200
+Message-ID: <20171003201204.GA23521@amd>
+References: <20171003185313.1017-1-mcgrof@kernel.org>
+ <20171003185313.1017-6-mcgrof@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171003185313.1017-3-mcgrof@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="AqsLC8rIMeq19msA"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45811 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751115AbdJCUMH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Oct 2017 16:12:07 -0400
+Content-Disposition: inline
+In-Reply-To: <20171003185313.1017-6-mcgrof@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 3 Oct 2017, Luis R. Rodriguez wrote:
 
-> This uses the existing filesystem freeze and thaw callbacks to
-> freeze each filesystem on suspend/hibernation and thaw upon resume.
-> 
-> This is needed so that we properly really stop IO in flight without
-> races after userspace has been frozen. Without this we rely on
-> kthread freezing and its semantics are loose and error prone.
-> For instance, even though a kthread may use try_to_freeze() and end
-> up being frozen we have no way of being sure that everything that
-> has been spawned asynchronously from it (such as timers) have also
-> been stopped as well.
-> 
-> A long term advantage of also adding filesystem freeze / thawing
-> supporting durign suspend / hibernation is that long term we may
-> be able to eventually drop the kernel's thread freezing completely
-> as it was originally added to stop disk IO in flight as we hibernate
-> or suspend.
-> 
-> This also implies that many kthread users exist which have been
-> adding freezer semantics onto its kthreads without need. These also
-> will need to be reviewed later.
-> 
-> This is based on prior work originally by Rafael Wysocki and later by
-> Jiri Kosina.
-> 
+--AqsLC8rIMeq19msA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Tue 2017-10-03 11:53:13, Luis R. Rodriguez wrote:
+> Now that all filesystems which used to rely on kthread
+> freezing have been converted to filesystem freeze/thawing
+> we can remove the kernel kthread freezer.
+
+Are you surely-sure? You mentioned other in kernel sources of writes;
+what about those?
+
+Can knfsd be a problem?
+
+Can memory management doing background writes be a problem?
+
+Did you do some hibernation testing?
+
 > Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
 
-Thanks a lot for picking this up; I never found time to actually finalize 
-it.
+Please don't apply this just yet.
 
-	Acked-by: Jiri Kosina <jkosina@suse.cz>
+									Pavel
 
-for patches 2 and 5 (the fs agnostic code), which were in the core of my 
-original work.
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
--- 
-Jiri Kosina
-SUSE Labs
+--AqsLC8rIMeq19msA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlnT7xQACgkQMOfwapXb+vK4qgCcDxGX3eUe+PcZPHNiVxFML35E
+slcAoJNxB4zJFlTZarJuhrPcwJiZQFAx
+=eLRH
+-----END PGP SIGNATURE-----
+
+--AqsLC8rIMeq19msA--
