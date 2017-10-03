@@ -1,37 +1,36 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4 24/27] x86_32: assembly, add ENDs to some functions and
- relabel with SYM_CODE_*
-Date: Tue, 3 Oct 2017 02:26:59 +0200
-Message-ID: <CAJZ5v0j_mK4jXps2w=aZzjjM4Q2966htP8UEeoQAz-vNnHNB-Q@mail.gmail.com>
-References: <20171002091246.28432-1-jslaby@suse.cz> <20171002091246.28432-24-jslaby@suse.cz>
+Subject: Re: [PATCH] cpuidle: fix broadcast control when broadcast can not be entered
+Date: Tue, 3 Oct 2017 02:31:40 +0200
+Message-ID: <CAJZ5v0hE-H_RfJcb=AWyitQOzkRxf=XXC_+q1+k0b35CZFceyg@mail.gmail.com>
+References: <20170901042956.29594-1-npiggin@gmail.com> <alpine.DEB.2.20.1709010944490.1857@nanos>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171002091246.28432-24-jslaby@suse.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Linux PM <linux-pm@vger.kernel.org>, xen-devel@lists.xenproject.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f66.google.com ([209.85.218.66]:56974 "EHLO
+        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750869AbdJCAbl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Oct 2017 20:31:41 -0400
+In-Reply-To: <alpine.DEB.2.20.1709010944490.1857@nanos>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, Nicholas Piggin <npiggin@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Mon, Oct 2, 2017 at 11:12 AM, Jiri Slaby <jslaby@suse.cz> wrote:
-> All these are functions which are invoked from elsewhere, but they are
-> not typical C functions. So we annotate them (as global) using the new
-> SYM_CODE_START. All these were not balanced with any END, so mark their
-> ends by SYM_CODE_END, appropriatelly.
+On Fri, Sep 1, 2017 at 9:44 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Fri, 1 Sep 2017, Nicholas Piggin wrote:
 >
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: x86@kernel.org
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-> Cc: Juergen Gross <jgross@suse.com>
-> Cc: linux-pm@vger.kernel.org
-> Cc: xen-devel@lists.xenproject.org
+>> When failing to enter broadcast timer mode for an idle state that
+>> requires it, a new state is selected that does not require broadcast,
+>> but the broadcast variable remains set. This causes
+>> tick_broadcast_exit to be called despite not having entered broadcast
+>> mode.
+>>
+>> This causes the WARN_ON_ONCE(!irqs_disabled()) to trigger in some
+>> cases. It does not appear to cause problems for code today, but seems
+>> to violate the interface so should be fixed.
+>>
+>> Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
+>
+> Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
 
-For the hibernate part:
-
-Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Applied, thanks!
