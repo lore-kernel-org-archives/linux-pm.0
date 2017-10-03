@@ -1,65 +1,68 @@
-From: Andrea Adami <andrea.adami@gmail.com>
-Subject: Re: [PATCH] PM: ARM: locomo: Drop suspend and resume bus type callbacks
-Date: Tue, 3 Oct 2017 16:55:03 +0200
-Message-ID: <CAAQYJAvLRZ7ocSqWk1LYQPXp-=ibsU=jS=Jr86-UOZSjiuqOYQ@mail.gmail.com>
-References: <2826985.0zUqx1lpzM@aspire.rjw.lan> <CAPDyKFrkUW7S7hkEsYH9UWex3F=1QHFLozxyMey1e+XT2a8JGg@mail.gmail.com>
- <38658124.i1yAOWmsJn@aspire.rjw.lan>
+From: "Moore, Robert" <robert.moore@intel.com>
+Subject: RE: [pm:bleeding-edge 12/41] utstrsuppt.c:undefined reference to
+ `__udivdi3'
+Date: Tue, 3 Oct 2017 16:43:42 +0000
+Message-ID: <94F2FBAB4432B54E8AACC7DFDE6C92E37E613050@ORSMSX110.amr.corp.intel.com>
+References: <201710031050.2Iy92vzG%fengguang.wu@intel.com>
+ <2859755.8uSvH3hIdc@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <38658124.i1yAOWmsJn@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Russell King <linux@armlinux.org.uk>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2859755.8uSvH3hIdc@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Zheng, Lv" <lv.zheng@intel.com>
+Cc: "Wu, Fengguang" <fengguang.wu@intel.com>, "kbuild-all@01.org" <kbuild-all@01.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 3, 2017 at 1:44 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, October 3, 2017 10:09:21 AM CEST Ulf Hansson wrote:
->> On 26 September 2017 at 22:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >
->> > None of the locomo drivers in the tree implements the suspend and
->> > resume callbacks from struct locomo_driver, so drop them and drop
->> > the corresponding callbacks from locomo_bus_type.
->> >
->> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> FWIW:
->>
->> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
->>
->> Do you also plan to convert the locomo_device_driver (platform_driver)
->> to be converted to the modern PM callbacks for suspend/resume?
->
-> Yes, I do, but that later. :-)
->
+
+
+> -----Original Message-----
+> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> Sent: Tuesday, October 3, 2017 4:32 AM
+> To: Moore, Robert <robert.moore@intel.com>; Zheng, Lv
+> <lv.zheng@intel.com>
+> Cc: Wu, Fengguang <fengguang.wu@intel.com>; kbuild-all@01.org; linux-
+> acpi@vger.kernel.org; devel@acpica.org; linux-pm@vger.kernel.org
+> Subject: Re: [pm:bleeding-edge 12/41] utstrsuppt.c:undefined reference
+> to `__udivdi3'
+> 
+> On Tuesday, October 3, 2017 4:25:52 AM CEST kbuild test robot wrote:
+> > tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-
+> pm.git bleeding-edge
+> > head:   09b089a247ea7272df93a2116368bf24b656cd65
+> > commit: 05545b3fb6eab35290413211617793bc274e136b [12/41] ACPICA:
+> Restructure/cleanup all string-to-integer conversion functions
+> > config: i386-defconfig (attached as .config)
+> > compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+> > reproduce:
+> >         git checkout 05545b3fb6eab35290413211617793bc274e136b
+> >         # save the attached .config to linux build tree
+> >         make ARCH=i386
+> >
+> > All errors (new ones prefixed by >>):
+> >
+> >    drivers/acpi/acpica/utstrsuppt.o: In function
+> `acpi_ut_insert_digit':
+> > >> utstrsuppt.c:(.text+0x33): undefined reference to `__udivdi3'
+> 
+> __udivdi3() doesn't work on 32-bit x86 AFAICS.
+> 
+> Can we avoid using it or at least put it under #ifdef somehow?
+[Moore, Robert] 
+
+
+I take it that __udivdi3 is a 64-bit divide?
+We do have a local divide implementation(s) for things like this.
+
+However, I don't see a divide in ut_insert_digit; There is a 64-bit divide in ut_strtoul_add_64, however.
+
+So, there are no issues with 64-bit add, subtract, and multiply?
+
+
+
+> 
 > Thanks,
 > Rafael
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
-
-Thanks for working on this.
-
-Just FYI,
-there is a patch-serie for 4.2/locomo ported up to 4.4: never went
-mainline unfortunately.
-
-http://git.infradead.org/users/dbaryshkov/zaurus.git
-
-I have just adapted the patches form 4.2 to 4.4 [1] and tested on real hw.
-Unfortunately it is not trivial updating it (must be adapted to GPIO
-descriptors, etc.).
-
-As far as I see in the new driver there isn't anymore the use of the
-bus, so your patch shouldn't harm.
-I'll put Dmitry in cc to get his confirmation.
-
-Regards
-Andrea
-
-[1] http://cgit.openembedded.org/meta-handheld/tree/recipes-kernel/linux/linux-handheld-4.4/locomo
