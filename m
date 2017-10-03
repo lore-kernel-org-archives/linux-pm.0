@@ -1,41 +1,37 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4 2/3] PM / mfd: intel-lpss: Push system sleep callbacks
- to late/early stages
-Date: Tue, 3 Oct 2017 01:58:04 +0200
-Message-ID: <CAJZ5v0gvn=JMGzCEUr750zXDQAHEEcnGzpJQ-_BBwTa1-2L4nw@mail.gmail.com>
-References: <3023226.l5IfJK6GIc@aspire.rjw.lan> <3958866.l2qnKDbinI@aspire.rjw.lan>
- <65494652.vEfz4tCBDb@aspire.rjw.lan> <4332008.kXBLY0K23i@aspire.rjw.lan> <20170925072847.nl2a6feqzrzdcxwz@ninjato>
+Subject: Re: [PATCH v4 24/27] x86_32: assembly, add ENDs to some functions and
+ relabel with SYM_CODE_*
+Date: Tue, 3 Oct 2017 02:26:59 +0200
+Message-ID: <CAJZ5v0j_mK4jXps2w=aZzjjM4Q2966htP8UEeoQAz-vNnHNB-Q@mail.gmail.com>
+References: <20171002091246.28432-1-jslaby@suse.cz> <20171002091246.28432-24-jslaby@suse.cz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20170925072847.nl2a6feqzrzdcxwz@ninjato>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-i2c <linux-i2c@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, Ulf Hansson <ulf.hansson@linaro.org>, Rajat Jain <rajatja@google.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171002091246.28432-24-jslaby@suse.cz>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, the arch/x86 maintainers <x86@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Linux PM <linux-pm@vger.kernel.org>, xen-devel@lists.xenproject.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Sep 25, 2017 at 9:28 AM, Wolfram Sang <wsa@the-dreams.de> wrote:
-> On Mon, Sep 25, 2017 at 01:20:35AM +0200, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Push the system suspend/resume callbacks of intel-lpss to the late
->> suspend/early resume stages to allow child device callbacks to be
->> pushed to the late/early stages of suspend/resume too, so as to
->> make it possible to avoid resuming the children if they are runtime-
->> suspended during system suspend going forward.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Tested-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
->> Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
->> Tested-by: Johannes Stezenbach <js@sig21.net>
->> Tested-by: Rajat Jain <rajatja@google.com>
+On Mon, Oct 2, 2017 at 11:12 AM, Jiri Slaby <jslaby@suse.cz> wrote:
+> All these are functions which are invoked from elsewhere, but they are
+> not typical C functions. So we annotate them (as global) using the new
+> SYM_CODE_START. All these were not balanced with any END, so mark their
+> ends by SYM_CODE_END, appropriatelly.
 >
-> If this series shall go in via I2C, I'd need an ack from Lee for this
-> one.
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+> Cc: Juergen Gross <jgross@suse.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: xen-devel@lists.xenproject.org
 
-So this one has been ACKed now, so the series should be good to go.
+For the hibernate part:
 
-Do you need me to resend it (because of the v5 of patch [1/3])?
-
-Thanks,
-Rafael
+Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
