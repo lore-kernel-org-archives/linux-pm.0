@@ -1,92 +1,104 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [pm:bleeding-edge 12/41] utstrsuppt.c:undefined reference to `__udivdi3'
-Date: Tue, 03 Oct 2017 23:07:26 +0200
-Message-ID: <7672294.bGB5UuPiJL@aspire.rjw.lan>
-References: <201710031050.2Iy92vzG%fengguang.wu@intel.com> <94F2FBAB4432B54E8AACC7DFDE6C92E37E6130BD@ORSMSX110.amr.corp.intel.com> <1939602.aFdyoUdUJn@aspire.rjw.lan>
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Subject: Re: [RFC 2/5] fs: freeze on suspend and thaw on resume
+Date: Tue, 3 Oct 2017 23:16:58 +0200
+Message-ID: <20171003211658.GK2294@wotan.suse.de>
+References: <20171003185313.1017-1-mcgrof@kernel.org>
+ <20171003185313.1017-3-mcgrof@kernel.org>
+ <20171003205841.GN3666@dastard>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <1939602.aFdyoUdUJn@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Moore, Robert" <robert.moore@intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Zheng, Lv" <lv.zheng@intel.com>, "Wu, Fengguang" <fengguang.wu@intel.com>, "kbuild-all@01.org" <kbuild-all@01.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171003205841.GN3666@dastard>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dave Chinner <david@fromorbit.com>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 3, 2017 10:50:11 PM CEST Rafael J. Wysocki wrote:
-> On Tuesday, October 3, 2017 9:41:23 PM CEST Moore, Robert wrote:
-> > 
-> > > -----Original Message-----
-> > > From: rjwysocki@gmail.com [mailto:rjwysocki@gmail.com] On Behalf Of
-> > > Rafael J. Wysocki
-> > > Sent: Tuesday, October 3, 2017 11:21 AM
-> > > To: Moore, Robert <robert.moore@intel.com>
-> > > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>; Zheng, Lv
-> > > <lv.zheng@intel.com>; Wu, Fengguang <fengguang.wu@intel.com>; kbuild-
-> > > all@01.org; linux-acpi@vger.kernel.org; devel@acpica.org; linux-
-> > > pm@vger.kernel.org
-> > > Subject: Re: [pm:bleeding-edge 12/41] utstrsuppt.c:undefined reference
-> > > to `__udivdi3'
-> > > 
-> > > On Tue, Oct 3, 2017 at 6:43 PM, Moore, Robert <robert.moore@intel.com>
-> > > wrote:
-> > > >
-> > > >
-> > > >> -----Original Message-----
-> > > >> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
-> > > >> Sent: Tuesday, October 3, 2017 4:32 AM
-> > > >> To: Moore, Robert <robert.moore@intel.com>; Zheng, Lv
-> > > >> <lv.zheng@intel.com>
-> > > >> Cc: Wu, Fengguang <fengguang.wu@intel.com>; kbuild-all@01.org; linux-
-> > > >> acpi@vger.kernel.org; devel@acpica.org; linux-pm@vger.kernel.org
-> > > >> Subject: Re: [pm:bleeding-edge 12/41] utstrsuppt.c:undefined
-> > > >> reference to `__udivdi3'
-> > > >>
-> > > >> On Tuesday, October 3, 2017 4:25:52 AM CEST kbuild test robot wrote:
-> > > >> > tree:
-> > > https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-
-> > > >> pm.git bleeding-edge
-> > > >> > head:   09b089a247ea7272df93a2116368bf24b656cd65
-> > > >> > commit: 05545b3fb6eab35290413211617793bc274e136b [12/41] ACPICA:
-> > > >> Restructure/cleanup all string-to-integer conversion functions
-> > > >> > config: i386-defconfig (attached as .config)
-> > > >> > compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
-> > > >> > reproduce:
-> > > >> >         git checkout 05545b3fb6eab35290413211617793bc274e136b
-> > > >> >         # save the attached .config to linux build tree
-> > > >> >         make ARCH=i386
-> > > >> >
-> > > >> > All errors (new ones prefixed by >>):
-> > > >> >
-> > > >> >    drivers/acpi/acpica/utstrsuppt.o: In function
-> > > >> `acpi_ut_insert_digit':
-> > > >> > >> utstrsuppt.c:(.text+0x33): undefined reference to `__udivdi3'
-> > > >>
-> > > >> __udivdi3() doesn't work on 32-bit x86 AFAICS.
-> > > >>
-> > > >> Can we avoid using it or at least put it under #ifdef somehow?
-> > > > [Moore, Robert]
-> > > >
-> > > >
-> > > > I take it that __udivdi3 is a 64-bit divide?
-> > > 
-> > > Practically, yes (AFAICS).
-> > > 
-> > > > We do have a local divide implementation(s) for things like this.
-> > > >
-> > > > However, I don't see a divide in ut_insert_digit; There is a 64-bit
-> > > divide in ut_strtoul_add_64, however.
-> > [Moore, Robert] 
-> > 
-> > Oops, sorry. The divided is in strtoul_multiply_64. We are checking for an
-> > overflow condition up front.
+On Wed, Oct 04, 2017 at 07:58:41AM +1100, Dave Chinner wrote:
+> On Tue, Oct 03, 2017 at 11:53:10AM -0700, Luis R. Rodriguez wrote:
+> > diff --git a/fs/super.c b/fs/super.c
+> > index d45e92d9a38f..ce8da8b187b1 100644
+> > --- a/fs/super.c
+> > +++ b/fs/super.c
+> > @@ -1572,3 +1572,82 @@ int thaw_super(struct super_block *sb)
+> >  	return 0;
+> >  }
+> >  EXPORT_SYMBOL(thaw_super);
+> > +
+> > +#ifdef CONFIG_PM_SLEEP
+> > +static bool super_allows_freeze(struct super_block *sb)
+> > +{
+> > +	return !!(sb->s_type->fs_flags & FS_FREEZE_ON_SUSPEND);
+> > +}
 > 
-> But this is a plain division, so it looks like a build system or compiler issue
-> to me.
+> That's a completely misleading function name. All superblocks can be
+> frozen - freeze_super() is filesystem independent. And given that, I
+> don't see why these super_should_freeze() hoops need to be jumped
+> through...
 
-Well, OK.  Plain u64 / u64 divisions need to be avoided for stuff to build on
-32-bit x86.
+I added this given ext4's current thaw implementation stalls on resume 
+as it implicates a bio_submit() and this never completes. So I refactored
+ext4 thaw skip a sync on thaw. This requires more eyeballs. This may be an
+underlying issue elsewhere.  If its not an bug elsewhere or on ordering, then
+there may be some restrictions on thaw when used on resume. Refer to my notes
+to Ted on patch #4 for ext4.
 
-Thanks,
-Rafael
+> > +int fs_suspend_freeze_sb(struct super_block *sb, void *priv)
+> > +{
+> > +	int error = 0;
+> > +
+> > +	spin_lock(&sb_lock);
+> > +	if (!super_should_freeze(sb))
+> > +		goto out;
+> > +
+> > +	up_read(&sb->s_umount);
+> > +	pr_info("%s (%s): freezing\n", sb->s_type->name, sb->s_id);
+> > +	error = freeze_super(sb);
+> > +	down_read(&sb->s_umount);
+> > +out:
+> > +	if (error && error != -EBUSY)
+> > +		pr_notice("%s (%s): Unable to freeze, error=%d",
+> > +			  sb->s_type->name, sb->s_id, error);
+> > +	spin_unlock(&sb_lock);
+> > +	return error;
+> > +}
+> 
+> I don't think this was ever tested.  Calling freeze_super() with a
+> spinlock held with through "sleeping in atomic" errors all over the
+> place.
 
+No, I run time tested it with a rootfs with ext4 and xfs with my
+development tree and hammering on both while I loop on suspend
+and resume.
+
+> Also, the s_umount lock juggling is nasty. Your new copy+pasted
+> iterate_supers_reverse() takes the lock in read mode, yet all the
+> freeze/thaw callers here want to take it in write mode.
+
+Yeap, yuk!
+
+> So, really,
+> iterate_supers_reverse() needs to be iterate_supers_reverse_excl()
+> and take the write lock, and freeze_super/thaw_super need to be
+> factored into locked and unlocked versions.
+> 
+> In which case, we end up with:
+> 
+> int fs_suspend_freeze_sb(struct super_block *sb, void *priv)
+> {
+> 	return freeze_locked_super(sb);
+> }
+> 
+> int fs_suspend_thaw_sb(struct super_block *sb, void *priv)
+> {
+> 	return thaw_locked_super(sb);
+> }
+
+Groovy, thanks, I suspected that locking was convoluted and
+we could come up with something better. Will do it this way.
+
+Its really what I hoped we could do :) I just needed to get
+it in writing.
+
+  Luis
