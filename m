@@ -1,94 +1,70 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM: ARM: locomo: Drop suspend and resume bus type callbacks
-Date: Tue, 3 Oct 2017 10:09:21 +0200
-Message-ID: <CAPDyKFrkUW7S7hkEsYH9UWex3F=1QHFLozxyMey1e+XT2a8JGg@mail.gmail.com>
-References: <2826985.0zUqx1lpzM@aspire.rjw.lan>
+From: Charles Keepax <ckeepax@opensource.cirrus.com>
+Subject: Re: [PATCH] extcon: Split out extcon header file for consumer and
+ provider device
+Date: Tue, 3 Oct 2017 09:58:48 +0100
+Message-ID: <20171003085848.tma5l5lq4yavddli@localhost.localdomain>
+References: <CGME20170929000148epcas2p200e56186b067ec626a033c7ae2d4bbdb@epcas2p2.samsung.com>
+ <1506643305-4581-1-git-send-email-cw00.choi@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2826985.0zUqx1lpzM@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Russell King <linux@armlinux.org.uk>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Content-Disposition: inline
+In-Reply-To: <1506643305-4581-1-git-send-email-cw00.choi@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: balbi@kernel.org, linux-usb@vger.kernel.org, heiko@sntech.de, b.zolnierkie@samsung.com, gregkh@linuxfoundation.org, yoshihiro.shimoda.uh@renesas.com, linux-pm@vger.kernel.org, sre@kernel.org, krzk@kernel.org, kishon@ti.com, linux-renesas-soc@vger.kernel.org, linux-rockchip@lists.infradead.org, wens@csie.org, myungjoo.ham@samsung.com, linux-arm-kernel@lists.infradead.org, chanwoo@kernel.org, maxime.ripard@free-electrons.com, lee.jones@linaro.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 26 September 2017 at 22:45, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> None of the locomo drivers in the tree implements the suspend and
-> resume callbacks from struct locomo_driver, so drop them and drop
-> the corresponding callbacks from locomo_bus_type.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-FWIW:
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
-Do you also plan to convert the locomo_device_driver (platform_driver)
-to be converted to the modern PM callbacks for suspend/resume?
-
-Kind regards
-Uffe
-
+On Fri, Sep 29, 2017 at 09:01:45AM +0900, Chanwoo Choi wrote:
+> The extcon has two type of extcon devices as following.
+> - 'extcon provider deivce' adds new extcon device and detect the
+>    state/properties of external connector. Also, it notifies the
+>    state/properties to the extcon consumer device.
+> - 'extcon consumer device' gets the change state/properties
+>    from extcon provider device.
+> Prior to that, include/linux/extcon.h contains all exported API for
+> both provider and consumer device driver. To clarify the meaning of
+> header file and to remove the wrong use-case on consumer device,
+> this patch separates into extcon.h and extcon-provider.h.
+> 
+> [Description for include/linux/{extcon.h|extcon-provider.h}]
+> - extcon.h includes the extcon API and data structure for extcon consumer
+>   device driver. This header file contains the following APIs:
+>   : Register/unregister the notifier to catch the change of extcon device
+>   : Get the extcon device instance
+>   : Get the extcon device name
+>   : Get the state of each external connector
+>   : Get the property value of each external connector
+>   : Get the property capability of each external connector
+> 
+> - extcon-provider.h includes the extcon API and data structure for extcon
+>   provider device driver. This header file contains the following APIs:
+>   : Include 'include/linux/extcon.h'
+>   : Allocate the memory for extcon device instance
+>   : Register/unregister extcon device
+>   : Set the state of each external connector
+>   : Set the property value of each external connector
+>   : Set the property capability of each external connector
+> 
+> Cc: Felipe Balbi <balbi@kernel.org>
+> Cc: Kishon Vijay Abraham I <kishon@ti.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 > ---
->  arch/arm/common/locomo.c               |   24 ------------------------
->  arch/arm/include/asm/hardware/locomo.h |    2 --
->  2 files changed, 26 deletions(-)
->
-> Index: linux-pm/arch/arm/include/asm/hardware/locomo.h
-> ===================================================================
-> --- linux-pm.orig/arch/arm/include/asm/hardware/locomo.h
-> +++ linux-pm/arch/arm/include/asm/hardware/locomo.h
-> @@ -189,8 +189,6 @@ struct locomo_driver {
->         unsigned int            devid;
->         int (*probe)(struct locomo_dev *);
->         int (*remove)(struct locomo_dev *);
-> -       int (*suspend)(struct locomo_dev *, pm_message_t);
-> -       int (*resume)(struct locomo_dev *);
->  };
->
->  #define LOCOMO_DRV(_d) container_of((_d), struct locomo_driver, drv)
-> Index: linux-pm/arch/arm/common/locomo.c
-> ===================================================================
-> --- linux-pm.orig/arch/arm/common/locomo.c
-> +++ linux-pm/arch/arm/common/locomo.c
-> @@ -826,28 +826,6 @@ static int locomo_match(struct device *_
->         return dev->devid == drv->devid;
->  }
->
-> -static int locomo_bus_suspend(struct device *dev, pm_message_t state)
-> -{
-> -       struct locomo_dev *ldev = LOCOMO_DEV(dev);
-> -       struct locomo_driver *drv = LOCOMO_DRV(dev->driver);
-> -       int ret = 0;
-> -
-> -       if (drv && drv->suspend)
-> -               ret = drv->suspend(ldev, state);
-> -       return ret;
-> -}
-> -
-> -static int locomo_bus_resume(struct device *dev)
-> -{
-> -       struct locomo_dev *ldev = LOCOMO_DEV(dev);
-> -       struct locomo_driver *drv = LOCOMO_DRV(dev->driver);
-> -       int ret = 0;
-> -
-> -       if (drv && drv->resume)
-> -               ret = drv->resume(ldev);
-> -       return ret;
-> -}
-> -
->  static int locomo_bus_probe(struct device *dev)
->  {
->         struct locomo_dev *ldev = LOCOMO_DEV(dev);
-> @@ -875,8 +853,6 @@ struct bus_type locomo_bus_type = {
->         .match          = locomo_match,
->         .probe          = locomo_bus_probe,
->         .remove         = locomo_bus_remove,
-> -       .suspend        = locomo_bus_suspend,
-> -       .resume         = locomo_bus_resume,
->  };
->
->  int locomo_driver_register(struct locomo_driver *driver)
->
+>  drivers/extcon/extcon-arizona.c               |   2 +-
+
+Acked-by: Charles Keepax <ckeepax@opensource.cirrus.com>
+
+Thanks,
+Charles
