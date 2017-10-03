@@ -1,31 +1,88 @@
-From: Bart Van Assche <Bart.VanAssche@wdc.com>
-Subject: Re: [RFC 0/5] fs: replace kthread freezing with filesystem
- freeze/thaw
-Date: Tue, 3 Oct 2017 20:59:26 +0000
-Message-ID: <1507064365.2567.36.camel@wdc.com>
-References: <20171003185313.1017-1-mcgrof@kernel.org>
-         <20171003193300.GD5362@ming.t460p> <20171003200511.GD2294@wotan.suse.de>
-         <20171003204755.GB8848@bombadil.infradead.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [pm:bleeding-edge 12/41] utstrsuppt.c:undefined reference to `__udivdi3'
+Date: Tue, 03 Oct 2017 22:50:11 +0200
+Message-ID: <1939602.aFdyoUdUJn@aspire.rjw.lan>
+References: <201710031050.2Iy92vzG%fengguang.wu@intel.com> <CAJZ5v0inoxc0KXF87CZXoD_nzNwgcTMf=BLbQfM+fGT5ks0v4Q@mail.gmail.com> <94F2FBAB4432B54E8AACC7DFDE6C92E37E6130BD@ORSMSX110.amr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from esa1.hgst.iphmx.com ([68.232.141.245]:47219 "EHLO
-        esa1.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750820AbdJCU7b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Oct 2017 16:59:31 -0400
-In-Reply-To: <20171003204755.GB8848@bombadil.infradead.org>
-Content-Language: en-US
-Content-ID: <4B44B2AFF4B5EA498A900C8C99DEA270@namprd04.prod.outlook.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <94F2FBAB4432B54E8AACC7DFDE6C92E37E6130BD@ORSMSX110.amr.corp.intel.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Moore, Robert" <robert.moore@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Zheng, Lv" <lv.zheng@intel.com>, "Wu, Fengguang" <fengguang.wu@intel.com>, "kbuild-all@01.org" <kbuild-all@01.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "devel@acpica.org" <devel@acpica.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "willy@infradead.org" <willy@infradead.org>, "mcgrof@kernel.org" <mcgrof@kernel.org>
-Cc: "boris.ostrovsky@oracle.com" <boris.ostrovsky@oracle.com>, "ONeukum@suse.com" <ONeukum@suse.com>, "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "nborisov@suse.com" <nborisov@suse.com>, "oleg.b.antonyan@gmail.com" <oleg.b.antonyan@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "darrick.wong@oracle.com" <darrick.wong@oracle.com>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "ming.lei@redhat.com" <ming.lei@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jgross@suse.com" <jgross@suse.com>, "oleksandr@natalenko.name" <oleksandr@natalenko.name>, todd.e.brandt@linux.intel.co
 
-T24gVHVlLCAyMDE3LTEwLTAzIGF0IDEzOjQ3IC0wNzAwLCBNYXR0aGV3IFdpbGNveCB3cm90ZToN
-Cj4gVGhlIFNDU0kgbGF5ZXIgY2FuIHNlbmQgU0NTSSBjb21tYW5kczsgdGhleSBhcmVuJ3QgSS9P
-cyBpbiB0aGUgc2Vuc2UgdGhhdA0KPiB0aGV5IGRvIHJlYWRzIGFuZCB3cml0ZXMgdG8gbWVkaWEs
-IGJ1dCB0aGV5IGFyZSBibG9jayByZXF1ZXN0cy4gIE1heWJlIHRob3NlDQo+IHNob3VsZCBiZSBh
-bGxvd2VkIGV2ZW4gdG8gZnJvemVuIGRldmljZXM/DQoNCkhlbGxvIE1hdHRoZXcsDQoNCkkgdGhp
-bmsgb25seSBSUUZfUE0gcmVxdWVzdHMgc2hvdWxkIGJlIHByb2Nlc3NlZCBmb3IgZnJvemVuIFND
-U0kgZGV2aWNlcw0KYW5kIG5vIG90aGVyIHJlcXVlc3RzLg0KDQpCYXJ0Lg==
+On Tuesday, October 3, 2017 9:41:23 PM CEST Moore, Robert wrote:
+> 
+> > -----Original Message-----
+> > From: rjwysocki@gmail.com [mailto:rjwysocki@gmail.com] On Behalf Of
+> > Rafael J. Wysocki
+> > Sent: Tuesday, October 3, 2017 11:21 AM
+> > To: Moore, Robert <robert.moore@intel.com>
+> > Cc: Rafael J. Wysocki <rjw@rjwysocki.net>; Zheng, Lv
+> > <lv.zheng@intel.com>; Wu, Fengguang <fengguang.wu@intel.com>; kbuild-
+> > all@01.org; linux-acpi@vger.kernel.org; devel@acpica.org; linux-
+> > pm@vger.kernel.org
+> > Subject: Re: [pm:bleeding-edge 12/41] utstrsuppt.c:undefined reference
+> > to `__udivdi3'
+> > 
+> > On Tue, Oct 3, 2017 at 6:43 PM, Moore, Robert <robert.moore@intel.com>
+> > wrote:
+> > >
+> > >
+> > >> -----Original Message-----
+> > >> From: Rafael J. Wysocki [mailto:rjw@rjwysocki.net]
+> > >> Sent: Tuesday, October 3, 2017 4:32 AM
+> > >> To: Moore, Robert <robert.moore@intel.com>; Zheng, Lv
+> > >> <lv.zheng@intel.com>
+> > >> Cc: Wu, Fengguang <fengguang.wu@intel.com>; kbuild-all@01.org; linux-
+> > >> acpi@vger.kernel.org; devel@acpica.org; linux-pm@vger.kernel.org
+> > >> Subject: Re: [pm:bleeding-edge 12/41] utstrsuppt.c:undefined
+> > >> reference to `__udivdi3'
+> > >>
+> > >> On Tuesday, October 3, 2017 4:25:52 AM CEST kbuild test robot wrote:
+> > >> > tree:
+> > https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-
+> > >> pm.git bleeding-edge
+> > >> > head:   09b089a247ea7272df93a2116368bf24b656cd65
+> > >> > commit: 05545b3fb6eab35290413211617793bc274e136b [12/41] ACPICA:
+> > >> Restructure/cleanup all string-to-integer conversion functions
+> > >> > config: i386-defconfig (attached as .config)
+> > >> > compiler: gcc-6 (Debian 6.2.0-3) 6.2.0 20160901
+> > >> > reproduce:
+> > >> >         git checkout 05545b3fb6eab35290413211617793bc274e136b
+> > >> >         # save the attached .config to linux build tree
+> > >> >         make ARCH=i386
+> > >> >
+> > >> > All errors (new ones prefixed by >>):
+> > >> >
+> > >> >    drivers/acpi/acpica/utstrsuppt.o: In function
+> > >> `acpi_ut_insert_digit':
+> > >> > >> utstrsuppt.c:(.text+0x33): undefined reference to `__udivdi3'
+> > >>
+> > >> __udivdi3() doesn't work on 32-bit x86 AFAICS.
+> > >>
+> > >> Can we avoid using it or at least put it under #ifdef somehow?
+> > > [Moore, Robert]
+> > >
+> > >
+> > > I take it that __udivdi3 is a 64-bit divide?
+> > 
+> > Practically, yes (AFAICS).
+> > 
+> > > We do have a local divide implementation(s) for things like this.
+> > >
+> > > However, I don't see a divide in ut_insert_digit; There is a 64-bit
+> > divide in ut_strtoul_add_64, however.
+> [Moore, Robert] 
+> 
+> Oops, sorry. The divided is in strtoul_multiply_64. We are checking for an
+> overflow condition up front.
+
+But this is a plain division, so it looks like a build system or compiler issue
+to me.
+
+Thanks,
+Rafael
+
