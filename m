@@ -1,36 +1,90 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 0/4] PM / Sleep / ACPI: Some cleanups and clarifications
-Date: Tue,  3 Oct 2017 09:11:05 +0200
-Message-ID: <1507014669-1502-1-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH 1/4] PM / ACPI: Restore acpi_subsys_complete()
+Date: Tue,  3 Oct 2017 09:11:06 +0200
+Message-ID: <1507014669-1502-2-git-send-email-ulf.hansson@linaro.org>
+References: <1507014669-1502-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1507014669-1502-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-This series contains four patches which are re-submitted as a subset from an
-earlier posted series [1]. These changes addresses cleanups/clarifications to
-the code and do not include any functional changes.
+The commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have
+been reset by firmware"), made PCI's and ACPI's ->complete() callbacks to
+be assigned to a new API called pm_complete_with_resume_check(), which was
+introduced in the same change.
 
-[1]
-https://www.spinics.net/lists/arm-kernel/msg603856.html
+Later it turned out that using pm_complete_with_resume_check() isn't good
+enough for PCI, as it needs additional PCI specific checks, before deciding
+whether runtime resuming the device is needed when running the ->complete()
+callback.
 
-Kind regards
-Uffe
+This leaves ACPI being the only user of pm_complete_with_resume_check().
+Therefore let's restore ACPI's acpi_subsys_complete(), which was dropped in
+commit 58a1fbbb2ee8 ("PM / PCI / ACPI: Kick devices that might have been
+reset by firmware").
 
-Ulf Hansson (4):
-  PM / ACPI: Restore acpi_subsys_complete()
-  PM / Sleep: Remove pm_complete_with_resume_check()
-  PM / ACPI: Split code validating need for runtime resume in
-    ->prepare()
-  PM / ACPI: Split acpi_lpss_suspend_late|resume_early()
+This enables us to remove the pm_complete_with_resume_check() API in a
+following change, but it also enables ACPI to add more ACPI specific checks
+in acpi_subsys_complete() if it turns out that is needed.
 
- drivers/acpi/acpi_lpss.c         | 31 +++++++++++++++++-----
- drivers/acpi/device_pm.c         | 56 ++++++++++++++++++++++++++++++----------
- drivers/base/power/generic_ops.c | 23 -----------------
- include/linux/pm.h               |  1 -
- 4 files changed, 66 insertions(+), 45 deletions(-)
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/acpi/acpi_lpss.c |  2 +-
+ drivers/acpi/device_pm.c | 19 ++++++++++++++++++-
+ 2 files changed, 19 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/acpi/acpi_lpss.c b/drivers/acpi/acpi_lpss.c
+index 032ae44..0c84d15 100644
+--- a/drivers/acpi/acpi_lpss.c
++++ b/drivers/acpi/acpi_lpss.c
+@@ -894,7 +894,7 @@ static struct dev_pm_domain acpi_lpss_pm_domain = {
+ #ifdef CONFIG_PM
+ #ifdef CONFIG_PM_SLEEP
+ 		.prepare = acpi_subsys_prepare,
+-		.complete = pm_complete_with_resume_check,
++		.complete = acpi_subsys_complete,
+ 		.suspend = acpi_subsys_suspend,
+ 		.suspend_late = acpi_lpss_suspend_late,
+ 		.resume_early = acpi_lpss_resume_early,
+diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+index fbcc73f..632f214 100644
+--- a/drivers/acpi/device_pm.c
++++ b/drivers/acpi/device_pm.c
+@@ -1020,6 +1020,23 @@ int acpi_subsys_prepare(struct device *dev)
+ EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
+ 
+ /**
++ * acpi_subsys_complete - Finalize device's resume during system resume.
++ * @dev: Device to handle.
++ */
++void acpi_subsys_complete(struct device *dev)
++{
++	pm_generic_complete(dev);
++	/*
++	 * If the device had been runtime-suspended before the system went into
++	 * the sleep state it is going out of and it has never been resumed till
++	 * now, resume it in case the firmware powered it up.
++	 */
++	if (dev->power.direct_complete && pm_resume_via_firmware())
++		pm_request_resume(dev);
++}
++EXPORT_SYMBOL_GPL(acpi_subsys_complete);
++
++/**
+  * acpi_subsys_suspend - Run the device driver's suspend callback.
+  * @dev: Device to handle.
+  *
+@@ -1087,7 +1104,7 @@ static struct dev_pm_domain acpi_general_pm_domain = {
+ 		.runtime_resume = acpi_subsys_runtime_resume,
+ #ifdef CONFIG_PM_SLEEP
+ 		.prepare = acpi_subsys_prepare,
+-		.complete = pm_complete_with_resume_check,
++		.complete = acpi_subsys_complete,
+ 		.suspend = acpi_subsys_suspend,
+ 		.suspend_late = acpi_subsys_suspend_late,
+ 		.resume_early = acpi_subsys_resume_early,
 -- 
 2.7.4
 
