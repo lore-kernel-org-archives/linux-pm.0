@@ -1,44 +1,48 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: Re: [RFC 5/5] pm: remove kernel thread freezing
-Date: Tue, 3 Oct 2017 22:27:31 +0200
-Message-ID: <20171003202731.GG2294@wotan.suse.de>
+From: Bart Van Assche <Bart.VanAssche@wdc.com>
+Subject: Re: [RFC 2/5] fs: freeze on suspend and thaw on resume
+Date: Tue, 3 Oct 2017 20:32:39 +0000
+Message-ID: <1507062758.2567.22.camel@wdc.com>
 References: <20171003185313.1017-1-mcgrof@kernel.org>
- <20171003185313.1017-6-mcgrof@kernel.org>
- <1507061605.2567.13.camel@wdc.com>
- <nycvar.YFH.7.76.1710032215140.17517@jbgna.fhfr.qr>
- <1507062101.2567.16.camel@wdc.com>
+         <20171003185313.1017-3-mcgrof@kernel.org> <1507060941.2567.6.camel@wdc.com>
+         <20171003202335.GF2294@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:43718 "EHLO mx1.suse.de"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1750812AbdJCU1f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 3 Oct 2017 16:27:35 -0400
-Content-Disposition: inline
-In-Reply-To: <1507062101.2567.16.camel@wdc.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171003202335.GF2294@wotan.suse.de>
+Content-Language: en-US
+Content-ID: <7893554CB41F9846846273F6834A9827@namprd04.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "mcgrof@kernel.org" <mcgrof@kernel.org>
+Cc: "boris.ostrovsky@oracle.com" <boris.ostrovsky@oracle.com>, "ONeukum@suse.com" <ONeukum@suse.com>, "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "nborisov@suse.com" <nborisov@suse.com>, "oleg.b.antonyan@gmail.com" <oleg.b.antonyan@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "darrick.wong@oracle.com" <darrick.wong@oracle.com>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "ming.lei@redhat.com" <ming.lei@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jgross@suse.com" <jgross@suse.com>, "oleksandr@natalenko.name" <oleksandr@natalenko.name>, todd.e.brandt@linux.intel.co
 List-Id: linux-pm@vger.kernel.org
-To: Bart Van Assche <Bart.VanAssche@wdc.com>
-Cc: "jikos@kernel.org" <jikos@kernel.org>, "boris.ostrovsky@oracle.com" <boris.ostrovsky@oracle.com>, "ONeukum@suse.com" <ONeukum@suse.com>, "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "nborisov@suse.com" <nborisov@suse.com>, "oleg.b.antonyan@gmail.com" <oleg.b.antonyan@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "darrick.wong@oracle.com" <darrick.wong@oracle.com>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "ming.lei@redhat.com" <ming.lei@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jgross@suse.com" <jgross@suse.com>, "oleksandr@natalenko.name" <oleksandr@natalen>
 
-On Tue, Oct 03, 2017 at 08:21:42PM +0000, Bart Van Assche wrote:
-> On Tue, 2017-10-03 at 22:17 +0200, Jiri Kosina wrote:
-> > On Tue, 3 Oct 2017, Bart Van Assche wrote:
-> > > What about the many drivers outside filesystems that use the 
-> > > set_freezable() / try_to_freeze() / wait_event_freezable() API?
-> > 
-> > Many/most of them are just completely bogus and pointless. I've killed a 
-> > lot of those in the past, but the copy/paste programming is just too 
-> > strong enemy to fight against.
-> 
-> If just a single driver would use that API to prevent that I/O occurs while
-> processes are frozen then this patch will break that driver.
-
-Yes! And although as Jiri points out, its debatable where this is being used,
-but as you suggest there may be *valid* reasons for it *now* even though
-originally it *may* have been bogus...
-
-Its why I believe this now can only be done piecemeal wise, slowly but steady.
-To avoid regressions, and make this effort bisectable.
-
-  Luis
+T24gVHVlLCAyMDE3LTEwLTAzIGF0IDIyOjIzICswMjAwLCBMdWlzIFIuIFJvZHJpZ3VleiB3cm90
+ZToNCj4gT24gVHVlLCBPY3QgMDMsIDIwMTcgYXQgMDg6MDI6MjJQTSArMDAwMCwgQmFydCBWYW4g
+QXNzY2hlIHdyb3RlOg0KPiA+IE9uIFR1ZSwgMjAxNy0xMC0wMyBhdCAxMTo1MyAtMDcwMCwgTHVp
+cyBSLiBSb2RyaWd1ZXogd3JvdGU6DQo+ID4gPiArc3RhdGljIGJvb2wgc3VwZXJfYWxsb3dzX2Zy
+ZWV6ZShzdHJ1Y3Qgc3VwZXJfYmxvY2sgKnNiKQ0KPiA+ID4gK3sNCj4gPiA+ICsJcmV0dXJuICEh
+KHNiLT5zX3R5cGUtPmZzX2ZsYWdzICYgRlNfRlJFRVpFX09OX1NVU1BFTkQpOw0KPiA+ID4gK30N
+Cj4gPiANCj4gPiBBIG1pbm9yIGNvbW1lbnQ6IGlmICIhISIgd291bGQgYmUgbGVmdCBvdXQgdGhl
+IGNvbXBpbGVyIHdpbGwgcGVyZm9ybSB0aGUNCj4gPiBjb252ZXJzaW9uIGZyb20gaW50IHRvIGJv
+b2wgaW1wbGljaXRseQ0KPiANCj4gRm9yIGFsbCBjb21waWxlcnM/DQoNCkxldCdzIGhhdmUgYSBs
+b29rIGF0IHRoZSBvdXRwdXQgb2YgdGhlIGZvbGxvd2luZyBjb21tYW5kczoNCg0KJCBQQUdFUj0g
+Z2l0IGdyZXAgJ3R5cGVkZWYuKltbOmJsYW5rOl1dYm9vbDsnIGluY2x1ZGUNCmluY2x1ZGUvbGlu
+dXgvdHlwZXMuaDp0eXBlZGVmIF9Cb29sICAgICAgICAgICAgICAgICAgICAgYm9vbDsNCiQgUEFH
+RVI9IGdpdCBncmVwIHN0ZD0gTWFrZWZpbGUNCk1ha2VmaWxlOiAgICAgICAgICAgICAgIC1mb21p
+dC1mcmFtZS1wb2ludGVyIC1zdGQ9Z251ODkgJChIT1NUX0xGU19DRkxBR1MpDQpNYWtlZmlsZTog
+ICAgICAgICAgICAgICAgICAtc3RkPWdudTg5ICQoY2FsbCBjYy1vcHRpb24sLWZuby1QSUUpDQoN
+CkZyb20gaHR0cHM6Ly9nY2MuZ251Lm9yZy9vbmxpbmVkb2NzL2djYy03LjIuMC9nY2MvQy1EaWFs
+ZWN0LU9wdGlvbnMuaHRtbCNDLURpYWxlY3QtT3B0aW9uczoNCuKAmGdudTg54oCZDQpHTlUgZGlh
+bGVjdCBvZiBJU08gQzkwIChpbmNsdWRpbmcgc29tZSBDOTkgZmVhdHVyZXMpLg0KDQpJIHRoaW5r
+IHRoaXMgbWVhbnMgdGhhdCB0aGUgTGludXgga2VybmVsIHRyZWUgY2FuIG9ubHkgYmUgY29tcGls
+ZWQgY29ycmVjdGx5DQpieSBjb21waWxlcnMgdGhhdCBzdXBwb3J0IHRoZSBDMTEgdHlwZSBfQm9v
+bC4NCg0KPiA+IEFueXdheSwgSSBhZ3JlZSB3aXRoIHRoZSBhcHByb2FjaCBvZiB0aGlzIHBhdGNo
+IGFuZCBJIHRoaW5rDQo+ID4gdGhhdCBmcmVlemluZyBmaWxlc3lzdGVtcyBiZWZvcmUgcHJvY2Vz
+c2VzIGFyZSBmcm96ZW4gd291bGQgYmUgYSBiaWcgc3RlcA0KPiA+IGZvcndhcmQuDQo+IA0KPiBH
+cmVhdCEgQnV0IHBsZWFzZSBub3RlLCB0aGUgY3VycmVudCBpbXBsZW1lbnRhdGlvbiBjYWxscyBm
+c19zdXNwZW5kX2ZyZWV6ZSgpDQo+ICphZnRlciogdHJ5X3RvX2ZyZWV6ZV90YXNrcygpLCBpZTog
+dGhpcyBpbXBsZW1lbnRhdGlvbiBmcmVlemVzIHVzZXJzcGFjZSBhbmQNCj4gb25seSBhZnRlciB0
+aGVuIGZpbGVzeXN0ZW1zLg0KDQpXaGF0IHdpbGwgdGhlIGltcGFjdCBiZSBvZiB0aGF0IGNob2lj
+ZSBvbiBmaWxlc3lzdGVtcyBpbXBsZW1lbnRlZCBpbiB1c2Vyc3BhY2U/DQoNClRoYW5rcywNCg0K
+QmFydC4=
