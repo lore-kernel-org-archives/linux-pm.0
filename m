@@ -1,51 +1,48 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 00/10] arm, arm64, cpufreq: frequency- and
- cpu-invariant accounting support for task scheduler
-Date: Wed, 4 Oct 2017 14:28:04 +0200
-Message-ID: <CAJZ5v0g6MidVErfSmtbguuR6nUzV25z3+ZcDMOrcW5hpim0xDQ@mail.gmail.com>
-References: <20170926164115.32367-1-dietmar.eggemann@arm.com> <20171004084114.GA6547@kroah.com>
+From: Oliver Neukum <oneukum@suse.com>
+Subject: Re: Huawei integrated modem causes instant resume from suspend on
+ Acer P648-G3
+Date: Wed, 04 Oct 2017 15:31:43 +0200
+Message-ID: <1507123903.9577.13.camel@suse.com>
+References: <20170927061446.15512-1-drake@endlessm.com>
+         <1506496379.28482.1.camel@suse.com>
+         <CAD8Lp44pcN_GE0qKLioYH2dPpvEFLx604bvSVen4xR5ph=QEtg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171004084114.GA6547@kroah.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Russell King - ARM Linux <linux@arm.linux.org.uk>, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:59238 "EHLO mx1.suse.de"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1752317AbdJDNcA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 4 Oct 2017 09:32:00 -0400
+In-Reply-To: <CAD8Lp44pcN_GE0qKLioYH2dPpvEFLx604bvSVen4xR5ph=QEtg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Drake <drake@endlessm.com>
+Cc: Linux USB Mailing List <linux-usb@vger.kernel.org>, linux-pm@vger.kernel.org, Linux Upstreaming Team <linux@endlessm.com>
 
-On Wed, Oct 4, 2017 at 10:41 AM, Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
-> On Tue, Sep 26, 2017 at 05:41:05PM +0100, Dietmar Eggemann wrote:
->> For a more accurate (i.e. frequency- and cpu-invariant) accounting
->> the task scheduler needs a frequency-scaling and on a heterogeneous
->> system a cpu-scaling correction factor.
->>
->> This patch-set implements a Frequency Invariance Engine (FIE)
->> based on the ratio of current frequency and maximum supported frequency
->> (topology_get_freq_scale()) in the arch topology driver (arm, arm64) to
->> provide such a frequency-scaling correction factor.
->> This is a solution to get frequency-invariant accounting support for
->> platforms without hardware-based performance tracking.
->>
->> The Cpu Invariance Engine (CIE) (topology_get_cpu_scale()) providing a
->> cpu-scaling correction factor was already introduced by the "Fix issues
->> and factorize arm/arm64 capacity information code" patch-set [1] which
->> went into v4.13.
->>
->> This patch-set also enables the frequency- and cpu-invariant accounting
->> support. Enabling here means to associate (wire) the task scheduler
->> function name arch_scale_freq_capacity and arch_scale_cpu_capacity with
->> the FIE and CIE function names from drivers/base/arch_topology.c. This
->> replaces the scheduler's default FIE and CIE in kernel/sched/sched.h.
->>
->> v4: review results:
->>
->> There were no further comments during the v4 [2] review.
->
-> This patchset crosses a bunch of different subsystems, who do you
-> want/expect to be taking this through their tree?
+Am Montag, den 02.10.2017, 10:23 +0800 schrieb Daniel Drake:
+> On Wed, Sep 27, 2017 at 3:12 PM, Oliver Neukum <oneukum@suse.com> wrote:
+> > 
+> > 1) kernel version?
+> 
+> Currently testing 4.14.0-rc2 but reproduced on multiple older versions
+> too going back to 4.8. (Have not found a working kernel version)
+> 
+> > 
+> > 2) driver used?
+> 
+> The problem is reproducible just with the base usb driver, without any
+> USB modem drivers loaded. (It would ordinarily load option and
+> cdc-ether)
 
-Dietmar asked me and I can handle it it that's not an issue.
+Hi,
 
-Thanks,
-Rafael
+this sucks in a major way. I am dismayed at the quality of some hardware.
+It looks like your patch, which is a brutal sledge hammer, is indeed
+needed and the correct approach.
+
+It suggest you resubmit it with an updated change log containing
+the what you wrote in your last mail.
+
+	Regards
+		Oliver
