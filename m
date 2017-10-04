@@ -1,85 +1,40 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 00/14] pinctrl: sh-pfc: Add suspend/resume support
-Date: Wed, 4 Oct 2017 21:19:21 +0200
-Message-ID: <CAMuHMdVx7w7NvY2U66ODx=_GkouPrAaqFSHD_C3xyyYjhm+qVQ@mail.gmail.com>
-References: <1507108033-8606-1-git-send-email-geert+renesas@glider.be>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH RFC hack dont apply] intel_idle: support running within a VM
+Date: Wed, 4 Oct 2017 22:18:22 +0200
+Message-ID: <CAJZ5v0hZXq1-bWBg8K6dK4UcF98HRyXRay88x2e1UxsfSAunSw@mail.gmail.com>
+References: <20170930005046-mutt-send-email-mst@kernel.org>
+ <CAJZ5v0hz+KDGVdz+X=98p51fOpk6AAa3CmL-asWw3uZg12X-Lw@mail.gmail.com>
+ <20171002101249.69b5611a@jacob-builder> <alpine.DEB.2.20.1710032254020.2278@nanos>
+ <20171004050939-mutt-send-email-mst@kernel.org> <alpine.DEB.2.20.1710040955450.1878@nanos>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1507108033-8606-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.20.1710040955450.1878@nanos>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "Michael S. Tsirkin" <mst@redhat.com>, Jacob Pan <jacob.jun.pan@linux.intel.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Yang Zhang <yang.zhang.wz@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org, Wanpeng Li <wanpeng.li@hotmail.com>, Paolo Bonzini <pbonzini@redhat.com>, rkrcmar@redhat.com, David Matlack <dmatlack@google.com>, Alexander Graf <agraf@suse.de>, Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 4, 2017 at 11:06 AM, Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
-> During PSCI system suspend, R-Car Gen3 SoCs are powered down, and their
-> pinctrl register state is lost.  Note that as the boot loader skips most
-> initialization after system resume, pinctrl register state differs from
-> the state encountered during normal system boot, too.
+On Wed, Oct 4, 2017 at 9:56 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, 4 Oct 2017, Michael S. Tsirkin wrote:
+>> On Tue, Oct 03, 2017 at 11:02:55PM +0200, Thomas Gleixner wrote:
+>> > There is the series from Audrey which makes use of the various idle
+>> > prediction mechanisms, scheduler, irq timings, idle governor to get an idea
+>> > about the estimated idle time. Exactly this information can be fed to the
+>> > kvmidle driver which can act accordingly.
+>> >
+>> > Hacking a random hardware specific idle driver is definitely the wrong
+>> > approach. It might be useful to chain the kvmidle driver and hardware
+>> > specific drivers at some point, i.e. if the kvmdriver decides not to exit
+>> > it delegates the mwait decision to the proper hardware driver in order not
+>> > to reimplement all the required logic again.
+>>
+>> By making changes to idle core to allow that chaining?
+>> Does this sound like something reasonable?
 >
-> To fix this, save all GPIO and peripheral function select, module
-> select, drive strength control, bias, and other I/O control registers
-> during system suspend, and restore them during resume.
->
-> This series consists of 4 parts:
->   - Patches 1-2 are cleanups,
->   - Patches 3-9 introduce a generic way to describe bias (pull-up/down)
->     registers, and converts the R-Car Gen3 and R-Car M1A bias support
->     over,
->   - Patches 10-13 introduce a generic way to describe various IOCTRL
->     registers, and converts the R-Car Gen3 I/O voltage support over,
->   - Patch 14 implements the actual suspend/resume code, using the
->     generic bias and IOCTRL support introduced earlier.
->
-> To avoid overhead on platforms not needing it, the suspend/resume code
-> has a build time dependency on sleep and PSCI support, and a runtime
-> dependency on PSCI.
->
-> Due to the more compact description of bias registers, this series
-> actually decreases kernel size (by ca. 112 bytes for renesas_defconfig,
-> and ca. 60 bytes for shmobile_defconfig).
->
-> Thanks for your comments!
->
-> Geert Uytterhoeven (14):
->   pinctrl: sh-pfc: Remove matching on plain sh-pfc platform device
->   pinctrl: sh-pfc: Drop width parameter of sh_pfc_{read,write}_reg()
->   pinctrl: sh-pfc: Add generic bias register description
->   pinctrl: sh-pfc: Add sh_pfc_pin_to_bias_reg() helper
->   pinctrl: sh-pfc: r8a7795-es1: Use generic bias register description
->   pinctrl: sh-pfc: r8a7795: Use generic bias register description
->   pinctrl: sh-pfc: r8a7796: Use generic bias register description
->   pinctrl: sh-pfc: r8a7778: Use generic bias register description
->   pinctrl: sh-pfc: Remove obsolete sh_pfc_pin_to_bias_info()
->   pinctrl: sh-pfc: Add generic IOCTRL register description
->   pinctrl: sh-pfc: r8a7795-es1: Use generic IOCTRL register description
->   pinctrl: sh-pfc: r8a7795: Use generic IOCTRL register description
->   pinctrl: sh-pfc: r8a7796: Use generic IOCTRL register description
->   pinctrl: sh-pfc: Save/restore registers for PSCI system suspend
->
->  drivers/pinctrl/sh-pfc/core.c            | 129 +++++++-
->  drivers/pinctrl/sh-pfc/core.h            |  11 +-
->  drivers/pinctrl/sh-pfc/pfc-r8a7778.c     | 403 +++++++++++++-----------
->  drivers/pinctrl/sh-pfc/pfc-r8a7795-es1.c | 511 ++++++++++++++++---------------
->  drivers/pinctrl/sh-pfc/pfc-r8a7795.c     | 511 ++++++++++++++++---------------
->  drivers/pinctrl/sh-pfc/pfc-r8a7796.c     | 511 ++++++++++++++++---------------
->  drivers/pinctrl/sh-pfc/pinctrl.c         |  12 +-
->  drivers/pinctrl/sh-pfc/sh_pfc.h          |  24 +-
->  8 files changed, 1170 insertions(+), 942 deletions(-)
+> At least for me it makes sense to avoid code duplication.
 
-For testers: please check the topic/sh-pfc-suspend-resume-v1 branch of
-my renesas-drivers git repository at
-git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
+Well, I agree.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Thanks,
+Rafael
