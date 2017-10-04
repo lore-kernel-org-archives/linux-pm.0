@@ -1,53 +1,56 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v5 00/10] arm, arm64, cpufreq: frequency- and
- cpu-invariant accounting support for task scheduler
-Date: Wed, 4 Oct 2017 10:41:14 +0200
-Message-ID: <20171004084114.GA6547@kroah.com>
-References: <20170926164115.32367-1-dietmar.eggemann@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:57824 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751354AbdJDIlG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Oct 2017 04:41:06 -0400
-Content-Disposition: inline
-In-Reply-To: <20170926164115.32367-1-dietmar.eggemann@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH 01/14] pinctrl: sh-pfc: Remove matching on plain sh-pfc platform device
+Date: Wed,  4 Oct 2017 11:07:00 +0200
+Message-ID: <1507108033-8606-2-git-send-email-geert+renesas@glider.be>
+References: <1507108033-8606-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1507108033-8606-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, linux-renesas-soc@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
-To: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux@arm.linux.org.uk, Russell King <rmk+kernel@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Juri Lelli <juri.lelli@arm.com>, Vincent Guittot <vincent.guittot@linaro.org>, Peter Zijlstra <peterz@infradead.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Sudeep Holla <sudeep.holla@arm.com>
 
-On Tue, Sep 26, 2017 at 05:41:05PM +0100, Dietmar Eggemann wrote:
-> For a more accurate (i.e. frequency- and cpu-invariant) accounting
-> the task scheduler needs a frequency-scaling and on a heterogeneous
-> system a cpu-scaling correction factor.
-> 
-> This patch-set implements a Frequency Invariance Engine (FIE)
-> based on the ratio of current frequency and maximum supported frequency
-> (topology_get_freq_scale()) in the arch topology driver (arm, arm64) to
-> provide such a frequency-scaling correction factor.
-> This is a solution to get frequency-invariant accounting support for
-> platforms without hardware-based performance tracking.
-> 
-> The Cpu Invariance Engine (CIE) (topology_get_cpu_scale()) providing a
-> cpu-scaling correction factor was already introduced by the "Fix issues
-> and factorize arm/arm64 capacity information code" patch-set [1] which
-> went into v4.13.
-> 
-> This patch-set also enables the frequency- and cpu-invariant accounting
-> support. Enabling here means to associate (wire) the task scheduler
-> function name arch_scale_freq_capacity and arch_scale_cpu_capacity with
-> the FIE and CIE function names from drivers/base/arch_topology.c. This
-> replaces the scheduler's default FIE and CIE in kernel/sched/sched.h.
-> 
-> v4: review results:
-> 
-> There were no further comments during the v4 [2] review.
+As of commit 8682b3c522c639f3 ("sh-pfc: Remove platform device
+registration"), plain "sh-pfc" platform devices are no longer created.
+Hence remove their match entry, and the now obsolete checks for missing
+device IDs and driver data.
 
-This patchset crosses a bunch of different subsystems, who do you
-want/expect to be taking this through their tree?
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/pinctrl/sh-pfc/core.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-thanks,
-
-greg k-h
+diff --git a/drivers/pinctrl/sh-pfc/core.c b/drivers/pinctrl/sh-pfc/core.c
+index 0c5e952461fdf7c6..9cdbaeab2cf10d46 100644
+--- a/drivers/pinctrl/sh-pfc/core.c
++++ b/drivers/pinctrl/sh-pfc/core.c
+@@ -569,7 +569,6 @@ static const struct of_device_id sh_pfc_of_table[] = {
+ 
+ static int sh_pfc_probe(struct platform_device *pdev)
+ {
+-	const struct platform_device_id *platid = platform_get_device_id(pdev);
+ #ifdef CONFIG_OF
+ 	struct device_node *np = pdev->dev.of_node;
+ #endif
+@@ -582,10 +581,7 @@ static int sh_pfc_probe(struct platform_device *pdev)
+ 		info = of_device_get_match_data(&pdev->dev);
+ 	else
+ #endif
+-		info = platid ? (const void *)platid->driver_data : NULL;
+-
+-	if (info == NULL)
+-		return -ENODEV;
++		info = (const void *)platform_get_device_id(pdev)->driver_data;
+ 
+ 	pfc = devm_kzalloc(&pdev->dev, sizeof(*pfc), GFP_KERNEL);
+ 	if (pfc == NULL)
+@@ -683,7 +679,6 @@ static const struct platform_device_id sh_pfc_id_table[] = {
+ #ifdef CONFIG_PINCTRL_PFC_SHX3
+ 	{ "pfc-shx3", (kernel_ulong_t)&shx3_pinmux_info },
+ #endif
+-	{ "sh-pfc", 0 },
+ 	{ },
+ };
+ 
+-- 
+2.7.4
