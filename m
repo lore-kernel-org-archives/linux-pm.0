@@ -1,31 +1,35 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 07/14] pinctrl: sh-pfc: r8a7796: Use generic bias register description
-Date: Wed,  4 Oct 2017 11:07:06 +0200
-Message-ID: <1507108033-8606-8-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 05/14] pinctrl: sh-pfc: r8a7795-es1: Use generic bias register description
+Date: Wed,  4 Oct 2017 11:07:04 +0200
+Message-ID: <1507108033-8606-6-git-send-email-geert+renesas@glider.be>
 References: <1507108033-8606-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from baptiste.telenet-ops.be ([195.130.132.51]:57312 "EHLO
+        baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752213AbdJDJHW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Oct 2017 05:07:22 -0400
 In-Reply-To: <1507108033-8606-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>
 Cc: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, linux-renesas-soc@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
-List-Id: linux-pm@vger.kernel.org
 
-Move R-Car M3-W bias support over to the generic way to describe bias
-registers, which will be needed for suspend/resume support.
+Move R-Car H3 ES1.x bias support over to the generic way to describe
+bias registers, which will be needed for suspend/resume support.
 
 As the new description is more compact, this decreases kernel size by
 ca. 304 bytes.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/pinctrl/sh-pfc/pfc-r8a7796.c | 499 ++++++++++++++++++-----------------
+ drivers/pinctrl/sh-pfc/pfc-r8a7795-es1.c | 499 ++++++++++++++++---------------
  1 file changed, 258 insertions(+), 241 deletions(-)
 
-diff --git a/drivers/pinctrl/sh-pfc/pfc-r8a7796.c b/drivers/pinctrl/sh-pfc/pfc-r8a7796.c
-index d76c615fdd086bdb..6f65719beebf1ee6 100644
---- a/drivers/pinctrl/sh-pfc/pfc-r8a7796.c
-+++ b/drivers/pinctrl/sh-pfc/pfc-r8a7796.c
-@@ -1518,6 +1518,7 @@ static const u16 pinmux_data[] = {
+diff --git a/drivers/pinctrl/sh-pfc/pfc-r8a7795-es1.c b/drivers/pinctrl/sh-pfc/pfc-r8a7795-es1.c
+index 246d0de915feaffe..229192cf8e7430af 100644
+--- a/drivers/pinctrl/sh-pfc/pfc-r8a7795-es1.c
++++ b/drivers/pinctrl/sh-pfc/pfc-r8a7795-es1.c
+@@ -1449,6 +1449,7 @@ static const u16 pinmux_data[] = {
  #define ROW_GROUP_A(r) ('Z' - 'A' + 1 + (r))
  #define PIN_NUMBER(r, c) (((r) - 'A') * 39 + (c) + 300)
  #define PIN_A_NUMBER(r, c) PIN_NUMBER(ROW_GROUP_A(r), c)
@@ -33,7 +37,7 @@ index d76c615fdd086bdb..6f65719beebf1ee6 100644
  
  static const struct sh_pfc_pin pinmux_pins[] = {
  	PINMUX_GPIO_GP_ALL(),
-@@ -5431,242 +5432,261 @@ static int r8a7796_pin_to_pocctrl(struct sh_pfc *pfc, unsigned int pin, u32 *poc
+@@ -5438,242 +5439,261 @@ static int r8a7795es1_pin_to_pocctrl(struct sh_pfc *pfc, unsigned int pin,
  	return bit;
  }
  
@@ -117,7 +121,7 @@ index d76c615fdd086bdb..6f65719beebf1ee6 100644
 -
 -	{ PIN_A_NUMBER('P', 8),  PU2, 31 },	/* DU_DOTCLKIN1 */
 -	{ PIN_A_NUMBER('P', 7),  PU2, 30 },	/* DU_DOTCLKIN0 */
--	{ RCAR_GP_PIN(7,  3),    PU2, 29 },	/* GP7_03 */
+-	{ RCAR_GP_PIN(7,  3),    PU2, 29 },	/* HDMI1_CEC */
 -	{ RCAR_GP_PIN(7,  2),    PU2, 28 },	/* HDMI0_CEC */
 -	{ RCAR_GP_PIN(7,  1),    PU2, 27 },	/* AVS2 */
 -	{ RCAR_GP_PIN(7,  0),    PU2, 26 },	/* AVS1 */
@@ -144,9 +148,9 @@ index d76c615fdd086bdb..6f65719beebf1ee6 100644
 -	{ RCAR_GP_PIN(1, 24),    PU2,  5 },	/* RD_WR_N */
 -	{ RCAR_GP_PIN(1, 23),    PU2,  4 },	/* RD_N */
 -	{ RCAR_GP_PIN(1, 22),    PU2,  3 },	/* BS_N */
--	{ RCAR_GP_PIN(1, 21),    PU2,  2 },	/* CS1_N */
+-	{ RCAR_GP_PIN(1, 21),    PU2,  2 },	/* CS1_N_A26 */
 -	{ RCAR_GP_PIN(1, 20),    PU2,  1 },	/* CS0_N */
--	{ RCAR_GP_PIN(1, 28),    PU2,  0 },	/* CLKOUT */
+-	{ PIN_NUMBER('F', 1),    PU2,  0 },	/* CLKOUT */
 -
 -	{ RCAR_GP_PIN(4,  9),    PU3, 31 },	/* SD3_DAT0 */
 -	{ RCAR_GP_PIN(4,  8),    PU3, 30 },	/* SD3_CMD */
@@ -177,9 +181,9 @@ index d76c615fdd086bdb..6f65719beebf1ee6 100644
 -	{ PIN_A_NUMBER('T', 27), PU3,  5 },	/* TCK */
 -	{ PIN_A_NUMBER('R', 26), PU3,  4 },	/* TRST# */
 -	{ PIN_A_NUMBER('D', 39), PU3,  3 },	/* EXTALR*/
--	{ PIN_A_NUMBER('D', 38), PU3,  2 },	/* FSCLKST */
--	/* bit 1 n/a on M3*/
--	{ PIN_A_NUMBER('R', 8),  PU3,  0 },	/* DU_DOTCLKIN2 */
+-	{ PIN_A_NUMBER('D', 38), PU3,  2 },	/* FSCLKST# */
+-	{ PIN_A_NUMBER('R', 8),  PU3,  1 },	/* DU_DOTCLKIN3 */
+-	{ PIN_A_NUMBER('R', 7),  PU3,  0 },	/* DU_DOTCLKIN2 */
 -
 -	{ RCAR_GP_PIN(5, 19),    PU4, 31 },	/* MSIOF0_SS1 */
 -	{ RCAR_GP_PIN(5, 18),    PU4, 30 },	/* MSIOF0_SYNC */
@@ -247,8 +251,8 @@ index d76c615fdd086bdb..6f65719beebf1ee6 100644
 -	{ RCAR_GP_PIN(5, 21),    PU5,  1 },	/* MSIOF0_SS2 */
 -	{ RCAR_GP_PIN(5, 20),    PU5,  0 },	/* MSIOF0_TXD */
 -
--	{ RCAR_GP_PIN(6, 31),    PU6,  6 },	/* GP6_31 */
--	{ RCAR_GP_PIN(6, 30),    PU6,  5 },	/* GP6_30 */
+-	{ RCAR_GP_PIN(6, 31),    PU6,  6 },	/* USB31_OVC */
+-	{ RCAR_GP_PIN(6, 30),    PU6,  5 },	/* USB31_PWEN */
 -	{ RCAR_GP_PIN(6, 29),    PU6,  4 },	/* USB30_OVC */
 -	{ RCAR_GP_PIN(6, 28),    PU6,  3 },	/* USB30_PWEN */
 -	{ RCAR_GP_PIN(6, 27),    PU6,  2 },	/* USB1_OVC */
@@ -324,9 +328,9 @@ index d76c615fdd086bdb..6f65719beebf1ee6 100644
 +		[31] = RCAR_GP_PIN(1, 19),	/* A19 */
 +	} },
 +	{ PINMUX_BIAS_REG("PUEN2", 0xe6060408, "PUD2", 0xe6060448) {
-+		[ 0] = RCAR_GP_PIN(1, 28),	/* CLKOUT */
++		[ 0] = PIN_NUMBER('F', 1),	/* CLKOUT */
 +		[ 1] = RCAR_GP_PIN(1, 20),	/* CS0_N */
-+		[ 2] = RCAR_GP_PIN(1, 21),	/* CS1_N */
++		[ 2] = RCAR_GP_PIN(1, 21),	/* CS1_N_A26 */
 +		[ 3] = RCAR_GP_PIN(1, 22),	/* BS_N */
 +		[ 4] = RCAR_GP_PIN(1, 23),	/* RD_N */
 +		[ 5] = RCAR_GP_PIN(1, 24),	/* RD_WR_N */
@@ -353,14 +357,14 @@ index d76c615fdd086bdb..6f65719beebf1ee6 100644
 +		[26] = RCAR_GP_PIN(7,  0),	/* AVS1 */
 +		[27] = RCAR_GP_PIN(7,  1),	/* AVS2 */
 +		[28] = RCAR_GP_PIN(7,  2),	/* HDMI0_CEC */
-+		[29] = RCAR_GP_PIN(7,  3),	/* GP7_03 */
++		[29] = RCAR_GP_PIN(7,  3),	/* HDMI1_CEC */
 +		[30] = PIN_A_NUMBER('P', 7),	/* DU_DOTCLKIN0 */
 +		[31] = PIN_A_NUMBER('P', 8),	/* DU_DOTCLKIN1 */
 +	} },
 +	{ PINMUX_BIAS_REG("PUEN3", 0xe606040c, "PUD3", 0xe606044c) {
-+		[ 0] = PIN_A_NUMBER('R', 8),	/* DU_DOTCLKIN2 */
-+		[ 1] = PIN_NONE,
-+		[ 2] = PIN_A_NUMBER('D', 38),	/* FSCLKST */
++		[ 0] = PIN_A_NUMBER('R', 7),	/* DU_DOTCLKIN2 */
++		[ 1] = PIN_A_NUMBER('R', 8),	/* DU_DOTCLKIN3 */
++		[ 2] = PIN_A_NUMBER('D', 38),	/* FSCLKST# */
 +		[ 3] = PIN_A_NUMBER('D', 39),	/* EXTALR*/
 +		[ 4] = PIN_A_NUMBER('R', 26),	/* TRST# */
 +		[ 5] = PIN_A_NUMBER('T', 27),	/* TCK */
@@ -465,8 +469,8 @@ index d76c615fdd086bdb..6f65719beebf1ee6 100644
 +		[ 2] = RCAR_GP_PIN(6, 27),	/* USB1_OVC */
 +		[ 3] = RCAR_GP_PIN(6, 28),	/* USB30_PWEN */
 +		[ 4] = RCAR_GP_PIN(6, 29),	/* USB30_OVC */
-+		[ 5] = RCAR_GP_PIN(6, 30),	/* GP6_30 */
-+		[ 6] = RCAR_GP_PIN(6, 31),	/* GP6_31 */
++		[ 5] = RCAR_GP_PIN(6, 30),	/* USB31_PWEN */
++		[ 6] = RCAR_GP_PIN(6, 31),	/* USB31_OVC */
 +		[ 7] = PIN_NONE,
 +		[ 8] = PIN_NONE,
 +		[ 9] = PIN_NONE,
@@ -496,8 +500,8 @@ index d76c615fdd086bdb..6f65719beebf1ee6 100644
 +	{ },
  };
  
- static unsigned int r8a7796_pinmux_get_bias(struct sh_pfc *pfc,
- 					    unsigned int pin)
+ static unsigned int r8a7795es1_pinmux_get_bias(struct sh_pfc *pfc,
+ 					       unsigned int pin)
  {
 -	const struct sh_pfc_bias_info *info;
 -	u32 reg;
@@ -522,9 +526,9 @@ index d76c615fdd086bdb..6f65719beebf1ee6 100644
  		return PIN_CONFIG_BIAS_PULL_UP;
  	else
  		return PIN_CONFIG_BIAS_PULL_DOWN;
-@@ -5675,28 +5695,24 @@ static unsigned int r8a7796_pinmux_get_bias(struct sh_pfc *pfc,
- static void r8a7796_pinmux_set_bias(struct sh_pfc *pfc, unsigned int pin,
- 				   unsigned int bias)
+@@ -5682,28 +5702,24 @@ static unsigned int r8a7795es1_pinmux_get_bias(struct sh_pfc *pfc,
+ static void r8a7795es1_pinmux_set_bias(struct sh_pfc *pfc, unsigned int pin,
+ 				       unsigned int bias)
  {
 -	const struct sh_pfc_bias_info *info;
 +	const struct pinmux_bias_reg *reg;
@@ -560,8 +564,8 @@ index d76c615fdd086bdb..6f65719beebf1ee6 100644
 +	sh_pfc_write_reg(pfc, reg->puen, enable);
  }
  
- static const struct sh_pfc_soc_operations r8a7796_pinmux_ops = {
-@@ -5721,6 +5737,7 @@ const struct sh_pfc_soc_info r8a7796_pinmux_info = {
+ static const struct sh_pfc_soc_operations r8a7795es1_pinmux_ops = {
+@@ -5728,6 +5744,7 @@ const struct sh_pfc_soc_info r8a7795es1_pinmux_info = {
  
  	.cfg_regs = pinmux_config_regs,
  	.drive_regs = pinmux_drive_regs,
