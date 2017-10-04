@@ -1,100 +1,85 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH RFC hack dont apply] intel_idle: support running within
- a VM
-Date: Wed, 4 Oct 2017 11:31:43 -0700
-Message-ID: <20171004113143.503032f0@jacob-builder>
-References: <20170930005046-mutt-send-email-mst@kernel.org>
-        <CAJZ5v0hz+KDGVdz+X=98p51fOpk6AAa3CmL-asWw3uZg12X-Lw@mail.gmail.com>
-        <20171002101249.69b5611a@jacob-builder>
-        <20171004050706-mutt-send-email-mst@kernel.org>
-        <20171004100939.1893e4a7@jacob-builder>
-        <20171004201125-mutt-send-email-mst@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 00/14] pinctrl: sh-pfc: Add suspend/resume support
+Date: Wed, 4 Oct 2017 21:19:21 +0200
+Message-ID: <CAMuHMdVx7w7NvY2U66ODx=_GkouPrAaqFSHD_C3xyyYjhm+qVQ@mail.gmail.com>
+References: <1507108033-8606-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga14.intel.com ([192.55.52.115]:58744 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750866AbdJDS3J (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 4 Oct 2017 14:29:09 -0400
-In-Reply-To: <20171004201125-mutt-send-email-mst@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1507108033-8606-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Michael S. Tsirkin" <mst@redhat.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Yang Zhang <yang.zhang.wz@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org, Wanpeng Li <wanpeng.li@hotmail.com>, Paolo Bonzini <pbonzini@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, rkrcmar@redhat.com, dmatlack@google.com, agraf@suse.de, Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, jacob.jun.pan@linux.intel.com, "Raj, Ashok" <ashok.raj@intel.com>
 
-On Wed, 4 Oct 2017 20:12:28 +0300
-"Michael S. Tsirkin" <mst@redhat.com> wrote:
+On Wed, Oct 4, 2017 at 11:06 AM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> During PSCI system suspend, R-Car Gen3 SoCs are powered down, and their
+> pinctrl register state is lost.  Note that as the boot loader skips most
+> initialization after system resume, pinctrl register state differs from
+> the state encountered during normal system boot, too.
+>
+> To fix this, save all GPIO and peripheral function select, module
+> select, drive strength control, bias, and other I/O control registers
+> during system suspend, and restore them during resume.
+>
+> This series consists of 4 parts:
+>   - Patches 1-2 are cleanups,
+>   - Patches 3-9 introduce a generic way to describe bias (pull-up/down)
+>     registers, and converts the R-Car Gen3 and R-Car M1A bias support
+>     over,
+>   - Patches 10-13 introduce a generic way to describe various IOCTRL
+>     registers, and converts the R-Car Gen3 I/O voltage support over,
+>   - Patch 14 implements the actual suspend/resume code, using the
+>     generic bias and IOCTRL support introduced earlier.
+>
+> To avoid overhead on platforms not needing it, the suspend/resume code
+> has a build time dependency on sleep and PSCI support, and a runtime
+> dependency on PSCI.
+>
+> Due to the more compact description of bias registers, this series
+> actually decreases kernel size (by ca. 112 bytes for renesas_defconfig,
+> and ca. 60 bytes for shmobile_defconfig).
+>
+> Thanks for your comments!
+>
+> Geert Uytterhoeven (14):
+>   pinctrl: sh-pfc: Remove matching on plain sh-pfc platform device
+>   pinctrl: sh-pfc: Drop width parameter of sh_pfc_{read,write}_reg()
+>   pinctrl: sh-pfc: Add generic bias register description
+>   pinctrl: sh-pfc: Add sh_pfc_pin_to_bias_reg() helper
+>   pinctrl: sh-pfc: r8a7795-es1: Use generic bias register description
+>   pinctrl: sh-pfc: r8a7795: Use generic bias register description
+>   pinctrl: sh-pfc: r8a7796: Use generic bias register description
+>   pinctrl: sh-pfc: r8a7778: Use generic bias register description
+>   pinctrl: sh-pfc: Remove obsolete sh_pfc_pin_to_bias_info()
+>   pinctrl: sh-pfc: Add generic IOCTRL register description
+>   pinctrl: sh-pfc: r8a7795-es1: Use generic IOCTRL register description
+>   pinctrl: sh-pfc: r8a7795: Use generic IOCTRL register description
+>   pinctrl: sh-pfc: r8a7796: Use generic IOCTRL register description
+>   pinctrl: sh-pfc: Save/restore registers for PSCI system suspend
+>
+>  drivers/pinctrl/sh-pfc/core.c            | 129 +++++++-
+>  drivers/pinctrl/sh-pfc/core.h            |  11 +-
+>  drivers/pinctrl/sh-pfc/pfc-r8a7778.c     | 403 +++++++++++++-----------
+>  drivers/pinctrl/sh-pfc/pfc-r8a7795-es1.c | 511 ++++++++++++++++---------------
+>  drivers/pinctrl/sh-pfc/pfc-r8a7795.c     | 511 ++++++++++++++++---------------
+>  drivers/pinctrl/sh-pfc/pfc-r8a7796.c     | 511 ++++++++++++++++---------------
+>  drivers/pinctrl/sh-pfc/pinctrl.c         |  12 +-
+>  drivers/pinctrl/sh-pfc/sh_pfc.h          |  24 +-
+>  8 files changed, 1170 insertions(+), 942 deletions(-)
 
-> On Wed, Oct 04, 2017 at 10:09:39AM -0700, Jacob Pan wrote:
-> > On Wed, 4 Oct 2017 05:09:09 +0300
-> > "Michael S. Tsirkin" <mst@redhat.com> wrote:
-> >   
-> > > On Mon, Oct 02, 2017 at 10:12:49AM -0700, Jacob Pan wrote:  
-> > > > On Sat, 30 Sep 2017 01:21:43 +0200
-> > > > "Rafael J. Wysocki" <rafael@kernel.org> wrote:
-> > > >     
-> > > > > On Sat, Sep 30, 2017 at 12:01 AM, Michael S. Tsirkin
-> > > > > <mst@redhat.com> wrote:    
-> > > > > > intel idle driver does not DTRT when running within a VM:
-> > > > > > when going into a deep power state, the right thing to
-> > > > > > do is to exit to hypervisor rather than to keep polling
-> > > > > > within guest using mwait.
-> > > > > >
-> > > > > > Currently the solution is just to exit to hypervisor each
-> > > > > > time we go idle - this is why kvm does not expose the mwait
-> > > > > > leaf to guests even when it allows guests to do mwait.
-> > > > > >
-> > > > > > But that's not ideal - it seems better to use the idle
-> > > > > > driver to guess when will the next interrupt arrive.      
-> > > > > 
-> > > > > The idle driver alone is not sufficient for that, though.
-> > > > >     
-> > > > I second that. Why try to solve this problem at vendor specific
-> > > > driver level?    
-> > > 
-> > > Well we still want to e.g. mwait if possible - saves power.
-> > >   
-> > > > perhaps just a pv idle driver that decide whether to vmexit
-> > > > based on something like local per vCPU timer expiration? I
-> > > > guess we can't predict other wake events such as interrupts.
-> > > > e.g.
-> > > > if (get_next_timer_interrupt() > kvm_halt_target_residency)
-> > > > 	vmexit
-> > > > else
-> > > > 	poll
-> > > > 
-> > > > Jacob    
-> > > 
-> > > It's not always a poll, on x86 putting the CPU in a low power
-> > > state is possible within a VM.
-> > >   
-> > Are you talking about using mwait/monitor in the user space which
-> > are available on some Intel CPUs, such as Xeon Phi? I guess if the
-> > guest can identify host CPU id, it is doable.  
-> 
-> Not really.
-> 
-> Please take a look at the patch in question - it does mwait in guest
-> kernel and no need to identify host CPU id.
-> 
-I may be missing something, in your patch I only see HLT being used in
-the guest OS, that would cause VM exit right? If you do mwait in the
-guest kernel, it will also exit. So I don't see how you can enter low
-power state within VM guest.
+For testers: please check the topic/sh-pfc-suspend-resume-v1 branch of
+my renesas-drivers git repository at
+git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
 
-+static int intel_halt(struct cpuidle_device *dev,
-+			struct cpuidle_driver *drv, int index)
-+{
-+	printk_once(KERN_ERR "safe_halt started\n");
-+	safe_halt();
-+	printk_once(KERN_ERR "safe_halt done\n");
-+	return index;
-+}
-> 
-> > > Does not seem possible on other CPUs that's why it's vendor
-> > > specific. 
-> > 
-> > [Jacob Pan]  
+Gr{oetje,eeting}s,
 
-[Jacob Pan]
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
