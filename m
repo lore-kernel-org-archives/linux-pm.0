@@ -1,63 +1,40 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: imx6q: Move speed grading check to cpufreq
- driver
-Date: Wed, 4 Oct 2017 11:43:28 +0530
-Message-ID: <20171004061328.GC8478@vireshk-i7>
-References: <1506784606-2064-1-git-send-email-festevam@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH 7/7] cpufreq: dt: Remove support for Exynos4212 SoCs
+Date: Wed, 04 Oct 2017 08:38:28 +0200
+Message-ID: <20171004063828.22068-8-m.szyprowski@samsung.com>
+References: <20171004063828.22068-1-m.szyprowski@samsung.com>
+        <CGME20171004063837eucas1p2a2c9dbc268fbb37da5253c329a0a8683@eucas1p2.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f179.google.com ([209.85.192.179]:52298 "EHLO
-        mail-pf0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750797AbdJDGNb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Oct 2017 02:13:31 -0400
-Received: by mail-pf0-f179.google.com with SMTP id a1so2546620pfj.9
-        for <linux-pm@vger.kernel.org>; Tue, 03 Oct 2017 23:13:31 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <1506784606-2064-1-git-send-email-festevam@gmail.com>
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:54548 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751262AbdJDGik (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Oct 2017 02:38:40 -0400
+In-reply-to: <20171004063828.22068-1-m.szyprowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, kernel@pengutronix.de, shawnguo@kernel.org, anson.huang@nxp.com, linux-arm-kernel@lists.infradead.org, otavio.salvador@ossystems.com.br, Fabio Estevam <fabio.estevam@nxp.com>
+To: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Viresh Kumar <viresh.kumar@linaro.org>
 
-On 30-09-17, 12:16, Fabio Estevam wrote:
-> From: Fabio Estevam <fabio.estevam@nxp.com>
-> 
-> On some i.MX6 SoCs (like i.MX6SL, i.MX6SX and i.MX6UL) that do not have
-> speed grading check, opp table will not be created in platform code,
-> so cpufreq driver prints the following error message:
-> 
-> cpu cpu0: dev_pm_opp_get_opp_count: OPP table not found (-19)
-> 
-> However, this is not really an error in this case because the
-> imx6q-cpufreq driver first calls dev_pm_opp_get_opp_count()
-> and if it fails, it means that platform code does not provide
-> OPP and then dev_pm_opp_of_add_table() will be called.
-> 
-> In order to avoid such confusing error message, move the speed grading
-> check from platform code to the imx6q-cpufreq driver.
-> 
-> This way the imx6q-cpufreq no longer has to check whether OPP table
-> is supplied by platform code.
-> 
-> Tested on a i.MX6Q and i.MX6UL based boards.
-> 
-> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
-> ---
-> Previous discussion on this topic:
-> https://patchwork.kernel.org/patch/9295059/
-> 
-> Changes since v2:
-> - Fixed a typo in the commit log (missed SL) - Otavio
-> - Remove __init anotation from imx6q_opp_check_speed_grading()
-> Changes since v1:
-> - Remove unneeded has_speed_grading() function.
+Support for Exynos4212 SoCs has been removed by commit bca9085e0ae9 ("ARM:
+dts: exynos: remove Exynos4212 support (dead code)"), so there is no need
+to keep remaining dead code related to this SoC version.
 
-Looks fine to me.
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-@Shawn: Can you please let us know if you are fine with it?
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index a753c50e9e41..4946ac528b72 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -48,7 +48,6 @@ static const struct of_device_id whitelist[] __initconst = {
+ 
+ 	{ .compatible = "samsung,exynos3250", },
+ 	{ .compatible = "samsung,exynos4210", },
+-	{ .compatible = "samsung,exynos4212", },
+ 	{ .compatible = "samsung,exynos5250", },
+ #ifndef CONFIG_BL_SWITCHER
+ 	{ .compatible = "samsung,exynos5800", },
 -- 
-viresh
+2.14.2
