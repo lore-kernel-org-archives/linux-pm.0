@@ -1,121 +1,69 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH V2] Bug fix for PME interrupt handler, add Root Status
- check
-Date: Wed, 4 Oct 2017 17:11:57 -0500
-Message-ID: <20171004221157.GL25517@bhelgaas-glaptop.roam.corp.google.com>
-References: <1506737526-94266-1-git-send-email-zhengqiang10@huawei.com>
+From: Dave Chinner <david@fromorbit.com>
+Subject: Re: [RFC 4/5] ext4: add fs freezing support on suspend/hibernation
+Date: Thu, 5 Oct 2017 09:22:33 +1100
+Message-ID: <20171004222233.GH3666@dastard>
+References: <20171003185313.1017-1-mcgrof@kernel.org>
+ <20171003185313.1017-5-mcgrof@kernel.org>
+ <20171003195930.ivgaccdabxczar62@thunk.org>
+ <20171003201321.GE2294@wotan.suse.de>
+ <20171004014204.mztkdnm7wb7r6sl2@thunk.org>
+ <20171004070523.GE3666@dastard>
+ <20171004164839.zyfpx64qmmfv2jtx@thunk.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:41800 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750951AbdJDWMB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 4 Oct 2017 18:12:01 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1506737526-94266-1-git-send-email-zhengqiang10@huawei.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20171004164839.zyfpx64qmmfv2jtx@thunk.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Theodore Ts'o <tytso@mit.edu>, "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Qiang Zheng <zhengqiang10@huawei.com>
-Cc: linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, gabriele.paoloni@huawei.com, linuxarm@huawei.com
 
-On Sat, Sep 30, 2017 at 10:12:06AM +0800, Qiang Zheng wrote:
-> PCIe PME and hot plug share same interrupt number. In some special case,
-> Link down event cause hot plug interrupt, devices is not disconnected,
-> But read config will return 0xff.
+On Wed, Oct 04, 2017 at 12:48:39PM -0400, Theodore Ts'o wrote:
+> On Wed, Oct 04, 2017 at 06:05:23PM +1100, Dave Chinner wrote:
+> > Basically, before thawing filesystems the rest of the kernel
+> > infrastructure needs to have been restarted. i.e. the order
+> > needs to be:
+> > 
+> > freeze userspace
+> > freeze filesystems
+> > freeze kernel threads
+> > freeze workqueues
+> > 
+> > thaw workqueues
+> > thaw kernel threads
+> > thaw filesystems
+> > thaw userspace
+> > 
+> > and it should end up that way.
+> > 
+> > > Or if we have a network block device, or
+> > > something else in the storage stack that needs to run a kernel thread
+> > > context (or a workqueue, etc.) --- is the fact that userspace is
+> > > frozen mean the scheduler is going to refuse to schedule()?
+> > 
+> > No.
 > 
-> In that case, PME work function will run and not return Because
-> Root Status PME bit always 1 and can not be cleared.
-> 
-> This patch add Root Status check in PME interrupt handler,
-> Just do same as pciehp isr Slot status check.
-> 
-> Signed-off-by: Qiang Zheng <zhengqiang10@huawei.com>
-> ---
->  drivers/pci/pcie/pme.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/pci/pcie/pme.c b/drivers/pci/pcie/pme.c
-> index fafdb16..2ff2e57 100644
-> --- a/drivers/pci/pcie/pme.c
-> +++ b/drivers/pci/pcie/pme.c
-> @@ -273,7 +273,7 @@ static irqreturn_t pcie_pme_irq(int irq, void *context)
->  	spin_lock_irqsave(&data->lock, flags);
->  	pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
->  
-> -	if (!(rtsta & PCI_EXP_RTSTA_PME)) {
-> +	if (rtsta == U32_MAX || !(rtsta & PCI_EXP_RTSTA_PME)) {
->  		spin_unlock_irqrestore(&data->lock, flags);
->  		return IRQ_NONE;
->  	}
-> 
+> Well, that's what the answer *should* be.  I was asking what this
+> patch series does, and given that Luis reported that with this patch
+> series ext4_commit_super(sb, 1) is hanging, I have my suspicions about
+> what the answer might be with this patch set.  (Especially since the
+> claimed goal of the patch set is, "kthread freezing with filesystem
+> freeze/thaw".
 
-I applied the patch below to pci/misc for v4.15.
+There are know bugs in the patchset w.r.t.  workqueues and kernel
+threads, and IO completion requires workqueues and kernel threads to
+be running correctly. Hence filesystem thaw needs to occur after
+workqueues and kernel threads are thawed.
 
-I think we need a similar test in pcie_pme_work_fn() itself.  Without
-it, I think there's a race: if we get a legitimate PME, enter
-pcie_pme_work_fn(), and the link goes down, we could still get
-0xffffffff the next time we read PCI_EXP_RTSTA.
+The existing code has this assumption - that filesystem will start
+working again the moment workqueues and kernel threads are thawed,
+but trying to do IO before that will not work. So it's the same
+with freeze/thaw of filesystems - thaw of filesystems will not work
+if the rest of the kernel machinery is still frozen...
 
-I also used "(u32) ~0" instead of U32_MAX because that's the style
-used elsewhere.  It might be clunkier than necessary, but U32_MAX
-suggests a limit, and that's not really the concept here.
+Cheers,
 
-I didn't add your reviewed-by, Rafael, since I made non-trivial
-changes to the patch.
-
-Bjorn
-
-
-
-commit 303029d6d55ba10a37c82c31a89eb5550cde77ec
-Author: Qiang <zhengqiang10@huawei.com>
-Date:   Thu Sep 28 11:54:34 2017 +0800
-
-    PCI/PME: Handle invalid data when reading Root Status
-    
-    PCIe PME and native hotplug share the same interrupt number, so hotplug
-    interrupts are also processed by PME.  In some cases, e.g., a Link Down
-    interrupt, a device may be present but unreachable, so when we try to
-    read its Root Status register, the read fails and we get all ones data
-    (0xffffffff).
-    
-    Previously, we interpreted that data as PCI_EXP_RTSTA_PME being set, i.e.,
-    "some device has asserted PME," so we scheduled pcie_pme_work_fn().  This
-    caused an infinite loop because pcie_pme_work_fn() tried to handle PME
-    requests until PCI_EXP_RTSTA_PME is cleared, but with the link down,
-    PCI_EXP_RTSTA_PME can't be cleared.
-    
-    Check for the invalid 0xffffffff data everywhere we read the Root Status
-    register.
-    
-    1469d17dd341 ("PCI: pciehp: Handle invalid data when reading from
-    non-existent devices") added similar checks in the hotplug driver.
-    
-    Signed-off-by: Qiang Zheng <zhengqiang10@huawei.com>
-    [bhelgaas: changelog, also check in pcie_pme_work_fn(), use "~0" to follow
-    other similar checks]
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-
-diff --git a/drivers/pci/pcie/pme.c b/drivers/pci/pcie/pme.c
-index fafdb165dd2e..df290aa58dce 100644
---- a/drivers/pci/pcie/pme.c
-+++ b/drivers/pci/pcie/pme.c
-@@ -226,6 +226,9 @@ static void pcie_pme_work_fn(struct work_struct *work)
- 			break;
- 
- 		pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
-+		if (rtsta == (u32) ~0)
-+			break;
-+
- 		if (rtsta & PCI_EXP_RTSTA_PME) {
- 			/*
- 			 * Clear PME status of the port.  If there are other
-@@ -273,7 +276,7 @@ static irqreturn_t pcie_pme_irq(int irq, void *context)
- 	spin_lock_irqsave(&data->lock, flags);
- 	pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
- 
--	if (!(rtsta & PCI_EXP_RTSTA_PME)) {
-+	if (rtsta == (u32) ~0 || !(rtsta & PCI_EXP_RTSTA_PME)) {
- 		spin_unlock_irqrestore(&data->lock, flags);
- 		return IRQ_NONE;
- 	}
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
