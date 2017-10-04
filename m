@@ -1,42 +1,58 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Subject: Re: [PATCH] PM / OPP: Add missing of_node_put(np)
-Date: Wed, 4 Oct 2017 09:42:05 -0700
-Message-ID: <a3dd282e-220d-5a10-7a0e-10c1acaee737@codeaurora.org>
-References: <3a82b2d3311e16f0f638de18bf0ee803540014a3.1507096875.git.viresh.kumar@linaro.org>
+From: Theodore Ts'o <tytso@mit.edu>
+Subject: Re: [RFC 4/5] ext4: add fs freezing support on suspend/hibernation
+Date: Wed, 4 Oct 2017 12:48:39 -0400
+Message-ID: <20171004164839.zyfpx64qmmfv2jtx@thunk.org>
+References: <20171003185313.1017-1-mcgrof@kernel.org>
+ <20171003185313.1017-5-mcgrof@kernel.org>
+ <20171003195930.ivgaccdabxczar62@thunk.org>
+ <20171003201321.GE2294@wotan.suse.de>
+ <20171004014204.mztkdnm7wb7r6sl2@thunk.org>
+ <20171004070523.GE3666@dastard>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:56944 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750966AbdJDQmI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Oct 2017 12:42:08 -0400
-In-Reply-To: <3a82b2d3311e16f0f638de18bf0ee803540014a3.1507096875.git.viresh.kumar@linaro.org>
-Content-Language: en-US
+Received: from imap.thunk.org ([74.207.234.97]:36116 "EHLO imap.thunk.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750966AbdJDQs7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 4 Oct 2017 12:48:59 -0400
+Content-Disposition: inline
+In-Reply-To: <20171004070523.GE3666@dastard>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>
-Cc: linux-pm@vger.kernel.org, Tobias Jordan <Tobias.Jordan@elektrobit.com>, "4 . 3+" <stable@vger.kernel.org>, linux-kernel@vger.kernel.org
+To: Dave Chinner <david@fromorbit.com>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 10/03/2017 11:05 PM, Viresh Kumar wrote:
-> From: Tobias Jordan <Tobias.Jordan@elektrobit.com>
->
-> The for_each_available_child_of_node() loop in _of_add_opp_table_v2()
-> doesn't drop the reference to "np" on errors. Fix that.
->
-> Fixes: 274659029c9d ("PM / OPP: Add support to parse "operating-points-v2" bindings")
-> Cc: 4.3+ <stable@vger.kernel.org> # 4.3+
-> Signed-off-by: Tobias Jordan <Tobias.Jordan@elektrobit.com>
-> [ VK: Improved commit log. ]
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
+On Wed, Oct 04, 2017 at 06:05:23PM +1100, Dave Chinner wrote:
+> Basically, before thawing filesystems the rest of the kernel
+> infrastructure needs to have been restarted. i.e. the order
+> needs to be:
+> 
+> freeze userspace
+> freeze filesystems
+> freeze kernel threads
+> freeze workqueues
+> 
+> thaw workqueues
+> thaw kernel threads
+> thaw filesystems
+> thaw userspace
+> 
+> and it should end up that way.
+> 
+> > Or if we have a network block device, or
+> > something else in the storage stack that needs to run a kernel thread
+> > context (or a workqueue, etc.) --- is the fact that userspace is
+> > frozen mean the scheduler is going to refuse to schedule()?
+> 
+> No.
 
-Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Well, that's what the answer *should* be.  I was asking what this
+patch series does, and given that Luis reported that with this patch
+series ext4_commit_super(sb, 1) is hanging, I have my suspicions about
+what the answer might be with this patch set.  (Especially since the
+claimed goal of the patch set is, "kthread freezing with filesystem
+freeze/thaw".
 
-Looks like that opp_table->np = opp_np assignment in this function needs
-to do an of_node_get() because the caller of this function puts the
-pointer unconditionally.
+Cheers,
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+						- Ted
