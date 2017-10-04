@@ -1,58 +1,69 @@
-From: Theodore Ts'o <tytso@mit.edu>
-Subject: Re: [RFC 4/5] ext4: add fs freezing support on suspend/hibernation
-Date: Wed, 4 Oct 2017 12:48:39 -0400
-Message-ID: <20171004164839.zyfpx64qmmfv2jtx@thunk.org>
-References: <20171003185313.1017-1-mcgrof@kernel.org>
- <20171003185313.1017-5-mcgrof@kernel.org>
- <20171003195930.ivgaccdabxczar62@thunk.org>
- <20171003201321.GE2294@wotan.suse.de>
- <20171004014204.mztkdnm7wb7r6sl2@thunk.org>
- <20171004070523.GE3666@dastard>
+From: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Subject: Re: [PATCH RFC hack dont apply] intel_idle: support running within
+ a VM
+Date: Wed, 4 Oct 2017 10:09:39 -0700
+Message-ID: <20171004100939.1893e4a7@jacob-builder>
+References: <20170930005046-mutt-send-email-mst@kernel.org>
+        <CAJZ5v0hz+KDGVdz+X=98p51fOpk6AAa3CmL-asWw3uZg12X-Lw@mail.gmail.com>
+        <20171002101249.69b5611a@jacob-builder>
+        <20171004050706-mutt-send-email-mst@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from imap.thunk.org ([74.207.234.97]:36116 "EHLO imap.thunk.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750966AbdJDQs7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 4 Oct 2017 12:48:59 -0400
-Content-Disposition: inline
-In-Reply-To: <20171004070523.GE3666@dastard>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171004050706-mutt-send-email-mst@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Michael S. Tsirkin" <mst@redhat.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Yang Zhang <yang.zhang.wz@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org, Wanpeng Li <wanpeng.li@hotmail.com>, Paolo Bonzini <pbonzini@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, rkrcmar@redhat.com, dmatlack@google.com, agraf@suse.de, Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, jacob.jun.pan@linux.intel.com
 List-Id: linux-pm@vger.kernel.org
-To: Dave Chinner <david@fromorbit.com>
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Oct 04, 2017 at 06:05:23PM +1100, Dave Chinner wrote:
-> Basically, before thawing filesystems the rest of the kernel
-> infrastructure needs to have been restarted. i.e. the order
-> needs to be:
-> 
-> freeze userspace
-> freeze filesystems
-> freeze kernel threads
-> freeze workqueues
-> 
-> thaw workqueues
-> thaw kernel threads
-> thaw filesystems
-> thaw userspace
-> 
-> and it should end up that way.
-> 
-> > Or if we have a network block device, or
-> > something else in the storage stack that needs to run a kernel thread
-> > context (or a workqueue, etc.) --- is the fact that userspace is
-> > frozen mean the scheduler is going to refuse to schedule()?
-> 
-> No.
+On Wed, 4 Oct 2017 05:09:09 +0300
+"Michael S. Tsirkin" <mst@redhat.com> wrote:
 
-Well, that's what the answer *should* be.  I was asking what this
-patch series does, and given that Luis reported that with this patch
-series ext4_commit_super(sb, 1) is hanging, I have my suspicions about
-what the answer might be with this patch set.  (Especially since the
-claimed goal of the patch set is, "kthread freezing with filesystem
-freeze/thaw".
+> On Mon, Oct 02, 2017 at 10:12:49AM -0700, Jacob Pan wrote:
+> > On Sat, 30 Sep 2017 01:21:43 +0200
+> > "Rafael J. Wysocki" <rafael@kernel.org> wrote:
+> >   
+> > > On Sat, Sep 30, 2017 at 12:01 AM, Michael S. Tsirkin
+> > > <mst@redhat.com> wrote:  
+> > > > intel idle driver does not DTRT when running within a VM:
+> > > > when going into a deep power state, the right thing to
+> > > > do is to exit to hypervisor rather than to keep polling
+> > > > within guest using mwait.
+> > > >
+> > > > Currently the solution is just to exit to hypervisor each time
+> > > > we go idle - this is why kvm does not expose the mwait leaf to
+> > > > guests even when it allows guests to do mwait.
+> > > >
+> > > > But that's not ideal - it seems better to use the idle driver to
+> > > > guess when will the next interrupt arrive.    
+> > > 
+> > > The idle driver alone is not sufficient for that, though.
+> > >   
+> > I second that. Why try to solve this problem at vendor specific
+> > driver level?  
+> 
+> Well we still want to e.g. mwait if possible - saves power.
+> 
+> > perhaps just a pv idle driver that decide whether to vmexit
+> > based on something like local per vCPU timer expiration? I guess we
+> > can't predict other wake events such as interrupts.
+> > e.g.
+> > if (get_next_timer_interrupt() > kvm_halt_target_residency)
+> > 	vmexit
+> > else
+> > 	poll
+> > 
+> > Jacob  
+> 
+> It's not always a poll, on x86 putting the CPU in a low power state
+> is possible within a VM.
+> 
+Are you talking about using mwait/monitor in the user space which are
+available on some Intel CPUs, such as Xeon Phi? I guess if the guest
+can identify host CPU id, it is doable.
 
-Cheers,
+> Does not seem possible on other CPUs that's why it's vendor specific.
+> 
 
-						- Ted
+[Jacob Pan]
