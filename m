@@ -1,232 +1,49 @@
 From: Julia Lawall <julia.lawall@lip6.fr>
 Subject: Re: [PATCH] coccinelle: api: detect duplicate chip data arrays
-Date: Thu, 5 Oct 2017 21:25:52 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1710052122380.2626@hadrien>
-References: <1506861768-5734-1-git-send-email-Julia.Lawall@lip6.fr> <CAKvHMgT07xoBW_VmAYsxUmoYaz_iN4vFh7Ljb_UQEWAd8bt22w@mail.gmail.com>
+Date: Thu, 5 Oct 2017 21:28:00 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1710052127320.2626@hadrien>
+References: <1506861768-5734-1-git-send-email-Julia.Lawall@lip6.fr> <CAK7LNAQK7w3FBxJUhX3Vn48XsUT7jQzGDC7kzCx2r-yWm0CdEw@mail.gmail.com> <alpine.DEB.2.20.1710052113090.2626@hadrien> <1507230959.4434.39.camel@perches.com>
+ <CAKvHMgRx9U+GQ82GrSZYTAA6s1RH+HpEtkYZYf+O3VzqLDoD_g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAKvHMgT07xoBW_VmAYsxUmoYaz_iN4vFh7Ljb_UQEWAd8bt22w@mail.gmail.com>
+In-Reply-To: <CAKvHMgRx9U+GQ82GrSZYTAA6s1RH+HpEtkYZYf+O3VzqLDoD_g@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, =?ISO-8859-15?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, kernel-janitors@vger.kernel.org, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, linux-kernel <linux-kernel@vger.kernel.org>, kbuild test robot <fengguang.wu@intel.com>, Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Joe Perches <joe@perches.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Sebastian Reichel <sebastian.reichel@collabora.co.uk>, =?ISO-8859-15?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, kernel-janitors@vger.kernel.org, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kbuild test robot <fengguang.wu@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
 
 
 On Thu, 5 Oct 2017, Liam Breck wrote:
 
-> Hi, sorry for slow reply...
+> Hi Joe,
 >
-> Can we patch something to make this script run by default on
-> bq7xxxx_battery_i2c build? If so let's do that.
-
-I don't think anything is set up for that.  But any changes to the file
-should be checked by the 0-day bot.
-
-> Also maybe the name of the script should include "bq27xxx_data"?
-
-OK
-
-> Few more comments below...
+> On Thu, Oct 5, 2017 at 12:15 PM, Joe Perches <joe@perches.com> wrote:
+> > On Thu, 2017-10-05 at 21:13 +0200, Julia Lawall wrote:
+> >>
+> >> On Fri, 6 Oct 2017, Masahiro Yamada wrote:
+> >>
+> >> > 2017-10-01 21:42 GMT+09:00 Julia Lawall <Julia.Lawall@lip6.fr>:
+> >> > > This semantic patch detects duplicate arrays declared using BQ27XXX_DATA
+> >> > > within a single structure.  It is currently specific to the file
+> >> > > drivers/power/supply/bq27xxx_battery.c.
+> >> > >
+> >> > > Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> >> > >
+> >> > > ---
+> >> >
+> >> > Applied to linux-kbuild/misc.
+> >>
+> >> Thanks for picking it up.
+> >
+> > If it is specific to one file, why not just run it
+> > and post the resultant patch?  Why have it in tree?
 >
-> On Sun, Oct 1, 2017 at 5:42 AM, Julia Lawall <Julia.Lawall@lip6.fr> wrote:
-> > This semantic patch detects duplicate arrays declared using BQ27XXX_DATA
-> > within a single structure.  It is currently specific to the file
-> > drivers/power/supply/bq27xxx_battery.c.
-> >
-> > Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-> >
-> > ---
-> >  scripts/coccinelle/api/battery.cocci |  161 +++++++++++++++++++++++++++++++++++
-> >  1 file changed, 161 insertions(+)
-> >
-> > diff --git a/scripts/coccinelle/api/battery.cocci b/scripts/coccinelle/api/battery.cocci
-> > new file mode 100644
-> > index 0000000..77c145a
-> > --- /dev/null
-> > +++ b/scripts/coccinelle/api/battery.cocci
-> > @@ -0,0 +1,161 @@
-> > +/// Detect BQ27XXX_DATA structures with identical registers, dm registers or
-> > +/// properties.
-> > +//# Doesn't unfold macros used in register or property fields.
-> > +//# Requires OCaml scripting
-> > +///
-> > +// Confidence: High
-> > +// Copyright: (C) 2017 Julia Lawall, Inria/LIP6, GPLv2.
-> > +// URL: http://coccinelle.lip6.fr/
-> > +// Requires: 1.0.7
-> > +// Keywords: BQ27XXX_DATA
-> > +
-> > +virtual report
-> > +
-> > +@initialize:ocaml@
-> > +@@
-> > +
-> > +let print_report p msg =
-> > +  let p = List.hd p in
-> > +  Printf.printf "%s:%d:%d-%d: %s" p.file p.line p.col p.col_end msg
-> > +
-> > +@str depends on report@
-> > +type t;
-> > +identifier i,i1,i2;
-> > +expression e1,e2;
-> > +@@
-> > +
-> > +t i[] = {
-> > +  ...,
-> > +  [e1] = BQ27XXX_DATA(i1,...),
-> > +  ...,
-> > +  [e2] = BQ27XXX_DATA(i2,...),
-> > +  ...,
-> > +};
-> > +
-> > +@script:ocaml tocheck@
-> > +i1 << str.i1;
-> > +i2 << str.i2;
-> > +i1regs; i2regs;
-> > +i1dmregs; i2dmregs;
-> > +i1props; i2props;
-> > +@@
-> > +
-> > +if not(i1 = i2)
-> > +then
-> > +  begin
-> > +    i1regs := make_ident (i1 ^ "_regs");
-> > +    i2regs := make_ident (i2 ^ "_regs");
-> > +    i1dmregs := make_ident (i1 ^ "_dm_regs");
-> > +    i2dmregs := make_ident (i2 ^ "_dm_regs");
-> > +    i1props := make_ident (i1 ^ "_props");
-> > +    i2props := make_ident (i2 ^ "_props")
-> > +  end
-> > +
-> > +(* ---------------------------------------------------------------- *)
-> > +
-> > +@getregs1@
-> > +typedef u8;
-> > +identifier tocheck.i1regs;
-> > +initializer list i1regs_vals;
-> > +position p1;
-> > +@@
-> > +
-> > +u8 i1regs@p1[...] = { i1regs_vals, };
-> > +
-> > +@getregs2@
-> > +identifier tocheck.i2regs;
-> > +initializer list i2regs_vals;
-> > +position p2;
-> > +@@
-> > +
-> > +u8 i2regs@p2[...] = { i2regs_vals, };
-> > +
-> > +@script:ocaml@
-> > +(_,i1regs_vals) << getregs1.i1regs_vals;
-> > +(_,i2regs_vals) << getregs2.i2regs_vals;
-> > +i1regs << tocheck.i1regs;
-> > +i2regs << tocheck.i2regs;
-> > +p1 << getregs1.p1;
-> > +p2 << getregs2.p2;
-> > +@@
-> > +
-> > +if i1regs < i2regs &&
-> > +   List.sort compare i1regs_vals = List.sort compare i2regs_vals
-> > +then
-> > +  let msg =
-> > +    Printf.sprintf
-> > +      "WARNING %s and %s (line %d) have the same registers\n"
->
-> "are identical" vs "have the same..."
+> The driver which this script analyzes supports more than a dozen
+> different chips, which require different parameters. This script
+> checks for duplicate parameter arrays.
 
-OK, I guess identical would be appropriate for regsand dm_regs, but
-perhaps not for properties because there the same values might be in a
-different order.
+I think the question is more how will the code change over time.
 
 julia
-
-> > +      i1regs i2regs (List.hd p2).line in
-> > +  print_report p1 msg
-> > +
-> > +(* ---------------------------------------------------------------- *)
-> > +
-> > +@getdmregs1@
-> > +identifier tocheck.i1dmregs;
-> > +initializer list i1dmregs_vals;
-> > +position p1;
-> > +@@
-> > +
-> > +struct bq27xxx_dm_reg i1dmregs@p1[] = { i1dmregs_vals, };
-> > +
-> > +@getdmregs2@
-> > +identifier tocheck.i2dmregs;
-> > +initializer list i2dmregs_vals;
-> > +position p2;
-> > +@@
-> > +
-> > +struct bq27xxx_dm_reg i2dmregs@p2[] = { i2dmregs_vals, };
-> > +
-> > +@script:ocaml@
-> > +(_,i1dmregs_vals) << getdmregs1.i1dmregs_vals;
-> > +(_,i2dmregs_vals) << getdmregs2.i2dmregs_vals;
-> > +i1dmregs << tocheck.i1dmregs;
-> > +i2dmregs << tocheck.i2dmregs;
-> > +p1 << getdmregs1.p1;
-> > +p2 << getdmregs2.p2;
-> > +@@
-> > +
-> > +if i1dmregs < i2dmregs &&
-> > +   List.sort compare i1dmregs_vals = List.sort compare i2dmregs_vals
-> > +then
-> > +  let msg =
-> > +    Printf.sprintf
-> > +      "WARNING %s and %s (line %d) have the same dm registers\n"
->
-> "are identical" vs "have the same..."
->
-> > +      i1dmregs i2dmregs (List.hd p2).line in
-> > +  print_report p1 msg
-> > +
-> > +(* ---------------------------------------------------------------- *)
-> > +
-> > +@getprops1@
-> > +identifier tocheck.i1props;
-> > +initializer list[n1] i1props_vals;
-> > +position p1;
-> > +@@
-> > +
-> > +enum power_supply_property i1props@p1[] = { i1props_vals, };
-> > +
-> > +@getprops2@
-> > +identifier tocheck.i2props;
-> > +initializer list[n2] i2props_vals;
-> > +position p2;
-> > +@@
-> > +
-> > +enum power_supply_property i2props@p2[] = { i2props_vals, };
-> > +
-> > +@script:ocaml@
-> > +(_,i1props_vals) << getprops1.i1props_vals;
-> > +(_,i2props_vals) << getprops2.i2props_vals;
-> > +i1props << tocheck.i1props;
-> > +i2props << tocheck.i2props;
-> > +p1 << getprops1.p1;
-> > +p2 << getprops2.p2;
-> > +@@
-> > +
-> > +if i1props < i2props &&
-> > +   List.sort compare i1props_vals = List.sort compare i2props_vals
-> > +then
-> > +  let msg =
-> > +    Printf.sprintf
-> > +      "WARNING %s and %s (line %d) have the same properties\n"
->
-> "are identical" vs "have the same..."
->
->
-> > +      i1props i2props (List.hd p2).line in
-> > +  print_report p1 msg
-> >
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
