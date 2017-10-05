@@ -1,86 +1,59 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v4 3/3] PM: i2c-designware-platdrv: Suspend/resume at the
- late/early stages
-Date: Thu, 5 Oct 2017 13:00:54 +0200
-Message-ID: <20171005110053.2oxmz25ucnpoxjrk@ninjato>
-References: <3023226.l5IfJK6GIc@aspire.rjw.lan>
- <3958866.l2qnKDbinI@aspire.rjw.lan>
- <65494652.vEfz4tCBDb@aspire.rjw.lan>
- <7572899.CfQ69SdO4W@aspire.rjw.lan>
+From: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Subject: Re: [PATCH v3 21/22] cpufreq: add support for CPU DVFS based on SCMI
+ message protocol
+Date: Thu, 5 Oct 2017 13:20:11 +0200
+Message-ID: <CAK8P3a18i-=6PE2WAZ5LkYHty5CrVjMhTF_qJjtGGE3aCxLOuw@mail.gmail.com>
+References: <1506604306-20739-1-git-send-email-sudeep.holla@arm.com>
+ <1506604306-20739-22-git-send-email-sudeep.holla@arm.com> <CAK8P3a3pAFKM+Dq_yb7KYhB+xeneVuODBq_4nacEuw9creT6Yw@mail.gmail.com>
+ <5efbd0a7-8b62-5b30-98e6-dfaff64e2628@arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="73evo3vnpt6mv5jd"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <7572899.CfQ69SdO4W@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, linux-i2c@vger.kernel.org, linux-acpi@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Jarkko Nikula <jarkko.nikula@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Jisheng Zhang <jszhang@marvell.com>, John Stultz <john.stultz@linaro.org>, Guodong Xu <guodong.xu@linaro.org>, Sumit Semwal <sumit.semwal@linaro.org>, Haojian Zhuang <haojian.zhuang@linaro.org>, Johannes Stezenbach <js@sig21.net>, Ulf Hansson <ulf.hansson@linaro.org>, Lee Jones <lee.jones@linaro.org>, Rajat Jain <rajatja@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5efbd0a7-8b62-5b30-98e6-dfaff64e2628-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Cc: ALKML <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DTML <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Roy Franz <roy.franz-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, Harb Abdulhamid <harba-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Loc Ho <lho-qTEPVZfXA3Y@public.gmane.org>, Alexey Klimov <alexey.klimov-5wv7dgnIgG8@public.gmane.org>, Ryan Harkin <Ryan.Harkin-5wv7dgnIgG8@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
+On Wed, Oct 4, 2017 at 5:01 PM, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org> wrote:
+>>> +
+>>> +static struct platform_driver scmi_cpufreq_platdrv = {
+>>> +       .driver = {
+>>> +               .name   = "scmi-cpufreq",
+>>> +       },
+>>> +       .probe          = scmi_cpufreq_probe,
+>>> +       .remove         = scmi_cpufreq_remove,
+>>> +};
+>>
+>> You appear to have split this driver into the 'cpufreq' side and
+>> the 'protocol' handler in a different file. I already commented that
+>> the way the main scmi driver knows about all the protocols looks
+>> bad, here we can see another aspect of the same problem.
+>>
+>> Rather than manually register a platform_device for the purpose
+>> of connecting it to the cpufreq driver, there should be a way
+>> to dynamically register the protocol from the cpufreq driver
+>> and then have both in the same file.
+>>
+>
+> I agree that should be possible. I took this approach for 2 reasons:
+>
+> 1. to avoid all sorts of probe ordering issues
+> 2. we may have system with multiple instances of SCMI. E.g. a system
+>    may have multiple remote processors, each controlling dvfs/power mgmt
+>    of a subset of CPUs/devices controller in OS.
+>
+> I have to admit that I haven't thought too much in details yet. That's
+> the main idea behind scmi_handle and restricting access to that only to
+> sub-nodes in it. I am open to suggestions.
 
---73evo3vnpt6mv5jd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+How about introducing a separate bus_type for protocols?
+The platform_device you use here isn't really the best abstraction,
+and with a new bus_type, you can handle multiple instances of
+scmi as well as decoupling them from the protocol drivers.
 
-On Mon, Sep 25, 2017 at 01:30:51AM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->=20
-> As reported by Rajat Jain, there are problems when ACPI operation
-> region handlers or similar, called at the ->resume_early() time, for
-> I2C client devices try to access an I2C controller that has already
-> been suspended at that point.  To avoid that, move the suspend/resume
-> of i2c-designware-platdrv to the late/early stages, respectively.
->=20
-> While at it, avoid resuming the device from runtime suspend in the
-> driver's ->suspend callback which isn't particularly nice.  [A better
-> approach would be to make the driver track the PM state of the device
-> so that it doesn't need to resume it in ->suspend, so implement it.]
->=20
-> First, drop dw_i2c_plat_suspend() added by commit a23318feeff6 (i2c:
-> designware: Fix system suspend) and rename dw_i2c_plat_runtime_suspend()
-> back to dw_i2c_plat_suspend().
->=20
-> Second, point the driver's ->late_suspend and ->early_resume
-> callbacks, rather than its ->suspend and ->resume callbacks,
-> to dw_i2c_plat_suspend() and dw_i2c_plat_resume(), respectively,
-> so that they are not executed in parallel with each other, for
-> example if runtime resume of the device takes place during system
-> suspend.
->=20
-> Finally, add "suspended" and "skip_resume" flags to struct dw_i2c_dev
-> and make dw_i2c_plat_suspend() and dw_i2c_plat_resume() use them to
-> avoid suspending or resuming the device twice in a row and to avoid
-> resuming a previously runtime-suspended device during system resume.
->=20
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Tested-by: Jarkko Nikula <jarkko.nikula@linux.intel.com>
-> Tested-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Tested-by: Johannes Stezenbach <js@sig21.net>
-> Tested-by: Rajat Jain <rajatja@google.com>
-
-Applied to for-next, thanks!
-
-
---73evo3vnpt6mv5jd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlnWEOUACgkQFA3kzBSg
-KbYxQQ/8C+AcBagRN7uTok0wINHEcCdOk/W8/Z+cbmtBvMtbpiBbS19op9Pi43+8
-av+WC+XtJ6BjiI3/xlDOlteZTHlN/c+7XUqL52RBgwyeeL9u70QjQuUv8Bt3tPsq
-HQ4V8k1ptsZFqt0G7TQ4KTkhtelxKgoSxggFw696lIeHTyg98oxjdEmMN/BbJgnL
-zUfAIRgZmJMguY8GOvI74u41gP5vEBY3ViQy1np9qF8Es20nml2ix1whVwjgxbbA
-/Rdo7Qspc1o82lL/ymEjkRMMmAybPC1s9OuDa2Xs8TSqflpaaFCeZmNSIgIkTPgO
-B3v7h/2ScQd3ami+djUHIgRxnlproW0f/GL8pB8EzkqI33fUN8UZPcxxf9SF1qby
-htb5bRufKr1kEbkwpGJ1PbUp0Uy3gf7n5JP/09WW4sUn1oVEf7m70390iyNzeBQl
-nDOfMhsRBi3BCGds6LhjbahVOkSkrDQLCnMBEcdTrzDrdXIYxpNdsRbscA55xT8S
-2pLzMRM9quhSxtyNKJVjYOns7AYi0pJbMPbEtvL6uxAmM2IgoXdB0wUjw4DU4ESu
-5Wn/EgaRLIlVzypj/ITnXfkqbIpMza6Xmij6vFEMn44gCjvbZcXbRJfetgK0Nn2M
-qSfuPTyX7bvZvmphaqA4NDdN0HxSPGaILyc7N33piEkzZ0xo1J8=
-=y9Ii
------END PGP SIGNATURE-----
-
---73evo3vnpt6mv5jd--
+      Arnd
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
