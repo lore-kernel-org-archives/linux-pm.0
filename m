@@ -1,66 +1,29 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [RFC v3 20/27] x86/ftrace: Adapt function tracing for PIE support
-Date: Thu, 5 Oct 2017 09:14:25 -0700
-Message-ID: <CAJcbSZGOYsoaYJBMPrLx4AffRRdaWCzGXNAPTRgP1DWeAkBkWA@mail.gmail.com>
-References: <20171004212003.28296-1-thgarnie@google.com> <20171004212003.28296-21-thgarnie@google.com>
- <20171005090633.5a6ce840@gandalf.local.home> <CAJcbSZHa3SyCR8zEm-Yor9CmBUfcjr0eE_6HMnaeq83gitdJNQ@mail.gmail.com>
- <20171005121132.7c1f4855@gandalf.local.home>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH] PM / OPP: Rename dev_pm_opp_register_put_opp_helper()
+Date: Thu, 5 Oct 2017 10:30:34 -0700
+Message-ID: <20171005173034.GE457@codeaurora.org>
+References: <0d69b3a1e8b565815c1f5a77f5622b524f6f7d35.1507204552.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-10087-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <20171005121132.7c1f4855@gandalf.local.home>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Kees Cook <keescook@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Juergen Gross <jgross@suse.com>, Chris Wright <chrisw@sous-sol.org>, Alok Kataria <akataria@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@linux.com>, Boris Ostrovsky <boris.ostrovsky@orac>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <0d69b3a1e8b565815c1f5a77f5622b524f6f7d35.1507204552.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 5, 2017 at 9:11 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> On Thu, 5 Oct 2017 09:01:14 -0700
-> Thomas Garnier <thgarnie@google.com> wrote:
->
->> On Thu, Oct 5, 2017 at 6:06 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
->> > On Wed,  4 Oct 2017 14:19:56 -0700
->> > Thomas Garnier <thgarnie@google.com> wrote:
->> >
->> >> When using -fPIE/PIC with function tracing, the compiler generates a
->> >> call through the GOT (call *__fentry__@GOTPCREL). This instruction
->> >> takes 6 bytes instead of 5 on the usual relative call.
->> >>
->> >> With this change, function tracing supports 6 bytes on traceable
->> >> function and can still replace relative calls on the ftrace assembly
->> >> functions.
->> >>
->> >> Position Independent Executable (PIE) support will allow to extended the
->> >> KASLR randomization range below the -2G memory limit.
->> >
->> > Question: This 6 bytes is only the initial call that gcc creates. When
->> > function tracing is enabled, the calls are back to the normal call to
->> > the ftrace trampoline?
->>
->> That is correct.
->>
->
-> Then I think a better idea is to simply nop them out at compile time,
-> and have the code that updates them to nops to know about it.
->
-> See scripts/recordmcount.c
->
-> Could we simply add a 5 byte nop followed by a 1 byte nop, and treat it
-> the same as if it didn't exist? This code can be a little complex, and
-> can cause really nasty side effects if things go wrong. I would like to
-> keep from adding more variables to the changes here.
+On 10/05, Viresh Kumar wrote:
+> The routine is named incorrectly since the first attempt as there is
+> nothing like a put_opp() helper. We wanted to unregister the set_opp()
+> helper here and so it should rather be named as
+> dev_pm_opp_unregister_set_opp_helper().
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
 
-Sure, I will simplify it for the next iteration.
-
-Thanks for the feedback.
-
->
-> -- Steve
-
-
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
 
 -- 
-Thomas
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
