@@ -1,127 +1,94 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2] Bug fix for PME interrupt handler, add Root Status check
-Date: Thu, 05 Oct 2017 15:02:54 +0200
-Message-ID: <4989012.MpNStB6gzp@aspire.rjw.lan>
-References: <1506737526-94266-1-git-send-email-zhengqiang10@huawei.com> <20171004221157.GL25517@bhelgaas-glaptop.roam.corp.google.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 03/13] timer: Remove init_timer_on_stack() in favor of timer_setup_on_stack()
+Date: Thu, 5 Oct 2017 15:18:32 +0200
+Message-ID: <CAJZ5v0iMxSDj0gR0n3YF+zRvR3e2XHpiMR9hKjjon_EXSbB89w@mail.gmail.com>
+References: <1507159627-127660-1-git-send-email-keescook@chromium.org> <1507159627-127660-4-git-send-email-keescook@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:44304 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751280AbdJENMR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2017 09:12:17 -0400
-In-Reply-To: <20171004221157.GL25517@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-mips-bounce@linux-mips.org>
+In-Reply-To: <1507159627-127660-4-git-send-email-keescook@chromium.org>
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-help: <mailto:ecartis@linux-mips.org?Subject=help>
+List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
+List-software: Ecartis version 1.0.0
+List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
+List-owner: <mailto:ralf@linux-mips.org>
+List-post: <mailto:linux-mips@linux-mips.org>
+List-archive: <http://www.linux-mips.org/archives/linux-mips/>
+To: Kees Cook <keescook@chromium.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Julian Wiedmann <jwi@linux.vnet.ibm.com>, Ursula Braun <ubraun@linux.vnet.ibm.com>, Michael Reed <mdr@sgi.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Linux PM <linux-pm@vger.kernel.org>, linux1394-devel@lists.sourceforge.net, linux-s390@vger.kernel.org, "open list:TARGET SUBSYSTEM" <linux-scsi@vger.kernel.org>, Andrew Morton <akpm@lin>
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Qiang Zheng <zhengqiang10@huawei.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, gabriele.paoloni@huawei.com, linuxarm@huawei.com
 
-On Thursday, October 5, 2017 12:11:57 AM CEST Bjorn Helgaas wrote:
-> On Sat, Sep 30, 2017 at 10:12:06AM +0800, Qiang Zheng wrote:
-> > PCIe PME and hot plug share same interrupt number. In some special case,
-> > Link down event cause hot plug interrupt, devices is not disconnected,
-> > But read config will return 0xff.
-> > 
-> > In that case, PME work function will run and not return Because
-> > Root Status PME bit always 1 and can not be cleared.
-> > 
-> > This patch add Root Status check in PME interrupt handler,
-> > Just do same as pciehp isr Slot status check.
-> > 
-> > Signed-off-by: Qiang Zheng <zhengqiang10@huawei.com>
-> > ---
-> >  drivers/pci/pcie/pme.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/pci/pcie/pme.c b/drivers/pci/pcie/pme.c
-> > index fafdb16..2ff2e57 100644
-> > --- a/drivers/pci/pcie/pme.c
-> > +++ b/drivers/pci/pcie/pme.c
-> > @@ -273,7 +273,7 @@ static irqreturn_t pcie_pme_irq(int irq, void *context)
-> >  	spin_lock_irqsave(&data->lock, flags);
-> >  	pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
-> >  
-> > -	if (!(rtsta & PCI_EXP_RTSTA_PME)) {
-> > +	if (rtsta == U32_MAX || !(rtsta & PCI_EXP_RTSTA_PME)) {
-> >  		spin_unlock_irqrestore(&data->lock, flags);
-> >  		return IRQ_NONE;
-> >  	}
-> > 
-> 
-> I applied the patch below to pci/misc for v4.15.
-> 
-> I think we need a similar test in pcie_pme_work_fn() itself.  Without
-> it, I think there's a race: if we get a legitimate PME, enter
-> pcie_pme_work_fn(), and the link goes down, we could still get
-> 0xffffffff the next time we read PCI_EXP_RTSTA.
-> 
-> I also used "(u32) ~0" instead of U32_MAX because that's the style
-> used elsewhere.  It might be clunkier than necessary, but U32_MAX
-> suggests a limit, and that's not really the concept here.
-> 
-> I didn't add your reviewed-by, Rafael, since I made non-trivial
-> changes to the patch.
-> 
-> Bjorn
-> 
-> 
-> 
-> commit 303029d6d55ba10a37c82c31a89eb5550cde77ec
-> Author: Qiang <zhengqiang10@huawei.com>
-> Date:   Thu Sep 28 11:54:34 2017 +0800
-> 
->     PCI/PME: Handle invalid data when reading Root Status
->     
->     PCIe PME and native hotplug share the same interrupt number, so hotplug
->     interrupts are also processed by PME.  In some cases, e.g., a Link Down
->     interrupt, a device may be present but unreachable, so when we try to
->     read its Root Status register, the read fails and we get all ones data
->     (0xffffffff).
->     
->     Previously, we interpreted that data as PCI_EXP_RTSTA_PME being set, i.e.,
->     "some device has asserted PME," so we scheduled pcie_pme_work_fn().  This
->     caused an infinite loop because pcie_pme_work_fn() tried to handle PME
->     requests until PCI_EXP_RTSTA_PME is cleared, but with the link down,
->     PCI_EXP_RTSTA_PME can't be cleared.
->     
->     Check for the invalid 0xffffffff data everywhere we read the Root Status
->     register.
->     
->     1469d17dd341 ("PCI: pciehp: Handle invalid data when reading from
->     non-existent devices") added similar checks in the hotplug driver.
->     
->     Signed-off-by: Qiang Zheng <zhengqiang10@huawei.com>
->     [bhelgaas: changelog, also check in pcie_pme_work_fn(), use "~0" to follow
->     other similar checks]
->     Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> 
-> diff --git a/drivers/pci/pcie/pme.c b/drivers/pci/pcie/pme.c
-> index fafdb165dd2e..df290aa58dce 100644
-> --- a/drivers/pci/pcie/pme.c
-> +++ b/drivers/pci/pcie/pme.c
-> @@ -226,6 +226,9 @@ static void pcie_pme_work_fn(struct work_struct *work)
->  			break;
->  
->  		pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
-> +		if (rtsta == (u32) ~0)
-> +			break;
-> +
->  		if (rtsta & PCI_EXP_RTSTA_PME) {
->  			/*
->  			 * Clear PME status of the port.  If there are other
-> @@ -273,7 +276,7 @@ static irqreturn_t pcie_pme_irq(int irq, void *context)
->  	spin_lock_irqsave(&data->lock, flags);
->  	pcie_capability_read_dword(port, PCI_EXP_RTSTA, &rtsta);
->  
-> -	if (!(rtsta & PCI_EXP_RTSTA_PME)) {
-> +	if (rtsta == (u32) ~0 || !(rtsta & PCI_EXP_RTSTA_PME)) {
->  		spin_unlock_irqrestore(&data->lock, flags);
->  		return IRQ_NONE;
->  	}
-> 
+On Thu, Oct 5, 2017 at 1:26 AM, Kees Cook <keescook@chromium.org> wrote:
+> Remove uses of init_timer_on_stack() with open-coded function and data
+> assignments that could be expressed using timer_setup_on_stack(). Several
+> were removed from the stack entirely since there was a one-to-one mapping
+> of parent structure to timer, those are switched to using timer_setup()
+> instead. All related callbacks were adjusted to use from_timer().
+>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Cc: Julian Wiedmann <jwi@linux.vnet.ibm.com>
+> Cc: Ursula Braun <ubraun@linux.vnet.ibm.com>
+> Cc: Michael Reed <mdr@sgi.com>
+> Cc: "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>
+> Cc: "Martin K. Petersen" <martin.petersen@oracle.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux1394-devel@lists.sourceforge.net
+> Cc: linux-s390@vger.kernel.org
+> Cc: linux-scsi@vger.kernel.org
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> ---
+>  drivers/base/power/main.c           |  8 +++-----
+>  drivers/firewire/core-transaction.c | 10 +++++-----
+>  drivers/parport/ieee1284.c          | 21 +++++++--------------
+>  drivers/s390/char/tape.h            |  1 +
+>  drivers/s390/char/tape_std.c        | 18 ++++++------------
+>  drivers/s390/net/lcs.c              | 16 ++++++----------
+>  drivers/s390/net/lcs.h              |  1 +
+>  drivers/scsi/qla1280.c              | 14 +++++---------
+>  drivers/scsi/qla1280.h              |  1 +
+>  include/linux/parport.h             |  1 +
+>  include/linux/timer.h               |  2 --
+>  11 files changed, 36 insertions(+), 57 deletions(-)
+>
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 770b1539a083..ae47b2ec84b4 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -478,9 +478,9 @@ struct dpm_watchdog {
+>   * There's not much we can do here to recover so panic() to
+>   * capture a crash-dump in pstore.
+>   */
+> -static void dpm_watchdog_handler(unsigned long data)
+> +static void dpm_watchdog_handler(struct timer_list *t)
+>  {
+> -       struct dpm_watchdog *wd = (void *)data;
+> +       struct dpm_watchdog *wd = from_timer(wd, t, timer);
+>
+>         dev_emerg(wd->dev, "**** DPM device timeout ****\n");
+>         show_stack(wd->tsk, NULL);
+> @@ -500,11 +500,9 @@ static void dpm_watchdog_set(struct dpm_watchdog *wd, struct device *dev)
+>         wd->dev = dev;
+>         wd->tsk = current;
+>
+> -       init_timer_on_stack(timer);
+> +       timer_setup_on_stack(timer, dpm_watchdog_handler, 0);
+>         /* use same timeout value for both suspend and resume */
+>         timer->expires = jiffies + HZ * CONFIG_DPM_WATCHDOG_TIMEOUT;
+> -       timer->function = dpm_watchdog_handler;
+> -       timer->data = (unsigned long)wd;
+>         add_timer(timer);
+>  }
 
-FWIW, it looks OK to me.
+For the above:
 
-Thanks,
-Rafael
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
