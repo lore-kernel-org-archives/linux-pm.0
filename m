@@ -1,73 +1,74 @@
-From: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH v3 21/22] cpufreq: add support for CPU DVFS based on SCMI
- message protocol
-Date: Thu, 5 Oct 2017 12:26:14 +0100
-Message-ID: <d7aa31d7-f68a-b81a-05fe-75d42cf88ed0@arm.com>
-References: <1506604306-20739-1-git-send-email-sudeep.holla@arm.com>
- <1506604306-20739-22-git-send-email-sudeep.holla@arm.com>
- <CAK8P3a3pAFKM+Dq_yb7KYhB+xeneVuODBq_4nacEuw9creT6Yw@mail.gmail.com>
- <5efbd0a7-8b62-5b30-98e6-dfaff64e2628@arm.com>
- <CAK8P3a18i-=6PE2WAZ5LkYHty5CrVjMhTF_qJjtGGE3aCxLOuw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAK8P3a18i-=6PE2WAZ5LkYHty5CrVjMhTF_qJjtGGE3aCxLOuw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, ALKML <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DTML <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Roy Franz <roy.franz-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, Harb Abdulhamid <harba-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Loc Ho <lho-qTEPVZfXA3Y@public.gmane.org>, Alexey Klimov <alexey.klimov-5wv7dgnIgG8@public.gmane.org>, Ryan Harkin <Ryan.Harkin-5wv7dgnIgG8@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] PM / OPP: Rename dev_pm_opp_register_put_opp_helper()
+Date: Thu,  5 Oct 2017 17:26:21 +0530
+Message-ID: <0d69b3a1e8b565815c1f5a77f5622b524f6f7d35.1507204552.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+The routine is named incorrectly since the first attempt as there is
+nothing like a put_opp() helper. We wanted to unregister the set_opp()
+helper here and so it should rather be named as
+dev_pm_opp_unregister_set_opp_helper().
 
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/opp/core.c     | 6 +++---
+ include/linux/pm_opp.h | 4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-On 05/10/17 12:20, Arnd Bergmann wrote:
-> On Wed, Oct 4, 2017 at 5:01 PM, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org> wrote:
->>>> +
->>>> +static struct platform_driver scmi_cpufreq_platdrv = {
->>>> +       .driver = {
->>>> +               .name   = "scmi-cpufreq",
->>>> +       },
->>>> +       .probe          = scmi_cpufreq_probe,
->>>> +       .remove         = scmi_cpufreq_remove,
->>>> +};
->>>
->>> You appear to have split this driver into the 'cpufreq' side and
->>> the 'protocol' handler in a different file. I already commented that
->>> the way the main scmi driver knows about all the protocols looks
->>> bad, here we can see another aspect of the same problem.
->>>
->>> Rather than manually register a platform_device for the purpose
->>> of connecting it to the cpufreq driver, there should be a way
->>> to dynamically register the protocol from the cpufreq driver
->>> and then have both in the same file.
->>>
->>
->> I agree that should be possible. I took this approach for 2 reasons:
->>
->> 1. to avoid all sorts of probe ordering issues
->> 2. we may have system with multiple instances of SCMI. E.g. a system
->>    may have multiple remote processors, each controlling dvfs/power mgmt
->>    of a subset of CPUs/devices controller in OS.
->>
->> I have to admit that I haven't thought too much in details yet. That's
->> the main idea behind scmi_handle and restricting access to that only to
->> sub-nodes in it. I am open to suggestions.
-> 
-> How about introducing a separate bus_type for protocols?
-> The platform_device you use here isn't really the best abstraction,
-> and with a new bus_type, you can handle multiple instances of
-> scmi as well as decoupling them from the protocol drivers.
-> 
-
-Yes based on some discussion on this thread yesterday, I started
-exploring and seem to have come to same conclusions. I will try to hack
-and see how that evolves. Thanks for the suggestion.
-
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index a6de32530693..7b6e83f0268a 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -1476,13 +1476,13 @@ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev,
+ EXPORT_SYMBOL_GPL(dev_pm_opp_register_set_opp_helper);
+ 
+ /**
+- * dev_pm_opp_register_put_opp_helper() - Releases resources blocked for
++ * dev_pm_opp_unregister_set_opp_helper() - Releases resources blocked for
+  *					   set_opp helper
+  * @opp_table: OPP table returned from dev_pm_opp_register_set_opp_helper().
+  *
+  * Release resources blocked for platform specific set_opp helper.
+  */
+-void dev_pm_opp_register_put_opp_helper(struct opp_table *opp_table)
++void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table)
+ {
+ 	if (!opp_table->set_opp) {
+ 		pr_err("%s: Doesn't have custom set_opp helper set\n",
+@@ -1497,7 +1497,7 @@ void dev_pm_opp_register_put_opp_helper(struct opp_table *opp_table)
+ 
+ 	dev_pm_opp_put_opp_table(opp_table);
+ }
+-EXPORT_SYMBOL_GPL(dev_pm_opp_register_put_opp_helper);
++EXPORT_SYMBOL_GPL(dev_pm_opp_unregister_set_opp_helper);
+ 
+ /**
+  * dev_pm_opp_add()  - Add an OPP table from a table definitions
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 51ec727b4824..849d21dc4ca7 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -124,7 +124,7 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table);
+ struct opp_table *dev_pm_opp_set_clkname(struct device *dev, const char * name);
+ void dev_pm_opp_put_clkname(struct opp_table *opp_table);
+ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev, int (*set_opp)(struct dev_pm_set_opp_data *data));
+-void dev_pm_opp_register_put_opp_helper(struct opp_table *opp_table);
++void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table);
+ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq);
+ int dev_pm_opp_set_sharing_cpus(struct device *cpu_dev, const struct cpumask *cpumask);
+ int dev_pm_opp_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+@@ -243,7 +243,7 @@ static inline struct opp_table *dev_pm_opp_register_set_opp_helper(struct device
+ 	return ERR_PTR(-ENOTSUPP);
+ }
+ 
+-static inline void dev_pm_opp_register_put_opp_helper(struct opp_table *opp_table) {}
++static inline void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table) {}
+ 
+ static inline struct opp_table *dev_pm_opp_set_prop_name(struct device *dev, const char *name)
+ {
 -- 
-Regards,
-Sudeep
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+2.14.1.202.g24db08a6e8fe
