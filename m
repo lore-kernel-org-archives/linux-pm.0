@@ -1,15 +1,28 @@
 From: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [PATCH] coccinelle: api: detect duplicate chip data arrays
-Date: Thu, 5 Oct 2017 21:40:51 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1710052140200.2626@hadrien>
-References: <1506861768-5734-1-git-send-email-Julia.Lawall@lip6.fr> <CAKvHMgT07xoBW_VmAYsxUmoYaz_iN4vFh7Ljb_UQEWAd8bt22w@mail.gmail.com> <alpine.DEB.2.20.1710052122380.2626@hadrien> <CAKvHMgSCZ3CLfKNpQQbK79bnCss0uFTr9TP_i89rkYr8+hAGsw@mail.gmail.com>
+Subject: Re: [PATCH] coccinelle: api: detect duplicate chip data
+	arrays
+Date: Thu, 5 Oct 2017 21:41:43 +0200 (CEST)
+Message-ID: <alpine.DEB.2.20.1710052141201.2626@hadrien>
+References: <1506861768-5734-1-git-send-email-Julia.Lawall@lip6.fr>
+ <CAKvHMgT07xoBW_VmAYsxUmoYaz_iN4vFh7Ljb_UQEWAd8bt22w@mail.gmail.com>
+ <alpine.DEB.2.20.1710052122380.2626@hadrien>
+ <CAKvHMgSCZ3CLfKNpQQbK79bnCss0uFTr9TP_i89rkYr8+hAGsw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <kernel-janitors-owner@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <cocci-bounces@systeme.lip6.fr>
 In-Reply-To: <CAKvHMgSCZ3CLfKNpQQbK79bnCss0uFTr9TP_i89rkYr8+hAGsw@mail.gmail.com>
-Sender: kernel-janitors-owner@vger.kernel.org
+List-Unsubscribe: <https://systeme.lip6.fr/mailman/options/cocci>,
+ <mailto:cocci-request@systeme.lip6.fr?subject=unsubscribe>
+List-Archive: <https://systeme.lip6.fr/pipermail/cocci>
+List-Post: <mailto:cocci@systeme.lip6.fr>
+List-Help: <mailto:cocci-request@systeme.lip6.fr?subject=help>
+List-Subscribe: <https://systeme.lip6.fr/mailman/listinfo/cocci>,
+ <mailto:cocci-request@systeme.lip6.fr?subject=subscribe>
+Sender: cocci-bounces@systeme.lip6.fr
+Errors-To: cocci-bounces@systeme.lip6.fr
 To: Liam Breck <liam@networkimprov.net>
-Cc: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, =?ISO-8859-15?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, kernel-janitors@vger.kernel.org, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, cocci@systeme.lip6.fr, linux-kernel <linux-kernel@vger.kernel.org>, kbuild test robot <fengguang.wu@intel.com>, Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, kernel-janitors@vger.kernel.org, Nicolas Palix <nicolas.palix@imag.fr>, linux-kernel <linux-kernel@vger.kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, =?ISO-8859-15?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sebastian.reichel@collabora.co.uk>, kbuild test robot <fengguang.wu@intel.com>, cocci@systeme.lip6.fr
 List-Id: linux-pm@vger.kernel.org
 
 
@@ -33,12 +46,6 @@ On Thu, 5 Oct 2017, Liam Breck wrote:
 >
 > How do we ask the 0-day bot team to configure their build to run this
 > script? Will they just pick it up?
-
-I put kbuild in CC.  I don't know what is the criterion for including
-semantic patches.
-
-julia
-
 >
 > >> Also maybe the name of the script should include "bq27xxx_data"?
 > >
@@ -159,6 +166,12 @@ julia
 >
 > The order of the properties has no impact, so a duplicate is
 > functionally identical.
+
+If you prefer identical, I can put that.
+
+julia
+
+
 >
 > >
 > > julia
@@ -250,4 +263,8 @@ julia
 > >> the body of a message to majordomo@vger.kernel.org
 > >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > >>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >
