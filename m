@@ -1,59 +1,41 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH 05/13] timer: Remove init_timer_deferrable() in favor of
- timer_setup()
-Date: Thu, 5 Oct 2017 03:02:18 +0200
-Message-ID: <20171005010218.v3aw4d3y66jn3bbo@earth>
-References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
- <1507159627-127660-6-git-send-email-keescook@chromium.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: Add missing of_node_put(np)
+Date: Thu, 5 Oct 2017 10:13:50 +0530
+Message-ID: <20171005044350.GA18345@vireshk-i7>
+References: <3a82b2d3311e16f0f638de18bf0ee803540014a3.1507096875.git.viresh.kumar@linaro.org>
+ <a3dd282e-220d-5a10-7a0e-10c1acaee737@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ioctv6qfrc7mty7c"
-Return-path: <netdev-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1507159627-127660-6-git-send-email-keescook@chromium.org>
-Sender: netdev-owner@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>, Harish Patil <harish.patil@cavium.com>, Manish Chopra <manish.chopra@cavium.com>, Kalle Valo <kvalo@qca.qualcomm.com>, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-wireless@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, Chris Metcalf <cmetcalf@mellanox.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Guenter Roeck <linux@roeck-us.net>, Heiko Carstens <heiko.carstens@de.ibm.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, John Stultz <john.stultz@linaro.org>, Julian Wiedmann <jwi@linux.vnet.ibm.com>, Lai
+In-Reply-To: <a3dd282e-220d-5a10-7a0e-10c1acaee737@codeaurora.org>
+Sender: stable-owner@vger.kernel.org
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org, Tobias Jordan <Tobias.Jordan@elektrobit.com>, "4 . 3+" <stable@vger.kernel.org>, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On 04-10-17, 09:42, Stephen Boyd wrote:
+> On 10/03/2017 11:05 PM, Viresh Kumar wrote:
+> > From: Tobias Jordan <Tobias.Jordan@elektrobit.com>
+> >
+> > The for_each_available_child_of_node() loop in _of_add_opp_table_v2()
+> > doesn't drop the reference to "np" on errors. Fix that.
+> >
+> > Fixes: 274659029c9d ("PM / OPP: Add support to parse "operating-points-v2" bindings")
+> > Cc: 4.3+ <stable@vger.kernel.org> # 4.3+
+> > Signed-off-by: Tobias Jordan <Tobias.Jordan@elektrobit.com>
+> > [ VK: Improved commit log. ]
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > ---
+> 
+> Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+> 
+> Looks like that opp_table->np = opp_np assignment in this function needs
+> to do an of_node_get() because the caller of this function puts the
+> pointer unconditionally.
 
---ioctv6qfrc7mty7c
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+We only use that pointer (opp_table->np) in _managed_opp() to compare the
+address. Perhaps we don't need to do a of_node_get() there.
 
-Hi,
-
-On Wed, Oct 04, 2017 at 04:26:59PM -0700, Kees Cook wrote:
-> This refactors the only users of init_timer_deferrable() to use
-> the new timer_setup() and from_timer(). Removes definition of
-> init_timer_deferrable().
-
-[...]
-
->  drivers/hsi/clients/ssi_protocol.c           | 32 ++++++++++++++++------------
-
-Acked-by: Sebastian Reichel <sre@kernel.org>
-
--- Sebastian
-
---ioctv6qfrc7mty7c
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlnVhJQACgkQ2O7X88g7
-+poqtw/+NVd8QRs2QuA6PAGWHUwxaYVABpFWmmT6auUlvyFDZ3dfZJID5IF3k1iT
-na5dX3a4nAKolDTmc7NOxWF7vEH/L/ONlRhfTt69PFg9oAk5KNjS1RdEx1bdxGRU
-rUBXQwOc2zi9LqxB2Hd8GQXOOhxbw0gICl4wrLCoUdkGNJs5fPpR6zVG8PGbntpq
-WWjDPDja6L+D6+pMhGADYfYj7Xtkfm0GWn3bycnHFKvFB61feCjknnH33QHR2Ayt
-O7gqcCR5aaYf6EadcVT4wR+ZRYl/7sZt102ziwKAsy2eztiOIsj4N8aRV2oR8riz
-CGwIx8ANBkrdn6OG8XFy6BfPzSZcBXqg6L/WreDPHJa2xZAzOds566XysTlDVnS2
-mmPZzXYhzdSJT5SgWxOwzPE3LH6wgG3id80kaCHFqive8gfGI6rh6Y8zQUk3umvg
-ksAklh+tTffWw6oBVT5P2GdyJUHx53Mbb3msk6NyH/G5DmGE0ikcWNcSHg8gcjVt
-KKArZaKBako7TLOE9Xklfx43wLM7GM5RtR6oDCeUfKKG8sF1PLaANmp0SnJeWP2X
-FjPA+SlOO9G/qT++PIkxsB2T6sFZrF/TNXi5exM7V6mYdTxvwJ8OVsKNMQKyxOKq
-rFI2Ntch9Trc5vcvXqlrW84i2bzA1b0jfzO1nkKoKm0XF8UHUKo=
-=6loN
------END PGP SIGNATURE-----
-
---ioctv6qfrc7mty7c--
+-- 
+viresh
