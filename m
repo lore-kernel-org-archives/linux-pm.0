@@ -1,41 +1,106 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 10/13] timer: Remove expires and data arguments from DEFINE_TIMER
-Date: Thu, 5 Oct 2017 10:59:12 +0200
-Message-ID: <CAK8P3a2uio4L3BMedHGg0wVy2asJ_CD8xqxevSnqdNDKOy6Vqw@mail.gmail.com>
-References: <1507159627-127660-1-git-send-email-keescook@chromium.org> <1507159627-127660-11-git-send-email-keescook@chromium.org>
+From: Paolo Bonzini <pbonzini@redhat.com>
+Subject: Re: [PATCH RFC hack dont apply] intel_idle: support running within a
+ VM
+Date: Thu, 5 Oct 2017 12:44:53 +0200
+Message-ID: <79e169dc-9848-ff48-4a20-50a98adfeb44@redhat.com>
+References: <20170930005046-mutt-send-email-mst@kernel.org>
+ <CAJZ5v0hz+KDGVdz+X=98p51fOpk6AAa3CmL-asWw3uZg12X-Lw@mail.gmail.com>
+ <20171002101249.69b5611a@jacob-builder>
+ <20171004050706-mutt-send-email-mst@kernel.org>
+ <20171004100939.1893e4a7@jacob-builder>
+ <20171004201125-mutt-send-email-mst@kernel.org>
+ <20171004113143.503032f0@jacob-builder>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-mips-bounce@linux-mips.org>
-In-Reply-To: <1507159627-127660-11-git-send-email-keescook@chromium.org>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
-To: Kees Cook <keescook@chromium.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@linux-foundation.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Chris Metcalf <cmetcalf@mellanox.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Guenter Roeck <linux@roeck-us.net>, Harish Patil <harish.patil@cavium.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, John Stultz <john.stultz@linaro.org>, Julian Wiedmann <jwi@linux.vnet.ibm.com>, Kalle Valo <kvalo@qca.qualcomm.com>, Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <len.brown@intel.com>, Manish Chopra <manish.chopra@cavium.com>, Mark Gross <mark.gross@intel.com>, "Martin K. Petersen" <martin.petersen@oracle.com>M
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171004113143.503032f0@jacob-builder>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jacob Pan <jacob.jun.pan@linux.intel.com>, "Michael S. Tsirkin" <mst@redhat.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Yang Zhang <yang.zhang.wz@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org, Wanpeng Li <wanpeng.li@hotmail.com>, Thomas Gleixner <tglx@linutronix.de>, rkrcmar@redhat.com, dmatlack@google.com, agraf@suse.de, Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Raj, Ashok" <ashok.raj@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 5, 2017 at 1:27 AM, Kees Cook <keescook@chromium.org> wrote:
-> Drop the arguments from the macro and adjust all callers with the
-> following script:
->
->   perl -pi -e 's/DEFINE_TIMER\((.*), 0, 0\);/DEFINE_TIMER($1);/g;' \
->     $(git grep DEFINE_TIMER | cut -d: -f1 | sort -u | grep -v timer.h)
->
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # for m68k parts
+On 04/10/2017 20:31, Jacob Pan wrote:
+> On Wed, 4 Oct 2017 20:12:28 +0300
+> "Michael S. Tsirkin" <mst@redhat.com> wrote:
+> 
+>> On Wed, Oct 04, 2017 at 10:09:39AM -0700, Jacob Pan wrote:
+>>> On Wed, 4 Oct 2017 05:09:09 +0300
+>>> "Michael S. Tsirkin" <mst@redhat.com> wrote:
+>>>   
+>>>> On Mon, Oct 02, 2017 at 10:12:49AM -0700, Jacob Pan wrote:  
+>>>>> On Sat, 30 Sep 2017 01:21:43 +0200
+>>>>> "Rafael J. Wysocki" <rafael@kernel.org> wrote:
+>>>>>     
+>>>>>> On Sat, Sep 30, 2017 at 12:01 AM, Michael S. Tsirkin
+>>>>>> <mst@redhat.com> wrote:    
+>>>>>>> intel idle driver does not DTRT when running within a VM:
+>>>>>>> when going into a deep power state, the right thing to
+>>>>>>> do is to exit to hypervisor rather than to keep polling
+>>>>>>> within guest using mwait.
+>>>>>>>
+>>>>>>> Currently the solution is just to exit to hypervisor each
+>>>>>>> time we go idle - this is why kvm does not expose the mwait
+>>>>>>> leaf to guests even when it allows guests to do mwait.
+>>>>>>>
+>>>>>>> But that's not ideal - it seems better to use the idle
+>>>>>>> driver to guess when will the next interrupt arrive.      
+>>>>>>
+>>>>>> The idle driver alone is not sufficient for that, though.
+>>>>>>     
+>>>>> I second that. Why try to solve this problem at vendor specific
+>>>>> driver level?    
+>>>>
+>>>> Well we still want to e.g. mwait if possible - saves power.
+>>>>   
+>>>>> perhaps just a pv idle driver that decide whether to vmexit
+>>>>> based on something like local per vCPU timer expiration? I
+>>>>> guess we can't predict other wake events such as interrupts.
+>>>>> e.g.
+>>>>> if (get_next_timer_interrupt() > kvm_halt_target_residency)
+>>>>> 	vmexit
+>>>>> else
+>>>>> 	poll
+>>>>>
+>>>>> Jacob    
+>>>>
+>>>> It's not always a poll, on x86 putting the CPU in a low power
+>>>> state is possible within a VM.
+>>>>   
+>>> Are you talking about using mwait/monitor in the user space which
+>>> are available on some Intel CPUs, such as Xeon Phi? I guess if the
+>>> guest can identify host CPU id, it is doable.  
+>>
+>> Not really.
+>>
+>> Please take a look at the patch in question - it does mwait in guest
+>> kernel and no need to identify host CPU id.
+>>
+> I may be missing something, in your patch I only see HLT being used in
+> the guest OS, that would cause VM exit right? If you do mwait in the
+> guest kernel, it will also exit. So I don't see how you can enter low
+> power state within VM guest.
 
-I was slightly worried about this large-scale rework, since it might conflict
-with new users of DEFINE_TIMER(), causing bisection problems.
+KVM does not exit on MWAIT (though it doesn't show it in CPUID by
+default), see commit 668fffa3f838edfcb1679f842f7ef1afa61c3e9a.
 
-However, a little research showed that we have only added two users
-in the past five years, so this is not a real concern.
+Paolo
 
-for arch/arm, drivers/char and overall:
-
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+> 
+> +static int intel_halt(struct cpuidle_device *dev,
+> +			struct cpuidle_driver *drv, int index)
+> +{
+> +	printk_once(KERN_ERR "safe_halt started\n");
+> +	safe_halt();
+> +	printk_once(KERN_ERR "safe_halt done\n");
+> +	return index;
+> +}
+>>
+>>>> Does not seem possible on other CPUs that's why it's vendor
+>>>> specific. 
+>>>
+>>> [Jacob Pan]  
+> 
+> [Jacob Pan]
+> 
