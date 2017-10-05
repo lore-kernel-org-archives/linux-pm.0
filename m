@@ -1,45 +1,43 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fix for v4.14-rc4
-Date: Fri, 6 Oct 2017 00:45:19 +0200
-Message-ID: <CAJZ5v0hBid3HBLuD_mK+wJ8dOpCAwF0oVkwS8kF__ErvL7HhRw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM: docs: Fix stale reference in kernel-parameters.txt
+Date: Fri, 06 Oct 2017 00:38:49 +0200
+Message-ID: <3300622.LT05oD3W3N@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49416 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751402AbdJEWsN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2017 18:48:13 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Linux Documentation <linux-doc@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>
 
-Hi Linus,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Please pull from the tag
+Commit 7aa7a0360a66 (PM: docs: Delete the obsolete states.txt
+document) forgot to update kernel-parameters.txt with a reference
+to the new sleep-states.rst document and it still points to
+states.txt that was dropped, so fix it now.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.14-rc4
+Fixes: 7aa7a0360a66 (PM: docs: Delete the obsolete states.txt document)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ Documentation/admin-guide/kernel-parameters.txt |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-with top-most commit ca935f8e769c3e36e1b6339cc527a25c49f4d624
-
- Merge branch 'pm-sleep'
-
-on top of commit 9e66317d3c92ddaab330c125dfe9d06eee268aff
-
- Linux 4.14-rc3
-
-to receive a power management fix for v4.14-rc4.
-
-This fixes a code ordering issue in the main suspend-to-idle loop
-that causes some "low power S0 idle" conditions to be incorrectly
-reported as unmet with suspend/resume debug messages enabled.
-
-Thanks!
-
-
----------------
-
-Rafael J. Wysocki (1):
-      PM / s2idle: Invoke the ->wake() platform callback earlier
-
----------------
-
- kernel/power/suspend.c | 18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
+Index: linux-pm/Documentation/admin-guide/kernel-parameters.txt
+===================================================================
+--- linux-pm.orig/Documentation/admin-guide/kernel-parameters.txt
++++ linux-pm/Documentation/admin-guide/kernel-parameters.txt
+@@ -2248,7 +2248,7 @@
+ 			s2idle  - Suspend-To-Idle
+ 			shallow - Power-On Suspend or equivalent (if supported)
+ 			deep    - Suspend-To-RAM or equivalent (if supported)
+-			See Documentation/power/states.txt.
++			See Documentation/admin-guide/pm/sleep-states.rst.
+ 
+ 	meye.*=		[HW] Set MotionEye Camera parameters
+ 			See Documentation/video4linux/meye.txt.
