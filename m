@@ -1,66 +1,65 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [PATCH] coccinelle: api: detect duplicate chip data arrays
-Date: Thu, 5 Oct 2017 21:58:23 +0200 (CEST)
-Message-ID: <alpine.DEB.2.20.1710052157130.2626@hadrien>
-References: <1506861768-5734-1-git-send-email-Julia.Lawall@lip6.fr>         <CAK7LNAQK7w3FBxJUhX3Vn48XsUT7jQzGDC7kzCx2r-yWm0CdEw@mail.gmail.com>         <alpine.DEB.2.20.1710052113090.2626@hadrien>         <1507230959.4434.39.camel@perches.com>        
- <alpine.DEB.2.20.1710052116480.2626@hadrien>         <1507231856.4434.41.camel@perches.com>         <CAKvHMgSniUfBjLXdBA8n_konTZm8D5kJf7M+DAZUXmEQzD0iUA@mail.gmail.com> <1507233265.4434.45.camel@perches.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Subject: Re: [PATCH] kbuild: revert $(realpath ...) to $(shell cd ... && /bin/pwd)
+Date: Fri, 6 Oct 2017 05:17:01 +0900
+Message-ID: <CAK7LNARStcxr=Htuje15+Hh0mZ_km42j8V1LQ=nYyqGKvuKWXA@mail.gmail.com>
+References: <1506931648-15511-1-git-send-email-yamada.masahiro@socionext.com> <ea8b93e6-2ce3-2c32-fbe3-f6570c523f1b@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:6753 "EHLO
-        mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751393AbdJET63 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2017 15:58:29 -0400
-In-Reply-To: <1507233265.4434.45.camel@perches.com>
+Received: from conssluserg-03.nifty.com ([210.131.2.82]:44672 "EHLO
+        conssluserg-03.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751966AbdJEUR6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2017 16:17:58 -0400
+In-Reply-To: <ea8b93e6-2ce3-2c32-fbe3-f6570c523f1b@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: Liam Breck <liam@networkimprov.net>, Masahiro Yamada <yamada.masahiro@socionext.com>, Sebastian Reichel <sebastian.reichel@collabora.co.uk>, =?ISO-8859-15?Q?Pali_Roh=E1r?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, kernel-janitors@vger.kernel.org, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, cocci@systeme.lip6.fr, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kbuild test robot <fengguang.wu@intel.com>
+To: Julien Grall <julien.grall@arm.com>
+Cc: Linux Kbuild mailing list <linux-kbuild@vger.kernel.org>, Linux PM mailing list <linux-pm@vger.kernel.org>, Michal Marek <mmarek@suse.com>, David Carrillo-Cisneros <davidcc@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Renninger <trenn@suse.com>, Josh Poimboeuf <jpoimboe@redhat.com>, Jiri Olsa <jolsa@kernel.org>, Arnaldo Carvalho de Melo <acme@redhat.com>
 
-
-
-On Thu, 5 Oct 2017, Joe Perches wrote:
-
-> On Thu, 2017-10-05 at 12:46 -0700, Liam Breck wrote:
-> > Hi Joe,
-> >
-> > On Thu, Oct 5, 2017 at 12:30 PM, Joe Perches <joe@perches.com> wrote:
-> > > On Thu, 2017-10-05 at 21:19 +0200, Julia Lawall wrote:
-> > > > On Thu, 5 Oct 2017, Joe Perches wrote:
-> > > > > On Thu, 2017-10-05 at 21:13 +0200, Julia Lawall wrote:
-> > > > > > On Fri, 6 Oct 2017, Masahiro Yamada wrote:
-> > > > > > > 2017-10-01 21:42 GMT+09:00 Julia Lawall <Julia.Lawall@lip6.fr>:
-> > > > > > > > This semantic patch detects duplicate arrays declared using BQ27XXX_DATA
-> > > > > > > > within a single structure.  It is currently specific to the file
-> > > > > > > > drivers/power/supply/bq27xxx_battery.c.
-> > > > > > > > Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-> > > > > > >
-> > > > > > > Applied to linux-kbuild/misc.
-> > > > > >
-> > > > > > Thanks for picking it up.
-> > > > >
-> > > > > If it is specific to one file, why not just run it
-> > > > > and post the resultant patch?  Why have it in tree?
-> > > >
-> > > > I guess that they anticipate that the data may change in the future?
-> > >
-> > > Aren't you the script author Julia?  Who is the "they"?
-> > >
-> > > I think having a script for a single file unnecessary.
-> >
-> > Sebastian Reichel, the power-supply maintainer, requested this script.
-> > I previously implemented this as a run-time check within ifdef DEBUG,
-> > but that was rejected.
+2017-10-02 20:27 GMT+09:00 Julien Grall <julien.grall@arm.com>:
+> Hello,
 >
-> Hi Liam.
+> On 02/10/17 09:07, Masahiro Yamada wrote:
+>>
+>> I thought commit 8e9b46679923 ("kbuild: use $(abspath ...) instead of
+>> $(shell cd ... && /bin/pwd)") was a safe conversion, but it changed
+>> the behavior.
+>>
+>> $(abspath ...) / $(realpath ...) does not expand shell special
+>> characters, such as '~'.
+>>
+>> Here is a simple Makefile example:
+>>
+>>    ---------------->8----------------
+>>    $(info /bin/pwd: $(shell cd ~/; /bin/pwd))
+>>    $(info abspath: $(abspath ~/))
+>>    $(info realpath: $(realpath ~/))
+>>    all:
+>>            @:
+>>    ---------------->8----------------
+>>
+>>    $ make
+>>    /bin/pwd: /home/masahiro
+>>    abspath: /home/masahiro/workspace/~
+>>    realpath:
+>>
+>> This can be a real problem if 'make O=~/foo' is invoked from another
+>> Makefile or primitive shell like dash.
+>>
+>> This commit partially reverts 8e9b46679923.
+>>
+>> Fixes: 8e9b46679923 ("kbuild: use $(abspath ...) instead of $(shell cd ...
+>> && /bin/pwd)")
+>> Reported-by: Julien Grall <julien.grall@arm.com>
+>> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 >
-> If you are the author of the script, you should also have
-> a sign-off/from here right?
 >
-> This also has a copyright of Inria and Julia Lawall
-> which, if you are the author, doesn't seem appropriate.
+> Tested-by: Julien Grall <julien.grall@arm.com>
 
-I am the author.  Liam and Sebastian asked for it to be done and to be put
-into the kernel.
 
-julia
+Applied to linux-kbuild/fixes.
+
+
+-- 
+Best Regards
+Masahiro Yamada
