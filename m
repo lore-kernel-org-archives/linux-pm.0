@@ -1,65 +1,81 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2] of: thermal: Introduce "linux,hwmon" optional property
-Date: Fri, 6 Oct 2017 10:21:18 +0100
-Message-ID: <109ff63c-a469-fc33-314c-74811a54547b@arm.com>
-References: <20171005084206.2914-1-kukabu@gmail.com>
- <510ceb7b-7e01-2054-008f-e018079f891f@arm.com>
- <CABrG=Zyu9AN8D4uz=xLiarxL_2cvh6m7xUyeY6P+7gjYQDZr6Q@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: x86: PIE support and option to extend KASLR randomization
+Date: Fri, 6 Oct 2017 12:39:33 +0200
+Message-ID: <20171006103933.GA9497@amd>
+References: <CAJcbSZFTX3uiS2g8JriS6+z_+WrG8z3hrQo4OSuyHpiyUDJWYA@mail.gmail.com>
+ <20170815075609.mmzbfwritjzvrpsn@gmail.com>
+ <CAJcbSZE+TiY2whT94WqCJNXzR=2ATOHcQ10H5RqBZA1j=k1VHQ@mail.gmail.com>
+ <20170816151235.oamkdva6cwpc4cex@gmail.com>
+ <20170821133222.2ek6bhqgdeoymxsg@hirez.programming.kicks-ass.net>
+ <20170821142854.dmuusnbc2tsrai3v@hirez.programming.kicks-ass.net>
+ <c830ba59-65d3-187f-3868-732059269f28@zytor.com>
+ <20170923100029.6nzpui6c3ke76bbs@gmail.com>
+ <20170924223708.GA12616@amd>
+ <20170925073342.2yoghmanhx6c75ho@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:56146 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752826AbdJFJVV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 6 Oct 2017 05:21:21 -0400
-In-Reply-To: <CABrG=Zyu9AN8D4uz=xLiarxL_2cvh6m7xUyeY6P+7gjYQDZr6Q@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fUYQa+Pmc3FrFX/N"
+Return-path: <kernel-hardening-return-10092-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+Content-Disposition: inline
+In-Reply-To: <20170925073342.2yoghmanhx6c75ho@gmail.com>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Thomas Garnier <thgarnie@google.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Matthias Kaehlcke <mka@chromium.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Paolo Bonzini <pbonzini@redhat.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, Joerg Roedel <joro@8bytes.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, Borislav Petkov <bp@suse.de>, Brian Gerst <brgerst@gmail.com>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Tejun Heo <tj@kernel.org>, Christo
 List-Id: linux-pm@vger.kernel.org
-To: Michael Tatarinov <kukabu@gmail.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
 
+--fUYQa+Pmc3FrFX/N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 06/10/17 03:44, Michael Tatarinov wrote:
-> Hello
-> 
-> 2017-10-05 18:57 GMT+04:00, Sudeep Holla <sudeep.holla@arm.com>:
->> Please add devicetree bindings mailing list when you are add such
->> generic and linux specific bindings. For now, I disagree on the approach
->> unless you convince that's the only way on devicetree list and get
->> ACK from DT binding maintainers.
-> 
-> OK, I will do it after deciding your next issue
-> 
->> On 05/10/17 09:42, Michael Tatarinov wrote:
->>> Introduce an optional property called "linux,hwmon", which enable
->>> registration in hwmon subsystems.
->>>
->>
->> Both the commit and the property binding seem to conflict with the
->> comment in Documentation/thermal/sysfs-api.txt
->>
->> It states "when no_hwmon == false, a hwmon sysfs interface will be
->> created" while you seem to indicate that this is required to register
->> to hwmon subsystems.
->>
->> If it's just to enable this sysfs access, then binding seems a bit of
->> misuse.
-> 
-> You're right but if the property is "linux,no_hwmon" we've enabled
-> this for all drivers by default.
-> I do not want to change the default behavior.
-> 
+On Mon 2017-09-25 09:33:42, Ingo Molnar wrote:
+>=20
+> * Pavel Machek <pavel@ucw.cz> wrote:
+>=20
+> > > For example, there would be collision with regular user-space mapping=
+s, right?=20
+> > > Can local unprivileged users use mmap(MAP_FIXED) probing to figure ou=
+t where=20
+> > > the kernel lives?
+> >=20
+> > Local unpriviledged users can probably get your secret bits using cache=
+ probing=20
+> > and jump prediction buffers.
+> >=20
+> > Yes, you don't want to leak the information using mmap(MAP_FIXED), but =
+CPU will=20
+> > leak it for you, anyway.
+>=20
+> Depends on the CPU I think, and CPU vendors are busy trying to mitigate t=
+his=20
+> angle.
 
-But you can't just create Linux specific bindings to influence the way
-you want drivers to behave. In certain cases, we do need linux specific
-bindings for some configurations. But I am not convinced this one falls
-in that category. You can always check what DT maintainers think
-especially when you creating some linux specific bindings which looks so
-generic.
+I believe any x86 CPU running Linux will leak it. And with CPU vendors
+putting "artifical inteligence" into branch prediction, no, I don't
+think it is going to get better.
 
--- 
-Regards,
-Sudeep
+That does not mean we shoudl not prevent mmap() info leak, but...
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--fUYQa+Pmc3FrFX/N
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlnXXWUACgkQMOfwapXb+vLHdQCfT0gtt1DcnPzO7HUoTmQNbTIP
+73cAn2DmS20EcLXQtKA4VV7Dur1vaFqH
+=9iUT
+-----END PGP SIGNATURE-----
+
+--fUYQa+Pmc3FrFX/N--
