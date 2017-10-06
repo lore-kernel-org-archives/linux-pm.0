@@ -1,64 +1,28 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] PM / ACPI: Removed unused function
-Date: Fri, 6 Oct 2017 14:14:55 +0200
-Message-ID: <20171006121455.GA14483@amd>
-References: <1507273714-26394-1-git-send-email-ulf.hansson@linaro.org>
- <20171006121230.GA14256@amd>
+From: Theodore Ts'o <tytso@mit.edu>
+Subject: Re: [RFC 5/5] pm: remove kernel thread freezing
+Date: Fri, 6 Oct 2017 08:54:23 -0400
+Message-ID: <20171006125423.vwxrw6z7nsiamqol@thunk.org>
+References: <20171003185313.1017-1-mcgrof@kernel.org>
+ <20171003185313.1017-6-mcgrof@kernel.org>
+ <20171003201204.GA23521@amd>
+ <20171003204940.GA5659@wotan.suse.de>
+ <20171006120713.GG9497@amd>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="PNTmBPCT7hxwcZjr"
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-block-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171006121230.GA14256@amd>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>
+In-Reply-To: <20171006120713.GG9497@amd>
+Sender: linux-block-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, Oct 06, 2017 at 02:07:13PM +0200, Pavel Machek wrote:
+> 
+> Yeah, I was not careful enough reading cover letter. Having series
+> where 1-4/5 are ready to go, and 5/5 not-good-idea for years to come
+> is quite confusing.
 
---PNTmBPCT7hxwcZjr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+4/5 is not ready to go either, at the very least....
 
-On Fri 2017-10-06 14:12:30, Pavel Machek wrote:
-> On Fri 2017-10-06 09:08:34, Ulf Hansson wrote:
-> > acpi_dev_pm_get_node() isn't used or implemented, let's remove it.
-> >=20
-> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->=20
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-
-I was too quick sending this.
-
-How is it unused?
-
-=2E/drivers/acpi/device_pm.c: * acpi_dev_pm_attach - Prepare device for
-ACPI power management.
-=2E/drivers/acpi/device_pm.c:int acpi_dev_pm_attach(struct device *dev,
-bool power_on)
-=2E/drivers/acpi/device_pm.c:EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
-Binary file ./drivers/acpi/device_pm.o matches
-Binary file ./drivers/base/power/common.o matches
-=2E/drivers/base/power/common.c:		  ret =3D
-acpi_dev_pm_attach(dev, power_on);
-
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---PNTmBPCT7hxwcZjr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlnXc78ACgkQMOfwapXb+vJ8VwCfTInliKC1703aeNwfyHfWn4Mk
-VYkAnioPwx3WcG6LqxHaY8xxFwH/p27b
-=7F5u
------END PGP SIGNATURE-----
-
---PNTmBPCT7hxwcZjr--
+       	   	       	       	  - Ted
