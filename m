@@ -1,42 +1,35 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / ACPI: Removed unused function
-Date: Fri,  6 Oct 2017 09:08:34 +0200
-Message-ID: <1507273714-26394-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>, Ulf Hansson <ulf.hansson@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / Domains: Rename genpd internals from pm_genpd_* to
+ genpd_*
+Date: Fri, 6 Oct 2017 13:54:14 +0530
+Message-ID: <20171006082414.GC18345@vireshk-i7>
+References: <1507273326-26132-1-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f51.google.com ([74.125.83.51]:55183 "EHLO
+        mail-pg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750714AbdJFIYU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Oct 2017 04:24:20 -0400
+Received: by mail-pg0-f51.google.com with SMTP id c137so9596220pga.11
+        for <linux-pm@vger.kernel.org>; Fri, 06 Oct 2017 01:24:19 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1507273326-26132-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>
 
-acpi_dev_pm_get_node() isn't used or implemented, let's remove it.
+On 06-10-17, 09:02, Ulf Hansson wrote:
+> Most of the functions names has already moved the genpd naming rules,
+> however let's make this complete to avoid any further confusions.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  drivers/base/power/domain.c | 104 +++++++++++++++++++++-----------------------
+>  1 file changed, 50 insertions(+), 54 deletions(-)
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- include/linux/acpi.h | 5 -----
- 1 file changed, 5 deletions(-)
+Reviewed-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/include/linux/acpi.h b/include/linux/acpi.h
-index 502af53..3b89b4f 100644
---- a/include/linux/acpi.h
-+++ b/include/linux/acpi.h
-@@ -868,17 +868,12 @@ int acpi_dev_runtime_suspend(struct device *dev);
- int acpi_dev_runtime_resume(struct device *dev);
- int acpi_subsys_runtime_suspend(struct device *dev);
- int acpi_subsys_runtime_resume(struct device *dev);
--struct acpi_device *acpi_dev_pm_get_node(struct device *dev);
- int acpi_dev_pm_attach(struct device *dev, bool power_on);
- #else
- static inline int acpi_dev_runtime_suspend(struct device *dev) { return 0; }
- static inline int acpi_dev_runtime_resume(struct device *dev) { return 0; }
- static inline int acpi_subsys_runtime_suspend(struct device *dev) { return 0; }
- static inline int acpi_subsys_runtime_resume(struct device *dev) { return 0; }
--static inline struct acpi_device *acpi_dev_pm_get_node(struct device *dev)
--{
--	return NULL;
--}
- static inline int acpi_dev_pm_attach(struct device *dev, bool power_on)
- {
- 	return -ENODEV;
 -- 
-2.7.4
-
+viresh
