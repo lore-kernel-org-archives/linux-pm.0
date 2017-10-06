@@ -1,28 +1,26 @@
-From: Theodore Ts'o <tytso@mit.edu>
-Subject: Re: [RFC 5/5] pm: remove kernel thread freezing
-Date: Fri, 6 Oct 2017 08:54:23 -0400
-Message-ID: <20171006125423.vwxrw6z7nsiamqol@thunk.org>
-References: <20171003185313.1017-1-mcgrof@kernel.org>
- <20171003185313.1017-6-mcgrof@kernel.org>
- <20171003201204.GA23521@amd>
- <20171003204940.GA5659@wotan.suse.de>
- <20171006120713.GG9497@amd>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 0/4] PM / Sleep / ACPI: Some cleanups and clarifications
+Date: Fri, 6 Oct 2017 14:58:18 +0200
+Message-ID: <CAJZ5v0iwO=3Ykeu0xYtgegpQnmhafHVOTy-e4ktEM3D0h9-cfA@mail.gmail.com>
+References: <1507014669-1502-1-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-block-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171006120713.GG9497@amd>
-Sender: linux-block-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1507014669-1502-1-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>, Pavel Machek <pavel@ucw.cz>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Oct 06, 2017 at 02:07:13PM +0200, Pavel Machek wrote:
-> 
-> Yeah, I was not careful enough reading cover letter. Having series
-> where 1-4/5 are ready to go, and 5/5 not-good-idea for years to come
-> is quite confusing.
+On Tue, Oct 3, 2017 at 9:11 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> This series contains four patches which are re-submitted as a subset from an
+> earlier posted series [1]. These changes addresses cleanups/clarifications to
+> the code and do not include any functional changes.
+>
+> [1]
+> https://www.spinics.net/lists/arm-kernel/msg603856.html
 
-4/5 is not ready to go either, at the very least....
+OK for patches [1-3/4], but I'm not sure about the last one.
 
-       	   	       	       	  - Ted
+Thanks,
+Rafael
