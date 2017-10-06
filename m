@@ -1,50 +1,54 @@
-From: Daniel Drake <drake@endlessm.com>
-Subject: Re: r8169 Wake-on-LAN causes immediate ACPI GPE wakeup
-Date: Fri, 6 Oct 2017 10:44:02 +0800
-Message-ID: <CAD8Lp44=tBOTRZcZeuATLwV3+8_PDWd=HPPYs76qMfRtwrRv+A@mail.gmail.com>
-References: <CAD8Lp45YVtw48+8jSq6gtu1xA7Rt+qr6vvVZF4AC-QXeCKNj4w@mail.gmail.com>
- <CAJZ5v0i+Ct9HbT+vMchW0dNxYO2WvyY5Tmz1a+3k0FLmbFGE2w@mail.gmail.com>
+From: Michael Tatarinov <kukabu@gmail.com>
+Subject: Re: [PATCH v2] of: thermal: Introduce "linux,hwmon" optional property
+Date: Fri, 6 Oct 2017 06:44:25 +0400
+Message-ID: <CABrG=Zyu9AN8D4uz=xLiarxL_2cvh6m7xUyeY6P+7gjYQDZr6Q@mail.gmail.com>
+References: <20171005084206.2914-1-kukabu@gmail.com> <510ceb7b-7e01-2054-008f-e018079f891f@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0i+Ct9HbT+vMchW0dNxYO2WvyY5Tmz1a+3k0FLmbFGE2w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: nic_swsd@realtek.com, netdev@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel <linux-kernel@vger.kernel.org>, Linux Upstreaming Team <linux@endlessm.com>, Linux PM <linux-pm@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:37114 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751625AbdJFCo1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Oct 2017 22:44:27 -0400
+Received: by mail-wm0-f67.google.com with SMTP id k66so5951013wmd.4
+        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2017 19:44:27 -0700 (PDT)
+In-Reply-To: <510ceb7b-7e01-2054-008f-e018079f891f@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 
-On Fri, Oct 6, 2017 at 9:24 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On the other hand, the RP05 (root port) _PRW says it will wake up the
->> system via GPE09, and the _L09 handler at least has one codepath which
->> could potentially do a Notify(PXSX, 2) to indicate an ethernet wakeup.
+Hello
+
+2017-10-05 18:57 GMT+04:00, Sudeep Holla <sudeep.holla@arm.com>:
+> Please add devicetree bindings mailing list when you are add such
+> generic and linux specific bindings. For now, I disagree on the approach
+> unless you convince that's the only way on devicetree list and get
+> ACK from DT binding maintainers.
+
+OK, I will do it after deciding your next issue
+
+> On 05/10/17 09:42, Michael Tatarinov wrote:
+>> Introduce an optional property called "linux,hwmon", which enable
+>> registration in hwmon subsystems.
+>>
 >
-> Which can only happen in the S0 system state.
-
-Not quite sure I understand your comment here. Of course the _L09
-handler (and any other ACPI code) can only execute in S0 state.
-However if Linux leaves GPE09 enabled during S3 suspend, and then
-detects that it has an event pending on resume, it will execute _L09
-during resume. (However, we have not observed GPE09 firing at all)
-
->> But in testing:
->>  - If GPE08 is enabled as a wakeup source, the system will always wake
->> up as soon as it goes to sleep
+> Both the commit and the property binding seem to conflict with the
+> comment in Documentation/thermal/sysfs-api.txt
 >
-> What exactly do you mean by "enabled as a wakeup source"?
+> It states "when no_hwmon == false, a hwmon sysfs interface will be
+> created" while you seem to indicate that this is required to register
+> to hwmon subsystems.
+>
+> If it's just to enable this sysfs access, then binding seems a bit of
+> misuse.
 
-Linux associates the ethernet PCI device with PCI0.RP05.PXSX, which
-has _PRW referencing GPE08.
-r8169 has already done device_set_wakeup_enable() at probe time.
-So when going into suspend, acpi_enable_wakeup_devices() and the code
-beneath that will ensure that GPE08 is enabled when the system goes
-into suspend.
-See acpi_hw_enable_wakeup_gpe_block().
+You're right but if the property is "linux,no_hwmon" we've enabled
+this for all drivers by default.
+I do not want to change the default behavior.
 
-To disable it, "echo disabled > power/wakeup" for the ethernet device in sysfs.
-
-To test with GPE09 instead, I modified the _PRW method in the DSDT to
-point at GPE09, and again used sysfs to control whether the GPE is
-enabled during suspend or not.
-
-Thanks
-Daniel
+>
+> --
+> Regards,
+> Sudeep
+>
