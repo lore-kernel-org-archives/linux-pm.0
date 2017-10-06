@@ -1,105 +1,90 @@
-From: "Michael S. Tsirkin" <mst@redhat.com>
-Subject: Re: [PATCH RFC hack dont apply] intel_idle: support running within a
- VM
-Date: Fri, 6 Oct 2017 06:37:18 +0300
-Message-ID: <20171006063433-mutt-send-email-mst@kernel.org>
-References: <20170930005046-mutt-send-email-mst@kernel.org>
- <CAJZ5v0hz+KDGVdz+X=98p51fOpk6AAa3CmL-asWw3uZg12X-Lw@mail.gmail.com>
- <20171002101249.69b5611a@jacob-builder>
- <20171004050706-mutt-send-email-mst@kernel.org>
- <20171004100939.1893e4a7@jacob-builder>
- <20171004201125-mutt-send-email-mst@kernel.org>
- <20171004113143.503032f0@jacob-builder>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171004113143.503032f0@jacob-builder>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Yang Zhang <yang.zhang.wz@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kvm@vger.kernel.org, Wanpeng Li <wanpeng.li@hotmail.com>, Paolo Bonzini <pbonzini@redhat.com>, Thomas Gleixner <tglx@linutronix.de>, rkrcmar@redhat.com, dmatlack@google.com, agraf@suse.de, Peter Zijlstra <peterz@infradead.org>, Len Brown <lenb@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Raj, Ashok" <ashok.raj@intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] ARM: ux500: Fix regression while init PM domains
+Date: Fri,  6 Oct 2017 06:20:25 +0200
+Message-ID: <1507263625-16756-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f45.google.com ([209.85.215.45]:44087 "EHLO
+        mail-lf0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750711AbdJFEUi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Oct 2017 00:20:38 -0400
+Received: by mail-lf0-f45.google.com with SMTP id l196so19059092lfl.1
+        for <linux-pm@vger.kernel.org>; Thu, 05 Oct 2017 21:20:37 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>, Arnd Bergmann <arnd@arndb.de>, arm@kernel.org
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Ulf Hansson <ulf.hansson@linaro.org>, Thara Gopinath <thara.gopinath@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Wed, Oct 04, 2017 at 11:31:43AM -0700, Jacob Pan wrote:
-> On Wed, 4 Oct 2017 20:12:28 +0300
-> "Michael S. Tsirkin" <mst@redhat.com> wrote:
-> 
-> > On Wed, Oct 04, 2017 at 10:09:39AM -0700, Jacob Pan wrote:
-> > > On Wed, 4 Oct 2017 05:09:09 +0300
-> > > "Michael S. Tsirkin" <mst@redhat.com> wrote:
-> > >   
-> > > > On Mon, Oct 02, 2017 at 10:12:49AM -0700, Jacob Pan wrote:  
-> > > > > On Sat, 30 Sep 2017 01:21:43 +0200
-> > > > > "Rafael J. Wysocki" <rafael@kernel.org> wrote:
-> > > > >     
-> > > > > > On Sat, Sep 30, 2017 at 12:01 AM, Michael S. Tsirkin
-> > > > > > <mst@redhat.com> wrote:    
-> > > > > > > intel idle driver does not DTRT when running within a VM:
-> > > > > > > when going into a deep power state, the right thing to
-> > > > > > > do is to exit to hypervisor rather than to keep polling
-> > > > > > > within guest using mwait.
-> > > > > > >
-> > > > > > > Currently the solution is just to exit to hypervisor each
-> > > > > > > time we go idle - this is why kvm does not expose the mwait
-> > > > > > > leaf to guests even when it allows guests to do mwait.
-> > > > > > >
-> > > > > > > But that's not ideal - it seems better to use the idle
-> > > > > > > driver to guess when will the next interrupt arrive.      
-> > > > > > 
-> > > > > > The idle driver alone is not sufficient for that, though.
-> > > > > >     
-> > > > > I second that. Why try to solve this problem at vendor specific
-> > > > > driver level?    
-> > > > 
-> > > > Well we still want to e.g. mwait if possible - saves power.
-> > > >   
-> > > > > perhaps just a pv idle driver that decide whether to vmexit
-> > > > > based on something like local per vCPU timer expiration? I
-> > > > > guess we can't predict other wake events such as interrupts.
-> > > > > e.g.
-> > > > > if (get_next_timer_interrupt() > kvm_halt_target_residency)
-> > > > > 	vmexit
-> > > > > else
-> > > > > 	poll
-> > > > > 
-> > > > > Jacob    
-> > > > 
-> > > > It's not always a poll, on x86 putting the CPU in a low power
-> > > > state is possible within a VM.
-> > > >   
-> > > Are you talking about using mwait/monitor in the user space which
-> > > are available on some Intel CPUs, such as Xeon Phi? I guess if the
-> > > guest can identify host CPU id, it is doable.  
-> > 
-> > Not really.
-> > 
-> > Please take a look at the patch in question - it does mwait in guest
-> > kernel and no need to identify host CPU id.
-> > 
-> I may be missing something, in your patch I only see HLT being used in
-> the guest OS, that would cause VM exit right? If you do mwait in the
-> guest kernel, it will also exit.
+The commit afece3ab9a36 ("PM / Domains: Add time accounting to various
+genpd states") causes a boot regression for ux500.
 
+The problem occurs when the ux500 machine code calls pm_genpd_init(), which
+since the above change triggers a call to ktime_get(). More precisely,
+because ux500 initializes PM domains in the init_IRQ() phase of the boot,
+timekeeping has not yet been initialized.
 
-No mwait won't exit if running on kvm.
-See 668fffa3f838edfcb1679f842f7ef1afa61c3e9a
+Fix the problem by moving the initialization of the PM domains to after
+timekeeping has been initialized.
 
+Fixes: afece3ab9a36 ("PM / Domains: Add time accounting to various genpd..")
+Cc: Thara Gopinath <thara.gopinath@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
 
-> So I don't see how you can enter low
-> power state within VM guest.
-> 
-> +static int intel_halt(struct cpuidle_device *dev,
-> +			struct cpuidle_driver *drv, int index)
-> +{
-> +	printk_once(KERN_ERR "safe_halt started\n");
-> +	safe_halt();
-> +	printk_once(KERN_ERR "safe_halt done\n");
-> +	return index;
-> +}
-> > 
-> > > > Does not seem possible on other CPUs that's why it's vendor
-> > > > specific. 
-> > > 
-> > > [Jacob Pan]  
-> 
-> [Jacob Pan]
+Note, since the commit afece3ab9a36 ("PM / Domains: Add time accounting to
+various genpd states") potentially could cause similar problems for other SoCs,
+I have walked through the callers of pm_genpd_init(). At this point I couldn't
+find any other SoC having these problems.
+
+Kind regards
+Uffe
+
+---
+ arch/arm/mach-ux500/cpu-db8500.c | 4 ++++
+ arch/arm/mach-ux500/pm.c         | 4 ----
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/arm/mach-ux500/cpu-db8500.c b/arch/arm/mach-ux500/cpu-db8500.c
+index 71a34e8..57058ac 100644
+--- a/arch/arm/mach-ux500/cpu-db8500.c
++++ b/arch/arm/mach-ux500/cpu-db8500.c
+@@ -32,6 +32,7 @@
+ #include <asm/mach/arch.h>
+ 
+ #include "db8500-regs.h"
++#include "pm_domains.h"
+ 
+ static int __init ux500_l2x0_unlock(void)
+ {
+@@ -157,6 +158,9 @@ static const struct of_device_id u8500_local_bus_nodes[] = {
+ 
+ static void __init u8500_init_machine(void)
+ {
++	/* Initialize ux500 power domains */
++	ux500_pm_domains_init();
++
+ 	/* automatically probe child nodes of dbx5x0 devices */
+ 	if (of_machine_is_compatible("st-ericsson,u8540"))
+ 		of_platform_populate(NULL, u8500_local_bus_nodes,
+diff --git a/arch/arm/mach-ux500/pm.c b/arch/arm/mach-ux500/pm.c
+index a970e7f..f6c33a0 100644
+--- a/arch/arm/mach-ux500/pm.c
++++ b/arch/arm/mach-ux500/pm.c
+@@ -19,7 +19,6 @@
+ #include <linux/of_address.h>
+ 
+ #include "db8500-regs.h"
+-#include "pm_domains.h"
+ 
+ /* ARM WFI Standby signal register */
+ #define PRCM_ARM_WFI_STANDBY    (prcmu_base + 0x130)
+@@ -203,7 +202,4 @@ void __init ux500_pm_init(u32 phy_base, u32 size)
+ 
+ 	/* Set up ux500 suspend callbacks. */
+ 	suspend_set_ops(UX500_SUSPEND_OPS);
+-
+-	/* Initialize ux500 power domains */
+-	ux500_pm_domains_init();
+ }
+-- 
+2.7.4
