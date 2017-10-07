@@ -1,98 +1,43 @@
-From: Jacob Pan <jacob.jun.pan@linux.intel.com>
-Subject: Re: [PATCH] intel_idle: replace conditionals with
- static_cpu_has(X86_FEATURE_ARAT)
-Date: Fri, 6 Oct 2017 14:09:13 -0700
-Message-ID: <20171006140913.33417872@jacob-builder>
-References: <bug-109051-18156@https.bugzilla.kernel.org/>
-        <1507310385-22388-1-git-send-email-jbaron@akamai.com>
-        <20171006113633.0186eb78@jacob-builder>
-        <e85b36ee-98fd-b1c9-1357-5d5af6f0d71d@akamai.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / ACPI: Removed unused function
+Date: Sat, 7 Oct 2017 08:44:33 +0200
+Message-ID: <CAPDyKFomApGebKqEMzpkiHJxq_YMxWaB6DUB9pjRDc_z-W3G8w@mail.gmail.com>
+References: <1507273714-26394-1-git-send-email-ulf.hansson@linaro.org>
+ <20171006121230.GA14256@amd> <20171006121455.GA14483@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:37407 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751491AbdJFVGj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 6 Oct 2017 17:06:39 -0400
-In-Reply-To: <e85b36ee-98fd-b1c9-1357-5d5af6f0d71d@akamai.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20171006121455.GA14483@amd>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Jason Baron <jbaron@akamai.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, jacob.jun.pan@linux.intel.com
 
-On Fri, 6 Oct 2017 14:41:07 -0400
-Jason Baron <jbaron@akamai.com> wrote:
+On 6 October 2017 at 14:14, Pavel Machek <pavel@ucw.cz> wrote:
+> On Fri 2017-10-06 14:12:30, Pavel Machek wrote:
+>> On Fri 2017-10-06 09:08:34, Ulf Hansson wrote:
+>> > acpi_dev_pm_get_node() isn't used or implemented, let's remove it.
+>> >
+>> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>
+>> Acked-by: Pavel Machek <pavel@ucw.cz>
+>
+> I was too quick sending this.
+>
+> How is it unused?
+>
+> ./drivers/acpi/device_pm.c: * acpi_dev_pm_attach - Prepare device for
+> ACPI power management.
+> ./drivers/acpi/device_pm.c:int acpi_dev_pm_attach(struct device *dev,
+> bool power_on)
+> ./drivers/acpi/device_pm.c:EXPORT_SYMBOL_GPL(acpi_dev_pm_attach);
+> Binary file ./drivers/acpi/device_pm.o matches
+> Binary file ./drivers/base/power/common.o matches
+> ./drivers/base/power/common.c:            ret =
+> acpi_dev_pm_attach(dev, power_on);
 
-> On 10/06/2017 02:36 PM, Jacob Pan wrote:
-> > On Fri,  6 Oct 2017 13:19:45 -0400
-> > Jason Baron <jbaron@akamai.com> wrote:
-> >   
-> >> If the 'arat' cpu flag is set, then the conditionals in
-> >> intel_idle() that guard calling tick_broadcast_enter()/exit() will
-> >> never be true. Use static_cpu_has(X86_FEATURE_ARAT) to create a
-> >> fast path to replace the conditional.
-> >>
-> >> Signed-off-by: Jason Baron <jbaron@akamai.com>
-> >> Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>
-> >> Cc: Len Brown <lenb@kernel.org>
-> >> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> ---
-> >>  drivers/idle/intel_idle.c | 16 +++++++++++-----
-> >>  1 file changed, 11 insertions(+), 5 deletions(-)
-> >>
-> >> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> >> index 5dc7ea4..5db5e31 100644
-> >> --- a/drivers/idle/intel_idle.c
-> >> +++ b/drivers/idle/intel_idle.c
-> >> @@ -913,8 +913,7 @@ static __cpuidle int intel_idle(struct
-> >> cpuidle_device *dev, struct cpuidle_state *state =
-> >> &drv->states[index]; unsigned long eax = flg2MWAIT(state->flags);
-> >>  	unsigned int cstate;
-> >> -
-> >> -	cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) &
-> >> MWAIT_CSTATE_MASK) + 1;
-> >> +	bool uninitialized_var(tick);
-> >>  
-> >>  	/*
-> >>  	 * NB: if CPUIDLE_FLAG_TLB_FLUSHED is set, this idle
-> >> transition @@ -923,12 +922,19 @@ static __cpuidle int
-> >> intel_idle(struct cpuidle_device *dev,
-> >>  	 * useful with this knowledge.
-> >>  	 */
-> >>  
-> >> -	if (!(lapic_timer_reliable_states & (1 << (cstate))))
-> >> -		tick_broadcast_enter();
-> >> +	if (!static_cpu_has(X86_FEATURE_ARAT)) {
-> >> +		cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) &
-> >> +				MWAIT_CSTATE_MASK) + 1;
-> >> +		tick = false;
-> >> +		if (!(lapic_timer_reliable_states & (1 <<
-> >> (cstate)))) {
-> >> +			tick = true;
-> >> +			tick_broadcast_enter();
-> >> +		}
-> >> +	}
-> >>  
-> >>  	mwait_idle_with_hints(eax, ecx);
-> >>  
-> >> -	if (!(lapic_timer_reliable_states & (1 << (cstate))))
-> >> +	if (!static_cpu_has(X86_FEATURE_ARAT) && tick)
-> >>  		tick_broadcast_exit();
-> >>  
-> >>  	return index;  
-> > 
-> > Seems better to have a function pointer set up at init time to
-> > select whether we do tick_broadcast or not (two functions). There
-> > is no need to check CPU feature on every entry.
-> >   
-> 
-> Hi,
-> 
-> static_cpu_has() uses alternatives patching, so the cpu feature is not
-> tested on every entry. With the arat flag set you just have two nops
-> in the straight-line code path with this patch.
-> 
-Thanks for explaining, i didn't know it was self modifying.
+I think you searched for the wrong function. It should be
+acpi_dev_pm_get_node().
 
-Acked-by: Jacob Pan <jacob.jun.pan@linux.intel.com>
+Kind regards
+Uffe
