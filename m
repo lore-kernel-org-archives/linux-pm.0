@@ -1,75 +1,118 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] pci: Fix a possible sleep-in-atomic bug in pci_set_power_state
-Date: Mon, 9 Oct 2017 20:21:43 +0200
-Message-ID: <CAJZ5v0giLdrUmS3CcbT=BP3jffgQDNgXLKs5yAAqXe6T+Pq=Cg@mail.gmail.com>
-References: <1507536980-9345-1-git-send-email-baijiaju1990@163.com>
- <20171009171517.GL25517@bhelgaas-glaptop.roam.corp.google.com> <20171009171837.GM25517@bhelgaas-glaptop.roam.corp.google.com>
+From: Aishwarya Pant <aishpant@gmail.com>
+Subject: [PATCH] power: supply: replace pr_* with dev_*
+Date: Tue, 10 Oct 2017 02:39:54 +0530
+Message-ID: <20171009210954.5fdeimcmt35jbcoa@aishwarya>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:38297 "EHLO
-        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754474AbdJISVo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Oct 2017 14:21:44 -0400
-In-Reply-To: <20171009171837.GM25517@bhelgaas-glaptop.roam.corp.google.com>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:37795 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754108AbdJIVJ7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Oct 2017 17:09:59 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Jia-Ju Bai <baijiaju1990@163.com>, patrik.r.jakobsson@gmail.com, David Airlie <airlied@linux.ie>, Bjorn Helgaas <bhelgaas@google.com>, forest@alittletooquiet.net, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, simon@nikanor.nu, scott@matheina.com, tvboxspy@gmail.com, dan.a.cashman@gmail.com, golubev.mikhail@gmail.com, devel@driverdev.osuosl.org, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: outreachy-kernel@googlegroups.com
 
-On Mon, Oct 9, 2017 at 7:18 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> On Mon, Oct 09, 2017 at 12:15:17PM -0500, Bjorn Helgaas wrote:
->> [+cc Rafael, linux-pm]
->>
->> Hi Jia-Ju,
->>
->> On Mon, Oct 09, 2017 at 04:16:20PM +0800, Jia-Ju Bai wrote:
->> > The drivers vt6655 and gma500 call pci_set_power_state under a spinlock, which may sleep.
->> > The function call paths are:
->> > gma_power_begin (acquire the spinlock) (drivers/gpu/drm/gma500/power.c)
->> >   gma_resume_pci
->> >     pci_set_power_state
->> >       __pci_start_power_transition (drivers/pci/pci.c)
->> >         msleep --> may sleep
->> >
->> > gma_power_begin (acquire the spinlock) (drivers/gpu/drm/gma500/power.c)
->> >   gma_resume_pci
->> >     pci_enable_device
->> >       pci_enable_device_flags (drivers/pci/pci.c)
->> >         do_pci_enable_device
->> >           pci_set_power_state
->> >             __pci_start_power_transition
->> >               msleep --> may sleep
->> >
->> > vt6655_suspend (acquire the spinlock) (drivers/staging/vt6655/device_main.c)
->> >   pci_set_power_state
->> >     __pci_start_power_transition (drivers/pci/pci.c)
->> >       msleep --> may sleep
->> >
->> > To fix these bugs, msleep is replaced with mdelay in __pci_start_power_transition
->> >
->> > These bugs are found by my static analysis tool and my code review.
->>
->> We can either
->>
->>   - change pci_set_power_state() so it can be called while holding a
->>     spinlock (as this patch does), or
->>
->>   - change the drivers so they don't hold the spinlock while calling
->>     pci_set_power_state().
->>
->> I think the latter is better because d3cold_delay is typically 100ms,
->> and that's a long time to spin with interrupts disabled.
->>
->> I assume it's easy to produce an actual failure here?  Why haven't we
->> seen bug reports about this?
->
-> Sigh, could have saved myself some time if I'd read the whole thread
-> before responding :)  Sorry for repeating what Greg already said!
+Use kernel preferred dev_* family of functions in place of pr_*,
+wherever a device object is present.
 
-Well, calling pci_set_power_state() with a spinlock held is a bug,
-plain and simple, among other things because it may involve running
-AML.  Messing up with the single delay in it simply doesn't help.
+Done with the help of coccinelle.
 
-Thanks,
-Rafael
+Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
+---
+The following cocci script was used to make the patch:
+@r exists@
+identifier f, s, x;
+position p;
+@@
+ f(..., struct s *x,...) {
+<+... when != x == NULL
+ \(pr_err@p\|pr_debug@p\|pr_info@p\|pr_warn@p\)(...); ...+>
+ }
+
+@struc@
+identifier dev, r.s;
+@@
+struct s {
+        ...
+        struct device *dev;
+        ...
+};
+
+@@
+identifier r.x, struc.dev;
+position r.p;
+@@
+(
+- pr_err@p
++ dev_err
+|
+- pr_warn@p
++ dev_warn
+|
+- pr_info@p
++ dev_info
+|
+- pr_debug@p
++ dev_dbg
+)
+ (
++ x->dev,
+...)
+
+@rr exists@
+local idexpression struct device *dev;
+@@
+
+<+... dev ...+>
+(
+- pr_err
++ dev_err
+|
+- pr_info
++ dev_info
+|
+- pr_warn
++ dev_warn
+|
+- pr_debug
++ dev_dbg
+)
+ (
++ dev,
+...)
+---
+ drivers/power/supply/power_supply_core.c | 2 +-
+ drivers/power/supply/twl4030_charger.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 02c6340ae36f..4b57fa9779ae 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -669,7 +669,7 @@ EXPORT_SYMBOL_GPL(power_supply_powers);
+ static void power_supply_dev_release(struct device *dev)
+ {
+ 	struct power_supply *psy = container_of(dev, struct power_supply, dev);
+-	pr_debug("device: '%s': %s\n", dev_name(dev), __func__);
++	dev_dbg(dev, "device: '%s': %s\n", dev_name(dev), __func__);
+ 	kfree(psy);
+ }
+ 
+diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
+index a5915f498eea..7ed2bc3039c4 100644
+--- a/drivers/power/supply/twl4030_charger.c
++++ b/drivers/power/supply/twl4030_charger.c
+@@ -743,7 +743,7 @@ static int twl4030bci_state(struct twl4030_bci *bci)
+ 
+ 	ret = twl4030_bci_read(TWL4030_BCIMSTATEC, &state);
+ 	if (ret) {
+-		pr_err("twl4030_bci: error reading BCIMSTATEC\n");
++		dev_err(bci->dev, "twl4030_bci: error reading BCIMSTATEC\n");
+ 		return ret;
+ 	}
+ 
+-- 
+2.11.0
