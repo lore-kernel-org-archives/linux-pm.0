@@ -1,89 +1,89 @@
-From: Todor Tomov <todor.tomov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: Re: [RFC PATCH 0/4] PM / Domains: Add support for explicit
- control of PM domains
-Date: Mon, 9 Oct 2017 19:36:49 +0300
-Message-ID: <72397ec8-d169-c5b1-2120-459031b35d48@linaro.org>
-References: <1490710443-27425-1-git-send-email-jonathanh@nvidia.com>
- <CAJZ5v0gMzN_zfC_2nnRtYFyFon3-_mnioQhNbDP0wsr91RnagA@mail.gmail.com>
- <ffe13074-9113-0a20-0fa6-76d0209dadfc@nvidia.com>
- <1832647.f77WMLkdQb@aspire.rjw.lan>
- <CAPDyKFokVKZfRAsEAB6ihx1FxW4JjarionyOwCATr3s+QW4aMg@mail.gmail.com>
- <b4e8fd34-e2f0-165d-aa22-32ba43a8dbed@nvidia.com>
- <CAPDyKFo-hfwbrY+AEMt0=fMshiT-BWvYDvGkKGqquTdowUvWHw@mail.gmail.com>
- <107242f1-de90-b8bb-bc2c-feaf014485aa@nvidia.com>
- <CAPDyKFqeAWoy-vfN89j8Yv1HTMpNqwcVk3XrTQoXH5JNrQ9Maw@mail.gmail.com>
- <b1c74af3-1943-51ff-0bc9-009ca6c7f217@nvidia.com>
- <5fcfeda6-f95c-cdaa-73a5-5c7499a3f9f5@codeaurora.org>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] pci: Fix a possible sleep-in-atomic bug in
+ pci_set_power_state
+Date: Mon, 9 Oct 2017 12:15:17 -0500
+Message-ID: <20171009171517.GL25517@bhelgaas-glaptop.roam.corp.google.com>
+References: <1507536980-9345-1-git-send-email-baijiaju1990@163.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <5fcfeda6-f95c-cdaa-73a5-5c7499a3f9f5-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Content-Language: en-US
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Cc: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Stanimir Varbanov <stanimir.varbanov-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Andersson <bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:50544 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754161AbdJIRPU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 9 Oct 2017 13:15:20 -0400
+Content-Disposition: inline
+In-Reply-To: <1507536980-9345-1-git-send-email-baijiaju1990@163.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jia-Ju Bai <baijiaju1990@163.com>
+Cc: patrik.r.jakobsson@gmail.com, airlied@linux.ie, bhelgaas@google.com, forest@alittletooquiet.net, gregkh@linuxfoundation.org, simon@nikanor.nu, scott@matheina.com, tvboxspy@gmail.com, dan.a.cashman@gmail.com, golubev.mikhail@gmail.com, devel@driverdev.osuosl.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 
-Hi,
+[+cc Rafael, linux-pm]
 
-On 30.05.2017 06:41, Rajendra Nayak wrote:
-> []..
-> 
->>>> I was proposing to have such a lower-layer by splitting the existing
->>>> genpd framework so the drivers would have the option of calling the
->>>> lower-level power control functions to look-up pm-domains and control
->>>> them directly from their rpm callbacks (if they need to). Same as we do
->>>> for clocks. This way you would not need to mess with the genpd ->start()
->>>> callback and leave it to the driver to handle itself as it knows what
->>>> needs to be done. This assumes that the device is never bound to the
->>>> pm-domain by the genpd core.
->>>
->>> Yes, agree! To me this is the only solution what would really work.
->>
->> I agree! :-)
->>
->>> Perhaps Rafael can confirm that he is fine with a solution like this?
->>
->> Yes and Rafael, please can you also elaborate on what you meant by
->> "allow genpd to use either a list of power resources or the on/off
->> callbacks provided by itself to cover different use cases"?
->>
->> I would like to understand exactly what you meant by allowing genpd to
->> use a list of power resources (ie. how you envisioned we could achieve
->> this).
-> 
-> While thinking through the problem of devices associated with multiple Power
-> domains (or power resources) and controlling them individually (or together)
-> I was wondering if something like a PM domain governor (with PM resource 
-> level constraints) could help.
-> 
-> So with just one set of PM domain callbacks, its quite easy to control multiple power
-> resources, if they need to be *all* turned on/off together, using something similar to
-> what Jon proposed in his RFC [1]
-> 
-> However, there could be instances where in we might need to control them individually
-> and in such cases we could hook up a PM domain governor which decides if an individual
-> PM resource can be turned on or off while the device is runtime suspended/resumed.
-> We can expose some PM resource level QoS APIs which the drivers can use to express their
-> needs, which the PM domain governor then takes into account during the decision making.
-> 
-> if this seems worth pursuing further, I can post some RFCs on these lines and
-> get the discussion going.
-> 
-> thanks,
-> Rajendra
-> 
-> [1] https://lkml.org/lkml/2016/9/20/173
-> 
+Hi Jia-Ju,
 
-I have come to a similar case with multiple power domains on Qualcomm APQ8096 - the
-camera subsystem has two VFE modules (Video Front End - these are image processing modules)
-and each of them has a separate power domain but we might want to control these from
-a single driver.
+On Mon, Oct 09, 2017 at 04:16:20PM +0800, Jia-Ju Bai wrote:
+> The drivers vt6655 and gma500 call pci_set_power_state under a spinlock, which may sleep.
+> The function call paths are:
+> gma_power_begin (acquire the spinlock) (drivers/gpu/drm/gma500/power.c)
+>   gma_resume_pci
+>     pci_set_power_state
+>       __pci_start_power_transition (drivers/pci/pci.c)
+>         msleep --> may sleep
+> 
+> gma_power_begin (acquire the spinlock) (drivers/gpu/drm/gma500/power.c)
+>   gma_resume_pci
+>     pci_enable_device
+>       pci_enable_device_flags (drivers/pci/pci.c)
+>         do_pci_enable_device
+>           pci_set_power_state
+>             __pci_start_power_transition
+>               msleep --> may sleep
+> 
+> vt6655_suspend (acquire the spinlock) (drivers/staging/vt6655/device_main.c)
+>   pci_set_power_state
+>     __pci_start_power_transition (drivers/pci/pci.c)
+>       msleep --> may sleep
+> 
+> To fix these bugs, msleep is replaced with mdelay in __pci_start_power_transition
+> 
+> These bugs are found by my static analysis tool and my code review.
 
-So I wanted to ask if there have been any news on this topic lately?
+We can either
 
-Thank you.
-Best regards,
-Todor
+  - change pci_set_power_state() so it can be called while holding a
+    spinlock (as this patch does), or
+    
+  - change the drivers so they don't hold the spinlock while calling 
+    pci_set_power_state().
+
+I think the latter is better because d3cold_delay is typically 100ms,
+and that's a long time to spin with interrupts disabled.
+
+I assume it's easy to produce an actual failure here?  Why haven't we
+seen bug reports about this?
+
+Bjorn
+
+> Signed-off-by: Jia-Ju Bai <baijiaju1990@163.com>
+> ---
+>  drivers/pci/pci.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> index 6078dfc..7b763a3 100644
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -823,7 +823,7 @@ static void __pci_start_power_transition(struct pci_dev *dev, pci_power_t state)
+>  		 */
+>  		if (dev->runtime_d3cold) {
+>  			if (dev->d3cold_delay)
+> -				msleep(dev->d3cold_delay);
+> +				mdelay(dev->d3cold_delay);
+>  			/*
+>  			 * When powering on a bridge from D3cold, the
+>  			 * whole hierarchy may be powered on into
+> -- 
+> 1.7.9.5
+> 
+> 
