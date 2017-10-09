@@ -1,60 +1,272 @@
-From: "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
-Subject: Re: [PATCH 9/9] arm64: dts: register Hi3660's thermal sensor
-Date: Mon, 9 Oct 2017 10:38:18 +0800
-Message-ID: <87bf0cfb-d465-03a3-004c-6c7957e33006@hisilicon.com>
-References: <1506073332-92438-1-git-send-email-kevin.wangtao@hisilicon.com>
- <1506073332-92438-10-git-send-email-kevin.wangtao@hisilicon.com>
- <f83a0936-23cc-0f5e-b6a3-c3adf1a0d7a0@linaro.org>
+From: Fengguang Wu <fengguang.wu@intel.com>
+Subject: Re: [PATCH] coccinelle: api: detect duplicate chip data arrays
+Date: Mon, 9 Oct 2017 10:50:39 +0800
+Message-ID: <20171009025039.77oaplaovnvpy6nv@wfg-t540p.sh.intel.com>
+References: <1506861768-5734-1-git-send-email-Julia.Lawall@lip6.fr>
+ <CAKvHMgT07xoBW_VmAYsxUmoYaz_iN4vFh7Ljb_UQEWAd8bt22w@mail.gmail.com>
+ <alpine.DEB.2.20.1710052122380.2626@hadrien>
+ <CAKvHMgSCZ3CLfKNpQQbK79bnCss0uFTr9TP_i89rkYr8+hAGsw@mail.gmail.com>
+ <alpine.DEB.2.20.1710052140200.2626@hadrien>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga04-in.huawei.com ([45.249.212.190]:7938 "EHLO
-        szxga04-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751172AbdJICiq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Oct 2017 22:38:46 -0400
-In-Reply-To: <f83a0936-23cc-0f5e-b6a3-c3adf1a0d7a0@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.20.1710052140200.2626@hadrien>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Julia Lawall <julia.lawall@lip6.fr>
+Cc: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, kernel-janitors@vger.kernel.org, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, cocci@systeme.lip6.fr, linux-kernel <linux-kernel@vger.kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com, edubezval@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, xuwei5@hisilicon.com, catalin.marinas@arm.com, will.deacon@arm.com
-Cc: leo.yan@linaro.org, lonela.Voinescu@arm.com, Valentin.Schneider@arm.com, vincent.guittot@linaro.org, sunzhaosheng@hisilicon.com, gengyanping@hisilicon.com, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Kevin Wangtao <kevin.wangtao@linaro.org>
 
+On Thu, Oct 05, 2017 at 09:40:51PM +0200, Julia Lawall wrote:
+>
+>
+>On Thu, 5 Oct 2017, Liam Breck wrote:
+>
+>> Hi Julia,
+>>
+>> On Thu, Oct 5, 2017 at 12:25 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
+>> >
+>> >
+>> > On Thu, 5 Oct 2017, Liam Breck wrote:
+>> >
+>> >> Hi, sorry for slow reply...
+>> >>
+>> >> Can we patch something to make this script run by default on
+>> >> bq7xxxx_battery_i2c build? If so let's do that.
+>> >
+>> > I don't think anything is set up for that.  But any changes to the file
+>> > should be checked by the 0-day bot.
+>>
+>> How do we ask the 0-day bot team to configure their build to run this
+>> script? Will they just pick it up?
+>
+>I put kbuild in CC.  I don't know what is the criterion for including
+>semantic patches.
 
+We may have 3 options:
 
-on 2017/10/3 3:06, Daniel Lezcano wrote:
-> On 22/09/2017 11:42, Tao Wang wrote:
->> From: Kevin Wangtao <kevin.wangtao@linaro.org>
+1) push this patch to upstream, so that all users can run the check
+   (with obvious cost)
+
+2) try to optimize away the extra overheads by improving
+   script/coccicheck to support conditional run of some cocci scripts
+
+3) let 0-day maintain and run a collection of 3rd-party scripts if
+   (1,2) turns out to be hard or not always applicable for some scripts
+
+What do you think? At least it'd be easy and quick for us to implement (3).
+
+Thanks,
+Fengguang
+
+>> >> Also maybe the name of the script should include "bq27xxx_data"?
+>> >
+>> > OK
+>> >
+>> >> Few more comments below...
+>> >>
+>> >> On Sun, Oct 1, 2017 at 5:42 AM, Julia Lawall <Julia.Lawall@lip6.fr> wrote:
+>> >> > This semantic patch detects duplicate arrays declared using BQ27XXX_DATA
+>> >> > within a single structure.  It is currently specific to the file
+>> >> > drivers/power/supply/bq27xxx_battery.c.
+>> >> >
+>> >> > Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+>> >> >
+>> >> > ---
+>> >> >  scripts/coccinelle/api/battery.cocci |  161 +++++++++++++++++++++++++++++++++++
+>> >> >  1 file changed, 161 insertions(+)
+>> >> >
+>> >> > diff --git a/scripts/coccinelle/api/battery.cocci b/scripts/coccinelle/api/battery.cocci
+>> >> > new file mode 100644
+>> >> > index 0000000..77c145a
+>> >> > --- /dev/null
+>> >> > +++ b/scripts/coccinelle/api/battery.cocci
+>> >> > @@ -0,0 +1,161 @@
+>> >> > +/// Detect BQ27XXX_DATA structures with identical registers, dm registers or
+>> >> > +/// properties.
+>> >> > +//# Doesn't unfold macros used in register or property fields.
+>> >> > +//# Requires OCaml scripting
+>> >> > +///
+>> >> > +// Confidence: High
+>> >> > +// Copyright: (C) 2017 Julia Lawall, Inria/LIP6, GPLv2.
+>> >> > +// URL: http://coccinelle.lip6.fr/
+>> >> > +// Requires: 1.0.7
+>> >> > +// Keywords: BQ27XXX_DATA
+>> >> > +
+>> >> > +virtual report
+>> >> > +
+>> >> > +@initialize:ocaml@
+>> >> > +@@
+>> >> > +
+>> >> > +let print_report p msg =
+>> >> > +  let p = List.hd p in
+>> >> > +  Printf.printf "%s:%d:%d-%d: %s" p.file p.line p.col p.col_end msg
+>> >> > +
+>> >> > +@str depends on report@
+>> >> > +type t;
+>> >> > +identifier i,i1,i2;
+>> >> > +expression e1,e2;
+>> >> > +@@
+>> >> > +
+>> >> > +t i[] = {
+>> >> > +  ...,
+>> >> > +  [e1] = BQ27XXX_DATA(i1,...),
+>> >> > +  ...,
+>> >> > +  [e2] = BQ27XXX_DATA(i2,...),
+>> >> > +  ...,
+>> >> > +};
+>> >> > +
+>> >> > +@script:ocaml tocheck@
+>> >> > +i1 << str.i1;
+>> >> > +i2 << str.i2;
+>> >> > +i1regs; i2regs;
+>> >> > +i1dmregs; i2dmregs;
+>> >> > +i1props; i2props;
+>> >> > +@@
+>> >> > +
+>> >> > +if not(i1 = i2)
+>> >> > +then
+>> >> > +  begin
+>> >> > +    i1regs := make_ident (i1 ^ "_regs");
+>> >> > +    i2regs := make_ident (i2 ^ "_regs");
+>> >> > +    i1dmregs := make_ident (i1 ^ "_dm_regs");
+>> >> > +    i2dmregs := make_ident (i2 ^ "_dm_regs");
+>> >> > +    i1props := make_ident (i1 ^ "_props");
+>> >> > +    i2props := make_ident (i2 ^ "_props")
+>> >> > +  end
+>> >> > +
+>> >> > +(* ---------------------------------------------------------------- *)
+>> >> > +
+>> >> > +@getregs1@
+>> >> > +typedef u8;
+>> >> > +identifier tocheck.i1regs;
+>> >> > +initializer list i1regs_vals;
+>> >> > +position p1;
+>> >> > +@@
+>> >> > +
+>> >> > +u8 i1regs@p1[...] = { i1regs_vals, };
+>> >> > +
+>> >> > +@getregs2@
+>> >> > +identifier tocheck.i2regs;
+>> >> > +initializer list i2regs_vals;
+>> >> > +position p2;
+>> >> > +@@
+>> >> > +
+>> >> > +u8 i2regs@p2[...] = { i2regs_vals, };
+>> >> > +
+>> >> > +@script:ocaml@
+>> >> > +(_,i1regs_vals) << getregs1.i1regs_vals;
+>> >> > +(_,i2regs_vals) << getregs2.i2regs_vals;
+>> >> > +i1regs << tocheck.i1regs;
+>> >> > +i2regs << tocheck.i2regs;
+>> >> > +p1 << getregs1.p1;
+>> >> > +p2 << getregs2.p2;
+>> >> > +@@
+>> >> > +
+>> >> > +if i1regs < i2regs &&
+>> >> > +   List.sort compare i1regs_vals = List.sort compare i2regs_vals
+>> >> > +then
+>> >> > +  let msg =
+>> >> > +    Printf.sprintf
+>> >> > +      "WARNING %s and %s (line %d) have the same registers\n"
+>> >>
+>> >> "are identical" vs "have the same..."
+>> >
+>> > OK, I guess identical would be appropriate for regsand dm_regs, but
+>> > perhaps not for properties because there the same values might be in a
+>> > different order.
 >>
->> add binding for tsensor on H3660, this tsensor is used for
->> SoC thermal control, it supports alarm interrupt.
+>> The order of the properties has no impact, so a duplicate is
+>> functionally identical.
 >>
->> Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
-> 
-> I'm not able to apply this patch. Does it rely on another patch?
-No, This patch is based on linux-next
-> 
->> ---
->>   arch/arm64/boot/dts/hisilicon/hi3660.dtsi | 8 ++++++++
->>   1 file changed, 8 insertions(+)
+>> >
+>> > julia
+>> >
+>> >> > +      i1regs i2regs (List.hd p2).line in
+>> >> > +  print_report p1 msg
+>> >> > +
+>> >> > +(* ---------------------------------------------------------------- *)
+>> >> > +
+>> >> > +@getdmregs1@
+>> >> > +identifier tocheck.i1dmregs;
+>> >> > +initializer list i1dmregs_vals;
+>> >> > +position p1;
+>> >> > +@@
+>> >> > +
+>> >> > +struct bq27xxx_dm_reg i1dmregs@p1[] = { i1dmregs_vals, };
+>> >> > +
+>> >> > +@getdmregs2@
+>> >> > +identifier tocheck.i2dmregs;
+>> >> > +initializer list i2dmregs_vals;
+>> >> > +position p2;
+>> >> > +@@
+>> >> > +
+>> >> > +struct bq27xxx_dm_reg i2dmregs@p2[] = { i2dmregs_vals, };
+>> >> > +
+>> >> > +@script:ocaml@
+>> >> > +(_,i1dmregs_vals) << getdmregs1.i1dmregs_vals;
+>> >> > +(_,i2dmregs_vals) << getdmregs2.i2dmregs_vals;
+>> >> > +i1dmregs << tocheck.i1dmregs;
+>> >> > +i2dmregs << tocheck.i2dmregs;
+>> >> > +p1 << getdmregs1.p1;
+>> >> > +p2 << getdmregs2.p2;
+>> >> > +@@
+>> >> > +
+>> >> > +if i1dmregs < i2dmregs &&
+>> >> > +   List.sort compare i1dmregs_vals = List.sort compare i2dmregs_vals
+>> >> > +then
+>> >> > +  let msg =
+>> >> > +    Printf.sprintf
+>> >> > +      "WARNING %s and %s (line %d) have the same dm registers\n"
+>> >>
+>> >> "are identical" vs "have the same..."
+>> >>
+>> >> > +      i1dmregs i2dmregs (List.hd p2).line in
+>> >> > +  print_report p1 msg
+>> >> > +
+>> >> > +(* ---------------------------------------------------------------- *)
+>> >> > +
+>> >> > +@getprops1@
+>> >> > +identifier tocheck.i1props;
+>> >> > +initializer list[n1] i1props_vals;
+>> >> > +position p1;
+>> >> > +@@
+>> >> > +
+>> >> > +enum power_supply_property i1props@p1[] = { i1props_vals, };
+>> >> > +
+>> >> > +@getprops2@
+>> >> > +identifier tocheck.i2props;
+>> >> > +initializer list[n2] i2props_vals;
+>> >> > +position p2;
+>> >> > +@@
+>> >> > +
+>> >> > +enum power_supply_property i2props@p2[] = { i2props_vals, };
+>> >> > +
+>> >> > +@script:ocaml@
+>> >> > +(_,i1props_vals) << getprops1.i1props_vals;
+>> >> > +(_,i2props_vals) << getprops2.i2props_vals;
+>> >> > +i1props << tocheck.i1props;
+>> >> > +i2props << tocheck.i2props;
+>> >> > +p1 << getprops1.p1;
+>> >> > +p2 << getprops2.p2;
+>> >> > +@@
+>> >> > +
+>> >> > +if i1props < i2props &&
+>> >> > +   List.sort compare i1props_vals = List.sort compare i2props_vals
+>> >> > +then
+>> >> > +  let msg =
+>> >> > +    Printf.sprintf
+>> >> > +      "WARNING %s and %s (line %d) have the same properties\n"
+>> >>
+>> >> "are identical" vs "have the same..."
+>> >>
+>> >>
+>> >> > +      i1props i2props (List.hd p2).line in
+>> >> > +  print_report p1 msg
+>> >> >
+>> >> --
+>> >> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+>> >> the body of a message to majordomo@vger.kernel.org
+>> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> >>
 >>
->> diff --git a/arch/arm64/boot/dts/hisilicon/hi3660.dtsi b/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
->> index b7a90d6..ae90991 100644
->> --- a/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
->> +++ b/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
->> @@ -978,5 +978,13 @@
->>   			clocks = <&crg_ctrl HI3660_OSC32K>;
->>   			clock-names = "apb_pclk";
->>   		};
->> +
->> +		tsensor: tsensor@fff30000 {
->> +			compatible = "hisilicon,hi3660-tsensor";
->> +			reg = <0x0 0xfff30000 0x0 0x1000>;
->> +			interrupts = <GIC_SPI 145 IRQ_TYPE_LEVEL_HIGH>;
->> +			#thermal-sensor-cells = <1>;
->> +		};
->> +
->>   	};
->>   };
->>
-> 
-> 
