@@ -1,72 +1,44 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal/intel_powerclamp: pr_err()/pr_info() strings
- should end with newlines
-Date: Mon, 9 Oct 2017 14:33:14 +0200
-Message-ID: <7555b065-f4de-2988-283b-b6800ce189ab@linaro.org>
-References: <277b8d12fc6980ec2ffd039a872f681ec0e49c19.1507549738.git.arvind.yadav.cs@gmail.com>
+From: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH 09/13] timer: Remove users of expire and data arguments
+ to DEFINE_TIMER
+Date: Mon, 9 Oct 2017 15:23:05 +0200
+Message-ID: <20171009132305.GH20977@linux-mips.org>
+References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
+ <1507159627-127660-10-git-send-email-keescook@chromium.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f49.google.com ([74.125.82.49]:52311 "EHLO
-        mail-wm0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751241AbdJIMdR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Oct 2017 08:33:17 -0400
-Received: by mail-wm0-f49.google.com with SMTP id k4so23021364wmc.1
-        for <linux-pm@vger.kernel.org>; Mon, 09 Oct 2017 05:33:16 -0700 (PDT)
-In-Reply-To: <277b8d12fc6980ec2ffd039a872f681ec0e49c19.1507549738.git.arvind.yadav.cs@gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <netdev-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1507159627-127660-10-git-send-email-keescook@chromium.org>
+Sender: netdev-owner@vger.kernel.org
+To: Kees Cook <keescook@chromium.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Wim Van Sebroeck <wim@iguana.be>, Guenter Roeck <linux@roeck-us.net>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-mips@linux-mips.org, linux-watchdog@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Chris Metcalf <cmetcalf@mellanox.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Harish Patil <harish.patil@cavium.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, John Stultz <john.stultz@linaro.org>, Julian Wiedmann <jwi@linux.vnet.ibm.com>, Kalle Valo <kvalo@qca.qualcomm.com>, Lai Jiangshan <jiangshanlai@gmail.com>, Len Brown <len.brown@intel.com>, Manis
 List-Id: linux-pm@vger.kernel.org
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/10/2017 13:51, Arvind Yadav wrote:
-> pr_err()/pr_info() messages should end with a new-line to avoid
-> other messages being concatenated.
+On Wed, Oct 04, 2017 at 04:27:03PM -0700, Kees Cook wrote:
+
+> Subject: [PATCH 09/13] timer: Remove users of expire and data arguments to
+>  DEFINE_TIMER
 > 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+> The expire and data arguments of DEFINE_TIMER are only used in two places
+> and are ignored by the code (malta-display.c only uses mod_timer(),
+> never add_timer(), so the preset expires value is ignored). Set both
+> sets of arguments to zero.
+> 
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Wim Van Sebroeck <wim@iguana.be>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+> Cc: linux-mips@linux-mips.org
+> Cc: linux-watchdog@vger.kernel.org
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
->  drivers/thermal/intel_powerclamp.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-> index d718cd1..4540e89 100644
-> --- a/drivers/thermal/intel_powerclamp.c
-> +++ b/drivers/thermal/intel_powerclamp.c
-> @@ -675,13 +675,13 @@ static int __init powerclamp_probe(void)
->  {
->  
->  	if (!x86_match_cpu(intel_powerclamp_ids)) {
-> -		pr_err("CPU does not support MWAIT");
-> +		pr_err("CPU does not support MWAIT\n");
->  		return -ENODEV;
->  	}
->  
->  	/* The goal for idle time alignment is to achieve package cstate. */
->  	if (!has_pkg_state_counter()) {
-> -		pr_info("No package C-state available");
-> +		pr_info("No package C-state available\n");
->  		return -ENODEV;
->  	}
+>  arch/mips/mti-malta/malta-display.c | 6 +++---
+>  drivers/watchdog/alim7101_wdt.c     | 4 ++--
+>  2 files changed, 5 insertions(+), 5 deletions(-)
 
+For malta-display:
 
-Hi Arvind,
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
 
-you are sending these fixes for all the drivers around. There is a way
-to fix this once and for all: use the coccinelle tools [1], add the
-script in the changelog with a big patchset and add the script in the
-coccinelle scripts directory [2].
-
-  -- Daniel
-
-[1] Documentation/dev-tools/coccinelle.rst
-[2] scripts/coccinelle/misc
-
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+  Ralf
