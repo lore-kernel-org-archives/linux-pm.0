@@ -1,97 +1,44 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Subject: Re: [PATCH 0/2] detect identical chip data arrays
-Date: Mon, 9 Oct 2017 18:11:49 +0900
-Message-ID: <CAK7LNAT3aS2Ad3RxM9m=t4wAW2Zq=aAc_poww_qutFc09F5T7A@mail.gmail.com>
-References: <1507490321-24900-1-git-send-email-Julia.Lawall@lip6.fr>
- <20171008203258.y7kqx7ipondxlsix@earth> <alpine.DEB.2.20.1710082243140.2160@hadrien>
- <CAK7LNATGdz52SbYWD2bv7uYBQGVAHAK7xb9oJOgUVsTQJEPN5Q@mail.gmail.com> <alpine.DEB.2.20.1710091038340.3252@hadrien>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1710091038340.3252@hadrien>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Liam Breck <liam@networkimprov.net>, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, kernel-janitors@vger.kernel.org, Joe Perches <joe@perches.com>, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, Michal Marek <mmarek@suse.com>, cocci@systeme.lip6.fr, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, kbuild test robot <fengguang.wu@intel.com>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [PATCH] thermal/intel_powerclamp: pr_err()/pr_info() strings should end with newlines
+Date: Mon,  9 Oct 2017 17:21:07 +0530
+Message-ID: <277b8d12fc6980ec2ffd039a872f681ec0e49c19.1507549738.git.arvind.yadav.cs@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:37823 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751068AbdJILwc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Oct 2017 07:52:32 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-2017-10-09 17:40 GMT+09:00 Julia Lawall <julia.lawall@lip6.fr>:
->
->
-> On Mon, 9 Oct 2017, Masahiro Yamada wrote:
->
->> 2017-10-09 5:44 GMT+09:00 Julia Lawall <julia.lawall@lip6.fr>:
->> >
->> >
->> > On Sun, 8 Oct 2017, Sebastian Reichel wrote:
->> >
->> >> Hi,
->> >>
->> >> On Sun, Oct 08, 2017 at 09:18:39PM +0200, Julia Lawall wrote:
->> >> > Rename battery.cocci as check_bq27xxx_data.cocci and adjust the warning
->> >> > messages to indicate that some structures are the same, in response to
->> >> > feedback from Liam Breck.
->> >> >
->> >> > Although check_bq27xxx_data.cocci says is requires Coccinelle 1.0.7, which
->> >> > is not yet released, it actually works with the version currently available
->> >> > on Github, eg from Coccinelle commit 3ba77b3a0f91.
->> >>
->> >> I think the rename makes sense, but I would expect the move to
->> >> happen in one go with "git send-email -M", so that it detects the
->> >> rename.
->> >
->> > I'm not actually sure what is the status of the previous version.
->> > Masahiro said applied, but I downloaded his tree and it was not there.  So
->> > I thought this way would be easier.
->>
->> My tree is here:
->> git://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild.git
->>
->> I had applied your patch a few days before.
->
-> OK, I got that tree, but it seemed to go only up to October 1.  But maybe
-> I did not pick the right branch.
+pr_err()/pr_info() messages should end with a new-line to avoid
+other messages being concatenated.
 
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/thermal/intel_powerclamp.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Oct 1 is the date you submitted it.
-According to "git log --pretty=fuller", I applied it Oct 5.
-I do not not remember when I pushed it, though.
-
-commit ffb11fd663a2b9cefbe24e8e3dd2ebcacd338d69
-Author:     Julia Lawall <Julia.Lawall@lip6.fr>
-AuthorDate: Sun Oct 1 14:42:48 2017 +0200
-Commit:     Masahiro Yamada <yamada.masahiro@socionext.com>
-CommitDate: Thu Oct 5 08:37:12 2017 +0900
-
-    coccinelle: api: detect duplicate chip data arrays
-
-
-
->>
->>
->> BTW, how should I handle this series?
->>
->> 1/2 is reverting it.
->>
->> So, I can drop the previous one entirely,
->> then pick up 2/2 only.
->>
->> Is this a good thing to do?
->
-> That would be perfectly fine with me.  You can drop 1/2 already.  For 2/2,
-> it would be nice to have an Ack from Liam first.
->
-> thanks,
-> julia
-
-
-OK.  I will drop the previous one.
-
-I will hold back 2/2 until it gets Ack from Liam.
-
-
-
-
-
+diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+index d718cd1..4540e89 100644
+--- a/drivers/thermal/intel_powerclamp.c
++++ b/drivers/thermal/intel_powerclamp.c
+@@ -675,13 +675,13 @@ static int __init powerclamp_probe(void)
+ {
+ 
+ 	if (!x86_match_cpu(intel_powerclamp_ids)) {
+-		pr_err("CPU does not support MWAIT");
++		pr_err("CPU does not support MWAIT\n");
+ 		return -ENODEV;
+ 	}
+ 
+ 	/* The goal for idle time alignment is to achieve package cstate. */
+ 	if (!has_pkg_state_counter()) {
+-		pr_info("No package C-state available");
++		pr_info("No package C-state available\n");
+ 		return -ENODEV;
+ 	}
+ 
 -- 
-Best Regards
-Masahiro Yamada
+1.9.1
