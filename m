@@ -1,272 +1,70 @@
-From: Fengguang Wu <fengguang.wu@intel.com>
-Subject: Re: [PATCH] coccinelle: api: detect duplicate chip data arrays
-Date: Mon, 9 Oct 2017 10:50:39 +0800
-Message-ID: <20171009025039.77oaplaovnvpy6nv@wfg-t540p.sh.intel.com>
-References: <1506861768-5734-1-git-send-email-Julia.Lawall@lip6.fr>
- <CAKvHMgT07xoBW_VmAYsxUmoYaz_iN4vFh7Ljb_UQEWAd8bt22w@mail.gmail.com>
- <alpine.DEB.2.20.1710052122380.2626@hadrien>
- <CAKvHMgSCZ3CLfKNpQQbK79bnCss0uFTr9TP_i89rkYr8+hAGsw@mail.gmail.com>
- <alpine.DEB.2.20.1710052140200.2626@hadrien>
+From: "Mohandass, Divagar" <divagar.mohandass@intel.com>
+Subject: RE: [PATCH v6 3/3] eeprom: at24: enable runtime pm support
+Date: Mon, 9 Oct 2017 03:14:24 +0000
+Message-ID: <7B8CE47BD58441468D2BB13285B50E6031DF530B@BGSMSX107.gar.corp.intel.com>
+References: <1504520928-5191-1-git-send-email-divagar.mohandass@intel.com>
+ <1504520928-5191-4-git-send-email-divagar.mohandass@intel.com>
+ <6F87890CF0F5204F892DEA1EF0D77A5972FC1278@FMSMSX114.amr.corp.intel.com>
+ <CAAFQd5DUNHJ7fqWy5iD_fb=TBUqGy3AQ3uGXr-TdQ5v39f_hsw@mail.gmail.com>
+ <20170920084519.asyfjxo6upt36woz@valkosipuli.retiisi.org.uk>
+ <CAAFQd5B65bJHsZkMgtjGgyd3btuoWzJwYQRQb5j2kSaefxCZ7Q@mail.gmail.com>
+ <20170920093222.yzfw2ctrupep5iqx@valkosipuli.retiisi.org.uk>
+ <20171003135109.v7ch7oc4fvjwzl7w@valkosipuli.retiisi.org.uk>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.20.1710052140200.2626@hadrien>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Liam Breck <liam@networkimprov.net>, Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>, Linux PM mailing list <linux-pm@vger.kernel.org>, kernel-janitors@vger.kernel.org, Gilles Muller <Gilles.Muller@lip6.fr>, Nicolas Palix <nicolas.palix@imag.fr>, cocci@systeme.lip6.fr, linux-kernel <linux-kernel@vger.kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20171003135109.v7ch7oc4fvjwzl7w@valkosipuli.retiisi.org.uk>
+Content-Language: en-US
+Sender: linux-i2c-owner@vger.kernel.org
+To: "'sakari.ailus@iki.fi'" <sakari.ailus@iki.fi>, Tomasz Figa <tfiga@chromium.org>
+Cc: "Mani, Rajmohan" <rajmohan.mani@intel.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "wsa@the-dreams.de" <wsa@the-dreams.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mika.westerberg@linux.intel.com" <mika.westerberg@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 05, 2017 at 09:40:51PM +0200, Julia Lawall wrote:
->
->
->On Thu, 5 Oct 2017, Liam Breck wrote:
->
->> Hi Julia,
->>
->> On Thu, Oct 5, 2017 at 12:25 PM, Julia Lawall <julia.lawall@lip6.fr> wrote:
->> >
->> >
->> > On Thu, 5 Oct 2017, Liam Breck wrote:
->> >
->> >> Hi, sorry for slow reply...
->> >>
->> >> Can we patch something to make this script run by default on
->> >> bq7xxxx_battery_i2c build? If so let's do that.
->> >
->> > I don't think anything is set up for that.  But any changes to the file
->> > should be checked by the 0-day bot.
->>
->> How do we ask the 0-day bot team to configure their build to run this
->> script? Will they just pick it up?
->
->I put kbuild in CC.  I don't know what is the criterion for including
->semantic patches.
-
-We may have 3 options:
-
-1) push this patch to upstream, so that all users can run the check
-   (with obvious cost)
-
-2) try to optimize away the extra overheads by improving
-   script/coccicheck to support conditional run of some cocci scripts
-
-3) let 0-day maintain and run a collection of 3rd-party scripts if
-   (1,2) turns out to be hard or not always applicable for some scripts
-
-What do you think? At least it'd be easy and quick for us to implement (3).
-
-Thanks,
-Fengguang
-
->> >> Also maybe the name of the script should include "bq27xxx_data"?
->> >
->> > OK
->> >
->> >> Few more comments below...
->> >>
->> >> On Sun, Oct 1, 2017 at 5:42 AM, Julia Lawall <Julia.Lawall@lip6.fr> wrote:
->> >> > This semantic patch detects duplicate arrays declared using BQ27XXX_DATA
->> >> > within a single structure.  It is currently specific to the file
->> >> > drivers/power/supply/bq27xxx_battery.c.
->> >> >
->> >> > Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
->> >> >
->> >> > ---
->> >> >  scripts/coccinelle/api/battery.cocci |  161 +++++++++++++++++++++++++++++++++++
->> >> >  1 file changed, 161 insertions(+)
->> >> >
->> >> > diff --git a/scripts/coccinelle/api/battery.cocci b/scripts/coccinelle/api/battery.cocci
->> >> > new file mode 100644
->> >> > index 0000000..77c145a
->> >> > --- /dev/null
->> >> > +++ b/scripts/coccinelle/api/battery.cocci
->> >> > @@ -0,0 +1,161 @@
->> >> > +/// Detect BQ27XXX_DATA structures with identical registers, dm registers or
->> >> > +/// properties.
->> >> > +//# Doesn't unfold macros used in register or property fields.
->> >> > +//# Requires OCaml scripting
->> >> > +///
->> >> > +// Confidence: High
->> >> > +// Copyright: (C) 2017 Julia Lawall, Inria/LIP6, GPLv2.
->> >> > +// URL: http://coccinelle.lip6.fr/
->> >> > +// Requires: 1.0.7
->> >> > +// Keywords: BQ27XXX_DATA
->> >> > +
->> >> > +virtual report
->> >> > +
->> >> > +@initialize:ocaml@
->> >> > +@@
->> >> > +
->> >> > +let print_report p msg =
->> >> > +  let p = List.hd p in
->> >> > +  Printf.printf "%s:%d:%d-%d: %s" p.file p.line p.col p.col_end msg
->> >> > +
->> >> > +@str depends on report@
->> >> > +type t;
->> >> > +identifier i,i1,i2;
->> >> > +expression e1,e2;
->> >> > +@@
->> >> > +
->> >> > +t i[] = {
->> >> > +  ...,
->> >> > +  [e1] = BQ27XXX_DATA(i1,...),
->> >> > +  ...,
->> >> > +  [e2] = BQ27XXX_DATA(i2,...),
->> >> > +  ...,
->> >> > +};
->> >> > +
->> >> > +@script:ocaml tocheck@
->> >> > +i1 << str.i1;
->> >> > +i2 << str.i2;
->> >> > +i1regs; i2regs;
->> >> > +i1dmregs; i2dmregs;
->> >> > +i1props; i2props;
->> >> > +@@
->> >> > +
->> >> > +if not(i1 = i2)
->> >> > +then
->> >> > +  begin
->> >> > +    i1regs := make_ident (i1 ^ "_regs");
->> >> > +    i2regs := make_ident (i2 ^ "_regs");
->> >> > +    i1dmregs := make_ident (i1 ^ "_dm_regs");
->> >> > +    i2dmregs := make_ident (i2 ^ "_dm_regs");
->> >> > +    i1props := make_ident (i1 ^ "_props");
->> >> > +    i2props := make_ident (i2 ^ "_props")
->> >> > +  end
->> >> > +
->> >> > +(* ---------------------------------------------------------------- *)
->> >> > +
->> >> > +@getregs1@
->> >> > +typedef u8;
->> >> > +identifier tocheck.i1regs;
->> >> > +initializer list i1regs_vals;
->> >> > +position p1;
->> >> > +@@
->> >> > +
->> >> > +u8 i1regs@p1[...] = { i1regs_vals, };
->> >> > +
->> >> > +@getregs2@
->> >> > +identifier tocheck.i2regs;
->> >> > +initializer list i2regs_vals;
->> >> > +position p2;
->> >> > +@@
->> >> > +
->> >> > +u8 i2regs@p2[...] = { i2regs_vals, };
->> >> > +
->> >> > +@script:ocaml@
->> >> > +(_,i1regs_vals) << getregs1.i1regs_vals;
->> >> > +(_,i2regs_vals) << getregs2.i2regs_vals;
->> >> > +i1regs << tocheck.i1regs;
->> >> > +i2regs << tocheck.i2regs;
->> >> > +p1 << getregs1.p1;
->> >> > +p2 << getregs2.p2;
->> >> > +@@
->> >> > +
->> >> > +if i1regs < i2regs &&
->> >> > +   List.sort compare i1regs_vals = List.sort compare i2regs_vals
->> >> > +then
->> >> > +  let msg =
->> >> > +    Printf.sprintf
->> >> > +      "WARNING %s and %s (line %d) have the same registers\n"
->> >>
->> >> "are identical" vs "have the same..."
->> >
->> > OK, I guess identical would be appropriate for regsand dm_regs, but
->> > perhaps not for properties because there the same values might be in a
->> > different order.
->>
->> The order of the properties has no impact, so a duplicate is
->> functionally identical.
->>
->> >
->> > julia
->> >
->> >> > +      i1regs i2regs (List.hd p2).line in
->> >> > +  print_report p1 msg
->> >> > +
->> >> > +(* ---------------------------------------------------------------- *)
->> >> > +
->> >> > +@getdmregs1@
->> >> > +identifier tocheck.i1dmregs;
->> >> > +initializer list i1dmregs_vals;
->> >> > +position p1;
->> >> > +@@
->> >> > +
->> >> > +struct bq27xxx_dm_reg i1dmregs@p1[] = { i1dmregs_vals, };
->> >> > +
->> >> > +@getdmregs2@
->> >> > +identifier tocheck.i2dmregs;
->> >> > +initializer list i2dmregs_vals;
->> >> > +position p2;
->> >> > +@@
->> >> > +
->> >> > +struct bq27xxx_dm_reg i2dmregs@p2[] = { i2dmregs_vals, };
->> >> > +
->> >> > +@script:ocaml@
->> >> > +(_,i1dmregs_vals) << getdmregs1.i1dmregs_vals;
->> >> > +(_,i2dmregs_vals) << getdmregs2.i2dmregs_vals;
->> >> > +i1dmregs << tocheck.i1dmregs;
->> >> > +i2dmregs << tocheck.i2dmregs;
->> >> > +p1 << getdmregs1.p1;
->> >> > +p2 << getdmregs2.p2;
->> >> > +@@
->> >> > +
->> >> > +if i1dmregs < i2dmregs &&
->> >> > +   List.sort compare i1dmregs_vals = List.sort compare i2dmregs_vals
->> >> > +then
->> >> > +  let msg =
->> >> > +    Printf.sprintf
->> >> > +      "WARNING %s and %s (line %d) have the same dm registers\n"
->> >>
->> >> "are identical" vs "have the same..."
->> >>
->> >> > +      i1dmregs i2dmregs (List.hd p2).line in
->> >> > +  print_report p1 msg
->> >> > +
->> >> > +(* ---------------------------------------------------------------- *)
->> >> > +
->> >> > +@getprops1@
->> >> > +identifier tocheck.i1props;
->> >> > +initializer list[n1] i1props_vals;
->> >> > +position p1;
->> >> > +@@
->> >> > +
->> >> > +enum power_supply_property i1props@p1[] = { i1props_vals, };
->> >> > +
->> >> > +@getprops2@
->> >> > +identifier tocheck.i2props;
->> >> > +initializer list[n2] i2props_vals;
->> >> > +position p2;
->> >> > +@@
->> >> > +
->> >> > +enum power_supply_property i2props@p2[] = { i2props_vals, };
->> >> > +
->> >> > +@script:ocaml@
->> >> > +(_,i1props_vals) << getprops1.i1props_vals;
->> >> > +(_,i2props_vals) << getprops2.i2props_vals;
->> >> > +i1props << tocheck.i1props;
->> >> > +i2props << tocheck.i2props;
->> >> > +p1 << getprops1.p1;
->> >> > +p2 << getprops2.p2;
->> >> > +@@
->> >> > +
->> >> > +if i1props < i2props &&
->> >> > +   List.sort compare i1props_vals = List.sort compare i2props_vals
->> >> > +then
->> >> > +  let msg =
->> >> > +    Printf.sprintf
->> >> > +      "WARNING %s and %s (line %d) have the same properties\n"
->> >>
->> >> "are identical" vs "have the same..."
->> >>
->> >>
->> >> > +      i1props i2props (List.hd p2).line in
->> >> > +  print_report p1 msg
->> >> >
->> >> --
->> >> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
->> >> the body of a message to majordomo@vger.kernel.org
->> >> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> >>
->>
+SGkgVG9tYXN6LA0KDQo+LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj5Gcm9tOiBzYWthcmku
+YWlsdXNAaWtpLmZpIFttYWlsdG86c2FrYXJpLmFpbHVzQGlraS5maV0NCj5TZW50OiBUdWVzZGF5
+LCBPY3RvYmVyIDAzLCAyMDE3IDc6MjEgUE0NCj5UbzogVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9t
+aXVtLm9yZz4NCj5DYzogTWFuaSwgUmFqbW9oYW4gPHJham1vaGFuLm1hbmlAaW50ZWwuY29tPjsg
+TW9oYW5kYXNzLCBEaXZhZ2FyDQo+PGRpdmFnYXIubW9oYW5kYXNzQGludGVsLmNvbT47IHJvYmgr
+ZHRAa2VybmVsLm9yZzsNCj5tYXJrLnJ1dGxhbmRAYXJtLmNvbTsgd3NhQHRoZS1kcmVhbXMuZGU7
+IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOw0KPmxpbnV4LWkyY0B2Z2VyLmtlcm5lbC5vcmc7
+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+bWlrYS53ZXN0ZXJiZXJnQGxpbnV4Lmlu
+dGVsLmNvbTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+U3ViamVjdDogUmU6IFtQQVRDSCB2
+NiAzLzNdIGVlcHJvbTogYXQyNDogZW5hYmxlIHJ1bnRpbWUgcG0gc3VwcG9ydA0KPg0KPkhpIFRv
+bWFzeiwNCj4NCj5PbiBXZWQsIFNlcCAyMCwgMjAxNyBhdCAxMjozMjoyMlBNICswMzAwLCBzYWth
+cmkuYWlsdXNAaWtpLmZpIHdyb3RlOg0KPj4gPiA+PiA+PiBAQCAtNzQzLDExICs3NzAsMTcgQEAg
+c3RhdGljIGludCBhdDI0X3Byb2JlKHN0cnVjdCBpMmNfY2xpZW50DQo+PiA+ID4+ID4+ICpjbGll
+bnQsIGNvbnN0IHN0cnVjdCBpMmNfZGV2aWNlX2lkICppZCkNCj4+ID4gPj4gPj4NCj4+ID4gPj4g
+Pj4gICAgICAgaTJjX3NldF9jbGllbnRkYXRhKGNsaWVudCwgYXQyNCk7DQo+PiA+ID4+ID4+DQo+
+PiA+ID4+ID4+ICsgICAgIC8qIGVuYWJsZSBydW50aW1lIHBtICovDQo+PiA+ID4+ID4+ICsgICAg
+IHBtX3J1bnRpbWVfZ2V0X25vcmVzdW1lKCZjbGllbnQtPmRldik7DQo+PiA+ID4+ID4+ICsgICAg
+IHBtX3J1bnRpbWVfc2V0X2FjdGl2ZSgmY2xpZW50LT5kZXYpOw0KPj4gPiA+PiA+PiArICAgICBw
+bV9ydW50aW1lX2VuYWJsZSgmY2xpZW50LT5kZXYpOw0KPj4gPiA+Pg0KPj4gPiA+PiBEbyB3ZSBu
+ZWVkIHRoaXMgZ2V0X25vcmVzdW1lL3NldF9hY3RpdmUgZGFuY2U/IEkgcmVtZW1iZXIgaXQgd2Fz
+DQo+PiA+ID4+IGZvciBzb21lIHJlYXNvbiBuZWVkZWQgZm9yIFBDSSBkZXZpY2VzLCBidXQgSSBk
+b24ndCBzZWUgd2h5IGZvcg0KPj4gPiA+PiBJMkMgYW55dGhpbmcgZWxzZSB0aGFuIGp1c3QgcG1f
+cnVudGltZV9lbmFibGUoKSB3b3VsZCBiZSBuZWNlc3NhcnkuDQo+PiA+ID4NCj4+ID4gPiBZb3Ug
+c3BlY2lmaWNhbGx5IGRvIG5vdCBuZWVkIChhbGwpIHRoaXMgZm9yIFBDSSBkZXZpY2VzLCBidXQg
+QUZBSVUNCj4+ID4gPiBmb3IgSea2jg0KPj4gPiA+IGRldmljZXMgeW91IGRvLiBUaGUgcnVudGlt
+ZSBQTSBzdGF0dXMgb2YgYSBkZXZpY2UgaXMgZGlzYWJsZWQgYnkNCj4+ID4gPiBkZWZhdWx0IGFu
+ZCB0aGUgdXNlIGNvdW50IGlzIHplcm8sIGJ1dCBvbiBBQ1BJIGJhc2VkIHN5c3RlbXMgdGhlDQo+
+PiA+ID4gZGV2aWNlIGlzIHN0aWxsIHBvd2VyZWQgb24uDQo+PiA+DQo+PiA+IE9rYXksIHNvIF9n
+ZXRfbm9yZXN1bWUoKSBhbmQgX3NldF9hY3RpdmUoKSB3b3VsZCBkbyB0aGUgdGhpbmcgZm9yDQo+
+PiA+IEFDUEkgaW5kZWVkLCBidXQgbm90IHN1cmUgYWJvdXQgb3RoZXIgcGxhdGZvcm1zLiBQZXJo
+YXBzIF9lbmFibGUoKSwNCj4+ID4gX2dldF9zeW5jKCkgd291bGQgYmUgbW9yZSBnZW5lcmFsPw0K
+Pj4NCj4+IFdoYXQgSSBlbmRlZCB1cCBkb2luZyBpbiBlLmcuIHRoZSBzbWlhcHAgZHJpdmVyIHdh
+cyB0byBleHBsaWNpdGx5DQo+PiBwb3dlciB0aGUgZGV2aWNlIG9uIGZpcnN0IGFuZCB0aGVuIGVu
+YWJsZSBydW50aW1lIFBNLiAoU2VlDQo+PiBkcml2ZXJzL21lZGlhL2kyYy9zbWlhcHAvc21pYXBw
+LWNvcmUuYyAuKSBUaGlzIGFwcHJvYWNoIHdvcmtzIGV2ZW4gaWYNCj4+IENPTkZJR19QTSBpcyBk
+aXNhYmxlZCwgYm90aCBvbiBEVCBhbmQgQUNQSS4NCj4NCj5wbV9ydW50aW1lX2dldF9ub3Jlc3Vt
+ZSgpICsgcG1fcnVudGltZV9wdXQoKSBjYW4gYmUgcmVwbGFjZWQgYnkgYSBzaW5nbGUNCj5wbV9y
+dW50aW1lX2lkbGUoKSBjYWxsICh3aGVyZSBwbV9ydW50aW1lX3B1dCgpIHdhcykuIHBtX3J1bnRp
+bWVfZW5hYmxlKCkNCj5pcyByZXF1aXJlZCB0byBlbmFibGUgcnVudGltZSBQTSBmb3IgYSBkZXZp
+Y2UuDQoNClZlcmlmaWVkIHRoZSBjaGFuZ2Ugc3VnZ2VzdGVkIGJ5IFNha2FyaS4gDQpMZXQgbWUg
+a25vdyBJIGNhbiBzZW5kIGEgdXBkYXRlZCBwYXRjaCB2ZXJzaW9uIHdpdGggdGhpcyBjaGFuZ2Uu
+DQoNCj4NCj5wbV9ydW50aW1lX2FsbG93KCkgbWF5IGJlIG9taXR0ZWQgYnV0IHRoZW4gdG8gbWFr
+ZSB0aGUgcnVudGltZSBQTQ0KPmZyYW1ld29yayB0byBtYWtlIHRoZSBwb3dlciBzdGF0ZSB0cmFu
+c2l0aW9ucyB0aGlzIG5lZWRzIHRvIGJlIGNvbmZpZ3VyZWQNCj5mcm9tIHRoZSB1c2VyIHNwYWNl
+IC0tLSB3aGljaCBJIGRvbid0IHRoaW5rIGlzIGludGVuZGVkLg0KPg0KPkNjIGxpbnV4LXBtLCB0
+b28uDQo+DQo+LS0NCj5SZWdhcmRzLA0KPg0KPlNha2FyaSBBaWx1cw0KPmUtbWFpbDogc2FrYXJp
+LmFpbHVzQGlraS5maQ0K
