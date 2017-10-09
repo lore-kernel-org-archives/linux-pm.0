@@ -1,70 +1,32 @@
-From: "Mohandass, Divagar" <divagar.mohandass@intel.com>
-Subject: RE: [PATCH v6 3/3] eeprom: at24: enable runtime pm support
-Date: Mon, 9 Oct 2017 03:14:24 +0000
-Message-ID: <7B8CE47BD58441468D2BB13285B50E6031DF530B@BGSMSX107.gar.corp.intel.com>
-References: <1504520928-5191-1-git-send-email-divagar.mohandass@intel.com>
- <1504520928-5191-4-git-send-email-divagar.mohandass@intel.com>
- <6F87890CF0F5204F892DEA1EF0D77A5972FC1278@FMSMSX114.amr.corp.intel.com>
- <CAAFQd5DUNHJ7fqWy5iD_fb=TBUqGy3AQ3uGXr-TdQ5v39f_hsw@mail.gmail.com>
- <20170920084519.asyfjxo6upt36woz@valkosipuli.retiisi.org.uk>
- <CAAFQd5B65bJHsZkMgtjGgyd3btuoWzJwYQRQb5j2kSaefxCZ7Q@mail.gmail.com>
- <20170920093222.yzfw2ctrupep5iqx@valkosipuli.retiisi.org.uk>
- <20171003135109.v7ch7oc4fvjwzl7w@valkosipuli.retiisi.org.uk>
+From: Zumeng Chen <zumeng.chen@windriver.com>
+Subject: Re: [PATCH ] cpufreq: ti-cpufreq: kfree opp_data when failure
+Date: Mon, 9 Oct 2017 13:51:00 +0800
+Message-ID: <5dbd2161-1cef-01c4-ac3a-19fcd4cc19f7@windriver.com>
+References: <1506496097-30852-1-git-send-email-zumeng.chen@windriver.com>
+ <20170927174026.GB12211@ubuntu>
+ <7b7315f0-c2e4-a09e-8769-2d15a167fa73@windriver.com>
+ <20170928041933.GG12211@ubuntu>
+ <7a2171a3-d594-7fd7-2ccf-75ef7110dd98@windriver.com>
+ <20171004053642.GA8478@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20171003135109.v7ch7oc4fvjwzl7w@valkosipuli.retiisi.org.uk>
-Content-Language: en-US
-Sender: linux-i2c-owner@vger.kernel.org
-To: "'sakari.ailus@iki.fi'" <sakari.ailus@iki.fi>, Tomasz Figa <tfiga@chromium.org>
-Cc: "Mani, Rajmohan" <rajmohan.mani@intel.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "wsa@the-dreams.de" <wsa@the-dreams.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mika.westerberg@linux.intel.com" <mika.westerberg@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.windriver.com ([147.11.1.11]:45863 "EHLO
+        mail.windriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751636AbdJIFss (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Oct 2017 01:48:48 -0400
+In-Reply-To: <20171004053642.GA8478@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, rjw@rjwysocki.net, d-gerlach@ti.com, tony@atomide.com
 
-SGkgVG9tYXN6LA0KDQo+LS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj5Gcm9tOiBzYWthcmku
-YWlsdXNAaWtpLmZpIFttYWlsdG86c2FrYXJpLmFpbHVzQGlraS5maV0NCj5TZW50OiBUdWVzZGF5
-LCBPY3RvYmVyIDAzLCAyMDE3IDc6MjEgUE0NCj5UbzogVG9tYXN6IEZpZ2EgPHRmaWdhQGNocm9t
-aXVtLm9yZz4NCj5DYzogTWFuaSwgUmFqbW9oYW4gPHJham1vaGFuLm1hbmlAaW50ZWwuY29tPjsg
-TW9oYW5kYXNzLCBEaXZhZ2FyDQo+PGRpdmFnYXIubW9oYW5kYXNzQGludGVsLmNvbT47IHJvYmgr
-ZHRAa2VybmVsLm9yZzsNCj5tYXJrLnJ1dGxhbmRAYXJtLmNvbTsgd3NhQHRoZS1kcmVhbXMuZGU7
-IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOw0KPmxpbnV4LWkyY0B2Z2VyLmtlcm5lbC5vcmc7
-IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmc7DQo+bWlrYS53ZXN0ZXJiZXJnQGxpbnV4Lmlu
-dGVsLmNvbTsgbGludXgtcG1Admdlci5rZXJuZWwub3JnDQo+U3ViamVjdDogUmU6IFtQQVRDSCB2
-NiAzLzNdIGVlcHJvbTogYXQyNDogZW5hYmxlIHJ1bnRpbWUgcG0gc3VwcG9ydA0KPg0KPkhpIFRv
-bWFzeiwNCj4NCj5PbiBXZWQsIFNlcCAyMCwgMjAxNyBhdCAxMjozMjoyMlBNICswMzAwLCBzYWth
-cmkuYWlsdXNAaWtpLmZpIHdyb3RlOg0KPj4gPiA+PiA+PiBAQCAtNzQzLDExICs3NzAsMTcgQEAg
-c3RhdGljIGludCBhdDI0X3Byb2JlKHN0cnVjdCBpMmNfY2xpZW50DQo+PiA+ID4+ID4+ICpjbGll
-bnQsIGNvbnN0IHN0cnVjdCBpMmNfZGV2aWNlX2lkICppZCkNCj4+ID4gPj4gPj4NCj4+ID4gPj4g
-Pj4gICAgICAgaTJjX3NldF9jbGllbnRkYXRhKGNsaWVudCwgYXQyNCk7DQo+PiA+ID4+ID4+DQo+
-PiA+ID4+ID4+ICsgICAgIC8qIGVuYWJsZSBydW50aW1lIHBtICovDQo+PiA+ID4+ID4+ICsgICAg
-IHBtX3J1bnRpbWVfZ2V0X25vcmVzdW1lKCZjbGllbnQtPmRldik7DQo+PiA+ID4+ID4+ICsgICAg
-IHBtX3J1bnRpbWVfc2V0X2FjdGl2ZSgmY2xpZW50LT5kZXYpOw0KPj4gPiA+PiA+PiArICAgICBw
-bV9ydW50aW1lX2VuYWJsZSgmY2xpZW50LT5kZXYpOw0KPj4gPiA+Pg0KPj4gPiA+PiBEbyB3ZSBu
-ZWVkIHRoaXMgZ2V0X25vcmVzdW1lL3NldF9hY3RpdmUgZGFuY2U/IEkgcmVtZW1iZXIgaXQgd2Fz
-DQo+PiA+ID4+IGZvciBzb21lIHJlYXNvbiBuZWVkZWQgZm9yIFBDSSBkZXZpY2VzLCBidXQgSSBk
-b24ndCBzZWUgd2h5IGZvcg0KPj4gPiA+PiBJMkMgYW55dGhpbmcgZWxzZSB0aGFuIGp1c3QgcG1f
-cnVudGltZV9lbmFibGUoKSB3b3VsZCBiZSBuZWNlc3NhcnkuDQo+PiA+ID4NCj4+ID4gPiBZb3Ug
-c3BlY2lmaWNhbGx5IGRvIG5vdCBuZWVkIChhbGwpIHRoaXMgZm9yIFBDSSBkZXZpY2VzLCBidXQg
-QUZBSVUNCj4+ID4gPiBmb3IgSea2jg0KPj4gPiA+IGRldmljZXMgeW91IGRvLiBUaGUgcnVudGlt
-ZSBQTSBzdGF0dXMgb2YgYSBkZXZpY2UgaXMgZGlzYWJsZWQgYnkNCj4+ID4gPiBkZWZhdWx0IGFu
-ZCB0aGUgdXNlIGNvdW50IGlzIHplcm8sIGJ1dCBvbiBBQ1BJIGJhc2VkIHN5c3RlbXMgdGhlDQo+
-PiA+ID4gZGV2aWNlIGlzIHN0aWxsIHBvd2VyZWQgb24uDQo+PiA+DQo+PiA+IE9rYXksIHNvIF9n
-ZXRfbm9yZXN1bWUoKSBhbmQgX3NldF9hY3RpdmUoKSB3b3VsZCBkbyB0aGUgdGhpbmcgZm9yDQo+
-PiA+IEFDUEkgaW5kZWVkLCBidXQgbm90IHN1cmUgYWJvdXQgb3RoZXIgcGxhdGZvcm1zLiBQZXJo
-YXBzIF9lbmFibGUoKSwNCj4+ID4gX2dldF9zeW5jKCkgd291bGQgYmUgbW9yZSBnZW5lcmFsPw0K
-Pj4NCj4+IFdoYXQgSSBlbmRlZCB1cCBkb2luZyBpbiBlLmcuIHRoZSBzbWlhcHAgZHJpdmVyIHdh
-cyB0byBleHBsaWNpdGx5DQo+PiBwb3dlciB0aGUgZGV2aWNlIG9uIGZpcnN0IGFuZCB0aGVuIGVu
-YWJsZSBydW50aW1lIFBNLiAoU2VlDQo+PiBkcml2ZXJzL21lZGlhL2kyYy9zbWlhcHAvc21pYXBw
-LWNvcmUuYyAuKSBUaGlzIGFwcHJvYWNoIHdvcmtzIGV2ZW4gaWYNCj4+IENPTkZJR19QTSBpcyBk
-aXNhYmxlZCwgYm90aCBvbiBEVCBhbmQgQUNQSS4NCj4NCj5wbV9ydW50aW1lX2dldF9ub3Jlc3Vt
-ZSgpICsgcG1fcnVudGltZV9wdXQoKSBjYW4gYmUgcmVwbGFjZWQgYnkgYSBzaW5nbGUNCj5wbV9y
-dW50aW1lX2lkbGUoKSBjYWxsICh3aGVyZSBwbV9ydW50aW1lX3B1dCgpIHdhcykuIHBtX3J1bnRp
-bWVfZW5hYmxlKCkNCj5pcyByZXF1aXJlZCB0byBlbmFibGUgcnVudGltZSBQTSBmb3IgYSBkZXZp
-Y2UuDQoNClZlcmlmaWVkIHRoZSBjaGFuZ2Ugc3VnZ2VzdGVkIGJ5IFNha2FyaS4gDQpMZXQgbWUg
-a25vdyBJIGNhbiBzZW5kIGEgdXBkYXRlZCBwYXRjaCB2ZXJzaW9uIHdpdGggdGhpcyBjaGFuZ2Uu
-DQoNCj4NCj5wbV9ydW50aW1lX2FsbG93KCkgbWF5IGJlIG9taXR0ZWQgYnV0IHRoZW4gdG8gbWFr
-ZSB0aGUgcnVudGltZSBQTQ0KPmZyYW1ld29yayB0byBtYWtlIHRoZSBwb3dlciBzdGF0ZSB0cmFu
-c2l0aW9ucyB0aGlzIG5lZWRzIHRvIGJlIGNvbmZpZ3VyZWQNCj5mcm9tIHRoZSB1c2VyIHNwYWNl
-IC0tLSB3aGljaCBJIGRvbid0IHRoaW5rIGlzIGludGVuZGVkLg0KPg0KPkNjIGxpbnV4LXBtLCB0
-b28uDQo+DQo+LS0NCj5SZWdhcmRzLA0KPg0KPlNha2FyaSBBaWx1cw0KPmUtbWFpbDogc2FrYXJp
-LmFpbHVzQGlraS5maQ0K
+On 10/04/2017 01:36 PM, Viresh Kumar wrote:
+> On 28-09-17, 13:00, Zumeng Chen wrote:
+>> Yes, you are right, it seems of_node_put(np) that you mentioned were
+>> ignored by both paths. If you don't mind I can deliver a separate patch
+>> to fix this based on some testing later.
+> Yeah, that's exactly how I want it.
+>
+OK,  I'll do it when I'm back from vacation, thanks ~
