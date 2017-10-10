@@ -1,87 +1,42 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] PM / OPP: use of_cpu_device_node_get() instead of
- of_get_cpu_node()
-Date: Tue, 10 Oct 2017 13:39:18 +0100
-Message-ID: <cc282f1b-0b36-bf45-6a0b-5e017c3c44ea@arm.com>
-References: <1507632519-19648-1-git-send-email-sudeep.holla@arm.com>
- <20171010114543.GI4031@vireshk-i7>
+From: Zumeng Chen <zumeng.chen@gmail.com>
+Subject: [PATCH 1/1] cpufreq: ti-cpufreq: add missing of_node_put()
+Date: Tue, 10 Oct 2017 21:27:20 +0800
+Message-ID: <1507642040-13646-1-git-send-email-zumeng.chen@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:43680 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751434AbdJJMjW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Oct 2017 08:39:22 -0400
-In-Reply-To: <20171010114543.GI4031@vireshk-i7>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: tony@atomide.com, viresh.kumar@linaro.org, Zumeng Chen <zumeng.chen@gmail.com>, rjw@rjwysocki.net, d-gerlach@ti.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
+call of_node_put to release the refcount of np.
 
+Signed-off-by: Zumeng Chen <zumeng.chen@gmail.com>
+---
+ drivers/cpufreq/ti-cpufreq.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-On 10/10/17 12:45, Viresh Kumar wrote:
-> On 10-10-17, 11:48, Sudeep Holla wrote:
->> Commit 762792913f8c ("PM / OPP: Fix get sharing CPUs when hotplug is used")
->> moved away from using cpu_dev->of_node because of some limitations.
->> However commit 7467c9d95989 ("of: return of_get_cpu_node from
->> of_cpu_device_node_get if CPUs are not registered") added support to
->> falls back to of_get_cpu_node if called if CPUs are not registered yet.
->>
->> This patch moves back to use of_cpu_device_node_get in
->> dev_pm_opp_of_get_sharing_cpus to avoid scanning the device tree again.
->> It also adds the missing of_node_put for the CPU device nodes.
->>
->> Cc: Viresh Kumar <vireshk@kernel.org>
->> Cc: Nishanth Menon <nm@ti.com>
->> Cc: Stephen Boyd <sboyd@codeaurora.org>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Fixes: 762792913f8c ("PM / OPP: Fix get sharing CPUs when hotplug is used")
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>  drivers/base/power/opp/of.c | 3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
->> index 0b718886479b..3505193043fe 100644
->> --- a/drivers/base/power/opp/of.c
->> +++ b/drivers/base/power/opp/of.c
->> @@ -603,13 +603,14 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
->>  		if (cpu == cpu_dev->id)
->>  			continue;
->>
->> -		cpu_np = of_get_cpu_node(cpu, NULL);
->> +		cpu_np = of_cpu_device_node_get(cpu);
->>  		if (!cpu_np) {
->>  			dev_err(cpu_dev, "%s: failed to get cpu%d node\n",
->>  				__func__, cpu);
->>  			ret = -ENOENT;
->>  			goto put_cpu_node;
->>  		}
->> +		of_node_put(cpu_np);
->>
->>  		/* Get OPP descriptor node */
->>  		tmp_np = _opp_of_get_opp_desc_node(cpu_np);
-> 
-> This line is going to use cpu_np, how can we put cpu_np before this ?
-> 
-
-We didn't take the reference before commit 762792913f8c as we were using
-cpu_dev->of_node directly. The above mentioned commit used
-of_get_cpu_node() which introduces the reference. So I assumed it
-shouldn't matter much and in order to keep the change simple, I did it
-before _opp_of_get_opp_desc_node. I can move just after
-_opp_of_get_opp_desc_node and before if check to avoid having both
-before failure goto and after the block.
-
-Let me know what is your preference ?
-
-> And you need to rebase this on pm/linux-next.
-> 
-
-OK
+diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+index ffcddcd..923317f 100644
+--- a/drivers/cpufreq/ti-cpufreq.c
++++ b/drivers/cpufreq/ti-cpufreq.c
+@@ -205,6 +205,7 @@ static int ti_cpufreq_init(void)
+ 
+ 	np = of_find_node_by_path("/");
+ 	match = of_match_node(ti_cpufreq_of_match, np);
++	of_node_put(np);
+ 	if (!match)
+ 		return -ENODEV;
+ 
 -- 
-Regards,
-Sudeep
+2.7.5
