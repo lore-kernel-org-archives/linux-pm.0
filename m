@@ -1,74 +1,51 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 13/25] thermal/drivers/hisi: Remove mutex_lock in the code
-Date: Tue, 10 Oct 2017 20:02:38 +0200
-Message-ID: <1507658570-32675-13-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 11/25] thermal/drivers/hisi: Convert long to int
+Date: Tue, 10 Oct 2017 20:02:36 +0200
+Message-ID: <1507658570-32675-11-git-send-email-daniel.lezcano@linaro.org>
 References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
  <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f50.google.com ([74.125.82.50]:52099 "EHLO
+        mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932572AbdJJSFG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2017 14:05:06 -0400
+Received: by mail-wm0-f50.google.com with SMTP id f4so7717381wme.0
+        for <linux-pm@vger.kernel.org>; Tue, 10 Oct 2017 11:05:05 -0700 (PDT)
 In-Reply-To: <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org, Leo Yan <leo.yan@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org
 
-The mutex is used to protect against writes in the configuration register.
+There is no point to specify the temperature as long variable, the int is
+enough.
 
-That happens at probe time, with no possible race yet.
-
-Then when the module is unloaded and at suspend/resume.
-
-When the module is unloaded, it is an userspace operation, thus via a process.
-Suspending the system goes through the freezer to suspend all the tasks
-synchronously before continuing. So it is not possible to hit the suspend ops
-in this driver while we are unloading it.
-
-The resume is the same situation than the probe.
-
-In other words, even if there are several places where we write the
-configuration register, there is no situation where we can write it at the same
-time, so far as I can judge
+Replace all long variables to int, so making the code consistent.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Reviewed-by: Leo Yan <leo.yan@linaro.org>
-Tested-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 6 ------
- 1 file changed, 6 deletions(-)
+ drivers/thermal/hisi_thermal.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 5b0b5be..241d42c 100644
+index 70dc373..dabe9a8 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -53,7 +53,6 @@ struct hisi_thermal_sensor {
- };
- 
- struct hisi_thermal_data {
--	struct mutex thermal_lock;    /* protects register data */
- 	struct platform_device *pdev;
- 	struct clk *clk;
- 	struct hisi_thermal_sensor sensor;
-@@ -200,14 +199,10 @@ static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
- 
- static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
- {
--	mutex_lock(&data->thermal_lock);
--
- 	/* disable sensor module */
- 	hisi_thermal_enable(data->regs, 0);
- 	hisi_thermal_alarm_enable(data->regs, 0);
- 	hisi_thermal_reset_enable(data->regs, 0);
--
--	mutex_unlock(&data->thermal_lock);
+@@ -85,12 +85,12 @@ static inline int hisi_thermal_step_to_temp(int step)
+ 	return HISI_TEMP_BASE + (step * HISI_TEMP_STEP);
  }
  
- static int hisi_thermal_get_temp(void *__data, int *temp)
-@@ -344,7 +339,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
- 	if (!data)
- 		return -ENOMEM;
+-static inline long hisi_thermal_temp_to_step(long temp)
++static inline int hisi_thermal_temp_to_step(int temp)
+ {
+ 	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
+ }
  
--	mutex_init(&data->thermal_lock);
- 	data->pdev = pdev;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-static inline long hisi_thermal_round_temp(int temp)
++static inline int hisi_thermal_round_temp(int temp)
+ {
+ 	return hisi_thermal_step_to_temp(
+ 		hisi_thermal_temp_to_step(temp));
 -- 
 2.7.4
