@@ -1,88 +1,80 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 08/25] thermal/drivers/hisi: Fix configuration register setting
-Date: Tue, 10 Oct 2017 20:02:33 +0200
-Message-ID: <1507658570-32675-8-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 05/25] thermal/drivers/hisi: Fix multiple alarm interrupts firing
+Date: Tue, 10 Oct 2017 20:02:30 +0200
+Message-ID: <1507658570-32675-5-git-send-email-daniel.lezcano@linaro.org>
 References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
  <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org, Leo Yan <leo.yan@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The TEMP0_CFG configuration register contains different field to set up the
-temperature controller. However in the code, nothing prevents a setup to
-overwrite the previous one: eg. writing the hdak value overwrites the sensor
-selection, the sensor selection overwrites the hdak value.
+The DT specifies a threshold of 65000, we setup the register with a value in
+the temperature resolution for the controller, 64656.
 
-In order to prevent such thing, use a regmap-like mechanism by reading the
-value before, set the corresponding bits and write the result.
+When we reach 64656, the interrupt fires, the interrupt is disabled. Then the
+irq thread runs and calls thermal_zone_device_update() which will call in turn
+hisi_thermal_get_temp().
+
+The function will look if the temperature decreased, assuming it was more than
+65000, but that is not the case because the current temperature is 64656
+(because of the rounding when setting the threshold). This condition being
+true, we re-enable the interrupt which fires immediately after exiting the irq
+thread. That happens again and again until the temperature goes to more than
+65000.
+
+Potentially, there is here an interrupt storm if the temperature stabilizes at
+this temperature. A very unlikely case but possible.
+
+In any case, it does not make sense to handle dozens of alarm interrupt for
+nothing.
+
+Fix this by rounding the threshold value to the controller resolution so the
+check against the threshold is consistent with the one set in the controller.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Leo Yan <leo.yan@linaro.org>
+Tested-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 34 +++++++++++++++++++++++++++++-----
- 1 file changed, 29 insertions(+), 5 deletions(-)
+ drivers/thermal/hisi_thermal.c | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 8e8a117..5688556 100644
+index 04eb5e2..1b44bfe 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -30,6 +30,8 @@
- #define TEMP0_TH			(0x4)
- #define TEMP0_RST_TH			(0x8)
- #define TEMP0_CFG			(0xC)
-+#define TEMP0_CFG_SS_MSK		(0xF000)
-+#define TEMP0_CFG_HDAK_MSK		(0x30)
- #define TEMP0_EN			(0x10)
- #define TEMP0_INT_EN			(0x14)
- #define TEMP0_INT_CLR			(0x18)
-@@ -132,19 +134,41 @@ static inline void hisi_thermal_enable(void __iomem *addr, int value)
- 	writel(value, addr + TEMP0_EN);
+@@ -90,6 +90,12 @@ static inline long hisi_thermal_temp_to_step(long temp)
+ 	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
  }
  
--static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
-+static inline int hisi_thermal_get_temperature(void __iomem *addr)
- {
--	writel((sensor << 12), addr + TEMP0_CFG);
-+	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
- }
- 
--static inline int hisi_thermal_get_temperature(void __iomem *addr)
-+/*
-+ * Temperature configuration register - Sensor selection
-+ *
-+ * Bits [19:12]
-+ *
-+ * 0x0: local sensor (default)
-+ * 0x1: remote sensor 1 (ACPU cluster 1)
-+ * 0x2: remote sensor 2 (ACPU cluster 0)
-+ * 0x3: remote sensor 3 (G3D)
-+ */
-+static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
- {
--	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
-+	writel((readl(addr + TEMP0_CFG) & ~TEMP0_CFG_SS_MSK ) |
-+	       (sensor << 12), addr + TEMP0_CFG);
- }
- 
-+/*
-+ * Temperature configuration register - Hdak conversion polling interval
-+ *
-+ * Bits [5:4]
-+ *
-+ * 0x0 :   0.768 ms
-+ * 0x1 :   6.144 ms
-+ * 0x2 :  49.152 ms
-+ * 0x3 : 393.216 ms
-+ */
- static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
- {
--	writel(value, addr + TEMP0_CFG);
-+	writel((readl(addr + TEMP0_CFG) & ~TEMP0_CFG_HDAK_MSK) |
-+	       (value << 4), addr + TEMP0_CFG);
- }
- 
++static inline long hisi_thermal_round_temp(int temp)
++{
++	return hisi_thermal_step_to_temp(
++		hisi_thermal_temp_to_step(temp));
++}
++
  static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+ 					 struct hisi_thermal_sensor *sensor)
+ {
+@@ -221,7 +227,7 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
+ 	sensor = &data->sensors;
+ 
+ 	dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
+-		 sensor->thres_temp / 1000);
++		 sensor->thres_temp);
+ 	mutex_unlock(&data->thermal_lock);
+ 
+ 	thermal_zone_device_update(data->sensors.tzd,
+@@ -255,7 +261,7 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+ 
+ 	for (i = 0; i < of_thermal_get_ntrips(sensor->tzd); i++) {
+ 		if (trip[i].type == THERMAL_TRIP_PASSIVE) {
+-			sensor->thres_temp = trip[i].temperature;
++			sensor->thres_temp = hisi_thermal_round_temp(trip[i].temperature);
+ 			break;
+ 		}
+ 	}
 -- 
 2.7.4
