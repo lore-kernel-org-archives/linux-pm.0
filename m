@@ -1,42 +1,117 @@
-From: Zumeng Chen <zumeng.chen@gmail.com>
-Subject: [PATCH 1/1] cpufreq: ti-cpufreq: add missing of_node_put()
-Date: Tue, 10 Oct 2017 21:27:20 +0800
-Message-ID: <1507642040-13646-1-git-send-email-zumeng.chen@gmail.com>
+From: Aishwarya Pant <aishpant@gmail.com>
+Subject: [PATCH v2] power: supply: replace pr_* with dev_*
+Date: Tue, 10 Oct 2017 20:09:18 +0530
+Message-ID: <20171010143918.5wl2h7gvyopuinv5@aishwarya>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: tony@atomide.com, viresh.kumar@linaro.org, Zumeng Chen <zumeng.chen@gmail.com>, rjw@rjwysocki.net, d-gerlach@ti.com
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-call of_node_put to release the refcount of np.
+Use kernel preferred dev_* family of functions in place of pr_*,
+wherever a device object is present.
 
-Signed-off-by: Zumeng Chen <zumeng.chen@gmail.com>
+Done with the help of coccinelle.
+
+Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
 ---
- drivers/cpufreq/ti-cpufreq.c | 1 +
- 1 file changed, 1 insertion(+)
+Changes in v2:
+- Remove device name from log message as it is already present
+  in the dev_* functions
 
-diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
-index ffcddcd..923317f 100644
---- a/drivers/cpufreq/ti-cpufreq.c
-+++ b/drivers/cpufreq/ti-cpufreq.c
-@@ -205,6 +205,7 @@ static int ti_cpufreq_init(void)
+The following cocci script was used to make the patch:
+@r exists@
+identifier f, s, x;
+position p;
+@@
+ f(..., struct s *x,...) {
+<+... when != x == NULL
+ \(pr_err@p\|pr_debug@p\|pr_info@p\|pr_warn@p\)(...); ...+>
+ }
+
+@struc@
+identifier dev, r.s;
+@@
+struct s {
+        ...
+        struct device *dev;
+        ...
+};
+
+@@
+identifier r.x, struc.dev;
+position r.p;
+@@
+(
+- pr_err@p
++ dev_err
+|
+- pr_warn@p
++ dev_warn
+|
+- pr_info@p
++ dev_info
+|
+- pr_debug@p
++ dev_dbg
+)
+ (
++ x->dev,
+...)
+
+@rr exists@
+local idexpression struct device *dev;
+@@
+
+<+... dev ...+>
+(
+- pr_err
++ dev_err
+|
+- pr_info
++ dev_info
+|
+- pr_warn
++ dev_warn
+|
+- pr_debug
++ dev_dbg
+)
+ (
++ dev,
+...)
+---
+ drivers/power/supply/power_supply_core.c | 2 +-
+ drivers/power/supply/twl4030_charger.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+index 02c6340ae36f..82f998ab5a52 100644
+--- a/drivers/power/supply/power_supply_core.c
++++ b/drivers/power/supply/power_supply_core.c
+@@ -669,7 +669,7 @@ EXPORT_SYMBOL_GPL(power_supply_powers);
+ static void power_supply_dev_release(struct device *dev)
+ {
+ 	struct power_supply *psy = container_of(dev, struct power_supply, dev);
+-	pr_debug("device: '%s': %s\n", dev_name(dev), __func__);
++	dev_dbg(dev, "%s\n", __func__);
+ 	kfree(psy);
+ }
  
- 	np = of_find_node_by_path("/");
- 	match = of_match_node(ti_cpufreq_of_match, np);
-+	of_node_put(np);
- 	if (!match)
- 		return -ENODEV;
+diff --git a/drivers/power/supply/twl4030_charger.c b/drivers/power/supply/twl4030_charger.c
+index a5915f498eea..bbcaee56db9d 100644
+--- a/drivers/power/supply/twl4030_charger.c
++++ b/drivers/power/supply/twl4030_charger.c
+@@ -743,7 +743,7 @@ static int twl4030bci_state(struct twl4030_bci *bci)
+ 
+ 	ret = twl4030_bci_read(TWL4030_BCIMSTATEC, &state);
+ 	if (ret) {
+-		pr_err("twl4030_bci: error reading BCIMSTATEC\n");
++		dev_err(bci->dev, "error reading BCIMSTATEC\n");
+ 		return ret;
+ 	}
  
 -- 
-2.7.5
+2.11.0
