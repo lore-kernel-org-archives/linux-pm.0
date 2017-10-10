@@ -1,113 +1,103 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 04/25] thermal/drivers/hisi: Simplify the temperature/step computation
-Date: Tue, 10 Oct 2017 20:02:29 +0200
-Message-ID: <1507658570-32675-4-git-send-email-daniel.lezcano@linaro.org>
-References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
- <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/8] Documentation: fix driver-api doc refs
+Date: Tue, 10 Oct 2017 23:39:55 +0200
+Message-ID: <CAJZ5v0h4aRyBdAscb97Y-ys-=yorv4dLYOLde-ENWBPcdOHGhA@mail.gmail.com>
+References: <cover.1507653969.git.tom.saeger@oracle.com> <62bc118fb6eca36e913a3b01327a5f1afabfe76c.1507653970.git.tom.saeger@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
+In-Reply-To: <62bc118fb6eca36e913a3b01327a5f1afabfe76c.1507653970.git.tom.saeger@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org, Leo Yan <leo.yan@linaro.org>
+To: Tom Saeger <tom.saeger@oracle.com>
+Cc: Jonathan Corbet <corbet@lwn.net>, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The step and the base temperature are fixed values, we can simplify the
-computation by converting the base temperature to milli celsius and use a
-pre-computed step value. That saves us a lot of mult + div for nothing at
-runtime.
+On Tue, Oct 10, 2017 at 7:36 PM, Tom Saeger <tom.saeger@oracle.com> wrote:
+> Make driver-api document refs valid.
+>
+> Signed-off-by: Tom Saeger <tom.saeger@oracle.com>
 
-Take also the opportunity to change the function names to be consistent with
-the rest of the code.
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Leo Yan <leo.yan@linaro.org>
-Tested-by: Leo Yan <leo.yan@linaro.org>
----
- drivers/thermal/hisi_thermal.c | 41 ++++++++++++++++++++++++++++-------------
- 1 file changed, 28 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index feae552..04eb5e2 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -35,8 +35,9 @@
- #define TEMP0_RST_MSK			(0x1C)
- #define TEMP0_VALUE			(0x28)
- 
--#define HISI_TEMP_BASE			(-60)
-+#define HISI_TEMP_BASE			(-60000)
- #define HISI_TEMP_RESET			(100000)
-+#define HISI_TEMP_STEP			(784)
- 
- #define HISI_MAX_SENSORS		4
- #define HISI_DEFAULT_SENSOR		2
-@@ -61,19 +62,32 @@ struct hisi_thermal_data {
- 	void __iomem *regs;
- };
- 
--/* in millicelsius */
--static inline int _step_to_temp(int step)
-+/*
-+ * The temperature computation on the tsensor is as follow:
-+ *	Unit: millidegree Celsius
-+ *	Step: 255/200 (0.7843)
-+ *	Temperature base: -60°C
-+ *
-+ * The register is programmed in temperature steps, every step is 784
-+ * millidegree and begins at -60 000 m°C
-+ *
-+ * The temperature from the steps:
-+ *
-+ *	Temp = TempBase + (steps x 784)
-+ *
-+ * and the steps from the temperature:
-+ *
-+ *	steps = (Temp - TempBase) / 784
-+ *
-+ */
-+static inline int hisi_thermal_step_to_temp(int step)
- {
--	/*
--	 * Every step equals (1 * 200) / 255 celsius, and finally
--	 * need convert to millicelsius.
--	 */
--	return (HISI_TEMP_BASE * 1000 + (step * 200000 / 255));
-+	return HISI_TEMP_BASE + (step * HISI_TEMP_STEP);
- }
- 
--static inline long _temp_to_step(long temp)
-+static inline long hisi_thermal_temp_to_step(long temp)
- {
--	return ((temp - HISI_TEMP_BASE * 1000) * 255) / 200000;
-+	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
- }
- 
- static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
-@@ -99,7 +113,7 @@ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
- 	usleep_range(3000, 5000);
- 
- 	val = readl(data->regs + TEMP0_VALUE);
--	val = _step_to_temp(val);
-+	val = hisi_thermal_step_to_temp(val);
- 
- 	mutex_unlock(&data->thermal_lock);
- 
-@@ -126,10 +140,11 @@ static void hisi_thermal_enable_bind_irq_sensor
- 	writel((sensor->id << 12), data->regs + TEMP0_CFG);
- 
- 	/* enable for interrupt */
--	writel(_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
-+	writel(hisi_thermal_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
- 	       data->regs + TEMP0_TH);
- 
--	writel(_temp_to_step(HISI_TEMP_RESET), data->regs + TEMP0_RST_TH);
-+	writel(hisi_thermal_temp_to_step(HISI_TEMP_RESET),
-+	       data->regs + TEMP0_RST_TH);
- 
- 	/* enable module */
- 	writel(0x1, data->regs + TEMP0_RST_MSK);
--- 
-2.7.4
+> ---
+>  Documentation/power/pci.txt                  | 10 +++++-----
+>  Documentation/power/runtime_pm.txt           |  2 +-
+>  Documentation/process/submitting-drivers.rst |  2 +-
+>  3 files changed, 7 insertions(+), 7 deletions(-)
+>
+> diff --git a/Documentation/power/pci.txt b/Documentation/power/pci.txt
+> index a1b7f7158930..d17fdf8f45ef 100644
+> --- a/Documentation/power/pci.txt
+> +++ b/Documentation/power/pci.txt
+> @@ -8,7 +8,7 @@ management.  Based on previous work by Patrick Mochel <mochel@transmeta.com>
+>
+>  This document only covers the aspects of power management specific to PCI
+>  devices.  For general description of the kernel's interfaces related to device
+> -power management refer to Documentation/power/admin-guide/devices.rst and
+> +power management refer to Documentation/driver-api/pm/devices.rst and
+>  Documentation/power/runtime_pm.txt.
+>
+>  ---------------------------------------------------------------------------
+> @@ -417,7 +417,7 @@ pm->runtime_idle() callback.
+>  2.4. System-Wide Power Transitions
+>  ----------------------------------
+>  There are a few different types of system-wide power transitions, described in
+> -Documentation/power/admin-guide/devices.rst.  Each of them requires devices to be handled
+> +Documentation/driver-api/pm/devices.rst.  Each of them requires devices to be handled
+>  in a specific way and the PM core executes subsystem-level power management
+>  callbacks for this purpose.  They are executed in phases such that each phase
+>  involves executing the same subsystem-level callback for every device belonging
+> @@ -623,7 +623,7 @@ System restore requires a hibernation image to be loaded into memory and the
+>  pre-hibernation memory contents to be restored before the pre-hibernation system
+>  activity can be resumed.
+>
+> -As described in Documentation/power/admin-guide/devices.rst, the hibernation image is loaded
+> +As described in Documentation/driver-api/pm/devices.rst, the hibernation image is loaded
+>  into memory by a fresh instance of the kernel, called the boot kernel, which in
+>  turn is loaded and run by a boot loader in the usual way.  After the boot kernel
+>  has loaded the image, it needs to replace its own code and data with the code
+> @@ -677,7 +677,7 @@ controlling the runtime power management of their devices.
+>
+>  At the time of this writing there are two ways to define power management
+>  callbacks for a PCI device driver, the recommended one, based on using a
+> -dev_pm_ops structure described in Documentation/power/admin-guide/devices.rst, and the
+> +dev_pm_ops structure described in Documentation/driver-api/pm/devices.rst, and the
+>  "legacy" one, in which the .suspend(), .suspend_late(), .resume_early(), and
+>  .resume() callbacks from struct pci_driver are used.  The legacy approach,
+>  however, doesn't allow one to define runtime power management callbacks and is
+> @@ -1046,5 +1046,5 @@ PCI Local Bus Specification, Rev. 3.0
+>  PCI Bus Power Management Interface Specification, Rev. 1.2
+>  Advanced Configuration and Power Interface (ACPI) Specification, Rev. 3.0b
+>  PCI Express Base Specification, Rev. 2.0
+> -Documentation/power/admin-guide/devices.rst
+> +Documentation/driver-api/pm/devices.rst
+>  Documentation/power/runtime_pm.txt
+> diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+> index 625549d4c74a..57af2f7963ee 100644
+> --- a/Documentation/power/runtime_pm.txt
+> +++ b/Documentation/power/runtime_pm.txt
+> @@ -680,7 +680,7 @@ left in runtime suspend.  If that happens, the PM core will not execute any
+>  system suspend and resume callbacks for all of those devices, except for the
+>  complete callback, which is then entirely responsible for handling the device
+>  as appropriate.  This only applies to system suspend transitions that are not
+> -related to hibernation (see Documentation/power/admin-guide/devices.rst for more
+> +related to hibernation (see Documentation/driver-api/pm/devices.rst for more
+>  information).
+>
+>  The PM core does its best to reduce the probability of race conditions between
+> diff --git a/Documentation/process/submitting-drivers.rst b/Documentation/process/submitting-drivers.rst
+> index afb82ee0cbea..b38bf2054ce3 100644
+> --- a/Documentation/process/submitting-drivers.rst
+> +++ b/Documentation/process/submitting-drivers.rst
+> @@ -117,7 +117,7 @@ PM support:
+>                 anything.  For the driver testing instructions see
+>                 Documentation/power/drivers-testing.txt and for a relatively
+>                 complete overview of the power management issues related to
+> -               drivers see Documentation/power/admin-guide/devices.rst .
+> +               drivers see Documentation/driver-api/pm/devices.rst.
+>
+>  Control:
+>                 In general if there is active maintenance of a driver by
+> --
+> 2.14.2
+>
