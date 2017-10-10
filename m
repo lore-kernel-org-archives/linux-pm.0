@@ -1,120 +1,139 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 1/2] ARM: cpuidle: Correct driver unregistration if
- init fails
-Date: Wed, 11 Oct 2017 00:00:33 +0200
-Message-ID: <CAJZ5v0h6BMTpFb1L5-ZAaupAiFApz+i-hYjDgfW4Fs0Dk_J1dg@mail.gmail.com>
-References: <1507614476-16054-1-git-send-email-leo.yan@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [RFC][PATCH] ACPI / LPSS: Update system sleep handling to follow runtime PM
+Date: Wed, 11 Oct 2017 01:17:51 +0200
+Message-ID: <6579657.vL5j0BfzvC@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f65.google.com ([209.85.218.65]:50238 "EHLO
-        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755586AbdJJWAe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2017 18:00:34 -0400
-In-Reply-To: <1507614476-16054-1-git-send-email-leo.yan@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tue, Oct 10, 2017 at 7:47 AM, Leo Yan <leo.yan@linaro.org> wrote:
-> If cpuidle init fails, the code misses to unregister the driver for
-> current CPU. Furthermore, we also need to rollback to cancel all
-> previous CPUs registration; but the code retrieves driver handler by
-> using function cpuidle_get_driver(), this function returns back
-> current CPU driver handler but not previous CPU's handler, which leads
-> to the failure handling code cannot unregister previous CPUs driver.
->
-> This commit fixes two mentioned issues, it adds error handling path
-> 'goto out_unregister_drv' for current CPU driver unregistration; and
-> it is to replace cpuidle_get_driver() with cpuidle_get_cpu_driver(),
-> the later function can retrieve driver handler for previous CPUs
-> according to the CPU device handler so can unregister the driver
-> properly.
->
-> This patch also adds extra error handling paths 'goto out_kfree_dev'
-> and 'goto out_kfree_drv' and adjusts the freeing sentences for previous
-> CPUs; so make the code more readable for freeing 'dev' and 'drv'
-> structures.
->
-> Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Signed-off-by: Leo Yan <leo.yan@linaro.org>
-> Fixes: d50a7d8acd78 ("ARM: cpuidle: Support asymmetric idle definition")
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Daniel, any comments here and on the [2/2]?
+Modify the system sleep callback routines of acpi_lpss,
+acpi_lpss_suspend_late() and acpi_lpss_resume_early(), to follow
+the runtime PM ones and take LPSS_QUIRK_ALWAYS_POWER_ON into account.
 
-> ---
->  drivers/cpuidle/cpuidle-arm.c | 22 +++++++++++++---------
->  1 file changed, 13 insertions(+), 9 deletions(-)
->
-> diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-> index 52a7505..f47c545 100644
-> --- a/drivers/cpuidle/cpuidle-arm.c
-> +++ b/drivers/cpuidle/cpuidle-arm.c
-> @@ -104,13 +104,13 @@ static int __init arm_idle_init(void)
->                 ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
->                 if (ret <= 0) {
->                         ret = ret ? : -ENODEV;
-> -                       goto init_fail;
-> +                       goto out_kfree_drv;
->                 }
->
->                 ret = cpuidle_register_driver(drv);
->                 if (ret) {
->                         pr_err("Failed to register cpuidle driver\n");
-> -                       goto init_fail;
-> +                       goto out_kfree_drv;
->                 }
->
->                 /*
-> @@ -128,14 +128,14 @@ static int __init arm_idle_init(void)
->
->                 if (ret) {
->                         pr_err("CPU %d failed to init idle CPU ops\n", cpu);
-> -                       goto out_fail;
-> +                       goto out_unregister_drv;
->                 }
->
->                 dev = kzalloc(sizeof(*dev), GFP_KERNEL);
->                 if (!dev) {
->                         pr_err("Failed to allocate cpuidle device\n");
->                         ret = -ENOMEM;
-> -                       goto out_fail;
-> +                       goto out_unregister_drv;
->                 }
->                 dev->cpu = cpu;
->
-> @@ -143,21 +143,25 @@ static int __init arm_idle_init(void)
->                 if (ret) {
->                         pr_err("Failed to register cpuidle device for CPU %d\n",
->                                cpu);
-> -                       kfree(dev);
-> -                       goto out_fail;
-> +                       goto out_kfree_dev;
->                 }
->         }
->
->         return 0;
-> -init_fail:
-> +
-> +out_kfree_dev:
-> +       kfree(dev);
-> +out_unregister_drv:
-> +       cpuidle_unregister_driver(drv);
-> +out_kfree_drv:
->         kfree(drv);
->  out_fail:
->         while (--cpu >= 0) {
->                 dev = per_cpu(cpuidle_devices, cpu);
-> +               drv = cpuidle_get_cpu_driver(dev);
->                 cpuidle_unregister_device(dev);
-> -               kfree(dev);
-> -               drv = cpuidle_get_driver();
->                 cpuidle_unregister_driver(drv);
-> +               kfree(dev);
->                 kfree(drv);
->         }
->
-> --
-> 2.7.4
->
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+The runtime PM and system sleep handling in acpi_lpss have diverged
+which almost certainly is a bug.
+
+At least I see no reason why LPSS_QUIRK_ALWAYS_POWER_ON should not
+be taken into account during systen suspend/resume in the
+suspend-to-idle case, but also I don't see why doing that will
+hurt the S3 case in principle.
+
+---
+ drivers/acpi/acpi_lpss.c |   86 +++++++++++++++++++++++++++--------------------
+ 1 file changed, 51 insertions(+), 35 deletions(-)
+
+Index: linux-pm/drivers/acpi/acpi_lpss.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/acpi_lpss.c
++++ linux-pm/drivers/acpi/acpi_lpss.c
+@@ -715,41 +715,6 @@ static void acpi_lpss_dismiss(struct dev
+ {
+ 	acpi_dev_runtime_suspend(dev);
+ }
+-
+-#ifdef CONFIG_PM_SLEEP
+-static int acpi_lpss_suspend_late(struct device *dev)
+-{
+-	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+-	int ret;
+-
+-	ret = pm_generic_suspend_late(dev);
+-	if (ret)
+-		return ret;
+-
+-	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
+-		acpi_lpss_save_ctx(dev, pdata);
+-
+-	return acpi_dev_suspend_late(dev);
+-}
+-
+-static int acpi_lpss_resume_early(struct device *dev)
+-{
+-	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+-	int ret;
+-
+-	ret = acpi_dev_resume_early(dev);
+-	if (ret)
+-		return ret;
+-
+-	acpi_lpss_d3_to_d0_delay(pdata);
+-
+-	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
+-		acpi_lpss_restore_ctx(dev, pdata);
+-
+-	return pm_generic_resume_early(dev);
+-}
+-#endif /* CONFIG_PM_SLEEP */
+-
+ /* IOSF SB for LPSS island */
+ #define LPSS_IOSF_UNIT_LPIOEP		0xA0
+ #define LPSS_IOSF_UNIT_LPIO1		0xAB
+@@ -835,6 +800,57 @@ static void lpss_iosf_exit_d3_state(void
+ 	mutex_unlock(&lpss_iosf_mutex);
+ }
+ 
++#ifdef CONFIG_PM_SLEEP
++static int acpi_lpss_suspend_late(struct device *dev)
++{
++	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
++	int ret;
++
++	ret = pm_generic_suspend_late(dev);
++	if (ret)
++		return ret;
++
++	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
++		acpi_lpss_save_ctx(dev, pdata);
++
++	ret = acpi_dev_suspend_late(dev);
++
++	/*
++	 * This call must be last in the sequence, otherwise PMC will return
++	 * wrong status for devices being about to be powered off. See
++	 * lpss_iosf_enter_d3_state() for further information.
++	 */
++	if (lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
++		lpss_iosf_enter_d3_state();
++
++	return ret;
++}
++
++static int acpi_lpss_resume_early(struct device *dev)
++{
++	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
++	int ret;
++
++	/*
++	 * This call is kept first to be in symmetry with
++	 * acpi_lpss_runtime_suspend() one.
++	 */
++	if (lpss_quirks & LPSS_QUIRK_ALWAYS_POWER_ON && iosf_mbi_available())
++		lpss_iosf_exit_d3_state();
++
++	ret = acpi_dev_resume_early(dev);
++	if (ret)
++		return ret;
++
++	acpi_lpss_d3_to_d0_delay(pdata);
++
++	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
++		acpi_lpss_restore_ctx(dev, pdata);
++
++	return pm_generic_resume_early(dev);
++}
++#endif /* CONFIG_PM_SLEEP */
++
+ static int acpi_lpss_runtime_suspend(struct device *dev)
+ {
+ 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+
