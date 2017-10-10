@@ -1,82 +1,48 @@
-From: Tomasz Figa <tfiga@chromium.org>
-Subject: Re: [PATCH v6 3/3] eeprom: at24: enable runtime pm support
-Date: Tue, 10 Oct 2017 12:55:45 +0900
-Message-ID: <CAAFQd5CF5SOsPw9=t-XDj1ey0YV-+M04xzQLAjZEQjecOyYUdw@mail.gmail.com>
-References: <1504520928-5191-1-git-send-email-divagar.mohandass@intel.com>
- <1504520928-5191-4-git-send-email-divagar.mohandass@intel.com>
- <6F87890CF0F5204F892DEA1EF0D77A5972FC1278@FMSMSX114.amr.corp.intel.com>
- <CAAFQd5DUNHJ7fqWy5iD_fb=TBUqGy3AQ3uGXr-TdQ5v39f_hsw@mail.gmail.com>
- <20170920084519.asyfjxo6upt36woz@valkosipuli.retiisi.org.uk>
- <CAAFQd5B65bJHsZkMgtjGgyd3btuoWzJwYQRQb5j2kSaefxCZ7Q@mail.gmail.com>
- <20170920093222.yzfw2ctrupep5iqx@valkosipuli.retiisi.org.uk>
- <20171003135109.v7ch7oc4fvjwzl7w@valkosipuli.retiisi.org.uk> <7B8CE47BD58441468D2BB13285B50E6031DF530B@BGSMSX107.gar.corp.intel.com>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] thermal/intel_powerclamp: pr_err()/pr_info() strings
+ should end with newlines
+Date: Mon, 09 Oct 2017 21:37:45 -0700
+Message-ID: <1507610265.3552.20.camel@perches.com>
+References: <277b8d12fc6980ec2ffd039a872f681ec0e49c19.1507549738.git.arvind.yadav.cs@gmail.com>
+         <7555b065-f4de-2988-283b-b6800ce189ab@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7B8CE47BD58441468D2BB13285B50E6031DF530B@BGSMSX107.gar.corp.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Mohandass, Divagar" <divagar.mohandass@intel.com>
-Cc: "sakari.ailus@iki.fi" <sakari.ailus@iki.fi>, "Mani, Rajmohan" <rajmohan.mani@intel.com>, "robh+dt@kernel.org" <robh+dt@kernel.org>, "mark.rutland@arm.com" <mark.rutland@arm.com>, "wsa@the-dreams.de" <wsa@the-dreams.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "mika.westerberg@linux.intel.com" <mika.westerberg@linux.intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtprelay0082.hostedemail.com ([216.40.44.82]:45279 "EHLO
+        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1750734AbdJJEhu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2017 00:37:50 -0400
+In-Reply-To: <7555b065-f4de-2988-283b-b6800ce189ab@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>, Arvind Yadav <arvind.yadav.cs@gmail.com>, rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Oct 9, 2017 at 12:14 PM, Mohandass, Divagar
-<divagar.mohandass@intel.com> wrote:
-> Hi Tomasz,
->
->>-----Original Message-----
->>From: sakari.ailus@iki.fi [mailto:sakari.ailus@iki.fi]
->>Sent: Tuesday, October 03, 2017 7:21 PM
->>To: Tomasz Figa <tfiga@chromium.org>
->>Cc: Mani, Rajmohan <rajmohan.mani@intel.com>; Mohandass, Divagar
->><divagar.mohandass@intel.com>; robh+dt@kernel.org;
->>mark.rutland@arm.com; wsa@the-dreams.de; devicetree@vger.kernel.org;
->>linux-i2c@vger.kernel.org; linux-kernel@vger.kernel.org;
->>mika.westerberg@linux.intel.com; linux-pm@vger.kernel.org
->>Subject: Re: [PATCH v6 3/3] eeprom: at24: enable runtime pm support
->>
->>Hi Tomasz,
->>
->>On Wed, Sep 20, 2017 at 12:32:22PM +0300, sakari.ailus@iki.fi wrote:
->>> > >> >> @@ -743,11 +770,17 @@ static int at24_probe(struct i2c_client
->>> > >> >> *client, const struct i2c_device_id *id)
->>> > >> >>
->>> > >> >>       i2c_set_clientdata(client, at24);
->>> > >> >>
->>> > >> >> +     /* enable runtime pm */
->>> > >> >> +     pm_runtime_get_noresume(&client->dev);
->>> > >> >> +     pm_runtime_set_active(&client->dev);
->>> > >> >> +     pm_runtime_enable(&client->dev);
->>> > >>
->>> > >> Do we need this get_noresume/set_active dance? I remember it was
->>> > >> for some reason needed for PCI devices, but I don't see why for
->>> > >> I2C anything else than just pm_runtime_enable() would be necessary=
-.
->>> > >
->>> > > You specifically do not need (all) this for PCI devices, but AFAIU
->>> > > for I=E6=B6=8E
->>> > > devices you do. The runtime PM status of a device is disabled by
->>> > > default and the use count is zero, but on ACPI based systems the
->>> > > device is still powered on.
->>> >
->>> > Okay, so _get_noresume() and _set_active() would do the thing for
->>> > ACPI indeed, but not sure about other platforms. Perhaps _enable(),
->>> > _get_sync() would be more general?
->>>
->>> What I ended up doing in e.g. the smiapp driver was to explicitly
->>> power the device on first and then enable runtime PM. (See
->>> drivers/media/i2c/smiapp/smiapp-core.c .) This approach works even if
->>> CONFIG_PM is disabled, both on DT and ACPI.
->>
->>pm_runtime_get_noresume() + pm_runtime_put() can be replaced by a single
->>pm_runtime_idle() call (where pm_runtime_put() was). pm_runtime_enable()
->>is required to enable runtime PM for a device.
->
-> Verified the change suggested by Sakari.
-> Let me know I can send a updated patch version with this change.
+On Mon, 2017-10-09 at 14:33 +0200, Daniel Lezcano wrote:
+> On 09/10/2017 13:51, Arvind Yadav wrote:
+> > pr_err()/pr_info() messages should end with a new-line to avoid
+> > other messages being concatenated.
+[]
+> > diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
+> > @@ -675,13 +675,13 @@ static int __init powerclamp_probe(void)
+> >  {
+> >  
+> >  	if (!x86_match_cpu(intel_powerclamp_ids)) {
+> > -		pr_err("CPU does not support MWAIT");
+> > +		pr_err("CPU does not support MWAIT\n");
 
-Okay, looks like Sakari confirmed that the driver should work fine
-without callbacks, so please go ahead. Thanks for patience.
+[etc...]
 
-Best regards,
-Tomasz
+> Hi Arvind,
+> 
+> you are sending these fixes for all the drivers around. There is a way
+> to fix this once and for all: use the coccinelle tools [1], add the
+> script in the changelog with a big patchset and add the script in the
+> coccinelle scripts directory [2].
+
+That can't work as any printk without a newline termination
+could be followed by a printk(KERN_CONT/pr_cont( in another
+function.
+
+All of these must be hand-verified.
