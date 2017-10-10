@@ -1,55 +1,113 @@
-From: Nicholas Piggin <npiggin@gmail.com>
-Subject: [PATCH] powerpc/pseries/cpuidle: add polling idle for shared processor guests
-Date: Tue, 10 Oct 2017 17:11:09 +1000
-Message-ID: <20171010071109.31207-1-npiggin@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:36848 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751872AbdJJHLU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2017 03:11:20 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+Subject: Re: [PATCH 07/34] cpufreq: cris: remove calls to
+ cpufreq_notify_transition()
+Date: Tue, 10 Oct 2017 09:57:42 +0200
+Message-ID: <20171010075742.GL17578@axis.com>
+References: <cover.1376619363.git.viresh.kumar@linaro.org>
+ <d8b7b00908f0fa16feca841b1bf7fb1a49c62df1.1376619363.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <d8b7b00908f0fa16feca841b1bf7fb1a49c62df1.1376619363.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "rjw@sisk.pl" <rjw@sisk.pl>, "linaro-kernel@lists.linaro.org" <linaro-kernel@lists.linaro.org>, "patches@linaro.org" <patches@linaro.org>, "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jesper Nilsson <jespern@axis.com>, Mikael Starvik <starvik@axis.com>, linux-cris-kernel <linux-cris-kernel@axis.com>
 List-Id: linux-pm@vger.kernel.org
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org, linux-pm@vger.kernel.org
 
-For shared processor guests (e.g., KVM), add an idle polling mode rather
-than immediately returning to the hypervisor when the guest CPU goes
-idle.
+On Fri, Aug 16, 2013 at 04:25:04AM +0200, Viresh Kumar wrote:
+> Most of the drivers do following in their ->target_index() routines:
+> 
+> 	struct cpufreq_freqs freqs;
+> 	freqs.old = old freq...
+> 	freqs.new = new freq...
+> 
+> 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+> 
+> 	/* Change rate here */
+> 
+> 	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+> 
+> This is replicated over all cpufreq drivers today and there doesn't exists a
+> good enough reason why this shouldn't be moved to cpufreq core instead.
+> 
+> Earlier patches have added support in cpufreq core to do cpufreq notification on
+> frequency change, this one removes it from this driver.
+> 
+> Some related minor cleanups are also done along with it.
+> 
 
-Test setup is a 2 socket POWER9 with 4 guests running, each with vCPUs
-equal to 1/2 of real of CPUs. Saturated each guest with tbench. Using
-polling idle gives about 1.4x throughput.
+Acked-by: Jesper Nilsson <jesper.nilsson@axis.com>
 
-Kernel compile speed was not changed significantly.
+> Cc: Mikael Starvik <starvik@axis.com>
+> Cc: linux-cris-kernel@axis.com
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/cris-artpec3-cpufreq.c | 8 --------
+>  drivers/cpufreq/cris-etraxfs-cpufreq.c | 8 --------
+>  2 files changed, 16 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/cris-artpec3-cpufreq.c b/drivers/cpufreq/cris-artpec3-cpufreq.c
+> index dace19d..e31e1e5 100644
+> --- a/drivers/cpufreq/cris-artpec3-cpufreq.c
+> +++ b/drivers/cpufreq/cris-artpec3-cpufreq.c
+> @@ -29,15 +29,9 @@ static unsigned int cris_freq_get_cpu_frequency(unsigned int cpu)
+>  
+>  static int cris_freq_target(struct cpufreq_policy *policy, unsigned int state)
+>  {
+> -	struct cpufreq_freqs freqs;
+>  	reg_clkgen_rw_clk_ctrl clk_ctrl;
+>  	clk_ctrl = REG_RD(clkgen, regi_clkgen, rw_clk_ctrl);
+>  
+> -	freqs.old = cris_freq_get_cpu_frequency(policy->cpu);
+> -	freqs.new = cris_freq_table[state].frequency;
+> -
+> -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+> -
+>  	local_irq_disable();
+>  
+>  	/* Even though we may be SMP they will share the same clock
+> @@ -50,8 +44,6 @@ static int cris_freq_target(struct cpufreq_policy *policy, unsigned int state)
+>  
+>  	local_irq_enable();
+>  
+> -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+> -
+>  	return 0;
+>  }
+>  
+> diff --git a/drivers/cpufreq/cris-etraxfs-cpufreq.c b/drivers/cpufreq/cris-etraxfs-cpufreq.c
+> index 4d40d9df..9d577d0 100644
+> --- a/drivers/cpufreq/cris-etraxfs-cpufreq.c
+> +++ b/drivers/cpufreq/cris-etraxfs-cpufreq.c
+> @@ -29,15 +29,9 @@ static unsigned int cris_freq_get_cpu_frequency(unsigned int cpu)
+>  
+>  static int cris_freq_target(struct cpufreq_policy *policy, unsigned int state)
+>  {
+> -	struct cpufreq_freqs freqs;
+>  	reg_config_rw_clk_ctrl clk_ctrl;
+>  	clk_ctrl = REG_RD(config, regi_config, rw_clk_ctrl);
+>  
+> -	freqs.old = cris_freq_get_cpu_frequency(policy->cpu);
+> -	freqs.new = cris_freq_table[state].frequency;
+> -
+> -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_PRECHANGE);
+> -
+>  	local_irq_disable();
+>  
+>  	/* Even though we may be SMP they will share the same clock
+> @@ -50,8 +44,6 @@ static int cris_freq_target(struct cpufreq_policy *policy, unsigned int state)
+>  
+>  	local_irq_enable();
+>  
+> -	cpufreq_notify_transition(policy, &freqs, CPUFREQ_POSTCHANGE);
+> -
+>  	return 0;
+>  }
+>  
+> -- 
+> 1.7.12.rc2.18.g61b472e
 
-Signed-off-by: Nicholas Piggin <npiggin@gmail.com>
----
- drivers/cpuidle/cpuidle-pseries.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index e9b3853d93ea..16be7ad30fe1 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -171,11 +171,17 @@ static struct cpuidle_state dedicated_states[] = {
-  * States for shared partition case.
-  */
- static struct cpuidle_state shared_states[] = {
-+	{ /* Snooze */
-+		.name = "snooze",
-+		.desc = "snooze",
-+		.exit_latency = 0,
-+		.target_residency = 0,
-+		.enter = &snooze_loop },
- 	{ /* Shared Cede */
- 		.name = "Shared Cede",
- 		.desc = "Shared Cede",
--		.exit_latency = 0,
--		.target_residency = 0,
-+		.exit_latency = 10,
-+		.target_residency = 100,
- 		.enter = &shared_cede_loop },
- };
- 
+/^JN - Jesper Nilsson
 -- 
-2.13.3
+               Jesper Nilsson -- jesper.nilsson@axis.com
