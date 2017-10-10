@@ -1,101 +1,110 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 18/25] thermal/drivers/hisi: Use round up step value
-Date: Tue, 10 Oct 2017 20:02:43 +0200
-Message-ID: <1507658570-32675-18-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 17/25] thermal/drivers/hisi: Move the clk setup in the corresponding functions
+Date: Tue, 10 Oct 2017 20:02:42 +0200
+Message-ID: <1507658570-32675-17-git-send-email-daniel.lezcano@linaro.org>
 References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
  <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f50.google.com ([74.125.82.50]:49023 "EHLO
+        mail-wm0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932630AbdJJSFP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2017 14:05:15 -0400
+Received: by mail-wm0-f50.google.com with SMTP id i124so7424156wmf.3
+        for <linux-pm@vger.kernel.org>; Tue, 10 Oct 2017 11:05:14 -0700 (PDT)
 In-Reply-To: <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: edubezval@gmail.com, rui.zhang@intel.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org
-List-Id: linux-pm@vger.kernel.org
 
 From: Kevin Wangtao <kevin.wangtao@linaro.org>
 
-Use round up division to ensure the programmed value of threshold and the lag
-are not less than what we set, and in order to keep the accuracy while using
-round up division, the step value should be a rounded up value.  There is
-no need to use hisi_thermal_round_temp.
+The sensor's clock is enabled and disabled outside of the probe and
+disable function. Moving the corresponding action in the
+hisi_thermal_setup() and hisi_thermal_disable_sensor(), factors out
+some lines of code and makes the code more symmetric.
 
 Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 22 ++++++++--------------
- 1 file changed, 8 insertions(+), 14 deletions(-)
+ drivers/thermal/hisi_thermal.c | 29 +++++++++--------------------
+ 1 file changed, 9 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 02d0ad8..befdb28 100644
+index 241d42c..02d0ad8 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -40,7 +40,7 @@
- 
- #define HISI_TEMP_BASE			(-60000)
- #define HISI_TEMP_RESET			(100000)
--#define HISI_TEMP_STEP			(784)
-+#define HISI_TEMP_STEP			(785)
- #define HISI_TEMP_LAG			(3500)
- 
- #define HISI_MAX_SENSORS		4
-@@ -63,19 +63,19 @@ struct hisi_thermal_data {
- /*
-  * The temperature computation on the tsensor is as follow:
-  *	Unit: millidegree Celsius
-- *	Step: 255/200 (0.7843)
-+ *	Step: 200/255 (0.7843)
-  *	Temperature base: -60°C
-  *
-- * The register is programmed in temperature steps, every step is 784
-+ * The register is programmed in temperature steps, every step is 785
-  * millidegree and begins at -60 000 m°C
-  *
-  * The temperature from the steps:
-  *
-- *	Temp = TempBase + (steps x 784)
-+ *	Temp = TempBase + (steps x 785)
-  *
-  * and the steps from the temperature:
-  *
-- *	steps = (Temp - TempBase) / 784
-+ *	steps = (Temp - TempBase) / 785
-  *
-  */
- static inline int hisi_thermal_step_to_temp(int step)
-@@ -85,13 +85,7 @@ static inline int hisi_thermal_step_to_temp(int step)
- 
- static inline int hisi_thermal_temp_to_step(int temp)
- {
--	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
--}
--
--static inline int hisi_thermal_round_temp(int temp)
--{
--	return hisi_thermal_step_to_temp(
--		hisi_thermal_temp_to_step(temp));
-+	return DIV_ROUND_UP(temp - HISI_TEMP_BASE, HISI_TEMP_STEP);
+@@ -203,6 +203,8 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
+ 	hisi_thermal_enable(data->regs, 0);
+ 	hisi_thermal_alarm_enable(data->regs, 0);
+ 	hisi_thermal_reset_enable(data->regs, 0);
++
++	clk_disable_unprepare(data->clk);
  }
  
- /*
-@@ -127,7 +121,7 @@ static inline int hisi_thermal_round_temp(int temp)
-  */
- static inline void hisi_thermal_set_lag(void __iomem *addr, int value)
+ static int hisi_thermal_get_temp(void *__data, int *temp)
+@@ -297,9 +299,13 @@ static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
+ 
+ static int hisi_thermal_setup(struct hisi_thermal_data *data)
  {
--	writel((value / HISI_TEMP_STEP) & 0x1F, addr + TEMP0_LAG);
-+	writel(DIV_ROUND_UP(value, HISI_TEMP_STEP) & 0x1F, addr + TEMP0_LAG);
- }
+-	struct hisi_thermal_sensor *sensor;
++	struct hisi_thermal_sensor *sensor = &data->sensor;
++	int ret;
  
- static inline void hisi_thermal_alarm_clear(void __iomem *addr, int value)
-@@ -274,7 +268,7 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+-	sensor = &data->sensor;
++	/* enable clock for tsensor */
++	ret = clk_prepare_enable(data->clk);
++	if (ret)
++		return ret;
  
- 	for (i = 0; i < of_thermal_get_ntrips(sensor->tzd); i++) {
- 		if (trip[i].type == THERMAL_TRIP_PASSIVE) {
--			sensor->thres_temp = hisi_thermal_round_temp(trip[i].temperature);
-+			sensor->thres_temp = trip[i].temperature;
- 			break;
- 		}
+ 	/* disable module firstly */
+ 	hisi_thermal_reset_enable(data->regs, 0);
+@@ -363,13 +369,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ 		return ret;
  	}
+ 
+-	/* enable clock for thermal */
+-	ret = clk_prepare_enable(data->clk);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
+-		return ret;
+-	}
+-
+ 	ret = hisi_thermal_register_sensor(pdev, data,
+ 					   &data->sensor,
+ 					   HISI_DEFAULT_SENSOR);
+@@ -405,7 +404,6 @@ static int hisi_thermal_remove(struct platform_device *pdev)
+ 
+ 	hisi_thermal_toggle_sensor(sensor, false);
+ 	hisi_thermal_disable_sensor(data);
+-	clk_disable_unprepare(data->clk);
+ 
+ 	return 0;
+ }
+@@ -417,23 +415,14 @@ static int hisi_thermal_suspend(struct device *dev)
+ 
+ 	hisi_thermal_disable_sensor(data);
+ 
+-	clk_disable_unprepare(data->clk);
+-
+ 	return 0;
+ }
+ 
+ static int hisi_thermal_resume(struct device *dev)
+ {
+ 	struct hisi_thermal_data *data = dev_get_drvdata(dev);
+-	int ret;
+ 
+-	ret = clk_prepare_enable(data->clk);
+-	if (ret)
+-		return ret;
+-
+-	hisi_thermal_setup(data);
+-
+-	return 0;
++	return hisi_thermal_setup(data);
+ }
+ #endif
+ 
 -- 
 2.7.4
