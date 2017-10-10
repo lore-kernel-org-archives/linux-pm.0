@@ -1,102 +1,62 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [GIT PULL] thermal: new material for hikey for 4.15
-Date: Tue, 10 Oct 2017 20:02:40 +0200
-Message-ID: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Keerthy <j-keerthy@ti.com>, ldewangan@nvidia.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 01/25] thermal/drivers/hisi: Fix missing interrupt enablement
+Date: Tue, 10 Oct 2017 20:02:26 +0200
+Message-ID: <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
+References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f52.google.com ([74.125.82.52]:57149 "EHLO
+        mail-wm0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756288AbdJJSEt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2017 14:04:49 -0400
+Received: by mail-wm0-f52.google.com with SMTP id l68so7682935wmd.5
+        for <linux-pm@vger.kernel.org>; Tue, 10 Oct 2017 11:04:49 -0700 (PDT)
+In-Reply-To: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: edubezval@gmail.com, rui.zhang@intel.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org, Leo Yan <leo.yan@linaro.org>
 
-Hi Rui, Eduardo,
+The interrupt for the temperature threshold is not enabled at the end of the
+probe function, enable it after the setup is complete.
 
-** this is my first pull request for thermal, so I may have choose the
-wrong branch **
+On the other side, the irq_enabled is not correctly set as we are checking if
+the interrupt is masked where 'yes' means irq_enabled=false.
 
-The changes are based on top of the thermal-soc branch.
+	irq_get_irqchip_state(data->irq, IRQCHIP_STATE_MASKED,
+				&data->irq_enabled);
 
-The pull request contains the following changes:
+As we are always enabling the interrupt, it is pointless to check if
+the interrupt is masked or not, just set irq_enabled to 'true'.
 
- - Reworked the hikey6220 thermal driver by improving the code, fixing
-the interrupt setup issues and removed the locks. Set the scene for the
-hikey3660 support (Daniel Lezcano)
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Leo Yan <leo.yan@linaro.org>
+Tested-by: Leo Yan <leo.yan@linaro.org>
+---
+ drivers/thermal/hisi_thermal.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
- - Switched tz request to devm version in order to be consistent with
-the devm API used in the driver (Daniel Lezcano)
-
- - Fixed temperature regulation misbehavior with the step wise governor
-leading to a hikey hard reset (Daniel Lezcano)
-
- - Added support for the hikey3660 thermal driver (Kevin Wangtao)
-
-Thanks!
-
-  -- Daniel
-
--------------------------------------------------------------------------
-
-The following changes since commit 7a348799d5d9087bbc2e60767f5e6da9f70cc7ca:
-
-  Merge branches 'mediatek-mt2712', 'rockchip-rk3328' and
-'uniphier-thermal' into thermal-soc (2017-09-08 11:17:53 +0800)
-
-are available in the git repository at:
-
-  https://git.linaro.org/people/daniel.lezcano/linux.git thermal/hikey-next
-
-for you to fetch changes up to 0b860d941472c97d16d65d4f1acd7fd2c2b29cb0:
-
-  arm64: dts: Register Hi3660's thermal sensor (2017-10-10 19:53:42 +0200)
-
-----------------------------------------------------------------
-Daniel Lezcano (16):
-      thermal/drivers/hisi: Fix missing interrupt enablement
-      thermal/drivers/hisi: Remove the multiple sensors support
-      thermal/drivers/hisi: Fix kernel panic on alarm interrupt
-      thermal/drivers/hisi: Simplify the temperature/step computation
-      thermal/drivers/hisi: Fix multiple alarm interrupts firing
-      thermal/drivers/hisi: Remove pointless lock
-      thermal/drivers/hisi: Encapsulate register writes into helpers
-      thermal/drivers/hisi: Fix configuration register setting
-      thermal/drivers/hisi: Remove costly sensor inspection
-      thermal/drivers/hisi: Rename and remove unused field
-      thermal/drivers/hisi: Convert long to int
-      thermal/drivers/hisi: Remove thermal data back pointer
-      thermal/drivers/hisi: Remove mutex_lock in the code
-      thermal/drivers/generic-iio-adc: Switch tz request to devm version
-      thermal/drivers/step_wise: Fix temperature regulation misbehavior
-      thermal/drivers/qcom-spmi: Use devm_iio_channel_get
-
-Kevin Wangtao (9):
-      thermal/drivers/hisi: Move the clk setup in the corresponding
-functions
-      thermal/drivers/hisi: Use round up step value
-      thermal/drivers/hisi: Put platform code together
-      thermal/drivers/hisi: Add platform prefix to function name
-      thermal/drivers/hisi: Prepare to add support for other hisi platforms
-      thermal/drivers/hisi: Add support for multi temp threshold
-      dt-bindings: Document the hi3660 thermal sensor binding
-      thermal/drivers/hisi: Add support for hi3660 SoC
-      arm64: dts: Register Hi3660's thermal sensor
-
- Documentation/devicetree/bindings/thermal/hisilicon-thermal.txt |   9 ++
- arch/arm64/boot/dts/hisilicon/hi3660.dtsi                       |   8 ++
- drivers/thermal/hisi_thermal.c                                  | 623
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------------------
- drivers/thermal/qcom-spmi-temp-alarm.c                          |  43
-+++------
- drivers/thermal/step_wise.c                                     |  11 ++-
- drivers/thermal/thermal-generic-adc.c                           |  24 +----
- 6 files changed, 453 insertions(+), 265 deletions(-)
-
-
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index 9c3ce34..f3b50b0 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -345,8 +345,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	hisi_thermal_enable_bind_irq_sensor(data);
+-	irq_get_irqchip_state(data->irq, IRQCHIP_STATE_MASKED,
+-			      &data->irq_enabled);
++	data->irq_enabled = true;
+ 
+ 	for (i = 0; i < HISI_MAX_SENSORS; ++i) {
+ 		ret = hisi_thermal_register_sensor(pdev, data,
+@@ -358,6 +357,8 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ 			hisi_thermal_toggle_sensor(&data->sensors[i], true);
+ 	}
+ 
++	enable_irq(data->irq);
++
+ 	return 0;
+ }
+ 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.7.4
