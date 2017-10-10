@@ -1,100 +1,99 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2] thermal/drivers/hisi: Switch to interrupt mode
-Date: Tue, 10 Oct 2017 19:28:14 +0200
-Message-ID: <89c960b0-404e-5a87-3c03-845ea36615cf@linaro.org>
-References: <1bfd974e-3dc1-e99b-d0dd-50102cee762d@ti.com>
- <1506575625-20388-1-git-send-email-daniel.lezcano@linaro.org>
- <4ce2e445-d846-e032-5677-36dcbce7bed4@arm.com>
- <313949ce-e0d6-da66-7809-a963f704f75f@linaro.org>
- <ff47cc88-dc44-60cd-e4bf-1da5ec19e066@arm.com>
- <464262af-206d-b8b8-2971-d894586d7edd@linaro.org>
- <b624a095-703d-fc05-321d-fa8e4ba943fa@arm.com>
+From: Tom Saeger <tom.saeger@oracle.com>
+Subject: [PATCH 1/8] Documentation: fix driver-api doc refs
+Date: Tue, 10 Oct 2017 12:36:09 -0500
+Message-ID: <62bc118fb6eca36e913a3b01327a5f1afabfe76c.1507653970.git.tom.saeger@oracle.com>
+References: <cover.1507653969.git.tom.saeger@oracle.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f54.google.com ([74.125.82.54]:47898 "EHLO
-        mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755818AbdJJR2S (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2017 13:28:18 -0400
-Received: by mail-wm0-f54.google.com with SMTP id t69so7278148wmt.2
-        for <linux-pm@vger.kernel.org>; Tue, 10 Oct 2017 10:28:17 -0700 (PDT)
-In-Reply-To: <b624a095-703d-fc05-321d-fa8e4ba943fa@arm.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <cover.1507653969.git.tom.saeger@oracle.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Tom Saeger <tom.saeger@oracle.com>, linux-doc@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Valentin Schneider <valentin.schneider@arm.com>, linux-pm@vger.kernel.org, ionela.voinescu@arm.com, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>
 
-On 10/10/2017 19:19, Valentin Schneider wrote:
-> 
-> 
-> On 10/10/2017 06:13 PM, Daniel Lezcano wrote:
->> On 10/10/2017 19:01, Valentin Schneider wrote:
->>> On 10/10/2017 05:51 PM, Daniel Lezcano wrote:
->>>> Ok, so apparently there are multiple alarms level in the driver for the
->>>> hikey960 [1]. So I prefer to drop this patch for now and take the
->>>> hikey960 thermal support first and we can sort out the issue later.
->>>>
->>>> For my information, can you show me the DT snippet you have for the
->>>> thermal zones?
->>> Sure thing:
->>>
->>>      thermal-zones {
->>>
->>>              cls0: cls0 {
->>>                  polling-delay = <1000>;
->>>                  polling-delay-passive = <100>;
->>>                  sustainable-power = <4500>;
->>>
->>>                  /* sensor ID */
->>>                  thermal-sensors = <&tsensor 1>;
->>>
->>>                  trips {
->>>                      threshold: trip-point@0 {
->>>                          temperature = <65000>;
->>>                          hysteresis = <1000>;
->>>                          type = "passive";
->>>                      };
->>>
->>>                      target: trip-point@1 {
->>>                          temperature = <75000>;
->>>                          hysteresis = <1000>;
->>>                          type = "passive";
->>>                      };
->>>                  };
->> That's strange, regarding your traces:
->>
->> "
->> [  118.107357] hisi_thermal fff30000.tsensor: THERMAL ALARM: 70495 >
->> 65000
->> [  119.182531] hisi_thermal fff30000.tsensor: THERMAL ALARM: 76235 >
->> 65000
->> [  119.361964] hisi_thermal fff30000.tsensor: THERMAL ALARM: 70495 >
->> 65000
->> [  119.907865] hisi_thermal fff30000.tsensor: THERMAL ALARM: 75620 >
->> 65000
->> [  119.959076] hisi_thermal fff30000.tsensor: THERMAL ALARM: 70700 >
->> 65000
->> "
->>
->> I was expecting to see more trip points. Did you test the driver with a
->> 70000 trip point?
-> 
-> No, I didn't change any setting other than the tsensor index to make
-> things work. Mind you, in Kevin's patch series the thermal alarm is
-> setup with a 4 degrees "lag", i.e. alarms will only be re-triggered if
-> temperature increases/decreases of at least 4 degrees (which explains
-> the traces).
+Make driver-api document refs valid.
 
-Mmh, the behavior regarding the interrupt is slightly different with the
-hi960, perhaps a bit fuzzy regarding how it is handled now. Anyway, we
-can live with that now and go further to fix that later, the result is
-the same.
+Signed-off-by: Tom Saeger <tom.saeger@oracle.com>
+---
+ Documentation/power/pci.txt                  | 10 +++++-----
+ Documentation/power/runtime_pm.txt           |  2 +-
+ Documentation/process/submitting-drivers.rst |  2 +-
+ 3 files changed, 7 insertions(+), 7 deletions(-)
 
-
+diff --git a/Documentation/power/pci.txt b/Documentation/power/pci.txt
+index a1b7f7158930..d17fdf8f45ef 100644
+--- a/Documentation/power/pci.txt
++++ b/Documentation/power/pci.txt
+@@ -8,7 +8,7 @@ management.  Based on previous work by Patrick Mochel <mochel@transmeta.com>
+ 
+ This document only covers the aspects of power management specific to PCI
+ devices.  For general description of the kernel's interfaces related to device
+-power management refer to Documentation/power/admin-guide/devices.rst and
++power management refer to Documentation/driver-api/pm/devices.rst and
+ Documentation/power/runtime_pm.txt.
+ 
+ ---------------------------------------------------------------------------
+@@ -417,7 +417,7 @@ pm->runtime_idle() callback.
+ 2.4. System-Wide Power Transitions
+ ----------------------------------
+ There are a few different types of system-wide power transitions, described in
+-Documentation/power/admin-guide/devices.rst.  Each of them requires devices to be handled
++Documentation/driver-api/pm/devices.rst.  Each of them requires devices to be handled
+ in a specific way and the PM core executes subsystem-level power management
+ callbacks for this purpose.  They are executed in phases such that each phase
+ involves executing the same subsystem-level callback for every device belonging
+@@ -623,7 +623,7 @@ System restore requires a hibernation image to be loaded into memory and the
+ pre-hibernation memory contents to be restored before the pre-hibernation system
+ activity can be resumed.
+ 
+-As described in Documentation/power/admin-guide/devices.rst, the hibernation image is loaded
++As described in Documentation/driver-api/pm/devices.rst, the hibernation image is loaded
+ into memory by a fresh instance of the kernel, called the boot kernel, which in
+ turn is loaded and run by a boot loader in the usual way.  After the boot kernel
+ has loaded the image, it needs to replace its own code and data with the code
+@@ -677,7 +677,7 @@ controlling the runtime power management of their devices.
+ 
+ At the time of this writing there are two ways to define power management
+ callbacks for a PCI device driver, the recommended one, based on using a
+-dev_pm_ops structure described in Documentation/power/admin-guide/devices.rst, and the
++dev_pm_ops structure described in Documentation/driver-api/pm/devices.rst, and the
+ "legacy" one, in which the .suspend(), .suspend_late(), .resume_early(), and
+ .resume() callbacks from struct pci_driver are used.  The legacy approach,
+ however, doesn't allow one to define runtime power management callbacks and is
+@@ -1046,5 +1046,5 @@ PCI Local Bus Specification, Rev. 3.0
+ PCI Bus Power Management Interface Specification, Rev. 1.2
+ Advanced Configuration and Power Interface (ACPI) Specification, Rev. 3.0b
+ PCI Express Base Specification, Rev. 2.0
+-Documentation/power/admin-guide/devices.rst
++Documentation/driver-api/pm/devices.rst
+ Documentation/power/runtime_pm.txt
+diff --git a/Documentation/power/runtime_pm.txt b/Documentation/power/runtime_pm.txt
+index 625549d4c74a..57af2f7963ee 100644
+--- a/Documentation/power/runtime_pm.txt
++++ b/Documentation/power/runtime_pm.txt
+@@ -680,7 +680,7 @@ left in runtime suspend.  If that happens, the PM core will not execute any
+ system suspend and resume callbacks for all of those devices, except for the
+ complete callback, which is then entirely responsible for handling the device
+ as appropriate.  This only applies to system suspend transitions that are not
+-related to hibernation (see Documentation/power/admin-guide/devices.rst for more
++related to hibernation (see Documentation/driver-api/pm/devices.rst for more
+ information).
+ 
+ The PM core does its best to reduce the probability of race conditions between
+diff --git a/Documentation/process/submitting-drivers.rst b/Documentation/process/submitting-drivers.rst
+index afb82ee0cbea..b38bf2054ce3 100644
+--- a/Documentation/process/submitting-drivers.rst
++++ b/Documentation/process/submitting-drivers.rst
+@@ -117,7 +117,7 @@ PM support:
+ 		anything.  For the driver testing instructions see
+ 		Documentation/power/drivers-testing.txt and for a relatively
+ 		complete overview of the power management issues related to
+-		drivers see Documentation/power/admin-guide/devices.rst .
++		drivers see Documentation/driver-api/pm/devices.rst.
+ 
+ Control:
+ 		In general if there is active maintenance of a driver by
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+2.14.2
