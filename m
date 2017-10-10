@@ -1,7 +1,7 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 16/25] thermal/drivers/qcom-spmi: Use devm_iio_channel_get
-Date: Tue, 10 Oct 2017 20:02:41 +0200
-Message-ID: <1507658570-32675-16-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 19/25] thermal/drivers/hisi: Put platform code together
+Date: Tue, 10 Oct 2017 20:02:44 +0200
+Message-ID: <1507658570-32675-19-git-send-email-daniel.lezcano@linaro.org>
 References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
  <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
@@ -11,119 +11,111 @@ To: edubezval@gmail.com, rui.zhang@intel.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-The iio_channel_get() function has now its devm_ version.
+From: Kevin Wangtao <kevin.wangtao@linaro.org>
 
-Use it and remove all the rollback code for iio_channel_release() as well
-as the .remove ops.
+Reorganize the code for next patches by moving the functions upper in
+the file which will prevent a forward declaration. There is no functional
+change here.
 
-[Compiled tested only]
-
+Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/qcom-spmi-temp-alarm.c | 43 +++++++++++-----------------------
- 1 file changed, 14 insertions(+), 29 deletions(-)
+ drivers/thermal/hisi_thermal.c | 76 +++++++++++++++++++++---------------------
+ 1 file changed, 38 insertions(+), 38 deletions(-)
 
-diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
-index f502419..95f987d 100644
---- a/drivers/thermal/qcom-spmi-temp-alarm.c
-+++ b/drivers/thermal/qcom-spmi-temp-alarm.c
-@@ -125,7 +125,7 @@ static int qpnp_tm_get_temp(void *data, int *temp)
- 	if (!temp)
- 		return -EINVAL;
- 
--	if (IS_ERR(chip->adc)) {
-+	if (!chip->adc) {
- 		ret = qpnp_tm_update_temp_no_adc(chip);
- 		if (ret < 0)
- 			return ret;
-@@ -224,67 +224,53 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 		return irq;
- 
- 	/* ADC based measurements are optional */
--	chip->adc = iio_channel_get(&pdev->dev, "thermal");
--	if (PTR_ERR(chip->adc) == -EPROBE_DEFER)
--		return PTR_ERR(chip->adc);
-+	chip->adc = devm_iio_channel_get(&pdev->dev, "thermal");
-+	if (IS_ERR(chip->adc)) {
-+		ret = PTR_ERR(chip->adc);
-+		chip->adc = NULL;
-+		if (ret == -EPROBE_DEFER)
-+			return ret;
-+	}
- 
- 	chip->base = res;
- 
- 	ret = qpnp_tm_read(chip, QPNP_TM_REG_TYPE, &type);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "could not read type\n");
--		goto fail;
-+		return ret;
- 	}
- 
- 	ret = qpnp_tm_read(chip, QPNP_TM_REG_SUBTYPE, &subtype);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "could not read subtype\n");
--		goto fail;
-+		return ret;
- 	}
- 
- 	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
- 		dev_err(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
- 			type, subtype);
--		ret = -ENODEV;
--		goto fail;
-+		return -ENODEV;
- 	}
- 
- 	ret = qpnp_tm_init(chip);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "init failed\n");
--		goto fail;
-+		return ret;
- 	}
- 
- 	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL, qpnp_tm_isr,
- 					IRQF_ONESHOT, node->name, chip);
- 	if (ret < 0)
--		goto fail;
-+		return ret;
- 
- 	chip->tz_dev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, chip,
- 							&qpnp_tm_sensor_ops);
- 	if (IS_ERR(chip->tz_dev)) {
- 		dev_err(&pdev->dev, "failed to register sensor\n");
--		ret = PTR_ERR(chip->tz_dev);
--		goto fail;
-+		return PTR_ERR(chip->tz_dev);
- 	}
- 
- 	return 0;
--
--fail:
--	if (!IS_ERR(chip->adc))
--		iio_channel_release(chip->adc);
--
--	return ret;
--}
--
--static int qpnp_tm_remove(struct platform_device *pdev)
--{
--	struct qpnp_tm_chip *chip = dev_get_drvdata(&pdev->dev);
--
--	if (!IS_ERR(chip->adc))
--		iio_channel_release(chip->adc);
--
--	return 0;
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index befdb28..ff9055a 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -201,6 +201,44 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
+ 	clk_disable_unprepare(data->clk);
  }
  
- static const struct of_device_id qpnp_tm_match_table[] = {
-@@ -299,7 +285,6 @@ static struct platform_driver qpnp_tm_driver = {
- 		.of_match_table = qpnp_tm_match_table,
- 	},
- 	.probe  = qpnp_tm_probe,
--	.remove = qpnp_tm_remove,
- };
- module_platform_driver(qpnp_tm_driver);
++
++static int hisi_thermal_setup(struct hisi_thermal_data *data)
++{
++	struct hisi_thermal_sensor *sensor = &data->sensor;
++	int ret;
++
++	/* enable clock for tsensor */
++	ret = clk_prepare_enable(data->clk);
++	if (ret)
++		return ret;
++
++	/* disable module firstly */
++	hisi_thermal_reset_enable(data->regs, 0);
++	hisi_thermal_enable(data->regs, 0);
++
++	/* select sensor id */
++	hisi_thermal_sensor_select(data->regs, sensor->id);
++
++	/* setting the hdak time */
++	hisi_thermal_hdak_set(data->regs, 0);
++
++	/* setting lag value between current temp and the threshold */
++	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
++
++	/* enable for interrupt */
++	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
++
++	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
++
++	/* enable module */
++	hisi_thermal_reset_enable(data->regs, 1);
++	hisi_thermal_enable(data->regs, 1);
++
++	hisi_thermal_alarm_clear(data->regs, 0);
++	hisi_thermal_alarm_enable(data->regs, 1);
++
++	return 0;
++}
+ static int hisi_thermal_get_temp(void *__data, int *temp)
+ {
+ 	struct hisi_thermal_data *data = __data;
+@@ -291,44 +329,6 @@ static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
+ 		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
+ }
  
+-static int hisi_thermal_setup(struct hisi_thermal_data *data)
+-{
+-	struct hisi_thermal_sensor *sensor = &data->sensor;
+-	int ret;
+-
+-	/* enable clock for tsensor */
+-	ret = clk_prepare_enable(data->clk);
+-	if (ret)
+-		return ret;
+-
+-	/* disable module firstly */
+-	hisi_thermal_reset_enable(data->regs, 0);
+-	hisi_thermal_enable(data->regs, 0);
+-
+-	/* select sensor id */
+-	hisi_thermal_sensor_select(data->regs, sensor->id);
+-
+-	/* setting the hdak time */
+-	hisi_thermal_hdak_set(data->regs, 0);
+-
+-	/* setting lag value between current temp and the threshold */
+-	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
+-
+-	/* enable for interrupt */
+-	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
+-
+-	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
+-
+-	/* enable module */
+-	hisi_thermal_reset_enable(data->regs, 1);
+-	hisi_thermal_enable(data->regs, 1);
+-
+-	hisi_thermal_alarm_clear(data->regs, 0);
+-	hisi_thermal_alarm_enable(data->regs, 1);
+-
+-	return 0;
+-}
+-
+ static int hisi_thermal_probe(struct platform_device *pdev)
+ {
+ 	struct hisi_thermal_data *data;
 -- 
 2.7.4
