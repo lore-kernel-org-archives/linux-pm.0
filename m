@@ -1,48 +1,106 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] thermal/intel_powerclamp: pr_err()/pr_info() strings
- should end with newlines
-Date: Mon, 09 Oct 2017 21:37:45 -0700
-Message-ID: <1507610265.3552.20.camel@perches.com>
-References: <277b8d12fc6980ec2ffd039a872f681ec0e49c19.1507549738.git.arvind.yadav.cs@gmail.com>
-         <7555b065-f4de-2988-283b-b6800ce189ab@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay0082.hostedemail.com ([216.40.44.82]:45279 "EHLO
-        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1750734AbdJJEhu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2017 00:37:50 -0400
-In-Reply-To: <7555b065-f4de-2988-283b-b6800ce189ab@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+From: Leo Yan <leo.yan@linaro.org>
+Subject: [PATCH v2 1/2] ARM: cpuidle: Correct driver unregistration if init fails
+Date: Tue, 10 Oct 2017 13:47:55 +0800
+Message-ID: <1507614476-16054-1-git-send-email-leo.yan@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Leo Yan <leo.yan@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, Arvind Yadav <arvind.yadav.cs@gmail.com>, rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 2017-10-09 at 14:33 +0200, Daniel Lezcano wrote:
-> On 09/10/2017 13:51, Arvind Yadav wrote:
-> > pr_err()/pr_info() messages should end with a new-line to avoid
-> > other messages being concatenated.
-[]
-> > diff --git a/drivers/thermal/intel_powerclamp.c b/drivers/thermal/intel_powerclamp.c
-> > @@ -675,13 +675,13 @@ static int __init powerclamp_probe(void)
-> >  {
-> >  
-> >  	if (!x86_match_cpu(intel_powerclamp_ids)) {
-> > -		pr_err("CPU does not support MWAIT");
-> > +		pr_err("CPU does not support MWAIT\n");
+If cpuidle init fails, the code misses to unregister the driver for
+current CPU. Furthermore, we also need to rollback to cancel all
+previous CPUs registration; but the code retrieves driver handler by
+using function cpuidle_get_driver(), this function returns back
+current CPU driver handler but not previous CPU's handler, which leads
+to the failure handling code cannot unregister previous CPUs driver.
 
-[etc...]
+This commit fixes two mentioned issues, it adds error handling path
+'goto out_unregister_drv' for current CPU driver unregistration; and
+it is to replace cpuidle_get_driver() with cpuidle_get_cpu_driver(),
+the later function can retrieve driver handler for previous CPUs
+according to the CPU device handler so can unregister the driver
+properly.
 
-> Hi Arvind,
-> 
-> you are sending these fixes for all the drivers around. There is a way
-> to fix this once and for all: use the coccinelle tools [1], add the
-> script in the changelog with a big patchset and add the script in the
-> coccinelle scripts directory [2].
+This patch also adds extra error handling paths 'goto out_kfree_dev'
+and 'goto out_kfree_drv' and adjusts the freeing sentences for previous
+CPUs; so make the code more readable for freeing 'dev' and 'drv'
+structures.
 
-That can't work as any printk without a newline termination
-could be followed by a printk(KERN_CONT/pr_cont( in another
-function.
+Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Leo Yan <leo.yan@linaro.org>
+Fixes: d50a7d8acd78 ("ARM: cpuidle: Support asymmetric idle definition")
+---
+ drivers/cpuidle/cpuidle-arm.c | 22 +++++++++++++---------
+ 1 file changed, 13 insertions(+), 9 deletions(-)
 
-All of these must be hand-verified.
+diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
+index 52a7505..f47c545 100644
+--- a/drivers/cpuidle/cpuidle-arm.c
++++ b/drivers/cpuidle/cpuidle-arm.c
+@@ -104,13 +104,13 @@ static int __init arm_idle_init(void)
+ 		ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
+ 		if (ret <= 0) {
+ 			ret = ret ? : -ENODEV;
+-			goto init_fail;
++			goto out_kfree_drv;
+ 		}
+ 
+ 		ret = cpuidle_register_driver(drv);
+ 		if (ret) {
+ 			pr_err("Failed to register cpuidle driver\n");
+-			goto init_fail;
++			goto out_kfree_drv;
+ 		}
+ 
+ 		/*
+@@ -128,14 +128,14 @@ static int __init arm_idle_init(void)
+ 
+ 		if (ret) {
+ 			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
+-			goto out_fail;
++			goto out_unregister_drv;
+ 		}
+ 
+ 		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+ 		if (!dev) {
+ 			pr_err("Failed to allocate cpuidle device\n");
+ 			ret = -ENOMEM;
+-			goto out_fail;
++			goto out_unregister_drv;
+ 		}
+ 		dev->cpu = cpu;
+ 
+@@ -143,21 +143,25 @@ static int __init arm_idle_init(void)
+ 		if (ret) {
+ 			pr_err("Failed to register cpuidle device for CPU %d\n",
+ 			       cpu);
+-			kfree(dev);
+-			goto out_fail;
++			goto out_kfree_dev;
+ 		}
+ 	}
+ 
+ 	return 0;
+-init_fail:
++
++out_kfree_dev:
++	kfree(dev);
++out_unregister_drv:
++	cpuidle_unregister_driver(drv);
++out_kfree_drv:
+ 	kfree(drv);
+ out_fail:
+ 	while (--cpu >= 0) {
+ 		dev = per_cpu(cpuidle_devices, cpu);
++		drv = cpuidle_get_cpu_driver(dev);
+ 		cpuidle_unregister_device(dev);
+-		kfree(dev);
+-		drv = cpuidle_get_driver();
+ 		cpuidle_unregister_driver(drv);
++		kfree(dev);
+ 		kfree(drv);
+ 	}
+ 
+-- 
+2.7.4
