@@ -1,204 +1,62 @@
-From: Leo Yan <leo.yan@linaro.org>
-Subject: [PATCH v2 2/2] ARM: cpuidle: Refactor rollback operations if init fails
-Date: Tue, 10 Oct 2017 13:47:56 +0800
-Message-ID: <1507614476-16054-2-git-send-email-leo.yan@linaro.org>
-References: <1507614476-16054-1-git-send-email-leo.yan@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1507614476-16054-1-git-send-email-leo.yan@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Leo Yan <leo.yan@linaro.org>
+From: Divagar Mohandass <divagar.mohandass-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH v7 0/3] enable eeprom "size" property and runtime pm
+Date: Tue, 10 Oct 2017 11:30:34 +0530
+Message-ID: <1507615237-21744-1-git-send-email-divagar.mohandass@intel.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, sakari.ailus-X3B1VOXEql0@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rajmohan.mani-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Divagar Mohandass <divagar.mohandass-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-If init fails, we need execute two levels rollback operations: the first
-level is for the failed CPU rollback operations, the second level is to
-iterate all succeeded CPUs to cancel their registration; currently the
-code uses one function to finish these two levels rollback operations.
+This series adds support for eeprom "size" property which will be read by the
+driver for eeprom size. The existing ACPI has a different default size which
+can be overridden with a DSD property value provided by the platform FW.
 
-This commit is to refactor rollback operations, so it adds a new
-function arm_idle_init_cpu() to encapsulate one specified CPU driver
-registration and rollback the first level operations; and use function
-arm_idle_init() to iterate all CPUs and finish the second level's
-rollback operations.
+This series also adds support for runtime PM. The eeprom driver currently
+did not have support for runtime PM and the device was kept in D0 throughout.
 
-Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Signed-off-by: Leo Yan <leo.yan@linaro.org>
----
- drivers/cpuidle/cpuidle-arm.c | 145 ++++++++++++++++++++++++------------------
- 1 file changed, 82 insertions(+), 63 deletions(-)
+[v1]
+- Add support for eeprom "size" property.
+- Add runtime PM support to the driver.
 
-diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-index f47c545..ddee1b6 100644
---- a/drivers/cpuidle/cpuidle-arm.c
-+++ b/drivers/cpuidle/cpuidle-arm.c
-@@ -72,79 +72,74 @@ static const struct of_device_id arm_idle_state_match[] __initconst = {
- };
- 
- /*
-- * arm_idle_init
-+ * arm_idle_init_cpu
-  *
-  * Registers the arm specific cpuidle driver with the cpuidle
-  * framework. It relies on core code to parse the idle states
-  * and initialize them using driver data structures accordingly.
-  */
--static int __init arm_idle_init(void)
-+static int __init arm_idle_init_cpu(int cpu)
- {
--	int cpu, ret;
-+	int ret;
- 	struct cpuidle_driver *drv;
- 	struct cpuidle_device *dev;
- 
--	for_each_possible_cpu(cpu) {
-+	drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
-+	if (!drv)
-+		return -ENOMEM;
- 
--		drv = kmemdup(&arm_idle_driver, sizeof(*drv), GFP_KERNEL);
--		if (!drv) {
--			ret = -ENOMEM;
--			goto out_fail;
--		}
--
--		drv->cpumask = (struct cpumask *)cpumask_of(cpu);
--
--		/*
--		 * Initialize idle states data, starting at index 1.  This
--		 * driver is DT only, if no DT idle states are detected (ret
--		 * == 0) let the driver initialization fail accordingly since
--		 * there is no reason to initialize the idle driver if only
--		 * wfi is supported.
--		 */
--		ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
--		if (ret <= 0) {
--			ret = ret ? : -ENODEV;
--			goto out_kfree_drv;
--		}
--
--		ret = cpuidle_register_driver(drv);
--		if (ret) {
--			pr_err("Failed to register cpuidle driver\n");
--			goto out_kfree_drv;
--		}
--
--		/*
--		 * Call arch CPU operations in order to initialize
--		 * idle states suspend back-end specific data
--		 */
--		ret = arm_cpuidle_init(cpu);
--
--		/*
--		 * Skip the cpuidle device initialization if the reported
--		 * failure is a HW misconfiguration/breakage (-ENXIO).
--		 */
--		if (ret == -ENXIO)
--			continue;
--
--		if (ret) {
--			pr_err("CPU %d failed to init idle CPU ops\n", cpu);
--			goto out_unregister_drv;
--		}
--
--		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
--		if (!dev) {
--			pr_err("Failed to allocate cpuidle device\n");
--			ret = -ENOMEM;
--			goto out_unregister_drv;
--		}
--		dev->cpu = cpu;
--
--		ret = cpuidle_register_device(dev);
--		if (ret) {
--			pr_err("Failed to register cpuidle device for CPU %d\n",
--			       cpu);
--			goto out_kfree_dev;
--		}
-+	drv->cpumask = (struct cpumask *)cpumask_of(cpu);
-+
-+	/*
-+	 * Initialize idle states data, starting at index 1.  This
-+	 * driver is DT only, if no DT idle states are detected (ret
-+	 * == 0) let the driver initialization fail accordingly since
-+	 * there is no reason to initialize the idle driver if only
-+	 * wfi is supported.
-+	 */
-+	ret = dt_init_idle_driver(drv, arm_idle_state_match, 1);
-+	if (ret <= 0) {
-+		ret = ret ? : -ENODEV;
-+		goto out_kfree_drv;
-+	}
-+
-+	ret = cpuidle_register_driver(drv);
-+	if (ret) {
-+		pr_err("Failed to register cpuidle driver\n");
-+		goto out_kfree_drv;
-+	}
-+
-+	/*
-+	 * Call arch CPU operations in order to initialize
-+	 * idle states suspend back-end specific data
-+	 */
-+	ret = arm_cpuidle_init(cpu);
-+
-+	/*
-+	 * Skip the cpuidle device initialization if the reported
-+	 * failure is a HW misconfiguration/breakage (-ENXIO).
-+	 */
-+	if (ret == -ENXIO)
-+		return 0;
-+
-+	if (ret) {
-+		pr_err("CPU %d failed to init idle CPU ops\n", cpu);
-+		goto out_unregister_drv;
-+	}
-+
-+	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-+	if (!dev) {
-+		pr_err("Failed to allocate cpuidle device\n");
-+		ret = -ENOMEM;
-+		goto out_unregister_drv;
-+	}
-+	dev->cpu = cpu;
-+
-+	ret = cpuidle_register_device(dev);
-+	if (ret) {
-+		pr_err("Failed to register cpuidle device for CPU %d\n",
-+		       cpu);
-+		goto out_kfree_dev;
- 	}
- 
- 	return 0;
-@@ -155,6 +150,30 @@ static int __init arm_idle_init(void)
- 	cpuidle_unregister_driver(drv);
- out_kfree_drv:
- 	kfree(drv);
-+	return ret;
-+}
-+
-+/*
-+ * arm_idle_init - Initializes arm cpuidle driver
-+ *
-+ * Initializes arm cpuidle driver for all CPUs, if any CPU fails
-+ * to register cpuidle driver then rollback to cancel all CPUs
-+ * registeration.
-+ */
-+static int __init arm_idle_init(void)
-+{
-+	int cpu, ret;
-+	struct cpuidle_driver *drv;
-+	struct cpuidle_device *dev;
-+
-+	for_each_possible_cpu(cpu) {
-+		ret = arm_idle_init_cpu(cpu);
-+		if (ret)
-+			goto out_fail;
-+	}
-+
-+	return 0;
-+
- out_fail:
- 	while (--cpu >= 0) {
- 		dev = per_cpu(cpuidle_devices, cpu);
+[v2]
+- Improved the patch subject.
+
+[v3]
+- Addressed comments from Sakari Ailus.
+- Improved patch description.
+- Improved pm support patch.
+
+[v4]
+- Improved runtime pm support.
+- Addressed comments from Sakari Ailus.
+
+[v5]
+- Addressed comments from Sakari Ailus.
+- Improved error handling for PM support.
+
+[v6]
+- Addressed comments from Sakari Ailus.
+
+[v7]
+- Added suggested-by and reviewed-by tags given in
+  https://lkml.org/lkml/2017/9/22/444
+  https://lkml.org/lkml/2017/9/5/430
+- Addressed comments on PM support.
+
+Divagar Mohandass (3):
+  dt-bindings: add eeprom "size" property
+  eeprom: at24: add support to fetch eeprom device property "size"
+  eeprom: at24: enable runtime pm support
+
+ .../devicetree/bindings/eeprom/eeprom.txt          |  2 ++
+ drivers/misc/eeprom/at24.c                         | 41 ++++++++++++++++++++++
+ 2 files changed, 43 insertions(+)
+
 -- 
-2.7.4
+1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
