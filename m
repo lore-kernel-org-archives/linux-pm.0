@@ -1,121 +1,51 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 19/25] thermal/drivers/hisi: Put platform code together
-Date: Tue, 10 Oct 2017 20:02:44 +0200
-Message-ID: <1507658570-32675-19-git-send-email-daniel.lezcano@linaro.org>
+From: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH 25/25] arm64: dts: Register Hi3660's thermal sensor
+Date: Tue, 10 Oct 2017 20:02:50 +0200
+Message-ID: <1507658570-32675-25-git-send-email-daniel.lezcano@linaro.org>
 References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
  <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1507658570-32675-1-git-send-email-daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kevin.wangtao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Wei Xu <xuwei5-C8/M+/jPZTeaMJb+Lgu22Q@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, "moderated list:ARM/HISILICON SOC
+        SUPPORT" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED
+        DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Kevin Wangtao <kevin.wangtao@linaro.org>
+From: Kevin Wangtao <kevin.wangtao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Reorganize the code for next patches by moving the functions upper in
-the file which will prevent a forward declaration. There is no functional
-change here.
+Add binding for tsensor on H3660, this tsensor is used for
+SoC thermal control, it supports alarm interrupt.
 
-Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Kevin Wangtao <kevin.wangtao-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 ---
- drivers/thermal/hisi_thermal.c | 76 +++++++++++++++++++++---------------------
- 1 file changed, 38 insertions(+), 38 deletions(-)
+ arch/arm64/boot/dts/hisilicon/hi3660.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index befdb28..ff9055a 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -201,6 +201,44 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
- 	clk_disable_unprepare(data->clk);
- }
- 
+diff --git a/arch/arm64/boot/dts/hisilicon/hi3660.dtsi b/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
+index c6a1961..d9c0cf3 100644
+--- a/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
++++ b/arch/arm64/boot/dts/hisilicon/hi3660.dtsi
+@@ -848,5 +848,13 @@
+ 				     &sdio_cfg_func>;
+ 			status = "disabled";
+ 		};
 +
-+static int hisi_thermal_setup(struct hisi_thermal_data *data)
-+{
-+	struct hisi_thermal_sensor *sensor = &data->sensor;
-+	int ret;
++		tsensor: tsensor@fff30000 {
++			compatible = "hisilicon,hi3660-tsensor";
++			reg = <0x0 0xfff30000 0x0 0x1000>;
++			interrupts = <GIC_SPI 145 IRQ_TYPE_LEVEL_HIGH>;
++			#thermal-sensor-cells = <1>;
++		};
 +
-+	/* enable clock for tsensor */
-+	ret = clk_prepare_enable(data->clk);
-+	if (ret)
-+		return ret;
-+
-+	/* disable module firstly */
-+	hisi_thermal_reset_enable(data->regs, 0);
-+	hisi_thermal_enable(data->regs, 0);
-+
-+	/* select sensor id */
-+	hisi_thermal_sensor_select(data->regs, sensor->id);
-+
-+	/* setting the hdak time */
-+	hisi_thermal_hdak_set(data->regs, 0);
-+
-+	/* setting lag value between current temp and the threshold */
-+	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
-+
-+	/* enable for interrupt */
-+	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
-+
-+	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
-+
-+	/* enable module */
-+	hisi_thermal_reset_enable(data->regs, 1);
-+	hisi_thermal_enable(data->regs, 1);
-+
-+	hisi_thermal_alarm_clear(data->regs, 0);
-+	hisi_thermal_alarm_enable(data->regs, 1);
-+
-+	return 0;
-+}
- static int hisi_thermal_get_temp(void *__data, int *temp)
- {
- 	struct hisi_thermal_data *data = __data;
-@@ -291,44 +329,6 @@ static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
- 		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
- }
- 
--static int hisi_thermal_setup(struct hisi_thermal_data *data)
--{
--	struct hisi_thermal_sensor *sensor = &data->sensor;
--	int ret;
--
--	/* enable clock for tsensor */
--	ret = clk_prepare_enable(data->clk);
--	if (ret)
--		return ret;
--
--	/* disable module firstly */
--	hisi_thermal_reset_enable(data->regs, 0);
--	hisi_thermal_enable(data->regs, 0);
--
--	/* select sensor id */
--	hisi_thermal_sensor_select(data->regs, sensor->id);
--
--	/* setting the hdak time */
--	hisi_thermal_hdak_set(data->regs, 0);
--
--	/* setting lag value between current temp and the threshold */
--	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
--
--	/* enable for interrupt */
--	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
--
--	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
--
--	/* enable module */
--	hisi_thermal_reset_enable(data->regs, 1);
--	hisi_thermal_enable(data->regs, 1);
--
--	hisi_thermal_alarm_clear(data->regs, 0);
--	hisi_thermal_alarm_enable(data->regs, 1);
--
--	return 0;
--}
--
- static int hisi_thermal_probe(struct platform_device *pdev)
- {
- 	struct hisi_thermal_data *data;
+ 	};
+ };
 -- 
 2.7.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
