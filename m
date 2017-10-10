@@ -1,38 +1,45 @@
-From: Divagar Mohandass <divagar.mohandass@intel.com>
-Subject: [PATCH v7 1/3] dt-bindings: add eeprom "size" property
-Date: Tue, 10 Oct 2017 11:30:35 +0530
-Message-ID: <1507615237-21744-2-git-send-email-divagar.mohandass@intel.com>
+From: Divagar Mohandass <divagar.mohandass-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Subject: [PATCH v7 2/3] eeprom: at24: add support to fetch eeprom device property "size"
+Date: Tue, 10 Oct 2017 11:30:36 +0530
+Message-ID: <1507615237-21744-3-git-send-email-divagar.mohandass@intel.com>
 References: <1507615237-21744-1-git-send-email-divagar.mohandass@intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1507615237-21744-1-git-send-email-divagar.mohandass@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, mark.rutland@arm.com, wsa@the-dreams.de, sakari.ailus@iki.fi, tfiga@chromium.org
-Cc: devicetree@vger.kernel.org, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, rajmohan.mani@intel.com, mika.westerberg@linux.intel.com, linux-pm@vger.kernel.org, Divagar Mohandass <divagar.mohandass@intel.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1507615237-21744-1-git-send-email-divagar.mohandass-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, sakari.ailus-X3B1VOXEql0@public.gmane.org, tfiga-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rajmohan.mani-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, mika.westerberg-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Divagar Mohandass <divagar.mohandass-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This adds eeprom "size" as optional property for i2c eeproms.
-The "size" property allows explicitly specifying the size of the
-EEPROM chip in bytes.
+Obtain the size of the EEPROM chip from DT if the "size" property is
+specified for the device.
 
-Acked-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Sakari Ailus <sakari.ailus@linux.intel.com>
-Signed-off-by: Divagar Mohandass <divagar.mohandass@intel.com>
+Suggested-by: Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Reviewed-by: Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Reviewed-by: Sakari Ailus <sakari.ailus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Signed-off-by: Divagar Mohandass <divagar.mohandass-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
 ---
- Documentation/devicetree/bindings/eeprom/eeprom.txt | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/misc/eeprom/at24.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/eeprom/eeprom.txt b/Documentation/devicetree/bindings/eeprom/eeprom.txt
-index 5696eb5..1436569 100644
---- a/Documentation/devicetree/bindings/eeprom/eeprom.txt
-+++ b/Documentation/devicetree/bindings/eeprom/eeprom.txt
-@@ -32,6 +32,8 @@ Optional properties:
+diff --git a/drivers/misc/eeprom/at24.c b/drivers/misc/eeprom/at24.c
+index 764ff5df..2199c42 100644
+--- a/drivers/misc/eeprom/at24.c
++++ b/drivers/misc/eeprom/at24.c
+@@ -570,6 +570,10 @@ static void at24_get_pdata(struct device *dev, struct at24_platform_data *chip)
+ 	if (device_property_present(dev, "read-only"))
+ 		chip->flags |= AT24_FLAG_READONLY;
  
-   - read-only: this parameterless property disables writes to the eeprom
- 
-+  - size: total eeprom size in bytes
++	err = device_property_read_u32(dev, "size", &val);
++	if (!err)
++		chip->byte_len = val;
 +
- Example:
- 
- eeprom@52 {
+ 	err = device_property_read_u32(dev, "pagesize", &val);
+ 	if (!err) {
+ 		chip->page_size = val;
 -- 
 1.9.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
