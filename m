@@ -1,40 +1,31 @@
-From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Subject: [PATCH/RFC 1/5] dt-bindings: mfd: bd9571mwv: Document rohm,ddr-backup-power
-Date: Tue, 10 Oct 2017 17:26:14 +0200
-Message-ID: <1507649178-31473-2-git-send-email-geert+renesas@glider.be>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC 5/5] arm64: dts: renesas: salvator-common: Configure PMIC for DDR Backup Power
+Date: Tue, 10 Oct 2017 17:26:18 +0200
+Message-ID: <1507649178-31473-6-git-send-email-geert+renesas@glider.be>
 References: <1507649178-31473-1-git-send-email-geert+renesas@glider.be>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1507649178-31473-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Marek Vasut <marek.vasut+renesas-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1507649178-31473-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Marek Vasut <marek.vasut+renesas@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
+Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-renesas-soc@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Document the new optional "rohm,ddr-backup-power" property.
+On Salvator-X(S), all of DDR0, DDR1, DDR0C, and DDR1C need to be kept
+powered when backup mode is enabled.
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Reflect this in the rohm,ddr-backup-power property for the BD9571MWV
+PMIC.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- Documentation/devicetree/bindings/mfd/bd9571mwv.txt | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/arm64/boot/dts/renesas/salvator-common.dtsi | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/devicetree/bindings/mfd/bd9571mwv.txt b/Documentation/devicetree/bindings/mfd/bd9571mwv.txt
-index 9ab216a851d5619b..7ea3f2db41d4e501 100644
---- a/Documentation/devicetree/bindings/mfd/bd9571mwv.txt
-+++ b/Documentation/devicetree/bindings/mfd/bd9571mwv.txt
-@@ -25,6 +25,12 @@ Required properties:
- 			    Each child node is defined using the standard
- 			    binding for regulators.
- 
-+Optional properties:
-+  - rohm,ddr-backup-power : Value to use for DDR-Backup Power.  This controls
-+			    which DDR rails need to be kept powered when backup
-+			    mode is enabled, cfr. the KEEPON_DDR* bits in the
-+			    documentation for the "BKUP Mode Cnt" register.
-+
- Example:
- 
- 	pmic: pmic@30 {
-@@ -36,6 +42,7 @@ Example:
+diff --git a/arch/arm64/boot/dts/renesas/salvator-common.dtsi b/arch/arm64/boot/dts/renesas/salvator-common.dtsi
+index c171718bac7f52a1..68245d87c305855c 100644
+--- a/arch/arm64/boot/dts/renesas/salvator-common.dtsi
++++ b/arch/arm64/boot/dts/renesas/salvator-common.dtsi
+@@ -366,6 +366,7 @@
  		#interrupt-cells = <2>;
  		gpio-controller;
  		#gpio-cells = <2>;
@@ -44,8 +35,3 @@ index 9ab216a851d5619b..7ea3f2db41d4e501 100644
  			dvfs: dvfs {
 -- 
 2.7.4
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
