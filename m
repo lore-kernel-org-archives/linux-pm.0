@@ -1,84 +1,118 @@
-From: Valentin Schneider <valentin.schneider@arm.com>
-Subject: Re: [PATCH V2] thermal/drivers/hisi: Switch to interrupt mode
-Date: Tue, 10 Oct 2017 18:19:53 +0100
-Message-ID: <b624a095-703d-fc05-321d-fa8e4ba943fa@arm.com>
-References: <1bfd974e-3dc1-e99b-d0dd-50102cee762d@ti.com>
- <1506575625-20388-1-git-send-email-daniel.lezcano@linaro.org>
- <4ce2e445-d846-e032-5677-36dcbce7bed4@arm.com>
- <313949ce-e0d6-da66-7809-a963f704f75f@linaro.org>
- <ff47cc88-dc44-60cd-e4bf-1da5ec19e066@arm.com>
- <464262af-206d-b8b8-2971-d894586d7edd@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] PM / OPP: use of_cpu_device_node_get() instead of
+ of_get_cpu_node()
+Date: Tue, 10 Oct 2017 18:20:07 +0100
+Message-ID: <f8fe6f50-b5e3-1ccf-ea2b-c6a6e3d61481@arm.com>
+References: <1507632519-19648-1-git-send-email-sudeep.holla@arm.com>
+ <20171010114543.GI4031@vireshk-i7>
+ <cc282f1b-0b36-bf45-6a0b-5e017c3c44ea@arm.com>
+ <72b6eba4-91b3-4786-6675-308f2adfd45d@arm.com>
+ <CAJZ5v0ivRZmAOWRLM+da7PaHxF9Gjt7P4adj2sdG0-toJb_Jdg@mail.gmail.com>
+ <CAJZ5v0gTa-5ObrK2v9ZHeMiXTuOsDhxcqxyknUDzJ6t453__Hw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:47878 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:47910 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756515AbdJJRT4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Oct 2017 13:19:56 -0400
-In-Reply-To: <464262af-206d-b8b8-2971-d894586d7edd@linaro.org>
+        id S1756533AbdJJRUK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 10 Oct 2017 13:20:10 -0400
+In-Reply-To: <CAJZ5v0gTa-5ObrK2v9ZHeMiXTuOsDhxcqxyknUDzJ6t453__Hw@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org, ionela.voinescu@arm.com, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
 
 
-On 10/10/2017 06:13 PM, Daniel Lezcano wrote:
-> On 10/10/2017 19:01, Valentin Schneider wrote:
->> On 10/10/2017 05:51 PM, Daniel Lezcano wrote:
->>> Ok, so apparently there are multiple alarms level in the driver for the
->>> hikey960 [1]. So I prefer to drop this patch for now and take the
->>> hikey960 thermal support first and we can sort out the issue later.
+On 10/10/17 18:13, Rafael J. Wysocki wrote:
+> On Tue, Oct 10, 2017 at 7:12 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> On Tue, Oct 10, 2017 at 5:54 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
 >>>
->>> For my information, can you show me the DT snippet you have for the
->>> thermal zones?
->> Sure thing:
+>>>
+>>> On 10/10/17 13:39, Sudeep Holla wrote:
+>>>>
+>>>>
+>>>> On 10/10/17 12:45, Viresh Kumar wrote:
+>>>>> On 10-10-17, 11:48, Sudeep Holla wrote:
+>>>>>> Commit 762792913f8c ("PM / OPP: Fix get sharing CPUs when hotplug is used")
+>>>>>> moved away from using cpu_dev->of_node because of some limitations.
+>>>>>> However commit 7467c9d95989 ("of: return of_get_cpu_node from
+>>>>>> of_cpu_device_node_get if CPUs are not registered") added support to
+>>>>>> falls back to of_get_cpu_node if called if CPUs are not registered yet.
+>>>>>>
+>>>>>> This patch moves back to use of_cpu_device_node_get in
+>>>>>> dev_pm_opp_of_get_sharing_cpus to avoid scanning the device tree again.
+>>>>>> It also adds the missing of_node_put for the CPU device nodes.
+>>>>>>
+>>>>>> Cc: Viresh Kumar <vireshk@kernel.org>
+>>>>>> Cc: Nishanth Menon <nm@ti.com>
+>>>>>> Cc: Stephen Boyd <sboyd@codeaurora.org>
+>>>>>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>>>>>> Fixes: 762792913f8c ("PM / OPP: Fix get sharing CPUs when hotplug is used")
+>>>>>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+>>>>>> ---
+>>>>>>  drivers/base/power/opp/of.c | 3 ++-
+>>>>>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>>>>>
+>>>>>> diff --git a/drivers/base/power/opp/of.c b/drivers/base/power/opp/of.c
+>>>>>> index 0b718886479b..3505193043fe 100644
+>>>>>> --- a/drivers/base/power/opp/of.c
+>>>>>> +++ b/drivers/base/power/opp/of.c
+>>>>>> @@ -603,13 +603,14 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+>>>>>>             if (cpu == cpu_dev->id)
+>>>>>>                     continue;
+>>>>>>
+>>>>>> -           cpu_np = of_get_cpu_node(cpu, NULL);
+>>>>>> +           cpu_np = of_cpu_device_node_get(cpu);
+>>>>>>             if (!cpu_np) {
+>>>>>>                     dev_err(cpu_dev, "%s: failed to get cpu%d node\n",
+>>>>>>                             __func__, cpu);
+>>>>>>                     ret = -ENOENT;
+>>>>>>                     goto put_cpu_node;
+>>>>>>             }
+>>>>>> +           of_node_put(cpu_np);
+>>>>>>
+>>>>>>             /* Get OPP descriptor node */
+>>>>>>             tmp_np = _opp_of_get_opp_desc_node(cpu_np);
+>>>>>
+>>>>> This line is going to use cpu_np, how can we put cpu_np before this ?
+>>>>>
+>>>>
+>>>> We didn't take the reference before commit 762792913f8c as we were using
+>>>> cpu_dev->of_node directly. The above mentioned commit used
+>>>> of_get_cpu_node() which introduces the reference. So I assumed it
+>>>> shouldn't matter much and in order to keep the change simple, I did it
+>>>> before _opp_of_get_opp_desc_node. I can move just after
+>>>> _opp_of_get_opp_desc_node and before if check to avoid having both
+>>>> before failure goto and after the block.
+>>>>
+>>>> Let me know what is your preference ?
+>>>>
+>>>>> And you need to rebase this on pm/linux-next.
+>>>>>
+>>>>
+>>>> OK
+>>>>
+>>> I see the path has changed. I am not sure how you would consider this
+>>> patch ? as fix for v4.14(the refcount issue is introduced in v4.14)
+>>> or for v4.15
+>>>
+>>> I can split the patch if use of of_cpu_device_node_get is not a fix
+>>> material. Let me know.
 >>
->>      thermal-zones {
->>
->>              cls0: cls0 {
->>                  polling-delay = <1000>;
->>                  polling-delay-passive = <100>;
->>                  sustainable-power = <4500>;
->>
->>                  /* sensor ID */
->>                  thermal-sensors = <&tsensor 1>;
->>
->>                  trips {
->>                      threshold: trip-point@0 {
->>                          temperature = <65000>;
->>                          hysteresis = <1000>;
->>                          type = "passive";
->>                      };
->>
->>                      target: trip-point@1 {
->>                          temperature = <75000>;
->>                          hysteresis = <1000>;
->>                          type = "passive";
->>                      };
->>                  };
-> That's strange, regarding your traces:
->
-> "
-> [  118.107357] hisi_thermal fff30000.tsensor: THERMAL ALARM: 70495 > 65000
-> [  119.182531] hisi_thermal fff30000.tsensor: THERMAL ALARM: 76235 > 65000
-> [  119.361964] hisi_thermal fff30000.tsensor: THERMAL ALARM: 70495 > 65000
-> [  119.907865] hisi_thermal fff30000.tsensor: THERMAL ALARM: 75620 > 65000
-> [  119.959076] hisi_thermal fff30000.tsensor: THERMAL ALARM: 70700 > 65000
-> "
->
-> I was expecting to see more trip points. Did you test the driver with a
-> 70000 trip point?
+>> It will go into 4.15, no need to resend.
+> 
+> I mean no need to resend just because of the path change.
+> 
+> It looks like the patch itself needs to be modified, though.
+> 
+> Anyway, 4.15 material.
+> 
 
-No, I didn't change any setting other than the tsensor index to make 
-things work. Mind you, in Kevin's patch series the thermal alarm is 
-setup with a 4 degrees "lag", i.e. alarms will only be re-triggered if 
-temperature increases/decreases of at least 4 degrees (which explains 
-the traces).
+Got it. I will base it on pm/linux-next then when I repost.
 
->
->
-> [ ... ]
->
->
+-- 
+Regards,
+Sudeep
