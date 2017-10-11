@@ -1,68 +1,94 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH v2] ARM: imx: Enable cpuidle for i.MX6DL starting at 1.1
-Date: Wed, 11 Oct 2017 14:09:57 +0200
-Message-ID: <1507723797.2398.8.camel@pengutronix.de>
-References: <800ef25ed868f303bb2aece5dba59d395340f25d.1507722933.git.leonard.crestez@nxp.com>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH v3 3/8] PM / devfreq: Show the available min/max frequency
+ through sysfs node
+Date: Wed, 11 Oct 2017 21:57:10 +0900
+Message-ID: <CAGTfZH0-pS8SLsYdxZfOotnE_FUFTtcYVZRcS8Eqgkk-H4b1vg@mail.gmail.com>
+References: <1507691364-3899-1-git-send-email-cw00.choi@samsung.com>
+ <CGME20171011030946epcas1p40f32955da5dada46e95302701a0afb7d@epcms1p3>
+ <1507691364-3899-4-git-send-email-cw00.choi@samsung.com> <20171011111532epcms1p3036bcc7be2cc00057fe478fc868ba71d@epcms1p3>
+Reply-To: cwchoi00@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:49621 "EHLO
-        metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751962AbdJKMKC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Oct 2017 08:10:02 -0400
-In-Reply-To: <800ef25ed868f303bb2aece5dba59d395340f25d.1507722933.git.leonard.crestez@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171011111532epcms1p3036bcc7be2cc00057fe478fc868ba71d@epcms1p3>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, Inki Dae <inki.dae@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Leonard Crestez <leonard.crestez@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de, Bai Ping <ping.bai@nxp.com>
 
-Am Mittwoch, den 11.10.2017, 15:08 +0300 schrieb Leonard Crestez:
-> Enable cpuidle support on i.MX6DL starting from
-> IMX_CHIP_REVISION_1_1.
-> 
-> This also makes the code cleaner because 6q and 6dl actually have
-> different revision histories.
-> 
-> Signed-off-by: Bai Ping <ping.bai@nxp.com>
-> Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+On Wed, Oct 11, 2017 at 8:15 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+>> The existing {min|max}_freq sysfs nodes don't consider whether min/max_freq
+>> are available or not. Those sysfs nodes show just the stored value
+>> in the struct devfreq.
+>>
+>> The devfreq uses the OPP interface and then dev_pm_opp_{disable|add}()
+>> might change the state of the device's supported frequency. This patch
+>> shows the available minimum and maximum frequency through sysfs node.
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  drivers/devfreq/devfreq.c | 18 ++++++++++++++++--
+>>  1 file changed, 16 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> index 2ce1fd0a1324..799a0cf75d39 100644
+>> --- a/drivers/devfreq/devfreq.c
+>> +++ b/drivers/devfreq/devfreq.c
+>> @@ -1128,7 +1128,14 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+>>  static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
+>>                            char *buf)
+>>  {
+>> -     return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
+>> +     struct devfreq *df = to_devfreq(dev);
+>> +     unsigned long min_freq = to_devfreq(dev)->min_freq;
+>> +     unsigned long available_min_freq = find_available_min_freq(df);
+>> +
+>> +     if (available_min_freq != 0 && min_freq < available_min_freq)
+>
+> nitpick:
+>
+> If available_min_freq == 0,
+> it can't be min_freq < available_min_freq anyway;
+> it's unsigned.
 
-Reviewed-by: Lucas Stach <l.stach@pengutronix.de>
+If the dev_pm_opp_find_*() return the error in the find_available_min_freq(),
+avaiable_min_freq is zero. So, if available_min_freq is zero,
+min_freq_show doesn't need to compare 'min_freq < available_min_freq'.
 
-> ---
-> 
-> Changes since v1: https://www.spinics.net/lists/arm-kernel/msg610461.
-> html
-> * Clarified comment but kept > instead of >= because that's what the
-> old code used. Would be OK to change with further feedback.
-> 
->  arch/arm/mach-imx/mach-imx6q.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/arm/mach-imx/mach-imx6q.c b/arch/arm/mach-imx/mach-
-> imx6q.c
-> index 45801b2..5707113 100644
-> --- a/arch/arm/mach-imx/mach-imx6q.c
-> +++ b/arch/arm/mach-imx/mach-imx6q.c
-> @@ -371,10 +371,13 @@ static struct platform_device
-> imx6q_cpufreq_pdev = {
->  static void __init imx6q_init_late(void)
->  {
->  	/*
-> -	 * WAIT mode is broken on TO 1.0 and 1.1, so there is no
-> point
-> -	 * to run cpuidle on them.
-> +	 * WAIT mode is broken on imx6 Dual/Quad revision 1.0 and
-> 1.1 so
-> +	 * there is no point to run cpuidle on them.
-> +	 *
-> +	 * It does work on imx6 Solo/DualLite starting from 1.1
->  	 */
-> -	if (imx_get_soc_revision() > IMX_CHIP_REVISION_1_1)
-> +	if ((cpu_is_imx6q() && imx_get_soc_revision() >
-> IMX_CHIP_REVISION_1_1) ||
-> +	    (cpu_is_imx6dl() && imx_get_soc_revision() >
-> IMX_CHIP_REVISION_1_0))
->  		imx6q_cpuidle_init();
->  
->  	if (IS_ENABLED(CONFIG_ARM_IMX6Q_CPUFREQ)) {
+In result, if 'available_min_freq' is zero, min_freq_show() only considers
+the 'min_freq' variable.
+
+>
+>> +             min_freq = available_min_freq;
+>> +
+>> +     return sprintf(buf, "%lu\n", min_freq);
+>>  }
+>>
+>>  static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+>> @@ -1162,7 +1169,14 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+>>  static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
+>>                            char *buf)
+>>  {
+>> -     return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
+>> +     struct devfreq *df = to_devfreq(dev);
+>> +     unsigned long max_freq = to_devfreq(dev)->max_freq;
+>> +     unsigned long available_max_freq = find_available_max_freq(df);
+>> +
+>> +     if (available_max_freq != 0 && max_freq > available_max_freq)
+>> +             max_freq = available_max_freq;
+>
+> similar here.
+
+ditto.
+
+>
+>> +
+>> +     return sprintf(buf, "%lu\n", max_freq);
+>>  }
+>>  static DEVICE_ATTR_RW(max_freq);
+
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
