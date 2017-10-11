@@ -1,58 +1,72 @@
-From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH v3 6/8] PM / devfreq: Remove unneeded conditional statement
-Date: Wed, 11 Oct 2017 22:45:57 +0900
-Message-ID: <CAGTfZH2xTWo99mRugnnN9RHYWPZ-8pwHkG7YVWkMUAjxcgs7=g@mail.gmail.com>
-References: <1507691364-3899-1-git-send-email-cw00.choi@samsung.com>
- <CGME20171011030947epcas1p3172d6bb79615a17e08164a150031262e@epcms1p5>
- <1507691364-3899-7-git-send-email-cw00.choi@samsung.com> <20171011113635epcms1p5d6597fdf6a6091737f43adba5c5daf50@epcms1p5>
-Reply-To: cwchoi00@gmail.com
+From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
+Subject: Re: [PATCH] USB: Force disconnect Huawei 4G modem during suspend
+Date: Wed, 11 Oct 2017 11:04:20 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1710111058380.1339-100000@iolanthe.rowland.org>
+References: <20171011064753.11471-1-drake@endlessm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171011113635epcms1p5d6597fdf6a6091737f43adba5c5daf50@epcms1p5>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, Inki Dae <inki.dae@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171011064753.11471-1-drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, oneukum-IBi9RG/b67k@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org, chiu-6IF/jdPJHihWk0Htik3J/w@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 11, 2017 at 8:36 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->> The commit 0ec09ac2cebe9 ("PM / devfreq: Set the freq_table of devfreq
->> device") initializes the freq_table array of each devfreq device always.
->> In result, it is unneeded to check whether profile->freq_table is NULL
->> or not.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  drivers/devfreq/devfreq.c | 7 +++----
->>  1 file changed, 3 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->> index 3b9662ffe603..b28810cae7ee 100644
->> --- a/drivers/devfreq/devfreq.c
->> +++ b/drivers/devfreq/devfreq.c
->> @@ -315,10 +315,9 @@ int update_devfreq(struct devfreq *devfreq)
->>       freqs.new = freq;
->>       devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
->>
->> -     if (devfreq->profile->freq_table)
->> -             if (devfreq_update_status(devfreq, freq))
->> -                     dev_err(&devfreq->dev,
->> -                             "Couldn't update frequency transition information.\n");
->> +     if (devfreq_update_status(devfreq, freq))
->> +             dev_err(&devfreq->dev,
->> +                     "Couldn't update frequency transition information.\n");
->
-> To make this commit really safe,
-> in this commit, please make devfreq_set_freq_table to return error
-> and let add_device fails when it returns error.
->
-> In the current code, we cannot guarantee that there will be
-> freq_table and trans_table available when it hits this line.
+On Wed, 11 Oct 2017, Daniel Drake wrote:
 
-You're right. The devfreq_set_freq_table() should return error if fail.
-I'll modify them on v4.
+> From: Chris Chiu <chiu-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+> 
+> When going into S3 suspend, the Acer TravelMate P648-M and P648-G3
+> laptops immediately wake up 3-4 seconds later for no obvious reason.
+> 
+> Unbinding the integrated Huawei 4G LTE modem before suspend avoids
+> the issue, even though we are not using the modem at all (checked
+> from rescue.target/runlevel1). The problem also occurs when the option
+> and cdc-ether modem drivers aren't loaded; it reproduces just with the
+> base usb driver. Under Windows the system can suspend fine.
+> 
+> Seeking a better fix, we've tried a lot of things, including:
+>  - Check that the device's power/wakeup is disabled
+>  - Check that remote wakeup is off at the USB level
+>  - All the quirks in drivers/usb/core/quirks.c e.g. USB_QUIRK_RESET_RESUME,
+>    USB_QUIRK_RESET, USB_QUIRK_IGNORE_REMOTE_WAKEUP, USB_QUIRK_NO_LPM.
+> 
+> but none of that makes any difference.
+> 
+> There are no errors in the logs showing any suspend/resume-related issues.
+> When the system wakes up due to the modem, log-wise it appears to be a
+> normal resume.
+> 
+> Introduce a quirk to disable the port during suspend when the modem is
+> detected.
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+> --- a/drivers/usb/core/hub.c
+> +++ b/drivers/usb/core/hub.c
+> @@ -3160,6 +3160,9 @@ int usb_port_suspend(struct usb_device *udev, pm_message_t msg)
+>  			goto err_ltm;
+>  	}
+>  
+> +	if (udev->quirks & USB_QUIRK_DISCONNECT_SUSPEND)
+> +		usb_clear_port_feature(hub->hdev, port1, USB_PORT_FEAT_ENABLE);
+> +
+>  	/* see 7.1.7.6 */
+>  	if (hub_is_superspeed(hub->hdev))
+>  		status = hub_set_port_link_state(hub, port1, USB_SS_PORT_LS_U3);
+
+I'm not so sure this is the right way to do it.  If you turn off the 
+enable feature then the following calls to turn on the suspend feature 
+will fail.  At the very least, you should change the following line so 
+that it does:
+
+	else if (hub_is_superspeed(hub->hdev)) ...
+
+Also, you should check whether this is for a runtime suspend or a
+system suspend.  You don't want to go around disconnecting a device
+whenever it gets runtime suspended!
+
+Alan Stern
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
