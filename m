@@ -1,92 +1,111 @@
 From: Chanwoo Choi <cwchoi00@gmail.com>
-Subject: Re: [PATCH v3 3/8] PM / devfreq: Show the available min/max frequency
- through sysfs node
-Date: Wed, 11 Oct 2017 21:57:10 +0900
-Message-ID: <CAGTfZH0-pS8SLsYdxZfOotnE_FUFTtcYVZRcS8Eqgkk-H4b1vg@mail.gmail.com>
+Subject: Re: [PATCH v3 4/8] PM / devfreq: Show the all available frequencies
+Date: Wed, 11 Oct 2017 22:14:46 +0900
+Message-ID: <CAGTfZH0VeoKvvQCmtpdn-HzpgTd+vtC9UJ=ew_=rZLyMnnOmXw@mail.gmail.com>
 References: <1507691364-3899-1-git-send-email-cw00.choi@samsung.com>
- <CGME20171011030946epcas1p40f32955da5dada46e95302701a0afb7d@epcms1p3>
- <1507691364-3899-4-git-send-email-cw00.choi@samsung.com> <20171011111532epcms1p3036bcc7be2cc00057fe478fc868ba71d@epcms1p3>
+ <CGME20171011030946epcas1p30ca5f54e1dd4df92cefd19a385423a41@epcms1p4>
+ <1507691364-3899-5-git-send-email-cw00.choi@samsung.com> <20171011112615epcms1p4da3b251ebd1e4285d203ab5c3be58e37@epcms1p4>
 Reply-To: cwchoi00@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171011111532epcms1p3036bcc7be2cc00057fe478fc868ba71d@epcms1p3>
+In-Reply-To: <20171011112615epcms1p4da3b251ebd1e4285d203ab5c3be58e37@epcms1p4>
 Sender: linux-kernel-owner@vger.kernel.org
 To: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>
 Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, Inki Dae <inki.dae@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Oct 11, 2017 at 8:15 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->> The existing {min|max}_freq sysfs nodes don't consider whether min/max_freq
->> are available or not. Those sysfs nodes show just the stored value
->> in the struct devfreq.
+On Wed, Oct 11, 2017 at 8:26 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+>> The commit a76caf55e5b35 ("thermal: Add devfreq cooling") allows
+>> the devfreq device to use the cooling device. When the cooling down
+>> are required, the devfreq_cooling.c disables the OPP entry with
+>> the dev_pm_opp_disable(). In result, 'available_frequencies'[1]
+>> sysfs node never came to show the all available frequencies.
+>> [1] /sys/class/devfreq/.../available_frequencies
 >>
->> The devfreq uses the OPP interface and then dev_pm_opp_{disable|add}()
->> might change the state of the device's supported frequency. This patch
->> shows the available minimum and maximum frequency through sysfs node.
+>> So, this patch uses the 'freq_table' in the 'struct devfreq_dev_profile'
+>> in order to show the all available frequencies.
+>> - If 'freq_table' is NULL, devfreq core initializes them by using OPP values.
+>> - If 'freq_table' is initialized, devfreq core just uses the 'freq_table'.
 >>
 >> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 >> ---
->>  drivers/devfreq/devfreq.c | 18 ++++++++++++++++--
->>  1 file changed, 16 insertions(+), 2 deletions(-)
+>>  drivers/devfreq/devfreq.c | 28 ++++++++++++++++------------
+>>  1 file changed, 16 insertions(+), 12 deletions(-)
 >>
 >> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->> index 2ce1fd0a1324..799a0cf75d39 100644
+>> index 799a0cf75d39..1c4b377cacfb 100644
 >> --- a/drivers/devfreq/devfreq.c
 >> +++ b/drivers/devfreq/devfreq.c
->> @@ -1128,7 +1128,14 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
->>  static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
->>                            char *buf)
+>> @@ -1185,22 +1185,26 @@ static ssize_t available_frequencies_show(struct device *d,
+>>                                         char *buf)
 >>  {
->> -     return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
->> +     struct devfreq *df = to_devfreq(dev);
->> +     unsigned long min_freq = to_devfreq(dev)->min_freq;
->> +     unsigned long available_min_freq = find_available_min_freq(df);
->> +
->> +     if (available_min_freq != 0 && min_freq < available_min_freq)
->
-> nitpick:
->
-> If available_min_freq == 0,
-> it can't be min_freq < available_min_freq anyway;
-> it's unsigned.
-
-If the dev_pm_opp_find_*() return the error in the find_available_min_freq(),
-avaiable_min_freq is zero. So, if available_min_freq is zero,
-min_freq_show doesn't need to compare 'min_freq < available_min_freq'.
-
-In result, if 'available_min_freq' is zero, min_freq_show() only considers
-the 'min_freq' variable.
-
->
->> +             min_freq = available_min_freq;
->> +
->> +     return sprintf(buf, "%lu\n", min_freq);
->>  }
+>>       struct devfreq *df = to_devfreq(d);
+>> -     struct device *dev = df->dev.parent;
+>> -     struct dev_pm_opp *opp;
+>>       ssize_t count = 0;
+>> -     unsigned long freq = 0;
+>> +     unsigned long *freq_table;
+>> +     int i, max_state;
 >>
->>  static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
->> @@ -1162,7 +1169,14 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
->>  static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
->>                            char *buf)
->>  {
->> -     return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
->> +     struct devfreq *df = to_devfreq(dev);
->> +     unsigned long max_freq = to_devfreq(dev)->max_freq;
->> +     unsigned long available_max_freq = find_available_max_freq(df);
->> +
->> +     if (available_max_freq != 0 && max_freq > available_max_freq)
->> +             max_freq = available_max_freq;
+>> -     do {
+>> -             opp = dev_pm_opp_find_freq_ceil(dev, &freq);
+>> -             if (IS_ERR(opp))
+>> -                     break;
+>> +     mutex_lock(&df->lock);
+>>
+>> -             dev_pm_opp_put(opp);
+>> -             count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
+>> -                                "%lu ", freq);
+>> -             freq++;
+>> -     } while (1);
+>> +     freq_table = df->profile->freq_table;
+>> +     max_state = df->profile->max_state;
+>>
+>> +     if (freq_table[0] < freq_table[max_state - 1]) {
+>> +             for (i = 0; i < max_state; i++)
+>> +                     count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
+>> +                                     "%lu ", freq_table[i]);
+>> +     } else {
+>> +             for (i = max_state - 1; i >= 0 ; i--)
+>> +                     count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
+>> +                                     "%lu ", freq_table[i]);
 >
-> similar here.
+> Is there a possibilty that PC will hit here?
 
-ditto.
+As I commented on patch description, the 'freq_table' is always filled
+with frequency as following description: There is no issue on both
+embedded and PC.
+--------
+- If 'freq_table' is NULL, devfreq core initializes them by using OPP values.
+- If 'freq_table' is initialized, devfreq core just uses the 'freq_table'.
+--------
+
+> (If so, don't you need to worry about not being sorted at all?)
+>
+> At least, devfreq_set_freq_table sorts it in ascending order.
+> And if you are worried about someone not using devfreq_set_freq_table
+> and set freq_table on their own, we'd better simple put some comments
+> to mandate it to be sorted in ascending order or not allowing to do it
+> anyway.
+
+OK. I'll just consider the ascending order and then I'll add some comments
+for that the ascending order is mandatory for 'freq_table'.
+
+(Actually. the ARM Mali kernel driver makes the 'freq_table'
+in the descending order. It doesn't matter. As you commented,
+I'll add the comment about the ordering way.)
 
 >
+> Cheers,
+> MyungJoo.
+>
+>> +     }
 >> +
->> +     return sprintf(buf, "%lu\n", max_freq);
->>  }
->>  static DEVICE_ATTR_RW(max_freq);
-
+>> +     mutex_unlock(&df->lock);
+>>       /* Truncate the trailing space */
+>>       if (count)
+>>               count--;
 
 -- 
 Best Regards,
