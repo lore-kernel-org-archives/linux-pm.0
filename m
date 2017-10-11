@@ -1,72 +1,49 @@
-From: Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>
-Subject: Re: [PATCH] USB: Force disconnect Huawei 4G modem during suspend
-Date: Wed, 11 Oct 2017 11:04:20 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1710111058380.1339-100000@iolanthe.rowland.org>
-References: <20171011064753.11471-1-drake@endlessm.com>
+From: Stephen Boyd <sboyd@codeaurora.org>
+Subject: Re: [PATCH v2] PM / OPP: add missing of_node_put() for
+ of_get_cpu_node()
+Date: Wed, 11 Oct 2017 13:20:22 -0700
+Message-ID: <20171011202011.GB25302@codeaurora.org>
+References: <1507632519-19648-1-git-send-email-sudeep.holla@arm.com>
+ <1507716661-27146-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171011064753.11471-1-drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Daniel Drake <drake-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
-Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, oneukum-IBi9RG/b67k@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-6IF/jdPJHihWk0Htik3J/w@public.gmane.org, chiu-6IF/jdPJHihWk0Htik3J/w@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:56626 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752337AbdJKUUZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Oct 2017 16:20:25 -0400
+Content-Disposition: inline
+In-Reply-To: <1507716661-27146-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Wed, 11 Oct 2017, Daniel Drake wrote:
-
-> From: Chris Chiu <chiu-6IF/jdPJHihWk0Htik3J/w@public.gmane.org>
+On 10/11, Sudeep Holla wrote:
+> @@ -603,7 +603,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+> @@ -614,10 +614,12 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+>  		/* Get OPP descriptor node */
+>  		tmp_np = _opp_of_get_opp_desc_node(cpu_np);
+>  		if (!tmp_np) {
+> +			of_node_put(cpu_np);
+>  			pr_err("%pOF: Couldn't find opp node\n", cpu_np);
+>  			ret = -ENOENT;
+>  			goto put_cpu_node;
+>  		}
+> +		of_node_put(cpu_np);
 > 
-> When going into S3 suspend, the Acer TravelMate P648-M and P648-G3
-> laptops immediately wake up 3-4 seconds later for no obvious reason.
-> 
-> Unbinding the integrated Huawei 4G LTE modem before suspend avoids
-> the issue, even though we are not using the modem at all (checked
-> from rescue.target/runlevel1). The problem also occurs when the option
-> and cdc-ether modem drivers aren't loaded; it reproduces just with the
-> base usb driver. Under Windows the system can suspend fine.
-> 
-> Seeking a better fix, we've tried a lot of things, including:
->  - Check that the device's power/wakeup is disabled
->  - Check that remote wakeup is off at the USB level
->  - All the quirks in drivers/usb/core/quirks.c e.g. USB_QUIRK_RESET_RESUME,
->    USB_QUIRK_RESET, USB_QUIRK_IGNORE_REMOTE_WAKEUP, USB_QUIRK_NO_LPM.
-> 
-> but none of that makes any difference.
-> 
-> There are no errors in the logs showing any suspend/resume-related issues.
-> When the system wakes up due to the modem, log-wise it appears to be a
-> normal resume.
-> 
-> Introduce a quirk to disable the port during suspend when the modem is
-> detected.
 
-> --- a/drivers/usb/core/hub.c
-> +++ b/drivers/usb/core/hub.c
-> @@ -3160,6 +3160,9 @@ int usb_port_suspend(struct usb_device *udev, pm_message_t msg)
->  			goto err_ltm;
->  	}
->  
-> +	if (udev->quirks & USB_QUIRK_DISCONNECT_SUSPEND)
-> +		usb_clear_port_feature(hub->hdev, port1, USB_PORT_FEAT_ENABLE);
-> +
->  	/* see 7.1.7.6 */
->  	if (hub_is_superspeed(hub->hdev))
->  		status = hub_set_port_link_state(hub, port1, USB_SS_PORT_LS_U3);
+Why not?
 
-I'm not so sure this is the right way to do it.  If you turn off the 
-enable feature then the following calls to turn on the suspend feature 
-will fail.  At the very least, you should change the following line so 
-that it does:
 
-	else if (hub_is_superspeed(hub->hdev)) ...
+		tmp_np = _opp_of_get_opp_desc_node(cpu_np);
+		of_node_put(cpu_np);
+		if (!tmp_np) {
+			pr_err("%pOF: Couldn't find opp node\n", cpu_np);
+			ret = -ENOENT;
+			goto put_cpu_node;
+		}
 
-Also, you should check whether this is for a runtime suspend or a
-system suspend.  You don't want to go around disconnecting a device
-whenever it gets runtime suspended!
-
-Alan Stern
-
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+-- 
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
