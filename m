@@ -1,82 +1,91 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: FW: RE: [PATCH v3 1/8] PM / devfreq: Set min/max_freq when adding
- the devfreq device
-Date: Wed, 11 Oct 2017 11:22:18 +0000
-Message-ID: <20171011112218epcms1p44a92995d11f8bed42199eab623b4a2d1@epcms1p4>
-References: <20171011110952epcms1p2f1c04c3cc0b078c07b55e7031cd175ac@epcms1p2>
-        <1507691364-3899-2-git-send-email-cw00.choi@samsung.com>
+Subject: RE: [PATCH v3 4/8] PM / devfreq: Show the all available frequencies
+Date: Wed, 11 Oct 2017 11:26:15 +0000
+Message-ID: <20171011112615epcms1p4da3b251ebd1e4285d203ab5c3be58e37@epcms1p4>
+References: <1507691364-3899-5-git-send-email-cw00.choi@samsung.com>
         <1507691364-3899-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20171011030946epcas1p156d133af4c065453eb8afde9e0e6869d@epcms1p4>
+        <CGME20171011030946epcas1p30ca5f54e1dd4df92cefd19a385423a41@epcms1p4>
 Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:23578 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756515AbdJKLWV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Oct 2017 07:22:21 -0400
-Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
-        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20171011112219epoutp04af96d5cedc4bdb0d322cc22df1638e70~sgDTNdUcF2824228242epoutp04Z
-        for <linux-pm@vger.kernel.org>; Wed, 11 Oct 2017 11:22:19 +0000 (GMT)
-In-Reply-To: <20171011110952epcms1p2f1c04c3cc0b078c07b55e7031cd175ac@epcms1p2>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1507691364-3899-5-git-send-email-cw00.choi@samsung.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
 Cc: "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "chanwoo@kernel.org" <chanwoo@kernel.org>, Inki Dae <inki.dae@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
-> > Prior to that, the min/max_freq of the devfreq device are always zero
-> > before the user changes the min/max_freq through sysfs entries.
-> > It might make the confusion for the min/max_freq.
-> > 
-> > This patch initializes the available min/max_freq by using the OPP
-> > during adding the devfreq device.
-> > 
-> > Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> > ---
-> >  drivers/devfreq/devfreq.c | 43 +++++++++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 43 insertions(+)
-> > 
-> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> > index a1c4ee818614..ae8717a6eee1 100644
-> > --- a/drivers/devfreq/devfreq.c
-> > +++ b/drivers/devfreq/devfreq.c
-> > diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> > index a1c4ee818614..ae8717a6eee1 100644
-> > --- a/drivers/devfreq/devfreq.c
-> > +++ b/drivers/devfreq/devfreq.c
-> > @@ -69,6 +69,34 @@ static struct devfreq *find_device_devfreq(struct device *dev)
-> >  	return ERR_PTR(-ENODEV);
-> >  }
-> >  
-> > +static unsigned long find_available_min_freq(struct devfreq *devfreq)
-> > +{
-> > +	struct dev_pm_opp *opp;
-> > +	unsigned long min_freq = 0;
-> > +
-> > +	opp = dev_pm_opp_find_freq_ceil(devfreq->dev.parent, &min_freq);
+> The commit a76caf55e5b35 ("thermal: Add devfreq cooling") allows
+> the devfreq device to use the cooling device. When the cooling down
+> are required, the devfreq_cooling.c disables the OPP entry with
+> the dev_pm_opp_disable(). In result, 'available_frequencies'[1]
+> sysfs node never came to show the all available frequencies.
+> [1] /sys/class/devfreq/.../available_frequencies
 > 
-> When min_freq is 0, dev_pm_opp_find_freq_ceil will return ERR_PTR(-EINVAL);
+> So, this patch uses the 'freq_table' in the 'struct devfreq_dev_profile'
+> in order to show the all available frequencies.
+> - If 'freq_table' is NULL, devfreq core initializes them by using OPP values.
+> - If 'freq_table' is initialized, devfreq core just uses the 'freq_table'.
 > 
-> --- from drivers/base/power/opp/core.c ------ 
-> struct dev_pm_opp *dev_pm_opp_find_freq_ceil(struct device *dev,
->                                              unsigned long *freq)
-> {
->         struct opp_table *opp_table;
->         struct dev_pm_opp *opp;
+> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+> ---
+>  drivers/devfreq/devfreq.c | 28 ++++++++++++++++------------
+>  1 file changed, 16 insertions(+), 12 deletions(-)
 > 
->         if (!dev || !freq) {
->                 dev_err(dev, "%s: Invalid argument freq=%p\n", __func__, freq);
->                 return ERR_PTR(-EINVAL);
->         }
-> ---------------------------------------------
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 799a0cf75d39..1c4b377cacfb 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -1185,22 +1185,26 @@ static ssize_t available_frequencies_show(struct device *d,
+>  					  char *buf)
+>  {
+>  	struct devfreq *df = to_devfreq(d);
+> -	struct device *dev = df->dev.parent;
+> -	struct dev_pm_opp *opp;
+>  	ssize_t count = 0;
+> -	unsigned long freq = 0;
+> +	unsigned long *freq_table;
+> +	int i, max_state;
+>  
+> -	do {
+> -		opp = dev_pm_opp_find_freq_ceil(dev, &freq);
+> -		if (IS_ERR(opp))
+> -			break;
+> +	mutex_lock(&df->lock);
+>  
+> -		dev_pm_opp_put(opp);
+> -		count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
+> -				   "%lu ", freq);
+> -		freq++;
+> -	} while (1);
+> +	freq_table = df->profile->freq_table;
+> +	max_state = df->profile->max_state;
+>  
+> +	if (freq_table[0] < freq_table[max_state - 1]) {
+> +		for (i = 0; i < max_state; i++)
+> +			count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
+> +					"%lu ", freq_table[i]);
+> +	} else {
+> +		for (i = max_state - 1; i >= 0 ; i--)
+> +			count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
+> +					"%lu ", freq_table[i]);
 
-Sorry, please never mind. My Bad. Your code had no such issues.
+Is there a possibilty that PC will hit here?
+(If so, don't you need to worry about not being sorted at all?)
 
-So, I'm adding:
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+At least, devfreq_set_freq_table sorts it in ascending order.
+And if you are worried about someone not using devfreq_set_freq_table
+and set freq_table on their own, we'd better simple put some comments
+to mandate it to be sorted in ascending order or not allowing to do it
+anyway.
 
-> 
-> Cheers,
-> MyungJoo
-> 
+Cheers,
+MyungJoo.
+
+> +	}
+> +
+> +	mutex_unlock(&df->lock);
+>  	/* Truncate the trailing space */
+>  	if (count)
+>  		count--;
