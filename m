@@ -1,65 +1,46 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v3 3/8] PM / devfreq: Show the available min/max frequency
- through sysfs node
-Date: Wed, 11 Oct 2017 12:09:19 +0900
-Message-ID: <1507691364-3899-4-git-send-email-cw00.choi@samsung.com>
-References: <1507691364-3899-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20171011030946epcas1p40f32955da5dada46e95302701a0afb7d@epcas1p4.samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1507691364-3899-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
-Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 1/1] cpufreq: ti-cpufreq: add missing of_node_put()
+Date: Wed, 11 Oct 2017 09:40:30 +0530
+Message-ID: <20171011041030.GJ4031@vireshk-i7>
+References: <1507642040-13646-1-git-send-email-zumeng.chen@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f51.google.com ([74.125.83.51]:52093 "EHLO
+        mail-pg0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750722AbdJKEKg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Oct 2017 00:10:36 -0400
+Received: by mail-pg0-f51.google.com with SMTP id u144so335677pgb.8
+        for <linux-pm@vger.kernel.org>; Tue, 10 Oct 2017 21:10:35 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1507642040-13646-1-git-send-email-zumeng.chen@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zumeng Chen <zumeng.chen@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, rjw@rjwysocki.net, d-gerlach@ti.com, tony@atomide.com
 
-The existing {min|max}_freq sysfs nodes don't consider whether min/max_freq
-are available or not. Those sysfs nodes show just the stored value
-in the struct devfreq.
+On 10-10-17, 21:27, Zumeng Chen wrote:
+> call of_node_put to release the refcount of np.
+> 
+> Signed-off-by: Zumeng Chen <zumeng.chen@gmail.com>
+> ---
+>  drivers/cpufreq/ti-cpufreq.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+> index ffcddcd..923317f 100644
+> --- a/drivers/cpufreq/ti-cpufreq.c
+> +++ b/drivers/cpufreq/ti-cpufreq.c
+> @@ -205,6 +205,7 @@ static int ti_cpufreq_init(void)
+>  
+>  	np = of_find_node_by_path("/");
+>  	match = of_match_node(ti_cpufreq_of_match, np);
+> +	of_node_put(np);
+>  	if (!match)
+>  		return -ENODEV;
+>  
 
-The devfreq uses the OPP interface and then dev_pm_opp_{disable|add}()
-might change the state of the device's supported frequency. This patch
-shows the available minimum and maximum frequency through sysfs node.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 2ce1fd0a1324..799a0cf75d39 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -1128,7 +1128,14 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
- static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
--	return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
-+	struct devfreq *df = to_devfreq(dev);
-+	unsigned long min_freq = to_devfreq(dev)->min_freq;
-+	unsigned long available_min_freq = find_available_min_freq(df);
-+
-+	if (available_min_freq != 0 && min_freq < available_min_freq)
-+		min_freq = available_min_freq;
-+
-+	return sprintf(buf, "%lu\n", min_freq);
- }
- 
- static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
-@@ -1162,7 +1169,14 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
--	return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
-+	struct devfreq *df = to_devfreq(dev);
-+	unsigned long max_freq = to_devfreq(dev)->max_freq;
-+	unsigned long available_max_freq = find_available_max_freq(df);
-+
-+	if (available_max_freq != 0 && max_freq > available_max_freq)
-+		max_freq = available_max_freq;
-+
-+	return sprintf(buf, "%lu\n", max_freq);
- }
- static DEVICE_ATTR_RW(max_freq);
- 
 -- 
-1.9.1
+viresh
