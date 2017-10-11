@@ -1,69 +1,58 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: [PATCH v1 18/27] kvm: Adapt assembly for PIE support
-Date: Wed, 11 Oct 2017 13:30:18 -0700
-Message-ID: <20171011203027.11248-19-thgarnie@google.com>
-References: <20171011203027.11248-1-thgarnie@google.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xen.org>
-In-Reply-To: <20171011203027.11248-1-thgarnie@google.com>
-List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xen.org>
-List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
-List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xen.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Thomas Garnier <thgarnie@google.com>, Kees Cook <keescook@chromium.org>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Matthias Kaehlcke <mka@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Juergen Gross <jgross@suse.com>, Chris Wright <chrisw@sous-sol.org>, Alok Kataria <akataria@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel.>
-Cc: linux-arch@vger.kernel.org, kvm@vger.kernel.org, linux-pm@vger.kernel.org, x86@kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org, linux-sparse@vger.kernel.org, linux-crypto@vger.kernel.org, kernel-hardening@lists.openwall.com, xen-devel@lists.xenproject.org
+From: Len Brown <lenb@kernel.org>
+Subject: [PATCH 1/1] x86/apic: Update TSC_DEADLINE quirk with additional HSX stepping
+Date: Wed, 11 Oct 2017 17:06:43 -0400
+Message-ID: <7f6f25d2332791092f30cbca4be26524ad854da1.1507755700.git.len.brown@intel.com>
+Reply-To: Len Brown <lenb@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f194.google.com ([209.85.216.194]:35782 "EHLO
+        mail-qt0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752434AbdJKVGu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Oct 2017 17:06:50 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rafael@kernel.org, tglx@linutronix.de
+Cc: x86@kernel.org, srinivas.pandruvada@linux.intel.com, peterz@infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
 
-Q2hhbmdlIHRoZSBhc3NlbWJseSBjb2RlIHRvIHVzZSBvbmx5IHJlbGF0aXZlIHJlZmVyZW5jZXMg
-b2Ygc3ltYm9scyBmb3IgdGhlCmtlcm5lbCB0byBiZSBQSUUgY29tcGF0aWJsZS4gVGhlIG5ldyBf
-X0FTTV9HRVRfUFRSX1BSRSBtYWNybyBpcyB1c2VkIHRvCmdldCB0aGUgYWRkcmVzcyBvZiBhIHN5
-bWJvbCBvbiBib3RoIDMyIGFuZCA2NC1iaXQgd2l0aCBQSUUgc3VwcG9ydC4KClBvc2l0aW9uIElu
-ZGVwZW5kZW50IEV4ZWN1dGFibGUgKFBJRSkgc3VwcG9ydCB3aWxsIGFsbG93IHRvIGV4dGVuZGVk
-IHRoZQpLQVNMUiByYW5kb21pemF0aW9uIHJhbmdlIGJlbG93IHRoZSAtMkcgbWVtb3J5IGxpbWl0
-LgoKU2lnbmVkLW9mZi1ieTogVGhvbWFzIEdhcm5pZXIgPHRoZ2FybmllQGdvb2dsZS5jb20+Ci0t
-LQogYXJjaC94ODYvaW5jbHVkZS9hc20va3ZtX2hvc3QuaCB8IDYgKysrKy0tCiBhcmNoL3g4Ni9r
-ZXJuZWwva3ZtLmMgICAgICAgICAgIHwgNiArKysrLS0KIGFyY2gveDg2L2t2bS9zdm0uYyAgICAg
-ICAgICAgICAgfCA0ICsrLS0KIDMgZmlsZXMgY2hhbmdlZCwgMTAgaW5zZXJ0aW9ucygrKSwgNiBk
-ZWxldGlvbnMoLSkKCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9pbmNsdWRlL2FzbS9rdm1faG9zdC5o
-IGIvYXJjaC94ODYvaW5jbHVkZS9hc20va3ZtX2hvc3QuaAppbmRleCA5ZDdkODU2YjJkODkuLjE0
-MDczZmRhNzVmYiAxMDA2NDQKLS0tIGEvYXJjaC94ODYvaW5jbHVkZS9hc20va3ZtX2hvc3QuaAor
-KysgYi9hcmNoL3g4Ni9pbmNsdWRlL2FzbS9rdm1faG9zdC5oCkBAIC0xMzQyLDkgKzEzNDIsMTEg
-QEAgYXNtbGlua2FnZSB2b2lkIGt2bV9zcHVyaW91c19mYXVsdCh2b2lkKTsKIAkiLnB1c2hzZWN0
-aW9uIC5maXh1cCwgXCJheFwiIFxuIiBcCiAJIjY2NzogXG5cdCIgXAogCWNsZWFudXBfaW5zbiAi
-XG5cdCIJCSAgICAgIFwKLQkiY21wYiAkMCwga3ZtX3JlYm9vdGluZyBcblx0IgkgICAgICBcCisJ
-ImNtcGIgJDAsIGt2bV9yZWJvb3RpbmciIF9fQVNNX1NFTCgsKCUlcmlwKSkgIiBcblx0IiBcCiAJ
-ImpuZSA2NjhiIFxuXHQiICAgICAgCQkgICAgICBcCi0JX19BU01fU0laRShwdXNoKSAiICQ2NjZi
-IFxuXHQiCSAgICAgIFwKKwlfX0FTTV9TSVpFKHB1c2gpICIlJSIgX0FTTV9BWCAiIFxuXHQiCQlc
-CisJX19BU01fR0VUX1BUUl9QUkUoNjY2YikgIiUlIiBfQVNNX0FYICJcblx0IglcCisJInhjaGcg
-JSUiIF9BU01fQVggIiwgKCUlIiBfQVNNX1NQICIpIFxuXHQiCVwKIAkiY2FsbCBrdm1fc3B1cmlv
-dXNfZmF1bHQgXG5cdCIJICAgICAgXAogCSIucG9wc2VjdGlvbiBcblx0IiBcCiAJX0FTTV9FWFRB
-QkxFKDY2NmIsIDY2N2IpCmRpZmYgLS1naXQgYS9hcmNoL3g4Ni9rZXJuZWwva3ZtLmMgYi9hcmNo
-L3g4Ni9rZXJuZWwva3ZtLmMKaW5kZXggOGJiOTU5NGQwNzYxLi40NDY0YzM2Njc4MzEgMTAwNjQ0
-Ci0tLSBhL2FyY2gveDg2L2tlcm5lbC9rdm0uYworKysgYi9hcmNoL3g4Ni9rZXJuZWwva3ZtLmMK
-QEAgLTYyNyw4ICs2MjcsMTAgQEAgYXNtKAogIi5nbG9iYWwgX19yYXdfY2FsbGVlX3NhdmVfX19r
-dm1fdmNwdV9pc19wcmVlbXB0ZWQ7IgogIi50eXBlIF9fcmF3X2NhbGxlZV9zYXZlX19fa3ZtX3Zj
-cHVfaXNfcHJlZW1wdGVkLCBAZnVuY3Rpb247IgogIl9fcmF3X2NhbGxlZV9zYXZlX19fa3ZtX3Zj
-cHVfaXNfcHJlZW1wdGVkOiIKLSJtb3ZxCV9fcGVyX2NwdV9vZmZzZXQoLCVyZGksOCksICVyYXg7
-IgotImNtcGIJJDAsICIgX19zdHJpbmdpZnkoS1ZNX1NURUFMX1RJTUVfcHJlZW1wdGVkKSAiK3N0
-ZWFsX3RpbWUoJXJheCk7IgorImxlYXEJX19wZXJfY3B1X29mZnNldCglcmlwKSwgJXJheDsiCisi
-bW92cQkoJXJheCwlcmRpLDgpLCAlcmF4OyIKKyJhZGRxCSIgX19zdHJpbmdpZnkoS1ZNX1NURUFM
-X1RJTUVfcHJlZW1wdGVkKSAiK3N0ZWFsX3RpbWUoJXJpcCksICVyYXg7IgorImNtcGIJJDAsICgl
-cmF4KTsiCiAic2V0bmUJJWFsOyIKICJyZXQ7IgogIi5wb3BzZWN0aW9uIik7CmRpZmYgLS1naXQg
-YS9hcmNoL3g4Ni9rdm0vc3ZtLmMgYi9hcmNoL3g4Ni9rdm0vc3ZtLmMKaW5kZXggMGU2OGYwYjNj
-YmY3Li4zNjQ1MzYwODA0MzggMTAwNjQ0Ci0tLSBhL2FyY2gveDg2L2t2bS9zdm0uYworKysgYi9h
-cmNoL3g4Ni9rdm0vc3ZtLmMKQEAgLTU2OCwxMiArNTY4LDEyIEBAIHN0YXRpYyB1MzIgc3ZtX21z
-cnBtX29mZnNldCh1MzIgbXNyKQogCiBzdGF0aWMgaW5saW5lIHZvaWQgY2xnaSh2b2lkKQogewot
-CWFzbSB2b2xhdGlsZSAoX19leChTVk1fQ0xHSSkpOworCWFzbSB2b2xhdGlsZSAoX19leChTVk1f
-Q0xHSSkgOiA6KTsKIH0KIAogc3RhdGljIGlubGluZSB2b2lkIHN0Z2kodm9pZCkKIHsKLQlhc20g
-dm9sYXRpbGUgKF9fZXgoU1ZNX1NUR0kpKTsKKwlhc20gdm9sYXRpbGUgKF9fZXgoU1ZNX1NUR0kp
-IDogOik7CiB9CiAKIHN0YXRpYyBpbmxpbmUgdm9pZCBpbnZscGdhKHVuc2lnbmVkIGxvbmcgYWRk
-ciwgdTMyIGFzaWQpCi0tIAoyLjE1LjAucmMwLjI3MS5nMzZiNjY5ZWRjYy1nb29nCgoKX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18KWGVuLWRldmVsIG1haWxp
-bmcgbGlzdApYZW4tZGV2ZWxAbGlzdHMueGVuLm9yZwpodHRwczovL2xpc3RzLnhlbi5vcmcveGVu
-LWRldmVsCg==
+From: Len Brown <len.brown@intel.com>
+
+HSX stepping-3 fixed the TSC_DEADLINE issue in a different ucode
+version number than stepping-4.  Linux needs to know this stepping-3
+specific version number to also enable the TSC_DEADLINE on stepping-3.
+
+The steppings and ucode versions are documented in the SKX BIOS update:
+https://downloadmirror.intel.com/26978/eng/ReleaseNotes_R00.01.0004.txt
+
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ arch/x86/kernel/apic/apic.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index d705c769f77d..da13b6abef2c 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -573,11 +573,21 @@ static u32 bdx_deadline_rev(void)
+ 	return ~0U;
+ }
+ 
++static u32 skx_deadline_rev(void)
++{
++	switch (boot_cpu_data.x86_mask) {
++	case 0x03: return 0x01000136;
++	case 0x04: return 0x02000014;
++	}
++
++	return ~0U;
++}
++
+ static const struct x86_cpu_id deadline_match[] = {
+ 	DEADLINE_MODEL_MATCH_FUNC( INTEL_FAM6_HASWELL_X,	hsx_deadline_rev),
+ 	DEADLINE_MODEL_MATCH_REV ( INTEL_FAM6_BROADWELL_X,	0x0b000020),
+ 	DEADLINE_MODEL_MATCH_FUNC( INTEL_FAM6_BROADWELL_XEON_D,	bdx_deadline_rev),
+-	DEADLINE_MODEL_MATCH_REV ( INTEL_FAM6_SKYLAKE_X,	0x02000014),
++	DEADLINE_MODEL_MATCH_FUNC( INTEL_FAM6_SKYLAKE_X,	skx_deadline_rev),
+ 
+ 	DEADLINE_MODEL_MATCH_REV ( INTEL_FAM6_HASWELL_CORE,	0x22),
+ 	DEADLINE_MODEL_MATCH_REV ( INTEL_FAM6_HASWELL_ULT,	0x20),
+-- 
+2.14.0-rc0
