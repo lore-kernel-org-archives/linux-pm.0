@@ -1,32 +1,57 @@
-From: Petr Mladek <pmladek-IBi9RG/b67k@public.gmane.org>
-Subject: Re: [PATCH 12/13] kthread: Convert callback to use from_timer()
-Date: Wed, 11 Oct 2017 12:20:33 +0200
-Message-ID: <20171011102033.GB2882@pathway.suse.cz>
-References: <1507159627-127660-1-git-send-email-keescook@chromium.org>
- <1507159627-127660-13-git-send-email-keescook@chromium.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v2] PM / OPP: add missing of_node_put() for
+ of_get_cpu_node()
+Date: Wed, 11 Oct 2017 15:51:46 +0530
+Message-ID: <20171011102146.GB32532@vireshk-i7>
+References: <1507632519-19648-1-git-send-email-sudeep.holla@arm.com>
+ <1507716661-27146-1-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f48.google.com ([74.125.83.48]:47151 "EHLO
+        mail-pg0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750705AbdJKKVu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Oct 2017 06:21:50 -0400
+Received: by mail-pg0-f48.google.com with SMTP id r25so752255pgn.4
+        for <linux-pm@vger.kernel.org>; Wed, 11 Oct 2017 03:21:49 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <1507159627-127660-13-git-send-email-keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Sender: linux-wireless-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Oleg Nesterov <oleg-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>, Chris Metcalf <cmetcalf-VPRAkNaXOzVWk0Htik3J/w@public.gmane.org>, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Harish Patil <harish.patil-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, Heiko Carstens <heiko.carstens-tA70FqPdS9bQT0dZR+AlfA@public.gmane.org>, "James E.J. Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, John Stultz <john.stultz-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Julian Wiedmann <jwi-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, Kalle Valo <kvalo-A+ZNKFmMK5xy9aJCnZT0Uw@public.gmane.org>, Lai Jiangshan <jiangshanlai-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Len Brown <len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Manish Chopra <manish.chopra-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>
+In-Reply-To: <1507716661-27146-1-git-send-email-sudeep.holla@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-pm@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Wed 2017-10-04 16:27:06, Kees Cook wrote:
-> In preparation for unconditionally passing the struct timer_list pointer
-> to all timer callbacks, switch kthread to use from_timer() and pass the
-> timer pointer explicitly.
+On 11-10-17, 11:11, Sudeep Holla wrote:
+> Commit 762792913f8c ("PM / OPP: Fix get sharing CPUs when hotplug is used")
+> moved away from using cpu_dev->of_node because of some limitations.
+> However commit 7467c9d95989 ("of: return of_get_cpu_node from
+> of_cpu_device_node_get if CPUs are not registered") added support to
+> falls back to of_get_cpu_node if called if CPUs are not registered yet.
 > 
-> Cc: Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>
-> Cc: Petr Mladek <pmladek-IBi9RG/b67k@public.gmane.org>
-> Cc: Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
-> Cc: Oleg Nesterov <oleg-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-> Signed-off-by: Kees Cook <keescook-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+> It adds the missing of_node_put for the CPU device nodes. This patch also
+> moves back to use of_cpu_device_node_get in dev_pm_opp_of_get_sharing_cpus
+> to avoid scanning the device tree again.
+> 
+> Cc: Viresh Kumar <vireshk@kernel.org>
+> Cc: Nishanth Menon <nm@ti.com>
+> Cc: Stephen Boyd <sboyd@codeaurora.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Fixes: 762792913f8c ("PM / OPP: Fix get sharing CPUs when hotplug is used")
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
 
-Reviewed-by: Petr Mladek <pmladek-IBi9RG/b67k@public.gmane.org>
+Cc: 4.14+ <stable@vger.kernel.org> # 4.14+
 
-Best Regards,
-Petr
+> ---
+>  drivers/opp/of.c | 6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> v1->v2:
+> 	- Moved of_node_put after using cpu_np
+> 	- Renamed the $subject as fixing refcount is key part of the part
+> 	  and correctly relates to "Fixes" tag
+> 	- Also added include change which was accidentally missed
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
