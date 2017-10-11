@@ -1,38 +1,110 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Subject: Re: [PATCH] pci: Fix a possible sleep-in-atomic bug in
- pci_set_power_state
-Date: Wed, 11 Oct 2017 16:33:24 +0300
-Message-ID: <20171011133324.b5xnlmj5uhme2ibt@mwanda>
-References: <1507536980-9345-1-git-send-email-baijiaju1990@163.com>
- <20171009171517.GL25517@bhelgaas-glaptop.roam.corp.google.com>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+Subject: Re: [PATCH v3 5/8] PM / devfreq: Get the available next frequency on update_devfreq()
+Date: Wed, 11 Oct 2017 22:33:16 +0900
+Message-ID: <CAGTfZH0NSZkDvPAv=Msvqc5EQJQy5YEAWXwmgChvPVi2jaAnbg@mail.gmail.com>
+References: <1507691364-3899-1-git-send-email-cw00.choi@samsung.com>
+ <CGME20171011030947epcas1p1133ca20bb9356453c331751b3e3bba4b@epcms1p2>
+ <1507691364-3899-6-git-send-email-cw00.choi@samsung.com> <20171011113041epcms1p2c09f39f5db8f3b33cb25fe4c28e18e74@epcms1p2>
+Reply-To: cwchoi00@gmail.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-Content-Disposition: inline
-In-Reply-To: <20171009171517.GL25517@bhelgaas-glaptop.roam.corp.google.com>
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: devel@driverdev.osuosl.org, simon@nikanor.nu, scott@matheina.com, airlied@linux.ie, gregkh@linuxfoundation.org, linux-pm@vger.kernel.org, dan.a.cashman@gmail.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tvboxspy@gmail.com, Jia-Ju Bai <baijiaju1990@163.com>, patrik.r.jakobsson@gmail.com, linux-pci@vger.kernel.org, bhelgaas@google.com, golubev.mikhail@gmail.com, forest@alittletooquiet.net
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171011113041epcms1p2c09f39f5db8f3b33cb25fe4c28e18e74@epcms1p2>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, Inki Dae <inki.dae@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 09, 2017 at 12:15:17PM -0500, Bjorn Helgaas wrote:
-> I assume it's easy to produce an actual failure here?  Why haven't we
-> seen bug reports about this?
+On Wed, Oct 11, 2017 at 8:30 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
+>> The update_devfreq() considers only user frequency (min_freq/max_freq)
+>> and the next target_freq provided by the governor. But, the commit
+>> a76caf55e5b35 ("thermal: Add devfreq cooling") is able to disable
+>> OPP as a cooling device. In result, the update_devfreq() have to
+>> consider the 'opp->available' status in order to decicde the next freq
+>> by the devfreq_recommended_opp().
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  drivers/devfreq/devfreq.c | 9 ++++++++-
+>>  1 file changed, 8 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> index 1c4b377cacfb..3b9662ffe603 100644
+>> --- a/drivers/devfreq/devfreq.c
+>> +++ b/drivers/devfreq/devfreq.c
+>> @@ -255,6 +255,7 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
+>>  int update_devfreq(struct devfreq *devfreq)
+>>  {
+>>       struct devfreq_freqs freqs;
+>> +     struct dev_pm_opp *opp;
+>>       unsigned long freq, cur_freq;
+>>       int err = 0;
+>>       u32 flags = 0;
+>> @@ -273,7 +274,7 @@ int update_devfreq(struct devfreq *devfreq)
+>>               return err;
+>>
+>>       /*
+>> -      * Adjust the frequency with user freq and QoS.
+>> +      * Adjust the frequency with user freq, QoS and available freq.
+>>        *
+>>        * List from the highest priority
+>>        * max_freq
+>> @@ -289,6 +290,12 @@ int update_devfreq(struct devfreq *devfreq)
+>>               flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
+>>       }
+>>
+>> +     opp = devfreq_recommended_opp(devfreq->dev.parent, &freq, flags);
+>> +     if (IS_ERR(opp))
+>> +             return PTR_ERR(opp);
+>> +     freq = dev_pm_opp_get_freq(opp);
+>> +     dev_pm_opp_put(opp);
+>> +
+>
+> Is this really necessary?
 
-The bug was detected with static analysis.  You have to enable a debug
-feature in the .config if you want sleeping with spinlock held warnings.
-Otherwise you'd have to hit the deadlock and you have to be pretty
-unlucky to hit it so these bugs sometimes do go unreported for a long
-time.
+The requirement is due to devfreq_cooling device using
+dev_pm_opp_disable/enable().
 
-regards,
-dan carpenter
+I added the detailed explanation on cover letter as following:
+If this code is not included, the notifiee using TRANSITION_NOTIFIER
+receives the wrong next target_freq. On the cpufreq, cpufreq doesn't
+use the 'dev_pm_opp_disable/enable()' function and then there is no
+the same issue on cpufreq.
+
+[Cover letter's description about this patch]
+For example,
+- devfreq's min_freq is 100Mhz and max_freq is 700Mhz.
+- OPP disabled 500/600/700Mhz due to devfreq-cooling.c.
+- simple_ondemand govenor decided the next target_freq (600Mhz)
+|----------|-------------------------------------------------------------|
+|Freq(MHz) |100     |200    |300    |400     |500     |600      |70 0    |
+|Devfreq   |min_freq|       |       |        |        |         |max_freq|
+|OPP avail |enabled |enabled|enabled|enabled |Disabled| Disabled|Disabled|
+|Ondmenad  |        |       |       |        |        |next_freq|        |
+|------------------------------------------------------------------------|
+
+In result,
+- Before this patch, target_freq is 600Mhz
+  and TRANSITION_NOTIFIER sends the next_freq is 600Mhz to the notifiee.
+- After this patch, target_freq is 400Mhz because 500/600 were disabled by OPP.
+  and TRANSITION_NOTIFIER sends the next_freq is 400Mhz to the notifiee.
+--------------
+
+>
+> devfreq_recommended_opp is going to be called by the device driver
+> invoked by devfreq->profile->target() function anyway.
+>
+> We are now going to call devfreq_recommended_opp twice in this context.
+>
+>>       if (devfreq->profile->get_cur_freq)
+>>               devfreq->profile->get_cur_freq(devfreq->dev.parent, &cur_freq);
+>>       else
+>> --
+
+Right. The devfreq_recommended_opp() is called twice.
+I wish there was a better way.
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
