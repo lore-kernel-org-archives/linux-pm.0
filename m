@@ -1,102 +1,98 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v3 0/8] PM / devfreq: Use OPP interface to handle the
- frequency
-Date: Wed, 11 Oct 2017 12:09:16 +0900
-Message-ID: <1507691364-3899-1-git-send-email-cw00.choi@samsung.com>
-References: <CGME20171011030946epcas1p1268ea2af497086ca64c373ea7367baaa@epcas1p1.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:39094 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754285AbdJKDJt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Oct 2017 23:09:49 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v3 8/8] PM / devfreq: exynos-bus: Register cooling device
+Date: Wed, 11 Oct 2017 12:09:24 +0900
+Message-ID: <1507691364-3899-9-git-send-email-cw00.choi@samsung.com>
+References: <1507691364-3899-1-git-send-email-cw00.choi@samsung.com>
+ <CGME20171011030947epcas1p475944e5d83cf28deaa3cdef731315d63@epcas1p4.samsung.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-reply-to: <1507691364-3899-1-git-send-email-cw00.choi@samsung.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
-Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, inki.dae@samsung.com, Kukjin Kim <kgene@kernel.org>, chanwoo@kernel.org, linux-arm-kernel@lists.infradead.org
+List-Id: linux-pm@vger.kernel.org
 
-These patches makes the devfreq to use the OPP interface and clean-up codes.
-- patch 1~5 are related to te OPP interfaces. 
-- patch 6 removes the unneeded code.
-- patch 7 clean-up for the governor name.
-- patch 8 registers the cooling device for exynos-bus.
+This patch registers the Exynos Bus-Frequency scaling device
+as a cooling device of thermal management.
 
-[Detaild Descripion]
-The commit a76caf55e5b3 ("thermal: Add devfreq cooling") provides
-the devfreq cooling device by using the OPP interface such as
-dev_pm_opp_disable() and dev_pm_opp_enable(). It means that
-the OPP interface is able to change the available status of the frequency.
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Cc: Kukjin Kim <kgene@kernel.org>
+Cc: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: linux-samsung-soc@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+---
+ drivers/devfreq/exynos-bus.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-Firstly, the existing devfreq doesn't use the OPP interface when showing
-the minimum and maximum frequency through the following sysfs nodes:
-It shows the wrong frequency value because min_freq/max_freq don't
-consider the frequency status by handling OPP interface
-(opp_dev_pm_opp_{disable|add}()). So, these patches fix this issue.
-- /sys/class/devfreq/devfreqX/min_freq
-- /sys/class/devfreq/devfreqX/max_freq
-
-Second, the 'available_frequencies' should show the all supported frequencis
-even if the specific frequency is not available. It doesn't matter whether
-frequneyc is available or not. Because the role of 'available_frequencies'
-shows the all frequencies. Also, these patches fix this issue.
-- /sys/class/devfreq/devfreqX/available_frequencies
-
-Third, update_devfreq() get the available next frequency by using
-the devfreq_recommended_opp() in order to consider the disabled OPP.
-
-For example,
-- devfreq's min_freq is 100Mhz and max_freq is 700Mhz.
-- OPP disabled 500/600/700Mhz due to devfreq-cooling.c.
-- simple_ondemand govenor decided the next target_freq (600Mhz)
-|----------|-------------------------------------------------------------|
-|Freq(MHz) |100     |200    |300    |400     |500     |600      |70 0    |
-|Devfreq   |min_freq|       |       |        |        |         |max_freq|
-|OPP avail |enabled |enabled|enabled|enabled |Disabled| Disabled|Disabled|
-|Ondmenad  |        |       |       |        |        |next_freq|        |
-|------------------------------------------------------------------------|
-
-In result,
-- Before this patch, target_freq is 600Mhz
-  and TRANSITION_NOTIFIER sends the next_freq is 600Mhz to the notifiee.
-- After this patch, target_freq is 400Mhz because 500/600 were disabled by OPP.
-  and TRANSITION_NOTIFIER sends the next_freq is 400Mhz to the notifiee.
-
-Lastly,
-- patch6/7 fix the minor issue and cleanup codes.
-- patch8 register the cooling device. It depends on opp patch[1].
-[1] https://patchwork.kernel.org/patch/9962387/
-
-
-Changes from v2:
-(https://lkml.org/lkml/2017/9/20/886)
-- Fix the exynos-bus.c for the cooling device on patch8
-
-Changes from v1:
-(https://lkml.org/lkml/2017/8/23/785)
-- Show the available frequencies as an ascending order
-- Change the author info from cwchoi00@gmail.com to cw00.choi@samsung.com
-- Drop the patches related to opp_notifier
-- Add new patch5/6/7/8
-
-Chanwoo Choi (8):
-  PM / devfreq: Set min/max_freq when adding the devfreq device
-  Revert "PM / devfreq: Add show_one macro to delete the duplicate code"
-  PM / devfreq: Show the available min/max frequency through sysfs node
-  PM / devfreq: Show the all available frequencies
-  PM / devfreq: Get the available next frequency on update_devfreq()
-  PM / devfreq: Remove unneeded conditional statement
-  PM / devfreq: Define the constant governor name
-  PM / devfreq: exynos-bus: Register cooling device
-
- drivers/devfreq/devfreq.c                 | 121 +++++++++++++++++++++++-------
- drivers/devfreq/exynos-bus.c              |  25 +++++-
- drivers/devfreq/governor_passive.c        |   2 +-
- drivers/devfreq/governor_performance.c    |   2 +-
- drivers/devfreq/governor_powersave.c      |   2 +-
- drivers/devfreq/governor_simpleondemand.c |   2 +-
- drivers/devfreq/governor_userspace.c      |   2 +-
- drivers/devfreq/rk3399_dmc.c              |   2 +-
- include/linux/devfreq.h                   |   7 ++
- 9 files changed, 131 insertions(+), 34 deletions(-)
-
+diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+index c25658b26598..fe9ef6a3238b 100644
+--- a/drivers/devfreq/exynos-bus.c
++++ b/drivers/devfreq/exynos-bus.c
+@@ -15,6 +15,7 @@
+ #include <linux/clk.h>
+ #include <linux/devfreq.h>
+ #include <linux/devfreq-event.h>
++#include <linux/devfreq_cooling.h>
+ #include <linux/device.h>
+ #include <linux/export.h>
+ #include <linux/module.h>
+@@ -41,6 +42,8 @@ struct exynos_bus {
+ 	struct clk *clk;
+ 	unsigned int voltage_tolerance;
+ 	unsigned int ratio;
++
++	struct thermal_cooling_device *cdev;
+ };
+ 
+ /*
+@@ -468,6 +471,13 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 		goto err;
+ 	}
+ 
++	/* Register devfreq cooling device */
++	bus->cdev = of_devfreq_cooling_register(np, bus->devfreq);
++	if (IS_ERR(bus->cdev)) {
++		dev_err(dev, "running exynos-bus without cooling device\n");
++		bus->cdev = NULL;
++	}
++
+ 	goto out;
+ passive:
+ 	/* Initialize the struct profile and governor data for passive device */
+@@ -514,6 +524,15 @@ static int exynos_bus_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
++static int exynos_bus_remove(struct platform_device *pdev)
++{
++	struct exynos_bus *bus = platform_get_drvdata(pdev);
++
++	devfreq_cooling_unregister(bus->cdev);
++
++	return 0;
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ static int exynos_bus_resume(struct device *dev)
+ {
+@@ -556,6 +575,7 @@ static int exynos_bus_suspend(struct device *dev)
+ 
+ static struct platform_driver exynos_bus_platdrv = {
+ 	.probe		= exynos_bus_probe,
++	.remove		= exynos_bus_remove,
+ 	.driver = {
+ 		.name	= "exynos-bus",
+ 		.pm	= &exynos_bus_pm,
 -- 
 1.9.1
