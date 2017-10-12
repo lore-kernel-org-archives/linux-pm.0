@@ -1,87 +1,36 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH] tracing: Remove unused clock events
-Date: Thu, 12 Oct 2017 12:44:46 -0400
-Message-ID: <20171012124446.4a4fb056@gandalf.local.home>
+From: Stefan Wahren <stefan.wahren@i2se.com>
+Subject: Re: [PATCH] thermal: enable broadcom menu for arm64 bcm2835
+Date: Thu, 12 Oct 2017 19:32:27 +0200 (CEST)
+Message-ID: <565515667.189984.1507829547871@email.1und1.de>
+References: <1506447464-3234-1-git-send-email-stefan.wahren@i2se.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:40778 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752204AbdJLQot (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 12 Oct 2017 12:44:49 -0400
+Received: from mout.kundenserver.de ([212.227.126.131]:54882 "EHLO
+        mout.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751067AbdJLRcg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2017 13:32:36 -0400
+In-Reply-To: <1506447464-3234-1-git-send-email-stefan.wahren@i2se.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jean Pihet <jean.pihet@newoldbits.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, discuss@lesswatts.org, linux-pm@vger.kernel.org, Thomas Renninger <trenn@suse.de>, Arjan van de Ven <arjan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Ingo Molnar <mingo@kernel.org>
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Allen Wild <allenwild93@gmail.com>
 
+> Stefan Wahren <stefan.wahren@i2se.com> hat am 26. September 2017 um 19:37 geschrieben:
+> 
+> 
+> From: Allen Wild <allenwild93@gmail.com>
+> 
+> Moving the bcm2835 thermal driver to the broadcom directory prevented it
+> from getting enabled for arm64 builds, since the broadcom directory is only
+> available when 32-bit specific ARCH_BCM is set.
+> 
+> Fix this by enabling the Broadcom menu for ARCH_BCM or ARCH_BCM2835.
+> 
+> Fixes: 6892cf07e733 ("thermal: bcm2835: move to the broadcom subdirectory")
+> Signed-off-by: Allen Wild <allenwild93@gmail.com>
+> Signed-off-by: Stefan Wahren <stefan.wahren@i2se.com>
+> ---
 
-[ Resending again, including linux-pm@vger.kernel.org this time ]
-
-From: Steven Rostedt (VMware) <rostedt@goodmis.org>
-
-Commit 74704ac6 ("tracing, perf: Add more power related events") added
-new events, among them were trace_clock_enable, trace_clock_disable and
-trace_clock_set_rate. In the last 7 years, nothing has used them. As
-they take up space, and nobody cares about these events, remove them.
-
-Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
----
-diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-index 54e3aad..d900cb7 100644
---- a/include/trace/events/power.h
-+++ b/include/trace/events/power.h
-@@ -254,53 +254,6 @@ DEFINE_EVENT(wakeup_source,
-wakeup_source_deactivate, );
- 
- /*
-- * The clock events are used for clock enable/disable and for
-- *  clock rate change
-- */
--DECLARE_EVENT_CLASS(clock,
--
--	TP_PROTO(const char *name, unsigned int state, unsigned int
-cpu_id), -
--	TP_ARGS(name, state, cpu_id),
--
--	TP_STRUCT__entry(
--		__string(       name,           name            )
--		__field(        u64,            state           )
--		__field(        u64,            cpu_id          )
--	),
--
--	TP_fast_assign(
--		__assign_str(name, name);
--		__entry->state = state;
--		__entry->cpu_id = cpu_id;
--	),
--
--	TP_printk("%s state=%lu cpu_id=%lu", __get_str(name),
--		(unsigned long)__entry->state, (unsigned
-long)__entry->cpu_id) -);
--
--DEFINE_EVENT(clock, clock_enable,
--
--	TP_PROTO(const char *name, unsigned int state, unsigned int
-cpu_id), -
--	TP_ARGS(name, state, cpu_id)
--);
--
--DEFINE_EVENT(clock, clock_disable,
--
--	TP_PROTO(const char *name, unsigned int state, unsigned int
-cpu_id), -
--	TP_ARGS(name, state, cpu_id)
--);
--
--DEFINE_EVENT(clock, clock_set_rate,
--
--	TP_PROTO(const char *name, unsigned int state, unsigned int
-cpu_id), -
--	TP_ARGS(name, state, cpu_id)
--);
--
--/*
-  * The power domain events are used for power domains transitions
-  */
- DECLARE_EVENT_CLASS(power_domain,
+gentle ping to Eduardo ...
