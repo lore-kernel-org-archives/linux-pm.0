@@ -1,43 +1,87 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: CPUs do not go idle - excessive energy consumption
-Date: Thu, 12 Oct 2017 09:36:10 -0700
-Message-ID: <000401d34378$37396080$a5ac2180$@net>
-References: <000001d3436e$b9b58160$2d208420$@net> 2fn5expvk3OTt2fn6eOG4c
+From: Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH] tracing: Remove unused clock events
+Date: Thu, 12 Oct 2017 12:44:46 -0400
+Message-ID: <20171012124446.4a4fb056@gandalf.local.home>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta16.telus.net ([209.171.16.89]:55626 "EHLO cmta16.telus.net"
+Received: from mail.kernel.org ([198.145.29.99]:40778 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752311AbdJLQgO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 12 Oct 2017 12:36:14 -0400
-In-Reply-To: 2fn5expvk3OTt2fn6eOG4c
-Content-Language: en-ca
+        id S1752204AbdJLQot (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 12 Oct 2017 12:44:49 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rafael@kernel.org>
-Cc: 'Linux PM' <linux-pm@vger.kernel.org>
+To: Jean Pihet <jean.pihet@newoldbits.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, discuss@lesswatts.org, linux-pm@vger.kernel.org, Thomas Renninger <trenn@suse.de>, Arjan van de Ven <arjan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Ingo Molnar <mingo@kernel.org>
 
-On 2017.10.12 08:53 Rafael J. Wysocki wrote:
-> On Thu, Oct 12, 2017 at 5:28 PM, Doug Smythies <dsmythies@telus.net> wrote:
->>
->> I am observing higher than nominal processor package power consumption, under
->> some conditions. The worst case, so far, was an extra 6.3 watts or 25%, however
->> more typically it is between 0 and 4 watts (over 1 minute sampling intervals).
->>
-...[snip]...
 
-> For starters, you can try to apply this patch
-> https://patchwork.kernel.org/patch/9866841/ and see if it makes any
-> difference.
+[ Resending again, including linux-pm@vger.kernel.org this time ]
 
-Oh darn, I missed the importance and relevance of that e-mail (but I did get it),
-which might have saved me a lot of time.
-It sounds like it is exactly the same issue.
-I'll try it as soon as I can either resolve the conflicts, or go back
-and apply it to whatever kernel version would result in no conflicts.
+From: Steven Rostedt (VMware) <rostedt@goodmis.org>
 
-I'll report back once I have some test results.
+Commit 74704ac6 ("tracing, perf: Add more power related events") added
+new events, among them were trace_clock_enable, trace_clock_disable and
+trace_clock_set_rate. In the last 7 years, nothing has used them. As
+they take up space, and nobody cares about these events, remove them.
 
-... Doug
+Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+---
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index 54e3aad..d900cb7 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -254,53 +254,6 @@ DEFINE_EVENT(wakeup_source,
+wakeup_source_deactivate, );
+ 
+ /*
+- * The clock events are used for clock enable/disable and for
+- *  clock rate change
+- */
+-DECLARE_EVENT_CLASS(clock,
+-
+-	TP_PROTO(const char *name, unsigned int state, unsigned int
+cpu_id), -
+-	TP_ARGS(name, state, cpu_id),
+-
+-	TP_STRUCT__entry(
+-		__string(       name,           name            )
+-		__field(        u64,            state           )
+-		__field(        u64,            cpu_id          )
+-	),
+-
+-	TP_fast_assign(
+-		__assign_str(name, name);
+-		__entry->state = state;
+-		__entry->cpu_id = cpu_id;
+-	),
+-
+-	TP_printk("%s state=%lu cpu_id=%lu", __get_str(name),
+-		(unsigned long)__entry->state, (unsigned
+long)__entry->cpu_id) -);
+-
+-DEFINE_EVENT(clock, clock_enable,
+-
+-	TP_PROTO(const char *name, unsigned int state, unsigned int
+cpu_id), -
+-	TP_ARGS(name, state, cpu_id)
+-);
+-
+-DEFINE_EVENT(clock, clock_disable,
+-
+-	TP_PROTO(const char *name, unsigned int state, unsigned int
+cpu_id), -
+-	TP_ARGS(name, state, cpu_id)
+-);
+-
+-DEFINE_EVENT(clock, clock_set_rate,
+-
+-	TP_PROTO(const char *name, unsigned int state, unsigned int
+cpu_id), -
+-	TP_ARGS(name, state, cpu_id)
+-);
+-
+-/*
+  * The power domain events are used for power domains transitions
+  */
+ DECLARE_EVENT_CLASS(power_domain,
