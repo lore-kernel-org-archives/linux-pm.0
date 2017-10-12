@@ -1,235 +1,75 @@
-From: Thomas Garnier <thgarnie@google.com>
-Subject: Re: [PATCH v1 00/27] x86: PIE support and option to extend KASLR randomization
-Date: Thu, 12 Oct 2017 08:34:13 -0700
-Message-ID: <CAJcbSZEzEGuby155zQZJqEbi1EO1v2bue+DB1oAXZfwMVOoySg@mail.gmail.com>
-References: <20171011203027.11248-1-thgarnie@google.com> <22e56a56-978a-738f-52b9-2d0c17839c9e@amd.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: CPUs do not go idle - excessive energy consumption
+Date: Thu, 12 Oct 2017 08:28:14 -0700
+Message-ID: <000001d3436e$b9b58160$2d208420$@net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <kernel-hardening-return-10150-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <22e56a56-978a-738f-52b9-2d0c17839c9e@amd.com>
-To: Tom Lendacky <thomas.lendacky@amd.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Kees Cook <keescook@chromium.org>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Matthias Kaehlcke <mka@chromium.org>, Andy Lutomirski <luto@kernel.org>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Juergen Gross <jgross@suse.com>, Chris Wright <chrisw@sous-sol.org>, Alok Kataria <akataria@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel.org>, Christoph Lameter <cl@linux.com>, Boris Ostrovsky <boris.ostrovsky@o>
+Content-Type: text/plain;
+        charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta20.telus.net ([209.171.16.93]:51683 "EHLO cmta20.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752044AbdJLPgZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 12 Oct 2017 11:36:25 -0400
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Doug Smythies <dsmythies@telus.net>
 
-On Wed, Oct 11, 2017 at 2:34 PM, Tom Lendacky <thomas.lendacky@amd.com> wrote:
-> On 10/11/2017 3:30 PM, Thomas Garnier wrote:
->> Changes:
->>   - patch v1:
->>     - Simplify ftrace implementation.
->>     - Use gcc mstack-protector-guard-reg=%gs with PIE when possible.
->>   - rfc v3:
->>     - Use --emit-relocs instead of -pie to reduce dynamic relocation space on
->>       mapped memory. It also simplifies the relocation process.
->>     - Move the start the module section next to the kernel. Remove the need for
->>       -mcmodel=large on modules. Extends module space from 1 to 2G maximum.
->>     - Support for XEN PVH as 32-bit relocations can be ignored with
->>       --emit-relocs.
->>     - Support for GOT relocations previously done automatically with -pie.
->>     - Remove need for dynamic PLT in modules.
->>     - Support dymamic GOT for modules.
->>   - rfc v2:
->>     - Add support for global stack cookie while compiler default to fs without
->>       mcmodel=kernel
->>     - Change patch 7 to correctly jump out of the identity mapping on kexec load
->>       preserve.
->>
->> These patches make the changes necessary to build the kernel as Position
->> Independent Executable (PIE) on x86_64. A PIE kernel can be relocated below
->> the top 2G of the virtual address space. It allows to optionally extend the
->> KASLR randomization range from 1G to 3G.
->
-> Hi Thomas,
->
-> I've applied your patches so that I can verify that SME works with PIE.
-> Unfortunately, I'm running into build warnings and errors when I enable
-> PIE.
->
-> With CONFIG_STACK_VALIDATION=y I receive lots of messages like this:
->
->   drivers/scsi/libfc/fc_exch.o: warning: objtool: fc_destroy_exch_mgr()+0x0: call without frame pointer save/setup
->
-> Disabling CONFIG_STACK_VALIDATION suppresses those.
+Hi all,
 
-I ran into that, I plan to fix it in the next iteration.
+I am observing higher than nominal processor package power consumption, under
+some conditions. The worst case, so far, was an extra 6.3 watts or 25%, however
+more typically it is between 0 and 4 watts (over 1 minute sampling intervals).
 
->
-> But near the end of the build, I receive errors like this:
->
->   arch/x86/kernel/setup.o: In function `dump_kernel_offset':
->   .../arch/x86/kernel/setup.c:801:(.text+0x32): relocation truncated to fit: R_X86_64_32S against symbol `_text' defined in .text section in .tmp_vmlinux1
->   .
->   . about 10 more of the above type messages
->   .
->   make: *** [vmlinux] Error 1
->   Error building kernel, exiting
->
-> Are there any config options that should or should not be enabled when
-> building with PIE enabled?  Is there a compiler requirement for PIE (I'm
-> using gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.5))?
+The simplest use case found so far is a single threaded 100% load on one CPU.
+The problem appears to be CPUs that should be idle and in a deep C state,
+sometimes are not. It is as though they have been forgotten and only when they hit
+the watchdog timer, or some other event, do they generally get sorted out. I have
+looked at kernels back as far as 4.5, and the issue is always present.
+  
+I am looking for assistance investigating towards finding the root cause, because
+I am unfamiliar with the idle code and have made little (O.K. no) progress on my own.
 
-I never ran into these ones and I tested compilers older and newer.
-What was your exact configuration?
+Details (for my test server, with an Intel i7-2600K, currently kernel 4.14-rc4):
 
->
-> Thanks,
-> Tom
->
->>
->> Thanks a lot to Ard Biesheuvel & Kees Cook on their feedback on compiler
->> changes, PIE support and KASLR in general. Thanks to Roland McGrath on his
->> feedback for using -pie versus --emit-relocs and details on compiler code
->> generation.
->>
->> The patches:
->>   - 1-3, 5-1#, 17-18: Change in assembly code to be PIE compliant.
->>   - 4: Add a new _ASM_GET_PTR macro to fetch a symbol address generically.
->>   - 14: Adapt percpu design to work correctly when PIE is enabled.
->>   - 15: Provide an option to default visibility to hidden except for key symbols.
->>         It removes errors between compilation units.
->>   - 16: Adapt relocation tool to handle PIE binary correctly.
->>   - 19: Add support for global cookie.
->>   - 20: Support ftrace with PIE (used on Ubuntu config).
->>   - 21: Fix incorrect address marker on dump_pagetables.
->>   - 22: Add option to move the module section just after the kernel.
->>   - 23: Adapt module loading to support PIE with dynamic GOT.
->>   - 24: Make the GOT read-only.
->>   - 25: Add the CONFIG_X86_PIE option (off by default).
->>   - 26: Adapt relocation tool to generate a 64-bit relocation table.
->>   - 27: Add the CONFIG_RANDOMIZE_BASE_LARGE option to increase relocation range
->>         from 1G to 3G (off by default).
->>
->> Performance/Size impact:
->>
->> Size of vmlinux (Default configuration):
->>   File size:
->>   - PIE disabled: +0.000031%
->>   - PIE enabled: -3.210% (less relocations)
->>   .text section:
->>   - PIE disabled: +0.000644%
->>   - PIE enabled: +0.837%
->>
->> Size of vmlinux (Ubuntu configuration):
->>   File size:
->>   - PIE disabled: -0.201%
->>   - PIE enabled: -0.082%
->>   .text section:
->>   - PIE disabled: same
->>   - PIE enabled: +1.319%
->>
->> Size of vmlinux (Default configuration + ORC):
->>   File size:
->>   - PIE enabled: -3.167%
->>   .text section:
->>   - PIE enabled: +0.814%
->>
->> Size of vmlinux (Ubuntu configuration + ORC):
->>   File size:
->>   - PIE enabled: -3.167%
->>   .text section:
->>   - PIE enabled: +1.26%
->>
->> The size increase is mainly due to not having access to the 32-bit signed
->> relocation that can be used with mcmodel=kernel. A small part is due to reduced
->> optimization for PIE code. This bug [1] was opened with gcc to provide a better
->> code generation for kernel PIE.
->>
->> Hackbench (50% and 1600% on thread/process for pipe/sockets):
->>   - PIE disabled: no significant change (avg +0.1% on latest test).
->>   - PIE enabled: between -0.50% to +0.86% in average (default and Ubuntu config).
->>
->> slab_test (average of 10 runs):
->>   - PIE disabled: no significant change (-2% on latest run, likely noise).
->>   - PIE enabled: between -1% and +0.8% on latest runs.
->>
->> Kernbench (average of 10 Half and Optimal runs):
->>   Elapsed Time:
->>   - PIE disabled: no significant change (avg -0.239%)
->>   - PIE enabled: average +0.07%
->>   System Time:
->>   - PIE disabled: no significant change (avg -0.277%)
->>   - PIE enabled: average +0.7%
->>
->> [1] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82303
->>
->> diffstat:
->>   Documentation/x86/x86_64/mm.txt              |    3
->>   arch/x86/Kconfig                             |   43 ++++++
->>   arch/x86/Makefile                            |   40 +++++
->>   arch/x86/boot/boot.h                         |    2
->>   arch/x86/boot/compressed/Makefile            |    5
->>   arch/x86/boot/compressed/misc.c              |   10 +
->>   arch/x86/crypto/aes-x86_64-asm_64.S          |   45 ++++--
->>   arch/x86/crypto/aesni-intel_asm.S            |   14 +-
->>   arch/x86/crypto/aesni-intel_avx-x86_64.S     |    6
->>   arch/x86/crypto/camellia-aesni-avx-asm_64.S  |   42 +++---
->>   arch/x86/crypto/camellia-aesni-avx2-asm_64.S |   44 +++---
->>   arch/x86/crypto/camellia-x86_64-asm_64.S     |    8 -
->>   arch/x86/crypto/cast5-avx-x86_64-asm_64.S    |   50 ++++---
->>   arch/x86/crypto/cast6-avx-x86_64-asm_64.S    |   44 +++---
->>   arch/x86/crypto/des3_ede-asm_64.S            |   96 +++++++++-----
->>   arch/x86/crypto/ghash-clmulni-intel_asm.S    |    4
->>   arch/x86/crypto/glue_helper-asm-avx.S        |    4
->>   arch/x86/crypto/glue_helper-asm-avx2.S       |    6
->>   arch/x86/entry/entry_32.S                    |    3
->>   arch/x86/entry/entry_64.S                    |   29 ++--
->>   arch/x86/include/asm/asm.h                   |   13 +
->>   arch/x86/include/asm/bug.h                   |    2
->>   arch/x86/include/asm/ftrace.h                |    6
->>   arch/x86/include/asm/jump_label.h            |    8 -
->>   arch/x86/include/asm/kvm_host.h              |    6
->>   arch/x86/include/asm/module.h                |   11 +
->>   arch/x86/include/asm/page_64_types.h         |    9 +
->>   arch/x86/include/asm/paravirt_types.h        |   12 +
->>   arch/x86/include/asm/percpu.h                |   25 ++-
->>   arch/x86/include/asm/pgtable_64_types.h      |    6
->>   arch/x86/include/asm/pm-trace.h              |    2
->>   arch/x86/include/asm/processor.h             |   12 +
->>   arch/x86/include/asm/sections.h              |    8 +
->>   arch/x86/include/asm/setup.h                 |    2
->>   arch/x86/include/asm/stackprotector.h        |   19 ++
->>   arch/x86/kernel/acpi/wakeup_64.S             |   31 ++--
->>   arch/x86/kernel/asm-offsets.c                |    3
->>   arch/x86/kernel/asm-offsets_32.c             |    3
->>   arch/x86/kernel/asm-offsets_64.c             |    3
->>   arch/x86/kernel/cpu/common.c                 |    7 -
->>   arch/x86/kernel/cpu/microcode/core.c         |    4
->>   arch/x86/kernel/ftrace.c                     |   42 +++++-
->>   arch/x86/kernel/head64.c                     |   32 +++-
->>   arch/x86/kernel/head_32.S                    |    3
->>   arch/x86/kernel/head_64.S                    |   41 +++++-
->>   arch/x86/kernel/kvm.c                        |    6
->>   arch/x86/kernel/module.c                     |  182 ++++++++++++++++++++++++++-
->>   arch/x86/kernel/module.lds                   |    3
->>   arch/x86/kernel/process.c                    |    5
->>   arch/x86/kernel/relocate_kernel_64.S         |    8 -
->>   arch/x86/kernel/setup_percpu.c               |    2
->>   arch/x86/kernel/vmlinux.lds.S                |   13 +
->>   arch/x86/kvm/svm.c                           |    4
->>   arch/x86/lib/cmpxchg16b_emu.S                |    8 -
->>   arch/x86/mm/dump_pagetables.c                |   11 +
->>   arch/x86/power/hibernate_asm_64.S            |    4
->>   arch/x86/tools/relocs.c                      |  170 +++++++++++++++++++++++--
->>   arch/x86/tools/relocs.h                      |    4
->>   arch/x86/tools/relocs_common.c               |   15 +-
->>   arch/x86/xen/xen-asm.S                       |   12 -
->>   arch/x86/xen/xen-head.S                      |    9 -
->>   arch/x86/xen/xen-pvh.S                       |   13 +
->>   drivers/base/firmware_class.c                |    4
->>   include/asm-generic/sections.h               |    6
->>   include/asm-generic/vmlinux.lds.h            |   12 +
->>   include/linux/compiler.h                     |    8 +
->>   init/Kconfig                                 |    9 +
->>   kernel/kallsyms.c                            |   16 +-
->>   kernel/trace/trace.h                         |    4
->>   lib/dynamic_debug.c                          |    4
->>   70 files changed, 1032 insertions(+), 308 deletions(-)
->>
+In an otherwise idle system, with one processor loaded 100%, processor power
+consumption is expected to be about 24 watts. However, sometimes power consumptions
+of up to about 28 watts have been observed. Of course, the first thought is that the
+extra power consumption is just due to some task, because the "otherwise idle" system
+isn't really completely so. If that were true, we would expect the intel_pstate CPU
+frequency scaling driver to be called often. It is not.
 
+Although it is difficult to correlate higher power samples from turbostat, with
+intel_pstate trace data, it seems they are due to occurrences of high load and long
+durations. For a few years now, we would never expect to see high load without
+high frequency calls to the driver. Also, typically for my test server, with many
+services turned off, other tasks should take very little run time per time slice.
+Examples (from trace data acquired and post processed with intel_pstate_tracer.py):
 
+CPU 3: Load 87.2%; Duration 4000.091 msec; Comment watchdog.
+CPU 5: Load 100%; Duration 2536.22 msec; Comment idle.
+CPU 3: Load 100%; Duration 1184.027 msec; Comment idle.
+(I have thousands more examples.)
 
--- 
-Thomas
+Higher power consumption with no user load at all seems to be rather rare,
+(Between 0 and 40 in one hour, arbitrary thresholds), and hard to detect via
+turbostat output. However, if the system is booted with intel_idle.max_cstate=1,
+then higher power consumption with no user load is very common, as are much wilder
+variations on power consumption (from ~9 watts to ~32 watts).
+For reference, the average rate is about 600 per hour with one 100% load, but
+it does vary.
+
+Note: While I tend to use taskset so as to know which CPU should be busy,
+the issue also occurs when taskset is not used.
+
+Note: I have arbitrarily set the threshold for this condition at >= 10% load
+and >= 250 milliseconds duration (the time between calls to the intel_pstate
+driver), and written a program to parse such samples out of the .csv files
+generated by intel_pstate_tracer.py.
+
+Note: This might be a separate problem, but the issue is made worse
+by taking CPUs off-line and then bringing them back on-line (I think).
+
+... Doug
