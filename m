@@ -1,255 +1,77 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH V13 1/7] PM / Domains: Add support to select
- performance-state of domains
-Date: Thu, 12 Oct 2017 11:43:32 +0200
-Message-ID: <CAPDyKFr1UjtWB+Zep-E4JbYNt2m45o3FRqZVEjn428HmcTba4A@mail.gmail.com>
-References: <431a7a5803b4a552dfe2a71700e19b904c6d16dc.1507703370.git.viresh.kumar@linaro.org>
- <990605fb7b17b75abe63c542a4be2e176152b9f6.1507800860.git.viresh.kumar@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: [PATCH v3] PM / OPP: add missing of_node_put() for of_get_cpu_node()
+Date: Thu, 12 Oct 2017 11:32:23 +0100
+Message-ID: <1507804343-2472-1-git-send-email-sudeep.holla@arm.com>
+References: <1507632519-19648-1-git-send-email-sudeep.holla@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f50.google.com ([209.85.214.50]:50639 "EHLO
-        mail-it0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750758AbdJLJne (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2017 05:43:34 -0400
-Received: by mail-it0-f50.google.com with SMTP id 72so6535491itl.5
-        for <linux-pm@vger.kernel.org>; Thu, 12 Oct 2017 02:43:33 -0700 (PDT)
-In-Reply-To: <990605fb7b17b75abe63c542a4be2e176152b9f6.1507800860.git.viresh.kumar@linaro.org>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:43262 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751186AbdJLKce (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 12 Oct 2017 06:32:34 -0400
+In-Reply-To: <1507632519-19648-1-git-send-email-sudeep.holla@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Rob Herring <robh+dt@kernel.org>, Lina Iyer <lina.iyer@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
+To: Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Nishanth Menon <nm@ti.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On 12 October 2017 at 11:37, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> Some platforms have the capability to configure the performance state of
-> PM domains. This patch enhances the genpd core to support such
-> platforms.
->
-> The performance levels (within the genpd core) are identified by
-> positive integer values, a lower value represents lower performance
-> state.
->
-> This patch adds a new genpd API, which is called by user drivers (like
-> OPP framework):
->
-> - int dev_pm_genpd_set_performance_state(struct device *dev,
->                                          unsigned int state);
->
->   This updates the performance state constraint of the device on its PM
->   domain. On success, the genpd will have its performance state set to a
->   value which is >= "state" passed to this routine. The genpd core calls
->   the genpd->set_performance_state() callback, if implemented,
->   else -ENODEV is returned to the caller.
->
-> The PM domain drivers need to implement the following callback if they
-> want to support performance states.
->
-> - int (*set_performance_state)(struct generic_pm_domain *genpd,
->                                unsigned int state);
->
->   This is called internally by the genpd core on several occasions. The
->   genpd core passes the genpd pointer and the aggregate of the
->   performance states of the devices supported by that genpd to this
->   callback. This callback must update the performance state of the genpd
->   (in a platform dependent way).
->
-> The power domains can avoid supplying above callback, if they don't
-> support setting performance-states.
->
-> Currently we aren't propagating performance state changes of a subdomain
-> to its masters as we don't have hardware that needs it right now. Over
-> that, the performance states of subdomain and its masters may not have
-> one-to-one mapping and would require additional information. We can get
-> back to this once we have hardware that needs it.
->
-> Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Commit 762792913f8c ("PM / OPP: Fix get sharing CPUs when hotplug is used")
+moved away from using cpu_dev->of_node because of some limitations.
+However commit 7467c9d95989 ("of: return of_get_cpu_node from
+of_cpu_device_node_get if CPUs are not registered") added support to
+falls back to of_get_cpu_node if called if CPUs are not registered yet.
 
-Yeah, this looks nice a clean now!
+It adds the missing of_node_put for the CPU device nodes. This patch also
+moves back to use of_cpu_device_node_get in dev_pm_opp_of_get_sharing_cpus
+to avoid scanning the device tree again.
 
-Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Nishanth Menon <nm@ti.com>
+Cc: Stephen Boyd <sboyd@codeaurora.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Acked-by: Viresh Kumar <vireshk@kernel.org>
+Fixes: 762792913f8c ("PM / OPP: Fix get sharing CPUs when hotplug is used")
+Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+---
+ drivers/opp/of.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Kind regards
-Uffe
+v1->v2:
+	- Moved of_node_put after using cpu_np
+	- Renamed the $subject as fixing refcount is key part of the part
+	  and correctly relates to "Fixes" tag
+	- Also added include change which was accidentally missed
 
-> ---
-> V13:
-> - Don't return directly from a locked section, drop the lock as well.
-> - Update the performance_state field for the device even in the case
->   state == genpd->performance_state.
-> - Always call genpd->set_performance_state() from power-on.
-> - Update device's performance state before traversing the list of
->   devices to find highest state, otherwise we will take previous state
->   of the device into account.
-> - Check state again after traversing the list of devices to see if state
->   changed.
->
->  drivers/base/power/domain.c | 98 +++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/pm_domain.h   | 12 ++++++
->  2 files changed, 110 insertions(+)
->
-> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> index a6e4c8d7d837..7e01ae364d78 100644
-> --- a/drivers/base/power/domain.c
-> +++ b/drivers/base/power/domain.c
-> @@ -237,6 +237,95 @@ static void genpd_update_accounting(struct generic_pm_domain *genpd)
->  static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
->  #endif
->
-> +/**
-> + * dev_pm_genpd_set_performance_state- Set performance state of device's power
-> + * domain.
-> + *
-> + * @dev: Device for which the performance-state needs to be set.
-> + * @state: Target performance state of the device. This can be set as 0 when the
-> + *        device doesn't have any performance state constraints left (And so
-> + *        the device wouldn't participate anymore to find the target
-> + *        performance state of the genpd).
-> + *
-> + * It is assumed that the users guarantee that the genpd wouldn't be detached
-> + * while this routine is getting called.
-> + *
-> + * Returns 0 on success and negative error values on failures.
-> + */
-> +int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
-> +{
-> +       struct generic_pm_domain *genpd;
-> +       struct generic_pm_domain_data *gpd_data, *pd_data;
-> +       struct pm_domain_data *pdd;
-> +       unsigned int prev;
-> +       int ret = 0;
-> +
-> +       genpd = dev_to_genpd(dev);
-> +       if (IS_ERR(genpd))
-> +               return -ENODEV;
-> +
-> +       if (unlikely(!genpd->set_performance_state))
-> +               return -EINVAL;
-> +
-> +       if (unlikely(!dev->power.subsys_data ||
-> +                    !dev->power.subsys_data->domain_data)) {
-> +               WARN_ON(1);
-> +               return -EINVAL;
-> +       }
-> +
-> +       genpd_lock(genpd);
-> +
-> +       gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
-> +       prev = gpd_data->performance_state;
-> +       gpd_data->performance_state = state;
-> +
-> +       /* New requested state is same as Max requested state */
-> +       if (state == genpd->performance_state)
-> +               goto unlock;
-> +
-> +       /* New requested state is higher than Max requested state */
-> +       if (state > genpd->performance_state)
-> +               goto update_state;
-> +
-> +       /* Traverse all devices within the domain */
-> +       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
-> +               pd_data = to_gpd_data(pdd);
-> +
-> +               if (pd_data->performance_state > state)
-> +                       state = pd_data->performance_state;
-> +       }
-> +
-> +       if (state == genpd->performance_state)
-> +               goto unlock;
-> +
-> +       /*
-> +        * We aren't propagating performance state changes of a subdomain to its
-> +        * masters as we don't have hardware that needs it. Over that, the
-> +        * performance states of subdomain and its masters may not have
-> +        * one-to-one mapping and would require additional information. We can
-> +        * get back to this once we have hardware that needs it. For that
-> +        * reason, we don't have to consider performance state of the subdomains
-> +        * of genpd here.
-> +        */
-> +
-> +update_state:
-> +       if (genpd_status_on(genpd)) {
-> +               ret = genpd->set_performance_state(genpd, state);
-> +               if (ret) {
-> +                       gpd_data->performance_state = prev;
-> +                       goto unlock;
-> +               }
-> +       }
-> +
-> +       genpd->performance_state = state;
-> +
-> +unlock:
-> +       genpd_unlock(genpd);
-> +
-> +       return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(dev_pm_genpd_set_performance_state);
-> +
->  static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
->  {
->         unsigned int state_idx = genpd->state_idx;
-> @@ -256,6 +345,15 @@ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
->                 return ret;
->
->         elapsed_ns = ktime_to_ns(ktime_sub(ktime_get(), time_start));
-> +
-> +       if (unlikely(genpd->set_performance_state)) {
-> +               ret = genpd->set_performance_state(genpd, genpd->performance_state);
-> +               if (ret) {
-> +                       pr_warn("%s: Failed to set performance state %d (%d)\n",
-> +                               genpd->name, genpd->performance_state, ret);
-> +               }
-> +       }
-> +
->         if (elapsed_ns <= genpd->states[state_idx].power_on_latency_ns)
->                 return ret;
->
-> diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-> index 84f423d5633e..9af0356bd69c 100644
-> --- a/include/linux/pm_domain.h
-> +++ b/include/linux/pm_domain.h
-> @@ -64,8 +64,11 @@ struct generic_pm_domain {
->         unsigned int device_count;      /* Number of devices */
->         unsigned int suspended_count;   /* System suspend device counter */
->         unsigned int prepared_count;    /* Suspend counter of prepared devices */
-> +       unsigned int performance_state; /* Aggregated max performance state */
->         int (*power_off)(struct generic_pm_domain *domain);
->         int (*power_on)(struct generic_pm_domain *domain);
-> +       int (*set_performance_state)(struct generic_pm_domain *genpd,
-> +                                    unsigned int state);
->         struct gpd_dev_ops dev_ops;
->         s64 max_off_time_ns;    /* Maximum allowed "suspended" time. */
->         bool max_off_time_changed;
-> @@ -121,6 +124,7 @@ struct generic_pm_domain_data {
->         struct pm_domain_data base;
->         struct gpd_timing_data td;
->         struct notifier_block nb;
-> +       unsigned int performance_state;
->         void *data;
->  };
->
-> @@ -148,6 +152,8 @@ extern int pm_genpd_remove_subdomain(struct generic_pm_domain *genpd,
->  extern int pm_genpd_init(struct generic_pm_domain *genpd,
->                          struct dev_power_governor *gov, bool is_off);
->  extern int pm_genpd_remove(struct generic_pm_domain *genpd);
-> +extern int dev_pm_genpd_set_performance_state(struct device *dev,
-> +                                             unsigned int state);
->
->  extern struct dev_power_governor simple_qos_governor;
->  extern struct dev_power_governor pm_domain_always_on_gov;
-> @@ -188,6 +194,12 @@ static inline int pm_genpd_remove(struct generic_pm_domain *genpd)
->         return -ENOTSUPP;
->  }
->
-> +static inline int dev_pm_genpd_set_performance_state(struct device *dev,
-> +                                                    unsigned int state)
-> +{
-> +       return -ENOTSUPP;
-> +}
-> +
->  #define simple_qos_governor            (*(struct dev_power_governor *)(NULL))
->  #define pm_domain_always_on_gov                (*(struct dev_power_governor *)(NULL))
->  #endif
-> --
-> 2.15.0.rc1.236.g92ea95045093
->
+v2->v3:
+	- Moved of_node_put before if condition
+
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index 87509cb69f79..cb716aa2f44b 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -16,7 +16,7 @@
+ #include <linux/cpu.h>
+ #include <linux/errno.h>
+ #include <linux/device.h>
+-#include <linux/of.h>
++#include <linux/of_device.h>
+ #include <linux/slab.h>
+ #include <linux/export.h>
+
+@@ -604,7 +604,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+ 		if (cpu == cpu_dev->id)
+ 			continue;
+
+-		cpu_np = of_get_cpu_node(cpu, NULL);
++		cpu_np = of_cpu_device_node_get(cpu);
+ 		if (!cpu_np) {
+ 			dev_err(cpu_dev, "%s: failed to get cpu%d node\n",
+ 				__func__, cpu);
+@@ -614,6 +614,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+
+ 		/* Get OPP descriptor node */
+ 		tmp_np = _opp_of_get_opp_desc_node(cpu_np);
++		of_node_put(cpu_np);
+ 		if (!tmp_np) {
+ 			pr_err("%pOF: Couldn't find opp node\n", cpu_np);
+ 			ret = -ENOENT;
+--
+2.7.4
