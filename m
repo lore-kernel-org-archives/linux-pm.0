@@ -1,60 +1,101 @@
-From: Shawn Guo <shawnguo@kernel.org>
-Subject: Re: [PATCH v3] cpufreq: imx6q: Move speed grading check to cpufreq
- driver
-Date: Fri, 13 Oct 2017 14:51:42 +0800
-Message-ID: <20171013065141.GI8833@dragon>
-References: <1506784606-2064-1-git-send-email-festevam@gmail.com>
- <20171004061328.GC8478@vireshk-i7>
+From: Jean Pihet <jean.pihet@newoldbits.com>
+Subject: Re: [PATCH] tracing: Remove unused clock events
+Date: Fri, 13 Oct 2017 09:20:44 +0200
+Message-ID: <CAORVsuU+12OEH4LFePORWHh3Ryfj-2cc8Kb6U-dQo4HQUXSJAA@mail.gmail.com>
+References: <20171012124446.4a4fb056@gandalf.local.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:58068 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753830AbdJMGwA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 13 Oct 2017 02:52:00 -0400
-Content-Disposition: inline
-In-Reply-To: <20171004061328.GC8478@vireshk-i7>
+Received: from mail-vk0-f48.google.com ([209.85.213.48]:53827 "EHLO
+        mail-vk0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750973AbdJMHUp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Oct 2017 03:20:45 -0400
+Received: by mail-vk0-f48.google.com with SMTP id c76so3835319vkd.10
+        for <linux-pm@vger.kernel.org>; Fri, 13 Oct 2017 00:20:45 -0700 (PDT)
+In-Reply-To: <20171012124446.4a4fb056@gandalf.local.home>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Fabio Estevam <festevam@gmail.com>, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, kernel@pengutronix.de, anson.huang@nxp.com, linux-arm-kernel@lists.infradead.org, otavio.salvador@ossystems.com.br, Fabio Estevam <fabio.estevam@nxp.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, discuss@lesswatts.org, Linux PM list <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.de>, Arjan van de Ven <arjan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Ingo Molnar <mingo@kernel.org>
 
-On Wed, Oct 04, 2017 at 11:43:28AM +0530, Viresh Kumar wrote:
-> On 30-09-17, 12:16, Fabio Estevam wrote:
-> > From: Fabio Estevam <fabio.estevam@nxp.com>
-> > 
-> > On some i.MX6 SoCs (like i.MX6SL, i.MX6SX and i.MX6UL) that do not have
-> > speed grading check, opp table will not be created in platform code,
-> > so cpufreq driver prints the following error message:
-> > 
-> > cpu cpu0: dev_pm_opp_get_opp_count: OPP table not found (-19)
-> > 
-> > However, this is not really an error in this case because the
-> > imx6q-cpufreq driver first calls dev_pm_opp_get_opp_count()
-> > and if it fails, it means that platform code does not provide
-> > OPP and then dev_pm_opp_of_add_table() will be called.
-> > 
-> > In order to avoid such confusing error message, move the speed grading
-> > check from platform code to the imx6q-cpufreq driver.
-> > 
-> > This way the imx6q-cpufreq no longer has to check whether OPP table
-> > is supplied by platform code.
-> > 
-> > Tested on a i.MX6Q and i.MX6UL based boards.
-> > 
-> > Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
-> > ---
-> > Previous discussion on this topic:
-> > https://patchwork.kernel.org/patch/9295059/
-> > 
-> > Changes since v2:
-> > - Fixed a typo in the commit log (missed SL) - Otavio
-> > - Remove __init anotation from imx6q_opp_check_speed_grading()
-> > Changes since v1:
-> > - Remove unneeded has_speed_grading() function.
-> 
-> Looks fine to me.
-> 
-> @Shawn: Can you please let us know if you are fine with it?
+Hi Steven,
 
-Acked-by: Shawn Guo <shawnguo@kernel.org>
+On Thu, Oct 12, 2017 at 6:44 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+> [ Resending again, including linux-pm@vger.kernel.org this time ]
+>
+> From: Steven Rostedt (VMware) <rostedt@goodmis.org>
+>
+> Commit 74704ac6 ("tracing, perf: Add more power related events") added
+> new events, among them were trace_clock_enable, trace_clock_disable and
+> trace_clock_set_rate. In the last 7 years, nothing has used them. As
+> they take up space, and nobody cares about these events, remove them.
+
+Ok if it is not used. Can others confirm?
+
+AFAIK this has been used internally.
+
+BR,
+Jean
+
+>
+> Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+> ---
+> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+> index 54e3aad..d900cb7 100644
+> --- a/include/trace/events/power.h
+> +++ b/include/trace/events/power.h
+> @@ -254,53 +254,6 @@ DEFINE_EVENT(wakeup_source,
+> wakeup_source_deactivate, );
+>
+>  /*
+> - * The clock events are used for clock enable/disable and for
+> - *  clock rate change
+> - */
+> -DECLARE_EVENT_CLASS(clock,
+> -
+> -       TP_PROTO(const char *name, unsigned int state, unsigned int
+> cpu_id), -
+> -       TP_ARGS(name, state, cpu_id),
+> -
+> -       TP_STRUCT__entry(
+> -               __string(       name,           name            )
+> -               __field(        u64,            state           )
+> -               __field(        u64,            cpu_id          )
+> -       ),
+> -
+> -       TP_fast_assign(
+> -               __assign_str(name, name);
+> -               __entry->state = state;
+> -               __entry->cpu_id = cpu_id;
+> -       ),
+> -
+> -       TP_printk("%s state=%lu cpu_id=%lu", __get_str(name),
+> -               (unsigned long)__entry->state, (unsigned
+> long)__entry->cpu_id) -);
+> -
+> -DEFINE_EVENT(clock, clock_enable,
+> -
+> -       TP_PROTO(const char *name, unsigned int state, unsigned int
+> cpu_id), -
+> -       TP_ARGS(name, state, cpu_id)
+> -);
+> -
+> -DEFINE_EVENT(clock, clock_disable,
+> -
+> -       TP_PROTO(const char *name, unsigned int state, unsigned int
+> cpu_id), -
+> -       TP_ARGS(name, state, cpu_id)
+> -);
+> -
+> -DEFINE_EVENT(clock, clock_set_rate,
+> -
+> -       TP_PROTO(const char *name, unsigned int state, unsigned int
+> cpu_id), -
+> -       TP_ARGS(name, state, cpu_id)
+> -);
+> -
+> -/*
+>   * The power domain events are used for power domains transitions
+>   */
+>  DECLARE_EVENT_CLASS(power_domain,
