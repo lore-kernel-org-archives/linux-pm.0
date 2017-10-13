@@ -1,44 +1,55 @@
-From: Rajat Jain <rajatja@google.com>
-Subject: [usbhid] identifying a particular usbhid device as wakeup reason?
-Date: Thu, 12 Oct 2017 17:38:55 -0700
-Message-ID: <CACK8Z6EHE1=L1gTNpodaJdOsz_2YTXWCzr=EzFV3huPHqTpB3g@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / core: Fix kerneldoc comments of three functions
+Date: Fri, 13 Oct 2017 02:33:33 +0200
+Message-ID: <1805031.1a2Ur49QVy@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f174.google.com ([209.85.216.174]:52627 "EHLO
-        mail-qt0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753278AbdJMAjg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2017 20:39:36 -0400
-Received: by mail-qt0-f174.google.com with SMTP id o52so16822457qtc.9
-        for <linux-pm@vger.kernel.org>; Thu, 12 Oct 2017 17:39:36 -0700 (PDT)
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-usb@vger.kernel.org, linux-input@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jiri Kosina <jikos@kernel.org>, Dmitry Torokhov <dtor@google.com>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 
-Hi usbhid folks,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I'd like to identify after a wakeup from suspend, that my USB HID
-keyboard was used to wake up the system.
+Fix kerneldoc comments of __device_suspend_noirq(),
+__device_suspend_late() and __device_suspend() where the function
+names in kerneldoc don't match the actual names of the functions.
 
-I'm trying to understand why don't I see "wakeup_count" increase for
-my USB keyboard or trackpad in /sys/kernel/debug/wakeup_sources, when
-I indeed woke up the system using the keyboard? I do not see
-wakeup_count increased for any device (including the underlying usb
-device for usbhid) when I wake using the keyboard.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/main.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-I do see that the wakeup_count increases for other devices when I wake
-using them (e.g. wifi on a PCI bus, or bluetooth controller on USB
-bus).
-
-My questions:
-
-1) How can I go about fixing this problem?
-
-2) Is it because the usbhid driver does not call pm_wakeup_event() on
-wake? In retrospect, is it because the usbhid driver cannot tell that
-its key presses indeed woke up the system (as opposite to if the
-system was already up)?
-
-Thanks,
-
-Rajat
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -1077,7 +1077,7 @@ static pm_message_t resume_event(pm_mess
+ }
+ 
+ /**
+- * device_suspend_noirq - Execute a "late suspend" callback for given device.
++ * __device_suspend_noirq - Execute a "late suspend" callback for given device.
+  * @dev: Device to handle.
+  * @state: PM transition of the system being carried out.
+  * @async: If true, the device is being suspended asynchronously.
+@@ -1237,7 +1237,7 @@ int dpm_suspend_noirq(pm_message_t state
+ }
+ 
+ /**
+- * device_suspend_late - Execute a "late suspend" callback for given device.
++ * __device_suspend_late - Execute a "late suspend" callback for given device.
+  * @dev: Device to handle.
+  * @state: PM transition of the system being carried out.
+  * @async: If true, the device is being suspended asynchronously.
+@@ -1439,7 +1439,7 @@ static void dpm_clear_suppliers_direct_c
+ }
+ 
+ /**
+- * device_suspend - Execute "suspend" callbacks for given device.
++ * __device_suspend - Execute "suspend" callbacks for given device.
+  * @dev: Device to handle.
+  * @state: PM transition of the system being carried out.
+  * @async: If true, the device is being suspended asynchronously.
