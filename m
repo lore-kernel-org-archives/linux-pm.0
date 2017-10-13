@@ -1,125 +1,52 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v3 3/8] PM / devfreq: Show the available min/max
- frequency through sysfs node
-Date: Fri, 13 Oct 2017 15:47:25 +0900
-Message-ID: <59E0617D.10309@samsung.com>
-References: <1507691364-3899-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20171011030946epcas1p40f32955da5dada46e95302701a0afb7d@epcms1p3>
-        <1507691364-3899-4-git-send-email-cw00.choi@samsung.com>
-        <20171011111532epcms1p3036bcc7be2cc00057fe478fc868ba71d@epcms1p3>
-        <CAGTfZH0-pS8SLsYdxZfOotnE_FUFTtcYVZRcS8Eqgkk-H4b1vg@mail.gmail.com>
-        <59DEEAA5.3050905@samsung.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / core: Fix kerneldoc comments of three functions
+Date: Fri, 13 Oct 2017 08:48:30 +0200
+Message-ID: <CAPDyKFoi_UGJzk9nWR6V5PgecvdVVSBzg8EQBLF6aMUXVFj_ug@mail.gmail.com>
+References: <1805031.1a2Ur49QVy@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:13631 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751414AbdJMGr1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Oct 2017 02:47:27 -0400
-In-reply-to: <59DEEAA5.3050905@samsung.com>
+Received: from mail-it0-f45.google.com ([209.85.214.45]:54118 "EHLO
+        mail-it0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751551AbdJMGsb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Oct 2017 02:48:31 -0400
+Received: by mail-it0-f45.google.com with SMTP id n195so9509885itg.2
+        for <linux-pm@vger.kernel.org>; Thu, 12 Oct 2017 23:48:31 -0700 (PDT)
+In-Reply-To: <1805031.1a2Ur49QVy@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "myungjoo.ham@samsung.com" <myungjoo.ham@samsung.com>
-Cc: cwchoi00@gmail.com, Kyungmin Park <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, Inki Dae <inki.dae@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>
 
-Hi,
+On 13 October 2017 at 02:33, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Fix kerneldoc comments of __device_suspend_noirq(),
+> __device_suspend_late() and __device_suspend() where the function
+> names in kerneldoc don't match the actual names of the functions.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/base/power/main.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+>
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -1077,7 +1077,7 @@ static pm_message_t resume_event(pm_mess
+>  }
+>
+>  /**
+> - * device_suspend_noirq - Execute a "late suspend" callback for given device.
+> + * __device_suspend_noirq - Execute a "late suspend" callback for given device.
 
-On 2017년 10월 12일 13:08, Chanwoo Choi wrote:
-> On 2017년 10월 11일 21:57, Chanwoo Choi wrote:
->> On Wed, Oct 11, 2017 at 8:15 PM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
->>>> The existing {min|max}_freq sysfs nodes don't consider whether min/max_freq
->>>> are available or not. Those sysfs nodes show just the stored value
->>>> in the struct devfreq.
->>>>
->>>> The devfreq uses the OPP interface and then dev_pm_opp_{disable|add}()
->>>> might change the state of the device's supported frequency. This patch
->>>> shows the available minimum and maximum frequency through sysfs node.
->>>>
->>>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>> ---
->>>>  drivers/devfreq/devfreq.c | 18 ++++++++++++++++--
->>>>  1 file changed, 16 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->>>> index 2ce1fd0a1324..799a0cf75d39 100644
->>>> --- a/drivers/devfreq/devfreq.c
->>>> +++ b/drivers/devfreq/devfreq.c
->>>> @@ -1128,7 +1128,14 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
->>>>  static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
->>>>                            char *buf)
->>>>  {
->>>> -     return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
->>>> +     struct devfreq *df = to_devfreq(dev);
->>>> +     unsigned long min_freq = to_devfreq(dev)->min_freq;
->>>> +     unsigned long available_min_freq = find_available_min_freq(df);
->>>> +
->>>> +     if (available_min_freq != 0 && min_freq < available_min_freq)
->>>
->>> nitpick:
->>>
->>> If available_min_freq == 0,
->>> it can't be min_freq < available_min_freq anyway;
->>> it's unsigned.
->>
->> If the dev_pm_opp_find_*() return the error in the find_available_min_freq(),
->> avaiable_min_freq is zero. So, if available_min_freq is zero,
->> min_freq_show doesn't need to compare 'min_freq < available_min_freq'.
->>
->> In result, if 'available_min_freq' is zero, min_freq_show() only considers
->> the 'min_freq' variable.
-> 
-> I'll modify this patch as following: How about that?
-> 
-> +       if (available_min_freq == 0)
-> +               goto out;
-> +       else if (min_freq < available_min_freq)
-> +               min_freq = available_min_freq;
-> +
-> +out:
-> +       return sprintf(buf, "%lu\n", min_freq);
-> 
+While at it, I suggest to also change "late suspend" to "noirq suspend".
 
-Please ignore this approach because
-I'll use the new 'scaling_min/max_freq' variables on v4.
+As a matter of fact I found the similar text to be wrong also for
+device_resume_noirq(), perhaps that should be fixed as well.
 
+[...]
 
-> 
->>>
->>>> +             min_freq = available_min_freq;
->>>> +
->>>> +     return sprintf(buf, "%lu\n", min_freq);
->>>>  }
->>>>
->>>>  static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
->>>> @@ -1162,7 +1169,14 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
->>>>  static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
->>>>                            char *buf)
->>>>  {
->>>> -     return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
->>>> +     struct devfreq *df = to_devfreq(dev);
->>>> +     unsigned long max_freq = to_devfreq(dev)->max_freq;
->>>> +     unsigned long available_max_freq = find_available_max_freq(df);
->>>> +
->>>> +     if (available_max_freq != 0 && max_freq > available_max_freq)
->>>> +             max_freq = available_max_freq;
->>>
->>> similar here.
->>
->> ditto.
->>
->>>
->>>> +
->>>> +     return sprintf(buf, "%lu\n", max_freq);
->>>>  }
->>>>  static DEVICE_ATTR_RW(max_freq);
->>
->>
-> 
-> 
-
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Kind regards
+Uffe
