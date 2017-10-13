@@ -1,109 +1,85 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH v2] USB: Force disconnect Huawei 4G modem during suspend
-Date: Fri, 13 Oct 2017 12:15:45 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1710131211200.1364-100000@iolanthe.rowland.org>
-References: <20171013015501.5889-1-drake@endlessm.com>
+From: Jeremy Linton <jeremy.linton@arm.com>
+Subject: Re: [PATCH v3 2/7] ACPI: Enable PPTT support on ARM64
+Date: Fri, 13 Oct 2017 12:51:39 -0500
+Message-ID: <68f0af6f-2552-0e1a-5242-a89acf3656d9@arm.com>
+References: <20171012194856.13844-1-jeremy.linton@arm.com>
+ <20171012194856.13844-3-jeremy.linton@arm.com> <59E08D32.2010605@huawei.com>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from iolanthe.rowland.org ([192.131.102.54]:53732 "HELO
-        iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with SMTP id S1750872AbdJMQPq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Oct 2017 12:15:46 -0400
-In-Reply-To: <20171013015501.5889-1-drake@endlessm.com>
+Received: from foss.arm.com ([217.140.101.70]:37374 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750973AbdJMRvm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 13 Oct 2017 13:51:42 -0400
+In-Reply-To: <59E08D32.2010605@huawei.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Drake <drake@endlessm.com>
-Cc: gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, oneukum@suse.com, linux-pm@vger.kernel.org, linux@endlessm.com, chiu@endlessm.com
+To: Hanjun Guo <guohanjun@huawei.com>, linux-acpi@vger.kernel.org
+Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, jhugo@codeaurora.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, will.deacon@arm.com, linux-kernel@vger.kernel.org, ahs3@redhat.com, viresh.kumar@linaro.org, hanjun.guo@linaro.org, sudeep.holla@arm.com, austinwc@codeaurora.org, wangxiongfeng2@huawei.com, linux-arm-kernel@lists.infradead.org
 
-On Fri, 13 Oct 2017, Daniel Drake wrote:
+Hi,
 
-> When going into S3 suspend, the Acer TravelMate P648-M and P648-G3
-> laptops immediately wake up 3-4 seconds later for no obvious reason.
+On 10/13/2017 04:53 AM, Hanjun Guo wrote:
+> Hi Jeremy,
 > 
-> Unbinding the integrated Huawei 4G LTE modem before suspend avoids
-> the issue, even though we are not using the modem at all (checked
-> from rescue.target/runlevel1). The problem also occurs when the option
-> and cdc-ether modem drivers aren't loaded; it reproduces just with the
-> base usb driver. Under Windows the system can suspend fine.
+> On 2017/10/13 3:48, Jeremy Linton wrote:
+>> Now that we have a PPTT parser, in preparation for its use
+>> on arm64, lets build it.
+>>
+>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+>> ---
+>>   arch/arm64/Kconfig         | 1 +
+>>   drivers/acpi/Makefile      | 1 +
+>>   drivers/acpi/arm64/Kconfig | 3 +++
+>>   3 files changed, 5 insertions(+)
+>>
+>> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+>> index 0df64a6a56d4..68c9d1289735 100644
+>> --- a/arch/arm64/Kconfig
+>> +++ b/arch/arm64/Kconfig
+>> @@ -7,6 +7,7 @@ config ARM64
+>>   	select ACPI_REDUCED_HARDWARE_ONLY if ACPI
+>>   	select ACPI_MCFG if ACPI
+>>   	select ACPI_SPCR_TABLE if ACPI
+>> +	select ACPI_PPTT if ACPI
+>>   	select ARCH_CLOCKSOURCE_DATA
+>>   	select ARCH_HAS_DEBUG_VIRTUAL
+>>   	select ARCH_HAS_DEVMEM_IS_ALLOWED
+>> diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+>> index 90265ab4437a..c92a0c937551 100644
+>> --- a/drivers/acpi/Makefile
+>> +++ b/drivers/acpi/Makefile
+>> @@ -85,6 +85,7 @@ obj-$(CONFIG_ACPI_BGRT)		+= bgrt.o
+>>   obj-$(CONFIG_ACPI_CPPC_LIB)	+= cppc_acpi.o
+>>   obj-$(CONFIG_ACPI_SPCR_TABLE)	+= spcr.o
+>>   obj-$(CONFIG_ACPI_DEBUGGER_USER) += acpi_dbg.o
+>> +obj-$(CONFIG_ACPI_PPTT) 	+= pptt.o
+>>   
+>>   # processor has its own "processor." module_param namespace
+>>   processor-y			:= processor_driver.o
+>> diff --git a/drivers/acpi/arm64/Kconfig b/drivers/acpi/arm64/Kconfig
+>> index 5a6f80fce0d6..74b855a669ea 100644
+>> --- a/drivers/acpi/arm64/Kconfig
+>> +++ b/drivers/acpi/arm64/Kconfig
+>> @@ -7,3 +7,6 @@ config ACPI_IORT
+>>   
+>>   config ACPI_GTDT
+>>   	bool
+>> +
+>> +config ACPI_PPTT
+>> +	bool
 > 
-> Seeking a better fix, we've tried a lot of things, including:
->  - Check that the device's power/wakeup is disabled
->  - Check that remote wakeup is off at the USB level
->  - All the quirks in drivers/usb/core/quirks.c e.g. USB_QUIRK_RESET_RESUME,
->    USB_QUIRK_RESET, USB_QUIRK_IGNORE_REMOTE_WAKEUP, USB_QUIRK_NO_LPM.
-> 
-> but none of that makes any difference.
-> 
-> There are no errors in the logs showing any suspend/resume-related issues.
-> When the system wakes up due to the modem, log-wise it appears to be a
-> normal resume.
-> 
-> Introduce a quirk to disable the port during suspend when the modem is
-> detected.
+> Can this be located in drivers/acpi/Kconfig? then other
+> platform can select ACPI_PPTT if they want.
 
-> diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
-> index eb87a259d55c..7c048afc9bfd 100644
-> --- a/drivers/usb/core/driver.c
-> +++ b/drivers/usb/core/driver.c
-> @@ -1461,6 +1461,7 @@ static void choose_wakeup(struct usb_device *udev, pm_message_t msg)
->  int usb_suspend(struct device *dev, pm_message_t msg)
->  {
->  	struct usb_device	*udev = to_usb_device(dev);
-> +	int r;
->  
->  	unbind_no_pm_drivers_interfaces(udev);
->  
-> @@ -1469,7 +1470,14 @@ int usb_suspend(struct device *dev, pm_message_t msg)
->  	 * so we may still need to unbind and rebind upon resume
->  	 */
->  	choose_wakeup(udev, msg);
-> -	return usb_suspend_both(udev, msg);
-> +	r = usb_suspend_both(udev, msg);
-> +	if (r)
-> +		return r;
-> +
-> +	if (udev->quirks & USB_QUIRK_DISCONNECT_SUSPEND)
-> +		r = usb_port_disable(udev);
-> +
-> +	return r;
+It can be, but I've been resisting doing that because without any 
+callers using it will do little but bloat the code of anyone that dares 
+enable it.
 
-Here it's probably best to ignore the return value.  Even if 
-usb_port_disable failed, you want the system suspend to move forward -- 
-even if the system spontaneously wakes up a second later.
+So my assumption is that when the code to enable PPTT on x86 shows up 
+the config option can be moved as well.
 
->  }
->  
->  /* The device lock is held by the PM core */
-> diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-> index b5c733613823..9662eaa9c44d 100644
-> --- a/drivers/usb/core/hub.c
-> +++ b/drivers/usb/core/hub.c
-> @@ -4180,6 +4180,19 @@ static int hub_port_disable(struct usb_hub *hub, int port1, int set_state)
->  	return ret;
->  }
->  
-> +/*
-> + * usb_port_disable - disable a usb device's upstream port
-> + * @udev: device to disable
-> + * Context: must be able to sleep; device not locked; pm locks held
-
-Actually the device _is_ locked when this routine gets called.  And the 
-PM locks are not held.
-
-> + *
-> + * Disables a USB device that isn't in active use.
-> + */
-> +int usb_port_disable(struct usb_device *udev)
-> +{
-> +	struct usb_hub *hub = usb_hub_to_struct_hub(udev->parent);
-> +
-> +	return hub_port_disable(hub, udev->portnum, 1);
-> +}
-
-You probably want the last argument to be 0, not 1.  The 1 will cause
-the device to be marked as disconnected, so when the system wakes up it
-will think that a new device has been plugged in rather than the old
-device having been attached all along.
-
-Alan Stern
+How about I meet you 1/2 way, and put it in the acpi/Kconfig but wrapped 
+in the arm64 exclusive section?
