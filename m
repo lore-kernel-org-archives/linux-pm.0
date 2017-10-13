@@ -1,126 +1,104 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / QoS: Drop PM_QOS_FLAG_REMOTE_WAKEUP
-Date: Fri, 13 Oct 2017 02:35:12 +0200
-Message-ID: <1853660.GWc8KbUC1W@aspire.rjw.lan>
+From: Rajat Jain <rajatja@google.com>
+Subject: Getting precise wake reason (Was "Understanding the use cases for
+ calling pm_wakeup_event()")
+Date: Thu, 12 Oct 2017 17:59:10 -0700
+Message-ID: <CACK8Z6H3S2+Jj2T59zTtg5dj_3g==SkYWxHVvUK-fQ2dz9f8kQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f172.google.com ([209.85.216.172]:47919 "EHLO
+        mail-qt0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753301AbdJMA7v (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2017 20:59:51 -0400
+Received: by mail-qt0-f172.google.com with SMTP id z50so16903386qtj.4
+        for <linux-pm@vger.kernel.org>; Thu, 12 Oct 2017 17:59:51 -0700 (PDT)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Dmitry Torokhov <dtor@google.com>, Ruchi Kandoi <kandoiruchi@google.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+[Changed the subject to more apt one]
 
-The PM QoS flag PM_QOS_FLAG_REMOTE_WAKEUP is not used consistently
-and the vast majority of code simply assumes that remote wakeup
-should be enabled for devices in runtime suspend if they can
-generate wakeup signals, so drop it.
+On Thu, Oct 12, 2017 at 5:28 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Fri, Oct 13, 2017 at 2:13 AM, Rajat Jain <rajatja@google.com> wrote:
+>> Hi,
+>>
+>> I'm trying to understand when a driver is supposed to call the
+>> pm_wakeup_event(). It appears that the purpose of this call is to
+>>
+>> (1) In the suspend path, halt the suspend if the driver believes it
+>> just got an appropriate wake event from the device while the system is
+>> trying to suspend.
+>>
+>> (2) If driver detects the event in the resume path, identify the
+>> device as (one of the) wake sources that fired.
+>>
+>> I understand good use cases of this call will be when a driver knows
+>> that its device has woken up the system, e.g:
+>>
+>> * When a driver handles dedicated "wakeup irq", and sees the interrupt fired.
+>> * If a driver detect operator events such as lid opened, power button
+>> pressed, switched to tablet mode etc etc.
+>
+> The above is correct.
+>
+>> But what should a driver do, when it handles an event (in the resume
+>> path) that potentially was a wake up source but the driver is not
+>> sure?
+>
+> Examples?
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/device_pm.c    |    6 ++----
- drivers/base/power/domain.c |    4 +---
- drivers/base/power/sysfs.c  |   28 ----------------------------
- include/linux/pm_qos.h      |    1 -
- 4 files changed, 3 insertions(+), 36 deletions(-)
+I'd like to determine precisely what woke my system up. One of the
+missing pieces - the USB keyboard. I'm not sure if the usbhid driver
+can tell whether its key presses were the reason for the system wake
+up.
 
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -581,8 +581,7 @@ static int acpi_dev_pm_get_state(struct
- 		d_min = ret;
- 		wakeup = device_may_wakeup(dev) && adev->wakeup.flags.valid
- 			&& adev->wakeup.sleep_state >= target_state;
--	} else if (dev_pm_qos_flags(dev, PM_QOS_FLAG_REMOTE_WAKEUP) !=
--			PM_QOS_FLAGS_NONE) {
-+	} else {
- 		wakeup = adev->wakeup.flags.valid;
- 	}
- 
-@@ -865,8 +864,7 @@ int acpi_dev_runtime_suspend(struct devi
- 	if (!adev)
- 		return 0;
- 
--	remote_wakeup = dev_pm_qos_flags(dev, PM_QOS_FLAG_REMOTE_WAKEUP) >
--				PM_QOS_FLAGS_NONE;
-+	remote_wakeup = acpi_device_can_wakeup(adev);
- 	if (remote_wakeup) {
- 		error = acpi_device_wakeup_enable(adev, ACPI_STATE_S0);
- 		if (error)
-Index: linux-pm/include/linux/pm_qos.h
-===================================================================
---- linux-pm.orig/include/linux/pm_qos.h
-+++ linux-pm/include/linux/pm_qos.h
-@@ -39,7 +39,6 @@ enum pm_qos_flags_status {
- #define PM_QOS_LATENCY_ANY			((s32)(~(__u32)0 >> 1))
- 
- #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
--#define PM_QOS_FLAG_REMOTE_WAKEUP	(1 << 1)
- 
- struct pm_qos_request {
- 	struct plist_node node;
-Index: linux-pm/drivers/base/power/domain.c
-===================================================================
---- linux-pm.orig/drivers/base/power/domain.c
-+++ linux-pm/drivers/base/power/domain.c
-@@ -346,9 +346,7 @@ static int genpd_power_off(struct generi
- 	list_for_each_entry(pdd, &genpd->dev_list, list_node) {
- 		enum pm_qos_flags_status stat;
- 
--		stat = dev_pm_qos_flags(pdd->dev,
--					PM_QOS_FLAG_NO_POWER_OFF
--						| PM_QOS_FLAG_REMOTE_WAKEUP);
-+		stat = dev_pm_qos_flags(pdd->dev, PM_QOS_FLAG_NO_POWER_OFF);
- 		if (stat > PM_QOS_FLAGS_NONE)
- 			return -EBUSY;
- 
-Index: linux-pm/drivers/base/power/sysfs.c
-===================================================================
---- linux-pm.orig/drivers/base/power/sysfs.c
-+++ linux-pm/drivers/base/power/sysfs.c
-@@ -309,33 +309,6 @@ static ssize_t pm_qos_no_power_off_store
- static DEVICE_ATTR(pm_qos_no_power_off, 0644,
- 		   pm_qos_no_power_off_show, pm_qos_no_power_off_store);
- 
--static ssize_t pm_qos_remote_wakeup_show(struct device *dev,
--					 struct device_attribute *attr,
--					 char *buf)
--{
--	return sprintf(buf, "%d\n", !!(dev_pm_qos_requested_flags(dev)
--					& PM_QOS_FLAG_REMOTE_WAKEUP));
--}
--
--static ssize_t pm_qos_remote_wakeup_store(struct device *dev,
--					  struct device_attribute *attr,
--					  const char *buf, size_t n)
--{
--	int ret;
--
--	if (kstrtoint(buf, 0, &ret))
--		return -EINVAL;
--
--	if (ret != 0 && ret != 1)
--		return -EINVAL;
--
--	ret = dev_pm_qos_update_flags(dev, PM_QOS_FLAG_REMOTE_WAKEUP, ret);
--	return ret < 0 ? ret : n;
--}
--
--static DEVICE_ATTR(pm_qos_remote_wakeup, 0644,
--		   pm_qos_remote_wakeup_show, pm_qos_remote_wakeup_store);
--
- #ifdef CONFIG_PM_SLEEP
- static const char _enabled[] = "enabled";
- static const char _disabled[] = "disabled";
-@@ -671,7 +644,6 @@ static const struct attribute_group pm_q
- 
- static struct attribute *pm_qos_flags_attrs[] = {
- 	&dev_attr_pm_qos_no_power_off.attr,
--	&dev_attr_pm_qos_remote_wakeup.attr,
- 	NULL,
- };
- static const struct attribute_group pm_qos_flags_attr_group = {
+>
+>> Is it appropriate to call
+>>
+>>        if (device_may_wakeup(dev))
+>>                 pm_wakeup_event(dev, 0);
+>>
+>> in that case, because I do see some drivers seem to call it when they
+>> think that their device *may* have been the reason the system woke up,
+>> but not necessarily *is* the reason for wake up. E.g.:
+>>
+>> drivers/input/mouse/cyapa.c:
+>> drivers/input/serio/hyperv-keyboard.c
+>> drivers/input/serio/olpc_apsp.c
+>
+> Anyway, if that happens in the resume path there are no consequences
+> of that for the kernel.
+>
+> However, if user space looks at wakeup sources in order to figure out
+> what event woke the system up from sleep, it may be confused by that.
+> Are you aware of any user space stacks doing this?
 
+Sorry, I think I should give more context. A new Chromeos platform
+wants to use Intel S0ix (suspend-to-idle) for suspend. Since the
+suspend and resume paths are entirely in kernel, need to find a good
+way of determining the wakeup source in the kernel. Ideally, we'd want
+to get (and log):
+
+* the first wakeup event that fired i.e. the real culprit event that
+actually lead to *this* system wakeup.
+* any other wakeup events that may have fired in the patch (after the
+first wakeup event).
+
+Looking around, I see that the struct wakeup_source(s) are available -
+however AFAICT the responsibility lies on each and driver to use
+pm_wakeup_event() to inform the kernel that it saw a wake up event.
+Now, I see only a limited number of drivers doing it - so I'm trying
+to understand if this can be somehow be be used for my purposes.
+
+I do see that some efforts were made in the past
+(https://patchwork.kernel.org/patch/3827341/) but were suggested to
+use the wake_sources framework.
+
+Thanks,
+
+Rajat
+
+>
+> Thanks,
+> Rafael
