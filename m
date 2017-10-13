@@ -1,42 +1,137 @@
-From: jeffy <jeffy.chen@rock-chips.com>
-Subject: Re: [PATCH v5 1/3] PCI: rockchip: Add support for pcie wake irq
-Date: Sat, 14 Oct 2017 03:26:16 +0800
-Message-ID: <59E11358.3090409@rock-chips.com>
-References: <20170911151029.25185-1-jeffy.chen@rock-chips.com> <20170911151029.25185-2-jeffy.chen@rock-chips.com> <20171013030441.GA25517@bhelgaas-glaptop.roam.corp.google.com> <2453698.N4jfPaHx71@aspire.rjw.lan> <59E10709.4020300@rock-chips.com> <20171013191906.GF25517@bhelgaas-glaptop.roam.corp.google.com>
+From: Jeremy Linton <jeremy.linton@arm.com>
+Subject: Re: [PATCH v3 0/7] Support PPTT for ARM64
+Date: Fri, 13 Oct 2017 14:34:51 -0500
+Message-ID: <08a1ad07-4bec-2767-d32c-6a5f8406af9c@arm.com>
+References: <20171012194856.13844-1-jeremy.linton@arm.com>
+ <f3fab8a0-48e1-57c2-fdc0-be1faccfff2b@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171013191906.GF25517@bhelgaas-glaptop.roam.corp.google.com>
+In-Reply-To: <f3fab8a0-48e1-57c2-fdc0-be1faccfff2b@huawei.com>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, bhelgaas@google.com, Heiko Stuebner <heiko@sntech.de>, linux-pci@vger.kernel.org, shawn.lin@rock-chips.com, briannorris@chromium.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+To: John Garry <john.garry@huawei.com>, linux-acpi@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, Linuxarm <linuxarm@huawei.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Bjorn,
+Hi,
 
-On 10/14/2017 03:19 AM, Bjorn Helgaas wrote:
-> I'm sure they're harmless.  The point is that the cleanup should be
-> done near the failure, not in the caller of the caller of the function
-> where the failure was detected.  You have:
->
->    rockchip_pcie_probe
->      rockchip_pcie_parse_dt
->        rockchip_pcie_setup_irq
->          err = dev_pm_set_dedicated_wake_irq
->          if (err)
->            dev_err(...)
->
-> So you detect the error in rockchip_pcie_setup_irq(), but you clean up
-> from it in rockchip_pcie_probe(), which doesn't make sense because
-> rockchip_pcie_probe() doesn't do anything related to wakeup interupts.
->
-right, but if something wrong happens in rockchip_pcie_probe() later 
-than rockchip_pcie_setup_irq(), we may still need to clean it up ;)
+On 10/13/2017 06:08 AM, John Garry wrote:
+> On 12/10/2017 20:48, Jeremy Linton wrote:
+>> ACPI 6.2 adds the Processor Properties Topology Table (PPTT), which is
+>> used to describe the processor and cache topology. Ideally it is
+>> used to extend/override information provided by the hardware, but
+>> right now ARM64 is entirely dependent on firmware provided tables.
+>>
+>> This patch parses the table for the cache topology and CPU topology.
+>> For the latter we also add an additional topology_cod_id() macro,
+>> and a package_id for arm64. Initially the physical id will match
+>> the cluster id, but we update users of the cluster to utilize
+>> the new macro. When we enable ACPI/PPTT for arm64 we map the socket
+>> to the physical id as the remainder of the kernel expects.
+>>
+> 
+> Hi Jeremy,
+> 
+> Can you put this series on a public branch for convenience of review and 
+> test?
 
-i think the error handling is a little like what we do in the remove 
-callback
-> Bjorn
->
->
->
+Let me see what I can do..
+
+> 
+> Also, what is your idea for supporting Type 2 ID structure?
+
+I don't have any plans, as you can see the current patches ignore the ID 
+nodes. It should be fairly easy to mine the information from the tables, 
+but what parts are necessary or where to use them isn't clear to me.
+
+Suggestions welcome.
+
+
+> 
+> Cheers,
+> John
+> 
+>> For example on juno:
+>> [root@mammon-juno-rh topology]# lstopo-no-graphics
+>>   Package L#0
+>>     L2 L#0 (1024KB)
+>>       L1d L#0 (32KB) + L1i L#0 (32KB) + Core L#0 + PU L#0 (P#0)
+>>       L1d L#1 (32KB) + L1i L#1 (32KB) + Core L#1 + PU L#1 (P#1)
+>>       L1d L#2 (32KB) + L1i L#2 (32KB) + Core L#2 + PU L#2 (P#2)
+>>       L1d L#3 (32KB) + L1i L#3 (32KB) + Core L#3 + PU L#3 (P#3)
+>>     L2 L#1 (2048KB)
+>>       L1d L#4 (32KB) + L1i L#4 (48KB) + Core L#4 + PU L#4 (P#4)
+>>       L1d L#5 (32KB) + L1i L#5 (48KB) + Core L#5 + PU L#5 (P#5)
+>>   HostBridge L#0
+>>     PCIBridge
+>>       PCIBridge
+>>         PCIBridge
+>>           PCI 1095:3132
+>>             Block(Disk) L#0 "sda"
+>>         PCIBridge
+>>           PCI 1002:68f9
+>>             GPU L#1 "renderD128"
+>>             GPU L#2 "card0"
+>>             GPU L#3 "controlD64"
+>>         PCIBridge
+>>           PCI 11ab:4380
+>>             Net L#4 "enp8s0"
+>>
+>> v2->v3:
+>>
+>> Remove valid bit check on leaf nodes. Now simply being a leaf node
+>>   is sufficient to verify the processor id against the ACPI
+>>   processor ids (gotten from MADT).
+>>
+>> Use the acpi processor for the "level 0" Id. This makes the /sys
+>>   visible core/thread ids more human readable if the firmware uses
+>>   small consecutive values for processor ids.
+>>
+>> Added PPTT to the list of injectable ACPI tables.
+>>
+>> Fix bug which kept the code from using the processor node as intended
+>>   in v2, caused by misuse of git rebase/fixup.
+>>
+>> v1->v2:
+>>
+>> The parser keys off the acpi_pptt_processor node to determine
+>>   unique cache's rather than the acpi_pptt_cache referenced by the
+>>   processor node. This allows PPTT tables which "share" cache nodes
+>>   across cpu nodes despite not being a shared cache.
+>>
+>> Normalize the socket, cluster and thread mapping so that they match
+>>   linux's traditional mapping for the physical id, and thread id.
+>>   Adding explicit scheduler knowledge of clusters (rather than just
+>>   their cache sharing attributes) is a subject for a future patch.
+>>
+>> Jeremy Linton (7):
+>>   ACPI/PPTT: Add Processor Properties Topology Table parsing
+>>   ACPI: Enable PPTT support on ARM64
+>>   drivers: base: cacheinfo: arm64: Add support for ACPI based firmware
+>>     tables
+>>   Topology: Add cluster on die macros and arm64 decoding
+>>   arm64: Fixup users of topology_physical_package_id
+>>   arm64: topology: Enable ACPI/PPTT based CPU topology.
+>>   ACPI: Add PPTT to injectable table list
+>>
+>>  arch/arm64/Kconfig                |   1 +
+>>  arch/arm64/include/asm/topology.h |   4 +-
+>>  arch/arm64/kernel/cacheinfo.c     |  23 +-
+>>  arch/arm64/kernel/topology.c      |  62 ++++-
+>>  drivers/acpi/Makefile             |   1 +
+>>  drivers/acpi/arm64/Kconfig        |   3 +
+>>  drivers/acpi/pptt.c               | 486 
+>> ++++++++++++++++++++++++++++++++++++++
+>>  drivers/acpi/tables.c             |   3 +-
+>>  drivers/base/cacheinfo.c          |  17 +-
+>>  drivers/cpufreq/arm_big_little.c  |   2 +-
+>>  drivers/firmware/psci_checker.c   |   2 +-
+>>  include/linux/cacheinfo.h         |  11 +-
+>>  include/linux/topology.h          |   4 +
+>>  13 files changed, 599 insertions(+), 20 deletions(-)
+>>  create mode 100644 drivers/acpi/pptt.c
+>>
+> 
+> 
