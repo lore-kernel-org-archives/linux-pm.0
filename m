@@ -1,56 +1,89 @@
-From: Tony Lindgren <tony@atomide.com>
+From: jeffy <jeffy.chen@rock-chips.com>
 Subject: Re: [PATCH v5 1/3] PCI: rockchip: Add support for pcie wake irq
-Date: Fri, 13 Oct 2017 10:58:26 -0700
-Message-ID: <20171013175825.GR4394@atomide.com>
-References: <20170911151029.25185-1-jeffy.chen@rock-chips.com>
- <20170911151029.25185-2-jeffy.chen@rock-chips.com>
- <20171013030441.GA25517@bhelgaas-glaptop.roam.corp.google.com>
- <2453698.N4jfPaHx71@aspire.rjw.lan>
+Date: Sat, 14 Oct 2017 02:33:45 +0800
+Message-ID: <59E10709.4020300@rock-chips.com>
+References: <20170911151029.25185-1-jeffy.chen@rock-chips.com> <20170911151029.25185-2-jeffy.chen@rock-chips.com> <20171013030441.GA25517@bhelgaas-glaptop.roam.corp.google.com> <2453698.N4jfPaHx71@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <2453698.N4jfPaHx71@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com, Heiko Stuebner <heiko@sntech.de>, linux-pci@vger.kernel.org, shawn.lin@rock-chips.com, briannorris@chromium.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <helgaas@kernel.org>
+Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, Heiko Stuebner <heiko@sntech.de>, linux-pci@vger.kernel.org, shawn.lin@rock-chips.com, briannorris@chromium.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
 List-Id: linux-pm@vger.kernel.org
 
-* Rafael J. Wysocki <rjw@rjwysocki.net> [171013 06:32]:
-> [+cc Tony]
-> 
-> On Friday, October 13, 2017 5:04:41 AM CEST Bjorn Helgaas wrote:
-> > [+cc Rafael, linux-pm]
-> > On Mon, Sep 11, 2017 at 11:10:27PM +0800, Jeffy Chen wrote:
-> > > Add support for PCIE_WAKE pin in rockchip pcie driver.
-...
-> > > @@ -995,6 +996,15 @@ static int rockchip_pcie_setup_irq(struct rockchip_pcie *rockchip)
-> > >  		return err;
-> > >  	}
-> > >  
-> > > +	/* Must init wakeup before setting dedicated wakeup irq. */
-> > > +	device_init_wakeup(dev, true);
-> > > +	irq = platform_get_irq_byname(pdev, "wakeup");
-> > > +	if (irq >= 0) {
-> > > +		err = dev_pm_set_dedicated_wake_irq(dev, irq);
-> > 
-> > I'm a little skeptical about dev_pm_set_dedicated_wake_irq(), not
-> > because I know anything at all about it, but because there are only
-> > five callers in the whole tree, three of which are in UART code, and
-> > none in anything resembling PCI code.
+Hi Rafael,
 
-Well it should work for any device that can provide an out of band wakeup
-interrupt such as a dedicated GPIO line.
+On 10/13/2017 09:21 PM, Rafael J. Wysocki wrote:
+>>
+>>I'm a little skeptical about dev_pm_set_dedicated_wake_irq(), not
+>>because I know anything at all about it, but because there are only
+>>five callers in the whole tree, three of which are in UART code, and
+>>none in anything resembling PCI code.
+>>
+>>Is Rockchip really that special, or are we going about this the wrong
+>>way?
 
-> > Is Rockchip really that special, or are we going about this the wrong
-> > way?
+we used to put these codes in the wifi driver, but another wifi vendor 
+suggests these should go into the pcie driver.
 
-Maybe this can be set up in a generic way somewhere similar to what
-the I2C bus is doing?
+and as tony said, it could go into pcie common code :)
+>>
+>> > >+		if (err)
+>> > >+			dev_err(dev, "failed to setup PCIe wakeup IRQ\n");
+>> > >+	}
+>> > >+
+>> > >  	return 0;
+>>
+>>The above could be structured as:
+>>
+>>   irq = platform_get_irq_byname(pdev, "wakeup");
+>>   if (irq < 0)
+>>     return 0;
+>>
+>>   device_init_wakeup(dev, true);
+>>   err = dev_pm_set_dedicated_wake_irq(dev, irq);
+>>   if (err) {
+>>     dev_pm_clear_wake_irq(dev);
+>>     device_init_wakeup(dev, false);
+>>   }
+>>
+there's no need to call dev_pm_clear_wake_irq when 
+dev_pm_set_dedicated_wake_irq failed...and i agree the 
+device_init_wakeup part, i'll add that in the next version(with brian's 
+comment too)
+>>   return 0;
+>>
+>>to unindent the mainline non-error code.
+>>
+>> > >  }
+>> > >
+>> > >@@ -1542,11 +1552,11 @@ static int rockchip_pcie_probe(struct platform_device *pdev)
+>> > >
+>> > >  	err = rockchip_pcie_parse_dt(rockchip);
+>> > >  	if (err)
+>> > >-		return err;
+>> > >+		goto err_disable_wake;
+>> > >
+>> > >  	err = rockchip_pcie_enable_clocks(rockchip);
+>> > >  	if (err)
+>> > >-		return err;
+>> > >+		goto err_disable_wake;
+>> > >
+>> > >  	err = rockchip_pcie_set_vpcie(rockchip);
+>> > >  	if (err) {
+>> > >@@ -1656,6 +1666,9 @@ static int rockchip_pcie_probe(struct platform_device *pdev)
+>> > >  		regulator_disable(rockchip->vpcie0v9);
+>> > >  err_set_vpcie:
+>> > >  	rockchip_pcie_disable_clocks(rockchip);
+>> > >+err_disable_wake:
+>> > >+	dev_pm_clear_wake_irq(dev);
+>> > >+	device_init_wakeup(dev, false);
+>>
+>>I think this error cleanup should be done in rockchip_pcie_setup_irq()
+>>as shown above.  There's no real connection between
+>>rockchip_pcie_probe() and the wake setup.
 
-See i2c_device_probe() for dev_pm_set_dedicated_wake_irq() in
-drivers/i2c/i2c-core-base.c.
-
-Regards,
-
-Tony
+this error handling is like inline "rockchip_pcie_cleanup_irq()", and 
+they are harmless to be called even if we don't have the wakeup irq :)
