@@ -1,48 +1,43 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: speedstep-lib: mark expected switch fall-through
-Date: Fri, 13 Oct 2017 09:19:55 +0530
-Message-ID: <20171013034955.GC31427@vireshk-i7>
-References: <20171012224103.GA18340@embeddedor.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / QoS: Drop PM_QOS_FLAG_REMOTE_WAKEUP
+Date: Fri, 13 Oct 2017 08:32:18 +0200
+Message-ID: <CAPDyKFoxooS3QE6vjKr3DNOV6YadV8u0Btw8SWTGdL=EwAxLiQ@mail.gmail.com>
+References: <1853660.GWc8KbUC1W@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:48359 "EHLO
-        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753575AbdJMDt6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2017 23:49:58 -0400
-Received: by mail-pf0-f174.google.com with SMTP id b79so8022384pfk.5
-        for <linux-pm@vger.kernel.org>; Thu, 12 Oct 2017 20:49:58 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20171012224103.GA18340@embeddedor.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1853660.GWc8KbUC1W@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 12-10-17, 17:41, Gustavo A. R. Silva wrote:
-> In preparation to enabling -Wimplicit-fallthrough, mark switch cases
-> where we are expecting to fall through.
-> 
-> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+On 13 October 2017 at 02:35, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> The PM QoS flag PM_QOS_FLAG_REMOTE_WAKEUP is not used consistently
+> and the vast majority of code simply assumes that remote wakeup
+> should be enabled for devices in runtime suspend if they can
+> generate wakeup signals, so drop it.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+With a minor nitpick below, please add:
+
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+
 > ---
->  drivers/cpufreq/speedstep-lib.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/speedstep-lib.c b/drivers/cpufreq/speedstep-lib.c
-> index ccab452..8085ec9 100644
-> --- a/drivers/cpufreq/speedstep-lib.c
-> +++ b/drivers/cpufreq/speedstep-lib.c
-> @@ -367,7 +367,7 @@ unsigned int speedstep_detect_processor(void)
->  			} else
->  				return SPEEDSTEP_CPU_PIII_C;
->  		}
-> -
-> +		/* fall through */
->  	default:
->  		return 0;
->  	}
+>  drivers/acpi/device_pm.c    |    6 ++----
+>  drivers/base/power/domain.c |    4 +---
+>  drivers/base/power/sysfs.c  |   28 ----------------------------
+>  include/linux/pm_qos.h      |    1 -
+>  4 files changed, 3 insertions(+), 36 deletions(-)
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+I found the flag to also be mentioned in the
+Documentation/power/pm_qos_interface.txt, could please remove that
+part as well.
 
--- 
-viresh
+[...]
+
+Kind regards
+Uffe
