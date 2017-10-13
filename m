@@ -1,139 +1,48 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH v5 1/3] PCI: rockchip: Add support for pcie wake irq
-Date: Thu, 12 Oct 2017 22:04:41 -0500
-Message-ID: <20171013030441.GA25517@bhelgaas-glaptop.roam.corp.google.com>
-References: <20170911151029.25185-1-jeffy.chen@rock-chips.com>
- <20170911151029.25185-2-jeffy.chen@rock-chips.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: speedstep-lib: mark expected switch fall-through
+Date: Fri, 13 Oct 2017 09:19:55 +0530
+Message-ID: <20171013034955.GC31427@vireshk-i7>
+References: <20171012224103.GA18340@embeddedor.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f174.google.com ([209.85.192.174]:48359 "EHLO
+        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753575AbdJMDt6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Oct 2017 23:49:58 -0400
+Received: by mail-pf0-f174.google.com with SMTP id b79so8022384pfk.5
+        for <linux-pm@vger.kernel.org>; Thu, 12 Oct 2017 20:49:58 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20170911151029.25185-2-jeffy.chen@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jeffy Chen <jeffy.chen@rock-chips.com>
-Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, Heiko Stuebner <heiko@sntech.de>, linux-pci@vger.kernel.org, shawn.lin@rock-chips.com, briannorris@chromium.org, dianders@chromium.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+In-Reply-To: <20171012224103.GA18340@embeddedor.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-[+cc Rafael, linux-pm]
-
-On Mon, Sep 11, 2017 at 11:10:27PM +0800, Jeffy Chen wrote:
-> Add support for PCIE_WAKE pin in rockchip pcie driver.
+On 12-10-17, 17:41, Gustavo A. R. Silva wrote:
+> In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+> where we are expecting to fall through.
 > 
-> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 > ---
+>  drivers/cpufreq/speedstep-lib.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> Changes in v5:
-> Rebase
-> 
-> Changes in v3:
-> Fix error handling
-> 
-> Changes in v2:
-> Use dev_pm_set_dedicated_wake_irq
->         -- Suggested by Brian Norris <briannorris@chromium.com>
-> 
->  drivers/pci/host/pcie-rockchip.c | 19 +++++++++++++++++--
->  1 file changed, 17 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/pci/host/pcie-rockchip.c b/drivers/pci/host/pcie-rockchip.c
-> index 9051c6c8fea4..a8b7272597a7 100644
-> --- a/drivers/pci/host/pcie-rockchip.c
-> +++ b/drivers/pci/host/pcie-rockchip.c
-> @@ -37,6 +37,7 @@
->  #include <linux/pci_ids.h>
->  #include <linux/phy/phy.h>
->  #include <linux/platform_device.h>
-> +#include <linux/pm_wakeirq.h>
->  #include <linux/reset.h>
->  #include <linux/regmap.h>
->  
-> @@ -995,6 +996,15 @@ static int rockchip_pcie_setup_irq(struct rockchip_pcie *rockchip)
->  		return err;
+> diff --git a/drivers/cpufreq/speedstep-lib.c b/drivers/cpufreq/speedstep-lib.c
+> index ccab452..8085ec9 100644
+> --- a/drivers/cpufreq/speedstep-lib.c
+> +++ b/drivers/cpufreq/speedstep-lib.c
+> @@ -367,7 +367,7 @@ unsigned int speedstep_detect_processor(void)
+>  			} else
+>  				return SPEEDSTEP_CPU_PIII_C;
+>  		}
+> -
+> +		/* fall through */
+>  	default:
+>  		return 0;
 >  	}
->  
-> +	/* Must init wakeup before setting dedicated wakeup irq. */
-> +	device_init_wakeup(dev, true);
-> +	irq = platform_get_irq_byname(pdev, "wakeup");
-> +	if (irq >= 0) {
-> +		err = dev_pm_set_dedicated_wake_irq(dev, irq);
 
-I'm a little skeptical about dev_pm_set_dedicated_wake_irq(), not
-because I know anything at all about it, but because there are only
-five callers in the whole tree, three of which are in UART code, and
-none in anything resembling PCI code.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Is Rockchip really that special, or are we going about this the wrong
-way?
-
-> +		if (err)
-> +			dev_err(dev, "failed to setup PCIe wakeup IRQ\n");
-> +	}
-> +
->  	return 0;
-
-The above could be structured as:
-
-  irq = platform_get_irq_byname(pdev, "wakeup");
-  if (irq < 0)
-    return 0;
-
-  device_init_wakeup(dev, true);
-  err = dev_pm_set_dedicated_wake_irq(dev, irq);
-  if (err) {
-    dev_pm_clear_wake_irq(dev);
-    device_init_wakeup(dev, false);
-  }
-
-  return 0;
-
-to unindent the mainline non-error code.
-
->  }
->  
-> @@ -1542,11 +1552,11 @@ static int rockchip_pcie_probe(struct platform_device *pdev)
->  
->  	err = rockchip_pcie_parse_dt(rockchip);
->  	if (err)
-> -		return err;
-> +		goto err_disable_wake;
->  
->  	err = rockchip_pcie_enable_clocks(rockchip);
->  	if (err)
-> -		return err;
-> +		goto err_disable_wake;
->  
->  	err = rockchip_pcie_set_vpcie(rockchip);
->  	if (err) {
-> @@ -1656,6 +1666,9 @@ static int rockchip_pcie_probe(struct platform_device *pdev)
->  		regulator_disable(rockchip->vpcie0v9);
->  err_set_vpcie:
->  	rockchip_pcie_disable_clocks(rockchip);
-> +err_disable_wake:
-> +	dev_pm_clear_wake_irq(dev);
-> +	device_init_wakeup(dev, false);
-
-I think this error cleanup should be done in rockchip_pcie_setup_irq()
-as shown above.  There's no real connection between
-rockchip_pcie_probe() and the wake setup.
-
->  	return err;
->  }
->  
-> @@ -1682,6 +1695,8 @@ static int rockchip_pcie_remove(struct platform_device *pdev)
->  	if (!IS_ERR(rockchip->vpcie0v9))
->  		regulator_disable(rockchip->vpcie0v9);
->  
-> +	dev_pm_clear_wake_irq(dev);
-> +	device_init_wakeup(dev, false);
->  	return 0;
->  }
->  
-> -- 
-> 2.11.0
-> 
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+-- 
+viresh
