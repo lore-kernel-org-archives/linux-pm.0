@@ -1,101 +1,109 @@
-From: Jean Pihet <jean.pihet@newoldbits.com>
-Subject: Re: [PATCH] tracing: Remove unused clock events
-Date: Fri, 13 Oct 2017 09:20:44 +0200
-Message-ID: <CAORVsuU+12OEH4LFePORWHh3Ryfj-2cc8Kb6U-dQo4HQUXSJAA@mail.gmail.com>
-References: <20171012124446.4a4fb056@gandalf.local.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: [PATCH v4 0/8] PM / devfreq: Use OPP interface to handle the
+ frequency
+Date: Fri, 13 Oct 2017 16:48:16 +0900
+Message-ID: <1507880904-31956-1-git-send-email-cw00.choi@samsung.com>
+References: <CGME20171013074831epcas2p28bc5c380fb339650234037e9cd24fe27@epcas2p2.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f48.google.com ([209.85.213.48]:53827 "EHLO
-        mail-vk0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750973AbdJMHUp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Oct 2017 03:20:45 -0400
-Received: by mail-vk0-f48.google.com with SMTP id c76so3835319vkd.10
-        for <linux-pm@vger.kernel.org>; Fri, 13 Oct 2017 00:20:45 -0700 (PDT)
-In-Reply-To: <20171012124446.4a4fb056@gandalf.local.home>
+Received: from mailout1.samsung.com ([203.254.224.24]:17543 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751937AbdJMHsd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Oct 2017 03:48:33 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, discuss@lesswatts.org, Linux PM list <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.de>, Arjan van de Ven <arjan@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Len Brown <len.brown@intel.com>, Kevin Hilman <khilman@deeprootsystems.com>, Ingo Molnar <mingo@kernel.org>
+To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
+Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi Steven,
+These patches makes the devfreq to use the OPP interface and clean-up codes.
 
-On Thu, Oct 12, 2017 at 6:44 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
->
-> [ Resending again, including linux-pm@vger.kernel.org this time ]
->
-> From: Steven Rostedt (VMware) <rostedt@goodmis.org>
->
-> Commit 74704ac6 ("tracing, perf: Add more power related events") added
-> new events, among them were trace_clock_enable, trace_clock_disable and
-> trace_clock_set_rate. In the last 7 years, nothing has used them. As
-> they take up space, and nobody cares about these events, remove them.
+[Detaild Descripion]
+The commit a76caf55e5b3 ("thermal: Add devfreq cooling") provides
+the devfreq cooling device by using the OPP interface such as
+dev_pm_opp_disable() and dev_pm_opp_enable(). It means that
+the OPP interface is able to change the available status of the frequency.
 
-Ok if it is not used. Can others confirm?
+Firstly, the existing devfreq doesn't reflect the result of OPP behavior
+when showing the min/max frequency through the following sysfs nodes:
+It shows the wrong frequency value because min_freq/max_freq don't
+consider the frequency status by handling OPP interface (opp_dev_pm_opp_
+{disable|add}()). So, these patches fix this issue.
+- /sys/class/devfreq/devfreqX/min_freq
+- /sys/class/devfreq/devfreqX/max_freq
 
-AFAIK this has been used internally.
+Second, the 'available_frequencies' should show the all supported frequencies
+even if the specific frequency is not available. It doesn't matter whether
+frequneyc is available or not. Because the role of 'available_frequencies'
+shows the all frequencies. Also, these patches fix this issue.
+- /sys/class/devfreq/devfreqX/available_frequencies
 
-BR,
-Jean
+Third, update_devfreq() get the available next frequency by using
+new 'scaling_min/max_frewq' variables in order to consider the disabled OPP.
 
->
-> Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
-> ---
-> diff --git a/include/trace/events/power.h b/include/trace/events/power.h
-> index 54e3aad..d900cb7 100644
-> --- a/include/trace/events/power.h
-> +++ b/include/trace/events/power.h
-> @@ -254,53 +254,6 @@ DEFINE_EVENT(wakeup_source,
-> wakeup_source_deactivate, );
->
->  /*
-> - * The clock events are used for clock enable/disable and for
-> - *  clock rate change
-> - */
-> -DECLARE_EVENT_CLASS(clock,
-> -
-> -       TP_PROTO(const char *name, unsigned int state, unsigned int
-> cpu_id), -
-> -       TP_ARGS(name, state, cpu_id),
-> -
-> -       TP_STRUCT__entry(
-> -               __string(       name,           name            )
-> -               __field(        u64,            state           )
-> -               __field(        u64,            cpu_id          )
-> -       ),
-> -
-> -       TP_fast_assign(
-> -               __assign_str(name, name);
-> -               __entry->state = state;
-> -               __entry->cpu_id = cpu_id;
-> -       ),
-> -
-> -       TP_printk("%s state=%lu cpu_id=%lu", __get_str(name),
-> -               (unsigned long)__entry->state, (unsigned
-> long)__entry->cpu_id) -);
-> -
-> -DEFINE_EVENT(clock, clock_enable,
-> -
-> -       TP_PROTO(const char *name, unsigned int state, unsigned int
-> cpu_id), -
-> -       TP_ARGS(name, state, cpu_id)
-> -);
-> -
-> -DEFINE_EVENT(clock, clock_disable,
-> -
-> -       TP_PROTO(const char *name, unsigned int state, unsigned int
-> cpu_id), -
-> -       TP_ARGS(name, state, cpu_id)
-> -);
-> -
-> -DEFINE_EVENT(clock, clock_set_rate,
-> -
-> -       TP_PROTO(const char *name, unsigned int state, unsigned int
-> cpu_id), -
-> -       TP_ARGS(name, state, cpu_id)
-> -);
-> -
-> -/*
->   * The power domain events are used for power domains transitions
->   */
->  DECLARE_EVENT_CLASS(power_domain,
+For example,
+- devfreq's min_freq is 100Mhz and max_freq is 700Mhz.
+- OPP disabled 500/600/700Mhz due to devfreq-cooling.c.
+- simple_ondemand govenor decided the next target_freq (600Mhz)
+|----------|-------------------------------------------------------------|
+|Freq(MHz) |100     |200    |300    |400     |500     |600      |70 0    |
+|Devfreq   |min_freq|       |       |        |        |         |max_freq|
+|OPP avail |enabled |enabled|enabled|enabled |Disabled| Disabled|Disabled|
+|Ondmenad  |        |       |       |        |        |next_freq|        |
+|------------------------------------------------------------------------|
+
+In result,
+- Before this patch, target_freq is 600Mhz
+  and TRANSITION_NOTIFIER sends the next_freq is 600Mhz to the notifiee.
+- After this patch, target_freq is 400Mhz because 500/600 were disabled by OPP.
+  and TRANSITION_NOTIFIER sends the next_freq is 400Mhz to the notifiee.
+
+Lastly,
+- patch6/7 fix the minor issue and cleanup codes.
+- patch8 register the cooling device. It depends on opp patch[1].
+[1] https://patchwork.kernel.org/patch/9962387/
+
+
+Changes from v3:
+- Add the new 'scaling_min/max_freq' to 'struct devfreq'
+  in order to reflect the OPP behavior such as dev_pm_opp_disable/enable().
+- Drop the call of devfreq_recommended_opp() in the update_devfreq().
+- Show the available frequencies in an ascending order.
+- Check '#cooling-cells' property before registering cooling device on
+  exynos-bus.c.
+- Change the return type of devfreq_set_freq_table() and remvoe 'devfreq'
+  prefix from function name.
+- Add acked-by tag from Myungjoo Ham on patch1.
+
+Changes from v2:
+(https://lkml.org/lkml/2017/9/20/886)
+- Fix the exynos-bus.c for the cooling device on patch8
+
+Changes from v1:
+(https://lkml.org/lkml/2017/8/23/785)
+- Show the available frequencies as an ascending order
+- Change the author info from cwchoi00@gmail.com to cw00.choi@samsung.com
+- Drop the patches related to opp_notifier
+- Add new patch5/6/7/8
+
+Chanwoo Choi (8):
+  PM / devfreq: Set min/max_freq when adding the devfreq device
+  Revert "PM / devfreq: Add show_one macro to delete the duplicate code"
+  PM / devfreq: Use the available min/max frequency
+  PM / devfreq: Change return type of devfreq_set_freq_table()
+  PM / devfreq: Show the all available frequencies
+  PM / devfreq: Remove unneeded conditional statement
+  PM / devfreq: Define the constant governor name
+  PM / devfreq: exynos-bus: Register cooling device
+
+ drivers/devfreq/devfreq.c                 | 135 +++++++++++++++++++++---------
+ drivers/devfreq/exynos-bus.c              |  32 ++++++-
+ drivers/devfreq/governor_passive.c        |   2 +-
+ drivers/devfreq/governor_performance.c    |   2 +-
+ drivers/devfreq/governor_powersave.c      |   2 +-
+ drivers/devfreq/governor_simpleondemand.c |   2 +-
+ drivers/devfreq/governor_userspace.c      |   2 +-
+ drivers/devfreq/rk3399_dmc.c              |   2 +-
+ include/linux/devfreq.h                   |  16 +++-
+ 9 files changed, 146 insertions(+), 49 deletions(-)
+
+-- 
+1.9.1
