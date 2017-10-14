@@ -1,202 +1,305 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] ACPI / PM: Combine device suspend routines
-Date: Sat, 14 Oct 2017 17:43:15 +0200
-Message-ID: <4784998.IJUKWVFqcl@aspire.rjw.lan>
-References: <1757450.aXvHk4JRfq@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1757450.aXvHk4JRfq@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Subject: [PATCH v3 RESEND] cpufreq: pxa: convert to clock API
+Date: Sat, 14 Oct 2017 23:51:02 +0200
+Message-ID: <20171014215102.10424-1-robert.jarzmik@free.fr>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp12.smtpout.orange.fr ([80.12.242.134]:46502 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751081AbdJNVvO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Oct 2017 17:51:14 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael J Wysocki <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+As the clock settings have been introduced into the clock pxa drivers,
+which are now available to change the CPU clock by themselves, remove
+the clock handling from this driver, and rely on pxa clock drivers.
 
-On top of a previous change getting rid of the PM QoS flag
-PM_QOS_FLAG_REMOTE_WAKEUP, combine two ACPI device suspend routines,
-acpi_dev_runtime_suspend() and acpi_dev_suspend_late(), into one,
-acpi_dev_suspend(), to eliminate some code duplication.
-
-It also avoids enabling wakeup for devices handled by the ACPI
-LPSS middle layer on driver removal.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
-
--> v2: Drop a previously missed acpi_dev_runtime_suspend() header.
-
+This is a resend of a formerly acked patch as all dependencies have
+hit upstream, see :
+	https://www.spinics.net/lists/arm-kernel/msg540181.html
 ---
- drivers/acpi/acpi_lpss.c |    6 ++--
- drivers/acpi/device_pm.c |   61 ++++++++++-------------------------------------
- include/linux/acpi.h     |    3 --
- 3 files changed, 18 insertions(+), 52 deletions(-)
+ drivers/cpufreq/pxa2xx-cpufreq.c | 191 ++++++++-------------------------------
+ 1 file changed, 39 insertions(+), 152 deletions(-)
 
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -847,37 +847,39 @@ static int acpi_dev_pm_full_power(struct
+diff --git a/drivers/cpufreq/pxa2xx-cpufreq.c b/drivers/cpufreq/pxa2xx-cpufreq.c
+index ce345bf34d5d..06b024a3e474 100644
+--- a/drivers/cpufreq/pxa2xx-cpufreq.c
++++ b/drivers/cpufreq/pxa2xx-cpufreq.c
+@@ -58,56 +58,40 @@ module_param(pxa27x_maxfreq, uint, 0);
+ MODULE_PARM_DESC(pxa27x_maxfreq, "Set the pxa27x maxfreq in MHz"
+ 		 "(typically 624=>pxa270, 416=>pxa271, 520=>pxa272)");
+ 
++struct pxa_cpufreq_data {
++	struct clk *clk_core;
++};
++static struct pxa_cpufreq_data  pxa_cpufreq_data;
++
+ struct pxa_freqs {
+ 	unsigned int khz;
+-	unsigned int membus;
+-	unsigned int cccr;
+-	unsigned int div2;
+-	unsigned int cclkcfg;
+ 	int vmin;
+ 	int vmax;
+ };
+ 
+-/* Define the refresh period in mSec for the SDRAM and the number of rows */
+-#define SDRAM_TREF	64	/* standard 64ms SDRAM */
+-static unsigned int sdram_rows;
+-
+-#define CCLKCFG_TURBO		0x1
+-#define CCLKCFG_FCS		0x2
+-#define CCLKCFG_HALFTURBO	0x4
+-#define CCLKCFG_FASTBUS		0x8
+-#define MDREFR_DB2_MASK		(MDREFR_K2DB2 | MDREFR_K1DB2)
+-#define MDREFR_DRI_MASK		0xFFF
+-
+-#define MDCNFG_DRAC2(mdcnfg) (((mdcnfg) >> 21) & 0x3)
+-#define MDCNFG_DRAC0(mdcnfg) (((mdcnfg) >> 5) & 0x3)
+-
+ /*
+  * PXA255 definitions
+  */
+-/* Use the run mode frequencies for the CPUFREQ_POLICY_PERFORMANCE policy */
+-#define CCLKCFG			CCLKCFG_TURBO | CCLKCFG_FCS
+-
+ static const struct pxa_freqs pxa255_run_freqs[] =
+ {
+-	/* CPU   MEMBUS  CCCR  DIV2 CCLKCFG	           run  turbo PXbus SDRAM */
+-	{ 99500,  99500, 0x121, 1,  CCLKCFG, -1, -1},	/*  99,   99,   50,   50  */
+-	{132700, 132700, 0x123, 1,  CCLKCFG, -1, -1},	/* 133,  133,   66,   66  */
+-	{199100,  99500, 0x141, 0,  CCLKCFG, -1, -1},	/* 199,  199,   99,   99  */
+-	{265400, 132700, 0x143, 1,  CCLKCFG, -1, -1},	/* 265,  265,  133,   66  */
+-	{331800, 165900, 0x145, 1,  CCLKCFG, -1, -1},	/* 331,  331,  166,   83  */
+-	{398100,  99500, 0x161, 0,  CCLKCFG, -1, -1},	/* 398,  398,  196,   99  */
++	/* CPU   MEMBUS		   run  turbo PXbus SDRAM */
++	{ 99500, -1, -1},	/*  99,   99,   50,   50  */
++	{132700, -1, -1},	/* 133,  133,   66,   66  */
++	{199100, -1, -1},	/* 199,  199,   99,   99  */
++	{265400, -1, -1},	/* 265,  265,  133,   66  */
++	{331800, -1, -1},	/* 331,  331,  166,   83  */
++	{398100, -1, -1},	/* 398,  398,  196,   99  */
+ };
+ 
+ /* Use the turbo mode frequencies for the CPUFREQ_POLICY_POWERSAVE policy */
+ static const struct pxa_freqs pxa255_turbo_freqs[] =
+ {
+-	/* CPU   MEMBUS  CCCR  DIV2 CCLKCFG	   run  turbo PXbus SDRAM */
+-	{ 99500, 99500,  0x121, 1,  CCLKCFG, -1, -1},	/*  99,   99,   50,   50  */
+-	{199100, 99500,  0x221, 0,  CCLKCFG, -1, -1},	/*  99,  199,   50,   99  */
+-	{298500, 99500,  0x321, 0,  CCLKCFG, -1, -1},	/*  99,  287,   50,   99  */
+-	{298600, 99500,  0x1c1, 0,  CCLKCFG, -1, -1},	/* 199,  287,   99,   99  */
+-	{398100, 99500,  0x241, 0,  CCLKCFG, -1, -1},	/* 199,  398,   99,   99  */
++	/* CPU			   run  turbo PXbus SDRAM */
++	{ 99500, -1, -1},	/*  99,   99,   50,   50  */
++	{199100, -1, -1},	/*  99,  199,   50,   99  */
++	{298500, -1, -1},	/*  99,  287,   50,   99  */
++	{298600, -1, -1},	/* 199,  287,   99,   99  */
++	{398100, -1, -1},	/* 199,  398,   99,   99  */
+ };
+ 
+ #define NUM_PXA25x_RUN_FREQS ARRAY_SIZE(pxa255_run_freqs)
+@@ -122,47 +106,14 @@ static unsigned int pxa255_turbo_table;
+ module_param(pxa255_turbo_table, uint, 0);
+ MODULE_PARM_DESC(pxa255_turbo_table, "Selects the frequency table (0 = run table, !0 = turbo table)");
+ 
+-/*
+- * PXA270 definitions
+- *
+- * For the PXA27x:
+- * Control variables are A, L, 2N for CCCR; B, HT, T for CLKCFG.
+- *
+- * A = 0 => memory controller clock from table 3-7,
+- * A = 1 => memory controller clock = system bus clock
+- * Run mode frequency	= 13 MHz * L
+- * Turbo mode frequency = 13 MHz * L * N
+- * System bus frequency = 13 MHz * L / (B + 1)
+- *
+- * In CCCR:
+- * A = 1
+- * L = 16	  oscillator to run mode ratio
+- * 2N = 6	  2 * (turbo mode to run mode ratio)
+- *
+- * In CCLKCFG:
+- * B = 1	  Fast bus mode
+- * HT = 0	  Half-Turbo mode
+- * T = 1	  Turbo mode
+- *
+- * For now, just support some of the combinations in table 3-7 of
+- * PXA27x Processor Family Developer's Manual to simplify frequency
+- * change sequences.
+- */
+-#define PXA27x_CCCR(A, L, N2) (A << 25 | N2 << 7 | L)
+-#define CCLKCFG2(B, HT, T) \
+-  (CCLKCFG_FCS | \
+-   ((B)  ? CCLKCFG_FASTBUS : 0) | \
+-   ((HT) ? CCLKCFG_HALFTURBO : 0) | \
+-   ((T)  ? CCLKCFG_TURBO : 0))
+-
+ static struct pxa_freqs pxa27x_freqs[] = {
+-	{104000, 104000, PXA27x_CCCR(1,	 8, 2), 0, CCLKCFG2(1, 0, 1),  900000, 1705000 },
+-	{156000, 104000, PXA27x_CCCR(1,	 8, 3), 0, CCLKCFG2(1, 0, 1), 1000000, 1705000 },
+-	{208000, 208000, PXA27x_CCCR(0, 16, 2), 1, CCLKCFG2(0, 0, 1), 1180000, 1705000 },
+-	{312000, 208000, PXA27x_CCCR(1, 16, 3), 1, CCLKCFG2(1, 0, 1), 1250000, 1705000 },
+-	{416000, 208000, PXA27x_CCCR(1, 16, 4), 1, CCLKCFG2(1, 0, 1), 1350000, 1705000 },
+-	{520000, 208000, PXA27x_CCCR(1, 16, 5), 1, CCLKCFG2(1, 0, 1), 1450000, 1705000 },
+-	{624000, 208000, PXA27x_CCCR(1, 16, 6), 1, CCLKCFG2(1, 0, 1), 1550000, 1705000 }
++	{104000,  900000, 1705000 },
++	{156000, 1000000, 1705000 },
++	{208000, 1180000, 1705000 },
++	{312000, 1250000, 1705000 },
++	{416000, 1350000, 1705000 },
++	{520000, 1450000, 1705000 },
++	{624000, 1550000, 1705000 }
+ };
+ 
+ #define NUM_PXA27x_FREQS ARRAY_SIZE(pxa27x_freqs)
+@@ -241,51 +192,29 @@ static void pxa27x_guess_max_freq(void)
+ 	}
  }
  
- /**
-- * acpi_dev_runtime_suspend - Put device into a low-power state using ACPI.
-+ * acpi_dev_suspend - Put device into a low-power state using ACPI.
-  * @dev: Device to put into a low-power state.
-+ * @wakeup: Whether or not to enable wakeup for the device.
-  *
-- * Put the given device into a runtime low-power state using the standard ACPI
-+ * Put the given device into a low-power state using the standard ACPI
-  * mechanism.  Set up remote wakeup if desired, choose the state to put the
-  * device into (this checks if remote wakeup is expected to work too), and set
-  * the power state of the device.
-  */
--int acpi_dev_runtime_suspend(struct device *dev)
-+int acpi_dev_suspend(struct device *dev, bool wakeup)
+-static void init_sdram_rows(void)
+-{
+-	uint32_t mdcnfg = __raw_readl(MDCNFG);
+-	unsigned int drac2 = 0, drac0 = 0;
+-
+-	if (mdcnfg & (MDCNFG_DE2 | MDCNFG_DE3))
+-		drac2 = MDCNFG_DRAC2(mdcnfg);
+-
+-	if (mdcnfg & (MDCNFG_DE0 | MDCNFG_DE1))
+-		drac0 = MDCNFG_DRAC0(mdcnfg);
+-
+-	sdram_rows = 1 << (11 + max(drac0, drac2));
+-}
+-
+-static u32 mdrefr_dri(unsigned int freq)
+-{
+-	u32 interval = freq * SDRAM_TREF / sdram_rows;
+-
+-	return (interval - (cpu_is_pxa27x() ? 31 : 0)) / 32;
+-}
+-
+ static unsigned int pxa_cpufreq_get(unsigned int cpu)
  {
- 	struct acpi_device *adev = ACPI_COMPANION(dev);
--	bool remote_wakeup;
-+	u32 target_state = acpi_target_system_state();
- 	int error;
+-	return get_clk_frequency_khz(0);
++	struct pxa_cpufreq_data *data = cpufreq_get_driver_data();
++
++	return (unsigned int) clk_get_rate(data->clk_core) / 1000;
+ }
  
- 	if (!adev)
- 		return 0;
+ static int pxa_set_target(struct cpufreq_policy *policy, unsigned int idx)
+ {
+ 	struct cpufreq_frequency_table *pxa_freqs_table;
+ 	const struct pxa_freqs *pxa_freq_settings;
+-	unsigned long flags;
+-	unsigned int new_freq_cpu, new_freq_mem;
+-	unsigned int unused, preset_mdrefr, postset_mdrefr, cclkcfg;
++	struct pxa_cpufreq_data *data = cpufreq_get_driver_data();
++	unsigned int new_freq_cpu;
+ 	int ret = 0;
  
--	remote_wakeup = acpi_device_can_wakeup(adev);
--	if (remote_wakeup) {
--		error = acpi_device_wakeup_enable(adev, ACPI_STATE_S0);
-+	if (wakeup && acpi_device_can_wakeup(adev)) {
-+		error = acpi_device_wakeup_enable(adev, target_state);
- 		if (error)
- 			return -EAGAIN;
-+	} else {
-+		wakeup = false;
+ 	/* Get the current policy */
+ 	find_freq_tables(&pxa_freqs_table, &pxa_freq_settings);
+ 
+ 	new_freq_cpu = pxa_freq_settings[idx].khz;
+-	new_freq_mem = pxa_freq_settings[idx].membus;
+ 
+ 	if (freq_debug)
+-		pr_debug("Changing CPU frequency to %d Mhz, (SDRAM %d Mhz)\n",
+-			 new_freq_cpu / 1000, (pxa_freq_settings[idx].div2) ?
+-			 (new_freq_mem / 2000) : (new_freq_mem / 1000));
++		pr_debug("Changing CPU frequency from %d Mhz to %d Mhz\n",
++			 policy->cur / 1000,  new_freq_cpu / 1000);
+ 
+ 	if (vcc_core && new_freq_cpu > policy->cur) {
+ 		ret = pxa_cpufreq_change_voltage(&pxa_freq_settings[idx]);
+@@ -293,53 +222,7 @@ static int pxa_set_target(struct cpufreq_policy *policy, unsigned int idx)
+ 			return ret;
  	}
  
--	error = acpi_dev_pm_low_power(dev, adev, ACPI_STATE_S0);
--	if (error && remote_wakeup)
-+	error = acpi_dev_pm_low_power(dev, adev, target_state);
-+	if (error && wakeup)
- 		acpi_device_wakeup_disable(adev);
- 
- 	return error;
- }
--EXPORT_SYMBOL_GPL(acpi_dev_runtime_suspend);
-+EXPORT_SYMBOL_GPL(acpi_dev_suspend);
- 
- /**
-  * acpi_dev_resume - Put device into the full-power state using ACPI.
-@@ -910,7 +912,7 @@ EXPORT_SYMBOL_GPL(acpi_dev_resume);
- int acpi_subsys_runtime_suspend(struct device *dev)
- {
- 	int ret = pm_generic_runtime_suspend(dev);
--	return ret ? ret : acpi_dev_runtime_suspend(dev);
-+	return ret ? ret : acpi_dev_suspend(dev, true);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_runtime_suspend);
- 
-@@ -929,41 +931,6 @@ int acpi_subsys_runtime_resume(struct de
- EXPORT_SYMBOL_GPL(acpi_subsys_runtime_resume);
- 
- #ifdef CONFIG_PM_SLEEP
--/**
-- * acpi_dev_suspend_late - Put device into a low-power state using ACPI.
-- * @dev: Device to put into a low-power state.
-- *
-- * Put the given device into a low-power state during system transition to a
-- * sleep state using the standard ACPI mechanism.  Set up system wakeup if
-- * desired, choose the state to put the device into (this checks if system
-- * wakeup is expected to work too), and set the power state of the device.
-- */
--int acpi_dev_suspend_late(struct device *dev)
--{
--	struct acpi_device *adev = ACPI_COMPANION(dev);
--	u32 target_state;
--	bool wakeup;
--	int error;
+-	/* Calculate the next MDREFR.  If we're slowing down the SDRAM clock
+-	 * we need to preset the smaller DRI before the change.	 If we're
+-	 * speeding up we need to set the larger DRI value after the change.
+-	 */
+-	preset_mdrefr = postset_mdrefr = __raw_readl(MDREFR);
+-	if ((preset_mdrefr & MDREFR_DRI_MASK) > mdrefr_dri(new_freq_mem)) {
+-		preset_mdrefr = (preset_mdrefr & ~MDREFR_DRI_MASK);
+-		preset_mdrefr |= mdrefr_dri(new_freq_mem);
+-	}
+-	postset_mdrefr =
+-		(postset_mdrefr & ~MDREFR_DRI_MASK) | mdrefr_dri(new_freq_mem);
 -
--	if (!adev)
--		return 0;
--
--	target_state = acpi_target_system_state();
--	wakeup = device_may_wakeup(dev) && acpi_device_can_wakeup(adev);
--	if (wakeup) {
--		error = acpi_device_wakeup_enable(adev, target_state);
--		if (error)
--			return error;
+-	/* If we're dividing the memory clock by two for the SDRAM clock, this
+-	 * must be set prior to the change.  Clearing the divide must be done
+-	 * after the change.
+-	 */
+-	if (pxa_freq_settings[idx].div2) {
+-		preset_mdrefr  |= MDREFR_DB2_MASK;
+-		postset_mdrefr |= MDREFR_DB2_MASK;
+-	} else {
+-		postset_mdrefr &= ~MDREFR_DB2_MASK;
 -	}
 -
--	error = acpi_dev_pm_low_power(dev, adev, target_state);
--	if (error && wakeup)
--		acpi_device_wakeup_disable(adev);
+-	local_irq_save(flags);
 -
--	return error;
--}
--EXPORT_SYMBOL_GPL(acpi_dev_suspend_late);
+-	/* Set new the CCCR and prepare CCLKCFG */
+-	writel(pxa_freq_settings[idx].cccr, CCCR);
+-	cclkcfg = pxa_freq_settings[idx].cclkcfg;
 -
- static bool acpi_dev_needs_resume(struct device *dev, struct acpi_device *adev)
- {
- 	u32 sys_target = acpi_target_system_state();
-@@ -1046,7 +1013,7 @@ EXPORT_SYMBOL_GPL(acpi_subsys_suspend);
- int acpi_subsys_suspend_late(struct device *dev)
- {
- 	int ret = pm_generic_suspend_late(dev);
--	return ret ? ret : acpi_dev_suspend_late(dev);
-+	return ret ? ret : acpi_dev_suspend(dev, device_may_wakeup(dev));
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_suspend_late);
- 
-Index: linux-pm/drivers/acpi/acpi_lpss.c
-===================================================================
---- linux-pm.orig/drivers/acpi/acpi_lpss.c
-+++ linux-pm/drivers/acpi/acpi_lpss.c
-@@ -713,7 +713,7 @@ static int acpi_lpss_activate(struct dev
- 
- static void acpi_lpss_dismiss(struct device *dev)
- {
--	acpi_dev_runtime_suspend(dev);
-+	acpi_dev_suspend(dev, false);
- }
- 
- #ifdef CONFIG_PM_SLEEP
-@@ -729,7 +729,7 @@ static int acpi_lpss_suspend_late(struct
- 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
- 		acpi_lpss_save_ctx(dev, pdata);
- 
--	return acpi_dev_suspend_late(dev);
-+	return acpi_dev_suspend(dev, device_may_wakeup(dev));
- }
- 
- static int acpi_lpss_resume_early(struct device *dev)
-@@ -847,7 +847,7 @@ static int acpi_lpss_runtime_suspend(str
- 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
- 		acpi_lpss_save_ctx(dev, pdata);
- 
--	ret = acpi_dev_runtime_suspend(dev);
-+	ret = acpi_dev_suspend(dev, true);
+-	asm volatile("							\n\
+-		ldr	r4, [%1]		/* load MDREFR */	\n\
+-		b	2f						\n\
+-		.align	5						\n\
+-1:									\n\
+-		str	%3, [%1]		/* preset the MDREFR */	\n\
+-		mcr	p14, 0, %2, c6, c0, 0	/* set CCLKCFG[FCS] */	\n\
+-		str	%4, [%1]		/* postset the MDREFR */ \n\
+-									\n\
+-		b	3f						\n\
+-2:		b	1b						\n\
+-3:		nop							\n\
+-	  "
+-		     : "=&r" (unused)
+-		     : "r" (MDREFR), "r" (cclkcfg),
+-		       "r" (preset_mdrefr), "r" (postset_mdrefr)
+-		     : "r4", "r5");
+-	local_irq_restore(flags);
++	clk_set_rate(data->clk_core, new_freq_cpu * 1000);
  
  	/*
- 	 * This call must be last in the sequence, otherwise PMC will return
-Index: linux-pm/include/linux/acpi.h
-===================================================================
---- linux-pm.orig/include/linux/acpi.h
-+++ linux-pm/include/linux/acpi.h
-@@ -864,7 +864,7 @@ static inline void arch_reserve_mem_area
- #endif
+ 	 * Even if voltage setting fails, we don't report it, as the frequency
+@@ -369,8 +252,6 @@ static int pxa_cpufreq_init(struct cpufreq_policy *policy)
  
- #if defined(CONFIG_ACPI) && defined(CONFIG_PM)
--int acpi_dev_runtime_suspend(struct device *dev);
-+int acpi_dev_suspend(struct device *dev, bool wakeup);
- int acpi_dev_resume(struct device *dev);
- int acpi_subsys_runtime_suspend(struct device *dev);
- int acpi_subsys_runtime_resume(struct device *dev);
-@@ -889,7 +889,6 @@ int acpi_subsys_resume_early(struct devi
- int acpi_subsys_suspend(struct device *dev);
- int acpi_subsys_freeze(struct device *dev);
- #else
--static inline int acpi_dev_suspend_late(struct device *dev) { return 0; }
- static inline int acpi_dev_resume_early(struct device *dev) { return 0; }
- static inline int acpi_subsys_prepare(struct device *dev) { return 0; }
- static inline void acpi_subsys_complete(struct device *dev) {}
+ 	pxa_cpufreq_init_voltages();
+ 
+-	init_sdram_rows();
+-
+ 	/* set default policy and cpuinfo */
+ 	policy->cpuinfo.transition_latency = 1000; /* FIXME: 1 ms, assumed */
+ 
+@@ -429,11 +310,17 @@ static struct cpufreq_driver pxa_cpufreq_driver = {
+ 	.init	= pxa_cpufreq_init,
+ 	.get	= pxa_cpufreq_get,
+ 	.name	= "PXA2xx",
++	.driver_data = &pxa_cpufreq_data,
+ };
+ 
+ static int __init pxa_cpu_init(void)
+ {
+ 	int ret = -ENODEV;
++
++	pxa_cpufreq_data.clk_core = clk_get_sys(NULL, "core");
++	if (IS_ERR(pxa_cpufreq_data.clk_core))
++		return PTR_ERR(pxa_cpufreq_data.clk_core);
++
+ 	if (cpu_is_pxa25x() || cpu_is_pxa27x())
+ 		ret = cpufreq_register_driver(&pxa_cpufreq_driver);
+ 	return ret;
+-- 
+2.11.0
