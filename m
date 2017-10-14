@@ -1,196 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] ACPI / PM: Combine device suspend routines
-Date: Sat, 14 Oct 2017 14:41:56 +0200
-Message-ID: <1757450.aXvHk4JRfq@aspire.rjw.lan>
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Subject: Re: [PATCH] PM: ARM: sa1111: Drop suspend and resume bus type
+ callbacks
+Date: Sat, 14 Oct 2017 15:43:51 +0100
+Message-ID: <20171014144351.GI20805@n2100.armlinux.org.uk>
+References: <2654085.Tx1JnNWXkX@aspire.rjw.lan>
+ <20170926212812.GS20805@n2100.armlinux.org.uk>
+ <CAJZ5v0i1iwBpkUYN=DbpbtVDu+xMKwza=4EbjYNyGr5rs7-D8Q@mail.gmail.com>
+ <20170928094936.GV20805@n2100.armlinux.org.uk>
+ <CAJZ5v0iuzDk+gT=6KG3fX1d4C9dfzp0s8t-Y0pAM4SsVgaU=0A@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.armlinux.org.uk ([78.32.30.218]:32908 "EHLO
+        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753198AbdJNOoB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Oct 2017 10:44:01 -0400
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0iuzDk+gT=6KG3fX1d4C9dfzp0s8t-Y0pAM4SsVgaU=0A@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, LKML <linux-kernel@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Linux PM <linux-pm@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, Sep 28, 2017 at 09:09:42PM +0200, Rafael J. Wysocki wrote:
+> On Thu, Sep 28, 2017 at 11:49 AM, Russell King - ARM Linux
+> <linux@armlinux.org.uk> wrote:
+> > On Tue, Sep 26, 2017 at 11:37:40PM +0200, Rafael J. Wysocki wrote:
+> >> On Tue, Sep 26, 2017 at 11:28 PM, Russell King - ARM Linux
+> >> <linux@armlinux.org.uk> wrote:
+> >> > On Tue, Sep 26, 2017 at 10:47:10PM +0200, Rafael J. Wysocki wrote:
+> >> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> >>
+> >> >> None of the sa1111 drivers in the tree implements the suspend and
+> >> >> resume callbacks from struct sa1111_driver, so drop them and drop
+> >> >> the corresponding callbacks from sa1111_bus_type.
+> >> >>
+> >> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> >
+> >> > This will conflict with some patches I have - would you like me to queue
+> >> > it along with my changes?
+> >>
+> >> Yes, please.
+> >>
+> >> >  When would you like to get this merged?
+> >>
+> >> When possible. :-)
+> >>
+> >> I would like to drop the legacy suspend/resume callbacks from struct
+> >> bus_type eventually, as that's long overdue, and this is needed for
+> >> that purpose.  Not too urgent, though.
+> >
+> > Sorry, I'd forgotten that I already had a similar patch:
+> >
+> > http://git.armlinux.org.uk/cgit/linux-arm.git/commit/?h=sa1100&id=0e4ec3edb1c7e44aba1f48b924ab0c77431fd155
+> >
+> > so no need to merge your veresion... I just need to get my version merged.
+> 
+> OK
 
-On top of a previous change getting rid of the PM QoS flag
-PM_QOS_FLAG_REMOTE_WAKEUP, combine two ACPI device suspend routines,
-acpi_dev_runtime_suspend() and acpi_dev_suspend_late(), into one,
-acpi_dev_suspend(), to eliminate some code duplication.
+As other maintainers have taken patches from my series, I can no longer
+merge your patch this cycle, (due to the dependencies involving multiple
+trees.)  I'll postpone the change until after the next merge window.
 
-It also avoids enabling wakeup for devices handled by the ACPI
-LPSS middle layer on driver removal.
+I can't really say about Locomo, having never really been involved with
+that stuff.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/acpi_lpss.c |    6 ++--
- drivers/acpi/device_pm.c |   61 ++++++++++-------------------------------------
- include/linux/acpi.h     |    2 -
- 3 files changed, 18 insertions(+), 51 deletions(-)
-
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -847,37 +847,39 @@ static int acpi_dev_pm_full_power(struct
- }
- 
- /**
-- * acpi_dev_runtime_suspend - Put device into a low-power state using ACPI.
-+ * acpi_dev_suspend - Put device into a low-power state using ACPI.
-  * @dev: Device to put into a low-power state.
-+ * @wakeup: Whether or not to enable wakeup for the device.
-  *
-- * Put the given device into a runtime low-power state using the standard ACPI
-+ * Put the given device into a low-power state using the standard ACPI
-  * mechanism.  Set up remote wakeup if desired, choose the state to put the
-  * device into (this checks if remote wakeup is expected to work too), and set
-  * the power state of the device.
-  */
--int acpi_dev_runtime_suspend(struct device *dev)
-+int acpi_dev_suspend(struct device *dev, bool wakeup)
- {
- 	struct acpi_device *adev = ACPI_COMPANION(dev);
--	bool remote_wakeup;
-+	u32 target_state = acpi_target_system_state();
- 	int error;
- 
- 	if (!adev)
- 		return 0;
- 
--	remote_wakeup = acpi_device_can_wakeup(adev);
--	if (remote_wakeup) {
--		error = acpi_device_wakeup_enable(adev, ACPI_STATE_S0);
-+	if (wakeup && acpi_device_can_wakeup(adev)) {
-+		error = acpi_device_wakeup_enable(adev, target_state);
- 		if (error)
- 			return -EAGAIN;
-+	} else {
-+		wakeup = false;
- 	}
- 
--	error = acpi_dev_pm_low_power(dev, adev, ACPI_STATE_S0);
--	if (error && remote_wakeup)
-+	error = acpi_dev_pm_low_power(dev, adev, target_state);
-+	if (error && wakeup)
- 		acpi_device_wakeup_disable(adev);
- 
- 	return error;
- }
--EXPORT_SYMBOL_GPL(acpi_dev_runtime_suspend);
-+EXPORT_SYMBOL_GPL(acpi_dev_suspend);
- 
- /**
-  * acpi_dev_resume - Put device into the full-power state using ACPI.
-@@ -910,7 +912,7 @@ EXPORT_SYMBOL_GPL(acpi_dev_resume);
- int acpi_subsys_runtime_suspend(struct device *dev)
- {
- 	int ret = pm_generic_runtime_suspend(dev);
--	return ret ? ret : acpi_dev_runtime_suspend(dev);
-+	return ret ? ret : acpi_dev_suspend(dev, true);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_runtime_suspend);
- 
-@@ -929,41 +931,6 @@ int acpi_subsys_runtime_resume(struct de
- EXPORT_SYMBOL_GPL(acpi_subsys_runtime_resume);
- 
- #ifdef CONFIG_PM_SLEEP
--/**
-- * acpi_dev_suspend_late - Put device into a low-power state using ACPI.
-- * @dev: Device to put into a low-power state.
-- *
-- * Put the given device into a low-power state during system transition to a
-- * sleep state using the standard ACPI mechanism.  Set up system wakeup if
-- * desired, choose the state to put the device into (this checks if system
-- * wakeup is expected to work too), and set the power state of the device.
-- */
--int acpi_dev_suspend_late(struct device *dev)
--{
--	struct acpi_device *adev = ACPI_COMPANION(dev);
--	u32 target_state;
--	bool wakeup;
--	int error;
--
--	if (!adev)
--		return 0;
--
--	target_state = acpi_target_system_state();
--	wakeup = device_may_wakeup(dev) && acpi_device_can_wakeup(adev);
--	if (wakeup) {
--		error = acpi_device_wakeup_enable(adev, target_state);
--		if (error)
--			return error;
--	}
--
--	error = acpi_dev_pm_low_power(dev, adev, target_state);
--	if (error && wakeup)
--		acpi_device_wakeup_disable(adev);
--
--	return error;
--}
--EXPORT_SYMBOL_GPL(acpi_dev_suspend_late);
--
- static bool acpi_dev_needs_resume(struct device *dev, struct acpi_device *adev)
- {
- 	u32 sys_target = acpi_target_system_state();
-@@ -1046,7 +1013,7 @@ EXPORT_SYMBOL_GPL(acpi_subsys_suspend);
- int acpi_subsys_suspend_late(struct device *dev)
- {
- 	int ret = pm_generic_suspend_late(dev);
--	return ret ? ret : acpi_dev_suspend_late(dev);
-+	return ret ? ret : acpi_dev_suspend(dev, device_may_wakeup(dev));
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_suspend_late);
- 
-Index: linux-pm/drivers/acpi/acpi_lpss.c
-===================================================================
---- linux-pm.orig/drivers/acpi/acpi_lpss.c
-+++ linux-pm/drivers/acpi/acpi_lpss.c
-@@ -713,7 +713,7 @@ static int acpi_lpss_activate(struct dev
- 
- static void acpi_lpss_dismiss(struct device *dev)
- {
--	acpi_dev_runtime_suspend(dev);
-+	acpi_dev_suspend(dev, false);
- }
- 
- #ifdef CONFIG_PM_SLEEP
-@@ -729,7 +729,7 @@ static int acpi_lpss_suspend_late(struct
- 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
- 		acpi_lpss_save_ctx(dev, pdata);
- 
--	return acpi_dev_suspend_late(dev);
-+	return acpi_dev_suspend(dev, device_may_wakeup(dev));
- }
- 
- static int acpi_lpss_resume_early(struct device *dev)
-@@ -847,7 +847,7 @@ static int acpi_lpss_runtime_suspend(str
- 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
- 		acpi_lpss_save_ctx(dev, pdata);
- 
--	ret = acpi_dev_runtime_suspend(dev);
-+	ret = acpi_dev_suspend(dev, true);
- 
- 	/*
- 	 * This call must be last in the sequence, otherwise PMC will return
-Index: linux-pm/include/linux/acpi.h
-===================================================================
---- linux-pm.orig/include/linux/acpi.h
-+++ linux-pm/include/linux/acpi.h
-@@ -865,6 +865,7 @@ static inline void arch_reserve_mem_area
- 
- #if defined(CONFIG_ACPI) && defined(CONFIG_PM)
- int acpi_dev_runtime_suspend(struct device *dev);
-+int acpi_dev_suspend(struct device *dev, bool wakeup);
- int acpi_dev_resume(struct device *dev);
- int acpi_subsys_runtime_suspend(struct device *dev);
- int acpi_subsys_runtime_resume(struct device *dev);
-@@ -889,7 +890,6 @@ int acpi_subsys_resume_early(struct devi
- int acpi_subsys_suspend(struct device *dev);
- int acpi_subsys_freeze(struct device *dev);
- #else
--static inline int acpi_dev_suspend_late(struct device *dev) { return 0; }
- static inline int acpi_dev_resume_early(struct device *dev) { return 0; }
- static inline int acpi_subsys_prepare(struct device *dev) { return 0; }
- static inline void acpi_subsys_complete(struct device *dev) {}
-
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
+According to speedtest.net: 8.21Mbps down 510kbps up
