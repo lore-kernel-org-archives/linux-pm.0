@@ -1,51 +1,49 @@
-From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
-Subject: Re: [PATCH 09/10] [RFC] ravb: Remove obsolete explicit clock handling
- for WoL
-Date: Mon, 16 Oct 2017 23:17:17 +0300
-Message-ID: <b3825de9-16e8-94a4-0b23-bf0caf87a343@cogentembedded.com>
-References: <1508162116-5043-1-git-send-email-geert+renesas@glider.be>
- <1508162116-5043-10-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1508162116-5043-10-git-send-email-geert+renesas@glider.be>
-Content-Language: en-MW
-Sender: linux-clk-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund+renesas@ragnatech.se>, linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org
+From: Tony Lindgren <tony@atomide.com>
+Subject: [PATCH] thermal: ti-soc-thermal: Fix ti_thermal_unregister_cpu_cooling NULL pointer on unload
+Date: Mon, 16 Oct 2017 14:07:14 -0700
+Message-ID: <20171016210714.16080-1-tony@atomide.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:44620 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1757515AbdJPVHU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 16 Oct 2017 17:07:20 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org, Keerthy <j-keerthy@ti.com>
 
-On 10/16/2017 04:55 PM, Geert Uytterhoeven wrote:
+While debugging some PM issues and trying to remove all the loaded modules, I ran
+across the following when unloading ti-soc-thermal:
 
-> Currently, if Wake-on-LAN is enabled, the EtherAVB device's module clock
-> is manually kept running during system suspend, to make sure the device
-> stays active.
-> 
-> Since "soc: renesas: rcar-sysc: Keep wakeup sources active during system
-> suspend", this workaround is no longer needed.  Hence remove all
-> explicit clock handling to keep the device active.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-[...]
+Unable to handle kernel NULL pointer dereference at virtual address 000000b4
+...
+[<c08db340>] (kobject_put) from [<bf28954c>] (ti_thermal_unregister_cpu_cooling+0x20/0x28 [ti_soc_thermal])
+[<bf28954c>] (ti_thermal_unregister_cpu_cooling [ti_soc_thermal]) from [<bf287c88>] (ti_bandgap_remove+0x3c/0x104 [ti_soc_thermal])
+[<bf287c88>] (ti_bandgap_remove [ti_soc_thermal]) from [<c0610d48>] (platform_drv_remove+0x24/0x3c)
+[<c0610d48>] (platform_drv_remove) from [<c060f114>] (device_release_driver_internal+0x160/0x208)
+[<c060f114>] (device_release_driver_internal) from [<c060f200>] (driver_detach+0x38/0x6c)
+[<c060f200>] (driver_detach) from [<c060e2d4>] (bus_remove_driver+0x4c/0xa0)
+[<c060e2d4>] (bus_remove_driver) from [<c01f2370>] (SyS_delete_module+0x168/0x238)
+[<c01f2370>] (SyS_delete_module) from [<c0108240>] (ret_fast_syscall+0x0/0x28)
 
-Reviewed-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Cc: Keerthy <j-keerthy@ti.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-> diff --git a/drivers/net/ethernet/renesas/ravb_main.c b/drivers/net/ethernet/renesas/ravb_main.c
-> index fdf30bfa403bf416..11ffccca11d56df5 100644
-> --- a/drivers/net/ethernet/renesas/ravb_main.c
-> +++ b/drivers/net/ethernet/renesas/ravb_main.c
-[...]
-> @@ -2289,8 +2283,6 @@ static int __maybe_unused ravb_resume(struct device *dev)
->   		 *       this clock dance should be removed.
->   		 */
->   		clk_disable(priv->clk);
-> -		clk_disable(priv->clk);
-> -		clk_enable(priv->clk);
->   		clk_enable(priv->clk);
-
-    I thought the entire clock dance could be removed now? Not yet?
-
-[...]
-
-MBR, Sergei
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -278,7 +278,8 @@ int ti_thermal_unregister_cpu_cooling(struct ti_bandgap *bgp, int id)
+ 
+ 	if (data) {
+ 		cpufreq_cooling_unregister(data->cool_dev);
+-		cpufreq_cpu_put(data->policy);
++		if (data->policy)
++			cpufreq_cpu_put(data->policy);
+ 	}
+ 
+ 	return 0;
+-- 
+2.14.2
