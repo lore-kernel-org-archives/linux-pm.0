@@ -1,49 +1,75 @@
 From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: Re: [RFC PATCH v2 4/8] tick/nohz: keep tick on for a fast idle
-Date: Mon, 16 Oct 2017 14:31:41 +0800
-Message-ID: <39e58dd5-1abd-aac7-2577-9afa71236e35@linux.intel.com>
+Subject: Re: [RFC PATCH v2 5/8] timers: keep sleep length updated as needed
+Date: Mon, 16 Oct 2017 14:46:41 +0800
+Message-ID: <33404efd-a8e0-eb0b-4df8-9e7aa5a66dde@linux.intel.com>
 References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com>
- <1506756034-6340-5-git-send-email-aubrey.li@intel.com>
- <4523111.uMcC96MW3N@aspire.rjw.lan>
- <5beefd1a-2792-c371-3bb8-8ee2a6574020@linux.intel.com>
- <1508129104.8087.2.camel@gmx.de>
- <c64ed43d-8afe-7317-e31f-a7a5eef914d1@linux.intel.com>
- <1508135135.8087.17.camel@gmx.de>
+ <1506756034-6340-6-git-send-email-aubrey.li@intel.com>
+ <1554921.dz8jk4n8cL@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:56942 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750914AbdJPGbn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Oct 2017 02:31:43 -0400
-In-Reply-To: <1508135135.8087.17.camel@gmx.de>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1554921.dz8jk4n8cL@aspire.rjw.lan>
 Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Mike Galbraith <efault@gmx.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aubrey Li <aubrey.li@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aubrey Li <aubrey.li@intel.com>
 Cc: tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 2017/10/16 14:25, Mike Galbraith wrote:
-> On Mon, 2017-10-16 at 13:34 +0800, Li, Aubrey wrote:
->> On 2017/10/16 12:45, Mike Galbraith wrote:
->>> On Mon, 2017-10-16 at 11:26 +0800, Li, Aubrey wrote:
->>>>
->>>> I'll try to move quiet_vmstat() into the normal idle branch if this patch series
->>>> are reasonable. Is fast_idle a good indication for it?
->>>
->>> see x86_tip 62cb1188ed86 sched/idle: Move quiet_vmstate() into the NOHZ code
+On 2017/10/14 8:56, Rafael J. Wysocki wrote:
+> On Saturday, September 30, 2017 9:20:31 AM CEST Aubrey Li wrote:
+>> sleep length indicates how long we'll be idle. Currently, it's updated
+>> only when tick nohz enters. These patch series make a new requirement
+>> with tick, so we should keep sleep length updated as needed
+> 
+> So what exactly would be the problem with leaving things as they are?
+
+Previously ts->sleep_length is only updated when tick is stopped.
+
+As follows, in
+
+__tick_nohz_idle_enter()
+{
+	if (can_stop_idle_tick() /* return true */) {
+		tick_nohz_stop_sched_tick()
+			|
+			|-----> update sleep_length
+	}
+}
+
+Now ts->sleep_length is required out of tick_nohz_idle_enter(), so we want
+to update sleep_length every time we read it
+
+If we leave it unchanged, the prediction could read a sleep_length long time
+ago if the system keep ticking.
+> 
+>> ---
+>>  kernel/time/tick-sched.c | 3 +++
+>>  1 file changed, 3 insertions(+)
 >>
->> It looks like this commit makes tick stop critical as it can be invoked in interrupt
->> exit path?
+>> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+>> index d663fab..94fb9b8 100644
+>> --- a/kernel/time/tick-sched.c
+>> +++ b/kernel/time/tick-sched.c
+>> @@ -1008,8 +1008,11 @@ void tick_nohz_irq_exit(void)
+>>   */
+>>  ktime_t tick_nohz_get_sleep_length(void)
+>>  {
+>> +	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
+>>  	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+>>  
+>> +	ts->sleep_length = ktime_sub(dev->next_event, ktime_get());
+>> +
+>>  	return ts->sleep_length;
+>>  }
+>>  
+>>
 > 
-> do_idle() ain't critical?  It is in my book.  Hopefully, you're about
-> to make that idle_stat.fast_idle thingy liberal enough that we cease
-> mucking about with the tick on every microscopic idle (and I can then
-> trash my years old local patch to avoid needlessly eating that cost).
+> I probably wouldn't do it this way ...
+> 
 > 
 
-Welcome any feedback of other patch set, Mike, :)
+May I know the detailed thoughts?
 
 Thanks,
 -Aubrey
