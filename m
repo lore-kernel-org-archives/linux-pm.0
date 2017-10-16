@@ -1,34 +1,46 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH 01/12] PM / core: Add NEVER_SKIP and SMART_PREPARE driver flags
-Date: Tue, 17 Oct 2017 00:07:37 +0200
-Message-ID: <1545766.cfb3OTroPT@aspire.rjw.lan>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <1998650.Q52BuGQTI4@aspire.rjw.lan> <20171016063122.GB28732@kroah.com>
+Date: Tue, 17 Oct 2017 00:11:23 +0200
+Message-ID: <2240270.3ttWVTLO4t@aspire.rjw.lan>
+References: <Pine.LNX.4.44L0.1710161612080.1377-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20171016063122.GB28732@kroah.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1710161612080.1377-100000@iolanthe.rowland.org>
+Sender: linux-doc-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, October 16, 2017 8:31:22 AM CEST Greg Kroah-Hartman wrote:
-> On Mon, Oct 16, 2017 at 03:29:02AM +0200, Rafael J. Wysocki wrote:
-> > +static inline void dev_pm_set_driver_flags(struct device *dev, unsigned int flags)
-> > +{
-> > +	dev->power.driver_flags = flags;
-> > +}
+On Monday, October 16, 2017 10:16:15 PM CEST Alan Stern wrote:
+> On Mon, 16 Oct 2017, Rafael J. Wysocki wrote:
 > 
-> Should this function just set the specific bit?  Or is it going to be ok
-> to set the whole value, meaning you aren't going to care about turning
-> on and off specific flags over the lifetime of the driver/device, you
-> are just going to set them once and then just test them as needed?
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > The motivation for this change is to provide a way to work around
+> > a problem with the direct-complete mechanism used for avoiding
+> > system suspend/resume handling for devices in runtime suspend.
+> > 
+> > The problem is that some middle layer code (the PCI bus type and
+> > the ACPI PM domain in particular) returns positive values from its
+> > system suspend ->prepare callbacks regardless of whether the driver's
+> > ->prepare returns a positive value or 0, which effectively prevents
+> > drivers from being able to control the direct-complete feature.
+> > Some drivers need that control, however, and the PCI bus type has
+> > grown its own flag to deal with this issue, but since it is not
+> > limited to PCI, it is better to address it by adding driver flags at
+> > the core level.
+> 
+> I'm curious: Why does the PCI bus type (and others) do this?  Why 
+> doesn't it do what the driver says to do?
 
-The idea is to set them once and they should not be touched again until
-the driver (or device) goes away, so that would be the whole value at once
-(and one of the i2c-designware-platdrv patches actually sets multiple flags
-in one go).
+Well, the idea was that it might work for the existing drivers without the
+need to modify them (and they would have had to be modified had the driver's
+->prepare return value been required to be taken into account).
+
+It actually does work for them in general, although with some notable
+exceptions.
 
 Thanks,
 Rafael
