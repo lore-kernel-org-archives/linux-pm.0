@@ -1,110 +1,82 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [PATCH] PM: Convert timers to use timer_setup()
-Date: Tue, 17 Oct 2017 01:53:28 +0200
-Message-ID: <da183173-0b50-9363-3880-cbb64812ecdf@intel.com>
-References: <20171016232055.GA100369@beast>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH v2 5/8] timers: keep sleep length updated as needed
+Date: Tue, 17 Oct 2017 01:58:13 +0200
+Message-ID: <35931824.svOhBhJZiB@aspire.rjw.lan>
+References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com> <1554921.dz8jk4n8cL@aspire.rjw.lan> <33404efd-a8e0-eb0b-4df8-9e7aa5a66dde@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga05.intel.com ([192.55.52.43]:16080 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932519AbdJPXxc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Oct 2017 19:53:32 -0400
-In-Reply-To: <20171016232055.GA100369@beast>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <33404efd-a8e0-eb0b-4df8-9e7aa5a66dde@linux.intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Cc: Aubrey Li <aubrey.li@intel.com>, tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kees Cook <keescook@chromium.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 10/17/2017 1:20 AM, Kees Cook wrote:
-> In preparation for unconditionally passing the struct timer_list pointer to
-> all timer callbacks, switch to using the new timer_setup() and from_timer()
-> to pass the timer pointer explicitly. Removes test of .data field, since
-> that will be going away.
->
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Len Brown <len.brown@intel.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+On Monday, October 16, 2017 8:46:41 AM CEST Li, Aubrey wrote:
+> On 2017/10/14 8:56, Rafael J. Wysocki wrote:
+> > On Saturday, September 30, 2017 9:20:31 AM CEST Aubrey Li wrote:
+> >> sleep length indicates how long we'll be idle. Currently, it's updated
+> >> only when tick nohz enters. These patch series make a new requirement
+> >> with tick, so we should keep sleep length updated as needed
+> > 
+> > So what exactly would be the problem with leaving things as they are?
+> 
+> Previously ts->sleep_length is only updated when tick is stopped.
+> 
+> As follows, in
+> 
+> __tick_nohz_idle_enter()
+> {
+> 	if (can_stop_idle_tick() /* return true */) {
+> 		tick_nohz_stop_sched_tick()
+> 			|
+> 			|-----> update sleep_length
+> 	}
+> }
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Which is logical, because the tick will get in the way if we don't stop it,
+won't it?
 
-> ---
->   drivers/base/power/runtime.c |  7 +++----
->   drivers/base/power/wakeup.c  | 11 +++++------
->   2 files changed, 8 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 7bcf80fa9ada..1cea431c0adf 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -894,9 +894,9 @@ static void pm_runtime_work(struct work_struct *work)
->    *
->    * Check if the time is right and queue a suspend request.
->    */
-> -static void pm_suspend_timer_fn(unsigned long data)
-> +static void pm_suspend_timer_fn(struct timer_list *t)
->   {
-> -	struct device *dev = (struct device *)data;
-> +	struct device *dev = from_timer(dev, t, power.suspend_timer);
->   	unsigned long flags;
->   	unsigned long expires;
->   
-> @@ -1499,8 +1499,7 @@ void pm_runtime_init(struct device *dev)
->   	INIT_WORK(&dev->power.work, pm_runtime_work);
->   
->   	dev->power.timer_expires = 0;
-> -	setup_timer(&dev->power.suspend_timer, pm_suspend_timer_fn,
-> -			(unsigned long)dev);
-> +	timer_setup(&dev->power.suspend_timer, pm_suspend_timer_fn, 0);
->   
->   	init_waitqueue_head(&dev->power.wait_queue);
->   }
-> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-> index cdd6f256da59..680ee1d36ac9 100644
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -54,7 +54,7 @@ static unsigned int saved_count;
->   
->   static DEFINE_SPINLOCK(events_lock);
->   
-> -static void pm_wakeup_timer_fn(unsigned long data);
-> +static void pm_wakeup_timer_fn(struct timer_list *t);
->   
->   static LIST_HEAD(wakeup_sources);
->   
-> @@ -176,7 +176,7 @@ void wakeup_source_add(struct wakeup_source *ws)
->   		return;
->   
->   	spin_lock_init(&ws->lock);
-> -	setup_timer(&ws->timer, pm_wakeup_timer_fn, (unsigned long)ws);
-> +	timer_setup(&ws->timer, pm_wakeup_timer_fn, 0);
->   	ws->active = false;
->   	ws->last_time = ktime_get();
->   
-> @@ -481,8 +481,7 @@ static bool wakeup_source_not_registered(struct wakeup_source *ws)
->   	 * Use timer struct to check if the given source is initialized
->   	 * by wakeup_source_add.
->   	 */
-> -	return ws->timer.function != pm_wakeup_timer_fn ||
-> -		   ws->timer.data != (unsigned long)ws;
-> +	return ws->timer.function != (TIMER_FUNC_TYPE)pm_wakeup_timer_fn;
->   }
->   
->   /*
-> @@ -724,9 +723,9 @@ EXPORT_SYMBOL_GPL(pm_relax);
->    * in @data if it is currently active and its timer has not been canceled and
->    * the expiration time of the timer is not in future.
->    */
-> -static void pm_wakeup_timer_fn(unsigned long data)
-> +static void pm_wakeup_timer_fn(struct timer_list *t)
->   {
-> -	struct wakeup_source *ws = (struct wakeup_source *)data;
-> +	struct wakeup_source *ws = from_timer(ws, t, timer);
->   	unsigned long flags;
->   
->   	spin_lock_irqsave(&ws->lock, flags);
+> 
+> Now ts->sleep_length is required out of tick_nohz_idle_enter(), so we want
+> to update sleep_length every time we read it
+> 
+> If we leave it unchanged, the prediction could read a sleep_length long time
+> ago if the system keep ticking.
+
+Well, but does it make sense to estimate the sleep length without stopping
+the tick?
+
+> >> ---
+> >>  kernel/time/tick-sched.c | 3 +++
+> >>  1 file changed, 3 insertions(+)
+> >>
+> >> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> >> index d663fab..94fb9b8 100644
+> >> --- a/kernel/time/tick-sched.c
+> >> +++ b/kernel/time/tick-sched.c
+> >> @@ -1008,8 +1008,11 @@ void tick_nohz_irq_exit(void)
+> >>   */
+> >>  ktime_t tick_nohz_get_sleep_length(void)
+> >>  {
+> >> +	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
+> >>  	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+> >>  
+> >> +	ts->sleep_length = ktime_sub(dev->next_event, ktime_get());
+> >> +
+> >>  	return ts->sleep_length;
+> >>  }
+> >>  
+> >>
+> > 
+> > I probably wouldn't do it this way ...
+> > 
+> > 
+> 
+> May I know the detailed thoughts?
+
+That depends on the answer above. :-)
+
+Thanks,
+Rafael
