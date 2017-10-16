@@ -1,56 +1,56 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 07/10] [RFC] clk: renesas: cpg-mssr: Use GENPD_FLAG_ACTIVE_WAKEUP
-Date: Mon, 16 Oct 2017 15:55:13 +0200
-Message-ID: <1508162116-5043-8-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 03/10] soc: renesas: rcar-sysc: Keep wakeup sources active during system suspend
+Date: Mon, 16 Oct 2017 15:55:09 +0200
+Message-ID: <1508162116-5043-4-git-send-email-geert+renesas@glider.be>
 References: <1508162116-5043-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from michel.telenet-ops.be ([195.130.137.88]:59314 "EHLO
-        michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753030AbdJPNz2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Oct 2017 09:55:28 -0400
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <1508162116-5043-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-renesas-soc-owner@vger.kernel.org
 To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
 Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+List-Id: linux-pm@vger.kernel.org
 
-Set the newly introduced GENPD_FLAG_ACTIVE_WAKEUP, which allows to
-remove the driver's own "always true" callback.
+If an R-Car SYSC slave device is part of the CPG/MSTP or CPG/MSSR Clock
+Domain and to be used as a wakeup source, it must be kept active during
+system suspend.
+
+Currently this is handled in device-specific drivers by explicitly
+increasing the use count of the module clock when the device is
+configured as a wakeup source.  However, the proper way to prevent the
+device from being stopped is to inform this requirement to the genpd
+core.
+
+Hence provide an .active_wakeup() callback that always returns true.
+Note that this will only affect devices configured as wakeup sources.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-This must not be applied before "PM / Domain: Enable genpd users to
-specify default active wakeup behavior" has landed upstream, hence the
-"RFC".
----
- drivers/clk/renesas/renesas-cpg-mssr.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ drivers/soc/renesas/rcar-sysc.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/clk/renesas/renesas-cpg-mssr.c b/drivers/clk/renesas/renesas-cpg-mssr.c
-index de534896f596168c..99699b715d7cf2de 100644
---- a/drivers/clk/renesas/renesas-cpg-mssr.c
-+++ b/drivers/clk/renesas/renesas-cpg-mssr.c
-@@ -481,11 +481,6 @@ void cpg_mssr_detach_dev(struct generic_pm_domain *unused, struct device *dev)
- 		pm_clk_destroy(dev);
- }
+diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
+index c8406e81640f6560..beb8b483a62abaca 100644
+--- a/drivers/soc/renesas/rcar-sysc.c
++++ b/drivers/soc/renesas/rcar-sysc.c
+@@ -194,6 +194,11 @@ static int rcar_sysc_pd_power_on(struct generic_pm_domain *genpd)
  
--static bool cpg_mssr_active_wakeup(struct device *dev)
--{
--	return true;
--}
--
- static int __init cpg_mssr_add_clk_domain(struct device *dev,
- 					  const unsigned int *core_pm_clks,
- 					  unsigned int num_core_pm_clks)
-@@ -505,8 +500,7 @@ static int __init cpg_mssr_add_clk_domain(struct device *dev,
+ static bool has_cpg_mstp;
  
- 	genpd = &pd->genpd;
- 	genpd->name = np->name;
--	genpd->flags = GENPD_FLAG_PM_CLK;
--	genpd->dev_ops.active_wakeup = cpg_mssr_active_wakeup;
-+	genpd->flags = GENPD_FLAG_PM_CLK | GENPD_FLAG_ACTIVE_WAKEUP;
- 	genpd->attach_dev = cpg_mssr_attach_dev;
- 	genpd->detach_dev = cpg_mssr_detach_dev;
- 	pm_genpd_init(genpd, &pm_domain_always_on_gov, false);
++static bool rcar_sysc_pd_active_wakeup(struct device *dev)
++{
++	return true;
++}
++
+ static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
+ {
+ 	struct generic_pm_domain *genpd = &pd->genpd;
+@@ -225,6 +230,7 @@ static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
+ 	if (!(pd->flags & (PD_CPU | PD_SCU))) {
+ 		/* Enable Clock Domain for I/O devices */
+ 		genpd->flags |= GENPD_FLAG_PM_CLK;
++		genpd->dev_ops.active_wakeup = rcar_sysc_pd_active_wakeup;
+ 		if (has_cpg_mstp) {
+ 			genpd->attach_dev = cpg_mstp_attach_dev;
+ 			genpd->detach_dev = cpg_mstp_detach_dev;
 -- 
 2.7.4
