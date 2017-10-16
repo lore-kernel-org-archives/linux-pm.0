@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH 03/10] soc: renesas: rcar-sysc: Keep wakeup sources active during system suspend
-Date: Mon, 16 Oct 2017 15:55:09 +0200
-Message-ID: <1508162116-5043-4-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH 10/10] [RFC] sh_eth: Remove obsolete explicit clock handling for WoL
+Date: Mon, 16 Oct 2017 15:55:16 +0200
+Message-ID: <1508162116-5043-11-git-send-email-geert+renesas@glider.be>
 References: <1508162116-5043-1-git-send-email-geert+renesas@glider.be>
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <1508162116-5043-1-git-send-email-geert+renesas@glider.be>
@@ -10,47 +10,93 @@ To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.
 Cc: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-If an R-Car SYSC slave device is part of the CPG/MSTP or CPG/MSSR Clock
-Domain and to be used as a wakeup source, it must be kept active during
-system suspend.
+Currently, if Wake-on-LAN is enabled, the SH-ETH device's module clock
+is manually kept running during system suspend, to make sure the device
+stays active.
 
-Currently this is handled in device-specific drivers by explicitly
-increasing the use count of the module clock when the device is
-configured as a wakeup source.  However, the proper way to prevent the
-device from being stopped is to inform this requirement to the genpd
-core.
-
-Hence provide an .active_wakeup() callback that always returns true.
-Note that this will only affect devices configured as wakeup sources.
+Since "soc: renesas: rcar-sysc: Keep wakeup sources active during system
+suspend" and "clk: renesas: mstp: Keep wakeup sources active during
+system suspend", this workaround is no longer needed.  Hence remove all
+explicit clock handling to keep the device active.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/soc/renesas/rcar-sysc.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+This must not be applied before the dependency has landed upstream,
+hence the "RFC"!
+---
+ drivers/net/ethernet/renesas/sh_eth.c | 18 +++---------------
+ 1 file changed, 3 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
-index c8406e81640f6560..beb8b483a62abaca 100644
---- a/drivers/soc/renesas/rcar-sysc.c
-+++ b/drivers/soc/renesas/rcar-sysc.c
-@@ -194,6 +194,11 @@ static int rcar_sysc_pd_power_on(struct generic_pm_domain *genpd)
+diff --git a/drivers/net/ethernet/renesas/sh_eth.c b/drivers/net/ethernet/renesas/sh_eth.c
+index d2e88a30f57bb4c5..8ea4d0cc325baeca 100644
+--- a/drivers/net/ethernet/renesas/sh_eth.c
++++ b/drivers/net/ethernet/renesas/sh_eth.c
+@@ -40,7 +40,6 @@
+ #include <linux/slab.h>
+ #include <linux/ethtool.h>
+ #include <linux/if_vlan.h>
+-#include <linux/clk.h>
+ #include <linux/sh_eth.h>
+ #include <linux/of_mdio.h>
  
- static bool has_cpg_mstp;
+@@ -2293,7 +2292,7 @@ static void sh_eth_get_wol(struct net_device *ndev, struct ethtool_wolinfo *wol)
+ 	wol->supported = 0;
+ 	wol->wolopts = 0;
  
-+static bool rcar_sysc_pd_active_wakeup(struct device *dev)
-+{
-+	return true;
-+}
-+
- static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
+-	if (mdp->cd->magic && mdp->clk) {
++	if (mdp->cd->magic) {
+ 		wol->supported = WAKE_MAGIC;
+ 		wol->wolopts = mdp->wol_enabled ? WAKE_MAGIC : 0;
+ 	}
+@@ -2303,7 +2302,7 @@ static int sh_eth_set_wol(struct net_device *ndev, struct ethtool_wolinfo *wol)
  {
- 	struct generic_pm_domain *genpd = &pd->genpd;
-@@ -225,6 +230,7 @@ static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
- 	if (!(pd->flags & (PD_CPU | PD_SCU))) {
- 		/* Enable Clock Domain for I/O devices */
- 		genpd->flags |= GENPD_FLAG_PM_CLK;
-+		genpd->dev_ops.active_wakeup = rcar_sysc_pd_active_wakeup;
- 		if (has_cpg_mstp) {
- 			genpd->attach_dev = cpg_mstp_attach_dev;
- 			genpd->detach_dev = cpg_mstp_detach_dev;
+ 	struct sh_eth_private *mdp = netdev_priv(ndev);
+ 
+-	if (!mdp->cd->magic || !mdp->clk || wol->wolopts & ~WAKE_MAGIC)
++	if (!mdp->cd->magic || wol->wolopts & ~WAKE_MAGIC)
+ 		return -EOPNOTSUPP;
+ 
+ 	mdp->wol_enabled = !!(wol->wolopts & WAKE_MAGIC);
+@@ -3144,11 +3143,6 @@ static int sh_eth_drv_probe(struct platform_device *pdev)
+ 		goto out_release;
+ 	}
+ 
+-	/* Get clock, if not found that's OK but Wake-On-Lan is unavailable */
+-	mdp->clk = devm_clk_get(&pdev->dev, NULL);
+-	if (IS_ERR(mdp->clk))
+-		mdp->clk = NULL;
+-
+ 	ndev->base_addr = res->start;
+ 
+ 	spin_lock_init(&mdp->lock);
+@@ -3251,7 +3245,7 @@ static int sh_eth_drv_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto out_napi_del;
+ 
+-	if (mdp->cd->magic && mdp->clk)
++	if (mdp->cd->magic)
+ 		device_set_wakeup_capable(&pdev->dev, 1);
+ 
+ 	/* print device information */
+@@ -3305,9 +3299,6 @@ static int sh_eth_wol_setup(struct net_device *ndev)
+ 	/* Enable MagicPacket */
+ 	sh_eth_modify(ndev, ECMR, ECMR_MPDE, ECMR_MPDE);
+ 
+-	/* Increased clock usage so device won't be suspended */
+-	clk_enable(mdp->clk);
+-
+ 	return enable_irq_wake(ndev->irq);
+ }
+ 
+@@ -3333,9 +3324,6 @@ static int sh_eth_wol_restore(struct net_device *ndev)
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	/* Restore clock usage count */
+-	clk_disable(mdp->clk);
+-
+ 	return disable_irq_wake(ndev->irq);
+ }
+ 
 -- 
 2.7.4
