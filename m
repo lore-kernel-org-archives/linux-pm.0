@@ -1,90 +1,45 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 08/12] ACPI / PM: Take SMART_SUSPEND driver flag into account
-Date: Mon, 16 Oct 2017 03:30:06 +0200
-Message-ID: <27437209.Q3JHjOQKcL@aspire.rjw.lan>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan>
+From: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Subject: Re: [RFC PATCH v2 1/8] cpuidle: menu: extract prediction
+ functionality
+Date: Mon, 16 Oct 2017 10:46:20 +0800
+Message-ID: <b9dc3eea-cd55-e2a5-71b7-f3c0a548e92b@linux.intel.com>
+References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com>
+ <1506756034-6340-2-git-send-email-aubrey.li@intel.com>
+ <1629755.KbDSmDPDTX@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:60873 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751734AbdJPBnE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 15 Oct 2017 21:43:04 -0400
-In-Reply-To: <3806130.B2KCK0tvef@aspire.rjw.lan>
+Received: from mga06.intel.com ([134.134.136.31]:30219 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751825AbdJPCqX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 15 Oct 2017 22:46:23 -0400
+In-Reply-To: <1629755.KbDSmDPDTX@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aubrey Li <aubrey.li@intel.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 2017/10/14 8:26, Rafael J. Wysocki wrote:
+> On Saturday, September 30, 2017 9:20:27 AM CEST Aubrey Li wrote:
+>> There are several factors in the menu governor to predict the next
+>> idle interval:
+>> - the next timer
+>> - the recent idle interval history
+>> - the corrected idle interval pattern
+>> These factors are common enough to be extracted to be one function.
+>>
+>> Signed-off-by: Aubrey Li <aubrey.li@linux.intel.com>
+> 
+> This patch alone would break things AFAICS, because it removes code from
+> menu_select() without a replacement (and menu_predict() is never called
+> just yet).
+> 
+> Please always do your best to ensure that things will work after *every*
+> patch in a series.
 
-Make the ACPI PM domain take DPM_FLAG_SMART_SUSPEND into account in
-its system suspend callbacks.
+okay, I'll correct this in the next version.
 
-[Note that the pm_runtime_suspended() check in acpi_dev_needs_resume()
-is an optimization, because if is not passed, all of the subsequent
-checks may be skipped and some of them are much more overhead in
-general.]
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/device_pm.c |   21 +++++++++++++--------
- 1 file changed, 13 insertions(+), 8 deletions(-)
-
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -936,7 +936,8 @@ static bool acpi_dev_needs_resume(struct
- 	u32 sys_target = acpi_target_system_state();
- 	int ret, state;
- 
--	if (device_may_wakeup(dev) != !!adev->wakeup.prepare_count)
-+	if (!pm_runtime_suspended(dev) || !adev ||
-+	    device_may_wakeup(dev) != !!adev->wakeup.prepare_count)
- 		return true;
- 
- 	if (sys_target == ACPI_STATE_S0)
-@@ -968,9 +969,6 @@ int acpi_subsys_prepare(struct device *d
- 	if (!ret && dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_PREPARE))
- 		return 0;
- 
--	if (!adev || !pm_runtime_suspended(dev))
--		return 0;
--
- 	return !acpi_dev_needs_resume(dev, adev);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
-@@ -996,12 +994,17 @@ EXPORT_SYMBOL_GPL(acpi_subsys_complete);
-  * acpi_subsys_suspend - Run the device driver's suspend callback.
-  * @dev: Device to handle.
-  *
-- * Follow PCI and resume devices suspended at run time before running their
-- * system suspend callbacks.
-+ * Follow PCI and resume devices from runtime suspend before running their
-+ * system suspend callbacks, unless the driver can cope with runtime-suspended
-+ * devices during system suspend and there are no ACPI-specific reasons for
-+ * resuming them.
-  */
- int acpi_subsys_suspend(struct device *dev)
- {
--	pm_runtime_resume(dev);
-+	if (!dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) ||
-+	    acpi_dev_needs_resume(dev, ACPI_COMPANION(dev)))
-+		pm_runtime_resume(dev);
-+
- 	return pm_generic_suspend(dev);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_suspend);
-@@ -1047,7 +1050,9 @@ int acpi_subsys_freeze(struct device *de
- 	 * runtime-suspended devices should not be touched during freeze/thaw
- 	 * transitions.
- 	 */
--	pm_runtime_resume(dev);
-+	if (!dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND))
-+		pm_runtime_resume(dev);
-+
- 	return pm_generic_freeze(dev);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_freeze);
+Thanks,
+-Aubrey
