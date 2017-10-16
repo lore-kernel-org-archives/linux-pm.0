@@ -1,37 +1,51 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 01/12] PM / core: Add NEVER_SKIP and SMART_PREPARE driver
- flags
-Date: Mon, 16 Oct 2017 16:16:15 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1710161612080.1377-100000@iolanthe.rowland.org>
-References: <1998650.Q52BuGQTI4@aspire.rjw.lan>
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Subject: Re: [PATCH 09/10] [RFC] ravb: Remove obsolete explicit clock handling
+ for WoL
+Date: Mon, 16 Oct 2017 23:17:17 +0300
+Message-ID: <b3825de9-16e8-94a4-0b23-bf0caf87a343@cogentembedded.com>
+References: <1508162116-5043-1-git-send-email-geert+renesas@glider.be>
+ <1508162116-5043-10-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <1998650.Q52BuGQTI4@aspire.rjw.lan>
-Sender: linux-i2c-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1508162116-5043-10-git-send-email-geert+renesas@glider.be>
+Content-Language: en-MW
+Sender: linux-clk-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund+renesas@ragnatech.se>, linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 16 Oct 2017, Rafael J. Wysocki wrote:
+On 10/16/2017 04:55 PM, Geert Uytterhoeven wrote:
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Currently, if Wake-on-LAN is enabled, the EtherAVB device's module clock
+> is manually kept running during system suspend, to make sure the device
+> stays active.
 > 
-> The motivation for this change is to provide a way to work around
-> a problem with the direct-complete mechanism used for avoiding
-> system suspend/resume handling for devices in runtime suspend.
+> Since "soc: renesas: rcar-sysc: Keep wakeup sources active during system
+> suspend", this workaround is no longer needed.  Hence remove all
+> explicit clock handling to keep the device active.
 > 
-> The problem is that some middle layer code (the PCI bus type and
-> the ACPI PM domain in particular) returns positive values from its
-> system suspend ->prepare callbacks regardless of whether the driver's
-> ->prepare returns a positive value or 0, which effectively prevents
-> drivers from being able to control the direct-complete feature.
-> Some drivers need that control, however, and the PCI bus type has
-> grown its own flag to deal with this issue, but since it is not
-> limited to PCI, it is better to address it by adding driver flags at
-> the core level.
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+[...]
 
-I'm curious: Why does the PCI bus type (and others) do this?  Why 
-doesn't it do what the driver says to do?
+Reviewed-by: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 
-Alan Stern
+> diff --git a/drivers/net/ethernet/renesas/ravb_main.c b/drivers/net/ethernet/renesas/ravb_main.c
+> index fdf30bfa403bf416..11ffccca11d56df5 100644
+> --- a/drivers/net/ethernet/renesas/ravb_main.c
+> +++ b/drivers/net/ethernet/renesas/ravb_main.c
+[...]
+> @@ -2289,8 +2283,6 @@ static int __maybe_unused ravb_resume(struct device *dev)
+>   		 *       this clock dance should be removed.
+>   		 */
+>   		clk_disable(priv->clk);
+> -		clk_disable(priv->clk);
+> -		clk_enable(priv->clk);
+>   		clk_enable(priv->clk);
+
+    I thought the entire clock dance could be removed now? Not yet?
+
+[...]
+
+MBR, Sergei
