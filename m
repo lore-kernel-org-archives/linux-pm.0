@@ -1,15 +1,15 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 3/5] clk: renesas: div6: Restore clock state during resume
-Date: Mon, 16 Oct 2017 10:36:52 +0200
-Message-ID: <1508143014-11795-4-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v3 1/5] clk: renesas: cpg-mssr: Restore module clocks during resume
+Date: Mon, 16 Oct 2017 10:36:50 +0200
+Message-ID: <1508143014-11795-2-git-send-email-geert+renesas@glider.be>
 References: <1508143014-11795-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from baptiste.telenet-ops.be ([195.130.132.51]:36008 "EHLO
+Received: from baptiste.telenet-ops.be ([195.130.132.51]:36034 "EHLO
         baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750914AbdJPJIu (ORCPT
+        with ESMTP id S1751743AbdJPJIu (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Oct 2017 05:08:50 -0400
 In-Reply-To: <1508143014-11795-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-pm-owner@vger.kernel.org
@@ -17,16 +17,33 @@ List-Id: linux-pm@vger.kernel.org
 To: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>
 Cc: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, linux-renesas-soc@vger.kernel.org, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-On R-Car Gen3 systems, PSCI system suspend powers down the SoC, losing
-clock configuration.  Register an (optional) notifier to restore the
-DIV6 clock state during system resume.
+During PSCI system suspend, R-Car Gen3 SoCs are powered down, and their
+clock register state is lost.  Note that as the boot loader skips most
+initialization after system resume, clock register state differs from
+the state encountered during normal system boot, too.
 
-As DIV6 clocks can be picky w.r.t. modifying multiple register fields at
-once, restore is not implemented by blindly restoring the register
-value, but by using the existing cpg_div6_clock_{en,dis}able() helpers.
+Hence after s2ram, some operations may fail because module clocks are
+disabled, while drivers expect them to be still enabled.  E.g. EtherAVB
+fails when Wake-on-LAN has been enabled using "ethtool -s eth0 wol g":
 
-Note that this does not yet support DIV6 clocks with multiple parents,
-which do not exist on R-Car Gen3 SoCs.
+    ravb e6800000.ethernet eth0: failed to switch device to config mode
+    ravb e6800000.ethernet eth0: device will be stopped after h/w processes are done.
+    ravb e6800000.ethernet eth0: failed to switch device to config
+    PM: Device e6800000.ethernet failed to resume: error -110
+
+In addition, some module clocks that were disabled by
+clk_disable_unused() may have been re-enabled, wasting power.
+
+To fix this, restore all bits of the SMSTPCR registers that represent
+clocks under control of Linux.
+
+Notes:
+  - While this fixes EtherAVB operation after resume from s2ram,
+    EtherAVB cannot be used as an actual wake-up source from s2ram, only
+    from s2idle, due to PSCI limitations,
+  - To avoid overhead on platforms not needing it, the suspend/resume
+    code has a build time dependency on sleep and PSCI support, and a
+    runtime dependency on PSCI.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Tested-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
@@ -34,138 +51,164 @@ Tested-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 v3:
   - Drop RFC state,
   - Add Tested-by,
+  - Add build and runtime dependencies on PM_SLEEP and PSCI,
 
 v2:
-  - New.
+  - Add Tested-by, Reviewed-by,
+  - Mark cpg_mssr_resume_noirq __maybe_unused to kill warning if PM=n,
+  - Move shadow register updates inside the RMW spinlock to protect
+    against concurrent updates of multiple MSTP clocks in the same bank,
+    just like for the actual registers,
+  - Add more comments,
+  - Save registers in suspend_noirq instead of constantly updating
+    shadow registers
+  - Let smstpcr_saved[].mask represent all clocks under our control, not
+    just the ones we ever changed.  As clk_disable_unused() doesn't
+    touch clocks that are not enabled, such clocks were not marked for
+    restore, and thus may stay enabled after resume (resume state is
+    different from boot state, as the boot loader disables some clocks
+    during normal boot),
+  - Drop Tested-by, Reviewed-by, as the code has changed substantially.
 ---
- drivers/clk/renesas/clk-div6.c         | 38 ++++++++++++++++++++++++++++++++--
- drivers/clk/renesas/clk-div6.h         |  3 ++-
- drivers/clk/renesas/renesas-cpg-mssr.c |  3 ++-
- 3 files changed, 40 insertions(+), 4 deletions(-)
+ drivers/clk/renesas/renesas-cpg-mssr.c | 84 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 84 insertions(+)
 
-diff --git a/drivers/clk/renesas/clk-div6.c b/drivers/clk/renesas/clk-div6.c
-index 3e0040c0ac87a14b..151336d2ba59e689 100644
---- a/drivers/clk/renesas/clk-div6.c
-+++ b/drivers/clk/renesas/clk-div6.c
-@@ -14,8 +14,10 @@
- #include <linux/init.h>
- #include <linux/io.h>
- #include <linux/kernel.h>
-+#include <linux/notifier.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
-+#include <linux/pm.h>
- #include <linux/slab.h>
- 
- #include "clk-div6.h"
-@@ -32,6 +34,7 @@
-  * @src_shift: Shift to access the register bits to select the parent clock
-  * @src_width: Number of register bits to select the parent clock (may be 0)
-  * @parents: Array to map from valid parent clocks indices to hardware indices
-+ * @nb: Notifier block to save/restore clock state for system resume
-  */
- struct div6_clock {
- 	struct clk_hw hw;
-@@ -40,6 +43,7 @@ struct div6_clock {
- 	u32 src_shift;
- 	u32 src_width;
- 	u8 *parents;
-+	struct notifier_block nb;
- };
- 
- #define to_div6_clock(_hw) container_of(_hw, struct div6_clock, hw)
-@@ -176,6 +180,29 @@ static const struct clk_ops cpg_div6_clock_ops = {
- 	.set_rate = cpg_div6_clock_set_rate,
- };
- 
-+static int cpg_div6_clock_notifier_call(struct notifier_block *nb,
-+					unsigned long action, void *data)
-+{
-+	struct div6_clock *clock = container_of(nb, struct div6_clock, nb);
-+
-+	switch (action) {
-+	case PM_EVENT_RESUME:
-+		/*
-+		 * TODO: This does not yet support DIV6 clocks with multiple
-+		 * parents, as the parent selection bits are not restored.
-+		 * Fortunately so far such DIV6 clocks are found only on
-+		 * R/SH-Mobile SoCs, while the resume functionality is only
-+		 * needed on R-Car Gen3.
-+		 */
-+		if (__clk_get_enable_count(clock->hw.clk))
-+			cpg_div6_clock_enable(&clock->hw);
-+		else
-+			cpg_div6_clock_disable(&clock->hw);
-+		return NOTIFY_OK;
-+	}
-+
-+	return NOTIFY_DONE;
-+}
- 
- /**
-  * cpg_div6_register - Register a DIV6 clock
-@@ -183,11 +210,13 @@ static const struct clk_ops cpg_div6_clock_ops = {
-  * @num_parents: Number of parent clocks of the DIV6 clock (1, 4, or 8)
-  * @parent_names: Array containing the names of the parent clocks
-  * @reg: Mapped register used to control the DIV6 clock
-+ * @notifiers: Optional notifier chain to save/restore state for system resume
-  */
- struct clk * __init cpg_div6_register(const char *name,
- 				      unsigned int num_parents,
- 				      const char **parent_names,
--				      void __iomem *reg)
-+				      void __iomem *reg,
-+				      struct raw_notifier_head *notifiers)
- {
- 	unsigned int valid_parents;
- 	struct clk_init_data init;
-@@ -258,6 +287,11 @@ struct clk * __init cpg_div6_register(const char *name,
- 	if (IS_ERR(clk))
- 		goto free_parents;
- 
-+	if (notifiers) {
-+		clock->nb.notifier_call = cpg_div6_clock_notifier_call;
-+		raw_notifier_chain_register(notifiers, &clock->nb);
-+	}
-+
- 	return clk;
- 
- free_parents:
-@@ -301,7 +335,7 @@ static void __init cpg_div6_clock_init(struct device_node *np)
- 	for (i = 0; i < num_parents; i++)
- 		parent_names[i] = of_clk_get_parent_name(np, i);
- 
--	clk = cpg_div6_register(clk_name, num_parents, parent_names, reg);
-+	clk = cpg_div6_register(clk_name, num_parents, parent_names, reg, NULL);
- 	if (IS_ERR(clk)) {
- 		pr_err("%s: failed to register %s DIV6 clock (%ld)\n",
- 		       __func__, np->name, PTR_ERR(clk));
-diff --git a/drivers/clk/renesas/clk-div6.h b/drivers/clk/renesas/clk-div6.h
-index 567b31d2bfa5269c..da4807299dda735b 100644
---- a/drivers/clk/renesas/clk-div6.h
-+++ b/drivers/clk/renesas/clk-div6.h
-@@ -2,6 +2,7 @@
- #define __RENESAS_CLK_DIV6_H__
- 
- struct clk *cpg_div6_register(const char *name, unsigned int num_parents,
--			      const char **parent_names, void __iomem *reg);
-+			      const char **parent_names, void __iomem *reg,
-+			      struct raw_notifier_head *notifiers);
- 
- #endif
 diff --git a/drivers/clk/renesas/renesas-cpg-mssr.c b/drivers/clk/renesas/renesas-cpg-mssr.c
-index 485dce00a562d919..e3d03ffea4bc2fd6 100644
+index 1779b0cc7a2abe9d..15fc8679d3426f3e 100644
 --- a/drivers/clk/renesas/renesas-cpg-mssr.c
 +++ b/drivers/clk/renesas/renesas-cpg-mssr.c
-@@ -303,7 +303,8 @@ static void __init cpg_mssr_register_core_clk(const struct cpg_core_clk *core,
+@@ -26,6 +26,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/pm_clock.h>
+ #include <linux/pm_domain.h>
++#include <linux/psci.h>
+ #include <linux/reset-controller.h>
+ #include <linux/slab.h>
  
- 		if (core->type == CLK_TYPE_DIV6P1) {
- 			clk = cpg_div6_register(core->name, 1, &parent_name,
--						priv->base + core->offset);
-+						priv->base + core->offset,
-+						&priv->notifiers);
- 		} else {
- 			clk = clk_register_fixed_factor(NULL, core->name,
- 							parent_name, 0,
+@@ -106,6 +107,8 @@ static const u16 srcr[] = {
+  * @num_core_clks: Number of Core Clocks in clks[]
+  * @num_mod_clks: Number of Module Clocks in clks[]
+  * @last_dt_core_clk: ID of the last Core Clock exported to DT
++ * @smstpcr_saved[].mask: Mask of SMSTPCR[] bits under our control
++ * @smstpcr_saved[].val: Saved values of SMSTPCR[]
+  */
+ struct cpg_mssr_priv {
+ #ifdef CONFIG_RESET_CONTROLLER
+@@ -119,6 +122,11 @@ struct cpg_mssr_priv {
+ 	unsigned int num_core_clks;
+ 	unsigned int num_mod_clks;
+ 	unsigned int last_dt_core_clk;
++
++	struct {
++		u32 mask;
++		u32 val;
++	} smstpcr_saved[ARRAY_SIZE(smstpcr)];
+ };
+ 
+ 
+@@ -382,6 +390,7 @@ static void __init cpg_mssr_register_mod_clk(const struct mssr_mod_clk *mod,
+ 
+ 	dev_dbg(dev, "Module clock %pC at %pCr Hz\n", clk, clk);
+ 	priv->clks[id] = clk;
++	priv->smstpcr_saved[clock->index / 32].mask |= BIT(clock->index % 32);
+ 	return;
+ 
+ fail:
+@@ -700,6 +709,79 @@ static void cpg_mssr_del_clk_provider(void *data)
+ 	of_clk_del_provider(data);
+ }
+ 
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_ARM_PSCI_FW)
++static int cpg_mssr_suspend_noirq(struct device *dev)
++{
++	struct cpg_mssr_priv *priv = dev_get_drvdata(dev);
++	unsigned int reg;
++
++	/* This is the best we can do to check for the presence of PSCI */
++	if (!psci_ops.cpu_suspend)
++		return 0;
++
++	/* Save module registers with bits under our control */
++	for (reg = 0; reg < ARRAY_SIZE(priv->smstpcr_saved); reg++) {
++		if (priv->smstpcr_saved[reg].mask)
++			priv->smstpcr_saved[reg].val =
++				readl(priv->base + SMSTPCR(reg));
++	}
++
++	return 0;
++}
++
++static int cpg_mssr_resume_noirq(struct device *dev)
++{
++	struct cpg_mssr_priv *priv = dev_get_drvdata(dev);
++	unsigned int reg, i;
++	u32 mask, oldval, newval;
++
++	/* This is the best we can do to check for the presence of PSCI */
++	if (!psci_ops.cpu_suspend)
++		return 0;
++
++	/* Restore module clocks */
++	for (reg = 0; reg < ARRAY_SIZE(priv->smstpcr_saved); reg++) {
++		mask = priv->smstpcr_saved[reg].mask;
++		if (!mask)
++			continue;
++
++		oldval = readl(priv->base + SMSTPCR(reg));
++		newval = oldval & ~mask;
++		newval |= priv->smstpcr_saved[reg].val & mask;
++		if (newval == oldval)
++			continue;
++
++		writel(newval, priv->base + SMSTPCR(reg));
++
++		/* Wait until enabled clocks are really enabled */
++		mask &= ~priv->smstpcr_saved[reg].val;
++		if (!mask)
++			continue;
++
++		for (i = 1000; i > 0; --i) {
++			oldval = readl(priv->base + MSTPSR(reg));
++			if (!(oldval & mask))
++				break;
++			cpu_relax();
++		}
++
++		if (!i)
++			dev_warn(dev, "Failed to enable SMSTP %p[0x%x]\n",
++				 priv->base + SMSTPCR(reg), oldval & mask);
++	}
++
++	return 0;
++}
++
++static const struct dev_pm_ops cpg_mssr_pm = {
++	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(cpg_mssr_suspend_noirq,
++				      cpg_mssr_resume_noirq)
++};
++#define DEV_PM_OPS	&cpg_mssr_pm
++#else
++#define DEV_PM_OPS	NULL
++#endif /* CONFIG_PM_SLEEP && CONFIG_ARM_PSCI_FW */
++
+ static int __init cpg_mssr_probe(struct platform_device *pdev)
+ {
+ 	struct device *dev = &pdev->dev;
+@@ -735,6 +817,7 @@ static int __init cpg_mssr_probe(struct platform_device *pdev)
+ 	if (!clks)
+ 		return -ENOMEM;
+ 
++	dev_set_drvdata(dev, priv);
+ 	priv->clks = clks;
+ 	priv->num_core_clks = info->num_total_core_clks;
+ 	priv->num_mod_clks = info->num_hw_mod_clks;
+@@ -775,6 +858,7 @@ static struct platform_driver cpg_mssr_driver = {
+ 	.driver		= {
+ 		.name	= "renesas-cpg-mssr",
+ 		.of_match_table = cpg_mssr_match,
++		.pm = DEV_PM_OPS,
+ 	},
+ };
+ 
 -- 
 2.7.4
