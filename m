@@ -1,96 +1,73 @@
-From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: Re: [RFC PATCH v2 0/8] Introduct cpu idle prediction functionality
-Date: Mon, 16 Oct 2017 15:44:41 +0800
-Message-ID: <c4eaedb9-904f-0b51-a6e3-3033a6808cf0@linux.intel.com>
-References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com>
- <3026355.QRuoy6eIZM@aspire.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / core: Fix kerneldoc comments of four functions
+Date: Mon, 16 Oct 2017 09:54:04 +0200
+Message-ID: <CAPDyKFoTnHrPwLmNpmffHKQRC5WxCzjvuE-gGN++ZM6Nuh_FPw@mail.gmail.com>
+References: <1805031.1a2Ur49QVy@aspire.rjw.lan> <4901589.sjI9o52FIP@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:25839 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750914AbdJPHoo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Oct 2017 03:44:44 -0400
-In-Reply-To: <3026355.QRuoy6eIZM@aspire.rjw.lan>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <4901589.sjI9o52FIP@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aubrey Li <aubrey.li@intel.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2017/10/14 9:14, Rafael J. Wysocki wrote:
-> On Saturday, September 30, 2017 9:20:26 AM CEST Aubrey Li wrote:
->> We found under some latency intensive workloads, short idle periods occurs
->> very common, then idle entry and exit path starts to dominate, so it's
->> important to optimize them. To determine the short idle pattern, we need
->> to figure out how long of the coming idle and the threshold of the short
->> idle interval.
->>
->> A cpu idle prediction functionality is introduced in this proposal to catch
->> the short idle pattern.
->>
->> Firstly, we check the IRQ timings subsystem, if there is an event
->> coming soon.
->> -- https://lwn.net/Articles/691297/
->>
->> Secondly, we check the idle statistics of scheduler, if it's likely we'll
->> go into a short idle.
->> -- https://patchwork.kernel.org/patch/2839221/
->>
->> Thirdly, we predict the next idle interval by using the prediction
->> fucntionality in the idle governor if it has.
->>
->> For the threshold of the short idle interval, we record the timestamps of
->> the idle entry, and multiply by a tunable parameter at here:
->> -- /proc/sys/kernel/fast_idle_ratio
->>
->> We use the output of the idle prediction to skip turning tick off if a
->> short idle is determined in this proposal. Reprogramming hardware timer
->> twice(off and on) is expensive for a very short idle. There are some
->> potential optimizations can be done according to the same indicator.
->>
->> I observed when system is idle, the idle predictor reports 20/s long idle
->> and ZERO fast idle on one CPU. And when the workload is running, the idle
->> predictor reports 72899/s fast idle and ZERO long idle on the same CPU.
->>
->> Aubrey Li (8):
->>   cpuidle: menu: extract prediction functionality
->>   cpuidle: record the overhead of idle entry
->>   cpuidle: add a new predict interface
->>   tick/nohz: keep tick on for a fast idle
->>   timers: keep sleep length updated as needed
->>   cpuidle: make fast idle threshold tunable
->>   cpuidle: introduce irq timing to make idle prediction
->>   cpuidle: introduce run queue average idle to make idle prediction
->>
->>  drivers/cpuidle/Kconfig          |   1 +
->>  drivers/cpuidle/cpuidle.c        | 109 +++++++++++++++++++++++++++++++++++++++
->>  drivers/cpuidle/governors/menu.c |  69 ++++++++++++++++---------
->>  include/linux/cpuidle.h          |  21 ++++++++
->>  kernel/sched/idle.c              |  14 ++++-
->>  kernel/sysctl.c                  |  12 +++++
->>  kernel/time/tick-sched.c         |   7 +++
->>  7 files changed, 209 insertions(+), 24 deletions(-)
->>
-> 
-> Overall, it looks like you could avoid stopping the tick every time the
-> predicted idle duration is not longer than the tick interval in the first
-> place.
-> > Why don't you do that?
+On 13 October 2017 at 15:25, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Fix the kerneldoc comments of __device_suspend_noirq(),
+> __device_suspend_late() and __device_suspend() where the function
+> names in kerneldoc don't match the actual names of the functions.
+>
+> Also fix the device_resume_noirq() kerneldoc comment which mentions
+> "early resume" instead of "noirq resume" incorrectly.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I didn't catch this.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Are you suggesting?
-
-if(!cpu_stat.fast_idle)
-	tick_nohz_idle_enter()
-
-Or you concern why the threshold can't simply be tick interval?
-
-For the first, can_stop_idle_tick() is a better place to skip tick-off IMHO.
-For the latter, if the threshold is close/equal to the tick, it's quite possible
-the next event is the tick and no other else event.
-
-Thanks,
--Aubrey
+> ---
+>  drivers/base/power/main.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
+>
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -528,7 +528,7 @@ static void dpm_watchdog_clear(struct dp
+>  /*------------------------- Resume routines -------------------------*/
+>
+>  /**
+> - * device_resume_noirq - Execute an "early resume" callback for given device.
+> + * device_resume_noirq - Execute a "noirq resume" callback for given device.
+>   * @dev: Device to handle.
+>   * @state: PM transition of the system being carried out.
+>   * @async: If true, the device is being resumed asynchronously.
+> @@ -1077,7 +1077,7 @@ static pm_message_t resume_event(pm_mess
+>  }
+>
+>  /**
+> - * device_suspend_noirq - Execute a "late suspend" callback for given device.
+> + * __device_suspend_noirq - Execute a "noirq suspend" callback for given device.
+>   * @dev: Device to handle.
+>   * @state: PM transition of the system being carried out.
+>   * @async: If true, the device is being suspended asynchronously.
+> @@ -1237,7 +1237,7 @@ int dpm_suspend_noirq(pm_message_t state
+>  }
+>
+>  /**
+> - * device_suspend_late - Execute a "late suspend" callback for given device.
+> + * __device_suspend_late - Execute a "late suspend" callback for given device.
+>   * @dev: Device to handle.
+>   * @state: PM transition of the system being carried out.
+>   * @async: If true, the device is being suspended asynchronously.
+> @@ -1439,7 +1439,7 @@ static void dpm_clear_suppliers_direct_c
+>  }
+>
+>  /**
+> - * device_suspend - Execute "suspend" callbacks for given device.
+> + * __device_suspend - Execute "suspend" callbacks for given device.
+>   * @dev: Device to handle.
+>   * @state: PM transition of the system being carried out.
+>   * @async: If true, the device is being suspended asynchronously.
+>
