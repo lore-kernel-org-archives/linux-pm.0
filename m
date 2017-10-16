@@ -1,40 +1,28 @@
-From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: Re: [RFC PATCH v2 4/8] tick/nohz: keep tick on for a fast idle
-Date: Mon, 16 Oct 2017 13:34:57 +0800
-Message-ID: <c64ed43d-8afe-7317-e31f-a7a5eef914d1@linux.intel.com>
-References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com>
- <1506756034-6340-5-git-send-email-aubrey.li@intel.com>
- <4523111.uMcC96MW3N@aspire.rjw.lan>
- <5beefd1a-2792-c371-3bb8-8ee2a6574020@linux.intel.com>
- <1508129104.8087.2.camel@gmx.de>
+From: Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH 01/12] PM / core: Add NEVER_SKIP and SMART_PREPARE driver
+ flags
+Date: Mon, 16 Oct 2017 07:34:52 +0200
+Message-ID: <20171016053452.GA11822@wunner.de>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan>
+ <1998650.Q52BuGQTI4@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1508129104.8087.2.camel@gmx.de>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <1998650.Q52BuGQTI4@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Mike Galbraith <efault@gmx.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aubrey Li <aubrey.li@intel.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 2017/10/16 12:45, Mike Galbraith wrote:
-> On Mon, 2017-10-16 at 11:26 +0800, Li, Aubrey wrote:
->>
->> I'll try to move quiet_vmstat() into the normal idle branch if this patch series
->> are reasonable. Is fast_idle a good indication for it?
-> 
-> see x86_tip 62cb1188ed86 sched/idle: Move quiet_vmstate() into the NOHZ code
+On Mon, Oct 16, 2017 at 03:29:02AM +0200, Rafael J. Wysocki wrote:
+> +	:c:func:`dev_pm_set_driver_flags` helper function.]  If the first of
+> +	tese flags is set, the PM core will not apply the direct-complete
+        ^
+	these
 
-It looks like this commit makes tick stop critical as it can be invoked in interrupt
-exit path?
+> +	proceudre described above to the given device and, consequenty, to any
+        ^
+        procedure
 
-->smp_apic_timer_interrupt
--->irq_exit
---->tick_nohz_irq_exit
----->__tick_nohz_idle_enter
------>tick_nohz_stop_sched_tick
------->quiet_vmstat
-
-Thanks,
--Aubrey
+Lukas
