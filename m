@@ -1,16 +1,16 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 06/12] PCI / PM: Take SMART_SUSPEND driver flag into account
-Date: Mon, 16 Oct 2017 03:29:47 +0200
-Message-ID: <12906785.qsTjxC3pk6@aspire.rjw.lan>
+Subject: [PATCH 07/12] ACPI / LPSS: Consolidate runtime PM and system sleep handling
+Date: Mon, 16 Oct 2017 03:29:55 +0200
+Message-ID: <3749856.UqA8Ev4sDu@aspire.rjw.lan>
 References: <3806130.B2KCK0tvef@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:41400 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46964 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751750AbdJPBnF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 15 Oct 2017 21:43:05 -0400
+        by vger.kernel.org with ESMTP id S1751742AbdJPBnE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 15 Oct 2017 21:43:04 -0400
 In-Reply-To: <3806130.B2KCK0tvef@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -19,170 +19,139 @@ Cc: Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>,
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Make the PCI bus type take DPM_FLAG_SMART_SUSPEND into account in its
-system suspend callbacks and make sure that all code that should not
-run in parallel with pci_pm_runtime_resume() is executed in the "late"
-phases of system suspend, freeze and poweroff transitions.
-
-[Note that the pm_runtime_suspended() check in pci_dev_keep_suspended()
-is an optimization, because if is not passed, all of the subsequent
-checks may be skipped and some of them are much more overhead in
-general.]
+Move the LPSS-specific code from acpi_lpss_runtime_suspend()
+and acpi_lpss_runtime_resume() into separate functions,
+acpi_lpss_suspend() and acpi_lpss_resume(), respectively, and
+make acpi_lpss_suspend_late() and acpi_lpss_resume_early() use
+them too in order to unify the runtime PM and system sleep
+handling in the LPSS driver.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
----
- Documentation/power/pci.txt |    6 ++++
- drivers/pci/pci-driver.c    |   56 ++++++++++++++++++++++++++++++--------------
- 2 files changed, 45 insertions(+), 17 deletions(-)
 
-Index: linux-pm/drivers/pci/pci-driver.c
+This is based on an RFC I posted some time ago
+(https://patchwork.kernel.org/patch/9998147/), which didn't
+receive any comments and it depends on a couple of ACPI device PM
+patches posted recently (https://patchwork.kernel.org/patch/10006457/
+in particular).
+
+It's included in this series, because the next patch won't work without it.
+
+---
+ drivers/acpi/acpi_lpss.c |   75 ++++++++++++++++++++---------------------------
+ 1 file changed, 33 insertions(+), 42 deletions(-)
+
+Index: linux-pm/drivers/acpi/acpi_lpss.c
 ===================================================================
---- linux-pm.orig/drivers/pci/pci-driver.c
-+++ linux-pm/drivers/pci/pci-driver.c
-@@ -727,18 +727,25 @@ static int pci_pm_suspend(struct device
+--- linux-pm.orig/drivers/acpi/acpi_lpss.c
++++ linux-pm/drivers/acpi/acpi_lpss.c
+@@ -716,40 +716,6 @@ static void acpi_lpss_dismiss(struct dev
+ 	acpi_dev_suspend(dev, false);
+ }
  
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
--		goto Fixup;
-+		return 0;
- 	}
+-#ifdef CONFIG_PM_SLEEP
+-static int acpi_lpss_suspend_late(struct device *dev)
+-{
+-	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+-	int ret;
+-
+-	ret = pm_generic_suspend_late(dev);
+-	if (ret)
+-		return ret;
+-
+-	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
+-		acpi_lpss_save_ctx(dev, pdata);
+-
+-	return acpi_dev_suspend(dev, device_may_wakeup(dev));
+-}
+-
+-static int acpi_lpss_resume_early(struct device *dev)
+-{
+-	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+-	int ret;
+-
+-	ret = acpi_dev_resume(dev);
+-	if (ret)
+-		return ret;
+-
+-	acpi_lpss_d3_to_d0_delay(pdata);
+-
+-	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
+-		acpi_lpss_restore_ctx(dev, pdata);
+-
+-	return pm_generic_resume_early(dev);
+-}
+-#endif /* CONFIG_PM_SLEEP */
+-
+ /* IOSF SB for LPSS island */
+ #define LPSS_IOSF_UNIT_LPIOEP		0xA0
+ #define LPSS_IOSF_UNIT_LPIO1		0xAB
+@@ -835,19 +801,15 @@ static void lpss_iosf_exit_d3_state(void
+ 	mutex_unlock(&lpss_iosf_mutex);
+ }
+ 
+-static int acpi_lpss_runtime_suspend(struct device *dev)
++static int acpi_lpss_suspend(struct device *dev, bool wakeup)
+ {
+ 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+ 	int ret;
+ 
+-	ret = pm_generic_runtime_suspend(dev);
+-	if (ret)
+-		return ret;
+-
+ 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
+ 		acpi_lpss_save_ctx(dev, pdata);
+ 
+-	ret = acpi_dev_suspend(dev, true);
++	 ret = acpi_dev_suspend(dev, wakeup);
  
  	/*
--	 * PCI devices suspended at run time need to be resumed at this point,
--	 * because in general it is necessary to reconfigure them for system
--	 * suspend.  Namely, if the device is supposed to wake up the system
--	 * from the sleep state, we may need to reconfigure it for this purpose.
--	 * In turn, if the device is not supposed to wake up the system from the
--	 * sleep state, we'll have to prevent it from signaling wake-up.
-+	 * PCI devices suspended at run time may need to be resumed at this
-+	 * point, because in general it may be necessary to reconfigure them for
-+	 * system suspend.  Namely, if the device is expected to wake up the
-+	 * system from the sleep state, it may have to be reconfigured for this
-+	 * purpose, or if the device is not expected to wake up the system from
-+	 * the sleep state, it should be prevented from signaling wakeup events
-+	 * going forward.
-+	 *
-+	 * Also if the driver of the device does not indicate that its system
-+	 * suspend callbacks can cope with runtime-suspended devices, it is
-+	 * better to resume the device from runtime suspend here.
- 	 */
--	pm_runtime_resume(dev);
-+	if (!dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) ||
-+	    !pci_dev_keep_suspended(pci_dev))
-+		pm_runtime_resume(dev);
- 
- 	pci_dev->state_saved = false;
- 	if (pm->suspend) {
-@@ -758,12 +765,16 @@ static int pci_pm_suspend(struct device
- 		}
- 	}
- 
-- Fixup:
--	pci_fixup_device(pci_fixup_suspend, pci_dev);
--
- 	return 0;
+ 	 * This call must be last in the sequence, otherwise PMC will return
+@@ -860,7 +822,7 @@ static int acpi_lpss_runtime_suspend(str
+ 	return ret;
  }
  
-+static int pci_pm_suspend_late(struct device *dev)
+-static int acpi_lpss_runtime_resume(struct device *dev)
++static int acpi_lpss_resume(struct device *dev)
+ {
+ 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
+ 	int ret;
+@@ -881,7 +843,36 @@ static int acpi_lpss_runtime_resume(stru
+ 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
+ 		acpi_lpss_restore_ctx(dev, pdata);
+ 
+-	return pm_generic_runtime_resume(dev);
++	return 0;
++}
++#ifdef CONFIG_PM_SLEEP
++static int acpi_lpss_suspend_late(struct device *dev)
 +{
-+	pci_fixup_device(pci_fixup_suspend, to_pci_dev(dev));
++	int ret = pm_generic_suspend_late(dev);
 +
-+	return pm_generic_suspend_late(dev);;
++	return ret ? ret : acpi_lpss_suspend(dev, device_may_wakeup(dev));
 +}
 +
- static int pci_pm_suspend_noirq(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
-@@ -872,6 +883,7 @@ static int pci_pm_resume(struct device *
- #else /* !CONFIG_SUSPEND */
- 
- #define pci_pm_suspend		NULL
-+#define pci_pm_suspend_late	NULL
- #define pci_pm_suspend_noirq	NULL
- #define pci_pm_resume		NULL
- #define pci_pm_resume_noirq	NULL
-@@ -906,7 +918,8 @@ static int pci_pm_freeze(struct device *
- 	 * devices should not be touched during freeze/thaw transitions,
- 	 * however.
- 	 */
--	pm_runtime_resume(dev);
-+	if (!dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND))
-+		pm_runtime_resume(dev);
- 
- 	pci_dev->state_saved = false;
- 	if (pm->freeze) {
-@@ -1004,11 +1017,13 @@ static int pci_pm_poweroff(struct device
- 
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
--		goto Fixup;
-+		return 0;
- 	}
- 
- 	/* The reason to do that is the same as in pci_pm_suspend(). */
--	pm_runtime_resume(dev);
-+	if (!dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) ||
-+	    !pci_dev_keep_suspended(pci_dev))
-+		pm_runtime_resume(dev);
- 
- 	pci_dev->state_saved = false;
- 	if (pm->poweroff) {
-@@ -1020,12 +1035,16 @@ static int pci_pm_poweroff(struct device
- 			return error;
- 	}
- 
-- Fixup:
--	pci_fixup_device(pci_fixup_suspend, pci_dev);
--
- 	return 0;
++static int acpi_lpss_resume_early(struct device *dev)
++{
++	int ret = acpi_lpss_resume(dev);
++
++	return ret ? ret : pm_generic_resume_early(dev);
++}
++#endif /* CONFIG_PM_SLEEP */
++
++static int acpi_lpss_runtime_suspend(struct device *dev)
++{
++	int ret = pm_generic_runtime_suspend(dev);
++
++	return ret ? ret : acpi_lpss_suspend(dev, true);
++}
++
++static int acpi_lpss_runtime_resume(struct device *dev)
++{
++	int ret = acpi_lpss_resume(dev);
++
++	return ret ? ret : pm_generic_runtime_resume(dev);
  }
+ #endif /* CONFIG_PM */
  
-+static int pci_pm_poweroff_late(struct device *dev)
-+{
-+	pci_fixup_device(pci_fixup_suspend, to_pci_dev(dev));
-+
-+	return pm_generic_poweroff_late(dev);
-+}
-+
- static int pci_pm_poweroff_noirq(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
-@@ -1124,6 +1143,7 @@ static int pci_pm_restore(struct device
- #define pci_pm_thaw		NULL
- #define pci_pm_thaw_noirq	NULL
- #define pci_pm_poweroff		NULL
-+#define pci_pm_poweroff_late	NULL
- #define pci_pm_poweroff_noirq	NULL
- #define pci_pm_restore		NULL
- #define pci_pm_restore_noirq	NULL
-@@ -1239,10 +1259,12 @@ static const struct dev_pm_ops pci_dev_p
- 	.prepare = pci_pm_prepare,
- 	.complete = pci_pm_complete,
- 	.suspend = pci_pm_suspend,
-+	.suspend_late = pci_pm_suspend_late,
- 	.resume = pci_pm_resume,
- 	.freeze = pci_pm_freeze,
- 	.thaw = pci_pm_thaw,
- 	.poweroff = pci_pm_poweroff,
-+	.poweroff_late = pci_pm_poweroff_late,
- 	.restore = pci_pm_restore,
- 	.suspend_noirq = pci_pm_suspend_noirq,
- 	.resume_noirq = pci_pm_resume_noirq,
-Index: linux-pm/Documentation/power/pci.txt
-===================================================================
---- linux-pm.orig/Documentation/power/pci.txt
-+++ linux-pm/Documentation/power/pci.txt
-@@ -980,6 +980,12 @@ positive value from pci_pm_prepare() if
- driver of the device returns a positive value.  That allows the driver to opt
- out from using the direct-complete mechanism dynamically.
- 
-+The DPM_FLAG_SMART_SUSPEND flag tells the PCI bus type that from the driver's
-+perspective the device can be safely left in runtime suspend during system
-+suspend.  That causes pci_pm_suspend(), pci_pm_freeze() and pci_pm_poweroff()
-+to skip resuming the device from runtime suspend unless there are PCI-specific
-+reasons for doing that.
-+
- 3.2. Device Runtime Power Management
- ------------------------------------
- In addition to providing device power management callbacks PCI device drivers
