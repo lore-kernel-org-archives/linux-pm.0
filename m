@@ -1,150 +1,79 @@
-From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: Re: [RFC PATCH v2 3/8] cpuidle: add a new predict interface
-Date: Mon, 16 Oct 2017 16:04:15 +0800
-Message-ID: <70eb3c82-a486-e1dd-05ce-d968b857e86b@linux.intel.com>
-References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com>
- <1506756034-6340-4-git-send-email-aubrey.li@intel.com>
- <2353480.vFnqZDvmsB@aspire.rjw.lan>
+From: Kevin Hilman <khilman@baylibre.com>
+Subject: Re: [PATCH V13 1/7] PM / Domains: Add support to select performance-state of domains
+Date: Mon, 16 Oct 2017 03:59:54 +0200
+Message-ID: <7hk1zvx36t.fsf@baylibre.com>
+References: <431a7a5803b4a552dfe2a71700e19b904c6d16dc.1507703370.git.viresh.kumar@linaro.org>
+        <990605fb7b17b75abe63c542a4be2e176152b9f6.1507800860.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga11.intel.com ([192.55.52.93]:56079 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750914AbdJPIER (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Oct 2017 04:04:17 -0400
-In-Reply-To: <2353480.vFnqZDvmsB@aspire.rjw.lan>
-Content-Language: en-US
+Received: from mail-wm0-f48.google.com ([74.125.82.48]:51743 "EHLO
+        mail-wm0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751376AbdJPIff (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Oct 2017 04:35:35 -0400
+Received: by mail-wm0-f48.google.com with SMTP id f4so669426wme.0
+        for <linux-pm@vger.kernel.org>; Mon, 16 Oct 2017 01:35:34 -0700 (PDT)
+In-Reply-To: <990605fb7b17b75abe63c542a4be2e176152b9f6.1507800860.git.viresh.kumar@linaro.org>
+        (Viresh Kumar's message of "Thu, 12 Oct 2017 15:07:23 +0530")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aubrey Li <aubrey.li@intel.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, ulf.hansson@linaro.org, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, robh+dt@kernel.org, lina.iyer@linaro.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Andy Gross <andy.gross@linaro.org>, David Brown <david.brown@linaro.org>
 
-On 2017/10/14 8:45, Rafael J. Wysocki wrote:
-> On Saturday, September 30, 2017 9:20:29 AM CEST Aubrey Li wrote:
->> For the governor has predict functionality, add a new predict
->> interface in cpuidle framework to call and use it.
-> 
-> Care to describe how it is intended to work?
-> 
-> Also this patch uses data structures introduced in the previous one
-> (and the previous one didn't use them), so maybe merge the two?
+Viresh Kumar <viresh.kumar@linaro.org> writes:
 
-okay, will refine in the next version.
+> Some platforms have the capability to configure the performance state of
+> PM domains. This patch enhances the genpd core to support such
+> platforms.
+>
+> The performance levels (within the genpd core) are identified by
+> positive integer values, a lower value represents lower performance
+> state.
+>
+> This patch adds a new genpd API, which is called by user drivers (like
+> OPP framework):
+>
+> - int dev_pm_genpd_set_performance_state(struct device *dev,
+> 					 unsigned int state);
+>
+>   This updates the performance state constraint of the device on its PM
+>   domain. On success, the genpd will have its performance state set to a
+>   value which is >= "state" passed to this routine. The genpd core calls
+>   the genpd->set_performance_state() callback, if implemented,
+>   else -ENODEV is returned to the caller.
+>
+> The PM domain drivers need to implement the following callback if they
+> want to support performance states.
+>
+> - int (*set_performance_state)(struct generic_pm_domain *genpd,
+> 			       unsigned int state);
+>
+>   This is called internally by the genpd core on several occasions. The
+>   genpd core passes the genpd pointer and the aggregate of the
+>   performance states of the devices supported by that genpd to this
+>   callback. This callback must update the performance state of the genpd
+>   (in a platform dependent way).
+>
+> The power domains can avoid supplying above callback, if they don't
+> support setting performance-states.
+>
+> Currently we aren't propagating performance state changes of a subdomain
+> to its masters as we don't have hardware that needs it right now. Over
+> that, the performance states of subdomain and its masters may not have
+> one-to-one mapping and would require additional information. We can get
+> back to this once we have hardware that needs it.
+>
+> Tested-by: Rajendra Nayak <rnayak@codeaurora.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-> 
->> ---
->>  drivers/cpuidle/cpuidle.c        | 34 ++++++++++++++++++++++++++++++++++
->>  drivers/cpuidle/governors/menu.c |  7 +++++++
->>  include/linux/cpuidle.h          |  3 +++
->>  kernel/sched/idle.c              |  1 +
->>  4 files changed, 45 insertions(+)
->>
->> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->> index 4066308..ef6f7dd 100644
->> --- a/drivers/cpuidle/cpuidle.c
->> +++ b/drivers/cpuidle/cpuidle.c
->> @@ -336,6 +336,40 @@ void cpuidle_entry_end(void)
->>  }
->>  
->>  /**
->> + * cpuidle_predict - predict whether the coming idle is a fast idle or not
->> + */
->> +void cpuidle_predict(void)
->> +{
->> +	struct cpuidle_device *dev = cpuidle_get_device();
->> +	unsigned int overhead_threshold;
->> +
->> +	if (!dev)
->> +		return;
->> +
->> +	overhead_threshold = dev->idle_stat.overhead;
->> +
->> +	if (cpuidle_curr_governor->predict) {
->> +		dev->idle_stat.predicted_us = cpuidle_curr_governor->predict();
->> +		/*
->> +		 * notify idle governor to avoid reduplicative
->> +		 * prediction computation
->> +		 */
-> 
-> This comment is hard to understand.
-> 
-> What does it mean, really?
-> 
+OK, I really like the OPP-related changes suggested by Ulf, and you've
+removed a lot of the complexity that made it a bit confusing to follow.
+It's definitley cleaned up and much easier to follow.
 
-predict() does a lot of computation. If it's called in cpuidle_predict(),
-we don't want it to be called in menu governor again. So here I use a flag to
-tell menu governor if predict computation is already done for the coming idle
-this time.
+Thanks for your persistence.  This is definitely a needed feature.
 
->> +		dev->idle_stat.predicted = true;
->> +		if (dev->idle_stat.predicted_us < overhead_threshold) {
->> +			/*
->> +			 * notify tick subsystem to keep ticking
->> +			 * for the coming idle
->> +			 */
->> +			dev->idle_stat.fast_idle = true;
->> +		} else
->> +			dev->idle_stat.fast_idle = false;
-> 
-> What about
-> 
-> 		dev->idle_stat.fast_idle = dev->idle_stat.predicted_us < overhead_threshold;
+I have some usecases in mind where the performance state might need to
+be selected based on OPP voltage, but that's now a change that can be
+added later when that feature is needed.
 
-Ack
-
-> 
-> Also why don't you use dev->idle_stat.overhead directly here?
-
-Yeah, I should merge a few patches, because dev->idle_stat.overhead is referenced many times,
-for irq timings, for scheduler idle statistics and for idle governor.
-
-> 
-> And what is the basic idea here?  Why do we compare the predicted
-> idle duration with the entry/exit overhead from the previous cycle
-> (if I understood this correctly, that is)?
-
-entry/exit overhead is an average here, and the variance should not be big.
-
-> 
->> +	} else {
->> +		dev->idle_stat.predicted = false;
->> +		dev->idle_stat.fast_idle = false;
->> +	}
->> +}
->> +
->> +/**
->>   * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
->>   */
->>  void cpuidle_install_idle_handler(void)
->> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
->> index 6bed197..90b2a10 100644
->> --- a/drivers/cpuidle/governors/menu.c
->> +++ b/drivers/cpuidle/governors/menu.c
->> @@ -344,6 +344,12 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
->>  	if (unlikely(latency_req == 0))
->>  		return 0;
->>  
->> +	/*don't predict again if idle framework already did it */
->> +	if (!dev->idle_stat.predicted)
->> +		menu_predict();
->> +	else
->> +		dev->idle_stat.predicted = false;
-> 
-> We provide the callback which is going to be used by the core if present,
-> so why would the core not use it after all?
-
-There is a case that in the loop
-
-while (!need_resched()) {
-	cpuidle_idle_call()
-}
-
-The CPU receives a timer interrupt and wake up and find nothing to be scheduled
-and back to call menu then mwait to sleep again.
-
-Under this case, cpuidle_predict() is not reached but the idle data for the 
-prediction needs to be updated.
-
-Thanks,
--Aubrey
+Reviewed-by: Kevin Hilman <khilman@baylibre.com>
