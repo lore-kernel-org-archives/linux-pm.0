@@ -1,101 +1,93 @@
 From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: Re: [RFC PATCH v2 2/8] cpuidle: record the overhead of idle entry
-Date: Mon, 16 Oct 2017 11:11:57 +0800
-Message-ID: <6f17f378-defc-c668-de00-250da5c41b87@linux.intel.com>
+Subject: Re: [RFC PATCH v2 4/8] tick/nohz: keep tick on for a fast idle
+Date: Mon, 16 Oct 2017 11:26:11 +0800
+Message-ID: <5beefd1a-2792-c371-3bb8-8ee2a6574020@linux.intel.com>
 References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com>
- <1506756034-6340-3-git-send-email-aubrey.li@intel.com>
- <2672521.fEEa1b19Vu@aspire.rjw.lan>
+ <1506756034-6340-5-git-send-email-aubrey.li@intel.com>
+ <4523111.uMcC96MW3N@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2672521.fEEa1b19Vu@aspire.rjw.lan>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga01.intel.com ([192.55.52.88]:38445 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751649AbdJPD0O (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 15 Oct 2017 23:26:14 -0400
+In-Reply-To: <4523111.uMcC96MW3N@aspire.rjw.lan>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aubrey Li <aubrey.li@intel.com>
 Cc: tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-On 2017/10/14 8:35, Rafael J. Wysocki wrote:
-> On Saturday, September 30, 2017 9:20:28 AM CEST Aubrey Li wrote:
->> Record the overhead of idle entry in micro-second
+On 2017/10/14 8:51, Rafael J. Wysocki wrote:
+> On Saturday, September 30, 2017 9:20:30 AM CEST Aubrey Li wrote:
+>> If the next idle is expected to be a fast idle, we should keep tick
+>> on before going into idle
 >>
+>> Signed-off-by: Aubrey Li <aubrey.li@linux.intel.com>
 > 
-> What is this needed for?
-
-We need to figure out how long of a idle is a short idle and recording
-the overhead is for this purpose. The short idle threshold is based
-on this overhead.
-
+> This also can be merged with the previous patch (and the [2/8]) IMO.
 > 
->> +void cpuidle_entry_end(void)
+
+okay, will merge in the next version.
+
+>> ---
+>>  drivers/cpuidle/cpuidle.c | 14 ++++++++++++++
+>>  include/linux/cpuidle.h   |  2 ++
+>>  kernel/time/tick-sched.c  |  4 ++++
+>>  3 files changed, 20 insertions(+)
+>>
+>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>> index ef6f7dd..6cb7e17 100644
+>> --- a/drivers/cpuidle/cpuidle.c
+>> +++ b/drivers/cpuidle/cpuidle.c
+>> @@ -370,6 +370,20 @@ void cpuidle_predict(void)
+>>  }
+>>  
+>>  /**
+>> + * cpuidle_fast_idle - predict whether or not the coming idle is a fast idle
+>> + * This function can be called in irq exit path, make it as soon as possible
+>> + */
+>> +bool cpuidle_fast_idle(void)
 >> +{
 >> +	struct cpuidle_device *dev = cpuidle_get_device();
->> +	u64 overhead;
->> +	s64 diff;
 >> +
->> +	if (dev) {
->> +		dev->idle_stat.entry_end = local_clock();
->> +		overhead = div_u64(dev->idle_stat.entry_end -
->> +				dev->idle_stat.entry_start, NSEC_PER_USEC);
-> 
-> Is the conversion really necessary?
-> 
-> If so, then why?
-
-We can choose nano-second and micro-second. Given that workload results
-in the short idle pattern, I think micro-second is good enough for the
-real workload.
-
-Another reason is that prediction from idle governor is micro-second, so
-I convert it for comparing purpose.
-> 
-> And if there is a good reason, what about using right shift to do
-> an approximate conversion to avoid the extra division here?
-
-Sure >> 10 works for me as I don't think here precision is a big deal.
-
-> 
->> +		diff = overhead - dev->idle_stat.overhead;
->> +		dev->idle_stat.overhead += diff >> 3;
-> 
-> Can you please explain what happens in the two lines above?
-
-Online average computing algorithm, stolen from update_avg() @ kernel/sched/core.c.
-> 
->> +		/*
->> +		 * limit overhead to 1us
->> +		 */
->> +		if (dev->idle_stat.overhead == 0)
->> +			dev->idle_stat.overhead = 1;
->> +	}
->> +}
+>> +	if (!dev)
+>> +		return false;
 >> +
->>  /**
->>   * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
->>   */
->> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
->> index fc1e5d7..cad9b71 100644
->> --- a/include/linux/cpuidle.h
->> +++ b/include/linux/cpuidle.h
->> @@ -72,6 +72,15 @@ struct cpuidle_device_kobj;
->>  struct cpuidle_state_kobj;
->>  struct cpuidle_driver_kobj;
+>> +	return dev->idle_stat.fast_idle;
+> 
+> return dev && dev->idle_stat.fast_idle;
+
+Thanks!
+
 >>  
->> +struct cpuidle_stat {
->> +	u64			entry_start;	/* nanosecond */
->> +	u64			entry_end;	/* nanosecond */
->> +	u64			overhead;	/* nanosecond */
->> +	unsigned int		predicted_us;	/* microsecond */
->> +	bool			predicted;	/* ever predicted? */
->> +	bool			fast_idle;	/* fast idle? */
+>> @@ -916,6 +917,9 @@ static bool can_stop_idle_tick(int cpu, struct tick_sched *ts)
+>>  			return false;
+>>  	}
+>>  
+>> +	if (cpuidle_fast_idle())
+>> +		return false;
+>> +
+>>  	return true;
 > 
-> Some of the fields here are never used in the code after this patch.
+> return !cpuidle_fast_idle();
+
+And thanks!
 > 
-> Also it would be good to add a comment describing the meaning of the
-> fields.
+>>  }
+>>  
+>>
 > 
-okay, will add in the next version.
+> And IMO there is quite a bit too much marketing in the "fast_idle" name,
+> as it seems all about avoiding to stop the tick if the predicted idle
+> duration is short enough.
+> 
+
+okay, and what's your suggestion? :)
+I'll try to move quiet_vmstat() into the normal idle branch if this patch series
+are reasonable. Is fast_idle a good indication for it?
 
 Thanks,
 -Aubrey
