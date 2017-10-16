@@ -1,58 +1,42 @@
-From: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Subject: Re: [RFC PATCH v2 6/8] cpuidle: make fast idle threshold tunable
-Date: Mon, 16 Oct 2017 14:00:45 +0800
-Message-ID: <d039059f-5ff4-780e-5865-8361315896c5@linux.intel.com>
+From: Mike Galbraith <efault@gmx.de>
+Subject: Re: [RFC PATCH v2 4/8] tick/nohz: keep tick on for a fast idle
+Date: Mon, 16 Oct 2017 08:25:35 +0200
+Message-ID: <1508135135.8087.17.camel@gmx.de>
 References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com>
- <1506756034-6340-7-git-send-email-aubrey.li@intel.com>
- <2242303.t20yq9Lc6j@aspire.rjw.lan>
+         <1506756034-6340-5-git-send-email-aubrey.li@intel.com>
+         <4523111.uMcC96MW3N@aspire.rjw.lan>
+         <5beefd1a-2792-c371-3bb8-8ee2a6574020@linux.intel.com>
+         <1508129104.8087.2.camel@gmx.de>
+         <c64ed43d-8afe-7317-e31f-a7a5eef914d1@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2242303.t20yq9Lc6j@aspire.rjw.lan>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aubrey Li <aubrey.li@intel.com>
-Cc: tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.gmx.net ([212.227.17.21]:64684 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751382AbdJPG0U (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 16 Oct 2017 02:26:20 -0400
+In-Reply-To: <c64ed43d-8afe-7317-e31f-a7a5eef914d1@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Li, Aubrey" <aubrey.li@linux.intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Aubrey Li <aubrey.li@intel.com>
+Cc: tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 2017/10/14 8:59, Rafael J. Wysocki wrote:
-> On Saturday, September 30, 2017 9:20:32 AM CEST Aubrey Li wrote:
->> Add a knob to make fast idle threshold tunable
->>
->> Signed-off-by: Aubrey Li <aubrey.li@linux.intel.com>
+On Mon, 2017-10-16 at 13:34 +0800, Li, Aubrey wrote:
+> On 2017/10/16 12:45, Mike Galbraith wrote:
+> > On Mon, 2017-10-16 at 11:26 +0800, Li, Aubrey wrote:
+> >>
+> >> I'll try to move quiet_vmstat() into the normal idle branch if this patch series
+> >> are reasonable. Is fast_idle a good indication for it?
+> > 
+> > see x86_tip 62cb1188ed86 sched/idle: Move quiet_vmstate() into the NOHZ code
 > 
-> I first of all am not sure about the need to add a tunable for this at all
-> in the first place.
+> It looks like this commit makes tick stop critical as it can be invoked in interrupt
+> exit path?
 
-Actually I think a fixed value(10) might be good enough but not quite sure
-if there is a requirement to tune it for different scenario, for example even
-if the predicted idle interval is 100x overhead, I still want a fast path for
-a better benchmark score?
+do_idle() ain't critical?  It is in my book.  Hopefully, you're about
+to make that idle_stat.fast_idle thingy liberal enough that we cease
+mucking about with the tick on every microscopic idle (and I can then
+trash my years old local patch to avoid needlessly eating that cost).
 
->> @@ -1229,6 +1230,17 @@ static struct ctl_table kern_table[] = {
->>  		.extra2		= &one,
->>  	},
->>  #endif
->> +#ifdef CONFIG_CPU_IDLE
->> +	{
->> +		.procname       = "fast_idle_ratio",
->> +		.data           = &sysctl_fast_idle_ratio,
->> +		.maxlen         = sizeof(int),
->> +		.mode           = 0644,
->> +		.proc_handler   = proc_dointvec_minmax,
->> +		.extra1         = &one,
->> +		.extra2         = &one_hundred,
->> +	},
->> +#endif
->>  	{ }
->>  };
->>  
-> 
-> And if there is a good enough reason to add it, shouldn't the tunable be
-> there in the cpuidle framework?
-> 
-sure, if it makes sense, I'll move it into cpuidle/sysfs.c
-
-Thanks,
--Aubrey
+	-Mike
