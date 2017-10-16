@@ -1,141 +1,232 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 11/12] PM: i2c-designware-platdrv: Optimize power management
-Date: Mon, 16 Oct 2017 03:31:17 +0200
-Message-ID: <2298462.BTY6P2Oy1l@aspire.rjw.lan>
+Subject: [PATCH 10/12] PM / core: Add LEAVE_SUSPENDED driver flag
+Date: Mon, 16 Oct 2017 03:30:22 +0200
+Message-ID: <1571653.x1WQWp6nIP@aspire.rjw.lan>
 References: <3806130.B2KCK0tvef@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <3806130.B2KCK0tvef@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Optimize the power management in i2c-designware-platdrv by making it
-set the DPM_FLAG_SMART_SUSPEND and DPM_FLAG_LEAVE_SUSPENDED which
-allows some code to be dropped from its PM callbacks.
+Define and document a new driver flag, DPM_FLAG_LEAVE_SUSPENDED, to
+instruct the PM core that it is desirable to leave the device in
+runtime suspend after system resume (for example, the device may be
+slow to resume and it may be better to avoid resuming it right away
+for this reason).
 
-First, setting DPM_FLAG_SMART_SUSPEND causes the intel-lpss driver
-to avoid resuming i2c-designware-platdrv devices in its ->prepare
-callback, so they can stay in runtime suspend after that point even
-if the direct-complete feature is not used for them.
-
-It also causes the PM core to avoid invoking "late" and "noirq"
-suspend callbacks for these devices if they are in runtime suspend
-at the beginning of the "late" phase of device suspend during
-system suspend.  That guarantees dw_i2c_plat_suspend() to be
-called for a device only if it is not in runtime suspend.
-Moreover, it also causes the PM core to set the device's runtime
-PM status to "active" after calling dw_i2c_plat_resume() for
-it, so the driver doesn't need internal flags to avoid invoking
-either dw_i2c_plat_suspend() or dw_i2c_plat_resume() twice in
-a row.
-
-Second, setting DPM_FLAG_LEAVE_SUSPENDED enables the optimization
-allowing the device to stay suspended after system resume under
-suitable conditions, so again the driver doesn't need to take
-care of that by itself.
-
-Accordingly, the internal "suspended" and "skip_resume" flags
-used by the driver are not necessary any more, so drop them and
-simplify the driver's PM callbacks.
-
-Additionally, notice that dw_i2c_plat_complete() only needs
-to schedule runtime PM for the device if platform firmware
-has been involved in resuming the system, so make it call
-pm_resume_via_firmware() to check that.
+Setting that flag causes the PM core to skip the ->resume_noirq,
+->resume_early and ->resume callbacks for the device (like in the
+direct-complete optimization case) if (1) the wakeup settings of it
+are compatible with runtime PM (that is, either the device is
+configured to wake up the system from sleep or it cannot generate
+wakeup signals at all), and it will not be used for resuming any of
+its children or consumers.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/i2c/busses/i2c-designware-core.h    |    2 --
- drivers/i2c/busses/i2c-designware-platdrv.c |   25 ++++++-------------------
- 2 files changed, 6 insertions(+), 21 deletions(-)
+ Documentation/driver-api/pm/devices.rst |   20 +++++++
+ drivers/base/power/main.c               |   81 ++++++++++++++++++++++++++++++--
+ include/linux/pm.h                      |   12 +++-
+ 3 files changed, 104 insertions(+), 9 deletions(-)
 
-Index: linux-pm/drivers/i2c/busses/i2c-designware-core.h
+Index: linux-pm/include/linux/pm.h
 ===================================================================
---- linux-pm.orig/drivers/i2c/busses/i2c-designware-core.h
-+++ linux-pm/drivers/i2c/busses/i2c-designware-core.h
-@@ -280,8 +280,6 @@ struct dw_i2c_dev {
- 	int			(*acquire_lock)(struct dw_i2c_dev *dev);
- 	void			(*release_lock)(struct dw_i2c_dev *dev);
- 	bool			pm_disabled;
--	bool			suspended;
--	bool			skip_resume;
- 	void			(*disable)(struct dw_i2c_dev *dev);
- 	void			(*disable_int)(struct dw_i2c_dev *dev);
- 	int			(*init)(struct dw_i2c_dev *dev);
-Index: linux-pm/drivers/i2c/busses/i2c-designware-platdrv.c
-===================================================================
---- linux-pm.orig/drivers/i2c/busses/i2c-designware-platdrv.c
-+++ linux-pm/drivers/i2c/busses/i2c-designware-platdrv.c
-@@ -42,6 +42,7 @@
- #include <linux/reset.h>
- #include <linux/sched.h>
- #include <linux/slab.h>
-+#include <linux/suspend.h>
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -559,6 +559,7 @@ struct pm_subsys_data {
+  * NEVER_SKIP: Do not skip system suspend/resume callbacks for the device.
+  * SMART_PREPARE: Check the return value of the driver's ->prepare callback.
+  * SMART_SUSPEND: No need to resume the device from runtime suspend.
++ * LEAVE_SUSPENDED: Avoid resuming the device during system resume if possible.
+  *
+  * Setting SMART_PREPARE instructs bus types and PM domains which may want
+  * system suspend/resume callbacks to be skipped for the device to return 0 from
+@@ -573,10 +574,14 @@ struct pm_subsys_data {
+  * the "late" and "noirq" phases of device suspend for the device if it remains
+  * in runtime suspend at the beginning of the "late" phase (when runtime PM has
+  * been disabled for it).
++ *
++ * Setting LEAVE_SUSPENDED informs the PM core and middle layer code that the
++ * driver prefers the device to be left in runtime suspend after system resume.
+  */
+-#define DPM_FLAG_NEVER_SKIP	BIT(0)
+-#define DPM_FLAG_SMART_PREPARE	BIT(1)
+-#define DPM_FLAG_SMART_SUSPEND	BIT(2)
++#define DPM_FLAG_NEVER_SKIP		BIT(0)
++#define DPM_FLAG_SMART_PREPARE		BIT(1)
++#define DPM_FLAG_SMART_SUSPEND		BIT(2)
++#define DPM_FLAG_LEAVE_SUSPENDED	BIT(3)
  
- #include "i2c-designware-core.h"
- 
-@@ -370,7 +371,10 @@ static int dw_i2c_plat_probe(struct plat
- 	ACPI_COMPANION_SET(&adap->dev, ACPI_COMPANION(&pdev->dev));
- 	adap->dev.of_node = pdev->dev.of_node;
- 
--	dev_pm_set_driver_flags(&pdev->dev, DPM_FLAG_SMART_PREPARE);
-+	dev_pm_set_driver_flags(&pdev->dev,
-+				DPM_FLAG_SMART_PREPARE |
-+				DPM_FLAG_SMART_SUSPEND |
-+				DPM_FLAG_LEAVE_SUSPENDED);
- 
- 	/* The code below assumes runtime PM to be disabled. */
- 	WARN_ON(pm_runtime_enabled(&pdev->dev));
-@@ -446,7 +450,7 @@ static int dw_i2c_plat_prepare(struct de
- 
- static void dw_i2c_plat_complete(struct device *dev)
- {
--	if (dev->power.direct_complete)
-+	if (dev->power.direct_complete && pm_resume_via_firmware())
- 		pm_request_resume(dev);
- }
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
+@@ -598,6 +603,7 @@ struct dev_pm_info {
+ 	bool			wakeup_path:1;
+ 	bool			syscore:1;
+ 	bool			no_pm_callbacks:1;	/* Owned by the PM core */
++	unsigned int		must_resume:1;	/* Owned by the PM core */
  #else
-@@ -459,16 +463,9 @@ static int dw_i2c_plat_suspend(struct de
- {
- 	struct dw_i2c_dev *i_dev = dev_get_drvdata(dev);
+ 	unsigned int		should_wakeup:1;
+ #endif
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -705,6 +705,12 @@ static int device_resume_early(struct de
+ 	if (!dev->power.is_late_suspended)
+ 		goto Out;
  
--	if (i_dev->suspended) {
--		i_dev->skip_resume = true;
--		return 0;
--	}
--
- 	i_dev->disable(i_dev);
- 	i2c_dw_plat_prepare_clk(i_dev, false);
++	if (dev_pm_test_driver_flags(dev, DPM_FLAG_LEAVE_SUSPENDED) &&
++	    !dev->power.must_resume) {
++		pm_runtime_set_suspended(dev);
++		goto Out;
++	}
++
+ 	dpm_wait_for_superior(dev, async);
  
--	i_dev->suspended = true;
--
- 	return 0;
+ 	if (dev->pm_domain) {
+@@ -1098,6 +1104,32 @@ static pm_message_t resume_event(pm_mess
+ 	return PMSG_ON;
  }
  
-@@ -476,19 +473,9 @@ static int dw_i2c_plat_resume(struct dev
- {
- 	struct dw_i2c_dev *i_dev = dev_get_drvdata(dev);
++static void dpm_suppliers_set_must_resume(struct device *dev)
++{
++	struct device_link *link;
++	int idx;
++
++	idx = device_links_read_lock();
++
++	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
++		link->supplier->power.must_resume = true;
++
++	device_links_read_unlock(idx);
++}
++
++static void dpm_leave_suspended(struct device *dev)
++{
++	pm_runtime_set_suspended(dev);
++	dev->power.is_suspended = false;
++	dev->power.is_late_suspended = false;
++	/*
++	 * This tells middle layer code to schedule runtime resume of the device
++	 * from its ->complete callback to update the device's power state in
++	 * case the platform firmware has been involved in resuming the system.
++	 */
++	dev->power.direct_complete = true;
++}
++
+ /**
+  * __device_suspend_noirq - Execute a "noirq suspend" callback for given device.
+  * @dev: Device to handle.
+@@ -1135,8 +1167,20 @@ static int __device_suspend_noirq(struct
+ 	 * the callback invocation for them.
+ 	 */
+ 	if (dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) &&
+-	    pm_runtime_status_suspended(dev))
+-		goto Skip;
++	    pm_runtime_status_suspended(dev)) {
++		/*
++		 * The device may be left suspended during system resume if
++		 * that is preferred by its driver and it will not be used for
++		 * resuming any of its children or consumers.
++		 */
++		if (dev_pm_test_driver_flags(dev, DPM_FLAG_LEAVE_SUSPENDED) &&
++		    !dev->power.must_resume) {
++			dpm_leave_suspended(dev);
++			goto Complete;
++		} else {
++			goto Skip;
++		}
++	}
  
--	if (!i_dev->suspended)
--		return 0;
--
--	if (i_dev->skip_resume) {
--		i_dev->skip_resume = false;
--		return 0;
--	}
--
- 	i2c_dw_plat_prepare_clk(i_dev, true);
- 	i_dev->init(i_dev);
+ 	if (dev->pm_domain) {
+ 		info = "noirq power domain ";
+@@ -1163,6 +1207,28 @@ static int __device_suspend_noirq(struct
+ 		goto Complete;
+ 	}
  
--	i_dev->suspended = false;
--
- 	return 0;
- }
++	/*
++	 * The device may be left suspended during system resume if that is
++	 * preferred by its driver and its wakeup configuration is compatible
++	 * with runtime PM, and it will not be used for resuming any of its
++	 * children or consumers.
++	 */
++	if (dev_pm_test_driver_flags(dev, DPM_FLAG_LEAVE_SUSPENDED) &&
++	    (device_may_wakeup(dev) || !device_can_wakeup(dev)) &&
++	    !dev->power.must_resume) {
++		dpm_leave_suspended(dev);
++		goto Complete;
++	}
++
++	/*
++	 * The parent and suppliers will be necessary to resume the device
++	 * during system resume, so avoid leaving them in runtime suspend.
++	 */
++	if (dev->parent)
++		dev->parent->power.must_resume = true;
++
++	dpm_suppliers_set_must_resume(dev);
++
+ Skip:
+ 	dev->power.is_noirq_suspended = true;
  
-
+@@ -1698,8 +1764,9 @@ static int device_prepare(struct device
+ 	if (dev->power.syscore)
+ 		return 0;
+ 
+-	WARN_ON(dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) &&
+-		!pm_runtime_enabled(dev));
++	WARN_ON(!pm_runtime_enabled(dev) &&
++		dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND |
++					      DPM_FLAG_LEAVE_SUSPENDED));
+ 
+ 	/*
+ 	 * If a device's parent goes into runtime suspend at the wrong time,
+@@ -1712,6 +1779,12 @@ static int device_prepare(struct device
+ 	device_lock(dev);
+ 
+ 	dev->power.wakeup_path = device_may_wakeup(dev);
++	/*
++	 * Avoid leaving devices in suspend after transitions that don't really
++	 * suspend them in general.
++	 */
++	dev->power.must_resume = state.event == PM_EVENT_FREEZE ||
++				state.event == PM_EVENT_QUIESCE;
+ 
+ 	if (dev->power.no_pm_callbacks) {
+ 		ret = 1;	/* Let device go direct_complete */
+Index: linux-pm/Documentation/driver-api/pm/devices.rst
+===================================================================
+--- linux-pm.orig/Documentation/driver-api/pm/devices.rst
++++ linux-pm/Documentation/driver-api/pm/devices.rst
+@@ -785,6 +785,22 @@ means that they should be put into the f
+ 
+ During system-wide resume from a sleep state it's easiest to put devices into
+ the full-power state, as explained in :file:`Documentation/power/runtime_pm.txt`.
+-Refer to that document for more information regarding this particular issue as
++[Refer to that document for more information regarding this particular issue as
+ well as for information on the device runtime power management framework in
+-general.
++general.]
++
++However, it may be desirable to leave some devices in runtime suspend after
++system resume and device drivers can use the ``DPM_FLAG_LEAVE_SUSPENDED`` flag
++to indicate to the PM core that this is the case.  If that flag is set for a
++device and the wakeup settings of it are compatible with runtime PM (that is,
++either the device is configured to wake up the system from sleep or it cannot
++generate wakeup signals at all), and it will not be used for resuming any of its
++children or consumers, the PM core will skip all of the system resume callbacks
++in the ``resume_noirq``, ``resume_early`` and ``resume`` phases for it and its
++runtime power management status will be set to "suspended".
++
++Still, if the platform firmware is involved in the handling of system resume, it
++may change the state of devices in unpredictable ways, so in that case the
++middle layer code (for example, a bus type or PM domain) the driver works with
++should update the device's power state and schedule runtime resume of it to
++align its power settings with the expectations of the runtime PM framework.
