@@ -1,119 +1,75 @@
-From: "Niklas =?iso-8859-1?Q?S=F6derlund?=" <niklas.soderlund@ragnatech.se>
-Subject: Re: [PATCH 10/10] [RFC] sh_eth: Remove obsolete explicit clock
- handling for WoL
-Date: Mon, 16 Oct 2017 17:15:18 +0200
-Message-ID: <20171016151518.GE19910@bigcity.dyn.berto.se>
-References: <1508162116-5043-1-git-send-email-geert+renesas@glider.be>
- <1508162116-5043-11-git-send-email-geert+renesas@glider.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1508162116-5043-11-git-send-email-geert+renesas@glider.be>
-Sender: linux-clk-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2 04/14] pinctrl: sh-pfc: Add sh_pfc_pin_to_bias_reg() helper
+Date: Mon, 16 Oct 2017 17:27:49 +0200
+Message-ID: <1508167679-21155-5-git-send-email-geert+renesas@glider.be>
+References: <1508167679-21155-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from baptiste.telenet-ops.be ([195.130.132.51]:56546 "EHLO
+        baptiste.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753837AbdJPP2D (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Oct 2017 11:28:03 -0400
+In-Reply-To: <1508167679-21155-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, linux-renesas-soc@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Hi Geert,
+Add a helper to look up bias registers and bit number for a specific
+pin, using the generic bias register description.
 
-On 2017-10-16 15:55:16 +0200, Geert Uytterhoeven wrote:
-> Currently, if Wake-on-LAN is enabled, the SH-ETH device's module clock
-> is manually kept running during system suspend, to make sure the device
-> stays active.
-> 
-> Since "soc: renesas: rcar-sysc: Keep wakeup sources active during system
-> suspend" and "clk: renesas: mstp: Keep wakeup sources active during
-> system suspend", this workaround is no longer needed.  Hence remove all
-> explicit clock handling to keep the device active.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v2:
+  - Use ARRAY_SIZE() instead of hardcoded constant 32,
+  - Add curly braces to nested for statements.
+---
+ drivers/pinctrl/sh-pfc/core.c | 20 ++++++++++++++++++++
+ drivers/pinctrl/sh-pfc/core.h |  3 +++
+ 2 files changed, 23 insertions(+)
 
-Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-
-> ---
-> This must not be applied before the dependency has landed upstream,
-> hence the "RFC"!
-> ---
->  drivers/net/ethernet/renesas/sh_eth.c | 18 +++---------------
->  1 file changed, 3 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/net/ethernet/renesas/sh_eth.c b/drivers/net/ethernet/renesas/sh_eth.c
-> index d2e88a30f57bb4c5..8ea4d0cc325baeca 100644
-> --- a/drivers/net/ethernet/renesas/sh_eth.c
-> +++ b/drivers/net/ethernet/renesas/sh_eth.c
-> @@ -40,7 +40,6 @@
->  #include <linux/slab.h>
->  #include <linux/ethtool.h>
->  #include <linux/if_vlan.h>
-> -#include <linux/clk.h>
->  #include <linux/sh_eth.h>
->  #include <linux/of_mdio.h>
->  
-> @@ -2293,7 +2292,7 @@ static void sh_eth_get_wol(struct net_device *ndev, struct ethtool_wolinfo *wol)
->  	wol->supported = 0;
->  	wol->wolopts = 0;
->  
-> -	if (mdp->cd->magic && mdp->clk) {
-> +	if (mdp->cd->magic) {
->  		wol->supported = WAKE_MAGIC;
->  		wol->wolopts = mdp->wol_enabled ? WAKE_MAGIC : 0;
->  	}
-> @@ -2303,7 +2302,7 @@ static int sh_eth_set_wol(struct net_device *ndev, struct ethtool_wolinfo *wol)
->  {
->  	struct sh_eth_private *mdp = netdev_priv(ndev);
->  
-> -	if (!mdp->cd->magic || !mdp->clk || wol->wolopts & ~WAKE_MAGIC)
-> +	if (!mdp->cd->magic || wol->wolopts & ~WAKE_MAGIC)
->  		return -EOPNOTSUPP;
->  
->  	mdp->wol_enabled = !!(wol->wolopts & WAKE_MAGIC);
-> @@ -3144,11 +3143,6 @@ static int sh_eth_drv_probe(struct platform_device *pdev)
->  		goto out_release;
->  	}
->  
-> -	/* Get clock, if not found that's OK but Wake-On-Lan is unavailable */
-> -	mdp->clk = devm_clk_get(&pdev->dev, NULL);
-> -	if (IS_ERR(mdp->clk))
-> -		mdp->clk = NULL;
-> -
->  	ndev->base_addr = res->start;
->  
->  	spin_lock_init(&mdp->lock);
-> @@ -3251,7 +3245,7 @@ static int sh_eth_drv_probe(struct platform_device *pdev)
->  	if (ret)
->  		goto out_napi_del;
->  
-> -	if (mdp->cd->magic && mdp->clk)
-> +	if (mdp->cd->magic)
->  		device_set_wakeup_capable(&pdev->dev, 1);
->  
->  	/* print device information */
-> @@ -3305,9 +3299,6 @@ static int sh_eth_wol_setup(struct net_device *ndev)
->  	/* Enable MagicPacket */
->  	sh_eth_modify(ndev, ECMR, ECMR_MPDE, ECMR_MPDE);
->  
-> -	/* Increased clock usage so device won't be suspended */
-> -	clk_enable(mdp->clk);
-> -
->  	return enable_irq_wake(ndev->irq);
->  }
->  
-> @@ -3333,9 +3324,6 @@ static int sh_eth_wol_restore(struct net_device *ndev)
->  	if (ret < 0)
->  		return ret;
->  
-> -	/* Restore clock usage count */
-> -	clk_disable(mdp->clk);
-> -
->  	return disable_irq_wake(ndev->irq);
->  }
->  
-> -- 
-> 2.7.4
-> 
-
+diff --git a/drivers/pinctrl/sh-pfc/core.c b/drivers/pinctrl/sh-pfc/core.c
+index 8b422ac07e57263b..01c408a3dee478f2 100644
+--- a/drivers/pinctrl/sh-pfc/core.c
++++ b/drivers/pinctrl/sh-pfc/core.c
+@@ -404,6 +404,26 @@ sh_pfc_pin_to_bias_info(const struct sh_pfc_bias_info *info,
+ 	return NULL;
+ }
+ 
++const struct pinmux_bias_reg *
++sh_pfc_pin_to_bias_reg(const struct sh_pfc *pfc, unsigned int pin,
++		       unsigned int *bit)
++{
++	unsigned int i, j;
++
++	for (i = 0; pfc->info->bias_regs[i].puen; i++) {
++		for (j = 0; j < ARRAY_SIZE(pfc->info->bias_regs[i].pins); j++) {
++			if (pfc->info->bias_regs[i].pins[j] == pin) {
++				*bit = j;
++				return &pfc->info->bias_regs[i];
++			}
++		}
++	}
++
++	WARN_ONCE(1, "Pin %u is not in bias info list\n", pin);
++
++	return NULL;
++}
++
+ static int sh_pfc_init_ranges(struct sh_pfc *pfc)
+ {
+ 	struct sh_pfc_pin_range *range;
+diff --git a/drivers/pinctrl/sh-pfc/core.h b/drivers/pinctrl/sh-pfc/core.h
+index dd215d36dcc82f8a..460d996513acea26 100644
+--- a/drivers/pinctrl/sh-pfc/core.h
++++ b/drivers/pinctrl/sh-pfc/core.h
+@@ -35,5 +35,8 @@ int sh_pfc_config_mux(struct sh_pfc *pfc, unsigned mark, int pinmux_type);
+ const struct sh_pfc_bias_info *
+ sh_pfc_pin_to_bias_info(const struct sh_pfc_bias_info *info,
+ 			unsigned int num, unsigned int pin);
++const struct pinmux_bias_reg *
++sh_pfc_pin_to_bias_reg(const struct sh_pfc *pfc, unsigned int pin,
++		       unsigned int *bit);
+ 
+ #endif /* __SH_PFC_CORE_H__ */
 -- 
-Regards,
-Niklas Söderlund
+2.7.4
