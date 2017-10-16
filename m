@@ -1,15 +1,15 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH 07/12] ACPI / LPSS: Consolidate runtime PM and system sleep handling
-Date: Mon, 16 Oct 2017 03:29:55 +0200
-Message-ID: <3749856.UqA8Ev4sDu@aspire.rjw.lan>
+Subject: [PATCH 08/12] ACPI / PM: Take SMART_SUSPEND driver flag into account
+Date: Mon, 16 Oct 2017 03:30:06 +0200
+Message-ID: <27437209.Q3JHjOQKcL@aspire.rjw.lan>
 References: <3806130.B2KCK0tvef@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46964 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:60873 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751742AbdJPBnE (ORCPT
+        by vger.kernel.org with ESMTP id S1751734AbdJPBnE (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 15 Oct 2017 21:43:04 -0400
 In-Reply-To: <3806130.B2KCK0tvef@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
@@ -19,139 +19,72 @@ Cc: Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>,
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Move the LPSS-specific code from acpi_lpss_runtime_suspend()
-and acpi_lpss_runtime_resume() into separate functions,
-acpi_lpss_suspend() and acpi_lpss_resume(), respectively, and
-make acpi_lpss_suspend_late() and acpi_lpss_resume_early() use
-them too in order to unify the runtime PM and system sleep
-handling in the LPSS driver.
+Make the ACPI PM domain take DPM_FLAG_SMART_SUSPEND into account in
+its system suspend callbacks.
+
+[Note that the pm_runtime_suspended() check in acpi_dev_needs_resume()
+is an optimization, because if is not passed, all of the subsequent
+checks may be skipped and some of them are much more overhead in
+general.]
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ drivers/acpi/device_pm.c |   21 +++++++++++++--------
+ 1 file changed, 13 insertions(+), 8 deletions(-)
 
-This is based on an RFC I posted some time ago
-(https://patchwork.kernel.org/patch/9998147/), which didn't
-receive any comments and it depends on a couple of ACPI device PM
-patches posted recently (https://patchwork.kernel.org/patch/10006457/
-in particular).
-
-It's included in this series, because the next patch won't work without it.
-
----
- drivers/acpi/acpi_lpss.c |   75 ++++++++++++++++++++---------------------------
- 1 file changed, 33 insertions(+), 42 deletions(-)
-
-Index: linux-pm/drivers/acpi/acpi_lpss.c
+Index: linux-pm/drivers/acpi/device_pm.c
 ===================================================================
---- linux-pm.orig/drivers/acpi/acpi_lpss.c
-+++ linux-pm/drivers/acpi/acpi_lpss.c
-@@ -716,40 +716,6 @@ static void acpi_lpss_dismiss(struct dev
- 	acpi_dev_suspend(dev, false);
- }
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -936,7 +936,8 @@ static bool acpi_dev_needs_resume(struct
+ 	u32 sys_target = acpi_target_system_state();
+ 	int ret, state;
  
--#ifdef CONFIG_PM_SLEEP
--static int acpi_lpss_suspend_late(struct device *dev)
--{
--	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
--	int ret;
--
--	ret = pm_generic_suspend_late(dev);
--	if (ret)
--		return ret;
--
--	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
--		acpi_lpss_save_ctx(dev, pdata);
--
--	return acpi_dev_suspend(dev, device_may_wakeup(dev));
--}
--
--static int acpi_lpss_resume_early(struct device *dev)
--{
--	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
--	int ret;
--
--	ret = acpi_dev_resume(dev);
--	if (ret)
--		return ret;
--
--	acpi_lpss_d3_to_d0_delay(pdata);
--
--	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
--		acpi_lpss_restore_ctx(dev, pdata);
--
--	return pm_generic_resume_early(dev);
--}
--#endif /* CONFIG_PM_SLEEP */
--
- /* IOSF SB for LPSS island */
- #define LPSS_IOSF_UNIT_LPIOEP		0xA0
- #define LPSS_IOSF_UNIT_LPIO1		0xAB
-@@ -835,19 +801,15 @@ static void lpss_iosf_exit_d3_state(void
- 	mutex_unlock(&lpss_iosf_mutex);
- }
+-	if (device_may_wakeup(dev) != !!adev->wakeup.prepare_count)
++	if (!pm_runtime_suspended(dev) || !adev ||
++	    device_may_wakeup(dev) != !!adev->wakeup.prepare_count)
+ 		return true;
  
--static int acpi_lpss_runtime_suspend(struct device *dev)
-+static int acpi_lpss_suspend(struct device *dev, bool wakeup)
+ 	if (sys_target == ACPI_STATE_S0)
+@@ -968,9 +969,6 @@ int acpi_subsys_prepare(struct device *d
+ 	if (!ret && dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_PREPARE))
+ 		return 0;
+ 
+-	if (!adev || !pm_runtime_suspended(dev))
+-		return 0;
+-
+ 	return !acpi_dev_needs_resume(dev, adev);
+ }
+ EXPORT_SYMBOL_GPL(acpi_subsys_prepare);
+@@ -996,12 +994,17 @@ EXPORT_SYMBOL_GPL(acpi_subsys_complete);
+  * acpi_subsys_suspend - Run the device driver's suspend callback.
+  * @dev: Device to handle.
+  *
+- * Follow PCI and resume devices suspended at run time before running their
+- * system suspend callbacks.
++ * Follow PCI and resume devices from runtime suspend before running their
++ * system suspend callbacks, unless the driver can cope with runtime-suspended
++ * devices during system suspend and there are no ACPI-specific reasons for
++ * resuming them.
+  */
+ int acpi_subsys_suspend(struct device *dev)
  {
- 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
- 	int ret;
- 
--	ret = pm_generic_runtime_suspend(dev);
--	if (ret)
--		return ret;
--
- 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
- 		acpi_lpss_save_ctx(dev, pdata);
- 
--	ret = acpi_dev_suspend(dev, true);
-+	 ret = acpi_dev_suspend(dev, wakeup);
- 
- 	/*
- 	 * This call must be last in the sequence, otherwise PMC will return
-@@ -860,7 +822,7 @@ static int acpi_lpss_runtime_suspend(str
- 	return ret;
+-	pm_runtime_resume(dev);
++	if (!dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) ||
++	    acpi_dev_needs_resume(dev, ACPI_COMPANION(dev)))
++		pm_runtime_resume(dev);
++
+ 	return pm_generic_suspend(dev);
  }
- 
--static int acpi_lpss_runtime_resume(struct device *dev)
-+static int acpi_lpss_resume(struct device *dev)
- {
- 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
- 	int ret;
-@@ -881,7 +843,36 @@ static int acpi_lpss_runtime_resume(stru
- 	if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
- 		acpi_lpss_restore_ctx(dev, pdata);
- 
--	return pm_generic_runtime_resume(dev);
-+	return 0;
-+}
-+#ifdef CONFIG_PM_SLEEP
-+static int acpi_lpss_suspend_late(struct device *dev)
-+{
-+	int ret = pm_generic_suspend_late(dev);
+ EXPORT_SYMBOL_GPL(acpi_subsys_suspend);
+@@ -1047,7 +1050,9 @@ int acpi_subsys_freeze(struct device *de
+ 	 * runtime-suspended devices should not be touched during freeze/thaw
+ 	 * transitions.
+ 	 */
+-	pm_runtime_resume(dev);
++	if (!dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND))
++		pm_runtime_resume(dev);
 +
-+	return ret ? ret : acpi_lpss_suspend(dev, device_may_wakeup(dev));
-+}
-+
-+static int acpi_lpss_resume_early(struct device *dev)
-+{
-+	int ret = acpi_lpss_resume(dev);
-+
-+	return ret ? ret : pm_generic_resume_early(dev);
-+}
-+#endif /* CONFIG_PM_SLEEP */
-+
-+static int acpi_lpss_runtime_suspend(struct device *dev)
-+{
-+	int ret = pm_generic_runtime_suspend(dev);
-+
-+	return ret ? ret : acpi_lpss_suspend(dev, true);
-+}
-+
-+static int acpi_lpss_runtime_resume(struct device *dev)
-+{
-+	int ret = acpi_lpss_resume(dev);
-+
-+	return ret ? ret : pm_generic_runtime_resume(dev);
+ 	return pm_generic_freeze(dev);
  }
- #endif /* CONFIG_PM */
- 
+ EXPORT_SYMBOL_GPL(acpi_subsys_freeze);
