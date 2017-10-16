@@ -1,18 +1,20 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 09/14] pinctrl: sh-pfc: Remove obsolete sh_pfc_pin_to_bias_info()
-Date: Mon, 16 Oct 2017 17:27:54 +0200
-Message-ID: <1508167679-21155-10-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH v2 03/14] pinctrl: sh-pfc: Add generic bias register description
+Date: Mon, 16 Oct 2017 17:27:48 +0200
+Message-ID: <1508167679-21155-4-git-send-email-geert+renesas@glider.be>
 References: <1508167679-21155-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-gpio-owner@vger.kernel.org>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <1508167679-21155-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-gpio-owner@vger.kernel.org
+Sender: linux-renesas-soc-owner@vger.kernel.org
 To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>
 Cc: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, linux-renesas-soc@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-All users of sh_pfc_pin_to_bias_info() and the related data structures
-have been converted to sh_pfc_pin_to_bias_reg(), so those can be
-removed.
+Add a generic way to describe bias registers (for pull-up/down control),
+like is already done for config and drive registers.
+
+This makes the sh-pfc core code aware of these registers, which will
+ease introducing suspend/resume support later.
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
@@ -20,68 +22,38 @@ Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 v2:
   - Add Reviewed-by.
 ---
- drivers/pinctrl/sh-pfc/core.c   | 15 ---------------
- drivers/pinctrl/sh-pfc/core.h   |  3 ---
- drivers/pinctrl/sh-pfc/sh_pfc.h |  6 ------
- 3 files changed, 24 deletions(-)
+ drivers/pinctrl/sh-pfc/sh_pfc.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/pinctrl/sh-pfc/core.c b/drivers/pinctrl/sh-pfc/core.c
-index 01c408a3dee478f2..2fe5fd6c5d17adc5 100644
---- a/drivers/pinctrl/sh-pfc/core.c
-+++ b/drivers/pinctrl/sh-pfc/core.c
-@@ -389,21 +389,6 @@ int sh_pfc_config_mux(struct sh_pfc *pfc, unsigned mark, int pinmux_type)
- 	return 0;
- }
- 
--const struct sh_pfc_bias_info *
--sh_pfc_pin_to_bias_info(const struct sh_pfc_bias_info *info,
--			unsigned int num, unsigned int pin)
--{
--	unsigned int i;
--
--	for (i = 0; i < num; i++)
--		if (info[i].pin == pin)
--			return &info[i];
--
--	WARN_ONCE(1, "Pin %u is not in bias info list\n", pin);
--
--	return NULL;
--}
--
- const struct pinmux_bias_reg *
- sh_pfc_pin_to_bias_reg(const struct sh_pfc *pfc, unsigned int pin,
- 		       unsigned int *bit)
-diff --git a/drivers/pinctrl/sh-pfc/core.h b/drivers/pinctrl/sh-pfc/core.h
-index 460d996513acea26..5af8ee26c03ea139 100644
---- a/drivers/pinctrl/sh-pfc/core.h
-+++ b/drivers/pinctrl/sh-pfc/core.h
-@@ -32,9 +32,6 @@ void sh_pfc_write(struct sh_pfc *pfc, u32 reg, u32 data);
- int sh_pfc_get_pin_index(struct sh_pfc *pfc, unsigned int pin);
- int sh_pfc_config_mux(struct sh_pfc *pfc, unsigned mark, int pinmux_type);
- 
--const struct sh_pfc_bias_info *
--sh_pfc_pin_to_bias_info(const struct sh_pfc_bias_info *info,
--			unsigned int num, unsigned int pin);
- const struct pinmux_bias_reg *
- sh_pfc_pin_to_bias_reg(const struct sh_pfc *pfc, unsigned int pin,
- 		       unsigned int *bit);
 diff --git a/drivers/pinctrl/sh-pfc/sh_pfc.h b/drivers/pinctrl/sh-pfc/sh_pfc.h
-index 1914f4b5fef569b3..18fd878266297dc2 100644
+index 8688b405e0813ad7..1914f4b5fef569b3 100644
 --- a/drivers/pinctrl/sh-pfc/sh_pfc.h
 +++ b/drivers/pinctrl/sh-pfc/sh_pfc.h
-@@ -200,12 +200,6 @@ struct sh_pfc_window {
- 	unsigned long size;
- };
+@@ -148,6 +148,17 @@ struct pinmux_drive_reg {
+ 	.reg = r, \
+ 	.fields =
  
--struct sh_pfc_bias_info {
--	u16 pin;
--	u16 reg : 11;
--	u16 bit : 5;
--};
--
- struct sh_pfc_pin_range;
++struct pinmux_bias_reg {
++	u32 puen;		/* Pull-enable or pull-up control register */
++	u32 pud;		/* Pull-up/down control register (optional) */
++	const u16 pins[32];
++};
++
++#define PINMUX_BIAS_REG(name1, r1, name2, r2) \
++	.puen = r1,	\
++	.pud = r2,	\
++	.pins =
++
+ struct pinmux_data_reg {
+ 	u32 reg;
+ 	u8 reg_width;
+@@ -245,6 +256,7 @@ struct sh_pfc_soc_info {
  
- struct sh_pfc {
+ 	const struct pinmux_cfg_reg *cfg_regs;
+ 	const struct pinmux_drive_reg *drive_regs;
++	const struct pinmux_bias_reg *bias_regs;
+ 	const struct pinmux_data_reg *data_regs;
+ 
+ 	const u16 *pinmux_data;
 -- 
 2.7.4
-
