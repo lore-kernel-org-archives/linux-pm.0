@@ -1,57 +1,57 @@
 From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v7 2/3] eeprom: at24: add support to fetch eeprom device
- property "size"
-Date: Tue, 17 Oct 2017 23:36:02 +0200
-Message-ID: <20171017213602.r52nkxgaqtgntbjn@ninjato>
+Subject: Re: [PATCH v7 3/3] eeprom: at24: enable runtime pm support
+Date: Tue, 17 Oct 2017 23:36:06 +0200
+Message-ID: <20171017213606.janfozvf5gjy3i7j@ninjato>
 References: <1507615237-21744-1-git-send-email-divagar.mohandass@intel.com>
- <1507615237-21744-3-git-send-email-divagar.mohandass@intel.com>
+ <1507615237-21744-4-git-send-email-divagar.mohandass@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="pjtstpantw4zdngp"
+        protocol="application/pgp-signature"; boundary="6azw25krnebqfqr7"
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1507615237-21744-3-git-send-email-divagar.mohandass@intel.com>
+In-Reply-To: <1507615237-21744-4-git-send-email-divagar.mohandass@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Divagar Mohandass <divagar.mohandass@intel.com>
 Cc: robh+dt@kernel.org, mark.rutland@arm.com, sakari.ailus@iki.fi, tfiga@chromium.org, devicetree@vger.kernel.org, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, rajmohan.mani@intel.com, mika.westerberg@linux.intel.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
---pjtstpantw4zdngp
+--6azw25krnebqfqr7
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 10, 2017 at 11:30:36AM +0530, Divagar Mohandass wrote:
-> Obtain the size of the EEPROM chip from DT if the "size" property is
-> specified for the device.
+On Tue, Oct 10, 2017 at 11:30:37AM +0530, Divagar Mohandass wrote:
+> Currently the device is kept in D0, there is an opportunity
+> to save power by enabling runtime pm.
 >=20
-> Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+> Device can be daisy chained from PMIC and we can't rely on I2C core
+> for auto resume/suspend. Driver will decide when to resume/suspend.
+>=20
 > Reviewed-by: Sakari Ailus <sakari.ailus@linux.intel.com>
 > Signed-off-by: Divagar Mohandass <divagar.mohandass@intel.com>
 
 Applied to for-next, thanks!
 
 
---pjtstpantw4zdngp
+--6azw25krnebqfqr7
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlnmd8IACgkQFA3kzBSg
-Kbbp0w//Wio3Wiori0EGFhNlN7kDZR2ekbOvD6kna6Zs5owdHXSxWEmDbG5vxMTu
-GtkrdaeY+8cYAWZYF22lS1epr2LX2zvVPKKGv/NBW3pfwjv4xxG5kXoUGzoAehAJ
-E9ddZqgjw9IDFkdO/kghR+GBpkDsR003lxw/mrk8LkaYhT1z/m9hK4/Z696b25K5
-/KnfPAtDCnLJmBwTIDDAKOiMMYEHsfqSH2Iz3TgpaBWtS4ni63hPaIBq4rNPh9v1
-HIRUhY+ZBhxUIhSyXKxhSKQjNamQvp1Jo+kTPCyR1v50LYk3Z+JHXHIDTSQ4Ls1+
-9AGriL376mtXaRQKYnwZjOCxWSLprrQY3W/l27NTtHvGGb+afnN+dvnoYQxtprnR
-Jiab/oRgvoXGMzgmvcLmr82GOHadYZrkeTehddQ8ffBzwCMuZc4sZN49yUtMdE6t
-gcqKx3fqaUIjRwn/QgYjxIe2k1d6ulueqC+5rsBP1QTDGyzO4BJGjjcFs7xQN7Es
-xG/hlqgrLyRrhN5EJjWpu6dOl+yxVsUBbEDf6c3CxGJJL9jaIccgKFWIMN4ZJn6d
-TM7dvUbc38rUrLU0bT03+KxD0krBluqfzb/Ur8m8986ayBASAegzYPFxCYSt74RB
-/5VJ1sEqegD5qIyZr+kgnD8CrQIozk/47boB/P335NWAbxIpul4=
-=Xvzu
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlnmd8YACgkQFA3kzBSg
+Kba6EA//fDzf9U6V0o4KKPYe75rCK8mz/aGDrF8hKs9clMvAivjO2L8CsbprrAfS
+N2yiVXo39bLJujPpbFNAV+LXnZR4RR96+B92MU8TKfjhBCdOaAaMy+02fagkJrPM
+fKBWht7OpDRTWL4du2iI2dlW1EE6Xtbj4I+eoZXj/tA5xCze3g0I6Pan3PVDxDFf
+Sx/JeXuJ+RwlTVlsAczY67bGQSGA4VID3KVG9J7vjSGEe9U7S3lvzM+0i53cQozW
+OzOVGq0o+9SGGfX5sBcP+7/ZRY3QrRMfuCmkgZNyLZYK+1v0hSU1R9/3XfLXw5yp
+amLl2whhay1rSCsqCBZjhDXWSP44lhMdz9Sr32q9vbLK4vrv41iVEi8ISx3oEm2r
+FbA+/SY8XHBVI8sqSg2kZsFYwoni0KSZ2dE3XLrVQuJvxcu4N4K/aXmfM2C7Hrry
+45S6WF6aZf21SQDvI5j6RaEBZkshWb4bV9P2f3QXwN9vxg/vjgrCKV+sUhcaM8P4
+ykrfzWhVbzy2h4U1U5Bu/gIETaAZzJIWZpRqZoL3oh1Hktz+/3XFIYTvbxb3QDIv
+JNyfiswAjmpjJsvJIfNFQEEy/UhhpaC0rdrfiohfthaBfl64w5CDdJZBDglJAi8c
+IiFMPe1qaaVMWvaTGaYuA+9BizAhKEGTO+TeGDjunRhEjjVw8SE=
+=328b
 -----END PGP SIGNATURE-----
 
---pjtstpantw4zdngp--
+--6azw25krnebqfqr7--
