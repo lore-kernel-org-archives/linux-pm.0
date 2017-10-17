@@ -1,73 +1,49 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH v2 2/8] cpuidle: record the overhead of idle entry
-Date: Tue, 17 Oct 2017 02:05:39 +0200
-Message-ID: <10643458.iWc7GTROAz@aspire.rjw.lan>
-References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com> <2672521.fEEa1b19Vu@aspire.rjw.lan> <6f17f378-defc-c668-de00-250da5c41b87@linux.intel.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 0/5] thermal: rockchip: add tsadc support in thermal
+ driver and IPA thermal control for RV1108 in dts
+Date: Mon, 16 Oct 2017 17:15:37 -0700
+Message-ID: <20171017001535.GA16006@localhost.localdomain>
+References: <1503570475-7850-1-git-send-email-rocky.hao@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6f17f378-defc-c668-de00-250da5c41b87@linux.intel.com>
+Content-Disposition: inline
+In-Reply-To: <1503570475-7850-1-git-send-email-rocky.hao@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Cc: Aubrey Li <aubrey.li@intel.com>, tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rocky Hao <rocky.hao@rock-chips.com>
+Cc: rui.zhang@intel.com, heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com
 List-Id: linux-pm@vger.kernel.org
 
-On Monday, October 16, 2017 5:11:57 AM CEST Li, Aubrey wrote:
-> On 2017/10/14 8:35, Rafael J. Wysocki wrote:
-> > On Saturday, September 30, 2017 9:20:28 AM CEST Aubrey Li wrote:
-> >> Record the overhead of idle entry in micro-second
-> >>
-> > 
-> > What is this needed for?
-> 
-> We need to figure out how long of a idle is a short idle and recording
-> the overhead is for this purpose. The short idle threshold is based
-> on this overhead.
+Hello,
 
-I don't really understand this statement.
-
-Pretent I'm not familiar with this stuff and try to explain it to me. :-)
-
-> > 
-> >> +void cpuidle_entry_end(void)
-> >> +{
-> >> +	struct cpuidle_device *dev = cpuidle_get_device();
-> >> +	u64 overhead;
-> >> +	s64 diff;
-> >> +
-> >> +	if (dev) {
-> >> +		dev->idle_stat.entry_end = local_clock();
-> >> +		overhead = div_u64(dev->idle_stat.entry_end -
-> >> +				dev->idle_stat.entry_start, NSEC_PER_USEC);
-> > 
-> > Is the conversion really necessary?
-> > 
-> > If so, then why?
+On Thu, Aug 24, 2017 at 06:27:50PM +0800, Rocky Hao wrote:
+> This series patches add the tsadc support in thermal driver and in devicetree for RV1108.
+> Also add thermal control with Intelligent Power Allocation (IPA) policy by default.  Please
+> refer to https://developer.arm.com/open-source/intelligent-power-allocation for more information
+> about IPA.
 > 
-> We can choose nano-second and micro-second. Given that workload results
-> in the short idle pattern, I think micro-second is good enough for the
-> real workload.
-> 
-> Another reason is that prediction from idle governor is micro-second, so
-> I convert it for comparing purpose.
-> > 
-> > And if there is a good reason, what about using right shift to do
-> > an approximate conversion to avoid the extra division here?
-> 
-> Sure >> 10 works for me as I don't think here precision is a big deal.
-> 
-> > 
-> >> +		diff = overhead - dev->idle_stat.overhead;
-> >> +		dev->idle_stat.overhead += diff >> 3;
-> > 
-> > Can you please explain what happens in the two lines above?
-> 
-> Online average computing algorithm, stolen from update_avg() @ kernel/sched/core.c.
+> Rocky Hao (5):
+>   dt-bindings: rockchip-thermal: Support the RV1108 SoC compatible
+>   thermal: rockchip: Support the RV1108 SoC in thermal driver
 
-OK
+Applied patches 1  and 2.
 
-Maybe care to add a comment to that effect?
+>   arm: dts: rockchip: add tsadc node for RV1108 SoC
+>   arm: dts: rockchip: add thermal nodes for RV1108 SoC
+>   arm: dts: rockchip: enable tsadc module on RV1108 evaluation board
+> 
 
-Thanks,
-Rafael
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
+
+for the DT changes.
+
+>  .../bindings/thermal/rockchip-thermal.txt          |  1 +
+>  arch/arm/boot/dts/rv1108-evb.dts                   |  4 ++
+>  arch/arm/boot/dts/rv1108.dtsi                      | 69 ++++++++++++++++++++++
+>  drivers/thermal/rockchip_thermal.c                 | 67 +++++++++++++++++++++
+>  4 files changed, 141 insertions(+)
+> 
+> -- 
+> 1.9.1
+> 
+> 
