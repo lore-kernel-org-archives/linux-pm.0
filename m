@@ -1,268 +1,98 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 24/25] thermal/drivers/hisi: Add support for hi3660 SoC
-Date: Mon, 16 Oct 2017 21:39:42 -0700
-Message-ID: <20171017043941.GE7954@localhost.localdomain>
-References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
- <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
- <1507658570-32675-24-git-send-email-daniel.lezcano@linaro.org>
+From: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Subject: Re: [RFC PATCH v2 5/8] timers: keep sleep length updated as needed
+Date: Tue, 17 Oct 2017 14:10:08 +0800
+Message-ID: <2e464ec4-b573-434a-e3df-baa00d1f7284@linux.intel.com>
+References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com>
+ <1554921.dz8jk4n8cL@aspire.rjw.lan>
+ <33404efd-a8e0-eb0b-4df8-9e7aa5a66dde@linux.intel.com>
+ <35931824.svOhBhJZiB@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:48479 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753083AbdJQEjp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2017 00:39:45 -0400
-Content-Disposition: inline
-In-Reply-To: <1507658570-32675-24-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <35931824.svOhBhJZiB@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Aubrey Li <aubrey.li@intel.com>, tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org
 
-On Tue, Oct 10, 2017 at 08:02:49PM +0200, Daniel Lezcano wrote:
-> From: Kevin Wangtao <kevin.wangtao@linaro.org>
+On 2017/10/17 7:58, Rafael J. Wysocki wrote:
+> On Monday, October 16, 2017 8:46:41 AM CEST Li, Aubrey wrote:
+>> On 2017/10/14 8:56, Rafael J. Wysocki wrote:
+>>> On Saturday, September 30, 2017 9:20:31 AM CEST Aubrey Li wrote:
+>>>> sleep length indicates how long we'll be idle. Currently, it's updated
+>>>> only when tick nohz enters. These patch series make a new requirement
+>>>> with tick, so we should keep sleep length updated as needed
+>>>
+>>> So what exactly would be the problem with leaving things as they are?
+>>
+>> Previously ts->sleep_length is only updated when tick is stopped.
+>>
+>> As follows, in
+>>
+>> __tick_nohz_idle_enter()
+>> {
+>> 	if (can_stop_idle_tick() /* return true */) {
+>> 		tick_nohz_stop_sched_tick()
+>> 			|
+>> 			|-----> update sleep_length
+>> 	}
+>> }
 > 
-> This patch adds the support for thermal sensor on the Hi3660 SoC.
-> Hi3660 tsensor support alarm interrupt and have three configurable
-> alarm thresholds, it also has a configurable hysteresis interval,
-> interrupt will be triggered when temperature rise above the alarm
-> threshold or fall below the hysteresis threshold.
+> Which is logical, because the tick will get in the way if we don't stop it,
+> won't it?
+> 
+The scenario here is, tick(4ms) is too long for a short idle(e.g. 4us).
+And there could be hundreds of short idle within one tick interval.
 
-Minor:
+>>
+>> Now ts->sleep_length is required out of tick_nohz_idle_enter(), so we want
+>> to update sleep_length every time we read it
+>>
+>> If we leave it unchanged, the prediction could read a sleep_length long time
+>> ago if the system keep ticking.
+> 
+> Well, but does it make sense to estimate the sleep length without stopping
+> the tick?
 
-
-CHECK: Alignment should match open parenthesis
-#173: FILE: drivers/thermal/hisi_thermal.c:214:
-+	writel(DIV_ROUND_UP(value, HI3660_TEMP_STEP) & 0x7F,
-+			addr + HI3660_LAG(id));
-
-total: 0 errors, 0 warnings, 1 checks, 205 lines checked
+For example, for the first short idle, we just turned tick off last time, so
+we may get the sleep length = 3900us. Then we keep tick on, and the 100th short
+idle comes, then the original sleep length is still 3900us(not updated), but
+actually it should be e.g. 100us.
 
 > 
-> Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> ---
->  drivers/thermal/hisi_thermal.c | 146 ++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 145 insertions(+), 1 deletion(-)
+>>>> ---
+>>>>  kernel/time/tick-sched.c | 3 +++
+>>>>  1 file changed, 3 insertions(+)
+>>>>
+>>>> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+>>>> index d663fab..94fb9b8 100644
+>>>> --- a/kernel/time/tick-sched.c
+>>>> +++ b/kernel/time/tick-sched.c
+>>>> @@ -1008,8 +1008,11 @@ void tick_nohz_irq_exit(void)
+>>>>   */
+>>>>  ktime_t tick_nohz_get_sleep_length(void)
+>>>>  {
+>>>> +	struct clock_event_device *dev = __this_cpu_read(tick_cpu_device.evtdev);
+>>>>  	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
+>>>>  
+>>>> +	ts->sleep_length = ktime_sub(dev->next_event, ktime_get());
+>>>> +
+>>>>  	return ts->sleep_length;
+>>>>  }
+>>>>  
+>>>>
+>>>
+>>> I probably wouldn't do it this way ...
+>>>
+>>>
+>>
+>> May I know the detailed thoughts?
 > 
-> diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index e87ca6c..10276f0 100644
-> --- a/drivers/thermal/hisi_thermal.c
-> +++ b/drivers/thermal/hisi_thermal.c
-> @@ -39,12 +39,24 @@
->  #define HI6220_TEMP0_RST_MSK			(0x1C)
->  #define HI6220_TEMP0_VALUE			(0x28)
->  
-> +#define HI3660_OFFSET(chan)		((chan) * 0x40)
-> +#define HI3660_TEMP(chan)		(HI3660_OFFSET(chan) + 0x1C)
-> +#define HI3660_TH(chan)			(HI3660_OFFSET(chan) + 0x20)
-> +#define HI3660_LAG(chan)		(HI3660_OFFSET(chan) + 0x28)
-> +#define HI3660_INT_EN(chan)		(HI3660_OFFSET(chan) + 0x2C)
-> +#define HI3660_INT_CLR(chan)		(HI3660_OFFSET(chan) + 0x30)
-> +
->  #define HI6220_TEMP_BASE			(-60000)
->  #define HI6220_TEMP_RESET			(100000)
->  #define HI6220_TEMP_STEP			(785)
->  #define HI6220_TEMP_LAG				(3500)
->  
-> +#define HI3660_TEMP_BASE		(-63780)
-> +#define HI3660_TEMP_STEP		(205)
-> +#define HI3660_TEMP_LAG			(4000)
-> +
->  #define HI6220_DEFAULT_SENSOR		2
-> +#define HI3660_DEFAULT_SENSOR		1
->  
->  #define MAX_THRES_NUM			2
->  
-> @@ -96,6 +108,24 @@ static inline int hi6220_thermal_temp_to_step(int temp)
->  }
->  
->  /*
-> + * for Hi3660,
-> + *	Step: 189/922 (0.205)
-> + *	Temperature base: -63.780°C
-> + *
-> + * The register is programmed in temperature steps, every step is 205
-> + * millidegree and begins at -63 780 m°C
-> + */
-> +static inline int hi3660_thermal_step_to_temp(int step)
-> +{
-> +	return HI3660_TEMP_BASE + step * HI3660_TEMP_STEP;
-> +}
-> +
-> +static inline int hi3660_thermal_temp_to_step(int temp)
-> +{
-> +	return DIV_ROUND_UP(temp - HI3660_TEMP_BASE, HI3660_TEMP_STEP);
-> +}
-> +
-> +/*
->   * The lag register contains 5 bits encoding the temperature in steps.
->   *
->   * Each time the temperature crosses the threshold boundary, an
-> @@ -169,6 +199,45 @@ static inline int hi6220_thermal_get_temperature(void __iomem *addr)
->  }
->  
->  /*
-> + * [0:6] lag register
-> + *
-> + * The temperature is coded in steps, cf. HI3660_TEMP_STEP.
-> + *
-> + * Min : 0x00 :  0.0 °C
-> + * Max : 0x7F : 26.0 °C
-> + *
-> + */
-> +static inline void hi3660_thermal_set_lag(void __iomem *addr,
-> +					  int id, int value)
-> +{
-> +	writel(DIV_ROUND_UP(value, HI3660_TEMP_STEP) & 0x7F,
-> +			addr + HI3660_LAG(id));
-> +}
-> +
-> +static inline void hi3660_thermal_alarm_clear(void __iomem *addr,
-> +					      int id, int value)
-> +{
-> +	writel(value, addr + HI3660_INT_CLR(id));
-> +}
-> +
-> +static inline void hi3660_thermal_alarm_enable(void __iomem *addr,
-> +					       int id, int value)
-> +{
-> +	writel(value, addr + HI3660_INT_EN(id));
-> +}
-> +
-> +static inline void hi3660_thermal_alarm_set(void __iomem *addr,
-> +					    int id, int value)
-> +{
-> +	writel(value, addr + HI3660_TH(id));
-> +}
-> +
-> +static inline int hi3660_thermal_get_temperature(void __iomem *addr, int id)
-> +{
-> +	return hi3660_thermal_step_to_temp(readl(addr + HI3660_TEMP(id)));
-> +}
-> +
-> +/*
->   * Temperature configuration register - Sensor selection
->   *
->   * Bits [19:12]
-> @@ -206,11 +275,22 @@ static int hi6220_thermal_irq_handler(struct hisi_thermal_data *data)
->  	return 0;
->  }
->  
-> +static int hi3660_thermal_irq_handler(struct hisi_thermal_data *data)
-> +{
-> +	hi3660_thermal_alarm_clear(data->regs, data->sensor.id, 1);
-> +	return 0;
-> +}
-> +
->  static int hi6220_thermal_get_temp(struct hisi_thermal_data *data)
->  {
->  	return hi6220_thermal_get_temperature(data->regs);
->  }
->  
-> +static int hi3660_thermal_get_temp(struct hisi_thermal_data *data)
-> +{
-> +	return hi3660_thermal_get_temperature(data->regs, data->sensor.id);
-> +}
-> +
->  static int hi6220_thermal_disable_sensor(struct hisi_thermal_data *data)
->  {
->  	/* disable sensor module */
-> @@ -222,6 +302,13 @@ static int hi6220_thermal_disable_sensor(struct hisi_thermal_data *data)
->  	return 0;
->  }
->  
-> +static int hi3660_thermal_disable_sensor(struct hisi_thermal_data *data)
-> +{
-> +	/* disable sensor module */
-> +	hi3660_thermal_alarm_enable(data->regs, data->sensor.id, 0);
-> +	return 0;
-> +}
-> +
->  static int hi6220_thermal_enable_sensor(struct hisi_thermal_data *data)
->  {
->  	struct hisi_thermal_sensor *sensor = &data->sensor;
-> @@ -260,6 +347,29 @@ static int hi6220_thermal_enable_sensor(struct hisi_thermal_data *data)
->  	return 0;
->  }
->  
-> +static int hi3660_thermal_enable_sensor(struct hisi_thermal_data *data)
-> +{
-> +	unsigned int value;
-> +	struct hisi_thermal_sensor *sensor = &data->sensor;
-> +
-> +	/* disable interrupt */
-> +	hi3660_thermal_alarm_enable(data->regs, sensor->id, 0);
-> +
-> +	/* setting lag value between current temp and the threshold */
-> +	hi3660_thermal_set_lag(data->regs, sensor->id, HI3660_TEMP_LAG);
-> +
-> +	/* set interrupt threshold */
-> +	value = hi3660_thermal_temp_to_step(sensor->thres_temp[0]);
-> +	value |= hi3660_thermal_temp_to_step(sensor->thres_temp[1]) << 10;
-> +	hi3660_thermal_alarm_set(data->regs, sensor->id, value);
-> +
-> +	/* enable interrupt */
-> +	hi3660_thermal_alarm_clear(data->regs, sensor->id, 1);
-> +	hi3660_thermal_alarm_enable(data->regs, sensor->id, 1);
-> +
-> +	return 0;
-> +}
-> +
->  static int hi6220_thermal_probe(struct hisi_thermal_data *data)
->  {
->  	struct platform_device *pdev = data->pdev;
-> @@ -296,6 +406,33 @@ static int hi6220_thermal_probe(struct hisi_thermal_data *data)
->  	return 0;
->  }
->  
-> +static int hi3660_thermal_probe(struct hisi_thermal_data *data)
-> +{
-> +	struct platform_device *pdev = data->pdev;
-> +	struct device *dev = &pdev->dev;
-> +	struct resource *res;
-> +
-> +	data->get_temp = hi3660_thermal_get_temp;
-> +	data->enable_sensor = hi3660_thermal_enable_sensor;
-> +	data->disable_sensor = hi3660_thermal_disable_sensor;
-> +	data->irq_handler = hi3660_thermal_irq_handler;
-> +
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	data->regs = devm_ioremap_resource(dev, res);
-> +	if (IS_ERR(data->regs)) {
-> +		dev_err(dev, "failed to get io address\n");
-> +		return PTR_ERR(data->regs);
-> +	}
-> +
-> +	data->irq = platform_get_irq(pdev, 0);
-> +	if (data->irq < 0)
-> +		return data->irq;
-> +
-> +	data->sensor.id = HI3660_DEFAULT_SENSOR;
-> +
-> +	return 0;
-> +}
-> +
->  
->  static int hisi_thermal_get_temp(void *__data, int *temp)
->  {
-> @@ -371,7 +508,14 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
->  }
->  
->  static const struct of_device_id of_hisi_thermal_match[] = {
-> -	{ .compatible = "hisilicon,tsensor", .data = hi6220_thermal_probe },
-> +	{
-> +		.compatible = "hisilicon,tsensor",
-> +		.data = hi6220_thermal_probe
-> +	},
-> +	{
-> +		.compatible = "hisilicon,hi3660-tsensor",
-> +		.data = hi3660_thermal_probe
-> +	},
->  	{ /* end */ }
->  };
->  MODULE_DEVICE_TABLE(of, of_hisi_thermal_match);
-> -- 
-> 2.7.4
-> 
+> That depends on the answer above. :-)
+
+Does the above explanation address the concern?
+
+Thanks,
+-Aubrey
