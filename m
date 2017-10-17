@@ -1,60 +1,57 @@
 From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v7 1/3] dt-bindings: add eeprom "size" property
-Date: Tue, 17 Oct 2017 23:35:58 +0200
-Message-ID: <20171017213558.rct4fjpplh3cfyyo@ninjato>
+Subject: Re: [PATCH v7 2/3] eeprom: at24: add support to fetch eeprom device
+ property "size"
+Date: Tue, 17 Oct 2017 23:36:02 +0200
+Message-ID: <20171017213602.r52nkxgaqtgntbjn@ninjato>
 References: <1507615237-21744-1-git-send-email-divagar.mohandass@intel.com>
- <1507615237-21744-2-git-send-email-divagar.mohandass@intel.com>
+ <1507615237-21744-3-git-send-email-divagar.mohandass@intel.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="2qwkx27l7hkxso7v"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sauhun.de ([88.99.104.3]:54591 "EHLO pokefinder.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753003AbdJQVgA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 17 Oct 2017 17:36:00 -0400
+        protocol="application/pgp-signature"; boundary="pjtstpantw4zdngp"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1507615237-21744-2-git-send-email-divagar.mohandass@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <1507615237-21744-3-git-send-email-divagar.mohandass@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Divagar Mohandass <divagar.mohandass@intel.com>
 Cc: robh+dt@kernel.org, mark.rutland@arm.com, sakari.ailus@iki.fi, tfiga@chromium.org, devicetree@vger.kernel.org, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, rajmohan.mani@intel.com, mika.westerberg@linux.intel.com, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
---2qwkx27l7hkxso7v
+--pjtstpantw4zdngp
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 10, 2017 at 11:30:35AM +0530, Divagar Mohandass wrote:
-> This adds eeprom "size" as optional property for i2c eeproms.
-> The "size" property allows explicitly specifying the size of the
-> EEPROM chip in bytes.
+On Tue, Oct 10, 2017 at 11:30:36AM +0530, Divagar Mohandass wrote:
+> Obtain the size of the EEPROM chip from DT if the "size" property is
+> specified for the device.
 >=20
-> Acked-by: Rob Herring <robh@kernel.org>
+> Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 > Reviewed-by: Sakari Ailus <sakari.ailus@linux.intel.com>
 > Signed-off-by: Divagar Mohandass <divagar.mohandass@intel.com>
 
 Applied to for-next, thanks!
 
 
---2qwkx27l7hkxso7v
+--pjtstpantw4zdngp
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlnmd7oACgkQFA3kzBSg
-KbblFBAAn7F2ZSl9+BZqREdwPEwX2/0SddLIswOeqrlvOTp/EL1rXzMLzRsVXAnp
-9lU6rySzRo6s4uZfW+rp1QHIcNQhH8RWM++0FVNSJc7mTdDvi07UWLmNeBG0yHb5
-G/mbuBjzEe4SzL2TgqLQIATDfGUOfC699TbkWDQybqNJ4GJq/J7AFdFvgdKWpuFz
-uNuElMup6gXBRmMg5JOw5CgMJMjrYqrJwSPjLUwsEDr4xhRNCrV8buQM44rN4G/6
-MZOUDFL9LfY7mVDkK5W4tv8v+gqaOfCAuehJxjyymbvsxpDfL21dC6Jih4S6doHk
-bfrJcpJA/yY6CTBGDccEBhFFhKxReCVpBc+fx/QdTaktp+UAx4yya7j6ZLYZTGOv
-3jFPuSBgReBn0kGP8spd82oPbUCNoXdJDE7KU36jOboNVncTonYvt05nVU8h/E4T
-9oE9HIzLAHKM9ISD5dYkN+aY4+IMpRiHvgNn5a8omFjEmTlCJyG7MxQ2anAVoZXl
-+3SSCCNR7m6ady6CKr8t1fVR3nHdgTs4+gaWBrejPexwAseEox/0Kq9Aa6ZrDY4H
-K5Y93dcEirelwkG3TAUFvo1cvr0SVw4xgbfBxGVHqz1WrkRLWqPSub885qfCAc5G
-wfd/eqzlm/nCEsdVh4uZUZG2RaeqKp5AejLUvkB1W1QO7fUR380=
-=jmaE
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlnmd8IACgkQFA3kzBSg
+Kbbp0w//Wio3Wiori0EGFhNlN7kDZR2ekbOvD6kna6Zs5owdHXSxWEmDbG5vxMTu
+GtkrdaeY+8cYAWZYF22lS1epr2LX2zvVPKKGv/NBW3pfwjv4xxG5kXoUGzoAehAJ
+E9ddZqgjw9IDFkdO/kghR+GBpkDsR003lxw/mrk8LkaYhT1z/m9hK4/Z696b25K5
+/KnfPAtDCnLJmBwTIDDAKOiMMYEHsfqSH2Iz3TgpaBWtS4ni63hPaIBq4rNPh9v1
+HIRUhY+ZBhxUIhSyXKxhSKQjNamQvp1Jo+kTPCyR1v50LYk3Z+JHXHIDTSQ4Ls1+
+9AGriL376mtXaRQKYnwZjOCxWSLprrQY3W/l27NTtHvGGb+afnN+dvnoYQxtprnR
+Jiab/oRgvoXGMzgmvcLmr82GOHadYZrkeTehddQ8ffBzwCMuZc4sZN49yUtMdE6t
+gcqKx3fqaUIjRwn/QgYjxIe2k1d6ulueqC+5rsBP1QTDGyzO4BJGjjcFs7xQN7Es
+xG/hlqgrLyRrhN5EJjWpu6dOl+yxVsUBbEDf6c3CxGJJL9jaIccgKFWIMN4ZJn6d
+TM7dvUbc38rUrLU0bT03+KxD0krBluqfzb/Ur8m8986ayBASAegzYPFxCYSt74RB
+/5VJ1sEqegD5qIyZr+kgnD8CrQIozk/47boB/P335NWAbxIpul4=
+=Xvzu
 -----END PGP SIGNATURE-----
 
---2qwkx27l7hkxso7v--
+--pjtstpantw4zdngp--
