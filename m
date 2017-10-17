@@ -1,49 +1,101 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 0/5] thermal: rockchip: add tsadc support in thermal
- driver and IPA thermal control for RV1108 in dts
-Date: Mon, 16 Oct 2017 17:15:37 -0700
-Message-ID: <20171017001535.GA16006@localhost.localdomain>
-References: <1503570475-7850-1-git-send-email-rocky.hao@rock-chips.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH v2 0/8] Introduct cpu idle prediction functionality
+Date: Tue, 17 Oct 2017 02:07:21 +0200
+Message-ID: <3251888.IpbWLYog7H@aspire.rjw.lan>
+References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com> <3026355.QRuoy6eIZM@aspire.rjw.lan> <c4eaedb9-904f-0b51-a6e3-3033a6808cf0@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1503570475-7850-1-git-send-email-rocky.hao@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rocky Hao <rocky.hao@rock-chips.com>
-Cc: rui.zhang@intel.com, heiko@sntech.de, robh+dt@kernel.org, mark.rutland@arm.com, catalin.marinas@arm.com, will.deacon@arm.com, shawn.lin@rock-chips.com, cl@rock-chips.com, william.wu@rock-chips.com, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, xxx@rock-chips.com, jay.xu@rock-chips.com, wxt@rock-chips.com, huangtao@rock-chips.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46410 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753241AbdJQAQ4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Oct 2017 20:16:56 -0400
+In-Reply-To: <c4eaedb9-904f-0b51-a6e3-3033a6808cf0@linux.intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Li, Aubrey" <aubrey.li@linux.intel.com>
+Cc: Aubrey Li <aubrey.li@intel.com>, tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hello,
-
-On Thu, Aug 24, 2017 at 06:27:50PM +0800, Rocky Hao wrote:
-> This series patches add the tsadc support in thermal driver and in devicetree for RV1108.
-> Also add thermal control with Intelligent Power Allocation (IPA) policy by default.  Please
-> refer to https://developer.arm.com/open-source/intelligent-power-allocation for more information
-> about IPA.
+On Monday, October 16, 2017 9:44:41 AM CEST Li, Aubrey wrote:
+> On 2017/10/14 9:14, Rafael J. Wysocki wrote:
+> > On Saturday, September 30, 2017 9:20:26 AM CEST Aubrey Li wrote:
+> >> We found under some latency intensive workloads, short idle periods occurs
+> >> very common, then idle entry and exit path starts to dominate, so it's
+> >> important to optimize them. To determine the short idle pattern, we need
+> >> to figure out how long of the coming idle and the threshold of the short
+> >> idle interval.
+> >>
+> >> A cpu idle prediction functionality is introduced in this proposal to catch
+> >> the short idle pattern.
+> >>
+> >> Firstly, we check the IRQ timings subsystem, if there is an event
+> >> coming soon.
+> >> -- https://lwn.net/Articles/691297/
+> >>
+> >> Secondly, we check the idle statistics of scheduler, if it's likely we'll
+> >> go into a short idle.
+> >> -- https://patchwork.kernel.org/patch/2839221/
+> >>
+> >> Thirdly, we predict the next idle interval by using the prediction
+> >> fucntionality in the idle governor if it has.
+> >>
+> >> For the threshold of the short idle interval, we record the timestamps of
+> >> the idle entry, and multiply by a tunable parameter at here:
+> >> -- /proc/sys/kernel/fast_idle_ratio
+> >>
+> >> We use the output of the idle prediction to skip turning tick off if a
+> >> short idle is determined in this proposal. Reprogramming hardware timer
+> >> twice(off and on) is expensive for a very short idle. There are some
+> >> potential optimizations can be done according to the same indicator.
+> >>
+> >> I observed when system is idle, the idle predictor reports 20/s long idle
+> >> and ZERO fast idle on one CPU. And when the workload is running, the idle
+> >> predictor reports 72899/s fast idle and ZERO long idle on the same CPU.
+> >>
+> >> Aubrey Li (8):
+> >>   cpuidle: menu: extract prediction functionality
+> >>   cpuidle: record the overhead of idle entry
+> >>   cpuidle: add a new predict interface
+> >>   tick/nohz: keep tick on for a fast idle
+> >>   timers: keep sleep length updated as needed
+> >>   cpuidle: make fast idle threshold tunable
+> >>   cpuidle: introduce irq timing to make idle prediction
+> >>   cpuidle: introduce run queue average idle to make idle prediction
+> >>
+> >>  drivers/cpuidle/Kconfig          |   1 +
+> >>  drivers/cpuidle/cpuidle.c        | 109 +++++++++++++++++++++++++++++++++++++++
+> >>  drivers/cpuidle/governors/menu.c |  69 ++++++++++++++++---------
+> >>  include/linux/cpuidle.h          |  21 ++++++++
+> >>  kernel/sched/idle.c              |  14 ++++-
+> >>  kernel/sysctl.c                  |  12 +++++
+> >>  kernel/time/tick-sched.c         |   7 +++
+> >>  7 files changed, 209 insertions(+), 24 deletions(-)
+> >>
+> > 
+> > Overall, it looks like you could avoid stopping the tick every time the
+> > predicted idle duration is not longer than the tick interval in the first
+> > place.
+> > > Why don't you do that?
 > 
-> Rocky Hao (5):
->   dt-bindings: rockchip-thermal: Support the RV1108 SoC compatible
->   thermal: rockchip: Support the RV1108 SoC in thermal driver
-
-Applied patches 1  and 2.
-
->   arm: dts: rockchip: add tsadc node for RV1108 SoC
->   arm: dts: rockchip: add thermal nodes for RV1108 SoC
->   arm: dts: rockchip: enable tsadc module on RV1108 evaluation board
+> I didn't catch this.
 > 
-
-Acked-by: Eduardo Valentin <edubezval@gmail.com>
-
-for the DT changes.
-
->  .../bindings/thermal/rockchip-thermal.txt          |  1 +
->  arch/arm/boot/dts/rv1108-evb.dts                   |  4 ++
->  arch/arm/boot/dts/rv1108.dtsi                      | 69 ++++++++++++++++++++++
->  drivers/thermal/rockchip_thermal.c                 | 67 +++++++++++++++++++++
->  4 files changed, 141 insertions(+)
+> Are you suggesting?
 > 
-> -- 
-> 1.9.1
+> if(!cpu_stat.fast_idle)
+> 	tick_nohz_idle_enter()
 > 
-> 
+> Or you concern why the threshold can't simply be tick interval?
+
+That I guess.
+
+> For the first, can_stop_idle_tick() is a better place to skip tick-off IMHO.
+> For the latter, if the threshold is close/equal to the tick, it's quite possible
+> the next event is the tick and no other else event.
+
+Well, I don't quite get that.
+
+What's the reasoning here?
+
+Thanks,
+Rafael
