@@ -1,78 +1,70 @@
-From: Len Brown <lenb@kernel.org>
-Subject: [PATCH 1/1] Revert "tools/power turbostat: stop migrating, unless '-m'"
-Date: Tue, 17 Oct 2017 16:00:02 -0400
-Message-ID: <a94c49e6b0d4da98d8c79e22cad313bf092d5886.1508270356.git.len.brown@intel.com>
-Reply-To: Len Brown <lenb@kernel.org>
-Return-path: <stable-owner@vger.kernel.org>
-Sender: stable-owner@vger.kernel.org
-To: rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>, stable@vger.kernel.org
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
+Date: Tue, 17 Oct 2017 16:12:19 -0400 (EDT)
+Message-ID: <Pine.LNX.4.44L0.1710171558170.1864-100000@iolanthe.rowland.org>
+References: <CAPDyKFrMTSUHP86hnpHius2CDfv-ap4svGg=xgwAiH8pKj9Lvw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFrMTSUHP86hnpHius2CDfv-ap4svGg=xgwAiH8pKj9Lvw@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+On Tue, 17 Oct 2017, Ulf Hansson wrote:
 
-This reverts commit c91fc8519d87715a3a173475ea3778794c139996.
+> > These functions are wrong, however, because they attempt to reuse the
+> > whole callback *path* instead of just reusing driver callbacks.  The
+> > *only* reason why it all "works" is because there are no middle layer
+> > callbacks involved in that now.
+> >
+> > If you changed them to reuse driver callbacks only today, nothing would break
+> > AFAICS.
+> 
+> Yes, it would.
+> 
+> First, for example, the amba bus is responsible for the amba bus
+> clock, but relies on drivers to gate/ungate it during system sleep. In
+> case the amba drivers don't use the pm_runtime_force_suspend|resume(),
+> it will explicitly have to start manage the clock during system sleep
+> themselves. Leading to open coding.
 
-That change caused a C6 and PC6 residency regression on large idle systems.
+I think what Rafael has in mind is that the PM core will call the amba
+bus's ->suspend callback, and that routine will then be able to call
+the amba driver's runtime_suspend routine directly, if it wants to --
+as opposed to going through pm_runtime_force_suspend.
 
-Users also complained about new output indicating jitter:
+However, it's not clear whether this fully answers your concerns.
 
-turbostat: cpu6 jitter 3794 9142
+> Second, it will introduce a regression in behavior for all users of
+> pm_runtime_force_suspend|resume(), especially during system resume as
+> the driver may then end up resuming the device even in case it isn't
+> needed. I believe I have explained why, also several times by now -
+> and that's also how far you could take the i2c designware driver at
+> this point.
+> 
+> That said, I assume the second part may be addressed in this series,
+> if these drivers convert to use the "driver PM flags", right?
 
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: <stable@vger.kernel.org> # v4.13
----
- tools/power/x86/turbostat/turbostat.c | 10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+Presumably.
 
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 0dafba2c1e7d..bd9c6b31a504 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -92,7 +92,6 @@ unsigned int do_ring_perf_limit_reasons;
- unsigned int crystal_hz;
- unsigned long long tsc_hz;
- int base_cpu;
--int do_migrate;
- double discover_bclk(unsigned int family, unsigned int model);
- unsigned int has_hwp;	/* IA32_PM_ENABLE, IA32_HWP_CAPABILITIES */
- 			/* IA32_HWP_REQUEST, IA32_HWP_STATUS */
-@@ -303,9 +302,6 @@ int for_all_cpus(int (func)(struct thread_data *, struct core_data *, struct pkg
- 
- int cpu_migrate(int cpu)
- {
--	if (!do_migrate)
--		return 0;
--
- 	CPU_ZERO_S(cpu_affinity_setsize, cpu_affinity_set);
- 	CPU_SET_S(cpu, cpu_affinity_setsize, cpu_affinity_set);
- 	if (sched_setaffinity(0, cpu_affinity_setsize, cpu_affinity_set) == -1)
-@@ -5007,7 +5003,6 @@ void cmdline(int argc, char **argv)
- 		{"hide",	required_argument,	0, 'H'},	// meh, -h taken by --help
- 		{"Joules",	no_argument,		0, 'J'},
- 		{"list",	no_argument,		0, 'l'},
--		{"migrate",	no_argument,		0, 'm'},
- 		{"out",		required_argument,	0, 'o'},
- 		{"quiet",	no_argument,		0, 'q'},
- 		{"show",	required_argument,	0, 's'},
-@@ -5019,7 +5014,7 @@ void cmdline(int argc, char **argv)
- 
- 	progname = argv[0];
- 
--	while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:Jmo:qST:v",
-+	while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:JM:m:o:qST:v",
- 				long_options, &option_index)) != -1) {
- 		switch (opt) {
- 		case 'a':
-@@ -5062,9 +5057,6 @@ void cmdline(int argc, char **argv)
- 			list_header_only++;
- 			quiet++;
- 			break;
--		case 'm':
--			do_migrate = 1;
--			break;
- 		case 'o':
- 			outf = fopen_or_die(optarg, "w");
- 			break;
--- 
-2.14.0-rc0
+The problem is how to handle things which need to be treated
+differently for runtime PM vs. system suspend vs. hibernation.  If
+everything filters through a runtime_suspend routine, that doesn't
+leave any scope for handling the different kinds of PM transitions
+differently.  Instead, we can make the middle layer (i.e., the bus-type
+callbacks) take care of the varying tasks, and they can directly invoke
+a driver's runtime-PM callbacks to handle all the common activities.  
+If that's how the middle layer wants to do it.
+
+> However, what about the first case? Is some open coding needed or your
+> think the amba driver can instruct the amba bus via the "driver PM
+> flags"?
+
+PM flags won't directly be able to cover things like disabling clocks.  
+But they could be useful for indicating explicitly whether the code to
+take care of those things needs to reside at the driver layer or at the
+bus layer.
+
+Alan Stern
