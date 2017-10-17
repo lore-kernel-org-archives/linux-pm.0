@@ -1,138 +1,88 @@
-From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
-        <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH v3] thermal: rcar_gen3_thermal: fix initialization sequence for H3 ES2.0
-Date: Tue, 17 Oct 2017 13:36:13 +0200
-Message-ID: <20171017113613.9788-1-niklas.soderlund+renesas@ragnatech.se>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 02/25] thermal/drivers/hisi: Remove the multiple sensors
+ support
+Date: Tue, 17 Oct 2017 14:28:27 +0200
+Message-ID: <62584345-11d7-1b23-2711-2b663972161b@linaro.org>
+References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
+ <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
+ <1507658570-32675-2-git-send-email-daniel.lezcano@linaro.org>
+ <20171017035409.GA23821@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-renesas-soc@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171017035409.GA23821@localhost.localdomain>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org, Leo Yan <leo.yan@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The initialization sequence for H3 (r8a7795) ES1.x and ES2.0 is
-different. H3 ES2.0 and later uses the same sequence as M3 (r8a7796)
-ES1.0. Fix this by not looking at compatible strings and instead
-defaulting to the r8a7796 initialization sequence and use
-soc_device_match() to check for H3 ES1.x.
+On 17/10/2017 05:54, Eduardo Valentin wrote:
+> On Tue, Oct 10, 2017 at 08:02:27PM +0200, Daniel Lezcano wrote:
+>> By essence, the tsensor does not really support multiple sensor at the same
+>> time. It allows to set a sensor and use it to get the temperature, another
+>> sensor could be switched but with a delay of 3-5ms. It is difficult to read
+>> simultaneously several sensors without a big delay.
+>>
+> 
+> Is 3-5 ms enough to loose an event? Is this really a problem?
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Acked-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
----
- drivers/thermal/rcar_gen3_thermal.c | 34 +++++++++++++++-------------------
- 1 file changed, 15 insertions(+), 19 deletions(-)
+There are several aspects:
 
-* Changes from v2
-- Removed & when assigning function pointers, thanks Geert.
-- Added Reviewed-by and Acked-by tags.
+ - the multiple sensors is not needed here
 
-* Changes since v1
-- Use positive test to check for pre-production SoCs as suggested by
-  Geert.
-- Renamed init functions as currently the only known odd init case is H3
-  ES1.x, other Gen3 SoC uses same init process.
-- Remove one layer of indirection by removing the struct
-  rcar_gen3_thermal_data and store the thermal_init function pointer
-  directly in struct rcar_gen3_thermal_priv.
-- Fix spelling mistakes.
+ - the temperature controller is not designed to read several sensors at
+the same time, we switch the sensor and that clears some internal
+buffers and re-init the controller
 
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 203aca44a2bb4bdf..561a0a332208504a 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -24,6 +24,7 @@
- #include <linux/platform_device.h>
- #include <linux/pm_runtime.h>
- #include <linux/spinlock.h>
-+#include <linux/sys_soc.h>
- #include <linux/thermal.h>
- 
- #include "thermal_core.h"
-@@ -90,10 +91,6 @@ struct rcar_gen3_thermal_priv {
- 	struct rcar_gen3_thermal_tsc *tscs[TSC_MAX_NUM];
- 	unsigned int num_tscs;
- 	spinlock_t lock; /* Protect interrupts on and off */
--	const struct rcar_gen3_thermal_data *data;
--};
--
--struct rcar_gen3_thermal_data {
- 	void (*thermal_init)(struct rcar_gen3_thermal_tsc *tsc);
- };
- 
-@@ -278,7 +275,12 @@ static irqreturn_t rcar_gen3_thermal_irq_thread(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
--static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
-+static const struct soc_device_attribute r8a7795es1[] = {
-+	{ .soc_id = "r8a7795", .revision = "ES1.*" },
-+	{ /* sentinel */ }
-+};
-+
-+static void rcar_gen3_thermal_init_r8a7795es1(struct rcar_gen3_thermal_tsc *tsc)
- {
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  CTSR_THBGR);
- 	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,  0x0);
-@@ -303,7 +305,7 @@ static void r8a7795_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
- 	usleep_range(1000, 2000);
- }
- 
--static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
-+static void rcar_gen3_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
- {
- 	u32 reg_val;
- 
-@@ -324,17 +326,9 @@ static void r8a7796_thermal_init(struct rcar_gen3_thermal_tsc *tsc)
- 	usleep_range(1000, 2000);
- }
- 
--static const struct rcar_gen3_thermal_data r8a7795_data = {
--	.thermal_init = r8a7795_thermal_init,
--};
--
--static const struct rcar_gen3_thermal_data r8a7796_data = {
--	.thermal_init = r8a7796_thermal_init,
--};
--
- static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
--	{ .compatible = "renesas,r8a7795-thermal", .data = &r8a7795_data},
--	{ .compatible = "renesas,r8a7796-thermal", .data = &r8a7796_data},
-+	{ .compatible = "renesas,r8a7795-thermal", },
-+	{ .compatible = "renesas,r8a7796-thermal", },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
-@@ -371,7 +365,9 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 	if (!priv)
- 		return -ENOMEM;
- 
--	priv->data = of_device_get_match_data(dev);
-+	priv->thermal_init = rcar_gen3_thermal_init;
-+	if (soc_device_match(r8a7795es1))
-+		priv->thermal_init = rcar_gen3_thermal_init_r8a7795es1;
- 
- 	spin_lock_init(&priv->lock);
- 
-@@ -423,7 +419,7 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
- 
- 		priv->tscs[i] = tsc;
- 
--		priv->data->thermal_init(tsc);
-+		priv->thermal_init(tsc);
- 		rcar_gen3_thermal_calc_coefs(&tsc->coef, ptat, thcode[i]);
- 
- 		zone = devm_thermal_zone_of_sensor_register(dev, i, tsc,
-@@ -476,7 +472,7 @@ static int __maybe_unused rcar_gen3_thermal_resume(struct device *dev)
- 	for (i = 0; i < priv->num_tscs; i++) {
- 		struct rcar_gen3_thermal_tsc *tsc = priv->tscs[i];
- 
--		priv->data->thermal_init(tsc);
-+		priv->thermal_init(tsc);
- 		rcar_gen3_thermal_set_trips(tsc, tsc->low, tsc->high);
- 	}
- 
+ - some boards can take 40°C in 1 sec, the temperature increase is
+insanely fast and reading several sensors add an extra 15ms.
+
+So from my point of view, trying to read multiple sensors with *this*
+tsensor is pointless.
+
+>> Today, just one sensor is used, it is not necessary to deal with multiple
+> 
+> How come? Today the driver exposes all sensors to userspace. Removing
+> them, means you are changing the amount of sensors userspace really
+> sees.
+> 
+> Are you sure about this?
+> 
+> Can you please elaborate how we are only using one of the four sensors?
+
+Only one has been defined in the DT since the beginning and no one is
+using multiple sensors.
+
+>> sensors in the code. Remove them and if it is needed in the future add them
+>> on top of a code which will be clean up in the meantime.
+> 
+> It is just not clear to me why having 1 sensor support is better than
+> having 4, as per the hw supported tsensor.
+
+The tsensor supports 4 sensors but not at the same time. You choose one
+and use it, AFAICS from the documentation and behavior.
+
+If multiple sensors is needed later, I will be happy to re-introduce it
+on top of a sanitized driver.
+
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> 
+> I would prefer to get confirmation from folks from hisilicon here.
+> 
+> BTW, you should be copying previous author of the code.
+
+Hmm, I thought Leo was in copy (added). Kevin is from hisilicon and in
+charge of the thermal aspect of the hikey.
+
+
+
+
+
 -- 
-2.14.2
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
