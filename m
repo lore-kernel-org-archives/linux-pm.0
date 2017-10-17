@@ -1,48 +1,52 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 01/12] PM / core: Add NEVER_SKIP and SMART_PREPARE driver flags
-Date: Tue, 17 Oct 2017 17:26:20 +0200
-Message-ID: <79398495.qfC5mmSRrG@aspire.rjw.lan>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <6007227.iNoRbQyInB@aspire.rjw.lan> <20171017071543.GB27293@kroah.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: Re: [PATCH 12/12] PM / core: Add AVOID_RPM driver flag
+Date: Tue, 17 Oct 2017 18:33:17 +0300
+Message-ID: <1508254397.16112.481.camel@linux.intel.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan>
+         <2517917.TZ0hdc7mRJ@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20171017071543.GB27293@kroah.com>
+In-Reply-To: <2517917.TZ0hdc7mRJ@aspire.rjw.lan>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, October 17, 2017 9:15:43 AM CEST Greg Kroah-Hartman wrote:
-> On Tue, Oct 17, 2017 at 12:05:11AM +0200, Rafael J. Wysocki wrote:
-> > On Monday, October 16, 2017 8:28:52 AM CEST Greg Kroah-Hartman wrote:
-> > > On Mon, Oct 16, 2017 at 03:29:02AM +0200, Rafael J. Wysocki wrote:
-> > > >  struct dev_pm_info {
-> > > >  	pm_message_t		power_state;
-> > > >  	unsigned int		can_wakeup:1;
-> > > > @@ -561,6 +580,7 @@ struct dev_pm_info {
-> > > >  	bool			is_late_suspended:1;
-> > > >  	bool			early_init:1;	/* Owned by the PM core */
-> > > >  	bool			direct_complete:1;	/* Owned by the PM core */
-> > > > +	unsigned int		driver_flags;
-> > > 
-> > > Minor nit, u32 or u64?
-> > 
-> > u32 I think, will update.
-> > 
-> > BTW, there's a mess in this struct overall and I'd like all of the bit fileds
-> > to be the same type (and that shouldn't be bool IMO :-)).
-> > 
-> > Do you prefer u32 or unsinged int?
+On Mon, 2017-10-16 at 03:32 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> I always prefer an explicit size for variables, unless it's a "generic
-> loop" type thing.  So I'll always say "u32" for this.
+> Define and document a new driver flag, DPM_FLAG_AVOID_RPM, to inform
+> the PM core and middle layer code that the driver has something
+> significant to do in its ->suspend and/or ->resume callbacks and
+> runtime PM should be disabled for the device when these callbacks
+> run.
 > 
-> And cleaning up the structure would be great, it's grown over time in
-> odd ways as you point out.
+> Setting DPM_FLAG_AVOID_RPM (in addition to DPM_FLAG_SMART_SUSPEND)
+> causes runtime PM to be disabled for the device before invoking the
+> driver's ->suspend callback for it and to be enabled again for it
+> only after the driver's ->resume callback has returned.  In addition
+> to that, if the device is in runtime suspend right after disabling
+> runtime PM for it (which means that there was no reason to resume it
+> from runtime suspend beforehand), the invocation of the ->suspend
+> callback will be skipped for it and it will be left in runtime
+> suspend until the "noirq" phase of the subsequent system resume.
+> 
+> If DPM_FLAG_SMART_SUSPEND is not set, DPM_FLAG_AVOID_RPM has no
+> effect.
+> 
 
-OK, but that will be separate from this work.
+> +	if (dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) &&
+> +	    dev_pm_test_driver_flags(dev, DPM_FLAG_AVOID_RPM)) {
 
-Thanks,
-Rafael
+Wasn't interface designed to allow something like:
+	if (dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND | DPM_FLAG_AVOID_RPM)) {
+instead?
 
+Does it make sense to have a separate definition for
+DPM_FLAG_SMART_SUSPEND | DPM_FLAG_AVOID_RPM ?
+
+-- 
+Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Intel Finland Oy
