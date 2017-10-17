@@ -1,24 +1,22 @@
 From: MyungJoo Ham <myungjoo.ham@samsung.com>
-Subject: Re: [PATCH v4 7/8] PM / devfreq: Define the constant governor name
-Date: Wed, 18 Oct 2017 00:02:21 +0900
-Message-ID: <CAJ0PZbTBmTB+N-p_2bJ5vjTj2uNBmjq5An5fBD2_nTCkW3O1kQ@mail.gmail.com>
-References: <CGME20171013074836epcas2p4e70bca2ebe9446353abf5c14a9d16460@epcas2p4.samsung.com>
- <1507880904-31956-1-git-send-email-cw00.choi@samsung.com> <1507880904-31956-8-git-send-email-cw00.choi@samsung.com>
+Subject: Re: [PATCH v4 8/8] PM / devfreq: exynos-bus: Register cooling device
+Date: Wed, 18 Oct 2017 00:11:47 +0900
+Message-ID: <CAJ0PZbRkfNt5eQK5qzunAnFiGmwEF1Dj-TKuqXNhxhN=BxzVEw@mail.gmail.com>
+References: <CGME20171013074837epcas1p49957bd030fc1a27cc845d63c50ad0aba@epcas1p4.samsung.com>
+ <1507880904-31956-1-git-send-email-cw00.choi@samsung.com> <1507880904-31956-9-git-send-email-cw00.choi@samsung.com>
 Reply-To: myungjoo.ham@gmail.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-In-Reply-To: <1507880904-31956-8-git-send-email-cw00.choi@samsung.com>
+In-Reply-To: <1507880904-31956-9-git-send-email-cw00.choi@samsung.com>
 Sender: linux-samsung-soc-owner@vger.kernel.org
 To: Chanwoo Choi <cw00.choi@samsung.com>
 Cc: Kyungmin Park <kyungmin.park@samsung.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, chanwoo@kernel.org, =?UTF-8?B?64yA7J246riw?= <inki.dae@samsung.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
 On Fri, Oct 13, 2017 at 4:48 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
-> Prior to that, the devfreq device uses the governor name when adding
-> the itself. In order to prevent the mistake used the wrong governor name,
-> this patch defines the governor name as a constant and then uses them
-> instead of using the string directly.
+> This patch registers the Exynos Bus-Frequency scaling device
+> as a cooling device of thermal management.
 >
 > Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 > Cc: Kukjin Kim <kgene@kernel.org>
@@ -27,22 +25,36 @@ On Fri, Oct 13, 2017 at 4:48 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
 > Cc: linux-arm-kernel@lists.infradead.org
 > Cc: linux-kernel@vger.kernel.org
 
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
+I've got a question below.
 
 > ---
->  drivers/devfreq/exynos-bus.c              | 5 +++--
->  drivers/devfreq/governor_passive.c        | 2 +-
->  drivers/devfreq/governor_performance.c    | 2 +-
->  drivers/devfreq/governor_powersave.c      | 2 +-
->  drivers/devfreq/governor_simpleondemand.c | 2 +-
->  drivers/devfreq/governor_userspace.c      | 2 +-
->  drivers/devfreq/rk3399_dmc.c              | 2 +-
->  include/linux/devfreq.h                   | 7 +++++++
->  8 files changed, 16 insertions(+), 8 deletions(-)
+>  drivers/devfreq/exynos-bus.c | 27 +++++++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
 >
-[]
+> diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
+> index c25658b26598..1c7521b65c2f 100644
+[]> @@ -468,6 +471,19 @@ static int exynos_bus_probe(struct
+platform_device *pdev)
+>                 goto err;
+>         }
+>
+> +       /*
+> +        * Register devfreq cooling device if thermal DT code
+> +        * takes care of matching them.
+> +        */
+> +       if (of_find_property(np, "#cooling-cells", NULL)) {
+> +               bus->cdev = of_devfreq_cooling_register(np, bus->devfreq);
+> +               if (IS_ERR(bus->cdev)) {
+> +                       dev_err(dev, "running exynos-bus without cooling device\n");
+> +                       bus->cdev = NULL;
+> +               }
+> +       }
+> +       of_node_put(np);
+
+Is this of_node_put() is a pair of of_find_property? or for something else?
+(do you need to call put for of_find_property? or for something else?
+I'm not seeing a function with "get")
 
 
--- 
-MyungJoo Ham, Ph.D.
-S/W Center, Samsung Electronics
+Cheers,
+MyungJoo
