@@ -1,70 +1,113 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
-Date: Tue, 17 Oct 2017 16:12:19 -0400 (EDT)
-Message-ID: <Pine.LNX.4.44L0.1710171558170.1864-100000@iolanthe.rowland.org>
-References: <CAPDyKFrMTSUHP86hnpHius2CDfv-ap4svGg=xgwAiH8pKj9Lvw@mail.gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 02/25] thermal/drivers/hisi: Remove the multiple sensors
+ support
+Date: Tue, 17 Oct 2017 14:07:08 -0700
+Message-ID: <20171017210706.GA3772@localhost.localdomain>
+References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
+ <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
+ <1507658570-32675-2-git-send-email-daniel.lezcano@linaro.org>
+ <20171017035409.GA23821@localhost.localdomain>
+ <62584345-11d7-1b23-2711-2b663972161b@linaro.org>
+ <20171017182547.GA1773@localhost.localdomain>
+ <789b9c73-40fa-bc5c-5dd2-9f718beac175@linaro.org>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrMTSUHP86hnpHius2CDfv-ap4svGg=xgwAiH8pKj9Lvw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f53.google.com ([74.125.83.53]:44642 "EHLO
+        mail-pg0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1758713AbdJQVHM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2017 17:07:12 -0400
+Content-Disposition: inline
+In-Reply-To: <789b9c73-40fa-bc5c-5dd2-9f718beac175@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org, Leo Yan <leo.yan@linaro.org>
 
-On Tue, 17 Oct 2017, Ulf Hansson wrote:
-
-> > These functions are wrong, however, because they attempt to reuse the
-> > whole callback *path* instead of just reusing driver callbacks.  The
-> > *only* reason why it all "works" is because there are no middle layer
-> > callbacks involved in that now.
-> >
-> > If you changed them to reuse driver callbacks only today, nothing would break
-> > AFAICS.
+On Tue, Oct 17, 2017 at 09:03:40PM +0200, Daniel Lezcano wrote:
+> On 17/10/2017 20:25, Eduardo Valentin wrote:
+> > Hello,
+> > 
+> > On Tue, Oct 17, 2017 at 02:28:27PM +0200, Daniel Lezcano wrote:
+> >> On 17/10/2017 05:54, Eduardo Valentin wrote:
+> >>> On Tue, Oct 10, 2017 at 08:02:27PM +0200, Daniel Lezcano wrote:
+> >>>> By essence, the tsensor does not really support multiple sensor at the same
+> >>>> time. It allows to set a sensor and use it to get the temperature, another
+> >>>> sensor could be switched but with a delay of 3-5ms. It is difficult to read
+> >>>> simultaneously several sensors without a big delay.
+> >>>>
+> >>>
+> >>> Is 3-5 ms enough to loose an event? Is this really a problem?
+> >>
+> >> There are several aspects:
+> >>
+> >>  - the multiple sensors is not needed here
+> > 
+> > Well, that is debatable, I cannot really agree or disagree with the
+> > above statement without understanding the use cases and most important,
+> > the location of each sensor. What is the location of each sensor?
+> > 
+> >>
+> >>  - the temperature controller is not designed to read several sensors at
+> >> the same time, we switch the sensor and that clears some internal
+> >> buffers and re-init the controller
+> > 
+> > Which is still very helpful in case you have multiple hotspots that you
+> > want to track and they are exposed on different workloads. Sacrificing
+> > the availability of sensors is something needs a better justification
+> > other than "current code uses only one".
+> > 
+> > 
+> >>
+> >>  - some boards can take 40°C in 1 sec, the temperature increase is
+> >> insanely fast and reading several sensors add an extra 15ms.
+> >>
+> > 
+> > 
+> > Ok... What is the difference in update rate with and without the switch
+> > of sensors? With the above worst case, you have about 4/6 mC/ms. Can
+> > your tsensor support that resolution for a single sensor? What is the
+> > maximum resolution a tsensor can support? What is the penalty added with
+> > switch?
+> > 
+> > Based on this data, and the above 3-5ms, that  means you would miss about
+> > ~ 3 - 4 mC while switching ( assuming tsensor can really achieve the
+> > above rate of change: 5ms * 4/6 mC /ms). Are you sure that is
+> > enough justification to drop three extra sensors?
 > 
-> Yes, it would.
+> Ok if I refer to the documentation the rate is 0.768 ms with the current
+> configuration.
 > 
-> First, for example, the amba bus is responsible for the amba bus
-> clock, but relies on drivers to gate/ungate it during system sleep. In
-> case the amba drivers don't use the pm_runtime_force_suspend|resume(),
-> it will explicitly have to start manage the clock during system sleep
-> themselves. Leading to open coding.
-
-I think what Rafael has in mind is that the PM core will call the amba
-bus's ->suspend callback, and that routine will then be able to call
-the amba driver's runtime_suspend routine directly, if it wants to --
-as opposed to going through pm_runtime_force_suspend.
-
-However, it's not clear whether this fully answers your concerns.
-
-> Second, it will introduce a regression in behavior for all users of
-> pm_runtime_force_suspend|resume(), especially during system resume as
-> the driver may then end up resuming the device even in case it isn't
-> needed. I believe I have explained why, also several times by now -
-> and that's also how far you could take the i2c designware driver at
-> this point.
+> The driver is currently bogus: register overwritten, bouncing interrupt,
+> unneeded lock, ... So the proposition was to remove the multiple sensors
+> support, clean the driver, and re-introduce it if there is a need.
 > 
-> That said, I assume the second part may be addressed in this series,
-> if these drivers convert to use the "driver PM flags", right?
+> If I remember correctly Leo, author of the driver, agreed on this. Leo ?
+> 
+> Note, I'm not strongly against multiple sensors support in the driver if
+> you think it is convenient but it is much simpler to remove the current
+> code as it is not used and put it back on top of a sane foundation
+> instead of circumventing that on the existing code.
+> 
+> 
 
-Presumably.
+I am also fine with the above strategy, as long as you are sure you are
+not breaking anyone (specially userspace). Also, it would be good to get
+a reviewed-by from hisilicon just to confirm (Leo?).
 
-The problem is how to handle things which need to be treated
-differently for runtime PM vs. system suspend vs. hibernation.  If
-everything filters through a runtime_suspend routine, that doesn't
-leave any scope for handling the different kinds of PM transitions
-differently.  Instead, we can make the middle layer (i.e., the bus-type
-callbacks) take care of the varying tasks, and they can directly invoke
-a driver's runtime-PM callbacks to handle all the common activities.  
-If that's how the middle layer wants to do it.
+Besides, once you get his reviewed-by, and add it to the patches,
+can you please resend the series with the minor issues I
+mentioned (a few minor checkpatch issues and one compilation warn that
+is added to the driver after the series is applied).
 
-> However, what about the first case? Is some open coding needed or your
-> think the amba driver can instruct the amba bus via the "driver PM
-> flags"?
-
-PM flags won't directly be able to cover things like disabling clocks.  
-But they could be useful for indicating explicitly whether the code to
-take care of those things needs to reside at the driver layer or at the
-bus layer.
-
-Alan Stern
+> 
+> 
+> 
+> -- 
+>  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+> 
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+> 
