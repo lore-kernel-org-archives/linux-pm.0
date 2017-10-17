@@ -1,101 +1,44 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [RFC PATCH v2 0/8] Introduct cpu idle prediction functionality
-Date: Tue, 17 Oct 2017 02:07:21 +0200
-Message-ID: <3251888.IpbWLYog7H@aspire.rjw.lan>
-References: <1506756034-6340-1-git-send-email-aubrey.li@intel.com> <3026355.QRuoy6eIZM@aspire.rjw.lan> <c4eaedb9-904f-0b51-a6e3-3033a6808cf0@linux.intel.com>
+From: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH] PM: Convert timers to use timer_setup()
+Date: Mon, 16 Oct 2017 17:19:48 -0700
+Message-ID: <CAGXu5j+S6WR_m0f5snY6NV0gt_OX7FCgi21d2uKYMYtoNMuuHw@mail.gmail.com>
+References: <20171016232055.GA100369@beast> <da183173-0b50-9363-3880-cbb64812ecdf@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46410 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753241AbdJQAQ4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Oct 2017 20:16:56 -0400
-In-Reply-To: <c4eaedb9-904f-0b51-a6e3-3033a6808cf0@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <da183173-0b50-9363-3880-cbb64812ecdf@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Li, Aubrey" <aubrey.li@linux.intel.com>
-Cc: Aubrey Li <aubrey.li@intel.com>, tglx@linutronix.de, peterz@infradead.org, len.brown@intel.com, ak@linux.intel.com, tim.c.chen@linux.intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, October 16, 2017 9:44:41 AM CEST Li, Aubrey wrote:
-> On 2017/10/14 9:14, Rafael J. Wysocki wrote:
-> > On Saturday, September 30, 2017 9:20:26 AM CEST Aubrey Li wrote:
-> >> We found under some latency intensive workloads, short idle periods occurs
-> >> very common, then idle entry and exit path starts to dominate, so it's
-> >> important to optimize them. To determine the short idle pattern, we need
-> >> to figure out how long of the coming idle and the threshold of the short
-> >> idle interval.
-> >>
-> >> A cpu idle prediction functionality is introduced in this proposal to catch
-> >> the short idle pattern.
-> >>
-> >> Firstly, we check the IRQ timings subsystem, if there is an event
-> >> coming soon.
-> >> -- https://lwn.net/Articles/691297/
-> >>
-> >> Secondly, we check the idle statistics of scheduler, if it's likely we'll
-> >> go into a short idle.
-> >> -- https://patchwork.kernel.org/patch/2839221/
-> >>
-> >> Thirdly, we predict the next idle interval by using the prediction
-> >> fucntionality in the idle governor if it has.
-> >>
-> >> For the threshold of the short idle interval, we record the timestamps of
-> >> the idle entry, and multiply by a tunable parameter at here:
-> >> -- /proc/sys/kernel/fast_idle_ratio
-> >>
-> >> We use the output of the idle prediction to skip turning tick off if a
-> >> short idle is determined in this proposal. Reprogramming hardware timer
-> >> twice(off and on) is expensive for a very short idle. There are some
-> >> potential optimizations can be done according to the same indicator.
-> >>
-> >> I observed when system is idle, the idle predictor reports 20/s long idle
-> >> and ZERO fast idle on one CPU. And when the workload is running, the idle
-> >> predictor reports 72899/s fast idle and ZERO long idle on the same CPU.
-> >>
-> >> Aubrey Li (8):
-> >>   cpuidle: menu: extract prediction functionality
-> >>   cpuidle: record the overhead of idle entry
-> >>   cpuidle: add a new predict interface
-> >>   tick/nohz: keep tick on for a fast idle
-> >>   timers: keep sleep length updated as needed
-> >>   cpuidle: make fast idle threshold tunable
-> >>   cpuidle: introduce irq timing to make idle prediction
-> >>   cpuidle: introduce run queue average idle to make idle prediction
-> >>
-> >>  drivers/cpuidle/Kconfig          |   1 +
-> >>  drivers/cpuidle/cpuidle.c        | 109 +++++++++++++++++++++++++++++++++++++++
-> >>  drivers/cpuidle/governors/menu.c |  69 ++++++++++++++++---------
-> >>  include/linux/cpuidle.h          |  21 ++++++++
-> >>  kernel/sched/idle.c              |  14 ++++-
-> >>  kernel/sysctl.c                  |  12 +++++
-> >>  kernel/time/tick-sched.c         |   7 +++
-> >>  7 files changed, 209 insertions(+), 24 deletions(-)
-> >>
-> > 
-> > Overall, it looks like you could avoid stopping the tick every time the
-> > predicted idle duration is not longer than the tick interval in the first
-> > place.
-> > > Why don't you do that?
-> 
-> I didn't catch this.
-> 
-> Are you suggesting?
-> 
-> if(!cpu_stat.fast_idle)
-> 	tick_nohz_idle_enter()
-> 
-> Or you concern why the threshold can't simply be tick interval?
+On Mon, Oct 16, 2017 at 4:53 PM, Rafael J. Wysocki
+<rafael.j.wysocki@intel.com> wrote:
+> On 10/17/2017 1:20 AM, Kees Cook wrote:
+>>
+>> In preparation for unconditionally passing the struct timer_list pointer
+>> to
+>> all timer callbacks, switch to using the new timer_setup() and
+>> from_timer()
+>> to pass the timer pointer explicitly. Removes test of .data field, since
+>> that will be going away.
+>>
+>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+>> Cc: Pavel Machek <pavel@ucw.cz>
+>> Cc: Len Brown <len.brown@intel.com>
+>> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> Cc: linux-pm@vger.kernel.org
+>> Signed-off-by: Kees Cook <keescook@chromium.org>
+>
+>
+> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-That I guess.
+Do you want this to be carried in the timers tree, or can you pick it up?
 
-> For the first, can_stop_idle_tick() is a better place to skip tick-off IMHO.
-> For the latter, if the threshold is close/equal to the tick, it's quite possible
-> the next event is the tick and no other else event.
+Thanks!
 
-Well, I don't quite get that.
+-Kees
 
-What's the reasoning here?
-
-Thanks,
-Rafael
+-- 
+Kees Cook
+Pixel Security
