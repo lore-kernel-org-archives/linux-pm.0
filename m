@@ -1,137 +1,127 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 19/25] thermal/drivers/hisi: Put platform code together
-Date: Mon, 16 Oct 2017 21:37:01 -0700
-Message-ID: <20171017043700.GC7954@localhost.localdomain>
+Subject: Re: [PATCH 22/25] thermal/drivers/hisi: Add support for multi temp
+ threshold
+Date: Mon, 16 Oct 2017 21:38:01 -0700
+Message-ID: <20171017043800.GD7954@localhost.localdomain>
 References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
  <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
- <1507658570-32675-19-git-send-email-daniel.lezcano@linaro.org>
+ <1507658570-32675-22-git-send-email-daniel.lezcano@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:56753 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753083AbdJQEiE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2017 00:38:04 -0400
 Content-Disposition: inline
-In-Reply-To: <1507658570-32675-19-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <1507658570-32675-22-git-send-email-daniel.lezcano@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org
-List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 10, 2017 at 08:02:44PM +0200, Daniel Lezcano wrote:
+On Tue, Oct 10, 2017 at 08:02:47PM +0200, Daniel Lezcano wrote:
 > From: Kevin Wangtao <kevin.wangtao@linaro.org>
 > 
-> Reorganize the code for next patches by moving the functions upper in
-> the file which will prevent a forward declaration. There is no functional
-> change here.
+> The next patches will provide the support for the hi3660 where the temperature
+> sensor can have multiple alarm levels. In order to set the scene to support it,
+> we have to convert the current code to be able to support multiple threshold
+> values.
 > 
+> [Daniel Lezcano: Restated the log]
+
+CHECK: Prefer kernel type 'u32' over 'uint32_t'
+#113: FILE: drivers/thermal/hisi_thermal.c:54:
++	uint32_t thres_temp[MAX_THRES_NUM];
+
+total: 0 errors, 1 warnings, 1 checks, 67 lines checked
 
 
-CHECK: Please don't use multiple blank lines
-#104: FILE: drivers/thermal/hisi_thermal.c:204:
- 
- +
 
- total: 0 errors, 0 warnings, 1 checks, 88 lines checked
-
-
+> 
 > Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > ---
->  drivers/thermal/hisi_thermal.c | 76 +++++++++++++++++++++---------------------
->  1 file changed, 38 insertions(+), 38 deletions(-)
+>  drivers/thermal/hisi_thermal.c | 21 ++++++++++++---------
+>  1 file changed, 12 insertions(+), 9 deletions(-)
 > 
 > diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-> index befdb28..ff9055a 100644
+> index b5a7159..e87ca6c 100644
 > --- a/drivers/thermal/hisi_thermal.c
 > +++ b/drivers/thermal/hisi_thermal.c
-> @@ -201,6 +201,44 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
->  	clk_disable_unprepare(data->clk);
->  }
+> @@ -46,10 +46,12 @@
 >  
-> +
-> +static int hisi_thermal_setup(struct hisi_thermal_data *data)
-> +{
-> +	struct hisi_thermal_sensor *sensor = &data->sensor;
-> +	int ret;
-> +
-> +	/* enable clock for tsensor */
-> +	ret = clk_prepare_enable(data->clk);
-> +	if (ret)
-> +		return ret;
-> +
-> +	/* disable module firstly */
-> +	hisi_thermal_reset_enable(data->regs, 0);
-> +	hisi_thermal_enable(data->regs, 0);
-> +
-> +	/* select sensor id */
-> +	hisi_thermal_sensor_select(data->regs, sensor->id);
-> +
-> +	/* setting the hdak time */
-> +	hisi_thermal_hdak_set(data->regs, 0);
-> +
-> +	/* setting lag value between current temp and the threshold */
-> +	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
-> +
-> +	/* enable for interrupt */
-> +	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
-> +
-> +	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
-> +
-> +	/* enable module */
-> +	hisi_thermal_reset_enable(data->regs, 1);
-> +	hisi_thermal_enable(data->regs, 1);
-> +
-> +	hisi_thermal_alarm_clear(data->regs, 0);
-> +	hisi_thermal_alarm_enable(data->regs, 1);
-> +
-> +	return 0;
-> +}
->  static int hisi_thermal_get_temp(void *__data, int *temp)
->  {
->  	struct hisi_thermal_data *data = __data;
-> @@ -291,44 +329,6 @@ static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
->  		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
->  }
+>  #define HI6220_DEFAULT_SENSOR		2
 >  
-> -static int hisi_thermal_setup(struct hisi_thermal_data *data)
-> -{
-> -	struct hisi_thermal_sensor *sensor = &data->sensor;
-> -	int ret;
-> -
-> -	/* enable clock for tsensor */
-> -	ret = clk_prepare_enable(data->clk);
-> -	if (ret)
-> -		return ret;
-> -
-> -	/* disable module firstly */
-> -	hisi_thermal_reset_enable(data->regs, 0);
-> -	hisi_thermal_enable(data->regs, 0);
-> -
-> -	/* select sensor id */
-> -	hisi_thermal_sensor_select(data->regs, sensor->id);
-> -
-> -	/* setting the hdak time */
-> -	hisi_thermal_hdak_set(data->regs, 0);
-> -
-> -	/* setting lag value between current temp and the threshold */
-> -	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
-> -
-> -	/* enable for interrupt */
-> -	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
-> -
-> -	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
-> -
-> -	/* enable module */
-> -	hisi_thermal_reset_enable(data->regs, 1);
-> -	hisi_thermal_enable(data->regs, 1);
-> -
-> -	hisi_thermal_alarm_clear(data->regs, 0);
-> -	hisi_thermal_alarm_enable(data->regs, 1);
-> -
-> -	return 0;
-> -}
-> -
->  static int hisi_thermal_probe(struct platform_device *pdev)
+> +#define MAX_THRES_NUM			2
+> +
+>  struct hisi_thermal_sensor {
+>  	struct thermal_zone_device *tzd;
+>  	uint32_t id;
+> -	uint32_t thres_temp;
+> +	uint32_t thres_temp[MAX_THRES_NUM];
+>  };
+>  
+>  struct hisi_thermal_data {
+> @@ -244,7 +246,7 @@ static int hi6220_thermal_enable_sensor(struct hisi_thermal_data *data)
+>  	hi6220_thermal_set_lag(data->regs, HI6220_TEMP_LAG);
+>  
+>  	/* enable for interrupt */
+> -	hi6220_thermal_alarm_set(data->regs, sensor->thres_temp);
+> +	hi6220_thermal_alarm_set(data->regs, sensor->thres_temp[0]);
+>  
+>  	hi6220_thermal_reset_set(data->regs, HI6220_TEMP_RESET);
+>  
+> @@ -303,7 +305,7 @@ static int hisi_thermal_get_temp(void *__data, int *temp)
+>  	*temp = data->get_temp(data);
+>  
+>  	dev_dbg(&data->pdev->dev, "id=%d, temp=%d, thres=%d\n",
+> -		sensor->id, *temp, sensor->thres_temp);
+> +		sensor->id, *temp, sensor->thres_temp[0]);
+>  
+>  	return 0;
+>  }
+> @@ -322,16 +324,16 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
+>  
+>  	hisi_thermal_get_temp(data, &temp);
+>  
+> -	if (temp >= sensor->thres_temp) {
+> +	if (temp >= sensor->thres_temp[0]) {
+>  		dev_crit(&data->pdev->dev, "THERMAL ALARM: %d > %d\n",
+> -			 temp, sensor->thres_temp);
+> +			 temp, sensor->thres_temp[0]);
+>  
+>  		thermal_zone_device_update(data->sensor.tzd,
+>  					   THERMAL_EVENT_UNSPECIFIED);
+>  
+>  	} else {
+>  		dev_crit(&data->pdev->dev, "THERMAL ALARM stopped: %d < %d\n",
+> -			 temp, sensor->thres_temp);
+> +			 temp, sensor->thres_temp[0]);
+>  	}
+>  
+>  	return IRQ_HANDLED;
+> @@ -341,7 +343,7 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+>  					struct hisi_thermal_data *data,
+>  					struct hisi_thermal_sensor *sensor)
 >  {
->  	struct hisi_thermal_data *data;
+> -	int ret, i;
+> +	int ret, i, thres_idx = 0;
+>  	const struct thermal_trip *trip;
+>  
+>  	sensor->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
+> @@ -359,8 +361,9 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+>  
+>  	for (i = 0; i < of_thermal_get_ntrips(sensor->tzd); i++) {
+>  		if (trip[i].type == THERMAL_TRIP_PASSIVE) {
+> -			sensor->thres_temp = trip[i].temperature;
+> -			break;
+> +			sensor->thres_temp[thres_idx++] = trip[i].temperature;
+> +			if (thres_idx >= MAX_THRES_NUM)
+> +				break;
+>  		}
+>  	}
+>  
 > -- 
 > 2.7.4
 > 
