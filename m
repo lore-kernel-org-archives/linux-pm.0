@@ -1,48 +1,69 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
-Date: Wed, 18 Oct 2017 23:48:20 +0200
-Message-ID: <2926646.NJduVklg7n@aspire.rjw.lan>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <CAPDyKFozJtSHxxBEFtC+ofJ4XUyQjqUundPs81JATT=WfjXoYA@mail.gmail.com> <7b9c2a3e-2e88-938e-46a5-703de0080681@ti.com>
+Date: Wed, 18 Oct 2017 23:54:28 +0200
+Message-ID: <20665978.JlZ4Hgb5rF@aspire.rjw.lan>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <2745759.OYb9FSKnNE@aspire.rjw.lan> <CAPDyKFpNHL=tZYbQduDJqypz7rbwPwvW7sOymm-djbRSFgZ00g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <7b9c2a3e-2e88-938e-46a5-703de0080681@ti.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFpNHL=tZYbQduDJqypz7rbwPwvW7sOymm-djbRSFgZ00g@mail.gmail.com>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, October 18, 2017 9:45:11 PM CEST Grygorii Strashko wrote:
+On Wednesday, October 18, 2017 2:34:10 PM CEST Ulf Hansson wrote:
+> [...]
 > 
-> On 10/18/2017 09:11 AM, Ulf Hansson wrote:
-
-[...]
-
-> >>> That's the point. We know pm_runtime_force_* works nicely for the
-> >>> trivial middle-layer cases.
-> >>
-> >> In which cases the middle-layer callbacks don't exist, so it's just like
-> >> reusing driver callbacks directly. :-)
+> >> Are there any major reasons why the appended patch (obviously untested) won't
+> >> work, then?
+> >
+> > OK, there is a reason, which is the optimizations bundled into
+> > pm_runtime_force_*, because (a) the device may be left in runtime suspend
+> > by them (in which case amba_pm_suspend_early() in my patch should not run)
+> > and (b) pm_runtime_force_resume() may decide to leave it suspended (in which
+> > case amba_pm_suspend_late() in my patch should not run).
 > 
-> I'd like to ask you clarify one point here and provide some info which I hope can be useful - 
-> what's exactly means  "trivial middle-layer cases"?
+> Exactly.
 > 
-> Is it when systems use "drivers/base/power/clock_ops.c - Generic clock
-> manipulation PM callbacks" as dev_pm_domain (arm davinci/keystone), or OMAP
-> device framework struct dev_pm_domain omap_device_pm_domain
-> (arm/mach-omap2/omap_device.c) or static const struct dev_pm_ops
-> tegra_aconnect_pm_ops?
+> >
+> > [BTW, the "leave the device suspended" optimization in pm_runtime_force_*
+> > is potentially problematic too, because it requires the children to do
+> > the right thing, which effectively means that their drivers need to use
+> > pm_runtime_force_* too, but what if they don't want to reuse their
+> > runtime PM callbacks for system-wide PM?]
 > 
-> if yes all above have PM runtime callbacks.
+> Deployment of pm_runtime_force_suspend() should generally be done for
+> children devices first.
+> 
+> If some reason that isn't the case, it's expected that the call to
+> pm_runtime_set_suspended() invoked from pm_runtime_force_suspend(),
+> for the parent, should fail and thus abort system suspend.
 
-Trivial ones don't actually do anything meaningful in their PM callbacks.
+Well, generally what about drivers that need to do something significantly
+different for system suspend and runtime PM?  The whole picture seems to be
+falling apart if one of these is involved.
 
-Things like the platform bus type, spi bus type, i2c bus type and similar.
+> >
+> > Honestly, I don't like the way this is designed.  IMO, it would be better
+> > to do the optimizations and all in the bus type middle-layer code instead
+> > of expecting drivers to use pm_runtime_force_* as their system-wide PM
+> > callbacks (and that expectation should at least be documented, which I'm
+> > not sure is the case now).  But whatever.
+> >
+> > It all should work the way it does now without pm_runtime_force_* if (a) the
+> > bus type's PM callbacks are changed like in the last patch and the drivers
+> > (b) point their system suspend callbacks to the runtime PM callback routines
+> > and (c) set DPM_FLAG_SMART_SUSPEND and DPM_FLAG_LEAVE_SUSPENDED for the
+> > devices (if they need to do the PM in ->suspend and ->resume, they may set
+> > DPM_FLAG_AVOID_RPM too).
+> >
+> > And if you see a reason why that won't work, please let me know.
+> 
+> I will have look and try out the series by using my local "runtime PM
+> test driver".
+> 
+> I get back to you with an update on this.
 
-If the middle-layer callbacks manipulate devices in a significant way, then
-they aren't trivial.
-
-Thanks,
-Rafael
-
+OK, thanks!
