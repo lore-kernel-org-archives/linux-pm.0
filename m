@@ -1,75 +1,35 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v4 8/8] PM / devfreq: exynos-bus: Register cooling
- device
-Date: Wed, 18 Oct 2017 11:08:28 +0900
-Message-ID: <59E6B79C.2040000@samsung.com>
-References: <CGME20171013074837epcas1p49957bd030fc1a27cc845d63c50ad0aba@epcas1p4.samsung.com>
-        <1507880904-31956-1-git-send-email-cw00.choi@samsung.com>
-        <1507880904-31956-9-git-send-email-cw00.choi@samsung.com>
-        <CAJ0PZbRkfNt5eQK5qzunAnFiGmwEF1Dj-TKuqXNhxhN=BxzVEw@mail.gmail.com>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH v3] cpufreq: imx6q: Move speed grading check to cpufreq
+ driver
+Date: Wed, 18 Oct 2017 10:09:17 +0800
+Message-ID: <20171018020916.GB18810@dragon>
+References: <1506784606-2064-1-git-send-email-festevam@gmail.com>
+ <20171013065141.GI8833@dragon>
+ <CAOMZO5AwB_2Nbky1wA8neU2-2-LDCTCMFOKGQk4jn5O9zuwKpQ@mail.gmail.com>
+ <5060748.qBWaaqo0sL@aspire.rjw.lan>
+ <CAOMZO5DTtE12znCVbA1YG=1ugggn1fqfbsuCXnkFTwV8b=yNEg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <CAJ0PZbRkfNt5eQK5qzunAnFiGmwEF1Dj-TKuqXNhxhN=BxzVEw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: myungjoo.ham@gmail.com
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, chanwoo@kernel.org, =?UTF-8?B?64yA7J246riw?= <inki.dae@samsung.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Linux Samsung SoC <linux-samsung-soc@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:60240 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1761614AbdJRCJ3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 17 Oct 2017 22:09:29 -0400
+Content-Disposition: inline
+In-Reply-To: <CAOMZO5DTtE12znCVbA1YG=1ugggn1fqfbsuCXnkFTwV8b=yNEg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, vireshk@kernel.org, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Yongcai Huang <anson.huang@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Otavio Salvador <otavio.salvador@ossystems.com.br>, Fabio Estevam <fabio.estevam@nxp.com>
 
-Hi,
-
-On 2017년 10월 18일 00:11, MyungJoo Ham wrote:
-> On Fri, Oct 13, 2017 at 4:48 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->> This patch registers the Exynos Bus-Frequency scaling device
->> as a cooling device of thermal management.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> Cc: Kukjin Kim <kgene@kernel.org>
->> Cc: Krzysztof Kozlowski <krzk@kernel.org>
->> Cc: linux-samsung-soc@vger.kernel.org
->> Cc: linux-arm-kernel@lists.infradead.org
->> Cc: linux-kernel@vger.kernel.org
+On Mon, Oct 16, 2017 at 08:46:10AM -0200, Fabio Estevam wrote:
+> On Sun, Oct 15, 2017 at 10:13 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 > 
-> I've got a question below.
+> > It could go in via the PM tree (which covers cpufreq), but I'd prefer
+> > it to go in via arm-soc.
 > 
->> ---
->>  drivers/devfreq/exynos-bus.c | 27 +++++++++++++++++++++++++++
->>  1 file changed, 27 insertions(+)
->>
->> diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
->> index c25658b26598..1c7521b65c2f 100644
-> []> @@ -468,6 +471,19 @@ static int exynos_bus_probe(struct
-> platform_device *pdev)
->>                 goto err;
->>         }
->>
->> +       /*
->> +        * Register devfreq cooling device if thermal DT code
->> +        * takes care of matching them.
->> +        */
->> +       if (of_find_property(np, "#cooling-cells", NULL)) {
->> +               bus->cdev = of_devfreq_cooling_register(np, bus->devfreq);
->> +               if (IS_ERR(bus->cdev)) {
->> +                       dev_err(dev, "running exynos-bus without cooling device\n");
->> +                       bus->cdev = NULL;
->> +               }
->> +       }
->> +       of_node_put(np);
-> 
-> Is this of_node_put() is a pair of of_find_property? or for something else?
-> (do you need to call put for of_find_property? or for something else?
-> I'm not seeing a function with "get")
+> Sounds good for me. In this case I think Shawn will apply it.
 
-You're right. The of_node_put(np) call is unneeded.
-Actually, the extcon-bus.c have to use the of_node_get instead of accessing
-the 'dev->of_node' directly.
+Okay, applied to imx/soc branch, thanks.
 
-And, when I test this patch, I got a bug related to passive governor.
-I need more time for debugging and redevelopment.
-So, I'll drop this patch on next patchset (v5).
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Shawn
