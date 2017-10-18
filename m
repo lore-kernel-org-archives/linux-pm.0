@@ -1,136 +1,122 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH v4 3/8] PM / devfreq: Use the available min/max
- frequency
-Date: Wed, 18 Oct 2017 10:31:02 +0900
-Message-ID: <59E6AED6.70703@samsung.com>
-References: <CGME20171013074833epcas1p433f03287f42a5b6dc16e796efa2a3bf3@epcas1p4.samsung.com>
-        <1507880904-31956-1-git-send-email-cw00.choi@samsung.com>
-        <1507880904-31956-4-git-send-email-cw00.choi@samsung.com>
-        <CAJ0PZbRarw8hSmkUZydn79czJj7HK1nc2G8egQdabDRVHE7W_w@mail.gmail.com>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: Re: [PATCH 02/25] thermal/drivers/hisi: Remove the multiple sensors
+ support
+Date: Wed, 18 Oct 2017 09:48:21 +0800
+Message-ID: <20171018014821.GE19504@leoy-ThinkPad-T440>
+References: <79a5f10c-0fb7-3e4f-caac-c1625904b137@linaro.org>
+ <1507658570-32675-1-git-send-email-daniel.lezcano@linaro.org>
+ <1507658570-32675-2-git-send-email-daniel.lezcano@linaro.org>
+ <20171017035409.GA23821@localhost.localdomain>
+ <62584345-11d7-1b23-2711-2b663972161b@linaro.org>
+ <20171017182547.GA1773@localhost.localdomain>
+ <789b9c73-40fa-bc5c-5dd2-9f718beac175@linaro.org>
+ <20171017210706.GA3772@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout3.samsung.com ([203.254.224.33]:41231 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1762121AbdJRBbE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2017 21:31:04 -0400
-In-reply-to: <CAJ0PZbRarw8hSmkUZydn79czJj7HK1nc2G8egQdabDRVHE7W_w@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171017210706.GA3772@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kevin.wangtao@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@gmail.com
-Cc: Kyungmin Park <kyungmin.park@samsung.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, chanwoo@kernel.org, =?UTF-8?B?64yA7J246riw?= <inki.dae@samsung.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-Hi,
-
-On 2017년 10월 17일 23:43, MyungJoo Ham wrote:
-> On Fri, Oct 13, 2017 at 4:48 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
->> The commit a76caf55e5b35 ("thermal: Add devfreq cooling") is able
->> to disable OPP as a cooling device. In result, both update_devfreq()
->> and {min|max}_freq_show() have to consider the 'opp->available'
->> status of each OPP.
->>
->> So, this patch adds the 'scaling_{min|max}_freq' to struct devfreq
->> in order to indicate the available mininum and maximum frequency
->> by adjusting OPP interface such as dev_pm_opp_{disable|enable}().
->> The 'scaling_{min|max}_freq' are used for on both update_devfreq()
->> and {min|max}_freq_show().
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  drivers/devfreq/devfreq.c | 36 ++++++++++++++++++++++++++++--------
->>  include/linux/devfreq.h   |  4 ++++
->>  2 files changed, 32 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
->> index b6ba24e5db0d..9de013ffeb67 100644
->> --- a/drivers/devfreq/devfreq.c
->> +++ b/drivers/devfreq/devfreq.c
-> []
->> @@ -494,6 +499,19 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
->>         int ret;
->>
->>         mutex_lock(&devfreq->lock);
->> +
->> +       devfreq->scaling_min_freq = find_available_min_freq(devfreq);
->> +       if (!devfreq->scaling_min_freq) {
->> +               mutex_unlock(&devfreq->lock);
->> +               return -EINVAL;
->> +       }
->> +
->> +       devfreq->scaling_max_freq = find_available_max_freq(devfreq);
->> +       if (!devfreq->max_freq) {
+On Tue, Oct 17, 2017 at 02:07:08PM -0700, Eduardo Valentin wrote:
+> On Tue, Oct 17, 2017 at 09:03:40PM +0200, Daniel Lezcano wrote:
+> > On 17/10/2017 20:25, Eduardo Valentin wrote:
+> > > Hello,
+> > > 
+> > > On Tue, Oct 17, 2017 at 02:28:27PM +0200, Daniel Lezcano wrote:
+> > >> On 17/10/2017 05:54, Eduardo Valentin wrote:
+> > >>> On Tue, Oct 10, 2017 at 08:02:27PM +0200, Daniel Lezcano wrote:
+> > >>>> By essence, the tsensor does not really support multiple sensor at the same
+> > >>>> time. It allows to set a sensor and use it to get the temperature, another
+> > >>>> sensor could be switched but with a delay of 3-5ms. It is difficult to read
+> > >>>> simultaneously several sensors without a big delay.
+> > >>>>
+> > >>>
+> > >>> Is 3-5 ms enough to loose an event? Is this really a problem?
+> > >>
+> > >> There are several aspects:
+> > >>
+> > >>  - the multiple sensors is not needed here
+> > > 
+> > > Well, that is debatable, I cannot really agree or disagree with the
+> > > above statement without understanding the use cases and most important,
+> > > the location of each sensor. What is the location of each sensor?
+> > > 
+> > >>
+> > >>  - the temperature controller is not designed to read several sensors at
+> > >> the same time, we switch the sensor and that clears some internal
+> > >> buffers and re-init the controller
+> > > 
+> > > Which is still very helpful in case you have multiple hotspots that you
+> > > want to track and they are exposed on different workloads. Sacrificing
+> > > the availability of sensors is something needs a better justification
+> > > other than "current code uses only one".
+> > > 
+> > > 
+> > >>
+> > >>  - some boards can take 40°C in 1 sec, the temperature increase is
+> > >> insanely fast and reading several sensors add an extra 15ms.
+> > >>
+> > > 
+> > > 
+> > > Ok... What is the difference in update rate with and without the switch
+> > > of sensors? With the above worst case, you have about 4/6 mC/ms. Can
+> > > your tsensor support that resolution for a single sensor? What is the
+> > > maximum resolution a tsensor can support? What is the penalty added with
+> > > switch?
+> > > 
+> > > Based on this data, and the above 3-5ms, that  means you would miss about
+> > > ~ 3 - 4 mC while switching ( assuming tsensor can really achieve the
+> > > above rate of change: 5ms * 4/6 mC /ms). Are you sure that is
+> > > enough justification to drop three extra sensors?
+> > 
+> > Ok if I refer to the documentation the rate is 0.768 ms with the current
+> > configuration.
+> > 
+> > The driver is currently bogus: register overwritten, bouncing interrupt,
+> > unneeded lock, ... So the proposition was to remove the multiple sensors
+> > support, clean the driver, and re-introduce it if there is a need.
+> > 
+> > If I remember correctly Leo, author of the driver, agreed on this. Leo ?
+> > 
+> > Note, I'm not strongly against multiple sensors support in the driver if
+> > you think it is convenient but it is much simpler to remove the current
+> > code as it is not used and put it back on top of a sane foundation
+> > instead of circumventing that on the existing code.
+> > 
+> > 
 > 
-> 1. s/max_freq/scaling/max_freq/ ??
+> I am also fine with the above strategy, as long as you are sure you are
+> not breaking anyone (specially userspace). Also, it would be good to get
+> a reviewed-by from hisilicon just to confirm (Leo?).
 
-My mistake. The scaling_max_freq is right. I'll fix it.
+Sorry I missed to reply this patch. And yes, I have tested and
+reviewed it at my side:
 
+Reviewed-by: Leo Yan <leo.yan@linaro.org>
+
+P.s. I am working for Linaro; I am continously co-working with
+Hisilicon to maintain this driver due it's important for Hikey/Hikey960
+two boards stability; this driver also is important for our daily
+profiling for power and performance. Eduardo, so please let us know if
+you still need ack from Hisilicon engineer.
+
+> Besides, once you get his reviewed-by, and add it to the patches,
+> can you please resend the series with the minor issues I
+> mentioned (a few minor checkpatch issues and one compilation warn that
+> is added to the driver after the series is applied).
 > 
-> 2. what if thermal is not active or has never triggered any event and
-> the user has never stated max/min? (making scaling_*_freq zero)
-
-
-The devfreq-cooling.c of tmu uses the OPP interface
-and then OPP interface affect the scaling_min/max_freq of devfreq
-through dev_pm_opp_disable/enable(). So, even if 'thermal is not active
-or has never triggered any event', devfreq will use the OPP interface
-as a mandatory.
-
-In result, I think that devfreq should maintain the correct frequency
-of scaling_min/max_freq indicating the 'limit minimum/maximum frequency
-requested by OPP interface' instead of zero.
-
-So, I'll change the description of scaling_min/max_freq as following:
-(by devfreq-cooling -> by OPP interface)
-On v4:
-+ * @scaling_min_freq:  Limit minimum frequency requested by devfreq-cooling
-+ * @scaling_max_freq:  Limit maximum frequency requested by devfreq-cooling
-
-On v5:
-+ * @scaling_min_freq:  Limit minimum frequency requested by OPP interface
-+ * @scaling_max_freq:  Limit maximum frequency requested by OPP interface
-
-
-And, this patch showed the wrong value of min/max_freq_show() by my mistake.
-I showed the 'min/max_freq' directly through min/max_freq_show()
-without comparing with scaling_min/max_freq. So, I'll fix this issue as following:
----------------
-On v5:
-static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
-                             char *buf)
- {
--       return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
-+       struct devfreq *df = to_devfreq(dev);
-+
-+       return sprintf(buf, "%lu\n", MAX(df->scaling_min_freq, df->min_freq));
- }
-
- static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
-@@ -1161,7 +1183,9 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
-                             char *buf)
- {
--       return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
-+       struct devfreq *df = to_devfreq(dev);
-+
-+       return sprintf(buf, "%lu\n", MIN(df->scaling_max_freq, df->max_freq));
----------------
-
-
-> 
->> +               mutex_unlock(&devfreq->lock);
->> +               return -EINVAL;
->> +       }
->> +
->>         ret = update_devfreq(devfreq);
->>         mutex_unlock(&devfreq->lock);
->>
-> 
-> 
-> 
-
-
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+> > 
+> > 
+> > 
+> > -- 
+> >  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+> > 
+> > Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> > <http://twitter.com/#!/linaroorg> Twitter |
+> > <http://www.linaro.org/linaro-blog/> Blog
+> > 
