@@ -1,71 +1,65 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: libbattery was Re: [RFC PATCH 5/5] power: generic-adc-battery:
- Add capacity handling
-Date: Wed, 18 Oct 2017 14:28:04 +0200
-Message-ID: <20171018122804.GA14376@amd>
-References: <1501620926-22669-1-git-send-email-marek.belisko@open-nandra.com>
- <1501620926-22669-6-git-send-email-marek.belisko@open-nandra.com>
- <20170829101147.debhadzyfrxhkrvt@earth>
- <20170908113231.GJ18365@amd>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
+Date: Wed, 18 Oct 2017 14:34:10 +0200
+Message-ID: <CAPDyKFpNHL=tZYbQduDJqypz7rbwPwvW7sOymm-djbRSFgZ00g@mail.gmail.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <CAPDyKFrMTSUHP86hnpHius2CDfv-ap4svGg=xgwAiH8pKj9Lvw@mail.gmail.com>
+ <1591167.zlNa3zLfmM@aspire.rjw.lan> <2745759.OYb9FSKnNE@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="BOKacYhQ+x31HxR3"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20170908113231.GJ18365@amd>
+In-Reply-To: <2745759.OYb9FSKnNE@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, pali.rohar@gmail.com, sre@kernel.org, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, patrikbachan@gmail.com, serge@hallyn.com, abcloriens@gmail.com, clayton@craftyguy.net, martijn@brixit.nl, sakari.ailus@linux.intel.com
-Cc: Marek Belisko <marek.belisko@open-nandra.com>, robh+dt@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, hns@goldelico.com, Marek Belisko <marek.belisko@gmail.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
+[...]
 
---BOKacYhQ+x31HxR3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>> Are there any major reasons why the appended patch (obviously untested) won't
+>> work, then?
+>
+> OK, there is a reason, which is the optimizations bundled into
+> pm_runtime_force_*, because (a) the device may be left in runtime suspend
+> by them (in which case amba_pm_suspend_early() in my patch should not run)
+> and (b) pm_runtime_force_resume() may decide to leave it suspended (in which
+> case amba_pm_suspend_late() in my patch should not run).
 
-Hi!
+Exactly.
 
-> > Without patch description: See Last Question in
-> >=20
-> > Documentation/power/power_supply_class.txt
->=20
-> ...should be done in libbattery, yet to be written. :-).
->=20
-> Do you have specific guidance what you'd like to see in libbattery?
+>
+> [BTW, the "leave the device suspended" optimization in pm_runtime_force_*
+> is potentially problematic too, because it requires the children to do
+> the right thing, which effectively means that their drivers need to use
+> pm_runtime_force_* too, but what if they don't want to reuse their
+> runtime PM callbacks for system-wide PM?]
 
-So I started something, it is at.
+Deployment of pm_runtime_force_suspend() should generally be done for
+children devices first.
 
-https://github.com/pavelmachek/libbattery
+If some reason that isn't the case, it's expected that the call to
+pm_runtime_set_suspended() invoked from pm_runtime_force_suspend(),
+for the parent, should fail and thus abort system suspend.
 
-My battery on n900 is currently uncalibrated (and charging), still it
-gets some kind of estimation:
+>
+> Honestly, I don't like the way this is designed.  IMO, it would be better
+> to do the optimizations and all in the bus type middle-layer code instead
+> of expecting drivers to use pm_runtime_force_* as their system-wide PM
+> callbacks (and that expectation should at least be documented, which I'm
+> not sure is the case now).  But whatever.
+>
+> It all should work the way it does now without pm_runtime_force_* if (a) the
+> bus type's PM callbacks are changed like in the last patch and the drivers
+> (b) point their system suspend callbacks to the runtime PM callback routines
+> and (c) set DPM_FLAG_SMART_SUSPEND and DPM_FLAG_LEAVE_SUSPENDED for the
+> devices (if they need to do the PM in ->suspend and ->resume, they may set
+> DPM_FLAG_AVOID_RPM too).
+>
+> And if you see a reason why that won't work, please let me know.
 
-Battery -1 %
-Seconds -1
-State 1
-Voltage 3.88 V
-Battery 63 %
+I will have look and try out the series by using my local "runtime PM
+test driver".
 
-Of course, there's a lot more work to be done.
+I get back to you with an update on this.
 
-Best regards,
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---BOKacYhQ+x31HxR3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlnnSNQACgkQMOfwapXb+vIvsQCfdBsdDQfqmnJUL4FhqOfZYDNe
-hiEAmQHrDB2kCeGo4a2VyguJDLSK+vDM
-=4bLx
------END PGP SIGNATURE-----
-
---BOKacYhQ+x31HxR3--
+Kind regards
+Uffe
