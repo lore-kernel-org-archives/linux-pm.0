@@ -1,48 +1,61 @@
-From: Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 4/5] ARM: dts: imx6sx: Use nvmem-cells for tempmon
-Date: Wed, 18 Oct 2017 10:29:45 +0800
-Message-ID: <20171018022943.GF18810@dragon>
-References: <cover.1500041281.git.leonard.crestez@nxp.com>
- <3cda26e557510055f05cea92b81678743e0ea9e3.1500041281.git.leonard.crestez@nxp.com>
+From: Keerthy <j-keerthy@ti.com>
+Subject: Re: [PATCH] thermal: ti-soc-thermal: Fix
+ ti_thermal_unregister_cpu_cooling NULL pointer on unload
+Date: Wed, 18 Oct 2017 09:19:49 +0530
+Message-ID: <63050967-7665-b655-8c9e-5e72b19c2cbe@ti.com>
+References: <20171016210714.16080-1-tony@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <3cda26e557510055f05cea92b81678743e0ea9e3.1500041281.git.leonard.crestez-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
-Cc: Srinivas Kandagatla <srinivas.kandagatla-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Lothar =?iso-8859-1?Q?Wa=DFmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>, Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>, Bai Ping <ping.bai-3arQi8VN3Tc@public.gmane.org>, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>, Octavian Purdila <octavian.purdila-3arQi8VN3Tc@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from lelnx193.ext.ti.com ([198.47.27.77]:57355 "EHLO
+        lelnx193.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754696AbdJRDtz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2017 23:49:55 -0400
+In-Reply-To: <20171016210714.16080-1-tony@atomide.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>, Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Fri, Jul 14, 2017 at 05:11:09PM +0300, Leonard Crestez wrote:
-> On imx6sx accessing OCOTP directly is wrong because the ocotp clock
-> needs to be enabled first. Use the nvmem-cells binding instead.
-> 
-> This requirement does not apply to older imx6qdl chips because there the
-> ocotp access clock (clk_ipg_s) is always enabled.
-> 
-> This is visible by comparing the "System Clocks, Gating, and Override"
-> tables (OCOTP rows) in the 6DQ and 6SX manuals:
-> http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6SXRM.pdf
-> http://www.nxp.com/assets/documents/data/en/reference-manuals/IMX6DQRM.pdf
-> 
-> This happens to work right now because the ocotp clock might be enabled
-> for some other reason. In particular the it might be enabled from the
-> bootloader and it only gets disabled late during boot in
-> clk_disable_unused, after imx-thermal has completed probing.
-> 
-> If imx-thermal is compiled as a module then the system can hang on
-> probe.
-> 
-> Reported-by: Lothar Waﬂmann <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>
-> Signed-off-by: Leonard Crestez <leonard.crestez-3arQi8VN3Tc@public.gmane.org>
 
-I applied patch #4 and #5 to IMX tree for avoiding merge conflict.  Rui
-will drop them from thermal tree.
 
-Shawn
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Tuesday 17 October 2017 02:37 AM, Tony Lindgren wrote:
+> While debugging some PM issues and trying to remove all the loaded modules, I ran
+> across the following when unloading ti-soc-thermal:
+> 
+> Unable to handle kernel NULL pointer dereference at virtual address 000000b4
+> ...
+> [<c08db340>] (kobject_put) from [<bf28954c>] (ti_thermal_unregister_cpu_cooling+0x20/0x28 [ti_soc_thermal])
+> [<bf28954c>] (ti_thermal_unregister_cpu_cooling [ti_soc_thermal]) from [<bf287c88>] (ti_bandgap_remove+0x3c/0x104 [ti_soc_thermal])
+> [<bf287c88>] (ti_bandgap_remove [ti_soc_thermal]) from [<c0610d48>] (platform_drv_remove+0x24/0x3c)
+> [<c0610d48>] (platform_drv_remove) from [<c060f114>] (device_release_driver_internal+0x160/0x208)
+> [<c060f114>] (device_release_driver_internal) from [<c060f200>] (driver_detach+0x38/0x6c)
+> [<c060f200>] (driver_detach) from [<c060e2d4>] (bus_remove_driver+0x4c/0xa0)
+> [<c060e2d4>] (bus_remove_driver) from [<c01f2370>] (SyS_delete_module+0x168/0x238)
+> [<c01f2370>] (SyS_delete_module) from [<c0108240>] (ret_fast_syscall+0x0/0x28)
+
+Acked-by: Keerthy <j-keerthy@ti.com>
+
+> 
+> Cc: Keerthy <j-keerthy@ti.com>
+> Signed-off-by: Tony Lindgren <tony@atomide.com>
+> ---
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> @@ -278,7 +278,8 @@ int ti_thermal_unregister_cpu_cooling(struct ti_bandgap *bgp, int id)
+>  
+>  	if (data) {
+>  		cpufreq_cooling_unregister(data->cool_dev);
+> -		cpufreq_cpu_put(data->policy);
+> +		if (data->policy)
+> +			cpufreq_cpu_put(data->policy);
+>  	}
+>  
+>  	return 0;
+> 
