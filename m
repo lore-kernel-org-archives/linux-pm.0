@@ -1,213 +1,140 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
-Date: Thu, 19 Oct 2017 00:12:09 +0200
-Message-ID: <4337843.QuD5zygUhU@aspire.rjw.lan>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <2890181.vdGMMavi5M@aspire.rjw.lan> <CAPDyKFozJtSHxxBEFtC+ofJ4XUyQjqUundPs81JATT=WfjXoYA@mail.gmail.com>
+From: Thomas Garnier <thgarnie@google.com>
+Subject: Re: [PATCH v1 15/27] compiler: Option to default to hidden symbols
+Date: Wed, 18 Oct 2017 16:15:10 -0700
+Message-ID: <CAJcbSZEJ-kjcRQD3uHm0QZuOvbHpg9FV=wn7v4-RweDG7J3uqg@mail.gmail.com>
+References: <20171011203027.11248-1-thgarnie@google.com> <20171011203027.11248-16-thgarnie@google.com>
+ <20171012200201.GW11645@wotan.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFozJtSHxxBEFtC+ofJ4XUyQjqUundPs81JATT=WfjXoYA@mail.gmail.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <kernel-hardening-return-10187-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
+List-Post: <mailto:kernel-hardening@lists.openwall.com>
+List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
+List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
+List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
+In-Reply-To: <20171012200201.GW11645@wotan.suse.de>
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: Guenter Roeck <linux@roeck-us.net>, Nicholas Piggin <npiggin@gmail.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Kees Cook <keescook@chromium.org>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Matthias Kaehlcke <mka@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Juergen Gross <jgross@suse.com>, Chris Wright <chrisw@sous-sol.org>, Alok Kataria <akataria@vmware.com>, Rusty Russell <rust>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, October 18, 2017 4:11:33 PM CEST Ulf Hansson wrote:
-> [...]
-> 
-> >>
-> >> The reason why pm_runtime_force_* needs to respects the hierarchy of
-> >> the RPM callbacks, is because otherwise it can't safely update the
-> >> runtime PM status of the device.
-> >
-> > I'm not sure I follow this requirement.  Why is that so?
-> 
-> If the PM domain controls some resources for the device in its RPM
-> callbacks and the driver controls some other resources in its RPM
-> callbacks - then these resources needs to be managed together.
-
-Right, but that doesn't automatically make it necessary to use runtime PM
-callbacks in the middle layer.  Its system-wide PM callbacks may be
-suitable for that just fine.
-
-That is, at least in some cases, you can combine ->runtime_suspend from a
-driver and ->suspend_late from a middle layer with no problems, for example.
-
-That's why some middle layers allow drivers to point ->suspend_late and
-->runtime_suspend to the same routine if they want to reuse that code.
-
-> This follows the behavior of when a regular call to
-> pm_runtime_get|put(), triggers the RPM callbacks to be invoked.
-
-But (a) it doesn't have to follow it and (b) in some cases it should not
-follow it.
- 
-> >
-> >> And updating the runtime PM status of
-> >> the device is required to manage the optimized behavior during system
-> >> resume (avoiding to unnecessary resume devices).
-> >
-> > Well, OK.  The runtime PM status of the device after system resume should
-> > better reflect its physical state.
-> >
-> > [The physical state of the device may not be under the control of the
-> > kernel in some cases, like in S3 resume on some systems that reset
-> > devices in the firmware and so on, but let's set that aside.]
-> >
-> > However, for the runtime PM status of the device may still reflect its state
-> > if, say, a ->resume_early of the middle layer is called during resume along
-> > with a driver's ->runtime_resume.  That still can produce the right state
-> > of the device and all depends on the middle layer.
-> >
-> > On the other hand, as I said before, using a middle-layer ->runtime_suspend
-> > during a system sleep transition may be outright incorrect, say if device
-> > wakeup settings need to be adjusted by the middle layer (which is the
-> > case for some of them).
-> >
-> > Of course, if the middle layer expects the driver to point its
-> > system-wide PM callbacks to pm_runtime_force_*, then that's how it goes,
-> > but the drivers working with this particular middle layer generally
-> > won't work with other middle layers and may interact incorrectly
-> > with parents and/or children using the other middle layers.
-> >
-> > I guess the problem boils down to having a common set of expectations
-> > on the driver side and on the middle layer side allowing different
-> > combinations of these to work together.
-> 
-> Yes!
-> 
-> >
-> >> Besides the AMBA case, I also realized that we are dealing with PM
-> >> clocks in the genpd case. For this, genpd relies on the that runtime
-> >> PM status of the device properly reflects the state of the HW, during
-> >> system-wide PM.
-> >>
-> >> In other words, if the driver would change the runtime PM status of
-> >> the device, without respecting the hierarchy of the runtime PM
-> >> callbacks, it would lead to that genpd starts taking wrong decisions
-> >> while managing the PM clocks during system-wide PM. So in case you
-> >> intend to change pm_runtime_force_* this needs to be addressed too.
-> >
-> > I've just looked at the genpd code and quite frankly I'm not sure how this
-> > works, but I'll figure this out. :-)
-> 
-> You may think of it as genpd's RPM callback controls some device
-> clocks, while the driver control some other device resources (pinctrl
-> for example) from its RPM callback.
-> 
-> These resources needs to managed together, similar to as I described above.
-
-Which, again, doesn't mean that runtime PM callbacks from the middle layer
-have to be used for that.
-
-> [...]
-> 
-> >> Absolutely agree about the different wake-up settings. However, these
-> >> issues can be addressed also when using pm_runtime_force_*, at least
-> >> in general, but then not for PCI.
-> >
-> > Well, not for the ACPI PM domain too.
-> >
-> > In general, not if the wakeup settings are adjusted by the middle layer.
-> 
-> Correct!
-> 
-> To use pm_runtime_force* for these cases, one would need some
-> additional information exchange between the driver and the
-> middle-layer.
-
-Which pretty much defeats the purpose of the wrappers, doesn't it?
-
-> >
-> >> Regarding hibernation, honestly that's not really my area of
-> >> expertise. Although, I assume the middle-layer and driver can treat
-> >> that as a separate case, so if it's not suitable to use
-> >> pm_runtime_force* for that case, then they shouldn't do it.
-> >
-> > Well, agreed.
-> >
-> > In some simple cases, though, driver callbacks can be reused for hibernation
-> > too, so it would be good to have a common way to do that too, IMO.
-> 
-> Okay, that makes sense!
-> 
-> >
-> >> >
-> >> > Also, quite so often other middle layers interact with PCI directly or
-> >> > indirectly (eg. a platform device may be a child or a consumer of a PCI
-> >> > device) and some optimizations need to take that into account (eg. parents
-> >> > generally need to be accessible when their childres are resumed and so on).
-> >>
-> >> A device's parent becomes informed when changing the runtime PM status
-> >> of the device via pm_runtime_force_suspend|resume(), as those calls
-> >> pm_runtime_set_suspended|active().
-> >
-> > This requires the parent driver or middle layer to look at the reference
-> > counter and understand it the same way as pm_runtime_force_*.
-> >
-> >> In case that isn't that sufficient, what else is needed? Perhaps you can
-> >> point me to an example so I can understand better?
-> >
-> > Say you want to leave the parent suspended after system resume, but the
-> > child drivers use pm_runtime_force_suspend|resume().  The parent would then
-> > need to use pm_runtime_force_suspend|resume() too, no?
-> 
-> Actually no.
-> 
-> Currently the other options of "deferring resume" (not using
-> pm_runtime_force_*), is either using the "direct_complete" path or
-> similar to the approach you took for the i2c designware driver.
+On Thu, Oct 12, 2017 at 1:02 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
+> On Wed, Oct 11, 2017 at 01:30:15PM -0700, Thomas Garnier wrote:
+>> Provide an option to default visibility to hidden except for key
+>> symbols. This option is disabled by default and will be used by x86_64
+>> PIE support to remove errors between compilation units.
+>>
+>> The default visibility is also enabled for external symbols that are
+>> compared as they maybe equals (start/end of sections). In this case,
+>> older versions of GCC will remove the comparison if the symbols are
+>> hidden. This issue exists at least on gcc 4.9 and before.
+>>
+>> Signed-off-by: Thomas Garnier <thgarnie@google.com>
 >
-> Both cases should play nicely in combination of a child being managed
-> by pm_runtime_force_*. That's because only when the parent device is
-> kept runtime suspended during system suspend, resuming can be
-> deferred.
+> <-- snip -->
+>
+>> diff --git a/arch/x86/kernel/cpu/microcode/core.c b/arch/x86/kernel/cpu/microcode/core.c
+>> index 86e8f0b2537b..8f021783a929 100644
+>> --- a/arch/x86/kernel/cpu/microcode/core.c
+>> +++ b/arch/x86/kernel/cpu/microcode/core.c
+>> @@ -144,8 +144,8 @@ static bool __init check_loader_disabled_bsp(void)
+>>       return *res;
+>>  }
+>>
+>> -extern struct builtin_fw __start_builtin_fw[];
+>> -extern struct builtin_fw __end_builtin_fw[];
+>> +extern struct builtin_fw __start_builtin_fw[] __default_visibility;
+>> +extern struct builtin_fw __end_builtin_fw[] __default_visibility;
+>>
+>>  bool get_builtin_firmware(struct cpio_data *cd, const char *name)
+>>  {
+>
+> <-- snip -->
+>
+>> diff --git a/include/asm-generic/sections.h b/include/asm-generic/sections.h
+>> index e5da44eddd2f..1aa5d6dac9e1 100644
+>> --- a/include/asm-generic/sections.h
+>> +++ b/include/asm-generic/sections.h
+>> @@ -30,6 +30,9 @@
+>>   *   __irqentry_text_start, __irqentry_text_end
+>>   *   __softirqentry_text_start, __softirqentry_text_end
+>>   */
+>> +#ifdef CONFIG_DEFAULT_HIDDEN
+>> +#pragma GCC visibility push(default)
+>> +#endif
+>>  extern char _text[], _stext[], _etext[];
+>>  extern char _data[], _sdata[], _edata[];
+>>  extern char __bss_start[], __bss_stop[];
+>> @@ -46,6 +49,9 @@ extern char __softirqentry_text_start[], __softirqentry_text_end[];
+>>
+>>  /* Start and end of .ctors section - used for constructor calls. */
+>>  extern char __ctors_start[], __ctors_end[];
+>> +#ifdef CONFIG_DEFAULT_HIDDEN
+>> +#pragma GCC visibility pop
+>> +#endif
+>>
+>>  extern __visible const void __nosave_begin, __nosave_end;
+>>
+>> diff --git a/include/linux/compiler.h b/include/linux/compiler.h
+>> index e95a2631e545..6997716f73bf 100644
+>> --- a/include/linux/compiler.h
+>> +++ b/include/linux/compiler.h
+>> @@ -78,6 +78,14 @@ extern void __chk_io_ptr(const volatile void __iomem *);
+>>  #include <linux/compiler-clang.h>
+>>  #endif
+>>
+>> +/* Useful for Position Independent Code to reduce global references */
+>> +#ifdef CONFIG_DEFAULT_HIDDEN
+>> +#pragma GCC visibility push(hidden)
+>> +#define __default_visibility  __attribute__((visibility ("default")))
+>
+> Does this still work with CONFIG_LD_DEAD_CODE_DATA_ELIMINATION ?
 
-And because the parent remains in runtime suspend late enough in the
-system suspend path, its children also are guaranteed to be suspended.
+I cannot make it work with or without this change. How is it supposed
+to be used?
 
-But then all of them need to be left in runtime suspend during system
-resume too, which is somewhat restrictive, because some drivers may
-want their devices to be resumed then.
+For me with, it crashes with a bad consdev at:
+http://elixir.free-electrons.com/linux/latest/source/drivers/tty/tty_io.c#L3194
 
-[BTW, our current documentation recommends resuming devices during
-system resume, actually, and gives a list of reasons why. :-)]
+>
+>> +#else
+>> +#define __default_visibility
+>> +#endif
+>> +
+>>  /*
+>>   * Generic compiler-dependent macros required for kernel
+>>   * build go below this comment. Actual compiler/compiler version
+>> diff --git a/init/Kconfig b/init/Kconfig
+>> index ccb1d8daf241..b640201fcff7 100644
+>> --- a/init/Kconfig
+>> +++ b/init/Kconfig
+>> @@ -1649,6 +1649,13 @@ config PROFILING
+>>  config TRACEPOINTS
+>>       bool
+>>
+>> +#
+>> +# Default to hidden visibility for all symbols.
+>> +# Useful for Position Independent Code to reduce global references.
+>> +#
+>> +config DEFAULT_HIDDEN
+>> +     bool
+>
+> Note it is default.
+>
+> Has 0-day ran through this git tree? It should be easy to get it added for
+> testing. Also, even though most changes are x86 based there are some generic
+> changes and I'd love a warm fuzzy this won't break odd / random builds.
+> Although 0-day does cover a lot of test cases, it only has limited run time
+> tests. There are some other test beds which also cover some more obscure
+> architectures. Having a test pass on Guenter's test bed would be nice to
+> see. For that please coordinate with Guenter if he's willing to run this
+> a test for you.
 
-> That means, if the resume of the parent is deferred, so will the also
-> the resume of the child.
-> 
-> >
-> >> For a PCI consumer device those will of course have to play by the rules of PCI.
-> >>
-> >> >
-> >> > Moreover, the majority of the "other subsystems/middle-layers" you've talked
-> >> > about so far don't provide any PM callbacks to be invoked by pm_runtime_force_*,
-> >> > so question is how representative they really are.
-> >>
-> >> That's the point. We know pm_runtime_force_* works nicely for the
-> >> trivial middle-layer cases.
-> >
-> > In which cases the middle-layer callbacks don't exist, so it's just like
-> > reusing driver callbacks directly. :-)
-> >
-> >> For the more complex cases, we need something additional/different.
-> >
-> > Something different.
-> >
-> > But overall, as I said, this is about common expectations.
-> >
-> > Today, some middle layers expect drivers to point their callback pointers
-> > to the same routine in order to resue it (PCI, ACPI bus type), some of them
-> > expect pm_runtime_force_suspend|resume() to be used (AMBA, maybe genpd),
-> > and some of them have no expectations at all.
-> >
-> > There needs to be a common ground in that area for drivers to be able to
-> > work with different middle layers.
-> 
-> Yes, reaching that point would be great, we should definitively aim for that!
+Not yet, plan to give a v1.5 to Kees Cook to keep in one of his tree
+for couple weeks. I expect it will identify interesting issues.
 
-Indeed.
+>
+>   Luis
 
-Thanks,
-Rafael
+
+
+-- 
+Thomas
