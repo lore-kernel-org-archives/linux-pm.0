@@ -1,189 +1,90 @@
-From: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-Subject: Re: [PATCH v3 1/7] ACPI/PPTT: Add Processor Properties Topology Table
- parsing
-Date: Wed, 18 Oct 2017 09:10:22 +0800
-Message-ID: <c6132eec-3c32-8471-76ab-6ec432b7b3f1@huawei.com>
-References: <20171012194856.13844-1-jeremy.linton@arm.com>
- <20171012194856.13844-2-jeremy.linton@arm.com>
- <38c63cfd-4c13-9461-0d4a-74b0943be0fd@semihalf.com>
- <2ce92b90-fc2c-3fff-a3e3-b9517057ab2c@arm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 1/1] Revert "tools/power turbostat: stop migrating, unless '-m'"
+Date: Wed, 18 Oct 2017 03:21:25 +0200
+Message-ID: <CAJZ5v0gK1gGt4iF+jqOwGqOoOghVs9UEcJNd3-ASpy4bHBihaQ@mail.gmail.com>
+References: <a94c49e6b0d4da98d8c79e22cad313bf092d5886.1508270356.git.len.brown@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2ce92b90-fc2c-3fff-a3e3-b9517057ab2c@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>, Tomasz Nowicki <tn@semihalf.com>, linux-acpi@vger.kernel.org
-Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, jhugo@codeaurora.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, will.deacon@arm.com, linux-kernel@vger.kernel.org, ahs3@redhat.com, viresh.kumar@linaro.org, hanjun.guo@linaro.org, sudeep.holla@arm.com, austinwc@codeaurora.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:52863 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754738AbdJRBV0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2017 21:21:26 -0400
+In-Reply-To: <a94c49e6b0d4da98d8c79e22cad313bf092d5886.1508270356.git.len.brown@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Stable <stable@vger.kernel.org>
 
-Hi Jeremy,
+On Tue, Oct 17, 2017 at 10:00 PM, Len Brown <lenb@kernel.org> wrote:
+> From: Len Brown <len.brown@intel.com>
+>
+> This reverts commit c91fc8519d87715a3a173475ea3778794c139996.
+>
+> That change caused a C6 and PC6 residency regression on large idle systems.
+>
+> Users also complained about new output indicating jitter:
+>
+> turbostat: cpu6 jitter 3794 9142
+>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Cc: <stable@vger.kernel.org> # v4.13
 
+Applied, thanks!
 
-On 2017/10/17 23:22, Jeremy Linton wrote:
-> Hi,
+> ---
+>  tools/power/x86/turbostat/turbostat.c | 10 +---------
+>  1 file changed, 1 insertion(+), 9 deletions(-)
 >
-> On 10/17/2017 08:25 AM, Tomasz Nowicki wrote:
->> Hi Jeremy,
->>
->> I did second round of review and have some more comments, please see below:
->>
->> On 12.10.2017 21:48, Jeremy Linton wrote:
-> I disagree, that routine is shared by the two code paths because its functionality is 99% duplicated between the two. The difference being whether it terminates the search at a given level, or continues searching until it runs out of nodes. The latter case is simply a degenerate version of the first.
+> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+> index 0dafba2c1e7d..bd9c6b31a504 100644
+> --- a/tools/power/x86/turbostat/turbostat.c
+> +++ b/tools/power/x86/turbostat/turbostat.c
+> @@ -92,7 +92,6 @@ unsigned int do_ring_perf_limit_reasons;
+>  unsigned int crystal_hz;
+>  unsigned long long tsc_hz;
+>  int base_cpu;
+> -int do_migrate;
+>  double discover_bclk(unsigned int family, unsigned int model);
+>  unsigned int has_hwp;  /* IA32_PM_ENABLE, IA32_HWP_CAPABILITIES */
+>                         /* IA32_HWP_REQUEST, IA32_HWP_STATUS */
+> @@ -303,9 +302,6 @@ int for_all_cpus(int (func)(struct thread_data *, struct core_data *, struct pkg
 >
+>  int cpu_migrate(int cpu)
+>  {
+> -       if (!do_migrate)
+> -               return 0;
+> -
+>         CPU_ZERO_S(cpu_affinity_setsize, cpu_affinity_set);
+>         CPU_SET_S(cpu, cpu_affinity_setsize, cpu_affinity_set);
+>         if (sched_setaffinity(0, cpu_affinity_setsize, cpu_affinity_set) == -1)
+> @@ -5007,7 +5003,6 @@ void cmdline(int argc, char **argv)
+>                 {"hide",        required_argument,      0, 'H'},        // meh, -h taken by --help
+>                 {"Joules",      no_argument,            0, 'J'},
+>                 {"list",        no_argument,            0, 'l'},
+> -               {"migrate",     no_argument,            0, 'm'},
+>                 {"out",         required_argument,      0, 'o'},
+>                 {"quiet",       no_argument,            0, 'q'},
+>                 {"show",        required_argument,      0, 's'},
+> @@ -5019,7 +5014,7 @@ void cmdline(int argc, char **argv)
 >
->>
->> Also, seems like we can merge acpi_parse_pptt() & acpi_process_node().
+>         progname = argv[0];
 >
-> That is true, but I fail to see how any of this is actually fixes anything. There are a million ways to do this, including as pointed out by building another data-structure to simplify the parsing what is a table that is less than ideal for runtime parsing (starting with the direction of the relative pointers, and ending with having to "infer" information that isn't directly flagged). I actually built a couple other versions of this, including a nice cute version which is about 1/8 this size of this and really easy to understand but of course is recursive...
->
->
-Maybe you can see my version below. It is similar to what you said above. It may give some help.
-https://github.com/fenghusthu/acpi_pptt
-
-Thanks
-Xiongfeng Wang
->>
->> Here are my suggestions:
->>
->>
->> static struct acpi_pptt_cache *acpi_pptt_cache_type_level(
->>      struct acpi_table_header *table_hdr,
->>      struct acpi_subtable_header *res,
->>      int *local_level,
->>      int level, int type)
->> {
->>      struct acpi_pptt_cache *cache = (struct acpi_pptt_cache *) res;
->>
->>      if (res->type != ACPI_PPTT_TYPE_CACHE)
->>          return NULL;
->>
->>      while (cache) {
->>          if ((*local_level == level) &&
->>              (cache->flags & ACPI_PPTT_CACHE_TYPE_VALID) &&
->>              ((cache->attributes & ACPI_PPTT_MASK_CACHE_TYPE) >> 2 == type)) {
->>
->>              pr_debug("Found cache @ level %d\n", level);
->>              return cache;
->>          }
->>          cache = fetch_pptt_cache(table_hdr, cache->next_level_of_cache);
->>          (*local_level)++;
->>      }
->>      return NULL;
->> }
->>
->> static struct acpi_pptt_cache *_acpi_find_cache_node(
->>      struct acpi_table_header *table_hdr,
->>      struct acpi_pptt_processor *cpu_node,
->>      int *local_level, int level, int type)
->> {
->>      struct acpi_subtable_header *res;
->>      struct acpi_pptt_cache *cache_tmp, *cache = NULL;
->>      int resource = 0;
->>
->>      /* walk down from the processor node */
->>      while ((res = acpi_get_pptt_resource(table_hdr, cpu_node, resource))) {
->>
->>          cache_tmp = acpi_pptt_cache_type_level(table_hdr, res,
->>                                 local_level, level, type);
->>          if (cache_tmp) {
->>              if (cache)
->>                  pr_err("Found duplicate cache level/type unable to determine uniqueness\n");
->>
->>              cache = cache_tmp;
->>          }
->>          resource++;
->>      }
->>      return cache;
->> }
->>
->> /* find the ACPI node describing the cache type/level for the given CPU */
->> static struct acpi_pptt_cache *acpi_find_cache_node(
->>      struct acpi_table_header *table_hdr, u32 acpi_cpu_id,
->>      enum cache_type type, unsigned int level,
->>      struct acpi_pptt_processor **node)
->> {
->>      int total_levels = 0;
->>      struct acpi_pptt_cache *found = NULL;
->>      struct acpi_pptt_processor *cpu_node;
->>      u8 acpi_type = acpi_cache_type(type);
->>
->>      pr_debug("Looking for CPU %d's level %d cache type %d\n",
->>           acpi_cpu_id, level, acpi_type);
->>
->>      cpu_node = acpi_find_processor_node(table_hdr, acpi_cpu_id);
->>      if (!cpu_node)
->>          return NULL;
->>
->>      do {
->>          found = _acpi_find_cache_node(table_hdr, cpu_node,
->>                            &total_levels, level, acpi_type);
->>          *node = cpu_node;
->>          cpu_node = fetch_pptt_node(table_hdr, cpu_node->parent);
->>      } while ((cpu_node) && (!found));
->>
->>      return found;
->> }
->>
->> static int acpi_pptt_cache_level(struct acpi_table_header *table_hdr,
->>                  struct acpi_subtable_header *res)
->> {
->>      struct acpi_pptt_cache *cache = (struct acpi_pptt_cache *) res;
->>      int local_level = 1;
->>
->>      if (res->type != ACPI_PPTT_TYPE_CACHE)
->>          return 0;
->>
->>      while ((cache = fetch_pptt_cache(table_hdr, cache->next_level_of_cache)))
->>          local_level++;
->>      return local_level;
->> }
->>
->> static int _acpi_count_cache_level(
->>      struct acpi_table_header *table_hdr,
->>      struct acpi_pptt_processor *cpu_node)
->> {
->>      struct acpi_subtable_header *res;
->>      int levels = 0, resource = 0, number_of_levels = 0;
->>
->>      /* walk down from the processor node */
->>      while ((res = acpi_get_pptt_resource(table_hdr, cpu_node, resource))) {
->>          levels = acpi_pptt_cache_level(table_hdr, res);
->>
->>          /*
->>           * we are looking for the max depth. Since its potentially
->>           * possible for a given node to have resources with differing
->>           * depths verify that the depth we have found is the largest.
->>           */
->>          if (levels > number_of_levels)
->>              number_of_levels = levels;
->>
->>          resource++;
->>      }
->>      return number_of_levels;
->> }
->>
->> static int acpi_count_cache_level(struct acpi_table_header *table_hdr,
->>                    u32 acpi_cpu_id)
->> {
->>      int total_levels = 0;
->>      struct acpi_pptt_processor *cpu_node;
->>
->>      cpu_node = acpi_find_processor_node(table_hdr, acpi_cpu_id);
->>      while (cpu_node) {
->>          total_levels += _acpi_count_cache_level(table_hdr, cpu_node);
->>          cpu_node = fetch_pptt_node(table_hdr, cpu_node->parent);
->>      }
->>
->>      return total_levels;
->> }
->>
->>
->> Did not compile the code so I may have missed somthing.
->>
->> Thanks,
->> Tomasz
->
->
-> .
+> -       while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:Jmo:qST:v",
+> +       while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:JM:m:o:qST:v",
+>                                 long_options, &option_index)) != -1) {
+>                 switch (opt) {
+>                 case 'a':
+> @@ -5062,9 +5057,6 @@ void cmdline(int argc, char **argv)
+>                         list_header_only++;
+>                         quiet++;
+>                         break;
+> -               case 'm':
+> -                       do_migrate = 1;
+> -                       break;
+>                 case 'o':
+>                         outf = fopen_or_die(optarg, "w");
+>                         break;
+> --
+> 2.14.0-rc0
 >
