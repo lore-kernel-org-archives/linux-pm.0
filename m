@@ -1,90 +1,136 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/1] Revert "tools/power turbostat: stop migrating, unless '-m'"
-Date: Wed, 18 Oct 2017 03:21:25 +0200
-Message-ID: <CAJZ5v0gK1gGt4iF+jqOwGqOoOghVs9UEcJNd3-ASpy4bHBihaQ@mail.gmail.com>
-References: <a94c49e6b0d4da98d8c79e22cad313bf092d5886.1508270356.git.len.brown@intel.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH v4 3/8] PM / devfreq: Use the available min/max
+ frequency
+Date: Wed, 18 Oct 2017 10:31:02 +0900
+Message-ID: <59E6AED6.70703@samsung.com>
+References: <CGME20171013074833epcas1p433f03287f42a5b6dc16e796efa2a3bf3@epcas1p4.samsung.com>
+        <1507880904-31956-1-git-send-email-cw00.choi@samsung.com>
+        <1507880904-31956-4-git-send-email-cw00.choi@samsung.com>
+        <CAJ0PZbRarw8hSmkUZydn79czJj7HK1nc2G8egQdabDRVHE7W_w@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f65.google.com ([209.85.218.65]:52863 "EHLO
-        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754738AbdJRBV0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2017 21:21:26 -0400
-In-Reply-To: <a94c49e6b0d4da98d8c79e22cad313bf092d5886.1508270356.git.len.brown@intel.com>
+Received: from mailout3.samsung.com ([203.254.224.33]:41231 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1762121AbdJRBbE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 17 Oct 2017 21:31:04 -0400
+In-reply-to: <CAJ0PZbRarw8hSmkUZydn79czJj7HK1nc2G8egQdabDRVHE7W_w@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Len Brown <len.brown@intel.com>, Stable <stable@vger.kernel.org>
+To: myungjoo.ham@gmail.com
+Cc: Kyungmin Park <kyungmin.park@samsung.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, chanwoo@kernel.org, =?UTF-8?B?64yA7J246riw?= <inki.dae@samsung.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 
-On Tue, Oct 17, 2017 at 10:00 PM, Len Brown <lenb@kernel.org> wrote:
-> From: Len Brown <len.brown@intel.com>
->
-> This reverts commit c91fc8519d87715a3a173475ea3778794c139996.
->
-> That change caused a C6 and PC6 residency regression on large idle systems.
->
-> Users also complained about new output indicating jitter:
->
-> turbostat: cpu6 jitter 3794 9142
->
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> Cc: <stable@vger.kernel.org> # v4.13
+Hi,
 
-Applied, thanks!
+On 2017년 10월 17일 23:43, MyungJoo Ham wrote:
+> On Fri, Oct 13, 2017 at 4:48 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>> The commit a76caf55e5b35 ("thermal: Add devfreq cooling") is able
+>> to disable OPP as a cooling device. In result, both update_devfreq()
+>> and {min|max}_freq_show() have to consider the 'opp->available'
+>> status of each OPP.
+>>
+>> So, this patch adds the 'scaling_{min|max}_freq' to struct devfreq
+>> in order to indicate the available mininum and maximum frequency
+>> by adjusting OPP interface such as dev_pm_opp_{disable|enable}().
+>> The 'scaling_{min|max}_freq' are used for on both update_devfreq()
+>> and {min|max}_freq_show().
+>>
+>> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> ---
+>>  drivers/devfreq/devfreq.c | 36 ++++++++++++++++++++++++++++--------
+>>  include/linux/devfreq.h   |  4 ++++
+>>  2 files changed, 32 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+>> index b6ba24e5db0d..9de013ffeb67 100644
+>> --- a/drivers/devfreq/devfreq.c
+>> +++ b/drivers/devfreq/devfreq.c
+> []
+>> @@ -494,6 +499,19 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
+>>         int ret;
+>>
+>>         mutex_lock(&devfreq->lock);
+>> +
+>> +       devfreq->scaling_min_freq = find_available_min_freq(devfreq);
+>> +       if (!devfreq->scaling_min_freq) {
+>> +               mutex_unlock(&devfreq->lock);
+>> +               return -EINVAL;
+>> +       }
+>> +
+>> +       devfreq->scaling_max_freq = find_available_max_freq(devfreq);
+>> +       if (!devfreq->max_freq) {
+> 
+> 1. s/max_freq/scaling/max_freq/ ??
 
-> ---
->  tools/power/x86/turbostat/turbostat.c | 10 +---------
->  1 file changed, 1 insertion(+), 9 deletions(-)
->
-> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-> index 0dafba2c1e7d..bd9c6b31a504 100644
-> --- a/tools/power/x86/turbostat/turbostat.c
-> +++ b/tools/power/x86/turbostat/turbostat.c
-> @@ -92,7 +92,6 @@ unsigned int do_ring_perf_limit_reasons;
->  unsigned int crystal_hz;
->  unsigned long long tsc_hz;
->  int base_cpu;
-> -int do_migrate;
->  double discover_bclk(unsigned int family, unsigned int model);
->  unsigned int has_hwp;  /* IA32_PM_ENABLE, IA32_HWP_CAPABILITIES */
->                         /* IA32_HWP_REQUEST, IA32_HWP_STATUS */
-> @@ -303,9 +302,6 @@ int for_all_cpus(int (func)(struct thread_data *, struct core_data *, struct pkg
->
->  int cpu_migrate(int cpu)
->  {
-> -       if (!do_migrate)
-> -               return 0;
-> -
->         CPU_ZERO_S(cpu_affinity_setsize, cpu_affinity_set);
->         CPU_SET_S(cpu, cpu_affinity_setsize, cpu_affinity_set);
->         if (sched_setaffinity(0, cpu_affinity_setsize, cpu_affinity_set) == -1)
-> @@ -5007,7 +5003,6 @@ void cmdline(int argc, char **argv)
->                 {"hide",        required_argument,      0, 'H'},        // meh, -h taken by --help
->                 {"Joules",      no_argument,            0, 'J'},
->                 {"list",        no_argument,            0, 'l'},
-> -               {"migrate",     no_argument,            0, 'm'},
->                 {"out",         required_argument,      0, 'o'},
->                 {"quiet",       no_argument,            0, 'q'},
->                 {"show",        required_argument,      0, 's'},
-> @@ -5019,7 +5014,7 @@ void cmdline(int argc, char **argv)
->
->         progname = argv[0];
->
-> -       while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:Jmo:qST:v",
-> +       while ((opt = getopt_long_only(argc, argv, "+C:c:Ddhi:JM:m:o:qST:v",
->                                 long_options, &option_index)) != -1) {
->                 switch (opt) {
->                 case 'a':
-> @@ -5062,9 +5057,6 @@ void cmdline(int argc, char **argv)
->                         list_header_only++;
->                         quiet++;
->                         break;
-> -               case 'm':
-> -                       do_migrate = 1;
-> -                       break;
->                 case 'o':
->                         outf = fopen_or_die(optarg, "w");
->                         break;
-> --
-> 2.14.0-rc0
->
+My mistake. The scaling_max_freq is right. I'll fix it.
+
+> 
+> 2. what if thermal is not active or has never triggered any event and
+> the user has never stated max/min? (making scaling_*_freq zero)
+
+
+The devfreq-cooling.c of tmu uses the OPP interface
+and then OPP interface affect the scaling_min/max_freq of devfreq
+through dev_pm_opp_disable/enable(). So, even if 'thermal is not active
+or has never triggered any event', devfreq will use the OPP interface
+as a mandatory.
+
+In result, I think that devfreq should maintain the correct frequency
+of scaling_min/max_freq indicating the 'limit minimum/maximum frequency
+requested by OPP interface' instead of zero.
+
+So, I'll change the description of scaling_min/max_freq as following:
+(by devfreq-cooling -> by OPP interface)
+On v4:
++ * @scaling_min_freq:  Limit minimum frequency requested by devfreq-cooling
++ * @scaling_max_freq:  Limit maximum frequency requested by devfreq-cooling
+
+On v5:
++ * @scaling_min_freq:  Limit minimum frequency requested by OPP interface
++ * @scaling_max_freq:  Limit maximum frequency requested by OPP interface
+
+
+And, this patch showed the wrong value of min/max_freq_show() by my mistake.
+I showed the 'min/max_freq' directly through min/max_freq_show()
+without comparing with scaling_min/max_freq. So, I'll fix this issue as following:
+---------------
+On v5:
+static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
+                             char *buf)
+ {
+-       return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
++       struct devfreq *df = to_devfreq(dev);
++
++       return sprintf(buf, "%lu\n", MAX(df->scaling_min_freq, df->min_freq));
+ }
+
+ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+@@ -1161,7 +1183,9 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
+                             char *buf)
+ {
+-       return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
++       struct devfreq *df = to_devfreq(dev);
++
++       return sprintf(buf, "%lu\n", MIN(df->scaling_max_freq, df->max_freq));
+---------------
+
+
+> 
+>> +               mutex_unlock(&devfreq->lock);
+>> +               return -EINVAL;
+>> +       }
+>> +
+>>         ret = update_devfreq(devfreq);
+>>         mutex_unlock(&devfreq->lock);
+>>
+> 
+> 
+> 
+
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
