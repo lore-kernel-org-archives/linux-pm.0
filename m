@@ -1,88 +1,105 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 17/18] thermal/drivers/generic-iio-adc: Switch tz request to devm version
-Date: Thu, 19 Oct 2017 19:05:59 +0200
-Message-ID: <1508432760-17847-17-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 14/18] thermal/drivers/hisi: Move the clk setup in the corresponding functions
+Date: Thu, 19 Oct 2017 19:05:56 +0200
+Message-ID: <1508432760-17847-14-git-send-email-daniel.lezcano@linaro.org>
 References: <6ac48f08-7fe6-92e9-0801-6ed3bcd05ff1@linaro.org>
  <1508432760-17847-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1508432760-17847-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
 To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org, Laxman Dewangan <ldewangan@nvidia.com>
+Cc: linux-pm@vger.kernel.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org, Kevin Wangtao <kevin.wangtao@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Everything mentionned here:
- https://lkml.org/lkml/2016/4/20/850
+From: Kevin Wangtao <kevin.wangtao@linaro.org>
 
-This driver was added before the devm_iio_channel_get() function version was
-merged. The sensor should be released before the iio channel, thus we had to
-use the non-devm version of thermal_zone_of_sensor_register().
+The sensor's clock is enabled and disabled outside of the probe and
+disable function. Moving the corresponding action in the
+hisi_thermal_setup() and hisi_thermal_disable_sensor(), factors out
+some lines of code and makes the code more symmetric.
 
-Now the devm_iio_channel_get() is available, do the corresponding change in
-this driver and remove gadc_thermal_remove().
-
-[Compiled tested only]
-
-Acked-by: Laxman Dewangan <ldewangan@nvidia.com>
+Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
+Tested-by: Daniel Lezcano <daniel.lezcano@linaro.org> # hikey6220
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/thermal-generic-adc.c | 24 ++++--------------------
- 1 file changed, 4 insertions(+), 20 deletions(-)
+ drivers/thermal/hisi_thermal.c | 29 +++++++++--------------------
+ 1 file changed, 9 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/thermal/thermal-generic-adc.c b/drivers/thermal/thermal-generic-adc.c
-index 73f55d6..46d3005 100644
---- a/drivers/thermal/thermal-generic-adc.c
-+++ b/drivers/thermal/thermal-generic-adc.c
-@@ -126,38 +126,23 @@ static int gadc_thermal_probe(struct platform_device *pdev)
- 	gti->dev = &pdev->dev;
- 	platform_set_drvdata(pdev, gti);
+diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
+index 8d1a8be..b9e4a9a 100644
+--- a/drivers/thermal/hisi_thermal.c
++++ b/drivers/thermal/hisi_thermal.c
+@@ -203,6 +203,8 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
+ 	hisi_thermal_enable(data->regs, 0);
+ 	hisi_thermal_alarm_enable(data->regs, 0);
+ 	hisi_thermal_reset_enable(data->regs, 0);
++
++	clk_disable_unprepare(data->clk);
+ }
  
--	gti->channel = iio_channel_get(&pdev->dev, "sensor-channel");
-+	gti->channel = devm_iio_channel_get(&pdev->dev, "sensor-channel");
- 	if (IS_ERR(gti->channel)) {
- 		ret = PTR_ERR(gti->channel);
- 		dev_err(&pdev->dev, "IIO channel not found: %d\n", ret);
+ static int hisi_thermal_get_temp(void *__data, int *temp)
+@@ -297,9 +299,13 @@ static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
+ 
+ static int hisi_thermal_setup(struct hisi_thermal_data *data)
+ {
+-	struct hisi_thermal_sensor *sensor;
++	struct hisi_thermal_sensor *sensor = &data->sensor;
++	int ret;
+ 
+-	sensor = &data->sensor;
++	/* enable clock for tsensor */
++	ret = clk_prepare_enable(data->clk);
++	if (ret)
++		return ret;
+ 
+ 	/* disable module firstly */
+ 	hisi_thermal_reset_enable(data->regs, 0);
+@@ -363,13 +369,6 @@ static int hisi_thermal_probe(struct platform_device *pdev)
  		return ret;
  	}
  
--	gti->tz_dev = thermal_zone_of_sensor_register(&pdev->dev, 0,
--						      gti, &gadc_thermal_ops);
-+	gti->tz_dev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, gti,
-+							   &gadc_thermal_ops);
- 	if (IS_ERR(gti->tz_dev)) {
- 		ret = PTR_ERR(gti->tz_dev);
- 		dev_err(&pdev->dev, "Thermal zone sensor register failed: %d\n",
- 			ret);
--		goto sensor_fail;
-+		return ret;
- 	}
+-	/* enable clock for thermal */
+-	ret = clk_prepare_enable(data->clk);
+-	if (ret) {
+-		dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
+-		return ret;
+-	}
+-
+ 	ret = hisi_thermal_register_sensor(pdev, data,
+ 					   &data->sensor,
+ 					   HISI_DEFAULT_SENSOR);
+@@ -405,7 +404,6 @@ static int hisi_thermal_remove(struct platform_device *pdev)
+ 
+ 	hisi_thermal_toggle_sensor(sensor, false);
+ 	hisi_thermal_disable_sensor(data);
+-	clk_disable_unprepare(data->clk);
  
  	return 0;
+ }
+@@ -417,23 +415,14 @@ static int hisi_thermal_suspend(struct device *dev)
+ 
+ 	hisi_thermal_disable_sensor(data);
+ 
+-	clk_disable_unprepare(data->clk);
 -
--sensor_fail:
--	iio_channel_release(gti->channel);
--
--	return ret;
--}
--
--static int gadc_thermal_remove(struct platform_device *pdev)
--{
--	struct gadc_thermal_info *gti = platform_get_drvdata(pdev);
--
--	thermal_zone_of_sensor_unregister(&pdev->dev, gti->tz_dev);
--	iio_channel_release(gti->channel);
--
--	return 0;
+ 	return 0;
  }
  
- static const struct of_device_id of_adc_thermal_match[] = {
-@@ -172,7 +157,6 @@ static struct platform_driver gadc_thermal_driver = {
- 		.of_match_table = of_adc_thermal_match,
- 	},
- 	.probe = gadc_thermal_probe,
--	.remove = gadc_thermal_remove,
- };
+ static int hisi_thermal_resume(struct device *dev)
+ {
+ 	struct hisi_thermal_data *data = dev_get_drvdata(dev);
+-	int ret;
  
- module_platform_driver(gadc_thermal_driver);
+-	ret = clk_prepare_enable(data->clk);
+-	if (ret)
+-		return ret;
+-
+-	hisi_thermal_setup(data);
+-
+-	return 0;
++	return hisi_thermal_setup(data);
+ }
+ #endif
+ 
 -- 
 2.7.4
