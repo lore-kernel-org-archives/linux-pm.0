@@ -1,119 +1,77 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 04/18] thermal/drivers/hisi: Simplify the temperature/step computation
-Date: Thu, 19 Oct 2017 19:05:46 +0200
-Message-ID: <1508432760-17847-4-git-send-email-daniel.lezcano@linaro.org>
-References: <6ac48f08-7fe6-92e9-0801-6ed3bcd05ff1@linaro.org>
- <1508432760-17847-1-git-send-email-daniel.lezcano@linaro.org>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
+Date: Thu, 19 Oct 2017 12:21:08 -0500
+Message-ID: <1769d82f-07d3-14c9-c06a-d6afec20fa0e@ti.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan>
+ <CAPDyKFozJtSHxxBEFtC+ofJ4XUyQjqUundPs81JATT=WfjXoYA@mail.gmail.com>
+ <7b9c2a3e-2e88-938e-46a5-703de0080681@ti.com>
+ <2926646.NJduVklg7n@aspire.rjw.lan>
+ <CAPDyKFrFbdXrZqtvwm=xmJSqQckfGzs7XNn7AOCTbOjwP4iAFQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f68.google.com ([74.125.82.68]:54533 "EHLO
-        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755014AbdJSRIg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2017 13:08:36 -0400
-Received: by mail-wm0-f68.google.com with SMTP id i124so17714723wmf.3
-        for <linux-pm@vger.kernel.org>; Thu, 19 Oct 2017 10:08:35 -0700 (PDT)
-In-Reply-To: <1508432760-17847-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFrFbdXrZqtvwm=xmJSqQckfGzs7XNn7AOCTbOjwP4iAFQ@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
 
-The step and the base temperature are fixed values, we can simplify the
-computation by converting the base temperature to milli celsius and use a
-pre-computed step value. That saves us a lot of mult + div for nothing at
-runtime.
 
-Take also the opportunity to change the function names to be consistent with
-the rest of the code.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Leo Yan <leo.yan@linaro.org>
-Tested-by: Leo Yan <leo.yan@linaro.org>
----
- drivers/thermal/hisi_thermal.c | 41 ++++++++++++++++++++++++++++-------------
- 1 file changed, 28 insertions(+), 13 deletions(-)
+On 10/19/2017 03:33 AM, Ulf Hansson wrote:
+> On 18 October 2017 at 23:48, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Wednesday, October 18, 2017 9:45:11 PM CEST Grygorii Strashko wrote:
+>>>
+>>> On 10/18/2017 09:11 AM, Ulf Hansson wrote:
+>>
+>> [...]
+>>
+>>>>>> That's the point. We know pm_runtime_force_* works nicely for the
+>>>>>> trivial middle-layer cases.
+>>>>>
+>>>>> In which cases the middle-layer callbacks don't exist, so it's just like
+>>>>> reusing driver callbacks directly. :-)
+>>>
+>>> I'd like to ask you clarify one point here and provide some info which I hope can be useful -
+>>> what's exactly means  "trivial middle-layer cases"?
+>>>
+>>> Is it when systems use "drivers/base/power/clock_ops.c - Generic clock
+>>> manipulation PM callbacks" as dev_pm_domain (arm davinci/keystone), or OMAP
+>>> device framework struct dev_pm_domain omap_device_pm_domain
+>>> (arm/mach-omap2/omap_device.c) or static const struct dev_pm_ops
+>>> tegra_aconnect_pm_ops?
+>>>
+>>> if yes all above have PM runtime callbacks.
+>>
+>> Trivial ones don't actually do anything meaningful in their PM callbacks.
+>>
+>> Things like the platform bus type, spi bus type, i2c bus type and similar.
+>>
+>> If the middle-layer callbacks manipulate devices in a significant way, then
+>> they aren't trivial.
+> 
+> I fully agree with Rafael's description above, but let me also clarify
+> one more thing.
+> 
+> We have also been discussing PM domains as being trivial and
+> non-trivial. In some statements I even think the PM domain has been a
+> part the middle-layer terminology, which may have been a bit
+> confusing.
+> 
+> In this regards as we consider genpd being a trivial PM domain, those
+> examples your bring up above is too me also examples of trivial PM
+> domains. Especially because they don't deal with wakeups, as that is
+> taken care of by the drivers, right!?
 
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index feae552..04eb5e2 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -35,8 +35,9 @@
- #define TEMP0_RST_MSK			(0x1C)
- #define TEMP0_VALUE			(0x28)
- 
--#define HISI_TEMP_BASE			(-60)
-+#define HISI_TEMP_BASE			(-60000)
- #define HISI_TEMP_RESET			(100000)
-+#define HISI_TEMP_STEP			(784)
- 
- #define HISI_MAX_SENSORS		4
- #define HISI_DEFAULT_SENSOR		2
-@@ -61,19 +62,32 @@ struct hisi_thermal_data {
- 	void __iomem *regs;
- };
- 
--/* in millicelsius */
--static inline int _step_to_temp(int step)
-+/*
-+ * The temperature computation on the tsensor is as follow:
-+ *	Unit: millidegree Celsius
-+ *	Step: 255/200 (0.7843)
-+ *	Temperature base: -60°C
-+ *
-+ * The register is programmed in temperature steps, every step is 784
-+ * millidegree and begins at -60 000 m°C
-+ *
-+ * The temperature from the steps:
-+ *
-+ *	Temp = TempBase + (steps x 784)
-+ *
-+ * and the steps from the temperature:
-+ *
-+ *	steps = (Temp - TempBase) / 784
-+ *
-+ */
-+static inline int hisi_thermal_step_to_temp(int step)
- {
--	/*
--	 * Every step equals (1 * 200) / 255 celsius, and finally
--	 * need convert to millicelsius.
--	 */
--	return (HISI_TEMP_BASE * 1000 + (step * 200000 / 255));
-+	return HISI_TEMP_BASE + (step * HISI_TEMP_STEP);
- }
- 
--static inline long _temp_to_step(long temp)
-+static inline long hisi_thermal_temp_to_step(long temp)
- {
--	return ((temp - HISI_TEMP_BASE * 1000) * 255) / 200000;
-+	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
- }
- 
- static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
-@@ -99,7 +113,7 @@ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
- 	usleep_range(3000, 5000);
- 
- 	val = readl(data->regs + TEMP0_VALUE);
--	val = _step_to_temp(val);
-+	val = hisi_thermal_step_to_temp(val);
- 
- 	mutex_unlock(&data->thermal_lock);
- 
-@@ -126,10 +140,11 @@ static void hisi_thermal_enable_bind_irq_sensor
- 	writel((sensor->id << 12), data->regs + TEMP0_CFG);
- 
- 	/* enable for interrupt */
--	writel(_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
-+	writel(hisi_thermal_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
- 	       data->regs + TEMP0_TH);
- 
--	writel(_temp_to_step(HISI_TEMP_RESET), data->regs + TEMP0_RST_TH);
-+	writel(hisi_thermal_temp_to_step(HISI_TEMP_RESET),
-+	       data->regs + TEMP0_RST_TH);
- 
- 	/* enable module */
- 	writel(0x1, data->regs + TEMP0_RST_MSK);
+Not directly, for example, omap device framework has noirq callback implemented
+which forcibly disable all devices which are not PM runtime suspended.
+while doing this it calls drivers PM .runtime_suspend() which may return
+non 0 value and in this case device will be left enabled (powered) at suspend for
+wake up purposes (see _od_suspend_noirq()).
+
+
 -- 
-2.7.4
+regards,
+-grygorii
