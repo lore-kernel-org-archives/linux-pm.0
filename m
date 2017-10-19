@@ -1,61 +1,102 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
-Date: Thu, 19 Oct 2017 10:33:47 +0200
-Message-ID: <CAPDyKFrFbdXrZqtvwm=xmJSqQckfGzs7XNn7AOCTbOjwP4iAFQ@mail.gmail.com>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <CAPDyKFozJtSHxxBEFtC+ofJ4XUyQjqUundPs81JATT=WfjXoYA@mail.gmail.com>
- <7b9c2a3e-2e88-938e-46a5-703de0080681@ti.com> <2926646.NJduVklg7n@aspire.rjw.lan>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v3 2/7] ACPI: Enable PPTT support on ARM64
+Date: Thu, 19 Oct 2017 10:12:50 +0100
+Message-ID: <20171019091250.GA17450@red-moon>
+References: <20171012194856.13844-1-jeremy.linton@arm.com>
+ <20171012194856.13844-3-jeremy.linton@arm.com>
+ <20171018164723.GA15924@red-moon>
+ <889154d0-ed39-1621-83ee-1084674ee963@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2926646.NJduVklg7n@aspire.rjw.lan>
+Content-Disposition: inline
+In-Reply-To: <889154d0-ed39-1621-83ee-1084674ee963@arm.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Grygorii Strashko <grygorii.strashko@ti.com>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
+To: Jeremy Linton <jeremy.linton@arm.com>
+Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On 18 October 2017 at 23:48, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, October 18, 2017 9:45:11 PM CEST Grygorii Strashko wrote:
->>
->> On 10/18/2017 09:11 AM, Ulf Hansson wrote:
->
-> [...]
->
->> >>> That's the point. We know pm_runtime_force_* works nicely for the
->> >>> trivial middle-layer cases.
->> >>
->> >> In which cases the middle-layer callbacks don't exist, so it's just like
->> >> reusing driver callbacks directly. :-)
->>
->> I'd like to ask you clarify one point here and provide some info which I hope can be useful -
->> what's exactly means  "trivial middle-layer cases"?
->>
->> Is it when systems use "drivers/base/power/clock_ops.c - Generic clock
->> manipulation PM callbacks" as dev_pm_domain (arm davinci/keystone), or OMAP
->> device framework struct dev_pm_domain omap_device_pm_domain
->> (arm/mach-omap2/omap_device.c) or static const struct dev_pm_ops
->> tegra_aconnect_pm_ops?
->>
->> if yes all above have PM runtime callbacks.
->
-> Trivial ones don't actually do anything meaningful in their PM callbacks.
->
-> Things like the platform bus type, spi bus type, i2c bus type and similar.
->
-> If the middle-layer callbacks manipulate devices in a significant way, then
-> they aren't trivial.
+On Wed, Oct 18, 2017 at 12:38:46PM -0500, Jeremy Linton wrote:
+> On 10/18/2017 11:47 AM, Lorenzo Pieralisi wrote:
+> >On Thu, Oct 12, 2017 at 02:48:51PM -0500, Jeremy Linton wrote:
+> >>Now that we have a PPTT parser, in preparation for its use
+> >>on arm64, lets build it.
+> >>
+> >>Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+> >>---
+> >>  arch/arm64/Kconfig         | 1 +
+> >>  drivers/acpi/Makefile      | 1 +
+> >>  drivers/acpi/arm64/Kconfig | 3 +++
+> >>  3 files changed, 5 insertions(+)
+> >>
+> >>diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> >>index 0df64a6a56d4..68c9d1289735 100644
+> >>--- a/arch/arm64/Kconfig
+> >>+++ b/arch/arm64/Kconfig
+> >>@@ -7,6 +7,7 @@ config ARM64
+> >>  	select ACPI_REDUCED_HARDWARE_ONLY if ACPI
+> >>  	select ACPI_MCFG if ACPI
+> >>  	select ACPI_SPCR_TABLE if ACPI
+> >>+	select ACPI_PPTT if ACPI
+> >>  	select ARCH_CLOCKSOURCE_DATA
+> >>  	select ARCH_HAS_DEBUG_VIRTUAL
+> >>  	select ARCH_HAS_DEVMEM_IS_ALLOWED
+> >>diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+> >>index 90265ab4437a..c92a0c937551 100644
+> >>--- a/drivers/acpi/Makefile
+> >>+++ b/drivers/acpi/Makefile
+> >>@@ -85,6 +85,7 @@ obj-$(CONFIG_ACPI_BGRT)		+= bgrt.o
+> >>  obj-$(CONFIG_ACPI_CPPC_LIB)	+= cppc_acpi.o
+> >>  obj-$(CONFIG_ACPI_SPCR_TABLE)	+= spcr.o
+> >>  obj-$(CONFIG_ACPI_DEBUGGER_USER) += acpi_dbg.o
+> >>+obj-$(CONFIG_ACPI_PPTT) 	+= pptt.o
+> >>  # processor has its own "processor." module_param namespace
+> >>  processor-y			:= processor_driver.o
+> >>diff --git a/drivers/acpi/arm64/Kconfig b/drivers/acpi/arm64/Kconfig
+> >>index 5a6f80fce0d6..74b855a669ea 100644
+> >>--- a/drivers/acpi/arm64/Kconfig
+> >>+++ b/drivers/acpi/arm64/Kconfig
+> >>@@ -7,3 +7,6 @@ config ACPI_IORT
+> >>  config ACPI_GTDT
+> >>  	bool
+> >>+
+> >>+config ACPI_PPTT
+> >>+	bool
+> >>\ No newline at end of file
+> >
+> >I do not understand the logic. Why should we have a Kconfig option
+> >in drivers/acpi/arm64 for code in drivers/acpi ?
+> >
+> >AFAIK PPTT is not an ACPI ARM64 specific binding.
+> 
+> Weird hu? Originally I had the whole shebang in arm64 because the
+> x86 (or whatever) bindings have not been written. My assumption is
+> that once that part had been provided it could be moved.
 
-I fully agree with Rafael's description above, but let me also clarify
-one more thing.
+Which part ? I asked because AFAICS the bindings are completely
+generic (and are meant to be so).
 
-We have also been discussing PM domains as being trivial and
-non-trivial. In some statements I even think the PM domain has been a
-part the middle-layer terminology, which may have been a bit
-confusing.
+> The config is sort of an artifact and "easier" to move than the
+> whole file. But, as Hanjun has also been complaining about it I've
+> agreed to move it to the "correct" location but keep it in the arm64
+> wrapper. Of course I think that is a bit strange too, but
+> whatever...
 
-In this regards as we consider genpd being a trivial PM domain, those
-examples your bring up above is too me also examples of trivial PM
-domains. Especially because they don't deal with wakeups, as that is
-taken care of by the drivers, right!?
+I do not want to cavil but either you have Kconfig and code in
+drivers/acpi or drivers/acpi/arm64 - I would not understand a
+mix of the two.
 
-Kind regards
-Uffe
+To reiterate the point, PPTT is not an ARM64 specific binding so
+IMO it does not belong in drivers/acpi/arm64.
+
+> Once the arm64 side of things are all wrapped up (and I can come up
+> for some air) I willing to help with bindings on other architectures
+> if anyone is truly interested.  But, I view that whole exercise as
+> more a "bug" fixing one than providing any real benefit at this
+> point.
+
+Please define "bindings on other architectures" because I do not
+understand what you mean.
+
+Thanks,
+Lorenzo
