@@ -1,98 +1,89 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [GIT PULL] thermal: new material for hikey for 4.15 #2
-Date: Thu, 19 Oct 2017 19:05:32 +0200
-Message-ID: <6ac48f08-7fe6-92e9-0801-6ed3bcd05ff1@linaro.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: libbattery was Re: [RFC PATCH 5/5] power: generic-adc-battery:
+ Add capacity handling
+Date: Thu, 19 Oct 2017 10:06:49 -0700
+Message-ID: <20171019170649.GG4394@atomide.com>
+References: <1501620926-22669-1-git-send-email-marek.belisko@open-nandra.com>
+ <1501620926-22669-6-git-send-email-marek.belisko@open-nandra.com>
+ <20170829101147.debhadzyfrxhkrvt@earth>
+ <20170908113231.GJ18365@amd>
+ <20171018122804.GA14376@amd>
+ <61BFA8AF-657A-4AD7-A7AC-3E5DC3B7E83D@goldelico.com>
+ <20171018132204.GD4394@atomide.com>
+ <0C0901E1-23E8-4D04-B3A9-8314809A7A6B@goldelico.com>
+ <20171019162416.GE4394@atomide.com>
+ <152FA5B1-75F9-4F0B-9E05-6277CD83C975@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f195.google.com ([209.85.128.195]:51611 "EHLO
-        mail-wr0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751961AbdJSRFg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2017 13:05:36 -0400
-Received: by mail-wr0-f195.google.com with SMTP id j14so9033209wre.8
-        for <linux-pm@vger.kernel.org>; Thu, 19 Oct 2017 10:05:35 -0700 (PDT)
-Content-Language: en-US
+Received: from muru.com ([72.249.23.125]:44912 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753234AbdJSRGy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Oct 2017 13:06:54 -0400
+Content-Disposition: inline
+In-Reply-To: <152FA5B1-75F9-4F0B-9E05-6277CD83C975@goldelico.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, Zhang Rui <rui.zhang@intel.com>
-Cc: Linux PM mailing list <linux-pm@vger.kernel.org>, Leo Yan <leo.yan@linaro.org>, Kevin Wangtao <kevin.wangtao@linaro.org>, Keerthy <j-keerthy@ti.com>, ldewangan@nvidia.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, sakari.ailus@linux.intel.com, Marek Belisko <marek.belisko@open-nandra.com>, khilman@kernel.org, Marek Belisko <marek.belisko@gmail.com>, linux-pm@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, kernel list <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, martijn@brixit.nl, robh+dt@kernel.org, abcloriens@gmail.com, Pavel Machek <pavel@ucw.cz>, Pali =?utf-8?B?Um9ow6Fy?= <pali.rohar@gmail.com>, Sebastian Reichel <sebastian.reichel@collabora.co.uk>, clayton@craftyguy.net, linux-omap <linux-omap@vger.kernel.org>, patrikbachan@gmail.com, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, serge@hallyn.com
 
+* H. Nikolaus Schaller <hns@goldelico.com> [171019 09:57]:
+> Hi Tony,
+> 
+> > Am 19.10.2017 um 18:24 schrieb Tony Lindgren <tony@atomide.com>:
+> > 
+> > * H. Nikolaus Schaller <hns@goldelico.com> [171018 08:49]:
+> >> 
+> >>> Am 18.10.2017 um 15:22 schrieb Tony Lindgren <tony@atomide.com>:
+> >>> 
+> >>> * H. Nikolaus Schaller <hns@goldelico.com> [171018 05:49]:
+> >>>>> Am 18.10.2017 um 14:28 schrieb Pavel Machek <pavel@ucw.cz>:
+> >>>>> 
+> >>>>> So I started something, it is at.
+> >>>>> 
+> >>>>> https://github.com/pavelmachek/libbattery
+> >>>>> 
+> >>>>> My battery on n900 is currently uncalibrated (and charging), still it
+> >>>>> gets some kind of estimation:
+> >>>>> 
+> >>>>> Battery -1 %
+> >>>>> Seconds -1
+> >>>>> State 1
+> >>>>> Voltage 3.88 V
+> >>>>> Battery 63 %
+> >>>>> 
+> >>>>> Of course, there's a lot more work to be done.
+> >>>> 
+> >>>> Nice start but not a solution to our problem.
+> >>>> 
+> >>>> Our problem is that people simply expect that for example https://packages.debian.org/wheezy/xfce/xfce4-battery-plugin
+> >>>> displays the battery percentage.
+> >>> 
+> >>> I think we could make things compatible with various battery apps by
+> >>> having libbattery write back the capacity percentage and time remaining
+> >>> to the kernel driver via sysfs or a dev entry. Then the kernel interface
+> >>> can just display the data to whatever apps.
+> >> 
+> >> Hm. That would be quite difficult to understand and maintain code.
+> > 
+> > How so? The libbattery can do it all, then the kernel drivers needing
+> > that will just display the most recent values to maintain compability
+> > with battery apps.
+> 
+> Well, it looks as if you are thinking about a much more complex solution
+> than I am...
+> 
+> The proposal we are discussing as
+> 
+> [RFC PATCH 5/5] power: generic-adc-battery: Add capacity handling
+> 
+> just reads the current voltage, charging current and uses a (nonlinear)
+> mapping to 0% .. 100%.
 
-Hi Eduardo,
+Right, I was discussing Pavel's libbattery link posted above. No
+comments on the current patch series. Let's move the libbattery stuff
+to a new thread to avoid confusion.
 
-** I'm not if I took the right branch **
+Regards,
 
-The changes are based on top of the thermal-soc branch.
-
-Note from the previous pull I removed the hikey960 support series in
-order to sort out the multiple threshold before submitting again.
-
-The pull request contains the following changes:
-
- - Reworked the hikey6220 thermal driver by improving the code, fixing
-the interrupt setup issues and removed the locks. Set the scene for the
-hikey3660 support (Daniel Lezcano)
-
- - Switched tz request to devm version in order to be consistent with
-the devm API used in the driver (Daniel Lezcano)
-
- - Fixed temperature regulation misbehavior with the step wise governor
-leading to a hikey hard reset (Daniel Lezcano)
-
- - Moved clock setup in the setup function and used rounded step value
-to prevent pointless roundup function (Kevin Wangtao)
-
------------------------------------------------------------------------
-
-The following changes since commit 7a348799d5d9087bbc2e60767f5e6da9f70cc7ca:
-
-  Merge branches 'mediatek-mt2712', 'rockchip-rk3328' and
-'uniphier-thermal' into thermal-soc (2017-09-08 11:17:53 +0800)
-
-are available in the git repository at:
-
-  https://git.linaro.org/people/daniel.lezcano/linux.git thermal/hikey-next
-
-for you to fetch changes up to ef32377640799ce62610f05d43db75ce0d34e42e:
-
-  thermal/drivers/qcom-spmi: Use devm_iio_channel_get (2017-10-18
-16:34:17 +0200)
-
-----------------------------------------------------------------
-Daniel Lezcano (16):
-      thermal/drivers/hisi: Fix missing interrupt enablement
-      thermal/drivers/hisi: Remove the multiple sensors support
-      thermal/drivers/hisi: Fix kernel panic on alarm interrupt
-      thermal/drivers/hisi: Simplify the temperature/step computation
-      thermal/drivers/hisi: Fix multiple alarm interrupts firing
-      thermal/drivers/hisi: Remove pointless lock
-      thermal/drivers/hisi: Encapsulate register writes into helpers
-      thermal/drivers/hisi: Fix configuration register setting
-      thermal/drivers/hisi: Remove costly sensor inspection
-      thermal/drivers/hisi: Rename and remove unused field
-      thermal/drivers/hisi: Convert long to int
-      thermal/drivers/hisi: Remove thermal data back pointer
-      thermal/drivers/hisi: Remove mutex_lock in the code
-      thermal/drivers/step_wise: Fix temperature regulation misbehavior
-      thermal/drivers/generic-iio-adc: Switch tz request to devm version
-      thermal/drivers/qcom-spmi: Use devm_iio_channel_get
-
-Kevin Wangtao (2):
-      thermal/drivers/hisi: Move the clk setup in the corresponding
-functions
-      thermal/drivers/hisi: Use round up step value
-
- drivers/thermal/hisi_thermal.c         | 396
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------------------------------------------------
- drivers/thermal/qcom-spmi-temp-alarm.c |  43 ++++++----------
- drivers/thermal/step_wise.c            |  11 +++--
- drivers/thermal/thermal-generic-adc.c  |  24 ++-------
- 4 files changed, 227 insertions(+), 247 deletions(-)
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Tony
