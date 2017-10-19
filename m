@@ -1,64 +1,27 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 3/3] thermal: pch: Add Cannon Lake support
-Date: Thu, 19 Oct 2017 14:51:34 -0700
-Message-ID: <1508449894-58797-4-git-send-email-srinivas.pandruvada@linux.intel.com>
-References: <1508449894-58797-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1508449894-58797-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH 0/3] thermal: Support for Coffee Lake and Cannon Lake
+Date: Thu, 19 Oct 2017 14:51:31 -0700
+Message-ID: <1508449894-58797-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga09.intel.com ([134.134.136.24]:58477 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752693AbdJSVvp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Oct 2017 17:51:45 -0400
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-List-Id: linux-pm@vger.kernel.org
 
-Added Cannon Lake PCH ids.
+Added support for PCH and processor thermal device.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/thermal/intel_pch_thermal.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+Srinivas Pandruvada (3):
+  thermal: int340x: processor_thermal: Add Cannon Lake support
+  thermal: int340x: processor_thermal: Add Coffee Lake support
+  thermal: pch: Add Cannon Lake support
 
-diff --git a/drivers/thermal/intel_pch_thermal.c b/drivers/thermal/intel_pch_thermal.c
-index c60b1cf..8a7f69b 100644
---- a/drivers/thermal/intel_pch_thermal.c
-+++ b/drivers/thermal/intel_pch_thermal.c
-@@ -30,6 +30,8 @@
- #define PCH_THERMAL_DID_WPT	0x9CA4 /* Wildcat Point */
- #define PCH_THERMAL_DID_SKL	0x9D31 /* Skylake PCH */
- #define PCH_THERMAL_DID_SKL_H	0xA131 /* Skylake PCH 100 series */
-+#define PCH_THERMAL_DID_CNL	0x9Df9 /* CNL PCH */
-+#define PCH_THERMAL_DID_CNL_H	0xA379 /* CNL-H PCH */
- 
- /* Wildcat Point-LP  PCH Thermal registers */
- #define WPT_TEMP	0x0000	/* Temperature */
-@@ -278,6 +280,7 @@ enum board_ids {
- 	board_hsw,
- 	board_wpt,
- 	board_skl,
-+	board_cnl,
- };
- 
- static const struct board_info {
-@@ -296,6 +299,10 @@ static const struct board_info {
- 		.name = "pch_skylake",
- 		.ops = &pch_dev_ops_wpt,
- 	},
-+	[board_cnl] = {
-+		.name = "pch_cannonlake",
-+		.ops = &pch_dev_ops_wpt,
-+	},
- };
- 
- static int intel_pch_thermal_probe(struct pci_dev *pdev,
-@@ -398,6 +405,10 @@ static const struct pci_device_id intel_pch_thermal_id[] = {
- 		.driver_data = board_skl, },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_SKL_H),
- 		.driver_data = board_skl, },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_CNL),
-+		.driver_data = board_cnl, },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_CNL_H),
-+		.driver_data = board_cnl, },
- 	{ 0, },
- };
- MODULE_DEVICE_TABLE(pci, intel_pch_thermal_id);
+ drivers/thermal/int340x_thermal/processor_thermal_device.c |  5 +++++
+ drivers/thermal/intel_pch_thermal.c                        | 11 +++++++++++
+ 2 files changed, 16 insertions(+)
+
 -- 
 2.7.5
