@@ -1,206 +1,513 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v3 3/7] drivers: base: cacheinfo: arm64: Add support for
- ACPI based firmware tables
-Date: Thu, 19 Oct 2017 16:20:12 +0100
-Message-ID: <20171019152012.GB18883@red-moon>
+From: Jeremy Linton <jeremy.linton@arm.com>
+Subject: Re: [PATCH v3 1/7] ACPI/PPTT: Add Processor Properties Topology Table
+ parsing
+Date: Thu, 19 Oct 2017 10:43:46 -0500
+Message-ID: <100c52ef-4215-4d43-4c57-a5810f834fb9@arm.com>
 References: <20171012194856.13844-1-jeremy.linton@arm.com>
- <20171012194856.13844-4-jeremy.linton@arm.com>
+ <20171012194856.13844-2-jeremy.linton@arm.com>
+ <20171019102207.GB17450@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171012194856.13844-4-jeremy.linton@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:56134 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753457AbdJSPnt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Oct 2017 11:43:49 -0400
+In-Reply-To: <20171019102207.GB17450@red-moon>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org
 
-On Thu, Oct 12, 2017 at 02:48:52PM -0500, Jeremy Linton wrote:
-> The /sys cache entries should support ACPI/PPTT generated cache
-> topology information. Lets detect ACPI systems and call
-> an arch specific cache_setup_acpi() routine to update the hardware
-> probed cache topology.
+On 10/19/2017 05:22 AM, Lorenzo Pieralisi wrote:
+> On Thu, Oct 12, 2017 at 02:48:50PM -0500, Jeremy Linton wrote:
+>> ACPI 6.2 adds a new table, which describes how processing units
+>> are related to each other in tree like fashion. Caches are
+>> also sprinkled throughout the tree and describe the properties
+>> of the caches in relation to other caches and processing units.
+>>
+>> Add the code to parse the cache hierarchy and report the total
+>> number of levels of cache for a given core using
+>> acpi_find_last_cache_level() as well as fill out the individual
+>> cores cache information with cache_setup_acpi() once the
+>> cpu_cacheinfo structure has been populated by the arch specific
+>> code.
+>>
+>> Further, report peers in the topology using setup_acpi_cpu_topology()
+>> to report a unique ID for each processing unit at a given level
+>> in the tree. These unique id's can then be used to match related
+>> processing units which exist as threads, COD (clusters
+>> on die), within a given package, etc.
 > 
-> For arm64, if ACPI is enabled, determine the max number of cache
-> levels and populate them using a PPTT table if one is available.
+> I think this patch should be split ((1) topology (2) cache), it is doing
+> too much which makes it hard to review.
+
+If you look at the RFC, it only did cache parsing, the topology changes 
+were added for v1. The cache bits are the ugly parts because they are 
+walking up/down both the node tree, as well as the cache tree's attached 
+to the nodes during the walk. Once that was in the place the addition of 
+the cpu topology was trivial. But, trying to understand the cpu topology 
+without first understanding the weird stuff done for the cache topology 
+might not be the right way to approach this code.
+
 > 
-> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
-> ---
->  arch/arm64/kernel/cacheinfo.c | 23 ++++++++++++++++++-----
->  drivers/acpi/pptt.c           |  1 +
->  drivers/base/cacheinfo.c      | 17 +++++++++++------
->  include/linux/cacheinfo.h     | 11 +++++++++--
->  4 files changed, 39 insertions(+), 13 deletions(-)
+> [...]
 > 
-> diff --git a/arch/arm64/kernel/cacheinfo.c b/arch/arm64/kernel/cacheinfo.c
-> index 380f2e2fbed5..2e2cf0d312ba 100644
-> --- a/arch/arm64/kernel/cacheinfo.c
-> +++ b/arch/arm64/kernel/cacheinfo.c
-> @@ -17,6 +17,7 @@
->   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
->   */
->  
-> +#include <linux/acpi.h>
->  #include <linux/cacheinfo.h>
->  #include <linux/of.h>
->  
-> @@ -44,9 +45,17 @@ static void ci_leaf_init(struct cacheinfo *this_leaf,
->  	this_leaf->type = type;
->  }
->  
-> +#ifndef CONFIG_ACPI
-> +int acpi_find_last_cache_level(unsigned int cpu)
-> +{
-> +	/*ACPI kernels should be built with PPTT support*/
-> +	return 0;
-> +}
-> +#endif
-> +
->  static int __init_cache_level(unsigned int cpu)
->  {
-> -	unsigned int ctype, level, leaves, of_level;
-> +	unsigned int ctype, level, leaves, fw_level;
->  	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
->  
->  	for (level = 1, leaves = 0; level <= MAX_CACHE_LEVEL; level++) {
-> @@ -59,15 +68,19 @@ static int __init_cache_level(unsigned int cpu)
->  		leaves += (ctype == CACHE_TYPE_SEPARATE) ? 2 : 1;
->  	}
->  
-> -	of_level = of_find_last_cache_level(cpu);
-> -	if (level < of_level) {
-> +	if (acpi_disabled)
-> +		fw_level = of_find_last_cache_level(cpu);
-> +	else
-> +		fw_level = acpi_find_last_cache_level(cpu);
-> +
-> +	if (level < fw_level) {
->  		/*
->  		 * some external caches not specified in CLIDR_EL1
->  		 * the information may be available in the device tree
->  		 * only unified external caches are considered here
->  		 */
-> -		leaves += (of_level - level);
-> -		level = of_level;
-> +		leaves += (fw_level - level);
-> +		level = fw_level;
->  	}
->  
->  	this_cpu_ci->num_levels = level;
-> diff --git a/drivers/acpi/pptt.c b/drivers/acpi/pptt.c
-> index c86715fed4a7..b5c6de37e328 100644
-> --- a/drivers/acpi/pptt.c
-> +++ b/drivers/acpi/pptt.c
-> @@ -355,6 +355,7 @@ static void update_cache_properties(struct cacheinfo *this_leaf,
->  				    struct acpi_pptt_cache *found_cache,
->  				    struct acpi_pptt_processor *cpu_node)
->  {
-> +	this_leaf->firmware_node = cpu_node;
+>> +/* determine if the given node is a leaf node */
+>> +static int acpi_pptt_leaf_node(struct acpi_table_header *table_hdr,
+>> +			       struct acpi_pptt_processor *node)
+>> +{
+>> +	struct acpi_subtable_header *entry;
+>> +	unsigned long table_end;
+>> +	u32 node_entry;
+>> +	struct acpi_pptt_processor *cpu_node;
+>> +
+>> +	table_end = (unsigned long)table_hdr + table_hdr->length;
+>> +	node_entry = (u32)((u8 *)node - (u8 *)table_hdr);
+>> +	entry = (struct acpi_subtable_header *)((u8 *)table_hdr +
+>> +						sizeof(struct acpi_table_pptt));
+>> +
+>> +	while (((unsigned long)entry) + sizeof(struct acpi_subtable_header) < table_end) {
+>> +		cpu_node = (struct acpi_pptt_processor *)entry;
+>> +		if ((entry->type == ACPI_PPTT_TYPE_PROCESSOR) &&
+>> +		    (cpu_node->parent == node_entry))
+>> +			return 0;
+>> +		entry = (struct acpi_subtable_header *)((u8 *)entry + entry->length);
+>> +	}
+> 
+> A leaf node is a node with a valid acpi_id corresponding to an MADT
+> entry, right ? By the way, is this function really needed ?
 
-This pointer comes from an ACPI static table mapping that happens
-to be permanent so it should be safe given that the mapping is carried
-out at device_initcall (ie cache_setup_acpi()) but it is not that
-obvious. More to it below.
+Yes, because the only way to determine if it is a leaf node is to see if 
+there are any references to it elsewhere in the table because the nodes 
+point towards the root of the tree (rather than the other way).
 
->  	if (found_cache->flags & ACPI_PPTT_SIZE_PROPERTY_VALID)
->  		this_leaf->size = found_cache->size;
->  	if (found_cache->flags & ACPI_PPTT_LINE_SIZE_VALID)
-> diff --git a/drivers/base/cacheinfo.c b/drivers/base/cacheinfo.c
-> index eb3af2739537..8eca279e50d1 100644
-> --- a/drivers/base/cacheinfo.c
-> +++ b/drivers/base/cacheinfo.c
-> @@ -86,7 +86,7 @@ static int cache_setup_of_node(unsigned int cpu)
->  static inline bool cache_leaves_are_shared(struct cacheinfo *this_leaf,
->  					   struct cacheinfo *sib_leaf)
->  {
-> -	return sib_leaf->of_node == this_leaf->of_node;
-> +	return sib_leaf->firmware_node == this_leaf->firmware_node;
->  }
->  
->  /* OF properties to query for a given cache type */
-> @@ -215,6 +215,11 @@ static inline bool cache_leaves_are_shared(struct cacheinfo *this_leaf,
->  }
->  #endif
->  
-> +int __weak cache_setup_acpi(unsigned int cpu)
-> +{
-> +	return -ENOTSUPP;
-> +}
-> +
->  static int cache_shared_cpu_map_setup(unsigned int cpu)
->  {
->  	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
-> @@ -225,11 +230,11 @@ static int cache_shared_cpu_map_setup(unsigned int cpu)
->  	if (this_cpu_ci->cpu_map_populated)
->  		return 0;
->  
-> -	if (of_have_populated_dt())
-> +	if (!acpi_disabled)
-> +		ret = cache_setup_acpi(cpu);
-> +	else if (of_have_populated_dt())
->  		ret = cache_setup_of_node(cpu);
-> -	else if (!acpi_disabled)
-> -		/* No cache property/hierarchy support yet in ACPI */
-> -		ret = -ENOTSUPP;
-> +
->  	if (ret)
->  		return ret;
->  
-> @@ -286,7 +291,7 @@ static void cache_shared_cpu_map_remove(unsigned int cpu)
->  
->  static void cache_override_properties(unsigned int cpu)
->  {
-> -	if (of_have_populated_dt())
-> +	if (acpi_disabled && of_have_populated_dt())
->  		return cache_of_override_properties(cpu);
->  }
->  
-> diff --git a/include/linux/cacheinfo.h b/include/linux/cacheinfo.h
-> index 6a524bf6a06d..d1e9b8e01981 100644
-> --- a/include/linux/cacheinfo.h
-> +++ b/include/linux/cacheinfo.h
-> @@ -36,6 +36,9 @@ enum cache_type {
->   * @of_node: if devicetree is used, this represents either the cpu node in
->   *	case there's no explicit cache node or the cache node itself in the
->   *	device tree
-> + * @firmware_node: Shared with of_node. When not using DT, this may contain
-> + *	pointers to other firmware based values. Particularly ACPI/PPTT
-> + *	unique values.
->   * @disable_sysfs: indicates whether this node is visible to the user via
->   *	sysfs or not
->   * @priv: pointer to any private data structure specific to particular
-> @@ -64,8 +67,10 @@ struct cacheinfo {
->  #define CACHE_ALLOCATE_POLICY_MASK	\
->  	(CACHE_READ_ALLOCATE | CACHE_WRITE_ALLOCATE)
->  #define CACHE_ID		BIT(4)
-> -
-> -	struct device_node *of_node;
-> +	union {
-> +		struct device_node *of_node;
-> +		void *firmware_node;
-> +	};
+This piece was the primary change for v1->v2.
 
-How about turning of_node into a struct fwnode_handle* (and allocate
-one for each PPTT cache node - acpi_static_fwnode - to have the
-ACPI counterpart) ?
+> 
+>> +	return 1;
+>> +}
+>> +
+>> +/*
+>> + * Find the subtable entry describing the provided processor
+>> + */
+>> +static struct acpi_pptt_processor *acpi_find_processor_node(
+>> +	struct acpi_table_header *table_hdr,
+>> +	u32 acpi_cpu_id)
+>> +{
+>> +	struct acpi_subtable_header *entry;
+>> +	unsigned long table_end;
+>> +	struct acpi_pptt_processor *cpu_node;
+>> +
+>> +	table_end = (unsigned long)table_hdr + table_hdr->length;
+>> +	entry = (struct acpi_subtable_header *)((u8 *)table_hdr +
+>> +						sizeof(struct acpi_table_pptt));
+>> +
+>> +	/* find the processor structure associated with this cpuid */
+>> +	while (((unsigned long)entry) + sizeof(struct acpi_subtable_header) < table_end) {
+>> +		cpu_node = (struct acpi_pptt_processor *)entry;
+>> +
+>> +		if ((entry->type == ACPI_PPTT_TYPE_PROCESSOR) &&
+>> +		    acpi_pptt_leaf_node(table_hdr, cpu_node)) {
+> 
+> Is the leaf node check necessary ? Or you just need to check the
+> ACPI Processor ID valid flag (as discussed offline) ?
 
-It will make more churn given that that pointer is just used to
-carry out a pointer comparison but it's also a bit more elegant.
+The valid flag doesn't mean anything for the leaf nodes, so its the only 
+correct way of determining if the node _might_ have a valid madt/acpi 
+ID. This actually should have the acpi_cpu_id checked as part of the if 
+statement and the leaf node check below because doing it this way makes 
+this parse n^2 instead of 2n. Of course in my mind, checking the id 
+before we know it might be valid is backwards of the "logical" way to do it.
 
-Lorenzo
+> 
+>> +			pr_debug("checking phy_cpu_id %d against acpi id %d\n",
+>> +				 acpi_cpu_id, cpu_node->acpi_processor_id);
+> 
+> Side note: I'd question (some of) these pr_debug() messages
+> 
+>> +			if (acpi_cpu_id == cpu_node->acpi_processor_id) {
+>> +				/* found the correct entry */
+>> +				pr_debug("match found!\n");
+> 
+> Like this one for instance.
 
->  	bool disable_sysfs;
->  	void *priv;
->  };
-> @@ -98,6 +103,8 @@ int func(unsigned int cpu)					\
->  struct cpu_cacheinfo *get_cpu_cacheinfo(unsigned int cpu);
->  int init_cache_level(unsigned int cpu);
->  int populate_cache_leaves(unsigned int cpu);
-> +int cache_setup_acpi(unsigned int cpu);
-> +int acpi_find_last_cache_level(unsigned int cpu);
->  
->  const struct attribute_group *cache_get_priv_group(struct cacheinfo *this_leaf);
->  
-> -- 
-> 2.13.5
+This one is a bit redundant, but I come from the school that I want to 
+be able to debug a remote machine. Large blocks of silent code are a 
+nightmare, particularly if you have a sysadmin level user driving the 
+keyboard/etc.
+
+> 
+>> +				return (struct acpi_pptt_processor *)entry;
+>> +			}
+>> +		}
+>> +
+>> +		if (entry->length == 0) {
+>> +			pr_err("Invalid zero length subtable\n");
+>> +			break;
+>> +		}
+> 
+> This should be moved at the beginning of the loop.
+
+Yah, the intention was to verify the next entry, but if its 0 then good 
+point, the current one is probably invalid.
+
+> 
+>> +		entry = (struct acpi_subtable_header *)
+>> +			((u8 *)entry + entry->length);
+>> +	}
+>> +
+>> +	return NULL;
+>> +}
+>> +
+>> +/*
+>> + * Given a acpi_pptt_processor node, walk up until we identify the
+>> + * package that the node is associated with or we run out of levels
+>> + * to request.
+>> + */
+>> +static struct acpi_pptt_processor *acpi_find_processor_package_id(
+>> +	struct acpi_table_header *table_hdr,
+>> +	struct acpi_pptt_processor *cpu,
+>> +	int level)
+>> +{
+>> +	struct acpi_pptt_processor *prev_node;
+>> +
+>> +	while (cpu && level && !(cpu->flags & ACPI_PPTT_PHYSICAL_PACKAGE)) {
+> 
+> I really do not understand what ACPI_PPTT_PHYSICAL_PACKAGE means and
+> more importantly, how it is actually used in this code.
+
+?
+
+Physical package maps to the package_id, which is generally defined to 
+mean the "socket" and is used to terminate the cpu topology side of the 
+parse.
+
+> 
+> This function is used to get a topology id (that is just a number for
+> a given topology level) for a given level starting from a given leaf
+> node.
+
+This flag is the one decent part of the spec, because its the only level 
+which actually is guaranteed to mean anything. Because the requirement 
+that the sharability of cache nodes is described with general processor 
+nodes it means that the number of nodes within a given leg of the tree 
+is mostly meaningless because people sprinkle caches around the system, 
+including potentially above the "socket" level.
+
+> Why do we care at all about ACPI_PPTT_PHYSICAL_PACKAGE ?
+
+Because, it gives us a hard mapping to core siblings.
+
+> 
+>> +		pr_debug("level %d\n", level);
+>> +		prev_node = fetch_pptt_node(table_hdr, cpu->parent);
+>> +		if (prev_node == NULL)
+>> +			break;
+>> +		cpu = prev_node;
+>> +		level--;
+>> +	}
+>> +	return cpu;
+>> +}
+>> +
+>> +static int acpi_parse_pptt(struct acpi_table_header *table_hdr, u32 acpi_cpu_id)
+>> +{
+>> +	int number_of_levels = 0;
+>> +	struct acpi_pptt_processor *cpu;
+>> +
+>> +	cpu = acpi_find_processor_node(table_hdr, acpi_cpu_id);
+>> +	if (cpu)
+>> +		number_of_levels = acpi_process_node(table_hdr, cpu);
+>> +
+>> +	return number_of_levels;
+>> +}
+>> +
+>> +#define ACPI_6_2_CACHE_TYPE_DATA		      (0x0)
+>> +#define ACPI_6_2_CACHE_TYPE_INSTR		      (1<<2)
+>> +#define ACPI_6_2_CACHE_TYPE_UNIFIED		      (1<<3)
+>> +#define ACPI_6_2_CACHE_POLICY_WB		      (0x0)
+>> +#define ACPI_6_2_CACHE_POLICY_WT		      (1<<4)
+>> +#define ACPI_6_2_CACHE_READ_ALLOCATE		      (0x0)
+>> +#define ACPI_6_2_CACHE_WRITE_ALLOCATE		      (0x01)
+>> +#define ACPI_6_2_CACHE_RW_ALLOCATE		      (0x02)
+>> +
+>> +static u8 acpi_cache_type(enum cache_type type)
+>> +{
+>> +	switch (type) {
+>> +	case CACHE_TYPE_DATA:
+>> +		pr_debug("Looking for data cache\n");
+>> +		return ACPI_6_2_CACHE_TYPE_DATA;
+>> +	case CACHE_TYPE_INST:
+>> +		pr_debug("Looking for instruction cache\n");
+>> +		return ACPI_6_2_CACHE_TYPE_INSTR;
+>> +	default:
+>> +		pr_debug("Unknown cache type, assume unified\n");
+>> +	case CACHE_TYPE_UNIFIED:
+>> +		pr_debug("Looking for unified cache\n");
+>> +		return ACPI_6_2_CACHE_TYPE_UNIFIED;
+>> +	}
+>> +}
+>> +
+>> +/* find the ACPI node describing the cache type/level for the given CPU */
+>> +static struct acpi_pptt_cache *acpi_find_cache_node(
+>> +	struct acpi_table_header *table_hdr, u32 acpi_cpu_id,
+>> +	enum cache_type type, unsigned int level,
+>> +	struct acpi_pptt_processor **node)
+>> +{
+>> +	int total_levels = 0;
+>> +	struct acpi_pptt_cache *found = NULL;
+>> +	struct acpi_pptt_processor *cpu_node;
+>> +	u8 acpi_type = acpi_cache_type(type);
+>> +
+>> +	pr_debug("Looking for CPU %d's level %d cache type %d\n",
+>> +		 acpi_cpu_id, level, acpi_type);
+>> +
+>> +	cpu_node = acpi_find_processor_node(table_hdr, acpi_cpu_id);
+>> +	if (!cpu_node)
+>> +		return NULL;
+>> +
+>> +	do {
+>> +		found = acpi_find_cache_level(table_hdr, cpu_node, &total_levels, level, acpi_type);
+>> +		*node = cpu_node;
+>> +		cpu_node = fetch_pptt_node(table_hdr, cpu_node->parent);
+>> +	} while ((cpu_node) && (!found));
+>> +
+>> +	return found;
+>> +}
+>> +
+>> +int acpi_find_last_cache_level(unsigned int cpu)
+>> +{
+>> +	u32 acpi_cpu_id;
+>> +	struct acpi_table_header *table;
+>> +	int number_of_levels = 0;
+>> +	acpi_status status;
+>> +
+>> +	pr_debug("Cache Setup find last level cpu=%d\n", cpu);
+>> +
+>> +	acpi_cpu_id = acpi_cpu_get_madt_gicc(cpu)->uid;
+> 
+> This would break !ARM64.
+
+> 
+>> +	status = acpi_get_table(ACPI_SIG_PPTT, 0, &table);
+>> +	if (ACPI_FAILURE(status)) {
+>> +		pr_err_once("No PPTT table found, cache topology may be inaccurate\n");
+
+Yup, as in a way this does too... Without writing the binding code for 
+another arch where that line is isn't clear at the moment. Part of the 
+reason I put this in the arm64 directory.
+
+
+>> +	} else {
+>> +		number_of_levels = acpi_parse_pptt(table, acpi_cpu_id);
+>> +		acpi_put_table(table);
+>> +	}
+>> +	pr_debug("Cache Setup find last level level=%d\n", number_of_levels);
+>> +
+>> +	return number_of_levels;
+>> +}
+>> +
+>> +/*
+>> + * The ACPI spec implies that the fields in the cache structures are used to
+>> + * extend and correct the information probed from the hardware. In the case
+>> + * of arm64 the CCSIDR probing has been removed because it might be incorrect.
+>> + */
+>> +static void update_cache_properties(struct cacheinfo *this_leaf,
+>> +				    struct acpi_pptt_cache *found_cache,
+>> +				    struct acpi_pptt_processor *cpu_node)
+>> +{
+>> +	if (found_cache->flags & ACPI_PPTT_SIZE_PROPERTY_VALID)
+>> +		this_leaf->size = found_cache->size;
+>> +	if (found_cache->flags & ACPI_PPTT_LINE_SIZE_VALID)
+>> +		this_leaf->coherency_line_size = found_cache->line_size;
+>> +	if (found_cache->flags & ACPI_PPTT_NUMBER_OF_SETS_VALID)
+>> +		this_leaf->number_of_sets = found_cache->number_of_sets;
+>> +	if (found_cache->flags & ACPI_PPTT_ASSOCIATIVITY_VALID)
+>> +		this_leaf->ways_of_associativity = found_cache->associativity;
+>> +	if (found_cache->flags & ACPI_PPTT_WRITE_POLICY_VALID)
+>> +		switch (found_cache->attributes & ACPI_PPTT_MASK_WRITE_POLICY) {
+>> +		case ACPI_6_2_CACHE_POLICY_WT:
+>> +			this_leaf->attributes = CACHE_WRITE_THROUGH;
+>> +			break;
+>> +		case ACPI_6_2_CACHE_POLICY_WB:
+>> +			this_leaf->attributes = CACHE_WRITE_BACK;
+>> +			break;
+>> +		default:
+>> +			pr_err("Unknown ACPI cache policy %d\n",
+>> +			      found_cache->attributes & ACPI_PPTT_MASK_WRITE_POLICY);
+>> +		}
+>> +	if (found_cache->flags & ACPI_PPTT_ALLOCATION_TYPE_VALID)
+>> +		switch (found_cache->attributes & ACPI_PPTT_MASK_ALLOCATION_TYPE) {
+>> +		case ACPI_6_2_CACHE_READ_ALLOCATE:
+>> +			this_leaf->attributes |= CACHE_READ_ALLOCATE;
+>> +			break;
+>> +		case ACPI_6_2_CACHE_WRITE_ALLOCATE:
+>> +			this_leaf->attributes |= CACHE_WRITE_ALLOCATE;
+>> +			break;
+>> +		case ACPI_6_2_CACHE_RW_ALLOCATE:
+>> +			this_leaf->attributes |=
+>> +				CACHE_READ_ALLOCATE|CACHE_WRITE_ALLOCATE;
+>> +			break;
+>> +		default:
+>> +			pr_err("Unknown ACPI cache allocation policy %d\n",
+>> +			   found_cache->attributes & ACPI_PPTT_MASK_ALLOCATION_TYPE);
+>> +		}
+>> +}
+>> +
+>> +static void cache_setup_acpi_cpu(struct acpi_table_header *table,
+>> +				 unsigned int cpu)
+>> +{
+>> +	struct acpi_pptt_cache *found_cache;
+>> +	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
+>> +	u32 acpi_cpu_id = acpi_cpu_get_madt_gicc(cpu)->uid;
+> 
+> Ditto.
+> 
+>> +	struct cacheinfo *this_leaf;
+>> +	unsigned int index = 0;
+>> +	struct acpi_pptt_processor *cpu_node = NULL;
+>> +
+>> +	while (index < get_cpu_cacheinfo(cpu)->num_leaves) {
+>> +		this_leaf = this_cpu_ci->info_list + index;
+>> +		found_cache = acpi_find_cache_node(table, acpi_cpu_id,
+>> +						   this_leaf->type,
+>> +						   this_leaf->level,
+>> +						   &cpu_node);
+>> +		pr_debug("found = %p %p\n", found_cache, cpu_node);
+>> +		if (found_cache)
+>> +			update_cache_properties(this_leaf,
+>> +						found_cache,
+>> +						cpu_node);
+>> +
+>> +		index++;
+>> +	}
+>> +}
+>> +
+>> +static int topology_setup_acpi_cpu(struct acpi_table_header *table,
+>> +				    unsigned int cpu, int level)
+>> +{
+>> +	struct acpi_pptt_processor *cpu_node;
+>> +	u32 acpi_cpu_id = acpi_cpu_get_madt_gicc(cpu)->uid;
+> 
+> Ditto.
+> 
+>> +	cpu_node = acpi_find_processor_node(table, acpi_cpu_id);
+>> +	if (cpu_node) {
+>> +		cpu_node = acpi_find_processor_package_id(table, cpu_node, level);
+> 
+> If level is 0 there is nothing to do here.
+> 
+>> +		/* Only the first level has a guaranteed id */
+>> +		if (level == 0)
+>> +			return cpu_node->acpi_processor_id;
+>> +		return (int)((u8 *)cpu_node - (u8 *)table);
+> 
+> Please explain to me the rationale behind this. To me acpi_processor_id
+> is as good as the cpu_node offset in the table to describe the topology
+> id at a given level, why special case level 0.
+
+Level 0 is the only level guaranteed to have something set in the 
+acpi_processor_id field. Its possible that values exist in nodes above 
+this one, but they must _all_ be flagged and have matching container 
+ids, and nothing in the spec requires that. Meaning that we need a 
+guaranteed way to generate ids. This was added between v2->v3 after the 
+discussion about making the ids a little nicer for the user.
+
+
+> 
+> On top of that, with this ID scheme, we would end up with
+> thread/core/cluster id potentially being non-sequential values
+> (depending on the PPTT table layout) which should not be a problem but
+> we'd better check how people are using them.
+
+The thread (or core, depending on which is the 0 level) will have 
+firmware provided Ids, everything else gets somewhat random looking but 
+consistent ids. I commented earlier in this series that "normalizing" 
+them is totally doable, although at the moment really only the 
+physical_id is user visible and that should probably be normalized 
+outside of this module in the arm64 topology parser if we want to 
+actually do it. I'm not sure its worth the effort at least not as part 
+of the general PPTT changes.
+
+
+> 
+>> +	}
+>> +	pr_err_once("PPTT table found, but unable to locate core for %d\n",
+>> +		    cpu);
+>> +	return -ENOENT;
+>> +}
+>> +
+>> +/*
+>> + * simply assign a ACPI cache entry to each known CPU cache entry
+>> + * determining which entries are shared is done later.
+> 
+> Add a kerneldoc style comment for an external interface.
+
+That is a good point.
+
+> 
+>> + */
+>> +int cache_setup_acpi(unsigned int cpu)
+>> +{
+>> +	struct acpi_table_header *table;
+>> +	acpi_status status;
+>> +
+>> +	pr_debug("Cache Setup ACPI cpu %d\n", cpu);
+>> +
+>> +	status = acpi_get_table(ACPI_SIG_PPTT, 0, &table);
+>> +	if (ACPI_FAILURE(status)) {
+>> +		pr_err_once("No PPTT table found, cache topology may be inaccurate\n");
+>> +		return -ENOENT;
+>> +	}
+>> +
+>> +	cache_setup_acpi_cpu(table, cpu);
+>> +	acpi_put_table(table);
+>> +
+>> +	return status;
+>> +}
+>> +
+>> +/*
+>> + * Determine a topology unique ID for each thread/core/cluster/socket/etc.
+>> + * This ID can then be used to group peers.
+> 
+> Ditto.
+> 
+>> + */
+>> +int setup_acpi_cpu_topology(unsigned int cpu, int level)
+>> +{
+>> +	struct acpi_table_header *table;
+>> +	acpi_status status;
+>> +	int retval;
+>> +
+>> +	status = acpi_get_table(ACPI_SIG_PPTT, 0, &table);
+>> +	if (ACPI_FAILURE(status)) {
+>> +		pr_err_once("No PPTT table found, cpu topology may be inaccurate\n");
+>> +		return -ENOENT;
+>> +	}
+>> +	retval = topology_setup_acpi_cpu(table, cpu, level);
+>> +	pr_debug("Topology Setup ACPI cpu %d, level %d ret = %d\n",
+>> +		 cpu, level, retval);
+>> +	acpi_put_table(table);
+>> +
+>> +	return retval;
+> 
+> This value is just a token - with no HW meaning whatsoever and that's
+> where I question the ACPI_PPTT_PHYSICAL_PACKAGE flag usage in retrieving
+> it, you are not looking for a packageid (which has no meaning whatsoever
+> anyway and I wonder why it was added to the specs at all) you are
+> looking for an id at a given level.
+
+If you look at the next patch in the series, to get the top level I pass 
+an arbitrary large value as the "level" which should terminate on the 
+PHYSICAL_PACKAGE rather than any intermediate nodes.
+
+
+> 
+> I will comment on the cache code separately - which deserves to
+> be in a separate patch to simplify the review, I avoided repeating
+> already reported review comments.
+> 
+> Lorenzo
 > 
