@@ -1,77 +1,96 @@
-From: Grygorii Strashko <grygorii.strashko@ti.com>
-Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
-Date: Thu, 19 Oct 2017 12:21:08 -0500
-Message-ID: <1769d82f-07d3-14c9-c06a-d6afec20fa0e@ti.com>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan>
- <CAPDyKFozJtSHxxBEFtC+ofJ4XUyQjqUundPs81JATT=WfjXoYA@mail.gmail.com>
- <7b9c2a3e-2e88-938e-46a5-703de0080681@ti.com>
- <2926646.NJduVklg7n@aspire.rjw.lan>
- <CAPDyKFrFbdXrZqtvwm=xmJSqQckfGzs7XNn7AOCTbOjwP4iAFQ@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Subject: Re: libbattery was Re: [RFC PATCH 5/5] power: generic-adc-battery: Add capacity handling
+Date: Thu, 19 Oct 2017 19:20:51 +0200
+Message-ID: <47187D0E-9D11-474F-972E-6192E3C35AC4@goldelico.com>
+References: <1501620926-22669-1-git-send-email-marek.belisko@open-nandra.com> <1501620926-22669-6-git-send-email-marek.belisko@open-nandra.com> <20170829101147.debhadzyfrxhkrvt@earth> <20170908113231.GJ18365@amd> <20171018122804.GA14376@amd> <61BFA8AF-657A-4AD7-A7AC-3E5DC3B7E83D@goldelico.com> <20171018132204.GD4394@atomide.com> <0C0901E1-23E8-4D04-B3A9-8314809A7A6B@goldelico.com> <20171019162416.GE4394@atomide.com> <152FA5B1-75F9-4F0B-9E05-6277CD83C975@goldelico.com> <20171019170649.GG4394@atomide.com>
+Mime-Version: 1.0 (Mac OS X Mail 9.3 \(3124\))
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrFbdXrZqtvwm=xmJSqQckfGzs7XNn7AOCTbOjwP4iAFQ@mail.gmail.com>
-Content-Language: en-US
+In-Reply-To: <20171019170649.GG4394@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Ivaylo Dimitrov <ivo.g.dimitrov.75@gmail.com>, sakari.ailus@linux.intel.com, Marek Belisko <marek.belisko@open-nandra.com>, khilman@kernel.org, Marek Belisko <marek.belisko@gmail.com>, linux-pm@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, kernel list <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, martijn@brixit.nl, robh+dt@kernel.org, abcloriens@gmail.com, Pavel Machek <pavel@ucw.cz>, =?utf-8?Q?Pali_Roh=C3=A1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sebastian.reichel@collabora.co.uk>, clayton@craftyguy.net, linux-omap <linux-omap@vger.kernel.org>, patrikbachan@gmail.com, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, serge@hallyn.com
 List-Id: linux-pm@vger.kernel.org
 
 
+> Am 19.10.2017 um 19:06 schrieb Tony Lindgren <tony@atomide.com>:
+>=20
+> * H. Nikolaus Schaller <hns@goldelico.com> [171019 09:57]:
+>> Hi Tony,
+>>=20
+>>> Am 19.10.2017 um 18:24 schrieb Tony Lindgren <tony@atomide.com>:
+>>>=20
+>>> * H. Nikolaus Schaller <hns@goldelico.com> [171018 08:49]:
+>>>>=20
+>>>>> Am 18.10.2017 um 15:22 schrieb Tony Lindgren <tony@atomide.com>:
+>>>>>=20
+>>>>> * H. Nikolaus Schaller <hns@goldelico.com> [171018 05:49]:
+>>>>>>> Am 18.10.2017 um 14:28 schrieb Pavel Machek <pavel@ucw.cz>:
+>>>>>>>=20
+>>>>>>> So I started something, it is at.
+>>>>>>>=20
+>>>>>>> https://github.com/pavelmachek/libbattery
+>>>>>>>=20
+>>>>>>> My battery on n900 is currently uncalibrated (and charging), =
+still it
+>>>>>>> gets some kind of estimation:
+>>>>>>>=20
+>>>>>>> Battery -1 %
+>>>>>>> Seconds -1
+>>>>>>> State 1
+>>>>>>> Voltage 3.88 V
+>>>>>>> Battery 63 %
+>>>>>>>=20
+>>>>>>> Of course, there's a lot more work to be done.
+>>>>>>=20
+>>>>>> Nice start but not a solution to our problem.
+>>>>>>=20
+>>>>>> Our problem is that people simply expect that for example =
+https://packages.debian.org/wheezy/xfce/xfce4-battery-plugin
+>>>>>> displays the battery percentage.
+>>>>>=20
+>>>>> I think we could make things compatible with various battery apps =
+by
+>>>>> having libbattery write back the capacity percentage and time =
+remaining
+>>>>> to the kernel driver via sysfs or a dev entry. Then the kernel =
+interface
+>>>>> can just display the data to whatever apps.
+>>>>=20
+>>>> Hm. That would be quite difficult to understand and maintain code.
+>>>=20
+>>> How so? The libbattery can do it all, then the kernel drivers =
+needing
+>>> that will just display the most recent values to maintain =
+compability
+>>> with battery apps.
+>>=20
+>> Well, it looks as if you are thinking about a much more complex =
+solution
+>> than I am...
+>>=20
+>> The proposal we are discussing as
+>>=20
+>> [RFC PATCH 5/5] power: generic-adc-battery: Add capacity handling
+>>=20
+>> just reads the current voltage, charging current and uses a =
+(nonlinear)
+>> mapping to 0% .. 100%.
+>=20
+> Right, I was discussing Pavel's libbattery link posted above. No
+> comments on the current patch series.
 
-On 10/19/2017 03:33 AM, Ulf Hansson wrote:
-> On 18 October 2017 at 23:48, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Wednesday, October 18, 2017 9:45:11 PM CEST Grygorii Strashko wrote:
->>>
->>> On 10/18/2017 09:11 AM, Ulf Hansson wrote:
->>
->> [...]
->>
->>>>>> That's the point. We know pm_runtime_force_* works nicely for the
->>>>>> trivial middle-layer cases.
->>>>>
->>>>> In which cases the middle-layer callbacks don't exist, so it's just like
->>>>> reusing driver callbacks directly. :-)
->>>
->>> I'd like to ask you clarify one point here and provide some info which I hope can be useful -
->>> what's exactly means  "trivial middle-layer cases"?
->>>
->>> Is it when systems use "drivers/base/power/clock_ops.c - Generic clock
->>> manipulation PM callbacks" as dev_pm_domain (arm davinci/keystone), or OMAP
->>> device framework struct dev_pm_domain omap_device_pm_domain
->>> (arm/mach-omap2/omap_device.c) or static const struct dev_pm_ops
->>> tegra_aconnect_pm_ops?
->>>
->>> if yes all above have PM runtime callbacks.
->>
->> Trivial ones don't actually do anything meaningful in their PM callbacks.
->>
->> Things like the platform bus type, spi bus type, i2c bus type and similar.
->>
->> If the middle-layer callbacks manipulate devices in a significant way, then
->> they aren't trivial.
-> 
-> I fully agree with Rafael's description above, but let me also clarify
-> one more thing.
-> 
-> We have also been discussing PM domains as being trivial and
-> non-trivial. In some statements I even think the PM domain has been a
-> part the middle-layer terminology, which may have been a bit
-> confusing.
-> 
-> In this regards as we consider genpd being a trivial PM domain, those
-> examples your bring up above is too me also examples of trivial PM
-> domains. Especially because they don't deal with wakeups, as that is
-> taken care of by the drivers, right!?
+Well, it was triggered by Sebastian's comment on this patch that=20
+some 10 years old Documentation recommends to write a libbattery.
 
-Not directly, for example, omap device framework has noirq callback implemented
-which forcibly disable all devices which are not PM runtime suspended.
-while doing this it calls drivers PM .runtime_suspend() which may return
-non 0 value and in this case device will be left enabled (powered) at suspend for
-wake up purposes (see _od_suspend_noirq()).
+And there is still some (weak) relation between the subject and =
+libbattery.
 
+> Let's move the libbattery stuff
+> to a new thread to avoid confusion.
 
--- 
-regards,
--grygorii
+Agreed.
+
+BR,
+Nikolaus
