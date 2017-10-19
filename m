@@ -1,48 +1,67 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fix for v4.14-rc6
-Date: Fri, 20 Oct 2017 01:12:36 +0200
-Message-ID: <CAJZ5v0j4G7rWQSbWntZMdt4xW-gC+_yNykEH3+B1tdC=2wEv_g@mail.gmail.com>
+From: Ramesh Thomas <ramesh.thomas@intel.com>
+Subject: [PATCH] cpuidle: ladder: Add per CPU PM QoS resume latency support
+Date: Thu, 19 Oct 2017 16:33:55 -0700
+Message-ID: <20171019233340.GA13902@intel.com>
+Reply-To: ramesh.thomas@intel.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f65.google.com ([209.85.218.65]:54920 "EHLO
-        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750736AbdJSXMh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2017 19:12:37 -0400
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, alex.shi@linaro.org, daniel.lezcano@linaro.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Linus,
+Individual CPUs may have special requirements to not enter
+deep idle states. For example, a CPU running real time
+applications would not want to enter deep idle states to
+avoid latency impacts. At the same time other CPUs that
+do not have such a requirement could allow deep idle
+states to save power.
 
-Please pull from the tag
+This was already implemented in the menu governor.
+Implementing similar changes in the ladder governor which
+gets selected when CONFIG_NO_HZ and CONFIG_NO_HZ_IDLE are not
+set. Refer following commits for the menu governor changes.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.14-rc6
+commit 9908859acaa9 ("cpuidle/menu: add per CPU PM QoS resume
+latency consideration")
+commit 6dbf5cea05a7 ("cpuidle: menu: Avoid taking spinlock for
+accessing QoS values")
 
-with top-most commit c97cc7dbce2fe6f46e137f4b040f915a0181ee85
+Signed-off-by: Ramesh Thomas <ramesh.thomas@intel.com>
+---
+ drivers/cpuidle/governors/ladder.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
- Revert "tools/power turbostat: stop migrating, unless '-m'"
-
-on top of commit 33d930e59a98fa10a0db9f56c7fa2f21a4aef9b9
-
- Linux 4.14-rc5
-
-to receive a power management fix for v4.14-rc6.
-
-This reverts a problematic commit modifying the turbostat
-utility that went in during the 4.13 cycle (Len Brown).
-
-Thanks!
-
-
----------------
-
-Len Brown (1):
-      Revert "tools/power turbostat: stop migrating, unless '-m'"
-
----------------
-
- tools/power/x86/turbostat/turbostat.c | 10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index ce1a2ff..f7cfee7 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -17,6 +17,7 @@
+ #include <linux/pm_qos.h>
+ #include <linux/jiffies.h>
+ #include <linux/tick.h>
++#include <linux/cpu.h>
+ 
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
+@@ -67,10 +68,16 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 				struct cpuidle_device *dev)
+ {
+ 	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
++	struct device *device = get_cpu_device(dev->cpu);
+ 	struct ladder_device_state *last_state;
+ 	int last_residency, last_idx = ldev->last_state_idx;
+ 	int first_idx = drv->states[0].flags & CPUIDLE_FLAG_POLLING ? 1 : 0;
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
++	int resume_latency = dev_pm_qos_raw_read_value(device);
++
++	/* resume_latency is 0 means no restriction */
++	if (resume_latency && resume_latency < latency_req)
++		latency_req = resume_latency;
+ 
+ 	/* Special case when user has set very strict latency requirement */
+ 	if (unlikely(latency_req == 0)) {
+-- 
+2.7.4
