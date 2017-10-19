@@ -1,135 +1,167 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 18/18] thermal/drivers/qcom-spmi: Use devm_iio_channel_get
-Date: Thu, 19 Oct 2017 19:06:00 +0200
-Message-ID: <1508432760-17847-18-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 16/18] thermal/drivers/step_wise: Fix temperature regulation misbehavior
+Date: Thu, 19 Oct 2017 19:05:58 +0200
+Message-ID: <1508432760-17847-16-git-send-email-daniel.lezcano@linaro.org>
 References: <6ac48f08-7fe6-92e9-0801-6ed3bcd05ff1@linaro.org>
  <1508432760-17847-1-git-send-email-daniel.lezcano@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f193.google.com ([209.85.128.193]:49638 "EHLO
-        mail-wr0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755136AbdJSRI4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2017 13:08:56 -0400
-Received: by mail-wr0-f193.google.com with SMTP id g90so9036813wrd.6
-        for <linux-pm@vger.kernel.org>; Thu, 19 Oct 2017 10:08:56 -0700 (PDT)
+Received: from mail-wm0-f45.google.com ([74.125.82.45]:47661 "EHLO
+        mail-wm0-f45.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755101AbdJSRIy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2017 13:08:54 -0400
+Received: by mail-wm0-f45.google.com with SMTP id t69so17363984wmt.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 Oct 2017 10:08:53 -0700 (PDT)
 In-Reply-To: <1508432760-17847-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: edubezval@gmail.com, rui.zhang@intel.com
-Cc: linux-pm@vger.kernel.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org, Keerthy <j-keerthy@ti.com>, John Stultz <john.stultz@linaro.org>
 
-The iio_channel_get() function has now its devm_ version.
+There is a particular situation when the cooling device is cpufreq and the heat
+dissipation is not efficient enough where the temperature increases little by
+little until reaching the critical threshold and leading to a SoC reset.
 
-Use it and remove all the rollback code for iio_channel_release() as well
-as the .remove ops.
+The behavior is reproducible on a hikey6220 with bad heat dissipation (eg.
+stacked with other boards).
 
-[Compiled tested only]
+Running a simple C program doing while(1); for each CPU of the SoC makes the
+temperature to reach the passive regulation trip point and ends up to the
+maximum allowed temperature followed by a reset.
+
+This issue has been also reported by running the libhugetlbfs test suite.
+
+What is observed is a ping pong between two cpu frequencies, 1.2GHz and 900MHz
+while the temperature continues to grow.
+
+It appears the step wise governor calls get_target_state() the first time with
+the throttle set to true and the trend to 'raising'. The code selects logically
+the next state, so the cpu frequency decreases from 1.2GHz to 900MHz, so far so
+good. The temperature decreases immediately but still stays greater than the
+trip point, then get_target_state() is called again, this time with the
+throttle set to true *and* the trend to 'dropping'. From there the algorithm
+assumes we have to step down the state and the cpu frequency jumps back to
+1.2GHz. But the temperature is still higher than the trip point, so
+get_target_state() is called with throttle=1 and trend='raising' again, we jump
+to 900MHz, then get_target_state() is called with throttle=1 and
+trend='dropping', we jump to 1.2GHz, etc ... but the temperature does not
+stabilizes and continues to increase.
+
+[  237.922654] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+[  237.922678] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+[  237.922690] thermal cooling_device0: cur_state=0
+[  237.922701] thermal cooling_device0: old_target=0, target=1
+[  238.026656] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+[  238.026680] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
+[  238.026694] thermal cooling_device0: cur_state=1
+[  238.026707] thermal cooling_device0: old_target=1, target=0
+[  238.134647] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+[  238.134667] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+[  238.134679] thermal cooling_device0: cur_state=0
+[  238.134690] thermal cooling_device0: old_target=0, target=1
+
+In this situation the temperature continues to increase while the trend is
+oscillating between 'dropping' and 'raising'. We need to keep the current state
+untouched if the throttle is set, so the temperature can decrease or a higher
+state could be selected, thus preventing this oscillation.
+
+Keeping the next_target untouched when 'throttle' is true at 'dropping' time
+fixes the issue.
+
+The following traces show the governor does not change the next state if
+trend==2 (dropping) and throttle==1.
+
+[ 2306.127987] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+[ 2306.128009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+[ 2306.128021] thermal cooling_device0: cur_state=0
+[ 2306.128031] thermal cooling_device0: old_target=0, target=1
+[ 2306.231991] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+[ 2306.232016] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=1
+[ 2306.232030] thermal cooling_device0: cur_state=1
+[ 2306.232042] thermal cooling_device0: old_target=1, target=1
+[ 2306.335982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+[ 2306.336006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=1
+[ 2306.336021] thermal cooling_device0: cur_state=1
+[ 2306.336034] thermal cooling_device0: old_target=1, target=1
+[ 2306.439984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+[ 2306.440008] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
+[ 2306.440022] thermal cooling_device0: cur_state=1
+[ 2306.440034] thermal cooling_device0: old_target=1, target=0
+
+[ ... ]
+
+After a while, if the temperature continues to increase, the next state becomes
+2 which is 720MHz on the hikey. That results in the temperature stabilizing
+around the trip point.
+
+[ 2455.831982] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+[ 2455.832006] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=0
+[ 2455.832019] thermal cooling_device0: cur_state=1
+[ 2455.832032] thermal cooling_device0: old_target=1, target=1
+[ 2455.935985] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+[ 2455.936013] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
+[ 2455.936027] thermal cooling_device0: cur_state=1
+[ 2455.936040] thermal cooling_device0: old_target=1, target=1
+[ 2456.043984] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=0,throttle=1
+[ 2456.044009] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=0,throttle=0
+[ 2456.044023] thermal cooling_device0: cur_state=1
+[ 2456.044036] thermal cooling_device0: old_target=1, target=1
+[ 2456.148001] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=1,throttle=1
+[ 2456.148028] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=1,throttle=1
+[ 2456.148042] thermal cooling_device0: cur_state=1
+[ 2456.148055] thermal cooling_device0: old_target=1, target=2
+[ 2456.252009] thermal thermal_zone0: Trip0[type=1,temp=65000]:trend=2,throttle=1
+[ 2456.252041] thermal thermal_zone0: Trip1[type=1,temp=75000]:trend=2,throttle=0
+[ 2456.252058] thermal cooling_device0: cur_state=2
+[ 2456.252075] thermal cooling_device0: old_target=2, target=1
+
+IOW, this change is needed to keep the state for a cooling device if the
+temperature trend is oscillating while the temperature increases slightly.
+
+Without this change, the situation above leads to a catastrophic crash by a
+hardware reset on hikey. This issue has been reported to happen on an OMAP
+dra7xx also.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Keerthy <j-keerthy@ti.com>
+Cc: John Stultz <john.stultz@linaro.org>
+Cc: Leo Yan <leo.yan@linaro.org>
+Tested-by: Keerthy <j-keerthy@ti.com>
+Reviewed-by: Keerthy <j-keerthy@ti.com>
 ---
- drivers/thermal/qcom-spmi-temp-alarm.c | 43 +++++++++++-----------------------
- 1 file changed, 14 insertions(+), 29 deletions(-)
+ drivers/thermal/step_wise.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom-spmi-temp-alarm.c
-index f502419..95f987d 100644
---- a/drivers/thermal/qcom-spmi-temp-alarm.c
-+++ b/drivers/thermal/qcom-spmi-temp-alarm.c
-@@ -125,7 +125,7 @@ static int qpnp_tm_get_temp(void *data, int *temp)
- 	if (!temp)
- 		return -EINVAL;
- 
--	if (IS_ERR(chip->adc)) {
-+	if (!chip->adc) {
- 		ret = qpnp_tm_update_temp_no_adc(chip);
- 		if (ret < 0)
- 			return ret;
-@@ -224,67 +224,53 @@ static int qpnp_tm_probe(struct platform_device *pdev)
- 		return irq;
- 
- 	/* ADC based measurements are optional */
--	chip->adc = iio_channel_get(&pdev->dev, "thermal");
--	if (PTR_ERR(chip->adc) == -EPROBE_DEFER)
--		return PTR_ERR(chip->adc);
-+	chip->adc = devm_iio_channel_get(&pdev->dev, "thermal");
-+	if (IS_ERR(chip->adc)) {
-+		ret = PTR_ERR(chip->adc);
-+		chip->adc = NULL;
-+		if (ret == -EPROBE_DEFER)
-+			return ret;
-+	}
- 
- 	chip->base = res;
- 
- 	ret = qpnp_tm_read(chip, QPNP_TM_REG_TYPE, &type);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "could not read type\n");
--		goto fail;
-+		return ret;
- 	}
- 
- 	ret = qpnp_tm_read(chip, QPNP_TM_REG_SUBTYPE, &subtype);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "could not read subtype\n");
--		goto fail;
-+		return ret;
- 	}
- 
- 	if (type != QPNP_TM_TYPE || subtype != QPNP_TM_SUBTYPE) {
- 		dev_err(&pdev->dev, "invalid type 0x%02x or subtype 0x%02x\n",
- 			type, subtype);
--		ret = -ENODEV;
--		goto fail;
-+		return -ENODEV;
- 	}
- 
- 	ret = qpnp_tm_init(chip);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "init failed\n");
--		goto fail;
-+		return ret;
- 	}
- 
- 	ret = devm_request_threaded_irq(&pdev->dev, irq, NULL, qpnp_tm_isr,
- 					IRQF_ONESHOT, node->name, chip);
- 	if (ret < 0)
--		goto fail;
-+		return ret;
- 
- 	chip->tz_dev = devm_thermal_zone_of_sensor_register(&pdev->dev, 0, chip,
- 							&qpnp_tm_sensor_ops);
- 	if (IS_ERR(chip->tz_dev)) {
- 		dev_err(&pdev->dev, "failed to register sensor\n");
--		ret = PTR_ERR(chip->tz_dev);
--		goto fail;
-+		return PTR_ERR(chip->tz_dev);
- 	}
- 
- 	return 0;
--
--fail:
--	if (!IS_ERR(chip->adc))
--		iio_channel_release(chip->adc);
--
--	return ret;
--}
--
--static int qpnp_tm_remove(struct platform_device *pdev)
--{
--	struct qpnp_tm_chip *chip = dev_get_drvdata(&pdev->dev);
--
--	if (!IS_ERR(chip->adc))
--		iio_channel_release(chip->adc);
--
--	return 0;
- }
- 
- static const struct of_device_id qpnp_tm_match_table[] = {
-@@ -299,7 +285,6 @@ static struct platform_driver qpnp_tm_driver = {
- 		.of_match_table = qpnp_tm_match_table,
- 	},
- 	.probe  = qpnp_tm_probe,
--	.remove = qpnp_tm_remove,
- };
- module_platform_driver(qpnp_tm_driver);
- 
+diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
+index be95826..ee047ca 100644
+--- a/drivers/thermal/step_wise.c
++++ b/drivers/thermal/step_wise.c
+@@ -31,8 +31,7 @@
+  * If the temperature is higher than a trip point,
+  *    a. if the trend is THERMAL_TREND_RAISING, use higher cooling
+  *       state for this trip point
+- *    b. if the trend is THERMAL_TREND_DROPPING, use lower cooling
+- *       state for this trip point
++ *    b. if the trend is THERMAL_TREND_DROPPING, do nothing
+  *    c. if the trend is THERMAL_TREND_RAISE_FULL, use upper limit
+  *       for this trip point
+  *    d. if the trend is THERMAL_TREND_DROP_FULL, use lower limit
+@@ -94,9 +93,11 @@ static unsigned long get_target_state(struct thermal_instance *instance,
+ 			if (!throttle)
+ 				next_target = THERMAL_NO_TARGET;
+ 		} else {
+-			next_target = cur_state - 1;
+-			if (next_target > instance->upper)
+-				next_target = instance->upper;
++			if (!throttle) {
++				next_target = cur_state - 1;
++				if (next_target > instance->upper)
++					next_target = instance->upper;
++			}
+ 		}
+ 		break;
+ 	case THERMAL_TREND_DROP_FULL:
 -- 
 2.7.4
