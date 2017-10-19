@@ -1,27 +1,48 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 0/3] thermal: Support for Coffee Lake and Cannon Lake
-Date: Thu, 19 Oct 2017 14:51:31 -0700
-Message-ID: <1508449894-58797-1-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fix for v4.14-rc6
+Date: Fri, 20 Oct 2017 01:12:36 +0200
+Message-ID: <CAJZ5v0j4G7rWQSbWntZMdt4xW-gC+_yNykEH3+B1tdC=2wEv_g@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga09.intel.com ([134.134.136.24]:58477 "EHLO mga09.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752693AbdJSVvp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 19 Oct 2017 17:51:45 -0400
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:54920 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750736AbdJSXMh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2017 19:12:37 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Added support for PCH and processor thermal device.
+Hi Linus,
 
-Srinivas Pandruvada (3):
-  thermal: int340x: processor_thermal: Add Cannon Lake support
-  thermal: int340x: processor_thermal: Add Coffee Lake support
-  thermal: pch: Add Cannon Lake support
+Please pull from the tag
 
- drivers/thermal/int340x_thermal/processor_thermal_device.c |  5 +++++
- drivers/thermal/intel_pch_thermal.c                        | 11 +++++++++++
- 2 files changed, 16 insertions(+)
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.14-rc6
 
--- 
-2.7.5
+with top-most commit c97cc7dbce2fe6f46e137f4b040f915a0181ee85
+
+ Revert "tools/power turbostat: stop migrating, unless '-m'"
+
+on top of commit 33d930e59a98fa10a0db9f56c7fa2f21a4aef9b9
+
+ Linux 4.14-rc5
+
+to receive a power management fix for v4.14-rc6.
+
+This reverts a problematic commit modifying the turbostat
+utility that went in during the 4.13 cycle (Len Brown).
+
+Thanks!
+
+
+---------------
+
+Len Brown (1):
+      Revert "tools/power turbostat: stop migrating, unless '-m'"
+
+---------------
+
+ tools/power/x86/turbostat/turbostat.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
