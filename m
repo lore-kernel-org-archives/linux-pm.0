@@ -1,162 +1,118 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
-Date: Thu, 19 Oct 2017 14:21:07 +0200
-Message-ID: <CAPDyKFqq9_ZbPFYn22s+6sxtxePWgnd0GJNodeqkCKF2+QkrNA@mail.gmail.com>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <2890181.vdGMMavi5M@aspire.rjw.lan>
- <CAPDyKFozJtSHxxBEFtC+ofJ4XUyQjqUundPs81JATT=WfjXoYA@mail.gmail.com> <4337843.QuD5zygUhU@aspire.rjw.lan>
+From: Jeremy Linton <jeremy.linton@arm.com>
+Subject: Re: [PATCH v3 1/7] ACPI/PPTT: Add Processor Properties Topology Table
+ parsing
+Date: Thu, 19 Oct 2017 09:24:12 -0500
+Message-ID: <b5dc310d-ca95-fd08-5b2e-8bbaeba19533@arm.com>
+References: <20171012194856.13844-1-jeremy.linton@arm.com>
+ <20171012194856.13844-2-jeremy.linton@arm.com>
+ <38c63cfd-4c13-9461-0d4a-74b0943be0fd@semihalf.com>
+ <2ce92b90-fc2c-3fff-a3e3-b9517057ab2c@arm.com>
+ <4ee4af4d-d987-33f9-4d55-67bfede3ebfa@caviumnetworks.com>
+ <ed7f2e82-1e9b-9f46-89af-4e638275355d@caviumnetworks.com>
+ <47d8ef93-a3ce-6d40-f8db-2bc7d527ac6f@arm.com>
+ <2605aa54-95f7-4619-e632-0a95a68e5fb0@caviumnetworks.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <4337843.QuD5zygUhU@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2605aa54-95f7-4619-e632-0a95a68e5fb0@caviumnetworks.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tomasz Nowicki <tnowicki@caviumnetworks.com>, linux-acpi@vger.kernel.org
+Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, lorenzo.pieralisi@arm.com, austinwc@codeaurora.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, gregkh@linuxfoundation.org, sudeep.holla@arm.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, will.deacon@arm.com, wangxiongfeng2@huawei.com, viresh.kumar@linaro.org, hanjun.guo@linaro.org, catalin.marinas@arm.com, ahs3@redhat.com, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On 19 October 2017 at 00:12, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, October 18, 2017 4:11:33 PM CEST Ulf Hansson wrote:
->> [...]
+Hi,
+
+
+On 10/19/2017 12:18 AM, Tomasz Nowicki wrote:
+> On 18.10.2017 19:30, Jeremy Linton wrote:
+>> On 10/18/2017 05:24 AM, Tomasz Nowicki wrote:
+>>> On 18.10.2017 07:39, Tomasz Nowicki wrote:
+>>>> On 17.10.2017 17:22, Jeremy Linton wrote:
+>>>>> On 10/17/2017 08:25 AM, Tomasz Nowicki wrote:
+>>>>>> On 12.10.2017 21:48, Jeremy Linton wrote:
+(trimming)
+>>>>>>> +            if (*found != NULL)
+>>>>>>> +                pr_err("Found duplicate cache level/type unable 
+>>>>>>> to determine uniqueness\n");
+>>>
+>>> Actually I still see this error messages in my dmesg. It is because 
+>>> the following ThunderX2 per-core L1 and L2 cache hierarchy:
+>>>
+>>> Core
+>>>   ------------------
+>>> |                  |
+>>> | L1i -----        |
+>>> |         |        |
+>>> |          ----L2  |
+>>> |         |        |
+>>> | L1d -----        |
+>>> |                  |
+>>>   ------------------
+>>>
+>>> In this case we have two paths which lead to L2 cache and hit above 
+>>> case. Is it really error case?
 >>
->> >>
->> >> The reason why pm_runtime_force_* needs to respects the hierarchy of
->> >> the RPM callbacks, is because otherwise it can't safely update the
->> >> runtime PM status of the device.
->> >
->> > I'm not sure I follow this requirement.  Why is that so?
+>> No, but its not deterministic unless we mark the node, which doesn't 
+>> solve the problem of a table constructed like
 >>
->> If the PM domain controls some resources for the device in its RPM
->> callbacks and the driver controls some other resources in its RPM
->> callbacks - then these resources needs to be managed together.
->
-> Right, but that doesn't automatically make it necessary to use runtime PM
-> callbacks in the middle layer.  Its system-wide PM callbacks may be
-> suitable for that just fine.
->
-> That is, at least in some cases, you can combine ->runtime_suspend from a
-> driver and ->suspend_late from a middle layer with no problems, for example.
->
-> That's why some middle layers allow drivers to point ->suspend_late and
-> ->runtime_suspend to the same routine if they want to reuse that code.
->
->> This follows the behavior of when a regular call to
->> pm_runtime_get|put(), triggers the RPM callbacks to be invoked.
->
-> But (a) it doesn't have to follow it and (b) in some cases it should not
-> follow it.
-
-Of course you don't explicitly *have to* respect the hierarchy of the
-RPM callbacks in pm_runtime_force_*.
-
-However, changing that would require some additional information
-exchange between the driver and the middle-layer/PM domain, as to
-instruct the middle-layer/PM domain of what to do during system-wide
-PM. Especially in cases when the driver deals with wakeup, as in those
-cases the instructions may change dynamically.
-
-[...]
-
->> > In general, not if the wakeup settings are adjusted by the middle layer.
+>> L1i->L2 (unified)
+>> L1d->L2 (unified)
 >>
->> Correct!
+>> or various other structures which aren't disallowed by the spec and 
+>> have non-deterministic real world meanings, anymore than constructing 
+>> the table like:
 >>
->> To use pm_runtime_force* for these cases, one would need some
->> additional information exchange between the driver and the
->> middle-layer.
->
-> Which pretty much defeats the purpose of the wrappers, doesn't it?
-
-Well, no matter if the wrappers are used or not, we need some kind of
-information exchange between the driver and the middle-layers/PM
-domains.
-
-Anyway, me personally think it's too early to conclude that using the
-wrappers may not be useful going forward. At this point, they clearly
-helps trivial cases to remain being trivial.
-
->
->> >
->> >> Regarding hibernation, honestly that's not really my area of
->> >> expertise. Although, I assume the middle-layer and driver can treat
->> >> that as a separate case, so if it's not suitable to use
->> >> pm_runtime_force* for that case, then they shouldn't do it.
->> >
->> > Well, agreed.
->> >
->> > In some simple cases, though, driver callbacks can be reused for hibernation
->> > too, so it would be good to have a common way to do that too, IMO.
+>> L1i
+>> Lid->L2(unified)
 >>
->> Okay, that makes sense!
+>> which I tend to prefer because with a structuring like that it can be 
+>> deterministic (and in a way actually represents the non-coherent 
+>> behavior of (most?) ARM64 core's i-caches, as could be argued the 
+>> first example if the allocation policies are varied between the L2 
+>> nodes).
 >>
->> >
->> >> >
->> >> > Also, quite so often other middle layers interact with PCI directly or
->> >> > indirectly (eg. a platform device may be a child or a consumer of a PCI
->> >> > device) and some optimizations need to take that into account (eg. parents
->> >> > generally need to be accessible when their childres are resumed and so on).
->> >>
->> >> A device's parent becomes informed when changing the runtime PM status
->> >> of the device via pm_runtime_force_suspend|resume(), as those calls
->> >> pm_runtime_set_suspended|active().
->> >
->> > This requires the parent driver or middle layer to look at the reference
->> > counter and understand it the same way as pm_runtime_force_*.
->> >
->> >> In case that isn't that sufficient, what else is needed? Perhaps you can
->> >> point me to an example so I can understand better?
->> >
->> > Say you want to leave the parent suspended after system resume, but the
->> > child drivers use pm_runtime_force_suspend|resume().  The parent would then
->> > need to use pm_runtime_force_suspend|resume() too, no?
+>> The really ugly bits here happen if you add another layer:
 >>
->> Actually no.
+>> L1i->L2i-L3
+>> L1d------^
 >>
->> Currently the other options of "deferring resume" (not using
->> pm_runtime_force_*), is either using the "direct_complete" path or
->> similar to the approach you took for the i2c designware driver.
+>> which is why I made that an error message, not including the fact that 
+>> since the levels aren't tagged the numbering and meaning isn't clear.
 >>
->> Both cases should play nicely in combination of a child being managed
->> by pm_runtime_force_*. That's because only when the parent device is
->> kept runtime suspended during system suspend, resuming can be
->> deferred.
->
-> And because the parent remains in runtime suspend late enough in the
-> system suspend path, its children also are guaranteed to be suspended.
+>> (the L1i in the above example might be better called an L0i to avoid 
+>> throwing off the reset of the hierarchy numbering, also so it could be 
+>> ignored).
+>>
+>> Summary:
+>>
+>> I'm not at all happy with this specification's attempt to leave out 
+>> pieces of information which make parsing things more deterministic. In 
+>> this case I'm happy to demote the message level, but not remove it 
+>> entirely but I do think the obvious case you list shouldn't be the 
+>> default one.
+>>
+>> Lastly:
+>>
+>> I'm assuming the final result is that the table is actually being 
+>> parsed correctly despite the ugly message?
+> 
+> Indeed, the ThunderX2 PPTT table is being parsed so that topology shown 
+> in lstopo and lscpu is correct.
 
-Yes.
+Great.
 
->
-> But then all of them need to be left in runtime suspend during system
-> resume too, which is somewhat restrictive, because some drivers may
-> want their devices to be resumed then.
+Also, I think this is a better change:
 
-Actually, this scenario is also addressed when using the pm_runtime_force_*.
+      if ((*found != NULL) && (*found != cache))
+          pr_err("Found duplicate cache level/type unable to determine 
+uniqueness\n");
 
-The driver for the child would only need to bump the runtime PM usage
-count (pm_runtime_get_noresume()) before calling
-pm_runtime_force_suspend() at system suspend. That then also
-propagates to the parent, leading to that both the parent and the
-child will be resumed when pm_runtime_force_resume() is called for
-them.
+Which if its a duplicate node/type at the given level the message is 
+just suppressed. It will of course still trigger in cases like:
 
-Of course, if the driver of the parent isn't using pm_runtime_force_,
-we would have to assume that it's always being resumed at system
-resume.
+L1d->L2
+l1i->L2
 
-As at matter of fact, doesn't this scenario actually indicates that we
-do need to involve the runtime PM core (updating RPM status according
-to the HW state even during system-wide PM) to really get this right.
-It's not enough to only use "driver PM flags"!?
-
-Seems like we need to create a list of all requirements, pitfalls,
-good things vs bad things etc. :-)
-
->
-> [BTW, our current documentation recommends resuming devices during
-> system resume, actually, and gives a list of reasons why. :-)]
-
-Yes, but that too easy and to me not good enough. :-)
-
-[...]
-
-Kind regards
-Uffe
+or other odd cases.
