@@ -1,80 +1,119 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 05/18] thermal/drivers/hisi: Fix multiple alarm interrupts firing
-Date: Thu, 19 Oct 2017 19:05:47 +0200
-Message-ID: <1508432760-17847-5-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 04/18] thermal/drivers/hisi: Simplify the temperature/step computation
+Date: Thu, 19 Oct 2017 19:05:46 +0200
+Message-ID: <1508432760-17847-4-git-send-email-daniel.lezcano@linaro.org>
 References: <6ac48f08-7fe6-92e9-0801-6ed3bcd05ff1@linaro.org>
  <1508432760-17847-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:54533 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755014AbdJSRIg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2017 13:08:36 -0400
+Received: by mail-wm0-f68.google.com with SMTP id i124so17714723wmf.3
+        for <linux-pm@vger.kernel.org>; Thu, 19 Oct 2017 10:08:35 -0700 (PDT)
 In-Reply-To: <1508432760-17847-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: edubezval@gmail.com, rui.zhang@intel.com
 Cc: linux-pm@vger.kernel.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-The DT specifies a threshold of 65000, we setup the register with a value in
-the temperature resolution for the controller, 64656.
+The step and the base temperature are fixed values, we can simplify the
+computation by converting the base temperature to milli celsius and use a
+pre-computed step value. That saves us a lot of mult + div for nothing at
+runtime.
 
-When we reach 64656, the interrupt fires, the interrupt is disabled. Then the
-irq thread runs and calls thermal_zone_device_update() which will call in turn
-hisi_thermal_get_temp().
-
-The function will look if the temperature decreased, assuming it was more than
-65000, but that is not the case because the current temperature is 64656
-(because of the rounding when setting the threshold). This condition being
-true, we re-enable the interrupt which fires immediately after exiting the irq
-thread. That happens again and again until the temperature goes to more than
-65000.
-
-Potentially, there is here an interrupt storm if the temperature stabilizes at
-this temperature. A very unlikely case but possible.
-
-In any case, it does not make sense to handle dozens of alarm interrupt for
-nothing.
-
-Fix this by rounding the threshold value to the controller resolution so the
-check against the threshold is consistent with the one set in the controller.
+Take also the opportunity to change the function names to be consistent with
+the rest of the code.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Reviewed-by: Leo Yan <leo.yan@linaro.org>
 Tested-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ drivers/thermal/hisi_thermal.c | 41 ++++++++++++++++++++++++++++-------------
+ 1 file changed, 28 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 04eb5e2..1b44bfe 100644
+index feae552..04eb5e2 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -90,6 +90,12 @@ static inline long hisi_thermal_temp_to_step(long temp)
- 	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
+@@ -35,8 +35,9 @@
+ #define TEMP0_RST_MSK			(0x1C)
+ #define TEMP0_VALUE			(0x28)
+ 
+-#define HISI_TEMP_BASE			(-60)
++#define HISI_TEMP_BASE			(-60000)
+ #define HISI_TEMP_RESET			(100000)
++#define HISI_TEMP_STEP			(784)
+ 
+ #define HISI_MAX_SENSORS		4
+ #define HISI_DEFAULT_SENSOR		2
+@@ -61,19 +62,32 @@ struct hisi_thermal_data {
+ 	void __iomem *regs;
+ };
+ 
+-/* in millicelsius */
+-static inline int _step_to_temp(int step)
++/*
++ * The temperature computation on the tsensor is as follow:
++ *	Unit: millidegree Celsius
++ *	Step: 255/200 (0.7843)
++ *	Temperature base: -60°C
++ *
++ * The register is programmed in temperature steps, every step is 784
++ * millidegree and begins at -60 000 m°C
++ *
++ * The temperature from the steps:
++ *
++ *	Temp = TempBase + (steps x 784)
++ *
++ * and the steps from the temperature:
++ *
++ *	steps = (Temp - TempBase) / 784
++ *
++ */
++static inline int hisi_thermal_step_to_temp(int step)
+ {
+-	/*
+-	 * Every step equals (1 * 200) / 255 celsius, and finally
+-	 * need convert to millicelsius.
+-	 */
+-	return (HISI_TEMP_BASE * 1000 + (step * 200000 / 255));
++	return HISI_TEMP_BASE + (step * HISI_TEMP_STEP);
  }
  
-+static inline long hisi_thermal_round_temp(int temp)
-+{
-+	return hisi_thermal_step_to_temp(
-+		hisi_thermal_temp_to_step(temp));
-+}
-+
- static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
- 					 struct hisi_thermal_sensor *sensor)
+-static inline long _temp_to_step(long temp)
++static inline long hisi_thermal_temp_to_step(long temp)
  {
-@@ -221,7 +227,7 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
- 	sensor = &data->sensors;
+-	return ((temp - HISI_TEMP_BASE * 1000) * 255) / 200000;
++	return (temp - HISI_TEMP_BASE) / HISI_TEMP_STEP;
+ }
  
- 	dev_crit(&data->pdev->dev, "THERMAL ALARM: T > %d\n",
--		 sensor->thres_temp / 1000);
-+		 sensor->thres_temp);
+ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+@@ -99,7 +113,7 @@ static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+ 	usleep_range(3000, 5000);
+ 
+ 	val = readl(data->regs + TEMP0_VALUE);
+-	val = _step_to_temp(val);
++	val = hisi_thermal_step_to_temp(val);
+ 
  	mutex_unlock(&data->thermal_lock);
  
- 	thermal_zone_device_update(data->sensors.tzd,
-@@ -255,7 +261,7 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
+@@ -126,10 +140,11 @@ static void hisi_thermal_enable_bind_irq_sensor
+ 	writel((sensor->id << 12), data->regs + TEMP0_CFG);
  
- 	for (i = 0; i < of_thermal_get_ntrips(sensor->tzd); i++) {
- 		if (trip[i].type == THERMAL_TRIP_PASSIVE) {
--			sensor->thres_temp = trip[i].temperature;
-+			sensor->thres_temp = hisi_thermal_round_temp(trip[i].temperature);
- 			break;
- 		}
- 	}
+ 	/* enable for interrupt */
+-	writel(_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
++	writel(hisi_thermal_temp_to_step(sensor->thres_temp) | 0x0FFFFFF00,
+ 	       data->regs + TEMP0_TH);
+ 
+-	writel(_temp_to_step(HISI_TEMP_RESET), data->regs + TEMP0_RST_TH);
++	writel(hisi_thermal_temp_to_step(HISI_TEMP_RESET),
++	       data->regs + TEMP0_RST_TH);
+ 
+ 	/* enable module */
+ 	writel(0x1, data->regs + TEMP0_RST_MSK);
 -- 
 2.7.4
