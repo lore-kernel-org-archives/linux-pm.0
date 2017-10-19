@@ -1,94 +1,110 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH 08/18] thermal/drivers/hisi: Fix configuration register setting
-Date: Thu, 19 Oct 2017 19:05:50 +0200
-Message-ID: <1508432760-17847-8-git-send-email-daniel.lezcano@linaro.org>
+Subject: [PATCH 10/18] thermal/drivers/hisi: Rename and remove unused field
+Date: Thu, 19 Oct 2017 19:05:52 +0200
+Message-ID: <1508432760-17847-10-git-send-email-daniel.lezcano@linaro.org>
 References: <6ac48f08-7fe6-92e9-0801-6ed3bcd05ff1@linaro.org>
  <1508432760-17847-1-git-send-email-daniel.lezcano@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:51824 "EHLO
-        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755064AbdJSRIl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2017 13:08:41 -0400
-Received: by mail-wm0-f66.google.com with SMTP id f4so17755737wme.0
-        for <linux-pm@vger.kernel.org>; Thu, 19 Oct 2017 10:08:41 -0700 (PDT)
+Received: from mail-wr0-f196.google.com ([209.85.128.196]:44597 "EHLO
+        mail-wr0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755070AbdJSRIp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2017 13:08:45 -0400
+Received: by mail-wr0-f196.google.com with SMTP id z55so2981941wrz.1
+        for <linux-pm@vger.kernel.org>; Thu, 19 Oct 2017 10:08:44 -0700 (PDT)
 In-Reply-To: <1508432760-17847-1-git-send-email-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: edubezval@gmail.com, rui.zhang@intel.com
 Cc: linux-pm@vger.kernel.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org
 
-The TEMP0_CFG configuration register contains different field to set up the
-temperature controller. However in the code, nothing prevents a setup to
-overwrite the previous one: eg. writing the hdak value overwrites the sensor
-selection, the sensor selection overwrites the hdak value.
-
-In order to prevent such thing, use a regmap-like mechanism by reading the
-value before, set the corresponding bits and write the result.
+Rename the 'sensors' field to 'sensor' as we describe only one sensor.
+Remove the 'sensor_temp' as it is no longer used.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Leo Yan <leo.yan@linaro.org>
+Tested-by: Leo Yan <leo.yan@linaro.org>
 ---
- drivers/thermal/hisi_thermal.c | 34 +++++++++++++++++++++++++++++-----
- 1 file changed, 29 insertions(+), 5 deletions(-)
+ drivers/thermal/hisi_thermal.c | 18 ++++++++----------
+ 1 file changed, 8 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 8e8a117..690f0bd 100644
+index c7bdcfe..baa3853 100644
 --- a/drivers/thermal/hisi_thermal.c
 +++ b/drivers/thermal/hisi_thermal.c
-@@ -30,6 +30,8 @@
- #define TEMP0_TH			(0x4)
- #define TEMP0_RST_TH			(0x8)
- #define TEMP0_CFG			(0xC)
-+#define TEMP0_CFG_SS_MSK		(0xF000)
-+#define TEMP0_CFG_HDAK_MSK		(0x30)
- #define TEMP0_EN			(0x10)
- #define TEMP0_INT_EN			(0x14)
- #define TEMP0_INT_CLR			(0x18)
-@@ -132,19 +134,41 @@ static inline void hisi_thermal_enable(void __iomem *addr, int value)
- 	writel(value, addr + TEMP0_EN);
- }
+@@ -49,8 +49,6 @@
+ struct hisi_thermal_sensor {
+ 	struct hisi_thermal_data *thermal;
+ 	struct thermal_zone_device *tzd;
+-
+-	long sensor_temp;
+ 	uint32_t id;
+ 	uint32_t thres_temp;
+ };
+@@ -59,9 +57,9 @@ struct hisi_thermal_data {
+ 	struct mutex thermal_lock;    /* protects register data */
+ 	struct platform_device *pdev;
+ 	struct clk *clk;
+-	struct hisi_thermal_sensor sensors;
+-	int irq;
++	struct hisi_thermal_sensor sensor;
+ 	void __iomem *regs;
++	int irq;
+ };
  
--static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
-+static inline int hisi_thermal_get_temperature(void __iomem *addr)
+ /*
+@@ -233,7 +231,7 @@ static struct thermal_zone_of_device_ops hisi_of_thermal_ops = {
+ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
  {
--	writel((sensor << 12), addr + TEMP0_CFG);
-+	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
- }
+ 	struct hisi_thermal_data *data = dev;
+-	struct hisi_thermal_sensor *sensor = &data->sensors;
++	struct hisi_thermal_sensor *sensor = &data->sensor;
+ 	int temp;
  
--static inline int hisi_thermal_get_temperature(void __iomem *addr)
-+/*
-+ * Temperature configuration register - Sensor selection
-+ *
-+ * Bits [19:12]
-+ *
-+ * 0x0: local sensor (default)
-+ * 0x1: remote sensor 1 (ACPU cluster 1)
-+ * 0x2: remote sensor 2 (ACPU cluster 0)
-+ * 0x3: remote sensor 3 (G3D)
-+ */
-+static inline void hisi_thermal_sensor_select(void __iomem *addr, int sensor)
+ 	hisi_thermal_alarm_clear(data->regs, 1);
+@@ -244,7 +242,7 @@ static irqreturn_t hisi_thermal_alarm_irq_thread(int irq, void *dev)
+ 		dev_crit(&data->pdev->dev, "THERMAL ALARM: %d > %d\n",
+ 			 temp, sensor->thres_temp);
+ 
+-		thermal_zone_device_update(data->sensors.tzd,
++		thermal_zone_device_update(data->sensor.tzd,
+ 					   THERMAL_EVENT_UNSPECIFIED);
+ 
+ 	} else if (temp < sensor->thres_temp) {
+@@ -307,7 +305,7 @@ static int hisi_thermal_setup(struct hisi_thermal_data *data)
  {
--	return hisi_thermal_step_to_temp(readl(addr + TEMP0_VALUE));
-+	writel((readl(addr + TEMP0_CFG) & ~TEMP0_CFG_SS_MSK) |
-+	       (sensor << 12), addr + TEMP0_CFG);
- }
+ 	struct hisi_thermal_sensor *sensor;
  
-+/*
-+ * Temperature configuration register - Hdak conversion polling interval
-+ *
-+ * Bits [5:4]
-+ *
-+ * 0x0 :   0.768 ms
-+ * 0x1 :   6.144 ms
-+ * 0x2 :  49.152 ms
-+ * 0x3 : 393.216 ms
-+ */
- static inline void hisi_thermal_hdak_set(void __iomem *addr, int value)
+-	sensor = &data->sensors;
++	sensor = &data->sensor;
+ 
+ 	/* disable module firstly */
+ 	hisi_thermal_reset_enable(data->regs, 0);
+@@ -380,7 +378,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	ret = hisi_thermal_register_sensor(pdev, data,
+-					   &data->sensors,
++					   &data->sensor,
+ 					   HISI_DEFAULT_SENSOR);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "failed to register thermal sensor: %d\n",
+@@ -402,7 +400,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	hisi_thermal_toggle_sensor(&data->sensors, true);
++	hisi_thermal_toggle_sensor(&data->sensor, true);
+ 
+ 	return 0;
+ }
+@@ -410,7 +408,7 @@ static int hisi_thermal_probe(struct platform_device *pdev)
+ static int hisi_thermal_remove(struct platform_device *pdev)
  {
--	writel(value, addr + TEMP0_CFG);
-+	writel((readl(addr + TEMP0_CFG) & ~TEMP0_CFG_HDAK_MSK) |
-+	       (value << 4), addr + TEMP0_CFG);
- }
+ 	struct hisi_thermal_data *data = platform_get_drvdata(pdev);
+-	struct hisi_thermal_sensor *sensor = &data->sensors;
++	struct hisi_thermal_sensor *sensor = &data->sensor;
  
- static long hisi_thermal_get_sensor_temp(struct hisi_thermal_data *data,
+ 	hisi_thermal_toggle_sensor(sensor, false);
+ 	hisi_thermal_disable_sensor(data);
 -- 
 2.7.4
