@@ -1,51 +1,80 @@
-From: Jeremy Linton <jeremy.linton@arm.com>
-Subject: Re: [PATCH v3 6/7] arm64: topology: Enable ACPI/PPTT based CPU
- topology.
-Date: Thu, 19 Oct 2017 11:13:27 -0500
-Message-ID: <6a9836f5-d31c-67fb-b2dd-bc0972ebb1c2@arm.com>
-References: <20171012194856.13844-1-jeremy.linton@arm.com>
- <20171012194856.13844-7-jeremy.linton@arm.com>
- <20171019155622.GC18883@red-moon>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: libbattery was Re: [RFC PATCH 5/5] power: generic-adc-battery:
+ Add capacity handling
+Date: Thu, 19 Oct 2017 09:24:16 -0700
+Message-ID: <20171019162416.GE4394@atomide.com>
+References: <1501620926-22669-1-git-send-email-marek.belisko@open-nandra.com>
+ <1501620926-22669-6-git-send-email-marek.belisko@open-nandra.com>
+ <20170829101147.debhadzyfrxhkrvt@earth>
+ <20170908113231.GJ18365@amd>
+ <20171018122804.GA14376@amd>
+ <61BFA8AF-657A-4AD7-A7AC-3E5DC3B7E83D@goldelico.com>
+ <20171018132204.GD4394@atomide.com>
+ <0C0901E1-23E8-4D04-B3A9-8314809A7A6B@goldelico.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20171019155622.GC18883@red-moon>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from muru.com ([72.249.23.125]:44862 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751325AbdJSQYX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Oct 2017 12:24:23 -0400
+Content-Disposition: inline
+In-Reply-To: <0C0901E1-23E8-4D04-B3A9-8314809A7A6B@goldelico.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sebastian.reichel@collabora.co.uk>, pali.rohar@gmail.com, sre@kernel.org, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, patrikbachan@gmail.com, serge@hallyn.com, abcloriens@gmail.com, clayton@craftyguy.net, martijn@brixit.nl, sakari.ailus@linux.intel.com, Marek Belisko <marek.belisko@open-nandra.com>, robh+dt@kernel.org, linux-pm@vger.kernel.org, Marek Belisko <marek.belisko@gmail.com>
 
-On 10/19/2017 10:56 AM, Lorenzo Pieralisi wrote:
-> On Thu, Oct 12, 2017 at 02:48:55PM -0500, Jeremy Linton wrote:
->> Propagate the topology information from the PPTT tree to the
->> cpu_topology array. We can get the thread id, core_id and
->> cluster_id by assuming certain levels of the PPTT tree correspond
->> to those concepts. The package_id is flagged in the tree and can be
->> found by passing an arbitrary large level to setup_acpi_cpu_topology()
->> which terminates its search when it finds an ACPI node flagged
->> as the physical package. If the tree doesn't contain enough
->> levels to represent all of thread/core/cod/package then the package
->> id will be used for the missing levels.
->>
->> Since server/ACPI machines are more likely to be multisocket and NUMA,
+* H. Nikolaus Schaller <hns@goldelico.com> [171018 08:49]:
 > 
-> I think this stuff is vague enough already so to start with I would drop
-> patch 4 and 5 and stop assuming what machines are more likely to ship
-> with ACPI than DT.
+> > Am 18.10.2017 um 15:22 schrieb Tony Lindgren <tony@atomide.com>:
+> > 
+> > * H. Nikolaus Schaller <hns@goldelico.com> [171018 05:49]:
+> >>> Am 18.10.2017 um 14:28 schrieb Pavel Machek <pavel@ucw.cz>:
+> >>> 
+> >>> So I started something, it is at.
+> >>> 
+> >>> https://github.com/pavelmachek/libbattery
+> >>> 
+> >>> My battery on n900 is currently uncalibrated (and charging), still it
+> >>> gets some kind of estimation:
+> >>> 
+> >>> Battery -1 %
+> >>> Seconds -1
+> >>> State 1
+> >>> Voltage 3.88 V
+> >>> Battery 63 %
+> >>> 
+> >>> Of course, there's a lot more work to be done.
+> >> 
+> >> Nice start but not a solution to our problem.
+> >> 
+> >> Our problem is that people simply expect that for example https://packages.debian.org/wheezy/xfce/xfce4-battery-plugin
+> >> displays the battery percentage.
+> > 
+> > I think we could make things compatible with various battery apps by
+> > having libbattery write back the capacity percentage and time remaining
+> > to the kernel driver via sysfs or a dev entry. Then the kernel interface
+> > can just display the data to whatever apps.
 > 
-> I am just saying, for the umpteenth time, that these levels have no
-> architectural meaning _whatsoever_, level is a hierarchy concept
-> with no architectural meaning attached.
+> Hm. That would be quite difficult to understand and maintain code.
 
-?
+How so? The libbattery can do it all, then the kernel drivers needing
+that will just display the most recent values to maintain compability
+with battery apps.
 
-Did anyone say anything about that? No, I think the only thing being 
-guaranteed here is that the kernel's physical_id maps to an ACPI defined 
-socket. Which seems to be the mindset of pretty much the entire !arm64 
-community meaning they are optimizing their software and the kernel with 
-that concept in mind.
+> Why not have the kernel driver do the simple calculations (they do
+> not need float) and provide the standard /sys/class/power attribute?
 
-Are you denying the existence of non-uniformity between threads running 
-on different physical sockets?
+Because the current remaining capacity and battery empty state depend
+on maintaining a database of previous history for battery wear. This
+data needs to be preserved across reboots, so most likely on a file
+on a disk is the way to go.
+
+There's a nice summary what all is involved here:
+
+http://www.mpoweruk.com/soc.htm
+
+Regards,
+
+Tony
