@@ -1,84 +1,104 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: Re: [PATCH v1 15/27] compiler: Option to default to
-	hidden symbols
-Date: Thu, 19 Oct 2017 21:38:08 +0200
-Message-ID: <20171019193808.GI17331@wotan.suse.de>
-References: <20171011203027.11248-1-thgarnie@google.com>
- <20171011203027.11248-16-thgarnie@google.com>
- <20171012200201.GW11645@wotan.suse.de>
- <CAJcbSZEJ-kjcRQD3uHm0QZuOvbHpg9FV=wn7v4-RweDG7J3uqg@mail.gmail.com>
+From: Grygorii Strashko <grygorii.strashko@ti.com>
+Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
+Date: Thu, 19 Oct 2017 16:31:32 -0500
+Message-ID: <fa2647cb-b043-0116-8129-cb035e03cb2c@ti.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan>
+ <CAPDyKFozJtSHxxBEFtC+ofJ4XUyQjqUundPs81JATT=WfjXoYA@mail.gmail.com>
+ <7b9c2a3e-2e88-938e-46a5-703de0080681@ti.com>
+ <2926646.NJduVklg7n@aspire.rjw.lan>
+ <CAPDyKFrFbdXrZqtvwm=xmJSqQckfGzs7XNn7AOCTbOjwP4iAFQ@mail.gmail.com>
+ <1769d82f-07d3-14c9-c06a-d6afec20fa0e@ti.com>
+ <CAPDyKFoAKguKiwnJu6zQF7F-w5AQ+mQoQq_XbNOQrys+c54Jhw@mail.gmail.com>
+ <CAPDyKFrtQO_rowO8q=7Lsb25x8+bQAJyc1yUYVRgiguG-2W0tA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <xen-devel-bounces@lists.xen.org>
-Content-Disposition: inline
-In-Reply-To: <CAJcbSZEJ-kjcRQD3uHm0QZuOvbHpg9FV=wn7v4-RweDG7J3uqg@mail.gmail.com>
-List-Unsubscribe: <https://lists.xen.org/cgi-bin/mailman/options/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=unsubscribe>
-List-Post: <mailto:xen-devel@lists.xen.org>
-List-Help: <mailto:xen-devel-request@lists.xen.org?subject=help>
-List-Subscribe: <https://lists.xen.org/cgi-bin/mailman/listinfo/xen-devel>,
- <mailto:xen-devel-request@lists.xen.org?subject=subscribe>
-Errors-To: xen-devel-bounces@lists.xen.org
-Sender: "Xen-devel" <xen-devel-bounces@lists.xen.org>
-To: Thomas Garnier <thgarnie@google.com>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Michal Hocko <mhocko@suse.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, linux-doc@vger.kernel.org, Daniel Micay <danielmicay@gmail.com>, Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>, Christopher Li <sparse@chrisli.org>, Jan H =?iso-8859-1?Q?=2E_Sch=F6nherr?= <jschoenh@amazon.de>, Alexei Starovoitov <ast@kernel.org>, virtualization@lists.linux-foundation.org, David Howells <dhowells@redhat.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Waiman Long <longman@redhat.com>, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>, the arch/x86 maintainers <x86@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, Daniel Borkmann <daniel@iogearbox.net>, Jonatha
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFrtQO_rowO8q=7Lsb25x8+bQAJyc1yUYVRgiguG-2W0tA@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-i2c-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gV2VkLCBPY3QgMTgsIDIwMTcgYXQgMDQ6MTU6MTBQTSAtMDcwMCwgVGhvbWFzIEdhcm5pZXIg
-d3JvdGU6Cj4gT24gVGh1LCBPY3QgMTIsIDIwMTcgYXQgMTowMiBQTSwgTHVpcyBSLiBSb2RyaWd1
-ZXogPG1jZ3JvZkBrZXJuZWwub3JnPiB3cm90ZToKPiA+IE9uIFdlZCwgT2N0IDExLCAyMDE3IGF0
-IDAxOjMwOjE1UE0gLTA3MDAsIFRob21hcyBHYXJuaWVyIHdyb3RlOgo+ID4+IGRpZmYgLS1naXQg
-YS9pbmNsdWRlL2xpbnV4L2NvbXBpbGVyLmggYi9pbmNsdWRlL2xpbnV4L2NvbXBpbGVyLmgKPiA+
-PiBpbmRleCBlOTVhMjYzMWU1NDUuLjY5OTc3MTZmNzNiZiAxMDA2NDQKPiA+PiAtLS0gYS9pbmNs
-dWRlL2xpbnV4L2NvbXBpbGVyLmgKPiA+PiArKysgYi9pbmNsdWRlL2xpbnV4L2NvbXBpbGVyLmgK
-PiA+PiBAQCAtNzgsNiArNzgsMTQgQEAgZXh0ZXJuIHZvaWQgX19jaGtfaW9fcHRyKGNvbnN0IHZv
-bGF0aWxlIHZvaWQgX19pb21lbSAqKTsKPiA+PiAgI2luY2x1ZGUgPGxpbnV4L2NvbXBpbGVyLWNs
-YW5nLmg+Cj4gPj4gICNlbmRpZgo+ID4+Cj4gPj4gKy8qIFVzZWZ1bCBmb3IgUG9zaXRpb24gSW5k
-ZXBlbmRlbnQgQ29kZSB0byByZWR1Y2UgZ2xvYmFsIHJlZmVyZW5jZXMgKi8KPiA+PiArI2lmZGVm
-IENPTkZJR19ERUZBVUxUX0hJRERFTgo+ID4+ICsjcHJhZ21hIEdDQyB2aXNpYmlsaXR5IHB1c2go
-aGlkZGVuKQo+ID4+ICsjZGVmaW5lIF9fZGVmYXVsdF92aXNpYmlsaXR5ICBfX2F0dHJpYnV0ZV9f
-KCh2aXNpYmlsaXR5ICgiZGVmYXVsdCIpKSkKPiA+Cj4gPiBEb2VzIHRoaXMgc3RpbGwgd29yayB3
-aXRoIENPTkZJR19MRF9ERUFEX0NPREVfREFUQV9FTElNSU5BVElPTiA/Cj4gCj4gSSBjYW5ub3Qg
-bWFrZSBpdCB3b3JrIHdpdGggb3Igd2l0aG91dCB0aGlzIGNoYW5nZS4gSG93IGlzIGl0IHN1cHBv
-c2VkCj4gdG8gYmUgdXNlZD8KClNhZGx5IEkgZG9uJ3QgdGhpbmsgbXVjaCBkb2N1bWVudGF0aW9u
-IHdhcyByZWFsbHkgYWRkZWQgYXMgcGFydCBvZiB0aGUgTmljaydzCmNvbW1pdHMgYWJvdXQgZmVh
-dHVyZSwgZXZlbiB0aG91Z2ggY29tbWl0IGI2NzA2N2YxMTc2ICgia2J1aWxkOiBhbGxvdyBhcmNo
-cyB0bwpzZWxlY3QgbGluayBkZWFkIGNvZGUvZGF0YSBlbGltaW5hdGlvbiIpICpkb2VzKiBzYXkg
-dGhpcyB3YXMgZG9jdW1lbnRlZC4KClNpZGUgcmFudDogdGhlIHdob2xlIENPTkZJR19MVE8gcmVt
-b3ZhbCB3YXMgbWVyZ2VkIGluIHRoZSBzYW1lIGNvbW1pdCB3aXRob3V0CnRoaXMgaGF2aW5nIGdv
-bmUgaW4gYXMgYSBzZXBhcmF0ZSBhdG9taWMgcGF0Y2guCgpOaWNrIGNhbiB5b3UgcHJvdmlkZSBh
-IGJpdCBtb3JlIGd1aWRhbmNlIGFib3V0IGhvdyB0byBnZXQgdGhpcyBmZWF0dXJlIGdvaW5nIG9y
-CnRlc3RlZCBvbiBhbiBhcmNoaXRlY3R1cmU/IE9yIGFyZSB5b3UganVzdCBzdGlja2luZyB0byBh
-c3N1bWluZyBmb2xrcyB1c2luZyB0aGUKbGlua2VyIC8gY29tcGlsZXIgZmxhZ3Mgd2lsbCBrbm93
-IHdoYXQgdG8gZG8/ICpTb21lKiBndWlkYW5jZSBjb3VsZCBoZWxwLgoKPiBGb3IgbWUgd2l0aCwg
-aXQgY3Jhc2hlcyB3aXRoIGEgYmFkIGNvbnNkZXYgYXQ6Cj4gaHR0cDovL2VsaXhpci5mcmVlLWVs
-ZWN0cm9ucy5jb20vbGludXgvbGF0ZXN0L3NvdXJjZS9kcml2ZXJzL3R0eS90dHlfaW8uYyNMMzE5
-NAoKRnJvbSBteSByZWFkaW5nIG9mIHRoZSBjb21taXQgbG9nIGhlIG9ubHkgaGFkIHRlc3RlZCBp
-dCB3aXRoIHdpdGggcG93ZXJwYzY0bGUsCmVhY2ggb3RoZXIgYXJjaGl0ZWN0dXJlIHdvdWxkIGhh
-dmUgdG8gZG8gd29yayB0byBnZXQgYXMgZmFyIGFzIGV2ZW4gYm9vdGluZy4KCkl0IHdvdWxkIHJl
-cXVpcmUgc29tZW9uZSB0aGVuIHRlc3RpbmcgTmljaydzIHBhdGNoZXMgYWdhaW5zdCBhIHdvcmtp
-bmcKcG93ZXJwYyBzZXR1cCB0byBlbnN1cmUgd2UgZG9uJ3QgcmVncmVzcyB0aGVyZS4KCj4gPj4g
-ZGlmZiAtLWdpdCBhL2luaXQvS2NvbmZpZyBiL2luaXQvS2NvbmZpZwo+ID4+IGluZGV4IGNjYjFk
-OGRhZjI0MS4uYjY0MDIwMWZjZmY3IDEwMDY0NAo+ID4+IC0tLSBhL2luaXQvS2NvbmZpZwo+ID4+
-ICsrKyBiL2luaXQvS2NvbmZpZwo+ID4+IEBAIC0xNjQ5LDYgKzE2NDksMTMgQEAgY29uZmlnIFBS
-T0ZJTElORwo+ID4+ICBjb25maWcgVFJBQ0VQT0lOVFMKPiA+PiAgICAgICBib29sCj4gPj4KPiA+
-PiArIwo+ID4+ICsjIERlZmF1bHQgdG8gaGlkZGVuIHZpc2liaWxpdHkgZm9yIGFsbCBzeW1ib2xz
-Lgo+ID4+ICsjIFVzZWZ1bCBmb3IgUG9zaXRpb24gSW5kZXBlbmRlbnQgQ29kZSB0byByZWR1Y2Ug
-Z2xvYmFsIHJlZmVyZW5jZXMuCj4gPj4gKyMKPiA+PiArY29uZmlnIERFRkFVTFRfSElEREVOCj4g
-Pj4gKyAgICAgYm9vbAo+ID4KPiA+IE5vdGUgaXQgaXMgZGVmYXVsdC4KPiA+Cj4gPiBIYXMgMC1k
-YXkgcmFuIHRocm91Z2ggdGhpcyBnaXQgdHJlZT8gSXQgc2hvdWxkIGJlIGVhc3kgdG8gZ2V0IGl0
-IGFkZGVkIGZvcgo+ID4gdGVzdGluZy4gQWxzbywgZXZlbiB0aG91Z2ggbW9zdCBjaGFuZ2VzIGFy
-ZSB4ODYgYmFzZWQgdGhlcmUgYXJlIHNvbWUgZ2VuZXJpYwo+ID4gY2hhbmdlcyBhbmQgSSdkIGxv
-dmUgYSB3YXJtIGZ1enp5IHRoaXMgd29uJ3QgYnJlYWsgb2RkIC8gcmFuZG9tIGJ1aWxkcy4KPiA+
-IEFsdGhvdWdoIDAtZGF5IGRvZXMgY292ZXIgYSBsb3Qgb2YgdGVzdCBjYXNlcywgaXQgb25seSBo
-YXMgbGltaXRlZCBydW4gdGltZQo+ID4gdGVzdHMuIFRoZXJlIGFyZSBzb21lIG90aGVyIHRlc3Qg
-YmVkcyB3aGljaCBhbHNvIGNvdmVyIHNvbWUgbW9yZSBvYnNjdXJlCj4gPiBhcmNoaXRlY3R1cmVz
-LiBIYXZpbmcgYSB0ZXN0IHBhc3Mgb24gR3VlbnRlcidzIHRlc3QgYmVkIHdvdWxkIGJlIG5pY2Ug
-dG8KPiA+IHNlZS4gRm9yIHRoYXQgcGxlYXNlIGNvb3JkaW5hdGUgd2l0aCBHdWVudGVyIGlmIGhl
-J3Mgd2lsbGluZyB0byBydW4gdGhpcwo+ID4gYSB0ZXN0IGZvciB5b3UuCj4gCj4gTm90IHlldCwg
-cGxhbiB0byBnaXZlIGEgdjEuNSB0byBLZWVzIENvb2sgdG8ga2VlcCBpbiBvbmUgb2YgaGlzIHRy
-ZWUKPiBmb3IgY291cGxlIHdlZWtzLiBJIGV4cGVjdCBpdCB3aWxsIGlkZW50aWZ5IGludGVyZXN0
-aW5nIGlzc3Vlcy4KCkkgYmV0IDopCgogIEx1aXMKCl9fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fClhlbi1kZXZlbCBtYWlsaW5nIGxpc3QKWGVuLWRldmVsQGxp
-c3RzLnhlbi5vcmcKaHR0cHM6Ly9saXN0cy54ZW4ub3JnL3hlbi1kZXZlbAo=
+
+
+On 10/19/2017 01:11 PM, Ulf Hansson wrote:
+> On 19 October 2017 at 20:04, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 19 October 2017 at 19:21, Grygorii Strashko <grygorii.strashko@ti.com> wrote:
+>>>
+>>>
+>>> On 10/19/2017 03:33 AM, Ulf Hansson wrote:
+>>>> On 18 October 2017 at 23:48, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>>>> On Wednesday, October 18, 2017 9:45:11 PM CEST Grygorii Strashko wrote:
+>>>>>>
+>>>>>> On 10/18/2017 09:11 AM, Ulf Hansson wrote:
+>>>>>
+>>>>> [...]
+>>>>>
+>>>>>>>>> That's the point. We know pm_runtime_force_* works nicely for the
+>>>>>>>>> trivial middle-layer cases.
+>>>>>>>>
+>>>>>>>> In which cases the middle-layer callbacks don't exist, so it's just like
+>>>>>>>> reusing driver callbacks directly. :-)
+>>>>>>
+>>>>>> I'd like to ask you clarify one point here and provide some info which I hope can be useful -
+>>>>>> what's exactly means  "trivial middle-layer cases"?
+>>>>>>
+>>>>>> Is it when systems use "drivers/base/power/clock_ops.c - Generic clock
+>>>>>> manipulation PM callbacks" as dev_pm_domain (arm davinci/keystone), or OMAP
+>>>>>> device framework struct dev_pm_domain omap_device_pm_domain
+>>>>>> (arm/mach-omap2/omap_device.c) or static const struct dev_pm_ops
+>>>>>> tegra_aconnect_pm_ops?
+>>>>>>
+>>>>>> if yes all above have PM runtime callbacks.
+>>>>>
+>>>>> Trivial ones don't actually do anything meaningful in their PM callbacks.
+>>>>>
+>>>>> Things like the platform bus type, spi bus type, i2c bus type and similar.
+>>>>>
+>>>>> If the middle-layer callbacks manipulate devices in a significant way, then
+>>>>> they aren't trivial.
+>>>>
+>>>> I fully agree with Rafael's description above, but let me also clarify
+>>>> one more thing.
+>>>>
+>>>> We have also been discussing PM domains as being trivial and
+>>>> non-trivial. In some statements I even think the PM domain has been a
+>>>> part the middle-layer terminology, which may have been a bit
+>>>> confusing.
+>>>>
+>>>> In this regards as we consider genpd being a trivial PM domain, those
+>>>> examples your bring up above is too me also examples of trivial PM
+>>>> domains. Especially because they don't deal with wakeups, as that is
+>>>> taken care of by the drivers, right!?
+>>>
+>>> Not directly, for example, omap device framework has noirq callback implemented
+>>> which forcibly disable all devices which are not PM runtime suspended.
+>>> while doing this it calls drivers PM .runtime_suspend() which may return
+>>> non 0 value and in this case device will be left enabled (powered) at suspend for
+>>> wake up purposes (see _od_suspend_noirq()).
+>>>
+>>
+>> Yeah, I had that feeling that omap has some trickyness going on. :-)
+>>
+>> I sure that can be fixed in the omap PM domain, although
+> 
+> ...slipped with my fingers.. here is the rest of the reply...
+> 
+> ..of course that require us to use another way for drivers to signal
+> to the omap PM domain that it needs to stay powered as to deal with
+> wakeup.
+> 
+> I can have a look at that more closely, to see if it makes sense to change.
+> 
+
+Also, additional note here. some IPs are reused between OMAP/Davinci/Keystone,
+OMAP PM domain have some code running at noirq time to dial with devices left
+in PM runtime enabled state (OMAP PM runtime centric), while Davinci/Keystone haven't (clock_ops.c),
+so pm_runtime_force_* API is actually possibility now to make the same driver work 
+ on all these platforms. 
+
+-- 
+regards,
+-grygorii
