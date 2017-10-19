@@ -1,67 +1,162 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Subject: [PATCH 2/2] cpufreq: arm_big_little: make cpufreq_arm_bL_ops structures const
-Date: Thu, 19 Oct 2017 12:59:15 +0200
-Message-ID: <1508410755-13666-3-git-send-email-bhumirks@gmail.com>
-References: <1508410755-13666-1-git-send-email-bhumirks@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f193.google.com ([209.85.128.193]:48788 "EHLO
-        mail-wr0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751836AbdJSK73 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Oct 2017 06:59:29 -0400
-In-Reply-To: <1508410755-13666-1-git-send-email-bhumirks@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
+Date: Thu, 19 Oct 2017 14:21:07 +0200
+Message-ID: <CAPDyKFqq9_ZbPFYn22s+6sxtxePWgnd0GJNodeqkCKF2+QkrNA@mail.gmail.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <2890181.vdGMMavi5M@aspire.rjw.lan>
+ <CAPDyKFozJtSHxxBEFtC+ofJ4XUyQjqUundPs81JATT=WfjXoYA@mail.gmail.com> <4337843.QuD5zygUhU@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <4337843.QuD5zygUhU@aspire.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: julia.lawall@lip6.fr, viresh.kumar@linaro.org, sudeep.holla@arm.com, rjw@rjwysocki.net, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
 
-Make these const as they are only getting passed to the functions
-bL_cpufreq_{register/unregister} having the arguments as const.
+On 19 October 2017 at 00:12, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, October 18, 2017 4:11:33 PM CEST Ulf Hansson wrote:
+>> [...]
+>>
+>> >>
+>> >> The reason why pm_runtime_force_* needs to respects the hierarchy of
+>> >> the RPM callbacks, is because otherwise it can't safely update the
+>> >> runtime PM status of the device.
+>> >
+>> > I'm not sure I follow this requirement.  Why is that so?
+>>
+>> If the PM domain controls some resources for the device in its RPM
+>> callbacks and the driver controls some other resources in its RPM
+>> callbacks - then these resources needs to be managed together.
+>
+> Right, but that doesn't automatically make it necessary to use runtime PM
+> callbacks in the middle layer.  Its system-wide PM callbacks may be
+> suitable for that just fine.
+>
+> That is, at least in some cases, you can combine ->runtime_suspend from a
+> driver and ->suspend_late from a middle layer with no problems, for example.
+>
+> That's why some middle layers allow drivers to point ->suspend_late and
+> ->runtime_suspend to the same routine if they want to reuse that code.
+>
+>> This follows the behavior of when a regular call to
+>> pm_runtime_get|put(), triggers the RPM callbacks to be invoked.
+>
+> But (a) it doesn't have to follow it and (b) in some cases it should not
+> follow it.
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
- drivers/cpufreq/arm_big_little_dt.c    | 2 +-
- drivers/cpufreq/scpi-cpufreq.c         | 2 +-
- drivers/cpufreq/vexpress-spc-cpufreq.c | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+Of course you don't explicitly *have to* respect the hierarchy of the
+RPM callbacks in pm_runtime_force_*.
 
-diff --git a/drivers/cpufreq/arm_big_little_dt.c b/drivers/cpufreq/arm_big_little_dt.c
-index 39b3f51..b944f29 100644
---- a/drivers/cpufreq/arm_big_little_dt.c
-+++ b/drivers/cpufreq/arm_big_little_dt.c
-@@ -61,7 +61,7 @@ static int dt_get_transition_latency(struct device *cpu_dev)
- 	return transition_latency;
- }
- 
--static struct cpufreq_arm_bL_ops dt_bL_ops = {
-+static const struct cpufreq_arm_bL_ops dt_bL_ops = {
- 	.name	= "dt-bl",
- 	.get_transition_latency = dt_get_transition_latency,
- 	.init_opp_table = dev_pm_opp_of_cpumask_add_table,
-diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-index 8de2364..05d2990 100644
---- a/drivers/cpufreq/scpi-cpufreq.c
-+++ b/drivers/cpufreq/scpi-cpufreq.c
-@@ -53,7 +53,7 @@ static int scpi_init_opp_table(const struct cpumask *cpumask)
- 	return ret;
- }
- 
--static struct cpufreq_arm_bL_ops scpi_cpufreq_ops = {
-+static const struct cpufreq_arm_bL_ops scpi_cpufreq_ops = {
- 	.name	= "scpi",
- 	.get_transition_latency = scpi_get_transition_latency,
- 	.init_opp_table = scpi_init_opp_table,
-diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
-index 87e5bdc..5323728 100644
---- a/drivers/cpufreq/vexpress-spc-cpufreq.c
-+++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
-@@ -42,7 +42,7 @@ static int ve_spc_get_transition_latency(struct device *cpu_dev)
- 	return 1000000; /* 1 ms */
- }
- 
--static struct cpufreq_arm_bL_ops ve_spc_cpufreq_ops = {
-+static const struct cpufreq_arm_bL_ops ve_spc_cpufreq_ops = {
- 	.name	= "vexpress-spc",
- 	.get_transition_latency = ve_spc_get_transition_latency,
- 	.init_opp_table = ve_spc_init_opp_table,
--- 
-1.9.1
+However, changing that would require some additional information
+exchange between the driver and the middle-layer/PM domain, as to
+instruct the middle-layer/PM domain of what to do during system-wide
+PM. Especially in cases when the driver deals with wakeup, as in those
+cases the instructions may change dynamically.
+
+[...]
+
+>> > In general, not if the wakeup settings are adjusted by the middle layer.
+>>
+>> Correct!
+>>
+>> To use pm_runtime_force* for these cases, one would need some
+>> additional information exchange between the driver and the
+>> middle-layer.
+>
+> Which pretty much defeats the purpose of the wrappers, doesn't it?
+
+Well, no matter if the wrappers are used or not, we need some kind of
+information exchange between the driver and the middle-layers/PM
+domains.
+
+Anyway, me personally think it's too early to conclude that using the
+wrappers may not be useful going forward. At this point, they clearly
+helps trivial cases to remain being trivial.
+
+>
+>> >
+>> >> Regarding hibernation, honestly that's not really my area of
+>> >> expertise. Although, I assume the middle-layer and driver can treat
+>> >> that as a separate case, so if it's not suitable to use
+>> >> pm_runtime_force* for that case, then they shouldn't do it.
+>> >
+>> > Well, agreed.
+>> >
+>> > In some simple cases, though, driver callbacks can be reused for hibernation
+>> > too, so it would be good to have a common way to do that too, IMO.
+>>
+>> Okay, that makes sense!
+>>
+>> >
+>> >> >
+>> >> > Also, quite so often other middle layers interact with PCI directly or
+>> >> > indirectly (eg. a platform device may be a child or a consumer of a PCI
+>> >> > device) and some optimizations need to take that into account (eg. parents
+>> >> > generally need to be accessible when their childres are resumed and so on).
+>> >>
+>> >> A device's parent becomes informed when changing the runtime PM status
+>> >> of the device via pm_runtime_force_suspend|resume(), as those calls
+>> >> pm_runtime_set_suspended|active().
+>> >
+>> > This requires the parent driver or middle layer to look at the reference
+>> > counter and understand it the same way as pm_runtime_force_*.
+>> >
+>> >> In case that isn't that sufficient, what else is needed? Perhaps you can
+>> >> point me to an example so I can understand better?
+>> >
+>> > Say you want to leave the parent suspended after system resume, but the
+>> > child drivers use pm_runtime_force_suspend|resume().  The parent would then
+>> > need to use pm_runtime_force_suspend|resume() too, no?
+>>
+>> Actually no.
+>>
+>> Currently the other options of "deferring resume" (not using
+>> pm_runtime_force_*), is either using the "direct_complete" path or
+>> similar to the approach you took for the i2c designware driver.
+>>
+>> Both cases should play nicely in combination of a child being managed
+>> by pm_runtime_force_*. That's because only when the parent device is
+>> kept runtime suspended during system suspend, resuming can be
+>> deferred.
+>
+> And because the parent remains in runtime suspend late enough in the
+> system suspend path, its children also are guaranteed to be suspended.
+
+Yes.
+
+>
+> But then all of them need to be left in runtime suspend during system
+> resume too, which is somewhat restrictive, because some drivers may
+> want their devices to be resumed then.
+
+Actually, this scenario is also addressed when using the pm_runtime_force_*.
+
+The driver for the child would only need to bump the runtime PM usage
+count (pm_runtime_get_noresume()) before calling
+pm_runtime_force_suspend() at system suspend. That then also
+propagates to the parent, leading to that both the parent and the
+child will be resumed when pm_runtime_force_resume() is called for
+them.
+
+Of course, if the driver of the parent isn't using pm_runtime_force_,
+we would have to assume that it's always being resumed at system
+resume.
+
+As at matter of fact, doesn't this scenario actually indicates that we
+do need to involve the runtime PM core (updating RPM status according
+to the HW state even during system-wide PM) to really get this right.
+It's not enough to only use "driver PM flags"!?
+
+Seems like we need to create a list of all requirements, pitfalls,
+good things vs bad things etc. :-)
+
+>
+> [BTW, our current documentation recommends resuming devices during
+> system resume, actually, and gives a list of reasons why. :-)]
+
+Yes, but that too easy and to me not good enough. :-)
+
+[...]
+
+Kind regards
+Uffe
