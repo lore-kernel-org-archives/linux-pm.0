@@ -1,67 +1,66 @@
-From: Ramesh Thomas <ramesh.thomas@intel.com>
-Subject: [PATCH] cpuidle: ladder: Add per CPU PM QoS resume latency support
-Date: Thu, 19 Oct 2017 16:33:55 -0700
-Message-ID: <20171019233340.GA13902@intel.com>
-Reply-To: ramesh.thomas@intel.com
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: CPUs do not go idle - excessive energy consumption
+Date: Thu, 19 Oct 2017 17:16:00 -0700
+Message-ID: <000001d34938$9d012310$d7036930$@net>
+References: <000001d3436e$b9b58160$2d208420$@net> 2fn5expvk3OTt2fn6eOG4c 2gTken1Ckt1L52gTmefPL5 30gVe635D3OTt30gXeUUCy
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, rafael.j.wysocki@intel.com, alex.shi@linaro.org, daniel.lezcano@linaro.org
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta19.telus.net ([209.171.16.92]:50637 "EHLO cmta19.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751046AbdJTAQG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Oct 2017 20:16:06 -0400
+In-Reply-To: 30gVe635D3OTt30gXeUUCy
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rafael@kernel.org>
+Cc: 'Linux PM' <linux-pm@vger.kernel.org>
 
-Individual CPUs may have special requirements to not enter
-deep idle states. For example, a CPU running real time
-applications would not want to enter deep idle states to
-avoid latency impacts. At the same time other CPUs that
-do not have such a requirement could allow deep idle
-states to save power.
+On 2017.10.13 07:10 Doug Smythies wrote:
+> On 2017.10.12 09:36 Doug Smythies wrote:
+>> On 2017.10.12 08:53 Rafael J. Wysocki wrote:
+>>> On Thu, Oct 12, 2017 at 5:28 PM, Doug Smythies <dsmythies@telus.net> wrote:
+>>>>
+>>>> I am observing higher than nominal processor package power consumption, under
+>>>> some conditions. The worst case, so far, was an extra 6.3 watts or 25%, however
+>>>> more typically it is between 0 and 4 watts (over 1 minute sampling intervals).
+>>>>
+>> ...[snip]...
+>>
+>>> For starters, you can try to apply this patch
+>>> https://patchwork.kernel.org/patch/9866841/ and see if it makes any
+>> difference.
+>>
+>> Oh darn, I missed the importance and relevance of that e-mail (but I did get it),
+>> which might have saved me a lot of time.
+>> It sounds like it is exactly the same issue.
+>> I'll try it as soon as I can either resolve the conflicts, or go back
+>> and apply it to whatever kernel version would result in no conflicts.
+>>
+>> I'll report back once I have some test results.
 
-This was already implemented in the menu governor.
-Implementing similar changes in the ladder governor which
-gets selected when CONFIG_NO_HZ and CONFIG_NO_HZ_IDLE are not
-set. Refer following commits for the menu governor changes.
+I'll report back by replying to the above referenced e-mail.
 
-commit 9908859acaa9 ("cpuidle/menu: add per CPU PM QoS resume
-latency consideration")
-commit 6dbf5cea05a7 ("cpuidle: menu: Avoid taking spinlock for
-accessing QoS values")
+> The patch did not solve the problem.
 
-Signed-off-by: Ramesh Thomas <ramesh.thomas@intel.com>
----
- drivers/cpuidle/governors/ladder.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+The patch did not work as it was sent.
+The changes I had to make will also be in the above mentioned reply.
 
-diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-index ce1a2ff..f7cfee7 100644
---- a/drivers/cpuidle/governors/ladder.c
-+++ b/drivers/cpuidle/governors/ladder.c
-@@ -17,6 +17,7 @@
- #include <linux/pm_qos.h>
- #include <linux/jiffies.h>
- #include <linux/tick.h>
-+#include <linux/cpu.h>
- 
- #include <asm/io.h>
- #include <linux/uaccess.h>
-@@ -67,10 +68,16 @@ static int ladder_select_state(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev)
- {
- 	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
-+	struct device *device = get_cpu_device(dev->cpu);
- 	struct ladder_device_state *last_state;
- 	int last_residency, last_idx = ldev->last_state_idx;
- 	int first_idx = drv->states[0].flags & CPUIDLE_FLAG_POLLING ? 1 : 0;
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
-+	int resume_latency = dev_pm_qos_raw_read_value(device);
-+
-+	/* resume_latency is 0 means no restriction */
-+	if (resume_latency && resume_latency < latency_req)
-+		latency_req = resume_latency;
- 
- 	/* Special case when user has set very strict latency requirement */
- 	if (unlikely(latency_req == 0)) {
--- 
-2.7.4
+The patch still doesn't solve this particular problem.
+Merely disabling idle state 0 does solve the problem.
+I have been trying to demonstrate a downside to disabling
+idle state 0, and haven't found one. pipe-test is something we used
+before, but I don't see any difference on my computer.
+
+I have reviewed and reminded myself about the issues with the menu governor.
+
+> 
+> Because the test results vary, and always have, it is hard to know for
+> certain of there was some improvement, but I did have a couple of 10 minute
+> tests with 0 occurrences (based on my arbitrary thresholds). A one hour
+> test had 530 occurrences.
+>
+> ... Doug
