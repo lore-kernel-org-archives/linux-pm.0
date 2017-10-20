@@ -1,247 +1,50 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V2 4/4] thermal/drivers/hisi: Add support for hi3660 SoC
-Date: Fri, 20 Oct 2017 17:11:07 +0200
-Message-ID: <1508512267-18302-5-git-send-email-daniel.lezcano@linaro.org>
-References: <1508512267-18302-1-git-send-email-daniel.lezcano@linaro.org>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v1 06/27] x86/entry/64: Adapt assembly for PIE support
+Date: Fri, 20 Oct 2017 17:20:28 +0200
+Message-ID: <20171020152028.syq6woeet6it3z3h@gmail.com>
+References: <20171011203027.11248-1-thgarnie@google.com>
+	<20171011203027.11248-7-thgarnie@google.com>
+	<20171020082646.bkxrps35sb3gq2nr@gmail.com>
+	<CAJcbSZFScsqOORMGXFQdsqcN5xbfHWpzSHGdxQB=45zgSDryLw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1508512267-18302-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: edubezval@gmail.com
-Cc: daniel.lezcano@linaro.org, rui.zhang@intel.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <virtualization-bounces@lists.linux-foundation.org>
+Content-Disposition: inline
+In-Reply-To: <CAJcbSZFScsqOORMGXFQdsqcN5xbfHWpzSHGdxQB=45zgSDryLw@mail.gmail.com>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
+List-Post: <mailto:virtualization@lists.linux-foundation.org>
+List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
+Sender: virtualization-bounces@lists.linux-foundation.org
+Errors-To: virtualization-bounces@lists.linux-foundation.org
+To: Thomas Garnier <thgarnie@google.com>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Michal Hocko <mhocko@suse.com>, Radim =?utf-8?B?S3LEjW3DocWZ?= <rkrcmar@redhat.com>, linux-doc@vger.kernel.org, Daniel Micay <danielmicay@gmail.com>, Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>, Christopher Li <sparse@chrisli.org>, Jan H =?iso-8859-1?Q?=2E_Sch=F6nherr?= <jschoenh@amazon.de>, Alexei Starovoitov <ast@kernel.org>, virtualization@lists.linux-foundation.org, David Howells <dhowells@redhat.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Waiman Long <longman@redhat.com>, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Christoph Lameter <cl@linux.com>, Thomas Gleixner <tglx@linutronix.de>, the arch/x86 maintainers <x86@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, Daniel Borkmann <daniel@iogearbox.net>, Jon
 List-Id: linux-pm@vger.kernel.org
 
-From: Kevin Wangtao <kevin.wangtao@linaro.org>
 
-This patch adds the support for thermal sensor on the Hi3660 SoC.
-Hi3660 tsensor support alarm in alarm threshold, it also has a configurable
-hysteresis interval, interrupt will be triggered when temperature rise above
-the alarm threshold or fall below the hysteresis threshold.
+* Thomas Garnier <thgarnie@google.com> wrote:
 
-Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
-Tested-by: Daniel Lezcano <daniel.lezcano@linaro.org> # hikey6220
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/hisi_thermal.c | 145 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 144 insertions(+), 1 deletion(-)
+> >>        */
+> >> -     cmpq    $.Lentry_SYSCALL_64_after_fastpath_call, (%rsp)
+> >> +     leaq    .Lentry_SYSCALL_64_after_fastpath_call(%rip), %r11
+> >> +     cmpq    %r11, (%rsp)
+> >>       jne     1f
 
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index 98a4403..94186e7 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -39,12 +39,24 @@
- #define HI6220_TEMP0_RST_MSK			(0x1C)
- #define HI6220_TEMP0_VALUE			(0x28)
- 
-+#define HI3660_OFFSET(chan)		((chan) * 0x40)
-+#define HI3660_TEMP(chan)		(HI3660_OFFSET(chan) + 0x1C)
-+#define HI3660_TH(chan)			(HI3660_OFFSET(chan) + 0x20)
-+#define HI3660_LAG(chan)		(HI3660_OFFSET(chan) + 0x28)
-+#define HI3660_INT_EN(chan)		(HI3660_OFFSET(chan) + 0x2C)
-+#define HI3660_INT_CLR(chan)		(HI3660_OFFSET(chan) + 0x30)
-+
- #define HI6220_TEMP_BASE			(-60000)
- #define HI6220_TEMP_RESET			(100000)
- #define HI6220_TEMP_STEP			(785)
- #define HI6220_TEMP_LAG				(3500)
- 
-+#define HI3660_TEMP_BASE		(-63780)
-+#define HI3660_TEMP_STEP		(205)
-+#define HI3660_TEMP_LAG			(4000)
-+
- #define HI6220_DEFAULT_SENSOR		2
-+#define HI3660_DEFAULT_SENSOR		1
- 
- struct hisi_thermal_sensor {
- 	struct thermal_zone_device *tzd;
-@@ -93,6 +105,24 @@ static inline int hi6220_thermal_temp_to_step(int temp)
- }
- 
- /*
-+ * for Hi3660,
-+ *	Step: 189/922 (0.205)
-+ *	Temperature base: -63.780°C
-+ *
-+ * The register is programmed in temperature steps, every step is 205
-+ * millidegree and begins at -63 780 m°C
-+ */
-+static inline int hi3660_thermal_step_to_temp(int step)
-+{
-+	return HI3660_TEMP_BASE + step * HI3660_TEMP_STEP;
-+}
-+
-+static inline int hi3660_thermal_temp_to_step(int temp)
-+{
-+	return DIV_ROUND_UP(temp - HI3660_TEMP_BASE, HI3660_TEMP_STEP);
-+}
-+
-+/*
-  * The lag register contains 5 bits encoding the temperature in steps.
-  *
-  * Each time the temperature crosses the threshold boundary, an
-@@ -166,6 +196,45 @@ static inline int hi6220_thermal_get_temperature(void __iomem *addr)
- }
- 
- /*
-+ * [0:6] lag register
-+ *
-+ * The temperature is coded in steps, cf. HI3660_TEMP_STEP.
-+ *
-+ * Min : 0x00 :  0.0 °C
-+ * Max : 0x7F : 26.0 °C
-+ *
-+ */
-+static inline void hi3660_thermal_set_lag(void __iomem *addr,
-+					  int id, int value)
-+{
-+	writel(DIV_ROUND_UP(value, HI3660_TEMP_STEP) & 0x7F,
-+			addr + HI3660_LAG(id));
-+}
-+
-+static inline void hi3660_thermal_alarm_clear(void __iomem *addr,
-+					      int id, int value)
-+{
-+	writel(value, addr + HI3660_INT_CLR(id));
-+}
-+
-+static inline void hi3660_thermal_alarm_enable(void __iomem *addr,
-+					       int id, int value)
-+{
-+	writel(value, addr + HI3660_INT_EN(id));
-+}
-+
-+static inline void hi3660_thermal_alarm_set(void __iomem *addr,
-+					    int id, int value)
-+{
-+	writel(value, addr + HI3660_TH(id));
-+}
-+
-+static inline int hi3660_thermal_get_temperature(void __iomem *addr, int id)
-+{
-+	return hi3660_thermal_step_to_temp(readl(addr + HI3660_TEMP(id)));
-+}
-+
-+/*
-  * Temperature configuration register - Sensor selection
-  *
-  * Bits [19:12]
-@@ -203,11 +272,22 @@ static int hi6220_thermal_irq_handler(struct hisi_thermal_data *data)
- 	return 0;
- }
- 
-+static int hi3660_thermal_irq_handler(struct hisi_thermal_data *data)
-+{
-+	hi3660_thermal_alarm_clear(data->regs, data->sensor.id, 1);
-+	return 0;
-+}
-+
- static int hi6220_thermal_get_temp(struct hisi_thermal_data *data)
- {
- 	return hi6220_thermal_get_temperature(data->regs);
- }
- 
-+static int hi3660_thermal_get_temp(struct hisi_thermal_data *data)
-+{
-+	return hi3660_thermal_get_temperature(data->regs, data->sensor.id);
-+}
-+
- static int hi6220_thermal_disable_sensor(struct hisi_thermal_data *data)
- {
- 	/* disable sensor module */
-@@ -220,6 +300,13 @@ static int hi6220_thermal_disable_sensor(struct hisi_thermal_data *data)
- 	return 0;
- }
- 
-+static int hi3660_thermal_disable_sensor(struct hisi_thermal_data *data)
-+{
-+	/* disable sensor module */
-+	hi3660_thermal_alarm_enable(data->regs, data->sensor.id, 0);
-+	return 0;
-+}
-+
- static int hi6220_thermal_enable_sensor(struct hisi_thermal_data *data)
- {
- 	struct hisi_thermal_sensor *sensor = &data->sensor;
-@@ -258,6 +345,28 @@ static int hi6220_thermal_enable_sensor(struct hisi_thermal_data *data)
- 	return 0;
- }
- 
-+static int hi3660_thermal_enable_sensor(struct hisi_thermal_data *data)
-+{
-+	unsigned int value;
-+	struct hisi_thermal_sensor *sensor = &data->sensor;
-+
-+	/* disable interrupt */
-+	hi3660_thermal_alarm_enable(data->regs, sensor->id, 0);
-+
-+	/* setting lag value between current temp and the threshold */
-+	hi3660_thermal_set_lag(data->regs, sensor->id, HI3660_TEMP_LAG);
-+
-+	/* set interrupt threshold */
-+	value = hi3660_thermal_temp_to_step(sensor->thres_temp);
-+	hi3660_thermal_alarm_set(data->regs, sensor->id, value);
-+
-+	/* enable interrupt */
-+	hi3660_thermal_alarm_clear(data->regs, sensor->id, 1);
-+	hi3660_thermal_alarm_enable(data->regs, sensor->id, 1);
-+
-+	return 0;
-+}
-+
- static int hi6220_thermal_probe(struct hisi_thermal_data *data)
- {
- 	struct platform_device *pdev = data->pdev;
-@@ -294,6 +403,33 @@ static int hi6220_thermal_probe(struct hisi_thermal_data *data)
- 	return 0;
- }
- 
-+static int hi3660_thermal_probe(struct hisi_thermal_data *data)
-+{
-+	struct platform_device *pdev = data->pdev;
-+	struct device *dev = &pdev->dev;
-+	struct resource *res;
-+
-+	data->get_temp = hi3660_thermal_get_temp;
-+	data->enable_sensor = hi3660_thermal_enable_sensor;
-+	data->disable_sensor = hi3660_thermal_disable_sensor;
-+	data->irq_handler = hi3660_thermal_irq_handler;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	data->regs = devm_ioremap_resource(dev, res);
-+	if (IS_ERR(data->regs)) {
-+		dev_err(dev, "failed to get io address\n");
-+		return PTR_ERR(data->regs);
-+	}
-+
-+	data->irq = platform_get_irq(pdev, 0);
-+	if (data->irq < 0)
-+		return data->irq;
-+
-+	data->sensor.id = HI3660_DEFAULT_SENSOR;
-+
-+	return 0;
-+}
-+
- static int hisi_thermal_get_temp(void *__data, int *temp)
- {
- 	struct hisi_thermal_data *data = __data;
-@@ -367,7 +503,14 @@ static int hisi_thermal_register_sensor(struct platform_device *pdev,
- }
- 
- static const struct of_device_id of_hisi_thermal_match[] = {
--	{ .compatible = "hisilicon,tsensor", .data = hi6220_thermal_probe },
-+	{
-+		.compatible = "hisilicon,tsensor",
-+		.data = hi6220_thermal_probe
-+	},
-+	{
-+		.compatible = "hisilicon,hi3660-tsensor",
-+		.data = hi3660_thermal_probe
-+	},
- 	{ /* end */ }
- };
- MODULE_DEVICE_TABLE(of, of_hisi_thermal_match);
--- 
-2.7.4
+> > This patch seems to add extra overhead to the syscall fast-path even when PIE is
+> > disabled, right?
+> 
+> It does add extra instructions when one is not possible, I preferred
+> that over ifdefing but I can change it.
+
+So my problem is, this pattern repeats in many other places as well, but sprinking 
+various pieces of assembly code with #ifdefs would be very bad as well.
+
+I have no good idea how to solve this.
+
+Thanks,
+
+	Ingo
