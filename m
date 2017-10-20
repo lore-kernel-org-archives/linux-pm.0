@@ -1,237 +1,59 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
 Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
-Date: Fri, 20 Oct 2017 07:57:15 +0200
-Message-ID: <CAPDyKFoVsagf86ozVss4GcWWjmu_2uixPB=cJb+fktOdbtcXOw@mail.gmail.com>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <4337843.QuD5zygUhU@aspire.rjw.lan>
- <CAPDyKFqq9_ZbPFYn22s+6sxtxePWgnd0GJNodeqkCKF2+QkrNA@mail.gmail.com> <4041983.hUlLtGrCgL@aspire.rjw.lan>
+Date: Fri, 20 Oct 2017 08:05:17 +0200
+Message-ID: <CAPDyKFptOc2w-5gXVtzt=fp1cRta3KyLssaGbTe0koV4kNaD=A@mail.gmail.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <CAPDyKFozJtSHxxBEFtC+ofJ4XUyQjqUundPs81JATT=WfjXoYA@mail.gmail.com>
+ <7b9c2a3e-2e88-938e-46a5-703de0080681@ti.com> <2926646.NJduVklg7n@aspire.rjw.lan>
+ <CAPDyKFrFbdXrZqtvwm=xmJSqQckfGzs7XNn7AOCTbOjwP4iAFQ@mail.gmail.com>
+ <1769d82f-07d3-14c9-c06a-d6afec20fa0e@ti.com> <CAPDyKFoAKguKiwnJu6zQF7F-w5AQ+mQoQq_XbNOQrys+c54Jhw@mail.gmail.com>
+ <CAPDyKFrtQO_rowO8q=7Lsb25x8+bQAJyc1yUYVRgiguG-2W0tA@mail.gmail.com> <fa2647cb-b043-0116-8129-cb035e03cb2c@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <4041983.hUlLtGrCgL@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <fa2647cb-b043-0116-8129-cb035e03cb2c@ti.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Grygorii Strashko <grygorii.strashko@ti.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 20 October 2017 at 03:19, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, October 19, 2017 2:21:07 PM CEST Ulf Hansson wrote:
->> On 19 October 2017 at 00:12, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Wednesday, October 18, 2017 4:11:33 PM CEST Ulf Hansson wrote:
->> >> [...]
->> >>
->> >> >>
->> >> >> The reason why pm_runtime_force_* needs to respects the hierarchy of
->> >> >> the RPM callbacks, is because otherwise it can't safely update the
->> >> >> runtime PM status of the device.
->> >> >
->> >> > I'm not sure I follow this requirement.  Why is that so?
->> >>
->> >> If the PM domain controls some resources for the device in its RPM
->> >> callbacks and the driver controls some other resources in its RPM
->> >> callbacks - then these resources needs to be managed together.
->> >
->> > Right, but that doesn't automatically make it necessary to use runtime PM
->> > callbacks in the middle layer.  Its system-wide PM callbacks may be
->> > suitable for that just fine.
->> >
->> > That is, at least in some cases, you can combine ->runtime_suspend from a
->> > driver and ->suspend_late from a middle layer with no problems, for example.
->> >
->> > That's why some middle layers allow drivers to point ->suspend_late and
->> > ->runtime_suspend to the same routine if they want to reuse that code.
->> >
->> >> This follows the behavior of when a regular call to
->> >> pm_runtime_get|put(), triggers the RPM callbacks to be invoked.
->> >
->> > But (a) it doesn't have to follow it and (b) in some cases it should not
->> > follow it.
+[...]
+
+>>>>> In this regards as we consider genpd being a trivial PM domain, those
+>>>>> examples your bring up above is too me also examples of trivial PM
+>>>>> domains. Especially because they don't deal with wakeups, as that is
+>>>>> taken care of by the drivers, right!?
+>>>>
+>>>> Not directly, for example, omap device framework has noirq callback implemented
+>>>> which forcibly disable all devices which are not PM runtime suspended.
+>>>> while doing this it calls drivers PM .runtime_suspend() which may return
+>>>> non 0 value and in this case device will be left enabled (powered) at suspend for
+>>>> wake up purposes (see _od_suspend_noirq()).
+>>>>
+>>>
+>>> Yeah, I had that feeling that omap has some trickyness going on. :-)
+>>>
+>>> I sure that can be fixed in the omap PM domain, although
 >>
->> Of course you don't explicitly *have to* respect the hierarchy of the
->> RPM callbacks in pm_runtime_force_*.
+>> ...slipped with my fingers.. here is the rest of the reply...
 >>
->> However, changing that would require some additional information
->> exchange between the driver and the middle-layer/PM domain, as to
->> instruct the middle-layer/PM domain of what to do during system-wide
->> PM. Especially in cases when the driver deals with wakeup, as in those
->> cases the instructions may change dynamically.
->
-> Well, if wakeup matters, drivers can't simply point their PM callbacks
-> to pm_runtime_force_* anyway.
->
-> If the driver itself deals with wakeups, it clearly needs different callback
-> routines for system-wide PM and for runtime PM, so it can't reuse its runtime
-> PM callbacks at all then.
-
-It can still re-use its runtime PM callbacks, simply by calling
-pm_runtime_force_ from its system sleep callbacks.
-
-Drivers already do that today, not only to deal with wakeups, but
-generally when they need to deal with some additional operations.
-
->
-> If the middle layer deals with wakeups, different callbacks are needed at
-> that level and so pm_runtime_force_* are unsuitable too.
->
-> Really, invoking runtime PM callbacks from the middle layer in
-> pm_runtime_force_* is a not a idea at all and there's no general requirement
-> for it whatever.
->
->> [...]
+>> ..of course that require us to use another way for drivers to signal
+>> to the omap PM domain that it needs to stay powered as to deal with
+>> wakeup.
 >>
->> >> > In general, not if the wakeup settings are adjusted by the middle layer.
->> >>
->> >> Correct!
->> >>
->> >> To use pm_runtime_force* for these cases, one would need some
->> >> additional information exchange between the driver and the
->> >> middle-layer.
->> >
->> > Which pretty much defeats the purpose of the wrappers, doesn't it?
+>> I can have a look at that more closely, to see if it makes sense to change.
 >>
->> Well, no matter if the wrappers are used or not, we need some kind of
->> information exchange between the driver and the middle-layers/PM
->> domains.
 >
-> Right.
->
-> But if that information is exchanged, then why use wrappers *in* *addition*
-> to that?
+> Also, additional note here. some IPs are reused between OMAP/Davinci/Keystone,
+> OMAP PM domain have some code running at noirq time to dial with devices left
+> in PM runtime enabled state (OMAP PM runtime centric), while Davinci/Keystone haven't (clock_ops.c),
+> so pm_runtime_force_* API is actually possibility now to make the same driver work
+>  on all these platforms.
 
-If we can find a different method that both avoids both open coding
-and offers the optimize system-wide PM path at resume, I am open to
-that.
+That sounds great!
 
->
->> Anyway, me personally think it's too early to conclude that using the
->> wrappers may not be useful going forward. At this point, they clearly
->> helps trivial cases to remain being trivial.
->
-> I'm not sure about that really.  So far I've seen more complexity resulting
-> from using them than being avoided by using them, but I guess the beauty is
-> in the eye of the beholder. :-)
-
-Hehe, yeah you may be right. :-)
-
->
->> >
->> >> >
->> >> >> Regarding hibernation, honestly that's not really my area of
->> >> >> expertise. Although, I assume the middle-layer and driver can treat
->> >> >> that as a separate case, so if it's not suitable to use
->> >> >> pm_runtime_force* for that case, then they shouldn't do it.
->> >> >
->> >> > Well, agreed.
->> >> >
->> >> > In some simple cases, though, driver callbacks can be reused for hibernation
->> >> > too, so it would be good to have a common way to do that too, IMO.
->> >>
->> >> Okay, that makes sense!
->> >>
->> >> >
->> >> >> >
->> >> >> > Also, quite so often other middle layers interact with PCI directly or
->> >> >> > indirectly (eg. a platform device may be a child or a consumer of a PCI
->> >> >> > device) and some optimizations need to take that into account (eg. parents
->> >> >> > generally need to be accessible when their childres are resumed and so on).
->> >> >>
->> >> >> A device's parent becomes informed when changing the runtime PM status
->> >> >> of the device via pm_runtime_force_suspend|resume(), as those calls
->> >> >> pm_runtime_set_suspended|active().
->> >> >
->> >> > This requires the parent driver or middle layer to look at the reference
->> >> > counter and understand it the same way as pm_runtime_force_*.
->> >> >
->> >> >> In case that isn't that sufficient, what else is needed? Perhaps you can
->> >> >> point me to an example so I can understand better?
->> >> >
->> >> > Say you want to leave the parent suspended after system resume, but the
->> >> > child drivers use pm_runtime_force_suspend|resume().  The parent would then
->> >> > need to use pm_runtime_force_suspend|resume() too, no?
->> >>
->> >> Actually no.
->> >>
->> >> Currently the other options of "deferring resume" (not using
->> >> pm_runtime_force_*), is either using the "direct_complete" path or
->> >> similar to the approach you took for the i2c designware driver.
->> >>
->> >> Both cases should play nicely in combination of a child being managed
->> >> by pm_runtime_force_*. That's because only when the parent device is
->> >> kept runtime suspended during system suspend, resuming can be
->> >> deferred.
->> >
->> > And because the parent remains in runtime suspend late enough in the
->> > system suspend path, its children also are guaranteed to be suspended.
->>
->> Yes.
->>
->> >
->> > But then all of them need to be left in runtime suspend during system
->> > resume too, which is somewhat restrictive, because some drivers may
->> > want their devices to be resumed then.
->>
->> Actually, this scenario is also addressed when using the pm_runtime_force_*.
->>
->> The driver for the child would only need to bump the runtime PM usage
->> count (pm_runtime_get_noresume()) before calling
->> pm_runtime_force_suspend() at system suspend. That then also
->> propagates to the parent, leading to that both the parent and the
->> child will be resumed when pm_runtime_force_resume() is called for
->> them.
->>
->> Of course, if the driver of the parent isn't using pm_runtime_force_,
->> we would have to assume that it's always being resumed at system
->> resume.
->
-> There may be other ways to avoid that, though.
->
-> BTW, I don't quite like using the RPM usage counter this way either, if
-> that hasn't been clear so far.
->
->> As at matter of fact, doesn't this scenario actually indicates that we
->> do need to involve the runtime PM core (updating RPM status according
->> to the HW state even during system-wide PM) to really get this right.
->> It's not enough to only use "driver PM flags"!?
->
-> I'm not sure what you are talking about.
->
-> For all devices with enabled runtime PM any state produced by system
-> suspend/resume has to be labeled either as RPM_SUSPENDED or as RPM_ACTIVE.
-> That has always been the case and hasn't involved any magic.
->
-> However, while runtime PM is disabled, the state of the device doesn't
-> need to be reflected by its RPM status and there's no need to track it then.
-> Moreover, in some cases it cannot be tracked even, because of the firmare
-> involvement (and we cannot track the firmware).
->
-> Besides, please really look at what happens in the patches I posted and
-> then we can talk.
-
-Yes, I will have look.
-
->
->> Seems like we need to create a list of all requirements, pitfalls,
->> good things vs bad things etc. :-)
->
-> We surely need to know what general cases need to be addressed.
->
->> >
->> > [BTW, our current documentation recommends resuming devices during
->> > system resume, actually, and gives a list of reasons why. :-)]
->>
->> Yes, but that too easy and to me not good enough. :-)
->
-> But the list of reasons why is kind of valid still.  There may be better
-> reasons for not doing that, but it really is a tradeoff and drivers
-> should be able to decide which way they want to go.
-
-Agree.
-
->
-> IOW, the "leave the device in runtime suspend throughout system
-> suspend" optimization doesn't have to be bundled with the "leave the
-> device in suspend throughout and after system resume" one.
-
-Agree.
+Also, in the end it would be nice to also convert the OMAP PM domain
+to genpd. I think most of the needed infrastructure is already there
+to do that.
 
 Kind regards
 Uffe
