@@ -1,127 +1,42 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: [PATCH V2 1/4] thermal/drivers/hisi: Put platform code together
-Date: Fri, 20 Oct 2017 17:11:04 +0200
-Message-ID: <1508512267-18302-2-git-send-email-daniel.lezcano@linaro.org>
-References: <1508512267-18302-1-git-send-email-daniel.lezcano@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f65.google.com ([74.125.82.65]:54971 "EHLO
-        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752082AbdJTPNO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Oct 2017 11:13:14 -0400
-Received: by mail-wm0-f65.google.com with SMTP id r68so3610343wmr.3
-        for <linux-pm@vger.kernel.org>; Fri, 20 Oct 2017 08:13:14 -0700 (PDT)
-In-Reply-To: <1508512267-18302-1-git-send-email-daniel.lezcano@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH V2 0/4] thermal/drivers/hisi: Add hi3660 thermal driver support
+Date: Fri, 20 Oct 2017 17:11:03 +0200
+Message-ID: <1508512267-18302-1-git-send-email-daniel.lezcano@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: edubezval@gmail.com
 Cc: daniel.lezcano@linaro.org, rui.zhang@intel.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-From: Kevin Wangtao <kevin.wangtao@linaro.org>
+This series adds the support for the hikey960 thermal driver. The tsensor
+is almost the same than the hi6220 but with a memory shared updated by a
+Cortex-M4.
 
-Reorganize the code for next patches by moving the functions upper in
-the file which will prevent a forward declaration. There is no functional
-change here.
+In order to handle both, the hi6220 and the hi3660, the current code should
+be prefixed with the platform name as we will add functions with the same
+purpose but slightly different. In addition, the core driver code is
+maintained untouched by using a set of ops filled at boot time.
 
-Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
-Tested-by: Daniel Lezcano <daniel.lezcano@linaro.org> # hikey6220
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/hisi_thermal.c | 76 +++++++++++++++++++++---------------------
- 1 file changed, 38 insertions(+), 38 deletions(-)
+Changelog:
 
-diff --git a/drivers/thermal/hisi_thermal.c b/drivers/thermal/hisi_thermal.c
-index b48e47e..ffa00b4 100644
---- a/drivers/thermal/hisi_thermal.c
-+++ b/drivers/thermal/hisi_thermal.c
-@@ -201,6 +201,44 @@ static void hisi_thermal_disable_sensor(struct hisi_thermal_data *data)
- 	clk_disable_unprepare(data->clk);
- }
- 
-+static int hisi_thermal_setup(struct hisi_thermal_data *data)
-+{
-+	struct hisi_thermal_sensor *sensor = &data->sensor;
-+	int ret;
-+
-+	/* enable clock for tsensor */
-+	ret = clk_prepare_enable(data->clk);
-+	if (ret)
-+		return ret;
-+
-+	/* disable module firstly */
-+	hisi_thermal_reset_enable(data->regs, 0);
-+	hisi_thermal_enable(data->regs, 0);
-+
-+	/* select sensor id */
-+	hisi_thermal_sensor_select(data->regs, sensor->id);
-+
-+	/* setting the hdak time */
-+	hisi_thermal_hdak_set(data->regs, 0);
-+
-+	/* setting lag value between current temp and the threshold */
-+	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
-+
-+	/* enable for interrupt */
-+	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
-+
-+	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
-+
-+	/* enable module */
-+	hisi_thermal_reset_enable(data->regs, 1);
-+	hisi_thermal_enable(data->regs, 1);
-+
-+	hisi_thermal_alarm_clear(data->regs, 0);
-+	hisi_thermal_alarm_enable(data->regs, 1);
-+
-+	return 0;
-+}
-+
- static int hisi_thermal_get_temp(void *__data, int *temp)
- {
- 	struct hisi_thermal_data *data = __data;
-@@ -291,44 +329,6 @@ static void hisi_thermal_toggle_sensor(struct hisi_thermal_sensor *sensor,
- 		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
- }
- 
--static int hisi_thermal_setup(struct hisi_thermal_data *data)
--{
--	struct hisi_thermal_sensor *sensor = &data->sensor;
--	int ret;
--
--	/* enable clock for tsensor */
--	ret = clk_prepare_enable(data->clk);
--	if (ret)
--		return ret;
--
--	/* disable module firstly */
--	hisi_thermal_reset_enable(data->regs, 0);
--	hisi_thermal_enable(data->regs, 0);
--
--	/* select sensor id */
--	hisi_thermal_sensor_select(data->regs, sensor->id);
--
--	/* setting the hdak time */
--	hisi_thermal_hdak_set(data->regs, 0);
--
--	/* setting lag value between current temp and the threshold */
--	hisi_thermal_set_lag(data->regs, HISI_TEMP_LAG);
--
--	/* enable for interrupt */
--	hisi_thermal_alarm_set(data->regs, sensor->thres_temp);
--
--	hisi_thermal_reset_set(data->regs, HISI_TEMP_RESET);
--
--	/* enable module */
--	hisi_thermal_reset_enable(data->regs, 1);
--	hisi_thermal_enable(data->regs, 1);
--
--	hisi_thermal_alarm_clear(data->regs, 0);
--	hisi_thermal_alarm_enable(data->regs, 1);
--
--	return 0;
--}
--
- static int hisi_thermal_probe(struct platform_device *pdev)
- {
- 	struct hisi_thermal_data *data;
+ - V2 : 
+        - Fixed extra carriage return, description length reported
+          by checkpatch
+        - Removed the multi-threshold interrupt
+        - Removed DT bindings documentation and DT change as it is
+          merge in the arm-soc tree now
+        - Tested on hi6220
+
+ - V1 : initial post
+
+Kevin Wangtao (4):
+  thermal/drivers/hisi: Put platform code together
+  thermal/drivers/hisi: Add platform prefix to function name
+  thermal/drivers/hisi: Prepare to add support for other hisi platforms
+  thermal/drivers/hisi: Add support for hi3660 SoC
+
+ drivers/thermal/hisi_thermal.c | 452 +++++++++++++++++++++++++++++------------
+ 1 file changed, 319 insertions(+), 133 deletions(-)
+
 -- 
 2.7.4
