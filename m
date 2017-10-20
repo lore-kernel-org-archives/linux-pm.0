@@ -1,138 +1,81 @@
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Subject: Re: [PATCH v1 01/27] x86/crypto: Adapt assembly for PIE support
-Date: Fri, 20 Oct 2017 09:28:00 +0100
-Message-ID: <CAKv+Gu9XMnNA0UoGfFMQmC9=Ryh6dcOduxH+tq49bcdvBwhyQw@mail.gmail.com>
-References: <20171011203027.11248-1-thgarnie@google.com>
-	<20171011203027.11248-2-thgarnie@google.com>
-	<20171020082420.lsvu7mqjrgnahm5t@gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v3 6/7] arm64: topology: Enable ACPI/PPTT based CPU
+ topology.
+Date: Fri, 20 Oct 2017 10:14:28 +0100
+Message-ID: <20171020091428.GA21060@red-moon>
+References: <20171012194856.13844-1-jeremy.linton@arm.com>
+ <20171012194856.13844-7-jeremy.linton@arm.com>
+ <20171019155622.GC18883@red-moon>
+ <6a9836f5-d31c-67fb-b2dd-bc0972ebb1c2@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <virtualization-bounces@lists.linux-foundation.org>
-In-Reply-To: <20171020082420.lsvu7mqjrgnahm5t@gmail.com>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
-List-Post: <mailto:virtualization@lists.linux-foundation.org>
-List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
-Sender: virtualization-bounces@lists.linux-foundation.org
-Errors-To: virtualization-bounces@lists.linux-foundation.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, Michal Hocko <mhocko@suse.com>, =?UTF-8?B?UmFkaW0gS3LEjW3DocWZ?= <rkrcmar@redhat.com>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, Daniel Micay <danielmicay@gmail.com>, Len Brown <len.brown@intel.com>, Peter Zijlstra <peterz@infradead.org>, Christopher Li <sparse@chrisli.org>, =?UTF-8?B?SmFuIEggLiBTY2jDtm5oZXJy?= <jschoenh@amazon.de>, Alexei Starovoitov <ast@kernel.org>, virtualization@lists.linux-foundation.org, David Howells <dhowells@redhat.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, Waiman Long <longman@redhat.com>, Pavel Machek <pavel@ucw.cz>, "H . Peter Anvin" <hpa@zytor.com>, Kernel Hardening <kernel-hardening@lists.openwall.com>, Christoph Lameter <cl@linux.com>, Thomas Gleixner <tglx@linutronix.de>, "x86@kernel.org" <x86@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, Daniel Borkmann <daniel@io>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <6a9836f5-d31c-67fb-b2dd-bc0972ebb1c2@arm.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jeremy Linton <jeremy.linton@arm.com>
+Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On 20 October 2017 at 09:24, Ingo Molnar <mingo@kernel.org> wrote:
->
-> * Thomas Garnier <thgarnie@google.com> wrote:
->
->> Change the assembly code to use only relative references of symbols for the
->> kernel to be PIE compatible.
->>
->> Position Independent Executable (PIE) support will allow to extended the
->> KASLR randomization range below the -2G memory limit.
->
->> diff --git a/arch/x86/crypto/aes-x86_64-asm_64.S b/arch/x86/crypto/aes-x86_64-asm_64.S
->> index 8739cf7795de..86fa068e5e81 100644
->> --- a/arch/x86/crypto/aes-x86_64-asm_64.S
->> +++ b/arch/x86/crypto/aes-x86_64-asm_64.S
->> @@ -48,8 +48,12 @@
->>  #define R10  %r10
->>  #define R11  %r11
->>
->> +/* Hold global for PIE suport */
->> +#define RBASE        %r12
->> +
->>  #define prologue(FUNC,KEY,B128,B192,r1,r2,r5,r6,r7,r8,r9,r10,r11) \
->>       ENTRY(FUNC);                    \
->> +     pushq   RBASE;                  \
->>       movq    r1,r2;                  \
->>       leaq    KEY+48(r8),r9;          \
->>       movq    r10,r11;                \
->> @@ -74,54 +78,63 @@
->>       movl    r6 ## E,4(r9);          \
->>       movl    r7 ## E,8(r9);          \
->>       movl    r8 ## E,12(r9);         \
->> +     popq    RBASE;                  \
->>       ret;                            \
->>       ENDPROC(FUNC);
->>
->> +#define round_mov(tab_off, reg_i, reg_o) \
->> +     leaq    tab_off(%rip), RBASE; \
->> +     movl    (RBASE,reg_i,4), reg_o;
->> +
->> +#define round_xor(tab_off, reg_i, reg_o) \
->> +     leaq    tab_off(%rip), RBASE; \
->> +     xorl    (RBASE,reg_i,4), reg_o;
->> +
->>  #define round(TAB,OFFSET,r1,r2,r3,r4,r5,r6,r7,r8,ra,rb,rc,rd) \
->>       movzbl  r2 ## H,r5 ## E;        \
->>       movzbl  r2 ## L,r6 ## E;        \
->> -     movl    TAB+1024(,r5,4),r5 ## E;\
->> +     round_mov(TAB+1024, r5, r5 ## E)\
->>       movw    r4 ## X,r2 ## X;        \
->> -     movl    TAB(,r6,4),r6 ## E;     \
->> +     round_mov(TAB, r6, r6 ## E)     \
->>       roll    $16,r2 ## E;            \
->>       shrl    $16,r4 ## E;            \
->>       movzbl  r4 ## L,r7 ## E;        \
->>       movzbl  r4 ## H,r4 ## E;        \
->>       xorl    OFFSET(r8),ra ## E;     \
->>       xorl    OFFSET+4(r8),rb ## E;   \
->> -     xorl    TAB+3072(,r4,4),r5 ## E;\
->> -     xorl    TAB+2048(,r7,4),r6 ## E;\
->> +     round_xor(TAB+3072, r4, r5 ## E)\
->> +     round_xor(TAB+2048, r7, r6 ## E)\
->>       movzbl  r1 ## L,r7 ## E;        \
->>       movzbl  r1 ## H,r4 ## E;        \
->> -     movl    TAB+1024(,r4,4),r4 ## E;\
->> +     round_mov(TAB+1024, r4, r4 ## E)\
->>       movw    r3 ## X,r1 ## X;        \
->>       roll    $16,r1 ## E;            \
->>       shrl    $16,r3 ## E;            \
->> -     xorl    TAB(,r7,4),r5 ## E;     \
->> +     round_xor(TAB, r7, r5 ## E)     \
->>       movzbl  r3 ## L,r7 ## E;        \
->>       movzbl  r3 ## H,r3 ## E;        \
->> -     xorl    TAB+3072(,r3,4),r4 ## E;\
->> -     xorl    TAB+2048(,r7,4),r5 ## E;\
->> +     round_xor(TAB+3072, r3, r4 ## E)\
->> +     round_xor(TAB+2048, r7, r5 ## E)\
->>       movzbl  r1 ## L,r7 ## E;        \
->>       movzbl  r1 ## H,r3 ## E;        \
->>       shrl    $16,r1 ## E;            \
->> -     xorl    TAB+3072(,r3,4),r6 ## E;\
->> -     movl    TAB+2048(,r7,4),r3 ## E;\
->> +     round_xor(TAB+3072, r3, r6 ## E)\
->> +     round_mov(TAB+2048, r7, r3 ## E)\
->>       movzbl  r1 ## L,r7 ## E;        \
->>       movzbl  r1 ## H,r1 ## E;        \
->> -     xorl    TAB+1024(,r1,4),r6 ## E;\
->> -     xorl    TAB(,r7,4),r3 ## E;     \
->> +     round_xor(TAB+1024, r1, r6 ## E)\
->> +     round_xor(TAB, r7, r3 ## E)     \
->>       movzbl  r2 ## H,r1 ## E;        \
->>       movzbl  r2 ## L,r7 ## E;        \
->>       shrl    $16,r2 ## E;            \
->> -     xorl    TAB+3072(,r1,4),r3 ## E;\
->> -     xorl    TAB+2048(,r7,4),r4 ## E;\
->> +     round_xor(TAB+3072, r1, r3 ## E)\
->> +     round_xor(TAB+2048, r7, r4 ## E)\
->>       movzbl  r2 ## H,r1 ## E;        \
->>       movzbl  r2 ## L,r2 ## E;        \
->>       xorl    OFFSET+8(r8),rc ## E;   \
->>       xorl    OFFSET+12(r8),rd ## E;  \
->> -     xorl    TAB+1024(,r1,4),r3 ## E;\
->> -     xorl    TAB(,r2,4),r4 ## E;
->> +     round_xor(TAB+1024, r1, r3 ## E)\
->> +     round_xor(TAB, r2, r4 ## E)
->
-> This appears to be adding unconditional overhead to a function that was moved to
-> assembly to improve its performance.
->
+On Thu, Oct 19, 2017 at 11:13:27AM -0500, Jeremy Linton wrote:
+> On 10/19/2017 10:56 AM, Lorenzo Pieralisi wrote:
+> >On Thu, Oct 12, 2017 at 02:48:55PM -0500, Jeremy Linton wrote:
+> >>Propagate the topology information from the PPTT tree to the
+> >>cpu_topology array. We can get the thread id, core_id and
+> >>cluster_id by assuming certain levels of the PPTT tree correspond
+> >>to those concepts. The package_id is flagged in the tree and can be
+> >>found by passing an arbitrary large level to setup_acpi_cpu_topology()
+> >>which terminates its search when it finds an ACPI node flagged
+> >>as the physical package. If the tree doesn't contain enough
+> >>levels to represent all of thread/core/cod/package then the package
+> >>id will be used for the missing levels.
+> >>
+> >>Since server/ACPI machines are more likely to be multisocket and NUMA,
+> >
+> >I think this stuff is vague enough already so to start with I would drop
+> >patch 4 and 5 and stop assuming what machines are more likely to ship
+> >with ACPI than DT.
+> >
+> >I am just saying, for the umpteenth time, that these levels have no
+> >architectural meaning _whatsoever_, level is a hierarchy concept
+> >with no architectural meaning attached.
+> 
+> ?
+> 
+> Did anyone say anything about that? No, I think the only thing being
+> guaranteed here is that the kernel's physical_id maps to an ACPI
+> defined socket. Which seems to be the mindset of pretty much the
+> entire !arm64 community meaning they are optimizing their software
+> and the kernel with that concept in mind.
+> 
+> Are you denying the existence of non-uniformity between threads
+> running on different physical sockets?
 
-I did some benchmarking on this code a while ago and, interestingly,
-it was slower than the generic C implementation (on a Pentium E2200),
-so we may want to consider whether we still need this driver in the
-first place.
+No, I have not explained my POV clearly, apologies.
+
+AFAIK, the kernel currently deals with 2 (3 - if SMT) topology layers.
+
+1) thread
+2) core
+3) package
+
+What I wanted to say is, that, to simplify this series, you do not need
+to introduce the COD topology level, since it is just another arbitrary
+topology level (ie there is no way you can pinpoint which level
+corresponds to COD with PPTT - or DT for the sake of this discussion)
+that would not be used in the kernel (apart from big.LITTLE cpufreq
+driver and PSCI checker whose usage of topology_physical_package_id() is
+questionable anyway).
+
+PPTT allows you to define what level corresponds to a package, use
+it to initialize the package topology level (that on ARM internal
+variables we call cluster) and be done with it.
+
+I do not think that adding another topology level improves anything as
+far as ACPI topology detection is concerned, you are not able to use it
+in the scheduler or from userspace to group CPUs anyway.
+
+Does this answer your question ?
+
+Thanks,
+Lorenzo
