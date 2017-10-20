@@ -1,73 +1,56 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v3 0/5] clk: renesas: rcar-gen3: Restore clocks during resume
-Date: Fri, 20 Oct 2017 11:32:02 +0200
-Message-ID: <CAMuHMdWtT3oim2jb5j65FoL=EBwgysGThLvAU-F3DpC5ptz=1g@mail.gmail.com>
-References: <1508143014-11795-1-git-send-email-geert+renesas@glider.be>
+Subject: Re: [PATCH v2 00/14] pinctrl: sh-pfc: Add suspend/resume support
+Date: Fri, 20 Oct 2017 11:56:50 +0200
+Message-ID: <CAMuHMdU3FjCv6va8yeNVOhnOD00FDo618JDtyu6gZFO=rd=bUQ@mail.gmail.com>
+References: <1508167679-21155-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1508143014-11795-1-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <1508167679-21155-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-renesas-soc-owner@vger.kernel.org
 To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Linus Walleij <linus.walleij@linaro.org>, =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Oct 16, 2017 at 10:36 AM, Geert Uytterhoeven
+On Mon, Oct 16, 2017 at 5:27 PM, Geert Uytterhoeven
 <geert+renesas@glider.be> wrote:
 > During PSCI system suspend, R-Car Gen3 SoCs are powered down, and their
-> clock register state is lost.  Note that as the boot loader skips most
-> initialization after resume, clock register state differs from the state
-> encountered during normal system boot, too.
+> pinctrl register state is lost.  Note that as the boot loader skips most
+> initialization after system resume, pinctrl register state differs from
+> the state encountered during normal system boot, too.
 >
-> Hence after s2ram, some operations may fail because module clocks are
-> disabled, while drivers expect them to be still enabled.  E.g. in the
-> absence of commit fbf3d034f2ff6264 ("ravb: add workaround for clock when
-> resuming with WoL enabled"), EtherAVB fails when Wake-on-LAN has been
-> enabled using "ethtool -s eth0 wol g":
+> To fix this, save all GPIO and peripheral function select, module
+> select, drive strength control, bias, and other I/O control registers
+> during system suspend, and restore them during resume.
 >
->     ravb e6800000.ethernet eth0: failed to switch device to config mode
->     ravb e6800000.ethernet eth0: device will be stopped after h/w processes are done.
->     ravb e6800000.ethernet eth0: failed to switch device to config
->     PM: Device e6800000.ethernet failed to resume: error -110
->
-> In addition, some clocks that were disabled by clk_disable_unused() may
-> have been re-enabled, wasting power.
->
-> This patch series fixes these issues by restoring clock registers during
-> system resume.  Note that while this fixes EtherAVB operation after
-> resume from s2ram, EtherAVB cannot be used as an actual wake-up source
-> from s2ram, only from s2idle, due to PSCI limitations.
+> This series consists of 4 parts:
+>   - Patches 1-2 are cleanups,
+>   - Patches 3-9 introduce a generic way to describe bias (pull-up/down)
+>     registers, and converts the R-Car Gen3 and R-Car M1A bias support
+>     over,
+>   - Patches 10-13 introduce a generic way to describe various IOCTRL
+>     registers, and converts the R-Car Gen3 I/O voltage support over,
+>   - Patch 14 implements the actual suspend/resume code, using the
+>     generic bias and IOCTRL support introduced earlier.
 >
 > To avoid overhead on platforms not needing it, the suspend/resume code
 > has a build time dependency on sleep and PSCI support, and a runtime
 > dependency on PSCI.
 >
-> Changes compared to v2:
->   - Drop RFC state,
->   - Add Tested-by,
->   - Add build and runtime dependencies on PM_SLEEP and PSCI.
+> Due to the more compact description of bias registers, this series
+> actually decreases kernel size (by ca. 112 bytes for renesas_defconfig,
+> and ca. 60 bytes for shmobile_defconfig).
 >
-> Changes compared to v1 (more details in the individual patches):
->   - Save module clock registers in suspend_noirq instead of constantly
->     updating shadow registers,
->   - Restore all module clocks under our control, not just the ones we ever
->     changed,
->   - Also restore DIV6, SDHI, and R clocks, thus covering all supported
->     programmable core clocks on R-Car Gen3.
+> Changes compared to v1:
+>   - Add Reviewed-by,
+>   - Shorten sh_pfc_{read,write}_reg() function names to
+>     sh_pfc_{read,write}(),
+>   - Use ARRAY_SIZE() instead of hardcoded constant 32,
+>   - Add curly braces to nested for statements,
+>   - Add a sentinel comment, to make it more explicit that a last zero
+>     entry is required in sh_pfc_soc_info.bias_regs[] arrays,
 >
-> This series is against the clk-renesas branch of my renesas-drivers git
-> repository at
-> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
-> For your convenience, this series is also available in the
-> topic/cpg-mssr-suspend-resume-v3 branch of the same repository.
->
-> This has been tested on Salvator-X with R-Car H3 ES1.0 and M3-W ES1.0,
-> and on Salvator-XS with R-Car H3 ES2.0 (the latter also needs "[PATCH
-> 0/4] ravb: Add PHY reset support",
-> https://www.spinics.net/lists/netdev/msg457308.html), and
-> regression-tested on various other Renesas arm32 boards not using PSCI.
->
-> I plan to queue this up in clk-renesas-for-v4.15.
+> I plan to queue this in sh-pfc-for-v4.15.
 
 Done.
 
