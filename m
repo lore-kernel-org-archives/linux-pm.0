@@ -1,77 +1,58 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [Update][PATCH v2 01/12] PM / core: Add NEVER_SKIP and SMART_PREPARE driver flags
-Date: Fri, 20 Oct 2017 13:28:33 +0200
-Message-ID: <9928366.cAI691llHG@aspire.rjw.lan>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <1564009.ulyn1Ag4Ad@aspire.rjw.lan> <20171020113527.GA699@kroah.com>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v3 1/3] interconnect: Add generic on-chip interconnect API
+Date: Fri, 20 Oct 2017 17:43:02 +0300
+Message-ID: <a7cf55ba-0475-d74c-f759-a24e58ccde47@linaro.org>
+References: <20170908171830.13813-1-georgi.djakov@linaro.org>
+ <20170908171830.13813-2-georgi.djakov@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20171020113527.GA699@kroah.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20170908171830.13813-2-georgi.djakov@linaro.org>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: rjw@rjwysocki.net, robh+dt@kernel.org, khilman@baylibre.com, mturquette@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, sboyd@codeaurora.org, andy.gross@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, October 20, 2017 1:35:27 PM CEST Greg Kroah-Hartman wrote:
-> On Fri, Oct 20, 2017 at 01:11:22PM +0200, Rafael J. Wysocki wrote:
-> > On Thursday, October 19, 2017 9:33:15 AM CEST Greg Kroah-Hartman wrote:
-> > > On Thu, Oct 19, 2017 at 01:17:31AM +0200, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > 
-> > > > The motivation for this change is to provide a way to work around
-> > > > a problem with the direct-complete mechanism used for avoiding
-> > > > system suspend/resume handling for devices in runtime suspend.
-> > > > 
-> > > > The problem is that some middle layer code (the PCI bus type and
-> > > > the ACPI PM domain in particular) returns positive values from its
-> > > > system suspend ->prepare callbacks regardless of whether the driver's
-> > > > ->prepare returns a positive value or 0, which effectively prevents
-> > > > drivers from being able to control the direct-complete feature.
-> > > > Some drivers need that control, however, and the PCI bus type has
-> > > > grown its own flag to deal with this issue, but since it is not
-> > > > limited to PCI, it is better to address it by adding driver flags at
-> > > > the core level.
-> > > > 
-> > > > To that end, add a driver_flags field to struct dev_pm_info for flags
-> > > > that can be set by device drivers at the probe time to inform the PM
-> > > > core and/or bus types, PM domains and so on on the capabilities and/or
-> > > > preferences of device drivers.  Also add two static inline helpers
-> > > > for setting that field and testing it against a given set of flags
-> > > > and make the driver core clear it automatically on driver remove
-> > > > and probe failures.
-> > > > 
-> > > > Define and document two PM driver flags related to the direct-
-> > > > complete feature: NEVER_SKIP and SMART_PREPARE that can be used,
-> > > > respectively, to indicate to the PM core that the direct-complete
-> > > > mechanism should never be used for the device and to inform the
-> > > > middle layer code (bus types, PM domains etc) that it can only
-> > > > request the PM core to use the direct-complete mechanism for
-> > > > the device (by returning a positive value from its ->prepare
-> > > > callback) if it also has been requested by the driver.
-> > > > 
-> > > > While at it, make the core check pm_runtime_suspended() when
-> > > > setting power.direct_complete so that it doesn't need to be
-> > > > checked by ->prepare callbacks.
-> > > > 
-> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > 
-> > > Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > 
-> > Thanks!
-> > 
-> > Does it also apply to the other patches in the series?
-> > 
-> > I'd like to queue up the core patches for 4.15 as they are specifically
-> > designed to only affect the drivers that actually set the flags, so there
-> > shouldn't be any regression resulting from them, and I'd like to be
-> > able to start using the flags in drivers going forward.
-> 
-> Yes, sorry, I thought I acked them, but you are right, I didn't:
-> 
-> Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> 
-> for all of them please.
+Hi,
 
-Thanks!
+On 09/08/2017 08:18 PM, Georgi Djakov wrote:
+> This patch introduce a new API to get requirements and configure the
+> interconnect buses across the entire chipset to fit with the current demand.
+> 
+> The API is using a consumer/provider-based model, where the providers are
+> the interconnect buses and the consumers could be various drivers.
+> The consumers request interconnect resources (path) between endpoints and
+> set the desired constraints on this data flow path. The providers receive
+> requests from consumers and aggregate these requests for all master-slave
+> pairs on that path. Then the providers configure each participating in the
+> topology node according to the requested data flow path, physical links and
+> constraints. The topology could be complicated and multi-tiered and is SoC
+> specific.
+> 
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+>  Documentation/interconnect/interconnect.rst |  93 +++++++
+>  drivers/Kconfig                             |   2 +
+>  drivers/Makefile                            |   1 +
+>  drivers/interconnect/Kconfig                |  10 +
+>  drivers/interconnect/Makefile               |   1 +
+>  drivers/interconnect/interconnect.c         | 382 ++++++++++++++++++++++++++++
+>  include/linux/interconnect-consumer.h       |  73 ++++++
+>  include/linux/interconnect-provider.h       | 119 +++++++++
+>  8 files changed, 681 insertions(+)
+>  create mode 100644 Documentation/interconnect/interconnect.rst
+>  create mode 100644 drivers/interconnect/Kconfig
+>  create mode 100644 drivers/interconnect/Makefile
+>  create mode 100644 drivers/interconnect/interconnect.c
+>  create mode 100644 include/linux/interconnect-consumer.h
+>  create mode 100644 include/linux/interconnect-provider.h
 
+Any comments on this patch?
+
+I am planning to change the prefix that is used for naming for example
+the functions from "interconnect_" to something shorter like icbus_.
+
+Thanks,
+Georgi
