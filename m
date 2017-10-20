@@ -1,54 +1,83 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v3 6/7] arm64: topology: Enable ACPI/PPTT based CPU
- topology.
-Date: Fri, 20 Oct 2017 10:22:10 +0100
-Message-ID: <20171020092210.GB21060@red-moon>
-References: <20171012194856.13844-1-jeremy.linton@arm.com>
- <20171012194856.13844-7-jeremy.linton@arm.com>
- <20171019155622.GC18883@red-moon>
- <b6c3fae3-eb6d-e5f2-6887-de1471978897@arm.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v3 0/5] clk: renesas: rcar-gen3: Restore clocks during resume
+Date: Fri, 20 Oct 2017 11:32:02 +0200
+Message-ID: <CAMuHMdWtT3oim2jb5j65FoL=EBwgysGThLvAU-F3DpC5ptz=1g@mail.gmail.com>
+References: <1508143014-11795-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <b6c3fae3-eb6d-e5f2-6887-de1471978897@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1508143014-11795-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 19, 2017 at 11:54:22AM -0500, Jeremy Linton wrote:
+On Mon, Oct 16, 2017 at 10:36 AM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> During PSCI system suspend, R-Car Gen3 SoCs are powered down, and their
+> clock register state is lost.  Note that as the boot loader skips most
+> initialization after resume, clock register state differs from the state
+> encountered during normal system boot, too.
+>
+> Hence after s2ram, some operations may fail because module clocks are
+> disabled, while drivers expect them to be still enabled.  E.g. in the
+> absence of commit fbf3d034f2ff6264 ("ravb: add workaround for clock when
+> resuming with WoL enabled"), EtherAVB fails when Wake-on-LAN has been
+> enabled using "ethtool -s eth0 wol g":
+>
+>     ravb e6800000.ethernet eth0: failed to switch device to config mode
+>     ravb e6800000.ethernet eth0: device will be stopped after h/w processes are done.
+>     ravb e6800000.ethernet eth0: failed to switch device to config
+>     PM: Device e6800000.ethernet failed to resume: error -110
+>
+> In addition, some clocks that were disabled by clk_disable_unused() may
+> have been re-enabled, wasting power.
+>
+> This patch series fixes these issues by restoring clock registers during
+> system resume.  Note that while this fixes EtherAVB operation after
+> resume from s2ram, EtherAVB cannot be used as an actual wake-up source
+> from s2ram, only from s2idle, due to PSCI limitations.
+>
+> To avoid overhead on platforms not needing it, the suspend/resume code
+> has a build time dependency on sleep and PSCI support, and a runtime
+> dependency on PSCI.
+>
+> Changes compared to v2:
+>   - Drop RFC state,
+>   - Add Tested-by,
+>   - Add build and runtime dependencies on PM_SLEEP and PSCI.
+>
+> Changes compared to v1 (more details in the individual patches):
+>   - Save module clock registers in suspend_noirq instead of constantly
+>     updating shadow registers,
+>   - Restore all module clocks under our control, not just the ones we ever
+>     changed,
+>   - Also restore DIV6, SDHI, and R clocks, thus covering all supported
+>     programmable core clocks on R-Car Gen3.
+>
+> This series is against the clk-renesas branch of my renesas-drivers git
+> repository at
+> git://git.kernel.org/pub/scm/linux/kernel/git/geert/renesas-drivers.git.
+> For your convenience, this series is also available in the
+> topic/cpg-mssr-suspend-resume-v3 branch of the same repository.
+>
+> This has been tested on Salvator-X with R-Car H3 ES1.0 and M3-W ES1.0,
+> and on Salvator-XS with R-Car H3 ES2.0 (the latter also needs "[PATCH
+> 0/4] ravb: Add PHY reset support",
+> https://www.spinics.net/lists/netdev/msg457308.html), and
+> regression-tested on various other Renesas arm32 boards not using PSCI.
+>
+> I plan to queue this up in clk-renesas-for-v4.15.
 
-[...]
+Done.
 
-> >>+			cpu_topology[cpu].core_id   = topology_id;
-> >>+			topology_id = setup_acpi_cpu_topology(cpu, 2);
-> >>+			cpu_topology[cpu].cluster_id = topology_id;
-> >>+			topology_id = setup_acpi_cpu_topology(cpu, max_topo);
-> >
-> >If you want a package id (that's just a package tag to group cores), you
-> >should not use a large level because you know how setup_acpi_cpu_topology()works, you should add an API that allows you to retrieve the package id
-> >(so that you can use th ACPI_PPTT_PHYSICAL_PACKAGE flag consistenly,
-> >whatever it represents).
-> 
-> I don't think the spec requires the use of PHYSICAL_PACKAGE... Am I
-> misreading it? Which means we need to "pick" a node level to
-> represent the physical package if one doesn't exist...
+Gr{oetje,eeting}s,
 
-The specs define a means to detect if a given PPTT node corresponds to a
-package (I am refraining from stating again that to me that's not clean
-cut what a package is _architecturally_, I think you know my POV by now)
-and that's what you need to use to retrieve a packageid for a given cpu,
-if I understand the aim of the physical package flag.
+                        Geert
 
-Either that or that flag is completely useless.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Lorenzo
-
-ACPI 6.2 - Table 5-151 (page 248)
-Physical package
------------------
-Set to 1 if this node of the processor topology represents the boundary
-of a physical package, whether socketed or surface mounted.  Set to 0 if
-this instance of the processor topology does not represent the boundary
-of a physical package.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
