@@ -1,104 +1,148 @@
 From: Thomas Ilsche <thomas.ilsche@tu-dresden.de>
 Subject: Re: [PATCH] cpuidle: Allow menu governor to enter deeper sleep states
  after some time
-Date: Fri, 20 Oct 2017 18:31:34 +0200
-Message-ID: <7531107f-3ea3-ef57-33ef-19b4697f42c7@tu-dresden.de>
+Date: Fri, 20 Oct 2017 19:13:52 +0200
+Message-ID: <a179cc88-632e-0c01-77b1-b64f62634ff3@tu-dresden.de>
 References: <a181bf42-9462-476c-6dcd-39fc7151957f@tu-dresden.de>
- <4491b9f9-bc6f-f173-5816-c46a2f41de8e@tu-dresden.de>
- <CAJvTdKkDcfNvLUq6fond7s2qG-UiZOAjszJOUmoGHsE6MTsVyw@mail.gmail.com>
+ <000101d34938$da740870$8f5c1950$@net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; boundary="------------ms060102060300000109060305"
+Content-Type: multipart/signed; protocol="application/pkcs7-signature"; micalg=sha-256; boundary="------------ms010402090207090508090909"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout6.zih.tu-dresden.de ([141.30.67.75]:57629 "EHLO
-        mailout6.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1753279AbdJTRGp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Oct 2017 13:06:45 -0400
-In-Reply-To: <CAJvTdKkDcfNvLUq6fond7s2qG-UiZOAjszJOUmoGHsE6MTsVyw@mail.gmail.com>
+Received: from mailout5.zih.tu-dresden.de ([141.30.67.74]:44194 "EHLO
+        mailout5.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752589AbdJTRNz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Oct 2017 13:13:55 -0400
+In-Reply-To: <000101d34938$da740870$8f5c1950$@net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Alex Shi <alex.shi@linaro.org>, Ingo Molnar <mingo@kernel.org>, Rik van Riel <riel@redhat.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Nicholas Piggin <npiggin@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, =?UTF-8?Q?Marcus_H=c3=a4hnel?= <mhaehnel@os.inf.tu-dresden.de>, Daniel Hackenberg <daniel.hackenberg@tu-dresden.de>, =?UTF-8?Q?Robert_Sch=c3=b6ne?= <robert.schoene@tu-dresden.de>, "mario.bielert@tu-dresden.de" <mario.bielert@tu-dresden.de>
+To: Doug Smythies <dsmythies@telus.net>
+Cc: =?UTF-8?Q?'Marcus_H=c3=a4hnel'?= <mhaehnel@os.inf.tu-dresden.de>, 'Daniel Hackenberg' <daniel.hackenberg@tu-dresden.de>, =?UTF-8?Q?'Robert_Sch=c3=b6ne'?= <robert.schoene@tu-dresden.de>, mario.bielert@tu-dresden.de, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, 'Alex Shi' <alex.shi@linaro.org>, 'Ingo Molnar' <mingo@kernel.org>, 'Rik van Riel' <riel@redhat.com>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Nicholas Piggin' <npiggin@gmail.com>, linux-pm@vger.kernel.org, 'Len Brown' <lenb@kernel.org>
 
 This is a cryptographically signed message in MIME format.
 
---------------ms060102060300000109060305
+--------------ms010402090207090508090909
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
 
-Len,
+Hi Doug,
 
-thank you for the detailed response. Answers below.
+thanks for reproducing, I'll come right to your issue
 
-> To prove that this is the result of OS C-state demotion, I have
-> implemented option "d)" in your paper.  I added a module param,
-> currently called "cpuidle.powersave", that causes cpuidle to bypass
-> the governor altogether and select the deepest state that is allowed
-> by PM_QOS.  (maybe I should call it cpuidle.bypass, or
-> cpuidle.deepest...)  When i set this parameter,  multi-user C-state
-> residency and power equal that seen in single-user mode, with no
-> spikes.
+>> On several contemporary Intel systems, we have observed that the idle
+>> power consumption is sometimes significantly too high, e.g. 105 W inst=
+ead
+>> of 74 W for several seconds.
+>=20
+> On my test system, I do not observe this magnitude of excessive idle en=
+ergy.
+> While I do observe occurrences of excessive time spent in idle state 0,=
+ they
+> do not add up to significant energy waste.
+>=20
+> [...]
+>=20
+> The problem I am struggling with is the patch makes no difference
+> for my example use case of 100% load on one CPU, others idle.
+> The wasted power is entirely from idle state 0, and idle state 0
+> times remain about the same with or without the fallback timer.
+> If I merely disable idle state 0, things are great. However,
+> just disabling idle state 0 does not help when "powermightmares"
+> are present.
+>=20
+> Example data (kernel 4.14-rc5 + this patch):
+>=20
+> Average package power with fallback timer disabled: ~27.2 watts
+> Average package power with fallback timer enabled: ~28 watts
+> Average package power with state 0 disabled, fallback timer disabled: ~=
+23.9 watts
+> Average package power with state 0 disabled, fallback timer enabled: ~2=
+3.9 watts
+ =20
+That's strange, we haven't seen issues with state0 residency. The
+menu idle governor explicitly tries to avoid polling, and on our
+system C1 has a latency of 1. I'm not even sure if poll_idle can
+run indefinitely similar to mwait.
 
-Can you please share the patch, I'd like to use it for some experiments.
+Unfortunately, I don't have a complete picture of your issue.
 
-> Note that the paper is not correct when it states that the OS can not
-> enforce latency constraints when relying on HW C-state selection.  The
-> OS PM_QOS constraint is still effective in this path because it can
-> still limit the OS request, and the HW will never "promote" to a
-> deeper state than that requested by the OS -- the hardware can only
-> demote and then un-demote -- but never deeper than the OS request.
+1) What processor do you use and what are the following
+/sys/devices/system/cpu/cpu*/cpuidle/state*/{name,latency,residency}
 
-Agreed. Since there is only C1E HW promotion, which is AFAIK disabled
-on Linux, practically one would only use HW (un)demotion with which the
-os can still enforce constraints.
+2) To get a better picture you can use perf via the following
+events in addition to power and residency:
 
-> Indeed, on systems where PM_QOS is used properly (and it is working
-> correctly, a different story), and where the hardware is smart about
-> demoting C-states, one can make a case that the menu governor is not
-> needed at all.
+sched:sched_switch     -> which tasks are scheduled when.
+power:cpu_idle (state) -> which state was used when going to sleep
 
-We haven't looked at auto-demotion in practice yet, but could do that.
-Would you think this is a serious option for Linux, given that it means
-handing quite some control to in-transparent hardware?
+Record a timeline with these events by using perf record -a -e
+You could also use -C to select only the core that should be
+idle but uses C0
+You can analyse it via perf script (or perf timeline if you have a
+scalable and fast SVG viewer, which I'm not sure exists)
 
-There also might be some concern about different architectures.
+If you see state0 selected before a long idle phase, it's what we
+call a Powernightmare. The intervals of 8 previous idles can tell
+what the heuristic tries.
 
-> Regarding your proposed patch.  I agree with the concept, but not the
-> implementation.  Rather than create a new timer, we should simply
-> decline to disable the OS tick when we predict short idle on the
-> tickless-idle-kernel.  That existing timer is a sufficient "safety
-> net" to assure that the shallow C-state does not run too long.
-> Indeed, Aubrey Li has discovered that it is also a latency issue for
-> the OS to be disabling and then re-enabling the timer tick for short
-> idles, so this is a situation where if we do less work, we can help
-> both performance and power!:-)
+Some things to consider to avoid other influences on power
+- uniformity of the busy core's workload
+- fixed userspace p-state
+- pinned threads
 
-That sounds like a viable alternative. I would like to try that, but I
-am unsure how to implement. If I read the code correctly, the tick-timer
-is disabled on the outer idle-loop in do_idle, whereas the decision is
-made later in the code.
+If you can share a reproducible use-case I can also try with
+our tool chain (recording toolchain is FOSS, visualizer is not)
 
-Deferring the tick_nohz_idle_enter would create some redundancy and I'm
-not sure it is free of side effects. Also it might complicate the calls
-from idle to governor.
+>> @@ -190,6 +195,85 @@ static inline int performance_multiplier(unsigned=
+ long nr_iowaiters, unsigned lo
+>>   =20
+>>    static DEFINE_PER_CPU(struct menu_device, menu_devices);
+>>   =20
+>> +static unsigned int fallback_timer_disregard_past =3D 1;
+>> +static unsigned int diff_threshold_bits =3D 8;
+>> +static unsigned int fallback_timer_enabled;
+>=20
+> Shouldn't fallback_timer_enabled be initialized?
+> On my system it defaults to 0, or disabled, and due to another problem,=
 
-> Also, I think we should re-examine menu governor's heuristic that you
-> pointed out where it throws out some results -- maybe that isn't such
-> a great heuristic...
+> see further down, this patch wasn't working.
 
-I agree, but
-1) we need the mitigation anyway because the heuristic will never be
-     perfect.
-2) i find it hard to optimize the heuristic with an incomplete
-    understanding of workload patterns and the latency optimization
-    target. I'm assuming a reason for some of the odd aspects of the
-    heuristic, but I don't know it.
+It was meant to be 0 for now, which is what static will be initialized to=
+,
+but I prefer explicit initialization.
 
-So as a secondary quest, for instance the outlier detection could be
-limited for below-median cases.
+>> +static unsigned int fallback_timer_interval_us =3D 10000;
+>> +
+>> +#define MENU_ATTR_RW(name, var, range_min, range_max, wfun) \
+>> +	static ssize_t show_##name(struct device *dev, \
+>> +				   struct device_attribute *attr, char *buf) \
+>> +	{ \
+>> +		return snprintf(buf, 12, "%i\n", var); \
+>> +	} \
+>> +	static ssize_t store_##name(struct device *dev, \
+>> +				    struct device_attribute *attr, \
+>> +				    const char *buf, size_t count) \
+>> +	{ \
+>> +		unsigned int tmp; \
+>> +		int ret =3D kstrtouint(buf, 10, &tmp); \
+>> +		if (ret !=3D 1) \
+>=20
+> Shouldn't this be:
+>=20
+>   +		if (ret !=3D 0) \
+>=20
+> (or maybe just " if (ret) \". I did (and therefore tested) the previous=
+=2E
+>=20
+> ?
+> Anyway, it doesn't work unless I make this change.
+
+Yes. An unfortunate oversight during the last style-checker changes.
+For sscanf the return code had to be 1. Sorry for the trouble.
 
 Best,
 Thomas
+
 --=20
 Dipl. Inf. Thomas Ilsche
 Computer Scientist
@@ -113,7 +157,7 @@ Fax: +49 351 463-37773
 E-Mail: thomas.ilsche@tu-dresden.de
 
 
---------------ms060102060300000109060305
+--------------ms010402090207090508090909
 Content-Type: application/pkcs7-signature; name="smime.p7s"
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="smime.p7s"
@@ -201,8 +245,8 @@ bAfD2IQZdvYAqSQT6qt2W1KkUMN38bRKdcICdqm8+fUMe7yKuvQxggO6MIIDtgIBATCBgzBz
 MQswCQYDVQQGEwJERTEQMA4GA1UECAwHU2FjaHNlbjEQMA4GA1UEBwwHRHJlc2RlbjEoMCYG
 A1UECgwfVGVjaG5pc2NoZSBVbml2ZXJzaXRhZXQgRHJlc2RlbjEWMBQGA1UEAwwNVFUgRHJl
 c2RlbiBDQQIMHL05iK9K3vZXxUdtMA0GCWCGSAFlAwQCAQUAoIICBzAYBgkqhkiG9w0BCQMx
-CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0xNzEwMjAxNjMxMzRaMC8GCSqGSIb3DQEJ
-BDEiBCCY61DlmyjqiH1Kzn5W8dQGcOWGw9K9OSQMb3ufFS9yzDBsBgkqhkiG9w0BCQ8xXzBd
+CwYJKoZIhvcNAQcBMBwGCSqGSIb3DQEJBTEPFw0xNzEwMjAxNzEzNTJaMC8GCSqGSIb3DQEJ
+BDEiBCCbT4rp9tQR3ab+rO93skSdbigS7gc9DcItuDajMmsGJTBsBgkqhkiG9w0BCQ8xXzBd
 MAsGCWCGSAFlAwQBKjALBglghkgBZQMEAQIwCgYIKoZIhvcNAwcwDgYIKoZIhvcNAwICAgCA
 MA0GCCqGSIb3DQMCAgFAMAcGBSsOAwIHMA0GCCqGSIb3DQMCAgEoMIGUBgkrBgEEAYI3EAQx
 gYYwgYMwczELMAkGA1UEBhMCREUxEDAOBgNVBAgMB1NhY2hzZW4xEDAOBgNVBAcMB0RyZXNk
@@ -210,10 +254,10 @@ ZW4xKDAmBgNVBAoMH1RlY2huaXNjaGUgVW5pdmVyc2l0YWV0IERyZXNkZW4xFjAUBgNVBAMM
 DVRVIERyZXNkZW4gQ0ECDBy9OYivSt72V8VHbTCBlgYLKoZIhvcNAQkQAgsxgYaggYMwczEL
 MAkGA1UEBhMCREUxEDAOBgNVBAgMB1NhY2hzZW4xEDAOBgNVBAcMB0RyZXNkZW4xKDAmBgNV
 BAoMH1RlY2huaXNjaGUgVW5pdmVyc2l0YWV0IERyZXNkZW4xFjAUBgNVBAMMDVRVIERyZXNk
-ZW4gQ0ECDBy9OYivSt72V8VHbTANBgkqhkiG9w0BAQEFAASCAQCQTreobaODvd6ePA0p9K5q
-NkdAmQeQBDJOIVARpy9fZu1hw2LiERdSg2LFPemnbWQHaqTOUq8NDzE4IITP2rNwgirQCVQ0
-cQGlACE9bHJdXRsQUs4kv0hy8f7OVnxdyHTBEuhdnj6TNs+GGwBFW/BTq4/1O8y+6mtIIyeA
-TINka2KLnT2eG2xs41ulGsPrWrwHLx71Cej50wKHTXGXrs7h2LS91AgzLyaghm+iQ6Ju+NGL
-9dx8Cab9pLujWUzFeakTZFH1VVqZHQ0b1c6m6KD0zhl9bRM7TzBCQ/sZCxeNpsAISCQf4GBp
-QwlWqApfyy+wvY3A4+tvD1kg9hESGW0wAAAAAAAA
---------------ms060102060300000109060305--
+ZW4gQ0ECDBy9OYivSt72V8VHbTANBgkqhkiG9w0BAQEFAASCAQA2SpdBUv6aAAEjSb9QbOyO
+mT7jEQq1E2yYpxF9Z63aBN1/4frbTHhvZJlhsItzpAegHa5ohpxiSUJXmwbeaMhKCTV7EJ3p
+7Rno9+G4aSk9xNkhuJ48zK+/KNzjpjzPoY1tXsJcHZmKfQt6jAVwWQsTfc2vYmCkHZy/9O0P
+u8ompLKy6K55Bz2NEI/zPWImKyxYXF6jXXqo/iF2ght1X1jHURA0I5MQKFK6UhrR1XdGsw0C
+nlZWHPHxcgG9Hbp8ksXe8610h3Ta9wF6b57BYf2cHadwtlM535+bLbwmOjR2EyfVZI7Vgk6A
+hcjp+TTmp/6ro4Uw1tLVC0YMC+bt1TeEAAAAAAAA
+--------------ms010402090207090508090909--
