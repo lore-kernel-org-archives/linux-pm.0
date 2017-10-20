@@ -1,52 +1,58 @@
-From: Andy Lutomirski <luto@amacapital.net>
-Subject: Re: [PATCH v1 06/27] x86/entry/64: Adapt assembly for PIE support
-Date: Fri, 20 Oct 2017 19:52:17 +0200
-Message-ID: <3EA62B98-ED93-48BC-9113-05CA09E6FC5E@amacapital.net>
-References: <20171011203027.11248-1-thgarnie@google.com> <20171011203027.11248-7-thgarnie@google.com> <20171020082646.bkxrps35sb3gq2nr@gmail.com> <CAJcbSZFScsqOORMGXFQdsqcN5xbfHWpzSHGdxQB=45zgSDryLw@mail.gmail.com> <20171020152028.syq6woeet6it3z3h@gmail.com>
-Mime-Version: 1.0 (1.0)
-Content-Type: text/plain;
-	charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
-Return-path: <kernel-hardening-return-10214-glkh-kernel-hardening=m.gmane.org@lists.openwall.com>
-List-Post: <mailto:kernel-hardening@lists.openwall.com>
-List-Help: <mailto:kernel-hardening-help@lists.openwall.com>
-List-Unsubscribe: <mailto:kernel-hardening-unsubscribe@lists.openwall.com>
-List-Subscribe: <mailto:kernel-hardening-subscribe@lists.openwall.com>
-In-Reply-To: <20171020152028.syq6woeet6it3z3h@gmail.com>
-To: Ingo Molnar <mingo@kernel.org>
-Cc: Thomas Garnier <thgarnie@google.com>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>, Josh Poimboeuf <jpoimboe@redhat.com>, Arnd Bergmann <arnd@arndb.de>, Kees Cook <keescook@chromium.org>, Andrey Ryabinin <aryabinin@virtuozzo.com>, Matthias Kaehlcke <mka@chromium.org>, Tom Lendacky <thomas.lendacky@amd.com>, Andy Lutomirski <luto@kernel.org>, "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>, Borislav Petkov <bp@suse.de>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Juergen Gross <jgross@suse.com>, Chris Wright <chrisw@sous-sol.org>, Alok Kataria <akataria@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel>
+From: "Christ, Austin" <austinwc@codeaurora.org>
+Subject: Re: [PATCH v3 1/7] ACPI/PPTT: Add Processor Properties Topology Table
+ parsing
+Date: Fri, 20 Oct 2017 13:53:45 -0600
+Message-ID: <3e898236-0e7d-a8b0-e4c2-443012472296@codeaurora.org>
+References: <20171012194856.13844-1-jeremy.linton@arm.com>
+ <20171012194856.13844-2-jeremy.linton@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:44338 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752581AbdJTTxt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Oct 2017 15:53:49 -0400
+In-Reply-To: <20171012194856.13844-2-jeremy.linton@arm.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com
 
+Hey Jeremy,
 
+Quick comment below.
 
-> On Oct 20, 2017, at 5:20 PM, Ingo Molnar <mingo@kernel.org> wrote:
->=20
->=20
-> * Thomas Garnier <thgarnie@google.com> wrote:
->=20
->>>>       */
->>>> -     cmpq    $.Lentry_SYSCALL_64_after_fastpath_call, (%rsp)
->>>> +     leaq    .Lentry_SYSCALL_64_after_fastpath_call(%rip), %r11
->>>> +     cmpq    %r11, (%rsp)
->>>>      jne     1f
->=20
->>> This patch seems to add extra overhead to the syscall fast-path even whe=
-n PIE is
->>> disabled, right?
->>=20
->> It does add extra instructions when one is not possible, I preferred
->> that over ifdefing but I can change it.
->=20
-> So my problem is, this pattern repeats in many other places as well, but s=
-prinking=20
-> various pieces of assembly code with #ifdefs would be very bad as well.
->=20
-> I have no good idea how to solve this.
->=20
-> Thanks,
+On 10/12/2017 1:48 PM, Jeremy Linton wrote:
+> +static int topology_setup_acpi_cpu(struct acpi_table_header *table,
+> +				    unsigned int cpu, int level)
+> +{
+> +	struct acpi_pptt_processor *cpu_node;
+> +	u32 acpi_cpu_id = acpi_cpu_get_madt_gicc(cpu)->uid;
 
-Ugh, brain was off.  This is a bit messy. We could use a macro for this, too=
-, I suppose.
+This lookup for the acpi id is architecture dependent. Can you use a 
+function that would work for any user of PPTT and MADT? It may require 
+writing and exporting the inverse lookup of the function 
+acpi_get_cpuid() which is exported from processor_core.c
 
->=20
->    Ingo
+> +
+> +	cpu_node = acpi_find_processor_node(table, acpi_cpu_id);
+> +	if (cpu_node) {
+> +		cpu_node = acpi_find_processor_package_id(table, cpu_node, level);
+> +		/* Only the first level has a guaranteed id */
+> +		if (level == 0)
+> +			return cpu_node->acpi_processor_id;
+> +		return (int)((u8 *)cpu_node - (u8 *)table);
+> +	}
+> +	pr_err_once("PPTT table found, but unable to locate core for %d\n",
+> +		    cpu);
+> +	return -ENOENT;
+> +}
+
+-- 
+Austin Christ
+Qualcomm Datacenter Technologies as an affiliate of Qualcomm 
+Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the
+Code Aurora Forum, a Linux Foundation Collaborative Project.
