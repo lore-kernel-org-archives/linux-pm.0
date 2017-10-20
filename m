@@ -1,81 +1,54 @@
 From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Subject: Re: [PATCH v3 6/7] arm64: topology: Enable ACPI/PPTT based CPU
  topology.
-Date: Fri, 20 Oct 2017 10:14:28 +0100
-Message-ID: <20171020091428.GA21060@red-moon>
+Date: Fri, 20 Oct 2017 10:22:10 +0100
+Message-ID: <20171020092210.GB21060@red-moon>
 References: <20171012194856.13844-1-jeremy.linton@arm.com>
  <20171012194856.13844-7-jeremy.linton@arm.com>
  <20171019155622.GC18883@red-moon>
- <6a9836f5-d31c-67fb-b2dd-bc0972ebb1c2@arm.com>
+ <b6c3fae3-eb6d-e5f2-6887-de1471978897@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <6a9836f5-d31c-67fb-b2dd-bc0972ebb1c2@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
+In-Reply-To: <b6c3fae3-eb6d-e5f2-6887-de1471978897@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Jeremy Linton <jeremy.linton@arm.com>
 Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Oct 19, 2017 at 11:13:27AM -0500, Jeremy Linton wrote:
-> On 10/19/2017 10:56 AM, Lorenzo Pieralisi wrote:
-> >On Thu, Oct 12, 2017 at 02:48:55PM -0500, Jeremy Linton wrote:
-> >>Propagate the topology information from the PPTT tree to the
-> >>cpu_topology array. We can get the thread id, core_id and
-> >>cluster_id by assuming certain levels of the PPTT tree correspond
-> >>to those concepts. The package_id is flagged in the tree and can be
-> >>found by passing an arbitrary large level to setup_acpi_cpu_topology()
-> >>which terminates its search when it finds an ACPI node flagged
-> >>as the physical package. If the tree doesn't contain enough
-> >>levels to represent all of thread/core/cod/package then the package
-> >>id will be used for the missing levels.
-> >>
-> >>Since server/ACPI machines are more likely to be multisocket and NUMA,
+On Thu, Oct 19, 2017 at 11:54:22AM -0500, Jeremy Linton wrote:
+
+[...]
+
+> >>+			cpu_topology[cpu].core_id   = topology_id;
+> >>+			topology_id = setup_acpi_cpu_topology(cpu, 2);
+> >>+			cpu_topology[cpu].cluster_id = topology_id;
+> >>+			topology_id = setup_acpi_cpu_topology(cpu, max_topo);
 > >
-> >I think this stuff is vague enough already so to start with I would drop
-> >patch 4 and 5 and stop assuming what machines are more likely to ship
-> >with ACPI than DT.
-> >
-> >I am just saying, for the umpteenth time, that these levels have no
-> >architectural meaning _whatsoever_, level is a hierarchy concept
-> >with no architectural meaning attached.
+> >If you want a package id (that's just a package tag to group cores), you
+> >should not use a large level because you know how setup_acpi_cpu_topology()works, you should add an API that allows you to retrieve the package id
+> >(so that you can use th ACPI_PPTT_PHYSICAL_PACKAGE flag consistenly,
+> >whatever it represents).
 > 
-> ?
-> 
-> Did anyone say anything about that? No, I think the only thing being
-> guaranteed here is that the kernel's physical_id maps to an ACPI
-> defined socket. Which seems to be the mindset of pretty much the
-> entire !arm64 community meaning they are optimizing their software
-> and the kernel with that concept in mind.
-> 
-> Are you denying the existence of non-uniformity between threads
-> running on different physical sockets?
+> I don't think the spec requires the use of PHYSICAL_PACKAGE... Am I
+> misreading it? Which means we need to "pick" a node level to
+> represent the physical package if one doesn't exist...
 
-No, I have not explained my POV clearly, apologies.
+The specs define a means to detect if a given PPTT node corresponds to a
+package (I am refraining from stating again that to me that's not clean
+cut what a package is _architecturally_, I think you know my POV by now)
+and that's what you need to use to retrieve a packageid for a given cpu,
+if I understand the aim of the physical package flag.
 
-AFAIK, the kernel currently deals with 2 (3 - if SMT) topology layers.
+Either that or that flag is completely useless.
 
-1) thread
-2) core
-3) package
-
-What I wanted to say is, that, to simplify this series, you do not need
-to introduce the COD topology level, since it is just another arbitrary
-topology level (ie there is no way you can pinpoint which level
-corresponds to COD with PPTT - or DT for the sake of this discussion)
-that would not be used in the kernel (apart from big.LITTLE cpufreq
-driver and PSCI checker whose usage of topology_physical_package_id() is
-questionable anyway).
-
-PPTT allows you to define what level corresponds to a package, use
-it to initialize the package topology level (that on ARM internal
-variables we call cluster) and be done with it.
-
-I do not think that adding another topology level improves anything as
-far as ACPI topology detection is concerned, you are not able to use it
-in the scheduler or from userspace to group CPUs anyway.
-
-Does this answer your question ?
-
-Thanks,
 Lorenzo
+
+ACPI 6.2 - Table 5-151 (page 248)
+Physical package
+-----------------
+Set to 1 if this node of the processor topology represents the boundary
+of a physical package, whether socketed or surface mounted.  Set to 0 if
+this instance of the processor topology does not represent the boundary
+of a physical package.
