@@ -1,68 +1,36 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH v3 1/3] interconnect: Add generic on-chip interconnect API
-Date: Fri, 20 Oct 2017 15:34:53 -0700
-Message-ID: <20171020223452.GD1165@minitux>
-References: <20170908171830.13813-1-georgi.djakov@linaro.org>
- <20170908171830.13813-2-georgi.djakov@linaro.org>
- <a7cf55ba-0475-d74c-f759-a24e58ccde47@linaro.org>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
+Date: Sat, 21 Oct 2017 03:04:39 +0200
+Message-ID: <9866321.2BgCJKj5ti@aspire.rjw.lan>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <20171020204607.GQ6332@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <a7cf55ba-0475-d74c-f759-a24e58ccde47@linaro.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, rjw@rjwysocki.net, robh+dt@kernel.org, khilman@baylibre.com, mturquette@baylibre.com, vincent.guittot@linaro.org, skannan@codeaurora.org, sboyd@codeaurora.org, andy.gross@linaro.org, seansw@qti.qualcomm.com, davidai@quicinc.com, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, mark.rutland@arm.com, lorenzo.pieralisi@arm.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20171020204607.GQ6332@bhelgaas-glaptop.roam.corp.google.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 20 Oct 07:43 PDT 2017, Georgi Djakov wrote:
-
-> Hi,
-> 
-> On 09/08/2017 08:18 PM, Georgi Djakov wrote:
-> > This patch introduce a new API to get requirements and configure the
-> > interconnect buses across the entire chipset to fit with the current demand.
+On Friday, October 20, 2017 10:46:07 PM CEST Bjorn Helgaas wrote:
+> On Mon, Oct 16, 2017 at 03:12:35AM +0200, Rafael J. Wysocki wrote:
+> > Hi All,
 > > 
-> > The API is using a consumer/provider-based model, where the providers are
-> > the interconnect buses and the consumers could be various drivers.
-> > The consumers request interconnect resources (path) between endpoints and
-> > set the desired constraints on this data flow path. The providers receive
-> > requests from consumers and aggregate these requests for all master-slave
-> > pairs on that path. Then the providers configure each participating in the
-> > topology node according to the requested data flow path, physical links and
-> > constraints. The topology could be complicated and multi-tiered and is SoC
-> > specific.
-> > 
-> > Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> > ---
-> >  Documentation/interconnect/interconnect.rst |  93 +++++++
-> >  drivers/Kconfig                             |   2 +
-> >  drivers/Makefile                            |   1 +
-> >  drivers/interconnect/Kconfig                |  10 +
-> >  drivers/interconnect/Makefile               |   1 +
-> >  drivers/interconnect/interconnect.c         | 382 ++++++++++++++++++++++++++++
-> >  include/linux/interconnect-consumer.h       |  73 ++++++
-> >  include/linux/interconnect-provider.h       | 119 +++++++++
-> >  8 files changed, 681 insertions(+)
-> >  create mode 100644 Documentation/interconnect/interconnect.rst
-> >  create mode 100644 drivers/interconnect/Kconfig
-> >  create mode 100644 drivers/interconnect/Makefile
-> >  create mode 100644 drivers/interconnect/interconnect.c
-> >  create mode 100644 include/linux/interconnect-consumer.h
-> >  create mode 100644 include/linux/interconnect-provider.h
+> > Well, this took more time than expected, as I tried to cover everything I had
+> > in mind regarding PM flags for drivers.
 > 
-> Any comments on this patch?
+> For the parts that touch PCI,
 > 
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Sorry, I still haven't found the time to do a proper review of this yet.
+Thank you!
 
-> I am planning to change the prefix that is used for naming for example
-> the functions from "interconnect_" to something shorter like icbus_.
-> 
+> I doubt there'll be conflicts with changes in my tree, but let me know if
+> you trip over any so I can watch for them when merging.
 
-This isn't implementing a bus; if you feel that just ic_ is too short I
-would suggest naming things inter_. (But keep the full name in the file
-names)
+Well, if there are any conflicts, we'll see them in linux-next I guess. :-)
 
-Regards,
-Bjorn
+Thanks,
+Rafael
+
