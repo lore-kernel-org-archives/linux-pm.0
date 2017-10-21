@@ -1,36 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/12] PM / sleep: Driver flags for system suspend/resume
-Date: Sat, 21 Oct 2017 03:04:39 +0200
-Message-ID: <9866321.2BgCJKj5ti@aspire.rjw.lan>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <20171020204607.GQ6332@bhelgaas-glaptop.roam.corp.google.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH V2 3/4] thermal/drivers/hisi: Prepare to add support for
+ other hisi platforms
+Date: Sat, 21 Oct 2017 10:14:33 +0200
+Message-ID: <c202f396-fdc3-70cd-d762-71c088e04ba0@linaro.org>
+References: <1508512267-18302-1-git-send-email-daniel.lezcano@linaro.org>
+ <1508512267-18302-4-git-send-email-daniel.lezcano@linaro.org>
+ <20171020205829.GA19087@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20171020204607.GQ6332@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171020205829.GA19087@localhost.localdomain>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: rui.zhang@intel.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, October 20, 2017 10:46:07 PM CEST Bjorn Helgaas wrote:
-> On Mon, Oct 16, 2017 at 03:12:35AM +0200, Rafael J. Wysocki wrote:
-> > Hi All,
-> > 
-> > Well, this took more time than expected, as I tried to cover everything I had
-> > in mind regarding PM flags for drivers.
+On 20/10/2017 22:58, Eduardo Valentin wrote:
+> On Fri, Oct 20, 2017 at 05:11:06PM +0200, Daniel Lezcano wrote:
+>> From: Kevin Wangtao <kevin.wangtao@linaro.org>
+>>
+>> For platform compatibility, add the tsensor ops to a thermal data
+>> structure. Each platform has its own probe function to register proper
+>> tsensor ops function to the pointer, platform related resource request
+>> are also implemented in the platform probe function.
+>>
+>> Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
+>> Tested-by: Daniel Lezcano <daniel.lezcano@linaro.org> # hikey6220
+>> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > 
-> For the parts that touch PCI,
+> This patch adds this issue to hisi driver (sparse)
 > 
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> drivers/thermal/hisi_thermal.c:398:24: warning: incorrect type in assignment (different modifiers)
+> drivers/thermal/hisi_thermal.c:398:24:    expected int ( *platform_probe )( ... )
+> drivers/thermal/hisi_thermal.c:398:24:    got void const *
+> 
+> essentially you are casting a const into a non const.
+> 
+> Please fix and resend.
 
-Thank you!
+I was not able to reproduce the warning. I tried the C=1, C=2 options,
+cross compiled or compiled on x86 with COMPILE_TEST, the warning does
+not appear.
 
-> I doubt there'll be conflicts with changes in my tree, but let me know if
-> you trip over any so I can watch for them when merging.
+Are you using make C=1 or something else to run sparse on the kernel
+sources ?
 
-Well, if there are any conflicts, we'll see them in linux-next I guess. :-)
 
-Thanks,
-Rafael
 
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
