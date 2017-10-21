@@ -1,57 +1,41 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH V2 3/4] thermal/drivers/hisi: Prepare to add support for
- other hisi platforms
-Date: Sat, 21 Oct 2017 10:14:33 +0200
-Message-ID: <c202f396-fdc3-70cd-d762-71c088e04ba0@linaro.org>
-References: <1508512267-18302-1-git-send-email-daniel.lezcano@linaro.org>
- <1508512267-18302-4-git-send-email-daniel.lezcano@linaro.org>
- <20171020205829.GA19087@localhost.localdomain>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH] cpuidle: Allow menu governor to enter deeper sleep states after some time
+Date: Sat, 21 Oct 2017 07:27:33 -0700
+Message-ID: <000701d34a78$be36a6e0$3aa3f4a0$@net>
+References: <a181bf42-9462-476c-6dcd-39fc7151957f@tu-dresden.de> <4491b9f9-bc6f-f173-5816-c46a2f41de8e@tu-dresden.de> <CAJvTdKkDcfNvLUq6fond7s2qG-UiZOAjszJOUmoGHsE6MTsVyw@mail.gmail.com> 5alHedkBdhCDu5alJeMF7o
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171020205829.GA19087@localhost.localdomain>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: rui.zhang@intel.com, kevin.wangtao@linaro.org, leo.yan@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta17.telus.net ([209.171.16.90]:47411 "EHLO cmta17.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932099AbdJUO1m (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 21 Oct 2017 10:27:42 -0400
+In-Reply-To: 5alHedkBdhCDu5alJeMF7o
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Len Brown' <lenb@kernel.org>
+Cc: "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, 'Alex Shi' <alex.shi@linaro.org>, 'Ingo Molnar' <mingo@kernel.org>, 'Rik van Riel' <riel@redhat.com>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Nicholas Piggin' <npiggin@gmail.com>, 'Linux PM list' <linux-pm@vger.kernel.org>, =?utf-8?Q?'Marcus_H=C3=A4hnel'?= <mhaehnel@os.inf.tu-dresden.de>, 'Daniel Hackenberg' <daniel.hackenberg@tu-dresden.de>, =?utf-8?Q?'Robert_Sch=C3=B6ne'?= <robert.schoene@tu-dresden.de>, mario.bielert@tu-dresden.de
 
-On 20/10/2017 22:58, Eduardo Valentin wrote:
-> On Fri, Oct 20, 2017 at 05:11:06PM +0200, Daniel Lezcano wrote:
->> From: Kevin Wangtao <kevin.wangtao@linaro.org>
->>
->> For platform compatibility, add the tsensor ops to a thermal data
->> structure. Each platform has its own probe function to register proper
->> tsensor ops function to the pointer, platform related resource request
->> are also implemented in the platform probe function.
->>
->> Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
->> Tested-by: Daniel Lezcano <daniel.lezcano@linaro.org> # hikey6220
->> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> 
-> This patch adds this issue to hisi driver (sparse)
-> 
-> drivers/thermal/hisi_thermal.c:398:24: warning: incorrect type in assignment (different modifiers)
-> drivers/thermal/hisi_thermal.c:398:24:    expected int ( *platform_probe )( ... )
-> drivers/thermal/hisi_thermal.c:398:24:    got void const *
-> 
-> essentially you are casting a const into a non const.
-> 
-> Please fix and resend.
+On 2017.10.20 09:32 Thomas Ilsche wrote:
 
-I was not able to reproduce the warning. I tried the C=1, C=2 options,
-cross compiled or compiled on x86 with COMPILE_TEST, the warning does
-not appear.
+>> To prove that this is the result of OS C-state demotion, I have
+>> implemented option "d)" in your paper.  I added a module param,
+>> currently called "cpuidle.powersave", that causes cpuidle to bypass
+>> the governor altogether and select the deepest state that is allowed
+>> by PM_QOS.  (maybe I should call it cpuidle.bypass, or
+>> cpuidle.deepest...)  When i set this parameter,  multi-user C-state
+>> residency and power equal that seen in single-user mode, with no
+>> spikes.
+>
+> Can you please share the patch, I'd like to use it for some experiments.
 
-Are you using make C=1 or something else to run sparse on the kernel
-sources ?
+Can you not achieve the same, or at least similar and good enough for
+testing, conditions by disabling all the other idle states?
 
+On my system, the max idle state is 4 (C6), and I just disable states
+0-3 to force always state 4.
 
-
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+... Doug
