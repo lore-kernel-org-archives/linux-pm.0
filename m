@@ -1,8 +1,8 @@
 From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH V2 3/4] thermal/drivers/hisi: Prepare to add support for
  other hisi platforms
-Date: Sat, 21 Oct 2017 21:58:47 +0200
-Message-ID: <d48f2733-72a4-ea0c-d57a-a1962a163117@linaro.org>
+Date: Sun, 22 Oct 2017 10:55:59 +0200
+Message-ID: <46eab5f8-8f50-9c0a-2bc1-075c320dbc7e@linaro.org>
 References: <1508512267-18302-1-git-send-email-daniel.lezcano@linaro.org>
  <1508512267-18302-4-git-send-email-daniel.lezcano@linaro.org>
  <20171020205829.GA19087@localhost.localdomain>
@@ -14,12 +14,12 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f169.google.com ([209.85.128.169]:53951 "EHLO
-        mail-wr0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932229AbdJUT6v (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Oct 2017 15:58:51 -0400
-Received: by mail-wr0-f169.google.com with SMTP id u40so8023725wrf.10
-        for <linux-pm@vger.kernel.org>; Sat, 21 Oct 2017 12:58:50 -0700 (PDT)
+Received: from mail-wm0-f68.google.com ([74.125.82.68]:46673 "EHLO
+        mail-wm0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751256AbdJVI4C (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Oct 2017 04:56:02 -0400
+Received: by mail-wm0-f68.google.com with SMTP id m72so4412977wmc.1
+        for <linux-pm@vger.kernel.org>; Sun, 22 Oct 2017 01:56:02 -0700 (PDT)
 In-Reply-To: <20171021190856.GB30342@localhost.localdomain>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
@@ -36,8 +36,8 @@ On 21/10/2017 21:08, Eduardo Valentin wrote:
 > 
 > Does it really matter? You are still assigning a const pointer to a non-const pointer.
 
-I would like to reproduce it in order to send a correct fix. I'm not
-sure about the const function pointer.
+Finally find the installed sparse version I have is a dev version.
+Moving back to the distro version showed the warning.
 
 
 -- 
