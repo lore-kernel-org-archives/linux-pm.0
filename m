@@ -1,162 +1,112 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v5 3/7] PM / devfreq: Use the available min/max frequency
-Date: Mon, 23 Oct 2017 10:32:08 +0900
-Message-ID: <1508722332-10628-4-git-send-email-cw00.choi@samsung.com>
-References: <1508722332-10628-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20171023013214epcas1p353a430282734319c904ea2edaa737dce@epcas1p3.samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <1508722332-10628-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Subject: [PATCH v5 0/7] PM / devfreq: Use OPP interface to handle the
+ frequency
+Date: Mon, 23 Oct 2017 10:32:05 +0900
+Message-ID: <1508722332-10628-1-git-send-email-cw00.choi@samsung.com>
+References: <CGME20171023013213epcas1p165faa416f69659b60ec4c3f18ea251d8@epcas1p1.samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout1.samsung.com ([203.254.224.24]:31149 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932177AbdJWBgC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Oct 2017 21:36:02 -0400
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
 Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-The commit a76caf55e5b35 ("thermal: Add devfreq cooling") is able
-to disable OPP as a cooling device. In result, both update_devfreq()
-and {min|max}_freq_show() have to consider the 'opp->available'
-status of each OPP.
+These patches makes the devfreq to use the OPP interface and clean-up codes.
 
-So, this patch adds the 'scaling_{min|max}_freq' to struct devfreq
-in order to indicate the available mininum and maximum frequency
-by adjusting OPP interface such as dev_pm_opp_{disable|enable}().
-The 'scaling_{min|max}_freq' are used for on both update_devfreq()
-and {min|max}_freq_show().
+[Detaild Descripion]
+The commit a76caf55e5b3 ("thermal: Add devfreq cooling") provides
+the devfreq cooling device by using the OPP interface such as
+dev_pm_opp_disable() and dev_pm_opp_enable(). It means that
+the OPP interface is able to change the available status of the frequency.
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c | 40 ++++++++++++++++++++++++++++++++--------
- include/linux/devfreq.h   |  4 ++++
- 2 files changed, 36 insertions(+), 8 deletions(-)
+Firstly, the existing devfreq doesn't reflect the result of OPP behavior
+when showing the min/max frequency through the following sysfs nodes:
+It shows the wrong frequency value because min_freq/max_freq don't
+consider the frequency status by handling OPP interface (opp_dev_pm_opp_
+{disable|add}()). So, these patches fix this issue.
+- /sys/class/devfreq/devfreqX/min_freq
+- /sys/class/devfreq/devfreqX/max_freq
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index b6ba24e5db0d..ee3e7cee30b6 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -28,6 +28,9 @@
- #include <linux/of.h>
- #include "governor.h"
- 
-+#define MAX(a,b)	((a > b) ? a : b)
-+#define MIN(a,b)	((a < b) ? a : b)
-+
- static struct class *devfreq_class;
- 
- /*
-@@ -255,7 +258,7 @@ static int devfreq_notify_transition(struct devfreq *devfreq,
- int update_devfreq(struct devfreq *devfreq)
- {
- 	struct devfreq_freqs freqs;
--	unsigned long freq, cur_freq;
-+	unsigned long freq, cur_freq, min_freq, max_freq;
- 	int err = 0;
- 	u32 flags = 0;
- 
-@@ -273,19 +276,21 @@ int update_devfreq(struct devfreq *devfreq)
- 		return err;
- 
- 	/*
--	 * Adjust the frequency with user freq and QoS.
-+	 * Adjust the frequency with user freq, QoS and available freq.
- 	 *
- 	 * List from the highest priority
- 	 * max_freq
- 	 * min_freq
- 	 */
-+	max_freq = MIN(devfreq->scaling_max_freq, devfreq->max_freq);
-+	min_freq = MAX(devfreq->scaling_min_freq, devfreq->min_freq);
- 
--	if (devfreq->min_freq && freq < devfreq->min_freq) {
--		freq = devfreq->min_freq;
-+	if (min_freq && freq < min_freq) {
-+		freq = min_freq;
- 		flags &= ~DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use GLB */
- 	}
--	if (devfreq->max_freq && freq > devfreq->max_freq) {
--		freq = devfreq->max_freq;
-+	if (max_freq && freq > max_freq) {
-+		freq = max_freq;
- 		flags |= DEVFREQ_FLAG_LEAST_UPPER_BOUND; /* Use LUB */
- 	}
- 
-@@ -494,6 +499,19 @@ static int devfreq_notifier_call(struct notifier_block *nb, unsigned long type,
- 	int ret;
- 
- 	mutex_lock(&devfreq->lock);
-+
-+	devfreq->scaling_min_freq = find_available_min_freq(devfreq);
-+	if (!devfreq->scaling_min_freq) {
-+		mutex_unlock(&devfreq->lock);
-+		return -EINVAL;
-+	}
-+
-+	devfreq->scaling_max_freq = find_available_max_freq(devfreq);
-+	if (!devfreq->scaling_max_freq) {
-+		mutex_unlock(&devfreq->lock);
-+		return -EINVAL;
-+	}
-+
- 	ret = update_devfreq(devfreq);
- 	mutex_unlock(&devfreq->lock);
- 
-@@ -593,6 +611,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		err = -EINVAL;
- 		goto err_dev;
- 	}
-+	devfreq->scaling_min_freq = devfreq->min_freq;
- 
- 	devfreq->max_freq = find_available_max_freq(devfreq);
- 	if (!devfreq->max_freq) {
-@@ -600,6 +619,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 		err = -EINVAL;
- 		goto err_dev;
- 	}
-+	devfreq->scaling_max_freq = devfreq->max_freq;
- 
- 	dev_set_name(&devfreq->dev, "devfreq%d",
- 				atomic_inc_return(&devfreq_no));
-@@ -1127,7 +1147,9 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
- static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
--	return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
-+	struct devfreq *df = to_devfreq(dev);
-+
-+	return sprintf(buf, "%lu\n", MAX(df->scaling_min_freq, df->min_freq));
- }
- 
- static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
-@@ -1161,7 +1183,9 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
- 			     char *buf)
- {
--	return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
-+	struct devfreq *df = to_devfreq(dev);
-+
-+	return sprintf(buf, "%lu\n", MIN(df->scaling_max_freq, df->max_freq));
- }
- static DEVICE_ATTR_RW(max_freq);
- 
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 597294e0cc40..997a9eb34191 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -120,6 +120,8 @@ struct devfreq_dev_profile {
-  *		touch this.
-  * @min_freq:	Limit minimum frequency requested by user (0: none)
-  * @max_freq:	Limit maximum frequency requested by user (0: none)
-+ * @scaling_min_freq:	Limit minimum frequency requested by OPP interface
-+ * @scaling_max_freq:	Limit maximum frequency requested by OPP interface
-  * @stop_polling:	 devfreq polling status of a device.
-  * @total_trans:	Number of devfreq transitions
-  * @trans_table:	Statistics of devfreq transitions
-@@ -153,6 +155,8 @@ struct devfreq {
- 
- 	unsigned long min_freq;
- 	unsigned long max_freq;
-+	unsigned long scaling_min_freq;
-+	unsigned long scaling_max_freq;
- 	bool stop_polling;
- 
- 	/* information for device frequency transition */
--- 
+Second, the 'available_frequencies' should show the all supported frequencies
+even if the specific frequency is not available. It doesn't matter whether
+frequneyc is available or not. Because the role of 'available_frequencies'
+shows the all frequencies. Also, these patches fix this issue.
+- /sys/class/devfreq/devfreqX/available_frequencies
+
+Third, update_devfreq() get the available next frequency by using
+new 'scaling_min/max_frewq' variables in order to consider the disabled OPP.
+
+For example,
+- devfreq's min_freq is 100Mhz and max_freq is 700Mhz.
+- OPP disabled 500/600/700Mhz due to devfreq-cooling.c.
+- simple_ondemand govenor decided the next target_freq (600Mhz)
+|----------|-------------------------------------------------------------|
+|Freq(MHz) |100     |200    |300    |400     |500     |600      |70 0    |
+|Devfreq   |min_freq|       |       |        |        |         |max_freq|
+|OPP avail |enabled |enabled|enabled|enabled |Disabled| Disabled|Disabled|
+|Ondmenad  |        |       |       |        |        |next_freq|        |
+|------------------------------------------------------------------------|
+
+In result,
+- Before this patch, target_freq is 600Mhz
+  and TRANSITION_NOTIFIER sends the next_freq is 600Mhz to the notifiee.
+- After this patch, target_freq is 400Mhz because 500/600 were disabled by OPP.
+  and TRANSITION_NOTIFIER sends the next_freq is 400Mhz to the notifiee.
+
+Lastly,
+- patch6/7 fix the minor issue and cleanup codes.
+
+
+Changes from v4:
+(https://lkml.org/lkml/2017/10/13/78)
+- Add acked-by tag from Myungjoo Ham on patch4/5/6/7.
+- Fix the typo and bug of min/max_freq_show() on patch3.
+- Drop the exynos-bus.c patch for using it as a cooling device.
+
+Changes from v3:
+- Add the new 'scaling_min/max_freq' to 'struct devfreq'
+  in order to reflect the OPP behavior such as dev_pm_opp_disable/enable().
+- Drop the call of devfreq_recommended_opp() in the update_devfreq().
+- Show the available frequencies in an ascending order.
+- Check '#cooling-cells' property before registering cooling device on
+  exynos-bus.c.
+- Change the return type of devfreq_set_freq_table() and remvoe 'devfreq'
+  prefix from function name.
+- Add acked-by tag from Myungjoo Ham on patch1.
+
+Changes from v2:
+(https://lkml.org/lkml/2017/9/20/886)
+- Fix the exynos-bus.c for the cooling device on patch8
+
+Changes from v1:
+(https://lkml.org/lkml/2017/8/23/785)
+- Show the available frequencies as an ascending order
+- Change the author info from cwchoi00@gmail.com to cw00.choi@samsung.com
+- Drop the patches related to opp_notifier
+- Add new patch5/6/7/8
+
+Chanwoo Choi (7):
+  PM / devfreq: Set min/max_freq when adding the devfreq device
+  Revert "PM / devfreq: Add show_one macro to delete the duplicate code"
+  PM / devfreq: Use the available min/max frequency
+  PM / devfreq: Change return type of devfreq_set_freq_table()
+  PM / devfreq: Show the all available frequencies
+  PM / devfreq: Remove unneeded conditional statement
+  PM / devfreq: Define the constant governor name
+
+ drivers/devfreq/devfreq.c                 | 139 +++++++++++++++++++++---------
+ drivers/devfreq/exynos-bus.c              |   5 +-
+ drivers/devfreq/governor_passive.c        |   2 +-
+ drivers/devfreq/governor_performance.c    |   2 +-
+ drivers/devfreq/governor_powersave.c      |   2 +-
+ drivers/devfreq/governor_simpleondemand.c |   2 +-
+ drivers/devfreq/governor_userspace.c      |   2 +-
+ drivers/devfreq/rk3399_dmc.c              |   2 +-
+ include/linux/devfreq.h                   |  16 +++-
+ 9 files changed, 123 insertions(+), 49 deletions(-)
+
+--
 1.9.1
