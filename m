@@ -1,159 +1,266 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 07/12] ACPI / LPSS: Consolidate runtime PM and system
- sleep handling
-Date: Mon, 23 Oct 2017 21:09:04 +0200
-Message-ID: <CAPDyKFqHX69BhQk5WezSdCjuNLULYucGFPrsOK6XpktFAMSZng@mail.gmail.com>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <3749856.UqA8Ev4sDu@aspire.rjw.lan>
+Subject: Re: [PATCH 10/12] PM / core: Add LEAVE_SUSPENDED driver flag
+Date: Mon, 23 Oct 2017 21:38:20 +0200
+Message-ID: <CAPDyKFrCUr9=atgr1n=QTfZbO04ZFuPo+uEwCr6_rMDWwGwSQQ@mail.gmail.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <1571653.x1WQWp6nIP@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <3749856.UqA8Ev4sDu@aspire.rjw.lan>
-Sender: linux-doc-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1571653.x1WQWp6nIP@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 16 October 2017 at 03:29, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+On 16 October 2017 at 03:30, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> Move the LPSS-specific code from acpi_lpss_runtime_suspend()
-> and acpi_lpss_runtime_resume() into separate functions,
-> acpi_lpss_suspend() and acpi_lpss_resume(), respectively, and
-> make acpi_lpss_suspend_late() and acpi_lpss_resume_early() use
-> them too in order to unify the runtime PM and system sleep
-> handling in the LPSS driver.
+> Define and document a new driver flag, DPM_FLAG_LEAVE_SUSPENDED, to
+> instruct the PM core that it is desirable to leave the device in
+> runtime suspend after system resume (for example, the device may be
+> slow to resume and it may be better to avoid resuming it right away
+> for this reason).
+>
+> Setting that flag causes the PM core to skip the ->resume_noirq,
+> ->resume_early and ->resume callbacks for the device (like in the
+> direct-complete optimization case) if (1) the wakeup settings of it
+> are compatible with runtime PM (that is, either the device is
+> configured to wake up the system from sleep or it cannot generate
+> wakeup signals at all), and it will not be used for resuming any of
+> its children or consumers.
+
+As you state above, this looks like the direct_complete path, if being
+used in conjunction with the DPM_SMART_SUSPEND flag.
+
+Taking both these flags into account, what it seems to boils done is
+that you need one flag, instructing the PM core to sometimes resume
+the devices when it runs the direct_complete path, as isn't the case
+today.
+
+Wouldn't that be an alternative solution, which may be a bit simpler?
+
 >
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-
 > ---
+>  Documentation/driver-api/pm/devices.rst |   20 +++++++
+>  drivers/base/power/main.c               |   81 ++++++++++++++++++++++++++++++--
+>  include/linux/pm.h                      |   12 +++-
+>  3 files changed, 104 insertions(+), 9 deletions(-)
 >
-> This is based on an RFC I posted some time ago
-> (https://patchwork.kernel.org/patch/9998147/), which didn't
-> receive any comments and it depends on a couple of ACPI device PM
-> patches posted recently (https://patchwork.kernel.org/patch/10006457/
-> in particular).
->
-> It's included in this series, because the next patch won't work without it.
->
-> ---
->  drivers/acpi/acpi_lpss.c |   75 ++++++++++++++++++++---------------------------
->  1 file changed, 33 insertions(+), 42 deletions(-)
->
-> Index: linux-pm/drivers/acpi/acpi_lpss.c
+> Index: linux-pm/include/linux/pm.h
 > ===================================================================
-> --- linux-pm.orig/drivers/acpi/acpi_lpss.c
-> +++ linux-pm/drivers/acpi/acpi_lpss.c
-> @@ -716,40 +716,6 @@ static void acpi_lpss_dismiss(struct dev
->         acpi_dev_suspend(dev, false);
+> --- linux-pm.orig/include/linux/pm.h
+> +++ linux-pm/include/linux/pm.h
+> @@ -559,6 +559,7 @@ struct pm_subsys_data {
+>   * NEVER_SKIP: Do not skip system suspend/resume callbacks for the device.
+>   * SMART_PREPARE: Check the return value of the driver's ->prepare callback.
+>   * SMART_SUSPEND: No need to resume the device from runtime suspend.
+> + * LEAVE_SUSPENDED: Avoid resuming the device during system resume if possible.
+>   *
+>   * Setting SMART_PREPARE instructs bus types and PM domains which may want
+>   * system suspend/resume callbacks to be skipped for the device to return 0 from
+> @@ -573,10 +574,14 @@ struct pm_subsys_data {
+>   * the "late" and "noirq" phases of device suspend for the device if it remains
+>   * in runtime suspend at the beginning of the "late" phase (when runtime PM has
+>   * been disabled for it).
+> + *
+> + * Setting LEAVE_SUSPENDED informs the PM core and middle layer code that the
+> + * driver prefers the device to be left in runtime suspend after system resume.
+>   */
+> -#define DPM_FLAG_NEVER_SKIP    BIT(0)
+> -#define DPM_FLAG_SMART_PREPARE BIT(1)
+> -#define DPM_FLAG_SMART_SUSPEND BIT(2)
+> +#define DPM_FLAG_NEVER_SKIP            BIT(0)
+> +#define DPM_FLAG_SMART_PREPARE         BIT(1)
+> +#define DPM_FLAG_SMART_SUSPEND         BIT(2)
+> +#define DPM_FLAG_LEAVE_SUSPENDED       BIT(3)
+
+I would appreciate if you could reformat the patches such that you
+only have to add one line here.
+
+It makes it easier when I later runs a "git blame" to understand what
+commit that introduced each flag. :-)
+
+>
+>  struct dev_pm_info {
+>         pm_message_t            power_state;
+> @@ -598,6 +603,7 @@ struct dev_pm_info {
+>         bool                    wakeup_path:1;
+>         bool                    syscore:1;
+>         bool                    no_pm_callbacks:1;      /* Owned by the PM core */
+> +       unsigned int            must_resume:1;  /* Owned by the PM core */
+>  #else
+>         unsigned int            should_wakeup:1;
+>  #endif
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -705,6 +705,12 @@ static int device_resume_early(struct de
+>         if (!dev->power.is_late_suspended)
+>                 goto Out;
+>
+> +       if (dev_pm_test_driver_flags(dev, DPM_FLAG_LEAVE_SUSPENDED) &&
+> +           !dev->power.must_resume) {
+> +               pm_runtime_set_suspended(dev);
+> +               goto Out;
+> +       }
+> +
+>         dpm_wait_for_superior(dev, async);
+>
+>         if (dev->pm_domain) {
+> @@ -1098,6 +1104,32 @@ static pm_message_t resume_event(pm_mess
+>         return PMSG_ON;
 >  }
 >
-> -#ifdef CONFIG_PM_SLEEP
-> -static int acpi_lpss_suspend_late(struct device *dev)
-> -{
-> -       struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
-> -       int ret;
-> -
-> -       ret = pm_generic_suspend_late(dev);
-> -       if (ret)
-> -               return ret;
-> -
-> -       if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
-> -               acpi_lpss_save_ctx(dev, pdata);
-> -
-> -       return acpi_dev_suspend(dev, device_may_wakeup(dev));
-> -}
-> -
-> -static int acpi_lpss_resume_early(struct device *dev)
-> -{
-> -       struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
-> -       int ret;
-> -
-> -       ret = acpi_dev_resume(dev);
-> -       if (ret)
-> -               return ret;
-> -
-> -       acpi_lpss_d3_to_d0_delay(pdata);
-> -
-> -       if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
-> -               acpi_lpss_restore_ctx(dev, pdata);
-> -
-> -       return pm_generic_resume_early(dev);
-> -}
-> -#endif /* CONFIG_PM_SLEEP */
-> -
->  /* IOSF SB for LPSS island */
->  #define LPSS_IOSF_UNIT_LPIOEP          0xA0
->  #define LPSS_IOSF_UNIT_LPIO1           0xAB
-> @@ -835,19 +801,15 @@ static void lpss_iosf_exit_d3_state(void
->         mutex_unlock(&lpss_iosf_mutex);
->  }
+> +static void dpm_suppliers_set_must_resume(struct device *dev)
+> +{
+> +       struct device_link *link;
+> +       int idx;
+> +
+> +       idx = device_links_read_lock();
+> +
+> +       list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
+> +               link->supplier->power.must_resume = true;
+> +
+> +       device_links_read_unlock(idx);
+> +}
+> +
+> +static void dpm_leave_suspended(struct device *dev)
+> +{
+> +       pm_runtime_set_suspended(dev);
+> +       dev->power.is_suspended = false;
+> +       dev->power.is_late_suspended = false;
+> +       /*
+> +        * This tells middle layer code to schedule runtime resume of the device
+> +        * from its ->complete callback to update the device's power state in
+> +        * case the platform firmware has been involved in resuming the system.
+> +        */
+> +       dev->power.direct_complete = true;
+> +}
+> +
+>  /**
+>   * __device_suspend_noirq - Execute a "noirq suspend" callback for given device.
+>   * @dev: Device to handle.
+> @@ -1135,8 +1167,20 @@ static int __device_suspend_noirq(struct
+>          * the callback invocation for them.
+>          */
+>         if (dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) &&
+> -           pm_runtime_status_suspended(dev))
+> -               goto Skip;
+> +           pm_runtime_status_suspended(dev)) {
+> +               /*
+> +                * The device may be left suspended during system resume if
+> +                * that is preferred by its driver and it will not be used for
+> +                * resuming any of its children or consumers.
+> +                */
+> +               if (dev_pm_test_driver_flags(dev, DPM_FLAG_LEAVE_SUSPENDED) &&
+> +                   !dev->power.must_resume) {
+> +                       dpm_leave_suspended(dev);
+> +                       goto Complete;
+> +               } else {
+> +                       goto Skip;
+> +               }
+> +       }
 >
-> -static int acpi_lpss_runtime_suspend(struct device *dev)
-> +static int acpi_lpss_suspend(struct device *dev, bool wakeup)
->  {
->         struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
->         int ret;
+>         if (dev->pm_domain) {
+>                 info = "noirq power domain ";
+> @@ -1163,6 +1207,28 @@ static int __device_suspend_noirq(struct
+>                 goto Complete;
+>         }
 >
-> -       ret = pm_generic_runtime_suspend(dev);
-> -       if (ret)
-> -               return ret;
-> -
->         if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
->                 acpi_lpss_save_ctx(dev, pdata);
+> +       /*
+> +        * The device may be left suspended during system resume if that is
+> +        * preferred by its driver and its wakeup configuration is compatible
+> +        * with runtime PM, and it will not be used for resuming any of its
+> +        * children or consumers.
+> +        */
+> +       if (dev_pm_test_driver_flags(dev, DPM_FLAG_LEAVE_SUSPENDED) &&
+> +           (device_may_wakeup(dev) || !device_can_wakeup(dev)) &&
+> +           !dev->power.must_resume) {
+> +               dpm_leave_suspended(dev);
+> +               goto Complete;
+> +       }
+> +
+> +       /*
+> +        * The parent and suppliers will be necessary to resume the device
+> +        * during system resume, so avoid leaving them in runtime suspend.
+> +        */
+> +       if (dev->parent)
+> +               dev->parent->power.must_resume = true;
+> +
+> +       dpm_suppliers_set_must_resume(dev);
+> +
+>  Skip:
+>         dev->power.is_noirq_suspended = true;
 >
-> -       ret = acpi_dev_suspend(dev, true);
-> +        ret = acpi_dev_suspend(dev, wakeup);
+> @@ -1698,8 +1764,9 @@ static int device_prepare(struct device
+>         if (dev->power.syscore)
+>                 return 0;
+>
+> -       WARN_ON(dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) &&
+> -               !pm_runtime_enabled(dev));
+> +       WARN_ON(!pm_runtime_enabled(dev) &&
+> +               dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND |
+> +                                             DPM_FLAG_LEAVE_SUSPENDED));
 >
 >         /*
->          * This call must be last in the sequence, otherwise PMC will return
-> @@ -860,7 +822,7 @@ static int acpi_lpss_runtime_suspend(str
->         return ret;
->  }
+>          * If a device's parent goes into runtime suspend at the wrong time,
+> @@ -1712,6 +1779,12 @@ static int device_prepare(struct device
+>         device_lock(dev);
 >
-> -static int acpi_lpss_runtime_resume(struct device *dev)
-> +static int acpi_lpss_resume(struct device *dev)
->  {
->         struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
->         int ret;
-> @@ -881,7 +843,36 @@ static int acpi_lpss_runtime_resume(stru
->         if (pdata->dev_desc->flags & LPSS_SAVE_CTX)
->                 acpi_lpss_restore_ctx(dev, pdata);
+>         dev->power.wakeup_path = device_may_wakeup(dev);
+> +       /*
+> +        * Avoid leaving devices in suspend after transitions that don't really
+> +        * suspend them in general.
+> +        */
+> +       dev->power.must_resume = state.event == PM_EVENT_FREEZE ||
+> +                               state.event == PM_EVENT_QUIESCE;
 >
-> -       return pm_generic_runtime_resume(dev);
-> +       return 0;
-> +}
-> +#ifdef CONFIG_PM_SLEEP
-> +static int acpi_lpss_suspend_late(struct device *dev)
-> +{
-> +       int ret = pm_generic_suspend_late(dev);
+>         if (dev->power.no_pm_callbacks) {
+>                 ret = 1;        /* Let device go direct_complete */
+> Index: linux-pm/Documentation/driver-api/pm/devices.rst
+> ===================================================================
+> --- linux-pm.orig/Documentation/driver-api/pm/devices.rst
+> +++ linux-pm/Documentation/driver-api/pm/devices.rst
+> @@ -785,6 +785,22 @@ means that they should be put into the f
+>
+>  During system-wide resume from a sleep state it's easiest to put devices into
+>  the full-power state, as explained in :file:`Documentation/power/runtime_pm.txt`.
+> -Refer to that document for more information regarding this particular issue as
+> +[Refer to that document for more information regarding this particular issue as
+>  well as for information on the device runtime power management framework in
+> -general.
+> +general.]
 > +
-> +       return ret ? ret : acpi_lpss_suspend(dev, device_may_wakeup(dev));
-> +}
+> +However, it may be desirable to leave some devices in runtime suspend after
+> +system resume and device drivers can use the ``DPM_FLAG_LEAVE_SUSPENDED`` flag
+> +to indicate to the PM core that this is the case.  If that flag is set for a
+> +device and the wakeup settings of it are compatible with runtime PM (that is,
+> +either the device is configured to wake up the system from sleep or it cannot
+> +generate wakeup signals at all), and it will not be used for resuming any of its
+> +children or consumers, the PM core will skip all of the system resume callbacks
+> +in the ``resume_noirq``, ``resume_early`` and ``resume`` phases for it and its
+> +runtime power management status will be set to "suspended".
 > +
-> +static int acpi_lpss_resume_early(struct device *dev)
-> +{
-> +       int ret = acpi_lpss_resume(dev);
-> +
-> +       return ret ? ret : pm_generic_resume_early(dev);
-> +}
-> +#endif /* CONFIG_PM_SLEEP */
-> +
-> +static int acpi_lpss_runtime_suspend(struct device *dev)
-> +{
-> +       int ret = pm_generic_runtime_suspend(dev);
-> +
-> +       return ret ? ret : acpi_lpss_suspend(dev, true);
-> +}
-> +
-> +static int acpi_lpss_runtime_resume(struct device *dev)
-> +{
-> +       int ret = acpi_lpss_resume(dev);
-> +
-> +       return ret ? ret : pm_generic_runtime_resume(dev);
->  }
->  #endif /* CONFIG_PM */
+> +Still, if the platform firmware is involved in the handling of system resume, it
+> +may change the state of devices in unpredictable ways, so in that case the
+> +middle layer code (for example, a bus type or PM domain) the driver works with
+> +should update the device's power state and schedule runtime resume of it to
+> +align its power settings with the expectations of the runtime PM framework.
 >
 >
->
+
+Regarding the DPM_NEVER_SKIP flag, is that flag only to prevent
+direct_complete, and thus it ought not to be used with these other
+driver PM flags that you add in this series?
+
+Have you considered that DPM_NEVER_SKIP also propagates to parents
+etc? Just to make sure one you won't skip invoking some system sleep
+callbacks, even if they should because a child requires it?
+
+Or maybe I am just tired and should continue to review with a more
+fresh mind. :-)
+
+Kind regards
+Uffe
