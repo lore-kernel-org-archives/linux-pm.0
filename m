@@ -1,14 +1,13 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v5 4/7] PM / devfreq: Change return type of
- devfreq_set_freq_table()
-Date: Mon, 23 Oct 2017 10:32:09 +0900
-Message-ID: <1508722332-10628-5-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v5 6/7] PM / devfreq: Remove unneeded conditional statement
+Date: Mon, 23 Oct 2017 10:32:11 +0900
+Message-ID: <1508722332-10628-7-git-send-email-cw00.choi@samsung.com>
 References: <1508722332-10628-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20171023013215epcas1p3e43fa1b26d20fcb7d7d5d89fd28f9166@epcas1p3.samsung.com>
+        <CGME20171023013215epcas1p1d25606a511fb6dc2c037cc978ad5dd5a@epcas1p1.samsung.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout2.samsung.com ([203.254.224.25]:60686 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932177AbdJWBcZ (ORCPT
+Received: from mailout4.samsung.com ([203.254.224.34]:28711 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932289AbdJWBcZ (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Oct 2017 21:32:25 -0400
 In-reply-to: <1508722332-10628-1-git-send-email-cw00.choi@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -16,78 +15,33 @@ List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
 Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-This patch changes the return type of devfreq_set_freq_table()
-from 'void' to 'int' in order to check whether it fails or not.
-
-And This patch just removes the 'devfreq' prefix and the description
-of function. Because the helper functions are only used by the devfreq.
+The freq_table array of each devfreq device is always not NULL.
+In result, it is unneeded to check whether profile->freq_table
+is NULL or not.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
- drivers/devfreq/devfreq.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/devfreq/devfreq.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index ee3e7cee30b6..b2920cd2b78e 100644
+index 381f92e5e794..78fb496ecb4e 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -116,11 +116,7 @@ static int devfreq_get_freq_level(struct devfreq *devfreq, unsigned long freq)
- 	return -EINVAL;
- }
+@@ -311,10 +311,9 @@ int update_devfreq(struct devfreq *devfreq)
+ 	freqs.new = freq;
+ 	devfreq_notify_transition(devfreq, &freqs, DEVFREQ_POSTCHANGE);
  
--/**
-- * devfreq_set_freq_table() - Initialize freq_table for the frequency
-- * @devfreq:	the devfreq instance
-- */
--static void devfreq_set_freq_table(struct devfreq *devfreq)
-+static int set_freq_table(struct devfreq *devfreq)
- {
- 	struct devfreq_dev_profile *profile = devfreq->profile;
- 	struct dev_pm_opp *opp;
-@@ -130,7 +126,7 @@ static void devfreq_set_freq_table(struct devfreq *devfreq)
- 	/* Initialize the freq_table from OPP table */
- 	count = dev_pm_opp_get_opp_count(devfreq->dev.parent);
- 	if (count <= 0)
--		return;
-+		return -EINVAL;
+-	if (devfreq->profile->freq_table)
+-		if (devfreq_update_status(devfreq, freq))
+-			dev_err(&devfreq->dev,
+-				"Couldn't update frequency transition information.\n");
++	if (devfreq_update_status(devfreq, freq))
++		dev_err(&devfreq->dev,
++			"Couldn't update frequency transition information.\n");
  
- 	profile->max_state = count;
- 	profile->freq_table = devm_kcalloc(devfreq->dev.parent,
-@@ -139,7 +135,7 @@ static void devfreq_set_freq_table(struct devfreq *devfreq)
- 					GFP_KERNEL);
- 	if (!profile->freq_table) {
- 		profile->max_state = 0;
--		return;
-+		return -ENOMEM;
- 	}
- 
- 	for (i = 0, freq = 0; i < profile->max_state; i++, freq++) {
-@@ -147,11 +143,13 @@ static void devfreq_set_freq_table(struct devfreq *devfreq)
- 		if (IS_ERR(opp)) {
- 			devm_kfree(devfreq->dev.parent, profile->freq_table);
- 			profile->max_state = 0;
--			return;
-+			return PTR_ERR(opp);
- 		}
- 		dev_pm_opp_put(opp);
- 		profile->freq_table[i] = freq;
- 	}
-+
-+	return 0;
- }
- 
- /**
-@@ -601,7 +599,9 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- 	if (!devfreq->profile->max_state && !devfreq->profile->freq_table) {
- 		mutex_unlock(&devfreq->lock);
--		devfreq_set_freq_table(devfreq);
-+		err = set_freq_table(devfreq);
-+		if (err < 0)
-+			goto err_out;
- 		mutex_lock(&devfreq->lock);
- 	}
- 
+ 	devfreq->previous_freq = freq;
+ 	return err;
 -- 
 1.9.1
