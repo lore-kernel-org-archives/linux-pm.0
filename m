@@ -1,112 +1,86 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v5 0/7] PM / devfreq: Use OPP interface to handle the
- frequency
-Date: Mon, 23 Oct 2017 10:32:05 +0900
-Message-ID: <1508722332-10628-1-git-send-email-cw00.choi@samsung.com>
-References: <CGME20171023013213epcas1p165faa416f69659b60ec4c3f18ea251d8@epcas1p1.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout1.samsung.com ([203.254.224.24]:31149 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932177AbdJWBgC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Oct 2017 21:36:02 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: Re: [PATCH v3 1/3] interconnect: Add generic on-chip interconnect API
+Date: Sun, 22 Oct 2017 19:58:30 -0700
+Message-ID: <CAEG3pNAbf3hLchrYK+s9RwZ3zF3srkqdbvqPSBMOoGV65TguLQ@mail.gmail.com>
+References: <20170908171830.13813-1-georgi.djakov@linaro.org>
+ <20170908171830.13813-2-georgi.djakov@linaro.org> <a7cf55ba-0475-d74c-f759-a24e58ccde47@linaro.org>
+ <20171020223452.GD1165@minitux>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171020223452.GD1165@minitux>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Georgi Djakov <georgi.djakov@linaro.org>, Linux PM list <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh+dt@kernel.org>, Kevin Hilman <khilman@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, "Sweeney, Sean" <seansw@qti.qualcomm.com>, "Dai, David" <davidai@quicinc.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Stephen Boyd <sboyd@codeaurora.org>, Emilio Lopez
+        <emilio@elopez.com.ar>, Hans de Goede <hdegoede@redhat.com>, linux-clk
+        <linux-clk@vger.kernel.org>, linux-arm-kernel" <linux-arm-kernel@lists.infradead.org>linux-a
 List-Id: linux-pm@vger.kernel.org
-To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
-Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-These patches makes the devfreq to use the OPP interface and clean-up codes.
+Hi all,
 
-[Detaild Descripion]
-The commit a76caf55e5b3 ("thermal: Add devfreq cooling") provides
-the devfreq cooling device by using the OPP interface such as
-dev_pm_opp_disable() and dev_pm_opp_enable(). It means that
-the OPP interface is able to change the available status of the frequency.
+On Fri, Oct 20, 2017 at 3:34 PM, Bjorn Andersson
+<bjorn.andersson@linaro.org> wrote:
+> On Fri 20 Oct 07:43 PDT 2017, Georgi Djakov wrote:
+>
+>> Hi,
+>>
+>> On 09/08/2017 08:18 PM, Georgi Djakov wrote:
+>> > This patch introduce a new API to get requirements and configure the
+>> > interconnect buses across the entire chipset to fit with the current demand.
+>> >
+>> > The API is using a consumer/provider-based model, where the providers are
+>> > the interconnect buses and the consumers could be various drivers.
+>> > The consumers request interconnect resources (path) between endpoints and
+>> > set the desired constraints on this data flow path. The providers receive
+>> > requests from consumers and aggregate these requests for all master-slave
+>> > pairs on that path. Then the providers configure each participating in the
+>> > topology node according to the requested data flow path, physical links and
+>> > constraints. The topology could be complicated and multi-tiered and is SoC
+>> > specific.
+>> >
+>> > Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+>> > ---
+>> >  Documentation/interconnect/interconnect.rst |  93 +++++++
+>> >  drivers/Kconfig                             |   2 +
+>> >  drivers/Makefile                            |   1 +
+>> >  drivers/interconnect/Kconfig                |  10 +
+>> >  drivers/interconnect/Makefile               |   1 +
+>> >  drivers/interconnect/interconnect.c         | 382 ++++++++++++++++++++++++++++
+>> >  include/linux/interconnect-consumer.h       |  73 ++++++
+>> >  include/linux/interconnect-provider.h       | 119 +++++++++
+>> >  8 files changed, 681 insertions(+)
+>> >  create mode 100644 Documentation/interconnect/interconnect.rst
+>> >  create mode 100644 drivers/interconnect/Kconfig
+>> >  create mode 100644 drivers/interconnect/Makefile
+>> >  create mode 100644 drivers/interconnect/interconnect.c
+>> >  create mode 100644 include/linux/interconnect-consumer.h
+>> >  create mode 100644 include/linux/interconnect-provider.h
+>>
+>> Any comments on this patch?
+>>
+>
+> Sorry, I still haven't found the time to do a proper review of this yet.
 
-Firstly, the existing devfreq doesn't reflect the result of OPP behavior
-when showing the min/max frequency through the following sysfs nodes:
-It shows the wrong frequency value because min_freq/max_freq don't
-consider the frequency status by handling OPP interface (opp_dev_pm_opp_
-{disable|add}()). So, these patches fix this issue.
-- /sys/class/devfreq/devfreqX/min_freq
-- /sys/class/devfreq/devfreqX/max_freq
+Same.
 
-Second, the 'available_frequencies' should show the all supported frequencies
-even if the specific frequency is not available. It doesn't matter whether
-frequneyc is available or not. Because the role of 'available_frequencies'
-shows the all frequencies. Also, these patches fix this issue.
-- /sys/class/devfreq/devfreqX/available_frequencies
+>
+>> I am planning to change the prefix that is used for naming for example
+>> the functions from "interconnect_" to something shorter like icbus_.
+>>
+>
+> This isn't implementing a bus; if you feel that just ic_ is too short I
+> would suggest naming things inter_. (But keep the full name in the file
+> names)
 
-Third, update_devfreq() get the available next frequency by using
-new 'scaling_min/max_frewq' variables in order to consider the disabled OPP.
+Not trying to bikeshed too much, but how about icc_ for "interconnect
+controller"? No idea if that is a hash collision with other in-kernel
+apis.
 
-For example,
-- devfreq's min_freq is 100Mhz and max_freq is 700Mhz.
-- OPP disabled 500/600/700Mhz due to devfreq-cooling.c.
-- simple_ondemand govenor decided the next target_freq (600Mhz)
-|----------|-------------------------------------------------------------|
-|Freq(MHz) |100     |200    |300    |400     |500     |600      |70 0    |
-|Devfreq   |min_freq|       |       |        |        |         |max_freq|
-|OPP avail |enabled |enabled|enabled|enabled |Disabled| Disabled|Disabled|
-|Ondmenad  |        |       |       |        |        |next_freq|        |
-|------------------------------------------------------------------------|
+Just "ic_" looks to me like "integrated circuit".
 
-In result,
-- Before this patch, target_freq is 600Mhz
-  and TRANSITION_NOTIFIER sends the next_freq is 600Mhz to the notifiee.
-- After this patch, target_freq is 400Mhz because 500/600 were disabled by OPP.
-  and TRANSITION_NOTIFIER sends the next_freq is 400Mhz to the notifiee.
+Regards,
+Mike
 
-Lastly,
-- patch6/7 fix the minor issue and cleanup codes.
-
-
-Changes from v4:
-(https://lkml.org/lkml/2017/10/13/78)
-- Add acked-by tag from Myungjoo Ham on patch4/5/6/7.
-- Fix the typo and bug of min/max_freq_show() on patch3.
-- Drop the exynos-bus.c patch for using it as a cooling device.
-
-Changes from v3:
-- Add the new 'scaling_min/max_freq' to 'struct devfreq'
-  in order to reflect the OPP behavior such as dev_pm_opp_disable/enable().
-- Drop the call of devfreq_recommended_opp() in the update_devfreq().
-- Show the available frequencies in an ascending order.
-- Check '#cooling-cells' property before registering cooling device on
-  exynos-bus.c.
-- Change the return type of devfreq_set_freq_table() and remvoe 'devfreq'
-  prefix from function name.
-- Add acked-by tag from Myungjoo Ham on patch1.
-
-Changes from v2:
-(https://lkml.org/lkml/2017/9/20/886)
-- Fix the exynos-bus.c for the cooling device on patch8
-
-Changes from v1:
-(https://lkml.org/lkml/2017/8/23/785)
-- Show the available frequencies as an ascending order
-- Change the author info from cwchoi00@gmail.com to cw00.choi@samsung.com
-- Drop the patches related to opp_notifier
-- Add new patch5/6/7/8
-
-Chanwoo Choi (7):
-  PM / devfreq: Set min/max_freq when adding the devfreq device
-  Revert "PM / devfreq: Add show_one macro to delete the duplicate code"
-  PM / devfreq: Use the available min/max frequency
-  PM / devfreq: Change return type of devfreq_set_freq_table()
-  PM / devfreq: Show the all available frequencies
-  PM / devfreq: Remove unneeded conditional statement
-  PM / devfreq: Define the constant governor name
-
- drivers/devfreq/devfreq.c                 | 139 +++++++++++++++++++++---------
- drivers/devfreq/exynos-bus.c              |   5 +-
- drivers/devfreq/governor_passive.c        |   2 +-
- drivers/devfreq/governor_performance.c    |   2 +-
- drivers/devfreq/governor_powersave.c      |   2 +-
- drivers/devfreq/governor_simpleondemand.c |   2 +-
- drivers/devfreq/governor_userspace.c      |   2 +-
- drivers/devfreq/rk3399_dmc.c              |   2 +-
- include/linux/devfreq.h                   |  16 +++-
- 9 files changed, 123 insertions(+), 49 deletions(-)
-
---
-1.9.1
+>
+> Regards,
+> Bjorn
