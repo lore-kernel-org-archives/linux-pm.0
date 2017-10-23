@@ -1,84 +1,73 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v5 5/7] PM / devfreq: Show the all available frequencies
-Date: Mon, 23 Oct 2017 10:32:10 +0900
-Message-ID: <1508722332-10628-6-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v5 2/7] Revert
+ "PM / devfreq: Add show_one macro to delete the duplicate code"
+Date: Mon, 23 Oct 2017 10:32:07 +0900
+Message-ID: <1508722332-10628-3-git-send-email-cw00.choi@samsung.com>
 References: <1508722332-10628-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20171023013215epcas2p1abdf1f948cc704f113d741e08d42a15b@epcas2p1.samsung.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+        <CGME20171023013214epcas1p341c10076a9dfdea26510c12fac0d723a@epcas1p3.samsung.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mailout4.samsung.com ([203.254.224.34]:30130 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932171AbdJWBe7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Oct 2017 21:34:59 -0400
 In-reply-to: <1508722332-10628-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
 Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-The commit a76caf55e5b35 ("thermal: Add devfreq cooling") allows
-the devfreq device to use the cooling device. When the cooling down
-are required, the devfreq_cooling.c disables the OPP entry with
-the dev_pm_opp_disable(). In result, 'available_frequencies'[1]
-sysfs node never came to show the all available frequencies.
-[1] /sys/class/devfreq/.../available_frequencies
+This reverts commit 3104fa3081126c9bda35793af5f335d0ee0d5818.
 
-So, this patch uses the 'freq_table' in the 'struct devfreq_dev_profile'
-in order to show the all available frequencies.
-- If 'freq_table' is NULL, devfreq core initializes them by using OPP values.
-- If 'freq_table' is initialized, devfreq core just uses the 'freq_table'.
-
-And this patch adds some comment about the sort way of 'freq_table'.
+The {min|max}_freq_show() show the stored value of the struct devfreq.
+But, if the drivers/thermal/devfreq_cooling.c disables the specific
+frequency value, {min|max}_freq_show() have to check this situation
+before showing the stored value. So, this patch revert the macro
+in order to add the additional codes.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
- drivers/devfreq/devfreq.c | 16 +++++-----------
- include/linux/devfreq.h   |  5 +++--
- 2 files changed, 8 insertions(+), 13 deletions(-)
+ drivers/devfreq/devfreq.c | 20 +++++++++++---------
+ 1 file changed, 11 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index b2920cd2b78e..381f92e5e794 100644
+index 6a6f88bccdee..b6ba24e5db0d 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -1194,22 +1194,16 @@ static ssize_t available_frequencies_show(struct device *d,
- 					  char *buf)
+@@ -1124,6 +1124,12 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
+ 	return ret;
+ }
+ 
++static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
++			     char *buf)
++{
++	return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
++}
++
+ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ 			      const char *buf, size_t count)
  {
- 	struct devfreq *df = to_devfreq(d);
--	struct device *dev = df->dev.parent;
--	struct dev_pm_opp *opp;
- 	ssize_t count = 0;
--	unsigned long freq = 0;
-+	int i;
+@@ -1150,17 +1156,13 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
+ 	mutex_unlock(&df->lock);
+ 	return ret;
+ }
++static DEVICE_ATTR_RW(min_freq);
  
--	do {
--		opp = dev_pm_opp_find_freq_ceil(dev, &freq);
--		if (IS_ERR(opp))
--			break;
-+	mutex_lock(&df->lock);
+-#define show_one(name)						\
+-static ssize_t name##_show					\
+-(struct device *dev, struct device_attribute *attr, char *buf)	\
+-{								\
+-	return sprintf(buf, "%lu\n", to_devfreq(dev)->name);	\
++static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
++			     char *buf)
++{
++	return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
+ }
+-show_one(min_freq);
+-show_one(max_freq);
+-
+-static DEVICE_ATTR_RW(min_freq);
+ static DEVICE_ATTR_RW(max_freq);
  
--		dev_pm_opp_put(opp);
-+	for (i = 0; i < df->profile->max_state; i++)
- 		count += scnprintf(&buf[count], (PAGE_SIZE - count - 2),
--				   "%lu ", freq);
--		freq++;
--	} while (1);
-+				"%lu ", df->profile->freq_table[i]);
- 
-+	mutex_unlock(&df->lock);
- 	/* Truncate the trailing space */
- 	if (count)
- 		count--;
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 997a9eb34191..19520625ea94 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -84,8 +84,9 @@ struct devfreq_dev_status {
-  *			from devfreq_remove_device() call. If the user
-  *			has registered devfreq->nb at a notifier-head,
-  *			this is the time to unregister it.
-- * @freq_table:	Optional list of frequencies to support statistics.
-- * @max_state:	The size of freq_table.
-+ * @freq_table:		Optional list of frequencies to support statistics
-+ *			and freq_table must be generated in ascending order.
-+ * @max_state:		The size of freq_table.
-  */
- struct devfreq_dev_profile {
- 	unsigned long initial_freq;
+ static ssize_t available_frequencies_show(struct device *d,
 -- 
 1.9.1
