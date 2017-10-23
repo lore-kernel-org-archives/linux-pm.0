@@ -1,73 +1,89 @@
 From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [PATCH v5 2/7] Revert
- "PM / devfreq: Add show_one macro to delete the duplicate code"
-Date: Mon, 23 Oct 2017 10:32:07 +0900
-Message-ID: <1508722332-10628-3-git-send-email-cw00.choi@samsung.com>
+Subject: [PATCH v5 1/7] PM / devfreq: Set min/max_freq when adding the
+ devfreq device
+Date: Mon, 23 Oct 2017 10:32:06 +0900
+Message-ID: <1508722332-10628-2-git-send-email-cw00.choi@samsung.com>
 References: <1508722332-10628-1-git-send-email-cw00.choi@samsung.com>
-        <CGME20171023013214epcas1p341c10076a9dfdea26510c12fac0d723a@epcas1p3.samsung.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout4.samsung.com ([203.254.224.34]:30130 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932171AbdJWBe7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Oct 2017 21:34:59 -0400
+        <CGME20171023013214epcas1p4f0652eceade1e3812ed7781d60b18367@epcas1p4.samsung.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-reply-to: <1508722332-10628-1-git-send-email-cw00.choi@samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: myungjoo.ham@samsung.com, kyungmin.park@samsung.com, cw00.choi@samsung.com
 Cc: rafael.j.wysocki@intel.com, chanwoo@kernel.org, inki.dae@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-This reverts commit 3104fa3081126c9bda35793af5f335d0ee0d5818.
+Prior to that, the min/max_freq of the devfreq device are always zero
+before the user changes the min/max_freq through sysfs entries.
+It might make the confusion for the min/max_freq.
 
-The {min|max}_freq_show() show the stored value of the struct devfreq.
-But, if the drivers/thermal/devfreq_cooling.c disables the specific
-frequency value, {min|max}_freq_show() have to check this situation
-before showing the stored value. So, this patch revert the macro
-in order to add the additional codes.
+This patch initializes the available min/max_freq by using the OPP
+during adding the devfreq device.
 
 Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Acked-by: MyungJoo Ham <myungjoo.ham@samsung.com>
 ---
- drivers/devfreq/devfreq.c | 20 +++++++++++---------
- 1 file changed, 11 insertions(+), 9 deletions(-)
+ drivers/devfreq/devfreq.c | 42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 42 insertions(+)
 
 diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 6a6f88bccdee..b6ba24e5db0d 100644
+index a1c4ee818614..6a6f88bccdee 100644
 --- a/drivers/devfreq/devfreq.c
 +++ b/drivers/devfreq/devfreq.c
-@@ -1124,6 +1124,12 @@ static ssize_t min_freq_store(struct device *dev, struct device_attribute *attr,
- 	return ret;
+@@ -69,6 +69,34 @@ static struct devfreq *find_device_devfreq(struct device *dev)
+ 	return ERR_PTR(-ENODEV);
  }
  
-+static ssize_t min_freq_show(struct device *dev, struct device_attribute *attr,
-+			     char *buf)
++static unsigned long find_available_min_freq(struct devfreq *devfreq)
 +{
-+	return sprintf(buf, "%lu\n", to_devfreq(dev)->min_freq);
++	struct dev_pm_opp *opp;
++	unsigned long min_freq = 0;
++
++	opp = dev_pm_opp_find_freq_ceil(devfreq->dev.parent, &min_freq);
++	if (IS_ERR(opp))
++		min_freq = 0;
++	else
++		dev_pm_opp_put(opp);
++
++	return min_freq;
 +}
 +
- static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- 			      const char *buf, size_t count)
- {
-@@ -1150,17 +1156,13 @@ static ssize_t max_freq_store(struct device *dev, struct device_attribute *attr,
- 	mutex_unlock(&df->lock);
- 	return ret;
- }
-+static DEVICE_ATTR_RW(min_freq);
- 
--#define show_one(name)						\
--static ssize_t name##_show					\
--(struct device *dev, struct device_attribute *attr, char *buf)	\
--{								\
--	return sprintf(buf, "%lu\n", to_devfreq(dev)->name);	\
-+static ssize_t max_freq_show(struct device *dev, struct device_attribute *attr,
-+			     char *buf)
++static unsigned long find_available_max_freq(struct devfreq *devfreq)
 +{
-+	return sprintf(buf, "%lu\n", to_devfreq(dev)->max_freq);
- }
--show_one(min_freq);
--show_one(max_freq);
--
--static DEVICE_ATTR_RW(min_freq);
- static DEVICE_ATTR_RW(max_freq);
++	struct dev_pm_opp *opp;
++	unsigned long max_freq = ULONG_MAX;
++
++	opp = dev_pm_opp_find_freq_floor(devfreq->dev.parent, &max_freq);
++	if (IS_ERR(opp))
++		max_freq = 0;
++	else
++		dev_pm_opp_put(opp);
++
++	return max_freq;
++}
++
+ /**
+  * devfreq_get_freq_level() - Lookup freq_table for the frequency
+  * @devfreq:	the devfreq instance
+@@ -559,6 +587,20 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 		mutex_lock(&devfreq->lock);
+ 	}
  
- static ssize_t available_frequencies_show(struct device *d,
++	devfreq->min_freq = find_available_min_freq(devfreq);
++	if (!devfreq->min_freq) {
++		mutex_unlock(&devfreq->lock);
++		err = -EINVAL;
++		goto err_dev;
++	}
++
++	devfreq->max_freq = find_available_max_freq(devfreq);
++	if (!devfreq->max_freq) {
++		mutex_unlock(&devfreq->lock);
++		err = -EINVAL;
++		goto err_dev;
++	}
++
+ 	dev_set_name(&devfreq->dev, "devfreq%d",
+ 				atomic_inc_return(&devfreq_no));
+ 	err = device_register(&devfreq->dev);
 -- 
 1.9.1
