@@ -1,146 +1,71 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / QoS: Fix device resume latency PM QoS
-Date: Tue, 24 Oct 2017 10:49:18 +0200
-Message-ID: <2465945.6cfLQGiipl@aspire.rjw.lan>
-References: <2245486.jYtPfSLF5g@aspire.rjw.lan> <20171024055409.GA5805@intel.com>
+Subject: Re: [PATCH 04/12] PM / core: Add SMART_SUSPEND driver flag
+Date: Tue, 24 Oct 2017 10:55:14 +0200
+Message-ID: <2295745.hKSUUfvB5u@aspire.rjw.lan>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <2481137.OYGUrPQscL@aspire.rjw.lan> <CAPDyKFopE6Pv8fH1U1mhY4io76BbtdNLTJ2b5f-vyfG=rnksvw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:63818 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751704AbdJXI7F (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Oct 2017 04:59:05 -0400
-In-Reply-To: <20171024055409.GA5805@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFopE6Pv8fH1U1mhY4io76BbtdNLTJ2b5f-vyfG=rnksvw@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: ramesh.thomas@intel.com
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Tuesday, October 24, 2017 7:54:09 AM CEST Ramesh Thomas wrote:
-> On 2017-10-20 at 13:27:34 +0200, Rafael J. Wysocki wrote:
+On Tuesday, October 24, 2017 7:22:25 AM CEST Ulf Hansson wrote:
+> On 16 October 2017 at 03:29, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> >  
-> >  static ssize_t pm_qos_resume_latency_store(struct device *dev,
-> > @@ -228,11 +235,19 @@ static ssize_t pm_qos_resume_latency_sto
-> >  	s32 value;
-> >  	int ret;
-> >  
-> > -	if (kstrtos32(buf, 0, &value))
-> > -		return -EINVAL;
-> > +	if (!kstrtos32(buf, 0, &value)) {
-> > +		/*
-> > +		 * Prevent users from writing negative or "no constraint" values
-> > +		 * directly.
-> > +		 */
-> > +		if (value < 0 || value == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
-> > +			return -EINVAL;
-> >  
-> > -	if (value < 0)
-> > -		return -EINVAL;
-> > +		if (value == 0)
-> > +			value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
-> > +	} else if (!strcmp(buf, "n/a") || !strcmp(buf, "n/a\n")) {
+> >
+> > Define and document a SMART_SUSPEND flag to instruct bus types and PM
+> > domains that the system suspend callbacks provided by the driver can
+> > cope with runtime-suspended devices, so from the driver's perspective
+> > it should be safe to leave devices in runtime suspend during system
+> > suspend.
+> >
+> > Setting that flag also causes the PM core to skip the "late" and
+> > "noirq" phases of device suspend for devices that remain in runtime
+> > suspend at the beginning of the "late" phase (when runtime PM has
+> > been disabled for them) under the assumption that their state cannot
+> > (and should not) change after that point until the system suspend
+> > transition is complete.  Moreover, the PM core prevents runtime PM
+> > from acting on devices with DPM_FLAG_SMART_SUSPEND during system
+> > resume by setting their runtime PM status to "active" at the end of
+> > the "early" phase (right prior to enabling runtime PM for them).
+> > That allows system resume callbacks to do whatever is necessary to
+> > resume the device without worrying about runtime PM possibly
+> > running in parallel with them.
 > 
-> Can the 2 checks for "n/a" be combined by checking first 3 characters?
+> After some sleep, I woke up and realized that the hole thing of making
+> the PM core skip invoking system sleep callbacks, is not compatible
+> with devices being attached to the genpd. Sorry.
 
-No, because "n/asomething" would then match too.
+That's OK. :-)
 
-> > +		value = 0;
-> > +	}
+It just means I need to move that logic up to the concerned middle layers.
+
+I was going to do that to start with, but then I thought I would do it in
+the core to avoid duplicated checks.  I overlooked the genpd case, however.
+
+> The reason is because genpd may not power off the PM domain, even if
+> all devices attached to it are runtime suspended. For example, due to
+> a subdomain holding it powered or because a PM QoS constraints
+> prevents to power off it in runtime. Then to understand whether it
+> shall power off/on the PM domain, during system-wide PM it requires
+> the system sleep callbacks to be invoked.
 > 
-> Should there be a check for kstrtos32 failure and return -EINVAL?
-
-No, but there should be an "else" branch here.
-
-> >  
-> >  	ret = dev_pm_qos_update_request(dev->power.qos->resume_latency_req,
-> >  					value);
+> So, even if the driver can cope with the behavior from
+> DPM_FLAG_SMART_SUSPEND, then what happens when the PM domain (genpd)
+> can not?
 > 
-> 
-> > Index: linux-pm/drivers/base/power/domain_governor.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/base/power/domain_governor.c
-> > +++ linux-pm/drivers/base/power/domain_governor.c
-> > @@ -14,23 +14,20 @@
-> >  static int dev_update_qos_constraint(struct device *dev, void *data)
-> >  {
-> >  	s64 *constraint_ns_p = data;
-> > -	s32 constraint_ns = -1;
-> > +	s64 constraint_ns = -1;
-> >  
-> >  	if (dev->power.subsys_data && dev->power.subsys_data->domain_data)
-> >  		constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
-> >  
-> > -	if (constraint_ns < 0) {
-> > +	if (constraint_ns < 0)
-> >  		constraint_ns = dev_pm_qos_read_value(dev);
-> > -		constraint_ns *= NSEC_PER_USEC;
-> > -	}
-> > -	if (constraint_ns == 0)
-> > +
-> > +	if (constraint_ns == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
-> >  		return 0;
-> >  
-> > -	/*
-> > -	 * constraint_ns cannot be negative here, because the device has been
-> > -	 * suspended.
-> > -	 */
-> > -	if (constraint_ns < *constraint_ns_p || *constraint_ns_p == 0)
-> > +	constraint_ns *= NSEC_PER_USEC;
-> > +
-> > +	if (constraint_ns < *constraint_ns_p || *constraint_ns_p < 0)
-> >  		*constraint_ns_p = constraint_ns;
-> >  
-> >  	return 0;
-> > @@ -63,10 +60,14 @@ static bool default_suspend_ok(struct de
-> >  
-> >  	spin_unlock_irqrestore(&dev->power.lock, flags);
-> >  
-> > -	if (constraint_ns < 0)
-> > +	if (constraint_ns == 0)
-> >  		return false;
-> >  
-> > -	constraint_ns *= NSEC_PER_USEC;
-> > +	if (constraint_ns == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
-> > +		constraint_ns = -1;
-> > +	else
-> > +		constraint_ns *= NSEC_PER_USEC;
-> > +
-> >  	/*
-> >  	 * We can walk the children without any additional locking, because
-> >  	 * they all have been suspended at this point and their
-> > @@ -76,14 +77,19 @@ static bool default_suspend_ok(struct de
-> >  		device_for_each_child(dev, &constraint_ns,
-> >  				      dev_update_qos_constraint);
-> >  
-> > -	if (constraint_ns > 0) {
-> > -		constraint_ns -= td->suspend_latency_ns +
-> > -				td->resume_latency_ns;
-> > -		if (constraint_ns == 0)
-> > -			return false;
-> > +	if (constraint_ns < 0) {
-> > +		/* The children have no constraints. */
-> > +		td->effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
-> > +		td->cached_suspend_ok = true;
-> > +	} else {
-> > +		constraint_ns -= td->suspend_latency_ns + td->resume_latency_ns;
-> > +		if (constraint_ns > 0) {
-> > +			td->effective_constraint_ns = constraint_ns;
-> > +			td->cached_suspend_ok = true;
-> > +		} else {
-> > +			td->effective_constraint_ns = 0;
-> 
-> Previously effective_constraint_ns was left as -1 if constraint_ns becomes 0
-> Not sure if this change is intentional.
+> Taking this into account, this feels like solution entirely specific
+> to ACPI and PCI. That is fine by me, however then we still have those
+> cross SoC drivers, the i2c-designware driver, which may have its
+> device attached to an ACPI PM domain or perhaps a genpd.
 
-Yes, it is.
-
-> I think at dev_update_qos_constraint, this can cause to skip call to
-> dev_pm_qos_read_value. 
-
-I need to double check that.
+Yes, that should be fine if the logic above goes to the PCI bus type
+and ACPI PM domain.  Then, setting the flag will have no effect on
+genpd at all, but that's OK.
 
 Thanks,
 Rafael
