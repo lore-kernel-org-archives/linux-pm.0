@@ -1,41 +1,55 @@
-From: Daniel Drake <drake@endlessm.com>
-Subject: Re: [PATCH v3] USB: Force disconnect Huawei 4G modem during suspend
-Date: Tue, 24 Oct 2017 12:16:04 +0800
-Message-ID: <CAD8Lp47eCDkYX8gOQx2YYnt_hubqkmMjZ5U75t9gPSy6B=5MDw@mail.gmail.com>
-References: <20171018071501.4900-1-drake@endlessm.com> <1508319080.8211.2.camel@suse.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 197009] /proc/cpuinfo does not update frequency
+Date: Tue, 24 Oct 2017 05:12:32 +0000
+Message-ID: <bug-197009-137361-GwmORPBd9R@https.bugzilla.kernel.org/>
+References: <bug-197009-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f47.google.com ([209.85.218.47]:53031 "EHLO
-        mail-oi0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750783AbdJXEQF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Oct 2017 00:16:05 -0400
-Received: by mail-oi0-f47.google.com with SMTP id c202so34665817oih.9
-        for <linux-pm@vger.kernel.org>; Mon, 23 Oct 2017 21:16:05 -0700 (PDT)
-In-Reply-To: <1508319080.8211.2.camel@suse.com>
+Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:45456 "EHLO
+        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750783AbdJXFMe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Oct 2017 01:12:34 -0400
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id ABE3A28977
+        for <linux-pm@vger.kernel.org>; Tue, 24 Oct 2017 05:12:33 +0000 (UTC)
+In-Reply-To: <bug-197009-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Oliver Neukum <oneukum@suse.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Chris Chiu <chiu@endlessm.com>, Linux Upstreaming Team <linux@endlessm.com>, Alan Stern <stern@rowland.harvard.edu>, Linux PM <linux-pm@vger.kernel.org>, Linux USB Mailing List <linux-usb@vger.kernel.org>
+To: linux-pm@kernel.org
 
-Hi Oliver,
+https://bugzilla.kernel.org/show_bug.cgi?id=197009
 
-On Wed, Oct 18, 2017 at 5:31 PM, Oliver Neukum <oneukum@suse.com> wrote:
-> Am Mittwoch, den 18.10.2017, 15:15 +0800 schrieb Daniel Drake:
->> Notes:
->>     v2:
->>     - Handle quirk later in suspend, to avoid interfering with other parts
->>       of the suspend routine.
->>     - Don't do the disconnect on runtime suspend, only for S3 suspend
->
-> well, can we effectively runtime suspend these devices?
+Steven Haigh (netwiz@crc.id.au) changed:
 
-How can I test for effective runtime suspend?
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |netwiz@crc.id.au
 
-> Furthermore, it seems to me that we indeed cannot do a runtime
-> suspend on external devices needing this quirk, but what about
-> internal devices?
+--- Comment #5 from Steven Haigh (netwiz@crc.id.au) ---
+I'm trying to figure out if I've hit a bug or not... My laptop CPU now doesn't
+seem to clock down - meaning the temps are higher and the laptop CPU fan is
+always running - even when idle.
 
-In this case the modem is an internal device.
+I noticed it used the intel_pstate driver, I disabled this and tried the
+acpi_cpufreq driver, however I see the following:
 
-Daniel
+# cat /sys/devices/system/cpu/cpufreq/policy*/scaling_cur_freq
+2828056
+2890338
+2889348
+2800463
+
+The frequencies supported are:
+2901000 2900000 2800000 2700000 2500000 2400000 2300000 2200000 2000000 1900000
+1800000 1700000 1600000 1400000 1300000 1200000
+
+I've tried the ondemand and performance gov with no changes.
+
+Is this an actual problem (I think so), or am I checking the freq settings in
+the wrong place and the values displayed are making me bark up the wrong tree?
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
