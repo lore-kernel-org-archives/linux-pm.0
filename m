@@ -1,300 +1,380 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] PM / QoS: Fix device resume latency PM QoS
-Date: Tue, 24 Oct 2017 13:35:05 +0200
-Message-ID: <1948004.bU45lK7TsE@aspire.rjw.lan>
-References: <2245486.jYtPfSLF5g@aspire.rjw.lan> <2465945.6cfLQGiipl@aspire.rjw.lan> <CAJZ5v0imdah_V1ErJsAUgh=vmsS3wtRsoRtgLQwxonGLzQrT-A@mail.gmail.com>
+From: jeffy <jeffy.chen@rock-chips.com>
+Subject: Re: [PATCH v7 1/3] PCI: Add support for wake irq
+Date: Tue, 24 Oct 2017 21:13:25 +0800
+Message-ID: <59EF3C75.2070107@rock-chips.com>
+References: <20171019111007.25234-1-jeffy.chen@rock-chips.com> <20171019111007.25234-2-jeffy.chen@rock-chips.com> <20171023230252.GA53058@google.com> <59EEBC3E.4030804@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0imdah_V1ErJsAUgh=vmsS3wtRsoRtgLQwxonGLzQrT-A@mail.gmail.com>
+In-Reply-To: <59EEBC3E.4030804@rock-chips.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, ramesh.thomas@intel.com, LKML <linux-kernel@vger.kernel.org>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Brian Norris <briannorris@chromium.org>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-kernel@vger.kernel.org, shawn.lin@rock-chips.com, dianders@chromium.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Brian,
 
-The special value of 0 for device resume latency PM QoS means
-"no restriction", but there are two problems with that.
+checking the pci-acpi code, it has:
+1/ pci_acpi_setup() and pci_acpi_cleanup() to setup/cleanup the 
+wakeup(and other stuff) for pci devices
 
-First, device resume latency PM QoS requests with 0 as the
-value are always put in front of requests with positive
-values in the priority lists used internally by the PM QoS
-framework, causing 0 to be chosen as an effective constraint
-value.  However, that 0 is then interpreted as "no restriction"
-effectively overriding the other requests with specific
-restrictions which is incorrect.
+we may need it too(for per-device wake) to parse wake irq and init 
+wakeup(false) and maybe setup dedicated wakeirq.
 
-Second, the users of device resume latency PM QoS have no
-way to specify that *any* resume latency at all should be
-avoided, which is an artificial limitation in general.
+2/ acpi_pci_wakeup(), which would do:
+find a parent or root bus or pci dev itself, which can do wakeup, and 
+update it's wakeup ability(with a enable_count).
 
-To address these issues, modify device resume latency PM QoS to
-use S32_MAX as the "no constraint" value and 0 as the "no
-latency at all" one and rework its users (the cpuidle menu
-governor, the genpd QoS governor and the runtime PM framework)
-to follow these changes.
+we may need to do something like that, but the can_wakeup() would be 
+check if wake irq avaliable, and set_device/bridge_wakeup() would be 
+setup/clear dedicated wakeirq, or just call device_set_wakeup_enable()
 
-Also add a special "n/a" value to the corresponding user space I/F
-to allow user space to indicate that it cannot accept any resume
-latencies at all for the given device.
 
-Fixes: 85dc0b8a4019 (PM / QoS: Make it possible to expose PM QoS latency constraints)
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=197323
-Reported-by: Reinette Chatre <reinette.chatre@intel.com>
-Tested-by: Reinette Chatre <reinette.chatre@intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Alex Shi <alex.shi@linaro.org>
----
 
--> v2: Add a missing "else" branch in pm_qos_resume_latency_store().
+so maybe we can:
+1/ add a setup_root_bus() platform ops callback to parse/setup root 
+bus's wakeirq in pci_register_host_bridge(),and clean it in 
+pci_stop_bus_device()
 
----
- Documentation/ABI/testing/sysfs-devices-power |    4 +
- drivers/base/cpu.c                            |    3 -
- drivers/base/power/domain_governor.c          |   53 ++++++++++++++------------
- drivers/base/power/qos.c                      |    2 
- drivers/base/power/runtime.c                  |    2 
- drivers/base/power/sysfs.c                    |   25 ++++++++++--
- drivers/cpuidle/governors/menu.c              |    4 -
- include/linux/pm_qos.h                        |    5 +-
- 8 files changed, 63 insertions(+), 35 deletions(-)
+2/ add a device_setup() and device_cleanup() callbacks to setup/clean 
+pci device's wake irq, and maybe call it in pci_device_probe() or 
+pci_setup_device()?
 
-Index: linux-pm/drivers/base/power/sysfs.c
-===================================================================
---- linux-pm.orig/drivers/base/power/sysfs.c
-+++ linux-pm/drivers/base/power/sysfs.c
-@@ -218,7 +218,14 @@ static ssize_t pm_qos_resume_latency_sho
- 					  struct device_attribute *attr,
- 					  char *buf)
- {
--	return sprintf(buf, "%d\n", dev_pm_qos_requested_resume_latency(dev));
-+	s32 value = dev_pm_qos_requested_resume_latency(dev);
-+
-+	if (value == 0)
-+		return sprintf(buf, "n/a\n");
-+	else if (value == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
-+		value = 0;
-+
-+	return sprintf(buf, "%d\n", value);
- }
- 
- static ssize_t pm_qos_resume_latency_store(struct device *dev,
-@@ -228,11 +235,21 @@ static ssize_t pm_qos_resume_latency_sto
- 	s32 value;
- 	int ret;
- 
--	if (kstrtos32(buf, 0, &value))
--		return -EINVAL;
-+	if (!kstrtos32(buf, 0, &value)) {
-+		/*
-+		 * Prevent users from writing negative or "no constraint" values
-+		 * directly.
-+		 */
-+		if (value < 0 || value == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
-+			return -EINVAL;
- 
--	if (value < 0)
-+		if (value == 0)
-+			value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
-+	} else if (!strcmp(buf, "n/a") || !strcmp(buf, "n/a\n")) {
-+		value = 0;
-+	} else  {
- 		return -EINVAL;
-+	}
- 
- 	ret = dev_pm_qos_update_request(dev->power.qos->resume_latency_req,
- 					value);
-Index: linux-pm/include/linux/pm_qos.h
-===================================================================
---- linux-pm.orig/include/linux/pm_qos.h
-+++ linux-pm/include/linux/pm_qos.h
-@@ -27,16 +27,17 @@ enum pm_qos_flags_status {
- 	PM_QOS_FLAGS_ALL,
- };
- 
--#define PM_QOS_DEFAULT_VALUE -1
-+#define PM_QOS_DEFAULT_VALUE	(-1)
-+#define PM_QOS_LATENCY_ANY	S32_MAX
- 
- #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
- #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
- #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
- #define PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE	0
- #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	0
-+#define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT	PM_QOS_LATENCY_ANY
- #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
- #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
--#define PM_QOS_LATENCY_ANY			((s32)(~(__u32)0 >> 1))
- 
- #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
- #define PM_QOS_FLAG_REMOTE_WAKEUP	(1 << 1)
-Index: linux-pm/drivers/cpuidle/governors/menu.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/governors/menu.c
-+++ linux-pm/drivers/cpuidle/governors/menu.c
-@@ -298,8 +298,8 @@ static int menu_select(struct cpuidle_dr
- 		data->needs_update = 0;
- 	}
- 
--	/* resume_latency is 0 means no restriction */
--	if (resume_latency && resume_latency < latency_req)
-+	if (resume_latency < latency_req &&
-+	    resume_latency != PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
- 		latency_req = resume_latency;
- 
- 	/* Special case when user has set very strict latency requirement */
-Index: linux-pm/drivers/base/power/domain_governor.c
-===================================================================
---- linux-pm.orig/drivers/base/power/domain_governor.c
-+++ linux-pm/drivers/base/power/domain_governor.c
-@@ -14,23 +14,20 @@
- static int dev_update_qos_constraint(struct device *dev, void *data)
- {
- 	s64 *constraint_ns_p = data;
--	s32 constraint_ns = -1;
-+	s64 constraint_ns = -1;
- 
- 	if (dev->power.subsys_data && dev->power.subsys_data->domain_data)
- 		constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
- 
--	if (constraint_ns < 0) {
-+	if (constraint_ns < 0)
- 		constraint_ns = dev_pm_qos_read_value(dev);
--		constraint_ns *= NSEC_PER_USEC;
--	}
--	if (constraint_ns == 0)
-+
-+	if (constraint_ns == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
- 		return 0;
- 
--	/*
--	 * constraint_ns cannot be negative here, because the device has been
--	 * suspended.
--	 */
--	if (constraint_ns < *constraint_ns_p || *constraint_ns_p == 0)
-+	constraint_ns *= NSEC_PER_USEC;
-+
-+	if (constraint_ns < *constraint_ns_p || *constraint_ns_p < 0)
- 		*constraint_ns_p = constraint_ns;
- 
- 	return 0;
-@@ -63,10 +60,14 @@ static bool default_suspend_ok(struct de
- 
- 	spin_unlock_irqrestore(&dev->power.lock, flags);
- 
--	if (constraint_ns < 0)
-+	if (constraint_ns == 0)
- 		return false;
- 
--	constraint_ns *= NSEC_PER_USEC;
-+	if (constraint_ns == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
-+		constraint_ns = -1;
-+	else
-+		constraint_ns *= NSEC_PER_USEC;
-+
- 	/*
- 	 * We can walk the children without any additional locking, because
- 	 * they all have been suspended at this point and their
-@@ -76,14 +77,19 @@ static bool default_suspend_ok(struct de
- 		device_for_each_child(dev, &constraint_ns,
- 				      dev_update_qos_constraint);
- 
--	if (constraint_ns > 0) {
--		constraint_ns -= td->suspend_latency_ns +
--				td->resume_latency_ns;
--		if (constraint_ns == 0)
--			return false;
-+	if (constraint_ns < 0) {
-+		/* The children have no constraints. */
-+		td->effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
-+		td->cached_suspend_ok = true;
-+	} else {
-+		constraint_ns -= td->suspend_latency_ns + td->resume_latency_ns;
-+		if (constraint_ns > 0) {
-+			td->effective_constraint_ns = constraint_ns;
-+			td->cached_suspend_ok = true;
-+		} else {
-+			td->effective_constraint_ns = 0;
-+		}
- 	}
--	td->effective_constraint_ns = constraint_ns;
--	td->cached_suspend_ok = constraint_ns >= 0;
- 
- 	/*
- 	 * The children have been suspended already, so we don't need to take
-@@ -145,13 +151,14 @@ static bool __default_power_down_ok(stru
- 		td = &to_gpd_data(pdd)->td;
- 		constraint_ns = td->effective_constraint_ns;
- 		/* default_suspend_ok() need not be called before us. */
--		if (constraint_ns < 0) {
-+		if (constraint_ns < 0)
- 			constraint_ns = dev_pm_qos_read_value(pdd->dev);
--			constraint_ns *= NSEC_PER_USEC;
--		}
--		if (constraint_ns == 0)
-+
-+		if (constraint_ns == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
- 			continue;
- 
-+		constraint_ns *= NSEC_PER_USEC;
-+
- 		/*
- 		 * constraint_ns cannot be negative here, because the device has
- 		 * been suspended.
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -253,7 +253,7 @@ static int rpm_check_suspend_allowed(str
- 	    || (dev->power.request_pending
- 			&& dev->power.request == RPM_REQ_RESUME))
- 		retval = -EAGAIN;
--	else if (__dev_pm_qos_read_value(dev) < 0)
-+	else if (__dev_pm_qos_read_value(dev) == 0)
- 		retval = -EPERM;
- 	else if (dev->power.runtime_status == RPM_SUSPENDED)
- 		retval = 1;
-Index: linux-pm/drivers/base/cpu.c
-===================================================================
---- linux-pm.orig/drivers/base/cpu.c
-+++ linux-pm/drivers/base/cpu.c
-@@ -377,7 +377,8 @@ int register_cpu(struct cpu *cpu, int nu
- 
- 	per_cpu(cpu_sys_devices, num) = &cpu->dev;
- 	register_cpu_under_node(num, cpu_to_node(num));
--	dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
-+	dev_pm_qos_expose_latency_limit(&cpu->dev,
-+					PM_QOS_RESUME_LATENCY_NO_CONSTRAINT);
- 
- 	return 0;
- }
-Index: linux-pm/drivers/base/power/qos.c
-===================================================================
---- linux-pm.orig/drivers/base/power/qos.c
-+++ linux-pm/drivers/base/power/qos.c
-@@ -189,7 +189,7 @@ static int dev_pm_qos_constraints_alloca
- 	plist_head_init(&c->list);
- 	c->target_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
- 	c->default_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
--	c->no_constraint_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
-+	c->no_constraint_value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
- 	c->type = PM_QOS_MIN;
- 	c->notifiers = n;
- 
-Index: linux-pm/Documentation/ABI/testing/sysfs-devices-power
-===================================================================
---- linux-pm.orig/Documentation/ABI/testing/sysfs-devices-power
-+++ linux-pm/Documentation/ABI/testing/sysfs-devices-power
-@@ -211,7 +211,9 @@ Description:
- 		device, after it has been suspended at run time, from a resume
- 		request to the moment the device will be ready to process I/O,
- 		in microseconds.  If it is equal to 0, however, this means that
--		the PM QoS resume latency may be arbitrary.
-+		the PM QoS resume latency may be arbitrary and the special value
-+		"n/a" means that user space cannot accept any resume latency at
-+		all for the given device.
- 
- 		Not all drivers support this attribute.  If it isn't supported,
- 		it is not present.
+3/ add a can_wakeup() and set_device_wakeup() and set_bridge_wakeup() 
+callbacks, and move acpi_pci_wakeup() and acpi_pci_propagate_wakeup()'s 
+code and the enable_count code into common platform_pci_set_wakeup().
+
+
+does this make sense?
+
+
+On 10/24/2017 12:06 PM, jeffy wrote:
+> Hi Brian,
+>
+> On 10/24/2017 07:02 AM, Brian Norris wrote:
+>> + PM folks
+>>
+>> Hi Jeffy,
+>>
+>> It's probably good if you send the whole thing to linux-pm@ in the
+>> future, if you're really trying to implement generic PCI/PM for device
+>> tree systems.
+> ok
+>>
+>> On Thu, Oct 19, 2017 at 07:10:05PM +0800, Jeffy Chen wrote:
+>>> Add support for PCIE_WAKE pin.
+>>
+>> This is kind of an important change, so it feels like you should
+>> document it a little more thoroughly than this. Particularly, I have a
+>> few questions below, and it seems like some of these questions should be
+>> acknowledged up front. e.g., why does this look so different than the
+>> ACPI hooks?
+> sure, will do in next version.
+>>
+>>>
+>>> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+>>> ---
+>>>
+>>> Changes in v7:
+>>> Move PCIE_WAKE handling into pci core.
+>>>
+>>> Changes in v6:
+>>> Fix device_init_wake error handling, and add some comments.
+>>>
+>>> Changes in v5:
+>>> Rebase
+>>>
+>>> Changes in v3:
+>>> Fix error handling
+>>>
+>>> Changes in v2:
+>>> Use dev_pm_set_dedicated_wake_irq
+>>>          -- Suggested by Brian Norris <briannorris@chromium.com>
+>>>
+>>>   drivers/pci/pci.c    | 34 ++++++++++++++++++++++++++++++++--
+>>>   drivers/pci/probe.c  | 32 ++++++++++++++++++++++++++++----
+>>>   drivers/pci/remove.c |  9 +++++++++
+>>>   3 files changed, 69 insertions(+), 6 deletions(-)
+>>>
+>>> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>>> index f0d68066c726..49080a10bdf0 100644
+>>> --- a/drivers/pci/pci.c
+>>> +++ b/drivers/pci/pci.c
+>>> @@ -603,10 +603,40 @@ static inline pci_power_t
+>>> platform_pci_choose_state(struct pci_dev *dev)
+>>>               pci_platform_pm->choose_state(dev) : PCI_POWER_ERROR;
+>>>   }
+>>>
+>>> +static int pci_dev_check_wakeup(struct pci_dev *dev, void *data)
+>>> +{
+>>> +    bool *wakeup = data;
+>>> +
+>>> +    if (device_may_wakeup(&dev->dev))
+>>> +        *wakeup = true;
+>>> +
+>>> +    return *wakeup;
+>>> +}
+>>> +
+>>>   static inline int platform_pci_set_wakeup(struct pci_dev *dev, bool
+>>> enable)
+>>>   {
+>>> -    return pci_platform_pm ?
+>>> -            pci_platform_pm->set_wakeup(dev, enable) : -ENODEV;
+>>> +    struct pci_dev *parent = dev;
+>>> +    struct pci_bus *bus;
+>>> +    bool wakeup = false;
+>>
+>> It feels like you're implementing a set of pci_platform_pm_ops, except
+>> you're not actually implementing them. It almost seems like we should
+>> have a drivers/pci/pci-of.c to do this. But that brings up a few
+>> questions....
+> i saw the drivers might call set_wakeup() in suspend/resume/shutdown to
+> configure the wakeup ability, maybe we can call
+> device_set_wakeup_enable() here as a common part of set_wakeup()?
+>
+> static inline int platform_pci_set_wakeup(struct pci_dev *dev, bool
+> enable) {
+>      device_set_wakeup_enable()
+> ...
+>      return pci_platform_pm ? pci_platform_pm->set_wakeup(dev, enable) :
+> -ENODEV;
+>
+>>
+>>> +
+>>> +    if (pci_platform_pm)
+>>
+>> So, if somebody already registered ops, then you won't follow the "OF"
+>> route? That means this all breaks as soon as a kernel has both
+>> CONFIG_ACPI and CONFIG_OF enabled. This is possible on at least ARM64,
+>> which 'select's OF and may also be built/run with CONFIG_ACPI.
+>>
+>> And that conflict is the same if we try to register pci_platform_pm_ops
+>> for OF systems -- it'll be a race over who sets them up first (or
+>> rather, last).
+>>
+>> Also, what happens on !ACPI && !OF? Or if the device tree did not
+>> contain a "wakeup" definition? You're now implementing a default path
+>> that doesn't make much sense IMO; you may claim wakeup capability
+>> without actually having set it up somewhere.
+> maybe we can use device_set_wakeup_enable(), which will check the setup
+> before setting?
+>>
+>> I think you could use some more comments, and (again) a real commit
+>> message.
+> ok, will do.
+>>
+>>> +        return pci_platform_pm->set_wakeup(dev, enable);
+>>> +
+>>> +    device_set_wakeup_capable(&dev->dev, enable);
+>>
+>> Why are you setting that here? This function should just be telling the
+>> lower layers to enable the physical WAKE# ability. In our case, it just
+>> means configuring the WAKE# interrupt for wakeup -- or, since you've
+>> used dev_pm_set_dedicated_wake_irq() which handles most of this
+>> automatically...do you need this at all? It seems like you should
+>> *either* implement these callbacks to manually manage the wakeup IRQ or
+>> else use the dedicated wakeirq infrastructure -- not both.
+>>
+>> And even if you need this, I don't think you need to do this many times;
+>> you should only need to set up the capabilities once, when you first set
+>> up the device.
+>>
+>> And BTW, the description for the set_wakeup() callback says:
+>>
+>>   * @set_wakeup: enables/disables wakeup capability for the device
+>>
+>> I *don't* think that means "capability" as in the device framework's
+>> view of "wakeup capable"; I think it means capability as in the physical
+>> ability (a la, enable_irq_wake() or similar).
+> i was thinking maybe we should disable the wakeup if all children
+> request set_wakeup(false)?
+>
+> and it seems like the dedicated wakeirq can be disabled by:
+> 1/ dev_pm_clear_wake_irq(), then we may need to store the irq somewhere
+> to set it up again in the future?
+>
+> 2/ let device_may_wakeup return false:
+> void dev_pm_arm_wake_irq(struct wake_irq *wirq)
+> {
+>          if (!wirq)
+>                  return;
+>
+>          if (device_may_wakeup(wirq->dev)) {
+>                  if (wirq->status & WAKE_IRQ_DEDICATED_ALLOCATED)
+>                          enable_irq(wirq->irq);
+>
+>                  enable_irq_wake(wirq->irq);
+>          }
+>
+>>
+>>> +
+>>> +    while ((parent = pci_upstream_bridge(parent)))
+>>> +        bus = parent->bus;
+>>> +
+>>> +    if (!bus || !pci_is_root_bus(bus) || !bus->bridge->parent)
+>>> +        return -ENODEV;
+>>> +
+>>> +    pci_walk_bus(bus, pci_dev_check_wakeup, &wakeup);
+>>> +    device_set_wakeup_capable(bus->bridge->parent, wakeup);
+>>
+>> What happens to any intermediate buses? You haven't marked them as
+>> wakeup-capable. Should you?
+>>
+>> And the more fundamental question here is: is this a per-device
+>> configuration or a per-root-port configuration? The APIs here are
+>> modeled after ACPI, where I guess this is a per-device thing. The PCIe
+>> spec doesn't exactly specify how many WAKE# pins you need, though it
+>> seems to say
+>>
+>> (a) it's all-or-nothing (if one device uses it, all wakeup-capable EPs
+>>      should be wired up to it)
+>> (b) it *can* be done as a single input to the system controller, since
+>>      it's an open drain signal
+>> (c) ...but I also see now in the PCIe Card Electromechanical
+>>      specification:
+>>
+>>      "WAKE# may be bused to multiple PCI Express add-in card connectors,
+>>      forming a single input connection at the PM controller, or
+>>      individual connectors can have individual connections to the PM
+>>      controller."
+>>
+>> So I think you're kind of going along the lines of (b) (as I suggested
+>> to you previously), and that matches the current hardware (we only have
+>> a single WAKE#) and proposed DT binding. But should this be set up in a
+>> way that suits (c) too? It's hard to tell exactly what ACPI-based
+>> systems do, since they have this abstracted behind ACPI interfaces that
+>> seem like they *could* support per-device or per-bridge type of hookups.
+> maybe we can try to setup wake irq for each pci devices which have it in
+> the dts, then in the set_wakeup(), try to find the parents(or itself)
+> who has wake irq, and enable/disable them(maybe also need a refcount)?
+>>
+>> Bjorn, any thoughts? This seems like a halfway attempt in between two
+>> different designs, and I'm not really sure which one makes more sense.
+>>
+>> Brian
+>>
+>>> +
+>>> +    dev_dbg(bus->bridge->parent,
+>>> +        "Wakeup %s\n", wakeup ? "enabled" : "disabled");
+>>> +
+>>> +    return 0;
+>>>   }
+>>>
+>>>   static inline bool platform_pci_need_resume(struct pci_dev *dev)
+>>> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+>>> index cdc2f83c11c5..fd43ca832665 100644
+>>> --- a/drivers/pci/probe.c
+>>> +++ b/drivers/pci/probe.c
+>>> @@ -7,6 +7,7 @@
+>>>   #include <linux/init.h>
+>>>   #include <linux/pci.h>
+>>>   #include <linux/of_device.h>
+>>> +#include <linux/of_irq.h>
+>>>   #include <linux/of_pci.h>
+>>>   #include <linux/pci_hotplug.h>
+>>>   #include <linux/slab.h>
+>>> @@ -17,6 +18,7 @@
+>>>   #include <linux/acpi.h>
+>>>   #include <linux/irqdomain.h>
+>>>   #include <linux/pm_runtime.h>
+>>> +#include <linux/pm_wakeirq.h>
+>>>   #include "pci.h"
+>>>
+>>>   #define CARDBUS_LATENCY_TIMER    176    /* secondary latency timer */
+>>> @@ -756,11 +758,28 @@ static int pci_register_host_bridge(struct
+>>> pci_host_bridge *bridge)
+>>>       struct resource *res;
+>>>       char addr[64], *fmt;
+>>>       const char *name;
+>>> -    int err;
+>>> +    int err, irq;
+>>> +
+>>> +    if (IS_ENABLED(CONFIG_OF) && parent && parent->of_node) {
+>>> +        irq = of_irq_get_byname(parent->of_node, "wakeup");
+>>> +        if (irq == -EPROBE_DEFER)
+>>> +            return irq;
+>>> +        if (irq > 0) {
+>>> +            device_init_wakeup(parent, true);
+>>> +            err = dev_pm_set_dedicated_wake_irq(parent, irq);
+>>> +            if (err) {
+>>> +                dev_err(parent, "Failed to setup wakeup IRQ\n");
+>>> +                goto deinit_wakeup;
+>>> +            }
+>>> +            dev_info(parent, "Wakeup enabled with IRQ %d\n", irq);
+>>> +        }
+>>> +    }
+>>>
+>>>       bus = pci_alloc_bus(NULL);
+>>> -    if (!bus)
+>>> -        return -ENOMEM;
+>>> +    if (!bus) {
+>>> +        err = -ENOMEM;
+>>> +        goto clear_wake_irq;
+>>> +    }
+>>>
+>>>       bridge->bus = bus;
+>>>
+>>> @@ -856,9 +875,14 @@ static int pci_register_host_bridge(struct
+>>> pci_host_bridge *bridge)
+>>>   unregister:
+>>>       put_device(&bridge->dev);
+>>>       device_unregister(&bridge->dev);
+>>> -
+>>>   free:
+>>>       kfree(bus);
+>>> +clear_wake_irq:
+>>> +    if (parent)
+>>> +        dev_pm_clear_wake_irq(parent);
+>>> +deinit_wakeup:
+>>> +    if (parent)
+>>> +        device_init_wakeup(parent, false);
+>>>       return err;
+>>>   }
+>>>
+>>> diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
+>>> index 73a03d382590..cb7a326429e1 100644
+>>> --- a/drivers/pci/remove.c
+>>> +++ b/drivers/pci/remove.c
+>>> @@ -1,6 +1,7 @@
+>>>   #include <linux/pci.h>
+>>>   #include <linux/module.h>
+>>>   #include <linux/pci-aspm.h>
+>>> +#include <linux/pm_wakeirq.h>
+>>>   #include "pci.h"
+>>>
+>>>   static void pci_free_resources(struct pci_dev *dev)
+>>> @@ -131,17 +132,25 @@ void pci_stop_root_bus(struct pci_bus *bus)
+>>>   {
+>>>       struct pci_dev *child, *tmp;
+>>>       struct pci_host_bridge *host_bridge;
+>>> +    struct device *parent;
+>>>
+>>>       if (!pci_is_root_bus(bus))
+>>>           return;
+>>>
+>>>       host_bridge = to_pci_host_bridge(bus->bridge);
+>>> +    parent = host_bridge->dev.parent;
+>>> +
+>>>       list_for_each_entry_safe_reverse(child, tmp,
+>>>                        &bus->devices, bus_list)
+>>>           pci_stop_bus_device(child);
+>>>
+>>>       /* stop the host bridge */
+>>>       device_release_driver(&host_bridge->dev);
+>>> +
+>>> +    if (parent) {
+>>> +        dev_pm_clear_wake_irq(parent);
+>>> +        device_init_wakeup(parent, false);
+>>> +    }
+>>>   }
+>>>   EXPORT_SYMBOL_GPL(pci_stop_root_bus);
+>>>
+>>> --
+>>> 2.11.0
+>>>
+>>>
+>>
+>>
+>>
+>
