@@ -1,300 +1,108 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [PATCH v7 1/3] PCI: Add support for wake irq
-Date: Mon, 23 Oct 2017 16:02:53 -0700
-Message-ID: <20171023230252.GA53058@google.com>
+From: Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Subject: Re: [PATCH v7 3/3] arm64: dts: rockchip: Handle pcie wake in pcie
+ driver for Gru
+Date: Mon, 23 Oct 2017 18:27:46 -0700
+Message-ID: <20171024012744.GA103893@google.com>
 References: <20171019111007.25234-1-jeffy.chen@rock-chips.com>
- <20171019111007.25234-2-jeffy.chen@rock-chips.com>
+ <20171019111007.25234-4-jeffy.chen@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f193.google.com ([209.85.223.193]:53618 "EHLO
-        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751275AbdJWXC6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 23 Oct 2017 19:02:58 -0400
-Received: by mail-io0-f193.google.com with SMTP id 189so21894303iow.10
-        for <linux-pm@vger.kernel.org>; Mon, 23 Oct 2017 16:02:57 -0700 (PDT)
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20171019111007.25234-2-jeffy.chen@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20171019111007.25234-4-jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Jeffy Chen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Matthias Kaehlcke <mka-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Klaus Goger <klaus.goger-SN7IsUiht6C/RdPyistoZJqQE7yCjDx5@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Caesar Wang <wxt-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Jeffy Chen <jeffy.chen@rock-chips.com>
-Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, shawn.lin@rock-chips.com, dianders@chromium.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-+ PM folks
++ linux-pm
 
-Hi Jeffy,
+On Thu, Oct 19, 2017 at 07:10:07PM +0800, Jeffy Chen wrote:
+> Currently we are handling pcie wake irq in mrvl wifi driver.
+> Move it to rockchip pcie driver for Gru boards.
 
-It's probably good if you send the whole thing to linux-pm@ in the
-future, if you're really trying to implement generic PCI/PM for device
-tree systems.
+It might be worth documenting one of the reasons for this patch, which
+I'll comment on below:
 
-On Thu, Oct 19, 2017 at 07:10:05PM +0800, Jeffy Chen wrote:
-> Add support for PCIE_WAKE pin.
-
-This is kind of an important change, so it feels like you should
-document it a little more thoroughly than this. Particularly, I have a
-few questions below, and it seems like some of these questions should be
-acknowledged up front. e.g., why does this look so different than the
-ACPI hooks?
-
-> 
-> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+> Signed-off-by: Jeffy Chen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 > ---
 > 
-> Changes in v7:
-> Move PCIE_WAKE handling into pci core.
-> 
-> Changes in v6:
-> Fix device_init_wake error handling, and add some comments.
-> 
+> Changes in v7: None
+> Changes in v6: None
 > Changes in v5:
-> Rebase
+> Use "wakeup" instead of "wake"
 > 
-> Changes in v3:
-> Fix error handling
+> Changes in v3: None
+> Changes in v2: None
 > 
-> Changes in v2:
-> Use dev_pm_set_dedicated_wake_irq
->         -- Suggested by Brian Norris <briannorris@chromium.com>
+>  arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi | 15 +++++++++------
+>  1 file changed, 9 insertions(+), 6 deletions(-)
 > 
->  drivers/pci/pci.c    | 34 ++++++++++++++++++++++++++++++++--
->  drivers/pci/probe.c  | 32 ++++++++++++++++++++++++++++----
->  drivers/pci/remove.c |  9 +++++++++
->  3 files changed, 69 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index f0d68066c726..49080a10bdf0 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -603,10 +603,40 @@ static inline pci_power_t platform_pci_choose_state(struct pci_dev *dev)
->  			pci_platform_pm->choose_state(dev) : PCI_POWER_ERROR;
->  }
+> diff --git a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
+> index 470105d651c2..04499714f541 100644
+> --- a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
+> +++ b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
+> @@ -708,7 +708,15 @@ ap_i2c_audio: &i2c8 {
 >  
-> +static int pci_dev_check_wakeup(struct pci_dev *dev, void *data)
-> +{
-> +	bool *wakeup = data;
+>  	ep-gpios = <&gpio2 27 GPIO_ACTIVE_HIGH>;
+>  	pinctrl-names = "default";
+> -	pinctrl-0 = <&pcie_clkreqn_cpm>, <&wifi_perst_l>;
+> +	pinctrl-0 = <&pcie_clkreqn_cpm>, <&wlan_host_wake_l>, <&wifi_perst_l>;
 > +
-> +	if (device_may_wakeup(&dev->dev))
-> +		*wakeup = true;
+> +	interrupts-extended = <&gic GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH 0>,
+> +			      <&gic GIC_SPI 50 IRQ_TYPE_LEVEL_HIGH 0>,
+> +			      <&gic GIC_SPI 51 IRQ_TYPE_LEVEL_HIGH 0>,
+> +			      <&gpio0 8 IRQ_TYPE_LEVEL_LOW>;
+> +	interrupt-names = "sys", "legacy", "client", "wakeup";
+> +	/delete-property/ interrupts;
 > +
-> +	return *wakeup;
-> +}
-> +
->  static inline int platform_pci_set_wakeup(struct pci_dev *dev, bool enable)
->  {
-> -	return pci_platform_pm ?
-> -			pci_platform_pm->set_wakeup(dev, enable) : -ENODEV;
-> +	struct pci_dev *parent = dev;
-> +	struct pci_bus *bus;
-> +	bool wakeup = false;
+>  	vpcie3v3-supply = <&pp3300_wifi_bt>;
+>  	vpcie1v8-supply = <&wlan_pd_n>; /* HACK: see &wlan_pd_n */
+>  	vpcie0v9-supply = <&pp900_pcie>;
+> @@ -723,11 +731,6 @@ ap_i2c_audio: &i2c8 {
+>  			compatible = "pci1b4b,2b42";
+>  			reg = <0x83010000 0x0 0x00000000 0x0 0x00100000
+>  			       0x83010000 0x0 0x00100000 0x0 0x00100000>;
+> -			interrupt-parent = <&gpio0>;
+> -			interrupts = <8 IRQ_TYPE_LEVEL_LOW>;
 
-It feels like you're implementing a set of pci_platform_pm_ops, except
-you're not actually implementing them. It almost seems like we should
-have a drivers/pci/pci-of.c to do this. But that brings up a few
-questions....
+One of the problems here is that this is a definition for a WAKE#
+interrupt, not for a legacy INTx interrupt. So this creates a conflict
+when both of these happen:
 
-> +
-> +	if (pci_platform_pm)
+(a) the PCI bus sets up this interrupt for use as INTx support (as a
+    shared interrupt), instead of using the actual PCI controller
+    interrupt and
+(b) the mwifiex driver requests this interrupt as a non-shared wake
+    interrupt, and fails to get it (and so fails to probe).
 
-So, if somebody already registered ops, then you won't follow the "OF"
-route? That means this all breaks as soon as a kernel has both
-CONFIG_ACPI and CONFIG_OF enabled. This is possible on at least ARM64,
-which 'select's OF and may also be built/run with CONFIG_ACPI.
+IOW, non-MSI interrupts are broken today on these devices. Jeffy's patch
+fixes that.
 
-And that conflict is the same if we try to register pci_platform_pm_ops
-for OF systems -- it'll be a race over who sets them up first (or
-rather, last).
+If we want to support something like the existing binding, we should
+clarify/update
+Documentation/devicetree/bindings/net/wireless/marvell-8xxx.txt.
+Personally, I would just declare that binding invalid for the PCI
+version. (It might still be valid for SDIO.)
 
-Also, what happens on !ACPI && !OF? Or if the device tree did not
-contain a "wakeup" definition? You're now implementing a default path
-that doesn't make much sense IMO; you may claim wakeup capability
-without actually having set it up somewhere.
-
-I think you could use some more comments, and (again) a real commit
-message.
-
-> +		return pci_platform_pm->set_wakeup(dev, enable);
-> +
-> +	device_set_wakeup_capable(&dev->dev, enable);
-
-Why are you setting that here? This function should just be telling the
-lower layers to enable the physical WAKE# ability. In our case, it just
-means configuring the WAKE# interrupt for wakeup -- or, since you've
-used dev_pm_set_dedicated_wake_irq() which handles most of this
-automatically...do you need this at all? It seems like you should
-*either* implement these callbacks to manually manage the wakeup IRQ or
-else use the dedicated wakeirq infrastructure -- not both.
-
-And even if you need this, I don't think you need to do this many times;
-you should only need to set up the capabilities once, when you first set
-up the device.
-
-And BTW, the description for the set_wakeup() callback says:
-
- * @set_wakeup: enables/disables wakeup capability for the device
-
-I *don't* think that means "capability" as in the device framework's
-view of "wakeup capable"; I think it means capability as in the physical
-ability (a la, enable_irq_wake() or similar).
-
-> +
-> +	while ((parent = pci_upstream_bridge(parent)))
-> +		bus = parent->bus;
-> +
-> +	if (!bus || !pci_is_root_bus(bus) || !bus->bridge->parent)
-> +		return -ENODEV;
-> +
-> +	pci_walk_bus(bus, pci_dev_check_wakeup, &wakeup);
-> +	device_set_wakeup_capable(bus->bridge->parent, wakeup);
-
-What happens to any intermediate buses? You haven't marked them as
-wakeup-capable. Should you?
-
-And the more fundamental question here is: is this a per-device
-configuration or a per-root-port configuration? The APIs here are
-modeled after ACPI, where I guess this is a per-device thing. The PCIe
-spec doesn't exactly specify how many WAKE# pins you need, though it
-seems to say
-
-(a) it's all-or-nothing (if one device uses it, all wakeup-capable EPs
-    should be wired up to it)
-(b) it *can* be done as a single input to the system controller, since
-    it's an open drain signal
-(c) ...but I also see now in the PCIe Card Electromechanical
-    specification:
-
-    "WAKE# may be bused to multiple PCI Express add-in card connectors,
-    forming a single input connection at the PM controller, or
-    individual connectors can have individual connections to the PM
-    controller."
-
-So I think you're kind of going along the lines of (b) (as I suggested
-to you previously), and that matches the current hardware (we only have
-a single WAKE#) and proposed DT binding. But should this be set up in a
-way that suits (c) too? It's hard to tell exactly what ACPI-based
-systems do, since they have this abstracted behind ACPI interfaces that
-seem like they *could* support per-device or per-bridge type of hookups.
-
-Bjorn, any thoughts? This seems like a halfway attempt in between two
-different designs, and I'm not really sure which one makes more sense.
+Also, if for some reason we *do* want WAKE# handling to be supported on
+a per-device basis (part of the discussion on patch 1), we should look
+at extending the existing PCI interrupt bindings in a way that doesn't
+break legacy interrupts.
 
 Brian
 
-> +
-> +	dev_dbg(bus->bridge->parent,
-> +		"Wakeup %s\n", wakeup ? "enabled" : "disabled");
-> +
-> +	return 0;
->  }
->  
->  static inline bool platform_pci_need_resume(struct pci_dev *dev)
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index cdc2f83c11c5..fd43ca832665 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -7,6 +7,7 @@
->  #include <linux/init.h>
->  #include <linux/pci.h>
->  #include <linux/of_device.h>
-> +#include <linux/of_irq.h>
->  #include <linux/of_pci.h>
->  #include <linux/pci_hotplug.h>
->  #include <linux/slab.h>
-> @@ -17,6 +18,7 @@
->  #include <linux/acpi.h>
->  #include <linux/irqdomain.h>
->  #include <linux/pm_runtime.h>
-> +#include <linux/pm_wakeirq.h>
->  #include "pci.h"
->  
->  #define CARDBUS_LATENCY_TIMER	176	/* secondary latency timer */
-> @@ -756,11 +758,28 @@ static int pci_register_host_bridge(struct pci_host_bridge *bridge)
->  	struct resource *res;
->  	char addr[64], *fmt;
->  	const char *name;
-> -	int err;
-> +	int err, irq;
-> +
-> +	if (IS_ENABLED(CONFIG_OF) && parent && parent->of_node) {
-> +		irq = of_irq_get_byname(parent->of_node, "wakeup");
-> +		if (irq == -EPROBE_DEFER)
-> +			return irq;
-> +		if (irq > 0) {
-> +			device_init_wakeup(parent, true);
-> +			err = dev_pm_set_dedicated_wake_irq(parent, irq);
-> +			if (err) {
-> +				dev_err(parent, "Failed to setup wakeup IRQ\n");
-> +				goto deinit_wakeup;
-> +			}
-> +			dev_info(parent, "Wakeup enabled with IRQ %d\n", irq);
-> +		}
-> +	}
->  
->  	bus = pci_alloc_bus(NULL);
-> -	if (!bus)
-> -		return -ENOMEM;
-> +	if (!bus) {
-> +		err = -ENOMEM;
-> +		goto clear_wake_irq;
-> +	}
->  
->  	bridge->bus = bus;
->  
-> @@ -856,9 +875,14 @@ static int pci_register_host_bridge(struct pci_host_bridge *bridge)
->  unregister:
->  	put_device(&bridge->dev);
->  	device_unregister(&bridge->dev);
-> -
->  free:
->  	kfree(bus);
-> +clear_wake_irq:
-> +	if (parent)
-> +		dev_pm_clear_wake_irq(parent);
-> +deinit_wakeup:
-> +	if (parent)
-> +		device_init_wakeup(parent, false);
->  	return err;
->  }
->  
-> diff --git a/drivers/pci/remove.c b/drivers/pci/remove.c
-> index 73a03d382590..cb7a326429e1 100644
-> --- a/drivers/pci/remove.c
-> +++ b/drivers/pci/remove.c
-> @@ -1,6 +1,7 @@
->  #include <linux/pci.h>
->  #include <linux/module.h>
->  #include <linux/pci-aspm.h>
-> +#include <linux/pm_wakeirq.h>
->  #include "pci.h"
->  
->  static void pci_free_resources(struct pci_dev *dev)
-> @@ -131,17 +132,25 @@ void pci_stop_root_bus(struct pci_bus *bus)
->  {
->  	struct pci_dev *child, *tmp;
->  	struct pci_host_bridge *host_bridge;
-> +	struct device *parent;
->  
->  	if (!pci_is_root_bus(bus))
->  		return;
->  
->  	host_bridge = to_pci_host_bridge(bus->bridge);
-> +	parent = host_bridge->dev.parent;
-> +
->  	list_for_each_entry_safe_reverse(child, tmp,
->  					 &bus->devices, bus_list)
->  		pci_stop_bus_device(child);
->  
->  	/* stop the host bridge */
->  	device_release_driver(&host_bridge->dev);
-> +
-> +	if (parent) {
-> +		dev_pm_clear_wake_irq(parent);
-> +		device_init_wakeup(parent, false);
-> +	}
->  }
->  EXPORT_SYMBOL_GPL(pci_stop_root_bus);
->  
+> -			pinctrl-names = "default";
+> -			pinctrl-0 = <&wlan_host_wake_l>;
+> -			wakeup-source;
+>  		};
+>  	};
+>  };
 > -- 
 > 2.11.0
 > 
 > 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
