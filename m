@@ -1,110 +1,73 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / QoS: Fix device resume latency PM QoS
-Date: Wed, 25 Oct 2017 18:28:01 +0200
-Message-ID: <CAJZ5v0gY=d5jBBqpVH+radA2pEAP2SF1m-6PXMgDMgJB6Xdedg@mail.gmail.com>
-References: <2245486.jYtPfSLF5g@aspire.rjw.lan> <20171024055409.GA5805@intel.com>
- <2465945.6cfLQGiipl@aspire.rjw.lan> <CAJZ5v0imdah_V1ErJsAUgh=vmsS3wtRsoRtgLQwxonGLzQrT-A@mail.gmail.com>
- <20171025072725.GB13327@intel.com>
+From: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+Subject: Re: How to power gate a specific single device from outside?
+Date: Wed, 25 Oct 2017 20:42:39 +0100
+Message-ID: <20171025204239.47a80251@alans-desktop>
+References: <CAHKzcEP6dQ1PxB35yCW_R1W8yZCCsJN_HqiZ6uq2d+sZp_9EYw@mail.gmail.com>
+        <20171025005635.57f1b926@alans-desktop>
+        <CAHKzcEORSo2X7uEsOzeR7WpzN+2T4pYAdh1QDZ5nd9kBD-w=sA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f65.google.com ([209.85.218.65]:55992 "EHLO
-        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751775AbdJYQ2D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Oct 2017 12:28:03 -0400
-In-Reply-To: <20171025072725.GB13327@intel.com>
+Received: from www.llwyncelyn.cymru ([82.70.14.225]:40484 "EHLO fuzix.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751725AbdJYTmn (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 25 Oct 2017 15:42:43 -0400
+In-Reply-To: <CAHKzcEORSo2X7uEsOzeR7WpzN+2T4pYAdh1QDZ5nd9kBD-w=sA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ramesh.thomas@intel.com
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+To: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wed, Oct 25, 2017 at 9:27 AM, Ramesh Thomas <ramesh.thomas@intel.com> wrote:
-> On 2017-10-24 at 13:23:23 +0200, Rafael J. Wysocki wrote:
->> On Tue, Oct 24, 2017 at 10:49 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > On Tuesday, October 24, 2017 7:54:09 AM CEST Ramesh Thomas wrote:
->> >> On 2017-10-20 at 13:27:34 +0200, Rafael J. Wysocki wrote:
->> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >> >
->>
->> [cut]
->>
->> >> > @@ -63,10 +60,14 @@ static bool default_suspend_ok(struct de
->> >> >
->> >> >     spin_unlock_irqrestore(&dev->power.lock, flags);
->> >> >
->> >> > -   if (constraint_ns < 0)
->> >> > +   if (constraint_ns == 0)
->> >> >             return false;
->> >> >
->> >> > -   constraint_ns *= NSEC_PER_USEC;
->> >> > +   if (constraint_ns == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
->> >> > +           constraint_ns = -1;
->> >> > +   else
->> >> > +           constraint_ns *= NSEC_PER_USEC;
->> >> > +
->> >> >     /*
->> >> >      * We can walk the children without any additional locking, because
->> >> >      * they all have been suspended at this point and their
->> >> > @@ -76,14 +77,19 @@ static bool default_suspend_ok(struct de
->> >> >             device_for_each_child(dev, &constraint_ns,
->> >> >                                   dev_update_qos_constraint);
->> >> >
->> >> > -   if (constraint_ns > 0) {
->> >> > -           constraint_ns -= td->suspend_latency_ns +
->> >> > -                           td->resume_latency_ns;
->> >> > -           if (constraint_ns == 0)
->> >> > -                   return false;
->> >> > +   if (constraint_ns < 0) {
->> >> > +           /* The children have no constraints. */
->> >> > +           td->effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
->> >> > +           td->cached_suspend_ok = true;
->> >> > +   } else {
->> >> > +           constraint_ns -= td->suspend_latency_ns + td->resume_latency_ns;
->> >> > +           if (constraint_ns > 0) {
->> >> > +                   td->effective_constraint_ns = constraint_ns;
->> >> > +                   td->cached_suspend_ok = true;
->> >> > +           } else {
->> >> > +                   td->effective_constraint_ns = 0;
->> >>
->> >> Previously effective_constraint_ns was left as -1 if constraint_ns becomes 0
->> >> Not sure if this change is intentional.
->> >
->> > Yes, it is.
->> >
->> >> I think at dev_update_qos_constraint, this can cause to skip call to
->> >> dev_pm_qos_read_value.
->> >
->> > I need to double check that.
->>
->> If constraint_ns becomes 0 (or less) here, power cannot be removed
->> from the device, because it would add an unacceptable latency.
->>
->> Thus effective_constraint_ns has to be 0 for it to indicate that
->> situation.  If it was left at -1, it would mean "no requirement", but
->> that wouldn't be correct.
->>
->
-> A negative value in effective_constraint_ns is used as trigger to read new
-> resume latency constraints.
+> Now, what I need in the kernel is to _selectively_ suspend devices
+> that are not needed in the "backup/emergency" mode.
 
-I guess you mean in __default_power_down_ok(), right?
+Which means you need to get the applications using them to die - or you
+could rewrite the driver top to bottom to have locking sufficient to
+ensure that your power management changes don't interact with any
+existing functionality and every function neatly aborts or errors in a
+safe way to the userspace which you've also modified extensively to cope.
 
-That doesn't matter, because it covers the case when the device has
-never been runtime-suspended: it started in the "suspended" state and
-has never been made "active".
+I knmow which I'd choose.
 
-The case we are talking about is when default_suspend_ok() *was* run
-and it returned "true", or the device would not have been suspended,
-so __default_power_down_ok() would not have run for that domain at
-all.  In that case effective_constraint has to be positive anyway,
-because that is the only case when default_suspend_ok() returns
-"true".
+> If current state of the power frameworks for system sleep, runtime pm,
+> genpd etc. are not able to handle this transition, and as far as I
+> understand these subsystems they cannot handle this straight away
 
-It matters in default_suspend_ok() itself, however, where the
-constraints for the children are checked and -1 means "no
-restriction".  So it still looks like the patch needs to be improved,
-but that's because effective_constraint should not remain -1 if
-constraint_ns is 0 (which it still does in one case).
+Correct - nor can you handle it straight away because you might be in the
+middle of doing something so need to finish a transactio before you can
+drop to a lower power level.
 
-Thanks,
-Rafael
+> In DT we could specify which devices should go in low power state when
+> in emergency mode eg.
+> node {
+>     ....
+>     suspend-in-emergency;
+>     .....
+> }
+
+If a component of your hardware has a low power mode then why aren't you
+always putting it in lowest power mode except when it's in current use ?
+
+> So the device driver knows if it should be suspended in
+> PM_SUSPEND_EMERGENCY or not.  The driver has to provide a callback in
+> pm_ops to handle this transition or we could reuse suspend callback if
+> possible.
+
+You need to re-use the existing power management logic, and in many cases
+that means you'll need to shut down the userspace processes that are
+keeping the device busy because they will be keeping it from going to
+sleep.
+
+> Just a brief idea. Does it make sense to anyone?
+
+So the normal way you do this kind of stuff is to use runlevels with init
+(or the systemd equivalents)
+
+When the power goes poof you change runlevel. init kills off and
+shuts down all the services you want to drop. Those close the devices,
+which being well behaved shove themselves into the deepest sleep they can.
+
+When the power comes back you switch runlevel back and stuff respawns.
+
+Alan
