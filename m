@@ -1,52 +1,52 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: [PATCH v2] cpupower: Fix no-rounding MHz frequency output
-Date: Wed, 25 Oct 2017 09:51:32 -0400
-Message-ID: <20171025135132.16324-1-prarit@redhat.com>
+From: Jiri Slaby <jslaby@suse.cz>
+Subject: Re: [PATCH v4 01/27] linkage: new macros for assembler symbols
+Date: Wed, 25 Oct 2017 16:20:31 +0200
+Message-ID: <67a86986-8868-82e5-6e54-cdf03c1e4d2b@suse.cz>
+References: <20171002091246.28432-1-jslaby@suse.cz>
+ <20171006152355.73fljxsihnejppx4@treble>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:37381 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751892AbdJYNve (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 25 Oct 2017 09:51:34 -0400
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:55882 "EHLO
+        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751732AbdJYOUe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Oct 2017 10:20:34 -0400
+In-Reply-To: <20171006152355.73fljxsihnejppx4@treble>
+Content-Language: en-GB
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, Thomas Renninger <trenn@suse.com>, Stafford Horne <shorne@gmail.com>, Shuah Khan <shuah@kernel.org>
+To: Josh Poimboeuf <jpoimboe@redhat.com>
+Cc: mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com, x86@kernel.org, linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Ingo Molnar <mingo@kernel.org>, Juergen Gross <jgross@suse.com>, Len Brown <len.brown@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-pm@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, Peter Zijlstra <a.p.zijlstra@chello.nl>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, xen-devel@lists.xenproject.org
 
-'cpupower frequency-info -ln' returns kHz values on systems with MHz range
-minimum CPU frequency range.  For example, on a 800MHz to 4.20GHz system
-the command returns
+On 10/06/2017, 05:23 PM, Josh Poimboeuf wrote:
+> On Mon, Oct 02, 2017 at 11:12:20AM +0200, Jiri Slaby wrote:
+>>    SYM_CODE_INNER_LABEL -- only for labels in the middle of code
+>>    SYM_CODE_INNER_LABEL_NOALIGN -- only for labels in the middle of code
+> 
+> Why are the inner labels aligned by default?  Seems like unaligned would
+> be the most common case.
 
-hardware limits: 800000 MHz - 4.200000 GHz
+Correct:
+$ git grep -w SYM_CODE_INNER_LABEL_NOALIGN arch/|wc -l
+20
+$ git grep -w SYM_CODE_INNER_LABEL arch/|wc -l
+3
 
-The code that causes this error can be removed.  The next else if clause
-will handle the output correctly such that
+Will switch them.
 
-hardware limits: 800.000 MHz - 4.200000 GHz
+>> d) For data
+>>    SYM_DATA_START -- global data symbol
+>>    SYM_DATA_END -- the end of the SYM_DATA_START symbol
+>>    SYM_DATA_END_LABEL -- the labeled end of SYM_DATA_START symbol
+>>    SYM_DATA_SIMPLE -- start+end wrapper around simple global data
+>>    SYM_DATA_SIMPLE_LOCAL -- start+end wrapper around simple local data
+> 
+> "SIMPLE" seems superfluous, how about s/SYM_DATA_SIMPLE/SYM_DATA/ ?
 
-is displayed correctly.
+Yup, makes sense, will do.
 
-[v2]: Remove two lines instead of fixing broken code.
-
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Cc: Thomas Renninger <trenn@suse.com>
-Cc: Stafford Horne <shorne@gmail.com>
-Cc: Shuah Khan <shuah@kernel.org>
----
- tools/power/cpupower/utils/cpufreq-info.c | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
-index 3e701f0e9c14..df43cd45d810 100644
---- a/tools/power/cpupower/utils/cpufreq-info.c
-+++ b/tools/power/cpupower/utils/cpufreq-info.c
-@@ -93,8 +93,6 @@ static void print_speed(unsigned long speed)
- 		if (speed > 1000000)
- 			printf("%u.%06u GHz", ((unsigned int) speed/1000000),
- 				((unsigned int) speed%1000000));
--		else if (speed > 100000)
--			printf("%u MHz", (unsigned int) speed);
- 		else if (speed > 1000)
- 			printf("%u.%03u MHz", ((unsigned int) speed/1000),
- 				(unsigned int) (speed%1000));
+thanks,
 -- 
-2.15.0.rc0.39.g2f0e14e64
+js
+suse labs
