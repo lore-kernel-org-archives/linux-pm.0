@@ -1,68 +1,76 @@
-From: Waldemar Rymarkiewicz <waldemar.rymarkiewicz@gmail.com>
-Subject: Re: How to power gate a specific single device from outside?
-Date: Wed, 25 Oct 2017 14:15:36 +0200
-Message-ID: <CAHKzcEORSo2X7uEsOzeR7WpzN+2T4pYAdh1QDZ5nd9kBD-w=sA@mail.gmail.com>
-References: <CAHKzcEP6dQ1PxB35yCW_R1W8yZCCsJN_HqiZ6uq2d+sZp_9EYw@mail.gmail.com>
- <20171025005635.57f1b926@alans-desktop>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH RESEND] cpupower: Fix no-rounding MHz frequency output
+Date: Wed, 25 Oct 2017 09:41:52 -0400
+Message-ID: <76a2402d-d1d7-5d74-b572-dbe5a8915965@redhat.com>
+References: <20171023115632.27998-1-prarit@redhat.com>
+ <20171023123539.GF2694@lianli.shorne-pla.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171025005635.57f1b926@alans-desktop>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Alan Cox <gnomes@lxorguk.ukuu.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:42484 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751289AbdJYNlx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 25 Oct 2017 09:41:53 -0400
+In-Reply-To: <20171023123539.GF2694@lianli.shorne-pla.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Stafford Horne <shorne@gmail.com>
+Cc: linux-pm@vger.kernel.org, Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>
 
-On 25 October 2017 at 01:56, Alan Cox <gnomes@lxorguk.ukuu.org.uk> wrote:
->
-> For a lot of devices if you close it then it will try and put the device
-> into a low power state. If a driver isn't doing that then (unless there
-> are hardware constraints preventing it) it would make sense to fix it.
->
-> There are some things entirely in your control - big ones. In particular
-> the brightness of laptop panels, pulling everything off one CPU socket,
-> disabling the nmi watchdog, hard disk power settings, stopping processes
-> that wake up a lot.
->
-> Many of those you can set anyway for best power behaviour (see powertop).
->
 
-Thanks Alan for your feedback.
 
-This is not really what I'm looking for. I do an embedded design and
-need to have more fine-grained control over certain IP blocks inside
-the SoC and outside when entering "backup" mode or "selective suspend"
-or whatever we call it.
+On 10/23/2017 08:35 AM, Stafford Horne wrote:
+> On Mon, Oct 23, 2017 at 07:56:32AM -0400, Prarit Bhargava wrote:
+>> Sent about a year ago ...
+>>
+>> P.
+>>
+>> ---8<---
+>>
+>> 'cpupower frequency-info -ln' returns kHz values on systems with MHz range
+>> minimum CPU frequency range.  For example, on a 800MHz to 4.20GHz system
+>> the command returns
+>>
+>> hardware limits: 800000 MHz - 4.200000 GHz
+>>
+>> The value of speed passed into print_speed is in kHz, so divide speed by
+>> 1000 in the MHz else-if section to get MHz.
+>>
+>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>> Cc: Thomas Renninger <trenn@suse.com>
+>> Cc: Stafford Horne <shorne@gmail.com>
+>> Cc: Shuah Khan <shuah@kernel.org>
+>> ---
+>>  tools/power/cpupower/utils/cpufreq-info.c | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+>> index 3e701f0e9c14..fe7c25147b3a 100644
+>> --- a/tools/power/cpupower/utils/cpufreq-info.c
+>> +++ b/tools/power/cpupower/utils/cpufreq-info.c
+>> @@ -94,7 +94,7 @@ static void print_speed(unsigned long speed)
+>>  			printf("%u.%06u GHz", ((unsigned int) speed/1000000),
+>>  				((unsigned int) speed%1000000));
+>>  		else if (speed > 100000)
+>> -			printf("%u MHz", (unsigned int) speed);
+>> +			printf("%u MHz", (unsigned int) speed/1000);
+> 
+> This looks ok to me, but can't we just remove this condition and depend on the
+> condition with the decimal point below?
+> 
+> -Stafford
+> 
+>>  		else if (speed > 1000)
+>>  			printf("%u.%03u MHz", ((unsigned int) speed/1000),
+>>  				(unsigned int) (speed%1000));
 
-The whole idea is to save maximum power in case of voltage outage on
-the main rail to let the system still do some emergency activities
-when it's on the backup battery. A simple circuit (or more complex
-power switch IC) will discover voltage outage, switch to a
-battery-backed rail and will generate an irq to SoC.
+Yeah we can.  I think I made a cut-and-paste error when I originally did this
+code.  I'll submit a v2 to clean that up.
 
-Now, what I need in the kernel is to _selectively_ suspend devices
-that are not needed in the "backup/emergency" mode.
+P.
 
-If current state of the power frameworks for system sleep, runtime pm,
-genpd etc. are not able to handle this transition, and as far as I
-understand these subsystems they cannot handle this straight away, I
-propose to extend with a new power state PM_SUSPEND_EMERGENCY or so to
-suspend unnecessary blocks of the system and leave the rest to operate
-in emergency mode.
 
-In DT we could specify which devices should go in low power state when
-in emergency mode eg.
-node {
-    ....
-    suspend-in-emergency;
-    .....
-}
-
-So the device driver knows if it should be suspended in
-PM_SUSPEND_EMERGENCY or not.  The driver has to provide a callback in
-pm_ops to handle this transition or we could reuse suspend callback if
-possible.
-
-Just a brief idea. Does it make sense to anyone?
-
-/Waldek
+>> -- 
+>> 2.15.0.rc0.39.g2f0e14e64
+>>
