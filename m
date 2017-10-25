@@ -1,51 +1,57 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH] PM / QoS: Fix device resume latency PM QoS
-Date: Wed, 25 Oct 2017 23:06:42 +0300
-Message-ID: <CAHp75VdY=q4A2cam=xg17+pOPgDbtYRdVdQvEjO7OGjG6m947Q@mail.gmail.com>
-References: <2245486.jYtPfSLF5g@aspire.rjw.lan> <20171024055409.GA5805@intel.com>
- <2465945.6cfLQGiipl@aspire.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 00/10] PM / Domain: renesas: Fix active wakeup behavior
+Date: Wed, 25 Oct 2017 22:49:11 +0200
+Message-ID: <CAPDyKFoUn18uAmSpOmCcjopNxunnNma4Cv2F9C2k+tE=xcuYMw@mail.gmail.com>
+References: <1508162116-5043-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f195.google.com ([209.85.216.195]:52180 "EHLO
-        mail-qt0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751933AbdJYUGo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Oct 2017 16:06:44 -0400
-In-Reply-To: <2465945.6cfLQGiipl@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1508162116-5043-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, linux-clk <linux-clk@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: ramesh.thomas@intel.com, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Tue, Oct 24, 2017 at 11:49 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Tuesday, October 24, 2017 7:54:09 AM CEST Ramesh Thomas wrote:
->> On 2017-10-20 at 13:27:34 +0200, Rafael J. Wysocki wrote:
-
->> >  static ssize_t pm_qos_resume_latency_store(struct device *dev,
->> > @@ -228,11 +235,19 @@ static ssize_t pm_qos_resume_latency_sto
->> >     s32 value;
->> >     int ret;
-
->> > +   if (!kstrtos32(buf, 0, &value)) {
->> > +           /*
->> > +            * Prevent users from writing negative or "no constraint" values
->> > +            * directly.
->> > +            */
->> > +           if (value < 0 || value == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
->> > +                   return -EINVAL;
-
->> > +           if (value == 0)
->> > +                   value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
->> > +   } else if (!strcmp(buf, "n/a") || !strcmp(buf, "n/a\n")) {
->>
->> Can the 2 checks for "n/a" be combined by checking first 3 characters?
+On 16 October 2017 at 15:55, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+>         Hi all,
 >
-> No, because "n/asomething" would then match too.
+> If a device in a Renesas ARM SoC is part of a Clock Domain, and it is
+> used as a wakeup source, it must be kept active during system suspend.
+>
+> Currently this is handled in device-specific drivers by explicitly
+> increasing the use count of the module clock when the device is
+> configured as a wakeup source.  However, the proper way to prevent the
+> device from being stopped is to inform this requirement to the genpd
+> core.  Hence this series does that, so the workarounds can be removed.
+>
+> This patch series consist of 4 parts:
+>   1. Patches 1-3 fix the clk-renesas-mstp, clk-renesas-cpg-mssr, and
+>      rcar-sysc Clock and/or PM Domain drivers by providing
+>      gpd_dev_ops.active_wakeup() callbacks,
 
-If I don't missed anything, kernfs is aware of \n which means the
-first check is enough.
-Am I correct?
+As we spoked about at ELC yesterday, I think the genpd specific
+callback for dealing with this is not really the proper solution.
 
--- 
-With Best Regards,
-Andy Shevchenko
+Instead I think this should be treated as a generic problem. In
+principle I think we need a way for drivers to inform the
+middle-layer/genpd about wakeup requirements during system-wide PM.
+
+Allow me to post a patch showing what I had in mind, then we can see
+what you think about it.
+
+>
+>   2. Patch 4 adds a new GENPD_FLAG_ACTIVE_WAKEUP flag, to avoid various
+>      PM Domain drivers that need similar behavior having to provide
+>      their own identical .active_wakeup() callbacks,
+
+This makes sense, however I think it's sufficient to make genpd check
+the flag, rather than assigning and using the ->active_wakeup()
+callback.
+
+That would then make it possible to remove the callback altogether.
+Can you do that instead?
+
+[...]
+
+Kind regards
+Uffe
