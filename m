@@ -1,31 +1,50 @@
-From: Tony Lindgren <tony@atomide.com>
+From: Sinan Kaya <okaya@codeaurora.org>
 Subject: Re: [RFC PATCH v8 7/7] PCI / PM: Add support for the PCIe WAKE#
  signal for OF
-Date: Thu, 26 Oct 2017 07:42:22 -0700
-Message-ID: <20171026144221.GF21504@atomide.com>
+Date: Thu, 26 Oct 2017 11:16:55 -0400
+Message-ID: <334be327-543f-d379-83de-ce84799fa49a@codeaurora.org>
 References: <20171026132840.20946-1-jeffy.chen@rock-chips.com>
  <20171026132840.20946-8-jeffy.chen@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:45748 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932255AbdJZOmZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 26 Oct 2017 10:42:25 -0400
-Content-Disposition: inline
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pci-owner@vger.kernel.org>
 In-Reply-To: <20171026132840.20946-8-jeffy.chen@rock-chips.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Language: en-US
+Sender: linux-pci-owner@vger.kernel.org
+To: Jeffy Chen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com
+Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jeffy Chen <jeffy.chen@rock-chips.com>
-Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, linux-pci@vger.kernel.org
 
-* Jeffy Chen <jeffy.chen@rock-chips.com> [171026 06:31]:
-> Add pci-of.c to handle the PCIe WAKE# interrupt.
+On 10/26/2017 9:28 AM, Jeffy Chen wrote:
+>  drivers/pci/Makefile |   2 +-
+>  drivers/pci/pci-of.c | 136 +++++++++++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 137 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/pci/pci-of.c
 > 
-> Also use the dedicated wakeirq infrastructure to simplify it.
-> 
-> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+> diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
+> index 66a21acad952..4f76dbdb024c 100644
+> --- a/drivers/pci/Makefile
+> +++ b/drivers/pci/Makefile
+> @@ -49,7 +49,7 @@ obj-$(CONFIG_PCI_ECAM) += ecam.o
+>  
+>  obj-$(CONFIG_XEN_PCIDEV_FRONTEND) += xen-pcifront.o
+>  
+> -obj-$(CONFIG_OF) += of.o
+> +obj-$(CONFIG_OF) += of.o pci-of.o
 
-Thanks for doing this, looks good to me from wakeirq point of view:
+If the intention is to push this to pci directory, this code needs to be made
+platform agnostic by splitting into two pieces.
 
-Acked-by: Tony Lindgren <tony@atomide.com>
+I think you can make this code common by abstracting the IRQ number and
+have some generic code like pci-wake.c in pci directory without the of prefix
+in this file.
+
+Then, you can have some other OF specific code in the drivers/of directory
+that reads the IRQ from OF and calls the common code in PCI directory.
+
+
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
