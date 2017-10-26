@@ -1,45 +1,48 @@
-From: =?GBK?B?wfXOyA==?= <18502523564@163.com>
-Subject: [PATCH] power: supply: 88pm860x_battery array_soc first number is
- in mV
-Date: Thu, 26 Oct 2017 11:31:22 +0800 (CST)
-Message-ID: <68ca57c8.53cd.15f56bc02ce.Coremail.18502523564@163.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] thermal: cpu_cooling:  pr_err() strings should end with
+ newlines
+Date: Thu, 26 Oct 2017 09:14:29 +0530
+Message-ID: <20171026034429.GB4240@vireshk-i7>
+References: <4a3646da88934a58525fc00141f634805ee6eb99.1508829220.git.arvind.yadav.cs@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-        boundary="----=_Part_79341_538721349.1508988682958"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:56362 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751973AbdJZDod (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Oct 2017 23:44:33 -0400
+Received: by mail-pf0-f195.google.com with SMTP id b85so1517279pfj.13
+        for <linux-pm@vger.kernel.org>; Wed, 25 Oct 2017 20:44:33 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <4a3646da88934a58525fc00141f634805ee6eb99.1508829220.git.arvind.yadav.cs@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Cc: amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-------=_Part_79341_538721349.1508988682958
-Content-Type: text/plain; charset=GBK
-Content-Transfer-Encoding: 7bit
+On 24-10-17, 13:20, Arvind Yadav wrote:
+> pr_err() messages should end with a new-line to avoid other messages
+> being concatenated.
+> 
+> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+> ---
+>  drivers/thermal/cpu_cooling.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+> index 908a801..dc63aba 100644
+> --- a/drivers/thermal/cpu_cooling.c
+> +++ b/drivers/thermal/cpu_cooling.c
+> @@ -696,7 +696,7 @@ static unsigned int find_next_max(struct cpufreq_frequency_table *table,
+>  	bool first;
+>  
+>  	if (IS_ERR_OR_NULL(policy)) {
+> -		pr_err("%s: cpufreq policy isn't valid: %p", __func__, policy);
+> +		pr_err("%s: cpufreq policy isn't valid: %p\n", __func__, policy);
+>  		return ERR_PTR(-EINVAL);
+>  	}
 
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-------=_Part_79341_538721349.1508988682958
-Content-Type: application/octet-stream;
- name="0001-power-supply-88pm860x_battery-array_soc-first-number.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="0001-power-supply-88pm860x_battery-array_soc-first-number.patch"
-
-RnJvbSBjZTViMzkzMzdmZjIyY2UzNzMxMWU2MTUwZDZjZGIxMjcwODcyYmZhIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiAid2ludG9uLmxpdSIgPDE4NTAyNTIzNTY0QDE2My5jb20+CkRh
-dGU6IFRodSwgMjYgT2N0IDIwMTcgMTE6MDY6NDEgKzA4MDAKU3ViamVjdDogW1BBVENIXSBwb3dl
-cjogc3VwcGx5OiA4OHBtODYweF9iYXR0ZXJ5IGFycmF5X3NvYyBmaXJzdCBudW1iZXIgaXMgaW4K
-IG1WCgpGaXggd3JvbmcgY29tbWVudHMgb2YgYXJyYXlfc29jIGRlc2NyaXB0aW9uLgpGaXJzdCBu
-dW1iZXIgaXMgbVYgbm90IG1BaC4KClNpZ25lZC1vZmYtYnk6IHdpbnRvbi5saXUgPDE4NTAyNTIz
-NTY0QDE2My5jb20+Ci0tLQogZHJpdmVycy9wb3dlci9zdXBwbHkvODhwbTg2MHhfYmF0dGVyeS5j
-IHwgMiArLQogMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspLCAxIGRlbGV0aW9uKC0pCgpk
-aWZmIC0tZ2l0IGEvZHJpdmVycy9wb3dlci9zdXBwbHkvODhwbTg2MHhfYmF0dGVyeS5jIGIvZHJp
-dmVycy9wb3dlci9zdXBwbHkvODhwbTg2MHhfYmF0dGVyeS5jCmluZGV4IDYzYzU3ZGMuLjhmODY3
-ZmQgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvcG93ZXIvc3VwcGx5Lzg4cG04NjB4X2JhdHRlcnkuYwor
-KysgYi9kcml2ZXJzL3Bvd2VyL3N1cHBseS84OHBtODYweF9iYXR0ZXJ5LmMKQEAgLTEyMyw3ICsx
-MjMsNyBAQCBzdHJ1Y3QgY2NudCB7CiAKIC8qCiAgKiBTdGF0ZSBvZiBDaGFyZ2UuCi0gKiBUaGUg
-Zmlyc3QgbnVtYmVyIGlzIG1BaCg9My42QyksIGFuZCB0aGUgc2Vjb25kIG51bWJlciBpcyBwZXJj
-ZW50IHBvaW50LgorICogVGhlIGZpcnN0IG51bWJlciBpcyBtViwgYW5kIHRoZSBzZWNvbmQgbnVt
-YmVyIGlzIHBlcmNlbnQgcG9pbnQuCiAgKi8KIHN0YXRpYyBpbnQgYXJyYXlfc29jW11bMl0gPSB7
-CiAJezQxNzAsIDEwMH0sIHs0MTU0LCA5OX0sIHs0MTM2LCA5OH0sIHs0MTIyLCA5N30sIHs0MTA3
-LCA5Nn0sCi0tIAoxLjkuMQoK
-------=_Part_79341_538721349.1508988682958--
+-- 
+viresh
