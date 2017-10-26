@@ -1,83 +1,56 @@
-From: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] power: supply: 88pm860x_battery array_soc first number
- is in mV
-Date: Wed, 25 Oct 2017 22:41:18 -0700
-Message-ID: <1508996478.10651.28.camel@perches.com>
-References: <1508995310-3834-1-git-send-email-18502523564@163.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / QoS: Fix device resume latency PM QoS
+Date: Thu, 26 Oct 2017 10:38:10 +0200
+Message-ID: <CAJZ5v0hgnq78z+=msaJjJmSFSHPM06MZ2_iRzixtRRDGxK-yBg@mail.gmail.com>
+References: <2245486.jYtPfSLF5g@aspire.rjw.lan> <20171024055409.GA5805@intel.com>
+ <2465945.6cfLQGiipl@aspire.rjw.lan> <CAHp75VdY=q4A2cam=xg17+pOPgDbtYRdVdQvEjO7OGjG6m947Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay0137.hostedemail.com ([216.40.44.137]:49932 "EHLO
-        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1750884AbdJZFlV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Oct 2017 01:41:21 -0400
-In-Reply-To: <1508995310-3834-1-git-send-email-18502523564@163.com>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:45284 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932246AbdJZIiL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Oct 2017 04:38:11 -0400
+In-Reply-To: <CAHp75VdY=q4A2cam=xg17+pOPgDbtYRdVdQvEjO7OGjG6m947Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "winton.liu" <18502523564@163.com>, sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ramesh.thomas@intel.com, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Thu, 2017-10-26 at 13:21 +0800, winton.liu wrote:
-> Fix wrong comments of array_soc description.
-> First number is mV not mAh.
-[]
-> diff --git a/drivers/power/supply/88pm860x_battery.c b/drivers/power/supply/88pm860x_battery.c
-[]
-> @@ -123,7 +123,7 @@ struct ccnt {
->  
->  /*
->   * State of Charge.
-> - * The first number is mAh(=3.6C), and the second number is percent point.
-> + * The first number is mV, and the second number is percent point.
->   */
->  static int array_soc[][2] = {
->  	{4170, 100}, {4154, 99}, {4136, 98}, {4122, 97}, {4107, 96},
+On Wed, Oct 25, 2017 at 10:06 PM, Andy Shevchenko
+<andy.shevchenko@gmail.com> wrote:
+> On Tue, Oct 24, 2017 at 11:49 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> On Tuesday, October 24, 2017 7:54:09 AM CEST Ramesh Thomas wrote:
+>>> On 2017-10-20 at 13:27:34 +0200, Rafael J. Wysocki wrote:
+>
+>>> >  static ssize_t pm_qos_resume_latency_store(struct device *dev,
+>>> > @@ -228,11 +235,19 @@ static ssize_t pm_qos_resume_latency_sto
+>>> >     s32 value;
+>>> >     int ret;
+>
+>>> > +   if (!kstrtos32(buf, 0, &value)) {
+>>> > +           /*
+>>> > +            * Prevent users from writing negative or "no constraint" values
+>>> > +            * directly.
+>>> > +            */
+>>> > +           if (value < 0 || value == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
+>>> > +                   return -EINVAL;
+>
+>>> > +           if (value == 0)
+>>> > +                   value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+>>> > +   } else if (!strcmp(buf, "n/a") || !strcmp(buf, "n/a\n")) {
+>>>
+>>> Can the 2 checks for "n/a" be combined by checking first 3 characters?
+>>
+>> No, because "n/asomething" would then match too.
+>
+> If I don't missed anything, kernfs is aware of \n which means the
+> first check is enough.
+> Am I correct?
 
-OK, but why not change the declaration to a struct
-and make it obvious?
+I'm not sure, honestly. :-)
 
-Also, the array or struct should be const.
+Anyway, that can be fixed up later and the bug in question is rather urgent.
 
-Perhaps:
----
- drivers/power/supply/88pm860x_battery.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/power/supply/88pm860x_battery.c b/drivers/power/supply/88pm860x_battery.c
-index 63c57dc82ac1..973c5f7b07ba 100644
---- a/drivers/power/supply/88pm860x_battery.c
-+++ b/drivers/power/supply/88pm860x_battery.c
-@@ -123,9 +123,12 @@ struct ccnt {
- 
- /*
-  * State of Charge.
-- * The first number is mAh(=3.6C), and the second number is percent point.
-+ * The first number is mV(=3.6C), and the second number is percent point.
-  */
--static int array_soc[][2] = {
-+static const struct {
-+	u16 mv;
-+	u8 percent;
-+} array_soc[] = {
- 	{4170, 100}, {4154, 99}, {4136, 98}, {4122, 97}, {4107, 96},
- 	{4102, 95}, {4088, 94}, {4081, 93}, {4070, 92}, {4060, 91},
- 	{4053, 90}, {4044, 89}, {4035, 88}, {4028, 87}, {4019, 86},
-@@ -388,14 +391,14 @@ static int calc_soc(struct pm860x_battery_info *info, int state, int *soc)
- 		return ret;
- 
- 	count = ARRAY_SIZE(array_soc);
--	if (ocv < array_soc[count - 1][0]) {
-+	if (ocv < array_soc[count - 1].mv) {
- 		*soc = 0;
- 		return 0;
- 	}
- 
- 	for (i = 0; i < count; i++) {
--		if (ocv >= array_soc[i][0]) {
--			*soc = array_soc[i][1];
-+		if (ocv >= array_soc[i].mv) {
-+			*soc = array_soc[i].percent;
- 			break;
- 		}
- 	}
+Thanks,
+Rafael
