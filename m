@@ -1,87 +1,30 @@
-From: Ramesh Thomas <ramesh.thomas@intel.com>
-Subject: Re: [PATCH v2] PM / QoS: Fix device resume latency PM QoS
-Date: Wed, 25 Oct 2017 19:00:20 -0700
-Message-ID: <20171026020020.GB18264@intel.com>
-References: <2245486.jYtPfSLF5g@aspire.rjw.lan>
- <2465945.6cfLQGiipl@aspire.rjw.lan>
- <CAJZ5v0imdah_V1ErJsAUgh=vmsS3wtRsoRtgLQwxonGLzQrT-A@mail.gmail.com>
- <1948004.bU45lK7TsE@aspire.rjw.lan>
- <20171025071625.GA13327@intel.com>
-Reply-To: ramesh.thomas@intel.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 0/2] cpufreq: arm_big_little: make function arguments and
+ structures const
+Date: Thu, 26 Oct 2017 08:33:07 +0530
+Message-ID: <20171026030307.GA4240@vireshk-i7>
+References: <1508410755-13666-1-git-send-email-bhumirks@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f50.google.com ([74.125.83.50]:48757 "EHLO
+        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752022AbdJZDDL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Oct 2017 23:03:11 -0400
+Received: by mail-pg0-f50.google.com with SMTP id v78so1572467pgb.5
+        for <linux-pm@vger.kernel.org>; Wed, 25 Oct 2017 20:03:11 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <20171025071625.GA13327@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
+In-Reply-To: <1508410755-13666-1-git-send-email-bhumirks@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bhumika Goyal <bhumirks@gmail.com>
+Cc: julia.lawall@lip6.fr, sudeep.holla@arm.com, rjw@rjwysocki.net, liviu.dudau@arm.com, lorenzo.pieralisi@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-On 2017-10-25 at 00:16:25 -0700, Ramesh Thomas wrote:
-> On 2017-10-24 at 13:35:05 +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> 
-> [cut]
-> 
-> > @@ -63,10 +60,14 @@ static bool default_suspend_ok(struct de
-> >  
-> >  	spin_unlock_irqrestore(&dev->power.lock, flags);
-> >  
-> > -	if (constraint_ns < 0)
-> > +	if (constraint_ns == 0)
-> >  		return false;
-> >  
-> > -	constraint_ns *= NSEC_PER_USEC;
-> > +	if (constraint_ns == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
-> > +		constraint_ns = -1;
-> > +	else
-> > +		constraint_ns *= NSEC_PER_USEC;
-> > +
-> >  	/*
-> >  	 * We can walk the children without any additional locking, because
-> >  	 * they all have been suspended at this point and their
-> > @@ -76,14 +77,19 @@ static bool default_suspend_ok(struct de
-> >  		device_for_each_child(dev, &constraint_ns,
-> >  				      dev_update_qos_constraint);
-> >  
-> > -	if (constraint_ns > 0) {
-> > -		constraint_ns -= td->suspend_latency_ns +
-> > -				td->resume_latency_ns;
-> > -		if (constraint_ns == 0)
-> > -			return false;
-> > +	if (constraint_ns < 0) {
-> > +		/* The children have no constraints. */
-> > +		td->effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
-> > +		td->cached_suspend_ok = true;
-> > +	} else {
-> > +		constraint_ns -= td->suspend_latency_ns + td->resume_latency_ns;
-> > +		if (constraint_ns > 0) {
-> > +			td->effective_constraint_ns = constraint_ns;
-> > +			td->cached_suspend_ok = true;
-> > +		} else {
-> > +			td->effective_constraint_ns = 0;
-> 
-> If the resume latency constraint was increased after this,
-> default_power_down_ok may not consider the new value. default_suspend_ok needs
-> to get called first if the new value is to be read.
-> 
-> This is because dev_pm_qos_read_value will get called only if
-> effective_constraint_ns has a negative value. default_suspend_ok initializes
-> effective_constraint_ns with -1 before doing the calculations.
-> default_power_down_ok does not initialize it to -1 and uses
-> the existing value.
-> 
-> A comment in default_power_down_ok implies it is not necessary to call
-> default_suspend_ok before calling default_power_down_ok. In that case,
-> default_power_down_ok should be able to get the new latency constraint value.
-> 
+On 19-10-17, 12:59, Bhumika Goyal wrote:
+> Make some function arguments as const. After this change make the 
+> cpufreq_arm_bL_ops structures const.
 
-The design expects default_suspend_ok would always be called before
-default_power_down_ok if the device was made "active" after start. Changes
-to resume latency constraint will not be considered if it happened between
-suspend and power down of a device. However, that is the design and not a
-behavior introduced by this patch.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Acked-by: Ramesh Thomas <ramesh.thomas@intel.com>
+-- 
+viresh
