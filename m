@@ -1,60 +1,54 @@
-From: Florian Fainelli <f.fainelli@gmail.com>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 Subject: Re: [PATCH] MAINTAINERS: thermal: Remove Eduardo's git tree
-Date: Thu, 26 Oct 2017 09:59:19 -0700
-Message-ID: <44d01b56-191e-d955-3be8-f413d18b5597@gmail.com>
+Date: Thu, 26 Oct 2017 19:06:10 +0200
+Message-ID: <aa79dc4c-8a76-9d98-d94f-3250fd8a328f@linaro.org>
 References: <20170924211843.11451-1-f.fainelli@gmail.com>
+ <44d01b56-191e-d955-3be8-f413d18b5597@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f195.google.com ([209.85.220.195]:56097 "EHLO
-        mail-qk0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932137AbdJZQ7Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Oct 2017 12:59:24 -0400
-In-Reply-To: <20170924211843.11451-1-f.fainelli@gmail.com>
+Received: from mail-wm0-f67.google.com ([74.125.82.67]:51327 "EHLO
+        mail-wm0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932127AbdJZRGN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Oct 2017 13:06:13 -0400
+Received: by mail-wm0-f67.google.com with SMTP id b9so9688505wmh.0
+        for <linux-pm@vger.kernel.org>; Thu, 26 Oct 2017 10:06:12 -0700 (PDT)
+In-Reply-To: <44d01b56-191e-d955-3be8-f413d18b5597@gmail.com>
 Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
+To: Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org
 Cc: code@mmayer.net, mmayer@broadcom.com, rui.zhang@intel.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "David S. Miller" <davem@davemloft.net>, Mauro Carvalho Chehab <mchehab@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, open list <linux-kernel@vger.kernel.org>
 
-On 09/24/2017 02:18 PM, Florian Fainelli wrote:
-> Eduardo's git tree at:
-> git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
+On 26/10/2017 18:59, Florian Fainelli wrote:
+> On 09/24/2017 02:18 PM, Florian Fainelli wrote:
+>> Eduardo's git tree at:
+>> git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
+>>
+>> has not been updated in months, remove it to avoid any confusing and
+>> patch submissions to stall.
+>>
+>> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+>> ---
+>> This is agains Rui's next branch
 > 
-> has not been updated in months, remove it to avoid any confusing and
-> patch submissions to stall.
+> The very fact that this patch has not received any response is a clear
+> indication that there is something seriously wrong with the SoC thermal
+> drivers maintenance.
 > 
-> Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
-> ---
-> This is agains Rui's next branch
+> Eduardo, if you can't even be bothered to respond to emails and
+> Ack/Nack, then remove yourself so you can set clear expectations with
+> people attempting to get their drivers upstreamed.
 
-The very fact that this patch has not received any response is a clear
-indication that there is something seriously wrong with the SoC thermal
-drivers maintenance.
+Eduardo reviewed and took my patches recently.
 
-Eduardo, if you can't even be bothered to respond to emails and
-Ack/Nack, then remove yourself so you can set clear expectations with
-people attempting to get their drivers upstreamed.
-
-> 
->  MAINTAINERS | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 209306019483..cc5bc8d0b48e 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -13210,7 +13210,6 @@ M:	Zhang Rui <rui.zhang@intel.com>
->  M:	Eduardo Valentin <edubezval@gmail.com>
->  L:	linux-pm@vger.kernel.org
->  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/rzhang/linux.git
-> -T:	git git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git
->  Q:	https://patchwork.kernel.org/project/linux-pm/list/
->  S:	Supported
->  F:	drivers/thermal/
-> 
+I don't know the status about merging them in Linus's tree.
 
 
 -- 
-Florian
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
