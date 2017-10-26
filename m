@@ -1,20 +1,20 @@
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [RFC PATCH v8 5/7] PCI: Make pci_platform_pm_ops's callbacks optional
-Date: Thu, 26 Oct 2017 21:28:38 +0800
-Message-ID: <20171026132840.20946-6-jeffy.chen@rock-chips.com>
+Subject: [RFC PATCH v8 4/7] of/irq: Adjust of pci irq parsing for multiple interrupts
+Date: Thu, 26 Oct 2017 21:28:37 +0800
+Message-ID: <20171026132840.20946-5-jeffy.chen@rock-chips.com>
 References: <20171026132840.20946-1-jeffy.chen@rock-chips.com>
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171026132840.20946-1-jeffy.chen@rock-chips.com>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, bhelgaas@google.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-pci@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Frank Rowand <frowand.list@gmail.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Allow platforms not to provide some of the pci_platform_pm_ops's
-callbacks.
+Currently we are considering the first irq as the PCI interrupt pin,
+but a pci device may have multiple interrupts(e.g. PCIe WAKE# pin).
 
-Also change the return value -ENOSYS to -ENODEV for:
-warning: drivers/pci/pci.c,594: ENOSYS means 'invalid syscall nr' and nothing else
+Only parse the PCI interrupt pin when the irq is unnamed or named as
+"pci".
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
@@ -26,108 +26,32 @@ Changes in v5: None
 Changes in v3: None
 Changes in v2: None
 
- drivers/pci/pci.c | 38 +++++++++++++++++++++++++-------------
- drivers/pci/pci.h |  5 +----
- 2 files changed, 26 insertions(+), 17 deletions(-)
+ drivers/of/of_pci_irq.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index f0d68066c726..e120b00a9017 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -572,46 +572,58 @@ static void pci_restore_bars(struct pci_dev *dev)
- 
- static const struct pci_platform_pm_ops *pci_platform_pm;
- 
--int pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
-+void pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
- {
--	if (!ops->is_manageable || !ops->set_state  || !ops->get_state ||
--	    !ops->choose_state  || !ops->set_wakeup || !ops->need_resume)
--		return -EINVAL;
- 	pci_platform_pm = ops;
--	return 0;
- }
- 
- static inline bool platform_pci_power_manageable(struct pci_dev *dev)
- {
--	return pci_platform_pm ? pci_platform_pm->is_manageable(dev) : false;
-+	if (pci_platform_pm && pci_platform_pm->is_manageable)
-+		return pci_platform_pm->is_manageable(dev);
+diff --git a/drivers/of/of_pci_irq.c b/drivers/of/of_pci_irq.c
+index 3a05568f65df..8b69211f0b88 100644
+--- a/drivers/of/of_pci_irq.c
++++ b/drivers/of/of_pci_irq.c
+@@ -27,7 +27,18 @@ int of_irq_parse_pci(const struct pci_dev *pdev, struct of_phandle_args *out_irq
+ 	 */
+ 	dn = pci_device_to_OF_node(pdev);
+ 	if (dn) {
+-		rc = of_irq_parse_one(dn, 0, out_irq);
++		struct property *prop;
++		const char *name;
++		int index = 0;
 +
-+	return false;
- }
- 
- static inline int platform_pci_set_power_state(struct pci_dev *dev,
- 					       pci_power_t t)
- {
--	return pci_platform_pm ? pci_platform_pm->set_state(dev, t) : -ENOSYS;
-+	if (pci_platform_pm && pci_platform_pm->set_state)
-+		return pci_platform_pm->set_state(dev, t);
++		prop = of_find_property(dn, "interrupt-names", NULL);
++		for (name = of_prop_next_string(prop, NULL); name;
++		     name = of_prop_next_string(prop, name), index++) {
++			if (!strcmp(name, "pci"))
++				break;
++		}
 +
-+	return -ENODEV;
- }
- 
- static inline pci_power_t platform_pci_get_power_state(struct pci_dev *dev)
- {
--	return pci_platform_pm ? pci_platform_pm->get_state(dev) : PCI_UNKNOWN;
-+	if (pci_platform_pm && pci_platform_pm->get_state)
-+		return pci_platform_pm->get_state(dev);
-+
-+	return PCI_UNKNOWN;
- }
- 
- static inline pci_power_t platform_pci_choose_state(struct pci_dev *dev)
- {
--	return pci_platform_pm ?
--			pci_platform_pm->choose_state(dev) : PCI_POWER_ERROR;
-+	if (pci_platform_pm && pci_platform_pm->choose_state)
-+		return pci_platform_pm->choose_state(dev);
-+
-+	return PCI_POWER_ERROR;
- }
- 
- static inline int platform_pci_set_wakeup(struct pci_dev *dev, bool enable)
- {
--	return pci_platform_pm ?
--			pci_platform_pm->set_wakeup(dev, enable) : -ENODEV;
-+	if (pci_platform_pm && pci_platform_pm->set_wakeup)
-+		return pci_platform_pm->set_wakeup(dev, enable);
-+
-+	return -ENODEV;
- }
- 
- static inline bool platform_pci_need_resume(struct pci_dev *dev)
- {
--	return pci_platform_pm ? pci_platform_pm->need_resume(dev) : false;
-+	if (pci_platform_pm && pci_platform_pm->need_resume)
-+		return pci_platform_pm->need_resume(dev);
-+
-+	return false;
- }
- 
- /**
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index e816a13e6259..048668271014 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -52,9 +52,6 @@ int pci_probe_reset_function(struct pci_dev *dev);
-  * @need_resume: returns 'true' if the given device (which is currently
-  *		suspended) needs to be resumed to be configured for system
-  *		wakeup.
-- *
-- * If given platform is generally capable of power managing PCI devices, all of
-- * these callbacks are mandatory.
-  */
- struct pci_platform_pm_ops {
- 	bool (*is_manageable)(struct pci_dev *dev);
-@@ -65,7 +62,7 @@ struct pci_platform_pm_ops {
- 	bool (*need_resume)(struct pci_dev *dev);
- };
- 
--int pci_set_platform_pm(const struct pci_platform_pm_ops *ops);
-+void pci_set_platform_pm(const struct pci_platform_pm_ops *ops);
- void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
- void pci_power_up(struct pci_dev *dev);
- void pci_disable_enabled_device(struct pci_dev *dev);
++		rc = of_irq_parse_one(dn, index, out_irq);
+ 		if (!rc)
+ 			return rc;
+ 	}
 -- 
 2.11.0
