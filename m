@@ -1,50 +1,57 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Subject: Re: [RFC PATCH v8 7/7] PCI / PM: Add support for the PCIe WAKE#
- signal for OF
-Date: Thu, 26 Oct 2017 11:16:55 -0400
-Message-ID: <334be327-543f-d379-83de-ce84799fa49a@codeaurora.org>
-References: <20171026132840.20946-1-jeffy.chen@rock-chips.com>
- <20171026132840.20946-8-jeffy.chen@rock-chips.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fix for v4.14-rc7
+Date: Thu, 26 Oct 2017 18:37:45 +0200
+Message-ID: <CAJZ5v0igDPBbCiyeCnO5jy9j3aFioV20g1nz66jXXBx6jAkqLQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <20171026132840.20946-8-jeffy.chen@rock-chips.com>
-Content-Language: en-US
-Sender: linux-pci-owner@vger.kernel.org
-To: Jeffy Chen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 10/26/2017 9:28 AM, Jeffy Chen wrote:
->  drivers/pci/Makefile |   2 +-
->  drivers/pci/pci-of.c | 136 +++++++++++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 137 insertions(+), 1 deletion(-)
->  create mode 100644 drivers/pci/pci-of.c
-> 
-> diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
-> index 66a21acad952..4f76dbdb024c 100644
-> --- a/drivers/pci/Makefile
-> +++ b/drivers/pci/Makefile
-> @@ -49,7 +49,7 @@ obj-$(CONFIG_PCI_ECAM) += ecam.o
->  
->  obj-$(CONFIG_XEN_PCIDEV_FRONTEND) += xen-pcifront.o
->  
-> -obj-$(CONFIG_OF) += of.o
-> +obj-$(CONFIG_OF) += of.o pci-of.o
+Hi Linus,
 
-If the intention is to push this to pci directory, this code needs to be made
-platform agnostic by splitting into two pieces.
+It is late in the cycle, but the bug in question is in the
+"user space can trigger unexpected behavior" category and the
+fix is stable-candidate, so here it goes.
 
-I think you can make this code common by abstracting the IRQ number and
-have some generic code like pci-wake.c in pci directory without the of prefix
-in this file.
+Please pull from the tag
 
-Then, you can have some other OF specific code in the drivers/of directory
-that reads the IRQ from OF and calls the common code in PCI directory.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.14-rc7
 
+with top-most commit 0cc2b4e5a020fc7f4d1795741c116c983e9467d7
 
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+ PM / QoS: Fix device resume latency PM QoS
+
+on top of commit bb176f67090ca54869fc1262c913aa69d2ede070
+
+ Linux 4.14-rc6
+
+to receive a power management fix for v4.14-rc7.
+
+This fixes a device power management quality of service (PM QoS)
+framework implementation issue causing "no restriction" requests
+for device resume latency, including "no restriction" set by user
+space, to effectively override requests with specific device
+resume latency requirements.
+
+Thanks!
+
+---------------
+
+Rafael J. Wysocki (1):
+      PM / QoS: Fix device resume latency PM QoS
+
+---------------
+
+ Documentation/ABI/testing/sysfs-devices-power |  4 +-
+ drivers/base/cpu.c                            |  3 +-
+ drivers/base/power/domain_governor.c          | 53 +++++++++++++++------------
+ drivers/base/power/qos.c                      |  2 +-
+ drivers/base/power/runtime.c                  |  2 +-
+ drivers/base/power/sysfs.c                    | 25 +++++++++++--
+ drivers/cpuidle/governors/menu.c              |  4 +-
+ include/linux/pm_qos.h                        |  5 ++-
+ 8 files changed, 63 insertions(+), 35 deletions(-)
