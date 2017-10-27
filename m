@@ -1,86 +1,60 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PULL REQUEST] for Rafael's Linux-PM / For-Next
-Date: Fri, 27 Oct 2017 10:00:56 +0200
-Message-ID: <CAJZ5v0gAb+H70QjO-urbeL6LyKSPX+NX2ePRHrigu2P0v1EjXg@mail.gmail.com>
-References: <CGME20171027003236epcms1p294d11fd0d6e074ec177abe903a2a91b8@epcms1p2>
- <20171027003236epcms1p294d11fd0d6e074ec177abe903a2a91b8@epcms1p2>
+From: Daniel Drake <drake@endlessm.com>
+Subject: Re: Multiple Acer laptops hang on ACPI poweroff
+Date: Fri, 27 Oct 2017 16:40:30 +0800
+Message-ID: <CAD8Lp47xEBPQVVDf0SQyAQHb1kXO4YpBq8DUz2u3Qnqj7RDDuQ@mail.gmail.com>
+References: <20170303201524.8150-1-drake@endlessm.com> <CAD8Lp44G_1R4gP9AFpEm34Y+DBmnWGgpBZbuTjimhi9uCQEKdg@mail.gmail.com>
+ <CAJZ5v0hXDHU4f5dXD3DrUszgiJWr0tzjM04bC66-qsEdRf6gUg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:55436 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750790AbdJ0IA5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2017 04:00:57 -0400
-Received: by mail-oi0-f68.google.com with SMTP id g125so9651555oib.12
-        for <linux-pm@vger.kernel.org>; Fri, 27 Oct 2017 01:00:57 -0700 (PDT)
-In-Reply-To: <20171027003236epcms1p294d11fd0d6e074ec177abe903a2a91b8@epcms1p2>
+Received: from mail-oi0-f46.google.com ([209.85.218.46]:52094 "EHLO
+        mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751170AbdJ0Ikc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2017 04:40:32 -0400
+Received: by mail-oi0-f46.google.com with SMTP id j126so9793805oib.8
+        for <linux-pm@vger.kernel.org>; Fri, 27 Oct 2017 01:40:32 -0700 (PDT)
+In-Reply-To: <CAJZ5v0hXDHU4f5dXD3DrUszgiJWr0tzjM04bC66-qsEdRf6gUg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Myungjoo Ham <myungjoo.ham@samsung.com>
-Cc: "rafael@kernel.org" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: linux-efi@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Upstreaming Team <linux@endlessm.com>, Chris Chiu <chiu@endlessm.com>
 
-On Fri, Oct 27, 2017 at 2:32 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
-> Dear Rafael,
+On Fri, Oct 27, 2017 at 3:57 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> Testing shutdown on Acer Aspire ES1-732 (Intel Apollo Lake N4200) on
+>> Linux 4.14-rc6, this issue is still present.
+>>
+>> The FADT has:
+>>
+>> [0ACh 0172  12]           PM1A Control Block : [Generic Address Structure]
+>> [0ACh 0172   1]                     Space ID : 01 [SystemIO]
+>> [0ADh 0173   1]                    Bit Width : 10
+>> [0AEh 0174   1]                   Bit Offset : 00
+>> [0AFh 0175   1]         Encoded Access Width : 02 [Word Access:16]
+>> [0B0h 0176   8]                      Address : 0000000000000404
+>>
+>> Full ACPI tables dump:
+>> https://gist.github.com/dsd/ed80d9fdd32f99e310002b2492cd6e1b
+>>
+>> We have tested that writing bit 13 of port 0404 under Windows 10
+>> (using an app called RW everything) results in an immediate and
+>> successful power down. However, writing the same bit under Linux just
+>> makes the system hang.
+>>
+>> I am not really familiar with the guts of x86 systems. When the OS
+>> writes to this port, which component of the system receives that
+>> request and acts accordingly? Is it handled by the BIOS? Or an EC, or
+>> ...? With more background here we may be able to approach the relevant
+>> component vendor and ask for help.
 >
-> Here goes a pull request from PM/devfreq mainly focussing on supporting OPP better.
+> Writes to the PM1A register may go straight to the PMC or trigger an
+> SMM trap.  In both cases the platform takes over.
 
-Thanks!
+Platform means BIOS/firmware? (i.e. Insyde in this case)
+Or you are referring to the Intel SoC?
 
-I will pull when I'm back home, likely on Sunday.
+> Is Apollo Lake the only platform affected or are there any other?
 
+All 3 affected product families are Apollo Lake
 
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> The following changes since commit bb176f67090ca54869fc1262c913aa69d2ede070:
->
->   Linux 4.14-rc6 (2017-10-23 06:49:47 -0400)
->
-> are available in the git repository at:
->
->   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pullreq_20171026
->
-> for you to fetch changes up to aa7c352f9841ab3fee5bf1de127a45e6310124a6:
->
->   PM / devfreq: Define the constant governor name (2017-10-26 17:08:40 +0900)
->
-> - ----------------------------------------------------------------
-> Pull Request from PM/devfreq to Linux-PM
->
-> - ----------------------------------------------------------------
-> Chanwoo Choi (7):
->       PM / devfreq: Set min/max_freq when adding the devfreq device
->       Revert "PM / devfreq: Add show_one macro to delete the duplicate code"
->       PM / devfreq: Use the available min/max frequency
->       PM / devfreq: Change return type of devfreq_set_freq_table()
->       PM / devfreq: Show the all available frequencies
->       PM / devfreq: Remove unneeded conditional statement
->       PM / devfreq: Define the constant governor name
->
->  drivers/devfreq/devfreq.c                 | 139 +++++++++++++++++++++---------
->  drivers/devfreq/exynos-bus.c              |   5 +-
->  drivers/devfreq/governor_passive.c        |   2 +-
->  drivers/devfreq/governor_performance.c    |   2 +-
->  drivers/devfreq/governor_powersave.c      |   2 +-
->  drivers/devfreq/governor_simpleondemand.c |   2 +-
->  drivers/devfreq/governor_userspace.c      |   2 +-
->  drivers/devfreq/rk3399_dmc.c              |   2 +-
->  include/linux/devfreq.h                   |  16 +++-
->  9 files changed, 123 insertions(+), 49 deletions(-)
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1
->
-> iQIcBAEBAgAGBQJZ8n08AAoJEBOhurvWBoCKCWUP+wcU5R/IxENbUf/pM5wykU3x
-> PCr67nJSa4Iohg22BzmJo0MkXC7AoNwajc/rPgYlrnHwd1arPcDKjF/Mi8+0cJNS
-> hRuqKW3w67+rbiBnYvhHeLT2U1Ik0CQPEICeNM/pn0yDUVMPIEQUpBS2W3ghx8OG
-> 3sufqxqsyMESnYmHluJAE9G3cFhxPipMNkd+cSA/xzqQxGO0ALsXAdSc/XJv9zVE
-> beiNIKz137XyddHA2Rwbcs9EL6swf6oDj6qPvXjsPPncG+pxoXydMmvjY5veMgW2
-> Hc49iTXLk2/srKIfhkpTyVHN4Y0MeDHJRwNaUm4i6OpWlZWR5J5tBw0mQYFLa81p
-> X9K5mtu6YllVu2MV+hEe6sqgDVVEnii1tQJ5uNDrT028/24Pe84LQGZvqNwBn2wP
-> APqvDQjCZObw0CS/RqVSKUvAmOS3+HmYJJEwaBmhK1j+ga4iFg1/MIDsFfuVEZIC
-> fhTw4TMbhsBHKqT1uRoHfS55q+hGXIMqtd1ZgvY/Cu/gX7h8ZKeW5ehVaJ/WA6iP
-> wLAf3WQHWgClDbe9mIU4nMQVrcp4DV3abQvbIzHzHOLN2HVwOgF2aX6wci95Iz1L
-> gWt6iP2ZhMqX19erIUp9W7B2WSGMto/vAA7Lhrm/w3nFl54f3r8wLoREBifjrRs/
-> 2gBILsa/5o/eZOjcbayI
-> =J1Ix
-> -----END PGP SIGNATURE-----
+Thanks
+Daniel
