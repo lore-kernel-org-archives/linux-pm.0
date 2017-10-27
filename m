@@ -1,68 +1,85 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 11/12] PM: i2c-designware-platdrv: Optimize power management
-Date: Thu, 26 Oct 2017 23:14:08 +0200
-Message-ID: <7872726.1UjM5oeC1r@aspire.rjw.lan>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <2298462.BTY6P2Oy1l@aspire.rjw.lan> <20171026204140.wzrq4lronz4nu6la@ninjato>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PULL REQUEST] for Rafael's Linux-PM / For-Next
+Date: Fri, 27 Oct 2017 00:32:36 +0000
+Message-ID: <20171027003236epcms1p294d11fd0d6e074ec177abe903a2a91b8@epcms1p2>
+References: <CGME20171027003236epcms1p294d11fd0d6e074ec177abe903a2a91b8@epcms1p2>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45912 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752047AbdJZVX7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Oct 2017 17:23:59 -0400
-In-Reply-To: <20171026204140.wzrq4lronz4nu6la@ninjato>
+Received: from mailout1.samsung.com ([203.254.224.24]:62749 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932364AbdJ0Acr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Oct 2017 20:32:47 -0400
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20171027003245epoutp017a571aa72299bf48d5c4bbf9aac2510e~xRgt_1tNQ0358503585epoutp01H
+        for <linux-pm@vger.kernel.org>; Fri, 27 Oct 2017 00:32:45 +0000 (GMT)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, linux-i2c@vger.kernel.org, Lee Jones <lee.jones@linaro.org>
+To: "rafael@kernel.org" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: Chanwoo Choi <cw00.choi@samsung.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>
 
-On Thursday, October 26, 2017 10:41:40 PM CEST Wolfram Sang wrote:
-> On Mon, Oct 16, 2017 at 03:31:17AM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > Optimize the power management in i2c-designware-platdrv by making it
-> > set the DPM_FLAG_SMART_SUSPEND and DPM_FLAG_LEAVE_SUSPENDED which
-> > allows some code to be dropped from its PM callbacks.
-> > 
-> > First, setting DPM_FLAG_SMART_SUSPEND causes the intel-lpss driver
-> > to avoid resuming i2c-designware-platdrv devices in its ->prepare
-> > callback, so they can stay in runtime suspend after that point even
-> > if the direct-complete feature is not used for them.
-> > 
-> > It also causes the PM core to avoid invoking "late" and "noirq"
-> > suspend callbacks for these devices if they are in runtime suspend
-> > at the beginning of the "late" phase of device suspend during
-> > system suspend.  That guarantees dw_i2c_plat_suspend() to be
-> > called for a device only if it is not in runtime suspend.
-> > Moreover, it also causes the PM core to set the device's runtime
-> > PM status to "active" after calling dw_i2c_plat_resume() for
-> > it, so the driver doesn't need internal flags to avoid invoking
-> > either dw_i2c_plat_suspend() or dw_i2c_plat_resume() twice in
-> > a row.
-> > 
-> > Second, setting DPM_FLAG_LEAVE_SUSPENDED enables the optimization
-> > allowing the device to stay suspended after system resume under
-> > suitable conditions, so again the driver doesn't need to take
-> > care of that by itself.
-> > 
-> > Accordingly, the internal "suspended" and "skip_resume" flags
-> > used by the driver are not necessary any more, so drop them and
-> > simplify the driver's PM callbacks.
-> > 
-> > Additionally, notice that dw_i2c_plat_complete() only needs
-> > to schedule runtime PM for the device if platform firmware
-> > has been involved in resuming the system, so make it call
-> > pm_resume_via_firmware() to check that.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> So, if the designware maintainers ack it, I will, too.
+Dear Rafael,
 
-Thanks!
+Here goes a pull request from PM/devfreq mainly focussing on supporting OPP better.
 
-I need to post a new revision of the core patches, so I'll send this one
-again later.  Likely during the next cycle.
 
-Thanks,
-Rafael
+Cheers,
+MyungJoo
+
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+The following changes since commit bb176f67090ca54869fc1262c913aa69d2ede070:
+
+  Linux 4.14-rc6 (2017-10-23 06:49:47 -0400)
+
+are available in the git repository at:
+
+  https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pullreq_20171026
+
+for you to fetch changes up to aa7c352f9841ab3fee5bf1de127a45e6310124a6:
+
+  PM / devfreq: Define the constant governor name (2017-10-26 17:08:40 +0900)
+
+- ----------------------------------------------------------------
+Pull Request from PM/devfreq to Linux-PM
+
+- ----------------------------------------------------------------
+Chanwoo Choi (7):
+      PM / devfreq: Set min/max_freq when adding the devfreq device
+      Revert "PM / devfreq: Add show_one macro to delete the duplicate code"
+      PM / devfreq: Use the available min/max frequency
+      PM / devfreq: Change return type of devfreq_set_freq_table()
+      PM / devfreq: Show the all available frequencies
+      PM / devfreq: Remove unneeded conditional statement
+      PM / devfreq: Define the constant governor name
+
+ drivers/devfreq/devfreq.c                 | 139 +++++++++++++++++++++---------
+ drivers/devfreq/exynos-bus.c              |   5 +-
+ drivers/devfreq/governor_passive.c        |   2 +-
+ drivers/devfreq/governor_performance.c    |   2 +-
+ drivers/devfreq/governor_powersave.c      |   2 +-
+ drivers/devfreq/governor_simpleondemand.c |   2 +-
+ drivers/devfreq/governor_userspace.c      |   2 +-
+ drivers/devfreq/rk3399_dmc.c              |   2 +-
+ include/linux/devfreq.h                   |  16 +++-
+ 9 files changed, 123 insertions(+), 49 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJZ8n08AAoJEBOhurvWBoCKCWUP+wcU5R/IxENbUf/pM5wykU3x
+PCr67nJSa4Iohg22BzmJo0MkXC7AoNwajc/rPgYlrnHwd1arPcDKjF/Mi8+0cJNS
+hRuqKW3w67+rbiBnYvhHeLT2U1Ik0CQPEICeNM/pn0yDUVMPIEQUpBS2W3ghx8OG
+3sufqxqsyMESnYmHluJAE9G3cFhxPipMNkd+cSA/xzqQxGO0ALsXAdSc/XJv9zVE
+beiNIKz137XyddHA2Rwbcs9EL6swf6oDj6qPvXjsPPncG+pxoXydMmvjY5veMgW2
+Hc49iTXLk2/srKIfhkpTyVHN4Y0MeDHJRwNaUm4i6OpWlZWR5J5tBw0mQYFLa81p
+X9K5mtu6YllVu2MV+hEe6sqgDVVEnii1tQJ5uNDrT028/24Pe84LQGZvqNwBn2wP
+APqvDQjCZObw0CS/RqVSKUvAmOS3+HmYJJEwaBmhK1j+ga4iFg1/MIDsFfuVEZIC
+fhTw4TMbhsBHKqT1uRoHfS55q+hGXIMqtd1ZgvY/Cu/gX7h8ZKeW5ehVaJ/WA6iP
+wLAf3WQHWgClDbe9mIU4nMQVrcp4DV3abQvbIzHzHOLN2HVwOgF2aX6wci95Iz1L
+gWt6iP2ZhMqX19erIUp9W7B2WSGMto/vAA7Lhrm/w3nFl54f3r8wLoREBifjrRs/
+2gBILsa/5o/eZOjcbayI
+=J1Ix
+-----END PGP SIGNATURE-----
