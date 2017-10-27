@@ -1,61 +1,93 @@
-From: =?GBK?B?wfXOyA==?= <18502523564@163.com>
-Subject: Re:Re: [PATCH] power: supply: 88pm860x_battery array_soc first
- number is in mV
-Date: Fri, 27 Oct 2017 10:48:00 +0800 (CST)
-Message-ID: <3a3b3c7c.4645.15f5bbaa714.Coremail.18502523564@163.com>
-References: <1508995310-3834-1-git-send-email-18502523564@163.com>
- <1508996478.10651.28.camel@perches.com>
+From: jeffy <jeffy.chen@rock-chips.com>
+Subject: Re: [RFC PATCH v8 1/7] dt-bindings: PCI: Add definition of PCIe WAKE#
+ irq and PCI irq
+Date: Fri, 27 Oct 2017 11:06:34 +0800
+Message-ID: <59F2A2BA.5030307@rock-chips.com>
+References: <20171026132840.20946-1-jeffy.chen@rock-chips.com> <20171026132840.20946-2-jeffy.chen@rock-chips.com> <20171027023331.GA11665@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=GBK
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from m13-43.163.com ([220.181.13.43]:10471 "EHLO m13-43.163.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751399AbdJ0DEq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 26 Oct 2017 23:04:46 -0400
-In-Reply-To: <1508996478.10651.28.camel@perches.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171027023331.GA11665@google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, rjw@rjwysocki.net, dianders@chromium.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Joe Perches <joe@perches.com>
-Cc: sre@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-CgoKCgoKCgoKCkF0IDIwMTctMTAtMjYgMTI6NDE6MTgsICJKb2UgUGVyY2hlcyIgPGpvZUBwZXJj
-aGVzLmNvbT4gd3JvdGU6Cj5PbiBUaHUsIDIwMTctMTAtMjYgYXQgMTM6MjEgKzA4MDAsIHdpbnRv
-bi5saXUgd3JvdGU6Cj4+IEZpeCB3cm9uZyBjb21tZW50cyBvZiBhcnJheV9zb2MgZGVzY3JpcHRp
-b24uCj4+IEZpcnN0IG51bWJlciBpcyBtViBub3QgbUFoLgo+W10KPj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvcG93ZXIvc3VwcGx5Lzg4cG04NjB4X2JhdHRlcnkuYyBiL2RyaXZlcnMvcG93ZXIvc3Vw
-cGx5Lzg4cG04NjB4X2JhdHRlcnkuYwo+W10KPj4gQEAgLTEyMyw3ICsxMjMsNyBAQCBzdHJ1Y3Qg
-Y2NudCB7Cj4+ICAKPj4gIC8qCj4+ICAgKiBTdGF0ZSBvZiBDaGFyZ2UuCj4+IC0gKiBUaGUgZmly
-c3QgbnVtYmVyIGlzIG1BaCg9My42QyksIGFuZCB0aGUgc2Vjb25kIG51bWJlciBpcyBwZXJjZW50
-IHBvaW50Lgo+PiArICogVGhlIGZpcnN0IG51bWJlciBpcyBtViwgYW5kIHRoZSBzZWNvbmQgbnVt
-YmVyIGlzIHBlcmNlbnQgcG9pbnQuCj4+ICAgKi8KPj4gIHN0YXRpYyBpbnQgYXJyYXlfc29jW11b
-Ml0gPSB7Cj4+ICAJezQxNzAsIDEwMH0sIHs0MTU0LCA5OX0sIHs0MTM2LCA5OH0sIHs0MTIyLCA5
-N30sIHs0MTA3LCA5Nn0sCj4KPk9LLCBidXQgd2h5IG5vdCBjaGFuZ2UgdGhlIGRlY2xhcmF0aW9u
-IHRvIGEgc3RydWN0Cj5hbmQgbWFrZSBpdCBvYnZpb3VzPwo+Cj5BbHNvLCB0aGUgYXJyYXkgb3Ig
-c3RydWN0IHNob3VsZCBiZSBjb25zdC4KPgogICAgWWVzLCB1c2luZyBhIHN0cnVjdCBtYWtlcyBp
-dCBtb3JlIHJlYWRhYmxlLgoKPlBlcmhhcHM6Cj4tLS0KPiBkcml2ZXJzL3Bvd2VyL3N1cHBseS84
-OHBtODYweF9iYXR0ZXJ5LmMgfCAxMyArKysrKysrKy0tLS0tCj4gMSBmaWxlIGNoYW5nZWQsIDgg
-aW5zZXJ0aW9ucygrKSwgNSBkZWxldGlvbnMoLSkKPgo+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvcG93
-ZXIvc3VwcGx5Lzg4cG04NjB4X2JhdHRlcnkuYyBiL2RyaXZlcnMvcG93ZXIvc3VwcGx5Lzg4cG04
-NjB4X2JhdHRlcnkuYwo+aW5kZXggNjNjNTdkYzgyYWMxLi45NzNjNWY3YjA3YmEgMTAwNjQ0Cj4t
-LS0gYS9kcml2ZXJzL3Bvd2VyL3N1cHBseS84OHBtODYweF9iYXR0ZXJ5LmMKPisrKyBiL2RyaXZl
-cnMvcG93ZXIvc3VwcGx5Lzg4cG04NjB4X2JhdHRlcnkuYwo+QEAgLTEyMyw5ICsxMjMsMTIgQEAg
-c3RydWN0IGNjbnQgewo+IAo+IC8qCj4gICogU3RhdGUgb2YgQ2hhcmdlLgo+LSAqIFRoZSBmaXJz
-dCBudW1iZXIgaXMgbUFoKD0zLjZDKSwgYW5kIHRoZSBzZWNvbmQgbnVtYmVyIGlzIHBlcmNlbnQg
-cG9pbnQuCj4rICogVGhlIGZpcnN0IG51bWJlciBpcyBtVig9My42QyksIGFuZCB0aGUgc2Vjb25k
-IG51bWJlciBpcyBwZXJjZW50IHBvaW50My4uCiAgICAgICAnKD0zLjZDKScgaXMgbm90IG5lZWRl
-ZC4gMW1BaCA9IDFtQSAqMzYwMHMgPSAzLjZDLiBBcyBmaXJzdCBudW1iZXIgaXMgbVYsIDMuNkMg
-aXMgbm90IG5lZWRlZC4KPiAgKi8KPi1zdGF0aWMgaW50IGFycmF5X3NvY1tdWzJdID0gewo+K3N0
-YXRpYyBjb25zdCBzdHJ1Y3Qgewo+Kwl1MTYgbXY7Cj4rCXU4IHBlcmNlbnQ7Cj4rfSBhcnJheV9z
-b2NbXSA9IHsKPiAJezQxNzAsIDEwMH0sIHs0MTU0LCA5OX0sIHs0MTM2LCA5OH0sIHs0MTIyLCA5
-N30sIHs0MTA3LCA5Nn0sCj4gCXs0MTAyLCA5NX0sIHs0MDg4LCA5NH0sIHs0MDgxLCA5M30sIHs0
-MDcwLCA5Mn0sIHs0MDYwLCA5MX0sCj4gCXs0MDUzLCA5MH0sIHs0MDQ0LCA4OX0sIHs0MDM1LCA4
-OH0sIHs0MDI4LCA4N30sIHs0MDE5LCA4Nn0sCj5AQCAtMzg4LDE0ICszOTEsMTQgQEAgc3RhdGlj
-IGludCBjYWxjX3NvYyhzdHJ1Y3QgcG04NjB4X2JhdHRlcnlfaW5mbyAqaW5mbywgaW50IHN0YXRl
-LCBpbnQgKnNvYykKPiAJCXJldHVybiByZXQ7Cj4gCj4gCWNvdW50ID0gQVJSQVlfU0laRShhcnJh
-eV9zb2MpOwo+LQlpZiAob2N2IDwgYXJyYXlfc29jW2NvdW50IC0gMV1bMF0pIHsKPisJaWYgKG9j
-diA8IGFycmF5X3NvY1tjb3VudCAtIDFdLm12KSB7Cj4gCQkqc29jID0gMDsKPiAJCXJldHVybiAw
-Owo+IAl9Cj4gCj4gCWZvciAoaSA9IDA7IGkgPCBjb3VudDsgaSsrKSB7Cj4tCQlpZiAob2N2ID49
-IGFycmF5X3NvY1tpXVswXSkgewo+LQkJCSpzb2MgPSBhcnJheV9zb2NbaV1bMV07Cj4rCQlpZiAo
-b2N2ID49IGFycmF5X3NvY1tpXS5tdikgewo+KwkJCSpzb2MgPSBhcnJheV9zb2NbaV0ucGVyY2Vu
-dDsKPiAJCQlicmVhazsKPiAJCX0KPiAJfQo+Cg==
+Hi Brian,
+
+On 10/27/2017 10:33 AM, Brian Norris wrote:
+> On Thu, Oct 26, 2017 at 09:28:34PM +0800, Jeffy Chen wrote:
+>> Add optional interrupts for PCIe WAKE# pin and PCI interrupt pin.
+>>
+>> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+>> ---
+>>
+>> Changes in v8:
+>> Add optional "pci", and rewrite commit message.
+>>
+>> Changes in v7: None
+>> Changes in v6: None
+>> Changes in v5:
+>> Move to pci.txt
+>>
+>> Changes in v3: None
+>> Changes in v2: None
+>>
+>>   Documentation/devicetree/bindings/pci/pci.txt | 3 +++
+>>   1 file changed, 3 insertions(+)
+>>
+>> diff --git a/Documentation/devicetree/bindings/pci/pci.txt b/Documentation/devicetree/bindings/pci/pci.txt
+>> index c77981c5dd18..faed405811cd 100644
+>> --- a/Documentation/devicetree/bindings/pci/pci.txt
+>> +++ b/Documentation/devicetree/bindings/pci/pci.txt
+>> @@ -24,3 +24,6 @@ driver implementation may support the following properties:
+>>      unsupported link speed, for instance, trying to do training for
+>>      unsupported link speed, etc.  Must be '4' for gen4, '3' for gen3, '2'
+>>      for gen2, and '1' for gen1. Any other values are invalid.
+>> +- interrupts: Interrupt specifier for each name in interrupt-names.
+>> +- interrupt-names: May contains "wakeup" for PCIe WAKE# interrupt and "pci"
+>> +  for PCI interrupt.
+>
+> Similar criticism to what Rob made on patch 4: this file already says "a
+> host bridge driver implementation may support the following properties",
+> so this property is clearly not for child devices. And so having the
+> "PCI interrupt" here doesn't make much sense.
+>
+> Similarly, you're documenting "wakeup" here as a host bridge property,
+> but then patch 7 is adding per-device support it seems? That seems
+> wrong.
+oops...so there's no section for PCI device here, maybe i should add a 
+section about "PCI device have standardized Device Tree bindings:" to 
+place it? will do in next version.
+
+
+>
+> In fact, I'm pretty sure this series fails to actually look in the host
+> bridge for the "wakeup" interrupt at all! Did you actually test this?
+actually it could...
+
+static void *of_pci_setup(struct device *dev)
+{
+...
+         device_init_wakeup(dev, false);
+
+         dev_info(dev, "Wakeup IRQ %d\n", irq);
+         return data;
+}
+
+[    1.546561] OF: PCI:   MEM 0xfa000000..0xfbdfffff -> 0xfa000000
+[    1.553154] OF: PCI:    IO 0xfbe00000..0xfbefffff -> 0xfbe00000
+[    1.560859] rockchip-pcie f8000000.pcie: Wakeup IRQ 64
+[    1.566555] rockchip-pcie f8000000.pcie: PCI host bridge to bus
+
+>
+> And again, describing your intentions a little better in the commit
+> message would make this clearer. Then we could tell which way you
+> intended this to work...
+ok, will do in next version...
+>
+> Brian
+>
+>
+>
