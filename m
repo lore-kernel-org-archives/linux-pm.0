@@ -1,93 +1,87 @@
-From: jeffy <jeffy.chen@rock-chips.com>
-Subject: Re: [RFC PATCH v8 1/7] dt-bindings: PCI: Add definition of PCIe WAKE#
- irq and PCI irq
-Date: Fri, 27 Oct 2017 11:06:34 +0800
-Message-ID: <59F2A2BA.5030307@rock-chips.com>
-References: <20171026132840.20946-1-jeffy.chen@rock-chips.com> <20171026132840.20946-2-jeffy.chen@rock-chips.com> <20171027023331.GA11665@google.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] MAINTAINERS: thermal: Remove Eduardo's git tree
+Date: Thu, 26 Oct 2017 20:41:25 -0700
+Message-ID: <20171027034123.GA16699@localhost.localdomain>
+References: <20170924211843.11451-1-f.fainelli@gmail.com>
+ <44d01b56-191e-d955-3be8-f413d18b5597@gmail.com>
+ <aa79dc4c-8a76-9d98-d94f-3250fd8a328f@linaro.org>
+ <1509070951.3536.28.camel@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171027023331.GA11665@google.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, rjw@rjwysocki.net, dianders@chromium.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:56629 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751263AbdJ0Dl3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Oct 2017 23:41:29 -0400
+Content-Disposition: inline
+In-Reply-To: <1509070951.3536.28.camel@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org, code@mmayer.net, mmayer@broadcom.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "David S. Miller" <davem@davemloft.net>, Mauro Carvalho Chehab <mchehab@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, open list <linux-kernel@vger.kernel.org>
 
-Hi Brian,
+Hello Florian,
 
-On 10/27/2017 10:33 AM, Brian Norris wrote:
-> On Thu, Oct 26, 2017 at 09:28:34PM +0800, Jeffy Chen wrote:
->> Add optional interrupts for PCIe WAKE# pin and PCI interrupt pin.
->>
->> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
->> ---
->>
->> Changes in v8:
->> Add optional "pci", and rewrite commit message.
->>
->> Changes in v7: None
->> Changes in v6: None
->> Changes in v5:
->> Move to pci.txt
->>
->> Changes in v3: None
->> Changes in v2: None
->>
->>   Documentation/devicetree/bindings/pci/pci.txt | 3 +++
->>   1 file changed, 3 insertions(+)
->>
->> diff --git a/Documentation/devicetree/bindings/pci/pci.txt b/Documentation/devicetree/bindings/pci/pci.txt
->> index c77981c5dd18..faed405811cd 100644
->> --- a/Documentation/devicetree/bindings/pci/pci.txt
->> +++ b/Documentation/devicetree/bindings/pci/pci.txt
->> @@ -24,3 +24,6 @@ driver implementation may support the following properties:
->>      unsupported link speed, for instance, trying to do training for
->>      unsupported link speed, etc.  Must be '4' for gen4, '3' for gen3, '2'
->>      for gen2, and '1' for gen1. Any other values are invalid.
->> +- interrupts: Interrupt specifier for each name in interrupt-names.
->> +- interrupt-names: May contains "wakeup" for PCIe WAKE# interrupt and "pci"
->> +  for PCI interrupt.
->
-> Similar criticism to what Rob made on patch 4: this file already says "a
-> host bridge driver implementation may support the following properties",
-> so this property is clearly not for child devices. And so having the
-> "PCI interrupt" here doesn't make much sense.
->
-> Similarly, you're documenting "wakeup" here as a host bridge property,
-> but then patch 7 is adding per-device support it seems? That seems
-> wrong.
-oops...so there's no section for PCI device here, maybe i should add a 
-section about "PCI device have standardized Device Tree bindings:" to 
-place it? will do in next version.
+On Fri, Oct 27, 2017 at 10:22:31AM +0800, Zhang Rui wrote:
+> CC Eduardo.
+> 
+> On Thu, 2017-10-26 at 19:06 +0200, Daniel Lezcano wrote:
+> > On 26/10/2017 18:59, Florian Fainelli wrote:
+> > > 
+> > > On 09/24/2017 02:18 PM, Florian Fainelli wrote:
+> > > > 
+> > > > Eduardo's git tree at:
+> > > > git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
+> > > > thermal.git
+> > > > 
+> > > > has not been updated in months, remove it to avoid any confusing
+> > > > and
+> > > > patch submissions to stall.
+> > > > 
+> > > > Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+> > > > ---
+> > > > This is agains Rui's next branch
+> > > The very fact that this patch has not received any response is a
+> > > clear
+> > > indication that there is something seriously wrong with the SoC
+> > > thermal
+> > > drivers maintenance.
 
+> > > 
+> > > Eduardo, if you can't even be bothered to respond to emails and
+> > > Ack/Nack, then remove yourself so you can set clear expectations
+> > > with
+> > > people attempting to get their drivers upstreamed.
+> > Eduardo reviewed and took my patches recently.
+> > 
+> > I don't know the status about merging them in Linus's tree.
+> > 
+> > 
+> Eduardo was busy on some personal stuff during last release cycle, and
+> now he is back and is taking thermal soc patches for next merge window.
 
->
-> In fact, I'm pretty sure this series fails to actually look in the host
-> bridge for the "wakeup" interrupt at all! Did you actually test this?
-actually it could...
+Yes, past merge windows I was not able to help on the thermal subsystem
+maintenance, which I do, btw, in my free time.
+If you want to sponsor that, feel free to contact me in private.
 
-static void *of_pci_setup(struct device *dev)
-{
-...
-         device_init_wakeup(dev, false);
+*Also, not that there are TWO maintainers in the thermal subsystem, and Rui
+was notified of my absence. And I am pretty sure he would take care of
+patches in case you properly called his attention.*
 
-         dev_info(dev, "Wakeup IRQ %d\n", irq);
-         return data;
-}
+> 
+> I think he didn't response because he was not CCed.
 
-[    1.546561] OF: PCI:   MEM 0xfa000000..0xfbdfffff -> 0xfa000000
-[    1.553154] OF: PCI:    IO 0xfbe00000..0xfbefffff -> 0xfbe00000
-[    1.560859] rockchip-pcie f8000000.pcie: Wakeup IRQ 64
-[    1.566555] rockchip-pcie f8000000.pcie: PCI host bridge to bus
+Yup, if you do not copy me in e-mails that you want my attention, it's
+hard to respond. I suppose if you want to remove a tree of a volunteer,
+it would be fair if you at least copy him/her :-)
 
->
-> And again, describing your intentions a little better in the commit
-> message would make this clearer. Then we could tell which way you
-> intended this to work...
-ok, will do in next version...
->
-> Brian
->
->
->
+Not sure if you noticed, but the BRCM driver you pinged me in linux-pm
+is also already merge in my tree and will be sent in the next merge
+window as notified over email:
+https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git/log/?h=linus
+
+Hope that helps and also clarifies.
+
+> 
+> thanks,
+> rui
