@@ -1,203 +1,40 @@
-From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [RFC PATCH v10 7/7] PCI / PM: Add support for the PCIe WAKE# signal for OF
-Date: Fri, 27 Oct 2017 15:26:12 +0800
-Message-ID: <20171027072612.26565-8-jeffy.chen@rock-chips.com>
-References: <20171027072612.26565-1-jeffy.chen@rock-chips.com>
+From: jeffy <jeffy.chen@rock-chips.com>
+Subject: Re: [RFC PATCH v8 7/7] PCI / PM: Add support for the PCIe WAKE# signal
+ for OF
+Date: Fri, 27 Oct 2017 15:32:52 +0800
+Message-ID: <59F2E124.5060209@rock-chips.com>
+References: <20171026132840.20946-1-jeffy.chen@rock-chips.com> <20171026132840.20946-8-jeffy.chen@rock-chips.com> <20171027055529.GB85582@google.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.130]:45154 "EHLO
+Received: from regular1.263xmail.com ([211.150.99.138]:57861 "EHLO
         regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752213AbdJ0H1b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2017 03:27:31 -0400
-In-Reply-To: <20171027072612.26565-1-jeffy.chen@rock-chips.com>
+        with ESMTP id S1750790AbdJ0Hc7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2017 03:32:59 -0400
+In-Reply-To: <20171027055529.GB85582@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, bhelgaas@google.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-pci@vger.kernel.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, rjw@rjwysocki.net, dianders@chromium.org, linux-pci@vger.kernel.org
 
-Add pci-of.c to handle the PCIe WAKE# interrupt.
+Hi Brian,
 
-Also use the dedicated wakeirq infrastructure to simplify it.
+On 10/27/2017 01:55 PM, Brian Norris wrote:
+> One reason this series is failing for me: the above is failing with
+> -EINVAL -- it seems like no one set the 'can_wakeup' flag for the
+> Marvell Wifi card I'm using. It seems like we probably*should*  be
+> calling device_set_wakeup_capable() from your new setup method, to say
+> that we're capable of wakeup. The PCI PME code does this already, which
+> seems to make sense. There are also some network drivers that do it too
+> (e.g., ath10k), but not all.
+>
+right, thanks for noticing, will fix it in the new version...
 
-Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
----
+and Sinan suggested to separate of code and wakeirq handling, would it 
+make sense to rewrite this as pci-wakeirq.c(platform_pm_ops based on 
+irq), and move of parse code into drivers/of/(maybe into 
+of_irq_parse_pci()'s PCI interrupt parsing code)?
 
-Changes in v10:
-Use device_set_wakeup_capable() instead of device_set_wakeup_enable(),
-since dedicated wakeirq will be lost in device_set_wakeup_enable(false).
-
-Changes in v9:
-Fix check error in .cleanup().
-Move dedicated wakeirq setup to setup() callback and use
-device_set_wakeup_enable() to enable/disable.
-
-Changes in v8:
-Add pci-of.c and use platform_pm_ops to handle the PCIe WAKE# signal.
-
-Changes in v7:
-Move PCIE_WAKE handling into pci core.
-
-Changes in v6:
-Fix device_init_wake error handling, and add some comments.
-
-Changes in v5:
-Rebase.
-
-Changes in v3:
-Fix error handling.
-
-Changes in v2:
-Use dev_pm_set_dedicated_wake_irq.
-
- drivers/pci/Makefile |   2 +-
- drivers/pci/pci-of.c | 127 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 128 insertions(+), 1 deletion(-)
- create mode 100644 drivers/pci/pci-of.c
-
-diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
-index 66a21acad952..4f76dbdb024c 100644
---- a/drivers/pci/Makefile
-+++ b/drivers/pci/Makefile
-@@ -49,7 +49,7 @@ obj-$(CONFIG_PCI_ECAM) += ecam.o
- 
- obj-$(CONFIG_XEN_PCIDEV_FRONTEND) += xen-pcifront.o
- 
--obj-$(CONFIG_OF) += of.o
-+obj-$(CONFIG_OF) += of.o pci-of.o
- 
- ccflags-$(CONFIG_PCI_DEBUG) := -DDEBUG
- 
-diff --git a/drivers/pci/pci-of.c b/drivers/pci/pci-of.c
-new file mode 100644
-index 000000000000..28f3c4a0eec8
---- /dev/null
-+++ b/drivers/pci/pci-of.c
-@@ -0,0 +1,127 @@
-+/*
-+ * OF PCI PM support
-+ *
-+ * Copyright (c) 2017 Rockchip, Inc.
-+ *
-+ * Author: Jeffy Chen <jeffy.chen@rock-chips.com>
-+ *
-+ * This program is free software: you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation, either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/of_irq.h>
-+#include <linux/pci.h>
-+#include <linux/pm_wakeirq.h>
-+#include "pci.h"
-+
-+struct of_pci_pm_data {
-+	struct device	*dev;
-+	unsigned int	wakeup_irq;
-+	atomic_t	wakeup_cnt;
-+};
-+
-+static void *of_pci_setup(struct device *dev)
-+{
-+	struct of_pci_pm_data *data;
-+	int irq, ret;
-+
-+	if (!dev->of_node)
-+		return NULL;
-+
-+	data = devm_kzalloc(dev, sizeof(struct of_pci_pm_data), GFP_KERNEL);
-+	if (!data)
-+		return ERR_PTR(-ENOMEM);
-+
-+	irq = of_irq_get_byname(dev->of_node, "wakeup");
-+	if (irq < 0) {
-+		if (irq == -EPROBE_DEFER)
-+			return ERR_PTR(irq);
-+
-+		return NULL;
-+	}
-+
-+	data->wakeup_irq = irq;
-+	data->dev = dev;
-+
-+	device_init_wakeup(dev, true);
-+	ret = dev_pm_set_dedicated_wake_irq(dev, irq);
-+	if (ret < 0) {
-+		device_init_wakeup(dev, false);
-+		return NULL;
-+	}
-+	device_set_wakeup_capable(dev, false);
-+
-+	dev_info(dev, "Wakeup IRQ %d\n", irq);
-+	return data;
-+}
-+
-+static void *of_pci_setup_dev(struct pci_dev *pci_dev)
-+{
-+	return of_pci_setup(&pci_dev->dev);
-+}
-+
-+static void *of_pci_setup_host_bridge(struct pci_host_bridge *bridge)
-+{
-+	return of_pci_setup(bridge->dev.parent);
-+}
-+
-+static void of_pci_cleanup(void *pmdata)
-+{
-+	struct of_pci_pm_data *data = pmdata;
-+
-+	if (!IS_ERR_OR_NULL(data)) {
-+		device_init_wakeup(data->dev, false);
-+		dev_pm_clear_wake_irq(data->dev);
-+	}
-+}
-+
-+static bool of_pci_can_wakeup(void *pmdata)
-+{
-+	struct of_pci_pm_data *data = pmdata;
-+
-+	if (IS_ERR_OR_NULL(data))
-+		return false;
-+
-+	return data->wakeup_irq > 0;
-+}
-+
-+static int of_pci_dev_wakeup(void *pmdata, bool enable)
-+{
-+	struct of_pci_pm_data *data = pmdata;
-+	struct device *dev = data->dev;
-+
-+	device_set_wakeup_capable(dev, enable);
-+	return 0;
-+}
-+
-+static int of_pci_bridge_wakeup(void *pmdata, bool enable)
-+{
-+	struct of_pci_pm_data *data = pmdata;
-+
-+	if (enable && atomic_inc_return(&data->wakeup_cnt) != 1)
-+		return 0;
-+
-+	if (!enable && atomic_dec_return(&data->wakeup_cnt) != 0)
-+		return 0;
-+
-+	return of_pci_dev_wakeup(pmdata, enable);
-+}
-+
-+static const struct pci_platform_pm_ops of_pci_platform_pm = {
-+	.setup_dev		= of_pci_setup_dev,
-+	.setup_host_bridge	= of_pci_setup_host_bridge,
-+	.cleanup		= of_pci_cleanup,
-+	.can_wakeup		= of_pci_can_wakeup,
-+	.dev_wakeup		= of_pci_dev_wakeup,
-+	.bridge_wakeup		= of_pci_bridge_wakeup,
-+};
-+
-+static int __init of_pci_init(void)
-+{
-+	pci_set_platform_pm(&of_pci_platform_pm);
-+	return 0;
-+}
-+arch_initcall(of_pci_init);
--- 
-2.11.0
+> Brian
+>
