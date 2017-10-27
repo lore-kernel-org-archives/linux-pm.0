@@ -1,60 +1,68 @@
-From: Daniel Drake <drake@endlessm.com>
-Subject: Re: Multiple Acer laptops hang on ACPI poweroff
-Date: Fri, 27 Oct 2017 16:40:30 +0800
-Message-ID: <CAD8Lp47xEBPQVVDf0SQyAQHb1kXO4YpBq8DUz2u3Qnqj7RDDuQ@mail.gmail.com>
-References: <20170303201524.8150-1-drake@endlessm.com> <CAD8Lp44G_1R4gP9AFpEm34Y+DBmnWGgpBZbuTjimhi9uCQEKdg@mail.gmail.com>
- <CAJZ5v0hXDHU4f5dXD3DrUszgiJWr0tzjM04bC66-qsEdRf6gUg@mail.gmail.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [RFC PATCH v8 4/7] of/irq: Adjust of pci irq parsing for
+ multiple interrupts
+Date: Fri, 27 Oct 2017 09:38:12 -0500
+Message-ID: <20171027143812.5i4vathfjpgld7wk@rob-hp-laptop>
+References: <20171026132840.20946-1-jeffy.chen@rock-chips.com>
+ <20171026132840.20946-5-jeffy.chen@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f46.google.com ([209.85.218.46]:52094 "EHLO
-        mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751170AbdJ0Ikc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2017 04:40:32 -0400
-Received: by mail-oi0-f46.google.com with SMTP id j126so9793805oib.8
-        for <linux-pm@vger.kernel.org>; Fri, 27 Oct 2017 01:40:32 -0700 (PDT)
-In-Reply-To: <CAJZ5v0hXDHU4f5dXD3DrUszgiJWr0tzjM04bC66-qsEdRf6gUg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171026132840.20946-5-jeffy.chen@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jeffy Chen <jeffy.chen@rock-chips.com>
+Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Frank Rowand <frowand.list@gmail.com>, devicetree@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: linux-efi@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Upstreaming Team <linux@endlessm.com>, Chris Chiu <chiu@endlessm.com>
 
-On Fri, Oct 27, 2017 at 3:57 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> Testing shutdown on Acer Aspire ES1-732 (Intel Apollo Lake N4200) on
->> Linux 4.14-rc6, this issue is still present.
->>
->> The FADT has:
->>
->> [0ACh 0172  12]           PM1A Control Block : [Generic Address Structure]
->> [0ACh 0172   1]                     Space ID : 01 [SystemIO]
->> [0ADh 0173   1]                    Bit Width : 10
->> [0AEh 0174   1]                   Bit Offset : 00
->> [0AFh 0175   1]         Encoded Access Width : 02 [Word Access:16]
->> [0B0h 0176   8]                      Address : 0000000000000404
->>
->> Full ACPI tables dump:
->> https://gist.github.com/dsd/ed80d9fdd32f99e310002b2492cd6e1b
->>
->> We have tested that writing bit 13 of port 0404 under Windows 10
->> (using an app called RW everything) results in an immediate and
->> successful power down. However, writing the same bit under Linux just
->> makes the system hang.
->>
->> I am not really familiar with the guts of x86 systems. When the OS
->> writes to this port, which component of the system receives that
->> request and acts accordingly? Is it handled by the BIOS? Or an EC, or
->> ...? With more background here we may be able to approach the relevant
->> component vendor and ask for help.
->
-> Writes to the PM1A register may go straight to the PMC or trigger an
-> SMM trap.  In both cases the platform takes over.
+On Thu, Oct 26, 2017 at 09:28:37PM +0800, Jeffy Chen wrote:
+> Currently we are considering the first irq as the PCI interrupt pin,
+> but a pci device may have multiple interrupts(e.g. PCIe WAKE# pin).
+> 
+> Only parse the PCI interrupt pin when the irq is unnamed or named as
+> "pci".
+> 
+> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+> ---
+> 
+> Changes in v8: None
+> Changes in v7: None
+> Changes in v6: None
+> Changes in v5: None
+> Changes in v3: None
+> Changes in v2: None
+> 
+>  drivers/of/of_pci_irq.c | 13 ++++++++++++-
+>  1 file changed, 12 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/of/of_pci_irq.c b/drivers/of/of_pci_irq.c
+> index 3a05568f65df..8b69211f0b88 100644
+> --- a/drivers/of/of_pci_irq.c
+> +++ b/drivers/of/of_pci_irq.c
+> @@ -27,7 +27,18 @@ int of_irq_parse_pci(const struct pci_dev *pdev, struct of_phandle_args *out_irq
+>  	 */
+>  	dn = pci_device_to_OF_node(pdev);
+>  	if (dn) {
+> -		rc = of_irq_parse_one(dn, 0, out_irq);
+> +		struct property *prop;
+> +		const char *name;
+> +		int index = 0;
+> +
+> +		prop = of_find_property(dn, "interrupt-names", NULL);
+> +		for (name = of_prop_next_string(prop, NULL); name;
+> +		     name = of_prop_next_string(prop, name), index++) {
+> +			if (!strcmp(name, "pci"))
+> +				break;
 
-Platform means BIOS/firmware? (i.e. Insyde in this case)
-Or you are referring to the Intel SoC?
+Use of_property_match_string
 
-> Is Apollo Lake the only platform affected or are there any other?
-
-All 3 affected product families are Apollo Lake
-
-Thanks
-Daniel
+> +		}
+> +
+> +		rc = of_irq_parse_one(dn, index, out_irq);
+>  		if (!rc)
+>  			return rc;
+>  	}
+> -- 
+> 2.11.0
+> 
+> 
