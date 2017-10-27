@@ -1,70 +1,93 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / QoS: Fix device resume latency PM QoS
-Date: Fri, 27 Oct 2017 21:16:08 +0200
-Message-ID: <CAJZ5v0hH62vFnL0=rK6VHB8LSBB=BD2CG5apw3QCxd=BH_OzYA@mail.gmail.com>
-References: <2245486.jYtPfSLF5g@aspire.rjw.lan> <20171024055409.GA5805@intel.com>
- <2465945.6cfLQGiipl@aspire.rjw.lan> <CAHp75VdY=q4A2cam=xg17+pOPgDbtYRdVdQvEjO7OGjG6m947Q@mail.gmail.com>
- <CAJZ5v0hgnq78z+=msaJjJmSFSHPM06MZ2_iRzixtRRDGxK-yBg@mail.gmail.com> <CAHp75VcdUP-108-ijVubYBXGyJOkpoP6hGz7LLu86NJAaMM3OA@mail.gmail.com>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [RFC PATCH v10 1/7] dt-bindings: PCI: Add definition of PCIe
+ WAKE# irq and PCI irq
+Date: Fri, 27 Oct 2017 13:45:17 -0700
+Message-ID: <20171027204513.GA105121@google.com>
+References: <20171027072612.26565-1-jeffy.chen@rock-chips.com>
+ <20171027072612.26565-2-jeffy.chen@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:48205 "EHLO
-        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932387AbdJ0TQJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2017 15:16:09 -0400
-In-Reply-To: <CAHp75VcdUP-108-ijVubYBXGyJOkpoP6hGz7LLu86NJAaMM3OA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171027072612.26565-2-jeffy.chen@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jeffy Chen <jeffy.chen@rock-chips.com>
+Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, rjw@rjwysocki.net, dianders@chromium.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, ramesh.thomas@intel.com, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Fri, Oct 27, 2017 at 8:52 PM, Andy Shevchenko
-<andy.shevchenko@gmail.com> wrote:
-> On Thu, Oct 26, 2017 at 11:38 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Wed, Oct 25, 2017 at 10:06 PM, Andy Shevchenko
->> <andy.shevchenko@gmail.com> wrote:
->>> On Tue, Oct 24, 2017 at 11:49 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>> On Tuesday, October 24, 2017 7:54:09 AM CEST Ramesh Thomas wrote:
->>>>> On 2017-10-20 at 13:27:34 +0200, Rafael J. Wysocki wrote:
->>>
->>>>> >  static ssize_t pm_qos_resume_latency_store(struct device *dev,
->>>>> > @@ -228,11 +235,19 @@ static ssize_t pm_qos_resume_latency_sto
->>>>> >     s32 value;
->>>>> >     int ret;
->>>
->>>>> > +   if (!kstrtos32(buf, 0, &value)) {
->>>>> > +           /*
->>>>> > +            * Prevent users from writing negative or "no constraint" values
->>>>> > +            * directly.
->>>>> > +            */
->>>>> > +           if (value < 0 || value == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
->>>>> > +                   return -EINVAL;
->>>
->>>>> > +           if (value == 0)
->>>>> > +                   value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
->>>>> > +   } else if (!strcmp(buf, "n/a") || !strcmp(buf, "n/a\n")) {
->>>>>
->>>>> Can the 2 checks for "n/a" be combined by checking first 3 characters?
->>>>
->>>> No, because "n/asomething" would then match too.
->>>
->>> If I don't missed anything, kernfs is aware of \n which means the
->>> first check is enough.
->>> Am I correct?
->>
->> I'm not sure, honestly. :-)
->
-> Okay, just a summary:
-> 1. kernfs guarantees that buffer is NULL terminated
-> 2. sysfs guarantees that the buffer is not empty
-> 3. kstrto* are aware of '\n'
-> 4. sysfs_streq() and __sysfs_match_string() are aware of '\n'
->
-> Thus, we just may use sysfs_streq() for that.
->
-> I will prepare a clean up patch on top of this fix if you are okay with it.
+Hi,
 
-OK, but then please cover all similar cases in this file.
+On Fri, Oct 27, 2017 at 03:26:06PM +0800, Jeffy Chen wrote:
+> We are going to handle PCIe WAKE# pin for PCI bus bridges and PCI
+> devices in the pci core, so add definitions of the optional PCIe
+> WAKE# pin for PCI bus bridges and PCI devices.
+> 
+> Also add an definition of the optional PCI interrupt pin for PCI
+> devices to distinguish it from the PCIe WAKE# pin.
+> 
+> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+> ---
+> 
+> Changes in v10: None
+> Changes in v9:
+> Add section for PCI devices and rewrite the commit message.
+> 
+> Changes in v8:
+> Add optional "pci", and rewrite commit message.
+> 
+> Changes in v7: None
+> Changes in v6: None
+> Changes in v5:
+> Move to pci.txt
+> 
+> Changes in v3: None
+> Changes in v2: None
+> 
+>  Documentation/devicetree/bindings/pci/pci.txt | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/pci/pci.txt b/Documentation/devicetree/bindings/pci/pci.txt
+> index c77981c5dd18..d4406d4e15ad 100644
+> --- a/Documentation/devicetree/bindings/pci/pci.txt
+> +++ b/Documentation/devicetree/bindings/pci/pci.txt
+> @@ -24,3 +24,11 @@ driver implementation may support the following properties:
+>     unsupported link speed, for instance, trying to do training for
+>     unsupported link speed, etc.  Must be '4' for gen4, '3' for gen3, '2'
+>     for gen2, and '1' for gen1. Any other values are invalid.
+> +- interrupts: Interrupt specifier for each name in interrupt-names.
+> +- interrupt-names: May contains "wakeup" for PCIe WAKE# interrupt.
 
-Thanks,
-Rafael
+s/contains/contain/
+
+> +
+> +PCI devices have standardized Device Tree bindings:
+
+This line is a little unclear, especially since there *is* an old
+documented standard, yet the following text is actually introducing new,
+non-standard additions.
+
+> +
+> +- interrupts: Interrupt specifier for each name in interrupt-names.
+> +- interrupt-names: May contains "wakeup" for PCIe WAKE# interrupt and "pci" for
+
+s/contains/contain/
+
+> +  PCI interrupt.
+
+IMO, since you're trying to augment a standardized binding, you need to
+be a lot clearer here. I expect you should mention the existing standard
+(that devices may optionally include an 'interrupts' property that
+represents the legacy PCI interrupt) and how you're augmenting it (that
+additional interrupts can be supported optionally, but they require a
+corresponding 'interrupt-names' property).
+
+Also, is this binding only applying either to a host bridge or to
+devices? No intermediate bridges or ports? It seems so, but I wanted to
+be clear. (And it probably could be extended if needed. Notably, ACPI
+has a tree-walk implementation, so if the device itself doesn't have
+a wakeup config, it can look into any of its parents.)
+
+Once you fix up the documentation...I suppose this looks like a sane
+idea. But I'd like 2nd opinions on this.
+
+Brian
