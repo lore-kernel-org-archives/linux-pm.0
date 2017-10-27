@@ -1,16 +1,20 @@
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [RFC PATCH v10 3/7] mwifiex: Disable wakeup irq handling for pcie
-Date: Fri, 27 Oct 2017 15:26:08 +0800
-Message-ID: <20171027072612.26565-4-jeffy.chen@rock-chips.com>
+Subject: [RFC PATCH v10 5/7] PCI: Make pci_platform_pm_ops's callbacks optional
+Date: Fri, 27 Oct 2017 15:26:10 +0800
+Message-ID: <20171027072612.26565-6-jeffy.chen@rock-chips.com>
 References: <20171027072612.26565-1-jeffy.chen@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
 In-Reply-To: <20171027072612.26565-1-jeffy.chen@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pci-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, bhelgaas@google.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Xinming Hu <huxm@marvell.com>, Kalle Valo <kvalo@codeaurora.org>, Ganapathi Bhat <gbhat@marvell.com>, Amitkumar Karwar <amitkarwar@gmail.com>, linux-wireless@vger.kernel.org, Nishant Sarmukadam <nishants@marvell.com>, netdev@vger.kernel.org
+Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-We are going to handle the wakeup irq in the pci core.
+Allow platforms not to provide some of the pci_platform_pm_ops's
+callbacks.
+
+Also change the return value from -ENOSYS to -ENODEV for:
+warning: drivers/pci/pci.c,594: ENOSYS means 'invalid syscall nr' and nothing else
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
@@ -24,23 +28,108 @@ Changes in v5: None
 Changes in v3: None
 Changes in v2: None
 
- drivers/net/wireless/marvell/mwifiex/main.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/pci/pci.c | 38 +++++++++++++++++++++++++-------------
+ drivers/pci/pci.h |  5 +----
+ 2 files changed, 26 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/net/wireless/marvell/mwifiex/main.c b/drivers/net/wireless/marvell/mwifiex/main.c
-index ee40b739b289..ba081c16f85c 100644
---- a/drivers/net/wireless/marvell/mwifiex/main.c
-+++ b/drivers/net/wireless/marvell/mwifiex/main.c
-@@ -1568,6 +1568,10 @@ static void mwifiex_probe_of(struct mwifiex_adapter *adapter)
- 		goto err_exit;
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index f0d68066c726..e120b00a9017 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -572,46 +572,58 @@ static void pci_restore_bars(struct pci_dev *dev)
  
- 	adapter->dt_node = dev->of_node;
+ static const struct pci_platform_pm_ops *pci_platform_pm;
+ 
+-int pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
++void pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
+ {
+-	if (!ops->is_manageable || !ops->set_state  || !ops->get_state ||
+-	    !ops->choose_state  || !ops->set_wakeup || !ops->need_resume)
+-		return -EINVAL;
+ 	pci_platform_pm = ops;
+-	return 0;
+ }
+ 
+ static inline bool platform_pci_power_manageable(struct pci_dev *dev)
+ {
+-	return pci_platform_pm ? pci_platform_pm->is_manageable(dev) : false;
++	if (pci_platform_pm && pci_platform_pm->is_manageable)
++		return pci_platform_pm->is_manageable(dev);
 +
-+	if (adapter->iface_type != MWIFIEX_PCIE)
-+		goto err_exit;
++	return false;
+ }
+ 
+ static inline int platform_pci_set_power_state(struct pci_dev *dev,
+ 					       pci_power_t t)
+ {
+-	return pci_platform_pm ? pci_platform_pm->set_state(dev, t) : -ENOSYS;
++	if (pci_platform_pm && pci_platform_pm->set_state)
++		return pci_platform_pm->set_state(dev, t);
 +
- 	adapter->irq_wakeup = irq_of_parse_and_map(adapter->dt_node, 0);
- 	if (!adapter->irq_wakeup) {
- 		dev_dbg(dev, "fail to parse irq_wakeup from device tree\n");
++	return -ENODEV;
+ }
+ 
+ static inline pci_power_t platform_pci_get_power_state(struct pci_dev *dev)
+ {
+-	return pci_platform_pm ? pci_platform_pm->get_state(dev) : PCI_UNKNOWN;
++	if (pci_platform_pm && pci_platform_pm->get_state)
++		return pci_platform_pm->get_state(dev);
++
++	return PCI_UNKNOWN;
+ }
+ 
+ static inline pci_power_t platform_pci_choose_state(struct pci_dev *dev)
+ {
+-	return pci_platform_pm ?
+-			pci_platform_pm->choose_state(dev) : PCI_POWER_ERROR;
++	if (pci_platform_pm && pci_platform_pm->choose_state)
++		return pci_platform_pm->choose_state(dev);
++
++	return PCI_POWER_ERROR;
+ }
+ 
+ static inline int platform_pci_set_wakeup(struct pci_dev *dev, bool enable)
+ {
+-	return pci_platform_pm ?
+-			pci_platform_pm->set_wakeup(dev, enable) : -ENODEV;
++	if (pci_platform_pm && pci_platform_pm->set_wakeup)
++		return pci_platform_pm->set_wakeup(dev, enable);
++
++	return -ENODEV;
+ }
+ 
+ static inline bool platform_pci_need_resume(struct pci_dev *dev)
+ {
+-	return pci_platform_pm ? pci_platform_pm->need_resume(dev) : false;
++	if (pci_platform_pm && pci_platform_pm->need_resume)
++		return pci_platform_pm->need_resume(dev);
++
++	return false;
+ }
+ 
+ /**
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index e816a13e6259..048668271014 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -52,9 +52,6 @@ int pci_probe_reset_function(struct pci_dev *dev);
+  * @need_resume: returns 'true' if the given device (which is currently
+  *		suspended) needs to be resumed to be configured for system
+  *		wakeup.
+- *
+- * If given platform is generally capable of power managing PCI devices, all of
+- * these callbacks are mandatory.
+  */
+ struct pci_platform_pm_ops {
+ 	bool (*is_manageable)(struct pci_dev *dev);
+@@ -65,7 +62,7 @@ struct pci_platform_pm_ops {
+ 	bool (*need_resume)(struct pci_dev *dev);
+ };
+ 
+-int pci_set_platform_pm(const struct pci_platform_pm_ops *ops);
++void pci_set_platform_pm(const struct pci_platform_pm_ops *ops);
+ void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
+ void pci_power_up(struct pci_dev *dev);
+ void pci_disable_enabled_device(struct pci_dev *dev);
 -- 
 2.11.0
