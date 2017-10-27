@@ -1,87 +1,76 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: thermal: Remove Eduardo's git tree
-Date: Thu, 26 Oct 2017 20:41:25 -0700
-Message-ID: <20171027034123.GA16699@localhost.localdomain>
-References: <20170924211843.11451-1-f.fainelli@gmail.com>
- <44d01b56-191e-d955-3be8-f413d18b5597@gmail.com>
- <aa79dc4c-8a76-9d98-d94f-3250fd8a328f@linaro.org>
- <1509070951.3536.28.camel@intel.com>
+From: Tomasz Nowicki <tn@semihalf.com>
+Subject: Re: [PATCH v3 1/7] ACPI/PPTT: Add Processor Properties Topology Table
+ parsing
+Date: Fri, 27 Oct 2017 07:21:13 +0200
+Message-ID: <e4f9e8f1-c200-7350-79af-7f3e9e5c3106@semihalf.com>
+References: <20171012194856.13844-1-jeremy.linton@arm.com>
+ <20171012194856.13844-2-jeremy.linton@arm.com>
+ <38c63cfd-4c13-9461-0d4a-74b0943be0fd@semihalf.com>
+ <2ce92b90-fc2c-3fff-a3e3-b9517057ab2c@arm.com>
+ <4ee4af4d-d987-33f9-4d55-67bfede3ebfa@caviumnetworks.com>
+ <ed7f2e82-1e9b-9f46-89af-4e638275355d@caviumnetworks.com>
+ <47d8ef93-a3ce-6d40-f8db-2bc7d527ac6f@arm.com>
+ <2605aa54-95f7-4619-e632-0a95a68e5fb0@caviumnetworks.com>
+ <49421fa9-c3ac-c81b-ed2d-a113f676edd8@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:56629 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751263AbdJ0Dl3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Oct 2017 23:41:29 -0400
-Content-Disposition: inline
-In-Reply-To: <1509070951.3536.28.camel@intel.com>
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:46980 "EHLO
+        mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750828AbdJ0FVR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2017 01:21:17 -0400
+Received: by mail-lf0-f66.google.com with SMTP id g70so6079571lfl.3
+        for <linux-pm@vger.kernel.org>; Thu, 26 Oct 2017 22:21:16 -0700 (PDT)
+In-Reply-To: <49421fa9-c3ac-c81b-ed2d-a113f676edd8@huawei.com>
+Content-Language: en-GB
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Florian Fainelli <f.fainelli@gmail.com>, linux-pm@vger.kernel.org, code@mmayer.net, mmayer@broadcom.com, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "David S. Miller" <davem@davemloft.net>, Mauro Carvalho Chehab <mchehab@kernel.org>, Randy Dunlap <rdunlap@infradead.org>, open list <linux-kernel@vger.kernel.org>
+To: John Garry <john.garry@huawei.com>, Tomasz Nowicki <tnowicki@caviumnetworks.com>, Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org
+Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, lorenzo.pieralisi@arm.com, austinwc@codeaurora.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, gregkh@linuxfoundation.org, sudeep.holla@arm.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, will.deacon@arm.com, wangxiongfeng2@huawei.com, viresh.kumar@linaro.org, hanjun.guo@linaro.org, catalin.marinas@arm.com, ahs3@redhat.com, linux-arm-kernel@lists.infradead.org
 
-Hello Florian,
+Hi John,
 
-On Fri, Oct 27, 2017 at 10:22:31AM +0800, Zhang Rui wrote:
-> CC Eduardo.
+On 19.10.2017 12:25, John Garry wrote:
+> On 19/10/2017 06:18, Tomasz Nowicki wrote:
+>>>
+>>> Summary:
+>>>
+>>> I'm not at all happy with this specification's attempt to leave out
+>>> pieces of information which make parsing things more deterministic. In
+>>> this case I'm happy to demote the message level, but not remove it
+>>> entirely but I do think the obvious case you list shouldn't be the
+>>> default one.
+>>>
+>>> Lastly:
+>>>
+>>> I'm assuming the final result is that the table is actually being
+>>> parsed correctly despite the ugly message?
+>>
+>> Indeed, the ThunderX2 PPTT table is being parsed so that topology shown
+>> in lstopo and lscpu is correct.
 > 
-> On Thu, 2017-10-26 at 19:06 +0200, Daniel Lezcano wrote:
-> > On 26/10/2017 18:59, Florian Fainelli wrote:
-> > > 
-> > > On 09/24/2017 02:18 PM, Florian Fainelli wrote:
-> > > > 
-> > > > Eduardo's git tree at:
-> > > > git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-
-> > > > thermal.git
-> > > > 
-> > > > has not been updated in months, remove it to avoid any confusing
-> > > > and
-> > > > patch submissions to stall.
-> > > > 
-> > > > Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
-> > > > ---
-> > > > This is agains Rui's next branch
-> > > The very fact that this patch has not received any response is a
-> > > clear
-> > > indication that there is something seriously wrong with the SoC
-> > > thermal
-> > > drivers maintenance.
-
-> > > 
-> > > Eduardo, if you can't even be bothered to respond to emails and
-> > > Ack/Nack, then remove yourself so you can set clear expectations
-> > > with
-> > > people attempting to get their drivers upstreamed.
-> > Eduardo reviewed and took my patches recently.
-> > 
-> > I don't know the status about merging them in Linus's tree.
-> > 
-> > 
-> Eduardo was busy on some personal stuff during last release cycle, and
-> now he is back and is taking thermal soc patches for next merge window.
-
-Yes, past merge windows I was not able to help on the thermal subsystem
-maintenance, which I do, btw, in my free time.
-If you want to sponsor that, feel free to contact me in private.
-
-*Also, not that there are TWO maintainers in the thermal subsystem, and Rui
-was notified of my absence. And I am pretty sure he would take care of
-patches in case you properly called his attention.*
-
+> Hi Tomasz,
 > 
-> I think he didn't response because he was not CCed.
-
-Yup, if you do not copy me in e-mails that you want my attention, it's
-hard to respond. I suppose if you want to remove a tree of a volunteer,
-it would be fair if you at least copy him/her :-)
-
-Not sure if you noticed, but the BRCM driver you pinged me in linux-pm
-is also already merge in my tree and will be sent in the next merge
-window as notified over email:
-https://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal.git/log/?h=linus
-
-Hope that helps and also clarifies.
-
+> Can you share the lscpu output? Does it have cluster info? I did not 
+> think that lscpu has a concept of clustering.
 > 
-> thanks,
-> rui
+> I would say that the per-cpu cluster index sysfs entry needs be added to 
+> drivers/base/arch_topology.c (and other appropiate code under 
+> GENERIC_ARCH_TOPOLOGY) to support this.
+
+Here is what I get:
+
+tn@val2-11 [~]$ lscpu -ap
+# The following is the parsable format, which can be fed to other
+# programs. Each different item in every column has an unique ID
+# starting from zero.
+# CPU,Core,Socket,Node,,L1d,L1i,L2,L3
+[...]
+1,0,0,0,,0,0,0,0
+[...]
+
+so yes, no cluster info.
+
+Thanks,
+Tomasz
