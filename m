@@ -1,76 +1,59 @@
-From: Tomasz Nowicki <tn@semihalf.com>
-Subject: Re: [PATCH v3 1/7] ACPI/PPTT: Add Processor Properties Topology Table
- parsing
-Date: Fri, 27 Oct 2017 07:21:13 +0200
-Message-ID: <e4f9e8f1-c200-7350-79af-7f3e9e5c3106@semihalf.com>
-References: <20171012194856.13844-1-jeremy.linton@arm.com>
- <20171012194856.13844-2-jeremy.linton@arm.com>
- <38c63cfd-4c13-9461-0d4a-74b0943be0fd@semihalf.com>
- <2ce92b90-fc2c-3fff-a3e3-b9517057ab2c@arm.com>
- <4ee4af4d-d987-33f9-4d55-67bfede3ebfa@caviumnetworks.com>
- <ed7f2e82-1e9b-9f46-89af-4e638275355d@caviumnetworks.com>
- <47d8ef93-a3ce-6d40-f8db-2bc7d527ac6f@arm.com>
- <2605aa54-95f7-4619-e632-0a95a68e5fb0@caviumnetworks.com>
- <49421fa9-c3ac-c81b-ed2d-a113f676edd8@huawei.com>
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [RFC PATCH v8 1/7] dt-bindings: PCI: Add definition of PCIe
+ WAKE# irq and PCI irq
+Date: Thu, 26 Oct 2017 22:40:28 -0700
+Message-ID: <20171027054025.GA85582@google.com>
+References: <20171026132840.20946-1-jeffy.chen@rock-chips.com>
+ <20171026132840.20946-2-jeffy.chen@rock-chips.com>
+ <20171027023331.GA11665@google.com>
+ <59F2A2BA.5030307@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f66.google.com ([209.85.215.66]:46980 "EHLO
-        mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750828AbdJ0FVR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2017 01:21:17 -0400
-Received: by mail-lf0-f66.google.com with SMTP id g70so6079571lfl.3
-        for <linux-pm@vger.kernel.org>; Thu, 26 Oct 2017 22:21:16 -0700 (PDT)
-In-Reply-To: <49421fa9-c3ac-c81b-ed2d-a113f676edd8@huawei.com>
-Content-Language: en-GB
+Received: from mail-io0-f195.google.com ([209.85.223.195]:50531 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750790AbdJ0Fkc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2017 01:40:32 -0400
+Received: by mail-io0-f195.google.com with SMTP id 97so10284771iok.7
+        for <linux-pm@vger.kernel.org>; Thu, 26 Oct 2017 22:40:32 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <59F2A2BA.5030307@rock-chips.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: John Garry <john.garry@huawei.com>, Tomasz Nowicki <tnowicki@caviumnetworks.com>, Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org
-Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, lorenzo.pieralisi@arm.com, austinwc@codeaurora.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, gregkh@linuxfoundation.org, sudeep.holla@arm.com, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, will.deacon@arm.com, wangxiongfeng2@huawei.com, viresh.kumar@linaro.org, hanjun.guo@linaro.org, catalin.marinas@arm.com, ahs3@redhat.com, linux-arm-kernel@lists.infradead.org
+To: jeffy <jeffy.chen@rock-chips.com>
+Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, rjw@rjwysocki.net, dianders@chromium.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 
-Hi John,
+Hi Jeffy,
 
-On 19.10.2017 12:25, John Garry wrote:
-> On 19/10/2017 06:18, Tomasz Nowicki wrote:
->>>
->>> Summary:
->>>
->>> I'm not at all happy with this specification's attempt to leave out
->>> pieces of information which make parsing things more deterministic. In
->>> this case I'm happy to demote the message level, but not remove it
->>> entirely but I do think the obvious case you list shouldn't be the
->>> default one.
->>>
->>> Lastly:
->>>
->>> I'm assuming the final result is that the table is actually being
->>> parsed correctly despite the ugly message?
->>
->> Indeed, the ThunderX2 PPTT table is being parsed so that topology shown
->> in lstopo and lscpu is correct.
+On Fri, Oct 27, 2017 at 11:06:34AM +0800, Jeffy Chen wrote:
+> On 10/27/2017 10:33 AM, Brian Norris wrote:
+> >In fact, I'm pretty sure this series fails to actually look in the host
+> >bridge for the "wakeup" interrupt at all! Did you actually test this?
+> actually it could...
 > 
-> Hi Tomasz,
+> static void *of_pci_setup(struct device *dev)
+> {
+> ...
+>         device_init_wakeup(dev, false);
 > 
-> Can you share the lscpu output? Does it have cluster info? I did not 
-> think that lscpu has a concept of clustering.
+>         dev_info(dev, "Wakeup IRQ %d\n", irq);
+>         return data;
+> }
 > 
-> I would say that the per-cpu cluster index sysfs entry needs be added to 
-> drivers/base/arch_topology.c (and other appropiate code under 
-> GENERIC_ARCH_TOPOLOGY) to support this.
+> [    1.546561] OF: PCI:   MEM 0xfa000000..0xfbdfffff -> 0xfa000000
+> [    1.553154] OF: PCI:    IO 0xfbe00000..0xfbefffff -> 0xfbe00000
+> [    1.560859] rockchip-pcie f8000000.pcie: Wakeup IRQ 64
+> [    1.566555] rockchip-pcie f8000000.pcie: PCI host bridge to bus
 
-Here is what I get:
+Hmm, I think I missed the .setup_host_bridge() stuff. So you do handle
+both. I'll have to take a little closer look tomorrow. But you
+definitely at least need to improve the documentation as mentioned.
 
-tn@val2-11 [~]$ lscpu -ap
-# The following is the parsable format, which can be fed to other
-# programs. Each different item in every column has an unique ID
-# starting from zero.
-# CPU,Core,Socket,Node,,L1d,L1i,L2,L3
-[...]
-1,0,0,0,,0,0,0,0
-[...]
+Another odd thing about this series is that the interrupt doesn't
+actually show up in /proc/interrupts, /sys/kernel/debug/gpio, or
+similar, seemingly because the wakeirq is requested/released every time
+we suspend/resume. So it's really not that obvious that the interrupt is
+being configured properly. That's not really a functional problem,
+necessarily, but it doesn't quite seem ideal.
 
-so yes, no cluster info.
-
-Thanks,
-Tomasz
+Brian
