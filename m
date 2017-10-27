@@ -1,349 +1,268 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 5/6] PCI / PM: Take SMART_SUSPEND driver flag into account
-Date: Sat, 28 Oct 2017 00:27:45 +0200
-Message-ID: <1786526.OJccb5RI6R@aspire.rjw.lan>
+Subject: [PATCH v2 1/6] PM / core: Add NEVER_SKIP and SMART_PREPARE driver flags
+Date: Sat, 28 Oct 2017 00:17:23 +0200
+Message-ID: <2208889.a1Ck7xDyoJ@aspire.rjw.lan>
 References: <3806130.B2KCK0tvef@aspire.rjw.lan> <16592954.7Zo1mAdIIH@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-doc-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55229 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S932608AbdJ0Waq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2017 18:30:46 -0400
 In-Reply-To: <16592954.7Zo1mAdIIH@aspire.rjw.lan>
-Sender: linux-doc-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Make the PCI bus type take DPM_FLAG_SMART_SUSPEND into account in its
-system-wide PM callbacks and make sure that all code that should not
-run in parallel with pci_pm_runtime_resume() is executed in the "late"
-phases of system suspend, freeze and poweroff transitions.
+The motivation for this change is to provide a way to work around
+a problem with the direct-complete mechanism used for avoiding
+system suspend/resume handling for devices in runtime suspend.
 
-[Note that the pm_runtime_suspended() check in pci_dev_keep_suspended()
-is an optimization, because if is not passed, all of the subsequent
-checks may be skipped and some of them are much more overhead in
-general.]
+The problem is that some middle layer code (the PCI bus type and
+the ACPI PM domain in particular) returns positive values from its
+system suspend ->prepare callbacks regardless of whether the driver's
+->prepare returns a positive value or 0, which effectively prevents
+drivers from being able to control the direct-complete feature.
+Some drivers need that control, however, and the PCI bus type has
+grown its own flag to deal with this issue, but since it is not
+limited to PCI, it is better to address it by adding driver flags at
+the core level.
 
-Also use the observation that if the device is in runtime suspend
-at the beginning of the "late" phase of a system-wide suspend-like
-transition, its state cannot change going forward (runtime PM is
-disabled for it at that time) until the transition is over and the
-subsequent system-wide PM callbacks should be skipped for it (as
-they generally assume the device to not be suspended), so add checks
-for that in pci_pm_suspend_late/noirq(), pci_pm_freeze_late/noirq()
-and pci_pm_poweroff_late/noirq().
+To that end, add a driver_flags field to struct dev_pm_info for flags
+that can be set by device drivers at the probe time to inform the PM
+core and/or bus types, PM domains and so on on the capabilities and/or
+preferences of device drivers.  Also add two static inline helpers
+for setting that field and testing it against a given set of flags
+and make the driver core clear it automatically on driver remove
+and probe failures.
 
-Moreover, if pci_pm_resume_noirq() or pci_pm_restore_noirq() is
-called during the subsequent system-wide resume transition and if
-the device was left in runtime suspend previously, its runtime PM
-status needs to be changed to "active" as it is going to be put
-into the full-power state, so add checks for that too to these
-functions.
+Define and document two PM driver flags related to the direct-
+complete feature: NEVER_SKIP and SMART_PREPARE that can be used,
+respectively, to indicate to the PM core that the direct-complete
+mechanism should never be used for the device and to inform the
+middle layer code (bus types, PM domains etc) that it can only
+request the PM core to use the direct-complete mechanism for
+the device (by returning a positive value from its ->prepare
+callback) if it also has been requested by the driver.
 
-In turn, if pci_pm_thaw_noirq() runs after the device has been
-left in runtime suspend, the subsequent "thaw" callbacks need
-to be skipped for it (as they may not work correctly with a
-suspended device), so set the power.direct_complete flag for the
-device then to make the PM core skip those callbacks.
-
-In addition to the above add a core helper for checking if
-DPM_FLAG_SMART_SUSPEND is set and the device runtime PM status is
-"suspended" at the same time, which is done quite often in the new
-code (and will be done elsewhere going forward too).
+While at it, make the core check pm_runtime_suspended() when
+setting power.direct_complete so that it doesn't need to be
+checked by ->prepare callbacks.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
 
--> v2: Implement the entire handling of DPM_FLAG_SMART_SUSPEND in
-       the PCI bus type (instead of doing that in the core).
+-> v2: Do not use pm_generic_prepare() in acpi_subsys_prepare()
+       as the latter has to distinguish between the lack of the
+       driver's ->prepare callback and the situation in which that
+       callback has returned 0 if DPM_FLAG_SMART_PREPARE is set.
 
 ---
- Documentation/power/pci.txt |   14 +++++
- drivers/base/power/main.c   |    6 ++
- drivers/pci/pci-driver.c    |  103 ++++++++++++++++++++++++++++++++++++--------
- include/linux/pm.h          |    2 
- 4 files changed, 108 insertions(+), 17 deletions(-)
+ Documentation/driver-api/pm/devices.rst |   14 ++++++++++++++
+ Documentation/power/pci.txt             |   19 +++++++++++++++++++
+ drivers/acpi/device_pm.c                |   13 +++++++++----
+ drivers/base/dd.c                       |    2 ++
+ drivers/base/power/main.c               |    4 +++-
+ drivers/pci/pci-driver.c                |    5 ++++-
+ include/linux/device.h                  |   10 ++++++++++
+ include/linux/pm.h                      |   20 ++++++++++++++++++++
+ 8 files changed, 81 insertions(+), 6 deletions(-)
 
-Index: linux-pm/drivers/pci/pci-driver.c
+Index: linux-pm/include/linux/device.h
 ===================================================================
---- linux-pm.orig/drivers/pci/pci-driver.c
-+++ linux-pm/drivers/pci/pci-driver.c
-@@ -734,18 +734,25 @@ static int pci_pm_suspend(struct device
- 
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
--		goto Fixup;
-+		return 0;
- 	}
- 
- 	/*
--	 * PCI devices suspended at run time need to be resumed at this point,
--	 * because in general it is necessary to reconfigure them for system
--	 * suspend.  Namely, if the device is supposed to wake up the system
--	 * from the sleep state, we may need to reconfigure it for this purpose.
--	 * In turn, if the device is not supposed to wake up the system from the
--	 * sleep state, we'll have to prevent it from signaling wake-up.
-+	 * PCI devices suspended at run time may need to be resumed at this
-+	 * point, because in general it may be necessary to reconfigure them for
-+	 * system suspend.  Namely, if the device is expected to wake up the
-+	 * system from the sleep state, it may have to be reconfigured for this
-+	 * purpose, or if the device is not expected to wake up the system from
-+	 * the sleep state, it should be prevented from signaling wakeup events
-+	 * going forward.
-+	 *
-+	 * Also if the driver of the device does not indicate that its system
-+	 * suspend callbacks can cope with runtime-suspended devices, it is
-+	 * better to resume the device from runtime suspend here.
- 	 */
--	pm_runtime_resume(dev);
-+	if (!dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) ||
-+	    !pci_dev_keep_suspended(pci_dev))
-+		pm_runtime_resume(dev);
- 
- 	pci_dev->state_saved = false;
- 	if (pm->suspend) {
-@@ -765,17 +772,27 @@ static int pci_pm_suspend(struct device
- 		}
- 	}
- 
-- Fixup:
--	pci_fixup_device(pci_fixup_suspend, pci_dev);
--
- 	return 0;
+--- linux-pm.orig/include/linux/device.h
++++ linux-pm/include/linux/device.h
+@@ -1070,6 +1070,16 @@ static inline void dev_pm_syscore_device
+ #endif
  }
  
-+static int pci_pm_suspend_late(struct device *dev)
++static inline void dev_pm_set_driver_flags(struct device *dev, u32 flags)
 +{
-+	if (dev_pm_smart_suspend_and_suspended(dev))
-+		return 0;
-+
-+	pci_fixup_device(pci_fixup_suspend, to_pci_dev(dev));
-+
-+	return pm_generic_suspend_late(dev);
++	dev->power.driver_flags = flags;
 +}
 +
- static int pci_pm_suspend_noirq(struct device *dev)
++static inline bool dev_pm_test_driver_flags(struct device *dev, u32 flags)
++{
++	return !!(dev->power.driver_flags & flags);
++}
++
+ static inline void device_lock(struct device *dev)
  {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
-+	if (dev_pm_smart_suspend_and_suspended(dev))
-+		return 0;
-+
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
- 
-@@ -834,6 +851,14 @@ static int pci_pm_resume_noirq(struct de
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
-+	/*
-+	 * Devices with DPM_FLAG_SMART_SUSPEND may be left in runtime suspend
-+	 * during system suspend, so update their runtime PM status to "active"
-+	 * as they are going to be put into D0 shortly.
-+	 */
-+	if (dev_pm_smart_suspend_and_suspended(dev))
-+		pm_runtime_set_active(dev);
-+
- 	pci_pm_default_resume_early(pci_dev);
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
-@@ -876,6 +901,7 @@ static int pci_pm_resume(struct device *
- #else /* !CONFIG_SUSPEND */
- 
- #define pci_pm_suspend		NULL
-+#define pci_pm_suspend_late	NULL
- #define pci_pm_suspend_noirq	NULL
- #define pci_pm_resume		NULL
- #define pci_pm_resume_noirq	NULL
-@@ -910,7 +936,8 @@ static int pci_pm_freeze(struct device *
- 	 * devices should not be touched during freeze/thaw transitions,
- 	 * however.
- 	 */
--	pm_runtime_resume(dev);
-+	if (!dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND))
-+		pm_runtime_resume(dev);
- 
- 	pci_dev->state_saved = false;
- 	if (pm->freeze) {
-@@ -925,11 +952,22 @@ static int pci_pm_freeze(struct device *
- 	return 0;
- }
- 
-+static int pci_pm_freeze_late(struct device *dev)
-+{
-+	if (dev_pm_smart_suspend_and_suspended(dev))
-+		return 0;
-+
-+	return pm_generic_freeze_late(dev);;
-+}
-+
- static int pci_pm_freeze_noirq(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
- 
-+	if (dev_pm_smart_suspend_and_suspended(dev))
-+		return 0;
-+
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend_late(dev, PMSG_FREEZE);
- 
-@@ -959,6 +997,16 @@ static int pci_pm_thaw_noirq(struct devi
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
-+	/*
-+	 * If the device is in runtime suspend, the code below may not work
-+	 * correctly with it, so skip that code and make the PM core skip all of
-+	 * the subsequent "thaw" callbacks for the device.
-+	 */
-+	if (dev_pm_smart_suspend_and_suspended(dev)) {
-+		dev->power.direct_complete = true;
-+		return 0;
-+	}
-+
- 	if (pcibios_pm_ops.thaw_noirq) {
- 		error = pcibios_pm_ops.thaw_noirq(dev);
- 		if (error)
-@@ -1008,11 +1056,13 @@ static int pci_pm_poweroff(struct device
- 
- 	if (!pm) {
- 		pci_pm_default_suspend(pci_dev);
--		goto Fixup;
-+		return 0;
- 	}
- 
- 	/* The reason to do that is the same as in pci_pm_suspend(). */
--	pm_runtime_resume(dev);
-+	if (!dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) ||
-+	    !pci_dev_keep_suspended(pci_dev))
-+		pm_runtime_resume(dev);
- 
- 	pci_dev->state_saved = false;
- 	if (pm->poweroff) {
-@@ -1024,17 +1074,27 @@ static int pci_pm_poweroff(struct device
- 			return error;
- 	}
- 
-- Fixup:
--	pci_fixup_device(pci_fixup_suspend, pci_dev);
--
- 	return 0;
- }
- 
-+static int pci_pm_poweroff_late(struct device *dev)
-+{
-+	if (dev_pm_smart_suspend_and_suspended(dev))
-+		return 0;
-+
-+	pci_fixup_device(pci_fixup_suspend, to_pci_dev(dev));
-+
-+	return pm_generic_poweroff_late(dev);
-+}
-+
- static int pci_pm_poweroff_noirq(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct device_driver *drv = dev->driver;
- 
-+	if (dev_pm_smart_suspend_and_suspended(dev))
-+		return 0;
-+
- 	if (pci_has_legacy_pm_support(to_pci_dev(dev)))
- 		return pci_legacy_suspend_late(dev, PMSG_HIBERNATE);
- 
-@@ -1076,6 +1136,10 @@ static int pci_pm_restore_noirq(struct d
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
-+	/* This is analogous to the pci_pm_resume_noirq() case. */
-+	if (dev_pm_smart_suspend_and_suspended(dev))
-+		pm_runtime_set_active(dev);
-+
- 	if (pcibios_pm_ops.restore_noirq) {
- 		error = pcibios_pm_ops.restore_noirq(dev);
- 		if (error)
-@@ -1124,10 +1188,12 @@ static int pci_pm_restore(struct device
- #else /* !CONFIG_HIBERNATE_CALLBACKS */
- 
- #define pci_pm_freeze		NULL
-+#define pci_pm_freeze_late	NULL
- #define pci_pm_freeze_noirq	NULL
- #define pci_pm_thaw		NULL
- #define pci_pm_thaw_noirq	NULL
- #define pci_pm_poweroff		NULL
-+#define pci_pm_poweroff_late	NULL
- #define pci_pm_poweroff_noirq	NULL
- #define pci_pm_restore		NULL
- #define pci_pm_restore_noirq	NULL
-@@ -1243,10 +1309,13 @@ static const struct dev_pm_ops pci_dev_p
- 	.prepare = pci_pm_prepare,
- 	.complete = pci_pm_complete,
- 	.suspend = pci_pm_suspend,
-+	.suspend_late = pci_pm_suspend_late,
- 	.resume = pci_pm_resume,
- 	.freeze = pci_pm_freeze,
-+	.freeze_late = pci_pm_freeze_late,
- 	.thaw = pci_pm_thaw,
- 	.poweroff = pci_pm_poweroff,
-+	.poweroff_late = pci_pm_poweroff_late,
- 	.restore = pci_pm_restore,
- 	.suspend_noirq = pci_pm_suspend_noirq,
- 	.resume_noirq = pci_pm_resume_noirq,
-Index: linux-pm/Documentation/power/pci.txt
-===================================================================
---- linux-pm.orig/Documentation/power/pci.txt
-+++ linux-pm/Documentation/power/pci.txt
-@@ -980,6 +980,20 @@ positive value from pci_pm_prepare() if
- driver of the device returns a positive value.  That allows the driver to opt
- out from using the direct-complete mechanism dynamically.
- 
-+The DPM_FLAG_SMART_SUSPEND flag tells the PCI bus type that from the driver's
-+perspective the device can be safely left in runtime suspend during system
-+suspend.  That causes pci_pm_suspend(), pci_pm_freeze() and pci_pm_poweroff()
-+to skip resuming the device from runtime suspend unless there are PCI-specific
-+reasons for doing that.  Also, it causes pci_pm_suspend_late/noirq(),
-+pci_pm_freeze_late/noirq() and pci_pm_poweroff_late/noirq() to return early
-+if the device remains in runtime suspend in the beginning of the "late" phase
-+of the system-wide transition under way.  Moreover, if the device is in
-+runtime suspend in pci_pm_resume_noirq() or pci_pm_restore_noirq(), its runtime
-+power management status will be changed to "active" (as it is going to be put
-+into D0 going forward), but if it is in runtime suspend in pci_pm_thaw_noirq(),
-+the function will set the power.direct_complete flag for it (to make the PM core
-+skip the subsequent "thaw" callbacks for it) and return.
-+
- 3.2. Device Runtime Power Management
- ------------------------------------
- In addition to providing device power management callbacks PCI device drivers
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -1861,3 +1861,9 @@ void device_pm_check_callbacks(struct de
- 		 !dev->driver->suspend && !dev->driver->resume));
- 	spin_unlock_irq(&dev->power.lock);
- }
-+
-+bool dev_pm_smart_suspend_and_suspended(struct device *dev)
-+{
-+	return dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) &&
-+		pm_runtime_status_suspended(dev);
-+}
+ 	mutex_lock(&dev->mutex);
 Index: linux-pm/include/linux/pm.h
 ===================================================================
 --- linux-pm.orig/include/linux/pm.h
 +++ linux-pm/include/linux/pm.h
-@@ -765,6 +765,8 @@ extern int pm_generic_poweroff_late(stru
- extern int pm_generic_poweroff(struct device *dev);
- extern void pm_generic_complete(struct device *dev);
+@@ -550,6 +550,25 @@ struct pm_subsys_data {
+ #endif
+ };
  
-+extern bool dev_pm_smart_suspend_and_suspended(struct device *dev);
++/*
++ * Driver flags to control system suspend/resume behavior.
++ *
++ * These flags can be set by device drivers at the probe time.  They need not be
++ * cleared by the drivers as the driver core will take care of that.
++ *
++ * NEVER_SKIP: Do not skip system suspend/resume callbacks for the device.
++ * SMART_PREPARE: Check the return value of the driver's ->prepare callback.
++ *
++ * Setting SMART_PREPARE instructs bus types and PM domains which may want
++ * system suspend/resume callbacks to be skipped for the device to return 0 from
++ * their ->prepare callbacks if the driver's ->prepare callback returns 0 (in
++ * other words, the system suspend/resume callbacks can only be skipped for the
++ * device if its driver doesn't object against that).  This flag has no effect
++ * if NEVER_SKIP is set.
++ */
++#define DPM_FLAG_NEVER_SKIP	BIT(0)
++#define DPM_FLAG_SMART_PREPARE	BIT(1)
 +
- #else /* !CONFIG_PM_SLEEP */
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
+ 	unsigned int		can_wakeup:1;
+@@ -561,6 +580,7 @@ struct dev_pm_info {
+ 	bool			is_late_suspended:1;
+ 	bool			early_init:1;	/* Owned by the PM core */
+ 	bool			direct_complete:1;	/* Owned by the PM core */
++	u32			driver_flags;
+ 	spinlock_t		lock;
+ #ifdef CONFIG_PM_SLEEP
+ 	struct list_head	entry;
+Index: linux-pm/drivers/base/dd.c
+===================================================================
+--- linux-pm.orig/drivers/base/dd.c
++++ linux-pm/drivers/base/dd.c
+@@ -464,6 +464,7 @@ pinctrl_bind_failed:
+ 	if (dev->pm_domain && dev->pm_domain->dismiss)
+ 		dev->pm_domain->dismiss(dev);
+ 	pm_runtime_reinit(dev);
++	dev_pm_set_driver_flags(dev, 0);
  
- #define device_pm_lock() do {} while (0)
-
-
+ 	switch (ret) {
+ 	case -EPROBE_DEFER:
+@@ -869,6 +870,7 @@ static void __device_release_driver(stru
+ 		if (dev->pm_domain && dev->pm_domain->dismiss)
+ 			dev->pm_domain->dismiss(dev);
+ 		pm_runtime_reinit(dev);
++		dev_pm_set_driver_flags(dev, 0);
+ 
+ 		klist_remove(&dev->p->knode_driver);
+ 		device_pm_check_callbacks(dev);
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -1700,7 +1700,9 @@ unlock:
+ 	 * applies to suspend transitions, however.
+ 	 */
+ 	spin_lock_irq(&dev->power.lock);
+-	dev->power.direct_complete = ret > 0 && state.event == PM_EVENT_SUSPEND;
++	dev->power.direct_complete = state.event == PM_EVENT_SUSPEND &&
++		pm_runtime_suspended(dev) && ret > 0 &&
++		!dev_pm_test_driver_flags(dev, DPM_FLAG_NEVER_SKIP);
+ 	spin_unlock_irq(&dev->power.lock);
+ 	return 0;
+ }
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -682,8 +682,11 @@ static int pci_pm_prepare(struct device
+ 
+ 	if (drv && drv->pm && drv->pm->prepare) {
+ 		int error = drv->pm->prepare(dev);
+-		if (error)
++		if (error < 0)
+ 			return error;
++
++		if (!error && dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_PREPARE))
++			return 0;
+ 	}
+ 	return pci_dev_keep_suspended(to_pci_dev(dev));
+ }
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -959,11 +959,16 @@ static bool acpi_dev_needs_resume(struct
+ int acpi_subsys_prepare(struct device *dev)
+ {
+ 	struct acpi_device *adev = ACPI_COMPANION(dev);
+-	int ret;
+ 
+-	ret = pm_generic_prepare(dev);
+-	if (ret < 0)
+-		return ret;
++	if (dev->driver && dev->driver->pm && dev->driver->pm->prepare) {
++		int ret = dev->driver->pm->prepare(dev);
++
++		if (ret < 0)
++			return ret;
++
++		if (!ret && dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_PREPARE))
++			return 0;
++	}
+ 
+ 	if (!adev || !pm_runtime_suspended(dev))
+ 		return 0;
+Index: linux-pm/Documentation/driver-api/pm/devices.rst
+===================================================================
+--- linux-pm.orig/Documentation/driver-api/pm/devices.rst
++++ linux-pm/Documentation/driver-api/pm/devices.rst
+@@ -354,6 +354,20 @@ the phases are: ``prepare``, ``suspend``
+ 	is because all such devices are initially set to runtime-suspended with
+ 	runtime PM disabled.
+ 
++	This feature also can be controlled by device drivers by using the
++	``DPM_FLAG_NEVER_SKIP`` and ``DPM_FLAG_SMART_PREPARE`` driver power
++	management flags.  [Typically, they are set at the time the driver is
++	probed against the device in question by passing them to the
++	:c:func:`dev_pm_set_driver_flags` helper function.]  If the first of
++	these flags is set, the PM core will not apply the direct-complete
++	procedure described above to the given device and, consequenty, to any
++	of its ancestors.  The second flag, when set, informs the middle layer
++	code (bus types, device types, PM domains, classes) that it should take
++	the return value of the ``->prepare`` callback provided by the driver
++	into account and it may only return a positive value from its own
++	``->prepare`` callback if the driver's one also has returned a positive
++	value.
++
+     2.	The ``->suspend`` methods should quiesce the device to stop it from
+ 	performing I/O.  They also may save the device registers and put it into
+ 	the appropriate low-power state, depending on the bus type the device is
+Index: linux-pm/Documentation/power/pci.txt
+===================================================================
+--- linux-pm.orig/Documentation/power/pci.txt
++++ linux-pm/Documentation/power/pci.txt
+@@ -961,6 +961,25 @@ dev_pm_ops to indicate that one suspend
+ .suspend(), .freeze(), and .poweroff() members and one resume routine is to
+ be pointed to by the .resume(), .thaw(), and .restore() members.
+ 
++3.1.19. Driver Flags for Power Management
++
++The PM core allows device drivers to set flags that influence the handling of
++power management for the devices by the core itself and by middle layer code
++including the PCI bus type.  The flags should be set once at the driver probe
++time with the help of the dev_pm_set_driver_flags() function and they should not
++be updated directly afterwards.
++
++The DPM_FLAG_NEVER_SKIP flag prevents the PM core from using the direct-complete
++mechanism allowing device suspend/resume callbacks to be skipped if the device
++is in runtime suspend when the system suspend starts.  That also affects all of
++the ancestors of the device, so this flag should only be used if absolutely
++necessary.
++
++The DPM_FLAG_SMART_PREPARE flag instructs the PCI bus type to only return a
++positive value from pci_pm_prepare() if the ->prepare callback provided by the
++driver of the device returns a positive value.  That allows the driver to opt
++out from using the direct-complete mechanism dynamically.
++
+ 3.2. Device Runtime Power Management
+ ------------------------------------
+ In addition to providing device power management callbacks PCI device drivers
