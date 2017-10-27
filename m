@@ -1,73 +1,58 @@
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [RFC PATCH v9 0/7] PCI: rockchip: Move PCIe WAKE# handling into pci core
-Date: Fri, 27 Oct 2017 15:17:32 +0800
-Message-ID: <20171027071739.21927-1-jeffy.chen@rock-chips.com>
-Return-path: <linux-pci-owner@vger.kernel.org>
-Sender: linux-pci-owner@vger.kernel.org
+Subject: [RFC PATCH v9 2/7] of/irq: Adjust of_pci_irq parsing for multiple interrupts
+Date: Fri, 27 Oct 2017 15:17:34 +0800
+Message-ID: <20171027071739.21927-3-jeffy.chen@rock-chips.com>
+References: <20171027071739.21927-1-jeffy.chen@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171027071739.21927-1-jeffy.chen@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, bhelgaas@google.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Xinming Hu <huxm@marvell.com>, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Kalle Valo <kvalo@codeaurora.org>, Heiko Stuebner <heiko@sntech.de>, linux-acpi@vger.kernel.org, linux-rockchip@lists.infradead.org, Nishant Sarmukadam <nishants@marvell.com>, Will Deacon <will.deacon@arm.com>, Matthias Kaehlcke <mka@chromium.org>, devicetree@vger.kernel.org, Ganapathi Bhat <gbhat@marvell.com>, Frank Rowand <frowand.list@gmail.com>, Len Brown <lenb@kernel.org>, Amitkumar Karwar <amitkarwar@gmail.com>, linux-arm-kernel@lists.in
+Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Frank Rowand <frowand.list@gmail.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+Currently we are considering the first irq as the PCI interrupt pin,
+but a PCI device may have multiple interrupts(e.g. PCIe WAKE# pin).
 
-Currently we are handling wake irq in mrvl wifi driver. Move it into
-pci core.
+Only parse the PCI interrupt pin when the irq is unnamed or named as
+"pci".
 
-Tested on my chromebook bob(with cros 4.4 kernel and mrvl wifi).
+Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+---
 
+Changes in v9: None
+Changes in v8: None
+Changes in v7: None
+Changes in v6: None
+Changes in v5: None
+Changes in v3: None
+Changes in v2: None
 
-Changes in v9:
-Add section for PCI devices and rewrite the commit message.
-Rewrite the commit message.
-Fix check error in .cleanup().
-Move dedicated wakeirq setup to setup() callback and use
-device_set_wakeup_enable() to enable/disable.
+ drivers/of/of_pci_irq.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-Changes in v8:
-Add optional "pci", and rewrite commit message.
-Rewrite the commit message.
-Add pci-of.c and use platform_pm_ops to handle the PCIe WAKE# signal.
-
-Changes in v7:
-Move PCIE_WAKE handling into pci core.
-
-Changes in v6:
-Fix device_init_wake error handling, and add some comments.
-
-Changes in v5:
-Move to pci.txt
-Use "wakeup" instead of "wake"
-Rebase.
-
-Changes in v3:
-Fix error handling.
-
-Changes in v2:
-Use dev_pm_set_dedicated_wake_irq.
-
-Jeffy Chen (7):
-  dt-bindings: PCI: Add definition of PCIe WAKE# irq and PCI irq
-  of/irq: Adjust of_pci_irq parsing for multiple interrupts
-  mwifiex: Disable wakeup irq handling for pcie
-  arm64: dts: rockchip: Move PCIe WAKE# irq to pcie driver for Gru
-  PCI: Make pci_platform_pm_ops's callbacks optional
-  PCI / PM: Move acpi wakeup code to pci core
-  PCI / PM: Add support for the PCIe WAKE# signal for OF
-
- Documentation/devicetree/bindings/pci/pci.txt |   8 ++
- arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi  |  15 +--
- drivers/net/wireless/marvell/mwifiex/main.c   |   4 +
- drivers/of/of_pci_irq.c                       |  13 ++-
- drivers/pci/Makefile                          |   2 +-
- drivers/pci/pci-acpi.c                        | 121 ++++++++++++-------------
- drivers/pci/pci-driver.c                      |   9 ++
- drivers/pci/pci-of.c                          | 126 ++++++++++++++++++++++++++
- drivers/pci/pci.c                             | 112 +++++++++++++++++++----
- drivers/pci/pci.h                             |  31 +++++--
- drivers/pci/probe.c                           |  12 ++-
- drivers/pci/remove.c                          |   2 +
- include/linux/pci.h                           |   2 +
- 13 files changed, 360 insertions(+), 97 deletions(-)
- create mode 100644 drivers/pci/pci-of.c
-
+diff --git a/drivers/of/of_pci_irq.c b/drivers/of/of_pci_irq.c
+index 3a05568f65df..8b69211f0b88 100644
+--- a/drivers/of/of_pci_irq.c
++++ b/drivers/of/of_pci_irq.c
+@@ -27,7 +27,18 @@ int of_irq_parse_pci(const struct pci_dev *pdev, struct of_phandle_args *out_irq
+ 	 */
+ 	dn = pci_device_to_OF_node(pdev);
+ 	if (dn) {
+-		rc = of_irq_parse_one(dn, 0, out_irq);
++		struct property *prop;
++		const char *name;
++		int index = 0;
++
++		prop = of_find_property(dn, "interrupt-names", NULL);
++		for (name = of_prop_next_string(prop, NULL); name;
++		     name = of_prop_next_string(prop, name), index++) {
++			if (!strcmp(name, "pci"))
++				break;
++		}
++
++		rc = of_irq_parse_one(dn, index, out_irq);
+ 		if (!rc)
+ 			return rc;
+ 	}
 -- 
 2.11.0
