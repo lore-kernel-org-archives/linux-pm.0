@@ -1,7 +1,7 @@
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [RFC PATCH v9 5/7] PCI: Make pci_platform_pm_ops's callbacks optional
-Date: Fri, 27 Oct 2017 15:17:37 +0800
-Message-ID: <20171027071739.21927-6-jeffy.chen@rock-chips.com>
+Subject: [RFC PATCH v9 7/7] PCI / PM: Add support for the PCIe WAKE# signal for OF
+Date: Fri, 27 Oct 2017 15:17:39 +0800
+Message-ID: <20171027071739.21927-8-jeffy.chen@rock-chips.com>
 References: <20171027071739.21927-1-jeffy.chen@rock-chips.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171027071739.21927-1-jeffy.chen@rock-chips.com>
@@ -10,125 +10,185 @@ To: linux-kernel@vger.kernel.org, bhelgaas@google.com
 Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Allow platforms not to provide some of the pci_platform_pm_ops's
-callbacks.
+Add pci-of.c to handle the PCIe WAKE# interrupt.
 
-Also change the return value from -ENOSYS to -ENODEV for:
-warning: drivers/pci/pci.c,594: ENOSYS means 'invalid syscall nr' and nothing else
+Also use the dedicated wakeirq infrastructure to simplify it.
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
 
-Changes in v9: None
-Changes in v8: None
-Changes in v7: None
-Changes in v6: None
-Changes in v5: None
-Changes in v3: None
-Changes in v2: None
+Changes in v9:
+Fix check error in .cleanup().
+Move dedicated wakeirq setup to setup() callback and use
+device_set_wakeup_enable() to enable/disable.
 
- drivers/pci/pci.c | 38 +++++++++++++++++++++++++-------------
- drivers/pci/pci.h |  5 +----
- 2 files changed, 26 insertions(+), 17 deletions(-)
+Changes in v8:
+Add pci-of.c and use platform_pm_ops to handle the PCIe WAKE# signal.
 
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index f0d68066c726..e120b00a9017 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -572,46 +572,58 @@ static void pci_restore_bars(struct pci_dev *dev)
+Changes in v7:
+Move PCIE_WAKE handling into pci core.
+
+Changes in v6:
+Fix device_init_wake error handling, and add some comments.
+
+Changes in v5:
+Rebase.
+
+Changes in v3:
+Fix error handling.
+
+Changes in v2:
+Use dev_pm_set_dedicated_wake_irq.
+
+ drivers/pci/Makefile |   2 +-
+ drivers/pci/pci-of.c | 126 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 127 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/pci/pci-of.c
+
+diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
+index 66a21acad952..4f76dbdb024c 100644
+--- a/drivers/pci/Makefile
++++ b/drivers/pci/Makefile
+@@ -49,7 +49,7 @@ obj-$(CONFIG_PCI_ECAM) += ecam.o
  
- static const struct pci_platform_pm_ops *pci_platform_pm;
+ obj-$(CONFIG_XEN_PCIDEV_FRONTEND) += xen-pcifront.o
  
--int pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
-+void pci_set_platform_pm(const struct pci_platform_pm_ops *ops)
- {
--	if (!ops->is_manageable || !ops->set_state  || !ops->get_state ||
--	    !ops->choose_state  || !ops->set_wakeup || !ops->need_resume)
--		return -EINVAL;
- 	pci_platform_pm = ops;
--	return 0;
- }
+-obj-$(CONFIG_OF) += of.o
++obj-$(CONFIG_OF) += of.o pci-of.o
  
- static inline bool platform_pci_power_manageable(struct pci_dev *dev)
- {
--	return pci_platform_pm ? pci_platform_pm->is_manageable(dev) : false;
-+	if (pci_platform_pm && pci_platform_pm->is_manageable)
-+		return pci_platform_pm->is_manageable(dev);
+ ccflags-$(CONFIG_PCI_DEBUG) := -DDEBUG
+ 
+diff --git a/drivers/pci/pci-of.c b/drivers/pci/pci-of.c
+new file mode 100644
+index 000000000000..cc8ab979af2c
+--- /dev/null
++++ b/drivers/pci/pci-of.c
+@@ -0,0 +1,126 @@
++/*
++ * OF PCI PM support
++ *
++ * Copyright (c) 2017 Rockchip, Inc.
++ *
++ * Author: Jeffy Chen <jeffy.chen@rock-chips.com>
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, either version 2 of the License, or
++ * (at your option) any later version.
++ */
 +
-+	return false;
- }
- 
- static inline int platform_pci_set_power_state(struct pci_dev *dev,
- 					       pci_power_t t)
- {
--	return pci_platform_pm ? pci_platform_pm->set_state(dev, t) : -ENOSYS;
-+	if (pci_platform_pm && pci_platform_pm->set_state)
-+		return pci_platform_pm->set_state(dev, t);
++#include <linux/init.h>
++#include <linux/of_irq.h>
++#include <linux/pci.h>
++#include <linux/pm_wakeirq.h>
++#include "pci.h"
 +
-+	return -ENODEV;
- }
- 
- static inline pci_power_t platform_pci_get_power_state(struct pci_dev *dev)
- {
--	return pci_platform_pm ? pci_platform_pm->get_state(dev) : PCI_UNKNOWN;
-+	if (pci_platform_pm && pci_platform_pm->get_state)
-+		return pci_platform_pm->get_state(dev);
++struct of_pci_pm_data {
++	struct device	*dev;
++	unsigned int	wakeup_irq;
++	atomic_t	wakeup_cnt;
++};
 +
-+	return PCI_UNKNOWN;
- }
- 
- static inline pci_power_t platform_pci_choose_state(struct pci_dev *dev)
- {
--	return pci_platform_pm ?
--			pci_platform_pm->choose_state(dev) : PCI_POWER_ERROR;
-+	if (pci_platform_pm && pci_platform_pm->choose_state)
-+		return pci_platform_pm->choose_state(dev);
++static void *of_pci_setup(struct device *dev)
++{
++	struct of_pci_pm_data *data;
++	int irq, ret;
 +
-+	return PCI_POWER_ERROR;
- }
- 
- static inline int platform_pci_set_wakeup(struct pci_dev *dev, bool enable)
- {
--	return pci_platform_pm ?
--			pci_platform_pm->set_wakeup(dev, enable) : -ENODEV;
-+	if (pci_platform_pm && pci_platform_pm->set_wakeup)
-+		return pci_platform_pm->set_wakeup(dev, enable);
++	if (!dev->of_node)
++		return NULL;
 +
-+	return -ENODEV;
- }
- 
- static inline bool platform_pci_need_resume(struct pci_dev *dev)
- {
--	return pci_platform_pm ? pci_platform_pm->need_resume(dev) : false;
-+	if (pci_platform_pm && pci_platform_pm->need_resume)
-+		return pci_platform_pm->need_resume(dev);
++	data = devm_kzalloc(dev, sizeof(struct of_pci_pm_data), GFP_KERNEL);
++	if (!data)
++		return ERR_PTR(-ENOMEM);
 +
-+	return false;
- }
- 
- /**
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index e816a13e6259..048668271014 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -52,9 +52,6 @@ int pci_probe_reset_function(struct pci_dev *dev);
-  * @need_resume: returns 'true' if the given device (which is currently
-  *		suspended) needs to be resumed to be configured for system
-  *		wakeup.
-- *
-- * If given platform is generally capable of power managing PCI devices, all of
-- * these callbacks are mandatory.
-  */
- struct pci_platform_pm_ops {
- 	bool (*is_manageable)(struct pci_dev *dev);
-@@ -65,7 +62,7 @@ struct pci_platform_pm_ops {
- 	bool (*need_resume)(struct pci_dev *dev);
- };
- 
--int pci_set_platform_pm(const struct pci_platform_pm_ops *ops);
-+void pci_set_platform_pm(const struct pci_platform_pm_ops *ops);
- void pci_update_current_state(struct pci_dev *dev, pci_power_t state);
- void pci_power_up(struct pci_dev *dev);
- void pci_disable_enabled_device(struct pci_dev *dev);
++	irq = of_irq_get_byname(dev->of_node, "wakeup");
++	if (irq < 0) {
++		if (irq == -EPROBE_DEFER)
++			return ERR_PTR(irq);
++
++		return NULL;
++	}
++
++	data->wakeup_irq = irq;
++	data->dev = dev;
++
++	device_init_wakeup(dev, true);
++	ret = dev_pm_set_dedicated_wake_irq(dev, irq);
++	if (ret < 0) {
++		device_init_wakeup(dev, false);
++		return NULL;
++	}
++	device_set_wakeup_enable(dev, false);
++
++	dev_info(dev, "Wakeup IRQ %d\n", irq);
++	return data;
++}
++
++static void *of_pci_setup_dev(struct pci_dev *pci_dev)
++{
++	return of_pci_setup(&pci_dev->dev);
++}
++
++static void *of_pci_setup_host_bridge(struct pci_host_bridge *bridge)
++{
++	return of_pci_setup(bridge->dev.parent);
++}
++
++static void of_pci_cleanup(void *pmdata)
++{
++	struct of_pci_pm_data *data = pmdata;
++
++	if (!IS_ERR_OR_NULL(data)) {
++		device_init_wakeup(data->dev, false);
++		dev_pm_clear_wake_irq(data->dev);
++	}
++}
++
++static bool of_pci_can_wakeup(void *pmdata)
++{
++	struct of_pci_pm_data *data = pmdata;
++
++	if (IS_ERR_OR_NULL(data))
++		return false;
++
++	return data->wakeup_irq > 0;
++}
++
++static int of_pci_dev_wakeup(void *pmdata, bool enable)
++{
++	struct of_pci_pm_data *data = pmdata;
++	struct device *dev = data->dev;
++
++	return device_set_wakeup_enable(dev, enable);
++}
++
++static int of_pci_bridge_wakeup(void *pmdata, bool enable)
++{
++	struct of_pci_pm_data *data = pmdata;
++
++	if (enable && atomic_inc_return(&data->wakeup_cnt) != 1)
++		return 0;
++
++	if (!enable && atomic_dec_return(&data->wakeup_cnt) != 0)
++		return 0;
++
++	return of_pci_dev_wakeup(pmdata, enable);
++}
++
++static const struct pci_platform_pm_ops of_pci_platform_pm = {
++	.setup_dev		= of_pci_setup_dev,
++	.setup_host_bridge	= of_pci_setup_host_bridge,
++	.cleanup		= of_pci_cleanup,
++	.can_wakeup		= of_pci_can_wakeup,
++	.dev_wakeup		= of_pci_dev_wakeup,
++	.bridge_wakeup		= of_pci_bridge_wakeup,
++};
++
++static int __init of_pci_init(void)
++{
++	pci_set_platform_pm(&of_pci_platform_pm);
++	return 0;
++}
++arch_initcall(of_pci_init);
 -- 
 2.11.0
