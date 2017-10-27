@@ -1,37 +1,69 @@
-From: jeffy <jeffy.chen@rock-chips.com>
-Subject: Re: [RFC PATCH v8 7/7] PCI / PM: Add support for the PCIe WAKE# signal
- for OF
-Date: Fri, 27 Oct 2017 15:37:24 +0800
-Message-ID: <59F2E234.1080801@rock-chips.com>
-References: <20171026132840.20946-1-jeffy.chen@rock-chips.com> <20171026132840.20946-8-jeffy.chen@rock-chips.com> <20171026144221.GF21504@atomide.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: Multiple Acer laptops hang on ACPI poweroff
+Date: Fri, 27 Oct 2017 09:57:38 +0200
+Message-ID: <CAJZ5v0hXDHU4f5dXD3DrUszgiJWr0tzjM04bC66-qsEdRf6gUg@mail.gmail.com>
+References: <20170303201524.8150-1-drake@endlessm.com> <CAD8Lp44G_1R4gP9AFpEm34Y+DBmnWGgpBZbuTjimhi9uCQEKdg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171026144221.GF21504@atomide.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:43374 "EHLO
+        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751933AbdJ0H5k (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Oct 2017 03:57:40 -0400
+In-Reply-To: <CAD8Lp44G_1R4gP9AFpEm34Y+DBmnWGgpBZbuTjimhi9uCQEKdg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Daniel Drake <drake@endlessm.com>
+Cc: linux-efi@vger.kernel.org, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Wysocki, Rafael J" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Upstreaming Team <linux@endlessm.com>, Chris Chiu <chiu@endlessm.com>
 
-Hi Tony,
-
-thanks for your Acked-by. but i'm moving the dedicated wakeirq setup to 
-the setup(), so that the irq would be tracked in the /proc/interrupts.
-
-please help to check the new v10 patches, thanks :)
-
-On 10/26/2017 10:42 PM, Tony Lindgren wrote:
-> * Jeffy Chen <jeffy.chen@rock-chips.com> [171026 06:31]:
->> Add pci-of.c to handle the PCIe WAKE# interrupt.
+On Fri, Oct 27, 2017 at 8:35 AM, Daniel Drake <drake@endlessm.com> wrote:
+> On Sat, Mar 4, 2017 at 4:15 AM, Daniel Drake <drake@endlessm.com> wrote:
+>> Some particular Acer/Packard Bell machines hang during shutdown.
+>> The system completely hangs while doing bit operations for turning on SLP_EN
+>> bit in ACPI PM1A control address and Sleep Control Register. Thus the
+>> normal acpi_power_off path can never complete the shutdown process.
 >>
->> Also use the dedicated wakeirq infrastructure to simplify it.
->>
->> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+>> We have found a workaround to force these systems to use EFI for poweroff,
+>> included below, but I wonder if anything better can be done.
+
+Maybe it can, but I need to investigate.
+
+>> It is especially not ideal because the system hangs the same way when going
+>> into suspend and we don't have a workaround for that.
+
+It may just not do S3 at all if it shipped with Windows 10.
+Suspend-to-idle is the only way to suspend such platforms.
+
+> Testing shutdown on Acer Aspire ES1-732 (Intel Apollo Lake N4200) on
+> Linux 4.14-rc6, this issue is still present.
 >
-> Thanks for doing this, looks good to me from wakeirq point of view:
+> The FADT has:
 >
-> Acked-by: Tony Lindgren <tony@atomide.com>
+> [0ACh 0172  12]           PM1A Control Block : [Generic Address Structure]
+> [0ACh 0172   1]                     Space ID : 01 [SystemIO]
+> [0ADh 0173   1]                    Bit Width : 10
+> [0AEh 0174   1]                   Bit Offset : 00
+> [0AFh 0175   1]         Encoded Access Width : 02 [Word Access:16]
+> [0B0h 0176   8]                      Address : 0000000000000404
 >
+> Full ACPI tables dump:
+> https://gist.github.com/dsd/ed80d9fdd32f99e310002b2492cd6e1b
 >
+> We have tested that writing bit 13 of port 0404 under Windows 10
+> (using an app called RW everything) results in an immediate and
+> successful power down. However, writing the same bit under Linux just
+> makes the system hang.
 >
+> I am not really familiar with the guts of x86 systems. When the OS
+> writes to this port, which component of the system receives that
+> request and acts accordingly? Is it handled by the BIOS? Or an EC, or
+> ...? With more background here we may be able to approach the relevant
+> component vendor and ask for help.
+
+Writes to the PM1A register may go straight to the PMC or trigger an
+SMM trap.  In both cases the platform takes over.
+
+Is Apollo Lake the only platform affected or are there any other?
+
+Thanks,
+Rafael
