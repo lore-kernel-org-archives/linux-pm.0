@@ -1,58 +1,45 @@
-From: Sinan Kaya <okaya@codeaurora.org>
+From: Brian Norris <briannorris@chromium.org>
 Subject: Re: [RFC PATCH v8 7/7] PCI / PM: Add support for the PCIe WAKE#
  signal for OF
-Date: Sat, 28 Oct 2017 14:01:46 -0400
-Message-ID: <9460e098-a797-296a-1d03-0d19512457c2@codeaurora.org>
+Date: Sat, 28 Oct 2017 13:39:06 -0700
+Message-ID: <20171028203905.GA122526@google.com>
 References: <20171026132840.20946-1-jeffy.chen@rock-chips.com>
  <20171026132840.20946-8-jeffy.chen@rock-chips.com>
  <334be327-543f-d379-83de-ce84799fa49a@codeaurora.org>
  <20171028000400.GE105121@google.com>
+ <9460e098-a797-296a-1d03-0d19512457c2@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:36092 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751327AbdJ1SBx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Oct 2017 14:01:53 -0400
-In-Reply-To: <20171028000400.GE105121@google.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <9460e098-a797-296a-1d03-0d19512457c2@codeaurora.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Sinan Kaya <okaya@codeaurora.org>
 Cc: Jeffy Chen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, rjw@rjwysocki.net, dianders@chromium.org, linux-pci@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-On 10/27/2017 8:04 PM, Brian Norris wrote:
->> I think you can make this code common by abstracting the IRQ number and
->> have some generic code like pci-wake.c in pci directory without the of prefix
->> in this file.
-> Why would 'pci-wake' be a good name for this? We're doing basically the
-> same things that pci-acpi.c is doing (it also can configure the WAKE#
-> signal, via ACPI firmware calls).
+On Sat, Oct 28, 2017 at 02:01:46PM -0400, Sinan Kaya wrote:
+> I was looking for some code that can be used between OF and ACPI rather than
+> duplicating the code in two different places just to extract some information
+> from the platform firmware. 
 > 
+> My initial look at your code suggested it to be very generic except the IRQ
+> read function. 
+> 
+> I was expecting that the kernel's PCI Wake handling to be common whether the IRQ
+> information is coming from DT/ACPI.
 
-I was looking for some code that can be used between OF and ACPI rather than
-duplicating the code in two different places just to extract some information
-from the platform firmware. 
+I'm not an ACPI expert, but from reading the existing ACPI code handling
+this wakeup configuration...they're not really that similar. Whereas for
+device tree firmware there's not much magic to it -- the OS is really
+just configuring a standard interrupt with wakeup capability -- ACPI
+layers this all behind its GPE (General Purpose Event) abstraction,
+which doesn't act like a typical interrupt. You manage GPE handlers with
+a completely different set of APIs.
 
-My initial look at your code suggested it to be very generic except the IRQ
-read function. 
+Anyway, Rafael seemed to have some of his own opinions (didn't like the
+current approach it seems), so maybe we're all completely off track
+here.
 
-I was expecting that the kernel's PCI Wake handling to be common whether the IRQ
-information is coming from DT/ACPI.
-
-There are different approaches to portability.
-
-* One approach is to keep of specific stuff in OF directory. 
-* Another approach is keep some common code can call it from multiple platform firmware
-or from the ARCH directory.
-* Another approach is have one file but put OF and ACPI specific pieces at the bottom.
-
-It depends on the code. 
-
-Bjorn should chime in here with his preference.
-
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+Regards,
+Brian
