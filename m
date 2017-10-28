@@ -1,70 +1,68 @@
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-Subject: [PATCH] thermal: tegra: allow sensor registeration to fail
-Date: Fri, 27 Oct 2017 16:54:13 -0700
-Message-ID: <1509148453-11388-1-git-send-email-nicoleotsuka@gmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: srikars@nvidia.com, thierry.reding@gmail.com, jonathanh@nvidia.com, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+From: Brian Norris <briannorris@chromium.org>
+Subject: Re: [RFC PATCH v8 7/7] PCI / PM: Add support for the PCIe WAKE#
+ signal for OF
+Date: Fri, 27 Oct 2017 17:04:01 -0700
+Message-ID: <20171028000400.GE105121@google.com>
+References: <20171026132840.20946-1-jeffy.chen@rock-chips.com>
+ <20171026132840.20946-8-jeffy.chen@rock-chips.com>
+ <334be327-543f-d379-83de-ce84799fa49a@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <334be327-543f-d379-83de-ce84799fa49a@codeaurora.org>
+Sender: linux-pci-owner@vger.kernel.org
+To: Sinan Kaya <okaya@codeaurora.org>
+Cc: Jeffy Chen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, rjw@rjwysocki.net, dianders@chromium.org, linux-pci@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Not all sensors may be used on a platform. So there could be
-some missing thermal zones in the Device Tree. However, the
-the driver now errors out whenever a sensor fails to register
-the thermal zone.
+Hi Sinan,
 
-Since the driver could live with other sensors, this change
-allows other sensors to continue the registerations even if
-one sensor fails to register.
+I'm not sure I understand all your suggestions below.
 
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
----
- drivers/thermal/tegra/soctherm.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+On Thu, Oct 26, 2017 at 11:16:55AM -0400, Sinan Kaya wrote:
+> On 10/26/2017 9:28 AM, Jeffy Chen wrote:
+> >  drivers/pci/Makefile |   2 +-
+> >  drivers/pci/pci-of.c | 136 +++++++++++++++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 137 insertions(+), 1 deletion(-)
+> >  create mode 100644 drivers/pci/pci-of.c
+> > 
+> > diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
+> > index 66a21acad952..4f76dbdb024c 100644
+> > --- a/drivers/pci/Makefile
+> > +++ b/drivers/pci/Makefile
+> > @@ -49,7 +49,7 @@ obj-$(CONFIG_PCI_ECAM) += ecam.o
+> >  
+> >  obj-$(CONFIG_XEN_PCIDEV_FRONTEND) += xen-pcifront.o
+> >  
+> > -obj-$(CONFIG_OF) += of.o
+> > +obj-$(CONFIG_OF) += of.o pci-of.o
+> 
+> If the intention is to push this to pci directory, this code needs to be made
+> platform agnostic by splitting into two pieces.
+> 
+> I think you can make this code common by abstracting the IRQ number and
+> have some generic code like pci-wake.c in pci directory without the of prefix
+> in this file.
 
-diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-index 455b58c..73fcd48 100644
---- a/drivers/thermal/tegra/soctherm.c
-+++ b/drivers/thermal/tegra/soctherm.c
-@@ -1280,7 +1280,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 	struct tsensor_shared_calib shared_calib;
- 	struct resource *res;
- 	struct tegra_soctherm_soc *soc;
--	unsigned int i;
-+	unsigned int i, e;
- 	int err;
- 
- 	match = of_match_node(tegra_soctherm_of_match, pdev->dev.of_node);
-@@ -1377,7 +1377,7 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 
- 	soctherm_init(pdev);
- 
--	for (i = 0; i < soc->num_ttgs; ++i) {
-+	for (i = 0, e = 0; i < soc->num_ttgs; ++i) {
- 		struct tegra_thermctl_zone *zone =
- 			devm_kzalloc(&pdev->dev, sizeof(*zone), GFP_KERNEL);
- 		if (!zone) {
-@@ -1397,7 +1397,10 @@ static int tegra_soctherm_probe(struct platform_device *pdev)
- 			err = PTR_ERR(z);
- 			dev_err(&pdev->dev, "failed to register sensor: %d\n",
- 				err);
--			goto disable_clocks;
-+			/* Check if all sensors failed to register */
-+			if (++e == soc->num_ttgs)
-+				goto disable_clocks;
-+			continue;
- 		}
- 
- 		zone->tz = z;
-@@ -1459,6 +1462,9 @@ static int __maybe_unused soctherm_resume(struct device *dev)
- 		struct thermal_zone_device *tz;
- 
- 		tz = tegra->thermctl_tzs[soc->ttgs[i]->id];
-+		if (!tz)
-+			continue;
-+
- 		err = tegra_soctherm_set_hwtrips(dev, soc->ttgs[i], tz);
- 		if (err) {
- 			dev_err(&pdev->dev,
--- 
-2.1.4
+Why would 'pci-wake' be a good name for this? We're doing basically the
+same things that pci-acpi.c is doing (it also can configure the WAKE#
+signal, via ACPI firmware calls).
+
+> Then, you can have some other OF specific code in the drivers/of directory
+> that reads the IRQ from OF and calls the common code in PCI directory.
+
+Why is drivers/of/ special? I thought in general, the DT maintainers
+preferred to move domain-specific stuff into the respective subsystems.
+
+Also, the extraction is a very tiny piece of code, and the logic around
+walking a PCI tree is the more important part. And in the
+meantime...Jeffy has sent two more revisions of this patch set already,
+and he did the latter (I like his abstraction of PCI device trees,
+shared between ACPI and OF code) but not the former (it's still all
+'pci-of.c').
+
+Feel free to comment further on here or on v10, but at the moment I'm
+not sure I understand yet how your suggestions would improve things.
+
+Brian
