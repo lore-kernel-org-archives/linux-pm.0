@@ -1,35 +1,33 @@
 From: Wolfram Sang <wsa@the-dreams.de>
-Subject: [PATCH 2/3] power: supply: sbs-battery: remove unchecked return var
-Date: Sun, 29 Oct 2017 16:35:44 +0100
-Message-ID: <20171029153545.3947-3-wsa@the-dreams.de>
-References: <20171029153545.3947-1-wsa@the-dreams.de>
+Subject: [PATCH 0/3] power: supply: minor improvements to sbs-manager and battery
+Date: Sun, 29 Oct 2017 16:35:42 +0100
+Message-ID: <20171029153545.3947-1-wsa@the-dreams.de>
 Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20171029153545.3947-1-wsa@the-dreams.de>
 Sender: linux-i2c-owner@vger.kernel.org
 To: linux-i2c@vger.kernel.org
-Cc: linux-pm@vger.kernel.org, Phil Reid <preid@electromag.com.au>, sre@kernel.org, Wolfram Sang <wsa@the-dreams.de>, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: linux-pm@vger.kernel.org, Phil Reid <preid@electromag.com.au>, sre@kernel.org, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
 
-Since the return value is not checked anyhow, we don't need to store it.
+Here are three patches I came up with when doing the code review for Phil
+Reid's V11 series for the sbs-manager. This code is not upstream yet but resides
+in this branch (already with these patches applied):
 
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
----
- drivers/power/supply/sbs-battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/sbs-manager
 
-diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index fb61da370947f4..83d7b4115857e3 100644
---- a/drivers/power/supply/sbs-battery.c
-+++ b/drivers/power/supply/sbs-battery.c
-@@ -556,7 +556,7 @@ static int sbs_get_battery_serial_number(struct i2c_client *client,
- 	if (ret < 0)
- 		return ret;
- 
--	ret = sprintf(sbs_serial, "%04x", ret);
-+	sprintf(sbs_serial, "%04x", ret);
- 	val->strval = sbs_serial;
- 
- 	return 0;
+Since Sebastian was super-fast in reviewing these patches, I will merge the
+above branch pretty soon into i2c/for-next if nobody objects.
+
+Thanks!
+
+
+Wolfram Sang (3):
+  power: supply: sbs-battery: remove superfluous variable init
+  power: supply: sbs-battery: remove unchecked return var
+  power: supply: sbs-message: fix some code style issues
+
+ drivers/power/supply/sbs-battery.c | 12 ++++--------
+ drivers/power/supply/sbs-manager.c |  7 ++++---
+ 2 files changed, 8 insertions(+), 11 deletions(-)
+
 -- 
 2.11.0
