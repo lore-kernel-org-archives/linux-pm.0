@@ -1,59 +1,113 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PULL REQUEST] for Rafael's Linux-PM / For-Next
-Date: Mon, 30 Oct 2017 11:20:08 +0100
-Message-ID: <CAJZ5v0hM=gm5=mR1W=E6=LUPDMSJVS+xpb4B+xXpu-dx=gU4Sg@mail.gmail.com>
-References: <CGME20171027003236epcms1p294d11fd0d6e074ec177abe903a2a91b8@epcms1p2>
- <20171027003236epcms1p294d11fd0d6e074ec177abe903a2a91b8@epcms1p2>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: [GIT PULL] Thermal SoC management updates for v4.15-rc1 #1
+Date: Mon, 30 Oct 2017 07:30:04 -0700
+Message-ID: <20171030143003.GA1938@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:57251 "EHLO
-        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932575AbdJ3KUJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Oct 2017 06:20:09 -0400
-Received: by mail-oi0-f66.google.com with SMTP id v9so21022480oif.13
-        for <linux-pm@vger.kernel.org>; Mon, 30 Oct 2017 03:20:08 -0700 (PDT)
-In-Reply-To: <20171027003236epcms1p294d11fd0d6e074ec177abe903a2a91b8@epcms1p2>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:54468 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751475AbdJ3OaJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Oct 2017 10:30:09 -0400
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Myungjoo Ham <myungjoo.ham@samsung.com>
-Cc: "rafael@kernel.org" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Chanwoo Choi <cw00.choi@samsung.com>, "myungjoo.ham@gmail.com" <myungjoo.ham@gmail.com>
+To: Rui Zhang <rui.zhang@intel.com>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-On Fri, Oct 27, 2017 at 2:32 AM, MyungJoo Ham <myungjoo.ham@samsung.com> wrote:
-> Dear Rafael,
->
-> Here goes a pull request from PM/devfreq mainly focussing on supporting OPP better.
->
->
-> Cheers,
-> MyungJoo
->
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> The following changes since commit bb176f67090ca54869fc1262c913aa69d2ede070:
->
->   Linux 4.14-rc6 (2017-10-23 06:49:47 -0400)
->
-> are available in the git repository at:
->
->   https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git tags/pullreq_20171026
->
-> for you to fetch changes up to aa7c352f9841ab3fee5bf1de127a45e6310124a6:
->
->   PM / devfreq: Define the constant governor name (2017-10-26 17:08:40 +0900)
->
-> - ----------------------------------------------------------------
-> Pull Request from PM/devfreq to Linux-PM
->
-> - ----------------------------------------------------------------
-> Chanwoo Choi (7):
->       PM / devfreq: Set min/max_freq when adding the devfreq device
->       Revert "PM / devfreq: Add show_one macro to delete the duplicate code"
->       PM / devfreq: Use the available min/max frequency
->       PM / devfreq: Change return type of devfreq_set_freq_table()
->       PM / devfreq: Show the all available frequencies
->       PM / devfreq: Remove unneeded conditional statement
->       PM / devfreq: Define the constant governor name
+Hello Rui,
 
-Pulled, thanks!
+Please pull the changes for thermal-soc for the coming v4.15-rc1.
+Changelog:
+- New drivers: Rockchip RV1108 and Broadcom AVS tmon.
+- Major rework on HISI driver plus additional support of hisi3660.
+- Several fixes on diverse drivers and few in core.
+
+BR,
+
+The following changes since commit 569dbb88e80deb68974ef6fdd6a13edb9d686261:
+
+  Linux 4.13 (2017-09-03 13:56:17 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/evalenti/linux-soc-thermal linus
+
+for you to fetch changes up to 877a9aa9dadc7291b0069fb2ccdf2bbc1e3e6a6e:
+
+  thermal: cpu_cooling: pr_err() strings should end with newlines (2017-10-26 11:33:32 -0700)
+
+----------------------------------------------------------------
+Allen Wild (1):
+      thermal: enable broadcom menu for arm64 bcm2835
+
+Arvind Yadav (1):
+      thermal: cpu_cooling: pr_err() strings should end with newlines
+
+Baruch Siach (1):
+      thermal: armada: fix formula documentation comment
+
+Brian Norris (2):
+      Documentation: devicetree: add binding for Broadcom STB AVS TMON
+      thermal: add brcmstb AVS TMON driver
+
+Daniel Lezcano (16):
+      thermal/drivers/hisi: Fix missing interrupt enablement
+      thermal/drivers/hisi: Remove the multiple sensors support
+      thermal/drivers/hisi: Fix kernel panic on alarm interrupt
+      thermal/drivers/hisi: Simplify the temperature/step computation
+      thermal/drivers/hisi: Fix multiple alarm interrupts firing
+      thermal/drivers/hisi: Remove pointless lock
+      thermal/drivers/hisi: Encapsulate register writes into helpers
+      thermal/drivers/hisi: Fix configuration register setting
+      thermal/drivers/hisi: Remove costly sensor inspection
+      thermal/drivers/hisi: Rename and remove unused field
+      thermal/drivers/hisi: Convert long to int
+      thermal/drivers/hisi: Remove thermal data back pointer
+      thermal/drivers/hisi: Remove mutex_lock in the code
+      thermal/drivers/step_wise: Fix temperature regulation misbehavior
+      thermal/drivers/generic-iio-adc: Switch tz request to devm version
+      thermal/drivers/qcom-spmi: Use devm_iio_channel_get
+
+Kevin Wangtao (6):
+      thermal/drivers/hisi: Move the clk setup in the corresponding functions
+      thermal/drivers/hisi: Use round up step value
+      thermal/drivers/hisi: Put platform code together
+      thermal/drivers/hisi: Add platform prefix to function name
+      thermal/drivers/hisi: Prepare to add support for other hisi platforms
+      thermal/drivers/hisi: Add support for hi3660 SoC
+
+Nicolin Chen (1):
+      thermal: tegra: remove null check for dev pointer
+
+Niklas Söderlund (1):
+      thermal: rcar_gen3_thermal: fix initialization sequence for H3 ES2.0
+
+Rocky Hao (2):
+      dt-bindings: rockchip-thermal: Support the RV1108 SoC compatible
+      thermal: rockchip: Support the RV1108 SoC in thermal driver
+
+Tony Lindgren (1):
+      thermal: ti-soc-thermal: Fix ti_thermal_unregister_cpu_cooling NULL pointer on unload
+
+ .../devicetree/bindings/thermal/brcm,avs-tmon.txt  |  20 +
+ .../bindings/thermal/rockchip-thermal.txt          |   1 +
+ MAINTAINERS                                        |   8 +
+ drivers/thermal/Kconfig                            |   2 +-
+ drivers/thermal/armada_thermal.c                   |   2 +-
+ drivers/thermal/broadcom/Kconfig                   |   7 +
+ drivers/thermal/broadcom/Makefile                  |   1 +
+ drivers/thermal/broadcom/brcmstb_thermal.c         | 387 +++++++++++++
+ drivers/thermal/cpu_cooling.c                      |   2 +-
+ drivers/thermal/hisi_thermal.c                     | 612 ++++++++++++++-------
+ drivers/thermal/qcom-spmi-temp-alarm.c             |  43 +-
+ drivers/thermal/rcar_gen3_thermal.c                |  34 +-
+ drivers/thermal/rockchip_thermal.c                 |  67 +++
+ drivers/thermal/step_wise.c                        |  11 +-
+ drivers/thermal/tegra/soctherm.c                   |   2 +-
+ drivers/thermal/thermal-generic-adc.c              |  24 +-
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c |   3 +-
+ 17 files changed, 940 insertions(+), 286 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/thermal/brcm,avs-tmon.txt
+ create mode 100644 drivers/thermal/broadcom/brcmstb_thermal.c
