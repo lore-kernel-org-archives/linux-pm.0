@@ -1,64 +1,62 @@
-From: Peter Rosin <peda@axentia.se>
-Subject: Battery temperature
-Date: Mon, 30 Oct 2017 09:26:33 +0100
-Message-ID: <fd2a5fff-de60-fd71-cc91-198ff2565d4b@axentia.se>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / QoS: Fix default runtime_pm device resume latency
+Date: Mon, 30 Oct 2017 11:19:08 +0100
+Message-ID: <CAJZ5v0i8HMDfV907QDTD54YPaFpoBLVt+R4oeQ704+9_C8APoA@mail.gmail.com>
+References: <1509347446-26105-1-git-send-email-t-kristo@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ve1eur01on0114.outbound.protection.outlook.com ([104.47.1.114]:51449
-        "EHLO EUR01-VE1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1751735AbdJ3I0l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 30 Oct 2017 04:26:41 -0400
-Content-Language: en-US
+Received: from mail-oi0-f66.google.com ([209.85.218.66]:47837 "EHLO
+        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752039AbdJ3KTJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Oct 2017 06:19:09 -0400
+In-Reply-To: <1509347446-26105-1-git-send-email-t-kristo@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Sebastian Reichel <sre@kernel.org>, Jonathan Cameron <jic23@kernel.org>
+To: Tero Kristo <t-kristo@ti.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>
 
-Hi!
+On Mon, Oct 30, 2017 at 8:10 AM, Tero Kristo <t-kristo@ti.com> wrote:
+> The recent change to the PM QoS framework to introduce a proper
+> no constraint value overlooked to handle the devices which don't
+> implement PM QoS OPS. Runtime PM is one of the more severely
+> impacted subsystems, failing every attempt to runtime suspend
+> a device. This leads into some nasty second level issues like
+> probe failures and increased power consumption among other things.
 
-We have a device with a series of rechargeable batteries.
+Oh, that's bad.
 
-The chargers are bq24725 and the batteries have a thermistor
-for temperature monitoring. This thermistor is connected to
-a standard adc component (ads1015). This means that the value
-the kernel knows for the temperature is in volts (from the
-iio driver). We can also monitor the charging current and the
-battery voltage for each battery/charger (also with that very
-same adc). A gpio pin indicates if external AC power is present.
-This gpio pin has to be polled, i.e. it is not possible to hook
-up interrupts for it.
+Sorry about breaking it and thanks for the fix!
 
-We currently have this "working" without the concept of neither
-battery nor charger manager in the kernel. It is all handled
-from user space by writing to
+> Fix this by adding a proper return value for devices that don't
+> implement PM QoS implicitly.
+>
+> Fixes: 0cc2b4e5a020 ("PM / QoS: Fix device resume latency PM QoS")
+> Signed-off-by: Tero Kristo <t-kristo@ti.com>
+> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-    /sys/class/power_supply/bq24735@<i2c-bus-and-addr>/status
+Applied.
 
-to en-/disable charging and by monitoring the adc voltages
-and doing the unit conversion to degrees Celsius in user space.
-
-IIUC, ideally there should be in-kernel charger-managers and
-battery objects for each charger/battery.
-
-I wonder if there is any existing way to do the non-linear
-conversion from the iio-adc volt-reading of the thermistor to
-the desired unit of degrees-celsius, or if I need to write
-something myself?
-
-I do see the generic-adc-battery driver, which sounds about
-right, but it has no DT binding and it also has its
-cal_charge() callback which is presumably difficult to handle
-from DT? We have no way to get at the battery charge level,
-short of inaccurate guesses based on the battery voltage. The
-driver also appears to have no concept of battery temperature,
-but I suppose it could be extended with that? Not sure if it's
-even applicable, I'm fumbling...
-
-I may have completely misunderstood how this is supposed to be
-hooked up in an ideal world.
-
-Cheers,
-Peter
+> ---
+>  include/linux/pm_qos.h | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+> index 6737a8c..d68b056 100644
+> --- a/include/linux/pm_qos.h
+> +++ b/include/linux/pm_qos.h
+> @@ -175,7 +175,8 @@ static inline s32 dev_pm_qos_requested_flags(struct device *dev)
+>  static inline s32 dev_pm_qos_raw_read_value(struct device *dev)
+>  {
+>         return IS_ERR_OR_NULL(dev->power.qos) ?
+> -               0 : pm_qos_read_value(&dev->power.qos->resume_latency);
+> +               PM_QOS_RESUME_LATENCY_NO_CONSTRAINT :
+> +               pm_qos_read_value(&dev->power.qos->resume_latency);
+>  }
+>  #else
+>  static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev,
+> --
+> 1.9.1
+>
+> --
+> Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki. Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
