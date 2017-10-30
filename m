@@ -1,67 +1,47 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: [PATCH v11 02/10] i2c: i2c-smbus: Move i2c_setup_smbus_alert from
- i2c-smbus to i2c-core-smbus
-Date: Mon, 30 Oct 2017 12:23:05 +0800
-Message-ID: <1397131b-c22d-9872-dbe0-9b691553cb9e@electromag.com.au>
-References: <1503567070-115646-1-git-send-email-preid@electromag.com.au>
- <1503567070-115646-3-git-send-email-preid@electromag.com.au>
- <20171029154408.vmjkpj7ybqyrj3ke@ninjato>
+From: Tero Kristo <t-kristo@ti.com>
+Subject: [PATCH] PM / QoS: Fix default runtime_pm device resume latency
+Date: Mon, 30 Oct 2017 09:10:46 +0200
+Message-ID: <1509347446-26105-1-git-send-email-t-kristo@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy2.45ru.net.au ([203.30.46.146]:40166 "EHLO
-        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751302AbdJ3EXP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Oct 2017 00:23:15 -0400
-In-Reply-To: <20171029154408.vmjkpj7ybqyrj3ke@ninjato>
-Content-Language: en-AU
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com
 List-Id: linux-pm@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, benjamin.tissoires@redhat.com, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 29/10/2017 23:44, Wolfram Sang wrote:
-> On Thu, Aug 24, 2017 at 05:31:02PM +0800, Phil Reid wrote:
->> In preparation to adding of_i2c_setup_smbus_alert() move
->> i2c_setup_smbus_alert() to core module. of_i2c_setup_smbus_alert()
->> will call i2c_setup_smbus_alert() and this avoid module dependecy issues.
-> 
-> I am not very happy with this but don't want to cause another delay. So,
-> I hope we can discuss and fix it incrementally.
-> 
->  From what it does, I really think both setup_alert functions belong to
-> i2c-smbus.c. Three possibilities come to my mind (untested, though):
-> 
-> a) use try_then_request_module somehow
-> 
-> b) add to CONFIG_I2C something like:
-> 	select I2C_SMBUS if OF
-> 
-> c) get rid of i2c-smbus.c entirely and move it all into the core
-> 
-> Dunno if a) or b) have been tried in the course of this series already?
-> 
-G'day Wolfram, Thanks for reviewing.
+The recent change to the PM QoS framework to introduce a proper
+no constraint value overlooked to handle the devices which don't
+implement PM QoS OPS. Runtime PM is one of the more severely
+impacted subsystems, failing every attempt to runtime suspend
+a device. This leads into some nasty second level issues like
+probe failures and increased power consumption among other things.
 
-Nope hadn't tried either a) or b).
-a) is not something I was aware of.
-Had a brief play and not sure how to make this work. This gives me the same linking problem.
+Fix this by adding a proper return value for devices that don't
+implement PM QoS implicitly.
 
-A variant of b) was tried by selecting I2C_SMBUS from driver modules having smbalert support,
-but that caused problems if the i2c core was builtin and the driver was a module. But this looks
-to work for me.
+Fixes: 0cc2b4e5a020 ("PM / QoS: Fix device resume latency PM QoS")
+Signed-off-by: Tero Kristo <t-kristo@ti.com>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ include/linux/pm_qos.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-A variant of c) with option to exclude the i2c-smbus code still.
-Add i2c-smbus to the i2c-core module by:
-Change Kconfig I2C_SMBUS to a bool
-add i2c-smbus to i2c-core object.
-fixup duplicate init_module calls etc.
-Possibly also rename i2c-smbus to i2c-smbus-alert?
-
-Let me know your preference and I'll put something together.
-
-
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 6737a8c..d68b056 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -175,7 +175,8 @@ static inline s32 dev_pm_qos_requested_flags(struct device *dev)
+ static inline s32 dev_pm_qos_raw_read_value(struct device *dev)
+ {
+ 	return IS_ERR_OR_NULL(dev->power.qos) ?
+-		0 : pm_qos_read_value(&dev->power.qos->resume_latency);
++		PM_QOS_RESUME_LATENCY_NO_CONSTRAINT :
++		pm_qos_read_value(&dev->power.qos->resume_latency);
+ }
+ #else
+ static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev,
 -- 
-Regards
-Phil Reid
+1.9.1
+
+--
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki. Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
