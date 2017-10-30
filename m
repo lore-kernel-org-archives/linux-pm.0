@@ -1,46 +1,70 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [RFC PATCH v8 4/7] of/irq: Adjust of pci irq parsing for
- multiple interrupts
-Date: Mon, 30 Oct 2017 11:46:51 -0700
-Message-ID: <20171030184649.GA99279@google.com>
-References: <20171026132840.20946-1-jeffy.chen@rock-chips.com>
- <20171026132840.20946-5-jeffy.chen@rock-chips.com>
- <20171027143812.5i4vathfjpgld7wk@rob-hp-laptop>
- <59F688FF.9020806@rock-chips.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH] bq2415x_charger: Use common error handling code in
+ bq2415x_timer_work()
+Date: Mon, 30 Oct 2017 21:50:10 +0100
+Message-ID: <48b34d35-8c41-d25b-0cb7-6257b37c5a44@users.sourceforge.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f169.google.com ([209.85.223.169]:55911 "EHLO
-        mail-io0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752955AbdJ3Sqz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Oct 2017 14:46:55 -0400
-Received: by mail-io0-f169.google.com with SMTP id p186so29442365ioe.12
-        for <linux-pm@vger.kernel.org>; Mon, 30 Oct 2017 11:46:54 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <59F688FF.9020806@rock-chips.com>
+Received: from mout.web.de ([212.227.17.12]:63265 "EHLO mout.web.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932153AbdJ3UuR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 30 Oct 2017 16:50:17 -0400
+Content-Language: en-GB
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: jeffy <jeffy.chen@rock-chips.com>
-Cc: Rob Herring <robh@kernel.org>, linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, rjw@rjwysocki.net, dianders@chromium.org, Frank Rowand <frowand.list@gmail.com>, devicetree@vger.kernel.org
+To: linux-pm@vger.kernel.org, =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, Sebastian Reichel <sre@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-On Mon, Oct 30, 2017 at 10:05:51AM +0800, Jeffy Chen wrote:
-> On 10/27/2017 10:38 PM, Rob Herring wrote:
-> >>+		prop = of_find_property(dn, "interrupt-names", NULL);
-> >>>+		for (name = of_prop_next_string(prop, NULL); name;
-> >>>+		     name = of_prop_next_string(prop, name), index++) {
-> >>>+			if (!strcmp(name, "pci"))
-> >>>+				break;
-> >Use of_property_match_string
-> >
-> i'm trying to find the first unnamed or "pci" named irq in the
-> string array, so cannot use that API:)
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 30 Oct 2017 21:45:09 +0100
 
-Actually, why can't you? It does exactly what your loop does right now.
-You'd just need to handle the -ENODATA case better. e.g., check if we
-have an interrupt-names property -- if not, just take index 0; if so,
-then use of_property_match_string().
+Add a jump target so that a bit of exception handling can be better reused
+at the end of this function.
 
-Brian
+This issue was detected by using the Coccinelle software.
 
-> but will change to of_property_for_each_string as Brian suggested.
-> 
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/power/supply/bq2415x_charger.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/power/supply/bq2415x_charger.c b/drivers/power/supply/bq2415x_charger.c
+index c4770a94cc8e..8385e02e1634 100644
+--- a/drivers/power/supply/bq2415x_charger.c
++++ b/drivers/power/supply/bq2415x_charger.c
+@@ -914,16 +914,12 @@ static void bq2415x_timer_work(struct work_struct *work)
+ 	}
+ 
+ 	boost = bq2415x_exec_command(bq, BQ2415X_BOOST_MODE_STATUS);
+-	if (boost < 0) {
+-		bq2415x_timer_error(bq, "Unknown error");
+-		return;
+-	}
++	if (boost < 0)
++		goto report_timer_error;
+ 
+ 	error = bq2415x_exec_command(bq, BQ2415X_FAULT_STATUS);
+-	if (error < 0) {
+-		bq2415x_timer_error(bq, "Unknown error");
+-		return;
+-	}
++	if (error < 0)
++		goto report_timer_error;
+ 
+ 	if (boost) {
+ 		switch (error) {
+@@ -992,6 +988,10 @@ static void bq2415x_timer_work(struct work_struct *work)
+ 	}
+ 
+ 	schedule_delayed_work(&bq->work, BQ2415X_TIMER_TIMEOUT * HZ);
++	return;
++
++report_timer_error:
++	bq2415x_timer_error(bq, "Unknown error");
+ }
+ 
+ /**** power supply interface code ****/
+-- 
+2.14.3
