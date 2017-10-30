@@ -1,46 +1,51 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Urgent power management fix for v4.14
-Date: Tue, 31 Oct 2017 00:24:27 +0100
-Message-ID: <CAJZ5v0g989OhZOMr-_QYpaZjNaE1J+rrMpN1+Zp03q2t4YipAQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / QoS: Fix default runtime_pm device resume latency
+Date: Tue, 31 Oct 2017 00:27:52 +0100
+Message-ID: <3227682.nATp9NGxKU@aspire.rjw.lan>
+References: <1509347446-26105-1-git-send-email-t-kristo@ti.com> <CAJZ5v0i8HMDfV907QDTD54YPaFpoBLVt+R4oeQ704+9_C8APoA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46842 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752050AbdJ3X1s (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Oct 2017 19:27:48 -0400
+In-Reply-To: <CAJZ5v0i8HMDfV907QDTD54YPaFpoBLVt+R4oeQ704+9_C8APoA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tero Kristo <t-kristo@ti.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Linus,
+On Monday, October 30, 2017 11:19:08 AM CET Rafael J. Wysocki wrote:
+> On Mon, Oct 30, 2017 at 8:10 AM, Tero Kristo <t-kristo@ti.com> wrote:
+> > The recent change to the PM QoS framework to introduce a proper
+> > no constraint value overlooked to handle the devices which don't
+> > implement PM QoS OPS. Runtime PM is one of the more severely
+> > impacted subsystems, failing every attempt to runtime suspend
+> > a device. This leads into some nasty second level issues like
+> > probe failures and increased power consumption among other things.
+> 
+> Oh, that's bad.
+> 
+> Sorry about breaking it and thanks for the fix!
+> 
+> > Fix this by adding a proper return value for devices that don't
+> > implement PM QoS implicitly.
+> >
+> > Fixes: 0cc2b4e5a020 ("PM / QoS: Fix device resume latency PM QoS")
+> > Signed-off-by: Tero Kristo <t-kristo@ti.com>
+> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Applied.
 
-Please pull from the tag
+And pushed to Linus.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-urgent-4.14
+That said, probe shouldn't ever fail if PM QoS is set to the
+"never suspend" value.
 
-with top-most commit 2a9a86d5c81389cd9afe6a4fea42c585733cd705
+User space can set it that way, after all, so the drivers that fail to probe
+in that case aren't correct I'm afraid.
 
- PM / QoS: Fix default runtime_pm device resume latency
-
-on top of commit
-
- Linux 4.14-rc7
-
-to receive an urgent power management fix for 4.14.
-
-This fixes new breakage introduced by the most recent PM QoS
-fix in which, embarrassingly enough, I forgot to update
-dev_pm_qos_raw_read_value() to return the right default
-for devices with no PM QoS constraints at all which prevents
-runtime PM from suspending those devices (fix from Tero Kristo).
-
-Thanks!
-
----------------
-
-Tero Kristo (1):
-      PM / QoS: Fix default runtime_pm device resume latency
-
----------------
-
- include/linux/pm_qos.h | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Thanks,
+Rafael
