@@ -1,99 +1,147 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH] PM / QoS: Fix default runtime_pm device resume latency
-Date: Tue, 31 Oct 2017 19:12:04 +0200
-Message-ID: <1785554.vpm9XMd3xA@avalon>
+Date: Tue, 31 Oct 2017 18:22:19 +0100
+Message-ID: <CAJZ5v0guHP=icMiRBZ1B4oWQVxrtN2Nt+aE_V1646PfpsKkiJg@mail.gmail.com>
 References: <1509347446-26105-1-git-send-email-t-kristo@ti.com>
- <CAMuHMdW3AJFZQVDPTcpL-UMRxNThcOpQxNz6yTx9qDP7SQ-kLg@mail.gmail.com>
- <CAMuHMdX4WjXZQrP9QMGFV8sbntOUvfZ4y-uQSS4_4ArrCjsxWA@mail.gmail.com>
+ <CAJZ5v0i8HMDfV907QDTD54YPaFpoBLVt+R4oeQ704+9_C8APoA@mail.gmail.com>
+ <3227682.nATp9NGxKU@aspire.rjw.lan> <CAMuHMdVKh9n4aep+niyYYEA_4cNrB4+BfGWrJ3WLpej1me114w@mail.gmail.com>
+ <CAMuHMdW3AJFZQVDPTcpL-UMRxNThcOpQxNz6yTx9qDP7SQ-kLg@mail.gmail.com> <CAMuHMdX4WjXZQrP9QMGFV8sbntOUvfZ4y-uQSS4_4ArrCjsxWA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
+Content-Type: multipart/mixed; boundary="94eb2c0439ee578ba5055cdaff2d"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <CAMuHMdX4WjXZQrP9QMGFV8sbntOUvfZ4y-uQSS4_4ArrCjsxWA@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tero Kristo <t-kristo@ti.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tero Kristo <t-kristo@ti.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, DRI Development <dri-devel@lists.freedesktop.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgR2VlcnQsCgpPbiBUdWVzZGF5LCAzMSBPY3RvYmVyIDIwMTcgMTU6NTU6MDIgRUVUIEdlZXJ0
-IFV5dHRlcmhvZXZlbiB3cm90ZToKPiBPbiBUdWUsIE9jdCAzMSwgMjAxNyBhdCAyOjEwIFBNLCBH
-ZWVydCBVeXR0ZXJob2V2ZW4gd3JvdGU6Cj4gPiBPbiBUdWUsIE9jdCAzMSwgMjAxNyBhdCAyOjA5
-IFBNLCBHZWVydCBVeXR0ZXJob2V2ZW4gd3JvdGU6Cj4gPj4gT24gVHVlLCBPY3QgMzEsIDIwMTcg
-YXQgMTI6MjcgQU0sIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+ID4+PiBPbiBNb25kYXksIE9j
-dG9iZXIgMzAsIDIwMTcgMTE6MTk6MDggQU0gQ0VUIFJhZmFlbCBKLiBXeXNvY2tpIHdyb3RlOgo+
-ID4+Pj4gT24gTW9uLCBPY3QgMzAsIDIwMTcgYXQgODoxMCBBTSwgVGVybyBLcmlzdG8gPHQta3Jp
-c3RvQHRpLmNvbT4gd3JvdGU6Cj4gPj4+Pj4gVGhlIHJlY2VudCBjaGFuZ2UgdG8gdGhlIFBNIFFv
-UyBmcmFtZXdvcmsgdG8gaW50cm9kdWNlIGEgcHJvcGVyCj4gPj4+Pj4gbm8gY29uc3RyYWludCB2
-YWx1ZSBvdmVybG9va2VkIHRvIGhhbmRsZSB0aGUgZGV2aWNlcyB3aGljaCBkb24ndAo+ID4+Pj4+
-IGltcGxlbWVudCBQTSBRb1MgT1BTLiBSdW50aW1lIFBNIGlzIG9uZSBvZiB0aGUgbW9yZSBzZXZl
-cmVseQo+ID4+Pj4+IGltcGFjdGVkIHN1YnN5c3RlbXMsIGZhaWxpbmcgZXZlcnkgYXR0ZW1wdCB0
-byBydW50aW1lIHN1c3BlbmQKPiA+Pj4+PiBhIGRldmljZS4gVGhpcyBsZWFkcyBpbnRvIHNvbWUg
-bmFzdHkgc2Vjb25kIGxldmVsIGlzc3VlcyBsaWtlCj4gPj4+Pj4gcHJvYmUgZmFpbHVyZXMgYW5k
-IGluY3JlYXNlZCBwb3dlciBjb25zdW1wdGlvbiBhbW9uZyBvdGhlciB0aGluZ3MuCj4gPj4+PiAK
-PiA+Pj4+IE9oLCB0aGF0J3MgYmFkLgo+ID4+Pj4gCj4gPj4+PiBTb3JyeSBhYm91dCBicmVha2lu
-ZyBpdCBhbmQgdGhhbmtzIGZvciB0aGUgZml4IQo+ID4+Pj4gCj4gPj4+Pj4gRml4IHRoaXMgYnkg
-YWRkaW5nIGEgcHJvcGVyIHJldHVybiB2YWx1ZSBmb3IgZGV2aWNlcyB0aGF0IGRvbid0Cj4gPj4+
-Pj4gaW1wbGVtZW50IFBNIFFvUyBpbXBsaWNpdGx5Lgo+ID4+Pj4+IAo+ID4+Pj4+IEZpeGVzOiAw
-Y2MyYjRlNWEwMjAgKCJQTSAvIFFvUzogRml4IGRldmljZSByZXN1bWUgbGF0ZW5jeSBQTSBRb1Mi
-KQo+ID4+Pj4+IFNpZ25lZC1vZmYtYnk6IFRlcm8gS3Jpc3RvIDx0LWtyaXN0b0B0aS5jb20+Cj4g
-Pj4+Pj4gQ2M6IFJhZmFlbCBKLiBXeXNvY2tpIDxyYWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4K
-PiA+Pj4+IAo+ID4+Pj4gQXBwbGllZC4KPiA+Pj4gCj4gPj4+IEFuZCBwdXNoZWQgdG8gTGludXMu
-Cj4gPj4gCj4gPj4gSSdtIGFmcmFpZCBpdCBpcyBub3Qgc3VmZmljaWVudC4KPiA+PiAKPiA+PiBD
-b21taXQgMGNjMmI0ZTVhMDIwZmM3ZiAoIlBNIC8gUW9TOiBGaXggZGV2aWNlIHJlc3VtZSBsYXRl
-bmN5IFBNIFFvUyIpCj4gPj4gCj4gPj4gaW50cm9kdWNlZCB0d28gaXNzdWVzIG9uIFJlbmVzYXMg
-cGxhdGZvcm1zOgo+ID4+ICAxLiBBZnRlciBib290IHVwLCBtYW55IGRldmljZXMgaGF2ZSBjaGFu
-Z2VkIHRoZWlyIHN0YXRlIGZyb20gInN1c3BlbmRlZCIKPiA+PiAgICAgdG8gImFjdGl2ZSIsIGFj
-Y29yZGluZyB0byAvc3lzL2tlcm5lbC9kZWJ1Zy9wbV9nZW5wZC9wbV9nZW5wZF9zdW1tYXJ5Cj4g
-Pj4gICAgIChjb21wYXJpbmcgdGhhdCBmaWxlIGFjcm9zcyBib290cyBpcyBvbmUgb2YgbXkgc3Rh
-bmRhcmQgdGVzdHMpLgo+ID4+ICAgICBJbnRlcmVzdGluZ2x5LCBkb2luZyBhIHN5c3RlbSBzdXNw
-ZW5kL3Jlc3VtZSBjeWNsZSByZXN0b3JlcyB0aGVpcgo+ID4+ICAgICBzdGF0ZSB0byAic3VzcGVu
-ZGVkIi4KPiA+PiAgCj4gPj4gIDIuIER1cmluZyBzeXN0ZW0gc3VzcGVuZCwgdGhlIGZvbGxvd2lu
-ZyB3YXJuaW5nIGlzIHByaW50ZWQgb24KPiA+PiAgICAgcjhhNzc5MS9rb2Vsc2NoOgo+ID4+ICAg
-ICAgICAgaTJjLXJjYXIgZTY1MzAwMDAuaTJjOiBydW50aW1lIFBNIHRyeWluZyB0byBzdXNwZW5k
-IGRldmljZSBidXQKPiA+PiAKPiA+PiBhY3RpdmUgY2hpbGQKPiAKPiAgMy4gSSd2ZSBqdXN0IGJp
-c2VjdGVkIGEgc2VlbWluZ2x5IHVucmVsYXRlZCBpc3N1ZSB0byB0aGUgc2FtZSBjb21taXQuCj4g
-ICAgIE9uIFNhbHZhdG9yLVhTIHdpdGggUi1DYXIgSDMsIGluaXRpYWxpemF0aW9uIG9mIHRoZSBy
-Y2FyLWR1IGRyaXZlciBub3cKPiAgICAgdGFrZXMgbW9yZSB0aGFuIDEgbWludXRlIGR1ZSB0byBm
-bGlwX2RvbmUgdGltZSBvdXRzLCB3aGlsZSBpdCB0b29rIDAuMTJzCj4gYmVmb3JlOgo+IAo+ICAg
-ICBbICAgIDMuMDE1MDM1XSBbZHJtXSBTdXBwb3J0cyB2YmxhbmsgdGltZXN0YW1wIGNhY2hpbmcg
-UmV2IDIKPiAoMjEuMTAuMjAxMykuIFsgICAgMy4wMjE3MjFdIFtkcm1dIE5vIGRyaXZlciBzdXBw
-b3J0IGZvciB2YmxhbmsgdGltZXN0YW1wCj4gcXVlcnkuIFsgICAxMy4yODA3MzhdIFtkcm06ZHJt
-X2F0b21pY19oZWxwZXJfd2FpdF9mb3JfZmxpcF9kb25lXSAqRVJST1IqCj4gW0NSVEM6NTg6Y3J0
-Yy0zXSBmbGlwX2RvbmUgdGltZWQgb3V0Cj4gICAgIFsgICAyMy41MjA3MDddIFtkcm06ZHJtX2F0
-b21pY19oZWxwZXJfY29tbWl0X2NsZWFudXBfZG9uZV0gKkVSUk9SKgo+IFtDUlRDOjU4OmNydGMt
-M10gZmxpcF9kb25lIHRpbWVkIG91dAo+ICAgICBbICAgMzMuNzYwNzA4XSBbZHJtOmRybV9hdG9t
-aWNfaGVscGVyX3dhaXRfZm9yX2ZsaXBfZG9uZV0gKkVSUk9SKgo+IFtDUlRDOjU4OmNydGMtM10g
-ZmxpcF9kb25lIHRpbWVkIG91dAo+ICAgICBbICAgNDQuMDAwNzU1XSBbZHJtOmRybV9hdG9taWNf
-aGVscGVyX2NvbW1pdF9jbGVhbnVwX2RvbmVdICpFUlJPUioKPiBbQ1JUQzo1ODpjcnRjLTNdIGZs
-aXBfZG9uZSB0aW1lZCBvdXQKPiAgICAgWyAgIDQ0LjAwMzU5N10gQ29uc29sZTogc3dpdGNoaW5n
-IHRvIGNvbG91ciBmcmFtZSBidWZmZXIgZGV2aWNlIDEyOHg0OAo+ICAgICBbICAgNTQuMjQwNzA3
-XSBbZHJtOmRybV9hdG9taWNfaGVscGVyX3dhaXRfZm9yX2ZsaXBfZG9uZV0gKkVSUk9SKgo+IFtD
-UlRDOjU4OmNydGMtM10gZmxpcF9kb25lIHRpbWVkIG91dAo+ICAgICBbICAgNjQuNDgwNzA2XSBb
-ZHJtOmRybV9hdG9taWNfaGVscGVyX2NvbW1pdF9jbGVhbnVwX2RvbmVdICpFUlJPUioKPiBbQ1JU
-Qzo1ODpjcnRjLTNdIGZsaXBfZG9uZSB0aW1lZCBvdXQKPiAgICAgWyAgIDY0LjU0NDg3Nl0gcmNh
-ci1kdSBmZWIwMDAwMC5kaXNwbGF5OiBmYjA6ICBmcmFtZSBidWZmZXIgZGV2aWNlCj4gICAgIFsg
-ICA2NC41NTIwMTNdIFtkcm1dIEluaXRpYWxpemVkIHJjYXItZHUgMS4wLjAgMjAxMzAxMTAgZm9y
-Cj4gZmViMDAwMDAuZGlzcGxheSBvbiBtaW5vciAwCj4gICAgIFsgICA2NC41NTk4NzNdIFtkcm1d
-IERldmljZSBmZWIwMDAwMC5kaXNwbGF5IHByb2JlZAo+IAo+ID4+IENvbW1pdCAyYTlhODZkNWM4
-MTM4OWNkICgiUE0gLyBRb1M6IEZpeCBkZWZhdWx0IHJ1bnRpbWVfcG0gZGV2aWNlIHJlc3VtZQo+
-ID4+IGxhdGVuY3kiKSBmaXhlcyB0aGUgc2Vjb25kIGlzc3VlLCBidXQgbm90IHRoZSBmaXJzdC4K
-PiAKPiAuLi4gbm9yIHRoZSB0aGlyZC4KPiAKPiA+PiBSZXZlcnRpbmcgY29tbWl0cyAyYTlhODZk
-NWM4MTM4OWNkICgiUE0gLyBRb1M6IEZpeCBkZWZhdWx0IHJ1bnRpbWVfcG0KPiA+PiBkZXZpY2Ug
-cmVzdW1lIGxhdGVuY3kiKSBhbmQgMGNjMmI0ZTVhMDIwZmM3ZiAoIlBNIC8gUW9TOiBGaXggZGV2
-aWNlCj4gPj4gcmVzdW1lCj4gPj4gbGF0ZW5jeSBQTSBRb1MiKSBmaXhlcyBib3RoLgo+IAo+IC4u
-LiBhbGwgdGhyZWUuCgpUaGFuayB5b3UgZm9yIHRyYWNraW5nIHRoaXMgYW5kIG5vdGlmeWluZyBt
-ZS4gSSBsaWtlIGl0IGV2ZW4gYmV0dGVyIG5vdyB0aGF0IAp0aGUgcHJvYmxlbSBzZWVtcyB0byBi
-ZSBmaXhlZCB3aXRob3V0IHJlcXVpcmluZyBhbnkgYWN0aW9uIGZyb20gbXkgc2lkZSA6LSkKCj4g
-Pj4gRG8geW91IGhhdmUgYSBjbHVlPwo+ID4+IFRoYW5rcyEKCi0tIApSZWdhcmRzLAoKTGF1cmVu
-dCBQaW5jaGFydAoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
-Cmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVs
-Cg==
+--94eb2c0439ee578ba5055cdaff2d
+Content-Type: text/plain; charset="UTF-8"
+
+On Tue, Oct 31, 2017 at 2:55 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Hi Rafael, Tero,
+>
+> CC pinchartl, dri-devel
+>
+> On Tue, Oct 31, 2017 at 2:10 PM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+>> CC linux-renesas-soc
+>>
+>> On Tue, Oct 31, 2017 at 2:09 PM, Geert Uytterhoeven
+>> <geert@linux-m68k.org> wrote:
+>>> On Tue, Oct 31, 2017 at 12:27 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>>> On Monday, October 30, 2017 11:19:08 AM CET Rafael J. Wysocki wrote:
+>>>>> On Mon, Oct 30, 2017 at 8:10 AM, Tero Kristo <t-kristo@ti.com> wrote:
+>>>>> > The recent change to the PM QoS framework to introduce a proper
+>>>>> > no constraint value overlooked to handle the devices which don't
+>>>>> > implement PM QoS OPS. Runtime PM is one of the more severely
+>>>>> > impacted subsystems, failing every attempt to runtime suspend
+>>>>> > a device. This leads into some nasty second level issues like
+>>>>> > probe failures and increased power consumption among other things.
+>>>>>
+>>>>> Oh, that's bad.
+>>>>>
+>>>>> Sorry about breaking it and thanks for the fix!
+>>>>>
+>>>>> > Fix this by adding a proper return value for devices that don't
+>>>>> > implement PM QoS implicitly.
+>>>>> >
+>>>>> > Fixes: 0cc2b4e5a020 ("PM / QoS: Fix device resume latency PM QoS")
+>>>>> > Signed-off-by: Tero Kristo <t-kristo@ti.com>
+>>>>> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>>>
+>>>>> Applied.
+>>>>
+>>>> And pushed to Linus.
+>>>
+>>> I'm afraid it is not sufficient.
+>>>
+>>> Commit 0cc2b4e5a020fc7f ("PM / QoS: Fix device resume latency PM QoS")
+>>> introduced two issues on Renesas platforms:
+>>>  1. After boot up, many devices have changed their state from "suspended"
+>>>     to "active", according to /sys/kernel/debug/pm_genpd/pm_genpd_summary
+>>>     (comparing that file across boots is one of my standard tests).
+>>>     Interestingly, doing a system suspend/resume cycle restores their state
+>>>     to "suspended".
+>>>
+>>>  2. During system suspend, the following warning is printed on
+>>>     r8a7791/koelsch:
+>>>
+>>>         i2c-rcar e6530000.i2c: runtime PM trying to suspend device but
+>>> active child
+>
+>  3. I've just bisected a seemingly unrelated issue to the same commit.
+>     On Salvator-XS with R-Car H3, initialization of the rcar-du driver now
+>     takes more than 1 minute due to flip_done time outs, while it took 0.12s
+>     before:
+>
+>     [    3.015035] [drm] Supports vblank timestamp caching Rev 2 (21.10.2013).
+>     [    3.021721] [drm] No driver support for vblank timestamp query.
+>     [   13.280738] [drm:drm_atomic_helper_wait_for_flip_done] *ERROR*
+> [CRTC:58:crtc-3] flip_done timed out
+>     [   23.520707] [drm:drm_atomic_helper_commit_cleanup_done] *ERROR*
+> [CRTC:58:crtc-3] flip_done timed out
+>     [   33.760708] [drm:drm_atomic_helper_wait_for_flip_done] *ERROR*
+> [CRTC:58:crtc-3] flip_done timed out
+>     [   44.000755] [drm:drm_atomic_helper_commit_cleanup_done] *ERROR*
+> [CRTC:58:crtc-3] flip_done timed out
+>     [   44.003597] Console: switching to colour frame buffer device 128x48
+>     [   54.240707] [drm:drm_atomic_helper_wait_for_flip_done] *ERROR*
+> [CRTC:58:crtc-3] flip_done timed out
+>     [   64.480706] [drm:drm_atomic_helper_commit_cleanup_done] *ERROR*
+> [CRTC:58:crtc-3] flip_done timed out
+>     [   64.544876] rcar-du feb00000.display: fb0:  frame buffer device
+>     [   64.552013] [drm] Initialized rcar-du 1.0.0 20130110 for
+> feb00000.display on minor 0
+>     [   64.559873] [drm] Device feb00000.display probed
+>
+>>> Commit 2a9a86d5c81389cd ("PM / QoS: Fix default runtime_pm device resume
+>>> latency") fixes the second issue, but not the first.
+>
+> ... nor the third.
+>
+>>> Reverting commits 2a9a86d5c81389cd ("PM / QoS: Fix default runtime_pm
+>>> device resume latency") and 0cc2b4e5a020fc7f ("PM / QoS: Fix device resume
+>>> latency PM QoS") fixes both.
+>
+> ... all three.
+
+Sorry for the breakage.
+
+OK, I'll just push the reverts to Linus later today.
+
+>>> Do you have a clue?
+
+Well, kind of.
+
+There is a change in behavior in domain_governor.c that should not
+have made any difference to my eyes, but maybe that's it.
+
+Can you please check if the attached patch makes any difference?
+
+Thanks,
+Rafael
+
+--94eb2c0439ee578ba5055cdaff2d
+Content-Type: text/x-patch; charset="US-ASCII"; name="pm-domain-qos-fixup.patch"
+Content-Disposition: attachment; filename="pm-domain-qos-fixup.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_j9fvqdg80
+
+LS0tCiBkcml2ZXJzL2Jhc2UvcG93ZXIvZG9tYWluX2dvdmVybm9yLmMgfCAgIDExICsrKysrLS0t
+LS0tCiAxIGZpbGUgY2hhbmdlZCwgNSBpbnNlcnRpb25zKCspLCA2IGRlbGV0aW9ucygtKQoKSW5k
+ZXg6IGxpbnV4LXBtL2RyaXZlcnMvYmFzZS9wb3dlci9kb21haW5fZ292ZXJub3IuYwo9PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09Ci0tLSBsaW51eC1wbS5vcmlnL2RyaXZlcnMvYmFzZS9wb3dlci9kb21haW5fZ292ZXJub3Iu
+YworKysgbGludXgtcG0vZHJpdmVycy9iYXNlL3Bvd2VyL2RvbWFpbl9nb3Zlcm5vci5jCkBAIC04
+MywxMiArODMsMTEgQEAgc3RhdGljIGJvb2wgZGVmYXVsdF9zdXNwZW5kX29rKHN0cnVjdCBkZQog
+CQl0ZC0+Y2FjaGVkX3N1c3BlbmRfb2sgPSB0cnVlOwogCX0gZWxzZSB7CiAJCWNvbnN0cmFpbnRf
+bnMgLT0gdGQtPnN1c3BlbmRfbGF0ZW5jeV9ucyArIHRkLT5yZXN1bWVfbGF0ZW5jeV9uczsKLQkJ
+aWYgKGNvbnN0cmFpbnRfbnMgPiAwKSB7Ci0JCQl0ZC0+ZWZmZWN0aXZlX2NvbnN0cmFpbnRfbnMg
+PSBjb25zdHJhaW50X25zOwotCQkJdGQtPmNhY2hlZF9zdXNwZW5kX29rID0gdHJ1ZTsKLQkJfSBl
+bHNlIHsKLQkJCXRkLT5lZmZlY3RpdmVfY29uc3RyYWludF9ucyA9IDA7Ci0JCX0KKwkJaWYgKGNv
+bnN0cmFpbnRfbnMgPT0gMCkKKwkJCXJldHVybiBmYWxzZTsKKworCQl0ZC0+ZWZmZWN0aXZlX2Nv
+bnN0cmFpbnRfbnMgPSBjb25zdHJhaW50X25zOworCQl0ZC0+Y2FjaGVkX3N1c3BlbmRfb2sgPSBj
+b25zdHJhaW50X25zID49IDA7CiAJfQogCiAJLyoK
+--94eb2c0439ee578ba5055cdaff2d--
