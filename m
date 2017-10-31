@@ -1,147 +1,116 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH] PM / QoS: Fix default runtime_pm device resume latency
-Date: Tue, 31 Oct 2017 18:22:19 +0100
-Message-ID: <CAJZ5v0guHP=icMiRBZ1B4oWQVxrtN2Nt+aE_V1646PfpsKkiJg@mail.gmail.com>
+Date: Tue, 31 Oct 2017 19:07:29 +0100
+Message-ID: <CAMuHMdWiwURQ2MAvpQu-=0AZ+O8Ej=VzPE7bCJ+FWxL3D2n_cg@mail.gmail.com>
 References: <1509347446-26105-1-git-send-email-t-kristo@ti.com>
  <CAJZ5v0i8HMDfV907QDTD54YPaFpoBLVt+R4oeQ704+9_C8APoA@mail.gmail.com>
- <3227682.nATp9NGxKU@aspire.rjw.lan> <CAMuHMdVKh9n4aep+niyYYEA_4cNrB4+BfGWrJ3WLpej1me114w@mail.gmail.com>
- <CAMuHMdW3AJFZQVDPTcpL-UMRxNThcOpQxNz6yTx9qDP7SQ-kLg@mail.gmail.com> <CAMuHMdX4WjXZQrP9QMGFV8sbntOUvfZ4y-uQSS4_4ArrCjsxWA@mail.gmail.com>
+ <3227682.nATp9NGxKU@aspire.rjw.lan>
+ <CAMuHMdVKh9n4aep+niyYYEA_4cNrB4+BfGWrJ3WLpej1me114w@mail.gmail.com>
+ <CAMuHMdW3AJFZQVDPTcpL-UMRxNThcOpQxNz6yTx9qDP7SQ-kLg@mail.gmail.com>
+ <CAMuHMdX4WjXZQrP9QMGFV8sbntOUvfZ4y-uQSS4_4ArrCjsxWA@mail.gmail.com>
+ <CAJZ5v0guHP=icMiRBZ1B4oWQVxrtN2Nt+aE_V1646PfpsKkiJg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="94eb2c0439ee578ba5055cdaff2d"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdX4WjXZQrP9QMGFV8sbntOUvfZ4y-uQSS4_4ArrCjsxWA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tero Kristo <t-kristo@ti.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, DRI Development <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <CAJZ5v0guHP=icMiRBZ1B4oWQVxrtN2Nt+aE_V1646PfpsKkiJg@mail.gmail.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tero Kristo <t-kristo@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 List-Id: linux-pm@vger.kernel.org
 
---94eb2c0439ee578ba5055cdaff2d
-Content-Type: text/plain; charset="UTF-8"
-
-On Tue, Oct 31, 2017 at 2:55 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> Hi Rafael, Tero,
->
-> CC pinchartl, dri-devel
->
-> On Tue, Oct 31, 2017 at 2:10 PM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> CC linux-renesas-soc
->>
->> On Tue, Oct 31, 2017 at 2:09 PM, Geert Uytterhoeven
->> <geert@linux-m68k.org> wrote:
->>> On Tue, Oct 31, 2017 at 12:27 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>> On Monday, October 30, 2017 11:19:08 AM CET Rafael J. Wysocki wrote:
->>>>> On Mon, Oct 30, 2017 at 8:10 AM, Tero Kristo <t-kristo@ti.com> wrote:
->>>>> > The recent change to the PM QoS framework to introduce a proper
->>>>> > no constraint value overlooked to handle the devices which don't
->>>>> > implement PM QoS OPS. Runtime PM is one of the more severely
->>>>> > impacted subsystems, failing every attempt to runtime suspend
->>>>> > a device. This leads into some nasty second level issues like
->>>>> > probe failures and increased power consumption among other things.
->>>>>
->>>>> Oh, that's bad.
->>>>>
->>>>> Sorry about breaking it and thanks for the fix!
->>>>>
->>>>> > Fix this by adding a proper return value for devices that don't
->>>>> > implement PM QoS implicitly.
->>>>> >
->>>>> > Fixes: 0cc2b4e5a020 ("PM / QoS: Fix device resume latency PM QoS")
->>>>> > Signed-off-by: Tero Kristo <t-kristo@ti.com>
->>>>> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>>>
->>>>> Applied.
->>>>
->>>> And pushed to Linus.
->>>
->>> I'm afraid it is not sufficient.
->>>
->>> Commit 0cc2b4e5a020fc7f ("PM / QoS: Fix device resume latency PM QoS")
->>> introduced two issues on Renesas platforms:
->>>  1. After boot up, many devices have changed their state from "suspended"
->>>     to "active", according to /sys/kernel/debug/pm_genpd/pm_genpd_summary
->>>     (comparing that file across boots is one of my standard tests).
->>>     Interestingly, doing a system suspend/resume cycle restores their state
->>>     to "suspended".
->>>
->>>  2. During system suspend, the following warning is printed on
->>>     r8a7791/koelsch:
->>>
->>>         i2c-rcar e6530000.i2c: runtime PM trying to suspend device but
->>> active child
->
->  3. I've just bisected a seemingly unrelated issue to the same commit.
->     On Salvator-XS with R-Car H3, initialization of the rcar-du driver now
->     takes more than 1 minute due to flip_done time outs, while it took 0.12s
->     before:
->
->     [    3.015035] [drm] Supports vblank timestamp caching Rev 2 (21.10.2013).
->     [    3.021721] [drm] No driver support for vblank timestamp query.
->     [   13.280738] [drm:drm_atomic_helper_wait_for_flip_done] *ERROR*
-> [CRTC:58:crtc-3] flip_done timed out
->     [   23.520707] [drm:drm_atomic_helper_commit_cleanup_done] *ERROR*
-> [CRTC:58:crtc-3] flip_done timed out
->     [   33.760708] [drm:drm_atomic_helper_wait_for_flip_done] *ERROR*
-> [CRTC:58:crtc-3] flip_done timed out
->     [   44.000755] [drm:drm_atomic_helper_commit_cleanup_done] *ERROR*
-> [CRTC:58:crtc-3] flip_done timed out
->     [   44.003597] Console: switching to colour frame buffer device 128x48
->     [   54.240707] [drm:drm_atomic_helper_wait_for_flip_done] *ERROR*
-> [CRTC:58:crtc-3] flip_done timed out
->     [   64.480706] [drm:drm_atomic_helper_commit_cleanup_done] *ERROR*
-> [CRTC:58:crtc-3] flip_done timed out
->     [   64.544876] rcar-du feb00000.display: fb0:  frame buffer device
->     [   64.552013] [drm] Initialized rcar-du 1.0.0 20130110 for
-> feb00000.display on minor 0
->     [   64.559873] [drm] Device feb00000.display probed
->
->>> Commit 2a9a86d5c81389cd ("PM / QoS: Fix default runtime_pm device resume
->>> latency") fixes the second issue, but not the first.
->
-> ... nor the third.
->
->>> Reverting commits 2a9a86d5c81389cd ("PM / QoS: Fix default runtime_pm
->>> device resume latency") and 0cc2b4e5a020fc7f ("PM / QoS: Fix device resume
->>> latency PM QoS") fixes both.
->
-> ... all three.
-
-Sorry for the breakage.
-
-OK, I'll just push the reverts to Linus later today.
-
->>> Do you have a clue?
-
-Well, kind of.
-
-There is a change in behavior in domain_governor.c that should not
-have made any difference to my eyes, but maybe that's it.
-
-Can you please check if the attached patch makes any difference?
-
-Thanks,
-Rafael
-
---94eb2c0439ee578ba5055cdaff2d
-Content-Type: text/x-patch; charset="US-ASCII"; name="pm-domain-qos-fixup.patch"
-Content-Disposition: attachment; filename="pm-domain-qos-fixup.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_j9fvqdg80
-
-LS0tCiBkcml2ZXJzL2Jhc2UvcG93ZXIvZG9tYWluX2dvdmVybm9yLmMgfCAgIDExICsrKysrLS0t
-LS0tCiAxIGZpbGUgY2hhbmdlZCwgNSBpbnNlcnRpb25zKCspLCA2IGRlbGV0aW9ucygtKQoKSW5k
-ZXg6IGxpbnV4LXBtL2RyaXZlcnMvYmFzZS9wb3dlci9kb21haW5fZ292ZXJub3IuYwo9PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09Ci0tLSBsaW51eC1wbS5vcmlnL2RyaXZlcnMvYmFzZS9wb3dlci9kb21haW5fZ292ZXJub3Iu
-YworKysgbGludXgtcG0vZHJpdmVycy9iYXNlL3Bvd2VyL2RvbWFpbl9nb3Zlcm5vci5jCkBAIC04
-MywxMiArODMsMTEgQEAgc3RhdGljIGJvb2wgZGVmYXVsdF9zdXNwZW5kX29rKHN0cnVjdCBkZQog
-CQl0ZC0+Y2FjaGVkX3N1c3BlbmRfb2sgPSB0cnVlOwogCX0gZWxzZSB7CiAJCWNvbnN0cmFpbnRf
-bnMgLT0gdGQtPnN1c3BlbmRfbGF0ZW5jeV9ucyArIHRkLT5yZXN1bWVfbGF0ZW5jeV9uczsKLQkJ
-aWYgKGNvbnN0cmFpbnRfbnMgPiAwKSB7Ci0JCQl0ZC0+ZWZmZWN0aXZlX2NvbnN0cmFpbnRfbnMg
-PSBjb25zdHJhaW50X25zOwotCQkJdGQtPmNhY2hlZF9zdXNwZW5kX29rID0gdHJ1ZTsKLQkJfSBl
-bHNlIHsKLQkJCXRkLT5lZmZlY3RpdmVfY29uc3RyYWludF9ucyA9IDA7Ci0JCX0KKwkJaWYgKGNv
-bnN0cmFpbnRfbnMgPT0gMCkKKwkJCXJldHVybiBmYWxzZTsKKworCQl0ZC0+ZWZmZWN0aXZlX2Nv
-bnN0cmFpbnRfbnMgPSBjb25zdHJhaW50X25zOworCQl0ZC0+Y2FjaGVkX3N1c3BlbmRfb2sgPSBj
-b25zdHJhaW50X25zID49IDA7CiAJfQogCiAJLyoK
---94eb2c0439ee578ba5055cdaff2d--
+SGkgUmFmYWVsLAoKT24gVHVlLCBPY3QgMzEsIDIwMTcgYXQgNjoyMiBQTSwgUmFmYWVsIEouIFd5
+c29ja2kgPHJhZmFlbEBrZXJuZWwub3JnPiB3cm90ZToKPiBPbiBUdWUsIE9jdCAzMSwgMjAxNyBh
+dCAyOjU1IFBNLCBHZWVydCBVeXR0ZXJob2V2ZW4KPiA8Z2VlcnRAbGludXgtbTY4ay5vcmc+IHdy
+b3RlOgo+PiBIaSBSYWZhZWwsIFRlcm8sCj4+Cj4+IENDIHBpbmNoYXJ0bCwgZHJpLWRldmVsCj4+
+Cj4+IE9uIFR1ZSwgT2N0IDMxLCAyMDE3IGF0IDI6MTAgUE0sIEdlZXJ0IFV5dHRlcmhvZXZlbgo+
+PiA8Z2VlcnRAbGludXgtbTY4ay5vcmc+IHdyb3RlOgo+Pj4gQ0MgbGludXgtcmVuZXNhcy1zb2MK
+Pj4+Cj4+PiBPbiBUdWUsIE9jdCAzMSwgMjAxNyBhdCAyOjA5IFBNLCBHZWVydCBVeXR0ZXJob2V2
+ZW4KPj4+IDxnZWVydEBsaW51eC1tNjhrLm9yZz4gd3JvdGU6Cj4+Pj4gT24gVHVlLCBPY3QgMzEs
+IDIwMTcgYXQgMTI6MjcgQU0sIFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD4g
+d3JvdGU6Cj4+Pj4+IE9uIE1vbmRheSwgT2N0b2JlciAzMCwgMjAxNyAxMToxOTowOCBBTSBDRVQg
+UmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4+Pj4+PiBPbiBNb24sIE9jdCAzMCwgMjAxNyBhdCA4
+OjEwIEFNLCBUZXJvIEtyaXN0byA8dC1rcmlzdG9AdGkuY29tPiB3cm90ZToKPj4+Pj4+ID4gVGhl
+IHJlY2VudCBjaGFuZ2UgdG8gdGhlIFBNIFFvUyBmcmFtZXdvcmsgdG8gaW50cm9kdWNlIGEgcHJv
+cGVyCj4+Pj4+PiA+IG5vIGNvbnN0cmFpbnQgdmFsdWUgb3Zlcmxvb2tlZCB0byBoYW5kbGUgdGhl
+IGRldmljZXMgd2hpY2ggZG9uJ3QKPj4+Pj4+ID4gaW1wbGVtZW50IFBNIFFvUyBPUFMuIFJ1bnRp
+bWUgUE0gaXMgb25lIG9mIHRoZSBtb3JlIHNldmVyZWx5Cj4+Pj4+PiA+IGltcGFjdGVkIHN1YnN5
+c3RlbXMsIGZhaWxpbmcgZXZlcnkgYXR0ZW1wdCB0byBydW50aW1lIHN1c3BlbmQKPj4+Pj4+ID4g
+YSBkZXZpY2UuIFRoaXMgbGVhZHMgaW50byBzb21lIG5hc3R5IHNlY29uZCBsZXZlbCBpc3N1ZXMg
+bGlrZQo+Pj4+Pj4gPiBwcm9iZSBmYWlsdXJlcyBhbmQgaW5jcmVhc2VkIHBvd2VyIGNvbnN1bXB0
+aW9uIGFtb25nIG90aGVyIHRoaW5ncy4KPj4+Pj4+Cj4+Pj4+PiBPaCwgdGhhdCdzIGJhZC4KPj4+
+Pj4+Cj4+Pj4+PiBTb3JyeSBhYm91dCBicmVha2luZyBpdCBhbmQgdGhhbmtzIGZvciB0aGUgZml4
+IQo+Pj4+Pj4KPj4+Pj4+ID4gRml4IHRoaXMgYnkgYWRkaW5nIGEgcHJvcGVyIHJldHVybiB2YWx1
+ZSBmb3IgZGV2aWNlcyB0aGF0IGRvbid0Cj4+Pj4+PiA+IGltcGxlbWVudCBQTSBRb1MgaW1wbGlj
+aXRseS4KPj4+Pj4+ID4KPj4+Pj4+ID4gRml4ZXM6IDBjYzJiNGU1YTAyMCAoIlBNIC8gUW9TOiBG
+aXggZGV2aWNlIHJlc3VtZSBsYXRlbmN5IFBNIFFvUyIpCj4+Pj4+PiA+IFNpZ25lZC1vZmYtYnk6
+IFRlcm8gS3Jpc3RvIDx0LWtyaXN0b0B0aS5jb20+Cj4+Pj4+PiA+IENjOiBSYWZhZWwgSi4gV3lz
+b2NraSA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+Cj4+Pj4+Pgo+Pj4+Pj4gQXBwbGllZC4K
+Pj4+Pj4KPj4+Pj4gQW5kIHB1c2hlZCB0byBMaW51cy4KPj4+Pgo+Pj4+IEknbSBhZnJhaWQgaXQg
+aXMgbm90IHN1ZmZpY2llbnQuCj4+Pj4KPj4+PiBDb21taXQgMGNjMmI0ZTVhMDIwZmM3ZiAoIlBN
+IC8gUW9TOiBGaXggZGV2aWNlIHJlc3VtZSBsYXRlbmN5IFBNIFFvUyIpCj4+Pj4gaW50cm9kdWNl
+ZCB0d28gaXNzdWVzIG9uIFJlbmVzYXMgcGxhdGZvcm1zOgo+Pj4+ICAxLiBBZnRlciBib290IHVw
+LCBtYW55IGRldmljZXMgaGF2ZSBjaGFuZ2VkIHRoZWlyIHN0YXRlIGZyb20gInN1c3BlbmRlZCIK
+Pj4+PiAgICAgdG8gImFjdGl2ZSIsIGFjY29yZGluZyB0byAvc3lzL2tlcm5lbC9kZWJ1Zy9wbV9n
+ZW5wZC9wbV9nZW5wZF9zdW1tYXJ5Cj4+Pj4gICAgIChjb21wYXJpbmcgdGhhdCBmaWxlIGFjcm9z
+cyBib290cyBpcyBvbmUgb2YgbXkgc3RhbmRhcmQgdGVzdHMpLgo+Pj4+ICAgICBJbnRlcmVzdGlu
+Z2x5LCBkb2luZyBhIHN5c3RlbSBzdXNwZW5kL3Jlc3VtZSBjeWNsZSByZXN0b3JlcyB0aGVpciBz
+dGF0ZQo+Pj4+ICAgICB0byAic3VzcGVuZGVkIi4KPj4+Pgo+Pj4+ICAyLiBEdXJpbmcgc3lzdGVt
+IHN1c3BlbmQsIHRoZSBmb2xsb3dpbmcgd2FybmluZyBpcyBwcmludGVkIG9uCj4+Pj4gICAgIHI4
+YTc3OTEva29lbHNjaDoKPj4+Pgo+Pj4+ICAgICAgICAgaTJjLXJjYXIgZTY1MzAwMDAuaTJjOiBy
+dW50aW1lIFBNIHRyeWluZyB0byBzdXNwZW5kIGRldmljZSBidXQKPj4+PiBhY3RpdmUgY2hpbGQK
+Pj4KPj4gIDMuIEkndmUganVzdCBiaXNlY3RlZCBhIHNlZW1pbmdseSB1bnJlbGF0ZWQgaXNzdWUg
+dG8gdGhlIHNhbWUgY29tbWl0Lgo+PiAgICAgT24gU2FsdmF0b3ItWFMgd2l0aCBSLUNhciBIMywg
+aW5pdGlhbGl6YXRpb24gb2YgdGhlIHJjYXItZHUgZHJpdmVyIG5vdwo+PiAgICAgdGFrZXMgbW9y
+ZSB0aGFuIDEgbWludXRlIGR1ZSB0byBmbGlwX2RvbmUgdGltZSBvdXRzLCB3aGlsZSBpdCB0b29r
+IDAuMTJzCj4+ICAgICBiZWZvcmU6Cj4+Cj4+ICAgICBbICAgIDMuMDE1MDM1XSBbZHJtXSBTdXBw
+b3J0cyB2YmxhbmsgdGltZXN0YW1wIGNhY2hpbmcgUmV2IDIgKDIxLjEwLjIwMTMpLgo+PiAgICAg
+WyAgICAzLjAyMTcyMV0gW2RybV0gTm8gZHJpdmVyIHN1cHBvcnQgZm9yIHZibGFuayB0aW1lc3Rh
+bXAgcXVlcnkuCj4+ICAgICBbICAgMTMuMjgwNzM4XSBbZHJtOmRybV9hdG9taWNfaGVscGVyX3dh
+aXRfZm9yX2ZsaXBfZG9uZV0gKkVSUk9SKgo+PiBbQ1JUQzo1ODpjcnRjLTNdIGZsaXBfZG9uZSB0
+aW1lZCBvdXQKPj4gICAgIFsgICAyMy41MjA3MDddIFtkcm06ZHJtX2F0b21pY19oZWxwZXJfY29t
+bWl0X2NsZWFudXBfZG9uZV0gKkVSUk9SKgo+PiBbQ1JUQzo1ODpjcnRjLTNdIGZsaXBfZG9uZSB0
+aW1lZCBvdXQKPj4gICAgIFsgICAzMy43NjA3MDhdIFtkcm06ZHJtX2F0b21pY19oZWxwZXJfd2Fp
+dF9mb3JfZmxpcF9kb25lXSAqRVJST1IqCj4+IFtDUlRDOjU4OmNydGMtM10gZmxpcF9kb25lIHRp
+bWVkIG91dAo+PiAgICAgWyAgIDQ0LjAwMDc1NV0gW2RybTpkcm1fYXRvbWljX2hlbHBlcl9jb21t
+aXRfY2xlYW51cF9kb25lXSAqRVJST1IqCj4+IFtDUlRDOjU4OmNydGMtM10gZmxpcF9kb25lIHRp
+bWVkIG91dAo+PiAgICAgWyAgIDQ0LjAwMzU5N10gQ29uc29sZTogc3dpdGNoaW5nIHRvIGNvbG91
+ciBmcmFtZSBidWZmZXIgZGV2aWNlIDEyOHg0OAo+PiAgICAgWyAgIDU0LjI0MDcwN10gW2RybTpk
+cm1fYXRvbWljX2hlbHBlcl93YWl0X2Zvcl9mbGlwX2RvbmVdICpFUlJPUioKPj4gW0NSVEM6NTg6
+Y3J0Yy0zXSBmbGlwX2RvbmUgdGltZWQgb3V0Cj4+ICAgICBbICAgNjQuNDgwNzA2XSBbZHJtOmRy
+bV9hdG9taWNfaGVscGVyX2NvbW1pdF9jbGVhbnVwX2RvbmVdICpFUlJPUioKPj4gW0NSVEM6NTg6
+Y3J0Yy0zXSBmbGlwX2RvbmUgdGltZWQgb3V0Cj4+ICAgICBbICAgNjQuNTQ0ODc2XSByY2FyLWR1
+IGZlYjAwMDAwLmRpc3BsYXk6IGZiMDogIGZyYW1lIGJ1ZmZlciBkZXZpY2UKPj4gICAgIFsgICA2
+NC41NTIwMTNdIFtkcm1dIEluaXRpYWxpemVkIHJjYXItZHUgMS4wLjAgMjAxMzAxMTAgZm9yCj4+
+IGZlYjAwMDAwLmRpc3BsYXkgb24gbWlub3IgMAo+PiAgICAgWyAgIDY0LjU1OTg3M10gW2RybV0g
+RGV2aWNlIGZlYjAwMDAwLmRpc3BsYXkgcHJvYmVkCj4+Cj4+Pj4gQ29tbWl0IDJhOWE4NmQ1Yzgx
+Mzg5Y2QgKCJQTSAvIFFvUzogRml4IGRlZmF1bHQgcnVudGltZV9wbSBkZXZpY2UgcmVzdW1lCj4+
+Pj4gbGF0ZW5jeSIpIGZpeGVzIHRoZSBzZWNvbmQgaXNzdWUsIGJ1dCBub3QgdGhlIGZpcnN0Lgo+
+Pgo+PiAuLi4gbm9yIHRoZSB0aGlyZC4KPj4KPj4+PiBSZXZlcnRpbmcgY29tbWl0cyAyYTlhODZk
+NWM4MTM4OWNkICgiUE0gLyBRb1M6IEZpeCBkZWZhdWx0IHJ1bnRpbWVfcG0KPj4+PiBkZXZpY2Ug
+cmVzdW1lIGxhdGVuY3kiKSBhbmQgMGNjMmI0ZTVhMDIwZmM3ZiAoIlBNIC8gUW9TOiBGaXggZGV2
+aWNlIHJlc3VtZQo+Pj4+IGxhdGVuY3kgUE0gUW9TIikgZml4ZXMgYm90aC4KPj4KPj4gLi4uIGFs
+bCB0aHJlZS4KPgo+IFNvcnJ5IGZvciB0aGUgYnJlYWthZ2UuCj4KPiBPSywgSSdsbCBqdXN0IHB1
+c2ggdGhlIHJldmVydHMgdG8gTGludXMgbGF0ZXIgdG9kYXkuCj4KPj4+PiBEbyB5b3UgaGF2ZSBh
+IGNsdWU/Cj4KPiBXZWxsLCBraW5kIG9mLgo+Cj4gVGhlcmUgaXMgYSBjaGFuZ2UgaW4gYmVoYXZp
+b3IgaW4gZG9tYWluX2dvdmVybm9yLmMgdGhhdCBzaG91bGQgbm90Cj4gaGF2ZSBtYWRlIGFueSBk
+aWZmZXJlbmNlIHRvIG15IGV5ZXMsIGJ1dCBtYXliZSB0aGF0J3MgaXQuCj4KPiBDYW4geW91IHBs
+ZWFzZSBjaGVjayBpZiB0aGUgYXR0YWNoZWQgcGF0Y2ggbWFrZXMgYW55IGRpZmZlcmVuY2U/CgpU
+aGFua3MsIGJ1dCBpdCBkb2Vzbid0IHNlZW0gdG8gZml4IHRoZSBpc3N1ZXMuCgpHcntvZXRqZSxl
+ZXRpbmd9cywKCiAgICAgICAgICAgICAgICAgICAgICAgIEdlZXJ0CgotLQpHZWVydCBVeXR0ZXJo
+b2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4
+LW02OGsub3JnCgpJbiBwZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3Bs
+ZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0CndoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5h
+bGlzdHMgSSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4KICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAtLSBMaW51cyBUb3J2YWxkcwpfX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBs
+aXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVz
+a3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
