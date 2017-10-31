@@ -1,50 +1,147 @@
-From: Jon Masters <jcm@redhat.com>
-Subject: Re: [PATCH v3 0/7] Support PPTT for ARM64
-Date: Tue, 31 Oct 2017 08:46:54 -0400
-Message-ID: <82688148-de6c-8538-dec8-51c94dc4f068@redhat.com>
-References: <20171012194856.13844-1-jeremy.linton@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20171012194856.13844-1-jeremy.linton@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [RFC V7 1/2] OPP: Allow OPP table to be used for power-domains
+Date: Tue, 31 Oct 2017 18:17:02 +0530
+Message-ID: <2b244ea0a09deaf50237fb8b7578273a8284499e.1509453284.git.viresh.kumar@linaro.org>
+References: <cover.1509453284.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1509453284.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1509453284.git.viresh.kumar@linaro.org>
+References: <cover.1509453284.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, rnayak@codeaurora.org, sudeep.holla@arm.com, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 10/12/2017 03:48 PM, Jeremy Linton wrote:
+Power-domains can also have their active states and this patch enhances
+the OPP binding to define those.
 
-> ACPI 6.2 adds the Processor Properties Topology Table (PPTT), which is
-> used to describe the processor and cache topology. Ideally it is
-> used to extend/override information provided by the hardware, but
-> right now ARM64 is entirely dependent on firmware provided tables.
-> 
-> This patch parses the table for the cache topology and CPU topology.
-> For the latter we also add an additional topology_cod_id() macro,
-> and a package_id for arm64. Initially the physical id will match
-> the cluster id, but we update users of the cluster to utilize
-> the new macro. When we enable ACPI/PPTT for arm64 we map the socket
-> to the physical id as the remainder of the kernel expects.
+The power domains can use the OPP bindings mostly as is. Though there
+are some changes required to support special cases:
 
-Just wanted to thank you for doing this Jeremy. As you know, we're
-tracking these patches and working with multiple vendors to ensure that
-firmware has accurate PPTTs populated to match. We're expecting to pull
-these patches and replace our current RHEL-only kludge asap. RHEL
-currently has to kludge topology based upon magic "known" meanings of
-the MPIDRs on various server platforms. It's (known to be) ugly and is
-one of the reasons that we pushed for what became PPTT.
+- Allow "operating-points-v2" to contain multiple phandles for power
+  domain providers providing multiple domains.
 
-Beyond scheduler efficiency, in general, it's very important that Arm
-systems can correctly report x86 style topology industry conventions -
-especially sockets - since (and I told Arm this years ago, and other
-non-Linux vendors backed me up) it's typical on server platforms to use
-either "memory" or "number of sockets" when making licensing and
-subscription calculations in various tooling. This became a problem
-early on even with X-Gene1 and Seattle showing as 8 socket boxes ;)
+- A new property "power-domain-opp" is added for devices to specify the
+  minimum required OPP of the master domain for the functioning of the
+  device. We can add this property directly to device's node if the
+  device has a fixed minimum OPP requirement from the master power
+  domain. Or we can add this property to each OPP node of the device, if
+  different OPP nodes have different minimum OPP requirement from the
+  master power domain.
 
-Jon.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ Documentation/devicetree/bindings/opp/opp.txt      | 12 +++++
+ .../devicetree/bindings/power/power_domain.txt     | 62 ++++++++++++++++++++++
+ 2 files changed, 74 insertions(+)
 
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index 9d733af26be7..203e09fe7698 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -45,6 +45,11 @@ Devices supporting OPPs must set their "operating-points-v2" property with
+ phandle to a OPP table in their DT node. The OPP core will use this phandle to
+ find the operating points for the device.
+ 
++This can contain more than one phandle for power domain providers that provide
++multiple power domains. That is, one phandle for each power domain. If only one
++phandle is available, then the same OPP table will be used for all power domains
++provided by the power domain provider.
++
+ If required, this can be extended for SoC vendor specific bindings. Such bindings
+ should be documented as Documentation/devicetree/bindings/power/<vendor>-opp.txt
+ and should have a compatible description like: "operating-points-v2-<vendor>".
+@@ -154,6 +159,13 @@ properties.
+ 
+ - status: Marks the node enabled/disabled.
+ 
++- power-domain-opp: This contains phandle to one of the OPP nodes of the master
++  power domain. This specifies the minimum required OPP of the master domain for
++  the functioning of the device in this OPP (where this property is present).
++  This property can only be set for a device if the device node contains the
++  "power-domains" property. Also, either all or none of the OPP nodes in an OPP
++  table should have it set.
++
+ Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+ 
+ / {
+diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+index 14bd9e945ff6..0d8608f2d133 100644
+--- a/Documentation/devicetree/bindings/power/power_domain.txt
++++ b/Documentation/devicetree/bindings/power/power_domain.txt
+@@ -40,6 +40,12 @@ phandle arguments (so called PM domain specifiers) of length specified by the
+   domain's idle states. In the absence of this property, the domain would be
+   considered as capable of being powered-on or powered-off.
+ 
++- operating-points-v2 : Phandles to the OPP tables of power domains provided by
++  a power domain provider. If the provider provides a single power domain only
++  or all the power domains provided by the provider have identical OPP tables,
++  then this shall contain a single phandle. Refer to ../opp/opp.txt for more
++  information.
++
+ Example:
+ 
+ 	power: power-controller@12340000 {
+@@ -120,4 +126,60 @@ The node above defines a typical PM domain consumer device, which is located
+ inside a PM domain with index 0 of a power controller represented by a node
+ with the label "power".
+ 
++Optional properties:
++- power-domain-opp: This contains phandle to one of the OPP nodes of the master
++  power domain. This specifies the minimum required OPP of the master domain for
++  the functioning of the device. This property can only be set for a device, if
++  the device node contains the "power-domains" property.
++
++Example:
++- OPP table for domain provider that provides two domains.
++
++	domain0_opp_table: opp_table0 {
++		compatible = "operating-points-v2";
++
++		domain0_opp_0: opp-1000000000 {
++			opp-hz = /bits/ 64 <1000000000>;
++			opp-microvolt = <975000 970000 985000>;
++		};
++		domain0_opp_1: opp-1100000000 {
++			opp-hz = /bits/ 64 <1100000000>;
++			opp-microvolt = <1000000 980000 1010000>;
++		};
++	};
++
++	domain1_opp_table: opp_table1 {
++		compatible = "operating-points-v2";
++
++		domain1_opp_0: opp-1200000000 {
++			opp-hz = /bits/ 64 <1200000000>;
++			opp-microvolt = <975000 970000 985000>;
++		};
++		domain1_opp_1: opp-1300000000 {
++			opp-hz = /bits/ 64 <1300000000>;
++			opp-microvolt = <1000000 980000 1010000>;
++		};
++	};
++
++	parent: power-controller@12340000 {
++		compatible = "foo,power-controller";
++		reg = <0x12340000 0x1000>;
++		#power-domain-cells = <1>;
++		operating-points-v2 = <&domain0_opp_table>, <&domain1_opp_table>;
++	};
++
++	leaky-device0@12350000 {
++		compatible = "foo,i-leak-current";
++		reg = <0x12350000 0x1000>;
++		power-domains = <&parent 0>;
++		power-domain-opp = <&domain0_opp_0>;
++	};
++
++	leaky-device1@12350000 {
++		compatible = "foo,i-leak-current";
++		reg = <0x12350000 0x1000>;
++		power-domains = <&parent 1>;
++		power-domain-opp = <&domain1_opp_1>;
++	};
++
+ [1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
 -- 
-Computer Architect | Sent from my Fedora powered laptop
-
+2.15.0.rc1.236.g92ea95045093
