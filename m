@@ -1,53 +1,67 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 2/5] [RFC] ARM: shmobile: pm-rmobile: Use GENPD_FLAG_ACTIVE_WAKEUP
-Date: Tue, 31 Oct 2017 19:11:31 +0100
-Message-ID: <1509473494-19740-3-git-send-email-geert+renesas@glider.be>
-References: <1509473494-19740-1-git-send-email-geert+renesas@glider.be>
+From: Rajat Jain <rajatja@google.com>
+Subject: [PATCH] PM / s2idle: Clear the events_check_enabled flag
+Date: Tue, 31 Oct 2017 14:44:24 -0700
+Message-ID: <20171031214424.84783-1-rajatja@google.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1509473494-19740-1-git-send-email-geert+renesas@glider.be>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>
-Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dtor@google.com, rajatxjain@gmail.com
+Cc: Rajat Jain <rajatja@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Set the newly introduced GENPD_FLAG_ACTIVE_WAKEUP, which allows to
-remove the driver's own "always true" callback.
+Problem: This flag does not get cleared currently in the suspend or
+resume path in the following cases:
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+* In case some driver's suspend routine returns an error.
+* Successful s2idle case
+* etc?
+
+Why is this a problem: What happens is that the next suspend attempt
+could fail even though the user did not enable the flag by writing to
+/sys/power/wakeup_count. This is 1 use case how the issue can be seen
+(but similar use case with driver suspend failure can be thought of):
+
+1. Read /sys/power/wakeup_count
+2. echo count > /sys/power/wakeup_count
+3. echo freeze > /sys/power/wakeup_count
+4. Let the system suspend, and wakeup the system using some wake source
+   that calls pm_wakeup_event() e.g. power button or something.
+5. Note that the combined wakeup count would be incremented due
+   to the pm_wakeup_event() in the resume path.
+6. After resuming the events_check_enabled flag is still set.
+
+At this point if the user attempts to freeze again (without writing to
+/sys/power/wakeup_count), the suspend would fail even though there has
+been no wake event since the past resume.
+
+What this patch does:
+
+It moves the clearing of the flag to just before a resume is completed,
+so that it is always cleared for the corner cases mentioned above.
+
+Signed-off-by: Rajat Jain <rajatja@google.com>
 ---
-This must not be applied before "PM / Domain: Enable genpd users to
-specify default active wakeup behavior" has landed upstream, hence the
-"RFC".
+ kernel/power/suspend.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-v2:
-  - No changes.
----
- arch/arm/mach-shmobile/pm-rmobile.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
-
-diff --git a/arch/arm/mach-shmobile/pm-rmobile.c b/arch/arm/mach-shmobile/pm-rmobile.c
-index 3a4ed4c33a68e51e..e348bcfe389da51b 100644
---- a/arch/arm/mach-shmobile/pm-rmobile.c
-+++ b/arch/arm/mach-shmobile/pm-rmobile.c
-@@ -120,18 +120,12 @@ static int rmobile_pd_power_up(struct generic_pm_domain *genpd)
- 	return __rmobile_pd_power_up(to_rmobile_pd(genpd), true);
- }
+diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
+index ccd2d20e6b06..0685c4499431 100644
+--- a/kernel/power/suspend.c
++++ b/kernel/power/suspend.c
+@@ -437,7 +437,6 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
+ 			error = suspend_ops->enter(state);
+ 			trace_suspend_resume(TPS("machine_suspend"),
+ 				state, false);
+-			events_check_enabled = false;
+ 		} else if (*wakeup) {
+ 			error = -EBUSY;
+ 		}
+@@ -582,6 +581,7 @@ static int enter_state(suspend_state_t state)
+ 	pm_restore_gfp_mask();
  
--static bool rmobile_pd_active_wakeup(struct device *dev)
--{
--	return true;
--}
--
- static void rmobile_init_pm_domain(struct rmobile_pm_domain *rmobile_pd)
- {
- 	struct generic_pm_domain *genpd = &rmobile_pd->genpd;
- 	struct dev_power_governor *gov = rmobile_pd->gov;
- 
--	genpd->flags |= GENPD_FLAG_PM_CLK;
--	genpd->dev_ops.active_wakeup	= rmobile_pd_active_wakeup;
-+	genpd->flags |= GENPD_FLAG_PM_CLK | GENPD_FLAG_ACTIVE_WAKEUP;
- 	genpd->power_off		= rmobile_pd_power_down;
- 	genpd->power_on			= rmobile_pd_power_up;
- 	genpd->attach_dev		= cpg_mstp_attach_dev;
+  Finish:
++	events_check_enabled = false;
+ 	pm_pr_dbg("Finishing wakeup.\n");
+ 	suspend_finish();
+  Unlock:
 -- 
-2.7.4
+2.15.0.403.gc27cc4dac6-goog
