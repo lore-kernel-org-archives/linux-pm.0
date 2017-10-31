@@ -1,67 +1,61 @@
-From: Rajat Jain <rajatja@google.com>
-Subject: [PATCH] PM / s2idle: Clear the events_check_enabled flag
-Date: Tue, 31 Oct 2017 14:44:24 -0700
-Message-ID: <20171031214424.84783-1-rajatja@google.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, dtor@google.com, rajatxjain@gmail.com
-Cc: Rajat Jain <rajatja@google.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management commit reverts for v4.14
+Date: Tue, 31 Oct 2017 23:22:51 +0100
+Message-ID: <CAJZ5v0jbiNjuTK96sdtAJXgmH3w5gTZh=uXcNSGN0zAK61Kzow@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:44180 "EHLO
+        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753635AbdJaWWw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Oct 2017 18:22:52 -0400
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Problem: This flag does not get cleared currently in the suspend or
-resume path in the following cases:
+Hi Linus,
 
-* In case some driver's suspend routine returns an error.
-* Successful s2idle case
-* etc?
+Since Geert reports additional problems with my PM QoS fix from the
+last week that have not been addressed by the most recent fixup on top
+of it, they both should better be reverted now and let's fix the
+original issue properly in 4.15.
 
-Why is this a problem: What happens is that the next suspend attempt
-could fail even though the user did not enable the flag by writing to
-/sys/power/wakeup_count. This is 1 use case how the issue can be seen
-(but similar use case with driver suspend failure can be thought of):
+Please pull from the tag
 
-1. Read /sys/power/wakeup_count
-2. echo count > /sys/power/wakeup_count
-3. echo freeze > /sys/power/wakeup_count
-4. Let the system suspend, and wakeup the system using some wake source
-   that calls pm_wakeup_event() e.g. power button or something.
-5. Note that the combined wakeup count would be incremented due
-   to the pm_wakeup_event() in the resume path.
-6. After resuming the events_check_enabled flag is still set.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-reverts-4.14
 
-At this point if the user attempts to freeze again (without writing to
-/sys/power/wakeup_count), the suspend would fail even though there has
-been no wake event since the past resume.
+with top-most commit d5919dcc349d2a16d805ef8096d36e4f519e42ae
 
-What this patch does:
+ Revert "PM / QoS: Fix device resume latency PM QoS"
 
-It moves the clearing of the flag to just before a resume is completed,
-so that it is always cleared for the corner cases mentioned above.
+on top of commit 2a9a86d5c81389cd9afe6a4fea42c585733cd705
 
-Signed-off-by: Rajat Jain <rajatja@google.com>
----
- kernel/power/suspend.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ PM / QoS: Fix default runtime_pm device resume latency
 
-diff --git a/kernel/power/suspend.c b/kernel/power/suspend.c
-index ccd2d20e6b06..0685c4499431 100644
---- a/kernel/power/suspend.c
-+++ b/kernel/power/suspend.c
-@@ -437,7 +437,6 @@ static int suspend_enter(suspend_state_t state, bool *wakeup)
- 			error = suspend_ops->enter(state);
- 			trace_suspend_resume(TPS("machine_suspend"),
- 				state, false);
--			events_check_enabled = false;
- 		} else if (*wakeup) {
- 			error = -EBUSY;
- 		}
-@@ -582,6 +581,7 @@ static int enter_state(suspend_state_t state)
- 	pm_restore_gfp_mask();
- 
-  Finish:
-+	events_check_enabled = false;
- 	pm_pr_dbg("Finishing wakeup.\n");
- 	suspend_finish();
-  Unlock:
--- 
-2.15.0.403.gc27cc4dac6-goog
+to receive extra power management fixes for v4.14.
+
+This reverts two recent PM QoS commits one of which introduced multiple
+problems and the other one fixed some, but not all of them (Rafael Wysocki).
+
+Thanks!
+
+
+---------------
+
+Rafael J. Wysocki (2):
+      Revert "PM / QoS: Fix default runtime_pm device resume latency"
+      Revert "PM / QoS: Fix device resume latency PM QoS"
+
+---------------
+
+ Documentation/ABI/testing/sysfs-devices-power |  4 +-
+ drivers/base/cpu.c                            |  3 +-
+ drivers/base/power/domain_governor.c          | 53 ++++++++++++---------------
+ drivers/base/power/qos.c                      |  2 +-
+ drivers/base/power/runtime.c                  |  2 +-
+ drivers/base/power/sysfs.c                    | 25 ++-----------
+ drivers/cpuidle/governors/menu.c              |  4 +-
+ include/linux/pm_qos.h                        |  8 ++--
+ 8 files changed, 36 insertions(+), 65 deletions(-)
