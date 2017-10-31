@@ -1,116 +1,68 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / QoS: Fix default runtime_pm device resume latency
-Date: Tue, 31 Oct 2017 19:07:29 +0100
-Message-ID: <CAMuHMdWiwURQ2MAvpQu-=0AZ+O8Ej=VzPE7bCJ+FWxL3D2n_cg@mail.gmail.com>
-References: <1509347446-26105-1-git-send-email-t-kristo@ti.com>
- <CAJZ5v0i8HMDfV907QDTD54YPaFpoBLVt+R4oeQ704+9_C8APoA@mail.gmail.com>
- <3227682.nATp9NGxKU@aspire.rjw.lan>
- <CAMuHMdVKh9n4aep+niyYYEA_4cNrB4+BfGWrJ3WLpej1me114w@mail.gmail.com>
- <CAMuHMdW3AJFZQVDPTcpL-UMRxNThcOpQxNz6yTx9qDP7SQ-kLg@mail.gmail.com>
- <CAMuHMdX4WjXZQrP9QMGFV8sbntOUvfZ4y-uQSS4_4ArrCjsxWA@mail.gmail.com>
- <CAJZ5v0guHP=icMiRBZ1B4oWQVxrtN2Nt+aE_V1646PfpsKkiJg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <CAJZ5v0guHP=icMiRBZ1B4oWQVxrtN2Nt+aE_V1646PfpsKkiJg@mail.gmail.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tero Kristo <t-kristo@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2 4/5] [RFC] soc: rockchip: power-domain: Use GENPD_FLAG_ACTIVE_WAKEUP
+Date: Tue, 31 Oct 2017 19:11:33 +0100
+Message-ID: <1509473494-19740-5-git-send-email-geert+renesas@glider.be>
+References: <1509473494-19740-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from andre.telenet-ops.be ([195.130.132.53]:41718 "EHLO
+        andre.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752908AbdJaSLo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Oct 2017 14:11:44 -0400
+In-Reply-To: <1509473494-19740-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>
+Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-SGkgUmFmYWVsLAoKT24gVHVlLCBPY3QgMzEsIDIwMTcgYXQgNjoyMiBQTSwgUmFmYWVsIEouIFd5
-c29ja2kgPHJhZmFlbEBrZXJuZWwub3JnPiB3cm90ZToKPiBPbiBUdWUsIE9jdCAzMSwgMjAxNyBh
-dCAyOjU1IFBNLCBHZWVydCBVeXR0ZXJob2V2ZW4KPiA8Z2VlcnRAbGludXgtbTY4ay5vcmc+IHdy
-b3RlOgo+PiBIaSBSYWZhZWwsIFRlcm8sCj4+Cj4+IENDIHBpbmNoYXJ0bCwgZHJpLWRldmVsCj4+
-Cj4+IE9uIFR1ZSwgT2N0IDMxLCAyMDE3IGF0IDI6MTAgUE0sIEdlZXJ0IFV5dHRlcmhvZXZlbgo+
-PiA8Z2VlcnRAbGludXgtbTY4ay5vcmc+IHdyb3RlOgo+Pj4gQ0MgbGludXgtcmVuZXNhcy1zb2MK
-Pj4+Cj4+PiBPbiBUdWUsIE9jdCAzMSwgMjAxNyBhdCAyOjA5IFBNLCBHZWVydCBVeXR0ZXJob2V2
-ZW4KPj4+IDxnZWVydEBsaW51eC1tNjhrLm9yZz4gd3JvdGU6Cj4+Pj4gT24gVHVlLCBPY3QgMzEs
-IDIwMTcgYXQgMTI6MjcgQU0sIFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD4g
-d3JvdGU6Cj4+Pj4+IE9uIE1vbmRheSwgT2N0b2JlciAzMCwgMjAxNyAxMToxOTowOCBBTSBDRVQg
-UmFmYWVsIEouIFd5c29ja2kgd3JvdGU6Cj4+Pj4+PiBPbiBNb24sIE9jdCAzMCwgMjAxNyBhdCA4
-OjEwIEFNLCBUZXJvIEtyaXN0byA8dC1rcmlzdG9AdGkuY29tPiB3cm90ZToKPj4+Pj4+ID4gVGhl
-IHJlY2VudCBjaGFuZ2UgdG8gdGhlIFBNIFFvUyBmcmFtZXdvcmsgdG8gaW50cm9kdWNlIGEgcHJv
-cGVyCj4+Pj4+PiA+IG5vIGNvbnN0cmFpbnQgdmFsdWUgb3Zlcmxvb2tlZCB0byBoYW5kbGUgdGhl
-IGRldmljZXMgd2hpY2ggZG9uJ3QKPj4+Pj4+ID4gaW1wbGVtZW50IFBNIFFvUyBPUFMuIFJ1bnRp
-bWUgUE0gaXMgb25lIG9mIHRoZSBtb3JlIHNldmVyZWx5Cj4+Pj4+PiA+IGltcGFjdGVkIHN1YnN5
-c3RlbXMsIGZhaWxpbmcgZXZlcnkgYXR0ZW1wdCB0byBydW50aW1lIHN1c3BlbmQKPj4+Pj4+ID4g
-YSBkZXZpY2UuIFRoaXMgbGVhZHMgaW50byBzb21lIG5hc3R5IHNlY29uZCBsZXZlbCBpc3N1ZXMg
-bGlrZQo+Pj4+Pj4gPiBwcm9iZSBmYWlsdXJlcyBhbmQgaW5jcmVhc2VkIHBvd2VyIGNvbnN1bXB0
-aW9uIGFtb25nIG90aGVyIHRoaW5ncy4KPj4+Pj4+Cj4+Pj4+PiBPaCwgdGhhdCdzIGJhZC4KPj4+
-Pj4+Cj4+Pj4+PiBTb3JyeSBhYm91dCBicmVha2luZyBpdCBhbmQgdGhhbmtzIGZvciB0aGUgZml4
-IQo+Pj4+Pj4KPj4+Pj4+ID4gRml4IHRoaXMgYnkgYWRkaW5nIGEgcHJvcGVyIHJldHVybiB2YWx1
-ZSBmb3IgZGV2aWNlcyB0aGF0IGRvbid0Cj4+Pj4+PiA+IGltcGxlbWVudCBQTSBRb1MgaW1wbGlj
-aXRseS4KPj4+Pj4+ID4KPj4+Pj4+ID4gRml4ZXM6IDBjYzJiNGU1YTAyMCAoIlBNIC8gUW9TOiBG
-aXggZGV2aWNlIHJlc3VtZSBsYXRlbmN5IFBNIFFvUyIpCj4+Pj4+PiA+IFNpZ25lZC1vZmYtYnk6
-IFRlcm8gS3Jpc3RvIDx0LWtyaXN0b0B0aS5jb20+Cj4+Pj4+PiA+IENjOiBSYWZhZWwgSi4gV3lz
-b2NraSA8cmFmYWVsLmoud3lzb2NraUBpbnRlbC5jb20+Cj4+Pj4+Pgo+Pj4+Pj4gQXBwbGllZC4K
-Pj4+Pj4KPj4+Pj4gQW5kIHB1c2hlZCB0byBMaW51cy4KPj4+Pgo+Pj4+IEknbSBhZnJhaWQgaXQg
-aXMgbm90IHN1ZmZpY2llbnQuCj4+Pj4KPj4+PiBDb21taXQgMGNjMmI0ZTVhMDIwZmM3ZiAoIlBN
-IC8gUW9TOiBGaXggZGV2aWNlIHJlc3VtZSBsYXRlbmN5IFBNIFFvUyIpCj4+Pj4gaW50cm9kdWNl
-ZCB0d28gaXNzdWVzIG9uIFJlbmVzYXMgcGxhdGZvcm1zOgo+Pj4+ICAxLiBBZnRlciBib290IHVw
-LCBtYW55IGRldmljZXMgaGF2ZSBjaGFuZ2VkIHRoZWlyIHN0YXRlIGZyb20gInN1c3BlbmRlZCIK
-Pj4+PiAgICAgdG8gImFjdGl2ZSIsIGFjY29yZGluZyB0byAvc3lzL2tlcm5lbC9kZWJ1Zy9wbV9n
-ZW5wZC9wbV9nZW5wZF9zdW1tYXJ5Cj4+Pj4gICAgIChjb21wYXJpbmcgdGhhdCBmaWxlIGFjcm9z
-cyBib290cyBpcyBvbmUgb2YgbXkgc3RhbmRhcmQgdGVzdHMpLgo+Pj4+ICAgICBJbnRlcmVzdGlu
-Z2x5LCBkb2luZyBhIHN5c3RlbSBzdXNwZW5kL3Jlc3VtZSBjeWNsZSByZXN0b3JlcyB0aGVpciBz
-dGF0ZQo+Pj4+ICAgICB0byAic3VzcGVuZGVkIi4KPj4+Pgo+Pj4+ICAyLiBEdXJpbmcgc3lzdGVt
-IHN1c3BlbmQsIHRoZSBmb2xsb3dpbmcgd2FybmluZyBpcyBwcmludGVkIG9uCj4+Pj4gICAgIHI4
-YTc3OTEva29lbHNjaDoKPj4+Pgo+Pj4+ICAgICAgICAgaTJjLXJjYXIgZTY1MzAwMDAuaTJjOiBy
-dW50aW1lIFBNIHRyeWluZyB0byBzdXNwZW5kIGRldmljZSBidXQKPj4+PiBhY3RpdmUgY2hpbGQK
-Pj4KPj4gIDMuIEkndmUganVzdCBiaXNlY3RlZCBhIHNlZW1pbmdseSB1bnJlbGF0ZWQgaXNzdWUg
-dG8gdGhlIHNhbWUgY29tbWl0Lgo+PiAgICAgT24gU2FsdmF0b3ItWFMgd2l0aCBSLUNhciBIMywg
-aW5pdGlhbGl6YXRpb24gb2YgdGhlIHJjYXItZHUgZHJpdmVyIG5vdwo+PiAgICAgdGFrZXMgbW9y
-ZSB0aGFuIDEgbWludXRlIGR1ZSB0byBmbGlwX2RvbmUgdGltZSBvdXRzLCB3aGlsZSBpdCB0b29r
-IDAuMTJzCj4+ICAgICBiZWZvcmU6Cj4+Cj4+ICAgICBbICAgIDMuMDE1MDM1XSBbZHJtXSBTdXBw
-b3J0cyB2YmxhbmsgdGltZXN0YW1wIGNhY2hpbmcgUmV2IDIgKDIxLjEwLjIwMTMpLgo+PiAgICAg
-WyAgICAzLjAyMTcyMV0gW2RybV0gTm8gZHJpdmVyIHN1cHBvcnQgZm9yIHZibGFuayB0aW1lc3Rh
-bXAgcXVlcnkuCj4+ICAgICBbICAgMTMuMjgwNzM4XSBbZHJtOmRybV9hdG9taWNfaGVscGVyX3dh
-aXRfZm9yX2ZsaXBfZG9uZV0gKkVSUk9SKgo+PiBbQ1JUQzo1ODpjcnRjLTNdIGZsaXBfZG9uZSB0
-aW1lZCBvdXQKPj4gICAgIFsgICAyMy41MjA3MDddIFtkcm06ZHJtX2F0b21pY19oZWxwZXJfY29t
-bWl0X2NsZWFudXBfZG9uZV0gKkVSUk9SKgo+PiBbQ1JUQzo1ODpjcnRjLTNdIGZsaXBfZG9uZSB0
-aW1lZCBvdXQKPj4gICAgIFsgICAzMy43NjA3MDhdIFtkcm06ZHJtX2F0b21pY19oZWxwZXJfd2Fp
-dF9mb3JfZmxpcF9kb25lXSAqRVJST1IqCj4+IFtDUlRDOjU4OmNydGMtM10gZmxpcF9kb25lIHRp
-bWVkIG91dAo+PiAgICAgWyAgIDQ0LjAwMDc1NV0gW2RybTpkcm1fYXRvbWljX2hlbHBlcl9jb21t
-aXRfY2xlYW51cF9kb25lXSAqRVJST1IqCj4+IFtDUlRDOjU4OmNydGMtM10gZmxpcF9kb25lIHRp
-bWVkIG91dAo+PiAgICAgWyAgIDQ0LjAwMzU5N10gQ29uc29sZTogc3dpdGNoaW5nIHRvIGNvbG91
-ciBmcmFtZSBidWZmZXIgZGV2aWNlIDEyOHg0OAo+PiAgICAgWyAgIDU0LjI0MDcwN10gW2RybTpk
-cm1fYXRvbWljX2hlbHBlcl93YWl0X2Zvcl9mbGlwX2RvbmVdICpFUlJPUioKPj4gW0NSVEM6NTg6
-Y3J0Yy0zXSBmbGlwX2RvbmUgdGltZWQgb3V0Cj4+ICAgICBbICAgNjQuNDgwNzA2XSBbZHJtOmRy
-bV9hdG9taWNfaGVscGVyX2NvbW1pdF9jbGVhbnVwX2RvbmVdICpFUlJPUioKPj4gW0NSVEM6NTg6
-Y3J0Yy0zXSBmbGlwX2RvbmUgdGltZWQgb3V0Cj4+ICAgICBbICAgNjQuNTQ0ODc2XSByY2FyLWR1
-IGZlYjAwMDAwLmRpc3BsYXk6IGZiMDogIGZyYW1lIGJ1ZmZlciBkZXZpY2UKPj4gICAgIFsgICA2
-NC41NTIwMTNdIFtkcm1dIEluaXRpYWxpemVkIHJjYXItZHUgMS4wLjAgMjAxMzAxMTAgZm9yCj4+
-IGZlYjAwMDAwLmRpc3BsYXkgb24gbWlub3IgMAo+PiAgICAgWyAgIDY0LjU1OTg3M10gW2RybV0g
-RGV2aWNlIGZlYjAwMDAwLmRpc3BsYXkgcHJvYmVkCj4+Cj4+Pj4gQ29tbWl0IDJhOWE4NmQ1Yzgx
-Mzg5Y2QgKCJQTSAvIFFvUzogRml4IGRlZmF1bHQgcnVudGltZV9wbSBkZXZpY2UgcmVzdW1lCj4+
-Pj4gbGF0ZW5jeSIpIGZpeGVzIHRoZSBzZWNvbmQgaXNzdWUsIGJ1dCBub3QgdGhlIGZpcnN0Lgo+
-Pgo+PiAuLi4gbm9yIHRoZSB0aGlyZC4KPj4KPj4+PiBSZXZlcnRpbmcgY29tbWl0cyAyYTlhODZk
-NWM4MTM4OWNkICgiUE0gLyBRb1M6IEZpeCBkZWZhdWx0IHJ1bnRpbWVfcG0KPj4+PiBkZXZpY2Ug
-cmVzdW1lIGxhdGVuY3kiKSBhbmQgMGNjMmI0ZTVhMDIwZmM3ZiAoIlBNIC8gUW9TOiBGaXggZGV2
-aWNlIHJlc3VtZQo+Pj4+IGxhdGVuY3kgUE0gUW9TIikgZml4ZXMgYm90aC4KPj4KPj4gLi4uIGFs
-bCB0aHJlZS4KPgo+IFNvcnJ5IGZvciB0aGUgYnJlYWthZ2UuCj4KPiBPSywgSSdsbCBqdXN0IHB1
-c2ggdGhlIHJldmVydHMgdG8gTGludXMgbGF0ZXIgdG9kYXkuCj4KPj4+PiBEbyB5b3UgaGF2ZSBh
-IGNsdWU/Cj4KPiBXZWxsLCBraW5kIG9mLgo+Cj4gVGhlcmUgaXMgYSBjaGFuZ2UgaW4gYmVoYXZp
-b3IgaW4gZG9tYWluX2dvdmVybm9yLmMgdGhhdCBzaG91bGQgbm90Cj4gaGF2ZSBtYWRlIGFueSBk
-aWZmZXJlbmNlIHRvIG15IGV5ZXMsIGJ1dCBtYXliZSB0aGF0J3MgaXQuCj4KPiBDYW4geW91IHBs
-ZWFzZSBjaGVjayBpZiB0aGUgYXR0YWNoZWQgcGF0Y2ggbWFrZXMgYW55IGRpZmZlcmVuY2U/CgpU
-aGFua3MsIGJ1dCBpdCBkb2Vzbid0IHNlZW0gdG8gZml4IHRoZSBpc3N1ZXMuCgpHcntvZXRqZSxl
-ZXRpbmd9cywKCiAgICAgICAgICAgICAgICAgICAgICAgIEdlZXJ0CgotLQpHZWVydCBVeXR0ZXJo
-b2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9uZCBpYTMyIC0tIGdlZXJ0QGxpbnV4
-LW02OGsub3JnCgpJbiBwZXJzb25hbCBjb252ZXJzYXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3Bs
-ZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0CndoZW4gSSdtIHRhbGtpbmcgdG8gam91cm5h
-bGlzdHMgSSBqdXN0IHNheSAicHJvZ3JhbW1lciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4KICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAtLSBMaW51cyBUb3J2YWxkcwpfX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpkcmktZGV2ZWwgbWFpbGluZyBs
-aXN0CmRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVz
-a3RvcC5vcmcvbWFpbG1hbi9saXN0aW5mby9kcmktZGV2ZWwK
+Set the newly introduced GENPD_FLAG_ACTIVE_WAKEUP, which allows to
+remove the driver's own flag-based callback.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+This must not be applied before "PM / Domain: Enable genpd users to
+specify default active wakeup behavior" has landed upstream, hence the
+"RFC".
+
+Compile-tested only.
+
+v2:
+  - New.
+---
+ drivers/soc/rockchip/pm_domains.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/soc/rockchip/pm_domains.c b/drivers/soc/rockchip/pm_domains.c
+index 40b75748835f552c..5c342167b9db7a16 100644
+--- a/drivers/soc/rockchip/pm_domains.c
++++ b/drivers/soc/rockchip/pm_domains.c
+@@ -358,17 +358,6 @@ static void rockchip_pd_detach_dev(struct generic_pm_domain *genpd,
+ 	pm_clk_destroy(dev);
+ }
+ 
+-static bool rockchip_active_wakeup(struct device *dev)
+-{
+-	struct generic_pm_domain *genpd;
+-	struct rockchip_pm_domain *pd;
+-
+-	genpd = pd_to_genpd(dev->pm_domain);
+-	pd = container_of(genpd, struct rockchip_pm_domain, genpd);
+-
+-	return pd->info->active_wakeup;
+-}
+-
+ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
+ 				      struct device_node *node)
+ {
+@@ -489,8 +478,9 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
+ 	pd->genpd.power_on = rockchip_pd_power_on;
+ 	pd->genpd.attach_dev = rockchip_pd_attach_dev;
+ 	pd->genpd.detach_dev = rockchip_pd_detach_dev;
+-	pd->genpd.dev_ops.active_wakeup = rockchip_active_wakeup;
+ 	pd->genpd.flags = GENPD_FLAG_PM_CLK;
++	if (pd_info->active_wakeup)
++		pd->genpd.flags |= GENPD_FLAG_ACTIVE_WAKEUP;
+ 	pm_genpd_init(&pd->genpd, NULL, false);
+ 
+ 	pmu->genpd_data.domains[id] = &pd->genpd;
+-- 
+2.7.4
