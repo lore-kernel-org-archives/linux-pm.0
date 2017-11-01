@@ -1,51 +1,114 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 09/12] PM / mfd: intel-lpss: Use DPM_FLAG_SMART_SUSPEND
-Date: Wed, 1 Nov 2017 21:26:13 +0100
-Message-ID: <CAJZ5v0gbmPd=rrveH1LyOYhB2Uu8Tz54C1Y+TutYmdRJCv8G4g@mail.gmail.com>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <5094729.JAaD38WncM@aspire.rjw.lan>
- <20171031150933.oho2ffvuj3iagx4m@dell> <CAJZ5v0ipSJv0PWPrD3P-yeyD0JWe6EqSJSuZXgjtnFTrMEvpfQ@mail.gmail.com>
- <20171101092819.thhofiwwjxblef4a@dell>
+From: Al Stone <ahs3@redhat.com>
+Subject: Re: [PATCH v3 6/7] arm64: topology: Enable ACPI/PPTT based CPU
+ topology.
+Date: Wed, 1 Nov 2017 14:29:26 -0600
+Message-ID: <270ae2f5-0af6-1be4-2914-d1ce8d0a5cd0@redhat.com>
+References: <20171012194856.13844-1-jeremy.linton@arm.com>
+ <20171012194856.13844-7-jeremy.linton@arm.com>
+ <20171019155622.GC18883@red-moon>
+ <b6c3fae3-eb6d-e5f2-6887-de1471978897@arm.com>
+ <20171020092210.GB21060@red-moon>
+Reply-To: ahs3@redhat.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20171101092819.thhofiwwjxblef4a@dell>
-Sender: linux-i2c-owner@vger.kernel.org
-To: Lee Jones <lee.jones@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f195.google.com ([209.85.223.195]:45343 "EHLO
+        mail-io0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754758AbdKAU3a (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2017 16:29:30 -0400
+Received: by mail-io0-f195.google.com with SMTP id i38so8921261iod.2
+        for <linux-pm@vger.kernel.org>; Wed, 01 Nov 2017 13:29:29 -0700 (PDT)
+In-Reply-To: <20171020092210.GB21060@red-moon>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Jeremy Linton <jeremy.linton@arm.com>
+Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org
 
-On Wed, Nov 1, 2017 at 10:28 AM, Lee Jones <lee.jones@linaro.org> wrote:
-> On Tue, 31 Oct 2017, Rafael J. Wysocki wrote:
->
->> On Tue, Oct 31, 2017 at 4:09 PM, Lee Jones <lee.jones@linaro.org> wrote:
->> > On Mon, 16 Oct 2017, Rafael J. Wysocki wrote:
->> >
->> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >>
->> >> Make the intel-lpss driver set DPM_FLAG_SMART_SUSPEND for its
->> >> devices which will allow them to stay in runtime suspend during
->> >> system suspend unless they need to be reconfigured for some reason.
->> >>
->> >> Also make it avoid resuming its child devices if they have
->> >> DPM_FLAG_SMART_SUSPEND set to allow them to remain in runtime
->> >> suspend during system suspend.
->> >>
->> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >> ---
->> >>  drivers/mfd/intel-lpss.c |    6 +++++-
->> >>  1 file changed, 5 insertions(+), 1 deletion(-)
->> >
->> > Is this patch independent?
+On 10/20/2017 03:22 AM, Lorenzo Pieralisi wrote:
+> On Thu, Oct 19, 2017 at 11:54:22AM -0500, Jeremy Linton wrote:
+> 
+> [...]
+> 
+>>>> +			cpu_topology[cpu].core_id   = topology_id;
+>>>> +			topology_id = setup_acpi_cpu_topology(cpu, 2);
+>>>> +			cpu_topology[cpu].cluster_id = topology_id;
+>>>> +			topology_id = setup_acpi_cpu_topology(cpu, max_topo);
+>>>
+>>> If you want a package id (that's just a package tag to group cores), you
+>>> should not use a large level because you know how setup_acpi_cpu_topology()works, you should add an API that allows you to retrieve the package id
+>>> (so that you can use th ACPI_PPTT_PHYSICAL_PACKAGE flag consistenly,
+>>> whatever it represents).
 >>
->> It depends on the flag definition at least, but functionally it also
->> depends on the PCI support for the flag.
->
-> No problem.  Which tree to you propose this goes through?
+>> I don't think the spec requires the use of PHYSICAL_PACKAGE... Am I
+>> misreading it? Which means we need to "pick" a node level to
+>> represent the physical package if one doesn't exist...
+> 
+> The specs define a means to detect if a given PPTT node corresponds to a
+> package (I am refraining from stating again that to me that's not clean
+> cut what a package is _architecturally_, I think you know my POV by now)
+> and that's what you need to use to retrieve a packageid for a given cpu,
+> if I understand the aim of the physical package flag.
+> 
+> Either that or that flag is completely useless.
+> 
+> Lorenzo
+> 
+> ACPI 6.2 - Table 5-151 (page 248)
+> Physical package
+> -----------------
+> Set to 1 if this node of the processor topology represents the boundary
+> of a physical package, whether socketed or surface mounted.  Set to 0 if
+> this instance of the processor topology does not represent the boundary
+> of a physical package.
+> 
 
-linux-pm.git if that's not a problem as the patches it depends on will
-go through it too.
+I've been following the discussion and I'm not sure I understand what the
+confusion is around having a physical package ID.  Since I'm the one that
+insisted it be in the spec, I'd be glad to clarify anything.  My apologies
+for not saying anything sooner but things IRL have been very complicated
+of late.
 
-That said I'll resend it when the core patches it depends on are ready.
+What was intended was a simple flag that was meant to tell me if a CPU ID
+(this could be a CPU, a cluster, a processor container -- I don't really
+care which) is *also* an actual physical device on a motherboard.  That is
+the only intent; there was no architectural meaning intended at all -- that
+is what the PPTT structures are for, in conjunction with any DSDT information
+uncovered later in the boot process.
 
-Thanks,
-Rafael
+However, in the broader server ecosystem, this can be incredibly useful.  There
+are a significant number of software products sold or supported that base their
+fees on the number of physical sockets in use.  There have been in the past (and
+may be in the near future) machines where the cost of the lease on the machine
+is determined by how many physical sockets (or even CPUs) are in use, even if
+the machine has many more available.
+
+Some vendors also include FRU (Field Replaceable Unit) location info in their
+ACPI tables.  So, for example, one or more CPUs or caches might fail in one
+physical package, which is then reported to a maintenance system of some sort
+that tells some human which of the physical sockets on what motherboard needs a
+replacement device, or it's simply noted and shut off until it's time to replace
+the entire server, or perhaps it's logged and used in an algorithm to predict
+when the server might fail completely.
+
+So, that's why the flag exists in the spec.  It seems to make sense to me to
+have a package ID as part of struct cpu_topology -- it might even be really
+handy for CPU hotplug.  If you don't, it seems to me a whole separate struct
+would be needed with more cpumasks to show who belongs to what physical package;
+that might be okay but seems unnecessarily complicated to me.
+
+You can also tell me that I have completely missed the point of the discussion
+so far :-).  But if you do, you have to tell me what I missed.
+
+Hope this helps clarify...
+
+-- 
+ciao,
+al
+-----------------------------------
+Al Stone
+Software Engineer
+Red Hat, Inc.
+ahs3@redhat.com
+-----------------------------------
