@@ -1,32 +1,51 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: 4.14.0-rc7: cpufreq interface in sysfs removed ?
-Date: Wed, 1 Nov 2017 21:24:01 +0100
-Message-ID: <CAJZ5v0gJa0-YRHVhKWE5GeY1D7W0FSPjxSx8UHqCK=wTir3PEw@mail.gmail.com>
-References: <CADDKRnDjXzSU=toFVH6pYOS9co4rp-hQ8rv6U9zBnChj_bLAvQ@mail.gmail.com>
+Subject: Re: [PATCH 09/12] PM / mfd: intel-lpss: Use DPM_FLAG_SMART_SUSPEND
+Date: Wed, 1 Nov 2017 21:26:13 +0100
+Message-ID: <CAJZ5v0gbmPd=rrveH1LyOYhB2Uu8Tz54C1Y+TutYmdRJCv8G4g@mail.gmail.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <5094729.JAaD38WncM@aspire.rjw.lan>
+ <20171031150933.oho2ffvuj3iagx4m@dell> <CAJZ5v0ipSJv0PWPrD3P-yeyD0JWe6EqSJSuZXgjtnFTrMEvpfQ@mail.gmail.com>
+ <20171101092819.thhofiwwjxblef4a@dell>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f52.google.com ([209.85.218.52]:51471 "EHLO
-        mail-oi0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752395AbdKAUYD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2017 16:24:03 -0400
-In-Reply-To: <CADDKRnDjXzSU=toFVH6pYOS9co4rp-hQ8rv6U9zBnChj_bLAvQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <20171101092819.thhofiwwjxblef4a@dell>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
 
-On Wed, Nov 1, 2017 at 6:06 PM, J=C3=B6rg Otte <jrg.otte@gmail.com> wrote:
-> In 4.14.0-rc7-00009-g287683d cpufreq directory under
-> /sys/devices/system/cpu/cpufreq
-> is empty. Also link /sys/devices/system/cpu/cpu0/cpufreq is missing.
+On Wed, Nov 1, 2017 at 10:28 AM, Lee Jones <lee.jones@linaro.org> wrote:
+> On Tue, 31 Oct 2017, Rafael J. Wysocki wrote:
 >
-> Is this change intentional?
+>> On Tue, Oct 31, 2017 at 4:09 PM, Lee Jones <lee.jones@linaro.org> wrote:
+>> > On Mon, 16 Oct 2017, Rafael J. Wysocki wrote:
+>> >
+>> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >>
+>> >> Make the intel-lpss driver set DPM_FLAG_SMART_SUSPEND for its
+>> >> devices which will allow them to stay in runtime suspend during
+>> >> system suspend unless they need to be reconfigured for some reason.
+>> >>
+>> >> Also make it avoid resuming its child devices if they have
+>> >> DPM_FLAG_SMART_SUSPEND set to allow them to remain in runtime
+>> >> suspend during system suspend.
+>> >>
+>> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >> ---
+>> >>  drivers/mfd/intel-lpss.c |    6 +++++-
+>> >>  1 file changed, 5 insertions(+), 1 deletion(-)
+>> >
+>> > Is this patch independent?
+>>
+>> It depends on the flag definition at least, but functionally it also
+>> depends on the PCI support for the flag.
+>
+> No problem.  Which tree to you propose this goes through?
 
-Sure not.
+linux-pm.git if that's not a problem as the patches it depends on will
+go through it too.
 
-What's the last good kernel you tested before this one?
+That said I'll resend it when the core patches it depends on are ready.
 
 Thanks,
 Rafael
