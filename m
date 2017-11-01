@@ -1,37 +1,37 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [RFC PATCH 2/7] typec: tcpm: Add ADO header for Alert message
+Subject: Re: [RFC PATCH 3/7] typec: tcpm: Add SDB header for Status message
  handling
-Date: Wed, 1 Nov 2017 18:20:07 +0100
-Message-ID: <20171101172007.GA14585@kroah.com>
+Date: Wed, 1 Nov 2017 18:20:42 +0100
+Message-ID: <20171101172042.GB14585@kroah.com>
 References: <cover.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
- <fed055cbecd4666d5a49a19c6a48958720045b40.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
+ <4199ae7655886b8ba7a436d3a9938220d2e14f0b.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <fed055cbecd4666d5a49a19c6a48958720045b40.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
+In-Reply-To: <4199ae7655886b8ba7a436d3a9938220d2e14f0b.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 01, 2017 at 05:03:10PM +0000, Adam Thomson wrote:
-> This commit adds a header providing definitions for handling Alert
-> messages. Currently the header only focuses on handling incoming
-> alerts.
+On Wed, Nov 01, 2017 at 05:03:11PM +0000, Adam Thomson wrote:
+> This commit adds a header providing definitions for handling
+> Status messages. Currently the header only focuses on handling
+> incoming Status messages.
 > 
 > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 > ---
->  include/linux/usb/pd_ado.h | 49 ++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 49 insertions(+)
->  create mode 100644 include/linux/usb/pd_ado.h
+>  include/linux/usb/pd_ext_sdb.h | 40 ++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 40 insertions(+)
+>  create mode 100644 include/linux/usb/pd_ext_sdb.h
 > 
-> diff --git a/include/linux/usb/pd_ado.h b/include/linux/usb/pd_ado.h
+> diff --git a/include/linux/usb/pd_ext_sdb.h b/include/linux/usb/pd_ext_sdb.h
 > new file mode 100644
-> index 0000000..edcbcfa
+> index 0000000..6d6da31
 > --- /dev/null
-> +++ b/include/linux/usb/pd_ado.h
-> @@ -0,0 +1,49 @@
+> +++ b/include/linux/usb/pd_ext_sdb.h
+> @@ -0,0 +1,40 @@
 > +/*
 > + * Copyright (c) 2017 Dialog Semiconductor
 > + *
@@ -42,8 +42,7 @@ On Wed, Nov 01, 2017 at 05:03:10PM +0000, Adam Thomson wrote:
 > + * the Free Software Foundation; either version 2 of the License, or
 > + * (at your option) any later version.
 
-I have to ask, do you _really_ mean "any later version"?
-
+Same license question here.
 
 
 > + *
@@ -53,33 +52,10 @@ I have to ask, do you _really_ mean "any later version"?
 > + * GNU General Public License for more details.
 > + */
 > +
-> +#ifndef __LINUX_USB_PD_ADO_H
-> +#define __LINUX_USB_PD_ADO_H
-> +
-> +/* ADO : Alert Data Object */
-> +#define ADO_TYPE_SHIFT			24
-> +#define ADO_TYPE_MASK			0xff
-> +#define ADO_FIXED_BATT_SHIFT		20
-> +#define ADO_FIXED_BATT_MASK		0xf
-> +#define ADO_HOT_SWAP_BATT_SHIFT		16
-> +#define ADO_HOT_SWAP_BATT_MASK		0xf
+> +#ifndef __LINUX_USB_PD_EXT_SDB_H
+> +#define __LINUX_USB_PD_EXT_SDB_H
 
-USB_ prefixes perhaps?
-
-> +
-> +#define ADO_TYPE_BATT_STATUS_CHANGE	BIT(1)
-> +#define ADO_TYPE_OCP			BIT(2)
-> +#define ADO_TYPE_OTP			BIT(3)
-> +#define ADO_TYPE_OP_COND_CHANGE		BIT(4)
-> +#define ADO_TYPE_SRC_INPUT_CHANGE	BIT(5)
-> +#define ADO_TYPE_OVP			BIT(6)
-> +
-> +static inline unsigned int ado_type(u32 ado)
-> +{
-> +	return (ado >> ADO_TYPE_SHIFT) & ADO_TYPE_MASK;
-> +}
-
-usb_ prefix for this and the other inline functions as well?
+No need for __LINUX_ right?
 
 thanks,
 
