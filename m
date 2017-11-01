@@ -1,45 +1,59 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 2/3] thermal: int340x: processor_thermal: Add Coffee Lake support
-Date: Wed,  1 Nov 2017 09:39:50 -0700
-Message-ID: <20171101163951.27332-3-srinivas.pandruvada@linux.intel.com>
-References: <20171101163951.27332-1-srinivas.pandruvada@linux.intel.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [RFC PATCH 0/7] typec: tcpm: Add sink side support for PPS
+Date: Wed, 1 Nov 2017 17:03:08 +0000
+Message-ID: <cover.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
+Mime-Version: 1.0
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:48629 "EHLO mga01.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754878AbdKAQkK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 1 Nov 2017 12:40:10 -0400
-In-Reply-To: <20171101163951.27332-1-srinivas.pandruvada@linux.intel.com>
+Received: from mail1.bemta6.messagelabs.com ([193.109.254.105]:15328 "EHLO
+        mail1.bemta6.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1754846AbdKARDM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2017 13:03:12 -0400
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 
-Add new PCI id for Coffee lake processor thermal device.
+This patch set adds sink side support for the PPS feature introduced in the
+USB PD 3.0 specification.
 
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
----
- drivers/thermal/int340x_thermal/processor_thermal_device.c | 2 ++
- 1 file changed, 2 insertions(+)
+The source PPS supply is represented using the Power Supply framework to provide
+access and control APIs for dealing with it's operating voltage and current,
+and switching between a standard PDO and PPS APDO operation. During standard PDO
+operation the voltage and current is read-only, but for APDO PPS these are
+writable as well to allow for control.
 
-diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-index e724a23d250e..80bbf9ce2fb6 100644
---- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-@@ -32,6 +32,7 @@
- 
- /* CannonLake thermal reporting device */
- #define PCI_DEVICE_ID_PROC_CNL_THERMAL	0x5a03
-+#define PCI_DEVICE_ID_PROC_CFL_THERMAL	0x3E83
- 
- /* Braswell thermal reporting device */
- #define PCI_DEVICE_ID_PROC_BSW_THERMAL	0x22DC
-@@ -465,6 +466,7 @@ static const struct pci_device_id proc_thermal_pci_ids[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BXTX_THERMAL)},
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BXTP_THERMAL)},
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_CNL_THERMAL)},
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_CFL_THERMAL)},
- 	{ 0, },
- };
- 
+It should be noted that the keepalive for PPS is not handled within TCPM. The
+expectation is that the external user will be required to ensure re-requests
+occur regularly to ensure PPS remains and the source does not hard reset.
+
+So with all of that covered, please feel free to rip this apart as you see fit.
+
+Note: Code changes are based on linux-next tag 'next-20171017' to pick up
+the move out of staging of TCPM related code.
+
+Adam Thomson (7):
+  typec: tcpm: Add PD Rev 3.0 definitions to PD header
+  typec: tcpm: Add ADO header for Alert message handling
+  typec: tcpm: Add SDB header for Status message handling
+  typec: tcpm: Add core support for sink side PPS
+  power: supply: Add type for USB PD PPS chargers
+  typec: tcpm: Represent source supply through power_supply class
+  typec: tcpm: Add support for sink PPS related messages
+
+ drivers/power/supply/power_supply_sysfs.c |   2 +-
+ drivers/usb/typec/Kconfig                 |   1 +
+ drivers/usb/typec/fusb302/Kconfig         |   2 +-
+ drivers/usb/typec/fusb302/fusb302.c       |  63 +--
+ drivers/usb/typec/tcpm.c                  | 816 +++++++++++++++++++++++++++++-
+ include/linux/power_supply.h              |   1 +
+ include/linux/usb/pd.h                    | 162 +++++-
+ include/linux/usb/pd_ado.h                |  49 ++
+ include/linux/usb/pd_ext_sdb.h            |  40 ++
+ include/linux/usb/tcpm.h                  |   2 +-
+ 10 files changed, 1041 insertions(+), 97 deletions(-)
+ create mode 100644 include/linux/usb/pd_ado.h
+ create mode 100644 include/linux/usb/pd_ext_sdb.h
+
 -- 
-2.13.6
+1.9.1
