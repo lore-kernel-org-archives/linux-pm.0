@@ -1,47 +1,64 @@
 From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH v2 1/3] thermal: int340x: processor_thermal: Add Cannon Lake support
-Date: Wed,  1 Nov 2017 09:39:49 -0700
-Message-ID: <20171101163951.27332-2-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v2 3/3] thermal: pch: Add Cannon Lake support
+Date: Wed,  1 Nov 2017 09:39:51 -0700
+Message-ID: <20171101163951.27332-4-srinivas.pandruvada@linux.intel.com>
 References: <20171101163951.27332-1-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga01.intel.com ([192.55.52.88]:48629 "EHLO mga01.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751653AbdKAQkJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 1 Nov 2017 12:40:09 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171101163951.27332-1-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: rui.zhang@intel.com, edubezval@gmail.com
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-Added PCI-ID of Cannon Lake thermal device.
+Added Cannon Lake PCH ids.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/thermal/int340x_thermal/processor_thermal_device.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/thermal/intel_pch_thermal.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/drivers/thermal/int340x_thermal/processor_thermal_device.c b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-index f02341f7134d..e724a23d250e 100644
---- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
-+++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-@@ -30,6 +30,9 @@
- /* Skylake thermal reporting device */
- #define PCI_DEVICE_ID_PROC_SKL_THERMAL	0x1903
+diff --git a/drivers/thermal/intel_pch_thermal.c b/drivers/thermal/intel_pch_thermal.c
+index c60b1cfcc64e..8a7f69b4b022 100644
+--- a/drivers/thermal/intel_pch_thermal.c
++++ b/drivers/thermal/intel_pch_thermal.c
+@@ -30,6 +30,8 @@
+ #define PCH_THERMAL_DID_WPT	0x9CA4 /* Wildcat Point */
+ #define PCH_THERMAL_DID_SKL	0x9D31 /* Skylake PCH */
+ #define PCH_THERMAL_DID_SKL_H	0xA131 /* Skylake PCH 100 series */
++#define PCH_THERMAL_DID_CNL	0x9Df9 /* CNL PCH */
++#define PCH_THERMAL_DID_CNL_H	0xA379 /* CNL-H PCH */
  
-+/* CannonLake thermal reporting device */
-+#define PCI_DEVICE_ID_PROC_CNL_THERMAL	0x5a03
-+
- /* Braswell thermal reporting device */
- #define PCI_DEVICE_ID_PROC_BSW_THERMAL	0x22DC
- 
-@@ -461,6 +464,7 @@ static const struct pci_device_id proc_thermal_pci_ids[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BXT1_THERMAL)},
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BXTX_THERMAL)},
- 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_BXTP_THERMAL)},
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_PROC_CNL_THERMAL)},
- 	{ 0, },
+ /* Wildcat Point-LP  PCH Thermal registers */
+ #define WPT_TEMP	0x0000	/* Temperature */
+@@ -278,6 +280,7 @@ enum board_ids {
+ 	board_hsw,
+ 	board_wpt,
+ 	board_skl,
++	board_cnl,
  };
  
+ static const struct board_info {
+@@ -296,6 +299,10 @@ static const struct board_info {
+ 		.name = "pch_skylake",
+ 		.ops = &pch_dev_ops_wpt,
+ 	},
++	[board_cnl] = {
++		.name = "pch_cannonlake",
++		.ops = &pch_dev_ops_wpt,
++	},
+ };
+ 
+ static int intel_pch_thermal_probe(struct pci_dev *pdev,
+@@ -398,6 +405,10 @@ static const struct pci_device_id intel_pch_thermal_id[] = {
+ 		.driver_data = board_skl, },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_SKL_H),
+ 		.driver_data = board_skl, },
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_CNL),
++		.driver_data = board_cnl, },
++	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCH_THERMAL_DID_CNL_H),
++		.driver_data = board_cnl, },
+ 	{ 0, },
+ };
+ MODULE_DEVICE_TABLE(pci, intel_pch_thermal_id);
 -- 
 2.13.6
