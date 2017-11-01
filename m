@@ -1,110 +1,72 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2] cpupower: Fix no-rounding MHz frequency output
-Date: Wed, 1 Nov 2017 23:34:05 +0100
-Message-ID: <CAJZ5v0jDzjVL_MJGDup_kYmcBsPaV09PjFu7jkveeSvnms3T5g@mail.gmail.com>
-References: <20171025135132.16324-1-prarit@redhat.com> <54215387-96b8-07d3-0b0e-4df4a0b0dca6@kernel.org>
- <CAJZ5v0hKmVeAbPtr06_JCDMd1U5TXxs+VW-7jYUnAwseXaiX7A@mail.gmail.com>
- <5a15dfc3-9dca-92a3-063c-b9a653ccbf0b@osg.samsung.com> <CAJZ5v0j6hC=eUnNKFO3dgTBd572AOngtnetGNjjm1kXWjeCrOg@mail.gmail.com>
- <a6f19fbd-3bc8-f8a1-4515-1a1bcecddce7@osg.samsung.com> <CAJZ5v0gkFYyJPewqHrCFQsfVHyqzn=H_mbUtqNEmDmPDpVGuVA@mail.gmail.com>
- <0023af85-a643-edaf-f6d4-fba1c3756e6e@osg.samsung.com>
+Subject: Re: [PATCH] PM / QoS: Fix default runtime_pm device resume latency
+Date: Wed, 1 Nov 2017 23:36:21 +0100
+Message-ID: <CAJZ5v0gLw2J=zU3fJxSnea_ua2AgP8bRoFQLi7_wyAzLJGizEg@mail.gmail.com>
+References: <1509347446-26105-1-git-send-email-t-kristo@ti.com>
+ <CAJZ5v0i8HMDfV907QDTD54YPaFpoBLVt+R4oeQ704+9_C8APoA@mail.gmail.com>
+ <3227682.nATp9NGxKU@aspire.rjw.lan> <CAMuHMdVKh9n4aep+niyYYEA_4cNrB4+BfGWrJ3WLpej1me114w@mail.gmail.com>
+ <CAMuHMdW3AJFZQVDPTcpL-UMRxNThcOpQxNz6yTx9qDP7SQ-kLg@mail.gmail.com>
+ <CAMuHMdX4WjXZQrP9QMGFV8sbntOUvfZ4y-uQSS4_4ArrCjsxWA@mail.gmail.com>
+ <CAJZ5v0guHP=icMiRBZ1B4oWQVxrtN2Nt+aE_V1646PfpsKkiJg@mail.gmail.com>
+ <CAMuHMdWiwURQ2MAvpQu-=0AZ+O8Ej=VzPE7bCJ+FWxL3D2n_cg@mail.gmail.com>
+ <CAJZ5v0iHdSzAf2KSJ0r5-kVaa1eEohgoUhdOR9s-uLRFw7EC9w@mail.gmail.com>
+ <42ddd99a-e279-0d64-d000-e70f356998d0@ti.com> <CAJZ5v0hW0iu3Yn+3YFk3EBOey+dtAQt=YbmU5dM2X4nirzbtSw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:45999 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752966AbdKAWeH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2017 18:34:07 -0400
-Received: by mail-oi0-f68.google.com with SMTP id f66so6823491oib.2
-        for <linux-pm@vger.kernel.org>; Wed, 01 Nov 2017 15:34:06 -0700 (PDT)
-In-Reply-To: <0023af85-a643-edaf-f6d4-fba1c3756e6e@osg.samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hW0iu3Yn+3YFk3EBOey+dtAQt=YbmU5dM2X4nirzbtSw@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Tero Kristo <t-kristo@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, DRI Development <dri-devel@lists.freedesktop.org>
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuahkh@osg.samsung.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Prarit Bhargava <prarit@redhat.com>, Stafford Horne <shorne@gmail.com>, Shuah Khan <shuah@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.com>
 
-On Wed, Nov 1, 2017 at 11:30 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
-> On 11/01/2017 04:07 PM, Rafael J. Wysocki wrote:
->> On Wed, Nov 1, 2017 at 10:49 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
->>> On 11/01/2017 03:46 PM, Rafael J. Wysocki wrote:
->>>> On Wed, Nov 1, 2017 at 10:38 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
->>>>> On 11/01/2017 03:33 PM, Rafael J. Wysocki wrote:
->>>>>> On Wed, Nov 1, 2017 at 10:00 PM, Shuah Khan <shuah@kernel.org> wrote:
->>>>>>> On 10/25/2017 07:51 AM, Prarit Bhargava wrote:
->>>>>>>> 'cpupower frequency-info -ln' returns kHz values on systems with MHz range
->>>>>>>> minimum CPU frequency range.  For example, on a 800MHz to 4.20GHz system
->>>>>>>> the command returns
->>>>>>>>
->>>>>>>> hardware limits: 800000 MHz - 4.200000 GHz
->>>>>>>>
->>>>>>>> The code that causes this error can be removed.  The next else if clause
->>>>>>>> will handle the output correctly such that
->>>>>>>>
->>>>>>>> hardware limits: 800.000 MHz - 4.200000 GHz
->>>>>>>>
->>>>>>>> is displayed correctly.
->>>>>>>>
->>>>>>>> [v2]: Remove two lines instead of fixing broken code.
->>>>>>>>
->>>>>>>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
->>>>>>>> Cc: Thomas Renninger <trenn@suse.com>
->>>>>>>> Cc: Stafford Horne <shorne@gmail.com>
->>>>>>>> Cc: Shuah Khan <shuah@kernel.org>
->>>>>>>> ---
->>>>>>>>  tools/power/cpupower/utils/cpufreq-info.c | 2 --
->>>>>>>>  1 file changed, 2 deletions(-)
->>>>>>>>
->>>>>>>> diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
->>>>>>>> index 3e701f0e9c14..df43cd45d810 100644
->>>>>>>> --- a/tools/power/cpupower/utils/cpufreq-info.c
->>>>>>>> +++ b/tools/power/cpupower/utils/cpufreq-info.c
->>>>>>>> @@ -93,8 +93,6 @@ static void print_speed(unsigned long speed)
->>>>>>>>               if (speed > 1000000)
->>>>>>>>                       printf("%u.%06u GHz", ((unsigned int) speed/1000000),
->>>>>>>>                               ((unsigned int) speed%1000000));
->>>>>>>> -             else if (speed > 100000)
->>>>>>>> -                     printf("%u MHz", (unsigned int) speed);
->>>>>>>>               else if (speed > 1000)
->>>>>>>>                       printf("%u.%03u MHz", ((unsigned int) speed/1000),
->>>>>>>>                               (unsigned int) (speed%1000));
->>>>>>>>
->>>>>>>
->>>>>>> Thanks.  I will queue this up for 4.15-rc1.
->>>>>>
->>>>>> OK
->>>>>>
->>>>>> So are you going to maintain this utility going forward?
->>>>>>
->>>>>
->>>>> oops. I was on auto-pilot responding to patches sitting in my Inbox.
->>>>> Wrong email response. Sorry about that.
->>>>>
->>>>> Please ignore. Mu bad.
->>>>
->>>> OK :-)
->>>>
->>>> But that said, from my perspective, cpupower is basically not maintained.
->>>>
->>>> Thomas, who sort of maintained it, but then basically became a patch
->>>> reviewer for it, does not respond to patches any more and I am not
->>>> sufficiently familiar with the code to be able to effectively review
->>>> the patches myself, nor I have the time to get more familiar with it.
->>>>
->>>> For this reason, I'm inclined to drop this code from the kernel source
->>>> tree unless somebody steps in to fill the gap.
->>>>
->>>
->>> Please don't drop this from kernel sources.. I think this is useful. If you
->>> are looking for a maintainer, I will be happy to step up to maintain it.
+[cut]
+
+>> It seems the default values for pm_qos have changed with the patch, and that
+>> breaks genpd at least. I only fixed PM runtime initially, but you could try
+>> this diff to fix the genpd part also:
 >>
->> Cool, please do that then. :-)
+>> diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+>> index d68b056..7c8f643 100644
+>> --- a/include/linux/pm_qos.h
+>> +++ b/include/linux/pm_qos.h
+>> @@ -34,9 +34,9 @@ enum pm_qos_flags_status {
+>>  #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE       (2000 * USEC_PER_SEC)
+>>  #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE        0
+>>  #define PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE  0
+>> -#define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE    0
+>> +#define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE    PM_QOS_LATENCY_ANY
+>>  #define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT    PM_QOS_LATENCY_ANY
+>> -#define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE 0
+>> +#define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE (-1)
+>>  #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT (-1)
 >>
->> I will be happy to take pull requests with cpupower changes so that
->> they go in along with the other PM material.
->>
+>>  #define PM_QOS_FLAG_NO_POWER_OFF       (1 << 0)
 >
-> Sounds like a plan. I can do that. I will work on getting git setup and
-> send pull requests. We can get that going for 4.15 unless you think it is
-> late for you to get pull requests.
+> This is the original change in pm_qos.h (up to the GMail-induced
+> whitespace breakage):
+>
+> -#define PM_QOS_DEFAULT_VALUE -1
+> +#define PM_QOS_DEFAULT_VALUE (-1)
+> +#define PM_QOS_LATENCY_ANY S32_MAX
+>
+> #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE (2000 * USEC_PER_SEC)
+> #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE (2000 * USEC_PER_SEC)
+> #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE 0
+> #define PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE 0
+> #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE 0
+> +#define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT PM_QOS_LATENCY_ANY
 
-That should be fine.  There still is a couple of days at least before
-the merge window. :-)
+OK, so I should have changed PM_QOS_RESUME_LATENCY_DEFAULT_VALUE to
+PM_QOS_LATENCY_ANY too, so that the default is still "no restriction".
+
+> #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE 0
+> #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT (-1)
+>
+> -#define PM_QOS_LATENCY_ANY ((s32)(~(__u32)0 >> 1))
+>
+> #define PM_QOS_FLAG_NO_POWER_OFF (1 << 0)
+> #define PM_QOS_FLAG_REMOTE_WAKEUP (1 << 1)
+
+Thanks,
+Rafael
