@@ -1,98 +1,68 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [RFC PATCH v10 1/7] dt-bindings: PCI: Add definition of PCIe
- WAKE# irq and PCI irq
-Date: Wed, 1 Nov 2017 16:05:41 -0500
-Message-ID: <20171101210541.vacfufnn2ms65xrw@rob-hp-laptop>
-References: <20171027072612.26565-1-jeffy.chen@rock-chips.com>
- <20171027072612.26565-2-jeffy.chen@rock-chips.com>
- <20171027204513.GA105121@google.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] cpupower: Fix no-rounding MHz frequency output
+Date: Wed, 1 Nov 2017 22:33:40 +0100
+Message-ID: <CAJZ5v0hKmVeAbPtr06_JCDMd1U5TXxs+VW-7jYUnAwseXaiX7A@mail.gmail.com>
+References: <20171025135132.16324-1-prarit@redhat.com> <54215387-96b8-07d3-0b0e-4df4a0b0dca6@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:56347 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933288AbdKAVFo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2017 17:05:44 -0400
-Content-Disposition: inline
-In-Reply-To: <20171027204513.GA105121@google.com>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:47223 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934159AbdKAVdm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2017 17:33:42 -0400
+Received: by mail-oi0-f65.google.com with SMTP id h200so6612931oib.4
+        for <linux-pm@vger.kernel.org>; Wed, 01 Nov 2017 14:33:41 -0700 (PDT)
+In-Reply-To: <54215387-96b8-07d3-0b0e-4df4a0b0dca6@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Brian Norris <briannorris@chromium.org>
-Cc: Jeffy Chen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, rjw@rjwysocki.net, dianders@chromium.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>
+To: Shuah Khan <shuah@kernel.org>
+Cc: Prarit Bhargava <prarit@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.com>, Stafford Horne <shorne@gmail.com>, Shuah Khan <shuahkh@osg.samsung.com>
 
-On Fri, Oct 27, 2017 at 01:45:17PM -0700, Brian Norris wrote:
-> Hi,
-> 
-> On Fri, Oct 27, 2017 at 03:26:06PM +0800, Jeffy Chen wrote:
-> > We are going to handle PCIe WAKE# pin for PCI bus bridges and PCI
-> > devices in the pci core, so add definitions of the optional PCIe
-> > WAKE# pin for PCI bus bridges and PCI devices.
-> > 
-> > Also add an definition of the optional PCI interrupt pin for PCI
-> > devices to distinguish it from the PCIe WAKE# pin.
-> > 
-> > Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
-> > ---
-> > 
-> > Changes in v10: None
-> > Changes in v9:
-> > Add section for PCI devices and rewrite the commit message.
-> > 
-> > Changes in v8:
-> > Add optional "pci", and rewrite commit message.
-> > 
-> > Changes in v7: None
-> > Changes in v6: None
-> > Changes in v5:
-> > Move to pci.txt
-> > 
-> > Changes in v3: None
-> > Changes in v2: None
-> > 
-> >  Documentation/devicetree/bindings/pci/pci.txt | 8 ++++++++
-> >  1 file changed, 8 insertions(+)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/pci/pci.txt b/Documentation/devicetree/bindings/pci/pci.txt
-> > index c77981c5dd18..d4406d4e15ad 100644
-> > --- a/Documentation/devicetree/bindings/pci/pci.txt
-> > +++ b/Documentation/devicetree/bindings/pci/pci.txt
-> > @@ -24,3 +24,11 @@ driver implementation may support the following properties:
-> >     unsupported link speed, for instance, trying to do training for
-> >     unsupported link speed, etc.  Must be '4' for gen4, '3' for gen3, '2'
-> >     for gen2, and '1' for gen1. Any other values are invalid.
-> > +- interrupts: Interrupt specifier for each name in interrupt-names.
-> > +- interrupt-names: May contains "wakeup" for PCIe WAKE# interrupt.
-> 
-> s/contains/contain/
-> 
-> > +
-> > +PCI devices have standardized Device Tree bindings:
-> 
-> This line is a little unclear, especially since there *is* an old
-> documented standard, yet the following text is actually introducing new,
-> non-standard additions.
-> 
-> > +
-> > +- interrupts: Interrupt specifier for each name in interrupt-names.
-> > +- interrupt-names: May contains "wakeup" for PCIe WAKE# interrupt and "pci" for
-> 
-> s/contains/contain/
-> 
-> > +  PCI interrupt.
-> 
-> IMO, since you're trying to augment a standardized binding, you need to
-> be a lot clearer here. I expect you should mention the existing standard
-> (that devices may optionally include an 'interrupts' property that
-> represents the legacy PCI interrupt) and how you're augmenting it (that
-> additional interrupts can be supported optionally, but they require a
-> corresponding 'interrupt-names' property).
+On Wed, Nov 1, 2017 at 10:00 PM, Shuah Khan <shuah@kernel.org> wrote:
+> On 10/25/2017 07:51 AM, Prarit Bhargava wrote:
+>> 'cpupower frequency-info -ln' returns kHz values on systems with MHz range
+>> minimum CPU frequency range.  For example, on a 800MHz to 4.20GHz system
+>> the command returns
+>>
+>> hardware limits: 800000 MHz - 4.200000 GHz
+>>
+>> The code that causes this error can be removed.  The next else if clause
+>> will handle the output correctly such that
+>>
+>> hardware limits: 800.000 MHz - 4.200000 GHz
+>>
+>> is displayed correctly.
+>>
+>> [v2]: Remove two lines instead of fixing broken code.
+>>
+>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>> Cc: Thomas Renninger <trenn@suse.com>
+>> Cc: Stafford Horne <shorne@gmail.com>
+>> Cc: Shuah Khan <shuah@kernel.org>
+>> ---
+>>  tools/power/cpupower/utils/cpufreq-info.c | 2 --
+>>  1 file changed, 2 deletions(-)
+>>
+>> diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+>> index 3e701f0e9c14..df43cd45d810 100644
+>> --- a/tools/power/cpupower/utils/cpufreq-info.c
+>> +++ b/tools/power/cpupower/utils/cpufreq-info.c
+>> @@ -93,8 +93,6 @@ static void print_speed(unsigned long speed)
+>>               if (speed > 1000000)
+>>                       printf("%u.%06u GHz", ((unsigned int) speed/1000000),
+>>                               ((unsigned int) speed%1000000));
+>> -             else if (speed > 100000)
+>> -                     printf("%u MHz", (unsigned int) speed);
+>>               else if (speed > 1000)
+>>                       printf("%u.%03u MHz", ((unsigned int) speed/1000),
+>>                               (unsigned int) (speed%1000));
+>>
+>
+> Thanks.  I will queue this up for 4.15-rc1.
 
-There's an additional complication that I'd guess the wakeup is 
-typically a GPIO line and hence a different parent. We have 2 options 
-there. The first is interrupts-extended which is generally implicitly 
-supported (i.e. we only document interrupts). The second is we already 
-have interrupt-map if we have legacy interrupts and can map to different 
-parents. For this to work, we'd have to use a number >4 for the wakeup 
-interrupts.
+OK
 
-Rob
+So are you going to maintain this utility going forward?
+
+Thanks,
+Rafael
