@@ -1,55 +1,49 @@
-From: Lee Jones <lee.jones@linaro.org>
-Subject: Re: [PATCH 09/12] PM / mfd: intel-lpss: Use DPM_FLAG_SMART_SUSPEND
-Date: Wed, 1 Nov 2017 09:28:19 +0000
-Message-ID: <20171101092819.thhofiwwjxblef4a@dell>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan>
- <5094729.JAaD38WncM@aspire.rjw.lan>
- <20171031150933.oho2ffvuj3iagx4m@dell>
- <CAJZ5v0ipSJv0PWPrD3P-yeyD0JWe6EqSJSuZXgjtnFTrMEvpfQ@mail.gmail.com>
+From: Colin King <colin.king@canonical.com>
+Subject: [PATCH] thermal: bxt: remove redundant variable trip
+Date: Wed,  1 Nov 2017 09:41:18 +0000
+Message-ID: <20171101094118.16916-1-colin.king@canonical.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0ipSJv0PWPrD3P-yeyD0JWe6EqSJSuZXgjtnFTrMEvpfQ@mail.gmail.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 31 Oct 2017, Rafael J. Wysocki wrote:
+From: Colin Ian King <colin.king@canonical.com>
 
-> On Tue, Oct 31, 2017 at 4:09 PM, Lee Jones <lee.jones@linaro.org> wrote:
-> > On Mon, 16 Oct 2017, Rafael J. Wysocki wrote:
-> >
-> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >>
-> >> Make the intel-lpss driver set DPM_FLAG_SMART_SUSPEND for its
-> >> devices which will allow them to stay in runtime suspend during
-> >> system suspend unless they need to be reconfigured for some reason.
-> >>
-> >> Also make it avoid resuming its child devices if they have
-> >> DPM_FLAG_SMART_SUSPEND set to allow them to remain in runtime
-> >> suspend during system suspend.
-> >>
-> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >> ---
-> >>  drivers/mfd/intel-lpss.c |    6 +++++-
-> >>  1 file changed, 5 insertions(+), 1 deletion(-)
-> >
-> > Is this patch independent?
-> 
-> It depends on the flag definition at least, but functionally it also
-> depends on the PCI support for the flag.
+Variable trip is assigned but never read, hence it is redundant
+and can be removed. Cleans up clang warning:
 
-No problem.  Which tree to you propose this goes through?
+drivers/thermal/intel_bxt_pmic_thermal.c:204:4: warning: Value stored
+to 'trip' is never read
 
-> > For my own reference:
-> >   Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/thermal/intel_bxt_pmic_thermal.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-
+diff --git a/drivers/thermal/intel_bxt_pmic_thermal.c b/drivers/thermal/intel_bxt_pmic_thermal.c
+index ef6b32242ccb..94cfd0064c43 100644
+--- a/drivers/thermal/intel_bxt_pmic_thermal.c
++++ b/drivers/thermal/intel_bxt_pmic_thermal.c
+@@ -166,7 +166,7 @@ static irqreturn_t pmic_thermal_irq_handler(int irq, void *data)
+ 	struct pmic_thermal_data *td;
+ 	struct intel_soc_pmic *pmic;
+ 	struct regmap *regmap;
+-	u8 reg_val, mask, irq_stat, trip;
++	u8 reg_val, mask, irq_stat;
+ 	u16 reg, evt_stat_reg;
+ 	int i, j, ret;
+ 
+@@ -201,7 +201,6 @@ static irqreturn_t pmic_thermal_irq_handler(int irq, void *data)
+ 			if (regmap_read(regmap, evt_stat_reg, &ret))
+ 				return IRQ_HANDLED;
+ 
+-			trip = td->maps[i].trip_config[j].trip_num;
+ 			tzd = thermal_zone_get_zone_by_name(td->maps[i].handle);
+ 			if (!IS_ERR(tzd))
+ 				thermal_zone_device_update(tzd,
 -- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.14.1
