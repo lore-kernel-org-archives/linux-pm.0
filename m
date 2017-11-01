@@ -1,268 +1,81 @@
 From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [RFC PATCH 1/7] typec: tcpm: Add PD Rev 3.0 definitions to PD header
-Date: Wed, 1 Nov 2017 17:03:09 +0000
-Message-ID: <ae7217123a3421fd71d314a77a36bb42d8f6224d.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: [RFC PATCH 2/7] typec: tcpm: Add ADO header for Alert message handling
+Date: Wed, 1 Nov 2017 17:03:10 +0000
+Message-ID: <fed055cbecd4666d5a49a19c6a48958720045b40.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
 References: <cover.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta6.messagelabs.com ([193.109.254.112]:5655 "EHLO
-        mail1.bemta6.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1754821AbdKARDM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2017 13:03:12 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>
 Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+List-Id: linux-pm@vger.kernel.org
 
-This commit adds definitions for PD Rev 3.0 messages, including
-APDO PPS and extended message support for TCPM.
+This commit adds a header providing definitions for handling Alert
+messages. Currently the header only focuses on handling incoming
+alerts.
 
 Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 ---
- include/linux/usb/pd.h | 162 +++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 151 insertions(+), 11 deletions(-)
+ include/linux/usb/pd_ado.h | 49 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 49 insertions(+)
+ create mode 100644 include/linux/usb/pd_ado.h
 
-diff --git a/include/linux/usb/pd.h b/include/linux/usb/pd.h
-index e00051c..77c6cd6 100644
---- a/include/linux/usb/pd.h
-+++ b/include/linux/usb/pd.h
-@@ -35,6 +35,13 @@ enum pd_ctrl_msg_type {
- 	PD_CTRL_WAIT = 12,
- 	PD_CTRL_SOFT_RESET = 13,
- 	/* 14-15 Reserved */
-+	PD_CTRL_NOT_SUPP = 16,
-+	PD_CTRL_GET_SOURCE_CAP_EXT = 17,
-+	PD_CTRL_GET_STATUS = 18,
-+	PD_CTRL_FR_SWAP = 19,
-+	PD_CTRL_GET_PPS_STATUS = 20,
-+	PD_CTRL_GET_COUNTRY_CODES = 21,
-+	/* 22-31 Reserved */
- };
- 
- enum pd_data_msg_type {
-@@ -43,13 +50,38 @@ enum pd_data_msg_type {
- 	PD_DATA_REQUEST = 2,
- 	PD_DATA_BIST = 3,
- 	PD_DATA_SINK_CAP = 4,
--	/* 5-14 Reserved */
-+	PD_DATA_BATT_STATUS = 5,
-+	PD_DATA_ALERT = 6,
-+	PD_DATA_GET_COUNTRY_INFO = 7,
-+	/* 8-14 Reserved */
- 	PD_DATA_VENDOR_DEF = 15,
-+	/* 16-31 Reserved */
-+};
+diff --git a/include/linux/usb/pd_ado.h b/include/linux/usb/pd_ado.h
+new file mode 100644
+index 0000000..edcbcfa
+--- /dev/null
++++ b/include/linux/usb/pd_ado.h
+@@ -0,0 +1,49 @@
++/*
++ * Copyright (c) 2017 Dialog Semiconductor
++ *
++ * Author: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
-+enum pd_ext_msg_type {
-+	/* 0 Reserved */
-+	PD_EXT_SOURCE_CAP_EXT = 1,
-+	PD_EXT_STATUS = 2,
-+	PD_EXT_GET_BATT_CAP = 3,
-+	PD_EXT_GET_BATT_STATUS = 4,
-+	PD_EXT_BATT_CAP = 5,
-+	PD_EXT_GET_MANUFACTURER_INFO = 6,
-+	PD_EXT_MANUFACTURER_INFO = 7,
-+	PD_EXT_SECURITY_REQUEST = 8,
-+	PD_EXT_SECURITY_RESPONSE = 9,
-+	PD_EXT_FW_UPDATE_REQUEST = 10,
-+	PD_EXT_FW_UPDATE_RESPONSE = 11,
-+	PD_EXT_PPS_STATUS = 12,
-+	PD_EXT_COUNTRY_INFO = 13,
-+	PD_EXT_COUNTRY_CODES = 14,
-+	/* 15-31 Reserved */
- };
- 
- #define PD_REV10	0x0
- #define PD_REV20	0x1
-+#define PD_REV30	0x2
- 
-+#define PD_HEADER_EXT_HDR	BIT(15)
- #define PD_HEADER_CNT_SHIFT	12
- #define PD_HEADER_CNT_MASK	0x7
- #define PD_HEADER_ID_SHIFT	9
-@@ -59,18 +91,19 @@ enum pd_data_msg_type {
- #define PD_HEADER_REV_MASK	0x3
- #define PD_HEADER_DATA_ROLE	BIT(5)
- #define PD_HEADER_TYPE_SHIFT	0
--#define PD_HEADER_TYPE_MASK	0xf
-+#define PD_HEADER_TYPE_MASK	0x1f
- 
--#define PD_HEADER(type, pwr, data, id, cnt)				\
-+#define PD_HEADER(type, pwr, data, id, cnt, ext_hdr)			\
- 	((((type) & PD_HEADER_TYPE_MASK) << PD_HEADER_TYPE_SHIFT) |	\
- 	 ((pwr) == TYPEC_SOURCE ? PD_HEADER_PWR_ROLE : 0) |		\
- 	 ((data) == TYPEC_HOST ? PD_HEADER_DATA_ROLE : 0) |		\
--	 (PD_REV20 << PD_HEADER_REV_SHIFT) |				\
-+	 (PD_REV30 << PD_HEADER_REV_SHIFT) |				\
- 	 (((id) & PD_HEADER_ID_MASK) << PD_HEADER_ID_SHIFT) |		\
--	 (((cnt) & PD_HEADER_CNT_MASK) << PD_HEADER_CNT_SHIFT))
-+	 (((cnt) & PD_HEADER_CNT_MASK) << PD_HEADER_CNT_SHIFT) |	\
-+	 ((ext_hdr) ? PD_HEADER_EXT_HDR : 0))
- 
- #define PD_HEADER_LE(type, pwr, data, id, cnt) \
--	cpu_to_le16(PD_HEADER((type), (pwr), (data), (id), (cnt)))
-+	cpu_to_le16(PD_HEADER((type), (pwr), (data), (id), (cnt), (0)))
- 
- static inline unsigned int pd_header_cnt(u16 header)
- {
-@@ -102,16 +135,66 @@ static inline unsigned int pd_header_msgid_le(__le16 header)
- 	return pd_header_msgid(le16_to_cpu(header));
- }
- 
-+#define PD_EXT_HDR_CHUNKED		BIT(15)
-+#define PD_EXT_HDR_CHUNK_NUM_SHIFT	11
-+#define PD_EXT_HDR_CHUNK_NUM_MASK	0xf
-+#define PD_EXT_HDR_REQ_CHUNK		BIT(10)
-+#define PD_EXT_HDR_DATA_SIZE_SHIFT	0
-+#define PD_EXT_HDR_DATA_SIZE_MASK	0x1ff
++#ifndef __LINUX_USB_PD_ADO_H
++#define __LINUX_USB_PD_ADO_H
 +
-+#define PD_EXT_HDR(data_size, req_chunk, chunk_num, chunked)				\
-+	((((data_size) & PD_EXT_HDR_DATA_SIZE_MASK) << PD_EXT_HDR_DATA_SIZE_SHIFT) |	\
-+	 ((req_chunk) ? PD_EXT_HDR_REQ_CHUNK : 0) |					\
-+	 (((chunk_num) & PD_EXT_HDR_CHUNK_NUM_MASK) << PD_EXT_HDR_CHUNK_NUM_SHIFT) |	\
-+	 ((chunked) ? PD_EXT_HDR_CHUNKED : 0))
++/* ADO : Alert Data Object */
++#define ADO_TYPE_SHIFT			24
++#define ADO_TYPE_MASK			0xff
++#define ADO_FIXED_BATT_SHIFT		20
++#define ADO_FIXED_BATT_MASK		0xf
++#define ADO_HOT_SWAP_BATT_SHIFT		16
++#define ADO_HOT_SWAP_BATT_MASK		0xf
 +
-+#define PD_EXT_HDR_LE(data_size, req_chunk, chunk_num, chunked) \
-+	cpu_to_le16(PD_EXT_HDR((data_size), (req_chunk), (chunk_num), (chunked)))
++#define ADO_TYPE_BATT_STATUS_CHANGE	BIT(1)
++#define ADO_TYPE_OCP			BIT(2)
++#define ADO_TYPE_OTP			BIT(3)
++#define ADO_TYPE_OP_COND_CHANGE		BIT(4)
++#define ADO_TYPE_SRC_INPUT_CHANGE	BIT(5)
++#define ADO_TYPE_OVP			BIT(6)
 +
-+static inline unsigned int pd_ext_header_chunk_num(u16 ext_header)
++static inline unsigned int ado_type(u32 ado)
 +{
-+	return (ext_header >> PD_EXT_HDR_CHUNK_NUM_SHIFT) &
-+		PD_EXT_HDR_CHUNK_NUM_MASK;
++	return (ado >> ADO_TYPE_SHIFT) & ADO_TYPE_MASK;
 +}
 +
-+static inline unsigned int pd_ext_header_data_size(u16 ext_header)
++static inline unsigned int ado_fixed_batt(u32 ado)
 +{
-+	return (ext_header >> PD_EXT_HDR_DATA_SIZE_SHIFT) &
-+		PD_EXT_HDR_DATA_SIZE_MASK;
++	return (ado >> ADO_FIXED_BATT_SHIFT) & ADO_FIXED_BATT_MASK;
 +}
 +
-+static inline unsigned int pd_ext_header_data_size_le(__le16 ext_header)
++static inline unsigned int ado_hot_swap_batt(u32 ado)
 +{
-+	return pd_ext_header_data_size(le16_to_cpu(ext_header));
++	return (ado >> ADO_HOT_SWAP_BATT_SHIFT) & ADO_HOT_SWAP_BATT_MASK;
 +}
-+
- #define PD_MAX_PAYLOAD		7
-+#define PD_EXT_MAX_LEGACY_DATA	26
-+#define PD_EXT_MAX_CHUNK_DATA	26
-+#define PD_EXT_MAX_DATA		260
- 
- /**
-- * struct pd_message - PD message as seen on wire
-- * @header:	PD message header
-- * @payload:	PD message payload
-- */
-+  * struct pd_ext_message_data - PD extended message data as seen on wire
-+  * @header:    PD extended message header
-+  * @data:      PD extended message data
-+  */
-+struct pd_ext_message_data {
-+	__le16 header;
-+	u8 data[PD_EXT_MAX_DATA];
-+} __packed;
-+
-+/**
-+  * struct pd_message - PD message as seen on wire
-+  * @header:    PD message header
-+  * @payload:   PD message payload
-+  * @ext_msg:   PD message extended message data
-+  */
- struct pd_message {
- 	__le16 header;
--	__le32 payload[PD_MAX_PAYLOAD];
-+	union {
-+		__le32 payload[PD_MAX_PAYLOAD];
-+		struct pd_ext_message_data ext_msg;
-+	};
- } __packed;
- 
- /* PDO: Power Data Object */
-@@ -121,6 +204,7 @@ enum pd_pdo_type {
- 	PDO_TYPE_FIXED = 0,
- 	PDO_TYPE_BATT = 1,
- 	PDO_TYPE_VAR = 2,
-+	PDO_TYPE_APDO = 3,
- };
- 
- #define PDO_TYPE_SHIFT		30
-@@ -172,6 +256,29 @@ enum pd_pdo_type {
- 	(PDO_TYPE(PDO_TYPE_VAR) | PDO_VAR_MIN_VOLT(min_mv) |	\
- 	 PDO_VAR_MAX_VOLT(max_mv) | PDO_VAR_MAX_CURR(max_ma))
- 
-+enum pd_apdo_type {
-+	APDO_TYPE_PPS = 0,
-+};
-+
-+#define PDO_APDO_TYPE_SHIFT	28	/* Only valid value currently is 0x0 - PPS */
-+#define PDO_APDO_MAX_VOLT_SHIFT	17	/* 100mV units */
-+#define PDO_APDO_MIN_VOLT_SHIFT	8	/* 100mV units */
-+#define PDO_APDO_MAX_CURR_SHIFT	0	/* 50mA units */
-+
-+#define PDO_APDO_TYPE_MASK	0x3
-+#define PDO_APDO_VOLT_MASK	0xff
-+#define PDO_APDO_CURR_MASK	0x7f
-+
-+#define PDO_APDO_TYPE(t)	((t) << PDO_APDO_TYPE_SHIFT)
-+#define PDO_APDO_MIN_VOLT(mv)	((((mv) / 100) & PDO_APDO_VOLT_MASK) << PDO_APDO_MIN_VOLT_SHIFT)
-+#define PDO_APDO_MAX_VOLT(mv)	((((mv) / 100) & PDO_APDO_VOLT_MASK) << PDO_APDO_MAX_VOLT_SHIFT)
-+#define PDO_APDO_MAX_CURR(ma)	((((ma) / 50) & PDO_APDO_CURR_MASK) << PDO_APDO_MAX_CURR_SHIFT)
-+
-+#define PDO_APDO(min_mv, max_mv, max_ma)				\
-+	(PDO_TYPE(PDO_TYPE_APDO) | PDO_APDO_TYPE(ADPO_TYPE_PPS) |	\
-+	PDO_APDO_MIN_VOLT(min_mv) | PDO_APDO_MAX_VOLT(max_mv) |		\
-+	PDO_APDO_MAX_CURR(max_ma))
-+
- static inline enum pd_pdo_type pdo_type(u32 pdo)
- {
- 	return (pdo >> PDO_TYPE_SHIFT) & PDO_TYPE_MASK;
-@@ -202,6 +309,26 @@ static inline unsigned int pdo_max_power(u32 pdo)
- 	return ((pdo >> PDO_BATT_MAX_PWR_SHIFT) & PDO_PWR_MASK) * 250;
- }
- 
-+static inline enum pd_apdo_type pdo_apdo_type(u32 pdo)
-+{
-+	return (pdo >> PDO_APDO_TYPE_SHIFT) & PDO_APDO_TYPE_MASK;
-+}
-+
-+static inline unsigned int pdo_apdo_min_voltage(u32 pdo)
-+{
-+	return ((pdo >> PDO_APDO_MIN_VOLT_SHIFT) & PDO_APDO_VOLT_MASK) * 100;
-+}
-+
-+static inline unsigned int pdo_apdo_max_voltage(u32 pdo)
-+{
-+	return ((pdo >> PDO_APDO_MAX_VOLT_SHIFT) & PDO_APDO_VOLT_MASK) * 100;
-+}
-+
-+static inline unsigned int pdo_apdo_max_current(u32 pdo)
-+{
-+	return ((pdo >> PDO_APDO_MAX_CURR_SHIFT) & PDO_APDO_CURR_MASK) * 50;
-+}
-+
- /* RDO: Request Data Object */
- #define RDO_OBJ_POS_SHIFT	28
- #define RDO_OBJ_POS_MASK	0x7
-@@ -235,6 +362,19 @@ static inline unsigned int pdo_max_power(u32 pdo)
- 	(RDO_OBJ(idx) | (flags) |				\
- 	 RDO_BATT_OP_PWR(op_mw) | RDO_BATT_MAX_PWR(max_mw))
- 
-+#define RDO_PROG_VOLT_MASK	0x7ff
-+#define RDO_PROG_CURR_MASK	0x7f
-+
-+#define RDO_PROG_VOLT_SHIFT	9
-+#define RDO_PROG_CURR_SHIFT	0
-+
-+#define PDO_PROG_OUT_VOLT(mv) ((((mv) / 20) & RDO_PROG_VOLT_MASK) << RDO_PROG_VOLT_SHIFT)
-+#define PDO_PROG_OP_CURR(mv) ((((ma) / 50) & RDO_PROG_CURR_MASK) << RDO_PROG_CURR_SHIFT)
-+
-+#define RDO_PROG(idx, out_mv, op_ma, flags)			\
-+	(RDO_OBJ(idx) | (flags) |				\
-+	 PDO_PROG_OUT_VOLT(out_mv) | PDO_PROG_OP_CURR(op_ma))
-+
- static inline unsigned int rdo_index(u32 rdo)
- {
- 	return (rdo >> RDO_OBJ_POS_SHIFT) & RDO_OBJ_POS_MASK;
++#endif /* __LINUX_USB_PD_ADO_H */
 -- 
 1.9.1
