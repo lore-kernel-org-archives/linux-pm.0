@@ -1,59 +1,50 @@
 From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [RFC PATCH 0/7] typec: tcpm: Add sink side support for PPS
-Date: Wed, 1 Nov 2017 17:03:08 +0000
-Message-ID: <cover.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: [RFC PATCH 5/7] power: supply: Add type for USB PD PPS chargers
+Date: Wed, 1 Nov 2017 17:03:13 +0000
+Message-ID: <d1fcc24b60933b590fc6c8e8946e9ccb44364306.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
+References: <cover.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta6.messagelabs.com ([193.109.254.105]:15328 "EHLO
-        mail1.bemta6.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1754846AbdKARDM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2017 13:03:12 -0400
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>
 Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+List-Id: linux-pm@vger.kernel.org
 
-This patch set adds sink side support for the PPS feature introduced in the
-USB PD 3.0 specification.
+This adds a type to represent USB PPS chargers as defined in the
+USB Power Delivery Specification Revision 3.0 V1.1
 
-The source PPS supply is represented using the Power Supply framework to provide
-access and control APIs for dealing with it's operating voltage and current,
-and switching between a standard PDO and PPS APDO operation. During standard PDO
-operation the voltage and current is read-only, but for APDO PPS these are
-writable as well to allow for control.
+Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+---
+ drivers/power/supply/power_supply_sysfs.c | 2 +-
+ include/linux/power_supply.h              | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-It should be noted that the keepalive for PPS is not handled within TCPM. The
-expectation is that the external user will be required to ensure re-requests
-occur regularly to ensure PPS remains and the source does not hard reset.
-
-So with all of that covered, please feel free to rip this apart as you see fit.
-
-Note: Code changes are based on linux-next tag 'next-20171017' to pick up
-the move out of staging of TCPM related code.
-
-Adam Thomson (7):
-  typec: tcpm: Add PD Rev 3.0 definitions to PD header
-  typec: tcpm: Add ADO header for Alert message handling
-  typec: tcpm: Add SDB header for Status message handling
-  typec: tcpm: Add core support for sink side PPS
-  power: supply: Add type for USB PD PPS chargers
-  typec: tcpm: Represent source supply through power_supply class
-  typec: tcpm: Add support for sink PPS related messages
-
- drivers/power/supply/power_supply_sysfs.c |   2 +-
- drivers/usb/typec/Kconfig                 |   1 +
- drivers/usb/typec/fusb302/Kconfig         |   2 +-
- drivers/usb/typec/fusb302/fusb302.c       |  63 +--
- drivers/usb/typec/tcpm.c                  | 816 +++++++++++++++++++++++++++++-
- include/linux/power_supply.h              |   1 +
- include/linux/usb/pd.h                    | 162 +++++-
- include/linux/usb/pd_ado.h                |  49 ++
- include/linux/usb/pd_ext_sdb.h            |  40 ++
- include/linux/usb/tcpm.h                  |   2 +-
- 10 files changed, 1041 insertions(+), 97 deletions(-)
- create mode 100644 include/linux/usb/pd_ado.h
- create mode 100644 include/linux/usb/pd_ext_sdb.h
-
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 5204f11..efd2469 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -43,7 +43,7 @@
+ static const char * const power_supply_type_text[] = {
+ 	"Unknown", "Battery", "UPS", "Mains", "USB",
+ 	"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
+-	"USB_PD", "USB_PD_DRP", "BrickID"
++	"USB_PD", "USB_PD_DRP", "USB_PD_PPS", "BrickID"
+ };
+ 
+ static const char * const power_supply_status_text[] = {
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 79e90b3..3a79c75 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -167,6 +167,7 @@ enum power_supply_type {
+ 	POWER_SUPPLY_TYPE_USB_TYPE_C,		/* Type C Port */
+ 	POWER_SUPPLY_TYPE_USB_PD,		/* Power Delivery Port */
+ 	POWER_SUPPLY_TYPE_USB_PD_DRP,		/* PD Dual Role Port */
++	POWER_SUPPLY_TYPE_USB_PD_PPS,		/* PD Programmable Power Supply */
+ 	POWER_SUPPLY_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
+ };
+ 
 -- 
 1.9.1
