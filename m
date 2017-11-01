@@ -1,48 +1,55 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 2/3] thermal: int340x: processor_thermal: Add Coffee
- Lake support
-Date: Wed, 01 Nov 2017 11:33:35 +0800
-Message-ID: <1509507215.3080.82.camel@intel.com>
-References: <1508449894-58797-1-git-send-email-srinivas.pandruvada@linux.intel.com>
-         <1508449894-58797-3-git-send-email-srinivas.pandruvada@linux.intel.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 09/12] PM / mfd: intel-lpss: Use DPM_FLAG_SMART_SUSPEND
+Date: Wed, 1 Nov 2017 09:28:19 +0000
+Message-ID: <20171101092819.thhofiwwjxblef4a@dell>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan>
+ <5094729.JAaD38WncM@aspire.rjw.lan>
+ <20171031150933.oho2ffvuj3iagx4m@dell>
+ <CAJZ5v0ipSJv0PWPrD3P-yeyD0JWe6EqSJSuZXgjtnFTrMEvpfQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:43495 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751958AbdKADc5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 31 Oct 2017 23:32:57 -0400
-In-Reply-To: <1508449894-58797-3-git-send-email-srinivas.pandruvada@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-doc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0ipSJv0PWPrD3P-yeyD0JWe6EqSJSuZXgjtnFTrMEvpfQ@mail.gmail.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 2017-10-19 at 14:51 -0700, Srinivas Pandruvada wrote:
-> Add new PCI id for Coffee lake processor thermal device.
-> 
-> Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.c
-> om>
-> ---
->  drivers/thermal/int340x_thermal/processor_thermal_device.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git
-> a/drivers/thermal/int340x_thermal/processor_thermal_device.c
-> b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-> index e724a23..1d9f524 100644
-> --- a/drivers/thermal/int340x_thermal/processor_thermal_device.c
-> +++ b/drivers/thermal/int340x_thermal/processor_thermal_device.c
-> @@ -32,6 +32,7 @@
->  
->  /* CannonLake thermal reporting device */
->  #define PCI_DEVICE_ID_PROC_CNL_THERMAL	0x5a03
-> +#define PCI_DEVICE_ID_PROC_CFL_THERMAL	0x3E83
->  
-shouldn't it be added into proc_thermal_pci_ids[]?
+On Tue, 31 Oct 2017, Rafael J. Wysocki wrote:
 
-thanks,
-rui
->  /* Braswell thermal reporting device */
->  #define PCI_DEVICE_ID_PROC_BSW_THERMAL	0x22DC
+> On Tue, Oct 31, 2017 at 4:09 PM, Lee Jones <lee.jones@linaro.org> wrote:
+> > On Mon, 16 Oct 2017, Rafael J. Wysocki wrote:
+> >
+> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >>
+> >> Make the intel-lpss driver set DPM_FLAG_SMART_SUSPEND for its
+> >> devices which will allow them to stay in runtime suspend during
+> >> system suspend unless they need to be reconfigured for some reason.
+> >>
+> >> Also make it avoid resuming its child devices if they have
+> >> DPM_FLAG_SMART_SUSPEND set to allow them to remain in runtime
+> >> suspend during system suspend.
+> >>
+> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> ---
+> >>  drivers/mfd/intel-lpss.c |    6 +++++-
+> >>  1 file changed, 5 insertions(+), 1 deletion(-)
+> >
+> > Is this patch independent?
+> 
+> It depends on the flag definition at least, but functionally it also
+> depends on the PCI support for the flag.
+
+No problem.  Which tree to you propose this goes through?
+
+> > For my own reference:
+> >   Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+
+
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
