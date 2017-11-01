@@ -1,62 +1,53 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [RFC PATCH 3/7] typec: tcpm: Add SDB header for Status message
- handling
-Date: Wed, 1 Nov 2017 18:20:42 +0100
-Message-ID: <20171101172042.GB14585@kroah.com>
-References: <cover.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
- <4199ae7655886b8ba7a436d3a9938220d2e14f0b.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
+From: Markus Mayer <markus.mayer@broadcom.com>
+Subject: Re: 4.14.0-rc7: cpufreq interface in sysfs removed ?
+Date: Wed, 1 Nov 2017 10:49:49 -0700
+Message-ID: <CAGt4E5tdttASaxx5Nuc8_6Pm9=Mkdp95-uWB9rAoH8YZoHA=-Q@mail.gmail.com>
+References: <CADDKRnDjXzSU=toFVH6pYOS9co4rp-hQ8rv6U9zBnChj_bLAvQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <4199ae7655886b8ba7a436d3a9938220d2e14f0b.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f54.google.com ([74.125.82.54]:54833 "EHLO
+        mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751324AbdKARtu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2017 13:49:50 -0400
+Received: by mail-wm0-f54.google.com with SMTP id r68so6409174wmr.3
+        for <linux-pm@vger.kernel.org>; Wed, 01 Nov 2017 10:49:50 -0700 (PDT)
+In-Reply-To: <CADDKRnDjXzSU=toFVH6pYOS9co4rp-hQ8rv6U9zBnChj_bLAvQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
 
-On Wed, Nov 01, 2017 at 05:03:11PM +0000, Adam Thomson wrote:
-> This commit adds a header providing definitions for handling
-> Status messages. Currently the header only focuses on handling
-> incoming Status messages.
-> 
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> ---
->  include/linux/usb/pd_ext_sdb.h | 40 ++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 40 insertions(+)
->  create mode 100644 include/linux/usb/pd_ext_sdb.h
-> 
-> diff --git a/include/linux/usb/pd_ext_sdb.h b/include/linux/usb/pd_ext_sdb.h
-> new file mode 100644
-> index 0000000..6d6da31
-> --- /dev/null
-> +++ b/include/linux/usb/pd_ext_sdb.h
-> @@ -0,0 +1,40 @@
-> +/*
-> + * Copyright (c) 2017 Dialog Semiconductor
-> + *
-> + * Author: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License as published by
-> + * the Free Software Foundation; either version 2 of the License, or
-> + * (at your option) any later version.
+On 1 November 2017 at 10:06, J=C3=B6rg Otte <jrg.otte@gmail.com> wrote:
+> In 4.14.0-rc7-00009-g287683d cpufreq directory under
+> /sys/devices/system/cpu/cpufreq
+> is empty. Also link /sys/devices/system/cpu/cpu0/cpufreq is missing.
 
-Same license question here.
+It is looking fine on my system.
 
+# dmesg | grep cpufreq
+<6>[    1.313374] brcmstb-avs-cpufreq f04c4000.avs-cpu-data-mem: registered
 
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#ifndef __LINUX_USB_PD_EXT_SDB_H
-> +#define __LINUX_USB_PD_EXT_SDB_H
+# find /sys -name \*cpufreq\*
+/sys/devices/system/cpu/cpu3/cpufreq
+/sys/devices/system/cpu/cpu1/cpufreq
+/sys/devices/system/cpu/cpufreq
+/sys/devices/system/cpu/cpu2/cpufreq
+/sys/devices/system/cpu/cpu0/cpufreq
+/sys/bus/platform/drivers/cpufreq-dt
+/sys/bus/platform/drivers/brcmstb-avs-cpufreq
+/sys/module/cpufreq
 
-No need for __LINUX_ right?
+# uname -a
+Linux (none) 4.14.0-rc7 #1 SMP Wed Nov 1 10:34:11 PDT 2017 armv7l GNU/Linux
 
-thanks,
+> Is this change intentional?
 
-greg k-h
+This sounds more like your cpufreq driver didn't load. It is probably
+worth investigating in that direction.
+
+Also, you didn't mention anything about your hardware or your configuration=
+.
+
+> J=C3=B6rg
