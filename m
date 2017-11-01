@@ -1,48 +1,89 @@
-From: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [RFC V7 2/2] OPP: Allow "opp-hz" and "opp-microvolt" to contain
- magic values
-Date: Wed, 1 Nov 2017 14:43:33 -0700
-Message-ID: <20171101214333.GG30645@codeaurora.org>
-References: <cover.1509453284.git.viresh.kumar@linaro.org>
- <23ba51eaa6b52117458165dccc00a95cf8e86e1d.1509453284.git.viresh.kumar@linaro.org>
- <CAL_JsqKr7MsM6iZ_QYO=iCzXNwANEGQGDLFUEwe0Z-p2Z_aMYw@mail.gmail.com>
- <CAKohpokvQD4Z6YY6MRG8c+hnsS=Z52X4XhyTgC5FTgf7VuaNmw@mail.gmail.com>
- <CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v2] cpupower: Fix no-rounding MHz frequency output
+Date: Wed, 1 Nov 2017 22:46:23 +0100
+Message-ID: <CAJZ5v0j6hC=eUnNKFO3dgTBd572AOngtnetGNjjm1kXWjeCrOg@mail.gmail.com>
+References: <20171025135132.16324-1-prarit@redhat.com> <54215387-96b8-07d3-0b0e-4df4a0b0dca6@kernel.org>
+ <CAJZ5v0hKmVeAbPtr06_JCDMd1U5TXxs+VW-7jYUnAwseXaiX7A@mail.gmail.com> <5a15dfc3-9dca-92a3-063c-b9a653ccbf0b@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:50779 "EHLO
+        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934301AbdKAVqY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2017 17:46:24 -0400
+Received: by mail-oi0-f68.google.com with SMTP id q4so6639863oic.7
+        for <linux-pm@vger.kernel.org>; Wed, 01 Nov 2017 14:46:23 -0700 (PDT)
+In-Reply-To: <5a15dfc3-9dca-92a3-063c-b9a653ccbf0b@osg.samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shuah Khan <shuahkh@osg.samsung.com>, Prarit Bhargava <prarit@redhat.com>, Stafford Horne <shorne@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Shuah Khan <shuah@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.com>
 
-On 11/01, Rob Herring wrote:
-> On Tue, Oct 31, 2017 at 9:17 PM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> > On 31 October 2017 at 16:02, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> >> Why not a new property for magic values? opp-magic? Don't we want to
-> >> know when we have magic values?
-> >
-> > I have kept a separate property since beginning (domain-performance-state)
-> > and moved to using these magic values in the existing field because of the
-> > suggestion Kevin gave earlier.
-> >
-> > https://marc.info/?l=linux-kernel&m=149306082218001&w=2
-> >
-> > I am not sure what to do now :)
-> 
-> Okay, I guess reusing the properties is fine.
-> 
+On Wed, Nov 1, 2017 at 10:38 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
+> On 11/01/2017 03:33 PM, Rafael J. Wysocki wrote:
+>> On Wed, Nov 1, 2017 at 10:00 PM, Shuah Khan <shuah@kernel.org> wrote:
+>>> On 10/25/2017 07:51 AM, Prarit Bhargava wrote:
+>>>> 'cpupower frequency-info -ln' returns kHz values on systems with MHz range
+>>>> minimum CPU frequency range.  For example, on a 800MHz to 4.20GHz system
+>>>> the command returns
+>>>>
+>>>> hardware limits: 800000 MHz - 4.200000 GHz
+>>>>
+>>>> The code that causes this error can be removed.  The next else if clause
+>>>> will handle the output correctly such that
+>>>>
+>>>> hardware limits: 800.000 MHz - 4.200000 GHz
+>>>>
+>>>> is displayed correctly.
+>>>>
+>>>> [v2]: Remove two lines instead of fixing broken code.
+>>>>
+>>>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>>>> Cc: Thomas Renninger <trenn@suse.com>
+>>>> Cc: Stafford Horne <shorne@gmail.com>
+>>>> Cc: Shuah Khan <shuah@kernel.org>
+>>>> ---
+>>>>  tools/power/cpupower/utils/cpufreq-info.c | 2 --
+>>>>  1 file changed, 2 deletions(-)
+>>>>
+>>>> diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+>>>> index 3e701f0e9c14..df43cd45d810 100644
+>>>> --- a/tools/power/cpupower/utils/cpufreq-info.c
+>>>> +++ b/tools/power/cpupower/utils/cpufreq-info.c
+>>>> @@ -93,8 +93,6 @@ static void print_speed(unsigned long speed)
+>>>>               if (speed > 1000000)
+>>>>                       printf("%u.%06u GHz", ((unsigned int) speed/1000000),
+>>>>                               ((unsigned int) speed%1000000));
+>>>> -             else if (speed > 100000)
+>>>> -                     printf("%u MHz", (unsigned int) speed);
+>>>>               else if (speed > 1000)
+>>>>                       printf("%u.%03u MHz", ((unsigned int) speed/1000),
+>>>>                               (unsigned int) (speed%1000));
+>>>>
+>>>
+>>> Thanks.  I will queue this up for 4.15-rc1.
+>>
+>> OK
+>>
+>> So are you going to maintain this utility going forward?
+>>
+>
+> oops. I was on auto-pilot responding to patches sitting in my Inbox.
+> Wrong email response. Sorry about that.
+>
+> Please ignore. Mu bad.
 
-We call them corners on qcom platforms. Any reason we can't keep
-using that name? I'd rather not have to keep telling people that
-these fake values in some misnamed property is actually a corner.
+OK :-)
 
--- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+But that said, from my perspective, cpupower is basically not maintained.
+
+Thomas, who sort of maintained it, but then basically became a patch
+reviewer for it, does not respond to patches any more and I am not
+sufficiently familiar with the code to be able to effectively review
+the patches myself, nor I have the time to get more familiar with it.
+
+For this reason, I'm inclined to drop this code from the kernel source
+tree unless somebody steps in to fill the gap.
+
+Thanks,
+Rafael
