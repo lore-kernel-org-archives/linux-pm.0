@@ -1,7 +1,7 @@
 From: Prarit Bhargava <prarit@redhat.com>
 Subject: Re: [PATCH v2] cpupower: Fix no-rounding MHz frequency output
-Date: Thu, 2 Nov 2017 15:43:11 -0400
-Message-ID: <e5ce4cc2-a67f-92d0-7ac5-d5ad4e04ea70@redhat.com>
+Date: Thu, 2 Nov 2017 16:05:01 -0400
+Message-ID: <109dccd9-5461-a1b2-b381-f738a187c3a6@redhat.com>
 References: <20171025135132.16324-1-prarit@redhat.com>
  <54215387-96b8-07d3-0b0e-4df4a0b0dca6@kernel.org>
  <CAJZ5v0hKmVeAbPtr06_JCDMd1U5TXxs+VW-7jYUnAwseXaiX7A@mail.gmail.com>
@@ -16,10 +16,10 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:51472 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:53442 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934065AbdKBTnN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 2 Nov 2017 15:43:13 -0400
+        id S964798AbdKBUFD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 2 Nov 2017 16:05:03 -0400
 In-Reply-To: <126a1373-cd76-3f1e-2f91-5b5ea8a664ec@osg.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
@@ -130,13 +130,13 @@ On 11/02/2017 02:59 PM, Shuah Khan wrote:
 > compilation terminated.
 > Makefile:221: recipe for target 'utils/helpers/amd.o' failed
 > make: *** [utils/helpers/amd.o] Error 1
-> 
 
-It does not build on latest due to some other unrelated change.  I'm looking at
-it now.
+This is strange.  I saw it, tried a git-bisect and now I can't reproduce it.
+I'll check out a new tree and see if I can make this reproduce.
 
 P.
 
+> 
 > thanks,
 > -- Shuah
 > 
