@@ -1,52 +1,83 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [RFC V7 2/2] OPP: Allow "opp-hz" and "opp-microvolt" to contain
- magic values
-Date: Thu, 2 Nov 2017 14:30:33 +0530
-Message-ID: <20171102090033.GZ4240@vireshk-i7>
-References: <cover.1509453284.git.viresh.kumar@linaro.org>
- <23ba51eaa6b52117458165dccc00a95cf8e86e1d.1509453284.git.viresh.kumar@linaro.org>
- <CAL_JsqKr7MsM6iZ_QYO=iCzXNwANEGQGDLFUEwe0Z-p2Z_aMYw@mail.gmail.com>
- <CAKohpokvQD4Z6YY6MRG8c+hnsS=Z52X4XhyTgC5FTgf7VuaNmw@mail.gmail.com>
- <CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ@mail.gmail.com>
- <20171101214333.GG30645@codeaurora.org>
- <20171102045155.GX4240@vireshk-i7>
- <20171102071533.GM30645@codeaurora.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2 0/5] PM / Domains: Remove gpd_dev_ops.active_wakeup() callback
+Date: Thu, 2 Nov 2017 10:14:37 +0100
+Message-ID: <CAMuHMdXiZvKj8eJw1p=x3EQbKoJc_Q2R+D8YKvBgOO8VY=qr2Q@mail.gmail.com>
+References: <1509473494-19740-1-git-send-email-geert+renesas@glider.be> <CAPDyKFoVnWKSGncWD6fxNLgbpuz-weJhqjgptEset2S8F2A6AA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f44.google.com ([74.125.83.44]:46227 "EHLO
-        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755274AbdKBJAi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2017 05:00:38 -0400
-Received: by mail-pg0-f44.google.com with SMTP id k7so4503677pga.3
-        for <linux-pm@vger.kernel.org>; Thu, 02 Nov 2017 02:00:38 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <20171102071533.GM30645@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFoVnWKSGncWD6fxNLgbpuz-weJhqjgptEset2S8F2A6AA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Heiko Stuebner <heiko@sntech.de>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-mediatek@lists.infradead.org, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Rafael Wysocki <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 02-11-17, 00:15, Stephen Boyd wrote:
-> Sorry I'm not following. We're going to need to have platform
-> specific code that understands platform specific bindings that
-> aren't shoved into the generic OPP bindings.
+Hi Ulf,
 
-At least I am not targeting any platform specific binding right now.
-The way I see this to work is:
+On Wed, Nov 1, 2017 at 11:10 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 31 October 2017 at 19:11, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+>> It is quite common for PM Domains to require slave devices to be kept
+>> active during system suspend if they are to be used as wakeup sources.
+>> To enable this, currently each PM Domain or driver has to provide its
+>> own gpd_dev_ops.active_wakeup() callback.
+>>
+>> All existing callbacks either return always true, or a fixed value
+>> depending on the PM Domain.
+>>
+>> Hence this patch series simplifies active wakeup handling by replacing
+>> the callback by a flag:
+>>   - Patch 1 adds a new new flag GENPD_FLAG_ACTIVE_WAKEUP, to be set by
+>>     PM Domain drivers that want to use the new handling,
+>>   - Patches 2-4 convert all existing users of the callback to the new
+>>     flag,
+>>   - Patch 5 removes the callback.
+>>
+>> This series was extracted from "[PATCH 00/10] PM / Domain: renesas: Fix
+>> active wakeup behavior", and retains only PM Domain changes to existing
+>> drivers.
+>> Changes compared to v1 (most suggested by Ulf):
+>>   - Use the flag in se instead of setting up an "always true" callback,
+>>   - Convert the mediatek and rockchip PM Domain drivers,
+>>   - Remove the callback.
+>>
+>> If this idea is accepted, I think it would be good to still queue the first
+>> patch for v4.15.  That would allow the changes to the PM Domain drivers
+>> to go in through the respective platform trees in v4.16.
+>> Then the final patch has to be postponed until v4.17.
+>> Alternatively, everything can go in through the PM tree in one shot.
+>
+> For the series:
+>
+> Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-- We will reuse earlier bindings and allow opp-hz and opp-microvolt to
-  contain special values (this patch).
-- Platform specific DT entries will put corner numbers in opp-hz (or
-  opp-microvolt) fields.
-- Some platform specific driver (in OPP or genpd) will be used to
-  convert OPP into a performance state (corner) value. Now that can
-  simply read opp-hz (or opp-microvolt) and return its value.
-- OPP core will request for a performance state (code is already
-  merged for that).
+Thanks!
 
-And so there is no platform specific binding here. Do you want to do
-this differently ?
+> It's easier if everything goes via Rafael's PM tree. Moreover, this
+> series is to me rather trivial, so I would actually recommend to pick
+> it all for 4.15. Mainly because, moving too slowly forward, allows new
+> users to show up of the callback you remove in patch5.
 
--- 
-viresh
+Obviously, that's fine for me.
+Guess I've just became a bit too cautious with treewide changes ;-)
+
+>>   [RFC] ARM: shmobile: pm-rmobile: Use GENPD_FLAG_ACTIVE_WAKEUP
+
+We already have an ack from Simon...
+
+>>   [RFC] soc: mediatek: Use GENPD_FLAG_ACTIVE_WAKEUP
+>>   [RFC] soc: rockchip: power-domain: Use GENPD_FLAG_ACTIVE_WAKEUP
+
+... we still need one for mediatek and rockchip?
+
+Thanks!
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
