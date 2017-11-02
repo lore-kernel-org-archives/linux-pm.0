@@ -1,114 +1,52 @@
-From: =?UTF-8?Q?J=C3=B6rg_Otte?= <jrg.otte@gmail.com>
-Subject: Re: 4.14.0-rc7: cpufreq interface in sysfs removed ?
-Date: Thu, 2 Nov 2017 09:37:41 +0100
-Message-ID: <CADDKRnAONVofxdoYBOmbuV7gVXwgM8YBTrtG_zX0A_OKvR+hzw@mail.gmail.com>
-References: <CADDKRnDjXzSU=toFVH6pYOS9co4rp-hQ8rv6U9zBnChj_bLAvQ@mail.gmail.com>
- <CAJZ5v0gJa0-YRHVhKWE5GeY1D7W0FSPjxSx8UHqCK=wTir3PEw@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC V7 2/2] OPP: Allow "opp-hz" and "opp-microvolt" to contain
+ magic values
+Date: Thu, 2 Nov 2017 14:30:33 +0530
+Message-ID: <20171102090033.GZ4240@vireshk-i7>
+References: <cover.1509453284.git.viresh.kumar@linaro.org>
+ <23ba51eaa6b52117458165dccc00a95cf8e86e1d.1509453284.git.viresh.kumar@linaro.org>
+ <CAL_JsqKr7MsM6iZ_QYO=iCzXNwANEGQGDLFUEwe0Z-p2Z_aMYw@mail.gmail.com>
+ <CAKohpokvQD4Z6YY6MRG8c+hnsS=Z52X4XhyTgC5FTgf7VuaNmw@mail.gmail.com>
+ <CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ@mail.gmail.com>
+ <20171101214333.GG30645@codeaurora.org>
+ <20171102045155.GX4240@vireshk-i7>
+ <20171102071533.GM30645@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f172.google.com ([209.85.223.172]:46584 "EHLO
-        mail-io0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750836AbdKBIhm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2017 04:37:42 -0400
-In-Reply-To: <CAJZ5v0gJa0-YRHVhKWE5GeY1D7W0FSPjxSx8UHqCK=wTir3PEw@mail.gmail.com>
+Received: from mail-pg0-f44.google.com ([74.125.83.44]:46227 "EHLO
+        mail-pg0-f44.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755274AbdKBJAi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2017 05:00:38 -0400
+Received: by mail-pg0-f44.google.com with SMTP id k7so4503677pga.3
+        for <linux-pm@vger.kernel.org>; Thu, 02 Nov 2017 02:00:38 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20171102071533.GM30645@codeaurora.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Rafael Wysocki <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-2017-11-01 21:24 GMT+01:00 Rafael J. Wysocki <rafael@kernel.org>:
-> On Wed, Nov 1, 2017 at 6:06 PM, J=C3=B6rg Otte <jrg.otte@gmail.com> wrote=
-:
->> In 4.14.0-rc7-00009-g287683d cpufreq directory under
->> /sys/devices/system/cpu/cpufreq
->> is empty. Also link /sys/devices/system/cpu/cpu0/cpufreq is missing.
->>
->> Is this change intentional?
->
-> Sure not.
->
-> What's the last good kernel you tested before this one?
-Unfortunately I had a disk crash and I was offline in last weeks.
-This is the first kernel with everything new installed on new disk.
-So I don't remember exactly last good kernel. For sure it was  4.14.0-rc1.
+On 02-11-17, 00:15, Stephen Boyd wrote:
+> Sorry I'm not following. We're going to need to have platform
+> specific code that understands platform specific bindings that
+> aren't shoved into the generic OPP bindings.
 
-Maybe I made a mistake with the kernel configuration ?
+At least I am not targeting any platform specific binding right now.
+The way I see this to work is:
 
-#
-# CPU Frequency scaling
-#
-CONFIG_CPU_FREQ=3Dy
-CONFIG_CPU_FREQ_GOV_ATTR_SET=3Dy
-CONFIG_CPU_FREQ_GOV_COMMON=3Dy
-CONFIG_CPU_FREQ_STAT=3Dy
-CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE=3Dy
-# CONFIG_CPU_FREQ_DEFAULT_GOV_POWERSAVE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE is not set
-# CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL is not set
-CONFIG_CPU_FREQ_GOV_PERFORMANCE=3Dy
-CONFIG_CPU_FREQ_GOV_POWERSAVE=3Dy
-# CONFIG_CPU_FREQ_GOV_USERSPACE is not set
-CONFIG_CPU_FREQ_GOV_ONDEMAND=3Dy
-CONFIG_CPU_FREQ_GOV_CONSERVATIVE=3Dy
-CONFIG_CPU_FREQ_GOV_SCHEDUTIL=3Dy
+- We will reuse earlier bindings and allow opp-hz and opp-microvolt to
+  contain special values (this patch).
+- Platform specific DT entries will put corner numbers in opp-hz (or
+  opp-microvolt) fields.
+- Some platform specific driver (in OPP or genpd) will be used to
+  convert OPP into a performance state (corner) value. Now that can
+  simply read opp-hz (or opp-microvolt) and return its value.
+- OPP core will request for a performance state (code is already
+  merged for that).
 
-#
-# CPU frequency scaling drivers
-#
-CONFIG_X86_INTEL_PSTATE=3Dy
-# CONFIG_X86_PCC_CPUFREQ is not set
-# CONFIG_X86_ACPI_CPUFREQ is not set
-# CONFIG_X86_SPEEDSTEP_CENTRINO is not set
-# CONFIG_X86_P4_CLOCKMOD is not set
+And so there is no platform specific binding here. Do you want to do
+this differently ?
 
-
-Just discovered:
-If intel_pstate is active everythin looks fine.
-If intel_pstate is disabled (intel_pstate=3Ddisable) the directories are
-empty again.
-
-Processor are:
-jojo@fichte:~$ cat /proc/cpuinfo
-processor       : 0 .. 3
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 60
-model name      : Intel(R) Core(TM) i5-4200M CPU @ 2.50GHz
-stepping        : 3
-microcode       : 0x22
-cpu MHz         : 2494.433
-cache size      : 3072 KB
-physical id     : 0
-siblings        : 4
-core id         : 0
-cpu cores       : 2
-apicid          : 0
-initial apicid  : 0
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 13
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr
-sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc
-arch_perfmon pebs bts rep_good nopl xtopology nons
-top_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx est
-tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1
-sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand
-lahf_lm abm cpuid_fault epb tpr_shadow vnmi flexpr
-iority ept vpid fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid
-xsaveopt dtherm ida arat pln pts
-bugs            :
-bogomips        : 4988.86
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 39 bits physical, 48 bits virtual
-power management:
-
-
-Thanks,
-J=C3=B6rg
+-- 
+viresh
