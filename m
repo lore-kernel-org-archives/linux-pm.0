@@ -1,89 +1,77 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: schedutil: Examine the correct CPU when we
- update util
-Date: Thu, 2 Nov 2017 16:40:23 +0530
-Message-ID: <20171102111022.GB4240@vireshk-i7>
-References: <20171102105438.14258-1-chris.redpath@arm.com>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH v2 3/5] [RFC] soc: mediatek: Use GENPD_FLAG_ACTIVE_WAKEUP
+Date: Thu, 2 Nov 2017 12:32:10 +0100
+Message-ID: <81cf254c-66b9-a139-0344-81c5cb560f88@gmail.com>
+References: <1509473494-19740-1-git-send-email-geert+renesas@glider.be>
+ <1509473494-19740-4-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171102105438.14258-1-chris.redpath@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Chris Redpath <chris.redpath@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "4 . 9+" <stable@vger.kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f66.google.com ([74.125.82.66]:53407 "EHLO
+        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750722AbdKBLcQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2017 07:32:16 -0400
+In-Reply-To: <1509473494-19740-4-git-send-email-geert+renesas@glider.be>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>
+Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 02-11-17, 10:54, Chris Redpath wrote:
-> Since:
+
+
+On 10/31/2017 07:11 PM, Geert Uytterhoeven wrote:
+> Set the newly introduced GENPD_FLAG_ACTIVE_WAKEUP, which allows to
+> remove the driver's own flag-based callback.
 > 
-> 4296f23ed cpufreq: schedutil: Fix per-CPU structure initialization in
->  sugov_start()
-
-Good catch but you pointed out to the wrong commit really.
-
-674e75411fc2 ("sched: cpufreq: Allow remote cpufreq callbacks"
-
-is the real culprit as that's where the 'cpu' field is added.
-
-> We lost the value of sg_cpu->cpu which is assigned during
-> sugov_register. The memset in sugov_start overwrites it with zero.
-> 
-> This leads to always looking at the utilization of CPU0 instead of
-> the one we just updated when we do a utilization update callback.
-> 
-> Let's fix this by consolidating the initialization code into
-> sugov_start().
-> 
-> Fixes: 4296f23ed49a ("cpufreq: schedutil: Fix per-CPU structure initialization in sugov_start()")
-
-Fixes: 674e75411fc2 ("sched: cpufreq: Allow remote cpufreq callbacks")
-
-> Signed-off-by: Chris Redpath <chris.redpath@arm.com>
-> Reviewed-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Reviewed-by: Brendan Jackman <brendan.jackman@arm.com>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: 4.9+ <stable@vger.kernel.org>
-
-This wouldn't be required now as it got merged in 4.14 only and Rafael
-should be able to get that as part of 4.14 itself.
-
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 > ---
->  kernel/sched/cpufreq_schedutil.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
+> This must not be applied before "PM / Domain: Enable genpd users to
+> specify default active wakeup behavior" has landed upstream, hence the
+> "RFC".
 > 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 6c1a7fcfa2a7..eeb7e0a1d861 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -731,6 +731,7 @@ static int sugov_start(struct cpufreq_policy *policy)
->  		sg_cpu->sg_policy = sg_policy;
->  		sg_cpu->flags = SCHED_CPUFREQ_RT;
->  		sg_cpu->iowait_boost_max = policy->cpuinfo.max_freq;
-> +		sg_cpu->cpu = cpu;
+> Compile-tested only.
+> 
+> v2:
+>   - New.
+> ---
+>  drivers/soc/mediatek/mtk-scpsys.c | 14 ++------------
+>  1 file changed, 2 insertions(+), 12 deletions(-)
+> 
 
-Maybe just move this below memset.
+Acked-by: Matthias Brugger <matthias.bgg@gmail.com>
 
+> diff --git a/drivers/soc/mediatek/mtk-scpsys.c b/drivers/soc/mediatek/mtk-scpsys.c
+> index e1ce8b1b5090aa0a..e570b6af2e6ffbdd 100644
+> --- a/drivers/soc/mediatek/mtk-scpsys.c
+> +++ b/drivers/soc/mediatek/mtk-scpsys.c
+> @@ -361,17 +361,6 @@ static int scpsys_power_off(struct generic_pm_domain *genpd)
+>  	return ret;
+>  }
+>  
+> -static bool scpsys_active_wakeup(struct device *dev)
+> -{
+> -	struct generic_pm_domain *genpd;
+> -	struct scp_domain *scpd;
+> -
+> -	genpd = pd_to_genpd(dev->pm_domain);
+> -	scpd = container_of(genpd, struct scp_domain, genpd);
+> -
+> -	return scpd->data->active_wakeup;
+> -}
+> -
+>  static void init_clks(struct platform_device *pdev, struct clk **clk)
+>  {
+>  	int i;
+> @@ -466,7 +455,8 @@ static struct scp *init_scp(struct platform_device *pdev,
+>  		genpd->name = data->name;
+>  		genpd->power_off = scpsys_power_off;
+>  		genpd->power_on = scpsys_power_on;
+> -		genpd->dev_ops.active_wakeup = scpsys_active_wakeup;
+> +		if (scpd->data->active_wakeup)
+> +			genpd->flags |= GENPD_FLAG_ACTIVE_WAKEUP;
 >  	}
 >  
->  	for_each_cpu(cpu, policy->cpus) {
-> @@ -793,11 +794,6 @@ struct cpufreq_governor *cpufreq_default_governor(void)
->  
->  static int __init sugov_register(void)
->  {
-> -	int cpu;
-> -
-> -	for_each_possible_cpu(cpu)
-> -		per_cpu(sugov_cpu, cpu).cpu = cpu;
-> -
->  	return cpufreq_register_governor(&schedutil_gov);
->  }
->  fs_initcall(sugov_register);
-
-Diff looks fine though.
-
--- 
-viresh
+>  	return scp;
+> 
