@@ -1,136 +1,132 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [RFC PATCH 2/7] typec: tcpm: Add ADO header for Alert message
- handling
-Date: Thu, 2 Nov 2017 18:41:41 +0100
-Message-ID: <20171102174141.GA27444@kroah.com>
-References: <cover.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
- <fed055cbecd4666d5a49a19c6a48958720045b40.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
- <20171101172007.GA14585@kroah.com>
- <2E89032DDAA8B9408CB92943514A0337014C1AACB5@SW-EX-MBX01.diasemi.com>
- <20171102164915.GA18566@kroah.com>
- <2E89032DDAA8B9408CB92943514A0337014C1AB290@SW-EX-MBX01.diasemi.com>
+From: Shuah Khan <shuahkh@osg.samsung.com>
+Subject: Re: [PATCH v2] cpupower: Fix no-rounding MHz frequency output
+Date: Thu, 2 Nov 2017 12:59:44 -0600
+Message-ID: <126a1373-cd76-3f1e-2f91-5b5ea8a664ec@osg.samsung.com>
+References: <20171025135132.16324-1-prarit@redhat.com>
+ <54215387-96b8-07d3-0b0e-4df4a0b0dca6@kernel.org>
+ <CAJZ5v0hKmVeAbPtr06_JCDMd1U5TXxs+VW-7jYUnAwseXaiX7A@mail.gmail.com>
+ <5a15dfc3-9dca-92a3-063c-b9a653ccbf0b@osg.samsung.com>
+ <CAJZ5v0j6hC=eUnNKFO3dgTBd572AOngtnetGNjjm1kXWjeCrOg@mail.gmail.com>
+ <a6f19fbd-3bc8-f8a1-4515-1a1bcecddce7@osg.samsung.com>
+ <CAJZ5v0gkFYyJPewqHrCFQsfVHyqzn=H_mbUtqNEmDmPDpVGuVA@mail.gmail.com>
+ <0023af85-a643-edaf-f6d4-fba1c3756e6e@osg.samsung.com>
+ <cc10ec84-e016-3f1b-163f-21cea09f7173@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <2E89032DDAA8B9408CB92943514A0337014C1AB290@SW-EX-MBX01.diasemi.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from osg.samsung.com ([64.30.133.232]:59278 "EHLO osg.samsung.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932571AbdKBS7r (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 2 Nov 2017 14:59:47 -0400
+In-Reply-To: <cc10ec84-e016-3f1b-163f-21cea09f7173@redhat.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Stafford Horne <shorne@gmail.com>, Shuah Khan <shuah@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.com>, Shuah Khan <shuahkh@osg.samsung.com>
 
-On Thu, Nov 02, 2017 at 05:34:22PM +0000, Adam Thomson wrote:
-> On 02 November 2017 16:49, Greg Kroah-Hartman wrote:
+On 11/01/2017 06:42 PM, Prarit Bhargava wrote:
 > 
-> > On Thu, Nov 02, 2017 at 11:40:12AM +0000, Adam Thomson wrote:
-> > > On 01 November 2017 17:20, Greg Kroah-Hartman wrote:
-> > >
-> > > > On Wed, Nov 01, 2017 at 05:03:10PM +0000, Adam Thomson wrote:
-> > > > > This commit adds a header providing definitions for handling Alert
-> > > > > messages. Currently the header only focuses on handling incoming
-> > > > > alerts.
-> > > > >
-> > > > > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > > > > ---
-> > > > >  include/linux/usb/pd_ado.h | 49
-> > > > ++++++++++++++++++++++++++++++++++++++++++++++
-> > > > >  1 file changed, 49 insertions(+)
-> > > > >  create mode 100644 include/linux/usb/pd_ado.h
-> > > > >
-> > > > > diff --git a/include/linux/usb/pd_ado.h b/include/linux/usb/pd_ado.h
-> > > > > new file mode 100644
-> > > > > index 0000000..edcbcfa
-> > > > > --- /dev/null
-> > > > > +++ b/include/linux/usb/pd_ado.h
-> > > > > @@ -0,0 +1,49 @@
-> > > > > +/*
-> > > > > + * Copyright (c) 2017 Dialog Semiconductor
-> > > > > + *
-> > > > > + * Author: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-> > > > > + *
-> > > > > + * This program is free software; you can redistribute it and/or modify
-> > > > > + * it under the terms of the GNU General Public License as published by
-> > > > > + * the Free Software Foundation; either version 2 of the License, or
-> > > > > + * (at your option) any later version.
-> > > >
-> > > > I have to ask, do you _really_ mean "any later version"?
-> > >
-> > > Many thanks for the prompt comments.
-> > >
-> > > So this is the same copyright header applied for the other PD related code
-> > > (bit of a copy and paste to follow existing tcpm practice), and have tended to
-> > > use this header for other driver development as well. Within the context of the
-> > > Linux kernel I believe this should be fine and will resolve to GPLv2, and should
-> > > someone use the code elsewhere then they can choose a later GPL license, not
-> > > that I suspect many would. Do you see any problems here as am happy to be
-> > > corrected? :)
-> >
-> > Please consult your lawyers as to what license you should use for new
-> > kernel code.  Never just blindly copy/paste without knowing what you are
-> > supposed to be doing :)
 > 
-> Yes, our legal department are aware of the use of this header, from previous
-> driver submissions, and have no problems. I certainly wouldn't have applied this
-> otherwise, but completely understand why you raised this :)
+> On 11/01/2017 06:30 PM, Shuah Khan wrote:
+>> On 11/01/2017 04:07 PM, Rafael J. Wysocki wrote:
+>>> On Wed, Nov 1, 2017 at 10:49 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
+>>>> On 11/01/2017 03:46 PM, Rafael J. Wysocki wrote:
+>>>>> On Wed, Nov 1, 2017 at 10:38 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
+>>>>>> On 11/01/2017 03:33 PM, Rafael J. Wysocki wrote:
+>>>>>>> On Wed, Nov 1, 2017 at 10:00 PM, Shuah Khan <shuah@kernel.org> wrote:
+>>>>>>>> On 10/25/2017 07:51 AM, Prarit Bhargava wrote:
+>>>>>>>>> 'cpupower frequency-info -ln' returns kHz values on systems with MHz range
+>>>>>>>>> minimum CPU frequency range.  For example, on a 800MHz to 4.20GHz system
+>>>>>>>>> the command returns
+>>>>>>>>>
+>>>>>>>>> hardware limits: 800000 MHz - 4.200000 GHz
+>>>>>>>>>
+>>>>>>>>> The code that causes this error can be removed.  The next else if clause
+>>>>>>>>> will handle the output correctly such that
+>>>>>>>>>
+>>>>>>>>> hardware limits: 800.000 MHz - 4.200000 GHz
+>>>>>>>>>
+>>>>>>>>> is displayed correctly.
+>>>>>>>>>
+>>>>>>>>> [v2]: Remove two lines instead of fixing broken code.
+>>>>>>>>>
+>>>>>>>>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>>>>>>>>> Cc: Thomas Renninger <trenn@suse.com>
+>>>>>>>>> Cc: Stafford Horne <shorne@gmail.com>
+>>>>>>>>> Cc: Shuah Khan <shuah@kernel.org>
+>>>>>>>>> ---
+>>>>>>>>>  tools/power/cpupower/utils/cpufreq-info.c | 2 --
+>>>>>>>>>  1 file changed, 2 deletions(-)
+>>>>>>>>>
+>>>>>>>>> diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+>>>>>>>>> index 3e701f0e9c14..df43cd45d810 100644
+>>>>>>>>> --- a/tools/power/cpupower/utils/cpufreq-info.c
+>>>>>>>>> +++ b/tools/power/cpupower/utils/cpufreq-info.c
+>>>>>>>>> @@ -93,8 +93,6 @@ static void print_speed(unsigned long speed)
+>>>>>>>>>               if (speed > 1000000)
+>>>>>>>>>                       printf("%u.%06u GHz", ((unsigned int) speed/1000000),
+>>>>>>>>>                               ((unsigned int) speed%1000000));
+>>>>>>>>> -             else if (speed > 100000)
+>>>>>>>>> -                     printf("%u MHz", (unsigned int) speed);
+>>>>>>>>>               else if (speed > 1000)
+>>>>>>>>>                       printf("%u.%03u MHz", ((unsigned int) speed/1000),
+>>>>>>>>>                               (unsigned int) (speed%1000));
+>>>>>>>>>
+>>>>>>>>
+>>>>>>>> Thanks.  I will queue this up for 4.15-rc1.
+>>>>>>>
+>>>>>>> OK
+>>>>>>>
+>>>>>>> So are you going to maintain this utility going forward?
+>>>>>>>
+>>>>>>
+>>>>>> oops. I was on auto-pilot responding to patches sitting in my Inbox.
+>>>>>> Wrong email response. Sorry about that.
+>>>>>>
+>>>>>> Please ignore. Mu bad.
+>>>>>
+>>>>> OK :-)
+>>>>>
+>>>>> But that said, from my perspective, cpupower is basically not maintained.
+>>>>>
+>>>>> Thomas, who sort of maintained it, but then basically became a patch
+>>>>> reviewer for it, does not respond to patches any more and I am not
+>>>>> sufficiently familiar with the code to be able to effectively review
+>>>>> the patches myself, nor I have the time to get more familiar with it.
+>>>>>
+>>>>> For this reason, I'm inclined to drop this code from the kernel source
+>>>>> tree unless somebody steps in to fill the gap.
+>>>>>
+>>>>
+>>>> Please don't drop this from kernel sources.. I think this is useful. If you
+>>>> are looking for a maintainer, I will be happy to step up to maintain it.
+>>>
+>>> Cool, please do that then. :-)
+>>>
+>>> I will be happy to take pull requests with cpupower changes so that
+>>> they go in along with the other PM material.
+>>>
+>>
+>> Sounds like a plan. I can do that. I will work on getting git setup and
+>> send pull requests. We can get that going for 4.15 unless you think it is
+>> late for you to get pull requests.
+> 
+> Shuah, I have two other cleanup patches that should be applied to cpupower.  I
+> will post them shortly.
+> 
 
-Great, thanks for the info.
+Hi Prarit,
 
-> > > > > + *
-> > > > > + * This program is distributed in the hope that it will be useful,
-> > > > > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> > > > > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> > > > > + * GNU General Public License for more details.
-> > > > > + */
-> > > > > +
-> > > > > +#ifndef __LINUX_USB_PD_ADO_H
-> > > > > +#define __LINUX_USB_PD_ADO_H
-> > > > > +
-> > > > > +/* ADO : Alert Data Object */
-> > > > > +#define ADO_TYPE_SHIFT			24
-> > > > > +#define ADO_TYPE_MASK			0xff
-> > > > > +#define ADO_FIXED_BATT_SHIFT		20
-> > > > > +#define ADO_FIXED_BATT_MASK		0xf
-> > > > > +#define ADO_HOT_SWAP_BATT_SHIFT		16
-> > > > > +#define ADO_HOT_SWAP_BATT_MASK		0xf
-> > > >
-> > > > USB_ prefixes perhaps?
-> > >
-> > > Again here I was following the existing TCPM approach, but if it's a problem
-> > > then I can update this.
-> >
-> > What does TCPM use here?  I missed those defines...
-> 
-> For example, include/linux/usb/pd_bdo.h uses defines such as:
-> 
-> #define BDO_MODE_TRANSMIT	(1 << 28)
-> 
-> and include/linux/usb/pd.h has defines such as:
-> 
-> #define PDO_FIXED_DUAL_ROLE	BIT(29)
+Does this tool build for you? I am seeing:
 
-Hm, ok, I guess that's ok for a define, but for a function:
+utils/helpers/amd.c:7:21: fatal error: pci/pci.h: No such file or directory
+ #include <pci/pci.h>
+                     ^
+compilation terminated.
+Makefile:221: recipe for target 'utils/helpers/amd.o' failed
+make: *** [utils/helpers/amd.o] Error 1
 
-> > > > > +#define ADO_TYPE_BATT_STATUS_CHANGE	BIT(1)
-> > > > > +#define ADO_TYPE_OCP			BIT(2)
-> > > > > +#define ADO_TYPE_OTP			BIT(3)
-> > > > > +#define ADO_TYPE_OP_COND_CHANGE		BIT(4)
-> > > > > +#define ADO_TYPE_SRC_INPUT_CHANGE	BIT(5)
-> > > > > +#define ADO_TYPE_OVP			BIT(6)
-> > > > > +
-> > > > > +static inline unsigned int ado_type(u32 ado)
-> > > > > +{
-> > > > > +	return (ado >> ADO_TYPE_SHIFT) & ADO_TYPE_MASK;
-> > > > > +}
-> > > >
-> > > > usb_ prefix for this and the other inline functions as well?
-> > >
-> > > Same comment here.
-> >
-> > But it would make more sense, right?
-> 
-> I'm happy with that. Actually I'd probably opt for 'usb_pd_' if I was going that
-> route as it's PD specific information. Would that be reasonable?
-
-Yes, that would be much better, thanks a lot.
-
-greg k-h
+thanks,
+-- Shuah
