@@ -1,128 +1,142 @@
-From: Edward Statham <edward.statham@gmail.com>
-Subject: Re: CPU frequency governor problem
-Date: Fri, 3 Nov 2017 08:26:39 +1300
-Message-ID: <CAMn+H1s3Cr2+kV_kMY7t3RB2bjtdVHTjmUJ01xgYjTZwq37kDA@mail.gmail.com>
-References: <CAMn+H1sk267Er5zS2jRmDUE_s+f8Fguq8K40ZpDQG656LcLnBg@mail.gmail.com>
- <CAOh2x==Wtv2o2cVST2hRMqXn76NC+P3hN0HnYKukHLiLPVws5w@mail.gmail.com>
- <CAMn+H1skVF-Y-u=6vZeGcshmkOZcLnQf3_K=gvGaGO6uQBCSVQ@mail.gmail.com> <CAMn+H1v2PpGrR6qp54R9g7gOdYCEF7PJUN_9ySgV+UgdQdPNOA@mail.gmail.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH v2] cpupower: Fix no-rounding MHz frequency output
+Date: Thu, 2 Nov 2017 15:43:11 -0400
+Message-ID: <e5ce4cc2-a67f-92d0-7ac5-d5ad4e04ea70@redhat.com>
+References: <20171025135132.16324-1-prarit@redhat.com>
+ <54215387-96b8-07d3-0b0e-4df4a0b0dca6@kernel.org>
+ <CAJZ5v0hKmVeAbPtr06_JCDMd1U5TXxs+VW-7jYUnAwseXaiX7A@mail.gmail.com>
+ <5a15dfc3-9dca-92a3-063c-b9a653ccbf0b@osg.samsung.com>
+ <CAJZ5v0j6hC=eUnNKFO3dgTBd572AOngtnetGNjjm1kXWjeCrOg@mail.gmail.com>
+ <a6f19fbd-3bc8-f8a1-4515-1a1bcecddce7@osg.samsung.com>
+ <CAJZ5v0gkFYyJPewqHrCFQsfVHyqzn=H_mbUtqNEmDmPDpVGuVA@mail.gmail.com>
+ <0023af85-a643-edaf-f6d4-fba1c3756e6e@osg.samsung.com>
+ <cc10ec84-e016-3f1b-163f-21cea09f7173@redhat.com>
+ <126a1373-cd76-3f1e-2f91-5b5ea8a664ec@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f48.google.com ([209.85.213.48]:43622 "EHLO
-        mail-vk0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934009AbdKBT0l (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2017 15:26:41 -0400
-Received: by mail-vk0-f48.google.com with SMTP id t203so416640vke.0
-        for <linux-pm@vger.kernel.org>; Thu, 02 Nov 2017 12:26:40 -0700 (PDT)
-In-Reply-To: <CAMn+H1v2PpGrR6qp54R9g7gOdYCEF7PJUN_9ySgV+UgdQdPNOA@mail.gmail.com>
+Received: from mx1.redhat.com ([209.132.183.28]:51472 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934065AbdKBTnN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 2 Nov 2017 15:43:13 -0400
+In-Reply-To: <126a1373-cd76-3f1e-2f91-5b5ea8a664ec@osg.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-
-hi, just thought I'd let you know:
-I just upgraded to kernel 4.13 from 4.11 and the problem is resolved.
+To: Shuah Khan <shuahkh@osg.samsung.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Stafford Horne <shorne@gmail.com>, Shuah Khan <shuah@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.com>
 
 
-On 31 October 2017 at 11:15, Edward Statham <edward.statham@gmail.com> wrot=
-e:
-> I have more details on this problem. I have a laptop that is prone to
-> overheating.
-> I have now fitted 3 external fans, and the problem has considerably
-> lessened - the max frequency is lowered but when the core temp drops
-> back
-> then it re-scales up to max again.
-> However - if the "no_turbo" flag is set true then it sticks there on
-> 70% max (sometimes 50%) and no_turbo=3D1 and stays there
-> regardless of subsequent core temp. Only a reboot clears it.
->
-> HTH
->
->
-> On 22 August 2017 at 12:12, Edward Statham <edward.statham@gmail.com> wro=
-te:
->> Some further info - the same behavior occurs with the powersave governor=
-.
->> It just locks at a low frequency, disables turbo and stays there.
+
+On 11/02/2017 02:59 PM, Shuah Khan wrote:
+> On 11/01/2017 06:42 PM, Prarit Bhargava wrote:
 >>
->> Immediately after reboot:
 >>
->> System:    Host: ed-P35V7 Kernel: 4.11.0-14-generic x86_64 (64 bit gcc: =
-5.4.0)
->>            Desktop: Cinnamon 3.4.6 (Gtk 3.18.9-1ubuntu3.3) Distro:
->> Linux Mint 18.2 Sonya
->> Machine:   Mobo: GIGABYTE model: P35V7 v: Default string Bios:
->> American Megatrends v: FB02 date: 11/29/2016
->> CPU:       Quad core Intel Core i7-7700HQ (-HT-MCP-) cache: 6144 KB
->>            flags: (lm nx sse sse2 sse3 sse4_1 sse4_2 ssse3 vmx) bmips: 2=
-2464
->>            clock speeds: max: 3800 MHz 1: 799 MHz 2: 799 MHz 3: 799
->> MHz 4: 799 MHz 5: 799 MHz 6: 799 MHz
->>            7: 799 MHz 8: 799 MHz
->> Graphics:  Card-1: Intel Device 591b bus-ID: 00:02.0
->>            Card-2: NVIDIA Device 1ba1 bus-ID: 01:00.0
->>            Display Server: X.Org 1.18.4 driver: nvidia Resolution:
->> 1920x1080@59.93hz
->>            GLX Renderer: GeForce GTX 1070/PCIe/SSE2 GLX Version: 4.5.0
->> NVIDIA 384.59 Direct Rendering: Yes
->> Audio:     Card Intel Sunrise Point-H HD Audio driver: snd_hda_intel
->> bus-ID: 00:1f.3
->>            Sound: Advanced Linux Sound Architecture v: k4.11.0-14-generi=
-c
->> Network:   Card-1: Realtek RTL8111/8168/8411 PCI Express Gigabit
->> Ethernet Controller
->>            driver: r8169 v: 2.3LK-NAPI port: d000 bus-ID: 02:00.0
->>            IF: enp2s0 state: up speed: 1000 Mbps duplex: full mac: <filt=
-er>
->>            Card-2: Intel Wireless 8260 driver: iwlwifi bus-ID: 04:00.0
->>            IF: wlp4s0 state: down mac: <filter>
->> Drives:    HDD Total Size: 1000.2GB (17.7% used) ID-1: /dev/nvme0n1
->> model: N/A size: 512.1GB
->>            ID-2: /dev/sda model: HGST_HTS721010A9 size: 1000.2GB
->> Partition: ID-1: / size: 30G used: 11G (37%) fs: ext4 dev: /dev/nvme0n1p=
-1
->>            ID-2: /home size: 184G used: 54G (31%) fs: ext4 dev: /dev/nvm=
-e0n1p6
->>            ID-3: swap-1 size: 32.00GB used: 0.00GB (0%) fs: swap dev:
->> /dev/nvme0n1p5
->> RAID:      No RAID devices: /proc/mdstat, md_mod kernel module present
->> Sensors:   System Temperatures: cpu: 53.5C mobo: 29.8C gpu: 0.0:65C
->>            Fan Speeds (in rpm): cpu: N/A
->> Info:      Processes: 376 Uptime: 4 min Memory: 4053.5/32055.0MB Init:
->> systemd runlevel: 5 Gcc sys: 5.4.0
->>            Client: Shell (bash 4.3.481) inxi: 2.2.35
->>
->> On 16 August 2017 at 15:18, Viresh Kumar <viresh.kumar@linaro.org> wrote=
-:
->>> Adding PM list instead.
+>> On 11/01/2017 06:30 PM, Shuah Khan wrote:
+>>> On 11/01/2017 04:07 PM, Rafael J. Wysocki wrote:
+>>>> On Wed, Nov 1, 2017 at 10:49 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
+>>>>> On 11/01/2017 03:46 PM, Rafael J. Wysocki wrote:
+>>>>>> On Wed, Nov 1, 2017 at 10:38 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
+>>>>>>> On 11/01/2017 03:33 PM, Rafael J. Wysocki wrote:
+>>>>>>>> On Wed, Nov 1, 2017 at 10:00 PM, Shuah Khan <shuah@kernel.org> wrote:
+>>>>>>>>> On 10/25/2017 07:51 AM, Prarit Bhargava wrote:
+>>>>>>>>>> 'cpupower frequency-info -ln' returns kHz values on systems with MHz range
+>>>>>>>>>> minimum CPU frequency range.  For example, on a 800MHz to 4.20GHz system
+>>>>>>>>>> the command returns
+>>>>>>>>>>
+>>>>>>>>>> hardware limits: 800000 MHz - 4.200000 GHz
+>>>>>>>>>>
+>>>>>>>>>> The code that causes this error can be removed.  The next else if clause
+>>>>>>>>>> will handle the output correctly such that
+>>>>>>>>>>
+>>>>>>>>>> hardware limits: 800.000 MHz - 4.200000 GHz
+>>>>>>>>>>
+>>>>>>>>>> is displayed correctly.
+>>>>>>>>>>
+>>>>>>>>>> [v2]: Remove two lines instead of fixing broken code.
+>>>>>>>>>>
+>>>>>>>>>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>>>>>>>>>> Cc: Thomas Renninger <trenn@suse.com>
+>>>>>>>>>> Cc: Stafford Horne <shorne@gmail.com>
+>>>>>>>>>> Cc: Shuah Khan <shuah@kernel.org>
+>>>>>>>>>> ---
+>>>>>>>>>>  tools/power/cpupower/utils/cpufreq-info.c | 2 --
+>>>>>>>>>>  1 file changed, 2 deletions(-)
+>>>>>>>>>>
+>>>>>>>>>> diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+>>>>>>>>>> index 3e701f0e9c14..df43cd45d810 100644
+>>>>>>>>>> --- a/tools/power/cpupower/utils/cpufreq-info.c
+>>>>>>>>>> +++ b/tools/power/cpupower/utils/cpufreq-info.c
+>>>>>>>>>> @@ -93,8 +93,6 @@ static void print_speed(unsigned long speed)
+>>>>>>>>>>               if (speed > 1000000)
+>>>>>>>>>>                       printf("%u.%06u GHz", ((unsigned int) speed/1000000),
+>>>>>>>>>>                               ((unsigned int) speed%1000000));
+>>>>>>>>>> -             else if (speed > 100000)
+>>>>>>>>>> -                     printf("%u MHz", (unsigned int) speed);
+>>>>>>>>>>               else if (speed > 1000)
+>>>>>>>>>>                       printf("%u.%03u MHz", ((unsigned int) speed/1000),
+>>>>>>>>>>                               (unsigned int) (speed%1000));
+>>>>>>>>>>
+>>>>>>>>>
+>>>>>>>>> Thanks.  I will queue this up for 4.15-rc1.
+>>>>>>>>
+>>>>>>>> OK
+>>>>>>>>
+>>>>>>>> So are you going to maintain this utility going forward?
+>>>>>>>>
+>>>>>>>
+>>>>>>> oops. I was on auto-pilot responding to patches sitting in my Inbox.
+>>>>>>> Wrong email response. Sorry about that.
+>>>>>>>
+>>>>>>> Please ignore. Mu bad.
+>>>>>>
+>>>>>> OK :-)
+>>>>>>
+>>>>>> But that said, from my perspective, cpupower is basically not maintained.
+>>>>>>
+>>>>>> Thomas, who sort of maintained it, but then basically became a patch
+>>>>>> reviewer for it, does not respond to patches any more and I am not
+>>>>>> sufficiently familiar with the code to be able to effectively review
+>>>>>> the patches myself, nor I have the time to get more familiar with it.
+>>>>>>
+>>>>>> For this reason, I'm inclined to drop this code from the kernel source
+>>>>>> tree unless somebody steps in to fill the gap.
+>>>>>>
+>>>>>
+>>>>> Please don't drop this from kernel sources.. I think this is useful. If you
+>>>>> are looking for a maintainer, I will be happy to step up to maintain it.
+>>>>
+>>>> Cool, please do that then. :-)
+>>>>
+>>>> I will be happy to take pull requests with cpupower changes so that
+>>>> they go in along with the other PM material.
+>>>>
 >>>
->>> On Tue, Aug 15, 2017 at 8:17 AM, Edward Statham
->>> <edward.statham@gmail.com> wrote:
->>>> Hi, sorry for the direct email but I=E2=80=99ve been unable to find a =
-resolution
->>>> to this in forums etc.  I have a laptop with a Intel i7-7700HQ CPU and=
- am
->>>> running Linux Mint 18.  The frequency governor is set to performance b=
-ut
->>>> it keeps on throttling down to 70% or even 50% and getting stuck there=
-,
->>>> for example:
->>>>
->>>> cat /sys/devices/system/cpu/intel_pstate/max_perf_pct
->>>> 70
->>>>
->>>> I can=E2=80=99t find a way to get it to throttle sensibly i.e. lower t=
-he max
->>>> when required but revert to full speed when other conditions allow. I=
-=E2=80=99ve
->>>> tried the ondemand and performance governors.
->>>>
->>>> Any suggestions would be much appreciated.
->>>>
->>>> thanks,
->>>> Ed
->>>> --
->>>> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
->>>> the body of a message to majordomo@vger.kernel.org
->>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Sounds like a plan. I can do that. I will work on getting git setup and
+>>> send pull requests. We can get that going for 4.15 unless you think it is
+>>> late for you to get pull requests.
+>>
+>> Shuah, I have two other cleanup patches that should be applied to cpupower.  I
+>> will post them shortly.
+>>
+> 
+> Hi Prarit,
+> 
+> Does this tool build for you? I am seeing:
+> 
+> utils/helpers/amd.c:7:21: fatal error: pci/pci.h: No such file or directory
+>  #include <pci/pci.h>
+>                      ^
+> compilation terminated.
+> Makefile:221: recipe for target 'utils/helpers/amd.o' failed
+> make: *** [utils/helpers/amd.o] Error 1
+> 
+
+It does not build on latest due to some other unrelated change.  I'm looking at
+it now.
+
+P.
+
+> thanks,
+> -- Shuah
+> 
