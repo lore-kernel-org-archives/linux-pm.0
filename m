@@ -1,64 +1,44 @@
-From: Shuah Khan <shuahkh@osg.samsung.com>
-Subject: Re: [PATCH v2] cpupower: Fix no-rounding MHz frequency output
-Date: Thu, 2 Nov 2017 14:20:01 -0600
-Message-ID: <fea531d0-666a-8c15-fcee-18adc0351a9c@osg.samsung.com>
-References: <20171025135132.16324-1-prarit@redhat.com>
- <54215387-96b8-07d3-0b0e-4df4a0b0dca6@kernel.org>
- <CAJZ5v0hKmVeAbPtr06_JCDMd1U5TXxs+VW-7jYUnAwseXaiX7A@mail.gmail.com>
- <5a15dfc3-9dca-92a3-063c-b9a653ccbf0b@osg.samsung.com>
- <CAJZ5v0j6hC=eUnNKFO3dgTBd572AOngtnetGNjjm1kXWjeCrOg@mail.gmail.com>
- <a6f19fbd-3bc8-f8a1-4515-1a1bcecddce7@osg.samsung.com>
- <CAJZ5v0gkFYyJPewqHrCFQsfVHyqzn=H_mbUtqNEmDmPDpVGuVA@mail.gmail.com>
- <0023af85-a643-edaf-f6d4-fba1c3756e6e@osg.samsung.com>
- <cc10ec84-e016-3f1b-163f-21cea09f7173@redhat.com>
- <126a1373-cd76-3f1e-2f91-5b5ea8a664ec@osg.samsung.com>
- <012f54bd-b4cc-22fb-83d4-9606ba7c50c8@redhat.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [RFC PATCH v10 1/7] dt-bindings: PCI: Add definition of PCIe
+ WAKE# irq and PCI irq
+Date: Thu, 2 Nov 2017 14:55:01 -0700
+Message-ID: <20171102215501.GD28152@atomide.com>
+References: <20171027072612.26565-1-jeffy.chen@rock-chips.com>
+ <20171027072612.26565-2-jeffy.chen@rock-chips.com>
+ <20171027204513.GA105121@google.com>
+ <20171101210541.vacfufnn2ms65xrw@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from osg.samsung.com ([64.30.133.232]:33099 "EHLO osg.samsung.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752105AbdKBUUD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 2 Nov 2017 16:20:03 -0400
-In-Reply-To: <012f54bd-b4cc-22fb-83d4-9606ba7c50c8@redhat.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171101210541.vacfufnn2ms65xrw@rob-hp-laptop>
+Sender: linux-pci-owner@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: Brian Norris <briannorris@chromium.org>, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, rjw@rjwysocki.net, dianders@chromium.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>, "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Stafford Horne <shorne@gmail.com>, Shuah Khan <shuah@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.com>, Shuah Khan <shuahkh@osg.samsung.com>
 
-On 11/02/2017 02:18 PM, Prarit Bhargava wrote:
+* Rob Herring <robh@kernel.org> [171101 21:07]:
+> On Fri, Oct 27, 2017 at 01:45:17PM -0700, Brian Norris wrote:
+> > IMO, since you're trying to augment a standardized binding, you need to
+> > be a lot clearer here. I expect you should mention the existing standard
+> > (that devices may optionally include an 'interrupts' property that
+> > represents the legacy PCI interrupt) and how you're augmenting it (that
+> > additional interrupts can be supported optionally, but they require a
+> > corresponding 'interrupt-names' property).
 > 
-> 
-> On 11/02/2017 02:59 PM, Shuah Khan wrote:
->> On 11/01/2017 06:42 PM, Prarit Bhargava wrote:
->>
->> Hi Prarit,
->>
->> Does this tool build for you? I am seeing:
->>
->> utils/helpers/amd.c:7:21: fatal error: pci/pci.h: No such file or directory
->>  #include <pci/pci.h>
->>                      ^
->> compilation terminated.
->> Makefile:221: recipe for target 'utils/helpers/amd.o' failed
->> make: *** [utils/helpers/amd.o] Error 1
->>
-> 
-> Got it ... you have to have the pciutils-devel package installed which
-> installs /usr/include/pci/pci.h.
-> 
-> That file contains:
-> 
-> struct pci_access {
->   /* Options you can change: */
->   unsigned int method;                  /* Access method */
->   int writeable;                        /* Open in read/write mode */
->   int buscentric;                       /* Bus-centric view of the world */
-> <snip>
-> 
+> There's an additional complication that I'd guess the wakeup is 
+> typically a GPIO line and hence a different parent. We have 2 options 
+> there. The first is interrupts-extended which is generally implicitly 
+> supported (i.e. we only document interrupts). The second is we already 
+> have interrupt-map if we have legacy interrupts and can map to different 
+> parents. For this to work, we'd have to use a number >4 for the wakeup 
+> interrupts.
 
-Thanks for looking into this.
+The wakeup interrupt can also be a separate always on interrupt
+controller in addition to GPIOs. Anyways, the interrupts-extended
+binding works well for these. And the interrupt-names we seem
+to have standardized on are "irq" and "wakeup".
 
--- Shuah
+Regards,
+
+Tony
