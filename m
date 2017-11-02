@@ -1,129 +1,63 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v3 6/7] arm64: topology: Enable ACPI/PPTT based CPU
- topology.
-Date: Thu, 2 Nov 2017 10:48:35 +0000
-Message-ID: <20171102104826.GB13580@red-moon>
-References: <20171012194856.13844-1-jeremy.linton@arm.com>
- <20171012194856.13844-7-jeremy.linton@arm.com>
- <20171019155622.GC18883@red-moon>
- <b6c3fae3-eb6d-e5f2-6887-de1471978897@arm.com>
- <20171020092210.GB21060@red-moon>
- <270ae2f5-0af6-1be4-2914-d1ce8d0a5cd0@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <270ae2f5-0af6-1be4-2914-d1ce8d0a5cd0@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Al Stone <ahs3@redhat.com>
-Cc: Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org
+From: Chris Redpath <chris.redpath@arm.com>
+Subject: [PATCH] cpufreq: schedutil: Examine the correct CPU when we update util
+Date: Thu,  2 Nov 2017 10:54:38 +0000
+Message-ID: <20171102105438.14258-1-chris.redpath@arm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: morten.rasmussen@arm.com, dietmar.eggemann@arm.com, Chris Redpath <chris.redpath@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "4 . 9+" <stable@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 01, 2017 at 02:29:26PM -0600, Al Stone wrote:
-> On 10/20/2017 03:22 AM, Lorenzo Pieralisi wrote:
-> > On Thu, Oct 19, 2017 at 11:54:22AM -0500, Jeremy Linton wrote:
-> > 
-> > [...]
-> > 
-> >>>> +			cpu_topology[cpu].core_id   = topology_id;
-> >>>> +			topology_id = setup_acpi_cpu_topology(cpu, 2);
-> >>>> +			cpu_topology[cpu].cluster_id = topology_id;
-> >>>> +			topology_id = setup_acpi_cpu_topology(cpu, max_topo);
-> >>>
-> >>> If you want a package id (that's just a package tag to group cores), you
-> >>> should not use a large level because you know how setup_acpi_cpu_topology()works, you should add an API that allows you to retrieve the package id
-> >>> (so that you can use th ACPI_PPTT_PHYSICAL_PACKAGE flag consistenly,
-> >>> whatever it represents).
-> >>
-> >> I don't think the spec requires the use of PHYSICAL_PACKAGE... Am I
-> >> misreading it? Which means we need to "pick" a node level to
-> >> represent the physical package if one doesn't exist...
-> > 
-> > The specs define a means to detect if a given PPTT node corresponds to a
-> > package (I am refraining from stating again that to me that's not clean
-> > cut what a package is _architecturally_, I think you know my POV by now)
-> > and that's what you need to use to retrieve a packageid for a given cpu,
-> > if I understand the aim of the physical package flag.
-> > 
-> > Either that or that flag is completely useless.
-> > 
-> > Lorenzo
-> > 
-> > ACPI 6.2 - Table 5-151 (page 248)
-> > Physical package
-> > -----------------
-> > Set to 1 if this node of the processor topology represents the boundary
-> > of a physical package, whether socketed or surface mounted.  Set to 0 if
-> > this instance of the processor topology does not represent the boundary
-> > of a physical package.
-> > 
-> 
-> I've been following the discussion and I'm not sure I understand what the
-> confusion is around having a physical package ID.  Since I'm the one that
-> insisted it be in the spec, I'd be glad to clarify anything.  My apologies
-> for not saying anything sooner but things IRL have been very complicated
-> of late.
-> 
-> What was intended was a simple flag that was meant to tell me if a CPU ID
-> (this could be a CPU, a cluster, a processor container -- I don't really
-> care which) is *also* an actual physical device on a motherboard.  That is
-> the only intent; there was no architectural meaning intended at all -- that
-> is what the PPTT structures are for, in conjunction with any DSDT information
-> uncovered later in the boot process.
-> 
-> However, in the broader server ecosystem, this can be incredibly useful.  There
-> are a significant number of software products sold or supported that base their
-> fees on the number of physical sockets in use.  There have been in the past (and
-> may be in the near future) machines where the cost of the lease on the machine
-> is determined by how many physical sockets (or even CPUs) are in use, even if
-> the machine has many more available.
-> 
-> Some vendors also include FRU (Field Replaceable Unit) location info in their
-> ACPI tables.  So, for example, one or more CPUs or caches might fail in one
-> physical package, which is then reported to a maintenance system of some sort
-> that tells some human which of the physical sockets on what motherboard needs a
-> replacement device, or it's simply noted and shut off until it's time to replace
-> the entire server, or perhaps it's logged and used in an algorithm to predict
-> when the server might fail completely.
-> 
-> So, that's why the flag exists in the spec.  It seems to make sense to me to
-> have a package ID as part of struct cpu_topology -- it might even be really
-> handy for CPU hotplug.  If you don't, it seems to me a whole separate struct
-> would be needed with more cpumasks to show who belongs to what physical package;
-> that might be okay but seems unnecessarily complicated to me.
-> 
-> You can also tell me that I have completely missed the point of the discussion
-> so far :-).  But if you do, you have to tell me what I missed.
-> 
-> Hope this helps clarify...
+Since:
 
-Hi Al,
+4296f23ed cpufreq: schedutil: Fix per-CPU structure initialization in
+ sugov_start()
 
-yes it does.
+We lost the value of sg_cpu->cpu which is assigned during
+sugov_register. The memset in sugov_start overwrites it with zero.
 
-I think we agree that package ID has a HW/architectural meaning on x86,
-it has none on PPTT (ie it totally depends on how PPTT is enumerated).
+This leads to always looking at the utilization of CPU0 instead of
+the one we just updated when we do a utilization update callback.
 
-That's the first remark. So, if the package flag is used to group CPUs
-and provide the topology package hierarchy to the kernel/userspace fine,
-if it is to be used to provide scheduler/userspace with an ID that can
-identify a HW "component" of sorts it is not fine because the topology
-package ID is a SW construction on ARM systems relying on PPTT
-(and DT - by the way).
+Let's fix this by consolidating the initialization code into
+sugov_start().
 
-So, to group CPUs and call them a package, fine by me (with a hope
-FW developers won't play too much with that package flag to make
-things work but use it consistenly instead).
+Fixes: 4296f23ed49a ("cpufreq: schedutil: Fix per-CPU structure initialization in sugov_start()")
+Signed-off-by: Chris Redpath <chris.redpath@arm.com>
+Reviewed-by: Patrick Bellasi <patrick.bellasi@arm.com>
+Reviewed-by: Brendan Jackman <brendan.jackman@arm.com>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: 4.9+ <stable@vger.kernel.org>
+---
+ kernel/sched/cpufreq_schedutil.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
-Having said that, all I asked is that, given that we _know_ (thanks
-to the PPTT flag) the package boundary, let's use it to initialize
-the topology package level and that's where this patch series should
-stop IMHO.
-
-For the time being, I see no point in adding another arbitrary topology
-level (ie COD) with no architectural meaning, as I said, this is vague
-enough already and there is legacy (and DT systems) to take into account
-too.
-
-Thanks,
-Lorenzo
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 6c1a7fcfa2a7..eeb7e0a1d861 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -731,6 +731,7 @@ static int sugov_start(struct cpufreq_policy *policy)
+ 		sg_cpu->sg_policy = sg_policy;
+ 		sg_cpu->flags = SCHED_CPUFREQ_RT;
+ 		sg_cpu->iowait_boost_max = policy->cpuinfo.max_freq;
++		sg_cpu->cpu = cpu;
+ 	}
+ 
+ 	for_each_cpu(cpu, policy->cpus) {
+@@ -793,11 +794,6 @@ struct cpufreq_governor *cpufreq_default_governor(void)
+ 
+ static int __init sugov_register(void)
+ {
+-	int cpu;
+-
+-	for_each_possible_cpu(cpu)
+-		per_cpu(sugov_cpu, cpu).cpu = cpu;
+-
+ 	return cpufreq_register_governor(&schedutil_gov);
+ }
+ fs_initcall(sugov_register);
+-- 
+2.13.1.449.g02a2850
