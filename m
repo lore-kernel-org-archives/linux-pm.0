@@ -1,160 +1,121 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFT][PATCH 1/2] PM / domains: Rework governor code to be more consistent
-Date: Thu, 02 Nov 2017 00:01:50 +0100
-Message-ID: <2099930.xGFd9X30dN@aspire.rjw.lan>
-References: <5770848.Kdi5IjVKeE@aspire.rjw.lan>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH v2] cpupower: Fix no-rounding MHz frequency output
+Date: Wed, 1 Nov 2017 20:42:34 -0400
+Message-ID: <cc10ec84-e016-3f1b-163f-21cea09f7173@redhat.com>
+References: <20171025135132.16324-1-prarit@redhat.com>
+ <54215387-96b8-07d3-0b0e-4df4a0b0dca6@kernel.org>
+ <CAJZ5v0hKmVeAbPtr06_JCDMd1U5TXxs+VW-7jYUnAwseXaiX7A@mail.gmail.com>
+ <5a15dfc3-9dca-92a3-063c-b9a653ccbf0b@osg.samsung.com>
+ <CAJZ5v0j6hC=eUnNKFO3dgTBd572AOngtnetGNjjm1kXWjeCrOg@mail.gmail.com>
+ <a6f19fbd-3bc8-f8a1-4515-1a1bcecddce7@osg.samsung.com>
+ <CAJZ5v0gkFYyJPewqHrCFQsfVHyqzn=H_mbUtqNEmDmPDpVGuVA@mail.gmail.com>
+ <0023af85-a643-edaf-f6d4-fba1c3756e6e@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <5770848.Kdi5IjVKeE@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Tero Kristo <t-kristo@ti.com>, Reinette Chatre <reinette.chatre@intel.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Alex Shi <alex.shi@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:44676 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932433AbdKBAmg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 1 Nov 2017 20:42:36 -0400
+In-Reply-To: <0023af85-a643-edaf-f6d4-fba1c3756e6e@osg.samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shuah Khan <shuahkh@osg.samsung.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Stafford Horne <shorne@gmail.com>, Shuah Khan <shuah@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Thomas Renninger <trenn@suse.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-The genpd governor currently uses negative PM QoS values to indicate
-the "no suspend" condition and 0 as "no restriction", but it doesn't
-use them consistently.  Moreover, it tries to refresh QoS values for
-already suspended devices in a quite questionable way.
 
-For the above reasons, rework it to be a bit more consistent.
+On 11/01/2017 06:30 PM, Shuah Khan wrote:
+> On 11/01/2017 04:07 PM, Rafael J. Wysocki wrote:
+>> On Wed, Nov 1, 2017 at 10:49 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
+>>> On 11/01/2017 03:46 PM, Rafael J. Wysocki wrote:
+>>>> On Wed, Nov 1, 2017 at 10:38 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
+>>>>> On 11/01/2017 03:33 PM, Rafael J. Wysocki wrote:
+>>>>>> On Wed, Nov 1, 2017 at 10:00 PM, Shuah Khan <shuah@kernel.org> wrote:
+>>>>>>> On 10/25/2017 07:51 AM, Prarit Bhargava wrote:
+>>>>>>>> 'cpupower frequency-info -ln' returns kHz values on systems with MHz range
+>>>>>>>> minimum CPU frequency range.  For example, on a 800MHz to 4.20GHz system
+>>>>>>>> the command returns
+>>>>>>>>
+>>>>>>>> hardware limits: 800000 MHz - 4.200000 GHz
+>>>>>>>>
+>>>>>>>> The code that causes this error can be removed.  The next else if clause
+>>>>>>>> will handle the output correctly such that
+>>>>>>>>
+>>>>>>>> hardware limits: 800.000 MHz - 4.200000 GHz
+>>>>>>>>
+>>>>>>>> is displayed correctly.
+>>>>>>>>
+>>>>>>>> [v2]: Remove two lines instead of fixing broken code.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+>>>>>>>> Cc: Thomas Renninger <trenn@suse.com>
+>>>>>>>> Cc: Stafford Horne <shorne@gmail.com>
+>>>>>>>> Cc: Shuah Khan <shuah@kernel.org>
+>>>>>>>> ---
+>>>>>>>>  tools/power/cpupower/utils/cpufreq-info.c | 2 --
+>>>>>>>>  1 file changed, 2 deletions(-)
+>>>>>>>>
+>>>>>>>> diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpupower/utils/cpufreq-info.c
+>>>>>>>> index 3e701f0e9c14..df43cd45d810 100644
+>>>>>>>> --- a/tools/power/cpupower/utils/cpufreq-info.c
+>>>>>>>> +++ b/tools/power/cpupower/utils/cpufreq-info.c
+>>>>>>>> @@ -93,8 +93,6 @@ static void print_speed(unsigned long speed)
+>>>>>>>>               if (speed > 1000000)
+>>>>>>>>                       printf("%u.%06u GHz", ((unsigned int) speed/1000000),
+>>>>>>>>                               ((unsigned int) speed%1000000));
+>>>>>>>> -             else if (speed > 100000)
+>>>>>>>> -                     printf("%u MHz", (unsigned int) speed);
+>>>>>>>>               else if (speed > 1000)
+>>>>>>>>                       printf("%u.%03u MHz", ((unsigned int) speed/1000),
+>>>>>>>>                               (unsigned int) (speed%1000));
+>>>>>>>>
+>>>>>>>
+>>>>>>> Thanks.  I will queue this up for 4.15-rc1.
+>>>>>>
+>>>>>> OK
+>>>>>>
+>>>>>> So are you going to maintain this utility going forward?
+>>>>>>
+>>>>>
+>>>>> oops. I was on auto-pilot responding to patches sitting in my Inbox.
+>>>>> Wrong email response. Sorry about that.
+>>>>>
+>>>>> Please ignore. Mu bad.
+>>>>
+>>>> OK :-)
+>>>>
+>>>> But that said, from my perspective, cpupower is basically not maintained.
+>>>>
+>>>> Thomas, who sort of maintained it, but then basically became a patch
+>>>> reviewer for it, does not respond to patches any more and I am not
+>>>> sufficiently familiar with the code to be able to effectively review
+>>>> the patches myself, nor I have the time to get more familiar with it.
+>>>>
+>>>> For this reason, I'm inclined to drop this code from the kernel source
+>>>> tree unless somebody steps in to fill the gap.
+>>>>
+>>>
+>>> Please don't drop this from kernel sources.. I think this is useful. If you
+>>> are looking for a maintainer, I will be happy to step up to maintain it.
+>>
+>> Cool, please do that then. :-)
+>>
+>> I will be happy to take pull requests with cpupower changes so that
+>> they go in along with the other PM material.
+>>
+> 
+> Sounds like a plan. I can do that. I will work on getting git setup and
+> send pull requests. We can get that going for 4.15 unless you think it is
+> late for you to get pull requests.
 
-First off, note that dev_pm_qos_read_value() in
-dev_update_qos_constraint() and __default_power_down_ok() is
-evaluated for devices in suspend.  Moreover, that only happens if the
-effective_constraint_ns value for them is negative (meaning "no
-suspend").  It is not evaluated in any other cases, so effectively
-the QoS values are only updated for devices in suspend that should
-not have been suspended in the first place.  In all of the other
-cases, the QoS values taken into account are the effective ones from
-the time before the device has been suspended, so generally devices
-need to be resumed and suspended again for new QoS values to take
-effect anyway.  Thus evaluating dev_update_qos_constraint() in
-those two places doesn't make sense at all, so drop it.
+Shuah, I have two other cleanup patches that should be applied to cpupower.  I
+will post them shortly.
 
-Second, initialize effective_constraint_ns to 0 ("no constraint")
-rather than to (-1) ("no suspend"), which makes more sense in
-general and in case effective_constraint_ns is never updated
-(the device is in suspend all the time or it is never suspended)
-it doesn't affect the device's parent and so on.
+P.
 
-Finally, rework default_suspend_ok() to explicitly handle the
-"no restriction" and "no suspend" special cases.
-
-Also add WARN_ON() around checks that should never trigger.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/domain.c          |    2 -
- drivers/base/power/domain_governor.c |   56 ++++++++++++++++++++---------------
- 2 files changed, 33 insertions(+), 25 deletions(-)
-
-Index: linux-pm/drivers/base/power/domain.c
-===================================================================
---- linux-pm.orig/drivers/base/power/domain.c
-+++ linux-pm/drivers/base/power/domain.c
-@@ -1331,7 +1331,7 @@ static struct generic_pm_domain_data *ge
- 
- 	gpd_data->base.dev = dev;
- 	gpd_data->td.constraint_changed = true;
--	gpd_data->td.effective_constraint_ns = -1;
-+	gpd_data->td.effective_constraint_ns = 0;
- 	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
- 
- 	spin_lock_irq(&dev->power.lock);
-Index: linux-pm/drivers/base/power/domain_governor.c
-===================================================================
---- linux-pm.orig/drivers/base/power/domain_governor.c
-+++ linux-pm/drivers/base/power/domain_governor.c
-@@ -14,22 +14,22 @@
- static int dev_update_qos_constraint(struct device *dev, void *data)
- {
- 	s64 *constraint_ns_p = data;
--	s32 constraint_ns = -1;
--
--	if (dev->power.subsys_data && dev->power.subsys_data->domain_data)
--		constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
-+	s64 constraint_ns;
- 
--	if (constraint_ns < 0) {
--		constraint_ns = dev_pm_qos_read_value(dev);
--		constraint_ns *= NSEC_PER_USEC;
--	}
--	if (constraint_ns == 0)
-+	if (!dev->power.subsys_data || !dev->power.subsys_data->domain_data)
- 		return 0;
- 
- 	/*
--	 * constraint_ns cannot be negative here, because the device has been
--	 * suspended.
-+	 * Only take suspend-time QoS constraints of devices into account,
-+	 * because constraints updated after the device has been suspended are
-+	 * not guaranteed to be taken into account anyway.  In order for them
-+	 * to take effect, the device has to be resumed and suspended again.
- 	 */
-+	constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
-+	/* 0 means "no constraint" */
-+	if (constraint_ns == 0)
-+		return 0;
-+
- 	if (constraint_ns < *constraint_ns_p || *constraint_ns_p == 0)
- 		*constraint_ns_p = constraint_ns;
- 
-@@ -76,14 +76,26 @@ static bool default_suspend_ok(struct de
- 		device_for_each_child(dev, &constraint_ns,
- 				      dev_update_qos_constraint);
- 
--	if (constraint_ns > 0) {
-+	if (constraint_ns == 0) {
-+		/* "No restriction", so the device is allowed to suspend. */
-+		td->effective_constraint_ns = 0;
-+		td->cached_suspend_ok = true;
-+	} else if (WARN_ON(constraint_ns < 0)) {
-+		/*
-+		 * effective_constraint_ns is negative already and
-+		 * cached_suspend_ok is false, so return right away.
-+		 */
-+		return false;
-+	} else {
- 		constraint_ns -= td->suspend_latency_ns +
- 				td->resume_latency_ns;
--		if (constraint_ns == 0)
-+		/* Again, if negative or zero, returning right away is fine. */
-+		if (constraint_ns <= 0)
- 			return false;
-+
-+		td->effective_constraint_ns = constraint_ns;
-+		td->cached_suspend_ok = true;
- 	}
--	td->effective_constraint_ns = constraint_ns;
--	td->cached_suspend_ok = constraint_ns >= 0;
- 
- 	/*
- 	 * The children have been suspended already, so we don't need to take
-@@ -144,18 +156,14 @@ static bool __default_power_down_ok(stru
- 		 */
- 		td = &to_gpd_data(pdd)->td;
- 		constraint_ns = td->effective_constraint_ns;
--		/* default_suspend_ok() need not be called before us. */
--		if (constraint_ns < 0) {
--			constraint_ns = dev_pm_qos_read_value(pdd->dev);
--			constraint_ns *= NSEC_PER_USEC;
--		}
-+		/* Negative values mean "no suspend at all" */
-+		if (WARN_ON(constraint_ns < 0))
-+			return false;
-+
-+		/* 0 means "no constraint" */
- 		if (constraint_ns == 0)
- 			continue;
- 
--		/*
--		 * constraint_ns cannot be negative here, because the device has
--		 * been suspended.
--		 */
- 		if (constraint_ns <= off_on_time_ns)
- 			return false;
- 
+> 
+> thanks,
+> -- Shuah
+> 
