@@ -1,103 +1,180 @@
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: Re: Battery temperature
-Date: Thu, 2 Nov 2017 15:01:37 +0000
-Message-ID: <20171102150137.00004eb0@huawei.com>
-References: <fd2a5fff-de60-fd71-cc91-198ff2565d4b@axentia.se>
+From: Georgi Djakov <georgi.djakov@linaro.org>
+Subject: Re: [PATCH v3 1/3] interconnect: Add generic on-chip interconnect API
+Date: Thu, 2 Nov 2017 18:00:42 +0200
+Message-ID: <26225878-8fed-b990-d02f-5253190de77a@linaro.org>
+References: <20170908171830.13813-1-georgi.djakov@linaro.org>
+ <20170908171830.13813-2-georgi.djakov@linaro.org>
+ <CAHLCerOKEY_My9OKDMV_ns3dTAgBMPkRS2hdS7iYwFoX5rxOPA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from szxga04-in.huawei.com ([45.249.212.190]:9937 "EHLO
-        szxga04-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755772AbdKBPC3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2017 11:02:29 -0400
-In-Reply-To: <fd2a5fff-de60-fd71-cc91-198ff2565d4b@axentia.se>
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:54698 "EHLO
+        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932280AbdKBQAu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2017 12:00:50 -0400
+Received: by mail-lf0-f68.google.com with SMTP id a2so7095883lfh.11
+        for <linux-pm@vger.kernel.org>; Thu, 02 Nov 2017 09:00:49 -0700 (PDT)
+In-Reply-To: <CAHLCerOKEY_My9OKDMV_ns3dTAgBMPkRS2hdS7iYwFoX5rxOPA@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Rosin <peda@axentia.se>
-Cc: "linux-iio@vger.kernel.org" <linux-iio@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, Jonathan Cameron <jic23@kernel.org>
+To: Amit Kucheria <amit.kucheria@verdurent.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, gregkh@linuxfoundation.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, robh+dt@kernel.org, khilman@baylibre.com, Michael Turquette <mturquette@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, seansw@qti.qualcomm.com, davidai@quicinc.com, LKML <linux-kernel@vger.kernel.org>, lakml <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, mark.rutland@arm.com, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On Mon, 30 Oct 2017 09:26:33 +0100
-Peter Rosin <peda@axentia.se> wrote:
+Hi Amit,
 
-> Hi!
+On 11/02/2017 09:28 AM, Amit Kucheria wrote:
+[..>> +Interconnect node is the software definition of the interconnect
+hardware
+>> +port. Each interconnect provider consists of multiple interconnect nodes,
+>> +which are connected to other SoC components including other interconnect
+>> +providers. The point on the diagram where the CPUs connects to the memory is
+>> +called an interconnect node, which belongs to the Mem NoC interconnect provider.
+>> +
+>> +Interconnect endpoits are the first or the last element of the path. Every
 > 
-> We have a device with a series of rechargeable batteries.
+> s/endpoits/endpoints
 > 
-> The chargers are bq24725 and the batteries have a thermistor
-> for temperature monitoring. This thermistor is connected to
-> a standard adc component (ads1015).
 
-Immediate thought is that we need to represent this device explicitly.
-So for this we have the existing drivers/hwmon/ntc_thermistor driver.
+Ok!
 
-> This means that the value
-> the kernel knows for the temperature is in volts (from the
-> iio driver). We can also monitor the charging current and the
-> battery voltage for each battery/charger (also with that very
-> same adc). A gpio pin indicates if external AC power is present.
-
-A little nasty but not really in IIO scope. I presume there are
-other devices with AC connection monitoring as a gpio that is polled?
-
-Would probably expect that to be a extcon driver perhaps?
-
-
-> This gpio pin has to be polled, i.e. it is not possible to hook
-> up interrupts for it.
+>> +endpoint is a node, but not every node is an endpoint.
+>> +
+>> +Interconnect path is everything between two endpoints including all the nodes
+>> +that have to be traversed to reach from a source to destination node. It may
+>> +include multiple master-slave pairs across several interconnect providers.
+>> +
+>> +Interconnect consumers are the entities which make use of the data paths exposed
+>> +by the providers. The consumers send requests to providers requesting various
+>> +throughput, latency and priority. Usually the consumers are device drivers, that
+>> +send request based on their needs. An example for a consumer is a a video
 > 
-> We currently have this "working" without the concept of neither
-> battery nor charger manager in the kernel. It is all handled
-> from user space by writing to
+> typo: is a video>
+
+Ok!
+
+[..]
+>> +/**
+>> + * interconnect_set() - set constraints on a path between two endpoints
+>> + * @path: reference to the path returned by interconnect_get()
+>> + * @creq: request from the consumer, containing its requirements
+>> + *
+>> + * This function is used by an interconnect consumer to express its own needs
+>> + * in term of bandwidth and QoS for a previously requested path between two
+>> + * endpoints. The requests are aggregated and each node is updated accordingly.
+>> + *
+>> + * Returns 0 on success, or an approproate error code otherwise.
+>> + */
+>> +int interconnect_set(struct interconnect_path *path,
+>> +                    struct interconnect_creq *creq)
+>> +{
+>> +       struct interconnect_node *next, *prev = NULL;
+>> +       size_t i;
+>> +       int ret = 0;
+>> +
+>> +       for (i = 0; i < path->num_nodes; i++, prev = next) {
+>> +               next = path->reqs[i].node;
+>> +
+>> +               /*
+>> +                * Both endpoints should be valid and master-slave pairs of
 > 
->     /sys/class/power_supply/bq24735@<i2c-bus-and-addr>/status
+> Losing the 'and' improves readability.
 > 
-> to en-/disable charging and by monitoring the adc voltages
-> and doing the unit conversion to degrees Celsius in user space.
+
+Ok!
+
+>> +                * the same interconnect provider that will be configured.
+>> +                */
+>> +               if (!next || !prev)
+>> +                       continue;
+>> +               if (next->icp != prev->icp)
+>> +                       continue;
+>> +
+>> +               mutex_lock(&next->icp->lock);
+>> +
+>> +               /* update the consumer request for this path */
+>> +               path->reqs[i].avg_bw = creq->avg_bw;
+>> +               path->reqs[i].peak_bw = creq->peak_bw;
+>> +
+>> +               /* aggregate all requests */
+>> +               interconnect_aggregate_icn(next);
+>> +               interconnect_aggregate_icp(next->icp);
+>> +
+>> +               if (next->icp->ops->set) {
+>> +                       /* commit the aggregated constraints */
+>> +                       ret = next->icp->ops->set(prev, next, &next->icp->creq);
+>> +               }
 > 
-> IIUC, ideally there should be in-kernel charger-managers and
-> battery objects for each charger/battery.
+> A comment here on how the contraints are propagated along the path
+> would be good. At the moment, this seems to go to each provider along
+> the path, take the provider lock and set the new constraints, then
+> move on to the next provider. Is there any need to make the changes
+> along the entire path "atomic"?
 
-Potentially a generic charger manager might work well.
-
-> 
-> I wonder if there is any existing way to do the non-linear
-> conversion from the iio-adc volt-reading of the thermistor to
-> the desired unit of degrees-celsius, or if I need to write
-> something myself?
-
-Table and interpolation based in the above mentioned driver.
-
-> 
-> I do see the generic-adc-battery driver, which sounds about
-> right, but it has no DT binding and it also has its
-> cal_charge() callback which is presumably difficult to handle
-> from DT? We have no way to get at the battery charge level,
-> short of inaccurate guesses based on the battery voltage. The
-> driver also appears to have no concept of battery temperature,
-> but I suppose it could be extended with that? Not sure if it's
-> even applicable, I'm fumbling...
-
-Potentially you could probably make it work.  There will need to
-be some sort of platform specific glue driver to pull it all together
-
-That glue driver could then register an instance of generic adc battery
-and provide the necessary platform data.
-
-How that connects everything together could be handled via dt bindings.
-
-> 
-> I may have completely misunderstood how this is supposed to be
-> hooked up in an ideal world.
-
-Nope, just at tricky problem to solve neatly ;)
-
-Jonathan
+Yes, the above is correct. There is no such need at least for the
+hardware i am currently playing with. We can add support for that later
+if needed.
 
 > 
-> Cheers,
-> Peter
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-iio"
-> in the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> I'm trying to understand what happens in the case where a new request
+> comes along while the previous path is still be traversed.
+
+It just gets aggregated and set and this seems to not be an issue as the
+paths are valid. Now I am trying to keep it simple and if anything needs
+serialization we can add some locking later.
+
+> 
+>> +               mutex_unlock(&next->icp->lock);
+>> +               if (ret)
+>> +                       goto out;
+>> +       }
+>> +
+>> +out:
+>> +       return ret;
+>> +}
+>> +
+>> +/**
+>> + * interconnect_get() - return a handle for path between two endpoints
+> 
+> This is not used currently by the msm8916 platform driver? Is this
+> expected to be called by leaf device drivers or by higher layer bus
+> drivers? I suspect a mix of the two, but an example would be nice.
+
+This is called by a consumer driver to express its for example bandwidth
+needs between various endpoints. Will add some examples.
+
+[..]
+>> +/**
+>> + * struct icp - interconnect provider (controller) entity that might
+>> + * provide multiple interconnect controls
+>> + *
+>> + * @icp_list: list of the registered interconnect providers
+>> + * @nodes: internal list of the interconnect provider nodes
+>> + * @ops: pointer to device specific struct icp_ops
+>> + * @dev: the device this interconnect provider belongs to
+>> + * @lock: a lock to protect creq and users
+>> + * @creq: the actual state of constraints for this interconnect provider
+>> + * @users: count of active users
+>> + * @data: pointer to private data
+>> + */
+>> +struct icp {
+>> +       struct list_head        icp_list;
+>> +       struct list_head        nodes;
+>> +       const struct icp_ops    *ops;
+>> +       struct device           *dev;
+>> +       struct mutex            lock;
+>> +       struct interconnect_creq creq;
+>> +       int                     users;
+>> +       void                    *data;
+>> +};
+> 
+> Use interconnect_provider here instead of icp for the sake of
+> consistency. Same for icp_ops. Or replace everything with any of the
+> other suggested alternatives. My suggestion to the name pool is 'xcon'
+> where x == inter.
+
+Yes i am working on better naming, thanks!
+
+BR,
+Georgi
