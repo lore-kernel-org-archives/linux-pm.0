@@ -1,180 +1,296 @@
 From: Georgi Djakov <georgi.djakov@linaro.org>
-Subject: Re: [PATCH v3 1/3] interconnect: Add generic on-chip interconnect API
-Date: Thu, 2 Nov 2017 18:00:42 +0200
-Message-ID: <26225878-8fed-b990-d02f-5253190de77a@linaro.org>
+Subject: Re: [PATCH v3 3/3] interconnect: Add Qualcomm msm8916 interconnect
+ provider driver
+Date: Thu, 2 Nov 2017 18:00:57 +0200
+Message-ID: <cc1c87cd-a42e-a37c-8962-721e6f04bbd1@linaro.org>
 References: <20170908171830.13813-1-georgi.djakov@linaro.org>
- <20170908171830.13813-2-georgi.djakov@linaro.org>
- <CAHLCerOKEY_My9OKDMV_ns3dTAgBMPkRS2hdS7iYwFoX5rxOPA@mail.gmail.com>
+ <20170908171830.13813-4-georgi.djakov@linaro.org>
+ <CAHLCerNO=yznzCdyNt13EYeuSW_b-Rb1dRFnq=MZtXoMLWkkUA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:54698 "EHLO
-        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932280AbdKBQAu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2017 12:00:50 -0400
-Received: by mail-lf0-f68.google.com with SMTP id a2so7095883lfh.11
-        for <linux-pm@vger.kernel.org>; Thu, 02 Nov 2017 09:00:49 -0700 (PDT)
-In-Reply-To: <CAHLCerOKEY_My9OKDMV_ns3dTAgBMPkRS2hdS7iYwFoX5rxOPA@mail.gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAHLCerNO=yznzCdyNt13EYeuSW_b-Rb1dRFnq=MZtXoMLWkkUA@mail.gmail.com>
 Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: Amit Kucheria <amit.kucheria@verdurent.com>
 Cc: Linux PM list <linux-pm@vger.kernel.org>, gregkh@linuxfoundation.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, robh+dt@kernel.org, khilman@baylibre.com, Michael Turquette <mturquette@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, seansw@qti.qualcomm.com, davidai@quicinc.com, LKML <linux-kernel@vger.kernel.org>, lakml <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, mark.rutland@arm.com, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
 Hi Amit,
 
 On 11/02/2017 09:28 AM, Amit Kucheria wrote:
-[..>> +Interconnect node is the software definition of the interconnect
-hardware
->> +port. Each interconnect provider consists of multiple interconnect nodes,
->> +which are connected to other SoC components including other interconnect
->> +providers. The point on the diagram where the CPUs connects to the memory is
->> +called an interconnect node, which belongs to the Mem NoC interconnect provider.
+> On Fri, Sep 8, 2017 at 10:48 PM, Georgi Djakov <georgi.djakov@linaro.org> wrote:
+>> Add driver for the Qualcomm interconnect buses found in msm8916 based
+>> platforms. This patch contains only a partial topology to make reviewing
+>> easier.
+>>
+>> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+>> ---
+>>  drivers/interconnect/Kconfig                     |   5 +
+>>  drivers/interconnect/Makefile                    |   1 +
+>>  drivers/interconnect/qcom/Kconfig                |  11 +
+>>  drivers/interconnect/qcom/Makefile               |   1 +
+>>  drivers/interconnect/qcom/interconnect_msm8916.c | 375 +++++++++++++++++++++++
+>>  include/linux/interconnect/qcom-msm8916.h        |  92 ++++++
+>>  6 files changed, 485 insertions(+)
+>>  create mode 100644 drivers/interconnect/qcom/Kconfig
+>>  create mode 100644 drivers/interconnect/qcom/Makefile
+>>  create mode 100644 drivers/interconnect/qcom/interconnect_msm8916.c
+>>  create mode 100644 include/linux/interconnect/qcom-msm8916.h
+>>
+>> diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
+>> index 1e50e951cdc1..b123a76e2f9d 100644
+>> --- a/drivers/interconnect/Kconfig
+>> +++ b/drivers/interconnect/Kconfig
+>> @@ -8,3 +8,8 @@ menuconfig INTERCONNECT
+>>
+>>           If unsure, say no.
+>>
+>> +if INTERCONNECT
 >> +
->> +Interconnect endpoits are the first or the last element of the path. Every
-> 
-> s/endpoits/endpoints
-> 
-
-Ok!
-
->> +endpoint is a node, but not every node is an endpoint.
+>> +source "drivers/interconnect/qcom/Kconfig"
 >> +
->> +Interconnect path is everything between two endpoints including all the nodes
->> +that have to be traversed to reach from a source to destination node. It may
->> +include multiple master-slave pairs across several interconnect providers.
+>> +endif
+>> diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
+>> index d9da6a6c3560..62a01de24aeb 100644
+>> --- a/drivers/interconnect/Makefile
+>> +++ b/drivers/interconnect/Makefile
+>> @@ -1 +1,2 @@
+>>  obj-$(CONFIG_INTERCONNECT)  += interconnect.o
+>> +obj-$(CONFIG_INTERCONNECT_QCOM)                += qcom/
+>> diff --git a/drivers/interconnect/qcom/Kconfig b/drivers/interconnect/qcom/Kconfig
+>> new file mode 100644
+>> index 000000000000..86465dc37bd4
+>> --- /dev/null
+>> +++ b/drivers/interconnect/qcom/Kconfig
+>> @@ -0,0 +1,11 @@
+>> +config INTERCONNECT_QCOM
+>> +       bool "Qualcomm Network-on-Chip interconnect drivers"
+>> +       depends on INTERCONNECT
+>> +       depends on ARCH_QCOM || COMPILE_TEST
+>> +       default y
 >> +
->> +Interconnect consumers are the entities which make use of the data paths exposed
->> +by the providers. The consumers send requests to providers requesting various
->> +throughput, latency and priority. Usually the consumers are device drivers, that
->> +send request based on their needs. An example for a consumer is a a video
-> 
-> typo: is a video>
-
-Ok!
-
-[..]
->> +/**
->> + * interconnect_set() - set constraints on a path between two endpoints
->> + * @path: reference to the path returned by interconnect_get()
->> + * @creq: request from the consumer, containing its requirements
+>> +config INTERCONNECT_QCOM_MSM8916
+>> +       tristate "Qualcomm MSM8916 interconnect driver"
+>> +       depends on INTERCONNECT_QCOM
+>> +       help
+>> +         This is a driver for the Qualcomm Network-on-Chip on msm8916-based platforms.
+>> diff --git a/drivers/interconnect/qcom/Makefile b/drivers/interconnect/qcom/Makefile
+>> new file mode 100644
+>> index 000000000000..0831080e1100
+>> --- /dev/null
+>> +++ b/drivers/interconnect/qcom/Makefile
+>> @@ -0,0 +1 @@
+>> +obj-$(CONFIG_INTERCONNECT_QCOM_MSM8916) += interconnect_msm8916.o
+>> diff --git a/drivers/interconnect/qcom/interconnect_msm8916.c b/drivers/interconnect/qcom/interconnect_msm8916.c
+>> new file mode 100644
+>> index 000000000000..9b001e100974
+>> --- /dev/null
+>> +++ b/drivers/interconnect/qcom/interconnect_msm8916.c
+>> @@ -0,0 +1,375 @@
+>> +/*
+>> + * Copyright (C) 2017 Linaro Ltd
 >> + *
->> + * This function is used by an interconnect consumer to express its own needs
->> + * in term of bandwidth and QoS for a previously requested path between two
->> + * endpoints. The requests are aggregated and each node is updated accordingly.
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the GNU General Public License version 2 and
+>> + * only version 2 as published by the Free Software Foundation.
 >> + *
->> + * Returns 0 on success, or an approproate error code otherwise.
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>> + * GNU General Public License for more details.
 >> + */
->> +int interconnect_set(struct interconnect_path *path,
->> +                    struct interconnect_creq *creq)
->> +{
->> +       struct interconnect_node *next, *prev = NULL;
->> +       size_t i;
->> +       int ret = 0;
 >> +
->> +       for (i = 0; i < path->num_nodes; i++, prev = next) {
->> +               next = path->reqs[i].node;
+>> +#include <linux/clk.h>
+>> +#include <linux/device.h>
+>> +#include <linux/io.h>
+>> +#include <linux/interconnect-provider.h>
+>> +#include <linux/interconnect/qcom-msm8916.h>
+>> +#include <linux/module.h>
+>> +#include <linux/of_device.h>
+>> +#include <linux/of_platform.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/slab.h>
 >> +
->> +               /*
->> +                * Both endpoints should be valid and master-slave pairs of
+>> +#define to_qcom_icp(_icp) \
+>> +       container_of(_icp, struct qcom_interconnect_provider, icp)
+>> +#define to_qcom_node(_node) \
+>> +       container_of(_node, struct qcom_interconnect_node, node)
+>> +
+>> +enum qcom_bus_type {
+>> +       QCOM_BUS_TYPE_NOC = 0,
+>> +       QCOM_BUS_TYPE_MEM,
+>> +};
+>> +
+>> +struct qcom_interconnect_provider {
+>> +       struct icp              icp;
+>> +       void __iomem            *base;
+>> +       struct clk              *bus_clk;
+>> +       struct clk              *bus_a_clk;
+>> +       u32                     base_offset;
+>> +       u32                     qos_offset;
+>> +       enum qcom_bus_type      type;
+>> +};
+>> +
+>> +struct qcom_interconnect_node {
+>> +       struct interconnect_node node;
+>> +       unsigned char *name;
+>> +       struct interconnect_node *links[8];
 > 
-> Losing the 'and' improves readability.
+> Magic number 8. Replace with 8916_MAX_LINKS or something.
+> 
+
+Ok, sure!
+
+>> +       u16 id;
+>> +       u16 num_links;
+>> +       u16 port;
+>> +       u16 buswidth;
+> 
+> Comment on what a buswidth is just to be clear
 > 
 
 Ok!
 
->> +                * the same interconnect provider that will be configured.
->> +                */
->> +               if (!next || !prev)
->> +                       continue;
->> +               if (next->icp != prev->icp)
->> +                       continue;
->> +
->> +               mutex_lock(&next->icp->lock);
->> +
->> +               /* update the consumer request for this path */
->> +               path->reqs[i].avg_bw = creq->avg_bw;
->> +               path->reqs[i].peak_bw = creq->peak_bw;
->> +
->> +               /* aggregate all requests */
->> +               interconnect_aggregate_icn(next);
->> +               interconnect_aggregate_icp(next->icp);
->> +
->> +               if (next->icp->ops->set) {
->> +                       /* commit the aggregated constraints */
->> +                       ret = next->icp->ops->set(prev, next, &next->icp->creq);
->> +               }
+>> +       u64 rate;
 > 
-> A comment here on how the contraints are propagated along the path
-> would be good. At the moment, this seems to go to each provider along
-> the path, take the provider lock and set the new constraints, then
-> move on to the next provider. Is there any need to make the changes
-> along the entire path "atomic"?
+> Comment on units
 
-Yes, the above is correct. There is no such need at least for the
-hardware i am currently playing with. We can add support for that later
-if needed.
+Ok!
 
 > 
-> I'm trying to understand what happens in the case where a new request
-> comes along while the previous path is still be traversed.
-
-It just gets aggregated and set and this seems to not be an issue as the
-paths are valid. Now I am trying to keep it simple and if anything needs
-serialization we can add some locking later.
-
-> 
->> +               mutex_unlock(&next->icp->lock);
->> +               if (ret)
->> +                       goto out;
->> +       }
+>> +};
 >> +
->> +out:
->> +       return ret;
->> +}
+>> +static struct qcom_interconnect_node snoc_int_0;
+>> +static struct qcom_interconnect_node snoc_int_1;
+>> +static struct qcom_interconnect_node snoc_int_bimc;
+>> +static struct qcom_interconnect_node snoc_bimc_0_mas;
+>> +static struct qcom_interconnect_node pnoc_snoc_slv;
 >> +
->> +/**
->> + * interconnect_get() - return a handle for path between two endpoints
+>> +static struct qcom_interconnect_node snoc_bimc_0_slv;
 > 
-> This is not used currently by the msm8916 platform driver? Is this
-> expected to be called by leaf device drivers or by higher layer bus
-> drivers? I suspect a mix of the two, but an example would be nice.
+> IMO, saving an 'a' and 'e' is not worth it for the sake of
+> readability. Just use 'slave' and 'master' in the names.
+> 
 
-This is called by a consumer driver to express its for example bandwidth
-needs between various endpoints. Will add some examples.
+Currently i prefer to keep it this way. Maybe i can put a comment
+somewhere.
 
-[..]
->> +/**
->> + * struct icp - interconnect provider (controller) entity that might
->> + * provide multiple interconnect controls
->> + *
->> + * @icp_list: list of the registered interconnect providers
->> + * @nodes: internal list of the interconnect provider nodes
->> + * @ops: pointer to device specific struct icp_ops
->> + * @dev: the device this interconnect provider belongs to
->> + * @lock: a lock to protect creq and users
->> + * @creq: the actual state of constraints for this interconnect provider
->> + * @users: count of active users
->> + * @data: pointer to private data
->> + */
->> +struct icp {
->> +       struct list_head        icp_list;
->> +       struct list_head        nodes;
->> +       const struct icp_ops    *ops;
->> +       struct device           *dev;
->> +       struct mutex            lock;
->> +       struct interconnect_creq creq;
->> +       int                     users;
->> +       void                    *data;
+>> +static struct qcom_interconnect_node slv_ebi_ch0;
+>> +
+>> +static struct qcom_interconnect_node pnoc_int_1;
+>> +static struct qcom_interconnect_node mas_pnoc_sdcc_1;
+>> +static struct qcom_interconnect_node mas_pnoc_sdcc_2;
+>> +static struct qcom_interconnect_node pnoc_snoc_mas;
+>> +
+>> +struct qcom_interconnect_desc {
+>> +       struct qcom_interconnect_node **nodes;
+>> +       size_t num_nodes;
+>> +};
+>> +
+>> +static struct qcom_interconnect_node snoc_int_0 = {
+>> +       .id = 10004,
+>> +       .name = "snoc-int-0",
+>> +#if 0
+> 
+> Please get rid if these.
+> 
+
+I have included only a small part of the topology for this SoC for
+simplicity. Will remove them.
+
+>> +       .links = { &snoc_pnoc_mas.node },
+>> +       .num_links = 1,
+>> +#endif
+>> +       .buswidth = 8,
+>> +};
+>> +
+>> +static struct qcom_interconnect_node snoc_int_1 = {
+>> +       .id = 10005,
+>> +       .name = "snoc-int-1",
+>> +#if 0
+>> +       .links = { &slv_apss.node, &slv_cats_0.node, &slv_cats_1.node },
+>> +       .num_links = 3,
+>> +#endif
+>> +       .buswidth = 8,
+>> +};
+>> +
+>> +static struct qcom_interconnect_node snoc_int_bimc = {
+>> +       .id = 10006,
+>> +       .name = "snoc-bimc",
+>> +       .links = { &snoc_bimc_0_mas.node },
+>> +       .num_links = 1,
+>> +       .buswidth = 8,
+>> +};
+>> +
+>> +static struct qcom_interconnect_node snoc_bimc_0_mas = {
+>> +       .id = 10007,
+>> +       .name = "snoc-bimc-0-mas",
+>> +       .links = { &snoc_bimc_0_slv.node },
+>> +       .num_links = 1,
+>> +       .buswidth = 8,
+>> +};
+>> +
+>> +static struct qcom_interconnect_node pnoc_snoc_slv = {
+>> +       .id = 10011,
+>> +       .name = "snoc-pnoc",
+>> +       .links = { &snoc_int_0.node, &snoc_int_bimc.node, &snoc_int_1.node },
+>> +       .num_links = 3,
+>> +       .buswidth = 8,
 >> +};
 > 
-> Use interconnect_provider here instead of icp for the sake of
-> consistency. Same for icp_ops. Or replace everything with any of the
-> other suggested alternatives. My suggestion to the name pool is 'xcon'
-> where x == inter.
+> 
+> Suggest replacing this list of definitions with a macro such as:
+> 
+> #define DEFINE_XCON_NODE(_name, _id, numlinks, buswidth, ...) \
+>              static struct qcom_interconnect_node _name;                       \
+>              static struct qcom_interconnect_node _name = {                  \
+>                    .id = _id,
+>                                  \
+>                    .name = _name,
+>                         \
+>                    .buswidth = buswidth,
+>                       \
+>                    .num_links = numlinks,
+>                     \
+>                    .links = { __VA_ARGS__ },
+>                 \
+>             };
+> 
+> 
+> This will reduce these definitions to a series of definitions as
+> follows that improves readability.
+> 
+> DEFINE_XCON_NODE(snoc_int_0, 10004, 1, 8, &snoc_pnoc_mas.node)
+> DEFINE_XCON_NODE(snoc_int_1, 10005, 3, 8, &snoc_apss.node,
+> &slv_cats_0.node, &slv_cats_1.node)
+> DEFINE_XCON_NODE(snoc_int_bimc, 10006, 1, 8, &snoc_bimc_0_mas.node)
+> 
+> If fact you could take it one step further and move the definitions
+> under the provider definition below directly.
+> 
 
-Yes i am working on better naming, thanks!
+Will do it. Thanks!
+
+[..]
+
+>> +static struct qcom_interconnect_node *msm8916_pnoc_nodes[] = {
+>> +       [PNOC_INT_1] = &pnoc_int_1,
+>> +       [MAS_PNOC_SDCC_1] = &mas_pnoc_sdcc_1,
+>> +       [MAS_PNOC_SDCC_2] = &mas_pnoc_sdcc_2,
+>> +       [PNOC_SNOC_MAS] = &pnoc_snoc_mas,
+>> +};
+> 
+> There are big holes in this node array definition because the index
+> values are not contiguous. Are you planning fill these in later for
+> each of the providers?
+> 
+
+Yes, exactly. I trying to keep this patch as small as possible to be
+more review friendly. At some time will add the full topology.
+
+Thanks for the comments!
 
 BR,
 Georgi
