@@ -1,44 +1,54 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 197009] /proc/cpuinfo does not update frequency
-Date: Thu, 02 Nov 2017 01:44:04 +0000
-Message-ID: <bug-197009-137361-gMiReKkpW1@https.bugzilla.kernel.org/>
-References: <bug-197009-137361@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC V7 2/2] OPP: Allow "opp-hz" and "opp-microvolt" to contain
+ magic values
+Date: Thu, 2 Nov 2017 10:19:23 +0530
+Message-ID: <20171102044923.GW4240@vireshk-i7>
+References: <cover.1509453284.git.viresh.kumar@linaro.org>
+ <23ba51eaa6b52117458165dccc00a95cf8e86e1d.1509453284.git.viresh.kumar@linaro.org>
+ <CAL_JsqKr7MsM6iZ_QYO=iCzXNwANEGQGDLFUEwe0Z-p2Z_aMYw@mail.gmail.com>
+ <CAKohpokvQD4Z6YY6MRG8c+hnsS=Z52X4XhyTgC5FTgf7VuaNmw@mail.gmail.com>
+ <CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:42714 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S933083AbdKBBoG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Nov 2017 21:44:06 -0400
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id A650528C80
-        for <linux-pm@vger.kernel.org>; Thu,  2 Nov 2017 01:44:05 +0000 (UTC)
-In-Reply-To: <bug-197009-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=197009
+On 01-11-17, 15:39, Rob Herring wrote:
+> On Tue, Oct 31, 2017 at 9:17 PM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> > On 31 October 2017 at 16:02, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> >> Why not a new property for magic values? opp-magic? Don't we want to
+> >> know when we have magic values?
+> >
+> > I have kept a separate property since beginning (domain-performance-state)
+> > and moved to using these magic values in the existing field because of the
+> > suggestion Kevin gave earlier.
+> >
+> > https://marc.info/?l=linux-kernel&m=149306082218001&w=2
+> >
+> > I am not sure what to do now :)
+> 
+> Okay, I guess reusing the properties is fine.
 
-Rob Thomas (xrobau@gmail.com) changed:
+Okay, great.
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |xrobau@gmail.com
+> >> Wouldn't magic values in opp-hz get propagated to user space?
+> >
+> > The OPP core puts them in debugfs just to know how the OPPs are
+> > set. Otherwise, I am not sure that the power domain core/drivers would
+> > be exposing that to user space.
+> 
+> I was thinking thru the cpufreq interface, but I guess this is not for cpus.
 
---- Comment #6 from Rob Thomas (xrobau@gmail.com) ---
-This appears to be a regression, and Linus has made it reasonably clear that
-he's unhappy with regressions - 
-http://lkml.iu.edu/hypermail/linux/kernel/1710.3/02474.html is a recent
-example.
-
-This breaks a bunch of userspace stuff that is relying on /proc/cpuinfo to
-provide an accurate, or even SLIGHTLY accurate, representation of the current
-CPU speed.
-
-Can this be readdressed?
+Oh no. That's not the target here for sure.
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
