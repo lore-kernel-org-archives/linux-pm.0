@@ -1,107 +1,54 @@
-From: Neil Armstrong <narmstrong@baylibre.com>
-Subject: [PATCH] soc: amlogic: meson-gx-pwrc-vpu: fix power-off when powered by bootloader
-Date: Fri,  3 Nov 2017 16:43:24 +0100
-Message-ID: <1509723804-21114-1-git-send-email-narmstrong@baylibre.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: khilman@baylibre.com, carlo@caione.org
-Cc: Neil Armstrong <narmstrong@baylibre.com>, linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3] cpufreq: schedutil: Examine the correct CPU when we
+ update util
+Date: Fri, 3 Nov 2017 21:15:59 +0530
+Message-ID: <20171103154559.GJ4240@vireshk-i7>
+References: <20171103034022.GD4240@vireshk-i7>
+ <20171103133642.8636-1-chris.redpath@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:47390 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751736AbdKCPqC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Nov 2017 11:46:02 -0400
+Received: by mail-pf0-f196.google.com with SMTP id z11so2475302pfk.4
+        for <linux-pm@vger.kernel.org>; Fri, 03 Nov 2017 08:46:02 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20171103133642.8636-1-chris.redpath@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Chris Redpath <chris.redpath@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-In the case the VPU power domain has been powered on by the bootloader
-and no driver are attached to this power domain, the genpd will power it
-off after a certain amount of time, but the clocks hasn't been enabled
-by the kernel itself and the power-off will trigger some faults.
-This patch enable the clocks to have a coherent state for an eventual
-poweroff and switches to the pm_domain_always_on_gov governor.
+On 03-11-17, 13:36, Chris Redpath wrote:
+> After
+> 674e75411fc2 ("sched: cpufreq: Allow remote cpufreq callbacks")
+> 
+> We stopped always reading utilization for the cpu we are running
+> the governor on, and instead read it for the cpu which we've been
+> told has updated utilization. This is stored in sugov_cpu->cpu.
+> 
+> The value is set in sugov_register but we clear it in sugov_start
+> which leads to always looking at the utilization of CPU0 instead
+> of the correct one.
+> 
+> Let's fix this by consolidating the initialization code into
+> sugov_start().
+> 
+> Fixes: 674e75411fc2 ("sched: cpufreq: Allow remote cpufreq callbacks")
+> Signed-off-by: Chris Redpath <chris.redpath@arm.com>
+> Reviewed-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> Reviewed-by: Brendan Jackman <brendan.jackman@arm.com>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> ---
+>  kernel/sched/cpufreq_schedutil.c | 6 +-----
+>  1 file changed, 1 insertion(+), 5 deletions(-)
 
-Fixes: 75fcb5ca4b46 ("soc: amlogic: add Meson GX VPU Domains driver")
-Signed-off-by: Neil Armstrong <narmstrong@baylibre.com>
----
- drivers/soc/amlogic/meson-gx-pwrc-vpu.c | 29 +++++++++++++++++++----------
- 1 file changed, 19 insertions(+), 10 deletions(-)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/drivers/soc/amlogic/meson-gx-pwrc-vpu.c b/drivers/soc/amlogic/meson-gx-pwrc-vpu.c
-index bf5190b..2bdeebc 100644
---- a/drivers/soc/amlogic/meson-gx-pwrc-vpu.c
-+++ b/drivers/soc/amlogic/meson-gx-pwrc-vpu.c
-@@ -34,7 +34,6 @@ struct meson_gx_pwrc_vpu {
- 	struct reset_control *rstc;
- 	struct clk *vpu_clk;
- 	struct clk *vapb_clk;
--	bool powered;
- };
- 
- static inline
-@@ -78,8 +77,6 @@ static int meson_gx_pwrc_vpu_power_off(struct generic_pm_domain *genpd)
- 	clk_disable_unprepare(pd->vpu_clk);
- 	clk_disable_unprepare(pd->vapb_clk);
- 
--	pd->powered = false;
--
- 	return 0;
- }
- 
-@@ -91,7 +88,11 @@ static int meson_gx_pwrc_vpu_setup_clk(struct meson_gx_pwrc_vpu *pd)
- 	if (ret)
- 		return ret;
- 
--	return clk_prepare_enable(pd->vapb_clk);
-+	ret = clk_prepare_enable(pd->vapb_clk);
-+	if (ret)
-+		clk_disable_unprepare(pd->vpu_clk);
-+
-+	return ret;
- }
- 
- static int meson_gx_pwrc_vpu_power_on(struct generic_pm_domain *genpd)
-@@ -139,8 +140,6 @@ static int meson_gx_pwrc_vpu_power_on(struct generic_pm_domain *genpd)
- 	if (ret)
- 		return ret;
- 
--	pd->powered = true;
--
- 	return 0;
- }
- 
-@@ -167,6 +166,8 @@ static int meson_gx_pwrc_vpu_probe(struct platform_device *pdev)
- 	struct reset_control *rstc;
- 	struct clk *vpu_clk;
- 	struct clk *vapb_clk;
-+	bool powered_off;
-+	int ret;
- 
- 	regmap_ao = syscon_node_to_regmap(of_get_parent(pdev->dev.of_node));
- 	if (IS_ERR(regmap_ao)) {
-@@ -205,8 +206,17 @@ static int meson_gx_pwrc_vpu_probe(struct platform_device *pdev)
- 	vpu_hdmi_pd.vpu_clk = vpu_clk;
- 	vpu_hdmi_pd.vapb_clk = vapb_clk;
- 
--	pm_genpd_init(&vpu_hdmi_pd.genpd, &simple_qos_governor,
--		      meson_gx_pwrc_vpu_get_power(&vpu_hdmi_pd));
-+	powered_off = meson_gx_pwrc_vpu_get_power(&vpu_hdmi_pd);
-+
-+	/* If already powered, sync the clock states */
-+	if (!powered_off) {
-+		ret = meson_gx_pwrc_vpu_setup_clk(&vpu_hdmi_pd);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	pm_genpd_init(&vpu_hdmi_pd.genpd, &pm_domain_always_on_gov,
-+		      powered_off);
- 
- 	return of_genpd_add_provider_simple(pdev->dev.of_node,
- 					    &vpu_hdmi_pd.genpd);
-@@ -214,8 +224,7 @@ static int meson_gx_pwrc_vpu_probe(struct platform_device *pdev)
- 
- static void meson_gx_pwrc_vpu_shutdown(struct platform_device *pdev)
- {
--	if (vpu_hdmi_pd.powered)
--		meson_gx_pwrc_vpu_power_off(&vpu_hdmi_pd.genpd);
-+	meson_gx_pwrc_vpu_power_off(&vpu_hdmi_pd.genpd);
- }
- 
- static const struct of_device_id meson_gx_pwrc_vpu_match_table[] = {
 -- 
-2.7.4
+viresh
