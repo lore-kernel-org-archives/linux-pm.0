@@ -1,49 +1,176 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v2] cpufreq: schedutil: Examine the correct CPU when we
- update util
-Date: Fri, 3 Nov 2017 09:10:22 +0530
-Message-ID: <20171103034022.GD4240@vireshk-i7>
-References: <20171102111022.GB4240@vireshk-i7>
- <20171102113840.17439-1-chris.redpath@arm.com>
- <20171102114048.GC4240@vireshk-i7>
- <037169f3-61f9-b29e-9561-0f7dba213cd5@arm.com>
+From: Ramesh Thomas <ramesh.thomas@intel.com>
+Subject: Re: [RFT][PATCH 1/2] PM / domains: Rework governor code to be more
+ consistent
+Date: Fri, 3 Nov 2017 00:05:02 -0700
+Message-ID: <20171103070501.GA22692@intel.com>
+References: <5770848.Kdi5IjVKeE@aspire.rjw.lan>
+ <2099930.xGFd9X30dN@aspire.rjw.lan>
+Reply-To: ramesh.thomas@intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f50.google.com ([74.125.83.50]:49031 "EHLO
-        mail-pg0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751297AbdKCDk1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Nov 2017 23:40:27 -0400
-Received: by mail-pg0-f50.google.com with SMTP id v78so1396528pgb.5
-        for <linux-pm@vger.kernel.org>; Thu, 02 Nov 2017 20:40:27 -0700 (PDT)
+Received: from mga06.intel.com ([134.134.136.31]:57908 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752657AbdKCHLq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 3 Nov 2017 03:11:46 -0400
 Content-Disposition: inline
-In-Reply-To: <037169f3-61f9-b29e-9561-0f7dba213cd5@arm.com>
+In-Reply-To: <2099930.xGFd9X30dN@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chris Redpath <chris.redpath@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Tero Kristo <t-kristo@ti.com>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>
 
-On 02-11-17, 12:06, Chris Redpath wrote:
-> According to my diff, this was the commit which switched from assigning
-> the values directly (and not overwriting the cpu member, which was
-> introduced in the other commit you reference) to using a memset and
-> clearing the whole struct.
+On 2017-11-02 at 00:01:50 +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The genpd governor currently uses negative PM QoS values to indicate
+> the "no suspend" condition and 0 as "no restriction", but it doesn't
+> use them consistently.  Moreover, it tries to refresh QoS values for
+> already suspended devices in a quite questionable way.
+> 
+> For the above reasons, rework it to be a bit more consistent.
+> 
+> First off, note that dev_pm_qos_read_value() in
+> dev_update_qos_constraint() and __default_power_down_ok() is
+> evaluated for devices in suspend.  Moreover, that only happens if the
+> effective_constraint_ns value for them is negative (meaning "no
+> suspend").  It is not evaluated in any other cases, so effectively
+> the QoS values are only updated for devices in suspend that should
+> not have been suspended in the first place.  In all of the other
+> cases, the QoS values taken into account are the effective ones from
+> the time before the device has been suspended, so generally devices
+> need to be resumed and suspended again for new QoS values to take
+> effect anyway.  Thus evaluating dev_update_qos_constraint() in
+> those two places doesn't make sense at all, so drop it.
+> 
+> Second, initialize effective_constraint_ns to 0 ("no constraint")
+> rather than to (-1) ("no suspend"), which makes more sense in
+> general and in case effective_constraint_ns is never updated
+> (the device is in suspend all the time or it is never suspended)
+> it doesn't affect the device's parent and so on.
+> 
+> Finally, rework default_suspend_ok() to explicitly handle the
+> "no restriction" and "no suspend" special cases.
+> 
+> Also add WARN_ON() around checks that should never trigger.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/base/power/domain.c          |    2 -
+>  drivers/base/power/domain_governor.c |   56 ++++++++++++++++++++---------------
+>  2 files changed, 33 insertions(+), 25 deletions(-)
+> 
+> Index: linux-pm/drivers/base/power/domain.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/domain.c
+> +++ linux-pm/drivers/base/power/domain.c
+> @@ -1331,7 +1331,7 @@ static struct generic_pm_domain_data *ge
+>  
+>  	gpd_data->base.dev = dev;
+>  	gpd_data->td.constraint_changed = true;
+> -	gpd_data->td.effective_constraint_ns = -1;
+> +	gpd_data->td.effective_constraint_ns = 0;
+>  	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
+>  
+>  	spin_lock_irq(&dev->power.lock);
+> Index: linux-pm/drivers/base/power/domain_governor.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/domain_governor.c
+> +++ linux-pm/drivers/base/power/domain_governor.c
+> @@ -14,22 +14,22 @@
+>  static int dev_update_qos_constraint(struct device *dev, void *data)
+>  {
+>  	s64 *constraint_ns_p = data;
+> -	s32 constraint_ns = -1;
+> -
+> -	if (dev->power.subsys_data && dev->power.subsys_data->domain_data)
+> -		constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
+> +	s64 constraint_ns;
+>  
+> -	if (constraint_ns < 0) {
+> -		constraint_ns = dev_pm_qos_read_value(dev);
+> -		constraint_ns *= NSEC_PER_USEC;
+> -	}
+> -	if (constraint_ns == 0)
+> +	if (!dev->power.subsys_data || !dev->power.subsys_data->domain_data)
+>  		return 0;
+>  
+>  	/*
+> -	 * constraint_ns cannot be negative here, because the device has been
+> -	 * suspended.
+> +	 * Only take suspend-time QoS constraints of devices into account,
+> +	 * because constraints updated after the device has been suspended are
+> +	 * not guaranteed to be taken into account anyway.  In order for them
+> +	 * to take effect, the device has to be resumed and suspended again.
+>  	 */
+> +	constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
+> +	/* 0 means "no constraint" */
+> +	if (constraint_ns == 0)
+> +		return 0;
+> +
+>  	if (constraint_ns < *constraint_ns_p || *constraint_ns_p == 0)
+>  		*constraint_ns_p = constraint_ns;
+>  
+> @@ -76,14 +76,26 @@ static bool default_suspend_ok(struct de
+>  		device_for_each_child(dev, &constraint_ns,
+>  				      dev_update_qos_constraint);
+>  
+> -	if (constraint_ns > 0) {
+> +	if (constraint_ns == 0) {
+> +		/* "No restriction", so the device is allowed to suspend. */
+> +		td->effective_constraint_ns = 0;
+> +		td->cached_suspend_ok = true;
+> +	} else if (WARN_ON(constraint_ns < 0)) {
 
-I understand what you want to convey here but the log says something
-else according to me. It says:
+Should never comer here. Child should not have suspended.
+Should be a fatal bug. This else block probably is not necessary.
 
-"Since: 4296f23ed cpufreq: schedutil: Fix per-CPU structure
-initialization in sugov_start(), We lost the value of sg_cpu->cpu
-which is assigned during sugov_register."
+> +		/*
+> +		 * effective_constraint_ns is negative already and
+> +		 * cached_suspend_ok is false, so return right away.
+> +		 */
+> +		return false;
+> +	} else {
+>  		constraint_ns -= td->suspend_latency_ns +
+>  				td->resume_latency_ns;
+> -		if (constraint_ns == 0)
+> +		/* Again, if negative or zero, returning right away is fine. */
+> +		if (constraint_ns <= 0)
+>  			return false;
+> +
+> +		td->effective_constraint_ns = constraint_ns;
+> +		td->cached_suspend_ok = true;
+>  	}
+> -	td->effective_constraint_ns = constraint_ns;
+> -	td->cached_suspend_ok = constraint_ns >= 0;
+>  
+>  	/*
+>  	 * The children have been suspended already, so we don't need to take
+> @@ -144,18 +156,14 @@ static bool __default_power_down_ok(stru
+>  		 */
+>  		td = &to_gpd_data(pdd)->td;
+>  		constraint_ns = td->effective_constraint_ns;
+> -		/* default_suspend_ok() need not be called before us. */
+> -		if (constraint_ns < 0) {
+> -			constraint_ns = dev_pm_qos_read_value(pdd->dev);
+> -			constraint_ns *= NSEC_PER_USEC;
+> -		}
+> +		/* Negative values mean "no suspend at all" */
+> +		if (WARN_ON(constraint_ns < 0))
+> +			return false;
 
-Reading this line it looks like sg_cpu->cpu was screwed up by
-4296f23ed, which happened in 4.9. But the sg_cpu->cpu field itself got
-added in 4.14 and so I think we should write it differently.
+Cannot come here if was not suspended. Looks like a redundant check.
 
-If I were you, I wouldn't mention 4296f23ed here at all but just say
-that memset() is clearing the value of sg_cpu->cpu, fix that.
-
-Thanks.
-
--- 
-viresh
+> +
+> +		/* 0 means "no constraint" */
+>  		if (constraint_ns == 0)
+>  			continue;
+>  
+> -		/*
+> -		 * constraint_ns cannot be negative here, because the device has
+> -		 * been suspended.
+> -		 */
+>  		if (constraint_ns <= off_on_time_ns)
+>  			return false;
+>  
+> 
