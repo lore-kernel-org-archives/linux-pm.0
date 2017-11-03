@@ -1,65 +1,254 @@
 From: Ramesh Thomas <ramesh.thomas@intel.com>
-Subject: Re: [RFT][PATCH 1/2] PM / domains: Rework governor code to be more
- consistent
-Date: Fri, 3 Nov 2017 00:05:02 -0700
-Message-ID: <20171103070501.GA22692@intel.com>
+Subject: Re: [RFT][PATCH 2/2] PM / QoS: Fix device resume latency framework
+Date: Fri, 3 Nov 2017 00:43:51 -0700
+Message-ID: <20171103074351.GB22692@intel.com>
 References: <5770848.Kdi5IjVKeE@aspire.rjw.lan>
- <2099930.xGFd9X30dN@aspire.rjw.lan>
+ <2054600.p9BxnU7SDF@aspire.rjw.lan>
 Reply-To: ramesh.thomas@intel.com
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:57908 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752657AbdKCHLq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 3 Nov 2017 03:11:46 -0400
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2099930.xGFd9X30dN@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <2054600.p9BxnU7SDF@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Tero Kristo <t-kristo@ti.com>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-On 2017-11-02 at 00:01:50 +0100, Rafael J. Wysocki wrote:
+On 2017-11-02 at 00:03:54 +0100, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> The genpd governor currently uses negative PM QoS values to indicate
-> the "no suspend" condition and 0 as "no restriction", but it doesn't
-> use them consistently.  Moreover, it tries to refresh QoS values for
-> already suspended devices in a quite questionable way.
+> The special value of 0 for device resume latency PM QoS means
+> "no restriction", but there are two problems with that.
 > 
-> For the above reasons, rework it to be a bit more consistent.
+> First, device resume latency PM QoS requests with 0 as the
+> value are always put in front of requests with positive
+> values in the priority lists used internally by the PM QoS
+> framework, causing 0 to be chosen as an effective constraint
+> value.  However, that 0 is then interpreted as "no restriction"
+> effectively overriding the other requests with specific
+> restrictions which is incorrect.
 > 
-> First off, note that dev_pm_qos_read_value() in
-> dev_update_qos_constraint() and __default_power_down_ok() is
-> evaluated for devices in suspend.  Moreover, that only happens if the
-> effective_constraint_ns value for them is negative (meaning "no
-> suspend").  It is not evaluated in any other cases, so effectively
-> the QoS values are only updated for devices in suspend that should
-> not have been suspended in the first place.  In all of the other
-> cases, the QoS values taken into account are the effective ones from
-> the time before the device has been suspended, so generally devices
-> need to be resumed and suspended again for new QoS values to take
-> effect anyway.  Thus evaluating dev_update_qos_constraint() in
-> those two places doesn't make sense at all, so drop it.
+> Second, the users of device resume latency PM QoS have no
+> way to specify that *any* resume latency at all should be
+> avoided, which is an artificial limitation in general.
 > 
-> Second, initialize effective_constraint_ns to 0 ("no constraint")
-> rather than to (-1) ("no suspend"), which makes more sense in
-> general and in case effective_constraint_ns is never updated
-> (the device is in suspend all the time or it is never suspended)
-> it doesn't affect the device's parent and so on.
+> To address these issues, modify device resume latency PM QoS to
+> use S32_MAX as the "no constraint" value and 0 as the "no
+> latency at all" one and rework its users (the cpuidle menu
+> governor, the genpd QoS governor and the runtime PM framework)
+> to follow these changes.
 > 
-> Finally, rework default_suspend_ok() to explicitly handle the
-> "no restriction" and "no suspend" special cases.
+> Also add a special "n/a" value to the corresponding user space I/F
+> to allow user space to indicate that it cannot accept any resume
+> latencies at all for the given device.
 > 
-> Also add WARN_ON() around checks that should never trigger.
-> 
+> Fixes: 85dc0b8a4019 (PM / QoS: Make it possible to expose PM QoS latency constraints)
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=197323
+> Reported-by: Reinette Chatre <reinette.chatre@intel.com>
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  drivers/base/power/domain.c          |    2 -
->  drivers/base/power/domain_governor.c |   56 ++++++++++++++++++++---------------
->  2 files changed, 33 insertions(+), 25 deletions(-)
+>  Documentation/ABI/testing/sysfs-devices-power |    4 ++-
+>  drivers/base/cpu.c                            |    3 +-
+>  drivers/base/power/domain.c                   |    2 -
+>  drivers/base/power/domain_governor.c          |   27 ++++++++++++--------------
+>  drivers/base/power/qos.c                      |    5 +++-
+>  drivers/base/power/runtime.c                  |    2 -
+>  drivers/base/power/sysfs.c                    |   25 ++++++++++++++++++++----
+>  drivers/cpuidle/governors/menu.c              |    4 +--
+>  include/linux/pm_qos.h                        |   24 +++++++++++++++--------
+>  9 files changed, 63 insertions(+), 33 deletions(-)
 > 
+> Index: linux-pm/drivers/base/power/sysfs.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/sysfs.c
+> +++ linux-pm/drivers/base/power/sysfs.c
+> @@ -218,7 +218,14 @@ static ssize_t pm_qos_resume_latency_sho
+>  					  struct device_attribute *attr,
+>  					  char *buf)
+>  {
+> -	return sprintf(buf, "%d\n", dev_pm_qos_requested_resume_latency(dev));
+> +	s32 value = dev_pm_qos_requested_resume_latency(dev);
+> +
+> +	if (value == 0)
+> +		return sprintf(buf, "n/a\n");
+> +	else if (value == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
+> +		value = 0;
+> +
+> +	return sprintf(buf, "%d\n", value);
+>  }
+>  
+>  static ssize_t pm_qos_resume_latency_store(struct device *dev,
+> @@ -228,11 +235,21 @@ static ssize_t pm_qos_resume_latency_sto
+>  	s32 value;
+>  	int ret;
+>  
+> -	if (kstrtos32(buf, 0, &value))
+> -		return -EINVAL;
+> +	if (!kstrtos32(buf, 0, &value)) {
+> +		/*
+> +		 * Prevent users from writing negative or "no constraint" values
+> +		 * directly.
+> +		 */
+> +		if (value < 0 || value == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
+> +			return -EINVAL;
+>  
+> -	if (value < 0)
+> +		if (value == 0)
+> +			value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+> +	} else if (!strcmp(buf, "n/a") || !strcmp(buf, "n/a\n")) {
+> +		value = 0;
+> +	} else {
+>  		return -EINVAL;
+> +	}
+>  
+>  	ret = dev_pm_qos_update_request(dev->power.qos->resume_latency_req,
+>  					value);
+> Index: linux-pm/include/linux/pm_qos.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/pm_qos.h
+> +++ linux-pm/include/linux/pm_qos.h
+> @@ -27,16 +27,17 @@ enum pm_qos_flags_status {
+>  	PM_QOS_FLAGS_ALL,
+>  };
+>  
+> -#define PM_QOS_DEFAULT_VALUE -1
+> +#define PM_QOS_DEFAULT_VALUE	(-1)
+> +#define PM_QOS_LATENCY_ANY	S32_MAX
+>  
+>  #define PM_QOS_CPU_DMA_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+>  #define PM_QOS_NETWORK_LAT_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
+>  #define PM_QOS_NETWORK_THROUGHPUT_DEFAULT_VALUE	0
+>  #define PM_QOS_MEMORY_BANDWIDTH_DEFAULT_VALUE	0
+> -#define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	0
+> +#define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	PM_QOS_LATENCY_ANY
+> +#define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT	PM_QOS_LATENCY_ANY
+>  #define PM_QOS_LATENCY_TOLERANCE_DEFAULT_VALUE	0
+>  #define PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT	(-1)
+> -#define PM_QOS_LATENCY_ANY			((s32)(~(__u32)0 >> 1))
+>  
+>  #define PM_QOS_FLAG_NO_POWER_OFF	(1 << 0)
+>  
+> @@ -173,7 +174,8 @@ static inline s32 dev_pm_qos_requested_f
+>  static inline s32 dev_pm_qos_raw_read_value(struct device *dev)
+>  {
+>  	return IS_ERR_OR_NULL(dev->power.qos) ?
+> -		0 : pm_qos_read_value(&dev->power.qos->resume_latency);
+> +		PM_QOS_RESUME_LATENCY_NO_CONSTRAINT :
+> +		pm_qos_read_value(&dev->power.qos->resume_latency);
+>  }
+>  #else
+>  static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev,
+> @@ -183,9 +185,9 @@ static inline enum pm_qos_flags_status d
+>  							s32 mask)
+>  			{ return PM_QOS_FLAGS_UNDEFINED; }
+>  static inline s32 __dev_pm_qos_read_value(struct device *dev)
+> -			{ return 0; }
+> +			{ return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT; }
+>  static inline s32 dev_pm_qos_read_value(struct device *dev)
+> -			{ return 0; }
+> +			{ return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT; }
+>  static inline int dev_pm_qos_add_request(struct device *dev,
+>  					 struct dev_pm_qos_request *req,
+>  					 enum dev_pm_qos_req_type type,
+> @@ -231,9 +233,15 @@ static inline int dev_pm_qos_expose_late
+>  			{ return 0; }
+>  static inline void dev_pm_qos_hide_latency_tolerance(struct device *dev) {}
+>  
+> -static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev) { return 0; }
+> +static inline s32 dev_pm_qos_requested_resume_latency(struct device *dev)
+> +{
+> +	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+> +}
+>  static inline s32 dev_pm_qos_requested_flags(struct device *dev) { return 0; }
+> -static inline s32 dev_pm_qos_raw_read_value(struct device *dev) { return 0; }
+> +static inline s32 dev_pm_qos_raw_read_value(struct device *dev)
+> +{
+> +	return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+> +}
+>  #endif
+>  
+>  #endif
+> Index: linux-pm/drivers/cpuidle/governors/menu.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpuidle/governors/menu.c
+> +++ linux-pm/drivers/cpuidle/governors/menu.c
+> @@ -298,8 +298,8 @@ static int menu_select(struct cpuidle_dr
+>  		data->needs_update = 0;
+>  	}
+>  
+> -	/* resume_latency is 0 means no restriction */
+> -	if (resume_latency && resume_latency < latency_req)
+> +	if (resume_latency < latency_req &&
+> +	    resume_latency != PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
+>  		latency_req = resume_latency;
+>  
+>  	/* Special case when user has set very strict latency requirement */
+> Index: linux-pm/drivers/base/power/runtime.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/runtime.c
+> +++ linux-pm/drivers/base/power/runtime.c
+> @@ -253,7 +253,7 @@ static int rpm_check_suspend_allowed(str
+>  	    || (dev->power.request_pending
+>  			&& dev->power.request == RPM_REQ_RESUME))
+>  		retval = -EAGAIN;
+> -	else if (__dev_pm_qos_read_value(dev) < 0)
+> +	else if (__dev_pm_qos_read_value(dev) == 0)
+>  		retval = -EPERM;
+>  	else if (dev->power.runtime_status == RPM_SUSPENDED)
+>  		retval = 1;
+> Index: linux-pm/drivers/base/cpu.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/cpu.c
+> +++ linux-pm/drivers/base/cpu.c
+> @@ -377,7 +377,8 @@ int register_cpu(struct cpu *cpu, int nu
+>  
+>  	per_cpu(cpu_sys_devices, num) = &cpu->dev;
+>  	register_cpu_under_node(num, cpu_to_node(num));
+> -	dev_pm_qos_expose_latency_limit(&cpu->dev, 0);
+> +	dev_pm_qos_expose_latency_limit(&cpu->dev,
+> +					PM_QOS_RESUME_LATENCY_NO_CONSTRAINT);
+>  
+>  	return 0;
+>  }
+> Index: linux-pm/drivers/base/power/qos.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/qos.c
+> +++ linux-pm/drivers/base/power/qos.c
+> @@ -139,6 +139,9 @@ static int apply_constraint(struct dev_p
+>  
+>  	switch(req->type) {
+>  	case DEV_PM_QOS_RESUME_LATENCY:
+> +		if (WARN_ON(value < 0))
+> +			value = 0;
+> +
+>  		ret = pm_qos_update_target(&qos->resume_latency,
+>  					   &req->data.pnode, action, value);
+>  		break;
+> @@ -189,7 +192,7 @@ static int dev_pm_qos_constraints_alloca
+>  	plist_head_init(&c->list);
+>  	c->target_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
+>  	c->default_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
+> -	c->no_constraint_value = PM_QOS_RESUME_LATENCY_DEFAULT_VALUE;
+> +	c->no_constraint_value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+>  	c->type = PM_QOS_MIN;
+>  	c->notifiers = n;
+>  
+> Index: linux-pm/Documentation/ABI/testing/sysfs-devices-power
+> ===================================================================
+> --- linux-pm.orig/Documentation/ABI/testing/sysfs-devices-power
+> +++ linux-pm/Documentation/ABI/testing/sysfs-devices-power
+> @@ -211,7 +211,9 @@ Description:
+>  		device, after it has been suspended at run time, from a resume
+>  		request to the moment the device will be ready to process I/O,
+>  		in microseconds.  If it is equal to 0, however, this means that
+> -		the PM QoS resume latency may be arbitrary.
+> +		the PM QoS resume latency may be arbitrary and the special value
+> +		"n/a" means that user space cannot accept any resume latency at
+> +		all for the given device.
+>  
+>  		Not all drivers support this attribute.  If it isn't supported,
+>  		it is not present.
 > Index: linux-pm/drivers/base/power/domain.c
 > ===================================================================
 > --- linux-pm.orig/drivers/base/power/domain.c
@@ -68,8 +257,8 @@ On 2017-11-02 at 00:01:50 +0100, Rafael J. Wysocki wrote:
 >  
 >  	gpd_data->base.dev = dev;
 >  	gpd_data->td.constraint_changed = true;
-> -	gpd_data->td.effective_constraint_ns = -1;
-> +	gpd_data->td.effective_constraint_ns = 0;
+> -	gpd_data->td.effective_constraint_ns = 0;
+> +	gpd_data->td.effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
 >  	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
 >  
 >  	spin_lock_irq(&dev->power.lock);
@@ -77,100 +266,97 @@ On 2017-11-02 at 00:01:50 +0100, Rafael J. Wysocki wrote:
 > ===================================================================
 > --- linux-pm.orig/drivers/base/power/domain_governor.c
 > +++ linux-pm/drivers/base/power/domain_governor.c
-> @@ -14,22 +14,22 @@
->  static int dev_update_qos_constraint(struct device *dev, void *data)
->  {
->  	s64 *constraint_ns_p = data;
-> -	s32 constraint_ns = -1;
-> -
-> -	if (dev->power.subsys_data && dev->power.subsys_data->domain_data)
-> -		constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
-> +	s64 constraint_ns;
->  
-> -	if (constraint_ns < 0) {
-> -		constraint_ns = dev_pm_qos_read_value(dev);
-> -		constraint_ns *= NSEC_PER_USEC;
-> -	}
+> @@ -26,11 +26,11 @@ static int dev_update_qos_constraint(str
+>  	 * to take effect, the device has to be resumed and suspended again.
+>  	 */
+>  	constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
+> -	/* 0 means "no constraint" */
 > -	if (constraint_ns == 0)
-> +	if (!dev->power.subsys_data || !dev->power.subsys_data->domain_data)
+> +	if (constraint_ns == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
 >  		return 0;
 >  
->  	/*
-> -	 * constraint_ns cannot be negative here, because the device has been
-> -	 * suspended.
-> +	 * Only take suspend-time QoS constraints of devices into account,
-> +	 * because constraints updated after the device has been suspended are
-> +	 * not guaranteed to be taken into account anyway.  In order for them
-> +	 * to take effect, the device has to be resumed and suspended again.
->  	 */
-> +	constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
-> +	/* 0 means "no constraint" */
-> +	if (constraint_ns == 0)
-> +		return 0;
-> +
->  	if (constraint_ns < *constraint_ns_p || *constraint_ns_p == 0)
+> -	if (constraint_ns < *constraint_ns_p || *constraint_ns_p == 0)
+> +	if (constraint_ns < *constraint_ns_p ||
+> +	    *constraint_ns_p == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
+
+Check for constraint_ns < *constraint_ns_p should be enough because
+PM_QOS_RESUME_LATENCY_NO_CONSTRAINT = S32_MAX which is the largest possible
+value, if that can be assumed here.
+
 >  		*constraint_ns_p = constraint_ns;
 >  
-> @@ -76,14 +76,26 @@ static bool default_suspend_ok(struct de
+>  	return 0;
+> @@ -58,12 +58,12 @@ static bool default_suspend_ok(struct de
+>  	}
+>  	td->constraint_changed = false;
+>  	td->cached_suspend_ok = false;
+> -	td->effective_constraint_ns = -1;
+> +	td->effective_constraint_ns = 0;
+>  	constraint_ns = __dev_pm_qos_read_value(dev);
+
+Why not initialize td->effective_constraint_ns with what is read by
+__dev_pm_qos_read_value()? Even though this value will stay only if false
+is returned, in which case it does not matter anyway, it looks like more
+meaningful value. Also PM_QOS_RESUME_LATENCY_NO_CONSTRAINT may be ok as it
+is initialized with at creation.
+
+>  
+>  	spin_unlock_irqrestore(&dev->power.lock, flags);
+>  
+> -	if (constraint_ns < 0)
+> +	if (constraint_ns == 0)
+>  		return false;
+>  
+>  	constraint_ns *= NSEC_PER_USEC;
+
+This will go wrong if PM_QOS_RESUME_LATENCY_NO_CONSTRAINT was the value
+Code below and in dev_update_qos_constraint check for that special value.
+
+May be those places can check PM_QOS_RESUME_LATENCY_NO_CONSTRAINT * NSEC_PER_USEC
+There may be other places that this might be an issue
+
+> @@ -76,14 +76,14 @@ static bool default_suspend_ok(struct de
 >  		device_for_each_child(dev, &constraint_ns,
 >  				      dev_update_qos_constraint);
 >  
-> -	if (constraint_ns > 0) {
-> +	if (constraint_ns == 0) {
-> +		/* "No restriction", so the device is allowed to suspend. */
-> +		td->effective_constraint_ns = 0;
-> +		td->cached_suspend_ok = true;
-> +	} else if (WARN_ON(constraint_ns < 0)) {
+> -	if (constraint_ns == 0) {
+> +	if (constraint_ns == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT) {
+>  		/* "No restriction", so the device is allowed to suspend. */
+> -		td->effective_constraint_ns = 0;
+> +		td->effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+>  		td->cached_suspend_ok = true;
+> -	} else if (WARN_ON(constraint_ns < 0)) {
+> +	} else if (WARN_ON(constraint_ns == 0)) {
 
-Should never comer here. Child should not have suspended.
-Should be a fatal bug. This else block probably is not necessary.
+This can never happen as this device will not be suspending if the child had
+failed to suspend (only case where this value is possible).
 
-> +		/*
-> +		 * effective_constraint_ns is negative already and
-> +		 * cached_suspend_ok is false, so return right away.
-> +		 */
-> +		return false;
-> +	} else {
->  		constraint_ns -= td->suspend_latency_ns +
->  				td->resume_latency_ns;
-> -		if (constraint_ns == 0)
-> +		/* Again, if negative or zero, returning right away is fine. */
-> +		if (constraint_ns <= 0)
->  			return false;
-> +
-> +		td->effective_constraint_ns = constraint_ns;
-> +		td->cached_suspend_ok = true;
->  	}
-> -	td->effective_constraint_ns = constraint_ns;
-> -	td->cached_suspend_ok = constraint_ns >= 0;
->  
->  	/*
->  	 * The children have been suspended already, so we don't need to take
-> @@ -144,18 +156,14 @@ static bool __default_power_down_ok(stru
+>  		/*
+> -		 * effective_constraint_ns is negative already and
+> -		 * cached_suspend_ok is false, so return right away.
+> +		 * effective_constraint_ns is 0 already and cached_suspend_ok is
+> +		 * false, so return right away.
+>  		 */
+>  		return false;
+>  	} else {
+> @@ -156,12 +156,11 @@ static bool __default_power_down_ok(stru
 >  		 */
 >  		td = &to_gpd_data(pdd)->td;
 >  		constraint_ns = td->effective_constraint_ns;
-> -		/* default_suspend_ok() need not be called before us. */
-> -		if (constraint_ns < 0) {
-> -			constraint_ns = dev_pm_qos_read_value(pdd->dev);
-> -			constraint_ns *= NSEC_PER_USEC;
-> -		}
-> +		/* Negative values mean "no suspend at all" */
-> +		if (WARN_ON(constraint_ns < 0))
-> +			return false;
+> -		/* Negative values mean "no suspend at all" */
+> -		if (WARN_ON(constraint_ns < 0))
+> +		/* 0 mean "no suspend at all" */
+> +		if (WARN_ON(constraint_ns == 0))
+>  			return false;
 
-Cannot come here if was not suspended. Looks like a redundant check.
+If it did not suspend then it cannot powerdown. This check may not be
+very useful here.
 
-> +
-> +		/* 0 means "no constraint" */
->  		if (constraint_ns == 0)
+>  
+> -		/* 0 means "no constraint" */
+> -		if (constraint_ns == 0)
+> +		if (constraint_ns == PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
 >  			continue;
 >  
-> -		/*
-> -		 * constraint_ns cannot be negative here, because the device has
-> -		 * been suspended.
-> -		 */
 >  		if (constraint_ns <= off_on_time_ns)
->  			return false;
->  
 > 
