@@ -1,54 +1,47 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3] cpufreq: schedutil: Examine the correct CPU when we
- update util
-Date: Fri, 3 Nov 2017 21:15:59 +0530
-Message-ID: <20171103154559.GJ4240@vireshk-i7>
-References: <20171103034022.GD4240@vireshk-i7>
- <20171103133642.8636-1-chris.redpath@arm.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH v2 0/2] pinctrl: Allow indicating loss of state across
+ suspend/resume
+Date: Fri, 3 Nov 2017 09:11:20 -0700
+Message-ID: <20171103161120.GH28152@atomide.com>
+References: <20171102231551.16220-1-f.fainelli@gmail.com>
+ <20171103103707.3e5wb3c7foxbuvvg@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f196.google.com ([209.85.192.196]:47390 "EHLO
-        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751736AbdKCPqC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Nov 2017 11:46:02 -0400
-Received: by mail-pf0-f196.google.com with SMTP id z11so2475302pfk.4
-        for <linux-pm@vger.kernel.org>; Fri, 03 Nov 2017 08:46:02 -0700 (PDT)
+Return-path: <linux-gpio-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171103133642.8636-1-chris.redpath@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20171103103707.3e5wb3c7foxbuvvg@localhost.localdomain>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Charles Keepax <ckeepax@opensource.cirrus.com>
+Cc: Florian Fainelli <f.fainelli@gmail.com>, linux-gpio@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, ckeepax@opensource.wolfsonmicro.com, swarren@nvidia.com, andy.shevchenko@gmail.com, alcooperx@gmail.com, bcm-kernel-feedback-list@broadcom.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Chris Redpath <chris.redpath@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-On 03-11-17, 13:36, Chris Redpath wrote:
-> After
-> 674e75411fc2 ("sched: cpufreq: Allow remote cpufreq callbacks")
+* Charles Keepax <ckeepax@opensource.cirrus.com> [171103 10:38]:
+> On Thu, Nov 02, 2017 at 04:15:49PM -0700, Florian Fainelli wrote:
+> > Hello Linus,
+> > 
+> > It's me again, so I have been thinking about the problem originally
+> > reported in: [PATCH fixes v3] pinctrl: Really force states during suspend/resume
+> > 
+> > and other similar patches a while ago, and this new version allows a platform
+> > using pinctrl-single to specify whether its pins are going to lose their state
+> > during a system deep sleep.
+> > 
+> > Note that this is still checked at the pinctrl_select_state() because consumers
+> > of the pinctrl API might be calling this from their suspend/resume functions
+> > and should not have to know whether the provider does lose its pin states.
+> > 
 > 
-> We stopped always reading utilization for the cpu we are running
-> the governor on, and instead read it for the cpu which we've been
-> told has updated utilization. This is stored in sugov_cpu->cpu.
-> 
-> The value is set in sugov_register but we clear it in sugov_start
-> which leads to always looking at the utilization of CPU0 instead
-> of the correct one.
-> 
-> Let's fix this by consolidating the initialization code into
-> sugov_start().
-> 
-> Fixes: 674e75411fc2 ("sched: cpufreq: Allow remote cpufreq callbacks")
-> Signed-off-by: Chris Redpath <chris.redpath@arm.com>
-> Reviewed-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Reviewed-by: Brendan Jackman <brendan.jackman@arm.com>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> ---
->  kernel/sched/cpufreq_schedutil.c | 6 +-----
->  1 file changed, 1 insertion(+), 5 deletions(-)
+> Still feels to me like it should be the providers job to the
+> restore the state rather than expecting the consumer to
+> re-request any state it had. But lets wait and see what Linus
+> thinks.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+But isn't it the consumer device losing it's state here? Or the
+pinctrl provider losing it's state?
 
--- 
-viresh
+Anyways, the context lost flag should be managed in the PM core for
+the device, so adding linux-pm and Rafael to Cc.
+
+Regards,
+
+Tony
