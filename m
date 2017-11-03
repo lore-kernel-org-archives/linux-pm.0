@@ -1,163 +1,148 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [RFT][PATCH v2 1/2] PM / domains: Rework governor code to be more consistent
-Date: Fri, 03 Nov 2017 12:47:20 +0100
-Message-ID: <1780873.Ca3tjQj9XB@aspire.rjw.lan>
-References: <5770848.Kdi5IjVKeE@aspire.rjw.lan> <2520927.XkLgALY3I0@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <2520927.XkLgALY3I0@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Tero Kristo <t-kristo@ti.com>, Reinette Chatre <reinette.chatre@intel.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Alex Shi <alex.shi@linaro.org>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: [RESEND PATCH 3/8] turbostat: Calculate additional node information for a package
+Date: Fri,  3 Nov 2017 08:25:45 -0400
+Message-ID: <20171103122550.13341-4-prarit@redhat.com>
+References: <20171103122550.13341-1-prarit@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:35814 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752102AbdKCM0E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 3 Nov 2017 08:26:04 -0400
+In-Reply-To: <20171103122550.13341-1-prarit@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: lenb@kernel.org, len.brown@intel.com, charles.rose@dell.com, rafael@kernel.org, suravee.suthikulpanit@amd.com, Prarit Bhargava <prarit@redhat.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The code currently assumes each package has exactly one node.  This is not
+the case for AMD systems and Intel systems with COD.  AMD systems also
+may re-enumerate each node's core IDs starting at 0 (for example, an AMD
+processor may have two nodes, each with core IDs from 0 to 7).  In order
+to properly enumerate the cores we need to track both the physical and
+logical node IDs.
 
-The genpd governor currently uses negative PM QoS values to indicate
-the "no suspend" condition and 0 as "no restriction", but it doesn't
-use them consistently.  Moreover, it tries to refresh QoS values for
-already suspended devices in a quite questionable way.
+Add physical_node_id to track the node ID assigned by the kernel, and
+logical_node_id used by turbostat to track the nodes per package ie) a
+0-based count within the package.
 
-For the above reasons, rework it to be a bit more consistent.
-
-First off, note that dev_pm_qos_read_value() in
-dev_update_qos_constraint() and __default_power_down_ok() is
-evaluated for devices in suspend.  Moreover, that only happens if the
-effective_constraint_ns value for them is negative (meaning "no
-suspend").  It is not evaluated in any other cases, so effectively
-the QoS values are only updated for devices in suspend that should
-not have been suspended in the first place.  In all of the other
-cases, the QoS values taken into account are the effective ones from
-the time before the device has been suspended, so generally devices
-need to be resumed and suspended again for new QoS values to take
-effect anyway.  Thus evaluating dev_update_qos_constraint() in
-those two places doesn't make sense at all, so drop it.
-
-Second, initialize effective_constraint_ns to 0 ("no constraint")
-rather than to (-1) ("no suspend"), which makes more sense in
-general and in case effective_constraint_ns is never updated
-(the device is in suspend all the time or it is never suspended)
-it doesn't affect the device's parent and so on.
-
-Finally, rework default_suspend_ok() to explicitly handle the
-"no restriction" special case.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: Len Brown <len.brown@intel.com>
 ---
- drivers/base/power/domain.c          |    2 -
- drivers/base/power/domain_governor.c |   61 +++++++++++++++++++++--------------
- 2 files changed, 38 insertions(+), 25 deletions(-)
+ tools/power/x86/turbostat/turbostat.c | 65 ++++++++++++++++++++++++++++++++---
+ 1 file changed, 61 insertions(+), 4 deletions(-)
 
-Index: linux-pm/drivers/base/power/domain.c
-===================================================================
---- linux-pm.orig/drivers/base/power/domain.c
-+++ linux-pm/drivers/base/power/domain.c
-@@ -1331,7 +1331,7 @@ static struct generic_pm_domain_data *ge
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 33d35e19164d..b397087671b3 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -249,7 +249,8 @@ struct system_summary {
+ struct cpu_topology {
+ 	int physical_package_id;
+ 	int logical_cpu_id;
+-	int node_id;
++	int physical_node_id;
++	int logical_node_id;	/* 0-based count within the package */
+ 	int physical_core_id;
+ 	cpu_set_t *put_ids; /* Processing Unit/Thread IDs */
+ } *cpus;
+@@ -259,6 +260,8 @@ struct topo_params {
+ 	int num_cpus;
+ 	int num_cores;
+ 	int max_cpu_num;
++	int max_node_num;
++	int num_nodes_per_pkg;
+ 	int num_cores_per_pkg;
+ 	int num_threads_per_core;
+ } topo;
+@@ -2316,7 +2319,54 @@ int get_core_id(int cpu)
+ 	return parse_int_file("/sys/devices/system/cpu/cpu%d/topology/core_id", cpu);
+ }
  
- 	gpd_data->base.dev = dev;
- 	gpd_data->td.constraint_changed = true;
--	gpd_data->td.effective_constraint_ns = -1;
-+	gpd_data->td.effective_constraint_ns = 0;
- 	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
- 
- 	spin_lock_irq(&dev->power.lock);
-Index: linux-pm/drivers/base/power/domain_governor.c
-===================================================================
---- linux-pm.orig/drivers/base/power/domain_governor.c
-+++ linux-pm/drivers/base/power/domain_governor.c
-@@ -14,22 +14,22 @@
- static int dev_update_qos_constraint(struct device *dev, void *data)
+-int get_node_id(struct cpu_topology *thiscpu)
++void set_node_data(void)
++{
++	char path[80];
++	FILE *filep;
++	int pkg, node, cpu;
++
++	struct pkg_node_info {
++		int count;
++		int min;
++	} *pni;
++
++	pni = calloc(topo.num_packages, sizeof(struct pkg_node_info));
++	if (!pni)
++		err(1, "calloc pkg_node_count");
++
++	for (pkg = 0; pkg < topo.num_packages; pkg++)
++		pni[pkg].min = topo.num_cpus;
++
++	for (node = 0; node <= topo.max_node_num; node++) {
++		/* find the "first" cpu in the node */
++		sprintf(path, "/sys/bus/node/devices/node%d/cpulist", node);
++		filep = fopen(path, "r");
++		if (!filep)
++			continue;
++		fscanf(filep, "%d", &cpu);
++		fclose(filep);
++
++		pkg = cpus[cpu].physical_package_id;
++		pni[pkg].count++;
++
++		if (node < pni[pkg].min)
++			pni[pkg].min = node;
++	}
++
++	for (pkg = 0; pkg < topo.num_packages; pkg++)
++		if (pni[pkg].count > topo.num_nodes_per_pkg)
++			topo.num_nodes_per_pkg = pni[0].count;
++
++	for (cpu = 0; cpu < topo.num_cpus; cpu++) {
++		pkg = cpus[cpu].physical_package_id;
++		node = cpus[cpu].physical_node_id;
++		cpus[cpu].logical_node_id = node - pni[pkg].min;
++	}
++	free(pni);
++
++}
++
++int get_physical_node_id(struct cpu_topology *thiscpu)
  {
- 	s64 *constraint_ns_p = data;
--	s32 constraint_ns = -1;
--
--	if (dev->power.subsys_data && dev->power.subsys_data->domain_data)
--		constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
-+	s64 constraint_ns;
+ 	char path[80];
+ 	FILE *filep;
+@@ -4428,7 +4478,9 @@ void topology_probe()
+ 			max_package_id = cpus[i].physical_package_id;
  
--	if (constraint_ns < 0) {
--		constraint_ns = dev_pm_qos_read_value(dev);
--		constraint_ns *= NSEC_PER_USEC;
--	}
--	if (constraint_ns == 0)
-+	if (!dev->power.subsys_data || !dev->power.subsys_data->domain_data)
- 		return 0;
+ 		/* get numa node information */
+-		cpus[i].node_id = get_node_id(&cpus[i]);
++		cpus[i].physical_node_id = get_physical_node_id(&cpus[i]);
++		if (cpus[i].physical_node_id > topo.max_node_num)
++			topo.max_node_num = cpus[i].physical_node_id;
  
- 	/*
--	 * constraint_ns cannot be negative here, because the device has been
--	 * suspended.
-+	 * Only take suspend-time QoS constraints of devices into account,
-+	 * because constraints updated after the device has been suspended are
-+	 * not guaranteed to be taken into account anyway.  In order for them
-+	 * to take effect, the device has to be resumed and suspended again.
- 	 */
-+	constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
-+	/* 0 means "no constraint" */
-+	if (constraint_ns == 0)
-+		return 0;
-+
- 	if (constraint_ns < *constraint_ns_p || *constraint_ns_p == 0)
- 		*constraint_ns_p = constraint_ns;
- 
-@@ -76,14 +76,29 @@ static bool default_suspend_ok(struct de
- 		device_for_each_child(dev, &constraint_ns,
- 				      dev_update_qos_constraint);
- 
--	if (constraint_ns > 0) {
-+	if (constraint_ns == 0) {
-+		/* "No restriction", so the device is allowed to suspend. */
-+		td->effective_constraint_ns = 0;
-+		td->cached_suspend_ok = true;
-+	} else {
-+		/*
-+		 * constraint_ns must be positive here, because the children
-+		 * walked above are all suspended, so effective_constraint_ns
-+		 * cannot be negative for them.
-+		 */
- 		constraint_ns -= td->suspend_latency_ns +
- 				td->resume_latency_ns;
--		if (constraint_ns == 0)
-+		/*
-+		 * effective_constraint_ns is negative already and
-+		 * cached_suspend_ok is false, so if the computed value is not
-+		 * positive, return right away.
-+		 */
-+		if (constraint_ns <= 0)
- 			return false;
-+
-+		td->effective_constraint_ns = constraint_ns;
-+		td->cached_suspend_ok = true;
+ 		/* get core information */
+ 		cpus[i].physical_core_id = get_core_id(i);
+@@ -4443,9 +4495,10 @@ void topology_probe()
+ 		if (debug > 1)
+ 			fprintf(outf, "cpu %d pkg %d node %d core %d\n",
+ 				i, cpus[i].physical_package_id,
+-				cpus[i].node_id,
++				cpus[i].physical_node_id,
+ 				cpus[i].physical_core_id);
  	}
--	td->effective_constraint_ns = constraint_ns;
--	td->cached_suspend_ok = constraint_ns >= 0;
++
+ 	topo.num_cores_per_pkg = max_core_id + 1;
+ 	if (debug > 1)
+ 		fprintf(outf, "max_core_id %d, sizing for %d cores per package\n",
+@@ -4460,6 +4513,10 @@ void topology_probe()
+ 	if (!summary_only && topo.num_packages > 1)
+ 		BIC_PRESENT(BIC_Package);
  
- 	/*
- 	 * The children have been suspended already, so we don't need to take
-@@ -144,18 +159,16 @@ static bool __default_power_down_ok(stru
- 		 */
- 		td = &to_gpd_data(pdd)->td;
- 		constraint_ns = td->effective_constraint_ns;
--		/* default_suspend_ok() need not be called before us. */
--		if (constraint_ns < 0) {
--			constraint_ns = dev_pm_qos_read_value(pdd->dev);
--			constraint_ns *= NSEC_PER_USEC;
--		}
-+		/*
-+		 * Negative values mean "no suspend at all" and this runs only
-+		 * when all devices in the domain are suspended, so it must be
-+		 * 0 at least.
-+		 *
-+		 * 0 means "no constraint"
-+		 */
- 		if (constraint_ns == 0)
- 			continue;
- 
--		/*
--		 * constraint_ns cannot be negative here, because the device has
--		 * been suspended.
--		 */
- 		if (constraint_ns <= off_on_time_ns)
- 			return false;
- 
++	set_node_data();
++	if (debug > 1)
++		fprintf(outf, "num_nodes_per_pkg %d\n", topo.num_nodes_per_pkg);
++
+ 	topo.num_threads_per_core = max_siblings;
+ 	if (debug > 1)
+ 		fprintf(outf, "max_siblings %d\n", max_siblings);
+-- 
+2.15.0.rc0.39.g2f0e14e64
