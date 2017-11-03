@@ -1,71 +1,53 @@
-From: Bastian Stender <bst@pengutronix.de>
-Subject: [PATCH] thermal: imx: use cpufreq cooling of registration method
-Date: Fri,  3 Nov 2017 17:42:03 +0100
-Message-ID: <20171103164203.5805-1-bst@pengutronix.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:42151 "EHLO
-        metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S932321AbdKCQmw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Nov 2017 12:42:52 -0400
-Sender: linux-pm-owner@vger.kernel.org
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH v2 0/2] pinctrl: Allow indicating loss of state across
+ suspend/resume
+Date: Fri, 3 Nov 2017 10:02:45 -0700
+Message-ID: <da808465-dc64-6c33-0be6-e038e0f84bce@gmail.com>
+References: <20171102231551.16220-1-f.fainelli@gmail.com>
+ <20171103103707.3e5wb3c7foxbuvvg@localhost.localdomain>
+ <20171103161120.GH28152@atomide.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <20171103161120.GH28152@atomide.com>
+Content-Language: en-US
+Sender: linux-gpio-owner@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>, Charles Keepax <ckeepax@opensource.cirrus.com>
+Cc: linux-gpio@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, ckeepax@opensource.wolfsonmicro.com, swarren@nvidia.com, andy.shevchenko@gmail.com, alcooperx@gmail.com, bcm-kernel-feedback-list@broadcom.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, kernel@pengutronix.de, Bastian Stender <bst@pengutronix.de>
 
-The of variant of cpufreq_cooling_register links the cooling device to
-the device tree node provided.
+On 11/03/2017 09:11 AM, Tony Lindgren wrote:
+> * Charles Keepax <ckeepax@opensource.cirrus.com> [171103 10:38]:
+>> On Thu, Nov 02, 2017 at 04:15:49PM -0700, Florian Fainelli wrote:
+>>> Hello Linus,
+>>>
+>>> It's me again, so I have been thinking about the problem originally
+>>> reported in: [PATCH fixes v3] pinctrl: Really force states during suspend/resume
+>>>
+>>> and other similar patches a while ago, and this new version allows a platform
+>>> using pinctrl-single to specify whether its pins are going to lose their state
+>>> during a system deep sleep.
+>>>
+>>> Note that this is still checked at the pinctrl_select_state() because consumers
+>>> of the pinctrl API might be calling this from their suspend/resume functions
+>>> and should not have to know whether the provider does lose its pin states.
+>>>
+>>
+>> Still feels to me like it should be the providers job to the
+>> restore the state rather than expecting the consumer to
+>> re-request any state it had. But lets wait and see what Linus
+>> thinks.
+> 
+> But isn't it the consumer device losing it's state here? Or the
+> pinctrl provider losing it's state?
 
-This makes it possible to bind the cpufreq cooling device to a custom
-thermal zone via a cooling-maps entry like:
+The pinctrl provider is losing its state, hence these two patches.
 
-	cooling-maps {
-		map0 {
-			trip = <&board_alert>;
-			cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-		};
-	};
+> 
+> Anyways, the context lost flag should be managed in the PM core for
+> the device, so adding linux-pm and Rafael to Cc.
 
-Assuming a cpu node exists with label "cpu0" and #cooling-cells
-property.
-
-Signed-off-by: Bastian Stender <bst@pengutronix.de>
----
- drivers/thermal/imx_thermal.c | 16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 4798b4b1fd77..de71cd3bb03a 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -473,6 +473,8 @@ MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
- 
- static int imx_thermal_probe(struct platform_device *pdev)
- {
-+	struct device_node *np;
-+	struct device *cpu_dev;
- 	struct imx_thermal_data *data;
- 	struct regmap *map;
- 	int measure_freq;
-@@ -533,7 +535,19 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 		return -EPROBE_DEFER;
- 	}
- 
--	data->cdev = cpufreq_cooling_register(data->policy);
-+	cpu_dev = get_cpu_device(0);
-+	if (!cpu_dev) {
-+		pr_err("%s: failed to get cpu0 device\n", __func__);
-+		return -ENODEV;
-+	}
-+
-+	np = of_node_get(cpu_dev->of_node);
-+	if (!np) {
-+		dev_err(cpu_dev, "failed to find cpu0 node\n");
-+		return -ENOENT;
-+	}
-+
-+	data->cdev = of_cpufreq_cooling_register(np, data->policy);
- 	if (IS_ERR(data->cdev)) {
- 		ret = PTR_ERR(data->cdev);
- 		dev_err(&pdev->dev,
+I don't think it's that simple but sure, why not.
 -- 
-2.11.0
+Florian
