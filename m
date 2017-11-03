@@ -1,77 +1,107 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: [PATCH v4 20/20] cpufreq: scmi: add support for fast frequency switching
-Date: Fri,  3 Nov 2017 14:47:57 +0000
-Message-ID: <1509720477-18936-21-git-send-email-sudeep.holla@arm.com>
-References: <1509720477-18936-1-git-send-email-sudeep.holla@arm.com>
+From: Neil Armstrong <narmstrong@baylibre.com>
+Subject: [PATCH] soc: amlogic: meson-gx-pwrc-vpu: fix power-off when powered by bootloader
+Date: Fri,  3 Nov 2017 16:43:24 +0100
+Message-ID: <1509723804-21114-1-git-send-email-narmstrong@baylibre.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1509720477-18936-1-git-send-email-sudeep.holla@arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Arnd Bergmann <arnd@arndb.de>, Loc Ho <lho@apm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+To: khilman@baylibre.com, carlo@caione.org
+Cc: Neil Armstrong <narmstrong@baylibre.com>, linux-pm@vger.kernel.org, linux-amlogic@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The cpufreq core provides option for drivers to implement fast_switch
-callback which is invoked for frequency switching from interrupt context.
+In the case the VPU power domain has been powered on by the bootloader
+and no driver are attached to this power domain, the genpd will power it
+off after a certain amount of time, but the clocks hasn't been enabled
+by the kernel itself and the power-off will trigger some faults.
+This patch enable the clocks to have a coherent state for an eventual
+poweroff and switches to the pm_domain_always_on_gov governor.
 
-This patch adds support for fast_switch callback in SCMI cpufreq driver
-by making use of polling based SCMI transfer. It also sets the flag
-fast_switch_possible.
-
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+Fixes: 75fcb5ca4b46 ("soc: amlogic: add Meson GX VPU Domains driver")
+Signed-off-by: Neil Armstrong <narmstrong@baylibre.com>
 ---
- drivers/cpufreq/scmi-cpufreq.c | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ drivers/soc/amlogic/meson-gx-pwrc-vpu.c | 29 +++++++++++++++++++----------
+ 1 file changed, 19 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-index b1057a13e6a7..91df5013f7b2 100644
---- a/drivers/cpufreq/scmi-cpufreq.c
-+++ b/drivers/cpufreq/scmi-cpufreq.c
-@@ -64,6 +64,19 @@ scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
- 	return perf_ops->freq_set(handle, priv->domain_id, freq, false);
+diff --git a/drivers/soc/amlogic/meson-gx-pwrc-vpu.c b/drivers/soc/amlogic/meson-gx-pwrc-vpu.c
+index bf5190b..2bdeebc 100644
+--- a/drivers/soc/amlogic/meson-gx-pwrc-vpu.c
++++ b/drivers/soc/amlogic/meson-gx-pwrc-vpu.c
+@@ -34,7 +34,6 @@ struct meson_gx_pwrc_vpu {
+ 	struct reset_control *rstc;
+ 	struct clk *vpu_clk;
+ 	struct clk *vapb_clk;
+-	bool powered;
+ };
+ 
+ static inline
+@@ -78,8 +77,6 @@ static int meson_gx_pwrc_vpu_power_off(struct generic_pm_domain *genpd)
+ 	clk_disable_unprepare(pd->vpu_clk);
+ 	clk_disable_unprepare(pd->vapb_clk);
+ 
+-	pd->powered = false;
+-
+ 	return 0;
  }
  
-+static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
-+					     unsigned int target_freq)
-+{
-+	struct scmi_data *priv = policy->driver_data;
-+	struct scmi_perf_ops *perf_ops = handle->perf_ops;
-+
-+	if (!perf_ops->freq_set(handle, priv->domain_id,
-+				target_freq * 1000, true))
-+		return target_freq;
-+
-+	return 0;
-+}
-+
- static int
- scmi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
- {
-@@ -167,6 +180,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+@@ -91,7 +88,11 @@ static int meson_gx_pwrc_vpu_setup_clk(struct meson_gx_pwrc_vpu *pd)
+ 	if (ret)
+ 		return ret;
  
- 	policy->cpuinfo.transition_latency = latency;
+-	return clk_prepare_enable(pd->vapb_clk);
++	ret = clk_prepare_enable(pd->vapb_clk);
++	if (ret)
++		clk_disable_unprepare(pd->vpu_clk);
++
++	return ret;
+ }
  
-+	policy->fast_switch_possible = true;
+ static int meson_gx_pwrc_vpu_power_on(struct generic_pm_domain *genpd)
+@@ -139,8 +140,6 @@ static int meson_gx_pwrc_vpu_power_on(struct generic_pm_domain *genpd)
+ 	if (ret)
+ 		return ret;
+ 
+-	pd->powered = true;
+-
  	return 0;
+ }
  
- out_free_cpufreq_table:
-@@ -183,6 +197,7 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
+@@ -167,6 +166,8 @@ static int meson_gx_pwrc_vpu_probe(struct platform_device *pdev)
+ 	struct reset_control *rstc;
+ 	struct clk *vpu_clk;
+ 	struct clk *vapb_clk;
++	bool powered_off;
++	int ret;
+ 
+ 	regmap_ao = syscon_node_to_regmap(of_get_parent(pdev->dev.of_node));
+ 	if (IS_ERR(regmap_ao)) {
+@@ -205,8 +206,17 @@ static int meson_gx_pwrc_vpu_probe(struct platform_device *pdev)
+ 	vpu_hdmi_pd.vpu_clk = vpu_clk;
+ 	vpu_hdmi_pd.vapb_clk = vapb_clk;
+ 
+-	pm_genpd_init(&vpu_hdmi_pd.genpd, &simple_qos_governor,
+-		      meson_gx_pwrc_vpu_get_power(&vpu_hdmi_pd));
++	powered_off = meson_gx_pwrc_vpu_get_power(&vpu_hdmi_pd);
++
++	/* If already powered, sync the clock states */
++	if (!powered_off) {
++		ret = meson_gx_pwrc_vpu_setup_clk(&vpu_hdmi_pd);
++		if (ret)
++			return ret;
++	}
++
++	pm_genpd_init(&vpu_hdmi_pd.genpd, &pm_domain_always_on_gov,
++		      powered_off);
+ 
+ 	return of_genpd_add_provider_simple(pdev->dev.of_node,
+ 					    &vpu_hdmi_pd.genpd);
+@@ -214,8 +224,7 @@ static int meson_gx_pwrc_vpu_probe(struct platform_device *pdev)
+ 
+ static void meson_gx_pwrc_vpu_shutdown(struct platform_device *pdev)
  {
- 	struct scmi_data *priv = policy->driver_data;
+-	if (vpu_hdmi_pd.powered)
+-		meson_gx_pwrc_vpu_power_off(&vpu_hdmi_pd.genpd);
++	meson_gx_pwrc_vpu_power_off(&vpu_hdmi_pd.genpd);
+ }
  
-+	policy->fast_switch_possible = false;
- 	cpufreq_cooling_unregister(priv->cdev);
- 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
- 	kfree(priv);
-@@ -226,6 +241,7 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
- 	.verify	= cpufreq_generic_frequency_table_verify,
- 	.attr	= cpufreq_generic_attr,
- 	.target_index	= scmi_cpufreq_set_target,
-+	.fast_switch	= scmi_cpufreq_fast_switch,
- 	.get	= scmi_cpufreq_get_rate,
- 	.init	= scmi_cpufreq_init,
- 	.exit	= scmi_cpufreq_exit,
+ static const struct of_device_id meson_gx_pwrc_vpu_match_table[] = {
 -- 
 2.7.4
