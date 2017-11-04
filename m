@@ -1,92 +1,34 @@
-From: Ramesh Thomas <ramesh.thomas@intel.com>
-Subject: Re: [PATCH v2] cpuidle: ladder: Add per CPU PM QoS resume latency
- support
-Date: Fri, 3 Nov 2017 19:48:34 -0700
-Message-ID: <20171104024833.GD29203@intel.com>
-References: <20171027020124.GA10233@intel.com>
- <CAJZ5v0gyngKSX9Re-+1kq3y7sK7KoKOGoR7YfUCBEEDAcFxxqA@mail.gmail.com>
-Reply-To: ramesh.thomas@intel.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: [PATCH] PM / devfreq: Propagate error from devfreq_add_device()
+Date: Fri,  3 Nov 2017 20:38:28 -0700
+Message-ID: <20171104033828.16773-1-bjorn.andersson@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gyngKSX9Re-+1kq3y7sK7KoKOGoR7YfUCBEEDAcFxxqA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Rafael Wysocki <rafael.j.wysocki@intel.com>, Alex Shi <alex.shi@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 2017-10-27 at 09:59:38 +0200, Rafael J. Wysocki wrote:
-> On Fri, Oct 27, 2017 at 4:01 AM, Ramesh Thomas <ramesh.thomas@intel.com> wrote:
-> > Individual CPUs may have special requirements to not enter
-> > deep idle states. For example, a CPU running real time
-> > applications would not want to enter deep idle states to
-> > avoid latency impacts. At the same time other CPUs that
-> > do not have such a requirement could allow deep idle
-> > states to save power.
-> >
-> > This was already implemented in the menu governor.
-> > Implementing similar changes in the ladder governor which
-> > gets selected when CONFIG_NO_HZ and CONFIG_NO_HZ_IDLE are not
-> > set. Refer following commits for the menu governor changes.
-> >
-> > commit 9908859acaa9 ("cpuidle/menu: add per CPU PM QoS resume
-> > latency consideration")
-> > commit 6dbf5cea05a7 ("cpuidle: menu: Avoid taking spinlock for
-> > accessing QoS values")
-> >
-> > Signed-off-by: Ramesh Thomas <ramesh.thomas@intel.com>
-> > ---
-> >
-> > v2:
-> >   - use PM_QOS_RESUME_LATENCY_NO_CONSTRAINT for "no constraint" value
-> >   Should be applied over https://patchwork.kernel.org/patch/10024157/
-> >
-> >  drivers/cpuidle/governors/ladder.c | 7 +++++++
-> >  1 file changed, 7 insertions(+)
-> >
-> > diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-> > index ce1a2ff..1ad8745 100644
-> > --- a/drivers/cpuidle/governors/ladder.c
-> > +++ b/drivers/cpuidle/governors/ladder.c
-> > @@ -17,6 +17,7 @@
-> >  #include <linux/pm_qos.h>
-> >  #include <linux/jiffies.h>
-> >  #include <linux/tick.h>
-> > +#include <linux/cpu.h>
-> >
-> >  #include <asm/io.h>
-> >  #include <linux/uaccess.h>
-> > @@ -67,10 +68,16 @@ static int ladder_select_state(struct cpuidle_driver *drv,
-> >                                 struct cpuidle_device *dev)
-> >  {
-> >         struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
-> > +       struct device *device = get_cpu_device(dev->cpu);
-> >         struct ladder_device_state *last_state;
-> >         int last_residency, last_idx = ldev->last_state_idx;
-> >         int first_idx = drv->states[0].flags & CPUIDLE_FLAG_POLLING ? 1 : 0;
-> >         int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
-> > +       int resume_latency = dev_pm_qos_raw_read_value(device);
-> > +
-> > +       if (resume_latency < latency_req &&
-> > +           resume_latency != PM_QOS_RESUME_LATENCY_NO_CONSTRAINT)
-> > +               latency_req = resume_latency;
-> >
-> >         /* Special case when user has set very strict latency requirement */
-> >         if (unlikely(latency_req == 0)) {
-> > --
-> > 2.7.4
-> >
-> 
-> Looks good to me.
-> 
-> I'll queue it up if nobody objects.
-> 
+Propagate the error of devfreq_add_device() in devm_devfreq_add_device()
+rather than statically returning ENOMEM. This makes it slightly faster
+to pinpoint the cause of a returned error.
 
-Hi Rafael,
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+---
+ drivers/devfreq/devfreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This patch would apply as is over your new PM QoS changes. If you need me
-to repost please let me know.
-
-Thanks,
-Ramesh
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 78fb496ecb4e..99c4021fc33b 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -737,7 +737,7 @@ struct devfreq *devm_devfreq_add_device(struct device *dev,
+ 	devfreq = devfreq_add_device(dev, profile, governor_name, data);
+ 	if (IS_ERR(devfreq)) {
+ 		devres_free(ptr);
+-		return ERR_PTR(-ENOMEM);
++		return devfreq;
+ 	}
+ 
+ 	*ptr = devfreq;
+-- 
+2.12.0
