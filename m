@@ -1,64 +1,60 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFT][PATCH v2 1/2] PM / domains: Rework governor code to be more consistent
-Date: Sat, 4 Nov 2017 12:24:15 +0100
-Message-ID: <CAJZ5v0jXz7FCgmivjwLL-yfK2hHbW2bGAQGjb4YS4cY0JxDQ8w@mail.gmail.com>
+Subject: Re: [RFT][PATCH v2 2/2] PM / QoS: Fix device resume latency framework
+Date: Sat, 4 Nov 2017 12:28:58 +0100
+Message-ID: <CAJZ5v0h526N335VGk0BnVKrTTz0U5o5FLeG6cVdzSanB8D3hpw@mail.gmail.com>
 References: <5770848.Kdi5IjVKeE@aspire.rjw.lan> <2520927.XkLgALY3I0@aspire.rjw.lan>
- <1780873.Ca3tjQj9XB@aspire.rjw.lan> <20171104023401.GB29203@intel.com>
+ <36826935.bDl2WuZxgq@aspire.rjw.lan> <aea02edb-b112-18db-6de5-f10e9a43846d@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f65.google.com ([209.85.218.65]:54320 "EHLO
-        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756626AbdKDLYQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Nov 2017 07:24:16 -0400
-In-Reply-To: <20171104023401.GB29203@intel.com>
+Received: from mail-ot0-f193.google.com ([74.125.82.193]:49767 "EHLO
+        mail-ot0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756630AbdKDL27 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Nov 2017 07:28:59 -0400
+In-Reply-To: <aea02edb-b112-18db-6de5-f10e9a43846d@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ramesh.thomas@intel.com
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Tero Kristo <t-kristo@ti.com>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>
+To: Reinette Chatre <reinette.chatre@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Tero Kristo <t-kristo@ti.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Alex Shi <alex.shi@linaro.org>
 
-On Sat, Nov 4, 2017 at 3:34 AM, Ramesh Thomas <ramesh.thomas@intel.com> wrote:
-> On 2017-11-03 at 12:47:20 +0100, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> The genpd governor currently uses negative PM QoS values to indicate
->> the "no suspend" condition and 0 as "no restriction", but it doesn't
->> use them consistently.  Moreover, it tries to refresh QoS values for
->> already suspended devices in a quite questionable way.
->>
->> For the above reasons, rework it to be a bit more consistent.
->>
->> First off, note that dev_pm_qos_read_value() in
->> dev_update_qos_constraint() and __default_power_down_ok() is
->> evaluated for devices in suspend.  Moreover, that only happens if the
->> effective_constraint_ns value for them is negative (meaning "no
->> suspend").  It is not evaluated in any other cases, so effectively
->> the QoS values are only updated for devices in suspend that should
->> not have been suspended in the first place.  In all of the other
->> cases, the QoS values taken into account are the effective ones from
->> the time before the device has been suspended, so generally devices
->> need to be resumed and suspended again for new QoS values to take
->> effect anyway.  Thus evaluating dev_update_qos_constraint() in
->> those two places doesn't make sense at all, so drop it.
->>
->> Second, initialize effective_constraint_ns to 0 ("no constraint")
->> rather than to (-1) ("no suspend"), which makes more sense in
->> general and in case effective_constraint_ns is never updated
->> (the device is in suspend all the time or it is never suspended)
->> it doesn't affect the device's parent and so on.
->>
->> Finally, rework default_suspend_ok() to explicitly handle the
->> "no restriction" special case.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> ---
-
-[cut]
-
-> Looks good to me.
+On Fri, Nov 3, 2017 at 5:39 PM, Reinette Chatre
+<reinette.chatre@intel.com> wrote:
+> Hi Rafael,
 >
-> Acked-by: Ramesh Thomas <ramesh.thomas@intel.com>
+> I started to test this but found myself triggering one of the warnings:
+>
+> On 11/3/2017 4:50 AM, Rafael J. Wysocki wrote:
+>> --- linux-pm.orig/include/linux/pm_qos.h
+>> +++ linux-pm/include/linux/pm_qos.h
+>> @@ -28,16 +28,19 @@ enum pm_qos_flags_status {
+>>       PM_QOS_FLAGS_ALL,
+>>  };
+>>
+>> -#define PM_QOS_DEFAULT_VALUE -1
+>> +#define PM_QOS_DEFAULT_VALUE (-1)
+>
+> PM_QOS_DEFAULT_VALUE is -1 ...
+>
+>
+>> ===================================================================
+>> --- linux-pm.orig/drivers/base/power/qos.c
+>> +++ linux-pm/drivers/base/power/qos.c
+>> @@ -139,6 +139,9 @@ static int apply_constraint(struct dev_p
+>>
+>>       switch(req->type) {
+>>       case DEV_PM_QOS_RESUME_LATENCY:
+>> +             if (WARN_ON(value < 0))
+>> +                     value = 0;
+>> +
+>
+> ... causing me to hit this WARN_ON because apply_constraint() is called by __dev_pm_qos_remove_request() with the value parameter set to PM_QOS_DEFAULT_VALUE.
 
-Thanks!
+Thanks for the report!
 
-Do you actually mean Reviewed-by?
+I've added it to catch bugs in the future, but it has caught a bug
+right away. :-)
+
+That actually is a bug in the existing code that needs to be fixed.
+
+Thanks,
+Rafael
