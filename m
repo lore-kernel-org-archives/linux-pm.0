@@ -1,71 +1,54 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] freezer: Fix typo in commnent to function
- freezable_schedule_timeout()
-Date: Sat, 4 Nov 2017 23:02:56 +0100
-Message-ID: <20171104220256.GA7012@amd>
-References: <1509832652-1552-1-git-send-email-himanshujha199640@gmail.com>
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: Request to add cpupower git to linux-next
+Date: Sun, 5 Nov 2017 13:10:22 +1100
+Message-ID: <20171105131022.401a880a@canb.auug.org.au>
+References: <72704c6e-fefd-74a0-74b3-3ebe862df1ba@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="M9NhX3UHpAaciwkO"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55680 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751463AbdKDWC7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Nov 2017 18:02:59 -0400
-Content-Disposition: inline
-In-Reply-To: <1509832652-1552-1-git-send-email-himanshujha199640@gmail.com>
+Received: from ozlabs.org ([103.22.144.67]:59513 "EHLO ozlabs.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751508AbdKECKZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 4 Nov 2017 22:10:25 -0400
+In-Reply-To: <72704c6e-fefd-74a0-74b3-3ebe862df1ba@osg.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Himanshu Jha <himanshujha199640@gmail.com>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, mcgrof@kernel.org
+To: Shuah Khan <shuahkh@osg.samsung.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
+Hi Shuah,
 
---M9NhX3UHpAaciwkO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 3 Nov 2017 10:26:58 -0600 Shuah Khan <shuahkh@osg.samsung.com> wrote:
+>
+> Could you please add
+> 
+> git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux.git cpupower
+> to linux-next
+> 
+> I will be sending pull requests to Rafael Wysocki for cpupower to be
+> included in linux-pm starting soon for 4.15 release.
 
-On Sun 2017-11-05 03:27:32, Himanshu Jha wrote:
-> Signed-off-by: Himanshu Jha <himanshujha199640@gmail.com>
+Added from tomorrow.
 
-ACK.
+Thanks for adding your subsystem tree as a participant of linux-next.  As
+you may know, this is not a judgement of your code.  The purpose of
+linux-next is for integration testing and to lower the impact of
+conflicts between subsystems in the next merge window. 
 
-But note you have typo in the subject ;-).
+You will need to ensure that the patches/commits in your tree/series have
+been:
+     * submitted under GPL v2 (or later) and include the Contributor's
+        Signed-off-by,
+     * posted to the relevant mailing list,
+     * reviewed by you (or another maintainer of your subsystem tree),
+     * successfully unit tested, and 
+     * destined for the current or next Linux merge window.
 
-Plus this kind of bug is usually called thinko.
-								Pavel
+Basically, this should be just what you would send to Linus (or ask him
+to fetch).  It is allowed to be rebased if you deem it necessary.
 
-
-> diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-> index 3995df1..21f5aa0 100644
-> --- a/include/linux/freezer.h
-> +++ b/include/linux/freezer.h
-> @@ -182,7 +182,7 @@ static inline void freezable_schedule_unsafe(void)
->  }
-> =20
->  /*
-> - * Like freezable_schedule_timeout(), but should not block the freezer. =
- Do not
-> + * Like schedule_timeout(), but should not block the freezer.  Do not
->   * call this with locks held.
->   */
->  static inline long freezable_schedule_timeout(long timeout)
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---M9NhX3UHpAaciwkO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAln+ORAACgkQMOfwapXb+vKvTgCgnlsEradG5rBaREtOT6PxbfcU
-9tkAn003AfPUArFEeJ0M0xXGC+cOWiHx
-=ks8D
------END PGP SIGNATURE-----
-
---M9NhX3UHpAaciwkO--
+-- 
+Cheers,
+Stephen Rothwell 
+sfr@canb.auug.org.au
