@@ -1,57 +1,44 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [RFT][PATCH v2 0/2] PM / QoS: Device resume latency framework fix
-Date: Mon, 6 Nov 2017 14:46:48 +0100
-Message-ID: <CAMuHMdU-BMmznrtR6S+uppWdsiXjWZKwQYemb+_q89r852KFjg@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFT][PATCH v2 1/2] PM / domains: Rework governor code to be more consistent
+Date: Mon, 6 Nov 2017 15:38:01 +0100
+Message-ID: <CAPDyKFoOcmHU6pE4QQnpZE8qPAq4p2Fepy43a272gHYSUwDoow@mail.gmail.com>
 References: <5770848.Kdi5IjVKeE@aspire.rjw.lan> <2520927.XkLgALY3I0@aspire.rjw.lan>
+ <1780873.Ca3tjQj9XB@aspire.rjw.lan> <CAPDyKFox_5XN1bV1rG_DJvADnpQLqBQcJFDamkEvpRXRMP7mag@mail.gmail.com>
+ <CAJZ5v0jmeqxZyws_hS8T8pZdHK2p3kzzAA4-jaJw9+v9gv1DRQ@mail.gmail.com>
+ <CAPDyKFpCZov7nJVijToJ7k_YJb_CKAeScpRC5KhrZ8qdiDFSVg@mail.gmail.com> <CAJZ5v0ifOC1S4LDpD0nRQ0XxiS=WdLRUJ89y45drhG0Szkju0Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f195.google.com ([209.85.220.195]:57185 "EHLO
-        mail-qk0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753291AbdKFNqu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Nov 2017 08:46:50 -0500
-In-Reply-To: <2520927.XkLgALY3I0@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0ifOC1S4LDpD0nRQ0XxiS=WdLRUJ89y45drhG0Szkju0Q@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Tero Kristo <t-kristo@ti.com>, Reinette Chatre <reinette.chatre@intel.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Alex Shi <alex.shi@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Tero Kristo <t-kristo@ti.com>, Reinette Chatre <reinette.chatre@intel.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Alex Shi <alex.shi@linaro.org>
 
-Hi Rafael,
+[...]
 
-On Fri, Nov 3, 2017 at 12:42 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, November 2, 2017 12:00:27 AM CET Rafael J. Wysocki wrote:
->> This series is a replacement for commit 0cc2b4e5a020 (PM / QoS: Fix device
->> resume latency PM QoS) that had to be reverted due to problems introduced by it.
+>>>
+>>> So I guess I'll simply evaluate dev_pm_qos_read_value(dev) if
+>>> subsys_data or subsys_data->domain_data is not there.
 >>
->> This time the genpd PM QoS governor is first updated to be more consistent
->> and the PM QoS changes are made on top of that which simplifies the second
->> patch quite a bit.
+>> Yes.
 >>
->> This is based on the linux-next branch from linux-pm.git as of now (should
->> also apply to the current mainline just fine).
->>
->> Please test if you can or let me know if you have any comments.
+>> However, if it returns -1, what value should you pick? 0?
 >
-> The v2 removes a couple of redundant checks from the first patch (and add
-> comments to explain why the checks are not needed) and fixes up the
-> "no constraint" value collision with a valid constraint multiplied by
-> NSEC_PER_USEC in the second patch.
->
-> Please test if possible and let me know about any issues.
+> Without the second patch, -1 will just mean "no suspend", so the
+> parent cannot be suspended too, but that should just work AFAICS
+> (effective_constraint_ns may be -1 too at that point, if present).
 
-With this series, the 3 issues I reported before do not happen.
+I am fine with whatever policy you pick.
 
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+However, I suspect it may be more tricky respecting a -1 (no suspend),
+because this means dev_update_qos_constraint() then may continue to
+return a negative value, which you changed the caller,
+default_suspend_ok(), to not cope with.
 
-Thank you.
+Anyway, let me look at the code one you posted a new version. :-)
 
-Gr{oetje,eeting}s,
+[...]
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Kind regards
+Uffe
