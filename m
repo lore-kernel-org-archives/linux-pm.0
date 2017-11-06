@@ -1,86 +1,46 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: imx: use cpufreq cooling of registration method
-Date: Sun, 5 Nov 2017 17:57:36 -0800
-Message-ID: <20171106015733.GA2525@localhost.localdomain>
-References: <20171103164203.5805-1-bst@pengutronix.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Subject: [RESEND PATCH] PM / devfreq: Propagate error from devfreq_add_device()
+Date: Sun,  5 Nov 2017 21:27:41 -0800
+Message-ID: <20171106052741.445-1-bjorn.andersson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f195.google.com ([209.85.128.195]:47305 "EHLO
-        mail-wr0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750808AbdKFB5m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Nov 2017 20:57:42 -0500
-Received: by mail-wr0-f195.google.com with SMTP id k61so1345605wrc.4
-        for <linux-pm@vger.kernel.org>; Sun, 05 Nov 2017 17:57:42 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20171103164203.5805-1-bst@pengutronix.de>
+Received: from mail-pf0-f196.google.com ([209.85.192.196]:49558 "EHLO
+        mail-pf0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750888AbdKFF1q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Nov 2017 00:27:46 -0500
+Received: by mail-pf0-f196.google.com with SMTP id i5so6925539pfe.6
+        for <linux-pm@vger.kernel.org>; Sun, 05 Nov 2017 21:27:45 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bastian Stender <bst@pengutronix.de>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, kernel@pengutronix.de
+To: MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>
+Cc: linux-pm@vger.kernel.org, stable@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hello Bastian,
+Propagate the error of devfreq_add_device() in devm_devfreq_add_device()
+rather than statically returning ENOMEM. This makes it slightly faster
+to pinpoint the cause of a returned error.
 
-On Fri, Nov 03, 2017 at 05:42:03PM +0100, Bastian Stender wrote:
-> The of variant of cpufreq_cooling_register links the cooling device to
-> the device tree node provided.
-> 
-> This makes it possible to bind the cpufreq cooling device to a custom
-> thermal zone via a cooling-maps entry like:
-> 
-> 	cooling-maps {
-> 		map0 {
-> 			trip = <&board_alert>;
-> 			cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-> 		};
-> 	};
-> 
-> Assuming a cpu node exists with label "cpu0" and #cooling-cells
-> property.
-> 
-> Signed-off-by: Bastian Stender <bst@pengutronix.de>
-> ---
->  drivers/thermal/imx_thermal.c | 16 +++++++++++++++-
->  1 file changed, 15 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-> index 4798b4b1fd77..de71cd3bb03a 100644
-> --- a/drivers/thermal/imx_thermal.c
-> +++ b/drivers/thermal/imx_thermal.c
-> @@ -473,6 +473,8 @@ MODULE_DEVICE_TABLE(of, of_imx_thermal_match);
->  
->  static int imx_thermal_probe(struct platform_device *pdev)
->  {
-> +	struct device_node *np;
-> +	struct device *cpu_dev;
->  	struct imx_thermal_data *data;
->  	struct regmap *map;
->  	int measure_freq;
-> @@ -533,7 +535,19 @@ static int imx_thermal_probe(struct platform_device *pdev)
->  		return -EPROBE_DEFER;
->  	}
->  
-> -	data->cdev = cpufreq_cooling_register(data->policy);
-> +	cpu_dev = get_cpu_device(0);
-> +	if (!cpu_dev) {
-> +		pr_err("%s: failed to get cpu0 device\n", __func__);
-> +		return -ENODEV;
-> +	}
-> +
-> +	np = of_node_get(cpu_dev->of_node);
-> +	if (!np) {
-> +		dev_err(cpu_dev, "failed to find cpu0 node\n");
-> +		return -ENOENT;
-> +	}
-> +
-> +	data->cdev = of_cpufreq_cooling_register(np, data->policy);
+Fixes: 8cd84092d35e ("PM / devfreq: Add resource-managed function for devfreq device")
+Cc: stable@vger.kernel.org
+Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+---
 
-This would actually be better suited if added to IMX cpufreq driver
-instead. Any reason to attempt to add to the thermal driver?
+Resending with Chanwoo's ack, Fixes and Cc stable
 
->  	if (IS_ERR(data->cdev)) {
->  		ret = PTR_ERR(data->cdev);
->  		dev_err(&pdev->dev,
-> -- 
-> 2.11.0
-> 
+ drivers/devfreq/devfreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 78fb496ecb4e..99c4021fc33b 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -737,7 +737,7 @@ struct devfreq *devm_devfreq_add_device(struct device *dev,
+ 	devfreq = devfreq_add_device(dev, profile, governor_name, data);
+ 	if (IS_ERR(devfreq)) {
+ 		devres_free(ptr);
+-		return ERR_PTR(-ENOMEM);
++		return devfreq;
+ 	}
+ 
+ 	*ptr = devfreq;
+-- 
+2.12.0
