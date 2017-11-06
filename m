@@ -1,90 +1,57 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [RFC PATCH 5/7] power: supply: Add type for USB PD PPS chargers
-Date: Mon, 6 Nov 2017 14:25:42 +0100
-Message-ID: <20171106132542.xe5hyfryxljmepaz@earth>
-References: <cover.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
- <d1fcc24b60933b590fc6c8e8946e9ccb44364306.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RFT][PATCH v2 0/2] PM / QoS: Device resume latency framework fix
+Date: Mon, 6 Nov 2017 14:46:48 +0100
+Message-ID: <CAMuHMdU-BMmznrtR6S+uppWdsiXjWZKwQYemb+_q89r852KFjg@mail.gmail.com>
+References: <5770848.Kdi5IjVKeE@aspire.rjw.lan> <2520927.XkLgALY3I0@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="yxpx3fnfdllnbufj"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <d1fcc24b60933b590fc6c8e8946e9ccb44364306.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f195.google.com ([209.85.220.195]:57185 "EHLO
+        mail-qk0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753291AbdKFNqu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Nov 2017 08:46:50 -0500
+In-Reply-To: <2520927.XkLgALY3I0@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Tero Kristo <t-kristo@ti.com>, Reinette Chatre <reinette.chatre@intel.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Alex Shi <alex.shi@linaro.org>
 
+Hi Rafael,
 
---yxpx3fnfdllnbufj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Nov 3, 2017 at 12:42 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, November 2, 2017 12:00:27 AM CET Rafael J. Wysocki wrote:
+>> This series is a replacement for commit 0cc2b4e5a020 (PM / QoS: Fix device
+>> resume latency PM QoS) that had to be reverted due to problems introduced by it.
+>>
+>> This time the genpd PM QoS governor is first updated to be more consistent
+>> and the PM QoS changes are made on top of that which simplifies the second
+>> patch quite a bit.
+>>
+>> This is based on the linux-next branch from linux-pm.git as of now (should
+>> also apply to the current mainline just fine).
+>>
+>> Please test if you can or let me know if you have any comments.
+>
+> The v2 removes a couple of redundant checks from the first patch (and add
+> comments to explain why the checks are not needed) and fixes up the
+> "no constraint" value collision with a valid constraint multiplied by
+> NSEC_PER_USEC in the second patch.
+>
+> Please test if possible and let me know about any issues.
 
-Hi,
+With this series, the 3 issues I reported before do not happen.
 
-On Wed, Nov 01, 2017 at 05:03:13PM +0000, Adam Thomson wrote:
-> This adds a type to represent USB PPS chargers as defined in the
-> USB Power Delivery Specification Revision 3.0 V1.1
->=20
-> Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Thank you.
 
--- Sebastian
+Gr{oetje,eeting}s,
 
->  drivers/power/supply/power_supply_sysfs.c | 2 +-
->  include/linux/power_supply.h              | 1 +
->  2 files changed, 2 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/su=
-pply/power_supply_sysfs.c
-> index 5204f11..efd2469 100644
-> --- a/drivers/power/supply/power_supply_sysfs.c
-> +++ b/drivers/power/supply/power_supply_sysfs.c
-> @@ -43,7 +43,7 @@
->  static const char * const power_supply_type_text[] =3D {
->  	"Unknown", "Battery", "UPS", "Mains", "USB",
->  	"USB_DCP", "USB_CDP", "USB_ACA", "USB_C",
-> -	"USB_PD", "USB_PD_DRP", "BrickID"
-> +	"USB_PD", "USB_PD_DRP", "USB_PD_PPS", "BrickID"
->  };
-> =20
->  static const char * const power_supply_status_text[] =3D {
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index 79e90b3..3a79c75 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -167,6 +167,7 @@ enum power_supply_type {
->  	POWER_SUPPLY_TYPE_USB_TYPE_C,		/* Type C Port */
->  	POWER_SUPPLY_TYPE_USB_PD,		/* Power Delivery Port */
->  	POWER_SUPPLY_TYPE_USB_PD_DRP,		/* PD Dual Role Port */
-> +	POWER_SUPPLY_TYPE_USB_PD_PPS,		/* PD Programmable Power Supply */
->  	POWER_SUPPLY_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
->  };
-> =20
-> --=20
-> 1.9.1
->=20
+                        Geert
 
---yxpx3fnfdllnbufj
-Content-Type: application/pgp-signature; name="signature.asc"
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAloAYtEACgkQ2O7X88g7
-+prkhg//aJiW69K/n9C0dN9enoIuwfVjubZllY69mFdrVgr8s8r4kJAQu/jDwu91
-otRflvjzyNx2XgpBAORibso36Wm7MdAngraCo9N8iaHNmFtQUtt1atkSw6t705eg
-JyWL0OxQDZYSWTefvhozRvDD5wVSofoFyja6mtywgQvXamLN66IMfQ6rGvP1z44M
-lPBQrDA8+sqfxVNDhMhqtgXF62XN2bYtN6EIeX/CU/oBfyrj5nzY4FTLbvj8Vp2c
-fsxhH6J9M6msChPmhEaV4Yz8Y9hpdG0NfQ1SfuJEcnnom8gVHhR3EdrAlG80Kdfw
-9mRfYl0pRDldOvvHAELSaMWynTB4VGFSj87KDyae2yZfgdHZThs1J1XPsCxxEiAX
-EXcbMQ0kGpc1tuy3VZee//E9n3WGJhH+1LdcCpSp04mdPoHswNV6c47dPA3CepoF
-m6DfhyQ0f/DkN5vMkKCmdUHI8no+HxJThf8tUk6s0ILuttoQu5/0LGMUQDh3g3dD
-15PnVb4IBO38DG5E1bq0sZVHSnCSDVgJrlaos5H5hX1k8Fiunap40v6XMBbAaDl0
-7L/vXt1h7ER08krrqqzdCMPEsK0jDT3Uti6wIPS0sBllPotNAHvhFwRp8WqdzDdu
-te1taP5SG2CwuffpQvNXXJ6VCrWnFOeim99DkLOfCyLfdIKbFYU=
-=8Hm1
------END PGP SIGNATURE-----
-
---yxpx3fnfdllnbufj--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
