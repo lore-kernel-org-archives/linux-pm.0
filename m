@@ -1,72 +1,78 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v3 0/5] PM / Domains: Remove gpd_dev_ops.active_wakeup() callback
-Date: Tue,  7 Nov 2017 13:48:10 +0100
-Message-ID: <1510058895-21712-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+From: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Subject: [PATCH v3 4/5] soc: rockchip: power-domain: Use
+ GENPD_FLAG_ACTIVE_WAKEUP
+Date: Tue,  7 Nov 2017 13:48:14 +0100
+Message-ID: <1510058895-21712-5-git-send-email-geert+renesas@glider.be>
+References: <1510058895-21712-1-git-send-email-geert+renesas@glider.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+In-Reply-To: <1510058895-21712-1-git-send-email-geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-rockchip/>
+List-Post: <mailto:linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+List-Help: <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-rockchip>,
+ <mailto:linux-rockchip-request-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org?subject=subscribe>
+Sender: "Linux-rockchip" <linux-rockchip-bounces-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>
+Errors-To: linux-rockchip-bounces+glpar-linux-rockchip=m.gmane.org-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-	Hi Rafael, Ulf, Kevin,
+Set the newly introduced GENPD_FLAG_ACTIVE_WAKEUP, which allows to
+remove the driver's own flag-based callback.
 
-It is quite common for PM Domains to require slave devices to be kept
-active during system suspend if they are to be used as wakeup sources.
-To enable this, currently each PM Domain or driver has to provide its
-own gpd_dev_ops.active_wakeup() callback.
+Signed-off-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+Acked-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Acked-by: Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+---
+Compile-tested only.
 
-All existing callbacks either return always true, or a fixed value
-depending on the PM Domain.
+v3:
+  - Add Acked-by,
+  - Drop RFC status,
 
-Hence this patch series simplifies active wakeup handling by replacing
-the callback by a flag:
-  - Patch 1 adds a new new flag GENPD_FLAG_ACTIVE_WAKEUP, to be set by
-    PM Domain drivers that want to use the new handling,
-  - Patches 2-4 convert all existing users of the callback to the new
-    flag,
-  - Patch 5 removes the callback.
+v2:
+  - New.
+---
+ drivers/soc/rockchip/pm_domains.c | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
-This series was extracted from "[PATCH 00/10] PM / Domain: renesas: Fix
-active wakeup behavior", and retains only PM Domain changes to existing
-drivers.
-
-Changes compared to v2:
-  - Add Acked-by, Reviewed-by,
-  - Drop RFC status from dependent patches, as everything can go in
-    through the pm tree.
-
-Changes compared to v1 (most suggested by Ulf):
-  - Use the flag in se instead of setting up an "always true" callback,
-  - Convert the mediatek and rockchip PM Domain drivers,
-  - Remove the callback.
-
-Thanks for applying for v4.15!
-
-Geert Uytterhoeven (5):
-  PM / Domains: Allow genpd users to specify default active wakeup
-    behavior
-  ARM: shmobile: pm-rmobile: Use GENPD_FLAG_ACTIVE_WAKEUP
-  soc: mediatek: Use GENPD_FLAG_ACTIVE_WAKEUP
-  soc: rockchip: power-domain: Use GENPD_FLAG_ACTIVE_WAKEUP
-  PM / Domains: Remove gpd_dev_ops.active_wakeup() callback
-
- arch/arm/mach-shmobile/pm-rmobile.c |  8 +-------
- drivers/base/power/domain.c         | 13 ++++---------
- drivers/soc/mediatek/mtk-scpsys.c   | 14 ++------------
- drivers/soc/rockchip/pm_domains.c   | 14 ++------------
- include/linux/pm_domain.h           |  8 ++++----
- 5 files changed, 13 insertions(+), 44 deletions(-)
-
+diff --git a/drivers/soc/rockchip/pm_domains.c b/drivers/soc/rockchip/pm_domains.c
+index 40b75748835f552c..5c342167b9db7a16 100644
+--- a/drivers/soc/rockchip/pm_domains.c
++++ b/drivers/soc/rockchip/pm_domains.c
+@@ -358,17 +358,6 @@ static void rockchip_pd_detach_dev(struct generic_pm_domain *genpd,
+ 	pm_clk_destroy(dev);
+ }
+ 
+-static bool rockchip_active_wakeup(struct device *dev)
+-{
+-	struct generic_pm_domain *genpd;
+-	struct rockchip_pm_domain *pd;
+-
+-	genpd = pd_to_genpd(dev->pm_domain);
+-	pd = container_of(genpd, struct rockchip_pm_domain, genpd);
+-
+-	return pd->info->active_wakeup;
+-}
+-
+ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
+ 				      struct device_node *node)
+ {
+@@ -489,8 +478,9 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
+ 	pd->genpd.power_on = rockchip_pd_power_on;
+ 	pd->genpd.attach_dev = rockchip_pd_attach_dev;
+ 	pd->genpd.detach_dev = rockchip_pd_detach_dev;
+-	pd->genpd.dev_ops.active_wakeup = rockchip_active_wakeup;
+ 	pd->genpd.flags = GENPD_FLAG_PM_CLK;
++	if (pd_info->active_wakeup)
++		pd->genpd.flags |= GENPD_FLAG_ACTIVE_WAKEUP;
+ 	pm_genpd_init(&pd->genpd, NULL, false);
+ 
+ 	pmu->genpd_data.domains[id] = &pd->genpd;
 -- 
 2.7.4
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
