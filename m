@@ -1,103 +1,43 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v4 20/20] cpufreq: scmi: add support for fast frequency
- switching
-Date: Tue, 7 Nov 2017 10:57:29 +0000
-Message-ID: <7deac477-8400-a223-420b-63f5a483c546@arm.com>
-References: <1509720477-18936-1-git-send-email-sudeep.holla@arm.com>
- <1509720477-18936-21-git-send-email-sudeep.holla@arm.com>
- <20171107061933.GC3297@vireshk-i7>
+From: Chris Redpath <chris.redpath@arm.com>
+Subject: Re: [PATCH v3] cpufreq: schedutil: Examine the correct CPU when we
+ update util
+Date: Tue, 7 Nov 2017 11:03:46 +0000
+Message-ID: <bb1cb0ee-8869-6260-eac5-a3f011fcd085@arm.com>
+References: <20171103034022.GD4240@vireshk-i7>
+ <20171103133642.8636-1-chris.redpath@arm.com>
+ <20171103154559.GJ4240@vireshk-i7>
+ <65a16c84-d25f-26ce-b4cf-5edc3f9b6d32@arm.com>
+ <20171107095951.GE3297@vireshk-i7>
+ <CAJZ5v0g11-45dW_Hgw7wzE+wWbznM4Hcan77FjuP8__wSGC=pg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171107061933.GC3297@vireshk-i7>
+In-Reply-To: <CAJZ5v0g11-45dW_Hgw7wzE+wWbznM4Hcan77FjuP8__wSGC=pg@mail.gmail.com>
 Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Arnd Bergmann <arnd@arndb.de>, Loc Ho <lho@apm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 List-Id: linux-pm@vger.kernel.org
 
+Thanks guys, really appreciated!
 
+--Chris
 
-On 07/11/17 06:19, Viresh Kumar wrote:
-> On 03-11-17, 14:47, Sudeep Holla wrote:
->> The cpufreq core provides option for drivers to implement fast_switch
->> callback which is invoked for frequency switching from interrupt context.
+On 07/11/17 10:09, Rafael J. Wysocki wrote:
+> On Tue, Nov 7, 2017 at 10:59 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>> On 07-11-17, 09:49, Chris Redpath wrote:
+>>> Hi Viresh, Rafael,
+>>>
+>>> Without this patch, schedutil is totally broken for us - is
+>>> there any chance at all this could go in 4.14 or is it just
+>>> too late?
 >>
->> This patch adds support for fast_switch callback in SCMI cpufreq driver
->> by making use of polling based SCMI transfer. It also sets the flag
->> fast_switch_possible.
->>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Cc: linux-pm@vger.kernel.org
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>  drivers/cpufreq/scmi-cpufreq.c | 16 ++++++++++++++++
->>  1 file changed, 16 insertions(+)
->>
->> diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
->> index b1057a13e6a7..91df5013f7b2 100644
->> --- a/drivers/cpufreq/scmi-cpufreq.c
->> +++ b/drivers/cpufreq/scmi-cpufreq.c
->> @@ -64,6 +64,19 @@ scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
->>  	return perf_ops->freq_set(handle, priv->domain_id, freq, false);
->>  }
->>  
->> +static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
->> +					     unsigned int target_freq)
->> +{
->> +	struct scmi_data *priv = policy->driver_data;
->> +	struct scmi_perf_ops *perf_ops = handle->perf_ops;
->> +
->> +	if (!perf_ops->freq_set(handle, priv->domain_id,
->> +				target_freq * 1000, true))
->> +		return target_freq;
->> +
->> +	return 0;
->> +}
->> +
->>  static int
->>  scmi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
->>  {
->> @@ -167,6 +180,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
->>  
->>  	policy->cpuinfo.transition_latency = latency;
->>  
->> +	policy->fast_switch_possible = true;
->>  	return 0;
->>  
->>  out_free_cpufreq_table:
->> @@ -183,6 +197,7 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
->>  {
->>  	struct scmi_data *priv = policy->driver_data;
->>  
->> +	policy->fast_switch_possible = false;
+>> I see that Rafael has already applied it, but not sure if he is planning to send
+>> it for 4.14 (though he should IMHO, as it is a critical fix).
 > 
-> You don't need this.
+> Yes, I am.
 > 
-
-OK, dropped now.
-
->>  	cpufreq_cooling_unregister(priv->cdev);
->>  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
->>  	kfree(priv);
->> @@ -226,6 +241,7 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
->>  	.verify	= cpufreq_generic_frequency_table_verify,
->>  	.attr	= cpufreq_generic_attr,
->>  	.target_index	= scmi_cpufreq_set_target,
->> +	.fast_switch	= scmi_cpufreq_fast_switch,
->>  	.get	= scmi_cpufreq_get_rate,
->>  	.init	= scmi_cpufreq_init,
->>  	.exit	= scmi_cpufreq_exit,
+> Thanks,
+> Rafael
 > 
-> Apart from that.
-> 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-
-Thanks
-
--- 
-Regards,
-Sudeep
