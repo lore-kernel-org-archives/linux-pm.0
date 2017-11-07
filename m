@@ -1,210 +1,101 @@
-From: Ramesh Thomas <ramesh.thomas@intel.com>
-Subject: Re: [PATCH v3 1/2] PM / domains: Rework governor code to be more
- consistent
-Date: Mon, 6 Nov 2017 21:05:45 -0800
-Message-ID: <20171107050544.GB17606@intel.com>
-References: <5770848.Kdi5IjVKeE@aspire.rjw.lan>
- <2520927.XkLgALY3I0@aspire.rjw.lan>
- <2941273.uOhv3ydaDP@aspire.rjw.lan>
- <3615978.1OBBRZE5lx@aspire.rjw.lan>
-Reply-To: ramesh.thomas@intel.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq:stats: Handle the case when trans_table goes beyond PAGE_SIZE
+Date: Tue,  7 Nov 2017 10:52:37 +0530
+Message-ID: <1510032157-31857-1-git-send-email-ego@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga04.intel.com ([192.55.52.120]:3322 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752580AbdKGFMb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 7 Nov 2017 00:12:31 -0500
-Content-Disposition: inline
-In-Reply-To: <3615978.1OBBRZE5lx@aspire.rjw.lan>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:44218 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753036AbdKGFWr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 00:22:47 -0500
+Received: from pps.filterd (m0098393.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vA75LPqg089154
+        for <linux-pm@vger.kernel.org>; Tue, 7 Nov 2017 00:22:47 -0500
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2e351emsfe-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Tue, 07 Nov 2017 00:22:47 -0500
+Received: from localhost
+        by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+        Tue, 7 Nov 2017 00:22:45 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Tero Kristo <t-kristo@ti.com>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, shilpa.bhat@linux.vnet.ibm.com, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: linux-pm@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On 2017-11-07 at 02:23:18 +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> The genpd governor currently uses negative PM QoS values to indicate
-> the "no suspend" condition and 0 as "no restriction", but it doesn't
-> use them consistently.  Moreover, it tries to refresh QoS values for
-> already suspended devices in a quite questionable way.
-> 
-> For the above reasons, rework it to be a bit more consistent.
-> 
-> First off, note that dev_pm_qos_read_value() in
-> dev_update_qos_constraint() and __default_power_down_ok() is
-> evaluated for devices in suspend.  Moreover, that only happens if the
-> effective_constraint_ns value for them is negative (meaning "no
-> suspend").  It is not evaluated in any other cases, so effectively
-> the QoS values are only updated for devices in suspend that should
-> not have been suspended in the first place.  In all of the other
-> cases, the QoS values taken into account are the effective ones from
-> the time before the device has been suspended, so generally devices
-> need to be resumed and suspended again for new QoS values to take
-> effect anyway.  Thus evaluating dev_update_qos_constraint() in
-> those two places doesn't make sense at all, so drop it.
-> 
-> Second, initialize effective_constraint_ns to 0 ("no constraint")
-> rather than to (-1) ("no suspend"), which makes more sense in
-> general and in case effective_constraint_ns is never updated
-> (the device is in suspend all the time or it is never suspended)
-> it doesn't affect the device's parent and so on.
-> 
-> Finally, rework default_suspend_ok() to explicitly handle the
-> "no restriction" and "no suspend" special cases.
-> 
-> Also add WARN_ON() around checks that should never trigger.
-> 
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> 
-> v2 -> v3: Take children that don't belong to genpd power domains into
->           account in dev_update_qos_constraint().
-> 
-> ---
->  drivers/base/power/domain.c          |    2 
->  drivers/base/power/domain_governor.c |   71 ++++++++++++++++++++++++-----------
->  2 files changed, 50 insertions(+), 23 deletions(-)
-> 
-> Index: linux-pm/drivers/base/power/domain.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/domain.c
-> +++ linux-pm/drivers/base/power/domain.c
-> @@ -1331,7 +1331,7 @@ static struct generic_pm_domain_data *ge
->  
->  	gpd_data->base.dev = dev;
->  	gpd_data->td.constraint_changed = true;
-> -	gpd_data->td.effective_constraint_ns = -1;
-> +	gpd_data->td.effective_constraint_ns = 0;
->  	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
->  
->  	spin_lock_irq(&dev->power.lock);
-> Index: linux-pm/drivers/base/power/domain_governor.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/domain_governor.c
-> +++ linux-pm/drivers/base/power/domain_governor.c
-> @@ -14,22 +14,33 @@
->  static int dev_update_qos_constraint(struct device *dev, void *data)
->  {
->  	s64 *constraint_ns_p = data;
-> -	s32 constraint_ns = -1;
-> +	s64 constraint_ns;
->  
-> -	if (dev->power.subsys_data && dev->power.subsys_data->domain_data)
-> +	if (dev->power.subsys_data && dev->power.subsys_data->domain_data) {
-> +		/*
-> +		 * Only take suspend-time QoS constraints of devices into
-> +		 * account, because constraints updated after the device has
-> +		 * been suspended are not guaranteed to be taken into account
-> +		 * anyway.  In order for them to take effect, the device has to
-> +		 * be resumed and suspended again.
-> +		 */
->  		constraint_ns = dev_gpd_data(dev)->td.effective_constraint_ns;
-> -
-> -	if (constraint_ns < 0) {
-> +	} else {
-> +		/*
-> +		 * The child is not in a domain and there's no info on its
-> +		 * suspend/resume latencies, so assume them to be negligible and
-> +		 * take its current PM QoS constraint (that's the only thing
-> +		 * known at this point anyway).
-> +		 */
->  		constraint_ns = dev_pm_qos_read_value(dev);
-> -		constraint_ns *= NSEC_PER_USEC;
-> +		if (constraint_ns > 0)
-> +			constraint_ns *= NSEC_PER_USEC;
->  	}
-> +
-> +	/* 0 means "no constraint" */
->  	if (constraint_ns == 0)
->  		return 0;
->  
-> -	/*
-> -	 * constraint_ns cannot be negative here, because the device has been
-> -	 * suspended.
-> -	 */
->  	if (constraint_ns < *constraint_ns_p || *constraint_ns_p == 0)
->  		*constraint_ns_p = constraint_ns;
->  
-> @@ -76,14 +87,32 @@ static bool default_suspend_ok(struct de
->  		device_for_each_child(dev, &constraint_ns,
->  				      dev_update_qos_constraint);
->  
-> -	if (constraint_ns > 0) {
-> +	if (constraint_ns == 0) {
-> +		/* "No restriction", so the device is allowed to suspend. */
-> +		td->effective_constraint_ns = 0;
-> +		td->cached_suspend_ok = true;
-> +	} else if (constraint_ns < 0) {
-> +		/*
-> +		 * This triggers if one of the children that don't belong to a
-> +		 * domain has a negative PM QoS constraint and it's better not
-> +		 * to suspend then.  effective_constraint_ns is negative already
-> +		 * and cached_suspend_ok is false, so bail out.
-> +		 */
-> +		return false;
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-This change is ok. However, would like to bring to your attention a possible
-inconsistency in the treatment of negative value as "no suspend at all" that
-can affect this.
+On platforms with large number of Pstates, the transition table, which
+is a NxN matrix, can overflow beyond the PAGE_SIZE boundary.
 
-user level entry does not allow negative values. Only way to enter a negative
-value is if the kernel API to add/update is used. In that interface, if -1
-(PM_QOS_DEFAULT_VALUE) is passed, pm_qos_update_target will actually assign
-the default value stored in the constraint. The default value is 
-PM_QOS_RESUME_LATENCY_DEFAULT_VALUE which is 0. 0 means "no constraint".
+This can be seen on POWER9 which has 100+ Pstates.
 
-All this gets fixed in the next patch though. 
+As a result, each time the trans_table is read for any of the CPUs, we
+will get the following error.
 
-> +	} else {
->  		constraint_ns -= td->suspend_latency_ns +
->  				td->resume_latency_ns;
-> -		if (constraint_ns == 0)
-> +		/*
-> +		 * effective_constraint_ns is negative already and
-> +		 * cached_suspend_ok is false, so if the computed value is not
-> +		 * positive, return right away.
-> +		 */
-> +		if (constraint_ns <= 0)
->  			return false;
-> +
-> +		td->effective_constraint_ns = constraint_ns;
-> +		td->cached_suspend_ok = true;
->  	}
-> -	td->effective_constraint_ns = constraint_ns;
-> -	td->cached_suspend_ok = constraint_ns >= 0;
->  
->  	/*
->  	 * The children have been suspended already, so we don't need to take
-> @@ -144,18 +173,16 @@ static bool __default_power_down_ok(stru
->  		 */
->  		td = &to_gpd_data(pdd)->td;
->  		constraint_ns = td->effective_constraint_ns;
-> -		/* default_suspend_ok() need not be called before us. */
-> -		if (constraint_ns < 0) {
-> -			constraint_ns = dev_pm_qos_read_value(pdd->dev);
-> -			constraint_ns *= NSEC_PER_USEC;
-> -		}
-> +		/*
-> +		 * Negative values mean "no suspend at all" and this runs only
-> +		 * when all devices in the domain are suspended, so it must be
-> +		 * 0 at least.
-> +		 *
-> +		 * 0 means "no constraint"
-> +		 */
->  		if (constraint_ns == 0)
->  			continue;
->  
-> -		/*
-> -		 * constraint_ns cannot be negative here, because the device has
-> -		 * been suspended.
-> -		 */
->  		if (constraint_ns <= off_on_time_ns)
->  			return false;
->  
-> 
+---------------------------------------------------
+fill_read_buffer: show+0x0/0xa0 returned bad count
+---------------------------------------------------
 
-Regards,
-Ramesh
+This patch detect the overflow the first time the trans_table is read
+and print a warning in the dmesg and return return the FILE TOO LARGE
+error.  The subsequent reads also return FILE TOO LARGE error.
+
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ Documentation/cpu-freq/cpufreq-stats.txt |  3 +++
+ drivers/cpufreq/cpufreq_stats.c          | 11 +++++++++--
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/cpu-freq/cpufreq-stats.txt b/Documentation/cpu-freq/cpufreq-stats.txt
+index 2bbe207..a873855 100644
+--- a/Documentation/cpu-freq/cpufreq-stats.txt
++++ b/Documentation/cpu-freq/cpufreq-stats.txt
+@@ -90,6 +90,9 @@ Freq_i to Freq_j. Freq_i is in descending order with increasing rows and
+ Freq_j is in descending order with increasing columns. The output here also 
+ contains the actual freq values for each row and column for better readability.
+ 
++If the transition table is bigger than PAGE_SIZE, reading this will
++return an -EFBIG error.
++
+ --------------------------------------------------------------------------------
+ <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
+    From  :    To
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index e75880e..3cb717c 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -79,6 +79,7 @@ static ssize_t store_reset(struct cpufreq_policy *policy, const char *buf,
+ 	return count;
+ }
+ 
++bool trans_table_overflow;
+ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ {
+ 	struct cpufreq_stats *stats = policy->stats;
+@@ -88,6 +89,9 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ 	if (policy->fast_switch_enabled)
+ 		return 0;
+ 
++	if (unlikely(trans_table_overflow))
++		return -EFBIG;
++
+ 	len += snprintf(buf + len, PAGE_SIZE - len, "   From  :    To\n");
+ 	len += snprintf(buf + len, PAGE_SIZE - len, "         : ");
+ 	for (i = 0; i < stats->state_num; i++) {
+@@ -118,8 +122,11 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+ 			break;
+ 		len += snprintf(buf + len, PAGE_SIZE - len, "\n");
+ 	}
+-	if (len >= PAGE_SIZE)
+-		return PAGE_SIZE;
++	if (len >= PAGE_SIZE) {
++		trans_table_overflow = true;
++		pr_warn("cpufreq transition table exceeds PAGE_SIZE. Disabling\n");
++		return -EFBIG;
++	}
+ 	return len;
+ }
+ cpufreq_freq_attr_ro(trans_table);
+-- 
+1.8.3.1
