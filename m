@@ -1,67 +1,138 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH v11 02/10] i2c: i2c-smbus: Move i2c_setup_smbus_alert
- from i2c-smbus to i2c-core-smbus
-Date: Tue, 7 Nov 2017 08:22:55 +0100
-Message-ID: <20171107072254.s43mwpyplx3hdkyo@ninjato>
-References: <1503567070-115646-1-git-send-email-preid@electromag.com.au>
- <1503567070-115646-3-git-send-email-preid@electromag.com.au>
- <20171029154408.vmjkpj7ybqyrj3ke@ninjato>
- <1397131b-c22d-9872-dbe0-9b691553cb9e@electromag.com.au>
- <20171106213646.2h3zsitnlablblli@ninjato>
- <2eaccb51-62cf-b764-d313-84008c6c8f87@electromag.com.au>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq:stats: Handle the case when trans_table goes
+ beyond PAGE_SIZE
+Date: Tue, 7 Nov 2017 13:22:07 +0530
+Message-ID: <20171107075207.GA13577@in.ibm.com>
+References: <1510032157-31857-1-git-send-email-ego@linux.vnet.ibm.com>
+ <20171107053236.GA3297@vireshk-i7>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="bikpymgkkwmtznnd"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sauhun.de ([88.99.104.3]:54768 "EHLO pokefinder.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755205AbdKGHW5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 7 Nov 2017 02:22:57 -0500
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:49886 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1754746AbdKGHwO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 02:52:14 -0500
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vA77p2NQ073364
+        for <linux-pm@vger.kernel.org>; Tue, 7 Nov 2017 02:52:14 -0500
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2e382c234f-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Tue, 07 Nov 2017 02:52:13 -0500
+Received: from localhost
+        by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+        Tue, 7 Nov 2017 00:52:12 -0700
 Content-Disposition: inline
-In-Reply-To: <2eaccb51-62cf-b764-d313-84008c6c8f87@electromag.com.au>
+In-Reply-To: <20171107053236.GA3297@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: Jean Delvare <jdelvare@suse.de>, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, benjamin.tissoires@redhat.com, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, shilpa.bhat@linux.vnet.ibm.com, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
 
+Hi Viresh,
 
---bikpymgkkwmtznnd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Tue, Nov 07, 2017 at 11:02:36AM +0530, Viresh Kumar wrote:
+> On 07-11-17, 10:52, Gautham R. Shenoy wrote:
+> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > 
+> > On platforms with large number of Pstates, the transition table, which
+> > is a NxN matrix, can overflow beyond the PAGE_SIZE boundary.
+> > 
+> > This can be seen on POWER9 which has 100+ Pstates.
+> > 
+> > As a result, each time the trans_table is read for any of the CPUs, we
+> > will get the following error.
+> > 
+> > ---------------------------------------------------
+> > fill_read_buffer: show+0x0/0xa0 returned bad count
+> > ---------------------------------------------------
+> > 
+> > This patch detect the overflow the first time the trans_table is read
+> > and print a warning in the dmesg and return return the FILE TOO LARGE
+> 
+> s/return return/return/
 
+Will fix this.
 
-> I was just thinking that all that's in the file now is smbus-alert code.
-> The other smbus (host notify) code was moved to i2c-core
-> So maybe i2c-core-smbus-alert and as you say use makefile to include it.
+> 
+> > error.  The subsequent reads also return FILE TOO LARGE error.
+> > 
+> > Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> > ---
+> >  Documentation/cpu-freq/cpufreq-stats.txt |  3 +++
+> >  drivers/cpufreq/cpufreq_stats.c          | 11 +++++++++--
+> >  2 files changed, 12 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/Documentation/cpu-freq/cpufreq-stats.txt b/Documentation/cpu-freq/cpufreq-stats.txt
+> > index 2bbe207..a873855 100644
+> > --- a/Documentation/cpu-freq/cpufreq-stats.txt
+> > +++ b/Documentation/cpu-freq/cpufreq-stats.txt
+> > @@ -90,6 +90,9 @@ Freq_i to Freq_j. Freq_i is in descending order with increasing rows and
+> >  Freq_j is in descending order with increasing columns. The output here also 
+> >  contains the actual freq values for each row and column for better readability.
+> >  
+> > +If the transition table is bigger than PAGE_SIZE, reading this will
+> > +return an -EFBIG error.
+> > +
+> >  --------------------------------------------------------------------------------
+> >  <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
+> >     From  :    To
+> > diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+> > index e75880e..3cb717c 100644
+> > --- a/drivers/cpufreq/cpufreq_stats.c
+> > +++ b/drivers/cpufreq/cpufreq_stats.c
+> > @@ -79,6 +79,7 @@ static ssize_t store_reset(struct cpufreq_policy *policy, const char *buf,
+> >  	return count;
+> >  }
+> >  
+> > +bool trans_table_overflow;
+> 
+> This should be marked static and would be better to move it as local to below
+> function, but ...
+> >  static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+> >  {
+> >  	struct cpufreq_stats *stats = policy->stats;
+> > @@ -88,6 +89,9 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+> >  	if (policy->fast_switch_enabled)
+> >  		return 0;
+> >  
+> > +	if (unlikely(trans_table_overflow))
+> > +		return -EFBIG;
+> > +
+> 
+> Do we really need to optimize this path at all? This is debug stuff really. Over
+> that a person can theoretically rmmod the driver, insmod another driver and the
+> problem may go away then. And so above would be problematic then.
 
-Aaaah, i2c-core-smbus-alert.c. Yes, that probably makes sense. I was
-wondering about i2c-smbus-alert.c (without -core)...
+Sure, I see what you mean. I can change the warning below to a
+pr_warn_once, so that the dmesg isn't cluttered everytime someone
+reads the trans_table.
 
-> I've tried this and it seems to work for the various combinations.
-> I'll wait a bit for Jean to offer an opinion.
+> 
+> >  	len += snprintf(buf + len, PAGE_SIZE - len, "   From  :    To\n");
+> >  	len += snprintf(buf + len, PAGE_SIZE - len, "         : ");
+> >  	for (i = 0; i < stats->state_num; i++) {
+> > @@ -118,8 +122,11 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
+> >  			break;
+> >  		len += snprintf(buf + len, PAGE_SIZE - len, "\n");
+> >  	}
+> > -	if (len >= PAGE_SIZE)
+> > -		return PAGE_SIZE;
+> > +	if (len >= PAGE_SIZE) {
+> > +		trans_table_overflow = true;
+> > +		pr_warn("cpufreq transition table exceeds PAGE_SIZE. Disabling\n");
+> > +		return -EFBIG;
+> > +	}
+> 
+> I would suggest making only this change and removing other optimizations
+> completely.
 
-Well, if you have code already, can you post it as RFC and CC Jean?
-It usually is easier to talk over code, even if it is not perfect yet...
+Ok. Will resend the patch incorporating your suggestions. Thanks for
+the review.
 
-
---bikpymgkkwmtznnd
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAloBX0oACgkQFA3kzBSg
-Kbb6nhAAiTjcLEHcmWcnWXLWm52v1eFi99WAwm3ONH6wlmWdT1WK/4ktJ6X3bx2Z
-XSVGvELMjeuFY2khXNmrM08pNu/ceNVBcBAuOhxDg9PeKLsBuRlPm6/38GIkKy9t
-IJbAz4+VJ1hqtpFNyOKuafvmcIwAYfdAeNOz5nqqiGGqZbHA3qMwLBxRvt3oupMB
-0ngTY/unB/x1tvhnXKAI73gq+I2S3OLM+SifwD+x84N8curvQ/oCtfhQ5WS+fuUW
-6FF/BeyE5qH0wN4LfDtap1LdIiiZnaHoI709hF8AGtJiLxmu4OeO+Jph5jiV6AOj
-mUCK4OoDDowHSsbvd7xNPE5FuPPNWpF6V1CnjZrV4zeN9QwP2DSlFwdZNkaCynGy
-V70sxrj1d2alD+YIWctu1iBuG7OiFus0wDvfpsUX9ZH0JQ0KSmtnZjjepaaQ3x/+
-XydRjM18OgGL7t28J4qb4sH36j8p1sGc04NMQokLwnh0zuR6+6e+qBTOYqQFtW5d
-8svTp8j7fRHdAwth57vAqRZx+qvUZtKH6f/BXhOEBsYQqnmeQfAjb78Q3+2XNdEY
-3sD3Bp0r5CUxKc+t3UZHP50NlPB6lm8i2ihu3kEqIqV6x/R1ESGP8PdznrbnGiNF
-om2OMPnFwWfeuAbiKvhpQt+J78nc+y9r06E+39vS1Fs4LI9QdUc=
-=j7zL
------END PGP SIGNATURE-----
-
---bikpymgkkwmtznnd--
+> 
+> -- 
+> viresh
+> 
