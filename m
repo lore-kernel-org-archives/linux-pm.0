@@ -1,61 +1,68 @@
-From: Shuah Khan <shuahkh@osg.samsung.com>
-Subject: Re: [PATCH v2] cpupowerutils: bench - Fix cpu online check
-Date: Tue, 7 Nov 2017 11:36:01 -0700
-Message-ID: <bf523e87-da2b-9ace-3e73-86d41b6080ea@osg.samsung.com>
-References: <20171107094755.49440-1-huntbag@linux.vnet.ibm.com>
- <3a6fd547-b367-6e35-7fb5-5ab8d1139b5b@linux.vnet.ibm.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] MAINTAINERS: add maintainer for tools/power/cpupower
+Date: Tue, 7 Nov 2017 19:51:46 +0100
+Message-ID: <CAJZ5v0jNd_ddw-7CQFd9NdiV9pcTPeQ2z2hhojY=TVpmj76LWQ@mail.gmail.com>
+References: <20171102191947.18486-1-shuahkh@osg.samsung.com>
+ <37746081.0qdYMxC6BJ@skinner> <bd67ee31-77c0-44d2-c530-de10b1f07449@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3a6fd547-b367-6e35-7fb5-5ab8d1139b5b@linux.vnet.ibm.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Abhishek <huntbag@linux.vnet.ibm.com>, Shuah Khan <shuah@kernel.org>, Thomas Renninger <trenn@suse.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Shuah Khan <shuahkh@osg.samsung.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:44176 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751779AbdKGSvr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 13:51:47 -0500
+In-Reply-To: <bd67ee31-77c0-44d2-c530-de10b1f07449@osg.samsung.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Shuah Khan <shuahkh@osg.samsung.com>
+Cc: Thomas Renninger <trenn@suse.de>, "Rafael J. Wysocki" <rafael@kernel.org>, David Miller <davem@davemloft.net>, Randy Dunlap <rdunlap@infradead.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On 11/07/2017 02:50 AM, Abhishek wrote:
-> Hi,
-> 
-> Can you please have a look at this also?
-> 
-> Thanks and Regards,
-> Abhishek Goel
-> System Engineer
-> IBM India Pvt. Ltd.
-> 
-
-Same comment on top posting.
-
-> On 11/07/2017 03:17 PM, Abhishek Goel wrote:
->> cpupower_is_cpu_online was incorrectly checking for 0. This patch fixes
->> this by checking for 1 when the cpu is online.
+On Fri, Nov 3, 2017 at 8:24 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
+> On 11/03/2017 12:42 PM, Thomas Renninger wrote:
+>> Hi Shuah,
 >>
->> Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
->> ---
->> v2: Commit message rephrased.
->> ---
->>   tools/power/cpupower/bench/system.c | 2 +-
->>   1 file changed, 1 insertion(+), 1 deletion(-)
 >>
->> diff --git a/tools/power/cpupower/bench/system.c b/tools/power/cpupower/bench/system.c
->> index c25a74a..2bb3eef 100644
->> --- a/tools/power/cpupower/bench/system.c
->> +++ b/tools/power/cpupower/bench/system.c
->> @@ -61,7 +61,7 @@ int set_cpufreq_governor(char *governor, unsigned int cpu)
+>> On Thursday, November 02, 2017 01:19:47 PM Shuah Khan wrote:
+>>> Based on discussions with Rafael J. Wysocki, cpupower is need of an
+>>> active maintainer. I decided to on take the task of maintaining this
+>>> tool.
 >>
->>       dprintf("set %s as cpufreq governor\n", governor);
->>
->> -    if (cpupower_is_cpu_online(cpu) != 0) {
->> +    if (cpupower_is_cpu_online(cpu) != 1) {
->>           perror("cpufreq_cpu_exists");
->>           fprintf(stderr, "error: cpu %u does not exist\n", cpu);
->>           return -1;
-> 
+>> Thanks. It is very much appreciated!
+>> I had a motorcycle accident and had to stop typing at all for several
+>> weeks/months.
+>
+> I am very sorry to hear that. Best wishes for recovery.
 
-Ths patch looks good to me. I still need it in my Inbox. Please send it
-to me directly.
+Seconded.
 
-thanks,
--- Shuah
+>>
+>> My plan is to be more active again on lists, do reviews again and submit some
+>> patches I have lying around for a long time, etc.,...
+>> Do not hesitate to contact me directly, I try to answer in time, may still
+>> take a while on more complex things...
+>>
+>> Good luck and have fun...,
+>
+> Thanks for the offer. I will need it. I will try to take good care
+> of the tool and please don't hesitate to jump back in whenever you
+> feel ready.
+>
+>
+>>
+>>> Patches will flow through the pm sub-systems to the mainline.
+>>>
+>>> Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
+>>> Signed-off-by: Shuah Khan <shuahkh@osg.samsung.com>
+>>
+>> Acked-by: Thomas Renninger <trenn@suse.com>
+>
+> thanks for the Ack.
+
+Patch queued-up for 4.15.
+
+BTW, what do you want me to do with the patches in Patchwork?  I mean
+I can mark them somehow special or I could assign them to you if you
+had a Patchwork account.
+
+Thanks,
+Rafael
