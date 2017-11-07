@@ -1,88 +1,105 @@
-From: Prashanth Prakash <pprakash@codeaurora.org>
-Subject: [PATCH 1/2] cpuidle: Add new macro to enter a retention idle state
-Date: Tue,  7 Nov 2017 10:35:32 -0700
-Message-ID: <1510076133-18139-2-git-send-email-pprakash@codeaurora.org>
-References: <1510076133-18139-1-git-send-email-pprakash@codeaurora.org>
+From: Shuah Khan <shuahkh@osg.samsung.com>
+Subject: Re: [PATCH v2] cpupower : Fix cpupower working when cpu0 is offline
+Date: Tue, 7 Nov 2017 11:20:33 -0700
+Message-ID: <63bf8c5d-2a7e-484b-8d13-81bb6bef175d@osg.samsung.com>
+References: <20171107072005.48034-1-huntbag@linux.vnet.ibm.com>
+ <b1ae1a14-b354-6bc5-6118-87c7b65ce8a1@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:55190 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751414AbdKGRgF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 12:36:05 -0500
-In-Reply-To: <1510076133-18139-1-git-send-email-pprakash@codeaurora.org>
+Received: from osg.samsung.com ([64.30.133.232]:41553 "EHLO osg.samsung.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751787AbdKGSUh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 7 Nov 2017 13:20:37 -0500
+In-Reply-To: <b1ae1a14-b354-6bc5-6118-87c7b65ce8a1@linux.vnet.ibm.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: sudeep.holla@arm.com, rjw@rjwysocki.net, daniel.lezcano@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com, Prashanth Prakash <pprakash@codeaurora.org>
+To: Abhishek <huntbag@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Shuah Khan <shuah@kernel.org>, Thomas Renninger <trenn@suse.com>
 
-If a CPU is entering a low power idle state where it doesn't lose any
-context, then there is no need to call cpu_pm_enter()/cpu_pm_exit().
-Add a new macro(CPU_PM_CPU_IDLE_ENTER_RETENTION) to be used by cpuidle
-drivers when they are entering retention state. By not calling
-cpu_pm_enter and cpu_pm_exit we reduce the latency involved in
-entering and exiting the retention idle states.
+On 11/07/2017 01:58 AM, Abhishek wrote:
+> Hi,
+> 
+> Can you have a look at it?
+> 
+> Thanks and Regards,
+> 
+> Abhishek Goel
+> 
+> System Engineer
+> 
+> IBM India Pvt. Ltd.
+> 
 
-On ARM64 based Qualcomm Server Platform we measured below overhead for
-for calling cpu_pm_enter and cpu_pm_exit for retention states.
+Please refrain from top posting on kernel email thread.
+In-lining comments and bottom posting is the norm.
 
-workload: stress --hdd #CPUs --hdd-bytes 32M  -t 30
-        Average overhead of cpu_pm_enter - 1.2us
-        Average overhead of cpu_pm_exit  - 3.1us
+> 
+> On 11/07/2017 12:50 PM, Abhishek Goel wrote:
+>> cpuidle_monitor used to assume that cpu0 is always online which is not
+>> a valid assumption on POWER machines. This patch fixes this by searching
+>> for the first online cpu and uses it, instead of always using cpu0 for
+>> monitoring which may not be online.
+>>
+>> Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+>> ---
+>> v2: Commit message updated.
+>> ---
+>>   tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c | 14 +++++++++++---
+>>   1 file changed, 11 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
+>> index 1b5da00..adacf99 100644
+>> --- a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
+>> +++ b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
+>> @@ -130,15 +130,23 @@ static struct cpuidle_monitor *cpuidle_register(void)
+>>   {
+>>       int num;
+>>       char *tmp;
+>> +    int first_online_cpu;
+>> +
+>> +    for (num = 0; num < cpu_count; num++) {
+>> +        if (cpupower_is_cpu_online(num))
+>> +            break;
+>> +    };
+>> +    first_online_cpu = num;
 
-Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
----
- include/linux/cpuidle.h | 38 +++++++++++++++++++++++---------------
- 1 file changed, 23 insertions(+), 15 deletions(-)
+Isn't it simpler to use sched_getcpu()n instead and use that instead
+of walking the sysfs nodes since assumption is made that the idle state
+count is the same for all CPUs
 
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 8f7788d..54cbd9d 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -258,21 +258,29 @@ static inline int cpuidle_register_governor(struct cpuidle_governor *gov)
- #endif
- 
- #define CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx)	\
--({								\
--	int __ret;						\
--								\
--	if (!idx) {						\
--		cpu_do_idle();					\
--		return idx;					\
--	}							\
--								\
--	__ret = cpu_pm_enter();					\
--	if (!__ret) {						\
--		__ret = low_level_idle_enter(idx);		\
--		cpu_pm_exit();					\
--	}							\
--								\
--	__ret ? -1 : idx;					\
-+	__CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx, 0)
-+
-+#define CPU_PM_CPU_IDLE_ENTER_RETENTION(low_level_idle_enter, idx)	\
-+	__CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx, 1)
-+
-+#define __CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx, is_retention) \
-+({									\
-+	int __ret = 0;							\
-+									\
-+	if (!idx) {							\
-+		cpu_do_idle();						\
-+		return idx;						\
-+	}								\
-+									\
-+	if (!is_retention)						\
-+		__ret =  cpu_pm_enter();				\
-+	if (!__ret) {							\
-+		__ret = low_level_idle_enter(idx);			\
-+		if (!is_retention)					\
-+			cpu_pm_exit();					\
-+	}								\
-+									\
-+	__ret ? -1 : idx;						\
- })
- 
- #endif /* _LINUX_CPUIDLE_H */
--- 
-Qualcomm Datacenter Technologies on behalf of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the
-Code Aurora Forum, a Linux Foundation Collaborative Project.
+>>
+>>       /* Assume idle state count is the same for all CPUs */
+>> -    cpuidle_sysfs_monitor.hw_states_num = cpuidle_state_count(0);
+
+This simply be:
+
+cpuidle_sysfs_monitor.hw_states_num = cpuidle_state_count(sched_getcpu);
+
+>> +    cpuidle_sysfs_monitor.hw_states_num =
+>> +        cpuidle_state_count(first_online_cpu);
+>>
+>>       if (cpuidle_sysfs_monitor.hw_states_num <= 0)
+>>           return NULL;
+>>
+>>       for (num = 0; num < cpuidle_sysfs_monitor.hw_states_num; num++) {
+>> -        tmp = cpuidle_state_name(0, num);
+>> +        tmp = cpuidle_state_name(first_online_cpu, num);
+>>           if (tmp == NULL)
+>>               continue;
+>>
+>> @@ -146,7 +154,7 @@ static struct cpuidle_monitor *cpuidle_register(void)
+>>           strncpy(cpuidle_cstates[num].name, tmp, CSTATE_NAME_LEN - 1);
+>>           free(tmp);
+>>
+>> -        tmp = cpuidle_state_desc(0, num);
+>> +        tmp = cpuidle_state_desc(first_online_cpu, num);
+>>           if (tmp == NULL)
+>>               continue;
+>>           strncpy(cpuidle_cstates[num].desc, tmp,    CSTATE_DESC_LEN - 1);
+> 
+
+thanks,
+-- Shuah
