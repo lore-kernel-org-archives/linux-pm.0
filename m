@@ -1,43 +1,34 @@
-From: Chris Redpath <chris.redpath@arm.com>
-Subject: Re: [PATCH v3] cpufreq: schedutil: Examine the correct CPU when we
- update util
-Date: Tue, 7 Nov 2017 11:03:46 +0000
-Message-ID: <bb1cb0ee-8869-6260-eac5-a3f011fcd085@arm.com>
-References: <20171103034022.GD4240@vireshk-i7>
- <20171103133642.8636-1-chris.redpath@arm.com>
- <20171103154559.GJ4240@vireshk-i7>
- <65a16c84-d25f-26ce-b4cf-5edc3f9b6d32@arm.com>
- <20171107095951.GE3297@vireshk-i7>
- <CAJZ5v0g11-45dW_Hgw7wzE+wWbznM4Hcan77FjuP8__wSGC=pg@mail.gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Subject: [PATCH] power: supply: sbs-message: double left shift bug in
+ sbsm_select()
+Date: Tue, 7 Nov 2017 15:43:22 +0300
+Message-ID: <20171107124322.mm3fqkrggw3zidrx@mwanda>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0g11-45dW_Hgw7wzE+wWbznM4Hcan77FjuP8__wSGC=pg@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <kernel-janitors-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: kernel-janitors-owner@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
+Cc: linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Thanks guys, really appreciated!
+The original code does this: "1 << (1 << 11)" which is undefined in C.
 
---Chris
+Fixes: dbc4deda03fe ("power: Adds support for Smart Battery System Manager")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+---
+>From static analysis.  Not tested.
 
-On 07/11/17 10:09, Rafael J. Wysocki wrote:
-> On Tue, Nov 7, 2017 at 10:59 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->> On 07-11-17, 09:49, Chris Redpath wrote:
->>> Hi Viresh, Rafael,
->>>
->>> Without this patch, schedutil is totally broken for us - is
->>> there any chance at all this could go in 4.14 or is it just
->>> too late?
->>
->> I see that Rafael has already applied it, but not sure if he is planning to send
->> it for 4.14 (though he should IMHO, as it is a critical fix).
-> 
-> Yes, I am.
-> 
-> Thanks,
-> Rafael
-> 
+diff --git a/drivers/power/supply/sbs-manager.c b/drivers/power/supply/sbs-manager.c
+index ccb4217b9638..cb6e8f66c7a2 100644
+--- a/drivers/power/supply/sbs-manager.c
++++ b/drivers/power/supply/sbs-manager.c
+@@ -183,7 +183,7 @@ static int sbsm_select(struct i2c_mux_core *muxc, u32 chan)
+ 		return ret;
+ 
+ 	/* chan goes from 1 ... 4 */
+-	reg = 1 << BIT(SBSM_SMB_BAT_OFFSET + chan);
++	reg = BIT(SBSM_SMB_BAT_OFFSET + chan);
+ 	ret = sbsm_write_word(data->client, SBSM_CMD_BATSYSSTATE, reg);
+ 	if (ret)
+ 		dev_err(dev, "Failed to select channel %i\n", chan);
