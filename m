@@ -1,390 +1,80 @@
-From: Thomas Ilsche <thomas.ilsche@tu-dresden.de>
-Subject: Re: [PATCH] cpuidle: Allow menu governor to enter deeper sleep states
- after some time
-Date: Wed, 8 Nov 2017 00:04:16 +0100
-Message-ID: <85fb012d-adba-a646-dfd5-a5322714a412@tu-dresden.de>
-References: <a181bf42-9462-476c-6dcd-39fc7151957f@tu-dresden.de>
- <000101d34938$da740870$8f5c1950$@net> <000801d34a78$cdd27890$697769b0$@net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] MAINTAINERS: add maintainer for tools/power/cpupower
+Date: Wed, 08 Nov 2017 00:15:28 +0100
+Message-ID: <3124036.H23EPi6669@aspire.rjw.lan>
+References: <20171102191947.18486-1-shuahkh@osg.samsung.com> <CAJZ5v0jNd_ddw-7CQFd9NdiV9pcTPeQ2z2hhojY=TVpmj76LWQ@mail.gmail.com> <665382bd-f567-19ec-b36a-e9d7abb9e7e8@osg.samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mailout5.zih.tu-dresden.de ([141.30.67.74]:52375 "EHLO
-        mailout5.zih.tu-dresden.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750913AbdKGXEY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 18:04:24 -0500
-In-Reply-To: <000801d34a78$cdd27890$697769b0$@net>
-Content-Language: en-US
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58154 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1755591AbdKGXPd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 18:15:33 -0500
+In-Reply-To: <665382bd-f567-19ec-b36a-e9d7abb9e7e8@osg.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: =?UTF-8?Q?'Marcus_H=c3=a4hnel'?= <mhaehnel@os.inf.tu-dresden.de>, 'Daniel Hackenberg' <daniel.hackenberg@tu-dresden.de>, =?UTF-8?Q?'Robert_Sch=c3=b6ne'?= <robert.schoene@tu-dresden.de>, mario.bielert@tu-dresden.de, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, 'Alex Shi' <alex.shi@linaro.org>, 'Ingo Molnar' <mingo@kernel.org>, 'Rik van Riel' <riel@redhat.com>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Nicholas Piggin' <npiggin@gmail.com>, linux-pm@vger.kernel.org, 'Len Brown' <lenb@kernel.org>
+To: Shuah Khan <shuahkh@osg.samsung.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Renninger <trenn@suse.de>, David Miller <davem@davemloft.net>, Randy Dunlap <rdunlap@infradead.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Shuah Khan <shuah@kernel.org>
 
-Hi Doug,
+On Tuesday, November 7, 2017 9:55:05 PM CET Shuah Khan wrote:
+> On 11/07/2017 11:51 AM, Rafael J. Wysocki wrote:
+> > On Fri, Nov 3, 2017 at 8:24 PM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
+> >> On 11/03/2017 12:42 PM, Thomas Renninger wrote:
+> >>> Hi Shuah,
+> >>>
+> >>>
+> >>> On Thursday, November 02, 2017 01:19:47 PM Shuah Khan wrote:
+> >>>> Based on discussions with Rafael J. Wysocki, cpupower is need of an
+> >>>> active maintainer. I decided to on take the task of maintaining this
+> >>>> tool.
+> >>>
+> >>> Thanks. It is very much appreciated!
+> >>> I had a motorcycle accident and had to stop typing at all for several
+> >>> weeks/months.
+> >>
+> >> I am very sorry to hear that. Best wishes for recovery.
+> > 
+> > Seconded.
+> > 
+> >>>
+> >>> My plan is to be more active again on lists, do reviews again and submit some
+> >>> patches I have lying around for a long time, etc.,...
+> >>> Do not hesitate to contact me directly, I try to answer in time, may still
+> >>> take a while on more complex things...
+> >>>
+> >>> Good luck and have fun...,
+> >>
+> >> Thanks for the offer. I will need it. I will try to take good care
+> >> of the tool and please don't hesitate to jump back in whenever you
+> >> feel ready.
+> >>
+> >>
+> >>>
+> >>>> Patches will flow through the pm sub-systems to the mainline.
+> >>>>
+> >>>> Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
+> >>>> Signed-off-by: Shuah Khan <shuahkh@osg.samsung.com>
+> >>>
+> >>> Acked-by: Thomas Renninger <trenn@suse.com>
+> >>
+> >> thanks for the Ack.
+> > 
+> > Patch queued-up for 4.15.
+> > 
+> > BTW, what do you want me to do with the patches in Patchwork?  I mean
+> > I can mark them somehow special or I could assign them to you if you
+> > had a Patchwork account.
+> > 
+> > Thanks,
+> > Rafael
+> > 
+> I now have patchwork account. You can assign patches to me.
 
-thanks to your detailed description I was able to reproduce and track down the
-issue on one of our systems with a similar processor. The effect is similar, the
-core stays in a shallow sleep state for too long. This is also amplified on a
-system with little background noise where a core can stay in C0 for seconds.
-But the cause / trigger is different. By my observation with many perf probes,
-the next timer is preventing a deep sleep, also overriding the anti-poll
-mechanism.
+OK, but first we need to ask for your account to be added to a
+specific list in Patchwork. :-)
 
-This immediate (usually 1-3 us) timer can be both tick_sched_timer and
-watchdog_timer_fn. The timers actually do happen and run, however poll_idle
-directly resumes after the interrupt - there is no need_resched(). The menu
-governor assumes that a timer will trigger another menu_select, but it does not.
-Neither does our fallback timer - so the mitigation.
+Let me sent a request for that.
 
-I made a hack[1] to stop poll_idle after timer_expires which prevents the issue
-in my tests. The idea is to make sure that poll_idle is really exited whenever a
-timer happens. I was trying to use existing information, but I'm not entirely
-sure if tick_sched.timer_expires actually has the right semantic. At the very
-least it would have to be exposed properly. Another way could be to set some
-flag within the timer handlers that is checked in poll_idle, but that is
-inviting race conditions. There is also the danger that resulting shorter, more
-frequent, times spent in C0 further confuses the menu heuristic.
-
-This issue is important to consider for the mitigation idea using a continuing
-tick timer when entering a shallow sleep state. We must ensure that the tick
-timer actually ends all sleep states including poll_idle.
-
-I did some experiments on an Core i7-2600 at nominal userspace frequency with
-enabled HyperThreading with one thread doing while(1){} over 20 min each.
-The default configuration consumes on average 53.5 W AC power. The
-configurations with C0 disabled, all but C6 disabled, and my timer_expires hack
-consume between 48.6 and 49.0 W on average. In the plots [2] of the 50 ms
-external power samples you nicely see the clusters where 1/2/3 cores are in C0
-adding about 9 W each.
-
-I was able to reproduce it on a number of additional CPUs, including larger
-multi-socket server systems. There are some systems where C0 is never used in
-the scenario, but that could be due to other factors. I think this is mostly
-independent of the actual CPU architecture.
-
-[1]: https://github.com/tud-zih-energy/linux/commit/7529b167dc7c2afaacd4551fe01ec576df5097e3
-[2]: https://wwwpub.zih.tu-dresden.de/~tilsche/powernightmares_poll.png
-
-
->> Can you please share the patch, I'd like to use it for some experiments.
-> 
-> Can you not achieve the same, or at least similar and good enough for
-> testing, conditions by disabling all the other idle states?
-> 
-> On my system, the max idle state is 4 (C6), and I just disable states
-> 0-3 to force always state 4.
-
-Absolutely! Previously I was using a version prior to 3ed09c9 where disabling state 0 was allowed.
-
-Best,
-Thomas
-
-On 2017-10-21 16:28, Doug Smythies wrote:
-> Hi Thomas,
-> 
-> Thanks for your quick reply.
-> 
-> On 2017.10.20 Thomas Ilsche wrote:
->    
->> Unfortunately, I don't have a complete picture of your issue.
->>
->> 1) What processor do you use and what are the following
->> /sys/devices/system/cpu/cpu*/cpuidle/state*/{name,latency,residency}
-> 
-> Processor: Intel(R) Core(TM) i7-2600K CPU @ 3.40GHz
-> 4 cores, 8 CPUs. I do not disable hyperthreading, which
-> your paper mentions you do.
-> 
-> All CPU have the same numbers, so CPU 0 used:
-> 
-> $ cat /sys/devices/system/cpu/cpu0/cpuidle/state*/name
-> POLL
-> C1
-> C1E
-> C3
-> C6
-> 
-> $ cat /sys/devices/system/cpu/cpu0/cpuidle/state*/latency
-> 0
-> 2
-> 10
-> 80
-> 104
-> 
-> $ cat /sys/devices/system/cpu/cpu0/cpuidle/state*/residency
-> 0
-> 2
-> 20
-> 211
-> 345
-> 
->> 2) To get a better picture you can use perf via the following
->> events in addition to power and residency:
->>
->> sched:sched_switch     -> which tasks are scheduled when.
->> power:cpu_idle (state) -> which state was used when going to sleep
->>
->> Record a timeline with these events by using perf record -a -e
->> You could also use -C to select only the core that should be
->> idle but uses C0
->> You can analyse it via perf script (or perf timeline if you have a
->> scalable and fast SVG viewer, which I'm not sure exists)
->>
->> If you see state0 selected before a long idle phase, it's what we
->> call a Powernightmare. The intervals of 8 previous idles can tell
->> what the heuristic tries.
-> 
-> Very interesting. Running "perf record" with your events
-> has a drastic effect on the rate of occurrence of the issue.
-> Actually, it pretty much eliminates it. However, I was still
-> able to capture a few. (data further below.)
-> 
->> Some things to consider to avoid other influences on power
->> - uniformity of the busy core's workload
->> - fixed userspace p-state
->> - pinned threads
-> 
-> Agreed.
-> 
->> If you can share a reproducible use-case I can also try with
->> our tool chain (recording toolchain is FOSS, visualizer is not)
-> 
-> My test computer is a server, with no GUI. To make "idle" even
-> more "idle", I do this:
-> 
-> $ cat set_cpu_turn_off_services
-> #! /bin/bash
-> # Turn off some services to try to get "idle" to be more "idle"
-> sudo systemctl stop mysql.service
-> sudo systemctl stop apache2.service
-> sudo systemctl stop nmbd.service
-> sudo systemctl stop smbd.service
-> sudo systemctl stop cron.service
-> sudo systemctl stop winbind.service
-> sudo systemctl stop apt-daily.timer
-> sudo systemctl stop libvirtd.service
-> 
-> My original "Reported-and-tested-by" work for 0c313cb
-> only looked at my "idle" test system, and still is good
-> enough.
-> 
-> However, now I observe significant excessive power sometimes
-> under load, the simplest being a single threaded CPU intensive
-> job.
->   
-> I merely load one CPU 100% (i.e. loadave = 1), and watch the others,
-> using turbostat (at >= 2 minutes per sample) and/or monitoring
-> idle state times (at >= 2 minutes, but typically more,
-> between samples) and/or the intel_pstate_tracer.py tool.
-> 
-> Some example trace data (edited). Look for "<<<<<<<<".
-> The previous 8 idle entry/exits are included in each sample:
-> 
-> CPU 1 sample 1:
-> 
-> doug@s15:~/idle/perf$ cat t02_1_1.txt
->     kworker/u16:1  5273 [001] 137660.900599: sched:sched_switch: kworker/u16:1:5273 [120] t ==> swapper/1:0 [120]
->           swapper     0 [001] 137660.900601:     power:cpu_idle: state=4 cpu_id=1
->           swapper     0 [001] 137660.900645:     power:cpu_idle: state=4294967295 cpu_id=1 time: 44
->           swapper     0 [001] 137660.900649: sched:sched_switch: swapper/1:0 [120] R ==> kworker/u16:1:5273 [120]
->     kworker/u16:1  5273 [001] 137660.900655: sched:sched_switch: kworker/u16:1:5273 [120] t ==> swapper/1:0 [120]
->           swapper     0 [001] 137660.900657: sched:sched_switch: swapper/1:0 [120] R ==> kworker/u16:1:5273 [120]
->     kworker/u16:1  5273 [001] 137660.900659: sched:sched_switch: kworker/u16:1:5273 [120] t ==> swapper/1:0 [120]
->           swapper     0 [001] 137660.900661:     power:cpu_idle: state=4 cpu_id=1
->           swapper     0 [001] 137660.900704:     power:cpu_idle: state=4294967295 cpu_id=1 time: 43
->           swapper     0 [001] 137660.900708: sched:sched_switch: swapper/1:0 [120] R ==> kworker/u16:1:5273 [120]
->     kworker/u16:1  5273 [001] 137660.900713: sched:sched_switch: kworker/u16:1:5273 [120] t ==> swapper/1:0 [120]
->           swapper     0 [001] 137660.900717: sched:sched_switch: swapper/1:0 [120] R ==> kworker/u16:1:5273 [120]
->     kworker/u16:1  5273 [001] 137660.900718: sched:sched_switch: kworker/u16:1:5273 [120] t ==> swapper/1:0 [120]
->           swapper     0 [001] 137660.900720:     power:cpu_idle: state=4 cpu_id=1
->           swapper     0 [001] 137660.900763:     power:cpu_idle: state=4294967295 cpu_id=1 time: 43
->           swapper     0 [001] 137660.900766: sched:sched_switch: swapper/1:0 [120] R ==> kworker/u16:1:5273 [120]
->     kworker/u16:1  5273 [001] 137660.900772: sched:sched_switch: kworker/u16:1:5273 [120] t ==> swapper/1:0 [120]
->           swapper     0 [001] 137660.900775:     power:cpu_idle: state=4 cpu_id=1
->           swapper     0 [001] 137660.900778:     power:cpu_idle: state=4294967295 cpu_id=1 time: 3
->           swapper     0 [001] 137660.900779: sched:sched_switch: swapper/1:0 [120] R ==> kworker/u16:1:5273 [120]
->     kworker/u16:1  5273 [001] 137660.900781: sched:sched_switch: kworker/u16:1:5273 [120] t ==> swapper/1:0 [120]
->           swapper     0 [001] 137660.900783:     power:cpu_idle: state=4 cpu_id=1
->           swapper     0 [001] 137660.900818:     power:cpu_idle: state=4294967295 cpu_id=1 time: 35
->           swapper     0 [001] 137660.900821: sched:sched_switch: swapper/1:0 [120] R ==> kworker/u16:1:5273 [120]
->     kworker/u16:1  5273 [001] 137660.900827: sched:sched_switch: kworker/u16:1:5273 [120] t ==> swapper/1:0 [120]
->           swapper     0 [001] 137660.900830: sched:sched_switch: swapper/1:0 [120] R ==> kworker/u16:1:5273 [120]
->     kworker/u16:1  5273 [001] 137660.900831: sched:sched_switch: kworker/u16:1:5273 [120] t ==> swapper/1:0 [120]
->           swapper     0 [001] 137660.900833:     power:cpu_idle: state=4 cpu_id=1
->           swapper     0 [001] 137660.900879:     power:cpu_idle: state=4294967295 cpu_id=1 time: 46
->           swapper     0 [001] 137660.900882: sched:sched_switch: swapper/1:0 [120] R ==> kworker/u16:1:5273 [120]
->     kworker/u16:1  5273 [001] 137660.900891: sched:sched_switch: kworker/u16:1:5273 [120] t ==> swapper/1:0 [120]
->           swapper     0 [001] 137660.900894:     power:cpu_idle: state=1 cpu_id=1
->           swapper     0 [001] 137661.679273:     power:cpu_idle: state=4294967295 cpu_id=1 time: 778378
->           swapper     0 [001] 137661.679280:     power:cpu_idle: state=1 cpu_id=1
->           swapper     0 [001] 137662.191265:     power:cpu_idle: state=4294967295 cpu_id=1 time: 511984
->           swapper     0 [001] 137662.191274:     power:cpu_idle: state=0 cpu_id=1  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
->           swapper     0 [001] 137662.843297:     power:cpu_idle: state=4294967295 cpu_id=1 time: 652023 uS
->           swapper     0 [001] 137662.843301: sched:sched_switch: swapper/1:0 [120] R ==> watchdog/1:14 [0]
->        watchdog/1    14 [001] 137662.843307: sched:sched_switch: watchdog/1:14 [0] S ==> swapper/1:0 [120]
-> 
-> CPU 3 sample 1:
-> doug@s15:~/idle/perf$ cat t02_3_1.txt
->           swapper     0 [003] 136958.987314:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 136959.167299:     power:cpu_idle: state=4294967295 cpu_id=3
->           swapper     0 [003] 136959.167316:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 136960.479303:     power:cpu_idle: state=4294967295 cpu_id=3 time: 1.312 Sec
->           swapper     0 [003] 136960.479311:     power:cpu_idle: state=1 cpu_id=3
->           swapper     0 [003] 136960.479328:     power:cpu_idle: state=4294967295 cpu_id=3 time: 17 uSec
->           swapper     0 [003] 136960.479340:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 136962.495332:     power:cpu_idle: state=4294967295 cpu_id=3 time: 2.016 Sec
->           swapper     0 [003] 136962.495340:     power:cpu_idle: state=2 cpu_id=3
->           swapper     0 [003] 136962.495372:     power:cpu_idle: state=4294967295 cpu_id=3 time: 32 uSec
->           swapper     0 [003] 136962.495385:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 136962.655390:     power:cpu_idle: state=4294967295 cpu_id=3 time: 0.16 Sec
->           swapper     0 [003] 136962.655399:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 136962.987380:     power:cpu_idle: state=4294967295 cpu_id=3 time: 0.332 Sec
->           swapper     0 [003] 136962.987393: sched:sched_switch: swapper/3:0 [120] R ==> watchdog/3:26 [0]
->        watchdog/3    26 [003] 136962.987397: sched:sched_switch: watchdog/3:26 [0] S ==> swapper/3:0 [120]
->           swapper     0 [003] 136962.987402:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 136963.167387:     power:cpu_idle: state=4294967295 cpu_id=3 time: 0.18 Seconds
->           swapper     0 [003] 136963.167404:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 136963.679391:     power:cpu_idle: state=4294967295 cpu_id=3 time: 0.512 Seconds
->           swapper     0 [003] 136963.679399:     power:cpu_idle: state=0 cpu_id=3  <<<<<<<<<<<<<<<<<<<<<<<
->           swapper     0 [003] 136966.655478:     power:cpu_idle: state=4294967295 cpu_id=3 time: 2.875 Seconds
-> 
-> CPU 3 sample 2:
-> 
-> doug@s15:~/idle/perf$ cat t02_3_2.txt
->           swapper     0 [003] 137563.001020:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 137563.181005:     power:cpu_idle: state=4294967295 cpu_id=3 time: 0.18 Sec
->           swapper     0 [003] 137563.181023:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 137564.493009:     power:cpu_idle: state=4294967295 cpu_id=3 time: 9 uSec
->           swapper     0 [003] 137564.493018:     power:cpu_idle: state=1 cpu_id=3
->           swapper     0 [003] 137564.493036:     power:cpu_idle: state=4294967295 cpu_id=3 time: 18 uSec
->           swapper     0 [003] 137564.493048:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 137566.509039:     power:cpu_idle: state=4294967295 cpu_id=3 time: 2.016 Sec
->           swapper     0 [003] 137566.509048:     power:cpu_idle: state=2 cpu_id=3
->           swapper     0 [003] 137566.509082:     power:cpu_idle: state=4294967295 cpu_id=3 time: 34 uSec
->           swapper     0 [003] 137566.509094:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 137566.669096:     power:cpu_idle: state=4294967295 cpu_id=3 time: 7 uSec
->           swapper     0 [003] 137566.669103:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 137567.001089:     power:cpu_idle: state=4294967295 cpu_id=3 time: 0.332 Sec
->           swapper     0 [003] 137567.001103: sched:sched_switch: swapper/3:0 [120] R ==> watchdog/3:26 [0]
->        watchdog/3    26 [003] 137567.001107: sched:sched_switch: watchdog/3:26 [0] S ==> swapper/3:0 [120]
->           swapper     0 [003] 137567.001112:     power:cpu_idle: state=4 cpu_id=3
->           swapper     0 [003] 137567.181094:     power:cpu_idle: state=4294967295 cpu_id=3 time: 0.18 Sec
->           swapper     0 [003] 137567.181098:     power:cpu_idle: state=0 cpu_id=3 <<<<<<<<<<<<<<<<<<
->           swapper     0 [003] 137570.669187:     power:cpu_idle: state=4294967295 cpu_id=3 time: 3.488 Sec
-> 
-> Idle state times (seconds) over 2 minutes, CPU 7 = 100% load, while "perf record" running:
-> CPU 0:
->     State 0: 1.436071
->     State 1: 0.000317
->     State 2: 0.000000
->     State 3: 0.000000
->     State 4: 118.554395
-> CPU 1:
->     State 0: 0.000053
->     State 1: 0.000007
->     State 2: 0.000000
->     State 3: 0.000000
->     State 4: 120.000261
-> CPU 2:
->     State 0: 0.000000
->     State 1: 0.000000
->     State 2: 0.032397
->     State 3: 0.030218
->     State 4: 119.902810
-> CPU 3:
->     State 0: 2.176088
->     State 1: 0.000114
->     State 2: 0.000887
->     State 3: 0.000000
->     State 4: 117.820492
-> CPU 4:
->     State 0: 0.000000
->     State 1: 0.000086
->     State 2: 0.001627
->     State 3: 0.000000
->     State 4: 121.360904
-> CPU 5:
->     State 0: 0.000000
->     State 1: 0.000014
->     State 2: 0.001412
->     State 3: 0.000000
->     State 4: 120.000058
-> CPU 6:
->     State 0: 0.000000
->     State 1: 0.000015
->     State 2: 0.000427
->     State 3: 0.001088
->     State 4: 119.984763
-> CPU 7:
->     State 0: 0.000000
->     State 1: 0.000000
->     State 2: 0.000000
->     State 3: 0.000000
->     State 4: 0.000000
-> 
-> Idle state times (seconds) over 2 minutes, CPU 7 = 100% load, no "perf record":
-> CPU 0:
->     State 0: 0.000223
->     State 1: 0.000679
->     State 2: 0.000000
->     State 3: 0.000000
->     State 4: 119.991636
-> CPU 1:
->     State 0: 3.912153
->     State 1: 0.000130
->     State 2: 0.000000
->     State 3: 0.000000
->     State 4: 116.088366
-> CPU 2:
->     State 0: 0.000000
->     State 1: 0.000000
->     State 2: 0.026982
->     State 3: 0.026250
->     State 4: 119.920878
-> CPU 3:
->     State 0: 0.000039
->     State 1: 0.000325
->     State 2: 0.000981
->     State 3: 0.000422
->     State 4: 119.996761
-> CPU 4:
->     State 0: 23.944607
->     State 1: 0.000092
->     State 2: 0.001095
->     State 3: 0.000000
->     State 4: 99.258784
-> CPU 5:
->     State 0: 29.880724
->     State 1: 0.000065
->     State 2: 0.000934
->     State 3: 0.000000
->     State 4: 90.120384
-> CPU 6:
->     State 0: 3.740422
->     State 1: 0.000017
->     State 2: 0.000451
->     State 3: 0.000000
->     State 4: 116.253516
-> CPU 7:
->     State 0: 0.000000
->     State 1: 0.000000
->     State 2: 0.000000
->     State 3: 0.000000
->     State 4: 0.000000
-> 
-> ... Doug
-> 
-> 
-
--- 
-Dipl. Inf. Thomas Ilsche
-Computer Scientist
-Highly Adaptive Energy-Efficient Computing
-CRC 912 HAEC: http://tu-dresden.de/sfb912
-Technische Universität Dresden
-Center for Information Services and High Performance Computing (ZIH)
-01062 Dresden, Germany
-
-Phone: +49 351 463-42168
-Fax: +49 351 463-37773
-E-Mail: thomas.ilsche@tu-dresden.de
+Thanks,
+Rafael
