@@ -1,97 +1,78 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4 20/20] cpufreq: scmi: add support for fast frequency
- switching
-Date: Tue, 7 Nov 2017 11:49:33 +0530
-Message-ID: <20171107061933.GC3297@vireshk-i7>
-References: <1509720477-18936-1-git-send-email-sudeep.holla@arm.com>
- <1509720477-18936-21-git-send-email-sudeep.holla@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH v2] cpupower : Fix cpupower working when cpu0 is offline
+Date: Tue,  7 Nov 2017 12:50:05 +0530
+Message-ID: <20171107072005.48034-1-huntbag@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:56648 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750913AbdKGGTg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 01:19:36 -0500
-Received: by mail-pf0-f193.google.com with SMTP id b85so9574308pfj.13
-        for <linux-pm@vger.kernel.org>; Mon, 06 Nov 2017 22:19:36 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <1509720477-18936-21-git-send-email-sudeep.holla@arm.com>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:50480 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1755108AbdKGHUT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 02:20:19 -0500
+Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vA77JcdR088042
+        for <linux-pm@vger.kernel.org>; Tue, 7 Nov 2017 02:20:18 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2e35hmh0pt-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Tue, 07 Nov 2017 02:20:18 -0500
+Received: from localhost
+        by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
+        Tue, 7 Nov 2017 07:20:16 -0000
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Arnd Bergmann <arnd@arndb.de>, Loc Ho <lho@apm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+To: trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 
-On 03-11-17, 14:47, Sudeep Holla wrote:
-> The cpufreq core provides option for drivers to implement fast_switch
-> callback which is invoked for frequency switching from interrupt context.
-> 
-> This patch adds support for fast_switch callback in SCMI cpufreq driver
-> by making use of polling based SCMI transfer. It also sets the flag
-> fast_switch_possible.
-> 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  drivers/cpufreq/scmi-cpufreq.c | 16 ++++++++++++++++
->  1 file changed, 16 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-> index b1057a13e6a7..91df5013f7b2 100644
-> --- a/drivers/cpufreq/scmi-cpufreq.c
-> +++ b/drivers/cpufreq/scmi-cpufreq.c
-> @@ -64,6 +64,19 @@ scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
->  	return perf_ops->freq_set(handle, priv->domain_id, freq, false);
->  }
->  
-> +static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
-> +					     unsigned int target_freq)
-> +{
-> +	struct scmi_data *priv = policy->driver_data;
-> +	struct scmi_perf_ops *perf_ops = handle->perf_ops;
-> +
-> +	if (!perf_ops->freq_set(handle, priv->domain_id,
-> +				target_freq * 1000, true))
-> +		return target_freq;
-> +
-> +	return 0;
-> +}
-> +
->  static int
->  scmi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
->  {
-> @@ -167,6 +180,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
->  
->  	policy->cpuinfo.transition_latency = latency;
->  
-> +	policy->fast_switch_possible = true;
->  	return 0;
->  
->  out_free_cpufreq_table:
-> @@ -183,6 +197,7 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
->  {
->  	struct scmi_data *priv = policy->driver_data;
->  
-> +	policy->fast_switch_possible = false;
+cpuidle_monitor used to assume that cpu0 is always online which is not
+a valid assumption on POWER machines. This patch fixes this by searching
+for the first online cpu and uses it, instead of always using cpu0 for
+monitoring which may not be online.
 
-You don't need this.
+Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+---
+v2: Commit message updated.
+---
+ tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
->  	cpufreq_cooling_unregister(priv->cdev);
->  	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
->  	kfree(priv);
-> @@ -226,6 +241,7 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
->  	.verify	= cpufreq_generic_frequency_table_verify,
->  	.attr	= cpufreq_generic_attr,
->  	.target_index	= scmi_cpufreq_set_target,
-> +	.fast_switch	= scmi_cpufreq_fast_switch,
->  	.get	= scmi_cpufreq_get_rate,
->  	.init	= scmi_cpufreq_init,
->  	.exit	= scmi_cpufreq_exit,
-
-Apart from that.
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
+index 1b5da00..adacf99 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
++++ b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
+@@ -130,15 +130,23 @@ static struct cpuidle_monitor *cpuidle_register(void)
+ {
+ 	int num;
+ 	char *tmp;
++	int first_online_cpu;
++
++	for (num = 0; num < cpu_count; num++) {
++		if (cpupower_is_cpu_online(num))
++			break;
++	};
++	first_online_cpu = num;
+ 
+ 	/* Assume idle state count is the same for all CPUs */
+-	cpuidle_sysfs_monitor.hw_states_num = cpuidle_state_count(0);
++	cpuidle_sysfs_monitor.hw_states_num =
++		cpuidle_state_count(first_online_cpu);
+ 
+ 	if (cpuidle_sysfs_monitor.hw_states_num <= 0)
+ 		return NULL;
+ 
+ 	for (num = 0; num < cpuidle_sysfs_monitor.hw_states_num; num++) {
+-		tmp = cpuidle_state_name(0, num);
++		tmp = cpuidle_state_name(first_online_cpu, num);
+ 		if (tmp == NULL)
+ 			continue;
+ 
+@@ -146,7 +154,7 @@ static struct cpuidle_monitor *cpuidle_register(void)
+ 		strncpy(cpuidle_cstates[num].name, tmp, CSTATE_NAME_LEN - 1);
+ 		free(tmp);
+ 
+-		tmp = cpuidle_state_desc(0, num);
++		tmp = cpuidle_state_desc(first_online_cpu, num);
+ 		if (tmp == NULL)
+ 			continue;
+ 		strncpy(cpuidle_cstates[num].desc, tmp,	CSTATE_DESC_LEN - 1);
 -- 
-viresh
+2.9.3
