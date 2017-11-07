@@ -1,63 +1,40 @@
-From: Abhishek <huntbag@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] cpupowerutils: bench - Fix cpu online check
-Date: Tue, 7 Nov 2017 15:20:29 +0530
-Message-ID: <3a6fd547-b367-6e35-7fb5-5ab8d1139b5b@linux.vnet.ibm.com>
-References: <20171107094755.49440-1-huntbag@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3] cpufreq: schedutil: Examine the correct CPU when we
+ update util
+Date: Tue, 7 Nov 2017 15:29:51 +0530
+Message-ID: <20171107095951.GE3297@vireshk-i7>
+References: <20171103034022.GD4240@vireshk-i7>
+ <20171103133642.8636-1-chris.redpath@arm.com>
+ <20171103154559.GJ4240@vireshk-i7>
+ <65a16c84-d25f-26ce-b4cf-5edc3f9b6d32@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:58330 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S933731AbdKGJuf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 04:50:35 -0500
-Received: from pps.filterd (m0098419.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vA79mIhf113515
-        for <linux-pm@vger.kernel.org>; Tue, 7 Nov 2017 04:50:35 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2e39qdtgup-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Tue, 07 Nov 2017 04:50:34 -0500
-Received: from localhost
-        by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
-        Tue, 7 Nov 2017 09:50:31 -0000
-In-Reply-To: <20171107094755.49440-1-huntbag@linux.vnet.ibm.com>
-Content-Language: en-US
+Received: from mail-pg0-f49.google.com ([74.125.83.49]:48838 "EHLO
+        mail-pg0-f49.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752589AbdKGJ7z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 04:59:55 -0500
+Received: by mail-pg0-f49.google.com with SMTP id v78so10619242pgb.5
+        for <linux-pm@vger.kernel.org>; Tue, 07 Nov 2017 01:59:54 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <65a16c84-d25f-26ce-b4cf-5edc3f9b6d32@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuahkh@osg.samsung.com>, Shuah Khan <shuah@kernel.org>, Thomas Renninger <trenn@suse.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Chris Redpath <chris.redpath@arm.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Morten Rasmussen <morten.rasmussen@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
 
-Hi,
+On 07-11-17, 09:49, Chris Redpath wrote:
+> Hi Viresh, Rafael,
+> 
+> Without this patch, schedutil is totally broken for us - is
+> there any chance at all this could go in 4.14 or is it just
+> too late?
 
-Can you please have a look at this also?
+I see that Rafael has already applied it, but not sure if he is planning to send
+it for 4.14 (though he should IMHO, as it is a critical fix).
 
-Thanks and Regards,
-Abhishek Goel
-System Engineer
-IBM India Pvt. Ltd.
+commit d62d813c0d71 ("cpufreq: schedutil: Examine the correct CPU when we update
+util")
 
-On 11/07/2017 03:17 PM, Abhishek Goel wrote:
-> cpupower_is_cpu_online was incorrectly checking for 0. This patch fixes
-> this by checking for 1 when the cpu is online.
->
-> Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-> ---
-> v2: Commit message rephrased.
-> ---
->   tools/power/cpupower/bench/system.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/tools/power/cpupower/bench/system.c b/tools/power/cpupower/bench/system.c
-> index c25a74a..2bb3eef 100644
-> --- a/tools/power/cpupower/bench/system.c
-> +++ b/tools/power/cpupower/bench/system.c
-> @@ -61,7 +61,7 @@ int set_cpufreq_governor(char *governor, unsigned int cpu)
->
->   	dprintf("set %s as cpufreq governor\n", governor);
->
-> -	if (cpupower_is_cpu_online(cpu) != 0) {
-> +	if (cpupower_is_cpu_online(cpu) != 1) {
->   		perror("cpufreq_cpu_exists");
->   		fprintf(stderr, "error: cpu %u does not exist\n", cpu);
->   		return -1;
+--
+viresh
