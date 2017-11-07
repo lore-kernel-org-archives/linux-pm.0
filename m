@@ -1,51 +1,38 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: [PATCH] power: supply: sbs-message: double left shift bug in
- sbsm_select()
-Date: Tue, 7 Nov 2017 23:18:49 +0800
-Message-ID: <6bf6a1bf-9f45-7ca3-214c-cbe554dad433@electromag.com.au>
-References: <20171107124322.mm3fqkrggw3zidrx@mwanda>
+From: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Subject: RE: [RFC PATCH 5/7] power: supply: Add type for USB PD PPS chargers
+Date: Tue, 7 Nov 2017 15:36:38 +0000
+Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1ABCF7@SW-EX-MBX01.diasemi.com>
+References: <cover.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
+ <d1fcc24b60933b590fc6c8e8946e9ccb44364306.1509554370.git.Adam.Thomson.Opensource@diasemi.com>
+ <20171106132542.xe5hyfryxljmepaz@earth>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from anchovy2.45ru.net.au ([203.30.46.146]:49032 "EHLO
-        anchovy.45ru.net.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S965291AbdKGPSy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 10:18:54 -0500
-In-Reply-To: <20171107124322.mm3fqkrggw3zidrx@mwanda>
-Content-Language: en-AU
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171106132542.xe5hyfryxljmepaz@earth>
+Content-Language: en-US
+Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+Cc: Heikki Krogerus <heikki.krogerus-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Hans de Goede <hdegoede-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Yueyao Zhu <yueyao.zhu-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rui Miguel Silva <rmfrfs-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Support Opensource <Support.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Dan Carpenter <dan.carpenter@oracle.com>, Sebastian Reichel <sre@kernel.org>, Karl-Heinz Schneider <karl-heinz@schneider-inet.de>
-Cc: linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-On 7/11/2017 20:43, Dan Carpenter wrote:
-> The original code does this: "1 << (1 << 11)" which is undefined in C.
-> 
-> Fixes: dbc4deda03fe ("power: Adds support for Smart Battery System Manager")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
->>From static analysis.  Not tested.
-> 
-> diff --git a/drivers/power/supply/sbs-manager.c b/drivers/power/supply/sbs-manager.c
-> index ccb4217b9638..cb6e8f66c7a2 100644
-> --- a/drivers/power/supply/sbs-manager.c
-> +++ b/drivers/power/supply/sbs-manager.c
-> @@ -183,7 +183,7 @@ static int sbsm_select(struct i2c_mux_core *muxc, u32 chan)
->   		return ret;
->   
->   	/* chan goes from 1 ... 4 */
-> -	reg = 1 << BIT(SBSM_SMB_BAT_OFFSET + chan);
-> +	reg = BIT(SBSM_SMB_BAT_OFFSET + chan);
->   	ret = sbsm_write_word(data->client, SBSM_CMD_BATSYSSTATE, reg);
->   	if (ret)
->   		dev_err(dev, "Failed to select channel %i\n", chan);
-> 
-> 
-Oops. That's my fault.
+On 06 November 2017 13:26, Sebastian Reichel wrote:
 
-Reviewed-by: Phil Reid <preid@electromag.com.au>
+> Hi,
+> 
+> On Wed, Nov 01, 2017 at 05:03:13PM +0000, Adam Thomson wrote:
+> > This adds a type to represent USB PPS chargers as defined in the
+> > USB Power Delivery Specification Revision 3.0 V1.1
+> >
+> > Signed-off-by: Adam Thomson <Adam.Thomson.Opensource-WBD+wuPFNBhBDgjK7y7TUQ@public.gmane.org>
+> 
+> Reviewed-by: Sebastian Reichel <sebastian.reichel-ZGY8ohtN/8pPYcu2f3hruQ@public.gmane.org>
+> 
+> -- Sebastian
+> 
 
--- 
-Regards
-Phil Reid
+Thanks for reviewing
+--
+To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
