@@ -1,112 +1,46 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq:stats: Handle the case when trans_table goes
- beyond PAGE_SIZE
-Date: Tue, 7 Nov 2017 11:02:36 +0530
-Message-ID: <20171107053236.GA3297@vireshk-i7>
-References: <1510032157-31857-1-git-send-email-ego@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v4 19/20] cpufreq: add support for CPU DVFS based on SCMI
+ message protocol
+Date: Tue, 7 Nov 2017 11:45:40 +0530
+Message-ID: <20171107061540.GB3297@vireshk-i7>
+References: <1509720477-18936-1-git-send-email-sudeep.holla@arm.com>
+ <1509720477-18936-20-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:55688 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752791AbdKGFck (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 00:32:40 -0500
-Received: by mail-pf0-f194.google.com with SMTP id 17so9508310pfn.12
-        for <linux-pm@vger.kernel.org>; Mon, 06 Nov 2017 21:32:39 -0800 (PST)
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <1510032157-31857-1-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1509720477-18936-20-git-send-email-sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Cc: ALKML <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DTML <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Roy Franz <roy.franz-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, Harb Abdulhamid <harba-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Loc Ho <lho-qTEPVZfXA3Y@public.gmane.org>, Ryan Harkin <Ryan.Harkin-5wv7dgnIgG8@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, shilpa.bhat@linux.vnet.ibm.com, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
 
-On 07-11-17, 10:52, Gautham R. Shenoy wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On 03-11-17, 14:47, Sudeep Holla wrote:
+> On some ARM based systems, a separate Cortex-M based System Control
+> Processor(SCP) provides the overall power, clock, reset and system
+> control including CPU DVFS. SCMI Message Protocol is used to
+> communicate with the SCP.
 > 
-> On platforms with large number of Pstates, the transition table, which
-> is a NxN matrix, can overflow beyond the PAGE_SIZE boundary.
+> This patch adds a cpufreq driver for such systems using SCMI interface
+> to drive CPU DVFS.
 > 
-> This can be seen on POWER9 which has 100+ Pstates.
-> 
-> As a result, each time the trans_table is read for any of the CPUs, we
-> will get the following error.
-> 
-> ---------------------------------------------------
-> fill_read_buffer: show+0x0/0xa0 returned bad count
-> ---------------------------------------------------
-> 
-> This patch detect the overflow the first time the trans_table is read
-> and print a warning in the dmesg and return return the FILE TOO LARGE
-
-s/return return/return/
-
-> error.  The subsequent reads also return FILE TOO LARGE error.
-> 
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+> Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Signed-off-by: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
 > ---
->  Documentation/cpu-freq/cpufreq-stats.txt |  3 +++
->  drivers/cpufreq/cpufreq_stats.c          | 11 +++++++++--
->  2 files changed, 12 insertions(+), 2 deletions(-)
-> 
-> diff --git a/Documentation/cpu-freq/cpufreq-stats.txt b/Documentation/cpu-freq/cpufreq-stats.txt
-> index 2bbe207..a873855 100644
-> --- a/Documentation/cpu-freq/cpufreq-stats.txt
-> +++ b/Documentation/cpu-freq/cpufreq-stats.txt
-> @@ -90,6 +90,9 @@ Freq_i to Freq_j. Freq_i is in descending order with increasing rows and
->  Freq_j is in descending order with increasing columns. The output here also 
->  contains the actual freq values for each row and column for better readability.
->  
-> +If the transition table is bigger than PAGE_SIZE, reading this will
-> +return an -EFBIG error.
-> +
->  --------------------------------------------------------------------------------
->  <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
->     From  :    To
-> diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-> index e75880e..3cb717c 100644
-> --- a/drivers/cpufreq/cpufreq_stats.c
-> +++ b/drivers/cpufreq/cpufreq_stats.c
-> @@ -79,6 +79,7 @@ static ssize_t store_reset(struct cpufreq_policy *policy, const char *buf,
->  	return count;
->  }
->  
-> +bool trans_table_overflow;
+>  MAINTAINERS                    |   2 +-
+>  drivers/cpufreq/Kconfig.arm    |  11 ++
+>  drivers/cpufreq/Makefile       |   1 +
+>  drivers/cpufreq/scmi-cpufreq.c | 274 +++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 287 insertions(+), 1 deletion(-)
+>  create mode 100644 drivers/cpufreq/scmi-cpufreq.c
 
-This should be marked static and would be better to move it as local to below
-function, but ...
-
->  static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
->  {
->  	struct cpufreq_stats *stats = policy->stats;
-> @@ -88,6 +89,9 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
->  	if (policy->fast_switch_enabled)
->  		return 0;
->  
-> +	if (unlikely(trans_table_overflow))
-> +		return -EFBIG;
-> +
-
-Do we really need to optimize this path at all? This is debug stuff really. Over
-that a person can theoretically rmmod the driver, insmod another driver and the
-problem may go away then. And so above would be problematic then.
-
->  	len += snprintf(buf + len, PAGE_SIZE - len, "   From  :    To\n");
->  	len += snprintf(buf + len, PAGE_SIZE - len, "         : ");
->  	for (i = 0; i < stats->state_num; i++) {
-> @@ -118,8 +122,11 @@ static ssize_t show_trans_table(struct cpufreq_policy *policy, char *buf)
->  			break;
->  		len += snprintf(buf + len, PAGE_SIZE - len, "\n");
->  	}
-> -	if (len >= PAGE_SIZE)
-> -		return PAGE_SIZE;
-> +	if (len >= PAGE_SIZE) {
-> +		trans_table_overflow = true;
-> +		pr_warn("cpufreq transition table exceeds PAGE_SIZE. Disabling\n");
-> +		return -EFBIG;
-> +	}
-
-I would suggest making only this change and removing other optimizations
-completely.
+Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
 -- 
 viresh
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
