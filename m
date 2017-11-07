@@ -1,78 +1,67 @@
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH v2] cpupower : Fix cpupower working when cpu0 is offline
-Date: Tue,  7 Nov 2017 12:50:05 +0530
-Message-ID: <20171107072005.48034-1-huntbag@linux.vnet.ibm.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Subject: Re: [PATCH v11 02/10] i2c: i2c-smbus: Move i2c_setup_smbus_alert
+ from i2c-smbus to i2c-core-smbus
+Date: Tue, 7 Nov 2017 08:22:55 +0100
+Message-ID: <20171107072254.s43mwpyplx3hdkyo@ninjato>
+References: <1503567070-115646-1-git-send-email-preid@electromag.com.au>
+ <1503567070-115646-3-git-send-email-preid@electromag.com.au>
+ <20171029154408.vmjkpj7ybqyrj3ke@ninjato>
+ <1397131b-c22d-9872-dbe0-9b691553cb9e@electromag.com.au>
+ <20171106213646.2h3zsitnlablblli@ninjato>
+ <2eaccb51-62cf-b764-d313-84008c6c8f87@electromag.com.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="bikpymgkkwmtznnd"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:50480 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1755108AbdKGHUT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 02:20:19 -0500
-Received: from pps.filterd (m0098421.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vA77JcdR088042
-        for <linux-pm@vger.kernel.org>; Tue, 7 Nov 2017 02:20:18 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2e35hmh0pt-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Tue, 07 Nov 2017 02:20:18 -0500
-Received: from localhost
-        by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
-        Tue, 7 Nov 2017 07:20:16 -0000
+Received: from sauhun.de ([88.99.104.3]:54768 "EHLO pokefinder.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755205AbdKGHW5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 7 Nov 2017 02:22:57 -0500
+Content-Disposition: inline
+In-Reply-To: <2eaccb51-62cf-b764-d313-84008c6c8f87@electromag.com.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To: Phil Reid <preid@electromag.com.au>
+Cc: Jean Delvare <jdelvare@suse.de>, robh+dt@kernel.org, mark.rutland@arm.com, sre@kernel.org, jdelvare@suse.com, jglauber@cavium.com, david.daney@cavium.com, peda@axentia.se, benjamin.tissoires@redhat.com, linux-i2c@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-cpuidle_monitor used to assume that cpu0 is always online which is not
-a valid assumption on POWER machines. This patch fixes this by searching
-for the first online cpu and uses it, instead of always using cpu0 for
-monitoring which may not be online.
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
-v2: Commit message updated.
----
- tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+--bikpymgkkwmtznnd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-index 1b5da00..adacf99 100644
---- a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-+++ b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-@@ -130,15 +130,23 @@ static struct cpuidle_monitor *cpuidle_register(void)
- {
- 	int num;
- 	char *tmp;
-+	int first_online_cpu;
-+
-+	for (num = 0; num < cpu_count; num++) {
-+		if (cpupower_is_cpu_online(num))
-+			break;
-+	};
-+	first_online_cpu = num;
- 
- 	/* Assume idle state count is the same for all CPUs */
--	cpuidle_sysfs_monitor.hw_states_num = cpuidle_state_count(0);
-+	cpuidle_sysfs_monitor.hw_states_num =
-+		cpuidle_state_count(first_online_cpu);
- 
- 	if (cpuidle_sysfs_monitor.hw_states_num <= 0)
- 		return NULL;
- 
- 	for (num = 0; num < cpuidle_sysfs_monitor.hw_states_num; num++) {
--		tmp = cpuidle_state_name(0, num);
-+		tmp = cpuidle_state_name(first_online_cpu, num);
- 		if (tmp == NULL)
- 			continue;
- 
-@@ -146,7 +154,7 @@ static struct cpuidle_monitor *cpuidle_register(void)
- 		strncpy(cpuidle_cstates[num].name, tmp, CSTATE_NAME_LEN - 1);
- 		free(tmp);
- 
--		tmp = cpuidle_state_desc(0, num);
-+		tmp = cpuidle_state_desc(first_online_cpu, num);
- 		if (tmp == NULL)
- 			continue;
- 		strncpy(cpuidle_cstates[num].desc, tmp,	CSTATE_DESC_LEN - 1);
--- 
-2.9.3
+
+> I was just thinking that all that's in the file now is smbus-alert code.
+> The other smbus (host notify) code was moved to i2c-core
+> So maybe i2c-core-smbus-alert and as you say use makefile to include it.
+
+Aaaah, i2c-core-smbus-alert.c. Yes, that probably makes sense. I was
+wondering about i2c-smbus-alert.c (without -core)...
+
+> I've tried this and it seems to work for the various combinations.
+> I'll wait a bit for Jean to offer an opinion.
+
+Well, if you have code already, can you post it as RFC and CC Jean?
+It usually is easier to talk over code, even if it is not perfect yet...
+
+
+--bikpymgkkwmtznnd
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAloBX0oACgkQFA3kzBSg
+Kbb6nhAAiTjcLEHcmWcnWXLWm52v1eFi99WAwm3ONH6wlmWdT1WK/4ktJ6X3bx2Z
+XSVGvELMjeuFY2khXNmrM08pNu/ceNVBcBAuOhxDg9PeKLsBuRlPm6/38GIkKy9t
+IJbAz4+VJ1hqtpFNyOKuafvmcIwAYfdAeNOz5nqqiGGqZbHA3qMwLBxRvt3oupMB
+0ngTY/unB/x1tvhnXKAI73gq+I2S3OLM+SifwD+x84N8curvQ/oCtfhQ5WS+fuUW
+6FF/BeyE5qH0wN4LfDtap1LdIiiZnaHoI709hF8AGtJiLxmu4OeO+Jph5jiV6AOj
+mUCK4OoDDowHSsbvd7xNPE5FuPPNWpF6V1CnjZrV4zeN9QwP2DSlFwdZNkaCynGy
+V70sxrj1d2alD+YIWctu1iBuG7OiFus0wDvfpsUX9ZH0JQ0KSmtnZjjepaaQ3x/+
+XydRjM18OgGL7t28J4qb4sH36j8p1sGc04NMQokLwnh0zuR6+6e+qBTOYqQFtW5d
+8svTp8j7fRHdAwth57vAqRZx+qvUZtKH6f/BXhOEBsYQqnmeQfAjb78Q3+2XNdEY
+3sD3Bp0r5CUxKc+t3UZHP50NlPB6lm8i2ihu3kEqIqV6x/R1ESGP8PdznrbnGiNF
+om2OMPnFwWfeuAbiKvhpQt+J78nc+y9r06E+39vS1Fs4LI9QdUc=
+=j7zL
+-----END PGP SIGNATURE-----
+
+--bikpymgkkwmtznnd--
