@@ -1,47 +1,66 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v4 20/20] cpufreq: scmi: add support for fast frequency switching
-Date: Wed, 8 Nov 2017 12:05:48 +0100
-Message-ID: <CAK8P3a03wGUQ+wMsRctuqhN20iBrgLTZOnFqN1k3gCXnwaBtDA@mail.gmail.com>
-References: <1509720477-18936-1-git-send-email-sudeep.holla@arm.com>
- <1509720477-18936-21-git-send-email-sudeep.holla@arm.com> <4588325.776kYim3Ci@aspire.rjw.lan>
- <3f79f75f-1b6a-3f7b-b0c0-f970f0fb6c12@arm.com>
+From: Lee Jones <lee.jones@linaro.org>
+Subject: Re: [PATCH 09/12] PM / mfd: intel-lpss: Use DPM_FLAG_SMART_SUSPEND
+Date: Wed, 8 Nov 2017 11:08:13 +0000
+Message-ID: <20171108110813.abqehgxdyvyahrro@dell>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan>
+ <5094729.JAaD38WncM@aspire.rjw.lan>
+ <20171031150933.oho2ffvuj3iagx4m@dell>
+ <CAJZ5v0ipSJv0PWPrD3P-yeyD0JWe6EqSJSuZXgjtnFTrMEvpfQ@mail.gmail.com>
+ <20171101092819.thhofiwwjxblef4a@dell>
+ <CAJZ5v0gbmPd=rrveH1LyOYhB2Uu8Tz54C1Y+TutYmdRJCv8G4g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f194.google.com ([74.125.82.194]:43131 "EHLO
-        mail-ot0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750818AbdKHLFt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Nov 2017 06:05:49 -0500
-In-Reply-To: <3f79f75f-1b6a-3f7b-b0c0-f970f0fb6c12@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gbmPd=rrveH1LyOYhB2Uu8Tz54C1Y+TutYmdRJCv8G4g@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-i2c <linux-i2c@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Loc Ho <lho@apm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
-On Wed, Nov 8, 2017 at 11:42 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
->
->
-> On 08/11/17 00:24, Rafael J. Wysocki wrote:
->> On Friday, November 3, 2017 3:47:57 PM CET Sudeep Holla wrote:
->>> The cpufreq core provides option for drivers to implement fast_switch
->>> callback which is invoked for frequency switching from interrupt context.
->>>
->>> This patch adds support for fast_switch callback in SCMI cpufreq driver
->>> by making use of polling based SCMI transfer. It also sets the flag
->>> fast_switch_possible.
->>>
->>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->>> Cc: linux-pm@vger.kernel.org
->>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->>
->> I'm assuming that this material will go in along with the rest of the series
->> through a different tree.
->>
->
-> Indeed, I will ask ARM-SoC guys to take it via their tree when ready. I
-> assume you are fine with that, please provide ack if that's still the case.
+On Wed, 01 Nov 2017, Rafael J. Wysocki wrote:
 
-Yes, that makes sense.
+> On Wed, Nov 1, 2017 at 10:28 AM, Lee Jones <lee.jones@linaro.org> wrote:
+> > On Tue, 31 Oct 2017, Rafael J. Wysocki wrote:
+> >
+> >> On Tue, Oct 31, 2017 at 4:09 PM, Lee Jones <lee.jones@linaro.org> wrote:
+> >> > On Mon, 16 Oct 2017, Rafael J. Wysocki wrote:
+> >> >
+> >> >> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> >>
+> >> >> Make the intel-lpss driver set DPM_FLAG_SMART_SUSPEND for its
+> >> >> devices which will allow them to stay in runtime suspend during
+> >> >> system suspend unless they need to be reconfigured for some reason.
+> >> >>
+> >> >> Also make it avoid resuming its child devices if they have
+> >> >> DPM_FLAG_SMART_SUSPEND set to allow them to remain in runtime
+> >> >> suspend during system suspend.
+> >> >>
+> >> >> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >> >> ---
+> >> >>  drivers/mfd/intel-lpss.c |    6 +++++-
+> >> >>  1 file changed, 5 insertions(+), 1 deletion(-)
+> >> >
+> >> > Is this patch independent?
+> >>
+> >> It depends on the flag definition at least, but functionally it also
+> >> depends on the PCI support for the flag.
+> >
+> > No problem.  Which tree to you propose this goes through?
+> 
+> linux-pm.git if that's not a problem as the patches it depends on will
+> go through it too.
+> 
+> That said I'll resend it when the core patches it depends on are ready.
 
-      Arnd
+It's fine by me.
+
+Please check to see if there are any clashes with MFD.  If there are,
+I'll need a (small) pull-request from you.
+
+-- 
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
