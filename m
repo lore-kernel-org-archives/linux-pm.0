@@ -1,31 +1,53 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 2/2] PM / QoS: Fix device resume latency framework
-Date: Wed, 08 Nov 2017 01:09:05 +0100
-Message-ID: <1899887.SchiVIoqFq@aspire.rjw.lan>
-References: <5770848.Kdi5IjVKeE@aspire.rjw.lan> <5398562.D1bMImPBRK@aspire.rjw.lan> <20171107231515.GA26314@intel.com>
+Subject: Re: [PATCH v3 0/5] PM / Domains: Remove gpd_dev_ops.active_wakeup() callback
+Date: Wed, 08 Nov 2017 01:17:27 +0100
+Message-ID: <2130215.VAlC8oaDc3@aspire.rjw.lan>
+References: <1510058895-21712-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53910 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752469AbdKHAJK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Nov 2017 19:09:10 -0500
-In-Reply-To: <20171107231515.GA26314@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1510058895-21712-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: ramesh.thomas@intel.com
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Tero Kristo <t-kristo@ti.com>, Reinette Chatre <reinette.chatre@intel.com>, Alex Shi <alex.shi@linaro.org>
 
-On Wednesday, November 8, 2017 12:15:16 AM CET Ramesh Thomas wrote:
-> On 2017-11-07 at 11:33:49 +0100, Rafael J. Wysocki wrote:
-
-[cut]
-
-> Looks good.
+On Tuesday, November 7, 2017 1:48:10 PM CET Geert Uytterhoeven wrote:
+> 	Hi Rafael, Ulf, Kevin,
 > 
-> Reviewed-by: Ramesh Thomas <ramesh.thomas@intel.com>
+> It is quite common for PM Domains to require slave devices to be kept
+> active during system suspend if they are to be used as wakeup sources.
+> To enable this, currently each PM Domain or driver has to provide its
+> own gpd_dev_ops.active_wakeup() callback.
+> 
+> All existing callbacks either return always true, or a fixed value
+> depending on the PM Domain.
+> 
+> Hence this patch series simplifies active wakeup handling by replacing
+> the callback by a flag:
+>   - Patch 1 adds a new new flag GENPD_FLAG_ACTIVE_WAKEUP, to be set by
+>     PM Domain drivers that want to use the new handling,
+>   - Patches 2-4 convert all existing users of the callback to the new
+>     flag,
+>   - Patch 5 removes the callback.
+> 
+> This series was extracted from "[PATCH 00/10] PM / Domain: renesas: Fix
+> active wakeup behavior", and retains only PM Domain changes to existing
+> drivers.
+> 
+> Changes compared to v2:
+>   - Add Acked-by, Reviewed-by,
+>   - Drop RFC status from dependent patches, as everything can go in
+>     through the pm tree.
+> 
+> Changes compared to v1 (most suggested by Ulf):
+>   - Use the flag in se instead of setting up an "always true" callback,
+>   - Convert the mediatek and rockchip PM Domain drivers,
+>   - Remove the callback.
+> 
+> Thanks for applying for v4.15!
 
-Thanks a lot for the reviews, they help quite a bit.
+Queued up for 4.15, thanks!
 
 Rafael
