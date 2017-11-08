@@ -1,33 +1,99 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 20/20] cpufreq: scmi: add support for fast frequency switching
-Date: Wed, 08 Nov 2017 01:24:47 +0100
-Message-ID: <4588325.776kYim3Ci@aspire.rjw.lan>
-References: <1509720477-18936-1-git-send-email-sudeep.holla@arm.com> <1509720477-18936-21-git-send-email-sudeep.holla@arm.com>
+From: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: [PATCH v2 0/2] pinctrl: Allow indicating loss of state across
+ suspend/resume
+Date: Tue, 7 Nov 2017 16:28:24 -0800
+Message-ID: <952312f9-2c26-58bc-e34f-76ab1fb5f05d@gmail.com>
+References: <20171102231551.16220-1-f.fainelli@gmail.com>
+ <7091cb38-e55b-fa20-114e-bd77950ea912@gmail.com>
+ <20171107160006.GQ28152@atomide.com> <4931157.VlYOOLbas7@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1509720477-18936-21-git-send-email-sudeep.holla@arm.com>
+In-Reply-To: <4931157.VlYOOLbas7@aspire.rjw.lan>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Arnd Bergmann <arnd@arndb.de>, Loc Ho <lho@apm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Tony Lindgren <tony@atomide.com>
+Cc: Charles Keepax <ckeepax@opensource.cirrus.com>, linux-gpio@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, ckeepax@opensource.wolfsonmicro.com, swarren@nvidia.com, andy.shevchenko@gmail.com, alcooperx@gmail.com, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, November 3, 2017 3:47:57 PM CET Sudeep Holla wrote:
-> The cpufreq core provides option for drivers to implement fast_switch
-> callback which is invoked for frequency switching from interrupt context.
+On 11/07/2017 04:23 PM, Rafael J. Wysocki wrote:
+> On Tuesday, November 7, 2017 5:00:06 PM CET Tony Lindgren wrote:
+>> * Florian Fainelli <f.fainelli@gmail.com> [171104 17:21]:
+>>>
+>>>
+>>> On 11/04/2017 05:25 AM, Rafael J. Wysocki wrote:
+>>>> On Friday, November 3, 2017 6:33:53 PM CET Tony Lindgren wrote:
+>>>>> * Florian Fainelli <f.fainelli@gmail.com> [171103 17:04]:
+>>>>>> On 11/03/2017 09:11 AM, Tony Lindgren wrote:
+>>>>>> The pinctrl provider is losing its state, hence these two patches.
+>>>>>
+>>>>> OK
+>>>>>
+>>>>>>> Anyways, the context lost flag should be managed in the PM core for
+>>>>>>> the device, so adding linux-pm and Rafael to Cc.
+>>>>>>
+>>>>>> I don't think it's that simple but sure, why not.
+>>>>>
+>>>>> Just having bool context_lost in struct dev_pm_info would probably
+>>>>> be enough to allow drivers to deal with it. This flag could then
+>>>>> be set for a device by power domain related code that knows if
+>>>>> context got lost.
+>>>>
+>>>> Something like: if the driver sees "context_lost" set, it should restore
+>>>> the context to the device from memory?
+>>>
+>>> That is what is being proposed here, except that the actual mechanism
+>>> where this matters needs to be in the core pinctrl code, otherwise the
+>>> state (context) is not restored due to a check that attempts not to
+>>> (re)apply a previous state.
+>>>
+>>>>
+>>>> But the it would also need to save the context beforehand, so why not to
+>>>> restore it unconditionally on resume?
+>>>
+>>> That's what my original attempts did here:
+>>>
+>>> https://patchwork.kernel.org/patch/9598969/
+>>>
+>>> but Linus rightfully requested this to be done differently, hence this
+>>> attempt now to solve it in a slightly more flexible way based on DT
+>>> properties.
+>>
+>> For runtime PM, restoring the state constantly is unnecessary and not
+>> good for battery life. The logic can be just:
+>>
+>> 1. Device driver runtime PM suspend saves the state when needed
+>>
+>> 2. Device driver runtime PM resume checks if context_lost was set by
+>>    the bus or power domain code
+>>
+>> 3. If context was lost, device driver restores the state, or in some
+>>    cases may need re-run the driver register init related parts
+>>    to bring the driver back up, then clears the context_lost flag
+>>
+>> How about something like the following patch? So far only compile
+>> tested with CONFIG_PM enabled. If that looks like the way to go,
+>> I'll test it properly and add some comments for the functions and
+>> post a proper patch :)
 > 
-> This patch adds support for fast_switch callback in SCMI cpufreq driver
-> by making use of polling based SCMI transfer. It also sets the flag
-> fast_switch_possible.
+> Honestly, I'm not sure.
 > 
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-pm@vger.kernel.org
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> I'd rather have a context_lost flag to start with and see how/if
+> drivers will use that before adding any common infra for handling
+> this.
 
-I'm assuming that this material will go in along with the rest of the series
-through a different tree.
+I am afraid we are being slightly side tracked here on this context_loss
+flag, because the crux of the problem is not whether a driver knows or
+not when it loses state, it's more than the pinctrl core refuses to
+re-apply the same state upon resumption even when the consumer driver
+tells it to, because it has not seen a transition (consider it as a
+stale software cache of the state), and there is only one state defined.
 
-Thanks,
-Rafael
+I don't particularly care how its gets solved, at the generic device
+driver model or at the pinctrl level, but I think the pinctrl code needs
+to change in that regard no matter what we do, because right now, if you
+call pinctrl_select_state() in your driver's resume function, and there
+is only one state defined, nothing happens, that's a problem.
+-- 
+Florian
