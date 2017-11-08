@@ -1,84 +1,60 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 3/6] ACPI / PM: Support for LEAVE_SUSPENDED driver flag in ACPI PM domain
-Date: Wed, 08 Nov 2017 14:34:04 +0100
-Message-ID: <2554940.NTGGD0NJQ9@aspire.rjw.lan>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <16592954.7Zo1mAdIIH@aspire.rjw.lan> <6330680.LdxjlP4uri@aspire.rjw.lan>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 2/2] ARM64 / cpuidle: Use new cpuidle macro for entering
+ retention state
+Date: Wed, 8 Nov 2017 14:27:28 +0000
+Message-ID: <16086b6c-6f34-35e8-bc19-705380e5b767@arm.com>
+References: <1510076133-18139-1-git-send-email-pprakash@codeaurora.org>
+ <1510076133-18139-3-git-send-email-pprakash@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <6330680.LdxjlP4uri@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:33788 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751839AbdKHO1c (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 8 Nov 2017 09:27:32 -0500
+In-Reply-To: <1510076133-18139-3-git-send-email-pprakash@codeaurora.org>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prashanth Prakash <pprakash@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, daniel.lezcano@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Add support for DPM_FLAG_LEAVE_SUSPENDED to the ACPI PM domain by
-making it (a) set the power.may_skip_resume status bit for devices
-that, from its perspective, may be left in suspend after system
-wakeup from sleep and (b) return early from acpi_subsys_resume_noirq()
-for devices whose remaining resume callbacks during the transition
-under way are going to be skipped by the PM core.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/acpi/device_pm.c |   27 ++++++++++++++++++++++++---
- 1 file changed, 24 insertions(+), 3 deletions(-)
+On 07/11/17 17:35, Prashanth Prakash wrote:
+> CPU_PM_CPU_IDLE_ENTER_RETENTION skips calling cpu_pm_enter() and
+> cpu_pm_exit(). By not calling cpu_pm functions in idle entry/exit
+> paths we can reduce the latency involved in entering and exiting
+> the low power idle state.
+> 
+> On ARM64 based Qualcomm server platform we measured below overhead
+> for calling cpu_pm_enter and cpu_pm_exit for retention states.
+> 
+> workload: stress --hdd #CPUs --hdd-bytes 32M  -t 30
+> 	Average overhead of cpu_pm_enter - 1.2us
+> 	Average overhead of cpu_pm_exit  - 3.1us
+> 
+> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
+> ---
+>  arch/arm64/kernel/cpuidle.c | 8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
+> index fd69108..f2d1381 100644
+> --- a/arch/arm64/kernel/cpuidle.c
+> +++ b/arch/arm64/kernel/cpuidle.c
+> @@ -47,6 +47,8 @@ int arm_cpuidle_suspend(int index)
+>  
+>  #include <acpi/processor.h>
+>  
+> +#define ARM64_LPI_IS_RETENTION_STATE(arch_flags) (!(arch_flags))
+> +
 
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -987,7 +987,7 @@ void acpi_subsys_complete(struct device
- 	 * the sleep state it is going out of and it has never been resumed till
- 	 * now, resume it in case the firmware powered it up.
- 	 */
--	if (dev->power.direct_complete && pm_resume_via_firmware())
-+	if (pm_runtime_suspended(dev) && pm_resume_via_firmware())
- 		pm_request_resume(dev);
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_complete);
-@@ -1036,10 +1036,28 @@ EXPORT_SYMBOL_GPL(acpi_subsys_suspend_la
-  */
- int acpi_subsys_suspend_noirq(struct device *dev)
- {
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	int ret;
-+
-+	if (dev_pm_smart_suspend_and_suspended(dev)) {
-+		dev->power.may_skip_resume = true;
- 		return 0;
-+	}
- 
--	return pm_generic_suspend_noirq(dev);
-+	ret = pm_generic_suspend_noirq(dev);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * If the target system sleep state is suspend-to-idle, it is sufficient
-+	 * to check whether or not the device's wakeup settings are good for
-+	 * runtime PM.  Otherwise, the pm_resume_via_firmware() check will cause
-+	 * acpi_subsys_complete() to take care of fixing up the device's state
-+	 * anyway, if need be.
-+	 */
-+	dev->power.may_skip_resume = device_may_wakeup(dev) ||
-+					!device_can_wakeup(dev);
-+
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(acpi_subsys_suspend_noirq);
- 
-@@ -1049,6 +1067,9 @@ EXPORT_SYMBOL_GPL(acpi_subsys_suspend_no
-  */
- int acpi_subsys_resume_noirq(struct device *dev)
- {
-+	if (dev_pm_may_skip_resume(dev))
-+		return 0;
-+
- 	/*
- 	 * Devices with DPM_FLAG_SMART_SUSPEND may be left in runtime suspend
- 	 * during system suspend, so update their runtime PM status to "active"
+Ideally we could cater both ACPI LPI and DT using PSCI parameters. No ?
+Just thinking it out loud as I see no reason to restrict this just to
+ACPI LPIs.
+
+-- 
+Regards,
+Sudeep
