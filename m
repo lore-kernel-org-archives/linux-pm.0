@@ -1,53 +1,82 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 0/5] PM / Domains: Remove gpd_dev_ops.active_wakeup() callback
-Date: Wed, 08 Nov 2017 01:17:27 +0100
-Message-ID: <2130215.VAlC8oaDc3@aspire.rjw.lan>
-References: <1510058895-21712-1-git-send-email-geert+renesas@glider.be>
+Subject: Re: [PATCH v2 0/2] pinctrl: Allow indicating loss of state across suspend/resume
+Date: Wed, 08 Nov 2017 01:23:14 +0100
+Message-ID: <4931157.VlYOOLbas7@aspire.rjw.lan>
+References: <20171102231551.16220-1-f.fainelli@gmail.com> <7091cb38-e55b-fa20-114e-bd77950ea912@gmail.com> <20171107160006.GQ28152@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1510058895-21712-1-git-send-email-geert+renesas@glider.be>
+In-Reply-To: <20171107160006.GQ28152@atomide.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Matthias Brugger <matthias.bgg@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-mediatek@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Florian Fainelli <f.fainelli@gmail.com>, Charles Keepax <ckeepax@opensource.cirrus.com>, linux-gpio@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, ckeepax@opensource.wolfsonmicro.com, swarren@nvidia.com, andy.shevchenko@gmail.com, alcooperx@gmail.com, bcm-kernel-feedback-list@broadcom.com, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, November 7, 2017 1:48:10 PM CET Geert Uytterhoeven wrote:
-> 	Hi Rafael, Ulf, Kevin,
+On Tuesday, November 7, 2017 5:00:06 PM CET Tony Lindgren wrote:
+> * Florian Fainelli <f.fainelli@gmail.com> [171104 17:21]:
+> > 
+> > 
+> > On 11/04/2017 05:25 AM, Rafael J. Wysocki wrote:
+> > > On Friday, November 3, 2017 6:33:53 PM CET Tony Lindgren wrote:
+> > >> * Florian Fainelli <f.fainelli@gmail.com> [171103 17:04]:
+> > >>> On 11/03/2017 09:11 AM, Tony Lindgren wrote:
+> > >>> The pinctrl provider is losing its state, hence these two patches.
+> > >>
+> > >> OK
+> > >>
+> > >>>> Anyways, the context lost flag should be managed in the PM core for
+> > >>>> the device, so adding linux-pm and Rafael to Cc.
+> > >>>
+> > >>> I don't think it's that simple but sure, why not.
+> > >>
+> > >> Just having bool context_lost in struct dev_pm_info would probably
+> > >> be enough to allow drivers to deal with it. This flag could then
+> > >> be set for a device by power domain related code that knows if
+> > >> context got lost.
+> > > 
+> > > Something like: if the driver sees "context_lost" set, it should restore
+> > > the context to the device from memory?
+> > 
+> > That is what is being proposed here, except that the actual mechanism
+> > where this matters needs to be in the core pinctrl code, otherwise the
+> > state (context) is not restored due to a check that attempts not to
+> > (re)apply a previous state.
+> > 
+> > > 
+> > > But the it would also need to save the context beforehand, so why not to
+> > > restore it unconditionally on resume?
+> > 
+> > That's what my original attempts did here:
+> > 
+> > https://patchwork.kernel.org/patch/9598969/
+> > 
+> > but Linus rightfully requested this to be done differently, hence this
+> > attempt now to solve it in a slightly more flexible way based on DT
+> > properties.
 > 
-> It is quite common for PM Domains to require slave devices to be kept
-> active during system suspend if they are to be used as wakeup sources.
-> To enable this, currently each PM Domain or driver has to provide its
-> own gpd_dev_ops.active_wakeup() callback.
+> For runtime PM, restoring the state constantly is unnecessary and not
+> good for battery life. The logic can be just:
 > 
-> All existing callbacks either return always true, or a fixed value
-> depending on the PM Domain.
+> 1. Device driver runtime PM suspend saves the state when needed
 > 
-> Hence this patch series simplifies active wakeup handling by replacing
-> the callback by a flag:
->   - Patch 1 adds a new new flag GENPD_FLAG_ACTIVE_WAKEUP, to be set by
->     PM Domain drivers that want to use the new handling,
->   - Patches 2-4 convert all existing users of the callback to the new
->     flag,
->   - Patch 5 removes the callback.
+> 2. Device driver runtime PM resume checks if context_lost was set by
+>    the bus or power domain code
 > 
-> This series was extracted from "[PATCH 00/10] PM / Domain: renesas: Fix
-> active wakeup behavior", and retains only PM Domain changes to existing
-> drivers.
+> 3. If context was lost, device driver restores the state, or in some
+>    cases may need re-run the driver register init related parts
+>    to bring the driver back up, then clears the context_lost flag
 > 
-> Changes compared to v2:
->   - Add Acked-by, Reviewed-by,
->   - Drop RFC status from dependent patches, as everything can go in
->     through the pm tree.
-> 
-> Changes compared to v1 (most suggested by Ulf):
->   - Use the flag in se instead of setting up an "always true" callback,
->   - Convert the mediatek and rockchip PM Domain drivers,
->   - Remove the callback.
-> 
-> Thanks for applying for v4.15!
+> How about something like the following patch? So far only compile
+> tested with CONFIG_PM enabled. If that looks like the way to go,
+> I'll test it properly and add some comments for the functions and
+> post a proper patch :)
 
-Queued up for 4.15, thanks!
+Honestly, I'm not sure.
 
+I'd rather have a context_lost flag to start with and see how/if
+drivers will use that before adding any common infra for handling
+this.
+
+Thanks,
 Rafael
