@@ -1,96 +1,61 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 1/2] cpuidle: Add new macro to enter a retention idle
- state
-Date: Wed, 8 Nov 2017 14:38:45 +0000
-Message-ID: <c60a1552-e722-f548-45d4-1529e129c231@arm.com>
-References: <1510076133-18139-1-git-send-email-pprakash@codeaurora.org>
- <1510076133-18139-2-git-send-email-pprakash@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] schedutil: Reset cached freq if it is not in sync with next_freq
+Date: Wed,  8 Nov 2017 20:23:55 +0530
+Message-ID: <2897534536b2506cbdbd5f8ace6f1c2dcdad189d.1510152832.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:33884 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751839AbdKHOiw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 8 Nov 2017 09:38:52 -0500
-In-Reply-To: <1510076133-18139-2-git-send-email-pprakash@codeaurora.org>
-Content-Language: en-US
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:51212 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751839AbdKHOyF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Nov 2017 09:54:05 -0500
+Received: by mail-pg0-f66.google.com with SMTP id p9so2030023pgc.8
+        for <linux-pm@vger.kernel.org>; Wed, 08 Nov 2017 06:54:05 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prashanth Prakash <pprakash@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, daniel.lezcano@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, stable@vger.kernel.org, linux-kernel@vger.kernel.org
 
+'cached_raw_freq' is used to get the next frequency quickly but should
+always be in sync with sg_policy->next_freq. There is a case where it is
+not and in such cases it should be reset to avoid switching to incorrect
+frequencies.
 
+Consider this case for example:
+- policy->cur is 1.2 GHz (Max)
+- New request comes for 780 MHz and we store that in cached_raw_freq.
+- Based on 780 MHz, we calculate the effective frequency as 800 MHz.
+- We then see the CPU wasn't idle recently and choose to keep the next
+  freq as 1.2 GHz.
+- Now we have cached_raw_freq is 780 MHz and sg_policy->next_freq is 1.2
+  GHz.
+- Now if the utilization doesn't change in then next request, then the
+  next target frequency will still be 780 MHz and it will match with
+  cached_raw_freq. But we will choose 1.2 GHz instead of 800 MHz here.
 
-On 07/11/17 17:35, Prashanth Prakash wrote:
-> If a CPU is entering a low power idle state where it doesn't lose any
-> context, then there is no need to call cpu_pm_enter()/cpu_pm_exit().
-> Add a new macro(CPU_PM_CPU_IDLE_ENTER_RETENTION) to be used by cpuidle
-> drivers when they are entering retention state. By not calling
-> cpu_pm_enter and cpu_pm_exit we reduce the latency involved in
-> entering and exiting the retention idle states.
-> 
-> On ARM64 based Qualcomm Server Platform we measured below overhead for
-> for calling cpu_pm_enter and cpu_pm_exit for retention states.
-> 
-> workload: stress --hdd #CPUs --hdd-bytes 32M  -t 30
->         Average overhead of cpu_pm_enter - 1.2us
->         Average overhead of cpu_pm_exit  - 3.1us
-> 
-> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
-> ---
->  include/linux/cpuidle.h | 38 +++++++++++++++++++++++---------------
->  1 file changed, 23 insertions(+), 15 deletions(-)
-> 
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 8f7788d..54cbd9d 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -258,21 +258,29 @@ static inline int cpuidle_register_governor(struct cpuidle_governor *gov)
->  #endif
->  
->  #define CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx)	\
-> -({								\
-> -	int __ret;						\
-> -								\
-> -	if (!idx) {						\
-> -		cpu_do_idle();					\
-> -		return idx;					\
-> -	}							\
-> -								\
-> -	__ret = cpu_pm_enter();					\
-> -	if (!__ret) {						\
-> -		__ret = low_level_idle_enter(idx);		\
-> -		cpu_pm_exit();					\
-> -	}							\
-> -								\
-> -	__ret ? -1 : idx;					\
-> +	__CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx, 0)
-> +
-> +#define CPU_PM_CPU_IDLE_ENTER_RETENTION(low_level_idle_enter, idx)	\
-> +	__CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx, 1)
-> +
-> +#define __CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx, is_retention) \
-> +({									\
-> +	int __ret = 0;							\
-> +									\
-> +	if (!idx) {							\
-> +		cpu_do_idle();						\
-> +		return idx;						\
-> +	}								\
-> +									\
-> +	if (!is_retention)						\
-> +		__ret =  cpu_pm_enter();				\
+Change-Id: I71bd31a1b59d27c26c0b4885301e4ba6155c2c51
+Cc: <stable@vger.kernel.org> # 4.12
+Fixes: b7eaf1aab9f8 ("cpufreq: schedutil: Avoid reducing frequency of busy CPUs prematurely")
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ kernel/sched/cpufreq_schedutil.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-I am fine with this change as initial step. But I am wondering if we
-will have a retention state which loses partial state ?
-
-The specification has flags to specify that difference but will we see
-that in reality is a different question. If we see such hardware, then
-we may need to revert this and handle in the callbacks as we can't skip
-cpu_pm notifier callbacks all together right ?
-
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index ba0da243fdd8..2f52ec0f1539 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -282,8 +282,12 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+ 		 * Do not reduce the frequency if the CPU has not been idle
+ 		 * recently, as the reduction is likely to be premature then.
+ 		 */
+-		if (busy && next_f < sg_policy->next_freq)
++		if (busy && next_f < sg_policy->next_freq) {
+ 			next_f = sg_policy->next_freq;
++
++			/* Reset cached freq as next_freq has changed */
++			sg_policy->cached_raw_freq = 0;
++		}
+ 	}
+ 	sugov_update_commit(sg_policy, time, next_f);
+ }
 -- 
--- 
-Regards,
-Sudeep
+2.15.0.rc1.236.g92ea95045093
