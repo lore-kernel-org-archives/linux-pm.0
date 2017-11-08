@@ -1,71 +1,51 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH 1/3] PM / core: Re-factor some code dealing with parents in __device_suspend()
-Date: Wed,  8 Nov 2017 16:15:32 +0100
-Message-ID: <1510154134-1248-2-git-send-email-ulf.hansson@linaro.org>
-References: <1510154134-1248-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1510154134-1248-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
+Subject: [PATCH 0/3] PM / core: Invent a WAKEUP_POWERED driver flag
+Date: Wed,  8 Nov 2017 16:15:31 +0100
+Message-ID: <1510154134-1248-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f68.google.com ([209.85.215.68]:46759 "EHLO
+        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752537AbdKHPPo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Nov 2017 10:15:44 -0500
+Received: by mail-lf0-f68.google.com with SMTP id g70so3570646lfl.3
+        for <linux-pm@vger.kernel.org>; Wed, 08 Nov 2017 07:15:44 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, linux-renesas-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
-List-Id: linux-pm@vger.kernel.org
 
-Let's make the code a bit more readable by moving some of the code, which
-deals with adjustments for parent devices in __device_suspend(), into its
-own function.
+The generic problem this series is trying to solve, is that for some bus types
+and PM domains, it's not sufficient to only check the return value from
+device_may_wakeup(), to fully understand how to treat the device during system
+suspend.
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/main.c | 29 +++++++++++++++++------------
- 1 file changed, 17 insertions(+), 12 deletions(-)
+One particular case that suffers from this, is the generic PM domain (aka genpd)
+and that is taken care of in the final change in this series.
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 6c6f1c7..8089e72 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1422,6 +1422,22 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
- 	return error;
- }
- 
-+static void dpm_propagate_to_parent(struct device *dev)
-+{
-+	struct device *parent = dev->parent;
-+
-+	if (!parent)
-+		return;
-+
-+	spin_lock_irq(&parent->power.lock);
-+
-+	parent->power.direct_complete = false;
-+	if (dev->power.wakeup_path && !parent->power.ignore_children)
-+		parent->power.wakeup_path = true;
-+
-+	spin_unlock_irq(&parent->power.lock);
-+}
-+
- static void dpm_clear_suppliers_direct_complete(struct device *dev)
- {
- 	struct device_link *link;
-@@ -1530,19 +1546,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
- 
-  End:
- 	if (!error) {
--		struct device *parent = dev->parent;
--
- 		dev->power.is_suspended = true;
--		if (parent) {
--			spin_lock_irq(&parent->power.lock);
--
--			dev->parent->power.direct_complete = false;
--			if (dev->power.wakeup_path
--			    && !dev->parent->power.ignore_children)
--				dev->parent->power.wakeup_path = true;
--
--			spin_unlock_irq(&parent->power.lock);
--		}
-+		dpm_propagate_to_parent(dev);
- 		dpm_clear_suppliers_direct_complete(dev);
- 	}
- 
+The special case this series address, is to enable drivers to instruct bus types
+and PM domains, that the device need to stay powered in case wakeup signals
+is enabled for it.
+
+Geert Uytterhoeven, has been working on some related problems for some Renesas
+SoCs [1], to be able to properly configure WakeOnLAN, for some ethernet
+devices/drivers, which are used together with genpd. My intent is that this
+series enables a solution for those problems.
+
+[1]
+https://www.spinics.net/lists/linux-renesas-soc/msg19319.html 
+
+
+Ulf Hansson (3):
+  PM / core: Re-factor some code dealing with parents in
+    __device_suspend()
+  PM / core: Add WAKEUP_POWERED driver flag
+  PM / Domains: Take WAKEUP_POWERED driver flag into account
+
+ Documentation/driver-api/pm/devices.rst | 12 ++++++++++++
+ drivers/base/power/domain.c             | 14 ++++++++++----
+ drivers/base/power/main.c               | 33 +++++++++++++++++++++------------
+ include/linux/pm.h                      |  5 +++++
+ 4 files changed, 48 insertions(+), 16 deletions(-)
+
 -- 
 2.7.4
