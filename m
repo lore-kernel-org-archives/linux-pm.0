@@ -1,61 +1,70 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] schedutil: Reset cached freq if it is not in sync with next_freq
-Date: Wed,  8 Nov 2017 20:23:55 +0530
-Message-ID: <2897534536b2506cbdbd5f8ace6f1c2dcdad189d.1510152832.git.viresh.kumar@linaro.org>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 2/2] ARM64 / cpuidle: Use new cpuidle macro for entering
+ retention state
+Date: Wed, 8 Nov 2017 15:01:46 +0000
+Message-ID: <6ae11aa5-34c3-5b28-d058-080f7e753190@arm.com>
+References: <1510076133-18139-1-git-send-email-pprakash@codeaurora.org>
+ <1510076133-18139-3-git-send-email-pprakash@codeaurora.org>
+ <16086b6c-6f34-35e8-bc19-705380e5b767@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:51212 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751839AbdKHOyF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Nov 2017 09:54:05 -0500
-Received: by mail-pg0-f66.google.com with SMTP id p9so2030023pgc.8
-        for <linux-pm@vger.kernel.org>; Wed, 08 Nov 2017 06:54:05 -0800 (PST)
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:34062 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751566AbdKHPBu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 8 Nov 2017 10:01:50 -0500
+In-Reply-To: <16086b6c-6f34-35e8-bc19-705380e5b767@arm.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, stable@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Prashanth Prakash <pprakash@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, daniel.lezcano@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com
 
-'cached_raw_freq' is used to get the next frequency quickly but should
-always be in sync with sg_policy->next_freq. There is a case where it is
-not and in such cases it should be reset to avoid switching to incorrect
-frequencies.
 
-Consider this case for example:
-- policy->cur is 1.2 GHz (Max)
-- New request comes for 780 MHz and we store that in cached_raw_freq.
-- Based on 780 MHz, we calculate the effective frequency as 800 MHz.
-- We then see the CPU wasn't idle recently and choose to keep the next
-  freq as 1.2 GHz.
-- Now we have cached_raw_freq is 780 MHz and sg_policy->next_freq is 1.2
-  GHz.
-- Now if the utilization doesn't change in then next request, then the
-  next target frequency will still be 780 MHz and it will match with
-  cached_raw_freq. But we will choose 1.2 GHz instead of 800 MHz here.
 
-Change-Id: I71bd31a1b59d27c26c0b4885301e4ba6155c2c51
-Cc: <stable@vger.kernel.org> # 4.12
-Fixes: b7eaf1aab9f8 ("cpufreq: schedutil: Avoid reducing frequency of busy CPUs prematurely")
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- kernel/sched/cpufreq_schedutil.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+On 08/11/17 14:27, Sudeep Holla wrote:
+> 
+> 
+> On 07/11/17 17:35, Prashanth Prakash wrote:
+>> CPU_PM_CPU_IDLE_ENTER_RETENTION skips calling cpu_pm_enter() and
+>> cpu_pm_exit(). By not calling cpu_pm functions in idle entry/exit
+>> paths we can reduce the latency involved in entering and exiting
+>> the low power idle state.
+>>
+>> On ARM64 based Qualcomm server platform we measured below overhead
+>> for calling cpu_pm_enter and cpu_pm_exit for retention states.
+>>
+>> workload: stress --hdd #CPUs --hdd-bytes 32M  -t 30
+>> 	Average overhead of cpu_pm_enter - 1.2us
+>> 	Average overhead of cpu_pm_exit  - 3.1us
+>>
+>> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
+>> ---
+>>  arch/arm64/kernel/cpuidle.c | 8 +++++++-
+>>  1 file changed, 7 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
+>> index fd69108..f2d1381 100644
+>> --- a/arch/arm64/kernel/cpuidle.c
+>> +++ b/arch/arm64/kernel/cpuidle.c
+>> @@ -47,6 +47,8 @@ int arm_cpuidle_suspend(int index)
+>>  
+>>  #include <acpi/processor.h>
+>>  
+>> +#define ARM64_LPI_IS_RETENTION_STATE(arch_flags) (!(arch_flags))
+>> +
+> 
+> Ideally we could cater both ACPI LPI and DT using PSCI parameters. No ?
+> Just thinking it out loud as I see no reason to restrict this just to
+> ACPI LPIs.
+> 
 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index ba0da243fdd8..2f52ec0f1539 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -282,8 +282,12 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
- 		 * Do not reduce the frequency if the CPU has not been idle
- 		 * recently, as the reduction is likely to be premature then.
- 		 */
--		if (busy && next_f < sg_policy->next_freq)
-+		if (busy && next_f < sg_policy->next_freq) {
- 			next_f = sg_policy->next_freq;
-+
-+			/* Reset cached freq as next_freq has changed */
-+			sg_policy->cached_raw_freq = 0;
-+		}
- 	}
- 	sugov_update_commit(sg_policy, time, next_f);
- }
+Just to add, after chatting with Lorenzo, I see PSCI covers only core
+states but that then leads to my question in the other patch: do we need
+partial state save/restore ever ? If not, then we can still use PSCI
+flag in both DT and ACPI.
+
 -- 
-2.15.0.rc1.236.g92ea95045093
+Regards,
+Sudeep
