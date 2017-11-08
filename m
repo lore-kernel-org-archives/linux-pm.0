@@ -1,57 +1,41 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v4 20/20] cpufreq: scmi: add support for fast frequency
- switching
-Date: Wed, 8 Nov 2017 15:42:39 +0000
-Message-ID: <555fa0d1-6499-3d40-29c3-0c3148a6bff0@arm.com>
-References: <1509720477-18936-1-git-send-email-sudeep.holla@arm.com>
- <1509720477-18936-21-git-send-email-sudeep.holla@arm.com>
- <4588325.776kYim3Ci@aspire.rjw.lan>
- <3f79f75f-1b6a-3f7b-b0c0-f970f0fb6c12@arm.com>
- <CAK8P3a03wGUQ+wMsRctuqhN20iBrgLTZOnFqN1k3gCXnwaBtDA@mail.gmail.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH] cpuidle: Allow menu governor to enter deeper sleep states after some time
+Date: Wed, 8 Nov 2017 08:26:06 -0800
+Message-ID: <001e01d358ae$48258a90$d8709fb0$@net>
+References: <a181bf42-9462-476c-6dcd-39fc7151957f@tu-dresden.de> <000101d34938$da740870$8f5c1950$@net> <000801d34a78$cdd27890$697769b0$@net> <85fb012d-adba-a646-dfd5-a5322714a412@tu-dresden.de> <CAJvTdKkP5xu6r7k7u0yjjGBtQ=3giRehGxLL=VfyJLdV1XJZNg@mail.gmail.com> CJNmeKLfst1L5CJNneFmdJ
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+        charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAK8P3a03wGUQ+wMsRctuqhN20iBrgLTZOnFqN1k3gCXnwaBtDA@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Loc Ho <lho@apm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta17.telus.net ([209.171.16.90]:59989 "EHLO cmta17.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751763AbdKHQ0J (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 8 Nov 2017 11:26:09 -0500
+In-Reply-To: CJNmeKLfst1L5CJNneFmdJ
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: 'Yu Chen' <yu.c.chen@intel.com>, 'Len Brown' <lenb@kernel.org>
+Cc: 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, =?iso-8859-1?Q?'Marcus_H=E4hnel'?= <mhaehnel@os.inf.tu-dresden.de>, 'Daniel Hackenberg' <daniel.hackenberg@tu-dresden.de>, =?iso-8859-1?Q?'Robert_Sch=F6ne'?= <robert.schoene@tu-dresden.de>, mario.bielert@tu-dresden.de, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, 'Alex Shi' <alex.shi@linaro.org>, 'Ingo Molnar' <mingo@kernel.org>, 'Rik van Riel' <riel@redhat.com>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Nicholas Piggin' <npiggin@gmail.com>, 'Ying Huang' <ying.huang@intel.com>, 'Linux PM list' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
+On 2017.11.07.10:01 22:01 Yu Chen wrote:
 
+... [snip]...
 
-On 08/11/17 11:05, Arnd Bergmann wrote:
-> On Wed, Nov 8, 2017 at 11:42 AM, Sudeep Holla <sudeep.holla@arm.com> wrote:
->>
->>
->> On 08/11/17 00:24, Rafael J. Wysocki wrote:
->>> On Friday, November 3, 2017 3:47:57 PM CET Sudeep Holla wrote:
->>>> The cpufreq core provides option for drivers to implement fast_switch
->>>> callback which is invoked for frequency switching from interrupt context.
->>>>
->>>> This patch adds support for fast_switch callback in SCMI cpufreq driver
->>>> by making use of polling based SCMI transfer. It also sets the flag
->>>> fast_switch_possible.
->>>>
->>>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>>> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->>>> Cc: linux-pm@vger.kernel.org
->>>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->>>
->>> I'm assuming that this material will go in along with the rest of the series
->>> through a different tree.
->>>
->>
->> Indeed, I will ask ARM-SoC guys to take it via their tree when ready. I
->> assume you are fine with that, please provide ack if that's still the case.
-> 
-> Yes, that makes sense.
-> 
+> According to the ftrace, there are mainly two problems here:
+>
+> 1. A local apic timer seems to always arrive earlier than it should be,
+>   which causes the breakage of deep cstate, as a result the menu governor
+>   would get a short 'next timer' event, which brings the cpu into poll_idle:
 
+... [snip]...
+      
+> Question 1 is the reason why the cpu choose poll_idle, ...
+> , and I think question 1 needs to be further investigated
+> whether we program the clockevent too soon(than it should be),
 
-Thanks Arnd. Thanks Rafael for the ack.
+Agreed.
+Thank you for the information.
 
--- 
-Regards,
-Sudeep
+...[snip]...
