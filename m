@@ -1,65 +1,62 @@
-From: Tero Kristo <t-kristo@ti.com>
-Subject: Re: [RFT][PATCH v2 0/2] PM / QoS: Device resume latency framework fix
-Date: Wed, 8 Nov 2017 11:09:48 +0200
-Message-ID: <e6630875-b145-cedd-e204-9048c104b96b@ti.com>
-References: <5770848.Kdi5IjVKeE@aspire.rjw.lan>
- <2520927.XkLgALY3I0@aspire.rjw.lan>
- <CAMuHMdU-BMmznrtR6S+uppWdsiXjWZKwQYemb+_q89r852KFjg@mail.gmail.com>
- <2157585.74BgekV60d@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / Domains: Fix genpd to deal with drivers returning 1 from ->prepare()
+Date: Wed,  8 Nov 2017 10:11:02 +0100
+Message-ID: <1510132262-21928-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx209.ext.ti.com ([198.47.19.16]:64547 "EHLO
-        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750812AbdKHJK5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Nov 2017 04:10:57 -0500
-In-Reply-To: <2157585.74BgekV60d@aspire.rjw.lan>
-Content-Language: en-US
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:55546 "EHLO
+        mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751106AbdKHJLL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Nov 2017 04:11:11 -0500
+Received: by mail-lf0-f66.google.com with SMTP id e143so2238179lfg.12
+        for <linux-pm@vger.kernel.org>; Wed, 08 Nov 2017 01:11:10 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Reinette Chatre <reinette.chatre@intel.com>, Ramesh Thomas <ramesh.thomas@intel.com>, Alex Shi <alex.shi@linaro.org>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Ulf Hansson <ulf.hansson@linaro.org>
 
-On 07/11/17 03:08, Rafael J. Wysocki wrote:
-> On Monday, November 6, 2017 2:46:48 PM CET Geert Uytterhoeven wrote:
->> Hi Rafael,
->>
->> On Fri, Nov 3, 2017 at 12:42 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>> On Thursday, November 2, 2017 12:00:27 AM CET Rafael J. Wysocki wrote:
->>>> This series is a replacement for commit 0cc2b4e5a020 (PM / QoS: Fix device
->>>> resume latency PM QoS) that had to be reverted due to problems introduced by it.
->>>>
->>>> This time the genpd PM QoS governor is first updated to be more consistent
->>>> and the PM QoS changes are made on top of that which simplifies the second
->>>> patch quite a bit.
->>>>
->>>> This is based on the linux-next branch from linux-pm.git as of now (should
->>>> also apply to the current mainline just fine).
->>>>
->>>> Please test if you can or let me know if you have any comments.
->>>
->>> The v2 removes a couple of redundant checks from the first patch (and add
->>> comments to explain why the checks are not needed) and fixes up the
->>> "no constraint" value collision with a valid constraint multiplied by
->>> NSEC_PER_USEC in the second patch.
->>>
->>> Please test if possible and let me know about any issues.
->>
->> With this series, the 3 issues I reported before do not happen.
->>
->> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
->>
->> Thank you.
-> 
-> Thanks!
-> 
-> Rafael
-> 
+During system-wide PM, genpd relies on its PM callbacks to be invoked for
+all its attached devices, as to deal with powering off/on the PM domain. In
+other words, genpd is not compatible with the direct_complete path, if
+executed by the PM core for any of its attached devices.
 
-The latest patches (#1 v3 and #2 v4) seem to work fine in my sanity 
-tests also.
+However, when genpd's ->prepare() callback invokes pm_generic_prepare(), it
+does not take into account that it may return 1. Instead it treats that as
+an error internally and expects the PM core to abort the prepare phase and
+roll back. This leads to genpd not properly powering on/off the PM domain,
+because its internal counters gets wrongly balanced.
 
-Tested-by: Tero Kristo <t-kristo@ti.com>
---
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki. Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+To fix the behaviour, allow drivers to return 1 from their ->prepare()
+callbacks, but let's return 0 from genpd's ->prepare() callback in such
+case, as that prevents the PM core from running the direct_complete path
+for the device.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/domain.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 24e39ce..0c80bea 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1008,7 +1008,7 @@ static int genpd_prepare(struct device *dev)
+ 	genpd_unlock(genpd);
+ 
+ 	ret = pm_generic_prepare(dev);
+-	if (ret) {
++	if (ret < 0) {
+ 		genpd_lock(genpd);
+ 
+ 		genpd->prepared_count--;
+@@ -1016,7 +1016,8 @@ static int genpd_prepare(struct device *dev)
+ 		genpd_unlock(genpd);
+ 	}
+ 
+-	return ret;
++	/* Never return 1, as genpd don't cope with the direct_complete path. */
++	return ret >= 0 ? 0 : ret;
+ }
+ 
+ /**
+-- 
+2.7.4
