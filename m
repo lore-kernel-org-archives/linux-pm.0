@@ -1,25 +1,25 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH 2/3] PM / core: Add WAKEUP_POWERED driver flag
-Date: Thu, 9 Nov 2017 12:40:55 +0100
-Message-ID: <CAJZ5v0iFoMgA++wqS9K9i_+rXn2EBP17dUB_AcA4P83GUnWo2g@mail.gmail.com>
+Date: Thu, 9 Nov 2017 12:51:41 +0100
+Message-ID: <CAJZ5v0hP6-c--GbJ9oiRBqjkGHNX4Q70W3ZLoosutzyn8barRA@mail.gmail.com>
 References: <1510154134-1248-1-git-send-email-ulf.hansson@linaro.org>
- <1510154134-1248-3-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0jFLL2pBNPo=J3MdwfcA9C+nSMe_S6iBYLoEA8SjbOJ+A@mail.gmail.com>
- <CAPDyKFpn5m+t-hBcFT1RebqaTtyLna9JCNJtsFA6yZwurKTxvw@mail.gmail.com>
+ <1510154134-1248-3-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0jOLvCW58K-RiHU+j90AX1H+D6p6D+wnxat3jYzJcQDew@mail.gmail.com>
+ <CAPDyKFqTj+zZV0z8FxupE9WK9qa7Y-SY6VE2hqXaF0rO2DEhdA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f67.google.com ([209.85.218.67]:57277 "EHLO
-        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753451AbdKILk4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Nov 2017 06:40:56 -0500
-In-Reply-To: <CAPDyKFpn5m+t-hBcFT1RebqaTtyLna9JCNJtsFA6yZwurKTxvw@mail.gmail.com>
+Received: from mail-ot0-f194.google.com ([74.125.82.194]:45697 "EHLO
+        mail-ot0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752066AbdKILvm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Nov 2017 06:51:42 -0500
+In-Reply-To: <CAPDyKFqTj+zZV0z8FxupE9WK9qa7Y-SY6VE2hqXaF0rO2DEhdA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On Thu, Nov 9, 2017 at 9:44 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 9 November 2017 at 01:24, Rafael J. Wysocki <rafael@kernel.org> wrote:
+On Thu, Nov 9, 2017 at 9:53 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 9 November 2017 at 01:41, Rafael J. Wysocki <rafael@kernel.org> wrote:
 >> On Wed, Nov 8, 2017 at 4:15 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >>> For some bus types and PM domains, it's not sufficient to only check the
 >>> return value from device_may_wakeup(), to fully understand how to treat the
@@ -62,101 +62,65 @@ On Thu, Nov 9, 2017 at 9:44 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >>> +:c:func:`dev_pm_set_driver_flags` helper. This instructs bus types and PM
 >>> +domains to leave the device in full power state, when wakeup signals are enabled
 >>> +for it.
+>>> +
+>>>  If any of these callbacks returns an error, the system won't enter the desired
+>>>  low-power state.  Instead, the PM core will unwind its actions by resuming all
+>>>  the devices that were suspended.
+>>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>>> index 8089e72..f64f945 100644
+>>> --- a/drivers/base/power/main.c
+>>> +++ b/drivers/base/power/main.c
+>>> @@ -1432,9 +1432,13 @@ static void dpm_propagate_to_parent(struct device *dev)
+>>>         spin_lock_irq(&parent->power.lock);
+>>>
+>>>         parent->power.direct_complete = false;
+>>> -       if (dev->power.wakeup_path && !parent->power.ignore_children)
+>>> +       if (dev->power.wakeup_path && !parent->power.ignore_children) {
+>>>                 parent->power.wakeup_path = true;
+>>>
+>>> +               if (dev_pm_test_driver_flags(dev, DPM_FLAG_WAKEUP_POWERED))
+>>> +                       parent->power.driver_flags |= DPM_FLAG_WAKEUP_POWERED;
 >>
->> IMO this is a bit unclear.
+>> No, sorry.
 >>
->> First off, how does the driver know that the device has to be in full
->> power for wakeup to work?
+>> The flag cannot be propagated this way, because that effectively
+>> overrides the choices made by the parent driver and up.
 >
-> Because the device is accessed as part of dealing with the wakeup.
-
-Yes, it is, In the working state of the system.  In the system wakeup
-case it may not be.
-
-Essentially, what happens then is that driver-provided interrupt
-handlers don't run as a rule and system wakeup is triggered by the
-low-level handler at the IRQ chip level.  Next, the PM callbacks
-invoked for the device are expected to clean up the wakeup status etc.
-
-Of course, power still is necessary for that to work, but it may be
-not be in-band.  That may be either in-band power used for normal
-operations and provided through the interconnect used by the device or
-it may be special wakeup power provided out-of-band.
-
-Also the wakeup signal itself may be an in-band device interrupt (like
-the ones used for signaling IO events during normal operation) or it
-may be a special wakeup signal (like PCI PME) in which case, from the
-driver's perspective, the wakeup signaling is out-of-band.
-
-Usually, the driver doesn't know how this is set up for the particular
-device in the particular platform and hence my question. :-)
-
-The case at hand seems to be when the wakeup power is in-band or the
-wakeup signal is an in-band interrupt (in which case power needs to be
-provided to the interconnect at least).
-
-If they both are out-of-band, the middle layer should know that,
-because as a rule it will be involved in setting up both of them.
-Otherwise, in principle, it should assume that in-band power needs to
-be provided for wakeup to work and avoid turning things off if wakeup
-is enabled.
-
->>
->> Second, this requirement sort of implies that the device cannot go
->> into a low-power state during runtime suspend too, so it basically
->> remains stays at full power even when runtime-suspended.
+> Yes, but that is the hole point.
 >
-> No, not really, because that depends on the current situation.
->
-> An Ethernet device can surely go into a low power state, at runtime
-> suspend, when the interface is down, for example.
+> If a child device needs to stay powered as to deal with wakeup, so is
+> required by the parent.
 
-But then it is not expected to generate wakeup signals I suppose.
+So you need a flag and a status bit.
 
-[BTW, I wonder how it detects when the cable is connected again to it.
-I know what happens in PCI NICs, but that clearly is not the case
-here.]
+The flag says what the driver wants (and what it wants for a
+particular device) and the status bit reflects the current situation
+(taking dependencies into account).
 
-Well, anyway, it looks like the case when the device is
-runtime-suspended right before system suspend and it is going to stay
-suspended is not interesting here, because the state will be retained
-whatever it is then.
+Say a device has two children, A and B, and both of them have the new flag set.
 
-An interesting case seems to be when the device is not
-runtime-suspended when system suspend triggers.
+If either A or B is configured for system wakeup, power should not be
+removed from the parent.  However, if neither A nor B is configured
+for system wakeup, power can be removed from the parent on suspend
+unless the parent driver itself has set the new flag.
+Thus setting the new flag by the child drivers alone doesn't imply the
+specific handling of the parent unless additional conditions occur.
+
+That can be represented by a status bit that will be set or unset on
+every suspend individually taking the current configuration into
+account every time.
 
 >>
->> Does it then mean that the middle layer is expected to simply avoid
->> changing the power state of the device when enabled to wake up the
->> system, or is there more to that?  In the former case, it may be
->> better to rename the flag to something along the lines of "don't
->> change power state if wakeup enabled".
+>> Besides, wakeup_path already had a similar purpose.  What has happened to that?
 >
-> Yes, correct.
+> Yes, but wakeup_path is only telling half of what is needed.
 >
-> I can try to clarify that in the description and unless you have a
-> suggestion for a better name of the flag, I try to come up with
-> something for that too.
+> Because even if wakeup_path becomes set for a parent device, doesn't
+> mean that it must stay in full power during system suspend to serve
+> wakeups for a child. That's why I think the DPM_FLAG_WAKEUP_POWERED
+> flag needs to be propagated also.
 
-I was thinking about something like DPM_FLAG_IN_BAND_WAKEUP or similar.
-
-But please note that there are cases in which the middle layer has
-information on what power states to put devices into for wakeup to
-work and IMO that should take precedence over the flag as a rule.
-
->>>  #define DPM_FLAG_NEVER_SKIP    BIT(0)
->>>  #define DPM_FLAG_SMART_PREPARE BIT(1)
->>>  #define DPM_FLAG_SMART_SUSPEND BIT(2)
->>> +#define DPM_FLAG_WAKEUP_POWERED        BIT(3)
->>
->> I'd prefer this to be BIT(4).
->
-> OK.
->
-> I guess you can always also amend my patch, depending on in what order
-> you merge things. :-)
-
-Right.
+OK, so one more status bit is needed, then.
 
 Thanks,
 Rafael
