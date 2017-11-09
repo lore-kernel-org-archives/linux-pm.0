@@ -1,41 +1,162 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] soc: amlogic: meson-gx-pwrc-vpu: fix power-off when
- powered by bootloader
-Date: Thu, 9 Nov 2017 11:42:46 +0100
-Message-ID: <CAK8P3a2eYi0bajPmmfjOJWOE76_-A-oDLOKObWyijY_95FEXqw@mail.gmail.com>
-References: <1509723804-21114-1-git-send-email-narmstrong@baylibre.com> <7hshdoi8b4.fsf@baylibre.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/3] PM / core: Add WAKEUP_POWERED driver flag
+Date: Thu, 9 Nov 2017 12:40:55 +0100
+Message-ID: <CAJZ5v0iFoMgA++wqS9K9i_+rXn2EBP17dUB_AcA4P83GUnWo2g@mail.gmail.com>
+References: <1510154134-1248-1-git-send-email-ulf.hansson@linaro.org>
+ <1510154134-1248-3-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0jFLL2pBNPo=J3MdwfcA9C+nSMe_S6iBYLoEA8SjbOJ+A@mail.gmail.com>
+ <CAPDyKFpn5m+t-hBcFT1RebqaTtyLna9JCNJtsFA6yZwurKTxvw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <7hshdoi8b4.fsf@baylibre.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Kevin Hilman <khilman@baylibre.com>
-Cc: arm-soc <arm@kernel.org>, Carlo Caione <carlo@caione.org>, linux-pm@vger.kernel.org, "open list:ARM/Amlogic Meson SoC support" <linux-amlogic@lists.infradead.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Neil Armstrong <narmstrong@baylibre.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:57277 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753451AbdKILk4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Nov 2017 06:40:56 -0500
+In-Reply-To: <CAPDyKFpn5m+t-hBcFT1RebqaTtyLna9JCNJtsFA6yZwurKTxvw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On Thu, Nov 9, 2017 at 1:50 AM, Kevin Hilman <khilman@baylibre.com> wrote:
-> Arnd, Olof,
->
-> Neil Armstrong <narmstrong@baylibre.com> writes:
->
->> In the case the VPU power domain has been powered on by the bootloader
->> and no driver are attached to this power domain, the genpd will power it
->> off after a certain amount of time, but the clocks hasn't been enabled
->> by the kernel itself and the power-off will trigger some faults.
->> This patch enable the clocks to have a coherent state for an eventual
->> poweroff and switches to the pm_domain_always_on_gov governor.
+On Thu, Nov 9, 2017 at 9:44 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 9 November 2017 at 01:24, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> On Wed, Nov 8, 2017 at 4:15 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>> For some bus types and PM domains, it's not sufficient to only check the
+>>> return value from device_may_wakeup(), to fully understand how to treat the
+>>> device during system suspend.
+>>>
+>>> In particular, sometimes the device may need to stay in full power state,
+>>> to have wakeup signals enabled for it. Therefore, define and document a
+>>> WAKEUP_POWERED flag, to enable drivers to instruct bus types and PM domains
+>>> exactly about that.
+>>>
+>>> During __device_suspend() in the PM core, let's make sure to also propagate
+>>> the setting of the flag to the parent device, when wakeup signals are
+>>> enabled and unless the parent has the "ignore_children" flag set. This
+>>> makes it also consistent with how the existing "wakeup_path" flag is being
+>>> assigned.
+>>>
+>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>> ---
+>>>  Documentation/driver-api/pm/devices.rst | 12 ++++++++++++
+>>>  drivers/base/power/main.c               |  6 +++++-
+>>>  include/linux/pm.h                      |  5 +++++
+>>>  3 files changed, 22 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/Documentation/driver-api/pm/devices.rst b/Documentation/driver-api/pm/devices.rst
+>>> index 53c1b0b..1ca2d0f 100644
+>>> --- a/Documentation/driver-api/pm/devices.rst
+>>> +++ b/Documentation/driver-api/pm/devices.rst
+>>> @@ -414,6 +414,18 @@ when the system is in the sleep state.  For example, :c:func:`enable_irq_wake()`
+>>>  might identify GPIO signals hooked up to a switch or other external hardware,
+>>>  and :c:func:`pci_enable_wake()` does something similar for the PCI PME signal.
+>>>
+>>> +Moreover, in case wakeup signals are enabled for a device, some bus types and
+>>> +PM domains may manage the device slightly differently during system suspend. For
+>>> +example, sometimes the device needs to stay in full power state, to have wakeup
+>>> +signals enabled for it. In cases when the wakeup settings are mostly managed by
+>>> +the driver, it may not be sufficient for bus types and PM domains to only check
+>>> +the return value of :c:func:`device_may_wakeup(dev)`, to understand what actions
+>>> +are needed. Therefore, drivers can set ``DPM_FLAG_WAKEUP_POWERED`` in
+>>> +:c:member:`power.driver_flags`, by passing the flag to
+>>> +:c:func:`dev_pm_set_driver_flags` helper. This instructs bus types and PM
+>>> +domains to leave the device in full power state, when wakeup signals are enabled
+>>> +for it.
 >>
->> Fixes: 75fcb5ca4b46 ("soc: amlogic: add Meson GX VPU Domains driver")
->> Signed-off-by: Neil Armstrong <narmstrong@baylibre.com>
+>> IMO this is a bit unclear.
+>>
+>> First off, how does the driver know that the device has to be in full
+>> power for wakeup to work?
 >
-> Tested-by: Kevin Hilman <khilman@baylibre.com>
->
-> This fixes a patch that's currently in arm-soc next/drivers (or
-> amlogic/drivers-2 to be precise.)
->
-> If it's not too late, please feel free to apply directly.  If not, I
-> will queue up for v4.15-rc fixes cycle.
+> Because the device is accessed as part of dealing with the wakeup.
 
-Applied to next/drivers, thanks!
+Yes, it is, In the working state of the system.  In the system wakeup
+case it may not be.
 
-      Arnd
+Essentially, what happens then is that driver-provided interrupt
+handlers don't run as a rule and system wakeup is triggered by the
+low-level handler at the IRQ chip level.  Next, the PM callbacks
+invoked for the device are expected to clean up the wakeup status etc.
+
+Of course, power still is necessary for that to work, but it may be
+not be in-band.  That may be either in-band power used for normal
+operations and provided through the interconnect used by the device or
+it may be special wakeup power provided out-of-band.
+
+Also the wakeup signal itself may be an in-band device interrupt (like
+the ones used for signaling IO events during normal operation) or it
+may be a special wakeup signal (like PCI PME) in which case, from the
+driver's perspective, the wakeup signaling is out-of-band.
+
+Usually, the driver doesn't know how this is set up for the particular
+device in the particular platform and hence my question. :-)
+
+The case at hand seems to be when the wakeup power is in-band or the
+wakeup signal is an in-band interrupt (in which case power needs to be
+provided to the interconnect at least).
+
+If they both are out-of-band, the middle layer should know that,
+because as a rule it will be involved in setting up both of them.
+Otherwise, in principle, it should assume that in-band power needs to
+be provided for wakeup to work and avoid turning things off if wakeup
+is enabled.
+
+>>
+>> Second, this requirement sort of implies that the device cannot go
+>> into a low-power state during runtime suspend too, so it basically
+>> remains stays at full power even when runtime-suspended.
+>
+> No, not really, because that depends on the current situation.
+>
+> An Ethernet device can surely go into a low power state, at runtime
+> suspend, when the interface is down, for example.
+
+But then it is not expected to generate wakeup signals I suppose.
+
+[BTW, I wonder how it detects when the cable is connected again to it.
+I know what happens in PCI NICs, but that clearly is not the case
+here.]
+
+Well, anyway, it looks like the case when the device is
+runtime-suspended right before system suspend and it is going to stay
+suspended is not interesting here, because the state will be retained
+whatever it is then.
+
+An interesting case seems to be when the device is not
+runtime-suspended when system suspend triggers.
+
+>>
+>> Does it then mean that the middle layer is expected to simply avoid
+>> changing the power state of the device when enabled to wake up the
+>> system, or is there more to that?  In the former case, it may be
+>> better to rename the flag to something along the lines of "don't
+>> change power state if wakeup enabled".
+>
+> Yes, correct.
+>
+> I can try to clarify that in the description and unless you have a
+> suggestion for a better name of the flag, I try to come up with
+> something for that too.
+
+I was thinking about something like DPM_FLAG_IN_BAND_WAKEUP or similar.
+
+But please note that there are cases in which the middle layer has
+information on what power states to put devices into for wakeup to
+work and IMO that should take precedence over the flag as a rule.
+
+>>>  #define DPM_FLAG_NEVER_SKIP    BIT(0)
+>>>  #define DPM_FLAG_SMART_PREPARE BIT(1)
+>>>  #define DPM_FLAG_SMART_SUSPEND BIT(2)
+>>> +#define DPM_FLAG_WAKEUP_POWERED        BIT(3)
+>>
+>> I'd prefer this to be BIT(4).
+>
+> OK.
+>
+> I guess you can always also amend my patch, depending on in what order
+> you merge things. :-)
+
+Right.
+
+Thanks,
+Rafael
