@@ -1,25 +1,25 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
 Subject: Re: [PATCH 2/3] PM / core: Add WAKEUP_POWERED driver flag
-Date: Thu, 9 Nov 2017 09:44:38 +0100
-Message-ID: <CAPDyKFpn5m+t-hBcFT1RebqaTtyLna9JCNJtsFA6yZwurKTxvw@mail.gmail.com>
+Date: Thu, 9 Nov 2017 09:53:02 +0100
+Message-ID: <CAPDyKFqTj+zZV0z8FxupE9WK9qa7Y-SY6VE2hqXaF0rO2DEhdA@mail.gmail.com>
 References: <1510154134-1248-1-git-send-email-ulf.hansson@linaro.org>
- <1510154134-1248-3-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0jFLL2pBNPo=J3MdwfcA9C+nSMe_S6iBYLoEA8SjbOJ+A@mail.gmail.com>
+ <1510154134-1248-3-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0jOLvCW58K-RiHU+j90AX1H+D6p6D+wnxat3jYzJcQDew@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f42.google.com ([209.85.214.42]:48555 "EHLO
-        mail-it0-f42.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753360AbdKIIoj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Nov 2017 03:44:39 -0500
-Received: by mail-it0-f42.google.com with SMTP id c3so10307692itc.3
-        for <linux-pm@vger.kernel.org>; Thu, 09 Nov 2017 00:44:39 -0800 (PST)
-In-Reply-To: <CAJZ5v0jFLL2pBNPo=J3MdwfcA9C+nSMe_S6iBYLoEA8SjbOJ+A@mail.gmail.com>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:50822 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753643AbdKIIxD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Nov 2017 03:53:03 -0500
+Received: by mail-it0-f68.google.com with SMTP id 72so10327638itl.5
+        for <linux-pm@vger.kernel.org>; Thu, 09 Nov 2017 00:53:03 -0800 (PST)
+In-Reply-To: <CAJZ5v0jOLvCW58K-RiHU+j90AX1H+D6p6D+wnxat3jYzJcQDew@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On 9 November 2017 at 01:24, Rafael J. Wysocki <rafael@kernel.org> wrote:
+On 9 November 2017 at 01:41, Rafael J. Wysocki <rafael@kernel.org> wrote:
 > On Wed, Nov 8, 2017 at 4:15 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 >> For some bus types and PM domains, it's not sufficient to only check the
 >> return value from device_may_wakeup(), to fully understand how to treat the
@@ -62,50 +62,44 @@ On 9 November 2017 at 01:24, Rafael J. Wysocki <rafael@kernel.org> wrote:
 >> +:c:func:`dev_pm_set_driver_flags` helper. This instructs bus types and PM
 >> +domains to leave the device in full power state, when wakeup signals are enabled
 >> +for it.
+>> +
+>>  If any of these callbacks returns an error, the system won't enter the desired
+>>  low-power state.  Instead, the PM core will unwind its actions by resuming all
+>>  the devices that were suspended.
+>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>> index 8089e72..f64f945 100644
+>> --- a/drivers/base/power/main.c
+>> +++ b/drivers/base/power/main.c
+>> @@ -1432,9 +1432,13 @@ static void dpm_propagate_to_parent(struct device *dev)
+>>         spin_lock_irq(&parent->power.lock);
+>>
+>>         parent->power.direct_complete = false;
+>> -       if (dev->power.wakeup_path && !parent->power.ignore_children)
+>> +       if (dev->power.wakeup_path && !parent->power.ignore_children) {
+>>                 parent->power.wakeup_path = true;
+>>
+>> +               if (dev_pm_test_driver_flags(dev, DPM_FLAG_WAKEUP_POWERED))
+>> +                       parent->power.driver_flags |= DPM_FLAG_WAKEUP_POWERED;
 >
-> IMO this is a bit unclear.
+> No, sorry.
 >
-> First off, how does the driver know that the device has to be in full
-> power for wakeup to work?
+> The flag cannot be propagated this way, because that effectively
+> overrides the choices made by the parent driver and up.
 
-Because the device is accessed as part of dealing with the wakeup.
+Yes, but that is the hole point.
 
->
-> Second, this requirement sort of implies that the device cannot go
-> into a low-power state during runtime suspend too, so it basically
-> remains stays at full power even when runtime-suspended.
-
-No, not really, because that depends on the current situation.
-
-An Ethernet device can surely go into a low power state, at runtime
-suspend, when the interface is down, for example.
+If a child device needs to stay powered as to deal with wakeup, so is
+required by the parent.
 
 >
-> Does it then mean that the middle layer is expected to simply avoid
-> changing the power state of the device when enabled to wake up the
-> system, or is there more to that?  In the former case, it may be
-> better to rename the flag to something along the lines of "don't
-> change power state if wakeup enabled".
+> Besides, wakeup_path already had a similar purpose.  What has happened to that?
 
-Yes, correct.
+Yes, but wakeup_path is only telling half of what is needed.
 
-I can try to clarify that in the description and unless you have a
-suggestion for a better name of the flag, I try to come up with
-something for that too.
-
->>  #define DPM_FLAG_NEVER_SKIP    BIT(0)
->>  #define DPM_FLAG_SMART_PREPARE BIT(1)
->>  #define DPM_FLAG_SMART_SUSPEND BIT(2)
->> +#define DPM_FLAG_WAKEUP_POWERED        BIT(3)
->
-> I'd prefer this to be BIT(4).
-
-OK.
-
-I guess you can always also amend my patch, depending on in what order
-you merge things. :-)
-
-[...]
+Because even if wakeup_path becomes set for a parent device, doesn't
+mean that it must stay in full power during system suspend to serve
+wakeups for a child. That's why I think the DPM_FLAG_WAKEUP_POWERED
+flag needs to be propagated also.
 
 Kind regards
 Uffe
