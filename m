@@ -1,198 +1,92 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH] cpuidle: Add "cpuidle.use_deepest" to bypass governor and
- allow HW to go deep
-Date: Thu, 9 Nov 2017 08:51:04 +0100
-Message-ID: <CAKfTPtDkdom+YQieLQ=H8cG0_34g2dADYbDz7-i2iVY4JyOvsQ@mail.gmail.com>
-References: <1d81edef71c936099f8bb9d16162f8e70fbe401c.1510212816.git.len.brown@intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/3] PM / core: Invent a WAKEUP_POWERED driver flag
+Date: Thu, 9 Nov 2017 09:28:00 +0100
+Message-ID: <CAPDyKFqeEZT631g=x_LTU+Dba=WAhM9YOHYfdsSYo+kJz7HtkQ@mail.gmail.com>
+References: <1510154134-1248-1-git-send-email-ulf.hansson@linaro.org> <CAMuHMdUu6=zuCRBaON4K9ivG8bdV1xBuf4dCvPUr2JCL-=xC=w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1d81edef71c936099f8bb9d16162f8e70fbe401c.1510212816.git.len.brown@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: thomas.ilsche@tu-dresden.de, dsmythies@telus.net, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, jacob.jun.pan@linux.intel.com, linux-kernel <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdUu6=zuCRBaON4K9ivG8bdV1xBuf4dCvPUr2JCL-=xC=w@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Len
+On 8 November 2017 at 16:41, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Ulf,
+>
+> On Wed, Nov 8, 2017 at 4:15 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> The generic problem this series is trying to solve, is that for some bus types
+>> and PM domains, it's not sufficient to only check the return value from
+>> device_may_wakeup(), to fully understand how to treat the device during system
+>> suspend.
+>>
+>> One particular case that suffers from this, is the generic PM domain (aka genpd)
+>> and that is taken care of in the final change in this series.
+>>
+>> The special case this series address, is to enable drivers to instruct bus types
+>> and PM domains, that the device need to stay powered in case wakeup signals
+>> is enabled for it.
+>
+> Thanks for your patches!
+> They look good to me, hence my Reviewed-by.
 
-On 9 November 2017 at 08:38, Len Brown <lenb@kernel.org> wrote:
-> From: Len Brown <len.brown@intel.com>
->
-> While there are several mechanisms (cmdline, sysfs, PM_QOS) to limit
-> cpuidle to shallow idle states, there is no simple mechanism
-> to give the hardware permission to enter the deeptest state permitted by PM_QOS.
+Hi Geert,
 
-and by per device resume latency QoS
+Thanks for reviewing, much appreciated!
 
 >
-> Here we create the "cpuidle.use_deepest" modparam to provide this capability.
+>> Geert Uytterhoeven, has been working on some related problems for some Renesas
+>> SoCs [1], to be able to properly configure WakeOnLAN, for some ethernet
+>> devices/drivers, which are used together with genpd. My intent is that this
+>> series enables a solution for those problems.
+>>
+>> [1]
+>> https://www.spinics.net/lists/linux-renesas-soc/msg19319.html
 >
-> "cpuidle.use_deepest=Y" can be set at boot-time, and
-> /sys/module/cpuidle/use_deepest can be modified (with Y/N) at run-time.
->
-> n.b.
->
-> Within the constraints of PM_QOS, this mechanism gives the hardware
-> permission to choose the deeptest power savings and highest latency
-> state available.  And so choice will depend on the particular hardware.
->
-> Also, if PM_QOS is not informed of latency constraints, it can't help.
-> In that case, using this mechanism may result in entering high-latency
-> states that impact performance.
->
-> Signed-off-by: Len Brown <len.brown@intel.com>
-> ---
->  Documentation/admin-guide/kernel-parameters.txt |  4 ++++
->  drivers/cpuidle/cpuidle.c                       | 19 ++++++++++++++++
->  include/linux/cpuidle.h                         |  7 ++++++
->  kernel/sched/idle.c                             | 30 +++++++++++++++++++------
->  4 files changed, 53 insertions(+), 7 deletions(-)
->
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index 05496622b4ef..20f70de688bf 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -659,6 +659,10 @@
->         cpuidle.off=1   [CPU_IDLE]
->                         disable the cpuidle sub-system
->
-> +       cpuidle.use_deepest=Y   [CPU_IDLE]
-> +                       Ignore cpuidle governor, always choose deepest
-> +                       PM_QOS-legal CPU idle power saving state.
-> +
->         cpufreq.off=1   [CPU_FREQ]
->                         disable the cpufreq sub-system
->
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 484cc8909d5c..afee5aab7719 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -34,6 +34,7 @@ LIST_HEAD(cpuidle_detected_devices);
->
->  static int enabled_devices;
->  static int off __read_mostly;
-> +static bool use_deepest __read_mostly;
->  static int initialized __read_mostly;
->
->  int cpuidle_disabled(void)
-> @@ -116,6 +117,10 @@ void cpuidle_use_deepest_state(bool enable)
->         preempt_enable();
->  }
->
-> +bool cpuidle_using_deepest_state(void)
-> +{
-> +       return use_deepest;
-> +}
->  /**
->   * cpuidle_find_deepest_state - Find the deepest available idle state.
->   * @drv: cpuidle driver for the given CPU.
-> @@ -127,6 +132,19 @@ int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
->         return find_deepest_state(drv, dev, UINT_MAX, 0, false);
->  }
->
-> +/**
-> + * cpuidle_find_deepest_state_qos - Find the deepest available idle state.
-> + * @drv: cpuidle driver for the given CPU.
-> + * @dev: cpuidle device for the given CPU.
-> + * Honors PM_QOS
-> + */
-> +int cpuidle_find_deepest_state_qos(struct cpuidle_driver *drv,
-> +                              struct cpuidle_device *dev)
-> +{
-> +       return find_deepest_state(drv, dev,
-> +                       pm_qos_request(PM_QOS_CPU_DMA_LATENCY), 0, false);
+> While your new WAKEUP_POWERED definitely serves a purpose, I don't think
+> it's the right solution for the Renesas SoCs.  I can just set the recently
+> added flag GENPD_FLAG_ACTIVE_WAKEUP in all Renesas clock/power domain
+> drivers to fix the issue for all Renesas drivers.  After all, all devices in
+> the clock/power domain must be kept enabled if they're a wakeup source, or
+> part of the wakeup path.
 
-You should also take into account per device latency  like in menu governor:
-dev_pm_qos_raw_read_value(device);
+Right, that would work! However, to me, I don't think it's fine grained enough.
 
+Let's take the Ethernet device/driver using WoL as an example, similar
+to your cases.
 
-> +}
-> +
->  #ifdef CONFIG_SUSPEND
->  static void enter_s2idle_proper(struct cpuidle_driver *drv,
->                                 struct cpuidle_device *dev, int index)
-> @@ -681,4 +699,5 @@ static int __init cpuidle_init(void)
->  }
+First, let's assume device_may_wakeup() returns true, meaning that the
+Ethernet device is wakeup capable and that userspace has requested
+wakeup to be enabled.
+
+Then we have three scenarios to consider when the Ethernet driver
+becomes suspended (typically when its ->suspend() callback gets
+invoked).
+1) The Ethernet interface is down.
+2) The Ethernet interface is up, but no connection established.
+3) The Ethernet interface is up, connection established.
+
+By following your approach, using GENPD_FLAG_ACTIVE_WAKEUP, would mean
+that we can't distinguish between any of the the scenarios above, but
+instead always keep the Ethernet device powered on and thus the PM
+domain also.
+
+In the more fine grained solution, we can change the Ethernet driver
+to consider under what scenario it's being suspended. For 1) and 2),
+there is no need to keep the Ethernet device being powered, but
+instead only enable WoL in 3) - via also using the WAKEUP_POWERED
+flag.
+
 >
->  module_param(off, int, 0444);
-> +module_param(use_deepest, bool, 0644);
->  core_initcall(cpuidle_init);
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 8f7788d23b57..e3c2c9d1898f 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -198,19 +198,26 @@ static inline struct cpuidle_device *cpuidle_get_device(void) {return NULL; }
->  #ifdef CONFIG_CPU_IDLE
->  extern int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
->                                       struct cpuidle_device *dev);
-> +extern int cpuidle_find_deepest_state_qos(struct cpuidle_driver *drv,
-> +                                     struct cpuidle_device *dev);
->  extern int cpuidle_enter_s2idle(struct cpuidle_driver *drv,
->                                 struct cpuidle_device *dev);
->  extern void cpuidle_use_deepest_state(bool enable);
-> +extern bool cpuidle_using_deepest_state(void);
->  #else
->  static inline int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
->                                              struct cpuidle_device *dev)
->  {return -ENODEV; }
-> +static inline int cpuidle_find_deepest_state_qos(struct cpuidle_driver *drv,
-> +                                            struct cpuidle_device *dev)
-> +{return -ENODEV; }
->  static inline int cpuidle_enter_s2idle(struct cpuidle_driver *drv,
->                                        struct cpuidle_device *dev)
->  {return -ENODEV; }
->  static inline void cpuidle_use_deepest_state(bool enable)
->  {
->  }
-> +static inline bool cpuidle_using_deepest_state(void) {return false; }
->  #endif
->
->  /* kernel/sched/idle.c */
-> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-> index 257f4f0b4532..6c7348ae28ec 100644
-> --- a/kernel/sched/idle.c
-> +++ b/kernel/sched/idle.c
-> @@ -167,17 +167,33 @@ static void cpuidle_idle_call(void)
->          * until a proper wakeup interrupt happens.
->          */
->
-> -       if (idle_should_enter_s2idle() || dev->use_deepest_state) {
-> -               if (idle_should_enter_s2idle()) {
-> -                       entered_state = cpuidle_enter_s2idle(drv, dev);
-> -                       if (entered_state > 0) {
-> -                               local_irq_enable();
-> -                               goto exit_idle;
-> -                       }
-> +       if (idle_should_enter_s2idle()) {
-> +               entered_state = cpuidle_enter_s2idle(drv, dev);
-> +               if (entered_state > 0) {
-> +                       local_irq_enable();
-> +                       goto exit_idle;
->                 }
-> +       }
->
-> +       /*
-> +        * cpuidle_dev->user_deepest_state is per-device, and thus per-CPU.
-> +        * it is used to force power-savings, and thus does not obey PM_QOS.
-> +        */
-> +
-> +       if (dev->use_deepest_state) {
->                 next_state = cpuidle_find_deepest_state(drv, dev);
->                 call_cpuidle(drv, dev, next_state);
-> +       }
-> +
-> +       /*
-> +        * cpuidle_using_deepest_state() is system-wide, applying to all CPUs.
-> +        * When activated, Linux gives the hardware permission to go as deep
-> +        * as PM_QOS allows.
-> +        */
-> +
-> +       else if (cpuidle_using_deepest_state()) {
-> +               next_state = cpuidle_find_deepest_state_qos(drv, dev);
-> +               call_cpuidle(drv, dev, next_state);
->         } else {
->                 /*
->                  * Ask the cpuidle framework to choose a convenient idle state.
-> --
-> 2.14.0-rc0
->
+> Not using GENPD_FLAG_ACTIVE_WAKEUP means I would have to add the
+> WAKEUP_POWERED flag to every single driver that can either be a wakeup
+> source itself, or be part of the wakeup path.
+
+Right.
+
+First, is that really that many? Second, nothing prevent us from doing
+the migration of each driver in step by step.
+
+Kind regards
+Uffe
