@@ -1,156 +1,143 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH 3/4] sched/fair: use util_est in LB and WU paths
-Date: Thu,  9 Nov 2017 16:41:16 +0000
-Message-ID: <20171109164117.19401-4-patrick.bellasi@arm.com>
-References: <20171109164117.19401-1-patrick.bellasi@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171109164117.19401-1-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, linux-pm@vger.kernel.org
+From: Shuah Khan <shuahkh@osg.samsung.com>
+Subject: [GIT PULL] cpupower update for 4.15-rc1
+Date: Thu, 9 Nov 2017 13:10:27 -0700
+Message-ID: <d34df2fe-3f33-2716-6a29-8f66656edf8a@osg.samsung.com>
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="------------8665E14027308EA778F16E93"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from osg.samsung.com ([64.30.133.232]:60344 "EHLO osg.samsung.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750736AbdKIUKg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 9 Nov 2017 15:10:36 -0500
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Thomas Renninger <trenn@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Shuah Khan <shuahkh@osg.samsung.com>, Prarit Bhargava <prarit@redhat.com>
 
-When the scheduler looks at the CPU utilization, the current PELT value
-for a CPU is returned straight away. In certain scenarios this can have
-undesired side effects on task placement.
+This is a multi-part message in MIME format.
+--------------8665E14027308EA778F16E93
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
-For example, since the task utilization is decayed at wakeup time, when
-a long sleeping big task is enqueued it does not add immediately a
-significant contribution to the target CPU.
-As a result we generate a race condition where other tasks can be placed
-on the same CPU while is still considered relatively empty.
+Hi Rafael,
 
-In order to reduce these kind of race conditions, this patch introduces the
-required support to integrate the usage of the CPU's estimated utilization
-in cpu_util_wake as well as in update_sg_lb_stats.
+Please pull the cpupower update for 4.15-rc1
 
-The estimated utilization of a CPU is defined to be the maximum between
-its PELT's utilization and the sum of the estimated utilization of the
-tasks currently RUNNABLE on that CPU.
-This allows to properly represent the expected utilization of a CPU which,
-for example it has just got a big task running since a long sleep
-period.
+This update consists of fixes to the MHz frequency output and
+adding 64-bit library detection.
 
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Reviewed-by: Brendan Jackman <brendan.jackman@arm.com>
-Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Paul Turner <pjt@google.com>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
----
- kernel/sched/fair.c | 74 ++++++++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 68 insertions(+), 6 deletions(-)
+Diff is attached.
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index f14d199e81ed..76626e1a7645 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -5973,6 +5973,41 @@ static unsigned long cpu_util(int cpu)
- 	return (util >= capacity) ? capacity : util;
- }
- 
-+/**
-+ * cpu_util_est: estimated utilization for the specified CPU
-+ * @cpu: the CPU to get the estimated utilization for
-+ *
-+ * The estimated utilization of a CPU is defined to be the maximum between its
-+ * PELT's utilization and the sum of the estimated utilization of the tasks
-+ * currently RUNNABLE on that CPU.
-+ *
-+ * This allows to properly represent the expected utilization of a CPU which
-+ * has just got a big task running since a long sleep period. At the same time
-+ * however it preserves the benefits of the "blocked load" in describing the
-+ * potential for other tasks waking up on the same CPU.
-+ *
-+ * Return: the estimated utlization for the specified CPU
-+ */
-+static inline unsigned long cpu_util_est(int cpu)
-+{
-+	unsigned long util, util_est;
-+	unsigned long capacity;
-+	struct cfs_rq *cfs_rq;
-+
-+	if (!sched_feat(UTIL_EST))
-+		return cpu_util(cpu);
-+
-+	cfs_rq = &cpu_rq(cpu)->cfs;
-+	util = cfs_rq->avg.util_avg;
-+	util_est = cfs_rq->util_est_runnable;
-+	util_est = max(util, util_est);
-+
-+	capacity = capacity_orig_of(cpu);
-+	util_est = min(util_est, capacity);
-+
-+	return util_est;
-+}
-+
- static inline unsigned long task_util(struct task_struct *p)
- {
- 	return p->se.avg.util_avg;
-@@ -5989,16 +6024,43 @@ static inline unsigned long task_util_est(struct task_struct *p)
-  */
- static unsigned long cpu_util_wake(int cpu, struct task_struct *p)
- {
--	unsigned long util, capacity;
-+	long util, util_est;
- 
- 	/* Task has no contribution or is new */
- 	if (cpu != task_cpu(p) || !p->se.avg.last_update_time)
--		return cpu_util(cpu);
-+		return cpu_util_est(cpu);
- 
--	capacity = capacity_orig_of(cpu);
--	util = max_t(long, cpu_rq(cpu)->cfs.avg.util_avg - task_util(p), 0);
-+	/* Discount task's blocked util from CPU's util */
-+	util = cpu_util(cpu) - task_util(p);
-+	util = max(util, 0L);
- 
--	return (util >= capacity) ? capacity : util;
-+	if (!sched_feat(UTIL_EST))
-+		return util;
-+
-+	/*
-+	 * These are the main cases covered:
-+	 * - if *p is the only task sleeping on this CPU, then:
-+	 *      cpu_util (== task_util) > util_est (== 0)
-+	 *   and thus we return:
-+	 *      cpu_util_wake = (cpu_util - task_util) = 0
-+	 *
-+	 * - if other tasks are SLEEPING on the same CPU, which is just waking
-+	 *   up, then:
-+	 *      cpu_util >= task_util
-+	 *      cpu_util > util_est (== 0)
-+	 *   and thus we discount *p's blocked utilization to return:
-+	 *      cpu_util_wake = (cpu_util - task_util) >= 0
-+	 *
-+	 * - if other tasks are RUNNABLE on that CPU and
-+	 *      util_est > cpu_util
-+	 *   then we use util_est since it returns a more restrictive
-+	 *   estimation of the spare capacity on that CPU, by just considering
-+	 *   the expected utilization of tasks already runnable on that CPU.
-+	 */
-+	util_est = cpu_rq(cpu)->cfs.util_est_runnable;
-+	util = max(util, util_est);
-+
-+	return util;
- }
- 
- /*
-@@ -7525,7 +7587,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
- 			load = source_load(i, load_idx);
- 
- 		sgs->group_load += load;
--		sgs->group_util += cpu_util(i);
-+		sgs->group_util += cpu_util_est(i);
- 		sgs->sum_nr_running += rq->cfs.h_nr_running;
- 
- 		nr_running = rq->nr_running;
+These patches have been in linux-next for a few days. I had to fix
+commit lines longer than 75 chars in one of the commits and fixed
+this morning.
+
+Please let me know if you would like any changes in the work-flow
+and the pull request.
+
+thanks,
+-- Shuah
+
+--------------------------------------------------------------
+The following changes since commit 0b07194bb55ed836c2cc7c22e866b87a14681984:
+
+  Linux 4.14-rc7 (2017-10-29 13:58:38 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux tags/linux-cpupower-4.15-rc1
+
+for you to fetch changes up to 69b6f8a9b7961efd7dcc11ab9b1d5be55ed8a15e:
+
+  tools/power/cpupower: add libcpupower.so.0.0.1 to .gitignore (2017-11-09 10:52:22 -0700)
+
+----------------------------------------------------------------
+linux-cpupower-4.15-rc1
+
+This cpupower update consists of fixes to the MHz frequency output and
+adding 64-bit library detection.
+
+----------------------------------------------------------------
+Prarit Bhargava (3):
+      cpupower: Fix no-rounding MHz frequency output
+      tools/power/cpupower: Add 64 bit library detection
+      tools/power/cpupower: add libcpupower.so.0.0.1 to .gitignore
+
+ tools/power/cpupower/.gitignore           | 3 +--
+ tools/power/cpupower/Makefile             | 6 ++++++
+ tools/power/cpupower/utils/cpufreq-info.c | 2 --
+ 3 files changed, 7 insertions(+), 4 deletions(-)
+--------------------------------------------------------------
+
 -- 
-2.14.1
+Shuah Khan
+Sr. Linux Kernel Developer
+Open Source Innovation Group
+Samsung Research America (Silicon Valley)
+shuahkh@osg.samsung.com
+
+--------------8665E14027308EA778F16E93
+Content-Type: text/x-patch;
+ name="linux-cpupower-4.15-rc1.diff"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+ filename="linux-cpupower-4.15-rc1.diff"
+
+diff --git a/tools/power/cpupower/.gitignore b/tools/power/cpupower/.giti=
+gnore
+index d42073f12609..1f9977cc609c 100644
+--- a/tools/power/cpupower/.gitignore
++++ b/tools/power/cpupower/.gitignore
+@@ -1,7 +1,6 @@
+ .libs
+ libcpupower.so
+-libcpupower.so.0
+-libcpupower.so.0.0.0
++libcpupower.so.*
+ build/ccdv
+ cpufreq-info
+ cpufreq-set
+diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefil=
+e
+index d6e1c02ddcfe..da205d1fa03c 100644
+--- a/tools/power/cpupower/Makefile
++++ b/tools/power/cpupower/Makefile
+@@ -30,6 +30,8 @@ OUTDIR :=3D $(shell cd $(OUTPUT) && /bin/pwd)
+ $(if $(OUTDIR),, $(error output directory "$(OUTPUT)" does not exist))
+ endif
+=20
++include ../../scripts/Makefile.arch
++
+ # --- CONFIGURATION BEGIN ---
+=20
+ # Set the following to `true' to make a unstripped, unoptimized
+@@ -79,7 +81,11 @@ bindir ?=3D	/usr/bin
+ sbindir ?=3D	/usr/sbin
+ mandir ?=3D	/usr/man
+ includedir ?=3D	/usr/include
++ifeq ($(IS_64_BIT), 1)
++libdir ?=3D	/usr/lib64
++else
+ libdir ?=3D	/usr/lib
++endif
+ localedir ?=3D	/usr/share/locale
+ docdir ?=3D       /usr/share/doc/packages/cpupower
+ confdir ?=3D      /etc/
+diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpup=
+ower/utils/cpufreq-info.c
+index 3e701f0e9c14..df43cd45d810 100644
+--- a/tools/power/cpupower/utils/cpufreq-info.c
++++ b/tools/power/cpupower/utils/cpufreq-info.c
+@@ -93,8 +93,6 @@ static void print_speed(unsigned long speed)
+ 		if (speed > 1000000)
+ 			printf("%u.%06u GHz", ((unsigned int) speed/1000000),
+ 				((unsigned int) speed%1000000));
+-		else if (speed > 100000)
+-			printf("%u MHz", (unsigned int) speed);
+ 		else if (speed > 1000)
+ 			printf("%u.%03u MHz", ((unsigned int) speed/1000),
+ 				(unsigned int) (speed%1000));
+
+--------------8665E14027308EA778F16E93--
