@@ -1,95 +1,131 @@
-From: Juergen Gross <jgross@suse.com>
-Subject: [PATCH v2 0/5] x86/xen: support booting PVH guest via standard boot
-	path
-Date: Thu,  9 Nov 2017 14:27:34 +0100
-Message-ID: <20171109132739.23465-1-jgross@suse.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <virtualization-bounces@lists.linux-foundation.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
-List-Post: <mailto:virtualization@lists.linux-foundation.org>
-List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
-	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
-Sender: virtualization-bounces@lists.linux-foundation.org
-Errors-To: virtualization-bounces@lists.linux-foundation.org
-To: linux-kernel@vger.kernel.org
-Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, pv-drivers@vmware.com, akataria@vmware.com, virtualization@lists.linux-foundation.org, pavel@ucw.cz, hpa@zytor.com, tglx@linutronix.de, sthemmin@microsoft.com, x86@kernel.org, moltmann@vmware.com, mingo@redhat.com, linux-graphics-maintainer@vmware.com, linux-input@vger.kernel.org, xen-devel@lists.xenproject.org, len.brown@intel.com, arnd@arndb.de, linux-pm@vger.kernel.org, xdeguillard@vmware.com, haiyangz@microsoft.com, rusty@rustcorp.com.au, pbonzini@redhat.com, boris.ostrovsky@oracle.com, Juergen Gross <jgross@suse.com>, gregkh@linuxfoundation.org, dmitry.torokhov@gmail.com, rjw@rjwysocki.net, devel@linuxdriverproject.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH/RFC 2/3] irqchip/renesas-irqc: Use wakeup_path i.s.o. explicit clock handling
+Date: Thu,  9 Nov 2017 14:48:32 +0100
+Message-ID: <1510235313-32445-3-git-send-email-geert+renesas@glider.be>
+References: <1510235313-32445-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1510235313-32445-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Linus Walleij <linus.walleij@linaro.org>, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Booting a Xen PVH guest requires a special boot entry as it is
-mandatory to setup some Xen-specific interfaces rather early. When grub
-or OVMF are used as boot loaders, however, those will fill the boot
-parameters in zeropage and there is no longer a need to do something
-PVH specific in the early boot path.
+Since commit 6f46aedb9c85873b ("irqchip: renesas-irqc: Add wake-up
+support"), when an IRQ is used for wakeup, the INTC
+block's module clock is manually kept running during system suspend, to
+make sure the device stays active.
 
-This patch series adds support for that scenario by identifying PVH
-environment and doing the required init steps via Xen hooks instead of
-using a dedicated boot entry.
+However, this explicit clock handling is merely a workaround for a
+failure to properly communicate wakeup information to the device core.
 
-The dedicated entry is still mandatory for support of Dom0 running in
-PVH mode as in this case there is no grub or OVMF involved for filling
-in the boot parameters.
+Instead, set the device's power.wakeup_path field, to indicate this
+device is part of the wakeup path.  Depending on the PM Domain's
+active_wakeup configuration, the genpd core code will keep the device
+enabled (and the clock running) during system suspend when needed.
+This allows for the removal of all explicit clock handling code from the
+driver.
 
-Changes in V2:
-- added new patches 1 and 2
+Note that the dev_pm_info.wakeup_path field exists only if
+CONFIG_PM_SLEEP is enabled, hence the whole suspend infrastructure is
+protected by #ifdef CONFIG_PM_SLEEP.
 
-Cc: kys@microsoft.com
-Cc: haiyangz@microsoft.com
-Cc: sthemmin@microsoft.com
-Cc: akataria@vmware.com
-Cc: pbonzini@redhat.com
-Cc: rkrcmar@redhat.com
-Cc: boris.ostrovsky@oracle.com
-Cc: rusty@rustcorp.com.au
-Cc: devel@linuxdriverproject.org
-Cc: virtualization@lists.linux-foundation.org
-Cc: kvm@vger.kernel.org
-Cc: xen-devel@lists.xenproject.org
-Cc: linux-graphics-maintainer@vmware.com
-Cc: pv-drivers@vmware.com
-Cc: dmitry.torokhov@gmail.com
-Cc: xdeguillard@vmware.com
-Cc: moltmann@vmware.com
-Cc: arnd@arndb.de
-Cc: gregkh@linuxfoundation.org
-Cc: linux-input@vger.kernel.org
-Cc: rjw@rjwysocki.net
-Cc: len.brown@intel.com
-Cc: pavel@ucw.cz
-Cc: linux-pm@vger.kernel.org
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+To avoid regressions, this must not be applied before "soc: renesas:
+rcar-sysc: Keep wakeup sources active during system suspend" has landed
+upstream, hence the "RFC"!
 
-Juergen Gross (5):
-  x86: merge x86_hyper into x86_platform and x86_init
-  x86: add enum for hypervisors to replace x86_hyper
-  x86/acpi: add test for ACPI_FADT_NO_VGA
-  x86: add guest_late_init hook to hypervisor_x86 structure
-  x86/xen: use guest_late_init to detect Xen PVH guest
+This driver is used on Renesas R-Mobile, R-Car Gen2/3, and RZ/G1
+platforms.  While the pm-rmobile driver already keeps wakeup sources
+active during system suspend, this is not the case on R-Car Gen2/3 and
+RZ/G1 yet.
 
- arch/x86/hyperv/hv_init.c         |  2 +-
- arch/x86/include/asm/hypervisor.h | 46 +++++++++++-----------------
- arch/x86/include/asm/kvm_para.h   |  2 --
- arch/x86/include/asm/x86_init.h   | 27 +++++++++++++++++
- arch/x86/kernel/acpi/boot.c       |  5 +++
- arch/x86/kernel/apic/apic.c       |  2 +-
- arch/x86/kernel/cpu/hypervisor.c  | 64 +++++++++++++++++++++------------------
- arch/x86/kernel/cpu/mshyperv.c    |  6 ++--
- arch/x86/kernel/cpu/vmware.c      |  8 ++---
- arch/x86/kernel/kvm.c             |  9 +++---
- arch/x86/kernel/setup.c           |  2 +-
- arch/x86/kernel/x86_init.c        | 10 ++++++
- arch/x86/mm/init.c                |  2 +-
- arch/x86/xen/enlighten_hvm.c      | 36 +++++++++++++++++-----
- arch/x86/xen/enlighten_pv.c       |  6 ++--
- arch/x86/xen/enlighten_pvh.c      |  9 ------
- drivers/hv/vmbus_drv.c            |  2 +-
- drivers/input/mouse/vmmouse.c     | 10 +++---
- drivers/misc/vmw_balloon.c        |  2 +-
- include/linux/hypervisor.h        |  8 +++--
- 20 files changed, 153 insertions(+), 105 deletions(-)
+v3:
+  - New.
+---
+ drivers/irqchip/irq-renesas-irqc.c | 35 ++++++++++++++++++-----------------
+ 1 file changed, 18 insertions(+), 17 deletions(-)
 
+diff --git a/drivers/irqchip/irq-renesas-irqc.c b/drivers/irqchip/irq-renesas-irqc.c
+index 52304b139aa46a60..d91dab43268f9d0a 100644
+--- a/drivers/irqchip/irq-renesas-irqc.c
++++ b/drivers/irqchip/irq-renesas-irqc.c
+@@ -17,7 +17,6 @@
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  */
+ 
+-#include <linux/clk.h>
+ #include <linux/init.h>
+ #include <linux/platform_device.h>
+ #include <linux/spinlock.h>
+@@ -64,7 +63,7 @@ struct irqc_priv {
+ 	struct platform_device *pdev;
+ 	struct irq_chip_generic *gc;
+ 	struct irq_domain *irq_domain;
+-	struct clk *clk;
++	unsigned wakeup_path:1;
+ };
+ 
+ static struct irqc_priv *irq_data_to_priv(struct irq_data *data)
+@@ -111,15 +110,7 @@ static int irqc_irq_set_wake(struct irq_data *d, unsigned int on)
+ 	int hw_irq = irqd_to_hwirq(d);
+ 
+ 	irq_set_irq_wake(p->irq[hw_irq].requested_irq, on);
+-
+-	if (!p->clk)
+-		return 0;
+-
+-	if (on)
+-		clk_enable(p->clk);
+-	else
+-		clk_disable(p->clk);
+-
++	p->wakeup_path = on;
+ 	return 0;
+ }
+ 
+@@ -159,12 +150,6 @@ static int irqc_probe(struct platform_device *pdev)
+ 	p->pdev = pdev;
+ 	platform_set_drvdata(pdev, p);
+ 
+-	p->clk = devm_clk_get(&pdev->dev, NULL);
+-	if (IS_ERR(p->clk)) {
+-		dev_warn(&pdev->dev, "unable to get clock\n");
+-		p->clk = NULL;
+-	}
+-
+ 	pm_runtime_enable(&pdev->dev);
+ 	pm_runtime_get_sync(&pdev->dev);
+ 
+@@ -276,6 +261,21 @@ static int irqc_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM_SLEEP
++static int irqc_suspend(struct device *dev)
++{
++	struct irqc_priv *p = dev_get_drvdata(dev);
++
++	dev->power.wakeup_path = p->wakeup_path;
++	return 0;
++}
++
++static SIMPLE_DEV_PM_OPS(irqc_pm_ops, irqc_suspend, NULL);
++#define DEV_PM_OPS	&irqc_pm_ops
++#else
++#define DEV_PM_OPS	NULL
++#endif
++
+ static const struct of_device_id irqc_dt_ids[] = {
+ 	{ .compatible = "renesas,irqc", },
+ 	{},
+@@ -288,6 +288,7 @@ static struct platform_driver irqc_device_driver = {
+ 	.driver		= {
+ 		.name	= "renesas_irqc",
+ 		.of_match_table	= irqc_dt_ids,
++		.pm	= DEV_PM_OPS,
+ 	}
+ };
+ 
 -- 
-2.12.3
+2.7.4
