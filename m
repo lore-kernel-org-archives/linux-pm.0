@@ -1,65 +1,62 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/3] PM / core: Invent a WAKEUP_POWERED driver flag
-Date: Thu, 9 Nov 2017 17:31:10 +0100
-Message-ID: <CAJZ5v0i9Qa4K-=UfC_zuZgWrP3=1r3pfdQ1e-AqNttze8utKFw@mail.gmail.com>
-References: <1510154134-1248-1-git-send-email-ulf.hansson@linaro.org>
- <CAMuHMdUu6=zuCRBaON4K9ivG8bdV1xBuf4dCvPUr2JCL-=xC=w@mail.gmail.com>
- <CAPDyKFqeEZT631g=x_LTU+Dba=WAhM9YOHYfdsSYo+kJz7HtkQ@mail.gmail.com>
- <CAMuHMdX-MX-H0LKR68KLf4Ypp0ZBvV4sBEf8mv8DSNbe0VuGTg@mail.gmail.com>
- <CAPDyKFpY24tn7zZK8A+XzSvTXLa7s_o93sO+yH5Rkae8KmvrXA@mail.gmail.com>
- <CAMuHMdWJ5XXzP7wZ8NJjTaxHMARfcvCkVWev5Z29s077BGbYRA@mail.gmail.com>
- <CAPDyKFp6FYX-dLZJV6oto8Uc8e8KzO18ScTO8SU+8=NGbs7cOg@mail.gmail.com> <CAMuHMdUTX+=SfzivXz5HkgmrxcKB0miYnisBuy3iMtZNABS5KA@mail.gmail.com>
+Subject: [GIT PULL] Final power management fixes for v4.14
+Date: Thu, 9 Nov 2017 17:36:03 +0100
+Message-ID: <CAJZ5v0i0ngNGouoG_RJjxHaeXS=syJp5Gk=5_Rg7UcQstuHfgQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdUTX+=SfzivXz5HkgmrxcKB0miYnisBuy3iMtZNABS5KA@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Nov 9, 2017 at 3:41 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Hi Ulf,
->
-> On Thu, Nov 9, 2017 at 3:28 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> [...]
->>
->>>>> The Ethernet driver can still call device_set_wakeup_enable(... , false)
->>>>> to control this.  If WoL is disabled by the user (or deemed not usable, see
->>>>> below), it already does so.
->>>>
->>>> I don't think that API is intended to be used like that and I wonder
->>>> if it even works as expected.
->>>>
->>>> Quoting the doc:
->>>> "If device wakeup mechanisms are enabled or disabled directly by
->>>> drivers, they also should use :c:func:`device_may_wakeup()` to decide what to do
->>>> during a system sleep transition.  Device drivers, however, are not expected to
->>>> call :c:func:`device_set_wakeup_enable()` directly in any case."
->>>>
->>>> Rafael, can you comment on this?
->>>
->>> There are ca. 100 callers in drivers.
->>
->> Yeah, but those doesn't normally use it to toggle the setting, but
->> instead only to set a default value during ->probe() or whatever
->> initialization code that runs.
->>
->> I think that makes a big difference, doesn't it?
->
-> The few Ethernet drivers I looked at change the state in their
-> ethtool_ops.set_wol() callback, not during probe.
-> This is to be configured from userspace using ethtool.
+Hi Linus,
 
-Which is the case I was talking about.
+Please pull from the tag
 
-Since changing the WoL setting via ethtool is expected to cause the
-sysfs knob to reflect its status, using device_set_wakeup_enable() in
-there is not actually confusing.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-final-4.14
 
-The same applies to setting the default from ->probe().
+with top-most commit e029b9bf1221f200319541cd6861912b89345665
 
-It will be confusing in all of the other cases, though.
+ Merge branch 'pm-cpufreq-sched'
 
-Thanks,
-Rafael
+on top of commit 39dae59d66acd86d1de24294bd2f343fd5e7a625
+
+ Linux 4.14-rc8
+
+to receive final power management fixes for 4.14.
+
+These fix a regression in the schedutil cpufreq governor introduced
+by a recent change and blacklist Dell XPS13 9360 from using the
+Low Power S0 Idle _DSM interface which triggers serious problems on
+one of these machines.
+
+Specifics:
+
+ - Prevent the schedutil cpufreq governor from using the
+   utilization of a wrong CPU in some cases which started to
+   happen after one of the recent changes in it (Chris Redpath).
+
+ - Blacklist Dell XPS13 9360 from using the Low Power S0 Idle _DSM
+   interface as that causes serious issue (related to NVMe) to
+   appear on one of these machines, even though the other Dells
+   XPS13 9360 in somewhat different HW configurations behave
+   correctly (Rafael Wysocki).
+
+Thanks!
+
+
+---------------
+
+Chris Redpath (1):
+      cpufreq: schedutil: Examine the correct CPU when we update util
+
+Rafael J. Wysocki (1):
+      ACPI / PM: Blacklist Low Power S0 Idle _DSM for Dell XPS13 9360
+
+---------------
+
+ drivers/acpi/sleep.c             | 28 ++++++++++++++++++++++++++++
+ kernel/sched/cpufreq_schedutil.c |  6 +-----
+ 2 files changed, 29 insertions(+), 5 deletions(-)
