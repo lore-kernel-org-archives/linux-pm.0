@@ -1,73 +1,51 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2 0/3] PM / Domain: renesas: Fix active wakeup behavior
-Date: Thu,  9 Nov 2017 14:26:59 +0100
-Message-ID: <1510234022-29442-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
+Subject: [PATCH v2 3/3] soc: renesas: rcar-sysc: Keep wakeup sources active during system suspend
+Date: Thu,  9 Nov 2017 14:27:02 +0100
+Message-ID: <1510234022-29442-4-git-send-email-geert+renesas@glider.be>
+References: <1510234022-29442-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from albert.telenet-ops.be ([195.130.137.90]:60470 "EHLO
+        albert.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754661AbdKIN1R (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Nov 2017 08:27:17 -0500
+In-Reply-To: <1510234022-29442-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>
 Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
-List-Id: linux-pm@vger.kernel.org
 
-	Hi Rafael, Ulf, Kevin,
-
-If a device in a Renesas ARM SoC is part of a Clock Domain, and it is
-used as a wakeup source, it must be kept active during system suspend.
+If an R-Car SYSC slave device is part of the CPG/MSTP or CPG/MSSR Clock
+Domain and to be used as a wakeup source, it must be kept active during
+system suspend.
 
 Currently this is handled in device-specific drivers by explicitly
 increasing the use count of the module clock when the device is
-configured as a wakeup source, or if it is part of the wakeup path.
-
-However, this is merely a workaround.  The proper way to prevent the
+configured as a wakeup source.  However, the proper way to prevent the
 device from being stopped is to inform this requirement to the genpd
-core, using the new GENPD_FLAG_ACTIVE_WAKEUP flag introduced in commit
-95a20ef6f7e54c6a ("PM / Domains: Allow genpd users to specify default
-active wakeup behavior").
+core, by setting the GENPD_FLAG_ACTIVE_WAKEUP flag.
 
-Hence this series does that for PM Domain drivers used on R-Car, RZ/A1,
-RZ/G1 SoCs, mimicking what is already done succesfully on SH/R-Mobile
-SoCs.  This will allow for the workarounds can be removed later.
+Note that this will only affect devices configured as wakeup sources.
 
-This series was extracted from "[PATCH 00/10] PM / Domain: renesas: Fix
-active wakeup behavior", and retains only fixes for Renesas PM Domain
-drivers.
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v2:
+  - Integrate "soc: renesas: rcar-sysc: Use GENPD_FLAG_ACTIVE_WAKEUP",
+---
+ drivers/soc/renesas/rcar-sysc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes compared to v1:
-  - Integrate follow-up patches to use GENPD_FLAG_ACTIVE_WAKEUP instead
-    of adding an "always true" callback.
-
-As GENPD_FLAG_ACTIVE_WAKEUP exists in pm/linux-next only, and this
-series is a dependency for the removal of workarounds in drivers of
-multiple subsystems (net, irqchip, and gpio), I think it is a good idea
-to still queue this for v4.15 in the PM tree, if possible.
-
-This has been tested on r8a73a4/ape6evm, r8a7740/armadillo,
-r8a7791/koelsch, r8a7795/salvator-x and -xs, r8a7795/salvator-x, and
-sh73a0/kzm9g.
-
-Thanks for applying!
-
-Geert Uytterhoeven (3):
-  clk: renesas: mstp: Keep wakeup sources active during system suspend
-  clk: renesas: cpg-mssr: Keep wakeup sources active during system
-    suspend
-  soc: renesas: rcar-sysc: Keep wakeup sources active during system
-    suspend
-
- drivers/clk/renesas/clk-mstp.c         | 2 +-
- drivers/clk/renesas/renesas-cpg-mssr.c | 2 +-
- drivers/soc/renesas/rcar-sysc.c        | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
+diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
+index c8406e81640f6560..ac4df1c43b2fbdbe 100644
+--- a/drivers/soc/renesas/rcar-sysc.c
++++ b/drivers/soc/renesas/rcar-sysc.c
+@@ -224,7 +224,7 @@ static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
+ 
+ 	if (!(pd->flags & (PD_CPU | PD_SCU))) {
+ 		/* Enable Clock Domain for I/O devices */
+-		genpd->flags |= GENPD_FLAG_PM_CLK;
++		genpd->flags |= GENPD_FLAG_PM_CLK | GENPD_FLAG_ACTIVE_WAKEUP;
+ 		if (has_cpg_mstp) {
+ 			genpd->attach_dev = cpg_mstp_attach_dev;
+ 			genpd->detach_dev = cpg_mstp_detach_dev;
 -- 
 2.7.4
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
