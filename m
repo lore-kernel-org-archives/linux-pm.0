@@ -1,32 +1,47 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: Re: bq2415x_charger: Use common error handling code in
- bq2415x_timer_work()
-Date: Thu, 9 Nov 2017 14:22:18 +0100
-Message-ID: <935e992c-e5ee-841b-c42a-4a7bf891d984@users.sourceforge.net>
-References: <48b34d35-8c41-d25b-0cb7-6257b37c5a44@users.sourceforge.net>
- <20171109120842.GA28552@atrey.karlin.mff.cuni.cz>
- <d680ca7e-9806-1f39-80da-58fa7239a31c@users.sourceforge.net>
- <20171109131433.x7xuh4bqvqm72wb5@pali>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171109131433.x7xuh4bqvqm72wb5@pali>
-Content-Language: en-GB
-Sender: linux-kernel-owner@vger.kernel.org
-To: =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali.rohar@gmail.com>, linux-pm@vger.kernel.org
-Cc: Pavel Machek <pavel@ucw.cz>, Sebastian Reichel <sre@kernel.org>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH v2 1/3] clk: renesas: mstp: Keep wakeup sources active during system suspend
+Date: Thu,  9 Nov 2017 14:27:00 +0100
+Message-ID: <1510234022-29442-2-git-send-email-geert+renesas@glider.be>
+References: <1510234022-29442-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1510234022-29442-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-clk-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>
+Cc: Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org, linux-clk@vger.kernel.org, linux-renesas-soc@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
->> Which information (or wording) would you find more appropriate
->> at these places?
-> 
-> Hi! Basically dropping your patch and instead of the "Unknown error"
-> return to user reason why BQ2415X_BOOST_MODE_STATUS or
-> BQ2415X_FAULT_STATUS commands failed. Or at least instead of the
-> "Unknown error" write "Unknown error during BQ2415X_FAULT_STATUS".
+If a device is part of the CPG/MSTP Clock Domain and to be used as a
+wakeup source, it must be kept active during system suspend.
 
-Can the error description become better?
+Currently this is handled in device-specific drivers by explicitly
+increasing the use count of the module clock when the device is
+configured as a wakeup source.  However, the proper way to prevent the
+device from being stopped is to inform this requirement to the genpd
+core, by setting the GENPD_FLAG_ACTIVE_WAKEUP flag.
 
-Regards,
-Markus
+Note that this will only affect devices configured as wakeup sources.
+
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+v2:
+  - Integrate "clk: renesas: mstp: Use GENPD_FLAG_ACTIVE_WAKEUP",
+---
+ drivers/clk/renesas/clk-mstp.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/clk/renesas/clk-mstp.c b/drivers/clk/renesas/clk-mstp.c
+index 500a9e4e03c48957..0b222197a4576fd7 100644
+--- a/drivers/clk/renesas/clk-mstp.c
++++ b/drivers/clk/renesas/clk-mstp.c
+@@ -344,7 +344,7 @@ void __init cpg_mstp_add_clk_domain(struct device_node *np)
+ 		return;
+ 
+ 	pd->name = np->name;
+-	pd->flags = GENPD_FLAG_PM_CLK;
++	pd->flags = GENPD_FLAG_PM_CLK | GENPD_FLAG_ACTIVE_WAKEUP;
+ 	pd->attach_dev = cpg_mstp_attach_dev;
+ 	pd->detach_dev = cpg_mstp_detach_dev;
+ 	pm_genpd_init(pd, &pm_domain_always_on_gov, false);
+-- 
+2.7.4
+
