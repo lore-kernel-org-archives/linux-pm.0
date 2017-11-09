@@ -1,60 +1,95 @@
 From: Juergen Gross <jgross@suse.com>
-Subject: [PATCH v2 3/5] x86/acpi: add test for ACPI_FADT_NO_VGA
-Date: Thu,  9 Nov 2017 14:27:37 +0100
-Message-ID: <20171109132739.23465-4-jgross@suse.com>
-References: <20171109132739.23465-1-jgross@suse.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:60430 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1754463AbdKIN14 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 9 Nov 2017 08:27:56 -0500
-In-Reply-To: <20171109132739.23465-1-jgross@suse.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v2 0/5] x86/xen: support booting PVH guest via standard boot
+	path
+Date: Thu,  9 Nov 2017 14:27:34 +0100
+Message-ID: <20171109132739.23465-1-jgross@suse.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <virtualization-bounces@lists.linux-foundation.org>
+List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=unsubscribe>
+List-Archive: <http://lists.linuxfoundation.org/pipermail/virtualization/>
+List-Post: <mailto:virtualization@lists.linux-foundation.org>
+List-Help: <mailto:virtualization-request@lists.linux-foundation.org?subject=help>
+List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/virtualization>,
+	<mailto:virtualization-request@lists.linux-foundation.org?subject=subscribe>
+Sender: virtualization-bounces@lists.linux-foundation.org
+Errors-To: virtualization-bounces@lists.linux-foundation.org
 To: linux-kernel@vger.kernel.org
-Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, x86@kernel.org, Juergen Gross <jgross@suse.com>, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org
+Cc: kvm@vger.kernel.org, rkrcmar@redhat.com, pv-drivers@vmware.com, akataria@vmware.com, virtualization@lists.linux-foundation.org, pavel@ucw.cz, hpa@zytor.com, tglx@linutronix.de, sthemmin@microsoft.com, x86@kernel.org, moltmann@vmware.com, mingo@redhat.com, linux-graphics-maintainer@vmware.com, linux-input@vger.kernel.org, xen-devel@lists.xenproject.org, len.brown@intel.com, arnd@arndb.de, linux-pm@vger.kernel.org, xdeguillard@vmware.com, haiyangz@microsoft.com, rusty@rustcorp.com.au, pbonzini@redhat.com, boris.ostrovsky@oracle.com, Juergen Gross <jgross@suse.com>, gregkh@linuxfoundation.org, dmitry.torokhov@gmail.com, rjw@rjwysocki.net, devel@linuxdriverproject.org
+List-Id: linux-pm@vger.kernel.org
 
-Add a test for ACPI_FADT_NO_VGA when scanning the FADT and set the new
-flag x86_platform.legacy.no_vga accordingly.
+Booting a Xen PVH guest requires a special boot entry as it is
+mandatory to setup some Xen-specific interfaces rather early. When grub
+or OVMF are used as boot loaders, however, those will fill the boot
+parameters in zeropage and there is no longer a need to do something
+PVH specific in the early boot path.
 
+This patch series adds support for that scenario by identifying PVH
+environment and doing the required init steps via Xen hooks instead of
+using a dedicated boot entry.
+
+The dedicated entry is still mandatory for support of Dom0 running in
+PVH mode as in this case there is no grub or OVMF involved for filling
+in the boot parameters.
+
+Changes in V2:
+- added new patches 1 and 2
+
+Cc: kys@microsoft.com
+Cc: haiyangz@microsoft.com
+Cc: sthemmin@microsoft.com
+Cc: akataria@vmware.com
+Cc: pbonzini@redhat.com
+Cc: rkrcmar@redhat.com
+Cc: boris.ostrovsky@oracle.com
+Cc: rusty@rustcorp.com.au
+Cc: devel@linuxdriverproject.org
+Cc: virtualization@lists.linux-foundation.org
+Cc: kvm@vger.kernel.org
+Cc: xen-devel@lists.xenproject.org
+Cc: linux-graphics-maintainer@vmware.com
+Cc: pv-drivers@vmware.com
+Cc: dmitry.torokhov@gmail.com
+Cc: xdeguillard@vmware.com
+Cc: moltmann@vmware.com
+Cc: arnd@arndb.de
+Cc: gregkh@linuxfoundation.org
+Cc: linux-input@vger.kernel.org
 Cc: rjw@rjwysocki.net
 Cc: len.brown@intel.com
 Cc: pavel@ucw.cz
 Cc: linux-pm@vger.kernel.org
 
-Signed-off-by: Juergen Gross <jgross@suse.com>
----
- arch/x86/include/asm/x86_init.h | 1 +
- arch/x86/kernel/acpi/boot.c     | 5 +++++
- 2 files changed, 6 insertions(+)
+Juergen Gross (5):
+  x86: merge x86_hyper into x86_platform and x86_init
+  x86: add enum for hypervisors to replace x86_hyper
+  x86/acpi: add test for ACPI_FADT_NO_VGA
+  x86: add guest_late_init hook to hypervisor_x86 structure
+  x86/xen: use guest_late_init to detect Xen PVH guest
 
-diff --git a/arch/x86/include/asm/x86_init.h b/arch/x86/include/asm/x86_init.h
-index ad15a0fda917..260e9a85fecb 100644
---- a/arch/x86/include/asm/x86_init.h
-+++ b/arch/x86/include/asm/x86_init.h
-@@ -208,6 +208,7 @@ enum x86_legacy_i8042_state {
- struct x86_legacy_features {
- 	enum x86_legacy_i8042_state i8042;
- 	int rtc;
-+	int no_vga;
- 	int reserve_bios_regions;
- 	struct x86_legacy_devices devices;
- };
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 079535e53e2a..ef9e02e614d0 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -961,6 +961,11 @@ static int __init acpi_parse_fadt(struct acpi_table_header *table)
- 		x86_platform.legacy.rtc = 0;
- 	}
- 
-+	if (acpi_gbl_FADT.boot_flags & ACPI_FADT_NO_VGA) {
-+		pr_debug("ACPI: probing for VGA not safe\n");
-+		x86_platform.legacy.no_vga = 1;
-+	}
-+
- #ifdef CONFIG_X86_PM_TIMER
- 	/* detect the location of the ACPI PM Timer */
- 	if (acpi_gbl_FADT.header.revision >= FADT2_REVISION_ID) {
+ arch/x86/hyperv/hv_init.c         |  2 +-
+ arch/x86/include/asm/hypervisor.h | 46 +++++++++++-----------------
+ arch/x86/include/asm/kvm_para.h   |  2 --
+ arch/x86/include/asm/x86_init.h   | 27 +++++++++++++++++
+ arch/x86/kernel/acpi/boot.c       |  5 +++
+ arch/x86/kernel/apic/apic.c       |  2 +-
+ arch/x86/kernel/cpu/hypervisor.c  | 64 +++++++++++++++++++++------------------
+ arch/x86/kernel/cpu/mshyperv.c    |  6 ++--
+ arch/x86/kernel/cpu/vmware.c      |  8 ++---
+ arch/x86/kernel/kvm.c             |  9 +++---
+ arch/x86/kernel/setup.c           |  2 +-
+ arch/x86/kernel/x86_init.c        | 10 ++++++
+ arch/x86/mm/init.c                |  2 +-
+ arch/x86/xen/enlighten_hvm.c      | 36 +++++++++++++++++-----
+ arch/x86/xen/enlighten_pv.c       |  6 ++--
+ arch/x86/xen/enlighten_pvh.c      |  9 ------
+ drivers/hv/vmbus_drv.c            |  2 +-
+ drivers/input/mouse/vmmouse.c     | 10 +++---
+ drivers/misc/vmw_balloon.c        |  2 +-
+ include/linux/hypervisor.h        |  8 +++--
+ 20 files changed, 153 insertions(+), 105 deletions(-)
+
 -- 
 2.12.3
