@@ -1,77 +1,65 @@
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [PATCH] x86: use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"
- again
-Date: Thu, 9 Nov 2017 17:06:41 +0100
-Message-ID: <6583ed1f-3ea3-c7fd-7e69-1430c8387e54@intel.com>
-References: <20171109103814.70688-1-chao.wang@ucloud.cn>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 0/3] PM / core: Invent a WAKEUP_POWERED driver flag
+Date: Thu, 9 Nov 2017 17:31:10 +0100
+Message-ID: <CAJZ5v0i9Qa4K-=UfC_zuZgWrP3=1r3pfdQ1e-AqNttze8utKFw@mail.gmail.com>
+References: <1510154134-1248-1-git-send-email-ulf.hansson@linaro.org>
+ <CAMuHMdUu6=zuCRBaON4K9ivG8bdV1xBuf4dCvPUr2JCL-=xC=w@mail.gmail.com>
+ <CAPDyKFqeEZT631g=x_LTU+Dba=WAhM9YOHYfdsSYo+kJz7HtkQ@mail.gmail.com>
+ <CAMuHMdX-MX-H0LKR68KLf4Ypp0ZBvV4sBEf8mv8DSNbe0VuGTg@mail.gmail.com>
+ <CAPDyKFpY24tn7zZK8A+XzSvTXLa7s_o93sO+yH5Rkae8KmvrXA@mail.gmail.com>
+ <CAMuHMdWJ5XXzP7wZ8NJjTaxHMARfcvCkVWev5Z29s077BGbYRA@mail.gmail.com>
+ <CAPDyKFp6FYX-dLZJV6oto8Uc8e8KzO18ScTO8SU+8=NGbs7cOg@mail.gmail.com> <CAMuHMdUTX+=SfzivXz5HkgmrxcKB0miYnisBuy3iMtZNABS5KA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:58332 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751264AbdKIQGq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 9 Nov 2017 11:06:46 -0500
-In-Reply-To: <20171109103814.70688-1-chao.wang@ucloud.cn>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdUTX+=SfzivXz5HkgmrxcKB0miYnisBuy3iMtZNABS5KA@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: WANG Chao <chao.wang@ucloud.cn>, Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, x86@kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-Hi Linus,
-
-On 11/9/2017 11:38 AM, WANG Chao wrote:
-> Commit 941f5f0f6ef5 (x86: CPU: Fix up "cpu MHz" in /proc/cpuinfo) caused
-> a serious performance issue when reading from /proc/cpuinfo on system
-> with aperfmperf.
+On Thu, Nov 9, 2017 at 3:41 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Ulf,
 >
-> For each cpu, arch_freq_get_on_cpu() sleeps 20ms to get its frequency.
-> On a system with 64 cpus, it takes 1.5s to finish running `cat
-> /proc/cpuinfo`, while it previously was done in 15ms.
-
-Honestly, I'm not sure what to do to address this ATM.
-
-The last requested frequency is only available in the non-HWP case, so 
-it cannot be used universally.
-
-> Some programs use /proc/cpuinfo during startup or runtime, eg. QEMU.
-> This patch will restore the previous behavior and let user space happy.
+> On Thu, Nov 9, 2017 at 3:28 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> [...]
+>>
+>>>>> The Ethernet driver can still call device_set_wakeup_enable(... , false)
+>>>>> to control this.  If WoL is disabled by the user (or deemed not usable, see
+>>>>> below), it already does so.
+>>>>
+>>>> I don't think that API is intended to be used like that and I wonder
+>>>> if it even works as expected.
+>>>>
+>>>> Quoting the doc:
+>>>> "If device wakeup mechanisms are enabled or disabled directly by
+>>>> drivers, they also should use :c:func:`device_may_wakeup()` to decide what to do
+>>>> during a system sleep transition.  Device drivers, however, are not expected to
+>>>> call :c:func:`device_set_wakeup_enable()` directly in any case."
+>>>>
+>>>> Rafael, can you comment on this?
+>>>
+>>> There are ca. 100 callers in drivers.
+>>
+>> Yeah, but those doesn't normally use it to toggle the setting, but
+>> instead only to set a default value during ->probe() or whatever
+>> initialization code that runs.
+>>
+>> I think that makes a big difference, doesn't it?
 >
-> Fixes: 941f5f0f6ef5 (x86: CPU: Fix up "cpu MHz" in /proc/cpuinfo)
-> Cc: stable@kernel.org   # 4.13
-> Signed-off-by: WANG Chao <chao.wang@ucloud.cn>
-> ---
->   arch/x86/kernel/cpu/Makefile | 2 +-
->   arch/x86/kernel/cpu/proc.c   | 4 +---
->   2 files changed, 2 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
-> index 236999c54edc..c60922a66385 100644
-> --- a/arch/x86/kernel/cpu/Makefile
-> +++ b/arch/x86/kernel/cpu/Makefile
-> @@ -22,7 +22,7 @@ obj-y			+= common.o
->   obj-y			+= rdrand.o
->   obj-y			+= match.o
->   obj-y			+= bugs.o
-> -obj-y			+= aperfmperf.o
-> +obj-$(CONFIG_CPU_FREQ)	+= aperfmperf.o
->   
->   obj-$(CONFIG_PROC_FS)	+= proc.o
->   obj-$(CONFIG_X86_FEATURE_NAMES) += capflags.o powerflags.o
-> diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-> index 4378a729b933..6b7e17bf0b71 100644
-> --- a/arch/x86/kernel/cpu/proc.c
-> +++ b/arch/x86/kernel/cpu/proc.c
-> @@ -78,10 +78,8 @@ static int show_cpuinfo(struct seq_file *m, void *v)
->   		seq_printf(m, "microcode\t: 0x%x\n", c->microcode);
->   
->   	if (cpu_has(c, X86_FEATURE_TSC)) {
-> -		unsigned int freq = arch_freq_get_on_cpu(cpu);
-> +		unsigned int freq = cpufreq_quick_get(cpu);
->   
-> -		if (!freq)
-> -			freq = cpufreq_quick_get(cpu);
->   		if (!freq)
->   			freq = cpu_khz;
->   		seq_printf(m, "cpu MHz\t\t: %u.%03u\n",
+> The few Ethernet drivers I looked at change the state in their
+> ethtool_ops.set_wol() callback, not during probe.
+> This is to be configured from userspace using ethtool.
+
+Which is the case I was talking about.
+
+Since changing the WoL setting via ethtool is expected to cause the
+sysfs knob to reflect its status, using device_set_wakeup_enable() in
+there is not actually confusing.
+
+The same applies to setting the default from ->probe().
+
+It will be confusing in all of the other cases, though.
+
+Thanks,
+Rafael
