@@ -1,19 +1,19 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH/RFC 2/3] irqchip/renesas-irqc: Use wakeup_path i.s.o. explicit clock handling
-Date: Thu,  9 Nov 2017 14:48:32 +0100
-Message-ID: <1510235313-32445-3-git-send-email-geert+renesas@glider.be>
+Subject: [PATCH/RFC 3/3] gpio: rcar: Use wakeup_path i.s.o. explicit clock handling
+Date: Thu,  9 Nov 2017 14:48:33 +0100
+Message-ID: <1510235313-32445-4-git-send-email-geert+renesas@glider.be>
 References: <1510235313-32445-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1510235313-32445-1-git-send-email-geert+renesas@glider.be>
-Sender: linux-renesas-soc-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Linus Walleij <linus.walleij@linaro.org>, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
 List-Id: linux-pm@vger.kernel.org
 
-Since commit 6f46aedb9c85873b ("irqchip: renesas-irqc: Add wake-up
-support"), when an IRQ is used for wakeup, the INTC
-block's module clock is manually kept running during system suspend, to
-make sure the device stays active.
+Since commit ab82fa7da4dce5c7 ("gpio: rcar: Prevent module clock disable
+when wake-up is enabled"), when a GPIO is used for wakeup, the GPIO
+block's module clock (if exists) is manually kept running during system
+suspend, to make sure the device stays active.
 
 However, this explicit clock handling is merely a workaround for a
 failure to properly communicate wakeup information to the device core.
@@ -35,43 +35,45 @@ To avoid regressions, this must not be applied before "soc: renesas:
 rcar-sysc: Keep wakeup sources active during system suspend" has landed
 upstream, hence the "RFC"!
 
-This driver is used on Renesas R-Mobile, R-Car Gen2/3, and RZ/G1
-platforms.  While the pm-rmobile driver already keeps wakeup sources
-active during system suspend, this is not the case on R-Car Gen2/3 and
-RZ/G1 yet.
+This driver is used on Renesas R-Car and RZ/G1 platforms.
+While the GPIO block on R-Car Gen1 doesn't have a controllable module
+clock and is thus fine, the rcar-sysc driver doesn't keep wakeup sources
+active during system suspend yet on R-Car Gen2 and Gen3, and on RZ/G1.
 
 v3:
   - New.
 ---
- drivers/irqchip/irq-renesas-irqc.c | 35 ++++++++++++++++++-----------------
- 1 file changed, 18 insertions(+), 17 deletions(-)
+ drivers/gpio/gpio-rcar.c | 43 ++++++++++++++++++-------------------------
+ 1 file changed, 18 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/irqchip/irq-renesas-irqc.c b/drivers/irqchip/irq-renesas-irqc.c
-index 52304b139aa46a60..d91dab43268f9d0a 100644
---- a/drivers/irqchip/irq-renesas-irqc.c
-+++ b/drivers/irqchip/irq-renesas-irqc.c
-@@ -17,7 +17,6 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+diff --git a/drivers/gpio/gpio-rcar.c b/drivers/gpio/gpio-rcar.c
+index 2cf5f458928b2af7..12bf87414213614d 100644
+--- a/drivers/gpio/gpio-rcar.c
++++ b/drivers/gpio/gpio-rcar.c
+@@ -14,7 +14,6 @@
+  * GNU General Public License for more details.
   */
  
 -#include <linux/clk.h>
+ #include <linux/err.h>
+ #include <linux/gpio.h>
  #include <linux/init.h>
- #include <linux/platform_device.h>
- #include <linux/spinlock.h>
-@@ -64,7 +63,7 @@ struct irqc_priv {
+@@ -37,10 +36,9 @@ struct gpio_rcar_priv {
  	struct platform_device *pdev;
- 	struct irq_chip_generic *gc;
- 	struct irq_domain *irq_domain;
+ 	struct gpio_chip gpio_chip;
+ 	struct irq_chip irq_chip;
 -	struct clk *clk;
-+	unsigned wakeup_path:1;
+ 	unsigned int irq_parent;
+ 	bool has_both_edge_trigger;
+-	bool needs_clk;
++	bool wakeup_path;
  };
  
- static struct irqc_priv *irq_data_to_priv(struct irq_data *data)
-@@ -111,15 +110,7 @@ static int irqc_irq_set_wake(struct irq_data *d, unsigned int on)
- 	int hw_irq = irqd_to_hwirq(d);
+ #define IOINTSEL 0x00	/* General IO/Interrupt Switching Register */
+@@ -186,14 +184,7 @@ static int gpio_rcar_irq_set_wake(struct irq_data *d, unsigned int on)
+ 		}
+ 	}
  
- 	irq_set_irq_wake(p->irq[hw_irq].requested_irq, on);
--
 -	if (!p->clk)
 -		return 0;
 -
@@ -84,48 +86,78 @@ index 52304b139aa46a60..d91dab43268f9d0a 100644
  	return 0;
  }
  
-@@ -159,12 +150,6 @@ static int irqc_probe(struct platform_device *pdev)
- 	p->pdev = pdev;
- 	platform_set_drvdata(pdev, p);
+@@ -330,17 +321,14 @@ static int gpio_rcar_direction_output(struct gpio_chip *chip, unsigned offset,
  
--	p->clk = devm_clk_get(&pdev->dev, NULL);
--	if (IS_ERR(p->clk)) {
--		dev_warn(&pdev->dev, "unable to get clock\n");
--		p->clk = NULL;
--	}
--
- 	pm_runtime_enable(&pdev->dev);
- 	pm_runtime_get_sync(&pdev->dev);
+ struct gpio_rcar_info {
+ 	bool has_both_edge_trigger;
+-	bool needs_clk;
+ };
  
-@@ -276,6 +261,21 @@ static int irqc_remove(struct platform_device *pdev)
+ static const struct gpio_rcar_info gpio_rcar_info_gen1 = {
+ 	.has_both_edge_trigger = false,
+-	.needs_clk = false,
+ };
+ 
+ static const struct gpio_rcar_info gpio_rcar_info_gen2 = {
+ 	.has_both_edge_trigger = true,
+-	.needs_clk = true,
+ };
+ 
+ static const struct of_device_id gpio_rcar_of_table[] = {
+@@ -403,7 +391,6 @@ static int gpio_rcar_parse_dt(struct gpio_rcar_priv *p, unsigned int *npins)
+ 	ret = of_parse_phandle_with_fixed_args(np, "gpio-ranges", 3, 0, &args);
+ 	*npins = ret == 0 ? args.args[2] : RCAR_MAX_GPIO_PER_BANK;
+ 	p->has_both_edge_trigger = info->has_both_edge_trigger;
+-	p->needs_clk = info->needs_clk;
+ 
+ 	if (*npins == 0 || *npins > RCAR_MAX_GPIO_PER_BANK) {
+ 		dev_warn(&p->pdev->dev,
+@@ -415,6 +402,21 @@ static int gpio_rcar_parse_dt(struct gpio_rcar_priv *p, unsigned int *npins)
  	return 0;
  }
  
 +#ifdef CONFIG_PM_SLEEP
-+static int irqc_suspend(struct device *dev)
++static int gpio_rcar_suspend(struct device *dev)
 +{
-+	struct irqc_priv *p = dev_get_drvdata(dev);
++	struct gpio_rcar_priv *p = dev_get_drvdata(dev);
 +
 +	dev->power.wakeup_path = p->wakeup_path;
 +	return 0;
 +}
 +
-+static SIMPLE_DEV_PM_OPS(irqc_pm_ops, irqc_suspend, NULL);
-+#define DEV_PM_OPS	&irqc_pm_ops
++static SIMPLE_DEV_PM_OPS(gpio_rcar_pm_ops, gpio_rcar_suspend, NULL);
++#define DEV_PM_OPS	&gpio_rcar_pm_ops
 +#else
 +#define DEV_PM_OPS	NULL
 +#endif
 +
- static const struct of_device_id irqc_dt_ids[] = {
- 	{ .compatible = "renesas,irqc", },
- 	{},
-@@ -288,6 +288,7 @@ static struct platform_driver irqc_device_driver = {
+ static int gpio_rcar_probe(struct platform_device *pdev)
+ {
+ 	struct gpio_rcar_priv *p;
+@@ -440,16 +442,6 @@ static int gpio_rcar_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, p);
+ 
+-	p->clk = devm_clk_get(dev, NULL);
+-	if (IS_ERR(p->clk)) {
+-		if (p->needs_clk) {
+-			dev_err(dev, "unable to get clock\n");
+-			ret = PTR_ERR(p->clk);
+-			goto err0;
+-		}
+-		p->clk = NULL;
+-	}
+-
+ 	pm_runtime_enable(dev);
+ 
+ 	irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+@@ -536,6 +528,7 @@ static struct platform_driver gpio_rcar_device_driver = {
+ 	.remove		= gpio_rcar_remove,
  	.driver		= {
- 		.name	= "renesas_irqc",
- 		.of_match_table	= irqc_dt_ids,
-+		.pm	= DEV_PM_OPS,
+ 		.name	= "gpio_rcar",
++		.pm     = DEV_PM_OPS,
+ 		.of_match_table = of_match_ptr(gpio_rcar_of_table),
  	}
  };
- 
 -- 
 2.7.4
