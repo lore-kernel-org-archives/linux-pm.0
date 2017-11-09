@@ -1,143 +1,134 @@
-From: Shuah Khan <shuahkh@osg.samsung.com>
-Subject: [GIT PULL] cpupower update for 4.15-rc1
-Date: Thu, 9 Nov 2017 13:10:27 -0700
-Message-ID: <d34df2fe-3f33-2716-6a29-8f66656edf8a@osg.samsung.com>
-Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------8665E14027308EA778F16E93"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from osg.samsung.com ([64.30.133.232]:60344 "EHLO osg.samsung.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750736AbdKIUKg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 9 Nov 2017 15:10:36 -0500
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Jeremy Linton <jeremy.linton@arm.com>
+Subject: [PATCH v4 0/9] Support PPTT for ARM64
+Date: Thu,  9 Nov 2017 15:03:02 -0600
+Message-ID: <20171109210311.25655-1-jeremy.linton@arm.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-acpi@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, robert.moore@intel.com, lv.zheng@intel.com, devel@acpica.org, Jeremy Linton <jeremy.linton@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Thomas Renninger <trenn@suse.de>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Shuah Khan <shuahkh@osg.samsung.com>, Prarit Bhargava <prarit@redhat.com>
 
-This is a multi-part message in MIME format.
---------------8665E14027308EA778F16E93
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+ACPI 6.2 adds the Processor Properties Topology Table (PPTT), which is
+used to describe the processor and cache topology. Ideally it is
+used to extend/override information provided by the hardware, but
+right now ARM64 is entirely dependent on firmware provided tables.
 
-Hi Rafael,
+This patch parses the table for the cache topology and CPU topology.
+New in the v4 we rename the topology cluster_id to physical_id
+to match the kernel macro using it, and as its unlikley to actually
+map to a cluster on an ACPI system. When we enable ACPI/PPTT for
+arm64 we map the physical_id to the PPTT node flagged as the
+physical package by the firmware. This results in topologies that
+match what the remainder of the system expects.
 
-Please pull the cpupower update for 4.15-rc1
+For example on juno:
+[root@mammon-juno-rh topology]# lstopo-no-graphics
+  Package L#0
+    L2 L#0 (1024KB)
+      L1d L#0 (32KB) + L1i L#0 (32KB) + Core L#0 + PU L#0 (P#0)
+      L1d L#1 (32KB) + L1i L#1 (32KB) + Core L#1 + PU L#1 (P#1)
+      L1d L#2 (32KB) + L1i L#2 (32KB) + Core L#2 + PU L#2 (P#2)
+      L1d L#3 (32KB) + L1i L#3 (32KB) + Core L#3 + PU L#3 (P#3)
+    L2 L#1 (2048KB)
+      L1d L#4 (32KB) + L1i L#4 (48KB) + Core L#4 + PU L#4 (P#4)
+      L1d L#5 (32KB) + L1i L#5 (48KB) + Core L#5 + PU L#5 (P#5)
+  HostBridge L#0
+    PCIBridge
+      PCIBridge
+        PCIBridge
+          PCI 1095:3132
+            Block(Disk) L#0 "sda"
+        PCIBridge
+          PCI 1002:68f9
+            GPU L#1 "renderD128"
+            GPU L#2 "card0"
+            GPU L#3 "controlD64"
+        PCIBridge
+          PCI 11ab:4380
+            Net L#4 "enp8s0"
 
-This update consists of fixes to the MHz frequency output and
-adding 64-bit library detection.
 
-Diff is attached.
+Git tree at:
+http://linux-arm.org/git?p=linux-jlinton.git
+branch: pptt_v4
 
-These patches have been in linux-next for a few days. I had to fix
-commit lines longer than 75 chars in one of the commits and fixed
-this morning.
+v3->v4:
+Suppress the "Found duplicate cache level/type..." message if the
+  duplicate cache entry is actually a duplicate node. This allows cases
+  like L1I and L1D nodes that point at the same L2 node to be accepted
+  without the warning.
+  
+Remove cluster/physical split code. Add a patch to rename cluster_id
+  so that its clear the topology may not be referring to a cluster.
+  
+Add additional ACPICA patch for the PPTT cache properties. This matches
+  an outstanding ACPICA pull that should be merged in the near future.
+  
+Replace a number of (struct*)((u8*)ptr+offset) constructs with ACPI_ADD_PTR
 
-Please let me know if you would like any changes in the work-flow
-and the pull request.
+Split out the topology parsing into an additional patch.
 
-thanks,
--- Shuah
+Tweak the cpu topology code to terminate on either a level, or a flag.
+  Add an additional function which retrives the physical package id
+  for a given cpu.
 
---------------------------------------------------------------
-The following changes since commit 0b07194bb55ed836c2cc7c22e866b87a14681984:
+Various other comments/tweaks.
 
-  Linux 4.14-rc7 (2017-10-29 13:58:38 -0700)
+v2->v3:
 
-are available in the git repository at:
+Remove valid bit check on leaf nodes. Now simply being a leaf node
+  is sufficient to verify the processor id against the ACPI
+  processor ids (gotten from MADT). 
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux tags/linux-cpupower-4.15-rc1
+Use the acpi processor for the "level 0" Id. This makes the /sys
+  visible core/thread ids more human readable if the firmware uses
+  small consecutive values for processor ids.
 
-for you to fetch changes up to 69b6f8a9b7961efd7dcc11ab9b1d5be55ed8a15e:
+Added PPTT to the list of injectable ACPI tables.
 
-  tools/power/cpupower: add libcpupower.so.0.0.1 to .gitignore (2017-11-09 10:52:22 -0700)
+Fix bug which kept the code from using the processor node as intended
+  in v2, caused by misuse of git rebase/fixup.
 
-----------------------------------------------------------------
-linux-cpupower-4.15-rc1
+v1->v2:
 
-This cpupower update consists of fixes to the MHz frequency output and
-adding 64-bit library detection.
+The parser keys off the acpi_pptt_processor node to determine
+  unique cache's rather than the acpi_pptt_cache referenced by the
+  processor node. This allows PPTT tables which "share" cache nodes
+  across cpu nodes despite not being a shared cache.
 
-----------------------------------------------------------------
-Prarit Bhargava (3):
-      cpupower: Fix no-rounding MHz frequency output
-      tools/power/cpupower: Add 64 bit library detection
-      tools/power/cpupower: add libcpupower.so.0.0.1 to .gitignore
+Normalize the socket, cluster and thread mapping so that they match
+  linux's traditional mapping for the physical id, and thread id.
+  Adding explicit scheduler knowledge of clusters (rather than just
+  their cache sharing attributes) is a subject for a future patch.
 
- tools/power/cpupower/.gitignore           | 3 +--
- tools/power/cpupower/Makefile             | 6 ++++++
- tools/power/cpupower/utils/cpufreq-info.c | 2 --
- 3 files changed, 7 insertions(+), 4 deletions(-)
---------------------------------------------------------------
+Jeremy Linton (9):
+  ACPICA: Add additional PPTT flags for cache properties
+  ACPI/PPTT: Add Processor Properties Topology Table parsing
+  arm64/acpi: Create arch specific cpu to acpi id helper
+  ACPI: Enable PPTT support on ARM64
+  drivers: base: cacheinfo: arm64: Add support for ACPI based firmware
+    tables
+  ACPI/PPTT: Add topology parsing code
+  arm64: Topology, rename cluster_id
+  arm64: topology: Enable ACPI/PPTT based CPU topology.
+  ACPI: Add PPTT to injectable table list
+
+ arch/arm64/Kconfig                |   1 +
+ arch/arm64/include/asm/acpi.h     |   4 +
+ arch/arm64/include/asm/topology.h |   4 +-
+ arch/arm64/kernel/cacheinfo.c     |  23 +-
+ arch/arm64/kernel/topology.c      |  74 ++++-
+ drivers/acpi/Kconfig              |   3 +
+ drivers/acpi/Makefile             |   1 +
+ drivers/acpi/pptt.c               | 570 ++++++++++++++++++++++++++++++++++++++
+ drivers/acpi/tables.c             |   3 +-
+ drivers/base/cacheinfo.c          |  17 +-
+ include/acpi/actbl1.h             |  14 +
+ include/linux/cacheinfo.h         |  11 +-
+ include/linux/topology.h          |   2 +
+ 13 files changed, 697 insertions(+), 30 deletions(-)
+ create mode 100644 drivers/acpi/pptt.c
 
 -- 
-Shuah Khan
-Sr. Linux Kernel Developer
-Open Source Innovation Group
-Samsung Research America (Silicon Valley)
-shuahkh@osg.samsung.com
+2.13.5
 
---------------8665E14027308EA778F16E93
-Content-Type: text/x-patch;
- name="linux-cpupower-4.15-rc1.diff"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="linux-cpupower-4.15-rc1.diff"
-
-diff --git a/tools/power/cpupower/.gitignore b/tools/power/cpupower/.giti=
-gnore
-index d42073f12609..1f9977cc609c 100644
---- a/tools/power/cpupower/.gitignore
-+++ b/tools/power/cpupower/.gitignore
-@@ -1,7 +1,6 @@
- .libs
- libcpupower.so
--libcpupower.so.0
--libcpupower.so.0.0.0
-+libcpupower.so.*
- build/ccdv
- cpufreq-info
- cpufreq-set
-diff --git a/tools/power/cpupower/Makefile b/tools/power/cpupower/Makefil=
-e
-index d6e1c02ddcfe..da205d1fa03c 100644
---- a/tools/power/cpupower/Makefile
-+++ b/tools/power/cpupower/Makefile
-@@ -30,6 +30,8 @@ OUTDIR :=3D $(shell cd $(OUTPUT) && /bin/pwd)
- $(if $(OUTDIR),, $(error output directory "$(OUTPUT)" does not exist))
- endif
-=20
-+include ../../scripts/Makefile.arch
-+
- # --- CONFIGURATION BEGIN ---
-=20
- # Set the following to `true' to make a unstripped, unoptimized
-@@ -79,7 +81,11 @@ bindir ?=3D	/usr/bin
- sbindir ?=3D	/usr/sbin
- mandir ?=3D	/usr/man
- includedir ?=3D	/usr/include
-+ifeq ($(IS_64_BIT), 1)
-+libdir ?=3D	/usr/lib64
-+else
- libdir ?=3D	/usr/lib
-+endif
- localedir ?=3D	/usr/share/locale
- docdir ?=3D       /usr/share/doc/packages/cpupower
- confdir ?=3D      /etc/
-diff --git a/tools/power/cpupower/utils/cpufreq-info.c b/tools/power/cpup=
-ower/utils/cpufreq-info.c
-index 3e701f0e9c14..df43cd45d810 100644
---- a/tools/power/cpupower/utils/cpufreq-info.c
-+++ b/tools/power/cpupower/utils/cpufreq-info.c
-@@ -93,8 +93,6 @@ static void print_speed(unsigned long speed)
- 		if (speed > 1000000)
- 			printf("%u.%06u GHz", ((unsigned int) speed/1000000),
- 				((unsigned int) speed%1000000));
--		else if (speed > 100000)
--			printf("%u MHz", (unsigned int) speed);
- 		else if (speed > 1000)
- 			printf("%u.%03u MHz", ((unsigned int) speed/1000),
- 				(unsigned int) (speed%1000));
-
---------------8665E14027308EA778F16E93--
