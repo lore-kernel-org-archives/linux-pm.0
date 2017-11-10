@@ -1,77 +1,56 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 0/3] PM / core: Invent a WAKEUP_POWERED driver flag
-Date: Fri, 10 Nov 2017 10:28:29 +0100
-Message-ID: <CAPDyKFpAxS9fp3NNnsmKyqedshNZgSzqcsqXTA9WA-4LE06i7A@mail.gmail.com>
-References: <1510154134-1248-1-git-send-email-ulf.hansson@linaro.org>
- <CAMuHMdUu6=zuCRBaON4K9ivG8bdV1xBuf4dCvPUr2JCL-=xC=w@mail.gmail.com>
- <CAPDyKFqeEZT631g=x_LTU+Dba=WAhM9YOHYfdsSYo+kJz7HtkQ@mail.gmail.com>
- <CAMuHMdX-MX-H0LKR68KLf4Ypp0ZBvV4sBEf8mv8DSNbe0VuGTg@mail.gmail.com>
- <CAPDyKFpY24tn7zZK8A+XzSvTXLa7s_o93sO+yH5Rkae8KmvrXA@mail.gmail.com>
- <CAMuHMdWJ5XXzP7wZ8NJjTaxHMARfcvCkVWev5Z29s077BGbYRA@mail.gmail.com>
- <CAPDyKFp6FYX-dLZJV6oto8Uc8e8KzO18ScTO8SU+8=NGbs7cOg@mail.gmail.com>
- <CAMuHMdUTX+=SfzivXz5HkgmrxcKB0miYnisBuy3iMtZNABS5KA@mail.gmail.com> <CAJZ5v0i9Qa4K-=UfC_zuZgWrP3=1r3pfdQ1e-AqNttze8utKFw@mail.gmail.com>
+From: WANG Chao <chao.wang@ucloud.cn>
+Subject: Re: [PATCH] x86: use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"
+ again
+Date: Fri, 10 Nov 2017 17:21:02 +0800
+Message-ID: <20171110092102.GA98700@WANG-Chaos-MacBook-Pro.local>
+References: <20171109103814.70688-1-chao.wang@ucloud.cn>
+ <6583ed1f-3ea3-c7fd-7e69-1430c8387e54@intel.com>
+ <20171110072513.mp5p7o7pledumoyi@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f193.google.com ([209.85.223.193]:46572 "EHLO
-        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751223AbdKJJ2a (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Nov 2017 04:28:30 -0500
-Received: by mail-io0-f193.google.com with SMTP id n79so2050424ion.3
-        for <linux-pm@vger.kernel.org>; Fri, 10 Nov 2017 01:28:30 -0800 (PST)
-In-Reply-To: <CAJZ5v0i9Qa4K-=UfC_zuZgWrP3=1r3pfdQ1e-AqNttze8utKFw@mail.gmail.com>
+Received: from m97139.mail.qiye.163.com ([220.181.97.139]:48235 "EHLO
+        m97139.mail.qiye.163.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751201AbdKJJ2z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Nov 2017 04:28:55 -0500
+Content-Disposition: inline
+In-Reply-To: <20171110072513.mp5p7o7pledumoyi@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, x86@kernel.org, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On 9 November 2017 at 17:31, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Thu, Nov 9, 2017 at 3:41 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> Hi Ulf,
->>
->> On Thu, Nov 9, 2017 at 3:28 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> [...]
->>>
->>>>>> The Ethernet driver can still call device_set_wakeup_enable(... , false)
->>>>>> to control this.  If WoL is disabled by the user (or deemed not usable, see
->>>>>> below), it already does so.
->>>>>
->>>>> I don't think that API is intended to be used like that and I wonder
->>>>> if it even works as expected.
->>>>>
->>>>> Quoting the doc:
->>>>> "If device wakeup mechanisms are enabled or disabled directly by
->>>>> drivers, they also should use :c:func:`device_may_wakeup()` to decide what to do
->>>>> during a system sleep transition.  Device drivers, however, are not expected to
->>>>> call :c:func:`device_set_wakeup_enable()` directly in any case."
->>>>>
->>>>> Rafael, can you comment on this?
->>>>
->>>> There are ca. 100 callers in drivers.
->>>
->>> Yeah, but those doesn't normally use it to toggle the setting, but
->>> instead only to set a default value during ->probe() or whatever
->>> initialization code that runs.
->>>
->>> I think that makes a big difference, doesn't it?
->>
->> The few Ethernet drivers I looked at change the state in their
->> ethtool_ops.set_wol() callback, not during probe.
->> This is to be configured from userspace using ethtool.
->
-> Which is the case I was talking about.
->
-> Since changing the WoL setting via ethtool is expected to cause the
-> sysfs knob to reflect its status, using device_set_wakeup_enable() in
-> there is not actually confusing.
->
-> The same applies to setting the default from ->probe().
->
-> It will be confusing in all of the other cases, though.
+On 11/10/17 at 08:25P, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rafael.j.wysocki@intel.com> wrote:
+> 
+> > Hi Linus,
+> > 
+> > On 11/9/2017 11:38 AM, WANG Chao wrote:
+> > > Commit 941f5f0f6ef5 (x86: CPU: Fix up "cpu MHz" in /proc/cpuinfo) caused
+> > > a serious performance issue when reading from /proc/cpuinfo on system
+> > > with aperfmperf.
+> > > 
+> > > For each cpu, arch_freq_get_on_cpu() sleeps 20ms to get its frequency.
+> > > On a system with 64 cpus, it takes 1.5s to finish running `cat
+> > > /proc/cpuinfo`, while it previously was done in 15ms.
+> > 
+> > Honestly, I'm not sure what to do to address this ATM.
+> > 
+> > The last requested frequency is only available in the non-HWP case, so it
+> > cannot be used universally.
+> 
+> This is a serious regression that needs to be fixed ASAP, because the slowdown is 
+> utterly ridiculous on a 120 CPU system:
+> 
+>   fomalhaut:~> time cat /proc/cpuinfo  >/dev/null
+> 
+>   real    0m2.689s
+>   user    0m0.001s
+>   sys     0m0.007s
 
-Agreed, so using it to enable/disable wakeups during suspend is a bad idea.
+Because 4.14 is about to release, how about adding this patch to 4.14
+now? We can work on a more sophisticated solution later.
 
-I will re-spin my series, addressing your review comments.
-
-Kind regards
-Uffe
+Thanks,
+WANG Chao
