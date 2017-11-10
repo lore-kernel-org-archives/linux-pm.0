@@ -1,125 +1,56 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 2/3] PM / core: Add WAKEUP_POWERED driver flag
-Date: Fri, 10 Nov 2017 10:44:01 +0100
-Message-ID: <CAPDyKFprpgEb_JsCPWWS0z2gomq8HZSKtktfgANqnRyHa-8jtg@mail.gmail.com>
-References: <1510154134-1248-1-git-send-email-ulf.hansson@linaro.org>
- <1510154134-1248-3-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0jFLL2pBNPo=J3MdwfcA9C+nSMe_S6iBYLoEA8SjbOJ+A@mail.gmail.com>
- <CAPDyKFpn5m+t-hBcFT1RebqaTtyLna9JCNJtsFA6yZwurKTxvw@mail.gmail.com> <CAJZ5v0iFoMgA++wqS9K9i_+rXn2EBP17dUB_AcA4P83GUnWo2g@mail.gmail.com>
+Subject: Re: [PATCH v2 0/3] PM / Domain: renesas: Fix active wakeup behavior
+Date: Fri, 10 Nov 2017 10:57:50 +0100
+Message-ID: <CAPDyKFrJ67POYoB1PQUjWEWxgzcGuBRUMKSs5NmjoyLOFLuk4A@mail.gmail.com>
+References: <1510234022-29442-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iFoMgA++wqS9K9i_+rXn2EBP17dUB_AcA4P83GUnWo2g@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f41.google.com ([209.85.214.41]:56827 "EHLO
+        mail-it0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752419AbdKJJ5v (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Nov 2017 04:57:51 -0500
+Received: by mail-it0-f41.google.com with SMTP id r127so1023259itb.5
+        for <linux-pm@vger.kernel.org>; Fri, 10 Nov 2017 01:57:51 -0800 (PST)
+In-Reply-To: <1510234022-29442-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-[...]
+On 9 November 2017 at 14:26, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+>         Hi Rafael, Ulf, Kevin,
+>
+> If a device in a Renesas ARM SoC is part of a Clock Domain, and it is
+> used as a wakeup source, it must be kept active during system suspend.
 
->>>
->>> First off, how does the driver know that the device has to be in full
->>> power for wakeup to work?
->>
->> Because the device is accessed as part of dealing with the wakeup.
->
-> Yes, it is, In the working state of the system.  In the system wakeup
-> case it may not be.
->
-> Essentially, what happens then is that driver-provided interrupt
-> handlers don't run as a rule and system wakeup is triggered by the
-> low-level handler at the IRQ chip level.  Next, the PM callbacks
-> invoked for the device are expected to clean up the wakeup status etc.
->
-> Of course, power still is necessary for that to work, but it may be
-> not be in-band.  That may be either in-band power used for normal
-> operations and provided through the interconnect used by the device or
-> it may be special wakeup power provided out-of-band.
->
-> Also the wakeup signal itself may be an in-band device interrupt (like
-> the ones used for signaling IO events during normal operation) or it
-> may be a special wakeup signal (like PCI PME) in which case, from the
-> driver's perspective, the wakeup signaling is out-of-band.
->
-> Usually, the driver doesn't know how this is set up for the particular
-> device in the particular platform and hence my question. :-)
->
-> The case at hand seems to be when the wakeup power is in-band or the
-> wakeup signal is an in-band interrupt (in which case power needs to be
-> provided to the interconnect at least).
+Geert, I think we discussed this a bit already. I wonder if the above
+is a correct statement for all devices in these PM domains, that has
+wakeups?
 
-Correct!
+Don't these SoCs make use of any external logic (out-of-band IRQ) to
+deal with the wakeup IRQs?
+
+For example, how is GPIO irqs dealt with in this regards?
+
+If that is the case, you should really avoid using the big hammer
+method of setting the GENPD_FLAG_ACTIVE_WAKEUP.
 
 >
-> If they both are out-of-band, the middle layer should know that,
-> because as a rule it will be involved in setting up both of them.
-> Otherwise, in principle, it should assume that in-band power needs to
-> be provided for wakeup to work and avoid turning things off if wakeup
-> is enabled.
-
-Agree!
-
+> Currently this is handled in device-specific drivers by explicitly
+> increasing the use count of the module clock when the device is
+> configured as a wakeup source, or if it is part of the wakeup path.
 >
->>>
->>> Second, this requirement sort of implies that the device cannot go
->>> into a low-power state during runtime suspend too, so it basically
->>> remains stays at full power even when runtime-suspended.
->>
->> No, not really, because that depends on the current situation.
->>
->> An Ethernet device can surely go into a low power state, at runtime
->> suspend, when the interface is down, for example.
+> However, this is merely a workaround.  The proper way to prevent the
+> device from being stopped is to inform this requirement to the genpd
+> core, using the new GENPD_FLAG_ACTIVE_WAKEUP flag introduced in commit
+> 95a20ef6f7e54c6a ("PM / Domains: Allow genpd users to specify default
+> active wakeup behavior").
 >
-> But then it is not expected to generate wakeup signals I suppose.
-
-Correct.
-
+> Hence this series does that for PM Domain drivers used on R-Car, RZ/A1,
+> RZ/G1 SoCs, mimicking what is already done succesfully on SH/R-Mobile
+> SoCs.  This will allow for the workarounds can be removed later.
 >
-> [BTW, I wonder how it detects when the cable is connected again to it.
-> I know what happens in PCI NICs, but that clearly is not the case
-> here.]
->
-> Well, anyway, it looks like the case when the device is
-> runtime-suspended right before system suspend and it is going to stay
-> suspended is not interesting here, because the state will be retained
-> whatever it is then.
-
-Correct.
-
->
-> An interesting case seems to be when the device is not
-> runtime-suspended when system suspend triggers.
->
-
-Yes.
-
-The principle is that the driver needs to runtime resume its device,
-if not already, during system suspend, as to be able to configure the
-in-band interrupt, then instruct the upper layers that the device
-needs to stay in its current power state.
-
->>>
->>> Does it then mean that the middle layer is expected to simply avoid
->>> changing the power state of the device when enabled to wake up the
->>> system, or is there more to that?  In the former case, it may be
->>> better to rename the flag to something along the lines of "don't
->>> change power state if wakeup enabled".
->>
->> Yes, correct.
->>
->> I can try to clarify that in the description and unless you have a
->> suggestion for a better name of the flag, I try to come up with
->> something for that too.
->
-> I was thinking about something like DPM_FLAG_IN_BAND_WAKEUP or similar.
-
-Perfect!
-
->
-> But please note that there are cases in which the middle layer has
-> information on what power states to put devices into for wakeup to
-> work and IMO that should take precedence over the flag as a rule.
-
-Yeah, let me try to clarify that in the doc.
 
 [...]
 
