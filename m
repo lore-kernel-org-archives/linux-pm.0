@@ -1,52 +1,218 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: Re: [PATCH v5 0/7] PM / devfreq: Use OPP interface to handle the
- frequency
-Date: Thu, 9 Nov 2017 16:12:59 -0800
-Message-ID: <20171110001259.GD28761@minitux>
-References: <CAOCOHw5+TtrCrnDUVj1QjBYb5tivsgTFL_8MgDGocAp0uWoEUw@mail.gmail.com>
- <1508722332-10628-1-git-send-email-cw00.choi@samsung.com>
- <CGME20171023013213epcas1p165faa416f69659b60ec4c3f18ea251d8@epcms1p2>
- <20171109235654epcms1p29b8d05dce899f1b11919823ed66cbd1c@epcms1p2>
+From: WANG Chao <chao.wang@ucloud.cn>
+Subject: Re: [PATCH] x86: use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"
+ again
+Date: Fri, 10 Nov 2017 12:04:00 +0800
+Message-ID: <20171110040400.GA97163@WANG-Chaos-MacBook-Pro.local>
+References: <20171109103814.70688-1-chao.wang@ucloud.cn>
+ <6583ed1f-3ea3-c7fd-7e69-1430c8387e54@intel.com>
+ <CAJZ5v0hdJhuoX2j=X4C5Rq+GT9_qKtMwgc-P6OJMfQ_36uLaKg@mail.gmail.com>
+ <3847477.0JmeHoyQ5e@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f68.google.com ([74.125.83.68]:53987 "EHLO
-        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755091AbdKJANE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Nov 2017 19:13:04 -0500
-Received: by mail-pg0-f68.google.com with SMTP id s2so6036480pge.10
-        for <linux-pm@vger.kernel.org>; Thu, 09 Nov 2017 16:13:03 -0800 (PST)
+Received: from m97135.mail.qiye.163.com ([220.181.97.135]:63401 "EHLO
+        m97135.mail.qiye.163.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753088AbdKJEMm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Nov 2017 23:12:42 -0500
 Content-Disposition: inline
-In-Reply-To: <20171109235654epcms1p29b8d05dce899f1b11919823ed66cbd1c@epcms1p2>
+In-Reply-To: <3847477.0JmeHoyQ5e@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: MyungJoo Ham <myungjoo.ham@samsung.com>
-Cc: Chanwoo Choi <cw00.choi@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "chanwoo@kernel.org" <chanwoo@kernel.org>, Inki Dae <inki.dae@samsung.com>, lkml <linux-kernel@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Vinayak Holikatti <vinholikatti@gmail.com>, Vivek Gautam <vivek.gautam@codeaurora.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Thu 09 Nov 15:56 PST 2017, MyungJoo Ham wrote:
-
-> > On Sun, Oct 22, 2017 at 6:32 PM, Chanwoo Choi <cw00.choi@samsung.com> wrote:
-> > > These patches makes the devfreq to use the OPP interface and clean-up codes.
+On 11/10/17 at 01:06P, Rafael J. Wysocki wrote:
+> On Thursday, November 9, 2017 11:30:54 PM CET Rafael J. Wysocki wrote:
+> > On Thu, Nov 9, 2017 at 5:06 PM, Rafael J. Wysocki
+> > <rafael.j.wysocki@intel.com> wrote:
+> > > Hi Linus,
 > > >
-> >
-> > Hi Chanwoo,
-> >
-> > This patch series breaks UFS support on modern Qualcomm platforms
-> > (e.g. MSM8996).
+> > > On 11/9/2017 11:38 AM, WANG Chao wrote:
+> > >>
+> > >> Commit 941f5f0f6ef5 (x86: CPU: Fix up "cpu MHz" in /proc/cpuinfo) caused
+> > >> a serious performance issue when reading from /proc/cpuinfo on system
+> > >> with aperfmperf.
+> > >>
+> > >> For each cpu, arch_freq_get_on_cpu() sleeps 20ms to get its frequency.
+> > >> On a system with 64 cpus, it takes 1.5s to finish running `cat
+> > >> /proc/cpuinfo`, while it previously was done in 15ms.
+> > >
+> > > Honestly, I'm not sure what to do to address this ATM.
+> > >
+> > > The last requested frequency is only available in the non-HWP case, so it
+> > > cannot be used universally.
+> > 
+> > OK, here's an idea.
+> > 
+> > c_start() can run aperfmperf_snapshot_khz() on all CPUs upfront (say
+> > in parallel), then wait for a while (say 5 ms; the current 20 ms wait
+> > is overkill) and then aperfmperf_snapshot_khz() can be run once on
+> > each CPU in show_cpuinfo() without taking the "stale cache" threshold
+> > into account.
+> > 
+> > I'm going to try that and see how far I can get with it.
 > 
-> Could you please show us the code location of it? 
+> Below is what I have.
 > 
+> I ended up using APERFMPERF_REFRESH_DELAY_MS for the delay in
+> aperfmperf_snapshot_all(), because 5 ms tended to add too much
+> variation to the results on my test box.
+> 
+> I think it may be reduced to 10 ms, though.
+> 
+> Chao, can you please try this one and report back?
 
-The driver is drivers/scsi/ufs/ufshcd.c function ufshcd_probe_hba()
-calls devm_devfreq_add_device() without there being an opp table
-associated with hba->dev. This used to return fine and
-ufshcd_devfreq_target() was called with *freq = UINT_MAX.
+Hi, Rafael
 
-Unfortunately the driver seems to be designed in such a way that without
-a call to ufshcd_devfreq_target() with *freq 0 or UINT_MAX some clock is
-left off, causing my board to reboot; so there's unfortunately a few
-levels of issues to fix here.
+Thanks for the patch. But it doesn't work for me. lscpu takes 1.5s to
+finish on a 64 cpus AMD box with aperfmperf.
 
-Regards,
-Bjorn
+You missed the fact that c_start() will also be called by c_next().
+
+But I don't think the overall idea is good enough. I think /proc/cpuinfo
+is too general for usespace too be delayed, no matter it's 10ms or 20ms.
+
+My point is cpu MHz is best to use a cached value for quick access. If
+people are looking for reliable and accurate cpu frequency,
+/proc/cpuinfo is probably a bad idae.
+
+What do you think?
+
+WANG Chao
+
+> 
+> 
+> ---
+>  arch/x86/kernel/cpu/aperfmperf.c |   42 ++++++++++++++++++++++++++++-----------
+>  arch/x86/kernel/cpu/cpu.h        |    4 +++
+>  arch/x86/kernel/cpu/proc.c       |    5 +++-
+>  3 files changed, 39 insertions(+), 12 deletions(-)
+> 
+> Index: linux-pm/arch/x86/kernel/cpu/aperfmperf.c
+> ===================================================================
+> --- linux-pm.orig/arch/x86/kernel/cpu/aperfmperf.c
+> +++ linux-pm/arch/x86/kernel/cpu/aperfmperf.c
+> @@ -14,6 +14,8 @@
+>  #include <linux/percpu.h>
+>  #include <linux/smp.h>
+>  
+> +#include "cpu.h"
+> +
+>  struct aperfmperf_sample {
+>  	unsigned int	khz;
+>  	ktime_t	time;
+> @@ -38,8 +40,6 @@ static void aperfmperf_snapshot_khz(void
+>  	u64 aperf, aperf_delta;
+>  	u64 mperf, mperf_delta;
+>  	struct aperfmperf_sample *s = this_cpu_ptr(&samples);
+> -	ktime_t now = ktime_get();
+> -	s64 time_delta = ktime_ms_delta(now, s->time);
+>  	unsigned long flags;
+>  
+>  	local_irq_save(flags);
+> @@ -57,15 +57,10 @@ static void aperfmperf_snapshot_khz(void
+>  	if (mperf_delta == 0)
+>  		return;
+>  
+> -	s->time = now;
+> +	s->time = ktime_get();
+>  	s->aperf = aperf;
+>  	s->mperf = mperf;
+> -
+> -	/* If the previous iteration was too long ago, discard it. */
+> -	if (time_delta > APERFMPERF_STALE_THRESHOLD_MS)
+> -		s->khz = 0;
+> -	else
+> -		s->khz = div64_u64((cpu_khz * aperf_delta), mperf_delta);
+> +	s->khz = div64_u64((cpu_khz * aperf_delta), mperf_delta);
+>  }
+>  
+>  unsigned int arch_freq_get_on_cpu(int cpu)
+> @@ -82,16 +77,41 @@ unsigned int arch_freq_get_on_cpu(int cp
+>  	/* Don't bother re-computing within the cache threshold time. */
+>  	time_delta = ktime_ms_delta(ktime_get(), per_cpu(samples.time, cpu));
+>  	khz = per_cpu(samples.khz, cpu);
+> -	if (khz && time_delta < APERFMPERF_CACHE_THRESHOLD_MS)
+> +	if (time_delta < APERFMPERF_CACHE_THRESHOLD_MS)
+>  		return khz;
+>  
+>  	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, 1);
+>  	khz = per_cpu(samples.khz, cpu);
+> -	if (khz)
+> +	if (time_delta <= APERFMPERF_STALE_THRESHOLD_MS)
+>  		return khz;
+>  
+> +	/* If the previous iteration was too long ago, take a new data point. */
+>  	msleep(APERFMPERF_REFRESH_DELAY_MS);
+>  	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, 1);
+>  
+>  	return per_cpu(samples.khz, cpu);
+>  }
+> +
+> +void aperfmperf_snapshot_all(void)
+> +{
+> +	if (!cpu_khz)
+> +		return;
+> +
+> +	if (!static_cpu_has(X86_FEATURE_APERFMPERF))
+> +		return;
+> +
+> +	smp_call_function_many(cpu_online_mask, aperfmperf_snapshot_khz, NULL, 1);
+> +	msleep(APERFMPERF_REFRESH_DELAY_MS);
+> +}
+> +
+> +unsigned int aperfmperf_snapshot_cpu(int cpu)
+> +{
+> +	if (!cpu_khz)
+> +		return 0;
+> +
+> +	if (!static_cpu_has(X86_FEATURE_APERFMPERF))
+> +		return 0;
+> +
+> +	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, 1);
+> +	return per_cpu(samples.khz, cpu);
+> +}
+> Index: linux-pm/arch/x86/kernel/cpu/cpu.h
+> ===================================================================
+> --- linux-pm.orig/arch/x86/kernel/cpu/cpu.h
+> +++ linux-pm/arch/x86/kernel/cpu/cpu.h
+> @@ -47,4 +47,8 @@ extern const struct cpu_dev *const __x86
+>  
+>  extern void get_cpu_cap(struct cpuinfo_x86 *c);
+>  extern void cpu_detect_cache_sizes(struct cpuinfo_x86 *c);
+> +
+> +extern unsigned int aperfmperf_snapshot_cpu(int cpu);
+> +extern void aperfmperf_snapshot_all(void);
+> +
+>  #endif /* ARCH_X86_CPU_H */
+> Index: linux-pm/arch/x86/kernel/cpu/proc.c
+> ===================================================================
+> --- linux-pm.orig/arch/x86/kernel/cpu/proc.c
+> +++ linux-pm/arch/x86/kernel/cpu/proc.c
+> @@ -5,6 +5,8 @@
+>  #include <linux/seq_file.h>
+>  #include <linux/cpufreq.h>
+>  
+> +#include "cpu.h"
+> +
+>  /*
+>   *	Get CPU information for use by the procfs.
+>   */
+> @@ -78,7 +80,7 @@ static int show_cpuinfo(struct seq_file
+>  		seq_printf(m, "microcode\t: 0x%x\n", c->microcode);
+>  
+>  	if (cpu_has(c, X86_FEATURE_TSC)) {
+> -		unsigned int freq = arch_freq_get_on_cpu(cpu);
+> +		unsigned int freq = aperfmperf_snapshot_cpu(cpu);
+>  
+>  		if (!freq)
+>  			freq = cpufreq_quick_get(cpu);
+> @@ -141,6 +143,7 @@ static int show_cpuinfo(struct seq_file
+>  
+>  static void *c_start(struct seq_file *m, loff_t *pos)
+>  {
+> +	aperfmperf_snapshot_all();
+>  	*pos = cpumask_next(*pos - 1, cpu_online_mask);
+>  	if ((*pos) < nr_cpu_ids)
+>  		return &cpu_data(*pos);
+> 
