@@ -1,111 +1,109 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH] cpuidle: Allow menu governor to enter deeper sleep states after some time
-Date: Fri, 10 Nov 2017 09:42:14 -0800
-Message-ID: <001901d35a4b$40d2f310$c278d930$@net>
-References: <a181bf42-9462-476c-6dcd-39fc7151957f@tu-dresden.de> <000101d34938$da740870$8f5c1950$@net> <000801d34a78$cdd27890$697769b0$@net> CCuzeI4ZRt1L5CCv4eEEwJ
-Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v1 1/3] PM / sysfs: Convert to use sysfs_streq()
+Date: Fri, 10 Nov 2017 20:28:07 +0200
+Message-ID: <20171110182809.85953-1-andriy.shevchenko@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta17.telus.net ([209.171.16.90]:50649 "EHLO cmta17.telus.net"
+Received: from mga02.intel.com ([134.134.136.20]:31726 "EHLO mga02.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752625AbdKJRmU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 10 Nov 2017 12:42:20 -0500
-In-Reply-To: CCuzeI4ZRt1L5CCv4eEEwJ
-Content-Language: en-ca
+        id S1751142AbdKJS2P (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 10 Nov 2017 13:28:15 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>
-Cc: =?UTF-8?Q?'Marcus_H=C3=A4hnel'?= <mhaehnel@os.inf.tu-dresden.de>, 'Daniel Hackenberg' <daniel.hackenberg@tu-dresden.de>, =?UTF-8?Q?'Robert_Sch=C3=B6ne'?= <robert.schoene@tu-dresden.de>, mario.bielert@tu-dresden.de, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, 'Alex Shi' <alex.shi@linaro.org>, 'Ingo Molnar' <mingo@kernel.org>, 'Rik van Riel' <riel@redhat.com>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Nicholas Piggin' <npiggin@gmail.com>, linux-pm@vger.kernel.org, 'Len Brown' <lenb@kernel.org>, Doug Smythies <dsmythies@telus.net>
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Pavel Machek <pavel@ucw.cz>, linux-pm@vger.kernel.org
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-Hi Thomas,
+...instead of custom approach.
 
-In addition to my previous reply:
-
-On 2017.11.7 15:04 Thomas Ilsche wrote:
-
-> I made a hack[1] to stop poll_idle after timer_expires which prevents the issue
-> in my tests. The idea is to make sure that poll_idle is really exited whenever a
-> timer happens. I was trying to use existing information, but I'm not entirely
-> sure if tick_sched.timer_expires actually has the right semantic.
-
-Your patch does not prevent the issue in my case.
-And actually I wouldn't expect it to. Why not? My (unproven) theory has always been
-that by the time it ends up in the loop in drivers/cpuidle/poll_state.c the timer has
-already expired, so you are looking at the next timer time, which is long.
-
-As previously mentioned, another old, but rebased, patch does work for my case,
-I'll paste it below.
-
-I'll just add a note that I find testing results hard to repeat here. Sometimes my tests
-will go for hours without an issue and other times they go for hours with constant issues.
-I will say that there does appear to be some repeatable pattern, where forcing minimum
-pstate makes the problem worse than when forcing the maximum pstate. (i.e. the time between
-reading the original call to tick_nohz_get_sleep_length and the loop inside
-drivers/cpuidle/poll_state.c is longer).
-
-[1]: https://github.com/tud-zih-energy/linux/commit/7529b167dc7c2afaacd4551fe01ec576df5097e3
-
-... Doug
-
->From 788fab5531625d7bc7f6db9622984c8e87fe7672 Mon Sep 17 00:00:00 2001
-From: Doug Smythies <dsmythies@telus.net>
-Date: Sat, 28 Oct 2017 07:15:41 -0700
-Subject: [PATCH] cpuidle: break out of idle polling loop after HLT threshold
-
-This was from Rik van Riel on 2016.03.18
-
-Staying in the poll loop can be beneficial for workloads that
-wake back up very, very quickly, but staying in the poll loop
-for too long can waste a lot of power.
-
-Break out of the idle polling loop if the system has spent more
-time in the loop than the threshold for entering the next power
-saving mode.
-
-The poll loop uses full CPU power already, so this will not
-increase the power use of the poll loop.
-
-Signed-off-by: Doug Smythies <dsmythies@telus.net>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/cpuidle/poll_state.c | 21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+ drivers/base/power/sysfs.c | 39 +++++++++------------------------------
+ 1 file changed, 9 insertions(+), 30 deletions(-)
 
-diff --git a/drivers/cpuidle/poll_state.c b/drivers/cpuidle/poll_state.c
-index 7416b16..3023d44 100644
---- a/drivers/cpuidle/poll_state.c
-+++ b/drivers/cpuidle/poll_state.c
-@@ -11,10 +11,29 @@
- static int __cpuidle poll_idle(struct cpuidle_device *dev,
-                               struct cpuidle_driver *drv, int index)
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index e153e28b1857..662632ac5e0e 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -108,16 +108,10 @@ static ssize_t control_show(struct device *dev, struct device_attribute *attr,
+ static ssize_t control_store(struct device * dev, struct device_attribute *attr,
+ 			     const char * buf, size_t n)
  {
-+       /*
-+        * Polling is state 0; break out of the polling loop after the
-+        * threshold for the next power state has passed. Doing this several
-+        * times in a row should cause the menu governor to immediately
-+        * select a deeper power state.
-+        */
-+       u64 limit = drv->states[1].target_residency * NSEC_PER_USEC;
-+       ktime_t start = ktime_get();
-+       int i = 0;
-+
-        local_irq_enable();
-        if (!current_set_polling_and_test()) {
--               while (!need_resched())
-+               while (!need_resched()) {
-+                       ktime_t now;
-                        cpu_relax();
-+
-+                       /* Occasionally check for a timeout. */
-+                       if (!(i++ % 1000)) {
-+                               now = ktime_get();
-+                               if (ktime_to_ns(ktime_sub(now, start)) > limit)
-+                                       break;
-+                       }
-+               }
-        }
-        current_clr_polling();
-
---
-2.7.4
+-	char *cp;
+-	int len = n;
+-
+-	cp = memchr(buf, '\n', n);
+-	if (cp)
+-		len = cp - buf;
+ 	device_lock(dev);
+-	if (len == sizeof ctrl_auto - 1 && strncmp(buf, ctrl_auto, len) == 0)
++	if (sysfs_streq(buf, ctrl_auto))
+ 		pm_runtime_allow(dev);
+-	else if (len == sizeof ctrl_on - 1 && strncmp(buf, ctrl_on, len) == 0)
++	else if (sysfs_streq(buf, ctrl_on))
+ 		pm_runtime_forbid(dev);
+ 	else
+ 		n = -EINVAL;
+@@ -245,7 +239,7 @@ static ssize_t pm_qos_resume_latency_store(struct device *dev,
+ 
+ 		if (value == 0)
+ 			value = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT;
+-	} else if (!strcmp(buf, "n/a") || !strcmp(buf, "n/a\n")) {
++	} else if (sysfs_streq(buf, "n/a")) {
+ 		value = 0;
+ 	} else {
+ 		return -EINVAL;
+@@ -285,9 +279,9 @@ static ssize_t pm_qos_latency_tolerance_store(struct device *dev,
+ 		if (value < 0)
+ 			return -EINVAL;
+ 	} else {
+-		if (!strcmp(buf, "auto") || !strcmp(buf, "auto\n"))
++		if (sysfs_streq(buf, "auto"))
+ 			value = PM_QOS_LATENCY_TOLERANCE_NO_CONSTRAINT;
+-		else if (!strcmp(buf, "any") || !strcmp(buf, "any\n"))
++		else if (sysfs_streq(buf, "any"))
+ 			value = PM_QOS_LATENCY_ANY;
+ 		else
+ 			return -EINVAL;
+@@ -342,20 +336,12 @@ static ssize_t
+ wake_store(struct device * dev, struct device_attribute *attr,
+ 	const char * buf, size_t n)
+ {
+-	char *cp;
+-	int len = n;
+-
+ 	if (!device_can_wakeup(dev))
+ 		return -EINVAL;
+ 
+-	cp = memchr(buf, '\n', n);
+-	if (cp)
+-		len = cp - buf;
+-	if (len == sizeof _enabled - 1
+-			&& strncmp(buf, _enabled, sizeof _enabled - 1) == 0)
++	if (sysfs_streq(buf, _enabled))
+ 		device_set_wakeup_enable(dev, 1);
+-	else if (len == sizeof _disabled - 1
+-			&& strncmp(buf, _disabled, sizeof _disabled - 1) == 0)
++	else if (sysfs_streq(buf, _disabled))
+ 		device_set_wakeup_enable(dev, 0);
+ 	else
+ 		return -EINVAL;
+@@ -566,16 +552,9 @@ static ssize_t async_show(struct device *dev, struct device_attribute *attr,
+ static ssize_t async_store(struct device *dev, struct device_attribute *attr,
+ 			   const char *buf, size_t n)
+ {
+-	char *cp;
+-	int len = n;
+-
+-	cp = memchr(buf, '\n', n);
+-	if (cp)
+-		len = cp - buf;
+-	if (len == sizeof _enabled - 1 && strncmp(buf, _enabled, len) == 0)
++	if (sysfs_streq(buf, _enabled))
+ 		device_enable_async_suspend(dev);
+-	else if (len == sizeof _disabled - 1 &&
+-		 strncmp(buf, _disabled, len) == 0)
++	else if (sysfs_streq(buf, _disabled))
+ 		device_disable_async_suspend(dev);
+ 	else
+ 		return -EINVAL;
+-- 
+2.14.2
