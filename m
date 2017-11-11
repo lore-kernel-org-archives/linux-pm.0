@@ -1,48 +1,37 @@
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH] powercap: Remove reassignment
-Date: Sat, 11 Nov 2017 23:17:26 +0530
-Message-ID: <00329a239c8b1640a9e491b6a90a5b20fd45e42c.1510422357.git.arvind.yadav.cs@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f68.google.com ([74.125.83.68]:50097 "EHLO
-        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751699AbdKKRrh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Nov 2017 12:47:37 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net
+Subject: [PATCH] mailbox/omap: unregister mbox class
+Date: Sat, 11 Nov 2017 23:39:18 +0530
+Message-ID: <014a4c5cd6008a42621d45f34d57b9e1a72d3c76.1510423634.git.arvind.yadav.cs@gmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: jassisinghbrar@gmail.com, s-anna@ti.com
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-It is not necessary to reassignment of 'result'.
-Here, result is being initialized zero and then updated with
-seed_constraint_attributes().
-class_register is enough to return successful and error value.
+platform_driver_register() can fail here and we must unregister mbox
+class.
 
 Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/powercap/powercap_sys.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/mailbox/omap-mailbox.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
-index 5b10b50..64b2b25 100644
---- a/drivers/powercap/powercap_sys.c
-+++ b/drivers/powercap/powercap_sys.c
-@@ -673,15 +673,13 @@ EXPORT_SYMBOL_GPL(powercap_unregister_control_type);
+diff --git a/drivers/mailbox/omap-mailbox.c b/drivers/mailbox/omap-mailbox.c
+index c5e8b9c..2517038 100644
+--- a/drivers/mailbox/omap-mailbox.c
++++ b/drivers/mailbox/omap-mailbox.c
+@@ -906,7 +906,11 @@ static int __init omap_mbox_init(void)
+ 	mbox_kfifo_size = max_t(unsigned int, mbox_kfifo_size,
+ 							sizeof(mbox_msg_t));
  
- static int __init powercap_init(void)
- {
--	int result = 0;
-+	int result;
- 
- 	result = seed_constraint_attributes();
- 	if (result)
- 		return result;
- 
--	result = class_register(&powercap_class);
--
--	return result;
-+	return class_register(&powercap_class);
+-	return platform_driver_register(&omap_mbox_driver);
++	err = platform_driver_register(&omap_mbox_driver);
++	if (err)
++		class_unregister(&omap_mbox_class);
++
++	return err;
  }
+ subsys_initcall(omap_mbox_init);
  
- device_initcall(powercap_init);
 -- 
 2.7.4
