@@ -1,66 +1,40 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: [PATCH] PM: Provide a config snippet for disabling PM
-Date: Sun, 12 Nov 2017 13:26:06 +0000
-Message-ID: <20171112132606.29910-1-broonie@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, Kevin Hilman <khilman@baylibre.com>, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>
+From: Pan Bian <bianpan2016@163.com>
+Subject: [PATCH] power: supply: cpcap-charger: fix incorrect return value check
+Date: Sun, 12 Nov 2017 23:52:02 +0800
+Message-ID: <1510501922-19163-1-git-send-email-bianpan2016@163.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from m12-14.163.com ([220.181.12.14]:57846 "EHLO m12-14.163.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751220AbdKLPw0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 12 Nov 2017 10:52:26 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pan Bian <bianpan2016@163.com>
 
-A frequent source of build problems is poor handling of optional PM
-support, almost all development is done with the PM options enabled
-but they can be turned off.  Currently few if any of the build test
-services do this as standard as there is no standard config for it and
-the use of selects and def_bool means that simply setting CONFIG_PM=n
-doesn't do what is expected.  To make this easier provide a fragement
-that can be used with KCONFIG_ALLCONFIG to force PM off.
+Function platform_get_irq_byname() returns a negative error code on
+failure, and a zero or positive number on success. However, in function
+cpcap_usb_init_irq(), positive IRQ numbers are also taken as error
+cases. Use "if (irq < 0)" instead of "if (!irq)" to validate the return
+value of platform_get_irq_byname().
 
-CONFIG_XEN is disabled as Xen uses hibernation callbacks which end up
-turning on power management on architectures with Xen.  Some cpuidle
-implementations on ARM select PM so CONFIG_CPU_IDLE is disabled, and
-some ARM architectures unconditionally enable PM so they are also
-disabled.
-
-Signed-off-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Pan Bian <bianpan2016@163.com>
 ---
- MAINTAINERS                |  1 +
- kernel/configs/nopm.config | 15 +++++++++++++++
- 2 files changed, 16 insertions(+)
- create mode 100644 kernel/configs/nopm.config
+ drivers/power/supply/cpcap-charger.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 0630482e701b..81851e3d6cbe 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -10805,6 +10805,7 @@ F:	include/linux/pm.h
- F:	include/linux/pm_*
- F:	include/linux/powercap.h
- F:	drivers/powercap/
-+F:	kernel/configs/nopm.config
+diff --git a/drivers/power/supply/cpcap-charger.c b/drivers/power/supply/cpcap-charger.c
+index 11a0763..e4905be 100644
+--- a/drivers/power/supply/cpcap-charger.c
++++ b/drivers/power/supply/cpcap-charger.c
+@@ -484,7 +484,7 @@ static int cpcap_usb_init_irq(struct platform_device *pdev,
+ 	int irq, error;
  
- POWER STATE COORDINATION INTERFACE (PSCI)
- M:	Mark Rutland <mark.rutland@arm.com>
-diff --git a/kernel/configs/nopm.config b/kernel/configs/nopm.config
-new file mode 100644
-index 000000000000..81ff07863576
---- /dev/null
-+++ b/kernel/configs/nopm.config
-@@ -0,0 +1,15 @@
-+CONFIG_PM=n
-+CONFIG_SUSPEND=n
-+CONFIG_HIBERNATION=n
-+
-+# Triggers PM on OMAP
-+CONFIG_CPU_IDLE=n
-+
-+# Triggers enablement via hibernate callbacks
-+CONFIG_XEN=n
-+
-+# ARM/ARM64 architectures that select PM unconditionally
-+CONFIG_ARCH_OMAP2PLUS_TYPICAL=n
-+CONFIG_ARCH_RENESAS=n
-+CONFIG_ARCH_TEGRA=n
-+CONFIG_ARCH_VEXPRESS=n
+ 	irq = platform_get_irq_byname(pdev, name);
+-	if (!irq)
++	if (irq < 0)
+ 		return -ENODEV;
+ 
+ 	error = devm_request_threaded_irq(ddata->dev, irq, NULL,
 -- 
-2.14.1
+1.9.1
