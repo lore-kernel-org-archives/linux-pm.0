@@ -1,56 +1,53 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 0/3] PM / core: Invent a WAKEUP_POWERED driver flag
-Date: Mon, 13 Nov 2017 16:50:20 +0100
-Message-ID: <CAPDyKFrLYbpttNgyS=J9-1v9aBH26+S7Y9a1=ngYe9BuspwVpA@mail.gmail.com>
-References: <1510588003-16650-1-git-send-email-ulf.hansson@linaro.org>
+From: Suman Anna <s-anna@ti.com>
+Subject: Re: [PATCH] mailbox/omap: unregister mbox class
+Date: Mon, 13 Nov 2017 10:28:30 -0600
+Message-ID: <fbb176b6-d479-a5b5-af47-34267d97a6dd@ti.com>
+References: <014a4c5cd6008a42621d45f34d57b9e1a72d3c76.1510423634.git.arvind.yadav.cs@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1510588003-16650-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from fllnx210.ext.ti.com ([198.47.19.17]:56671 "EHLO
+        fllnx210.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753443AbdKMQ2c (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Nov 2017 11:28:32 -0500
+In-Reply-To: <014a4c5cd6008a42621d45f34d57b9e1a72d3c76.1510423634.git.arvind.yadav.cs@gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Arvind Yadav <arvind.yadav.cs@gmail.com>, jassisinghbrar@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 13 November 2017 at 16:46, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> The generic problem this series is trying to solve, is that for some bus types
-> and PM domains, it's not sufficient to only check the return value from
-> device_may_wakeup(), to fully understand how to treat the device during system
-> suspend.
->
-> One particular case that suffers from this, is the generic PM domain (aka genpd)
-> and that is taken care of in the final change in this series.
->
-> The special case this series address, is to enable drivers to instruct bus types
-> and PM domains, that the device need to remain in its current power state in
-> case it should be able to generate wakeup signals during system suspend. This is
-> done by an opt-in method, however bus types and PM domains that has additional
-> knowledge about devices' wakeup settings may still override the setting.
->
-> Geert Uytterhoeven, has been working on some related problems for some Renesas
-> SoCs [1], to be able to properly configure WakeOnLAN, for some ethernet
-> devices/drivers, which are used together with genpd. My intent is that this
-> series enables a solution for those problems.
->
-> [1]
-> https://www.spinics.net/lists/linux-renesas-soc/msg19319.html
->
-> Changes in v2:
->         - See change logs for each patch.
->
->
-> Ulf Hansson (3):
->   PM / core: Re-factor some code dealing with parents in
->     __device_suspend()
->   PM / core: Add IN_BAND_WAKEUP driver flag
->   PM / Domains: Take wakeup_path_in_band status flag into account
->
+On 11/11/2017 12:09 PM, Arvind Yadav wrote:
+> platform_driver_register() can fail here and we must unregister mbox
+> class.
+> 
+> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 
-Realized that the header of the cover letter still has the old
-WAKEUP_POWERED flag name in it. It should be "IN_BAND_WAKEUP", as
-following patches shows.
+Acked-by: Suman Anna <s-anna@ti.com>
 
-Apologize for noise!
+regards
+Suman
 
-Br
-Uffe
+> ---
+>  drivers/mailbox/omap-mailbox.c | 6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/mailbox/omap-mailbox.c b/drivers/mailbox/omap-mailbox.c
+> index c5e8b9c..2517038 100644
+> --- a/drivers/mailbox/omap-mailbox.c
+> +++ b/drivers/mailbox/omap-mailbox.c
+> @@ -906,7 +906,11 @@ static int __init omap_mbox_init(void)
+>  	mbox_kfifo_size = max_t(unsigned int, mbox_kfifo_size,
+>  							sizeof(mbox_msg_t));
+>  
+> -	return platform_driver_register(&omap_mbox_driver);
+> +	err = platform_driver_register(&omap_mbox_driver);
+> +	if (err)
+> +		class_unregister(&omap_mbox_class);
+> +
+> +	return err;
+>  }
+>  subsys_initcall(omap_mbox_init);
+>  
+> 
