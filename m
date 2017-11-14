@@ -1,38 +1,74 @@
-From: Brian Bian <brian.bian@linux.intel.com>
-Subject: [PATCH] thermal: int3400_thermal: Ignore Unknown Notification Codes
-Date: Tue, 14 Nov 2017 09:36:36 -0800
-Message-ID: <1510680996-25468-1-git-send-email-brian.bian@linux.intel.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v2 2/2] ARM64 / cpuidle: Use new cpuidle macro for
+ entering retention state
+Date: Tue, 14 Nov 2017 17:40:49 +0000
+Message-ID: <22312902-e63e-6464-ea80-eb76ad40eee2@arm.com>
+References: <1510187922-8218-1-git-send-email-pprakash@codeaurora.org>
+ <1510187922-8218-3-git-send-email-pprakash@codeaurora.org>
+ <0b4b13d3-2415-33df-f02b-1c94df4331ea@arm.com>
+ <73f03603-5878-9f78-55b1-ad8d1267b302@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:1675 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756054AbdKNRgl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 14 Nov 2017 12:36:41 -0500
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:59576 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753457AbdKNRky (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 14 Nov 2017 12:40:54 -0500
+In-Reply-To: <73f03603-5878-9f78-55b1-ad8d1267b302@codeaurora.org>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, Brian Bian <brian.bian@linux.intel.com>
+To: "Prakash, Prashanth" <pprakash@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, daniel.lezcano@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com
 
-Some BIOS implementations route ACPI codes other than 0x83 to INT3400
-device. Ignore these ACPI notification codes because the INT3400 driver
-does not handle them.
 
-Signed-off-by: Brian Bian <brian.bian@linux.intel.com>
----
- drivers/thermal/int340x_thermal/int3400_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
-index 8ee38f5..c9db1c6 100644
---- a/drivers/thermal/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
-@@ -211,7 +211,7 @@ static void int3400_notify(acpi_handle handle,
- 				thermal_prop);
- 		break;
- 	default:
--		dev_err(&priv->adev->dev, "Unsupported event [0x%x]\n", event);
-+		/* Ignore unknown notification codes sent to INT3400 device */
- 		break;
- 	}
- }
+On 14/11/17 16:15, Prakash, Prashanth wrote:
+> 
+> 
+> On 11/13/2017 5:33 AM, Sudeep Holla wrote:
+>>
+>> On 09/11/17 00:38, Prashanth Prakash wrote:
+>>> CPU_PM_CPU_IDLE_ENTER_RETENTION skips calling cpu_pm_enter() and
+>>> cpu_pm_exit(). By not calling cpu_pm functions in idle entry/exit
+>>> paths we can reduce the latency involved in entering and exiting
+>>> the low power idle state.
+>>>
+>>> On ARM64 based Qualcomm server platform we measured below overhead
+>>> for calling cpu_pm_enter and cpu_pm_exit for retention states.
+>>>
+>>> workload: stress --hdd #CPUs --hdd-bytes 32M  -t 30
+>>> 	Average overhead of cpu_pm_enter - 1.2us
+>>> 	Average overhead of cpu_pm_exit  - 3.1us
+>>>
+>>> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
+>>> ---
+>>>  arch/arm64/kernel/cpuidle.c | 8 +++++++-
+>>>  1 file changed, 7 insertions(+), 1 deletion(-)
+>>>
+>>> diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
+>>> index fd69108..f2d1381 100644
+>>> --- a/arch/arm64/kernel/cpuidle.c
+>>> +++ b/arch/arm64/kernel/cpuidle.c
+>>> @@ -47,6 +47,8 @@ int arm_cpuidle_suspend(int index)
+>>>  
+>>>  #include <acpi/processor.h>
+>>>  
+>>> +#define ARM64_LPI_IS_RETENTION_STATE(arch_flags) (!(arch_flags))
+>>> +
+>> This is fine, but just to be safer, is it better to check for all
+>> flags to be set as we can't/don't support any partial retention modes.
+> I am not sure I completely understand.
+> 
+> If any bit is set in arch_flags, then we lose the context corresponding to that bit, so
+> a full retention state will have no bit set, so that's what we are checking for.
+> Or am i missing something?
+> 
+
+Ah you are right, I somehow misinterpreted the flags exactly to be
+opposite(i.e. state retained) rather than state lost, sorry for the noise.
+
 -- 
-2.7.4
+Regards,
+Sudeep
