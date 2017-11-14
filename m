@@ -1,74 +1,209 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v2 2/2] ARM64 / cpuidle: Use new cpuidle macro for
- entering retention state
-Date: Tue, 14 Nov 2017 17:40:49 +0000
-Message-ID: <22312902-e63e-6464-ea80-eb76ad40eee2@arm.com>
-References: <1510187922-8218-1-git-send-email-pprakash@codeaurora.org>
- <1510187922-8218-3-git-send-email-pprakash@codeaurora.org>
- <0b4b13d3-2415-33df-f02b-1c94df4331ea@arm.com>
- <73f03603-5878-9f78-55b1-ad8d1267b302@codeaurora.org>
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Subject: Re: [Regression/XFS/PM] Freeze tasks failed in xfsaild
+Date: Tue, 14 Nov 2017 21:19:15 +0100
+Message-ID: <20171114201915.GI729@wotan.suse.de>
+References: <20171113103139.GA18936@yu-chen.sh.intel.com>
+ <20171113201414.GD16026@wotan.suse.de>
+ <CAPcyv4hbHpoMe20Sjpq4Qov6TKx9A+t6Y9GJ68PT2tsY3Jh7kA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:59576 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753457AbdKNRky (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 14 Nov 2017 12:40:54 -0500
-In-Reply-To: <73f03603-5878-9f78-55b1-ad8d1267b302@codeaurora.org>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAPcyv4hbHpoMe20Sjpq4Qov6TKx9A+t6Y9GJ68PT2tsY3Jh7kA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, Yu Chen <yu.c.chen@intel.com>, Michal Hocko <mhocko@suse.com>, Hendrik Woltersdorf <hendrikw@arcor.de>, Dave Chinner <dchinner@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Darrick J. Wong" <darrick.wong@oracle.com>, Jiri Kosina <jkosina@suse.cz>, Len Brown <len.brown@intel.com>, Rui Zhang <rui.zhang@intel.com>, Yu Chen <yu.chen.surf@gmail.com>, linux-xfs@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org, Thorsten Leemhuis <linux@leemhuis.info>, oleg.b.antonyan@gmail.com, Oliver Neukum <oneukum@suse.com>
 List-Id: linux-pm@vger.kernel.org
-To: "Prakash, Prashanth" <pprakash@codeaurora.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: Sudeep Holla <sudeep.holla@arm.com>, rjw@rjwysocki.net, daniel.lezcano@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com
 
-
-
-On 14/11/17 16:15, Prakash, Prashanth wrote:
+On Mon, Nov 13, 2017 at 12:37:00PM -0800, Dan Williams wrote:
+> On Mon, Nov 13, 2017 at 12:14 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
+> > On Mon, Nov 13, 2017 at 06:31:39PM +0800, Yu Chen wrote:
+> >> The xfs-buf/dm-1 should be freezed according to
+> >> commit 8018ec083c72 ("xfs: mark all internal workqueues
+> >> as freezable"), thus a easier way might be have to revert
+> >> commit 18f1df4e00ce ("xfs: Make xfsaild freezeable
+> >> again") for now, after this reverting the xfsaild/dm-1
+> >> becomes non-freezable again, thus pm does not see this
+> >> thread - unless we find a graceful way to treat xfsaild/dm-1
+> >> as 'frozen' if it is waiting for an already 'frozen' task,
+> >> or if the filesystem freeze is added in.
+> >>
+> >> Any comments would be much appreciated.
+> >
+> > Reverting 18f1df4e00ce ("xfs: Make xfsaild freezeable again")
+> > would break the proper form of the kthread for it to be freezable.
+> > This "form" is not defined formally, and sadly its just a form
+> > learned throughout years over different kthreads in the kernel.
 > 
-> 
-> On 11/13/2017 5:33 AM, Sudeep Holla wrote:
->>
->> On 09/11/17 00:38, Prashanth Prakash wrote:
->>> CPU_PM_CPU_IDLE_ENTER_RETENTION skips calling cpu_pm_enter() and
->>> cpu_pm_exit(). By not calling cpu_pm functions in idle entry/exit
->>> paths we can reduce the latency involved in entering and exiting
->>> the low power idle state.
->>>
->>> On ARM64 based Qualcomm server platform we measured below overhead
->>> for calling cpu_pm_enter and cpu_pm_exit for retention states.
->>>
->>> workload: stress --hdd #CPUs --hdd-bytes 32M  -t 30
->>> 	Average overhead of cpu_pm_enter - 1.2us
->>> 	Average overhead of cpu_pm_exit  - 3.1us
->>>
->>> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
->>> ---
->>>  arch/arm64/kernel/cpuidle.c | 8 +++++++-
->>>  1 file changed, 7 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/arch/arm64/kernel/cpuidle.c b/arch/arm64/kernel/cpuidle.c
->>> index fd69108..f2d1381 100644
->>> --- a/arch/arm64/kernel/cpuidle.c
->>> +++ b/arch/arm64/kernel/cpuidle.c
->>> @@ -47,6 +47,8 @@ int arm_cpuidle_suspend(int index)
->>>  
->>>  #include <acpi/processor.h>
->>>  
->>> +#define ARM64_LPI_IS_RETENTION_STATE(arch_flags) (!(arch_flags))
->>> +
->> This is fine, but just to be safer, is it better to check for all
->> flags to be set as we can't/don't support any partial retention modes.
-> I am not sure I completely understand.
-> 
-> If any bit is set in arch_flags, then we lose the context corresponding to that bit, so
-> a full retention state will have no bit set, so that's what we are checking for.
-> Or am i missing something?
-> 
+> If the behavior breaks then the "form" is broken.
 
-Ah you are right, I somehow misinterpreted the flags exactly to be
-opposite(i.e. state retained) rather than state lost, sorry for the noise.
+People have been arguing this for a long time, as such a long term objective is
+to do away with kthread freezing all together. That's easier said than done.
+It will require some more work though, so a tiny initial first goal will be to
+do fs freezing prior to suspend/hibernate. For discussions on the challenges on
+removing kthread frerezing, you can refer to the discussion of the last 2
+patches in my series.
 
--- 
-Regards,
-Sudeep
+> > I'm also not convinced all our hibernation / suspend woes would be fixed by
+> > reverting this commit, its why I worked instead on formalizing a proper freeze
+> > / thaw, which a lot of filesystems already implement prior to system
+> > hibernation / suspend / resume [0].
+> >
+> > I'll be respinning this series without the last patch, provided I'm able to
+> > ensure I don't need the ext[234] hack I did in that thread. Can you test the
+> > first 3 patches *only* on that series and seeing if that helps on your XFS
+> > front as well?
+> 
+> Those do not seem suitable for a  -stable backport.
+
+Agreed. But fortunately filesystem freeze support has been in place for XFS
+since v2.6.29 via commit c4be0c1dc4cdc ("filesystem freeze: add error handling
+of write_super_lockfs/unlockfs") and likewise for a few other filesystems.
+Prior to this commit freeze_fs() was write_super_lockfs() and returned
+void, likewise unfreeze_fs() was unlockfs() and also returned void, after
+the commit both could return an error. So one option for stable kernels
+is to see if you can devise a userspace hook pre suspend or hiberanate
+to issue the freeze fs yourself, and back:
+
+/usr/sbin/xfs_freeze /mount-point
+/usr/sbin/xfs_freeze -u /mount-point
+
+In systemd-isneyverse, as per systemd-suspend.service(8), this *could* be
+something like stashing the following script the systemd-suspend.service(8)
+special path, for instance my systemd-suspend.service(8) on openSUSE
+is /usr/lib/systemd/system-sleep/ however on Debian this is
+   /lib/systemd/system-sleep/
+
+So say you stash a fs.sleep script[0] there, first verify:
+
+systemctl status systemd-suspend.service
+
+You can then debug this while suspending with:
+
+journalctl -f -u systemd-suspend
+
+This is not enough though, one would also have to suspend processes
+mucking with XFS filesystems, and unfortunately there isn't much of
+graceful way to do this from userspace I think that I could come up
+with except using SIGSTOP, and using lsofs on the mount point...
+
+This seems to work on both my OpenSUSE and Debian systems, except the user
+experience may not be as ideal, and this is precisely why having the kernel do
+this work is much better long term.
+
+#!/bin/bash
+
+set -e
+
+XFS_FREEZE="/usr/sbin/xfs_freeze"
+PROC_MOUNTS="/proc/mounts"
+SUSPEND_SIGNAL="SIGSTOP"
+
+error_quit()
+{
+	echo "$1" >&2
+	exit 1
+}
+
+check-system()
+{
+	[ -r "${PROC_MOUNTS}" ] || error_quit "ERROR: cannot find or read ${PROC_MOUNTS}"
+	[ -x "${XFS_FREEZE}" ] || error_quit "ERROR: cannot find or execute ${XFS_FREEZE}"
+}
+
+run-fs-freeze()
+{
+	local i FSTYPE MNT ROOTDEV ARGS
+
+	while read ROOTDEV MNT FSTYPE ARGS; do
+	    [ "$ROOTDEV" = "rootfs" ] && continue
+	    [ "$MNT" = "/" ] && continue
+
+	    case $FSTYPE in
+	    xfs)
+		echo "  Trying to freeze userspace processes on '$FSTYPE' mounted on ${MNT}... "
+		for i in $(lsof +D $MNT -t 2>/dev/null); do kill -$SUSPEND_SIGNAL $i; done
+		echo -n "  Trying to freeze fstype '$FSTYPE' mounted on ${MNT}... "
+		$XFS_FREEZE -f $MNT
+		echo "OK!"
+		;;
+	    *)
+		;;
+	    esac
+
+	done < $PROC_MOUNTS
+}
+
+run-fs-unfreeze()
+{
+	local i FSTYPE MNT ROOTDEV ARGS
+
+	while read ROOTDEV MNT FSTYPE ARGS; do
+	    [ "$ROOTDEV" = "rootfs" ] && continue
+	    [ "$MNT" = "/" ] && continue
+
+	    case $FSTYPE in
+	    xfs)
+		echo "  Trying to unfreeze userspace processes on '$FSTYPE' mounted on ${MNT}... "
+		for i in $(lsof +D $MNT -t 2>/dev/null); do kill -SIGCONT $i; done
+		echo -n "  Trying to unfreeze fstype '$FSTYPE' mounted on ${MNT}... "
+		$XFS_FREEZE -u $MNT
+		echo "OK!"
+		;;
+	    *)
+		;;
+	    esac
+
+	done < $PROC_MOUNTS
+}
+
+check-system
+
+if [ "$2" = suspend ]; then
+	echo "INFO: running $0 for $2"
+else
+	echo "INFO: running $0 for $2"
+fi
+
+if [ "$1" = pre ] ; then
+	run-fs-freeze
+fi
+if [ "$1" = post ] ; then
+	run-fs-unfreeze
+fi
+
+> We can always
+> follow on with these patches once -stable and mainline are back to
+> their baseline behavior.
+
+Reverting 18f1df4e00ce ("xfs: Make xfsaild freezeable again") cannot
+be defined as "going back to baseline behavior" given it also implies
+we'd be resurfacing the issue Hendrik reported last year in February,
+that of suspend failures due to xfsaild blocking the freezer to
+settle down:
+
+    Jan 17 19:59:56 linux-6380 kernel: PM: Syncing filesystems ... done.
+    Jan 17 19:59:56 linux-6380 kernel: PM: Preparing system for sleep (mem)
+    Jan 17 19:59:56 linux-6380 kernel: Freezing user space processes ... (elapsed 0.001 seconds) done.
+    Jan 17 19:59:56 linux-6380 kernel: Freezing remaining freezable tasks ...
+    Jan 17 19:59:56 linux-6380 kernel: Freezing of tasks failed after 20.002 seconds (1 tasks refusing to freeze, wq_busy=0):
+    Jan 17 19:59:56 linux-6380 kernel: xfsaild/dm-5    S 00000000     0  1293      2 0x00000080
+    Jan 17 19:59:56 linux-6380 kernel:  f0ef5f00 00000046 00000200 00000000 ffff9022 c02d3800 00000000 00000032
+    Jan 17 19:59:56 linux-6380 kernel:  ee0b2400 00000032 f71e0d00 f36fabc0 f0ef2d00 f0ef6000 f0ef2d00 f12f90c0
+    Jan 17 19:59:56 linux-6380 kernel:  f0ef5f0c c0844e44 00000000 f0ef5f6c f811e0be 00000000 00000000 f0ef2d00
+    Jan 17 19:59:56 linux-6380 kernel: Call Trace:
+    Jan 17 19:59:56 linux-6380 kernel:  [<c0844e44>] schedule+0x34/0x90
+    Jan 17 19:59:56 linux-6380 kernel:  [<f811e0be>] xfsaild+0x5de/0x600 [xfs]
+    Jan 17 19:59:56 linux-6380 kernel:  [<c0286cbb>] kthread+0x9b/0xb0
+    Jan 17 19:59:56 linux-6380 kernel:  [<c0848a79>] ret_from_kernel_thread+0x21/0x38
+
+As noted on the commit log of Michal's patch, the issue had been there for quite
+some time, its just commit 24ba16bb3d4 ("xfs: clear PF_NOFREEZE for xfsaild
+kthread") made the issue visible.
+
+This is another way to say suspend has been busted on XFS for a very long time,
+but I would not blame XFS -- this is a kernel issue to get proper filesystem
+suspend working right, and the way we currently deal with kthreads is just
+a sloppy goo mess which has created this situation.
+
+  Luis
