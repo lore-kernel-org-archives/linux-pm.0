@@ -1,27 +1,72 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] x86: use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz" again
-Date: Tue, 14 Nov 2017 15:02:22 -0800
-Message-ID: <CA+55aFxkfh1U1kawntYUtz4u610Hcgx-HWgyL+pROzQFA+MOaw@mail.gmail.com>
-References: <20171109103814.70688-1-chao.wang@ucloud.cn> <CA+55aFycTaZjKg1SGujkMrOX5WmUyWHvy2ujzaV8jefOfDPy_Q@mail.gmail.com>
- <CAJZ5v0iPt8VKoM8BuRA7O+U+fk7dg37sqVJ0pi2=S8muqfznPQ@mail.gmail.com> <2101739.Je3pS2vcJU@aspire.rjw.lan>
+From: Dave Chinner <david@fromorbit.com>
+Subject: Re: [Regression/XFS/PM] Freeze tasks failed in xfsaild
+Date: Wed, 15 Nov 2017 10:07:30 +1100
+Message-ID: <20171114230730.GD4094@dastard>
+References: <20171113103139.GA18936@yu-chen.sh.intel.com>
+ <20171114201915.GI729@wotan.suse.de>
+ <20171114212538.GC4094@dastard>
+ <6271997.pCNICGrn9T@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f46.google.com ([209.85.214.46]:40803 "EHLO
-        mail-it0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753334AbdKNXCX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Nov 2017 18:02:23 -0500
-In-Reply-To: <2101739.Je3pS2vcJU@aspire.rjw.lan>
+Received: from ipmail03.adl6.internode.on.net ([150.101.137.143]:52802 "EHLO
+        ipmail03.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1754420AbdKNXHe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Nov 2017 18:07:34 -0500
+Content-Disposition: inline
+In-Reply-To: <6271997.pCNICGrn9T@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: WANG Chao <chao.wang@ucloud.cn>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, Dan Williams <dan.j.williams@intel.com>, Yu Chen <yu.c.chen@intel.com>, Michal Hocko <mhocko@suse.com>, Hendrik Woltersdorf <hendrikw@arcor.de>, Dave Chinner <dchinner@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Darrick J. Wong" <darrick.wong@oracle.com>, Jiri Kosina <jkosina@suse.cz>, Len Brown <len.brown@intel.com>, Rui Zhang <rui.zhang@intel.com>, Yu Chen <yu.chen.surf@gmail.com>, linux-xfs@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, linux-kernel@vger.kernel.org, Thorsten Leemhuis <linux@leemhuis.info>, oleg.b.antonyan@gmail.com, Oliver Neukum <oneukum@suse.com>
 
-On Tue, Nov 14, 2017 at 2:47 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> So what about the one below?  It works for me as expected.
+On Tue, Nov 14, 2017 at 11:01:57PM +0100, Rafael J. Wysocki wrote:
+> On Tuesday, November 14, 2017 10:25:38 PM CET Dave Chinner wrote:
+> > On Tue, Nov 14, 2017 at 09:19:15PM +0100, Luis R. Rodriguez wrote:
+> > > This is another way to say suspend has been busted on XFS for a very long time,
+> > > but I would not blame XFS -- this is a kernel issue to get proper filesystem
+> > > suspend working right, and the way we currently deal with kthreads is just
+> > > a sloppy goo mess which has created this situation.
+> > 
+> > Yes, and I've been telling people that suspend on journalling
+> > filesystems has been broken for a long time (i.e since I first
+> > realised the scope of the problem back in 2005). However, only XFS
+> > triggers those conditions regularly because it is the most
+> > asynchronous of the "freezable" journalling filesytems and has the
+> > most reliance on co-ordination of kernel threads and workqueues to
+> > function correctly.
+> > 
+> > IOWs, suspend of filesystems has been broken forever, and we've been
+> > slapping bandaids on it in XFS forever. Now we've got to a
+> > catch-22 situation that bandaids can't fix. We need structural
+> > fixes, like I said we needed to do more than 10 years ago.
+> 
+> Right.
+> 
+> Yet, apparently, nobody has had the time to make those changes for all
+> that time.
 
-Can somebody with 100+ cores test this? Ingo? You had a 160 core
-machine that took forever, didn't you..
+No, that's not the case. The problem was that the suspend developers
+were in complete denial about the short-comings of using "sync" to
+quiesce filesystems.  It wasn't until Plumbers a year ago that it
+was reluctantly admitted that maybe there was a problem and that
+filesystem freeze should be used instead.
 
-            Linus
+Until the admission that "sync" was inadequate was made, there was
+no point in even proposing a solution; the response up until that
+point in time was a "we don't see a problem here" denial. We had to
+wait for you guys to come to that conclusion yourselves because you
+simply wouldn't listen to what the filesystem developers were
+repeatedly telling you....
+
+> So what do you think should be done, specifically?
+
+Luis posted an initial version of those "use fs freeze" changes
+recently, so Work with Luis to get those changes into the kernel.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
