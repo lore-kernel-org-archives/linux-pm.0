@@ -1,96 +1,62 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / runtime: Drop children check from __pm_runtime_set_status()
-Date: Tue, 14 Nov 2017 10:56:39 +0100
-Message-ID: <CAPDyKFo0pufKdZ=5Dn84UewE7qN3ztVKjRV1_TyM_DcxX2B7Ug@mail.gmail.com>
-References: <1713438.irjm9MTSvo@aspire.rjw.lan> <CAPDyKFp9Cqh3NOCMoT1d2R__yYynDBQ48OvfOLAfRQ_-Z9QfeQ@mail.gmail.com>
- <7259587.Kcyqf0xrP6@aspire.rjw.lan> <CAPDyKFrzJuWVr9hmcU-S6LMMGTh2pyQcjMJc2+ky5AmctatOLQ@mail.gmail.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [RFC PATCH v2 0/7] typec: tcpm: Add sink side support for PPS
+Date: Tue, 14 Nov 2017 11:44:41 +0000
+Message-ID: <cover.1510657748.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f46.google.com ([209.85.214.46]:40379 "EHLO
-        mail-it0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754001AbdKNJ4l (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Nov 2017 04:56:41 -0500
-Received: by mail-it0-f46.google.com with SMTP id 72so12927536itl.5
-        for <linux-pm@vger.kernel.org>; Tue, 14 Nov 2017 01:56:40 -0800 (PST)
-In-Reply-To: <CAPDyKFrzJuWVr9hmcU-S6LMMGTh2pyQcjMJc2+ky5AmctatOLQ@mail.gmail.com>
+Received: from mail1.bemta6.messagelabs.com ([193.109.254.114]:57883 "EHLO
+        mail1.bemta6.messagelabs.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753186AbdKNLoo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Nov 2017 06:44:44 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Linus Walleij <linus.walleij@linaro.org>
+To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 
-On 14 November 2017 at 10:13, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 13 November 2017 at 22:50, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Monday, November 13, 2017 2:26:28 PM CET Ulf Hansson wrote:
->>> On 12 November 2017 at 01:27, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>> >
->>> > The check for "active" children in __pm_runtime_set_status(), when
->>> > trying to set the parent device status to "suspended", doesn't
->>> > really make sense, because in fact it is not invalid to set the
->>> > status of a device with runtime PM disabled to "suspended" in any
->>> > case.  It is invalid to enable runtime PM for a device with its
->>> > status set to "suspended" while its child_count reference counter
->>> > is nonzero, but the check in __pm_runtime_set_status() doesn't
->>> > really cover that situation.
->>>
->>> The reason to why I changed this in commit a8636c89648a ("PM /
->>> Runtime: Don't allow to suspend a device with an active child") was
->>> because to get a consistent behavior.
->>
->> Well, it causes the function to return an error in a non-error situation,
->> which IMnsHO is a bug.
->>
->>> Because, setting the device's status to active (RPM_ACTIVE) via
->>> __pm_runtime_set_status(), requires its parent to also be active (in
->>> case the parent has runtime PM enabled).
->>
->> No!!!
->>
->> The check is in there, because the parent's usage_count is affected by that
->> code and incrementing it in case the parent has runtime PM enabled and is
->> RPM_SUSPENDED leads to an inconsistent runtime PM state of the parent.  IOW,
->> it would confuse the framework.
->
-> Right, I do understand the reasons *why* it is like this.
->
->>
->> There's no such issue if the runtime PM status of a child is set to RPM_SUSPENDED.
->>
->> It is all consistent without the check I'm removing and is made inconsistent
->> by that very check.
->>
->>> I would prefer to try maintain this consistency, but I also I realize
->>> that commit a8636c89648a, should also have been checking if the parent
->>> has runtime PM enabled (again for consistency), which it doesn't.
->>>
->>> What about fixing that instead?
->>
->> Runtime PM is *disabled* for the parent at this point, guaranteed, so there's
->> nothing to check, I'm afraid ...
->
-> Where and how is that guarantee made?
+This patch set adds sink side support for the PPS feature introduced in the
+USB PD 3.0 specification.
 
-Oh, just realize that it should be "child" instead of "parent", in the
-above reasoning. Apologize for giving the wrong argument.
+The source PPS supply is represented using the Power Supply framework to provide
+access and control APIs for dealing with it's operating voltage and current,
+and switching between a standard PDO and PPS APDO operation. During standard PDO
+operation the voltage and current is read-only, but for APDO PPS these are
+writable as well to allow for control.
 
-So, let's me take this once again, to make it clear.
+It should be noted that the keepalive for PPS is not handled within TCPM. The
+expectation is that the external user will be required to ensure re-requests
+occur regularly to ensure PPS remains and the source does not hard reset.
 
-When pm_runtime_set_suspended(dev) is called, dev's child device may
-still be runtime PM enabled and active.
-I was suggesting to add a check for this scenario, to see if dev's
-child device is runtime PM is enabled, as and additional constraint
-before deciding to return an error code.
+Changes in v2:
+ - Use USB_PD and usb_pd prefixes for macros and inline functions in headers.
+ - Negotiate spec revision of PD headers during initial contract agreement.
+ - New headers now use SPDX tags for referencing correct license.
 
-The idea was to get a consistent behavior, from the
-pm_runtime_set_active|suspended() APIs point of view, and not from the
-runtime PM core point of view.
+NOTE: Code changes are based on linux-next tag 'next-20171114' to pick up
+the move out of staging of TCPM related code.
 
-Of course, because dev->power.child_count, is maintained properly even
-when runtime PM is disabled for dev's child device, it works as you
-have suggested in $subject patch as well.
+Adam Thomson (7):
+  typec: tcpm: Add PD Rev 3.0 definitions to PD header
+  typec: tcpm: Add ADO header for Alert message handling
+  typec: tcpm: Add SDB header for Status message handling
+  typec: tcpm: Add core support for sink side PPS
+  power: supply: Add type for USB PD PPS chargers
+  typec: tcpm: Represent source supply through power_supply class
+  typec: tcpm: Add support for sink PPS related messages
 
-[...]
+ drivers/power/supply/power_supply_sysfs.c |   2 +-
+ drivers/usb/typec/Kconfig                 |   1 +
+ drivers/usb/typec/fusb302/Kconfig         |   2 +-
+ drivers/usb/typec/fusb302/fusb302.c       |  63 +--
+ drivers/usb/typec/tcpm.c                  | 851 +++++++++++++++++++++++++++++-
+ include/linux/power_supply.h              |   1 +
+ include/linux/usb/pd.h                    | 174 +++++-
+ include/linux/usb/pd_ado.h                |  42 ++
+ include/linux/usb/pd_ext_sdb.h            |  31 ++
+ include/linux/usb/tcpm.h                  |   2 +-
+ 10 files changed, 1071 insertions(+), 98 deletions(-)
+ create mode 100644 include/linux/usb/pd_ado.h
+ create mode 100644 include/linux/usb/pd_ext_sdb.h
 
-Kind regards
-Uffe
+-- 
+1.9.1
