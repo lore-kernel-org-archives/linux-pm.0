@@ -1,96 +1,60 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [RFC PATCH v10 6/7] PCI / PM: Move acpi wakeup code to pci core
-Date: Mon, 13 Nov 2017 18:51:11 -0800
-Message-ID: <20171114025109.GA43048@google.com>
-References: <20171027072612.26565-1-jeffy.chen@rock-chips.com>
- <20171027072612.26565-7-jeffy.chen@rock-chips.com>
- <1894178.xtK0vD2N4H@aspire.rjw.lan>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [Regression/XFS/PM] Freeze tasks failed in xfsaild
+Date: Tue, 14 Nov 2017 11:31:37 +0800
+Message-ID: <20171114033137.GA23219@yu-chen.sh.intel.com>
+References: <20171113103139.GA18936@yu-chen.sh.intel.com>
+ <20171113201414.GD16026@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga05.intel.com ([192.55.52.43]:56317 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750806AbdKND3F (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 Nov 2017 22:29:05 -0500
 Content-Disposition: inline
-In-Reply-To: <1894178.xtK0vD2N4H@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Jeffy Chen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, dianders@chromium.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>
+In-Reply-To: <20171113201414.GD16026@wotan.suse.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: Michal Hocko <mhocko@suse.com>, Hendrik Woltersdorf <hendrikw@arcor.de>, Dave Chinner <dchinner@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Darrick J. Wong" <darrick.wong@oracle.com>, Jiri Kosina <jkosina@suse.cz>, Len Brown <len.brown@intel.com>, Rui Zhang <rui.zhang@intel.com>, Dan Williams <dan.j.williams@intel.com>, Yu Chen <yu.chen.surf@gmail.com>, linux-xfs@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Rafael,
-
-I'll answer some of it from my perspective, though Jeffy might have had
-different ideas (and answers) when he implemented this.
-
-On Wed, Nov 08, 2017 at 11:32:20PM +0100, Rafael J. Wysocki wrote:
-> On Friday, October 27, 2017 9:26:11 AM CET Jeffy Chen wrote:
-> > Move acpi wakeup code to pci core as pci_set_wakeup(), so that other
-> > platforms could reuse it.
+On Mon, Nov 13, 2017 at 09:14:14PM +0100, Luis R. Rodriguez wrote:
+> On Mon, Nov 13, 2017 at 06:31:39PM +0800, Yu Chen wrote:
+> > The xfs-buf/dm-1 should be freezed according to
+> > commit 8018ec083c72 ("xfs: mark all internal workqueues
+> > as freezable"), thus a easier way might be have to revert
+> > commit 18f1df4e00ce ("xfs: Make xfsaild freezeable
+> > again") for now, after this reverting the xfsaild/dm-1
+> > becomes non-freezable again, thus pm does not see this
+> > thread - unless we find a graceful way to treat xfsaild/dm-1
+> > as 'frozen' if it is waiting for an already 'frozen' task,
+> > or if the filesystem freeze is added in.
+> > 
+> > Any comments would be much appreciated.
 > 
-> What exactly do you want to reuse?
+> Reverting 18f1df4e00ce ("xfs: Make xfsaild freezeable again")
+> would break the proper form of the kthread for it to be freezable.
+> This "form" is not defined formally, and sadly its just a form
+> learned throughout years over different kthreads in the kernel.
 > 
-> It looks like that's just several lines of code in acpi_pci_wakeup()
-> and acpi_pci_propagate_wakeup() which invoke ACPI-specific lower-level
-> functions, so IMO not worth it at all.
-
-The important part he's sharing here is the walking of the tree
-structure, in which it's possible for some parent along the way to
-handle wakeup for its children. I'm not sure how valuable nor how
-reusable that is.
-
-In this case (the Rockchip platforms Jeffy and I are working on), I
-think we really want to just support a single WAKE# pin for the whole
-system, so maybe the complexity isn't needed. The spec does describe
-that there are good reasons for supporting more than 1 WAKE# pin though
-(e.g., 1 per device), so it doesn't seem really wise to shoehorn
-oursleves into a single setup.
-
-But that can be implemented either via copying the "few" lines of
-tree-walking logic, or by trying to share them.
-
-> The structure for other platform code may be the same or similar, but
-> the details will almost certainly be different and I don't think that
-> having more callback pointers in pci_platform_pm_ops is necessarily better.
-
-I suppose that's reasonable.
-
-> > Also add .setup_dev() / .setup_host_bridge() / .cleanup() platform pm
-> > ops's callbacks to setup and cleanup pci devices and host bridge for
-> > wakeup.
+> I'm also not convinced all our hibernation / suspend woes would be fixed by
+> reverting this commit, its why I worked instead on formalizing a proper freeze
+> / thaw, which a lot of filesystems already implement prior to system
+> hibernation / suspend / resume [0].
 > 
-> Why are they needed?
-
-The implementation is in patch 7, if you really needed more info about
-why, or provide alternatives.
-
-The current set of hooks assumes that there is no state information or
-initialization needed for tracking actions of these platform PM hooks on
-a device. For ACPI this works, because devices have "companion"
-acpi_dev's to handle everything, and the ACPI framework generally
-prepares GPE's for you, IIUC. For 'pci-mid', the operations happen to be
-trivial (and arguably wrong -- several are no-ops, where we might expect
-the platform to tell us whether the operation was actually supported or
-not).
-
-For device tree, there isn't really a canonical place to store this
-information, nor to initialize something like wakeup interrupts.
-
-Technically, we could shoehorn this into the .set_wakeup() call, but
-we'd probably rather not do things like request_irq() on every attempt
-to suspend/resume the system (among other reasons, we'd lose information
-that we might otherwise track in /proc/ or /sys/).
-
-Or the inverse of the above: where would you suggest initializing or
-tearing down the wakeirq?
-
-An alternative could be to include any necessary state into the
-pci_host_bridge or pci_dev and just inline the setup code into
-pci.c/remove.c (e.g., pci_register_host_bridge()) and pci-driver.c
-(pci_device_{probe,remove}()). But I'm not sure that's much more
-beautiful.
-
-Brian
-
-> > Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+> I'll be respinning this series without the last patch, provided I'm able to
+> ensure I don't need the ext[234] hack I did in that thread. Can you test the
+> first 3 patches *only* on that series and seeing if that helps on your XFS
+> front as well?
 > 
-> Thanks,
-> Rafael
+> [0] https://lkml.kernel.org/r/20171003185313.1017-1-mcgrof@kernel.org
 > 
+>   Luis
+Thanks for the comment Luis,
+Yes, I agree the freezing of filesystem is a proper/thorough fix for such
+kind issues, but as Dan said, it might be a little risky for us to
+to deploy it on our products currently, unless it is in the
+mainline/stable branch. Although the XFS issue might not be 100% reproducible,
+we can help test the patch set while seeking for a lightweight 'fix'.
+Thanks,
+	Yu
