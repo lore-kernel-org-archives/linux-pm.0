@@ -1,123 +1,170 @@
-From: Bastian Stender <bst@pengutronix.de>
-Subject: [PATCH] cpufreq: imx6q: add CPU as cooling device
-Date: Tue, 14 Nov 2017 14:51:28 +0100
-Message-ID: <20171114135128.6173-1-bst@pengutronix.de>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:59247 "EHLO
-        metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752526AbdKNNvc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Nov 2017 08:51:32 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/6] PM / core: Add LEAVE_SUSPENDED driver flag
+Date: Tue, 14 Nov 2017 17:07:59 +0100
+Message-ID: <CAPDyKFr4DgVdKtf=G1vUy=Si0nSTECsrWoqB+z9UCQHS8DuwcQ@mail.gmail.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <16592954.7Zo1mAdIIH@aspire.rjw.lan>
+ <6330680.LdxjlP4uri@aspire.rjw.lan> <2932219.eEdIVn6WWf@aspire.rjw.lan>
+ <CAPDyKFrbnLjBzY3yE1OyXOpG3--K+C-1BCWQtyL9S6zQ5cmdhw@mail.gmail.com> <CAJZ5v0i4yFGyqAZ6QqG7q1_xNfjMNHkPk3o0WuBvwKFeM2nXeg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0i4yFGyqAZ6QqG7q1_xNfjMNHkPk3o0WuBvwKFeM2nXeg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, kernel@pengutronix.de, Bastian Stender <bst@pengutronix.de>
 
-The cooling device should be part of the i.MX cpufreq driver. So move
-it there.
+On 11 November 2017 at 00:45, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Fri, Nov 10, 2017 at 10:09 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 8 November 2017 at 14:25, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>
+>>> Define and document a new driver flag, DPM_FLAG_LEAVE_SUSPENDED, to
+>>> instruct the PM core and middle-layer (bus type, PM domain, etc.)
+>>> code that it is desirable to leave the device in runtime suspend
+>>> after system-wide transitions to the working state (for example,
+>>> the device may be slow to resume and it may be better to avoid
+>>> resuming it right away).
+>>>
+>>> Generally, the middle-layer code involved in the handling of the
+>>> device is expected to indicate to the PM core whether or not the
+>>> device may be left in suspend with the help of the device's
+>>> power.may_skip_resume status bit.  That has to happen in the "noirq"
+>>> phase of the preceding system suspend (or analogous) transition.
+>>> The middle layer is then responsible for handling the device as
+>>> appropriate in its "noirq" resume callback which is executed
+>>> regardless of whether or not the device may be left suspended, but
+>>> the other resume callbacks (except for ->complete) will be skipped
+>>> automatically by the core if the device really can be left in
+>>> suspend.
+>>
+>> I don't understand the reason to why you need to skip invoking resume
+>> callbacks to achieve this behavior, could you elaborate on that?
+>
+> The reason why it is done this way is because that takes less code and
+> is easier (or at least less error-prone, because it avoids repeating
+> patterns in middle layers).
+>
+> Note that the callbacks only may be skipped by the core if the middle
+> layer has set power.skip_resume for the device (or if the core is
+> handling it in patch [5/6], but that's one more step ahead still).
+>
+>> Couldn't the PM domain or the middle-layer instead decide what to do?
+>
+> They still can, the whole thing is a total opt-in.
+>
+> But to be constructive, do you have any specific examples in mind?
 
-Use of_cpufreq_power_cooling_register to link the cooling device to the
-device tree node provided.
+See more below.
 
-This makes it possible to bind the cpufreq cooling device to a custom
-thermal zone via a cooling-maps entry like:
+>
+>> To me it sounds a bit prone to errors by skipping callbacks from the
+>> PM core, and I wonder if the general driver author will be able to
+>> understand how to use this flag properly.
+>
+> This has nothing to do with general driver authors and I'm not sure
+> what you mean here and where you are going with this.
 
-	cooling-maps {
-		map0 {
-			trip = <&board_alert>;
-			cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-		};
-	};
+Let me elaborate.
 
-Assuming a cpu node exists with label "cpu0" and #cooling-cells
-property.
+My general goal is that I want to make it easier (or as easy as
+possible) for the general driver author to deploy runtime PM and
+system-wide PM support - in an optimized manner. Therefore, I am
+pondering over the solution you picked in this series, trying to
+understand how it fits into those aspects.
 
-Signed-off-by: Bastian Stender <bst@pengutronix.de>
----
-This is part of a rework of "thermal: imx: use cpufreq cooling of
-registration method" (id:20171103164203.5805-1-bst@pengutronix.de).
+Particular I am a bit worried from a complexity point of view, about
+the part with skipping callbacks from the PM core. We have observed
+some difficulties with the direct_complete path (i2c dw driver), which
+is based on a similar approach as this one.
 
-The cooling device gets removed from imx_thermal code by "thermal: imx:
-remove cooling device" (id:20171114134829.1354-1-bst@pengutronix.de)
----
- drivers/cpufreq/imx6q-cpufreq.c | 38 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+Additionally, in this case, to trigger skipping of callbacks to
+happen, first, drivers needs to inform the middle-layer, second, the
+middle layer acts on that information and then informs the PM core,
+then in the third step, the PM core can decide what to do. It doesn't
+sound straight-forward.
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 14466a9b01c0..66833840236e 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -9,6 +9,7 @@
- #include <linux/clk.h>
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpu_cooling.h>
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/of.h>
-@@ -35,6 +36,7 @@ static struct clk *pll2_bus_clk;
- static struct clk *secondary_sel_clk;
- 
- static struct device *cpu_dev;
-+static struct thermal_cooling_device *cdev;
- static bool free_opp;
- static struct cpufreq_frequency_table *freq_table;
- static unsigned int transition_latency;
-@@ -169,6 +171,32 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
- 	return 0;
- }
- 
-+static void imx6q_cpufreq_ready(struct cpufreq_policy *policy)
-+{
-+	struct device_node *np = of_node_get(cpu_dev->of_node);
-+	u32 capacitance = 0;
-+
-+	if (WARN_ON(!np))
-+		return;
-+
-+	if (of_find_property(np, "#cooling-cells", NULL)) {
-+		of_property_read_u32(np, "dynamic-power-coefficient", &capacitance);
-+
-+		cdev = of_cpufreq_power_cooling_register(np,
-+						policy, capacitance, NULL);
-+
-+		if (IS_ERR(cdev)) {
-+			dev_err(cpu_dev,
-+				"running cpufreq without cooling device: %ld\n",
-+				PTR_ERR(cdev));
-+
-+			cdev = NULL;
-+		}
-+	}
-+
-+	of_node_put(np);
-+}
-+
- static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
- {
- 	int ret;
-@@ -180,13 +208,23 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
- 	return ret;
- }
- 
-+static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
-+{
-+	cpufreq_cooling_unregister(cdev);
-+	dev_pm_opp_free_cpufreq_table(cpu_dev, &policy->freq_table);
-+
-+	return 0;
-+}
-+
- static struct cpufreq_driver imx6q_cpufreq_driver = {
- 	.flags = CPUFREQ_NEED_INITIAL_FREQ_CHECK,
- 	.verify = cpufreq_generic_frequency_table_verify,
- 	.target_index = imx6q_set_target,
- 	.get = cpufreq_generic_get,
- 	.init = imx6q_cpufreq_init,
-+	.exit = imx6q_cpufreq_exit,
- 	.name = "imx6q-cpufreq",
-+	.ready = imx6q_cpufreq_ready,
- 	.attr = cpufreq_generic_attr,
- 	.suspend = cpufreq_generic_suspend,
- };
--- 
-2.11.0
+I guess I need to be convinced that this new approach is going to be
+better than the the direct_complete path, so it somehow can replace it
+along the road. Otherwise, we may end up just having yet another way
+of skipping callbacks in the PM core and I don't like that.
+
+Of course, I also realize this hole thing is opt-in, so nothing will
+break and we are all good. :-)
+
+>
+>> That said, as the series don't include any changes for drivers making
+>> use of the flag, could please fold in such change as it would provide
+>> a more complete picture?
+>
+> I've already done so, see https://patchwork.kernel.org/patch/10007349/
+>
+> IMHO it's not really useful to drag this stuff (which doesn't change
+> BTW) along with every iteration of the core patches.
+
+Well, to me it's useful because it shows how these flags can/will be used.
+
+Anyway, I thought you scraped that patch and was working on a new
+version. I will have a look then.
+
+[...]
+
+>>>   * device_resume_noirq - Execute a "noirq resume" callback for given device.
+>>>   * @dev: Device to handle.
+>>>   * @state: PM transition of the system being carried out.
+>>> @@ -575,6 +587,12 @@ static int device_resume_noirq(struct de
+>>>         error = dpm_run_callback(callback, dev, state, info);
+>>>         dev->power.is_noirq_suspended = false;
+>>>
+>>> +       if (dev_pm_may_skip_resume(dev)) {
+>>> +               pm_runtime_set_suspended(dev);
+>>
+>> According to the doc, the DPM_FLAG_LEAVE_SUSPENDED intends to leave
+>> the device in runtime suspend state during system resume.
+>> However, here you are actually trying to change its runtime PM state to that.
+>
+> So the doc needs to be fixed. :-)
+
+Yep.
+
+>
+> But I'm guessing that this just is a misunderstanding and you mean the
+> phrase "it may be desirable to leave some devices in runtime suspend
+> after [...]".  Yes, it is talking about "runtime suspend", but
+> actually "runtime suspend" is the only kind of "suspend" you can leave
+> a device in after a system transition to the working state.  It never
+> says that the device must have been suspended before the preceding
+> system transition into a sleep state started.
+
+My point is, it's isn't obvious why you need to make sure the device's
+runtime PM status is set to "RPM_SUSPENDED" when leaving the resume
+noirq phase. You did explain that somewhat above, thanks!
+
+Perhaps you could fold in some of that information into the doc as well?
+
+>
+>> Moreover, you should check the return value from
+>> pm_runtime_set_suspended().
+>
+> This is in "noirq", so failures of that are meaningless here.
+>
+>> Then I wonder, what should you do when it fails here?
+>>
+>> Perhaps a better idea is to do this in the noirq suspend phase,
+>> because it allows you to bail out in case pm_runtime_set_suspended()
+>> fails.
+>
+> This doesn't make sense, sorry.
+
+What do you mean by "failures of that are meaningless here."?
+
+I was suggesting, instead of calling pm_runtime_set_suspended() in the
+noirq *resume* phase, why can't you do that in the noirq *suspend*
+phase?
+
+In the noirq *suspend* phase it's not too late to deal with errors!? Or is it?
+
+[...]
+
+Kind regards
+Uffe
