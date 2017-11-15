@@ -1,112 +1,56 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: [ANNOUNCE][CFP] Power Management and Scheduling in the Linux Kernel
- II edition (OSPM-summit 2018)
-Date: Wed, 15 Nov 2017 14:34:09 +0100
-Message-ID: <CAFj23Bj4PvHyBKXCzeVOo_O0M4tVydK7B7fv78=yPO3WQ2+WBw@mail.gmail.com>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 4/4] cpu_cooling: Drop static-power related stuff
+Date: Wed, 15 Nov 2017 07:09:26 -0800
+Message-ID: <20171115150924.GA1758@localhost.localdomain>
+References: <cover.1510735482.git.viresh.kumar@linaro.org>
+ <fcca009e0e10840ff5ee31c88b618a212ab69201.1510735482.git.viresh.kumar@linaro.org>
+ <20171115113133.GA10252@localhost>
+ <2932a544-dd58-11e3-4012-7d281d6b64ef@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f196.google.com ([209.85.216.196]:52059 "EHLO
-        mail-qt0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932767AbdKONeL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 08:34:11 -0500
-Received: by mail-qt0-f196.google.com with SMTP id e19so29456813qte.8
-        for <linux-pm@vger.kernel.org>; Wed, 15 Nov 2017 05:34:10 -0800 (PST)
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:44163 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752852AbdKOPJa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 10:09:30 -0500
+Content-Disposition: inline
+In-Reply-To: <2932a544-dd58-11e3-4012-7d281d6b64ef@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Tommaso Cucinotta <tommaso.cucinotta@sssup.it>, Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Paolo Valente <paolo.valente@unimore.it>, Claudio Scordino <claudio@evidence.eu.com>, Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>
+To: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Javi Merino <javi.merino@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, lukasz.luba@arm.com, linux-kernel@vger.kernel.org, Punit Agrawal <punit.agrawal@arm.com>
 
-Power Management and Scheduling in the Linux Kernel II edition
-(OSPM-summit 2018)
+On Wed, Nov 15, 2017 at 12:39:36PM +0100, Daniel Lezcano wrote:
+> On 15/11/2017 12:31, Javi Merino wrote:
+> > On Wed, Nov 15, 2017 at 02:49:48PM +0530, Viresh Kumar wrote:
+> >> No one has used it for the last two and half years (since it was
+> >> introduced by commit c36cf0717631 ("thermal: cpu_cooling: implement the
+> >> power cooling device API")), get rid of it.
+> > 
+> > Linaro used it in lsk 3.18 for the cpufreq driver for Juno.  The cpufreq
+> > driver was converted to the generic one from dt in lsk 4.4, but the
+> > generic cpufreq driver does not support static power because everything
+> > has to come from device tree and we don't have a way to specify it there.
+> 
+> Are in favor of removing it or improving the code ?
 
-April 16-18, 2018
-Scuola Superiore Sant'Anna
-Pisa, Italy
+Yes, to what I can remember, Juno driver originally used this and it was
+supposed to be a reference on who this stuff gets to be used. So, this
+is more like "the code never made mainline" instead of no one is using.
 
-http://retis.sssup.it/ospm-summit/
+And to be frank, this is the API that represents static power, which is
+the component that differentiate things while using IPA. Maybe 
 
----
+So yes, my suggestion is to put effort to get the juno code that uses
+the static power back to mainline.
 
-.:: FOCUS
-
-Power management and scheduling techniques to reduce energy
-consumption while meeting performance and latency requirements are
-still receiving considerable attention from the Linux Kernel
-development community.
-
-After the success of the first edition
-(https://lwn.net/Articles/721573/), II edition of the Power Management
-and Scheduling in the Linux Kernel (OSPM) summit aims at replicating
-such focused discussions, understanding what has been achieved and
-what instead still remains to be addressed.
-
-.:: FORMAT
-
-The summit is organised to cover three days of discussions and talks.
-
-The list of topics of interest includes (but it is not limited to):
-
-* Power management techniques
-* Real-time and non real-time scheduling techniques
-* Energy awareness
-* Mobile/Server power management real-world use cases (successes and failures)
-* Power management and scheduling tooling (configuration, integration,
-testing, etc.)
-* Tracing
-* Recap lightning talks (what has been achieved w.r.t. I edition?)
-
-Presentations can cover recently developed technologies, ongoing work
-and new ideas. Please understand that this workshop is not intended
-for presenting sales and marketing pitches.
-
-.:: ATTENDING
-
-Attending the OSPM-summit is free of charge, but registration to the
-event is mandatory. The event can allow a maximum of 50 people (so, be
-sure to register early!). Registrations open on December 23rd, 2017.
-To register fill in the registration form available at
-https://goo.gl/forms/QHebUBdSWgFeSrKv2. While it is not strictly
-required to submit a topic/presentation (see below), registrations
-with a topic/presentation proposal will take precedence.
-
-.:: VENUE
-
-The workshop will take place at ReTiS Lab*, Scuola Superiore
-Sant'Anna, Pisa, Italy. Pisa is a small town, walking distance from
-the city centre to the venue is 20 minutes, walking distance from the
-airport to the city centre is 30 minutes. More details are available
-from the summit web page: http://retis.sssup.it/ospm-summit/#site
-
-* https://goo.gl/maps/2pPXG2v7Lfp
-
-.:: SUBMIT A TOPIC/PRESENTATION
-
-To submit a topic/presentation add its details to this list:
-https://docs.google.com/spreadsheets/d/1ZPfASW6zVOM3xQvOrcaDEf1c-Pxi1XnFukVYHHwGUq4/edit?usp=sharing
-
-Alternatively, simply reply (only to me :) to this email specifying:
-
-- name/surname
-- affiliation
-- short bio
-- email address
-- title
-- abstract
-- 30min or 50min slot
-
-Deadline for submitting topics/presentations is 9th of December 2017.
-Notifications for accepted topics/presentations will be sent out on
-23rd of December 2017.
-
-.:: ORGANISERS (in alphabetical order)
-
-Luca Abeni (SSSA)
-Patrick Bellasi (Arm)
-Tommaso Cucinotta (SSSA)
-Dietmar Eggemann (Arm)
-Sudeep Holla (Arm)
-Juri Lelli (Red Hat)
-Lorenzo Pieralisi (Arm)
-Morten Rasmussen (Arm)
-Claudio Scordino (Evidence SRL)
+> 
+> 
+> -- 
+>  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+> 
+> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+> <http://twitter.com/#!/linaroorg> Twitter |
+> <http://www.linaro.org/linaro-blog/> Blog
+> 
