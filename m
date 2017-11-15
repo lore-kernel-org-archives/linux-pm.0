@@ -1,255 +1,116 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] x86 / CPU: Always show current CPU frequency in /proc/cpuinfo
-Date: Wed, 15 Nov 2017 02:13:40 +0100
-Message-ID: <50366815.86mgx8Isne@aspire.rjw.lan>
-References: <20171109103814.70688-1-chao.wang@ucloud.cn> <2067351.8xeh6jAbVr@aspire.rjw.lan> <CA+55aFxYQKzGbZ3GUWcuta5kz=2jp52xbEhV96R5RfCaMbLaNg@mail.gmail.com>
+Subject: [PATCH] ACPI / PM: Make it possible to ignore the system sleep blacklist
+Date: Wed, 15 Nov 2017 02:16:55 +0100
+Message-ID: <302151591.hxLyGjAOpX@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:58050 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49342 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752358AbdKOBNx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Nov 2017 20:13:53 -0500
-In-Reply-To: <CA+55aFxYQKzGbZ3GUWcuta5kz=2jp52xbEhV96R5RfCaMbLaNg@mail.gmail.com>
+        by vger.kernel.org with ESMTP id S1752971AbdKOBRI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Nov 2017 20:17:08 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, WANG Chao <chao.wang@ucloud.cn>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mario Limonciello <mario.limonciello@dell.com>, Paul Menzel <pmenzel@molgen.mpg.de>
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-After commit 890da9cf0983 (Revert "x86: do not use cpufreq_quick_get()
-for /proc/cpuinfo "cpu MHz"") the "cpu MHz" number in /proc/cpuinfo
-on x86 can be either the nominal CPU frequency (which is constant)
-or the frequency most recently requested by a scaling governor in
-cpufreq, depending on the cpufreq configuration.  That is somewhat
-inconsistent and is different from what it was before 4.13, so in
-order to restore the previous behavior, make it report the current
-CPU frequency like the scaling_cur_freq sysfs file in cpufreq.
+The ACPI code supporting system transitions to sleep states uses
+an internal blacklist to apply special handling to some machines
+reported to behave incorrectly in some ways.
 
-To that end, modify the /proc/cpuinfo implementation on x86 to use
-aperfmperf_snapshot_khz() to snapshot the APERF and MPERF feedback
-registers, if available, and use their values to compute the CPU
-frequency to be reported as "cpu MHz".
+However, some entries of that blacklist cover problematic as well as
+non-problematic systems, so give the users of the latter a chance to
+ignore the blacklist and run their systems in the default way by
+adding acpi_sleep=nobl to the kernel command line.
 
-However, do that carefully enough to avoid accumulating delays that
-lead to unacceptable access times for /proc/cpuinfo on systems with
-many CPUs.  Run aperfmperf_snapshot_khz() once on all CPUs
-asynchronously at the /proc/cpuinfo open time, add a single delay
-upfront (if necessary) at that point and simply compute the current
-frequency while running show_cpuinfo() for each individual CPU.
+For example, that allows the users of Dell XPS13 9360 systems not
+affected by the issue that caused the blacklist entry for this
+machine to be added by commit 71630b7a832f (ACPI / PM: Blacklist Low
+Power S0 Idle _DSM for Dell XPS13 9360) to use suspend-to-idle with
+the Low Power S0 Idle _DSM interface which in principle should be
+more energy-efficient than S3 on them.
 
-Also, to avoid slowing down /proc/cpuinfo accesses too much, reduce
-the default delay between consecutive APERF and MPERF reads to 10 ms,
-which should be sufficient to get large enough numbers for the
-frequency computation in all cases.
-
-Fixes: 890da9cf0983 (Revert "x86: do not use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"")
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
+ Documentation/admin-guide/kernel-parameters.txt |    5 ++++-
+ arch/x86/kernel/acpi/sleep.c                    |    2 ++
+ drivers/acpi/sleep.c                            |   10 ++++++++++
+ include/linux/acpi.h                            |    1 +
+ 4 files changed, 17 insertions(+), 1 deletion(-)
 
-Resent with a changelog & tags.
-
-I'm going to route it via the linux-pm tree.
-
----
- arch/x86/kernel/cpu/aperfmperf.c |   74 +++++++++++++++++++++++++++------------
- arch/x86/kernel/cpu/cpu.h        |    3 +
- arch/x86/kernel/cpu/proc.c       |    6 ++-
- fs/proc/cpuinfo.c                |    6 +++
- include/linux/cpufreq.h          |    1 
- 5 files changed, 67 insertions(+), 23 deletions(-)
-
-Index: linux-pm/arch/x86/kernel/cpu/proc.c
+Index: linux-pm/arch/x86/kernel/acpi/sleep.c
 ===================================================================
---- linux-pm.orig/arch/x86/kernel/cpu/proc.c
-+++ linux-pm/arch/x86/kernel/cpu/proc.c
-@@ -5,6 +5,8 @@
- #include <linux/seq_file.h>
- #include <linux/cpufreq.h>
- 
-+#include "cpu.h"
-+
- /*
-  *	Get CPU information for use by the procfs.
-  */
-@@ -78,9 +80,11 @@ static int show_cpuinfo(struct seq_file
- 		seq_printf(m, "microcode\t: 0x%x\n", c->microcode);
- 
- 	if (cpu_has(c, X86_FEATURE_TSC)) {
--		unsigned int freq = cpufreq_quick_get(cpu);
-+		unsigned int freq = aperfmperf_get_khz(cpu);
- 
- 		if (!freq)
-+			freq = cpufreq_quick_get(cpu);
-+		if (!freq)
- 			freq = cpu_khz;
- 		seq_printf(m, "cpu MHz\t\t: %u.%03u\n",
- 			   freq / 1000, (freq % 1000));
-Index: linux-pm/arch/x86/kernel/cpu/aperfmperf.c
+--- linux-pm.orig/arch/x86/kernel/acpi/sleep.c
++++ linux-pm/arch/x86/kernel/acpi/sleep.c
+@@ -138,6 +138,8 @@ static int __init acpi_sleep_setup(char
+ 			acpi_nvs_nosave_s3();
+ 		if (strncmp(str, "old_ordering", 12) == 0)
+ 			acpi_old_suspend_ordering();
++		if (strncmp(str, "nobl", 4) == 0)
++			acpi_sleep_no_blacklist();
+ 		str = strchr(str, ',');
+ 		if (str != NULL)
+ 			str += strspn(str, ", \t");
+Index: linux-pm/drivers/acpi/sleep.c
 ===================================================================
---- linux-pm.orig/arch/x86/kernel/cpu/aperfmperf.c
-+++ linux-pm/arch/x86/kernel/cpu/aperfmperf.c
-@@ -14,6 +14,8 @@
- #include <linux/percpu.h>
- #include <linux/smp.h>
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -367,10 +367,20 @@ static const struct dmi_system_id acpisl
+ 	{},
+ };
  
-+#include "cpu.h"
++static bool ignore_blacklist;
 +
- struct aperfmperf_sample {
- 	unsigned int	khz;
- 	ktime_t	time;
-@@ -24,7 +26,7 @@ struct aperfmperf_sample {
- static DEFINE_PER_CPU(struct aperfmperf_sample, samples);
- 
- #define APERFMPERF_CACHE_THRESHOLD_MS	10
--#define APERFMPERF_REFRESH_DELAY_MS	20
-+#define APERFMPERF_REFRESH_DELAY_MS	10
- #define APERFMPERF_STALE_THRESHOLD_MS	1000
- 
- /*
-@@ -38,8 +40,6 @@ static void aperfmperf_snapshot_khz(void
- 	u64 aperf, aperf_delta;
- 	u64 mperf, mperf_delta;
- 	struct aperfmperf_sample *s = this_cpu_ptr(&samples);
--	ktime_t now = ktime_get();
--	s64 time_delta = ktime_ms_delta(now, s->time);
- 	unsigned long flags;
- 
- 	local_irq_save(flags);
-@@ -57,38 +57,68 @@ static void aperfmperf_snapshot_khz(void
- 	if (mperf_delta == 0)
- 		return;
- 
--	s->time = now;
-+	s->time = ktime_get();
- 	s->aperf = aperf;
- 	s->mperf = mperf;
--
--	/* If the previous iteration was too long ago, discard it. */
--	if (time_delta > APERFMPERF_STALE_THRESHOLD_MS)
--		s->khz = 0;
--	else
--		s->khz = div64_u64((cpu_khz * aperf_delta), mperf_delta);
-+	s->khz = div64_u64((cpu_khz * aperf_delta), mperf_delta);
- }
- 
--unsigned int arch_freq_get_on_cpu(int cpu)
-+static bool aperfmperf_snapshot_cpu(int cpu, ktime_t now, bool wait)
++void __init acpi_sleep_no_blacklist(void)
++{
++	ignore_blacklist = true;
++}
++
+ static void __init acpi_sleep_dmi_check(void)
  {
--	s64 time_delta;
--	unsigned int khz;
-+	s64 time_delta = ktime_ms_delta(now, per_cpu(samples.time, cpu));
-+
-+	/* Don't bother re-computing within the cache threshold time. */
-+	if (time_delta < APERFMPERF_CACHE_THRESHOLD_MS)
-+		return true;
-+
-+	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, wait);
-+
-+	/* Return false if the previous iteration was too long ago. */
-+	return time_delta <= APERFMPERF_STALE_THRESHOLD_MS;
-+}
+ 	int year;
  
-+unsigned int aperfmperf_get_khz(int cpu)
-+{
- 	if (!cpu_khz)
- 		return 0;
- 
- 	if (!static_cpu_has(X86_FEATURE_APERFMPERF))
- 		return 0;
- 
--	/* Don't bother re-computing within the cache threshold time. */
--	time_delta = ktime_ms_delta(ktime_get(), per_cpu(samples.time, cpu));
--	khz = per_cpu(samples.khz, cpu);
--	if (khz && time_delta < APERFMPERF_CACHE_THRESHOLD_MS)
--		return khz;
-+	aperfmperf_snapshot_cpu(cpu, ktime_get(), true);
-+	return per_cpu(samples.khz, cpu);
-+}
- 
--	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, 1);
--	khz = per_cpu(samples.khz, cpu);
--	if (khz)
--		return khz;
-+void arch_freq_prepare_all(void)
-+{
-+	ktime_t now = ktime_get();
-+	bool wait = false;
-+	int cpu;
-+
-+	if (!cpu_khz)
++	if (ignore_blacklist)
 +		return;
 +
-+	if (!static_cpu_has(X86_FEATURE_APERFMPERF))
-+		return;
-+
-+	for_each_online_cpu(cpu)
-+		if (!aperfmperf_snapshot_cpu(cpu, now, false))
-+			wait = true;
-+
-+	if (wait)
-+		msleep(APERFMPERF_REFRESH_DELAY_MS);
-+}
-+
-+unsigned int arch_freq_get_on_cpu(int cpu)
-+{
-+	if (!cpu_khz)
-+		return 0;
-+
-+	if (!static_cpu_has(X86_FEATURE_APERFMPERF))
-+		return 0;
-+
-+	if (aperfmperf_snapshot_cpu(cpu, ktime_get(), true))
-+		return per_cpu(samples.khz, cpu);
+ 	if (dmi_get_date(DMI_BIOS_DATE, &year, NULL, NULL) && year >= 2012)
+ 		acpi_nvs_nosave_s3();
  
- 	msleep(APERFMPERF_REFRESH_DELAY_MS);
- 	smp_call_function_single(cpu, aperfmperf_snapshot_khz, NULL, 1);
-Index: linux-pm/arch/x86/kernel/cpu/cpu.h
+Index: linux-pm/include/linux/acpi.h
 ===================================================================
---- linux-pm.orig/arch/x86/kernel/cpu/cpu.h
-+++ linux-pm/arch/x86/kernel/cpu/cpu.h
-@@ -47,4 +47,7 @@ extern const struct cpu_dev *const __x86
+--- linux-pm.orig/include/linux/acpi.h
++++ linux-pm/include/linux/acpi.h
+@@ -451,6 +451,7 @@ void __init acpi_no_s4_hw_signature(void
+ void __init acpi_old_suspend_ordering(void);
+ void __init acpi_nvs_nosave(void);
+ void __init acpi_nvs_nosave_s3(void);
++void __init acpi_sleep_no_blacklist(void);
+ #endif /* CONFIG_PM_SLEEP */
  
- extern void get_cpu_cap(struct cpuinfo_x86 *c);
- extern void cpu_detect_cache_sizes(struct cpuinfo_x86 *c);
-+
-+unsigned int aperfmperf_get_khz(int cpu);
-+
- #endif /* ARCH_X86_CPU_H */
-Index: linux-pm/fs/proc/cpuinfo.c
+ struct acpi_osc_context {
+Index: linux-pm/Documentation/admin-guide/kernel-parameters.txt
 ===================================================================
---- linux-pm.orig/fs/proc/cpuinfo.c
-+++ linux-pm/fs/proc/cpuinfo.c
-@@ -1,12 +1,18 @@
- // SPDX-License-Identifier: GPL-2.0
-+#include <linux/cpufreq.h>
- #include <linux/fs.h>
- #include <linux/init.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
+--- linux-pm.orig/Documentation/admin-guide/kernel-parameters.txt
++++ linux-pm/Documentation/admin-guide/kernel-parameters.txt
+@@ -223,7 +223,7 @@
  
-+__weak void arch_freq_prepare_all(void)
-+{
-+}
-+
- extern const struct seq_operations cpuinfo_op;
- static int cpuinfo_open(struct inode *inode, struct file *file)
- {
-+	arch_freq_prepare_all();
- 	return seq_open(file, &cpuinfo_op);
- }
+ 	acpi_sleep=	[HW,ACPI] Sleep options
+ 			Format: { s3_bios, s3_mode, s3_beep, s4_nohwsig,
+-				  old_ordering, nonvs, sci_force_enable }
++				  old_ordering, nonvs, sci_force_enable, nobl }
+ 			See Documentation/power/video.txt for information on
+ 			s3_bios and s3_mode.
+ 			s3_beep is for debugging; it makes the PC's speaker beep
+@@ -239,6 +239,9 @@
+ 			sci_force_enable causes the kernel to set SCI_EN directly
+ 			on resume from S1/S3 (which is against the ACPI spec,
+ 			but some broken systems don't work without it).
++			nobl causes the internal blacklist of systems known to
++			behave incorrectly in some ways with respect to system
++			suspend and resume to be ignored (use wisely).
  
-Index: linux-pm/include/linux/cpufreq.h
-===================================================================
---- linux-pm.orig/include/linux/cpufreq.h
-+++ linux-pm/include/linux/cpufreq.h
-@@ -917,6 +917,7 @@ static inline bool policy_has_boost_freq
- }
- #endif
- 
-+extern void arch_freq_prepare_all(void);
- extern unsigned int arch_freq_get_on_cpu(int cpu);
- 
- extern void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
+ 	acpi_use_timer_override [HW,ACPI]
+ 			Use timer override. For some broken Nvidia NF5 boards
