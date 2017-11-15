@@ -1,43 +1,49 @@
-From: Bastian Stender <bst@pengutronix.de>
-Subject: Re: [PATCH] cpufreq: imx6q: add CPU as cooling device
-Date: Wed, 15 Nov 2017 10:09:06 +0100
-Message-ID: <9b2c7392-683c-c005-7f5c-0e56dba38074@pengutronix.de>
-References: <20171114135128.6173-1-bst@pengutronix.de>
- <20171115045956.GG3257@vireshk-i7>
- <6926d893-53ca-7719-f530-0406148f8fde@pengutronix.de>
- <20171115090623.GJ3257@vireshk-i7>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/4] cpu_cooling: cooling dev registration cleanups
+Date: Wed, 15 Nov 2017 14:49:44 +0530
+Message-ID: <cover.1510735482.git.viresh.kumar@linaro.org>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:56565 "EHLO
-        metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751189AbdKOJJL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 04:09:11 -0500
-In-Reply-To: <20171115090623.GJ3257@vireshk-i7>
-Content-Language: en-US
+Received: from mail-pg0-f66.google.com ([74.125.83.66]:45006 "EHLO
+        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756168AbdKOJUy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 04:20:54 -0500
+Received: by mail-pg0-f66.google.com with SMTP id 4so8687113pge.1
+        for <linux-pm@vger.kernel.org>; Wed, 15 Nov 2017 01:20:54 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Eduardo Valentin <edubezval@gmail.com>, kernel@pengutronix.de, Zhang Rui <rui.zhang@intel.com>, shawnguo@kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, edubezval@gmail.com
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, lukasz.luba@arm.com, javi.merino@kernel.org, linux-kernel@vger.kernel.org, amit.kachhap@gmail.com, rui.zhang@intel.com
 
-On 11/15/2017 10:06 AM, Viresh Kumar wrote:
-> On 15-11-17, 10:04, Bastian Stender wrote:
->> Yes, I looked how drivers/cpufreq/mediatek-cpufreq.c handles the cooling
->> device. So dev_pm_opp_free_cpufreq_table is obviously not needed, but why do
->> we need no cpufreq_cooling_unregister call here?
-> 
-> My comment was only for the last line, i.e. dev_pm_opp_free_cpufreq_table(). Of
-> course we need to use cpufreq_cooling_unregister() as you pointed out.
+Hi,
 
-Alright.
+This touches cpu_cooling and a bunch of cpufreq drivers and I am not
+sure who should take these patches really.
 
-Regards,
-Bastian
+This cleans up the helpers exposed by cpu_cooling driver and its users
+and removes a lot of code (around 280 lines effectively). Lots of unused
+code is removed.
+
+Tested on Hikey6220 and based over linux-next/master.
+Not targeted for 4.15-rc1 :)
+
+--
+viresh
+
+Viresh Kumar (4):
+  cpu_cooling: Make of_cpufreq_power_cooling_register() parse DT
+  cpu_cooling: Remove unused cpufreq_power_cooling_register()
+  cpu_cooling: Keep only one of_cpufreq*cooling_register() helper
+  cpu_cooling: Drop static-power related stuff
+
+ Documentation/thermal/cpu-cooling-api.txt |  33 +----
+ drivers/cpufreq/arm_big_little.c          |  23 +---
+ drivers/cpufreq/cpufreq-dt.c              |  27 +---
+ drivers/cpufreq/mediatek-cpufreq.c        |  22 +---
+ drivers/cpufreq/qoriq-cpufreq.c           |  14 +--
+ drivers/thermal/cpu_cooling.c             | 201 ++++++------------------------
+ include/linux/cpu_cooling.h               |  75 +++--------
+ include/trace/events/thermal.h            |  10 +-
+ 8 files changed, 64 insertions(+), 341 deletions(-)
 
 -- 
-Pengutronix e.K.
-Industrial Linux Solutions
-http://www.pengutronix.de/
-Peiner Str. 6-8, 31137 Hildesheim, Germany
-Amtsgericht Hildesheim, HRA 2686
+2.15.0.194.g9af6a3dea062
