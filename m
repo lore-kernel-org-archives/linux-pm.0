@@ -1,154 +1,83 @@
-From: "Sajjan, Vikas C" <vikas.cha.sajjan@hpe.com>
-Subject: RE: [PATCH] x86/acpi: Fix improper handling of SCI INT for platforms
- supporting only IOAPIC mode
-Date: Wed, 15 Nov 2017 10:05:07 +0000
-Message-ID: <CS1PR8401MB0518BBCAEA7AB61840C83324D9290@CS1PR8401MB0518.NAMPRD84.PROD.OUTLOOK.COM>
-References: <1510306686-18230-1-git-send-email-vikas.cha.sajjan@hpe.com>
+From: Michal Hocko <mhocko@kernel.org>
+Subject: Re: [Regression/XFS/PM] Freeze tasks failed in xfsaild
+Date: Wed, 15 Nov 2017 11:14:40 +0100
+Message-ID: <20171115101440.ar2yki5axehfq3bq@dhcp22.suse.cz>
+References: <20171113103139.GA18936@yu-chen.sh.intel.com>
+ <20171113225216.GJ5858@dastard>
+ <20171114033959.GB23219@yu-chen.sh.intel.com>
+ <20171114040232.GZ4094@dastard>
+ <20171114163953.GA27880@yu-chen.sh.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from g9t1613g.houston.hpe.com ([15.241.32.99]:35389 "EHLO
-        g9t1613g.houston.hpe.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757425AbdKOKFm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 05:05:42 -0500
-In-Reply-To: <1510306686-18230-1-git-send-email-vikas.cha.sajjan@hpe.com>
-Content-Language: en-US
+Received: from mx2.suse.de ([195.135.220.15]:38829 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752424AbdKOKOm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Nov 2017 05:14:42 -0500
+Content-Disposition: inline
+In-Reply-To: <20171114163953.GA27880@yu-chen.sh.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>
-Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kkamagui@gmail.com" <kkamagui@gmail.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@kernel.org" <mingo@kernel.org>, "Lakshminarasimha, Sunil Vishwanathpur" <sunil.vl@hpe.com>, "Attar, Abdul Lateef" <abdul-lateef.attar@hpe.com>
+To: Yu Chen <yu.c.chen@intel.com>
+Cc: Dave Chinner <david@fromorbit.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Hendrik Woltersdorf <hendrikw@arcor.de>, Dave Chinner <dchinner@redhat.com>, "Darrick J. Wong" <darrick.wong@oracle.com>, Jiri Kosina <jkosina@suse.cz>, Len Brown <len.brown@intel.com>, Rui Zhang <rui.zhang@intel.com>, Dan Williams <dan.j.williams@intel.com>, Yu Chen <yu.chen.surf@gmail.com>, linux-xfs@vger.kernel.org, Hou Tao <houtao1@huawei.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Rafael,
+On Wed 15-11-17 00:39:53, Yu Chen wrote:
+[...]
+> Before the filesystem freezing feature is merged into
+> upstream, wouldn't it be nice if we have some compromise
+> workaround for such kind of issues: how about treat the
+> always-sleeping tasks as frozen? They are safe to be
+> regarded as frozen because they do nothing.
+> Here's a draft patch to get it done, and it can be
+> optimized if the direction is acceptible.
 
-Any thoughts on this.
+I do not think this will fly. You have no guarantee those tasks wake up
+at any moment after you consider them frozen and declare the system as
+quiescent from the userspace POV.
 
-Regards
-Vikas Sajjan
+> diff --git a/kernel/power/process.c b/kernel/power/process.c
+> index 7381d49a44db..93e123a58558 100644
+> --- a/kernel/power/process.c
+> +++ b/kernel/power/process.c
+> @@ -100,8 +100,28 @@ static int try_to_freeze_tasks(bool user_only)
+>  			read_lock(&tasklist_lock);
+>  			for_each_process_thread(g, p) {
+>  				if (p != current && !freezer_should_skip(p)
+> -				    && freezing(p) && !frozen(p))
+> -					sched_show_task(p);
+> +				    && freezing(p) && !frozen(p)) {
+> +					unsigned long cnt_ctx;
+> +
+> +					cnt_ctx = p->nvcsw + p->nivcsw;
+> +					msleep(MSEC_PER_SEC);
+> +					/* If the task keeps asleep for 1000 ms
+> +					 * (actually should be:
+> +					 * freeze_timeout_msecs+1000ms in theory)
+> +					 * AKA, there is no context switch for the
+> +					 * task during this period, we predict this
+> +					 * task is not likely to do any work in the
+> +					 * future and we can treat it as frozen.
+> +					 */
+> +					if ((p->state & TASK_NORMAL) &&
+> +					   (cnt_ctx == (p->nvcsw + p->nivcsw))) {
+> +						pr_err("(%s %c) is sleeping and safe to be treated as frozen\n",
+> +							p->comm, task_state_to_char(p));
+> +						todo = 0;
+> +					} else {
+> +						sched_show_task(p);
+> +					}
+> +				}
+>  			}
+>  			read_unlock(&tasklist_lock);
+>  		}
+> -- 
+> 2.13.5
+> 
+> 
+> 
+> 
+> 
 
------Original Message-----
-From: Sajjan, Vikas C 
-Sent: Friday, November 10, 2017 3:08 PM
-To: linux-pm@vger.kernel.org; linux-acpi@vger.kernel.org; rjw@rjwysocki.net
-Cc: linux-kernel@vger.kernel.org; kkamagui@gmail.com; tglx@linutronix.de; mingo@kernel.org; Sajjan, Vikas C <vikas.cha.sajjan@hpe.com>; Lakshminarasimha, Sunil Vishwanathpur <sunil.vl@hpe.com>; Attar, Abdul Lateef <abdul-lateef.attar@hpe.com>
-Subject: [PATCH] x86/acpi: Fix improper handling of SCI INT for platforms supporting only IOAPIC mode
-
-The platforms which support only IOAPIC mode and whose SCI INT is greater than 16, passes SCI INT via FADT and not via MADT int src override structure. In such cases current logic fails to handle it and throws error "Invalid bus_irq %u for legacy override". This patch handles the above  mentioned case. While at it, also modify function mp_override_legacy_irq() to use the newly introduced function mp_register_ioapic_irq().
-
-Signed-off-by: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
-Signed-off-by: Sunil V L <sunil.vl@hpe.com>
-Signed-off-by: Abdul Lateef Attar <abdul-lateef.attar@hpe.com>
----
- arch/x86/kernel/acpi/boot.c | 77 +++++++++++++++++++++++++++------------------
- 1 file changed, 47 insertions(+), 30 deletions(-)
-
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c index 079535e..8ab97a5 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -342,13 +342,12 @@ static int acpi_register_lapic(int id, u32 acpiid, u8 enabled)  #ifdef CONFIG_X86_IO_APIC
- #define MP_ISA_BUS		0
- 
-+static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
-+						u8 trigger, u32 gsi);
-+
- static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
- 					  u32 gsi)
- {
--	int ioapic;
--	int pin;
--	struct mpc_intsrc mp_irq;
--
- 	/*
- 	 * Check bus_irq boundary.
- 	 */
-@@ -357,32 +356,8 @@ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
- 		return;
- 	}
- 
--	/*
--	 * Convert 'gsi' to 'ioapic.pin'.
--	 */
--	ioapic = mp_find_ioapic(gsi);
--	if (ioapic < 0)
-+	if (mp_register_ioapic_irq(bus_irq, polarity, trigger, gsi) < 0)
- 		return;
--	pin = mp_find_ioapic_pin(ioapic, gsi);
--
--	/*
--	 * TBD: This check is for faulty timer entries, where the override
--	 *      erroneously sets the trigger to level, resulting in a HUGE
--	 *      increase of timer interrupts!
--	 */
--	if ((bus_irq == 0) && (trigger == 3))
--		trigger = 1;
--
--	mp_irq.type = MP_INTSRC;
--	mp_irq.irqtype = mp_INT;
--	mp_irq.irqflag = (trigger << 2) | polarity;
--	mp_irq.srcbus = MP_ISA_BUS;
--	mp_irq.srcbusirq = bus_irq;	/* IRQ */
--	mp_irq.dstapic = mpc_ioapic_id(ioapic); /* APIC ID */
--	mp_irq.dstirq = pin;	/* INTIN# */
--
--	mp_save_irq(&mp_irq);
--
- 	/*
- 	 * Reset default identity mapping if gsi is also an legacy IRQ,
- 	 * otherwise there will be more than one entry with the same GSI @@ -429,6 +404,44 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
- 	return 0;
- }
- 
-+static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
-+						u8 trigger, u32 gsi)
-+{
-+	int ioapic;
-+	int pin;
-+	struct mpc_intsrc mp_irq;
-+
-+	/*
-+	 * Convert 'gsi' to 'ioapic.pin'.
-+	 */
-+	ioapic = mp_find_ioapic(gsi);
-+	if (ioapic < 0) {
-+		pr_warn("Failed to find ioapic for gsi : %u\n", gsi);
-+		return ioapic;
-+	}
-+	pin = mp_find_ioapic_pin(ioapic, gsi);
-+
-+	/*
-+	 * TBD: This check is for faulty timer entries, where the override
-+	 *      erroneously sets the trigger to level, resulting in a HUGE
-+	 *      increase of timer interrupts!
-+	 */
-+	if ((bus_irq == 0) && (trigger == 3))
-+		trigger = 1;
-+
-+	mp_irq.type = MP_INTSRC;
-+	mp_irq.irqtype = mp_INT;
-+	mp_irq.irqflag = (trigger << 2) | polarity;
-+	mp_irq.srcbus = MP_ISA_BUS;
-+	mp_irq.srcbusirq = bus_irq;	/* IRQ */
-+	mp_irq.dstapic = mpc_ioapic_id(ioapic); /* APIC ID */
-+	mp_irq.dstirq = pin;	/* INTIN# */
-+
-+	mp_save_irq(&mp_irq);
-+
-+	return 0;
-+}
-+
- static int __init
- acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)  { @@ -473,7 +486,11 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
- 	if (acpi_sci_flags & ACPI_MADT_POLARITY_MASK)
- 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
- 
--	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
-+	if (bus_irq < NR_IRQS_LEGACY)
-+		mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
-+	else
-+		mp_register_ioapic_irq(bus_irq, polarity, trigger, gsi);
-+
- 	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
- 
- 	/*
---
-1.9.1
+-- 
+Michal Hocko
+SUSE Labs
