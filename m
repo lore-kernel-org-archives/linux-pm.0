@@ -1,65 +1,55 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 4/4] cpu_cooling: Drop static-power related stuff
-Date: Wed, 15 Nov 2017 10:20:49 -0800
-Message-ID: <20171115182047.GA4831@localhost.localdomain>
-References: <cover.1510735482.git.viresh.kumar@linaro.org>
- <fcca009e0e10840ff5ee31c88b618a212ab69201.1510735482.git.viresh.kumar@linaro.org>
- <761f7963-8b6d-b002-5404-a9ad0acf84d6@linaro.org>
- <20171115154311.GA3005@localhost.localdomain>
- <CAJZ5v0j6Hk8D29h+MdMeU-PgSAFkNG-41_a7d+goVuSve0=CYw@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86/acpi: Fix improper handling of SCI INT for platforms
+ supporting only IOAPIC mode
+Date: Wed, 15 Nov 2017 19:30:14 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1711151929200.1805@nanos>
+References: <1510306686-18230-1-git-send-email-vikas.cha.sajjan@hpe.com> <CAJZ5v0g8d=q1TZvacBZ_EDMjAnufQdHYkfbnkhv4kSH_FNOhDg@mail.gmail.com> <CS1PR8401MB05189C5186CD6E4B6509EAD5D9290@CS1PR8401MB0518.NAMPRD84.PROD.OUTLOOK.COM>
+ <CAJZ5v0jQErbC729H0JCjO-RqJRYZ8P2zHdJm0HopXNB781G_aw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:46569 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757707AbdKOSUw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 13:20:52 -0500
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0j6Hk8D29h+MdMeU-PgSAFkNG-41_a7d+goVuSve0=CYw@mail.gmail.com>
+Received: from Galois.linutronix.de ([146.0.238.70]:42961 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932593AbdKOSaQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 13:30:16 -0500
+In-Reply-To: <CAJZ5v0jQErbC729H0JCjO-RqJRYZ8P2zHdJm0HopXNB781G_aw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, lukasz.luba@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
+Cc: "Sajjan, Vikas C" <vikas.cha.sajjan@hpe.com>, Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Seunghun Han <kkamagui@gmail.com>, Ingo Molnar <mingo@kernel.org>, "Lakshminarasimha, Sunil Vishwanathpur" <sunil.vl@hpe.com>, "Attar, Abdul Lateef" <abdul-lateef.attar@hpe.com>
 
-On Wed, Nov 15, 2017 at 07:17:49PM +0100, Rafael J. Wysocki wrote:
-> On Wed, Nov 15, 2017 at 4:43 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
-> > On Wed, Nov 15, 2017 at 11:18:03AM +0100, Daniel Lezcano wrote:
-> >> On 15/11/2017 10:19, Viresh Kumar wrote:
-> >> > No one has used it for the last two and half years (since it was
-> >> > introduced by commit c36cf0717631 ("thermal: cpu_cooling: implement the
-> >> > power cooling device API")), get rid of it.
-> >> >
-> >> > Cc: Javi Merino <javi.merino@arm.com>
-> >> > Cc: Punit Agrawal <punit.agrawal@arm.com>
-> >> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> >> > ---
-> >>
-> >> Even if I agree that is not used to in the mainstream kernel, it is part
-> >> of the EAS which is currently merged in Android.
-> >>
+On Wed, 15 Nov 2017, Rafael J. Wysocki wrote:
+> On Wed, Nov 15, 2017 at 6:30 PM, Sajjan, Vikas C
+> <vikas.cha.sajjan@hpe.com> wrote:
+> > Hi Rafael,
 > >
-> > Even though we really should care about stuff that is in mainline, this
-> > specific case is about a piece of code that never made mainline, or got
-> > lost on translation from one version to another. So, I am currently
-> > nacking this patch and asking ARM/linaro folks to upstream the juno
-> > implementation that uses static power.
+> > -----Original Message-----
+> > From: rjwysocki@gmail.com [mailto:rjwysocki@gmail.com] On Behalf Of Rafael J. Wysocki
+> > Sent: Wednesday, November 15, 2017 10:51 PM
+> > To: Sajjan, Vikas C <vikas.cha.sajjan@hpe.com>
+> > Cc: Linux PM <linux-pm@vger.kernel.org>; ACPI Devel Maling List <linux-acpi@vger.kernel.org>; Rafael J. Wysocki <rjw@rjwysocki.net>; Linux Kernel Mailing List <linux-kernel@vger.kernel.org>; Seunghun Han <kkamagui@gmail.com>; Thomas Gleixner <tglx@linutronix.de>; Ingo Molnar <mingo@kernel.org>; Lakshminarasimha, Sunil Vishwanathpur <sunil.vl@hpe.com>; Attar, Abdul Lateef <abdul-lateef.attar@hpe.com>
+> > Subject: Re: [PATCH] x86/acpi: Fix improper handling of SCI INT for platforms supporting only IOAPIC mode
+> >
+> > On Fri, Nov 10, 2017 at 10:38 AM, Vikas C Sajjan <vikas.cha.sajjan@hpe.com> wrote:
+> >> The platforms which support only IOAPIC mode and whose SCI INT is
+> >> greater than 16, passes SCI INT via FADT and not via MADT int src
+> >> override structure. In such cases current logic fails to handle it and
+> >> throws error "Invalid bus_irq %u for legacy override". This patch
+> >> handles the above  mentioned case. While at it, also modify function
+> >> mp_override_legacy_irq() to use the newly introduced function mp_register_ioapic_irq().
+> >
+> > Actually, is it necessary to make this extra change here?
+> >
+> > How complicated would it be to separate it out?
+> >
+> > I can move these extra changes into a separate patch and keep only the fix in this patch.
 > 
-> However, I would like to see a clear declaration from whoever is
-> maintaining that code today that there is a plan in place to upstream
-> it and that this plan will actually be acted on.  And, better yet,
-> *when* that can be expected to happen.
-> 
-> Without such a declaration I'm afraid there is no point for the
-> mainline to carry the unused code.  Which apparently gets in the way
-> somehow, or Viresh wouldn't have taken the time to attempt to remove
-> it I suppose?
+> That would be useful I think in case someone wants to backport your
+> fix, for example.
 
+That would also simplify review a lot. I'll wait for that before I twist my
+brain around distangling the changes.
 
-I agree here. This is mostly a code maintained by the linaro folks at
-this moment (daniel, please chime in if I am wrong). If no effort is
-done to get the code into mainline, there is no point in keeping the
-static component as a dead code in our tree.
+Thanks,
 
-> 
-> Thanks,
-> Rafael
+	tglx
