@@ -1,88 +1,71 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH] x86: use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"
- again
-Date: Wed, 15 Nov 2017 08:54:26 +0100
-Message-ID: <20171115075426.GA23018@kroah.com>
-References: <20171109103814.70688-1-chao.wang@ucloud.cn>
- <CA+55aFw=JkvmxohBtVy-3QPtFibq_rv_uqp3ss+gpo8vSqYGQw@mail.gmail.com>
- <CA+55aFyRYWUn790wumcGNky98gJsDzz8W3Qna1xLC9fwcKOE=Q@mail.gmail.com>
- <2067351.8xeh6jAbVr@aspire.rjw.lan>
- <20171115074358.4jf4sjpq4ffmhmpi@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH v3] cpupower : Fix cpupower working when cpu0 is offline
+Date: Wed, 15 Nov 2017 14:10:02 +0530
+Message-ID: <20171115084002.23887-1-huntbag@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:35836 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752358AbdKOHyX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 02:54:23 -0500
-Content-Disposition: inline
-In-Reply-To: <20171115074358.4jf4sjpq4ffmhmpi@gmail.com>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:58286 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1755194AbdKOIkM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 03:40:12 -0500
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vAF8dBPQ074492
+        for <linux-pm@vger.kernel.org>; Wed, 15 Nov 2017 03:40:12 -0500
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2e8fpxedu2-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Wed, 15 Nov 2017 03:40:11 -0500
+Received: from localhost
+        by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
+        Wed, 15 Nov 2017 08:40:09 -0000
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ingo Molnar <mingo@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, WANG Chao <chao.wang@ucloud.cn>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: trenn@suse.com, linux-pm@vger.kernel.org, shuah@kernel.org, linux-kernel@vger.kernel.org
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 
-On Wed, Nov 15, 2017 at 08:43:58AM +0100, Ingo Molnar wrote:
-> 
-> * Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> 
-> > On Wednesday, November 15, 2017 1:06:12 AM CET Linus Torvalds wrote:
-> > > On Tue, Nov 14, 2017 at 4:04 PM, Linus Torvalds
-> > > <torvalds@linux-foundation.org> wrote:
-> > > > On Tue, Nov 14, 2017 at 3:53 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > > >> Current head + Raphaels patch:
-> > > >>
-> > > >> real    0m0.029s
-> > > >> user    0m0.000s
-> > > >> sys     0m0.010s
-> > > >>
-> > > >> So that patch is actually slower.
-> > > >
-> > > > Oh it definitely is expected to be slower, because it does the IPI to
-> > > > all the cores and actually gets their frequency right.
-> > > >
-> > > > It was the old one that we had to revert (because it did so
-> > > > sequentially) that was really bad, and took something like 2+ seconds
-> > > > on Ingo's 160-core thing, iirc.
-> > > 
-> > > Looked it up. Ingo's machine "only" had 120 cores, and he said
-> > > 
-> > >     fomalhaut:~> time cat /proc/cpuinfo  >/dev/null
-> > >     real    0m2.689s
-> > > 
-> > > for the bad serial case, so yeah, it looks "a bit" better than it was ;)
-> > 
-> > OK, so may I queue it up?
-> > 
-> > I don't think I can get that to work substantially faster anyway ...
-> 
-> The new version is OK I suppose:
-> 
->   Acked-by: Ingo Molnar <mingo@kernel.org>
-> 
-> I also think that /proc/cpuinfo is a pretty bad interface for many uses - I 
-> personally only very rarely need the cpuinfo of _all_ CPUs.
-> 
-> We we should eventually have /proc/cpu/N/info or so, so that 99% of the times 
-> cpuinfo is needed to report bugs we can do:
-> 
-> 	cat /proc/cpu/0/info
-> 
-> With maybe also the following variants:
-> 
-> 	/proc/cpu/first/
-> 	/proc/cpu/last/
-> 	/proc/cpu/current/
-> 
-> ... to the first/last/current CPUs.
+cpuidle_monitor used to assume that cpu0 is always online which is not
+a valid assumption on POWER machines. This patch fixes this by getting
+the cpu on which the current thread is running, instead of always using
+cpu0 for monitoring which may not be online.
 
-We started to move this info into /sys/devices/cpu/ in individual files,
-but that got stalled due to a lack of review and general "freak out" by
-the ARM maintainers :)
+Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+---
+ tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-Hopefully that patch set will come back soon so people can review it
-properly.
-
-thanks,
-
-greg k-h
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
+index 1b5da00..5b3205f 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
++++ b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
+@@ -130,15 +130,18 @@ static struct cpuidle_monitor *cpuidle_register(void)
+ {
+ 	int num;
+ 	char *tmp;
++	int this_cpu;
++
++	this_cpu = sched_getcpu();
+ 
+ 	/* Assume idle state count is the same for all CPUs */
+-	cpuidle_sysfs_monitor.hw_states_num = cpuidle_state_count(0);
++	cpuidle_sysfs_monitor.hw_states_num = cpuidle_state_count(this_cpu);
+ 
+ 	if (cpuidle_sysfs_monitor.hw_states_num <= 0)
+ 		return NULL;
+ 
+ 	for (num = 0; num < cpuidle_sysfs_monitor.hw_states_num; num++) {
+-		tmp = cpuidle_state_name(0, num);
++		tmp = cpuidle_state_name(this_cpu, num);
+ 		if (tmp == NULL)
+ 			continue;
+ 
+@@ -146,7 +149,7 @@ static struct cpuidle_monitor *cpuidle_register(void)
+ 		strncpy(cpuidle_cstates[num].name, tmp, CSTATE_NAME_LEN - 1);
+ 		free(tmp);
+ 
+-		tmp = cpuidle_state_desc(0, num);
++		tmp = cpuidle_state_desc(this_cpu, num);
+ 		if (tmp == NULL)
+ 			continue;
+ 		strncpy(cpuidle_cstates[num].desc, tmp,	CSTATE_DESC_LEN - 1);
+-- 
+2.9.3
