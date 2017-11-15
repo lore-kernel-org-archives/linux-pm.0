@@ -1,98 +1,112 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: [GIT PULL] power-supply changes for 4.15
-Date: Wed, 15 Nov 2017 13:38:04 +0100
-Message-ID: <20171115123804.c56jqazszmgyepmo@earth>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: [ANNOUNCE][CFP] Power Management and Scheduling in the Linux Kernel
+ II edition (OSPM-summit 2018)
+Date: Wed, 15 Nov 2017 14:34:09 +0100
+Message-ID: <CAFj23Bj4PvHyBKXCzeVOo_O0M4tVydK7B7fv78=yPO3WQ2+WBw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="txgplteh6qdx6apa"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:49880 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932619AbdKOMiH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Nov 2017 07:38:07 -0500
-Content-Disposition: inline
+Received: from mail-qt0-f196.google.com ([209.85.216.196]:52059 "EHLO
+        mail-qt0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932767AbdKONeL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 08:34:11 -0500
+Received: by mail-qt0-f196.google.com with SMTP id e19so29456813qte.8
+        for <linux-pm@vger.kernel.org>; Wed, 15 Nov 2017 05:34:10 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Tommaso Cucinotta <tommaso.cucinotta@sssup.it>, Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Paolo Valente <paolo.valente@unimore.it>, Claudio Scordino <claudio@evidence.eu.com>, Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>
 
+Power Management and Scheduling in the Linux Kernel II edition
+(OSPM-summit 2018)
 
---txgplteh6qdx6apa
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+April 16-18, 2018
+Scuola Superiore Sant'Anna
+Pisa, Italy
 
-Hi Linus,
+http://retis.sssup.it/ospm-summit/
 
-Just a couple of small things coming in from the power-supply
-subsystem for 4.15-rc1. A few other subsystems modified files in
-the power-supply directory this time. I'm aware of the following:
+---
 
- * sbs-manager (new driver) via i2c tree
- * timer conversion from Kees Cook via his tree
- * extcon API change via extcon tree
+.:: FOCUS
 
-As far as I can see all patches modify different files and Stephen
-Rothwell did not mention any merge problems in linux-next.
+Power management and scheduling techniques to reduce energy
+consumption while meeting performance and latency requirements are
+still receiving considerable attention from the Linux Kernel
+development community.
 
--- Sebastian
+After the success of the first edition
+(https://lwn.net/Articles/721573/), II edition of the Power Management
+and Scheduling in the Linux Kernel (OSPM) summit aims at replicating
+such focused discussions, understanding what has been achieved and
+what instead still remains to be addressed.
 
-The following changes since commit 0b07194bb55ed836c2cc7c22e866b87a14681984:
+.:: FORMAT
 
-  Linux 4.14-rc7 (2017-10-29 13:58:38 -0700)
+The summit is organised to cover three days of discussions and talks.
 
-are available in the Git repository at:
+The list of topics of interest includes (but it is not limited to):
 
-  ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v4.15
+* Power management techniques
+* Real-time and non real-time scheduling techniques
+* Energy awareness
+* Mobile/Server power management real-world use cases (successes and failures)
+* Power management and scheduling tooling (configuration, integration,
+testing, etc.)
+* Tracing
+* Recap lightning talks (what has been achieved w.r.t. I edition?)
 
-for you to fetch changes up to 838c8afa67f98014970c9f56107805e767ed87ad:
+Presentations can cover recently developed technologies, ongoing work
+and new ideas. Please understand that this workshop is not intended
+for presenting sales and marketing pitches.
 
-  power: supply: cpcap-charger: fix incorrect return value check (2017-11-13 11:56:12 +0100)
+.:: ATTENDING
 
-----------------------------------------------------------------
-power supply and reset changes for the v4.15 series
+Attending the OSPM-summit is free of charge, but registration to the
+event is mandatory. The event can allow a maximum of 50 people (so, be
+sure to register early!). Registrations open on December 23rd, 2017.
+To register fill in the registration form available at
+https://goo.gl/forms/QHebUBdSWgFeSrKv2. While it is not strictly
+required to submit a topic/presentation (see below), registrations
+with a topic/presentation proposal will take precedence.
 
-* Misc. minor fixes
+.:: VENUE
 
-----------------------------------------------------------------
-Aishwarya Pant (1):
-      power: supply: replace pr_* with dev_*
+The workshop will take place at ReTiS Lab*, Scuola Superiore
+Sant'Anna, Pisa, Italy. Pisa is a small town, walking distance from
+the city centre to the venue is 20 minutes, walking distance from the
+airport to the city centre is 30 minutes. More details are available
+from the summit web page: http://retis.sssup.it/ospm-summit/#site
 
-Colin Ian King (2):
-      power: supply: generic-adc-battery: remove redundant variable pdata
-      power: supply: pcf50633-charger: remove redundant variable charging_start
+* https://goo.gl/maps/2pPXG2v7Lfp
 
-Markus Elfring (1):
-      power: supply: max8997: Improve a size determination in probe
+.:: SUBMIT A TOPIC/PRESENTATION
 
-Pan Bian (1):
-      power: supply: cpcap-charger: fix incorrect return value check
+To submit a topic/presentation add its details to this list:
+https://docs.google.com/spreadsheets/d/1ZPfASW6zVOM3xQvOrcaDEf1c-Pxi1XnFukVYHHwGUq4/edit?usp=sharing
 
- drivers/power/supply/cpcap-charger.c       | 2 +-
- drivers/power/supply/generic-adc-battery.c | 2 --
- drivers/power/supply/max8997_charger.c     | 3 +--
- drivers/power/supply/pcf50633-charger.c    | 2 --
- drivers/power/supply/power_supply_core.c   | 2 +-
- drivers/power/supply/twl4030_charger.c     | 2 +-
- 6 files changed, 4 insertions(+), 9 deletions(-)
+Alternatively, simply reply (only to me :) to this email specifying:
 
---txgplteh6qdx6apa
-Content-Type: application/pgp-signature; name="signature.asc"
+- name/surname
+- affiliation
+- short bio
+- email address
+- title
+- abstract
+- 30min or 50min slot
 
------BEGIN PGP SIGNATURE-----
+Deadline for submitting topics/presentations is 9th of December 2017.
+Notifications for accepted topics/presentations will be sent out on
+23rd of December 2017.
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAloMNSkACgkQ2O7X88g7
-+prRjg/+PtiZr9TJ7bJo740y9WPupPm9rD4s5AYR4Q1Je67UvF4gt2mlGqCs2dKI
-Q8Ewd+gQCgwHvlY6XHK2XRQTcHC7RIjyE3DumJ9DEuA5PKp41PDHeJGwmn4tDfZH
-h5R06d+lE6Rg9FBqDBeF10uAQtylyQCYSMHXFAK5ReYneFszeahFhVtFA2kWZirH
-ipOdt4cYVu7P0iB7f54QqWoj6MQcUh01czgsLqgRRDH/qBx0V/jcMC+y36uSGVxq
-aGl9lZbRBMzLzOibLN3buTt0dsUl9jTV3Nh0zYtRH5hDhYbg477oqnJCRCMsQ9l6
-LFLwsTd13v1+eAHLueK9FUFfdVEWU2oTuzvj7nX3z3VEv6CWBfthCWfwCSLA1gUy
-tK1SfUKF2rpL9fEQTs4n/BWM6uVeTtEFuHYbbJANkdKZxNqsLWk9gNTYy3sEihS+
-OZ+GxmssIULJi9KGIxM527OejNUtYdlZFvFzR9BGilIGg0FMnOJUZNpfuy6tUwgT
-lmm1Tw1WO78oHZEun5ya/0yvGch9MbK/PHD6xyvlM5xVhywZWDzi0+8bRIxgVTu3
-C89yrFpVtLp0omxRIsRjpXvaOE60Kt+B2+0DAN/PKXI+xis3qIgxGfMGIX71J7LL
-W8Qatc5EvIiMEQidJRjFqKFyf3VeH+3mVAWvvp9ogQTbd/8un2A=
-=DW3W
------END PGP SIGNATURE-----
+.:: ORGANISERS (in alphabetical order)
 
---txgplteh6qdx6apa--
+Luca Abeni (SSSA)
+Patrick Bellasi (Arm)
+Tommaso Cucinotta (SSSA)
+Dietmar Eggemann (Arm)
+Sudeep Holla (Arm)
+Juri Lelli (Red Hat)
+Lorenzo Pieralisi (Arm)
+Morten Rasmussen (Arm)
+Claudio Scordino (Evidence SRL)
