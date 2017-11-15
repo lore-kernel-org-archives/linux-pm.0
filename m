@@ -1,141 +1,303 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 2/4] cpu_cooling: Remove unused cpufreq_power_cooling_register()
-Date: Wed, 15 Nov 2017 14:49:46 +0530
-Message-ID: <813c6ba9a48a6e092d0e78bdbdc2d6fa069e5fed.1510735482.git.viresh.kumar@linaro.org>
+Subject: [PATCH 4/4] cpu_cooling: Drop static-power related stuff
+Date: Wed, 15 Nov 2017 14:49:48 +0530
+Message-ID: <fcca009e0e10840ff5ee31c88b618a212ab69201.1510735482.git.viresh.kumar@linaro.org>
 References: <cover.1510735482.git.viresh.kumar@linaro.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:47335 "EHLO
+        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756920AbdKOJVH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 04:21:07 -0500
+Received: by mail-pf0-f193.google.com with SMTP id t69so7614773pfg.4
+        for <linux-pm@vger.kernel.org>; Wed, 15 Nov 2017 01:21:06 -0800 (PST)
 In-Reply-To: <cover.1510735482.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1510735482.git.viresh.kumar@linaro.org>
 References: <cover.1510735482.git.viresh.kumar@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, edubezval@gmail.com, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Zhang Rui <rui.zhang@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, lukasz.luba@arm.com, linux-kernel@vger.kernel.org, linux-doc@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, edubezval@gmail.com, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, lukasz.luba@arm.com, linux-kernel@vger.kernel.org, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
 
-It isn't used by anyone, drop it.
+No one has used it for the last two and half years (since it was
+introduced by commit c36cf0717631 ("thermal: cpu_cooling: implement the
+power cooling device API")), get rid of it.
 
+Cc: Javi Merino <javi.merino@arm.com>
+Cc: Punit Agrawal <punit.agrawal@arm.com>
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- Documentation/thermal/cpu-cooling-api.txt | 24 +++---------------------
- drivers/thermal/cpu_cooling.c             | 30 ------------------------------
- include/linux/cpu_cooling.h               | 10 ----------
- 3 files changed, 3 insertions(+), 61 deletions(-)
+ drivers/thermal/cpu_cooling.c  | 106 +++++------------------------------------
+ include/linux/cpu_cooling.h    |   3 --
+ include/trace/events/thermal.h |  10 ++--
+ 3 files changed, 16 insertions(+), 103 deletions(-)
 
-diff --git a/Documentation/thermal/cpu-cooling-api.txt b/Documentation/thermal/cpu-cooling-api.txt
-index 4f6f5e9bb4d6..ea61e8bf7e2b 100644
---- a/Documentation/thermal/cpu-cooling-api.txt
-+++ b/Documentation/thermal/cpu-cooling-api.txt
-@@ -36,28 +36,14 @@ the user. The registration APIs returns the cooling device pointer.
-     np: pointer to the cooling device device tree node
-     clip_cpus: cpumask of cpus where the frequency constraints will happen.
- 
--1.1.3 struct thermal_cooling_device *cpufreq_power_cooling_register(
--    const struct cpumask *clip_cpus, u32 capacitance,
--    get_static_t plat_static_func)
--
--Similar to cpufreq_cooling_register, this function registers a cpufreq
--cooling device.  Using this function, the cooling device will
--implement the power extensions by using a simple cpu power model.  The
--cpus must have registered their OPPs using the OPP library.
--
--The additional parameters are needed for the power model (See 2. Power
--models).  "capacitance" is the dynamic power coefficient (See 2.1
--Dynamic power).  "plat_static_func" is a function to calculate the
--static power consumed by these cpus (See 2.2 Static power).
--
--1.1.4 struct thermal_cooling_device *of_cpufreq_power_cooling_register(
-+1.1.3 struct thermal_cooling_device *of_cpufreq_power_cooling_register(
- 					struct cpufreq_policy *policy)
- 
--Similar to cpufreq_power_cooling_register, this function register a
-+Similar to cpufreq_cooling_register, this function register a
- cpufreq cooling device with power extensions using the device tree
- information supplied by the np parameter.
- 
--1.1.5 void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
-+1.1.4 void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
- 
-     This interface function unregisters the "thermal-cpufreq-%x" cooling device.
- 
-@@ -74,10 +60,6 @@ cpu.  If you are using CONFIG_CPUFREQ_DT then the
- `cpufreq_frequency_table` should already be assigned to the cpu
- device.
- 
--The `plat_static_func` parameter of `cpufreq_power_cooling_register()`
--is optional.  If you don't provide it, only dynamic power will be
--considered.
--
- 2.1 Dynamic power
- 
- The dynamic power consumption of a processor depends on many factors.
 diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 5740b49fee68..94ffb4463e22 100644
+index 55d6b9fb909d..f102ad6127a4 100644
 --- a/drivers/thermal/cpu_cooling.c
 +++ b/drivers/thermal/cpu_cooling.c
-@@ -841,36 +841,6 @@ of_cpufreq_cooling_register(struct device_node *np,
+@@ -88,7 +88,6 @@ struct time_in_idle {
+  * @policy: cpufreq policy.
+  * @node: list_head to link all cpufreq_cooling_device together.
+  * @idle_time: idle time stats
+- * @plat_get_static_power: callback to calculate the static power
+  *
+  * This structure is required for keeping information of each registered
+  * cpufreq_cooling_device.
+@@ -104,7 +103,6 @@ struct cpufreq_cooling_device {
+ 	struct cpufreq_policy *policy;
+ 	struct list_head node;
+ 	struct time_in_idle *idle_time;
+-	get_static_t plat_get_static_power;
+ };
+ 
+ static DEFINE_IDA(cpufreq_ida);
+@@ -318,60 +316,6 @@ static u32 get_load(struct cpufreq_cooling_device *cpufreq_cdev, int cpu,
+ 	return load;
  }
- EXPORT_SYMBOL_GPL(of_cpufreq_cooling_register);
  
 -/**
-- * cpufreq_power_cooling_register() - create cpufreq cooling device with power extensions
-- * @policy:		cpufreq policy
-- * @capacitance:	dynamic power coefficient for these cpus
-- * @plat_static_func:	function to calculate the static power consumed by these
-- *			cpus (optional)
+- * get_static_power() - calculate the static power consumed by the cpus
+- * @cpufreq_cdev:	struct &cpufreq_cooling_device for this cpu cdev
+- * @tz:		thermal zone device in which we're operating
+- * @freq:	frequency in KHz
+- * @power:	pointer in which to store the calculated static power
 - *
-- * This interface function registers the cpufreq cooling device with
-- * the name "thermal-cpufreq-%x".  This api can support multiple
-- * instances of cpufreq cooling devices.  Using this function, the
-- * cooling device will implement the power extensions by using a
-- * simple cpu power model.  The cpus must have registered their OPPs
-- * using the OPP library.
+- * Calculate the static power consumed by the cpus described by
+- * @cpu_actor running at frequency @freq.  This function relies on a
+- * platform specific function that should have been provided when the
+- * actor was registered.  If it wasn't, the static power is assumed to
+- * be negligible.  The calculated static power is stored in @power.
 - *
-- * An optional @plat_static_func may be provided to calculate the
-- * static power consumed by these cpus.  If the platform's static
-- * power consumption is unknown or negligible, make it NULL.
-- *
-- * Return: a valid struct thermal_cooling_device pointer on success,
-- * on failure, it returns a corresponding ERR_PTR().
+- * Return: 0 on success, -E* on failure.
 - */
--struct thermal_cooling_device *
--cpufreq_power_cooling_register(struct cpufreq_policy *policy, u32 capacitance,
--			       get_static_t plat_static_func)
+-static int get_static_power(struct cpufreq_cooling_device *cpufreq_cdev,
+-			    struct thermal_zone_device *tz, unsigned long freq,
+-			    u32 *power)
 -{
--	return __cpufreq_cooling_register(NULL, policy, capacitance,
--				plat_static_func);
+-	struct dev_pm_opp *opp;
+-	unsigned long voltage;
+-	struct cpufreq_policy *policy = cpufreq_cdev->policy;
+-	struct cpumask *cpumask = policy->related_cpus;
+-	unsigned long freq_hz = freq * 1000;
+-	struct device *dev;
+-
+-	if (!cpufreq_cdev->plat_get_static_power) {
+-		*power = 0;
+-		return 0;
+-	}
+-
+-	dev = get_cpu_device(policy->cpu);
+-	WARN_ON(!dev);
+-
+-	opp = dev_pm_opp_find_freq_exact(dev, freq_hz, true);
+-	if (IS_ERR(opp)) {
+-		dev_warn_ratelimited(dev, "Failed to find OPP for frequency %lu: %ld\n",
+-				     freq_hz, PTR_ERR(opp));
+-		return -EINVAL;
+-	}
+-
+-	voltage = dev_pm_opp_get_voltage(opp);
+-	dev_pm_opp_put(opp);
+-
+-	if (voltage == 0) {
+-		dev_err_ratelimited(dev, "Failed to get voltage for frequency %lu\n",
+-				    freq_hz);
+-		return -EINVAL;
+-	}
+-
+-	return cpufreq_cdev->plat_get_static_power(cpumask, tz->passive_delay,
+-						  voltage, power);
 -}
--EXPORT_SYMBOL(cpufreq_power_cooling_register);
 -
  /**
-  * of_cpufreq_power_cooling_register() - create cpufreq cooling device with power extensions
-  * @policy: CPUFreq policy.
+  * get_dynamic_power() - calculate the dynamic power
+  * @cpufreq_cdev:	&cpufreq_cooling_device for this cdev
+@@ -491,8 +435,8 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+ 				       u32 *power)
+ {
+ 	unsigned long freq;
+-	int i = 0, cpu, ret;
+-	u32 static_power, dynamic_power, total_load = 0;
++	int i = 0, cpu;
++	u32 total_load = 0;
+ 	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
+ 	struct cpufreq_policy *policy = cpufreq_cdev->policy;
+ 	u32 *load_cpu = NULL;
+@@ -522,22 +466,15 @@ static int cpufreq_get_requested_power(struct thermal_cooling_device *cdev,
+ 
+ 	cpufreq_cdev->last_load = total_load;
+ 
+-	dynamic_power = get_dynamic_power(cpufreq_cdev, freq);
+-	ret = get_static_power(cpufreq_cdev, tz, freq, &static_power);
+-	if (ret) {
+-		kfree(load_cpu);
+-		return ret;
+-	}
++	*power = get_dynamic_power(cpufreq_cdev, freq);
+ 
+ 	if (load_cpu) {
+ 		trace_thermal_power_cpu_get_power(policy->related_cpus, freq,
+-						  load_cpu, i, dynamic_power,
+-						  static_power);
++						  load_cpu, i, *power);
+ 
+ 		kfree(load_cpu);
+ 	}
+ 
+-	*power = static_power + dynamic_power;
+ 	return 0;
+ }
+ 
+@@ -561,8 +498,6 @@ static int cpufreq_state2power(struct thermal_cooling_device *cdev,
+ 			       unsigned long state, u32 *power)
+ {
+ 	unsigned int freq, num_cpus;
+-	u32 static_power, dynamic_power;
+-	int ret;
+ 	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
+ 
+ 	/* Request state should be less than max_level */
+@@ -572,13 +507,9 @@ static int cpufreq_state2power(struct thermal_cooling_device *cdev,
+ 	num_cpus = cpumask_weight(cpufreq_cdev->policy->cpus);
+ 
+ 	freq = cpufreq_cdev->freq_table[state].frequency;
+-	dynamic_power = cpu_freq_to_power(cpufreq_cdev, freq) * num_cpus;
+-	ret = get_static_power(cpufreq_cdev, tz, freq, &static_power);
+-	if (ret)
+-		return ret;
++	*power = cpu_freq_to_power(cpufreq_cdev, freq) * num_cpus;
+ 
+-	*power = static_power + dynamic_power;
+-	return ret;
++	return 0;
+ }
+ 
+ /**
+@@ -606,21 +537,14 @@ static int cpufreq_power2state(struct thermal_cooling_device *cdev,
+ 			       unsigned long *state)
+ {
+ 	unsigned int cur_freq, target_freq;
+-	int ret;
+-	s32 dyn_power;
+-	u32 last_load, normalised_power, static_power;
++	u32 last_load, normalised_power;
+ 	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
+ 	struct cpufreq_policy *policy = cpufreq_cdev->policy;
+ 
+ 	cur_freq = cpufreq_quick_get(policy->cpu);
+-	ret = get_static_power(cpufreq_cdev, tz, cur_freq, &static_power);
+-	if (ret)
+-		return ret;
+-
+-	dyn_power = power - static_power;
+-	dyn_power = dyn_power > 0 ? dyn_power : 0;
++	power = power > 0 ? power : 0;
+ 	last_load = cpufreq_cdev->last_load ?: 1;
+-	normalised_power = (dyn_power * 100) / last_load;
++	normalised_power = (power * 100) / last_load;
+ 	target_freq = cpu_power_to_freq(cpufreq_cdev, normalised_power);
+ 
+ 	*state = get_level(cpufreq_cdev, target_freq);
+@@ -671,8 +595,6 @@ static unsigned int find_next_max(struct cpufreq_frequency_table *table,
+  * @policy: cpufreq policy
+  * Normally this should be same as cpufreq policy->related_cpus.
+  * @capacitance: dynamic power coefficient for these cpus
+- * @plat_static_func: function to calculate the static power consumed by these
+- *                    cpus (optional)
+  *
+  * This interface function registers the cpufreq cooling device with the name
+  * "thermal-cpufreq-%x". This api can support multiple instances of cpufreq
+@@ -684,8 +606,7 @@ static unsigned int find_next_max(struct cpufreq_frequency_table *table,
+  */
+ static struct thermal_cooling_device *
+ __cpufreq_cooling_register(struct device_node *np,
+-			struct cpufreq_policy *policy, u32 capacitance,
+-			get_static_t plat_static_func)
++			struct cpufreq_policy *policy, u32 capacitance)
+ {
+ 	struct thermal_cooling_device *cdev;
+ 	struct cpufreq_cooling_device *cpufreq_cdev;
+@@ -755,8 +676,6 @@ __cpufreq_cooling_register(struct device_node *np,
+ 	}
+ 
+ 	if (capacitance) {
+-		cpufreq_cdev->plat_get_static_power = plat_static_func;
+-
+ 		ret = update_freq_table(cpufreq_cdev, capacitance);
+ 		if (ret) {
+ 			cdev = ERR_PTR(ret);
+@@ -813,7 +732,7 @@ __cpufreq_cooling_register(struct device_node *np,
+ struct thermal_cooling_device *
+ cpufreq_cooling_register(struct cpufreq_policy *policy)
+ {
+-	return __cpufreq_cooling_register(NULL, policy, 0, NULL);
++	return __cpufreq_cooling_register(NULL, policy, 0);
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_cooling_register);
+ 
+@@ -853,8 +772,7 @@ of_cpufreq_cooling_register(struct cpufreq_policy *policy)
+ 		of_property_read_u32(np, "dynamic-power-coefficient",
+ 				     &capacitance);
+ 
+-		cdev = __cpufreq_cooling_register(np, policy, capacitance,
+-						  NULL);
++		cdev = __cpufreq_cooling_register(np, policy, capacitance);
+ 		if (IS_ERR(cdev)) {
+ 			pr_err("cpu_cooling: cpu%d is not running as cooling device: %ld\n",
+ 			       policy->cpu, PTR_ERR(cdev));
 diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
-index f09d4feb34f4..c35778960a9c 100644
+index a0204c58d269..22d7364cbc16 100644
 --- a/include/linux/cpu_cooling.h
 +++ b/include/linux/cpu_cooling.h
-@@ -41,10 +41,6 @@ typedef int (*get_static_t)(cpumask_t *cpumask, int interval,
- struct thermal_cooling_device *
- cpufreq_cooling_register(struct cpufreq_policy *policy);
+@@ -30,9 +30,6 @@
  
--struct thermal_cooling_device *
--cpufreq_power_cooling_register(struct cpufreq_policy *policy,
--			       u32 capacitance, get_static_t plat_static_func);
+ struct cpufreq_policy;
+ 
+-typedef int (*get_static_t)(cpumask_t *cpumask, int interval,
+-			    unsigned long voltage, u32 *power);
 -
+ #ifdef CONFIG_CPU_THERMAL
  /**
-  * of_cpufreq_cooling_register - create cpufreq cooling device based on DT.
-  * @np: a valid struct device_node to the cooling device device tree node.
-@@ -84,12 +80,6 @@ cpufreq_cooling_register(struct cpufreq_policy *policy)
- {
- 	return ERR_PTR(-ENOSYS);
- }
--static inline struct thermal_cooling_device *
--cpufreq_power_cooling_register(struct cpufreq_policy *policy,
--			       u32 capacitance, get_static_t plat_static_func)
--{
--	return NULL;
--}
+  * cpufreq_cooling_register - function to create cpufreq cooling device.
+diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
+index 466c09d882ad..52424cf13408 100644
+--- a/include/trace/events/thermal.h
++++ b/include/trace/events/thermal.h
+@@ -93,9 +93,9 @@ TRACE_EVENT(thermal_zone_trip,
  
- static inline struct thermal_cooling_device *
- of_cpufreq_cooling_register(struct device_node *np,
+ TRACE_EVENT(thermal_power_cpu_get_power,
+ 	TP_PROTO(const struct cpumask *cpus, unsigned long freq, u32 *load,
+-		size_t load_len, u32 dynamic_power, u32 static_power),
++		size_t load_len, u32 dynamic_power),
+ 
+-	TP_ARGS(cpus, freq, load, load_len, dynamic_power, static_power),
++	TP_ARGS(cpus, freq, load, load_len, dynamic_power),
+ 
+ 	TP_STRUCT__entry(
+ 		__bitmask(cpumask, num_possible_cpus())
+@@ -103,7 +103,6 @@ TRACE_EVENT(thermal_power_cpu_get_power,
+ 		__dynamic_array(u32,   load, load_len)
+ 		__field(size_t,        load_len      )
+ 		__field(u32,           dynamic_power )
+-		__field(u32,           static_power  )
+ 	),
+ 
+ 	TP_fast_assign(
+@@ -114,13 +113,12 @@ TRACE_EVENT(thermal_power_cpu_get_power,
+ 			load_len * sizeof(*load));
+ 		__entry->load_len = load_len;
+ 		__entry->dynamic_power = dynamic_power;
+-		__entry->static_power = static_power;
+ 	),
+ 
+-	TP_printk("cpus=%s freq=%lu load={%s} dynamic_power=%d static_power=%d",
++	TP_printk("cpus=%s freq=%lu load={%s} dynamic_power=%d",
+ 		__get_bitmask(cpumask), __entry->freq,
+ 		__print_array(__get_dynamic_array(load), __entry->load_len, 4),
+-		__entry->dynamic_power, __entry->static_power)
++		__entry->dynamic_power)
+ );
+ 
+ TRACE_EVENT(thermal_power_cpu_limit,
 -- 
 2.15.0.194.g9af6a3dea062
