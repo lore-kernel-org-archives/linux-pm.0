@@ -1,70 +1,57 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v3 4/6] PM / core: Add helpers for subsystem callback selection
-Date: Wed, 15 Nov 2017 18:55:26 +0100
-Message-ID: <CAJZ5v0gfuKaCDkJLLB8k4+oWunae_xkj9AcX0NB9DuWRsw8Ocw@mail.gmail.com>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <6330680.LdxjlP4uri@aspire.rjw.lan>
- <4184911.zoJM7jZeH4@aspire.rjw.lan> <2261600.6h5WdhsrLe@aspire.rjw.lan> <CAPDyKFpB=wq+66mfrVkMoUwyBqA2QhNQav5cipG1G-VNKO7Sig@mail.gmail.com>
+Subject: Re: [PATCH] x86/acpi: Fix improper handling of SCI INT for platforms
+ supporting only IOAPIC mode
+Date: Wed, 15 Nov 2017 18:58:44 +0100
+Message-ID: <CAJZ5v0jQErbC729H0JCjO-RqJRYZ8P2zHdJm0HopXNB781G_aw@mail.gmail.com>
+References: <1510306686-18230-1-git-send-email-vikas.cha.sajjan@hpe.com>
+ <CAJZ5v0g8d=q1TZvacBZ_EDMjAnufQdHYkfbnkhv4kSH_FNOhDg@mail.gmail.com> <CS1PR8401MB05189C5186CD6E4B6509EAD5D9290@CS1PR8401MB0518.NAMPRD84.PROD.OUTLOOK.COM>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFpB=wq+66mfrVkMoUwyBqA2QhNQav5cipG1G-VNKO7Sig@mail.gmail.com>
-Sender: linux-doc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CS1PR8401MB05189C5186CD6E4B6509EAD5D9290@CS1PR8401MB0518.NAMPRD84.PROD.OUTLOOK.COM>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Sajjan, Vikas C" <vikas.cha.sajjan@hpe.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Seunghun Han <kkamagui@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, "Lakshminarasimha, Sunil Vishwanathpur" <sunil.vl@hpe.com>, "Attar, Abdul Lateef" <abdul-lateef.attar@hpe.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 15, 2017 at 8:43 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 12 November 2017 at 01:42, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Add helper routines to find and return a suitable subsystem callback
->> during the "noirq" phases of system suspend/resume (or analogous)
->> transitions as well as during the "late" phase of system suspend and
->> the "early" phase of system resume (or analogous) transitions.
->>
->> The helpers will be called from additional sites going forward.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Nov 15, 2017 at 6:30 PM, Sajjan, Vikas C
+<vikas.cha.sajjan@hpe.com> wrote:
+> Hi Rafael,
 >
-> With a minor nitpick, see below, feel free to add:
+> -----Original Message-----
+> From: rjwysocki@gmail.com [mailto:rjwysocki@gmail.com] On Behalf Of Rafae=
+l J. Wysocki
+> Sent: Wednesday, November 15, 2017 10:51 PM
+> To: Sajjan, Vikas C <vikas.cha.sajjan@hpe.com>
+> Cc: Linux PM <linux-pm@vger.kernel.org>; ACPI Devel Maling List <linux-ac=
+pi@vger.kernel.org>; Rafael J. Wysocki <rjw@rjwysocki.net>; Linux Kernel Ma=
+iling List <linux-kernel@vger.kernel.org>; Seunghun Han <kkamagui@gmail.com=
+>; Thomas Gleixner <tglx@linutronix.de>; Ingo Molnar <mingo@kernel.org>; La=
+kshminarasimha, Sunil Vishwanathpur <sunil.vl@hpe.com>; Attar, Abdul Lateef=
+ <abdul-lateef.attar@hpe.com>
+> Subject: Re: [PATCH] x86/acpi: Fix improper handling of SCI INT for platf=
+orms supporting only IOAPIC mode
 >
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> On Fri, Nov 10, 2017 at 10:38 AM, Vikas C Sajjan <vikas.cha.sajjan@hpe.co=
+m> wrote:
+>> The platforms which support only IOAPIC mode and whose SCI INT is
+>> greater than 16, passes SCI INT via FADT and not via MADT int src
+>> override structure. In such cases current logic fails to handle it and
+>> throws error "Invalid bus_irq %u for legacy override". This patch
+>> handles the above  mentioned case. While at it, also modify function
+>> mp_override_legacy_irq() to use the newly introduced function mp_registe=
+r_ioapic_irq().
 >
->> ---
->>
->> v2 -> v3: No changes.
->>
->> ---
->>  drivers/base/power/main.c |  196 +++++++++++++++++++++++++++++++---------------
->>  1 file changed, 136 insertions(+), 60 deletions(-)
->>
->> Index: linux-pm/drivers/base/power/main.c
->> ===================================================================
->> --- linux-pm.orig/drivers/base/power/main.c
->> +++ linux-pm/drivers/base/power/main.c
->> @@ -525,6 +525,14 @@ static void dpm_watchdog_clear(struct dp
->>  #define dpm_watchdog_clear(x)
->>  #endif
->>
->> +static pm_callback_t dpm_subsys_suspend_noirq_cb(struct device *dev,
->> +                                                pm_message_t state,
->> +                                                const char **info_p);
->> +
->> +static pm_callback_t dpm_subsys_suspend_late_cb(struct device *dev,
->> +                                               pm_message_t state,
->> +                                               const char **info_p);
->> +
+> Actually, is it necessary to make this extra change here?
 >
-> There is no need to declare these functions.
+> How complicated would it be to separate it out?
 >
-> Perhaps a following patch in the series need them, but then that
-> change should add these or even better (in my opinion) just move the
-> implementations and avoid the declarations all together.
+> I can move these extra changes into a separate patch and keep only the fi=
+x in this patch.
 
-Well, all of the changes in this patch are for the benefit of the
-subsequent patches. :-)
-
-I just wanted to move additional code churn noise from those patches.
+That would be useful I think in case someone wants to backport your
+fix, for example.
 
 Thanks,
 Rafael
