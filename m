@@ -1,547 +1,688 @@
-From: Jeremy Linton <jeremy.linton@arm.com>
-Subject: Re: [PATCH v4 2/9] ACPI/PPTT: Add Processor Properties Topology Table
- parsing
-Date: Wed, 15 Nov 2017 09:50:17 -0600
-Message-ID: <c0d51518-9906-fe32-83db-e8f197a1b38d@arm.com>
-References: <20171109210311.25655-1-jeremy.linton@arm.com>
- <20171109210311.25655-3-jeremy.linton@arm.com>
- <53555e1c-8bed-cfaf-21e5-1d2954428c04@huawei.com>
+From: kbuild test robot <fengguang.wu@intel.com>
+Subject: [pm:bleeding-edge 5/6] arch/x86/kernel/cpu/proc.c:83: undefined
+ reference to `aperfmperf_get_khz'
+Date: Wed, 15 Nov 2017 23:50:15 +0800
+Message-ID: <201711152312.vKW9wGyw%fengguang.wu@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="jI8keyz6grp/JLjh"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:41382 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S932872AbdKOPu1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Nov 2017 10:50:27 -0500
-In-Reply-To: <53555e1c-8bed-cfaf-21e5-1d2954428c04@huawei.com>
-Content-Language: en-US
+Received: from mga05.intel.com ([192.55.52.43]:58885 "EHLO mga05.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932714AbdKOPu3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Nov 2017 10:50:29 -0500
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Xiongfeng Wang <wangxiongfeng2@huawei.com>, linux-acpi@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, robert.moore@intel.com, lv.zheng@intel.com, devel@acpica.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: kbuild-all@01.org, linux-acpi@vger.kernel.org, devel@acpica.org, linux-pm@vger.kernel.org
 
-Hi,
 
-On 11/15/2017 03:27 AM, Xiongfeng Wang wrote:
-> Hi Jeremy,
-> 
-> On 2017/11/10 5:03, Jeremy Linton wrote:
->> ACPI 6.2 adds a new table, which describes how processing units
->> are related to each other in tree like fashion. Caches are
->> also sprinkled throughout the tree and describe the properties
->> of the caches in relation to other caches and processing units.
->>
->> Add the code to parse the cache hierarchy and report the total
->> number of levels of cache for a given core using
->> acpi_find_last_cache_level() as well as fill out the individual
->> cores cache information with cache_setup_acpi() once the
->> cpu_cacheinfo structure has been populated by the arch specific
->> code.
->>
->> Further, report peers in the topology using setup_acpi_cpu_topology()
->> to report a unique ID for each processing unit at a given level
->> in the tree. These unique id's can then be used to match related
->> processing units which exist as threads, COD (clusters
->> on die), within a given package, etc.
->>
->> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
->> ---
->>   drivers/acpi/pptt.c | 452 ++++++++++++++++++++++++++++++++++++++++++++++++++++
->>   1 file changed, 452 insertions(+)
->>   create mode 100644 drivers/acpi/pptt.c
->>
->> diff --git a/drivers/acpi/pptt.c b/drivers/acpi/pptt.c
->> new file mode 100644
->> index 000000000000..9c9b8b4660e0
->> --- /dev/null
->> +++ b/drivers/acpi/pptt.c
->> @@ -0,0 +1,452 @@
->> +/*
->> + * Copyright (C) 2017, ARM
->> + *
->> + * This program is free software; you can redistribute it and/or modify it
->> + * under the terms and conditions of the GNU General Public License,
->> + * version 2, as published by the Free Software Foundation.
->> + *
->> + * This program is distributed in the hope it will be useful, but WITHOUT
->> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
->> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
->> + * more details.
->> + *
->> + * This file implements parsing of Processor Properties Topology Table (PPTT)
->> + * which is optionally used to describe the processor and cache topology.
->> + * Due to the relative pointers used throughout the table, this doesn't
->> + * leverage the existing subtable parsing in the kernel.
->> + *
->> + * The PPTT structure is an inverted tree, with each node potentially
->> + * holding one or two inverted tree data structures describing
->> + * the caches available at that level. Each cache structure optionally
->> + * contains properties describing the cache at that level which can be
->> + * used to override hardware/probed values.
->> + */
->> +#define pr_fmt(fmt) "ACPI PPTT: " fmt
->> +
->> +#include <linux/acpi.h>
->> +#include <linux/cacheinfo.h>
->> +#include <acpi/processor.h>
->> +
->> +/*
->> + * Given the PPTT table, find and verify that the subtable entry
->> + * is located within the table
->> + */
->> +static struct acpi_subtable_header *fetch_pptt_subtable(
->> +	struct acpi_table_header *table_hdr, u32 pptt_ref)
->> +{
->> +	struct acpi_subtable_header *entry;
->> +
->> +	/* there isn't a subtable at reference 0 */
->> +	if (pptt_ref < sizeof(struct acpi_subtable_header))
->> +		return NULL;
->> +
->> +	if (pptt_ref + sizeof(struct acpi_subtable_header) > table_hdr->length)
->> +		return NULL;
->> +
->> +	entry = ACPI_ADD_PTR(struct acpi_subtable_header, table_hdr, pptt_ref);
->> +
->> +	if (pptt_ref + entry->length > table_hdr->length)
->> +		return NULL;
->> +
->> +	return entry;
->> +}
->> +
->> +static struct acpi_pptt_processor *fetch_pptt_node(
->> +	struct acpi_table_header *table_hdr, u32 pptt_ref)
->> +{
->> +	return (struct acpi_pptt_processor *)fetch_pptt_subtable(table_hdr,
->> +								 pptt_ref);
->> +}
->> +
->> +static struct acpi_pptt_cache *fetch_pptt_cache(
->> +	struct acpi_table_header *table_hdr, u32 pptt_ref)
->> +{
->> +	return (struct acpi_pptt_cache *)fetch_pptt_subtable(table_hdr,
->> +							     pptt_ref);
->> +}
->> +
->> +static struct acpi_subtable_header *acpi_get_pptt_resource(
->> +	struct acpi_table_header *table_hdr,
->> +	struct acpi_pptt_processor *node, int resource)
->> +{
->> +	u32 *ref;
->> +
->> +	if (resource >= node->number_of_priv_resources)
->> +		return NULL;
->> +
->> +	ref = ACPI_ADD_PTR(u32, node, sizeof(struct acpi_pptt_processor));
->> +	ref += resource;
->> +
->> +	return fetch_pptt_subtable(table_hdr, *ref);
->> +}
->> +
->> +/*
->> + * Attempt to find a given cache level, while counting the max number
->> + * of cache levels for the cache node.
->> + *
->> + * Given a pptt resource, verify that it is a cache node, then walk
->> + * down each level of caches, counting how many levels are found
->> + * as well as checking the cache type (icache, dcache, unified). If a
->> + * level & type match, then we set found, and continue the search.
->> + * Once the entire cache branch has been walked return its max
->> + * depth.
->> + */
->> +static int acpi_pptt_walk_cache(struct acpi_table_header *table_hdr,
->> +				int local_level,
->> +				struct acpi_subtable_header *res,
->> +				struct acpi_pptt_cache **found,
->> +				int level, int type)
->> +{
->> +	struct acpi_pptt_cache *cache;
->> +
->> +	if (res->type != ACPI_PPTT_TYPE_CACHE)
->> +		return 0;
->> +
->> +	cache = (struct acpi_pptt_cache *) res;
->> +	while (cache) {
->> +		local_level++;
->> +
->> +		if ((local_level == level) &&
->> +		    (cache->flags & ACPI_PPTT_CACHE_TYPE_VALID) &&
->> +		    ((cache->attributes & ACPI_PPTT_MASK_CACHE_TYPE) == type)) {
->> +			if ((*found != NULL) && (cache != *found))
->> +				pr_err("Found duplicate cache level/type unable to determine uniqueness\n");
->> +
->> +			pr_debug("Found cache @ level %d\n", level);
->> +			*found = cache;
->> +			/*
->> +			 * continue looking at this node's resource list
->> +			 * to verify that we don't find a duplicate
->> +			 * cache node.
->> +			 */
->> +		}
->> +		cache = fetch_pptt_cache(table_hdr, cache->next_level_of_cache);
->> +	}
->> +	return local_level;
->> +}
->> +
->> +/*
->> + * Given a CPU node look for cache levels that exist at this level, and then
->> + * for each cache node, count how many levels exist below (logically above) it.
->> + * If a level and type are specified, and we find that level/type, abort
->> + * processing and return the acpi_pptt_cache structure.
->> + */
->> +static struct acpi_pptt_cache *acpi_find_cache_level(
->> +	struct acpi_table_header *table_hdr,
->> +	struct acpi_pptt_processor *cpu_node,
->> +	int *starting_level, int level, int type)
->> +{
->> +	struct acpi_subtable_header *res;
->> +	int number_of_levels = *starting_level;
->> +	int resource = 0;
->> +	struct acpi_pptt_cache *ret = NULL;
->> +	int local_level;
->> +
->> +	/* walk down from processor node */
->> +	while ((res = acpi_get_pptt_resource(table_hdr, cpu_node, resource))) {
->> +		resource++;
->> +
->> +		local_level = acpi_pptt_walk_cache(table_hdr, *starting_level,
->> +						   res, &ret, level, type);
->> +		/*
->> +		 * we are looking for the max depth. Since its potentially
->> +		 * possible for a given node to have resources with differing
->> +		 * depths verify that the depth we have found is the largest.
->> +		 */
->> +		if (number_of_levels < local_level)
->> +			number_of_levels = local_level;
->> +	}
->> +	if (number_of_levels > *starting_level)
->> +		*starting_level = number_of_levels;
->> +
->> +	return ret;
->> +}
->> +
->> +/*
->> + * Given a processor node containing a processing unit, walk into it and count
->> + * how many levels exist solely for it, and then walk up each level until we hit
->> + * the root node (ignore the package level because it may be possible to have
->> + * caches that exist across packages). Count the number of cache levels that
->> + * exist at each level on the way up.
->> + */
->> +static int acpi_process_node(struct acpi_table_header *table_hdr,
->> +			     struct acpi_pptt_processor *cpu_node)
->> +{
->> +	int total_levels = 0;
->> +
->> +	do {
->> +		acpi_find_cache_level(table_hdr, cpu_node, &total_levels, 0, 0);
->> +		cpu_node = fetch_pptt_node(table_hdr, cpu_node->parent);
->> +	} while (cpu_node);
->> +
->> +	return total_levels;
->> +}
->> +
->> +/*
->> + * Determine if the *node parameter is a leaf node by iterating the
->> + * PPTT table, looking for nodes which reference it.
->> + * Return 0 if we find a node refrencing the passed node,
->> + * or 1 if we don't.
->> + */
->> +static int acpi_pptt_leaf_node(struct acpi_table_header *table_hdr,
->> +			       struct acpi_pptt_processor *node)
->> +{
->> +	struct acpi_subtable_header *entry;
->> +	unsigned long table_end;
->> +	u32 node_entry;
->> +	struct acpi_pptt_processor *cpu_node;
->> +
->> +	table_end = (unsigned long)table_hdr + table_hdr->length;
->> +	node_entry = ACPI_PTR_DIFF(node, table_hdr);
->> +	entry = ACPI_ADD_PTR(struct acpi_subtable_header, table_hdr,
->> +			     sizeof(struct acpi_table_pptt));
->> +
->> +	while ((unsigned long)(entry + 1) < table_end) {
->> +		cpu_node = (struct acpi_pptt_processor *)entry;
->> +		if ((entry->type == ACPI_PPTT_TYPE_PROCESSOR) &&
->> +		    (cpu_node->parent == node_entry))
->> +			return 0;
->> +		entry = ACPI_ADD_PTR(struct acpi_subtable_header, entry,
->> +				     entry->length);
->> +	}
->> +	return 1;
->> +}
->> +
->> +/*
->> + * Find the subtable entry describing the provided processor.
->> + * This is done by iterating the PPTT table looking for processor nodes
->> + * which have an acpi_processor_id that matches the acpi_cpu_id parameter
->> + * passed into the function. If we find a node that matches this criteria
->> + * we verify that its a leaf node in the topology rather than depending
->> + * on the valid flag, which doesn't need to be set for leaf nodes.
->> + */
->> +static struct acpi_pptt_processor *acpi_find_processor_node(
->> +	struct acpi_table_header *table_hdr,
->> +	u32 acpi_cpu_id)
->> +{
->> +	struct acpi_subtable_header *entry;
->> +	unsigned long table_end;
->> +	struct acpi_pptt_processor *cpu_node;
->> +
->> +	table_end = (unsigned long)table_hdr + table_hdr->length;
->> +	entry = ACPI_ADD_PTR(struct acpi_subtable_header, table_hdr,
->> +			     sizeof(struct acpi_table_pptt));
->> +
->> +	/* find the processor structure associated with this cpuid */
->> +	while ((unsigned long)(entry + 1) < table_end) {
->> +		cpu_node = (struct acpi_pptt_processor *)entry;
->> +
->> +		if (entry->length == 0) {
->> +			pr_err("Invalid zero length subtable\n");
->> +			break;
->> +		}
->> +		if ((entry->type == ACPI_PPTT_TYPE_PROCESSOR) &&
->> +		    (acpi_cpu_id == cpu_node->acpi_processor_id) &&
->> +		     acpi_pptt_leaf_node(table_hdr, cpu_node)) {
->> +			return (struct acpi_pptt_processor *)entry;
->> +		}
->> +
->> +		entry = ACPI_ADD_PTR(struct acpi_subtable_header, entry,
->> +				     entry->length);
->> +	}
->> +
->> +	return NULL;
->> +}
->> +
->> +static int acpi_find_cache_levels(struct acpi_table_header *table_hdr,
->> +				  u32 acpi_cpu_id)
->> +{
->> +	int number_of_levels = 0;
->> +	struct acpi_pptt_processor *cpu;
->> +
->> +	cpu = acpi_find_processor_node(table_hdr, acpi_cpu_id);
->> +	if (cpu)
->> +		number_of_levels = acpi_process_node(table_hdr, cpu);
->> +
->> +	return number_of_levels;
->> +}
->> +
->> +/* Convert the linux cache_type to a ACPI PPTT cache type value */
->> +static u8 acpi_cache_type(enum cache_type type)
->> +{
->> +	switch (type) {
->> +	case CACHE_TYPE_DATA:
->> +		pr_debug("Looking for data cache\n");
->> +		return ACPI_PPTT_CACHE_TYPE_DATA;
->> +	case CACHE_TYPE_INST:
->> +		pr_debug("Looking for instruction cache\n");
->> +		return ACPI_PPTT_CACHE_TYPE_INSTR;
->> +	default:
->> +	case CACHE_TYPE_UNIFIED:
->> +		pr_debug("Looking for unified cache\n");
->> +		/*
->> +		 * It is important that ACPI_PPTT_CACHE_TYPE_UNIFIED
->> +		 * contains the bit pattern that will match both
->> +		 * ACPI unified bit patterns because we use it later
->> +		 * to match both cases.
->> +		 */
->> +		return ACPI_PPTT_CACHE_TYPE_UNIFIED;
->> +	}
->> +}
->> +
->> +/* find the ACPI node describing the cache type/level for the given CPU */
->> +static struct acpi_pptt_cache *acpi_find_cache_node(
->> +	struct acpi_table_header *table_hdr, u32 acpi_cpu_id,
->> +	enum cache_type type, unsigned int level,
->> +	struct acpi_pptt_processor **node)
->> +{
->> +	int total_levels = 0;
->> +	struct acpi_pptt_cache *found = NULL;
->> +	struct acpi_pptt_processor *cpu_node;
->> +	u8 acpi_type = acpi_cache_type(type);
->> +
->> +	pr_debug("Looking for CPU %d's level %d cache type %d\n",
->> +		 acpi_cpu_id, level, acpi_type);
->> +
->> +	cpu_node = acpi_find_processor_node(table_hdr, acpi_cpu_id);
->> +
->> +	while ((cpu_node) && (!found)) {
->> +		found = acpi_find_cache_level(table_hdr, cpu_node,
->> +					      &total_levels, level, acpi_type);
->> +		*node = cpu_node;
->> +		cpu_node = fetch_pptt_node(table_hdr, cpu_node->parent);
->> +	}
->> +
->> +	return found;
->> +}
->> +
->> +/*
->> + * The ACPI spec implies that the fields in the cache structures are used to
->> + * extend and correct the information probed from the hardware. In the case
->> + * of arm64 the CCSIDR probing has been removed because it might be incorrect.
->> + */
->> +static void update_cache_properties(struct cacheinfo *this_leaf,
->> +				    struct acpi_pptt_cache *found_cache,
->> +				    struct acpi_pptt_processor *cpu_node)
->> +{
->> +	if (found_cache->flags & ACPI_PPTT_SIZE_PROPERTY_VALID)
->> +		this_leaf->size = found_cache->size;
->> +	if (found_cache->flags & ACPI_PPTT_LINE_SIZE_VALID)
->> +		this_leaf->coherency_line_size = found_cache->line_size;
->> +	if (found_cache->flags & ACPI_PPTT_NUMBER_OF_SETS_VALID)
->> +		this_leaf->number_of_sets = found_cache->number_of_sets;
->> +	if (found_cache->flags & ACPI_PPTT_ASSOCIATIVITY_VALID)
->> +		this_leaf->ways_of_associativity = found_cache->associativity;
->> +	if (found_cache->flags & ACPI_PPTT_WRITE_POLICY_VALID)
->> +		switch (found_cache->attributes & ACPI_PPTT_MASK_WRITE_POLICY) {
->> +		case ACPI_PPTT_CACHE_POLICY_WT:
->> +			this_leaf->attributes = CACHE_WRITE_THROUGH;
->> +			break;
->> +		case ACPI_PPTT_CACHE_POLICY_WB:
->> +			this_leaf->attributes = CACHE_WRITE_BACK;
->> +			break;
->> +		}
->> +	if (found_cache->flags & ACPI_PPTT_ALLOCATION_TYPE_VALID)
->> +		switch (found_cache->attributes & ACPI_PPTT_MASK_ALLOCATION_TYPE) {
->> +		case ACPI_PPTT_CACHE_READ_ALLOCATE:
->> +			this_leaf->attributes |= CACHE_READ_ALLOCATE;
->> +			break;
->> +		case ACPI_PPTT_CACHE_WRITE_ALLOCATE:
->> +			this_leaf->attributes |= CACHE_WRITE_ALLOCATE;
->> +			break;
->> +		case ACPI_PPTT_CACHE_RW_ALLOCATE:
->> +		case ACPI_PPTT_CACHE_RW_ALLOCATE_ALT:
->> +			this_leaf->attributes |=
->> +				CACHE_READ_ALLOCATE | CACHE_WRITE_ALLOCATE;
->> +			break;
->> +		}
->> +}
->> +
-> 
+--jI8keyz6grp/JLjh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-First, thanks for testing this!
+tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+head:   f379d4b265627033aa2f4d68464df7ae3a6a11c9
+commit: a1823cba722b8f403f6ad83ec79b17773817fb27 [5/6] x86 / CPU: Always show current CPU frequency in /proc/cpuinfo
+config: i386-randconfig-s0-201746 (attached as .config)
+compiler: gcc-6 (Debian 6.4.0-9) 6.4.0 20171026
+reproduce:
+        git checkout a1823cba722b8f403f6ad83ec79b17773817fb27
+        # save the attached .config to linux build tree
+        make ARCH=i386 
 
-> I test this patch on our platform, and the result is that 'type' property of L3Cache
-> is not displayed.
-> 
-> So I add some print to debug, and found out that ARM64 __populate_cache_leaves()
-> set this_cpu_ci->info_list[L3Cache_level].type to 0, bacause we can't get the type of
-> L3Cache from CLIDR.
-> 
-> Then cache_setup_acpi_cpu() try to find L3Cache from PPTT.  Because L3Cache type read from
-> CLIDR is 0, so branch in acpi_cache_type falls into default: ACPI_PPTT_CACHE_TYPE_UNIFIED.
-> So we can find L3Cache in PPTT, then use update_cache_properties() to update L3Cache property.
-> But update_cache_properties() doesn't update the cache type, so this_cpu_ci->info_list[L3Cache_level].type
-> is still 0, cache_default_attrs_is_visible() returns 0, and 'type' property of L3Cache won't be displayed in sysfs.
+All errors (new ones prefixed by >>):
 
-Oh, right! The other implication is that you can't add caches which 
-aren't unified if they aren't detected by the cache description registers.
+   arch/x86/kernel/cpu/proc.o: In function `show_cpuinfo':
+>> arch/x86/kernel/cpu/proc.c:83: undefined reference to `aperfmperf_get_khz'
 
-> 
-> Can we set this_cpu_ci->info_list[level].type to CACHE_TYPE_UNIFIED in __populate_cache_leaves() when level >= 3 ?
-> Or can we update cache type property in update_cache_properties() ?
+vim +83 arch/x86/kernel/cpu/proc.c
 
-Sure, I think maybe updating it here in update_cache_properties is a 
-better plan if we can assure that enough of the fields are valid that we 
-aren't just displaying a zero size cache in sysfs..
+    56	
+    57	static int show_cpuinfo(struct seq_file *m, void *v)
+    58	{
+    59		struct cpuinfo_x86 *c = v;
+    60		unsigned int cpu;
+    61		int i;
+    62	
+    63		cpu = c->cpu_index;
+    64		seq_printf(m, "processor\t: %u\n"
+    65			   "vendor_id\t: %s\n"
+    66			   "cpu family\t: %d\n"
+    67			   "model\t\t: %u\n"
+    68			   "model name\t: %s\n",
+    69			   cpu,
+    70			   c->x86_vendor_id[0] ? c->x86_vendor_id : "unknown",
+    71			   c->x86,
+    72			   c->x86_model,
+    73			   c->x86_model_id[0] ? c->x86_model_id : "unknown");
+    74	
+    75		if (c->x86_mask || c->cpuid_level >= 0)
+    76			seq_printf(m, "stepping\t: %d\n", c->x86_mask);
+    77		else
+    78			seq_puts(m, "stepping\t: unknown\n");
+    79		if (c->microcode)
+    80			seq_printf(m, "microcode\t: 0x%x\n", c->microcode);
+    81	
+    82		if (cpu_has(c, X86_FEATURE_TSC)) {
+  > 83			unsigned int freq = aperfmperf_get_khz(cpu);
+    84	
+    85			if (!freq)
+    86				freq = cpufreq_quick_get(cpu);
+    87			if (!freq)
+    88				freq = cpu_khz;
+    89			seq_printf(m, "cpu MHz\t\t: %u.%03u\n",
+    90				   freq / 1000, (freq % 1000));
+    91		}
+    92	
+    93		/* Cache size */
+    94		if (c->x86_cache_size >= 0)
+    95			seq_printf(m, "cache size\t: %d KB\n", c->x86_cache_size);
+    96	
+    97		show_cpuinfo_core(m, c, cpu);
+    98		show_cpuinfo_misc(m, c);
+    99	
+   100		seq_puts(m, "flags\t\t:");
+   101		for (i = 0; i < 32*NCAPINTS; i++)
+   102			if (cpu_has(c, i) && x86_cap_flags[i] != NULL)
+   103				seq_printf(m, " %s", x86_cap_flags[i]);
+   104	
+   105		seq_puts(m, "\nbugs\t\t:");
+   106		for (i = 0; i < 32*NBUGINTS; i++) {
+   107			unsigned int bug_bit = 32*NCAPINTS + i;
+   108	
+   109			if (cpu_has_bug(c, bug_bit) && x86_bug_flags[i])
+   110				seq_printf(m, " %s", x86_bug_flags[i]);
+   111		}
+   112	
+   113		seq_printf(m, "\nbogomips\t: %lu.%02lu\n",
+   114			   c->loops_per_jiffy/(500000/HZ),
+   115			   (c->loops_per_jiffy/(5000/HZ)) % 100);
+   116	
 
-> 
-> 
-> Thanks,
-> Xiongfeng Wang
-> 
-> 
->> +/*
->> + * Update the kernel cache information for each level of cache
->> + * associated with the given acpi cpu.
->> + */
->> +static void cache_setup_acpi_cpu(struct acpi_table_header *table,
->> +				 unsigned int cpu)
->> +{
->> +	struct acpi_pptt_cache *found_cache;
->> +	struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
->> +	u32 acpi_cpu_id = get_acpi_id_for_cpu(cpu);
->> +	struct cacheinfo *this_leaf;
->> +	unsigned int index = 0;
->> +	struct acpi_pptt_processor *cpu_node = NULL;
->> +
->> +	while (index < get_cpu_cacheinfo(cpu)->num_leaves) {
->> +		this_leaf = this_cpu_ci->info_list + index;
->> +		found_cache = acpi_find_cache_node(table, acpi_cpu_id,
->> +						   this_leaf->type,
->> +						   this_leaf->level,
->> +						   &cpu_node);
->> +		pr_debug("found = %p %p\n", found_cache, cpu_node);
->> +		if (found_cache)
->> +			update_cache_properties(this_leaf,
->> +						found_cache,
->> +						cpu_node);
->> +
->> +		index++;
->> +	}
->> +}
->> +
->> +/**
->> + * acpi_find_last_cache_level() - Determines the number of cache levels for a PE
->> + * @cpu: Kernel logical cpu number
->> + *
->> + * Given a logical cpu number, returns the number of levels of cache represented
->> + * in the PPTT. Errors caused by lack of a PPTT table, or otherwise, return 0
->> + * indicating we didn't find any cache levels.
->> + *
->> + * Return: Cache levels visible to this core.
->> + */
->> +int acpi_find_last_cache_level(unsigned int cpu)
->> +{
->> +	u32 acpi_cpu_id;
->> +	struct acpi_table_header *table;
->> +	int number_of_levels = 0;
->> +	acpi_status status;
->> +
->> +	pr_debug("Cache Setup find last level cpu=%d\n", cpu);
->> +
->> +	acpi_cpu_id = get_acpi_id_for_cpu(cpu);
->> +	status = acpi_get_table(ACPI_SIG_PPTT, 0, &table);
->> +	if (ACPI_FAILURE(status)) {
->> +		pr_err_once("No PPTT table found, cache topology may be inaccurate\n");
->> +	} else {
->> +		number_of_levels = acpi_find_cache_levels(table, acpi_cpu_id);
->> +		acpi_put_table(table);
->> +	}
->> +	pr_debug("Cache Setup find last level level=%d\n", number_of_levels);
->> +
->> +	return number_of_levels;
->> +}
->> +
->> +/**
->> + * cache_setup_acpi() - Override CPU cache topology with data from the PPTT
->> + * @cpu: Kernel logical cpu number
->> + *
->> + * Updates the global cache info provided by cpu_get_cacheinfo()
->> + * when there are valid properties in the acpi_pptt_cache nodes. A
->> + * successful parse may not result in any updates if none of the
->> + * cache levels have any valid flags set.  Futher, a unique value is
->> + * associated with each known CPU cache entry. This unique value
->> + * can be used to determine whether caches are shared between cpus.
->> + *
->> + * Return: -ENOENT on failure to find table, or 0 on success
->> + */
->> +int cache_setup_acpi(unsigned int cpu)
->> +{
->> +	struct acpi_table_header *table;
->> +	acpi_status status;
->> +
->> +	pr_debug("Cache Setup ACPI cpu %d\n", cpu);
->> +
->> +	status = acpi_get_table(ACPI_SIG_PPTT, 0, &table);
->> +	if (ACPI_FAILURE(status)) {
->> +		pr_err_once("No PPTT table found, cache topology may be inaccurate\n");
->> +		return -ENOENT;
->> +	}
->> +
->> +	cache_setup_acpi_cpu(table, cpu);
->> +	acpi_put_table(table);
->> +
->> +	return status;
->> +}
->>
-> 
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+
+--jI8keyz6grp/JLjh
+Content-Type: application/gzip
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
+
+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
+
+--jI8keyz6grp/JLjh--
