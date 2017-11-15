@@ -1,79 +1,154 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: supply: sbs-message: double left shift bug in
- sbsm_select()
-Date: Wed, 15 Nov 2017 11:05:16 +0100
-Message-ID: <20171115100516.andgvd6gvdcrv46y@earth>
-References: <20171107124322.mm3fqkrggw3zidrx@mwanda>
- <20171113105524.xdiusofmau36zdeu@earth>
- <20171113110231.ixxeszux3d7agojv@ninjato>
- <20171115074544.5mxmjb66nqkzwyqo@ninjato>
+From: "Sajjan, Vikas C" <vikas.cha.sajjan@hpe.com>
+Subject: RE: [PATCH] x86/acpi: Fix improper handling of SCI INT for platforms
+ supporting only IOAPIC mode
+Date: Wed, 15 Nov 2017 10:05:07 +0000
+Message-ID: <CS1PR8401MB0518BBCAEA7AB61840C83324D9290@CS1PR8401MB0518.NAMPRD84.PROD.OUTLOOK.COM>
+References: <1510306686-18230-1-git-send-email-vikas.cha.sajjan@hpe.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="be6ipm5etwn2o756"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:34796 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752323AbdKOKFU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Nov 2017 05:05:20 -0500
-Content-Disposition: inline
-In-Reply-To: <20171115074544.5mxmjb66nqkzwyqo@ninjato>
+Received: from g9t1613g.houston.hpe.com ([15.241.32.99]:35389 "EHLO
+        g9t1613g.houston.hpe.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757425AbdKOKFm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 05:05:42 -0500
+In-Reply-To: <1510306686-18230-1-git-send-email-vikas.cha.sajjan@hpe.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: Dan Carpenter <dan.carpenter@oracle.com>, Karl-Heinz Schneider <karl-heinz@schneider-inet.de>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-i2c@vger.kernel.org
+To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kkamagui@gmail.com" <kkamagui@gmail.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@kernel.org" <mingo@kernel.org>, "Lakshminarasimha, Sunil Vishwanathpur" <sunil.vl@hpe.com>, "Attar, Abdul Lateef" <abdul-lateef.attar@hpe.com>
 
+Hi Rafael,
 
---be6ipm5etwn2o756
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Any thoughts on this.
 
-Hi,
+Regards
+Vikas Sajjan
 
-On Wed, Nov 15, 2017 at 08:45:44AM +0100, Wolfram Sang wrote:
-> > > >  	/* chan goes from 1 ... 4 */
-> > > > -	reg =3D 1 << BIT(SBSM_SMB_BAT_OFFSET + chan);
-> > > > +	reg =3D BIT(SBSM_SMB_BAT_OFFSET + chan);
-> > > >  	ret =3D sbsm_write_word(data->client, SBSM_CMD_BATSYSSTATE, reg);
-> > > >  	if (ret)
-> > > >  		dev_err(dev, "Failed to select channel %i\n", chan);
-> > >=20
-> > > Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-> > >=20
-> > > sbs-manager has been added to linux-next through the i2c tree due to
-> > > dependencies, so this one also needs to go through i2c.
-> >=20
-> > I want to send Linus my pull request early this time (like today or
-> > tomorrow). So, you either apply this patch then yourself afterwards on
-> > top of linus' tree. Or I send it to him, but then I'd need the original
-> > patch bounced or resent. Both fine with me.
->=20
-> The sbs-manager code is in linus' tree now. How would you like to
-> proceed?
+-----Original Message-----
+From: Sajjan, Vikas C 
+Sent: Friday, November 10, 2017 3:08 PM
+To: linux-pm@vger.kernel.org; linux-acpi@vger.kernel.org; rjw@rjwysocki.net
+Cc: linux-kernel@vger.kernel.org; kkamagui@gmail.com; tglx@linutronix.de; mingo@kernel.org; Sajjan, Vikas C <vikas.cha.sajjan@hpe.com>; Lakshminarasimha, Sunil Vishwanathpur <sunil.vl@hpe.com>; Attar, Abdul Lateef <abdul-lateef.attar@hpe.com>
+Subject: [PATCH] x86/acpi: Fix improper handling of SCI INT for platforms supporting only IOAPIC mode
 
-I plan to send my pull request today and will take it during the -rc phase
-through the power-supply tree. Thanks,
+The platforms which support only IOAPIC mode and whose SCI INT is greater than 16, passes SCI INT via FADT and not via MADT int src override structure. In such cases current logic fails to handle it and throws error "Invalid bus_irq %u for legacy override". This patch handles the above  mentioned case. While at it, also modify function mp_override_legacy_irq() to use the newly introduced function mp_register_ioapic_irq().
 
--- Sebastian
+Signed-off-by: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
+Signed-off-by: Sunil V L <sunil.vl@hpe.com>
+Signed-off-by: Abdul Lateef Attar <abdul-lateef.attar@hpe.com>
+---
+ arch/x86/kernel/acpi/boot.c | 77 +++++++++++++++++++++++++++------------------
+ 1 file changed, 47 insertions(+), 30 deletions(-)
 
---be6ipm5etwn2o756
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAloMEVYACgkQ2O7X88g7
-+prdVA/5AUxAhdzkXvIsSD27XYpyVoiCOeTJi4Li9TmpWwtVUFZ56vtGU+Uk8gQv
-377t9YdNA/CAHuZBA31+yloQvh+HV9wWY5mVjtizyS28O/iv0I3PCjEcEaNMDTYL
-crPeeYK41CRNj5vN9ijfJC6eekZ5xS6oNWkkAoDOit8B9dBTGW9A71VYmNjTKnq0
-WjLZpy8qqAC1g/7Mk/JPts4bfokf5ZrnqK/3T0XYvzasACVBNocT8GvKwQolYt6E
-Vo6GClshhjaTjphNoxwjrn+nv01JDWXNQy0X5771ODXRomLMxuQQBgwXhEWsTb1s
-fn1i8qyFDRxECoyV7Axy9io7CILpycyAzVMJkyIRVbaT1sNqMbMjMtskTDB8QXoc
-RnovIBFG+VxJ47ng1QrkRF/lab+PMC0+PHMFhHnErPH1nDAJxGWmu23464o/9vvy
-QlYnZ98JqrkyVI5W5lSYi/LhxofvedtGCkalABfNbN6JETHmk0kDpR5KUN/wNGBr
-kugzZKwhBrDrsVjk5uMuVxG0FD1XbvFrAN9PkAcBTKeywG5egKCFlSIWbmB5ligl
-C1PrRzqw/E8KeHkkptINwXttt25+WBy/e72InVb8eF5QrAvgSdW0aC/Rcf/OhApU
-UHWPwHVEGCIYIaX5MlVL4YdH5waxPU7qqLoGSMHxkY/kj0EDVNU=
-=hJAU
------END PGP SIGNATURE-----
-
---be6ipm5etwn2o756--
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c index 079535e..8ab97a5 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -342,13 +342,12 @@ static int acpi_register_lapic(int id, u32 acpiid, u8 enabled)  #ifdef CONFIG_X86_IO_APIC
+ #define MP_ISA_BUS		0
+ 
++static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
++						u8 trigger, u32 gsi);
++
+ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
+ 					  u32 gsi)
+ {
+-	int ioapic;
+-	int pin;
+-	struct mpc_intsrc mp_irq;
+-
+ 	/*
+ 	 * Check bus_irq boundary.
+ 	 */
+@@ -357,32 +356,8 @@ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
+ 		return;
+ 	}
+ 
+-	/*
+-	 * Convert 'gsi' to 'ioapic.pin'.
+-	 */
+-	ioapic = mp_find_ioapic(gsi);
+-	if (ioapic < 0)
++	if (mp_register_ioapic_irq(bus_irq, polarity, trigger, gsi) < 0)
+ 		return;
+-	pin = mp_find_ioapic_pin(ioapic, gsi);
+-
+-	/*
+-	 * TBD: This check is for faulty timer entries, where the override
+-	 *      erroneously sets the trigger to level, resulting in a HUGE
+-	 *      increase of timer interrupts!
+-	 */
+-	if ((bus_irq == 0) && (trigger == 3))
+-		trigger = 1;
+-
+-	mp_irq.type = MP_INTSRC;
+-	mp_irq.irqtype = mp_INT;
+-	mp_irq.irqflag = (trigger << 2) | polarity;
+-	mp_irq.srcbus = MP_ISA_BUS;
+-	mp_irq.srcbusirq = bus_irq;	/* IRQ */
+-	mp_irq.dstapic = mpc_ioapic_id(ioapic); /* APIC ID */
+-	mp_irq.dstirq = pin;	/* INTIN# */
+-
+-	mp_save_irq(&mp_irq);
+-
+ 	/*
+ 	 * Reset default identity mapping if gsi is also an legacy IRQ,
+ 	 * otherwise there will be more than one entry with the same GSI @@ -429,6 +404,44 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
+ 	return 0;
+ }
+ 
++static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
++						u8 trigger, u32 gsi)
++{
++	int ioapic;
++	int pin;
++	struct mpc_intsrc mp_irq;
++
++	/*
++	 * Convert 'gsi' to 'ioapic.pin'.
++	 */
++	ioapic = mp_find_ioapic(gsi);
++	if (ioapic < 0) {
++		pr_warn("Failed to find ioapic for gsi : %u\n", gsi);
++		return ioapic;
++	}
++	pin = mp_find_ioapic_pin(ioapic, gsi);
++
++	/*
++	 * TBD: This check is for faulty timer entries, where the override
++	 *      erroneously sets the trigger to level, resulting in a HUGE
++	 *      increase of timer interrupts!
++	 */
++	if ((bus_irq == 0) && (trigger == 3))
++		trigger = 1;
++
++	mp_irq.type = MP_INTSRC;
++	mp_irq.irqtype = mp_INT;
++	mp_irq.irqflag = (trigger << 2) | polarity;
++	mp_irq.srcbus = MP_ISA_BUS;
++	mp_irq.srcbusirq = bus_irq;	/* IRQ */
++	mp_irq.dstapic = mpc_ioapic_id(ioapic); /* APIC ID */
++	mp_irq.dstirq = pin;	/* INTIN# */
++
++	mp_save_irq(&mp_irq);
++
++	return 0;
++}
++
+ static int __init
+ acpi_parse_ioapic(struct acpi_subtable_header * header, const unsigned long end)  { @@ -473,7 +486,11 @@ static void __init acpi_sci_ioapic_setup(u8 bus_irq, u16 polarity, u16 trigger,
+ 	if (acpi_sci_flags & ACPI_MADT_POLARITY_MASK)
+ 		polarity = acpi_sci_flags & ACPI_MADT_POLARITY_MASK;
+ 
+-	mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
++	if (bus_irq < NR_IRQS_LEGACY)
++		mp_override_legacy_irq(bus_irq, polarity, trigger, gsi);
++	else
++		mp_register_ioapic_irq(bus_irq, polarity, trigger, gsi);
++
+ 	acpi_penalize_sci_irq(bus_irq, trigger, polarity);
+ 
+ 	/*
+--
+1.9.1
