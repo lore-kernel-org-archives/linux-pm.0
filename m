@@ -1,72 +1,88 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Subject: Re: [PATCH] power: supply: sbs-message: double left shift bug in
- sbsm_select()
-Date: Wed, 15 Nov 2017 08:45:44 +0100
-Message-ID: <20171115074544.5mxmjb66nqkzwyqo@ninjato>
-References: <20171107124322.mm3fqkrggw3zidrx@mwanda>
- <20171113105524.xdiusofmau36zdeu@earth>
- <20171113110231.ixxeszux3d7agojv@ninjato>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH] x86: use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"
+ again
+Date: Wed, 15 Nov 2017 08:54:26 +0100
+Message-ID: <20171115075426.GA23018@kroah.com>
+References: <20171109103814.70688-1-chao.wang@ucloud.cn>
+ <CA+55aFw=JkvmxohBtVy-3QPtFibq_rv_uqp3ss+gpo8vSqYGQw@mail.gmail.com>
+ <CA+55aFyRYWUn790wumcGNky98gJsDzz8W3Qna1xLC9fwcKOE=Q@mail.gmail.com>
+ <2067351.8xeh6jAbVr@aspire.rjw.lan>
+ <20171115074358.4jf4sjpq4ffmhmpi@gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="tpipa2lijnyuggkc"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sauhun.de ([88.99.104.3]:34179 "EHLO pokefinder.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751155AbdKOHpp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Nov 2017 02:45:45 -0500
+Received: from mail.linuxfoundation.org ([140.211.169.12]:35836 "EHLO
+        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752358AbdKOHyX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 02:54:23 -0500
 Content-Disposition: inline
-In-Reply-To: <20171113110231.ixxeszux3d7agojv@ninjato>
+In-Reply-To: <20171115074358.4jf4sjpq4ffmhmpi@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Dan Carpenter <dan.carpenter@oracle.com>, Karl-Heinz Schneider <karl-heinz@schneider-inet.de>, linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-i2c@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, WANG Chao <chao.wang@ucloud.cn>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
+On Wed, Nov 15, 2017 at 08:43:58AM +0100, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> 
+> > On Wednesday, November 15, 2017 1:06:12 AM CET Linus Torvalds wrote:
+> > > On Tue, Nov 14, 2017 at 4:04 PM, Linus Torvalds
+> > > <torvalds@linux-foundation.org> wrote:
+> > > > On Tue, Nov 14, 2017 at 3:53 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > >> Current head + Raphaels patch:
+> > > >>
+> > > >> real    0m0.029s
+> > > >> user    0m0.000s
+> > > >> sys     0m0.010s
+> > > >>
+> > > >> So that patch is actually slower.
+> > > >
+> > > > Oh it definitely is expected to be slower, because it does the IPI to
+> > > > all the cores and actually gets their frequency right.
+> > > >
+> > > > It was the old one that we had to revert (because it did so
+> > > > sequentially) that was really bad, and took something like 2+ seconds
+> > > > on Ingo's 160-core thing, iirc.
+> > > 
+> > > Looked it up. Ingo's machine "only" had 120 cores, and he said
+> > > 
+> > >     fomalhaut:~> time cat /proc/cpuinfo  >/dev/null
+> > >     real    0m2.689s
+> > > 
+> > > for the bad serial case, so yeah, it looks "a bit" better than it was ;)
+> > 
+> > OK, so may I queue it up?
+> > 
+> > I don't think I can get that to work substantially faster anyway ...
+> 
+> The new version is OK I suppose:
+> 
+>   Acked-by: Ingo Molnar <mingo@kernel.org>
+> 
+> I also think that /proc/cpuinfo is a pretty bad interface for many uses - I 
+> personally only very rarely need the cpuinfo of _all_ CPUs.
+> 
+> We we should eventually have /proc/cpu/N/info or so, so that 99% of the times 
+> cpuinfo is needed to report bugs we can do:
+> 
+> 	cat /proc/cpu/0/info
+> 
+> With maybe also the following variants:
+> 
+> 	/proc/cpu/first/
+> 	/proc/cpu/last/
+> 	/proc/cpu/current/
+> 
+> ... to the first/last/current CPUs.
 
---tpipa2lijnyuggkc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+We started to move this info into /sys/devices/cpu/ in individual files,
+but that got stalled due to a lack of review and general "freak out" by
+the ARM maintainers :)
 
+Hopefully that patch set will come back soon so people can review it
+properly.
 
-> > >  	/* chan goes from 1 ... 4 */
-> > > -	reg =3D 1 << BIT(SBSM_SMB_BAT_OFFSET + chan);
-> > > +	reg =3D BIT(SBSM_SMB_BAT_OFFSET + chan);
-> > >  	ret =3D sbsm_write_word(data->client, SBSM_CMD_BATSYSSTATE, reg);
-> > >  	if (ret)
-> > >  		dev_err(dev, "Failed to select channel %i\n", chan);
-> >=20
-> > Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-> >=20
-> > sbs-manager has been added to linux-next through the i2c tree due to
-> > dependencies, so this one also needs to go through i2c.
->=20
-> I want to send Linus my pull request early this time (like today or
-> tomorrow). So, you either apply this patch then yourself afterwards on
-> top of linus' tree. Or I send it to him, but then I'd need the original
-> patch bounced or resent. Both fine with me.
+thanks,
 
-The sbs-manager code is in linus' tree now. How would you like to
-proceed?
-
-
---tpipa2lijnyuggkc
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAloL8KQACgkQFA3kzBSg
-KbYMOA//ZxY2z4CKrEmFu2PDcuGP/PkE9jErsUuWkHP/SPvbJ/cVTrV2MQZ/nPHd
-VBXnn5sLx24ySH691fL6zia+SpQvUQ5tGRnqVUL5nb29L7CUBjUnR9eTIPLVxsZV
-D+wszAZUIWjqNnZuMEeIQSVl0MvB+gu6Gm4W0Mtt2HMrjUF35894G0GY87SPqzeg
-IOvD70WhZjPmHNuTfOJoo71U6OYW0pP02qqZj+W5Df5OHK+gvnS7y6NDbnvAg+mk
-ONGeh/70IKsILvXMKk4ndlftKro4tOOtNFis5rh9XMJCURYmwPzyxhg6kFNsm159
-TDbLeDnTKDLc4NJmL3AQCME5GK1bLvErDWqvxL/kWo5kXQZLQo5amsXDUDOpidpn
-Vve6NgUqLAGZ5O4A+Cqks5HGa7HO7nOtC3n0hQiA9ZfwukSzNAG7r7TUN02m6r9s
-iBFZuF8uUhTdKmnRZUxaOC4U3+FMYYnSgIPRBK424XqS3tqGMuEPQjVcOysQJpEH
-J/SQSgckzaij2W8FIDyq2VrNO5WwGtvR2UElN9P7z0FPI5UgqBbe1Ki3n0rQ/Nce
-K238+56RSDHQq7xH3lCxXalwvJI9g0p/Vk9zRmzJ6x/LCoEhRJNWAlaNatlFnkst
-cJNEl0NG0kSEyuQpPfPD9Pva4mgWya31OJv+KyeXdgoNKYFTQGc=
-=zzb0
------END PGP SIGNATURE-----
-
---tpipa2lijnyuggkc--
+greg k-h
