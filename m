@@ -1,58 +1,25 @@
-From: Prashanth Prakash <pprakash@codeaurora.org>
-Subject: [PATCH v3 0/2] Avoid calling cpu_pm functions for retention idle states
-Date: Wed, 15 Nov 2017 10:11:48 -0700
-Message-ID: <1510765910-23739-1-git-send-email-pprakash@codeaurora.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:47526 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S933351AbdKORMA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 12:12:00 -0500
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] x86/acpi: Fix improper handling of SCI INT for platforms
+ supporting only IOAPIC mode
+Date: Wed, 15 Nov 2017 18:18:52 +0100
+Message-ID: <CAJZ5v0i9VFCzMFHzfAWMJitoVNXF3uO82vVOcthLDgXsdLxheg@mail.gmail.com>
+References: <1510306686-18230-1-git-send-email-vikas.cha.sajjan@hpe.com> <CS1PR8401MB0518BBCAEA7AB61840C83324D9290@CS1PR8401MB0518.NAMPRD84.PROD.OUTLOOK.COM>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CS1PR8401MB0518BBCAEA7AB61840C83324D9290@CS1PR8401MB0518.NAMPRD84.PROD.OUTLOOK.COM>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Sajjan, Vikas C" <vikas.cha.sajjan@hpe.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kkamagui@gmail.com" <kkamagui@gmail.com>, "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@kernel.org" <mingo@kernel.org>, "Lakshminarasimha, Sunil Vishwanathpur" <sunil.vl@hpe.com>, "Attar, Abdul Lateef" <abdul-lateef.attar@hpe.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Cc: sudeep.holla@arm.com, rjw@rjwysocki.net, daniel.lezcano@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com, Prashanth Prakash <pprakash@codeaurora.org>
 
-CPU_PM_CPU_IDLE_ENTER() treats all idle states whose idx != 0 as a
-state that loses some context, but we can have deeper idle states that
-doesn't lose any software context. If a CPU is entering such a low power
-idle state where it retains the context, then there is no need to call
-cpu_pm_enter()/cpu_pm_exit().
+On Wed, Nov 15, 2017 at 11:05 AM, Sajjan, Vikas C
+<vikas.cha.sajjan@hpe.com> wrote:
+> Hi Rafael,
+>
+> Any thoughts on this.
 
-Add a new macro(CPU_PM_CPU_IDLE_ENTER_RETENTION) to be used by cpuidle
-drivers when they are entering retention state. By not calling cpu_pm_enter
-and cpu_pm_exit we reduce the latency involved in entering and exiting
-the retention states.
+I don't have concerns about it, but you really need to talk to Thomas.
 
-On ARM64 based Qualcomm server platform we measured below overhead for
-for calling cpu_pm_enter and cpu_pm_exit for retention states.
-
-workload: stress --hdd #CPUs --hdd-bytes 32M  -t 30
-Overhead of cpu_pm_enter - 1.2us(Average), 6.5us(Max)
-Overhead of cpu_pm_exit  - 3.1us(Average), 11.1us(Max)
-
-Listed below are 5 functions that were notified on ENTER/EXIT on the
-test platform:
-      gic_cpu_pm_notifier
-      arch_timer_cpu_pm_notify
-      cpu_pm_pmu_notify
-      hyp_init_cpu_pm_notifier
-      fpsimd_cpu_pm_notifier
-
-Prashanth Prakash (2):
-  cpuidle: Add new macro to enter a retention idle state
-  ARM64 / cpuidle: Use new cpuidle macro for entering retention state
-
-Changes in v3:
- - Added additional clarification to commit message (Sudeep)
-
-Changes in v2:
- - Reordered cpuidle.h macros for better readablity (Rafael)
-
- arch/arm64/kernel/cpuidle.c |  8 +++++++-
- include/linux/cpuidle.h     | 40 ++++++++++++++++++++++++----------------
- 2 files changed, 31 insertions(+), 17 deletions(-)
-
--- 
-Qualcomm Datacenter Technologies on behalf of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the
-Code Aurora Forum, a Linux Foundation Collaborative Project.
+Thanks,
+Rafael
