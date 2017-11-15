@@ -1,71 +1,56 @@
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH v3] cpupower : Fix cpupower working when cpu0 is offline
-Date: Wed, 15 Nov 2017 14:10:02 +0530
-Message-ID: <20171115084002.23887-1-huntbag@linux.vnet.ibm.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"
+ again
+Date: Wed, 15 Nov 2017 09:47:11 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1711150943030.1805@nanos>
+References: <20171109103814.70688-1-chao.wang@ucloud.cn> <CA+55aFycTaZjKg1SGujkMrOX5WmUyWHvy2ujzaV8jefOfDPy_Q@mail.gmail.com> <CAJZ5v0iPt8VKoM8BuRA7O+U+fk7dg37sqVJ0pi2=S8muqfznPQ@mail.gmail.com> <2101739.Je3pS2vcJU@aspire.rjw.lan>
+ <CA+55aFxkfh1U1kawntYUtz4u610Hcgx-HWgyL+pROzQFA+MOaw@mail.gmail.com> <alpine.DEB.2.20.1711150038120.2221@nanos> <CA+55aFw=JkvmxohBtVy-3QPtFibq_rv_uqp3ss+gpo8vSqYGQw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:58286 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1755194AbdKOIkM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 03:40:12 -0500
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vAF8dBPQ074492
-        for <linux-pm@vger.kernel.org>; Wed, 15 Nov 2017 03:40:12 -0500
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2e8fpxedu2-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Wed, 15 Nov 2017 03:40:11 -0500
-Received: from localhost
-        by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
-        Wed, 15 Nov 2017 08:40:09 -0000
+Received: from Galois.linutronix.de ([146.0.238.70]:40600 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751785AbdKOIrc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 03:47:32 -0500
+In-Reply-To: <CA+55aFw=JkvmxohBtVy-3QPtFibq_rv_uqp3ss+gpo8vSqYGQw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: trenn@suse.com, linux-pm@vger.kernel.org, shuah@kernel.org, linux-kernel@vger.kernel.org
-Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, WANG Chao <chao.wang@ucloud.cn>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-cpuidle_monitor used to assume that cpu0 is always online which is not
-a valid assumption on POWER machines. This patch fixes this by getting
-the cpu on which the current thread is running, instead of always using
-cpu0 for monitoring which may not be online.
+On Tue, 14 Nov 2017, Linus Torvalds wrote:
+> On Tue, Nov 14, 2017 at 3:53 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > Current head + Raphaels patch:
+> >
+> > real    0m0.029s
+> > user    0m0.000s
+> > sys     0m0.010s
+> >
+> > So that patch is actually slower.
+> 
+> Oh it definitely is expected to be slower, because it does the IPI to
+> all the cores and actually gets their frequency right.
+> 
+> It was the old one that we had to revert (because it did so
+> sequentially) that was really bad, and took something like 2+ seconds
+> on Ingo's 160-core thing, iirc.
+> 
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
- tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c | 9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Tired brain did not connect it to the revert.
 
-diff --git a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-index 1b5da00..5b3205f 100644
---- a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-+++ b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-@@ -130,15 +130,18 @@ static struct cpuidle_monitor *cpuidle_register(void)
- {
- 	int num;
- 	char *tmp;
-+	int this_cpu;
-+
-+	this_cpu = sched_getcpu();
- 
- 	/* Assume idle state count is the same for all CPUs */
--	cpuidle_sysfs_monitor.hw_states_num = cpuidle_state_count(0);
-+	cpuidle_sysfs_monitor.hw_states_num = cpuidle_state_count(this_cpu);
- 
- 	if (cpuidle_sysfs_monitor.hw_states_num <= 0)
- 		return NULL;
- 
- 	for (num = 0; num < cpuidle_sysfs_monitor.hw_states_num; num++) {
--		tmp = cpuidle_state_name(0, num);
-+		tmp = cpuidle_state_name(this_cpu, num);
- 		if (tmp == NULL)
- 			continue;
- 
-@@ -146,7 +149,7 @@ static struct cpuidle_monitor *cpuidle_register(void)
- 		strncpy(cpuidle_cstates[num].name, tmp, CSTATE_NAME_LEN - 1);
- 		free(tmp);
- 
--		tmp = cpuidle_state_desc(0, num);
-+		tmp = cpuidle_state_desc(this_cpu, num);
- 		if (tmp == NULL)
- 			continue;
- 		strncpy(cpuidle_cstates[num].desc, tmp,	CSTATE_DESC_LEN - 1);
--- 
-2.9.3
+On that machine with ea0ee3398877: Revert "x86: CPU: Fix up "cpu MHz" in
+/proc/cpuinfo" reverted it takes:
+
+real	0m4.497s
+user	0m0.012s
+sys	0m0.000s
+
+> It sounds like the current patch is slower, but likely acceptable
+> considering that you get the right results now ..
+
+Correct and the factor 10, i.e. 30ms vs. 3ms is not horrible, while the 4.5
+seconds are.
+
+Thanks,
+
+	tglx
