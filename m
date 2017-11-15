@@ -1,45 +1,70 @@
-From: "Sajjan, Vikas C" <vikas.cha.sajjan@hpe.com>
-Subject: RE: [PATCH] x86/acpi: Fix improper handling of SCI INT for platforms
- supporting only IOAPIC mode
-Date: Wed, 15 Nov 2017 17:30:46 +0000
-Message-ID: <CS1PR8401MB05189C5186CD6E4B6509EAD5D9290@CS1PR8401MB0518.NAMPRD84.PROD.OUTLOOK.COM>
-References: <1510306686-18230-1-git-send-email-vikas.cha.sajjan@hpe.com>
- <CAJZ5v0g8d=q1TZvacBZ_EDMjAnufQdHYkfbnkhv4kSH_FNOhDg@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v3 4/6] PM / core: Add helpers for subsystem callback selection
+Date: Wed, 15 Nov 2017 18:55:26 +0100
+Message-ID: <CAJZ5v0gfuKaCDkJLLB8k4+oWunae_xkj9AcX0NB9DuWRsw8Ocw@mail.gmail.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <6330680.LdxjlP4uri@aspire.rjw.lan>
+ <4184911.zoJM7jZeH4@aspire.rjw.lan> <2261600.6h5WdhsrLe@aspire.rjw.lan> <CAPDyKFpB=wq+66mfrVkMoUwyBqA2QhNQav5cipG1G-VNKO7Sig@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0g8d=q1TZvacBZ_EDMjAnufQdHYkfbnkhv4kSH_FNOhDg@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Seunghun Han <kkamagui@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, "Lakshminarasimha, Sunil Vishwanathpur" <sunil.vl@hpe.com>, "Attar, Abdul Lateef" <abdul-lateef.attar@hpe.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFpB=wq+66mfrVkMoUwyBqA2QhNQav5cipG1G-VNKO7Sig@mail.gmail.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-SGkgUmFmYWVsLA0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogcmp3eXNvY2tp
-QGdtYWlsLmNvbSBbbWFpbHRvOnJqd3lzb2NraUBnbWFpbC5jb21dIE9uIEJlaGFsZiBPZiBSYWZh
-ZWwgSi4gV3lzb2NraQ0KU2VudDogV2VkbmVzZGF5LCBOb3ZlbWJlciAxNSwgMjAxNyAxMDo1MSBQ
-TQ0KVG86IFNhamphbiwgVmlrYXMgQyA8dmlrYXMuY2hhLnNhamphbkBocGUuY29tPg0KQ2M6IExp
-bnV4IFBNIDxsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc+OyBBQ1BJIERldmVsIE1hbGluZyBMaXN0
-IDxsaW51eC1hY3BpQHZnZXIua2VybmVsLm9yZz47IFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3
-eXNvY2tpLm5ldD47IExpbnV4IEtlcm5lbCBNYWlsaW5nIExpc3QgPGxpbnV4LWtlcm5lbEB2Z2Vy
-Lmtlcm5lbC5vcmc+OyBTZXVuZ2h1biBIYW4gPGtrYW1hZ3VpQGdtYWlsLmNvbT47IFRob21hcyBH
-bGVpeG5lciA8dGdseEBsaW51dHJvbml4LmRlPjsgSW5nbyBNb2xuYXIgPG1pbmdvQGtlcm5lbC5v
-cmc+OyBMYWtzaG1pbmFyYXNpbWhhLCBTdW5pbCBWaXNod2FuYXRocHVyIDxzdW5pbC52bEBocGUu
-Y29tPjsgQXR0YXIsIEFiZHVsIExhdGVlZiA8YWJkdWwtbGF0ZWVmLmF0dGFyQGhwZS5jb20+DQpT
-dWJqZWN0OiBSZTogW1BBVENIXSB4ODYvYWNwaTogRml4IGltcHJvcGVyIGhhbmRsaW5nIG9mIFND
-SSBJTlQgZm9yIHBsYXRmb3JtcyBzdXBwb3J0aW5nIG9ubHkgSU9BUElDIG1vZGUNCg0KT24gRnJp
-LCBOb3YgMTAsIDIwMTcgYXQgMTA6MzggQU0sIFZpa2FzIEMgU2FqamFuIDx2aWthcy5jaGEuc2Fq
-amFuQGhwZS5jb20+IHdyb3RlOg0KPiBUaGUgcGxhdGZvcm1zIHdoaWNoIHN1cHBvcnQgb25seSBJ
-T0FQSUMgbW9kZSBhbmQgd2hvc2UgU0NJIElOVCBpcyANCj4gZ3JlYXRlciB0aGFuIDE2LCBwYXNz
-ZXMgU0NJIElOVCB2aWEgRkFEVCBhbmQgbm90IHZpYSBNQURUIGludCBzcmMgDQo+IG92ZXJyaWRl
-IHN0cnVjdHVyZS4gSW4gc3VjaCBjYXNlcyBjdXJyZW50IGxvZ2ljIGZhaWxzIHRvIGhhbmRsZSBp
-dCBhbmQgDQo+IHRocm93cyBlcnJvciAiSW52YWxpZCBidXNfaXJxICV1IGZvciBsZWdhY3kgb3Zl
-cnJpZGUiLiBUaGlzIHBhdGNoIA0KPiBoYW5kbGVzIHRoZSBhYm92ZSAgbWVudGlvbmVkIGNhc2Uu
-IFdoaWxlIGF0IGl0LCBhbHNvIG1vZGlmeSBmdW5jdGlvbiANCj4gbXBfb3ZlcnJpZGVfbGVnYWN5
-X2lycSgpIHRvIHVzZSB0aGUgbmV3bHkgaW50cm9kdWNlZCBmdW5jdGlvbiBtcF9yZWdpc3Rlcl9p
-b2FwaWNfaXJxKCkuDQoNCkFjdHVhbGx5LCBpcyBpdCBuZWNlc3NhcnkgdG8gbWFrZSB0aGlzIGV4
-dHJhIGNoYW5nZSBoZXJlPw0KDQpIb3cgY29tcGxpY2F0ZWQgd291bGQgaXQgYmUgdG8gc2VwYXJh
-dGUgaXQgb3V0Pw0KDQpJIGNhbiBtb3ZlIHRoZXNlIGV4dHJhIGNoYW5nZXMgaW50byBhIHNlcGFy
-YXRlIHBhdGNoIGFuZCBrZWVwIG9ubHkgdGhlIGZpeCBpbiB0aGlzIHBhdGNoLg0KDQpUaGFua3Ms
-DQpSYWZhZWwNCg0KVGhhbmtzLA0KVmlrYXMgU2FqamFuDQo=
+On Wed, Nov 15, 2017 at 8:43 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 12 November 2017 at 01:42, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> Add helper routines to find and return a suitable subsystem callback
+>> during the "noirq" phases of system suspend/resume (or analogous)
+>> transitions as well as during the "late" phase of system suspend and
+>> the "early" phase of system resume (or analogous) transitions.
+>>
+>> The helpers will be called from additional sites going forward.
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> With a minor nitpick, see below, feel free to add:
+>
+> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+>
+>> ---
+>>
+>> v2 -> v3: No changes.
+>>
+>> ---
+>>  drivers/base/power/main.c |  196 +++++++++++++++++++++++++++++++---------------
+>>  1 file changed, 136 insertions(+), 60 deletions(-)
+>>
+>> Index: linux-pm/drivers/base/power/main.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/base/power/main.c
+>> +++ linux-pm/drivers/base/power/main.c
+>> @@ -525,6 +525,14 @@ static void dpm_watchdog_clear(struct dp
+>>  #define dpm_watchdog_clear(x)
+>>  #endif
+>>
+>> +static pm_callback_t dpm_subsys_suspend_noirq_cb(struct device *dev,
+>> +                                                pm_message_t state,
+>> +                                                const char **info_p);
+>> +
+>> +static pm_callback_t dpm_subsys_suspend_late_cb(struct device *dev,
+>> +                                               pm_message_t state,
+>> +                                               const char **info_p);
+>> +
+>
+> There is no need to declare these functions.
+>
+> Perhaps a following patch in the series need them, but then that
+> change should add these or even better (in my opinion) just move the
+> implementations and avoid the declarations all together.
+
+Well, all of the changes in this patch are for the benefit of the
+subsequent patches. :-)
+
+I just wanted to move additional code churn noise from those patches.
+
+Thanks,
+Rafael
