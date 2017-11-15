@@ -1,52 +1,38 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [Regression/XFS/PM] Freeze tasks failed in xfsaild
-Date: Wed, 15 Nov 2017 19:05:33 +0100
-Message-ID: <CAJZ5v0jKa0n+7Bg+znRuhSuaot0WG3ByAttkFdRoBgMveUff7Q@mail.gmail.com>
-References: <20171113103139.GA18936@yu-chen.sh.intel.com> <6271997.pCNICGrn9T@aspire.rjw.lan>
- <20171114230730.GD4094@dastard> <1642052.KjDFtI7czP@aspire.rjw.lan> <20171115180138.GF16026@wotan.suse.de>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86: use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz"
+ again
+Date: Wed, 15 Nov 2017 19:05:22 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1711151903260.1805@nanos>
+References: <20171109103814.70688-1-chao.wang@ucloud.cn> <CA+55aFw=JkvmxohBtVy-3QPtFibq_rv_uqp3ss+gpo8vSqYGQw@mail.gmail.com> <CA+55aFyRYWUn790wumcGNky98gJsDzz8W3Qna1xLC9fwcKOE=Q@mail.gmail.com> <2067351.8xeh6jAbVr@aspire.rjw.lan> <20171115074358.4jf4sjpq4ffmhmpi@gmail.com>
+ <CA+55aFzHqhxzv1p7fqdXPugMUVRyM44pL4KO3f_T6yFJUACXvw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f193.google.com ([74.125.82.193]:43418 "EHLO
-        mail-ot0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757984AbdKOSFf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 13:05:35 -0500
-In-Reply-To: <20171115180138.GF16026@wotan.suse.de>
+Received: from Galois.linutronix.de ([146.0.238.70]:42796 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756208AbdKOSGV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 13:06:21 -0500
+In-Reply-To: <CA+55aFzHqhxzv1p7fqdXPugMUVRyM44pL4KO3f_T6yFJUACXvw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Dave Chinner <david@fromorbit.com>, Jiri Kosina <jkosina@suse.cz>, Dan Williams <dan.j.williams@intel.com>, Yu Chen <yu.c.chen@intel.com>, Michal Hocko <mhocko@suse.com>, Hendrik Woltersdorf <hendrikw@arcor.de>, Dave Chinner <dchinner@redhat.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, "Darrick J. Wong" <darrick.wong@oracle.com>, Len Brown <len.brown@intel.com>, Rui Zhang <rui.zhang@intel.com>, Yu Chen <yu.chen.surf@gmail.com>, linux-xfs@vger.kernel.org, Linux-pm mailing list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thorsten Leemhuis <linux@leemhuis.info>, Oleg Antonyan <oleg.b.antonyan@gmail.com>, Oliver Neukum <oneukum@suse.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, WANG Chao <chao.wang@ucloud.cn>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Wed, Nov 15, 2017 at 7:01 PM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
-> On Wed, Nov 15, 2017 at 12:40:43AM +0100, Rafael J. Wysocki wrote:
->> On Wednesday, November 15, 2017 12:07:30 AM CET Dave Chinner wrote:
->> Can we stop here and be constructive going forward, please?
->
-> Then let's stop this nonsense and get to work.
->
->> > > So what do you think should be done, specifically?
->> >
->> > Luis posted an initial version of those "use fs freeze" changes
->> > recently, so Work with Luis to get those changes into the kernel.
->>
->> This isn't the first version as per the above and sorry, but without
->> help from fs people this is going to end the same way as before and
->> I sort of doubt that "working with Luis" alone is going to be sufficient.
->>
->> We need the fs people to actually help us, pretty much like back in 2011.
->
-> Rafael, AFAICT the only outstanding issue with the patches I posted were
-> the last two patches. I haven't had time to re-test my patches without the
-> last patch, but if Chinner was right, and I suspect he was, then the last patch
-> is what implicated the need for the ext patch, which we don't want. So dropping
-> the last two patches I think would be a good starting point.
->
-> I hope to have time to re-test this week, if you feel compelled to help,
-> you can also help test the patches except for the last two. Then if you
-> want to help further, helping iron out the kinks on the last patch would
-> be much appreciated.
+On Wed, 15 Nov 2017, Linus Torvalds wrote:
+> On Tue, Nov 14, 2017 at 11:43 PM, Ingo Molnar <mingo@kernel.org> wrote:
+> Again, try that "cat" example again, and time it.
+> 
+> (And yes, I also know that "cpu*/cpufreq" is a symlink, but the direct
+> names are illogical, and no faster for me. Try it if you like:
+> 
+>   time cat /sys/devices/system/cpu/cpufreq/policy*/scaling_cur_freq > /dev/null
 
-OK, please resend the series when you're ready.
+Just for the fun of it I tried. It's exactly the same time as /proc/cpuinfo
+with the reverted patch which did the full IPI thing, i.e. >4 seconds on
+that machine.
+
+Not a surprise because those files do the full IPI thing as well.
 
 Thanks,
-Rafael
+
+	tglx
