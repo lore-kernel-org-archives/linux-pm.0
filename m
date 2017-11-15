@@ -1,51 +1,32 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [PATCH] x86: use cpufreq_quick_get() for /proc/cpuinfo "cpu MHz" again
-Date: Wed, 15 Nov 2017 01:30:37 +0100
-Message-ID: <2067351.8xeh6jAbVr@aspire.rjw.lan>
-References: <20171109103814.70688-1-chao.wang@ucloud.cn> <CA+55aFw=JkvmxohBtVy-3QPtFibq_rv_uqp3ss+gpo8vSqYGQw@mail.gmail.com> <CA+55aFyRYWUn790wumcGNky98gJsDzz8W3Qna1xLC9fwcKOE=Q@mail.gmail.com>
+Date: Tue, 14 Nov 2017 16:34:43 -0800
+Message-ID: <CA+55aFxYQKzGbZ3GUWcuta5kz=2jp52xbEhV96R5RfCaMbLaNg@mail.gmail.com>
+References: <20171109103814.70688-1-chao.wang@ucloud.cn> <CA+55aFw=JkvmxohBtVy-3QPtFibq_rv_uqp3ss+gpo8vSqYGQw@mail.gmail.com>
+ <CA+55aFyRYWUn790wumcGNky98gJsDzz8W3Qna1xLC9fwcKOE=Q@mail.gmail.com> <2067351.8xeh6jAbVr@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:48821 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1755093AbdKOAat (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Nov 2017 19:30:49 -0500
-In-Reply-To: <CA+55aFyRYWUn790wumcGNky98gJsDzz8W3Qna1xLC9fwcKOE=Q@mail.gmail.com>
+Received: from mail-io0-f178.google.com ([209.85.223.178]:45862 "EHLO
+        mail-io0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752929AbdKOAeo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Nov 2017 19:34:44 -0500
+In-Reply-To: <2067351.8xeh6jAbVr@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Thomas Gleixner <tglx@linutronix.de>, WANG Chao <chao.wang@ucloud.cn>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Wednesday, November 15, 2017 1:06:12 AM CET Linus Torvalds wrote:
-> On Tue, Nov 14, 2017 at 4:04 PM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
-> > On Tue, Nov 14, 2017 at 3:53 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> >> Current head + Raphaels patch:
-> >>
-> >> real    0m0.029s
-> >> user    0m0.000s
-> >> sys     0m0.010s
-> >>
-> >> So that patch is actually slower.
-> >
-> > Oh it definitely is expected to be slower, because it does the IPI to
-> > all the cores and actually gets their frequency right.
-> >
-> > It was the old one that we had to revert (because it did so
-> > sequentially) that was really bad, and took something like 2+ seconds
-> > on Ingo's 160-core thing, iirc.
-> 
-> Looked it up. Ingo's machine "only" had 120 cores, and he said
-> 
->     fomalhaut:~> time cat /proc/cpuinfo  >/dev/null
->     real    0m2.689s
-> 
-> for the bad serial case, so yeah, it looks "a bit" better than it was ;)
+On Tue, Nov 14, 2017 at 4:30 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>
+> OK, so may I queue it up?
+>
+> I don't think I can get that to work substantially faster anyway ...
 
-OK, so may I queue it up?
+Yeah, I think it's ok.
 
-I don't think I can get that to work substantially faster anyway ...
+If somebody is really doing that /proc/cpuinfo in a loop, the rate
+limiting should kick in. And if you do it only once, getting the right
+frequency is worth it, I think.
 
-Thanks,
-Rafael
+             Linus
