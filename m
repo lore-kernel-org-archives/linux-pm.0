@@ -1,75 +1,44 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: Add Loongson machine dependencies
-Date: Thu, 16 Nov 2017 08:11:15 +0530
-Message-ID: <20171116024115.GP3257@vireshk-i7>
-References: <20171115211755.25102-1-james.hogan@mips.com>
+Subject: Re: [PATCH 4/4] cpu_cooling: Drop static-power related stuff
+Date: Thu, 16 Nov 2017 08:17:04 +0530
+Message-ID: <20171116024704.GQ3257@vireshk-i7>
+References: <cover.1510735482.git.viresh.kumar@linaro.org>
+ <fcca009e0e10840ff5ee31c88b618a212ab69201.1510735482.git.viresh.kumar@linaro.org>
+ <761f7963-8b6d-b002-5404-a9ad0acf84d6@linaro.org>
+ <20171115154311.GA3005@localhost.localdomain>
+ <CAJZ5v0j6Hk8D29h+MdMeU-PgSAFkNG-41_a7d+goVuSve0=CYw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:52008 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750967AbdKPClS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 21:41:18 -0500
-Received: by mail-pg0-f66.google.com with SMTP id p9so19480616pgc.8
-        for <linux-pm@vger.kernel.org>; Wed, 15 Nov 2017 18:41:18 -0800 (PST)
+Received: from mail-pg0-f41.google.com ([74.125.83.41]:52630 "EHLO
+        mail-pg0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754551AbdKPCrH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 21:47:07 -0500
+Received: by mail-pg0-f41.google.com with SMTP id j16so13979565pgn.9
+        for <linux-pm@vger.kernel.org>; Wed, 15 Nov 2017 18:47:07 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <20171115211755.25102-1-james.hogan@mips.com>
+In-Reply-To: <CAJZ5v0j6Hk8D29h+MdMeU-PgSAFkNG-41_a7d+goVuSve0=CYw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: James Hogan <james.hogan@mips.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Keguang Zhang <keguang.zhang@gmail.com>, James Hogan <jhogan@kernel.org>, Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, lukasz.luba@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
 
-On 15-11-17, 21:17, James Hogan wrote:
-> From: James Hogan <jhogan@kernel.org>
-> 
-> The MIPS loongson cpufreq drivers don't build unless configured for the
-> correct machine type, due to dependency on machine specific architecture
-> headers and symbols in machine specific platform code.
-> 
-> More specifically loongson1-cpufreq.c uses RST_CPU_EN and RST_CPU,
-> neither of which is defined in asm/mach-loongson32/regs-clk.h unless
-> CONFIG_LOONGSON1_LS1B=y, and loongson2_cpufreq.c references
-> loongson2_clockmod_table[], which is only defined in
-> arch/mips/loongson64/lemote-2f/clock.c, i.e. when
-> CONFIG_LEMOTE_MACH2F=y.
-> 
-> Add these dependencies to Kconfig to avoid randconfig / allyesconfig
-> build failures (e.g. when based on BMIPS which also has a cpufreq
-> driver).
-> 
-> Signed-off-by: James Hogan <jhogan@kernel.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Keguang Zhang <keguang.zhang@gmail.com>
-> Cc: Ralf Baechle <ralf@linux-mips.org>
-> Cc: linux-pm@vger.kernel.org
-> Cc: linux-mips@linux-mips.org
-> ---
->  drivers/cpufreq/Kconfig | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index 4ebae43118ef..d8addbce40bc 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -275,6 +275,7 @@ config BMIPS_CPUFREQ
->  
->  config LOONGSON2_CPUFREQ
->  	tristate "Loongson2 CPUFreq Driver"
-> +	depends on LEMOTE_MACH2F
->  	help
->  	  This option adds a CPUFreq driver for loongson processors which
->  	  support software configurable cpu frequency.
-> @@ -287,6 +288,7 @@ config LOONGSON2_CPUFREQ
->  
->  config LOONGSON1_CPUFREQ
->  	tristate "Loongson1 CPUFreq Driver"
-> +	depends on LOONGSON1_LS1B
->  	help
->  	  This option adds a CPUFreq driver for loongson1 processors which
->  	  support software configurable cpu frequency.
+On 15-11-17, 19:17, Rafael J. Wysocki wrote:
+> However, I would like to see a clear declaration from whoever is
+> maintaining that code today that there is a plan in place to upstream
+> it and that this plan will actually be acted on.  And, better yet,
+> *when* that can be expected to happen.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Exactly what I have been advocating.
+
+And there is bunch of other places where such examples can be seen.
+For example multiple regulator support in the OPP framework, which I
+added an year ago hasn't seen a user yet. And I am pushing the TI guys
+(who wanted it badly) to upstream their code before we remove that as
+well :)
+
+Again, someone has to come up and take responsibility of getting
+static power platform support upstream in a definite amount of time.
 
 -- 
 viresh
