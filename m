@@ -1,36 +1,145 @@
 From: "Sajjan, Vikas C" <vikas.cha.sajjan@hpe.com>
-Subject: RE: [PATCH v2 2/2] acpi/x86: Reuse the mp_register_ioapic_irq() in
- the function mp_override_legacy_irq()
-Date: Thu, 16 Nov 2017 11:37:02 +0000
-Message-ID: <TU4PR8401MB0525D194D8A3A2DAEB8A3C95D92E0@TU4PR8401MB0525.NAMPRD84.PROD.OUTLOOK.COM>
+Subject: RE: [PATCH v2 1/2] acpi/x86: Fix improper handling of SCI INT for
+ platforms supporting only IOAPIC mode
+Date: Thu, 16 Nov 2017 11:36:44 +0000
+Message-ID: <TU4PR8401MB0525A1594F5D2E063B3A8CB2D92E0@TU4PR8401MB0525.NAMPRD84.PROD.OUTLOOK.COM>
 References: <1510824595-12287-1-git-send-email-vikas.cha.sajjan@hpe.com>
- <1510824595-12287-3-git-send-email-vikas.cha.sajjan@hpe.com>
- <alpine.DEB.2.20.1711161205020.2191@nanos>
+ <1510824595-12287-2-git-send-email-vikas.cha.sajjan@hpe.com>
+ <alpine.DEB.2.20.1711161147200.2191@nanos>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1711161205020.2191@nanos>
+In-Reply-To: <alpine.DEB.2.20.1711161147200.2191@nanos>
 Content-Language: en-US
 Sender: linux-acpi-owner@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kkamagui@gmail.com" <kkamagui@gmail.com>, "mingo@kernel.org" <mingo@kernel.org>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kkamagui@gmail.com" <kkamagui@gmail.com>, "mingo@kernel.org" <mingo@kernel.org>, "Lakshminarasimha, Sunil Vishwanathpur" <sunil.vl@hpe.com>, "Attar, Abdul Lateef" <abdul-lateef.attar@hpe.com>
 List-Id: linux-pm@vger.kernel.org
 
-
+Thanks for review, Thomas.
 
 -----Original Message-----
 From: Thomas Gleixner [mailto:tglx@linutronix.de] 
 Sent: Thursday, November 16, 2017 4:35 PM
 To: Sajjan, Vikas C <vikas.cha.sajjan@hpe.com>
-Cc: rjw@rjwysocki.net; rafael.j.wysocki@intel.com; linux-pm@vger.kernel.org; linux-acpi@vger.kernel.org; linux-kernel@vger.kernel.org; kkamagui@gmail.com; mingo@kernel.org
-Subject: Re: [PATCH v2 2/2] acpi/x86: Reuse the mp_register_ioapic_irq() in the function mp_override_legacy_irq()
+Cc: rjw@rjwysocki.net; rafael.j.wysocki@intel.com; linux-pm@vger.kernel.org; linux-acpi@vger.kernel.org; linux-kernel@vger.kernel.org; kkamagui@gmail.com; mingo@kernel.org; Lakshminarasimha, Sunil Vishwanathpur <sunil.vl@hpe.com>; Attar, Abdul Lateef <abdul-lateef.attar@hpe.com>
+Subject: Re: [PATCH v2 1/2] acpi/x86: Fix improper handling of SCI INT for platforms supporting only IOAPIC mode
 
 On Thu, 16 Nov 2017, Vikas C Sajjan wrote:
 
-> Modify the function mp_override_legacy_irq() to reuse the newly 
-> introduced function mp_register_ioapic_irq().
+Thanks for splitting this up.
 
-Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+> The platforms which support only IOAPIC mode and whose SCI INT is 
+> greater than 16, passes SCI INT via FADT and not via MADT int src 
+> override
 
-Thanks.
+greater? I think that's >= 16 because the legacy space is 0-15
+
+yes, It should be >=16. Will modify it.
+
+> structure. In such cases current logic fails to handle it and throws 
+> error "Invalid bus_irq %u for legacy override".
+
+Up to this point the changelog is informative. It just lacks the information WHY the current logic fails to handle it.
+
+> This patch fixes it.
+
+This part is completely useless. You should at least explain the concept of the fix, not the details (they can be seen from the code).
+
+Sure, will remove this part.
+
+Let me give you an example:
+
+ Platforms which support only IOAPIC mode pass the SCI information of  interrupts above the legacy space (0-15) via the FADT mechanism and not  via MADT, i.e. the table parser ends up calling acpi_sci_ioapic_setup().
+
+ acpi_sci_ioapic_setup() uses mp_override_legacy_irq() to register SCI  interrupts, which fails for interrupts >= 16, because it only handles  interrupts 0-15.
+
+ Provide a separate function to handle SCI interrupts >= 16 and invoke it  conditional in acpi_sci_ioapic_setup().
+
+ This creates some code duplication, which will be cleaned up in a separate  patch.
+
+See?
+Thanks for the example. Will give details on why the current logic fails and high level view of the fix.
+ 
+> Signed-off-by: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
+> Signed-off-by: Sunil V L <sunil.vl@hpe.com>
+> Signed-off-by: Abdul Lateef Attar <abdul-lateef.attar@hpe.com>
+
+This Signed-off-by chain is broken. It says:
+
+     Vikas wrote the patch and handed it to Sunil
+     Sunil handed it to Abdul
+     Abdul sent it to lkml
+
+Which is obviously not the case.
+3 of us worked on it, hence I had put all the 3 "Signed-off-by". Are you suggesting to call-out who did what.  Is that what you mean, when you say  "Signed-off-by chain is broken".
+
+> ---
+>  arch/x86/kernel/acpi/boot.c | 37 
+> ++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 36 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c 
+> index ef9e02e..40c24d1b 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -429,6 +429,37 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
+>  	return 0;
+>  }
+>  
+> +static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
+> +						u8 trigger, u32 gsi)
+> +{
+> +	int ioapic;
+> +	int pin;
+> +	struct mpc_intsrc mp_irq;
+
+I know you copied that, but please get rid of the extra line and sort the variables in reverse fir tree fashion, i.e.:
+
+	struct mpc_intsrc mp_irq;
+	int ioapic, pin;
+
+That takes less space and is better to read/parse.
+Sure, will do.
+> +
+> +	/*
+> +	 * Convert 'gsi' to 'ioapic.pin'.
+> +	 */
+
+Please make this a one line comment. It's useful, but not that important to stand out.
+OK.
+
+> +	ioapic = mp_find_ioapic(gsi);
+> +	if (ioapic < 0) {
+> +		pr_warn("Failed to find ioapic for gsi : %u\n", gsi);
+> +		return ioapic;
+> +	}
+> +
+> +	pin = mp_find_ioapic_pin(ioapic, gsi);
+> +
+> +	mp_irq.type = MP_INTSRC;
+> +	mp_irq.irqtype = mp_INT;
+> +	mp_irq.irqflag = (trigger << 2) | polarity;
+> +	mp_irq.srcbus = MP_ISA_BUS;
+> +	mp_irq.srcbusirq = bus_irq;	/* IRQ */
+
+Please get rid of these tail comments. First of all tail comments are disturbing the reading flow. Secondly these comment have exactly zero value.
+OK.
+
+> +	mp_irq.dstapic = mpc_ioapic_id(ioapic); /* APIC ID */
+> +	mp_irq.dstirq = pin;	/* INTIN# */
+
+except for this one, but that information should go into that other comment above, i.e.:
+
+       /* Convert 'gsi' to ioapic.pin (INTIN#) */
+
+Other than these more formal nitpicks, the patch is fine.
+Thank you, Thomas.
+ 
+Thanks,
+
+	Tglx
+
+Thanks 
+Vikas Sajjan
