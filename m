@@ -1,128 +1,130 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 1/6] PM / core: Add LEAVE_SUSPENDED driver flag
-Date: Thu, 16 Nov 2017 11:18:21 +0100
-Message-ID: <CAPDyKFrP2V24ROgV0U8qgR-t91rzJ5mnEMkCQpq_tN_bZj1YPg@mail.gmail.com>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <CAJZ5v0i4yFGyqAZ6QqG7q1_xNfjMNHkPk3o0WuBvwKFeM2nXeg@mail.gmail.com>
- <CAPDyKFr4DgVdKtf=G1vUy=Si0nSTECsrWoqB+z9UCQHS8DuwcQ@mail.gmail.com> <2655595.bSA6msl5Qp@aspire.rjw.lan>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v2 1/2] acpi/x86: Fix improper handling of SCI INT for
+ platforms supporting only IOAPIC mode
+Date: Thu, 16 Nov 2017 12:04:52 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1711161147200.2191@nanos>
+References: <1510824595-12287-1-git-send-email-vikas.cha.sajjan@hpe.com> <1510824595-12287-2-git-send-email-vikas.cha.sajjan@hpe.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <2655595.bSA6msl5Qp@aspire.rjw.lan>
+In-Reply-To: <1510824595-12287-2-git-send-email-vikas.cha.sajjan@hpe.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
+To: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
+Cc: rjw@rjwysocki.net, rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, kkamagui@gmail.com, mingo@kernel.org, Sunil V L <sunil.vl@hpe.com>, Abdul Lateef Attar <abdul-lateef.attar@hpe.com>
 List-Id: linux-pm@vger.kernel.org
 
-[...]
+On Thu, 16 Nov 2017, Vikas C Sajjan wrote:
 
->>
->> My general goal is that I want to make it easier (or as easy as
->> possible) for the general driver author to deploy runtime PM and
->> system-wide PM support - in an optimized manner. Therefore, I am
->> pondering over the solution you picked in this series, trying to
->> understand how it fits into those aspects.
->>
->> Particular I am a bit worried from a complexity point of view, about
->> the part with skipping callbacks from the PM core. We have observed
->> some difficulties with the direct_complete path (i2c dw driver), which
->> is based on a similar approach as this one.
->
-> These are resume callbacks, not suspend callbacks.  Also not all of them
-> are skipped.  That is quite a bit different from skipping *all* callbacks.
->
-> Moreover, at the point the core decides to skip the callbacks, the device
-> *has* *to* be left suspended and there simply is no point in running them
-> no matter what.
->
-> That part of code can be trivially moved to middle layers, but then each
-> of them will have to do exactly the same thing.  I don't see any reason to
-> do that and I'm not finding one in your comments.  Sorry.
+Thanks for splitting this up.
 
-I think my concerns boils done to that I am wondering how useful it
-will be, in general, to enable the core to skip invoking resume
-callbacks.
+> The platforms which support only IOAPIC mode and whose SCI INT is
+> greater than 16, passes SCI INT via FADT and not via MADT int src override
 
-Although, if you are targeting some specific devices/drivers (ACPI,
-PCI, etc), and not care that much about flexibility, then I am fine
-with it. The approach seems to work.
+greater? I think that's >= 16 because the legacy space is 0-15
 
-Let me elaborate on that comment a bit.
+> structure. In such cases current logic fails to handle it and throws error
+> "Invalid bus_irq %u for legacy override".
 
-1)
-Skipping resume callbacks is not going to work for a device that may
-be attached to the generic PM domain.
+Up to this point the changelog is informative. It just lacks the
+information WHY the current logic fails to handle it.
 
-Well, in principle one could try to re-work genpd to cope with this
-behavior, I guess, but that would also mean genpd becomes limited to
-always use the noirq callbacks to power on/off the PM domain. That
-isn't an acceptable limitation.
+> This patch fixes it.
 
-2)
-Because of 1) This leads to those cross SoC drivers, dealing with
-devices which sometimes may have a genpd attached and sometimes an
-ACPI PM domain attached. I guess those drivers would need to have a
-different set of system-wide PM callbacks, depending on the PM domain
-the device is attached to, as to achieve a similar optimized behavior
-during system resume. Or some other cleverness to deal with
-system-wide PM.
+This part is completely useless. You should at least explain the concept of
+the fix, not the details (they can be seen from the code).
 
-Perhaps we can ignore both 1) and 2), because the number of cross SoC
-drivers having these issues should be rather limited!?
+Let me give you an example:
 
-3)
-There are certainly lots of drivers that can cope with its device
-remaining in runtime suspend, during system resume.
-Although, some of these drivers may have some additional operations to
-carry out during resume, which may not require to resume (activate)
-its device. For example the driver may need to resume a queue,
-re-configure an out-of-band wakeup (GPIO IRQ), re-configure pinctrls,
-etc.
+ Platforms which support only IOAPIC mode pass the SCI information of
+ interrupts above the legacy space (0-15) via the FADT mechanism and not
+ via MADT, i.e. the table parser ends up calling acpi_sci_ioapic_setup().
 
-These drivers can't use the method behind LEAVE_SUSPENDED, because
-they need their resume callbacks to be invoked.
+ acpi_sci_ioapic_setup() uses mp_override_legacy_irq() to register SCI
+ interrupts, which fails for interrupts >= 16, because it only handles
+ interrupts 0-15.
 
-[...]
+ Provide a separate function to handle SCI interrupts >= 16 and invoke it
+ conditional in acpi_sci_ioapic_setup().
 
->
-> Well, this works the other way around this time, I'm afraid.  At this point
-> you need to convince me that the approach has real issues. :-)
+ This creates some code duplication, which will be cleaned up in a separate
+ patch.
 
-I think I have pointed out some issues above. Feel free to ignore
-them, depending on what your target is.
+See?
+ 
+> Signed-off-by: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
+> Signed-off-by: Sunil V L <sunil.vl@hpe.com>
+> Signed-off-by: Abdul Lateef Attar <abdul-lateef.attar@hpe.com>
 
-[...]
+This Signed-off-by chain is broken. It says:
 
->> >> Perhaps a better idea is to do this in the noirq suspend phase,
->> >> because it allows you to bail out in case pm_runtime_set_suspended()
->> >> fails.
->> >
->> > This doesn't make sense, sorry.
->>
->> What do you mean by "failures of that are meaningless here."?
->
-> If all devices have runtime PM disabled, pm_runtime_set_suspended() should
-> just do what it is asked for unless called with an invalid argument or
-> similar.
+     Vikas wrote the patch and handed it to Sunil
+     Sunil handed it to Abdul
+     Abdul sent it to lkml
 
-Yes.
+Which is obviously not the case.
 
->
->> I was suggesting, instead of calling pm_runtime_set_suspended() in the
->> noirq *resume* phase, why can't you do that in the noirq *suspend*
->> phase?
->>
->> In the noirq *suspend* phase it's not too late to deal with errors!? Or is it?
->
-> At that point it has not been decided whether or not the devices will stay
-> suspended yet.  The status cannot be changed before making that decision,
-> which only happens in the noirq resume phase.
+> ---
+>  arch/x86/kernel/acpi/boot.c | 37 ++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 36 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index ef9e02e..40c24d1b 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -429,6 +429,37 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
+>  	return 0;
+>  }
+>  
+> +static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
+> +						u8 trigger, u32 gsi)
+> +{
+> +	int ioapic;
+> +	int pin;
+> +	struct mpc_intsrc mp_irq;
 
-Okay, then it's fine as is (because of your other patch to the runtime
-PM core, which changes the behavior for pm_runtime_set_suspended()).
+I know you copied that, but please get rid of the extra line and sort the
+variables in reverse fir tree fashion, i.e.:
 
-BTW, I have some additional minor comments to some other parts of the
-code, but I will start over with a new thread proving you with those
-comments.
+	struct mpc_intsrc mp_irq;
+	int ioapic, pin;
 
-Kind regards
-Uffe
+That takes less space and is better to read/parse.
+
+> +
+> +	/*
+> +	 * Convert 'gsi' to 'ioapic.pin'.
+> +	 */
+
+Please make this a one line comment. It's useful, but not that important to
+stand out.
+
+> +	ioapic = mp_find_ioapic(gsi);
+> +	if (ioapic < 0) {
+> +		pr_warn("Failed to find ioapic for gsi : %u\n", gsi);
+> +		return ioapic;
+> +	}
+> +
+> +	pin = mp_find_ioapic_pin(ioapic, gsi);
+> +
+> +	mp_irq.type = MP_INTSRC;
+> +	mp_irq.irqtype = mp_INT;
+> +	mp_irq.irqflag = (trigger << 2) | polarity;
+> +	mp_irq.srcbus = MP_ISA_BUS;
+> +	mp_irq.srcbusirq = bus_irq;	/* IRQ */
+
+Please get rid of these tail comments. First of all tail comments are
+disturbing the reading flow. Secondly these comment have exactly zero value.
+
+> +	mp_irq.dstapic = mpc_ioapic_id(ioapic); /* APIC ID */
+> +	mp_irq.dstirq = pin;	/* INTIN# */
+
+except for this one, but that information should go into that other comment
+above, i.e.:
+
+       /* Convert 'gsi' to ioapic.pin (INTIN#) */
+
+Other than these more formal nitpicks, the patch is fine.
+
+Thanks,
+
+	tglx
