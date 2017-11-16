@@ -1,84 +1,39 @@
-From: WANG Chao <chao.wang@ucloud.cn>
-Subject: Re: [PATCH] x86 / CPU: Always show current CPU frequency in
- /proc/cpuinfo
-Date: Thu, 16 Nov 2017 17:50:36 +0800
-Message-ID: <20171116095036.GB28750@WANG-Chaos-MacBook-Pro.local>
-References: <20171109103814.70688-1-chao.wang@ucloud.cn>
- <50366815.86mgx8Isne@aspire.rjw.lan>
- <20171115093347.GA28750@WANG-Chaos-MacBook-Pro.local>
- <8646127.yoBvgp8gpO@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
+Subject: [PATCH v2 0/2] Fix improper handling of SCI INT for platforms supporting only IOAPIC mode
+Date: Thu, 16 Nov 2017 14:59:53 +0530
+Message-ID: <1510824595-12287-1-git-send-email-vikas.cha.sajjan@hpe.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from m97139.mail.qiye.163.com ([220.181.97.139]:33585 "EHLO
-        m97139.mail.qiye.163.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1759363AbdKPJy4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Nov 2017 04:54:56 -0500
-Content-Disposition: inline
-In-Reply-To: <8646127.yoBvgp8gpO@aspire.rjw.lan>
+Received: from g2t1383g.austin.hpe.com ([15.233.16.89]:33600 "EHLO
+        g2t1383g.austin.hpe.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750814AbdKPJ4H (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Nov 2017 04:56:07 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: tglx@linutronix.de, rjw@rjwysocki.net, rafael.j.wysocki@intel.com
+Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, kkamagui@gmail.com, mingo@kernel.org, Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
 
-On 11/16/17 at 01:24P, Rafael J. Wysocki wrote:
-> On Wednesday, November 15, 2017 10:33:47 AM CET WANG Chao wrote:
-> > On 11/15/17 at 02:13P, Rafael J. Wysocki wrote:
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > 
-> > > After commit 890da9cf0983 (Revert "x86: do not use cpufreq_quick_get()
-> > > for /proc/cpuinfo "cpu MHz"") the "cpu MHz" number in /proc/cpuinfo
-> > > on x86 can be either the nominal CPU frequency (which is constant)
-> > > or the frequency most recently requested by a scaling governor in
-> > > cpufreq, depending on the cpufreq configuration.  That is somewhat
-> > > inconsistent and is different from what it was before 4.13, so in
-> > > order to restore the previous behavior, make it report the current
-> > > CPU frequency like the scaling_cur_freq sysfs file in cpufreq.
-> > > 
-> > > To that end, modify the /proc/cpuinfo implementation on x86 to use
-> > > aperfmperf_snapshot_khz() to snapshot the APERF and MPERF feedback
-> > > registers, if available, and use their values to compute the CPU
-> > > frequency to be reported as "cpu MHz".
-> > > 
-> > > However, do that carefully enough to avoid accumulating delays that
-> > > lead to unacceptable access times for /proc/cpuinfo on systems with
-> > > many CPUs.  Run aperfmperf_snapshot_khz() once on all CPUs
-> > > asynchronously at the /proc/cpuinfo open time, add a single delay
-> > > upfront (if necessary) at that point and simply compute the current
-> > > frequency while running show_cpuinfo() for each individual CPU.
-> > 
-> > Hi, Rafael
-> > 
-> > I tested your patch. It's much faster.
-> > 
-> > But from what I got, calling aperfmperf_snapshot_khz() asynchronously
-> > with 10ms sleep takes much longer than calling aperfmperf_snapshot_khz()
-> > synchronously.
-> > 
-> > Here's my result on 64 CPUs:
-> > 
-> >  - async aperfmperf_snapshot_khz() w/ 10ms sleep:
-> > 
-> > # time cat /proc/cpuinfo > /dev/null
-> > real    0m0.014s
-> > user    0m0.000s
-> > sys     0m0.002s
-> > 
-> >  - sync aperfmperf_snapshot_khz() w/o any sleep:
-> > 
-> > # time cat /proc/cpuinfo > /dev/null
-> > real    0m0.002s
-> > user    0m0.000s
-> > sys     0m0.002s
-> 
-> Sure, but the delay is there, because without it the computed frequency
-> may be way off for at least one of the CPUs.
+The platforms which support only IOAPIC mode and whose SCI INT is
+greater than 16, passes SCI INT via FADT and not via MADT int src override
+structure. In such cases current logic fails to handle it and throws error
+"Invalid bus_irq %u for legacy override". This patch handles the above
+ mentioned case. While at it, also modify function mp_override_legacy_irq()
+to use the newly introduced function mp_register_ioapic_irq().
 
-Thanks, I understand now. In this case, The 10ms delay turns out to be
-the interval of measuring aperf and mperf and computing their deltas.
+This series is rebased on 'master' branch of
+https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
 
-Last question though, is 10ms best practice or can we make it shorter,
-say 5ms?
+Changes since v1:
+Patch is split into 2, separating actual fix and code cleanup
+as suggested by Rafael.
 
-Thanks,
-WANG Chao
+Vikas C Sajjan (2):
+  acpi/x86: Fix improper handling of SCI INT for platforms supporting
+    only IOAPIC mode
+  acpi/x86: Reuse the mp_register_ioapic_irq() in the function
+    mp_override_legacy_irq()
+
+ arch/x86/kernel/acpi/boot.c | 64 +++++++++++++++++++++++++++++----------------
+ 1 file changed, 41 insertions(+), 23 deletions(-)
+
+-- 
+1.9.1
