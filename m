@@ -1,43 +1,41 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/4] cpu_cooling: Drop static-power related stuff
-Date: Thu, 16 Nov 2017 20:50:58 +0530
-Message-ID: <20171116152058.GR3257@vireshk-i7>
-References: <cover.1510735482.git.viresh.kumar@linaro.org>
- <fcca009e0e10840ff5ee31c88b618a212ab69201.1510735482.git.viresh.kumar@linaro.org>
- <761f7963-8b6d-b002-5404-a9ad0acf84d6@linaro.org>
- <20171115154311.GA3005@localhost.localdomain>
- <CAJZ5v0j6Hk8D29h+MdMeU-PgSAFkNG-41_a7d+goVuSve0=CYw@mail.gmail.com>
- <20171115182047.GA4831@localhost.localdomain>
- <65fef2a1-d23f-3de2-bd91-021296c3e2f7@arm.com>
+From: Joe Perches <joe@perches.com>
+Subject: [PATCH 0/4] treewide: Fix line continuation formats
+Date: Thu, 16 Nov 2017 07:27:25 -0800
+Message-ID: <cover.1510845910.git.joe@perches.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:52350 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1759681AbdKPPVC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Nov 2017 10:21:02 -0500
-Received: by mail-pf0-f194.google.com with SMTP id m88so12585933pfi.9
-        for <linux-pm@vger.kernel.org>; Thu, 16 Nov 2017 07:21:02 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <65fef2a1-d23f-3de2-bd91-021296c3e2f7@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org, linux-integrity@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, linux-media@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ionela Voinescu <ionela.voinescu@arm.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, lukasz.luba@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
 
-On 16-11-17, 15:02, Ionela Voinescu wrote:
-> When it was added in lsk 3.18 in what was then a thermal driver for Juno
-> it was believed to have an effect in thermal mitigation, but that was
-> not proven later as to justify posting it upstream, and that is why the
-> code never made it in mainline.
-> The code added there can be found at:
-> https://git.linaro.org/landing-teams/working/arm/kernel-release.git/tree/drivers/thermal/scpi-thermal.c?h=lsk-3.18-armlt#n247
-> 
-> As for removing this code now, I would not want to make that decision without
-> spending more time to check if it impacts other customer codelines.
-> I'll come back with a reply to this in the next couple of days.
-
-Sure, we can wait for few days definitely :)
-
--- 
-viresh
+QXZvaWQgdXNpbmcgbGluZSBjb250aW5hdGlvbnMgaW4gZm9ybWF0cyBhcyB0aGF0IGNhdXNlcyB1
+bmV4cGVjdGVkCm91dHB1dC4KCkpvZSBQZXJjaGVzICg0KToKICByazMzOTlfZG1jOiBGaXggbGlu
+ZSBjb250aW51YXRpb24gZm9ybWF0CiAgZHJtOiBhbWQ6IEZpeCBsaW5lIGNvbnRpbnVhdGlvbiBm
+b3JtYXRzCiAgW21lZGlhXSBkaWJ4MDAwX2NvbW1vbjogRml4IGxpbmUgY29udGludWF0aW9uIGZv
+cm1hdAogIGltYTogRml4IGxpbmUgY29udGludWF0aW9uIGZvcm1hdAoKIGRyaXZlcnMvZGV2ZnJl
+cS9yazMzOTlfZG1jLmMgICAgICAgICAgICAgICAgICAgICAgIHwgIDQgKystLQogZHJpdmVycy9n
+cHUvZHJtL2FtZC9kaXNwbGF5L2RjL2NvcmUvZGNfbGlua19kcC5jICAgfCAxMSArKysrLS0tLS0K
+IC4uLi9hbWQvcG93ZXJwbGF5L2h3bWdyL3Byb2Nlc3NfcHB0YWJsZXNfdjFfMC5jICAgIHwgIDYg
+KystLS0KIGRyaXZlcnMvZ3B1L2RybS9hbWQvcG93ZXJwbGF5L2h3bWdyL3ZlZ2ExMF9od21nci5j
+IHwgMjcgKysrKysrKystLS0tLS0tLS0tLS0tLQogZHJpdmVycy9ncHUvZHJtL2FtZC9wb3dlcnBs
+YXkvc211bWdyL2NpX3NtdW1nci5jICAgfCAgNiArKy0tLQogLi4uL2dwdS9kcm0vYW1kL3Bvd2Vy
+cGxheS9zbXVtZ3IvaWNlbGFuZF9zbXVtZ3IuYyAgfCAgOSArKystLS0tLQogLi4uL2dwdS9kcm0v
+YW1kL3Bvd2VycGxheS9zbXVtZ3IvdmVnYTEwX3NtdW1nci5jICAgfCAgNiArKy0tLQogZHJpdmVy
+cy9tZWRpYS9kdmItZnJvbnRlbmRzL2RpYngwMDBfY29tbW9uLmMgICAgICAgfCAgOCArKystLS0t
+CiBzZWN1cml0eS9pbnRlZ3JpdHkvaW1hL2ltYV90ZW1wbGF0ZS5jICAgICAgICAgICAgICB8IDEx
+ICsrKystLS0tLQogOSBmaWxlcyBjaGFuZ2VkLCAzMyBpbnNlcnRpb25zKCspLCA1NSBkZWxldGlv
+bnMoLSkKCi0tIAoyLjE1LjAKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCmRyaS1kZXZlbCBtYWlsaW5nIGxpc3QKZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNr
+dG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2Ry
+aS1kZXZlbAo=
