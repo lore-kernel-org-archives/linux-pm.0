@@ -1,45 +1,86 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / runtime: Drop children check from __pm_runtime_set_status()
-Date: Thu, 16 Nov 2017 14:57:46 +0100
-Message-ID: <2019845.JZoN7saqRp@aspire.rjw.lan>
-References: <1713438.irjm9MTSvo@aspire.rjw.lan> <20171116092241.GI11226@localhost>
+From: Ionela Voinescu <ionela.voinescu@arm.com>
+Subject: Re: [PATCH 4/4] cpu_cooling: Drop static-power related stuff
+Date: Thu, 16 Nov 2017 15:02:18 +0000
+Message-ID: <65fef2a1-d23f-3de2-bd91-021296c3e2f7@arm.com>
+References: <cover.1510735482.git.viresh.kumar@linaro.org>
+ <fcca009e0e10840ff5ee31c88b618a212ab69201.1510735482.git.viresh.kumar@linaro.org>
+ <761f7963-8b6d-b002-5404-a9ad0acf84d6@linaro.org>
+ <20171115154311.GA3005@localhost.localdomain>
+ <CAJZ5v0j6Hk8D29h+MdMeU-PgSAFkNG-41_a7d+goVuSve0=CYw@mail.gmail.com>
+ <20171115182047.GA4831@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171116092241.GI11226@localhost>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Johan Hovold <johan@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:52392 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S934397AbdKPPCW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Nov 2017 10:02:22 -0500
+In-Reply-To: <20171115182047.GA4831@localhost.localdomain>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, lukasz.luba@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
 
-On Thursday, November 16, 2017 10:22:41 AM CET Johan Hovold wrote:
-> On Sun, Nov 12, 2017 at 01:27:30AM +0100, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > The check for "active" children in __pm_runtime_set_status(), when
-> > trying to set the parent device status to "suspended", doesn't
-> > really make sense, because in fact it is not invalid to set the
-> > status of a device with runtime PM disabled to "suspended" in any
-> > case.  It is invalid to enable runtime PM for a device with its
-> > status set to "suspended" while its child_count reference counter
-> > is nonzero, but the check in __pm_runtime_set_status() doesn't
-> > really cover that situation.
-> > 
-> > For this reason, drop the children check from __pm_runtime_set_status()
-> > and add a check against child_count reference counters of "suspended"
-> > devices to pm_runtime_enable().
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi guys,
+
+On 15/11/17 18:20, Eduardo Valentin wrote:
+> On Wed, Nov 15, 2017 at 07:17:49PM +0100, Rafael J. Wysocki wrote:
+>> On Wed, Nov 15, 2017 at 4:43 PM, Eduardo Valentin <edubezval@gmail.com> wrote:
+>>> On Wed, Nov 15, 2017 at 11:18:03AM +0100, Daniel Lezcano wrote:
+>>>> On 15/11/2017 10:19, Viresh Kumar wrote:
+>>>>> No one has used it for the last two and half years (since it was
+>>>>> introduced by commit c36cf0717631 ("thermal: cpu_cooling: implement the
+>>>>> power cooling device API")), get rid of it.
+>>>>>
+>>>>> Cc: Javi Merino <javi.merino@arm.com>
+>>>>> Cc: Punit Agrawal <punit.agrawal@arm.com>
+>>>>> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+>>>>> ---
+>>>>
+>>>> Even if I agree that is not used to in the mainstream kernel, it is part
+>>>> of the EAS which is currently merged in Android.
+>>>>
+>>>
+>>> Even though we really should care about stuff that is in mainline, this
+>>> specific case is about a piece of code that never made mainline, or got
+>>> lost on translation from one version to another. So, I am currently
+>>> nacking this patch and asking ARM/linaro folks to upstream the juno
+>>> implementation that uses static power.
+>>
+>> However, I would like to see a clear declaration from whoever is
+>> maintaining that code today that there is a plan in place to upstream
+>> it and that this plan will actually be acted on.  And, better yet,
+>> *when* that can be expected to happen.
+>>
+>> Without such a declaration I'm afraid there is no point for the
+>> mainline to carry the unused code.  Which apparently gets in the way
+>> somehow, or Viresh wouldn't have taken the time to attempt to remove
+>> it I suppose?
 > 
-> Looks good to me, but you should also fix
-> Documentation/power/runtime_pm.txt which was updated to reflect the
-> constraint that is now being reverted.
+> 
+> I agree here. This is mostly a code maintained by the linaro folks at
+> this moment (daniel, please chime in if I am wrong). If no effort is
+> done to get the code into mainline, there is no point in keeping the
+> static component as a dead code in our tree.
+> 
 
-Thanks for pointing that out.
+When it was added in lsk 3.18 in what was then a thermal driver for Juno
+it was believed to have an effect in thermal mitigation, but that was
+not proven later as to justify posting it upstream, and that is why the
+code never made it in mainline.
+The code added there can be found at:
+https://git.linaro.org/landing-teams/working/arm/kernel-release.git/tree/drivers/thermal/scpi-thermal.c?h=lsk-3.18-armlt#n247
 
-> Reviewed-by: Johan Hovold <johan@kernel.org>
+As for removing this code now, I would not want to make that decision without
+spending more time to check if it impacts other customer codelines.
+I'll come back with a reply to this in the next couple of days.
 
-Thanks!
+Thank you,
+Ionela.
 
-Rafael
+>>
+>> Thanks,
+>> Rafael
+> 
