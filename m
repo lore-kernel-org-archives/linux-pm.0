@@ -1,163 +1,190 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH] cpuidle: Allow menu governor to enter deeper sleep states after some time
-Date: Thu, 16 Nov 2017 14:47:45 -0800
-Message-ID: <001f01d35f2c$edc11490$c9433db0$@net>
-References: <a181bf42-9462-476c-6dcd-39fc7151957f@tu-dresden.de> <000101d34938$da740870$8f5c1950$@net> <000801d34a78$cdd27890$697769b0$@net> <002c01d35d0f$8b0416f0$a10c44d0$@net> FMl8e97ZchCDuFMlDezTwJ
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v3 1/6] PM / core: Add LEAVE_SUSPENDED driver flag
+Date: Fri, 17 Nov 2017 00:07:59 +0100
+Message-ID: <2654404.6YT5rmSnae@aspire.rjw.lan>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <5556673.MXo6XDN1f4@aspire.rjw.lan> <CAPDyKFpzSd4zwW_awuxuim0gzyKV5s9dm66X+szsSUKRnBakbA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta18.telus.net ([209.171.16.91]:45299 "EHLO cmta18.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S965567AbdKPWrw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 Nov 2017 17:47:52 -0500
-In-Reply-To: FMl8e97ZchCDuFMlDezTwJ
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFpzSd4zwW_awuxuim0gzyKV5s9dm66X+szsSUKRnBakbA@mail.gmail.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>
-Cc: =?UTF-8?Q?'Marcus_H=C3=A4hnel'?= <mhaehnel@os.inf.tu-dresden.de>, 'Daniel Hackenberg' <daniel.hackenberg@tu-dresden.de>, =?UTF-8?Q?'Robert_Sch=C3=B6ne'?= <robert.schoene@tu-dresden.de>, mario.bielert@tu-dresden.de, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, 'Alex Shi' <alex.shi@linaro.org>, 'Ingo Molnar' <mingo@kernel.org>, 'Rik van Riel' <riel@redhat.com>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Nicholas Piggin' <npiggin@gmail.com>, linux-pm@vger.kernel.org, 'Len Brown' <lenb@kernel.org>, 'Yu Chen' <yu.c.chen@intel.com>, Doug Smythies <dsmythies@telus.net>
 
+On Thursday, November 16, 2017 4:10:16 PM CET Ulf Hansson wrote:
+> On 12 November 2017 at 01:37, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > Define and document a new driver flag, DPM_FLAG_LEAVE_SUSPENDED, to
+> > instruct the PM core and middle-layer (bus type, PM domain, etc.)
+> > code that it is desirable to leave the device in runtime suspend
+> > after system-wide transitions to the working state (for example,
+> > the device may be slow to resume and it may be better to avoid
+> > resuming it right away).
+> >
+> > Generally, the middle-layer code involved in the handling of the
+> > device is expected to indicate to the PM core whether or not the
+> > device may be left in suspend with the help of the device's
+> > power.may_skip_resume status bit.  That has to happen in the "noirq"
+> > phase of the preceding system suspend (or analogous) transition.
+> > The middle layer is then responsible for handling the device as
+> > appropriate in its "noirq" resume callback which is executed
+> > regardless of whether or not the device may be left suspended, but
+> > the other resume callbacks (except for ->complete) will be skipped
+> > automatically by the core if the device really can be left in
+> > suspend.
+> >
+> > The additional power.must_resume status bit introduced for the
+> > implementation of this mechanisn is used internally by the PM core
+> > to track the requirement to resume the device (which may depend on
+> > its children etc).
+> >
+> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > ---
+> >
+> > v2 -> v3: Take dev->power.usage_count when updating power.must_resume in
+> >           __device_suspend_noirq().
+> >
+> > ---
+> >  Documentation/driver-api/pm/devices.rst |   24 ++++++++++-
+> >  drivers/base/power/main.c               |   66 +++++++++++++++++++++++++++++---
+> >  drivers/base/power/runtime.c            |    9 ++--
+> >  include/linux/pm.h                      |   14 +++++-
+> >  include/linux/pm_runtime.h              |    9 ++--
+> >  5 files changed, 104 insertions(+), 18 deletions(-)
+> >
+> > Index: linux-pm/include/linux/pm.h
+> > ===================================================================
+> > --- linux-pm.orig/include/linux/pm.h
+> > +++ linux-pm/include/linux/pm.h
+> > @@ -559,6 +559,7 @@ struct pm_subsys_data {
+> >   * NEVER_SKIP: Do not skip system suspend/resume callbacks for the device.
+> >   * SMART_PREPARE: Check the return value of the driver's ->prepare callback.
+> >   * SMART_SUSPEND: No need to resume the device from runtime suspend.
+> > + * LEAVE_SUSPENDED: Avoid resuming the device during system resume if possible.
+> >   *
+> >   * Setting SMART_PREPARE instructs bus types and PM domains which may want
+> >   * system suspend/resume callbacks to be skipped for the device to return 0 from
+> > @@ -572,10 +573,14 @@ struct pm_subsys_data {
+> >   * necessary from the driver's perspective.  It also may cause them to skip
+> >   * invocations of the ->suspend_late and ->suspend_noirq callbacks provided by
+> >   * the driver if they decide to leave the device in runtime suspend.
+> > + *
+> > + * Setting LEAVE_SUSPENDED informs the PM core and middle-layer code that the
+> > + * driver prefers the device to be left in runtime suspend after system resume.
+> >   */
+> 
+> Question: Can LEAVE_SUSPENDED and NEVER_SKIP be valid combination? I
+> guess not!? Should we validate for wrong combinations?
 
-On 2017.11.16 08:11 Thomas Ilsche wrote:
+Why not?  There's no real overlap between them.
 
->> Actually, the watchdog_timer_fn does set the "need_resched" condition, and will
->> cause the state 0 idle to exit normally.
->> 
->> But yes, tick_sched_timer and a few others (for example: sched_rt_period_timer,
->> clocksource_watchdog) do not set the "need_resched" condition, and, as you
->> mentioned, will not cause the state 0 idle to exit as it should.
->> 
->> Conclusion: Currently the exit condition in drivers/cpuidle/poll_state.c
->> is insufficient to guarantee proper operation.
+> 
+> [...]
+> 
+> >  /**
+> >   * __device_suspend_noirq - Execute a "noirq suspend" callback for given device.
+> >   * @dev: Device to handle.
+> > @@ -1127,10 +1161,28 @@ static int __device_suspend_noirq(struct
+> >         }
+> >
+> >         error = dpm_run_callback(callback, dev, state, info);
+> > -       if (!error)
+> > -               dev->power.is_noirq_suspended = true;
+> > -       else
+> > +       if (error) {
+> >                 async_error = error;
+> > +               goto Complete;
+> > +       }
+> > +
+> > +       dev->power.is_noirq_suspended = true;
+> > +
+> > +       if (dev_pm_test_driver_flags(dev, DPM_FLAG_LEAVE_SUSPENDED)) {
+> > +               /*
+> > +                * The only safe strategy here is to require that if the device
+> > +                * may not be left in suspend, resume callbacks must be invoked
+> > +                * for it.
+> > +                */
+> > +               dev->power.must_resume = dev->power.must_resume ||
+> > +                                       !dev->power.may_skip_resume ||
+> > +                                       atomic_read(&dev->power.usage_count);
+> 
+> dev->power.usage_count is always > 0 at this point, meaning that
+> dev->power.must_resume always becomes true. :-)
+> 
+> You should rather use "atomic_read(&dev->power.usage_count) > 1".
 
-Or: Any interrupt out of the idle loop must return with "need_resched" 
+Right, thanks.  I tend to forget about that.
 
->> 
->> This:
->> 
->> while (!need_resched())
->> 
->> is not enough.
->
-> I may very well have mistakenly included watchdog_timer_fn in the list,
-> but as you describe it is inconsequential. If there are timers that do
-> not set need_resched, and that itself is not considered a bug, then
-> there should be another break condition.
-> I suppose it is a good idea
-> to differentiate between the need for rescheduling and the need to
-> be able to go in another sleep state.
+> > +       } else {
+> > +               dev->power.must_resume = true;
+> > +       }
+> > +
+> > +       if (dev->power.must_resume)
+> > +               dpm_superior_set_must_resume(dev);
+> >
+> >  Complete:
+> >         complete_all(&dev->power.completion);
+> > @@ -1487,6 +1539,9 @@ static int __device_suspend(struct devic
+> >                 dev->power.direct_complete = false;
+> >         }
+> >
+> > +       dev->power.may_skip_resume = false;
+> > +       dev->power.must_resume = false;
+> > +
+> 
+> First, these assignment could be bypassed if the direct_complete path
+> is used. Perhaps it's more robust to reset these flags already in
+> device_prepare().
 
-See patch below. I think both conditions are satisfied.
+In the direct-complete case may_skip_resume doesn't matter.
 
-> What do you think about the idea to use idle_expires?
-> Although on second thought that may have issues regarding accuracy /
-> race conditions with the interrupt timer.
+must_resume should be set to "false", however, so that parents of
+direct-complete devices may be left in suspend (in case they don't
+fall under direct-complete themselves), so good catch.
 
-For a couples of days now, and with excellent results, I have
-been testing variations on the following theme:
+But it is sufficient to do that before the power.direct_complete check above. :-)
 
-diff --git a/drivers/cpuidle/poll_state.c b/drivers/cpuidle/poll_state.c
-index 7416b16..4d17d3d 100644
---- a/drivers/cpuidle/poll_state.c
-+++ b/drivers/cpuidle/poll_state.c
-@@ -5,16 +5,31 @@
-  */
+> Second, have you considered setting the default value of
+> dev->power.may_skip_resume to true?
 
- #include <linux/cpuidle.h>
-+#include <linux/tick.h>
- #include <linux/sched.h>
- #include <linux/sched/idle.h>
+Yes.
 
- static int __cpuidle poll_idle(struct cpuidle_device *dev,
-                               struct cpuidle_driver *drv, int index)
- {
-+       unsigned int next_timer_us, i;
-+
-        local_irq_enable();
-        if (!current_set_polling_and_test()) {
--               while (!need_resched())
-+               while (!need_resched()){
-                        cpu_relax();
-+
-+                       /* Occasionally check for a new and long expected residency time. */
-+                       if (!(i++ % 1024)) {
-+                               local_irq_disable();
-+                               next_timer_us = ktime_to_us(tick_nohz_get_sleep_length());
-+                               local_irq_enable();
-+                               /* need a better way to get threshold, including large margin */
-+                               /* We are only trying to catch really bad cases here.         */
-+                               if (next_timer_us > 100)
-+                               break;
-+                       }
-+               }
-        }
-        current_clr_polling();
+> That would means the subsystem
+> instead need to implement an opt-out method. I am thinking that it may
+> not be an issue, since we anyway at this point, don't have drivers
+> using the LEAVE_SUSPENDED flag.
 
+Opt-out doesn't work because of the need to invoke the "noirq" callbacks.
 
-Trace example 1:
+> [...]
+> 
+> > +However, it may be desirable to leave some devices in runtime suspend after
+> > +system transitions to the working state and device drivers can use the
+> > +``DPM_FLAG_LEAVE_SUSPENDED`` flag to indicate to the PM core (and middle-layer
+> > +code) that this is the case.  Whether or not the devices will actually be left
+> > +in suspend may depend on their state before the given system suspend-resume
+> > +cycle and on the type of the system transition under way.  In particular,
+> > +devices are not left suspended if that transition is a restore from hibernation,
+> > +as device states are not guaranteed to be reflected by the information stored in
+> > +the hibernation image in that case.
+> > +
+> > +The middle-layer code involved in the handling of the device has to indicate to
+> > +the PM core if the device may be left in suspend with the help of its
+> > +:c:member:`power.may_skip_resume` status bit.  That has to happen in the "noirq"
+> > +phase of the preceding system-wide suspend (or analogous) transition.  The
+> 
+> Does it have to be managed in the "noirq" phase? Wouldn't be perfectly
+> okay do this in the suspend and suspend_late phases as well?
 
-       9 [005] d...  1749.232242: cpu_idle: state=4 cpu_id=5
- 1055985 [005] d...  1750.288228: cpu_idle: state=4294967295 cpu_id=5
-       3 [005] d.h.  1750.288231: local_timer_entry: vector=239
-       1 [005] d.h.  1750.288233: local_timer_exit: vector=239
-       5 [005] d...  1750.288238: cpu_idle: state=0 cpu_id=5
-       0 [005] d.h.  1750.288238: local_timer_entry: vector=239
-       0 [005] d.h.  1750.288239: hrtimer_expire_entry: hrtimer=ffff91ca5f354880 function=tick_sched_timer now=1749980002791
-       3 [005] d.h.  1750.288242: hrtimer_expire_exit: hrtimer=ffff91ca5f354880
-       0 [005] d.h.  1750.288243: local_timer_exit: vector=239
-       1 [005] ..s.  1750.288244: timer_expire_entry: timer=ffffffffb4770ee0 function=__prandom_timer now=4295329792
-       4 [005] ..s.  1750.288249: timer_expire_exit: timer=ffffffffb4770ee0
-       5 [005] ....  1750.288254: cpu_idle: state=4294967295 cpu_id=5
+The wording is slightly misleading I think.
 
-"need_resched" is not set, but the next timer is far off, so poll_state.c with the above patch now exits.
-And properly now decides to go into idle state 4, because nothing is going to happen for an eternity.
+In fact technically may_skip_resume may be set earlier, but the core checks it
+in the "noirq" phase only anyway.
 
-       1 [005] d...  1750.288256: cpu_idle: state=4 cpu_id=5
- 2087982 [005] d...  1752.376239: cpu_idle: state=4294967295 cpu_id=5
-       3 [005] d.h.  1752.376242: local_timer_entry: vector=239
-       0 [005] d.h.  1752.376243: local_timer_exit: vector=239
-       5 [005] d...  1752.376248: cpu_idle: state=1 cpu_id=5
-      15 [005] d...  1752.376263: cpu_idle: state=4294967295 cpu_id=5
-       0 [005] d.h.  1752.376263: local_timer_entry: vector=239
-       0 [005] d.h.  1752.376264: hrtimer_expire_entry: hrtimer=ffff91ca5f354a00 function=watchdog_timer_fn now=1752068001621
-       3 [005] dNh.  1752.376268: hrtimer_expire_exit: hrtimer=ffff91ca5f354a00
+Thanks,
+Rafael
 
-
-Trace example 2:
-
-       4 [000] d...  1792.272757: cpu_idle: state=0 cpu_id=0
-       1 [000] d.h.  1792.272758: local_timer_entry: vector=239
-       0 [000] d.h.  1792.272759: hrtimer_expire_entry: hrtimer=ffff91ca5f214880 function=tick_sched_timer now=1791964002768
-       3 [000] d.h.  1792.272762: hrtimer_expire_exit: hrtimer=ffff91ca5f214880
-       0 [000] d.h.  1792.272762: local_timer_exit: vector=239
-
-The next timer is very short, so the poll_state.c loop does not exit.
-(even if it was going to exit, it might not have had time to. I didn't find a better example.)
-
-       0 [000] ..s.  1792.272763: timer_expire_entry: timer=ffff91ca4cde8478 function=dev_watchdog now=4295340288
-       3 [000] ..s.  1792.272766: timer_expire_exit: timer=ffff91ca4cde8478
-
-The next timer is very short, so the poll_state.c loop does not exit.
-
-       0 [000] d.s.  1792.272767: timer_expire_entry: timer=ffffffffc0997440 function=delayed_work_timer_fn now=4295340288
-       5 [000] dNs.  1792.272772: timer_expire_exit: timer=ffffffffc0997440
-
-This time "need_resched" is set. I assume it didn't have time to exit idle state 0 yet.
-
-       0 [000] dNs.  1792.272772: timer_expire_entry: timer=ffffffffb46faa40 function=delayed_work_timer_fn now=4295340288
-       0 [000] dNs.  1792.272773: timer_expire_exit: timer=ffffffffb46faa40
-
-Now it exits idle state 0.
-
-       7 [000] .N..  1792.272780: cpu_idle: state=4294967295 cpu_id=0
-      29 [000] d...  1792.272810: cpu_idle: state=4 cpu_id=0
-
-And properly now decides to go into idle state 4, because nothing is going to happen for awhile.
-
-   91949 [000] d...  1792.364760: cpu_idle: state=4294967295 cpu_id=0
-       3 [000] d.h.  1792.364763: local_timer_entry: vector=239
-       0 [000] d.h.  1792.364764: hrtimer_expire_entry: hrtimer=ffff91ca5f214a00 function=watchdog_timer_fn now=1792056006926
-
-... Doug
