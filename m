@@ -1,145 +1,205 @@
-From: "Sajjan, Vikas C" <vikas.cha.sajjan@hpe.com>
-Subject: RE: [PATCH v2 1/2] acpi/x86: Fix improper handling of SCI INT for
- platforms supporting only IOAPIC mode
-Date: Thu, 16 Nov 2017 11:36:44 +0000
-Message-ID: <TU4PR8401MB0525A1594F5D2E063B3A8CB2D92E0@TU4PR8401MB0525.NAMPRD84.PROD.OUTLOOK.COM>
-References: <1510824595-12287-1-git-send-email-vikas.cha.sajjan@hpe.com>
- <1510824595-12287-2-git-send-email-vikas.cha.sajjan@hpe.com>
- <alpine.DEB.2.20.1711161147200.2191@nanos>
+From: Shawn Guo <shawnguo@kernel.org>
+Subject: Re: [PATCH] cpufreq: imx6q/thermal: imx: move CPU cooling device
+ from thermal to cpufreq
+Date: Thu, 16 Nov 2017 19:49:18 +0800
+Message-ID: <20171116114918.GS25384@dragon>
+References: <20171115092332.9320-1-bst@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1711161147200.2191@nanos>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kkamagui@gmail.com" <kkamagui@gmail.com>, "mingo@kernel.org" <mingo@kernel.org>, "Lakshminarasimha, Sunil Vishwanathpur" <sunil.vl@hpe.com>, "Attar, Abdul Lateef" <abdul-lateef.attar@hpe.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:54618 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S933589AbdKPLtm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Nov 2017 06:49:42 -0500
+Content-Disposition: inline
+In-Reply-To: <20171115092332.9320-1-bst@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bastian Stender <bst@pengutronix.de>, Leonard Crestez <leonard.crestez@nxp.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, kernel@pengutronix.de
 
-Thanks for review, Thomas.
+On Wed, Nov 15, 2017 at 10:23:32AM +0100, Bastian Stender wrote:
+> The cooling device should be part of the i.MX cpufreq driver. So move
+> it there.
+> 
+> Use of_cpufreq_power_cooling_register to link the cooling device to the
+> device tree node provided.
+> 
+> This makes it possible to bind the cpufreq cooling device to a custom
+> thermal zone via a cooling-maps entry like:
+> 
+> 	cooling-maps {
+> 		map0 {
+> 			trip = <&board_alert>;
+> 			cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+> 		};
+> 	};
+> 
+> Assuming a cpu node exists with label "cpu0" and #cooling-cells
+> property.
+> 
+> Signed-off-by: Bastian Stender <bst@pengutronix.de>
 
------Original Message-----
-From: Thomas Gleixner [mailto:tglx@linutronix.de] 
-Sent: Thursday, November 16, 2017 4:35 PM
-To: Sajjan, Vikas C <vikas.cha.sajjan@hpe.com>
-Cc: rjw@rjwysocki.net; rafael.j.wysocki@intel.com; linux-pm@vger.kernel.org; linux-acpi@vger.kernel.org; linux-kernel@vger.kernel.org; kkamagui@gmail.com; mingo@kernel.org; Lakshminarasimha, Sunil Vishwanathpur <sunil.vl@hpe.com>; Attar, Abdul Lateef <abdul-lateef.attar@hpe.com>
-Subject: Re: [PATCH v2 1/2] acpi/x86: Fix improper handling of SCI INT for platforms supporting only IOAPIC mode
+I'm fine with the patch, but I would invite Leonard to take a look.
 
-On Thu, 16 Nov 2017, Vikas C Sajjan wrote:
-
-Thanks for splitting this up.
-
-> The platforms which support only IOAPIC mode and whose SCI INT is 
-> greater than 16, passes SCI INT via FADT and not via MADT int src 
-> override
-
-greater? I think that's >= 16 because the legacy space is 0-15
-
-yes, It should be >=16. Will modify it.
-
-> structure. In such cases current logic fails to handle it and throws 
-> error "Invalid bus_irq %u for legacy override".
-
-Up to this point the changelog is informative. It just lacks the information WHY the current logic fails to handle it.
-
-> This patch fixes it.
-
-This part is completely useless. You should at least explain the concept of the fix, not the details (they can be seen from the code).
-
-Sure, will remove this part.
-
-Let me give you an example:
-
- Platforms which support only IOAPIC mode pass the SCI information of  interrupts above the legacy space (0-15) via the FADT mechanism and not  via MADT, i.e. the table parser ends up calling acpi_sci_ioapic_setup().
-
- acpi_sci_ioapic_setup() uses mp_override_legacy_irq() to register SCI  interrupts, which fails for interrupts >= 16, because it only handles  interrupts 0-15.
-
- Provide a separate function to handle SCI interrupts >= 16 and invoke it  conditional in acpi_sci_ioapic_setup().
-
- This creates some code duplication, which will be cleaned up in a separate  patch.
-
-See?
-Thanks for the example. Will give details on why the current logic fails and high level view of the fix.
- 
-> Signed-off-by: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
-> Signed-off-by: Sunil V L <sunil.vl@hpe.com>
-> Signed-off-by: Abdul Lateef Attar <abdul-lateef.attar@hpe.com>
-
-This Signed-off-by chain is broken. It says:
-
-     Vikas wrote the patch and handed it to Sunil
-     Sunil handed it to Abdul
-     Abdul sent it to lkml
-
-Which is obviously not the case.
-3 of us worked on it, hence I had put all the 3 "Signed-off-by". Are you suggesting to call-out who did what.  Is that what you mean, when you say  "Signed-off-by chain is broken".
+Shawn
 
 > ---
->  arch/x86/kernel/acpi/boot.c | 37 
-> ++++++++++++++++++++++++++++++++++++-
->  1 file changed, 36 insertions(+), 1 deletion(-)
 > 
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c 
-> index ef9e02e..40c24d1b 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -429,6 +429,37 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int trigger,
+> This is a rework of "thermal: imx: use cpufreq cooling of
+> registration method" (id:20171103164203.5805-1-bst@pengutronix.de) and a
+> merged version of the follow-up patches "thermal: imx: remove cooling
+> device" (id:20171114134829.1354-1-bst@pengutronix.de) and "cpufreq:
+> imx6q: add CPU as cooling device"
+> (id:20171114135128.6173-1-bst@pengutronix.de).
+> ---
+>  drivers/cpufreq/imx6q-cpufreq.c | 37 +++++++++++++++++++++++++++++++++++++
+>  drivers/thermal/imx_thermal.c   | 15 ---------------
+>  2 files changed, 37 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+> index 14466a9b01c0..6c7c59766990 100644
+> --- a/drivers/cpufreq/imx6q-cpufreq.c
+> +++ b/drivers/cpufreq/imx6q-cpufreq.c
+> @@ -9,6 +9,7 @@
+>  #include <linux/clk.h>
+>  #include <linux/cpu.h>
+>  #include <linux/cpufreq.h>
+> +#include <linux/cpu_cooling.h>
+>  #include <linux/err.h>
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+> @@ -35,6 +36,7 @@ static struct clk *pll2_bus_clk;
+>  static struct clk *secondary_sel_clk;
+>  
+>  static struct device *cpu_dev;
+> +static struct thermal_cooling_device *cdev;
+>  static bool free_opp;
+>  static struct cpufreq_frequency_table *freq_table;
+>  static unsigned int transition_latency;
+> @@ -169,6 +171,32 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
 >  	return 0;
 >  }
 >  
-> +static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
-> +						u8 trigger, u32 gsi)
+> +static void imx6q_cpufreq_ready(struct cpufreq_policy *policy)
 > +{
-> +	int ioapic;
-> +	int pin;
-> +	struct mpc_intsrc mp_irq;
-
-I know you copied that, but please get rid of the extra line and sort the variables in reverse fir tree fashion, i.e.:
-
-	struct mpc_intsrc mp_irq;
-	int ioapic, pin;
-
-That takes less space and is better to read/parse.
-Sure, will do.
+> +	struct device_node *np = of_node_get(cpu_dev->of_node);
+> +	u32 capacitance = 0;
 > +
-> +	/*
-> +	 * Convert 'gsi' to 'ioapic.pin'.
-> +	 */
-
-Please make this a one line comment. It's useful, but not that important to stand out.
-OK.
-
-> +	ioapic = mp_find_ioapic(gsi);
-> +	if (ioapic < 0) {
-> +		pr_warn("Failed to find ioapic for gsi : %u\n", gsi);
-> +		return ioapic;
+> +	if (WARN_ON(!np))
+> +		return;
+> +
+> +	if (of_find_property(np, "#cooling-cells", NULL)) {
+> +		of_property_read_u32(np, "dynamic-power-coefficient", &capacitance);
+> +
+> +		cdev = of_cpufreq_power_cooling_register(np,
+> +						policy, capacitance, NULL);
+> +
+> +		if (IS_ERR(cdev)) {
+> +			dev_err(cpu_dev,
+> +				"running cpufreq without cooling device: %ld\n",
+> +				PTR_ERR(cdev));
+> +
+> +			cdev = NULL;
+> +		}
 > +	}
 > +
-> +	pin = mp_find_ioapic_pin(ioapic, gsi);
+> +	of_node_put(np);
+> +}
 > +
-> +	mp_irq.type = MP_INTSRC;
-> +	mp_irq.irqtype = mp_INT;
-> +	mp_irq.irqflag = (trigger << 2) | polarity;
-> +	mp_irq.srcbus = MP_ISA_BUS;
-> +	mp_irq.srcbusirq = bus_irq;	/* IRQ */
-
-Please get rid of these tail comments. First of all tail comments are disturbing the reading flow. Secondly these comment have exactly zero value.
-OK.
-
-> +	mp_irq.dstapic = mpc_ioapic_id(ioapic); /* APIC ID */
-> +	mp_irq.dstirq = pin;	/* INTIN# */
-
-except for this one, but that information should go into that other comment above, i.e.:
-
-       /* Convert 'gsi' to ioapic.pin (INTIN#) */
-
-Other than these more formal nitpicks, the patch is fine.
-Thank you, Thomas.
- 
-Thanks,
-
-	Tglx
-
-Thanks 
-Vikas Sajjan
+>  static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+>  {
+>  	int ret;
+> @@ -180,13 +208,22 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+>  	return ret;
+>  }
+>  
+> +static int imx6q_cpufreq_exit(struct cpufreq_policy *policy)
+> +{
+> +	cpufreq_cooling_unregister(cdev);
+> +
+> +	return 0;
+> +}
+> +
+>  static struct cpufreq_driver imx6q_cpufreq_driver = {
+>  	.flags = CPUFREQ_NEED_INITIAL_FREQ_CHECK,
+>  	.verify = cpufreq_generic_frequency_table_verify,
+>  	.target_index = imx6q_set_target,
+>  	.get = cpufreq_generic_get,
+>  	.init = imx6q_cpufreq_init,
+> +	.exit = imx6q_cpufreq_exit,
+>  	.name = "imx6q-cpufreq",
+> +	.ready = imx6q_cpufreq_ready,
+>  	.attr = cpufreq_generic_attr,
+>  	.suspend = cpufreq_generic_suspend,
+>  };
+> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+> index 4798b4b1fd77..3bdbde675698 100644
+> --- a/drivers/thermal/imx_thermal.c
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -91,7 +91,6 @@ static struct thermal_soc_data thermal_imx6sx_data = {
+>  struct imx_thermal_data {
+>  	struct cpufreq_policy *policy;
+>  	struct thermal_zone_device *tz;
+> -	struct thermal_cooling_device *cdev;
+>  	enum thermal_device_mode mode;
+>  	struct regmap *tempmon;
+>  	u32 c1, c2; /* See formula in imx_get_sensor_data() */
+> @@ -533,22 +532,12 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>  		return -EPROBE_DEFER;
+>  	}
+>  
+> -	data->cdev = cpufreq_cooling_register(data->policy);
+> -	if (IS_ERR(data->cdev)) {
+> -		ret = PTR_ERR(data->cdev);
+> -		dev_err(&pdev->dev,
+> -			"failed to register cpufreq cooling device: %d\n", ret);
+> -		cpufreq_cpu_put(data->policy);
+> -		return ret;
+> -	}
+> -
+>  	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
+>  	if (IS_ERR(data->thermal_clk)) {
+>  		ret = PTR_ERR(data->thermal_clk);
+>  		if (ret != -EPROBE_DEFER)
+>  			dev_err(&pdev->dev,
+>  				"failed to get thermal clk: %d\n", ret);
+> -		cpufreq_cooling_unregister(data->cdev);
+>  		cpufreq_cpu_put(data->policy);
+>  		return ret;
+>  	}
+> @@ -563,7 +552,6 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>  	ret = clk_prepare_enable(data->thermal_clk);
+>  	if (ret) {
+>  		dev_err(&pdev->dev, "failed to enable thermal clk: %d\n", ret);
+> -		cpufreq_cooling_unregister(data->cdev);
+>  		cpufreq_cpu_put(data->policy);
+>  		return ret;
+>  	}
+> @@ -579,7 +567,6 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>  		dev_err(&pdev->dev,
+>  			"failed to register thermal zone device %d\n", ret);
+>  		clk_disable_unprepare(data->thermal_clk);
+> -		cpufreq_cooling_unregister(data->cdev);
+>  		cpufreq_cpu_put(data->policy);
+>  		return ret;
+>  	}
+> @@ -608,7 +595,6 @@ static int imx_thermal_probe(struct platform_device *pdev)
+>  		dev_err(&pdev->dev, "failed to request alarm irq: %d\n", ret);
+>  		clk_disable_unprepare(data->thermal_clk);
+>  		thermal_zone_device_unregister(data->tz);
+> -		cpufreq_cooling_unregister(data->cdev);
+>  		cpufreq_cpu_put(data->policy);
+>  		return ret;
+>  	}
+> @@ -630,7 +616,6 @@ static int imx_thermal_remove(struct platform_device *pdev)
+>  		clk_disable_unprepare(data->thermal_clk);
+>  
+>  	thermal_zone_device_unregister(data->tz);
+> -	cpufreq_cooling_unregister(data->cdev);
+>  	cpufreq_cpu_put(data->policy);
+>  
+>  	return 0;
+> -- 
+> 2.11.0
+> 
