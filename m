@@ -1,70 +1,73 @@
-From: James Hogan <james.hogan@mips.com>
-Subject: [PATCH] cpufreq: Add Loongson machine dependencies
-Date: Wed, 15 Nov 2017 21:17:55 +0000
-Message-ID: <20171115211755.25102-1-james.hogan@mips.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] x86 / CPU: Always show current CPU frequency in /proc/cpuinfo
+Date: Thu, 16 Nov 2017 01:24:16 +0100
+Message-ID: <8646127.yoBvgp8gpO@aspire.rjw.lan>
+References: <20171109103814.70688-1-chao.wang@ucloud.cn> <50366815.86mgx8Isne@aspire.rjw.lan> <20171115093347.GA28750@WANG-Chaos-MacBook-Pro.local>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-mips-bounce@linux-mips.org>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-help: <mailto:ecartis@linux-mips.org?Subject=help>
-List-unsubscribe: <mailto:ecartis@linux-mips.org?subject=unsubscribe%20linux-mips>
-List-software: Ecartis version 1.0.0
-List-subscribe: <mailto:ecartis@linux-mips.org?subject=subscribe%20linux-mips>
-List-owner: <mailto:ralf@linux-mips.org>
-List-post: <mailto:linux-mips@linux-mips.org>
-List-archive: <http://www.linux-mips.org/archives/linux-mips/>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Keguang Zhang <keguang.zhang@gmail.com>
-Cc: James Hogan <jhogan@kernel.org>, Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46826 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753083AbdKPAYb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Nov 2017 19:24:31 -0500
+In-Reply-To: <20171115093347.GA28750@WANG-Chaos-MacBook-Pro.local>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: WANG Chao <chao.wang@ucloud.cn>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Vikas Shivappa <vikas.shivappa@linux.intel.com>, Kate Stewart <kstewart@linuxfoundation.org>, Len Brown <len.brown@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Philippe Ombredanne <pombredanne@nexb.com>, Mathias Krause <minipli@googlemail.com>, the arch/x86 maintainers <x86@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-From: James Hogan <jhogan@kernel.org>
+On Wednesday, November 15, 2017 10:33:47 AM CET WANG Chao wrote:
+> On 11/15/17 at 02:13P, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > After commit 890da9cf0983 (Revert "x86: do not use cpufreq_quick_get()
+> > for /proc/cpuinfo "cpu MHz"") the "cpu MHz" number in /proc/cpuinfo
+> > on x86 can be either the nominal CPU frequency (which is constant)
+> > or the frequency most recently requested by a scaling governor in
+> > cpufreq, depending on the cpufreq configuration.  That is somewhat
+> > inconsistent and is different from what it was before 4.13, so in
+> > order to restore the previous behavior, make it report the current
+> > CPU frequency like the scaling_cur_freq sysfs file in cpufreq.
+> > 
+> > To that end, modify the /proc/cpuinfo implementation on x86 to use
+> > aperfmperf_snapshot_khz() to snapshot the APERF and MPERF feedback
+> > registers, if available, and use their values to compute the CPU
+> > frequency to be reported as "cpu MHz".
+> > 
+> > However, do that carefully enough to avoid accumulating delays that
+> > lead to unacceptable access times for /proc/cpuinfo on systems with
+> > many CPUs.  Run aperfmperf_snapshot_khz() once on all CPUs
+> > asynchronously at the /proc/cpuinfo open time, add a single delay
+> > upfront (if necessary) at that point and simply compute the current
+> > frequency while running show_cpuinfo() for each individual CPU.
+> 
+> Hi, Rafael
+> 
+> I tested your patch. It's much faster.
+> 
+> But from what I got, calling aperfmperf_snapshot_khz() asynchronously
+> with 10ms sleep takes much longer than calling aperfmperf_snapshot_khz()
+> synchronously.
+> 
+> Here's my result on 64 CPUs:
+> 
+>  - async aperfmperf_snapshot_khz() w/ 10ms sleep:
+> 
+> # time cat /proc/cpuinfo > /dev/null
+> real    0m0.014s
+> user    0m0.000s
+> sys     0m0.002s
+> 
+>  - sync aperfmperf_snapshot_khz() w/o any sleep:
+> 
+> # time cat /proc/cpuinfo > /dev/null
+> real    0m0.002s
+> user    0m0.000s
+> sys     0m0.002s
 
-The MIPS loongson cpufreq drivers don't build unless configured for the
-correct machine type, due to dependency on machine specific architecture
-headers and symbols in machine specific platform code.
+Sure, but the delay is there, because without it the computed frequency
+may be way off for at least one of the CPUs.
 
-More specifically loongson1-cpufreq.c uses RST_CPU_EN and RST_CPU,
-neither of which is defined in asm/mach-loongson32/regs-clk.h unless
-CONFIG_LOONGSON1_LS1B=y, and loongson2_cpufreq.c references
-loongson2_clockmod_table[], which is only defined in
-arch/mips/loongson64/lemote-2f/clock.c, i.e. when
-CONFIG_LEMOTE_MACH2F=y.
-
-Add these dependencies to Kconfig to avoid randconfig / allyesconfig
-build failures (e.g. when based on BMIPS which also has a cpufreq
-driver).
-
-Signed-off-by: James Hogan <jhogan@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Keguang Zhang <keguang.zhang@gmail.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-mips@linux-mips.org
----
- drivers/cpufreq/Kconfig | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index 4ebae43118ef..d8addbce40bc 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -275,6 +275,7 @@ config BMIPS_CPUFREQ
- 
- config LOONGSON2_CPUFREQ
- 	tristate "Loongson2 CPUFreq Driver"
-+	depends on LEMOTE_MACH2F
- 	help
- 	  This option adds a CPUFreq driver for loongson processors which
- 	  support software configurable cpu frequency.
-@@ -287,6 +288,7 @@ config LOONGSON2_CPUFREQ
- 
- config LOONGSON1_CPUFREQ
- 	tristate "Loongson1 CPUFreq Driver"
-+	depends on LOONGSON1_LS1B
- 	help
- 	  This option adds a CPUFreq driver for loongson1 processors which
- 	  support software configurable cpu frequency.
--- 
-2.14.1
+Thanks,
+Rafael
