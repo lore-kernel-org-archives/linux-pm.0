@@ -1,81 +1,128 @@
-From: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
-Subject: [PATCH v2 2/2] acpi/x86: Reuse the mp_register_ioapic_irq() in the function mp_override_legacy_irq()
-Date: Thu, 16 Nov 2017 14:59:55 +0530
-Message-ID: <1510824595-12287-3-git-send-email-vikas.cha.sajjan@hpe.com>
-References: <1510824595-12287-1-git-send-email-vikas.cha.sajjan@hpe.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from g2t1383g.austin.hpe.com ([15.233.16.89]:33616 "EHLO
-        g2t1383g.austin.hpe.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1759363AbdKPJ4W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Nov 2017 04:56:22 -0500
-In-Reply-To: <1510824595-12287-1-git-send-email-vikas.cha.sajjan@hpe.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/6] PM / core: Add LEAVE_SUSPENDED driver flag
+Date: Thu, 16 Nov 2017 11:18:21 +0100
+Message-ID: <CAPDyKFrP2V24ROgV0U8qgR-t91rzJ5mnEMkCQpq_tN_bZj1YPg@mail.gmail.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <CAJZ5v0i4yFGyqAZ6QqG7q1_xNfjMNHkPk3o0WuBvwKFeM2nXeg@mail.gmail.com>
+ <CAPDyKFr4DgVdKtf=G1vUy=Si0nSTECsrWoqB+z9UCQHS8DuwcQ@mail.gmail.com> <2655595.bSA6msl5Qp@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <2655595.bSA6msl5Qp@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: tglx@linutronix.de, rjw@rjwysocki.net, rafael.j.wysocki@intel.com
-Cc: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, kkamagui@gmail.com, mingo@kernel.org, Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
 
-Modify the function mp_override_legacy_irq() to reuse the newly introduced
-function mp_register_ioapic_irq().
+[...]
 
-Signed-off-by: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
----
- arch/x86/kernel/acpi/boot.c | 27 +++++----------------------
- 1 file changed, 5 insertions(+), 22 deletions(-)
+>>
+>> My general goal is that I want to make it easier (or as easy as
+>> possible) for the general driver author to deploy runtime PM and
+>> system-wide PM support - in an optimized manner. Therefore, I am
+>> pondering over the solution you picked in this series, trying to
+>> understand how it fits into those aspects.
+>>
+>> Particular I am a bit worried from a complexity point of view, about
+>> the part with skipping callbacks from the PM core. We have observed
+>> some difficulties with the direct_complete path (i2c dw driver), which
+>> is based on a similar approach as this one.
+>
+> These are resume callbacks, not suspend callbacks.  Also not all of them
+> are skipped.  That is quite a bit different from skipping *all* callbacks.
+>
+> Moreover, at the point the core decides to skip the callbacks, the device
+> *has* *to* be left suspended and there simply is no point in running them
+> no matter what.
+>
+> That part of code can be trivially moved to middle layers, but then each
+> of them will have to do exactly the same thing.  I don't see any reason to
+> do that and I'm not finding one in your comments.  Sorry.
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 40c24d1b..6aae067 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -342,13 +342,12 @@ static int acpi_register_lapic(int id, u32 acpiid, u8 enabled)
- #ifdef CONFIG_X86_IO_APIC
- #define MP_ISA_BUS		0
- 
-+static int __init mp_register_ioapic_irq(u8 bus_irq, u8 polarity,
-+						u8 trigger, u32 gsi);
-+
- static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
- 					  u32 gsi)
- {
--	int ioapic;
--	int pin;
--	struct mpc_intsrc mp_irq;
--
- 	/*
- 	 * Check bus_irq boundary.
- 	 */
-@@ -358,14 +357,6 @@ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
- 	}
- 
- 	/*
--	 * Convert 'gsi' to 'ioapic.pin'.
--	 */
--	ioapic = mp_find_ioapic(gsi);
--	if (ioapic < 0)
--		return;
--	pin = mp_find_ioapic_pin(ioapic, gsi);
--
--	/*
- 	 * TBD: This check is for faulty timer entries, where the override
- 	 *      erroneously sets the trigger to level, resulting in a HUGE
- 	 *      increase of timer interrupts!
-@@ -373,16 +364,8 @@ static void __init mp_override_legacy_irq(u8 bus_irq, u8 polarity, u8 trigger,
- 	if ((bus_irq == 0) && (trigger == 3))
- 		trigger = 1;
- 
--	mp_irq.type = MP_INTSRC;
--	mp_irq.irqtype = mp_INT;
--	mp_irq.irqflag = (trigger << 2) | polarity;
--	mp_irq.srcbus = MP_ISA_BUS;
--	mp_irq.srcbusirq = bus_irq;	/* IRQ */
--	mp_irq.dstapic = mpc_ioapic_id(ioapic); /* APIC ID */
--	mp_irq.dstirq = pin;	/* INTIN# */
--
--	mp_save_irq(&mp_irq);
--
-+	if (mp_register_ioapic_irq(bus_irq, polarity, trigger, gsi) < 0)
-+		return;
- 	/*
- 	 * Reset default identity mapping if gsi is also an legacy IRQ,
- 	 * otherwise there will be more than one entry with the same GSI
--- 
-1.9.1
+I think my concerns boils done to that I am wondering how useful it
+will be, in general, to enable the core to skip invoking resume
+callbacks.
+
+Although, if you are targeting some specific devices/drivers (ACPI,
+PCI, etc), and not care that much about flexibility, then I am fine
+with it. The approach seems to work.
+
+Let me elaborate on that comment a bit.
+
+1)
+Skipping resume callbacks is not going to work for a device that may
+be attached to the generic PM domain.
+
+Well, in principle one could try to re-work genpd to cope with this
+behavior, I guess, but that would also mean genpd becomes limited to
+always use the noirq callbacks to power on/off the PM domain. That
+isn't an acceptable limitation.
+
+2)
+Because of 1) This leads to those cross SoC drivers, dealing with
+devices which sometimes may have a genpd attached and sometimes an
+ACPI PM domain attached. I guess those drivers would need to have a
+different set of system-wide PM callbacks, depending on the PM domain
+the device is attached to, as to achieve a similar optimized behavior
+during system resume. Or some other cleverness to deal with
+system-wide PM.
+
+Perhaps we can ignore both 1) and 2), because the number of cross SoC
+drivers having these issues should be rather limited!?
+
+3)
+There are certainly lots of drivers that can cope with its device
+remaining in runtime suspend, during system resume.
+Although, some of these drivers may have some additional operations to
+carry out during resume, which may not require to resume (activate)
+its device. For example the driver may need to resume a queue,
+re-configure an out-of-band wakeup (GPIO IRQ), re-configure pinctrls,
+etc.
+
+These drivers can't use the method behind LEAVE_SUSPENDED, because
+they need their resume callbacks to be invoked.
+
+[...]
+
+>
+> Well, this works the other way around this time, I'm afraid.  At this point
+> you need to convince me that the approach has real issues. :-)
+
+I think I have pointed out some issues above. Feel free to ignore
+them, depending on what your target is.
+
+[...]
+
+>> >> Perhaps a better idea is to do this in the noirq suspend phase,
+>> >> because it allows you to bail out in case pm_runtime_set_suspended()
+>> >> fails.
+>> >
+>> > This doesn't make sense, sorry.
+>>
+>> What do you mean by "failures of that are meaningless here."?
+>
+> If all devices have runtime PM disabled, pm_runtime_set_suspended() should
+> just do what it is asked for unless called with an invalid argument or
+> similar.
+
+Yes.
+
+>
+>> I was suggesting, instead of calling pm_runtime_set_suspended() in the
+>> noirq *resume* phase, why can't you do that in the noirq *suspend*
+>> phase?
+>>
+>> In the noirq *suspend* phase it's not too late to deal with errors!? Or is it?
+>
+> At that point it has not been decided whether or not the devices will stay
+> suspended yet.  The status cannot be changed before making that decision,
+> which only happens in the noirq resume phase.
+
+Okay, then it's fine as is (because of your other patch to the runtime
+PM core, which changes the behavior for pm_runtime_set_suspended()).
+
+BTW, I have some additional minor comments to some other parts of the
+code, but I will start over with a new thread proving you with those
+comments.
+
+Kind regards
+Uffe
