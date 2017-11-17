@@ -1,72 +1,79 @@
-From: James Hogan <james.hogan@mips.com>
-Subject: Re: [PATCH] cpufreq: Add Loongson machine dependencies
-Date: Fri, 17 Nov 2017 09:37:10 +0000
-Message-ID: <20171117093710.GB27368@jhogan-linux.mipstec.com>
-References: <20171115211755.25102-1-james.hogan@mips.com>
- <CAAhV-H5Bhwxtec7cZKuov2i1F1mHaPHPOV0cD4ZZzWMJVkD1Zw@mail.gmail.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v3 1/2] acpi/x86: Fix improper handling of SCI INT for
+ platforms supporting only IOAPIC mode
+Date: Fri, 17 Nov 2017 11:38:05 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1711171126270.7700@nanos>
+References: <1510848825-21965-1-git-send-email-vikas.cha.sajjan@hpe.com> <1510848825-21965-2-git-send-email-vikas.cha.sajjan@hpe.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="9amGYk9869ThD9tj"
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from 19pmail.ess.barracuda.com ([64.235.150.245]:45352 "EHLO
-        19pmail.ess.barracuda.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751161AbdKQJhg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Nov 2017 04:37:36 -0500
-Content-Disposition: inline
-In-Reply-To: <CAAhV-H5Bhwxtec7cZKuov2i1F1mHaPHPOV0cD4ZZzWMJVkD1Zw@mail.gmail.com>
+Received: from Galois.linutronix.de ([146.0.238.70]:49972 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754523AbdKQKiJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Nov 2017 05:38:09 -0500
+In-Reply-To: <1510848825-21965-2-git-send-email-vikas.cha.sajjan@hpe.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Huacai Chen <chenhuacai@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Keguang Zhang <keguang.zhang@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Linux MIPS Mailing List <linux-mips@linux-mips.org>
+To: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
+Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, kkamagui@gmail.com, mingo@kernel.org
 
---9amGYk9869ThD9tj
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+On Thu, 16 Nov 2017, Vikas C Sajjan wrote:
 
-Hi Huacai
+> The platforms which support only IOAPIC mode, pass the SCI information
+> above the legacy space (0-15) via the FADT mechanism and not via MADT.
+> In such cases the mp_override_legacy_irq() used by acpi_sci_ioapic_setup()
+> to register SCI interrupts fails for interrupts >= 16, since it is meant to
+> handle only legacy space and throws error "Invalid bus_irq %u for legacy
+> override". Hence add a new function to handle SCI interrupts >= 16 and
+> invoke it conditionally in acpi_sci_ioapic_setup().The code duplication
+> due to this new function will be cleaned up in a separate patch.
 
-On Fri, Nov 17, 2017 at 12:37:30PM +0800, Huacai Chen wrote:
-> I think it is better to make LOONGSON1_CPUFREQ depends on
-> CPU_LOONGSON1, and LOONGSON2_CPUFREQ depends on CPU_LOONGSON2
+This reads way better, but I have a small nit pick. In the example I gave
+you there were multiple paragraphs on purpose to separate the different
+parts. So if I just split the above lump into separate paragraphs:
 
-Yes, that may well be preferable, however as stated below both drivers
-have stricter dependencies than that which break the build for certain
-configurations:
+[1]
+   The platforms which support only IOAPIC mode, pass the SCI information
+   above the legacy space (0-15) via the FADT mechanism and not via MADT.
 
-> On Thu, Nov 16, 2017 at 5:17 AM, James Hogan <james.hogan@mips.com> wrote:
-> > More specifically loongson1-cpufreq.c uses RST_CPU_EN and RST_CPU,
-> > neither of which is defined in asm/mach-loongson32/regs-clk.h unless
-> > CONFIG_LOONGSON1_LS1B=y, and loongson2_cpufreq.c references
-> > loongson2_clockmod_table[], which is only defined in
-> > arch/mips/loongson64/lemote-2f/clock.c, i.e. when
-> > CONFIG_LEMOTE_MACH2F=y.
+[2]
+   In such cases the mp_override_legacy_irq() used by acpi_sci_ioapic_setup()
+   to register SCI interrupts fails for interrupts >= 16, since it is meant to
+   handle only legacy space and throws error "Invalid bus_irq %u for legacy
+   override".
 
-If those issues are fixed such that the drivers build on any respective
-loongson1 / loongson2 configuration then the dependencies can always be
-updated again to reflect that.
+[3]
+   Hence add a new function to handle SCI interrupts >= 16 and
+   invoke it conditionally in acpi_sci_ioapic_setup().
 
-Cheers
-James
+[4]
+   The code duplication due to this new function will be cleaned up in a
+   separate patch.
 
---9amGYk9869ThD9tj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+then this is clearly structured:
 
------BEGIN PGP SIGNATURE-----
+[1] describes the context.
 
-iQIzBAEBCAAdFiEEd80NauSabkiESfLYbAtpk944dnoFAloOrb0ACgkQbAtpk944
-dnrjVA//fKmSzwAE6mZE712mk2kRI/9EXptpipRyZhheDfd551tgxf78zP2c/U0c
-GBfoW9giX9wYfpnr5ku9jmE4sXmkUANlwSRJbOXHWwNKSQK1uhPV3uqeB8Z6fBl8
-q3zMW37QlSQJU/ISG4pYyud/0PSgE6NS1mqfa9o4FmkFlgtrYJn6ouEKRHBIRWAx
-65FaQtWUPq0y/tBR6K61dj6pLvoI1koZyZftJ4AIY7ptRZkve0niId6vIopw5Mk1
-Z7tWt21VTrNH56F+jk9UKYnlAIPKX2PdmWAKNVwDNlVliKqD5fciiJKtF0L0CaBk
-pG8cEdjtOY1//ObJd2zFy5l1zJ9mfWg1sIkHpzJdhB9UqvKSV8MET5nfeqjKbCsS
-1mcvjckVPLbbgfRrVwLidRF3Ik7NtJHBDa8w597y7D577hIY+RIcK5RPSa1zKqxW
-lta3InF84KVe1rnipdALe7Z8WZiuE5ZtCZmXbN0hrCEBDIqSDG+tYshGJshAXS95
-QndCXnGp6MKx5o09JCu9VBpCT9cQqQlswrJHqC92Gmh16wJFisMDtTUkwN3WVGTh
-0IC8TADj5Kk2O3o89nDVYXaCB1/I874gl5ZE0ZRY+phhAe+GcfL4K+l7dX1H/NfM
-iFz/+qWeWE46MSk/a79w1SqRYxfHRJyEClVE5hdUk7oKbi4lSAA=
-=IqZA
------END PGP SIGNATURE-----
+[2] describes the failure
 
---9amGYk9869ThD9tj--
+[3] describes the solution
+
+[4] is an extra note to tell the reviewer/reader that you are aware of the
+    code duplication and this is addressed later. 
+
+No need to resend. I can do that when picking it up.
+
+> Co-developed-by: Sunil V L <sunil.vl@hpe.com>
+
+I had a discussion with Greg about this tag which resulted in a patch so
+it should be soon part of the official documentation:
+
+ https://lkml.kernel.org/r/20171116132309.GA8449@kroah.com
+
+We agreed that both authors should add their Signed-off-by to document that
+the work conforms with the Developer Certificate of Origin. I'll add that
+if that's ok for you.
+
+Thanks for following up!
+
+       tglx
