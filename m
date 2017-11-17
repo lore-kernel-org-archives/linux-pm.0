@@ -1,82 +1,78 @@
-From: "Sajjan, Vikas C" <vikas.cha.sajjan@hpe.com>
-Subject: RE: [PATCH v3 1/2] acpi/x86: Fix improper handling of SCI INT for
- platforms supporting only IOAPIC mode
-Date: Fri, 17 Nov 2017 14:00:14 +0000
-Message-ID: <CS1PR8401MB0518E69621848A5BFB398B2CD92F0@CS1PR8401MB0518.NAMPRD84.PROD.OUTLOOK.COM>
-References: <1510848825-21965-1-git-send-email-vikas.cha.sajjan@hpe.com>
- <1510848825-21965-2-git-send-email-vikas.cha.sajjan@hpe.com>
- <alpine.DEB.2.20.1711171126270.7700@nanos>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v3 1/6] PM / core: Add LEAVE_SUSPENDED driver flag
+Date: Fri, 17 Nov 2017 15:31:38 +0100
+Message-ID: <CAJZ5v0iD3uzJr4fdhrWfRhSmr_foU4GQx9LY_9sR=BKYUxZOGw@mail.gmail.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <5556673.MXo6XDN1f4@aspire.rjw.lan>
+ <CAPDyKFpzSd4zwW_awuxuim0gzyKV5s9dm66X+szsSUKRnBakbA@mail.gmail.com>
+ <2654404.6YT5rmSnae@aspire.rjw.lan> <CAPDyKFo4gE6O=xMoS2Phe0kNgNUGBffy1hxT3iPrY71ieGcumQ@mail.gmail.com>
+ <CAJZ5v0ibqqUZ0M1_GKCkGj_E+2DQQMOLAVTyPd7mSJDAypkHjQ@mail.gmail.com> <CAPDyKFrsabWL2cVE2SwguRRiEV5sJHLpzpyhahLucdER_RAEpg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1711171126270.7700@nanos>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "kkamagui@gmail.com" <kkamagui@gmail.com>, "mingo@kernel.org" <mingo@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFrsabWL2cVE2SwguRRiEV5sJHLpzpyhahLucdER_RAEpg@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Fri, Nov 17, 2017 at 2:49 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> [...]
+>
+>>>
+>>>>> Second, have you considered setting the default value of
+>>>>> dev->power.may_skip_resume to true?
+>>>>
+>>>> Yes.
+>>>>
+>>>>> That would means the subsystem
+>>>>> instead need to implement an opt-out method. I am thinking that it may
+>>>>> not be an issue, since we anyway at this point, don't have drivers
+>>>>> using the LEAVE_SUSPENDED flag.
+>>>>
+>>>> Opt-out doesn't work because of the need to invoke the "noirq" callbacks.
+>>>
+>>> I am not sure I follow that.
+>>>
+>>> Whatever needs to be fixed on the subsystem level, that could be done
+>>> before the driver starts using the LEAVE_SUSPENDED flag. No?
+>>
+>> That requires a bit of explanation, sorry for being overly concise.
+>>
+>> The core calls ->resume_noirq from the middle layer regardless of
+>> whether or not the device will be left suspended, so the
+>> ->resume_noirq cannot do arbitrary things to it.  Setting
+>> may_skip_resume by the middle layer tells the core that the middle
+>> layer is ready for that and is going to cooperate.  If may_skip_resume
+>> had been set by default, that piece of information would have been
+>> missing.
+>
+> Huh, I still don't get that. Sorry.
+>
+> If the "may_skip_resume" is default set to true by the PM core,
+> wouldn't that just mean that the middle-layer needs to implement an
+> opt-out method, rather than opt-in. In principle to opt-out the
+> middle-layer needs to set may_skip_resume to false in suspend_noirq
+> phase, no?
 
-On Thu, 16 Nov 2017, Vikas C Sajjan wrote:
+Yes, but if the middle-layer doesn't clear it, that may mean two
+things.  First, the middle layer is ready and so on.  Good.  Second,
+the middle layer is not aware of the whole thing.  Not good.  The core
+cannot tell.
 
-> The platforms which support only IOAPIC mode, pass the SCI information 
-> above the legacy space (0-15) via the FADT mechanism and not via MADT.
-> In such cases the mp_override_legacy_irq() used by 
-> acpi_sci_ioapic_setup() to register SCI interrupts fails for 
-> interrupts >= 16, since it is meant to handle only legacy space and 
-> throws error "Invalid bus_irq %u for legacy override". Hence add a new 
-> function to handle SCI interrupts >= 16 and invoke it conditionally in 
-> acpi_sci_ioapic_setup().The code duplication due to this new function will be cleaned up in a separate patch.
+In the opt-in case, however, all is clear. :-)
 
-This reads way better, but I have a small nit pick. In the example I gave you there were multiple paragraphs on purpose to separate the different parts. So if I just split the above lump into separate paragraphs:
+> Then we only need to make sure drivers don't starts use
+> LEAVE_SUSPENDED, before we make sure the middle layers is adopted. But
+> that should not be a problem.
+>
+> The benefit would be that those middle layers that can cope with
+> LEAVE_SUSPENDED as of today don't need to change.
 
-[1]
-   The platforms which support only IOAPIC mode, pass the SCI information
-   above the legacy space (0-15) via the FADT mechanism and not via MADT.
+I'm not sure if that's the case.
 
-[2]
-   In such cases the mp_override_legacy_irq() used by acpi_sci_ioapic_setup()
-   to register SCI interrupts fails for interrupts >= 16, since it is meant to
-   handle only legacy space and throws error "Invalid bus_irq %u for legacy
-   override".
+The middle layer has to evaluate dev_pm_may_skip_resume() in
+->resume_noirq() to check if the device can be left in suspend, as it
+cannot determine that in ->suspend_noirq() yet.
 
-[3]
-   Hence add a new function to handle SCI interrupts >= 16 and
-   invoke it conditionally in acpi_sci_ioapic_setup().
-
-[4]
-   The code duplication due to this new function will be cleaned up in a
-   separate patch.
-
-then this is clearly structured:
-
-[1] describes the context.
-
-[2] describes the failure
-
-[3] describes the solution
-
-[4] is an extra note to tell the reviewer/reader that you are aware of the
-    code duplication and this is addressed later. 
-
-No need to resend. I can do that when picking it up.
-Thanks.
-
-> Co-developed-by: Sunil V L <sunil.vl@hpe.com>
-
-I had a discussion with Greg about this tag which resulted in a patch so it should be soon part of the official documentation:
-
- https://lkml.kernel.org/r/20171116132309.GA8449@kroah.com
-
-Great. Good to know that.
-
-We agreed that both authors should add their Signed-off-by to document that the work conforms with the Developer Certificate of Origin. I'll add that if that's ok for you.
-
-I am OK with that. Please go ahead.
-
-Thanks for following up!
-
-Thank you for the review.
-
-       tglx
+Thanks,
+Rafael
