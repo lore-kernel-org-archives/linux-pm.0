@@ -1,92 +1,62 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v3 1/6] PM / core: Add LEAVE_SUSPENDED driver flag
-Date: Fri, 17 Nov 2017 13:45:16 +0100
-Message-ID: <CAJZ5v0iAC+NoiSs5mMvt37mVtyG+2qp=cap40Ju6y+UG44TJSQ@mail.gmail.com>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <5556673.MXo6XDN1f4@aspire.rjw.lan>
- <CAPDyKFpzSd4zwW_awuxuim0gzyKV5s9dm66X+szsSUKRnBakbA@mail.gmail.com> <2654404.6YT5rmSnae@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-doc-owner@vger.kernel.org>
-In-Reply-To: <2654404.6YT5rmSnae@aspire.rjw.lan>
-Sender: linux-doc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / runtime: Allow an irq-safe parent to be runtime suspended
+Date: Fri, 17 Nov 2017 14:16:06 +0100
+Message-ID: <1510924566-16112-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f66.google.com ([209.85.215.66]:43230 "EHLO
+        mail-lf0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S933291AbdKQNQR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Nov 2017 08:16:17 -0500
+Received: by mail-lf0-f66.google.com with SMTP id 73so2629844lfu.10
+        for <linux-pm@vger.kernel.org>; Fri, 17 Nov 2017 05:16:16 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Alan Stern <stern@rowland.harvard.edu>, Ulf Hansson <ulf.hansson@linaro.org>, linux-pm@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>
 
-On Fri, Nov 17, 2017 at 12:07 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Thursday, November 16, 2017 4:10:16 PM CET Ulf Hansson wrote:
->> On 12 November 2017 at 01:37, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >
->> > Define and document a new driver flag, DPM_FLAG_LEAVE_SUSPENDED, to
->> > instruct the PM core and middle-layer (bus type, PM domain, etc.)
->> > code that it is desirable to leave the device in runtime suspend
->> > after system-wide transitions to the working state (for example,
->> > the device may be slow to resume and it may be better to avoid
->> > resuming it right away).
->> >
->> > Generally, the middle-layer code involved in the handling of the
->> > device is expected to indicate to the PM core whether or not the
->> > device may be left in suspend with the help of the device's
->> > power.may_skip_resume status bit.  That has to happen in the "noirq"
->> > phase of the preceding system suspend (or analogous) transition.
->> > The middle layer is then responsible for handling the device as
->> > appropriate in its "noirq" resume callback which is executed
->> > regardless of whether or not the device may be left suspended, but
->> > the other resume callbacks (except for ->complete) will be skipped
->> > automatically by the core if the device really can be left in
->> > suspend.
->> >
->> > The additional power.must_resume status bit introduced for the
->> > implementation of this mechanisn is used internally by the PM core
->> > to track the requirement to resume the device (which may depend on
->> > its children etc).
->> >
->> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> > Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> > ---
->> >
->> > v2 -> v3: Take dev->power.usage_count when updating power.must_resume in
->> >           __device_suspend_noirq().
->> >
->> > ---
+When pm_runtime_irq_safe() is a called for a child device, it's assumed
+that the parent is never also irq-safe. Therefore, is the parent runtime
+resumed and the usage counter increased for it, as to avoid having an
+irq-safe child waiting for non-irq-safe parent.
 
-[...]
+Improve this behaviour by taking into account that the parent could also be
+irq-safe. In such case let's allow it to be runtime suspended.
 
->> > +       } else {
->> > +               dev->power.must_resume = true;
->> > +       }
->> > +
->> > +       if (dev->power.must_resume)
->> > +               dpm_superior_set_must_resume(dev);
->> >
->> >  Complete:
->> >         complete_all(&dev->power.completion);
->> > @@ -1487,6 +1539,9 @@ static int __device_suspend(struct devic
->> >                 dev->power.direct_complete = false;
->> >         }
->> >
->> > +       dev->power.may_skip_resume = false;
->> > +       dev->power.must_resume = false;
->> > +
->>
->> First, these assignment could be bypassed if the direct_complete path
->> is used. Perhaps it's more robust to reset these flags already in
->> device_prepare().
->
-> In the direct-complete case may_skip_resume doesn't matter.
->
-> must_resume should be set to "false", however, so that parents of
-> direct-complete devices may be left in suspend (in case they don't
-> fall under direct-complete themselves), so good catch.
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/base/power/runtime.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Actually, not really.
-
-must_resume for parents/suppliers is not updated if the device has
-direct_complete set and the device's own must_resume doesn't matter
-then.
-
-So this part is good as is AFAICS.
-
-Thanks,
-Rafael
+diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+index ec059750..d44f520 100644
+--- a/drivers/base/power/runtime.c
++++ b/drivers/base/power/runtime.c
+@@ -1370,13 +1370,13 @@ EXPORT_SYMBOL_GPL(pm_runtime_no_callbacks);
+  * Set the power.irq_safe flag, which tells the PM core that the
+  * ->runtime_suspend() and ->runtime_resume() callbacks for this device should
+  * always be invoked with the spinlock held and interrupts disabled.  It also
+- * causes the parent's usage counter to be permanently incremented, preventing
+- * the parent from runtime suspending -- otherwise an irq-safe child might have
+- * to wait for a non-irq-safe parent.
++ * causes the parent's usage counter to be permanently incremented, unless the
++ * parent is also irq-safe. This prevents the parent from runtime suspending,
++ * otherwise an irq-safe child might have to wait for a non-irq-safe parent.
+  */
+ void pm_runtime_irq_safe(struct device *dev)
+ {
+-	if (dev->parent)
++	if (dev->parent && !pm_runtime_is_irq_safe(dev->parent))
+ 		pm_runtime_get_sync(dev->parent);
+ 	spin_lock_irq(&dev->power.lock);
+ 	dev->power.irq_safe = 1;
+@@ -1507,7 +1507,7 @@ void pm_runtime_reinit(struct device *dev)
+ 			spin_lock_irq(&dev->power.lock);
+ 			dev->power.irq_safe = 0;
+ 			spin_unlock_irq(&dev->power.lock);
+-			if (dev->parent)
++			if (dev->parent && !pm_runtime_is_irq_safe(dev->parent))
+ 				pm_runtime_put(dev->parent);
+ 		}
+ 	}
+-- 
+2.7.4
