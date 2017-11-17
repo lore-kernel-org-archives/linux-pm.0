@@ -1,79 +1,130 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v3 1/2] acpi/x86: Fix improper handling of SCI INT for
- platforms supporting only IOAPIC mode
-Date: Fri, 17 Nov 2017 11:38:05 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1711171126270.7700@nanos>
-References: <1510848825-21965-1-git-send-email-vikas.cha.sajjan@hpe.com> <1510848825-21965-2-git-send-email-vikas.cha.sajjan@hpe.com>
+From: Punit Agrawal <punit.agrawal@arm.com>
+Subject: Re: [PATCH 4/4] cpu_cooling: Drop static-power related stuff
+Date: Fri, 17 Nov 2017 11:02:56 +0000
+Message-ID: <878tf5tbfj.fsf@e105922-lin.cambridge.arm.com>
+References: <cover.1510735482.git.viresh.kumar@linaro.org>
+        <65fef2a1-d23f-3de2-bd91-021296c3e2f7@arm.com>
+        <20171116152058.GR3257@vireshk-i7> <2810372.fJ2vMN0cWO@aspire.rjw.lan>
+        <20171116234422.GA6141@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:49972 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754523AbdKQKiJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Nov 2017 05:38:09 -0500
-In-Reply-To: <1510848825-21965-2-git-send-email-vikas.cha.sajjan@hpe.com>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:33186 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750949AbdKQLC6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 17 Nov 2017 06:02:58 -0500
+In-Reply-To: <20171116234422.GA6141@localhost.localdomain> (Eduardo Valentin's
+        message of "Thu, 16 Nov 2017 15:44:24 -0800")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Vikas C Sajjan <vikas.cha.sajjan@hpe.com>
-Cc: rjw@rjwysocki.net, linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org, kkamagui@gmail.com, mingo@kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Ionela Voinescu <ionela.voinescu@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, lukasz.luba@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Javi Merino <javi.merino@arm.com>
 
-On Thu, 16 Nov 2017, Vikas C Sajjan wrote:
+Hi Eduardo,
 
-> The platforms which support only IOAPIC mode, pass the SCI information
-> above the legacy space (0-15) via the FADT mechanism and not via MADT.
-> In such cases the mp_override_legacy_irq() used by acpi_sci_ioapic_setup()
-> to register SCI interrupts fails for interrupts >= 16, since it is meant to
-> handle only legacy space and throws error "Invalid bus_irq %u for legacy
-> override". Hence add a new function to handle SCI interrupts >= 16 and
-> invoke it conditionally in acpi_sci_ioapic_setup().The code duplication
-> due to this new function will be cleaned up in a separate patch.
+Eduardo Valentin <edubezval@gmail.com> writes:
 
-This reads way better, but I have a small nit pick. In the example I gave
-you there were multiple paragraphs on purpose to separate the different
-parts. So if I just split the above lump into separate paragraphs:
+> Hello,
+>
+> On Fri, Nov 17, 2017 at 12:31:41AM +0100, Rafael J. Wysocki wrote:
+>> On Thursday, November 16, 2017 4:20:58 PM CET Viresh Kumar wrote:
+>> > On 16-11-17, 15:02, Ionela Voinescu wrote:
+>> > > When it was added in lsk 3.18 in what was then a thermal driver for Juno
+>> > > it was believed to have an effect in thermal mitigation, but that was
+>> > > not proven later as to justify posting it upstream, and that is why the
+>> > > code never made it in mainline.
+>
+>
+> Really?  Do you have data that can be shared to back up the above
+> statement?
+>
+> Last time I checked, not only in Juno, static power does have
+> a non-negligible contribution. Neglecting static power can essentially
+> make IPA to undershoot in many cases to eventually overshoot. And that
+> is what I recollect from the data that I was presented, even for getting
+> this code reviewed. Just do not recollect to have the link to it.
 
-[1]
-   The platforms which support only IOAPIC mode, pass the SCI information
-   above the legacy space (0-15) via the FADT mechanism and not via MADT.
+Just to make sure we are on the same page - static power can be a
+significant portion of SoC power consumption. It varies widely across
+SoCs and from experience depends on things like fabrication process,
+ambient temperature, applied voltage/current drain, etc. There are many
+SoCs where static power is a significant part of power consumption and
+needs to be modelled for good thermal control.
 
-[2]
-   In such cases the mp_override_legacy_irq() used by acpi_sci_ioapic_setup()
-   to register SCI interrupts fails for interrupts >= 16, since it is meant to
-   handle only legacy space and throws error "Invalid bus_irq %u for legacy
-   override".
+Specifically in the case of Juno - we'd done some thermal and
+performance benchmarking when working on IPA. This included implementing
+a static power model to understand and test it's impact. If memory
+serves me right static power was approximately in the 10-15%
+range. Unfortunately, I can't find any datasets to support or disprove
+this claim.
 
-[3]
-   Hence add a new function to handle SCI interrupts >= 16 and
-   invoke it conditionally in acpi_sci_ioapic_setup().
+My take away from the Juno experiment was that it is not a particularly
+thermally constrained system. At the least it took many 10s of seconds
+running at max frequency (both clusters and the GPU) with the case fan
+turned off for it to see a 10C increase. So the lack of a static power
+model wasn't affecting it's thermal control.
 
-[4]
-   The code duplication due to this new function will be cleaned up in a
-   separate patch.
+But this situation is only true for Juno. More below...
 
-then this is clearly structured:
+>
+>> > > The code added there can be found at:
+>> > > https://git.linaro.org/landing-teams/working/arm/kernel-release.git/tree/drivers/thermal/scpi-thermal.c?h=lsk-3.18-armlt#n247
+>> > > 
+>> > > As for removing this code now, I would not want to make that decision without
+>> > > spending more time to check if it impacts other customer codelines.
+>> > >
+>
+> Maybe this is a matter of Linaro/ARM failing to convince SoC vendors to
+> really publish static power to mainline Linux instead of really having
+> the benefit of modeling it? Even simple models based on temperature
+> ranges would be better than only using dynamic power model.
 
-[1] describes the context.
+I know of a few SoCs implementing static power model in their kernel
+(not mainline). It would be great for that code to hit mainline. But as
+with all the out of tree code, I'm not sure have much influence we have
+in making that happen.
 
-[2] describes the failure
+Again, I don't think we are arguing about the importance of static power
+in a power model based thermal control strategy like IPA.
 
-[3] describes the solution
+>
+>> > > I'll come back with a reply to this in the next couple of days.
+>> > 
+>> > Sure, we can wait for few days definitely :)
+>> 
+>> While the above certainly is true, it doesn't matter whether or not any
+>> out-of-the-tree code will be affected by removing this from the mainline.
+>> 
+>> What matters is *only* whether or not anyone is going to add anything
+>> depending on it to the mainline any time soon.  If that's not the case,
+>> the stuff goes away (and may be added back in the future if need be).
+>> 
+>> To avoid delaying this indefinitely, let's make a deal as follows.
+>> 
+>> Unless anyone with some changes targeted at the mainline and depending on the
+>> code in question shows up before the end of the merge window currently under
+>> way, I will queue up the patches from Viresh for 4.16.  Then, there will be
+>> 8 weeks (or more) of time before the 4.16 merge window opens to drop them if
+>> any new material depending on the code removed by them materializes in the
+>> meantime.
+>
+>
+> Sure, as I mentioned before, if we failed to convince SoC manufacturers
+> to provide valid models, makes no sense to keep dead code in the tree,
+> you have my support and you can add my:
+>
+> Acked-by: Eduardo Valentin <edubezval@gmail.com>
+>
+> I am just not convinced that this is really about the static power
+> being negligible for IPA.
 
-[4] is an extra note to tell the reviewer/reader that you are aware of the
-    code duplication and this is addressed later. 
+Just to reiterate once more, we are in agreement here. :)
 
-No need to resend. I can do that when picking it up.
+I'd like to think this patchset has come out of a plan to develop
+functionality on top but I don't know if that is the case.
 
-> Co-developed-by: Sunil V L <sunil.vl@hpe.com>
-
-I had a discussion with Greg about this tag which resulted in a patch so
-it should be soon part of the official documentation:
-
- https://lkml.kernel.org/r/20171116132309.GA8449@kroah.com
-
-We agreed that both authors should add their Signed-off-by to document that
-the work conforms with the Developer Certificate of Origin. I'll add that
-if that's ok for you.
-
-Thanks for following up!
-
-       tglx
+>
+>> 
+>> Thanks,
+>> Rafael
+>> 
