@@ -1,98 +1,55 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v3 1/6] PM / core: Add LEAVE_SUSPENDED driver flag
-Date: Fri, 17 Nov 2017 07:11:08 +0100
-Message-ID: <CAPDyKFo4gE6O=xMoS2Phe0kNgNUGBffy1hxT3iPrY71ieGcumQ@mail.gmail.com>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <5556673.MXo6XDN1f4@aspire.rjw.lan>
- <CAPDyKFpzSd4zwW_awuxuim0gzyKV5s9dm66X+szsSUKRnBakbA@mail.gmail.com> <2654404.6YT5rmSnae@aspire.rjw.lan>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH 4/4] cpu_cooling: Drop static-power related stuff
+Date: Fri, 17 Nov 2017 08:55:42 +0100
+Message-ID: <d474a8cf-159c-8325-d27d-01a921666ecc@linaro.org>
+References: <cover.1510735482.git.viresh.kumar@linaro.org>
+ <fcca009e0e10840ff5ee31c88b618a212ab69201.1510735482.git.viresh.kumar@linaro.org>
+ <761f7963-8b6d-b002-5404-a9ad0acf84d6@linaro.org>
+ <20171115154311.GA3005@localhost.localdomain>
+ <CAJZ5v0j6Hk8D29h+MdMeU-PgSAFkNG-41_a7d+goVuSve0=CYw@mail.gmail.com>
+ <20171116024704.GQ3257@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f179.google.com ([209.85.223.179]:33883 "EHLO
-        mail-io0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756989AbdKQGLK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Nov 2017 01:11:10 -0500
-Received: by mail-io0-f179.google.com with SMTP id q101so7706275ioi.1
-        for <linux-pm@vger.kernel.org>; Thu, 16 Nov 2017 22:11:10 -0800 (PST)
-In-Reply-To: <2654404.6YT5rmSnae@aspire.rjw.lan>
+Received: from mail-wm0-f54.google.com ([74.125.82.54]:35397 "EHLO
+        mail-wm0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S964944AbdKQHzq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Nov 2017 02:55:46 -0500
+Received: by mail-wm0-f54.google.com with SMTP id y80so4616472wmd.0
+        for <linux-pm@vger.kernel.org>; Thu, 16 Nov 2017 23:55:45 -0800 (PST)
+In-Reply-To: <20171116024704.GQ3257@vireshk-i7>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Rafael Wysocki <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, lukasz.luba@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Javi Merino <javi.merino@arm.com>, Punit Agrawal <punit.agrawal@arm.com>
 
-[...]
+On 16/11/2017 03:47, Viresh Kumar wrote:
+> On 15-11-17, 19:17, Rafael J. Wysocki wrote:
+>> However, I would like to see a clear declaration from whoever is
+>> maintaining that code today that there is a plan in place to upstream
+>> it and that this plan will actually be acted on.  And, better yet,
+>> *when* that can be expected to happen.
+> 
+> Exactly what I have been advocating.
+> 
+> And there is bunch of other places where such examples can be seen.
+> For example multiple regulator support in the OPP framework, which I
+> added an year ago hasn't seen a user yet. And I am pushing the TI guys
+> (who wanted it badly) to upstream their code before we remove that as
+> well :)
+> 
+> Again, someone has to come up and take responsibility of getting
+> static power platform support upstream in a definite amount of time.
 
->> > +++ linux-pm/include/linux/pm.h
->> > @@ -559,6 +559,7 @@ struct pm_subsys_data {
->> >   * NEVER_SKIP: Do not skip system suspend/resume callbacks for the device.
->> >   * SMART_PREPARE: Check the return value of the driver's ->prepare callback.
->> >   * SMART_SUSPEND: No need to resume the device from runtime suspend.
->> > + * LEAVE_SUSPENDED: Avoid resuming the device during system resume if possible.
->> >   *
->> >   * Setting SMART_PREPARE instructs bus types and PM domains which may want
->> >   * system suspend/resume callbacks to be skipped for the device to return 0 from
->> > @@ -572,10 +573,14 @@ struct pm_subsys_data {
->> >   * necessary from the driver's perspective.  It also may cause them to skip
->> >   * invocations of the ->suspend_late and ->suspend_noirq callbacks provided by
->> >   * the driver if they decide to leave the device in runtime suspend.
->> > + *
->> > + * Setting LEAVE_SUSPENDED informs the PM core and middle-layer code that the
->> > + * driver prefers the device to be left in runtime suspend after system resume.
->> >   */
->>
->> Question: Can LEAVE_SUSPENDED and NEVER_SKIP be valid combination? I
->> guess not!? Should we validate for wrong combinations?
->
-> Why not?  There's no real overlap between them.
+Instead of removing entirely the code, why not convert this to a DT
+based info and put the Juno values back ?
 
-Except that NEVER_SKIP, documentation wise, tells you that your
-suspend and resume callbacks will never be skipped. :-)
 
-[...]
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
->> Second, have you considered setting the default value of
->> dev->power.may_skip_resume to true?
->
-> Yes.
->
->> That would means the subsystem
->> instead need to implement an opt-out method. I am thinking that it may
->> not be an issue, since we anyway at this point, don't have drivers
->> using the LEAVE_SUSPENDED flag.
->
-> Opt-out doesn't work because of the need to invoke the "noirq" callbacks.
-
-I am not sure I follow that.
-
-Whatever needs to be fixed on the subsystem level, that could be done
-before the driver starts using the LEAVE_SUSPENDED flag. No?
-
->
->> [...]
->>
->> > +However, it may be desirable to leave some devices in runtime suspend after
->> > +system transitions to the working state and device drivers can use the
->> > +``DPM_FLAG_LEAVE_SUSPENDED`` flag to indicate to the PM core (and middle-layer
->> > +code) that this is the case.  Whether or not the devices will actually be left
->> > +in suspend may depend on their state before the given system suspend-resume
->> > +cycle and on the type of the system transition under way.  In particular,
->> > +devices are not left suspended if that transition is a restore from hibernation,
->> > +as device states are not guaranteed to be reflected by the information stored in
->> > +the hibernation image in that case.
->> > +
->> > +The middle-layer code involved in the handling of the device has to indicate to
->> > +the PM core if the device may be left in suspend with the help of its
->> > +:c:member:`power.may_skip_resume` status bit.  That has to happen in the "noirq"
->> > +phase of the preceding system-wide suspend (or analogous) transition.  The
->>
->> Does it have to be managed in the "noirq" phase? Wouldn't be perfectly
->> okay do this in the suspend and suspend_late phases as well?
->
-> The wording is slightly misleading I think.
->
-> In fact technically may_skip_resume may be set earlier, but the core checks it
-> in the "noirq" phase only anyway.
-
-Yeah, okay.
-
-Kind regards
-Uffe
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
