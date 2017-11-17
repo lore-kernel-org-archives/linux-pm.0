@@ -1,36 +1,49 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 4/4] cpu_cooling: Drop static-power related stuff
-Date: Fri, 17 Nov 2017 16:36:46 +0530
-Message-ID: <20171117110646.GT3257@vireshk-i7>
-References: <cover.1510735482.git.viresh.kumar@linaro.org>
- <65fef2a1-d23f-3de2-bd91-021296c3e2f7@arm.com>
- <20171116152058.GR3257@vireshk-i7>
- <2810372.fJ2vMN0cWO@aspire.rjw.lan>
- <20171116234422.GA6141@localhost.localdomain>
- <878tf5tbfj.fsf@e105922-lin.cambridge.arm.com>
+From: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
+Subject: Re: [PATCH v11 02/10] i2c: i2c-smbus: Move i2c_setup_smbus_alert from
+ i2c-smbus to i2c-core-smbus
+Date: Fri, 17 Nov 2017 20:15:59 +0800
+Message-ID: <c5a9309b-a595-c663-1e39-f83ed08c8c07@electromag.com.au>
+References: <1503567070-115646-1-git-send-email-preid@electromag.com.au>
+ <1503567070-115646-3-git-send-email-preid@electromag.com.au>
+ <20171029154408.vmjkpj7ybqyrj3ke@ninjato>
+ <1397131b-c22d-9872-dbe0-9b691553cb9e@electromag.com.au>
+ <20171106213646.2h3zsitnlablblli@ninjato>
+ <2eaccb51-62cf-b764-d313-84008c6c8f87@electromag.com.au>
+ <20171107072254.s43mwpyplx3hdkyo@ninjato>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f174.google.com ([209.85.192.174]:39147 "EHLO
-        mail-pf0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753391AbdKQLGt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Nov 2017 06:06:49 -0500
-Received: by mail-pf0-f174.google.com with SMTP id l24so1719429pfj.6
-        for <linux-pm@vger.kernel.org>; Fri, 17 Nov 2017 03:06:49 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <878tf5tbfj.fsf@e105922-lin.cambridge.arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171107072254.s43mwpyplx3hdkyo@ninjato>
+Content-Language: en-AU
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+Cc: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jdelvare-IBi9RG/b67k@public.gmane.org, jglauber-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, david.daney-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Punit Agrawal <punit.agrawal@arm.com>
-Cc: Eduardo Valentin <edubezval@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ionela Voinescu <ionela.voinescu@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, lukasz.luba@arm.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Javi Merino <javi.merino@arm.com>
 
-On 17-11-17, 11:02, Punit Agrawal wrote:
-> I'd like to think this patchset has come out of a plan to develop
-> functionality on top but I don't know if that is the case.
+On 7/11/2017 15:22, Wolfram Sang wrote:
+> 
+>> I was just thinking that all that's in the file now is smbus-alert code.
+>> The other smbus (host notify) code was moved to i2c-core
+>> So maybe i2c-core-smbus-alert and as you say use makefile to include it.
+> 
+> Aaaah, i2c-core-smbus-alert.c. Yes, that probably makes sense. I was
+> wondering about i2c-smbus-alert.c (without -core)...
+> 
+>> I've tried this and it seems to work for the various combinations.
+>> I'll wait a bit for Jean to offer an opinion.
+> 
+> Well, if you have code already, can you post it as RFC and CC Jean?
+> It usually is easier to talk over code, even if it is not perfect yet...
+> 
 
-If you are talking about my patch series (?), then no, I don't have
-any plans on top of it. I just cleaned things up a bit. Nothing more
-:)
+Yes will do. Was hoping to clean it up into some incremental patches and post this week.
+But it looks like next week now.
 
 -- 
-viresh
+Regards
+Phil Reid
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
