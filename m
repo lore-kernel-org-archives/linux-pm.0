@@ -1,49 +1,92 @@
-From: Phil Reid <preid-qgqNFa1JUf/o2iN0hyhwsIdd74u8MsAO@public.gmane.org>
-Subject: Re: [PATCH v11 02/10] i2c: i2c-smbus: Move i2c_setup_smbus_alert from
- i2c-smbus to i2c-core-smbus
-Date: Fri, 17 Nov 2017 20:15:59 +0800
-Message-ID: <c5a9309b-a595-c663-1e39-f83ed08c8c07@electromag.com.au>
-References: <1503567070-115646-1-git-send-email-preid@electromag.com.au>
- <1503567070-115646-3-git-send-email-preid@electromag.com.au>
- <20171029154408.vmjkpj7ybqyrj3ke@ninjato>
- <1397131b-c22d-9872-dbe0-9b691553cb9e@electromag.com.au>
- <20171106213646.2h3zsitnlablblli@ninjato>
- <2eaccb51-62cf-b764-d313-84008c6c8f87@electromag.com.au>
- <20171107072254.s43mwpyplx3hdkyo@ninjato>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v3 1/6] PM / core: Add LEAVE_SUSPENDED driver flag
+Date: Fri, 17 Nov 2017 13:45:16 +0100
+Message-ID: <CAJZ5v0iAC+NoiSs5mMvt37mVtyG+2qp=cap40Ju6y+UG44TJSQ@mail.gmail.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <5556673.MXo6XDN1f4@aspire.rjw.lan>
+ <CAPDyKFpzSd4zwW_awuxuim0gzyKV5s9dm66X+szsSUKRnBakbA@mail.gmail.com> <2654404.6YT5rmSnae@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171107072254.s43mwpyplx3hdkyo@ninjato>
-Content-Language: en-AU
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-Cc: Jean Delvare <jdelvare-l3A5Bk7waGM@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, jdelvare-IBi9RG/b67k@public.gmane.org, jglauber-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, david.daney-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org, peda-koto5C5qi+TLoDKTGw+V6w@public.gmane.org, benjamin.tissoires-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <2654404.6YT5rmSnae@aspire.rjw.lan>
+Sender: linux-doc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 7/11/2017 15:22, Wolfram Sang wrote:
-> 
->> I was just thinking that all that's in the file now is smbus-alert code.
->> The other smbus (host notify) code was moved to i2c-core
->> So maybe i2c-core-smbus-alert and as you say use makefile to include it.
-> 
-> Aaaah, i2c-core-smbus-alert.c. Yes, that probably makes sense. I was
-> wondering about i2c-smbus-alert.c (without -core)...
-> 
->> I've tried this and it seems to work for the various combinations.
->> I'll wait a bit for Jean to offer an opinion.
-> 
-> Well, if you have code already, can you post it as RFC and CC Jean?
-> It usually is easier to talk over code, even if it is not perfect yet...
-> 
+On Fri, Nov 17, 2017 at 12:07 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, November 16, 2017 4:10:16 PM CET Ulf Hansson wrote:
+>> On 12 November 2017 at 01:37, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >
+>> > Define and document a new driver flag, DPM_FLAG_LEAVE_SUSPENDED, to
+>> > instruct the PM core and middle-layer (bus type, PM domain, etc.)
+>> > code that it is desirable to leave the device in runtime suspend
+>> > after system-wide transitions to the working state (for example,
+>> > the device may be slow to resume and it may be better to avoid
+>> > resuming it right away).
+>> >
+>> > Generally, the middle-layer code involved in the handling of the
+>> > device is expected to indicate to the PM core whether or not the
+>> > device may be left in suspend with the help of the device's
+>> > power.may_skip_resume status bit.  That has to happen in the "noirq"
+>> > phase of the preceding system suspend (or analogous) transition.
+>> > The middle layer is then responsible for handling the device as
+>> > appropriate in its "noirq" resume callback which is executed
+>> > regardless of whether or not the device may be left suspended, but
+>> > the other resume callbacks (except for ->complete) will be skipped
+>> > automatically by the core if the device really can be left in
+>> > suspend.
+>> >
+>> > The additional power.must_resume status bit introduced for the
+>> > implementation of this mechanisn is used internally by the PM core
+>> > to track the requirement to resume the device (which may depend on
+>> > its children etc).
+>> >
+>> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> > Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+>> > ---
+>> >
+>> > v2 -> v3: Take dev->power.usage_count when updating power.must_resume in
+>> >           __device_suspend_noirq().
+>> >
+>> > ---
 
-Yes will do. Was hoping to clean it up into some incremental patches and post this week.
-But it looks like next week now.
+[...]
 
--- 
-Regards
-Phil Reid
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> > +       } else {
+>> > +               dev->power.must_resume = true;
+>> > +       }
+>> > +
+>> > +       if (dev->power.must_resume)
+>> > +               dpm_superior_set_must_resume(dev);
+>> >
+>> >  Complete:
+>> >         complete_all(&dev->power.completion);
+>> > @@ -1487,6 +1539,9 @@ static int __device_suspend(struct devic
+>> >                 dev->power.direct_complete = false;
+>> >         }
+>> >
+>> > +       dev->power.may_skip_resume = false;
+>> > +       dev->power.must_resume = false;
+>> > +
+>>
+>> First, these assignment could be bypassed if the direct_complete path
+>> is used. Perhaps it's more robust to reset these flags already in
+>> device_prepare().
+>
+> In the direct-complete case may_skip_resume doesn't matter.
+>
+> must_resume should be set to "false", however, so that parents of
+> direct-complete devices may be left in suspend (in case they don't
+> fall under direct-complete themselves), so good catch.
+
+Actually, not really.
+
+must_resume for parents/suppliers is not updated if the device has
+direct_complete set and the device's own must_resume doesn't matter
+then.
+
+So this part is good as is AFAICS.
+
+Thanks,
+Rafael
