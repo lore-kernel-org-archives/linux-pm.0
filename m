@@ -1,116 +1,267 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v4 2/6] PCI / PM: Support for LEAVE_SUSPENDED driver flag
-Date: Sat, 18 Nov 2017 15:33:52 +0100
-Message-ID: <3189584.p93WhT6c0L@aspire.rjw.lan>
+Subject: [PATCH v4 1/6] PM / core: Add LEAVE_SUSPENDED driver flag
+Date: Sat, 18 Nov 2017 15:31:49 +0100
+Message-ID: <13167729.Euq9qh5SXX@aspire.rjw.lan>
 References: <3806130.B2KCK0tvef@aspire.rjw.lan> <4184911.zoJM7jZeH4@aspire.rjw.lan> <1917233.X2U0QN21my@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47253 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S966411AbdKROp0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Nov 2017 09:45:26 -0500
+Return-path: <linux-acpi-owner@vger.kernel.org>
 In-Reply-To: <1917233.X2U0QN21my@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
 To: Linux PM <linux-pm@vger.kernel.org>
 Cc: Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
+List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Add support for DPM_FLAG_LEAVE_SUSPENDED to the PCI bus type by
-making it (a) set the power.may_skip_resume status bit for devices
-that, from its perspective, may be left in suspend after system
-wakeup from sleep and (b) return early from pci_pm_resume_noirq()
-for devices whose remaining resume callbacks during the transition
-under way are going to be skipped by the PM core.
+Define and document a new driver flag, DPM_FLAG_LEAVE_SUSPENDED, to
+instruct the PM core and middle-layer (bus type, PM domain, etc.)
+code that it is desirable to leave the device in runtime suspend
+after system-wide transitions to the working state (for example,
+the device may be slow to resume and it may be better to avoid
+resuming it right away).
+
+Generally, the middle-layer code involved in the handling of the
+device is expected to indicate to the PM core whether or not the
+device may be left in suspend with the help of the device's
+power.may_skip_resume status bit.  That has to happen in the "noirq"
+phase of the preceding system suspend (or analogous) transition.
+The middle layer is then responsible for handling the device as
+appropriate in its "noirq" resume callback which is executed
+regardless of whether or not the device may be left suspended, but
+the other resume callbacks (except for ->complete) will be skipped
+automatically by the core if the device really can be left in
+suspend.
+
+The additional power.must_resume status bit introduced for the
+implementation of this mechanisn is used internally by the PM core
+to track the requirement to resume the device (which may depend on
+its children etc).
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
 
-v3 -> v4: No changes.
+v3 -> v4: Fix the dev->power.usage_count check added in v3, clarify
+          documentation, add comment to explain why the runtime PM status
+          is changed in device_resume_noirq() and make the description of
+          the NEVER_SKIP flag more precise.
 
-v2 -> v3: Add the Acked-by from Bjorn, no changes in the patch.
+v2 -> v3: Take dev->power.usage_count when updating power.must_resume in
+          __device_suspend_noirq().
 
 ---
- Documentation/power/pci.txt |   11 +++++++++++
- drivers/pci/pci-driver.c    |   19 +++++++++++++++++--
- 2 files changed, 28 insertions(+), 2 deletions(-)
+ Documentation/driver-api/pm/devices.rst |   27 ++++++++++-
+ drivers/base/power/main.c               |   73 +++++++++++++++++++++++++++++---
+ include/linux/pm.h                      |   16 +++++--
+ 3 files changed, 105 insertions(+), 11 deletions(-)
 
-Index: linux-pm/drivers/pci/pci-driver.c
+Index: linux-pm/include/linux/pm.h
 ===================================================================
---- linux-pm.orig/drivers/pci/pci-driver.c
-+++ linux-pm/drivers/pci/pci-driver.c
-@@ -699,7 +699,7 @@ static void pci_pm_complete(struct devic
- 	pm_generic_complete(dev);
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -556,9 +556,10 @@ struct pm_subsys_data {
+  * These flags can be set by device drivers at the probe time.  They need not be
+  * cleared by the drivers as the driver core will take care of that.
+  *
+- * NEVER_SKIP: Do not skip system suspend/resume callbacks for the device.
++ * NEVER_SKIP: Do not skip all system suspend/resume callbacks for the device.
+  * SMART_PREPARE: Check the return value of the driver's ->prepare callback.
+  * SMART_SUSPEND: No need to resume the device from runtime suspend.
++ * LEAVE_SUSPENDED: Avoid resuming the device during system resume if possible.
+  *
+  * Setting SMART_PREPARE instructs bus types and PM domains which may want
+  * system suspend/resume callbacks to be skipped for the device to return 0 from
+@@ -572,10 +573,14 @@ struct pm_subsys_data {
+  * necessary from the driver's perspective.  It also may cause them to skip
+  * invocations of the ->suspend_late and ->suspend_noirq callbacks provided by
+  * the driver if they decide to leave the device in runtime suspend.
++ *
++ * Setting LEAVE_SUSPENDED informs the PM core and middle-layer code that the
++ * driver prefers the device to be left in suspend after system resume.
+  */
+-#define DPM_FLAG_NEVER_SKIP	BIT(0)
+-#define DPM_FLAG_SMART_PREPARE	BIT(1)
+-#define DPM_FLAG_SMART_SUSPEND	BIT(2)
++#define DPM_FLAG_NEVER_SKIP		BIT(0)
++#define DPM_FLAG_SMART_PREPARE		BIT(1)
++#define DPM_FLAG_SMART_SUSPEND		BIT(2)
++#define DPM_FLAG_LEAVE_SUSPENDED	BIT(3)
  
- 	/* Resume device if platform firmware has put it in reset-power-on */
--	if (dev->power.direct_complete && pm_resume_via_firmware()) {
-+	if (pm_runtime_suspended(dev) && pm_resume_via_firmware()) {
- 		pci_power_t pre_sleep_state = pci_dev->current_state;
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
+@@ -597,6 +602,8 @@ struct dev_pm_info {
+ 	bool			wakeup_path:1;
+ 	bool			syscore:1;
+ 	bool			no_pm_callbacks:1;	/* Owned by the PM core */
++	unsigned int		must_resume:1;	/* Owned by the PM core */
++	unsigned int		may_skip_resume:1;	/* Set by subsystems */
+ #else
+ 	unsigned int		should_wakeup:1;
+ #endif
+@@ -765,6 +772,7 @@ extern int pm_generic_poweroff_late(stru
+ extern int pm_generic_poweroff(struct device *dev);
+ extern void pm_generic_complete(struct device *dev);
  
- 		pci_update_current_state(pci_dev, pci_dev->current_state);
-@@ -783,8 +783,10 @@ static int pci_pm_suspend_noirq(struct d
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
++extern bool dev_pm_may_skip_resume(struct device *dev);
+ extern bool dev_pm_smart_suspend_and_suspended(struct device *dev);
  
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_smart_suspend_and_suspended(dev)) {
-+		dev->power.may_skip_resume = true;
- 		return 0;
-+	}
+ #else /* !CONFIG_PM_SLEEP */
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -528,6 +528,18 @@ static void dpm_watchdog_clear(struct dp
+ /*------------------------- Resume routines -------------------------*/
  
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
-@@ -838,6 +840,16 @@ static int pci_pm_suspend_noirq(struct d
- Fixup:
- 	pci_fixup_device(pci_fixup_suspend_late, pci_dev);
- 
-+	/*
-+	 * If the target system sleep state is suspend-to-idle, it is sufficient
-+	 * to check whether or not the device's wakeup settings are good for
-+	 * runtime PM.  Otherwise, the pm_resume_via_firmware() check will cause
-+	 * pci_pm_complete() to take care of fixing up the device's state
-+	 * anyway, if need be.
-+	 */
-+	dev->power.may_skip_resume = device_may_wakeup(dev) ||
-+					!device_can_wakeup(dev);
+ /**
++ * dev_pm_may_skip_resume - System-wide device resume optimization check.
++ * @dev: Target device.
++ *
++ * Checks whether or not the device may be left in suspend after a system-wide
++ * transition to the working state.
++ */
++bool dev_pm_may_skip_resume(struct device *dev)
++{
++	return !dev->power.must_resume && pm_transition.event != PM_EVENT_RESTORE;
++}
 +
- 	return 0;
++/**
+  * device_resume_noirq - Execute a "noirq resume" callback for given device.
+  * @dev: Device to handle.
+  * @state: PM transition of the system being carried out.
+@@ -575,6 +587,19 @@ static int device_resume_noirq(struct de
+ 	error = dpm_run_callback(callback, dev, state, info);
+ 	dev->power.is_noirq_suspended = false;
+ 
++	if (dev_pm_may_skip_resume(dev)) {
++		/*
++		 * The device is going to be left in suspend, but it might not
++		 * have been in runtime suspend before the system suspended, so
++		 * its runtime PM status needs to be updated to avoid confusing
++		 * the runtime PM framework when runtime PM is enabled for the
++		 * device again.
++		 */
++		pm_runtime_set_suspended(dev);
++		dev->power.is_late_suspended = false;
++		dev->power.is_suspended = false;
++	}
++
+  Out:
+ 	complete_all(&dev->power.completion);
+ 	TRACE_RESUME(error);
+@@ -1076,6 +1101,22 @@ static pm_message_t resume_event(pm_mess
+ 	return PMSG_ON;
  }
  
-@@ -847,6 +859,9 @@ static int pci_pm_resume_noirq(struct de
- 	struct device_driver *drv = dev->driver;
- 	int error = 0;
- 
-+	if (dev_pm_may_skip_resume(dev))
-+		return 0;
++static void dpm_superior_set_must_resume(struct device *dev)
++{
++	struct device_link *link;
++	int idx;
 +
++	if (dev->parent)
++		dev->parent->power.must_resume = true;
++
++	idx = device_links_read_lock();
++
++	list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
++		link->supplier->power.must_resume = true;
++
++	device_links_read_unlock(idx);
++}
++
+ /**
+  * __device_suspend_noirq - Execute a "noirq suspend" callback for given device.
+  * @dev: Device to handle.
+@@ -1127,10 +1168,28 @@ static int __device_suspend_noirq(struct
+ 	}
+ 
+ 	error = dpm_run_callback(callback, dev, state, info);
+-	if (!error)
+-		dev->power.is_noirq_suspended = true;
+-	else
++	if (error) {
+ 		async_error = error;
++		goto Complete;
++	}
++
++	dev->power.is_noirq_suspended = true;
++
++	if (dev_pm_test_driver_flags(dev, DPM_FLAG_LEAVE_SUSPENDED)) {
++		/*
++		 * The only safe strategy here is to require that if the device
++		 * may not be left in suspend, resume callbacks must be invoked
++		 * for it.
++		 */
++		dev->power.must_resume = dev->power.must_resume ||
++					!dev->power.may_skip_resume ||
++					atomic_read(&dev->power.usage_count) > 1;
++	} else {
++		dev->power.must_resume = true;
++	}
++
++	if (dev->power.must_resume)
++		dpm_superior_set_must_resume(dev);
+ 
+ Complete:
+ 	complete_all(&dev->power.completion);
+@@ -1487,6 +1546,9 @@ static int __device_suspend(struct devic
+ 		dev->power.direct_complete = false;
+ 	}
+ 
++	dev->power.may_skip_resume = false;
++	dev->power.must_resume = false;
++
+ 	dpm_watchdog_set(&wd, dev);
+ 	device_lock(dev);
+ 
+@@ -1652,8 +1714,9 @@ static int device_prepare(struct device
+ 	if (dev->power.syscore)
+ 		return 0;
+ 
+-	WARN_ON(dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) &&
+-		!pm_runtime_enabled(dev));
++	WARN_ON(!pm_runtime_enabled(dev) &&
++		dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND |
++					      DPM_FLAG_LEAVE_SUSPENDED));
+ 
  	/*
- 	 * Devices with DPM_FLAG_SMART_SUSPEND may be left in runtime suspend
- 	 * during system suspend, so update their runtime PM status to "active"
-Index: linux-pm/Documentation/power/pci.txt
+ 	 * If a device's parent goes into runtime suspend at the wrong time,
+Index: linux-pm/Documentation/driver-api/pm/devices.rst
 ===================================================================
---- linux-pm.orig/Documentation/power/pci.txt
-+++ linux-pm/Documentation/power/pci.txt
-@@ -994,6 +994,17 @@ into D0 going forward), but if it is in
- the function will set the power.direct_complete flag for it (to make the PM core
- skip the subsequent "thaw" callbacks for it) and return.
+--- linux-pm.orig/Documentation/driver-api/pm/devices.rst
++++ linux-pm/Documentation/driver-api/pm/devices.rst
+@@ -788,6 +788,29 @@ must reflect the "active" status for run
  
-+Setting the DPM_FLAG_LEAVE_SUSPENDED flag means that the driver prefers the
-+device to be left in suspend after system-wide transitions to the working state.
-+This flag is checked by the PM core, but the PCI bus type informs the PM core
-+which devices may be left in suspend from its perspective (that happens during
-+the "noirq" phase of system-wide suspend and analogous transitions) and next it
-+uses the dev_pm_may_skip_resume() helper to decide whether or not to return from
-+pci_pm_resume_noirq() early, as the PM core will skip the remaining resume
-+callbacks for the device during the transition under way and will set its
-+runtime PM status to "suspended" if dev_pm_may_skip_resume() returns "true" for
-+it.
+ During system-wide resume from a sleep state it's easiest to put devices into
+ the full-power state, as explained in :file:`Documentation/power/runtime_pm.txt`.
+-Refer to that document for more information regarding this particular issue as
++[Refer to that document for more information regarding this particular issue as
+ well as for information on the device runtime power management framework in
+-general.
++general.]
 +
- 3.2. Device Runtime Power Management
- ------------------------------------
- In addition to providing device power management callbacks PCI device drivers
++However, it often is desirable to leave devices in suspend after system
++transitions to the working state, especially if those devices had been in
++runtime suspend before the preceding system-wide suspend (or analogous)
++transition.  Device drivers can use the ``DPM_FLAG_LEAVE_SUSPENDED`` flag to
++indicate to the PM core (and middle-layer code) that they prefer the specific
++devices handled by them to be left suspended and they have no problems with
++skipping their system-wide resume callbacks for this reason.  Whether or not the
++devices will actually be left in suspend may depend on their state before the
++given system suspend-resume cycle and on the type of the system transition under
++way.  In particular, devices are not left suspended if that transition is a
++restore from hibernation, as device states are not guaranteed to be reflected
++by the information stored in the hibernation image in that case.
++
++The middle-layer code involved in the handling of the device is expected to
++indicate to the PM core if the device may be left in suspend by setting its
++:c:member:`power.may_skip_resume` status bit which is checked by the PM core
++during the "noirq" phase of the preceding system-wide suspend (or analogous)
++transition.  The middle layer is then responsible for handling the device as
++appropriate in its "noirq" resume callback, which is executed regardless of
++whether or not the device is left suspended, but the other resume callbacks
++(except for ``->complete``) will be skipped automatically by the PM core if the
++device really can be left in suspend.
+
