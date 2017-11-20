@@ -1,31 +1,38 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 197009] /proc/cpuinfo does not update frequency
-Date: Mon, 20 Nov 2017 19:12:58 +0000
-Message-ID: <bug-197009-137361-A0hauFXWil@https.bugzilla.kernel.org/>
-References: <bug-197009-137361@https.bugzilla.kernel.org/>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:44874 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752406AbdKTTM7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2017 14:12:59 -0500
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 65F482935C
-        for <linux-pm@vger.kernel.org>; Mon, 20 Nov 2017 19:12:59 +0000 (UTC)
-In-Reply-To: <bug-197009-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jesse Chan <jc@linux.com>
+Subject: [PATCH] power: reset: zx-reboot: add missing MODULE_DESCRIPTION/AUTHOR/LICENSE
+Date: Mon, 20 Nov 2017 12:58:27 -0800
+Message-ID: <20171120205827.88610-1-jc@linux.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+Cc: Jesse Chan <jc@linux.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=197009
+This change resolves a new compile-time warning
+when built as a loadable module:
 
---- Comment #11 from Steven Haigh (netwiz@crc.id.au) ---
-For what its worth, this seems exactly like my Comment 5 above.
+WARNING: modpost: missing MODULE_LICENSE() in drivers/power/reset/zx-reboot.o
+see include/linux/module.h for more information
 
-I still have no solution or leads on how / where to follow this up.
+This adds the license as "GPL v2", which matches the header of the file.
 
+MODULE_DESCRIPTION and MODULE_AUTHOR are also added.
+
+Signed-off-by: Jesse Chan <jc@linux.com>
+---
+ drivers/power/reset/zx-reboot.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/drivers/power/reset/zx-reboot.c b/drivers/power/reset/zx-reboot.c
+index 7549c7f74a3c..c03e96e6a041 100644
+--- a/drivers/power/reset/zx-reboot.c
++++ b/drivers/power/reset/zx-reboot.c
+@@ -82,3 +82,7 @@ static struct platform_driver zx_reboot_driver = {
+ 	},
+ };
+ module_platform_driver(zx_reboot_driver);
++
++MODULE_DESCRIPTION("ZTE SoCs reset driver");
++MODULE_AUTHOR("Jun Nie <jun.nie@linaro.org>");
++MODULE_LICENSE("GPL v2");
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+2.14.1
