@@ -1,62 +1,31 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: [PATCH] cpupower: Combine two condition checks into one statement in
- get_cpu_topology()
-Date: Mon, 20 Nov 2017 19:19:39 +0100
-Message-ID: <3daea226-c5cb-62e7-a025-8f758712a81a@users.sourceforge.net>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 197009] /proc/cpuinfo does not update frequency
+Date: Mon, 20 Nov 2017 19:12:58 +0000
+Message-ID: <bug-197009-137361-A0hauFXWil@https.bugzilla.kernel.org/>
+References: <bug-197009-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Language: en-GB
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Thomas Renninger <trenn@suse.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:44874 "EHLO
+        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752406AbdKTTM7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2017 14:12:59 -0500
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id 65F482935C
+        for <linux-pm@vger.kernel.org>; Mon, 20 Nov 2017 19:12:59 +0000 (UTC)
+In-Reply-To: <bug-197009-137361@https.bugzilla.kernel.org/>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@kernel.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 20 Nov 2017 19:10:14 +0100
+https://bugzilla.kernel.org/show_bug.cgi?id=197009
 
-The same assignments were used in an if branch of two separate statements.
+--- Comment #11 from Steven Haigh (netwiz@crc.id.au) ---
+For what its worth, this seems exactly like my Comment 5 above.
 
-* Merge their condition checks into a single statement instead.
+I still have no solution or leads on how / where to follow this up.
 
-* Adjust the indentation there.
-
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- tools/power/cpupower/lib/cpupower.c | 18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
-
-diff --git a/tools/power/cpupower/lib/cpupower.c b/tools/power/cpupower/lib/cpupower.c
-index 9c395ec924de..81c828e5920e 100644
---- a/tools/power/cpupower/lib/cpupower.c
-+++ b/tools/power/cpupower/lib/cpupower.c
-@@ -140,18 +140,12 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
- 	for (cpu = 0; cpu < cpus; cpu++) {
- 		cpu_top->core_info[cpu].cpu = cpu;
- 		cpu_top->core_info[cpu].is_online = cpupower_is_cpu_online(cpu);
--		if(sysfs_topology_read_file(
--			cpu,
--			"physical_package_id",
--			&(cpu_top->core_info[cpu].pkg)) < 0) {
--			cpu_top->core_info[cpu].pkg = -1;
--			cpu_top->core_info[cpu].core = -1;
--			continue;
--		}
--		if(sysfs_topology_read_file(
--			cpu,
--			"core_id",
--			&(cpu_top->core_info[cpu].core)) < 0) {
-+		if (sysfs_topology_read_file(cpu, "physical_package_id",
-+					     &(cpu_top->core_info[cpu].pkg))
-+		    < 0 ||
-+		    sysfs_topology_read_file(cpu, "core_id",
-+					     &(cpu_top->core_info[cpu].core))
-+		    < 0) {
- 			cpu_top->core_info[cpu].pkg = -1;
- 			cpu_top->core_info[cpu].core = -1;
- 			continue;
 -- 
-2.15.0
+You are receiving this mail because:
+You are the assignee for the bug.
