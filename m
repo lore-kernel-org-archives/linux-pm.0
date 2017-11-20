@@ -1,254 +1,274 @@
-From: Pintu Kumar <pintu.ping@gmail.com>
-Subject: [tegra186]: emmc resume errors after booting from suspend
-Date: Mon, 20 Nov 2017 12:48:30 +0530
-Message-ID: <CAOuPNLgtKPvO=QJXeq=LJ4ehHzNNg_NgqCqEYNKvsTzpcPi=FA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v4 1/6] PM / core: Add LEAVE_SUSPENDED driver flag
+Date: Mon, 20 Nov 2017 13:25:34 +0100
+Message-ID: <CAPDyKFqODyR6rcTitUdvU3dRwmYpOQF+4p0xXMpkpGQfDB_tBQ@mail.gmail.com>
+References: <3806130.B2KCK0tvef@aspire.rjw.lan> <4184911.zoJM7jZeH4@aspire.rjw.lan>
+ <1917233.X2U0QN21my@aspire.rjw.lan> <13167729.Euq9qh5SXX@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Pintu Kumar <pintu.ping@gmail.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <13167729.Euq9qh5SXX@aspire.rjw.lan>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On 18 November 2017 at 15:31, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Define and document a new driver flag, DPM_FLAG_LEAVE_SUSPENDED, to
+> instruct the PM core and middle-layer (bus type, PM domain, etc.)
+> code that it is desirable to leave the device in runtime suspend
+> after system-wide transitions to the working state (for example,
+> the device may be slow to resume and it may be better to avoid
+> resuming it right away).
+>
+> Generally, the middle-layer code involved in the handling of the
+> device is expected to indicate to the PM core whether or not the
+> device may be left in suspend with the help of the device's
+> power.may_skip_resume status bit.  That has to happen in the "noirq"
+> phase of the preceding system suspend (or analogous) transition.
+> The middle layer is then responsible for handling the device as
+> appropriate in its "noirq" resume callback which is executed
+> regardless of whether or not the device may be left suspended, but
+> the other resume callbacks (except for ->complete) will be skipped
+> automatically by the core if the device really can be left in
+> suspend.
+>
+> The additional power.must_resume status bit introduced for the
+> implementation of this mechanisn is used internally by the PM core
+> to track the requirement to resume the device (which may depend on
+> its children etc).
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-I am trying to verify suspend-to-disk on jetson-tx2 board (nvidia tegra186).
-Suspend is working fine, but during resume emmc is failing to resume.
-Kernel version: 4.4
-Repo: https://nv-tegra.nvidia.com/gitweb/?p=linux-4.4.git;a=summary
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
+Kind regards
+Uffe
 
-It returns with:
-mmc0: error -110 during resume (card was removed?)
-
-Please see the complete logs below.
-
-I tried to add some prints in mmc driver to check the cause.
-It seems that mmc is not responding during resume.
-[  137.125314] mmc_sleep: ERROR: mmc_wait_for_cmd, ret: -110
-
-Do you have any pointers to fix/debug this issue?
-When I see the linux kernel mainline kernel-4.14 (latest), I could see
-that there are some patches in drivers/mmc/core/* which are missing in
-jetson tx2 kernel version-4.4.
-Do you think any of the latest patches may help to solve this issue?
-If yes, can you point to some of relevant once?
-
-
-Please help.
-
-
-Thanks,
-Pintu
-
-LOGS:
------------------------------------------------------------
-## Booting ...
-[ 117.079061] sdhci-tegra 3400000.sdhci: Tuning already done,
-restoring the best tap value : 112
-[ 117.081179] xhci-tegra 3530000.xhci: exiting ELPG
-[ 117.081798] xhci-tegra 3530000.xhci: Firmware timestamp: 2016-09-01
-11:32:41 UTC, Version: 55.05 release
-[ 117.085202] xhci-tegra 3530000.xhci: exiting ELPG done
-[ 117.085204] xhci-tegra 3530000.xhci: entering ELPG
-[ 117.087770] xhci-tegra 3530000.xhci: entering ELPG done
-[ 117.087775] Wake76 for irq=199
-[ 117.087777] Wake77 for irq=199
-[ 117.087778] Wake78 for irq=199
-[ 117.087779] Wake79 for irq=199
-[ 117.087780] Wake80 for irq=199
-[ 117.087781] Wake81 for irq=199
-[ 117.087782] Wake82 for irq=199
-[ 117.087784] Enabling wake76
-[ 117.087785] Enabling wake77
-[ 117.087786] Enabling wake78
-[ 117.087787] Enabling wake79
-[ 117.087788] Enabling wake80
-[ 117.087789] Enabling wake81
-[ 117.087790] Enabling wake82
-[ 117.087891] tegra186-cam-rtcpu b000000.rtcpu: sce gets halted
-[ 117.090012] Wake24 for irq=241
-[ 117.090015] Enabling wake24
-[ 117.090598] nct1008_nct72 7-004c: success in disabling tmp451 VDD rail
-[ 117.090654] gpio tegra-gpio-aon wake29 for gpio=56(FF:0)
-[ 117.090655] Enabling wake29
-[ 117.090774] gpio tegra-gpio wake53 for gpio=159(X:5)
-[ 117.090775] Enabling wake53
-[ 117.111219] tegradc 15210000.nvdisplay: suspend
-[ 117.111422] Wake73 for irq=42
-[ 117.111424] Enabling wake73
-[ 117.111597] bcm54xx_low_power_mode(): put phy in iddq-lp mode
-[ 117.113533] gpio tegra-gpio wake71 for gpio=125(P:6)
-[ 117.113535] Enabling wake71
-[ 117.113632] PM: suspend of devices complete after 34.680 msecs
-[ 117.114829] host1x 13e10000.host1x: suspended
-[ 117.114898] PM: late suspend of devices complete after 1.262 msecs
-[ 117.133746] PM: noirq suspend of devices complete after 18.841 msecs
-[ 117.133971] Disabling non-boot CPUs ...
-[ 117.134249] CPU3: shutdown
-[ 117.148582] psci: Retrying again to check for CPU kill
-[ 117.148586] psci: CPU3 killed.
-[ 117.149097] CPU4: shutdown
-[ 117.164584] psci: Retrying again to check for CPU kill
-[ 117.164589] psci: CPU4 killed.
-[ 117.165041] CPU5: shutdown
-[ 117.180572] psci: Retrying again to check for CPU kill
-[ 117.180576] psci: CPU5 killed.
-[ 117.180834] Entered SC7
-[ 117.180834] Wake[31-0] level=0x40000000
-[ 117.180834] Wake[63-32] level=0x0
-[ 117.180834] Wake[95-64] level=0x7f2a0
-[ 117.180834] Wake[31-0] enable=0x21000000
-[ 117.180834] Wake[63-32] enable=0x200000
-[ 117.180834] Wake[95-64] enable=0x7f280
-[ 117.180834] Wake[31-0] route=0x21000000
-[ 117.180834] Wake[63-32] route=0x200000
-[ 117.180834] Wake[95-64] route=0x7f280
-----
-[ 117.180834] Wake[32:0] status=0x0
-[ 117.180834] Wake[64:32] status=0x0
-[ 117.180834] Wake[96:64] status=0x0
-[ 117.180834] Exited SC7
-[ 117.180834] bpmp: waiting for handshake
-[ 117.180834] bpmp: synchronizing channels
-[ 117.180834] bpmp: channels synchronized
-[ 117.180869] Enabling non-boot CPUs ...
-[ 117.181067] CPU3: Booted secondary processor [411fd073]
-[ 117.181198] CPU3 is up
-[ 117.181353] CPU4: Booted secondary processor [411fd073]
-[ 117.181455] CPU4 is up
-[ 117.181609] CPU5: Booted secondary processor [411fd073]
-[ 117.181721] CPU5 is up
-[ 117.182740] xhci-tegra 3530000.xhci: exiting ELPG
-[ 117.183221] xhci-tegra 3530000.xhci: Firmware timestamp: 2016-09-01
-11:32:41 UTC, Version: 55.05 release
-[ 117.381630] xhci-tegra 3530000.xhci: XHCI Controller not ready.
-Falcon state: 0x10
-[ 117.381633] xhci-tegra 3530000.xhci: exiting ELPG failed
-[ 117.381643] dpm_run_callback(): tegra_xhci_resume_noirq+0x0/0x48 returns -14
-[ 117.381653] PM: Device 3530000.xhci failed to resume noirq: error -14
-[ 117.381724] PM: noirq resume of devices complete after 199.999 msecs
-[ 117.383100] PM: early resume of devices complete after 1.236 msecs
-[ 117.390964] gpio tegra-gpio wake71 for gpio=125(P:6)
-[ 117.390966] Disabling wake71
-[ 117.392317] pad_id 26: PMC_IMPL_E_33V_PWR_0 = [0x79]
-[ 117.392317] sdhci-tegra 3400000.sdhci: Tuning already done,
-restoring the best tap value : 112
-[ 117.392380] sdhci-tegra 3400000.sdhci: Tuning already done,
-restoring the best tap value : 112
-[ 117.393492] skipping ...
-[ 117.393495] skipping ...
-[ 117.393496] skipping ...
-[ 117.393498] skipping ...
-[ 117.393499] skipping ...
-[ 117.393510] skipping ...
-[ 117.393511] skipping ...
-[ 117.393512] skipping ...
-[ 117.461448] gpio tegra-gpio wake18 for gpio=101(M:3)
-[ 117.461611] Wake73 for irq=42
-[ 117.461613] Disabling wake73
-[ 117.461636] tegradc 15210000.nvdisplay: resume
-[ 117.461640] PD DISP0 index2 UP
-[ 117.462067] PD DISP1 index3 UP
-[ 117.462156] PD DISP2 index4 UP
-[ 117.468176] gk20a 17000000.gp10b: gk20a_init_fifo_setup_hw: bar1
-broken @ gk20a: CPU wrote 0x33, GPU read 0xbad0ac05
-[ 117.468179] gk20a 17000000.gp10b: gk20a_pm_finalize_poweron: failed
-to init gk20a fifo
-[ 117.481847] dpm_run_callback(): platform_pm_resume+0x0/0x58 returns -22
-[ 117.481850] PM: Device 17000000.gp10b failed to resume: error -22
-[ 117.484872] gpio tegra-gpio wake53 for gpio=159(X:5)
-[ 117.484874] Disabling wake53
-[ 117.486434] extcon-gpio-states external-connection:extcon@1: Cable state 0
-[ 117.486544] pwm_fan_driver pwm-fan: Enabled vdd-fan
-[ 117.486646] gpio tegra-gpio-aon wake29 for gpio=56(FF:0)
-[ 117.486647] Disabling wake29
-[ 117.487977] nct1008_nct72 7-004c: success in enabling tmp451 VDD rail
-[ 117.487982] nct1008_nct72 7-004c: nct1008_read_reg: err -16
-[ 117.487985] nct1008_nct72 7-004c: nct1008_write_reg: err -16
-[ 117.487988] nct1008_nct72 7-004c:
-[ 117.487988] exit nct1008_configure_sensor, err=-16
-[ 117.487990] nct1008_nct72 7-004c: nct1008_write_reg: err -16
-[ 117.487993] nct1008_nct72 7-004c: nct1008_enable, line=1174, i2c
-write error=-16
-[ 117.487996] nct1008_nct72 7-004c: Error: nct1008_resume_powerdown, error=-16
-[ 117.488004] dpm_run_callback(): nct1008_resume+0x0/0x140 returns -16
-[ 117.488006] PM: Device 7-004c failed to resume: error -16
-[ 117.540893] Wake24 for irq=241
-[ 117.540895] Disabling wake24
-[ 117.541684] tegra-xudc-new 3550000.xudc: exiting ELPG
-[ 117.542833] tegra-xudc-new 3550000.xudc: exiting ELPG done
-[ 117.543777] tegra186-cam-rtcpu b000000.rtcpu: booting sce with Camera RTCPU FW
-[ 117.543781] tegra186-cam-rtcpu b000000.rtcpu: sce gets unhalted
-[ 117.543825] tegra186-cam-rtcpu b000000.rtcpu: enabling tracing
-[ 117.543872] xhci-tegra 3530000.xhci: exiting ELPG
-[ 117.544128] xhci-tegra 3530000.xhci: Firmware already loaded, Falcon
-state 0x10
-[ 118.044718] xhci-tegra 3530000.xhci: exiting ELPG done
-[ 118.044733] Wake76 for irq=199
-[ 118.044735] Wake77 for irq=199
-[ 118.044736] Wake78 for irq=199
-[ 118.044737] Wake79 for irq=199
-[ 118.044738] Wake80 for irq=199
-[ 118.044739] Wake81 for irq=199
-[ 118.044740] Wake82 for irq=199
-[ 118.044742] Disabling wake76
-[ 118.044743] Disabling wake77
-[ 118.044744] Disabling wake78
-[ 118.044745] Disabling wake79
-[ 118.044746] Disabling wake80
-[ 118.044747] Disabling wake81
-[ 118.044748] Disabling wake82
-[ 118.044783] pwm_fan_driver pwm-fan: Disabled vdd-fan
-[ 118.044784] _mmc_resume: [PINTU]: Enter
-[ 118.044787] _mmc_resume: [PINTU]: mmc_card_in_sleep
-[ 118.044821] _mmc_resume: [PINTU]: Done
-[ 118.044824] mmc0: error -110 during resume (card was removed?)
-[ 118.234270] pad_id 26: PMC_IMPL_E_33V_PWR_0 = [0x79]
-[ 118.258208] pad_id 26: PMC_IMPL_E_33V_PWR_0 = [0x69]
-[ 118.258208] sdhci-tegra 3400000.sdhci: Tuning already done,
-restoring the best tap value : 112
-[ 120.496556] tegra-hda 3510000.hda: azx_get_response timeout,
-switching to polling mode: last cmd=0x30170500
-[ 121.500555] tegra-hda 3510000.hda: azx_get_response timeout,
-switching to single_cmd mode: last cmd=0x30170500
-[ 121.501139] PM: resume of devices complete after 4118.033 msecs
-[ 121.517871] eqos 2490000.ether_qos eth0: Link is Up - 100Mbps/Full -
-flow control rx/tx
---
-[ 122.335653] Restarting tasks ...
-[ 122.339023] tegra-xudc-new 3550000.xudc: entering ELPG
-[ 122.345787] xhci-tegra 3530000.xhci: entering ELPG
-[ 122.347145] tegra-xudc-new 3550000.xudc: entering ELPG done
-[ 122.347558] nct1008_nct72 7-004c: nct1008_read_reg: err -16
-[ 122.347561] thermal thermal_zone5: failed to read out thermal zone (-1)
-[ 122.347565] nct1008_nct72 7-004c: nct1008_read_reg: err -16
-[ 122.347568] thermal thermal_zone6: failed to read out thermal zone (-1)
-[ 122.385092] PM: suspend exit 2016-05-06 05:42:04.775600032 UTC
-[ 122.386487] xhci-tegra 3530000.xhci: entering ELPG done
-[ 124.605296] mmcblk0: error -110 sending status command, retrying
-[ 124.613771] mmcblk0: error -110 sending status command, retrying
-[ 124.622175] mmcblk0: error -110 sending status command, aborting
-[ 124.631538] mmc_reset: [PINTU]: Enter
-[ 124.638572] blk_update_request: I/O error, dev mmcblk0, sector 59745989
-[ 124.648740] blk_update_request: I/O error, dev mmcblk0, sector 59745990
-[ 124.658768] blk_update_request: I/O error, dev mmcblk0, sector 59745991
-[ 124.668689] blk_update_request: I/O error, dev mmcblk0, sector 59745992
-[ 124.678609] blk_update_request: I/O error, dev mmcblk0, sector 59745993
-[ 124.688666] mmcblk0: error -110 sending status command, retrying
-[ 124.697840] mmcblk0: error -110 sending status command, retrying
-[ 124.706903] mmcblk0: error -110 sending status command, aborting
-[ 124.715858] blk_update_request: I/O error, dev mmcblk0, sector 59745994
-[ 124.725339] blk_update_request: I/O error, dev mmcblk0, sector 59745995
-[ 124.734690] blk_update_request: I/O error, dev mmcblk0, sector 59745996
-[ 124.743936] blk_update_request: I/O error, dev mmcblk0, sector 59745997
-[ 124.753041] blk_update_request: I/O error, dev mmcblk0, sector 59745998
-[ 124.762252] mmcblk0: error -110 sending status command, retrying
-[ 124.770656] mmcblk0: error -110 sending status command, retrying
-[ 124.778977] mmcblk0: error -110 sending status command, aborting
-[ 124.789002] mmcblk0: error -110 sending status command, retrying
-[ 124.797177] mmcblk0: error -110 sending status command, retrying
-[ 124.805285] mmcblk0: error -110 sending status command, aborting
-[ 124.814281] mmcblk0: error -110 sending status command, retrying
-[ 124.822247] mmcblk0: error -110 sending status command, retrying
-[ 124.830092] mmcblk0: error -110 sending status command, aborting
-[ 124.837840] FAT-fs (mmcblk0p17): FAT read failed (blocknr 32)
+> ---
+>
+> v3 -> v4: Fix the dev->power.usage_count check added in v3, clarify
+>           documentation, add comment to explain why the runtime PM status
+>           is changed in device_resume_noirq() and make the description of
+>           the NEVER_SKIP flag more precise.
+>
+> v2 -> v3: Take dev->power.usage_count when updating power.must_resume in
+>           __device_suspend_noirq().
+>
+> ---
+>  Documentation/driver-api/pm/devices.rst |   27 ++++++++++-
+>  drivers/base/power/main.c               |   73 +++++++++++++++++++++++++++++---
+>  include/linux/pm.h                      |   16 +++++--
+>  3 files changed, 105 insertions(+), 11 deletions(-)
+>
+> Index: linux-pm/include/linux/pm.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/pm.h
+> +++ linux-pm/include/linux/pm.h
+> @@ -556,9 +556,10 @@ struct pm_subsys_data {
+>   * These flags can be set by device drivers at the probe time.  They need not be
+>   * cleared by the drivers as the driver core will take care of that.
+>   *
+> - * NEVER_SKIP: Do not skip system suspend/resume callbacks for the device.
+> + * NEVER_SKIP: Do not skip all system suspend/resume callbacks for the device.
+>   * SMART_PREPARE: Check the return value of the driver's ->prepare callback.
+>   * SMART_SUSPEND: No need to resume the device from runtime suspend.
+> + * LEAVE_SUSPENDED: Avoid resuming the device during system resume if possible.
+>   *
+>   * Setting SMART_PREPARE instructs bus types and PM domains which may want
+>   * system suspend/resume callbacks to be skipped for the device to return 0 from
+> @@ -572,10 +573,14 @@ struct pm_subsys_data {
+>   * necessary from the driver's perspective.  It also may cause them to skip
+>   * invocations of the ->suspend_late and ->suspend_noirq callbacks provided by
+>   * the driver if they decide to leave the device in runtime suspend.
+> + *
+> + * Setting LEAVE_SUSPENDED informs the PM core and middle-layer code that the
+> + * driver prefers the device to be left in suspend after system resume.
+>   */
+> -#define DPM_FLAG_NEVER_SKIP    BIT(0)
+> -#define DPM_FLAG_SMART_PREPARE BIT(1)
+> -#define DPM_FLAG_SMART_SUSPEND BIT(2)
+> +#define DPM_FLAG_NEVER_SKIP            BIT(0)
+> +#define DPM_FLAG_SMART_PREPARE         BIT(1)
+> +#define DPM_FLAG_SMART_SUSPEND         BIT(2)
+> +#define DPM_FLAG_LEAVE_SUSPENDED       BIT(3)
+>
+>  struct dev_pm_info {
+>         pm_message_t            power_state;
+> @@ -597,6 +602,8 @@ struct dev_pm_info {
+>         bool                    wakeup_path:1;
+>         bool                    syscore:1;
+>         bool                    no_pm_callbacks:1;      /* Owned by the PM core */
+> +       unsigned int            must_resume:1;  /* Owned by the PM core */
+> +       unsigned int            may_skip_resume:1;      /* Set by subsystems */
+>  #else
+>         unsigned int            should_wakeup:1;
+>  #endif
+> @@ -765,6 +772,7 @@ extern int pm_generic_poweroff_late(stru
+>  extern int pm_generic_poweroff(struct device *dev);
+>  extern void pm_generic_complete(struct device *dev);
+>
+> +extern bool dev_pm_may_skip_resume(struct device *dev);
+>  extern bool dev_pm_smart_suspend_and_suspended(struct device *dev);
+>
+>  #else /* !CONFIG_PM_SLEEP */
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -528,6 +528,18 @@ static void dpm_watchdog_clear(struct dp
+>  /*------------------------- Resume routines -------------------------*/
+>
+>  /**
+> + * dev_pm_may_skip_resume - System-wide device resume optimization check.
+> + * @dev: Target device.
+> + *
+> + * Checks whether or not the device may be left in suspend after a system-wide
+> + * transition to the working state.
+> + */
+> +bool dev_pm_may_skip_resume(struct device *dev)
+> +{
+> +       return !dev->power.must_resume && pm_transition.event != PM_EVENT_RESTORE;
+> +}
+> +
+> +/**
+>   * device_resume_noirq - Execute a "noirq resume" callback for given device.
+>   * @dev: Device to handle.
+>   * @state: PM transition of the system being carried out.
+> @@ -575,6 +587,19 @@ static int device_resume_noirq(struct de
+>         error = dpm_run_callback(callback, dev, state, info);
+>         dev->power.is_noirq_suspended = false;
+>
+> +       if (dev_pm_may_skip_resume(dev)) {
+> +               /*
+> +                * The device is going to be left in suspend, but it might not
+> +                * have been in runtime suspend before the system suspended, so
+> +                * its runtime PM status needs to be updated to avoid confusing
+> +                * the runtime PM framework when runtime PM is enabled for the
+> +                * device again.
+> +                */
+> +               pm_runtime_set_suspended(dev);
+> +               dev->power.is_late_suspended = false;
+> +               dev->power.is_suspended = false;
+> +       }
+> +
+>   Out:
+>         complete_all(&dev->power.completion);
+>         TRACE_RESUME(error);
+> @@ -1076,6 +1101,22 @@ static pm_message_t resume_event(pm_mess
+>         return PMSG_ON;
+>  }
+>
+> +static void dpm_superior_set_must_resume(struct device *dev)
+> +{
+> +       struct device_link *link;
+> +       int idx;
+> +
+> +       if (dev->parent)
+> +               dev->parent->power.must_resume = true;
+> +
+> +       idx = device_links_read_lock();
+> +
+> +       list_for_each_entry_rcu(link, &dev->links.suppliers, c_node)
+> +               link->supplier->power.must_resume = true;
+> +
+> +       device_links_read_unlock(idx);
+> +}
+> +
+>  /**
+>   * __device_suspend_noirq - Execute a "noirq suspend" callback for given device.
+>   * @dev: Device to handle.
+> @@ -1127,10 +1168,28 @@ static int __device_suspend_noirq(struct
+>         }
+>
+>         error = dpm_run_callback(callback, dev, state, info);
+> -       if (!error)
+> -               dev->power.is_noirq_suspended = true;
+> -       else
+> +       if (error) {
+>                 async_error = error;
+> +               goto Complete;
+> +       }
+> +
+> +       dev->power.is_noirq_suspended = true;
+> +
+> +       if (dev_pm_test_driver_flags(dev, DPM_FLAG_LEAVE_SUSPENDED)) {
+> +               /*
+> +                * The only safe strategy here is to require that if the device
+> +                * may not be left in suspend, resume callbacks must be invoked
+> +                * for it.
+> +                */
+> +               dev->power.must_resume = dev->power.must_resume ||
+> +                                       !dev->power.may_skip_resume ||
+> +                                       atomic_read(&dev->power.usage_count) > 1;
+> +       } else {
+> +               dev->power.must_resume = true;
+> +       }
+> +
+> +       if (dev->power.must_resume)
+> +               dpm_superior_set_must_resume(dev);
+>
+>  Complete:
+>         complete_all(&dev->power.completion);
+> @@ -1487,6 +1546,9 @@ static int __device_suspend(struct devic
+>                 dev->power.direct_complete = false;
+>         }
+>
+> +       dev->power.may_skip_resume = false;
+> +       dev->power.must_resume = false;
+> +
+>         dpm_watchdog_set(&wd, dev);
+>         device_lock(dev);
+>
+> @@ -1652,8 +1714,9 @@ static int device_prepare(struct device
+>         if (dev->power.syscore)
+>                 return 0;
+>
+> -       WARN_ON(dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) &&
+> -               !pm_runtime_enabled(dev));
+> +       WARN_ON(!pm_runtime_enabled(dev) &&
+> +               dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND |
+> +                                             DPM_FLAG_LEAVE_SUSPENDED));
+>
+>         /*
+>          * If a device's parent goes into runtime suspend at the wrong time,
+> Index: linux-pm/Documentation/driver-api/pm/devices.rst
+> ===================================================================
+> --- linux-pm.orig/Documentation/driver-api/pm/devices.rst
+> +++ linux-pm/Documentation/driver-api/pm/devices.rst
+> @@ -788,6 +788,29 @@ must reflect the "active" status for run
+>
+>  During system-wide resume from a sleep state it's easiest to put devices into
+>  the full-power state, as explained in :file:`Documentation/power/runtime_pm.txt`.
+> -Refer to that document for more information regarding this particular issue as
+> +[Refer to that document for more information regarding this particular issue as
+>  well as for information on the device runtime power management framework in
+> -general.
+> +general.]
+> +
+> +However, it often is desirable to leave devices in suspend after system
+> +transitions to the working state, especially if those devices had been in
+> +runtime suspend before the preceding system-wide suspend (or analogous)
+> +transition.  Device drivers can use the ``DPM_FLAG_LEAVE_SUSPENDED`` flag to
+> +indicate to the PM core (and middle-layer code) that they prefer the specific
+> +devices handled by them to be left suspended and they have no problems with
+> +skipping their system-wide resume callbacks for this reason.  Whether or not the
+> +devices will actually be left in suspend may depend on their state before the
+> +given system suspend-resume cycle and on the type of the system transition under
+> +way.  In particular, devices are not left suspended if that transition is a
+> +restore from hibernation, as device states are not guaranteed to be reflected
+> +by the information stored in the hibernation image in that case.
+> +
+> +The middle-layer code involved in the handling of the device is expected to
+> +indicate to the PM core if the device may be left in suspend by setting its
+> +:c:member:`power.may_skip_resume` status bit which is checked by the PM core
+> +during the "noirq" phase of the preceding system-wide suspend (or analogous)
+> +transition.  The middle layer is then responsible for handling the device as
+> +appropriate in its "noirq" resume callback, which is executed regardless of
+> +whether or not the device is left suspended, but the other resume callbacks
+> +(except for ``->complete``) will be skipped automatically by the PM core if the
+> +device really can be left in suspend.
+>
