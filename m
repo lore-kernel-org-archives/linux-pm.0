@@ -1,98 +1,62 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v4 5/9] drivers: base: cacheinfo: arm64: Add support for
- ACPI based firmware tables
-Date: Mon, 20 Nov 2017 18:14:15 +0000
-Message-ID: <c4f8dd3a-75ee-242e-e499-d85710e91b78@arm.com>
-References: <20171109210311.25655-1-jeremy.linton@arm.com>
- <20171109210311.25655-6-jeremy.linton@arm.com>
- <20171120165642.GA31395@e107155-lin>
- <e1f2bdcc-e0fa-67d5-d4fe-7077b166988f@arm.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Subject: [PATCH] cpupower: Combine two condition checks into one statement in
+ get_cpu_topology()
+Date: Mon, 20 Nov 2017 19:19:39 +0100
+Message-ID: <3daea226-c5cb-62e7-a025-8f758712a81a@users.sourceforge.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <e1f2bdcc-e0fa-67d5-d4fe-7077b166988f@arm.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, robert.moore@intel.com, lv.zheng@intel.com, devel@acpica.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Language: en-GB
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, Shuah Khan <shuah@kernel.org>, Thomas Renninger <trenn@suse.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 20 Nov 2017 19:10:14 +0100
 
+The same assignments were used in an if branch of two separate statements.
 
-On 20/11/17 18:02, Jeremy Linton wrote:
-> On 11/20/2017 10:56 AM, Sudeep Holla wrote:
-> 
-> (trimming)
-> 
->>> *    case there's no explicit cache node or the cache node
->>> itself in the *    device tree + * @firmware_node: Shared with
->>> of_node. When not using DT, this may contain + *    pointers to
->>> other firmware based values. Particularly ACPI/PPTT + *    unique
->>> values. * @disable_sysfs: indicates whether this node is visible
->>> to the user via *    sysfs or not * @priv: pointer to any private
->>> data structure specific to particular @@ -64,8 +67,10 @@ struct
->>> cacheinfo { #define CACHE_ALLOCATE_POLICY_MASK    \ 
->>> (CACHE_READ_ALLOCATE | CACHE_WRITE_ALLOCATE) #define CACHE_ID
->>> BIT(4) - -    struct device_node *of_node; +    union { +
->>> struct device_node *of_node; +        void *firmware_node; +
->>> };
->> 
->> I would prefer struct device_node *of_node; changed to struct
->> fwnode_handle *fwnode;
->> 
->> You can then have struct pptt_fwnode { <.....> /*below fwnode
->> allocated using acpi_alloc_fwnode_static */ struct fwnode_handle
->> *fwnode; };
->> 
->> This gives a good starting point to abstract DT and ACPI.
->> 
->> If not now, we can later implement fwnode.ops=pptt_cache_ops and
->> then use get property for both DT and ACPI.
-> 
-> 
-> I'm obviously confused why this keeps coming up. On the surface it 
-> sounds like a good idea. But then, given that I've actually
-> implemented a portion of it, what becomes clear is that the PPTT
-> isn't a good match.
+* Merge their condition checks into a single statement instead.
 
-Fair enough.
+* Adjust the indentation there.
 
-> Converting the OF routines to use the fwnode is fairly
-> straightforward, but that doesn't help the ACPI situation other than
-> to create a lot of misleading code (and the possibility of creating
-> nonstandard DSDT entries). The fact that this hasn't been done for
-> other tables MADT/SLIT/SRAT/etc makes me wonder why we should do it
-> for the PPTT?
-> 
+This issue was detected by using the Coccinelle software.
 
-IRQ/IORT does use it. If we don't want to use it fine. But the union
-doesn't make sense and breaks the flow many other subsystems follow.
-Hence I raised. Sorry, I hadn't followed the last revision/discussion on
-this, my bad. But I had this thought since the beginning, hence I
-brought this up.
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ tools/power/cpupower/lib/cpupower.c | 18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
 
-> Particularly, when one considers fwnode is more a DSDT<->DT
-> abstraction and thus has a lot of API surface that simply doesn't
-> make any sense given the PPTT binary tree structure. Given that most
-> of the fwnode routines are translating string properties (for
-> example fwnode_property_read_string()) it might be possible to build
-> a translator of some form which takes DT style properties and
-> attempts to map them to the ACPI PPTT tree. What this adds I can't
-> fathom, beyond the fact that suddenly the fwnode interface is a
-> partial/brittle implementation where a large subset of the
-> fwnode_operations will tend to be degenerate cases. The result likely
-> will be a poorly implemented translator which breaks or is
-> meaningless over a large part of the fwnode API surface.
-
-Sure, I just mentioned ops thing, but that's optional. I just didn't
-like the union which has of_node and void ptr instead of fwhandle. I am
-fine if many agree that it's bad idea to use fwhandle here.
-
+diff --git a/tools/power/cpupower/lib/cpupower.c b/tools/power/cpupower/lib/cpupower.c
+index 9c395ec924de..81c828e5920e 100644
+--- a/tools/power/cpupower/lib/cpupower.c
++++ b/tools/power/cpupower/lib/cpupower.c
+@@ -140,18 +140,12 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
+ 	for (cpu = 0; cpu < cpus; cpu++) {
+ 		cpu_top->core_info[cpu].cpu = cpu;
+ 		cpu_top->core_info[cpu].is_online = cpupower_is_cpu_online(cpu);
+-		if(sysfs_topology_read_file(
+-			cpu,
+-			"physical_package_id",
+-			&(cpu_top->core_info[cpu].pkg)) < 0) {
+-			cpu_top->core_info[cpu].pkg = -1;
+-			cpu_top->core_info[cpu].core = -1;
+-			continue;
+-		}
+-		if(sysfs_topology_read_file(
+-			cpu,
+-			"core_id",
+-			&(cpu_top->core_info[cpu].core)) < 0) {
++		if (sysfs_topology_read_file(cpu, "physical_package_id",
++					     &(cpu_top->core_info[cpu].pkg))
++		    < 0 ||
++		    sysfs_topology_read_file(cpu, "core_id",
++					     &(cpu_top->core_info[cpu].core))
++		    < 0) {
+ 			cpu_top->core_info[cpu].pkg = -1;
+ 			cpu_top->core_info[cpu].core = -1;
+ 			continue;
 -- 
-Regards,
-Sudeep
-
--- 
-Regards,
-Sudeep
+2.15.0
