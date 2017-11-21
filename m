@@ -1,30 +1,49 @@
-From: bugzilla-daemon@bugzilla.kernel.org
-Subject: [Bug 197009] /proc/cpuinfo does not update frequency
-Date: Tue, 21 Nov 2017 01:30:29 +0000
-Message-ID: <bug-197009-137361-B4JAPMf4bK@https.bugzilla.kernel.org/>
-References: <bug-197009-137361@https.bugzilla.kernel.org/>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] cpufreq: mediatek: add missing
+ MODULE_DESCRIPTION/AUTHOR/LICENSE
+Date: Tue, 21 Nov 2017 08:58:15 +0530
+Message-ID: <20171121032815.GF6125@vireshk-i7>
+References: <20171120213201.52606-1-jc@linux.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:54756 "EHLO
-        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751195AbdKUBab (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2017 20:30:31 -0500
-Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
-        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id B06E92916B
-        for <linux-pm@vger.kernel.org>; Tue, 21 Nov 2017 01:30:30 +0000 (UTC)
-In-Reply-To: <bug-197009-137361@https.bugzilla.kernel.org/>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171120213201.52606-1-jc@linux.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jesse Chan <jc@linux.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@kernel.org
 
-https://bugzilla.kernel.org/show_bug.cgi?id=197009
+On 20-11-17, 13:32, Jesse Chan wrote:
+> This change resolves a new compile-time warning
+> when built as a loadable module:
+> 
+> WARNING: modpost: missing MODULE_LICENSE() in drivers/cpufreq/mediatek-cpufreq.o
+> see include/linux/module.h for more information
+> 
+> This adds the license as "GPL v2", which matches the header of the file.
+> 
+> MODULE_DESCRIPTION and MODULE_AUTHOR are also added.
+> 
+> Signed-off-by: Jesse Chan <jc@linux.com>
+> ---
+>  drivers/cpufreq/mediatek-cpufreq.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
+> index 18c4bd9a5c65..e0d5090b303d 100644
+> --- a/drivers/cpufreq/mediatek-cpufreq.c
+> +++ b/drivers/cpufreq/mediatek-cpufreq.c
+> @@ -620,3 +620,7 @@ static int __init mtk_cpufreq_driver_init(void)
+>  	return 0;
+>  }
+>  device_initcall(mtk_cpufreq_driver_init);
+> +
+> +MODULE_DESCRIPTION("MediaTek CPUFreq driver");
+> +MODULE_AUTHOR("Pi-Cheng Chen <pi-cheng.chen@linaro.org>");
+> +MODULE_LICENSE("GPL v2");
 
---- Comment #14 from Steven Haigh (netwiz@crc.id.au) ---
-Re Comment 12 - I have lodged the issue here:
-https://bugzilla.kernel.org/show_bug.cgi?id=197945
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-You are receiving this mail because:
-You are the assignee for the bug.
+viresh
