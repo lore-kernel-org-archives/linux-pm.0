@@ -1,69 +1,69 @@
-From: Shuah Khan <shuah@kernel.org>
-Subject: Re: [PATCH] cpupower: Combine two condition checks into one statement
- in get_cpu_topology()
-Date: Tue, 21 Nov 2017 12:47:00 -0700
-Message-ID: <372aa4f8-7e97-ee83-1078-6f80e28ffdf0@kernel.org>
-References: <3daea226-c5cb-62e7-a025-8f758712a81a@users.sourceforge.net>
-Reply-To: shuah@kernel.org
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
+        <u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 3/4] thermal: imx: use consistent style to write temperatures
+Date: Tue, 21 Nov 2017 21:02:24 +0100
+Message-ID: <20171121200225.23316-4-u.kleine-koenig@pengutronix.de>
+References: <20171121200225.23316-1-u.kleine-koenig@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <3daea226-c5cb-62e7-a025-8f758712a81a@users.sourceforge.net>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: SF Markus Elfring <elfring@users.sourceforge.net>, linux-pm@vger.kernel.org, Thomas Renninger <trenn@suse.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Shuah Khan <shuahkh@osg.samsung.com>, Shuah Khan <shuah@kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from antares.kleine-koenig.org ([94.130.110.236]:56966 "EHLO
+        antares.kleine-koenig.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751067AbdKUULk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Nov 2017 15:11:40 -0500
+In-Reply-To: <20171121200225.23316-1-u.kleine-koenig@pengutronix.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: linux-pm@vger.kernel.org, kernel@pengutronix.de
 
-On 11/20/2017 11:19 AM, SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Mon, 20 Nov 2017 19:10:14 +0100
-> 
-> The same assignments were used in an if branch of two separate statements.
-> 
-> * Merge their condition checks into a single statement instead.
-> 
-> * Adjust the indentation there.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  tools/power/cpupower/lib/cpupower.c | 18 ++++++------------
->  1 file changed, 6 insertions(+), 12 deletions(-)
-> 
-> diff --git a/tools/power/cpupower/lib/cpupower.c b/tools/power/cpupower/lib/cpupower.c
-> index 9c395ec924de..81c828e5920e 100644
-> --- a/tools/power/cpupower/lib/cpupower.c
-> +++ b/tools/power/cpupower/lib/cpupower.c
-> @@ -140,18 +140,12 @@ int get_cpu_topology(struct cpupower_topology *cpu_top)
->  	for (cpu = 0; cpu < cpus; cpu++) {
->  		cpu_top->core_info[cpu].cpu = cpu;
->  		cpu_top->core_info[cpu].is_online = cpupower_is_cpu_online(cpu);
-> -		if(sysfs_topology_read_file(
-> -			cpu,
-> -			"physical_package_id",
-> -			&(cpu_top->core_info[cpu].pkg)) < 0) {
-> -			cpu_top->core_info[cpu].pkg = -1;
-> -			cpu_top->core_info[cpu].core = -1;
-> -			continue;
-> -		}
-> -		if(sysfs_topology_read_file(
-> -			cpu,
-> -			"core_id",
-> -			&(cpu_top->core_info[cpu].core)) < 0) {
-> +		if (sysfs_topology_read_file(cpu, "physical_package_id",
-> +					     &(cpu_top->core_info[cpu].pkg))
-> +		    < 0 ||
-> +		    sysfs_topology_read_file(cpu, "core_id",
-> +					     &(cpu_top->core_info[cpu].core))
-> +		    < 0) {
+The previous commit already took care to use the right notation for
+temperatures. Add correct units to all values representing temperatures in
+the right notation for the rest of the file.
 
-This change takes the easily readable code into hard to read code,
-even though it removes the duplicate code in the conditional.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/thermal/imx_thermal.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-Please find a better way to make it not so hard to read.
-
-thanks,
--- Shuah
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index c08883dff2cb..b24aa6cfebbf 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -394,27 +394,27 @@ static void imx_init_temp_grade(struct platform_device *pdev, u32 ocotp_mem0)
+ 
+ 	/* The maximum die temp is specified by the Temperature Grade */
+ 	switch ((ocotp_mem0 >> 6) & 0x3) {
+-	case 0: /* Commercial (0 to 95C) */
++	case 0: /* Commercial (0 to 95 °C) */
+ 		data->temp_grade = "Commercial";
+ 		data->temp_max = 95000;
+ 		break;
+-	case 1: /* Extended Commercial (-20 to 105C) */
++	case 1: /* Extended Commercial (-20 °C to 105 °C) */
+ 		data->temp_grade = "Extended Commercial";
+ 		data->temp_max = 105000;
+ 		break;
+-	case 2: /* Industrial (-40 to 105C) */
++	case 2: /* Industrial (-40 °C to 105 °C) */
+ 		data->temp_grade = "Industrial";
+ 		data->temp_max = 105000;
+ 		break;
+-	case 3: /* Automotive (-40 to 125C) */
++	case 3: /* Automotive (-40 °C to 125 °C) */
+ 		data->temp_grade = "Automotive";
+ 		data->temp_max = 125000;
+ 		break;
+ 	}
+ 
+ 	/*
+-	 * Set the critical trip point at 5C under max
+-	 * Set the passive trip point at 10C under max (can change via sysfs)
++	 * Set the critical trip point at 5 °C under max
++	 * Set the passive trip point at 10 °C under max (changable via sysfs)
+ 	 */
+ 	data->temp_critical = data->temp_max - (1000 * 5);
+ 	data->temp_passive = data->temp_max - (1000 * 10);
+-- 
+2.14.2
