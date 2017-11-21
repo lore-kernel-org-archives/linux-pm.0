@@ -1,53 +1,30 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v4 1/6] PM / core: Add LEAVE_SUSPENDED driver flag
-Date: Tue, 21 Nov 2017 01:16:51 +0100
-Message-ID: <CAJZ5v0gdSpPQ82Oa+orQyMbANJMgu=mp_3wbrHzhXtkOwCxTrQ@mail.gmail.com>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <4184911.zoJM7jZeH4@aspire.rjw.lan>
- <1917233.X2U0QN21my@aspire.rjw.lan> <13167729.Euq9qh5SXX@aspire.rjw.lan> <CAPDyKFqODyR6rcTitUdvU3dRwmYpOQF+4p0xXMpkpGQfDB_tBQ@mail.gmail.com>
+From: bugzilla-daemon@bugzilla.kernel.org
+Subject: [Bug 197009] /proc/cpuinfo does not update frequency
+Date: Tue, 21 Nov 2017 01:30:29 +0000
+Message-ID: <bug-197009-137361-B4JAPMf4bK@https.bugzilla.kernel.org/>
+References: <bug-197009-137361@https.bugzilla.kernel.org/>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f193.google.com ([74.125.82.193]:36625 "EHLO
-        mail-ot0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751195AbdKUAQw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2017 19:16:52 -0500
-In-Reply-To: <CAPDyKFqODyR6rcTitUdvU3dRwmYpOQF+4p0xXMpkpGQfDB_tBQ@mail.gmail.com>
+Received: from mail.wl.linuxfoundation.org ([198.145.29.98]:54756 "EHLO
+        mail.wl.linuxfoundation.org" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751195AbdKUBab (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Nov 2017 20:30:31 -0500
+Received: from mail.wl.linuxfoundation.org (localhost [127.0.0.1])
+        by mail.wl.linuxfoundation.org (Postfix) with ESMTP id B06E92916B
+        for <linux-pm@vger.kernel.org>; Tue, 21 Nov 2017 01:30:30 +0000 (UTC)
+In-Reply-To: <bug-197009-137361@https.bugzilla.kernel.org/>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
+To: linux-pm@kernel.org
 
-On Mon, Nov 20, 2017 at 1:25 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 18 November 2017 at 15:31, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Define and document a new driver flag, DPM_FLAG_LEAVE_SUSPENDED, to
->> instruct the PM core and middle-layer (bus type, PM domain, etc.)
->> code that it is desirable to leave the device in runtime suspend
->> after system-wide transitions to the working state (for example,
->> the device may be slow to resume and it may be better to avoid
->> resuming it right away).
->>
->> Generally, the middle-layer code involved in the handling of the
->> device is expected to indicate to the PM core whether or not the
->> device may be left in suspend with the help of the device's
->> power.may_skip_resume status bit.  That has to happen in the "noirq"
->> phase of the preceding system suspend (or analogous) transition.
->> The middle layer is then responsible for handling the device as
->> appropriate in its "noirq" resume callback which is executed
->> regardless of whether or not the device may be left suspended, but
->> the other resume callbacks (except for ->complete) will be skipped
->> automatically by the core if the device really can be left in
->> suspend.
->>
->> The additional power.must_resume status bit introduced for the
->> implementation of this mechanisn is used internally by the PM core
->> to track the requirement to resume the device (which may depend on
->> its children etc).
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+https://bugzilla.kernel.org/show_bug.cgi?id=197009
 
-Thanks!
+--- Comment #14 from Steven Haigh (netwiz@crc.id.au) ---
+Re Comment 12 - I have lodged the issue here:
+https://bugzilla.kernel.org/show_bug.cgi?id=197945
+
+-- 
+You are receiving this mail because:
+You are the assignee for the bug.
