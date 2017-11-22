@@ -1,76 +1,116 @@
-From: Pintu Kumar <pintu.ping@gmail.com>
-Subject: Re: [tegra186]: emmc resume failing after booting from snapshot image
-Date: Wed, 22 Nov 2017 22:09:33 +0530
-Message-ID: <CAOuPNLhjthNSnX+iq1oCx+AB6wJAaPxN7Yivxka3esSTi9shag@mail.gmail.com>
-References: <CAOuPNLjWvqvcb+eDp52GsXEfvtzAcTneUxGhQc9bPWYGsqxpEQ@mail.gmail.com>
- <d2b3b1e3-dd08-2aad-c027-2c51e4b72459@kapsi.fi> <b607c51f-559e-0315-6843-c0d9d07cb81e@nvidia.com>
- <CAOuPNLgW84yuXxm8HLQ7KS-1=0nPo9s7OumWt4ipkm7D2pdmog@mail.gmail.com> <b0729c10-601f-d609-b807-a87b4bed4e59@nvidia.com>
+From: Baruch Siach <baruch@tkos.co.il>
+Subject: Re: [PATCH 3/3] thermal: armada: add support for CP110
+Date: Wed, 22 Nov 2017 19:41:59 +0200
+Message-ID: <20171122174159.ymercwblsblpdk37@tarshish>
+References: <7102bb32704ac9f70ef3ae61682d50de8af61b57.1511361725.git.baruch@tkos.co.il>
+ <adccb0e7b20cc128663701eadcf6ebce412dfe5e.1511361725.git.baruch@tkos.co.il>
+ <20171122162335.GA25339@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <b0729c10-601f-d609-b807-a87b4bed4e59@nvidia.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jon Hunter <jonathanh@nvidia.com>
-Cc: Mikko Perttunen <cyndis@kapsi.fi>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mmc@vger.kernel.org, linux-tegra@vger.kernel.org, Pintu Kumar <pintu.ping@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from guitar.tcltek.co.il ([192.115.133.116]:56578 "EHLO
+        mx.tkos.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751646AbdKVRmE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 Nov 2017 12:42:04 -0500
+Content-Disposition: inline
+In-Reply-To: <20171122162335.GA25339@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Miquel Raynal <miquel.raynal@free-electrons.com>
 
-On Wed, Nov 22, 2017 at 9:45 PM, Jon Hunter <jonathanh@nvidia.com> wrote:
->
-> On 22/11/17 12:26, Pintu Kumar wrote:
->> Hello Jon,
->> Yes I raised my query there almost 1 week back here.
->> https://devtalk.nvidia.com/default/topic/1026527/jetson-tx2/-jetson-tx2-mmc-resume-errors-after-booting-from-suspend/
->>
->> But no response.
->> So, I thought to discuss it here.
->> May be some pointers may help to find the root cause.
->> One point is that, I am able to resume the board with the sd-card, but
->> resume from emmc is returning -110 (may be CMD5 timeout).
->> Whether there is any difference between sd-card resume and emmc resume ?
->> Do we need to check the card initialization sequence for emmc ?
-> OK great. There should be a team looking at these so please bare with
+Hi Eduardo,
 
-Ok thanks. Can you put your comments there, so that somebody can start
-responding.
-It will be really helpful.
-I have already sent the reminder, but still no response.
-I know it will be difficult to debug like this, but at least some
-pointers or support will definitely help.
-Basically I wanted to know, if there is any problem from SoC side
-itself, or it is specific to emmc driver issue.
-Because, with the kernel 4.4 (and our internal patches), other SoC
-(such as hikey), it is working fine.
+On Wed, Nov 22, 2017 at 08:23:36AM -0800, Eduardo Valentin wrote:
+> On Wed, Nov 22, 2017 at 04:42:05PM +0200, Baruch Siach wrote:
+> > The CP110 component is integrated in the Armada 8k and 7k lines of processors.
+> > 
+> > This patch also adds an option of offset to the MSB of the control
+> > register. The existing DT binding for Armada 38x refers to a single 32 bit
+> > control register. It turns out that this is actually only the MSB of the
+> > control area. Changing the binding to fix that would break existing DT files,
+> > so the Armada 38x binding is left as is.
+> > 
+> > The new CP110 binding increases the size of the control area to 64 bits, thus
+> > moving the MSB to offset 4.
+> > 
+> > Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+> > ---
+> >  drivers/thermal/armada_thermal.c | 24 ++++++++++++++++++++++--
+> >  1 file changed, 22 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+> > index 1f7f81628040..542db578ce36 100644
+> > --- a/drivers/thermal/armada_thermal.c
+> > +++ b/drivers/thermal/armada_thermal.c
+> > @@ -72,6 +72,7 @@ struct armada_thermal_data {
+> >  	unsigned int temp_shift;
+> >  	unsigned int temp_mask;
+> >  	unsigned int is_valid_shift;
+> > +	unsigned int control_msb_offset;
+> >  };
+> >  
+> >  static void armadaxp_init_sensor(struct platform_device *pdev,
+> > @@ -141,12 +142,14 @@ static void armada375_init_sensor(struct platform_device *pdev,
+> >  static void armada380_init_sensor(struct platform_device *pdev,
+> >  				  struct armada_thermal_priv *priv)
+> >  {
+> > -	unsigned long reg = readl_relaxed(priv->control);
+> > +	void __iomem *control_msb =
+> > +		priv->control + priv->data->control_msb_offset;
+> > +	unsigned long reg = readl_relaxed(control_msb);
+> 
+> Will existing users of this function work with default
+> control_msb_offset? presumably 0, right?
 
-> them. I noticed that you did not state which release you are using for
-> TX2 and there are two available (r27 and r28.1 [0]), unless I missed it.
-> So it is worth stating the release you are using.
->
+Of course. With control_msb_offset=0, this hunk is a nop. All 
+armada_thermal_data instances are static, so any field that is not explicitly 
+set should be initialized to zero. The code already relies on this behaviour 
+for the is_valid field.
 
-I am using tegra-l4t-r27.1 release, and on top of that we have our
-internal patches for snapshot image.
-However, I also compared with r28 repo under drivers/mmc/*
-There were not major difference. Still I tried to manually apply few
-of the changes to r27, but it still it did not help much.
-That is the reason I thought to discuss, so that somebody can point
-me, if I am missing any right fixes.
-Because from r27 to r28, with our internal patches is again a painful task.
-So first I wanted to make sure if some patches backing from r28 works,
-then I can recommend to upgrade to r28.
+baruch
 
-> What command are you using to suspend to disk?
+> >  	/* Reset hardware once */
+> >  	if (!(reg & A380_HW_RESET)) {
+> >  		reg |= A380_HW_RESET;
+> > -		writel(reg, priv->control);
+> > +		writel(reg, control_msb);
+> >  		mdelay(10);
+> >  	}
+> >  }
+> > @@ -258,6 +261,19 @@ static const struct armada_thermal_data armada_ap806_data = {
+> >  	.inverted = true,
+> >  };
+> >  
+> > +static const struct armada_thermal_data armada_cp110_data = {
+> > +	.is_valid = armada_is_valid,
+> > +	.init_sensor = armada380_init_sensor,
+> > +	.is_valid_shift = 10,
+> > +	.temp_shift = 0,
+> > +	.temp_mask = 0x3ff,
+> > +	.control_msb_offset = 4,
+> > +	.coef_b = 1172499100UL,
+> > +	.coef_m = 2000096UL,
+> > +	.coef_div = 4201,
+> > +	.inverted = true,
+> > +};
+> > +
+> >  static const struct of_device_id armada_thermal_id_table[] = {
+> >  	{
+> >  		.compatible = "marvell,armadaxp-thermal",
+> > @@ -279,6 +295,10 @@ static const struct of_device_id armada_thermal_id_table[] = {
+> >  		.compatible = "marvell,armada-ap806-thermal",
+> >  		.data       = &armada_ap806_data,
+> >  	},
+> > +	{
+> > +		.compatible = "marvell,armada-cp110-thermal",
+> > +		.data       = &armada_cp110_data,
+> > +	},
+> >  	{
+> >  		/* sentinel */
+> >  	},
 
-Its actually our internal command, something like:
-# echo snap > /sys/power/state
-This internally create our snapshot image and save it on disk.
-Then we boot the system normally with this image.
-Note: currently to debug the emmc issue, we are right now booting with sd-card.
-
-
->
-
-> Cheers
-> Jon
->
-> [0] https://developer.nvidia.com/embedded/linux-tegra-archive
-> --
-> nvpublic
+-- 
+     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
+=}------------------------------------------------ooO--U--Ooo------------{=
+   - baruch@tkos.co.il - tel: +972.52.368.4656, http://www.tkos.co.il -
