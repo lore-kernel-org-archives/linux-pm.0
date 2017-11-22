@@ -1,65 +1,63 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 5/6] PM / core: Direct handling of DPM_FLAG_LEAVE_SUSPENDED
-Date: Wed, 22 Nov 2017 02:10:51 +0100
-Message-ID: <4400947.0Tgl7arJ6a@aspire.rjw.lan>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <5730411.DndCTChqpV@aspire.rjw.lan> <CAPDyKFq0HGm7h_OFOwd5sRz+3_ZseNFTC-fi8c2qJVW4ZkOaHA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/4] cpu_cooling: Drop static-power related stuff
+Date: Wed, 22 Nov 2017 06:55:32 +0530
+Message-ID: <20171122012532.GG6125@vireshk-i7>
+References: <20171116152058.GR3257@vireshk-i7>
+ <2810372.fJ2vMN0cWO@aspire.rjw.lan>
+ <20171116234422.GA6141@localhost.localdomain>
+ <878tf5tbfj.fsf@e105922-lin.cambridge.arm.com>
+ <35d3751d-f28d-38c2-02b2-c9980f11c52e@arm.com>
+ <cab738f4-dbbf-e5d8-af51-14bc3219b53e@linaro.org>
+ <5A144CB3.50806@gmail.com>
+ <CAKfTPtBBSxV+weYf-9yTf9azc78--8a8x8wNad3OGCYfvEJ4qw@mail.gmail.com>
+ <20171121165703.GA2499@localhost.localdomain>
+ <20171121180006.GA26638@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFq0HGm7h_OFOwd5sRz+3_ZseNFTC-fi8c2qJVW4ZkOaHA@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:38765 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751353AbdKVBZh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Nov 2017 20:25:37 -0500
+Received: by mail-pg0-f65.google.com with SMTP id s11so11649995pgc.5
+        for <linux-pm@vger.kernel.org>; Tue, 21 Nov 2017 17:25:37 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20171121180006.GA26638@localhost>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Javi Merino <javi.merino@kernel.org>
+Cc: Eduardo Valentin <edubezval@gmail.com>, Vincent Guittot <vincent.guittot@linaro.org>, Lukasz Luba <llu.ker.dev@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ionela Voinescu <ionela.voinescu@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Monday, November 20, 2017 2:42:26 PM CET Ulf Hansson wrote:
-> On 18 November 2017 at 15:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > Make the PM core handle DPM_FLAG_LEAVE_SUSPENDED directly for
-> > devices whose "noirq", "late" and "early" driver callbacks are
-> > invoked directly by it.
-> 
-> This indicates that your target for this particular change isn't
-> ACPI/PCI, but instead this aims to be a more generic solution to be
-> able to optimize the resume path for devices.
-> 
-> Assuming, this is the case, I don't think this is good enough as I
-> pointed out [1] earlier. Simply because it isn't as flexible as is
-> required - to really be able cover generic cases.
+On 21-11-17, 18:00, Javi Merino wrote:
+> As Ionela pointed out earlier in the thread, the cpufreq driver for Juno
+> was not acceptable for mainline because it used platform specific code.
 
-I'll go back to that message, but nothing so far has been flexible enough to
-cover everything you can imagine.
+Can we get a link to that thread? I don't remember what I have commented earlier
+but the above doesn't seem to be entirely true.
 
-The case this and the next patch cover really is to allow drivers that can be
-used with or without a PM domain to avoid doing any "are we suspended?" type
-of checks in their callbacks.  Actually, the [6/6] is more important from that
-standpoint, but this one also may play the role because of the dependencies
-between devices involved in the handling of LEAVE_SUSPENDED (eg. say a PCI
-parent has a child platform or I2C or similar devices without a PM domain
-and what happens to the child affects the parent).
+The basic idea is to use as much common stuff as possible and so to use
+cpufreq-dt.c if possible. Its not that we are against platform specific bits,
+they are fine if they are really required.
 
-> >
-> > Namely, make it skip all of the system-wide resume callbacks for
-> > such devices with DPM_FLAG_LEAVE_SUSPENDED set if they are in
-> > runtime suspend during the "noirq" phase of system-wide suspend
-> > (or analogous) transitions or the system transition under way is
-> > a proper suspend (rather than anything related to hibernation) and
-> > the device's wakeup settings are compatible with runtime PM (that
-> > is, the device cannot generate wakeup signals at all or it is
-> > allowed to wake up the system from sleep).
-> 
-> As I pointed out by submitting another patch [2], device_may_wakeup()
-> doesn't really tell whether the wakeup is configured as "in-band" or
-> "out-of-band". That knowledge is known by the driver and the subsystem
-> layer - and for that reason I don't think the PM core shall base
-> generic decisions like this on it.
+> When it was converted to cpufreq-dt, the static power was left behind
+> because it can't be represented in device tree.  This is because there
+> isn't a function that works for every SoC, different process nodes
+> (among other things) will need different functions.  So it can't be just
+> a bunch of coefficients in DT, we need a function.  Hence the callback.
 
-The "or it is allowed to wake up the system from sleep" case may be overly
-optimistic, but the remaining two (runtime-suspended devices and devices
-that can't generate wakeup signals at all) are quite straightforward to me.
+Sure thing. And we can make this happen if we need. We aren't blocking it.
 
-Thanks,
-Rafael
+> In a nutshell, mainline does not want platform specific code, but we
 
+Not really. We don't want platform specific code in arch/arm64, but we can have
+that in drivers/opp/ for example if required.
+
+Please start a discussion (in a separate thread if you want) and we can get
+cpufreq support updated for Juno very easily.
+
+And don't worry about this patch here. We can surely drop the patch if someone
+is serious enough to start using it. But there needs to be a commitment, nothing
+more.
+
+-- 
+viresh
