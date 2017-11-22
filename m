@@ -1,89 +1,80 @@
-From: Baruch Siach <baruch@tkos.co.il>
-Subject: [PATCH 2/3] thermal: armada: add support for AP806
-Date: Wed, 22 Nov 2017 16:42:04 +0200
-Message-ID: <320800cce532d6ae1927b36f82b007f04c740a15.1511361725.git.baruch@tkos.co.il>
-References: <7102bb32704ac9f70ef3ae61682d50de8af61b57.1511361725.git.baruch@tkos.co.il>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from guitar.tcltek.co.il ([192.115.133.116]:56532 "EHLO
-        mx.tkos.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751338AbdKVOnL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 22 Nov 2017 09:43:11 -0500
-In-Reply-To: <7102bb32704ac9f70ef3ae61682d50de8af61b57.1511361725.git.baruch@tkos.co.il>
-Sender: linux-pm-owner@vger.kernel.org
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH 4/4] cpu_cooling: Drop static-power related stuff
+Date: Wed, 22 Nov 2017 07:34:10 -0800
+Message-ID: <20171122153407.GA24699@localhost.localdomain>
+References: <20171116234422.GA6141@localhost.localdomain>
+ <878tf5tbfj.fsf@e105922-lin.cambridge.arm.com>
+ <35d3751d-f28d-38c2-02b2-c9980f11c52e@arm.com>
+ <cab738f4-dbbf-e5d8-af51-14bc3219b53e@linaro.org>
+ <5A144CB3.50806@gmail.com>
+ <CAKfTPtBBSxV+weYf-9yTf9azc78--8a8x8wNad3OGCYfvEJ4qw@mail.gmail.com>
+ <20171121165703.GA2499@localhost.localdomain>
+ <20171121180006.GA26638@localhost>
+ <20171121181222.GA4075@localhost.localdomain>
+ <a9f9e968-c93f-4f84-453c-03914263ac04@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <a9f9e968-c93f-4f84-453c-03914263ac04@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Javi Merino <javi.merino@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Lukasz Luba <llu.ker.dev@gmail.com>, Daniel Lezcano <daniel.lezcano@linaro.org>, Ionela Voinescu <ionela.voinescu@arm.com>, Punit Agrawal <punit.agrawal@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Zhang Rui <rui.zhang@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>, Linux PM <linux-pm@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Miquel Raynal <miquel.raynal@free-electrons.com>, Baruch Siach <baruch@tkos.co.il>
 
-The AP806 component is integrated in the Armada 8k and 7k lines of processors.
+On Wed, Nov 22, 2017 at 10:59:21AM +0000, Sudeep Holla wrote:
+> (sorry for chiming in quite late)
+> 
+> On 21/11/17 18:12, Eduardo Valentin wrote:
+> > On Tue, Nov 21, 2017 at 06:00:07PM +0000, Javi Merino wrote:
+> >> Hi,
+> >>
+> >> On Tue, Nov 21, 2017 at 08:57:06AM -0800, Eduardo Valentin wrote:
+> >>
+> 
+> [...]
+> 
+> >>
+> >> In a nutshell, mainline does not want platform specific code, but we
+> >> haven't figured out how to calculate static power without platform
+> >> specific code.>
+> > To, that is still fine to have it as a callback, as long as you have at
+> > least one user! I still do not understand why Juno static power cannot
+> > go as platform code that register the callback to implement the static
+> > power model.
+> > 
+> 
+> 1. It was proved not so useful(anyone can prove otherwise ?)
 
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
----
- drivers/thermal/armada_thermal.c | 32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+Can anyone prove it does not have static power?
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index ae75328945f7..1f7f81628040 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -41,6 +41,10 @@
- #define A375_HW_RESETn			BIT(8)
- #define A380_HW_RESET			BIT(8)
- 
-+#define AP806_START			BIT(0)
-+#define AP806_RESET			BIT(1)
-+#define AP806_ENABLE			BIT(2)
-+
- struct armada_thermal_data;
- 
- /* Marvell EBU Thermal Sensor Dev Structure */
-@@ -147,6 +151,18 @@ static void armada380_init_sensor(struct platform_device *pdev,
- 	}
- }
- 
-+static void armada_ap806_init_sensor(struct platform_device *pdev,
-+				     struct armada_thermal_priv *priv)
-+{
-+	u32 reg = readl_relaxed(priv->control);
-+
-+	reg &= ~AP806_RESET;
-+	reg |= AP806_START;
-+	reg |= AP806_ENABLE;
-+	writel(reg, priv->control);
-+	mdelay(10);
-+}
-+
- static bool armada_is_valid(struct armada_thermal_priv *priv)
- {
- 	unsigned long reg = readl_relaxed(priv->sensor);
-@@ -230,6 +246,18 @@ static const struct armada_thermal_data armada380_data = {
- 	.inverted = true,
- };
- 
-+static const struct armada_thermal_data armada_ap806_data = {
-+	.is_valid = armada_is_valid,
-+	.init_sensor = armada_ap806_init_sensor,
-+	.is_valid_shift = 16,
-+	.temp_shift = 0,
-+	.temp_mask = 0x3ff,
-+	.coef_b = 1172499100UL,
-+	.coef_m = 2000096UL,
-+	.coef_div = 4201,
-+	.inverted = true,
-+};
-+
- static const struct of_device_id armada_thermal_id_table[] = {
- 	{
- 		.compatible = "marvell,armadaxp-thermal",
-@@ -247,6 +275,10 @@ static const struct of_device_id armada_thermal_id_table[] = {
- 		.compatible = "marvell,armada380-thermal",
- 		.data       = &armada380_data,
- 	},
-+	{
-+		.compatible = "marvell,armada-ap806-thermal",
-+		.data       = &armada_ap806_data,
-+	},
- 	{
- 		/* sentinel */
- 	},
--- 
-2.15.0
+> 2. I am told static power is negligible compared to dynamic power with
+>    new fab processes.
+
+I am told quantum computer is out there :-), does it mean we should drop the
+maintenance of everything else?
+
+
+> 3. It's very hard to even test IPA on Juno as it doesn't reach the
+>    required critical temperature easily. So as Juno platform maintainer
+>    I want a test case to test regression before we merge anything.
+> 
+> IMO, if the $subject code is expected to be used on Juno, then my answer
+> is no if one can't test it reliably and also prove that static power
+> really matters on Juno. So far, I have heard both the above is not
+> possible. So please delete the code if Juno is the only user in
+> short and mid term. We can get the code back if we find any users in
+> longer term.
+
+Yeah, the fact that Juno takes time to reach crit temperature does not
+necessarily imply it does not have static power consumption, or that its
+static power consumption is negligible. Now, if you want to ignore it,
+because it is not the best example to show usefulness of IPA, that is a
+different story.
+
+Eduardo
+
+> 
+> -- 
+> Regards,
+> Sudeep
