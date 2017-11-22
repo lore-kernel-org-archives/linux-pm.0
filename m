@@ -1,74 +1,199 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v4 5/6] PM / core: Direct handling of DPM_FLAG_LEAVE_SUSPENDED
-Date: Wed, 22 Nov 2017 02:28:58 +0100
-Message-ID: <19138154.CxoQn1onCO@aspire.rjw.lan>
-References: <3806130.B2KCK0tvef@aspire.rjw.lan> <CAPDyKFq0HGm7h_OFOwd5sRz+3_ZseNFTC-fi8c2qJVW4ZkOaHA@mail.gmail.com> <4400947.0Tgl7arJ6a@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <4400947.0Tgl7arJ6a@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Alan Stern <stern@rowland.harvard.edu>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Documentation <linux-doc@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Kevin Hilman <khilman@kernel.org>
+From: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
+Subject: [PATCH v3] Fix header-name to read state name and adjust column width
+Date: Wed, 22 Nov 2017 09:35:50 +0530
+Message-ID: <1511323550-15684-1-git-send-email-s1seetee@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:35310 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751415AbdKVEGB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Nov 2017 23:06:01 -0500
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vAM452Gx111217
+        for <linux-pm@vger.kernel.org>; Tue, 21 Nov 2017 23:06:00 -0500
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2ecxebrtw6-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Tue, 21 Nov 2017 23:06:00 -0500
+Received: from localhost
+        by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <s1seetee@linux.vnet.ibm.com>;
+        Wed, 22 Nov 2017 04:05:58 -0000
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: shuah@kernel.org, trenn@suse.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: s1seetee@linux.vnet.ibm.com
 
-On Wednesday, November 22, 2017 2:10:51 AM CET Rafael J. Wysocki wrote:
-> On Monday, November 20, 2017 2:42:26 PM CET Ulf Hansson wrote:
-> > On 18 November 2017 at 15:41, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > >
-> > > Make the PM core handle DPM_FLAG_LEAVE_SUSPENDED directly for
-> > > devices whose "noirq", "late" and "early" driver callbacks are
-> > > invoked directly by it.
-> > 
-> > This indicates that your target for this particular change isn't
-> > ACPI/PCI, but instead this aims to be a more generic solution to be
-> > able to optimize the resume path for devices.
-> > 
-> > Assuming, this is the case, I don't think this is good enough as I
-> > pointed out [1] earlier. Simply because it isn't as flexible as is
-> > required - to really be able cover generic cases.
-> 
-> I'll go back to that message, but nothing so far has been flexible enough to
-> cover everything you can imagine.
-> 
-> The case this and the next patch cover really is to allow drivers that can be
-> used with or without a PM domain to avoid doing any "are we suspended?" type
-> of checks in their callbacks.  Actually, the [6/6] is more important from that
-> standpoint, but this one also may play the role because of the dependencies
-> between devices involved in the handling of LEAVE_SUSPENDED (eg. say a PCI
-> parent has a child platform or I2C or similar devices without a PM domain
-> and what happens to the child affects the parent).
-> 
-> > >
-> > > Namely, make it skip all of the system-wide resume callbacks for
-> > > such devices with DPM_FLAG_LEAVE_SUSPENDED set if they are in
-> > > runtime suspend during the "noirq" phase of system-wide suspend
-> > > (or analogous) transitions or the system transition under way is
-> > > a proper suspend (rather than anything related to hibernation) and
-> > > the device's wakeup settings are compatible with runtime PM (that
-> > > is, the device cannot generate wakeup signals at all or it is
-> > > allowed to wake up the system from sleep).
-> > 
-> > As I pointed out by submitting another patch [2], device_may_wakeup()
-> > doesn't really tell whether the wakeup is configured as "in-band" or
-> > "out-of-band". That knowledge is known by the driver and the subsystem
-> > layer - and for that reason I don't think the PM core shall base
-> > generic decisions like this on it.
-> 
-> The "or it is allowed to wake up the system from sleep" case may be overly
-> optimistic, but the remaining two (runtime-suspended devices and devices
-> that can't generate wakeup signals at all) are quite straightforward to me.
+The names of the idle states in the output of cpupower monitor command are
+truncated to 4 characters. Hence, On POWER9, since the states are named
+"stop0, stop1, stop2, stop4, stop11", this output is ambiguous
 
-BTW, I'm not sure if the device_may_wakeup() check is really insufficient
-in this particular case.
+root:~# cpupower monitor
+               |Idle_Stats
+ PKG |CORE|CPU | snoo | stop | stop
+    0|   8|   0|  0.00|  0.00|  2.79
+    0|   8|   1|  0.00|  0.00| 70.68
 
-Say the device was not in runtime suspend before, but device_may_wakeup()
-returns "true" for it and the system is resuming from suspend.  The device's
-state should be suitable to wake up the system in any case, so the "in-band"
-vs "out-of-band" difference has had to be taken care of already during system
-suspend.
+In this patch, we modify the output to print the state name
+and adjust the column width, that results in a legible output.
 
-Thanks,
-Rafael
+root:~#cpupower monitor
+              |Idle_Stats
+PKG |CORE|CPU |snooze|stop0_li|stop1_li
+   0|   8|   0|  0.00|    0.00|   60.04
+   0|   8|   1|  0.00|    0.00|   38.97
+   0|   8|   2|  0.00|    0.00|    0.00
+   0|   8|   3|  0.00|    0.00|    0.00
+   0|  12|   4|  0.00|    0.00|   99.25
+   0|  12|   5|  0.00|    0.00|    0.00
+   0|  12|   6|  0.00|    0.00|   99.71
+   0|  12|   7|  0.00|    0.00|   99.85
+   8|2048|   8|  0.00|    0.00|   54.66
+   8|2048|   9|  0.00|    0.00|    0.00
+   8|2048|  10|  0.00|    0.00|    0.00
+   8|2048|  11|  0.00|    0.00|   97.83
+   8|2052|  12|  0.00|    0.00|    0.00
+   8|2052|  13|  0.00|    0.00|    0.00
+   8|2052|  14|  0.00|    0.00|    1.99
+   8|2052|  15|  0.00|    0.00|   99.87
+
+Tested on POWER8, POWER9 and x86.
+
+Signed-off-by: Seeteena Thoufeek <s1seetee@linux.vnet.ibm.com>
+---
+ .../cpupower/utils/idle_monitor/cpupower-monitor.c | 62 +++++++++++++++-------
+ .../cpupower/utils/idle_monitor/cpupower-monitor.h |  6 ++-
+ 2 files changed, 47 insertions(+), 21 deletions(-)
+
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+index 05f953f..949b3bc 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
++++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
+@@ -21,6 +21,10 @@
+ #include "idle_monitor/cpupower-monitor.h"
+ #include "idle_monitor/idle_monitors.h"
+ #include "helpers/helpers.h"
++#define xstr(s) str(s)
++#define str(s) #s
++#define COL_WIDTH_MIN   6
++#define COL_WIDTH_MAX   8
+ 
+ /* Define pointers to all monitors.  */
+ #define DEF(x) & x ## _monitor ,
+@@ -85,7 +89,7 @@ int fill_string_with_spaces(char *s, int n)
+ void print_header(int topology_depth)
+ {
+ 	int unsigned mon;
+-	int state, need_len;
++	int state, need_len, name_len;
+ 	cstate_t s;
+ 	char buf[128] = "";
+ 	int percent_width = 4;
+@@ -116,17 +120,19 @@ void print_header(int topology_depth)
+ 	for (mon = 0; mon < avail_monitors; mon++) {
+ 		if (mon != 0)
+ 			printf("|| ");
+-		else
+-			printf(" ");
+ 		for (state = 0; state < monitors[mon]->hw_states_num; state++) {
+ 			if (state != 0)
+-				printf(" | ");
++				printf("|");
+ 			s = monitors[mon]->hw_states[state];
+-			sprintf(buf, "%s", s.name);
++			name_len = strlen(s.name);
++			if (name_len <= COL_WIDTH_MIN)
++				percent_width = COL_WIDTH_MIN;
++			else
++				percent_width = COL_WIDTH_MAX;
++			sprintf(buf, "%.*s", percent_width, s.name);
+ 			fill_string_with_spaces(buf, percent_width);
+ 			printf("%s", buf);
+ 		}
+-		printf(" ");
+ 	}
+ 	printf("\n");
+ }
+@@ -134,12 +140,12 @@ void print_header(int topology_depth)
+ 
+ void print_results(int topology_depth, int cpu)
+ {
+-	unsigned int mon;
+-	int state, ret;
++	unsigned int mon, percent_width, name_len, width;
++	int state, ret, i;
+ 	double percent;
+ 	unsigned long long result;
+ 	cstate_t s;
+-
++	char buf[128] = "";
+ 	/* Be careful CPUs may got resorted for pkg value do not just use cpu */
+ 	if (!bitmask_isbitset(cpus_chosen, cpu_top.core_info[cpu].cpu))
+ 		return;
+@@ -163,23 +160,37 @@ void print_results(int topology_depth, int cpu)
+ 				printf("|");
+ 
+ 			s = monitors[mon]->hw_states[state];
+-
++			name_len = strlen(s.name);
++			if (name_len > COL_WIDTH_MIN) {
++				percent_width = COL_WIDTH_MAX;
++				width = percent_width - COL_WIDTH_MIN;
++				fill_string_with_spaces(buf, width);
++				printf("%s", buf);
++			}
+ 			if (s.get_count_percent) {
+ 				ret = s.get_count_percent(s.id, &percent,
+ 						  cpu_top.core_info[cpu].cpu);
+-				if (ret)
+-					printf("******");
+-				else if (percent >= 100.0)
+-					printf("%6.1f", percent);
+-				else
+-					printf("%6.2f", percent);
++				if (ret) {
++					for (i = 0; i < COL_WIDTH_MIN; i++)
++						printf("*");
++				} else if (percent >= 100.0) {
++					printf("%"xstr(COL_WIDTH_MIN)".1f",
++						  percent);
++					}
++				else {
++					printf("%"xstr(COL_WIDTH_MIN)".2f",
++						  percent);
++				}
+ 			} else if (s.get_count) {
+ 				ret = s.get_count(s.id, &result,
+ 						  cpu_top.core_info[cpu].cpu);
+-				if (ret)
+-					printf("******");
+-				else
+-					printf("%6llu", result);
++				if (ret) {
++					for (i = 0; i < COL_WIDTH_MIN; i++)
++						printf("*");
++				} else {
++					printf("%"xstr(COL_WIDTH_MIN)"llu",
++						  result);
++				}
+ 			} else {
+ 				printf(_("Monitor %s, Counter %s has no count "
+ 					 "function. Implementation error\n"),
+diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+index 9e43f33..f6dcb9f 100644
+--- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
++++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
+@@ -15,7 +15,11 @@
+ 
+ #define MONITORS_MAX 20
+ #define MONITOR_NAME_LEN 20
+-#define CSTATE_NAME_LEN 5
++/*
++ *  CSTATE_NAME_LEN is limited by the CPUIDLE_NAME_LEN defined
++ *  in include/linux/cpuidle.h.
++ */
++#define CSTATE_NAME_LEN 16
+ #define CSTATE_DESC_LEN 60
+ 
+ int cpu_count;
+-- 
+1.8.3.1
