@@ -1,50 +1,40 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Subject: [PATCH 2/2] power: supply: ab8500_charger: Bail out in case of error in 'ab8500_charger_init_hw_registers()'
-Date: Wed, 22 Nov 2017 21:31:20 +0100
-Message-ID: <20171122203120.13467-1-christophe.jaillet@wanadoo.fr>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 4/4] cpufreq: Drop pointless return statement
+Date: Thu, 23 Nov 2017 01:30:16 +0100
+Message-ID: <8136755.4DucdONPzh@aspire.rjw.lan>
+References: <1655574.Es7zYAeW1r@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp02.smtpout.orange.fr ([80.12.242.124]:58636 "EHLO
-        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751274AbdKVUbn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Nov 2017 15:31:43 -0500
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:57726 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751507AbdKWAbQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Nov 2017 19:31:16 -0500
+In-Reply-To: <1655574.Es7zYAeW1r@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: sre@kernel.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-If an error occurs when we enable the backup battery charging, we should
-go through the error handling path directly.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Before commit db43e6c473b5 ("ab8500-bm: Add usb power path support") this
-was the case, but this commit has added some code between the last test and
-the 'out' label.
-So, in case of error, this added code is executed and the error may be
-silently ignored.
+Drop a pointless return statement from cpufreq_unregister_governor().
 
-Fix it by adding the missing 'goto out', as done in all other error
-handling paths.
-
-Fixes: db43e6c473b5 ("ab8500-bm: Add usb power path support")
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/power/supply/ab8500_charger.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/cpufreq/cpufreq.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply/ab8500_charger.c
-index 1cdbe7a0738d..5a76c6d343de 100644
---- a/drivers/power/supply/ab8500_charger.c
-+++ b/drivers/power/supply/ab8500_charger.c
-@@ -3221,8 +3221,10 @@ static int ab8500_charger_init_hw_registers(struct ab8500_charger *di)
- 	ret = abx500_mask_and_set_register_interruptible(di->dev,
- 		AB8500_RTC, AB8500_RTC_CTRL_REG,
- 		RTC_BUP_CH_ENA, RTC_BUP_CH_ENA);
--	if (ret < 0)
-+	if (ret < 0) {
- 		dev_err(di->dev, "%s mask and set failed\n", __func__);
-+		goto out;
-+	}
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -2168,7 +2168,6 @@ void cpufreq_unregister_governor(struct
+ 	mutex_lock(&cpufreq_governor_mutex);
+ 	list_del(&governor->governor_list);
+ 	mutex_unlock(&cpufreq_governor_mutex);
+-	return;
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_unregister_governor);
  
- 	if (is_ab8540(di->parent)) {
- 		ret = abx500_mask_and_set_register_interruptible(di->dev,
--- 
-2.14.1
