@@ -1,74 +1,66 @@
-From: Mike Looijmans <mike.looijmans@topic.nl>
-Subject: [PATCH] power: ltc2941-battery-gauge: Disable continuous monitoring on shutdown
-Date: Thu, 23 Nov 2017 15:41:05 +0100
-Message-ID: <1511448065-2727-1-git-send-email-mike.looijmans@topic.nl>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-pm@vger.kernel.org, sre@kernel.org
-Cc: linux-kernel@vger.kernel.org, ladis@linux-mips.org, Dragos.Bogdan@analog.com, Mike Looijmans <mike.looijmans@topic.nl>
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Subject: Re: [PATCH 2/3] thermal: armada: add support for AP806
+Date: Thu, 23 Nov 2017 15:24:17 +0000
+Message-ID: <20171123152416.GR31757@n2100.armlinux.org.uk>
+References: <7102bb32704ac9f70ef3ae61682d50de8af61b57.1511361725.git.baruch@tkos.co.il>
+ <320800cce532d6ae1927b36f82b007f04c740a15.1511361725.git.baruch@tkos.co.il>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from pandora.armlinux.org.uk ([78.32.30.218]:52066 "EHLO
+        pandora.armlinux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752413AbdKWPYi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Nov 2017 10:24:38 -0500
+Content-Disposition: inline
+In-Reply-To: <320800cce532d6ae1927b36f82b007f04c740a15.1511361725.git.baruch@tkos.co.il>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Baruch Siach <baruch@tkos.co.il>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Miquel Raynal <miquel.raynal@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 
-The driver sets the fuel gauge to continuous monitoring on startup, for
-the models that support this. When the board shuts down, the chip remains
-in that mode, causing a few mA drain on the battery every 2 or 10 seconds.
+On Wed, Nov 22, 2017 at 04:42:04PM +0200, Baruch Siach wrote:
+> The AP806 component is integrated in the Armada 8k and 7k lines of processors.
+> 
+> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+> ---
+>  drivers/thermal/armada_thermal.c | 32 ++++++++++++++++++++++++++++++++
+>  1 file changed, 32 insertions(+)
+> 
+> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+> index ae75328945f7..1f7f81628040 100644
+> --- a/drivers/thermal/armada_thermal.c
+> +++ b/drivers/thermal/armada_thermal.c
+> @@ -41,6 +41,10 @@
+>  #define A375_HW_RESETn			BIT(8)
+>  #define A380_HW_RESET			BIT(8)
+>  
+> +#define AP806_START			BIT(0)
+> +#define AP806_RESET			BIT(1)
+> +#define AP806_ENABLE			BIT(2)
+> +
+>  struct armada_thermal_data;
+>  
+>  /* Marvell EBU Thermal Sensor Dev Structure */
+> @@ -147,6 +151,18 @@ static void armada380_init_sensor(struct platform_device *pdev,
+>  	}
+>  }
+>  
+> +static void armada_ap806_init_sensor(struct platform_device *pdev,
+> +				     struct armada_thermal_priv *priv)
+> +{
+> +	u32 reg = readl_relaxed(priv->control);
+> +
+> +	reg &= ~AP806_RESET;
+> +	reg |= AP806_START;
+> +	reg |= AP806_ENABLE;
+> +	writel(reg, priv->control);
+> +	mdelay(10);
 
-This patch registers a shutdown handler that turns off the monitoring to
-prevent this battery drain.
+Do you really need to make the CPU busy-wait for 10ms here?  This
+looks like it's called from a schedulable context, so won't msleep()
+do?
 
-Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
----
- drivers/power/supply/ltc2941-battery-gauge.c | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
-
-diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
-index 08e4fd9..4cfa3f0 100644
---- a/drivers/power/supply/ltc2941-battery-gauge.c
-+++ b/drivers/power/supply/ltc2941-battery-gauge.c
-@@ -60,6 +60,7 @@ enum ltc294x_id {
- #define LTC294X_REG_CONTROL_PRESCALER_SET(x) \
- 	((x << 3) & LTC294X_REG_CONTROL_PRESCALER_MASK)
- #define LTC294X_REG_CONTROL_ALCC_CONFIG_DISABLED	0
-+#define LTC294X_REG_CONTROL_ADC_DISABLE(x)	((x) & ~(BIT(7) | BIT(6)))
- 
- struct ltc294x_info {
- 	struct i2c_client *client;	/* I2C Client pointer */
-@@ -523,6 +524,29 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
- 	return 0;
- }
- 
-+static void ltc294x_i2c_shutdown(struct i2c_client *client)
-+{
-+	struct ltc294x_info *info = i2c_get_clientdata(client);
-+	int ret;
-+	u8 value;
-+	u8 control;
-+
-+	/* The LTC2941 does not need any special handling */
-+	if (info->id == LTC2941_ID)
-+		return;
-+
-+	/* Read control register */
-+	ret = ltc294x_read_regs(info->client, LTC294X_REG_CONTROL, &value, 1);
-+	if (ret < 0)
-+		return;
-+
-+	/* Disable continuous ADC conversion as this drains the battery */
-+	control = LTC294X_REG_CONTROL_ADC_DISABLE(value);
-+	if (control != value)
-+		ltc294x_write_regs(info->client, LTC294X_REG_CONTROL,
-+			&control, 1);
-+}
-+
- #ifdef CONFIG_PM_SLEEP
- 
- static int ltc294x_suspend(struct device *dev)
-@@ -589,6 +613,7 @@ static int ltc294x_resume(struct device *dev)
- 	},
- 	.probe		= ltc294x_i2c_probe,
- 	.remove		= ltc294x_i2c_remove,
-+	.shutdown	= ltc294x_i2c_shutdown,
- 	.id_table	= ltc294x_i2c_id,
- };
- module_i2c_driver(ltc294x_driver);
 -- 
-1.9.1
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
+According to speedtest.net: 8.21Mbps down 510kbps up
