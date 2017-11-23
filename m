@@ -1,71 +1,74 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2 3/4] cpufreq: Fix governor module removal race
-Date: Thu, 23 Nov 2017 14:27:07 +0100
-Message-ID: <16997374.L1f6Qxgytn@aspire.rjw.lan>
-References: <1655574.Es7zYAeW1r@aspire.rjw.lan> <2007526.uAUpsoPmOG@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:64801 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752683AbdKWN1a (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Nov 2017 08:27:30 -0500
-In-Reply-To: <2007526.uAUpsoPmOG@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+From: Mike Looijmans <mike.looijmans@topic.nl>
+Subject: [PATCH] power: ltc2941-battery-gauge: Disable continuous monitoring on shutdown
+Date: Thu, 23 Nov 2017 15:41:05 +0100
+Message-ID: <1511448065-2727-1-git-send-email-mike.looijmans@topic.nl>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, sre@kernel.org
+Cc: linux-kernel@vger.kernel.org, ladis@linux-mips.org, Dragos.Bogdan@analog.com, Mike Looijmans <mike.looijmans@topic.nl>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The driver sets the fuel gauge to continuous monitoring on startup, for
+the models that support this. When the board shuts down, the chip remains
+in that mode, causing a few mA drain on the battery every 2 or 10 seconds.
 
-It is possible to remove a cpufreq governor module after
-cpufreq_parse_governor() has returned success in
-store_scaling_governor() and before cpufreq_set_policy()
-acquires a reference to it, because the governor list is
-not protected during that period and nothing prevents the
-governor from being unregistered then.
+This patch registers a shutdown handler that turns off the monitoring to
+prevent this battery drain.
 
-Prevent that from happening by acquiring an extra reference
-to the governor module temporarily in cpufreq_parse_governor(),
-under cpufreq_governor_mutex, and dropping it in
-store_scaling_governor(), when cpufreq_set_policy() returns.
-
-Note that the second cpufreq_parse_governor() call site is fine,
-because it only cares about the policy member of new_policy.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
 ---
+ drivers/power/supply/ltc2941-battery-gauge.c | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
--> v2: Drop changes to clear policy->governor in
-       cpufreq_parse_governor() in the cpufreq_driver->setpolicy set
-       case, as that field should always be NULL then.
-
----
- drivers/cpufreq/cpufreq.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -633,6 +633,8 @@ static int cpufreq_parse_governor(char *
+diff --git a/drivers/power/supply/ltc2941-battery-gauge.c b/drivers/power/supply/ltc2941-battery-gauge.c
+index 08e4fd9..4cfa3f0 100644
+--- a/drivers/power/supply/ltc2941-battery-gauge.c
++++ b/drivers/power/supply/ltc2941-battery-gauge.c
+@@ -60,6 +60,7 @@ enum ltc294x_id {
+ #define LTC294X_REG_CONTROL_PRESCALER_SET(x) \
+ 	((x << 3) & LTC294X_REG_CONTROL_PRESCALER_MASK)
+ #define LTC294X_REG_CONTROL_ALCC_CONFIG_DISABLED	0
++#define LTC294X_REG_CONTROL_ADC_DISABLE(x)	((x) & ~(BIT(7) | BIT(6)))
  
- 			t = find_governor(str_governor);
- 		}
-+		if (t && !try_module_get(t->owner))
-+			t = NULL;
- 
- 		mutex_unlock(&cpufreq_governor_mutex);
- 
-@@ -766,6 +768,10 @@ static ssize_t store_scaling_governor(st
- 		return -EINVAL;
- 
- 	ret = cpufreq_set_policy(policy, &new_policy);
-+
-+	if (new_policy.governor)
-+		module_put(new_policy.governor->owner);
-+
- 	return ret ? ret : count;
+ struct ltc294x_info {
+ 	struct i2c_client *client;	/* I2C Client pointer */
+@@ -523,6 +524,29 @@ static int ltc294x_i2c_probe(struct i2c_client *client,
+ 	return 0;
  }
  
++static void ltc294x_i2c_shutdown(struct i2c_client *client)
++{
++	struct ltc294x_info *info = i2c_get_clientdata(client);
++	int ret;
++	u8 value;
++	u8 control;
++
++	/* The LTC2941 does not need any special handling */
++	if (info->id == LTC2941_ID)
++		return;
++
++	/* Read control register */
++	ret = ltc294x_read_regs(info->client, LTC294X_REG_CONTROL, &value, 1);
++	if (ret < 0)
++		return;
++
++	/* Disable continuous ADC conversion as this drains the battery */
++	control = LTC294X_REG_CONTROL_ADC_DISABLE(value);
++	if (control != value)
++		ltc294x_write_regs(info->client, LTC294X_REG_CONTROL,
++			&control, 1);
++}
++
+ #ifdef CONFIG_PM_SLEEP
+ 
+ static int ltc294x_suspend(struct device *dev)
+@@ -589,6 +613,7 @@ static int ltc294x_resume(struct device *dev)
+ 	},
+ 	.probe		= ltc294x_i2c_probe,
+ 	.remove		= ltc294x_i2c_remove,
++	.shutdown	= ltc294x_i2c_shutdown,
+ 	.id_table	= ltc294x_i2c_id,
+ };
+ module_i2c_driver(ltc294x_driver);
+-- 
+1.9.1
