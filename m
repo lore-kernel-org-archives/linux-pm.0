@@ -1,32 +1,40 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 03/10] PM / QoS: Fix device resume latency for non PM QoS devices
-Date: Fri, 24 Nov 2017 17:50:42 +0100
-Message-ID: <CAJZ5v0ghcwSHdrbZd_=XA=tHz7=aTUVd66dHkMYRNyXpnqP84w@mail.gmail.com>
-References: <1511538800-8275-1-git-send-email-mmaddireddy@nvidia.com> <1511538800-8275-4-git-send-email-mmaddireddy@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1511538800-8275-4-git-send-email-mmaddireddy@nvidia.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Manikanta Maddireddy <mmaddireddy@nvidia.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Jon Hunter <jonathanh@nvidia.com>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Subject: [PATCH] power: supply: cpcap-battery: Fix platform_get_irq_byname's error checking
+Date: Fri, 24 Nov 2017 22:31:40 +0530
+Message-ID: <638d9bb5ac4c0ef44d3e83cc0f74d6e80cddcf7d.1511542695.git.arvind.yadav.cs@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pl0-f66.google.com ([209.85.160.66]:45190 "EHLO
+        mail-pl0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750731AbdKXRB6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Nov 2017 12:01:58 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Fri, Nov 24, 2017 at 4:53 PM, Manikanta Maddireddy
-<mmaddireddy@nvidia.com> wrote:
-> In 'commit 0cc2b4e5a020 ("PM / QoS: Fix device resume latency PM QoS")'
-> PM QoS resume latency modified 0 as "no latency at all". However
-> dev_pm_qos_raw_read_value() returns 0 for devices which doesn't have
-> PM QoS constraints. This is blocking runtime suspend for these devices
-> in rpm_check_suspend_allowed(). Return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT
-> when PM QoS constraints are not available for a particular device.
->
-> Fixes: 0cc2b4e5a020 ("PM / QoS: Fix device resume latency PM QoS")
+The platform_get_irq_byname() function returns -1 if an error occurs.
+zero or positive number on success. platform_get_irq_byname() error
+checking for zero is not correct.
 
-That commit has been reverted, so this patch is not applicable and
-therefore the whole series isn't.
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/power/supply/cpcap-battery.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-What kernel is it based off?
-
-Thanks,
-Rafael
+diff --git a/drivers/power/supply/cpcap-battery.c b/drivers/power/supply/cpcap-battery.c
+index ee71a2b..98ba078 100644
+--- a/drivers/power/supply/cpcap-battery.c
++++ b/drivers/power/supply/cpcap-battery.c
+@@ -586,8 +586,8 @@ static int cpcap_battery_init_irq(struct platform_device *pdev,
+ 	int irq, error;
+ 
+ 	irq = platform_get_irq_byname(pdev, name);
+-	if (!irq)
+-		return -ENODEV;
++	if (irq < 0)
++		return irq;
+ 
+ 	error = devm_request_threaded_irq(ddata->dev, irq, NULL,
+ 					  cpcap_battery_irq_thread,
+-- 
+2.7.4
