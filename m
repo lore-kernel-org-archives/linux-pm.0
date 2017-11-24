@@ -1,7 +1,7 @@
 From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH 02/10] of: Export of_pci_range_to_resource()
-Date: Fri, 24 Nov 2017 21:23:12 +0530
-Message-ID: <1511538800-8275-3-git-send-email-mmaddireddy@nvidia.com>
+Subject: [PATCH 03/10] PM / QoS: Fix device resume latency for non PM QoS devices
+Date: Fri, 24 Nov 2017 21:23:13 +0530
+Message-ID: <1511538800-8275-4-git-send-email-mmaddireddy@nvidia.com>
 References: <1511538800-8275-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,25 +12,32 @@ To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adc
 Cc: vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Allow PCI host driver to use of_pci_range_to_resource() to create a
-resource from an of_pci_range.
+In 'commit 0cc2b4e5a020 ("PM / QoS: Fix device resume latency PM QoS")'
+PM QoS resume latency modified 0 as "no latency at all". However
+dev_pm_qos_raw_read_value() returns 0 for devices which doesn't have
+PM QoS constraints. This is blocking runtime suspend for these devices
+in rpm_check_suspend_allowed(). Return PM_QOS_RESUME_LATENCY_NO_CONSTRAINT
+when PM QoS constraints are not available for a particular device.
 
+Fixes: 0cc2b4e5a020 ("PM / QoS: Fix device resume latency PM QoS")
 Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
- drivers/of/address.c | 1 +
- 1 file changed, 1 insertion(+)
+ include/linux/pm_qos.h | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/of/address.c b/drivers/of/address.c
-index 792722e7d458..9c7b2071bf2f 100644
---- a/drivers/of/address.c
-+++ b/drivers/of/address.c
-@@ -348,6 +348,7 @@ int of_pci_range_to_resource(struct of_pci_range *range,
- 	res->end = (resource_size_t)OF_BAD_ADDR;
- 	return err;
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 6737a8c9e8c6..d68b0569a5eb 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -175,7 +175,8 @@ static inline s32 dev_pm_qos_requested_flags(struct device *dev)
+ static inline s32 dev_pm_qos_raw_read_value(struct device *dev)
+ {
+ 	return IS_ERR_OR_NULL(dev->power.qos) ?
+-		0 : pm_qos_read_value(&dev->power.qos->resume_latency);
++		PM_QOS_RESUME_LATENCY_NO_CONSTRAINT :
++		pm_qos_read_value(&dev->power.qos->resume_latency);
  }
-+EXPORT_SYMBOL(of_pci_range_to_resource);
- #endif /* CONFIG_PCI */
- 
- /*
+ #else
+ static inline enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev,
 -- 
 2.1.4
