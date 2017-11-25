@@ -1,40 +1,38 @@
-From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V2 2/9] of: Export of_pci_range_to_resource()
-Date: Sun, 26 Nov 2017 01:02:06 +0530
-Message-ID: <1511638333-22951-3-git-send-email-mmaddireddy@nvidia.com>
+From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Subject: [PATCH V2 3/9] ARM: tegra: Export tegra_cpuidle_pcie_irqs_in_use()
+Date: Sun, 26 Nov 2017 01:02:07 +0530
+Message-ID: <1511638333-22951-4-git-send-email-mmaddireddy@nvidia.com>
 References: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1511638333-22951-1-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org
-Cc: vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: thierry.reding@gmail.com, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, bhelgaas@google.com, rjw@rjwysocki.net, tglx@linutronix.de
+Cc: vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Manikanta Maddireddy <mmaddireddy@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-Tegra PCIe host driver parses of_pci_range from device tree and converts
-to resource. Export of_pci_range_to_resource() to allow Tegra PCIe host
-driver to be compiled as loadable kernel module.
+Tegra20 has a HW bug where PCIe interrupts are lost when LP2 (Tegra idle
+state) is enabled. tegra_cpuidle_pcie_irqs_in_use() disables LP2 when
+PCIe irq is mapped. EXPORT tegra_cpuidle_pcie_irqs_in_use() to allow Tegra
+PCIe driver to be compiled as loadable kernel module.
 
-Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
 ---
 V2:
 * commit message update
 
- drivers/of/address.c | 1 +
+ arch/arm/mach-tegra/cpuidle.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/of/address.c b/drivers/of/address.c
-index fa6cabfc3cb9..8d9b93f8701a 100644
---- a/drivers/of/address.c
-+++ b/drivers/of/address.c
-@@ -361,6 +361,7 @@ int of_pci_range_to_resource(struct of_pci_range *range,
- 	res->end = (resource_size_t)OF_BAD_ADDR;
- 	return err;
+diff --git a/arch/arm/mach-tegra/cpuidle.c b/arch/arm/mach-tegra/cpuidle.c
+index 316563141add..7d7e6d3ce32d 100644
+--- a/arch/arm/mach-tegra/cpuidle.c
++++ b/arch/arm/mach-tegra/cpuidle.c
+@@ -57,3 +57,4 @@ void tegra_cpuidle_pcie_irqs_in_use(void)
+ 		break;
+ 	}
  }
-+EXPORT_SYMBOL(of_pci_range_to_resource);
- #endif /* CONFIG_PCI */
- 
- /*
++EXPORT_SYMBOL(tegra_cpuidle_pcie_irqs_in_use);
 -- 
 2.1.4
