@@ -1,110 +1,41 @@
-From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
-Subject: [PATCH V2 7/9] PCI: tegra: Add loadable kernel module support
-Date: Sun, 26 Nov 2017 01:02:11 +0530
-Message-ID: <1511638333-22951-8-git-send-email-mmaddireddy@nvidia.com>
+From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH V2 5/9] PCI: Export pci_flags
+Date: Sun, 26 Nov 2017 01:02:09 +0530
+Message-ID: <1511638333-22951-6-git-send-email-mmaddireddy@nvidia.com>
 References: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: thierry.reding@gmail.com, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, bhelgaas@google.com, rjw@rjwysocki.net, tglx@linutronix.de
-Cc: vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1511638333-22951-1-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org
+Cc: vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Implement remove callback function for Tegra PCIe driver to add
-loadable kernel module support. Change PCI_TEGRA config to tristate to
-allow pci-tegra driver to be build as a module.
+pci_flags variable is used in inline functions in 'pci.h', Tegra PCIe
+driver use one of these functions pci_add_flags() and includes 'pci.h'.
+Export pci_flags to allow Tegra PCIe host controller driver to be
+compiled as loadable kernel module.
 
-Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
 V2:
-* no change in this patch
+* commit message update
 
- drivers/pci/host/Kconfig     |  2 +-
- drivers/pci/host/pci-tegra.c | 31 ++++++++++++++++++++++++++++++-
- 2 files changed, 31 insertions(+), 2 deletions(-)
+ drivers/pci/setup-bus.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/pci/host/Kconfig b/drivers/pci/host/Kconfig
-index 38d12980db0f..6fd2a5937804 100644
---- a/drivers/pci/host/Kconfig
-+++ b/drivers/pci/host/Kconfig
-@@ -34,7 +34,7 @@ config PCI_FTPCI100
- 	default ARCH_GEMINI
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index b1ad466199ad..3567e1c4e340 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -29,6 +29,7 @@
+ #include "pci.h"
  
- config PCI_TEGRA
--	bool "NVIDIA Tegra PCIe controller"
-+	tristate "NVIDIA Tegra PCIe controller"
- 	depends on ARCH_TEGRA
- 	help
- 	  Say Y here if you want support for the PCIe host controller found
-diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-index 7f7b8c9c1e84..bbc2807bcd4a 100644
---- a/drivers/pci/host/pci-tegra.c
-+++ b/drivers/pci/host/pci-tegra.c
-@@ -35,6 +35,7 @@
- #include <linux/irqdomain.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
-+#include <linux/module.h>
- #include <linux/msi.h>
- #include <linux/of_address.h>
- #include <linux/of_pci.h>
-@@ -2720,6 +2721,12 @@ static int tegra_pcie_debugfs_init(struct tegra_pcie *pcie)
- 	return -ENOMEM;
- }
+ unsigned int pci_flags;
++EXPORT_SYMBOL(pci_flags);
  
-+static void tegra_pcie_debugfs_exit(struct tegra_pcie *pcie)
-+{
-+	debugfs_remove_recursive(pcie->debugfs);
-+	pcie->debugfs = NULL;
-+}
-+
- static int tegra_pcie_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
-@@ -2734,6 +2741,7 @@ static int tegra_pcie_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	pcie = pci_host_bridge_priv(host);
-+	platform_set_drvdata(pdev, pcie);
- 
- 	pcie->soc = of_device_get_match_data(dev);
- 	INIT_LIST_HEAD(&pcie->buses);
-@@ -2816,6 +2824,25 @@ static int tegra_pcie_probe(struct platform_device *pdev)
- 	return err;
- }
- 
-+static int tegra_pcie_remove(struct platform_device *pdev)
-+{
-+	struct tegra_pcie *pcie = platform_get_drvdata(pdev);
-+	struct pci_host_bridge *host = pci_host_bridge_from_priv(pcie);
-+
-+	if (IS_ENABLED(CONFIG_DEBUG_FS))
-+		tegra_pcie_debugfs_exit(pcie);
-+	pci_stop_root_bus(host->bus);
-+	pci_remove_root_bus(host->bus);
-+	if (IS_ENABLED(CONFIG_PCI_MSI))
-+		tegra_pcie_disable_msi(pcie);
-+	tegra_pcie_disable_ports(pcie);
-+	tegra_pcie_free_resources(pcie);
-+	tegra_pcie_disable_controller(pcie);
-+	tegra_pcie_put_resources(pcie);
-+
-+	return 0;
-+}
-+
- static struct platform_driver tegra_pcie_driver = {
- 	.driver = {
- 		.name = "tegra-pcie",
-@@ -2823,5 +2850,7 @@ static struct platform_driver tegra_pcie_driver = {
- 		.suppress_bind_attrs = true,
- 	},
- 	.probe = tegra_pcie_probe,
-+	.remove = tegra_pcie_remove,
- };
--builtin_platform_driver(tegra_pcie_driver);
-+module_platform_driver(tegra_pcie_driver);
-+MODULE_LICENSE("GPL");
+ struct pci_dev_resource {
+ 	struct list_head list;
 -- 
 2.1.4
