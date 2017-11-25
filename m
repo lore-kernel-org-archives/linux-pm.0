@@ -1,58 +1,149 @@
-From: "Marty E. Plummer" <hanetzer@startmail.com>
-Subject: hi3521a syscon-reboot issue, reboot fails oddly.
-Date: Sat, 25 Nov 2017 13:02:03 -0600
-Message-ID: <20171125190203.24521-1-hanetzer@startmail.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-arm-kernel@lists.infradead.org
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, xuwei5@hisilicon.com, linux@armlinux.org.uk, z.liuxinliang@hisilicon.com, kong.kongxinwei@hisilicon.com, puck.chen@hisilicon.com, zhangshaokun@hisilicon.com, wangzhou1@hisilicon.com, songxiaowei@hisilicon.com, wangbinghui@hisilicon.com, xuejiancheng@huawei.com, zhangfei.gao@linaro.org, "Marty E. Plummer" <hanetzer@startmail.com>
+From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Subject: [PATCH V2 8/9] PCI: tegra: Broadcast PME_turn_Off message before link goes to L2
+Date: Sun, 26 Nov 2017 01:02:12 +0530
+Message-ID: <1511638333-22951-9-git-send-email-mmaddireddy@nvidia.com>
+References: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:19033 "EHLO
+        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751634AbdKYTcx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 Nov 2017 14:32:53 -0500
+In-Reply-To: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: thierry.reding@gmail.com, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, bhelgaas@google.com, rjw@rjwysocki.net, tglx@linutronix.de
+Cc: vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Manikanta Maddireddy <mmaddireddy@nvidia.com>
 
-Greetings,
+Per PCIe r3.0, sec 5.3.3.2.1, PCIe root port shoould broadcast PME_turn_Off
+message before PCIe link goes to L2. PME_turn_Off broadcast mechanism is
+implemented in AFI module. Each Tegra PCIe root port has its own
+PME_turn_Off and PME_TO_Ack bitmap in AFI_PME register, program this
+register to broadcast PME_turn_Off message.
 
-Having a slight issue with getting reboot to work on the board I'm tinkering
-with; according to the documentation writing any value to 0x12050004 should
-reset the system, as such I have the following snippet in my dts to make it
-work:
+Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+---
+V2:
+* no change in this patch
 
-sysctrl: system-controller@12050000 {
-	compatible = "hisilicon,hi3521a-sysctrl", "syscon";
-	reg = <0x12050000 0x1000>;
-	#clock-cells = <1>;
-	#reset-cells = <2>;
-};
+ drivers/pci/host/pci-tegra.c | 76 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 76 insertions(+)
 
-reboot {
-	compatible = "syscon-reboot";
-	regmap = <&sysctrl>;
-	offset = <0x4>;
-	mask = <0xdeadbeef>;
-};
-
-The above is primarily based on the hi3519.dtsi setup, whose docs indicate
-it resets in the same manner.
-
-However, issuing a `reboot' ends up putting the cpu into a wierd state, with
-the serial port getting spammed with '0x0a2020202020...0a20202020...' in what
-appears to be an infinite amount of time (let it sit in this state overnight,
-remaining in this state.
-
-It doesn't make much sense to me, as I can't find anything in the bsp regarding
-reset excluding a small bit in linux-3.10.y/arch/arm/mach-hi3521a/core.c:
-
-void hi3521a_restart(char mode, const char *cmd)
-{
-	writel(~0, __io_address(REG_BASE_SCTL + REG_SC_SYSRES));
-}
-
-which effectively does the same thing as syscon-reboot.
-
-This happens whether I reboot via command or by killing the process feeding the
-watchdog (procd on lede's initramfs).
-
-Was hoping you guys could perhaps provide some guidance regarding this matter.
-
-Regards,
-Marty
+diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+index bbc2807bcd4a..b380958a3deb 100644
+--- a/drivers/pci/host/pci-tegra.c
++++ b/drivers/pci/host/pci-tegra.c
+@@ -155,6 +155,8 @@
+ #define  AFI_INTR_EN_FPCI_TIMEOUT	(1 << 7)
+ #define  AFI_INTR_EN_PRSNT_SENSE	(1 << 8)
+ 
++#define AFI_PCIE_PME		0xf0
++
+ #define AFI_PCIE_CONFIG					0x0f8
+ #define  AFI_PCIE_CONFIG_PCIE_DISABLE(x)		(1 << ((x) + 1))
+ #define  AFI_PCIE_CONFIG_PCIE_DISABLE_ALL		0xe
+@@ -315,6 +317,7 @@
+ #define PADS_REFCLK_CFG_DRVI_SHIFT		12 /* 15:12 */
+ 
+ #define LINK_RETRAIN_TIMEOUT 100000
++#define PME_ACK_TIMEOUT 10000
+ 
+ struct tegra_msi {
+ 	struct msi_controller chip;
+@@ -1503,6 +1506,76 @@ static int tegra_pcie_put_resources(struct tegra_pcie *pcie)
+ 	return 0;
+ }
+ 
++static inline u32 get_pme_turnoff_bitmap(struct tegra_pcie_port *port)
++{
++	struct device *dev = port->pcie->dev;
++	struct device_node *np = dev->of_node;
++	int ret = 0;
++
++	switch (port->index) {
++	case 0:
++		ret = 0;
++	case 1:
++		ret = 8;
++	case 2:
++		if (of_device_is_compatible(np, "nvidia,tegra30-pcie"))
++			ret = 16;
++		else
++			ret = 12;
++	}
++	return ret;
++}
++
++static inline u32 get_pme_ack_bitmap(struct tegra_pcie_port *port)
++{
++	struct device *dev = port->pcie->dev;
++	struct device_node *np = dev->of_node;
++	int ret = 0;
++
++	switch (port->index) {
++	case 0:
++		ret = 5;
++	case 1:
++		ret = 10;
++	case 2:
++		if (of_device_is_compatible(np, "nvidia,tegra30-pcie"))
++			ret = 18;
++		else
++			ret = 14;
++	}
++	return ret;
++}
++
++static void tegra_pcie_pme_turnoff(struct tegra_pcie_port *port)
++{
++	struct tegra_pcie *pcie = port->pcie;
++	ktime_t deadline;
++	unsigned int data;
++
++	data = afi_readl(pcie, AFI_PCIE_PME);
++	data |= (0x1 << get_pme_turnoff_bitmap(port));
++	afi_writel(pcie, data, AFI_PCIE_PME);
++
++	deadline = ktime_add_us(ktime_get(), PME_ACK_TIMEOUT);
++	do {
++		data = afi_readl(pcie, AFI_PCIE_PME);
++		data &= (0x1 << get_pme_ack_bitmap(port));
++		udelay(1);
++		if (ktime_after(ktime_get(), deadline))
++			break;
++	} while (!data);
++
++	if (data)
++		dev_err(pcie->dev, "PME Ack is not receieved on port: %d\n",
++			port->index);
++
++	usleep_range(10000, 11000);
++
++	data = afi_readl(pcie, AFI_PCIE_PME);
++	data &= ~(0x1 << get_pme_turnoff_bitmap(port));
++	afi_writel(pcie, data, AFI_PCIE_PME);
++}
++
+ static int tegra_msi_alloc(struct tegra_msi *chip)
+ {
+ 	int msi;
+@@ -2828,6 +2901,7 @@ static int tegra_pcie_remove(struct platform_device *pdev)
+ {
+ 	struct tegra_pcie *pcie = platform_get_drvdata(pdev);
+ 	struct pci_host_bridge *host = pci_host_bridge_from_priv(pcie);
++	struct tegra_pcie_port *port, *tmp;
+ 
+ 	if (IS_ENABLED(CONFIG_DEBUG_FS))
+ 		tegra_pcie_debugfs_exit(pcie);
+@@ -2835,6 +2909,8 @@ static int tegra_pcie_remove(struct platform_device *pdev)
+ 	pci_remove_root_bus(host->bus);
+ 	if (IS_ENABLED(CONFIG_PCI_MSI))
+ 		tegra_pcie_disable_msi(pcie);
++	list_for_each_entry_safe(port, tmp, &pcie->ports, list)
++		tegra_pcie_pme_turnoff(port);
+ 	tegra_pcie_disable_ports(pcie);
+ 	tegra_pcie_free_resources(pcie);
+ 	tegra_pcie_disable_controller(pcie);
 -- 
-2.15.0
+2.1.4
