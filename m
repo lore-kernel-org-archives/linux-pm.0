@@ -1,30 +1,58 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH] cpuidle: Allow menu governor to enter deeper sleep states after some time
-Date: Sat, 25 Nov 2017 08:30:23 -0800
-Message-ID: <000301d3660a$b4224fd0$1c66ef70$@net>
-References: <a181bf42-9462-476c-6dcd-39fc7151957f@tu-dresden.de> <000101d34938$da740870$8f5c1950$@net> <000801d34a78$cdd27890$697769b0$@net> <002c01d35d0f$8b0416f0$a10c44d0$@net> FMl8e97ZchCDuFMlDezTwJ FS1bekJUDC2CsFSwpebYuw IH9feHKSnhSAJIHtze5qna
-Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta19.telus.net ([209.171.16.92]:56813 "EHLO cmta19.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751231AbdKYQa3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 25 Nov 2017 11:30:29 -0500
-In-Reply-To: IH9feHKSnhSAJIHtze5qna
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+From: "Marty E. Plummer" <hanetzer@startmail.com>
+Subject: hi3521a syscon-reboot issue, reboot fails oddly.
+Date: Sat, 25 Nov 2017 13:02:03 -0600
+Message-ID: <20171125190203.24521-1-hanetzer@startmail.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, xuwei5@hisilicon.com, linux@armlinux.org.uk, z.liuxinliang@hisilicon.com, kong.kongxinwei@hisilicon.com, puck.chen@hisilicon.com, zhangshaokun@hisilicon.com, wangzhou1@hisilicon.com, songxiaowei@hisilicon.com, wangbinghui@hisilicon.com, xuejiancheng@huawei.com, zhangfei.gao@linaro.org, "Marty E. Plummer" <hanetzer@startmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: 'Thomas Ilsche' <thomas.ilsche@tu-dresden.de>, 'Yu Chen' <yu.c.chen@intel.com>
-Cc: =?utf-8?Q?'Marcus_H=C3=A4hnel'?= <mhaehnel@os.inf.tu-dresden.de>, 'Daniel Hackenberg' <daniel.hackenberg@tu-dresden.de>, =?utf-8?Q?'Robert_Sch=C3=B6ne'?= <robert.schoene@tu-dresden.de>, mario.bielert@tu-dresden.de, "'Rafael J. Wysocki'" <rafael.j.wysocki@intel.com>, 'Alex Shi' <alex.shi@linaro.org>, 'Ingo Molnar' <mingo@kernel.org>, 'Rik van Riel' <riel@redhat.com>, 'Daniel Lezcano' <daniel.lezcano@linaro.org>, 'Nicholas Piggin' <npiggin@gmail.com>, linux-pm@vger.kernel.org, 'Len Brown' <lenb@kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-On 2017.11.24 09:36 Doug Smythies wrote:
+Greetings,
 
-> Phoronix mafft: 1.8% MORE energy; ~3.5% performance DEGRADATION. (investigation pending.)
+Having a slight issue with getting reboot to work on the board I'm tinkering
+with; according to the documentation writing any value to 0x12050004 should
+reset the system, as such I have the following snippet in my dts to make it
+work:
 
-Investigation complete. ~400 more Phoronix mafft tests were done. The revised results are:
+sysctrl: system-controller@12050000 {
+	compatible = "hisilicon,hi3521a-sysctrl", "syscon";
+	reg = <0x12050000 0x1000>;
+	#clock-cells = <1>;
+	#reset-cells = <2>;
+};
 
-Phoronix mafft: no consistent energy or performance change.
+reboot {
+	compatible = "syscon-reboot";
+	regmap = <&sysctrl>;
+	offset = <0x4>;
+	mask = <0xdeadbeef>;
+};
 
-... Doug
+The above is primarily based on the hi3519.dtsi setup, whose docs indicate
+it resets in the same manner.
+
+However, issuing a `reboot' ends up putting the cpu into a wierd state, with
+the serial port getting spammed with '0x0a2020202020...0a20202020...' in what
+appears to be an infinite amount of time (let it sit in this state overnight,
+remaining in this state.
+
+It doesn't make much sense to me, as I can't find anything in the bsp regarding
+reset excluding a small bit in linux-3.10.y/arch/arm/mach-hi3521a/core.c:
+
+void hi3521a_restart(char mode, const char *cmd)
+{
+	writel(~0, __io_address(REG_BASE_SCTL + REG_SC_SYSRES));
+}
+
+which effectively does the same thing as syscon-reboot.
+
+This happens whether I reboot via command or by killing the process feeding the
+watchdog (procd on lede's initramfs).
+
+Was hoping you guys could perhaps provide some guidance regarding this matter.
+
+Regards,
+Marty
+-- 
+2.15.0
