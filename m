@@ -1,38 +1,46 @@
-From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
-Subject: [PATCH V2 3/9] ARM: tegra: Export tegra_cpuidle_pcie_irqs_in_use()
-Date: Sun, 26 Nov 2017 01:02:07 +0530
-Message-ID: <1511638333-22951-4-git-send-email-mmaddireddy@nvidia.com>
+From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH V2 4/9] PCI: Export pci_find_host_bridge()
+Date: Sun, 26 Nov 2017 01:02:08 +0530
+Message-ID: <1511638333-22951-5-git-send-email-mmaddireddy@nvidia.com>
 References: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: thierry.reding@gmail.com, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, bhelgaas@google.com, rjw@rjwysocki.net, tglx@linutronix.de
-Cc: vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1511638333-22951-1-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org
+Cc: vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Tegra20 has a HW bug where PCIe interrupts are lost when LP2 (Tegra idle
-state) is enabled. tegra_cpuidle_pcie_irqs_in_use() disables LP2 when
-PCIe irq is mapped. EXPORT tegra_cpuidle_pcie_irqs_in_use() to allow Tegra
-PCIe driver to be compiled as loadable kernel module.
+PCI subsystem pass pci_bus pointer to pci_ops callback functions, Tegra
+host driver use pci_find_host_bridge() to get pci_host_bridge from pci_bus.
+Export pci_find_host_bridge() to allow Tegra PCIe driver to be compiled as
+loadable kernel module.
 
-Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
 V2:
 * commit message update
 
- arch/arm/mach-tegra/cpuidle.c | 1 +
+ drivers/pci/host-bridge.c | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/arch/arm/mach-tegra/cpuidle.c b/arch/arm/mach-tegra/cpuidle.c
-index 316563141add..7d7e6d3ce32d 100644
---- a/arch/arm/mach-tegra/cpuidle.c
-+++ b/arch/arm/mach-tegra/cpuidle.c
-@@ -57,3 +57,4 @@ void tegra_cpuidle_pcie_irqs_in_use(void)
- 		break;
- 	}
+diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
+index add66236215c..e0942fc086ad 100644
+--- a/drivers/pci/host-bridge.c
++++ b/drivers/pci/host-bridge.c
+@@ -22,6 +22,7 @@ struct pci_host_bridge *pci_find_host_bridge(struct pci_bus *bus)
+ 
+ 	return to_pci_host_bridge(root_bus->bridge);
  }
-+EXPORT_SYMBOL(tegra_cpuidle_pcie_irqs_in_use);
++EXPORT_SYMBOL(pci_find_host_bridge);
+ 
+ struct device *pci_get_host_bridge_device(struct pci_dev *dev)
+ {
 -- 
 2.1.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
