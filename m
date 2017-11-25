@@ -1,149 +1,55 @@
-From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
-Subject: [PATCH V2 8/9] PCI: tegra: Broadcast PME_turn_Off message before link goes to L2
-Date: Sun, 26 Nov 2017 01:02:12 +0530
-Message-ID: <1511638333-22951-9-git-send-email-mmaddireddy@nvidia.com>
-References: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
+From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH V2 0/9] Add loadable kernel module and power management support
+Date: Sun, 26 Nov 2017 01:02:04 +0530
+Message-ID: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate16.nvidia.com ([216.228.121.65]:19033 "EHLO
-        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751634AbdKYTcx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 Nov 2017 14:32:53 -0500
-In-Reply-To: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org
+Cc: vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: thierry.reding@gmail.com, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, bhelgaas@google.com, rjw@rjwysocki.net, tglx@linutronix.de
-Cc: vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Manikanta Maddireddy <mmaddireddy@nvidia.com>
 
-Per PCIe r3.0, sec 5.3.3.2.1, PCIe root port shoould broadcast PME_turn_Off
-message before PCIe link goes to L2. PME_turn_Off broadcast mechanism is
-implemented in AFI module. Each Tegra PCIe root port has its own
-PME_turn_Off and PME_TO_Ack bitmap in AFI_PME register, program this
-register to broadcast PME_turn_Off message.
+This series of patches add loadable kernel module and power management
+support to Tegra PCIe host controller driver.
 
-Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
----
-V2:
-* no change in this patch
+These patches are tested on Jetson TK1, TX1 and TX2 platforms, following
+are the verification details.
+	- Multiple module insert & remove
+	- PCIe device functionality after module insert
+	- Free clock, resets, regulators, powergate, iomem and interrupt
+	resources after module remove
+	- PCIe device functionality after resume from RAM
 
- drivers/pci/host/pci-tegra.c | 76 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 76 insertions(+)
+Tegra PCIe host controller driver is using ioremap_page_range() which is
+not exported. This is switched with devm_ioremap() in the series
+'https://patchwork.ozlabs.org/project/linux-tegra/list/?series=9907'.
+Both these series will complete the loadable module support for Tegra
+PCIe host driver.
 
-diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-index bbc2807bcd4a..b380958a3deb 100644
---- a/drivers/pci/host/pci-tegra.c
-+++ b/drivers/pci/host/pci-tegra.c
-@@ -155,6 +155,8 @@
- #define  AFI_INTR_EN_FPCI_TIMEOUT	(1 << 7)
- #define  AFI_INTR_EN_PRSNT_SENSE	(1 << 8)
- 
-+#define AFI_PCIE_PME		0xf0
-+
- #define AFI_PCIE_CONFIG					0x0f8
- #define  AFI_PCIE_CONFIG_PCIE_DISABLE(x)		(1 << ((x) + 1))
- #define  AFI_PCIE_CONFIG_PCIE_DISABLE_ALL		0xe
-@@ -315,6 +317,7 @@
- #define PADS_REFCLK_CFG_DRVI_SHIFT		12 /* 15:12 */
- 
- #define LINK_RETRAIN_TIMEOUT 100000
-+#define PME_ACK_TIMEOUT 10000
- 
- struct tegra_msi {
- 	struct msi_controller chip;
-@@ -1503,6 +1506,76 @@ static int tegra_pcie_put_resources(struct tegra_pcie *pcie)
- 	return 0;
- }
- 
-+static inline u32 get_pme_turnoff_bitmap(struct tegra_pcie_port *port)
-+{
-+	struct device *dev = port->pcie->dev;
-+	struct device_node *np = dev->of_node;
-+	int ret = 0;
-+
-+	switch (port->index) {
-+	case 0:
-+		ret = 0;
-+	case 1:
-+		ret = 8;
-+	case 2:
-+		if (of_device_is_compatible(np, "nvidia,tegra30-pcie"))
-+			ret = 16;
-+		else
-+			ret = 12;
-+	}
-+	return ret;
-+}
-+
-+static inline u32 get_pme_ack_bitmap(struct tegra_pcie_port *port)
-+{
-+	struct device *dev = port->pcie->dev;
-+	struct device_node *np = dev->of_node;
-+	int ret = 0;
-+
-+	switch (port->index) {
-+	case 0:
-+		ret = 5;
-+	case 1:
-+		ret = 10;
-+	case 2:
-+		if (of_device_is_compatible(np, "nvidia,tegra30-pcie"))
-+			ret = 18;
-+		else
-+			ret = 14;
-+	}
-+	return ret;
-+}
-+
-+static void tegra_pcie_pme_turnoff(struct tegra_pcie_port *port)
-+{
-+	struct tegra_pcie *pcie = port->pcie;
-+	ktime_t deadline;
-+	unsigned int data;
-+
-+	data = afi_readl(pcie, AFI_PCIE_PME);
-+	data |= (0x1 << get_pme_turnoff_bitmap(port));
-+	afi_writel(pcie, data, AFI_PCIE_PME);
-+
-+	deadline = ktime_add_us(ktime_get(), PME_ACK_TIMEOUT);
-+	do {
-+		data = afi_readl(pcie, AFI_PCIE_PME);
-+		data &= (0x1 << get_pme_ack_bitmap(port));
-+		udelay(1);
-+		if (ktime_after(ktime_get(), deadline))
-+			break;
-+	} while (!data);
-+
-+	if (data)
-+		dev_err(pcie->dev, "PME Ack is not receieved on port: %d\n",
-+			port->index);
-+
-+	usleep_range(10000, 11000);
-+
-+	data = afi_readl(pcie, AFI_PCIE_PME);
-+	data &= ~(0x1 << get_pme_turnoff_bitmap(port));
-+	afi_writel(pcie, data, AFI_PCIE_PME);
-+}
-+
- static int tegra_msi_alloc(struct tegra_msi *chip)
- {
- 	int msi;
-@@ -2828,6 +2901,7 @@ static int tegra_pcie_remove(struct platform_device *pdev)
- {
- 	struct tegra_pcie *pcie = platform_get_drvdata(pdev);
- 	struct pci_host_bridge *host = pci_host_bridge_from_priv(pcie);
-+	struct tegra_pcie_port *port, *tmp;
- 
- 	if (IS_ENABLED(CONFIG_DEBUG_FS))
- 		tegra_pcie_debugfs_exit(pcie);
-@@ -2835,6 +2909,8 @@ static int tegra_pcie_remove(struct platform_device *pdev)
- 	pci_remove_root_bus(host->bus);
- 	if (IS_ENABLED(CONFIG_PCI_MSI))
- 		tegra_pcie_disable_msi(pcie);
-+	list_for_each_entry_safe(port, tmp, &pcie->ports, list)
-+		tegra_pcie_pme_turnoff(port);
- 	tegra_pcie_disable_ports(pcie);
- 	tegra_pcie_free_resources(pcie);
- 	tegra_pcie_disable_controller(pcie);
+PM QoS fix is dropped in V2 from this series because the fix is
+incorporated in latest 'commit 0759e80b84e3 ("PM / QoS: Fix device resume
+latency framework")'. Update commit message of few patches in V2.
+
+Manikanta Maddireddy (9):
+  genirq: Export irq_set_msi_desc()
+  of: Export of_pci_range_to_resource()
+  ARM: tegra: Export tegra_cpuidle_pcie_irqs_in_use()
+  PCI: Export pci_find_host_bridge()
+  PCI: Export pci_flags
+  PCI: tegra: free resources on probe failure
+  PCI: tegra: Add loadable kernel module support
+  PCI: tegra: Broadcast PME_turn_Off message before link goes to L2
+  PCI: tegra: Add power management support
+
+ arch/arm/mach-tegra/cpuidle.c |   1 +
+ drivers/of/address.c          |   1 +
+ drivers/pci/host-bridge.c     |   1 +
+ drivers/pci/host/Kconfig      |   2 +-
+ drivers/pci/host/pci-tegra.c  | 359 +++++++++++++++++++++++++++++++++---------
+ drivers/pci/setup-bus.c       |   1 +
+ kernel/irq/chip.c             |   1 +
+ 7 files changed, 292 insertions(+), 74 deletions(-)
+
 -- 
 2.1.4
