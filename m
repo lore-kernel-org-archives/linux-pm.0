@@ -1,30 +1,27 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V2 2/9] of: Export of_pci_range_to_resource()
-Date: Sun, 26 Nov 2017 16:31:55 -0600
-Message-ID: <20171126223155.ip6sfcoocvqyeiyr@rob-hp-laptop>
-References: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
- <1511638333-22951-3-git-send-email-mmaddireddy@nvidia.com>
+From: Heiner Kallweit <hkallweit1@gmail.com>
+Subject: Something like devm_pm_runtime_enable desirable?
+Date: Mon, 27 Nov 2017 00:13:38 +0100
+Message-ID: <66504d0c-1b30-8b36-fd11-bd9abc2eb41a@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1511638333-22951-3-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f172.google.com ([209.85.128.172]:46804 "EHLO
+        mail-wr0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751980AbdKZXNq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Nov 2017 18:13:46 -0500
+Received: by mail-wr0-f172.google.com with SMTP id r2so18310771wra.13
+        for <linux-pm@vger.kernel.org>; Sun, 26 Nov 2017 15:13:46 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
 
-On Sun, Nov 26, 2017 at 01:02:06AM +0530, Manikanta Maddireddy wrote:
-> Tegra PCIe host driver parses of_pci_range from device tree and converts
-> to resource. Export of_pci_range_to_resource() to allow Tegra PCIe host
-> driver to be compiled as loadable kernel module.
-> 
-> Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
-> V2:
-> * commit message update
-> 
->  drivers/of/address.c | 1 +
->  1 file changed, 1 insertion(+)
+I have a runtime pm enabled driver which uses device-managed resources
+only and therefore wouldn't need a remove callback. The remove callback
+does pm_runtime_disable only.
+Therefore I'm wondering whether something like devm_pm_runtime_enable
+would be desirable doing the pm_runtime_disable automagically.
 
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+I can't really imagine that I'm the first one with this idea so I
+guess there is some reason why it doesn't exist yet ..
