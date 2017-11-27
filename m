@@ -1,75 +1,77 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: RE: [RFC PATCH v2 6/7] typec: tcpm: Represent source supply through
+From: Heikki Krogerus <heikki.krogerus@linux.intel.com>
+Subject: Re: [RFC PATCH v2 6/7] typec: tcpm: Represent source supply through
  power_supply class
-Date: Mon, 27 Nov 2017 13:43:36 +0000
-Message-ID: <2E89032DDAA8B9408CB92943514A0337014C1B14E9@SW-EX-MBX01.diasemi.com>
+Date: Mon, 27 Nov 2017 16:11:57 +0200
+Message-ID: <20171127141157.GC2403@kuha.fi.intel.com>
 References: <cover.1510657748.git.Adam.Thomson.Opensource@diasemi.com>
  <81dd8843163c9ca193f32d54adb6fece99e5f159.1510657748.git.Adam.Thomson.Opensource@diasemi.com>
  <20171124121902.GA2403@kuha.fi.intel.com>
- <3f1b813d-a9a9-756e-718c-5b2aa2b72906@redhat.com>
+ <2E89032DDAA8B9408CB92943514A0337014C1B1241@SW-EX-MBX01.diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail1.bemta3.messagelabs.com ([195.245.230.172]:51111 "EHLO
-        mail1.bemta3.messagelabs.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751555AbdK0Nnl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Nov 2017 08:43:41 -0500
-In-Reply-To: <3f1b813d-a9a9-756e-718c-5b2aa2b72906@redhat.com>
-Content-Language: en-US
+Received: from mga03.intel.com ([134.134.136.65]:6007 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752240AbdK0OQ0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 27 Nov 2017 09:16:26 -0500
+Content-Disposition: inline
+In-Reply-To: <2E89032DDAA8B9408CB92943514A0337014C1B1241@SW-EX-MBX01.diasemi.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>, Heikki Krogerus <heikki.krogerus@linux.intel.com>, Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Cc: Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
+To: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, Sebastian Reichel <sre@kernel.org>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Support Opensource <Support.Opensource@diasemi.com>
 
-T24gMjUgTm92ZW1iZXIgMjAxNyAxNDowMywgSGFucyBkZSBHb2VkZSB3cm90ZToNCg0KPiBIaSwN
-Cj4gDQo+IE9uIDExLzI0LzIwMTcgMDE6MTkgUE0sIEhlaWtraSBLcm9nZXJ1cyB3cm90ZToNCj4g
-PiBIaSwNCj4gPg0KPiA+IE9uIFR1ZSwgTm92IDE0LCAyMDE3IGF0IDExOjQ0OjQ3QU0gKzAwMDAs
-IEFkYW0gVGhvbXNvbiB3cm90ZToNCj4gPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdXNiL3R5cGVj
-L3RjcG0uYyBiL2RyaXZlcnMvdXNiL3R5cGVjL3RjcG0uYw0KPiA+PiBpbmRleCA3ODk4M2UxLi43
-YzI2YzNkIDEwMDY0NA0KPiA+PiAtLS0gYS9kcml2ZXJzL3VzYi90eXBlYy90Y3BtLmMNCj4gPj4g
-KysrIGIvZHJpdmVycy91c2IvdHlwZWMvdGNwbS5jDQo+ID4+IEBAIC0xMiw2ICsxMiw3IEBADQo+
-ID4+ICAgI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPg0KPiA+PiAgICNpbmNsdWRlIDxsaW51eC9t
-b2R1bGUuaD4NCj4gPj4gICAjaW5jbHVkZSA8bGludXgvbXV0ZXguaD4NCj4gPj4gKyNpbmNsdWRl
-IDxsaW51eC9wb3dlcl9zdXBwbHkuaD4NCj4gPj4gICAjaW5jbHVkZSA8bGludXgvcHJvY19mcy5o
-Pg0KPiA+PiAgICNpbmNsdWRlIDxsaW51eC9zY2hlZC9jbG9jay5oPg0KPiA+PiAgICNpbmNsdWRl
-IDxsaW51eC9zZXFfZmlsZS5oPg0KPiA+PiBAQCAtMjc3LDYgKzI3OCwxMCBAQCBzdHJ1Y3QgdGNw
-bV9wb3J0IHsNCj4gPj4gICAJdTMyIGN1cnJlbnRfbGltaXQ7DQo+ID4+ICAgCXUzMiBzdXBwbHlf
-dm9sdGFnZTsNCj4gPj4NCj4gPj4gKwkvKiBVc2VkIHRvIGV4cG9ydCBUQSB2b2x0YWdlIGFuZCBj
-dXJyZW50ICovDQo+ID4+ICsJc3RydWN0IHBvd2VyX3N1cHBseSAqcHN5Ow0KPiA+PiArCXN0cnVj
-dCBwb3dlcl9zdXBwbHlfZGVzYyBwc3lfZGVzYzsNCj4gPj4gKw0KPiA+PiAgIAl1MzIgYmlzdF9y
-ZXF1ZXN0Ow0KPiA+Pg0KPiA+PiAgIAkvKiBQRCBzdGF0ZSBmb3IgVmVuZG9yIERlZmluZWQgTWVz
-c2FnZXMgKi8NCj4gPj4gQEAgLTE3NTYsNiArMTc2MSw3IEBAIHN0YXRpYyBpbnQgdGNwbV9wZF9z
-ZWxlY3RfcGRvKHN0cnVjdCB0Y3BtX3BvcnQgKnBvcnQpDQo+ID4+ICAgCWludCByZXQgPSAtRUlO
-VkFMOw0KPiA+Pg0KPiA+PiAgIAlwb3J0LT5wcHNfZGF0YS5zdXBwb3J0ZWQgPSBmYWxzZTsNCj4g
-Pj4gKwlwb3J0LT5wc3lfZGVzYy50eXBlID0gUE9XRVJfU1VQUExZX1RZUEVfVVNCX1BEOw0KPiA+
-Pg0KPiA+PiAgIAkvKg0KPiA+PiAgIAkgKiBTZWxlY3QgdGhlIHNvdXJjZSBQRE8gcHJvdmlkaW5n
-IHRoZSBtb3N0IHBvd2VyIHdoaWxlIHN0YXlpbmcgd2l0aGluDQo+ID4+IEBAIC0xNzc1LDggKzE3
-ODEsMTAgQEAgc3RhdGljIGludCB0Y3BtX3BkX3NlbGVjdF9wZG8oc3RydWN0IHRjcG1fcG9ydA0K
-PiAqcG9ydCkNCj4gPj4gICAJCQltdiA9IHBkb19taW5fdm9sdGFnZShwZG8pOw0KPiA+PiAgIAkJ
-CWJyZWFrOw0KPiA+PiAgIAkJY2FzZSBQRE9fVFlQRV9BUERPOg0KPiA+PiAtCQkJaWYgKHBkb19h
-cGRvX3R5cGUocGRvKSA9PSBBUERPX1RZUEVfUFBTKQ0KPiA+PiArCQkJaWYgKHBkb19hcGRvX3R5
-cGUocGRvKSA9PSBBUERPX1RZUEVfUFBTKSB7DQo+ID4+ICAgCQkJCXBvcnQtPnBwc19kYXRhLnN1
-cHBvcnRlZCA9IHRydWU7DQo+ID4+ICsJCQkJcG9ydC0+cHN5X2Rlc2MudHlwZSA9DQo+IFBPV0VS
-X1NVUFBMWV9UWVBFX1VTQl9QRF9QUFM7DQo+ID4+ICsJCQl9DQo+ID4+ICAgCQkJY29udGludWU7
-DQo+ID4+ICAgCQlkZWZhdWx0Og0KPiA+PiAgIAkJCXRjcG1fbG9nKHBvcnQsICJJbnZhbGlkIFBE
-TyB0eXBlLCBpZ25vcmluZyIpOw0KPiA+PiBAQCAtMjI0OCw2ICsyMjU2LDkgQEAgc3RhdGljIHZv
-aWQgdGNwbV9yZXNldF9wb3J0KHN0cnVjdCB0Y3BtX3BvcnQgKnBvcnQpDQo+ID4+ICAgCXBvcnQt
-PnRyeV9zbmtfY291bnQgPSAwOw0KPiA+PiAgIAlwb3J0LT5zdXBwbHlfdm9sdGFnZSA9IDA7DQo+
-ID4+ICAgCXBvcnQtPmN1cnJlbnRfbGltaXQgPSAwOw0KPiA+PiArCXBvcnQtPnBzeV9kZXNjLnR5
-cGUgPSBQT1dFUl9TVVBQTFlfVFlQRV9VU0JfVFlQRV9DOw0KPiA+DQo+ID4gSXMgaXQgT0sgdG8g
-ZXZlcnlib2R5IHRoYXQgdGhlIHR5cGUgb2YgdGhlIHBzeSBpcyBjaGFuZ2VkIGxpa2UgdGhhdD8N
-Cj4gPiBIYW5zPyENCj4gPg0KPiA+IFdlIGRvIGhhdmUgZHJpdmVycyB0aGF0IGFscmVhZHkgY2hh
-bmdlIHRoZSB0eXBlLCBmb3IgZXhhbXBsZQ0KPiA+IGRyaXZlcnMvcG93ZXIvc3VwcGx5L2lzcDE3
-MDRfY2hhcmdlci5jLCBidXQgd2hhdCBkb2VzIHRoZSB1c2VyIHNwYWNlDQo+ID4gZXhwZWN0PyBU
-aGUgQUJJIGZvciB0aGUgcG93ZXIgc3VwcGx5IGNsYXNzIHdhcyBuZXZlciBkb2N1bWVudGVkIEkN
-Cj4gPiBndWVzcy4NCj4gDQo+IFRoZSBtYWluIHVzZXJzcGFjZSBjb25zdW1lciBvZiB0aGUgcG93
-ZXJfc3VwcGx5IHN5c2ZzIGNsYXNzIGlzIHVwb3dlciwNCj4gdXBvd2VyIGtub3dzIGFib3V0IDMg
-dHlwZXM6ICJNYWlucyIsICJCYXR0ZXJ5IiBhbmQgIlVTQiIsIGFueXRoaW5nDQo+IGVsc2UgaXQg
-Z2l2ZXMgYSB0eXBlIG9mIFVQX0RFVklDRV9LSU5EX1VOS05PV04uIFNvDQo+IFBPV0VSX1NVUFBM
-WV9UWVBFX1VTQl9UWVBFX0MNCj4gdnMgUE9XRVJfU1VQUExZX1RZUEVfVVNCX1BEX1BQUyBkb2Vz
-IG1hdHRlciB0byBpdC4NCg0KRG9lcyBvciBkb2Vzbid0IG1hdHRlcj8gSSBoYWQgYSBxdWljayBs
-b29rIGF0IHRoZSBjb2RlIGZvciB1cG93ZXIgYW5kIGlmIEkNCnVuZGVyc3RhbmQgY29ycmVjdGx5
-IHJpZ2h0IG5vdyBib3RoIFVTQl9UWVBFX0MgYW5kIFVTQl9QRF9QUFMgd291bGQgYmUNCnJlcHJl
-c2VudGVkIGFzICdVUF9ERVZJQ0VfS0lORF9VTktOT1dOJyBiYXNlZCBvbiBnX2FzY2lpX3N0cmNh
-c2VjbXAgcmVzdWx0LiBJcw0KdGhhdCBjb3JyZWN0Pw0K
+Hi Adam,
+
+On Fri, Nov 24, 2017 at 02:05:27PM +0000, Adam Thomson wrote:
+> On 24 November 2017 12:19, Heikki Krogerus wrote:
+> > Is it OK to everybody that the type of the psy is changed like that?
+> > Hans?!
+> > 
+> > We do have drivers that already change the type, for example
+> > drivers/power/supply/isp1704_charger.c, but what does the user space
+> > expect? The ABI for the power supply class was never documented I
+> > guess.
+> > 
+> 
+> Hi Heikki,
+> 
+> Appreciate your time in reviewing this.
+> 
+> Yes, I actually saw that as an example when I considered this approach. I didn't
+> see anything obvious for this in the ABI documentation. Any ideas Sebastian?
+> What is user-space expectation for the 'type' property of a power_supply? I
+> assume having this dynamic is ok given existing drivers can already do something
+> like this, but would be good to have clarification.
+> 
+> > I'm not against changing the type, but I think that we should have an
+> > attribute file listing all supported types a psy can have if we go
+> > forward with this. Ideally the type file would just list them as space
+> > separated values, and show the current one with asterisk in front of
+> > it. The output would be similar we have with some of the other files
+> > under /sys/power, at least /sys/power/state, but that would break the
+> > ABI.
+> > 
+> 
+> I added this as I wanted the user to know what was connected rather than
+> blindly trying to set the 'online' property to enable PPS, even if the attached
+> source partner didn't support this. As you say, am not sure we could change the
+> 'TYPE' property as that to my knowledge has always been a single string.
+> 
+> Maybe the addition of a 'SUPPORTED_TYPES' property or something similar could
+> close this gap (as you eluded to), at least by providing a RO list of all
+> supported types? Another option would be to add a type which indicates the
+> supply supports multiple types, and then based on this we can read another
+> property which does as you suggest with multiple strings and one being
+> highlighted? Am certainly open to discussion on this.
+
+It looks like this is USB specific problem. I think the type should
+actually be just USB, and there should be an other USB only attribute
+file which should list the current and supported connection types.
+Well, maybe it does not even need to be USB only.
+
+
+Thanks,
+
+-- 
+heikki
