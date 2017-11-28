@@ -1,88 +1,54 @@
-From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Subject: RE: [PATCH] PM / runtime: Drop children check from
- __pm_runtime_set_status()
-Date: Tue, 28 Nov 2017 12:48:00 +0000
-Message-ID: <TY1PR06MB09928D43D4E5E5752A6A604ED83A0@TY1PR06MB0992.apcprd06.prod.outlook.com>
-References: <1713438.irjm9MTSvo@aspire.rjw.lan>
- <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Subject: Re: [PATCH 1/4] thermal: imx: Use better parameter names than "val"
+Date: Tue, 28 Nov 2017 15:20:43 +0200
+Message-ID: <1511875243.20123.41.camel@nxp.com>
+References: <20171121200225.23316-1-u.kleine-koenig@pengutronix.de>
+         <20171121200225.23316-2-u.kleine-koenig@pengutronix.de>
+         <1511807971.20123.29.camel@nxp.com>
+         <20171127195038.k3ntwdqmdibfooi7@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relmlor2.renesas.com ([210.160.252.172]:13405 "EHLO
-        relmlie1.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1751248AbdK1MsF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Nov 2017 07:48:05 -0500
-In-Reply-To: <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
-Content-Language: ja-JP
+Received: from mail-sn1nam01on0076.outbound.protection.outlook.com ([104.47.32.76]:36148
+        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1753116AbdK1NUs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 28 Nov 2017 08:20:48 -0500
+In-Reply-To: <20171127195038.k3ntwdqmdibfooi7@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: Dong Aisheng <aisheng.dong@nxp.com>, Bai Ping <ping.bai@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, kernel@pengutronix.de
 
-SGkgR2VlcnQtc2FuLA0KDQo+IEZyb206IEdlZXJ0IFV5dHRlcmhvZXZlbiwgU2VudDogVHVlc2Rh
-eSwgTm92ZW1iZXIgMjgsIDIwMTcgNzo1OCBQTQ0KPiANCj4gSGkgUmFmYWVsLCBTaGltb2RhLXNh
-biwNCj4gDQo+IE9uIFN1biwgTm92IDEyLCAyMDE3IGF0IDE6MjcgQU0sIFJhZmFlbCBKLiBXeXNv
-Y2tpIDxyandAcmp3eXNvY2tpLm5ldD4gd3JvdGU6DQo+ID4gRnJvbTogUmFmYWVsIEouIFd5c29j
-a2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPg0KPiA+DQo+ID4gVGhlIGNoZWNrIGZvciAi
-YWN0aXZlIiBjaGlsZHJlbiBpbiBfX3BtX3J1bnRpbWVfc2V0X3N0YXR1cygpLCB3aGVuDQo+ID4g
-dHJ5aW5nIHRvIHNldCB0aGUgcGFyZW50IGRldmljZSBzdGF0dXMgdG8gInN1c3BlbmRlZCIsIGRv
-ZXNuJ3QNCj4gPiByZWFsbHkgbWFrZSBzZW5zZSwgYmVjYXVzZSBpbiBmYWN0IGl0IGlzIG5vdCBp
-bnZhbGlkIHRvIHNldCB0aGUNCj4gPiBzdGF0dXMgb2YgYSBkZXZpY2Ugd2l0aCBydW50aW1lIFBN
-IGRpc2FibGVkIHRvICJzdXNwZW5kZWQiIGluIGFueQ0KPiA+IGNhc2UuICBJdCBpcyBpbnZhbGlk
-IHRvIGVuYWJsZSBydW50aW1lIFBNIGZvciBhIGRldmljZSB3aXRoIGl0cw0KPiA+IHN0YXR1cyBz
-ZXQgdG8gInN1c3BlbmRlZCIgd2hpbGUgaXRzIGNoaWxkX2NvdW50IHJlZmVyZW5jZSBjb3VudGVy
-DQo+ID4gaXMgbm9uemVybywgYnV0IHRoZSBjaGVjayBpbiBfX3BtX3J1bnRpbWVfc2V0X3N0YXR1
-cygpIGRvZXNuJ3QNCj4gPiByZWFsbHkgY292ZXIgdGhhdCBzaXR1YXRpb24uDQo+ID4NCj4gPiBG
-b3IgdGhpcyByZWFzb24sIGRyb3AgdGhlIGNoaWxkcmVuIGNoZWNrIGZyb20gX19wbV9ydW50aW1l
-X3NldF9zdGF0dXMoKQ0KPiA+IGFuZCBhZGQgYSBjaGVjayBhZ2FpbnN0IGNoaWxkX2NvdW50IHJl
-ZmVyZW5jZSBjb3VudGVycyBvZiAic3VzcGVuZGVkIg0KPiA+IGRldmljZXMgdG8gcG1fcnVudGlt
-ZV9lbmFibGUoKS4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxy
-YWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9iYXNlL3Bv
-d2VyL3J1bnRpbWUuYyB8ICAgMzAgKysrKysrKysrKy0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4g
-IDEgZmlsZSBjaGFuZ2VkLCAxMCBpbnNlcnRpb25zKCspLCAyMCBkZWxldGlvbnMoLSkNCj4gPg0K
-PiA+IEluZGV4OiBsaW51eC1wbS9kcml2ZXJzL2Jhc2UvcG93ZXIvcnVudGltZS5jDQo+ID4gPT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PQ0KPiA+IC0tLSBsaW51eC1wbS5vcmlnL2RyaXZlcnMvYmFzZS9wb3dlci9ydW50aW1l
-LmMNCj4gPiArKysgbGludXgtcG0vZHJpdmVycy9iYXNlL3Bvd2VyL3J1bnRpbWUuYw0KPiA+IEBA
-IC0xMTAxLDI5ICsxMTAxLDEzIEBAIGludCBfX3BtX3J1bnRpbWVfc2V0X3N0YXR1cyhzdHJ1Y3Qg
-ZGV2aWMNCj4gPiAgICAgICAgICAgICAgICAgZ290byBvdXQ7DQo+ID4gICAgICAgICB9DQo+ID4N
-Cj4gPiAtICAgICAgIGlmIChkZXYtPnBvd2VyLnJ1bnRpbWVfc3RhdHVzID09IHN0YXR1cykNCj4g
-PiArICAgICAgIGlmIChkZXYtPnBvd2VyLnJ1bnRpbWVfc3RhdHVzID09IHN0YXR1cyB8fCAhcGFy
-ZW50KQ0KPiA+ICAgICAgICAgICAgICAgICBnb3RvIG91dF9zZXQ7DQo+ID4NCj4gPiAgICAgICAg
-IGlmIChzdGF0dXMgPT0gUlBNX1NVU1BFTkRFRCkgew0KPiA+IC0gICAgICAgICAgICAgICAvKg0K
-PiA+IC0gICAgICAgICAgICAgICAgKiBJdCBpcyBpbnZhbGlkIHRvIHN1c3BlbmQgYSBkZXZpY2Ug
-d2l0aCBhbiBhY3RpdmUgY2hpbGQsDQo+ID4gLSAgICAgICAgICAgICAgICAqIHVubGVzcyBpdCBo
-YXMgYmVlbiBzZXQgdG8gaWdub3JlIGl0cyBjaGlsZHJlbi4NCj4gPiAtICAgICAgICAgICAgICAg
-ICovDQo+ID4gLSAgICAgICAgICAgICAgIGlmICghZGV2LT5wb3dlci5pZ25vcmVfY2hpbGRyZW4g
-JiYNCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICBhdG9taWNfcmVhZCgmZGV2LT5wb3dlci5j
-aGlsZF9jb3VudCkpIHsNCj4gPiAtICAgICAgICAgICAgICAgICAgICAgICBkZXZfZXJyKGRldiwg
-InJ1bnRpbWUgUE0gdHJ5aW5nIHRvIHN1c3BlbmQgZGV2aWNlIGJ1dCBhY3RpdmUgY2hpbGRcbiIp
-Ow0KPiANCj4gSkZUUiwgdGhpcyB0cmlnZ2VyZWQgYmVmb3JlIGR1cmluZyBzeXN0ZW0gcmVzdW1l
-IG9uIGUuZy4gU2FsdmF0b3ItWFMgd2l0aA0KPiBSLUNhciBIMzoNCj4gDQo+ICAgICBvaGNpLXBs
-YXRmb3JtIGVlMDgwMDAwLnVzYjogcnVudGltZSBQTSB0cnlpbmcgdG8gc3VzcGVuZCBkZXZpY2UN
-Cj4gYnV0IGFjdGl2ZSBjaGlsZA0KPiAgICAgcGh5X3JjYXJfZ2VuM191c2IyIGVlMDgwMjAwLnVz
-Yi1waHk6IHJ1bnRpbWUgUE0gdHJ5aW5nIHRvIHN1c3BlbmQNCj4gZGV2aWNlIGJ1dCBhY3RpdmUg
-Y2hpbGQNCj4gICAgIG9oY2ktcGxhdGZvcm0gZWUwYzAwMDAudXNiOiBydW50aW1lIFBNIHRyeWlu
-ZyB0byBzdXNwZW5kIGRldmljZQ0KPiBidXQgYWN0aXZlIGNoaWxkDQo+ICAgICBvaGNpLXBsYXRm
-b3JtIGVlMGEwMDAwLnVzYjogcnVudGltZSBQTSB0cnlpbmcgdG8gc3VzcGVuZCBkZXZpY2UNCj4g
-YnV0IGFjdGl2ZSBjaGlsZA0KPiAgICAgcGh5X3JjYXJfZ2VuM191c2IyIGVlMGMwMjAwLnVzYi1w
-aHk6IHJ1bnRpbWUgUE0gdHJ5aW5nIHRvIHN1c3BlbmQNCj4gZGV2aWNlIGJ1dCBhY3RpdmUgY2hp
-bGQNCj4gICAgIHBoeV9yY2FyX2dlbjNfdXNiMiBlZTBhMDIwMC51c2ItcGh5OiBydW50aW1lIFBN
-IHRyeWluZyB0byBzdXNwZW5kDQo+IGRldmljZSBidXQgYWN0aXZlIGNoaWxkDQo+IA0KPiBzbyB0
-aGlzIHdhcyBhbiBleGlzdGluZyBpc3N1ZSB3aXRoIFVTQiBiZWZvcmUuDQoNClRoYW5rIHlvdSBm
-b3IgdGhlIHJlcG9ydCENCkkga25vdyB0aGF0LCBidXQgc2luY2UgdGhpcyBkaWRuJ3QgY2F1c2Ug
-YW55IHRyb3VibGUgdW50aWwgbm93LA0KSSBwb3N0cG9uZWQgdG8gaW52ZXN0aWdhdGUgdGhlIGlz
-c3VlLi4uIEJ1dCwgSSBpbnZlc3RpZ2F0ZSBpdCB0b2RheS4NCkkgZG9uJ3QgZmluZCB0aGUgcm9v
-dCBjYXVzZSB5ZXQuIEhvd2V2ZXIsIGl0IHNlZW1zIHJlbGF0ZWQgdG8gdXNiIGhvc3QgYW5kL29y
-IHVzYiBjb3JlLg0KLS0+IFVTQiBob3N0IHJlbGF0ZWQgZGV2aWNlcycgY2hpbGRfY291bnQgd2ls
-bCBiZSAxIGluIHN1c3BlbmQgdGltaW5nLg0KIC0tPiBJIGd1ZXNzIHJlbW90ZSB3YWtldXAgZmVh
-dHVyZSBpcyBlbmFibGVkPyBCdXQsIEkgZG9uJ3QgZmluZCB0aGUgcG9pbnQgeWV0Lg0KDQpUaGUg
-cmVuZXNhc191c2JocyBhbHNvIHVzZXMgdGhlIHBoeV9yY2FyX2dlbjNfdXNiMiBkcml2ZXIuDQot
-LT4gSWYgSSBvbmx5IHVzZWQgdGhlIHJlbmVzYXNfdXNiaHMgZHJpdmVyIChpbiBvdGhlciB3b3Jk
-cywgSSBkb24ndCBpbnN0YWxsDQogICAgW2VvXWhjaS17aGNkLHBsYXRmb3JtfSBkcml2ZXJzKSwg
-dGhlIGlzc3VlIGRpc2FwcGVhcmVkLg0KIC0tPiBTbywgSSB0aGluayB0aGUgcGh5X3JjYXJfZ2Vu
-M191c2IyIGRyaXZlciBkb2Vzbid0IGNhdXNlIHRoaXMgaXNzdWUuDQogICAgKEJ1dCwgaXQgaXMg
-cG9zc2libGUgdG8gYmUgcmVsYXRlZCB0aG91Z2guKQ0KDQpJJ2xsIGNvbnRpbnVlIHRvIGludmVz
-dGlnYXRlIHRoaXMgaXNzdWUgdG9tb3Jyb3cuDQoNCkJlc3QgcmVnYXJkcywNCllvc2hpaGlybyBT
-aGltb2RhDQoNCg==
+On Mon, 2017-11-27 at 20:50 +0100, Uwe Kleine-König wrote:
+> On Mon, Nov 27, 2017 at 08:39:31PM +0200, Leonard Crestez wrote:
+> > On Tue, 2017-11-21 at 21:02 +0100, Uwe Kleine-König wrote:
+> > > 
+> > > The values passed to imx_init_calib() and imx_init_temp_grade() are
+> > > read from specific OCOTP values. Use their names (in lower case) as
+> > > parameter name instead of "val" to make the code easier to understand.
+> > > 
+
+> > > -static void imx_init_temp_grade(struct platform_device *pdev, u32 val)
+> > > +static void imx_init_temp_grade(struct platform_device *pdev, u32 ocotp_mem0)
+
+> > On imx7 (thermal not currently supported in upstream) the temperature
+> > grade is in OCOTP_TESTER3. So using a more generic parameter name here
+> > would be preferable or this would have to be changed again later.
+
+> Then I suggest to change the semantic and make this:
+> 
+> 	imx_init_temp_grade(struct platform_device *pdev, u32 grade)
+> 
+> and let the caller do the bit shift and masking.
+
+That would work. It just so happens that the grade is stored in the
+same bits.
+
+It might be better to deal with this when adding imx7 thermal support
+instead.
+
+> Does the same problem exist for ocotp_ana1?
+
+No, not that I know of.
