@@ -1,50 +1,52 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpufreq: longhaul: Set transition_delay_us to 20 ms
-Date: Tue, 28 Nov 2017 08:41:30 +0530
-Message-ID: <ed89c17b60d7183144ab4ac4b125fbed373fe670.1511838689.git.viresh.kumar@linaro.org>
-References: <alpine.LRH.2.21.1711241741080.10361@math.ut.ee>
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.21.1711241741080.10361@math.ut.ee>
-Sender: stable-owner@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, mroos@linux.ee
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, "4 . 14+" <stable@vger.kernel.org>, linux-kernel@vger.kernel.org
+From: Phil Reid <preid@electromag.com.au>
+Subject: [RFC v2 0/3]  i2c: core: move smbus_alert into i2c-core
+Date: Tue, 28 Nov 2017 11:38:26 +0800
+Message-ID: <1511840309-37964-1-git-send-email-preid@electromag.com.au>
+Return-path: <linux-i2c-owner@vger.kernel.org>
+Sender: linux-i2c-owner@vger.kernel.org
+To: realmz6@gmail.com, wsa@the-dreams.de, sre@kernel.org, preid@electromag.com.au, adi-buildroot-devel@lists.sourceforge.net, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, jdelvare@suse.de, benjamin.tissoires@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-The commit e948bc8fbee0 ("cpufreq: Cap the default transition delay
-value to 10 ms") caused a regression on EPIA-M min-ITX computer where
-shutdown or reboot hangs occasionally with a print message like:
+A part of the review of previous accepted series 
+"Add sbs-manager with smbalert support" Wolfram suggested moving
+the smbus_alert driver module into the i2c-core.
 
-longhaul: Warning: Timeout while waiting for idle PCI bus
-cpufreq: __target_index: Failed to change cpu frequency: -16
+This is a proposed implementation of that move.
 
-This probably happens because the cpufreq governor tries to change the
-frequency of the CPU faster than allowed by the hardware.
+I've also rename Kconfig and file name to reflect that this only
+relates the smbus alert feature.
 
-With the above commit, the default transition delay comes to 10 ms for a
-transition_latency of 200 us. Set the default transition delay to 20 ms
-directly to fix this regression.
+I think I've compile tested all the possible permutations of compiling 
+things as either builtin or module.
+eg:
+core Builtin, Driver Builin
+core Builtin, Driver Module
+core Module,  Driver Module
 
-Fixes: e948bc8fbee0 ("cpufreq: Cap the default transition delay value to 10 ms")
-Cc: 4.14+ <stable@vger.kernel.org> # 4.14+
-Reported-by: Meelis Roos <mroos@linux.ee>
-Suggested-by: Rafael J. Wysocki <rjw@rjwysocki.net>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/longhaul.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changes from v1:
+- Add guard around of_i2c_setup_smbus_alert for builds
+  that include smbus-alert but are not CONFIG_OF
 
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index c46a12df40dd..56eafcb07859 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -894,7 +894,7 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
- 	if ((longhaul_version != TYPE_LONGHAUL_V1) && (scale_voltage != 0))
- 		longhaul_setup_voltagescaling();
- 
--	policy->cpuinfo.transition_latency = 200000;	/* nsec */
-+	policy->transition_delay_us = 20000;	/* usec */
- 
- 	return cpufreq_table_validate_and_show(policy, longhaul_table);
- }
+
+Phil Reid (3):
+  i2c: smbus: move of_i2c_setup_smbus_alert declaration to i2c-core.h
+  i2c: Kconfig: rename variable I2C_SMBUS to I2C_SMBUS_ALERT
+  i2c: core: move smbus_alert module into i2c-core
+
+ arch/blackfin/configs/BF527-TLL6527M_defconfig |   2 +-
+ drivers/i2c/Kconfig                            |  14 +-
+ drivers/i2c/Makefile                           |   2 +-
+ drivers/i2c/busses/Kconfig                     |   8 +-
+ drivers/i2c/i2c-core-base.c                    |   7 +
+ drivers/i2c/i2c-core-smbus-alert.c             | 243 +++++++++++++++++++++++++
+ drivers/i2c/i2c-core-smbus.c                   |  22 ---
+ drivers/i2c/i2c-core.h                         |  22 +++
+ drivers/i2c/i2c-smbus.c                        | 217 ----------------------
+ drivers/power/supply/Kconfig                   |   2 +-
+ include/linux/i2c-smbus.h                      |  10 -
+ 11 files changed, 284 insertions(+), 265 deletions(-)
+ create mode 100644 drivers/i2c/i2c-core-smbus-alert.c
+ delete mode 100644 drivers/i2c/i2c-smbus.c
+
 -- 
-2.15.0.194.g9af6a3dea062
+1.8.3.1
