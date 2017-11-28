@@ -1,73 +1,48 @@
-From: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-Subject: Re: [PATCH 1/2] MAINTAINERS: regulator: Add
- Documentation/power/regulator/
-Date: Tue, 28 Nov 2017 05:22:02 +0100
-Message-ID: <20171128042201.vwrhaj4jzlah6uy7@latitude>
-References: <20171119050907.5043-1-j.neuschaefer@gmx.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="w2ub33ziud6r3sdi"
-Return-path: <linux-doc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171119050907.5043-1-j.neuschaefer@gmx.net>
-Sender: linux-doc-owner@vger.kernel.org
-To: Jonathan =?utf-8?Q?Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-doc@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH v4.4] PM / OPP: Add missing of_node_put(np)
+Date: Tue, 28 Nov 2017 12:20:41 +0530
+Message-ID: <3b71eca9ceb96a3525f4bb08bd1225536d691638.1511851763.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:44211 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750907AbdK1Gux (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Nov 2017 01:50:53 -0500
+Received: by mail-pg0-f65.google.com with SMTP id c123so19869981pga.11
+        for <linux-pm@vger.kernel.org>; Mon, 27 Nov 2017 22:50:53 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: stable@vger.kernel.org
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 
+From: Tobias Jordan <Tobias.Jordan@elektrobit.com>
 
---w2ub33ziud6r3sdi
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+commit 7978db344719dab1e56d05e6fc04aaaddcde0a5e upstream.
 
-On Sun, Nov 19, 2017 at 06:09:06AM +0100, Jonathan Neusch=C3=A4fer wrote:
-> Signed-off-by: Jonathan Neusch=C3=A4fer <j.neuschaefer@gmx.net>
-> ---
->  MAINTAINERS | 1 +
->  1 file changed, 1 insertion(+)
+The for_each_available_child_of_node() loop in _of_add_opp_table_v2()
+doesn't drop the reference to "np" on errors. Fix that.
 
-Ping.
+Fixes: 274659029c9d (PM / OPP: Add support to parse "operating-points-v2" bindings)
+Cc: 4.4 <stable@vger.kernel.org> # 4.4
+Signed-off-by: Tobias Jordan <Tobias.Jordan@elektrobit.com>
+[ VK: Improved commit log. ]
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/opp/core.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Should I resend this series with Cc: linux-doc@vger.kernel.org?
-
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 2811a211632c..a644d41e088c 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -14447,6 +14447,7 @@ W:	http://www.slimlogic.co.uk/?p=3D48
->  T:	git git://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.g=
-it
->  S:	Supported
->  F:	Documentation/devicetree/bindings/regulator/
-> +F:	Documentation/power/regulator/
->  F:	drivers/regulator/
->  F:	include/dt-bindings/regulator/
->  F:	include/linux/regulator/
-> --=20
-> 2.11.0
->=20
-
---w2ub33ziud6r3sdi
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAABAgAGBQJaHORiAAoJEAgwRJqO81/b6FIP/A12wuswb8DQJU+Fsb/YIwTK
-2OXXmP4paSEzj4twFcjwR7VSZUo3FLaQX/eUEtKR4M8yNJ61V0pzwrmN4tEnNbbW
-n0f8zHU2DSiSlP0Sa1gy0zA9UyDYLS8y24iwfCEU/wUEcS2n67c9PYQHWr2HsSYV
-pIXHPIP4RD6TQQ1M1QIsYGZCnclQw5dp+SM4qicNf6B01MpuZCHUvpjExdb7t+RE
-+ti+w4o0og5vG+u1NPQYqd34s0CHiV9YSrq2RHToAd8/sGmfgeVq2ETsv9tVzDTo
-pHNyDnnWDBZ3XzdHRrSrjAAxllUbSckLSLTY5UQ8b2jvLzv85Hugm/Q9N13QlH5c
-d8PA3SUW87rtj3PPdpFeEsfORa6hjZqNqV7ovbJOzf6wZZDas/BJI+0NCr/DFEgK
-5SIms6F7XSuPPR/7m0F3BFrWmyQghxiIkKU/GwmRiKkaYdTwXki4+4+O8+lBEnaI
-AuO9u3do2n1i5ONPGogd9cuSAJ/bXYLr4FH7ICY1McTmFQ5nArUTOyszT2RWBUWi
-SQqePcFQrK2UoKgH4l/aa9+XwJDFo+xx8Ec5f4QNVCznw2TMr1KzlapRUinOukZ4
-APZUjekKOB5C8KeEiwJm7z9xxFe5kLGU0T0BJcQCfLfc2NpfeT7uUPDaKT3HHsAk
-EaUppRW8CbOnQ5HyJ9cU
-=qKXJ
------END PGP SIGNATURE-----
-
---w2ub33ziud6r3sdi--
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index b8e76f75073b..0b4190a1efaa 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -1199,6 +1199,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
+ 		if (ret) {
+ 			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
+ 				ret);
+++			of_node_put(np);
+ 			goto free_table;
+ 		}
+ 	}
+-- 
+2.15.0.194.g9af6a3dea062
