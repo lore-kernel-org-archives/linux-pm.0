@@ -1,63 +1,61 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v4.4] PM / OPP: Add missing of_node_put(np)
-Date: Tue, 28 Nov 2017 14:51:10 +0530
-Message-ID: <20171128092110.GF11413@vireshk-i7>
-References: <3b71eca9ceb96a3525f4bb08bd1225536d691638.1511851763.git.viresh.kumar@linaro.org>
- <20171128084322.GG9413@kroah.com>
+From: Marc Zyngier <marc.zyngier-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH 01/10] genirq: Export irq_set_msi_desc()
+Date: Tue, 28 Nov 2017 10:00:32 +0000
+Message-ID: <be79bf6f-b24a-6292-5eb1-3bcf97890421@arm.com>
+References: <1511538800-8275-1-git-send-email-mmaddireddy@nvidia.com>
+ <1511538800-8275-2-git-send-email-mmaddireddy@nvidia.com>
+ <alpine.DEB.2.20.1711250050520.2316@nanos>
+ <600a7b65-670e-b164-913c-99e18ae593d2@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:35956 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751847AbdK1JVN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Nov 2017 04:21:13 -0500
-Received: by mail-pf0-f194.google.com with SMTP id i15so18695666pfa.3
-        for <linux-pm@vger.kernel.org>; Tue, 28 Nov 2017 01:21:13 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20171128084322.GG9413@kroah.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <600a7b65-670e-b164-913c-99e18ae593d2-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Language: en-GB
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Thomas Gleixner <tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org>
+Cc: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Greg KH <greg@kroah.com>
-Cc: stable@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 28-11-17, 09:43, Greg KH wrote:
-> On Tue, Nov 28, 2017 at 12:20:41PM +0530, Viresh Kumar wrote:
-> > From: Tobias Jordan <Tobias.Jordan@elektrobit.com>
-> > 
-> > commit 7978db344719dab1e56d05e6fc04aaaddcde0a5e upstream.
-> > 
-> > The for_each_available_child_of_node() loop in _of_add_opp_table_v2()
-> > doesn't drop the reference to "np" on errors. Fix that.
-> > 
-> > Fixes: 274659029c9d (PM / OPP: Add support to parse "operating-points-v2" bindings)
-> > Cc: 4.4 <stable@vger.kernel.org> # 4.4
-> > Signed-off-by: Tobias Jordan <Tobias.Jordan@elektrobit.com>
-> > [ VK: Improved commit log. ]
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > Reviewed-by: Stephen Boyd <sboyd@codeaurora.org>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/base/power/opp/core.c | 1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
-> > index b8e76f75073b..0b4190a1efaa 100644
-> > --- a/drivers/base/power/opp/core.c
-> > +++ b/drivers/base/power/opp/core.c
-> > @@ -1199,6 +1199,7 @@ static int _of_add_opp_table_v2(struct device *dev, struct device_node *opp_np)
-> >  		if (ret) {
-> >  			dev_err(dev, "%s: Failed to add OPP, %d\n", __func__,
-> >  				ret);
-> > ++			of_node_put(np);
+On 25/11/17 19:41, Manikanta Maddireddy wrote:
 > 
-> I don't think you test-built this patch :(
+> 
+> On 25-Nov-17 5:25 AM, Thomas Gleixner wrote:
+>> On Fri, 24 Nov 2017, Manikanta Maddireddy wrote:
+>>
+>> Please CC the proper mailing list for irq related changes.
+>>
+>>> PCI bus support MSI interrupts, allow PCI host driver to set MSI descriptor
+>>> data for an irq.
+>>
+>> This is not really an explanation why this export is needed.
+>>
+>> Thanks,
+>>
+>> 	tglx
+>>
+> Updated the commit log with why Tegra PCIe driver is using this function in V2.
+> Please review.
 
-I actually compile tested the 4.9 patch and found the function to be
-exactly same in 4.4 branch and skipped it being lazy. And the laziness
-always proves that it was a bad decision to skip compiling it :(
+Well, to review it, I would like to be on Cc.
 
-Sorry for the ++ crap (It took me several minutes to see how your
-committed change is different from what I have sent) :(
+My current position on this is that if you need to export this function,
+then you're using a deprecated API, and you should instead consider
+moving to the generic MSI model, which doesn't need any of this.
 
+I've done that a distant past, but never actually published the patch
+(not tested it):
+
+https://git.kernel.org/pub/scm/linux/kernel/git/maz/arm-platforms.git/commit/?h=irq/kill-msi-controller&id=83b3602fcee7972b9d549ed729b56ec28de16081
+
+But without seeing the patches, I may be barking up the wrong tree...
+
+Thanks,
+
+	M.
 -- 
-viresh
+Jazz is not dead. It just smells funny...
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
