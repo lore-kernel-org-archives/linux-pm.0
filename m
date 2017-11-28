@@ -1,54 +1,115 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH 1/4] thermal: imx: Use better parameter names than "val"
-Date: Tue, 28 Nov 2017 15:20:43 +0200
-Message-ID: <1511875243.20123.41.camel@nxp.com>
-References: <20171121200225.23316-1-u.kleine-koenig@pengutronix.de>
-         <20171121200225.23316-2-u.kleine-koenig@pengutronix.de>
-         <1511807971.20123.29.camel@nxp.com>
-         <20171127195038.k3ntwdqmdibfooi7@pengutronix.de>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / runtime: Drop children check from __pm_runtime_set_status()
+Date: Tue, 28 Nov 2017 15:17:15 +0100
+Message-ID: <CAJZ5v0iyjULu3Chxou61Xx3W1ULnfhheY5cHZASVVKw7JmO+Jg@mail.gmail.com>
+References: <1713438.irjm9MTSvo@aspire.rjw.lan> <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-sn1nam01on0076.outbound.protection.outlook.com ([104.47.32.76]:36148
-        "EHLO NAM01-SN1-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1753116AbdK1NUs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 28 Nov 2017 08:20:48 -0500
-In-Reply-To: <20171127195038.k3ntwdqmdibfooi7@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Dong Aisheng <aisheng.dong@nxp.com>, Bai Ping <ping.bai@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, kernel@pengutronix.de
 
-On Mon, 2017-11-27 at 20:50 +0100, Uwe Kleine-König wrote:
-> On Mon, Nov 27, 2017 at 08:39:31PM +0200, Leonard Crestez wrote:
-> > On Tue, 2017-11-21 at 21:02 +0100, Uwe Kleine-König wrote:
-> > > 
-> > > The values passed to imx_init_calib() and imx_init_temp_grade() are
-> > > read from specific OCOTP values. Use their names (in lower case) as
-> > > parameter name instead of "val" to make the code easier to understand.
-> > > 
+On Tue, Nov 28, 2017 at 11:58 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> Hi Rafael, Shimoda-san,
+>
+> On Sun, Nov 12, 2017 at 1:27 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> The check for "active" children in __pm_runtime_set_status(), when
+>> trying to set the parent device status to "suspended", doesn't
+>> really make sense, because in fact it is not invalid to set the
+>> status of a device with runtime PM disabled to "suspended" in any
+>> case.  It is invalid to enable runtime PM for a device with its
+>> status set to "suspended" while its child_count reference counter
+>> is nonzero, but the check in __pm_runtime_set_status() doesn't
+>> really cover that situation.
+>>
+>> For this reason, drop the children check from __pm_runtime_set_status()
+>> and add a check against child_count reference counters of "suspended"
+>> devices to pm_runtime_enable().
+>>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> ---
+>>  drivers/base/power/runtime.c |   30 ++++++++++--------------------
+>>  1 file changed, 10 insertions(+), 20 deletions(-)
+>>
+>> Index: linux-pm/drivers/base/power/runtime.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/base/power/runtime.c
+>> +++ linux-pm/drivers/base/power/runtime.c
+>> @@ -1101,29 +1101,13 @@ int __pm_runtime_set_status(struct devic
+>>                 goto out;
+>>         }
+>>
+>> -       if (dev->power.runtime_status == status)
+>> +       if (dev->power.runtime_status == status || !parent)
+>>                 goto out_set;
+>>
+>>         if (status == RPM_SUSPENDED) {
+>> -               /*
+>> -                * It is invalid to suspend a device with an active child,
+>> -                * unless it has been set to ignore its children.
+>> -                */
+>> -               if (!dev->power.ignore_children &&
+>> -                       atomic_read(&dev->power.child_count)) {
+>> -                       dev_err(dev, "runtime PM trying to suspend device but active child\n");
+>
+> JFTR, this triggered before during system resume on e.g. Salvator-XS with
+> R-Car H3:
+>
+>     ohci-platform ee080000.usb: runtime PM trying to suspend device
+> but active child
+>     phy_rcar_gen3_usb2 ee080200.usb-phy: runtime PM trying to suspend
+> device but active child
+>     ohci-platform ee0c0000.usb: runtime PM trying to suspend device
+> but active child
+>     ohci-platform ee0a0000.usb: runtime PM trying to suspend device
+> but active child
+>     phy_rcar_gen3_usb2 ee0c0200.usb-phy: runtime PM trying to suspend
+> device but active child
+>     phy_rcar_gen3_usb2 ee0a0200.usb-phy: runtime PM trying to suspend
+> device but active child
+>
+> so this was an existing issue with USB before.
+>
+>> -                       error = -EBUSY;
+>> -                       goto out;
+>> -               }
+>> -
+>> -               if (parent) {
+>> -                       atomic_add_unless(&parent->power.child_count, -1, 0);
+>> -                       notify_parent = !parent->power.ignore_children;
+>> -               }
+>> -               goto out_set;
+>> -       }
+>> -
+>> -       if (parent) {
+>> +               atomic_add_unless(&parent->power.child_count, -1, 0);
+>> +               notify_parent = !parent->power.ignore_children;
+>> +       } else {
+>>                 spin_lock_nested(&parent->power.lock, SINGLE_DEPTH_NESTING);
+>>
+>>                 /*
+>> @@ -1307,6 +1291,12 @@ void pm_runtime_enable(struct device *de
+>>         else
+>>                 dev_warn(dev, "Unbalanced %s!\n", __func__);
+>>
+>> +       WARN(dev->power.runtime_status == RPM_SUSPENDED &&
+>> +            !dev->power.ignore_children &&
+>> +            atomic_read(&dev->power.child_count) > 0,
+>> +            "Enabling runtime PM for inactive device (%s) with active children\n",
+>> +            dev_name(dev));
+>
+> And now it became a bit more noisy:
 
-> > > -static void imx_init_temp_grade(struct platform_device *pdev, u32 val)
-> > > +static void imx_init_temp_grade(struct platform_device *pdev, u32 ocotp_mem0)
+Well, it's all existing issues, although the WARN() doesn't provide
+additional information in this particular case.
 
-> > On imx7 (thermal not currently supported in upstream) the temperature
-> > grade is in OCOTP_TESTER3. So using a more generic parameter name here
-> > would be preferable or this would have to be changed again later.
+I'm considering changing it to print a message without a stack trace.
 
-> Then I suggest to change the semantic and make this:
-> 
-> 	imx_init_temp_grade(struct platform_device *pdev, u32 grade)
-> 
-> and let the caller do the bit shift and masking.
-
-That would work. It just so happens that the grade is stored in the
-same bits.
-
-It might be better to deal with this when adding imx7 thermal support
-instead.
-
-> Does the same problem exist for ocotp_ana1?
-
-No, not that I know of.
+Thanks,
+Rafael
