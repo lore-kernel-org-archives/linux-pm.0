@@ -1,152 +1,159 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH 07/13] power: reset: Add a driver for the Microsemi Ocelot reset
-Date: Tue, 28 Nov 2017 16:26:37 +0100
-Message-ID: <20171128152643.20463-8-alexandre.belloni@free-electrons.com>
-References: <20171128152643.20463-1-alexandre.belloni@free-electrons.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [RFC V7 1/2] OPP: Allow OPP table to be used for power-domains
+Date: Tue, 28 Nov 2017 16:50:32 +0100
+Message-ID: <CAPDyKFp_6VD6+7XJGy4oWOf+YQH4Ah6Q7BfmQsuz2OYp4KGjzA@mail.gmail.com>
+References: <cover.1509453284.git.viresh.kumar@linaro.org> <2b244ea0a09deaf50237fb8b7578273a8284499e.1509453284.git.viresh.kumar@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171128152643.20463-1-alexandre.belloni@free-electrons.com>
+In-Reply-To: <2b244ea0a09deaf50237fb8b7578273a8284499e.1509453284.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rob Herring <robh+dt@kernel.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-The Microsemi Ocelot SoC has a register allowing to reset the MIPS core.
-Unfortunately, the syscon-reboot driver can't be used directly (but almost)
-as the reset control may be disabled using another register.
+On 31 October 2017 at 13:47, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Power-domains can also have their active states and this patch enhances
+> the OPP binding to define those.
+>
+> The power domains can use the OPP bindings mostly as is. Though there
+> are some changes required to support special cases:
+>
+> - Allow "operating-points-v2" to contain multiple phandles for power
+>   domain providers providing multiple domains.
+>
+> - A new property "power-domain-opp" is added for devices to specify the
+>   minimum required OPP of the master domain for the functioning of the
+>   device. We can add this property directly to device's node if the
+>   device has a fixed minimum OPP requirement from the master power
 
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
----
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
+Please avoid the terminology "master power domain", it's confusing.
+Instead use only "power domain". This applies to a couple of more
+places of $subject patch, please fix those as well.
 
- drivers/power/reset/Kconfig        |  7 +++
- drivers/power/reset/Makefile       |  1 +
- drivers/power/reset/ocelot-reset.c | 87 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 95 insertions(+)
- create mode 100644 drivers/power/reset/ocelot-reset.c
+>   domain. Or we can add this property to each OPP node of the device, if
+>   different OPP nodes have different minimum OPP requirement from the
+>   master power domain.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/opp/opp.txt      | 12 +++++
+>  .../devicetree/bindings/power/power_domain.txt     | 62 ++++++++++++++++++++++
+>  2 files changed, 74 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> index 9d733af26be7..203e09fe7698 100644
+> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> @@ -45,6 +45,11 @@ Devices supporting OPPs must set their "operating-points-v2" property with
+>  phandle to a OPP table in their DT node. The OPP core will use this phandle to
+>  find the operating points for the device.
+>
+> +This can contain more than one phandle for power domain providers that provide
+> +multiple power domains. That is, one phandle for each power domain. If only one
+> +phandle is available, then the same OPP table will be used for all power domains
+> +provided by the power domain provider.
+> +
+>  If required, this can be extended for SoC vendor specific bindings. Such bindings
+>  should be documented as Documentation/devicetree/bindings/power/<vendor>-opp.txt
+>  and should have a compatible description like: "operating-points-v2-<vendor>".
+> @@ -154,6 +159,13 @@ properties.
+>
+>  - status: Marks the node enabled/disabled.
+>
+> +- power-domain-opp: This contains phandle to one of the OPP nodes of the master
+> +  power domain. This specifies the minimum required OPP of the master domain for
+> +  the functioning of the device in this OPP (where this property is present).
+> +  This property can only be set for a device if the device node contains the
+> +  "power-domains" property. Also, either all or none of the OPP nodes in an OPP
+> +  table should have it set.
+> +
+>  Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+>
+>  / {
+> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> index 14bd9e945ff6..0d8608f2d133 100644
+> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -40,6 +40,12 @@ phandle arguments (so called PM domain specifiers) of length specified by the
+>    domain's idle states. In the absence of this property, the domain would be
+>    considered as capable of being powered-on or powered-off.
+>
+> +- operating-points-v2 : Phandles to the OPP tables of power domains provided by
+> +  a power domain provider. If the provider provides a single power domain only
+> +  or all the power domains provided by the provider have identical OPP tables,
+> +  then this shall contain a single phandle. Refer to ../opp/opp.txt for more
+> +  information.
+> +
+>  Example:
+>
+>         power: power-controller@12340000 {
+> @@ -120,4 +126,60 @@ The node above defines a typical PM domain consumer device, which is located
+>  inside a PM domain with index 0 of a power controller represented by a node
+>  with the label "power".
+>
+> +Optional properties:
+> +- power-domain-opp: This contains phandle to one of the OPP nodes of the master
+> +  power domain. This specifies the minimum required OPP of the master domain for
+> +  the functioning of the device. This property can only be set for a device, if
+> +  the device node contains the "power-domains" property.
+> +
+> +Example:
+> +- OPP table for domain provider that provides two domains.
+> +
+> +       domain0_opp_table: opp_table0 {
+> +               compatible = "operating-points-v2";
+> +
+> +               domain0_opp_0: opp-1000000000 {
+> +                       opp-hz = /bits/ 64 <1000000000>;
+> +                       opp-microvolt = <975000 970000 985000>;
+> +               };
+> +               domain0_opp_1: opp-1100000000 {
+> +                       opp-hz = /bits/ 64 <1100000000>;
+> +                       opp-microvolt = <1000000 980000 1010000>;
+> +               };
+> +       };
+> +
+> +       domain1_opp_table: opp_table1 {
+> +               compatible = "operating-points-v2";
+> +
+> +               domain1_opp_0: opp-1200000000 {
+> +                       opp-hz = /bits/ 64 <1200000000>;
+> +                       opp-microvolt = <975000 970000 985000>;
+> +               };
+> +               domain1_opp_1: opp-1300000000 {
+> +                       opp-hz = /bits/ 64 <1300000000>;
+> +                       opp-microvolt = <1000000 980000 1010000>;
+> +               };
+> +       };
+> +
+> +       parent: power-controller@12340000 {
+> +               compatible = "foo,power-controller";
+> +               reg = <0x12340000 0x1000>;
+> +               #power-domain-cells = <1>;
+> +               operating-points-v2 = <&domain0_opp_table>, <&domain1_opp_table>;
+> +       };
+> +
+> +       leaky-device0@12350000 {
+> +               compatible = "foo,i-leak-current";
+> +               reg = <0x12350000 0x1000>;
+> +               power-domains = <&parent 0>;
+> +               power-domain-opp = <&domain0_opp_0>;
+> +       };
+> +
+> +       leaky-device1@12350000 {
+> +               compatible = "foo,i-leak-current";
+> +               reg = <0x12350000 0x1000>;
+> +               power-domains = <&parent 1>;
+> +               power-domain-opp = <&domain1_opp_1>;
+> +       };
+> +
+>  [1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
+> --
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index ca0de1a78e85..2372f8e1040d 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -113,6 +113,13 @@ config POWER_RESET_MSM
- 	help
- 	  Power off and restart support for Qualcomm boards.
- 
-+config POWER_RESET_OCELOT_RESET
-+	bool "Microsemi Ocelot reset driver"
-+	depends on MSCC_OCELOT || COMPILE_TEST
-+	select MFD_SYSCON
-+	help
-+	  This driver supports restart for Microsemi Ocelot SoC.
-+
- config POWER_RESET_PIIX4_POWEROFF
- 	tristate "Intel PIIX4 power-off driver"
- 	depends on PCI
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index aeb65edb17b7..df9d92291c67 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -12,6 +12,7 @@ obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
- obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
- obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
- obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
-+obj-$(CONFIG_POWER_RESET_OCELOT_RESET) += ocelot-reset.o
- obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
- obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
-diff --git a/drivers/power/reset/ocelot-reset.c b/drivers/power/reset/ocelot-reset.c
-new file mode 100644
-index 000000000000..d27e3d51f6a4
---- /dev/null
-+++ b/drivers/power/reset/ocelot-reset.c
-@@ -0,0 +1,87 @@
-+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-+/*
-+ * Microsemi MIPS SoC reset driver
-+ *
-+ * License: Dual MIT/GPL
-+ * Copyright (c) 2017 Microsemi Corporation
-+ */
-+#include <linux/delay.h>
-+#include <linux/io.h>
-+#include <linux/notifier.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/of_address.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/reboot.h>
-+#include <linux/regmap.h>
-+
-+struct ocelot_reset_context {
-+	struct regmap *chip_regs;
-+	struct regmap *cpu_ctrl;
-+	struct notifier_block restart_handler;
-+};
-+
-+#define ICPU_CFG_CPU_SYSTEM_CTRL_RESET 0x20
-+#define CORE_RST_PROTECT BIT(2)
-+
-+#define CHIP_REGS_SOFT_RST 0x8
-+#define SOFT_CHIP_RST BIT(0)
-+
-+static int ocelot_restart_handle(struct notifier_block *this,
-+				 unsigned long mode, void *cmd)
-+{
-+	struct ocelot_reset_context *ctx = container_of(this, struct
-+							ocelot_reset_context,
-+							restart_handler);
-+
-+	/* Make sure the core is not protected from reset */
-+	regmap_update_bits(ctx->cpu_ctrl, ICPU_CFG_CPU_SYSTEM_CTRL_RESET,
-+			   CORE_RST_PROTECT, 0);
-+
-+	regmap_write(ctx->chip_regs, CHIP_REGS_SOFT_RST, SOFT_CHIP_RST);
-+
-+	pr_emerg("Unable to restart system\n");
-+	return NOTIFY_DONE;
-+}
-+
-+static int ocelot_reset_probe(struct platform_device *pdev)
-+{
-+	struct ocelot_reset_context *ctx;
-+	struct device *dev = &pdev->dev;
-+	int err;
-+
-+	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
-+	if (!ctx)
-+		return -ENOMEM;
-+
-+	ctx->chip_regs = syscon_node_to_regmap(of_get_parent(dev->of_node));
-+	if (IS_ERR(ctx->chip_regs))
-+		return PTR_ERR(ctx->chip_regs);
-+
-+	ctx->cpu_ctrl = syscon_regmap_lookup_by_phandle(dev->of_node,
-+							"mscc,cpucontrol");
-+	if (IS_ERR(ctx->cpu_ctrl))
-+		return PTR_ERR(ctx->cpu_ctrl);
-+
-+	ctx->restart_handler.notifier_call = ocelot_restart_handle;
-+	ctx->restart_handler.priority = 192;
-+	err = register_restart_handler(&ctx->restart_handler);
-+	if (err)
-+		dev_err(dev, "can't register restart notifier (err=%d)\n", err);
-+
-+	return err;
-+}
-+
-+static const struct of_device_id ocelot_reset_of_match[] = {
-+	{ .compatible = "mscc,ocelot-chip-reset" },
-+	{}
-+};
-+
-+static struct platform_driver ocelot_reset_driver = {
-+	.probe = ocelot_reset_probe,
-+	.driver = {
-+		.name = "ocelot-chip-reset",
-+		.of_match_table = ocelot_reset_of_match,
-+	},
-+};
-+builtin_platform_driver(ocelot_reset_driver);
--- 
-2.15.0
+Besides the minor nitpick(s), this looks good to me. Feel free to add:
+
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
