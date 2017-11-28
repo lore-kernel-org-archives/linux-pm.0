@@ -1,63 +1,92 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH 1/2] MAINTAINERS: regulator: Add
- Documentation/power/regulator/
-Date: Tue, 28 Nov 2017 15:15:37 +0000
-Message-ID: <20171128151537.jxf4ojjf7n7mnk7r@sirena.org.uk>
-References: <20171119050907.5043-1-j.neuschaefer@gmx.net>
- <20171128042201.vwrhaj4jzlah6uy7@latitude>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="rj6msg7r2xsbbv2r"
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: [PATCH 00/13] MIPS: add support for the Microsemi MIPS SoCs
+Date: Tue, 28 Nov 2017 16:26:30 +0100
+Message-ID: <20171128152643.20463-1-alexandre.belloni@free-electrons.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171128042201.vwrhaj4jzlah6uy7@latitude>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Jonathan =?iso-8859-1?Q?Neusch=E4fer?= <j.neuschaefer@gmx.net>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, linux-doc@vger.kernel.org
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Linus Walleij <linus.walleij@linaro.org>, linux-gpio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi,
 
---rj6msg7r2xsbbv2r
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch series adds initial support for the Microsemi MIPS SoCs. It
+is currently focusing on the Microsemi Ocelot (VSC7513, VSC7514).
 
-On Tue, Nov 28, 2017 at 05:22:02AM +0100, Jonathan Neusch=E4fer wrote:
-> On Sun, Nov 19, 2017 at 06:09:06AM +0100, Jonathan Neusch=E4fer wrote:
-> > Signed-off-by: Jonathan Neusch=E4fer <j.neuschaefer@gmx.net>
-> > ---
-> >  MAINTAINERS | 1 +
-> >  1 file changed, 1 insertion(+)
->=20
-> Ping.
->=20
-> Should I resend this series with Cc: linux-doc@vger.kernel.org?
+It adds support for the IRQ controller, pinmux and gpio controller and
+reset control.
 
-Please don't send content free pings and please allow a reasonable time
-for review.  People get busy, go on holiday, attend conferences and so=20
-on so unless there is some reason for urgency (like critical bug fixes)
-please allow at least a couple of weeks for review.  If there have been
-review comments then people may be waiting for those to be addressed.
+This produces a kernel that can boot to the console.
 
-Sending content free pings adds to the mail volume (if they are seen at
-all) which is often the problem and since they can't be reviewed
-directly if something has gone wrong you'll have to resend the patches
-anyway, though there are some other maintainers who like them - if in
-doubt look at how patches for the subsystem are normally handled.
+This is a single series for reference but it can also be taken
+separately by each maintainer as each drivers are independant.
 
---rj6msg7r2xsbbv2r
-Content-Type: application/pgp-signature; name="signature.asc"
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: devicetree@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jason Cooper <jason@lakedaemon.net>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-gpio@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org
 
------BEGIN PGP SIGNATURE-----
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlodfZgACgkQJNaLcl1U
-h9DF6wf/dCqm0UlGz6IPTx57TiVlDIdt28iLygFRhqf++TcJqmG03ZnxePeVgGBE
-OM+nKrr6U+C59652sOmEcw9q5xMiD0fHwVORMSsFKzb2MH7Age7nym4jwOkPmF1e
-e7AvM9feHRnApqvl+mAslhWPgSDSKAVBLQ6tN7xciV6sNmea0JU/ErBemOaWmTbf
-zAJa7lVD4f+bb1MmZsWgYar9xklpddIw8qOih4OhJCnLJ/5DXQodDYnUyEGvA8Qj
-jrIyNJyh6bU/dWeX7gifL/fvnSTnhwrcNKgReZWTE8ZqEjQ4ZK2X3pDPd/1znXFn
-friK68UhShSZiEHl6iST9RScUiYZfA==
-=qGI3
------END PGP SIGNATURE-----
+Alexandre Belloni (13):
+  dt-bindings: Add vendor prefix for Microsemi Corporation
+  dt-bindings: interrupt-controller: Add binding for the Microsemi
+    Ocelot interrupt controller
+  irqchip: Add a driver for the Microsemi Ocelot controller
+  dt-bindings: pinctrl: Add bindings for Microsemi Ocelot
+  pinctrl: Add Microsemi Ocelot SoC driver
+  dt-bindings: power: reset: Document ocelot-reset binding
+  power: reset: Add a driver for the Microsemi Ocelot reset
+  dt-bindings: mips: Add bindings for Microsemi SoCs
+  MIPS: mscc: Add initial support for Microsemi MIPS SoCs
+  MIPS: mscc: add ocelot dtsi
+  MIPS: mscc: add ocelot PCB123 device tree
+  MIPS: defconfigs: add a defconfig for Microsemi SoCs
+  MAINTAINERS: Add entry for Microsemi MIPS SoCs
 
---rj6msg7r2xsbbv2r--
+ .../interrupt-controller/mscc,ocelot-icpu-intr.txt |  22 +
+ Documentation/devicetree/bindings/mips/mscc.txt    |   6 +
+ .../bindings/pinctrl/mscc,ocelot-pinctrl.txt       |  39 ++
+ .../bindings/power/reset/ocelot-reset.txt          |  24 +
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ MAINTAINERS                                        |   7 +
+ arch/mips/Kbuild.platforms                         |   1 +
+ arch/mips/Kconfig                                  |  24 +
+ arch/mips/boot/dts/Makefile                        |   1 +
+ arch/mips/boot/dts/mscc/Makefile                   |   6 +
+ arch/mips/boot/dts/mscc/ocelot.dtsi                | 118 +++++
+ arch/mips/boot/dts/mscc/ocelot_pcb123.dts          |  30 ++
+ arch/mips/configs/mscc_defconfig                   |  84 ++++
+ arch/mips/mscc/Makefile                            |  11 +
+ arch/mips/mscc/Platform                            |  12 +
+ arch/mips/mscc/setup.c                             | 106 +++++
+ drivers/irqchip/Kconfig                            |   5 +
+ drivers/irqchip/Makefile                           |   1 +
+ drivers/irqchip/irq-mscc-ocelot.c                  | 109 +++++
+ drivers/pinctrl/Kconfig                            |  10 +
+ drivers/pinctrl/Makefile                           |   1 +
+ drivers/pinctrl/pinctrl-ocelot.c                   | 505 +++++++++++++++++++++
+ drivers/power/reset/Kconfig                        |   7 +
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/ocelot-reset.c                 |  87 ++++
+ 25 files changed, 1218 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interrupt-controller/mscc,ocelot-icpu-intr.txt
+ create mode 100644 Documentation/devicetree/bindings/mips/mscc.txt
+ create mode 100644 Documentation/devicetree/bindings/pinctrl/mscc,ocelot-pinctrl.txt
+ create mode 100644 Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
+ create mode 100644 arch/mips/boot/dts/mscc/Makefile
+ create mode 100644 arch/mips/boot/dts/mscc/ocelot.dtsi
+ create mode 100644 arch/mips/boot/dts/mscc/ocelot_pcb123.dts
+ create mode 100644 arch/mips/configs/mscc_defconfig
+ create mode 100644 arch/mips/mscc/Makefile
+ create mode 100644 arch/mips/mscc/Platform
+ create mode 100644 arch/mips/mscc/setup.c
+ create mode 100644 drivers/irqchip/irq-mscc-ocelot.c
+ create mode 100644 drivers/pinctrl/pinctrl-ocelot.c
+ create mode 100644 drivers/power/reset/ocelot-reset.c
+
+-- 
+2.15.0
