@@ -1,115 +1,22 @@
-From: Jean Delvare <jdelvare@suse.de>
-Subject: Re: [RFC v2 2/3] i2c: Kconfig: rename variable I2C_SMBUS to
- I2C_SMBUS_ALERT
-Date: Tue, 28 Nov 2017 23:08:55 +0100
-Message-ID: <20171128230855.20bb64be@endymion>
-References: <1511840309-37964-1-git-send-email-preid@electromag.com.au>
-        <1511840309-37964-3-git-send-email-preid@electromag.com.au>
+From: "Bruce Chang (VAS)" <BruceChang@via-alliance.com>
+Subject: Test mail
+Date: Wed, 29 Nov 2017 01:35:32 +0000
+Message-ID: <a058e30e884d4f7eb5768cecc74fbd08@via-alliance.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:39877 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751144AbdK1WJA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 28 Nov 2017 17:09:00 -0500
-In-Reply-To: <1511840309-37964-3-git-send-email-preid@electromag.com.au>
+Received: from TPCH01.via.com.tw ([61.66.243.61]:42329 "EHLO email.via.com.tw"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1752617AbdK2BlC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 28 Nov 2017 20:41:02 -0500
+Content-Language: zh-CN
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Phil Reid <preid@electromag.com.au>
-Cc: realmz6@gmail.com, wsa@the-dreams.de, sre@kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, benjamin.tissoires@redhat.com
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-Hi Phil,
+I'm sorry for this mail to disturbing you.
+It's just a test mail.
 
-On Tue, 28 Nov 2017 11:38:28 +0800, Phil Reid wrote:
-> i2c-smbus now only contains code related to the smbus_alert driver.
-> Other smbus protocols have been moved from this into the i2c-core-smbus.
-> Change the Kconfig variable name to reflect this.
-
-Not really. i2c-core-smbus.c contains essentially SMBus transaction
-helpers, which have never been in i2c-smbus.c. They aren't really SMBus
-protocols, more like a subset of I2C transactions suitable for general
-purpose. The only really SMBus protocol specific portion is relative to
-SMBus Alert, and that's only a small part of it. The other supported
-SMBus-specific protocol, Host Notify, is in i2c-core-base.c.
-
-My original intent was to have all the SMBus protocols specific code in
-one file, controlled by one Kconfig option, which could be built as a
-separate module. I wasn't certain it would be viable, it was a bet
-which I lost, as it turns out there are too many dependencies.
-
-If the code can no longer build as a separate module, there is no
-benefit in having it in a separate file. Let's just merge it into
-i2c-code-smbus.c, where the rest of the SMBus alert code already is.
-That would make things more simple.
-
-I also don't think renaming this configuration option and moving code
-to a separate file (as your patch 3/3 does) makes sense. Having a
-separate option for each SMBus-specific protocol seems overkill to me,
-having one for all of them was and still is more reasonable. I wonder
-why the SMBus Notify code does NOT depend on CONFIG_I2C_SMBUS, and why
-it is in i2c-core-base.c instead of i2c-core-smbus.c. Wolfram?
-
-And more generally, renaming a Kconfig option has a non-trivial cost
-for distribution kernel maintainers, so it shall not be done lightly.
-So you need a clear and strong rationale.
-
-> Signed-off-by: Phil Reid <preid@electromag.com.au>
-> ---
->  arch/blackfin/configs/BF527-TLL6527M_defconfig |  2 +-
->  drivers/i2c/Kconfig                            | 11 +++++------
->  drivers/i2c/Makefile                           |  2 +-
->  drivers/i2c/busses/Kconfig                     |  8 ++++----
->  drivers/i2c/i2c-core-smbus.c                   |  2 +-
->  drivers/i2c/i2c-core.h                         |  2 +-
->  drivers/power/supply/Kconfig                   |  2 +-
->  7 files changed, 14 insertions(+), 15 deletions(-)
-> (...)
-> diff --git a/drivers/i2c/Kconfig b/drivers/i2c/Kconfig
-> index efc3354..fcd4bea 100644
-> --- a/drivers/i2c/Kconfig
-> +++ b/drivers/i2c/Kconfig
-> @@ -55,7 +55,7 @@ config I2C_CHARDEV
->  	  programs use the I2C bus.  Information on how to do this is
->  	  contained in the file <file:Documentation/i2c/dev-interface>.
->  
-> -	  This support is also available as a module.  If so, the module 
-> +	  This support is also available as a module.  If so, the module
->  	  will be called i2c-dev.
->  
->  config I2C_MUX
-
-Please don't mix white-space clean-ups with actual changes. It might
-be tolerated by some maintainers if within a chunk you are already
-touching. But if such a change creates a new patch chunk then it's a
-no-go.
-
-Your patch 1/3 suffers from similar issues.
-
-> @@ -84,12 +84,11 @@ config I2C_HELPER_AUTO
->  
->  	  In doubt, say Y.
->  
-> -config I2C_SMBUS
-> -	tristate "SMBus-specific protocols" if !I2C_HELPER_AUTO
-> +config I2C_SMBUS_ALERT
-> +	tristate "SMBus-alert protocol" if !I2C_HELPER_AUTO
-
-"SMBus Alert" is the correct spelling.
-
->  	help
-> -	  Say Y here if you want support for SMBus extensions to the I2C
-> -	  specification. At the moment, two extensions are supported:
-> -	  the SMBus Alert protocol and the SMBus Host Notify protocol.
-> +	  Say Y here if you want support for SMBus alert extensions to the I2C
-> +	  specification.
-
-"extension" without "s".
-
->  
->  	  This support is also available as a module.  If so, the module
->  	  will be called i2c-smbus.
-
--- 
-Jean Delvare
-SUSE L3 Support
+Bruce
+The information transmitted in this e-mail is intended only for the addressee and may contain confidential and/or privileged material. Any review, retransmission, dissemination or other use of this information by persons or entities other than the intended recipient is prohibited. If you received this e-mail in error, please notify the sender immediately, and delete this e-mail and any attachments. Thank you.
