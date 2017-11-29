@@ -1,14 +1,18 @@
 From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: [PATCH 11/11] jfs: remove not needed freezing calls
-Date: Wed, 29 Nov 2017 15:23:56 -0800
-Message-ID: <20171129232356.28296-12-mcgrof@kernel.org>
+Subject: [PATCH 10/11] nilfs2: remove not needed freezing calls
+Date: Wed, 29 Nov 2017 15:23:55 -0800
+Message-ID: <20171129232356.28296-11-mcgrof@kernel.org>
 References: <20171129232356.28296-1-mcgrof@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:54202 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753293AbdK2XYN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 Nov 2017 18:24:13 -0500
 In-Reply-To: <20171129232356.28296-1-mcgrof@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org
 Cc: boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@kernel.org>
-List-Id: linux-pm@vger.kernel.org
 
 This removes superflous freezer calls as they are no longer needed
 as the VFS now performs filesystem freezing/thaw if the filesystem has
@@ -59,87 +63,78 @@ expression task;
 Generated-by: Coccinelle SmPL
 Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
 ---
- fs/jfs/jfs_logmgr.c | 11 +++--------
- fs/jfs/jfs_txnmgr.c | 31 +++++++++----------------------
- 2 files changed, 12 insertions(+), 30 deletions(-)
+ fs/nilfs2/segment.c | 48 ++++++++++++++++++++----------------------------
+ 1 file changed, 20 insertions(+), 28 deletions(-)
 
-diff --git a/fs/jfs/jfs_logmgr.c b/fs/jfs/jfs_logmgr.c
-index 0e5d412c0b01..fa5a95d8fba8 100644
---- a/fs/jfs/jfs_logmgr.c
-+++ b/fs/jfs/jfs_logmgr.c
-@@ -2344,14 +2344,9 @@ int jfsIOWait(void *arg)
- 			spin_lock_irq(&log_redrive_lock);
- 		}
+diff --git a/fs/nilfs2/segment.c b/fs/nilfs2/segment.c
+index 9f3ffba41533..407e12a60145 100644
+--- a/fs/nilfs2/segment.c
++++ b/fs/nilfs2/segment.c
+@@ -2543,6 +2543,8 @@ static int nilfs_segctor_thread(void *arg)
+ 	struct nilfs_sc_info *sci = (struct nilfs_sc_info *)arg;
+ 	struct the_nilfs *nilfs = sci->sc_super->s_fs_info;
+ 	int timeout = 0;
++	DEFINE_WAIT(wait);
++	int should_sleep = 1;
  
--		if (freezing(current)) {
--			spin_unlock_irq(&log_redrive_lock);
--			try_to_freeze();
--		} else {
--			set_current_state(TASK_INTERRUPTIBLE);
--			spin_unlock_irq(&log_redrive_lock);
--			schedule();
--		}
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		spin_unlock_irq(&log_redrive_lock);
+ 	sci->sc_timer_task = current;
+ 
+@@ -2574,38 +2576,28 @@ static int nilfs_segctor_thread(void *arg)
+ 		timeout = 0;
+ 	}
+ 
++	prepare_to_wait(&sci->sc_wait_daemon, &wait,
++			TASK_INTERRUPTIBLE);
+ 
+-	if (freezing(current)) {
++	if (sci->sc_seq_request != sci->sc_seq_done)
++		should_sleep = 0;
++	else if (sci->sc_flush_request)
++		should_sleep = 0;
++	else if (sci->sc_state & NILFS_SEGCTOR_COMMIT)
++		should_sleep = time_before(jiffies,
++				sci->sc_timer.expires);
++
++	if (should_sleep) {
+ 		spin_unlock(&sci->sc_state_lock);
+-		try_to_freeze();
 +		schedule();
- 	} while (!kthread_should_stop());
- 
- 	jfs_info("jfsIOWait being killed!");
-diff --git a/fs/jfs/jfs_txnmgr.c b/fs/jfs/jfs_txnmgr.c
-index 4d973524c887..a313300c4651 100644
---- a/fs/jfs/jfs_txnmgr.c
-+++ b/fs/jfs/jfs_txnmgr.c
-@@ -2747,6 +2747,7 @@ int jfs_lazycommit(void *arg)
- 	struct tblock *tblk;
- 	unsigned long flags;
- 	struct jfs_sb_info *sbi;
-+	DECLARE_WAITQUEUE(wq, current);
- 
- 	do {
- 		LAZY_LOCK(flags);
-@@ -2793,19 +2794,11 @@ int jfs_lazycommit(void *arg)
- 		}
- 		/* In case a wakeup came while all threads were active */
- 		jfs_commit_thread_waking = 0;
+ 		spin_lock(&sci->sc_state_lock);
+-	} else {
+-		DEFINE_WAIT(wait);
+-		int should_sleep = 1;
 -
--		if (freezing(current)) {
--			LAZY_UNLOCK(flags);
--			try_to_freeze();
--		} else {
--			DECLARE_WAITQUEUE(wq, current);
+-		prepare_to_wait(&sci->sc_wait_daemon, &wait,
+-				TASK_INTERRUPTIBLE);
 -
--			add_wait_queue(&jfs_commit_thread_wait, &wq);
--			set_current_state(TASK_INTERRUPTIBLE);
--			LAZY_UNLOCK(flags);
+-		if (sci->sc_seq_request != sci->sc_seq_done)
+-			should_sleep = 0;
+-		else if (sci->sc_flush_request)
+-			should_sleep = 0;
+-		else if (sci->sc_state & NILFS_SEGCTOR_COMMIT)
+-			should_sleep = time_before(jiffies,
+-					sci->sc_timer.expires);
+-
+-		if (should_sleep) {
+-			spin_unlock(&sci->sc_state_lock);
 -			schedule();
--			remove_wait_queue(&jfs_commit_thread_wait, &wq);
+-			spin_lock(&sci->sc_state_lock);
 -		}
-+		add_wait_queue(&jfs_commit_thread_wait, &wq);
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		LAZY_UNLOCK(flags);
-+		schedule();
-+		remove_wait_queue(&jfs_commit_thread_wait, &wq);
- 	} while (!kthread_should_stop());
- 
- 	if (!list_empty(&TxAnchor.unlock_queue))
-@@ -2982,15 +2975,9 @@ int jfs_sync(void *arg)
- 		}
- 		/* Add anon_list2 back to anon_list */
- 		list_splice_init(&TxAnchor.anon_list2, &TxAnchor.anon_list);
+-		finish_wait(&sci->sc_wait_daemon, &wait);
+-		timeout = ((sci->sc_state & NILFS_SEGCTOR_COMMIT) &&
+-			   time_after_eq(jiffies, sci->sc_timer.expires));
 -
--		if (freezing(current)) {
--			TXN_UNLOCK();
--			try_to_freeze();
--		} else {
--			set_current_state(TASK_INTERRUPTIBLE);
--			TXN_UNLOCK();
--			schedule();
--		}
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		TXN_UNLOCK();
-+		schedule();
- 	} while (!kthread_should_stop());
+-		if (nilfs_sb_dirty(nilfs) && nilfs_sb_need_update(nilfs))
+-			set_nilfs_discontinued(nilfs);
+ 	}
++	finish_wait(&sci->sc_wait_daemon, &wait);
++	timeout = ((sci->sc_state & NILFS_SEGCTOR_COMMIT) &&
++		   time_after_eq(jiffies, sci->sc_timer.expires));
++
++	if (nilfs_sb_dirty(nilfs) && nilfs_sb_need_update(nilfs))
++		set_nilfs_discontinued(nilfs);
+ 	goto loop;
  
- 	jfs_info("jfs_sync being killed");
+  end_thread:
 -- 
 2.15.0
