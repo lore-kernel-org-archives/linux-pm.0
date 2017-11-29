@@ -1,181 +1,90 @@
-From: Mikko Perttunen <cyndis@kapsi.fi>
-Subject: Re: [PATCH V2 8/9] PCI: tegra: Broadcast PME_turn_Off message before
- link goes to L2
-Date: Wed, 29 Nov 2017 14:18:54 +0200
-Message-ID: <dd3cb6a5-76ec-98c2-4132-54678c2d74ce@kapsi.fi>
-References: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
- <1511638333-22951-9-git-send-email-mmaddireddy@nvidia.com>
+From: Jean Delvare <jdelvare@suse.de>
+Subject: Re: [RFC v2 2/3] i2c: Kconfig: rename variable I2C_SMBUS to
+ I2C_SMBUS_ALERT
+Date: Wed, 29 Nov 2017 13:48:49 +0100
+Message-ID: <20171129134849.140ca3ad@endymion>
+References: <1511840309-37964-1-git-send-email-preid@electromag.com.au>
+        <1511840309-37964-3-git-send-email-preid@electromag.com.au>
+        <20171128230855.20bb64be@endymion>
+        <21647bb9-0818-8823-0935-87b270a80f26@electromag.com.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kapsi.fi ([91.232.154.25]:51158 "EHLO mail.kapsi.fi"
+Received: from mx2.suse.de ([195.135.220.15]:56383 "EHLO mx2.suse.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751295AbdK2MS5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 Nov 2017 07:18:57 -0500
-In-Reply-To: <1511638333-22951-9-git-send-email-mmaddireddy@nvidia.com>
+        id S932082AbdK2Msz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 Nov 2017 07:48:55 -0500
+In-Reply-To: <21647bb9-0818-8823-0935-87b270a80f26@electromag.com.au>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Manikanta Maddireddy <mmaddireddy@nvidia.com>, thierry.reding@gmail.com, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, bhelgaas@google.com, rjw@rjwysocki.net, tglx@linutronix.de
-Cc: vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+To: Phil Reid <preid@electromag.com.au>
+Cc: realmz6@gmail.com, wsa@the-dreams.de, sre@kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, benjamin.tissoires@redhat.com
 
-On 25.11.2017 21:32, Manikanta Maddireddy wrote:
-> Per PCIe r3.0, sec 5.3.3.2.1, PCIe root port shoould broadcast PME_turn_Off
-> message before PCIe link goes to L2. PME_turn_Off broadcast mechanism is
-> implemented in AFI module. Each Tegra PCIe root port has its own
-> PME_turn_Off and PME_TO_Ack bitmap in AFI_PME register, program this
-> register to broadcast PME_turn_Off message.
->
-> Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
-> ---
-> V2:
-> * no change in this patch
->
->  drivers/pci/host/pci-tegra.c | 76 ++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 76 insertions(+)
->
-> diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-> index bbc2807bcd4a..b380958a3deb 100644
-> --- a/drivers/pci/host/pci-tegra.c
-> +++ b/drivers/pci/host/pci-tegra.c
-> @@ -155,6 +155,8 @@
->  #define  AFI_INTR_EN_FPCI_TIMEOUT	(1 << 7)
->  #define  AFI_INTR_EN_PRSNT_SENSE	(1 << 8)
->
-> +#define AFI_PCIE_PME		0xf0
-> +
->  #define AFI_PCIE_CONFIG					0x0f8
->  #define  AFI_PCIE_CONFIG_PCIE_DISABLE(x)		(1 << ((x) + 1))
->  #define  AFI_PCIE_CONFIG_PCIE_DISABLE_ALL		0xe
-> @@ -315,6 +317,7 @@
->  #define PADS_REFCLK_CFG_DRVI_SHIFT		12 /* 15:12 */
->
->  #define LINK_RETRAIN_TIMEOUT 100000
-> +#define PME_ACK_TIMEOUT 10000
->
->  struct tegra_msi {
->  	struct msi_controller chip;
-> @@ -1503,6 +1506,76 @@ static int tegra_pcie_put_resources(struct tegra_pcie *pcie)
->  	return 0;
->  }
->
-> +static inline u32 get_pme_turnoff_bitmap(struct tegra_pcie_port *port)
-> +{
-> +	struct device *dev = port->pcie->dev;
-> +	struct device_node *np = dev->of_node;
-> +	int ret = 0;
-> +
-> +	switch (port->index) {
-> +	case 0:
-> +		ret = 0;
-> +	case 1:
-> +		ret = 8;
-> +	case 2:
-> +		if (of_device_is_compatible(np, "nvidia,tegra30-pcie"))
-> +			ret = 16;
-> +		else
-> +			ret = 12;
-> +	}
-> +	return ret;
-> +}
-> +
-> +static inline u32 get_pme_ack_bitmap(struct tegra_pcie_port *port)
-> +{
-> +	struct device *dev = port->pcie->dev;
-> +	struct device_node *np = dev->of_node;
-> +	int ret = 0;
-> +
-> +	switch (port->index) {
-> +	case 0:
-> +		ret = 5;
-> +	case 1:
-> +		ret = 10;
-> +	case 2:
-> +		if (of_device_is_compatible(np, "nvidia,tegra30-pcie"))
-> +			ret = 18;
-> +		else
-> +			ret = 14;
-> +	}
-> +	return ret;
-> +}
+On Wed, 29 Nov 2017 09:58:44 +0800, Phil Reid wrote:
+> G'day Jean,
+> 
+> Thanks for looking at this.
+> 
+> On 29/11/2017 06:08, Jean Delvare wrote:
+> > Hi Phil,
+> > 
+> > On Tue, 28 Nov 2017 11:38:28 +0800, Phil Reid wrote:  
+> >> i2c-smbus now only contains code related to the smbus_alert driver.
+> >> Other smbus protocols have been moved from this into the i2c-core-smbus.
+> >> Change the Kconfig variable name to reflect this.  
+> > 
+> > Not really. i2c-core-smbus.c contains essentially SMBus transaction
+> > helpers, which have never been in i2c-smbus.c. They aren't really SMBus
+> > protocols, more like a subset of I2C transactions suitable for general
+> > purpose. The only really SMBus protocol specific portion is relative to
+> > SMBus Alert, and that's only a small part of it. The other supported
+> > SMBus-specific protocol, Host Notify, is in i2c-core-base.c.
+> > 
+> > My original intent was to have all the SMBus protocols specific code in
+> > one file, controlled by one Kconfig option, which could be built as a
+> > separate module. I wasn't certain it would be viable, it was a bet
+> > which I lost, as it turns out there are too many dependencies.
+> > 
+> > If the code can no longer build as a separate module, there is no
+> > benefit in having it in a separate file. Let's just merge it into
+> > i2c-code-smbus.c, where the rest of the SMBus alert code already is.
+> > That would make things more simple.  
+> I had to put of_i2c_setup_smbus_alert in there to deal with dependencies.
+> This was seen as a little messy at the time. It was accepted provided
+> that I clean things up somehow.
+> 
+> The question is how. This series is just one proposal for that to stir some
+> discussion. Your approach is certainly the simpler one.
 
- From what I can tell, the port 2 bit is 12/14 on everything after 
-Tegra30 as well, so I don't think this actually works?
+OK, can you please give it a try and wee how it compares with your own
+approach?
 
-I think simpler would be to add a SoC data fields 'u8 
-pme_turnoff_bit[3]' and 'u8 pme_ack_bit[3]' and then set that
-to '.pme_turnoff_bit = { 0, 8, 16 }' and so on.
+> > I also don't think renaming this configuration option and moving code
+> > to a separate file (as your patch 3/3 does) makes sense. Having a
+> > separate option for each SMBus-specific protocol seems overkill to me,
+> > having one for all of them was and still is more reasonable. I wonder
+> > why the SMBus Notify code does NOT depend on CONFIG_I2C_SMBUS, and why
+> > it is in i2c-core-base.c instead of i2c-core-smbus.c. Wolfram?
+> > 
+> > And more generally, renaming a Kconfig option has a non-trivial cost
+> > for distribution kernel maintainers, so it shall not be done lightly.
+> > So you need a clear and strong rationale.  
+> 
+> My only rational is that it didn't encompass all the SMBUS specific protocols.
+> It currently seems a little ambiguous to me. Especially with regard the current
+> Kconfig help description is not accurate with regard the Host Notify protocol.
 
-> +
-> +static void tegra_pcie_pme_turnoff(struct tegra_pcie_port *port)
-> +{
-> +	struct tegra_pcie *pcie = port->pcie;
-> +	ktime_t deadline;
-> +	unsigned int data;
-> +
-> +	data = afi_readl(pcie, AFI_PCIE_PME);
-> +	data |= (0x1 << get_pme_turnoff_bitmap(port));
-> +	afi_writel(pcie, data, AFI_PCIE_PME);
-> +
-> +	deadline = ktime_add_us(ktime_get(), PME_ACK_TIMEOUT);
-> +	do {
-> +		data = afi_readl(pcie, AFI_PCIE_PME);
-> +		data &= (0x1 << get_pme_ack_bitmap(port));
-> +		udelay(1);
-> +		if (ktime_after(ktime_get(), deadline))
-> +			break;
-> +	} while (!data);
+I agree, the I2C_SMBUS Kconfig help text no longer reflects the reality
+since over a year now. But I think the text is how things should be and
+the code is what should be fixed (that is, all the SMBus Host Notify
+code should be left out when I2C_SMBUS isn't set, and it should live in
+i2c-core-smbus.c.) But I did not look at the details, maybe this isn't
+possible for some reason. Maybe you can look into it after you are done
+with moving the SMBus Alert code into the i2c core? If you don't, I
+will.
 
-Since this is a normal MMIO read, we could replace the whole loop with a 
-call to readl_poll_timeout (or readl_relaxed_poll_timeout, or if we 
-really must delay and not sleep, readl_poll_timeout_atomic etc.) from 
-iopoll.h
-
-   int err;
-   u32 val;
-
-   err = readl_poll_timeout(pcie->afi + AFI_PCIE_PME, val,
-                            val & (0x1 << pcie->soc->pme_ack_bit[port]),
-                            1, PME_ACK_TIMEOUT);
-   if (err)
-     ...
-
-> +
-> +	if (data)
-> +		dev_err(pcie->dev, "PME Ack is not receieved on port: %d\n",
-> +			port->index);
-> +
-
-Typo here, s/receieved/received/
-
-Cheers,
-Mikko
-
-> +	usleep_range(10000, 11000);
-> +
-> +	data = afi_readl(pcie, AFI_PCIE_PME);
-> +	data &= ~(0x1 << get_pme_turnoff_bitmap(port));
-> +	afi_writel(pcie, data, AFI_PCIE_PME);
-> +}
-> +
->  static int tegra_msi_alloc(struct tegra_msi *chip)
->  {
->  	int msi;
-> @@ -2828,6 +2901,7 @@ static int tegra_pcie_remove(struct platform_device *pdev)
->  {
->  	struct tegra_pcie *pcie = platform_get_drvdata(pdev);
->  	struct pci_host_bridge *host = pci_host_bridge_from_priv(pcie);
-> +	struct tegra_pcie_port *port, *tmp;
->
->  	if (IS_ENABLED(CONFIG_DEBUG_FS))
->  		tegra_pcie_debugfs_exit(pcie);
-> @@ -2835,6 +2909,8 @@ static int tegra_pcie_remove(struct platform_device *pdev)
->  	pci_remove_root_bus(host->bus);
->  	if (IS_ENABLED(CONFIG_PCI_MSI))
->  		tegra_pcie_disable_msi(pcie);
-> +	list_for_each_entry_safe(port, tmp, &pcie->ports, list)
-> +		tegra_pcie_pme_turnoff(port);
->  	tegra_pcie_disable_ports(pcie);
->  	tegra_pcie_free_resources(pcie);
->  	tegra_pcie_disable_controller(pcie);
->
+Thanks,
+-- 
+Jean Delvare
+SUSE L3 Support
