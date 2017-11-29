@@ -1,7 +1,7 @@
 From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: [PATCH 08/11] ext4: remove not needed freezing calls
-Date: Wed, 29 Nov 2017 15:23:53 -0800
-Message-ID: <20171129232356.28296-9-mcgrof@kernel.org>
+Subject: [PATCH 11/11] jfs: remove not needed freezing calls
+Date: Wed, 29 Nov 2017 15:23:56 -0800
+Message-ID: <20171129232356.28296-12-mcgrof@kernel.org>
 References: <20171129232356.28296-1-mcgrof@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171129232356.28296-1-mcgrof@kernel.org>
@@ -59,21 +59,87 @@ expression task;
 Generated-by: Coccinelle SmPL
 Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
 ---
- fs/ext4/super.c | 2 --
- 1 file changed, 2 deletions(-)
+ fs/jfs/jfs_logmgr.c | 11 +++--------
+ fs/jfs/jfs_txnmgr.c | 31 +++++++++----------------------
+ 2 files changed, 12 insertions(+), 30 deletions(-)
 
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 57a8fa451d3e..8a510b1c2d92 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -2980,8 +2980,6 @@ static int ext4_lazyinit_thread(void *arg)
+diff --git a/fs/jfs/jfs_logmgr.c b/fs/jfs/jfs_logmgr.c
+index 0e5d412c0b01..fa5a95d8fba8 100644
+--- a/fs/jfs/jfs_logmgr.c
++++ b/fs/jfs/jfs_logmgr.c
+@@ -2344,14 +2344,9 @@ int jfsIOWait(void *arg)
+ 			spin_lock_irq(&log_redrive_lock);
  		}
- 		mutex_unlock(&eli->li_list_mtx);
  
--		try_to_freeze();
+-		if (freezing(current)) {
+-			spin_unlock_irq(&log_redrive_lock);
+-			try_to_freeze();
+-		} else {
+-			set_current_state(TASK_INTERRUPTIBLE);
+-			spin_unlock_irq(&log_redrive_lock);
+-			schedule();
+-		}
++		set_current_state(TASK_INTERRUPTIBLE);
++		spin_unlock_irq(&log_redrive_lock);
++		schedule();
+ 	} while (!kthread_should_stop());
+ 
+ 	jfs_info("jfsIOWait being killed!");
+diff --git a/fs/jfs/jfs_txnmgr.c b/fs/jfs/jfs_txnmgr.c
+index 4d973524c887..a313300c4651 100644
+--- a/fs/jfs/jfs_txnmgr.c
++++ b/fs/jfs/jfs_txnmgr.c
+@@ -2747,6 +2747,7 @@ int jfs_lazycommit(void *arg)
+ 	struct tblock *tblk;
+ 	unsigned long flags;
+ 	struct jfs_sb_info *sbi;
++	DECLARE_WAITQUEUE(wq, current);
+ 
+ 	do {
+ 		LAZY_LOCK(flags);
+@@ -2793,19 +2794,11 @@ int jfs_lazycommit(void *arg)
+ 		}
+ 		/* In case a wakeup came while all threads were active */
+ 		jfs_commit_thread_waking = 0;
 -
- 		cur = jiffies;
- 		if ((time_after_eq(cur, next_wakeup)) ||
- 		    (MAX_JIFFY_OFFSET == next_wakeup)) {
+-		if (freezing(current)) {
+-			LAZY_UNLOCK(flags);
+-			try_to_freeze();
+-		} else {
+-			DECLARE_WAITQUEUE(wq, current);
+-
+-			add_wait_queue(&jfs_commit_thread_wait, &wq);
+-			set_current_state(TASK_INTERRUPTIBLE);
+-			LAZY_UNLOCK(flags);
+-			schedule();
+-			remove_wait_queue(&jfs_commit_thread_wait, &wq);
+-		}
++		add_wait_queue(&jfs_commit_thread_wait, &wq);
++		set_current_state(TASK_INTERRUPTIBLE);
++		LAZY_UNLOCK(flags);
++		schedule();
++		remove_wait_queue(&jfs_commit_thread_wait, &wq);
+ 	} while (!kthread_should_stop());
+ 
+ 	if (!list_empty(&TxAnchor.unlock_queue))
+@@ -2982,15 +2975,9 @@ int jfs_sync(void *arg)
+ 		}
+ 		/* Add anon_list2 back to anon_list */
+ 		list_splice_init(&TxAnchor.anon_list2, &TxAnchor.anon_list);
+-
+-		if (freezing(current)) {
+-			TXN_UNLOCK();
+-			try_to_freeze();
+-		} else {
+-			set_current_state(TASK_INTERRUPTIBLE);
+-			TXN_UNLOCK();
+-			schedule();
+-		}
++		set_current_state(TASK_INTERRUPTIBLE);
++		TXN_UNLOCK();
++		schedule();
+ 	} while (!kthread_should_stop());
+ 
+ 	jfs_info("jfs_sync being killed");
 -- 
 2.15.0
