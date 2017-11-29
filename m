@@ -1,40 +1,101 @@
-From: Meelis Roos <mroos@linux.ee>
-Subject: Re: [PATCH] cpufreq: longhaul: Set transition_delay_us to 20 ms
-Date: Wed, 29 Nov 2017 08:59:27 +0200 (EET)
-Message-ID: <alpine.LRH.2.21.1711290859010.803@math.ut.ee>
-References: <alpine.LRH.2.21.1711241741080.10361@math.ut.ee> <ed89c17b60d7183144ab4ac4b125fbed373fe670.1511838689.git.viresh.kumar@linaro.org> <CAJZ5v0gTk_XpszbnvifxiaySMXomDSxpcr_yG2MPpLvX6L4CFA@mail.gmail.com>
+From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Subject: RE: [PATCH] PM / runtime: Drop children check from
+ __pm_runtime_set_status()
+Date: Wed, 29 Nov 2017 08:21:22 +0000
+Message-ID: <TY1PR06MB0992899AE427576E3F83CF54D83B0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+References: <TY1PR06MB09928D43D4E5E5752A6A604ED83A0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+ <Pine.LNX.4.44L0.1711281004170.1467-100000@iolanthe.rowland.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:48666 "EHLO smtp2.it.da.ut.ee"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752014AbdK2G7c (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 Nov 2017 01:59:32 -0500
-In-Reply-To: <CAJZ5v0gTk_XpszbnvifxiaySMXomDSxpcr_yG2MPpLvX6L4CFA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44L0.1711281004170.1467-100000@iolanthe.rowland.org>
+Content-Language: ja-JP
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "4 . 14+" <stable@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-> > diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-> > index c46a12df40dd..56eafcb07859 100644
-> > --- a/drivers/cpufreq/longhaul.c
-> > +++ b/drivers/cpufreq/longhaul.c
-> > @@ -894,7 +894,7 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
-> >         if ((longhaul_version != TYPE_LONGHAUL_V1) && (scale_voltage != 0))
-> >                 longhaul_setup_voltagescaling();
+Hi,
+
+> From: Alan Stern, Sent: Wednesday, November 29, 2017 12:07 AM
+>=20
+> On Tue, 28 Nov 2017, Yoshihiro Shimoda wrote:
+>=20
+> > Hi Geert-san,
 > >
-> > -       policy->cpuinfo.transition_latency = 200000;    /* nsec */
-> > +       policy->transition_delay_us = 20000;    /* usec */
+> > > From: Geert Uytterhoeven, Sent: Tuesday, November 28, 2017 7:58 PM
+> > >
+> > > Hi Rafael, Shimoda-san,
+> > >
+> > > On Sun, Nov 12, 2017 at 1:27 AM, Rafael J. Wysocki <rjw@rjwysocki.net=
+> wrote:
+> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+<snip>
+> > > JFTR, this triggered before during system resume on e.g. Salvator-XS =
+with
+> > > R-Car H3:
+> > >
+> > >     ohci-platform ee080000.usb: runtime PM trying to suspend device
+> > > but active child
+> > >     phy_rcar_gen3_usb2 ee080200.usb-phy: runtime PM trying to suspend
+> > > device but active child
+> > >     ohci-platform ee0c0000.usb: runtime PM trying to suspend device
+> > > but active child
+> > >     ohci-platform ee0a0000.usb: runtime PM trying to suspend device
+> > > but active child
+> > >     phy_rcar_gen3_usb2 ee0c0200.usb-phy: runtime PM trying to suspend
+> > > device but active child
+> > >     phy_rcar_gen3_usb2 ee0a0200.usb-phy: runtime PM trying to suspend
+> > > device but active child
+> > >
+> > > so this was an existing issue with USB before.
 > >
-> >         return cpufreq_table_validate_and_show(policy, longhaul_table);
-> >  }
-> > --
-> 
-> Meelis, please check if this fixes the shutdown issue you have
-> reported recently.
+> > Thank you for the report!
+> > I know that, but since this didn't cause any trouble until now,
+> > I postponed to investigate the issue... But, I investigate it today.
+> > I don't find the root cause yet. However, it seems related to usb host =
+and/or usb core.
+> > --> USB host related devices' child_count will be 1 in suspend timing.
+> >  --> I guess remote wakeup feature is enabled? But, I don't find the po=
+int yet.
+> >
+> > The renesas_usbhs also uses the phy_rcar_gen3_usb2 driver.
 
-Yes, but not today - hopefully tomorrow.
+I'm so sorry, but this is mistake.
+The renesas_usbhs doesn't use the phy_rcar_gen3_usb2 driver.
+So,
 
--- 
-Meelis Roos (mroos@linux.ee)
+> > --> If I only used the renesas_usbhs driver (in other words, I don't in=
+stall
+> >     [eo]hci-{hcd,platform} drivers), the issue disappeared.
+> >  --> So, I think the phy_rcar_gen3_usb2 driver doesn't cause this issue=
+.
+> >     (But, it is possible to be related though.)
+
+They are also mistake.
+
+> > I'll continue to investigate this issue tomorrow.
+>=20
+> Does the phy_rcar_gen3_usb2 driver use runtime PM?
+
+Yes, the phy_rcar_gen3_usb2 uses runtime PM.
+
+>  It looks like the
+> phy device somehow gets enabled for runtime PM when it shouldn't be.
+
+I also think that now.
+I don't find why for now, but the usage_count of a phy device was not 1 jus=
+t before suspend.
+(This "a phy device" means the child of ee0a0200.usb-phy device.)
+
+> (And by the way, what device is the child of ee0a0200.usb-phy?)
+
+It's a phy device:
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/dri=
+vers/phy/phy-core.c?h=3Dv4.15-rc1#n773
+
+Best regards,
+Yoshihiro Shimoda
+
+> Alan Stern
