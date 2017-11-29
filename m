@@ -1,79 +1,49 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
+From: Mark Brown <broonie@kernel.org>
 Subject: Re: [PATCH] PM: Provide a config snippet for disabling PM
-Date: Wed, 29 Nov 2017 15:37:01 +0100
-Message-ID: <CAJZ5v0jGZxP5NWHKEhXU7gFfvSjwm-iocSEZ-C2A7UhUM+v2CA@mail.gmail.com>
+Date: Wed, 29 Nov 2017 15:02:41 +0000
+Message-ID: <20171129150241.yx6zihr3oschz5jb@sirena.org.uk>
 References: <20171129111227.26798-1-broonie@kernel.org>
+ <CAJZ5v0jGZxP5NWHKEhXU7gFfvSjwm-iocSEZ-C2A7UhUM+v2CA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:36724 "EHLO
-        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751851AbdK2OhC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Nov 2017 09:37:02 -0500
-In-Reply-To: <20171129111227.26798-1-broonie@kernel.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Mark Brown <broonie@kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="x757m4fmjc5kvalo"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jGZxP5NWHKEhXU7gFfvSjwm-iocSEZ-C2A7UhUM+v2CA@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
 Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@baylibre.com>, Fengguang Wu <fengguang.wu@intel.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 29, 2017 at 12:12 PM, Mark Brown <broonie@kernel.org> wrote:
-> A frequent source of build problems is poor handling of optional PM
-> support, almost all development is done with the PM options enabled
-> but they can be turned off.  Currently few if any of the build test
-> services do this as standard as there is no standard config for it and
-> the use of selects and def_bool means that simply setting CONFIG_PM=n
-> doesn't do what is expected.  To make this easier provide a fragement
-> that can be used with KCONFIG_ALLCONFIG to force PM off.
->
-> CONFIG_XEN is disabled as Xen uses hibernation callbacks which end up
-> turning on power management on architectures with Xen.  Some cpuidle
-> implementations on ARM select PM so CONFIG_CPU_IDLE is disabled, and
-> some ARM architectures unconditionally enable PM so they are also
-> disabled.
->
-> Signed-off-by: Mark Brown <broonie@kernel.org>
 
-I'm going to apply this shortly, sorry for the delay.
+--x757m4fmjc5kvalo
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> ---
->  MAINTAINERS                |  1 +
->  kernel/configs/nopm.config | 15 +++++++++++++++
->  2 files changed, 16 insertions(+)
->  create mode 100644 kernel/configs/nopm.config
->
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 07d9067f68fd..539808dc7928 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -10895,6 +10895,7 @@ F:      include/linux/pm.h
->  F:     include/linux/pm_*
->  F:     include/linux/powercap.h
->  F:     drivers/powercap/
-> +F:     kernel/configs/nopm.config
->
->  POWER STATE COORDINATION INTERFACE (PSCI)
->  M:     Mark Rutland <mark.rutland@arm.com>
-> diff --git a/kernel/configs/nopm.config b/kernel/configs/nopm.config
-> new file mode 100644
-> index 000000000000..81ff07863576
-> --- /dev/null
-> +++ b/kernel/configs/nopm.config
-> @@ -0,0 +1,15 @@
-> +CONFIG_PM=n
-> +CONFIG_SUSPEND=n
-> +CONFIG_HIBERNATION=n
-> +
-> +# Triggers PM on OMAP
-> +CONFIG_CPU_IDLE=n
-> +
-> +# Triggers enablement via hibernate callbacks
-> +CONFIG_XEN=n
-> +
-> +# ARM/ARM64 architectures that select PM unconditionally
-> +CONFIG_ARCH_OMAP2PLUS_TYPICAL=n
-> +CONFIG_ARCH_RENESAS=n
-> +CONFIG_ARCH_TEGRA=n
-> +CONFIG_ARCH_VEXPRESS=n
-> --
-> 2.15.0
->
+On Wed, Nov 29, 2017 at 03:37:01PM +0100, Rafael J. Wysocki wrote:
+> On Wed, Nov 29, 2017 at 12:12 PM, Mark Brown <broonie@kernel.org> wrote:
+
+> > A frequent source of build problems is poor handling of optional PM
+> > support, almost all development is done with the PM options enabled
+
+> I'm going to apply this shortly, sorry for the delay.
+
+Thanks!  I sent it just before the merge window so I was expecting to
+have to resend even when I originally posted it.
+
+--x757m4fmjc5kvalo
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAloezBAACgkQJNaLcl1U
+h9A2Jwf+LrBsNwyeyImKr5WJF4q+5B+89TExtbww4OX1x88ZJXEUS4OtvOB+bKgH
+0B0MkSk5V5cyitf2cvKENDhZBjIKDbvB/j7ZRls0vxj0ilC7/I2p4EQ8RBAudkhZ
+NVfRd3QVqsaU7ingjwx4Mo5rWAcf2nbKkncKwQ+iEchysjJbsu8kVVrsluxll68q
+z8p0wAZnnZI8bBCyXP358TveiH/Ip7/XjPmX3CqIm/jKwyzx9FZ3If6MwTEEWyDI
+yw+7++8hzrgAUs/JLD6QMqlJmqi6VM65bO7xPBGrNpwycxk/yRODKeCZsh8x+O6p
+ML43imOw8ZYloOGkw1w5FBW4VXQIrQ==
+=p7Fg
+-----END PGP SIGNATURE-----
+
+--x757m4fmjc5kvalo--
