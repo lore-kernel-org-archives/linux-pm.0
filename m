@@ -1,78 +1,165 @@
-From: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC V7 1/2] OPP: Allow OPP table to be used for power-domains
-Date: Wed, 29 Nov 2017 10:46:09 -0600
-Message-ID: <CAL_JsqJr9pTkwODqxc1CKRv-zNr3B_kfy4U0g6imaV67oaca4A@mail.gmail.com>
-References: <cover.1509453284.git.viresh.kumar@linaro.org> <2b244ea0a09deaf50237fb8b7578273a8284499e.1509453284.git.viresh.kumar@linaro.org>
+From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V2 8/9] PCI: tegra: Broadcast PME_turn_Off message before
+ link goes to L2
+Date: Wed, 29 Nov 2017 10:51:47 -0600
+Message-ID: <20171129165147.GB6469@bhelgaas-glaptop.roam.corp.google.com>
+References: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
+ <1511638333-22951-9-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <2b244ea0a09deaf50237fb8b7578273a8284499e.1509453284.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1511638333-22951-9-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Oct 31, 2017 at 7:47 AM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> Power-domains can also have their active states and this patch enhances
-> the OPP binding to define those.
->
-> The power domains can use the OPP bindings mostly as is. Though there
-> are some changes required to support special cases:
->
-> - Allow "operating-points-v2" to contain multiple phandles for power
->   domain providers providing multiple domains.
->
-> - A new property "power-domain-opp" is added for devices to specify the
->   minimum required OPP of the master domain for the functioning of the
->   device. We can add this property directly to device's node if the
->   device has a fixed minimum OPP requirement from the master power
->   domain. Or we can add this property to each OPP node of the device, if
->   different OPP nodes have different minimum OPP requirement from the
->   master power domain.
->
-> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+On Sun, Nov 26, 2017 at 01:02:12AM +0530, Manikanta Maddireddy wrote:
+> Per PCIe r3.0, sec 5.3.3.2.1, PCIe root port shoould broadcast PME_turn_Off
+> message before PCIe link goes to L2. PME_turn_Off broadcast mechanism is
+> implemented in AFI module. Each Tegra PCIe root port has its own
+> PME_turn_Off and PME_TO_Ack bitmap in AFI_PME register, program this
+> register to broadcast PME_turn_Off message.
+
+s/PME_turn_Off/PME_Turn_Off/ above to match spec.
+
+I thought PME_TO_Ack was also mis-capitalized, but it's not.  Guess
+that "TO" stands for "Turn Off".
+
+> Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 > ---
->  Documentation/devicetree/bindings/opp/opp.txt      | 12 +++++
->  .../devicetree/bindings/power/power_domain.txt     | 62 ++++++++++++++++++++++
->  2 files changed, 74 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-> index 9d733af26be7..203e09fe7698 100644
-> --- a/Documentation/devicetree/bindings/opp/opp.txt
-> +++ b/Documentation/devicetree/bindings/opp/opp.txt
-> @@ -45,6 +45,11 @@ Devices supporting OPPs must set their "operating-points-v2" property with
->  phandle to a OPP table in their DT node. The OPP core will use this phandle to
->  find the operating points for the device.
->
-> +This can contain more than one phandle for power domain providers that provide
-> +multiple power domains. That is, one phandle for each power domain. If only one
-> +phandle is available, then the same OPP table will be used for all power domains
-> +provided by the power domain provider.
+> V2:
+> * no change in this patch
+> 
+>  drivers/pci/host/pci-tegra.c | 76 ++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 76 insertions(+)
+> 
+> diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+> index bbc2807bcd4a..b380958a3deb 100644
+> --- a/drivers/pci/host/pci-tegra.c
+> +++ b/drivers/pci/host/pci-tegra.c
+> @@ -155,6 +155,8 @@
+>  #define  AFI_INTR_EN_FPCI_TIMEOUT	(1 << 7)
+>  #define  AFI_INTR_EN_PRSNT_SENSE	(1 << 8)
+>  
+> +#define AFI_PCIE_PME		0xf0
 > +
->  If required, this can be extended for SoC vendor specific bindings. Such bindings
->  should be documented as Documentation/devicetree/bindings/power/<vendor>-opp.txt
->  and should have a compatible description like: "operating-points-v2-<vendor>".
-> @@ -154,6 +159,13 @@ properties.
->
->  - status: Marks the node enabled/disabled.
->
-> +- power-domain-opp: This contains phandle to one of the OPP nodes of the master
-> +  power domain. This specifies the minimum required OPP of the master domain for
-> +  the functioning of the device in this OPP (where this property is present).
-> +  This property can only be set for a device if the device node contains the
-> +  "power-domains" property. Also, either all or none of the OPP nodes in an OPP
-> +  table should have it set.
+>  #define AFI_PCIE_CONFIG					0x0f8
+>  #define  AFI_PCIE_CONFIG_PCIE_DISABLE(x)		(1 << ((x) + 1))
+>  #define  AFI_PCIE_CONFIG_PCIE_DISABLE_ALL		0xe
+> @@ -315,6 +317,7 @@
+>  #define PADS_REFCLK_CFG_DRVI_SHIFT		12 /* 15:12 */
+>  
+>  #define LINK_RETRAIN_TIMEOUT 100000
+> +#define PME_ACK_TIMEOUT 10000
+>  
+>  struct tegra_msi {
+>  	struct msi_controller chip;
+> @@ -1503,6 +1506,76 @@ static int tegra_pcie_put_resources(struct tegra_pcie *pcie)
+>  	return 0;
+>  }
+>  
+> +static inline u32 get_pme_turnoff_bitmap(struct tegra_pcie_port *port)
+> +{
+> +	struct device *dev = port->pcie->dev;
+> +	struct device_node *np = dev->of_node;
+> +	int ret = 0;
 
-This is a "this device requires OPP n" property. Couldn't we want this
-for cases other than a powerdomain OPP? What if a device has
-requirements 2 different OPPs?
+Unnecessary initialization.  In fact, the variable is unnecessary; you
+can just return the value directly as soon as you know it.
 
-On the flipside, I don't think we want devices picking things like CPU
-OPPs and putting policy here. But I'd rather things be extendable than
-reviewing yet another OPP property next month.
+> +
+> +	switch (port->index) {
+> +	case 0:
+> +		ret = 0;
+> +	case 1:
+> +		ret = 8;
+> +	case 2:
+> +		if (of_device_is_compatible(np, "nvidia,tegra30-pcie"))
+> +			ret = 16;
+> +		else
+> +			ret = 12;
+> +	}
+> +	return ret;
+> +}
+> +
+> +static inline u32 get_pme_ack_bitmap(struct tegra_pcie_port *port)
+> +{
+> +	struct device *dev = port->pcie->dev;
+> +	struct device_node *np = dev->of_node;
+> +	int ret = 0;
 
-Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Similar.
+
+> +
+> +	switch (port->index) {
+> +	case 0:
+> +		ret = 5;
+> +	case 1:
+> +		ret = 10;
+> +	case 2:
+> +		if (of_device_is_compatible(np, "nvidia,tegra30-pcie"))
+> +			ret = 18;
+> +		else
+> +			ret = 14;
+> +	}
+> +	return ret;
+> +}
+> +
+> +static void tegra_pcie_pme_turnoff(struct tegra_pcie_port *port)
+> +{
+> +	struct tegra_pcie *pcie = port->pcie;
+> +	ktime_t deadline;
+> +	unsigned int data;
+> +
+> +	data = afi_readl(pcie, AFI_PCIE_PME);
+> +	data |= (0x1 << get_pme_turnoff_bitmap(port));
+> +	afi_writel(pcie, data, AFI_PCIE_PME);
+> +
+> +	deadline = ktime_add_us(ktime_get(), PME_ACK_TIMEOUT);
+> +	do {
+> +		data = afi_readl(pcie, AFI_PCIE_PME);
+> +		data &= (0x1 << get_pme_ack_bitmap(port));
+> +		udelay(1);
+> +		if (ktime_after(ktime_get(), deadline))
+> +			break;
+> +	} while (!data);
+> +
+> +	if (data)
+> +		dev_err(pcie->dev, "PME Ack is not receieved on port: %d\n",
+
+s/receieved/received/
+
+> +			port->index);
+> +
+> +	usleep_range(10000, 11000);
+> +
+> +	data = afi_readl(pcie, AFI_PCIE_PME);
+> +	data &= ~(0x1 << get_pme_turnoff_bitmap(port));
+> +	afi_writel(pcie, data, AFI_PCIE_PME);
+> +}
+> +
+>  static int tegra_msi_alloc(struct tegra_msi *chip)
+>  {
+>  	int msi;
+> @@ -2828,6 +2901,7 @@ static int tegra_pcie_remove(struct platform_device *pdev)
+>  {
+>  	struct tegra_pcie *pcie = platform_get_drvdata(pdev);
+>  	struct pci_host_bridge *host = pci_host_bridge_from_priv(pcie);
+> +	struct tegra_pcie_port *port, *tmp;
+>  
+>  	if (IS_ENABLED(CONFIG_DEBUG_FS))
+>  		tegra_pcie_debugfs_exit(pcie);
+> @@ -2835,6 +2909,8 @@ static int tegra_pcie_remove(struct platform_device *pdev)
+>  	pci_remove_root_bus(host->bus);
+>  	if (IS_ENABLED(CONFIG_PCI_MSI))
+>  		tegra_pcie_disable_msi(pcie);
+> +	list_for_each_entry_safe(port, tmp, &pcie->ports, list)
+> +		tegra_pcie_pme_turnoff(port);
+>  	tegra_pcie_disable_ports(pcie);
+>  	tegra_pcie_free_resources(pcie);
+>  	tegra_pcie_disable_controller(pcie);
+> -- 
+> 2.1.4
+> 
