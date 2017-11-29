@@ -1,7 +1,7 @@
 From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: [PATCH 07/11] xfs: remove not needed freezing calls
-Date: Wed, 29 Nov 2017 15:23:52 -0800
-Message-ID: <20171129232356.28296-8-mcgrof@kernel.org>
+Subject: [PATCH 09/11] f2fs: remove not needed freezing calls
+Date: Wed, 29 Nov 2017 15:23:54 -0800
+Message-ID: <20171129232356.28296-10-mcgrof@kernel.org>
 References: <20171129232356.28296-1-mcgrof@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171129232356.28296-1-mcgrof@kernel.org>
@@ -59,42 +59,58 @@ expression task;
 Generated-by: Coccinelle SmPL
 Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
 ---
- fs/xfs/xfs_trans_ail.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ fs/f2fs/gc.c      | 5 +----
+ fs/f2fs/segment.c | 6 +-----
+ 2 files changed, 2 insertions(+), 9 deletions(-)
 
-diff --git a/fs/xfs/xfs_trans_ail.c b/fs/xfs/xfs_trans_ail.c
-index cef89f7127d3..1f3dd10a9d00 100644
---- a/fs/xfs/xfs_trans_ail.c
-+++ b/fs/xfs/xfs_trans_ail.c
-@@ -513,7 +513,6 @@ xfsaild(
- 	long		tout = 0;	/* milliseconds */
+diff --git a/fs/f2fs/gc.c b/fs/f2fs/gc.c
+index d844dcb80570..1032d6aa1756 100644
+--- a/fs/f2fs/gc.c
++++ b/fs/f2fs/gc.c
+@@ -32,10 +32,9 @@ static int gc_thread_func(void *data)
  
- 	current->flags |= PF_MEMALLOC;
+ 	wait_ms = gc_th->min_sleep_time;
+ 
 -	set_freezable();
+ 	do {
+ 		wait_event_interruptible_timeout(*wq,
+-				kthread_should_stop() || freezing(current) ||
++				kthread_should_stop() ||
+ 				gc_th->gc_wake,
+ 				msecs_to_jiffies(wait_ms));
  
- 	while (1) {
- 		if (tout && tout <= 20)
-@@ -551,19 +550,17 @@ xfsaild(
- 		if (!xfs_ail_min(ailp) &&
- 		    ailp->xa_target == ailp->xa_target_prev) {
- 			spin_unlock(&ailp->xa_lock);
--			freezable_schedule();
-+			schedule();
- 			tout = 0;
- 			continue;
- 		}
- 		spin_unlock(&ailp->xa_lock);
+@@ -43,8 +42,6 @@ static int gc_thread_func(void *data)
+ 		if (gc_th->gc_wake)
+ 			gc_th->gc_wake = 0;
  
- 		if (tout)
--			freezable_schedule_timeout(msecs_to_jiffies(tout));
-+			schedule_timeout(msecs_to_jiffies(tout));
+-		if (try_to_freeze())
+-			continue;
+ 		if (kthread_should_stop())
+ 			break;
  
- 		__set_current_state(TASK_RUNNING);
+diff --git a/fs/f2fs/segment.c b/fs/f2fs/segment.c
+index c117e0913f2a..a55e456e67ee 100644
+--- a/fs/f2fs/segment.c
++++ b/fs/f2fs/segment.c
+@@ -1382,18 +1382,14 @@ static int issue_discard_thread(void *data)
+ 	unsigned int wait_ms = DEF_MIN_DISCARD_ISSUE_TIME;
+ 	int issued;
  
--		try_to_freeze();
+-	set_freezable();
 -
- 		tout = xfsaild_push(ailp);
- 	}
+ 	do {
+ 		init_discard_policy(&dpolicy, DPOLICY_BG,
+ 					dcc->discard_granularity);
+ 
+ 		wait_event_interruptible_timeout(*q,
+-				kthread_should_stop() || freezing(current) ||
++				kthread_should_stop() ||
+ 				dcc->discard_wake,
+ 				msecs_to_jiffies(wait_ms));
+-		if (try_to_freeze())
+-			continue;
+ 		if (kthread_should_stop())
+ 			return 0;
  
 -- 
 2.15.0
