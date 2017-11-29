@@ -1,7 +1,7 @@
 From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: [PATCH 02/11] fs: provide unlocked helper thaw_super()
-Date: Wed, 29 Nov 2017 15:23:47 -0800
-Message-ID: <20171129232356.28296-3-mcgrof@kernel.org>
+Subject: [PATCH 08/11] ext4: remove not needed freezing calls
+Date: Wed, 29 Nov 2017 15:23:53 -0800
+Message-ID: <20171129232356.28296-9-mcgrof@kernel.org>
 References: <20171129232356.28296-1-mcgrof@kernel.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171129232356.28296-1-mcgrof@kernel.org>
@@ -10,86 +10,70 @@ To: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@
 Cc: boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-thaw_super() hold a write lock, however we wish to also enable
-callers which already hold the write lock. To do this provide a helper
-and make thaw_super() use it. This way, all that thaw_super() does
-now is lock handling and active count management.
+This removes superflous freezer calls as they are no longer needed
+as the VFS now performs filesystem freezing/thaw if the filesystem has
+support for it.
 
-This change has no functional changes.
+The following Coccinelle rule was used as follows:
 
-Suggested-by: Dave Chinner <david@fromorbit.com>
+spatch --sp-file fs-freeze-cleanup.cocci --in-place fs/$FS/
+
+@ has_freeze_fs @
+identifier super_ops;
+expression freeze_op;
+@@
+
+struct super_operations super_ops = {
+	.freeze_fs = freeze_op,
+};
+
+@ remove_set_freezable depends on has_freeze_fs @
+expression time;
+statement S, S2, S3;
+expression task;
+@@
+
+(
+-	set_freezable();
+|
+-	if (try_to_freeze())
+-		continue;
+|
+-	try_to_freeze();
+|
+-	freezable_schedule();
++	schedule();
+|
+-	freezable_schedule_timeout(time);
++	schedule_timeout(time);
+|
+-	if (freezing(task)) { S }
+|
+-	if (freezing(task)) { S }
+-	else
+	{ S2 }
+|
+-	freezing(current)
+)
+
+Generated-by: Coccinelle SmPL
 Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
 ---
- fs/super.c | 39 ++++++++++++++++++++++++++-------------
- 1 file changed, 26 insertions(+), 13 deletions(-)
+ fs/ext4/super.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/fs/super.c b/fs/super.c
-index a7650ff22f0e..cecc279beecd 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -1493,21 +1493,13 @@ int freeze_super(struct super_block *sb)
- }
- EXPORT_SYMBOL(freeze_super);
- 
--/**
-- * thaw_super -- unlock filesystem
-- * @sb: the super to thaw
-- *
-- * Unlocks the filesystem and marks it writeable again after freeze_super().
-- */
--int thaw_super(struct super_block *sb)
-+/* Caller takes lock and handles active count */
-+static int thaw_locked_super(struct super_block *sb)
- {
- 	int error;
- 
--	down_write(&sb->s_umount);
--	if (sb->s_writers.frozen != SB_FREEZE_COMPLETE) {
--		up_write(&sb->s_umount);
-+	if (sb->s_writers.frozen != SB_FREEZE_COMPLETE)
- 		return -EINVAL;
--	}
- 
- 	if (sb_rdonly(sb)) {
- 		sb->s_writers.frozen = SB_UNFROZEN;
-@@ -1522,7 +1514,6 @@ int thaw_super(struct super_block *sb)
- 			printk(KERN_ERR
- 				"VFS:Filesystem thaw failed\n");
- 			lockdep_sb_freeze_release(sb);
--			up_write(&sb->s_umount);
- 			return error;
+diff --git a/fs/ext4/super.c b/fs/ext4/super.c
+index 57a8fa451d3e..8a510b1c2d92 100644
+--- a/fs/ext4/super.c
++++ b/fs/ext4/super.c
+@@ -2980,8 +2980,6 @@ static int ext4_lazyinit_thread(void *arg)
  		}
- 	}
-@@ -1531,7 +1522,29 @@ int thaw_super(struct super_block *sb)
- 	sb_freeze_unlock(sb);
- out:
- 	wake_up(&sb->s_writers.wait_unfrozen);
--	deactivate_locked_super(sb);
- 	return 0;
- }
-+
-+/**
-+ * thaw_super -- unlock filesystem
-+ * @sb: the super to thaw
-+ *
-+ * Unlocks the filesystem and marks it writeable again after freeze_super().
-+ */
-+int thaw_super(struct super_block *sb)
-+{
-+	int error;
-+
-+	down_write(&sb->s_umount);
-+	error = thaw_locked_super(sb);
-+	if (error) {
-+		up_write(&sb->s_umount);
-+		goto out;
-+	}
-+
-+	deactivate_locked_super(sb);
-+
-+out:
-+	return error;
-+}
- EXPORT_SYMBOL(thaw_super);
+ 		mutex_unlock(&eli->li_list_mtx);
+ 
+-		try_to_freeze();
+-
+ 		cur = jiffies;
+ 		if ((time_after_eq(cur, next_wakeup)) ||
+ 		    (MAX_JIFFY_OFFSET == next_wakeup)) {
 -- 
 2.15.0
