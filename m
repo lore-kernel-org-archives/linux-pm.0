@@ -1,101 +1,83 @@
 From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
 Subject: RE: [PATCH] PM / runtime: Drop children check from
  __pm_runtime_set_status()
-Date: Wed, 29 Nov 2017 08:21:22 +0000
-Message-ID: <TY1PR06MB0992899AE427576E3F83CF54D83B0@TY1PR06MB0992.apcprd06.prod.outlook.com>
-References: <TY1PR06MB09928D43D4E5E5752A6A604ED83A0@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <Pine.LNX.4.44L0.1711281004170.1467-100000@iolanthe.rowland.org>
+Date: Wed, 29 Nov 2017 08:21:32 +0000
+Message-ID: <TY1PR06MB09924E4F66C6FCF131EE71CFD83B0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+References: <1713438.irjm9MTSvo@aspire.rjw.lan>
+ <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
+ <TY1PR06MB09928D43D4E5E5752A6A604ED83A0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+ <CAPDyKFoF0WMSTuK4AAyDzerpVpnfEq=Hn1n9kDJM0fYMkFL_wA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44L0.1711281004170.1467-100000@iolanthe.rowland.org>
+In-Reply-To: <CAPDyKFoF0WMSTuK4AAyDzerpVpnfEq=Hn1n9kDJM0fYMkFL_wA@mail.gmail.com>
 Content-Language: ja-JP
 Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-> From: Alan Stern, Sent: Wednesday, November 29, 2017 12:07 AM
->=20
-> On Tue, 28 Nov 2017, Yoshihiro Shimoda wrote:
->=20
-> > Hi Geert-san,
-> >
-> > > From: Geert Uytterhoeven, Sent: Tuesday, November 28, 2017 7:58 PM
-> > >
-> > > Hi Rafael, Shimoda-san,
-> > >
-> > > On Sun, Nov 12, 2017 at 1:27 AM, Rafael J. Wysocki <rjw@rjwysocki.net=
-> wrote:
-> > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-<snip>
-> > > JFTR, this triggered before during system resume on e.g. Salvator-XS =
-with
-> > > R-Car H3:
-> > >
-> > >     ohci-platform ee080000.usb: runtime PM trying to suspend device
-> > > but active child
-> > >     phy_rcar_gen3_usb2 ee080200.usb-phy: runtime PM trying to suspend
-> > > device but active child
-> > >     ohci-platform ee0c0000.usb: runtime PM trying to suspend device
-> > > but active child
-> > >     ohci-platform ee0a0000.usb: runtime PM trying to suspend device
-> > > but active child
-> > >     phy_rcar_gen3_usb2 ee0c0200.usb-phy: runtime PM trying to suspend
-> > > device but active child
-> > >     phy_rcar_gen3_usb2 ee0a0200.usb-phy: runtime PM trying to suspend
-> > > device but active child
-> > >
-> > > so this was an existing issue with USB before.
-> >
-> > Thank you for the report!
-> > I know that, but since this didn't cause any trouble until now,
-> > I postponed to investigate the issue... But, I investigate it today.
-> > I don't find the root cause yet. However, it seems related to usb host =
-and/or usb core.
-> > --> USB host related devices' child_count will be 1 in suspend timing.
-> >  --> I guess remote wakeup feature is enabled? But, I don't find the po=
-int yet.
-> >
-> > The renesas_usbhs also uses the phy_rcar_gen3_usb2 driver.
-
-I'm so sorry, but this is mistake.
-The renesas_usbhs doesn't use the phy_rcar_gen3_usb2 driver.
-So,
-
-> > --> If I only used the renesas_usbhs driver (in other words, I don't in=
-stall
-> >     [eo]hci-{hcd,platform} drivers), the issue disappeared.
-> >  --> So, I think the phy_rcar_gen3_usb2 driver doesn't cause this issue=
-.
-> >     (But, it is possible to be related though.)
-
-They are also mistake.
-
-> > I'll continue to investigate this issue tomorrow.
->=20
-> Does the phy_rcar_gen3_usb2 driver use runtime PM?
-
-Yes, the phy_rcar_gen3_usb2 uses runtime PM.
-
->  It looks like the
-> phy device somehow gets enabled for runtime PM when it shouldn't be.
-
-I also think that now.
-I don't find why for now, but the usage_count of a phy device was not 1 jus=
-t before suspend.
-(This "a phy device" means the child of ee0a0200.usb-phy device.)
-
-> (And by the way, what device is the child of ee0a0200.usb-phy?)
-
-It's a phy device:
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/dri=
-vers/phy/phy-core.c?h=3Dv4.15-rc1#n773
-
-Best regards,
-Yoshihiro Shimoda
-
-> Alan Stern
+SGksDQoNCj4gRnJvbTogVWxmIEhhbnNzb24sIFNlbnQ6IFdlZG5lc2RheSwgTm92ZW1iZXIgMjks
+IDIwMTcgMjoyMyBBTQ0KPiANCj4gT24gMjggTm92ZW1iZXIgMjAxNyBhdCAxMzo0OCwgWW9zaGlo
+aXJvIFNoaW1vZGENCj4gPHlvc2hpaGlyby5zaGltb2RhLnVoQHJlbmVzYXMuY29tPiB3cm90ZToN
+Cj4gPiBIaSBHZWVydC1zYW4sDQo+ID4NCj4gPj4gRnJvbTogR2VlcnQgVXl0dGVyaG9ldmVuLCBT
+ZW50OiBUdWVzZGF5LCBOb3ZlbWJlciAyOCwgMjAxNyA3OjU4IFBNDQo+ID4+DQo+ID4+IEhpIFJh
+ZmFlbCwgU2hpbW9kYS1zYW4sDQo+ID4+DQo+ID4+IE9uIFN1biwgTm92IDEyLCAyMDE3IGF0IDE6
+MjcgQU0sIFJhZmFlbCBKLiBXeXNvY2tpIDxyandAcmp3eXNvY2tpLm5ldD4gd3JvdGU6DQo+ID4+
+ID4gRnJvbTogUmFmYWVsIEouIFd5c29ja2kgPHJhZmFlbC5qLnd5c29ja2lAaW50ZWwuY29tPg0K
+PHNuaXA+DQo+ID4+IEpGVFIsIHRoaXMgdHJpZ2dlcmVkIGJlZm9yZSBkdXJpbmcgc3lzdGVtIHJl
+c3VtZSBvbiBlLmcuIFNhbHZhdG9yLVhTIHdpdGgNCj4gPj4gUi1DYXIgSDM6DQo+ID4+DQo+ID4+
+ICAgICBvaGNpLXBsYXRmb3JtIGVlMDgwMDAwLnVzYjogcnVudGltZSBQTSB0cnlpbmcgdG8gc3Vz
+cGVuZCBkZXZpY2UNCj4gPj4gYnV0IGFjdGl2ZSBjaGlsZA0KPiA+PiAgICAgcGh5X3JjYXJfZ2Vu
+M191c2IyIGVlMDgwMjAwLnVzYi1waHk6IHJ1bnRpbWUgUE0gdHJ5aW5nIHRvIHN1c3BlbmQNCj4g
+Pj4gZGV2aWNlIGJ1dCBhY3RpdmUgY2hpbGQNCj4gPj4gICAgIG9oY2ktcGxhdGZvcm0gZWUwYzAw
+MDAudXNiOiBydW50aW1lIFBNIHRyeWluZyB0byBzdXNwZW5kIGRldmljZQ0KPiA+PiBidXQgYWN0
+aXZlIGNoaWxkDQo+ID4+ICAgICBvaGNpLXBsYXRmb3JtIGVlMGEwMDAwLnVzYjogcnVudGltZSBQ
+TSB0cnlpbmcgdG8gc3VzcGVuZCBkZXZpY2UNCj4gPj4gYnV0IGFjdGl2ZSBjaGlsZA0KPiA+PiAg
+ICAgcGh5X3JjYXJfZ2VuM191c2IyIGVlMGMwMjAwLnVzYi1waHk6IHJ1bnRpbWUgUE0gdHJ5aW5n
+IHRvIHN1c3BlbmQNCj4gPj4gZGV2aWNlIGJ1dCBhY3RpdmUgY2hpbGQNCj4gPj4gICAgIHBoeV9y
+Y2FyX2dlbjNfdXNiMiBlZTBhMDIwMC51c2ItcGh5OiBydW50aW1lIFBNIHRyeWluZyB0byBzdXNw
+ZW5kDQo+ID4+IGRldmljZSBidXQgYWN0aXZlIGNoaWxkDQo+ID4+DQo+ID4+IHNvIHRoaXMgd2Fz
+IGFuIGV4aXN0aW5nIGlzc3VlIHdpdGggVVNCIGJlZm9yZS4NCj4gPg0KPiA+IFRoYW5rIHlvdSBm
+b3IgdGhlIHJlcG9ydCENCj4gPiBJIGtub3cgdGhhdCwgYnV0IHNpbmNlIHRoaXMgZGlkbid0IGNh
+dXNlIGFueSB0cm91YmxlIHVudGlsIG5vdywNCj4gPiBJIHBvc3Rwb25lZCB0byBpbnZlc3RpZ2F0
+ZSB0aGUgaXNzdWUuLi4gQnV0LCBJIGludmVzdGlnYXRlIGl0IHRvZGF5Lg0KPiA+IEkgZG9uJ3Qg
+ZmluZCB0aGUgcm9vdCBjYXVzZSB5ZXQuIEhvd2V2ZXIsIGl0IHNlZW1zIHJlbGF0ZWQgdG8gdXNi
+IGhvc3QgYW5kL29yIHVzYiBjb3JlLg0KPiA+IC0tPiBVU0IgaG9zdCByZWxhdGVkIGRldmljZXMn
+IGNoaWxkX2NvdW50IHdpbGwgYmUgMSBpbiBzdXNwZW5kIHRpbWluZy4NCj4gPiAgLS0+IEkgZ3Vl
+c3MgcmVtb3RlIHdha2V1cCBmZWF0dXJlIGlzIGVuYWJsZWQ/IEJ1dCwgSSBkb24ndCBmaW5kIHRo
+ZSBwb2ludCB5ZXQuDQo+IA0KPiBJIGFtIGd1ZXNzaW5nIHRoZSBpc3N1ZSBpcyB0cmlnZ2VyZWQg
+YnkgZ2VucGQgaW4gdGhlIHN1c3BlbmQgbm9pcnENCj4gcGhhc2UgKGdlbnBkX3N1c3BlbmRfbm9p
+cnEoKSkuIEluIHRoZXJlLCAgdGhlcmUgaXMgYSBjYWxsIHRvDQo+IHBtX3J1bnRpbWVfZm9yY2Vf
+c3VzcGVuZCgpICh3aGljaCBjYWxscyBwbV9ydW50aW1lX3NldF9zdXNwZW5kZWQoKSBhbmQNCj4g
+d2hpY2ggdHJpZ2dlcmVkIHRoZSBlYXJsaWVyIGVycm9yIG1lc3NhZ2VzIGJlaW5nIHByaW50ZWQp
+Lg0KPiANCj4gVGhlIHJlYXNvbiB3aHkgZ2VucGQgY2FsbHMgcG1fcnVudGltZV9mb3JjZV9zdXNw
+ZW5kKCksIGlzIGJlY2F1c2Ugd2hlbg0KPiB2YWxpZGF0aW5nIHdha2V1cCBjb25maWd1cmF0aW9u
+cyBmb3IgdGhlIGRldmljZSAiaWYNCj4gKGRldi0+cG93ZXIud2FrZXVwX3BhdGggJiYgZ2VucGRf
+aXNfYWN0aXZlX3dha2V1cChnZW5wZCkpIiwgaXQncw0KPiB0aGlua3Mgd2FrZXVwIGlzbid0IGNv
+bmZpZ3VyZWQgd2hpbGUgaXQgcHJvYmFibHkgc2hvdWxkIGJlLg0KPiANCj4gQW4gYWRkaXRpb25h
+bCBub3RlLCBvbmx5IHdoZW4gZ2VucGQgaGFzIHRoZSBHRU5QRF9GTEFHX1BNX0NMSyBzZXQsDQo+
+IHdoaWNoIG1ha2VzIHRoZSBnZW5wZC0+ZGV2X29wcy5zdG9wfHN0YXJ0KCkgYmVpbmcgYXNzaWdu
+ZWQsIGdlbnBkDQo+IGNhbGxzIHBtX3J1bnRpbWVfZm9yY2Vfc3VzcGVuZCgpIC0gZWxzZSBpdCBk
+b2Vzbid0Lg0KPiANCj4gUGVyaGFwcyB0cnkgb3V0IHRoZSBzZXJpZXMgSSByZWNlbnRseSBwb3N0
+ZWQgaW1wcm92aW5nIHRoZSBjb2RlDQo+IGRlYWxpbmcgd2l0aCB3YWtldXBzIGluIGdlbnBkIGFu
+ZCB0aGUgUE0gY29yZToNCj4gaHR0cHM6Ly93d3cuc3Bpbmljcy5uZXQvbGlzdHMvbGludXgtcmVu
+ZXNhcy1zb2MvbXNnMjAxMjIuaHRtbA0KPiBUbyB0aGF0LCB5b3UgbmVlZCB0byBzZXQgdGhlIG5l
+dyBmbGFnIChpbnZlbnRlZCBpbiB0aGUgYWJvdmUgc2VyaWVzKQ0KPiBEUE1fRkxBR19JTl9CQU5E
+X1dBS0VVUCBpbiB0aGUgZHJpdmVyIHRoYXQgY29uZmlndXJlcyB3YWtldXAgb2YgaXRzDQo+IGRl
+dmljZS4NCj4gDQo+IEhvcGUgdGhpcyBoZWxwcyENCg0KVGhhbmsgeW91IGZvciB0aGUgY29tbWVu
+dHMhDQpJIHRyaWVkIERQTV9GTEFHX0lOX0JBTkRfV0FLRVVQLCBidXQgdGhlIGlzc3VlIHN0aWxs
+IGV4aXN0cy4NCkkgYWRkZWQgdGhlIGZsYWcgaW4gdGhlIFtlb11oY2ktcGxhdGZvcm0gZHJpdmVy
+IGFuZCB1c2IvY29yZS9kcml2ZXIuYy4NCkkgYWxzbyBhZGRlZCB0aGUgZmxhZyBpbiB0aGUgcGh5
+X3JjYXJfZ2VuM191c2IyIGRyaXZlciBleGNlcHQgdXNiIGhvc3QgZHJpdmVycy4NCg0KPiA+IFRo
+ZSByZW5lc2FzX3VzYmhzIGFsc28gdXNlcyB0aGUgcGh5X3JjYXJfZ2VuM191c2IyIGRyaXZlci4N
+Cj4gPiAtLT4gSWYgSSBvbmx5IHVzZWQgdGhlIHJlbmVzYXNfdXNiaHMgZHJpdmVyIChpbiBvdGhl
+ciB3b3JkcywgSSBkb24ndCBpbnN0YWxsDQo+ID4gICAgIFtlb11oY2kte2hjZCxwbGF0Zm9ybX0g
+ZHJpdmVycyksIHRoZSBpc3N1ZSBkaXNhcHBlYXJlZC4NCj4gPiAgLS0+IFNvLCBJIHRoaW5rIHRo
+ZSBwaHlfcmNhcl9nZW4zX3VzYjIgZHJpdmVyIGRvZXNuJ3QgY2F1c2UgdGhpcyBpc3N1ZS4NCj4g
+PiAgICAgKEJ1dCwgaXQgaXMgcG9zc2libGUgdG8gYmUgcmVsYXRlZCB0aG91Z2guKQ0KPiA+DQo+
+ID4gSSdsbCBjb250aW51ZSB0byBpbnZlc3RpZ2F0ZSB0aGlzIGlzc3VlIHRvbW9ycm93Lg0KPiAN
+Cj4gUGxlYXNlIGtlZXAgbWUgcG9zdGVkLCBJIGFtIGludGVyZXN0ZWQgYWJvdXQgdGhlIHdoeSB0
+aGUgcHJvYmxlbSBleGlzdHMuIDotKQ0KDQpTdXJlISA6KQ0KDQpCZXN0IHJlZ2FyZHMsDQpZb3No
+aWhpcm8gU2hpbW9kYQ0KDQo+IEtpbmQgcmVnYXJkcw0KPiBVZmZlDQo=
