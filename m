@@ -1,116 +1,203 @@
 From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: [PATCH 09/11] f2fs: remove not needed freezing calls
-Date: Wed, 29 Nov 2017 15:23:54 -0800
-Message-ID: <20171129232356.28296-10-mcgrof@kernel.org>
+Subject: [PATCH 06/11] fs: freeze on suspend and thaw on resume
+Date: Wed, 29 Nov 2017 15:23:51 -0800
+Message-ID: <20171129232356.28296-7-mcgrof@kernel.org>
 References: <20171129232356.28296-1-mcgrof@kernel.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-block-owner@vger.kernel.org>
 In-Reply-To: <20171129232356.28296-1-mcgrof@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-block-owner@vger.kernel.org
 To: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org
 Cc: boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org, "Luis R. Rodriguez" <mcgrof@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-This removes superflous freezer calls as they are no longer needed
-as the VFS now performs filesystem freezing/thaw if the filesystem has
-support for it.
+This uses the existing filesystem freeze and thaw callbacks to
+freeze each filesystem on suspend/hibernation and thaw upon resume.
 
-The following Coccinelle rule was used as follows:
+This is needed so that we properly really stop IO in flight without
+races after userspace has been frozen. Without this we rely on
+kthread freezing and its semantics are loose and error prone.
+For instance, even though a kthread may use try_to_freeze() and end
+up being frozen we have no way of being sure that everything that
+has been spawned asynchronously from it (such as timers) have also
+been stopped as well.
 
-spatch --sp-file fs-freeze-cleanup.cocci --in-place fs/$FS/
+A long term advantage of also adding filesystem freeze / thawing
+supporting durign suspend / hibernation is that long term we may
+be able to eventually drop the kernel's thread freezing completely
+as it was originally added to stop disk IO in flight as we hibernate
+or suspend.
 
-@ has_freeze_fs @
-identifier super_ops;
-expression freeze_op;
-@@
+This also implies that many kthread users exist which have been
+adding freezer semantics onto its kthreads without need. These also
+will need to be reviewed later.
 
-struct super_operations super_ops = {
-	.freeze_fs = freeze_op,
-};
+This is based on prior work originally by Rafael Wysocki and later by
+Jiri Kosina.
 
-@ remove_set_freezable depends on has_freeze_fs @
-expression time;
-statement S, S2, S3;
-expression task;
-@@
-
-(
--	set_freezable();
-|
--	if (try_to_freeze())
--		continue;
-|
--	try_to_freeze();
-|
--	freezable_schedule();
-+	schedule();
-|
--	freezable_schedule_timeout(time);
-+	schedule_timeout(time);
-|
--	if (freezing(task)) { S }
-|
--	if (freezing(task)) { S }
--	else
-	{ S2 }
-|
--	freezing(current)
-)
-
-Generated-by: Coccinelle SmPL
 Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
 ---
- fs/f2fs/gc.c      | 5 +----
- fs/f2fs/segment.c | 6 +-----
- 2 files changed, 2 insertions(+), 9 deletions(-)
+ fs/super.c             | 85 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/fs.h     | 13 ++++++++
+ kernel/power/process.c | 15 ++++++++-
+ 3 files changed, 112 insertions(+), 1 deletion(-)
 
-diff --git a/fs/f2fs/gc.c b/fs/f2fs/gc.c
-index d844dcb80570..1032d6aa1756 100644
---- a/fs/f2fs/gc.c
-+++ b/fs/f2fs/gc.c
-@@ -32,10 +32,9 @@ static int gc_thread_func(void *data)
+diff --git a/fs/super.c b/fs/super.c
+index 885711c1d35b..c3a2842e5690 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -1648,3 +1648,88 @@ int thaw_super(struct super_block *sb)
+ 	return error;
+ }
+ EXPORT_SYMBOL(thaw_super);
++
++#ifdef CONFIG_PM_SLEEP
++static bool super_should_freeze(struct super_block *sb)
++{
++	if (!sb->s_root)
++		return false;
++	if (!(sb->s_flags & MS_BORN))
++		return false;
++	/*
++	 * We don't freeze virtual filesystems, we skip those filesystems with
++	 * no backing device.
++	 */
++	if (sb->s_bdi == &noop_backing_dev_info)
++		return false;
++	/* No need to freeze read-only filesystems */
++	if (sb->s_flags & MS_RDONLY)
++		return false;
++
++	return true;
++}
++
++static int fs_suspend_freeze_sb(struct super_block *sb, void *priv)
++{
++	int error = 0;
++
++	spin_lock(&sb_lock);
++	if (!super_should_freeze(sb))
++		goto out;
++
++	pr_info("%s (%s): freezing\n", sb->s_type->name, sb->s_id);
++
++	spin_unlock(&sb_lock);
++
++	atomic_inc(&sb->s_active);
++	error = freeze_locked_super(sb, false);
++	if (error)
++		atomic_dec(&sb->s_active);
++
++	spin_lock(&sb_lock);
++	if (error && error != -EBUSY)
++		pr_notice("%s (%s): Unable to freeze, error=%d",
++			  sb->s_type->name, sb->s_id, error);
++
++out:
++	spin_unlock(&sb_lock);
++	return error;
++}
++
++int fs_suspend_freeze(void)
++{
++	return iterate_supers_reverse_excl(fs_suspend_freeze_sb, NULL);
++}
++
++static int fs_suspend_thaw_sb(struct super_block *sb, void *priv)
++{
++	int error = 0;
++
++	spin_lock(&sb_lock);
++	if (!super_should_freeze(sb))
++		goto out;
++
++	pr_info("%s (%s): thawing\n", sb->s_type->name, sb->s_id);
++
++	spin_unlock(&sb_lock);
++
++	error = thaw_locked_super(sb, false);
++	if (!error)
++		atomic_dec(&sb->s_active);
++
++	spin_lock(&sb_lock);
++	if (error && error != -EBUSY)
++		pr_notice("%s (%s): Unable to unfreeze, error=%d",
++			  sb->s_type->name, sb->s_id, error);
++
++out:
++	spin_unlock(&sb_lock);
++	return error;
++}
++
++int fs_resume_unfreeze(void)
++{
++	return iterate_supers_excl(fs_suspend_thaw_sb, NULL);
++}
++
++#endif
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index fe90b6542697..dbaa69c3a4cf 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2237,6 +2237,19 @@ extern int user_statfs(const char __user *, struct kstatfs *);
+ extern int fd_statfs(int, struct kstatfs *);
+ extern int freeze_super(struct super_block *super);
+ extern int thaw_super(struct super_block *super);
++#ifdef CONFIG_PM_SLEEP
++int fs_suspend_freeze(void);
++int fs_resume_unfreeze(void);
++#else
++static inline int fs_suspend_freeze(void)
++{
++	return 0;
++}
++static inline int fs_resume_unfreeze(void)
++{
++	return 0;
++}
++#endif
+ extern bool our_mnt(struct vfsmount *mnt);
+ extern __printf(2, 3)
+ int super_setup_bdi_name(struct super_block *sb, char *fmt, ...);
+diff --git a/kernel/power/process.c b/kernel/power/process.c
+index c326d7235c5f..7a44f8310968 100644
+--- a/kernel/power/process.c
++++ b/kernel/power/process.c
+@@ -145,6 +145,16 @@ int freeze_processes(void)
+ 	pr_cont("\n");
+ 	BUG_ON(in_atomic());
  
- 	wait_ms = gc_th->min_sleep_time;
++	pr_info("Freezing filesystems ... ");
++	error = fs_suspend_freeze();
++	if (error) {
++		pr_cont("failed\n");
++		fs_resume_unfreeze();
++		thaw_processes();
++		return error;
++	}
++	pr_cont("done.\n");
++
+ 	/*
+ 	 * Now that the whole userspace is frozen we need to disbale
+ 	 * the OOM killer to disallow any further interference with
+@@ -154,8 +164,10 @@ int freeze_processes(void)
+ 	if (!error && !oom_killer_disable(msecs_to_jiffies(freeze_timeout_msecs)))
+ 		error = -EBUSY;
  
--	set_freezable();
- 	do {
- 		wait_event_interruptible_timeout(*wq,
--				kthread_should_stop() || freezing(current) ||
-+				kthread_should_stop() ||
- 				gc_th->gc_wake,
- 				msecs_to_jiffies(wait_ms));
+-	if (error)
++	if (error) {
++		fs_resume_unfreeze();
+ 		thaw_processes();
++	}
+ 	return error;
+ }
  
-@@ -43,8 +42,6 @@ static int gc_thread_func(void *data)
- 		if (gc_th->gc_wake)
- 			gc_th->gc_wake = 0;
+@@ -198,6 +210,7 @@ void thaw_processes(void)
+ 	pm_nosig_freezing = false;
  
--		if (try_to_freeze())
--			continue;
- 		if (kthread_should_stop())
- 			break;
+ 	oom_killer_enable();
++	fs_resume_unfreeze();
  
-diff --git a/fs/f2fs/segment.c b/fs/f2fs/segment.c
-index c117e0913f2a..a55e456e67ee 100644
---- a/fs/f2fs/segment.c
-+++ b/fs/f2fs/segment.c
-@@ -1382,18 +1382,14 @@ static int issue_discard_thread(void *data)
- 	unsigned int wait_ms = DEF_MIN_DISCARD_ISSUE_TIME;
- 	int issued;
- 
--	set_freezable();
--
- 	do {
- 		init_discard_policy(&dpolicy, DPOLICY_BG,
- 					dcc->discard_granularity);
- 
- 		wait_event_interruptible_timeout(*q,
--				kthread_should_stop() || freezing(current) ||
-+				kthread_should_stop() ||
- 				dcc->discard_wake,
- 				msecs_to_jiffies(wait_ms));
--		if (try_to_freeze())
--			continue;
- 		if (kthread_should_stop())
- 			return 0;
+ 	pr_info("Restarting tasks ... ");
  
 -- 
 2.15.0
