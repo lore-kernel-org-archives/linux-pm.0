@@ -1,204 +1,79 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] PM / runtime: Drop children check from __pm_runtime_set_status()
-Date: Wed, 29 Nov 2017 15:09:03 +0100
-Message-ID: <CAMuHMdU0tDFWUAWjzY7WS58pDGwhtUZyxqdLVOKRqfhWxiv1Wg@mail.gmail.com>
-References: <1713438.irjm9MTSvo@aspire.rjw.lan> <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
- <TY1PR06MB09928D43D4E5E5752A6A604ED83A0@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFoF0WMSTuK4AAyDzerpVpnfEq=Hn1n9kDJM0fYMkFL_wA@mail.gmail.com>
- <TY1PR06MB09924E4F66C6FCF131EE71CFD83B0@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFoG2-mVGDtzPyg2FDVbXnsWGy543craKqeBVE_awKpf8Q@mail.gmail.com>
- <CAMuHMdViD3vqzits=th52+01d5y3p5iwbAg0jbUBcoGvYfULuA@mail.gmail.com> <CAPDyKFpRrQr3LRXH_CoLSYe2a=2PnUqvuNWUYSuh0wm+rBJ0dw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM: Provide a config snippet for disabling PM
+Date: Wed, 29 Nov 2017 15:37:01 +0100
+Message-ID: <CAJZ5v0jGZxP5NWHKEhXU7gFfvSjwm-iocSEZ-C2A7UhUM+v2CA@mail.gmail.com>
+References: <20171129111227.26798-1-broonie@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f193.google.com ([209.85.220.193]:43351 "EHLO
-        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750799AbdK2OJF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Nov 2017 09:09:05 -0500
-In-Reply-To: <CAPDyKFpRrQr3LRXH_CoLSYe2a=2PnUqvuNWUYSuh0wm+rBJ0dw@mail.gmail.com>
+Received: from mail-oi0-f66.google.com ([209.85.218.66]:36724 "EHLO
+        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751851AbdK2OhC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Nov 2017 09:37:02 -0500
+In-Reply-To: <20171129111227.26798-1-broonie@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: Mark Brown <broonie@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@baylibre.com>, Fengguang Wu <fengguang.wu@intel.com>
 
-Hi Ulf,
-
-On Wed, Nov 29, 2017 at 10:59 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 29 November 2017 at 10:43, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> On Wed, Nov 29, 2017 at 10:24 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> On 29 November 2017 at 09:21, Yoshihiro Shimoda
->>> <yoshihiro.shimoda.uh@renesas.com> wrote:
->>>>> From: Ulf Hansson, Sent: Wednesday, November 29, 2017 2:23 AM
->>>>> On 28 November 2017 at 13:48, Yoshihiro Shimoda
->>>>> <yoshihiro.shimoda.uh@renesas.com> wrote:
->>>>> >> From: Geert Uytterhoeven, Sent: Tuesday, November 28, 2017 7:58 PM
->>>>> >> On Sun, Nov 12, 2017 at 1:27 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>>> >> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>> <snip>
->>>>> >> JFTR, this triggered before during system resume on e.g. Salvator-XS with
->>>>> >> R-Car H3:
->>>>> >>
->>>>> >>     ohci-platform ee080000.usb: runtime PM trying to suspend device
->>>>> >> but active child
->>>>> >>     phy_rcar_gen3_usb2 ee080200.usb-phy: runtime PM trying to suspend
->>>>> >> device but active child
->>>>> >>     ohci-platform ee0c0000.usb: runtime PM trying to suspend device
->>>>> >> but active child
->>>>> >>     ohci-platform ee0a0000.usb: runtime PM trying to suspend device
->>>>> >> but active child
->>>>> >>     phy_rcar_gen3_usb2 ee0c0200.usb-phy: runtime PM trying to suspend
->>>>> >> device but active child
->>>>> >>     phy_rcar_gen3_usb2 ee0a0200.usb-phy: runtime PM trying to suspend
->>>>> >> device but active child
->>>>> >>
->>>>> >> so this was an existing issue with USB before.
->>>>> >
->>>>> > Thank you for the report!
->>>>> > I know that, but since this didn't cause any trouble until now,
->>>>> > I postponed to investigate the issue... But, I investigate it today.
->>>>> > I don't find the root cause yet. However, it seems related to usb host and/or usb core.
->>>>> > --> USB host related devices' child_count will be 1 in suspend timing.
->>>>> >  --> I guess remote wakeup feature is enabled? But, I don't find the point yet.
->>>>>
->>>>> I am guessing the issue is triggered by genpd in the suspend noirq
->>>>> phase (genpd_suspend_noirq()). In there,  there is a call to
->>>>> pm_runtime_force_suspend() (which calls pm_runtime_set_suspended() and
->>>>> which triggered the earlier error messages being printed).
->>>>>
->>>>> The reason why genpd calls pm_runtime_force_suspend(), is because when
->>>>> validating wakeup configurations for the device "if
->>>>> (dev->power.wakeup_path && genpd_is_active_wakeup(genpd))", it's
->>>>> thinks wakeup isn't configured while it probably should be.
->>>>>
->>>>> An additional note, only when genpd has the GENPD_FLAG_PM_CLK set,
->>>>> which makes the genpd->dev_ops.stop|start() being assigned, genpd
->>>>> calls pm_runtime_force_suspend() - else it doesn't.
->>>>>
->>>>> Perhaps try out the series I recently posted improving the code
->>>>> dealing with wakeups in genpd and the PM core:
->>>>> https://www.spinics.net/lists/linux-renesas-soc/msg20122.html
->>>>> To that, you need to set the new flag (invented in the above series)
->>>>> DPM_FLAG_IN_BAND_WAKEUP in the driver that configures wakeup of its
->>>>> device.
->>>>>
->>>>> Hope this helps!
->>>>
->>>> Thank you for the comments!
->>>> I tried DPM_FLAG_IN_BAND_WAKEUP, but the issue still exists.
->>>> I added the flag in the [eo]hci-platform driver and usb/core/driver.c.
->>>> I also added the flag in the phy_rcar_gen3_usb2 driver except usb host drivers.
->>>
->>> First, did you confirm that genpd was used? Then for what device?
->>
->> All 6 devices are part of the SYSC PM Domain.
+On Wed, Nov 29, 2017 at 12:12 PM, Mark Brown <broonie@kernel.org> wrote:
+> A frequent source of build problems is poor handling of optional PM
+> support, almost all development is done with the PM options enabled
+> but they can be turned off.  Currently few if any of the build test
+> services do this as standard as there is no standard config for it and
+> the use of selects and def_bool means that simply setting CONFIG_PM=n
+> doesn't do what is expected.  To make this easier provide a fragement
+> that can be used with KCONFIG_ALLCONFIG to force PM off.
 >
-> Okay!
+> CONFIG_XEN is disabled as Xen uses hibernation callbacks which end up
+> turning on power management on architectures with Xen.  Some cpuidle
+> implementations on ARM select PM so CONFIG_CPU_IDLE is disabled, and
+> some ARM architectures unconditionally enable PM so they are also
+> disabled.
 >
-> Can you perhaps clarify which 6 devices/drivers that are involved, and
-> perhaps also point out if their child devices?
+> Signed-off-by: Mark Brown <broonie@kernel.org>
 
-/sys/devices/platform/soc/ee080000.usb
-/sys/devices/platform/soc/ee0c0000.usb
-/sys/devices/platform/soc/ee0a0000.usb
+I'm going to apply this shortly, sorry for the delay.
 
-Driver: ohci-platform
-
-The children are usb6/6-0:1.0, usb3/3-0:1.0, resp. usb4/4-0:1.0, all using
-the usb "hub" driver
-
-/sys/devices/platform/soc/ee080200.usb-phy
-/sys/devices/platform/soc/ee0a0200.usb-phy
-/sys/devices/platform/soc/ee0c0200.usb-phy
-
-Driver: phy_rcar_gen3_usb2
-
-The children are:
-
-phy/phy-ee080200.usb-phy.2
-phy/phy-ee0a0200.usb-phy.0
-phy/phy-ee0c0200.usb-phy.1
-
-all without a driver, according to sysfs.
-
-Note that at first I had missed them, as printing the children using
-device_for_each_child() does not print them, unlike the hub devices that
-are children of the usb hosts.
-
-With some debug code added, logging inc/dec of child_count:
-
-USB driver init:
-
- ehci-pci: EHCI PCI platform driver
- ehci-platform: EHCI generic platform driver
-+phy_rcar_gen3_usb2 ee0a0200.usb-phy: rpm_resume:830: inc child_count
-of parent soc
-+phy phy-ee0a0200.usb-phy.0: rpm_resume:830: inc child_count of parent
-ee0a0200.usb-phy
-+phy phy-ee0a0200.usb-phy.0: rpm_suspend:606: dec child_count of
-parent ee0a0200.usb-phy
-+phy phy-ee0a0200.usb-phy.0: rpm_resume:759: inc child_count of parent
-ee0a0200.usb-phy
-
-+phy_rcar_gen3_usb2 ee0c0200.usb-phy: rpm_resume:830: inc child_count
-of parent soc
-+phy phy-ee0c0200.usb-phy.1: rpm_resume:830: inc child_count of parent
-ee0c0200.usb-phy
-+phy phy-ee0c0200.usb-phy.1: rpm_suspend:606: dec child_count of
-parent ee0c0200.usb-phy
-+phy phy-ee0c0200.usb-phy.1: rpm_resume:759: inc child_count of parent
-ee0c0200.usb-phy
-
-+phy phy-ee080200.usb-phy.2: rpm_resume:830: inc child_count of parent
-ee080200.usb-phy
-+phy phy-ee080200.usb-phy.2: rpm_suspend:606: dec child_count of
-parent ee080200.usb-phy
-+phy phy-ee080200.usb-phy.2: rpm_resume:759: inc child_count of parent
-ee080200.usb-phy
-
-Somehow the phy class phy-ee0*0200.usb-phy.* devices have the platform
-ee0*0200.usb-phy devices as parent, but they're not part of the list of
-children? Looks like a bug in the USB PHY driver or subsystem.
-
-
-USB hub instantiation:
-
-+usb usb3: __pm_runtime_set_status:1131: inc child_count of parent ee0a0000.usb
-+usb usb3: rpm_suspend:606: dec child_count of parent ee0a0000.usb
-
-+usb usb4: __pm_runtime_set_status:1131: inc child_count of parent ee0c0000.usb
-+usb usb4: rpm_suspend:606: dec child_count of parent ee0c0000.usb
-
-+usb usb6: __pm_runtime_set_status:1131: inc child_count of parent ee080000.usb
-+usb usb6: rpm_suspend:606: dec child_count of parent ee080000.usb
-
-
-System suspend:
-
-+usb usb6: rpm_resume:830: inc child_count of parent ee080000.usb
-+usb usb3: rpm_resume:830: inc child_count of parent ee0a0000.usb
-+usb usb4: rpm_resume:830: inc child_count of parent ee0c0000.usb
-
-
-System resume:
-
- Enabling runtime PM for inactive device (ee0c0200.usb-phy) with active children
- Enabling runtime PM for inactive device (ee0c0200.usb-phy) with active children
- Enabling runtime PM for inactive device (ee0a0000.usb) with active children
- Enabling runtime PM for inactive device (ee0c0000.usb) with active children
- Enabling runtime PM for inactive device (ee080200.usb-phy) with active children
- Enabling runtime PM for inactive device (ee080000.usb) with active children
-
-+usb usb4: rpm_suspend:606: dec child_count of parent ee0c0000.usb
-+usb usb6: rpm_suspend:606: dec child_count of parent ee080000.usb
-+usb usb3: rpm_suspend:606: dec child_count of parent ee0a0000.usb
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> ---
+>  MAINTAINERS                |  1 +
+>  kernel/configs/nopm.config | 15 +++++++++++++++
+>  2 files changed, 16 insertions(+)
+>  create mode 100644 kernel/configs/nopm.config
+>
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 07d9067f68fd..539808dc7928 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -10895,6 +10895,7 @@ F:      include/linux/pm.h
+>  F:     include/linux/pm_*
+>  F:     include/linux/powercap.h
+>  F:     drivers/powercap/
+> +F:     kernel/configs/nopm.config
+>
+>  POWER STATE COORDINATION INTERFACE (PSCI)
+>  M:     Mark Rutland <mark.rutland@arm.com>
+> diff --git a/kernel/configs/nopm.config b/kernel/configs/nopm.config
+> new file mode 100644
+> index 000000000000..81ff07863576
+> --- /dev/null
+> +++ b/kernel/configs/nopm.config
+> @@ -0,0 +1,15 @@
+> +CONFIG_PM=n
+> +CONFIG_SUSPEND=n
+> +CONFIG_HIBERNATION=n
+> +
+> +# Triggers PM on OMAP
+> +CONFIG_CPU_IDLE=n
+> +
+> +# Triggers enablement via hibernate callbacks
+> +CONFIG_XEN=n
+> +
+> +# ARM/ARM64 architectures that select PM unconditionally
+> +CONFIG_ARCH_OMAP2PLUS_TYPICAL=n
+> +CONFIG_ARCH_RENESAS=n
+> +CONFIG_ARCH_TEGRA=n
+> +CONFIG_ARCH_VEXPRESS=n
+> --
+> 2.15.0
+>
