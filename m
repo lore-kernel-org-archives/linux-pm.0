@@ -1,49 +1,33 @@
-From: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH] PM: Provide a config snippet for disabling PM
-Date: Wed, 29 Nov 2017 15:02:41 +0000
-Message-ID: <20171129150241.yx6zihr3oschz5jb@sirena.org.uk>
-References: <20171129111227.26798-1-broonie@kernel.org>
- <CAJZ5v0jGZxP5NWHKEhXU7gFfvSjwm-iocSEZ-C2A7UhUM+v2CA@mail.gmail.com>
+From: Rob Herring <robh+dt@kernel.org>
+Subject: Re: [RFC V7 0/2] OPP: Allow OPP table to be used for power-domains
+Date: Wed, 29 Nov 2017 10:37:43 -0600
+Message-ID: <CAL_JsqJ4D-NzSzZ-GjxU_VRHpgQHS3-jMp8aeKTxTS6dx9mD+g@mail.gmail.com>
+References: <cover.1509453284.git.viresh.kumar@linaro.org> <20171129041435.GG11413@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="x757m4fmjc5kvalo"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jGZxP5NWHKEhXU7gFfvSjwm-iocSEZ-C2A7UhUM+v2CA@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Kevin Hilman <khilman@baylibre.com>, Fengguang Wu <fengguang.wu@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:42908 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752314AbdK2QiF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 Nov 2017 11:38:05 -0500
+In-Reply-To: <20171129041435.GG11413@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Viresh Kumar <vireshk@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>
+
+On Tue, Nov 28, 2017 at 10:14 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 31-10-17, 18:17, Viresh Kumar wrote:
+>> Hi,
+>>
+>> Now that the performance state of PM domains are supported by the kernel
+>> (merged in linux-next), I am trying once again to define the bindings
+>> which we dropped until the code is merged first.
+>
+> @Rob/Stephen: Can I get Ack from you guys on this series, before I
+> apply them? Ulf has already reviewed these.
+
+I don't ack RFCs. In any case, I'm waiting to see what Stephen says.
 
 
---x757m4fmjc5kvalo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Wed, Nov 29, 2017 at 03:37:01PM +0100, Rafael J. Wysocki wrote:
-> On Wed, Nov 29, 2017 at 12:12 PM, Mark Brown <broonie@kernel.org> wrote:
-
-> > A frequent source of build problems is poor handling of optional PM
-> > support, almost all development is done with the PM options enabled
-
-> I'm going to apply this shortly, sorry for the delay.
-
-Thanks!  I sent it just before the merge window so I was expecting to
-have to resend even when I originally posted it.
-
---x757m4fmjc5kvalo
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAloezBAACgkQJNaLcl1U
-h9A2Jwf+LrBsNwyeyImKr5WJF4q+5B+89TExtbww4OX1x88ZJXEUS4OtvOB+bKgH
-0B0MkSk5V5cyitf2cvKENDhZBjIKDbvB/j7ZRls0vxj0ilC7/I2p4EQ8RBAudkhZ
-NVfRd3QVqsaU7ingjwx4Mo5rWAcf2nbKkncKwQ+iEchysjJbsu8kVVrsluxll68q
-z8p0wAZnnZI8bBCyXP358TveiH/Ip7/XjPmX3CqIm/jKwyzx9FZ3If6MwTEEWyDI
-yw+7++8hzrgAUs/JLD6QMqlJmqi6VM65bO7xPBGrNpwycxk/yRODKeCZsh8x+O6p
-ML43imOw8ZYloOGkw1w5FBW4VXQIrQ==
-=p7Fg
------END PGP SIGNATURE-----
-
---x757m4fmjc5kvalo--
+Rob
