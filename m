@@ -1,77 +1,62 @@
 From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v2] PM / Domains: Remove obsolete "samsung,power-domain" check
-Date: Thu, 30 Nov 2017 12:54:28 +0100
-Message-ID: <1512042868-23017-1-git-send-email-geert+renesas@glider.be>
-Return-path: <linux-samsung-soc-owner@vger.kernel.org>
-Sender: linux-samsung-soc-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] bus: simple-pm-bus: convert bool SIMPLE_PM_BUS to tristate
+Date: Thu, 30 Nov 2017 12:57:00 +0100
+Message-ID: <1512043020-23452-1-git-send-email-geert+renesas@glider.be>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from michel.telenet-ops.be ([195.130.137.88]:47012 "EHLO
+        michel.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751486AbdK3L6o (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Nov 2017 06:58:44 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>, Kevin Hilman <khilman@linaro.org>, Simon Horman <horms+renesas@verge.net.au>, linux-arm-kernel@lists.infradead.org, Geert Uytterhoeven <geert+renesas@glider.be>
 
-Currently the generic PM Domain code code checks for the presence of
-both (generic) "power-domains" and (Samsung Exynos legacy)
-"samsung,power-domain" properties in all device tree nodes representing
-devices.
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-There are two issues with this:
-  1. This imposes a small boot-time penalty on all platforms using DT,
-  2. Platform-specific checks do not really belong in core framework
-     code.
+The Kconfig currently controlling compilation of this code is:
 
-Remove the platform-specific check, as the last user of
-"samsung,power-domain" was removed in commit 46dcf0ff0de35da8 ("ARM:
-dts: exynos: Remove exynos4415.dtsi").  All other users were converted
-before in commit 0da6587041363033 ("ARM: dts: convert to generic power
-domain bindings for exynos DT").
+config SIMPLE_PM_BUS
+        bool "Simple Power-Managed Bus Driver"
 
+...meaning that it currently is not being built as a module by anyone.
+
+In removing the orphaned modular support in a previous patch set,
+Geert indicated he'd rather see this code converted to tristate.
+
+I normally don't do that because it extends functionality that I
+can't easily run time test or even know if the use case makes sense,
+but since in this case the author has nominated it as such, we do
+the conversion here.
+
+Note that doesn't change the lack of run time testing ; this change
+is only tested for sucessful compile and modpost.
+
+[geert: Ethernet is probed successfully on sh73a0/kzm9g after
+        insmodding simple-pm-bus.ko]
+
+Cc: Kevin Hilman <khilman@linaro.org>
+Cc: Simon Horman <horms+renesas@verge.net.au>
+Cc: linux-arm-kernel@lists.infradead.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
-This is v2 of 'PM / Domains: Restrict "samsung,power-domain" checks to
-ARCH_EXYNOS'.
+ drivers/bus/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-"samsung,power-domain" was only ever used in:
-  - arch/arm/boot/dts/exynos4415.dtsi: Removed
-  - arch/arm/boot/dts/exynos3250.dtsi: CONFIG_ARCH_EXYNOS3
-  - arch/arm/boot/dts/exynos4.dtsi:    CONFIG_ARCH_EXYNOS4
-  - arch/arm/boot/dts/exynos4x12.dtsi: CONFIG_ARCH_EXYNOS4
-  - arch/arm/boot/dts/exynos5250.dtsi: CONFIG_ARCH_EXYNOS5
-  - arch/arm/boot/dts/exynos5420.dtsi: CONFIG_ARCH_EXYNOS5
-
-v2:
-  - Remove the check completely instead of restricting it to
-    ARCH_EXYNOS, as suggested Javier Martinez Canillas one year ago
-    ("Removing the support for the deprecated property sound sensible to me",
-    http://lists.infradead.org/pipermail/linux-arm-kernel/2016-October/462868.html).
----
- drivers/base/power/domain.c | 16 ++--------------
- 1 file changed, 2 insertions(+), 14 deletions(-)
-
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 0c80bea05bcb92be..f9dcc981b6b9328c 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -2199,20 +2199,8 @@ int genpd_dev_pm_attach(struct device *dev)
+diff --git a/drivers/bus/Kconfig b/drivers/bus/Kconfig
+index dc7b3c7b7d42fd09..57e011d36a79fce3 100644
+--- a/drivers/bus/Kconfig
++++ b/drivers/bus/Kconfig
+@@ -120,7 +120,7 @@ config QCOM_EBI2
+ 	  SRAM, ethernet adapters, FPGAs and LCD displays.
  
- 	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
- 					"#power-domain-cells", 0, &pd_args);
--	if (ret < 0) {
--		if (ret != -ENOENT)
--			return ret;
--
--		/*
--		 * Try legacy Samsung-specific bindings
--		 * (for backwards compatibility of DT ABI)
--		 */
--		pd_args.args_count = 0;
--		pd_args.np = of_parse_phandle(dev->of_node,
--						"samsung,power-domain", 0);
--		if (!pd_args.np)
--			return -ENOENT;
--	}
-+	if (ret < 0)
-+		return ret;
- 
- 	mutex_lock(&gpd_list_lock);
- 	pd = genpd_get_from_provider(&pd_args);
+ config SIMPLE_PM_BUS
+-	bool "Simple Power-Managed Bus Driver"
++	tristate "Simple Power-Managed Bus Driver"
+ 	depends on OF && PM
+ 	help
+ 	  Driver for transparent busses that don't need a real driver, but
 -- 
 2.7.4
