@@ -1,67 +1,61 @@
-From: Dave Chinner <david@fromorbit.com>
-Subject: Re: [PATCH 00/11] fs: use freeze_fs on suspend/hibernate
-Date: Fri, 1 Dec 2017 08:03:12 +1100
-Message-ID: <20171130210312.GN5858@dastard>
-References: <20171129232356.28296-1-mcgrof@kernel.org>
- <1512061271.2774.10.camel@wdc.com>
- <20171130194249.GK729@wotan.suse.de>
- <1512075231.2774.17.camel@wdc.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [GIT PULL] Power management fixes for v4.15-rc2
+Date: Thu, 30 Nov 2017 22:46:07 +0100
+Message-ID: <CAJZ5v0jfxdfzZWo3Rv0TdHHycKvOS-xLqoJ7-eaKYbHd-GO40Q@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1512075231.2774.17.camel@wdc.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Bart Van Assche <Bart.VanAssche@wdc.com>
-Cc: "bmarzins@redhat.com" <bmarzins@redhat.com>, "mcgrof@kernel.org" <mcgrof@kernel.org>, "boris.ostrovsky@oracle.com" <boris.ostrovsky@oracle.com>, "ONeukum@suse.com" <ONeukum@suse.com>, "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "nborisov@suse.com" <nborisov@suse.com>, "oleg.b.antonyan@gmail.com" <oleg.b.antonyan@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>, "darrick.wong@oracle.com" <darrick.wong@oracle.com>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "ming.lei@redhat.com" <ming.lei@redhat.com>, "dan.j.williams@intel.com" <dan.j.williams@intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:37140 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750760AbdK3VqI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Nov 2017 16:46:08 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thu, Nov 30, 2017 at 08:53:52PM +0000, Bart Van Assche wrote:
-> On Thu, 2017-11-30 at 20:42 +0100, Luis R. Rodriguez wrote:
-> > On Thu, Nov 30, 2017 at 05:01:13PM +0000, Bart Van Assche wrote:
-> > > The md resync
-> > > thread must be stopped before a system is frozen. Today the md driver uses
-> > > the kthread freezing mechanism for that purpose. Do you have a plan for
-> > > handling the more complicated scenarios, e.g. a filesystem that exists on top
-> > > of an md device where the md device uses one or more files as backing store
-> > > and with the loop driver between the md device and the files?
-> > 
-> > Nope not yet. It seems you have given this some thought though so you're 
-> > help here is greatly appreciated. In fact the way we should see the long
-> > term 'kill kthread freezing' effort should be a collaborative one. I've
-> > never touched md, so folks more familiar with md should give this some
-> > thought.
-> > 
-> > Can for instance md register_pm_notifier() and register_syscore_ops()
-> > and do handy work to pause some work to replace kthread freezing?
-> > Note that I believe a pm notifier is needed in case syscore_suspend()
-> > is not called, say on a suspend fail.
-> 
-> Sorry but I don't think that a solution can be based on a notifier mechanism.
-> Freezing has to happen in the order in which drivers and filesystems have
-> been stacked (filesystem > md device > filesystem for the above example).
+Hi Linus,
 
-Yup, we need top down stack freezing. We get that at the filesystem
-layer by the reverse order superblock iteration - that freezes newer
-mounts before older mounts, so things like filesystems on loopback
-freeze before the lower filesystem that hosts the loopback image.
+Please pull from the tag
 
-I think what we need is the opposite of the "freeze_bdev()" interface.
-That allows a block device to freeze the superblock on the block
-device. i.e. when the block device needs to quiesce (e.g. for a
-snapshot to be taken) it locks the filesystem and waits for it to
-quiesce, then does what it needs to and unlocks the filesystem.
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-4.15-rc2
 
-ISTM that you're asking for the opposite of this - a call that
-allows the superblock to quiesce the underlying block device into a
-known, unchanging state.  This would allow MD/dm to suspend whatever
-on-going maintenance operations it has in progress until the
-filesystem says "we need you to start again" when it gets a thaw
-call....
+with top-most commit 6981037442b05b192504fbc3c165cb240e01f6e2
 
-Cheers,
+ Merge branch 'pm-tools'
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+on top of commit e75080f185c103a638c66d7b65c673769a57cb87
+
+ Merge tag 'pm-fixes-4.15-rc1' of
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+
+to receive power management fixes for 4.15-rc2.
+
+These add missing module information to the Mediatek cpufreq driver
+module (Jesse Chan), fix config dependencies for the Loongson cpufreq
+driver (James Hogan) and fix two issues related to CPU offline in
+the cpupower utility (Abhishek Goel).
+
+Thanks!
+
+
+---------------
+
+Abhishek Goel (2):
+      cpupowerutils: bench - Fix cpu online check
+      cpupower : Fix cpupower working when cpu0 is offline
+
+James Hogan (1):
+      cpufreq: Add Loongson machine dependencies
+
+Jesse Chan (1):
+      cpufreq: mediatek: add missing MODULE_DESCRIPTION/AUTHOR/LICENSE
+
+---------------
+
+ drivers/cpufreq/Kconfig                                 | 2 ++
+ drivers/cpufreq/mediatek-cpufreq.c                      | 4 ++++
+ tools/power/cpupower/bench/system.c                     | 2 +-
+ tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c | 9 ++++++---
+ 4 files changed, 13 insertions(+), 4 deletions(-)
