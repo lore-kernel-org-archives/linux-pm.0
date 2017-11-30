@@ -1,144 +1,46 @@
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] cpufreq: powernv: Define methods to parse positive & negative pstates
-Date: Thu, 30 Nov 2017 10:13:38 +0530
-Message-ID: <1512017018-4857-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [RFC V7 1/2] OPP: Allow OPP table to be used for power-domains
+Date: Thu, 30 Nov 2017 10:18:00 +0530
+Message-ID: <20171130044800.GH11413@vireshk-i7>
+References: <cover.1509453284.git.viresh.kumar@linaro.org>
+ <2b244ea0a09deaf50237fb8b7578273a8284499e.1509453284.git.viresh.kumar@linaro.org>
+ <CAL_JsqJr9pTkwODqxc1CKRv-zNr3B_kfy4U0g6imaV67oaca4A@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:51266 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752099AbdK3EoO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Nov 2017 23:44:14 -0500
-Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vAU4hglP095757
-        for <linux-pm@vger.kernel.org>; Wed, 29 Nov 2017 23:44:14 -0500
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2ej807xeu5-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Wed, 29 Nov 2017 23:44:14 -0500
-Received: from localhost
-        by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
-        Thu, 30 Nov 2017 04:44:11 -0000
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:41229 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751771AbdK3EsG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Nov 2017 23:48:06 -0500
+Received: by mail-pf0-f195.google.com with SMTP id j28so2608768pfk.8
+        for <linux-pm@vger.kernel.org>; Wed, 29 Nov 2017 20:48:05 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAL_JsqJr9pTkwODqxc1CKRv-zNr3B_kfy4U0g6imaV67oaca4A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, svaidy@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, huntbag@linux.vnet.ibm.com, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: Rob Herring <robh+dt@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On 29-11-17, 10:46, Rob Herring wrote:
+> On Tue, Oct 31, 2017 at 7:47 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > +- power-domain-opp: This contains phandle to one of the OPP nodes of the master
+> > +  power domain. This specifies the minimum required OPP of the master domain for
+> > +  the functioning of the device in this OPP (where this property is present).
+> > +  This property can only be set for a device if the device node contains the
+> > +  "power-domains" property. Also, either all or none of the OPP nodes in an OPP
+> > +  table should have it set.
+> 
+> This is a "this device requires OPP n" property. Couldn't we want this
+> for cases other than a powerdomain OPP? What if a device has
+> requirements 2 different OPPs?
 
-Pstates are 8bit values but on POWER8 they are negative and on POWER9
-they are positive. This patch adds helper routines to differentiate
-the sign to read the correct pstate value.
+Hmm, I agree. We can/should make it more generic.
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-Tested-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 43 ++++++++++++++++++++++++++++++---------
- 1 file changed, 33 insertions(+), 10 deletions(-)
+> On the flipside, I don't think we want devices picking things like CPU
+> OPPs and putting policy here. But I'd rather things be extendable than
+> reviewing yet another OPP property next month.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index b6d7c4c..bb7586e 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -41,11 +41,14 @@
- #define POWERNV_MAX_PSTATES	256
- #define PMSR_PSAFE_ENABLE	(1UL << 30)
- #define PMSR_SPR_EM_DISABLE	(1UL << 31)
--#define PMSR_MAX(x)		((x >> 32) & 0xFF)
-+#define EXTRACT_BYTE(x, shift)	(((x) >> shift) & 0xFF)
-+#define MAX_SHIFT		32
- #define LPSTATE_SHIFT		48
- #define GPSTATE_SHIFT		56
--#define GET_LPSTATE(x)		(((x) >> LPSTATE_SHIFT) & 0xFF)
--#define GET_GPSTATE(x)		(((x) >> GPSTATE_SHIFT) & 0xFF)
-+#define GET_PMSR_MAX(x)		EXTRACT_BYTE(x, MAX_SHIFT)
-+#define GET_LPSTATE(x)		EXTRACT_BYTE(x, LPSTATE_SHIFT)
-+#define GET_GPSTATE(x)		EXTRACT_BYTE(x, GPSTATE_SHIFT)
-+
- 
- #define MAX_RAMP_DOWN_TIME				5120
- /*
-@@ -64,6 +67,12 @@
- 
- /* Interval after which the timer is queued to bring down global pstate */
- #define GPSTATE_TIMER_INTERVAL				2000
-+/*
-+ * On POWER8 the pstates are negatively numbered. On POWER9, they are
-+ * positively numbered.  Use this flag to track whether we have
-+ * positive or negative numbered pstates.
-+ */
-+static bool pos_pstates;
- 
- /**
-  * struct global_pstate_info -	Per policy data structure to maintain history of
-@@ -164,7 +173,7 @@ static inline unsigned int pstate_to_idx(int pstate)
- 	int min = powernv_freqs[powernv_pstate_info.min].driver_data;
- 	int max = powernv_freqs[powernv_pstate_info.max].driver_data;
- 
--	if (min > 0) {
-+	if (pos_pstates) {
- 		if (unlikely((pstate < max) || (pstate > min))) {
- 			pr_warn_once("pstate %d is out of bound\n", pstate);
- 			return powernv_pstate_info.nominal;
-@@ -301,6 +310,9 @@ static int init_powernv_pstates(void)
- 		}
- 	}
- 
-+	if ((int)pstate_min > 0)
-+		pos_pstates = true;
-+
- 	/* End of list marker entry */
- 	powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
- 	return 0;
-@@ -438,7 +450,6 @@ struct powernv_smp_call_data {
- static void powernv_read_cpu_freq(void *arg)
- {
- 	unsigned long pmspr_val;
--	s8 local_pstate_id;
- 	struct powernv_smp_call_data *freq_data = arg;
- 
- 	pmspr_val = get_pmspr(SPRN_PMSR);
-@@ -447,8 +458,11 @@ static void powernv_read_cpu_freq(void *arg)
- 	 * The local pstate id corresponds bits 48..55 in the PMSR.
- 	 * Note: Watch out for the sign!
- 	 */
--	local_pstate_id = (pmspr_val >> 48) & 0xFF;
--	freq_data->pstate_id = local_pstate_id;
-+	if (pos_pstates)
-+		freq_data->pstate_id = (u8)GET_LPSTATE(pmspr_val);
-+	else
-+		freq_data->pstate_id = (s8)GET_LPSTATE(pmspr_val);
-+
- 	freq_data->freq = pstate_id_to_freq(freq_data->pstate_id);
- 
- 	pr_debug("cpu %d pmsr %016lX pstate_id %d frequency %d kHz\n",
-@@ -522,7 +536,10 @@ static void powernv_cpufreq_throttle_check(void *data)
- 	chip = this_cpu_read(chip_info);
- 
- 	/* Check for Pmax Capping */
--	pmsr_pmax = (s8)PMSR_MAX(pmsr);
-+	if (pos_pstates)
-+		pmsr_pmax = (u8)GET_PMSR_MAX(pmsr);
-+	else
-+		pmsr_pmax = (s8)GET_PMSR_MAX(pmsr);
- 	pmsr_pmax_idx = pstate_to_idx(pmsr_pmax);
- 	if (pmsr_pmax_idx != powernv_pstate_info.max) {
- 		if (chip->throttled)
-@@ -645,8 +662,14 @@ void gpstate_timer_handler(struct timer_list *t)
- 	 * value. Hence, read from PMCR to get correct data.
- 	 */
- 	val = get_pmspr(SPRN_PMCR);
--	freq_data.gpstate_id = (s8)GET_GPSTATE(val);
--	freq_data.pstate_id = (s8)GET_LPSTATE(val);
-+	if (pos_pstates) {
-+		freq_data.gpstate_id = (u8)GET_GPSTATE(val);
-+		freq_data.pstate_id = (u8)GET_LPSTATE(val);
-+	} else {
-+		freq_data.gpstate_id = (s8)GET_GPSTATE(val);
-+		freq_data.pstate_id = (s8)GET_LPSTATE(val);
-+	}
-+
- 	if (freq_data.gpstate_id  == freq_data.pstate_id) {
- 		reset_gpstates(policy);
- 		spin_unlock(&gpstates->gpstate_lock);
+Sure, I would rename this property and make necessary changes to it.
+
 -- 
-1.8.3.1
+viresh
