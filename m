@@ -1,80 +1,32 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: Re: [PATCH 00/11] fs: use freeze_fs on suspend/hibernate
-Date: Thu, 30 Nov 2017 20:42:49 +0100
-Message-ID: <20171130194249.GK729@wotan.suse.de>
-References: <20171129232356.28296-1-mcgrof@kernel.org>
- <1512061271.2774.10.camel@wdc.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 07/11] xfs: remove not needed freezing calls
+Date: Thu, 30 Nov 2017 21:32:53 +0100
+Message-ID: <CAJZ5v0hrEWOMi+C0Cw+ij_P7fwh=d7KVHAKWWTc=C2SSw=2nkA@mail.gmail.com>
+References: <20171129232356.28296-1-mcgrof@kernel.org> <20171129232356.28296-8-mcgrof@kernel.org>
+ <20171130162155.GB28180@quack2.suse.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:46259 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750752AbdK3Tmx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 30 Nov 2017 14:42:53 -0500
-Content-Disposition: inline
-In-Reply-To: <1512061271.2774.10.camel@wdc.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-fsdevel-owner@vger.kernel.org>
+In-Reply-To: <20171130162155.GB28180@quack2.suse.cz>
+Sender: linux-fsdevel-owner@vger.kernel.org
+To: Jan Kara <jack@suse.cz>
+Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, bart.vanassche@wdc.com, ming.lei@redhat.com, Ted Ts'o <tytso@mit.edu>, "Darrick J. Wong" <darrick.wong@oracle.com>, Jiri Kosina <jikos@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-fsdevel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Todd Brandt <todd.e.brandt@linux.intel.com>, nborisov@suse.com, "Martin K. Petersen" <martin.petersen@oracle.com>, Oliver Neukum <ONeukum@suse.com>, oleksandr@natalenko.name, Oleg Antonyan <oleg.b.antonyan@gmail.com>, Yu Chen <yu.chen.surf@gmail.com>, Dan Williams <dan.j.williams@intel.com>, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Bart Van Assche <Bart.VanAssche@wdc.com>, Benjamin Marzinski <bmarzins@redhat.com>
-Cc: "pavel@ucw.cz" <pavel@ucw.cz>, "darrick.wong@oracle.com" <darrick.wong@oracle.com>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "ming.lei@redhat.com" <ming.lei@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "mcgrof@kernel.org" <mcgrof@kernel.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "jikos@kernel.org" <jikos@kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "tytso@mit.edu" <tytso@mit.edu>, "boris.ostrovsky@oracle.com" <boris.ostrovsky@oracle.com>, "ONeukum@suse.com" <ONeukum@suse.com>, "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "nborisov@suse.com" <nborisov@suse.com>, "oleg.b.antonyan@gmail.com" <oleg.b.antonyan@gmail.com>l
 
-On Thu, Nov 30, 2017 at 05:01:13PM +0000, Bart Van Assche wrote:
-> It's great to see that you are making progress with this work :-) However,
-> what's not clear to me is what your (long-term) plan is for freezing
-> filesystems that e.g. exist on top of a md RAID1 block device?
+On Thu, Nov 30, 2017 at 5:21 PM, Jan Kara <jack@suse.cz> wrote:
+> On Wed 29-11-17 15:23:52, Luis R. Rodriguez wrote:
+>> This removes superflous freezer calls as they are no longer needed
+>> as the VFS now performs filesystem freezing/thaw if the filesystem has
+>> support for it.
+>>
+>> The following Coccinelle rule was used as follows:
+>>
+>> spatch --sp-file fs-freeze-cleanup.cocci --in-place fs/$FS/
+>
+> I think your rule misses WQ_FREEZABLE flag for workqueues? That would be
+> also good to get rid of...
 
-The original approach of doing a full swing kill on kthread freezing helpers
-in one shot was too much. We must therefore approach this turtle style and
-carefully. This patch series currently only addresses filesystems which
-have a freeze_fs() callback implemented, that's it. The rest of the kernel
-needs more work.
+We need that one (or equivalent) for the runtime PM workqueue at least.
 
-So this work is far as I've gotten so far.
-
-Note, it does *not* remove the kthread freezing API calls on any other drivers,
-as such that should still work.
-
-> The md resync
-> thread must be stopped before a system is frozen. Today the md driver uses
-> the kthread freezing mechanism for that purpose. Do you have a plan for
-> handling the more complicated scenarios, e.g. a filesystem that exists on top
-> of an md device where the md device uses one or more files as backing store
-> and with the loop driver between the md device and the files?
-
-Nope not yet. It seems you have given this some thought though so you're 
-help here is greatly appreciated. In fact the way we should see the long
-term 'kill kthread freezing' effort should be a collaborative one. I've
-never touched md, so folks more familiar with md should give this some
-thought.
-
-Can for instance md register_pm_notifier() and register_syscore_ops()
-and do handy work to pause some work to replace kthread freezing?
-Note that I believe a pm notifier is needed in case syscore_suspend()
-is not called, say on a suspend fail.
-
-> How about filesystems implemented in user space using the FUSE driver?
-
-Not sure, someone more familiar with FUSE drivers should chime in. Right
-now all this does is leverage filesystems which *do* implement freeze_fs()
-only, and removes the kthread freezing calls after that. That's all. It
-should not affect any other filesystems
-
-Likewise consider filesystems that implement freeze_super() instead (like gfs2)
-which don't hold sb->s_umount -- see commit 48b6bca6b7b8309 ("fs: add
-freeze_super/thaw_super fs hooks"). If its desirable to address those as well,
-it would seem a pair of non-locking iters somehow are needed. More work to
-be done.
-
-This all needs to be considered for the future as well.
-
-> Patch 6/11 of this series freezes user space processes before freezing
-> filesystems. Will that work for FUSE filesystems?
-
-It doesn't add new code which should negatively affect FUSE drivers.
-Long term if we wanted to address FUSE, it may require other work.
-
-In the future then fs_suspend_freeze() may need to work for different
-types of filesystems. Right now only filesystems which implement freeze_fs()
-are addressed.
-
-  Luis
+Thanks,
+Rafael
