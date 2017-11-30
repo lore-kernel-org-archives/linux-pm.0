@@ -1,99 +1,82 @@
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=
         <u.kleine-koenig@pengutronix.de>
-Subject: [PATCH v2 4/4] thermal: imx: update to new formula according to NXP AN5215
-Date: Thu, 30 Nov 2017 10:17:38 +0100
-Message-ID: <20171130091738.8901-5-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH v2 1/4] thermal: imx: Use better parameter names than "val"
+Date: Thu, 30 Nov 2017 10:17:35 +0100
+Message-ID: <20171130091738.8901-2-u.kleine-koenig@pengutronix.de>
 References: <20171130091738.8901-1-u.kleine-koenig@pengutronix.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from antares.kleine-koenig.org ([94.130.110.236]:36750 "EHLO
+Received: from antares.kleine-koenig.org ([94.130.110.236]:36736 "EHLO
         antares.kleine-koenig.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752312AbdK3JRq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Nov 2017 04:17:46 -0500
+        with ESMTP id S1751851AbdK3JRn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Nov 2017 04:17:43 -0500
 In-Reply-To: <20171130091738.8901-1-u.kleine-koenig@pengutronix.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Leonard Crestez <leonard.crestez@nxp.com>, Shawn Guo <shawnguo@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
 Cc: kernel@pengutronix.de, linux-pm@vger.kernel.org
 
-According to an application note from 03/2017 there is an updated formula to
-calculate the temperature that better matches reality. This is implemented here.
+The values passed to imx_init_calib() and imx_init_temp_grade() are
+read from specific OCOTP values. Use their names (in lower case) as
+parameter name instead of "val" to make the code easier to understand.
 
-While updating move the magic constants from cpp defines which are far above the
-explaining formula to constants in the code just under the explaining comment.
-
-Reviewed-by: Leonard Crestez <leonard.crestez@nxp.com>
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
-Changes since (implicit) v1, sent with
-Message-ID: 20171121200225.23316-5-u.kleine-koenig@pengutronix.de
+No changes since (implicit) v1, sent with
+Message-ID: 20171121200225.23316-2-u.kleine-koenig@pengutronix.de
 
- - Add Reviewed-by: Leonard Crestez
+Leonard Crestez had doubts because on i.MX7 the OTP registers are called
+differently, but I ignored these as the driver up to now only supports
+i.MX6.
 ---
- drivers/thermal/imx_thermal.c | 26 +++++++++++---------------
- 1 file changed, 11 insertions(+), 15 deletions(-)
+ drivers/thermal/imx_thermal.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 41e15cf5ffd7..a67781b7a0b2 100644
+index e7d4ffc3de7f..21b8c4c4da3c 100644
 --- a/drivers/thermal/imx_thermal.c
 +++ b/drivers/thermal/imx_thermal.c
-@@ -70,10 +70,6 @@ enum imx_thermal_trip {
- #define IMX_POLLING_DELAY		2000 /* millisecond */
- #define IMX_PASSIVE_DELAY		1000
+@@ -347,13 +347,13 @@ static struct thermal_zone_device_ops imx_tz_ops = {
+ 	.set_trip_temp = imx_set_trip_temp,
+ };
  
--#define FACTOR0				10000000
--#define FACTOR1				15976
--#define FACTOR2				4297157
--
- #define TEMPMON_IMX6Q			1
- #define TEMPMON_IMX6SX			2
- 
-@@ -350,7 +346,7 @@ static struct thermal_zone_device_ops imx_tz_ops = {
- static int imx_init_calib(struct platform_device *pdev, u32 ocotp_ana1)
+-static int imx_init_calib(struct platform_device *pdev, u32 val)
++static int imx_init_calib(struct platform_device *pdev, u32 ocotp_ana1)
  {
  	struct imx_thermal_data *data = platform_get_drvdata(pdev);
--	int t1, n1;
-+	int n1;
+ 	int t1, n1;
  	u64 temp64;
  
- 	if (ocotp_ana1 == 0 || ocotp_ana1 == ~0) {
-@@ -365,25 +361,25 @@ static int imx_init_calib(struct platform_device *pdev, u32 ocotp_ana1)
- 	 * To find the actual temperature T, the following formula has to be used
- 	 * when reading value n from the sensor:
- 	 *
--	 * T = T1 + (N - N1) / (0.4297157 - 0.0015976 * N1) °C
--	 *   = [T1 - N1 / (0.4297157 - 0.0015976 * N1) °C] + N / (0.4297157 - 0.0015976 * N1) °C
--	 *   = [T1 + N1 / (0.0015976 * N1 - 0.4297157) °C] - N / (0.0015976 * N1 - 0.4297157) °C
-+	 * T = T1 + (N - N1) / (0.4148468 - 0.0015423 * N1) °C + 3.580661 °C
-+	 *   = [T1' - N1 / (0.4148468 - 0.0015423 * N1) °C] + N / (0.4148468 - 0.0015423 * N1) °C
-+	 *   = [T1' + N1 / (0.0015423 * N1 - 0.4148468) °C] - N / (0.0015423 * N1 - 0.4148468) °C
- 	 *   = c2 - c1 * N
- 	 *
- 	 * with
- 	 *
--	 *   c1 = 1 / (0.0015976 * N1 - 0.4297157) °C
--	 *   c2 = T1 + N1 / (0.0015976 * N1 - 0.4297157) °C
--	 *      = T1 + N1 * C1
-+	 *  T1' = 28.580661 °C
-+	 *   c1 = 1 / (0.0015423 * N1 - 0.4297157) °C
-+	 *   c2 = T1' + N1 / (0.0015423 * N1 - 0.4148468) °C
-+	 *      = T1' + N1 * c1
+-	if (val == 0 || val == ~0) {
++	if (ocotp_ana1 == 0 || ocotp_ana1 == ~0) {
+ 		dev_err(&pdev->dev, "invalid sensor calibration data\n");
+ 		return -EINVAL;
+ 	}
+@@ -364,7 +364,7 @@ static int imx_init_calib(struct platform_device *pdev, u32 val)
+ 	 * Use universal formula now and only need sensor value @ 25C
+ 	 * slope = 0.4297157 - (0.0015976 * 25C fuse)
  	 */
- 	n1 = ocotp_ana1 >> 20;
--	t1 = 25; /* °C */
+-	n1 = val >> 20;
++	n1 = ocotp_ana1 >> 20;
+ 	t1 = 25; /* t1 always 25C */
  
--	temp64 = FACTOR0; /* 10^7 for FACTOR1 and FACTOR2 */
-+	temp64 = 10000000; /* use 10^7 as fixed point constant for values in formula */
- 	temp64 *= 1000; /* to get result in °mC */
--	do_div(temp64, FACTOR1 * n1 - FACTOR2);
-+	do_div(temp64, 15423 * n1 - 4148468);
- 	data->c1 = temp64;
--	data->c2 = n1 * data->c1 + 1000 * t1;
-+	data->c2 = n1 * data->c1 + 28581;
- 
+ 	/*
+@@ -392,12 +392,12 @@ static int imx_init_calib(struct platform_device *pdev, u32 val)
  	return 0;
  }
+ 
+-static void imx_init_temp_grade(struct platform_device *pdev, u32 val)
++static void imx_init_temp_grade(struct platform_device *pdev, u32 ocotp_mem0)
+ {
+ 	struct imx_thermal_data *data = platform_get_drvdata(pdev);
+ 
+ 	/* The maximum die temp is specified by the Temperature Grade */
+-	switch ((val >> 6) & 0x3) {
++	switch ((ocotp_mem0 >> 6) & 0x3) {
+ 	case 0: /* Commercial (0 to 95C) */
+ 		data->temp_grade = "Commercial";
+ 		data->temp_max = 95000;
 -- 
 2.15.0
