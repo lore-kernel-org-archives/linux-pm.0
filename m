@@ -1,39 +1,43 @@
 From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH v3 5/6] cpufreq: schedutil: relax rate-limiting while
- running RT/DL tasks
-Date: Thu, 30 Nov 2017 17:06:27 +0100
-Message-ID: <20171130160627.GJ9903@localhost.localdomain>
+Subject: Re: [PATCH v3 6/6] cpufreq: schedutil: ignore sugov kthreads
+Date: Thu, 30 Nov 2017 17:12:20 +0100
+Message-ID: <20171130161220.GK9903@localhost.localdomain>
 References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171130114723.29210-6-patrick.bellasi@arm.com>
- <20171130133642.GE9903@localhost.localdomain>
- <20171130155403.GE31247@e110439-lin>
+ <20171130114723.29210-7-patrick.bellasi@arm.com>
+ <20171130134155.GF9903@localhost.localdomain>
+ <20171130160234.GG31247@e110439-lin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171130155403.GE31247@e110439-lin>
+In-Reply-To: <20171130160234.GG31247@e110439-lin>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Patrick Bellasi <patrick.bellasi@arm.com>
 Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 30/11/17 15:54, Patrick Bellasi wrote:
-> On 30-Nov 14:36, Juri Lelli wrote:
+On 30/11/17 16:02, Patrick Bellasi wrote:
+> On 30-Nov 14:41, Juri Lelli wrote:
 
 [...]
 
-> > I wonder if we would also need some way to trigger a back to back update
-> > as soon as a currently running one finishes and an RT/DL task asked for
-> > an update (without waiting for the next tick).
+> > If the DL changes (which I shall post again as soon as tip/sched/core is
+> > bumped up to 4.15-rc1) get in first, this is going to be useless (as the
+> > DL kthread gets ignored by the scheduling class itself). But, this looks
+> > good to me "in the meantime".
 > 
-> Good point, I think that would actually be an interesting
-> optimization. We already discussed that in the past, but refrained by
-> adding more on top of this already "substantial" set of changes.
-> 
-> Can we think about that once we decided about some patches of this
-> series?
+> Just to better understand, you mean that the DL kthread does not send
+> out schedutil updates?
 
-Definitely yes for me. One bit at a time. :)
+It doesn't have a "proper" bandwidth (utilization) :/. So it gets
+"unnoticed" and schedutil updates are not triggered.
+
+> 
+> If that's the case I agree we can discard this patch... that's also
+> one of the reasons why I move it at the end of this series.
+
+Not sure about this though, not my call :). I guess this still helps
+until we get the DL changes in.
 
 Best,
 
