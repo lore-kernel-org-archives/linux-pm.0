@@ -1,53 +1,72 @@
-From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Subject: RE: [PATCH] PM / runtime: Drop children check from
- __pm_runtime_set_status()
-Date: Thu, 30 Nov 2017 12:51:45 +0000
-Message-ID: <TY1PR06MB09928B145D35E52444F8D462D8380@TY1PR06MB0992.apcprd06.prod.outlook.com>
-References: <1713438.irjm9MTSvo@aspire.rjw.lan>
- <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
- <TY1PR06MB09928D43D4E5E5752A6A604ED83A0@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFoF0WMSTuK4AAyDzerpVpnfEq=Hn1n9kDJM0fYMkFL_wA@mail.gmail.com>
- <TY1PR06MB09924E4F66C6FCF131EE71CFD83B0@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFoG2-mVGDtzPyg2FDVbXnsWGy543craKqeBVE_awKpf8Q@mail.gmail.com>
- <CAMuHMdViD3vqzits=th52+01d5y3p5iwbAg0jbUBcoGvYfULuA@mail.gmail.com>
- <CAPDyKFpRrQr3LRXH_CoLSYe2a=2PnUqvuNWUYSuh0wm+rBJ0dw@mail.gmail.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH v3 1/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE
+ enter
+Date: Thu, 30 Nov 2017 14:12:22 +0100
+Message-ID: <20171130131222.GA9903@localhost.localdomain>
+References: <20171130114723.29210-1-patrick.bellasi@arm.com>
+ <20171130114723.29210-2-patrick.bellasi@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relmlor2.renesas.com ([210.160.252.172]:64189 "EHLO
-        relmlie1.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1751099AbdK3Mvu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Nov 2017 07:51:50 -0500
-In-Reply-To: <CAPDyKFpRrQr3LRXH_CoLSYe2a=2PnUqvuNWUYSuh0wm+rBJ0dw@mail.gmail.com>
-Content-Language: ja-JP
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171130114723.29210-2-patrick.bellasi@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-SGksDQoNCj4gRnJvbTogVWxmIEhhbnNzb24sIFNlbnQ6IFdlZG5lc2RheSwgTm92ZW1iZXIgMjks
-IDIwMTcgNjo1OSBQTQ0KPiANCj4gT24gMjkgTm92ZW1iZXIgMjAxNyBhdCAxMDo0MywgR2VlcnQg
-VXl0dGVyaG9ldmVuIDxnZWVydEBsaW51eC1tNjhrLm9yZz4gd3JvdGU6DQo+ID4gSGkgVWxmLA0K
-PHNuaXA+DQo+IE9rYXksIHNvIHRoZSBwcm9ibGVtIHJlbWFpbnMgbm8gbWF0dGVyIHdoaWNoIHNv
-bHV0aW9uIGZvciB3YWtldXAgeW91DQo+IHBpY2sgaW4gZ2VucGQuDQoNClllcy4gVG9kYXkgSSBj
-b3VsZCByZXByb2R1Y2UgdGhpcyBpc3N1ZSB3aXRob3V0IHVzYiBob3N0IGRyaXZlci4NCi0gVGhl
-IHJlbmVzYXNfdXNiMyB1c2IgcGVyaXBoZXJhbCBkcml2ZXIgaGFzIGdlbmVyaWMgcGh5IGhhbmRs
-aW5nLg0KICAoVGhlIHBlcmlwaGVyYWwgZHJpdmVyIHVzZXMgZGlmZmVyZW50IGdlbmVyaWMgcGh5
-IGRyaXZlciAocGh5LXJjYXItZ2VuMy11c2IzLmMpIHRob3VnaC4pDQogLS0+IElmIEkgdXNlZCB0
-aGUgY3VycmVudCByZW5lc2FzX3VzYjMgKHRoaXMgbWVhbnMgZG9lc24ndCBjYWxsIHBoeV9wb3dl
-cl97b24sb2ZmfSgpLA0KICAgICB0aGUgaXNzdWUgZGlkbid0IGhhcHBlbi4NCiAtLT4gSWYgSSBh
-ZGRlZCBwaHlfcG93ZXJfe29uLG9mZn0oKSBjYWxsaW5nLCB0aGUgaXNzdWUgaGFwcGVuZWQuDQog
-IC0tPiBTbywgSSdtIHRoaW5raW5nIHRoZSBBUElzIGFyZSByZWxhdGVkIHRvIHRoZSBpc3N1ZS4N
-Cg0KLSBUaGUgZ2VuZXJpYyBwaHkgQVBJcyBhcmUgaW4gZHJpdmVycy9waHkvcGh5LWNvcmUuYy4N
-CiAtLT4gVGhlIHBoeS1yY2FyLWdlbjMtdXNiWzIzXSBkcml2ZXJzIGNhbGwgb25seSBwbV9ydW50
-aW1lX2VuYWJsZSgpIGJlZm9yZSBkZXZtX3BoeV9jcmVhdGUoKS4NCiAgLS0+IFRoZSBwaHktY29y
-ZSB3aWxsIGNhbGwgcG1fcnVudGltZV97Z2V0X3N5bmMscHV0fSgpIGluIHBoeV97aW5pdCxleGl0
-LHBvd2VyX3tvbixvZmZ9fS4NCiAgIC0tPiBTbywgSUlVQywgYm90aCBkZXZpY2VzIG9mIHBoeS08
-ZGV2X25hbWU+LjxpZD4gYW5kIDxkZXZfbmFtZT4gd2lsbCBiZSBoYW5kbGVkIGJ5IHJ1bnRpbWUg
-UE0gQVBJcy4NCiAtLT4gVGhlIHJ1bnRpbWUgUE0gaW1wbGVtZW50YXRpb24gb2YgcGh5LWNvcmUg
-c2VlbXMgZ29vZCB0byBtZS4gQnV0Li4uPw0KDQo+IFRoZW4gdGhpcyBzZWVtcyB0byBwb2ludCB0
-byB0aGF0IHRoZSBkcml2ZXIgbWF5IGJlIG1pc2JlaGF2aW5nIGluIHNvbWUNCj4gd2F5LiBJIGNh
-biBoZWxwIHRvIGNoZWNrIHdoYXQgaXMgZ29pbmcgb24uDQoNCkkgZ3Vlc3Mgc28uIEJ1dCwgSSBk
-b24ndCBmaW5kIHlldC4uLg0KDQpCZXN0IHJlZ2FyZHMsDQpZb3NoaWhpcm8gU2hpbW9kYQ0KDQo+
-IEtpbmQgcmVnYXJkcw0KPiBVZmZlDQo=
+Hi,
+
+On 30/11/17 11:47, Patrick Bellasi wrote:
+
+[...]
+
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 2f52ec0f1539..67339ccb5595 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -347,6 +347,12 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>  
+>  	sg_cpu->util = util;
+>  	sg_cpu->max = max;
+> +
+> +	/* CPU is entering IDLE, reset flags without triggering an update */
+> +	if (unlikely(flags & SCHED_CPUFREQ_IDLE)) {
+> +		sg_cpu->flags = 0;
+> +		goto done;
+> +	}
+
+Looks good for now. I'm just thinking that we will happen for DL, as a
+CPU that still "has" a sleeping task is not going to be really idle
+until the 0-lag time. I guess we could move this at that point in time?
+
+>  	sg_cpu->flags = flags;
+>  
+>  	sugov_set_iowait_boost(sg_cpu, time, flags);
+> @@ -361,6 +367,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+>  		sugov_update_commit(sg_policy, time, next_f);
+>  	}
+>  
+> +done:
+>  	raw_spin_unlock(&sg_policy->update_lock);
+>  }
+>  
+> diff --git a/kernel/sched/idle_task.c b/kernel/sched/idle_task.c
+> index d518664cce4f..6e8ae2aa7a13 100644
+> --- a/kernel/sched/idle_task.c
+> +++ b/kernel/sched/idle_task.c
+> @@ -30,6 +30,10 @@ pick_next_task_idle(struct rq *rq, struct task_struct *prev, struct rq_flags *rf
+>  	put_prev_task(rq, prev);
+>  	update_idle_core(rq);
+>  	schedstat_inc(rq->sched_goidle);
+> +
+> +	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
+> +	cpufreq_update_util(rq, SCHED_CPUFREQ_IDLE);
+
+Don't know if it make things any cleaner, but you could add to the
+comment that we don't actually trigger a frequency update with this
+call.
+
+Best,
+
+Juri
