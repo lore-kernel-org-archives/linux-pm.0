@@ -1,161 +1,181 @@
 From: Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH 05/11] fs: add iterate_supers_excl() and
- iterate_supers_reverse_excl()
-Date: Thu, 30 Nov 2017 17:57:07 +0100
-Message-ID: <20171130165707.GD28180@quack2.suse.cz>
+Subject: Re: [PATCH 01/11] fs: provide unlocked helper for freeze_super()
+Date: Thu, 30 Nov 2017 17:58:37 +0100
+Message-ID: <20171130165837.GE28180@quack2.suse.cz>
 References: <20171129232356.28296-1-mcgrof@kernel.org>
- <20171129232356.28296-6-mcgrof@kernel.org>
+ <20171129232356.28296-2-mcgrof@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.suse.de ([195.135.220.15]:33791 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752012AbdK3Q6j (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 30 Nov 2017 11:58:39 -0500
 Content-Disposition: inline
-In-Reply-To: <20171129232356.28296-6-mcgrof@kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
+In-Reply-To: <20171129232356.28296-2-mcgrof@kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 To: "Luis R. Rodriguez" <mcgrof@kernel.org>
 Cc: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
 
-On Wed 29-11-17 15:23:50, Luis R. Rodriguez wrote:
-> There are use cases where we wish to traverse the superblock list
-> but also capture errors, and in which case we want to avoid having
-> our callers issue a lock themselves since we can do the locking for
-> the callers. Provide a iterate_supers_excl() which calls a function
-> with the write lock held. If an error occurs we capture it and
-> propagate it.
+On Wed 29-11-17 15:23:46, Luis R. Rodriguez wrote:
+> freeze_super() holds a write lock, however we wish to also enable
+> callers which already hold the write lock. To do this provide a helper
+> and make freeze_super() use it. This way, all that freeze_super() does
+> now is lock handling and active count management.
 > 
-> Likewise there are use cases where we wish to traverse the superblock
-> list but in reverse order. The new iterate_supers_reverse_excl() helpers
-> does this but also also captures any errors encountered.
+> This change has no functional changes.
 > 
+> Suggested-by: Dave Chinner <david@fromorbit.com>
 > Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
 
-The patch looks good to me. You can add:
+Looks good to me. You can add:
 
 Reviewed-by: Jan Kara <jack@suse.cz>
 
 								Honza
 
-
 > ---
->  fs/super.c         | 91 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/fs.h |  2 ++
->  2 files changed, 93 insertions(+)
+>  fs/super.c | 100 +++++++++++++++++++++++++++++++++----------------------------
+>  1 file changed, 55 insertions(+), 45 deletions(-)
 > 
 > diff --git a/fs/super.c b/fs/super.c
-> index a63513d187e8..885711c1d35b 100644
+> index d4e33e8f1e6f..a7650ff22f0e 100644
 > --- a/fs/super.c
 > +++ b/fs/super.c
-> @@ -605,6 +605,97 @@ void iterate_supers(void (*f)(struct super_block *, void *), void *arg)
->  	spin_unlock(&sb_lock);
+> @@ -1387,59 +1387,20 @@ static void sb_freeze_unlock(struct super_block *sb)
+>  		percpu_up_write(sb->s_writers.rw_sem + level);
 >  }
 >  
-> +/**
-> + *	iterate_supers_excl - exclusively call func for all active superblocks
-> + *	@f: function to call
-> + *	@arg: argument to pass to it
-> + *
-> + *	Scans the superblock list and calls given function, passing it
-> + *	locked superblock and given argument. Returns 0 unless an error
-> + *	occurred on calling the function on any superblock.
-> + */
-> +int iterate_supers_excl(int (*f)(struct super_block *, void *), void *arg)
-> +{
-> +	struct super_block *sb, *p = NULL;
-> +	int error = 0;
-> +
-> +	spin_lock(&sb_lock);
-> +	list_for_each_entry(sb, &super_blocks, s_list) {
-> +		if (hlist_unhashed(&sb->s_instances))
-> +			continue;
-> +		sb->s_count++;
-> +		spin_unlock(&sb_lock);
-> +
-> +		down_write(&sb->s_umount);
-> +		if (sb->s_root && (sb->s_flags & SB_BORN)) {
-> +			error = f(sb, arg);
-> +			if (error) {
-> +				up_write(&sb->s_umount);
-> +				spin_lock(&sb_lock);
-> +				__put_super(sb);
-> +				break;
-> +			}
-> +		}
-> +		up_write(&sb->s_umount);
-> +
-> +		spin_lock(&sb_lock);
-> +		if (p)
-> +			__put_super(p);
-> +		p = sb;
-> +	}
-> +	if (p)
-> +		__put_super(p);
-> +	spin_unlock(&sb_lock);
-> +
-> +	return error;
-> +}
-> +
-> +/**
-> + *	iterate_supers_reverse_excl - exclusively calls func in reverse order
-> + *	@f: function to call
-> + *	@arg: argument to pass to it
-> + *
-> + *	Scans the superblock list and calls given function, passing it
-> + *	locked superblock and given argument, in reverse order, and holding
-> + *	the s_umount write lock. Returns if an error occurred.
-> + */
-> +int iterate_supers_reverse_excl(int (*f)(struct super_block *, void *),
-> +					 void *arg)
-> +{
-> +	struct super_block *sb, *p = NULL;
-> +	int error = 0;
-> +
-> +	spin_lock(&sb_lock);
-> +	list_for_each_entry_reverse(sb, &super_blocks, s_list) {
-> +		if (hlist_unhashed(&sb->s_instances))
-> +			continue;
-> +		sb->s_count++;
-> +		spin_unlock(&sb_lock);
-> +
-> +		down_write(&sb->s_umount);
-> +		if (sb->s_root && (sb->s_flags & SB_BORN)) {
-> +			error = f(sb, arg);
-> +			if (error) {
-> +				up_write(&sb->s_umount);
-> +				spin_lock(&sb_lock);
-> +				__put_super(sb);
-> +				break;
-> +			}
-> +		}
-> +		up_write(&sb->s_umount);
-> +
-> +		spin_lock(&sb_lock);
-> +		if (p)
-> +			__put_super(p);
-> +		p = sb;
-> +	}
-> +	if (p)
-> +		__put_super(p);
-> +	spin_unlock(&sb_lock);
-> +
-> +	return error;
-> +}
-> +
->  /**
->   *	iterate_supers_type - call function for superblocks of given type
->   *	@type: fs type
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 107725b20fad..fe90b6542697 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -3164,6 +3164,8 @@ extern struct super_block *get_active_super(struct block_device *bdev);
->  extern void drop_super(struct super_block *sb);
->  extern void drop_super_exclusive(struct super_block *sb);
->  extern void iterate_supers(void (*)(struct super_block *, void *), void *);
-> +extern int iterate_supers_excl(int (*f)(struct super_block *, void *), void *arg);
-> +extern int iterate_supers_reverse_excl(int (*)(struct super_block *, void *), void *);
->  extern void iterate_supers_type(struct file_system_type *,
->  			        void (*)(struct super_block *, void *), void *);
+> -/**
+> - * freeze_super - lock the filesystem and force it into a consistent state
+> - * @sb: the super to lock
+> - *
+> - * Syncs the super to make sure the filesystem is consistent and calls the fs's
+> - * freeze_fs.  Subsequent calls to this without first thawing the fs will return
+> - * -EBUSY.
+> - *
+> - * During this function, sb->s_writers.frozen goes through these values:
+> - *
+> - * SB_UNFROZEN: File system is normal, all writes progress as usual.
+> - *
+> - * SB_FREEZE_WRITE: The file system is in the process of being frozen.  New
+> - * writes should be blocked, though page faults are still allowed. We wait for
+> - * all writes to complete and then proceed to the next stage.
+> - *
+> - * SB_FREEZE_PAGEFAULT: Freezing continues. Now also page faults are blocked
+> - * but internal fs threads can still modify the filesystem (although they
+> - * should not dirty new pages or inodes), writeback can run etc. After waiting
+> - * for all running page faults we sync the filesystem which will clean all
+> - * dirty pages and inodes (no new dirty pages or inodes can be created when
+> - * sync is running).
+> - *
+> - * SB_FREEZE_FS: The file system is frozen. Now all internal sources of fs
+> - * modification are blocked (e.g. XFS preallocation truncation on inode
+> - * reclaim). This is usually implemented by blocking new transactions for
+> - * filesystems that have them and need this additional guard. After all
+> - * internal writers are finished we call ->freeze_fs() to finish filesystem
+> - * freezing. Then we transition to SB_FREEZE_COMPLETE state. This state is
+> - * mostly auxiliary for filesystems to verify they do not modify frozen fs.
+> - *
+> - * sb->s_writers.frozen is protected by sb->s_umount.
+> - */
+> -int freeze_super(struct super_block *sb)
+> +/* Caller takes lock and handles active count */
+> +static int freeze_locked_super(struct super_block *sb)
+>  {
+>  	int ret;
 >  
+> -	atomic_inc(&sb->s_active);
+> -	down_write(&sb->s_umount);
+> -	if (sb->s_writers.frozen != SB_UNFROZEN) {
+> -		deactivate_locked_super(sb);
+> +	if (sb->s_writers.frozen != SB_UNFROZEN)
+>  		return -EBUSY;
+> -	}
+>  
+> -	if (!(sb->s_flags & SB_BORN)) {
+> -		up_write(&sb->s_umount);
+> +	if (!(sb->s_flags & SB_BORN))
+>  		return 0;	/* sic - it's "nothing to do" */
+> -	}
+>  
+>  	if (sb_rdonly(sb)) {
+>  		/* Nothing to do really... */
+>  		sb->s_writers.frozen = SB_FREEZE_COMPLETE;
+> -		up_write(&sb->s_umount);
+>  		return 0;
+>  	}
+>  
+> @@ -1468,7 +1429,6 @@ int freeze_super(struct super_block *sb)
+>  			sb->s_writers.frozen = SB_UNFROZEN;
+>  			sb_freeze_unlock(sb);
+>  			wake_up(&sb->s_writers.wait_unfrozen);
+> -			deactivate_locked_super(sb);
+>  			return ret;
+>  		}
+>  	}
+> @@ -1478,9 +1438,59 @@ int freeze_super(struct super_block *sb)
+>  	 */
+>  	sb->s_writers.frozen = SB_FREEZE_COMPLETE;
+>  	lockdep_sb_freeze_release(sb);
+> -	up_write(&sb->s_umount);
+>  	return 0;
+>  }
+> +
+> +/**
+> + * freeze_super - lock the filesystem and force it into a consistent state
+> + * @sb: the super to lock
+> + *
+> + * Syncs the super to make sure the filesystem is consistent and calls the fs's
+> + * freeze_fs.  Subsequent calls to this without first thawing the fs will return
+> + * -EBUSY.
+> + *
+> + * During this function, sb->s_writers.frozen goes through these values:
+> + *
+> + * SB_UNFROZEN: File system is normal, all writes progress as usual.
+> + *
+> + * SB_FREEZE_WRITE: The file system is in the process of being frozen.  New
+> + * writes should be blocked, though page faults are still allowed. We wait for
+> + * all writes to complete and then proceed to the next stage.
+> + *
+> + * SB_FREEZE_PAGEFAULT: Freezing continues. Now also page faults are blocked
+> + * but internal fs threads can still modify the filesystem (although they
+> + * should not dirty new pages or inodes), writeback can run etc. After waiting
+> + * for all running page faults we sync the filesystem which will clean all
+> + * dirty pages and inodes (no new dirty pages or inodes can be created when
+> + * sync is running).
+> + *
+> + * SB_FREEZE_FS: The file system is frozen. Now all internal sources of fs
+> + * modification are blocked (e.g. XFS preallocation truncation on inode
+> + * reclaim). This is usually implemented by blocking new transactions for
+> + * filesystems that have them and need this additional guard. After all
+> + * internal writers are finished we call ->freeze_fs() to finish filesystem
+> + * freezing. Then we transition to SB_FREEZE_COMPLETE state. This state is
+> + * mostly auxiliary for filesystems to verify they do not modify frozen fs.
+> + *
+> + * sb->s_writers.frozen is protected by sb->s_umount.
+> + */
+> +int freeze_super(struct super_block *sb)
+> +{
+> +	int error;
+> +
+> +	atomic_inc(&sb->s_active);
+> +
+> +	down_write(&sb->s_umount);
+> +	error = freeze_locked_super(sb);
+> +	if (error) {
+> +		deactivate_locked_super(sb);
+> +		goto out;
+> +	}
+> +	up_write(&sb->s_umount);
+> +
+> +out:
+> +	return error;
+> +}
+>  EXPORT_SYMBOL(freeze_super);
+>  
+>  /**
 > -- 
 > 2.15.0
 > 
