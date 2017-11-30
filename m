@@ -1,90 +1,80 @@
-From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
-Subject: Re: [PATCH V2 5/9] PCI: Export pci_flags
-Date: Fri, 1 Dec 2017 01:08:56 +0530
-Message-ID: <1edda714-5dba-3673-1f98-a6c5f2869e41@nvidia.com>
-References: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
- <1511638333-22951-6-git-send-email-mmaddireddy@nvidia.com>
- <20171129170133.GC6469@bhelgaas-glaptop.roam.corp.google.com>
- <20171130102436.GB10349@red-moon>
- <20171130184224.GA19640@bhelgaas-glaptop.roam.corp.google.com>
+From: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Subject: Re: [PATCH 00/11] fs: use freeze_fs on suspend/hibernate
+Date: Thu, 30 Nov 2017 20:42:49 +0100
+Message-ID: <20171130194249.GK729@wotan.suse.de>
+References: <20171129232356.28296-1-mcgrof@kernel.org>
+ <1512061271.2774.10.camel@wdc.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate15.nvidia.com ([216.228.121.64]:13846 "EHLO
-        hqemgate15.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751322AbdK3TjK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Nov 2017 14:39:10 -0500
-In-Reply-To: <20171130184224.GA19640@bhelgaas-glaptop.roam.corp.google.com>
-Content-Language: en-US
+Received: from mx2.suse.de ([195.135.220.15]:46259 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750752AbdK3Tmx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 30 Nov 2017 14:42:53 -0500
+Content-Disposition: inline
+In-Reply-To: <1512061271.2774.10.camel@wdc.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: thierry.reding@gmail.com, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, bhelgaas@google.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+To: Bart Van Assche <Bart.VanAssche@wdc.com>, Benjamin Marzinski <bmarzins@redhat.com>
+Cc: "pavel@ucw.cz" <pavel@ucw.cz>, "darrick.wong@oracle.com" <darrick.wong@oracle.com>, "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>, "ming.lei@redhat.com" <ming.lei@redhat.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "mcgrof@kernel.org" <mcgrof@kernel.org>, "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>, "jikos@kernel.org" <jikos@kernel.org>, "len.brown@intel.com" <len.brown@intel.com>, "tytso@mit.edu" <tytso@mit.edu>, "boris.ostrovsky@oracle.com" <boris.ostrovsky@oracle.com>, "ONeukum@suse.com" <ONeukum@suse.com>, "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "nborisov@suse.com" <nborisov@suse.com>, "oleg.b.antonyan@gmail.com" <oleg.b.antonyan@gmail.com>l
 
+On Thu, Nov 30, 2017 at 05:01:13PM +0000, Bart Van Assche wrote:
+> It's great to see that you are making progress with this work :-) However,
+> what's not clear to me is what your (long-term) plan is for freezing
+> filesystems that e.g. exist on top of a md RAID1 block device?
 
+The original approach of doing a full swing kill on kthread freezing helpers
+in one shot was too much. We must therefore approach this turtle style and
+carefully. This patch series currently only addresses filesystems which
+have a freeze_fs() callback implemented, that's it. The rest of the kernel
+needs more work.
 
-On 01-Dec-17 12:12 AM, Bjorn Helgaas wrote:
-> On Thu, Nov 30, 2017 at 10:24:37AM +0000, Lorenzo Pieralisi wrote:
->> On Wed, Nov 29, 2017 at 11:01:33AM -0600, Bjorn Helgaas wrote:
->>> [+cc Lorenzo]
->>>
->>> On Sun, Nov 26, 2017 at 01:02:09AM +0530, Manikanta Maddireddy wrote:
->>>> pci_flags variable is used in inline functions in 'pci.h', Tegra PCIe
->>>> driver use one of these functions pci_add_flags() and includes 'pci.h'.
->>>> Export pci_flags to allow Tegra PCIe host controller driver to be
->>>> compiled as loadable kernel module.
->>>
->>> Here's the usage in tegra_pcie_probe():
->>>
->>>   pci_add_flags(PCI_REASSIGN_ALL_RSRC | PCI_REASSIGN_ALL_BUS);
->>>
->>> We've probably had this discussion before, but  I don't know why Tegra
->>> needs PCI_REASSIGN_ALL_RSRC and PCI_REASSIGN_ALL_BUS.
->>>
->>> I would prefer to drop this usage of pci_add_flags() if possible.  It
->>> seems to be just an arm/powerpc thing and I'm not convinced it's
->>> really necessary.
->>
->> It is hard to say if it is really necessary (because it depends
->> on firmware configuration - ie pci_scan_bridge()), that's the
->> problem.
->>
->> I suspect it can trigger regressions if we do not set it (since
->> it affects what pcibios_assign_all_busses() returns on eg arm/arm64).
->>
->> There are two things we can do:
->>
->> 1) Set it unconditionally in arch code (in a hook to be defined)
->> 2) We remove it on a per-host bridge basis and ask for testing
->>
->> I agree this may have trickled from host bridge to host bridge through
->> copy'n'paste and it is not based on any firmware assumtpion but I can't
->> say if it is really needed.
-> 
-> My basic position is that if resources are not assigned correctly, the
-> PCI core should automatically try to assign them, regardless of
-> whether PCI_REASSIGN_ALL_RSRC or PCI_REASSIGN_ALL_BUS is set.  If that
-> doesn't work, I think there's something wrongin the PCI core and we
-> should fix that.
-> 
-> This might be an opportunity to try removing the use of
-> pci_add_flags() and see what breaks.
-> 
-> Bjorn
-> 
+So this work is far as I've gotten so far.
 
-As per the Tegra TRM primary, secondary and subordinate default
-bus numbers are 0 and it is expecting SW to program these numbers.
-I believe this is the reason for adding PCI_REASSIGN_ALL_RSRC and
-PCI_REASSIGN_ALL_BUS flags.
+Note, it does *not* remove the kthread freezing API calls on any other drivers,
+as such that should still work.
 
-Looking at the function pci_scan_bridge_extend(), if secondary and
-subordinate bus numbers are 0 it is assigning bus numbers even if
-these flags are not set.
+> The md resync
+> thread must be stopped before a system is frozen. Today the md driver uses
+> the kthread freezing mechanism for that purpose. Do you have a plan for
+> handling the more complicated scenarios, e.g. a filesystem that exists on top
+> of an md device where the md device uses one or more files as backing store
+> and with the loop driver between the md device and the files?
 
-In the basic testing with one endpoint PCIe link up is working
-fine without these flags, however I would like test with PCIe switch
-and multiple endpoints connected to Tegra.
+Nope not yet. It seems you have given this some thought though so you're 
+help here is greatly appreciated. In fact the way we should see the long
+term 'kill kthread freezing' effort should be a collaborative one. I've
+never touched md, so folks more familiar with md should give this some
+thought.
 
-Manikanta
+Can for instance md register_pm_notifier() and register_syscore_ops()
+and do handy work to pause some work to replace kthread freezing?
+Note that I believe a pm notifier is needed in case syscore_suspend()
+is not called, say on a suspend fail.
+
+> How about filesystems implemented in user space using the FUSE driver?
+
+Not sure, someone more familiar with FUSE drivers should chime in. Right
+now all this does is leverage filesystems which *do* implement freeze_fs()
+only, and removes the kthread freezing calls after that. That's all. It
+should not affect any other filesystems
+
+Likewise consider filesystems that implement freeze_super() instead (like gfs2)
+which don't hold sb->s_umount -- see commit 48b6bca6b7b8309 ("fs: add
+freeze_super/thaw_super fs hooks"). If its desirable to address those as well,
+it would seem a pair of non-locking iters somehow are needed. More work to
+be done.
+
+This all needs to be considered for the future as well.
+
+> Patch 6/11 of this series freezes user space processes before freezing
+> filesystems. Will that work for FUSE filesystems?
+
+It doesn't add new code which should negatively affect FUSE drivers.
+Long term if we wanted to address FUSE, it may require other work.
+
+In the future then fs_suspend_freeze() may need to work for different
+types of filesystems. Right now only filesystems which implement freeze_fs()
+are addressed.
+
+  Luis
