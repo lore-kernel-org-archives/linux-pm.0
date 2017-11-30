@@ -1,66 +1,56 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
-Date: Thu, 30 Nov 2017 11:47:17 +0000
-Message-ID: <20171130114723.29210-1-patrick.bellasi@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:51226 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751513AbdK3Lrq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 30 Nov 2017 06:47:46 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH v3 3/6] cpufreq: schedutil: update CFS util only if used
+Date: Thu, 30 Nov 2017 11:47:20 +0000
+Message-ID: <20171130114723.29210-4-patrick.bellasi@arm.com>
+References: <20171130114723.29210-1-patrick.bellasi@arm.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171130114723.29210-1-patrick.bellasi@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+List-Id: linux-pm@vger.kernel.org
 
-This is a re-spin of a previous posting [1], rebased on v4.15-rc1.
+Currently the utilization of the FAIR class is collected before locking
+the policy. Although that should not be a big issue for most cases, we
+also don't really know how much latency there can be between the
+utilization reading and its usage.
 
-A detailed description of the series, as well as experimental results,
-is available in the cover letter of the previous posting.
-Here is a resume of the main results:
+Let's get the FAIR utilization right before its usage to be better in
+sync with the current status of a CPU.
 
-- reduces energy consumption by ~50% by ensuring that a small task is always
-  running at the minimum OPP even when the sugov's RT kthread is used to change
-  frequencies in the same cluster
+Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-pm@vger.kernel.org
 
-- increase from 4% to 98% the chances for a RT task to complete its activations
-  while running at the max OPP.
+---
+Changes from v2:
+- rebased on v4.15-rc1
 
-- The sequence of tracing events reported in a trace is much more deterministic
-  and matching the expected system behaviors.  For example, as soon as a RT
-  task wakes up we ask for an OPP switch to max frequency.
+Change-Id: I9291a560bcad7db76894e3f0fcdb917511d0479e
+---
+ kernel/sched/cpufreq_schedutil.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-A detailed report for these results is available here [2].
-
-According to the discussion in the previous posting, one patch:
-
-   cpufreq: schedutil: ignore the sugov kthread for frequencies selections
-
-was considered the more controversial.
-That's why in this posting I'm still proposing that patch, since it
-still makes sense to me, but I've moved it at the end of the series,
-after the less controversial ones.
-
-Cheers Patrick
-
-.:: References
-==============
-
-[1] https://lkml.org/lkml/2017/7/4/495
-[2] https://gist.github.com/derkling/0cd7210e4fa6f2ec3558073006e5ad70
-
-Patrick Bellasi (6):
-  cpufreq: schedutil: reset sg_cpus's flags at IDLE enter
-  cpufreq: schedutil: ensure max frequency while running RT/DL tasks
-  cpufreq: schedutil: update CFS util only if used
-  sched/rt: fast switch to maximum frequency when RT tasks are scheduled
-  cpufreq: schedutil: relax rate-limiting while running RT/DL tasks
-  cpufreq: schedutil: ignore sugov kthreads
-
- include/linux/sched/cpufreq.h    |  1 +
- kernel/sched/cpufreq_schedutil.c | 61 ++++++++++++++++++++++++++++++++--------
- kernel/sched/idle_task.c         |  4 +++
- kernel/sched/rt.c                | 15 ++++++++--
- 4 files changed, 67 insertions(+), 14 deletions(-)
-
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 448f49de5335..40521d59630b 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -351,10 +351,9 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+ 	unsigned int next_f;
+ 	bool rt_mode;
+ 
+-	sugov_get_util(&util, &max, sg_cpu->cpu);
+-
+ 	raw_spin_lock(&sg_policy->update_lock);
+ 
++	sugov_get_util(&util, &max, sg_cpu->cpu);
+ 	sg_cpu->util = util;
+ 	sg_cpu->max = max;
+ 
 -- 
 2.14.1
