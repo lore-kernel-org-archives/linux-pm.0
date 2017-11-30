@@ -1,100 +1,115 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 1/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE
- enter
-Date: Thu, 30 Nov 2017 16:19:01 +0000
-Message-ID: <20171130161859.GH31247@e110439-lin>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171130114723.29210-2-patrick.bellasi@arm.com>
- <20171130131222.GA9903@localhost.localdomain>
- <20171130154111.GC31247@e110439-lin>
- <20171130160205.GH9903@localhost.localdomain>
+From: Jan Kara <jack@suse.cz>
+Subject: Re: [PATCH 07/11] xfs: remove not needed freezing calls
+Date: Thu, 30 Nov 2017 17:21:55 +0100
+Message-ID: <20171130162155.GB28180@quack2.suse.cz>
+References: <20171129232356.28296-1-mcgrof@kernel.org>
+ <20171129232356.28296-8-mcgrof@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-block-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171130160205.GH9903@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+In-Reply-To: <20171129232356.28296-8-mcgrof@kernel.org>
+Sender: linux-block-owner@vger.kernel.org
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 30-Nov 17:02, Juri Lelli wrote:
-> On 30/11/17 15:41, Patrick Bellasi wrote:
-> > On 30-Nov 14:12, Juri Lelli wrote:
-> > > Hi,
-> > > 
-> > > On 30/11/17 11:47, Patrick Bellasi wrote:
-> > > 
-> > > [...]
-> > > 
-> > > > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > > > index 2f52ec0f1539..67339ccb5595 100644
-> > > > --- a/kernel/sched/cpufreq_schedutil.c
-> > > > +++ b/kernel/sched/cpufreq_schedutil.c
-> > > > @@ -347,6 +347,12 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
-> > > >  
-> > > >  	sg_cpu->util = util;
-> > > >  	sg_cpu->max = max;
-> > > > +
-> > > > +	/* CPU is entering IDLE, reset flags without triggering an update */
-> > > > +	if (unlikely(flags & SCHED_CPUFREQ_IDLE)) {
-> > > > +		sg_cpu->flags = 0;
-> > > > +		goto done;
-> > > > +	}
-> > > 
-> > > Looks good for now. I'm just thinking that we will happen for DL, as a
-> > > CPU that still "has" a sleeping task is not going to be really idle
-> > > until the 0-lag time.
-> > 
-> > AFAIU, for the time being, DL already cannot really rely on this flag
-> > for its behaviors to be correct. Indeed, flags are reset as soon as
-> > a FAIR task wakes up and it's enqueued.
+On Wed 29-11-17 15:23:52, Luis R. Rodriguez wrote:
+> This removes superflous freezer calls as they are no longer needed
+> as the VFS now performs filesystem freezing/thaw if the filesystem has
+> support for it.
 > 
-> Right, and your flags ORing patch should help with this.
+> The following Coccinelle rule was used as follows:
 > 
-> > 
-> > Only once your DL integration patches are in, we do not depends on
-> > flags anymore since DL will report a ceratain utilization up to the
-> > 0-lag time, isn't it?
+> spatch --sp-file fs-freeze-cleanup.cocci --in-place fs/$FS/
+
+I think your rule misses WQ_FREEZABLE flag for workqueues? That would be
+also good to get rid of...
+
+								Honza
+
 > 
-> Utilization won't decrease until 0-lag time, correct.
-
-Then IMO with your DL patches the DL class don't need the flags
-anymore since schedutil will know (and account) for the
-utlization required by the DL tasks. Isn't it?
-
-> I was just wondering if resetting flags before that time (when a CPU
-> enters idle) might be an issue.
-
-If the above is correct, then flags will be used only for the RT class (and
-IO boosting)... and thus this patch will still be useful as it is now:
-meaning that once the idle task is selected we do not care anymore
-about RT and IOBoosting (only).
-
-> > If that's the case, I would say that the flags will be used only to
-> > jump to the max OPP for RT tasks. Thus, this patch should still be valid.
-> > 
-> > > I guess we could move this at that point in time?
-> > 
-> > Not sure what you mean here. Right now the new SCHED_CPUFREQ_IDLE flag
-> > is notified only by idle tasks. That's the only code path where we are
-> > sure the CPU is entering IDLE.
-> > 
+> @ has_freeze_fs @
+> identifier super_ops;
+> expression freeze_op;
+> @@
 > 
-> W.r.t. the possible issue above, I was thinking that we might want to
-> reset flags at 0-lag time for DL (if CPU is still idle). Anyway, two
-> distinct set of patches. Who gets in last will have to ponder the thing
-> a little bit more. :)
-
-Perhaps I'm still a bit confused but, to me, it seems that with your
-patches we completely fix DL but we still can use this exact same
-patch just for RT tasks.
-
-> Best,
+> struct super_operations super_ops = {
+> 	.freeze_fs = freeze_op,
+> };
 > 
-> Juri
-
+> @ remove_set_freezable depends on has_freeze_fs @
+> expression time;
+> statement S, S2, S3;
+> expression task;
+> @@
+> 
+> (
+> -	set_freezable();
+> |
+> -	if (try_to_freeze())
+> -		continue;
+> |
+> -	try_to_freeze();
+> |
+> -	freezable_schedule();
+> +	schedule();
+> |
+> -	freezable_schedule_timeout(time);
+> +	schedule_timeout(time);
+> |
+> -	if (freezing(task)) { S }
+> |
+> -	if (freezing(task)) { S }
+> -	else
+> 	{ S2 }
+> |
+> -	freezing(current)
+> )
+> 
+> Generated-by: Coccinelle SmPL
+> Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
+> ---
+>  fs/xfs/xfs_trans_ail.c | 7 ++-----
+>  1 file changed, 2 insertions(+), 5 deletions(-)
+> 
+> diff --git a/fs/xfs/xfs_trans_ail.c b/fs/xfs/xfs_trans_ail.c
+> index cef89f7127d3..1f3dd10a9d00 100644
+> --- a/fs/xfs/xfs_trans_ail.c
+> +++ b/fs/xfs/xfs_trans_ail.c
+> @@ -513,7 +513,6 @@ xfsaild(
+>  	long		tout = 0;	/* milliseconds */
+>  
+>  	current->flags |= PF_MEMALLOC;
+> -	set_freezable();
+>  
+>  	while (1) {
+>  		if (tout && tout <= 20)
+> @@ -551,19 +550,17 @@ xfsaild(
+>  		if (!xfs_ail_min(ailp) &&
+>  		    ailp->xa_target == ailp->xa_target_prev) {
+>  			spin_unlock(&ailp->xa_lock);
+> -			freezable_schedule();
+> +			schedule();
+>  			tout = 0;
+>  			continue;
+>  		}
+>  		spin_unlock(&ailp->xa_lock);
+>  
+>  		if (tout)
+> -			freezable_schedule_timeout(msecs_to_jiffies(tout));
+> +			schedule_timeout(msecs_to_jiffies(tout));
+>  
+>  		__set_current_state(TASK_RUNNING);
+>  
+> -		try_to_freeze();
+> -
+>  		tout = xfsaild_push(ailp);
+>  	}
+>  
+> -- 
+> 2.15.0
+> 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+Jan Kara <jack@suse.com>
+SUSE Labs, CR
