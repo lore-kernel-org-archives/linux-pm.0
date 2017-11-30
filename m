@@ -1,84 +1,149 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 2/6] cpufreq: schedutil: ensure max frequency while
+Subject: Re: [PATCH v3 5/6] cpufreq: schedutil: relax rate-limiting while
  running RT/DL tasks
-Date: Thu, 30 Nov 2017 15:45:06 +0000
-Message-ID: <20171130154506.GD31247@e110439-lin>
+Date: Thu, 30 Nov 2017 15:54:03 +0000
+Message-ID: <20171130155403.GE31247@e110439-lin>
 References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171130114723.29210-3-patrick.bellasi@arm.com>
- <20171130131759.GB9903@localhost.localdomain>
+ <20171130114723.29210-6-patrick.bellasi@arm.com>
+ <20171130133642.GE9903@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:56598 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752135AbdK3PyI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 30 Nov 2017 10:54:08 -0500
 Content-Disposition: inline
-In-Reply-To: <20171130131759.GB9903@localhost.localdomain>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle.linux@gmail.com>
+In-Reply-To: <20171130133642.GE9903@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Juri Lelli <juri.lelli@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-On 30-Nov 14:17, Juri Lelli wrote:
+On 30-Nov 14:36, Juri Lelli wrote:
 > Hi,
 > 
 > On 30/11/17 11:47, Patrick Bellasi wrote:
+> > The policy in use for RT/DL tasks sets the maximum frequency when a task
+> > in these classes calls for a cpufreq_update_util().  However, the
+> > current implementation is still enforcing a frequency switch rate
+> > limiting when these tasks are running.
+> > This is potentially working against the goal to switch to the maximum OPP
+> > when RT tasks are running. In certain unfortunate cases it can also happen
+> > that a RT task almost completes its activation at a lower OPP.
+> > 
+> > This patch overrides on purpose the rate limiting configuration
+> > to better serve RT/DL tasks. As long as a frequency scaling operation
+> > is not in progress, a frequency switch is always authorized when
+> > running in "rt_mode", i.e. the current task in a CPU belongs to the
+> > RT/DL class.
+> > 
+> > Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+> > Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
+> > Cc: Ingo Molnar <mingo@redhat.com>
+> > Cc: Peter Zijlstra <peterz@infradead.org>
+> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > Cc: linux-kernel@vger.kernel.org
+> > Cc: linux-pm@vger.kernel.org
+> > 
+> > ---
+> > Changes from v2:
+> > - rebased on v4.15-rc1
+> > 
+> > Change-Id: I733d47b9e265cebb2e3e5e71a3cd468e9be002d1
 > 
-> [...]
-> 
-> > @@ -340,6 +349,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
-> >  	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
-> >  	unsigned long util, max;
-> >  	unsigned int next_f;
-> > +	bool rt_mode;
+> Luckily this gets ignored... :)
+
+Indeed, and it was intended... just to verify if ML folks can tolerate
+the idea to have Change-Ids in the "notes section".
+
+This would help some internal review workflow, which sometimes are
+based... yes... ehm... on gerrit :-]
+
+> > ---
+> >  kernel/sched/cpufreq_schedutil.c | 19 ++++++++++++-------
+> >  1 file changed, 12 insertions(+), 7 deletions(-)
+> > 
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > index 40521d59630b..3eea8884e61b 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -74,7 +74,8 @@ static DEFINE_PER_CPU(struct sugov_cpu, sugov_cpu);
 > >  
-> >  	sugov_get_util(&util, &max, sg_cpu->cpu);
+> >  /************************ Governor internals ***********************/
 > >  
-> > @@ -353,17 +363,27 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
-> >  		sg_cpu->flags = 0;
-> >  		goto done;
+> > -static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+> > +static bool sugov_should_update_freq(struct sugov_policy *sg_policy,
+> > +				     u64 time, bool rt_mode)
+> >  {
+> >  	s64 delta_ns;
+> >  
+> > @@ -111,6 +112,10 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
+> >  		return true;
 > >  	}
-> > -	sg_cpu->flags = flags;
-> > +
-> > +	/*
-> > +	 * While RT/DL tasks are running we do not want FAIR tasks to
-> > +	 * overwrite this CPU's flags, still we can update utilization and
-> > +	 * frequency (if required/possible) to be fair with these tasks.
-> > +	 */
-> > +	rt_mode = task_has_dl_policy(current) ||
-> > +		  task_has_rt_policy(current) ||
-> > +		  (flags & SCHED_CPUFREQ_RT_DL);
-> > +	if (rt_mode)
-> > +		sg_cpu->flags |= flags;
-> > +	else
-> > +		sg_cpu->flags = flags;
 > >  
+> > +	/* Always update if a RT/DL task is running */
+> > +	if (rt_mode)
+> > +		return true;
+> > +
+> >  	delta_ns = time - sg_policy->last_freq_update_time;
+> >  	return delta_ns >= sg_policy->freq_update_delay_ns;
+> >  }
+> > @@ -268,11 +273,6 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
 > >  	sugov_set_iowait_boost(sg_cpu, time, flags);
 > >  	sg_cpu->last_update = time;
 > >  
-> >  	if (sugov_should_update_freq(sg_policy, time)) {
-> > -		if (flags & SCHED_CPUFREQ_RT_DL)
-> > -			next_f = sg_policy->policy->cpuinfo.max_freq;
-> > -		else
-> > -			next_f = sugov_next_freq_shared(sg_cpu, time);
+> > -	if (!sugov_should_update_freq(sg_policy, time))
+> > -		return;
 > > -
-> > +		next_f = rt_mode
-> > +			? sg_policy->policy->cpuinfo.max_freq
-> > +			: sugov_next_freq_shared(sg_cpu, time);
-> >  		sugov_update_commit(sg_policy, time, next_f);
+> > -	busy = sugov_cpu_is_busy(sg_cpu);
+> > -
+> >  	/*
+> >  	 * While RT/DL tasks are running we do not want FAIR tasks to
+> >  	 * overvrite this CPU's flags, still we can update utilization and
+> > @@ -281,6 +281,11 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+> >  	rt_mode = task_has_dl_policy(current) ||
+> >  		  task_has_rt_policy(current) ||
+> >  		  (flags & SCHED_CPUFREQ_RT_DL);
+> > +	if (!sugov_should_update_freq(sg_policy, time, rt_mode))
+> > +		return;
+> > +
+> > +	busy = sugov_cpu_is_busy(sg_cpu);
+> > +
+> >  	if (rt_mode) {
+> >  		next_f = policy->cpuinfo.max_freq;
+> >  	} else {
+> > @@ -379,7 +384,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+> >  	sugov_set_iowait_boost(sg_cpu, time, flags);
+> >  	sg_cpu->last_update = time;
+> >  
+> > -	if (sugov_should_update_freq(sg_policy, time)) {
+> > +	if (sugov_should_update_freq(sg_policy, time, rt_mode)) {
+> >  		next_f = rt_mode
+> >  			? sg_policy->policy->cpuinfo.max_freq
+> >  			: sugov_next_freq_shared(sg_cpu, time);
 > 
-> Aren't we already at max_freq at this point (since an RT/DL task is
-> running)? Do we need to trigger a frequency update?
+> Reviewed-by: Juri Lelli <juri.lelli@redhat.com>
 
-I think that's required to cover the first time we enter rt_mode in
-order to jump to max OPP.
+Tks ;-)
+ 
+> I wonder if we would also need some way to trigger a back to back update
+> as soon as a currently running one finishes and an RT/DL task asked for
+> an update (without waiting for the next tick).
 
-If we are already at max OPP, sugov_update_commit() will just bail out
-without doing anything.
+Good point, I think that would actually be an interesting
+optimization. We already discussed that in the past, but refrained by
+adding more on top of this already "substantial" set of changes.
 
-Am I missing something?
+Can we think about that once we decided about some patches of this
+series?
 
-> 
 > Best,
 > 
 > Juri
+
+Cheers Patrick
 
 -- 
 #include <best/regards.h>
