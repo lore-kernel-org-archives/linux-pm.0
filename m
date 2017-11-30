@@ -1,26 +1,56 @@
-From: Jiri Kosina <jikos@kernel.org>
-Subject: Re: [PATCH 00/11] fs: use freeze_fs on suspend/hibernate
-Date: Thu, 30 Nov 2017 17:41:35 +0100 (CET)
-Message-ID: <nycvar.YFH.7.76.1711301740000.11505@cbobk.fhfr.pm>
-References: <20171129232356.28296-1-mcgrof@kernel.org> <CADjb_WRG8hxJB3zY5_XnZqeQbCy3jYW5xJaS63_7FGztZymLzg@mail.gmail.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 6/6] cpufreq: schedutil: ignore sugov kthreads
+Date: Thu, 30 Nov 2017 16:42:51 +0000
+Message-ID: <20171130164237.GI31247@e110439-lin>
+References: <20171130114723.29210-1-patrick.bellasi@arm.com>
+ <20171130114723.29210-7-patrick.bellasi@arm.com>
+ <20171130134155.GF9903@localhost.localdomain>
+ <20171130160234.GG31247@e110439-lin>
+ <20171130161220.GK9903@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CADjb_WRG8hxJB3zY5_XnZqeQbCy3jYW5xJaS63_7FGztZymLzg@mail.gmail.com>
+Content-Disposition: inline
+In-Reply-To: <20171130161220.GK9903@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Yu Chen <yu.chen.surf@gmail.com>
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, Dan Williams <dan.j.williams@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+To: Juri Lelli <juri.lelli@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 1 Dec 2017, Yu Chen wrote:
+On 30-Nov 17:12, Juri Lelli wrote:
+> On 30/11/17 16:02, Patrick Bellasi wrote:
+> > On 30-Nov 14:41, Juri Lelli wrote:
+> 
+> [...]
+> 
+> > > If the DL changes (which I shall post again as soon as tip/sched/core is
+> > > bumped up to 4.15-rc1) get in first, this is going to be useless (as the
+> > > DL kthread gets ignored by the scheduling class itself). But, this looks
+> > > good to me "in the meantime".
+> > 
+> > Just to better understand, you mean that the DL kthread does not send
+> > out schedutil updates?
+> 
+> It doesn't have a "proper" bandwidth (utilization) :/. So it gets
+> "unnoticed" and schedutil updates are not triggered.
 
-> BTW, is nfs able to be included in this set? I also encountered a 
-> freeze() failure due to nfs access during that stage recently.
+Ah, right... that was the "let CBS ignore this DL task" solution! ;-)
 
-The freezer usage in NFS is magnitudes more complicated, so it makes sense 
-to first go after the lower hanging fruit to figure out the viability of 
-the whole aproach in practice.
+> > 
+> > If that's the case I agree we can discard this patch... that's also
+> > one of the reasons why I move it at the end of this series.
+> 
+> Not sure about this though, not my call :). I guess this still helps
+> until we get the DL changes in.
+
+Yes, agree... well Viresh had some concerns about this patch.
+Let see what he thinks.
+ 
+> Best,
+> 
+> Juri
 
 -- 
-Jiri Kosina
-SUSE Labs
+#include <best/regards.h>
+
+Patrick Bellasi
