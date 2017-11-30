@@ -1,48 +1,54 @@
-From: Marc Zyngier <marc.zyngier@arm.com>
-Subject: Re: Save and Restore Generic Interrupt Controller for System Sleep on ARM
-Date: Thu, 30 Nov 2017 09:44:26 +0000
-Message-ID: <86d140xfr9.fsf@unassigned-hostname.unassigned-domain>
-References: <CAGAzgsrSDF0Hs4-=m02c6ME90RvZumYxzBFFi0oH=RuwxQnB-Q@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH V2 5/9] PCI: Export pci_flags
+Date: Thu, 30 Nov 2017 10:24:37 +0000
+Message-ID: <20171130102436.GB10349@red-moon>
+References: <1511638333-22951-1-git-send-email-mmaddireddy@nvidia.com>
+ <1511638333-22951-6-git-send-email-mmaddireddy@nvidia.com>
+ <20171129170133.GC6469@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAGAzgsrSDF0Hs4-=m02c6ME90RvZumYxzBFFi0oH=RuwxQnB-Q@mail.gmail.com>
-        (dbasehore .'s message of "Wed, 29 Nov 2017 14:49:18 -0800")
-Sender: linux-kernel-owner@vger.kernel.org
-To: "dbasehore ." <dbasehore@chromium.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, sudeep.holla@arm.com, Linux-pm mailing list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20171129170133.GC6469-1RhO1Y9PlrlHTL0Zs8A6p5iNqAH0jzoTYJqu5kTmcBRl57MIdRCFDg@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Nov 29 2017 at  2:49:18 pm GMT, "dbasehore ." <dbasehore@chromium.org> wrote:
-> There was some work in ARM Trusted Firmware to support saving and
-> restoring the Generic Interrupt Controller (GICv3) before and after
-> sleep, but it seems that the plan is to have this all in the kernel
-> now. The point of doing this is to save power during sleep. On an
-> RK3399 system, we save about 15mW by disabling the power rail that the
-> GIC is on.
->
-> I was looking for whether anyone had anything in progress already or
-> for preferences on how to do this. Marc suggested using a device tree
-> entry to indicate the need to save and restore the GIC. There is
-> another requirement to resend MAPC commands on certain implementations
-> of the GICv3 which could be indicated by another device tree entry.
+On Wed, Nov 29, 2017 at 11:01:33AM -0600, Bjorn Helgaas wrote:
+> [+cc Lorenzo]
+> 
+> On Sun, Nov 26, 2017 at 01:02:09AM +0530, Manikanta Maddireddy wrote:
+> > pci_flags variable is used in inline functions in 'pci.h', Tegra PCIe
+> > driver use one of these functions pci_add_flags() and includes 'pci.h'.
+> > Export pci_flags to allow Tegra PCIe host controller driver to be
+> > compiled as loadable kernel module.
+> 
+> Here's the usage in tegra_pcie_probe():
+> 
+>   pci_add_flags(PCI_REASSIGN_ALL_RSRC | PCI_REASSIGN_ALL_BUS);
+> 
+> We've probably had this discussion before, but  I don't know why Tegra
+> needs PCI_REASSIGN_ALL_RSRC and PCI_REASSIGN_ALL_BUS.
+> 
+> I would prefer to drop this usage of pci_add_flags() if possible.  It
+> seems to be just an arm/powerpc thing and I'm not convinced it's
+> really necessary.
 
-Let's be precise: This is a GIC-500 requirement, and not something that
-the GICv3 architecture defines (PM is *not* part of the GICv3
-architecture).
+It is hard to say if it is really necessary (because it depends
+on firmware configuration - ie pci_scan_bridge()), that's the
+problem.
 
-> If someone does have patches, I'll be able to test and verify them on
-> my system since we've gotten things working with the ARM Trusted
-> Firmware patches.
+I suspect it can trigger regressions if we do not set it (since
+it affects what pcibios_assign_all_busses() returns on eg arm/arm64).
 
-I'm not aware of any such patch that has been posted for mainline, so
-just post whatever you have and we'll take it from there.
+There are two things we can do:
 
-IT is hard to comment further on what you're trying to do without seeing
-the code and a description of the new API between ATF and the kernel.
+1) Set it unconditionally in arch code (in a hook to be defined)
+2) We remove it on a per-host bridge basis and ask for testing
 
-Thanks,
+I agree this may have trickled from host bridge to host bridge through
+copy'n'paste and it is not based on any firmware assumtpion but I can't
+say if it is really needed.
 
-	M.
--- 
-Jazz is not dead, it just smell funny.
+Lorenzo
