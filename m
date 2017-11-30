@@ -1,100 +1,144 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 05/11] fs: add iterate_supers_excl() and iterate_supers_reverse_excl()
-Date: Thu, 30 Nov 2017 02:40:38 +0100
-Message-ID: <CAJZ5v0iERnA8a=Ay0Vyr-iBU6yzAc_Vmcq183GK_rdUXTB7eZA@mail.gmail.com>
-References: <20171129232356.28296-1-mcgrof@kernel.org> <20171129232356.28296-6-mcgrof@kernel.org>
- <CAJZ5v0gO49=pXGEdi42Hka=Rf=SqVWp-QSJf9_+bGuOgsHMFig@mail.gmail.com> <20171130013406.GM5858@dastard>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-block-owner@vger.kernel.org>
-In-Reply-To: <20171130013406.GM5858@dastard>
-Sender: linux-block-owner@vger.kernel.org
-To: Dave Chinner <david@fromorbit.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, bart.vanassche@wdc.com, ming.lei@redhat.com, Ted Ts'o <tytso@mit.edu>, "Darrick J. Wong" <darrick.wong@oracle.com>, Jiri Kosina <jikos@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-fsdevel@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>, Todd Brandt <todd.e.brandt@linux.intel.com>, nborisov@suse.com, Jan Kara <jack@suse.cz>, "Martin K. Petersen" <martin.petersen@oracle.com>, Oliver Neukum <ONeukum@suse.com>, oleksandr@natalenko.name, Oleg Antonyan <oleg.b.antonyan@gmail.com>, Yu Chen <yu.chen.surf@gmail.com>, Dan
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: powernv: Define methods to parse positive & negative pstates
+Date: Thu, 30 Nov 2017 10:13:38 +0530
+Message-ID: <1512017018-4857-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:51266 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752099AbdK3EoO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Nov 2017 23:44:14 -0500
+Received: from pps.filterd (m0098404.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vAU4hglP095757
+        for <linux-pm@vger.kernel.org>; Wed, 29 Nov 2017 23:44:14 -0500
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2ej807xeu5-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Wed, 29 Nov 2017 23:44:14 -0500
+Received: from localhost
+        by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+        Thu, 30 Nov 2017 04:44:11 -0000
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, svaidy@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, huntbag@linux.vnet.ibm.com, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On Thu, Nov 30, 2017 at 2:34 AM, Dave Chinner <david@fromorbit.com> wrote:
-> On Thu, Nov 30, 2017 at 12:48:15AM +0100, Rafael J. Wysocki wrote:
->> On Thu, Nov 30, 2017 at 12:23 AM, Luis R. Rodriguez <mcgrof@kernel.org> wrote:
->> > There are use cases where we wish to traverse the superblock list
->> > but also capture errors, and in which case we want to avoid having
->> > our callers issue a lock themselves since we can do the locking for
->> > the callers. Provide a iterate_supers_excl() which calls a function
->> > with the write lock held. If an error occurs we capture it and
->> > propagate it.
->> >
->> > Likewise there are use cases where we wish to traverse the superblock
->> > list but in reverse order. The new iterate_supers_reverse_excl() helpers
->> > does this but also also captures any errors encountered.
->> >
->> > Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
->> > ---
->> >  fs/super.c         | 91 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
->> >  include/linux/fs.h |  2 ++
->> >  2 files changed, 93 insertions(+)
->> >
->> > diff --git a/fs/super.c b/fs/super.c
->> > index a63513d187e8..885711c1d35b 100644
->> > --- a/fs/super.c
->> > +++ b/fs/super.c
->> > @@ -605,6 +605,97 @@ void iterate_supers(void (*f)(struct super_block *, void *), void *arg)
->> >         spin_unlock(&sb_lock);
->> >  }
->> >
->> > +/**
->> > + *     iterate_supers_excl - exclusively call func for all active superblocks
->> > + *     @f: function to call
->> > + *     @arg: argument to pass to it
->> > + *
->> > + *     Scans the superblock list and calls given function, passing it
->> > + *     locked superblock and given argument. Returns 0 unless an error
->> > + *     occurred on calling the function on any superblock.
->> > + */
->> > +int iterate_supers_excl(int (*f)(struct super_block *, void *), void *arg)
->> > +{
->> > +       struct super_block *sb, *p = NULL;
->> > +       int error = 0;
->> > +
->> > +       spin_lock(&sb_lock);
->> > +       list_for_each_entry(sb, &super_blocks, s_list) {
->> > +               if (hlist_unhashed(&sb->s_instances))
->> > +                       continue;
->> > +               sb->s_count++;
->> > +               spin_unlock(&sb_lock);
->>
->> Can anything bad happen if the list is modified at this point by a
->> concurrent thread?
->
-> No. We have a valid reference to sb->s_count and that keeps it on
-> the list while we have the lock dropped. The sb reference isn't
-> dropped until we've iterated to the next sb on the list and taken a
-> reference to that, hence it's safe to drop and regain the list lock
-> without needing to restart the iteration.
->
->> > +
->> > +               down_write(&sb->s_umount);
->> > +               if (sb->s_root && (sb->s_flags & SB_BORN)) {
->> > +                       error = f(sb, arg);
->> > +                       if (error) {
->> > +                               up_write(&sb->s_umount);
->> > +                               spin_lock(&sb_lock);
->> > +                               __put_super(sb);
->> > +                               break;
->> > +                       }
->> > +               }
->> > +               up_write(&sb->s_umount);
->> > +
->> > +               spin_lock(&sb_lock);
->> > +               if (p)
->> > +                       __put_super(p);
->> > +               p = sb;
->
-> This code here is what drops the reference to the previous sb
-> we've iterated past.
->
-> FWIW, this "hold until next is held" iteration pattern is used
-> frequently for inodes, dentries, and other reference counted VFS
-> objects so we can iterate the list without needing to hold the
-> list lock for the entire iteration....
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-OK, thanks!
+Pstates are 8bit values but on POWER8 they are negative and on POWER9
+they are positive. This patch adds helper routines to differentiate
+the sign to read the correct pstate value.
+
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Tested-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 43 ++++++++++++++++++++++++++++++---------
+ 1 file changed, 33 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index b6d7c4c..bb7586e 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -41,11 +41,14 @@
+ #define POWERNV_MAX_PSTATES	256
+ #define PMSR_PSAFE_ENABLE	(1UL << 30)
+ #define PMSR_SPR_EM_DISABLE	(1UL << 31)
+-#define PMSR_MAX(x)		((x >> 32) & 0xFF)
++#define EXTRACT_BYTE(x, shift)	(((x) >> shift) & 0xFF)
++#define MAX_SHIFT		32
+ #define LPSTATE_SHIFT		48
+ #define GPSTATE_SHIFT		56
+-#define GET_LPSTATE(x)		(((x) >> LPSTATE_SHIFT) & 0xFF)
+-#define GET_GPSTATE(x)		(((x) >> GPSTATE_SHIFT) & 0xFF)
++#define GET_PMSR_MAX(x)		EXTRACT_BYTE(x, MAX_SHIFT)
++#define GET_LPSTATE(x)		EXTRACT_BYTE(x, LPSTATE_SHIFT)
++#define GET_GPSTATE(x)		EXTRACT_BYTE(x, GPSTATE_SHIFT)
++
+ 
+ #define MAX_RAMP_DOWN_TIME				5120
+ /*
+@@ -64,6 +67,12 @@
+ 
+ /* Interval after which the timer is queued to bring down global pstate */
+ #define GPSTATE_TIMER_INTERVAL				2000
++/*
++ * On POWER8 the pstates are negatively numbered. On POWER9, they are
++ * positively numbered.  Use this flag to track whether we have
++ * positive or negative numbered pstates.
++ */
++static bool pos_pstates;
+ 
+ /**
+  * struct global_pstate_info -	Per policy data structure to maintain history of
+@@ -164,7 +173,7 @@ static inline unsigned int pstate_to_idx(int pstate)
+ 	int min = powernv_freqs[powernv_pstate_info.min].driver_data;
+ 	int max = powernv_freqs[powernv_pstate_info.max].driver_data;
+ 
+-	if (min > 0) {
++	if (pos_pstates) {
+ 		if (unlikely((pstate < max) || (pstate > min))) {
+ 			pr_warn_once("pstate %d is out of bound\n", pstate);
+ 			return powernv_pstate_info.nominal;
+@@ -301,6 +310,9 @@ static int init_powernv_pstates(void)
+ 		}
+ 	}
+ 
++	if ((int)pstate_min > 0)
++		pos_pstates = true;
++
+ 	/* End of list marker entry */
+ 	powernv_freqs[i].frequency = CPUFREQ_TABLE_END;
+ 	return 0;
+@@ -438,7 +450,6 @@ struct powernv_smp_call_data {
+ static void powernv_read_cpu_freq(void *arg)
+ {
+ 	unsigned long pmspr_val;
+-	s8 local_pstate_id;
+ 	struct powernv_smp_call_data *freq_data = arg;
+ 
+ 	pmspr_val = get_pmspr(SPRN_PMSR);
+@@ -447,8 +458,11 @@ static void powernv_read_cpu_freq(void *arg)
+ 	 * The local pstate id corresponds bits 48..55 in the PMSR.
+ 	 * Note: Watch out for the sign!
+ 	 */
+-	local_pstate_id = (pmspr_val >> 48) & 0xFF;
+-	freq_data->pstate_id = local_pstate_id;
++	if (pos_pstates)
++		freq_data->pstate_id = (u8)GET_LPSTATE(pmspr_val);
++	else
++		freq_data->pstate_id = (s8)GET_LPSTATE(pmspr_val);
++
+ 	freq_data->freq = pstate_id_to_freq(freq_data->pstate_id);
+ 
+ 	pr_debug("cpu %d pmsr %016lX pstate_id %d frequency %d kHz\n",
+@@ -522,7 +536,10 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 	chip = this_cpu_read(chip_info);
+ 
+ 	/* Check for Pmax Capping */
+-	pmsr_pmax = (s8)PMSR_MAX(pmsr);
++	if (pos_pstates)
++		pmsr_pmax = (u8)GET_PMSR_MAX(pmsr);
++	else
++		pmsr_pmax = (s8)GET_PMSR_MAX(pmsr);
+ 	pmsr_pmax_idx = pstate_to_idx(pmsr_pmax);
+ 	if (pmsr_pmax_idx != powernv_pstate_info.max) {
+ 		if (chip->throttled)
+@@ -645,8 +662,14 @@ void gpstate_timer_handler(struct timer_list *t)
+ 	 * value. Hence, read from PMCR to get correct data.
+ 	 */
+ 	val = get_pmspr(SPRN_PMCR);
+-	freq_data.gpstate_id = (s8)GET_GPSTATE(val);
+-	freq_data.pstate_id = (s8)GET_LPSTATE(val);
++	if (pos_pstates) {
++		freq_data.gpstate_id = (u8)GET_GPSTATE(val);
++		freq_data.pstate_id = (u8)GET_LPSTATE(val);
++	} else {
++		freq_data.gpstate_id = (s8)GET_GPSTATE(val);
++		freq_data.pstate_id = (s8)GET_LPSTATE(val);
++	}
++
+ 	if (freq_data.gpstate_id  == freq_data.pstate_id) {
+ 		reset_gpstates(policy);
+ 		spin_unlock(&gpstates->gpstate_lock);
+-- 
+1.8.3.1
