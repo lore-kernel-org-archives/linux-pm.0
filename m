@@ -1,95 +1,66 @@
-From: Phil Reid <preid@electromag.com.au>
-Subject: Re: [RFC v2 2/3] i2c: Kconfig: rename variable I2C_SMBUS to
- I2C_SMBUS_ALERT
-Date: Thu, 30 Nov 2017 18:31:13 +0800
-Message-ID: <0f316ec8-a9c1-3348-0d0b-cb1c567c9646@electromag.com.au>
-References: <1511840309-37964-1-git-send-email-preid@electromag.com.au>
- <1511840309-37964-3-git-send-email-preid@electromag.com.au>
- <20171128230855.20bb64be@endymion>
- <21647bb9-0818-8823-0935-87b270a80f26@electromag.com.au>
- <20171129134849.140ca3ad@endymion>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-i2c-owner@vger.kernel.org>
-In-Reply-To: <20171129134849.140ca3ad@endymion>
-Content-Language: en-AU
-Sender: linux-i2c-owner@vger.kernel.org
-To: Jean Delvare <jdelvare@suse.de>
-Cc: realmz6@gmail.com, wsa@the-dreams.de, sre@kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-i2c@vger.kernel.org, linux-pm@vger.kernel.org, benjamin.tissoires@redhat.com
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
+Date: Thu, 30 Nov 2017 11:47:17 +0000
+Message-ID: <20171130114723.29210-1-patrick.bellasi@arm.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:51226 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751513AbdK3Lrq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 30 Nov 2017 06:47:46 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-On 29/11/2017 20:48, Jean Delvare wrote:
-> On Wed, 29 Nov 2017 09:58:44 +0800, Phil Reid wrote:
->> G'day Jean,
->>
->> Thanks for looking at this.
->>
->> On 29/11/2017 06:08, Jean Delvare wrote:
->>> Hi Phil,
->>>
->>> On Tue, 28 Nov 2017 11:38:28 +0800, Phil Reid wrote:
->>>> i2c-smbus now only contains code related to the smbus_alert driver.
->>>> Other smbus protocols have been moved from this into the i2c-core-smbus.
->>>> Change the Kconfig variable name to reflect this.
->>>
->>> Not really. i2c-core-smbus.c contains essentially SMBus transaction
->>> helpers, which have never been in i2c-smbus.c. They aren't really SMBus
->>> protocols, more like a subset of I2C transactions suitable for general
->>> purpose. The only really SMBus protocol specific portion is relative to
->>> SMBus Alert, and that's only a small part of it. The other supported
->>> SMBus-specific protocol, Host Notify, is in i2c-core-base.c.
->>>
->>> My original intent was to have all the SMBus protocols specific code in
->>> one file, controlled by one Kconfig option, which could be built as a
->>> separate module. I wasn't certain it would be viable, it was a bet
->>> which I lost, as it turns out there are too many dependencies.
->>>
->>> If the code can no longer build as a separate module, there is no
->>> benefit in having it in a separate file. Let's just merge it into
->>> i2c-code-smbus.c, where the rest of the SMBus alert code already is.
->>> That would make things more simple.
->> I had to put of_i2c_setup_smbus_alert in there to deal with dependencies.
->> This was seen as a little messy at the time. It was accepted provided
->> that I clean things up somehow.
->>
->> The question is how. This series is just one proposal for that to stir some
->> discussion. Your approach is certainly the simpler one.
-> 
-> OK, can you please give it a try and wee how it compares with your own
-> approach?
+This is a re-spin of a previous posting [1], rebased on v4.15-rc1.
 
-Should be able to get to it next week.
+A detailed description of the series, as well as experimental results,
+is available in the cover letter of the previous posting.
+Here is a resume of the main results:
 
-> 
->>> I also don't think renaming this configuration option and moving code
->>> to a separate file (as your patch 3/3 does) makes sense. Having a
->>> separate option for each SMBus-specific protocol seems overkill to me,
->>> having one for all of them was and still is more reasonable. I wonder
->>> why the SMBus Notify code does NOT depend on CONFIG_I2C_SMBUS, and why
->>> it is in i2c-core-base.c instead of i2c-core-smbus.c. Wolfram?
->>>
->>> And more generally, renaming a Kconfig option has a non-trivial cost
->>> for distribution kernel maintainers, so it shall not be done lightly.
->>> So you need a clear and strong rationale.
->>
->> My only rational is that it didn't encompass all the SMBUS specific protocols.
->> It currently seems a little ambiguous to me. Especially with regard the current
->> Kconfig help description is not accurate with regard the Host Notify protocol.
-> 
-> I agree, the I2C_SMBUS Kconfig help text no longer reflects the reality
-> since over a year now. But I think the text is how things should be and
-> the code is what should be fixed (that is, all the SMBus Host Notify
-> code should be left out when I2C_SMBUS isn't set, and it should live in
-> i2c-core-smbus.c.) But I did not look at the details, maybe this isn't
-> possible for some reason. Maybe you can look into it after you are done
-> with moving the SMBus Alert code into the i2c core? If you don't, I
-> will.
-> 
-> Thanks,
-> 
+- reduces energy consumption by ~50% by ensuring that a small task is always
+  running at the minimum OPP even when the sugov's RT kthread is used to change
+  frequencies in the same cluster
 
+- increase from 4% to 98% the chances for a RT task to complete its activations
+  while running at the max OPP.
+
+- The sequence of tracing events reported in a trace is much more deterministic
+  and matching the expected system behaviors.  For example, as soon as a RT
+  task wakes up we ask for an OPP switch to max frequency.
+
+A detailed report for these results is available here [2].
+
+According to the discussion in the previous posting, one patch:
+
+   cpufreq: schedutil: ignore the sugov kthread for frequencies selections
+
+was considered the more controversial.
+That's why in this posting I'm still proposing that patch, since it
+still makes sense to me, but I've moved it at the end of the series,
+after the less controversial ones.
+
+Cheers Patrick
+
+.:: References
+==============
+
+[1] https://lkml.org/lkml/2017/7/4/495
+[2] https://gist.github.com/derkling/0cd7210e4fa6f2ec3558073006e5ad70
+
+Patrick Bellasi (6):
+  cpufreq: schedutil: reset sg_cpus's flags at IDLE enter
+  cpufreq: schedutil: ensure max frequency while running RT/DL tasks
+  cpufreq: schedutil: update CFS util only if used
+  sched/rt: fast switch to maximum frequency when RT tasks are scheduled
+  cpufreq: schedutil: relax rate-limiting while running RT/DL tasks
+  cpufreq: schedutil: ignore sugov kthreads
+
+ include/linux/sched/cpufreq.h    |  1 +
+ kernel/sched/cpufreq_schedutil.c | 61 ++++++++++++++++++++++++++++++++--------
+ kernel/sched/idle_task.c         |  4 +++
+ kernel/sched/rt.c                | 15 ++++++++--
+ 4 files changed, 67 insertions(+), 14 deletions(-)
 
 -- 
-Regards
-Phil Reid
+2.14.1
