@@ -1,68 +1,77 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI fixes for v4.15-rc2
-Date: Thu, 30 Nov 2017 22:47:36 +0100
-Message-ID: <CAJZ5v0jh+WnNDcrf5-Uqf9XXgTZMHAum6FqrspA-vbnyY2jnTw@mail.gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 00/11] fs: use freeze_fs on suspend/hibernate
+Date: Thu, 30 Nov 2017 22:51:57 +0100
+Message-ID: <20171130215157.GB2808@amd>
+References: <20171129232356.28296-1-mcgrof@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="WhfpMioaduB5tiZL"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171129232356.28296-1-mcgrof@kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
 
-Please pull from the tag
+--WhfpMioaduB5tiZL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-4.15-rc2
+Hi!
 
-with top-most commit b6c70268723bc89743b8aaaa7d17f6889d72497a
+> Proposed solution:
+>=20
+> Instead of fixing such semantics and trying to get all filesystems to do =
+it
+> right, we can easily do away with all freezing calls if the filesystem
+> implements a proper freeze_fs() callback. The following 9 filesystems have
+> freeze_fs() implemented as such we can let the kernel issue the callback =
+upon
+> suspend and thaw on resume automatically on our behalf.
+>=20
+>   o xfs
+>   o reiserfs
+>   o nilfs2
+>   o jfs
+>   o f2fs
+>   o ext4
+>   o ext2
+>   o btrfs
+>=20
+> Of these, the following have freezer helpers, which can then be removed
+> after the kernel automaticaly calls freeze_fs for us on suspend:
+>=20
+>   o xfs
+>   o nilfs2
+>   o jfs
+>   o f2fs
+>   o ext4
+>=20
+> I've tested this on a system with ext4 and XFS, and have let 0-day go at
+> without issues. I have branches availabe for linux-next [3] and Linus'
+> latest tree [4].
 
- Merge branch 'acpi-ec' into acpi
+Was hibernation tested? uswsusp?
 
-on top of commit 190b10367b0d311f68dc71e40b254fd4427affc2
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
- Merge tag 'acpi-fix-4.15-rc1' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
+--WhfpMioaduB5tiZL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-to receive ACPI fixes for 4.15-rc2.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-These fix a regression related to the ACPI EC handling during system
-suspend/resume on some platforms and prevent modalias from being
-exposed to user space for ACPI device object with "not functional
-and not present" status.
+iEYEARECAAYFAlogfX0ACgkQMOfwapXb+vKAXACgnqWMFQA+PKvI9Rq5vdZq0eqm
+DmkAn2v6+NlkogtL87tOprZw+w4DXzjv
+=rmjt
+-----END PGP SIGNATURE-----
 
-Specifics:
-
- - Fix an ACPI EC driver regression (from the 4.9 cycle) causing
-   the driver's power management operations to be omitted during
-   system suspend/resume on platforms where the EC instance from the
-   ECDT table is used instead of the one from the DSDT (Lv Zheng).
-
- - Prevent modalias from being exposed to user space for ACPI device
-   objects with _STA returning 0 (not present and not functional) to
-   prevent driver modules from being loaded automatically for
-   hardware that is not actually present on some platforms (Hans
-   de Goede).
-
-Thanks!
-
-
----------------
-
-Hans de Goede (1):
-      ACPI / bus: Leave modalias empty for devices which are not present
-
-Lv Zheng (1):
-      ACPI / EC: Fix regression related to PM ops support in ECDT device
-
----------------
-
- drivers/acpi/device_sysfs.c |  4 +++
- drivers/acpi/ec.c           | 69 +++++++++++++++++++++++++++++----------------
- drivers/acpi/internal.h     |  1 +
- drivers/acpi/scan.c         | 21 ++++++++++++++
- include/acpi/acpi_bus.h     |  1 +
- include/acpi/acpi_drivers.h |  1 +
- 6 files changed, 73 insertions(+), 24 deletions(-)
+--WhfpMioaduB5tiZL--
