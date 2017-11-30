@@ -1,72 +1,105 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH v3 3/6] cpufreq: schedutil: update CFS util only if used
-Date: Thu, 30 Nov 2017 14:22:34 +0100
-Message-ID: <20171130132234.GC9903@localhost.localdomain>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171130114723.29210-4-patrick.bellasi@arm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] clk: Manage proper runtime PM state in clk_change_rate()
+Date: Thu, 30 Nov 2017 14:24:49 +0100
+Message-ID: <CAPDyKFquGA49j5YaO2wohatwaU7fF4RDUYOgKGx-OX1g74Uk-A@mail.gmail.com>
+References: <CGME20171130121511eucas1p1832c1f6e5bc9e263860e40478efca132@eucas1p1.samsung.com>
+ <20171130121451.6710-1-m.szyprowski@samsung.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171130114723.29210-4-patrick.bellasi@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <20171130121451.6710-1-m.szyprowski@samsung.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: linux-clk <linux-clk@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-samsung-soc <linux-samsung-soc@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+On 30 November 2017 at 13:14, Marek Szyprowski <m.szyprowski@samsung.com> wrote:
+> clk_change_rate() propagates rate change down to all its children. Such
+> operation requires managing proper runtime PM state of each child, what
+> was missing. Add needed calls to clk_pm_runtime*() to ensure that
+> set_rate() clock callback is called on runtime active clock.
+>
+> This fixes following issue found on Exynos5433 TM2 board with devfreq
+> enabled:
+>
+> Synchronous External Abort: synchronous external abort (0x96000210) at 0xffffff80093f5600
+> Internal error: : 96000210 [#1] PREEMPT SMP
+> Modules linked in:
+> CPU: 0 PID: 5 Comm: kworker/u16:0 Not tainted 4.15.0-rc1-next-20171129+ #4
+> Hardware name: Samsung TM2 board (DT)
+> Workqueue: devfreq_wq devfreq_monitor
+> task: ffffffc0ca96b600 task.stack: ffffff80093a8000
+> pstate: a0000085 (NzCv daIf -PAN -UAO)
+> pc : clk_divider_set_rate+0x54/0x118
+> lr : clk_divider_set_rate+0x44/0x118
+> ...
+> Process kworker/u16:0 (pid: 5, stack limit = 0xffffff80093a8000)
+> Call trace:
+>  clk_divider_set_rate+0x54/0x118
+>  clk_change_rate+0xfc/0x4e0
+>  clk_change_rate+0x1f0/0x4e0
+>  clk_change_rate+0x1f0/0x4e0
+>  clk_change_rate+0x1f0/0x4e0
+>  clk_core_set_rate_nolock+0x138/0x148
+>  clk_set_rate+0x28/0x50
+>  exynos_bus_passive_target+0x6c/0x11c
+>  update_devfreq_passive+0x58/0xb4
+>  devfreq_passive_notifier_call+0x50/0x5c
+>  notifier_call_chain+0x4c/0x88
+>  __srcu_notifier_call_chain+0x54/0x80
+>  srcu_notifier_call_chain+0x14/0x1c
+>  update_devfreq+0x100/0x1b4
+>  devfreq_monitor+0x2c/0x88
+>  process_one_work+0x148/0x3d8
+>  worker_thread+0x13c/0x3f8
+>  kthread+0x100/0x12c
+>  ret_from_fork+0x10/0x18
+>
+> Reported-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Fixes: 9a34b45397e5 ("clk: Add support for runtime PM")
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 
-On 30/11/17 11:47, Patrick Bellasi wrote:
-> Currently the utilization of the FAIR class is collected before locking
-> the policy. Although that should not be a big issue for most cases, we
-> also don't really know how much latency there can be between the
-> utilization reading and its usage.
-> 
-> Let's get the FAIR utilization right before its usage to be better in
-> sync with the current status of a CPU.
-> 
-> Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-> Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> 
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
+
 > ---
-> Changes from v2:
-> - rebased on v4.15-rc1
-> 
-> Change-Id: I9291a560bcad7db76894e3f0fcdb917511d0479e
+> For some unknown reason handling of this case was missing in the initial
+> patch, which added runtime PM support for clock core. Even tests in
+> linux-next did not revealed this issue. This patch finaly fixes it,
+> as it is now easy to trigger it with v4.15-rc1.
+>
+> Best regards
+> Marek Szyprowski
+> Samsung R&D Institute Poland
 > ---
->  kernel/sched/cpufreq_schedutil.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 448f49de5335..40521d59630b 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -351,10 +351,9 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
->  	unsigned int next_f;
->  	bool rt_mode;
->  
-> -	sugov_get_util(&util, &max, sg_cpu->cpu);
-> -
->  	raw_spin_lock(&sg_policy->update_lock);
->  
-> +	sugov_get_util(&util, &max, sg_cpu->cpu);
->  	sg_cpu->util = util;
->  	sg_cpu->max = max;
-
-Patch looks good.
-
-Reviewed-by: Juri Lelli <juri.lelli@redhat.com>
-
-However, not sure $SUBJECT is really in sync with what the patch does?
-CFS gets "used" before and after the patch... last paragraph of the
-changelog looks more like it. :)
-
-Best,
-
-Juri
+>  drivers/clk/clk.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index 647d056df88c..8a1860a36c77 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -1564,6 +1564,9 @@ static void clk_change_rate(struct clk_core *core)
+>                 best_parent_rate = core->parent->rate;
+>         }
+>
+> +       if (clk_pm_runtime_get(core))
+> +               return;
+> +
+>         if (core->flags & CLK_SET_RATE_UNGATE) {
+>                 unsigned long flags;
+>
+> @@ -1634,6 +1637,8 @@ static void clk_change_rate(struct clk_core *core)
+>         /* handle the new child who might not be in core->children yet */
+>         if (core->new_child)
+>                 clk_change_rate(core->new_child);
+> +
+> +       clk_pm_runtime_put(core);
+>  }
+>
+>  static int clk_core_set_rate_nolock(struct clk_core *core,
+> --
+> 2.15.0
+>
