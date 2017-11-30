@@ -1,7 +1,7 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v3 1/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE enter
-Date: Thu, 30 Nov 2017 11:47:18 +0000
-Message-ID: <20171130114723.29210-2-patrick.bellasi@arm.com>
+Subject: [PATCH v3 4/6] sched/rt: fast switch to maximum frequency when RT tasks are scheduled
+Date: Thu, 30 Nov 2017 11:47:21 +0000
+Message-ID: <20171130114723.29210-5-patrick.bellasi@arm.com>
 References: <20171130114723.29210-1-patrick.bellasi@arm.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171130114723.29210-1-patrick.bellasi@arm.com>
@@ -10,45 +10,39 @@ To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-Currently, sg_cpu's flags are set to the value defined by the last call
-of the cpufreq_update_util(); for RT/DL classes this corresponds to the
-SCHED_CPUFREQ_{RT/DL} flags always being set.
+Currently schedutil updates are triggered for the RT class using a single
+call place, which is part of the rt::update_curr_rt() used in:
 
-When multiple CPUs share the same frequency domain it might happen that
-a CPU which executed an RT task, right before entering IDLE, has one of
-the SCHED_CPUFREQ_RT_DL flags set, permanently, until it exits IDLE.
+- dequeue_task_rt:
+  but it does not make sense to set the schedutil's SCHED_CPUFREQ_RT in
+  case the next task should not be an RT one
 
-Although such an idle CPU is _going to be_ ignored by the
-sugov_next_freq_shared():
-  1. this kind of "useless RT requests" are ignored only if more then
-     TICK_NSEC have elapsed since the last update
-  2. we can still potentially trigger an already too late switch to
-     MAX, which starts also a new throttling interval
-  3. the internal state machine is not consistent with what the
-     scheduler knows, i.e. the CPU is now actually idle
+- put_prev_task_rt:
+  likewise, we set the SCHED_CPUFREQ_RT flag without knowing if required
+  by the next task
 
-Thus, in sugov_next_freq_shared(), where utilisation and flags are
-aggregated across all the CPUs of a frequency domain, it can turn out
-that all the CPUs of that domain can run unnecessary at the maximum OPP
-until another event happens in the idle CPU, which eventually clears the
-SCHED_CPUFREQ_{RT/DL} flag, or the IDLE CPUs gets ignored after
-TICK_NSEC [ns] since the CPU entering IDLE.
+- pick_next_task_rt:
+  likewise, the schedutil's SCHED_CPUFREQ_RT is set in case the prev task
+  was RT, while we don't yet know if the next will be RT
 
-Such a behaviour can harm the energy efficiency of systems where RT
-workloads are not so frequent and other CPUs in the same frequency
-domain are running small utilisation workloads, which is a quite common
-scenario in mobile embedded systems.
+- task_tick_rt:
+  that's the only really useful call, which can ramp up the frequency in
+  case a RT task started its execution without a chance to order a
+  frequency switch (e.g. because of the schedutil ratelimit)
 
-This patch proposes a solution which is aligned with the current
-principle to update the flags each time a scheduling event happens. The
-scheduling of the idle_task on a CPU is considered one of such
-meaningful events.  That's why when the idle_task is selected for
-execution we poke the schedutil policy to reset the flags for that CPU.
+Apart from the last call in task_tick_rt, the others are at least useless.
+Thus, although being a simple solution, not all the call sites of that
+update_curr_rt() are interesting to trigger a frequency switch as well as
+some of the most interesting points are not covered by that call.
+For example, a task set to RT has to wait the next tick to get the
+frequency boost.
 
-No frequency transitions are activated at that point, which is fair in
-case the RT workload should come back in the future. However, this still
-allows other CPUs in the same frequency domain to scale down the
-frequency in case that should be possible.
+This patch fixes these issues by placing explicitly the schedutils
+update calls in the only sensible places, which are:
+- when an RT task wakes up and it's enqueued in a CPU
+- when we actually pick a RT task for execution
+- at each tick time
+- when a task is set to be RT
 
 Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
 Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
@@ -61,70 +55,67 @@ Cc: linux-pm@vger.kernel.org
 
 ---
 Changes from v2:
-- use cpufreq_update_util() instead of cpufreq_update_this_cpu()
 - rebased on v4.15-rc1
+- use cpufreq_update_util() instead of cpufreq_update_this_cpu()
 
-Changes from v1:
-- added "unlikely()" around the statement (SteveR)
-
-Change-Id: I1192ca9a3acb767cb3a745967a7a23a17e1af7b7
+Change-Id: I3794615819270fe175cb118eef3f7edd61f602ba
 ---
- include/linux/sched/cpufreq.h    | 1 +
- kernel/sched/cpufreq_schedutil.c | 7 +++++++
- kernel/sched/idle_task.c         | 4 ++++
- 3 files changed, 12 insertions(+)
+ kernel/sched/rt.c | 15 ++++++++++++---
+ 1 file changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
-index d1ad3d825561..bb5f778db023 100644
---- a/include/linux/sched/cpufreq.h
-+++ b/include/linux/sched/cpufreq.h
-@@ -11,6 +11,7 @@
- #define SCHED_CPUFREQ_RT	(1U << 0)
- #define SCHED_CPUFREQ_DL	(1U << 1)
- #define SCHED_CPUFREQ_IOWAIT	(1U << 2)
-+#define SCHED_CPUFREQ_IDLE	(1U << 3)
+diff --git a/kernel/sched/rt.c b/kernel/sched/rt.c
+index 4056c19ca3f0..6984032598a6 100644
+--- a/kernel/sched/rt.c
++++ b/kernel/sched/rt.c
+@@ -959,9 +959,6 @@ static void update_curr_rt(struct rq *rq)
+ 	if (unlikely((s64)delta_exec <= 0))
+ 		return;
  
- #define SCHED_CPUFREQ_RT_DL	(SCHED_CPUFREQ_RT | SCHED_CPUFREQ_DL)
+-	/* Kick cpufreq (see the comment in kernel/sched/sched.h). */
+-	cpufreq_update_util(rq, SCHED_CPUFREQ_RT);
+-
+ 	schedstat_set(curr->se.statistics.exec_max,
+ 		      max(curr->se.statistics.exec_max, delta_exec));
  
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 2f52ec0f1539..67339ccb5595 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -347,6 +347,12 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
+@@ -1327,6 +1324,9 @@ enqueue_task_rt(struct rq *rq, struct task_struct *p, int flags)
  
- 	sg_cpu->util = util;
- 	sg_cpu->max = max;
+ 	if (!task_current(rq, p) && p->nr_cpus_allowed > 1)
+ 		enqueue_pushable_task(rq, p);
 +
-+	/* CPU is entering IDLE, reset flags without triggering an update */
-+	if (unlikely(flags & SCHED_CPUFREQ_IDLE)) {
-+		sg_cpu->flags = 0;
-+		goto done;
-+	}
- 	sg_cpu->flags = flags;
- 
- 	sugov_set_iowait_boost(sg_cpu, time, flags);
-@@ -361,6 +367,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
- 		sugov_update_commit(sg_policy, time, next_f);
- 	}
- 
-+done:
- 	raw_spin_unlock(&sg_policy->update_lock);
++	/* Kick cpufreq (see the comment in kernel/sched/sched.h). */
++	cpufreq_update_util(rq, SCHED_CPUFREQ_RT);
  }
  
-diff --git a/kernel/sched/idle_task.c b/kernel/sched/idle_task.c
-index d518664cce4f..6e8ae2aa7a13 100644
---- a/kernel/sched/idle_task.c
-+++ b/kernel/sched/idle_task.c
-@@ -30,6 +30,10 @@ pick_next_task_idle(struct rq *rq, struct task_struct *prev, struct rq_flags *rf
- 	put_prev_task(rq, prev);
- 	update_idle_core(rq);
- 	schedstat_inc(rq->sched_goidle);
-+
-+	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
-+	cpufreq_update_util(rq, SCHED_CPUFREQ_IDLE);
-+
- 	return rq->idle;
- }
+ static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int flags)
+@@ -1564,6 +1564,9 @@ pick_next_task_rt(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
  
+ 	p = _pick_next_task_rt(rq);
+ 
++	/* Kick cpufreq (see the comment in kernel/sched/sched.h). */
++	cpufreq_update_util(rq, SCHED_CPUFREQ_RT);
++
+ 	/* The running task is never eligible for pushing */
+ 	dequeue_pushable_task(rq, p);
+ 
+@@ -2282,6 +2285,9 @@ static void task_tick_rt(struct rq *rq, struct task_struct *p, int queued)
+ {
+ 	struct sched_rt_entity *rt_se = &p->rt;
+ 
++	/* Kick cpufreq (see the comment in kernel/sched/sched.h). */
++	cpufreq_update_util(rq, SCHED_CPUFREQ_RT);
++
+ 	update_curr_rt(rq);
+ 
+ 	watchdog(rq, p);
+@@ -2317,6 +2323,9 @@ static void set_curr_task_rt(struct rq *rq)
+ 
+ 	p->se.exec_start = rq_clock_task(rq);
+ 
++	/* Kick cpufreq (see the comment in kernel/sched/sched.h). */
++	cpufreq_update_util(rq, SCHED_CPUFREQ_RT);
++
+ 	/* The running task is never eligible for pushing */
+ 	dequeue_pushable_task(rq, p);
+ }
 -- 
 2.14.1
