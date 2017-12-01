@@ -1,60 +1,117 @@
-From: "dbasehore ." <dbasehore@chromium.org>
-Subject: Re: Save and Restore Generic Interrupt Controller for System Sleep on ARM
-Date: Thu, 30 Nov 2017 17:21:20 -0800
-Message-ID: <CAGAzgspYoDwbmj+cXWQJcUmmGZshQ95-a-8gBNOtxT8L2Qm-VQ@mail.gmail.com>
-References: <CAGAzgsrSDF0Hs4-=m02c6ME90RvZumYxzBFFi0oH=RuwxQnB-Q@mail.gmail.com>
- <86d140xfr9.fsf@unassigned-hostname.unassigned-domain>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] clk: Manage proper runtime PM state in
+ clk_change_rate()
+Date: Fri, 01 Dec 2017 10:41:33 +0900
+Message-ID: <5A20B34D.7020108@samsung.com>
+References: <CGME20171130121511eucas1p1832c1f6e5bc9e263860e40478efca132@eucas1p1.samsung.com>
+        <20171130121451.6710-1-m.szyprowski@samsung.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f171.google.com ([209.85.128.171]:46019 "EHLO
-        mail-wr0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751793AbdLABVW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Nov 2017 20:21:22 -0500
-Received: by mail-wr0-f171.google.com with SMTP id h1so8439746wre.12
-        for <linux-pm@vger.kernel.org>; Thu, 30 Nov 2017 17:21:22 -0800 (PST)
-In-Reply-To: <86d140xfr9.fsf@unassigned-hostname.unassigned-domain>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-reply-to: <20171130121451.6710-1-m.szyprowski@samsung.com>
+Sender: linux-clk-owner@vger.kernel.org
+To: Marek Szyprowski <m.szyprowski@samsung.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Stephen Boyd <sboyd@codeaurora.org>, Michael Turquette <mturquette@baylibre.com>, Ulf Hansson <ulf.hansson@linaro.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 List-Id: linux-pm@vger.kernel.org
-To: Marc Zyngier <marc.zyngier@arm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, sudeep.holla@arm.com, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Thu, Nov 30, 2017 at 1:44 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
-> On Wed, Nov 29 2017 at  2:49:18 pm GMT, "dbasehore ." <dbasehore@chromium.org> wrote:
->> There was some work in ARM Trusted Firmware to support saving and
->> restoring the Generic Interrupt Controller (GICv3) before and after
->> sleep, but it seems that the plan is to have this all in the kernel
->> now. The point of doing this is to save power during sleep. On an
->> RK3399 system, we save about 15mW by disabling the power rail that the
->> GIC is on.
->>
->> I was looking for whether anyone had anything in progress already or
->> for preferences on how to do this. Marc suggested using a device tree
->> entry to indicate the need to save and restore the GIC. There is
->> another requirement to resend MAPC commands on certain implementations
->> of the GICv3 which could be indicated by another device tree entry.
->
-> Let's be precise: This is a GIC-500 requirement, and not something that
-> the GICv3 architecture defines (PM is *not* part of the GICv3
-> architecture).
->
+Dear all,
 
-Just to double check, do the register restores apply to all GICv3
-designs? If so, I can put that code in the gic-v3 code instead of
-breaking it out.
+On 2017년 11월 30일 21:14, Marek Szyprowski wrote:
+> clk_change_rate() propagates rate change down to all its children. Such
+> operation requires managing proper runtime PM state of each child, what
+> was missing. Add needed calls to clk_pm_runtime*() to ensure that
+> set_rate() clock callback is called on runtime active clock.
+> 
+> This fixes following issue found on Exynos5433 TM2 board with devfreq
+> enabled:
+> 
+> Synchronous External Abort: synchronous external abort (0x96000210) at 0xffffff80093f5600
+> Internal error: : 96000210 [#1] PREEMPT SMP
+> Modules linked in:
+> CPU: 0 PID: 5 Comm: kworker/u16:0 Not tainted 4.15.0-rc1-next-20171129+ #4
+> Hardware name: Samsung TM2 board (DT)
+> Workqueue: devfreq_wq devfreq_monitor
+> task: ffffffc0ca96b600 task.stack: ffffff80093a8000
+> pstate: a0000085 (NzCv daIf -PAN -UAO)
+> pc : clk_divider_set_rate+0x54/0x118
+> lr : clk_divider_set_rate+0x44/0x118
+> ...
+> Process kworker/u16:0 (pid: 5, stack limit = 0xffffff80093a8000)
+> Call trace:
+>  clk_divider_set_rate+0x54/0x118
+>  clk_change_rate+0xfc/0x4e0
+>  clk_change_rate+0x1f0/0x4e0
+>  clk_change_rate+0x1f0/0x4e0
+>  clk_change_rate+0x1f0/0x4e0
+>  clk_core_set_rate_nolock+0x138/0x148
+>  clk_set_rate+0x28/0x50
+>  exynos_bus_passive_target+0x6c/0x11c
+>  update_devfreq_passive+0x58/0xb4
+>  devfreq_passive_notifier_call+0x50/0x5c
+>  notifier_call_chain+0x4c/0x88
+>  __srcu_notifier_call_chain+0x54/0x80
+>  srcu_notifier_call_chain+0x14/0x1c
+>  update_devfreq+0x100/0x1b4
+>  devfreq_monitor+0x2c/0x88
+>  process_one_work+0x148/0x3d8
+>  worker_thread+0x13c/0x3f8
+>  kthread+0x100/0x12c
+>  ret_from_fork+0x10/0x18
+> 
+> Reported-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Fixes: 9a34b45397e5 ("clk: Add support for runtime PM")
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+> For some unknown reason handling of this case was missing in the initial
+> patch, which added runtime PM support for clock core. Even tests in
+> linux-next did not revealed this issue. This patch finaly fixes it,
+> as it is now easy to trigger it with v4.15-rc1.
+> 
+> Best regards
+> Marek Szyprowski
+> Samsung R&D Institute Poland
+> ---
+>  drivers/clk/clk.c | 5 +++++
+>  1 file changed, 5 insertions(+)
 
->> If someone does have patches, I'll be able to test and verify them on
->> my system since we've gotten things working with the ARM Trusted
->> Firmware patches.
->
-> I'm not aware of any such patch that has been posted for mainline, so
-> just post whatever you have and we'll take it from there.
->
-> IT is hard to comment further on what you're trying to do without seeing
-> the code and a description of the new API between ATF and the kernel.
->
-> Thanks,
->
->         M.
-> --
-> Jazz is not dead, it just smell funny.
+I tested it on Exynos5433-based TM2 with following test environment:
+- Based on linux-next git with next-20171129 tag.
+- Exynos5433 clock driver supports the runtime PM.
+- Exynos5433-based TM2 board makes the connections between
+  power-domain and clock controller/other device.
+- Enable devfreq for memory bus frequency on TM2.
+
+Tested-by: Chanwoo Choi <cw00.choi@samsung.com>
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+
+> 
+> diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+> index 647d056df88c..8a1860a36c77 100644
+> --- a/drivers/clk/clk.c
+> +++ b/drivers/clk/clk.c
+> @@ -1564,6 +1564,9 @@ static void clk_change_rate(struct clk_core *core)
+>  		best_parent_rate = core->parent->rate;
+>  	}
+>  
+> +	if (clk_pm_runtime_get(core))
+> +		return;
+> +
+>  	if (core->flags & CLK_SET_RATE_UNGATE) {
+>  		unsigned long flags;
+>  
+> @@ -1634,6 +1637,8 @@ static void clk_change_rate(struct clk_core *core)
+>  	/* handle the new child who might not be in core->children yet */
+>  	if (core->new_child)
+>  		clk_change_rate(core->new_child);
+> +
+> +	clk_pm_runtime_put(core);
+>  }
+>  
+>  static int clk_core_set_rate_nolock(struct clk_core *core,
+> 
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
