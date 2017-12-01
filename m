@@ -1,84 +1,69 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH 06/13] dt-bindings: power: reset: Document ocelot-reset
- binding
-Date: Thu, 30 Nov 2017 19:54:08 -0600
-Message-ID: <20171201015408.gg5di47m7nic57cz@rob-hp-laptop>
-References: <20171128152643.20463-1-alexandre.belloni@free-electrons.com>
- <20171128152643.20463-7-alexandre.belloni@free-electrons.com>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH] bus: simple-pm-bus: convert bool SIMPLE_PM_BUS to
+ tristate
+Date: Fri, 1 Dec 2017 08:02:33 +0100
+Message-ID: <20171201070232.v4uilgo5cydaoyqa@verge.net.au>
+References: <1512043020-23452-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:34999 "EHLO
-        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750735AbdLAByK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Nov 2017 20:54:10 -0500
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171128152643.20463-7-alexandre.belloni@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1512043020-23452-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>, Kevin Hilman <khilman@linaro.org>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Nov 28, 2017 at 04:26:36PM +0100, Alexandre Belloni wrote:
-> Add binding documentation for the Microsemi Ocelot reset block.
+On Thu, Nov 30, 2017 at 12:57:00PM +0100, Geert Uytterhoeven wrote:
+> From: Paul Gortmaker <paul.gortmaker@windriver.com>
 > 
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> The Kconfig currently controlling compilation of this code is:
+> 
+> config SIMPLE_PM_BUS
+>         bool "Simple Power-Managed Bus Driver"
+> 
+> ...meaning that it currently is not being built as a module by anyone.
+> 
+> In removing the orphaned modular support in a previous patch set,
+> Geert indicated he'd rather see this code converted to tristate.
+> 
+> I normally don't do that because it extends functionality that I
+> can't easily run time test or even know if the use case makes sense,
+> but since in this case the author has nominated it as such, we do
+> the conversion here.
+> 
+> Note that doesn't change the lack of run time testing ; this change
+> is only tested for sucessful compile and modpost.
+> 
+> [geert: Ethernet is probed successfully on sh73a0/kzm9g after
+>         insmodding simple-pm-bus.ko]
+> 
+> Cc: Kevin Hilman <khilman@linaro.org>
+> Cc: Simon Horman <horms+renesas@verge.net.au>
+> Cc: linux-arm-kernel@lists.infradead.org
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Acked-by: Simon Horman <horms+renesas@verge.net.au>
+
 > ---
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: devicetree@vger.kernel.org
-> To: Sebastian Reichel <sre@kernel.org>
-> Cc: linux-pm@vger.kernel.org
+>  drivers/bus/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
->  .../bindings/power/reset/ocelot-reset.txt          | 24 ++++++++++++++++++++++
->  1 file changed, 24 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-> new file mode 100644
-> index 000000000000..2d3f2c21fadd
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-> @@ -0,0 +1,24 @@
-> +Microsemi Ocelot reset driver
-
-Bindings are not drivers.
-
-> +
-> +The DEVCPU_GCB:CHIP_REGS have a SOFT_RST register that can be used to reset the
-> +SoC MIPS core.
-> +
-> +Required Properties:
-> + - compatible: "mscc,ocelot-chip-reset"
-> + - mscc,cpucontrol: phandle to the CPU system control syscon block
-> +
-> +Example:
-> +		cpu_ctrl: syscon@70000000 {
-> +			compatible = "syscon";
-
-syscon alone is not valid.
-
-> +			reg = <0x70000000 0x2c>;
-> +		};
-> +
-> +		syscon@71070000 {
-> +			compatible = "simple-mfd", "syscon";
-
-SoC specific compatible?
-
-> +			reg = <0x71070000 0x1c>;
-> +
-> +			reset {
-> +				compatible = "mscc,ocelot-chip-reset";
-> +				mscc,cpucontrol = <&cpu_ctrl>;
-
-This looks strange. A syscon pointing to another syscon?
-
-Doesn't look like you even need this node, but hard to know if you don't 
-document the parent node completely (i.e. what are all the functions in 
-this syscon).
-
-> +			};
-> +		};
+> diff --git a/drivers/bus/Kconfig b/drivers/bus/Kconfig
+> index dc7b3c7b7d42fd09..57e011d36a79fce3 100644
+> --- a/drivers/bus/Kconfig
+> +++ b/drivers/bus/Kconfig
+> @@ -120,7 +120,7 @@ config QCOM_EBI2
+>  	  SRAM, ethernet adapters, FPGAs and LCD displays.
+>  
+>  config SIMPLE_PM_BUS
+> -	bool "Simple Power-Managed Bus Driver"
+> +	tristate "Simple Power-Managed Bus Driver"
+>  	depends on OF && PM
+>  	help
+>  	  Driver for transparent busses that don't need a real driver, but
 > -- 
-> 2.15.0
+> 2.7.4
 > 
