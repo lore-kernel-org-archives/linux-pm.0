@@ -1,73 +1,121 @@
 From: Jeremy Linton <jeremy.linton@arm.com>
-Subject: [PATCH v5 3/9] ACPI: Enable PPTT support on ARM64
-Date: Fri,  1 Dec 2017 16:23:24 -0600
-Message-ID: <20171201222330.18863-4-jeremy.linton@arm.com>
+Subject: [PATCH v5 8/9] arm64: topology: Enable ACPI/PPTT based CPU topology.
+Date: Fri,  1 Dec 2017 16:23:29 -0600
+Message-ID: <20171201222330.18863-9-jeremy.linton@arm.com>
 References: <20171201222330.18863-1-jeremy.linton@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171201222330.18863-1-jeremy.linton@arm.com>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-acpi@vger.kernel.org
-Cc: mark.rutland@arm.com, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, lorenzo.pieralisi@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, jhugo@codeaurora.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org, will.deacon@arm.com, linux-kernel@vger.kernel.org, Jeremy Linton <jeremy.linton@arm.com>, ahs3@redhat.com, viresh.kumar@linaro.org, hanjun.guo@linaro.org, sudeep.holla@arm.com, austinwc@codeaurora.org, wangxiongfeng2@huawei.com, linux-arm-kernel@lists.infradead.org, lenb@kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, Jeremy Linton <jeremy.linton@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-Now that we have a PPTT parser, in preparation for its use
-on arm64, lets build it.
+Propagate the topology information from the PPTT tree to the
+cpu_topology array. We can get the thread id, core_id and
+cluster_id by assuming certain levels of the PPTT tree correspond
+to those concepts. The package_id is flagged in the tree and can be
+found by calling find_acpi_cpu_topology_package() which terminates
+its search when it finds an ACPI node flagged as the physical
+package. If the tree doesn't contain enough levels to represent
+all of the requested levels then the root node will be returned
+for all subsequent levels.
 
 Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
 ---
- arch/arm64/Kconfig    | 1 +
- drivers/acpi/Kconfig  | 3 +++
- drivers/acpi/Makefile | 1 +
- 3 files changed, 5 insertions(+)
+ arch/arm64/kernel/topology.c | 47 +++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/topology.h     |  2 ++
+ 2 files changed, 48 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index a93339f5178f..e62fd1e08c1f 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -7,6 +7,7 @@ config ARM64
- 	select ACPI_REDUCED_HARDWARE_ONLY if ACPI
- 	select ACPI_MCFG if ACPI
- 	select ACPI_SPCR_TABLE if ACPI
-+	select ACPI_PPTT if ACPI
- 	select ARCH_CLOCKSOURCE_DATA
- 	select ARCH_HAS_DEBUG_VIRTUAL
- 	select ARCH_HAS_DEVMEM_IS_ALLOWED
-diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index 46505396869e..df7aebf0af0e 100644
---- a/drivers/acpi/Kconfig
-+++ b/drivers/acpi/Kconfig
-@@ -545,6 +545,9 @@ config ACPI_CONFIGFS
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index 74a8a5173a35..198714aca9e8 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -11,6 +11,7 @@
+  * for more details.
+  */
  
- if ARM64
- source "drivers/acpi/arm64/Kconfig"
++#include <linux/acpi.h>
+ #include <linux/arch_topology.h>
+ #include <linux/cpu.h>
+ #include <linux/cpumask.h>
+@@ -22,6 +23,7 @@
+ #include <linux/sched.h>
+ #include <linux/sched/topology.h>
+ #include <linux/slab.h>
++#include <linux/smp.h>
+ #include <linux/string.h>
+ 
+ #include <asm/cpu.h>
+@@ -300,6 +302,47 @@ static void __init reset_cpu_topology(void)
+ 	}
+ }
+ 
++#ifdef CONFIG_ACPI
++/*
++ * Propagate the topology information of the processor_topology_node tree to the
++ * cpu_topology array.
++ */
++static int __init parse_acpi_topology(void)
++{
++	u64 is_threaded;
++	int cpu;
++	int topology_id;
 +
-+config ACPI_PPTT
-+	bool
- endif
++	is_threaded = read_cpuid_mpidr() & MPIDR_MT_BITMASK;
++
++	for_each_possible_cpu(cpu) {
++		topology_id = find_acpi_cpu_topology(cpu, 0);
++		if (topology_id < 0)
++			return topology_id;
++
++		if (is_threaded) {
++			cpu_topology[cpu].thread_id = topology_id;
++			topology_id = find_acpi_cpu_topology(cpu, 1);
++			cpu_topology[cpu].core_id   = topology_id;
++			topology_id = find_acpi_cpu_topology_package(cpu);
++			cpu_topology[cpu].physical_id = topology_id;
++		} else {
++			cpu_topology[cpu].thread_id  = -1;
++			cpu_topology[cpu].core_id    = topology_id;
++			topology_id = find_acpi_cpu_topology_package(cpu);
++			cpu_topology[cpu].physical_id = topology_id;
++		}
++	}
++	return 0;
++}
++
++#else
++static int __init parse_acpi_topology(void)
++{
++	/*ACPI kernels should be built with PPTT support*/
++	return -EINVAL;
++}
++#endif
  
- config TPS68470_PMIC_OPREGION
-diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
-index 41954a601989..b6056b566df4 100644
---- a/drivers/acpi/Makefile
-+++ b/drivers/acpi/Makefile
-@@ -87,6 +87,7 @@ obj-$(CONFIG_ACPI_BGRT)		+= bgrt.o
- obj-$(CONFIG_ACPI_CPPC_LIB)	+= cppc_acpi.o
- obj-$(CONFIG_ACPI_SPCR_TABLE)	+= spcr.o
- obj-$(CONFIG_ACPI_DEBUGGER_USER) += acpi_dbg.o
-+obj-$(CONFIG_ACPI_PPTT) 	+= pptt.o
+ void __init init_cpu_topology(void)
+ {
+@@ -309,6 +352,8 @@ void __init init_cpu_topology(void)
+ 	 * Discard anything that was parsed if we hit an error so we
+ 	 * don't use partial information.
+ 	 */
+-	if (of_have_populated_dt() && parse_dt_topology())
++	if ((!acpi_disabled) && parse_acpi_topology())
++		reset_cpu_topology();
++	else if (of_have_populated_dt() && parse_dt_topology())
+ 		reset_cpu_topology();
+ }
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index cb0775e1ee4b..170ce87edd88 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -43,6 +43,8 @@
+ 		if (nr_cpus_node(node))
  
- # processor has its own "processor." module_param namespace
- processor-y			:= processor_driver.o
+ int arch_update_cpu_topology(void);
++int find_acpi_cpu_topology(unsigned int cpu, int level);
++int find_acpi_cpu_topology_package(unsigned int cpu);
+ 
+ /* Conform to ACPI 2.0 SLIT distance definitions */
+ #define LOCAL_DISTANCE		10
 -- 
 2.13.5
