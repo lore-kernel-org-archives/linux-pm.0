@@ -1,85 +1,83 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Subject: Re: [PATCH] power: reset: zx-reboot: add missing
- MODULE_DESCRIPTION/AUTHOR/LICENSE
-Date: Fri, 1 Dec 2017 16:28:25 +0100
-Message-ID: <20171201152825.qedjiscaihhiovww@earth>
-References: <20171120205827.88610-1-jc@linux.com>
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: [PATCH] power: supply: charger-manager: Fix typo in condition
+Date: Fri, 1 Dec 2017 16:29:18 +0100
+Message-ID: <20171201152918.qjmo6i5bk3ij5myj@earth>
+References: <20171121042712.3035-1-raitosyo@gmail.com>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="brcg7mrw4r5y272a"
-Return-path: <linux-kernel-owner@vger.kernel.org>
+        protocol="application/pgp-signature"; boundary="lu7nzxjvfwnwza6j"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:54730 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751032AbdLAP3V (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 1 Dec 2017 10:29:21 -0500
 Content-Disposition: inline
-In-Reply-To: <20171120205827.88610-1-jc@linux.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Jesse Chan <jc@linux.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20171121042712.3035-1-raitosyo@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: raitosyo@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
 
---brcg7mrw4r5y272a
+--lu7nzxjvfwnwza6j
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Mon, Nov 20, 2017 at 12:58:27PM -0800, Jesse Chan wrote:
-> This change resolves a new compile-time warning
-> when built as a loadable module:
+On Tue, Nov 21, 2017 at 01:27:12PM +0900, raitosyo@gmail.com wrote:
+> From: Ryosuke Saito <raitosyo@gmail.com>
 >=20
-> WARNING: modpost: missing MODULE_LICENSE() in drivers/power/reset/zx-rebo=
-ot.o
-> see include/linux/module.h for more information
+> Should be discharging_max_duration_ms, not charging_max_duration_ms.
 >=20
-> This adds the license as "GPL v2", which matches the header of the file.
->=20
-> MODULE_DESCRIPTION and MODULE_AUTHOR are also added.
->=20
-> Signed-off-by: Jesse Chan <jc@linux.com>
+> Signed-off-by: Ryosuke Saito <raitosyo@gmail.com>
 > ---
 
 Thanks, queued.
 
 -- Sebastian
 
->  drivers/power/reset/zx-reboot.c | 4 ++++
->  1 file changed, 4 insertions(+)
+>  drivers/power/supply/charger-manager.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> diff --git a/drivers/power/reset/zx-reboot.c b/drivers/power/reset/zx-reb=
-oot.c
-> index 7549c7f74a3c..c03e96e6a041 100644
-> --- a/drivers/power/reset/zx-reboot.c
-> +++ b/drivers/power/reset/zx-reboot.c
-> @@ -82,3 +82,7 @@ static struct platform_driver zx_reboot_driver =3D {
->  	},
->  };
->  module_platform_driver(zx_reboot_driver);
-> +
-> +MODULE_DESCRIPTION("ZTE SoCs reset driver");
-> +MODULE_AUTHOR("Jun Nie <jun.nie@linaro.org>");
-> +MODULE_LICENSE("GPL v2");
+> diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/suppl=
+y/charger-manager.c
+> index 6502fa7..1de4b44 100644
+> --- a/drivers/power/supply/charger-manager.c
+> +++ b/drivers/power/supply/charger-manager.c
+> @@ -578,7 +578,7 @@ static int check_charging_duration(struct charger_man=
+ager *cm)
+>  	} else if (is_ext_pwr_online(cm) && !cm->charger_enabled) {
+>  		duration =3D curr - cm->charging_end_time;
+> =20
+> -		if (duration > desc->charging_max_duration_ms &&
+> +		if (duration > desc->discharging_max_duration_ms &&
+>  				is_ext_pwr_online(cm)) {
+>  			dev_info(cm->dev, "Discharging duration exceed %ums\n",
+>  				 desc->discharging_max_duration_ms);
 > --=20
-> 2.14.1
+> 2.9.5
 >=20
 
---brcg7mrw4r5y272a
+--lu7nzxjvfwnwza6j
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlohdRkACgkQ2O7X88g7
-+ppf6g//YI2/xnERMLUw+OD+sO6gQUFi1gs186udUIh2tRWJTu7Y1waik/q2vj3/
-g1T6/49jhQMgoY43vAMbeYqgQXdwu1GroHhoLgpnMkBsbV8gWCEztu90uX3tbMgq
-NDKabD4pkXLjvD7huTc2diwjJQ14e5zeKY1wF0FhNN1SaWHR5Z89eXwpiYbyzYc6
-lw/4q05U7T1RGLkjjgIIz6+5mxgecrzAVGb+h3XOy1F+9DlpQUEPMr3ouerjYyO2
-4XiGxNxE/w2pD4KJtalteTA2MiiF+uQOoRL9jm4qhK6OloMNHSAeOvuXX9EWPBe9
-Qj9OcXn6xJHNcrYkRfXj1eL8OfJws3i9WkUaKtgXGdWbMdjpNHrnnr3MPIYFlgOr
-cVTrMLkuERaHjB4G3lmVFl+iPiYX0l/YbTtwQkEdDFUhQxYEFNcx1zzw9U8CuzxX
-3ifu0vqw0aD2AfhQ9ASVfEoh9UiZ67bLfhzWhiPJ5mjGHqdQKZc0UOt9QB7LJCa9
-UHoFpQqKZpDMqI+1dDLB08wGNtYo6JtiWNmDNI/hCvVNdtRvUIkvpB6IpFEm6qMk
-/0+5onxjNsWL+LgW3XuhEejWkIl7VyJcNT/OBPTQ+fB4ZewCtqBzcmeSG0cwsAUQ
-Qp0nq8Ugic6npJ5Y76HG74W9eQjUWoEu6jsest6oPnGhIZt/DPY=
-=1OSe
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlohdU4ACgkQ2O7X88g7
++po0vRAAqGBtE9EQOzJ+R2/s9Z7cWupJVQV1PIgf0xXdJC4ORCwVn1iVB5olywBJ
+CwLTBvUYT79wMaBL4f6tYB6wIFK+k2Z+nt0ntxl98ltEQCn/YMMwXBRL+6T00i2F
+/QyeOcghZ/4tSUdodLUc/FydOzbf1yVaeK0jjC4kP4CA8LVKOfCpqngD1i4Y8DPN
+X1KGJK3Uvr979nxVi7XUoUg3Fom3oRrUEYP2EG2nhDPKmaMxUqcfyeS2fl5PrzS0
+9ULpjFSGpYXI+ODtUQTd/2GlPJhtJgsQbzfx0SbAGKEQepNuU4cdZoJN4FSV/eKn
+IhZBHGmUCeUvs4QHSt7w8ze8XmidHesSGyNe/atLclQVL/RCiYwtOfwIUdPOsTwE
+mrl5QUF8zVpkvIfvUAhnrDMH43UMA4KHMcAQ4/vN30nIPji3DH8ysZ1OxtWf2Yy5
+c2pGdamoFtvQ1xQ4OySO2TQUXw6PSp9GQ6IrzhDsxHk5yfhzbp13+S7Xsrxpwnhl
+hUOtyMLX+ZHr/J9ACT86GRqzziyis+qRJpgGZRlRVHGR0TCw079baEIWq1Qqn26h
+TLPxwluPQrszqK8VbrXMRiF7+FDCKXubl9j3cqULURIvy/FvUJR/d5CX5hTnPPe5
+EknbGwtAQD2NaiKsjYd/1uwyFmzEDrYTHGDNhrJ2i9sACdRVeTU=
+=Pkmg
 -----END PGP SIGNATURE-----
 
---brcg7mrw4r5y272a--
+--lu7nzxjvfwnwza6j--
