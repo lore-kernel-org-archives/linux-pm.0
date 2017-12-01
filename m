@@ -1,69 +1,70 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v2 2/3] PM / core: Add IN_BAND_WAKEUP driver flag
-Date: Fri, 1 Dec 2017 12:17:09 +0100
-Message-ID: <CAKfTPtAyn-SZL6hq3nrUbWhccjKxx3EHdvD7stf1RnqMTQ4-xQ@mail.gmail.com>
-References: <1510588003-16650-1-git-send-email-ulf.hansson@linaro.org> <1510588003-16650-3-git-send-email-ulf.hansson@linaro.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1510588003-16650-3-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, linux-renesas-soc@vger.kernel.org
+From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH 0/6]  Add CPU Frequency scaling support on Armada 37xx
+Date: Fri,  1 Dec 2017 12:25:02 +0100
+Message-ID: <20171201112508.14121-1-gregory.clement@free-electrons.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Victor Gu <xigu-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Marcin Wojtas <mw-nYOzD4b6Jr9Wk0Htik3J/w@public.gmane.org>, Wilson Ding <dingwei-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Hua Jing <jinghua-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Neta Zur Hershkovits <neta-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Evan Wang <xswang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Ulf,
+Hi,
 
-you have left some old naming WAKEUP_POWERED in your patch
+This series adds the CPU Frequency support on Armada 37xx using
+DVFS. It is based on the initial work of Evan Wang and Victor Gu.
 
-On 13 November 2017 at 16:46, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> For some bus types and PM domains, it's not sufficient to only check the
-> return value from device_may_wakeup(), to fully understand how to configure
-> wakeup settings for the device during system suspend.
->
-[snip]
+DVFS control is done by a set of registers from the North Bridge Power
+Management block. The binding for this block is documented in patch 1.
 
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index 65d3911..4efb16a 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -559,6 +559,7 @@ struct pm_subsys_data {
->   * NEVER_SKIP: Do not skip system suspend/resume callbacks for the device.
->   * SMART_PREPARE: Check the return value of the driver's ->prepare callback.
->   * SMART_SUSPEND: No need to resume the device from runtime suspend.
-> + * WAKEUP_POWERED: Keep the device powered if it has wakeup enabled.
+While adding a new cpufreq driver I found that the Kconfig and
+Makefile were no more in order, so it is fixed by patch 2 and 3.
 
-it should be IN_BAND_WAKEUP ?
+The 4th patch is just about updating the MAINTAINERS file with the new
+driver.
 
->   *
->   * Setting SMART_PREPARE instructs bus types and PM domains which may want
->   * system suspend/resume callbacks to be skipped for the device to return 0 from
-> @@ -572,10 +573,14 @@ struct pm_subsys_data {
->   * necessary from the driver's perspective.  It also may cause them to skip
->   * invocations of the ->suspend_late and ->suspend_noirq callbacks provided by
->   * the driver if they decide to leave the device in runtime suspend.
-> + *
-> + * Setting WAKEUP_POWERED instructs bus types and PM domains that the device
+The next patch is the real purpose of the series. The main goal of
+this driver is to setup the CPU load level in the hardware to
+associate them to CPU frequencies and register a standard cpufreq
+driver. Note that the hardware also capable of doing AVS (Adaptive
+Voltage Scaling), by associating a voltage on each level beside the
+CPU frequency. However, this support is not yet ready, so it is not
+part of this series.
 
-it should be IN_BAND_WAKEUP ?
+Finally, the last patch is for arm-soc the arm-soc subsystem through
+mvebu and update the device tree to support the CPU frequency scaling.
 
-> + * needs to remain powered in system suspend, in case wakeup is enabled for it.
->   */
->  #define DPM_FLAG_NEVER_SKIP    BIT(0)
->  #define DPM_FLAG_SMART_PREPARE BIT(1)
->  #define DPM_FLAG_SMART_SUSPEND BIT(2)
-> +#define DPM_FLAG_IN_BAND_WAKEUP        BIT(3)
->
->  struct dev_pm_info {
->         pm_message_t            power_state;
-> @@ -595,6 +600,7 @@ struct dev_pm_info {
->         struct completion       completion;
->         struct wakeup_source    *wakeup;
->         bool                    wakeup_path:1;
-> +       bool                    wakeup_path_in_band:1;
->         bool                    syscore:1;
->         bool                    no_pm_callbacks:1;      /* Owned by the PM core */
->  #else
-> --
-> 2.7.4
->
+An update on the CPU clock driver is needed in order to take into
+account the DVFS setting. It's the purpose of an other series already
+sent, but is no dependencies between the series (for building or at
+runtime).
+
+Thanks,
+
+Gregory
+
+Gregory CLEMENT (6):
+  dt-bindings: marvell: Add documentation for the North Bridge PM on
+    Armada 37xx
+  cpufreq: ARM: sort the Kconfig menu
+  cpufreq: sort the drivers in ARM part
+  MAINTAINERS: add new entries for Armada 37xx cpufreq driver
+  cpufreq: Add DVFS support for Armada 37xx
+  arm64: dts: marvell: armada-37xx: add nodes allowing cpufreq support
+
+ .../bindings/arm/marvell/armada-37xx.txt           |  19 ++
+ MAINTAINERS                                        |   1 +
+ arch/arm64/boot/dts/marvell/armada-372x.dtsi       |   1 +
+ arch/arm64/boot/dts/marvell/armada-37xx.dtsi       |   7 +
+ drivers/cpufreq/Kconfig.arm                        |  89 ++++----
+ drivers/cpufreq/Makefile                           |   9 +-
+ drivers/cpufreq/armada-37xx-cpufreq.c              | 241 +++++++++++++++++++++
+ 7 files changed, 322 insertions(+), 45 deletions(-)
+ create mode 100644 drivers/cpufreq/armada-37xx-cpufreq.c
+
+-- 
+2.15.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
