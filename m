@@ -1,65 +1,138 @@
-From: Dave Chinner <david@fromorbit.com>
-Subject: Re: [PATCH 00/11] fs: use freeze_fs on suspend/hibernate
-Date: Sat, 2 Dec 2017 08:51:11 +1100
-Message-ID: <20171201215111.GQ5858@dastard>
-References: <20171129232356.28296-1-mcgrof@kernel.org>
- <CADjb_WRG8hxJB3zY5_XnZqeQbCy3jYW5xJaS63_7FGztZymLzg@mail.gmail.com>
- <nycvar.YFH.7.76.1711301740000.11505@cbobk.fhfr.pm>
- <1512155144.4322.13.camel@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-fsdevel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1512155144.4322.13.camel@redhat.com>
-Sender: linux-fsdevel-owner@vger.kernel.org
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Jiri Kosina <jikos@kernel.org>, Yu Chen <yu.chen.surf@gmail.com>, "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, Dan Williams <dan.j.williams@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
+From: Jeremy Linton <jeremy.linton@arm.com>
+Subject: [PATCH v5 0/9] Support PPTT for ARM64
+Date: Fri,  1 Dec 2017 16:23:21 -0600
+Message-ID: <20171201222330.18863-1-jeremy.linton@arm.com>
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-acpi@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, Jeremy Linton <jeremy.linton@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 01, 2017 at 02:05:44PM -0500, Jeff Layton wrote:
-> On Thu, 2017-11-30 at 17:41 +0100, Jiri Kosina wrote:
-> > On Fri, 1 Dec 2017, Yu Chen wrote:
-> > 
-> > > BTW, is nfs able to be included in this set? I also encountered a 
-> > > freeze() failure due to nfs access during that stage recently.
-> > 
-> > The freezer usage in NFS is magnitudes more complicated, so it makes sense 
-> > to first go after the lower hanging fruit to figure out the viability of 
-> > the whole aproach in practice.
-> > 
-> 
-> Agreed that we should do this in stages. It doesn't help that freezer
-> handling in the client is a bit of a mess at this point...
-> 
-> At a high level for NFS, I think we need to have freeze_fs make the RPC
-> engine "park" newly issued RPCs for that fs' client onto a
-> rpc_wait_queue. Any RPC that has already been sent however, we need to
-> wait for a reply.
-> 
-> Once everything is quiesced we can return and call it frozen.
-> unfreeze_fs can then just have the engine stop parking RPCs and wake up
-> the waitq.
+This patch set is dependent on "[14/15] ACPICA: ACPI 6.2: Additional
+PPTT flags" https://patchwork.kernel.org/patch/10064191/
 
-That seems pretty reasonable. freezing is expected to take a bit of
-time to run - local filesystems can do a fair bit of IO draining
-queues, inflight operations and bringing the journal into a
-consistent state on disk before declaring the filesystem is frozen.
+ACPI 6.2 adds the Processor Properties Topology Table (PPTT), which is
+used to describe the processor and cache topology. Ideally it is
+used to extend/override information provided by the hardware, but
+right now ARM64 is entirely dependent on firmware provided tables.
 
-> That should be enough to make suspend and resume work more reliably. If,
-> however, you're interested in making the cgroup freezer also work, then
-> we may need to do a bit more work to ensure that we don't end up with
-> frozen tasks squatting on VFS locks.
+This patch parses the table for the cache topology and CPU topology.
+When we enable ACPI/PPTT for arm64 we map the physical_id to the
+PPTT node flagged as the physical package by the firmware.
+This results in topologies that match what the remainder of the
+system expects.
 
-None of the existing freezing code gives those guarantees. In fact,
-freezing a filesystem pretty much guarantees the opposite - that
-tasks *will freeze when holding VFS locks* - and so the cgroup
-freezer is broken by design if it requires tasks to be frozen
-without holding any VFS/filesystem lock context. So I wouldn't
-really worry about the cgroup freezer....
+For example on juno:
+[root@mammon-juno-rh topology]# lstopo-no-graphics
+  Package L#0
+    L2 L#0 (1024KB)
+      L1d L#0 (32KB) + L1i L#0 (32KB) + Core L#0 + PU L#0 (P#0)
+      L1d L#1 (32KB) + L1i L#1 (32KB) + Core L#1 + PU L#1 (P#1)
+      L1d L#2 (32KB) + L1i L#2 (32KB) + Core L#2 + PU L#2 (P#2)
+      L1d L#3 (32KB) + L1i L#3 (32KB) + Core L#3 + PU L#3 (P#3)
+    L2 L#1 (2048KB)
+      L1d L#4 (32KB) + L1i L#4 (48KB) + Core L#4 + PU L#4 (P#4)
+      L1d L#5 (32KB) + L1i L#5 (48KB) + Core L#5 + PU L#5 (P#5)
+  HostBridge L#0
+    PCIBridge
+      PCIBridge
+        PCIBridge
+          PCI 1095:3132
+            Block(Disk) L#0 "sda"
+        PCIBridge
+          PCI 1002:68f9
+            GPU L#1 "renderD128"
+            GPU L#2 "card0"
+            GPU L#3 "controlD64"
+        PCIBridge
+          PCI 11ab:4380
+            Net L#4 "enp8s0"
 
-Cheers,
 
-Dave.
+Git tree at:
+http://linux-arm.org/git?p=linux-jlinton.git
+branch: pptt_v5
+
+v4->v5:
+Update the cache type from NOCACHE to UNIFIED when all the cache
+  attributes we update are valid. This fixes a problem where caches
+  which are entirely created by the PPTT don't show up in lstopo.
+
+Give the PPTT its own firmware_node in the cache structure instead of
+  sharing it with the of_node.
+
+Move some pieces around between patches.
+
+v3->v4:
+Suppress the "Found duplicate cache level/type..." message if the
+  duplicate cache entry is actually a duplicate node. This allows cases
+  like L1I and L1D nodes that point at the same L2 node to be accepted
+  without the warning.
+  
+Remove cluster/physical split code. Add a patch to rename cluster_id
+  so that its clear the topology may not be referring to a cluster.
+  
+Add additional ACPICA patch for the PPTT cache properties. This matches
+  an outstanding ACPICA pull that should be merged in the near future.
+  
+Replace a number of (struct*)((u8*)ptr+offset) constructs with ACPI_ADD_PTR
+
+Split out the topology parsing into an additional patch.
+
+Tweak the cpu topology code to terminate on either a level, or a flag.
+  Add an additional function which retrives the physical package id
+  for a given cpu.
+
+Various other comments/tweaks.
+
+v2->v3:
+
+Remove valid bit check on leaf nodes. Now simply being a leaf node
+  is sufficient to verify the processor id against the ACPI
+  processor ids (gotten from MADT). 
+
+Use the acpi processor for the "level 0" Id. This makes the /sys
+  visible core/thread ids more human readable if the firmware uses
+  small consecutive values for processor ids.
+
+Added PPTT to the list of injectable ACPI tables.
+
+Fix bug which kept the code from using the processor node as intended
+  in v2, caused by misuse of git rebase/fixup.
+
+v1->v2:
+
+The parser keys off the acpi_pptt_processor node to determine
+  unique cache's rather than the acpi_pptt_cache referenced by the
+  processor node. This allows PPTT tables which "share" cache nodes
+  across cpu nodes despite not being a shared cache.
+
+Jeremy Linton (9):
+  arm64/acpi: Create arch specific cpu to acpi id helper
+  ACPI/PPTT: Add Processor Properties Topology Table parsing
+  ACPI: Enable PPTT support on ARM64
+  drivers: base cacheinfo: Add support for ACPI based firmware tables
+  arm64: Add support for ACPI based firmware tables
+  ACPI/PPTT: Add topology parsing code
+  arm64: Topology, rename cluster_id
+  arm64: topology: Enable ACPI/PPTT based CPU topology.
+  ACPI: Add PPTT to injectable table list
+
+ arch/arm64/Kconfig                |   1 +
+ arch/arm64/include/asm/acpi.h     |   4 +
+ arch/arm64/include/asm/topology.h |   4 +-
+ arch/arm64/kernel/cacheinfo.c     |  15 +-
+ arch/arm64/kernel/topology.c      |  74 ++++-
+ drivers/acpi/Kconfig              |   3 +
+ drivers/acpi/Makefile             |   1 +
+ drivers/acpi/pptt.c               | 592 ++++++++++++++++++++++++++++++++++++++
+ drivers/acpi/tables.c             |   3 +-
+ drivers/base/cacheinfo.c          |  20 +-
+ include/linux/cacheinfo.h         |  13 +-
+ include/linux/topology.h          |   2 +
+ 12 files changed, 703 insertions(+), 29 deletions(-)
+ create mode 100644 drivers/acpi/pptt.c
+
 -- 
-Dave Chinner
-david@fromorbit.com
+2.13.5
+
