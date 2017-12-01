@@ -1,43 +1,44 @@
-From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V3 2/7] PCI: Export pci_find_host_bridge()
-Date: Fri, 1 Dec 2017 14:50:02 +0530
-Message-ID: <1512120007-28088-3-git-send-email-mmaddireddy@nvidia.com>
+From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Subject: [PATCH V3 3/7] PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for Tegra PCIe
+Date: Fri, 1 Dec 2017 14:50:03 +0530
+Message-ID: <1512120007-28088-4-git-send-email-mmaddireddy@nvidia.com>
 References: <1512120007-28088-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1512120007-28088-1-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: cyndis-/1wQRMveznE@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org
-Cc: jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <1512120007-28088-1-git-send-email-mmaddireddy@nvidia.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: cyndis@kapsi.fi, thierry.reding@gmail.com, bhelgaas@google.com, lorenzo.pieralisi@arm.com
+Cc: jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Manikanta Maddireddy <mmaddireddy@nvidia.com>
 List-Id: linux-pm@vger.kernel.org
 
-PCI subsystem pass pci_bus pointer to pci_ops callback functions, Tegra
-host driver use pci_find_host_bridge() to get pci_host_bridge from pci_bus.
-Export pci_find_host_bridge() to allow Tegra PCIe driver to be compiled as
-loadable kernel module.
+Primary, secondary and subordinate default bus numbers are 0 in Tegra and
+it is expecting SW to program these numbers in configration space.
 
-Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+pci_scan_bridge_extend() function programs these numbers in configuration
+space if secondary & subordinate bus numbers are 0 or PCI_REASSIGN_ALL_BUS
+flag is set. Since secondary & subordinate default bus numbers are 0,
+PCI_REASSIGN_ALL_BUS flag can be removed for Tegra PCIe.
+
+Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
 ---
-V2:
-* commit message update
 V3:
-* EXPORT_SYMBOL is changed to EXPORT_SYMBOL_GPL
+* new patch in V3
 
- drivers/pci/host-bridge.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/pci/host/pci-tegra.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
-index add66236215c..b8c0fcde9bd7 100644
---- a/drivers/pci/host-bridge.c
-+++ b/drivers/pci/host-bridge.c
-@@ -22,6 +22,7 @@ struct pci_host_bridge *pci_find_host_bridge(struct pci_bus *bus)
+diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+index 72a316940723..2a108c798846 100644
+--- a/drivers/pci/host/pci-tegra.c
++++ b/drivers/pci/host/pci-tegra.c
+@@ -2706,7 +2706,6 @@ static int tegra_pcie_probe(struct platform_device *pdev)
  
- 	return to_pci_host_bridge(root_bus->bridge);
- }
-+EXPORT_SYMBOL_GPL(pci_find_host_bridge);
+ 	tegra_pcie_enable_ports(pcie);
  
- struct device *pci_get_host_bridge_device(struct pci_dev *dev)
- {
+-	pci_add_flags(PCI_REASSIGN_ALL_BUS);
+ 	host->busnr = pcie->busn.start;
+ 	host->dev.parent = &pdev->dev;
+ 	host->ops = &tegra_pcie_ops;
 -- 
 2.1.4
