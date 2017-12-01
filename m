@@ -1,83 +1,83 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] power: supply: charger-manager: Fix typo in condition
-Date: Fri, 1 Dec 2017 16:29:18 +0100
-Message-ID: <20171201152918.qjmo6i5bk3ij5myj@earth>
-References: <20171121042712.3035-1-raitosyo@gmail.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH 1/2] power: supply: ab8500_charger: Fix an error handling
+ path
+Date: Fri, 1 Dec 2017 16:29:43 +0100
+Message-ID: <20171201152943.ckzvhph45kj76blr@earth>
+References: <20171122202731.13414-1-christophe.jaillet@wanadoo.fr>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="lu7nzxjvfwnwza6j"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:54730 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751032AbdLAP3V (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 1 Dec 2017 10:29:21 -0500
+        protocol="application/pgp-signature"; boundary="kh5olwkwxpob3tjf"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171121042712.3035-1-raitosyo@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: raitosyo@gmail.com
+In-Reply-To: <20171122202731.13414-1-christophe.jaillet@wanadoo.fr>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
 
---lu7nzxjvfwnwza6j
+--kh5olwkwxpob3tjf
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Tue, Nov 21, 2017 at 01:27:12PM +0900, raitosyo@gmail.com wrote:
-> From: Ryosuke Saito <raitosyo@gmail.com>
+On Wed, Nov 22, 2017 at 09:27:31PM +0100, Christophe JAILLET wrote:
+> 'ret' is know to be 0 at this point, because it has not been updated by t=
+he
+> the previous call to 'abx500_mask_and_set_register_interruptible()'.
 >=20
-> Should be discharging_max_duration_ms, not charging_max_duration_ms.
+> Fix it by updating 'ret' before checking if an error occurred.
 >=20
-> Signed-off-by: Ryosuke Saito <raitosyo@gmail.com>
+> Fixes: 84edbeeab67c ("ab8500-charger: AB8500 charger driver")
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 > ---
 
 Thanks, queued.
 
 -- Sebastian
 
->  drivers/power/supply/charger-manager.c | 2 +-
+>  drivers/power/supply/ab8500_charger.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 >=20
-> diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/suppl=
-y/charger-manager.c
-> index 6502fa7..1de4b44 100644
-> --- a/drivers/power/supply/charger-manager.c
-> +++ b/drivers/power/supply/charger-manager.c
-> @@ -578,7 +578,7 @@ static int check_charging_duration(struct charger_man=
-ager *cm)
->  	} else if (is_ext_pwr_online(cm) && !cm->charger_enabled) {
->  		duration =3D curr - cm->charging_end_time;
+> diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply=
+/ab8500_charger.c
+> index 4ebbcce45c48..1cdbe7a0738d 100644
+> --- a/drivers/power/supply/ab8500_charger.c
+> +++ b/drivers/power/supply/ab8500_charger.c
+> @@ -3218,7 +3218,7 @@ static int ab8500_charger_init_hw_registers(struct =
+ab8500_charger *di)
+>  	}
 > =20
-> -		if (duration > desc->charging_max_duration_ms &&
-> +		if (duration > desc->discharging_max_duration_ms &&
->  				is_ext_pwr_online(cm)) {
->  			dev_info(cm->dev, "Discharging duration exceed %ums\n",
->  				 desc->discharging_max_duration_ms);
+>  	/* Enable backup battery charging */
+> -	abx500_mask_and_set_register_interruptible(di->dev,
+> +	ret =3D abx500_mask_and_set_register_interruptible(di->dev,
+>  		AB8500_RTC, AB8500_RTC_CTRL_REG,
+>  		RTC_BUP_CH_ENA, RTC_BUP_CH_ENA);
+>  	if (ret < 0)
 > --=20
-> 2.9.5
+> 2.14.1
 >=20
 
---lu7nzxjvfwnwza6j
+--kh5olwkwxpob3tjf
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlohdU4ACgkQ2O7X88g7
-+po0vRAAqGBtE9EQOzJ+R2/s9Z7cWupJVQV1PIgf0xXdJC4ORCwVn1iVB5olywBJ
-CwLTBvUYT79wMaBL4f6tYB6wIFK+k2Z+nt0ntxl98ltEQCn/YMMwXBRL+6T00i2F
-/QyeOcghZ/4tSUdodLUc/FydOzbf1yVaeK0jjC4kP4CA8LVKOfCpqngD1i4Y8DPN
-X1KGJK3Uvr979nxVi7XUoUg3Fom3oRrUEYP2EG2nhDPKmaMxUqcfyeS2fl5PrzS0
-9ULpjFSGpYXI+ODtUQTd/2GlPJhtJgsQbzfx0SbAGKEQepNuU4cdZoJN4FSV/eKn
-IhZBHGmUCeUvs4QHSt7w8ze8XmidHesSGyNe/atLclQVL/RCiYwtOfwIUdPOsTwE
-mrl5QUF8zVpkvIfvUAhnrDMH43UMA4KHMcAQ4/vN30nIPji3DH8ysZ1OxtWf2Yy5
-c2pGdamoFtvQ1xQ4OySO2TQUXw6PSp9GQ6IrzhDsxHk5yfhzbp13+S7Xsrxpwnhl
-hUOtyMLX+ZHr/J9ACT86GRqzziyis+qRJpgGZRlRVHGR0TCw079baEIWq1Qqn26h
-TLPxwluPQrszqK8VbrXMRiF7+FDCKXubl9j3cqULURIvy/FvUJR/d5CX5hTnPPe5
-EknbGwtAQD2NaiKsjYd/1uwyFmzEDrYTHGDNhrJ2i9sACdRVeTU=
-=Pkmg
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlohdWcACgkQ2O7X88g7
++poRJQ/7BZsVvHPf31Cz1zVmE7Ckcj/5TJhk857OTDBx9t2rC42DXPbtDwYLj+oH
+ia/RlPPHt10SpOzTZeR6hzUKoYNZlCmYHEEKg7qUhAz56Az+yxtB72vnBH2GZ0Eq
+UvaZ2aLUODLLJzhJLmQ90N5iGxP9YBg/MoCXY6+QAukA/YJOgu2rK9fEtZAWVhkI
+a3QAHOAOqNFJBcvur9zhJzv0RsjDyM33ATH3iziCRGkPiGmwOQZQTEGl4eAiWPYJ
+vPCaw3SgDfY15tqxF4Vg3ZGAsc1IpiHJNrgKRYV9cZfchV9FTc72ufb9lye9PDJy
+XMtXb2ZJukwxUQ3+OxfeTyGxV+fKbukUd5BiLlCIbmpzEgOrWY0EQFyij0KdxNk/
+7adoPIX2LIuLqapxvHcwQl7OelwRry4pohUoVbryjeqB+ndEa25DSZ7pOjqKg3QZ
+CfBSFZwC1xQRmZ0UyjAuslFzcJvjdHq2HjU3EElXq7ObQo5FKkQ5agohI/wLi3gy
+XSPk8StfWEN4I8p4/nKpMXvP3rcAaAErYHwPiSPknZS6R6EoVlb0eqe2tIS0CID4
+JedPEdBLbmfK0Pc4jx2KUMYS4kC0FMxcATlkizTHBrr4pEp4ICLKvQy2XlXj/qi6
+VBOCgXWALxUZ62okmsl0DLxy6/S9kR17yGJqGt6th7C+hDv9mAQ=
+=XTMz
 -----END PGP SIGNATURE-----
 
---lu7nzxjvfwnwza6j--
+--kh5olwkwxpob3tjf--
