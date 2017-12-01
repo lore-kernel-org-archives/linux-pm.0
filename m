@@ -1,179 +1,65 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: Re: [PATCH 03/11] fs: add frozen sb state helpers
-Date: Fri, 1 Dec 2017 22:13:27 +0100
-Message-ID: <20171201211327.GQ729@wotan.suse.de>
+From: Dave Chinner <david@fromorbit.com>
+Subject: Re: [PATCH 00/11] fs: use freeze_fs on suspend/hibernate
+Date: Sat, 2 Dec 2017 08:51:11 +1100
+Message-ID: <20171201215111.GQ5858@dastard>
 References: <20171129232356.28296-1-mcgrof@kernel.org>
- <20171129232356.28296-4-mcgrof@kernel.org>
- <20171130171310.GG28180@quack2.suse.cz>
- <20171130190548.GJ729@wotan.suse.de>
- <20171201114724.GC8365@quack2.suse.cz>
+ <CADjb_WRG8hxJB3zY5_XnZqeQbCy3jYW5xJaS63_7FGztZymLzg@mail.gmail.com>
+ <nycvar.YFH.7.76.1711301740000.11505@cbobk.fhfr.pm>
+ <1512155144.4322.13.camel@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-block-owner@vger.kernel.org>
+Return-path: <linux-fsdevel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171201114724.GC8365@quack2.suse.cz>
-Sender: linux-block-owner@vger.kernel.org
-To: Jan Kara <jack@suse.cz>
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1512155144.4322.13.camel@redhat.com>
+Sender: linux-fsdevel-owner@vger.kernel.org
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Jiri Kosina <jikos@kernel.org>, Yu Chen <yu.chen.surf@gmail.com>, "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, Dan Williams <dan.j.williams@intel.com>, Linux PM list <linux-pm@vger.kernel.org>, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Zhang Rui <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 01, 2017 at 12:47:24PM +0100, Jan Kara wrote:
-> On Thu 30-11-17 20:05:48, Luis R. Rodriguez wrote:
-> > On Thu, Nov 30, 2017 at 06:13:10PM +0100, Jan Kara wrote:
-> > > ... I dislike the _by_user() suffix as there may be different places that
-> > > call freeze_super() (e.g. device mapper does this during some operations).
-> > > Clearly we need to distinguish "by system suspend" and "the other" cases.
-> > > So please make this clear in the naming.
+On Fri, Dec 01, 2017 at 02:05:44PM -0500, Jeff Layton wrote:
+> On Thu, 2017-11-30 at 17:41 +0100, Jiri Kosina wrote:
+> > On Fri, 1 Dec 2017, Yu Chen wrote:
 > > 
-> > Ah. How about sb_frozen_by_cb() ?
+> > > BTW, is nfs able to be included in this set? I also encountered a 
+> > > freeze() failure due to nfs access during that stage recently.
+> > 
+> > The freezer usage in NFS is magnitudes more complicated, so it makes sense 
+> > to first go after the lower hanging fruit to figure out the viability of 
+> > the whole aproach in practice.
+> > 
 > 
-> And what does 'cb' stand for? :)
-
-Callback. But let me think about bdev usage a bit and we can worry about the
-bikeshedding later.
-
-> > > In fact, what might be a cleaner solution is to introduce a 'freeze_count'
-> > > for superblock freezing (we already do have this for block devices). Then
-> > > you don't need to differentiate these two cases - but you'd still need to
-> > > properly handle cleanup if freezing of all superblocks fails in the middle.
-> > > So I'm not 100% this works out nicely in the end. But it's certainly worth
-> > > a consideration.
-> > 
-> > Ah, there are three important reasons for doing it the way I did it which are
-> > easy to miss, unless you read the commit log message very carefully.
-> > 
-> > 0) The ioctl interface causes a failure to be sent back to userspace if
-> > you issue two consecutive freezes, or two thaws. Ie, once a filesystem is
-> > frozen, a secondary call will result in an error. Likewise for thaw.
+> Agreed that we should do this in stages. It doesn't help that freezer
+> handling in the client is a bit of a mess at this point...
 > 
-> Yep. But also note that there's *another* interface to filesystem freezing
-> which behaves differently - freeze_bdev() (used internally by dm). That
-> interface uses the counter and freezing of already frozen device succeeds.
-
-Ah... so freeze_bdev() semantics matches the same semantics I was looking
-for.
-
-> IOW it is a mess.
-
-To say the least.
-
-> We cannot change the behavior of the ioctl but we could
-> still provide an in-kernel interface to freeze_super() with the same
-> semantics as freeze_bdev() which might be easier to use by suspend - maybe
-> we could call it 'exclusive' (for the current freeze_super() semantics) and
-> 'non-exclusive' (for the freeze_bdev() semantics) since this is very much
-> like O_EXCL open of block devices...
-
-Sure, now typically I see we make exclusive calls with the postfix _excl() so
-I take it you'd be OK in renaming freeze_super() freeze_super_excl() eventually
-then?
-
-I totally missed freeze_bdev() otherwise I think I would have picked up on the
-shared semantics stuff and I would have just made a helper out of what
-freeze_bdev() uses, and then have both in-kernel and freeze_bdev() use it.
-
-I'll note that its still not perfectly clear if really the semantics behind
-freeze_bdev() match what I described above fully. That still needs to be
-vetted for. For instance, does thaw_bdev() keep a superblock frozen if we
-an ioctl initiated freeze had occurred before? If so then great. Otherwise
-I think we'll need to distinguish the ioctl interface. Worst possible case
-is that bdev semantics and in-kernel semantics differ somehow, then that
-will really create a holy fucking mess.
-
-> > 1) The new iterate supers stuff I added bail on the first error and return that
-> > error. If we kept the ioctl() interface error scheme we'd be erroring out
-> > if on suspend if userspace had already frozen a filesystem. Clearly that'd
-> > be silly so we need to distinguish between the automatic kernel freezing
-> > and the old userspace ioctl initiated interface, so that we can keep the
-> > old behaviour but allow in-kernel auto freeze on suspend to work properly.
+> At a high level for NFS, I think we need to have freeze_fs make the RPC
+> engine "park" newly issued RPCs for that fs' client onto a
+> rpc_wait_queue. Any RPC that has already been sent however, we need to
+> wait for a reply.
 > 
-> This would work fine with the non-exclusive semantics I believe.
+> Once everything is quiesced we can return and call it frozen.
+> unfreeze_fs can then just have the engine stop parking RPCs and wake up
+> the waitq.
 
-Groovy.
+That seems pretty reasonable. freezing is expected to take a bit of
+time to run - local filesystems can do a fair bit of IO draining
+queues, inflight operations and bringing the journal into a
+consistent state on disk before declaring the filesystem is frozen.
 
-> > 2) If we fail to suspend we need to then thaw up all filesystems. The order
-> > in which we try to freeze is in reverse order on the super_block list. If we
-> > fail though we iterate in proper order on the super_block list and thaw. If
-> > you had two filesystems this means that if a failure happened on freezing
-> > the first filesystem, we'd first thaw the other filesystem -- and because of
-> > 0) if we don't distinguish between the ioctl interface or auto freezing, we'd
-> > also fail on thaw'ing given the other superblock wouldn't have been frozen.
-> > 
-> > So we need to keep two separate approaches. The count stuff would not suffice
-> > to distinguish origin of source for freeze call.
-> > 
-> > Come to think of it, I think I forgot to avoid thaw if the freeze was ioctl
-> > initiated..
-> > 
-> > thaw_unlocked(bool cb_call)
-> > {
-> >   if (sb_frozen_by_cb(sb) && !cb_call)
-> >     return 0; /* skip as the user wanted to keep this fs frozen */
-> >   ...
-> > }
-> > 
-> > Even though the kernel auto call is new I think we need to keep ioctl initiated
-> > frozen filesystems frozen to not break old userspace assumptions.
-> > 
-> > So, keeping all this in mind, does a count method still suffice?
-> 
-> The count method would need a different error recovery method - i.e. if you
-> fail freezing filesystems somewhere in the middle of iteration through
-> superblock list, you'd need to iterate from that point on to the superblock
-> where you've started. This is somewhat more complicated than your approach
-> but it seems cleaner to me:
-> 
-> 1) Function freezing all superblocks either succeeds and all superblocks
-> are frozen or fails and no superblocks are (additionally) frozen.
+> That should be enough to make suspend and resume work more reliably. If,
+> however, you're interested in making the cgroup freezer also work, then
+> we may need to do a bit more work to ensure that we don't end up with
+> frozen tasks squatting on VFS locks.
 
-To be clear, for now this would just be, all superblocks that support
-freeze_fs() are frozen :)
+None of the existing freezing code gives those guarantees. In fact,
+freezing a filesystem pretty much guarantees the opposite - that
+tasks *will freeze when holding VFS locks* - and so the cgroup
+freezer is broken by design if it requires tasks to be frozen
+without holding any VFS/filesystem lock context. So I wouldn't
+really worry about the cgroup freezer....
 
-> 2) It is not that normal users + one special user (who owns the "flag" in
-> the superblock in form of a special freeze state) setup. We'd simply have
-> exclusive and non-exclusive users of superblock freezing and there can be
-> arbitrary numbers of them.
+Cheers,
 
-Sorry I did not understand this point. Can you rephrase perhaps a bit?
-
-Anyway, I just tried implementing this and it seemed rather easy to
-use a pivot, however note that then freeze_processes() which calls
-fs_suspend_freeze() would somehow need to pass the failed sb... do
-we want to have let fs_suspend_freeze() pass a parameter to be set
-to the failed sb of it failed? Locking-wise this seems racy.
-
-So I mean, adding support to thaw using a pivot, the failed sb is
-rather easy:
-
-diff --git a/fs/super.c b/fs/super.c
-index 885711c1d35b..8cb6f38652d8 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -614,13 +614,21 @@ void iterate_supers(void (*f)(struct super_block *, void *), void *arg)
-  *	locked superblock and given argument. Returns 0 unless an error
-  *	occurred on calling the function on any superblock.
-  */
--int iterate_supers_excl(int (*f)(struct super_block *, void *), void *arg)
-+int iterate_supers_excl(int (*f)(struct super_block *, void *), void *arg,
-+			struct super_block *pivot)
- {
- 	struct super_block *sb, *p = NULL;
- 	int error = 0;
- 
- 	spin_lock(&sb_lock);
- 	list_for_each_entry(sb, &super_blocks, s_list) {
-+		/* If we have a pivot, start work on the next item */
-+		if (pivot) {
-+			if (sb != pivot)
-+				continue;
-+			pivot = NULL;
-+			continue;
-+		}
- 		if (hlist_unhashed(&sb->s_instances))
- 			continue;
- 		sb->s_count++;
-
-But we'd still need to to give enough context to let thaw use the failed sb
-as a pivot.
-
-  Luis
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
