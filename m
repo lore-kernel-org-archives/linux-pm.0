@@ -1,144 +1,39 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH 2/6] cpufreq: ARM: sort the Kconfig menu
-Date: Fri,  1 Dec 2017 12:25:04 +0100
-Message-ID: <20171201112508.14121-3-gregory.clement@free-electrons.com>
+From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH 4/6] MAINTAINERS: add new entries for Armada 37xx cpufreq driver
+Date: Fri,  1 Dec 2017 12:25:06 +0100
+Message-ID: <20171201112508.14121-5-gregory.clement@free-electrons.com>
 References: <20171201112508.14121-1-gregory.clement@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:60973 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752189AbdLALZ1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Dec 2017 06:25:27 -0500
-In-Reply-To: <20171201112508.14121-1-gregory.clement@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171201112508.14121-1-gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Victor Gu <xigu-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Marcin Wojtas <mw-nYOzD4b6Jr9Wk0Htik3J/w@public.gmane.org>, Wilson Ding <dingwei-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Hua Jing <jinghua-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Neta Zur Hershkovits <neta-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Evan Wang <xswang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@free-electrons.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, Evan Wang <xswang@marvell.com>
 
-Group all the related big LITTLE configuration together and sort the
-other entries in alphabetic order.
+This new driver belongs to the mvebu family, update the MAINTAINER file
+to document it.
 
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Signed-off-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- drivers/cpufreq/Kconfig.arm | 82 ++++++++++++++++++++++-----------------------
- 1 file changed, 41 insertions(+), 41 deletions(-)
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index bdce4488ded1..17625115c67f 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -2,6 +2,23 @@
- # ARM CPU Frequency scaling drivers
- #
- 
-+config ACPI_CPPC_CPUFREQ
-+	tristate "CPUFreq driver based on the ACPI CPPC spec"
-+	depends on ACPI_PROCESSOR
-+	select ACPI_CPPC_LIB
-+	default n
-+	help
-+	  This adds a CPUFreq driver which uses CPPC methods
-+	  as described in the ACPIv5.1 spec. CPPC stands for
-+	  Collaborative Processor Performance Controls. It
-+	  is based on an abstract continuous scale of CPU
-+	  performance values which allows the remote power
-+	  processor to flexibly optimize for power and
-+	  performance. CPPC relies on power management firmware
-+	  support for its operation.
-+
-+	  If in doubt, say N.
-+
- # big LITTLE core layer and glue drivers
- config ARM_BIG_LITTLE_CPUFREQ
- 	tristate "Generic ARM big LITTLE CPUfreq driver"
-@@ -12,6 +29,30 @@ config ARM_BIG_LITTLE_CPUFREQ
- 	help
- 	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
- 
-+config ARM_DT_BL_CPUFREQ
-+	tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
-+	depends on ARM_BIG_LITTLE_CPUFREQ && OF
-+	help
-+	  This enables probing via DT for Generic CPUfreq driver for ARM
-+	  big.LITTLE platform. This gets frequency tables from DT.
-+
-+config ARM_VEXPRESS_SPC_CPUFREQ
-+        tristate "Versatile Express SPC based CPUfreq driver"
-+	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
-+        help
-+          This add the CPUfreq driver support for Versatile Express
-+	  big.LITTLE platforms using SPC for power management.
-+
-+config ARM_SCPI_CPUFREQ
-+        tristate "SCPI based CPUfreq driver"
-+	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
-+        help
-+	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
-+	  using SCPI protocol for CPU power management.
-+
-+	  This driver uses SCPI Message Protocol driver to interact with the
-+	  firmware providing the CPU DVFS functionality.
-+
- config ARM_BRCMSTB_AVS_CPUFREQ
- 	tristate "Broadcom STB AVS CPUfreq driver"
- 	depends on ARCH_BRCMSTB || COMPILE_TEST
-@@ -33,20 +74,6 @@ config ARM_BRCMSTB_AVS_CPUFREQ_DEBUG
- 
- 	  If in doubt, say N.
- 
--config ARM_DT_BL_CPUFREQ
--	tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
--	depends on ARM_BIG_LITTLE_CPUFREQ && OF
--	help
--	  This enables probing via DT for Generic CPUfreq driver for ARM
--	  big.LITTLE platform. This gets frequency tables from DT.
--
--config ARM_VEXPRESS_SPC_CPUFREQ
--        tristate "Versatile Express SPC based CPUfreq driver"
--	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
--        help
--          This add the CPUfreq driver support for Versatile Express
--	  big.LITTLE platforms using SPC for power management.
--
- config ARM_EXYNOS5440_CPUFREQ
- 	tristate "SAMSUNG EXYNOS5440"
- 	depends on SOC_EXYNOS5440
-@@ -205,16 +232,6 @@ config ARM_SA1100_CPUFREQ
- config ARM_SA1110_CPUFREQ
- 	bool
- 
--config ARM_SCPI_CPUFREQ
--        tristate "SCPI based CPUfreq driver"
--	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
--        help
--	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
--	  using SCPI protocol for CPU power management.
--
--	  This driver uses SCPI Message Protocol driver to interact with the
--	  firmware providing the CPU DVFS functionality.
--
- config ARM_SPEAR_CPUFREQ
- 	bool "SPEAr CPUFreq support"
- 	depends on PLAT_SPEAR
-@@ -275,20 +292,3 @@ config ARM_PXA2xx_CPUFREQ
- 	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
- 
- 	  If in doubt, say N.
--
--config ACPI_CPPC_CPUFREQ
--	tristate "CPUFreq driver based on the ACPI CPPC spec"
--	depends on ACPI_PROCESSOR
--	select ACPI_CPPC_LIB
--	default n
--	help
--	  This adds a CPUFreq driver which uses CPPC methods
--	  as described in the ACPIv5.1 spec. CPPC stands for
--	  Collaborative Processor Performance Controls. It
--	  is based on an abstract continuous scale of CPU
--	  performance values which allows the remote power
--	  processor to flexibly optimize for power and
--	  performance. CPPC relies on power management firmware
--	  support for its operation.
--
--	  If in doubt, say N.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index aa71ab52fd76..98dcee849481 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1582,6 +1582,7 @@ F:	arch/arm/boot/dts/kirkwood*
+ F:	arch/arm/configs/mvebu_*_defconfig
+ F:	arch/arm/mach-mvebu/
+ F:	arch/arm64/boot/dts/marvell/armada*
++F:	drivers/cpufreq/armada-37xx-cpufreq.c
+ F:	drivers/cpufreq/mvebu-cpufreq.c
+ F:	drivers/irqchip/irq-armada-370-xp.c
+ F:	drivers/irqchip/irq-mvebu-*
 -- 
 2.15.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
