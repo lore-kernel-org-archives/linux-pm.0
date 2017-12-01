@@ -1,106 +1,40 @@
-From: Jan Kara <jack@suse.cz>
-Subject: Re: [PATCH 03/11] fs: add frozen sb state helpers
-Date: Fri, 1 Dec 2017 12:47:24 +0100
-Message-ID: <20171201114724.GC8365@quack2.suse.cz>
-References: <20171129232356.28296-1-mcgrof@kernel.org>
- <20171129232356.28296-4-mcgrof@kernel.org>
- <20171130171310.GG28180@quack2.suse.cz>
- <20171130190548.GJ729@wotan.suse.de>
+From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Subject: RE: [PATCH] PM / runtime: Drop children check from
+ __pm_runtime_set_status()
+Date: Fri, 1 Dec 2017 11:54:39 +0000
+Message-ID: <TY1PR06MB0992A6FD8D85E0345EF198D2D8390@TY1PR06MB0992.apcprd06.prod.outlook.com>
+References: <1713438.irjm9MTSvo@aspire.rjw.lan>
+ <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
+ <TY1PR06MB09928D43D4E5E5752A6A604ED83A0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+ <CAPDyKFoF0WMSTuK4AAyDzerpVpnfEq=Hn1n9kDJM0fYMkFL_wA@mail.gmail.com>
+ <TY1PR06MB09924E4F66C6FCF131EE71CFD83B0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+ <CAPDyKFoG2-mVGDtzPyg2FDVbXnsWGy543craKqeBVE_awKpf8Q@mail.gmail.com>
+ <CAMuHMdViD3vqzits=th52+01d5y3p5iwbAg0jbUBcoGvYfULuA@mail.gmail.com>
+ <CAPDyKFpRrQr3LRXH_CoLSYe2a=2PnUqvuNWUYSuh0wm+rBJ0dw@mail.gmail.com>
+ <TY1PR06MB09928B145D35E52444F8D462D8380@TY1PR06MB0992.apcprd06.prod.outlook.com>
+ <CAPDyKFr8D4jL2vwO5tdBJnNVP=DoAD6H_K=4SQbu7rFAZFd3Xg@mail.gmail.com>
+ <TY1PR06MB09929CD76E67B64FDE54B170D8390@TY1PR06MB0992.apcprd06.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171130190548.GJ729@wotan.suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: Jan Kara <jack@suse.cz>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <TY1PR06MB09929CD76E67B64FDE54B170D8390@TY1PR06MB0992.apcprd06.prod.outlook.com>
+Content-Language: ja-JP
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu 30-11-17 20:05:48, Luis R. Rodriguez wrote:
-> On Thu, Nov 30, 2017 at 06:13:10PM +0100, Jan Kara wrote:
-> > ... I dislike the _by_user() suffix as there may be different places that
-> > call freeze_super() (e.g. device mapper does this during some operations).
-> > Clearly we need to distinguish "by system suspend" and "the other" cases.
-> > So please make this clear in the naming.
-> 
-> Ah. How about sb_frozen_by_cb() ?
-
-And what does 'cb' stand for? :)
-
-> > In fact, what might be a cleaner solution is to introduce a 'freeze_count'
-> > for superblock freezing (we already do have this for block devices). Then
-> > you don't need to differentiate these two cases - but you'd still need to
-> > properly handle cleanup if freezing of all superblocks fails in the middle.
-> > So I'm not 100% this works out nicely in the end. But it's certainly worth
-> > a consideration.
-> 
-> Ah, there are three important reasons for doing it the way I did it which are
-> easy to miss, unless you read the commit log message very carefully.
-> 
-> 0) The ioctl interface causes a failure to be sent back to userspace if
-> you issue two consecutive freezes, or two thaws. Ie, once a filesystem is
-> frozen, a secondary call will result in an error. Likewise for thaw.
-
-Yep. But also note that there's *another* interface to filesystem freezing
-which behaves differently - freeze_bdev() (used internally by dm). That
-interface uses the counter and freezing of already frozen device succeeds.
-IOW it is a mess. We cannot change the behavior of the ioctl but we could
-still provide an in-kernel interface to freeze_super() with the same
-semantics as freeze_bdev() which might be easier to use by suspend - maybe
-we could call it 'exclusive' (for the current freeze_super() semantics) and
-'non-exclusive' (for the freeze_bdev() semantics) since this is very much
-like O_EXCL open of block devices...
-
-> 1) The new iterate supers stuff I added bail on the first error and return that
-> error. If we kept the ioctl() interface error scheme we'd be erroring out
-> if on suspend if userspace had already frozen a filesystem. Clearly that'd
-> be silly so we need to distinguish between the automatic kernel freezing
-> and the old userspace ioctl initiated interface, so that we can keep the
-> old behaviour but allow in-kernel auto freeze on suspend to work properly.
-
-This would work fine with the non-exclusive semantics I believe.
-
-> 2) If we fail to suspend we need to then thaw up all filesystems. The order
-> in which we try to freeze is in reverse order on the super_block list. If we
-> fail though we iterate in proper order on the super_block list and thaw. If
-> you had two filesystems this means that if a failure happened on freezing
-> the first filesystem, we'd first thaw the other filesystem -- and because of
-> 0) if we don't distinguish between the ioctl interface or auto freezing, we'd
-> also fail on thaw'ing given the other superblock wouldn't have been frozen.
-> 
-> So we need to keep two separate approaches. The count stuff would not suffice
-> to distinguish origin of source for freeze call.
-> 
-> Come to think of it, I think I forgot to avoid thaw if the freeze was ioctl
-> initiated..
-> 
-> thaw_unlocked(bool cb_call)
-> {
->   if (sb_frozen_by_cb(sb) && !cb_call)
->     return 0; /* skip as the user wanted to keep this fs frozen */
->   ...
-> }
-> 
-> Even though the kernel auto call is new I think we need to keep ioctl initiated
-> frozen filesystems frozen to not break old userspace assumptions.
-> 
-> So, keeping all this in mind, does a count method still suffice?
-
-The count method would need a different error recovery method - i.e. if you
-fail freezing filesystems somewhere in the middle of iteration through
-superblock list, you'd need to iterate from that point on to the superblock
-where you've started. This is somewhat more complicated than your approach
-but it seems cleaner to me:
-
-1) Function freezing all superblocks either succeeds and all superblocks
-are frozen or fails and no superblocks are (additionally) frozen.
-
-2) It is not that normal users + one special user (who owns the "flag" in
-the superblock in form of a special freeze state) setup. We'd simply have
-exclusive and non-exclusive users of superblock freezing and there can be
-arbitrary numbers of them.
-
-								Honza
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+SGkgYWdhaW4sDQoNCj4gRnJvbTogWW9zaGloaXJvIFNoaW1vZGEsIFNlbnQ6IEZyaWRheSwgRGVj
+ZW1iZXIgMSwgMjAxNyA4OjA0IFBNDQo+IA0KPiBIaSwNCj4gDQo8c25pcD4NCj4gSG93ZXZlciwg
+dGhlIGZvbGxvd2luZyBtZXNzYWdlIHN0aWxsIGV4aXN0cy4NCj4gDQo+ICAgIEVuYWJsaW5nIHJ1
+bnRpbWUgUE0gZm9yIGluYWN0aXZlIGRldmljZSAoZWUwODAwMDAudXNiKSB3aXRoIGFjdGl2ZSBj
+aGlsZHJlbg0KPiANCj4gU28sIEkgZ3Vlc3Mgb2hjaS1wbGF0Zm9ybS5jIGFsc28gaGFzIHNpbWls
+YXIgaXNzdWUuDQo+IA0KPiBKRllJLCB0aGUgZWhjaS1wbGF0Zm9ybS5jIGRvZXNuJ3QgaGF2ZSBy
+dW50aW1lIFBNIGhhbmRsaW5nLg0KPiBTbywgSSB0aGluayB0aGF0IGVycm9yIG1lc3NhZ2UgZG9l
+c24ndCBvdXRwdXQgZnJvbSBlaGNpIGRldmljZXMuDQoNCkkgaGF2ZSB1cGRhdGUuDQpJZiBJIGFk
+ZGVkIHRvIGNhbGwgcG1fcnVudGltZV9mb3JiaWQoKSBpbiBvaGNpLXBsYXRmb3JtLmMgbGlrZSB4
+aGNpLXBsYXQuYywNCnRoZSBpc3N1ZSBkaXNhcHBlYXJlZC4gSSBkb24ndCB1bmRlcnN0YW5kIHRo
+ZSBwbV9ydW50aW1lX2ZvcmJpZCgpIGJlaGF2aW9yIHlldCwNCmJ1dCBpcyB0aGlzIGFjY2VwdGFi
+bGU/DQoNCkJlc3QgcmVnYXJkcywNCllvc2hpaGlybyBTaGltb2RhDQoNCj4gQmVzdCByZWdhcmRz
+LA0KPiBZb3NoaWhpcm8gU2hpbW9kYQ0KDQo=
