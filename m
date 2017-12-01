@@ -1,40 +1,43 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / runtime: Allow an irq-safe parent to be runtime suspended
-Date: Fri, 01 Dec 2017 14:52:07 +0100
-Message-ID: <16620063.rk7vuB3HEa@aspire.rjw.lan>
-References: <1510924566-16112-1-git-send-email-ulf.hansson@linaro.org> <CAPDyKFq+5mAWyr+4y0F8WCevD5myZ-cbM=Np7rFvYWUPiViCug@mail.gmail.com>
+Subject: [PATCH] PM / runtime: Fix handling of suppliers with disabled runtime PM
+Date: Fri, 01 Dec 2017 14:58:34 +0100
+Message-ID: <1532136.s6buYvDjaS@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:61963 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752565AbdLANwi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Dec 2017 08:52:38 -0500
-In-Reply-To: <CAPDyKFq+5mAWyr+4y0F8WCevD5myZ-cbM=Np7rFvYWUPiViCug@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Hunter <adrian.hunter@intel.com>, Lukas Wunner <lukas@wunner.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Lina Iyer <lina.iyer@linaro.org>
 
-On Friday, December 1, 2017 8:35:50 AM CET Ulf Hansson wrote:
-> On 17 November 2017 at 14:16, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> > When pm_runtime_irq_safe() is a called for a child device, it's assumed
-> > that the parent is never also irq-safe. Therefore, is the parent runtime
-> > resumed and the usage counter increased for it, as to avoid having an
-> > irq-safe child waiting for non-irq-safe parent.
-> >
-> > Improve this behaviour by taking into account that the parent could also be
-> > irq-safe. In such case let's allow it to be runtime suspended.
-> >
-> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> 
-> Rafael, I noticed you applied this for next, but I realized that I
-> have overlooked a couple of more things that needs to be taken care
-> of.
-> 
-> Can you please drop this version? I will re-spin a new version soon.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Will do, thanks!
+Prevent rpm_get_suppliers() from returning an error code if runtime
+PM is disabled for one or more of the supplier devices it wants to
+runtime-resume, so as to make runtime PM work for devices with links
+to suppliers that don't use runtime PM (such links may be created
+during device enumeration even before it is known whether or not
+runtime PM will be enabled for the devices in question, for example).
 
-Rafael
+Reported-by: Adrian Hunter <adrian.hunter@intel.com>
+Fixes: 21d5c57b3726 (PM / runtime: Use device links)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/base/power/runtime.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -276,7 +276,8 @@ static int rpm_get_suppliers(struct devi
+ 			continue;
+ 
+ 		retval = pm_runtime_get_sync(link->supplier);
+-		if (retval < 0) {
++		/* Ignore suppliers with disabled runtime PM. */
++		if (retval < 0 && retval != -EACCES) {
+ 			pm_runtime_put_noidle(link->supplier);
+ 			return retval;
+ 		}
