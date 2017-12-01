@@ -1,86 +1,69 @@
-From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Subject: RE: [PATCH] PM / runtime: Drop children check from
- __pm_runtime_set_status()
-Date: Fri, 1 Dec 2017 11:03:33 +0000
-Message-ID: <TY1PR06MB09929CD76E67B64FDE54B170D8390@TY1PR06MB0992.apcprd06.prod.outlook.com>
-References: <1713438.irjm9MTSvo@aspire.rjw.lan>
- <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
- <TY1PR06MB09928D43D4E5E5752A6A604ED83A0@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFoF0WMSTuK4AAyDzerpVpnfEq=Hn1n9kDJM0fYMkFL_wA@mail.gmail.com>
- <TY1PR06MB09924E4F66C6FCF131EE71CFD83B0@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFoG2-mVGDtzPyg2FDVbXnsWGy543craKqeBVE_awKpf8Q@mail.gmail.com>
- <CAMuHMdViD3vqzits=th52+01d5y3p5iwbAg0jbUBcoGvYfULuA@mail.gmail.com>
- <CAPDyKFpRrQr3LRXH_CoLSYe2a=2PnUqvuNWUYSuh0wm+rBJ0dw@mail.gmail.com>
- <TY1PR06MB09928B145D35E52444F8D462D8380@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFr8D4jL2vwO5tdBJnNVP=DoAD6H_K=4SQbu7rFAZFd3Xg@mail.gmail.com>
+From: Vincent Guittot <vincent.guittot@linaro.org>
+Subject: Re: [PATCH v2 2/3] PM / core: Add IN_BAND_WAKEUP driver flag
+Date: Fri, 1 Dec 2017 12:17:09 +0100
+Message-ID: <CAKfTPtAyn-SZL6hq3nrUbWhccjKxx3EHdvD7stf1RnqMTQ4-xQ@mail.gmail.com>
+References: <1510588003-16650-1-git-send-email-ulf.hansson@linaro.org> <1510588003-16650-3-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFr8D4jL2vwO5tdBJnNVP=DoAD6H_K=4SQbu7rFAZFd3Xg@mail.gmail.com>
-Content-Language: ja-JP
+In-Reply-To: <1510588003-16650-3-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-renesas-soc-owner@vger.kernel.org
 To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGksDQoNCj4gRnJvbTogVWxmIEhhbnNzb24sIFNlbnQ6IEZyaWRheSwgRGVjZW1iZXIgMSwgMjAx
-NyA2OjIyIFBNDQo+IA0KPiArIEtpc2hvbg0KPiANCj4gT24gMzAgTm92ZW1iZXIgMjAxNyBhdCAx
-Mzo1MSwgWW9zaGloaXJvIFNoaW1vZGENCj4gPHlvc2hpaGlyby5zaGltb2RhLnVoQHJlbmVzYXMu
-Y29tPiB3cm90ZToNCj4gPiBIaSwNCj4gPg0KPiA+PiBGcm9tOiBVbGYgSGFuc3NvbiwgU2VudDog
-V2VkbmVzZGF5LCBOb3ZlbWJlciAyOSwgMjAxNyA2OjU5IFBNDQo+ID4+DQo+ID4+IE9uIDI5IE5v
-dmVtYmVyIDIwMTcgYXQgMTA6NDMsIEdlZXJ0IFV5dHRlcmhvZXZlbiA8Z2VlcnRAbGludXgtbTY4
-ay5vcmc+IHdyb3RlOg0KPiA+PiA+IEhpIFVsZiwNCj4gPiA8c25pcD4NCj4gPj4gT2theSwgc28g
-dGhlIHByb2JsZW0gcmVtYWlucyBubyBtYXR0ZXIgd2hpY2ggc29sdXRpb24gZm9yIHdha2V1cCB5
-b3UNCj4gPj4gcGljayBpbiBnZW5wZC4NCj4gPg0KPiA+IFllcy4gVG9kYXkgSSBjb3VsZCByZXBy
-b2R1Y2UgdGhpcyBpc3N1ZSB3aXRob3V0IHVzYiBob3N0IGRyaXZlci4NCj4gPiAtIFRoZSByZW5l
-c2FzX3VzYjMgdXNiIHBlcmlwaGVyYWwgZHJpdmVyIGhhcyBnZW5lcmljIHBoeSBoYW5kbGluZy4N
-Cj4gPiAgIChUaGUgcGVyaXBoZXJhbCBkcml2ZXIgdXNlcyBkaWZmZXJlbnQgZ2VuZXJpYyBwaHkg
-ZHJpdmVyIChwaHktcmNhci1nZW4zLXVzYjMuYykgdGhvdWdoLikNCj4gPiAgLS0+IElmIEkgdXNl
-ZCB0aGUgY3VycmVudCByZW5lc2FzX3VzYjMgKHRoaXMgbWVhbnMgZG9lc24ndCBjYWxsIHBoeV9w
-b3dlcl97b24sb2ZmfSgpLA0KPiA+ICAgICAgdGhlIGlzc3VlIGRpZG4ndCBoYXBwZW4uDQo+ID4g
-IC0tPiBJZiBJIGFkZGVkIHBoeV9wb3dlcl97b24sb2ZmfSgpIGNhbGxpbmcsIHRoZSBpc3N1ZSBo
-YXBwZW5lZC4NCj4gPiAgIC0tPiBTbywgSSdtIHRoaW5raW5nIHRoZSBBUElzIGFyZSByZWxhdGVk
-IHRvIHRoZSBpc3N1ZS4NCj4gDQo+IFllcy4NCj4gDQo+ID4NCj4gPiAtIFRoZSBnZW5lcmljIHBo
-eSBBUElzIGFyZSBpbiBkcml2ZXJzL3BoeS9waHktY29yZS5jLg0KPiA+ICAtLT4gVGhlIHBoeS1y
-Y2FyLWdlbjMtdXNiWzIzXSBkcml2ZXJzIGNhbGwgb25seSBwbV9ydW50aW1lX2VuYWJsZSgpIGJl
-Zm9yZSBkZXZtX3BoeV9jcmVhdGUoKS4NCj4gPiAgIC0tPiBUaGUgcGh5LWNvcmUgd2lsbCBjYWxs
-IHBtX3J1bnRpbWVfe2dldF9zeW5jLHB1dH0oKSBpbiBwaHlfe2luaXQsZXhpdCxwb3dlcl97b24s
-b2ZmfX0uDQo+ID4gICAgLS0+IFNvLCBJSVVDLCBib3RoIGRldmljZXMgb2YgcGh5LTxkZXZfbmFt
-ZT4uPGlkPiBhbmQgPGRldl9uYW1lPiB3aWxsIGJlIGhhbmRsZWQgYnkgcnVudGltZSBQTSBBUElz
-Lg0KPiA+ICAtLT4gVGhlIHJ1bnRpbWUgUE0gaW1wbGVtZW50YXRpb24gb2YgcGh5LWNvcmUgc2Vl
-bXMgZ29vZCB0byBtZS4gQnV0Li4uPw0KPiANCj4gDQo+IEkgaGF2ZSBkaWdlc3RlZCB0aGUgaW5m
-b3JtYXRpb24gdGhhdCB5b3UgYW5kIEdlZXJ0IHByb3ZpZGVkLCB0aGFua3MhDQo+IA0KPiBTbywg
-bXkgY29uY2x1c2lvbnMgc28gZmFyIGlzOg0KPiANCj4gVGhlIHBoeSBjb3JlIGlzIHVzaW5nIHJ1
-bnRpbWUgUE0gcmVmZXJlbmNlIGNvdW50aW5nIGF0DQo+IHBoeV9wb3dlcl9vbnxvZmYoKS4gQWx0
-aG91Z2ggaXQgZG9lcyB0aGF0IG9uIHRoZSBwaHkgY29yZSBkZXZpY2UsDQo+IHdoaWNoIGlzIGEg
-Y2hpbGQgZGV2aWNlIG9mIHRoZSBwaHkgcHJvdmlkZXIgZGV2aWNlLg0KPiANCj4gQmVjYXVzZSBw
-aHlfcG93ZXJfb2ZmKCkgaXMgY2FsbGVkIGR1cmluZyBzeXN0ZW0gc3VzcGVuZCBmcm9tIHBoeQ0K
-PiBjb25zdW1lciBkcml2ZXJzIGxpa2UgdXNiLCB0aGUgcGh5IGNvcmUgZGV2aWNlIChjaGlsZCkg
-YW5kIHRoZSBwaHkNCj4gcHJvdmlkZXIgZGV2aWNlIChwYXJlbnQpIHdpbGwgbmV2ZXIgYmVjb21l
-IHJ1bnRpbWUgc3VzcGVuZGVkIChiZWNhdXNlDQo+IHRoZSBQTSBjb3JlIGhhcyBpbnZva2VkIHBt
-X3J1bnRpbWVfZ2V0X25vX3Jlc3VtZSgpIGZvciBhbGwgZGV2aWNlIGluDQo+IHRoZSBkZXZpY2Ug
-cHJlcGFyZSBwaGFzZSkuDQo+IA0KPiBUaGVuLCB3aGVuIGdlbnBkIGNhbGxzIHBtX3J1bnRpbWVf
-Zm9yY2Vfc3VzcGVuZCgpIGF0IHRoZSBzdXNwZW5kIG5vaXJxDQo+IHBoYXNlIGZvciB0aGUgcGh5
-IHByb3ZpZGVyIGRldmljZSwgdGhlIGNhbGwgdG8NCj4gcG1fcnVudGltZV9zZXRfc3VzcGVuZGVk
-KCkgaW4gdGhlcmUsIHRyaWdnZXJzIHRoZSBlYXJsaWVyIGVycm9yDQo+IG1lc3NhZ2UsIHdoaWNo
-IGlzIGJlY2F1c2UgdGhlIGNoaWxkIChwaHkgY29yZSBkZXZpY2UpIGlzIHN0aWxsIHJ1bnRpbWUN
-Cj4gcmVzdW1lZC4NCg0KVGhhbmsgeW91IHZlcnkgbXVjaCBmb3IgdGhlIGNvbmNsdXNpb25zIQ0K
-SXQncyBoZWxwZnVsIHRvIG1lIGFib3V0IHJ1bnRpbWUgUE0gYmVoYXZpb3IuDQoNCj4gPj4gVGhl
-biB0aGlzIHNlZW1zIHRvIHBvaW50IHRvIHRoYXQgdGhlIGRyaXZlciBtYXkgYmUgbWlzYmVoYXZp
-bmcgaW4gc29tZQ0KPiA+PiB3YXkuIEkgY2FuIGhlbHAgdG8gY2hlY2sgd2hhdCBpcyBnb2luZyBv
-bi4NCj4gPg0KPiA+IEkgZ3Vlc3Mgc28uIEJ1dCwgSSBkb24ndCBmaW5kIHlldC4uLg0KPiANCj4g
-SSB0aGluayB0aGUgYmVsb3cgcGF0Y2ggd2lsbCBoZWxwLCBhbHRob3VnaCBJIGFtIG5vdCBzdXJl
-IGlmIHRoYXQgaXMNCj4gc3VmZmljaWVudCBhcyBhIGxvbmcgdGVybSBmaXguDQoNClRoYW5rIHlv
-dSB2ZXJ5IG11Y2ggZm9yIHlvdXIgaGVscCENCkFsc28sIEknbSBub3Qgc3VyZSBob3cgdG8gZml4
-IGZvciBhIGxvbmcgdGVybSBrZXJuZWxzIHRob3VnaC4uLg0KDQo+IENhbiB5b3UgcGxlYXNlIHRy
-eSBhbmQgc2VlIGlmIGl0IHNvbHZlcyB0aGUgcHJvYmxlbXM/DQoNClN1cmUhIEkgdGVzdGVkIHlv
-dXIgcGF0Y2gsIGFuZCB0aGVuIHRoZSBmb2xsb3dpbmcgbWVzc2FnZSBkaXNhcHBlYXJlZCENCg0K
-ICAgRW5hYmxpbmcgcnVudGltZSBQTSBmb3IgaW5hY3RpdmUgZGV2aWNlIChlZTA4MDIwMC51c2It
-cGh5KSB3aXRoIGFjdGl2ZSBjaGlsZHJlbg0KDQpIb3dldmVyLCB0aGUgZm9sbG93aW5nIG1lc3Nh
-Z2Ugc3RpbGwgZXhpc3RzLg0KDQogICBFbmFibGluZyBydW50aW1lIFBNIGZvciBpbmFjdGl2ZSBk
-ZXZpY2UgKGVlMDgwMDAwLnVzYikgd2l0aCBhY3RpdmUgY2hpbGRyZW4NCg0KU28sIEkgZ3Vlc3Mg
-b2hjaS1wbGF0Zm9ybS5jIGFsc28gaGFzIHNpbWlsYXIgaXNzdWUuDQoNCkpGWUksIHRoZSBlaGNp
-LXBsYXRmb3JtLmMgZG9lc24ndCBoYXZlIHJ1bnRpbWUgUE0gaGFuZGxpbmcuDQpTbywgSSB0aGlu
-ayB0aGF0IGVycm9yIG1lc3NhZ2UgZG9lc24ndCBvdXRwdXQgZnJvbSBlaGNpIGRldmljZXMuDQoN
-CkJlc3QgcmVnYXJkcywNCllvc2hpaGlybyBTaGltb2RhDQoNCg==
+Hi Ulf,
+
+you have left some old naming WAKEUP_POWERED in your patch
+
+On 13 November 2017 at 16:46, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> For some bus types and PM domains, it's not sufficient to only check the
+> return value from device_may_wakeup(), to fully understand how to configure
+> wakeup settings for the device during system suspend.
+>
+[snip]
+
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index 65d3911..4efb16a 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -559,6 +559,7 @@ struct pm_subsys_data {
+>   * NEVER_SKIP: Do not skip system suspend/resume callbacks for the device.
+>   * SMART_PREPARE: Check the return value of the driver's ->prepare callback.
+>   * SMART_SUSPEND: No need to resume the device from runtime suspend.
+> + * WAKEUP_POWERED: Keep the device powered if it has wakeup enabled.
+
+it should be IN_BAND_WAKEUP ?
+
+>   *
+>   * Setting SMART_PREPARE instructs bus types and PM domains which may want
+>   * system suspend/resume callbacks to be skipped for the device to return 0 from
+> @@ -572,10 +573,14 @@ struct pm_subsys_data {
+>   * necessary from the driver's perspective.  It also may cause them to skip
+>   * invocations of the ->suspend_late and ->suspend_noirq callbacks provided by
+>   * the driver if they decide to leave the device in runtime suspend.
+> + *
+> + * Setting WAKEUP_POWERED instructs bus types and PM domains that the device
+
+it should be IN_BAND_WAKEUP ?
+
+> + * needs to remain powered in system suspend, in case wakeup is enabled for it.
+>   */
+>  #define DPM_FLAG_NEVER_SKIP    BIT(0)
+>  #define DPM_FLAG_SMART_PREPARE BIT(1)
+>  #define DPM_FLAG_SMART_SUSPEND BIT(2)
+> +#define DPM_FLAG_IN_BAND_WAKEUP        BIT(3)
+>
+>  struct dev_pm_info {
+>         pm_message_t            power_state;
+> @@ -595,6 +600,7 @@ struct dev_pm_info {
+>         struct completion       completion;
+>         struct wakeup_source    *wakeup;
+>         bool                    wakeup_path:1;
+> +       bool                    wakeup_path_in_band:1;
+>         bool                    syscore:1;
+>         bool                    no_pm_callbacks:1;      /* Owned by the PM core */
+>  #else
+> --
+> 2.7.4
+>
