@@ -1,349 +1,226 @@
-From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V3 7/7] PCI: tegra: Add power management support
-Date: Fri, 1 Dec 2017 14:50:07 +0530
-Message-ID: <1512120007-28088-8-git-send-email-mmaddireddy@nvidia.com>
-References: <1512120007-28088-1-git-send-email-mmaddireddy@nvidia.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / runtime: Drop children check from __pm_runtime_set_status()
+Date: Fri, 1 Dec 2017 10:22:18 +0100
+Message-ID: <CAPDyKFr8D4jL2vwO5tdBJnNVP=DoAD6H_K=4SQbu7rFAZFd3Xg@mail.gmail.com>
+References: <1713438.irjm9MTSvo@aspire.rjw.lan> <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
+ <TY1PR06MB09928D43D4E5E5752A6A604ED83A0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+ <CAPDyKFoF0WMSTuK4AAyDzerpVpnfEq=Hn1n9kDJM0fYMkFL_wA@mail.gmail.com>
+ <TY1PR06MB09924E4F66C6FCF131EE71CFD83B0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+ <CAPDyKFoG2-mVGDtzPyg2FDVbXnsWGy543craKqeBVE_awKpf8Q@mail.gmail.com>
+ <CAMuHMdViD3vqzits=th52+01d5y3p5iwbAg0jbUBcoGvYfULuA@mail.gmail.com>
+ <CAPDyKFpRrQr3LRXH_CoLSYe2a=2PnUqvuNWUYSuh0wm+rBJ0dw@mail.gmail.com> <TY1PR06MB09928B145D35E52444F8D462D8380@TY1PR06MB0992.apcprd06.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1512120007-28088-1-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: cyndis-/1wQRMveznE@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org
-Cc: jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f169.google.com ([209.85.223.169]:40742 "EHLO
+        mail-io0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751236AbdLAJWU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 Dec 2017 04:22:20 -0500
+Received: by mail-io0-f169.google.com with SMTP id d21so10564440ioe.7
+        for <linux-pm@vger.kernel.org>; Fri, 01 Dec 2017 01:22:20 -0800 (PST)
+In-Reply-To: <TY1PR06MB09928B145D35E52444F8D462D8380@TY1PR06MB0992.apcprd06.prod.outlook.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
 
-Tegra186 powergate driver is implemented as power domain driver, power
-partition ungate/gate are registered as power_on/power_off callback
-functions. There are no direct functions to power gate/ungate host
-controller in Tegra186. Host controller driver should add "power-domains"
-property in device tree and implement runtime suspend and resume
-callback functons. Power gate and ungate is taken care by power domain
-driver when host controller driver calls pm_runtime_put_sync and
-pm_runtime_get_sync respectively.
++ Kishon
 
-Register suspend_noirq & resume_noirq callback functions to allow PCIe to
-come up after resume from RAM. Both runtime and noirq pm ops share same
-callback functions.
+On 30 November 2017 at 13:51, Yoshihiro Shimoda
+<yoshihiro.shimoda.uh@renesas.com> wrote:
+> Hi,
+>
+>> From: Ulf Hansson, Sent: Wednesday, November 29, 2017 6:59 PM
+>>
+>> On 29 November 2017 at 10:43, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>> > Hi Ulf,
+> <snip>
+>> Okay, so the problem remains no matter which solution for wakeup you
+>> pick in genpd.
+>
+> Yes. Today I could reproduce this issue without usb host driver.
+> - The renesas_usb3 usb peripheral driver has generic phy handling.
+>   (The peripheral driver uses different generic phy driver (phy-rcar-gen3-usb3.c) though.)
+>  --> If I used the current renesas_usb3 (this means doesn't call phy_power_{on,off}(),
+>      the issue didn't happen.
+>  --> If I added phy_power_{on,off}() calling, the issue happened.
+>   --> So, I'm thinking the APIs are related to the issue.
 
-Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Yes.
+
+>
+> - The generic phy APIs are in drivers/phy/phy-core.c.
+>  --> The phy-rcar-gen3-usb[23] drivers call only pm_runtime_enable() before devm_phy_create().
+>   --> The phy-core will call pm_runtime_{get_sync,put}() in phy_{init,exit,power_{on,off}}.
+>    --> So, IIUC, both devices of phy-<dev_name>.<id> and <dev_name> will be handled by runtime PM APIs.
+>  --> The runtime PM implementation of phy-core seems good to me. But...?
+
+
+I have digested the information that you and Geert provided, thanks!
+
+So, my conclusions so far is:
+
+The phy core is using runtime PM reference counting at
+phy_power_on|off(). Although it does that on the phy core device,
+which is a child device of the phy provider device.
+
+Because phy_power_off() is called during system suspend from phy
+consumer drivers like usb, the phy core device (child) and the phy
+provider device (parent) will never become runtime suspended (because
+the PM core has invoked pm_runtime_get_no_resume() for all device in
+the device prepare phase).
+
+Then, when genpd calls pm_runtime_force_suspend() at the suspend noirq
+phase for the phy provider device, the call to
+pm_runtime_set_suspended() in there, triggers the earlier error
+message, which is because the child (phy core device) is still runtime
+resumed.
+
+>
+>> Then this seems to point to that the driver may be misbehaving in some
+>> way. I can help to check what is going on.
+>
+> I guess so. But, I don't find yet...
+
+I think the below patch will help, although I am not sure if that is
+sufficient as a long term fix.
+
+Can you please try and see if it solves the problems?
+
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Date: Fri, 1 Dec 2017 09:07:54 +0100
+Subject: [PATCH] phy: core: Move runtime PM reference counting to be done on
+ the parent
+
+This is temporary hack, do not merge!
+
+The runtime PM deployment in the phy core is a bit unnecessary complicated,
+due to enabling runtime PM for the phy device. Moreover it causes problems
+for parent devices (phy providers) when dealing with system wide PM.
+
+Therefore, move the runtime PM reference counting to be done on the phy's
+parent device and drop to enable runtime PM for the phy device altogether.
+This simplifies for the phy provider driver, to deal with system wide PM,
+in case it also cares about keeping the runtime PM status of the device in
+sync with the state of the HW.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
-V2:
-* no change in this patch
-V3:
-* no change in this patch
+ drivers/phy/phy-core.c | 35 +++++++++--------------------------
+ 1 file changed, 9 insertions(+), 26 deletions(-)
 
- drivers/pci/host/pci-tegra.c | 174 ++++++++++++++++++++++++++-----------------
- 1 file changed, 106 insertions(+), 68 deletions(-)
+diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
+index b4964b0..837e50d 100644
+--- a/drivers/phy/phy-core.c
++++ b/drivers/phy/phy-core.c
+@@ -217,15 +217,12 @@ EXPORT_SYMBOL_GPL(phy_pm_runtime_forbid);
 
-diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-index bc532c0fd04f..30af1bf5620e 100644
---- a/drivers/pci/host/pci-tegra.c
-+++ b/drivers/pci/host/pci-tegra.c
-@@ -1425,31 +1425,25 @@ static int tegra_pcie_get_resources(struct tegra_pcie *pcie)
- 		}
- 	}
- 
--	err = tegra_pcie_power_on(pcie);
--	if (err) {
--		dev_err(dev, "failed to power up: %d\n", err);
--		goto phys_put;
--	}
--
- 	pads = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pads");
- 	pcie->pads = devm_ioremap_resource(dev, pads);
- 	if (IS_ERR(pcie->pads)) {
- 		err = PTR_ERR(pcie->pads);
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	afi = platform_get_resource_byname(pdev, IORESOURCE_MEM, "afi");
- 	pcie->afi = devm_ioremap_resource(dev, afi);
- 	if (IS_ERR(pcie->afi)) {
- 		err = PTR_ERR(pcie->afi);
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	/* request configuration space, but remap later, on demand */
- 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "cs");
- 	if (!res) {
- 		err = -EADDRNOTAVAIL;
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	axi_addr = pcie->soc->use_4k_conf_space ?
-@@ -1457,21 +1451,21 @@ static int tegra_pcie_get_resources(struct tegra_pcie *pcie)
- 	pcie->cs = devm_request_mem_region(dev, axi_addr, SZ_4K, res->name);
- 	if (!pcie->cs) {
- 		err = -EADDRNOTAVAIL;
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	pcie->cfg_va_base = devm_ioremap(dev, pcie->cs->start, SZ_4K);
- 	if (!pcie->cfg_va_base) {
- 		dev_err(pcie->dev, "failed to ioremap config space\n");
- 		err = -EADDRNOTAVAIL;
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	/* request interrupt */
- 	err = platform_get_irq_byname(pdev, "intr");
- 	if (err < 0) {
- 		dev_err(dev, "failed to get IRQ: %d\n", err);
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	pcie->irq = err;
-@@ -1479,13 +1473,11 @@ static int tegra_pcie_get_resources(struct tegra_pcie *pcie)
- 	err = request_irq(pcie->irq, tegra_pcie_isr, IRQF_SHARED, "PCIE", pcie);
- 	if (err) {
- 		dev_err(dev, "failed to register IRQ: %d\n", err);
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	return 0;
- 
--poweroff:
--	tegra_pcie_power_off(pcie);
- phys_put:
- 	if (soc->program_uphy)
- 		tegra_pcie_phys_put(pcie);
-@@ -1499,8 +1491,6 @@ static int tegra_pcie_put_resources(struct tegra_pcie *pcie)
- 	if (pcie->irq > 0)
- 		free_irq(pcie->irq, pcie);
- 
--	tegra_pcie_power_off(pcie);
--
- 	if (soc->program_uphy)
- 		tegra_pcie_phys_put(pcie);
- 
-@@ -1678,37 +1668,41 @@ static int tegra_pcie_enable_msi(struct tegra_pcie *pcie)
- 	int err;
- 	u32 reg;
- 
--	mutex_init(&msi->lock);
-+	if (!msi->phys) {
-+		mutex_init(&msi->lock);
- 
--	msi->chip.dev = dev;
--	msi->chip.setup_irq = tegra_msi_setup_irq;
--	msi->chip.teardown_irq = tegra_msi_teardown_irq;
-+		msi->chip.dev = dev;
-+		msi->chip.setup_irq = tegra_msi_setup_irq;
-+		msi->chip.teardown_irq = tegra_msi_teardown_irq;
- 
--	msi->domain = irq_domain_add_linear(dev->of_node, INT_PCI_MSI_NR,
--					    &msi_domain_ops, &msi->chip);
--	if (!msi->domain) {
--		dev_err(dev, "failed to create IRQ domain\n");
--		return -ENOMEM;
--	}
-+		msi->domain = irq_domain_add_linear(dev->of_node,
-+						    INT_PCI_MSI_NR,
-+						    &msi_domain_ops,
-+						    &msi->chip);
-+		if (!msi->domain) {
-+			dev_err(dev, "failed to create IRQ domain\n");
-+			return -ENOMEM;
-+		}
- 
--	err = platform_get_irq_byname(pdev, "msi");
--	if (err < 0) {
--		dev_err(dev, "failed to get IRQ: %d\n", err);
--		goto err;
--	}
-+		err = platform_get_irq_byname(pdev, "msi");
-+		if (err < 0) {
-+			dev_err(dev, "failed to get IRQ: %d\n", err);
-+			goto err;
-+		}
- 
--	msi->irq = err;
-+		msi->irq = err;
- 
--	err = request_irq(msi->irq, tegra_pcie_msi_irq, IRQF_NO_THREAD,
--			  tegra_msi_irq_chip.name, pcie);
--	if (err < 0) {
--		dev_err(dev, "failed to request IRQ: %d\n", err);
--		goto err;
--	}
-+		err = request_irq(msi->irq, tegra_pcie_msi_irq, IRQF_NO_THREAD,
-+				  tegra_msi_irq_chip.name, pcie);
-+		if (err < 0) {
-+			dev_err(dev, "failed to request IRQ: %d\n", err);
-+			goto err;
-+		}
- 
--	/* setup AFI/FPCI range */
--	msi->pages = __get_free_pages(GFP_KERNEL, 0);
--	msi->phys = virt_to_phys((void *)msi->pages);
-+		/* setup AFI/FPCI range */
-+		msi->pages = __get_free_pages(GFP_KERNEL, 0);
-+		msi->phys = virt_to_phys((void *)msi->pages);
-+	}
- 
- 	afi_writel(pcie, msi->phys >> soc->msi_base_shift, AFI_MSI_FPCI_BAR_ST);
- 	afi_writel(pcie, msi->phys, AFI_MSI_AXI_BAR_ST);
-@@ -2796,26 +2790,16 @@ static int tegra_pcie_probe(struct platform_device *pdev)
- 		return err;
- 	}
- 
--	err = tegra_pcie_enable_controller(pcie);
--	if (err)
-+	pm_runtime_enable(pcie->dev);
-+	err = pm_runtime_get_sync(pcie->dev);
-+	if (err) {
-+		dev_err(dev, "fail to enable pcie controller: %d\n", err);
- 		goto put_resources;
-+	}
- 
- 	err = tegra_pcie_request_resources(pcie);
- 	if (err)
--		goto disable_controller;
--
--	/* setup the AFI address translations */
--	tegra_pcie_setup_translations(pcie);
--
--	if (IS_ENABLED(CONFIG_PCI_MSI)) {
--		err = tegra_pcie_enable_msi(pcie);
--		if (err < 0) {
--			dev_err(dev, "failed to enable MSI support: %d\n", err);
--			goto free_resources;
--		}
--	}
--
--	tegra_pcie_enable_ports(pcie);
-+		goto pm_runtime_put;
- 
- 	host->busnr = pcie->busn.start;
- 	host->dev.parent = &pdev->dev;
-@@ -2826,7 +2810,7 @@ static int tegra_pcie_probe(struct platform_device *pdev)
- 	err = pci_scan_root_bus_bridge(host);
- 	if (err < 0) {
- 		dev_err(dev, "failed to register host: %d\n", err);
--		goto disable_msi;
-+		goto free_resources;
- 	}
- 
- 	pci_bus_size_bridges(host->bus);
-@@ -2848,14 +2832,13 @@ static int tegra_pcie_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
--disable_msi:
--	if (IS_ENABLED(CONFIG_PCI_MSI))
--		tegra_pcie_disable_msi(pcie);
--	tegra_pcie_disable_ports(pcie);
- free_resources:
- 	tegra_pcie_free_resources(pcie);
--disable_controller:
--	tegra_pcie_disable_controller(pcie);
-+pm_runtime_put:
-+	if (IS_ENABLED(CONFIG_PCI_MSI))
-+		tegra_pcie_disable_msi(pcie);
-+	pm_runtime_put_sync(pcie->dev);
-+	pm_runtime_disable(pcie->dev);
- put_resources:
- 	tegra_pcie_put_resources(pcie);
- 	return err;
-@@ -2865,7 +2848,6 @@ static int tegra_pcie_remove(struct platform_device *pdev)
+ int phy_init(struct phy *phy)
  {
- 	struct tegra_pcie *pcie = platform_get_drvdata(pdev);
- 	struct pci_host_bridge *host = pci_host_bridge_from_priv(pcie);
--	struct tegra_pcie_port *port, *tmp;
- 
- 	if (IS_ENABLED(CONFIG_DEBUG_FS))
- 		tegra_pcie_debugfs_exit(pcie);
-@@ -2873,21 +2855,77 @@ static int tegra_pcie_remove(struct platform_device *pdev)
- 	pci_remove_root_bus(host->bus);
- 	if (IS_ENABLED(CONFIG_PCI_MSI))
- 		tegra_pcie_disable_msi(pcie);
-+	tegra_pcie_free_resources(pcie);
-+	pm_runtime_put_sync(pcie->dev);
-+	pm_runtime_disable(pcie->dev);
-+	tegra_pcie_put_resources(pcie);
-+
-+	return 0;
-+}
-+
-+static int tegra_pcie_pm_suspend(struct device *dev)
-+{
-+	struct tegra_pcie *pcie = dev_get_drvdata(dev);
-+	struct tegra_pcie_port *port, *tmp;
-+
- 	list_for_each_entry_safe(port, tmp, &pcie->ports, list)
- 		tegra_pcie_pme_turnoff(port);
- 	tegra_pcie_disable_ports(pcie);
--	tegra_pcie_free_resources(pcie);
- 	tegra_pcie_disable_controller(pcie);
--	tegra_pcie_put_resources(pcie);
-+	tegra_pcie_power_off(pcie);
- 
- 	return 0;
- }
- 
-+static int tegra_pcie_pm_resume(struct device *dev)
-+{
-+	struct tegra_pcie *pcie = dev_get_drvdata(dev);
-+	int err;
-+
-+	err = tegra_pcie_power_on(pcie);
-+	if (err) {
-+		dev_err(dev, "tegra pcie power on fail: %d\n", err);
-+		return err;
-+	}
-+	err = tegra_pcie_enable_controller(pcie);
-+	if (err) {
-+		dev_err(dev, "tegra pcie controller enable fail: %d\n", err);
-+		goto poweroff;
-+	}
-+	tegra_pcie_setup_translations(pcie);
-+
-+	if (IS_ENABLED(CONFIG_PCI_MSI)) {
-+		err = tegra_pcie_enable_msi(pcie);
-+		if (err < 0) {
-+			dev_err(dev, "failed to enable MSI support: %d\n", err);
-+			goto disable_controller;
-+		}
-+	}
-+
-+	tegra_pcie_enable_ports(pcie);
-+
-+	return 0;
-+
-+disable_controller:
-+	tegra_pcie_disable_controller(pcie);
-+poweroff:
-+	tegra_pcie_power_off(pcie);
-+
-+	return err;
-+}
-+
-+static const struct dev_pm_ops tegra_pcie_pm_ops = {
-+	SET_RUNTIME_PM_OPS(tegra_pcie_pm_suspend, tegra_pcie_pm_resume, NULL)
-+	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(tegra_pcie_pm_suspend,
-+				      tegra_pcie_pm_resume)
-+};
-+
- static struct platform_driver tegra_pcie_driver = {
- 	.driver = {
- 		.name = "tegra-pcie",
- 		.of_match_table = tegra_pcie_of_match,
- 		.suppress_bind_attrs = true,
-+		.pm = &tegra_pcie_pm_ops,
- 	},
- 	.probe = tegra_pcie_probe,
- 	.remove = tegra_pcie_remove,
--- 
-2.1.4
+-       int ret;
++       int ret = 0;
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+        if (!phy)
+                return 0;
+
+-       ret = phy_pm_runtime_get_sync(phy);
+-       if (ret < 0 && ret != -ENOTSUPP)
+-               return ret;
+-       ret = 0; /* Override possible ret == -ENOTSUPP */
++       pm_runtime_get_sync(phy->dev.parent);
+
+        mutex_lock(&phy->mutex);
+        if (phy->init_count == 0 && phy->ops->init) {
+@@ -239,22 +236,19 @@ int phy_init(struct phy *phy)
+
+ out:
+        mutex_unlock(&phy->mutex);
+-       phy_pm_runtime_put(phy);
++       pm_runtime_put(phy->dev.parent);
+        return ret;
+ }
+ EXPORT_SYMBOL_GPL(phy_init);
+
+ int phy_exit(struct phy *phy)
+ {
+-       int ret;
++       int ret = 0;
+
+        if (!phy)
+                return 0;
+
+-       ret = phy_pm_runtime_get_sync(phy);
+-       if (ret < 0 && ret != -ENOTSUPP)
+-               return ret;
+-       ret = 0; /* Override possible ret == -ENOTSUPP */
++       pm_runtime_get_sync(phy->dev.parent);
+
+        mutex_lock(&phy->mutex);
+        if (phy->init_count == 1 && phy->ops->exit) {
+@@ -268,7 +262,7 @@ int phy_exit(struct phy *phy)
+
+ out:
+        mutex_unlock(&phy->mutex);
+-       phy_pm_runtime_put(phy);
++       pm_runtime_put(phy->dev.parent);
+        return ret;
+ }
+ EXPORT_SYMBOL_GPL(phy_exit);
+@@ -286,11 +280,7 @@ int phy_power_on(struct phy *phy)
+                        goto out;
+        }
+
+-       ret = phy_pm_runtime_get_sync(phy);
+-       if (ret < 0 && ret != -ENOTSUPP)
+-               goto err_pm_sync;
+-
+-       ret = 0; /* Override possible ret == -ENOTSUPP */
++       pm_runtime_get_sync(phy->dev.parent);
+
+        mutex_lock(&phy->mutex);
+        if (phy->power_count == 0 && phy->ops->power_on) {
+@@ -306,8 +296,7 @@ int phy_power_on(struct phy *phy)
+
+ err_pwr_on:
+        mutex_unlock(&phy->mutex);
+-       phy_pm_runtime_put_sync(phy);
+-err_pm_sync:
++       pm_runtime_put(phy->dev.parent);
+        if (phy->pwr)
+                regulator_disable(phy->pwr);
+ out:
+@@ -333,7 +322,7 @@ int phy_power_off(struct phy *phy)
+        }
+        --phy->power_count;
+        mutex_unlock(&phy->mutex);
+-       phy_pm_runtime_put(phy);
++       pm_runtime_put(phy->dev.parent);
+
+        if (phy->pwr)
+                regulator_disable(phy->pwr);
+@@ -774,11 +763,6 @@ struct phy *phy_create(struct device *dev, struct
+device_node *node,
+        if (ret)
+                goto put_dev;
+
+-       if (pm_runtime_enabled(dev)) {
+-               pm_runtime_enable(&phy->dev);
+-               pm_runtime_no_callbacks(&phy->dev);
+-       }
+-
+        return phy;
+
+ put_dev:
+@@ -831,7 +815,6 @@ EXPORT_SYMBOL_GPL(devm_phy_create);
+  */
+ void phy_destroy(struct phy *phy)
+ {
+-       pm_runtime_disable(&phy->dev);
+        device_unregister(&phy->dev);
+ }
+ EXPORT_SYMBOL_GPL(phy_destroy);
+-- 
+2.7.4
+
+Kind regards
+Uffe
