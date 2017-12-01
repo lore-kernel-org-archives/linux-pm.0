@@ -1,40 +1,61 @@
-From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Subject: RE: [PATCH] PM / runtime: Drop children check from
- __pm_runtime_set_status()
-Date: Fri, 1 Dec 2017 11:54:39 +0000
-Message-ID: <TY1PR06MB0992A6FD8D85E0345EF198D2D8390@TY1PR06MB0992.apcprd06.prod.outlook.com>
-References: <1713438.irjm9MTSvo@aspire.rjw.lan>
- <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
- <TY1PR06MB09928D43D4E5E5752A6A604ED83A0@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFoF0WMSTuK4AAyDzerpVpnfEq=Hn1n9kDJM0fYMkFL_wA@mail.gmail.com>
- <TY1PR06MB09924E4F66C6FCF131EE71CFD83B0@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFoG2-mVGDtzPyg2FDVbXnsWGy543craKqeBVE_awKpf8Q@mail.gmail.com>
- <CAMuHMdViD3vqzits=th52+01d5y3p5iwbAg0jbUBcoGvYfULuA@mail.gmail.com>
- <CAPDyKFpRrQr3LRXH_CoLSYe2a=2PnUqvuNWUYSuh0wm+rBJ0dw@mail.gmail.com>
- <TY1PR06MB09928B145D35E52444F8D462D8380@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFr8D4jL2vwO5tdBJnNVP=DoAD6H_K=4SQbu7rFAZFd3Xg@mail.gmail.com>
- <TY1PR06MB09929CD76E67B64FDE54B170D8390@TY1PR06MB0992.apcprd06.prod.outlook.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Subject: Re: [PATCH v2] PM / Domains: Remove obsolete "samsung,power-domain" check
+Date: Fri, 1 Dec 2017 13:26:13 +0100
+Message-ID: <CAJKOXPf1ta1NkC7cUi9uDaXibaZrUPRYWyaB5G_JikYsnMAQ=g@mail.gmail.com>
+References: <1512042868-23017-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <TY1PR06MB09929CD76E67B64FDE54B170D8390@TY1PR06MB0992.apcprd06.prod.outlook.com>
-Content-Language: ja-JP
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1512042868-23017-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-SGkgYWdhaW4sDQoNCj4gRnJvbTogWW9zaGloaXJvIFNoaW1vZGEsIFNlbnQ6IEZyaWRheSwgRGVj
-ZW1iZXIgMSwgMjAxNyA4OjA0IFBNDQo+IA0KPiBIaSwNCj4gDQo8c25pcD4NCj4gSG93ZXZlciwg
-dGhlIGZvbGxvd2luZyBtZXNzYWdlIHN0aWxsIGV4aXN0cy4NCj4gDQo+ICAgIEVuYWJsaW5nIHJ1
-bnRpbWUgUE0gZm9yIGluYWN0aXZlIGRldmljZSAoZWUwODAwMDAudXNiKSB3aXRoIGFjdGl2ZSBj
-aGlsZHJlbg0KPiANCj4gU28sIEkgZ3Vlc3Mgb2hjaS1wbGF0Zm9ybS5jIGFsc28gaGFzIHNpbWls
-YXIgaXNzdWUuDQo+IA0KPiBKRllJLCB0aGUgZWhjaS1wbGF0Zm9ybS5jIGRvZXNuJ3QgaGF2ZSBy
-dW50aW1lIFBNIGhhbmRsaW5nLg0KPiBTbywgSSB0aGluayB0aGF0IGVycm9yIG1lc3NhZ2UgZG9l
-c24ndCBvdXRwdXQgZnJvbSBlaGNpIGRldmljZXMuDQoNCkkgaGF2ZSB1cGRhdGUuDQpJZiBJIGFk
-ZGVkIHRvIGNhbGwgcG1fcnVudGltZV9mb3JiaWQoKSBpbiBvaGNpLXBsYXRmb3JtLmMgbGlrZSB4
-aGNpLXBsYXQuYywNCnRoZSBpc3N1ZSBkaXNhcHBlYXJlZC4gSSBkb24ndCB1bmRlcnN0YW5kIHRo
-ZSBwbV9ydW50aW1lX2ZvcmJpZCgpIGJlaGF2aW9yIHlldCwNCmJ1dCBpcyB0aGlzIGFjY2VwdGFi
-bGU/DQoNCkJlc3QgcmVnYXJkcywNCllvc2hpaGlybyBTaGltb2RhDQoNCj4gQmVzdCByZWdhcmRz
-LA0KPiBZb3NoaWhpcm8gU2hpbW9kYQ0KDQo=
+On Thu, Nov 30, 2017 at 12:54 PM, Geert Uytterhoeven
+<geert+renesas@glider.be> wrote:
+> Currently the generic PM Domain code code checks for the presence of
+> both (generic) "power-domains" and (Samsung Exynos legacy)
+> "samsung,power-domain" properties in all device tree nodes representing
+> devices.
+>
+> There are two issues with this:
+>   1. This imposes a small boot-time penalty on all platforms using DT,
+>   2. Platform-specific checks do not really belong in core framework
+>      code.
+>
+> Remove the platform-specific check, as the last user of
+> "samsung,power-domain" was removed in commit 46dcf0ff0de35da8 ("ARM:
+> dts: exynos: Remove exynos4415.dtsi").  All other users were converted
+> before in commit 0da6587041363033 ("ARM: dts: convert to generic power
+> domain bindings for exynos DT").
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> This is v2 of 'PM / Domains: Restrict "samsung,power-domain" checks to
+> ARCH_EXYNOS'.
+>
+> "samsung,power-domain" was only ever used in:
+>   - arch/arm/boot/dts/exynos4415.dtsi: Removed
+>   - arch/arm/boot/dts/exynos3250.dtsi: CONFIG_ARCH_EXYNOS3
+>   - arch/arm/boot/dts/exynos4.dtsi:    CONFIG_ARCH_EXYNOS4
+>   - arch/arm/boot/dts/exynos4x12.dtsi: CONFIG_ARCH_EXYNOS4
+>   - arch/arm/boot/dts/exynos5250.dtsi: CONFIG_ARCH_EXYNOS5
+>   - arch/arm/boot/dts/exynos5420.dtsi: CONFIG_ARCH_EXYNOS5
+>
+> v2:
+>   - Remove the check completely instead of restricting it to
+>     ARCH_EXYNOS, as suggested Javier Martinez Canillas one year ago
+>     ("Removing the support for the deprecated property sound sensible to me",
+>     http://lists.infradead.org/pipermail/linux-arm-kernel/2016-October/462868.html).
+> ---
+>  drivers/base/power/domain.c | 16 ++--------------
+>  1 file changed, 2 insertions(+), 14 deletions(-)
+>
+
+The property was deprecated long enough and we anyway always ship DTB
++ kernel together thus:
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+
+Best regards,
+Krzysztof
