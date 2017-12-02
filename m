@@ -1,37 +1,38 @@
-From: Jeremy Linton <jeremy.linton@arm.com>
-Subject: [PATCH v5 1/9] arm64/acpi: Create arch specific cpu to acpi id helper
-Date: Fri,  1 Dec 2017 16:23:22 -0600
-Message-ID: <20171201222330.18863-2-jeremy.linton@arm.com>
-References: <20171201222330.18863-1-jeremy.linton@arm.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171201222330.18863-1-jeremy.linton@arm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-acpi@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, Jeremy Linton <jeremy.linton@arm.com>
+From: Daniel Axtens <dja@axtens.net>
+Subject: [PATCH] power: reset: zx-reboot: add MODULE_LICENSE
+Date: Sat,  2 Dec 2017 18:13:38 +1100
+Message-ID: <20171202071338.17975-1-dja@axtens.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pl0-f67.google.com ([209.85.160.67]:41617 "EHLO
+        mail-pl0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751367AbdLBHOA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 2 Dec 2017 02:14:00 -0500
+Received: by mail-pl0-f67.google.com with SMTP id g2so7546636pli.8
+        for <linux-pm@vger.kernel.org>; Fri, 01 Dec 2017 23:14:00 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: sre@kernel.org, linux-pm@vger.kernel.org
+Cc: trivial@kernel.org, Daniel Axtens <dja@axtens.net>
 
-Its helpful to be able to lookup the acpi_processor_id associated
-with a logical cpu. Provide an arm64 helper to do this.
+This fixes the following warning when building allmodconfig:
+WARNING: modpost: missing MODULE_LICENSE() in drivers/power/reset/zx-reboot.o
 
-Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+The license matches the one at the top of the file.
+
+Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/arm64/include/asm/acpi.h | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/power/reset/zx-reboot.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/arm64/include/asm/acpi.h b/arch/arm64/include/asm/acpi.h
-index 32f465a80e4e..0db62a4cbce2 100644
---- a/arch/arm64/include/asm/acpi.h
-+++ b/arch/arm64/include/asm/acpi.h
-@@ -86,6 +86,10 @@ static inline bool acpi_has_cpu_in_madt(void)
- }
- 
- struct acpi_madt_generic_interrupt *acpi_cpu_get_madt_gicc(int cpu);
-+static inline u32 get_acpi_id_for_cpu(unsigned int cpu)
-+{
-+	return	acpi_cpu_get_madt_gicc(cpu)->uid;
-+}
- 
- static inline void arch_fix_phys_package_id(int num, u32 slot) { }
- void __init acpi_init_cpus(void);
+diff --git a/drivers/power/reset/zx-reboot.c b/drivers/power/reset/zx-reboot.c
+index 7549c7f74a3c..19d0096a4846 100644
+--- a/drivers/power/reset/zx-reboot.c
++++ b/drivers/power/reset/zx-reboot.c
+@@ -82,3 +82,5 @@ static struct platform_driver zx_reboot_driver = {
+ 	},
+ };
+ module_platform_driver(zx_reboot_driver);
++
++MODULE_LICENSE("GPL v2");
 -- 
-2.13.5
+2.11.0
