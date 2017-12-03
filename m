@@ -1,138 +1,66 @@
-From: Baruch Siach <baruch@tkos.co.il>
-Subject: [PATCH v2 2/4] thermal: armada: add support for AP806
-Date: Sun,  3 Dec 2017 13:11:22 +0200
-Message-ID: <0aa7ef4c48974f5973ff637ab37aee620d35b8fe.1512299484.git.baruch@tkos.co.il>
+From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+Subject: [PATCH v2 4/4] thermal: armada: use msleep for long delays
+Date: Sun,  3 Dec 2017 13:11:24 +0200
+Message-ID: <0f09adfb9790009eb4ee4cdc62ce83307c0feede.1512299484.git.baruch@tkos.co.il>
 References: <f8c589337a4fb78852eadf15058e8f8d132d4dc0.1512299484.git.baruch@tkos.co.il>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from guitar.tcltek.co.il ([192.115.133.116]:57338 "EHLO
-        mx.tkos.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750891AbdLCLSy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 3 Dec 2017 06:18:54 -0500
-In-Reply-To: <f8c589337a4fb78852eadf15058e8f8d132d4dc0.1512299484.git.baruch@tkos.co.il>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <f8c589337a4fb78852eadf15058e8f8d132d4dc0.1512299484.git.baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: devicetree@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Russell King <linux@armlinux.org.uk>, Miquel Raynal <miquel.raynal@free-electrons.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Baruch Siach <baruch@tkos.co.il>
 
-The AP806 component is integrated in the Armada 8k and 7k lines of processors.
+Use msleep for long (> 10ms) delays, instead of the busy waiting mdelay.
+All delays are called from the probe routine, where scheduling is
+allowed.
 
-The thermal sensor sample field on the status register is a signed
-value. Extend armada_get_temp() to handle signed values.
-
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
 ---
-v2:
-  Use msleep instead of mdelay (RMK).
-  Fix temperature calculation formula according to recent documentation
-  and vendor code. Update the commit log.
+v2: New patch
 ---
- drivers/thermal/armada_thermal.c | 44 ++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 42 insertions(+), 2 deletions(-)
+ drivers/thermal/armada_thermal.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 706d74798cbe..0eb82097571f 100644
+index 59b75f63945d..d86538d4f519 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -41,6 +41,10 @@
- #define A375_HW_RESETn			BIT(8)
- #define A380_HW_RESET			BIT(8)
+@@ -119,7 +119,7 @@ static void armada370_init_sensor(struct platform_device *pdev,
+ 	reg &= ~PMU_TDC0_START_CAL_MASK;
+ 	writel(reg, priv->control);
  
-+#define AP806_START			BIT(0)
-+#define AP806_RESET			BIT(1)
-+#define AP806_ENABLE			BIT(2)
-+
- struct armada_thermal_data;
+-	mdelay(10);
++	msleep(10);
+ }
  
- /* Marvell EBU Thermal Sensor Dev Structure */
-@@ -63,6 +67,7 @@ struct armada_thermal_data {
- 	unsigned long coef_m;
- 	unsigned long coef_div;
- 	bool inverted;
-+	bool signed_sample;
+ static void armada375_init_sensor(struct platform_device *pdev,
+@@ -133,11 +133,11 @@ static void armada375_init_sensor(struct platform_device *pdev,
+ 	reg &= ~A375_HW_RESETn;
  
- 	/* Register shift and mask to access the sensor temperature */
- 	unsigned int temp_shift;
-@@ -147,6 +152,18 @@ static void armada380_init_sensor(struct platform_device *pdev,
+ 	writel(reg, priv->control + 4);
+-	mdelay(20);
++	msleep(20);
+ 
+ 	reg |= A375_HW_RESETn;
+ 	writel(reg, priv->control + 4);
+-	mdelay(50);
++	msleep(50);
+ }
+ 
+ static void armada380_init_sensor(struct platform_device *pdev,
+@@ -151,7 +151,7 @@ static void armada380_init_sensor(struct platform_device *pdev,
+ 	if (!(reg & A380_HW_RESET)) {
+ 		reg |= A380_HW_RESET;
+ 		writel(reg, control_msb);
+-		mdelay(10);
++		msleep(10);
  	}
  }
  
-+static void armada_ap806_init_sensor(struct platform_device *pdev,
-+				     struct armada_thermal_priv *priv)
-+{
-+	u32 reg = readl_relaxed(priv->control);
-+
-+	reg &= ~AP806_RESET;
-+	reg |= AP806_START;
-+	reg |= AP806_ENABLE;
-+	writel(reg, priv->control);
-+	msleep(10);
-+}
-+
- static bool armada_is_valid(struct armada_thermal_priv *priv)
- {
- 	unsigned long reg = readl_relaxed(priv->sensor);
-@@ -160,6 +177,7 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
- 	struct armada_thermal_priv *priv = thermal->devdata;
- 	unsigned long reg;
- 	unsigned long m, b, div;
-+	int sample;
- 
- 	/* Valid check */
- 	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
-@@ -170,6 +188,11 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
- 
- 	reg = readl_relaxed(priv->sensor);
- 	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
-+	if (priv->data->signed_sample)
-+		/* The most significant bit is the sign bit */
-+		sample = sign_extend32(reg, fls(priv->data->temp_mask) - 1);
-+	else
-+		sample = reg;
- 
- 	/* Get formula coeficients */
- 	b = priv->data->coef_b;
-@@ -177,9 +200,9 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
- 	div = priv->data->coef_div;
- 
- 	if (priv->data->inverted)
--		*temp = ((m * reg) - b) / div;
-+		*temp = ((m * sample) - b) / div;
- 	else
--		*temp = (b - (m * reg)) / div;
-+		*temp = (b - (m * sample)) / div;
- 	return 0;
- }
- 
-@@ -230,6 +253,19 @@ static const struct armada_thermal_data armada380_data = {
- 	.inverted = true,
- };
- 
-+static const struct armada_thermal_data armada_ap806_data = {
-+	.is_valid = armada_is_valid,
-+	.init_sensor = armada_ap806_init_sensor,
-+	.is_valid_shift = 16,
-+	.temp_shift = 0,
-+	.temp_mask = 0x3ff,
-+	.coef_b = -150000,
-+	.coef_m = 423UL,
-+	.coef_div = 1,
-+	.inverted = true,
-+	.signed_sample = true,
-+};
-+
- static const struct of_device_id armada_thermal_id_table[] = {
- 	{
- 		.compatible = "marvell,armadaxp-thermal",
-@@ -247,6 +283,10 @@ static const struct of_device_id armada_thermal_id_table[] = {
- 		.compatible = "marvell,armada380-thermal",
- 		.data       = &armada380_data,
- 	},
-+	{
-+		.compatible = "marvell,armada-ap806-thermal",
-+		.data       = &armada_ap806_data,
-+	},
- 	{
- 		/* sentinel */
- 	},
 -- 
 2.15.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
