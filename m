@@ -1,107 +1,80 @@
 From: Juri Lelli <juri.lelli@redhat.com>
-Subject: [RFC PATCH v2 8/8] sched/deadline: make bandwidth enforcement scale-invariant
-Date: Mon,  4 Dec 2017 11:23:25 +0100
-Message-ID: <20171204102325.5110-9-juri.lelli@redhat.com>
+Subject: [RFC PATCH v2 6/8] sched/sched.h: remove sd arch_scale_freq_capacity parameter
+Date: Mon,  4 Dec 2017 11:23:23 +0100
+Message-ID: <20171204102325.5110-7-juri.lelli@redhat.com>
 References: <20171204102325.5110-1-juri.lelli@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171204102325.5110-1-juri.lelli@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, alessio.balsini@arm.com, juri.lelli@redhat.com, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, patrick.bellasi@arm.com, alessio.balsini@arm.com, juri.lelli@redhat.com, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 From: Juri Lelli <juri.lelli@arm.com>
 
-Apply frequency and cpu scale-invariance correction factor to bandwidth
-enforcement (similar to what we already do to fair utilization tracking).
+sd parameter is never used in arch_scale_freq_capacity (and it's hard to
+see where information coming from scheduling domains might help doing
+frequency invariance scaling).
 
-Each delta_exec gets scaled considering current frequency and maximum
-cpu capacity; which means that the reservation runtime parameter (that
-need to be specified profiling the task execution at max frequency on
-biggest capacity core) gets thus scaled accordingly.
+Remove it; also in anticipation of moving arch_scale_freq_capacity
+outside CONFIG_SMP.
 
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Ingo Molnar <mingo@kernel.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Luca Abeni <luca.abeni@santannapisa.it>
-Cc: Claudio Scordino <claudio@evidence.eu.com>
 ---
- kernel/sched/deadline.c | 26 ++++++++++++++++++++++----
- kernel/sched/fair.c     |  2 --
- kernel/sched/sched.h    |  2 ++
- 3 files changed, 24 insertions(+), 6 deletions(-)
+ include/linux/arch_topology.h | 2 +-
+ kernel/sched/fair.c           | 2 +-
+ kernel/sched/sched.h          | 4 ++--
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
-index 40f12aab9250..741d2fe26f88 100644
---- a/kernel/sched/deadline.c
-+++ b/kernel/sched/deadline.c
-@@ -1151,7 +1151,8 @@ static void update_curr_dl(struct rq *rq)
+diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
+index 304511267c82..2b709416de05 100644
+--- a/include/linux/arch_topology.h
++++ b/include/linux/arch_topology.h
+@@ -27,7 +27,7 @@ void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
+ DECLARE_PER_CPU(unsigned long, freq_scale);
+ 
+ static inline
+-unsigned long topology_get_freq_scale(struct sched_domain *sd, int cpu)
++unsigned long topology_get_freq_scale(int cpu)
  {
- 	struct task_struct *curr = rq->curr;
- 	struct sched_dl_entity *dl_se = &curr->dl;
--	u64 delta_exec;
-+	u64 delta_exec, scaled_delta_exec;
-+	int cpu = cpu_of(rq);
- 
- 	if (!dl_task(curr) || !on_dl_rq(dl_se))
- 		return;
-@@ -1185,9 +1186,26 @@ static void update_curr_dl(struct rq *rq)
- 	if (unlikely(dl_entity_is_special(dl_se)))
- 		return;
- 
--	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM))
--		delta_exec = grub_reclaim(delta_exec, rq, &curr->dl);
--	dl_se->runtime -= delta_exec;
-+	/*
-+	 * For tasks that participate in GRUB, we implement GRUB-PA: the
-+	 * spare reclaimed bandwidth is used to clock down frequency.
-+	 *
-+	 * For the others, we still need to scale reservation parameters
-+	 * according to current frequency and CPU maximum capacity.
-+	 */
-+	if (unlikely(dl_se->flags & SCHED_FLAG_RECLAIM)) {
-+		scaled_delta_exec = grub_reclaim(delta_exec,
-+						 rq,
-+						 &curr->dl);
-+	} else {
-+		unsigned long scale_freq = arch_scale_freq_capacity(cpu);
-+		unsigned long scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
-+
-+		scaled_delta_exec = cap_scale(delta_exec, scale_freq);
-+		scaled_delta_exec = cap_scale(scaled_delta_exec, scale_cpu);
-+	}
-+
-+	dl_se->runtime -= scaled_delta_exec;
- 
- throttle:
- 	if (dl_runtime_exceeded(dl_se) || dl_se->dl_yielded) {
+ 	return per_cpu(freq_scale, cpu);
+ }
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 535d9409f4af..5bc3273a5c1c 100644
+index 4037e19bbca2..535d9409f4af 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -3091,8 +3091,6 @@ static u32 __accumulate_pelt_segments(u64 periods, u32 d1, u32 d3)
- 	return c1 + c2 + c3;
- }
+@@ -3122,7 +3122,7 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
+ 	u32 contrib = (u32)delta; /* p == 0 -> delta < 1024 */
+ 	u64 periods;
  
--#define cap_scale(v, s) ((v)*(s) >> SCHED_CAPACITY_SHIFT)
--
- /*
-  * Accumulate the three separate parts of the sum; d1 the remainder
-  * of the last (incomplete) period, d2 the span of full periods and d3
+-	scale_freq = arch_scale_freq_capacity(NULL, cpu);
++	scale_freq = arch_scale_freq_capacity(cpu);
+ 	scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
+ 
+ 	delta += sa->period_contrib;
 diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 0022c649fabb..6d9d55e764fa 100644
+index 280b421a82e8..b64207d54a55 100644
 --- a/kernel/sched/sched.h
 +++ b/kernel/sched/sched.h
-@@ -156,6 +156,8 @@ static inline int task_has_dl_policy(struct task_struct *p)
- 	return dl_policy(p->policy);
- }
+@@ -1712,7 +1712,7 @@ extern void sched_avg_update(struct rq *rq);
  
-+#define cap_scale(v, s) ((v)*(s) >> SCHED_CAPACITY_SHIFT)
-+
- /*
-  * !! For sched_setattr_nocheck() (kernel) only !!
-  *
+ #ifndef arch_scale_freq_capacity
+ static __always_inline
+-unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
++unsigned long arch_scale_freq_capacity(int cpu)
+ {
+ 	return SCHED_CAPACITY_SCALE;
+ }
+@@ -1731,7 +1731,7 @@ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+ 
+ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
+ {
+-	rq->rt_avg += rt_delta * arch_scale_freq_capacity(NULL, cpu_of(rq));
++	rq->rt_avg += rt_delta * arch_scale_freq_capacity(cpu_of(rq));
+ 	sched_avg_update(rq);
+ }
+ #else
 -- 
 2.14.3
