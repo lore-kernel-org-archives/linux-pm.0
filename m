@@ -1,13 +1,13 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH 5/8] power: supply: axp20x_battery: add support
- for AXP813
-Date: Mon,  4 Dec 2017 15:12:51 +0100
-Message-ID: <545d3aa6339c9e33060d651c42d652d0b848c06b.1512396054.git-series.quentin.schulz@free-electrons.com>
+Subject: [PATCH 8/8] ARM: dtsi: sun8i: a711: enable battery
+ power supply subnode
+Date: Mon,  4 Dec 2017 15:12:54 +0100
+Message-ID: <2af471ef9bee675a2cf411b9d2dd602eb4aa448b.1512396054.git-series.quentin.schulz@free-electrons.com>
 References: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBB25QSXIQKGQEB6ACWJA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBB35QSXIQKGQEWDBDYXY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 In-Reply-To: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -22,113 +22,28 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@
 Cc: knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, icenowy-h8G6r0blFSE@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP813 PMIC has got some slight differences from
-AXP20X/AXP22X PMICs:
- - the maximum voltage supplied by the PMIC is 4.35 instead of 4.36/4.24
- for AXP20X/AXP22X,
- - the constant charge current formula is different,
-
-It also has a bit to tell whether the battery percentage returned by the
-PMIC is valid.
+The TBS A711 has an AXP813 PMIC and a soldered battery, thus, we enable
+the battery power supply subnode in its Device Tree.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- drivers/power/supply/axp20x_battery.c | 44 +++++++++++++++++++++++++++-
- 1 file changed, 43 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/sun8i-a83t-tbs-a711.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
-index 7494f0f..cb30302 100644
---- a/drivers/power/supply/axp20x_battery.c
-+++ b/drivers/power/supply/axp20x_battery.c
-@@ -46,6 +46,8 @@
- #define AXP20X_CHRG_CTRL1_TGT_4_2V	(2 << 5)
- #define AXP20X_CHRG_CTRL1_TGT_4_36V	(3 << 5)
+diff --git a/arch/arm/boot/dts/sun8i-a83t-tbs-a711.dts b/arch/arm/boot/dts/sun8i-a83t-tbs-a711.dts
+index 9871553..806cb17 100644
+--- a/arch/arm/boot/dts/sun8i-a83t-tbs-a711.dts
++++ b/arch/arm/boot/dts/sun8i-a83t-tbs-a711.dts
+@@ -181,6 +181,10 @@
  
-+#define AXP813_CHRG_CTRL1_TGT_4_35V	(3 << 5)
+ #include "axp81x.dtsi"
+ 
++&battery_power_supply {
++	status = "okay";
++};
 +
- #define AXP22X_CHRG_CTRL1_TGT_4_22V	(1 << 5)
- #define AXP22X_CHRG_CTRL1_TGT_4_24V	(3 << 5)
- 
-@@ -123,10 +125,41 @@ static int axp22x_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
- 	return 0;
- }
- 
-+static int axp813_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
-+					  int *val)
-+{
-+	int ret, reg;
-+
-+	ret = regmap_read(axp20x_batt->regmap, AXP20X_CHRG_CTRL1, &reg);
-+	if (ret)
-+		return ret;
-+
-+	switch (reg & AXP20X_CHRG_CTRL1_TGT_VOLT) {
-+	case AXP20X_CHRG_CTRL1_TGT_4_1V:
-+		*val = 4100000;
-+		break;
-+	case AXP20X_CHRG_CTRL1_TGT_4_15V:
-+		*val = 4150000;
-+		break;
-+	case AXP20X_CHRG_CTRL1_TGT_4_2V:
-+		*val = 4200000;
-+		break;
-+	case AXP813_CHRG_CTRL1_TGT_4_35V:
-+		*val = 4350000;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
- static void raw_to_constant_charge_current(struct axp20x_batt_ps *axp, int *val)
- {
- 	if (axp->axp_id == AXP209_ID)
- 		*val = *val * 100000 + 300000;
-+	else if (axp->axp_id == AXP813_ID)
-+		*val = *val * 200000 + 200000;
- 	else
- 		*val = *val * 150000 + 300000;
- }
-@@ -135,6 +168,8 @@ static void constant_charge_current_to_raw(struct axp20x_batt_ps *axp, int *val)
- {
- 	if (axp->axp_id == AXP209_ID)
- 		*val = (*val - 300000) / 100000;
-+	else if (axp->axp_id == AXP813_ID)
-+		*val = (*val - 200000) / 200000;
- 	else
- 		*val = (*val - 300000) / 150000;
- }
-@@ -269,7 +304,8 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
- 		if (ret)
- 			return ret;
- 
--		if (axp20x_batt->axp_id == AXP221_ID &&
-+		if ((axp20x_batt->axp_id == AXP221_ID ||
-+		     axp20x_batt->axp_id == AXP813_ID) &&
- 		    !(reg & AXP22X_FG_VALID))
- 			return -EINVAL;
- 
-@@ -284,6 +320,9 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
- 		if (axp20x_batt->axp_id == AXP209_ID)
- 			return axp20x_battery_get_max_voltage(axp20x_batt,
- 							      &val->intval);
-+		else if (axp20x_batt->axp_id == AXP813_ID)
-+			return axp813_battery_get_max_voltage(axp20x_batt,
-+							      &val->intval);
- 		return axp22x_battery_get_max_voltage(axp20x_batt,
- 						      &val->intval);
- 
-@@ -467,6 +506,9 @@ static const struct of_device_id axp20x_battery_ps_id[] = {
- 	}, {
- 		.compatible = "x-powers,axp221-battery-power-supply",
- 		.data = (void *)AXP221_ID,
-+	}, {
-+		.compatible = "x-powers,axp813-battery-power-supply",
-+		.data = (void *)AXP813_ID,
- 	}, { /* sentinel */ },
- };
- MODULE_DEVICE_TABLE(of, axp20x_battery_ps_id);
+ &reg_aldo1 {
+ 	regulator-min-microvolt = <1800000>;
+ 	regulator-max-microvolt = <1800000>;
 -- 
 git-series 0.9.1
