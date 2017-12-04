@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH 6/8] mfd: axp20x: add battery power supply cell
+Subject: [PATCH 5/8] power: supply: axp20x_battery: add support
  for AXP813
-Date: Mon,  4 Dec 2017 15:12:52 +0100
-Message-ID: <9b5e9ed623165d0586f086343a7c67bc5c18bbb5.1512396054.git-series.quentin.schulz@free-electrons.com>
+Date: Mon,  4 Dec 2017 15:12:51 +0100
+Message-ID: <545d3aa6339c9e33060d651c42d652d0b848c06b.1512396054.git-series.quentin.schulz@free-electrons.com>
 References: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
@@ -22,26 +22,113 @@ To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@
 Cc: knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, icenowy-h8G6r0blFSE@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-As axp20x-battery-power-supply now supports AXP813, add a cell for it.
+The X-Powers AXP813 PMIC has got some slight differences from
+AXP20X/AXP22X PMICs:
+ - the maximum voltage supplied by the PMIC is 4.35 instead of 4.36/4.24
+ for AXP20X/AXP22X,
+ - the constant charge current formula is different,
+
+It also has a bit to tell whether the battery percentage returned by the
+PMIC is valid.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- drivers/mfd/axp20x.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/power/supply/axp20x_battery.c | 44 +++++++++++++++++++++++++++-
+ 1 file changed, 43 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
-index 42e54d1..7566358 100644
---- a/drivers/mfd/axp20x.c
-+++ b/drivers/mfd/axp20x.c
-@@ -880,6 +880,9 @@ static struct mfd_cell axp813_cells[] = {
- 		.name			= "axp20x-regulator",
- 	}, {
- 		.name			= "axp813-adc",
-+	}, {
-+		.name			= "axp20x-battery-power-supply",
-+		.of_compatible		= "x-powers,axp813-battery-power-supply",
- 	},
- };
+diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
+index 7494f0f..cb30302 100644
+--- a/drivers/power/supply/axp20x_battery.c
++++ b/drivers/power/supply/axp20x_battery.c
+@@ -46,6 +46,8 @@
+ #define AXP20X_CHRG_CTRL1_TGT_4_2V	(2 << 5)
+ #define AXP20X_CHRG_CTRL1_TGT_4_36V	(3 << 5)
  
++#define AXP813_CHRG_CTRL1_TGT_4_35V	(3 << 5)
++
+ #define AXP22X_CHRG_CTRL1_TGT_4_22V	(1 << 5)
+ #define AXP22X_CHRG_CTRL1_TGT_4_24V	(3 << 5)
+ 
+@@ -123,10 +125,41 @@ static int axp22x_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
+ 	return 0;
+ }
+ 
++static int axp813_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
++					  int *val)
++{
++	int ret, reg;
++
++	ret = regmap_read(axp20x_batt->regmap, AXP20X_CHRG_CTRL1, &reg);
++	if (ret)
++		return ret;
++
++	switch (reg & AXP20X_CHRG_CTRL1_TGT_VOLT) {
++	case AXP20X_CHRG_CTRL1_TGT_4_1V:
++		*val = 4100000;
++		break;
++	case AXP20X_CHRG_CTRL1_TGT_4_15V:
++		*val = 4150000;
++		break;
++	case AXP20X_CHRG_CTRL1_TGT_4_2V:
++		*val = 4200000;
++		break;
++	case AXP813_CHRG_CTRL1_TGT_4_35V:
++		*val = 4350000;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
+ static void raw_to_constant_charge_current(struct axp20x_batt_ps *axp, int *val)
+ {
+ 	if (axp->axp_id == AXP209_ID)
+ 		*val = *val * 100000 + 300000;
++	else if (axp->axp_id == AXP813_ID)
++		*val = *val * 200000 + 200000;
+ 	else
+ 		*val = *val * 150000 + 300000;
+ }
+@@ -135,6 +168,8 @@ static void constant_charge_current_to_raw(struct axp20x_batt_ps *axp, int *val)
+ {
+ 	if (axp->axp_id == AXP209_ID)
+ 		*val = (*val - 300000) / 100000;
++	else if (axp->axp_id == AXP813_ID)
++		*val = (*val - 200000) / 200000;
+ 	else
+ 		*val = (*val - 300000) / 150000;
+ }
+@@ -269,7 +304,8 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+ 		if (ret)
+ 			return ret;
+ 
+-		if (axp20x_batt->axp_id == AXP221_ID &&
++		if ((axp20x_batt->axp_id == AXP221_ID ||
++		     axp20x_batt->axp_id == AXP813_ID) &&
+ 		    !(reg & AXP22X_FG_VALID))
+ 			return -EINVAL;
+ 
+@@ -284,6 +320,9 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+ 		if (axp20x_batt->axp_id == AXP209_ID)
+ 			return axp20x_battery_get_max_voltage(axp20x_batt,
+ 							      &val->intval);
++		else if (axp20x_batt->axp_id == AXP813_ID)
++			return axp813_battery_get_max_voltage(axp20x_batt,
++							      &val->intval);
+ 		return axp22x_battery_get_max_voltage(axp20x_batt,
+ 						      &val->intval);
+ 
+@@ -467,6 +506,9 @@ static const struct of_device_id axp20x_battery_ps_id[] = {
+ 	}, {
+ 		.compatible = "x-powers,axp221-battery-power-supply",
+ 		.data = (void *)AXP221_ID,
++	}, {
++		.compatible = "x-powers,axp813-battery-power-supply",
++		.data = (void *)AXP813_ID,
+ 	}, { /* sentinel */ },
+ };
+ MODULE_DEVICE_TABLE(of, axp20x_battery_ps_id);
 -- 
 git-series 0.9.1
