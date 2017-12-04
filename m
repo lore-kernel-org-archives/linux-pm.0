@@ -1,7 +1,7 @@
 From: Juri Lelli <juri.lelli@redhat.com>
-Subject: [RFC PATCH v2 6/8] sched/sched.h: remove sd arch_scale_freq_capacity parameter
-Date: Mon,  4 Dec 2017 11:23:23 +0100
-Message-ID: <20171204102325.5110-7-juri.lelli@redhat.com>
+Subject: [RFC PATCH v2 7/8] sched/sched.h: move arch_scale_{freq,cpu}_capacity outside CONFIG_SMP
+Date: Mon,  4 Dec 2017 11:23:24 +0100
+Message-ID: <20171204102325.5110-8-juri.lelli@redhat.com>
 References: <20171204102325.5110-1-juri.lelli@redhat.com>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171204102325.5110-1-juri.lelli@redhat.com>
@@ -12,69 +12,95 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Juri Lelli <juri.lelli@arm.com>
 
-sd parameter is never used in arch_scale_freq_capacity (and it's hard to
-see where information coming from scheduling domains might help doing
-frequency invariance scaling).
+Currently, frequency and cpu capacity scaling is only performed on
+CONFIG_SMP systems (as CFS PELT signals are only present for such
+systems). However, other scheduling classes want to do freq/cpu scaling,
+and for !CONFIG_SMP configurations as well.
 
-Remove it; also in anticipation of moving arch_scale_freq_capacity
-outside CONFIG_SMP.
+arch_scale_freq_capacity is useful to implement frequency scaling even
+on !CONFIG_SMP platforms, so we simply move it outside CONFIG_SMP
+ifdeffery.
+
+Even if arch_scale_cpu_capacity is not useful on !CONFIG_SMP platforms,
+we make a default implementation available for such configurations anyway
+to simplify scheduler code doing CPU scale invariance.
 
 Signed-off-by: Juri Lelli <juri.lelli@arm.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Ingo Molnar <mingo@kernel.org>
+Reviewed-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
 ---
- include/linux/arch_topology.h | 2 +-
- kernel/sched/fair.c           | 2 +-
- kernel/sched/sched.h          | 4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ include/linux/sched/topology.h | 12 ++++++------
+ kernel/sched/sched.h           | 13 ++++++++++---
+ 2 files changed, 16 insertions(+), 9 deletions(-)
 
-diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
-index 304511267c82..2b709416de05 100644
---- a/include/linux/arch_topology.h
-+++ b/include/linux/arch_topology.h
-@@ -27,7 +27,7 @@ void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity);
- DECLARE_PER_CPU(unsigned long, freq_scale);
+diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
+index cf257c2e728d..26347741ba50 100644
+--- a/include/linux/sched/topology.h
++++ b/include/linux/sched/topology.h
+@@ -6,6 +6,12 @@
  
- static inline
--unsigned long topology_get_freq_scale(struct sched_domain *sd, int cpu)
-+unsigned long topology_get_freq_scale(int cpu)
+ #include <linux/sched/idle.h>
+ 
++/*
++ * Increase resolution of cpu_capacity calculations
++ */
++#define SCHED_CAPACITY_SHIFT	SCHED_FIXEDPOINT_SHIFT
++#define SCHED_CAPACITY_SCALE	(1L << SCHED_CAPACITY_SHIFT)
++
+ /*
+  * sched-domains (multiprocessor balancing) declarations:
+  */
+@@ -27,12 +33,6 @@
+ #define SD_OVERLAP		0x2000	/* sched_domains of this level overlap */
+ #define SD_NUMA			0x4000	/* cross-node balancing */
+ 
+-/*
+- * Increase resolution of cpu_capacity calculations
+- */
+-#define SCHED_CAPACITY_SHIFT	SCHED_FIXEDPOINT_SHIFT
+-#define SCHED_CAPACITY_SCALE	(1L << SCHED_CAPACITY_SHIFT)
+-
+ #ifdef CONFIG_SCHED_SMT
+ static inline int cpu_smt_flags(void)
  {
- 	return per_cpu(freq_scale, cpu);
- }
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 4037e19bbca2..535d9409f4af 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -3122,7 +3122,7 @@ accumulate_sum(u64 delta, int cpu, struct sched_avg *sa,
- 	u32 contrib = (u32)delta; /* p == 0 -> delta < 1024 */
- 	u64 periods;
- 
--	scale_freq = arch_scale_freq_capacity(NULL, cpu);
-+	scale_freq = arch_scale_freq_capacity(cpu);
- 	scale_cpu = arch_scale_cpu_capacity(NULL, cpu);
- 
- 	delta += sa->period_contrib;
 diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index 280b421a82e8..b64207d54a55 100644
+index b64207d54a55..0022c649fabb 100644
 --- a/kernel/sched/sched.h
 +++ b/kernel/sched/sched.h
-@@ -1712,7 +1712,7 @@ extern void sched_avg_update(struct rq *rq);
+@@ -1707,9 +1707,6 @@ static inline int hrtick_enabled(struct rq *rq)
  
+ #endif /* CONFIG_SCHED_HRTICK */
+ 
+-#ifdef CONFIG_SMP
+-extern void sched_avg_update(struct rq *rq);
+-
  #ifndef arch_scale_freq_capacity
  static __always_inline
--unsigned long arch_scale_freq_capacity(struct sched_domain *sd, int cpu)
-+unsigned long arch_scale_freq_capacity(int cpu)
- {
- 	return SCHED_CAPACITY_SCALE;
+ unsigned long arch_scale_freq_capacity(int cpu)
+@@ -1718,6 +1715,9 @@ unsigned long arch_scale_freq_capacity(int cpu)
  }
-@@ -1731,7 +1731,7 @@ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+ #endif
  
- static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
- {
--	rq->rt_avg += rt_delta * arch_scale_freq_capacity(NULL, cpu_of(rq));
-+	rq->rt_avg += rt_delta * arch_scale_freq_capacity(cpu_of(rq));
++#ifdef CONFIG_SMP
++extern void sched_avg_update(struct rq *rq);
++
+ #ifndef arch_scale_cpu_capacity
+ static __always_inline
+ unsigned long arch_scale_cpu_capacity(struct sched_domain *sd, int cpu)
+@@ -1735,6 +1735,13 @@ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
  	sched_avg_update(rq);
  }
  #else
++#ifndef arch_scale_cpu_capacity
++static __always_inline
++unsigned long arch_scale_cpu_capacity(void __always_unused *sd, int cpu)
++{
++	return SCHED_CAPACITY_SCALE;
++}
++#endif
+ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta) { }
+ static inline void sched_avg_update(struct rq *rq) { }
+ #endif
 -- 
 2.14.3
