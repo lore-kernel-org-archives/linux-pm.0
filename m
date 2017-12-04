@@ -1,57 +1,66 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: Re: [PATCH] PM / runtime: Fix handling of suppliers with disabled
- runtime PM
-Date: Mon, 4 Dec 2017 13:51:36 +0200
-Message-ID: <c704e4a3-7faf-d2fd-297e-4efcd604bd0f@intel.com>
-References: <1532136.s6buYvDjaS@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:31024 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752736AbdLDLv6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 4 Dec 2017 06:51:58 -0500
-In-Reply-To: <1532136.s6buYvDjaS@aspire.rjw.lan>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH 0/8] add support for AXP813 ADC and battery power supply
+Date: Mon,  4 Dec 2017 15:12:46 +0100
+Message-ID: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz@free-electrons.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, icenowy-h8G6r0blFSE@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Lukas Wunner <lukas@wunner.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On 01/12/17 15:58, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Prevent rpm_get_suppliers() from returning an error code if runtime
-> PM is disabled for one or more of the supplier devices it wants to
-> runtime-resume, so as to make runtime PM work for devices with links
-> to suppliers that don't use runtime PM (such links may be created
-> during device enumeration even before it is known whether or not
-> runtime PM will be enabled for the devices in question, for example).
-> 
-> Reported-by: Adrian Hunter <adrian.hunter@intel.com>
-> Fixes: 21d5c57b3726 (PM / runtime: Use device links)
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The AXP813 PMIC is relatively close to the already supported AXP20X and
+AXP22X. It provides three different power outputs: battery, AC and USB, and
+measures a few different things: temperature, power supply status, current
+current and voltage supplied, maximum current limit, battery capacity, min
+and max voltage limits.
 
-Tested-by: Adrian Hunter <adrian.hunter@intel.com>
+One of its two GPIOs can be used as an ADC.
 
-> ---
->  drivers/base/power/runtime.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> Index: linux-pm/drivers/base/power/runtime.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/runtime.c
-> +++ linux-pm/drivers/base/power/runtime.c
-> @@ -276,7 +276,8 @@ static int rpm_get_suppliers(struct devi
->  			continue;
->  
->  		retval = pm_runtime_get_sync(link->supplier);
-> -		if (retval < 0) {
-> +		/* Ignore suppliers with disabled runtime PM. */
-> +		if (retval < 0 && retval != -EACCES) {
->  			pm_runtime_put_noidle(link->supplier);
->  			return retval;
->  		}
-> 
-> 
+There are a few differences with AXP20X/AXP22X PMICs though:
+  - a different constant charge current formula,
+  - battery temperature, GPIO0 and battery voltages are the only voltages
+  measurable,
+  - all data are stored on 12 bits (AXP20X/AXP22X had one type of data that
+  was stored on 13 bits),
+  - different scales and offsets,
+  - a different ADC rate formula and register,
+
+This patch series adds support for the PMIC's ADC and battery power supply
+in the existing drivers.
+
+Make the axp20x MFD automatically probe the ADC driver, add the battery
+power supply node in axp81x node and enable it for the TBS A711 since it
+has a soldered battery.
+
+Q: The BananaPi M3 has two solder balls for battery, should the battery
+power supply node be enabled for this board as well?
+
+Thanks,
+Quentin
+
+Quentin Schulz (8):
+  iio: adc: axp20x_adc: put ADC rate setting in a per-variant function
+  iio: adc: axp20x_adc: add support for AXP813 ADC
+  mfd: axp20x: probe axp20x_adc driver for AXP813
+  dt-bindings: power: supply: axp20x: add AXP813 battery DT binding
+  power: supply: axp20x_battery: add support for AXP813
+  mfd: axp20x: add battery power supply cell for AXP813
+  ARM: dtsi: axp81x: add battery power supply subnode
+  ARM: dtsi: sun8i: a711: enable battery power supply subnode
+
+ Documentation/devicetree/bindings/power/supply/axp20x_battery.txt |   8 ++--
+ arch/arm/boot/dts/axp81x.dtsi                                     |   5 +++-
+ arch/arm/boot/dts/sun8i-a83t-tbs-a711.dts                         |   4 ++-
+ drivers/iio/adc/axp20x_adc.c                                      | 139 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ drivers/mfd/axp20x.c                                              |   7 +++-
+ drivers/power/supply/axp20x_battery.c                             |  44 ++++++++++++++++++++++-
+ include/linux/mfd/axp20x.h                                        |   2 +-
+ 7 files changed, 196 insertions(+), 13 deletions(-)
+
+base-commit: 7cc61a0a562c7005d2a34f97e94cf26689a2f57c
+-- 
+git-series 0.9.1
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
