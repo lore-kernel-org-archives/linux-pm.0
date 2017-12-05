@@ -1,44 +1,39 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal/drivers/hisi: disable multi alarm support for
- hi3660 SoC
-Date: Mon, 4 Dec 2017 18:02:13 -0800
-Message-ID: <20171205020212.GB4949@localhost.localdomain>
-References: <20171017043941.GE7954@localhost.localdomain>
- <1508318150-108444-1-git-send-email-kevin.wangtao@hisilicon.com>
- <9685721b-4593-029b-b8e8-d721526b7119@linaro.org>
- <6f39a5ed-0db6-4600-19d0-f9e9c5c43b1f@hisilicon.com>
+From: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH] thermal: tegra: allow sensor registeration to fail
+Date: Mon, 4 Dec 2017 18:46:28 -0800
+Message-ID: <20171205024625.GC4949@localhost.localdomain>
+References: <1509148453-11388-1-git-send-email-nicoleotsuka@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:46525 "EHLO
-        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750995AbdLECCS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Dec 2017 21:02:18 -0500
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <6f39a5ed-0db6-4600-19d0-f9e9c5c43b1f@hisilicon.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1509148453-11388-1-git-send-email-nicoleotsuka-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Nicolin Chen <nicoleotsuka-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, srikars-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, sunzhaosheng@hisilicon.com, gengyanping@hisilicon.com, Kevin Wangtao <kevin.wangtao@linaro.org>
 
 Hello,
 
-On Thu, Oct 19, 2017 at 09:31:24AM +0800, Wangtao (Kevin, Kirin) wrote:
-> 
-> 
-> 在 2017/10/18 23:54, Daniel Lezcano 写道:
-> >On 18/10/2017 11:15, Tao Wang wrote:
-> >>From: Kevin Wangtao <kevin.wangtao@linaro.org>
-> >>
-> >>multi alarm interrupt forced a re-trigger of power_allocator_throttle
-> >>which changes the PID's actual sampling rate, this isn't optimal for
-> >>IPA, it is best to disable multi alarm support now and sort out this
-> >>issue later.
-> >>
-> >>Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
-> >
-> >Did you test the series with this change?
-> Yes
+On Fri, Oct 27, 2017 at 04:54:13PM -0700, Nicolin Chen wrote:
+> Not all sensors may be used on a platform. So there could be
+> some missing thermal zones in the Device Tree. However, the
+> the driver now errors out whenever a sensor fails to register
+> the thermal zone.
+>=20
+> Since the driver could live with other sensors, this change
+> allows other sensors to continue the registerations even if
+> one sensor fails to register.
 
-Is this patch still valid with the latest linus master?
+What would be the use case you want to have your chip running with
+failed to probe thermal zones ? If they are failing to probe
+shouldnt you fix the DT nodes?
+
+a system with correct DT, failed to probe zones is a real bug.
+Either in the DT or in the code.
+
+>=20
+> Signed-off-by: Nicolin Chen <nicoleotsuka-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> ---
+>=20
