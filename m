@@ -1,165 +1,90 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v2 3/4] sched/fair: use util_est in LB and WU paths
-Date: Tue,  5 Dec 2017 17:10:17 +0000
-Message-ID: <20171205171018.9203-4-patrick.bellasi@arm.com>
+Subject: [PATCH v2 1/4] sched/fair: always used unsigned long for utilization
+Date: Tue,  5 Dec 2017 17:10:15 +0000
+Message-ID: <20171205171018.9203-2-patrick.bellasi@arm.com>
 References: <20171205171018.9203-1-patrick.bellasi@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:52338 "EHLO foss.arm.com"
+Received: from foss.arm.com ([217.140.101.70]:52290 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753063AbdLERKp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 5 Dec 2017 12:10:45 -0500
+        id S1752902AbdLERKi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 5 Dec 2017 12:10:38 -0500
 In-Reply-To: <20171205171018.9203-1-patrick.bellasi@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-When the scheduler looks at the CPU utilization, the current PELT value
-for a CPU is returned straight away. In certain scenarios this can have
-undesired side effects on task placement.
+Utilization and capacity are tracked as unsigned long, however some
+functions using them return an int which is ultimately assigned back to
+unsigned long variables.
 
-For example, since the task utilization is decayed at wakeup time, when
-a long sleeping big task is enqueued it does not add immediately a
-significant contribution to the target CPU.
-As a result we generate a race condition where other tasks can be placed
-on the same CPU while is still considered relatively empty.
-
-In order to reduce these kind of race conditions, this patch introduces the
-required support to integrate the usage of the CPU's estimated utilization
-in cpu_util_wake as well as in update_sg_lb_stats.
-
-The estimated utilization of a CPU is defined to be the maximum between
-its PELT's utilization and the sum of the estimated utilization of the
-tasks currently RUNNABLE on that CPU.
-This allows to properly represent the expected utilization of a CPU which,
-for example, has just got a big task running since a long sleep
-period.
+Since there is not scope on using a different and signed type, this
+consolidate the signature of functions returning utilization to always
+use the native type.
+As well as improving code consistency this is expected also benefits
+code paths where utilizations should be clamped by avoiding further type
+conversions or ugly type casts.
 
 Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
+Reviewed-by: Chris Redpath <chris.redpath@arm.com>
 Reviewed-by: Brendan Jackman <brendan.jackman@arm.com>
 Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Cc: Ingo Molnar <mingo@redhat.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Paul Turner <pjt@google.com>
 Cc: Vincent Guittot <vincent.guittot@linaro.org>
 Cc: Morten Rasmussen <morten.rasmussen@arm.com>
 Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
 Cc: linux-kernel@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
 
 ---
 Changes v1->v2:
  - rebase on top of v4.15-rc2
  - tested that overhauled PELT code does not affect the util_est
 ---
- kernel/sched/fair.c | 74 ++++++++++++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 68 insertions(+), 6 deletions(-)
+ kernel/sched/fair.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index d8f3ed71010b..373d631efa91 100644
+index 4037e19bbca2..ad21550d008c 100644
 --- a/kernel/sched/fair.c
 +++ b/kernel/sched/fair.c
-@@ -6306,6 +6306,41 @@ static unsigned long cpu_util(int cpu)
+@@ -5721,8 +5721,8 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p,
+ 	return affine;
+ }
+ 
+-static inline int task_util(struct task_struct *p);
+-static int cpu_util_wake(int cpu, struct task_struct *p);
++static inline unsigned long task_util(struct task_struct *p);
++static unsigned long cpu_util_wake(int cpu, struct task_struct *p);
+ 
+ static unsigned long capacity_spare_wake(int cpu, struct task_struct *p)
+ {
+@@ -6203,7 +6203,7 @@ static int select_idle_sibling(struct task_struct *p, int prev, int target)
+  * capacity_orig) as it useful for predicting the capacity required after task
+  * migrations (scheduler-driven DVFS).
+  */
+-static int cpu_util(int cpu)
++static unsigned long cpu_util(int cpu)
+ {
+ 	unsigned long util = cpu_rq(cpu)->cfs.avg.util_avg;
+ 	unsigned long capacity = capacity_orig_of(cpu);
+@@ -6211,7 +6211,7 @@ static int cpu_util(int cpu)
  	return (util >= capacity) ? capacity : util;
  }
  
-+/**
-+ * cpu_util_est: estimated utilization for the specified CPU
-+ * @cpu: the CPU to get the estimated utilization for
-+ *
-+ * The estimated utilization of a CPU is defined to be the maximum between its
-+ * PELT's utilization and the sum of the estimated utilization of the tasks
-+ * currently RUNNABLE on that CPU.
-+ *
-+ * This allows to properly represent the expected utilization of a CPU which
-+ * has just got a big task running since a long sleep period. At the same time
-+ * however it preserves the benefits of the "blocked load" in describing the
-+ * potential for other tasks waking up on the same CPU.
-+ *
-+ * Return: the estimated utlization for the specified CPU
-+ */
-+static inline unsigned long cpu_util_est(int cpu)
-+{
-+	unsigned long util, util_est;
-+	unsigned long capacity;
-+	struct cfs_rq *cfs_rq;
-+
-+	if (!sched_feat(UTIL_EST))
-+		return cpu_util(cpu);
-+
-+	cfs_rq = &cpu_rq(cpu)->cfs;
-+	util = cfs_rq->avg.util_avg;
-+	util_est = cfs_rq->util_est_runnable;
-+	util_est = max(util, util_est);
-+
-+	capacity = capacity_orig_of(cpu);
-+	util_est = min(util_est, capacity);
-+
-+	return util_est;
-+}
-+
- static inline unsigned long task_util(struct task_struct *p)
+-static inline int task_util(struct task_struct *p)
++static inline unsigned long task_util(struct task_struct *p)
  {
  	return p->se.avg.util_avg;
-@@ -6322,16 +6357,43 @@ static inline unsigned long task_util_est(struct task_struct *p)
-  */
- static unsigned long cpu_util_wake(int cpu, struct task_struct *p)
- {
--	unsigned long util, capacity;
-+	long util, util_est;
- 
- 	/* Task has no contribution or is new */
- 	if (cpu != task_cpu(p) || !p->se.avg.last_update_time)
--		return cpu_util(cpu);
-+		return cpu_util_est(cpu);
- 
--	capacity = capacity_orig_of(cpu);
--	util = max_t(long, cpu_rq(cpu)->cfs.avg.util_avg - task_util(p), 0);
-+	/* Discount task's blocked util from CPU's util */
-+	util = cpu_util(cpu) - task_util(p);
-+	util = max(util, 0L);
- 
--	return (util >= capacity) ? capacity : util;
-+	if (!sched_feat(UTIL_EST))
-+		return util;
-+
-+	/*
-+	 * These are the main cases covered:
-+	 * - if *p is the only task sleeping on this CPU, then:
-+	 *      cpu_util (== task_util) > util_est (== 0)
-+	 *   and thus we return:
-+	 *      cpu_util_wake = (cpu_util - task_util) = 0
-+	 *
-+	 * - if other tasks are SLEEPING on the same CPU, which is just waking
-+	 *   up, then:
-+	 *      cpu_util >= task_util
-+	 *      cpu_util > util_est (== 0)
-+	 *   and thus we discount *p's blocked utilization to return:
-+	 *      cpu_util_wake = (cpu_util - task_util) >= 0
-+	 *
-+	 * - if other tasks are RUNNABLE on that CPU and
-+	 *      util_est > cpu_util
-+	 *   then we use util_est since it returns a more restrictive
-+	 *   estimation of the spare capacity on that CPU, by just considering
-+	 *   the expected utilization of tasks already runnable on that CPU.
-+	 */
-+	util_est = cpu_rq(cpu)->cfs.util_est_runnable;
-+	util = max(util, util_est);
-+
-+	return util;
  }
+@@ -6220,7 +6220,7 @@ static inline int task_util(struct task_struct *p)
+  * cpu_util_wake: Compute cpu utilization with any contributions from
+  * the waking task p removed.
+  */
+-static int cpu_util_wake(int cpu, struct task_struct *p)
++static unsigned long cpu_util_wake(int cpu, struct task_struct *p)
+ {
+ 	unsigned long util, capacity;
  
- /*
-@@ -7857,7 +7919,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
- 			load = source_load(i, load_idx);
- 
- 		sgs->group_load += load;
--		sgs->group_util += cpu_util(i);
-+		sgs->group_util += cpu_util_est(i);
- 		sgs->sum_nr_running += rq->cfs.h_nr_running;
- 
- 		nr_running = rq->nr_running;
 -- 
 2.14.1
