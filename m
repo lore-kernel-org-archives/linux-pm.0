@@ -1,48 +1,142 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH V2 0/4] cpu_cooling: cooling dev registration cleanups
-Date: Tue,  5 Dec 2017 11:02:42 +0530
-Message-ID: <cover.1512451487.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f66.google.com ([74.125.83.66]:43954 "EHLO
-        mail-pg0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752196AbdLEFgw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Dec 2017 00:36:52 -0500
-Received: by mail-pg0-f66.google.com with SMTP id b18so9954753pgv.10
-        for <linux-pm@vger.kernel.org>; Mon, 04 Dec 2017 21:36:51 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [PATCH V2 2/4] cpu_cooling: Remove unused cpufreq_power_cooling_register()
+Date: Tue,  5 Dec 2017 11:02:44 +0530
+Message-ID: <0565cf18cd0286d686faf409e174572c7f566931.1512451487.git.viresh.kumar@linaro.org>
+References: <cover.1512451487.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1512451487.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1512451487.git.viresh.kumar@linaro.org>
+References: <cover.1512451487.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Rafael Wysocki <rjw@rjwysocki.net>, edubezval@gmail.com
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, javi.merino@kernel.org, amit.kachhap@gmail.com, rui.zhang@intel.com, ionela.voinescu@arm.com
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+It isn't used by anyone, drop it.
 
-This cleans up the helpers exposed by cpu_cooling driver and its users
-and removes a lot of code (around 280 lines effectively). Lots of unused
-code is removed.
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ Documentation/thermal/cpu-cooling-api.txt | 24 +++---------------------
+ drivers/thermal/cpu_cooling.c             | 30 ------------------------------
+ include/linux/cpu_cooling.h               | 10 ----------
+ 3 files changed, 3 insertions(+), 61 deletions(-)
 
-Tested on Hikey6220 and based over pm/linux-next.
-
-V1->V2:
-- Fixed a compilation warning when CONFIG_CPU_THERMAL isn't selected.
-
---
-viresh
-
-Viresh Kumar (4):
-  cpu_cooling: Make of_cpufreq_power_cooling_register() parse DT
-  cpu_cooling: Remove unused cpufreq_power_cooling_register()
-  cpu_cooling: Keep only one of_cpufreq*cooling_register() helper
-  cpu_cooling: Drop static-power related stuff
-
- Documentation/thermal/cpu-cooling-api.txt |  33 +----
- drivers/cpufreq/arm_big_little.c          |  23 +---
- drivers/cpufreq/cpufreq-dt.c              |  27 +---
- drivers/cpufreq/mediatek-cpufreq.c        |  22 +---
- drivers/cpufreq/qoriq-cpufreq.c           |  14 +--
- drivers/thermal/cpu_cooling.c             | 201 ++++++------------------------
- include/linux/cpu_cooling.h               |  75 +++--------
- include/trace/events/thermal.h            |  10 +-
- 8 files changed, 64 insertions(+), 341 deletions(-)
-
+diff --git a/Documentation/thermal/cpu-cooling-api.txt b/Documentation/thermal/cpu-cooling-api.txt
+index 4f6f5e9bb4d6..ea61e8bf7e2b 100644
+--- a/Documentation/thermal/cpu-cooling-api.txt
++++ b/Documentation/thermal/cpu-cooling-api.txt
+@@ -36,28 +36,14 @@ the user. The registration APIs returns the cooling device pointer.
+     np: pointer to the cooling device device tree node
+     clip_cpus: cpumask of cpus where the frequency constraints will happen.
+ 
+-1.1.3 struct thermal_cooling_device *cpufreq_power_cooling_register(
+-    const struct cpumask *clip_cpus, u32 capacitance,
+-    get_static_t plat_static_func)
+-
+-Similar to cpufreq_cooling_register, this function registers a cpufreq
+-cooling device.  Using this function, the cooling device will
+-implement the power extensions by using a simple cpu power model.  The
+-cpus must have registered their OPPs using the OPP library.
+-
+-The additional parameters are needed for the power model (See 2. Power
+-models).  "capacitance" is the dynamic power coefficient (See 2.1
+-Dynamic power).  "plat_static_func" is a function to calculate the
+-static power consumed by these cpus (See 2.2 Static power).
+-
+-1.1.4 struct thermal_cooling_device *of_cpufreq_power_cooling_register(
++1.1.3 struct thermal_cooling_device *of_cpufreq_power_cooling_register(
+ 					struct cpufreq_policy *policy)
+ 
+-Similar to cpufreq_power_cooling_register, this function register a
++Similar to cpufreq_cooling_register, this function register a
+ cpufreq cooling device with power extensions using the device tree
+ information supplied by the np parameter.
+ 
+-1.1.5 void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
++1.1.4 void cpufreq_cooling_unregister(struct thermal_cooling_device *cdev)
+ 
+     This interface function unregisters the "thermal-cpufreq-%x" cooling device.
+ 
+@@ -74,10 +60,6 @@ cpu.  If you are using CONFIG_CPUFREQ_DT then the
+ `cpufreq_frequency_table` should already be assigned to the cpu
+ device.
+ 
+-The `plat_static_func` parameter of `cpufreq_power_cooling_register()`
+-is optional.  If you don't provide it, only dynamic power will be
+-considered.
+-
+ 2.1 Dynamic power
+ 
+ The dynamic power consumption of a processor depends on many factors.
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index a31eb03c788e..10199f7e1196 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -842,36 +842,6 @@ of_cpufreq_cooling_register(struct device_node *np,
+ EXPORT_SYMBOL_GPL(of_cpufreq_cooling_register);
+ 
+ /**
+- * cpufreq_power_cooling_register() - create cpufreq cooling device with power extensions
+- * @policy:		cpufreq policy
+- * @capacitance:	dynamic power coefficient for these cpus
+- * @plat_static_func:	function to calculate the static power consumed by these
+- *			cpus (optional)
+- *
+- * This interface function registers the cpufreq cooling device with
+- * the name "thermal-cpufreq-%x".  This api can support multiple
+- * instances of cpufreq cooling devices.  Using this function, the
+- * cooling device will implement the power extensions by using a
+- * simple cpu power model.  The cpus must have registered their OPPs
+- * using the OPP library.
+- *
+- * An optional @plat_static_func may be provided to calculate the
+- * static power consumed by these cpus.  If the platform's static
+- * power consumption is unknown or negligible, make it NULL.
+- *
+- * Return: a valid struct thermal_cooling_device pointer on success,
+- * on failure, it returns a corresponding ERR_PTR().
+- */
+-struct thermal_cooling_device *
+-cpufreq_power_cooling_register(struct cpufreq_policy *policy, u32 capacitance,
+-			       get_static_t plat_static_func)
+-{
+-	return __cpufreq_cooling_register(NULL, policy, capacitance,
+-				plat_static_func);
+-}
+-EXPORT_SYMBOL(cpufreq_power_cooling_register);
+-
+-/**
+  * of_cpufreq_power_cooling_register() - create cpufreq cooling device with power extensions
+  * @policy: CPUFreq policy.
+  *
+diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+index f09d4feb34f4..c35778960a9c 100644
+--- a/include/linux/cpu_cooling.h
++++ b/include/linux/cpu_cooling.h
+@@ -41,10 +41,6 @@ typedef int (*get_static_t)(cpumask_t *cpumask, int interval,
+ struct thermal_cooling_device *
+ cpufreq_cooling_register(struct cpufreq_policy *policy);
+ 
+-struct thermal_cooling_device *
+-cpufreq_power_cooling_register(struct cpufreq_policy *policy,
+-			       u32 capacitance, get_static_t plat_static_func);
+-
+ /**
+  * of_cpufreq_cooling_register - create cpufreq cooling device based on DT.
+  * @np: a valid struct device_node to the cooling device device tree node.
+@@ -84,12 +80,6 @@ cpufreq_cooling_register(struct cpufreq_policy *policy)
+ {
+ 	return ERR_PTR(-ENOSYS);
+ }
+-static inline struct thermal_cooling_device *
+-cpufreq_power_cooling_register(struct cpufreq_policy *policy,
+-			       u32 capacitance, get_static_t plat_static_func)
+-{
+-	return NULL;
+-}
+ 
+ static inline struct thermal_cooling_device *
+ of_cpufreq_cooling_register(struct device_node *np,
 -- 
 2.11.0
