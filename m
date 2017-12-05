@@ -1,90 +1,105 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: [PATCH v2 1/4] sched/fair: always used unsigned long for utilization
-Date: Tue,  5 Dec 2017 17:10:15 +0000
-Message-ID: <20171205171018.9203-2-patrick.bellasi@arm.com>
-References: <20171205171018.9203-1-patrick.bellasi@arm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:52290 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752902AbdLERKi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 5 Dec 2017 12:10:38 -0500
-In-Reply-To: <20171205171018.9203-1-patrick.bellasi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] xhci: Fix front USB ports on ASUS PRIME B350M-A
+Date: Tue, 5 Dec 2017 11:14:40 -0600
+Message-ID: <20171205171440.GA23510@bhelgaas-glaptop.roam.corp.google.com>
+References: <20171205162242.4057-1-kai.heng.feng@canonical.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171205162242.4057-1-kai.heng.feng@canonical.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc: mathias.nyman@intel.com, bhelgaas@google.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org, Joe Lee <asmt.swfae@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-Utilization and capacity are tracked as unsigned long, however some
-functions using them return an int which is ultimately assigned back to
-unsigned long variables.
+[+cc Rafael, linux-pm]
 
-Since there is not scope on using a different and signed type, this
-consolidate the signature of functions returning utilization to always
-use the native type.
-As well as improving code consistency this is expected also benefits
-code paths where utilizations should be clamped by avoiding further type
-conversions or ugly type casts.
+On Wed, Dec 06, 2017 at 12:22:42AM +0800, Kai-Heng Feng wrote:
+> The board in question has three XHCI HCs:
+> 02:00.0 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] USB 3.1 XHCI Controller [1022:43bb] (rev 02)
+> 04:00.0 USB controller [0c03]: ASMedia Technology Inc. Device [1b21:1343]
+> 0a:00.3 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] USB3 Host Controller [1022:145c]
+> 
+> The front ports are connected to HC [1022:43bb] (02:00.0).
+> 
+> After plugging high speed devices into front ports several times, it
+> stops responding to high speed devices. Super speed devices can still
+> get detected though.
+> 
+> When I plugged a high speed device, [1b21:1343] (04:00.0) also got woke
+> up:
+> [  140.834823] xhci_hcd 0000:02:00.0: // Setting command ring address to 0xff73b001
+> [  140.838220] xhci_hcd 0000:02:00.0: xhci_resume: starting port polling.
+> [  140.838226] xhci_hcd 0000:02:00.0: xhci_hub_status_data: stopping port polling.
+> [  140.838266] xhci_hcd 0000:02:00.0: xhci_suspend: stopping port polling.
+> [  140.838362] xhci_hcd 0000:02:00.0: // Setting command ring address to 0xff73b001
+> [  140.858908] xhci_hcd 0000:04:00.0: // Setting command ring address to 0xfffd9001
+> [  140.862745] xhci_hcd 0000:04:00.0: xhci_resume: starting port polling.
+> [  140.862754] xhci_hcd 0000:04:00.0: xhci_hub_status_data: stopping port polling.
+> [  140.862760] xhci_hcd 0000:04:00.0: xhci_hub_status_data: stopping port polling.
+> [  140.862787] xhci_hcd 0000:04:00.0: xhci_suspend: stopping port polling.
+> [  140.862811] xhci_hcd 0000:04:00.0: // Setting command ring address to 0xfffd9001
+> 
+> Seems like [1022:43bb] is wired to [1b21:1343] internally.
+> 
+> Both HCs support D3hot PME, so I tried to disable D3cold on them.
+> Turns out disable D3cold on [1b21:1343] (04:00.0) can workaround the
+> issue for [1022:43bb] (02:00.0).
+> 
+> Also, [1022:43bb] (02:00.0) sometimes failed to suspend:
+> [  549.114587] xhci_hcd 0000:02:00.0: WARN: xHC CMD_RUN timeout
+> [  549.114608] suspend_common(): xhci_pci_suspend+0x0/0xc0 returns -110
+> [  549.114638] xhci_hcd 0000:02:00.0: can't suspend (hcd_pci_runtime_suspend returned -110)
+> [  549.116744] usb usb3: root hub lost power or was reset
+> [  549.116746] usb usb4: root hub lost power or was reset
+> 
+> Based on previous guesswork, the issue can be workaround by doing PCI
+> reset on [1b21:1343] (04:00.0).
 
-Signed-off-by: Patrick Bellasi <patrick.bellasi@arm.com>
-Reviewed-by: Chris Redpath <chris.redpath@arm.com>
-Reviewed-by: Brendan Jackman <brendan.jackman@arm.com>
-Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Vincent Guittot <vincent.guittot@linaro.org>
-Cc: Morten Rasmussen <morten.rasmussen@arm.com>
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Cc: linux-kernel@vger.kernel.org
+Naive questions: Does this indicate that xhci_hcd is lacking something
+in the "resume from D3cold" path?  Is there a bugzilla for this?  If
+not, can you open one and attach the complete dmesg log and complete
+"lspci -vv" output (as root)?  Google found some possibly related
+issues but I can't quite tie them together yet.
 
----
-Changes v1->v2:
- - rebase on top of v4.15-rc2
- - tested that overhauled PELT code does not affect the util_est
----
- kernel/sched/fair.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+I don't have an issue with the quirk per se, but in general I think
+it's better to debug an issue than simply avoid it.
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 4037e19bbca2..ad21550d008c 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -5721,8 +5721,8 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p,
- 	return affine;
- }
- 
--static inline int task_util(struct task_struct *p);
--static int cpu_util_wake(int cpu, struct task_struct *p);
-+static inline unsigned long task_util(struct task_struct *p);
-+static unsigned long cpu_util_wake(int cpu, struct task_struct *p);
- 
- static unsigned long capacity_spare_wake(int cpu, struct task_struct *p)
- {
-@@ -6203,7 +6203,7 @@ static int select_idle_sibling(struct task_struct *p, int prev, int target)
-  * capacity_orig) as it useful for predicting the capacity required after task
-  * migrations (scheduler-driven DVFS).
-  */
--static int cpu_util(int cpu)
-+static unsigned long cpu_util(int cpu)
- {
- 	unsigned long util = cpu_rq(cpu)->cfs.avg.util_avg;
- 	unsigned long capacity = capacity_orig_of(cpu);
-@@ -6211,7 +6211,7 @@ static int cpu_util(int cpu)
- 	return (util >= capacity) ? capacity : util;
- }
- 
--static inline int task_util(struct task_struct *p)
-+static inline unsigned long task_util(struct task_struct *p)
- {
- 	return p->se.avg.util_avg;
- }
-@@ -6220,7 +6220,7 @@ static inline int task_util(struct task_struct *p)
-  * cpu_util_wake: Compute cpu utilization with any contributions from
-  * the waking task p removed.
-  */
--static int cpu_util_wake(int cpu, struct task_struct *p)
-+static unsigned long cpu_util_wake(int cpu, struct task_struct *p)
- {
- 	unsigned long util, capacity;
- 
--- 
-2.14.1
+> Cc: Joe Lee <asmt.swfae@gmail.com>
+> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+> ---
+>  drivers/pci/quirks.c          | 2 ++
+>  drivers/usb/host/pci-quirks.c | 3 +++
+>  2 files changed, 5 insertions(+)
+> 
+> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> index 10684b17d0bd..380061dae51d 100644
+> --- a/drivers/pci/quirks.c
+> +++ b/drivers/pci/quirks.c
+> @@ -1699,6 +1699,8 @@ static void quirk_radeon_pm(struct pci_dev *dev)
+>  }
+>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x6741, quirk_radeon_pm);
+>  
+> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASMEDIA, 0x1343, pci_d3cold_disable);
+> +
+>  #ifdef CONFIG_X86_IO_APIC
+>  static int dmi_disable_ioapicreroute(const struct dmi_system_id *d)
+>  {
+> diff --git a/drivers/usb/host/pci-quirks.c b/drivers/usb/host/pci-quirks.c
+> index 161536717025..8c4318671e37 100644
+> --- a/drivers/usb/host/pci-quirks.c
+> +++ b/drivers/usb/host/pci-quirks.c
+> @@ -1176,6 +1176,9 @@ bool usb_xhci_needs_pci_reset(struct pci_dev *pdev)
+>  	    (pdev->device == 0x0014 || pdev->device == 0x0015))
+>  		return true;
+>  
+> +	if (pdev->vendor == PCI_VENDOR_ID_ASMEDIA && pdev->device == 0x1343)
+> +		return true;
+> +
+>  	return false;
+>  }
+>  EXPORT_SYMBOL_GPL(usb_xhci_needs_pci_reset);
+> -- 
+> 2.14.1
+> 
