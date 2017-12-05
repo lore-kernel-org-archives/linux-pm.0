@@ -1,92 +1,101 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] of: thermal: Introduce "hwmon" optional property
-Date: Mon, 4 Dec 2017 17:46:17 -0800
-Message-ID: <20171205014615.GA3536@localhost.localdomain>
-References: <20170710115146.27313-1-kukabu@gmail.com>
- <CABrG=Zy7SYZBP6PyZ4aP6Fi5q3k5nCh6b5shN=CtOYTQ2DDoTA@mail.gmail.com>
+Subject: Re: [PATCH] thermal: tegra: delete unneeded of_node_put
+Date: Mon, 4 Dec 2017 17:49:20 -0800
+Message-ID: <20171205014918.GB3536@localhost.localdomain>
+References: <1500108152-1812-1-git-send-email-Julia.Lawall@lip6.fr>
+ <66e7906c-9472-4fcb-7c04-750bb27d3989@nvidia.com>
+ <alpine.DEB.2.20.1707171641190.2038@hadrien>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-yb0-f196.google.com ([209.85.213.196]:38098 "EHLO
-        mail-yb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751582AbdLEBqW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Dec 2017 20:46:22 -0500
-Received: by mail-yb0-f196.google.com with SMTP id v12so7466274ybj.5
-        for <linux-pm@vger.kernel.org>; Mon, 04 Dec 2017 17:46:22 -0800 (PST)
+Received: from mail-yb0-f193.google.com ([209.85.213.193]:46581 "EHLO
+        mail-yb0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751582AbdLEBt0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Dec 2017 20:49:26 -0500
 Content-Disposition: inline
-In-Reply-To: <CABrG=Zy7SYZBP6PyZ4aP6Fi5q3k5nCh6b5shN=CtOYTQ2DDoTA@mail.gmail.com>
+In-Reply-To: <alpine.DEB.2.20.1707171641190.2038@hadrien>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Michael Tatarinov <kukabu@gmail.com>
-Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
+To: Julia Lawall <julia.lawall@lip6.fr>
+Cc: Jon Hunter <jonathanh@nvidia.com>, Zhang Rui <rui.zhang@intel.com>, kernel-janitors@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Jul 12, 2017 at 11:49:10AM +0400, Michael Tatarinov wrote:
-> Hello
+On Mon, Jul 17, 2017 at 04:42:38PM +0200, Julia Lawall wrote:
 > 
-> Some clarifications for this patch.
-> I uses CONFIG_THERMAL_HWMON feature on Raspberry PI. It works ok with
-> the downstream thermal driver because it uses
-> thermal_zone_device_register(). After I switches to the upstream
-> driver this feature doesn't work because it uses
-> thermal_zone_of_sensor_register().
-> I would like to use this opportunity and in the future.
-
-I would be OK with the linux,no-hwmon flag, but that needs to be acked
-by the DT folks.
-
 > 
-> 2017-07-10 15:51 GMT+04:00, Michael Tatarinov <kukabu@gmail.com>:
-> > Introduce an optional property called, hwmon, which enable
-> > registration in hwmon subsystems.
+> On Mon, 17 Jul 2017, Jon Hunter wrote:
+> 
 > >
-> > Cc: Zhang Rui <rui.zhang@intel.com>
-> > Cc: Eduardo Valentin <edubezval@gmail.com>
-> > Signed-off-by: Michael Tatarinov <kukabu@gmail.com>
-> > ---
-> >  Documentation/devicetree/bindings/thermal/thermal.txt | 6 ++++++
-> >  drivers/thermal/of-thermal.c                          | 3 +--
-> >  2 files changed, 7 insertions(+), 2 deletions(-)
+> > On 15/07/17 09:42, Julia Lawall wrote:
+> > > Device node iterators perform an of_node_put on each iteration, so putting
+> > > an of_node_put before a continue results in a double put.
+> > >
+> > > The semantic match that finds this problem is as follows
+> > > (http://coccinelle.lip6.fr):
+> > >
+> > > // <smpl>
+> > > @@
+> > > expression e1;
+> > > local idexpression child;
+> > > iterator name for_each_child_of_node;
+> > > @@
+> > >
+> > >  for_each_child_of_node(e1,child) {
+> > >    ... when != of_node_get(child)
+> > > *  of_node_put(child);
+> > >    ...
+> > > *  continue;
+> > > }
+> > > // </smpl>
+> > >
+> > > Furthermore, the call to thermal_of_cooling_device_register immediately
+> > > calls __thermal_cooling_device_register with the same arguments.  The
+> > > latter function stores the device node argument, which is the second
+> > > argument of for_each_child_of_node, in the returned thermal_cooling_device
+> > > structure.  This returned structure is then stored in the cdev field of
+> > > stc.  Thus it seems that the second argument of for_each_child_of_node
+> > > escapes the scope of the for_each_child_of_node, so an explicit of_node_get
+> > > on success of thermal_of_cooling_device_register is also needed.
+> > >
+> > > Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> > >
+> > > ---
+> > >  drivers/thermal/tegra/soctherm.c |    2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > >
+> > > diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
+> > > index 7d2db23..10f4fdd 100644
+> > > --- a/drivers/thermal/tegra/soctherm.c
+> > > +++ b/drivers/thermal/tegra/soctherm.c
+> > > @@ -1014,7 +1014,6 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
+> > >  		tcd = thermal_of_cooling_device_register(np_stcc,
+> > >  							 (char *)name, ts,
+> > >  							 &throt_cooling_ops);
+> > > -		of_node_put(np_stcc);
+> > >  		if (IS_ERR_OR_NULL(tcd)) {
+> > >  			dev_err(dev,
+> > >  				"throttle-cfg: %s: failed to register cooling device\n",
+> > > @@ -1022,6 +1021,7 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
+> > >  			continue;
+> > >  		}
+> > >
+> > > +		of_node_get(np_stcc);
+> > >  		stc->cdev = tcd;
+> > >  		stc->init = true;
+> > >  	}
 > >
-> > diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt
-> > b/Documentation/devicetree/bindings/thermal/thermal.txt
-> > index 88b6ea1ad290..4e51fbd4efa2 100644
-> > --- a/Documentation/devicetree/bindings/thermal/thermal.txt
-> > +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
-> > @@ -175,6 +175,10 @@ Optional property:
-> >  			2000mW, while on a 10'' tablet is around
-> >  			4500mW.
+> > Thanks for fixing this. However, I am wondering if it is better for the
+> > 'of_node_get' to be placed within the
+> > thermal_of_cooling_device_register() function as it seems a bit odd if
+> > the caller needs to know that this is being stored for later use.
 > >
-> > +- hwmon:		Register the thermal zone in hwmon subsystems
-> > +  Type: boolean 	(requires CONFIG_THERMAL_HWMON).
-> > +  Size: one cell
-> > +
-> >  Note: The delay properties are bound to the maximum dT/dt (temperature
-> >  derivative over time) in two situations for a thermal zone:
-> >  (i)  - when passive cooling is activated (polling-delay-passive); and
-> > @@ -556,6 +560,8 @@ thermal-zones {
-> >
-> >  		sustainable-power = <2500>;
-> >
-> > +		hwmon;
-> > +
-> >  		trips {
-> >  			/* Trips are based on resulting linear equation */
-> >  			cpu_trip: cpu-trip {
-> > diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-> > index d04ec3b9e5ff..ce580a57313b 100644
-> > --- a/drivers/thermal/of-thermal.c
-> > +++ b/drivers/thermal/of-thermal.c
-> > @@ -994,8 +994,7 @@ int __init of_parse_thermal_zones(void)
-> >  			goto exit_free;
-> >  		}
-> >
-> > -		/* No hwmon because there might be hwmon drivers registering */
-> > -		tzp->no_hwmon = true;
-> > +		tzp->no_hwmon = !of_property_read_bool(child, "hwmon");
-> >
-> >  		if (!of_property_read_u32(child, "sustainable-power", &prop))
-> >  			tzp->sustainable_power = prop;
-> > --
-> > 2.9.4
-> >
-> >
+> > Also, taking a quick look, I see a couple other drivers calling
+> > thermal_of_cooling_device_register() and they are also not calling
+> > of_node_get on success. So it maybe easier to fix placing it in the
+> > thermal_of_cooling_device_register() function.
+> 
+> I'm not an expert, but I had the impression that from some call sites, the
+> get would have been done already, because the argument is already stored
+> in some structure.  I can check more exhaustively.
+
+Julia, I agree with Jon here. Better if fixed in the API itself. Are you
+still planning on sending a fix for this?
