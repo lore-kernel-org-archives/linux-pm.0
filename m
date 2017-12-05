@@ -1,64 +1,54 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] cpufreq: longhaul: Set transition_delay_us to 20 ms
-Date: Tue, 5 Dec 2017 16:26:29 +0100
-Message-ID: <CAJZ5v0henViynygKTRqpYWr6mfm_LJALH6wurNhxM_AXLU4Kzg@mail.gmail.com>
-References: <alpine.LRH.2.21.1711241741080.10361@math.ut.ee>
- <ed89c17b60d7183144ab4ac4b125fbed373fe670.1511838689.git.viresh.kumar@linaro.org>
- <alpine.LRH.2.21.1712051017060.2774@math.ut.ee> <alpine.LRH.2.21.1712051054170.2774@math.ut.ee>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [RFC PATCH v2 4/8] sched/cpufreq_schedutil: split utilization
+ signals
+Date: Tue, 5 Dec 2017 16:26:49 +0100
+Message-ID: <20171205152649.GD15085@localhost.localdomain>
+References: <20171204102325.5110-1-juri.lelli@redhat.com>
+ <20171204102325.5110-5-juri.lelli@redhat.com>
+ <20171205151734.GM31247@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <alpine.LRH.2.21.1712051054170.2774@math.ut.ee>
-Sender: stable-owner@vger.kernel.org
-To: Meelis Roos <mroos@ut.ee>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "4 . 14+" <stable@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171205151734.GM31247@e110439-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: peterz@infradead.org, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, alessio.balsini@arm.com, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 5, 2017 at 9:54 AM, Meelis Roos <mroos@ut.ee> wrote:
->> > The commit e948bc8fbee0 ("cpufreq: Cap the default transition delay
->> > value to 10 ms") caused a regression on EPIA-M min-ITX computer where
->> > shutdown or reboot hangs occasionally with a print message like:
->> >
->> > longhaul: Warning: Timeout while waiting for idle PCI bus
->> > cpufreq: __target_index: Failed to change cpu frequency: -16
->> >
->> > This probably happens because the cpufreq governor tries to change the
->> > frequency of the CPU faster than allowed by the hardware.
->> >
->> > With the above commit, the default transition delay comes to 10 ms for a
->> > transition_latency of 200 us. Set the default transition delay to 20 ms
->> > directly to fix this regression.
->> >
->> > Fixes: e948bc8fbee0 ("cpufreq: Cap the default transition delay value to 10 ms")
->> > Cc: 4.14+ <stable@vger.kernel.org> # 4.14+
->> > Reported-by: Meelis Roos <mroos@linux.ee>
->> > Suggested-by: Rafael J. Wysocki <rjw@rjwysocki.net>
->> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
->> > ---
->> >  drivers/cpufreq/longhaul.c | 2 +-
->> >  1 file changed, 1 insertion(+), 1 deletion(-)
->> >
->> > diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
->> > index c46a12df40dd..56eafcb07859 100644
->> > --- a/drivers/cpufreq/longhaul.c
->> > +++ b/drivers/cpufreq/longhaul.c
->> > @@ -894,7 +894,7 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
->> >     if ((longhaul_version != TYPE_LONGHAUL_V1) && (scale_voltage != 0))
->> >             longhaul_setup_voltagescaling();
->> >
->> > -   policy->cpuinfo.transition_latency = 200000;    /* nsec */
->> > +   policy->transition_delay_us = 20000;    /* usec */
->> >
->> >     return cpufreq_table_validate_and_show(policy, longhaul_table);
->> >  }
->>
->> This patch also works on my EPIA-M board - tested 10+ times.
->
-> An on the last try just after sending the mail, it hung again in the
-> same way as before - so maybe 20 is on the edge of being good.
+Hi,
 
-OK, so can you please try to modify the patch to set
-transition_delay_us to 30000, say, and see if that's reliable?
+On 05/12/17 15:17, Patrick Bellasi wrote:
+> Hi Juri,
+> 
+> On 04-Dec 11:23, Juri Lelli wrote:
+> > From: Juri Lelli <juri.lelli@arm.com>
+> > 
+> > To be able to treat utilization signals of different scheduling classes
+> > in different ways (e.g., CFS signal might be stale while DEADLINE signal
+> > is never stale by design) we need to split sugov_cpu::util signal in two:
+> > util_cfs and util_dl.
+> > 
+> > This patch does that by also changing sugov_get_util() parameter list.
+> > After this change, aggregation of the different signals has to be performed
+> > by sugov_get_util() users (so that they can decide what to do with the
+> > different signals).
+> 
+> Did not tried myself, but to me it would be nice to have this patch
+> squashed with the first one of this series. After all, looking at this
+> one it seems that [RFC PATH 1/8] is just adding util_dl but it's not
+> really using it the proper way.
+> 
+> Here instead is where you better introduce two separate signals,
+> tracked by struct sugov_cpu, and properly aggregate them.
+> 
+> But perhaps that's just me being picky ;-)
+> 
 
-Thanks,
-Rafael
+Sure. It looked too invasive as a single patch to me. Also, I was trying
+to follow the "one change one patch" rule. So, I'd keep them separate.
+What others think?
+
+Best,
+
+- Juri
