@@ -1,62 +1,49 @@
-From: Meelis Roos <mroos@linux.ee>
-Subject: Re: [PATCH] cpufreq: longhaul: Set transition_delay_us to 20 ms
-Date: Tue, 5 Dec 2017 10:18:21 +0200 (EET)
-Message-ID: <alpine.LRH.2.21.1712051017060.2774@math.ut.ee>
-References: <alpine.LRH.2.21.1711241741080.10361@math.ut.ee> <ed89c17b60d7183144ab4ac4b125fbed373fe670.1511838689.git.viresh.kumar@linaro.org>
+From: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 6/8] mfd: axp20x: add battery power supply
+ cell for AXP813
+Date: Tue, 5 Dec 2017 08:24:14 +0000
+Message-ID: <20171205082414.ayv5s4ehafwy5xfa@dell>
+References: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz@free-electrons.com>
+ <9b5e9ed623165d0586f086343a7c67bc5c18bbb5.1512396054.git-series.quentin.schulz@free-electrons.com>
+Reply-To: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:37262 "EHLO smtp2.it.da.ut.ee"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752540AbdLEIS0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 5 Dec 2017 03:18:26 -0500
-In-Reply-To: <ed89c17b60d7183144ab4ac4b125fbed373fe670.1511838689.git.viresh.kumar@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-sunxi+bncBDA7X7F2WUEBBMNPTHIQKGQEIXNMMIQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Disposition: inline
+In-Reply-To: <9b5e9ed623165d0586f086343a7c67bc5c18bbb5.1512396054.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, icenowy-h8G6r0blFSE@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, "4 . 14+" <stable@vger.kernel.org>, linux-kernel@vger.kernel.org
 
+On Mon, 04 Dec 2017, Quentin Schulz wrote:
 
-> The commit e948bc8fbee0 ("cpufreq: Cap the default transition delay
-> value to 10 ms") caused a regression on EPIA-M min-ITX computer where
-> shutdown or reboot hangs occasionally with a print message like:
-> 
-> longhaul: Warning: Timeout while waiting for idle PCI bus
-> cpufreq: __target_index: Failed to change cpu frequency: -16
-> 
-> This probably happens because the cpufreq governor tries to change the
-> frequency of the CPU faster than allowed by the hardware.
-> 
-> With the above commit, the default transition delay comes to 10 ms for a
-> transition_latency of 200 us. Set the default transition delay to 20 ms
-> directly to fix this regression.
-> 
-> Fixes: e948bc8fbee0 ("cpufreq: Cap the default transition delay value to 10 ms")
-> Cc: 4.14+ <stable@vger.kernel.org> # 4.14+
-> Reported-by: Meelis Roos <mroos@linux.ee>
-> Suggested-by: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> As axp20x-battery-power-supply now supports AXP813, add a cell for it.
+>=20
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 > ---
->  drivers/cpufreq/longhaul.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-> index c46a12df40dd..56eafcb07859 100644
-> --- a/drivers/cpufreq/longhaul.c
-> +++ b/drivers/cpufreq/longhaul.c
-> @@ -894,7 +894,7 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
->  	if ((longhaul_version != TYPE_LONGHAUL_V1) && (scale_voltage != 0))
->  		longhaul_setup_voltagescaling();
->  
-> -	policy->cpuinfo.transition_latency = 200000;	/* nsec */
-> +	policy->transition_delay_us = 20000;	/* usec */
->  
->  	return cpufreq_table_validate_and_show(policy, longhaul_table);
->  }
+>  drivers/mfd/axp20x.c | 3 +++
+>  1 file changed, 3 insertions(+)
 
-This patch also works on my EPIA-M board - tested 10+ times.
+For my own reference:
+  Acked-for-MFD-by: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Sorry it took so long to test, it was a remote computer.
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
 
--- 
-Meelis Roos (mroos@linux.ee)
+--=20
+You received this message because you are subscribed to the Google Groups "=
+linux-sunxi" group.
+To unsubscribe from this group and stop receiving emails from it, send an e=
+mail to linux-sunxi+unsubscribe-/JYPxA39Uh5TLH3MbocFF+G/Ez6ZCGd0@public.gmane.org
+For more options, visit https://groups.google.com/d/optout.
