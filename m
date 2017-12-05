@@ -1,57 +1,66 @@
-From: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Subject: Re: In kernel power management domain_pm created for async schedules
-Date: Tue, 5 Dec 2017 14:27:00 +0100
-Message-ID: <20171205132700.GA13746@kroah.com>
-References: <CGME20171205092418epcms5p5c9404c09716e2efe84114cae3ce6b534@epcms5p5>
- <20171205092418epcms5p5c9404c09716e2efe84114cae3ce6b534@epcms5p5>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: RE: [PATCH] PM / runtime: Drop children check from __pm_runtime_set_status()
+Date: Tue, 5 Dec 2017 10:03:15 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1712050958090.1416-100000@iolanthe.rowland.org>
+References: <TY1PR06MB0992214C75585618A1400A1CD83D0@TY1PR06MB0992.apcprd06.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:40442 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752149AbdLEN0x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Dec 2017 08:26:53 -0500
-Content-Disposition: inline
-In-Reply-To: <20171205092418epcms5p5c9404c09716e2efe84114cae3ce6b534@epcms5p5>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <TY1PR06MB0992214C75585618A1400A1CD83D0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, USB list <linux-usb@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>
 List-Id: linux-pm@vger.kernel.org
-To: Vikas Bansal <vikas.bansal@samsung.com>
-Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 
-On Tue, Dec 05, 2017 at 09:24:18AM +0000, Vikas Bansal wrote:
-> >From 8e948f8c697d661f38c2c3a85787e4c48b165adc Mon Sep 17 00:00:00 2001
-> From: Vikas Bansal <vikas.bansal@samsung.com>
-> Date: Tue, 5 Dec 2017 01:14:41 -0800
+On Tue, 5 Dec 2017, Yoshihiro Shimoda wrote:
 
-Why is all of this here in the patch itself?
-
-> Subject: [PATCH] Put all the async schdules in PM core in domain with name
->  domain_pm. This avoids pm core to wait for async schedules
->  in system other than PM core.
-
-Something went wrong with your commit, you have a very long subject and
-no change log text :(
-
-> Signed-off-by: Vikas Bansal <vikas.bansal@samsung.com>
-> ---
->  drivers/base/power/main.c |   25 +++++++++++++------------
->  1 file changed, 13 insertions(+), 12 deletions(-)
+> Hi,
 > 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index db2f044..2d19dfb 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -39,6 +39,7 @@
->  #include "power.h"
->  
->  typedef int (*pm_callback_t)(struct device *);
-> +ASYNC_DOMAIN(domain_pm);
+> > From: Ulf Hansson, Sent: Monday, December 4, 2017 7:41 PM
+> > 
+> > On 1 December 2017 at 12:03, Yoshihiro Shimoda
+> > <yoshihiro.shimoda.uh@renesas.com> wrote:
+> <snip>
+> > > Sure! I tested your patch, and then the following message disappeared!
+> > >
+> > >    Enabling runtime PM for inactive device (ee080200.usb-phy) with active children
+> > 
+> > Great, that confirms my theory.
+> > 
+> > I will re-work the patch and re-post it to see what people thinks about it.
+> 
+> Thank you!
+> 
+> > >
+> > > However, the following message still exists.
+> > >
+> > >    Enabling runtime PM for inactive device (ee080000.usb) with active children
+> > >
+> > > So, I guess ohci-platform.c also has similar issue.
+> > 
+> > Yes, very likely!
+> > 
+> > However, I need some more time to look into this to be able to suggest
+> > a solution.
+> 
+> I found a solution and sent a report as below:
+> https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg1551146.html
+> 
+> What do you think about using pm_runtime_forbid()?
 
-Why is this a global symbol?
+In general, drivers should not use pm_runtime_forbid().
 
-I don't understand why this is needed, please explain the problem you
-are having with the existing code.
+It is meant for use by userspace, through the /sys/.../power/control 
+file.  Drivers cannot rely on the result of calling pm_runtime_forbid() 
+or pm_runtime_allow(), because the user can change it at any time.
 
-thanks,
+If you really want to prevent the OHCI controller from going into 
+runtime suspend, the proper approach is to call pm_runtime_get() in the 
+probe routine and pm_runtime_put() in the release routine.  However, 
+this will waste energy because it will force the controller to remain 
+at full power even when no active devices are attached.
 
-greg k-h
+In this case, there probably is a better to solution to your problem 
+(such as fixing the runtime PM support in the phy driver).
+
+Alan Stern
