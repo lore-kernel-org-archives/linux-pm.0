@@ -1,50 +1,91 @@
-From: Yoshihiro Shimoda <yoshihiro.shimoda.uh-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
-Subject: RE: [PATCH] PM / runtime: Drop children check from
- __pm_runtime_set_status()
-Date: Tue, 5 Dec 2017 03:23:06 +0000
-Message-ID: <TY1PR06MB0992214C75585618A1400A1CD83D0@TY1PR06MB0992.apcprd06.prod.outlook.com>
-References: <1713438.irjm9MTSvo@aspire.rjw.lan>
- <CAMuHMdV4LV2Uzh2oGdaPiS4W4dfsZ-pn3rGcJNiZLStfo39How@mail.gmail.com>
- <TY1PR06MB09928D43D4E5E5752A6A604ED83A0@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFoF0WMSTuK4AAyDzerpVpnfEq=Hn1n9kDJM0fYMkFL_wA@mail.gmail.com>
- <TY1PR06MB09924E4F66C6FCF131EE71CFD83B0@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFoG2-mVGDtzPyg2FDVbXnsWGy543craKqeBVE_awKpf8Q@mail.gmail.com>
- <CAMuHMdViD3vqzits=th52+01d5y3p5iwbAg0jbUBcoGvYfULuA@mail.gmail.com>
- <CAPDyKFpRrQr3LRXH_CoLSYe2a=2PnUqvuNWUYSuh0wm+rBJ0dw@mail.gmail.com>
- <TY1PR06MB09928B145D35E52444F8D462D8380@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFr8D4jL2vwO5tdBJnNVP=DoAD6H_K=4SQbu7rFAZFd3Xg@mail.gmail.com>
- <TY1PR06MB09929CD76E67B64FDE54B170D8390@TY1PR06MB0992.apcprd06.prod.outlook.com>
- <CAPDyKFr4=Vct_-w1euOsEnb3WdeBvH9mz12zNTUfX7Z6nEwRuw@mail.gmail.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [linux-sunxi] [PATCH 1/8] iio: adc: axp20x_adc: put ADC rate
+ setting in a per-variant function
+Date: Tue, 5 Dec 2017 11:35:49 +0800
+Message-ID: <CAGb2v64er1xMXCFDfNKqGjGN-TysQyjK+vfHdx0t+kaCchQfCg@mail.gmail.com>
+References: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz@free-electrons.com>
+ <e97d7332790facf3d10a58feabbfe7b2c0b90db7.1512396054.git-series.quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAPDyKFr4=Vct_-w1euOsEnb3WdeBvH9mz12zNTUfX7Z6nEwRuw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Content-Language: ja-JP
-Sender: linux-usb-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Alan Stern <stern-nwvwT67g6+6dFdvTe/nMLpVzexx5G7lz@public.gmane.org>, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux-Renesas <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.csie.ntu.edu.tw ([140.112.30.61]:37562 "EHLO
+        smtp.csie.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751756AbdLEDgP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Dec 2017 22:36:15 -0500
+In-Reply-To: <e97d7332790facf3d10a58feabbfe7b2c0b90db7.1512396054.git-series.quentin.schulz@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Quentin Schulz <quentin.schulz@free-electrons.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Chen-Yu Tsai <wens@csie.org>, Russell King <linux@armlinux.org.uk>, Maxime Ripard <maxime.ripard@free-electrons.com>, Jonathan Cameron <jic23@kernel.org>, Lee Jones <lee.jones@linaro.org>, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, "open list:THERMAL" <linux-pm@vger.kernel.org>, devicetree <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-iio@vger.kernel.org, Icenowy Zheng <icenowy@aosc.io>, linux-sunxi <linux-sunxi@googlegroups.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
 
-SGksDQoNCj4gRnJvbTogVWxmIEhhbnNzb24sIFNlbnQ6IE1vbmRheSwgRGVjZW1iZXIgNCwgMjAx
-NyA3OjQxIFBNDQo+IA0KPiBPbiAxIERlY2VtYmVyIDIwMTcgYXQgMTI6MDMsIFlvc2hpaGlybyBT
-aGltb2RhDQo+IDx5b3NoaWhpcm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbT4gd3JvdGU6DQo8c25p
-cD4NCj4gPiBTdXJlISBJIHRlc3RlZCB5b3VyIHBhdGNoLCBhbmQgdGhlbiB0aGUgZm9sbG93aW5n
-IG1lc3NhZ2UgZGlzYXBwZWFyZWQhDQo+ID4NCj4gPiAgICBFbmFibGluZyBydW50aW1lIFBNIGZv
-ciBpbmFjdGl2ZSBkZXZpY2UgKGVlMDgwMjAwLnVzYi1waHkpIHdpdGggYWN0aXZlIGNoaWxkcmVu
-DQo+IA0KPiBHcmVhdCwgdGhhdCBjb25maXJtcyBteSB0aGVvcnkuDQo+IA0KPiBJIHdpbGwgcmUt
-d29yayB0aGUgcGF0Y2ggYW5kIHJlLXBvc3QgaXQgdG8gc2VlIHdoYXQgcGVvcGxlIHRoaW5rcyBh
-Ym91dCBpdC4NCg0KVGhhbmsgeW91IQ0KDQo+ID4NCj4gPiBIb3dldmVyLCB0aGUgZm9sbG93aW5n
-IG1lc3NhZ2Ugc3RpbGwgZXhpc3RzLg0KPiA+DQo+ID4gICAgRW5hYmxpbmcgcnVudGltZSBQTSBm
-b3IgaW5hY3RpdmUgZGV2aWNlIChlZTA4MDAwMC51c2IpIHdpdGggYWN0aXZlIGNoaWxkcmVuDQo+
-ID4NCj4gPiBTbywgSSBndWVzcyBvaGNpLXBsYXRmb3JtLmMgYWxzbyBoYXMgc2ltaWxhciBpc3N1
-ZS4NCj4gDQo+IFllcywgdmVyeSBsaWtlbHkhDQo+IA0KPiBIb3dldmVyLCBJIG5lZWQgc29tZSBt
-b3JlIHRpbWUgdG8gbG9vayBpbnRvIHRoaXMgdG8gYmUgYWJsZSB0byBzdWdnZXN0DQo+IGEgc29s
-dXRpb24uDQoNCkkgZm91bmQgYSBzb2x1dGlvbiBhbmQgc2VudCBhIHJlcG9ydCBhcyBiZWxvdzoN
-Cmh0dHBzOi8vd3d3Lm1haWwtYXJjaGl2ZS5jb20vbGludXgta2VybmVsQHZnZXIua2VybmVsLm9y
-Zy9tc2cxNTUxMTQ2Lmh0bWwNCg0KV2hhdCBkbyB5b3UgdGhpbmsgYWJvdXQgdXNpbmcgcG1fcnVu
-dGltZV9mb3JiaWQoKT8NCg0KQmVzdCByZWdhcmRzLA0KWW9zaGloaXJvIFNoaW1vZGENCg0K
---
-To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Mon, Dec 4, 2017 at 10:12 PM, Quentin Schulz
+<quentin.schulz@free-electrons.com> wrote:
+> To prepare for a new comer that set a different register with different
+> values, move rate setting in a function that is specific to each AXP
+> variant.
+>
+> Signed-off-by: Quentin Schulz <quentin.schulz@free-electrons.com>
+> ---
+>  drivers/iio/adc/axp20x_adc.c | 17 ++++++++++-------
+>  1 file changed, 10 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
+> index a30a972..7274f4f 100644
+> --- a/drivers/iio/adc/axp20x_adc.c
+> +++ b/drivers/iio/adc/axp20x_adc.c
+> @@ -470,14 +470,18 @@ static const struct iio_info axp22x_adc_iio_info = {
+>         .read_raw = axp22x_read_raw,
+>  };
+>
+> -static int axp20x_adc_rate(int rate)
+> +static int axp20x_adc_rate(struct axp20x_adc_iio *info, int rate)
+>  {
+> -       return AXP20X_ADC_RATE_HZ(rate);
+> +       return regmap_update_bits(info->regmap, AXP20X_ADC_RATE,
+> +                                 AXP20X_ADC_RATE_MASK,
+> +                                 AXP20X_ADC_RATE_HZ(rate));
+>  }
+>
+> -static int axp22x_adc_rate(int rate)
+> +static int axp22x_adc_rate(struct axp20x_adc_iio *info, int rate)
+>  {
+> -       return AXP22X_ADC_RATE_HZ(rate);
+> +       return regmap_update_bits(info->regmap, AXP20X_ADC_RATE,
+> +                                 AXP20X_ADC_RATE_MASK,
+> +                                 AXP22X_ADC_RATE_HZ(rate));
+>  }
+>
+>  struct axp_data {
+> @@ -485,7 +489,7 @@ struct axp_data {
+>         int                             num_channels;
+>         struct iio_chan_spec const      *channels;
+>         unsigned long                   adc_en1_mask;
+> -       int                             (*adc_rate)(int rate);
+> +       int                             (*adc_rate)(struct axp20x_adc_iio *info, int rate);
+
+Could you also change the name of the callback, to say, adc_set_rate?
+This would make it much clearer what the callback does. Previously
+it was just a conversion helper.
+
+ChenYu
+
+>         bool                            adc_en2;
+>         struct iio_map                  *maps;
+>  };
+> @@ -554,8 +558,7 @@ static int axp20x_probe(struct platform_device *pdev)
+>                                    AXP20X_ADC_EN2_MASK, AXP20X_ADC_EN2_MASK);
+>
+>         /* Configure ADCs rate */
+> -       regmap_update_bits(info->regmap, AXP20X_ADC_RATE, AXP20X_ADC_RATE_MASK,
+> -                          info->data->adc_rate(100));
+> +       info->data->adc_rate(info, 100);
+>
+>         ret = iio_map_array_register(indio_dev, info->data->maps);
+>         if (ret < 0) {
+> --
+> git-series 0.9.1
+>
+> --
+> You received this message because you are subscribed to the Google Groups "linux-sunxi" group.
+> To unsubscribe from this group and stop receiving emails from it, send an email to linux-sunxi+unsubscribe@googlegroups.com.
+> For more options, visit https://groups.google.com/d/optout.
