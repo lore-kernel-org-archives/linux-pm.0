@@ -1,37 +1,92 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 1/4] dt-bindings: thermal/armada: describe AP806 and
- CP110
-Date: Mon, 4 Dec 2017 16:33:22 -0600
-Message-ID: <20171204223322.sfm7ryrqmlaslmq3@rob-hp-laptop>
-References: <f8c589337a4fb78852eadf15058e8f8d132d4dc0.1512299484.git.baruch@tkos.co.il>
+From: Eduardo Valentin <edubezval@gmail.com>
+Subject: Re: [PATCH] of: thermal: Introduce "hwmon" optional property
+Date: Mon, 4 Dec 2017 17:46:17 -0800
+Message-ID: <20171205014615.GA3536@localhost.localdomain>
+References: <20170710115146.27313-1-kukabu@gmail.com>
+ <CABrG=Zy7SYZBP6PyZ4aP6Fi5q3k5nCh6b5shN=CtOYTQ2DDoTA@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-yb0-f196.google.com ([209.85.213.196]:38098 "EHLO
+        mail-yb0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751582AbdLEBqW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 Dec 2017 20:46:22 -0500
+Received: by mail-yb0-f196.google.com with SMTP id v12so7466274ybj.5
+        for <linux-pm@vger.kernel.org>; Mon, 04 Dec 2017 17:46:22 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <f8c589337a4fb78852eadf15058e8f8d132d4dc0.1512299484.git.baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+In-Reply-To: <CABrG=Zy7SYZBP6PyZ4aP6Fi5q3k5nCh6b5shN=CtOYTQ2DDoTA@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Michael Tatarinov <kukabu@gmail.com>
+Cc: linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
 
-On Sun, Dec 03, 2017 at 01:11:21PM +0200, Baruch Siach wrote:
-> Add compatible strings for AP806 and CP110 that are part of the Armada 8k/7k
-> line of SoCs.
+On Wed, Jul 12, 2017 at 11:49:10AM +0400, Michael Tatarinov wrote:
+> Hello
 > 
-> Add a note on the difference in the size of the control area in different
-> bindings. This is an existing difference between the Armada 375 binding and
-> the rest. The new AP806 and CP110 bindings are similar to the existing Armada
-> 375 in this regard.
-> 
-> Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
-> ---
-> v2: No change
-> ---
->  Documentation/devicetree/bindings/thermal/armada-thermal.txt | 9 ++++++++-
->  1 file changed, 8 insertions(+), 1 deletion(-)
+> Some clarifications for this patch.
+> I uses CONFIG_THERMAL_HWMON feature on Raspberry PI. It works ok with
+> the downstream thermal driver because it uses
+> thermal_zone_device_register(). After I switches to the upstream
+> driver this feature doesn't work because it uses
+> thermal_zone_of_sensor_register().
+> I would like to use this opportunity and in the future.
 
-Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I would be OK with the linux,no-hwmon flag, but that needs to be acked
+by the DT folks.
+
+> 
+> 2017-07-10 15:51 GMT+04:00, Michael Tatarinov <kukabu@gmail.com>:
+> > Introduce an optional property called, hwmon, which enable
+> > registration in hwmon subsystems.
+> >
+> > Cc: Zhang Rui <rui.zhang@intel.com>
+> > Cc: Eduardo Valentin <edubezval@gmail.com>
+> > Signed-off-by: Michael Tatarinov <kukabu@gmail.com>
+> > ---
+> >  Documentation/devicetree/bindings/thermal/thermal.txt | 6 ++++++
+> >  drivers/thermal/of-thermal.c                          | 3 +--
+> >  2 files changed, 7 insertions(+), 2 deletions(-)
+> >
+> > diff --git a/Documentation/devicetree/bindings/thermal/thermal.txt
+> > b/Documentation/devicetree/bindings/thermal/thermal.txt
+> > index 88b6ea1ad290..4e51fbd4efa2 100644
+> > --- a/Documentation/devicetree/bindings/thermal/thermal.txt
+> > +++ b/Documentation/devicetree/bindings/thermal/thermal.txt
+> > @@ -175,6 +175,10 @@ Optional property:
+> >  			2000mW, while on a 10'' tablet is around
+> >  			4500mW.
+> >
+> > +- hwmon:		Register the thermal zone in hwmon subsystems
+> > +  Type: boolean 	(requires CONFIG_THERMAL_HWMON).
+> > +  Size: one cell
+> > +
+> >  Note: The delay properties are bound to the maximum dT/dt (temperature
+> >  derivative over time) in two situations for a thermal zone:
+> >  (i)  - when passive cooling is activated (polling-delay-passive); and
+> > @@ -556,6 +560,8 @@ thermal-zones {
+> >
+> >  		sustainable-power = <2500>;
+> >
+> > +		hwmon;
+> > +
+> >  		trips {
+> >  			/* Trips are based on resulting linear equation */
+> >  			cpu_trip: cpu-trip {
+> > diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> > index d04ec3b9e5ff..ce580a57313b 100644
+> > --- a/drivers/thermal/of-thermal.c
+> > +++ b/drivers/thermal/of-thermal.c
+> > @@ -994,8 +994,7 @@ int __init of_parse_thermal_zones(void)
+> >  			goto exit_free;
+> >  		}
+> >
+> > -		/* No hwmon because there might be hwmon drivers registering */
+> > -		tzp->no_hwmon = true;
+> > +		tzp->no_hwmon = !of_property_read_bool(child, "hwmon");
+> >
+> >  		if (!of_property_read_u32(child, "sustainable-power", &prop))
+> >  			tzp->sustainable_power = prop;
+> > --
+> > 2.9.4
+> >
+> >
