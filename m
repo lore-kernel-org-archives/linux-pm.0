@@ -1,64 +1,62 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [PATCH] thermal/drivers/hisi: disable multi alarm support for
- hi3660 SoC
-Date: Tue, 5 Dec 2017 07:57:24 +0100
-Message-ID: <74aafbca-f08b-0a27-5536-e8967bcffeb7@linaro.org>
-References: <20171017043941.GE7954@localhost.localdomain>
- <1508318150-108444-1-git-send-email-kevin.wangtao@hisilicon.com>
- <9685721b-4593-029b-b8e8-d721526b7119@linaro.org>
- <6f39a5ed-0db6-4600-19d0-f9e9c5c43b1f@hisilicon.com>
- <20171205020212.GB4949@localhost.localdomain>
+From: Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH 3/8] mfd: axp20x: probe axp20x_adc driver
+ for AXP813
+Date: Tue, 5 Dec 2017 09:08:55 +0100
+Message-ID: <20171205080855.arr7vlgnxoxmyedd@flea.lan>
+References: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz@free-electrons.com>
+ <302c93023d8c4a54cafe321d912df484e39727b7.1512396054.git-series.quentin.schulz@free-electrons.com>
+Reply-To: maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f66.google.com ([74.125.82.66]:40543 "EHLO
-        mail-wm0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751473AbdLEG51 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Dec 2017 01:57:27 -0500
-Received: by mail-wm0-f66.google.com with SMTP id f206so12143406wmf.5
-        for <linux-pm@vger.kernel.org>; Mon, 04 Dec 2017 22:57:26 -0800 (PST)
-In-Reply-To: <20171205020212.GB4949@localhost.localdomain>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="mii2azbudvffe6kc"
+Return-path: <linux-sunxi+bncBDSJBYGBRIMBBIVITHIQKGQEK4ILEBI-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Disposition: inline
+In-Reply-To: <302c93023d8c4a54cafe321d912df484e39727b7.1512396054.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, icenowy-h8G6r0blFSE@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>, "Wangtao (Kevin, Kirin)" <kevin.wangtao@hisilicon.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, sunzhaosheng@hisilicon.com, gengyanping@hisilicon.com, Kevin Wangtao <kevin.wangtao@linaro.org>
 
-On 05/12/2017 03:02, Eduardo Valentin wrote:
-> Hello,
+
+--mii2azbudvffe6kc
+Content-Type: text/plain; charset="UTF-8"
+Content-Disposition: inline
+
+On Mon, Dec 04, 2017 at 03:12:49PM +0100, Quentin Schulz wrote:
+> This makes the axp20x_adc driver probe with platform device id
+> "axp813-adc".
 > 
-> On Thu, Oct 19, 2017 at 09:31:24AM +0800, Wangtao (Kevin, Kirin) wrote:
->>
->>
->> 在 2017/10/18 23:54, Daniel Lezcano 写道:
->>> On 18/10/2017 11:15, Tao Wang wrote:
->>>> From: Kevin Wangtao <kevin.wangtao@linaro.org>
->>>>
->>>> multi alarm interrupt forced a re-trigger of power_allocator_throttle
->>>> which changes the PID's actual sampling rate, this isn't optimal for
->>>> IPA, it is best to disable multi alarm support now and sort out this
->>>> issue later.
->>>>
->>>> Signed-off-by: Kevin Wangtao <kevin.wangtao@linaro.org>
->>>
->>> Did you test the series with this change?
->> Yes
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> ---
+>  drivers/mfd/axp20x.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 > 
-> Is this patch still valid with the latest linus master?
+> diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+> index 2468b43..42e54d1 100644
+> --- a/drivers/mfd/axp20x.c
+> +++ b/drivers/mfd/axp20x.c
+> @@ -878,7 +878,9 @@ static struct mfd_cell axp813_cells[] = {
+>  		.resources		= axp803_pek_resources,
+>  	}, {
+>  		.name			= "axp20x-regulator",
+> -	}
+> +	}, {
+> +		.name			= "axp813-adc",
+> +	},
 
-No, it was folded in the next iteration.
+Any particular reason you're not adding it to the DT?
 
-All patches for hisilicon are up-to-date.
-
-Thanks.
-
- -- Daniel
-
+Thanks!
+Maxime
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Maxime Ripard, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
+--mii2azbudvffe6kc--
