@@ -1,103 +1,55 @@
-From: Julia Lawall <julia.lawall-L2FTfq7BK8M@public.gmane.org>
-Subject: Re: [PATCH] thermal: tegra: delete unneeded of_node_put
-Date: Tue, 5 Dec 2017 07:17:02 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1712050716210.2555@hadrien>
-References: <1500108152-1812-1-git-send-email-Julia.Lawall@lip6.fr> <66e7906c-9472-4fcb-7c04-750bb27d3989@nvidia.com> <alpine.DEB.2.20.1707171641190.2038@hadrien> <20171205014918.GB3536@localhost.localdomain>
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Subject: Re: [PATCH] thermal/drivers/hisi: Remove confusing error message
+Date: Tue, 5 Dec 2017 07:48:01 +0100
+Message-ID: <dde0f691-18d4-0c18-531c-0f77200944d0@linaro.org>
+References: <1499439833-32531-1-git-send-email-daniel.lezcano@linaro.org>
+ <20171205015231.GC3536@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171205014918.GB3536-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Jon Hunter <jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, kernel-janitors-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f53.google.com ([74.125.82.53]:34582 "EHLO
+        mail-wm0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751255AbdLEGsE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 5 Dec 2017 01:48:04 -0500
+Received: by mail-wm0-f53.google.com with SMTP id y82so17569739wmg.1
+        for <linux-pm@vger.kernel.org>; Mon, 04 Dec 2017 22:48:04 -0800 (PST)
+In-Reply-To: <20171205015231.GC3536@localhost.localdomain>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: rui.zhang@intel.com, "open list:THERMAL" <linux-pm@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
+On 05/12/2017 02:52, Eduardo Valentin wrote:
+> Hello,
+> 
+> Catching up on old patches.
+> On Fri, Jul 07, 2017 at 05:03:52PM +0200, Daniel Lezcano wrote:
+>> The sensor id is unknown at init time and we use all id in the authorized
+>> MAX_SENSORS interval to register the sensor. On this SoC there is one
+>> thermal-zone with one sensor on it. No need to spit on the console everytime we
+>> failed to register thermal sensors, information which is deliberaly known as it
+>> is part of the discovery process.
+>>
+>>  hisi_thermal f7030700.tsensor: failed to register sensor id 0: -19
+>>  hisi_thermal f7030700.tsensor: failed to register thermal sensor: -19
+>>  hisi_thermal f7030700.tsensor: failed to register sensor id 1: -19
+>>  hisi_thermal f7030700.tsensor: failed to register thermal sensor: -19
+>>  hisi_thermal f7030700.tsensor: failed to register sensor id 3: -19
+>>  hisi_thermal f7030700.tsensor: failed to register thermal sensor: -19
+>>
+>> Remove the error messages
+> 
+> Is this still needed? I am assuming no.
 
+Right, no longer needed.
 
-On Mon, 4 Dec 2017, Eduardo Valentin wrote:
+  -- Daniel
 
-> On Mon, Jul 17, 2017 at 04:42:38PM +0200, Julia Lawall wrote:
-> >
-> >
-> > On Mon, 17 Jul 2017, Jon Hunter wrote:
-> >
-> > >
-> > > On 15/07/17 09:42, Julia Lawall wrote:
-> > > > Device node iterators perform an of_node_put on each iteration, so putting
-> > > > an of_node_put before a continue results in a double put.
-> > > >
-> > > > The semantic match that finds this problem is as follows
-> > > > (http://coccinelle.lip6.fr):
-> > > >
-> > > > // <smpl>
-> > > > @@
-> > > > expression e1;
-> > > > local idexpression child;
-> > > > iterator name for_each_child_of_node;
-> > > > @@
-> > > >
-> > > >  for_each_child_of_node(e1,child) {
-> > > >    ... when != of_node_get(child)
-> > > > *  of_node_put(child);
-> > > >    ...
-> > > > *  continue;
-> > > > }
-> > > > // </smpl>
-> > > >
-> > > > Furthermore, the call to thermal_of_cooling_device_register immediately
-> > > > calls __thermal_cooling_device_register with the same arguments.  The
-> > > > latter function stores the device node argument, which is the second
-> > > > argument of for_each_child_of_node, in the returned thermal_cooling_device
-> > > > structure.  This returned structure is then stored in the cdev field of
-> > > > stc.  Thus it seems that the second argument of for_each_child_of_node
-> > > > escapes the scope of the for_each_child_of_node, so an explicit of_node_get
-> > > > on success of thermal_of_cooling_device_register is also needed.
-> > > >
-> > > > Signed-off-by: Julia Lawall <Julia.Lawall-L2FTfq7BK8M@public.gmane.org>
-> > > >
-> > > > ---
-> > > >  drivers/thermal/tegra/soctherm.c |    2 +-
-> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > >
-> > > > diff --git a/drivers/thermal/tegra/soctherm.c b/drivers/thermal/tegra/soctherm.c
-> > > > index 7d2db23..10f4fdd 100644
-> > > > --- a/drivers/thermal/tegra/soctherm.c
-> > > > +++ b/drivers/thermal/tegra/soctherm.c
-> > > > @@ -1014,7 +1014,6 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
-> > > >  		tcd = thermal_of_cooling_device_register(np_stcc,
-> > > >  							 (char *)name, ts,
-> > > >  							 &throt_cooling_ops);
-> > > > -		of_node_put(np_stcc);
-> > > >  		if (IS_ERR_OR_NULL(tcd)) {
-> > > >  			dev_err(dev,
-> > > >  				"throttle-cfg: %s: failed to register cooling device\n",
-> > > > @@ -1022,6 +1021,7 @@ static void soctherm_init_hw_throt_cdev(struct platform_device *pdev)
-> > > >  			continue;
-> > > >  		}
-> > > >
-> > > > +		of_node_get(np_stcc);
-> > > >  		stc->cdev = tcd;
-> > > >  		stc->init = true;
-> > > >  	}
-> > >
-> > > Thanks for fixing this. However, I am wondering if it is better for the
-> > > 'of_node_get' to be placed within the
-> > > thermal_of_cooling_device_register() function as it seems a bit odd if
-> > > the caller needs to know that this is being stored for later use.
-> > >
-> > > Also, taking a quick look, I see a couple other drivers calling
-> > > thermal_of_cooling_device_register() and they are also not calling
-> > > of_node_get on success. So it maybe easier to fix placing it in the
-> > > thermal_of_cooling_device_register() function.
-> >
-> > I'm not an expert, but I had the impression that from some call sites, the
-> > get would have been done already, because the argument is already stored
-> > in some structure.  I can check more exhaustively.
->
-> Julia, I agree with Jon here. Better if fixed in the API itself. Are you
-> still planning on sending a fix for this?
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-This has fallen off my stack, and I'mnot sure that Ican get to it in the
-short term.
-
-julia
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
