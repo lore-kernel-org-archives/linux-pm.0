@@ -1,89 +1,117 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V1] PM: In kernel power management domain_pm created for async schedules
-Date: Wed, 06 Dec 2017 15:18:15 +0100
-Message-ID: <3785462.Nrr6Y8ermz@aspire.rjw.lan>
-References: <CGME20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7> <20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7> <20171206141238.GB11339@kroah.com>
+From: Kai-Heng Feng <kai.heng.feng@canonical.com>
+Subject: Re: [PATCH] xhci: Fix front USB ports on ASUS PRIME B350M-A
+Date: Wed, 6 Dec 2017 22:20:17 +0800
+Message-ID: <CAAd53p7K1g1NU3ObDi2UvJQogEhK6=xPXy39nixaK4yFmmtG-g@mail.gmail.com>
+References: <20171205162242.4057-1-kai.heng.feng@canonical.com> <20171205171440.GA23510@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171206141238.GB11339@kroah.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Vikas Bansal <vikas.bansal@samsung.com>
-Cc: "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20171205171440.GA23510@bhelgaas-glaptop.roam.corp.google.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: mathias.nyman@intel.com, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, USB list <linux-usb@vger.kernel.org>, linux-pci@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Joe Lee <asmt.swfae@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, December 6, 2017 3:12:38 PM CET gregkh@linuxfoundation.org wrote:
-> On Wed, Dec 06, 2017 at 12:07:14PM +0000, Vikas Bansal wrote:
-> > Description:
-> 
-> Why is this here?
-> 
-> > 
-> > If there is a driver in system which starts creating async schedules
-> > just after resume (Same as our case, in which we faced issue).
-> > Then async_synchronize_full API in PM cores starts waiting for completion
-> > of async schedules created by that driver (Even though those are in a domain).
-> > Because of this kernel resume time is increased (We faces the same issue)
-> > and whole system is delayed.
-> > This problem can be solved by creating a domain for
-> > async schedules in PM core (As we solved in our case).
-> > Below patch is for solving this problem.
-> 
-> Very odd formatting.
-> 
-> > 
-> > Changelog:
-> > 1. Created Async domain domain_pm.
-> > 2. Converted async_schedule to async_schedule_domain.
-> > 3. Converted async_synchronize_full to async_synchronize_full_domain
-> 
-> I'm confused.  Have you read kernel patch submissions?  Look at how they
-> are formatted.  The documentation in the kernel tree should help you out
-> a lot here.
-> 
-> Also, this is not v1, it has changed from the previous version.  Always
-> describe, in the correct way, the changes from previous submissions.
-> 
-> 
-> > 
-> > 
-> > 
-> > Signed-off-by: Vikas Bansal <vikas.bansal@samsung.com>
-> > Signed-off-by: Anuj Gupta <anuj01.gupta@samsung.com>
-> > ---
-> >  drivers/base/power/main.c |   27 +++++++++++++++------------
-> >  1 file changed, 15 insertions(+), 12 deletions(-)
-> > 
-> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> > index db2f044..042b034 100644
-> > --- a/drivers/base/power/main.c
-> > +++ b/drivers/base/power/main.c
-> > @@ -39,6 +39,7 @@
-> >  #include "power.h"
-> >  
-> >  typedef int (*pm_callback_t)(struct device *);
-> > +static ASYNC_DOMAIN(domain_pm);
-> >  
-> >  /*
-> >   * The entries in the dpm_list list are in a depth first order, simply
-> > @@ -615,7 +616,8 @@ void dpm_noirq_resume_devices(pm_message_t state)
-> >  		reinit_completion(&dev->power.completion);
-> >  		if (is_async(dev)) {
-> >  			get_device(dev);
-> > -			async_schedule(async_resume_noirq, dev);
-> > +			async_schedule_domain(async_resume_noirq, dev, 
-> 
-> Always run your patches through scripts/checkpatch.pl so you do you not
-> get grumpy maintainers telling you to use scripts/checkpatch.pl
-> 
-> Stop.  Take some time.  Redo the patch in another day or so, and then
-> resend it later, _AFTER_ you have addressed the issues.  Don't rush,
-> there is no race here.
+On Wed, Dec 6, 2017 at 1:14 AM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> [+cc Rafael, linux-pm]
+>
+> On Wed, Dec 06, 2017 at 12:22:42AM +0800, Kai-Heng Feng wrote:
+>> The board in question has three XHCI HCs:
+>> 02:00.0 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] USB 3.1 XHCI Controller [1022:43bb] (rev 02)
+>> 04:00.0 USB controller [0c03]: ASMedia Technology Inc. Device [1b21:1343]
+>> 0a:00.3 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] USB3 Host Controller [1022:145c]
+>>
+>> The front ports are connected to HC [1022:43bb] (02:00.0).
+>>
+>> After plugging high speed devices into front ports several times, it
+>> stops responding to high speed devices. Super speed devices can still
+>> get detected though.
+>>
+>> When I plugged a high speed device, [1b21:1343] (04:00.0) also got woke
+>> up:
+>> [  140.834823] xhci_hcd 0000:02:00.0: // Setting command ring address to 0xff73b001
+>> [  140.838220] xhci_hcd 0000:02:00.0: xhci_resume: starting port polling.
+>> [  140.838226] xhci_hcd 0000:02:00.0: xhci_hub_status_data: stopping port polling.
+>> [  140.838266] xhci_hcd 0000:02:00.0: xhci_suspend: stopping port polling.
+>> [  140.838362] xhci_hcd 0000:02:00.0: // Setting command ring address to 0xff73b001
+>> [  140.858908] xhci_hcd 0000:04:00.0: // Setting command ring address to 0xfffd9001
+>> [  140.862745] xhci_hcd 0000:04:00.0: xhci_resume: starting port polling.
+>> [  140.862754] xhci_hcd 0000:04:00.0: xhci_hub_status_data: stopping port polling.
+>> [  140.862760] xhci_hcd 0000:04:00.0: xhci_hub_status_data: stopping port polling.
+>> [  140.862787] xhci_hcd 0000:04:00.0: xhci_suspend: stopping port polling.
+>> [  140.862811] xhci_hcd 0000:04:00.0: // Setting command ring address to 0xfffd9001
+>>
+>> Seems like [1022:43bb] is wired to [1b21:1343] internally.
+>>
+>> Both HCs support D3hot PME, so I tried to disable D3cold on them.
+>> Turns out disable D3cold on [1b21:1343] (04:00.0) can workaround the
+>> issue for [1022:43bb] (02:00.0).
+>>
+>> Also, [1022:43bb] (02:00.0) sometimes failed to suspend:
+>> [  549.114587] xhci_hcd 0000:02:00.0: WARN: xHC CMD_RUN timeout
+>> [  549.114608] suspend_common(): xhci_pci_suspend+0x0/0xc0 returns -110
+>> [  549.114638] xhci_hcd 0000:02:00.0: can't suspend (hcd_pci_runtime_suspend returned -110)
+>> [  549.116744] usb usb3: root hub lost power or was reset
+>> [  549.116746] usb usb4: root hub lost power or was reset
+>>
+>> Based on previous guesswork, the issue can be workaround by doing PCI
+>> reset on [1b21:1343] (04:00.0).
+>
+> Naive questions: Does this indicate that xhci_hcd is lacking something
+> in the "resume from D3cold" path?
 
-Also it is not clear to me if this fixes a mainline kernel issue,
-because the changelog mentions a driver doing something odd, but it
-doesn't say which one it is and whether or not it is in the tree.
+I think it's not related to xhci_hcd, it's weird to 04:00.0 gets woke
+up because
+something plugged into 02:00.0's port at first place.
 
-Thanks,
-Rafael
+> Is there a bugzilla for this? If
+> not, can you open one and attach the complete dmesg log and complete
+> "lspci -vv" output (as root)?  Google found some possibly related
+> issues but I can't quite tie them together yet.
+
+https://bugzilla.kernel.org/show_bug.cgi?id=198097
+
+>
+> I don't have an issue with the quirk per se, but in general I think
+> it's better to debug an issue than simply avoid it.
+
+Thanks. I hope ASMedia can shed some light on this issue.
+
+>
+>> Cc: Joe Lee <asmt.swfae@gmail.com>
+>> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+>> ---
+>>  drivers/pci/quirks.c          | 2 ++
+>>  drivers/usb/host/pci-quirks.c | 3 +++
+>>  2 files changed, 5 insertions(+)
+>>
+>> diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+>> index 10684b17d0bd..380061dae51d 100644
+>> --- a/drivers/pci/quirks.c
+>> +++ b/drivers/pci/quirks.c
+>> @@ -1699,6 +1699,8 @@ static void quirk_radeon_pm(struct pci_dev *dev)
+>>  }
+>>  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ATI, 0x6741, quirk_radeon_pm);
+>>
+>> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASMEDIA, 0x1343, pci_d3cold_disable);
+>> +
+>>  #ifdef CONFIG_X86_IO_APIC
+>>  static int dmi_disable_ioapicreroute(const struct dmi_system_id *d)
+>>  {
+>> diff --git a/drivers/usb/host/pci-quirks.c b/drivers/usb/host/pci-quirks.c
+>> index 161536717025..8c4318671e37 100644
+>> --- a/drivers/usb/host/pci-quirks.c
+>> +++ b/drivers/usb/host/pci-quirks.c
+>> @@ -1176,6 +1176,9 @@ bool usb_xhci_needs_pci_reset(struct pci_dev *pdev)
+>>           (pdev->device == 0x0014 || pdev->device == 0x0015))
+>>               return true;
+>>
+>> +     if (pdev->vendor == PCI_VENDOR_ID_ASMEDIA && pdev->device == 0x1343)
+>> +             return true;
+>> +
+>>       return false;
+>>  }
+>>  EXPORT_SYMBOL_GPL(usb_xhci_needs_pci_reset);
+>> --
+>> 2.14.1
+>>
