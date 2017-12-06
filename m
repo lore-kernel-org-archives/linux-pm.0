@@ -1,63 +1,164 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH 3/6] cpufreq: sort the drivers in ARM part
-Date: Wed, 06 Dec 2017 13:09:17 +0100
-Message-ID: <87o9nct5w2.fsf@free-electrons.com>
-References: <20171201112508.14121-1-gregory.clement@free-electrons.com>
-        <20171201112508.14121-4-gregory.clement@free-electrons.com>
-        <20171204091850.iamq5uslv3hv6bez@vireshk-mac-ubuntu>
+From: Vikas Bansal <vikas.bansal@samsung.com>
+Subject: [PATCH V1] PM: In kernel power management domain_pm created for
+ async schedules
+Date: Wed, 06 Dec 2017 12:07:14 +0000
+Message-ID: <20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7>
+References: <CGME20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7>
+Reply-To: vikas.bansal@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:54341 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751066AbdLFMJ2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Dec 2017 07:09:28 -0500
-In-Reply-To: <20171204091850.iamq5uslv3hv6bez@vireshk-mac-ubuntu> (Viresh
-        Kumar's message of "Mon, 4 Dec 2017 14:48:50 +0530")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@free-electrons.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, Evan Wang <xswang@marvell.com>
 
-Hi Viresh,
+Description:
+
+If there is a driver in system which starts creating async schedules
+just after resume (Same as our case, in which we faced issue).
+Then async_synchronize_full API in PM cores starts waiting for completion
+of async schedules created by that driver (Even though those are in a domain).
+Because of this kernel resume time is increased (We faces the same issue)
+and whole system is delayed.
+This problem can be solved by creating a domain for
+async schedules in PM core (As we solved in our case).
+Below patch is for solving this problem.
+
+Changelog:
+1. Created Async domain domain_pm.
+2. Converted async_schedule to async_schedule_domain.
+3. Converted async_synchronize_full to async_synchronize_full_domain
+
+
+
+Signed-off-by: Vikas Bansal <vikas.bansal@samsung.com>
+Signed-off-by: Anuj Gupta <anuj01.gupta@samsung.com>
+---
+ drivers/base/power/main.c |   27 +++++++++++++++------------
+ 1 file changed, 15 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index db2f044..042b034 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -39,6 +39,7 @@
+ #include "power.h"
  
- On lun., déc. 04 2017, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-
-> On 01-12-17, 12:25, Gregory CLEMENT wrote:
->> Keep the driver files alphabetically sorted.
->> 
->> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
->> ---
->>  drivers/cpufreq/Makefile | 8 ++++----
->>  1 file changed, 4 insertions(+), 4 deletions(-)
->> 
->> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
->> index 812f9e0d01a3..d762e76887e7 100644
->> --- a/drivers/cpufreq/Makefile
->> +++ b/drivers/cpufreq/Makefile
->> @@ -53,22 +53,24 @@ obj-$(CONFIG_ARM_BIG_LITTLE_CPUFREQ)	+= arm_big_little.o
->>  obj-$(CONFIG_ARM_DT_BL_CPUFREQ)		+= arm_big_little_dt.o
->>  
->>  obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
->> +obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+= cppc_cpufreq.o
->
-> Shouldn't we add them in ascending order of the whole config name and not just
-> CPPC_CPUFREQ ?
-
-Here it is the object name that are sorted not the CONFIG_ name. So
-cppc_cpufreq comes after brcmstb-avs-cpufreq.
-
-Thanks,
-
-Gregory
-
->
-> -- 
-> viresh
-
+ typedef int (*pm_callback_t)(struct device *);
++static ASYNC_DOMAIN(domain_pm);
+ 
+ /*
+  * The entries in the dpm_list list are in a depth first order, simply
+@@ -615,7 +616,8 @@ void dpm_noirq_resume_devices(pm_message_t state)
+ 		reinit_completion(&dev->power.completion);
+ 		if (is_async(dev)) {
+ 			get_device(dev);
+-			async_schedule(async_resume_noirq, dev);
++			async_schedule_domain(async_resume_noirq, dev, 
++			&domain_pm);
+ 		}
+ 	}
+ 
+@@ -641,7 +643,7 @@ void dpm_noirq_resume_devices(pm_message_t state)
+ 		put_device(dev);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	dpm_show_time(starttime, state, 0, "noirq");
+ 	trace_suspend_resume(TPS("dpm_resume_noirq"), state.event, false);
+ }
+@@ -755,7 +757,8 @@ void dpm_resume_early(pm_message_t state)
+ 		reinit_completion(&dev->power.completion);
+ 		if (is_async(dev)) {
+ 			get_device(dev);
+-			async_schedule(async_resume_early, dev);
++			async_schedule_domain(async_resume_early, dev, 
++			&domain_pm);
+ 		}
+ 	}
+ 
+@@ -780,7 +783,7 @@ void dpm_resume_early(pm_message_t state)
+ 		put_device(dev);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	dpm_show_time(starttime, state, 0, "early");
+ 	trace_suspend_resume(TPS("dpm_resume_early"), state.event, false);
+ }
+@@ -919,7 +922,7 @@ void dpm_resume(pm_message_t state)
+ 		reinit_completion(&dev->power.completion);
+ 		if (is_async(dev)) {
+ 			get_device(dev);
+-			async_schedule(async_resume, dev);
++			async_schedule_domain(async_resume, dev, &domain_pm);
+ 		}
+ 	}
+ 
+@@ -946,7 +949,7 @@ void dpm_resume(pm_message_t state)
+ 		put_device(dev);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	dpm_show_time(starttime, state, 0, NULL);
+ 
+ 	cpufreq_resume();
+@@ -1156,7 +1159,7 @@ static int device_suspend_noirq(struct device *dev)
+ 
+ 	if (is_async(dev)) {
+ 		get_device(dev);
+-		async_schedule(async_suspend_noirq, dev);
++		async_schedule_domain(async_suspend_noirq, dev, &domain_pm);
+ 		return 0;
+ 	}
+ 	return __device_suspend_noirq(dev, pm_transition, false);
+@@ -1202,7 +1205,7 @@ int dpm_noirq_suspend_devices(pm_message_t state)
+ 			break;
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	if (!error)
+ 		error = async_error;
+ 
+@@ -1316,7 +1319,7 @@ static int device_suspend_late(struct device *dev)
+ 
+ 	if (is_async(dev)) {
+ 		get_device(dev);
+-		async_schedule(async_suspend_late, dev);
++		async_schedule_domain(async_suspend_late, dev, &domain_pm);
+ 		return 0;
+ 	}
+ 
+@@ -1361,7 +1364,7 @@ int dpm_suspend_late(pm_message_t state)
+ 			break;
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	if (!error)
+ 		error = async_error;
+ 	if (error) {
+@@ -1576,7 +1579,7 @@ static int device_suspend(struct device *dev)
+ 
+ 	if (is_async(dev)) {
+ 		get_device(dev);
+-		async_schedule(async_suspend, dev);
++		async_schedule_domain(async_suspend, dev, &domain_pm);
+ 		return 0;
+ 	}
+ 
+@@ -1622,7 +1625,7 @@ int dpm_suspend(pm_message_t state)
+ 			break;
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	if (!error)
+ 		error = async_error;
+ 	if (error) {
 -- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+1.7.9.5
