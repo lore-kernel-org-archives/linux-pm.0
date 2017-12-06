@@ -1,22 +1,29 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V1] PM: In kernel power management domain_pm created for async schedules
-Date: Wed, 06 Dec 2017 14:50:16 +0100
-Message-ID: <2799044.UXHTlt2n3n@aspire.rjw.lan>
-References: <CGME20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7> <20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7>
+From: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH V1] PM: In kernel power management domain_pm created for
+ async schedules
+Date: Wed, 6 Dec 2017 15:12:38 +0100
+Message-ID: <20171206141238.GB11339@kroah.com>
+References: <CGME20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7>
+ <20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.linuxfoundation.org ([140.211.169.12]:57282 "EHLO
+        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752298AbdLFOMb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 Dec 2017 09:12:31 -0500
+Content-Disposition: inline
 In-Reply-To: <20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: vikas.bansal@samsung.com, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Cc: "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Vikas Bansal <vikas.bansal@samsung.com>
+Cc: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Greg, I'll take care of this if you don't mind.
-
-On Wednesday, December 6, 2017 1:07:14 PM CET Vikas Bansal wrote:
+On Wed, Dec 06, 2017 at 12:07:14PM +0000, Vikas Bansal wrote:
 > Description:
+
+Why is this here?
+
 > 
 > If there is a driver in system which starts creating async schedules
 > just after resume (Same as our case, in which we faced issue).
@@ -28,17 +35,25 @@ On Wednesday, December 6, 2017 1:07:14 PM CET Vikas Bansal wrote:
 > async schedules in PM core (As we solved in our case).
 > Below patch is for solving this problem.
 
-OK, it is more clear what's going on here.
+Very odd formatting.
 
-First question, is the driver using the async things in the tree?
-
+> 
 > Changelog:
 > 1. Created Async domain domain_pm.
 > 2. Converted async_schedule to async_schedule_domain.
 > 3. Converted async_synchronize_full to async_synchronize_full_domain
 
-This still isn't a proper changelog, but I can fix it up.
+I'm confused.  Have you read kernel patch submissions?  Look at how they
+are formatted.  The documentation in the kernel tree should help you out
+a lot here.
 
+Also, this is not v1, it has changed from the previous version.  Always
+describe, in the correct way, the changes from previous submissions.
+
+
+> 
+> 
+> 
 > Signed-off-by: Vikas Bansal <vikas.bansal@samsung.com>
 > Signed-off-by: Anuj Gupta <anuj01.gupta@samsung.com>
 > ---
@@ -54,10 +69,6 @@ This still isn't a proper changelog, but I can fix it up.
 >  
 >  typedef int (*pm_callback_t)(struct device *);
 > +static ASYNC_DOMAIN(domain_pm);
-
-Rename this to async_pm or similar (just use the word "async" in the name
-at least or it will be super-confusing).
-
 >  
 >  /*
 >   * The entries in the dpm_list list are in a depth first order, simply
@@ -67,36 +78,12 @@ at least or it will be super-confusing).
 >  			get_device(dev);
 > -			async_schedule(async_resume_noirq, dev);
 > +			async_schedule_domain(async_resume_noirq, dev, 
-> +			&domain_pm);
 
-This is not the right way to format the line above and you don't need to break
-it (yes, it will be longer than 80 chars, but it will look better anyway).
+Always run your patches through scripts/checkpatch.pl so you do you not
+get grumpy maintainers telling you to use scripts/checkpatch.pl
 
->  		}
->  	}
->  
-> @@ -641,7 +643,7 @@ void dpm_noirq_resume_devices(pm_message_t state)
->  		put_device(dev);
->  	}
->  	mutex_unlock(&dpm_list_mtx);
-> -	async_synchronize_full();
-> +	async_synchronize_full_domain(&domain_pm);
->  	dpm_show_time(starttime, state, 0, "noirq");
->  	trace_suspend_resume(TPS("dpm_resume_noirq"), state.event, false);
->  }
-> @@ -755,7 +757,8 @@ void dpm_resume_early(pm_message_t state)
->  		reinit_completion(&dev->power.completion);
->  		if (is_async(dev)) {
->  			get_device(dev);
-> -			async_schedule(async_resume_early, dev);
-> +			async_schedule_domain(async_resume_early, dev, 
-> +			&domain_pm);
+Stop.  Take some time.  Redo the patch in another day or so, and then
+resend it later, _AFTER_ you have addressed the issues.  Don't rush,
+there is no race here.
 
-Same here.
-
->  		}
->  	}
->  
-
-Thanks,
-Rafael
+greg k-h
