@@ -1,95 +1,57 @@
-From: Vincent Guittot <vincent.guittot@linaro.org>
-Subject: Re: [PATCH v3 4/6] sched/rt: fast switch to maximum frequency when RT
- tasks are scheduled
-Date: Wed, 6 Dec 2017 13:36:00 +0100
-Message-ID: <CAKfTPtD7iytL5CSyn3qEZDjOTqvvZ1PPNeotuwgUB+=Q+ma4_Q@mail.gmail.com>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171130114723.29210-5-patrick.bellasi@arm.com> <CAKfTPtCoUVoxhG5mem9fcf30VoQBUCMZr-CLkFVoKRMHr_=btQ@mail.gmail.com>
- <20171206113821.GO31247@e110439-lin>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] cpufreq: powernv: Define methods to parse positive & negative pstates
+Date: Wed, 06 Dec 2017 23:41:32 +1100
+Message-ID: <87lgigdo5f.fsf@concordia.ellerman.id.au>
+References: <1512017018-4857-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com> <87r2s8dt3w.fsf@concordia.ellerman.id.au> <20171206111944.GB22880@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171206113821.GO31247@e110439-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from ozlabs.org ([103.22.144.67]:35905 "EHLO ozlabs.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751840AbdLFMle (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 6 Dec 2017 07:41:34 -0500
+In-Reply-To: <20171206111944.GB22880@in.ibm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-kernel@vger.kernel.org, huntbag@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, akshay.adiga@linux.vnet.ibm.com
 
-On 6 December 2017 at 12:38, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
-> Hi Vincent,
->
-> On 06-Dec 10:39, Vincent Guittot wrote:
->> Hi Patrick,
->>
->> On 30 November 2017 at 12:47, Patrick Bellasi <patrick.bellasi@arm.com> wrote:
->
-> [...]
->
->> >  static void dequeue_task_rt(struct rq *rq, struct task_struct *p, int flags)
->> > @@ -1564,6 +1564,9 @@ pick_next_task_rt(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
->> >
->> >         p = _pick_next_task_rt(rq);
->> >
->> > +       /* Kick cpufreq (see the comment in kernel/sched/sched.h). */
->>
->> p is null when there is no rt task to pick.
->> You should test this condition before calling cpufreq_update_util
->
-> Mmm... for what I see, from the above function's implementation,
-> _pick_next_task_rt() is always returning a valid pointer to an RT
-> task.
->
-> The above call does a:
->
->    p->se.exec_start = rq_clock_task(rq);
->
-> right before returning, and there is also a BUG_ON(!rt_se) in the
-> previous RT tasks scanning loop.
->
-> Am I missing something?
+Gautham R Shenoy <ego@linux.vnet.ibm.com> writes:
 
-No you're right the return Null is done earlier if there is no task
+> Hi Michael,
+>
+> On Wed, Dec 06, 2017 at 09:54:27PM +1100, Michael Ellerman wrote:
+>> Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> writes:
+>> 
+>> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>> >
+>> > Pstates are 8bit values but on POWER8 they are negative and on POWER9
+>> > they are positive. This patch adds helper routines to differentiate
+>> > the sign to read the correct pstate value.
+>> 
+>> This sounds like it could be a bad bug, but I can't really tell from the
+>> change log. What is the actual impact of not having this patch?
+>
+> On some POWER9 platforms, there can be more than 128 pstates. 
+>
+> Without this patch, on such platforms, if the value of the current
+> frequency corresponds to a pstate greater than 128, then the code will
+> interpret it as a negative number, and report that the "pstate is out
+> of bound" while returning a nominal frequency.
 
+OK, that's good detail to have in the change log, please include it.
+
+>> Should it have a Fixes/Cc-stable tag?
 >
->> > +       cpufreq_update_util(rq, SCHED_CPUFREQ_RT);
->> > +
->> >         /* The running task is never eligible for pushing */
->> >         dequeue_pushable_task(rq, p);
->
-> [...]
->
->> > @@ -2317,6 +2323,9 @@ static void set_curr_task_rt(struct rq *rq)
->> >
->> >         p->se.exec_start = rq_clock_task(rq);
->> >
->> > +       /* Kick cpufreq (see the comment in kernel/sched/sched.h). */
->> > +       cpufreq_update_util(rq, SCHED_CPUFREQ_RT);
->>
->> Is this change linked to the "- when a task is set to be RT" in the
->> commit message ?
->>
->> I can't see a situation where this is call without the previous one.
->> AFAICT, enqueue_task_rt will be called before each call to this
->> function
->
-> Yeah, you right, in core.c the pattern seems to always be:
->
->     if (queued)
->             enqueue_task()
->     if (running)
->             set_curr_task()
->
-> I'll remove this chunk from the next version.
->
->>
->> > +
->> >         /* The running task is never eligible for pushing */
->> >         dequeue_pushable_task(rq, p);
->> >  }
->
-> Thanks for the review!
->
-> --
-> #include <best/regards.h>
->
-> Patrick Bellasi
+> This doesn't fix any prior commit, but is fixes a newly discovered
+> bug.
+
+OK. You could say it "fixes" the commit that added Power9 support to the
+driver, but it seems there wasn't really a commit that did that
+specifically.
+
+> I will resend the patch Cc'ing stable.
+
+You don't have to Cc stable, that was just a suggestion. Though it
+sounds like the symptoms are probably bad enough to warrant it.
+
+cheers
