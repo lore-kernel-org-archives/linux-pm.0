@@ -1,82 +1,43 @@
-From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH 1/6] dt-bindings: marvell: Add documentation for the North Bridge PM on Armada 37xx
-Date: Wed, 06 Dec 2017 12:51:07 +0100
-Message-ID: <87zi6wt6qc.fsf@free-electrons.com>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH 2/6] cpufreq: ARM: sort the Kconfig menu
+Date: Wed, 06 Dec 2017 12:52:20 +0100
+Message-ID: <87shcot6ob.fsf@free-electrons.com>
 References: <20171201112508.14121-1-gregory.clement@free-electrons.com>
-        <20171201112508.14121-2-gregory.clement@free-electrons.com>
-        <20171204214706.4sbjgxme3ftmf3l3@rob-hp-laptop>
+ <20171201112508.14121-3-gregory.clement@free-electrons.com>
+ <20171204084124.mchpmw3kta5tddgh@vireshk-mac-ubuntu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171204214706.4sbjgxme3ftmf3l3@rob-hp-laptop> (Rob Herring's
-        message of "Mon, 4 Dec 2017 15:47:06 -0600")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Victor Gu <xigu-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Marcin Wojtas <mw-nYOzD4b6Jr9Wk0Htik3J/w@public.gmane.org>, Wilson Ding <dingwei-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Hua Jing <jinghua-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Neta Zur Hershkovits <neta-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Evan Wang <xswang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20171204084124.mchpmw3kta5tddgh@vireshk-mac-ubuntu> (Viresh
+ Kumar's message of "Mon, 4 Dec 2017 14:11:24 +0530")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Evan Wang <xswang@marvell.com>, Nadav Haklai <nadavh@marvell.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Neta Zur Hershkovits <neta@marvell.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@free-electrons.com>, Victor Gu <xigu@marvell.com>, Hua Jing <jinghua@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Rob,
- 
- On lun., déc. 04 2017, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-
-> On Fri, Dec 01, 2017 at 12:25:03PM +0100, Gregory CLEMENT wrote:
->> Extend the documentation of the Armada 37xx SoC with the the North
->> Bridge Power Management component.
->> 
->> Signed-off-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
->> ---
->>  .../devicetree/bindings/arm/marvell/armada-37xx.txt   | 19 +++++++++++++++++++
->>  1 file changed, 19 insertions(+)
->> 
->> diff --git a/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt b/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
->> index 51336e5fc761..7ad9830d9177 100644
->> --- a/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
->> +++ b/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
->> @@ -14,3 +14,22 @@ following property before the previous one:
->>  Example:
->>  
->>  compatible = "marvell,armada-3720-db", "marvell,armada3720", "marvell,armada3710";
->> +
->> +
->> +Power management
->> +----------------
->> +
->> +For power management (particularly DVFS and AVS), the North Bridge
->> +Power Management component is needed:
->> +
->> +Required properties:
->> +- compatible     : should contain "marvell,armada-3700-nb-pm", "syscon";
->> +- reg            : the register start and length for the North Bridge
->> +		    Power Management
->> +
->> +Example:
->> +
->> +nb_pm: nb_pm@14000 {
->
-> Don't use underscore in node or property names. "syscon" is a better 
-> choice here.
-
-OK I will change this.
-
-Thanks,
-
-Gregory
-
->
->> +	compatible = "marvell,armada-3700-nb-pm", "syscon";
->> +	reg = <0x14000 0x60>;
->> +}
->> -- 
->> 2.15.0
->> 
-
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+SGkgVmlyZXNoLAogCiBPbiBsdW4uLCBkw6ljLiAwNCAyMDE3LCBWaXJlc2ggS3VtYXIgPHZpcmVz
+aC5rdW1hckBsaW5hcm8ub3JnPiB3cm90ZToKCj4gT24gMDEtMTItMTcsIDEyOjI1LCBHcmVnb3J5
+IENMRU1FTlQgd3JvdGU6Cj4+ICtjb25maWcgQVJNX1ZFWFBSRVNTX1NQQ19DUFVGUkVRCj4+ICsg
+ICAgICAgIHRyaXN0YXRlICJWZXJzYXRpbGUgRXhwcmVzcyBTUEMgYmFzZWQgQ1BVZnJlcSBkcml2
+ZXIiCj4+ICsJZGVwZW5kcyBvbiBBUk1fQklHX0xJVFRMRV9DUFVGUkVRICYmIEFSQ0hfVkVYUFJF
+U1NfU1BDCj4+ICsgICAgICAgIGhlbHAKPj4gKyAgICAgICAgICBUaGlzIGFkZCB0aGUgQ1BVZnJl
+cSBkcml2ZXIgc3VwcG9ydCBmb3IgVmVyc2F0aWxlIEV4cHJlc3MKPj4gKwkgIGJpZy5MSVRUTEUg
+cGxhdGZvcm1zIHVzaW5nIFNQQyBmb3IgcG93ZXIgbWFuYWdlbWVudC4KPj4gKwo+PiArY29uZmln
+IEFSTV9TQ1BJX0NQVUZSRVEKPgo+IFRoZSBvcmRlciBvZiBhYm92ZSB0d28gbXVzdCBiZSByZXZl
+cnNlZCA/CgpSaWdodCwgSSB3aWxsIGZpeCBpdC4KClRoYW5rcywKCkdyZWdvcnkKCgo+Cj4gLS0g
+Cj4gdmlyZXNoCgotLSAKR3JlZ29yeSBDbGVtZW50LCBGcmVlIEVsZWN0cm9ucwpLZXJuZWwsIGRy
+aXZlcnMsIHJlYWwtdGltZSBhbmQgZW1iZWRkZWQgTGludXgKZGV2ZWxvcG1lbnQsIGNvbnN1bHRp
+bmcsIHRyYWluaW5nIGFuZCBzdXBwb3J0LgpodHRwOi8vZnJlZS1lbGVjdHJvbnMuY29tCgpfX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2Vy
+bmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0
+cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVs
+Cg==
