@@ -1,59 +1,151 @@
-From: Marc Zyngier <marc.zyngier@arm.com>
-Subject: Re: Save and Restore Generic Interrupt Controller for System Sleep on ARM
-Date: Wed, 06 Dec 2017 09:48:16 +0000
-Message-ID: <87vahk6vbz.fsf@on-the-bus.cambridge.arm.com>
-References: <CAGAzgsrSDF0Hs4-=m02c6ME90RvZumYxzBFFi0oH=RuwxQnB-Q@mail.gmail.com>
-        <86d140xfr9.fsf@unassigned-hostname.unassigned-domain>
-        <CAGAzgspYoDwbmj+cXWQJcUmmGZshQ95-a-8gBNOtxT8L2Qm-VQ@mail.gmail.com>
+From: Vikas Bansal <vikas.bansal@samsung.com>
+Subject: In kernel power management domain_pm created for async schedules
+Date: Wed, 06 Dec 2017 05:38:31 +0000
+Message-ID: <20171206053831epcms5p58903d153d261ffd797e43b6983cda1ce@epcms5p5>
+References: <CGME20171206053831epcms5p58903d153d261ffd797e43b6983cda1ce@epcms5p5>
+Reply-To: vikas.bansal@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:59522 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752373AbdLFJsU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 6 Dec 2017 04:48:20 -0500
-In-Reply-To: <CAGAzgspYoDwbmj+cXWQJcUmmGZshQ95-a-8gBNOtxT8L2Qm-VQ@mail.gmail.com>
-        (dbasehore .'s message of "Thu, 30 Nov 2017 17:21:20 -0800")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: "dbasehore ." <dbasehore@chromium.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, sudeep.holla@arm.com, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Thu, Nov 30 2017 at  5:21:20 pm GMT, "dbasehore ." <dbasehore@chromium.org> wrote:
-> On Thu, Nov 30, 2017 at 1:44 AM, Marc Zyngier <marc.zyngier@arm.com> wrote:
->> On Wed, Nov 29 2017 at 2:49:18 pm GMT, "dbasehore ."
->> <dbasehore@chromium.org> wrote:
->>> There was some work in ARM Trusted Firmware to support saving and
->>> restoring the Generic Interrupt Controller (GICv3) before and after
->>> sleep, but it seems that the plan is to have this all in the kernel
->>> now. The point of doing this is to save power during sleep. On an
->>> RK3399 system, we save about 15mW by disabling the power rail that the
->>> GIC is on.
->>>
->>> I was looking for whether anyone had anything in progress already or
->>> for preferences on how to do this. Marc suggested using a device tree
->>> entry to indicate the need to save and restore the GIC. There is
->>> another requirement to resend MAPC commands on certain implementations
->>> of the GICv3 which could be indicated by another device tree entry.
->>
->> Let's be precise: This is a GIC-500 requirement, and not something that
->> the GICv3 architecture defines (PM is *not* part of the GICv3
->> architecture).
->>
->
-> Just to double check, do the register restores apply to all GICv3
-> designs? If so, I can put that code in the gic-v3 code instead of
-> breaking it out.
+If there is a driver in system which starts creating async schedules just after resume (Same as our case, in which we faced issue). Then async_synchronize_full API in PM cores starts waiting for completion of async schedules created by that driver (Even though those are in a domain). Because of this kernel resume time is increased (We faces the same issue) and whole system is delayed. 
+This problem can be solved by creating is domain for async schedules in PM core (As we solved in our case). Below patch is for solving this problem.
 
-I would keep it GIC-500 specific for the time being. But that code
-should live in the GICv3 driver, gated on the IIDR registers and some
-form of firmware negotiation.
 
-Again, it will be much easier to comment on this when we see the
-code. So far, I feel a bit uneasy talking mostly hypothetically.
+>From b8ea152eed6eef3b53275e7dd240a4d2124e9d4d Mon Sep 17 00:00:00 2001
+From: Anuj Gupta <anuj01.gupta@samsung.com>
+Date: Tue, 5 Dec 2017 21:34:49 -0800
+Subject: [PATCH] Added domain_pm to PM core
 
-Thanks,
 
-	M.
+Signed-off-by: Vikas Bansal <vikas.bansal@samsung.com>
+---
+ drivers/base/power/main.c |   25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index db2f044..2d19dfb 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -39,6 +39,7 @@
+ #include "power.h"
+ 
+ typedef int (*pm_callback_t)(struct device *);
++ASYNC_DOMAIN(domain_pm);
+ 
+ /*
+  * The entries in the dpm_list list are in a depth first order, simply
+@@ -615,7 +616,7 @@ void dpm_noirq_resume_devices(pm_message_t state)
+ 		reinit_completion(&dev->power.completion);
+ 		if (is_async(dev)) {
+ 			get_device(dev);
+-			async_schedule(async_resume_noirq, dev);
++			async_schedule_domain(async_resume_noirq, dev, &domain_pm);
+ 		}
+ 	}
+ 
+@@ -641,7 +642,7 @@ void dpm_noirq_resume_devices(pm_message_t state)
+ 		put_device(dev);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	dpm_show_time(starttime, state, 0, "noirq");
+ 	trace_suspend_resume(TPS("dpm_resume_noirq"), state.event, false);
+ }
+@@ -755,7 +756,7 @@ void dpm_resume_early(pm_message_t state)
+ 		reinit_completion(&dev->power.completion);
+ 		if (is_async(dev)) {
+ 			get_device(dev);
+-			async_schedule(async_resume_early, dev);
++			async_schedule_domain(async_resume_early, dev, &domain_pm);
+ 		}
+ 	}
+ 
+@@ -780,7 +781,7 @@ void dpm_resume_early(pm_message_t state)
+ 		put_device(dev);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	dpm_show_time(starttime, state, 0, "early");
+ 	trace_suspend_resume(TPS("dpm_resume_early"), state.event, false);
+ }
+@@ -919,7 +920,7 @@ void dpm_resume(pm_message_t state)
+ 		reinit_completion(&dev->power.completion);
+ 		if (is_async(dev)) {
+ 			get_device(dev);
+-			async_schedule(async_resume, dev);
++			async_schedule_domain(async_resume, dev, &domain_pm);
+ 		}
+ 	}
+ 
+@@ -946,7 +947,7 @@ void dpm_resume(pm_message_t state)
+ 		put_device(dev);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	dpm_show_time(starttime, state, 0, NULL);
+ 
+ 	cpufreq_resume();
+@@ -1156,7 +1157,7 @@ static int device_suspend_noirq(struct device *dev)
+ 
+ 	if (is_async(dev)) {
+ 		get_device(dev);
+-		async_schedule(async_suspend_noirq, dev);
++		async_schedule_domain(async_suspend_noirq, dev, &domain_pm);
+ 		return 0;
+ 	}
+ 	return __device_suspend_noirq(dev, pm_transition, false);
+@@ -1202,7 +1203,7 @@ int dpm_noirq_suspend_devices(pm_message_t state)
+ 			break;
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	if (!error)
+ 		error = async_error;
+ 
+@@ -1316,7 +1317,7 @@ static int device_suspend_late(struct device *dev)
+ 
+ 	if (is_async(dev)) {
+ 		get_device(dev);
+-		async_schedule(async_suspend_late, dev);
++		async_schedule_domain(async_suspend_late, dev, &domain_pm);
+ 		return 0;
+ 	}
+ 
+@@ -1361,7 +1362,7 @@ int dpm_suspend_late(pm_message_t state)
+ 			break;
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	if (!error)
+ 		error = async_error;
+ 	if (error) {
+@@ -1576,7 +1577,7 @@ static int device_suspend(struct device *dev)
+ 
+ 	if (is_async(dev)) {
+ 		get_device(dev);
+-		async_schedule(async_suspend, dev);
++		async_schedule_domain(async_suspend, dev, &domain_pm);
+ 		return 0;
+ 	}
+ 
+@@ -1622,7 +1623,7 @@ int dpm_suspend(pm_message_t state)
+ 			break;
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
+-	async_synchronize_full();
++	async_synchronize_full_domain(&domain_pm);
+ 	if (!error)
+ 		error = async_error;
+ 	if (error) {
 -- 
-Jazz is not dead, it just smell funny.
+1.7.9.5
