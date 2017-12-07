@@ -1,38 +1,53 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 6/6] cpufreq: schedutil: ignore sugov kthreads
-Date: Thu, 7 Dec 2017 14:54:49 +0530
-Message-ID: <20171207092449.hncv4aldaum5wivg@vireshk-mac-ubuntu>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171130114723.29210-7-patrick.bellasi@arm.com>
- <20171130134155.GF9903@localhost.localdomain>
- <20171130160234.GG31247@e110439-lin>
- <20171130161220.GK9903@localhost.localdomain>
- <20171130164237.GI31247@e110439-lin>
+Subject: Re: [PATCH] cpufreq: longhaul: Set transition_delay_us to 20 ms
+Date: Thu, 7 Dec 2017 15:03:50 +0530
+Message-ID: <20171207093349.ct2hkhqj2d2tzvui@vireshk-mac-ubuntu>
+References: <alpine.LRH.2.21.1711241741080.10361@math.ut.ee>
+ <ed89c17b60d7183144ab4ac4b125fbed373fe670.1511838689.git.viresh.kumar@linaro.org>
+ <alpine.LRH.2.21.1712051017060.2774@math.ut.ee>
+ <alpine.LRH.2.21.1712051054170.2774@math.ut.ee>
+ <CAJZ5v0henViynygKTRqpYWr6mfm_LJALH6wurNhxM_AXLU4Kzg@mail.gmail.com>
+ <alpine.LRH.2.21.1712062020200.11844@math.ut.ee>
+ <20171207044019.kxwusyl5qoxq7zta@vireshk-mac-ubuntu>
+ <alpine.LRH.2.21.1712070925450.25092@math.ut.ee>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <stable-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171130164237.GI31247@e110439-lin>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+In-Reply-To: <alpine.LRH.2.21.1712070925450.25092@math.ut.ee>
+Sender: stable-owner@vger.kernel.org
+To: Meelis Roos <mroos@linux.ee>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "4 . 14+" <stable@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 30-11-17, 16:42, Patrick Bellasi wrote:
-> On 30-Nov 17:12, Juri Lelli wrote:
-> > Not sure about this though, not my call :). I guess this still helps
-> > until we get the DL changes in.
+On 07-12-17, 09:26, Meelis Roos wrote:
+> > On 06-12-17, 20:21, Meelis Roos wrote:
+> > > 30000 was not reliable.
+> > > 
+> > > I created root cron job
+> > > @reboot sleep 120; /sbin/reboot
+> > > 
+> > > and by the evening it was dead again.
+> > > 
+> > > Will try 50000 tomorrow.
+> > 
+> > Lets make it similar to what it was before my original patch modified
+> > it, to avoid all corner cases.
+> > 
+> > Please test against 200 ms, 200000 value here.
 > 
-> Yes, agree... well Viresh had some concerns about this patch.
-> Let see what he thinks.
+> Sorry, I confused 200000 vs 20000, will test 200000.
+> 
+> But 200000 was the value before.
 
-And the problem is that we never got to a conclusion in V2 for this
-patch as well, as you never responded to the last set of queries I
-had. Unless we finish the ongoing conversations, we will have the same
-queries again.
+It was value of a different variable (transition_latency) at that
+time. Just set transition_delay_us in my recent patch as 200,000 and
+apply that over mainline.
 
-IOW, can you explain the exact scenario where this patch will be
-helpful ? I am not sure if this patch is that helpful at all :)
+I will resend the patch in the mean time as well.
+
+> Shall I test 200000 with or without 
+> the other limiting patch?
 
 -- 
 viresh
