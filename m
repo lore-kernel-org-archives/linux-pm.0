@@ -1,105 +1,71 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / sleep: Avoid excess pm_runtime_enable() calls in device_resume()
-Date: Thu, 07 Dec 2017 03:26:14 +0100
-Message-ID: <3600031.yTsliOITBg@aspire.rjw.lan>
+Subject: [PATCH] ACPI / PM: Do not reconfigure GPEs for suspend-to-idle
+Date: Thu, 07 Dec 2017 03:27:51 +0100
+Message-ID: <1563861.ZpJ5HHSL6q@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>
 List-Id: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Middle-layer code doing suspend-time optimizations for devices with
-the DPM_FLAG_SMART_SUSPEND flag set (currently, the PCI bus type and
-the ACPI PM domain) needs to make the core skip ->thaw_early and
-->thaw callbacks for those devices in some cases and it sets the
-power.direct_complete flag for them for this purpose.
+Currently, non-wakeup GPEs are disabled on suspend-to-idle
+entry to avoid spurious wakeups, but that should not be strictly
+necessary any more after commit 33e4f80ee69b (ACPI / PM: Ignore
+spurious SCI wakeups from suspend-to-idle) which prevents spurious
+GPE wakeups from resuming the system.  The only consequence of
+leaving non-wakeup GPEs enabled may be more interrupt-related
+activity while suspended, which is not ideal (more energy is
+used if that happens), but it is not critical too.
 
-However, it turns out that setting power.direct_complete outside of
-the PM core is a bad idea as it triggers an excessive invocation of
-pm_runtime_enable() in device_resume().
+On the other hand, this change allows Dells XPS13 9360 blacklisted by
+commit 71630b7a832f (ACPI / PM: Blacklist Low Power S0 Idle _DSM for
+Dell XPS13 9360) to use the power button for waking up from suspend-
+to-idle and it helps at least one other older Dell system (the
+wakeup button GPE on that one is not listed in _PRW for any
+devices, so it is not regarded as a wakeup one and gets disabled
+on suspend-to-idle entry today).
 
-For this reason, provide a helper to clear power.is_late_suspended
-and power.is_suspended to be invoked by the middle-layer code in
-question instead of setting power.direct_complete and make that code
-call the new helper.
+For the above reasons, leave GPE configuration as is over
+suspend-to-idle on all systems.
 
-Fixes: c4b65157aeef (PCI / PM: Take SMART_SUSPEND driver flag into account)
-Fixes: 05087360fd7a (ACPI / PM: Take SMART_SUSPEND driver flag into account)
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/acpi/device_pm.c  |    2 +-
- drivers/base/power/main.c |   15 +++++++++++++++
- drivers/pci/pci-driver.c  |    2 +-
- include/linux/pm.h        |    1 +
- 4 files changed, 18 insertions(+), 2 deletions(-)
+ drivers/acpi/sleep.c |   11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
 
-Index: linux-pm/include/linux/pm.h
+Index: linux-pm/drivers/acpi/sleep.c
 ===================================================================
---- linux-pm.orig/include/linux/pm.h
-+++ linux-pm/include/linux/pm.h
-@@ -765,6 +765,7 @@ extern int pm_generic_poweroff_late(stru
- extern int pm_generic_poweroff(struct device *dev);
- extern void pm_generic_complete(struct device *dev);
- 
-+extern void dev_pm_skip_next_resume_phases(struct device *dev);
- extern bool dev_pm_smart_suspend_and_suspended(struct device *dev);
- 
- #else /* !CONFIG_PM_SLEEP */
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -526,6 +526,21 @@ static void dpm_watchdog_clear(struct dp
- /*------------------------- Resume routines -------------------------*/
- 
- /**
-+ * dev_pm_skip_next_resume_phases - Skip next system resume phases for device.
-+ * @dev: Target device.
-+ *
-+ * Make the core skip the "early resume" and "resume" phases for @dev.
-+ *
-+ * This function can be called by middle-layer code during the "noirq" phase of
-+ * system resume if necessary, but not by device drivers.
-+ */
-+void dev_pm_skip_next_resume_phases(struct device *dev)
-+{
-+	dev->power.is_late_suspended = false;
-+	dev->power.is_suspended = false;
-+}
+--- linux-pm.orig/drivers/acpi/sleep.c
++++ linux-pm/drivers/acpi/sleep.c
+@@ -951,15 +951,8 @@ static int acpi_s2idle_prepare(void)
+ 	if (lps0_device_handle) {
+ 		acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_OFF);
+ 		acpi_sleep_run_lps0_dsm(ACPI_LPS0_ENTRY);
+-	} else {
+-		/*
+-		 * The configuration of GPEs is changed here to avoid spurious
+-		 * wakeups, but that should not be necessary if this is a
+-		 * "low-power S0" platform and the low-power S0 _DSM is present.
+-		 */
+-		acpi_enable_all_wakeup_gpes();
+-		acpi_os_wait_events_complete();
+ 	}
 +
-+/**
-  * device_resume_noirq - Execute a "noirq resume" callback for given device.
-  * @dev: Device to handle.
-  * @state: PM transition of the system being carried out.
-Index: linux-pm/drivers/pci/pci-driver.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-driver.c
-+++ linux-pm/drivers/pci/pci-driver.c
-@@ -999,7 +999,7 @@ static int pci_pm_thaw_noirq(struct devi
- 	 * the subsequent "thaw" callbacks for the device.
- 	 */
- 	if (dev_pm_smart_suspend_and_suspended(dev)) {
--		dev->power.direct_complete = true;
-+		dev_pm_skip_next_resume_phases(dev);
- 		return 0;
- 	}
+ 	if (acpi_sci_irq_valid())
+ 		enable_irq_wake(acpi_sci_irq);
  
-Index: linux-pm/drivers/acpi/device_pm.c
-===================================================================
---- linux-pm.orig/drivers/acpi/device_pm.c
-+++ linux-pm/drivers/acpi/device_pm.c
-@@ -1138,7 +1138,7 @@ int acpi_subsys_thaw_noirq(struct device
- 	 * skip all of the subsequent "thaw" callbacks for the device.
- 	 */
- 	if (dev_pm_smart_suspend_and_suspended(dev)) {
--		dev->power.direct_complete = true;
-+		dev_pm_skip_next_resume_phases(dev);
- 		return 0;
+@@ -1005,8 +998,6 @@ static void acpi_s2idle_restore(void)
+ 	if (lps0_device_handle) {
+ 		acpi_sleep_run_lps0_dsm(ACPI_LPS0_EXIT);
+ 		acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_ON);
+-	} else {
+-		acpi_enable_all_runtime_gpes();
  	}
+ }
  
 
