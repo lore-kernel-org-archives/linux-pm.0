@@ -1,44 +1,59 @@
-From: Brian Norris <briannorris@chromium.org>
-Subject: Re: [RFC PATCH v10 6/7] PCI / PM: Move acpi wakeup code to pci core
-Date: Wed, 6 Dec 2017 16:29:56 -0800
-Message-ID: <20171207002955.GA40447@google.com>
-References: <20171027072612.26565-1-jeffy.chen@rock-chips.com>
- <1894178.xtK0vD2N4H@aspire.rjw.lan>
- <20171114025109.GA43048@google.com>
- <1882670.s3LR2t44nD@aspire.rjw.lan>
- <20171206193421.GA143886@google.com>
- <20171207001754.GB28152@atomide.com>
+From: Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH] PM / devfreq: Fix potential NULL pointer dereference in
+ governor_store
+Date: Thu, 07 Dec 2017 10:24:21 +0900
+Message-ID: <5A289845.5040301@samsung.com>
+References: <CGME20171206202028epcas2p44920d43cbde12943ed978b1e6d192ba5@epcas2p4.samsung.com>
+        <20171206202015.GA15636@embeddedor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171207001754.GB28152@atomide.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Tony Lindgren <tony@atomide.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, dianders@chromium.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-reply-to: <20171206202015.GA15636@embeddedor.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 06, 2017 at 04:17:54PM -0800, Tony Lindgren wrote:
-> * Brian Norris <briannorris@chromium.org> [171206 19:36]:
-> > By the way, it seems pretty ambiguous how we want to handle things like
-> > (a) multiple devices sharing the same WAKE#
-> > (b) systems where a slot is swappable
-> > 
-> > For (a), the main problem is that if we have to repeat the interrupt
-> > definition in multiple devices, then we have to deal with something like
-> > IRQF_SHARED. That can be done, but it makes it much harder to use the
-> > dedicated wakeirq helpers.
+On 2017년 12월 07일 05:20, Gustavo A. R. Silva wrote:
+> df->governor is being dereferenced before it is null checked,
+> hence there is a potential null pointer dereference.
 > 
-> This will get messy, let's not go there :) That is unless the hardware
-> really has a single interrupt wired to multiple devices. And in that
-> case almost certainly a custom interrupt handler is needed.
+> Notice that df->governor is being null checked at line 1004:
+> if (df->governor) {, which implies it might be null.
+> 
+> Fix this by null checking df->governor before dereferencing it.
+> 
+> Addresses-Coverity-ID: 1401988 ("Dereference before null check")
+> Fixes: bcf23c79c4e4 ("PM / devfreq: Fix available_governor sysfs")
+> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+> ---
+>  drivers/devfreq/devfreq.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+> index 78fb496..14fe76b 100644
+> --- a/drivers/devfreq/devfreq.c
+> +++ b/drivers/devfreq/devfreq.c
+> @@ -996,7 +996,8 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>  	if (df->governor == governor) {
+>  		ret = 0;
+>  		goto out;
+> -	} else if (df->governor->immutable || governor->immutable) {
+> +	} else if ((df->governor && df->governor->immutable) ||
+> +					governor->immutable) {
+>  		ret = -EINVAL;
+>  		goto out;
+>  	}
+> 
 
-As Rafael mentioned, the spec doesn't clearly delineate a required
-hierarchy to the WAKE# pin, and it's certainly possible to share it. I'm
-fine dodging that question for now, and only writing said custom
-interrupt handler if/when needed.
+Actually, df->governor would be never NULL because devfreq_add_device()
+initializes the ->governor always. But, governor_store() doesn't know it.
 
-But device tree bindings are "forever", so it seems reasonable to at
-least agree how it should be defined.
+So, looks good to me.
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 
-Brian
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
