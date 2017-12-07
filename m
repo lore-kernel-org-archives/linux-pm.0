@@ -1,74 +1,60 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 6/6] cpufreq: schedutil: ignore sugov kthreads
-Date: Thu, 7 Dec 2017 15:47:52 +0000
-Message-ID: <20171207154752.GS31247@e110439-lin>
+From: Dietmar Eggemann <dietmar.eggemann@arm.com>
+Subject: Re: [PATCH v3 1/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE
+ enter
+Date: Thu, 7 Dec 2017 16:55:25 +0100
+Message-ID: <2ca6459c-8ef5-9593-e8c4-52907d35355a@arm.com>
 References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171130114723.29210-7-patrick.bellasi@arm.com>
- <20171130134155.GF9903@localhost.localdomain>
- <20171130160234.GG31247@e110439-lin>
- <20171130161220.GK9903@localhost.localdomain>
- <20171130164237.GI31247@e110439-lin>
- <20171207092449.hncv4aldaum5wivg@vireshk-mac-ubuntu>
+ <20171130114723.29210-2-patrick.bellasi@arm.com>
+ <20171207050135.vvhqttazumjg7n7n@vireshk-mac-ubuntu>
+ <20171207124510.GP31247@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171207092449.hncv4aldaum5wivg@vireshk-mac-ubuntu>
+In-Reply-To: <20171207124510.GP31247@e110439-lin>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+To: Patrick Bellasi <patrick.bellasi@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 07-Dec 14:54, Viresh Kumar wrote:
-> On 30-11-17, 16:42, Patrick Bellasi wrote:
-> > On 30-Nov 17:12, Juri Lelli wrote:
-> > > Not sure about this though, not my call :). I guess this still helps
-> > > until we get the DL changes in.
-> > 
-> > Yes, agree... well Viresh had some concerns about this patch.
-> > Let see what he thinks.
+On 12/07/2017 01:45 PM, Patrick Bellasi wrote:
+> Hi Viresh,
 > 
-> And the problem is that we never got to a conclusion in V2 for this
-> patch as well, as you never responded to the last set of queries I
-> had. Unless we finish the ongoing conversations, we will have the same
-> queries again.
+> On 07-Dec 10:31, Viresh Kumar wrote:
+>> On 30-11-17, 11:47, Patrick Bellasi wrote:
+
+[...]
+
+>> We posted some comments on V2 for this particular patch suggesting
+>> some improvements. The patch hasn't changed at all and you haven't
+>> replied to few of those suggestions as well. Any particular reason for
+>> that?
 > 
-> IOW, can you explain the exact scenario where this patch will be
-> helpful ? I am not sure if this patch is that helpful at all :)
+> You right, since the previous posting has been a long time ago, with
+> this one I mainly wanted to refresh the discussion. Thanks for
+> highlighting hereafter which one was the main discussion points.
+> 
+> 
+>> For example:
+>> - I suggested to get rid of the conditional expression in
+>>    cpufreq_schedutil.c file that you have added.
+> 
+> We can probably set flags to SCHED_CPUFREQ_IDLE (instead of resetting
+> them), however I think we still need an if condition somewhere.
+> 
+> Indeed, when SCHED_CPUFREQ_IDLE is asserted we don't want to trigger
+> an OPP change (reasons described in the changelog).
+> 
+> If that's still a goal, then we will need to check this flag and bail
+> out from sugov_update_shared straight away. That's why I've added a
+> check at the beginning and also defined it as unlikely to have not
+> impact on all cases where we call a schedutil update with runnable
+> tasks.
+> 
+> Does this makes sense?
 
-My use case is considering a small FAIR task which triggers an OPP
-change while running on a CPU which is different from the one running
-the schedutil kthread.
+IIRC, there was also this question of doing this not only in the shared 
+but also in the single case ...
 
-If we go for a "clear flags semantics", where the RT class clears its
-flag as soon as there are not more RT tasks runnable, then this patch
-likely is not more required.
-
-Otherwise, there can be corner cases in which the RT flag remain set in
-the kthread CPU thus affecting OPP decisions even then there are not
-RT tasks around. Consider for example this scenarios:
-
-
-CPU0:               | SUGOV |            | SUGOV |
-         small FAIR |       | small FAIR |       |
-                      flags = RT          ^
-                    ^                     |
-                    | (A)                 | (B)
-                    | sugov_update_util() |
-                    |                     | sugov_update_util()
-CPU1:    medium growing FAIR task | another FAIR enqueued
-
-
-In this case:
-- in A we set the RT flag
-- in B we pick the MAX OPP even if there are only small tasks.
-
-
-This will not happen with a "clear flags semantics" because we ensure
-to release the RT flag every time an RT task exit the CPU.
-Thus, if we go for that semantics, we can skip this patch.
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+[...]
