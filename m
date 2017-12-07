@@ -1,135 +1,98 @@
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-Subject: Re: [RFC PATCH] cpuidle/coupled: Handle broadcast enter failures
-Date: Thu, 7 Dec 2017 14:03:41 +0100
-Message-ID: <48d2e450-f580-9fca-b31a-f60d96796e0d@linaro.org>
-References: <20171205225536.21516-1-james.hogan@mips.com>
- <d74c6e8b-3020-6bed-4cf1-132f41a2c5ff@linaro.org>
- <20171207114706.GO5027@jhogan-linux.mipstec.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171207114706.GO5027@jhogan-linux.mipstec.com>
-Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: James Hogan <james.hogan@mips.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>, Frederic Weisbecker <fweisbec@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org
+From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH v2 0/7] Add CPU Frequency scaling support on Armada 37xx
+Date: Thu,  7 Dec 2017 14:56:09 +0100
+Message-ID: <20171207135616.23670-1-gregory.clement@free-electrons.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Victor Gu <xigu-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Marcin Wojtas <mw-nYOzD4b6Jr9Wk0Htik3J/w@public.gmane.org>, Wilson Ding <dingwei-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Hua Jing <jinghua-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Neta Zur Hershkovits <neta-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Evan Wang <xswang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Andre Heider <a.heider-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 07/12/2017 12:47, James Hogan wrote:
-> On Thu, Dec 07, 2017 at 12:17:25PM +0100, Daniel Lezcano wrote:
->> On 05/12/2017 23:55, James Hogan wrote:
->>> From: James Hogan <jhogan@kernel.org>
->>>
->>> If the hrtimer based broadcast tick device is in use, the enabling of
->>> broadcast ticks by cpuidle may fail when the next broadcast event is
->>> brought forward to match the next event due on the local tick device,
->>> This is because setting the next event may migrate the hrtimer based
->>> broadcast tick to the current CPU, which then makes
->>> broadcast_needs_cpu() fail.
->>>
->>> This isn't normally a problem as cpuidle handles it by falling back to
->>> the deepest idle state not needing broadcast ticks, however when coupled
->>> cpuidle is used it can happen after the coupled CPUs have all agreed on
->>> a particular idle state, resulting in only one of the CPUs falling back
->>> to a shallower state, and an attempt to couple two completely different
->>> idle states which may not be safe.
->>>
->>> Therefore extend cpuidle_enter_state_coupled() to be able to handle the
->>> enabling of broadcast ticks directly, so that a failure can be detected
->>> at the higher level, and all coupled CPUs can be made to fall back to
->>> the same idle state.
->>>
->>> This takes place after the idle state has been initially agreed. Each
->>> CPU will then attempt to enable broadcast ticks (if necessary), and upon
->>> failure it will update the requested_state[] array before a second
->>> coupled parallel barrier so that all coupled CPUs can recognise the
->>> change.
->>>
->>> Signed-off-by: James Hogan <jhogan@kernel.org>
->>> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->>> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
->>> Cc: Frederic Weisbecker <fweisbec@gmail.com>
->>> Cc: Thomas Gleixner <tglx@linutronix.de>
->>> Cc: Ingo Molnar <mingo@kernel.org>
->>> Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->>> Cc: Ralf Baechle <ralf@linux-mips.org>
->>> Cc: Paul Burton <paul.burton@mips.com>
->>> Cc: linux-pm@vger.kernel.org
->>> Cc: linux-kernel@vger.kernel.org
->>> Cc: linux-mips@linux-mips.org
->>> ---
->>> Is this an acceptable approach in principle?
->>>
->>> Better/cleaner ideas to handle this are most welcome.
->>>
->>> This doesn't directly address the problem that some of the time it won't
->>> be possible to enter deeper idle states because of the hrtimer based
->>> broadcast tick's affinity. The actual case I'm looking at is on MIPS
->>> with cpuidle-cps, where the first core cannot (currently) go into a deep
->>> idle state requiring broadcast ticks, so it'd be nice if the hrtimer
->>> based broadcast tick device could just stay on core 0.
->>> ---
->>
->> Before commenting this patch, I would like to understand why the couple
->> idle state is needed for the MIPS, what in the architecture forces the
->> usage of the couple idle state?
-> 
-> Hardware multithreading.
-> 
-> Each physical core may have more than one hardware thread (VPE or VP in
-> MIPS lingo), each of which appears as a separate CPU to Linux. The lower
-> power states are all effective at the core level though:
-> - non-coherent wait - the hardware threads share physical caches, so
->   coherency can only be turned off when all hardware threads are in a
->   safe state, else they (1) wouldn't be coherent with the rest of the
->   system and (2) could bring stuff into the cache which isn't kept
->   coherent, requiring I presume a second cache flush.
-> - clock gated - must go non-coherent first, and applies to the whole
->   core and all the physical resources shared by the VP(E)s.
-> - power gated - again must go non-coherent first, and applies to the
->   whole core and all the physical resources shared by the VP(E)s.
+Hi,
 
-The couple idle state was introduced to compensate hardware mis-design.
+This is the second version of a series adding the CPU Frequency
+support on Armada 37xx using DVFS. It is based on the initial work of
+Evan Wang and Victor Gu.
 
-There are a couple of examples omap4 and exynos4 where only CPU0 can do
-some PM operations. AFAICT, from the feedbacks I got, couple idle state
-consume more energy than it saves (very likely because of the busy loop
-sync mechanism).
+The main change since the first version was a bug fixed in the
+"cpufreq: Add DVFS support for Armada 37xx" patch which was preventing
+to register the opp. An other noticeable change is the 4th patch which
+is new adding the use of dev_pm_opp_remove and removing an comment
+became wrong. The other changes are described in the change log.
 
-I did some tests with a 4 cores system and the overhead was so high the
-system had a very bad response time, so dropped the cluster idle state.
+DVFS control is done by a set of registers from the North Bridge Power
+Management block. The binding for this block is documented in patch 1.
 
-So before going further in the couple idle path, I suggest you
-investigate first a sync mechanism which may be implemented by the
-hardware. One good example is the cpuidle-ux500.c.
+While adding a new cpufreq driver I found that the Kconfig and
+Makefile were no more in order, so it is fixed by patch 2 and 3.
 
-With a proper last man standing sync, we can then take care of the timer
-broadcast thing. I can give you a hand for that if you need.
+The 5th patch is just about updating the MAINTAINERS file with the new
+driver.
 
->> The hrtimer broadcast mechanism is only needed if there isn't a backup
->> timer outside of the idle state's power domain. That's the case on this
->> platform?
-> 
-> I believe there is an external timer, and I believe we recommend
-> customers implement one for use as a clocksource anyway (in case of
-> frequency scaling), but on this particular platform the driver isn't
-> upstream yet.
+The next patch is the real purpose of the series. The main goal of
+this driver is to setup the CPU load level in the hardware to
+associate them to CPU frequencies and register a standard cpufreq
+driver. Note that the hardware also capable of doing AVS (Adaptive
+Voltage Scaling), by associating a voltage on each level beside the
+CPU frequency. However, this support is not yet ready, so it is not
+part of this series.
 
-Perhaps, you can upstream the external timer driver first?
+Finally, the last patch is for arm-soc the arm-soc subsystem through
+mvebu and update the device tree to support the CPU frequency scaling.
 
-> If its something that shouldn't be supported in Linux, perhaps a simple
-> WARN_ON is the better approach (i.e. if the broadcast tick can't be
-> enabled in the current place and its a coupled idle state), though it
-> does at least seem to work now with this and a couple of other patches
-> (though I haven't been able to take any power measurements yet).
+An update on the CPU clock driver is needed in order to take into
+account the DVFS setting. It's the purpose of an other series already
+sent, but is no dependencies between the series (for building or at
+runtime).
 
+Thanks,
 
+Gregory
 
+Changelog:
+
+v1 -> v2:
+
+ - using syscon instead of nb_pm for the binding of the North bridge
+   power management unit: reported by Rob Herring
+
+ - fix sorting inside the big LITTLE section for the Kconfig: reported
+   by Viresh Kumar
+
+ - fix the bogus freq calculation in armada37xx_cpufreq_driver_init,
+   bug reported by Andre Heider
+
+ - use dev_pm_opp_remove() on the previous opp if dev_pm_opp_add()
+   failed, reported by Viresh Kumar
+
+ - add the Tested-by flag from Andre Heider on "cpufreq: Add DVFS
+   support for Armada 37xx" patch
+
+Gregory CLEMENT (7):
+  dt-bindings: marvell: Add documentation for the North Bridge PM on
+    Armada 37xx
+  cpufreq: ARM: sort the Kconfig menu
+  cpufreq: sort the drivers in ARM part
+  cpufreq: mvebu: Use dev_pm_opp_remove()
+  MAINTAINERS: add new entries for Armada 37xx cpufreq driver
+  cpufreq: Add DVFS support for Armada 37xx
+  arm64: dts: marvell: armada-37xx: add nodes allowing cpufreq support
+
+ .../bindings/arm/marvell/armada-37xx.txt           |  19 ++
+ MAINTAINERS                                        |   1 +
+ arch/arm64/boot/dts/marvell/armada-372x.dtsi       |   1 +
+ arch/arm64/boot/dts/marvell/armada-37xx.dtsi       |   7 +
+ drivers/cpufreq/Kconfig.arm                        |  89 ++++----
+ drivers/cpufreq/Makefile                           |   9 +-
+ drivers/cpufreq/armada-37xx-cpufreq.c              | 241 +++++++++++++++++++++
+ drivers/cpufreq/mvebu-cpufreq.c                    |  11 +-
+ 8 files changed, 327 insertions(+), 51 deletions(-)
+ create mode 100644 drivers/cpufreq/armada-37xx-cpufreq.c
 
 -- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+2.15.0
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
