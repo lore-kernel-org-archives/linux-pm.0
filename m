@@ -1,53 +1,64 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v2 1/7] dt-bindings: marvell: Add documentation for the North Bridge PM on Armada 37xx
-Date: Thu,  7 Dec 2017 14:56:10 +0100
-Message-ID: <20171207135616.23670-2-gregory.clement@free-electrons.com>
+Subject: [PATCH v2 7/7] arm64: dts: marvell: armada-37xx: add nodes allowing cpufreq support
+Date: Thu,  7 Dec 2017 14:56:16 +0100
+Message-ID: <20171207135616.23670-8-gregory.clement@free-electrons.com>
 References: <20171207135616.23670-1-gregory.clement@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:33694 "EHLO
+Received: from mail.free-electrons.com ([62.4.15.54]:33750 "EHLO
         mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753709AbdLGN5F (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Dec 2017 08:57:05 -0500
+        with ESMTP id S1753709AbdLGN5I (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Dec 2017 08:57:08 -0500
 In-Reply-To: <20171207135616.23670-1-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@free-electrons.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, Evan Wang <xswang@marvell.com>, Andre Heider <a.heider@gmail.com>
 
-Extend the documentation of the Armada 37xx SoC with the the North
-Bridge Power Management component.
+In order to be able to use cpu freq, we need to associate a clock to each
+CPU and to expose the power management registers.
 
 Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- .../devicetree/bindings/arm/marvell/armada-37xx.txt   | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ arch/arm64/boot/dts/marvell/armada-372x.dtsi | 1 +
+ arch/arm64/boot/dts/marvell/armada-37xx.dtsi | 7 +++++++
+ 2 files changed, 8 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt b/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
-index 51336e5fc761..35c3c3460d17 100644
---- a/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
-+++ b/Documentation/devicetree/bindings/arm/marvell/armada-37xx.txt
-@@ -14,3 +14,22 @@ following property before the previous one:
- Example:
+diff --git a/arch/arm64/boot/dts/marvell/armada-372x.dtsi b/arch/arm64/boot/dts/marvell/armada-372x.dtsi
+index 59d7557d3b1b..2554e0baea6b 100644
+--- a/arch/arm64/boot/dts/marvell/armada-372x.dtsi
++++ b/arch/arm64/boot/dts/marvell/armada-372x.dtsi
+@@ -56,6 +56,7 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a53","arm,armv8";
+ 			reg = <0x1>;
++			clocks = <&nb_periph_clk 16>;
+ 			enable-method = "psci";
+ 		};
+ 	};
+diff --git a/arch/arm64/boot/dts/marvell/armada-37xx.dtsi b/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
+index 90c26d616a54..3056d7168e0b 100644
+--- a/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
++++ b/arch/arm64/boot/dts/marvell/armada-37xx.dtsi
+@@ -65,6 +65,7 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a53", "arm,armv8";
+ 			reg = <0>;
++			clocks = <&nb_periph_clk 16>;
+ 			enable-method = "psci";
+ 		};
+ 	};
+@@ -234,6 +235,12 @@
+ 				};
+ 			};
  
- compatible = "marvell,armada-3720-db", "marvell,armada3720", "marvell,armada3710";
++			nb_pm: syscon@14000 {
++				compatible = "marvell,armada-3700-nb-pm",
++					     "syscon";
++				reg = <0x14000 0x60>;
++			};
 +
-+
-+Power management
-+----------------
-+
-+For power management (particularly DVFS and AVS), the North Bridge
-+Power Management component is needed:
-+
-+Required properties:
-+- compatible     : should contain "marvell,armada-3700-nb-pm", "syscon";
-+- reg            : the register start and length for the North Bridge
-+		    Power Management
-+
-+Example:
-+
-+nb_pm: syscon@14000 {
-+	compatible = "marvell,armada-3700-nb-pm", "syscon";
-+	reg = <0x14000 0x60>;
-+}
+ 			pinctrl_sb: pinctrl@18800 {
+ 				compatible = "marvell,armada3710-sb-pinctrl",
+ 					     "syscon", "simple-mfd";
 -- 
 2.15.0
