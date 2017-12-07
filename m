@@ -1,53 +1,61 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH] cpufreq: longhaul: Set transition_delay_us to 20 ms
-Date: Thu, 7 Dec 2017 15:03:50 +0530
-Message-ID: <20171207093349.ct2hkhqj2d2tzvui@vireshk-mac-ubuntu>
+Subject: [PATCH V2] cpufreq: longhaul: Revert transition_delay_us to 200 ms
+Date: Thu,  7 Dec 2017 15:15:19 +0530
+Message-ID: <4985fe0a825edcd4b5a13f4c42e4d5b8f49d25ff.1512639844.git.viresh.kumar@linaro.org>
 References: <alpine.LRH.2.21.1711241741080.10361@math.ut.ee>
- <ed89c17b60d7183144ab4ac4b125fbed373fe670.1511838689.git.viresh.kumar@linaro.org>
- <alpine.LRH.2.21.1712051017060.2774@math.ut.ee>
- <alpine.LRH.2.21.1712051054170.2774@math.ut.ee>
- <CAJZ5v0henViynygKTRqpYWr6mfm_LJALH6wurNhxM_AXLU4Kzg@mail.gmail.com>
- <alpine.LRH.2.21.1712062020200.11844@math.ut.ee>
- <20171207044019.kxwusyl5qoxq7zta@vireshk-mac-ubuntu>
- <alpine.LRH.2.21.1712070925450.25092@math.ut.ee>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <stable-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.21.1712070925450.25092@math.ut.ee>
-Sender: stable-owner@vger.kernel.org
-To: Meelis Roos <mroos@linux.ee>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Rafael Wysocki <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, "4 . 14+" <stable@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:35316 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750947AbdLGJpa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 Dec 2017 04:45:30 -0500
+Received: by mail-pg0-f65.google.com with SMTP id q20so4108713pgv.2
+        for <linux-pm@vger.kernel.org>; Thu, 07 Dec 2017 01:45:29 -0800 (PST)
+In-Reply-To: <alpine.LRH.2.21.1711241741080.10361@math.ut.ee>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, mroos@linux.ee
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, "4 . 14+" <stable@vger.kernel.org>, linux-kernel@vger.kernel.org
 
-On 07-12-17, 09:26, Meelis Roos wrote:
-> > On 06-12-17, 20:21, Meelis Roos wrote:
-> > > 30000 was not reliable.
-> > > 
-> > > I created root cron job
-> > > @reboot sleep 120; /sbin/reboot
-> > > 
-> > > and by the evening it was dead again.
-> > > 
-> > > Will try 50000 tomorrow.
-> > 
-> > Lets make it similar to what it was before my original patch modified
-> > it, to avoid all corner cases.
-> > 
-> > Please test against 200 ms, 200000 value here.
-> 
-> Sorry, I confused 200000 vs 20000, will test 200000.
-> 
-> But 200000 was the value before.
+The commit e948bc8fbee0 ("cpufreq: Cap the default transition delay
+value to 10 ms") caused a regression on EPIA-M min-ITX computer where
+shutdown or reboot hangs occasionally with a print message like:
 
-It was value of a different variable (transition_latency) at that
-time. Just set transition_delay_us in my recent patch as 200,000 and
-apply that over mainline.
+longhaul: Warning: Timeout while waiting for idle PCI bus
+cpufreq: __target_index: Failed to change cpu frequency: -16
 
-I will resend the patch in the mean time as well.
+This probably happens because the cpufreq governor tries to change the
+frequency of the CPU faster than allowed by the hardware.
 
-> Shall I test 200000 with or without 
-> the other limiting patch?
+Before the above commit, the default transition delay was set to 200 ms
+for a transition_latency of 200000 ns. Lets revert back to that
+transition delay value to fix it. Note that several other transition
+delay values were tested like 20 ms and 30 ms and none of them have
+resolved system hang issue completely.
 
+Fixes: e948bc8fbee0 ("cpufreq: Cap the default transition delay value to 10 ms")
+Cc: 4.14+ <stable@vger.kernel.org> # 4.14+
+Reported-by: Meelis Roos <mroos@linux.ee>
+Suggested-by: Rafael J. Wysocki <rjw@rjwysocki.net>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+V1->V2:
+- s/20 ms/200 ms.
+
+ drivers/cpufreq/longhaul.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+index c46a12df40dd..5faa37c5b091 100644
+--- a/drivers/cpufreq/longhaul.c
++++ b/drivers/cpufreq/longhaul.c
+@@ -894,7 +894,7 @@ static int longhaul_cpu_init(struct cpufreq_policy *policy)
+ 	if ((longhaul_version != TYPE_LONGHAUL_V1) && (scale_voltage != 0))
+ 		longhaul_setup_voltagescaling();
+ 
+-	policy->cpuinfo.transition_latency = 200000;	/* nsec */
++	policy->transition_delay_us = 200000;	/* usec */
+ 
+ 	return cpufreq_table_validate_and_show(policy, longhaul_table);
+ }
 -- 
-viresh
+2.14.1
