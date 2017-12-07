@@ -1,34 +1,36 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 4/8] dt-bindings: power: supply: axp20x: add
- AXP813 battery DT binding
-Date: Wed, 6 Dec 2017 15:16:59 -0600
-Message-ID: <20171206211659.epe65eetp6gr4b7f@rob-hp-laptop>
-References: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz@free-electrons.com>
- <bf3682e87c75532884881d7b08840c61678cbce1.1512396054.git-series.quentin.schulz@free-electrons.com>
-Reply-To: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [RFC PATCH v10 6/7] PCI / PM: Move acpi wakeup code to pci core
+Date: Wed, 6 Dec 2017 16:17:54 -0800
+Message-ID: <20171207001754.GB28152@atomide.com>
+References: <20171027072612.26565-1-jeffy.chen@rock-chips.com>
+ <1894178.xtK0vD2N4H@aspire.rjw.lan>
+ <20171114025109.GA43048@google.com>
+ <1882670.s3LR2t44nD@aspire.rjw.lan>
+ <20171206193421.GA143886@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBDJIP47K7MERBTF4UHIQKGQEPEEBCTY-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <bf3682e87c75532884881d7b08840c61678cbce1.1512396054.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Archive: <https://groups.google.com/group/linux-sunxi
-List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
-List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
- <https://groups.google.com/group/linux-sunxi/subscribe>
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, icenowy-h8G6r0blFSE@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+In-Reply-To: <20171206193421.GA143886@google.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, dianders@chromium.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 04, 2017 at 03:12:50PM +0100, Quentin Schulz wrote:
-> The AXP813 can have a battery as power supply, so let's add it to the
-> list of compatibles.
+* Brian Norris <briannorris@chromium.org> [171206 19:36]:
+> By the way, it seems pretty ambiguous how we want to handle things like
+> (a) multiple devices sharing the same WAKE#
+> (b) systems where a slot is swappable
 > 
-> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> ---
->  Documentation/devicetree/bindings/power/supply/axp20x_battery.txt | 8 +++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
+> For (a), the main problem is that if we have to repeat the interrupt
+> definition in multiple devices, then we have to deal with something like
+> IRQF_SHARED. That can be done, but it makes it much harder to use the
+> dedicated wakeirq helpers.
 
-Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+This will get messy, let's not go there :) That is unless the hardware
+really has a single interrupt wired to multiple devices. And in that
+case almost certainly a custom interrupt handler is needed.
+
+Regards,
+
+Tony
