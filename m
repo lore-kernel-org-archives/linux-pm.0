@@ -1,118 +1,53 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH] PM / sleep: Avoid excess pm_runtime_enable() calls in device_resume()
-Date: Thu, 7 Dec 2017 20:44:51 +0100
-Message-ID: <CAPDyKFpyfMTw9vdSDHxarZquSRA9zU9aMdb-pkzhMWKrFGxayw@mail.gmail.com>
-References: <3600031.yTsliOITBg@aspire.rjw.lan>
+Subject: Re: [PATCH] PM / runtime: Fix handling of suppliers with disabled
+ runtime PM
+Date: Thu, 7 Dec 2017 20:48:52 +0100
+Message-ID: <CAPDyKFpUsgO1H93QLttTZ65LnXUOBxoKzLxnt5B50+UidWFJ5Q@mail.gmail.com>
+References: <1532136.s6buYvDjaS@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <3600031.yTsliOITBg@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1532136.s6buYvDjaS@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Adrian Hunter <adrian.hunter@intel.com>, Lukas Wunner <lukas@wunner.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 7 December 2017 at 03:26, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+On 1 December 2017 at 14:58, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
-> Middle-layer code doing suspend-time optimizations for devices with
-> the DPM_FLAG_SMART_SUSPEND flag set (currently, the PCI bus type and
-> the ACPI PM domain) needs to make the core skip ->thaw_early and
-> ->thaw callbacks for those devices in some cases and it sets the
-> power.direct_complete flag for them for this purpose.
+> Prevent rpm_get_suppliers() from returning an error code if runtime
+> PM is disabled for one or more of the supplier devices it wants to
+> runtime-resume, so as to make runtime PM work for devices with links
+> to suppliers that don't use runtime PM (such links may be created
+> during device enumeration even before it is known whether or not
+> runtime PM will be enabled for the devices in question, for example).
 >
-> However, it turns out that setting power.direct_complete outside of
-> the PM core is a bad idea as it triggers an excessive invocation of
-> pm_runtime_enable() in device_resume().
-
-Do we need to clarify the comment about the flag in pm.h?
-
-Or is "/* Owned by the PM core */" sufficient?
-
->
-> For this reason, provide a helper to clear power.is_late_suspended
-> and power.is_suspended to be invoked by the middle-layer code in
-> question instead of setting power.direct_complete and make that code
-> call the new helper.
->
-> Fixes: c4b65157aeef (PCI / PM: Take SMART_SUSPEND driver flag into account)
-> Fixes: 05087360fd7a (ACPI / PM: Take SMART_SUSPEND driver flag into account)
+> Reported-by: Adrian Hunter <adrian.hunter@intel.com>
+> Fixes: 21d5c57b3726 (PM / runtime: Use device links)
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro,org>
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
 Kind regards
 Uffe
 
 > ---
->  drivers/acpi/device_pm.c  |    2 +-
->  drivers/base/power/main.c |   15 +++++++++++++++
->  drivers/pci/pci-driver.c  |    2 +-
->  include/linux/pm.h        |    1 +
->  4 files changed, 18 insertions(+), 2 deletions(-)
+>  drivers/base/power/runtime.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
 >
-> Index: linux-pm/include/linux/pm.h
+> Index: linux-pm/drivers/base/power/runtime.c
 > ===================================================================
-> --- linux-pm.orig/include/linux/pm.h
-> +++ linux-pm/include/linux/pm.h
-> @@ -765,6 +765,7 @@ extern int pm_generic_poweroff_late(stru
->  extern int pm_generic_poweroff(struct device *dev);
->  extern void pm_generic_complete(struct device *dev);
+> --- linux-pm.orig/drivers/base/power/runtime.c
+> +++ linux-pm/drivers/base/power/runtime.c
+> @@ -276,7 +276,8 @@ static int rpm_get_suppliers(struct devi
+>                         continue;
 >
-> +extern void dev_pm_skip_next_resume_phases(struct device *dev);
->  extern bool dev_pm_smart_suspend_and_suspended(struct device *dev);
->
->  #else /* !CONFIG_PM_SLEEP */
-> Index: linux-pm/drivers/base/power/main.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/main.c
-> +++ linux-pm/drivers/base/power/main.c
-> @@ -526,6 +526,21 @@ static void dpm_watchdog_clear(struct dp
->  /*------------------------- Resume routines -------------------------*/
->
->  /**
-> + * dev_pm_skip_next_resume_phases - Skip next system resume phases for device.
-> + * @dev: Target device.
-> + *
-> + * Make the core skip the "early resume" and "resume" phases for @dev.
-> + *
-> + * This function can be called by middle-layer code during the "noirq" phase of
-> + * system resume if necessary, but not by device drivers.
-> + */
-> +void dev_pm_skip_next_resume_phases(struct device *dev)
-> +{
-> +       dev->power.is_late_suspended = false;
-> +       dev->power.is_suspended = false;
-> +}
-> +
-> +/**
->   * device_resume_noirq - Execute a "noirq resume" callback for given device.
->   * @dev: Device to handle.
->   * @state: PM transition of the system being carried out.
-> Index: linux-pm/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci-driver.c
-> +++ linux-pm/drivers/pci/pci-driver.c
-> @@ -999,7 +999,7 @@ static int pci_pm_thaw_noirq(struct devi
->          * the subsequent "thaw" callbacks for the device.
->          */
->         if (dev_pm_smart_suspend_and_suspended(dev)) {
-> -               dev->power.direct_complete = true;
-> +               dev_pm_skip_next_resume_phases(dev);
->                 return 0;
->         }
->
-> Index: linux-pm/drivers/acpi/device_pm.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/device_pm.c
-> +++ linux-pm/drivers/acpi/device_pm.c
-> @@ -1138,7 +1138,7 @@ int acpi_subsys_thaw_noirq(struct device
->          * skip all of the subsequent "thaw" callbacks for the device.
->          */
->         if (dev_pm_smart_suspend_and_suspended(dev)) {
-> -               dev->power.direct_complete = true;
-> +               dev_pm_skip_next_resume_phases(dev);
->                 return 0;
->         }
->
+>                 retval = pm_runtime_get_sync(link->supplier);
+> -               if (retval < 0) {
+> +               /* Ignore suppliers with disabled runtime PM. */
+> +               if (retval < 0 && retval != -EACCES) {
+>                         pm_runtime_put_noidle(link->supplier);
+>                         return retval;
+>                 }
 >
