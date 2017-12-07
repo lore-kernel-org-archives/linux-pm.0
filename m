@@ -1,59 +1,105 @@
-From: Chanwoo Choi <cw00.choi@samsung.com>
-Subject: Re: [PATCH] PM / devfreq: Fix potential NULL pointer dereference in
- governor_store
-Date: Thu, 07 Dec 2017 10:24:21 +0900
-Message-ID: <5A289845.5040301@samsung.com>
-References: <CGME20171206202028epcas2p44920d43cbde12943ed978b1e6d192ba5@epcas2p4.samsung.com>
-        <20171206202015.GA15636@embeddedor.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PM / sleep: Avoid excess pm_runtime_enable() calls in device_resume()
+Date: Thu, 07 Dec 2017 03:26:14 +0100
+Message-ID: <3600031.yTsliOITBg@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-reply-to: <20171206202015.GA15636@embeddedor.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 2017년 12월 07일 05:20, Gustavo A. R. Silva wrote:
-> df->governor is being dereferenced before it is null checked,
-> hence there is a potential null pointer dereference.
-> 
-> Notice that df->governor is being null checked at line 1004:
-> if (df->governor) {, which implies it might be null.
-> 
-> Fix this by null checking df->governor before dereferencing it.
-> 
-> Addresses-Coverity-ID: 1401988 ("Dereference before null check")
-> Fixes: bcf23c79c4e4 ("PM / devfreq: Fix available_governor sysfs")
-> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
-> ---
->  drivers/devfreq/devfreq.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-> index 78fb496..14fe76b 100644
-> --- a/drivers/devfreq/devfreq.c
-> +++ b/drivers/devfreq/devfreq.c
-> @@ -996,7 +996,8 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
->  	if (df->governor == governor) {
->  		ret = 0;
->  		goto out;
-> -	} else if (df->governor->immutable || governor->immutable) {
-> +	} else if ((df->governor && df->governor->immutable) ||
-> +					governor->immutable) {
->  		ret = -EINVAL;
->  		goto out;
->  	}
-> 
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Actually, df->governor would be never NULL because devfreq_add_device()
-initializes the ->governor always. But, governor_store() doesn't know it.
+Middle-layer code doing suspend-time optimizations for devices with
+the DPM_FLAG_SMART_SUSPEND flag set (currently, the PCI bus type and
+the ACPI PM domain) needs to make the core skip ->thaw_early and
+->thaw callbacks for those devices in some cases and it sets the
+power.direct_complete flag for them for this purpose.
 
-So, looks good to me.
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+However, it turns out that setting power.direct_complete outside of
+the PM core is a bad idea as it triggers an excessive invocation of
+pm_runtime_enable() in device_resume().
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+For this reason, provide a helper to clear power.is_late_suspended
+and power.is_suspended to be invoked by the middle-layer code in
+question instead of setting power.direct_complete and make that code
+call the new helper.
+
+Fixes: c4b65157aeef (PCI / PM: Take SMART_SUSPEND driver flag into account)
+Fixes: 05087360fd7a (ACPI / PM: Take SMART_SUSPEND driver flag into account)
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/acpi/device_pm.c  |    2 +-
+ drivers/base/power/main.c |   15 +++++++++++++++
+ drivers/pci/pci-driver.c  |    2 +-
+ include/linux/pm.h        |    1 +
+ 4 files changed, 18 insertions(+), 2 deletions(-)
+
+Index: linux-pm/include/linux/pm.h
+===================================================================
+--- linux-pm.orig/include/linux/pm.h
++++ linux-pm/include/linux/pm.h
+@@ -765,6 +765,7 @@ extern int pm_generic_poweroff_late(stru
+ extern int pm_generic_poweroff(struct device *dev);
+ extern void pm_generic_complete(struct device *dev);
+ 
++extern void dev_pm_skip_next_resume_phases(struct device *dev);
+ extern bool dev_pm_smart_suspend_and_suspended(struct device *dev);
+ 
+ #else /* !CONFIG_PM_SLEEP */
+Index: linux-pm/drivers/base/power/main.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/main.c
++++ linux-pm/drivers/base/power/main.c
+@@ -526,6 +526,21 @@ static void dpm_watchdog_clear(struct dp
+ /*------------------------- Resume routines -------------------------*/
+ 
+ /**
++ * dev_pm_skip_next_resume_phases - Skip next system resume phases for device.
++ * @dev: Target device.
++ *
++ * Make the core skip the "early resume" and "resume" phases for @dev.
++ *
++ * This function can be called by middle-layer code during the "noirq" phase of
++ * system resume if necessary, but not by device drivers.
++ */
++void dev_pm_skip_next_resume_phases(struct device *dev)
++{
++	dev->power.is_late_suspended = false;
++	dev->power.is_suspended = false;
++}
++
++/**
+  * device_resume_noirq - Execute a "noirq resume" callback for given device.
+  * @dev: Device to handle.
+  * @state: PM transition of the system being carried out.
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -999,7 +999,7 @@ static int pci_pm_thaw_noirq(struct devi
+ 	 * the subsequent "thaw" callbacks for the device.
+ 	 */
+ 	if (dev_pm_smart_suspend_and_suspended(dev)) {
+-		dev->power.direct_complete = true;
++		dev_pm_skip_next_resume_phases(dev);
+ 		return 0;
+ 	}
+ 
+Index: linux-pm/drivers/acpi/device_pm.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/device_pm.c
++++ linux-pm/drivers/acpi/device_pm.c
+@@ -1138,7 +1138,7 @@ int acpi_subsys_thaw_noirq(struct device
+ 	 * skip all of the subsequent "thaw" callbacks for the device.
+ 	 */
+ 	if (dev_pm_smart_suspend_and_suspended(dev)) {
+-		dev->power.direct_complete = true;
++		dev_pm_skip_next_resume_phases(dev);
+ 		return 0;
+ 	}
+ 
+
