@@ -1,110 +1,37 @@
 From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 2/6] cpufreq: schedutil: ensure max frequency while
- running RT/DL tasks
-Date: Thu, 7 Dec 2017 14:18:17 +0000
-Message-ID: <20171207141817.GQ31247@e110439-lin>
+Subject: Re: [PATCH v3 3/6] cpufreq: schedutil: update CFS util only if used
+Date: Thu, 7 Dec 2017 14:19:27 +0000
+Message-ID: <20171207141927.GR31247@e110439-lin>
 References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171130114723.29210-3-patrick.bellasi@arm.com>
- <20171207050509.vfa64mbp23gnq547@vireshk-mac-ubuntu>
+ <20171130114723.29210-4-patrick.bellasi@arm.com>
+ <20171130132234.GC9903@localhost.localdomain>
+ <20171130155728.GF31247@e110439-lin>
+ <20171207051540.larfamrdflctn5pn@vireshk-mac-ubuntu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:52094 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753224AbdLGOSW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 7 Dec 2017 09:18:22 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171207050509.vfa64mbp23gnq547@vireshk-mac-ubuntu>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+In-Reply-To: <20171207051540.larfamrdflctn5pn@vireshk-mac-ubuntu>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Steve Muckle <smuckle.linux@gmail.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+List-Id: linux-pm@vger.kernel.org
 
-On 07-Dec 10:35, Viresh Kumar wrote:
-> On 30-11-17, 11:47, Patrick Bellasi wrote:
-> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> > index 67339ccb5595..448f49de5335 100644
-> > --- a/kernel/sched/cpufreq_schedutil.c
-> > +++ b/kernel/sched/cpufreq_schedutil.c
-> > @@ -262,6 +262,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
-> >  	struct cpufreq_policy *policy = sg_policy->policy;
-> >  	unsigned long util, max;
-> >  	unsigned int next_f;
-> > +	bool rt_mode;
-> >  	bool busy;
-> >  
-> >  	sugov_set_iowait_boost(sg_cpu, time, flags);
-> > @@ -272,7 +273,15 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
-> >  
-> >  	busy = sugov_cpu_is_busy(sg_cpu);
-> >  
-> > -	if (flags & SCHED_CPUFREQ_RT_DL) {
-> > +	/*
-> > +	 * While RT/DL tasks are running we do not want FAIR tasks to
-> > +	 * overvrite this CPU's flags, still we can update utilization and
-> > +	 * frequency (if required/possible) to be fair with these tasks.
-> > +	 */
-> > +	rt_mode = task_has_dl_policy(current) ||
-> > +		  task_has_rt_policy(current) ||
-> > +		  (flags & SCHED_CPUFREQ_RT_DL);
-> > +	if (rt_mode) {
-> >  		next_f = policy->cpuinfo.max_freq;
-> >  	} else {
-> >  		sugov_get_util(&util, &max, sg_cpu->cpu);
-> > @@ -340,6 +349,7 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
-> >  	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
-> >  	unsigned long util, max;
-> >  	unsigned int next_f;
-> > +	bool rt_mode;
-> >  
-> >  	sugov_get_util(&util, &max, sg_cpu->cpu);
-> >  
-> > @@ -353,17 +363,27 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
-> >  		sg_cpu->flags = 0;
-> >  		goto done;
-> >  	}
-> > -	sg_cpu->flags = flags;
-> > +
-> > +	/*
-> > +	 * While RT/DL tasks are running we do not want FAIR tasks to
-> > +	 * overwrite this CPU's flags, still we can update utilization and
-> > +	 * frequency (if required/possible) to be fair with these tasks.
-> > +	 */
-> > +	rt_mode = task_has_dl_policy(current) ||
-> > +		  task_has_rt_policy(current) ||
-> > +		  (flags & SCHED_CPUFREQ_RT_DL);
-> > +	if (rt_mode)
-> > +		sg_cpu->flags |= flags;
-> > +	else
-> > +		sg_cpu->flags = flags;
-> >  
-> >  	sugov_set_iowait_boost(sg_cpu, time, flags);
-> >  	sg_cpu->last_update = time;
-> >  
-> >  	if (sugov_should_update_freq(sg_policy, time)) {
-> > -		if (flags & SCHED_CPUFREQ_RT_DL)
-> > -			next_f = sg_policy->policy->cpuinfo.max_freq;
-> > -		else
-> > -			next_f = sugov_next_freq_shared(sg_cpu, time);
-> > -
-> > +		next_f = rt_mode
-> > +			? sg_policy->policy->cpuinfo.max_freq
-> > +			: sugov_next_freq_shared(sg_cpu, time);
-> >  		sugov_update_commit(sg_policy, time, next_f);
-> >  	}
+On 07-Dec 10:45, Viresh Kumar wrote:
+> On 30-11-17, 15:57, Patrick Bellasi wrote:
+> > Yes, that's a pretty trivial update with a confusing changelog.
+> > 
+> > If we think it's worth to keep (and correct as well) I'll update the
+> > commit message.
 > 
-> Same here. There are pending comments from V2 which no one objected to
-> and I was looking to see those modifications here.
+> We also need to update the commit log based on feedback from Vikram on
+> V2. Which said that the utilization can't change around the lock here
+> as we are within rq lock section, though max can change (maybe). So
+> this patch only takes care of locking before reading max.
 
-So, your proposal here was actually to add additional flags to clear
-the RT and DL ones.
+Ok, right... will do.
 
-My past comment was instead that we never had a "clear bit" semantics
-for flags updates. However, it seems that the most common optinion was
-that we should try to add such flags.
-
-Thus, I think I have to refresh this patch by adding in the new flags
-as you proposed and give it a try.
+Thus you are still of the opinion to keep this patch in the series?
 
 -- 
 #include <best/regards.h>
