@@ -1,76 +1,43 @@
-From: Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [v2 PATCH] cpufreq: powernv: Correctly parse the sign of pstates
- on POWER8 vs POWER9
-Date: Fri, 8 Dec 2017 14:44:40 +1100
-Message-ID: <CAKTCnzkWRm6BOoHLvO+rTmXh8frCJW4uGuccHLSW+WQnWseuhQ@mail.gmail.com>
-References: <1512626365-22845-1-git-send-email-ego@linux.vnet.ibm.com>
+From: Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Subject: [PATCH v1 0/4] add support of cpufreq to mt8173 and mt2712
+Date: Fri, 8 Dec 2017 14:07:54 +0800
+Message-ID: <1512713278-17807-1-git-send-email-andrew-sh.cheng@mediatek.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <stable-owner@vger.kernel.org>
-In-Reply-To: <1512626365-22845-1-git-send-email-ego@linux.vnet.ibm.com>
-Sender: stable-owner@vger.kernel.org
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, huntbag@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, stable@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 7, 2017 at 4:59 PM, Gautham R. Shenoy
-<ego@linux.vnet.ibm.com> wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->
-> On POWERNV platform, Pstates are 8-bit values. On POWER8 they are
-> negatively numbered while on POWER9 they are positively
-> numbered. Thus, on POWER9, the maximum number of pstates could be as
-> high as 256.
->
-> The current code interprets pstates as a signed 8-bit value. This
-> causes a problem on POWER9 platforms which have more than 128 pstates.
-> On such systems, on a CPU that is in a lower pstate whose number is
-> greater than 128, querying the current pstate returns a "pstate X is
-> out of bound" error message and the current pstate is reported as the
-> nominal pstate.
->
-> This patch fixes the aforementioned issue by correctly differentiating
-> the sign whenever a pstate value read, depending on whether the
-> pstates are positively numbered or negatively numbered.
+This series is based on v4.15-rc1 and [1].
 
-Yikes! Is there no better way of fixing this?
+Mediatek projects will use mediate-cpufreq.c as cpufreq driver,
+so add mediatek related projects into black list of cpufreq_dt.c
 
->
-> Fixes: commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with frequency table index")
-> Cc: <stable@vger.kernel.org> #v4.8
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> Tested-and-reviewed-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 43 ++++++++++++++++++++++++++++++---------
->  1 file changed, 33 insertions(+), 10 deletions(-)
->
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index b6d7c4c..bb7586e 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -41,11 +41,14 @@
->  #define POWERNV_MAX_PSTATES    256
->  #define PMSR_PSAFE_ENABLE      (1UL << 30)
->  #define PMSR_SPR_EM_DISABLE    (1UL << 31)
-> -#define PMSR_MAX(x)            ((x >> 32) & 0xFF)
-> +#define EXTRACT_BYTE(x, shift) (((x) >> shift) & 0xFF)
-> +#define MAX_SHIFT              32
->  #define LPSTATE_SHIFT          48
->  #define GPSTATE_SHIFT          56
-> -#define GET_LPSTATE(x)         (((x) >> LPSTATE_SHIFT) & 0xFF)
-> -#define GET_GPSTATE(x)         (((x) >> GPSTATE_SHIFT) & 0xFF)
-> +#define GET_PMSR_MAX(x)                EXTRACT_BYTE(x, MAX_SHIFT)
-> +#define GET_LPSTATE(x)         EXTRACT_BYTE(x, LPSTATE_SHIFT)
-> +#define GET_GPSTATE(x)         EXTRACT_BYTE(x, GPSTATE_SHIFT)
-> +
+mt8173 and mt2712 both support 2 clusters, and the main difference 
+is that mt2712 currently only support fixed voltage.
 
-Can you hide all of this in pstate_to_idx(), do the casting inside? I
-was reviewing this
-code earlier before being distracted with something else, this did
-come across as
-strange and I was looking at using abs values to simplify the code,
-but I did not get
-to it.
+[1] http://lists.infradead.org/pipermail/linux-arm-kernel/2017-November/544072.html
 
-Balbir Singh.
+Andrew-sh Cheng (4):
+  cpufreq: mediatek: add mt2712 into compatible list
+  cpufreq: mediatek: Add mediatek related projects into blacklist
+  arm64: dts: mediatek: add mt8173 cpufreq related device nodes
+  arm64: dts: mediatek: add mt2712 cpufreq related device nodes
+
+ arch/arm64/boot/dts/mediatek/mt2712-evb.dts | 27 +++++++++
+ arch/arm64/boot/dts/mediatek/mt2712e.dtsi   | 57 ++++++++++++++++++
+ arch/arm64/boot/dts/mediatek/mt8173-evb.dts | 18 ++++++
+ arch/arm64/boot/dts/mediatek/mt8173.dtsi    | 90 +++++++++++++++++++++++++++++
+ drivers/cpufreq/cpufreq-dt-platdev.c        |  8 +++
+ drivers/cpufreq/mediatek-cpufreq.c          |  1 +
+ 6 files changed, 201 insertions(+)
+
+-- 
+2.6.4
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
