@@ -1,42 +1,76 @@
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: [PATCH 9/9] genirq: remove unneeded kallsyms include
-Date: Fri,  8 Dec 2017 11:56:16 +0900
-Message-ID: <20171208025616.16267-10-sergey.senozhatsky@gmail.com>
-References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
-Sender: owner-linux-mm@kvack.org
-To: Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [v2 PATCH] cpufreq: powernv: Correctly parse the sign of pstates
+ on POWER8 vs POWER9
+Date: Fri, 8 Dec 2017 14:44:40 +1100
+Message-ID: <CAKTCnzkWRm6BOoHLvO+rTmXh8frCJW4uGuccHLSW+WQnWseuhQ@mail.gmail.com>
+References: <1512626365-22845-1-git-send-email-ego@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <stable-owner@vger.kernel.org>
+In-Reply-To: <1512626365-22845-1-git-send-email-ego@linux.vnet.ibm.com>
+Sender: stable-owner@vger.kernel.org
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, huntbag@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, stable@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The file was converted from print_symbol() to %pf some time ago
-(ef26f20cd117eb3c18 "genirq: Print threaded handler in spurious
-debug output"). kallsyms does not seem to be needed anymore.
+On Thu, Dec 7, 2017 at 4:59 PM, Gautham R. Shenoy
+<ego@linux.vnet.ibm.com> wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>
+> On POWERNV platform, Pstates are 8-bit values. On POWER8 they are
+> negatively numbered while on POWER9 they are positively
+> numbered. Thus, on POWER9, the maximum number of pstates could be as
+> high as 256.
+>
+> The current code interprets pstates as a signed 8-bit value. This
+> causes a problem on POWER9 platforms which have more than 128 pstates.
+> On such systems, on a CPU that is in a lower pstate whose number is
+> greater than 128, querying the current pstate returns a "pstate X is
+> out of bound" error message and the current pstate is reported as the
+> nominal pstate.
+>
+> This patch fixes the aforementioned issue by correctly differentiating
+> the sign whenever a pstate value read, depending on whether the
+> pstates are positively numbered or negatively numbered.
 
-Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
- kernel/irq/spurious.c | 1 -
- 1 file changed, 1 deletion(-)
+Yikes! Is there no better way of fixing this?
 
-diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
-index ef2a47e0eab6..6cdecc6f4c53 100644
---- a/kernel/irq/spurious.c
-+++ b/kernel/irq/spurious.c
-@@ -10,7 +10,6 @@
- #include <linux/jiffies.h>
- #include <linux/irq.h>
- #include <linux/module.h>
--#include <linux/kallsyms.h>
- #include <linux/interrupt.h>
- #include <linux/moduleparam.h>
- #include <linux/timer.h>
--- 
-2.15.1
+>
+> Fixes: commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with frequency table index")
+> Cc: <stable@vger.kernel.org> #v4.8
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> Tested-and-reviewed-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/cpufreq/powernv-cpufreq.c | 43 ++++++++++++++++++++++++++++++---------
+>  1 file changed, 33 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> index b6d7c4c..bb7586e 100644
+> --- a/drivers/cpufreq/powernv-cpufreq.c
+> +++ b/drivers/cpufreq/powernv-cpufreq.c
+> @@ -41,11 +41,14 @@
+>  #define POWERNV_MAX_PSTATES    256
+>  #define PMSR_PSAFE_ENABLE      (1UL << 30)
+>  #define PMSR_SPR_EM_DISABLE    (1UL << 31)
+> -#define PMSR_MAX(x)            ((x >> 32) & 0xFF)
+> +#define EXTRACT_BYTE(x, shift) (((x) >> shift) & 0xFF)
+> +#define MAX_SHIFT              32
+>  #define LPSTATE_SHIFT          48
+>  #define GPSTATE_SHIFT          56
+> -#define GET_LPSTATE(x)         (((x) >> LPSTATE_SHIFT) & 0xFF)
+> -#define GET_GPSTATE(x)         (((x) >> GPSTATE_SHIFT) & 0xFF)
+> +#define GET_PMSR_MAX(x)                EXTRACT_BYTE(x, MAX_SHIFT)
+> +#define GET_LPSTATE(x)         EXTRACT_BYTE(x, LPSTATE_SHIFT)
+> +#define GET_GPSTATE(x)         EXTRACT_BYTE(x, GPSTATE_SHIFT)
+> +
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Can you hide all of this in pstate_to_idx(), do the casting inside? I
+was reviewing this
+code earlier before being distracted with something else, this did
+come across as
+strange and I was looking at using abs values to simplify the code,
+but I did not get
+to it.
+
+Balbir Singh.
