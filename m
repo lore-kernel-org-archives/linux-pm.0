@@ -1,107 +1,47 @@
-From: Vivek Gautam <vivek.gautam@codeaurora.org>
-Subject: Re: [PATCH 1/1] base: power: runtime: Export pm_runtime_get/put_suppliers
-Date: Fri, 8 Dec 2017 19:09:11 +0530
-Message-ID: <CAFp+6iHp5dt80p6-cMKLbcoHLfkRjVztFn8N2kiB24dUeeHpMA@mail.gmail.com>
-References: <1512736247-16538-1-git-send-email-vivek.gautam@codeaurora.org> <20171208132136.GA26631@kroah.com>
+From: Petr Mladek <pmladek@suse.com>
+Subject: Re: [PATCH 1/9] sched/autogroup: remove unneeded kallsyms include
+Date: Fri, 8 Dec 2017 14:43:30 +0100
+Message-ID: <20171208134330.gcimodmkzxfovvm7@pathway.suse.cz>
+References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
+ <20171208025616.16267-2-sergey.senozhatsky@gmail.com>
+ <20171208105611.rcoxze4erxkpimad@hirez.programming.kicks-ass.net>
+ <20171208112048.GH628@jagdpanzerIV>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:53458 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752990AbdLHNjN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Dec 2017 08:39:13 -0500
-In-Reply-To: <20171208132136.GA26631@kroah.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <owner-linux-mm@kvack.org>
+Content-Disposition: inline
+In-Reply-To: <20171208112048.GH628@jagdpanzerIV>
+Sender: owner-linux-mm@kvack.org
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>, Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Rob Clark <robdclark@gmail.com>, Robin Murphy <robin.murphy@arm.com>, Will Deacon <will.deacon@arm.com>, linux-arm-msm <linux-arm-msm@vger.kernel.org>
 
-Hi Greg,
+On Fri 2017-12-08 20:20:48, Sergey Senozhatsky wrote:
+> On (12/08/17 11:56), Peter Zijlstra wrote:
+> > On Fri, Dec 08, 2017 at 11:56:08AM +0900, Sergey Senozhatsky wrote:
+> > > Autogroup does not seem to use any of kallsyms functions/defines.
+> > > 
+> > > Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> > > Cc: Peter Zijlstra <peterz@infradead.org>
+> > 
+> > Feel free to take this through whatever tree you need this in.
+> > 
+> > Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 
+Thanks!
 
-On Fri, Dec 8, 2017 at 6:51 PM, Greg KH <gregkh@linuxfoundation.org> wrote:
-> On Fri, Dec 08, 2017 at 06:00:47PM +0530, Vivek Gautam wrote:
->> The device link allows the pm framework to tie the supplier and
->> consumer. So, whenever the consumer is powered-on, the supplier
->> is powered-on first.
->>
->> There are however cases in which the consumer wants to power-on
->> the supplier, but not itself.
->> E.g., A Graphics or multimedia driver wants to power-on the SMMU
->> to unmap a buffer and finish the TLB operations without powering
->> on itself. Some of these unmap requests are coming from the
->> user space when the controller itself is not powered-up, and it
->> can be huge penalty in terms of power and latency to power-up
->> the graphics/mm controllers.
->> There can be an argument that the supplier should handle this case
->> on its own and there should not be a need for the consumer to
->> power-on the supplier. But as discussed on the thread [1] about
->> ARM-SMMU runtime pm, we don't want to introduce runtime pm calls
->> in atomic paths, such as in arm_smmu_unmap.
->>
->> [1] https://patchwork.kernel.org/patch/9827825/
->>
->> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
->> ---
->>  drivers/base/power/runtime.c | 2 ++
->>  1 file changed, 2 insertions(+)
->>
->> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
->> index 027d159ac381..af169304ca13 100644
->> --- a/drivers/base/power/runtime.c
->> +++ b/drivers/base/power/runtime.c
->> @@ -1578,6 +1578,7 @@ void pm_runtime_get_suppliers(struct device *dev)
->>
->>       device_links_read_unlock(idx);
->>  }
->> +EXPORT_SYMBOL_GPL(pm_runtime_get_suppliers);
->
-> We do not export symbols unless there are in-kernel users of them.
-> Where is the patch that adds a user for these functions?
+> Petr, let's pick up sched/autogroup patches then. Thank you.
 
-My apologies for not putting the changes for the user of these APIs.
-I will be sending a patch for the user (which would be:
-"drivers/gpu/drm/msm/msm_iommu.c"). The patch will be included
-with the arm-smmu runtime patch series. Right now I am facing issues
-with the use of clk_bulk_*() APIs on 4.15-rc kernel.
+Yup, I have pushed both patches into printk.git for-4.16:
 
-But, I wanted to get opinions about this change since we had been
-discussing about this in the arm-smmu runtime patch thread [1].
+https://git.kernel.org/pub/scm/linux/kernel/git/pmladek/printk.git/commit/?h=for-4.16&id=79ee842891595293be37c5aed0e75b4630166c5a
+https://git.kernel.org/pub/scm/linux/kernel/git/pmladek/printk.git/commit/?h=for-4.16&id=25493e5fba2f7b8cdade29d0fc8945114ee7732b
 
-[1] https://patchwork.kernel.org/patch/9827825/
+Best Regards,
+Petr
 
-
-P.S.: A snippet of the change in the user of these APIs:
-
- diff --git a/drivers/gpu/drm/msm/msm_iommu.c b/drivers/gpu/drm/msm/msm_iommu.c
- index b23d33622f37..1ab629bbee69 100644
- --- a/drivers/gpu/drm/msm/msm_iommu.c
- +++ b/drivers/gpu/drm/msm/msm_iommu.c
- @@ -76,9 +76,9 @@ static int msm_iommu_unmap(struct msm_mmu *mmu,
-uint64_t iova,
-  {
-         struct msm_iommu *iommu = to_msm_iommu(mmu);
-
- -       pm_runtime_get_sync(mmu->dev);
- +       pm_runtime_get_suppliers(mmu->dev);
-         iommu_unmap(iommu->domain, iova, len);
- -       pm_runtime_put_sync(mmu->dev);
- +       pm_runtime_put_suppliers(mmu->dev);
-
-         return 0;
-  }
-
-
-regards
-Vivek
-
->
-> thanks,
->
-> greg k-h
-
-
-
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
