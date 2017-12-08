@@ -1,51 +1,51 @@
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: Re: [PATCH] sched/autogroup: move sched.h include
-Date: Fri, 8 Dec 2017 19:39:31 +0900
-Message-ID: <20171208103931.GG628@jagdpanzerIV>
-References: <20171208025616.16267-2-sergey.senozhatsky@gmail.com>
- <20171208082422.5021-1-sergey.senozhatsky@gmail.com>
- <20171208085755.GA3148@linux.suse>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 1/9] sched/autogroup: remove unneeded kallsyms include
+Date: Fri, 8 Dec 2017 11:56:11 +0100
+Message-ID: <20171208105611.rcoxze4erxkpimad@hirez.programming.kicks-ass.net>
+References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
+ <20171208025616.16267-2-sergey.senozhatsky@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <owner-linux-mm@kvack.org>
 Content-Disposition: inline
-In-Reply-To: <20171208085755.GA3148@linux.suse>
-Sender: linux-pci-owner@vger.kernel.org
-To: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+In-Reply-To: <20171208025616.16267-2-sergey.senozhatsky@gmail.com>
+Sender: owner-linux-mm@kvack.org
+To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
-
-On (12/08/17 09:57), Petr Mladek wrote:
-> On Fri 2017-12-08 17:24:22, Sergey Senozhatsky wrote:
-> > Move local "sched.h" include to the bottom. sched.h defines
-> > several macros that are getting redefined in ARCH-specific
-> > code, for instance, finish_arch_post_lock_switch() and
-> > prepare_arch_switch(), so we need ARCH-specific definitions
-> > to come in first.
+On Fri, Dec 08, 2017 at 11:56:08AM +0900, Sergey Senozhatsky wrote:
+> Autogroup does not seem to use any of kallsyms functions/defines.
 > 
-> This patch is needed to fix compilation error [1] caused by a patchset
-> that deprecates %pf/%pF printk modifiers[2].
+> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+
+Feel free to take this through whatever tree you need this in.
+
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+
+> ---
+>  kernel/sched/autogroup.c | 1 -
+>  1 file changed, 1 deletion(-)
 > 
-> IMHO, we should make sure that this fix goes into Linus' tree
-> before the printk-related patchset. What is the best practice,
-> please?
+> diff --git a/kernel/sched/autogroup.c b/kernel/sched/autogroup.c
+> index a43df5193538..0786227a3f48 100644
+> --- a/kernel/sched/autogroup.c
+> +++ b/kernel/sched/autogroup.c
+> @@ -3,7 +3,6 @@
+>  
+>  #include <linux/proc_fs.h>
+>  #include <linux/seq_file.h>
+> -#include <linux/kallsyms.h>
+>  #include <linux/utsname.h>
+>  #include <linux/security.h>
+>  #include <linux/export.h>
+> -- 
+> 2.15.1
+> 
 
-as long as sched pull request goes before printk pull request we
-are fine. but I see your point.
-
-> I see two reasonable possibilities. Either sched people could
-> push this for-4.15-rcX. Or I could put it into printk.git for-4.16
-> in the right order.
-
-agreed.
-
-> What do you think?
-
-either way is fine with me. we can have it in print.git (no objections
-from my side) or in sched tree and just make sure that sched pull request
-has "bigger priority", or it can go to Linus's tree as a potential fix
-(I'd prefer the last option, I think).
-
-	-ss
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
