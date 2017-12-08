@@ -1,42 +1,54 @@
-From: Petr Mladek <pmladek@suse.com>
-Subject: Re: [PATCH] sched/autogroup: move sched.h include
-Date: Fri, 8 Dec 2017 09:57:55 +0100
-Message-ID: <20171208085755.GA3148@linux.suse>
-References: <20171208025616.16267-2-sergey.senozhatsky@gmail.com>
- <20171208082422.5021-1-sergey.senozhatsky@gmail.com>
+From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Subject: [PATCH V4 0/7] Add loadable kernel module and power management support
+Date: Fri, 8 Dec 2017 14:28:06 +0530
+Message-ID: <1512723493-865-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pci-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171208082422.5021-1-sergey.senozhatsky@gmail.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Content-Type: text/plain
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: cyndis-/1wQRMveznE@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org
+Cc: jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2017-12-08 17:24:22, Sergey Senozhatsky wrote:
-> Move local "sched.h" include to the bottom. sched.h defines
-> several macros that are getting redefined in ARCH-specific
-> code, for instance, finish_arch_post_lock_switch() and
-> prepare_arch_switch(), so we need ARCH-specific definitions
-> to come in first.
+This series of patches adds loadable kernel module and power management
+support to Tegra PCIe host controller driver.
 
-This patch is needed to fix compilation error [1] caused by a patchset
-that deprecates %pf/%pF printk modifiers[2].
+These patches are tested on Jetson TK1, TX1 and TX2 platforms, following
+are the verification details.
+	- Multiple module insert & remove
+	- PCIe device functionality after module insert
+	- Free clock, resets, regulators, powergate, iomem and interrupt
+	resources after module remove
+	- PCIe device functionality after resume from RAM
 
-IMHO, we should make sure that this fix goes into Linus' tree
-before the printk-related patchset. What is the best practice,
-please?
+Tegra PCIe host controller driver is using ioremap_page_range() which is
+not exported. This is switched with devm_ioremap() in the series
+'https://patchwork.ozlabs.org/project/linux-tegra/list/?series=9907'.
 
-I see two reasonable possibilities. Either sched people could
-push this for-4.15-rcX. Or I could put it into printk.git for-4.16
-in the right order.
+V2: PM QoS fix is dropped in V2 from this series because the fix is
+incorporated in latest 'commit 0759e80b84e3 ("PM / QoS: Fix device resume
+latency framework")'. Update commit message of few patches in V2.
 
-What do you think?
+V3: Patches to export irq_set_msi_desc() and tegra_cpuidle_pcie_irqs_in_use()
+are dropped based on review comments. These symbols will be addressed in next
+series. Took care of few other review comments.
 
-Referece:
-[0] http://lkml.kernel.org/r/201712080259.tvO64XfA%fengguang.wu@intel.com
-[1] https://git.kernel.org/pub/scm/linux/kernel/git/pmladek/printk.git/commit/?h=for-next&id=98fff2c57b7e88d643cb42ffd910fe9905b33176
+V4: Dropped pci_find_host_bridge() export patch and added new patch to use
+bus->sysdata for private data.
 
-Best Regards,
-Petr
+Manikanta Maddireddy (7):
+  of: Export of_pci_range_to_resource()
+  PCI: tegra: Use bus->sysdata to store and get host private data
+  PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for Tegra PCIe
+  PCI: tegra: Free resources on probe failure
+  PCI: tegra: Add loadable kernel module support
+  PCI: tegra: Broadcast PME_Turn_Off message before link goes to L2
+  PCI: tegra: Add power management support
+
+ drivers/of/address.c         |   1 +
+ drivers/pci/host/Kconfig     |   2 +-
+ drivers/pci/host/pci-tegra.c | 344 ++++++++++++++++++++++++++++++++-----------
+ 3 files changed, 261 insertions(+), 86 deletions(-)
+
+-- 
+2.1.4
