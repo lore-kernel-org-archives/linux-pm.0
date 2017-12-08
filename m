@@ -1,203 +1,251 @@
-From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v4 02/12] clk: mux: Split out register accessors for reuse
-Date: Fri,  8 Dec 2017 14:59:51 +0530
-Message-ID: <1512725401-4944-3-git-send-email-sricharan@codeaurora.org>
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: [PATCH v4 05/12] clk: qcom: Add MSM8960/APQ8064's HFPLLs
+Date: Fri,  8 Dec 2017 14:59:54 +0530
+Message-ID: <1512725401-4944-6-git-send-email-sricharan@codeaurora.org>
 References: <1512725401-4944-1-git-send-email-sricharan@codeaurora.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1512725401-4944-1-git-send-email-sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:32946 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753194AbdLHJas (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Dec 2017 04:30:48 -0500
+In-Reply-To: <1512725401-4944-1-git-send-email-sricharan@codeaurora.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: mturquette@linaro.org, sboyd@codeaurora.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org
+Cc: sricharan@codeaurora.org
 
-From: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+From: Stephen Boyd <sboyd@codeaurora.org>
 
-We want to reuse the logic in clk-mux.c for other clock drivers
-that don't use readl as register accessors. Fortunately, there
-really isn't much to the mux code besides the table indirection
-and quirk flags if you assume any bit shifting and masking has
-been done already. Pull that logic out into reusable functions
-that operate on an optional table and some flags so that other
-drivers can use the same logic.
+Describe the HFPLLs present on MSM8960 and APQ8064 devices.
 
-Signed-off-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/clk/clk-mux.c        | 75 +++++++++++++++++++++++++++-----------------
- include/linux/clk-provider.h |  9 ++++--
- 2 files changed, 54 insertions(+), 30 deletions(-)
+ drivers/clk/qcom/gcc-msm8960.c               | 172 +++++++++++++++++++++++++++
+ include/dt-bindings/clock/qcom,gcc-msm8960.h |   2 +
+ 2 files changed, 174 insertions(+)
 
-diff --git a/drivers/clk/clk-mux.c b/drivers/clk/clk-mux.c
-index 39cabe1..22ebf99 100644
---- a/drivers/clk/clk-mux.c
-+++ b/drivers/clk/clk-mux.c
-@@ -26,35 +26,24 @@
-  * parent - parent is adjustable through clk_set_parent
-  */
+diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
+index eb551c7..809f16a 100644
+--- a/drivers/clk/qcom/gcc-msm8960.c
++++ b/drivers/clk/qcom/gcc-msm8960.c
+@@ -30,6 +30,7 @@
+ #include "clk-pll.h"
+ #include "clk-rcg.h"
+ #include "clk-branch.h"
++#include "clk-hfpll.h"
+ #include "reset.h"
  
--static u8 clk_mux_get_parent(struct clk_hw *hw)
-+unsigned int clk_mux_get_parent(struct clk_hw *hw, unsigned int val,
-+				unsigned int *table, unsigned long flags)
- {
--	struct clk_mux *mux = to_clk_mux(hw);
- 	int num_parents = clk_hw_get_num_parents(hw);
--	u32 val;
--
--	/*
--	 * FIXME need a mux-specific flag to determine if val is bitwise or numeric
--	 * e.g. sys_clkin_ck's clksel field is 3 bits wide, but ranges from 0x1
--	 * to 0x7 (index starts at one)
--	 * OTOH, pmd_trace_clk_mux_ck uses a separate bit for each clock, so
--	 * val = 0x4 really means "bit 2, index starts at bit 0"
--	 */
--	val = clk_readl(mux->reg) >> mux->shift;
--	val &= mux->mask;
- 
--	if (mux->table) {
-+	if (table) {
- 		int i;
- 
- 		for (i = 0; i < num_parents; i++)
--			if (mux->table[i] == val)
-+			if (table[i] == val)
- 				return i;
- 		return -EINVAL;
- 	}
- 
--	if (val && (mux->flags & CLK_MUX_INDEX_BIT))
-+	if (val && (flags & CLK_MUX_INDEX_BIT))
- 		val = ffs(val) - 1;
- 
--	if (val && (mux->flags & CLK_MUX_INDEX_ONE))
-+	if (val && (flags & CLK_MUX_INDEX_ONE))
- 		val--;
- 
- 	if (val >= num_parents)
-@@ -62,23 +51,53 @@ static u8 clk_mux_get_parent(struct clk_hw *hw)
- 
- 	return val;
- }
-+EXPORT_SYMBOL_GPL(clk_mux_get_parent);
- 
--static int clk_mux_set_parent(struct clk_hw *hw, u8 index)
-+static u8 _clk_mux_get_parent(struct clk_hw *hw)
- {
- 	struct clk_mux *mux = to_clk_mux(hw);
- 	u32 val;
--	unsigned long flags = 0;
- 
--	if (mux->table) {
--		index = mux->table[index];
-+	/*
-+	 * FIXME need a mux-specific flag to determine if val is bitwise or
-+	 * numeric e.g. sys_clkin_ck's clksel field is 3 bits wide,
-+	 * but ranges from 0x1 to 0x7 (index starts at one)
-+	 * OTOH, pmd_trace_clk_mux_ck uses a separate bit for each clock, so
-+	 * val = 0x4 really means "bit 2, index starts at bit 0"
-+	 */
-+	val = clk_readl(mux->reg) >> mux->shift;
-+	val &= mux->mask;
-+
-+	return clk_mux_get_parent(hw, val, mux->table, mux->flags);
-+}
-+
-+unsigned int clk_mux_reindex(u8 index, unsigned int *table,
-+			     unsigned long flags)
-+{
-+	unsigned int val = index;
-+
-+	if (table) {
-+		val = table[val];
- 	} else {
--		if (mux->flags & CLK_MUX_INDEX_BIT)
--			index = 1 << index;
-+		if (flags & CLK_MUX_INDEX_BIT)
-+			val = 1 << index;
- 
--		if (mux->flags & CLK_MUX_INDEX_ONE)
--			index++;
-+		if (flags & CLK_MUX_INDEX_ONE)
-+			val++;
- 	}
- 
-+	return val;
-+}
-+EXPORT_SYMBOL_GPL(clk_mux_reindex);
-+
-+static int clk_mux_set_parent(struct clk_hw *hw, u8 index)
-+{
-+	struct clk_mux *mux = to_clk_mux(hw);
-+	u32 val;
-+	unsigned long flags = 0;
-+
-+	index = clk_mux_reindex(index, mux->table, mux->flags);
-+
- 	if (mux->lock)
- 		spin_lock_irqsave(mux->lock, flags);
- 	else
-@@ -102,14 +121,14 @@ static int clk_mux_set_parent(struct clk_hw *hw, u8 index)
- }
- 
- const struct clk_ops clk_mux_ops = {
--	.get_parent = clk_mux_get_parent,
-+	.get_parent = _clk_mux_get_parent,
- 	.set_parent = clk_mux_set_parent,
- 	.determine_rate = __clk_mux_determine_rate,
+ static struct clk_pll pll3 = {
+@@ -86,6 +87,164 @@
+ 	},
  };
- EXPORT_SYMBOL_GPL(clk_mux_ops);
  
- const struct clk_ops clk_mux_ro_ops = {
--	.get_parent = clk_mux_get_parent,
-+	.get_parent = _clk_mux_get_parent,
- };
- EXPORT_SYMBOL_GPL(clk_mux_ro_ops);
- 
-@@ -117,7 +136,7 @@ struct clk_hw *clk_hw_register_mux_table(struct device *dev, const char *name,
- 		const char * const *parent_names, u8 num_parents,
- 		unsigned long flags,
- 		void __iomem *reg, u8 shift, u32 mask,
--		u8 clk_mux_flags, u32 *table, spinlock_t *lock)
-+		u8 clk_mux_flags, unsigned int *table, spinlock_t *lock)
- {
- 	struct clk_mux *mux;
- 	struct clk_hw *hw;
-diff --git a/include/linux/clk-provider.h b/include/linux/clk-provider.h
-index 7c925e6..9578411 100644
---- a/include/linux/clk-provider.h
-+++ b/include/linux/clk-provider.h
-@@ -468,7 +468,7 @@ struct clk_hw *clk_hw_register_divider_table(struct device *dev,
- struct clk_mux {
- 	struct clk_hw	hw;
- 	void __iomem	*reg;
--	u32		*table;
-+	unsigned int	*table;
- 	u32		mask;
- 	u8		shift;
- 	u8		flags;
-@@ -486,6 +486,11 @@ struct clk_mux {
- extern const struct clk_ops clk_mux_ops;
- extern const struct clk_ops clk_mux_ro_ops;
- 
-+unsigned int clk_mux_get_parent(struct clk_hw *hw, unsigned int val,
-+				unsigned int *table, unsigned long flags);
-+unsigned int clk_mux_reindex(u8 index, unsigned int *table,
-+			     unsigned long flags);
++static struct hfpll_data hfpll0_data = {
++	.mode_reg = 0x3200,
++	.l_reg = 0x3208,
++	.m_reg = 0x320c,
++	.n_reg = 0x3210,
++	.config_reg = 0x3204,
++	.status_reg = 0x321c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3214,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
 +
- struct clk *clk_register_mux(struct device *dev, const char *name,
- 		const char * const *parent_names, u8 num_parents,
- 		unsigned long flags,
-@@ -506,7 +511,7 @@ struct clk_hw *clk_hw_register_mux_table(struct device *dev, const char *name,
- 		const char * const *parent_names, u8 num_parents,
- 		unsigned long flags,
- 		void __iomem *reg, u8 shift, u32 mask,
--		u8 clk_mux_flags, u32 *table, spinlock_t *lock);
-+		u8 clk_mux_flags, unsigned int *table, spinlock_t *lock);
++static struct clk_hfpll hfpll0 = {
++	.d = &hfpll0_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll0",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll0.lock),
++};
++
++static struct hfpll_data hfpll1_8064_data = {
++	.mode_reg = 0x3240,
++	.l_reg = 0x3248,
++	.m_reg = 0x324c,
++	.n_reg = 0x3250,
++	.config_reg = 0x3244,
++	.status_reg = 0x325c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3254,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct hfpll_data hfpll1_data = {
++	.mode_reg = 0x3300,
++	.l_reg = 0x3308,
++	.m_reg = 0x330c,
++	.n_reg = 0x3310,
++	.config_reg = 0x3304,
++	.status_reg = 0x331c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3314,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll1 = {
++	.d = &hfpll1_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll1",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll1.lock),
++};
++
++static struct hfpll_data hfpll2_data = {
++	.mode_reg = 0x3280,
++	.l_reg = 0x3288,
++	.m_reg = 0x328c,
++	.n_reg = 0x3290,
++	.config_reg = 0x3284,
++	.status_reg = 0x329c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3294,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll2 = {
++	.d = &hfpll2_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll2",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll2.lock),
++};
++
++static struct hfpll_data hfpll3_data = {
++	.mode_reg = 0x32c0,
++	.l_reg = 0x32c8,
++	.m_reg = 0x32cc,
++	.n_reg = 0x32d0,
++	.config_reg = 0x32c4,
++	.status_reg = 0x32dc,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x32d4,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll3 = {
++	.d = &hfpll3_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll3",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll3.lock),
++};
++
++static struct hfpll_data hfpll_l2_8064_data = {
++	.mode_reg = 0x3300,
++	.l_reg = 0x3308,
++	.m_reg = 0x330c,
++	.n_reg = 0x3310,
++	.config_reg = 0x3304,
++	.status_reg = 0x331c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3314,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct hfpll_data hfpll_l2_data = {
++	.mode_reg = 0x3400,
++	.l_reg = 0x3408,
++	.m_reg = 0x340c,
++	.n_reg = 0x3410,
++	.config_reg = 0x3404,
++	.status_reg = 0x341c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3414,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll_l2 = {
++	.d = &hfpll_l2_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll_l2",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll_l2.lock),
++};
++
+ static struct clk_pll pll14 = {
+ 	.l_reg = 0x31c4,
+ 	.m_reg = 0x31c8,
+@@ -3112,6 +3271,9 @@ enum {
+ 	[PMIC_ARB1_H_CLK] = &pmic_arb1_h_clk.clkr,
+ 	[PMIC_SSBI2_CLK] = &pmic_ssbi2_clk.clkr,
+ 	[RPM_MSG_RAM_H_CLK] = &rpm_msg_ram_h_clk.clkr,
++	[PLL9] = &hfpll0.clkr,
++	[PLL10] = &hfpll1.clkr,
++	[PLL12] = &hfpll_l2.clkr,
+ };
  
- void clk_unregister_mux(struct clk *clk);
- void clk_hw_unregister_mux(struct clk_hw *hw);
+ static const struct qcom_reset_map gcc_msm8960_resets[] = {
+@@ -3323,6 +3485,11 @@ enum {
+ 	[PMIC_ARB1_H_CLK] = &pmic_arb1_h_clk.clkr,
+ 	[PMIC_SSBI2_CLK] = &pmic_ssbi2_clk.clkr,
+ 	[RPM_MSG_RAM_H_CLK] = &rpm_msg_ram_h_clk.clkr,
++	[PLL9] = &hfpll0.clkr,
++	[PLL10] = &hfpll1.clkr,
++	[PLL12] = &hfpll_l2.clkr,
++	[PLL16] = &hfpll2.clkr,
++	[PLL17] = &hfpll3.clkr,
+ };
+ 
+ static const struct qcom_reset_map gcc_apq8064_resets[] = {
+@@ -3482,6 +3649,11 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
++	if (match->data == &gcc_apq8064_desc) {
++		hfpll1.d = &hfpll1_8064_data;
++		hfpll_l2.d = &hfpll_l2_8064_data;
++	}
++
+ 	tsens = platform_device_register_data(&pdev->dev, "qcom-tsens", -1,
+ 					      NULL, 0);
+ 	if (IS_ERR(tsens))
+diff --git a/include/dt-bindings/clock/qcom,gcc-msm8960.h b/include/dt-bindings/clock/qcom,gcc-msm8960.h
+index 7d20eed..e02742f 100644
+--- a/include/dt-bindings/clock/qcom,gcc-msm8960.h
++++ b/include/dt-bindings/clock/qcom,gcc-msm8960.h
+@@ -319,5 +319,7 @@
+ #define CE3_SRC					303
+ #define CE3_CORE_CLK				304
+ #define CE3_H_CLK				305
++#define PLL16					306
++#define PLL17					307
+ 
+ #endif
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
