@@ -1,37 +1,43 @@
 From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: [PATCH 4/9] pci: remove unneeded kallsyms include
-Date: Fri,  8 Dec 2017 11:56:11 +0900
-Message-ID: <20171208025616.16267-5-sergey.senozhatsky@gmail.com>
+Subject: [PATCH 5/9] pnp: remove unneeded kallsyms include
+Date: Fri,  8 Dec 2017 11:56:12 +0900
+Message-ID: <20171208025616.16267-6-sergey.senozhatsky@gmail.com>
 References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <owner-linux-mm@kvack.org>
 In-Reply-To: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: owner-linux-mm@kvack.org
 To: Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
 The file was converted from print_fn_descriptor_symbol()
-to %pF some time ago (c9bbb4abb658da "PCI: use %pF instead
-of print_fn_descriptor_symbol() in quirks.c"). kallsyms does
-not seem to be needed anymore.
+to %pF some time ago (2e532d68a2b3e2aa {pci,pnp} quirks.c:
+don't use deprecated print_fn_descriptor_symbol()). kallsyms
+does not seem to be needed anymore.
 
 Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 Cc: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/pci/quirks.c | 1 -
+ drivers/pnp/quirks.c | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 10684b17d0bd..fd49b976973f 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -19,7 +19,6 @@
- #include <linux/init.h>
- #include <linux/delay.h>
- #include <linux/acpi.h>
+diff --git a/drivers/pnp/quirks.c b/drivers/pnp/quirks.c
+index f054cdddfef8..803666ae3635 100644
+--- a/drivers/pnp/quirks.c
++++ b/drivers/pnp/quirks.c
+@@ -21,7 +21,6 @@
+ #include <linux/slab.h>
+ #include <linux/pnp.h>
+ #include <linux/io.h>
 -#include <linux/kallsyms.h>
- #include <linux/dmi.h>
- #include <linux/pci-aspm.h>
- #include <linux/ioport.h>
+ #include "base.h"
+ 
+ static void quirk_awe32_add_ports(struct pnp_dev *dev,
 -- 
 2.15.1
+
+--
+To unsubscribe, send a message with 'unsubscribe linux-mm' in
+the body to majordomo@kvack.org.  For more info on Linux MM,
+see: http://www.linux-mm.org/ .
+Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
