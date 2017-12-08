@@ -1,154 +1,107 @@
-From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Subject: [PATCH v2 08/13] power: reset: Add a driver for the Microsemi Ocelot reset
-Date: Fri,  8 Dec 2017 16:46:13 +0100
-Message-ID: <20171208154618.20105-9-alexandre.belloni@free-electrons.com>
-References: <20171208154618.20105-1-alexandre.belloni@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:46828 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754336AbdLHPrq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Dec 2017 10:47:46 -0500
-In-Reply-To: <20171208154618.20105-1-alexandre.belloni@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH 0/2] acpi, x86: Add SPCR table support
+Date: Fri, 8 Dec 2017 11:02:40 -0500
+Message-ID: <c5441b79-91a3-719b-f435-3c9ea937a743@redhat.com>
+References: <20171207172912.17868-1-prarit@redhat.com>
+ <20171208062925.64ov23u7oxmdfzyk@gmail.com>
+ <f078ada7-1e30-41cc-28dc-077ed2a5986d@redhat.com>
+ <bd727a15-c697-741f-864b-8b48b8e5e272@codeaurora.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <bd727a15-c697-741f-864b-8b48b8e5e272@codeaurora.org>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jeffrey Hugo <jhugo@codeaurora.org>, Ingo Molnar <mingo@kernel.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Bhupesh Sharma <bhsharma@redhat.com>, linux-doc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lv Zheng <lv.zheng@intel.com>, linux-serial@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 
-The Microsemi Ocelot SoC has a register allowing to reset the MIPS core.
-Unfortunately, the syscon-reboot driver can't be used directly (but almost)
-as the reset control may be disabled using another register.
 
-Cc: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
----
- drivers/power/reset/Kconfig        |  7 ++++
- drivers/power/reset/Makefile       |  1 +
- drivers/power/reset/ocelot-reset.c | 86 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 94 insertions(+)
- create mode 100644 drivers/power/reset/ocelot-reset.c
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index ca0de1a78e85..2372f8e1040d 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -113,6 +113,13 @@ config POWER_RESET_MSM
- 	help
- 	  Power off and restart support for Qualcomm boards.
- 
-+config POWER_RESET_OCELOT_RESET
-+	bool "Microsemi Ocelot reset driver"
-+	depends on MSCC_OCELOT || COMPILE_TEST
-+	select MFD_SYSCON
-+	help
-+	  This driver supports restart for Microsemi Ocelot SoC.
-+
- config POWER_RESET_PIIX4_POWEROFF
- 	tristate "Intel PIIX4 power-off driver"
- 	depends on PCI
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index aeb65edb17b7..df9d92291c67 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -12,6 +12,7 @@ obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
- obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
- obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
- obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
-+obj-$(CONFIG_POWER_RESET_OCELOT_RESET) += ocelot-reset.o
- obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
- obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
-diff --git a/drivers/power/reset/ocelot-reset.c b/drivers/power/reset/ocelot-reset.c
-new file mode 100644
-index 000000000000..1fb14bf17191
---- /dev/null
-+++ b/drivers/power/reset/ocelot-reset.c
-@@ -0,0 +1,86 @@
-+// SPDX-License-Identifier: (GPL-2.0 OR MIT)
-+/*
-+ * Microsemi MIPS SoC reset driver
-+ *
-+ * License: Dual MIT/GPL
-+ * Copyright (c) 2017 Microsemi Corporation
-+ */
-+#include <linux/delay.h>
-+#include <linux/io.h>
-+#include <linux/notifier.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/of_address.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/reboot.h>
-+#include <linux/regmap.h>
-+
-+struct ocelot_reset_context {
-+	struct regmap *chip_regs;
-+	struct regmap *cpu_ctrl;
-+	struct notifier_block restart_handler;
-+};
-+
-+#define ICPU_CFG_CPU_SYSTEM_CTRL_RESET 0x20
-+#define CORE_RST_PROTECT BIT(2)
-+
-+#define CHIP_REGS_SOFT_RST 0x8
-+#define SOFT_CHIP_RST BIT(0)
-+
-+static int ocelot_restart_handle(struct notifier_block *this,
-+				 unsigned long mode, void *cmd)
-+{
-+	struct ocelot_reset_context *ctx = container_of(this, struct
-+							ocelot_reset_context,
-+							restart_handler);
-+
-+	/* Make sure the core is not protected from reset */
-+	regmap_update_bits(ctx->cpu_ctrl, ICPU_CFG_CPU_SYSTEM_CTRL_RESET,
-+			   CORE_RST_PROTECT, 0);
-+
-+	regmap_write(ctx->chip_regs, CHIP_REGS_SOFT_RST, SOFT_CHIP_RST);
-+
-+	pr_emerg("Unable to restart system\n");
-+	return NOTIFY_DONE;
-+}
-+
-+static int ocelot_reset_probe(struct platform_device *pdev)
-+{
-+	struct ocelot_reset_context *ctx;
-+	struct device *dev = &pdev->dev;
-+	int err;
-+
-+	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
-+	if (!ctx)
-+		return -ENOMEM;
-+
-+	ctx->chip_regs = syscon_node_to_regmap(of_get_parent(dev->of_node));
-+	if (IS_ERR(ctx->chip_regs))
-+		return PTR_ERR(ctx->chip_regs);
-+
-+	ctx->cpu_ctrl = syscon_regmap_lookup_by_compatible("mscc,ocelot-cpu-syscon");
-+	if (IS_ERR(ctx->cpu_ctrl))
-+		return PTR_ERR(ctx->cpu_ctrl);
-+
-+	ctx->restart_handler.notifier_call = ocelot_restart_handle;
-+	ctx->restart_handler.priority = 192;
-+	err = register_restart_handler(&ctx->restart_handler);
-+	if (err)
-+		dev_err(dev, "can't register restart notifier (err=%d)\n", err);
-+
-+	return err;
-+}
-+
-+static const struct of_device_id ocelot_reset_of_match[] = {
-+	{ .compatible = "mscc,ocelot-chip-reset" },
-+	{}
-+};
-+
-+static struct platform_driver ocelot_reset_driver = {
-+	.probe = ocelot_reset_probe,
-+	.driver = {
-+		.name = "ocelot-chip-reset",
-+		.of_match_table = ocelot_reset_of_match,
-+	},
-+};
-+builtin_platform_driver(ocelot_reset_driver);
--- 
-2.15.1
+On 12/08/2017 10:31 AM, Jeffrey Hugo wrote:
+> On 12/8/2017 7:29 AM, Prarit Bhargava wrote:
+>>
+>>
+>> On 12/08/2017 01:29 AM, Ingo Molnar wrote:
+>>>
+>>> * Prarit Bhargava <prarit@redhat.com> wrote:
+>>>
+>>>> The SPCR (Serial Port Console Redirection) Table provides information
+>>>> about the configuration of serial port.  This information can be used
+>>>> to configure the early console.
+>>>
+>>> s/about the configuration of serial port
+>>>   /about the configuration of the serial port
+>>>
+>>>> SPCR support was added for arm64 and is made available across all arches
+>>>> in this patchset.  The first patch adds a weak per-arch configuration function
+>>>> and moves the SPCR code into ACPI.  The second patch adds support to x86.
+>>>>
+>>>> The existing behaviour on arm64 is maintained.  If the SPCR exists the
+>>>> earlycon and console are automatically configured.
+>>>
+>>> s/arm64
+>>>   /ARM64
+>>>
+>>> which is easier to read and it's also the prevalent spelling:
+>>>
+>>>   triton:~/tip> for N in $(git grep -ih arm64 arch/arm64/ | sed
+>>> 's/[[:punct:]]/ /g'); do echo $N | grep -iw arm64; done | sort | uniq -c
+>>>       412 arm64
+>>>         1 Arm64
+>>>       854 ARM64
+>>>
+>>>> The existing default behaviour on x86 is also maintained.  If no console or
+>>>> earlycon parameter is defined and the SPCR exists , the serial port is not
+>>>> configured.  If the earlycon parameter is used both the early console
+>>>> and the console are configured using the data from the SPCR.
+>>>
+>>> s/exists , the
+>>>   /exists, the
+>>>
+>>> But, the logic to not use the SPCR looks confusing to me.
+>>>
+>>> The SPCR is only present if the user has explicitly configured a serial console
+>>> for that machine, either in the firmware, or remotely via IPMI, correct? I.e.
+>>> SPCR
+>>> will not be spuriously present by default on systems that have a serial console
+>>> but the user never expressed any interest for them, right?
+>>
+>> If I disable "Serial Port Console Debug" in my BIOS I still see the SPCR
+>> configured:
+>>
+>> [root@prarit-lab ~]# dmesg | grep SPCR
+>> [    0.000000] ACPI: SPCR 0x0000000069031000 000050 (v01
+>> 00000000      00000000)
+>>
+>> AFAICT the SPCR is always enabled on some systems.
+> 
+> "Serial Port Console Debug" sounds like DBG2 to me, although I am unsure of the
+> specific platform you are referencing.
+> 
+>>
+>>>
+>>> If so then we should pick up that serial console configuration and activate it,
+>>> regardless of any kernel boot options!
+>>
+>> I'm worried about someone who doesn't want a console on ttyS0 suddenly ending up
+>> with one.  The SPCR could contain incorrect data, etc.
+>>
+>> I originally wanted this on by default, but the chances of breaking someone's
+>> setup seems significant doesn't it?  Maybe I'm being too cautious.  Anyone else
+>> want to weigh in?  I'm not ignoring your idea Ingo, I'm just worried about being
+>> yelled at by a user :) because I broke their default console setup.
+>>
+> 
+> SPCR is always present on QDF2400 (ARM64 platform).  Firmware will automatically
+> update the SPCR table to point to the correct console (IE Serial-over-LAN or SOL
+> if configured via IPMI).  Unless a user specifically chooses to override the
+> SPCR via "console=", we expect that a console will be present based on the data
+> in SPCR.
+
+Hey Jeffrey -- I think Ingo's & my conversation is x86-specific.  I am *NOT*
+changing the behaviour on ARM64.
+
+P.
+
+> 
