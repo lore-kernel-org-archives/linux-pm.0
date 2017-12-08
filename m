@@ -1,45 +1,54 @@
 From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/9] sched/autogroup: remove unneeded kallsyms include
-Date: Fri, 8 Dec 2017 11:56:11 +0100
-Message-ID: <20171208105611.rcoxze4erxkpimad@hirez.programming.kicks-ass.net>
-References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
- <20171208025616.16267-2-sergey.senozhatsky@gmail.com>
+Subject: Re: [PATCH] sched/autogroup: move sched.h include
+Date: Fri, 8 Dec 2017 11:56:40 +0100
+Message-ID: <20171208105640.2ovmvxpds6psdnnq@hirez.programming.kicks-ass.net>
+References: <20171208025616.16267-2-sergey.senozhatsky@gmail.com>
+ <20171208082422.5021-1-sergey.senozhatsky@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <owner-linux-mm@kvack.org>
 Content-Disposition: inline
-In-Reply-To: <20171208025616.16267-2-sergey.senozhatsky@gmail.com>
+In-Reply-To: <20171208082422.5021-1-sergey.senozhatsky@gmail.com>
 Sender: owner-linux-mm@kvack.org
 To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 08, 2017 at 11:56:08AM +0900, Sergey Senozhatsky wrote:
-> Autogroup does not seem to use any of kallsyms functions/defines.
+On Fri, Dec 08, 2017 at 05:24:22PM +0900, Sergey Senozhatsky wrote:
+> Move local "sched.h" include to the bottom. sched.h defines
+> several macros that are getting redefined in ARCH-specific
+> code, for instance, finish_arch_post_lock_switch() and
+> prepare_arch_switch(), so we need ARCH-specific definitions
+> to come in first.
 > 
+> Suggested-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-
-Feel free to take this through whatever tree you need this in.
 
 Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 
 > ---
->  kernel/sched/autogroup.c | 1 -
->  1 file changed, 1 deletion(-)
+>  kernel/sched/autogroup.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
 > diff --git a/kernel/sched/autogroup.c b/kernel/sched/autogroup.c
-> index a43df5193538..0786227a3f48 100644
+> index 0786227a3f48..bb4b9fe026a1 100644
 > --- a/kernel/sched/autogroup.c
 > +++ b/kernel/sched/autogroup.c
-> @@ -3,7 +3,6 @@
->  
+> @@ -1,12 +1,12 @@
+>  // SPDX-License-Identifier: GPL-2.0
+> -#include "sched.h"
+> -
 >  #include <linux/proc_fs.h>
 >  #include <linux/seq_file.h>
-> -#include <linux/kallsyms.h>
 >  #include <linux/utsname.h>
 >  #include <linux/security.h>
 >  #include <linux/export.h>
+>  
+> +#include "sched.h"
+> +
+>  unsigned int __read_mostly sysctl_sched_autogroup_enabled = 1;
+>  static struct autogroup autogroup_default;
+>  static atomic_t autogroup_seq_nr;
 > -- 
 > 2.15.1
 > 
