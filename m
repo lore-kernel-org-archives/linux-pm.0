@@ -1,79 +1,82 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] ACPI / PM: Do not reconfigure GPEs for suspend-to-idle
-Date: Fri, 8 Dec 2017 15:29:07 +0100
-Message-ID: <CAJZ5v0jhviHiij0EidmKZpWpCNJOwM6_=WQX-1=Rok2PVr_vZw@mail.gmail.com>
-References: <1563861.ZpJ5HHSL6q@aspire.rjw.lan>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH 0/2] acpi, x86: Add SPCR table support
+Date: Fri, 8 Dec 2017 09:29:54 -0500
+Message-ID: <f078ada7-1e30-41cc-28dc-077ed2a5986d@redhat.com>
+References: <20171207172912.17868-1-prarit@redhat.com>
+ <20171208062925.64ov23u7oxmdfzyk@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1563861.ZpJ5HHSL6q@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-doc-owner@vger.kernel.org>
+In-Reply-To: <20171208062925.64ov23u7oxmdfzyk@gmail.com>
+Sender: linux-doc-owner@vger.kernel.org
+To: Ingo Molnar <mingo@kernel.org>
+Cc: linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 7, 2017 at 3:27 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Currently, non-wakeup GPEs are disabled on suspend-to-idle
-> entry to avoid spurious wakeups, but that should not be strictly
-> necessary any more after commit 33e4f80ee69b (ACPI / PM: Ignore
-> spurious SCI wakeups from suspend-to-idle) which prevents spurious
-> GPE wakeups from resuming the system.  The only consequence of
-> leaving non-wakeup GPEs enabled may be more interrupt-related
-> activity while suspended, which is not ideal (more energy is
-> used if that happens), but it is not critical too.
->
-> On the other hand, this change allows Dells XPS13 9360 blacklisted by
-> commit 71630b7a832f (ACPI / PM: Blacklist Low Power S0 Idle _DSM for
-> Dell XPS13 9360) to use the power button for waking up from suspend-
-> to-idle and it helps at least one other older Dell system (the
-> wakeup button GPE on that one is not listed in _PRW for any
-> devices, so it is not regarded as a wakeup one and gets disabled
-> on suspend-to-idle entry today).
->
-> For the above reasons, leave GPE configuration as is over
-> suspend-to-idle on all systems.
->
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/acpi/sleep.c |   11 +----------
->  1 file changed, 1 insertion(+), 10 deletions(-)
->
-> Index: linux-pm/drivers/acpi/sleep.c
-> ===================================================================
-> --- linux-pm.orig/drivers/acpi/sleep.c
-> +++ linux-pm/drivers/acpi/sleep.c
-> @@ -951,15 +951,8 @@ static int acpi_s2idle_prepare(void)
->         if (lps0_device_handle) {
->                 acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_OFF);
->                 acpi_sleep_run_lps0_dsm(ACPI_LPS0_ENTRY);
-> -       } else {
-> -               /*
-> -                * The configuration of GPEs is changed here to avoid spurious
-> -                * wakeups, but that should not be necessary if this is a
-> -                * "low-power S0" platform and the low-power S0 _DSM is present.
-> -                */
-> -               acpi_enable_all_wakeup_gpes();
-> -               acpi_os_wait_events_complete();
->         }
-> +
->         if (acpi_sci_irq_valid())
->                 enable_irq_wake(acpi_sci_irq);
->
-> @@ -1005,8 +998,6 @@ static void acpi_s2idle_restore(void)
->         if (lps0_device_handle) {
->                 acpi_sleep_run_lps0_dsm(ACPI_LPS0_EXIT);
->                 acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_ON);
-> -       } else {
-> -               acpi_enable_all_runtime_gpes();
->         }
->  }
->
 
-I have to withdraw this as it leads to a regression on one of my test machines.
 
-That is unexpected, so I need to investigate what's going on in there.
+On 12/08/2017 01:29 AM, Ingo Molnar wrote:
+> 
+> * Prarit Bhargava <prarit@redhat.com> wrote:
+> 
+>> The SPCR (Serial Port Console Redirection) Table provides information
+>> about the configuration of serial port.  This information can be used
+>> to configure the early console.
+> 
+> s/about the configuration of serial port
+>  /about the configuration of the serial port
+> 
+>> SPCR support was added for arm64 and is made available across all arches
+>> in this patchset.  The first patch adds a weak per-arch configuration function
+>> and moves the SPCR code into ACPI.  The second patch adds support to x86.
+>>
+>> The existing behaviour on arm64 is maintained.  If the SPCR exists the
+>> earlycon and console are automatically configured.
+> 
+> s/arm64
+>  /ARM64
+> 
+> which is easier to read and it's also the prevalent spelling:
+> 
+>  triton:~/tip> for N in $(git grep -ih arm64 arch/arm64/ | sed 's/[[:punct:]]/ /g'); do echo $N | grep -iw arm64; done | sort | uniq -c
+>      412 arm64
+>        1 Arm64
+>      854 ARM64
+> 
+>> The existing default behaviour on x86 is also maintained.  If no console or
+>> earlycon parameter is defined and the SPCR exists , the serial port is not
+>> configured.  If the earlycon parameter is used both the early console
+>> and the console are configured using the data from the SPCR.
+> 
+> s/exists , the
+>  /exists, the
+> 
+> But, the logic to not use the SPCR looks confusing to me.
+> 
+> The SPCR is only present if the user has explicitly configured a serial console 
+> for that machine, either in the firmware, or remotely via IPMI, correct? I.e. SPCR 
+> will not be spuriously present by default on systems that have a serial console 
+> but the user never expressed any interest for them, right?
 
-Thanks,
-Rafael
+If I disable "Serial Port Console Debug" in my BIOS I still see the SPCR configured:
+
+[root@prarit-lab ~]# dmesg | grep SPCR
+[    0.000000] ACPI: SPCR 0x0000000069031000 000050 (v01
+00000000      00000000)
+
+AFAICT the SPCR is always enabled on some systems.
+
+> 
+> If so then we should pick up that serial console configuration and activate it, 
+> regardless of any kernel boot options!
+
+I'm worried about someone who doesn't want a console on ttyS0 suddenly ending up
+with one.  The SPCR could contain incorrect data, etc.
+
+I originally wanted this on by default, but the chances of breaking someone's
+setup seems significant doesn't it?  Maybe I'm being too cautious.  Anyone else
+want to weigh in?  I'm not ignoring your idea Ingo, I'm just worried about being
+yelled at by a user :) because I broke their default console setup.
+
+P.
