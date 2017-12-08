@@ -1,85 +1,123 @@
-From: Alexander Dahl <post@lespocky.de>
-Subject: no hwmon entries in sysfs for thermal on raspberry pi 1b
-Date: Fri, 8 Dec 2017 20:53:10 +0100
-Message-ID: <20171208195308.b7mq43ejegmzjlbi@falbala.home.lespocky.de>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] PM / sleep: Avoid excess pm_runtime_enable() calls in
+ device_resume()
+Date: Fri, 8 Dec 2017 14:25:56 -0600
+Message-ID: <20171208202556.GD12367@bhelgaas-glaptop.roam.corp.google.com>
+References: <3600031.yTsliOITBg@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="4shk57tj2l6imnyj"
-Return-path: <linux-hwmon-owner@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:43566 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751113AbdLHUZ6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 8 Dec 2017 15:25:58 -0500
 Content-Disposition: inline
-Sender: linux-hwmon-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org
-Cc: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, linux-hwmon@vger.kernel.org, linux-pm@vger.kernel.org
+In-Reply-To: <3600031.yTsliOITBg@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux ACPI <linux-acpi@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Ulf Hansson <ulf.hansson@linaro.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
+On Thu, Dec 07, 2017 at 03:26:14AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Middle-layer code doing suspend-time optimizations for devices with
+> the DPM_FLAG_SMART_SUSPEND flag set (currently, the PCI bus type and
+> the ACPI PM domain) needs to make the core skip ->thaw_early and
+> ->thaw callbacks for those devices in some cases and it sets the
+> power.direct_complete flag for them for this purpose.
+> 
+> However, it turns out that setting power.direct_complete outside of
+> the PM core is a bad idea as it triggers an excessive invocation of
+> pm_runtime_enable() in device_resume().
+> 
+> For this reason, provide a helper to clear power.is_late_suspended
+> and power.is_suspended to be invoked by the middle-layer code in
+> question instead of setting power.direct_complete and make that code
+> call the new helper.
+> 
+> Fixes: c4b65157aeef (PCI / PM: Take SMART_SUSPEND driver flag into account)
+> Fixes: 05087360fd7a (ACPI / PM: Take SMART_SUSPEND driver flag into account)
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
---4shk57tj2l6imnyj
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Hei hei,
+I don't pretend to understand this (and I don't need to, so don't
+waste your time explaining), but I trust you :)
 
-I have v4.15-rc2 vanilla running on the original Raspberry Pi 1B aka
-bcm2835 (not rev2, not the 1B+ or plus), compiled with ptxdist /
-DistroKit, using bcm2835-rpi-b.dts from arch/arm/boot/dts as device
-tree file. I try to get temperature values from the SoC with
-lm-sensors (for using it in some other project). After reading an
-issue report on the lm-sensors github project [1] I checked my kernel
-config. The following is set:
-
-    CONFIG_HWMON=3Dy
-    CONFIG_THERMAL_HWMON=3Dy
-    CONFIG_THERMAL=3Dy
-    CONFIG_THERMAL_OF=3Dy
-    CONFIG_BCM2835_THERMAL=3Dy
-
-There's one thermal zone in sysfs and I get some temperature which I
-suppose is the temp of the SoC in m=B0C:
-
-    root@DistroKit:~ cat /sys/class/thermal/thermal_zone0/temp=20
-    42236
-
-However, there's nothing below /sys/class/hwmon and I'm wondering why.
-There's a thermal zone named 'cpu-thermal' defined and active in DT.
-
-I tried to read some driver code and as far as I understood
-thermal_add_hwmon_sysfs() must be called somewhere to get entries for
-hwmon in sysfs, and this is done in thermal_zone_device_register(), so
-probably a thermal zone must be present somehow, but it seems to be,
-at least I can read temp values from it.
-
-What piece am I missing? Is it some kind of configuration I did wrong?
-
-Greets
-Alex
-
-[1] https://github.com/groeck/lm-sensors/issues/30
-
---=20
-=BBWith the first link, the chain is forged. The first speech censured,=20
-the first thought forbidden, the first freedom denied, chains us all=20
-irrevocably.=AB (Jean-Luc Picard, quoting Judge Aaron Satie)
-*** GnuPG-FP: C28E E6B9 0263 95CF 8FAF  08FA 34AD CD00 7221 5CC6 ***
-
---4shk57tj2l6imnyj
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEwo7muQJjlc+Prwj6NK3NAHIhXMYFAloq7Z0ACgkQNK3NAHIh
-XMYsvxAAtp/y7loGAtTSGS5bNR7IhTzx7reoufTsXITYh4Eu4faNKfVzoi3fnhNw
-ydkBVxwf8WZ+1FeeqsUBG2LJX6dakXzutW3kG0jdXkD/pc0c5PrW4mpgIozWUgmD
-fXWhSsQ3aVQ+3Q7Dcna/MDAUfVeYC/ad+t40dTasNIJo3ZtlBv1t118nzMeiDq6V
-xv/p5eMZN0nvlRGqCbXi3DZ5TP1wDHSGAVhKDt5LnGixAHJg8SxyKvr4Q5qGo7uc
-mJxnuvMgHaNFLFViqBtvuqySve1Mo++pqdfzNRhTsUIM/XFSewiwduNTIoDPzr9r
-X6W+cNTkRbmHK7e3yyGFD4yDKev1XJeGvr7A9tkRCof4K4eURM44E8y5gbbsb71A
-7YBoy0D0T95H++C5hxey1zZaLvpp/cIrcQer3dCHh0lamsYbE0U7jYS2lMb4D9AE
-bTz2RgwZP2QiDhgjrMgG3YSXvrYIOc16VH+Tr7l7IFhknj8peXPraawuGcmX4RBR
-hRnGSqlim7e+WHDuEACirtw9eVJJvfZmHzsT5pHy0iizb0tEPW0c4wZIJSE7fkJ/
-nYSpMnf6wZJrXRWHV3pj7R5wXOE65/PYOz76vLdo+7F7Q7rUlMerc4yqzZ8Lc9Ab
-5NaxctkFkcu4E+llDfdSUKuifXSdnZYAxcNeSsvhfK9hDCbnfag=
-=TfKg
------END PGP SIGNATURE-----
-
---4shk57tj2l6imnyj--
+> ---
+>  drivers/acpi/device_pm.c  |    2 +-
+>  drivers/base/power/main.c |   15 +++++++++++++++
+>  drivers/pci/pci-driver.c  |    2 +-
+>  include/linux/pm.h        |    1 +
+>  4 files changed, 18 insertions(+), 2 deletions(-)
+> 
+> Index: linux-pm/include/linux/pm.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/pm.h
+> +++ linux-pm/include/linux/pm.h
+> @@ -765,6 +765,7 @@ extern int pm_generic_poweroff_late(stru
+>  extern int pm_generic_poweroff(struct device *dev);
+>  extern void pm_generic_complete(struct device *dev);
+>  
+> +extern void dev_pm_skip_next_resume_phases(struct device *dev);
+>  extern bool dev_pm_smart_suspend_and_suspended(struct device *dev);
+>  
+>  #else /* !CONFIG_PM_SLEEP */
+> Index: linux-pm/drivers/base/power/main.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/main.c
+> +++ linux-pm/drivers/base/power/main.c
+> @@ -526,6 +526,21 @@ static void dpm_watchdog_clear(struct dp
+>  /*------------------------- Resume routines -------------------------*/
+>  
+>  /**
+> + * dev_pm_skip_next_resume_phases - Skip next system resume phases for device.
+> + * @dev: Target device.
+> + *
+> + * Make the core skip the "early resume" and "resume" phases for @dev.
+> + *
+> + * This function can be called by middle-layer code during the "noirq" phase of
+> + * system resume if necessary, but not by device drivers.
+> + */
+> +void dev_pm_skip_next_resume_phases(struct device *dev)
+> +{
+> +	dev->power.is_late_suspended = false;
+> +	dev->power.is_suspended = false;
+> +}
+> +
+> +/**
+>   * device_resume_noirq - Execute a "noirq resume" callback for given device.
+>   * @dev: Device to handle.
+>   * @state: PM transition of the system being carried out.
+> Index: linux-pm/drivers/pci/pci-driver.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-driver.c
+> +++ linux-pm/drivers/pci/pci-driver.c
+> @@ -999,7 +999,7 @@ static int pci_pm_thaw_noirq(struct devi
+>  	 * the subsequent "thaw" callbacks for the device.
+>  	 */
+>  	if (dev_pm_smart_suspend_and_suspended(dev)) {
+> -		dev->power.direct_complete = true;
+> +		dev_pm_skip_next_resume_phases(dev);
+>  		return 0;
+>  	}
+>  
+> Index: linux-pm/drivers/acpi/device_pm.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/device_pm.c
+> +++ linux-pm/drivers/acpi/device_pm.c
+> @@ -1138,7 +1138,7 @@ int acpi_subsys_thaw_noirq(struct device
+>  	 * skip all of the subsequent "thaw" callbacks for the device.
+>  	 */
+>  	if (dev_pm_smart_suspend_and_suspended(dev)) {
+> -		dev->power.direct_complete = true;
+> +		dev_pm_skip_next_resume_phases(dev);
+>  		return 0;
+>  	}
+>  
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
