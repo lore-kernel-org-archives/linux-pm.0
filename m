@@ -1,139 +1,105 @@
-From: Amit Kucheria <amit.kucheria@verdurent.com>
-Subject: Re: [PATCH v3 1/3] interconnect: Add generic on-chip interconnect API
-Date: Sat, 9 Dec 2017 00:08:22 +0530
-Message-ID: <CAHLCerOgm+T6S1pxjo5hFajyU+vqUgBFcwfuBCsphgECRMf3Yw@mail.gmail.com>
-References: <20170908171830.13813-1-georgi.djakov@linaro.org> <20170908171830.13813-2-georgi.djakov@linaro.org>
+From: Prarit Bhargava <prarit@redhat.com>
+Subject: Re: [PATCH 1/2] acpi, spcr: Make SPCR avialable to other
+ architectures
+Date: Fri, 8 Dec 2017 14:42:14 -0500
+Message-ID: <848618dd-86ad-85aa-b7f4-fa700ccf63c3@redhat.com>
+References: <20171207172912.17868-1-prarit@redhat.com>
+ <20171207172912.17868-2-prarit@redhat.com>
+ <CAOZdJXV4E6gu=Ed6nOCcEp2afe_g8Ot-H5oO5=6+ye51cv9hUg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f196.google.com ([74.125.82.196]:38448 "EHLO
-        mail-ot0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752270AbdLHSiX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Dec 2017 13:38:23 -0500
-Received: by mail-ot0-f196.google.com with SMTP id p3so9906918oti.5
-        for <linux-pm@vger.kernel.org>; Fri, 08 Dec 2017 10:38:23 -0800 (PST)
-In-Reply-To: <20170908171830.13813-2-georgi.djakov@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAOZdJXV4E6gu=Ed6nOCcEp2afe_g8Ot-H5oO5=6+ye51cv9hUg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Timur Tabi <timur@codeaurora.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, the arch/x86 maintainers <x86@kernel.org>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Bhupesh Sharma <bhsharma@redhat.com>, linux-doc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lv Zheng <lv.zheng@intel.com>, linux-serial@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jeffrey Hugo <jhugo@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Georgi Djakov <georgi.djakov@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, gregkh@linuxfoundation.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, robh+dt@kernel.org, khilman@baylibre.com, Michael Turquette <mturquette@baylibre.com>, Vincent Guittot <vincent.guittot@linaro.org>, Saravana Kannan <skannan@codeaurora.org>, Stephen Boyd <sboyd@codeaurora.org>, Andy Gross <andy.gross@linaro.org>, seansw@qti.qualcomm.com, davidai@quicinc.com, LKML <linux-kernel@vger.kernel.org>, lakml <linux-arm-kernel@lists.infradead.org>, linux-arm-msm@vger.kernel.org, mark.rutland@arm.com, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 
-On Fri, Sep 8, 2017 at 10:48 PM, Georgi Djakov <georgi.djakov@linaro.org> wrote:
-> This patch introduce a new API to get requirements and configure the
-> interconnect buses across the entire chipset to fit with the current demand.
->
-> The API is using a consumer/provider-based model, where the providers are
-> the interconnect buses and the consumers could be various drivers.
-> The consumers request interconnect resources (path) between endpoints and
-> set the desired constraints on this data flow path. The providers receive
-> requests from consumers and aggregate these requests for all master-slave
-> pairs on that path. Then the providers configure each participating in the
-> topology node according to the requested data flow path, physical links and
-> constraints. The topology could be complicated and multi-tiered and is SoC
-> specific.
->
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> ---
->  Documentation/interconnect/interconnect.rst |  93 +++++++
->  drivers/Kconfig                             |   2 +
->  drivers/Makefile                            |   1 +
->  drivers/interconnect/Kconfig                |  10 +
->  drivers/interconnect/Makefile               |   1 +
->  drivers/interconnect/interconnect.c         | 382 ++++++++++++++++++++++++++++
->  include/linux/interconnect-consumer.h       |  73 ++++++
->  include/linux/interconnect-provider.h       | 119 +++++++++
->  8 files changed, 681 insertions(+)
->  create mode 100644 Documentation/interconnect/interconnect.rst
->  create mode 100644 drivers/interconnect/Kconfig
->  create mode 100644 drivers/interconnect/Makefile
->  create mode 100644 drivers/interconnect/interconnect.c
->  create mode 100644 include/linux/interconnect-consumer.h
->  create mode 100644 include/linux/interconnect-provider.h
->
 
-<snip>
 
-> diff --git a/include/linux/interconnect-consumer.h b/include/linux/interconnect-consumer.h
-> new file mode 100644
-> index 000000000000..6e71bf7a63c0
-> --- /dev/null
-> +++ b/include/linux/interconnect-consumer.h
-> @@ -0,0 +1,73 @@
-> +/*
-> + * Copyright (c) 2017, Linaro Ltd.
-> + *
-> + * This software is licensed under the terms of the GNU General Public
-> + * License version 2, as published by the Free Software Foundation, and
-> + * may be copied, distributed, and modified under those terms.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + */
-> +
-> +#ifndef _LINUX_INTERCONNECT_CONSUMER_H
-> +#define _LINUX_INTERCONNECT_CONSUMER_H
-> +
-> +struct interconnect_node;
-> +struct interconnect_path;
-> +
-> +#if IS_ENABLED(CONFIG_INTERCONNECT)
-> +
-> +struct interconnect_path *interconnect_get(const char *sdev, const int sid,
-> +                                          const char *ddev, const int did);
-> +
-> +void interconnect_put(struct interconnect_path *path);
-> +
-> +/**
-> + * struct creq - interconnect consumer request
-> + * @avg_bw: the average requested bandwidth (over longer period of time) in kbps
-> + * @peak_bw: the peak (maximum) bandwidth in kpbs
-> + */
-> +struct interconnect_creq {
-> +       u32 avg_bw;
-> +       u32 peak_bw;
-> +};
-> +
-> +/**
-> + * interconnect_set() - set constraints on a path between two endpoints
-> + * @path: reference to the path returned by interconnect_get()
-> + * @creq: request from the consumer, containing its requirements
-> + *
-> + * This function is used by an interconnect consumer to express its own needs
-> + * in term of bandwidth and QoS for a previously requested path between two
-> + * endpoints. The requests are aggregated and each node is updated accordingly.
-> + *
-> + * Returns 0 on success, or an approproate error code otherwise.
-> + */
-> +int interconnect_set(struct interconnect_path *path,
-> +                    struct interconnect_creq *creq);
-> +
-> +#else
-> +
-> +inline struct interconnect_path *interconnect_get(const char *sdev,
-> +                                                        const int sid,
-> +                                                        const char *ddev,
-> +                                                        const int did)
-> +{
-> +       return ERR_PTR(-ENOTSUPP);
-> +}
-> +
-> +inline void interconnect_put(struct interconnect_path *path)
-> +{
-> +}
-> +
-> +inline int interconnect_set(struct interconnect_path *path,
-> +                           struct interconnect_creq *creq);
+On 12/07/2017 01:43 PM, Timur Tabi wrote:
+> On Thu, Dec 7, 2017 at 11:29 AM, Prarit Bhargava <prarit@redhat.com> wrote:
+>> Other architectures can use SPCR to setup an early console or console but
+>> the current code is ARM64 specific.
+>>
+>> Change the name of parse_spcr() to acpi_parse_spcr().  Add a weak
+>> function acpi_arch_setup_console() that can be used for arch-specific
+>> setup.  Move SPCR initialization flag into ACPI code.  Update the
+>> Documention on the use of the SPCR earlycon.
+>>
+>> This patch does not change arm64 behaviour.
+> 
+> Let's hope so.  Our E44 erratum work-around has caused lots of
+> problems in the past, so the code is a bit fragile.
 
-Remove the semi colon
+So it does look like I broke something :(  I'll fix this and do more testing.
+One thing that I just learned (relative to x86) is that you have to test much
+further and wider than on x86.
 
-> +{
-> +       return -ENOTSUPP
+P.
 
-return ERR_PTR(-ENOTSUPP);
-
-> +}
-> +
-
-This breaks the build with INTERCONNECT disabled in Kconfig.
+> 
+>> +static bool qdf2400_erratum_44_present(struct acpi_table_header *h)
+>> +{
+>> +       if (memcmp(h->oem_id, "QCOM  ", ACPI_OEM_ID_SIZE))
+>> +               return false;
+>> +
+>> +       if (!memcmp(h->oem_table_id, "QDF2432 ", ACPI_OEM_TABLE_ID_SIZE))
+>> +               return true;
+>> +
+>> +       if (!memcmp(h->oem_table_id, "QDF2400 ", ACPI_OEM_TABLE_ID_SIZE) &&
+>> +                       h->oem_revision == 1)
+>> +               return true;
+>> +
+>> +       return false;
+>> +}
+> 
+> Please give us a chance to test this patch before merging. We've had a
+> lot of problems with our E44 work-around, and we need to make sure
+> that qdf2400_erratum_44_present function is called before the pl011
+> driver is probed.
+> 
+>> +
+>> +/*
+>> + * APM X-Gene v1 and v2 UART hardware is an 16550 like device but has its
+>> + * register aligned to 32-bit. In addition, the BIOS also encoded the
+>> + * access width to be 8 bits. This function detects this errata condition.
+>> + */
+>> +static bool xgene_8250_erratum_present(struct acpi_table_spcr *tb)
+>> +{
+>> +       bool xgene_8250 = false;
+>> +
+>> +       if (tb->interface_type != ACPI_DBG2_16550_COMPATIBLE)
+>> +               return false;
+>> +
+>> +       if (memcmp(tb->header.oem_id, "APMC0D", ACPI_OEM_ID_SIZE) &&
+>> +           memcmp(tb->header.oem_id, "HPE   ", ACPI_OEM_ID_SIZE))
+>> +               return false;
+>> +
+>> +       if (!memcmp(tb->header.oem_table_id, "XGENESPC",
+>> +           ACPI_OEM_TABLE_ID_SIZE) && tb->header.oem_revision == 0)
+>> +               xgene_8250 = true;
+>> +
+>> +       if (!memcmp(tb->header.oem_table_id, "ProLiant",
+>> +           ACPI_OEM_TABLE_ID_SIZE) && tb->header.oem_revision == 1)
+>> +               xgene_8250 = true;
+>> +
+>> +       return xgene_8250;
+>> +}
+> 
+> I suspect that this function has the same issues as
+> qdf2400_erratum_44_present().
+> 
+>> +config ACPI_SPCR_TABLE
+>> +       bool "ACPI Serial Port Console Redirection Support"
+>> +       default y if ARM64
+>> +       help
+>> +         Enable support for Serial Port Console Redirection (SPCR) Table.
+>> +         This table provides information about the configuration of the
+>> +         earlycon console.
+>> +
+> 
+> So ACPI without SPCR has never been tested by us.  Making it optional
+> makes me a little nervous.  We'll have to evaluate this change.
+> 
