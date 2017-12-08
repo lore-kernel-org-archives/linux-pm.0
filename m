@@ -1,7 +1,7 @@
 From: Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>
-Subject: [PATCH v1 3/4] arm64: dts: mediatek: add mt8173 cpufreq related device nodes
-Date: Fri, 8 Dec 2017 14:07:57 +0800
-Message-ID: <1512713278-17807-4-git-send-email-andrew-sh.cheng@mediatek.com>
+Subject: [PATCH v1 4/4] arm64: dts: mediatek: add mt2712 cpufreq related device nodes
+Date: Fri, 8 Dec 2017 14:07:58 +0800
+Message-ID: <1512713278-17807-5-git-send-email-andrew-sh.cheng@mediatek.com>
 References: <1512713278-17807-1-git-send-email-andrew-sh.cheng@mediatek.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -17,167 +17,136 @@ and also add clocks, regulators and opp information into cpu nodes
 
 Signed-off-by: Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>
 ---
- arch/arm64/boot/dts/mediatek/mt8173-evb.dts | 18 ++++++
- arch/arm64/boot/dts/mediatek/mt8173.dtsi    | 90 +++++++++++++++++++++++++++++
- 2 files changed, 108 insertions(+)
+ arch/arm64/boot/dts/mediatek/mt2712-evb.dts | 27 ++++++++++++++
+ arch/arm64/boot/dts/mediatek/mt2712e.dtsi   | 57 +++++++++++++++++++++++++++++
+ 2 files changed, 84 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt8173-evb.dts b/arch/arm64/boot/dts/mediatek/mt8173-evb.dts
-index 1c3634f..369dfcd 100644
---- a/arch/arm64/boot/dts/mediatek/mt8173-evb.dts
-+++ b/arch/arm64/boot/dts/mediatek/mt8173-evb.dts
-@@ -74,6 +74,24 @@
- 	status = "okay";
- };
- 
+diff --git a/arch/arm64/boot/dts/mediatek/mt2712-evb.dts b/arch/arm64/boot/dts/mediatek/mt2712-evb.dts
+index 14163b9..d47f3c7 100644
+--- a/arch/arm64/boot/dts/mediatek/mt2712-evb.dts
++++ b/arch/arm64/boot/dts/mediatek/mt2712-evb.dts
+@@ -26,6 +26,33 @@
+ 		linux,initrd-start = <0x45000000>;
+ 		linux,initrd-end   = <0x4a000000>;
+ 	};
++
++	cpus_fixed_vproc0: fixedregulator@0 {
++		compatible = "regulator-fixed";
++		regulator-name = "vproc_buck0";
++		regulator-min-microvolt = <1000000>;
++		regulator-max-microvolt = <1000000>;
++	};
++
++	cpus_fixed_vproc1: fixedregulator@1 {
++		compatible = "regulator-fixed";
++		regulator-name = "vproc_buck1";
++		regulator-min-microvolt = <1000000>;
++		regulator-max-microvolt = <1000000>;
++	};
++
++};
++
 +&cpu0 {
-+	proc-supply = <&mt6397_vpca15_reg>;
++	proc-supply = <&cpus_fixed_vproc0>;
 +};
 +
 +&cpu1 {
-+	proc-supply = <&mt6397_vpca15_reg>;
++	proc-supply = <&cpus_fixed_vproc0>;
 +};
 +
 +&cpu2 {
-+	proc-supply = <&da9211_vcpu_reg>;
-+	sram-supply = <&mt6397_vsramca7_reg>;
-+};
-+
-+&cpu3 {
-+	proc-supply = <&da9211_vcpu_reg>;
-+	sram-supply = <&mt6397_vsramca7_reg>;
-+};
-+
- &dpi0 {
- 	status = "okay";
++	proc-supply = <&cpus_fixed_vproc1>;
  };
-diff --git a/arch/arm64/boot/dts/mediatek/mt8173.dtsi b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-index 26396ef..31bc593 100644
---- a/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt8173.dtsi
-@@ -51,6 +51,80 @@
- 		mdp_wrot1 = &mdp_wrot1;
- 	};
+ 
+ &uart0 {
+diff --git a/arch/arm64/boot/dts/mediatek/mt2712e.dtsi b/arch/arm64/boot/dts/mediatek/mt2712e.dtsi
+index 61dd763..fdf66f4 100644
+--- a/arch/arm64/boot/dts/mediatek/mt2712e.dtsi
++++ b/arch/arm64/boot/dts/mediatek/mt2712e.dtsi
+@@ -16,6 +16,48 @@
+ 	#address-cells = <2>;
+ 	#size-cells = <2>;
  
 +	cluster0_opp: opp_table0 {
 +		compatible = "operating-points-v2";
 +		opp-shared;
-+		opp-507000000 {
-+			opp-hz = /bits/ 64 <507000000>;
-+			opp-microvolt = <859000>;
++		opp00 {
++			opp-hz = /bits/ 64 <598000000>;
++			opp-microvolt = <1000000>;
 +		};
-+		opp-702000000 {
++		opp01 {
 +			opp-hz = /bits/ 64 <702000000>;
-+			opp-microvolt = <908000>;
++			opp-microvolt = <1000000>;
 +		};
-+		opp-1001000000 {
-+			opp-hz = /bits/ 64 <1001000000>;
-+			opp-microvolt = <983000>;
-+		};
-+		opp-1105000000 {
-+			opp-hz = /bits/ 64 <1105000000>;
-+			opp-microvolt = <1009000>;
-+		};
-+		opp-1209000000 {
-+			opp-hz = /bits/ 64 <1209000000>;
-+			opp-microvolt = <1034000>;
-+		};
-+		opp-1300000000 {
-+			opp-hz = /bits/ 64 <1300000000>;
-+			opp-microvolt = <1057000>;
-+		};
-+		opp-1508000000 {
-+			opp-hz = /bits/ 64 <1508000000>;
-+			opp-microvolt = <1109000>;
-+		};
-+		opp-1703000000 {
-+			opp-hz = /bits/ 64 <1703000000>;
-+			opp-microvolt = <1125000>;
++		opp02 {
++			opp-hz = /bits/ 64 <793000000>;
++			opp-microvolt = <1000000>;
 +		};
 +	};
 +
 +	cluster1_opp: opp_table1 {
 +		compatible = "operating-points-v2";
 +		opp-shared;
-+		opp-507000000 {
-+			opp-hz = /bits/ 64 <507000000>;
-+			opp-microvolt = <828000>;
++		opp00 {
++			opp-hz = /bits/ 64 <598000000>;
++			opp-microvolt = <1000000>;
 +		};
-+		opp-702000000 {
++		opp01 {
 +			opp-hz = /bits/ 64 <702000000>;
-+			opp-microvolt = <867000>;
++			opp-microvolt = <1000000>;
 +		};
-+		opp-1001000000 {
++		opp02 {
++			opp-hz = /bits/ 64 <793000000>;
++			opp-microvolt = <1000000>;
++		};
++		opp03 {
++			opp-hz = /bits/ 64 <897000000>;
++			opp-microvolt = <1000000>;
++		};
++		opp04 {
 +			opp-hz = /bits/ 64 <1001000000>;
-+			opp-microvolt = <927000>;
-+		};
-+		opp-1209000000 {
-+			opp-hz = /bits/ 64 <1209000000>;
-+			opp-microvolt = <968000>;
-+		};
-+		opp-1404000000 {
-+			opp-hz = /bits/ 64 <1404000000>;
-+			opp-microvolt = <1007000>;
-+		};
-+		opp-1612000000 {
-+			opp-hz = /bits/ 64 <1612000000>;
-+			opp-microvolt = <1049000>;
-+		};
-+		opp-1807000000 {
-+			opp-hz = /bits/ 64 <1807000000>;
-+			opp-microvolt = <1089000>;
-+		};
-+		opp-2106000000 {
-+			opp-hz = /bits/ 64 <2106000000>;
-+			opp-microvolt = <1125000>;
++			opp-microvolt = <1000000>;
 +		};
 +	};
 +
  	cpus {
  		#address-cells = <1>;
  		#size-cells = <0>;
-@@ -81,6 +155,10 @@
+@@ -41,6 +83,11 @@
+ 			device_type = "cpu";
+ 			compatible = "arm,cortex-a35";
  			reg = <0x000>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SLEEP_0>;
-+			clocks = <&infracfg CLK_INFRA_CA53SEL>,
-+				 <&apmixedsys CLK_APMIXED_MAINPLL>;
++			clocks = <&mcucfg CLK_MCU_MP0_SEL>,
++				<&topckgen CLK_TOP_F_MP0_PLL1>;
 +			clock-names = "cpu", "intermediate";
++			proc-supply = <&cpus_fixed_vproc0>;
 +			operating-points-v2 = <&cluster0_opp>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
  		};
  
- 		cpu1: cpu@1 {
-@@ -89,6 +167,10 @@
+@@ -49,6 +96,11 @@
+ 			compatible = "arm,cortex-a35";
  			reg = <0x001>;
  			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SLEEP_0>;
-+			clocks = <&infracfg CLK_INFRA_CA53SEL>,
-+				 <&apmixedsys CLK_APMIXED_MAINPLL>;
++			clocks = <&mcucfg CLK_MCU_MP0_SEL>,
++				<&topckgen CLK_TOP_F_MP0_PLL1>;
 +			clock-names = "cpu", "intermediate";
++			proc-supply = <&cpus_fixed_vproc0>;
 +			operating-points-v2 = <&cluster0_opp>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
  		};
  
- 		cpu2: cpu@100 {
-@@ -97,6 +179,10 @@
- 			reg = <0x100>;
+@@ -57,6 +109,11 @@
+ 			compatible = "arm,cortex-a72";
+ 			reg = <0x200>;
  			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SLEEP_0>;
-+			clocks = <&infracfg CLK_INFRA_CA57SEL>,
-+				 <&apmixedsys CLK_APMIXED_MAINPLL>;
++			clocks = <&mcucfg CLK_MCU_MP2_SEL>,
++				<&topckgen CLK_TOP_F_BIG_PLL1>;
 +			clock-names = "cpu", "intermediate";
++			proc-supply = <&cpus_fixed_vproc1>;
 +			operating-points-v2 = <&cluster1_opp>;
+ 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
  		};
  
- 		cpu3: cpu@101 {
-@@ -105,6 +191,10 @@
- 			reg = <0x101>;
- 			enable-method = "psci";
- 			cpu-idle-states = <&CPU_SLEEP_0>;
-+			clocks = <&infracfg CLK_INFRA_CA57SEL>,
-+				 <&apmixedsys CLK_APMIXED_MAINPLL>;
-+			clock-names = "cpu", "intermediate";
-+			operating-points-v2 = <&cluster1_opp>;
- 		};
- 
- 		idle-states {
 -- 
 2.6.4
