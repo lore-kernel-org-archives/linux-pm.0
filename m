@@ -1,152 +1,63 @@
-From: Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>
-Subject: [PATCH v1 4/4] arm64: dts: mediatek: add mt2712 cpufreq related device nodes
-Date: Fri, 8 Dec 2017 14:07:58 +0800
-Message-ID: <1512713278-17807-5-git-send-email-andrew-sh.cheng@mediatek.com>
-References: <1512713278-17807-1-git-send-email-andrew-sh.cheng@mediatek.com>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 0/2] acpi, x86: Add SPCR table support
+Date: Fri, 8 Dec 2017 07:29:25 +0100
+Message-ID: <20171208062925.64ov23u7oxmdfzyk@gmail.com>
+References: <20171207172912.17868-1-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1512713278-17807-1-git-send-email-andrew-sh.cheng@mediatek.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, matthias.bgg@gmail.com, mark.rutland@arm.com
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, robh+dt@kernel.org, devicetree@vger.kernel.org, Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171207172912.17868-1-prarit@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-Add opp v2 information,
-and also add clocks, regulators and opp information into cpu nodes
 
-Signed-off-by: Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>
----
- arch/arm64/boot/dts/mediatek/mt2712-evb.dts | 27 ++++++++++++++
- arch/arm64/boot/dts/mediatek/mt2712e.dtsi   | 57 +++++++++++++++++++++++++++++
- 2 files changed, 84 insertions(+)
+* Prarit Bhargava <prarit@redhat.com> wrote:
 
-diff --git a/arch/arm64/boot/dts/mediatek/mt2712-evb.dts b/arch/arm64/boot/dts/mediatek/mt2712-evb.dts
-index 14163b9..d47f3c7 100644
---- a/arch/arm64/boot/dts/mediatek/mt2712-evb.dts
-+++ b/arch/arm64/boot/dts/mediatek/mt2712-evb.dts
-@@ -26,6 +26,33 @@
- 		linux,initrd-start = <0x45000000>;
- 		linux,initrd-end   = <0x4a000000>;
- 	};
-+
-+	cpus_fixed_vproc0: fixedregulator@0 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "vproc_buck0";
-+		regulator-min-microvolt = <1000000>;
-+		regulator-max-microvolt = <1000000>;
-+	};
-+
-+	cpus_fixed_vproc1: fixedregulator@1 {
-+		compatible = "regulator-fixed";
-+		regulator-name = "vproc_buck1";
-+		regulator-min-microvolt = <1000000>;
-+		regulator-max-microvolt = <1000000>;
-+	};
-+
-+};
-+
-+&cpu0 {
-+	proc-supply = <&cpus_fixed_vproc0>;
-+};
-+
-+&cpu1 {
-+	proc-supply = <&cpus_fixed_vproc0>;
-+};
-+
-+&cpu2 {
-+	proc-supply = <&cpus_fixed_vproc1>;
- };
- 
- &uart0 {
-diff --git a/arch/arm64/boot/dts/mediatek/mt2712e.dtsi b/arch/arm64/boot/dts/mediatek/mt2712e.dtsi
-index 61dd763..fdf66f4 100644
---- a/arch/arm64/boot/dts/mediatek/mt2712e.dtsi
-+++ b/arch/arm64/boot/dts/mediatek/mt2712e.dtsi
-@@ -16,6 +16,48 @@
- 	#address-cells = <2>;
- 	#size-cells = <2>;
- 
-+	cluster0_opp: opp_table0 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+		opp00 {
-+			opp-hz = /bits/ 64 <598000000>;
-+			opp-microvolt = <1000000>;
-+		};
-+		opp01 {
-+			opp-hz = /bits/ 64 <702000000>;
-+			opp-microvolt = <1000000>;
-+		};
-+		opp02 {
-+			opp-hz = /bits/ 64 <793000000>;
-+			opp-microvolt = <1000000>;
-+		};
-+	};
-+
-+	cluster1_opp: opp_table1 {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+		opp00 {
-+			opp-hz = /bits/ 64 <598000000>;
-+			opp-microvolt = <1000000>;
-+		};
-+		opp01 {
-+			opp-hz = /bits/ 64 <702000000>;
-+			opp-microvolt = <1000000>;
-+		};
-+		opp02 {
-+			opp-hz = /bits/ 64 <793000000>;
-+			opp-microvolt = <1000000>;
-+		};
-+		opp03 {
-+			opp-hz = /bits/ 64 <897000000>;
-+			opp-microvolt = <1000000>;
-+		};
-+		opp04 {
-+			opp-hz = /bits/ 64 <1001000000>;
-+			opp-microvolt = <1000000>;
-+		};
-+	};
-+
- 	cpus {
- 		#address-cells = <1>;
- 		#size-cells = <0>;
-@@ -41,6 +83,11 @@
- 			device_type = "cpu";
- 			compatible = "arm,cortex-a35";
- 			reg = <0x000>;
-+			clocks = <&mcucfg CLK_MCU_MP0_SEL>,
-+				<&topckgen CLK_TOP_F_MP0_PLL1>;
-+			clock-names = "cpu", "intermediate";
-+			proc-supply = <&cpus_fixed_vproc0>;
-+			operating-points-v2 = <&cluster0_opp>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 		};
- 
-@@ -49,6 +96,11 @@
- 			compatible = "arm,cortex-a35";
- 			reg = <0x001>;
- 			enable-method = "psci";
-+			clocks = <&mcucfg CLK_MCU_MP0_SEL>,
-+				<&topckgen CLK_TOP_F_MP0_PLL1>;
-+			clock-names = "cpu", "intermediate";
-+			proc-supply = <&cpus_fixed_vproc0>;
-+			operating-points-v2 = <&cluster0_opp>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 		};
- 
-@@ -57,6 +109,11 @@
- 			compatible = "arm,cortex-a72";
- 			reg = <0x200>;
- 			enable-method = "psci";
-+			clocks = <&mcucfg CLK_MCU_MP2_SEL>,
-+				<&topckgen CLK_TOP_F_BIG_PLL1>;
-+			clock-names = "cpu", "intermediate";
-+			proc-supply = <&cpus_fixed_vproc1>;
-+			operating-points-v2 = <&cluster1_opp>;
- 			cpu-idle-states = <&CPU_SLEEP_0 &CLUSTER_SLEEP_0>;
- 		};
- 
--- 
-2.6.4
+> The SPCR (Serial Port Console Redirection) Table provides information
+> about the configuration of serial port.  This information can be used
+> to configure the early console.
+
+s/about the configuration of serial port
+ /about the configuration of the serial port
+
+> SPCR support was added for arm64 and is made available across all arches
+> in this patchset.  The first patch adds a weak per-arch configuration function
+> and moves the SPCR code into ACPI.  The second patch adds support to x86.
+> 
+> The existing behaviour on arm64 is maintained.  If the SPCR exists the
+> earlycon and console are automatically configured.
+
+s/arm64
+ /ARM64
+
+which is easier to read and it's also the prevalent spelling:
+
+ triton:~/tip> for N in $(git grep -ih arm64 arch/arm64/ | sed 's/[[:punct:]]/ /g'); do echo $N | grep -iw arm64; done | sort | uniq -c
+     412 arm64
+       1 Arm64
+     854 ARM64
+
+> The existing default behaviour on x86 is also maintained.  If no console or
+> earlycon parameter is defined and the SPCR exists , the serial port is not
+> configured.  If the earlycon parameter is used both the early console
+> and the console are configured using the data from the SPCR.
+
+s/exists , the
+ /exists, the
+
+But, the logic to not use the SPCR looks confusing to me.
+
+The SPCR is only present if the user has explicitly configured a serial console 
+for that machine, either in the firmware, or remotely via IPMI, correct? I.e. SPCR 
+will not be spuriously present by default on systems that have a serial console 
+but the user never expressed any interest for them, right?
+
+If so then we should pick up that serial console configuration and activate it, 
+regardless of any kernel boot options!
+
+Thanks,
+
+	Ingo
