@@ -1,107 +1,57 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH 0/2] acpi, x86: Add SPCR table support
-Date: Fri, 8 Dec 2017 11:02:40 -0500
-Message-ID: <c5441b79-91a3-719b-f435-3c9ea937a743@redhat.com>
-References: <20171207172912.17868-1-prarit@redhat.com>
- <20171208062925.64ov23u7oxmdfzyk@gmail.com>
- <f078ada7-1e30-41cc-28dc-077ed2a5986d@redhat.com>
- <bd727a15-c697-741f-864b-8b48b8e5e272@codeaurora.org>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [RFC PATCH v10 6/7] PCI / PM: Move acpi wakeup code to pci core
+Date: Fri, 8 Dec 2017 08:37:10 -0800
+Message-ID: <20171208163710.GB24344@atomide.com>
+References: <20171027072612.26565-1-jeffy.chen@rock-chips.com>
+ <1894178.xtK0vD2N4H@aspire.rjw.lan>
+ <20171114025109.GA43048@google.com>
+ <1882670.s3LR2t44nD@aspire.rjw.lan>
+ <20171206193421.GA143886@google.com>
+ <20171207001754.GB28152@atomide.com>
+ <20171207002955.GA40447@google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <bd727a15-c697-741f-864b-8b48b8e5e272@codeaurora.org>
+Content-Disposition: inline
+In-Reply-To: <20171207002955.GA40447@google.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Jeffrey Hugo <jhugo@codeaurora.org>, Ingo Molnar <mingo@kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Bhupesh Sharma <bhsharma@redhat.com>, linux-doc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lv Zheng <lv.zheng@intel.com>, linux-serial@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Jeffy Chen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, dianders@chromium.org, linux-pci@vger.kernel.org, linux-acpi@vger.kernel.org, Len Brown <lenb@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 12/08/2017 10:31 AM, Jeffrey Hugo wrote:
-> On 12/8/2017 7:29 AM, Prarit Bhargava wrote:
->>
->>
->> On 12/08/2017 01:29 AM, Ingo Molnar wrote:
->>>
->>> * Prarit Bhargava <prarit@redhat.com> wrote:
->>>
->>>> The SPCR (Serial Port Console Redirection) Table provides information
->>>> about the configuration of serial port.  This information can be used
->>>> to configure the early console.
->>>
->>> s/about the configuration of serial port
->>>   /about the configuration of the serial port
->>>
->>>> SPCR support was added for arm64 and is made available across all arches
->>>> in this patchset.  The first patch adds a weak per-arch configuration function
->>>> and moves the SPCR code into ACPI.  The second patch adds support to x86.
->>>>
->>>> The existing behaviour on arm64 is maintained.  If the SPCR exists the
->>>> earlycon and console are automatically configured.
->>>
->>> s/arm64
->>>   /ARM64
->>>
->>> which is easier to read and it's also the prevalent spelling:
->>>
->>>   triton:~/tip> for N in $(git grep -ih arm64 arch/arm64/ | sed
->>> 's/[[:punct:]]/ /g'); do echo $N | grep -iw arm64; done | sort | uniq -c
->>>       412 arm64
->>>         1 Arm64
->>>       854 ARM64
->>>
->>>> The existing default behaviour on x86 is also maintained.  If no console or
->>>> earlycon parameter is defined and the SPCR exists , the serial port is not
->>>> configured.  If the earlycon parameter is used both the early console
->>>> and the console are configured using the data from the SPCR.
->>>
->>> s/exists , the
->>>   /exists, the
->>>
->>> But, the logic to not use the SPCR looks confusing to me.
->>>
->>> The SPCR is only present if the user has explicitly configured a serial console
->>> for that machine, either in the firmware, or remotely via IPMI, correct? I.e.
->>> SPCR
->>> will not be spuriously present by default on systems that have a serial console
->>> but the user never expressed any interest for them, right?
->>
->> If I disable "Serial Port Console Debug" in my BIOS I still see the SPCR
->> configured:
->>
->> [root@prarit-lab ~]# dmesg | grep SPCR
->> [    0.000000] ACPI: SPCR 0x0000000069031000 000050 (v01
->> 00000000      00000000)
->>
->> AFAICT the SPCR is always enabled on some systems.
+* Brian Norris <briannorris@chromium.org> [171207 00:32]:
+> On Wed, Dec 06, 2017 at 04:17:54PM -0800, Tony Lindgren wrote:
+> > * Brian Norris <briannorris@chromium.org> [171206 19:36]:
+> > > By the way, it seems pretty ambiguous how we want to handle things like
+> > > (a) multiple devices sharing the same WAKE#
+> > > (b) systems where a slot is swappable
+> > > 
+> > > For (a), the main problem is that if we have to repeat the interrupt
+> > > definition in multiple devices, then we have to deal with something like
+> > > IRQF_SHARED. That can be done, but it makes it much harder to use the
+> > > dedicated wakeirq helpers.
+> > 
+> > This will get messy, let's not go there :) That is unless the hardware
+> > really has a single interrupt wired to multiple devices. And in that
+> > case almost certainly a custom interrupt handler is needed.
 > 
-> "Serial Port Console Debug" sounds like DBG2 to me, although I am unsure of the
-> specific platform you are referencing.
-> 
->>
->>>
->>> If so then we should pick up that serial console configuration and activate it,
->>> regardless of any kernel boot options!
->>
->> I'm worried about someone who doesn't want a console on ttyS0 suddenly ending up
->> with one.  The SPCR could contain incorrect data, etc.
->>
->> I originally wanted this on by default, but the chances of breaking someone's
->> setup seems significant doesn't it?  Maybe I'm being too cautious.  Anyone else
->> want to weigh in?  I'm not ignoring your idea Ingo, I'm just worried about being
->> yelled at by a user :) because I broke their default console setup.
->>
-> 
-> SPCR is always present on QDF2400 (ARM64 platform).  Firmware will automatically
-> update the SPCR table to point to the correct console (IE Serial-over-LAN or SOL
-> if configured via IPMI).  Unless a user specifically chooses to override the
-> SPCR via "console=", we expect that a console will be present based on the data
-> in SPCR.
+> As Rafael mentioned, the spec doesn't clearly delineate a required
+> hierarchy to the WAKE# pin, and it's certainly possible to share it. I'm
+> fine dodging that question for now, and only writing said custom
+> interrupt handler if/when needed.
 
-Hey Jeffrey -- I think Ingo's & my conversation is x86-specific.  I am *NOT*
-changing the behaviour on ARM64.
+OK if the WAKE# pin is shared then PCI (or hardware specific?) code needs
+to figure out from where it came from.
 
-P.
+> But device tree bindings are "forever", so it seems reasonable to at
+> least agree how it should be defined.
 
-> 
+Well that's why we're just using the existing interrupts-extended
+binding there :) It does not leave out the option for shared interrupts,
+it's just that drivers/base/power/wakeirq.c can't deal with them in a
+sane way or at least we'd have to add a flag to not enable/disable the
+wakeirq automatically.
+
+Regards,
+
+Tony
