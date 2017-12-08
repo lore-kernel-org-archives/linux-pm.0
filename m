@@ -1,81 +1,316 @@
 From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v4 12/12] cpufreq: dt: Reintroduce independent_clocks platform
- data
-Date: Fri,  8 Dec 2017 15:12:30 +0530
-Message-ID: <1512726150-7204-13-git-send-email-sricharan@codeaurora.org>
+Subject: [PATCH v4 11/12] cpufreq: Add module to register cpufreq on Krait CPUs
+Date: Fri,  8 Dec 2017 15:12:29 +0530
+Message-ID: <1512726150-7204-12-git-send-email-sricharan@codeaurora.org>
 References: <1512726150-7204-1-git-send-email-sricharan@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <1512726150-7204-1-git-send-email-sricharan@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: mturquette@baylibre.com, sboyd@codeaurora.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org
 Cc: sricharan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-The Platform data was removed earlier by,
-'commit eb96924acddc ("cpufreq: dt: Kill platform-data")'
-since there were no users at that time.
-Now this is required when the each of the cpu clocks
-can be scaled independently, which is the case
-for krait cores. So reintroduce it.
+From: Stephen Boyd <sboyd@codeaurora.org>
 
-Signed-off-by: Sricharan R <sricharan@codeaurora.org>
+Register a cpufreq-generic device whenever we detect that a
+"qcom,krait" compatible CPU is present in DT.
+
+Cc: <devicetree@vger.kernel.org>
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/cpufreq/cpufreq-dt.c | 7 ++++++-
- drivers/cpufreq/cpufreq-dt.h | 6 ++++++
- 2 files changed, 12 insertions(+), 1 deletion(-)
+ .../devicetree/bindings/arm/msm/qcom,pvs.txt       |  38 ++++
+ drivers/cpufreq/Kconfig.arm                        |   9 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/qcom-cpufreq.c                     | 204 +++++++++++++++++++++
+ 4 files changed, 252 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
+ create mode 100644 drivers/cpufreq/qcom-cpufreq.c
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 545946a..8f0e881 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -228,7 +228,10 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	}
- 
- 	if (fallback) {
--		cpumask_setall(policy->cpus);
-+		struct cpufreq_dt_platform_data *pd = cpufreq_get_driver_data();
+diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt b/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
+new file mode 100644
+index 0000000..e7cb104
+--- /dev/null
++++ b/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
+@@ -0,0 +1,38 @@
++Qualcomm Process Voltage Scaling Tables
 +
-+		if (!pd || !pd->independent_clocks)
-+			cpumask_setall(policy->cpus);
- 
- 		/*
- 		 * OPP tables are initialized only for policy->cpu, do it for
-@@ -380,6 +383,8 @@ static int dt_cpufreq_probe(struct platform_device *pdev)
- 	if (data && data->have_governor_per_policy)
- 		dt_cpufreq_driver.flags |= CPUFREQ_HAVE_GOVERNOR_PER_POLICY;
- 
-+	dt_cpufreq_driver.driver_data = data;
++The node name is required to be "qcom,pvs". There shall only be one
++such node present in the root of the tree.
 +
- 	ret = cpufreq_register_driver(&dt_cpufreq_driver);
- 	if (ret)
- 		dev_err(&pdev->dev, "failed register driver: %d\n", ret);
-diff --git a/drivers/cpufreq/cpufreq-dt.h b/drivers/cpufreq/cpufreq-dt.h
-index 54d774e..dcc03c6 100644
---- a/drivers/cpufreq/cpufreq-dt.h
-+++ b/drivers/cpufreq/cpufreq-dt.h
-@@ -13,6 +13,12 @@
- #include <linux/types.h>
++PROPERTIES
++
++- qcom,pvs-format-a or qcom,pvs-format-b:
++	Usage: required
++	Value type: <empty>
++	Definition: Indicates the format of qcom,speedX-pvsY-bin-vZ properties.
++		    If qcom,pvs-format-a is used the table is two columns
++		    (frequency and voltage in that order). If qcom,pvs-format-b 		    is used the table is three columns (frequency, voltage,
++		    and current in that order).
++
++- qcom,speedX-pvsY-bin-vZ:
++	Usage: required
++	Value type: <prop-encoded-array>
++	Definition: The PVS table corresponding to the speed bin X, pvs bin Y,
++		    and version Z.
++Example:
++
++	qcom,pvs {
++		qcom,pvs-format-a;
++		qcom,speed0-pvs0-bin-v0 =
++			<  384000000  950000 >,
++			<  486000000  975000 >,
++			<  594000000 1000000 >,
++			<  702000000 1025000 >,
++			<  810000000 1075000 >,
++			<  918000000 1100000 >,
++			< 1026000000 1125000 >,
++			< 1134000000 1175000 >,
++			< 1242000000 1200000 >,
++			< 1350000000 1225000 >,
++			< 1458000000 1237500 >,
++			< 1512000000 1250000 >;
++	};
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index bdce448..60f28e7 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -100,6 +100,15 @@ config ARM_OMAP2PLUS_CPUFREQ
+ 	depends on ARCH_OMAP2PLUS
+ 	default ARCH_OMAP2PLUS
  
- struct cpufreq_dt_platform_data {
-+	/*
-+	 * True when each CPU has its own clock to control its
-+	 * frequency, false when all CPUs are controlled by a single
-+	 * clock.
-+	 */
-+	bool independent_clocks;
- 	bool have_governor_per_policy;
- };
- 
++config ARM_QCOM_CPUFREQ
++	tristate "Qualcomm based"
++	depends on ARCH_QCOM
++	select PM_OPP
++	help
++	  This adds the CPUFreq driver for Qualcomm SoC based boards.
++
++	  If in doubt, say N.
++
+ config ARM_S3C_CPUFREQ
+ 	bool
+ 	help
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 812f9e0..1496464 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -62,6 +62,7 @@ obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mediatek-cpufreq.o
+ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+ obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
++obj-$(CONFIG_ARM_QCOM_CPUFREQ)		+= qcom-cpufreq.o
+ obj-$(CONFIG_ARM_S3C24XX_CPUFREQ)	+= s3c24xx-cpufreq.o
+ obj-$(CONFIG_ARM_S3C24XX_CPUFREQ_DEBUGFS) += s3c24xx-cpufreq-debugfs.o
+ obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
+diff --git a/drivers/cpufreq/qcom-cpufreq.c b/drivers/cpufreq/qcom-cpufreq.c
+new file mode 100644
+index 0000000..95ed2ba
+--- /dev/null
++++ b/drivers/cpufreq/qcom-cpufreq.c
+@@ -0,0 +1,204 @@
++/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#include <linux/cpu.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/pm_opp.h>
++#include <linux/slab.h>
++#include "cpufreq-dt.h"
++
++static void __init get_krait_bin_format_a(int *speed, int *pvs, int *pvs_ver)
++{
++	void __iomem *base;
++	u32 pte_efuse;
++
++	*speed = *pvs = *pvs_ver = 0;
++
++	base = ioremap(0x007000c0, 4);
++	if (!base) {
++		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
++		return;
++	}
++
++	pte_efuse = readl_relaxed(base);
++	iounmap(base);
++
++	*speed = pte_efuse & 0xf;
++	if (*speed == 0xf)
++		*speed = (pte_efuse >> 4) & 0xf;
++
++	if (*speed == 0xf) {
++		*speed = 0;
++		pr_warn("Speed bin: Defaulting to %d\n", *speed);
++	} else {
++		pr_info("Speed bin: %d\n", *speed);
++	}
++
++	*pvs = (pte_efuse >> 10) & 0x7;
++	if (*pvs == 0x7)
++		*pvs = (pte_efuse >> 13) & 0x7;
++
++	if (*pvs == 0x7) {
++		*pvs = 0;
++		pr_warn("PVS bin: Defaulting to %d\n", *pvs);
++	} else {
++		pr_info("PVS bin: %d\n", *pvs);
++	}
++}
++
++static void __init get_krait_bin_format_b(int *speed, int *pvs, int *pvs_ver)
++{
++	u32 pte_efuse, redundant_sel;
++	void __iomem *base;
++
++	*speed = 0;
++	*pvs = 0;
++	*pvs_ver = 0;
++
++	base = ioremap(0xfc4b80b0, 8);
++	if (!base) {
++		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
++		return;
++	}
++
++	pte_efuse = readl_relaxed(base);
++	redundant_sel = (pte_efuse >> 24) & 0x7;
++	*speed = pte_efuse & 0x7;
++	/* 4 bits of PVS are in efuse register bits 31, 8-6. */
++	*pvs = ((pte_efuse >> 28) & 0x8) | ((pte_efuse >> 6) & 0x7);
++	*pvs_ver = (pte_efuse >> 4) & 0x3;
++
++	switch (redundant_sel) {
++	case 1:
++		*speed = (pte_efuse >> 27) & 0xf;
++		break;
++	case 2:
++		*pvs = (pte_efuse >> 27) & 0xf;
++		break;
++	}
++
++	/* Check SPEED_BIN_BLOW_STATUS */
++	if (pte_efuse & BIT(3)) {
++		pr_info("Speed bin: %d\n", *speed);
++	} else {
++		pr_warn("Speed bin not set. Defaulting to 0!\n");
++		*speed = 0;
++	}
++
++	/* Check PVS_BLOW_STATUS */
++	pte_efuse = readl_relaxed(base + 0x4) & BIT(21);
++	if (pte_efuse) {
++		pr_info("PVS bin: %d\n", *pvs);
++	} else {
++		pr_warn("PVS bin not set. Defaulting to 0!\n");
++		*pvs = 0;
++	}
++
++	pr_info("PVS version: %d\n", *pvs_ver);
++	iounmap(base);
++}
++
++static int __init qcom_cpufreq_populate_opps(void)
++{
++	int len, rows, cols, i, k, speed, pvs, pvs_ver;
++	char table_name[] = "qcom,speedXX-pvsXX-bin-vXX";
++	struct device_node *np;
++	struct device *dev;
++	int cpu = 0;
++
++	np = of_find_node_by_name(NULL, "qcom,pvs");
++	if (!np)
++		return -ENODEV;
++
++	if (of_property_read_bool(np, "qcom,pvs-format-a")) {
++		get_krait_bin_format_a(&speed, &pvs, &pvs_ver);
++		cols = 2;
++	} else if (of_property_read_bool(np, "qcom,pvs-format-b")) {
++		get_krait_bin_format_b(&speed, &pvs, &pvs_ver);
++		cols = 3;
++	} else {
++		return -ENODEV;
++	}
++
++	snprintf(table_name, sizeof(table_name),
++		 "qcom,speed%d-pvs%d-bin-v%d", speed, pvs, pvs_ver);
++
++	if (!of_find_property(np, table_name, &len))
++		return -EINVAL;
++
++	len /= sizeof(u32);
++	if (len % cols || len == 0)
++		return -EINVAL;
++
++	rows = len / cols;
++
++	for (i = 0, k = 0; i < rows; i++) {
++		u32 freq, volt;
++
++		of_property_read_u32_index(np, table_name, k++, &freq);
++		of_property_read_u32_index(np, table_name, k++, &volt);
++		while (k % cols)
++			k++; /* Skip uA entries if present */
++		for (cpu = 0; cpu < num_possible_cpus(); cpu++) {
++			dev = get_cpu_device(cpu);
++			if (!dev)
++				return -ENODEV;
++			if (dev_pm_opp_add(dev, freq, volt))
++				pr_warn("failed to add OPP %u\n", freq);
++		}
++	}
++
++	return 0;
++}
++
++static int __init qcom_cpufreq_driver_init(void)
++{
++	struct cpufreq_dt_platform_data pdata = { .independent_clocks = true };
++	struct platform_device_info devinfo = {
++		.name = "cpufreq-dt",
++		.data = &pdata,
++		.size_data = sizeof(pdata),
++	};
++	struct device *cpu_dev;
++	struct device_node *np;
++	int ret;
++
++	cpu_dev = get_cpu_device(0);
++	if (!cpu_dev)
++		return -ENODEV;
++
++	np = of_node_get(cpu_dev->of_node);
++	if (!np)
++		return -ENOENT;
++
++	if (!of_device_is_compatible(np, "qcom,krait")) {
++		of_node_put(np);
++		return -ENODEV;
++	}
++	of_node_put(np);
++
++	ret = qcom_cpufreq_populate_opps();
++	if (ret)
++		return ret;
++
++	return PTR_ERR_OR_ZERO(platform_device_register_full(&devinfo));
++}
++module_init(qcom_cpufreq_driver_init);
++
++MODULE_DESCRIPTION("Qualcomm CPUfreq driver");
++MODULE_LICENSE("GPL v2");
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
