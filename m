@@ -1,141 +1,69 @@
 From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v4 06/12] clk: qcom: Add IPQ806X's HFPLLs
-Date: Fri,  8 Dec 2017 14:59:55 +0530
-Message-ID: <1512725401-4944-7-git-send-email-sricharan@codeaurora.org>
+Subject: [PATCH v4 12/12] cpufreq: dt: Reintroduce independent_clocks platform data
+Date: Fri,  8 Dec 2017 15:00:01 +0530
+Message-ID: <1512725401-4944-13-git-send-email-sricharan@codeaurora.org>
 References: <1512725401-4944-1-git-send-email-sricharan@codeaurora.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
 In-Reply-To: <1512725401-4944-1-git-send-email-sricharan@codeaurora.org>
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+Sender: linux-arm-msm-owner@vger.kernel.org
 To: mturquette@linaro.org, sboyd@codeaurora.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org
 Cc: sricharan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Stephen Boyd <sboyd@codeaurora.org>
+The Platform data was removed earlier by,
+'commit eb96924acddc ("cpufreq: dt: Kill platform-data")'
+since there were no users at that time.
+Now this is required when the each of the cpu clocks
+can be scaled independently, which is the case
+for krait cores. So reintroduce it.
 
-Describe the HFPLLs present on IPQ806X devices.
-
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Sricharan R <sricharan@codeaurora.org>
 ---
- drivers/clk/qcom/gcc-ipq806x.c | 82 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 82 insertions(+)
+ drivers/cpufreq/cpufreq-dt.c | 7 ++++++-
+ drivers/cpufreq/cpufreq-dt.h | 6 ++++++
+ 2 files changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/clk/qcom/gcc-ipq806x.c b/drivers/clk/qcom/gcc-ipq806x.c
-index 28eb200..d571cf8 100644
---- a/drivers/clk/qcom/gcc-ipq806x.c
-+++ b/drivers/clk/qcom/gcc-ipq806x.c
-@@ -30,6 +30,7 @@
- #include "clk-pll.h"
- #include "clk-rcg.h"
- #include "clk-branch.h"
-+#include "clk-hfpll.h"
- #include "reset.h"
+diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
+index 545946a..8f0e881 100644
+--- a/drivers/cpufreq/cpufreq-dt.c
++++ b/drivers/cpufreq/cpufreq-dt.c
+@@ -228,7 +228,10 @@ static int cpufreq_init(struct cpufreq_policy *policy)
+ 	}
  
- static struct clk_pll pll0 = {
-@@ -113,6 +114,84 @@
- 	},
+ 	if (fallback) {
+-		cpumask_setall(policy->cpus);
++		struct cpufreq_dt_platform_data *pd = cpufreq_get_driver_data();
++
++		if (!pd || !pd->independent_clocks)
++			cpumask_setall(policy->cpus);
+ 
+ 		/*
+ 		 * OPP tables are initialized only for policy->cpu, do it for
+@@ -380,6 +383,8 @@ static int dt_cpufreq_probe(struct platform_device *pdev)
+ 	if (data && data->have_governor_per_policy)
+ 		dt_cpufreq_driver.flags |= CPUFREQ_HAVE_GOVERNOR_PER_POLICY;
+ 
++	dt_cpufreq_driver.driver_data = data;
++
+ 	ret = cpufreq_register_driver(&dt_cpufreq_driver);
+ 	if (ret)
+ 		dev_err(&pdev->dev, "failed register driver: %d\n", ret);
+diff --git a/drivers/cpufreq/cpufreq-dt.h b/drivers/cpufreq/cpufreq-dt.h
+index 54d774e..dcc03c6 100644
+--- a/drivers/cpufreq/cpufreq-dt.h
++++ b/drivers/cpufreq/cpufreq-dt.h
+@@ -13,6 +13,12 @@
+ #include <linux/types.h>
+ 
+ struct cpufreq_dt_platform_data {
++	/*
++	 * True when each CPU has its own clock to control its
++	 * frequency, false when all CPUs are controlled by a single
++	 * clock.
++	 */
++	bool independent_clocks;
+ 	bool have_governor_per_policy;
  };
  
-+static struct hfpll_data hfpll0_data = {
-+	.mode_reg = 0x3200,
-+	.l_reg = 0x3208,
-+	.m_reg = 0x320c,
-+	.n_reg = 0x3210,
-+	.config_reg = 0x3204,
-+	.status_reg = 0x321c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3214,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
-+
-+static struct clk_hfpll hfpll0 = {
-+	.d = &hfpll0_data,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.parent_names = (const char *[]){ "pxo" },
-+		.num_parents = 1,
-+		.name = "hfpll0",
-+		.ops = &clk_ops_hfpll,
-+		.flags = CLK_IGNORE_UNUSED,
-+	},
-+	.lock = __SPIN_LOCK_UNLOCKED(hfpll0.lock),
-+};
-+
-+static struct hfpll_data hfpll1_data = {
-+	.mode_reg = 0x3240,
-+	.l_reg = 0x3248,
-+	.m_reg = 0x324c,
-+	.n_reg = 0x3250,
-+	.config_reg = 0x3244,
-+	.status_reg = 0x325c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3314,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
-+
-+static struct clk_hfpll hfpll1 = {
-+	.d = &hfpll1_data,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.parent_names = (const char *[]){ "pxo" },
-+		.num_parents = 1,
-+		.name = "hfpll1",
-+		.ops = &clk_ops_hfpll,
-+		.flags = CLK_IGNORE_UNUSED,
-+	},
-+	.lock = __SPIN_LOCK_UNLOCKED(hfpll1.lock),
-+};
-+
-+static struct hfpll_data hfpll_l2_data = {
-+	.mode_reg = 0x3300,
-+	.l_reg = 0x3308,
-+	.m_reg = 0x330c,
-+	.n_reg = 0x3310,
-+	.config_reg = 0x3304,
-+	.status_reg = 0x331c,
-+	.config_val = 0x7845c665,
-+	.droop_reg = 0x3314,
-+	.droop_val = 0x0108c000,
-+	.min_rate = 600000000UL,
-+	.max_rate = 1800000000UL,
-+};
-+
-+static struct clk_hfpll hfpll_l2 = {
-+	.d = &hfpll_l2_data,
-+	.clkr.hw.init = &(struct clk_init_data){
-+		.parent_names = (const char *[]){ "pxo" },
-+		.num_parents = 1,
-+		.name = "hfpll_l2",
-+		.ops = &clk_ops_hfpll,
-+		.flags = CLK_IGNORE_UNUSED,
-+	},
-+	.lock = __SPIN_LOCK_UNLOCKED(hfpll_l2.lock),
-+};
-+
- static struct clk_pll pll14 = {
- 	.l_reg = 0x31c4,
- 	.m_reg = 0x31c8,
-@@ -2800,6 +2879,9 @@ enum {
- 	[UBI32_CORE2_CLK_SRC] = &ubi32_core2_src_clk.clkr,
- 	[NSSTCM_CLK_SRC] = &nss_tcm_src.clkr,
- 	[NSSTCM_CLK] = &nss_tcm_clk.clkr,
-+	[PLL9] = &hfpll0.clkr,
-+	[PLL10] = &hfpll1.clkr,
-+	[PLL12] = &hfpll_l2.clkr,
- };
- 
- static const struct qcom_reset_map gcc_ipq806x_resets[] = {
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
