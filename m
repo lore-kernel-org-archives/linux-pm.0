@@ -1,101 +1,103 @@
-From: Jeffrey Hugo <jhugo@codeaurora.org>
-Subject: Re: [PATCH 0/2] acpi, x86: Add SPCR table support
-Date: Fri, 8 Dec 2017 08:31:53 -0700
-Message-ID: <bd727a15-c697-741f-864b-8b48b8e5e272@codeaurora.org>
-References: <20171207172912.17868-1-prarit@redhat.com>
- <20171208062925.64ov23u7oxmdfzyk@gmail.com>
- <f078ada7-1e30-41cc-28dc-077ed2a5986d@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <f078ada7-1e30-41cc-28dc-077ed2a5986d@redhat.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Prarit Bhargava <prarit@redhat.com>, Ingo Molnar <mingo@kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, x86@kernel.org, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Bhupesh Sharma <bhsharma@redhat.com>, linux-doc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lv Zheng <lv.zheng@intel.com>, linux-serial@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org
+From: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Subject: [PATCH v2 00/13] MIPS: add support for the Microsemi MIPS SoCs
+Date: Fri,  8 Dec 2017 16:46:05 +0100
+Message-ID: <20171208154618.20105-1-alexandre.belloni@free-electrons.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.free-electrons.com ([62.4.15.54]:46784 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754176AbdLHPrg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Dec 2017 10:47:36 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ralf Baechle <ralf@linux-mips.org>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Linus Walleij <linus.walleij@linaro.org>, linux-gpio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 
-On 12/8/2017 7:29 AM, Prarit Bhargava wrote:
-> 
-> 
-> On 12/08/2017 01:29 AM, Ingo Molnar wrote:
->>
->> * Prarit Bhargava <prarit@redhat.com> wrote:
->>
->>> The SPCR (Serial Port Console Redirection) Table provides information
->>> about the configuration of serial port.  This information can be used
->>> to configure the early console.
->>
->> s/about the configuration of serial port
->>   /about the configuration of the serial port
->>
->>> SPCR support was added for arm64 and is made available across all arches
->>> in this patchset.  The first patch adds a weak per-arch configuration function
->>> and moves the SPCR code into ACPI.  The second patch adds support to x86.
->>>
->>> The existing behaviour on arm64 is maintained.  If the SPCR exists the
->>> earlycon and console are automatically configured.
->>
->> s/arm64
->>   /ARM64
->>
->> which is easier to read and it's also the prevalent spelling:
->>
->>   triton:~/tip> for N in $(git grep -ih arm64 arch/arm64/ | sed 's/[[:punct:]]/ /g'); do echo $N | grep -iw arm64; done | sort | uniq -c
->>       412 arm64
->>         1 Arm64
->>       854 ARM64
->>
->>> The existing default behaviour on x86 is also maintained.  If no console or
->>> earlycon parameter is defined and the SPCR exists , the serial port is not
->>> configured.  If the earlycon parameter is used both the early console
->>> and the console are configured using the data from the SPCR.
->>
->> s/exists , the
->>   /exists, the
->>
->> But, the logic to not use the SPCR looks confusing to me.
->>
->> The SPCR is only present if the user has explicitly configured a serial console
->> for that machine, either in the firmware, or remotely via IPMI, correct? I.e. SPCR
->> will not be spuriously present by default on systems that have a serial console
->> but the user never expressed any interest for them, right?
-> 
-> If I disable "Serial Port Console Debug" in my BIOS I still see the SPCR configured:
-> 
-> [root@prarit-lab ~]# dmesg | grep SPCR
-> [    0.000000] ACPI: SPCR 0x0000000069031000 000050 (v01
-> 00000000      00000000)
-> 
-> AFAICT the SPCR is always enabled on some systems.
+Hi,
 
-"Serial Port Console Debug" sounds like DBG2 to me, although I am unsure 
-of the specific platform you are referencing.
+This patch series adds initial support for the Microsemi MIPS SoCs. It
+is currently focusing on the Microsemi Ocelot (VSC7513, VSC7514).
 
-> 
->>
->> If so then we should pick up that serial console configuration and activate it,
->> regardless of any kernel boot options!
-> 
-> I'm worried about someone who doesn't want a console on ttyS0 suddenly ending up
-> with one.  The SPCR could contain incorrect data, etc.
-> 
-> I originally wanted this on by default, but the chances of breaking someone's
-> setup seems significant doesn't it?  Maybe I'm being too cautious.  Anyone else
-> want to weigh in?  I'm not ignoring your idea Ingo, I'm just worried about being
-> yelled at by a user :) because I broke their default console setup.
-> 
+It adds support for the IRQ controller, pinmux and gpio controller and
+reset control.
 
-SPCR is always present on QDF2400 (ARM64 platform).  Firmware will 
-automatically update the SPCR table to point to the correct console (IE 
-Serial-over-LAN or SOL if configured via IPMI).  Unless a user 
-specifically chooses to override the SPCR via "console=", we expect that 
-a console will be present based on the data in SPCR.
+This produces a kernel that can boot to the console.
+
+This is a single series for reference but it can also be taken
+separately by each maintainer as each drivers are independant.
+
+Changes in v2:
+ - removed the wildcard in MAINAINERS
+ - corrected the Cc list
+ - added proper documentation for both syscons
+ - removed the mscc,cpucontrol property
+ - updated the ranges property in the ocelot dtsi
+
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: devicetree@vger.kernel.org
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jason Cooper <jason@lakedaemon.net>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-gpio@vger.kernel.org
+Cc: Sebastian Reichel <sre@kernel.org>
+Cc: linux-pm@vger.kernel.org
+
+
+Alexandre Belloni (13):
+  dt-bindings: Add vendor prefix for Microsemi Corporation
+  dt-bindings: interrupt-controller: Add binding for the Microsemi
+    Ocelot interrupt controller
+  irqchip: Add a driver for the Microsemi Ocelot controller
+  dt-bindings: pinctrl: Add bindings for Microsemi Ocelot
+  pinctrl: Add Microsemi Ocelot SoC driver
+  dt-bindings: mips: Add bindings for Microsemi SoCs
+  dt-bindings: power: reset: Document ocelot-reset binding
+  power: reset: Add a driver for the Microsemi Ocelot reset
+  MIPS: mscc: Add initial support for Microsemi MIPS SoCs
+  MIPS: mscc: add ocelot dtsi
+  MIPS: mscc: add ocelot PCB123 device tree
+  MIPS: defconfigs: add a defconfig for Microsemi SoCs
+  MAINTAINERS: Add entry for Microsemi MIPS SoCs
+
+ .../interrupt-controller/mscc,ocelot-icpu-intr.txt |  22 +
+ Documentation/devicetree/bindings/mips/mscc.txt    |  46 ++
+ .../bindings/pinctrl/mscc,ocelot-pinctrl.txt       |  39 ++
+ .../bindings/power/reset/ocelot-reset.txt          |  17 +
+ .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+ MAINTAINERS                                        |   7 +
+ arch/mips/Kbuild.platforms                         |   1 +
+ arch/mips/Kconfig                                  |  24 +
+ arch/mips/boot/dts/Makefile                        |   1 +
+ arch/mips/boot/dts/mscc/Makefile                   |   6 +
+ arch/mips/boot/dts/mscc/ocelot.dtsi                | 115 +++++
+ arch/mips/boot/dts/mscc/ocelot_pcb123.dts          |  27 ++
+ arch/mips/configs/mscc_defconfig                   |  84 ++++
+ arch/mips/mscc/Makefile                            |  11 +
+ arch/mips/mscc/Platform                            |  12 +
+ arch/mips/mscc/setup.c                             | 106 +++++
+ drivers/irqchip/Kconfig                            |   5 +
+ drivers/irqchip/Makefile                           |   1 +
+ drivers/irqchip/irq-mscc-ocelot.c                  | 109 +++++
+ drivers/pinctrl/Kconfig                            |  10 +
+ drivers/pinctrl/Makefile                           |   1 +
+ drivers/pinctrl/pinctrl-ocelot.c                   | 505 +++++++++++++++++++++
+ drivers/power/reset/Kconfig                        |   7 +
+ drivers/power/reset/Makefile                       |   1 +
+ drivers/power/reset/ocelot-reset.c                 |  86 ++++
+ 25 files changed, 1244 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interrupt-controller/mscc,ocelot-icpu-intr.txt
+ create mode 100644 Documentation/devicetree/bindings/mips/mscc.txt
+ create mode 100644 Documentation/devicetree/bindings/pinctrl/mscc,ocelot-pinctrl.txt
+ create mode 100644 Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
+ create mode 100644 arch/mips/boot/dts/mscc/Makefile
+ create mode 100644 arch/mips/boot/dts/mscc/ocelot.dtsi
+ create mode 100644 arch/mips/boot/dts/mscc/ocelot_pcb123.dts
+ create mode 100644 arch/mips/configs/mscc_defconfig
+ create mode 100644 arch/mips/mscc/Makefile
+ create mode 100644 arch/mips/mscc/Platform
+ create mode 100644 arch/mips/mscc/setup.c
+ create mode 100644 drivers/irqchip/irq-mscc-ocelot.c
+ create mode 100644 drivers/pinctrl/pinctrl-ocelot.c
+ create mode 100644 drivers/power/reset/ocelot-reset.c
 
 -- 
-Jeffrey Hugo
-Qualcomm Datacenter Technologies as an affiliate of Qualcomm 
-Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the
-Code Aurora Forum, a Linux Foundation Collaborative Project.
+2.15.1
