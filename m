@@ -1,51 +1,57 @@
-From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V3 2/7] PCI: Export pci_find_host_bridge()
-Date: Fri, 8 Dec 2017 08:38:52 -0600
-Message-ID: <20171208143852.GA2386@bhelgaas-glaptop.roam.corp.google.com>
-References: <1512120007-28088-1-git-send-email-mmaddireddy@nvidia.com>
- <1512120007-28088-3-git-send-email-mmaddireddy@nvidia.com>
- <20171205200402.GF23510@bhelgaas-glaptop.roam.corp.google.com>
- <aebabb88-d894-2b1f-d3e8-63a2acad9665@nvidia.com>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Subject: Re: [PATCH 3/9] power: remove unneeded kallsyms include
+Date: Fri, 8 Dec 2017 23:48:44 +0900
+Message-ID: <20171208144844.GA489@tigerII.localdomain>
+References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
+ <20171208025616.16267-4-sergey.senozhatsky@gmail.com>
+ <CAJZ5v0g1CBhKTYi=CzYPcBXdH=yZ3iJcKzZ6TaftNWoq+X5wnQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f193.google.com ([209.85.192.193]:46880 "EHLO
+        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753380AbdLHOss (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Dec 2017 09:48:48 -0500
 Content-Disposition: inline
-In-Reply-To: <aebabb88-d894-2b1f-d3e8-63a2acad9665-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: cyndis-/1wQRMveznE@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <CAJZ5v0g1CBhKTYi=CzYPcBXdH=yZ3iJcKzZ6TaftNWoq+X5wnQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Memory Management List <linux-mm@kvack.org>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 
-On Fri, Dec 08, 2017 at 02:07:54PM +0530, Manikanta Maddireddy wrote:
+On (12/08/17 15:01), Rafael J. Wysocki wrote:
+> On Fri, Dec 8, 2017 at 3:56 AM, Sergey Senozhatsky
+> <sergey.senozhatsky.work@gmail.com> wrote:
+> > The file was converted from print_fn_descriptor_symbol()
+> > to %pF some time ago (c80cfb0406c01bb "vsprintf: use new
+> > vsprintf symbolic function pointer format"). kallsyms does
+> > not seem to be needed anymore.
+> >
+> > Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> > Cc: Rafael Wysocki <rjw@rjwysocki.net>
+> > Cc: Len Brown <len.brown@intel.com>
+> > ---
+> >  drivers/base/power/main.c | 1 -
+> >  1 file changed, 1 deletion(-)
+> >
+> > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> > index 5bc2cf1f812c..e2539d8423f7 100644
+> > --- a/drivers/base/power/main.c
+> > +++ b/drivers/base/power/main.c
+> > @@ -18,7 +18,6 @@
+> >   */
+> >
+> >  #include <linux/device.h>
+> > -#include <linux/kallsyms.h>
+> >  #include <linux/export.h>
+> >  #include <linux/mutex.h>
+> >  #include <linux/pm.h>
+> > --
 > 
-> 
-> On 06-Dec-17 1:34 AM, Bjorn Helgaas wrote:
-> > On Fri, Dec 01, 2017 at 02:50:02PM +0530, Manikanta Maddireddy wrote:
-> >> PCI subsystem pass pci_bus pointer to pci_ops callback functions, Tegra
-> > 
-> > s/PCI subsystem pass/The PCI subsystem passes a/
-> > s/, Tegra/.  The Tegra/
-> > 
-> >> host driver use pci_find_host_bridge() to get pci_host_bridge from pci_bus.
-> > 
-> > s/use/uses/
-> > 
-> >> Export pci_find_host_bridge() to allow Tegra PCIe driver to be compiled as
-> >> loadable kernel module.
-> > 
-> > s/allow Tegra/allow the Tegra/
-> > s/loadable/a loadable/
-> > 
-> > But why do you need pci_find_host_bridge() at all?  Most drivers use
-> > the pci_bus.sysdata pointer for this purpose, e.g., see db271747a04d
-> > ("PCI: mediatek: Use bus->sysdata to get host private data")
-> 
-> I will send a patch to use bus->sysdata instead of pci_find_host_bridge().
+> Do you want me to apply this or do you want to route it differently?
 
-That would be excellent!  Thank you!
+Hello Rafael,
 
-Bjorn
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+don't mind if you'll pick it up.
+
+	-ss
