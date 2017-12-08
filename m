@@ -1,170 +1,247 @@
-From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v4 10/12] clk: qcom: Add safe switch hook for krait mux clocks
-Date: Fri,  8 Dec 2017 15:12:28 +0530
-Message-ID: <1512726150-7204-11-git-send-email-sricharan@codeaurora.org>
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: [PATCH v4 05/12] clk: qcom: Add MSM8960/APQ8064's HFPLLs
+Date: Fri,  8 Dec 2017 15:12:23 +0530
+Message-ID: <1512726150-7204-6-git-send-email-sricharan@codeaurora.org>
 References: <1512726150-7204-1-git-send-email-sricharan@codeaurora.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1512726150-7204-1-git-send-email-sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1512726150-7204-1-git-send-email-sricharan@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: mturquette@baylibre.com, sboyd@codeaurora.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org
+Cc: sricharan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
-When the Hfplls are reprogrammed during the rate change,
-the primary muxes which are sourced from the same hfpll
-for higher frequencies, needs to be switched to the 'safe
-secondary mux' as the parent for that small window. This
-is done by registering a clk notifier for the muxes and
-switching to the safe parent in the PRE_RATE_CHANGE notifier
-and back to the original parent in the POST_RATE_CHANGE notifier.
+From: Stephen Boyd <sboyd@codeaurora.org>
 
-Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Describe the HFPLLs present on MSM8960 and APQ8064 devices.
+
+Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- drivers/clk/qcom/clk-krait.c |  2 ++
- drivers/clk/qcom/clk-krait.h |  3 +++
- drivers/clk/qcom/krait-cc.c  | 56 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 61 insertions(+)
+ drivers/clk/qcom/gcc-msm8960.c               | 172 +++++++++++++++++++++++++++
+ include/dt-bindings/clock/qcom,gcc-msm8960.h |   2 +
+ 2 files changed, 174 insertions(+)
 
-diff --git a/drivers/clk/qcom/clk-krait.c b/drivers/clk/qcom/clk-krait.c
-index 6099307..1627a6e 100644
---- a/drivers/clk/qcom/clk-krait.c
-+++ b/drivers/clk/qcom/clk-krait.c
-@@ -60,6 +60,8 @@ static int krait_mux_set_parent(struct clk_hw *hw, u8 index)
- 	if (__clk_is_enabled(hw->clk))
- 		__krait_mux_set_sel(mux, sel);
+diff --git a/drivers/clk/qcom/gcc-msm8960.c b/drivers/clk/qcom/gcc-msm8960.c
+index eb551c7..809f16a 100644
+--- a/drivers/clk/qcom/gcc-msm8960.c
++++ b/drivers/clk/qcom/gcc-msm8960.c
+@@ -30,6 +30,7 @@
+ #include "clk-pll.h"
+ #include "clk-rcg.h"
+ #include "clk-branch.h"
++#include "clk-hfpll.h"
+ #include "reset.h"
  
-+	mux->reparent = true;
-+
- 	return 0;
- }
- 
-diff --git a/drivers/clk/qcom/clk-krait.h b/drivers/clk/qcom/clk-krait.h
-index af89782..f9e1279 100644
---- a/drivers/clk/qcom/clk-krait.h
-+++ b/drivers/clk/qcom/clk-krait.h
-@@ -23,6 +23,9 @@ struct krait_mux_clk {
- 	u32		shift;
- 	u32		en_mask;
- 	bool		lpl;
-+	u8		safe_sel;
-+	u8		old_index;
-+	bool		reparent;
- 
- 	struct clk_hw	hw;
- 	struct notifier_block   clk_nb;
-diff --git a/drivers/clk/qcom/krait-cc.c b/drivers/clk/qcom/krait-cc.c
-index f5ffb1a..ec899ad 100644
---- a/drivers/clk/qcom/krait-cc.c
-+++ b/drivers/clk/qcom/krait-cc.c
-@@ -35,6 +35,49 @@
- 	0,
+ static struct clk_pll pll3 = {
+@@ -86,6 +87,164 @@
+ 	},
  };
  
-+/*
-+ * Notifier function for switching the muxes to safe parent
-+ * while the hfpll is getting reprogrammed.
-+ */
-+static int krait_notifier_cb(struct notifier_block *nb,
-+			     unsigned long event,
-+			     void *data)
-+{
-+	int ret = 0;
-+	struct krait_mux_clk *mux = container_of(nb, struct krait_mux_clk,
-+						 clk_nb);
-+	/* Switch to safe parent */
-+	if (event == PRE_RATE_CHANGE) {
-+		mux->old_index = krait_mux_clk_ops.get_parent(&mux->hw);
-+		ret = krait_mux_clk_ops.set_parent(&mux->hw, mux->safe_sel);
-+		mux->reparent = false;
-+	/*
-+	 * By the time POST_RATE_CHANGE notifier is called,
-+	 * clk framework itself would have changed the parent for the new rate.
-+	 * Only otherwise, put back to the old parent.
-+	 */
-+	} else if (event == POST_RATE_CHANGE) {
-+		if (!mux->reparent)
-+			ret = krait_mux_clk_ops.set_parent(&mux->hw,
-+							   mux->old_index);
++static struct hfpll_data hfpll0_data = {
++	.mode_reg = 0x3200,
++	.l_reg = 0x3208,
++	.m_reg = 0x320c,
++	.n_reg = 0x3210,
++	.config_reg = 0x3204,
++	.status_reg = 0x321c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3214,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll0 = {
++	.d = &hfpll0_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll0",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll0.lock),
++};
++
++static struct hfpll_data hfpll1_8064_data = {
++	.mode_reg = 0x3240,
++	.l_reg = 0x3248,
++	.m_reg = 0x324c,
++	.n_reg = 0x3250,
++	.config_reg = 0x3244,
++	.status_reg = 0x325c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3254,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct hfpll_data hfpll1_data = {
++	.mode_reg = 0x3300,
++	.l_reg = 0x3308,
++	.m_reg = 0x330c,
++	.n_reg = 0x3310,
++	.config_reg = 0x3304,
++	.status_reg = 0x331c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3314,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll1 = {
++	.d = &hfpll1_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll1",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll1.lock),
++};
++
++static struct hfpll_data hfpll2_data = {
++	.mode_reg = 0x3280,
++	.l_reg = 0x3288,
++	.m_reg = 0x328c,
++	.n_reg = 0x3290,
++	.config_reg = 0x3284,
++	.status_reg = 0x329c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3294,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll2 = {
++	.d = &hfpll2_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll2",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll2.lock),
++};
++
++static struct hfpll_data hfpll3_data = {
++	.mode_reg = 0x32c0,
++	.l_reg = 0x32c8,
++	.m_reg = 0x32cc,
++	.n_reg = 0x32d0,
++	.config_reg = 0x32c4,
++	.status_reg = 0x32dc,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x32d4,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll3 = {
++	.d = &hfpll3_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll3",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll3.lock),
++};
++
++static struct hfpll_data hfpll_l2_8064_data = {
++	.mode_reg = 0x3300,
++	.l_reg = 0x3308,
++	.m_reg = 0x330c,
++	.n_reg = 0x3310,
++	.config_reg = 0x3304,
++	.status_reg = 0x331c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3314,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct hfpll_data hfpll_l2_data = {
++	.mode_reg = 0x3400,
++	.l_reg = 0x3408,
++	.m_reg = 0x340c,
++	.n_reg = 0x3410,
++	.config_reg = 0x3404,
++	.status_reg = 0x341c,
++	.config_val = 0x7845c665,
++	.droop_reg = 0x3414,
++	.droop_val = 0x0108c000,
++	.min_rate = 600000000UL,
++	.max_rate = 1800000000UL,
++};
++
++static struct clk_hfpll hfpll_l2 = {
++	.d = &hfpll_l2_data,
++	.clkr.hw.init = &(struct clk_init_data){
++		.parent_names = (const char *[]){ "pxo" },
++		.num_parents = 1,
++		.name = "hfpll_l2",
++		.ops = &clk_ops_hfpll,
++		.flags = CLK_IGNORE_UNUSED,
++	},
++	.lock = __SPIN_LOCK_UNLOCKED(hfpll_l2.lock),
++};
++
+ static struct clk_pll pll14 = {
+ 	.l_reg = 0x31c4,
+ 	.m_reg = 0x31c8,
+@@ -3112,6 +3271,9 @@ enum {
+ 	[PMIC_ARB1_H_CLK] = &pmic_arb1_h_clk.clkr,
+ 	[PMIC_SSBI2_CLK] = &pmic_ssbi2_clk.clkr,
+ 	[RPM_MSG_RAM_H_CLK] = &rpm_msg_ram_h_clk.clkr,
++	[PLL9] = &hfpll0.clkr,
++	[PLL10] = &hfpll1.clkr,
++	[PLL12] = &hfpll_l2.clkr,
+ };
+ 
+ static const struct qcom_reset_map gcc_msm8960_resets[] = {
+@@ -3323,6 +3485,11 @@ enum {
+ 	[PMIC_ARB1_H_CLK] = &pmic_arb1_h_clk.clkr,
+ 	[PMIC_SSBI2_CLK] = &pmic_ssbi2_clk.clkr,
+ 	[RPM_MSG_RAM_H_CLK] = &rpm_msg_ram_h_clk.clkr,
++	[PLL9] = &hfpll0.clkr,
++	[PLL10] = &hfpll1.clkr,
++	[PLL12] = &hfpll_l2.clkr,
++	[PLL16] = &hfpll2.clkr,
++	[PLL17] = &hfpll3.clkr,
+ };
+ 
+ static const struct qcom_reset_map gcc_apq8064_resets[] = {
+@@ -3482,6 +3649,11 @@ static int gcc_msm8960_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
+ 
++	if (match->data == &gcc_apq8064_desc) {
++		hfpll1.d = &hfpll1_8064_data;
++		hfpll_l2.d = &hfpll_l2_8064_data;
 +	}
 +
-+	return notifier_from_errno(ret);
-+}
-+
-+static int krait_notifier_register(struct device *dev, struct clk *clk,
-+				   struct krait_mux_clk *mux)
-+{
-+	int ret = 0;
-+
-+	mux->clk_nb.notifier_call = krait_notifier_cb;
-+	ret = clk_notifier_register(clk, &mux->clk_nb);
-+	if (ret)
-+		dev_err(dev, "failed to register clock notifier: %d\n", ret);
-+
-+	return ret;
-+}
-+
- static int
- krait_add_div(struct device *dev, int id, const char *s, unsigned int offset)
- {
-@@ -79,6 +122,7 @@
- krait_add_sec_mux(struct device *dev, int id, const char *s,
- 		  unsigned int offset, bool unique_aux)
- {
-+	int ret;
- 	struct krait_mux_clk *mux;
- 	static const char *sec_mux_list[] = {
- 		"acpu_aux",
-@@ -102,6 +146,7 @@
- 	mux->shift = 2;
- 	mux->parent_map = sec_mux_map;
- 	mux->hw.init = &init;
-+	mux->safe_sel = 0;
+ 	tsens = platform_device_register_data(&pdev->dev, "qcom-tsens", -1,
+ 					      NULL, 0);
+ 	if (IS_ERR(tsens))
+diff --git a/include/dt-bindings/clock/qcom,gcc-msm8960.h b/include/dt-bindings/clock/qcom,gcc-msm8960.h
+index 7d20eed..e02742f 100644
+--- a/include/dt-bindings/clock/qcom,gcc-msm8960.h
++++ b/include/dt-bindings/clock/qcom,gcc-msm8960.h
+@@ -319,5 +319,7 @@
+ #define CE3_SRC					303
+ #define CE3_CORE_CLK				304
+ #define CE3_H_CLK				305
++#define PLL16					306
++#define PLL17					307
  
- 	init.name = kasprintf(GFP_KERNEL, "krait%s_sec_mux", s);
- 	if (!init.name)
-@@ -117,6 +162,11 @@
- 
- 	clk = devm_clk_register(dev, &mux->hw);
- 
-+	ret = krait_notifier_register(dev, clk, mux);
-+	if (ret)
-+		goto unique_aux;
-+
-+unique_aux:
- 	if (unique_aux)
- 		kfree(sec_mux_list[0]);
- err_aux:
-@@ -128,6 +178,7 @@
- krait_add_pri_mux(struct device *dev, int id, const char *s,
- 		  unsigned int offset)
- {
-+	int ret;
- 	struct krait_mux_clk *mux;
- 	const char *p_names[3];
- 	struct clk_init_data init = {
-@@ -148,6 +199,7 @@
- 	mux->lpl = id >= 0;
- 	mux->parent_map = pri_mux_map;
- 	mux->hw.init = &init;
-+	mux->safe_sel = 2;
- 
- 	init.name = kasprintf(GFP_KERNEL, "krait%s_pri_mux", s);
- 	if (!init.name)
-@@ -173,6 +225,10 @@
- 
- 	clk = devm_clk_register(dev, &mux->hw);
- 
-+	ret = krait_notifier_register(dev, clk, mux);
-+	if (ret)
-+		goto err_p3;
-+err_p3:
- 	kfree(p_names[2]);
- err_p2:
- 	kfree(p_names[1]);
+ #endif
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
