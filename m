@@ -1,346 +1,148 @@
-From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V4 7/7] PCI: tegra: Add power management support
-Date: Fri, 8 Dec 2017 14:28:13 +0530
-Message-ID: <1512723493-865-8-git-send-email-mmaddireddy@nvidia.com>
-References: <1512723493-865-1-git-send-email-mmaddireddy@nvidia.com>
-Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1512723493-865-1-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: cyndis-/1wQRMveznE@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org
-Cc: jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [PATCH v4 00/12] Krait clocks + Krait CPUfreq
+Date: Fri,  8 Dec 2017 14:59:49 +0530
+Message-ID: <1512725401-4944-1-git-send-email-sricharan@codeaurora.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Cc: sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Tegra186 powergate driver is implemented as power domain driver, power
-partition ungate/gate are registered as power_on/power_off callback
-functions. There are no direct functions to power gate/ungate host
-controller in Tegra186. Host controller driver should add "power-domains"
-property in device tree and implement runtime suspend and resume
-callback functons. Power gate and ungate is taken care by power domain
-driver when host controller driver calls pm_runtime_put_sync and
-pm_runtime_get_sync respectively.
+Mostly a resend of the v3 posted by Stephen quite some time back [1]
+except for few changes.
+  Based on reading some feedback from list,
+  * Dropped the patch "clk: Add safe switch hook" from v3 [2].
+    Now this is taken care by patch#10 in this series only for Krait.
+  * Dropped the path "clk: Avoid sending high rates to downstream
+		      clocks during set_rate" from v3 [3].
+  * Rebased on top of clk-next.
+  * Dropped the DT update from the series. Will send seperately
+  * Now with cpufreq-dt+opp supporting voltage scaling, registering the
+    krait cpu supplies in DT should be sufficient. But one issue is,
+    the qcom-cpufreq drivers reads the efuse and based on that registers
+    the opp data and then registers the cpufreq-dt device. So when
+    cpufreq-dt driver probes and registers the regulator to the OPP framework,
+    it expects that the opp data for the device should not be registered before
+    the regulator. Will send a RFC patch removing that check, to find out the
+    right way of doing it.
 
-Register suspend_noirq & resume_noirq callback functions to allow PCIe to
-come up after resume from RAM. Both runtime and noirq pm ops share same
-callback functions.
+These patches provide cpufreq scaling on devices with Krait CPUs.
+In Krait CPU designs there's one PLL and two muxes per CPU, allowing
+us to switch CPU frequencies independently.
 
-Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
----
-V2:
-* no change in this patch
-V3:
-* no change in this patch
-V4:
-* no change in this patch
+				 secondary
+	 +-----+                    +
+	 | QSB |-------+------------|\
+	 +-----+       |            | |-+
+		       |    +-------|/  |
+		       |    |       +   |
+	 +-----+       |    |           |
+	 | PLL |----+-------+           |   primary
+	 +-----+    |  |                |     +
+		    |  |                +-----|\       +------+
+	 +-------+  |  |                      | \      |      |
+	 | HFPLL |----------+-----------------|  |-----| CPU0 |
+	 +-------+  |  |    |                 |  |     |      |
+		    |  |    | +-----+         | /      +------+
+		    |  |    +-| / 2 |---------|/
+		    |  |      +-----+         +
+		    |  |         secondary
+		    |  |            +
+		    |  +------------|\
+		    |               | |-+
+		    +---------------|/  |   primary
+				    +   |     +
+					+-----|\       +------+
+	 +-------+                            | \      |      |
+	 | HFPLL |----------------------------|  |-----| CPU1 |
+	 +-------+          |                 |  |     |      |
+			    | +-----+         | /      +------+
+			    +-| / 2 |---------|/
+			      +-----+         +
 
- drivers/pci/host/pci-tegra.c | 174 ++++++++++++++++++++++++++-----------------
- 1 file changed, 106 insertions(+), 68 deletions(-)
+To support this in the common clock framework we model the muxes,
+dividers, and PLLs as different clocks. CPUfreq only interacts
+with the primary mux (farthest right in the diagram). When CPUfreq
+sets a rate, the mux code finds the best parent that can provide the rate.
+Due to the design, QSB and the top PLL are always a fixed rate and thus
+only support one frequency each. These sources provide the lowest
+frequencies for the CPUs. The HFPLLs are where we can make the CPU go
+faster (GHz range). Sometimes we need to run the HFPLL twice as
+fast and divide it by two to get a particular frequency.
 
-diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-index 1972081322c4..534cb4fccbbc 100644
---- a/drivers/pci/host/pci-tegra.c
-+++ b/drivers/pci/host/pci-tegra.c
-@@ -1385,31 +1385,25 @@ static int tegra_pcie_get_resources(struct tegra_pcie *pcie)
- 		}
- 	}
- 
--	err = tegra_pcie_power_on(pcie);
--	if (err) {
--		dev_err(dev, "failed to power up: %d\n", err);
--		goto phys_put;
--	}
--
- 	pads = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pads");
- 	pcie->pads = devm_ioremap_resource(dev, pads);
- 	if (IS_ERR(pcie->pads)) {
- 		err = PTR_ERR(pcie->pads);
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	afi = platform_get_resource_byname(pdev, IORESOURCE_MEM, "afi");
- 	pcie->afi = devm_ioremap_resource(dev, afi);
- 	if (IS_ERR(pcie->afi)) {
- 		err = PTR_ERR(pcie->afi);
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	/* request configuration space, but remap later, on demand */
- 	res = platform_get_resource_byname(pdev, IORESOURCE_MEM, "cs");
- 	if (!res) {
- 		err = -EADDRNOTAVAIL;
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	axi_addr = pcie->soc->use_4k_conf_space ?
-@@ -1417,21 +1411,21 @@ static int tegra_pcie_get_resources(struct tegra_pcie *pcie)
- 	pcie->cs = devm_request_mem_region(dev, axi_addr, SZ_4K, res->name);
- 	if (!pcie->cs) {
- 		err = -EADDRNOTAVAIL;
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	pcie->cfg_va_base = devm_ioremap(dev, pcie->cs->start, SZ_4K);
- 	if (!pcie->cfg_va_base) {
- 		dev_err(pcie->dev, "failed to ioremap config space\n");
- 		err = -EADDRNOTAVAIL;
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	/* request interrupt */
- 	err = platform_get_irq_byname(pdev, "intr");
- 	if (err < 0) {
- 		dev_err(dev, "failed to get IRQ: %d\n", err);
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	pcie->irq = err;
-@@ -1439,13 +1433,11 @@ static int tegra_pcie_get_resources(struct tegra_pcie *pcie)
- 	err = request_irq(pcie->irq, tegra_pcie_isr, IRQF_SHARED, "PCIE", pcie);
- 	if (err) {
- 		dev_err(dev, "failed to register IRQ: %d\n", err);
--		goto poweroff;
-+		goto phys_put;
- 	}
- 
- 	return 0;
- 
--poweroff:
--	tegra_pcie_power_off(pcie);
- phys_put:
- 	if (soc->program_uphy)
- 		tegra_pcie_phys_put(pcie);
-@@ -1459,8 +1451,6 @@ static int tegra_pcie_put_resources(struct tegra_pcie *pcie)
- 	if (pcie->irq > 0)
- 		free_irq(pcie->irq, pcie);
- 
--	tegra_pcie_power_off(pcie);
--
- 	if (soc->program_uphy)
- 		tegra_pcie_phys_put(pcie);
- 
-@@ -1638,37 +1628,41 @@ static int tegra_pcie_enable_msi(struct tegra_pcie *pcie)
- 	int err;
- 	u32 reg;
- 
--	mutex_init(&msi->lock);
-+	if (!msi->phys) {
-+		mutex_init(&msi->lock);
- 
--	msi->chip.dev = dev;
--	msi->chip.setup_irq = tegra_msi_setup_irq;
--	msi->chip.teardown_irq = tegra_msi_teardown_irq;
-+		msi->chip.dev = dev;
-+		msi->chip.setup_irq = tegra_msi_setup_irq;
-+		msi->chip.teardown_irq = tegra_msi_teardown_irq;
- 
--	msi->domain = irq_domain_add_linear(dev->of_node, INT_PCI_MSI_NR,
--					    &msi_domain_ops, &msi->chip);
--	if (!msi->domain) {
--		dev_err(dev, "failed to create IRQ domain\n");
--		return -ENOMEM;
--	}
-+		msi->domain = irq_domain_add_linear(dev->of_node,
-+						    INT_PCI_MSI_NR,
-+						    &msi_domain_ops,
-+						    &msi->chip);
-+		if (!msi->domain) {
-+			dev_err(dev, "failed to create IRQ domain\n");
-+			return -ENOMEM;
-+		}
- 
--	err = platform_get_irq_byname(pdev, "msi");
--	if (err < 0) {
--		dev_err(dev, "failed to get IRQ: %d\n", err);
--		goto err;
--	}
-+		err = platform_get_irq_byname(pdev, "msi");
-+		if (err < 0) {
-+			dev_err(dev, "failed to get IRQ: %d\n", err);
-+			goto err;
-+		}
- 
--	msi->irq = err;
-+		msi->irq = err;
- 
--	err = request_irq(msi->irq, tegra_pcie_msi_irq, IRQF_NO_THREAD,
--			  tegra_msi_irq_chip.name, pcie);
--	if (err < 0) {
--		dev_err(dev, "failed to request IRQ: %d\n", err);
--		goto err;
--	}
-+		err = request_irq(msi->irq, tegra_pcie_msi_irq, IRQF_NO_THREAD,
-+				  tegra_msi_irq_chip.name, pcie);
-+		if (err < 0) {
-+			dev_err(dev, "failed to request IRQ: %d\n", err);
-+			goto err;
-+		}
- 
--	/* setup AFI/FPCI range */
--	msi->pages = __get_free_pages(GFP_KERNEL, 0);
--	msi->phys = virt_to_phys((void *)msi->pages);
-+		/* setup AFI/FPCI range */
-+		msi->pages = __get_free_pages(GFP_KERNEL, 0);
-+		msi->phys = virt_to_phys((void *)msi->pages);
-+	}
- 
- 	afi_writel(pcie, msi->phys >> soc->msi_base_shift, AFI_MSI_FPCI_BAR_ST);
- 	afi_writel(pcie, msi->phys, AFI_MSI_AXI_BAR_ST);
-@@ -2694,26 +2688,16 @@ static int tegra_pcie_probe(struct platform_device *pdev)
- 		return err;
- 	}
- 
--	err = tegra_pcie_enable_controller(pcie);
--	if (err)
-+	pm_runtime_enable(pcie->dev);
-+	err = pm_runtime_get_sync(pcie->dev);
-+	if (err) {
-+		dev_err(dev, "fail to enable pcie controller: %d\n", err);
- 		goto put_resources;
-+	}
- 
- 	err = tegra_pcie_request_resources(pcie);
- 	if (err)
--		goto disable_controller;
--
--	/* setup the AFI address translations */
--	tegra_pcie_setup_translations(pcie);
--
--	if (IS_ENABLED(CONFIG_PCI_MSI)) {
--		err = tegra_pcie_enable_msi(pcie);
--		if (err < 0) {
--			dev_err(dev, "failed to enable MSI support: %d\n", err);
--			goto free_resources;
--		}
--	}
--
--	tegra_pcie_enable_ports(pcie);
-+		goto pm_runtime_put;
- 
- 	host->busnr = pcie->busn.start;
- 	host->dev.parent = &pdev->dev;
-@@ -2724,7 +2708,7 @@ static int tegra_pcie_probe(struct platform_device *pdev)
- 	err = pci_scan_root_bus_bridge(host);
- 	if (err < 0) {
- 		dev_err(dev, "failed to register host: %d\n", err);
--		goto disable_msi;
-+		goto free_resources;
- 	}
- 
- 	pci_bus_size_bridges(host->bus);
-@@ -2746,14 +2730,13 @@ static int tegra_pcie_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
--disable_msi:
--	if (IS_ENABLED(CONFIG_PCI_MSI))
--		tegra_pcie_disable_msi(pcie);
--	tegra_pcie_disable_ports(pcie);
- free_resources:
- 	tegra_pcie_free_resources(pcie);
--disable_controller:
--	tegra_pcie_disable_controller(pcie);
-+pm_runtime_put:
-+	if (IS_ENABLED(CONFIG_PCI_MSI))
-+		tegra_pcie_disable_msi(pcie);
-+	pm_runtime_put_sync(pcie->dev);
-+	pm_runtime_disable(pcie->dev);
- put_resources:
- 	tegra_pcie_put_resources(pcie);
- 	return err;
-@@ -2763,7 +2746,6 @@ static int tegra_pcie_remove(struct platform_device *pdev)
- {
- 	struct tegra_pcie *pcie = platform_get_drvdata(pdev);
- 	struct pci_host_bridge *host = pci_host_bridge_from_priv(pcie);
--	struct tegra_pcie_port *port, *tmp;
- 
- 	if (IS_ENABLED(CONFIG_DEBUG_FS))
- 		tegra_pcie_debugfs_exit(pcie);
-@@ -2771,21 +2753,77 @@ static int tegra_pcie_remove(struct platform_device *pdev)
- 	pci_remove_root_bus(host->bus);
- 	if (IS_ENABLED(CONFIG_PCI_MSI))
- 		tegra_pcie_disable_msi(pcie);
-+	tegra_pcie_free_resources(pcie);
-+	pm_runtime_put_sync(pcie->dev);
-+	pm_runtime_disable(pcie->dev);
-+	tegra_pcie_put_resources(pcie);
-+
-+	return 0;
-+}
-+
-+static int tegra_pcie_pm_suspend(struct device *dev)
-+{
-+	struct tegra_pcie *pcie = dev_get_drvdata(dev);
-+	struct tegra_pcie_port *port, *tmp;
-+
- 	list_for_each_entry_safe(port, tmp, &pcie->ports, list)
- 		tegra_pcie_pme_turnoff(port);
- 	tegra_pcie_disable_ports(pcie);
--	tegra_pcie_free_resources(pcie);
- 	tegra_pcie_disable_controller(pcie);
--	tegra_pcie_put_resources(pcie);
-+	tegra_pcie_power_off(pcie);
- 
- 	return 0;
- }
- 
-+static int tegra_pcie_pm_resume(struct device *dev)
-+{
-+	struct tegra_pcie *pcie = dev_get_drvdata(dev);
-+	int err;
-+
-+	err = tegra_pcie_power_on(pcie);
-+	if (err) {
-+		dev_err(dev, "tegra pcie power on fail: %d\n", err);
-+		return err;
-+	}
-+	err = tegra_pcie_enable_controller(pcie);
-+	if (err) {
-+		dev_err(dev, "tegra pcie controller enable fail: %d\n", err);
-+		goto poweroff;
-+	}
-+	tegra_pcie_setup_translations(pcie);
-+
-+	if (IS_ENABLED(CONFIG_PCI_MSI)) {
-+		err = tegra_pcie_enable_msi(pcie);
-+		if (err < 0) {
-+			dev_err(dev, "failed to enable MSI support: %d\n", err);
-+			goto disable_controller;
-+		}
-+	}
-+
-+	tegra_pcie_enable_ports(pcie);
-+
-+	return 0;
-+
-+disable_controller:
-+	tegra_pcie_disable_controller(pcie);
-+poweroff:
-+	tegra_pcie_power_off(pcie);
-+
-+	return err;
-+}
-+
-+static const struct dev_pm_ops tegra_pcie_pm_ops = {
-+	SET_RUNTIME_PM_OPS(tegra_pcie_pm_suspend, tegra_pcie_pm_resume, NULL)
-+	SET_NOIRQ_SYSTEM_SLEEP_PM_OPS(tegra_pcie_pm_suspend,
-+				      tegra_pcie_pm_resume)
-+};
-+
- static struct platform_driver tegra_pcie_driver = {
- 	.driver = {
- 		.name = "tegra-pcie",
- 		.of_match_table = tegra_pcie_of_match,
- 		.suppress_bind_attrs = true,
-+		.pm = &tegra_pcie_pm_ops,
- 	},
- 	.probe = tegra_pcie_probe,
- 	.remove = tegra_pcie_remove,
+When switching rates we can't leave the CPU clocked by the HFPLL because
+we need to turn off the output of the PLL when changing its frequency.
+This means we have to switch over to the secondary mux and use one of the
+fixed sources. This is why we need something like the safe parent patch.
+
+[1] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332607.html
+[2] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332615.html
+[3] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332608.html
+
+Sricharan R (2):
+  clk: qcom: Add safe switch hook for krait mux clocks
+  cpufreq: dt: Reintroduce independent_clocks platform data
+
+Stephen Boyd (10):
+  ARM: Add Krait L2 register accessor functions
+  clk: mux: Split out register accessors for reuse
+  clk: qcom: Add support for High-Frequency PLLs (HFPLLs)
+  clk: qcom: Add HFPLL driver
+  clk: qcom: Add MSM8960/APQ8064's HFPLLs
+  clk: qcom: Add IPQ806X's HFPLLs
+  clk: qcom: Add support for Krait clocks
+  clk: qcom: Add KPSS ACC/GCC driver
+  clk: qcom: Add Krait clock controller driver
+  cpufreq: Add module to register cpufreq on Krait CPUs
+
+ .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  |   7 +
+ .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  |  28 ++
+ .../devicetree/bindings/arm/msm/qcom,pvs.txt       |  38 ++
+ .../devicetree/bindings/clock/qcom,hfpll.txt       |  40 ++
+ .../devicetree/bindings/clock/qcom,krait-cc.txt    |  22 ++
+ arch/arm/common/Kconfig                            |   3 +
+ arch/arm/common/Makefile                           |   1 +
+ arch/arm/common/krait-l2-accessors.c               |  58 +++
+ arch/arm/include/asm/krait-l2-accessors.h          |  20 +
+ drivers/clk/clk-mux.c                              |  75 ++--
+ drivers/clk/qcom/Kconfig                           |  28 ++
+ drivers/clk/qcom/Makefile                          |   5 +
+ drivers/clk/qcom/clk-hfpll.c                       | 253 +++++++++++++
+ drivers/clk/qcom/clk-hfpll.h                       |  54 +++
+ drivers/clk/qcom/clk-krait.c                       | 136 +++++++
+ drivers/clk/qcom/clk-krait.h                       |  51 +++
+ drivers/clk/qcom/gcc-ipq806x.c                     |  82 +++++
+ drivers/clk/qcom/gcc-msm8960.c                     | 172 +++++++++
+ drivers/clk/qcom/hfpll.c                           | 106 ++++++
+ drivers/clk/qcom/kpss-xcc.c                        |  96 +++++
+ drivers/clk/qcom/krait-cc.c                        | 406 +++++++++++++++++++++
+ drivers/cpufreq/Kconfig.arm                        |   9 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/cpufreq-dt.c                       |   7 +-
+ drivers/cpufreq/cpufreq-dt.h                       |   6 +
+ drivers/cpufreq/qcom-cpufreq.c                     | 204 +++++++++++
+ include/dt-bindings/clock/qcom,gcc-msm8960.h       |   2 +
+ include/linux/clk-provider.h                       |   9 +-
+ 28 files changed, 1888 insertions(+), 31 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+ create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,hfpll.txt
+ create mode 100644 Documentation/devicetree/bindings/clock/qcom,krait-cc.txt
+ create mode 100644 arch/arm/common/krait-l2-accessors.c
+ create mode 100644 arch/arm/include/asm/krait-l2-accessors.h
+ create mode 100644 drivers/clk/qcom/clk-hfpll.c
+ create mode 100644 drivers/clk/qcom/clk-hfpll.h
+ create mode 100644 drivers/clk/qcom/clk-krait.c
+ create mode 100644 drivers/clk/qcom/clk-krait.h
+ create mode 100644 drivers/clk/qcom/hfpll.c
+ create mode 100644 drivers/clk/qcom/kpss-xcc.c
+ create mode 100644 drivers/clk/qcom/krait-cc.c
+ create mode 100644 drivers/cpufreq/qcom-cpufreq.c
+
 -- 
-2.1.4
+QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
