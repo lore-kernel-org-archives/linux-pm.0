@@ -1,117 +1,204 @@
-From: Vivek Gautam <vivek.gautam@codeaurora.org>
-Subject: Re: [PATCH 1/1] base: power: runtime: Export pm_runtime_get/put_suppliers
-Date: Fri, 8 Dec 2017 22:33:37 +0530
-Message-ID: <CAFp+6iHLMi_t77602f1EEazcuP_+yJvJ5pEs2ZbtGC3rOsCD5A@mail.gmail.com>
-References: <1512736247-16538-1-git-send-email-vivek.gautam@codeaurora.org>
- <20171208132136.GA26631@kroah.com> <CAFp+6iHp5dt80p6-cMKLbcoHLfkRjVztFn8N2kiB24dUeeHpMA@mail.gmail.com>
- <CAJZ5v0jfmHHqwZU-x9CMD_CggH5U0Z3=7myfa73XG5916E57AA@mail.gmail.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Subject: Re: [PATCH v2 08/13] power: reset: Add a driver for the Microsemi
+ Ocelot reset
+Date: Fri, 8 Dec 2017 18:07:55 +0100
+Message-ID: <20171208170755.n6eqgn2jkjh4rbo5@earth>
+References: <20171208154618.20105-1-alexandre.belloni@free-electrons.com>
+ <20171208154618.20105-9-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jfmHHqwZU-x9CMD_CggH5U0Z3=7myfa73XG5916E57AA@mail.gmail.com>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Greg KH <gregkh@linuxfoundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Linux PM <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Boyd <sboyd@codeaurora.org>, Rob Clark <robdclark@gmail.com>, Robin Murphy <robin.murphy@arm.com>, Will Deacon <will.deacon@arm.com>, linux-arm-msm <linux-arm-msm@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="he4uuaf73s5d6do6"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:44632 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750777AbdLHRIA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Dec 2017 12:08:00 -0500
+Content-Disposition: inline
+In-Reply-To: <20171208154618.20105-9-alexandre.belloni@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-On Fri, Dec 8, 2017 at 7:37 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, Dec 8, 2017 at 2:39 PM, Vivek Gautam
-> <vivek.gautam@codeaurora.org> wrote:
->> Hi Greg,
->>
->>
->> On Fri, Dec 8, 2017 at 6:51 PM, Greg KH <gregkh@linuxfoundation.org> wrote:
->>> On Fri, Dec 08, 2017 at 06:00:47PM +0530, Vivek Gautam wrote:
->>>> The device link allows the pm framework to tie the supplier and
->>>> consumer. So, whenever the consumer is powered-on, the supplier
->>>> is powered-on first.
->>>>
->>>> There are however cases in which the consumer wants to power-on
->>>> the supplier, but not itself.
->>>> E.g., A Graphics or multimedia driver wants to power-on the SMMU
->>>> to unmap a buffer and finish the TLB operations without powering
->>>> on itself. Some of these unmap requests are coming from the
->>>> user space when the controller itself is not powered-up, and it
->>>> can be huge penalty in terms of power and latency to power-up
->>>> the graphics/mm controllers.
->>>> There can be an argument that the supplier should handle this case
->>>> on its own and there should not be a need for the consumer to
->>>> power-on the supplier. But as discussed on the thread [1] about
->>>> ARM-SMMU runtime pm, we don't want to introduce runtime pm calls
->>>> in atomic paths, such as in arm_smmu_unmap.
->>>>
->>>> [1] https://patchwork.kernel.org/patch/9827825/
->>>>
->>>> Signed-off-by: Vivek Gautam <vivek.gautam@codeaurora.org>
->>>> ---
->>>>  drivers/base/power/runtime.c | 2 ++
->>>>  1 file changed, 2 insertions(+)
->>>>
->>>> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
->>>> index 027d159ac381..af169304ca13 100644
->>>> --- a/drivers/base/power/runtime.c
->>>> +++ b/drivers/base/power/runtime.c
->>>> @@ -1578,6 +1578,7 @@ void pm_runtime_get_suppliers(struct device *dev)
->>>>
->>>>       device_links_read_unlock(idx);
->>>>  }
->>>> +EXPORT_SYMBOL_GPL(pm_runtime_get_suppliers);
->>>
->>> We do not export symbols unless there are in-kernel users of them.
->>> Where is the patch that adds a user for these functions?
->>
->> My apologies for not putting the changes for the user of these APIs.
->> I will be sending a patch for the user (which would be:
->> "drivers/gpu/drm/msm/msm_iommu.c"). The patch will be included
->> with the arm-smmu runtime patch series. Right now I am facing issues
->> with the use of clk_bulk_*() APIs on 4.15-rc kernel.
->>
->> But, I wanted to get opinions about this change since we had been
->> discussing about this in the arm-smmu runtime patch thread [1].
->>
->> [1] https://patchwork.kernel.org/patch/9827825/
->>
->>
->> P.S.: A snippet of the change in the user of these APIs:
->>
->>  diff --git a/drivers/gpu/drm/msm/msm_iommu.c b/drivers/gpu/drm/msm/msm_iommu.c
->>  index b23d33622f37..1ab629bbee69 100644
->>  --- a/drivers/gpu/drm/msm/msm_iommu.c
->>  +++ b/drivers/gpu/drm/msm/msm_iommu.c
->>  @@ -76,9 +76,9 @@ static int msm_iommu_unmap(struct msm_mmu *mmu,
->> uint64_t iova,
->>   {
->>          struct msm_iommu *iommu = to_msm_iommu(mmu);
->>
->>  -       pm_runtime_get_sync(mmu->dev);
->>  +       pm_runtime_get_suppliers(mmu->dev);
->>          iommu_unmap(iommu->domain, iova, len);
->>  -       pm_runtime_put_sync(mmu->dev);
->>  +       pm_runtime_put_suppliers(mmu->dev);
->>
->>          return 0;
->>   }
->>
->
-> Well, pm_runtime_get/put_suppliers() were not designed to be used
-> outside of the runtime PM core code.  I need to have a deeper look
-> into things at this point, so give me some time.
-
-Thanks Rafael.
-
-regards
-Vivek
-
->
-> Thanks,
-> Rafael
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
 
+--he4uuaf73s5d6do6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
-of Code Aurora Forum, hosted by The Linux Foundation
+Hi,
+
+On Fri, Dec 08, 2017 at 04:46:13PM +0100, Alexandre Belloni wrote:
+> The Microsemi Ocelot SoC has a register allowing to reset the MIPS core.
+> Unfortunately, the syscon-reboot driver can't be used directly (but almos=
+t)
+> as the reset control may be disabled using another register.
+>=20
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+
+Is it safe to apply this and the DT binding patch (once it has Rob's
+Ack-by) via the power-supply tree?
+
+Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+
+-- Sebastian
+
+>  drivers/power/reset/Kconfig        |  7 ++++
+>  drivers/power/reset/Makefile       |  1 +
+>  drivers/power/reset/ocelot-reset.c | 86 ++++++++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 94 insertions(+)
+>  create mode 100644 drivers/power/reset/ocelot-reset.c
+>=20
+> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> index ca0de1a78e85..2372f8e1040d 100644
+> --- a/drivers/power/reset/Kconfig
+> +++ b/drivers/power/reset/Kconfig
+> @@ -113,6 +113,13 @@ config POWER_RESET_MSM
+>  	help
+>  	  Power off and restart support for Qualcomm boards.
+> =20
+> +config POWER_RESET_OCELOT_RESET
+> +	bool "Microsemi Ocelot reset driver"
+> +	depends on MSCC_OCELOT || COMPILE_TEST
+> +	select MFD_SYSCON
+> +	help
+> +	  This driver supports restart for Microsemi Ocelot SoC.
+> +
+>  config POWER_RESET_PIIX4_POWEROFF
+>  	tristate "Intel PIIX4 power-off driver"
+>  	depends on PCI
+> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+> index aeb65edb17b7..df9d92291c67 100644
+> --- a/drivers/power/reset/Makefile
+> +++ b/drivers/power/reset/Makefile
+> @@ -12,6 +12,7 @@ obj-$(CONFIG_POWER_RESET_GPIO_RESTART) +=3D gpio-restar=
+t.o
+>  obj-$(CONFIG_POWER_RESET_HISI) +=3D hisi-reboot.o
+>  obj-$(CONFIG_POWER_RESET_IMX) +=3D imx-snvs-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_MSM) +=3D msm-poweroff.o
+> +obj-$(CONFIG_POWER_RESET_OCELOT_RESET) +=3D ocelot-reset.o
+>  obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) +=3D piix4-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_LTC2952) +=3D ltc2952-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_QNAP) +=3D qnap-poweroff.o
+> diff --git a/drivers/power/reset/ocelot-reset.c b/drivers/power/reset/oce=
+lot-reset.c
+> new file mode 100644
+> index 000000000000..1fb14bf17191
+> --- /dev/null
+> +++ b/drivers/power/reset/ocelot-reset.c
+> @@ -0,0 +1,86 @@
+> +// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+> +/*
+> + * Microsemi MIPS SoC reset driver
+> + *
+> + * License: Dual MIT/GPL
+> + * Copyright (c) 2017 Microsemi Corporation
+> + */
+> +#include <linux/delay.h>
+> +#include <linux/io.h>
+> +#include <linux/notifier.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/reboot.h>
+> +#include <linux/regmap.h>
+> +
+> +struct ocelot_reset_context {
+> +	struct regmap *chip_regs;
+> +	struct regmap *cpu_ctrl;
+> +	struct notifier_block restart_handler;
+> +};
+> +
+> +#define ICPU_CFG_CPU_SYSTEM_CTRL_RESET 0x20
+> +#define CORE_RST_PROTECT BIT(2)
+> +
+> +#define CHIP_REGS_SOFT_RST 0x8
+> +#define SOFT_CHIP_RST BIT(0)
+> +
+> +static int ocelot_restart_handle(struct notifier_block *this,
+> +				 unsigned long mode, void *cmd)
+> +{
+> +	struct ocelot_reset_context *ctx =3D container_of(this, struct
+> +							ocelot_reset_context,
+> +							restart_handler);
+> +
+> +	/* Make sure the core is not protected from reset */
+> +	regmap_update_bits(ctx->cpu_ctrl, ICPU_CFG_CPU_SYSTEM_CTRL_RESET,
+> +			   CORE_RST_PROTECT, 0);
+> +
+> +	regmap_write(ctx->chip_regs, CHIP_REGS_SOFT_RST, SOFT_CHIP_RST);
+> +
+> +	pr_emerg("Unable to restart system\n");
+> +	return NOTIFY_DONE;
+> +}
+> +
+> +static int ocelot_reset_probe(struct platform_device *pdev)
+> +{
+> +	struct ocelot_reset_context *ctx;
+> +	struct device *dev =3D &pdev->dev;
+> +	int err;
+> +
+> +	ctx =3D devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
+> +	if (!ctx)
+> +		return -ENOMEM;
+> +
+> +	ctx->chip_regs =3D syscon_node_to_regmap(of_get_parent(dev->of_node));
+> +	if (IS_ERR(ctx->chip_regs))
+> +		return PTR_ERR(ctx->chip_regs);
+> +
+> +	ctx->cpu_ctrl =3D syscon_regmap_lookup_by_compatible("mscc,ocelot-cpu-s=
+yscon");
+> +	if (IS_ERR(ctx->cpu_ctrl))
+> +		return PTR_ERR(ctx->cpu_ctrl);
+> +
+> +	ctx->restart_handler.notifier_call =3D ocelot_restart_handle;
+> +	ctx->restart_handler.priority =3D 192;
+> +	err =3D register_restart_handler(&ctx->restart_handler);
+> +	if (err)
+> +		dev_err(dev, "can't register restart notifier (err=3D%d)\n", err);
+> +
+> +	return err;
+> +}
+> +
+> +static const struct of_device_id ocelot_reset_of_match[] =3D {
+> +	{ .compatible =3D "mscc,ocelot-chip-reset" },
+> +	{}
+> +};
+> +
+> +static struct platform_driver ocelot_reset_driver =3D {
+> +	.probe =3D ocelot_reset_probe,
+> +	.driver =3D {
+> +		.name =3D "ocelot-chip-reset",
+> +		.of_match_table =3D ocelot_reset_of_match,
+> +	},
+> +};
+> +builtin_platform_driver(ocelot_reset_driver);
+> --=20
+> 2.15.1
+>=20
+
+--he4uuaf73s5d6do6
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAloqxuoACgkQ2O7X88g7
++poQrBAAg1jPlzymdt0xW9C0sKXlqJHr0DaUXSdQ4zbRSjH55WQR9VJvYGUHKV7v
+zAG4qqbWnwBOxKDHzLShvfgHiKoOCGy83su+eiNwCnUCMDuKnlVNYgorLXwCwwwK
+omCq7qfCD/YrL9kFlJoaV4/JrndpSvSVIbV5YKNVvxXr5o/eVLkpg5KS99CMCFSI
+ESlW5+KmRzQx8YpaJTbmjK2vYhb38Bkj37NfqPS9lN1bL+o59cix9YqN/VDjz0hf
+oX9BaE8CwsFZ6kBge1RP/DhSCoDNDpeUA2d7KW+Ccrwr5kZJ8phcvTaSa7NctYPw
+LR43EzLDm+qBmtqsnStAFEnbkKVwknjV3c+bL2ro0Q6WO5HcBoNJUA/El5IXnOUQ
+oqSRZuTq5hahPL2kqJuZ7jilnIO36792MH+PQBc94pNXSsy0+IGAbc8c3mTh6RDN
+UUGch4IaFDn5kddW0m5z9epSjPfpj9DaXa4wxUOYI6jEfC6e+6cyg6gzNnV6Y8oE
+OUX4dfbrhvzc1xOuuV4okfDuvbaw8kLswHi0y8SenKB+qTZAdbdFuCkpW3UV+4sp
+mf9ysqUOCgCRY5U95RR+HV5rUsa0VlL0Dsd3RHrzo030WavJ0KLaitdBgzJGjGH3
+MQvQ0HGjg0rLrkoHznql6fJDuM+wuWD3dyKcvf7zS6ojeSV/1z4=
+=LdCR
+-----END PGP SIGNATURE-----
+
+--he4uuaf73s5d6do6--
