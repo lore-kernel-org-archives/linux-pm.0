@@ -1,7 +1,7 @@
 From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: [PATCH 6/9] mm: remove unneeded kallsyms include
-Date: Fri,  8 Dec 2017 11:56:13 +0900
-Message-ID: <20171208025616.16267-7-sergey.senozhatsky@gmail.com>
+Subject: [PATCH 7/9] workqueue: remove unneeded kallsyms include
+Date: Fri,  8 Dec 2017 11:56:14 +0900
+Message-ID: <20171208025616.16267-8-sergey.senozhatsky@gmail.com>
 References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
 Return-path: <owner-linux-mm@kvack.org>
 In-Reply-To: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
@@ -10,30 +10,29 @@ To: Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.
 Cc: Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-The file was converted from sprint_symbol() to %pS some time
-ago (62c70bce8ac23651 "mm: convert sprintf_symbol to %pS").
+The filw was converted from print_symbol() to %pf some time
+ago (044c782ce3a901fb "workqueue: fix checkpatch issues").
 kallsyms does not seem to be needed anymore.
 
 Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Lai Jiangshan <jiangshanlai@gmail.com>
 ---
- mm/vmalloc.c | 1 -
+ kernel/workqueue.c | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/mm/vmalloc.c b/mm/vmalloc.c
-index 673942094328..fdda6534e9a0 100644
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -19,7 +19,6 @@
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
- #include <linux/debugobjects.h>
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index f4ff9fa5586a..acf485eada1b 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -38,7 +38,6 @@
+ #include <linux/hardirq.h>
+ #include <linux/mempolicy.h>
+ #include <linux/freezer.h>
 -#include <linux/kallsyms.h>
- #include <linux/list.h>
- #include <linux/notifier.h>
- #include <linux/rbtree.h>
+ #include <linux/debug_locks.h>
+ #include <linux/lockdep.h>
+ #include <linux/idr.h>
 -- 
 2.15.1
 
