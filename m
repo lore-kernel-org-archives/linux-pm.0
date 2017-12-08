@@ -1,35 +1,28 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/9] remove some of unneeded kallsyms includes
-Date: Fri, 8 Dec 2017 14:24:42 -0800
-Message-ID: <20171208142442.7c09406d7f0bc3d2c1bfe411@linux-foundation.org>
-References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [RESEND PATCH 2/8] turbostat: Fix node and siblings lookup data
+Date: Fri, 8 Dec 2017 17:47:39 -0500
+Message-ID: <CAJvTdK=-pH_XTS5dNsgz+MEhqN-mYOwQaHOs_Qc+58+KpEp4Zw@mail.gmail.com>
+References: <20171103122550.13341-1-prarit@redhat.com> <20171103122550.13341-3-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Michal Hocko <mhocko@suse.com>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f176.google.com ([209.85.220.176]:36547 "EHLO
+        mail-qk0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752730AbdLHWrk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 Dec 2017 17:47:40 -0500
+Received: by mail-qk0-f176.google.com with SMTP id t187so751196qkh.3
+        for <linux-pm@vger.kernel.org>; Fri, 08 Dec 2017 14:47:40 -0800 (PST)
+In-Reply-To: <20171103122550.13341-3-prarit@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: Linux PM list <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, charles.rose@dell.com, "Rafael J. Wysocki" <rafael@kernel.org>, suravee.suthikulpanit@amd.com
 
-On Fri,  8 Dec 2017 11:56:07 +0900 Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com> wrote:
+This patch causes a core dump:
 
-> 	A small patch set that removes some kallsyms includes
-> here and there. Mostly those kallsyms includes are leftovers:
-> printk() gained %pS/%pF modifiers support some time ago, so
-> print_symbol() and friends became sort of unneeded [along with
-> print_fn_descriptor_symbol() deprecation], thus some of the
-> users were converted to pS/pF. This patch set just cleans up
-> that convertion.
-> 
-> 	We still have a number of print_symbol() users [which
-> must be converted to ps/pf, print_symbol() uses a stack buffer
-> KSYM_SYMBOL_LEN to do what printk(ps/pf) can do], but this is
-> out of scope.
-> 
-> 	I compile tested the patch set; but, as always and
-> usual, would be great if 0day build robot double check it.
+turbostat: malloc.c:2394: sysmalloc: Assertion `(old_top ==
+initial_top (av) && old_size == 0) || ((unsigned long) (old_size) >=
+MINSIZE && prev_inuse (old_top) && ((unsigned long) old_end &
+(pagesize - 1)) == 0)' failed.
 
-I grabbed everything and shall drop any patches which later turn up in
-the various subsystem trees.
+Aborted (core dumped)
