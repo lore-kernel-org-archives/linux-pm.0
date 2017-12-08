@@ -1,53 +1,79 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [v2 PATCH] cpufreq: powernv: Correctly parse the sign of pstates
- on POWER8 vs POWER9
-Date: Fri, 8 Dec 2017 15:08:17 +0100
-Message-ID: <CAJZ5v0hg7AAJBeKpAi2Bv6-udGjGT7RywgofCPmO7j3BsZ2P9A@mail.gmail.com>
-References: <1512626365-22845-1-git-send-email-ego@linux.vnet.ibm.com>
- <CAJZ5v0jzh1B_8FYciWhpJZVPZNzm3n30NEE25LO_YJ17Wi+h+w@mail.gmail.com> <87indhh25h.fsf@concordia.ellerman.id.au>
+Subject: Re: [PATCH] ACPI / PM: Do not reconfigure GPEs for suspend-to-idle
+Date: Fri, 8 Dec 2017 15:29:07 +0100
+Message-ID: <CAJZ5v0jhviHiij0EidmKZpWpCNJOwM6_=WQX-1=Rok2PVr_vZw@mail.gmail.com>
+References: <1563861.ZpJ5HHSL6q@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <87indhh25h.fsf@concordia.ellerman.id.au>
+In-Reply-To: <1563861.ZpJ5HHSL6q@aspire.rjw.lan>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, huntbag@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Stable <stable@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux ACPI <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Mario Limonciello <mario.limonciello@dell.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 8, 2017 at 12:47 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> "Rafael J. Wysocki" <rafael@kernel.org> writes:
+On Thu, Dec 7, 2017 at 3:27 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
->> On Thu, Dec 7, 2017 at 6:59 AM, Gautham R. Shenoy
->> <ego@linux.vnet.ibm.com> wrote:
->>> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->>>
->>> On POWERNV platform, Pstates are 8-bit values. On POWER8 they are
->>> negatively numbered while on POWER9 they are positively
->>> numbered. Thus, on POWER9, the maximum number of pstates could be as
->>> high as 256.
->>>
->>> The current code interprets pstates as a signed 8-bit value. This
->>> causes a problem on POWER9 platforms which have more than 128 pstates.
->>> On such systems, on a CPU that is in a lower pstate whose number is
->>> greater than 128, querying the current pstate returns a "pstate X is
->>> out of bound" error message and the current pstate is reported as the
->>> nominal pstate.
->>>
->>> This patch fixes the aforementioned issue by correctly differentiating
->>> the sign whenever a pstate value read, depending on whether the
->>> pstates are positively numbered or negatively numbered.
->>>
->>> Fixes: commit 09ca4c9b5958 ("cpufreq: powernv: Replacing pstate_id with frequency table index")
->>> Cc: <stable@vger.kernel.org> #v4.8
->>> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
->>> Tested-and-reviewed-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>
->> I'm going to apply this, or please let me know if you want to route it
->> differently.
+> Currently, non-wakeup GPEs are disabled on suspend-to-idle
+> entry to avoid spurious wakeups, but that should not be strictly
+> necessary any more after commit 33e4f80ee69b (ACPI / PM: Ignore
+> spurious SCI wakeups from suspend-to-idle) which prevents spurious
+> GPE wakeups from resuming the system.  The only consequence of
+> leaving non-wakeup GPEs enabled may be more interrupt-related
+> activity while suspended, which is not ideal (more energy is
+> used if that happens), but it is not critical too.
 >
-> Do you mind waiting for now, we're still debating how to fix it.
+> On the other hand, this change allows Dells XPS13 9360 blacklisted by
+> commit 71630b7a832f (ACPI / PM: Blacklist Low Power S0 Idle _DSM for
+> Dell XPS13 9360) to use the power button for waking up from suspend-
+> to-idle and it helps at least one other older Dell system (the
+> wakeup button GPE on that one is not listed in _PRW for any
+> devices, so it is not regarded as a wakeup one and gets disabled
+> on suspend-to-idle entry today).
+>
+> For the above reasons, leave GPE configuration as is over
+> suspend-to-idle on all systems.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>  drivers/acpi/sleep.c |   11 +----------
+>  1 file changed, 1 insertion(+), 10 deletions(-)
+>
+> Index: linux-pm/drivers/acpi/sleep.c
+> ===================================================================
+> --- linux-pm.orig/drivers/acpi/sleep.c
+> +++ linux-pm/drivers/acpi/sleep.c
+> @@ -951,15 +951,8 @@ static int acpi_s2idle_prepare(void)
+>         if (lps0_device_handle) {
+>                 acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_OFF);
+>                 acpi_sleep_run_lps0_dsm(ACPI_LPS0_ENTRY);
+> -       } else {
+> -               /*
+> -                * The configuration of GPEs is changed here to avoid spurious
+> -                * wakeups, but that should not be necessary if this is a
+> -                * "low-power S0" platform and the low-power S0 _DSM is present.
+> -                */
+> -               acpi_enable_all_wakeup_gpes();
+> -               acpi_os_wait_events_complete();
+>         }
+> +
+>         if (acpi_sci_irq_valid())
+>                 enable_irq_wake(acpi_sci_irq);
+>
+> @@ -1005,8 +998,6 @@ static void acpi_s2idle_restore(void)
+>         if (lps0_device_handle) {
+>                 acpi_sleep_run_lps0_dsm(ACPI_LPS0_EXIT);
+>                 acpi_sleep_run_lps0_dsm(ACPI_LPS0_SCREEN_ON);
+> -       } else {
+> -               acpi_enable_all_runtime_gpes();
+>         }
+>  }
+>
 
-No problem. :-)
+I have to withdraw this as it leads to a regression on one of my test machines.
 
-Just please let me know when you're ready.
+That is unexpected, so I need to investigate what's going on in there.
+
+Thanks,
+Rafael
