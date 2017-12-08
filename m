@@ -1,7 +1,8 @@
 From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v4 01/12] ARM: Add Krait L2 register accessor functions
-Date: Fri,  8 Dec 2017 15:12:19 +0530
-Message-ID: <1512726150-7204-2-git-send-email-sricharan@codeaurora.org>
+Subject: [PATCH v4 03/12] clk: qcom: Add support for High-Frequency PLLs
+ (HFPLLs)
+Date: Fri,  8 Dec 2017 15:12:21 +0530
+Message-ID: <1512726150-7204-4-git-send-email-sricharan@codeaurora.org>
 References: <1512726150-7204-1-git-send-email-sricharan@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -18,67 +19,43 @@ List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
 Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
 Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
 To: mturquette@baylibre.com, sboyd@codeaurora.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Russell King <linux@arm.linux.org.uk>, sricharan@codeaurora.org, Courtney Cavin <courtney.cavin@sonymobile.com>
+Cc: sricharan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Stephen Boyd <sboyd@codeaurora.org>
 
-Krait CPUs have a handful of L2 cache controller registers that
-live behind a cp15 based indirection register. First you program
-the indirection register (l2cpselr) to point the L2 'window'
-register (l2cpdr) at what you want to read/write.  Then you
-read/write the 'window' register to do what you want. The
-l2cpselr register is not banked per-cpu so we must lock around
-accesses to it to prevent other CPUs from re-pointing l2cpdr
-underneath us.
+HFPLLs are the main frequency source for Krait CPU clocks. Add
+support for changing the rate of these PLLs.
 
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Courtney Cavin <courtney.cavin@sonymobile.com>
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- arch/arm/common/Kconfig                   |  3 ++
- arch/arm/common/Makefile                  |  1 +
- arch/arm/common/krait-l2-accessors.c      | 58 +++++++++++++++++++++++++++++++
- arch/arm/include/asm/krait-l2-accessors.h | 20 +++++++++++
- 4 files changed, 82 insertions(+)
- create mode 100644 arch/arm/common/krait-l2-accessors.c
- create mode 100644 arch/arm/include/asm/krait-l2-accessors.h
+ drivers/clk/qcom/Makefile    |   1 +
+ drivers/clk/qcom/clk-hfpll.c | 253 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/clk/qcom/clk-hfpll.h |  54 +++++++++
+ 3 files changed, 308 insertions(+)
+ create mode 100644 drivers/clk/qcom/clk-hfpll.c
+ create mode 100644 drivers/clk/qcom/clk-hfpll.h
 
-diff --git a/arch/arm/common/Kconfig b/arch/arm/common/Kconfig
-index e5ad070..c8e1986 100644
---- a/arch/arm/common/Kconfig
-+++ b/arch/arm/common/Kconfig
-@@ -7,6 +7,9 @@ config DMABOUNCE
- 	bool
- 	select ZONE_DMA
+diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
+index 602af38..4795e21 100644
+--- a/drivers/clk/qcom/Makefile
++++ b/drivers/clk/qcom/Makefile
+@@ -10,6 +10,7 @@ clk-qcom-y += clk-rcg2.o
+ clk-qcom-y += clk-branch.o
+ clk-qcom-y += clk-regmap-divider.o
+ clk-qcom-y += clk-regmap-mux.o
++clk-qcom-y += clk-hfpll.o
+ clk-qcom-y += reset.o
+ clk-qcom-$(CONFIG_QCOM_GDSC) += gdsc.o
  
-+config KRAIT_L2_ACCESSORS
-+	bool
-+
- config SHARP_LOCOMO
- 	bool
- 
-diff --git a/arch/arm/common/Makefile b/arch/arm/common/Makefile
-index 70b4a14..eec6cd1 100644
---- a/arch/arm/common/Makefile
-+++ b/arch/arm/common/Makefile
-@@ -7,6 +7,7 @@ obj-y				+= firmware.o
- 
- obj-$(CONFIG_SA1111)		+= sa1111.o
- obj-$(CONFIG_DMABOUNCE)		+= dmabounce.o
-+obj-$(CONFIG_KRAIT_L2_ACCESSORS) += krait-l2-accessors.o
- obj-$(CONFIG_SHARP_LOCOMO)	+= locomo.o
- obj-$(CONFIG_SHARP_PARAM)	+= sharpsl_param.o
- obj-$(CONFIG_SHARP_SCOOP)	+= scoop.o
-diff --git a/arch/arm/common/krait-l2-accessors.c b/arch/arm/common/krait-l2-accessors.c
+diff --git a/drivers/clk/qcom/clk-hfpll.c b/drivers/clk/qcom/clk-hfpll.c
 new file mode 100644
-index 0000000..5d514bb
+index 0000000..5b0bb71
 --- /dev/null
-+++ b/arch/arm/common/krait-l2-accessors.c
-@@ -0,0 +1,58 @@
++++ b/drivers/clk/qcom/clk-hfpll.c
+@@ -0,0 +1,253 @@
 +/*
-+ * Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
++ * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 and
@@ -89,60 +66,255 @@ index 0000000..5d514bb
 + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 + * GNU General Public License for more details.
 + */
-+
-+#include <linux/spinlock.h>
++#include <linux/kernel.h>
 +#include <linux/export.h>
++#include <linux/regmap.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/clk-provider.h>
++#include <linux/spinlock.h>
 +
-+#include <asm/barrier.h>
-+#include <asm/krait-l2-accessors.h>
++#include "clk-regmap.h"
++#include "clk-hfpll.h"
 +
-+static DEFINE_RAW_SPINLOCK(krait_l2_lock);
++#define PLL_OUTCTRL	BIT(0)
++#define PLL_BYPASSNL	BIT(1)
++#define PLL_RESET_N	BIT(2)
 +
-+void krait_set_l2_indirect_reg(u32 addr, u32 val)
++/* Initialize a HFPLL at a given rate and enable it. */
++static void __clk_hfpll_init_once(struct clk_hw *hw)
 +{
-+	unsigned long flags;
++	struct clk_hfpll *h = to_clk_hfpll(hw);
++	struct hfpll_data const *hd = h->d;
++	struct regmap *regmap = h->clkr.regmap;
 +
-+	raw_spin_lock_irqsave(&krait_l2_lock, flags);
-+	/*
-+	 * Select the L2 window by poking l2cpselr, then write to the window
-+	 * via l2cpdr.
-+	 */
-+	asm volatile ("mcr p15, 3, %0, c15, c0, 6 @ l2cpselr" : : "r" (addr));
-+	isb();
-+	asm volatile ("mcr p15, 3, %0, c15, c0, 7 @ l2cpdr" : : "r" (val));
-+	isb();
++	if (likely(h->init_done))
++		return;
 +
-+	raw_spin_unlock_irqrestore(&krait_l2_lock, flags);
++	/* Configure PLL parameters for integer mode. */
++	if (hd->config_val)
++		regmap_write(regmap, hd->config_reg, hd->config_val);
++	regmap_write(regmap, hd->m_reg, 0);
++	regmap_write(regmap, hd->n_reg, 1);
++
++	if (hd->user_reg) {
++		u32 regval = hd->user_val;
++		unsigned long rate;
++
++		rate = clk_hw_get_rate(hw);
++
++		/* Pick the right VCO. */
++		if (hd->user_vco_mask && rate > hd->low_vco_max_rate)
++			regval |= hd->user_vco_mask;
++		regmap_write(regmap, hd->user_reg, regval);
++	}
++
++	if (hd->droop_reg)
++		regmap_write(regmap, hd->droop_reg, hd->droop_val);
++
++	h->init_done = true;
 +}
-+EXPORT_SYMBOL(krait_set_l2_indirect_reg);
 +
-+u32 krait_get_l2_indirect_reg(u32 addr)
++static void __clk_hfpll_enable(struct clk_hw *hw)
 +{
++	struct clk_hfpll *h = to_clk_hfpll(hw);
++	struct hfpll_data const *hd = h->d;
++	struct regmap *regmap = h->clkr.regmap;
 +	u32 val;
++
++	__clk_hfpll_init_once(hw);
++
++	/* Disable PLL bypass mode. */
++	regmap_update_bits(regmap, hd->mode_reg, PLL_BYPASSNL, PLL_BYPASSNL);
++
++	/*
++	 * H/W requires a 5us delay between disabling the bypass and
++	 * de-asserting the reset. Delay 10us just to be safe.
++	 */
++	usleep_range(10, 100);
++
++	/* De-assert active-low PLL reset. */
++	regmap_update_bits(regmap, hd->mode_reg, PLL_RESET_N, PLL_RESET_N);
++
++	/* Wait for PLL to lock. */
++	if (hd->status_reg) {
++		do {
++			regmap_read(regmap, hd->status_reg, &val);
++		} while (!(val & BIT(hd->lock_bit)));
++	} else {
++		usleep_range(60, 100);
++	}
++
++	/* Enable PLL output. */
++	regmap_update_bits(regmap, hd->mode_reg, PLL_OUTCTRL, PLL_OUTCTRL);
++}
++
++/* Enable an already-configured HFPLL. */
++static int clk_hfpll_enable(struct clk_hw *hw)
++{
++	unsigned long flags;
++	struct clk_hfpll *h = to_clk_hfpll(hw);
++	struct hfpll_data const *hd = h->d;
++	struct regmap *regmap = h->clkr.regmap;
++	u32 mode;
++
++	spin_lock_irqsave(&h->lock, flags);
++	regmap_read(regmap, hd->mode_reg, &mode);
++	if (!(mode & (PLL_BYPASSNL | PLL_RESET_N | PLL_OUTCTRL)))
++		__clk_hfpll_enable(hw);
++	spin_unlock_irqrestore(&h->lock, flags);
++
++	return 0;
++}
++
++static void __clk_hfpll_disable(struct clk_hfpll *h)
++{
++	struct hfpll_data const *hd = h->d;
++	struct regmap *regmap = h->clkr.regmap;
++
++	/*
++	 * Disable the PLL output, disable test mode, enable the bypass mode,
++	 * and assert the reset.
++	 */
++	regmap_update_bits(regmap, hd->mode_reg,
++			   PLL_BYPASSNL | PLL_RESET_N | PLL_OUTCTRL, 0);
++}
++
++static void clk_hfpll_disable(struct clk_hw *hw)
++{
++	struct clk_hfpll *h = to_clk_hfpll(hw);
 +	unsigned long flags;
 +
-+	raw_spin_lock_irqsave(&krait_l2_lock, flags);
-+	/*
-+	 * Select the L2 window by poking l2cpselr, then read from the window
-+	 * via l2cpdr.
-+	 */
-+	asm volatile ("mcr p15, 3, %0, c15, c0, 6 @ l2cpselr" : : "r" (addr));
-+	isb();
-+	asm volatile ("mrc p15, 3, %0, c15, c0, 7 @ l2cpdr" : "=r" (val));
-+
-+	raw_spin_unlock_irqrestore(&krait_l2_lock, flags);
-+
-+	return val;
++	spin_lock_irqsave(&h->lock, flags);
++	__clk_hfpll_disable(h);
++	spin_unlock_irqrestore(&h->lock, flags);
 +}
-+EXPORT_SYMBOL(krait_get_l2_indirect_reg);
-diff --git a/arch/arm/include/asm/krait-l2-accessors.h b/arch/arm/include/asm/krait-l2-accessors.h
-new file mode 100644
-index 0000000..48fe552
---- /dev/null
-+++ b/arch/arm/include/asm/krait-l2-accessors.h
-@@ -0,0 +1,20 @@
++
++static long clk_hfpll_round_rate(struct clk_hw *hw, unsigned long rate,
++				 unsigned long *parent_rate)
++{
++	struct clk_hfpll *h = to_clk_hfpll(hw);
++	struct hfpll_data const *hd = h->d;
++	unsigned long rrate;
++
++	rate = clamp(rate, hd->min_rate, hd->max_rate);
++
++	rrate = DIV_ROUND_UP(rate, *parent_rate) * *parent_rate;
++	if (rrate > hd->max_rate)
++		rrate -= *parent_rate;
++
++	return rrate;
++}
++
 +/*
-+ * Copyright (c) 2011-2013, The Linux Foundation. All rights reserved.
++ * For optimization reasons, assumes no downstream clocks are actively using
++ * it.
++ */
++static int clk_hfpll_set_rate(struct clk_hw *hw, unsigned long rate,
++			      unsigned long parent_rate)
++{
++	struct clk_hfpll *h = to_clk_hfpll(hw);
++	struct hfpll_data const *hd = h->d;
++	struct regmap *regmap = h->clkr.regmap;
++	unsigned long flags;
++	u32 l_val, val;
++	bool enabled;
++
++	l_val = rate / parent_rate;
++
++	spin_lock_irqsave(&h->lock, flags);
++
++	enabled = __clk_is_enabled(hw->clk);
++	if (enabled)
++		__clk_hfpll_disable(h);
++
++	/* Pick the right VCO. */
++	if (hd->user_reg && hd->user_vco_mask) {
++		regmap_read(regmap, hd->user_reg, &val);
++		if (rate <= hd->low_vco_max_rate)
++			val &= ~hd->user_vco_mask;
++		else
++			val |= hd->user_vco_mask;
++		regmap_write(regmap, hd->user_reg, val);
++	}
++
++	regmap_write(regmap, hd->l_reg, l_val);
++
++	if (enabled)
++		__clk_hfpll_enable(hw);
++
++	spin_unlock_irqrestore(&h->lock, flags);
++
++	return 0;
++}
++
++static unsigned long clk_hfpll_recalc_rate(struct clk_hw *hw,
++					   unsigned long parent_rate)
++{
++	struct clk_hfpll *h = to_clk_hfpll(hw);
++	struct hfpll_data const *hd = h->d;
++	struct regmap *regmap = h->clkr.regmap;
++	u32 l_val;
++
++	regmap_read(regmap, hd->l_reg, &l_val);
++
++	return l_val * parent_rate;
++}
++
++static void clk_hfpll_init(struct clk_hw *hw)
++{
++	struct clk_hfpll *h = to_clk_hfpll(hw);
++	struct hfpll_data const *hd = h->d;
++	struct regmap *regmap = h->clkr.regmap;
++	u32 mode, status;
++
++	regmap_read(regmap, hd->mode_reg, &mode);
++	if (mode != (PLL_BYPASSNL | PLL_RESET_N | PLL_OUTCTRL)) {
++		__clk_hfpll_init_once(hw);
++		return;
++	}
++
++	if (hd->status_reg) {
++		regmap_read(regmap, hd->status_reg, &status);
++		if (!(status & BIT(hd->lock_bit))) {
++			WARN(1, "HFPLL %s is ON, but not locked!\n",
++			     __clk_get_name(hw->clk));
++			clk_hfpll_disable(hw);
++			__clk_hfpll_init_once(hw);
++		}
++	}
++}
++
++static int hfpll_is_enabled(struct clk_hw *hw)
++{
++	struct clk_hfpll *h = to_clk_hfpll(hw);
++	struct hfpll_data const *hd = h->d;
++	struct regmap *regmap = h->clkr.regmap;
++	u32 mode;
++
++	regmap_read(regmap, hd->mode_reg, &mode);
++	mode &= 0x7;
++	return mode == (PLL_BYPASSNL | PLL_RESET_N | PLL_OUTCTRL);
++}
++
++const struct clk_ops clk_ops_hfpll = {
++	.enable = clk_hfpll_enable,
++	.disable = clk_hfpll_disable,
++	.is_enabled = hfpll_is_enabled,
++	.round_rate = clk_hfpll_round_rate,
++	.set_rate = clk_hfpll_set_rate,
++	.recalc_rate = clk_hfpll_recalc_rate,
++	.init = clk_hfpll_init,
++};
++EXPORT_SYMBOL_GPL(clk_ops_hfpll);
+diff --git a/drivers/clk/qcom/clk-hfpll.h b/drivers/clk/qcom/clk-hfpll.h
+new file mode 100644
+index 0000000..48c18d6
+--- /dev/null
++++ b/drivers/clk/qcom/clk-hfpll.h
+@@ -0,0 +1,54 @@
++/*
++ * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 and
@@ -153,12 +325,46 @@ index 0000000..48fe552
 + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 + * GNU General Public License for more details.
 + */
++#ifndef __QCOM_CLK_HFPLL_H__
++#define __QCOM_CLK_HFPLL_H__
 +
-+#ifndef __ASMARM_KRAIT_L2_ACCESSORS_H
-+#define __ASMARM_KRAIT_L2_ACCESSORS_H
++#include <linux/clk-provider.h>
++#include <linux/spinlock.h>
++#include "clk-regmap.h"
 +
-+extern void krait_set_l2_indirect_reg(u32 addr, u32 val);
-+extern u32 krait_get_l2_indirect_reg(u32 addr);
++struct hfpll_data {
++	u32 mode_reg;
++	u32 l_reg;
++	u32 m_reg;
++	u32 n_reg;
++	u32 user_reg;
++	u32 droop_reg;
++	u32 config_reg;
++	u32 status_reg;
++	u8  lock_bit;
++
++	u32 droop_val;
++	u32 config_val;
++	u32 user_val;
++	u32 user_vco_mask;
++	unsigned long low_vco_max_rate;
++
++	unsigned long min_rate;
++	unsigned long max_rate;
++};
++
++struct clk_hfpll {
++	struct hfpll_data const *d;
++	int init_done;
++
++	struct clk_regmap clkr;
++	spinlock_t lock;
++};
++
++#define to_clk_hfpll(_hw) \
++	container_of(to_clk_regmap(_hw), struct clk_hfpll, clkr)
++
++extern const struct clk_ops clk_ops_hfpll;
 +
 +#endif
 -- 
