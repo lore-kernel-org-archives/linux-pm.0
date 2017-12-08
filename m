@@ -1,105 +1,85 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [PATCH 1/2] acpi, spcr: Make SPCR avialable to other
- architectures
-Date: Fri, 8 Dec 2017 14:42:14 -0500
-Message-ID: <848618dd-86ad-85aa-b7f4-fa700ccf63c3@redhat.com>
-References: <20171207172912.17868-1-prarit@redhat.com>
- <20171207172912.17868-2-prarit@redhat.com>
- <CAOZdJXV4E6gu=Ed6nOCcEp2afe_g8Ot-H5oO5=6+ye51cv9hUg@mail.gmail.com>
+From: Alexander Dahl <post@lespocky.de>
+Subject: no hwmon entries in sysfs for thermal on raspberry pi 1b
+Date: Fri, 8 Dec 2017 20:53:10 +0100
+Message-ID: <20171208195308.b7mq43ejegmzjlbi@falbala.home.lespocky.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAOZdJXV4E6gu=Ed6nOCcEp2afe_g8Ot-H5oO5=6+ye51cv9hUg@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Timur Tabi <timur@codeaurora.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, the arch/x86 maintainers <x86@kernel.org>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Bhupesh Sharma <bhsharma@redhat.com>, linux-doc@vger.kernel.org, Will Deacon <will.deacon@arm.com>, lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lv Zheng <lv.zheng@intel.com>, linux-serial@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Jeffrey Hugo <jhugo@codeaurora.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="4shk57tj2l6imnyj"
+Return-path: <linux-hwmon-owner@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-hwmon-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, linux-hwmon@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
 
+--4shk57tj2l6imnyj
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 12/07/2017 01:43 PM, Timur Tabi wrote:
-> On Thu, Dec 7, 2017 at 11:29 AM, Prarit Bhargava <prarit@redhat.com> wrote:
->> Other architectures can use SPCR to setup an early console or console but
->> the current code is ARM64 specific.
->>
->> Change the name of parse_spcr() to acpi_parse_spcr().  Add a weak
->> function acpi_arch_setup_console() that can be used for arch-specific
->> setup.  Move SPCR initialization flag into ACPI code.  Update the
->> Documention on the use of the SPCR earlycon.
->>
->> This patch does not change arm64 behaviour.
-> 
-> Let's hope so.  Our E44 erratum work-around has caused lots of
-> problems in the past, so the code is a bit fragile.
+Hei hei,
 
-So it does look like I broke something :(  I'll fix this and do more testing.
-One thing that I just learned (relative to x86) is that you have to test much
-further and wider than on x86.
+I have v4.15-rc2 vanilla running on the original Raspberry Pi 1B aka
+bcm2835 (not rev2, not the 1B+ or plus), compiled with ptxdist /
+DistroKit, using bcm2835-rpi-b.dts from arch/arm/boot/dts as device
+tree file. I try to get temperature values from the SoC with
+lm-sensors (for using it in some other project). After reading an
+issue report on the lm-sensors github project [1] I checked my kernel
+config. The following is set:
 
-P.
+    CONFIG_HWMON=3Dy
+    CONFIG_THERMAL_HWMON=3Dy
+    CONFIG_THERMAL=3Dy
+    CONFIG_THERMAL_OF=3Dy
+    CONFIG_BCM2835_THERMAL=3Dy
 
-> 
->> +static bool qdf2400_erratum_44_present(struct acpi_table_header *h)
->> +{
->> +       if (memcmp(h->oem_id, "QCOM  ", ACPI_OEM_ID_SIZE))
->> +               return false;
->> +
->> +       if (!memcmp(h->oem_table_id, "QDF2432 ", ACPI_OEM_TABLE_ID_SIZE))
->> +               return true;
->> +
->> +       if (!memcmp(h->oem_table_id, "QDF2400 ", ACPI_OEM_TABLE_ID_SIZE) &&
->> +                       h->oem_revision == 1)
->> +               return true;
->> +
->> +       return false;
->> +}
-> 
-> Please give us a chance to test this patch before merging. We've had a
-> lot of problems with our E44 work-around, and we need to make sure
-> that qdf2400_erratum_44_present function is called before the pl011
-> driver is probed.
-> 
->> +
->> +/*
->> + * APM X-Gene v1 and v2 UART hardware is an 16550 like device but has its
->> + * register aligned to 32-bit. In addition, the BIOS also encoded the
->> + * access width to be 8 bits. This function detects this errata condition.
->> + */
->> +static bool xgene_8250_erratum_present(struct acpi_table_spcr *tb)
->> +{
->> +       bool xgene_8250 = false;
->> +
->> +       if (tb->interface_type != ACPI_DBG2_16550_COMPATIBLE)
->> +               return false;
->> +
->> +       if (memcmp(tb->header.oem_id, "APMC0D", ACPI_OEM_ID_SIZE) &&
->> +           memcmp(tb->header.oem_id, "HPE   ", ACPI_OEM_ID_SIZE))
->> +               return false;
->> +
->> +       if (!memcmp(tb->header.oem_table_id, "XGENESPC",
->> +           ACPI_OEM_TABLE_ID_SIZE) && tb->header.oem_revision == 0)
->> +               xgene_8250 = true;
->> +
->> +       if (!memcmp(tb->header.oem_table_id, "ProLiant",
->> +           ACPI_OEM_TABLE_ID_SIZE) && tb->header.oem_revision == 1)
->> +               xgene_8250 = true;
->> +
->> +       return xgene_8250;
->> +}
-> 
-> I suspect that this function has the same issues as
-> qdf2400_erratum_44_present().
-> 
->> +config ACPI_SPCR_TABLE
->> +       bool "ACPI Serial Port Console Redirection Support"
->> +       default y if ARM64
->> +       help
->> +         Enable support for Serial Port Console Redirection (SPCR) Table.
->> +         This table provides information about the configuration of the
->> +         earlycon console.
->> +
-> 
-> So ACPI without SPCR has never been tested by us.  Making it optional
-> makes me a little nervous.  We'll have to evaluate this change.
-> 
+There's one thermal zone in sysfs and I get some temperature which I
+suppose is the temp of the SoC in m=B0C:
+
+    root@DistroKit:~ cat /sys/class/thermal/thermal_zone0/temp=20
+    42236
+
+However, there's nothing below /sys/class/hwmon and I'm wondering why.
+There's a thermal zone named 'cpu-thermal' defined and active in DT.
+
+I tried to read some driver code and as far as I understood
+thermal_add_hwmon_sysfs() must be called somewhere to get entries for
+hwmon in sysfs, and this is done in thermal_zone_device_register(), so
+probably a thermal zone must be present somehow, but it seems to be,
+at least I can read temp values from it.
+
+What piece am I missing? Is it some kind of configuration I did wrong?
+
+Greets
+Alex
+
+[1] https://github.com/groeck/lm-sensors/issues/30
+
+--=20
+=BBWith the first link, the chain is forged. The first speech censured,=20
+the first thought forbidden, the first freedom denied, chains us all=20
+irrevocably.=AB (Jean-Luc Picard, quoting Judge Aaron Satie)
+*** GnuPG-FP: C28E E6B9 0263 95CF 8FAF  08FA 34AD CD00 7221 5CC6 ***
+
+--4shk57tj2l6imnyj
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEwo7muQJjlc+Prwj6NK3NAHIhXMYFAloq7Z0ACgkQNK3NAHIh
+XMYsvxAAtp/y7loGAtTSGS5bNR7IhTzx7reoufTsXITYh4Eu4faNKfVzoi3fnhNw
+ydkBVxwf8WZ+1FeeqsUBG2LJX6dakXzutW3kG0jdXkD/pc0c5PrW4mpgIozWUgmD
+fXWhSsQ3aVQ+3Q7Dcna/MDAUfVeYC/ad+t40dTasNIJo3ZtlBv1t118nzMeiDq6V
+xv/p5eMZN0nvlRGqCbXi3DZ5TP1wDHSGAVhKDt5LnGixAHJg8SxyKvr4Q5qGo7uc
+mJxnuvMgHaNFLFViqBtvuqySve1Mo++pqdfzNRhTsUIM/XFSewiwduNTIoDPzr9r
+X6W+cNTkRbmHK7e3yyGFD4yDKev1XJeGvr7A9tkRCof4K4eURM44E8y5gbbsb71A
+7YBoy0D0T95H++C5hxey1zZaLvpp/cIrcQer3dCHh0lamsYbE0U7jYS2lMb4D9AE
+bTz2RgwZP2QiDhgjrMgG3YSXvrYIOc16VH+Tr7l7IFhknj8peXPraawuGcmX4RBR
+hRnGSqlim7e+WHDuEACirtw9eVJJvfZmHzsT5pHy0iizb0tEPW0c4wZIJSE7fkJ/
+nYSpMnf6wZJrXRWHV3pj7R5wXOE65/PYOz76vLdo+7F7Q7rUlMerc4yqzZ8Lc9Ab
+5NaxctkFkcu4E+llDfdSUKuifXSdnZYAxcNeSsvhfK9hDCbnfag=
+=TfKg
+-----END PGP SIGNATURE-----
+
+--4shk57tj2l6imnyj--
