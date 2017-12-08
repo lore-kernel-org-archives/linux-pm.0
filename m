@@ -1,44 +1,46 @@
-From: Petr Mladek <pmladek@suse.com>
-Subject: Re: [PATCH 1/9] sched/autogroup: remove unneeded kallsyms include
-Date: Fri, 8 Dec 2017 14:43:30 +0100
-Message-ID: <20171208134330.gcimodmkzxfovvm7@pathway.suse.cz>
-References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
- <20171208025616.16267-2-sergey.senozhatsky@gmail.com>
- <20171208105611.rcoxze4erxkpimad@hirez.programming.kicks-ass.net>
- <20171208112048.GH628@jagdpanzerIV>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/9] power: remove unneeded kallsyms include
+Date: Fri, 8 Dec 2017 15:01:52 +0100
+Message-ID: <CAJZ5v0g1CBhKTYi=CzYPcBXdH=yZ3iJcKzZ6TaftNWoq+X5wnQ@mail.gmail.com>
+References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com> <20171208025616.16267-4-sergey.senozhatsky@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <owner-linux-mm@kvack.org>
-Content-Disposition: inline
-In-Reply-To: <20171208112048.GH628@jagdpanzerIV>
+In-Reply-To: <20171208025616.16267-4-sergey.senozhatsky@gmail.com>
 Sender: owner-linux-mm@kvack.org
 To: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>, Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Rafael Wysocki <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Memory Management List <linux-mm@kvack.org>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri 2017-12-08 20:20:48, Sergey Senozhatsky wrote:
-> On (12/08/17 11:56), Peter Zijlstra wrote:
-> > On Fri, Dec 08, 2017 at 11:56:08AM +0900, Sergey Senozhatsky wrote:
-> > > Autogroup does not seem to use any of kallsyms functions/defines.
-> > > 
-> > > Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-> > > Cc: Peter Zijlstra <peterz@infradead.org>
-> > 
-> > Feel free to take this through whatever tree you need this in.
-> > 
-> > Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+On Fri, Dec 8, 2017 at 3:56 AM, Sergey Senozhatsky
+<sergey.senozhatsky.work@gmail.com> wrote:
+> The file was converted from print_fn_descriptor_symbol()
+> to %pF some time ago (c80cfb0406c01bb "vsprintf: use new
+> vsprintf symbolic function pointer format"). kallsyms does
+> not seem to be needed anymore.
+>
+> Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> Cc: Rafael Wysocki <rjw@rjwysocki.net>
+> Cc: Len Brown <len.brown@intel.com>
+> ---
+>  drivers/base/power/main.c | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 5bc2cf1f812c..e2539d8423f7 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -18,7 +18,6 @@
+>   */
+>
+>  #include <linux/device.h>
+> -#include <linux/kallsyms.h>
+>  #include <linux/export.h>
+>  #include <linux/mutex.h>
+>  #include <linux/pm.h>
+> --
 
-Thanks!
-
-> Petr, let's pick up sched/autogroup patches then. Thank you.
-
-Yup, I have pushed both patches into printk.git for-4.16:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/pmladek/printk.git/commit/?h=for-4.16&id=79ee842891595293be37c5aed0e75b4630166c5a
-https://git.kernel.org/pub/scm/linux/kernel/git/pmladek/printk.git/commit/?h=for-4.16&id=25493e5fba2f7b8cdade29d0fc8945114ee7732b
-
-Best Regards,
-Petr
+Do you want me to apply this or do you want to route it differently?
 
 --
 To unsubscribe, send a message with 'unsubscribe linux-mm' in
