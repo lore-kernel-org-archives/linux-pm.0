@@ -1,7 +1,7 @@
 From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Subject: [PATCH 2/9] mm: remove unneeded kallsyms include
-Date: Fri,  8 Dec 2017 11:56:09 +0900
-Message-ID: <20171208025616.16267-3-sergey.senozhatsky@gmail.com>
+Subject: [PATCH 3/9] power: remove unneeded kallsyms include
+Date: Fri,  8 Dec 2017 11:56:10 +0900
+Message-ID: <20171208025616.16267-4-sergey.senozhatsky@gmail.com>
 References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
 Return-path: <owner-linux-mm@kvack.org>
 In-Reply-To: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
@@ -10,39 +10,30 @@ To: Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.
 Cc: Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, linux-pm@vger.kernel.org, linux-pci@vger.kernel.org, linux-mm@kvack.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-The file was converted from print_symbol() to %pSR a while
-ago (071361d3473ebb814 "mm: Convert print_symbol to %pSR").
-kallsyms does not seem to be needed anymore.
+The file was converted from print_fn_descriptor_symbol()
+to %pF some time ago (c80cfb0406c01bb "vsprintf: use new
+vsprintf symbolic function pointer format"). kallsyms does
+not seem to be needed anymore.
 
 Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michal Hocko <mhocko@suse.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>
+Cc: Len Brown <len.brown@intel.com>
 ---
- mm/memory.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/base/power/main.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/mm/memory.c b/mm/memory.c
-index 24e9e1d5488f..551b323c9ab6 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -59,7 +59,6 @@
- #include <linux/writeback.h>
- #include <linux/memcontrol.h>
- #include <linux/mmu_notifier.h>
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 5bc2cf1f812c..e2539d8423f7 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -18,7 +18,6 @@
+  */
+ 
+ #include <linux/device.h>
 -#include <linux/kallsyms.h>
- #include <linux/swapops.h>
- #include <linux/elf.h>
- #include <linux/gfp.h>
-@@ -760,9 +759,6 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
- 		dump_page(page, "bad pte");
- 	pr_alert("addr:%p vm_flags:%08lx anon_vma:%p mapping:%p index:%lx\n",
- 		 (void *)addr, vma->vm_flags, vma->anon_vma, mapping, index);
--	/*
--	 * Choose text because data symbols depend on CONFIG_KALLSYMS_ALL=y
--	 */
- 	pr_alert("file:%pD fault:%pf mmap:%pf readpage:%pf\n",
- 		 vma->vm_file,
- 		 vma->vm_ops ? vma->vm_ops->fault : NULL,
+ #include <linux/export.h>
+ #include <linux/mutex.h>
+ #include <linux/pm.h>
 -- 
 2.15.1
 
