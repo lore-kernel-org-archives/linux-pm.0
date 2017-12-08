@@ -1,321 +1,156 @@
-From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v4 11/12] cpufreq: Add module to register cpufreq on Krait CPUs
-Date: Fri,  8 Dec 2017 15:00:00 +0530
-Message-ID: <1512725401-4944-12-git-send-email-sricharan@codeaurora.org>
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: Re: [PATCH v4 00/12] Krait clocks + Krait CPUfreq
+Date: Fri, 8 Dec 2017 15:04:53 +0530
+Message-ID: <e107cb2c-c334-fd5a-5a99-c994a4c512ab@codeaurora.org>
 References: <1512725401-4944-1-git-send-email-sricharan@codeaurora.org>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1512725401-4944-1-git-send-email-sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: mturquette-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-Cc: sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-msm-owner@vger.kernel.org>
+In-Reply-To: <1512725401-4944-1-git-send-email-sricharan@codeaurora.org>
+Content-Language: en-US
+Sender: linux-arm-msm-owner@vger.kernel.org
+To: mturquette@baylibre.com, sboyd@codeaurora.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+oops, got Mike's id wrong. Will just re-post fixing his id.
 
-Register a cpufreq-generic device whenever we detect that a
-"qcom,krait" compatible CPU is present in DT.
+On 12/8/2017 2:59 PM, Sricharan R wrote:
+> Mostly a resend of the v3 posted by Stephen quite some time back [1]
+> except for few changes.
+>   Based on reading some feedback from list,
+>   * Dropped the patch "clk: Add safe switch hook" from v3 [2].
+>     Now this is taken care by patch#10 in this series only for Krait.
+>   * Dropped the path "clk: Avoid sending high rates to downstream
+> 		      clocks during set_rate" from v3 [3].
+>   * Rebased on top of clk-next.
+>   * Dropped the DT update from the series. Will send seperately
+>   * Now with cpufreq-dt+opp supporting voltage scaling, registering the
+>     krait cpu supplies in DT should be sufficient. But one issue is,
+>     the qcom-cpufreq drivers reads the efuse and based on that registers
+>     the opp data and then registers the cpufreq-dt device. So when
+>     cpufreq-dt driver probes and registers the regulator to the OPP framework,
+>     it expects that the opp data for the device should not be registered before
+>     the regulator. Will send a RFC patch removing that check, to find out the
+>     right way of doing it.
+> 
+> These patches provide cpufreq scaling on devices with Krait CPUs.
+> In Krait CPU designs there's one PLL and two muxes per CPU, allowing
+> us to switch CPU frequencies independently.
+> 
+> 				 secondary
+> 	 +-----+                    +
+> 	 | QSB |-------+------------|\
+> 	 +-----+       |            | |-+
+> 		       |    +-------|/  |
+> 		       |    |       +   |
+> 	 +-----+       |    |           |
+> 	 | PLL |----+-------+           |   primary
+> 	 +-----+    |  |                |     +
+> 		    |  |                +-----|\       +------+
+> 	 +-------+  |  |                      | \      |      |
+> 	 | HFPLL |----------+-----------------|  |-----| CPU0 |
+> 	 +-------+  |  |    |                 |  |     |      |
+> 		    |  |    | +-----+         | /      +------+
+> 		    |  |    +-| / 2 |---------|/
+> 		    |  |      +-----+         +
+> 		    |  |         secondary
+> 		    |  |            +
+> 		    |  +------------|\
+> 		    |               | |-+
+> 		    +---------------|/  |   primary
+> 				    +   |     +
+> 					+-----|\       +------+
+> 	 +-------+                            | \      |      |
+> 	 | HFPLL |----------------------------|  |-----| CPU1 |
+> 	 +-------+          |                 |  |     |      |
+> 			    | +-----+         | /      +------+
+> 			    +-| / 2 |---------|/
+> 			      +-----+         +
+> 
+> To support this in the common clock framework we model the muxes,
+> dividers, and PLLs as different clocks. CPUfreq only interacts
+> with the primary mux (farthest right in the diagram). When CPUfreq
+> sets a rate, the mux code finds the best parent that can provide the rate.
+> Due to the design, QSB and the top PLL are always a fixed rate and thus
+> only support one frequency each. These sources provide the lowest
+> frequencies for the CPUs. The HFPLLs are where we can make the CPU go
+> faster (GHz range). Sometimes we need to run the HFPLL twice as
+> fast and divide it by two to get a particular frequency.
+> 
+> When switching rates we can't leave the CPU clocked by the HFPLL because
+> we need to turn off the output of the PLL when changing its frequency.
+> This means we have to switch over to the secondary mux and use one of the
+> fixed sources. This is why we need something like the safe parent patch.
+> 
+> [1] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332607.html
+> [2] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332615.html
+> [3] http://lists.infradead.org/pipermail/linux-arm-kernel/2015-March/332608.html
+> 
+> Sricharan R (2):
+>   clk: qcom: Add safe switch hook for krait mux clocks
+>   cpufreq: dt: Reintroduce independent_clocks platform data
+> 
+> Stephen Boyd (10):
+>   ARM: Add Krait L2 register accessor functions
+>   clk: mux: Split out register accessors for reuse
+>   clk: qcom: Add support for High-Frequency PLLs (HFPLLs)
+>   clk: qcom: Add HFPLL driver
+>   clk: qcom: Add MSM8960/APQ8064's HFPLLs
+>   clk: qcom: Add IPQ806X's HFPLLs
+>   clk: qcom: Add support for Krait clocks
+>   clk: qcom: Add KPSS ACC/GCC driver
+>   clk: qcom: Add Krait clock controller driver
+>   cpufreq: Add module to register cpufreq on Krait CPUs
+> 
+>  .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  |   7 +
+>  .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  |  28 ++
+>  .../devicetree/bindings/arm/msm/qcom,pvs.txt       |  38 ++
+>  .../devicetree/bindings/clock/qcom,hfpll.txt       |  40 ++
+>  .../devicetree/bindings/clock/qcom,krait-cc.txt    |  22 ++
+>  arch/arm/common/Kconfig                            |   3 +
+>  arch/arm/common/Makefile                           |   1 +
+>  arch/arm/common/krait-l2-accessors.c               |  58 +++
+>  arch/arm/include/asm/krait-l2-accessors.h          |  20 +
+>  drivers/clk/clk-mux.c                              |  75 ++--
+>  drivers/clk/qcom/Kconfig                           |  28 ++
+>  drivers/clk/qcom/Makefile                          |   5 +
+>  drivers/clk/qcom/clk-hfpll.c                       | 253 +++++++++++++
+>  drivers/clk/qcom/clk-hfpll.h                       |  54 +++
+>  drivers/clk/qcom/clk-krait.c                       | 136 +++++++
+>  drivers/clk/qcom/clk-krait.h                       |  51 +++
+>  drivers/clk/qcom/gcc-ipq806x.c                     |  82 +++++
+>  drivers/clk/qcom/gcc-msm8960.c                     | 172 +++++++++
+>  drivers/clk/qcom/hfpll.c                           | 106 ++++++
+>  drivers/clk/qcom/kpss-xcc.c                        |  96 +++++
+>  drivers/clk/qcom/krait-cc.c                        | 406 +++++++++++++++++++++
+>  drivers/cpufreq/Kconfig.arm                        |   9 +
+>  drivers/cpufreq/Makefile                           |   1 +
+>  drivers/cpufreq/cpufreq-dt.c                       |   7 +-
+>  drivers/cpufreq/cpufreq-dt.h                       |   6 +
+>  drivers/cpufreq/qcom-cpufreq.c                     | 204 +++++++++++
+>  include/dt-bindings/clock/qcom,gcc-msm8960.h       |   2 +
+>  include/linux/clk-provider.h                       |   9 +-
+>  28 files changed, 1888 insertions(+), 31 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+>  create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
+>  create mode 100644 Documentation/devicetree/bindings/clock/qcom,hfpll.txt
+>  create mode 100644 Documentation/devicetree/bindings/clock/qcom,krait-cc.txt
+>  create mode 100644 arch/arm/common/krait-l2-accessors.c
+>  create mode 100644 arch/arm/include/asm/krait-l2-accessors.h
+>  create mode 100644 drivers/clk/qcom/clk-hfpll.c
+>  create mode 100644 drivers/clk/qcom/clk-hfpll.h
+>  create mode 100644 drivers/clk/qcom/clk-krait.c
+>  create mode 100644 drivers/clk/qcom/clk-krait.h
+>  create mode 100644 drivers/clk/qcom/hfpll.c
+>  create mode 100644 drivers/clk/qcom/kpss-xcc.c
+>  create mode 100644 drivers/clk/qcom/krait-cc.c
+>  create mode 100644 drivers/cpufreq/qcom-cpufreq.c
+> 
 
-Cc: <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Signed-off-by: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
----
- .../devicetree/bindings/arm/msm/qcom,pvs.txt       |  38 ++++
- drivers/cpufreq/Kconfig.arm                        |   9 +
- drivers/cpufreq/Makefile                           |   1 +
- drivers/cpufreq/qcom-cpufreq.c                     | 204 +++++++++++++++++++++
- 4 files changed, 252 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
- create mode 100644 drivers/cpufreq/qcom-cpufreq.c
-
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt b/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
-new file mode 100644
-index 0000000..e7cb104
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
-@@ -0,0 +1,38 @@
-+Qualcomm Process Voltage Scaling Tables
-+
-+The node name is required to be "qcom,pvs". There shall only be one
-+such node present in the root of the tree.
-+
-+PROPERTIES
-+
-+- qcom,pvs-format-a or qcom,pvs-format-b:
-+	Usage: required
-+	Value type: <empty>
-+	Definition: Indicates the format of qcom,speedX-pvsY-bin-vZ properties.
-+		    If qcom,pvs-format-a is used the table is two columns
-+		    (frequency and voltage in that order). If qcom,pvs-format-b 		    is used the table is three columns (frequency, voltage,
-+		    and current in that order).
-+
-+- qcom,speedX-pvsY-bin-vZ:
-+	Usage: required
-+	Value type: <prop-encoded-array>
-+	Definition: The PVS table corresponding to the speed bin X, pvs bin Y,
-+		    and version Z.
-+Example:
-+
-+	qcom,pvs {
-+		qcom,pvs-format-a;
-+		qcom,speed0-pvs0-bin-v0 =
-+			<  384000000  950000 >,
-+			<  486000000  975000 >,
-+			<  594000000 1000000 >,
-+			<  702000000 1025000 >,
-+			<  810000000 1075000 >,
-+			<  918000000 1100000 >,
-+			< 1026000000 1125000 >,
-+			< 1134000000 1175000 >,
-+			< 1242000000 1200000 >,
-+			< 1350000000 1225000 >,
-+			< 1458000000 1237500 >,
-+			< 1512000000 1250000 >;
-+	};
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index bdce448..60f28e7 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -100,6 +100,15 @@ config ARM_OMAP2PLUS_CPUFREQ
- 	depends on ARCH_OMAP2PLUS
- 	default ARCH_OMAP2PLUS
- 
-+config ARM_QCOM_CPUFREQ
-+	tristate "Qualcomm based"
-+	depends on ARCH_QCOM
-+	select PM_OPP
-+	help
-+	  This adds the CPUFreq driver for Qualcomm SoC based boards.
-+
-+	  If in doubt, say N.
-+
- config ARM_S3C_CPUFREQ
- 	bool
- 	help
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index 812f9e0..1496464 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -62,6 +62,7 @@ obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mediatek-cpufreq.o
- obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
- obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
- obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
-+obj-$(CONFIG_ARM_QCOM_CPUFREQ)		+= qcom-cpufreq.o
- obj-$(CONFIG_ARM_S3C24XX_CPUFREQ)	+= s3c24xx-cpufreq.o
- obj-$(CONFIG_ARM_S3C24XX_CPUFREQ_DEBUGFS) += s3c24xx-cpufreq-debugfs.o
- obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
-diff --git a/drivers/cpufreq/qcom-cpufreq.c b/drivers/cpufreq/qcom-cpufreq.c
-new file mode 100644
-index 0000000..95ed2ba
---- /dev/null
-+++ b/drivers/cpufreq/qcom-cpufreq.c
-@@ -0,0 +1,204 @@
-+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/cpu.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/slab.h>
-+#include "cpufreq-dt.h"
-+
-+static void __init get_krait_bin_format_a(int *speed, int *pvs, int *pvs_ver)
-+{
-+	void __iomem *base;
-+	u32 pte_efuse;
-+
-+	*speed = *pvs = *pvs_ver = 0;
-+
-+	base = ioremap(0x007000c0, 4);
-+	if (!base) {
-+		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
-+		return;
-+	}
-+
-+	pte_efuse = readl_relaxed(base);
-+	iounmap(base);
-+
-+	*speed = pte_efuse & 0xf;
-+	if (*speed == 0xf)
-+		*speed = (pte_efuse >> 4) & 0xf;
-+
-+	if (*speed == 0xf) {
-+		*speed = 0;
-+		pr_warn("Speed bin: Defaulting to %d\n", *speed);
-+	} else {
-+		pr_info("Speed bin: %d\n", *speed);
-+	}
-+
-+	*pvs = (pte_efuse >> 10) & 0x7;
-+	if (*pvs == 0x7)
-+		*pvs = (pte_efuse >> 13) & 0x7;
-+
-+	if (*pvs == 0x7) {
-+		*pvs = 0;
-+		pr_warn("PVS bin: Defaulting to %d\n", *pvs);
-+	} else {
-+		pr_info("PVS bin: %d\n", *pvs);
-+	}
-+}
-+
-+static void __init get_krait_bin_format_b(int *speed, int *pvs, int *pvs_ver)
-+{
-+	u32 pte_efuse, redundant_sel;
-+	void __iomem *base;
-+
-+	*speed = 0;
-+	*pvs = 0;
-+	*pvs_ver = 0;
-+
-+	base = ioremap(0xfc4b80b0, 8);
-+	if (!base) {
-+		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
-+		return;
-+	}
-+
-+	pte_efuse = readl_relaxed(base);
-+	redundant_sel = (pte_efuse >> 24) & 0x7;
-+	*speed = pte_efuse & 0x7;
-+	/* 4 bits of PVS are in efuse register bits 31, 8-6. */
-+	*pvs = ((pte_efuse >> 28) & 0x8) | ((pte_efuse >> 6) & 0x7);
-+	*pvs_ver = (pte_efuse >> 4) & 0x3;
-+
-+	switch (redundant_sel) {
-+	case 1:
-+		*speed = (pte_efuse >> 27) & 0xf;
-+		break;
-+	case 2:
-+		*pvs = (pte_efuse >> 27) & 0xf;
-+		break;
-+	}
-+
-+	/* Check SPEED_BIN_BLOW_STATUS */
-+	if (pte_efuse & BIT(3)) {
-+		pr_info("Speed bin: %d\n", *speed);
-+	} else {
-+		pr_warn("Speed bin not set. Defaulting to 0!\n");
-+		*speed = 0;
-+	}
-+
-+	/* Check PVS_BLOW_STATUS */
-+	pte_efuse = readl_relaxed(base + 0x4) & BIT(21);
-+	if (pte_efuse) {
-+		pr_info("PVS bin: %d\n", *pvs);
-+	} else {
-+		pr_warn("PVS bin not set. Defaulting to 0!\n");
-+		*pvs = 0;
-+	}
-+
-+	pr_info("PVS version: %d\n", *pvs_ver);
-+	iounmap(base);
-+}
-+
-+static int __init qcom_cpufreq_populate_opps(void)
-+{
-+	int len, rows, cols, i, k, speed, pvs, pvs_ver;
-+	char table_name[] = "qcom,speedXX-pvsXX-bin-vXX";
-+	struct device_node *np;
-+	struct device *dev;
-+	int cpu = 0;
-+
-+	np = of_find_node_by_name(NULL, "qcom,pvs");
-+	if (!np)
-+		return -ENODEV;
-+
-+	if (of_property_read_bool(np, "qcom,pvs-format-a")) {
-+		get_krait_bin_format_a(&speed, &pvs, &pvs_ver);
-+		cols = 2;
-+	} else if (of_property_read_bool(np, "qcom,pvs-format-b")) {
-+		get_krait_bin_format_b(&speed, &pvs, &pvs_ver);
-+		cols = 3;
-+	} else {
-+		return -ENODEV;
-+	}
-+
-+	snprintf(table_name, sizeof(table_name),
-+		 "qcom,speed%d-pvs%d-bin-v%d", speed, pvs, pvs_ver);
-+
-+	if (!of_find_property(np, table_name, &len))
-+		return -EINVAL;
-+
-+	len /= sizeof(u32);
-+	if (len % cols || len == 0)
-+		return -EINVAL;
-+
-+	rows = len / cols;
-+
-+	for (i = 0, k = 0; i < rows; i++) {
-+		u32 freq, volt;
-+
-+		of_property_read_u32_index(np, table_name, k++, &freq);
-+		of_property_read_u32_index(np, table_name, k++, &volt);
-+		while (k % cols)
-+			k++; /* Skip uA entries if present */
-+		for (cpu = 0; cpu < num_possible_cpus(); cpu++) {
-+			dev = get_cpu_device(cpu);
-+			if (!dev)
-+				return -ENODEV;
-+			if (dev_pm_opp_add(dev, freq, volt))
-+				pr_warn("failed to add OPP %u\n", freq);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int __init qcom_cpufreq_driver_init(void)
-+{
-+	struct cpufreq_dt_platform_data pdata = { .independent_clocks = true };
-+	struct platform_device_info devinfo = {
-+		.name = "cpufreq-dt",
-+		.data = &pdata,
-+		.size_data = sizeof(pdata),
-+	};
-+	struct device *cpu_dev;
-+	struct device_node *np;
-+	int ret;
-+
-+	cpu_dev = get_cpu_device(0);
-+	if (!cpu_dev)
-+		return -ENODEV;
-+
-+	np = of_node_get(cpu_dev->of_node);
-+	if (!np)
-+		return -ENOENT;
-+
-+	if (!of_device_is_compatible(np, "qcom,krait")) {
-+		of_node_put(np);
-+		return -ENODEV;
-+	}
-+	of_node_put(np);
-+
-+	ret = qcom_cpufreq_populate_opps();
-+	if (ret)
-+		return ret;
-+
-+	return PTR_ERR_OR_ZERO(platform_device_register_full(&devinfo));
-+}
-+module_init(qcom_cpufreq_driver_init);
-+
-+MODULE_DESCRIPTION("Qualcomm CPUfreq driver");
-+MODULE_LICENSE("GPL v2");
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+---
+This email has been checked for viruses by Avast antivirus software.
+https://www.avast.com/antivirus
