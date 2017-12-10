@@ -1,97 +1,275 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 2/3] PM / core: Add IN_BAND_WAKEUP driver flag
-Date: Sun, 10 Dec 2017 11:16:40 +0100
-Message-ID: <CAMuHMdUE+fdbS+HDxbcWNHaTZubnrQ7ai4bkOsBpLriG1y-gZg@mail.gmail.com>
-References: <1510588003-16650-1-git-send-email-ulf.hansson@linaro.org>
- <1510588003-16650-3-git-send-email-ulf.hansson@linaro.org> <1926914.PsNMcYBlGW@aspire.rjw.lan>
+From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 2/8] iio: adc: axp20x_adc: add support for AXP813 ADC
+Date: Sun, 10 Dec 2017 16:36:55 +0000
+Message-ID: <20171210163655.43fbd3c0@archlinux>
+References: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz@free-electrons.com>
+        <ef830ce470a4f0f4be6040a776b6928bf89c0143.1512396054.git-series.quentin.schulz@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f194.google.com ([209.85.216.194]:37094 "EHLO
-        mail-qt0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751452AbdLJKQl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 10 Dec 2017 05:16:41 -0500
-In-Reply-To: <1926914.PsNMcYBlGW@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <ef830ce470a4f0f4be6040a776b6928bf89c0143.1512396054.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, icenowy-h8G6r0blFSE@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-Hi Rafael, Ulf,
+On Mon,  4 Dec 2017 15:12:48 +0100
+Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
 
-On Sun, Dec 10, 2017 at 3:30 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Monday, November 13, 2017 4:46:42 PM CET Ulf Hansson wrote:
->> For some bus types and PM domains, it's not sufficient to only check the
->> return value from device_may_wakeup(), to fully understand how to configure
->> wakeup settings for the device during system suspend.
->>
->> In particular, sometimes the device may need to remain in its power state,
->> in case the driver has configured it for in band IRQs, as to be able to
->> generate wakeup signals. Therefore, define and document an IN_BAND_WAKEUP
->> driver flag, to enable drivers to instruct bus types and PM domains about
->> this setting.
->>
->> Of course, in case the bus type and PM domain has additional information
->> about wakeup settings of the device, they may override the behaviour.
->>
->> Using the IN_BAND_WAKEUP driver flag for a device, may also affect how bus
->> types and PM domains should treat the device's parent during system
->> suspend. Therefore, in __device_suspend(), let the PM core propagate the
->> wakeup setting by using a status flag in the struct dev_pm_info for the
->> parent. This also makes it consistent with how the existing "wakeup_path"
->> status flag is being assigned.
->
-> I've been thinking about this quite a bit recently and my conclusion is that
-> the flag makes perfect sence (as it covers a valid use case), but I would
-> define it and design the handling of it a bit differently.
+> The X-Powers AXP813 PMIC is really close to what is already done for
+> AXP20X/AXP22X.
+> 
+> There are two pairs of bits to set the rate (one for Voltage and Current
+> measurements and one for TS/GPIO0 voltage measurements) instead of one.
 
-I'm also still thinking about this, cfr. my recent silence w.r.t.
-these matters...
+This would normally imply we need to split the device into two logical
+IIO devices.  However, that only becomes relevant if we are using
+buffered output which this driver doesn't support.
 
-On Renesas ARM SoCs (and at least some SH SoCs, but these are stuck in the
-pre-DT legacy clock domain), a device needs to be kept running if it is a
-wake-up source (e.g. WoL), or if it's part of the wake-up patch (e.g.
-irqchip). So in the absence of the GENPD_FLAG_ACTIVE_WAKEUP flag in the PM
-Domain driver, all individual drivers would need to set the IN_BAND_WAKEUP
-flag (but see the exception below)
-Hence for this class of SoCs, this would duplicate the existing
-dev->power.wakeup and dev->power.wakeup_path flags, so that's why I would
-prefer using GENPD_FLAG_ACTIVE_WAKEUP instead (like we already do for the
-older SH-Mobile SoCs, but not for newer R-Car and RZ series).
-For other SoC families, the situation may be different.
+It'll be nasty to deal with this if we add that support down the line
+though.  Up to you though as it's more likely to be your problem than
+anyone else's :)
 
-For us, the only exception are devices where the wakeup-source is not the
-device itself, but a GPIO, e.g. SDHI card detect. In such a case, only the
-device driver knows if the device is to be woken up through a dedicated CD
-line, or through a GPIO CD. So that would call for a method to opt-out,
-e.g. OUT_BAND_WAKEUP.
+For now you could elect to support the different sampling frequencies
+if you wanted to but just providing controls for each channel.
 
-To complicate matters, some drivers may be used on SoCs where the device
-needs to be kept running (clock and/or power domain), and on SoCs where the
-device is always running. This difference is typically handled by genpd,
-and the device driver may not even be aware. Of course the driver can just
-set IN_BAND_WAKEUP regardless, (else it has to check for the presence of
-clocks and/or power-domains properties itself, duplicating genpd
-core/driver code).
+Given the driver doesn't currently expose these at all (I think)
+this is all rather immaterial ;)
+> 
+> The register to set the ADC rates is different from the one for
+> AXP20X/AXP22X.
+> 
+> GPIO0 can be used as an ADC (measuring Volts) unlike for AXP22X.
+> 
+> The scales to apply to the different inputs are unlike the ones from
+> AXP20X and AXP22X.
+> 
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 
-So what about
+Looks good to me.
 
-         if (IN_BAND_WAKEUP ||
-            (GENPD_FLAG_ACTIVE_WAKEUP && !OUT_BAND_WAKEUP)) {
-                ... suspend device...
-        }
+Acked-by: Jonathan Cameron <Jonathan.Cameron-hv44wF8Li93QT0dZR+AlfA@public.gmane.org>
 
-?
+I'm assuming these will probably go via MFD..
 
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Jonathan
+> ---
+>  drivers/iio/adc/axp20x_adc.c | 122 ++++++++++++++++++++++++++++++++++++-
+>  include/linux/mfd/axp20x.h   |   2 +-
+>  2 files changed, 124 insertions(+)
+> 
+> diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
+> index 7274f4f..03d489b 100644
+> --- a/drivers/iio/adc/axp20x_adc.c
+> +++ b/drivers/iio/adc/axp20x_adc.c
+> @@ -35,8 +35,13 @@
+>  #define AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(x)	(((x) & BIT(0)) << 1)
+>  
+>  #define AXP20X_ADC_RATE_MASK			GENMASK(7, 6)
+> +#define AXP813_V_I_ADC_RATE_MASK		GENMASK(5, 4)
+> +#define AXP813_ADC_RATE_MASK			(AXP20X_ADC_RATE_MASK | AXP813_V_I_ADC_RATE_MASK)
+>  #define AXP20X_ADC_RATE_HZ(x)			((ilog2((x) / 25) << 6) & AXP20X_ADC_RATE_MASK)
+>  #define AXP22X_ADC_RATE_HZ(x)			((ilog2((x) / 100) << 6) & AXP20X_ADC_RATE_MASK)
+> +#define AXP813_TS_GPIO0_ADC_RATE_HZ(x)		AXP20X_ADC_RATE_HZ(x)
+> +#define AXP813_V_I_ADC_RATE_HZ(x)		((ilog2((x) / 100) << 4) & AXP813_V_I_ADC_RATE_MASK)
+> +#define AXP813_ADC_RATE_HZ(x)			(AXP20X_ADC_RATE_HZ(x) | AXP813_V_I_ADC_RATE_HZ(x))
+>  
+>  #define AXP20X_ADC_CHANNEL(_channel, _name, _type, _reg)	\
+>  	{							\
+> @@ -95,6 +100,12 @@ enum axp22x_adc_channel_i {
+>  	AXP22X_BATT_DISCHRG_I,
+>  };
+>  
+> +enum axp813_adc_channel_v {
+> +	AXP813_TS_IN = 0,
+> +	AXP813_GPIO0_V,
+> +	AXP813_BATT_V,
+> +};
+> +
+>  static struct iio_map axp20x_maps[] = {
+>  	{
+>  		.consumer_dev_name = "axp20x-usb-power-supply",
+> @@ -197,6 +208,25 @@ static const struct iio_chan_spec axp22x_adc_channels[] = {
+>  			   AXP20X_BATT_DISCHRG_I_H),
+>  };
+>  
+> +static const struct iio_chan_spec axp813_adc_channels[] = {
+> +	{
+> +		.type = IIO_TEMP,
+> +		.address = AXP22X_PMIC_TEMP_H,
+> +		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |
+> +				      BIT(IIO_CHAN_INFO_SCALE) |
+> +				      BIT(IIO_CHAN_INFO_OFFSET),
+> +		.datasheet_name = "pmic_temp",
+> +	},
+> +	AXP20X_ADC_CHANNEL(AXP813_GPIO0_V, "gpio0_v", IIO_VOLTAGE,
+> +			   AXP288_GP_ADC_H),
+> +	AXP20X_ADC_CHANNEL(AXP813_BATT_V, "batt_v", IIO_VOLTAGE,
+> +			   AXP20X_BATT_V_H),
+> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
+> +			   AXP20X_BATT_CHRG_I_H),
+> +	AXP20X_ADC_CHANNEL(AXP22X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
+> +			   AXP20X_BATT_DISCHRG_I_H),
+> +};
+> +
+>  static int axp20x_adc_raw(struct iio_dev *indio_dev,
+>  			  struct iio_chan_spec const *chan, int *val)
+>  {
+> @@ -243,6 +273,18 @@ static int axp22x_adc_raw(struct iio_dev *indio_dev,
+>  	return IIO_VAL_INT;
+>  }
+>  
+> +static int axp813_adc_raw(struct iio_dev *indio_dev,
+> +			  struct iio_chan_spec const *chan, int *val)
+> +{
+> +	struct axp20x_adc_iio *info = iio_priv(indio_dev);
+> +
+> +	*val = axp20x_read_variable_width(info->regmap, chan->address, 12);
+> +	if (*val < 0)
+> +		return *val;
+> +
+> +	return IIO_VAL_INT;
+> +}
+> +
+>  static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
+>  {
+>  	switch (channel) {
+> @@ -273,6 +315,24 @@ static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
+>  	}
+>  }
+>  
+> +static int axp813_adc_scale_voltage(int channel, int *val, int *val2)
+> +{
+> +	switch (channel) {
+> +	case AXP813_GPIO0_V:
+> +		*val = 0;
+> +		*val2 = 800000;
+> +		return IIO_VAL_INT_PLUS_MICRO;
+> +
+> +	case AXP813_BATT_V:
+> +		*val = 1;
+> +		*val2 = 100000;
+> +		return IIO_VAL_INT_PLUS_MICRO;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+>  static int axp20x_adc_scale_current(int channel, int *val, int *val2)
+>  {
+>  	switch (channel) {
+> @@ -342,6 +402,26 @@ static int axp22x_adc_scale(struct iio_chan_spec const *chan, int *val,
+>  	}
+>  }
+>  
+> +static int axp813_adc_scale(struct iio_chan_spec const *chan, int *val,
+> +			    int *val2)
+> +{
+> +	switch (chan->type) {
+> +	case IIO_VOLTAGE:
+> +		return axp813_adc_scale_voltage(chan->channel, val, val2);
+> +
+> +	case IIO_CURRENT:
+> +		*val = 1;
+> +		return IIO_VAL_INT;
+> +
+> +	case IIO_TEMP:
+> +		*val = 100;
+> +		return IIO_VAL_INT;
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+>  static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
+>  				     int *val)
+>  {
+> @@ -425,6 +505,26 @@ static int axp22x_read_raw(struct iio_dev *indio_dev,
+>  	}
+>  }
+>  
+> +static int axp813_read_raw(struct iio_dev *indio_dev,
+> +			   struct iio_chan_spec const *chan, int *val,
+> +			   int *val2, long mask)
+> +{
+> +	switch (mask) {
+> +	case IIO_CHAN_INFO_OFFSET:
+> +		*val = -2667;
+> +		return IIO_VAL_INT;
+> +
+> +	case IIO_CHAN_INFO_SCALE:
+> +		return axp813_adc_scale(chan, val, val2);
+> +
+> +	case IIO_CHAN_INFO_RAW:
+> +		return axp813_adc_raw(indio_dev, chan, val);
+> +
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +}
+> +
+>  static int axp20x_write_raw(struct iio_dev *indio_dev,
+>  			    struct iio_chan_spec const *chan, int val, int val2,
+>  			    long mask)
+> @@ -470,6 +570,10 @@ static const struct iio_info axp22x_adc_iio_info = {
+>  	.read_raw = axp22x_read_raw,
+>  };
+>  
+> +static const struct iio_info axp813_adc_iio_info = {
+> +	.read_raw = axp813_read_raw,
+> +};
+> +
+>  static int axp20x_adc_rate(struct axp20x_adc_iio *info, int rate)
+>  {
+>  	return regmap_update_bits(info->regmap, AXP20X_ADC_RATE,
+> @@ -484,6 +588,13 @@ static int axp22x_adc_rate(struct axp20x_adc_iio *info, int rate)
+>  				  AXP22X_ADC_RATE_HZ(rate));
+>  }
+>  
+> +static int axp813_adc_rate(struct axp20x_adc_iio *info, int rate)
+> +{
+> +	return regmap_update_bits(info->regmap, AXP813_ADC_RATE,
+> +				 AXP813_ADC_RATE_MASK,
+> +				 AXP813_ADC_RATE_HZ(rate));
+> +}
+> +
+>  struct axp_data {
+>  	const struct iio_info		*iio_info;
+>  	int				num_channels;
+> @@ -514,9 +625,20 @@ static const struct axp_data axp22x_data = {
+>  	.maps = axp22x_maps,
+>  };
+>  
+> +static const struct axp_data axp813_data = {
+> +	.iio_info = &axp813_adc_iio_info,
+> +	.num_channels = ARRAY_SIZE(axp813_adc_channels),
+> +	.channels = axp813_adc_channels,
+> +	.adc_en1_mask = AXP22X_ADC_EN1_MASK,
+> +	.adc_rate = axp813_adc_rate,
+> +	.adc_en2 = false,
+> +	.maps = axp22x_maps,
+> +};
+> +
+>  static const struct platform_device_id axp20x_adc_id_match[] = {
+>  	{ .name = "axp20x-adc", .driver_data = (kernel_ulong_t)&axp20x_data, },
+>  	{ .name = "axp22x-adc", .driver_data = (kernel_ulong_t)&axp22x_data, },
+> +	{ .name = "axp813-adc", .driver_data = (kernel_ulong_t)&axp813_data, },
+>  	{ /* sentinel */ },
+>  };
+>  MODULE_DEVICE_TABLE(platform, axp20x_adc_id_match);
+> diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
+> index 78dc853..ff95414 100644
+> --- a/include/linux/mfd/axp20x.h
+> +++ b/include/linux/mfd/axp20x.h
+> @@ -266,6 +266,8 @@ enum axp20x_variants {
+>  #define AXP288_RT_BATT_V_H		0xa0
+>  #define AXP288_RT_BATT_V_L		0xa1
+>  
+> +#define AXP813_ADC_RATE			0x85
+> +
+>  /* Fuel Gauge */
+>  #define AXP288_FG_RDC1_REG          0xba
+>  #define AXP288_FG_RDC0_REG          0xbb
