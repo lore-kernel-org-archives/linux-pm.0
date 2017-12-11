@@ -1,148 +1,207 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH v2 3/4] thermal: armada: add support for CP110
-Date: Mon, 11 Dec 2017 18:02:49 +0100
-Message-ID: <87y3m9qjt2.fsf@free-electrons.com>
-References: <f8c589337a4fb78852eadf15058e8f8d132d4dc0.1512299484.git.baruch@tkos.co.il>
-        <d48c916a2502f9c75e9ea4ba41300e2ffbb254d8.1512299484.git.baruch@tkos.co.il>
-        <20171211160932.692ba8be@xps13>
-        <20171211152731.glkkes5errcxmsvz@sapphire.tkos.co.il>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 2/3] PM / core: Add IN_BAND_WAKEUP driver flag
+Date: Mon, 11 Dec 2017 21:59:31 +0100
+Message-ID: <CAPDyKFoey_kSf0OE7OmHCX4H4VFQcWOU6NE4suZ9=9stZVQNpQ@mail.gmail.com>
+References: <1510588003-16650-1-git-send-email-ulf.hansson@linaro.org>
+ <1510588003-16650-3-git-send-email-ulf.hansson@linaro.org>
+ <1926914.PsNMcYBlGW@aspire.rjw.lan> <CAMuHMdUE+fdbS+HDxbcWNHaTZubnrQ7ai4bkOsBpLriG1y-gZg@mail.gmail.com>
+ <CAPDyKFoAY7yZJz9obke5DeqadpqJ0MEKPQJvxibpq85f+==BBA@mail.gmail.com> <CAMuHMdXk9GaExvYbdSfV0bf4Kh1TNrZDKtAfTDaDfWFMvk6Snw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:41921 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751628AbdLKRDB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Dec 2017 12:03:01 -0500
-In-Reply-To: <20171211152731.glkkes5errcxmsvz@sapphire.tkos.co.il> (Baruch
-        Siach's message of "Mon, 11 Dec 2017 17:27:31 +0200")
+Received: from mail-it0-f46.google.com ([209.85.214.46]:46384 "EHLO
+        mail-it0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751625AbdLKU7c (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 Dec 2017 15:59:32 -0500
+Received: by mail-it0-f46.google.com with SMTP id t1so19178574ite.5
+        for <linux-pm@vger.kernel.org>; Mon, 11 Dec 2017 12:59:32 -0800 (PST)
+In-Reply-To: <CAMuHMdXk9GaExvYbdSfV0bf4Kh1TNrZDKtAfTDaDfWFMvk6Snw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Baruch Siach <baruch@tkos.co.il>, Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
-Cc: Miquel RAYNAL <miquel.raynal@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, devicetree@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Russell King <linux@armlinux.org.uk>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-Hi Baruch,
- 
- On lun., déc. 11 2017, Baruch Siach <baruch@tkos.co.il> wrote:
-
-> Hi Miquel,
+On 11 December 2017 at 11:48, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Ulf,
 >
-> On Mon, Dec 11, 2017 at 04:09:32PM +0100, Miquel RAYNAL wrote:
->> On Sun,  3 Dec 2017 13:11:23 +0200
->> Baruch Siach <baruch@tkos.co.il> wrote:
->> 
->> > The CP110 component is integrated in the Armada 8k and 7k lines of
->> > processors.
->> > 
->> > This patch also adds an option of offset to the MSB of the control
->> > register. The existing DT binding for Armada 38x refers to a single
->> > 32 bit control register. It turns out that this is actually only the
->> > MSB of the control area. Changing the binding to fix that would break
->> > existing DT files, so the Armada 38x binding is left as is.
->> > 
->> > The new CP110 binding increases the size of the control area to 64
->> > bits, thus moving the MSB to offset 4.
->> > 
->> > Signed-off-by: Baruch Siach <baruch@tkos.co.il>
->> > ---
->> > v2: No change
->> > ---
->> >  drivers/thermal/armada_thermal.c | 24 ++++++++++++++++++++++--
->> >  1 file changed, 22 insertions(+), 2 deletions(-)
->> > 
->> > diff --git a/drivers/thermal/armada_thermal.c
->> > b/drivers/thermal/armada_thermal.c index 0eb82097571f..59b75f63945d
->> > 100644 --- a/drivers/thermal/armada_thermal.c
->> > +++ b/drivers/thermal/armada_thermal.c
->> > @@ -73,6 +73,7 @@ struct armada_thermal_data {
->> >  	unsigned int temp_shift;
->> >  	unsigned int temp_mask;
->> >  	unsigned int is_valid_shift;
->> > +	unsigned int control_msb_offset;
->> >  };
->> >  
->> >  static void armadaxp_init_sensor(struct platform_device *pdev,
->> > @@ -142,12 +143,14 @@ static void armada375_init_sensor(struct
->> > platform_device *pdev, static void armada380_init_sensor(struct
->> > platform_device *pdev, struct armada_thermal_priv *priv)
->> >  {
->> > -	unsigned long reg = readl_relaxed(priv->control);
->> > +	void __iomem *control_msb =
->> > +		priv->control + priv->data->control_msb_offset;
->> > +	unsigned long reg = readl_relaxed(control_msb);
->> >  
->> >  	/* Reset hardware once */
->> >  	if (!(reg & A380_HW_RESET)) {
->> >  		reg |= A380_HW_RESET;
->> > -		writel(reg, priv->control);
->> > +		writel(reg, control_msb);
->> >  		mdelay(10);
->> >  	}
->> >  }
->> > @@ -266,6 +269,19 @@ static const struct armada_thermal_data
->> > armada_ap806_data = { .signed_sample = true,
->> >  };
->> >  
->> > +static const struct armada_thermal_data armada_cp110_data = {
->> > +	.is_valid = armada_is_valid,
->> > +	.init_sensor = armada380_init_sensor,
->> 
->> I see the initialization for CP110 thermal IP is close to
->> Armada-380's, but, as you point it in the commit log it is still
->> different.
->> 
->> I don't know what is the best way to handle this but until now each
->> new compatible had his own ->init_sensor function, shouldn't we do
->> the same here as changes are requested? This would naturally avoid the
->> situation with Armada-380 bindings.
+> On Mon, Dec 11, 2017 at 11:24 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 10 December 2017 at 11:16, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>>> On Sun, Dec 10, 2017 at 3:30 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>>> On Monday, November 13, 2017 4:46:42 PM CET Ulf Hansson wrote:
+>>>>> For some bus types and PM domains, it's not sufficient to only check the
+>>>>> return value from device_may_wakeup(), to fully understand how to configure
+>>>>> wakeup settings for the device during system suspend.
+>>>>>
+>>>>> In particular, sometimes the device may need to remain in its power state,
+>>>>> in case the driver has configured it for in band IRQs, as to be able to
+>>>>> generate wakeup signals. Therefore, define and document an IN_BAND_WAKEUP
+>>>>> driver flag, to enable drivers to instruct bus types and PM domains about
+>>>>> this setting.
+>>>>>
+>>>>> Of course, in case the bus type and PM domain has additional information
+>>>>> about wakeup settings of the device, they may override the behaviour.
+>>>>>
+>>>>> Using the IN_BAND_WAKEUP driver flag for a device, may also affect how bus
+>>>>> types and PM domains should treat the device's parent during system
+>>>>> suspend. Therefore, in __device_suspend(), let the PM core propagate the
+>>>>> wakeup setting by using a status flag in the struct dev_pm_info for the
+>>>>> parent. This also makes it consistent with how the existing "wakeup_path"
+>>>>> status flag is being assigned.
+>>>>
+>>>> I've been thinking about this quite a bit recently and my conclusion is that
+>>>> the flag makes perfect sence (as it covers a valid use case), but I would
+>>>> define it and design the handling of it a bit differently.
+>>>
+>>> I'm also still thinking about this, cfr. my recent silence w.r.t.
+>>> these matters...
+>>>
+>>> On Renesas ARM SoCs (and at least some SH SoCs, but these are stuck in the
+>>> pre-DT legacy clock domain), a device needs to be kept running if it is a
+>>> wake-up source (e.g. WoL), or if it's part of the wake-up patch (e.g.
+>>> irqchip). So in the absence of the GENPD_FLAG_ACTIVE_WAKEUP flag in the PM
+>>> Domain driver, all individual drivers would need to set the IN_BAND_WAKEUP
+>>> flag (but see the exception below)
+>>
+>> Could you elaborate a bit about the wakeup-path? Let me start and you
+>> can fill in.
+>>
+>> In $subject patch, the PM core propagates the IN_BAND_WAKEUP flag of
+>> the device to its parent device, via the ->power.wakeup_path_in_band
+>> flag. That becomes additional new information, as we already has the
+>> PM core to propagate the value of device_may_wakeup() (if true) to the
+>> parent device, via the ->power.wakeup_path flag.
+>>
+>> I assume that isn't sufficient, because the wakeup path isn't
+>> reflected in the child/parent hierarchy?
 >
-> I'm not sure I understand your suggestion.
+> That's correct. Interrupts are not part of the parent/child relationship.
+> Traditionally, irqchips were not platform devices, but now many irqchips
+> used on embedded platforms are.
 >
-> There is no difference between the CP110 and the Armada 38x, as far as I can 
-> see. The only quirk is that the existing Armada 38x DT binding is wrong I that 
-> the 'reg' property references the control MSB, while leaving the LSB
-> out. We
+>> So, I guess this is about drivers who deals with wakeup enabled
+>> devices and which are consumers of other resources (irqchips for
+>> example). As part of the wakup path, these resources also needs to be
+>> kept running, right?
+>
+> Correct.
+>
+>> In your case, what other resources besides the irqchip, can be
+>> considered as a part of the wakeup path, but also being outside the
+>> parent/child hierarchy of the wakeup enabled device?
+>
+> GPIOs used for wake-up? E.g. SDHI GPIO. We don't seem to have that
+> enabled for the Renesas SDHI drivers, though.
+>
+> For gpio-keys, this is handled through enable_irq_wake(), so again it
+> uses an irqchip.
 
-Well I would not say it was wrong but more incomplete :)
+Yes, this is clearly a common use case. Although, I am sure we have more.
 
-
-> can't change the Armada 38x binding without breaking existing DTs. The 
-> 'control_msb_offset' field that this patch adds allows correct binding for 
-> CP110, while keeping compatibility with the existing Armada 38x
-> binding.
-
-I am not against adding a new compatible string for CP110 but ot be
-honest the new binding for CP110 does not bring anything as you don't
-use at all the LSB register.
-
-Actually, if on Armada 375 we initially mapped the LSB register it was
-to support an very early release of the SoC (stepping Z) and only for
-resetting its value. So I guess you started to write the AP860 part
-based on the Armada 375 and then found that we could map a more complete
-range of the registers.
+For example, phys may need a very similar treatment, in case their
+consumers requires its phy to be running - as to be able to receive
+signals for wakeups. Anyway, let's discuss other cases separately and
+focus on yours with the irqchip for now.
 
 >
-> How would a separate init_sensor routine improve things?
+>> Note that, an important fact as of today, is that when
+>> GENPD_FLAG_ACTIVE_WAKEUP is set for the genpd, genpd also checks the
+>> ->power.wakeup_path flag for the device. Both conditions must be true,
+>> else genpd powers off the PM domain (and the device).
+>>
+>> In other words, all devices being part of the wakeup path must either
+>> have device_may_wakeup() to return true for it or the
+>> ->power.wakeup_path set, else genpd will power off the PM domain,
+>> regardless of whether the GENPD_FLAG_ACTIVE_WAKEUP flag is set or not.
+>
+> Correct.
 
-So yes please do it, thanks to this you won't have to add the
-control_msb_offset member and can use a clean function. Moreover if in
-the future we see some usefulness for this LSB register then we could use
-the new compatible for the Armada 38x.
+Okay, thanks for confirming this.
 
-Thanks,
-
-Gregory
+This also clarifies why you set the ->power.wakeup_path flag for the
+renesas irqchip device in your other series [1]. That makes perfect
+sense to me, in this regards.
 
 >
-> baruch
+>>> Hence for this class of SoCs, this would duplicate the existing
+>>> dev->power.wakeup and dev->power.wakeup_path flags, so that's why I would
+>>> prefer using GENPD_FLAG_ACTIVE_WAKEUP instead (like we already do for the
+>>> older SH-Mobile SoCs, but not for newer R-Car and RZ series).
+>>> For other SoC families, the situation may be different.
+>>>
+>>> For us, the only exception are devices where the wakeup-source is not the
+>>> device itself, but a GPIO, e.g. SDHI card detect. In such a case, only the
+>>> device driver knows if the device is to be woken up through a dedicated CD
+>>> line, or through a GPIO CD. So that would call for a method to opt-out,
+>>> e.g. OUT_BAND_WAKEUP.
+>>
+>> The main reason to why I chosen the IN_BAND_WAKEUP method, is because
+>> genpd's *default* method is to power off the PM domain (and the
+>> device) even if wakeup is enabled for the device. Hence, genpd treats
+>> all wakeups as default being out-of-band IRQs.
 >
-> -- 
->      http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
-> =}------------------------------------------------ooO--U--Ooo------------{=
->    - baruch@tkos.co.il - tel: +972.2.679.5364, http://www.tkos.co.il -
+> OK.
+>
+>> Having an OUT_BAND_WAKEUP flag, would thus only make sense for those
+>> genpds that has GENPD_FLAG_ACTIVE_WAKEUP set, I guess that is what you
+>> are saying as well?
+>
+> Yes.
+>
+> IMHO this is orthogonal to the device: the device driver knows if the
+> device itself is generating the wake-up event (e.g. Wake-on-LAN, dedicated
+> SDHI CD), or some other device is taking care (e.g. GPIO SDHI CD).
+> The device driver may not know if the device needs to be kept awake to
+> to handle wake-up events, that may be platform knowledge handled by genpd.
 
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+Agree.
+
+>
+>>> To complicate matters, some drivers may be used on SoCs where the device
+>>> needs to be kept running (clock and/or power domain), and on SoCs where the
+>>> device is always running. This difference is typically handled by genpd,
+>>> and the device driver may not even be aware. Of course the driver can just
+>>> set IN_BAND_WAKEUP regardless, (else it has to check for the presence of
+>>> clocks and/or power-domains properties itself, duplicating genpd
+>>> core/driver code).
+>>>
+>>> So what about
+>>>
+>>>          if (IN_BAND_WAKEUP ||
+>>>             (GENPD_FLAG_ACTIVE_WAKEUP && !OUT_BAND_WAKEUP)) {
+>>
+>> We don't want to suspend the device in case of IN_BAND_WAKEUP, right!?
+>>
+>>>                 ... suspend device...
+>>>         }
+>
+> Oops, inverted logic. I should not write technical emails on Sunday morning.
+>
+> Yes, the device must be kept awake if either IN_BAND_WAKEUP is set, or
+> if GENPD_FLAG_ACTIVE_WAKEUP is set but OUT_BAND_WAKEUP isn't.
+>
+
+Putting together the pieces of information received here, you have
+convinced me that we should stick to use the current
+GENPD_FLAG_ACTIVE_WAKEUP for now, which allows genpds to opt-in for
+start dealing with in-band-wakeups.
+
+Then, as you suggest, we need a method for the driver to set an
+opt-out flag for its device, in case it configures an out-band-wakeup.
+In other words, we should have an OUT_BAND_WAKEUP flag instead of an
+IN_BAND_WAKEUP flag.
+
+That together with an option of allowing "consumed resource-devices"
+(irqchip) to be included in the wakeup path. I am thinking, perhaps
+another driver PM flag (DPM_FLAG_WAKEUP_PATH), that the PM core looks
+at and sets ->power.wakeup_path flag for the device and its parents.
+
+Let me re-spin this series. Perhaps I fold in some of the changes from
+your series as well, as to provide people with a complete picture.
+
+Any further comments? Does it makes sense?
+
+Kind regards
+Uffe
+
+[1]
+https://www.spinics.net/lists/linux-renesas-soc/msg19947.html
