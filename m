@@ -1,94 +1,107 @@
-From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V4 2/7] PCI: tegra: Use bus->sysdata to store and get
- host private data
-Date: Tue, 12 Dec 2017 11:34:40 -0600
-Message-ID: <20171212173440.GC53955@bhelgaas-glaptop.roam.corp.google.com>
-References: <1512723493-865-1-git-send-email-mmaddireddy@nvidia.com>
- <1512723493-865-3-git-send-email-mmaddireddy@nvidia.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Subject: Re: [PATCH 1/2] cpufreq: ARM: sort the Kconfig menu
+Date: Tue, 12 Dec 2017 09:45:54 -0800
+Message-ID: <97091943-dcb8-47ab-0e55-831d35b1f73e@infradead.org>
+References: <20171212165419.752-1-gregory.clement@free-electrons.com>
+ <20171212165419.752-2-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1512723493-865-3-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: cyndis-/1wQRMveznE@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20171212165419.752-2-gregory.clement@free-electrons.com>
+Content-Language: en-US
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@free-electrons.com>, Andre Heider <a.heider@gmail.com>, Evan Wang <xswang@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Rob Herring <robh+dt@kernel.org>, Neta Zur Hershkovits <neta@marvell.com>, =?UTF-8?Q?Miqu=c3=a8l_Raynal?= <miquel.raynal@free-electrons.com>, Victor Gu <xigu@marvell.com>, Hua Jing <jinghua@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 08, 2017 at 02:28:08PM +0530, Manikanta Maddireddy wrote:
-> Tegra host driver is using pci_find_host_bridge() to get private data,
-> however pci_find_host_bridge() is causing module build failure because
-> it is not exported. pci_find_host_bridge() can be avoided by using
-> bus->sysdata to store and get private data.
+On 12/12/2017 08:54 AM, Gregory CLEMENT wrote:
+> Group all the related big LITTLE configuration together and sort the
+> other entries in alphabetic order.
 > 
-> Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-
-Thanks a lot for doing this!  Looks like it was even easier than I
-expected :)
-
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 > ---
-> V4:
-> * new patch in V4
+>  drivers/cpufreq/Kconfig.arm | 82 ++++++++++++++++++++++-----------------------
+>  1 file changed, 41 insertions(+), 41 deletions(-)
 > 
->  drivers/pci/host/pci-tegra.c | 13 +++++--------
->  1 file changed, 5 insertions(+), 8 deletions(-)
-> 
-> diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-> index 6f2f44539020..a549c5899e26 100644
-> --- a/drivers/pci/host/pci-tegra.c
-> +++ b/drivers/pci/host/pci-tegra.c
-> @@ -448,8 +448,7 @@ static unsigned long tegra_pcie_conf_offset(unsigned char b, unsigned int devfn,
+> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+> index bdce4488ded1..0baf43837b51 100644
+> --- a/drivers/cpufreq/Kconfig.arm
+> +++ b/drivers/cpufreq/Kconfig.arm
+> @@ -2,6 +2,23 @@
+>  # ARM CPU Frequency scaling drivers
+>  #
 >  
->  static int tegra_pcie_add_bus(struct pci_bus *bus)
->  {
-> -	struct pci_host_bridge *host = pci_find_host_bridge(bus);
-> -	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
-> +	struct tegra_pcie *pcie = bus->sysdata;
->  	struct tegra_pcie_bus *b;
+> +config ACPI_CPPC_CPUFREQ
+> +	tristate "CPUFreq driver based on the ACPI CPPC spec"
+> +	depends on ACPI_PROCESSOR
+> +	select ACPI_CPPC_LIB
+> +	default n
+
+Drop "default n" since that is the default default.
+
+> +	help
+> +	  This adds a CPUFreq driver which uses CPPC methods
+> +	  as described in the ACPIv5.1 spec. CPPC stands for
+> +	  Collaborative Processor Performance Controls. It
+> +	  is based on an abstract continuous scale of CPU
+> +	  performance values which allows the remote power
+> +	  processor to flexibly optimize for power and
+> +	  performance. CPPC relies on power management firmware
+> +	  support for its operation.
+> +
+> +	  If in doubt, say N.
+> +
+>  # big LITTLE core layer and glue drivers
+>  config ARM_BIG_LITTLE_CPUFREQ
+>  	tristate "Generic ARM big LITTLE CPUfreq driver"
+> @@ -12,6 +29,30 @@ config ARM_BIG_LITTLE_CPUFREQ
+>  	help
+>  	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
 >  
->  	b = kzalloc(sizeof(*b), GFP_KERNEL);
-> @@ -466,8 +465,7 @@ static int tegra_pcie_add_bus(struct pci_bus *bus)
->  
->  static void tegra_pcie_remove_bus(struct pci_bus *child)
->  {
-> -	struct pci_host_bridge *host = pci_find_host_bridge(child);
-> -	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
-> +	struct tegra_pcie *pcie = child->sysdata;
->  	struct tegra_pcie_bus *bus, *tmp;
->  
->  	list_for_each_entry_safe(bus, tmp, &pcie->buses, list) {
-> @@ -483,8 +481,7 @@ static void __iomem *tegra_pcie_map_bus(struct pci_bus *bus,
->  					unsigned int devfn,
->  					int where)
->  {
-> -	struct pci_host_bridge *host = pci_find_host_bridge(bus);
-> -	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
-> +	struct tegra_pcie *pcie = bus->sysdata;
->  	void __iomem *addr = NULL;
->  	u32 val = 0;
->  	u32 offset = 0;
-> @@ -675,8 +672,7 @@ static int tegra_pcie_request_resources(struct tegra_pcie *pcie)
->  
->  static int tegra_pcie_map_irq(const struct pci_dev *pdev, u8 slot, u8 pin)
->  {
-> -	struct pci_host_bridge *host = pci_find_host_bridge(pdev->bus);
-> -	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
-> +	struct tegra_pcie *pcie = pdev->bus->sysdata;
->  	int irq;
->  
->  	tegra_cpuidle_pcie_irqs_in_use();
-> @@ -2570,6 +2566,7 @@ static int tegra_pcie_probe(struct platform_device *pdev)
->  		return -ENOMEM;
->  
->  	pcie = pci_host_bridge_priv(host);
-> +	host->sysdata = pcie;
->  
->  	pcie->soc = of_device_get_match_data(dev);
->  	INIT_LIST_HEAD(&pcie->buses);
-> -- 
-> 2.1.4
-> 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> +config ARM_DT_BL_CPUFREQ
+> +	tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
+> +	depends on ARM_BIG_LITTLE_CPUFREQ && OF
+> +	help
+> +	  This enables probing via DT for Generic CPUfreq driver for ARM
+> +	  big.LITTLE platform. This gets frequency tables from DT.
+> +
+> +config ARM_SCPI_CPUFREQ
+> +        tristate "SCPI based CPUfreq driver"
+> +	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
+> +        help
+
+Fix the help and tristate lines -- use tab instead of spaces.
+
+> +	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
+> +	  using SCPI protocol for CPU power management.
+> +
+> +	  This driver uses SCPI Message Protocol driver to interact with the
+> +	  firmware providing the CPU DVFS functionality.
+> +
+> +config ARM_VEXPRESS_SPC_CPUFREQ
+> +        tristate "Versatile Express SPC based CPUfreq driver"
+> +	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
+> +        help
+
+Use tab instead of spaces above. Oh, and one line below.
+
+> +          This add the CPUfreq driver support for Versatile Express
+> +	  big.LITTLE platforms using SPC for power management.
+> +
+>  config ARM_BRCMSTB_AVS_CPUFREQ
+>  	tristate "Broadcom STB AVS CPUfreq driver"
+>  	depends on ARCH_BRCMSTB || COMPILE_TEST
+
+
+-- 
+~Randy
