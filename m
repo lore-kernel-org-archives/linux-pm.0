@@ -1,54 +1,65 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Subject: Re: [PATCH v1 4/4] arm64: dts: mediatek: add mt2712 cpufreq related
- device nodes
-Date: Tue, 12 Dec 2017 10:34:42 +0100
-Message-ID: <a68c5382-2a9c-6c3c-ea67-99db46bdff1a@gmail.com>
-References: <1512713278-17807-1-git-send-email-andrew-sh.cheng@mediatek.com>
- <1512713278-17807-5-git-send-email-andrew-sh.cheng@mediatek.com>
- <20171211075719.GD25177@vireshk-i7> <1758225.tOgn8eUOoH@aspire.rjw.lan>
- <20171212072625.GL25177@vireshk-i7>
+From: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH v2 2/2] acpi, x86: Use SPCR table for earlycon on x86
+Date: Tue, 12 Dec 2017 11:41:14 +0100
+Message-ID: <20171212104114.nddfrykzhezmngnl@gmail.com>
+References: <20171211155059.17062-1-prarit@redhat.com>
+ <20171211155059.17062-3-prarit@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f196.google.com ([209.85.128.196]:41310 "EHLO
-        mail-wr0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750715AbdLLJep (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Dec 2017 04:34:45 -0500
-In-Reply-To: <20171212072625.GL25177@vireshk-i7>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171211155059.17062-3-prarit@redhat.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Prarit Bhargava <prarit@redhat.com>
+Cc: linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Timur Tabi <timur@codeaurora.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>, mark.rutland@arm.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, srv_heupstream@mediatek.com, robh+dt@kernel.org, devicetree@vger.kernel.org
 
-Hi,
 
-On 12/12/2017 08:26 AM, Viresh Kumar wrote:
-> On 12-12-17, 02:17, Rafael J. Wysocki wrote:
->> On Monday, December 11, 2017 8:57:19 AM CET Viresh Kumar wrote:
->>> On 08-12-17, 14:07, Andrew-sh Cheng wrote:
->>>> Add opp v2 information,
->>>> and also add clocks, regulators and opp information into cpu nodes
->>>>
->>>> Signed-off-by: Andrew-sh Cheng <andrew-sh.cheng@mediatek.com>
->>>> ---
->>>>  arch/arm64/boot/dts/mediatek/mt2712-evb.dts | 27 ++++++++++++++
->>>>  arch/arm64/boot/dts/mediatek/mt2712e.dtsi   | 57 +++++++++++++++++++++++++++++
->>>>  2 files changed, 84 insertions(+)
->>>
->>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
->>
->> Of course, DT bindings require ACKs from DT maintainers to be applied.
+* Prarit Bhargava <prarit@redhat.com> wrote:
+
+> The ACPI SPCR code has been used to define an earlycon console for ARM64
+> and can be used for x86.
 > 
-> I didn't knew that we need Acks from DT maintainers for dts files as well? Yeah,
-> its very much required while defining new bindings for sure.
+> Modify the ACPI SPCR parsing code to account for console behaviour
+> differences between ARM64 and x86.  Initialize the SPCR code from
+> x86 ACPI initialization code.
 > 
+> Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+> Cc: linux-doc@vger.kernel.org
+> Cc: linux-kernel@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: linux-pm@vger.kernel.org
+> Cc: linux-acpi@vger.kernel.org
+> Cc: linux-serial@vger.kernel.org
+> Cc: Bhupesh Sharma <bhsharma@redhat.com>
+> Cc: Lv Zheng <lv.zheng@intel.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: x86@kernel.org
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will.deacon@arm.com>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Timur Tabi <timur@codeaurora.org>
+> ---
+>  Documentation/admin-guide/kernel-parameters.txt | 3 +++
+>  arch/arm64/kernel/acpi.c                        | 2 +-
+>  arch/x86/kernel/acpi/boot.c                     | 4 ++++
+>  drivers/acpi/Kconfig                            | 2 +-
+>  drivers/acpi/spcr.c                             | 7 +++++--
+>  include/linux/acpi.h                            | 7 +++++--
+>  6 files changed, 19 insertions(+), 6 deletions(-)
 
-I will take the dts parts through the Mediatek SoC tree, so you don't have to
-worry about them.
+LGTM from an x86 perspective:
 
-Please let me know when you take patch 1 and 2.
+  Acked-by: Ingo Molnar <mingo@kernel.org>
 
-Regards,
-Matthias
+(assuming it causes no regressions in linux-next.)
+
+Since patch #1 affects ARM64 significantly, once that patch is acceptable to the 
+arm64 folks feel free to upstream this second patch via the ARM64 tree as well.
+
+Thanks,
+
+	Ingo
