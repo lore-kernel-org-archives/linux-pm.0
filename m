@@ -1,71 +1,75 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] drivers: base: power: Fix GFP_KERNEL in spinlock context
-Date: Tue, 12 Dec 2017 15:58:00 +0100
-Message-ID: <CAMuHMdUrhV9RkUnXkTbSWaRY33iQrANwbKBE5KAPQseNgxOofg@mail.gmail.com>
-References: <1513086342-3581-1-git-send-email-shrikant.maurya@techveda.org>
+From: Jonathan Cameron <Jonathan.Cameron-hv44wF8Li93QT0dZR+AlfA@public.gmane.org>
+Subject: Re: [PATCH 2/8] iio: adc: axp20x_adc: add support for AXP813 ADC
+Date: Tue, 12 Dec 2017 15:12:32 +0000
+Message-ID: <20171212151232.00006fd0@huawei.com>
+References: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz@free-electrons.com>
+        <ef830ce470a4f0f4be6040a776b6928bf89c0143.1512396054.git-series.quentin.schulz@free-electrons.com>
+        <20171210163655.43fbd3c0@archlinux>
+        <b2cdd796-5c22-c114-bc74-41b900a05464@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f196.google.com ([209.85.216.196]:37017 "EHLO
-        mail-qt0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753003AbdLLO6C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Dec 2017 09:58:02 -0500
-In-Reply-To: <1513086342-3581-1-git-send-email-shrikant.maurya@techveda.org>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <b2cdd796-5c22-c114-bc74-41b900a05464-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, icenowy-h8G6r0blFSE@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: shrikant.maurya@techveda.org
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>, Greg KH <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Suniel Mahesh <sunil.m@techveda.org>, Karthik Tummala <karthik@techveda.org>, raghu@techveda.org
 
-Hi Shrikant,
+On Mon, 11 Dec 2017 09:18:55 +0100
+Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
 
-On Tue, Dec 12, 2017 at 2:45 PM,  <shrikant.maurya@techveda.org> wrote:
-> From: Shrikant Maurya <shrikant.maurya@techveda.org>
->
-> As reported by Jia-Ju Bai (https://lkml.org/lkml/2017/12/11/872):
-> API's are using GFP_KERNEL to allocate memory which may sleep.
->
-> To ensure atomicity such allocations must be avoided in critical
-> sections under spinlock.
-> Fixed by replacing GFP_KERNEL to GFP_ATOMIC.
->
-> Reported-by: Jia-Ju Bai <baijiaju1990@gmail.com>
-> Signed-off-by: Shrikant Maurya <shrikant.maurya@techveda.org>
-> Signed-off-by: Suniel Mahesh <sunil.m@techveda.org>
-> Signed-off-by: Raghu Bharadwaj <raghu@techveda.org>
-> Signed-off-by: Karthik Tummala <karthik@techveda.org>
+> Hi Jonathan,
+> 
+> On 10/12/2017 17:36, Jonathan Cameron wrote:
+> > On Mon,  4 Dec 2017 15:12:48 +0100
+> > Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+> >   
+> >> The X-Powers AXP813 PMIC is really close to what is already done for
+> >> AXP20X/AXP22X.
+> >>
+> >> There are two pairs of bits to set the rate (one for Voltage and Current
+> >> measurements and one for TS/GPIO0 voltage measurements) instead of one.  
+> > 
+> > This would normally imply we need to split the device into two logical
+> > IIO devices.  However, that only becomes relevant if we are using
+> > buffered output which this driver doesn't support.  
+> > > It'll be nasty to deal with this if we add that support down the line  
+> > though.  Up to you though as it's more likely to be your problem than
+> > anyone else's :)
+> >   
+> 
+> I have no plans for supporting buffered output for the AXPs at the
+> moment. But that's an interesting (and important) limitation to raise.
+> Wouldn't be more of a hack to have two IIO devices representing the
+> actual same IP?
 
-Can't the call to device_init_wakeup() in isp116x_start() just be moved
-below the spinlock release?
+We have thought about allowing multiple buffers from a single IIO device
+but that makes for some horrible changes to the ABI - so as things stand
+the only option is two devices for one IP.  Ultimately they aren't really
+two devices - in the same way we have triggers separating registered on
+the IIO bus (often many of them).  Just two different elements of the same IP.
 
-> --- a/drivers/base/power/wakeup.c
-> +++ b/drivers/base/power/wakeup.c
-> @@ -92,11 +92,11 @@ struct wakeup_source *wakeup_source_create(const char *name)
->  {
->         struct wakeup_source *ws;
->
-> -       ws = kmalloc(sizeof(*ws), GFP_KERNEL);
-> +       ws = kmalloc(sizeof(*ws), GFP_ATOMIC);
+> 
+> > For now you could elect to support the different sampling frequencies
+> > if you wanted to but just providing controls for each channel.
+> >   
+> 
+> I guess that you're offering to use IIO_CHAN_INFO_SAMP_FREQ in
+> info_mask_separate for each channel?
+Yes
+> 
+> > Given the driver doesn't currently expose these at all (I think)
+> > this is all rather immaterial ;)  
+> 
+> I'm not giving the user the option to chose the sampling frequency for
+> now. I have no plans to do it either, but I think it would be rather
+> simple to later add support for setting frequency sampling since we only
+> need to add a sysfs entry (with IIO_CHAN_INFO_SAMP_FREQ) that does not
+> exist yet. Don't you think? Am I missing something?
+No should be straight forward as long as we keep clear of the buffered
+interfaces with their limitations.
 
-With GFP_ATOMIC, allocation failure is much more likely to occur.
-So IMHO it's better to fix the isp116x, than to impose this burden on
-every user.
-
->         if (!ws)
->                 return NULL;
->
-> -       wakeup_source_prepare(ws, name ? kstrdup_const(name, GFP_KERNEL) : NULL);
-> +       wakeup_source_prepare(ws, name ? kstrdup_const(name, GFP_ATOMIC) : NULL);
->         return ws;
->  }
->  EXPORT_SYMBOL_GPL(wakeup_source_create);
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> 
+> Thanks,
+> Quentin
