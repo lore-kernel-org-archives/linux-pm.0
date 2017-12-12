@@ -1,51 +1,89 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 2/3] PM / core: Add IN_BAND_WAKEUP driver flag
-Date: Tue, 12 Dec 2017 15:20:56 +0100
-Message-ID: <CAPDyKFo-QtiBc-DmXAJO26eo0_WHA=_8YdOb8HzKc7t2q1zagg@mail.gmail.com>
-References: <1510588003-16650-1-git-send-email-ulf.hansson@linaro.org>
- <1510588003-16650-3-git-send-email-ulf.hansson@linaro.org>
- <1926914.PsNMcYBlGW@aspire.rjw.lan> <CAMuHMdUE+fdbS+HDxbcWNHaTZubnrQ7ai4bkOsBpLriG1y-gZg@mail.gmail.com>
- <CAPDyKFoAY7yZJz9obke5DeqadpqJ0MEKPQJvxibpq85f+==BBA@mail.gmail.com>
- <CAMuHMdXk9GaExvYbdSfV0bf4Kh1TNrZDKtAfTDaDfWFMvk6Snw@mail.gmail.com>
- <CAPDyKFoey_kSf0OE7OmHCX4H4VFQcWOU6NE4suZ9=9stZVQNpQ@mail.gmail.com> <CAMuHMdX4jNL7Md5rgUj63sBC1KUqYa5K-cbxM+ineW9KkB9r=g@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH v3 1/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE
+ enter
+Date: Tue, 12 Dec 2017 20:10:19 +0530
+Message-ID: <20171212144019.GQ25177@vireshk-i7>
+References: <20171130114723.29210-1-patrick.bellasi@arm.com>
+ <20171130114723.29210-2-patrick.bellasi@arm.com>
+ <20171207050135.vvhqttazumjg7n7n@vireshk-mac-ubuntu>
+ <20171207124510.GP31247@e110439-lin>
+ <20171212113727.GO25177@vireshk-i7>
+ <20171212133824.GH4635@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f41.google.com ([209.85.214.41]:46560 "EHLO
-        mail-it0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751678AbdLLOU6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Dec 2017 09:20:58 -0500
-Received: by mail-it0-f41.google.com with SMTP id t1so24800978ite.5
-        for <linux-pm@vger.kernel.org>; Tue, 12 Dec 2017 06:20:58 -0800 (PST)
-In-Reply-To: <CAMuHMdX4jNL7Md5rgUj63sBC1KUqYa5K-cbxM+ineW9KkB9r=g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171212133824.GH4635@localhost.localdomain>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Juri Lelli <juri.lelli@redhat.com>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On 12 December 2017 at 09:16, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Hi Ulf,
->
-> On Mon, Dec 11, 2017 at 9:59 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> That together with an option of allowing "consumed resource-devices"
->> (irqchip) to be included in the wakeup path. I am thinking, perhaps
->> another driver PM flag (DPM_FLAG_WAKEUP_PATH), that the PM core looks
->> at and sets ->power.wakeup_path flag for the device and its parents.
->
-> This is complicated by the fact that currently the device and irq
-> subsystems don't really share data. E.g. {en,dis}able_irq_wake() and
-> irq_set_irq_wake() don't take a device parameter, only an interrupt number,
-> and conversion from interrupt numbers to devices is non-trivial.
-> That's why I handled it in the irqchip drivers in the series referenced
-> below.
+On 12-12-17, 14:38, Juri Lelli wrote:
+> Hi Viresh,
+> 
+> On 12/12/17 17:07, Viresh Kumar wrote:
+> 
+> [...]
+> 
+> > From: Viresh Kumar <viresh.kumar@linaro.org>
+> > Date: Tue, 12 Dec 2017 15:43:26 +0530
+> > Subject: [PATCH] sched: Keep track of cpufreq utilization update flags
+> > 
+> > Currently the schedutil governor overwrites the sg_cpu->flags field on
+> > every call to the utilization handler. It was pretty good as the initial
+> > implementation of utilization handlers, there are several drawbacks
+> > though.
+> > 
+> > The biggest drawback is that the sg_cpu->flags field doesn't always
+> > represent the correct type of tasks that are enqueued on a CPU's rq. For
+> > example, if a fair task is enqueued while a RT or DL task is running, we
+> > will overwrite the flags with value 0 and that may take the CPU to lower
+> > OPPs unintentionally. There can be other corner cases as well which we
+> > aren't aware of currently.
+> > 
+> > This patch changes the current implementation to keep track of all the
+> > task types that are currently enqueued to the CPUs rq. There are two
+> > flags for every scheduling class now, one to set the flag and other one
+> > to clear it. The flag is set by the scheduling classes from the existing
+> > set of calls to cpufreq_update_util(), and the flag is cleared when the
+> > last task of the scheduling class is dequeued. For now, the util update
+> > handlers return immediately if they were called to clear the flag.
+> > 
+> > We can add more optimizations over this patch separately.
+> > 
+> > The last parameter of sugov_set_iowait_boost() is also dropped as the
+> > function can get it from sg_cpu anyway.
+> > 
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> 
+> [...]
+> 
+> > @@ -655,7 +669,7 @@ static int sugov_start(struct cpufreq_policy *policy)
+> >  		memset(sg_cpu, 0, sizeof(*sg_cpu));
+> >  		sg_cpu->cpu = cpu;
+> >  		sg_cpu->sg_policy = sg_policy;
+> > -		sg_cpu->flags = SCHED_CPUFREQ_RT;
+> > +		sg_cpu->flags = 0;
+> >  		sg_cpu->iowait_boost_max = policy->cpuinfo.max_freq;
+> >  	}
+> 
+> Why this change during initialization?
 
-Yes, that seems like a good way forward for now.
+Firstly I am not sure why it was set to SCHED_CPUFREQ_RT, as schedutil wouldn't
+change the frequency until the first time the util handler is called. And once
+that is called we were updating the flag anyway. So, unless I misunderstood its
+purpose, it was doing anything helpful.
 
-We can always look into how to extend the irq subsystem to deal with
-this internally, but I rather leave that to be done as a separate
-task.
+I need to remove it otherwise the RT flag may remain set for a very long time
+unnecessarily. That would be until the time the last RT task is not dequeued.
+Consider this for example: we are at max freq when sugov_start() is called and
+it sets the RT flag, but there is no RT task to run. Now, we have tons of CFS
+tasks but we always keep running at max because of the flag. Even the schedutil
+RT thread doesn't get a chance to run/deququed, because we never want a freq
+change with the RT flag and stay at max.
 
-[...]
+Makes sense ?
 
-Kind regards
-Uffe
+-- 
+viresh
