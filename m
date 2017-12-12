@@ -1,61 +1,40 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Ask for help on governor
-Date: Tue, 12 Dec 2017 17:51:25 +0100
-Message-ID: <CAJZ5v0iXsPgVcyBdvEG8EWRo8bCiD2wbywBG6Rbfh7jqRBPujg@mail.gmail.com>
-References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com>
- <000801d37364$d48f6ed0$7dae4c70$@net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f175.google.com ([74.125.82.175]:45191 "EHLO
-        mail-ot0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752102AbdLLQv0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Dec 2017 11:51:26 -0500
-Received: by mail-ot0-f175.google.com with SMTP id 103so18337275otj.12
-        for <linux-pm@vger.kernel.org>; Tue, 12 Dec 2017 08:51:26 -0800 (PST)
-In-Reply-To: <000801d37364$d48f6ed0$7dae4c70$@net>
-Sender: linux-pm-owner@vger.kernel.org
+From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH 0/2] cpufreq: Sort Kconfig and Makefile
+Date: Tue, 12 Dec 2017 17:54:17 +0100
+Message-ID: <20171212165419.752-1-gregory.clement@free-electrons.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Victor Gu <xigu-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Marcin Wojtas <mw-nYOzD4b6Jr9Wk0Htik3J/w@public.gmane.org>, Wilson Ding <dingwei-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Hua Jing <jinghua-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Neta Zur Hershkovits <neta-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Evan Wang <xswang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Andre Heider <a.heider-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Andy Tang <andy.tang@nxp.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>
 
-On Tue, Dec 12, 2017 at 5:18 PM, Doug Smythies <dsmythies@telus.net> wrote:
-> On 2017.12.11 23:31 Viresh Kumar wrote:
->> On 12-12-17, 02:46, Andy Tang wrote:
->>> Hi,
->>>
->>> I run into a question that conservative governor can't work while ondemand governor works well.
->>> When cpu load gets higher, if ondemand governor is used, cpu frequency can get higher and higher.
->>> But if I use conservative governor, cpu frequency stays on lowest frequency no matter what cpu load is.
->>>
->>> This issue was found on kernel 4.14.0, on kernel 4.9 kernel. It acts well.
->>
->> You mean to say that the problem exists on 4.14 but not on 4.9?
->>
->> Strange, as we haven't seen any such reports from anyone else.
->
-> Well, it is easy enough for us to check.
-> Indeed, it is broken in kernel 4.14-rc1, but O.K. in kernel 4.13.
-> It remains broken in kernel 4.15-rc1 (I am not on -rc3 yet).
->
-> Because it was easier for me to do so, I used intel_cpufreq (i.e. intel_pstate in passive mode).
->
->>
->>> I think it may related to cpufreq framework, not driver itself. Could you guys give me some clues on how to debug it?
->>> I don't expect a direct answer; any suggestions are welcome.
->>
->> Please provide output of below:
->>
->> grep . /sys/devices/system/cpu/cpufreq/policy*/*
->>
->> And then you may need to bisect the problem as well by going to kernel version
->> in between 4.9 and 4.14.
->
-> @Andy: Have you started bisecting the kernel yet? I suppose I could if you haven't,
-> or if you do not know how.
+Hi,
 
-There is only one commit touching conservative in 4.14:
+The patch of this series was originally part of the series "Add CPU
+Frequency scaling support on Armada 37xx" [1].
 
-2d045036322c cpufreq: governor: Drop min_sampling_rate
+As requested by Rafael J. Wysocki, these 2 patches are extracted in a
+independent series, in the meantime, Viresh Kumar gave his acked-by
+that I added to the patches.
 
-Maybe try to revert this one?
+Thanks,
+
+Gregory
+
+[1]: http://lists.infradead.org/pipermail/linux-arm-kernel/2017-December/546709.html
+
+Gregory CLEMENT (2):
+  cpufreq: ARM: sort the Kconfig menu
+  cpufreq: sort the drivers in ARM part
+
+ drivers/cpufreq/Kconfig.arm | 82 ++++++++++++++++++++++-----------------------
+ drivers/cpufreq/Makefile    |  8 ++---
+ 2 files changed, 45 insertions(+), 45 deletions(-)
+
+-- 
+2.15.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
