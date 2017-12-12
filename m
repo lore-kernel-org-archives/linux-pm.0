@@ -1,30 +1,34 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v5 6/9] ACPI/PPTT: Add topology parsing code
-Date: Tue, 12 Dec 2017 02:12:11 +0100
-Message-ID: <9009154.M66RGdQJXA@aspire.rjw.lan>
-References: <20171201222330.18863-1-jeremy.linton@arm.com> <20171201222330.18863-7-jeremy.linton@arm.com>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH v1 4/4] arm64: dts: mediatek: add mt2712 cpufreq related device nodes
+Date: Tue, 12 Dec 2017 02:17:06 +0100
+Message-ID: <1758225.tOgn8eUOoH@aspire.rjw.lan>
+References: <1512713278-17807-1-git-send-email-andrew-sh.cheng@mediatek.com> <1512713278-17807-5-git-send-email-andrew-sh.cheng@mediatek.com> <20171211075719.GD25177@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20171201222330.18863-7-jeremy.linton@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, lorenzo.pieralisi@arm.com, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171211075719.GD25177@vireshk-i7>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+Cc: matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, December 1, 2017 11:23:27 PM CET Jeremy Linton wrote:
-> The PPTT can be used to determine the groupings of CPU's at
-> given levels in the system. Lets add a few routines to the PPTT
-> parsing code to return a unique id for each unique level in the
-> processor hierarchy. This can then be matched to build
-> thread/core/cluster/die/package/etc mappings for each processing
-> element in the system.
+On Monday, December 11, 2017 8:57:19 AM CET Viresh Kumar wrote:
+> On 08-12-17, 14:07, Andrew-sh Cheng wrote:
+> > Add opp v2 information,
+> > and also add clocks, regulators and opp information into cpu nodes
+> > 
+> > Signed-off-by: Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> > ---
+> >  arch/arm64/boot/dts/mediatek/mt2712-evb.dts | 27 ++++++++++++++
+> >  arch/arm64/boot/dts/mediatek/mt2712e.dtsi   | 57 +++++++++++++++++++++++++++++
+> >  2 files changed, 84 insertions(+)
 > 
-> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Why can't this be folded into patch [2/9]?
+Of course, DT bindings require ACKs from DT maintainers to be applied.
 
-Thanks,
-Rafael
-
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
