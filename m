@@ -1,107 +1,190 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Subject: Re: [PATCH 1/2] cpufreq: ARM: sort the Kconfig menu
-Date: Tue, 12 Dec 2017 09:45:54 -0800
-Message-ID: <97091943-dcb8-47ab-0e55-831d35b1f73e@infradead.org>
-References: <20171212165419.752-1-gregory.clement@free-electrons.com>
- <20171212165419.752-2-gregory.clement@free-electrons.com>
+From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH 5/8] power: supply: axp20x_battery: add support for
+ AXP813
+Date: Tue, 12 Dec 2017 19:55:23 +0000
+Message-ID: <20171212195523.1089902d@archlinux>
+References: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz@free-electrons.com>
+        <545d3aa6339c9e33060d651c42d652d0b848c06b.1512396054.git-series.quentin.schulz@free-electrons.com>
+        <20171210164910.415da6f5@archlinux>
+        <873410df-046e-bd86-584d-0d35b9d8c993@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20171212165419.752-2-gregory.clement@free-electrons.com>
-Content-Language: en-US
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Andrew Lunn <andrew@lunn.ch>, Jason Cooper <jason@lakedaemon.net>, devicetree@vger.kernel.org, Antoine Tenart <antoine.tenart@free-electrons.com>, Andre Heider <a.heider@gmail.com>, Evan Wang <xswang@marvell.com>, Nadav Haklai <nadavh@marvell.com>, Rob Herring <robh+dt@kernel.org>, Neta Zur Hershkovits <neta@marvell.com>, =?UTF-8?Q?Miqu=c3=a8l_Raynal?= <miquel.raynal@free-electrons.com>, Victor Gu <xigu@marvell.com>, Hua Jing <jinghua@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <873410df-046e-bd86-584d-0d35b9d8c993-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, icenowy-h8G6r0blFSE@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 12/12/2017 08:54 AM, Gregory CLEMENT wrote:
-> Group all the related big LITTLE configuration together and sort the
-> other entries in alphabetic order.
+On Mon, 11 Dec 2017 09:35:43 +0100
+Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+
+> Hi Jonathan,
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-> ---
->  drivers/cpufreq/Kconfig.arm | 82 ++++++++++++++++++++++-----------------------
->  1 file changed, 41 insertions(+), 41 deletions(-)
+> On 10/12/2017 17:49, Jonathan Cameron wrote:
+> > On Mon,  4 Dec 2017 15:12:51 +0100
+> > Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+> >   
+> >> The X-Powers AXP813 PMIC has got some slight differences from
+> >> AXP20X/AXP22X PMICs:
+> >>  - the maximum voltage supplied by the PMIC is 4.35 instead of 4.36/4.24
+> >>  for AXP20X/AXP22X,
+> >>  - the constant charge current formula is different,
+> >>
+> >> It also has a bit to tell whether the battery percentage returned by the
+> >> PMIC is valid.
+> >>
+> >> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>  
+> > 
+> > I'd use switch statements when matching the IDs as that'll be more elegant
+> > as you perhaps add further devices going forward...
+> > 
+> > Other than that, looks good to me.
+> >   
 > 
-> diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-> index bdce4488ded1..0baf43837b51 100644
-> --- a/drivers/cpufreq/Kconfig.arm
-> +++ b/drivers/cpufreq/Kconfig.arm
-> @@ -2,6 +2,23 @@
->  # ARM CPU Frequency scaling drivers
->  #
->  
-> +config ACPI_CPPC_CPUFREQ
-> +	tristate "CPUFreq driver based on the ACPI CPPC spec"
-> +	depends on ACPI_PROCESSOR
-> +	select ACPI_CPPC_LIB
-> +	default n
+> Well, I was wondering if it shouldn't be better to define a structure
+> for each device containing their quirks, functions, etc... like it is
+> done for the ADC or the ACIN power supply driver part.
+> 
 
-Drop "default n" since that is the default default.
+Even better.
 
-> +	help
-> +	  This adds a CPUFreq driver which uses CPPC methods
-> +	  as described in the ACPIv5.1 spec. CPPC stands for
-> +	  Collaborative Processor Performance Controls. It
-> +	  is based on an abstract continuous scale of CPU
-> +	  performance values which allows the remote power
-> +	  processor to flexibly optimize for power and
-> +	  performance. CPPC relies on power management firmware
-> +	  support for its operation.
-> +
-> +	  If in doubt, say N.
-> +
->  # big LITTLE core layer and glue drivers
->  config ARM_BIG_LITTLE_CPUFREQ
->  	tristate "Generic ARM big LITTLE CPUfreq driver"
-> @@ -12,6 +29,30 @@ config ARM_BIG_LITTLE_CPUFREQ
->  	help
->  	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
->  
-> +config ARM_DT_BL_CPUFREQ
-> +	tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
-> +	depends on ARM_BIG_LITTLE_CPUFREQ && OF
-> +	help
-> +	  This enables probing via DT for Generic CPUfreq driver for ARM
-> +	  big.LITTLE platform. This gets frequency tables from DT.
-> +
-> +config ARM_SCPI_CPUFREQ
-> +        tristate "SCPI based CPUfreq driver"
-> +	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
-> +        help
-
-Fix the help and tristate lines -- use tab instead of spaces.
-
-> +	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
-> +	  using SCPI protocol for CPU power management.
-> +
-> +	  This driver uses SCPI Message Protocol driver to interact with the
-> +	  firmware providing the CPU DVFS functionality.
-> +
-> +config ARM_VEXPRESS_SPC_CPUFREQ
-> +        tristate "Versatile Express SPC based CPUfreq driver"
-> +	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
-> +        help
-
-Use tab instead of spaces above. Oh, and one line below.
-
-> +          This add the CPUfreq driver support for Versatile Express
-> +	  big.LITTLE platforms using SPC for power management.
-> +
->  config ARM_BRCMSTB_AVS_CPUFREQ
->  	tristate "Broadcom STB AVS CPUfreq driver"
->  	depends on ARCH_BRCMSTB || COMPILE_TEST
-
-
--- 
-~Randy
+> struct axp20x_data {
+> 	bool	has_valid_fg_reg;
+> 	void 	constant_charge_current_to_raw(struct axp20x_batt_ps *axp, int *val);
+> 	void 	raw_to_constant_charge_current(struct axp20x_batt_ps *axp, int *val);
+> 	int 	get_max_voltage(struct axp20x_batt_ps *axp, int *val);
+> 	[...]
+> };
+> 
+> static const struct of_device_id axp20x_battery_ps_id[] = {
+> 	{ .compatible = "x-powers,axp209-battery-power-supply", .data = (void
+> *)&axp209_data, }, {}
+> };
+> 
+> void probe()
+> {
+> 	[...]
+> 	axp20x_batt->info = of_device_get_match_data(&pdev->dev);
+> 	[...]
+> }
+> 
+> Sebastian, any objection on doing this?
+> 
+> Thanks,
+> Quentin
+> 
+> > Jonathan
+> >   
+> >> ---
+> >>  drivers/power/supply/axp20x_battery.c | 44 +++++++++++++++++++++++++++-
+> >>  1 file changed, 43 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
+> >> index 7494f0f..cb30302 100644
+> >> --- a/drivers/power/supply/axp20x_battery.c
+> >> +++ b/drivers/power/supply/axp20x_battery.c
+> >> @@ -46,6 +46,8 @@
+> >>  #define AXP20X_CHRG_CTRL1_TGT_4_2V	(2 << 5)
+> >>  #define AXP20X_CHRG_CTRL1_TGT_4_36V	(3 << 5)
+> >>  
+> >> +#define AXP813_CHRG_CTRL1_TGT_4_35V	(3 << 5)
+> >> +
+> >>  #define AXP22X_CHRG_CTRL1_TGT_4_22V	(1 << 5)
+> >>  #define AXP22X_CHRG_CTRL1_TGT_4_24V	(3 << 5)
+> >>  
+> >> @@ -123,10 +125,41 @@ static int axp22x_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
+> >>  	return 0;
+> >>  }
+> >>  
+> >> +static int axp813_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
+> >> +					  int *val)
+> >> +{
+> >> +	int ret, reg;
+> >> +
+> >> +	ret = regmap_read(axp20x_batt->regmap, AXP20X_CHRG_CTRL1, &reg);
+> >> +	if (ret)
+> >> +		return ret;
+> >> +
+> >> +	switch (reg & AXP20X_CHRG_CTRL1_TGT_VOLT) {  
+> > 
+> > You could do a lookup based from a table instead which might
+> > be ever so slightly more elegant..
+> >   
+> >> +	case AXP20X_CHRG_CTRL1_TGT_4_1V:
+> >> +		*val = 4100000;
+> >> +		break;
+> >> +	case AXP20X_CHRG_CTRL1_TGT_4_15V:
+> >> +		*val = 4150000;
+> >> +		break;
+> >> +	case AXP20X_CHRG_CTRL1_TGT_4_2V:
+> >> +		*val = 4200000;
+> >> +		break;
+> >> +	case AXP813_CHRG_CTRL1_TGT_4_35V:
+> >> +		*val = 4350000;
+> >> +		break;
+> >> +	default:
+> >> +		return -EINVAL;
+> >> +	}
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >>  static void raw_to_constant_charge_current(struct axp20x_batt_ps *axp, int *val)
+> >>  {
+> >>  	if (axp->axp_id == AXP209_ID)
+> >>  		*val = *val * 100000 + 300000;
+> >> +	else if (axp->axp_id == AXP813_ID)
+> >> +		*val = *val * 200000 + 200000;
+> >>  	else
+> >>  		*val = *val * 150000 + 300000;  
+> > 
+> > Switch?
+> >   
+> >>  }
+> >> @@ -135,6 +168,8 @@ static void constant_charge_current_to_raw(struct axp20x_batt_ps *axp, int *val)
+> >>  {
+> >>  	if (axp->axp_id == AXP209_ID)
+> >>  		*val = (*val - 300000) / 100000;
+> >> +	else if (axp->axp_id == AXP813_ID)
+> >> +		*val = (*val - 200000) / 200000;
+> >>  	else
+> >>  		*val = (*val - 300000) / 150000;
+> >>  }
+> >> @@ -269,7 +304,8 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+> >>  		if (ret)
+> >>  			return ret;
+> >>  
+> >> -		if (axp20x_batt->axp_id == AXP221_ID &&
+> >> +		if ((axp20x_batt->axp_id == AXP221_ID ||
+> >> +		     axp20x_batt->axp_id == AXP813_ID) &&
+> >>  		    !(reg & AXP22X_FG_VALID))
+> >>  			return -EINVAL;
+> >>  
+> >> @@ -284,6 +320,9 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+> >>  		if (axp20x_batt->axp_id == AXP209_ID)
+> >>  			return axp20x_battery_get_max_voltage(axp20x_batt,
+> >>  							      &val->intval);
+> >> +		else if (axp20x_batt->axp_id == AXP813_ID)
+> >> +			return axp813_battery_get_max_voltage(axp20x_batt,
+> >> +							      &val->intval);
+> >>  		return axp22x_battery_get_max_voltage(axp20x_batt,
+> >>  						      &val->intval);  
+> > 
+> > Worth converting to a switch statement to make it more elegant for future
+> > devices?
+> >   
+> >>  
+> >> @@ -467,6 +506,9 @@ static const struct of_device_id axp20x_battery_ps_id[] = {
+> >>  	}, {
+> >>  		.compatible = "x-powers,axp221-battery-power-supply",
+> >>  		.data = (void *)AXP221_ID,
+> >> +	}, {
+> >> +		.compatible = "x-powers,axp813-battery-power-supply",
+> >> +		.data = (void *)AXP813_ID,
+> >>  	}, { /* sentinel */ },
+> >>  };
+> >>  MODULE_DEVICE_TABLE(of, axp20x_battery_ps_id);  
+> >   
+> 
