@@ -1,58 +1,50 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 4/7] cpufreq: mvebu: Use dev_pm_opp_remove()
-Date: Tue, 12 Dec 2017 13:03:20 +0530
-Message-ID: <20171212073320.GN25177@vireshk-i7>
-References: <20171207135616.23670-1-gregory.clement@free-electrons.com>
- <20171207135616.23670-5-gregory.clement@free-electrons.com>
- <20171212082846.4e201953@windsurf.png.is.keysight.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2 2/3] PM / core: Add IN_BAND_WAKEUP driver flag
+Date: Tue, 12 Dec 2017 09:16:27 +0100
+Message-ID: <CAMuHMdX4jNL7Md5rgUj63sBC1KUqYa5K-cbxM+ineW9KkB9r=g@mail.gmail.com>
+References: <1510588003-16650-1-git-send-email-ulf.hansson@linaro.org>
+ <1510588003-16650-3-git-send-email-ulf.hansson@linaro.org>
+ <1926914.PsNMcYBlGW@aspire.rjw.lan> <CAMuHMdUE+fdbS+HDxbcWNHaTZubnrQ7ai4bkOsBpLriG1y-gZg@mail.gmail.com>
+ <CAPDyKFoAY7yZJz9obke5DeqadpqJ0MEKPQJvxibpq85f+==BBA@mail.gmail.com>
+ <CAMuHMdXk9GaExvYbdSfV0bf4Kh1TNrZDKtAfTDaDfWFMvk6Snw@mail.gmail.com> <CAPDyKFoey_kSf0OE7OmHCX4H4VFQcWOU6NE4suZ9=9stZVQNpQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20171212082846.4e201953-dFHcqWZE4newlwMtHBQNBj9sBOhXbXn6VpNB7YpNyf8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?iso-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Victor Gu <xigu-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Marcin Wojtas <mw-nYOzD4b6Jr9Wk0Htik3J/w@public.gmane.org>, Wilson Ding <dingwei-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Hua Jing <jinghua-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Neta Zur Hershkovits <neta-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Evan Wang <xswang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Andre Heider <a.heider-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f196.google.com ([209.85.216.196]:40441 "EHLO
+        mail-qt0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750749AbdLLIQ2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Dec 2017 03:16:28 -0500
+In-Reply-To: <CAPDyKFoey_kSf0OE7OmHCX4H4VFQcWOU6NE4suZ9=9stZVQNpQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On 12-12-17, 08:28, Thomas Petazzoni wrote:
-> Hello,
-> 
-> On Thu,  7 Dec 2017 14:56:13 +0100, Gregory CLEMENT wrote:
-> 
-> > -		/*
-> > -		 * In case of a failure of dev_pm_opp_add(), we don't
-> > -		 * bother with cleaning up the registered OPP (there's
-> > -		 * no function to do so), and simply cancel the
-> > -		 * registration of the cpufreq device.
-> > -		 */
-> >  		ret = dev_pm_opp_add(cpu_dev, clk_get_rate(clk), 0);
-> >  		if (ret) {
-> >  			clk_put(clk);
-> > @@ -90,6 +84,11 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
-> >  
-> >  		ret = dev_pm_opp_add(cpu_dev, clk_get_rate(clk) / 2, 0);
-> >  		if (ret) {
-> > +			/*
-> > +			 * The second opp failed to be added, remove
-> > +			 * the first one before exiting.
-> > +			 */
-> > +			dev_pm_opp_remove(cpu_dev, clk_get_rate(clk));
-> >  			clk_put(clk);
-> >  			return ret;
-> >  		}
-> 
-> This still doesn't fix the failure situation. Indeed, you are only
-> removing the OPP at full rate for the current CPU, but you are not
-> removing the OPPs for the N-1 previous CPUs that have been handled in
-> previous iterations of the loop.
+Hi Ulf,
 
-Sorry for missing that, I quickly looked at source and missed seeing the
-for_each_cpu loop :(
+On Mon, Dec 11, 2017 at 9:59 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> That together with an option of allowing "consumed resource-devices"
+> (irqchip) to be included in the wakeup path. I am thinking, perhaps
+> another driver PM flag (DPM_FLAG_WAKEUP_PATH), that the PM core looks
+> at and sets ->power.wakeup_path flag for the device and its parents.
 
--- 
-viresh
+This is complicated by the fact that currently the device and irq
+subsystems don't really share data. E.g. {en,dis}able_irq_wake() and
+irq_set_irq_wake() don't take a device parameter, only an interrupt number,
+and conversion from interrupt numbers to devices is non-trivial.
+That's why I handled it in the irqchip drivers in the series referenced
+below.
+
+> [1]
+> https://www.spinics.net/lists/linux-renesas-soc/msg19947.html
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
