@@ -1,51 +1,40 @@
 From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 6/7] cpufreq: Add DVFS support for Armada 37xx
-Date: Tue, 12 Dec 2017 12:54:26 +0530
-Message-ID: <20171212072426.GK25177@vireshk-i7>
-References: <20171207135616.23670-1-gregory.clement@free-electrons.com>
- <20171207135616.23670-7-gregory.clement@free-electrons.com>
+Subject: Re: [PATCH v1 4/4] arm64: dts: mediatek: add mt2712 cpufreq related
+ device nodes
+Date: Tue, 12 Dec 2017 12:56:25 +0530
+Message-ID: <20171212072625.GL25177@vireshk-i7>
+References: <1512713278-17807-1-git-send-email-andrew-sh.cheng@mediatek.com>
+ <1512713278-17807-5-git-send-email-andrew-sh.cheng@mediatek.com>
+ <20171211075719.GD25177@vireshk-i7>
+ <1758225.tOgn8eUOoH@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20171207135616.23670-7-gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+In-Reply-To: <1758225.tOgn8eUOoH-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?iso-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Victor Gu <xigu-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Marcin Wojtas <mw-nYOzD4b6Jr9Wk0Htik3J/w@public.gmane.org>, Wilson Ding <dingwei-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Hua Jing <jinghua-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Neta Zur Hershkovits <neta-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Evan Wang <xswang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Andre Heider <a.heider-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 07-12-17, 14:56, Gregory CLEMENT wrote:
-> +/* Power management in North Bridge register set */
-> +#define ARMADA_37XX_NB_L0L1	0x18
-> +#define ARMADA_37XX_NB_L2L3	0x1C
-> +#define	ARMADA_37XX_NB_TBG_DIV_OFF	13
-> +#define	ARMADA_37XX_NB_TBG_DIV_MASK	0x7
-> +#define	 ARMADA_37XX_NB_CLK_SEL_OFF	11
-> +#define	 ARMADA_37XX_NB_CLK_SEL_MASK	0x1
-> +#define	 ARMADA_37XX_NB_CLK_SEL_TBG      0x1
-> +#define	 ARMADA_37XX_NB_TBG_SEL_OFF	9
-> +#define	 ARMADA_37XX_NB_TBG_SEL_MASK	0x3
-> +#define	 ARMADA_37XX_NB_VDD_SEL_OFF	6
-> +#define	 ARMADA_37XX_NB_VDD_SEL_MASK	0x3
-> +#define	 ARMADA_37XX_NB_CONFIG_SHIFT	16
-> +#define ARMADA_37XX_NB_DYN_MOD	0x24
-> +#define	 ARMADA_37XX_NB_CLK_SEL_EN	BIT(26)
-> +#define	 ARMADA_37XX_NB_TBG_EN		BIT(28)
-> +#define	 ARMADA_37XX_NB_DIV_EN		BIT(29)
-> +#define	 ARMADA_37XX_NB_VDD_EN		BIT(30)
-> +#define	 ARMADA_37XX_NB_DFS_EN		BIT(31)
-> +#define ARMADA_37XX_NB_CPU_LOAD	0x30
-> +#define	 ARMADA_37XX_NB_CPU_LOAD_MASK	0x3
-> +#define	 ARMADA_37XX_DVFS_LOAD_0		0
-> +#define	 ARMADA_37XX_DVFS_LOAD_1		1
-> +#define	 ARMADA_37XX_DVFS_LOAD_2		2
-> +#define	 ARMADA_37XX_DVFS_LOAD_3		3
+On 12-12-17, 02:17, Rafael J. Wysocki wrote:
+> On Monday, December 11, 2017 8:57:19 AM CET Viresh Kumar wrote:
+> > On 08-12-17, 14:07, Andrew-sh Cheng wrote:
+> > > Add opp v2 information,
+> > > and also add clocks, regulators and opp information into cpu nodes
+> > > 
+> > > Signed-off-by: Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> > > ---
+> > >  arch/arm64/boot/dts/mediatek/mt2712-evb.dts | 27 ++++++++++++++
+> > >  arch/arm64/boot/dts/mediatek/mt2712e.dtsi   | 57 +++++++++++++++++++++++++++++
+> > >  2 files changed, 84 insertions(+)
+> > 
+> > Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> 
+> Of course, DT bindings require ACKs from DT maintainers to be applied.
 
-I thought you agreed to using space instead of tab after #define ?
-
-Looks fine otherwise. You can add below after fixing above tab/space thing:
-
-Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+I didn't knew that we need Acks from DT maintainers for dts files as well? Yeah,
+its very much required while defining new bindings for sure.
 
 -- 
 viresh
