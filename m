@@ -1,158 +1,94 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 4/9] drivers: base cacheinfo: Add support for ACPI
- based firmware tables
-Date: Tue, 12 Dec 2017 18:25:22 +0100
-Message-ID: <CAJZ5v0hHdfE3khVvuqQm5JFMgY5R054c8UB9Nixii9ucq0Ecnw@mail.gmail.com>
-References: <20171201222330.18863-1-jeremy.linton@arm.com> <20171201222330.18863-5-jeremy.linton@arm.com>
- <2078459.JrYtfXc8fv@aspire.rjw.lan> <5024a041-2ef4-3912-994f-b5fcc945e916@arm.com>
+From: Bjorn Helgaas <helgaas-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V4 2/7] PCI: tegra: Use bus->sysdata to store and get
+ host private data
+Date: Tue, 12 Dec 2017 11:34:40 -0600
+Message-ID: <20171212173440.GC53955@bhelgaas-glaptop.roam.corp.google.com>
+References: <1512723493-865-1-git-send-email-mmaddireddy@nvidia.com>
+ <1512723493-865-3-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <5024a041-2ef4-3912-994f-b5fcc945e916@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sudeep Holla <sudeep.holla@arm.com>, Hanjun Guo <hanjun.guo@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, Al Stone <ahs3@redhat.com>, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, Len Brown <lenb@>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1512723493-865-3-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: cyndis-/1wQRMveznE@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Dec 12, 2017 at 6:03 PM, Jeremy Linton <jeremy.linton@arm.com> wrote:
-> Hi,
->
->
-> On 12/11/2017 07:11 PM, Rafael J. Wysocki wrote:
->>
->> On Friday, December 1, 2017 11:23:25 PM CET Jeremy Linton wrote:
->>>
->>> Add a entry to to struct cacheinfo to maintain a reference to the PPTT
->>> node which can be used to match identical caches across cores. Also
->>> stub out cache_setup_acpi() so that individual architectures can
->>> enable ACPI topology parsing.
->>>
->>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
->>> ---
->>>   drivers/acpi/pptt.c       |  1 +
->>>   drivers/base/cacheinfo.c  | 20 ++++++++++++++------
->>>   include/linux/cacheinfo.h | 13 ++++++++++++-
->>>   3 files changed, 27 insertions(+), 7 deletions(-)
->>>
->>> diff --git a/drivers/acpi/pptt.c b/drivers/acpi/pptt.c
->>> index 0f8a1631af33..a35e457cefb7 100644
->>> --- a/drivers/acpi/pptt.c
->>> +++ b/drivers/acpi/pptt.c
->>> @@ -329,6 +329,7 @@ static void update_cache_properties(struct cacheinfo
->>> *this_leaf,
->>>   {
->>>         int valid_flags = 0;
->>>   +     this_leaf->firmware_node = cpu_node;
->>>         if (found_cache->flags & ACPI_PPTT_SIZE_PROPERTY_VALID) {
->>>                 this_leaf->size = found_cache->size;
->>>                 valid_flags++;
->>> diff --git a/drivers/base/cacheinfo.c b/drivers/base/cacheinfo.c
->>> index eb3af2739537..ba89f9310e6f 100644
->>> --- a/drivers/base/cacheinfo.c
->>> +++ b/drivers/base/cacheinfo.c
->>> @@ -86,7 +86,10 @@ static int cache_setup_of_node(unsigned int cpu)
->>>   static inline bool cache_leaves_are_shared(struct cacheinfo *this_leaf,
->>>                                            struct cacheinfo *sib_leaf)
->>>   {
->>> -       return sib_leaf->of_node == this_leaf->of_node;
->>> +       if (acpi_disabled)
->>> +               return sib_leaf->of_node == this_leaf->of_node;
->>> +       else
->>> +               return sib_leaf->firmware_node ==
->>> this_leaf->firmware_node;
->>>   }
->>>     /* OF properties to query for a given cache type */
->>> @@ -215,6 +218,11 @@ static inline bool cache_leaves_are_shared(struct
->>> cacheinfo *this_leaf,
->>>   }
->>>   #endif
->>>   +int __weak cache_setup_acpi(unsigned int cpu)
->>> +{
->>> +       return -ENOTSUPP;
->>> +}
->>> +
->>>   static int cache_shared_cpu_map_setup(unsigned int cpu)
->>>   {
->>>         struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
->>> @@ -225,11 +233,11 @@ static int cache_shared_cpu_map_setup(unsigned int
->>> cpu)
->>>         if (this_cpu_ci->cpu_map_populated)
->>>                 return 0;
->>>   -     if (of_have_populated_dt())
->>> +       if (!acpi_disabled)
->>> +               ret = cache_setup_acpi(cpu);
->>> +       else if (of_have_populated_dt())
->>>                 ret = cache_setup_of_node(cpu);
->>> -       else if (!acpi_disabled)
->>> -               /* No cache property/hierarchy support yet in ACPI */
->>> -               ret = -ENOTSUPP;
->>> +
->>>         if (ret)
->>>                 return ret;
->>>   @@ -286,7 +294,7 @@ static void cache_shared_cpu_map_remove(unsigned
->>> int cpu)
->>>     static void cache_override_properties(unsigned int cpu)
->>>   {
->>> -       if (of_have_populated_dt())
->>> +       if (acpi_disabled && of_have_populated_dt())
->>>                 return cache_of_override_properties(cpu);
->>>   }
->>>   diff --git a/include/linux/cacheinfo.h b/include/linux/cacheinfo.h
->>> index 3d9805297cda..7ebff157ae6c 100644
->>> --- a/include/linux/cacheinfo.h
->>> +++ b/include/linux/cacheinfo.h
->>> @@ -37,6 +37,8 @@ enum cache_type {
->>>    * @of_node: if devicetree is used, this represents either the cpu node
->>> in
->>>    *    case there's no explicit cache node or the cache node itself in
->>> the
->>>    *    device tree
->>> + * @firmware_node: When not using DT, this may contain pointers to other
->>> + *     firmware based values. Particularly ACPI/PPTT unique values.
->>>    * @disable_sysfs: indicates whether this node is visible to the user
->>> via
->>>    *    sysfs or not
->>>    * @priv: pointer to any private data structure specific to particular
->>> @@ -65,8 +67,8 @@ struct cacheinfo {
->>>   #define CACHE_ALLOCATE_POLICY_MASK    \
->>>         (CACHE_READ_ALLOCATE | CACHE_WRITE_ALLOCATE)
->>>   #define CACHE_ID              BIT(4)
->>> -
->>>         struct device_node *of_node;
->>> +       void *firmware_node;
->>
->>
->> What about converting this to using struct fwnode instead of adding
->> fields to it?
->
->
-> I didn't really want to add another field here, but I've also pointed out
-> how I thought converting it to a fwnode wasn't a good choice.
->
-> https://lkml.org/lkml/2017/11/20/502
->
-> Mostly because IMHO its even more misleading (lacking any fwnode_operations)
-> than misusing the of_node as a void *.
+On Fri, Dec 08, 2017 at 02:28:08PM +0530, Manikanta Maddireddy wrote:
+> Tegra host driver is using pci_find_host_bridge() to get private data,
+> however pci_find_host_bridge() is causing module build failure because
+> it is not exported. pci_find_host_bridge() can be avoided by using
+> bus->sysdata to store and get private data.
+> 
+> Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-I'm not sure what you mean.
+Thanks a lot for doing this!  Looks like it was even easier than I
+expected :)
 
-Anyway, the idea is to have one pointer in there instead of two that
-cannot be used at the same time and there's no reason why of_node
-should be special.
-
-of_node should just be one of multiple choices.
-
-> Given that I'm in the minority thinking this, how far down the fwnode path
-> on the ACPI side do we want to go?
-
-I have no idea. :-)
-
-> Is simply treating it as a void pointer
-> sufficient for the ACPI side, considering all the PPTT code needs is a
-> unique token?
-
-I guess you can think about it as of_node under a different name, but
-whether or not this is sufficient depends on what you need it for.
-
-Thanks,
-Rafael
+> ---
+> V4:
+> * new patch in V4
+> 
+>  drivers/pci/host/pci-tegra.c | 13 +++++--------
+>  1 file changed, 5 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+> index 6f2f44539020..a549c5899e26 100644
+> --- a/drivers/pci/host/pci-tegra.c
+> +++ b/drivers/pci/host/pci-tegra.c
+> @@ -448,8 +448,7 @@ static unsigned long tegra_pcie_conf_offset(unsigned char b, unsigned int devfn,
+>  
+>  static int tegra_pcie_add_bus(struct pci_bus *bus)
+>  {
+> -	struct pci_host_bridge *host = pci_find_host_bridge(bus);
+> -	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
+> +	struct tegra_pcie *pcie = bus->sysdata;
+>  	struct tegra_pcie_bus *b;
+>  
+>  	b = kzalloc(sizeof(*b), GFP_KERNEL);
+> @@ -466,8 +465,7 @@ static int tegra_pcie_add_bus(struct pci_bus *bus)
+>  
+>  static void tegra_pcie_remove_bus(struct pci_bus *child)
+>  {
+> -	struct pci_host_bridge *host = pci_find_host_bridge(child);
+> -	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
+> +	struct tegra_pcie *pcie = child->sysdata;
+>  	struct tegra_pcie_bus *bus, *tmp;
+>  
+>  	list_for_each_entry_safe(bus, tmp, &pcie->buses, list) {
+> @@ -483,8 +481,7 @@ static void __iomem *tegra_pcie_map_bus(struct pci_bus *bus,
+>  					unsigned int devfn,
+>  					int where)
+>  {
+> -	struct pci_host_bridge *host = pci_find_host_bridge(bus);
+> -	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
+> +	struct tegra_pcie *pcie = bus->sysdata;
+>  	void __iomem *addr = NULL;
+>  	u32 val = 0;
+>  	u32 offset = 0;
+> @@ -675,8 +672,7 @@ static int tegra_pcie_request_resources(struct tegra_pcie *pcie)
+>  
+>  static int tegra_pcie_map_irq(const struct pci_dev *pdev, u8 slot, u8 pin)
+>  {
+> -	struct pci_host_bridge *host = pci_find_host_bridge(pdev->bus);
+> -	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
+> +	struct tegra_pcie *pcie = pdev->bus->sysdata;
+>  	int irq;
+>  
+>  	tegra_cpuidle_pcie_irqs_in_use();
+> @@ -2570,6 +2566,7 @@ static int tegra_pcie_probe(struct platform_device *pdev)
+>  		return -ENOMEM;
+>  
+>  	pcie = pci_host_bridge_priv(host);
+> +	host->sysdata = pcie;
+>  
+>  	pcie->soc = of_device_get_match_data(dev);
+>  	INIT_LIST_HEAD(&pcie->buses);
+> -- 
+> 2.1.4
+> 
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
