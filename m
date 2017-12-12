@@ -1,190 +1,133 @@
-From: Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 5/8] power: supply: axp20x_battery: add support for
- AXP813
-Date: Tue, 12 Dec 2017 19:55:23 +0000
-Message-ID: <20171212195523.1089902d@archlinux>
-References: <cover.4052f8c517c42db26a3cabe078cad333243d371c.1512396054.git-series.quentin.schulz@free-electrons.com>
-        <545d3aa6339c9e33060d651c42d652d0b848c06b.1512396054.git-series.quentin.schulz@free-electrons.com>
-        <20171210164910.415da6f5@archlinux>
-        <873410df-046e-bd86-584d-0d35b9d8c993@free-electrons.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH v4 04/12] clk: qcom: Add HFPLL driver
+Date: Tue, 12 Dec 2017 14:35:15 -0600
+Message-ID: <20171212203515.gpnu7cnxilkdz4hc@rob-hp-laptop>
+References: <1512726150-7204-1-git-send-email-sricharan@codeaurora.org>
+ <1512726150-7204-5-git-send-email-sricharan@codeaurora.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <873410df-046e-bd86-584d-0d35b9d8c993-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: linux-iio-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, wens-jdAy2FN1RRM@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, icenowy-h8G6r0blFSE@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1512726150-7204-5-git-send-email-sricharan@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sricharan R <sricharan@codeaurora.org>
+Cc: mturquette@baylibre.com, sboyd@codeaurora.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, 11 Dec 2017 09:35:43 +0100
-Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+On Fri, Dec 08, 2017 at 03:12:22PM +0530, Sricharan R wrote:
+> From: Stephen Boyd <sboyd@codeaurora.org>
+> 
+> On some devices (MSM8974 for example), the HFPLLs are
+> instantiated within the Krait processor subsystem as separate
+> register regions. Add a driver for these PLLs so that we can
+> provide HFPLL clocks for use by the system.
+> 
+> Cc: <devicetree@vger.kernel.org>
+> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+> ---
+>  .../devicetree/bindings/clock/qcom,hfpll.txt       |  40 ++++++++
+>  drivers/clk/qcom/Kconfig                           |   8 ++
+>  drivers/clk/qcom/Makefile                          |   1 +
+>  drivers/clk/qcom/hfpll.c                           | 106 +++++++++++++++++++++
+>  4 files changed, 155 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/clock/qcom,hfpll.txt
+>  create mode 100644 drivers/clk/qcom/hfpll.c
+> 
+> diff --git a/Documentation/devicetree/bindings/clock/qcom,hfpll.txt b/Documentation/devicetree/bindings/clock/qcom,hfpll.txt
+> new file mode 100644
+> index 0000000..fee92bb
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/clock/qcom,hfpll.txt
+> @@ -0,0 +1,40 @@
+> +High-Frequency PLL (HFPLL)
+> +
+> +PROPERTIES
+> +
+> +- compatible:
+> +	Usage: required
+> +	Value type: <string>
+> +	Definition: must be "qcom,hfpll"
 
-> Hi Jonathan,
-> 
-> On 10/12/2017 17:49, Jonathan Cameron wrote:
-> > On Mon,  4 Dec 2017 15:12:51 +0100
-> > Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
-> >   
-> >> The X-Powers AXP813 PMIC has got some slight differences from
-> >> AXP20X/AXP22X PMICs:
-> >>  - the maximum voltage supplied by the PMIC is 4.35 instead of 4.36/4.24
-> >>  for AXP20X/AXP22X,
-> >>  - the constant charge current formula is different,
-> >>
-> >> It also has a bit to tell whether the battery percentage returned by the
-> >> PMIC is valid.
-> >>
-> >> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>  
-> > 
-> > I'd use switch statements when matching the IDs as that'll be more elegant
-> > as you perhaps add further devices going forward...
-> > 
-> > Other than that, looks good to me.
-> >   
-> 
-> Well, I was wondering if it shouldn't be better to define a structure
-> for each device containing their quirks, functions, etc... like it is
-> done for the ADC or the ACIN power supply driver part.
-> 
+Fine for a fallback, but please add SoC specific compatibles.
 
-Even better.
+> +
+> +- reg:
+> +	Usage: required
+> +	Value type: <prop-encoded-array>
+> +	Definition: address and size of HPLL registers. An optional second
+> +		    element specifies the address and size of the alias
+> +		    register region.
+> +
+> +- clock-output-names:
+> +	Usage: required
+> +	Value type: <string>
+> +	Definition: Name of the PLL. Typically hfpllX where X is a CPU number
+> +		    starting at 0. Otherwise hfpll_Y where Y is more specific
+> +		    such as "l2".
+> +
+> +Example:
+> +
+> +1) An HFPLL for the L2 cache.
+> +
+> +	clock-controller@f9016000 {
+> +		compatible = "qcom,hfpll";
+> +		reg = <0xf9016000 0x30>;
+> +		clock-output-names = "hfpll_l2";
+> +	};
+> +
+> +2) An HFPLL for CPU0. This HFPLL has the alias register region.
+> +
+> +	clock-controller@f908a000 {
+> +		compatible = "qcom,hfpll";
+> +		reg = <0xf908a000 0x30>, <0xf900a000 0x30>;
+> +		clock-output-names = "hfpll0";
+> +	};
+> diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
+> index 20b5d6f..6c811bd 100644
+> --- a/drivers/clk/qcom/Kconfig
+> +++ b/drivers/clk/qcom/Kconfig
+> @@ -205,3 +205,11 @@ config SPMI_PMIC_CLKDIV
+>  	  Technologies, Inc. SPMI PMIC. It configures the frequency of
+>  	  clkdiv outputs of the PMIC. These clocks are typically wired
+>  	  through alternate functions on GPIO pins.
+> +
+> +config QCOM_HFPLL
+> +	tristate "High-Frequency PLL (HFPLL) Clock Controller"
+> +	depends on COMMON_CLK_QCOM
+> +	help
+> +	  Support for the high-frequency PLLs present on Qualcomm devices.
+> +	  Say Y if you want to support CPU frequency scaling on devices
+> +	  such as MSM8974, APQ8084, etc.
+> diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
+> index 4795e21..4a4bf38 100644
+> --- a/drivers/clk/qcom/Makefile
+> +++ b/drivers/clk/qcom/Makefile
+> @@ -36,3 +36,4 @@ obj-$(CONFIG_MSM_MMCC_8996) += mmcc-msm8996.o
+>  obj-$(CONFIG_QCOM_CLK_RPM) += clk-rpm.o
+>  obj-$(CONFIG_QCOM_CLK_SMD_RPM) += clk-smd-rpm.o
+>  obj-$(CONFIG_SPMI_PMIC_CLKDIV) += clk-spmi-pmic-div.o
+> +obj-$(CONFIG_QCOM_HFPLL) += hfpll.o
+> diff --git a/drivers/clk/qcom/hfpll.c b/drivers/clk/qcom/hfpll.c
+> new file mode 100644
+> index 0000000..7405bb6
+> --- /dev/null
+> +++ b/drivers/clk/qcom/hfpll.c
+> @@ -0,0 +1,106 @@
+> +/*
+> + * Copyright (c) 2013-2014, The Linux Foundation. All rights reserved.
 
-> struct axp20x_data {
-> 	bool	has_valid_fg_reg;
-> 	void 	constant_charge_current_to_raw(struct axp20x_batt_ps *axp, int *val);
-> 	void 	raw_to_constant_charge_current(struct axp20x_batt_ps *axp, int *val);
-> 	int 	get_max_voltage(struct axp20x_batt_ps *axp, int *val);
-> 	[...]
-> };
-> 
-> static const struct of_device_id axp20x_battery_ps_id[] = {
-> 	{ .compatible = "x-powers,axp209-battery-power-supply", .data = (void
-> *)&axp209_data, }, {}
-> };
-> 
-> void probe()
-> {
-> 	[...]
-> 	axp20x_batt->info = of_device_get_match_data(&pdev->dev);
-> 	[...]
-> }
-> 
-> Sebastian, any objection on doing this?
-> 
-> Thanks,
-> Quentin
-> 
-> > Jonathan
-> >   
-> >> ---
-> >>  drivers/power/supply/axp20x_battery.c | 44 +++++++++++++++++++++++++++-
-> >>  1 file changed, 43 insertions(+), 1 deletion(-)
-> >>
-> >> diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
-> >> index 7494f0f..cb30302 100644
-> >> --- a/drivers/power/supply/axp20x_battery.c
-> >> +++ b/drivers/power/supply/axp20x_battery.c
-> >> @@ -46,6 +46,8 @@
-> >>  #define AXP20X_CHRG_CTRL1_TGT_4_2V	(2 << 5)
-> >>  #define AXP20X_CHRG_CTRL1_TGT_4_36V	(3 << 5)
-> >>  
-> >> +#define AXP813_CHRG_CTRL1_TGT_4_35V	(3 << 5)
-> >> +
-> >>  #define AXP22X_CHRG_CTRL1_TGT_4_22V	(1 << 5)
-> >>  #define AXP22X_CHRG_CTRL1_TGT_4_24V	(3 << 5)
-> >>  
-> >> @@ -123,10 +125,41 @@ static int axp22x_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
-> >>  	return 0;
-> >>  }
-> >>  
-> >> +static int axp813_battery_get_max_voltage(struct axp20x_batt_ps *axp20x_batt,
-> >> +					  int *val)
-> >> +{
-> >> +	int ret, reg;
-> >> +
-> >> +	ret = regmap_read(axp20x_batt->regmap, AXP20X_CHRG_CTRL1, &reg);
-> >> +	if (ret)
-> >> +		return ret;
-> >> +
-> >> +	switch (reg & AXP20X_CHRG_CTRL1_TGT_VOLT) {  
-> > 
-> > You could do a lookup based from a table instead which might
-> > be ever so slightly more elegant..
-> >   
-> >> +	case AXP20X_CHRG_CTRL1_TGT_4_1V:
-> >> +		*val = 4100000;
-> >> +		break;
-> >> +	case AXP20X_CHRG_CTRL1_TGT_4_15V:
-> >> +		*val = 4150000;
-> >> +		break;
-> >> +	case AXP20X_CHRG_CTRL1_TGT_4_2V:
-> >> +		*val = 4200000;
-> >> +		break;
-> >> +	case AXP813_CHRG_CTRL1_TGT_4_35V:
-> >> +		*val = 4350000;
-> >> +		break;
-> >> +	default:
-> >> +		return -EINVAL;
-> >> +	}
-> >> +
-> >> +	return 0;
-> >> +}
-> >> +
-> >>  static void raw_to_constant_charge_current(struct axp20x_batt_ps *axp, int *val)
-> >>  {
-> >>  	if (axp->axp_id == AXP209_ID)
-> >>  		*val = *val * 100000 + 300000;
-> >> +	else if (axp->axp_id == AXP813_ID)
-> >> +		*val = *val * 200000 + 200000;
-> >>  	else
-> >>  		*val = *val * 150000 + 300000;  
-> > 
-> > Switch?
-> >   
-> >>  }
-> >> @@ -135,6 +168,8 @@ static void constant_charge_current_to_raw(struct axp20x_batt_ps *axp, int *val)
-> >>  {
-> >>  	if (axp->axp_id == AXP209_ID)
-> >>  		*val = (*val - 300000) / 100000;
-> >> +	else if (axp->axp_id == AXP813_ID)
-> >> +		*val = (*val - 200000) / 200000;
-> >>  	else
-> >>  		*val = (*val - 300000) / 150000;
-> >>  }
-> >> @@ -269,7 +304,8 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
-> >>  		if (ret)
-> >>  			return ret;
-> >>  
-> >> -		if (axp20x_batt->axp_id == AXP221_ID &&
-> >> +		if ((axp20x_batt->axp_id == AXP221_ID ||
-> >> +		     axp20x_batt->axp_id == AXP813_ID) &&
-> >>  		    !(reg & AXP22X_FG_VALID))
-> >>  			return -EINVAL;
-> >>  
-> >> @@ -284,6 +320,9 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
-> >>  		if (axp20x_batt->axp_id == AXP209_ID)
-> >>  			return axp20x_battery_get_max_voltage(axp20x_batt,
-> >>  							      &val->intval);
-> >> +		else if (axp20x_batt->axp_id == AXP813_ID)
-> >> +			return axp813_battery_get_max_voltage(axp20x_batt,
-> >> +							      &val->intval);
-> >>  		return axp22x_battery_get_max_voltage(axp20x_batt,
-> >>  						      &val->intval);  
-> > 
-> > Worth converting to a switch statement to make it more elegant for future
-> > devices?
-> >   
-> >>  
-> >> @@ -467,6 +506,9 @@ static const struct of_device_id axp20x_battery_ps_id[] = {
-> >>  	}, {
-> >>  		.compatible = "x-powers,axp221-battery-power-supply",
-> >>  		.data = (void *)AXP221_ID,
-> >> +	}, {
-> >> +		.compatible = "x-powers,axp813-battery-power-supply",
-> >> +		.data = (void *)AXP813_ID,
-> >>  	}, { /* sentinel */ },
-> >>  };
-> >>  MODULE_DEVICE_TABLE(of, axp20x_battery_ps_id);  
-> >   
-> 
+It's 2017.
+
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 and
+> + * only version 2 as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+
+Use SPDX tags.
+
+Rob
