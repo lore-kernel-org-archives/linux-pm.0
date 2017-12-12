@@ -1,36 +1,142 @@
 From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH 0/2] cpufreq: Sort Kconfig and Makefile
-Date: Tue, 12 Dec 2017 17:54:17 +0100
-Message-ID: <20171212165419.752-1-gregory.clement@free-electrons.com>
+Subject: [PATCH 1/2] cpufreq: ARM: sort the Kconfig menu
+Date: Tue, 12 Dec 2017 17:54:18 +0100
+Message-ID: <20171212165419.752-2-gregory.clement@free-electrons.com>
+References: <20171212165419.752-1-gregory.clement@free-electrons.com>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171212165419.752-1-gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 Cc: Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Victor Gu <xigu-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Marcin Wojtas <mw-nYOzD4b6Jr9Wk0Htik3J/w@public.gmane.org>, Wilson Ding <dingwei-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Hua Jing <jinghua-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Neta Zur Hershkovits <neta-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Evan Wang <xswang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Andre Heider <a.heider-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi,
+Group all the related big LITTLE configuration together and sort the
+other entries in alphabetic order.
 
-The patch of this series was originally part of the series "Add CPU
-Frequency scaling support on Armada 37xx" [1].
-
-As requested by Rafael J. Wysocki, these 2 patches are extracted in a
-independent series, in the meantime, Viresh Kumar gave his acked-by
-that I added to the patches.
-
-Thanks,
-
-Gregory
-
-[1]: http://lists.infradead.org/pipermail/linux-arm-kernel/2017-December/546709.html
-
-Gregory CLEMENT (2):
-  cpufreq: ARM: sort the Kconfig menu
-  cpufreq: sort the drivers in ARM part
-
+Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+---
  drivers/cpufreq/Kconfig.arm | 82 ++++++++++++++++++++++-----------------------
- drivers/cpufreq/Makefile    |  8 ++---
- 2 files changed, 45 insertions(+), 45 deletions(-)
+ 1 file changed, 41 insertions(+), 41 deletions(-)
 
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index bdce4488ded1..0baf43837b51 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -2,6 +2,23 @@
+ # ARM CPU Frequency scaling drivers
+ #
+ 
++config ACPI_CPPC_CPUFREQ
++	tristate "CPUFreq driver based on the ACPI CPPC spec"
++	depends on ACPI_PROCESSOR
++	select ACPI_CPPC_LIB
++	default n
++	help
++	  This adds a CPUFreq driver which uses CPPC methods
++	  as described in the ACPIv5.1 spec. CPPC stands for
++	  Collaborative Processor Performance Controls. It
++	  is based on an abstract continuous scale of CPU
++	  performance values which allows the remote power
++	  processor to flexibly optimize for power and
++	  performance. CPPC relies on power management firmware
++	  support for its operation.
++
++	  If in doubt, say N.
++
+ # big LITTLE core layer and glue drivers
+ config ARM_BIG_LITTLE_CPUFREQ
+ 	tristate "Generic ARM big LITTLE CPUfreq driver"
+@@ -12,6 +29,30 @@ config ARM_BIG_LITTLE_CPUFREQ
+ 	help
+ 	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
+ 
++config ARM_DT_BL_CPUFREQ
++	tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
++	depends on ARM_BIG_LITTLE_CPUFREQ && OF
++	help
++	  This enables probing via DT for Generic CPUfreq driver for ARM
++	  big.LITTLE platform. This gets frequency tables from DT.
++
++config ARM_SCPI_CPUFREQ
++        tristate "SCPI based CPUfreq driver"
++	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
++        help
++	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
++	  using SCPI protocol for CPU power management.
++
++	  This driver uses SCPI Message Protocol driver to interact with the
++	  firmware providing the CPU DVFS functionality.
++
++config ARM_VEXPRESS_SPC_CPUFREQ
++        tristate "Versatile Express SPC based CPUfreq driver"
++	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
++        help
++          This add the CPUfreq driver support for Versatile Express
++	  big.LITTLE platforms using SPC for power management.
++
+ config ARM_BRCMSTB_AVS_CPUFREQ
+ 	tristate "Broadcom STB AVS CPUfreq driver"
+ 	depends on ARCH_BRCMSTB || COMPILE_TEST
+@@ -33,20 +74,6 @@ config ARM_BRCMSTB_AVS_CPUFREQ_DEBUG
+ 
+ 	  If in doubt, say N.
+ 
+-config ARM_DT_BL_CPUFREQ
+-	tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
+-	depends on ARM_BIG_LITTLE_CPUFREQ && OF
+-	help
+-	  This enables probing via DT for Generic CPUfreq driver for ARM
+-	  big.LITTLE platform. This gets frequency tables from DT.
+-
+-config ARM_VEXPRESS_SPC_CPUFREQ
+-        tristate "Versatile Express SPC based CPUfreq driver"
+-	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
+-        help
+-          This add the CPUfreq driver support for Versatile Express
+-	  big.LITTLE platforms using SPC for power management.
+-
+ config ARM_EXYNOS5440_CPUFREQ
+ 	tristate "SAMSUNG EXYNOS5440"
+ 	depends on SOC_EXYNOS5440
+@@ -205,16 +232,6 @@ config ARM_SA1100_CPUFREQ
+ config ARM_SA1110_CPUFREQ
+ 	bool
+ 
+-config ARM_SCPI_CPUFREQ
+-        tristate "SCPI based CPUfreq driver"
+-	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
+-        help
+-	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
+-	  using SCPI protocol for CPU power management.
+-
+-	  This driver uses SCPI Message Protocol driver to interact with the
+-	  firmware providing the CPU DVFS functionality.
+-
+ config ARM_SPEAR_CPUFREQ
+ 	bool "SPEAr CPUFreq support"
+ 	depends on PLAT_SPEAR
+@@ -275,20 +292,3 @@ config ARM_PXA2xx_CPUFREQ
+ 	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
+ 
+ 	  If in doubt, say N.
+-
+-config ACPI_CPPC_CPUFREQ
+-	tristate "CPUFreq driver based on the ACPI CPPC spec"
+-	depends on ACPI_PROCESSOR
+-	select ACPI_CPPC_LIB
+-	default n
+-	help
+-	  This adds a CPUFreq driver which uses CPPC methods
+-	  as described in the ACPIv5.1 spec. CPPC stands for
+-	  Collaborative Processor Performance Controls. It
+-	  is based on an abstract continuous scale of CPU
+-	  performance values which allows the remote power
+-	  processor to flexibly optimize for power and
+-	  performance. CPPC relies on power management firmware
+-	  support for its operation.
+-
+-	  If in doubt, say N.
 -- 
 2.15.1
 
