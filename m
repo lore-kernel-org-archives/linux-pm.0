@@ -1,41 +1,66 @@
 From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH 0/2] cpufreq: few fix on mvebu driver
-Date: Wed, 13 Dec 2017 18:29:12 +0100
-Message-ID: <20171213172914.6148-1-gregory.clement@free-electrons.com>
+Subject: [PATCH 2/2] cpufreq: mvebu: Free opp if registering failed
+Date: Wed, 13 Dec 2017 18:29:14 +0100
+Message-ID: <20171213172914.6148-3-gregory.clement@free-electrons.com>
+References: <20171213172914.6148-1-gregory.clement@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:42540 "EHLO
+Received: from mail.free-electrons.com ([62.4.15.54]:42556 "EHLO
         mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753189AbdLMR3Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 12:29:24 -0500
+        with ESMTP id S1753409AbdLMR3Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 12:29:25 -0500
+In-Reply-To: <20171213172914.6148-1-gregory.clement@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
 Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@free-electrons.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@free-electrons.com>
 
-Hi,
+Since the introduction of this driver, the functions to remove the opp
+were added. So stop claiming we can't remove opp and use one of them in
+case of failure.
 
-The second patch of this series was originally part of the series "Add CPU
-Frequency scaling support on Armada 37xx" [1].
+Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+---
+ drivers/cpufreq/mvebu-cpufreq.c | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
-As requested by Viresh Kumar, it is extracted in a independent series.
-In the meantime, Thomas Petazzoni pointed an issue on the first
-version that I fixed in this series.
-
-While I was on this driver I found an aother issue that I fixed with
-the first patch.
-
-Thanks,
-
-Gregory
-
-[1]: http://lists.infradead.org/pipermail/linux-arm-kernel/2017-December/547650.html
-
-Gregory CLEMENT (2):
-  cpufreq: mvebu: Free the clock reference in the normal path
-  cpufreq: mvebu: Free opp if registering failed
-
- drivers/cpufreq/mvebu-cpufreq.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
-
+diff --git a/drivers/cpufreq/mvebu-cpufreq.c b/drivers/cpufreq/mvebu-cpufreq.c
+index c043aad8e3a0..31513bd42705 100644
+--- a/drivers/cpufreq/mvebu-cpufreq.c
++++ b/drivers/cpufreq/mvebu-cpufreq.c
+@@ -76,12 +76,6 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
+ 			return PTR_ERR(clk);
+ 		}
+ 
+-		/*
+-		 * In case of a failure of dev_pm_opp_add(), we don't
+-		 * bother with cleaning up the registered OPP (there's
+-		 * no function to do so), and simply cancel the
+-		 * registration of the cpufreq device.
+-		 */
+ 		ret = dev_pm_opp_add(cpu_dev, clk_get_rate(clk), 0);
+ 		if (ret) {
+ 			clk_put(clk);
+@@ -91,7 +85,8 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
+ 		ret = dev_pm_opp_add(cpu_dev, clk_get_rate(clk) / 2, 0);
+ 		if (ret) {
+ 			clk_put(clk);
+-			return ret;
++			dev_err(cpu_dev, "Failed to register OPPs\n");
++			goto opp_register_failed;
+ 		}
+ 
+ 		ret = dev_pm_opp_set_sharing_cpus(cpu_dev,
+@@ -104,5 +99,11 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
+ 
+ 	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+ 	return 0;
++
++opp_register_failed:
++	/* As registering has failed remove all the opp for all cpus */
++	dev_pm_opp_cpumask_remove_table(cpu_possible_mask);
++
++	return ret;
+ }
+ device_initcall(armada_xp_pmsu_cpufreq_init);
 -- 
 2.15.1
