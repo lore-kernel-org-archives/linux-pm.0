@@ -1,71 +1,108 @@
-From: Timur Tabi <timur@codeaurora.org>
-Subject: Re: [PATCH v2 1/2] acpi, spcr: Make SPCR avialable to other
- architectures
-Date: Wed, 13 Dec 2017 15:11:33 -0600
-Message-ID: <d967861e-9f83-689c-2b14-58d7450c848b@codeaurora.org>
-References: <20171211155059.17062-1-prarit@redhat.com>
- <20171211155059.17062-2-prarit@redhat.com> <20171213124533.GA32362@red-moon>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH V3] PM: In kernel power management domain_pm created for
+ async schedules
+Date: Wed, 13 Dec 2017 23:26:27 +0100
+Message-ID: <CAJZ5v0j2RPzdCzAp3ofjpmnFhMUym691TBS54OvQpw=fidS9Ew@mail.gmail.com>
+References: <20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7>
+ <20171206141238.GB11339@kroah.com> <CGME20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7>
+ <3785462.Nrr6Y8ermz@aspire.rjw.lan> <20171213084612epcms5p7755822fff34c87907de2236923e82305@epcms5p7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20171213124533.GA32362@red-moon>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Prarit Bhargava <prarit@redhat.com>
-Cc: linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, graeme.gregory@linaro.org, mark.salter@redhat.com
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:36314 "EHLO
+        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750992AbdLMW03 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 17:26:29 -0500
+In-Reply-To: <20171213084612epcms5p7755822fff34c87907de2236923e82305@epcms5p7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: vikas.bansal@samsung.com
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 12/13/2017 06:45 AM, Lorenzo Pieralisi wrote:
->> +/*
->> + * Erratum 44 for QDF2432v1 and QDF2400v1 SoCs describes the BUSY bit as
->> + * occasionally getting stuck as 1. To avoid the potential for a hang, check
->> + * TXFE == 0 instead of BUSY == 1. This may not be suitable for all UART
->> + * implementations, so only do so if an affected platform is detected in
->> + * acpi_parse_spcr().
->> + */
->> +bool qdf2400_e44_present;
->> +EXPORT_SYMBOL(qdf2400_e44_present);
-> 
-> My eyes, this is horrible but it is not introduced by this patch. It
-> would have been much better if:
-> 
-> drivers/tty/serial/amba-pl011.c
-> 
-> parsed the SPCR table (again) to detect it instead of relying on this
-> horrible exported flag.
+On Wed, Dec 13, 2017 at 9:46 AM, Vikas Bansal <vikas.bansal@samsung.com> wrote:
+>
+> Sender : Rafael J. Wysocki <rjw@rjwysocki.net>
+> Date   : 2017-12-06 19:48 (GMT+5:30)
+>
+>> On Wednesday, December 6, 2017 3:12:38 PM CET gregkh@linuxfoundation.org wrote:
+>> > On Wed, Dec 06, 2017 at 12:07:14PM +0000, Vikas Bansal wrote:
+>> > > Description:
+>> >
+>> > Why is this here?
+>> >
+>> > >
+>> > > If there is a driver in system which starts creating async schedules
+>> > > just after resume (Same as our case, in which we faced issue).
+>> > > Then async_synchronize_full API in PM cores starts waiting for completion
+>> > > of async schedules created by that driver (Even though those are in a domain).
+>> > > Because of this kernel resume time is increased (We faces the same issue)
+>> > > and whole system is delayed.
+>> > > This problem can be solved by creating a domain for
+>> > > async schedules in PM core (As we solved in our case).
+>> > > Below patch is for solving this problem.
+>> >
+>> > Very odd formatting.
+>> >
+>> > >
+>> > > Changelog:
+>> > > 1. Created Async domain domain_pm.
+>> > > 2. Converted async_schedule to async_schedule_domain.
+>> > > 3. Converted async_synchronize_full to async_synchronize_full_domain
+>> >
+>> > I'm confused.  Have you read kernel patch submissions?  Look at how they
+>> > are formatted.  The documentation in the kernel tree should help you out
+>> > a lot here.
+>> >
+>> > Also, this is not v1, it has changed from the previous version.  Always
+>> > describe, in the correct way, the changes from previous submissions.
+>
+> Setting the correct version and chaging the formatting.
+>
+>> >
+>> >
+>> > >
+>> > >
+>> > >
+>> > > Signed-off-by: Vikas Bansal <vikas.bansal@samsung.com>
+>> > > Signed-off-by: Anuj Gupta <anuj01.gupta@samsung.com>
+>> > > ---
+>> > >  drivers/base/power/main.c |   27 +++++++++++++++------------
+>> > >  1 file changed, 15 insertions(+), 12 deletions(-)
+>> > >
+>> > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>> > > index db2f044..042b034 100644
+>> > > --- a/drivers/base/power/main.c
+>> > > +++ b/drivers/base/power/main.c
+>> > > @@ -39,6 +39,7 @@
+>> > >  #include "power.h"
+>> > >
+>> > >  typedef int (*pm_callback_t)(struct device *);
+>> > > +static ASYNC_DOMAIN(domain_pm);
+>> > >
+>> > >  /*
+>> > >   * The entries in the dpm_list list are in a depth first order, simply
+>> > > @@ -615,7 +616,8 @@ void dpm_noirq_resume_devices(pm_message_t state)
+>> > >                  reinit_completion(&dev->power.completion);
+>> > >                  if (is_async(dev)) {
+>> > >                          get_device(dev);
+>> > > -                        async_schedule(async_resume_noirq, dev);
+>> > > +                        async_schedule_domain(async_resume_noirq, dev,
+>> >
+>> > Always run your patches through scripts/checkpatch.pl so you do you not
+>> > get grumpy maintainers telling you to use scripts/checkpatch.pl
+>> >
+>> > Stop.  Take some time.  Redo the patch in another day or so, and then
+>> > resend it later, _AFTER_ you have addressed the issues.  Don't rush,
+>> > there is no race here.
+>>
+>> Also it is not clear to me if this fixes a mainline kernel issue,
+>> because the changelog mentions a driver doing something odd, but it
+>> doesn't say which one it is and whether or not it is in the tree.
+>
+> No, this driver is not part of mainline yet.
 
-I didn't want to put any ACPI code in amba-pl011.c, so putting it in 
-spcr.c made the most sense.  I agree the global variable is ugly.  If 
-you have a better idea, I'm all ears.
+So please submit it along with the driver that needs it, whenever that
+one is ready.
 
-If it's any consolation, this erratum affects only 1.x silicon, which is 
-technically pre-production (although a lot of people have them).  This 
-work-around will eventually be reverted.
-
->> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
->> index 46505396869e..9ae98eeada76 100644
->> --- a/drivers/acpi/Kconfig
->> +++ b/drivers/acpi/Kconfig
->> @@ -79,7 +79,12 @@ config ACPI_DEBUGGER_USER
->>   endif
->>   
->>   config ACPI_SPCR_TABLE
->> -	bool
->> +	bool "ACPI Serial Port Console Redirection Support"
->> +	default y if ARM64
-> 
-> You need to remove the selection in arch/arm64 then. Also, moving away
-> from a non-visible config may have consequences on ARM64, Graeme and
-> Mark are more familiar with the SPCR dependencies so please chime in.
-
-I did raise this as a concern in the previous version of the patch.  I 
-also think it should not be a selectable option.
-
-Keeping the "select" does force SPCR to be enabled on ARM64 ACPI 
-platforms, but if it's an option for x86, it should be an option for ARM.
-
--- 
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm
-Technologies, Inc.  Qualcomm Technologies, Inc. is a member of the
-Code Aurora Forum, a Linux Foundation Collaborative Project.
+Thanks,
+Rafael
