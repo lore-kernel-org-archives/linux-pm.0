@@ -1,74 +1,102 @@
-From: Johannes Stezenbach <js@sig21.net>
-Subject: Re: [RFC PATCH 1/2] platform/x86: add Atom PMC quirk to disable SATA
-Date: Wed, 13 Dec 2017 12:13:05 +0100
-Message-ID: <20171213111305.GA20260@sig21.net>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
- <20170925191749.2oamusbajgs6clcg@sig21.net>
- <20170925192109.rty2fnm7c4jnj3vx@sig21.net>
- <34396652.fljU28PShI@aspire.rjw.lan>
- <a2c8d724-015a-e6c3-23ab-4b6036cc22eb@redhat.com>
+From: Sricharan R <sricharan@codeaurora.org>
+Subject: Re: [PATCH v4 08/12] clk: qcom: Add KPSS ACC/GCC driver
+Date: Wed, 13 Dec 2017 17:12:37 +0530
+Message-ID: <722ad6a1-2cf2-25ca-a62b-0a837ab4aa1d@codeaurora.org>
+References: <1512726150-7204-1-git-send-email-sricharan@codeaurora.org>
+ <1512726150-7204-9-git-send-email-sricharan@codeaurora.org>
+ <20171212203813.f3fkjw4uvxm43yok@rob-hp-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-clk-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <a2c8d724-015a-e6c3-23ab-4b6036cc22eb@redhat.com>
-Sender: linux-clk-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:58482 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751853AbdLMLmo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 06:42:44 -0500
+In-Reply-To: <20171212203813.f3fkjw4uvxm43yok@rob-hp-laptop>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: mturquette@baylibre.com, sboyd@codeaurora.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org
 
-On Wed, Dec 13, 2017 at 09:53:21AM +0100, Hans de Goede wrote:
-> On 13-12-17 01:00, Rafael J. Wysocki wrote:
-> > On Monday, September 25, 2017 9:21:09 PM CET Johannes Stezenbach wrote:
-> > > SATA controller is enabled on Asus E200HA even though the
-> > > machine doesn't use it (it has eMMC storage), however
-> > > SATA being on blocks S0ix entry so we need to disable it.
-> > > 
-> > > Signed-off-by: Johannes Stezenbach <js@sig21.net>
-> > 
-> > Mika, Andy, Hans, any comments on this one?
+Hi Rob,
+
+On 12/13/2017 2:08 AM, Rob Herring wrote:
+> On Fri, Dec 08, 2017 at 03:12:26PM +0530, Sricharan R wrote:
+>> From: Stephen Boyd <sboyd@codeaurora.org>
+>>
+>> The ACC and GCC regions present in KPSSv1 contain registers to
+>> control clocks and power to each Krait CPU and L2. For CPUfreq
+>> purposes probe these devices and expose a mux clock that chooses
+>> between PXO and PLL8.
+>>
+>> Cc: <devicetree@vger.kernel.org>
+>> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+>> ---
+>>  .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  |  7 ++
+>>  .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  | 28 +++++++
 > 
-> Seems sensible to me, I'm afraid we may need the same quirk on
-> other devices, but I see no way around this.
+> Please make bindings a separate patch.
+
+ ok.
+
 > 
-> Although, maybe we need to have a specialized (derived)
-> ahci driver for these Atom SoCs and in there if no
-> disk is detected do this through the clock framework?
+>>  drivers/clk/qcom/Kconfig                           |  8 ++
+>>  drivers/clk/qcom/Makefile                          |  1 +
+>>  drivers/clk/qcom/kpss-xcc.c                        | 96 ++++++++++++++++++++++
+>>  5 files changed, 140 insertions(+)
+>>  create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+>>  create mode 100644 drivers/clk/qcom/kpss-xcc.c
+>>
+>> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
+>> index 1333db9..382a574 100644
+>> --- a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
+>> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
+>> @@ -21,10 +21,17 @@ PROPERTIES
+>>  		    the register region. An optional second element specifies
+>>  		    the base address and size of the alias register region.
+>>  
+>> +- clock-output-names:
+>> +	Usage: optional
+>> +	Value type: <string>
+>> +	Definition: Name of the output clock. Typically acpuX_aux where X is a
+>> +		    CPU number starting at 0.
+>> +
+>>  Example:
+>>  
+>>  	clock-controller@2088000 {
+>>  		compatible = "qcom,kpss-acc-v2";
+>>  		reg = <0x02088000 0x1000>,
+>>  		      <0x02008000 0x1000>;
+>> +		clock-output-names = "acpu0_aux";
+>>  	};
+>> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+>> new file mode 100644
+>> index 0000000..d1e12f1
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+>> @@ -0,0 +1,28 @@
+>> +Krait Processor Sub-system (KPSS) Global Clock Controller (GCC)
+>> +
+>> +PROPERTIES
+>> +
+>> +- compatible:
+>> +	Usage: required
+>> +	Value type: <string>
+>> +	Definition: should be one of:
+>> +			"qcom,kpss-gcc"
 > 
-> That may be better then a long list of quirks.
-> 
-> Johannes, question how did you test this and figure out
-> which clocks to disable, a quick howto on this, I think
-> a patch adding a little howto / README as say
-> Documentation/power/intel-S0ix-debugging.txt
-> documenting this would be great. I'm certainly interested
-> in trying to reproduce this on some of my own Bay Trail and
-> Cherry Trail devices and add fixes for those if necessary.
+> Only one implementation?
 
-I put my E200HA aside due to lack of time, so it's
-unlikely I'll send documentation patches anytime soon.
+ hmm, missed "qcom,kpss-acc-v1", will add that too.
+ 
+Regards,
+ Sricharan
 
-Basically everything is documented in bugzilla:
-https://bugzilla.kernel.org/show_bug.cgi?id=193891
+-- 
+"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
 
-For the SATA issue I just poked wildly around in registers using
-busybox devmem, after applying S0ix blocker debug patch
-I tried to disable some devices which were printed:
-https://bugzilla.kernel.org/show_bug.cgi?id=193891#c53
-(Obviously bug 193891 is misnamed, most of what's
-discussed there doesn't directly relate to PMIC. Sorry
-for creating a mess, but my understanding of the platform
-was very low when I created it.)
-
-The thing is that the public CHT datasheet (atom-z8000-datasheet-vol-1.pdf + vol-2)
-doesn't even mention SATA, and there is no PCI device for it.
-OTOH, baytrail datasheet (atom-e3800-family-datasheet.pdf)
-specifies SATA and BIT_SATA was already defined in pmc_atom.h.
-
-Besides SATA, I also needed to disable dw DMA, using a
-hack patch or devmem, but eventually it might be solved properly:
-https://bugzilla.kernel.org/show_bug.cgi?id=196861
-
-
-Thanks,
-Johannes
+---
+This email has been checked for viruses by Avast antivirus software.
+https://www.avast.com/antivirus
