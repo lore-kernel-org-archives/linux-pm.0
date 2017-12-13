@@ -1,55 +1,71 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
-Date: Wed, 13 Dec 2017 22:06:40 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1712132201380.1885@nanos>
-References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFwsMuHUBQz5kDNwRf17JnasXMWjvmLq5qXGH-694yeq1w@mail.gmail.com> <20171206121452.GA6320@dhcp22.suse.cz> <db81e89d-eee6-868c-dc10-c028f4c4be84@mblankhorst.nl> <alpine.DEB.2.20.1712061344560.1724@nanos>
- <0f1d3d63-fa10-5cef-8014-81753dc60243@mblankhorst.nl> <alpine.DEB.2.20.1712061514420.1724@nanos> <57c8679e-1b88-c9ad-2299-2bea7560b28f@mblankhorst.nl> <alpine.DEB.2.20.1712081129450.1840@nanos> <alpine.DEB.2.20.1712131507160.1885@nanos>
- <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com> <alpine.DEB.2.20.1712131738020.1885@nanos> <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com> <alpine.DEB.2.20.1712131856130.1885@nanos>
- <alpine.DEB.2.20.1712132149420.1885@nanos>
+From: Timur Tabi <timur@codeaurora.org>
+Subject: Re: [PATCH v2 1/2] acpi, spcr: Make SPCR avialable to other
+ architectures
+Date: Wed, 13 Dec 2017 15:11:33 -0600
+Message-ID: <d967861e-9f83-689c-2b14-58d7450c848b@codeaurora.org>
+References: <20171211155059.17062-1-prarit@redhat.com>
+ <20171211155059.17062-2-prarit@redhat.com> <20171213124533.GA32362@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.20.1712132149420.1885@nanos>
-Sender: linux-pci-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20171213124533.GA32362@red-moon>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Prarit Bhargava <prarit@redhat.com>
+Cc: linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, graeme.gregory@linaro.org, mark.salter@redhat.com
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 13 Dec 2017, Thomas Gleixner wrote:
-> On Wed, 13 Dec 2017, Thomas Gleixner wrote:
-> > On Wed, 13 Dec 2017, Linus Torvalds wrote:
-> > 
-> > > On Wed, Dec 13, 2017 at 8:41 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > > >
-> > > > Definitely. That was fragile forever but puzzles me is that I can't figure
-> > > > out what now causes that spurious interrupt to surface out of the blue.
-> > > 
-> > > Perhaps just timing?
-> > 
-> > That's what I'm trying to figure out right now, because that is the only
-> > sensible explanation left. The whole machinery of suspend is exactly the
-> > same with and without the vector changes. I instrumented all functions
-> > involved and the picture is the same. I even do not see any fundamental
-> > timing differences where one would say: That's it.
-> > 
-> > What puzzles me even more is that in the range of commits I'm fiddling with
-> > there is no other change than the vector management stuff and the point
-> > where it breaks makes no sense at all. The point Maarten bisected it to
-> > works nicely here, so that might just point to a very subtle timing issue.
+On 12/13/2017 06:45 AM, Lorenzo Pieralisi wrote:
+>> +/*
+>> + * Erratum 44 for QDF2432v1 and QDF2400v1 SoCs describes the BUSY bit as
+>> + * occasionally getting stuck as 1. To avoid the potential for a hang, check
+>> + * TXFE == 0 instead of BUSY == 1. This may not be suitable for all UART
+>> + * implementations, so only do so if an affected platform is detected in
+>> + * acpi_parse_spcr().
+>> + */
+>> +bool qdf2400_e44_present;
+>> +EXPORT_SYMBOL(qdf2400_e44_present);
 > 
-> After doing more debugging on this it turns out that this looks like a
-> legacy interrupt coming in. The vector number is always 55, which is legacy
-> IRQ 7 as seen from the PIC. The corresponding IOAPIC interrupt pin is
-> masked and vector 55 is completely unused.
+> My eyes, this is horrible but it is not introduced by this patch. It
+> would have been much better if:
 > 
-> More questions than answers. Still investigating.
+> drivers/tty/serial/amba-pl011.c
+> 
+> parsed the SPCR table (again) to detect it instead of relying on this
+> horrible exported flag.
 
-And it does not explain Maartens report which gets a spurious vector 33 on
-CPU4 after the non boot cpus have been brought online again. And that's the
-vector which was assigned before the affinity was moved by unplugging CPU4.
+I didn't want to put any ACPI code in amba-pl011.c, so putting it in 
+spcr.c made the most sense.  I agree the global variable is ugly.  If 
+you have a better idea, I'm all ears.
 
-Hrmpf. Even more mystery to solve.
+If it's any consolation, this erratum affects only 1.x silicon, which is 
+technically pre-production (although a lot of people have them).  This 
+work-around will eventually be reverted.
 
-Thanks,
+>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+>> index 46505396869e..9ae98eeada76 100644
+>> --- a/drivers/acpi/Kconfig
+>> +++ b/drivers/acpi/Kconfig
+>> @@ -79,7 +79,12 @@ config ACPI_DEBUGGER_USER
+>>   endif
+>>   
+>>   config ACPI_SPCR_TABLE
+>> -	bool
+>> +	bool "ACPI Serial Port Console Redirection Support"
+>> +	default y if ARM64
+> 
+> You need to remove the selection in arch/arm64 then. Also, moving away
+> from a non-visible config may have consequences on ARM64, Graeme and
+> Mark are more familiar with the SPCR dependencies so please chime in.
 
-	tglx
+I did raise this as a concern in the previous version of the patch.  I 
+also think it should not be a selectable option.
+
+Keeping the "select" does force SPCR to be enabled on ARM64 ACPI 
+platforms, but if it's an option for x86, it should be an option for ARM.
+
+-- 
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm
+Technologies, Inc.  Qualcomm Technologies, Inc. is a member of the
+Code Aurora Forum, a Linux Foundation Collaborative Project.
