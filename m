@@ -1,102 +1,41 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH v4 08/12] clk: qcom: Add KPSS ACC/GCC driver
-Date: Wed, 13 Dec 2017 17:12:37 +0530
-Message-ID: <722ad6a1-2cf2-25ca-a62b-0a837ab4aa1d@codeaurora.org>
-References: <1512726150-7204-1-git-send-email-sricharan@codeaurora.org>
- <1512726150-7204-9-git-send-email-sricharan@codeaurora.org>
- <20171212203813.f3fkjw4uvxm43yok@rob-hp-laptop>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 4/4] cpufreq: schedutil: Don't call sugov_get_util()
+ unnecessarily
+Date: Wed, 13 Dec 2017 17:32:24 +0530
+Message-ID: <20171213120224.GM3322@vireshk-i7>
+References: <cover.1513158452.git.viresh.kumar@linaro.org>
+ <7b0698a61bcb959704f58dbabe8c70d657210301.1513158452.git.viresh.kumar@linaro.org>
+ <20171213113435.GF30887@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:58482 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751853AbdLMLmo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 06:42:44 -0500
-In-Reply-To: <20171212203813.f3fkjw4uvxm43yok@rob-hp-laptop>
-Content-Language: en-US
+Received: from mail-pl0-f48.google.com ([209.85.160.48]:37549 "EHLO
+        mail-pl0-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752279AbdLMMC2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 07:02:28 -0500
+Received: by mail-pl0-f48.google.com with SMTP id s3so867548plp.4
+        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 04:02:28 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20171213113435.GF30887@localhost.localdomain>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: mturquette@baylibre.com, sboyd@codeaurora.org, devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org
+To: Juri Lelli <juri.lelli@redhat.com>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, tkjos@android.com, joelaf@google.com, linux-kernel@vger.kernel.org, Patrick Bellasi <patrick.bellasi@arm.com>
 
-Hi Rob,
-
-On 12/13/2017 2:08 AM, Rob Herring wrote:
-> On Fri, Dec 08, 2017 at 03:12:26PM +0530, Sricharan R wrote:
->> From: Stephen Boyd <sboyd@codeaurora.org>
->>
->> The ACC and GCC regions present in KPSSv1 contain registers to
->> control clocks and power to each Krait CPU and L2. For CPUfreq
->> purposes probe these devices and expose a mux clock that chooses
->> between PXO and PLL8.
->>
->> Cc: <devicetree@vger.kernel.org>
->> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
->> ---
->>  .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  |  7 ++
->>  .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  | 28 +++++++
+On 13-12-17, 12:34, Juri Lelli wrote:
+> It seems that Patrick already posted basically the same change:
 > 
-> Please make bindings a separate patch.
+> https://patchwork.kernel.org/patch/10084669/
 
- ok.
+Yeah, only that the reasoning is completely different from what he had (to which
+many doubts were raised).
 
-> 
->>  drivers/clk/qcom/Kconfig                           |  8 ++
->>  drivers/clk/qcom/Makefile                          |  1 +
->>  drivers/clk/qcom/kpss-xcc.c                        | 96 ++++++++++++++++++++++
->>  5 files changed, 140 insertions(+)
->>  create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
->>  create mode 100644 drivers/clk/qcom/kpss-xcc.c
->>
->> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
->> index 1333db9..382a574 100644
->> --- a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
->> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
->> @@ -21,10 +21,17 @@ PROPERTIES
->>  		    the register region. An optional second element specifies
->>  		    the base address and size of the alias register region.
->>  
->> +- clock-output-names:
->> +	Usage: optional
->> +	Value type: <string>
->> +	Definition: Name of the output clock. Typically acpuX_aux where X is a
->> +		    CPU number starting at 0.
->> +
->>  Example:
->>  
->>  	clock-controller@2088000 {
->>  		compatible = "qcom,kpss-acc-v2";
->>  		reg = <0x02088000 0x1000>,
->>  		      <0x02008000 0x1000>;
->> +		clock-output-names = "acpu0_aux";
->>  	};
->> diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
->> new file mode 100644
->> index 0000000..d1e12f1
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
->> @@ -0,0 +1,28 @@
->> +Krait Processor Sub-system (KPSS) Global Clock Controller (GCC)
->> +
->> +PROPERTIES
->> +
->> +- compatible:
->> +	Usage: required
->> +	Value type: <string>
->> +	Definition: should be one of:
->> +			"qcom,kpss-gcc"
-> 
-> Only one implementation?
+> Also, Cc-ing him for this.. I just noticed he wasn't Cc-ed to the series.
 
- hmm, missed "qcom,kpss-acc-v1", will add that too.
- 
-Regards,
- Sricharan
+I copied everyone in cc from one of Patrick's email and forgot to copy the guy
+in the From field :)
+
+I have bounced all the emails to him now, he should get them.
 
 -- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
-
----
-This email has been checked for viruses by Avast antivirus software.
-https://www.avast.com/antivirus
+viresh
