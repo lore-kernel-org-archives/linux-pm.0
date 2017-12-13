@@ -1,57 +1,60 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
-Date: Wed, 13 Dec 2017 23:39:24 +0100
-Message-ID: <2011671.y8uyto1vn5@aspire.rjw.lan>
-References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com> <alpine.DEB.2.20.1712131856130.1885@nanos>
+Date: Wed, 13 Dec 2017 23:48:45 +0100
+Message-ID: <15300261.gs7DNfzHs2@aspire.rjw.lan>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <alpine.DEB.2.20.1712132149420.1885@nanos> <alpine.DEB.2.20.1712132201380.1885@nanos>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47307 "EHLO
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:47281 "EHLO
         cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1751128AbdLMWkJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 17:40:09 -0500
-In-Reply-To: <alpine.DEB.2.20.1712131856130.1885@nanos>
+        by vger.kernel.org with ESMTP id S1750748AbdLMWt3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 17:49:29 -0500
+In-Reply-To: <alpine.DEB.2.20.1712132201380.1885@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Thomas Gleixner <tglx@linutronix.de>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>, Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Wednesday, December 13, 2017 7:19:17 PM CET Thomas Gleixner wrote:
-> On Wed, 13 Dec 2017, Linus Torvalds wrote:
-> 
-> > On Wed, Dec 13, 2017 at 8:41 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > >
-> > > Definitely. That was fragile forever but puzzles me is that I can't figure
-> > > out what now causes that spurious interrupt to surface out of the blue.
+On Wednesday, December 13, 2017 10:06:40 PM CET Thomas Gleixner wrote:
+> On Wed, 13 Dec 2017, Thomas Gleixner wrote:
+> > On Wed, 13 Dec 2017, Thomas Gleixner wrote:
+> > > On Wed, 13 Dec 2017, Linus Torvalds wrote:
+> > > 
+> > > > On Wed, Dec 13, 2017 at 8:41 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > > >
+> > > > > Definitely. That was fragile forever but puzzles me is that I can't figure
+> > > > > out what now causes that spurious interrupt to surface out of the blue.
+> > > > 
+> > > > Perhaps just timing?
+> > > 
+> > > That's what I'm trying to figure out right now, because that is the only
+> > > sensible explanation left. The whole machinery of suspend is exactly the
+> > > same with and without the vector changes. I instrumented all functions
+> > > involved and the picture is the same. I even do not see any fundamental
+> > > timing differences where one would say: That's it.
+> > > 
+> > > What puzzles me even more is that in the range of commits I'm fiddling with
+> > > there is no other change than the vector management stuff and the point
+> > > where it breaks makes no sense at all. The point Maarten bisected it to
+> > > works nicely here, so that might just point to a very subtle timing issue.
 > > 
-> > Perhaps just timing?
+> > After doing more debugging on this it turns out that this looks like a
+> > legacy interrupt coming in. The vector number is always 55, which is legacy
+> > IRQ 7 as seen from the PIC. The corresponding IOAPIC interrupt pin is
+> > masked and vector 55 is completely unused.
+> > 
+> > More questions than answers. Still investigating.
 > 
-> That's what I'm trying to figure out right now, because that is the only
-> sensible explanation left. The whole machinery of suspend is exactly the
-> same with and without the vector changes. I instrumented all functions
-> involved and the picture is the same. I even do not see any fundamental
-> timing differences where one would say: That's it.
+> And it does not explain Maartens report which gets a spurious vector 33 on
+> CPU4 after the non boot cpus have been brought online again. And that's the
+> vector which was assigned before the affinity was moved by unplugging CPU4.
 > 
-> What puzzles me even more is that in the range of commits I'm fiddling with
-> there is no other change than the vector management stuff and the point
-> where it breaks makes no sense at all. The point Maarten bisected it to
-> works nicely here, so that might just point to a very subtle timing issue.
-> 
-> > How hard would it be to change the ordering to just redirect irqs first?
-> 
-> The whole interrupt redirection happens when the non boot CPUs are brought
-> down, which is the very last step before the actual suspend happens.
-> 
-> We could probably do that earlier, but that's something Rafael needs to
-> answer ultimately.
+> Hrmpf. Even more mystery to solve.
 
-Well, that's both flattering and concerning. ;-)
+Any chance to look at /proc/interrupts from a machine where that can be
+reproduced?
 
-Anyway, yes, we can do that earlier AFAICS.  Action handlers are not going to
-run after we've called suspend_device_irqs() which happens before the final
-stage of PCI devices suspend (suspend_noirq) and it doesn't matter which CPU
-gets the interrupt from that point on (it is either wakeup or unwanted then).
-
-Thanks,
-Rafael
+I'm also curious if that can be reproduced by doing CPU offline/online
+without suspending?
