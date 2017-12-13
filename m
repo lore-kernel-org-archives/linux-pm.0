@@ -1,53 +1,83 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v2 0/4] Utilization estimation (util_est) for FAIR tasks
-Date: Wed, 13 Dec 2017 16:23:02 +0000
-Message-ID: <20171213162302.GC8264@e110439-lin>
-References: <20171205171018.9203-1-patrick.bellasi@arm.com>
- <20171213160357.3se4vvyo5lqud2uo@hirez.programming.kicks-ass.net>
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
+Date: Wed, 13 Dec 2017 10:23:37 -0600
+Message-ID: <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan>
+ <CA+55aFwsMuHUBQz5kDNwRf17JnasXMWjvmLq5qXGH-694yeq1w@mail.gmail.com>
+ <20171206121452.GA6320@dhcp22.suse.cz>
+ <db81e89d-eee6-868c-dc10-c028f4c4be84@mblankhorst.nl>
+ <alpine.DEB.2.20.1712061344560.1724@nanos>
+ <0f1d3d63-fa10-5cef-8014-81753dc60243@mblankhorst.nl>
+ <alpine.DEB.2.20.1712061514420.1724@nanos>
+ <57c8679e-1b88-c9ad-2299-2bea7560b28f@mblankhorst.nl>
+ <alpine.DEB.2.20.1712081129450.1840@nanos>
+ <alpine.DEB.2.20.1712131507160.1885@nanos>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171213160357.3se4vvyo5lqud2uo@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+In-Reply-To: <alpine.DEB.2.20.1712131507160.1885@nanos>
+Sender: linux-pci-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 13-Dec 17:03, Peter Zijlstra wrote:
-> On Tue, Dec 05, 2017 at 05:10:14PM +0000, Patrick Bellasi wrote:
-> > With this feature enabled, the measured overhead is in the range of ~1%
-> > on the same HW/SW test configuration.
+[+cc linux-pci, linux-pm]
+
+On Wed, Dec 13, 2017 at 04:57:56PM +0100, Thomas Gleixner wrote:
+> So I was finally able to figure out what the hell is going on:
 > 
-> That's quite a lot; did you look where that comes from?
+> Suspend:
+> 
+>  - The device suspend code puts the graphics card into a power
+>    state != PCI_D0.
+> 
+>  - Offline non boot CPUs
+> 
+>  - Break interrupt affinity. Allocate new vector on CPU 0, compose and
+>    write MSI message which ends up in:
+> 
+>    __pci_write_msi_msg(entry, msg)
+>    {
+> 	if (dev->current_state != PCI_D0 || pci_dev_is_disconnected(dev)) {
+> 	   /* Don't touch the hardware now */
+> 	} else {
+> 	   ....
+> 	}
+> 	entry->msg = *msg;
+>    }
+>  
+>   So because the device is not in PCI_D0 the message is not written. It's
+>   written in the device resume path.
 
-I've tracked it down to  util_est_dequeue() introduced by PATCH 2/4,
-mainly due to the EWMA udpate. Initially the running average was
-implemented using the library function provided in:
+I'm not a PM guru, but this ordering seems fragile.  If we offline
+CPUs before re-targeting interrupts directed at those CPUs, aren't we
+always going to be at risk of sending interrupts to an offline CPU?
 
-   include/linux/average.h::DECLARE_EWMA
+Even if the device is now asleep and therefore should not generate an
+interrupt, it seems like there's a window when the device returns to
+PCI_D0 where it could generate an interrupt before we have a chance to
+update the MSI message.
 
-but that solution generated even more overhead.
-That's why we switched to an "inline custom" implementation.
-
-Hackbench is quite stressful for that path and we have also few
-branches which can play a role. One for example has been added to
-avoid the EWMA if the rolling average is "close enough" to the
-current PELT value.
-
-All that considered, that's why I disable by default the sched_feat,
-in which case we have 0 overheads... in !SCHED_DEBUG kernel the code
-is actually removed by the compiler.
-
-In mobile systems (i.e. non-hackbench scenarios) the additional
-benefits on tasks placement and OPP selection is likely still worth
-the overhead.
-
-Do you think the idea to have a Kconfig to enabled this feature only
-on systems which do not care about the possible  overheads is a viable
-solution?
-
--- 
-#include <best/regards.h>
-
-Patrick Bellasi
+> Resume:
+> [  139.670446] ACPI: Low-level resume complete
+> [  139.670541] PM: Restoring platform NVS memory
+> [  139.672462] do_IRQ: 0.55 No irq handler for vector
+> [  139.672475] Enabling non-boot CPUs ...
+> 
+> So the spurious interrupt happens early and way before the device resume
+> code writes the new MSI message.
+> 
+> I checked the behaviour on 4.14. The MSI write is delayed there in the same
+> way, but there is no spurious interrupt. There is no interrupt coming in at
+> all _BEFORE_ the device is put out of PCI_D0.
+> 
+> And this has certainly nothing to do with the vector management changes,
+> but I can't figure yet what makes that spurious interrupt to be sent.
+> 
+> Any ideas welcome.
+> 
+> Thanks,
+> 
+> 	tglx
+> 
