@@ -1,106 +1,112 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v3 1/2] cpuidle: Add new macro to enter a retention idle state
-Date: Wed, 13 Dec 2017 02:05:33 +0100
-Message-ID: <2279450.Sc9T3hx1hA@aspire.rjw.lan>
-References: <1510765910-23739-1-git-send-email-pprakash@codeaurora.org> <1510765910-23739-2-git-send-email-pprakash@codeaurora.org>
+Subject: Re: [PATCH 00/11] fs: use freeze_fs on suspend/hibernate
+Date: Wed, 13 Dec 2017 02:09:49 +0100
+Message-ID: <7282138.2afjHhBgNp@aspire.rjw.lan>
+References: <20171129232356.28296-1-mcgrof@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:52935 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752898AbdLMBGP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 Dec 2017 20:06:15 -0500
-In-Reply-To: <1510765910-23739-2-git-send-email-pprakash@codeaurora.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-block-owner@vger.kernel.org>
+In-Reply-To: <20171129232356.28296-1-mcgrof@kernel.org>
+Sender: linux-block-owner@vger.kernel.org
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>
+Cc: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Prashanth Prakash <pprakash@codeaurora.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, daniel.lezcano@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com
 
-On Wednesday, November 15, 2017 6:11:49 PM CET Prashanth Prakash wrote:
-> If a CPU is entering a low power idle state where it doesn't lose any
-> context, then there is no need to call cpu_pm_enter()/cpu_pm_exit().
-> Add a new macro(CPU_PM_CPU_IDLE_ENTER_RETENTION) to be used by cpuidle
-> drivers when they are entering retention state. By not calling
-> cpu_pm_enter and cpu_pm_exit we reduce the latency involved in
-> entering and exiting the retention idle states.
+On Thursday, November 30, 2017 12:23:45 AM CET Luis R. Rodriguez wrote:
+> This is a followup from the original RFC which proposed to start
+> to kill kthread freezing all together [0]. Instead of going straight
+> out to the jugular for kthread freezing this series only addresses
+> killing freezer calls on filesystems which implement freeze_fs, after
+> we let the kernel freeze these filesystems for us on suspend.
 > 
-> CPU_PM_CPU_IDLE_ENTER_RETENTION assumes that no state is lost and
-> hence CPU PM notifiers will not be called. We may need a broader
-> change if we need to support partial retention states effeciently.
+> This approach puts on a slow but steady path towards the original goal
+> though. Each subsystem could look for similar solutions. Even with
+> filesystems we're not all done yet, after this we'll still have to
+> decide what to do about filesystems which do not implement freeze_fs().
 > 
-> On ARM64 based Qualcomm Server Platform we measured below overhead for
-> for calling cpu_pm_enter and cpu_pm_exit for retention states.
+> Motivation and problem:
 > 
-> workload: stress --hdd #CPUs --hdd-bytes 32M  -t 30
->         Average overhead of cpu_pm_enter - 1.2us
->         Average overhead of cpu_pm_exit  - 3.1us
+> kthreads have some semantics for freezing, which helps the kernel
+> freeze them when a system is going to suspend or hibernation. These
+> semantics are not well defined though, and it actually turns out
+> pretty hard to get it right.
 > 
-> Signed-off-by: Prashanth Prakash <pprakash@codeaurora.org>
-> Acked-by: Sudeep Holla <sudeep.holla@arm.com>
-> ---
->  include/linux/cpuidle.h | 40 ++++++++++++++++++++++++----------------
->  1 file changed, 24 insertions(+), 16 deletions(-)
+> Without a proper solution suspend and hibernation are fragile on filesystems,
+> it can easily break suspend and fixing such issues are in no way trivial [1]
+> [2].
 > 
-> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-> index 8f7788d..871f9e2 100644
-> --- a/include/linux/cpuidle.h
-> +++ b/include/linux/cpuidle.h
-> @@ -257,22 +257,30 @@ static inline int cpuidle_register_governor(struct cpuidle_governor *gov)
->  {return 0;}
->  #endif
->  
-> -#define CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx)	\
-> -({								\
-> -	int __ret;						\
-> -								\
-> -	if (!idx) {						\
-> -		cpu_do_idle();					\
-> -		return idx;					\
-> -	}							\
-> -								\
-> -	__ret = cpu_pm_enter();					\
-> -	if (!__ret) {						\
-> -		__ret = low_level_idle_enter(idx);		\
-> -		cpu_pm_exit();					\
-> -	}							\
-> -								\
-> -	__ret ? -1 : idx;					\
-> +#define __CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx, is_retention) \
-> +({									\
-> +	int __ret = 0;							\
-> +									\
-> +	if (!idx) {							\
-> +		cpu_do_idle();						\
-> +		return idx;						\
-> +	}								\
-> +									\
-> +	if (!is_retention)						\
-> +		__ret =  cpu_pm_enter();				\
-> +	if (!__ret) {							\
-> +		__ret = low_level_idle_enter(idx);			\
-> +		if (!is_retention)					\
-> +			cpu_pm_exit();					\
-> +	}								\
-> +									\
-> +	__ret ? -1 : idx;						\
->  })
->  
-> +#define CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx)	\
-> +	__CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx, 0)
-> +
-> +#define CPU_PM_CPU_IDLE_ENTER_RETENTION(low_level_idle_enter, idx)	\
-> +	__CPU_PM_CPU_IDLE_ENTER(low_level_idle_enter, idx, 1)
-> +
->  #endif /* _LINUX_CPUIDLE_H */
+> Proposed solution:
+> 
+> Instead of fixing such semantics and trying to get all filesystems to do it
+> right, we can easily do away with all freezing calls if the filesystem
+> implements a proper freeze_fs() callback. The following 9 filesystems have
+> freeze_fs() implemented as such we can let the kernel issue the callback upon
+> suspend and thaw on resume automatically on our behalf.
+> 
+>   o xfs
+>   o reiserfs
+>   o nilfs2
+>   o jfs
+>   o f2fs
+>   o ext4
+>   o ext2
+>   o btrfs
+> 
+> Of these, the following have freezer helpers, which can then be removed
+> after the kernel automaticaly calls freeze_fs for us on suspend:
+> 
+>   o xfs
+>   o nilfs2
+>   o jfs
+>   o f2fs
+>   o ext4
+> 
+> I've tested this on a system with ext4 and XFS, and have let 0-day go at
+> without issues. I have branches availabe for linux-next [3] and Linus'
+> latest tree [4].
+> 
+> Further testing, thoughts, reviews, flames are all equally appreciated.
+> 
+> [0] https://lkml.kernel.org/r/20171003185313.1017-1-mcgrof@kernel.org
+> [1] https://bugzilla.suse.com/show_bug.cgi?id=1043449
+> [2] https://lkml.kernel.org/r/20171113103139.GA18936@yu-chen.sh.intel.com
+> [3] https://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/linux-next.git/log/?h=20171129-fs-freeze-cleanup
+> [4] https://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/linux.git/log/?h=20171129-fs-freeze-cleanup
+> 
+> Luis R. Rodriguez (11):
+>   fs: provide unlocked helper for freeze_super()
+>   fs: provide unlocked helper thaw_super()
+>   fs: add frozen sb state helpers
+>   fs: distinguish between user initiated freeze and kernel initiated
+>     freeze
+>   fs: add iterate_supers_excl() and iterate_supers_reverse_excl()
+>   fs: freeze on suspend and thaw on resume
+>   xfs: remove not needed freezing calls
+>   ext4: remove not needed freezing calls
+>   f2fs: remove not needed freezing calls
+>   nilfs2: remove not needed freezing calls
+>   jfs: remove not needed freezing calls
+> 
+>  fs/ext4/ext4_jbd2.c    |   2 +-
+>  fs/ext4/super.c        |   2 -
+>  fs/f2fs/gc.c           |   5 +-
+>  fs/f2fs/segment.c      |   6 +-
+>  fs/jfs/jfs_logmgr.c    |  11 +-
+>  fs/jfs/jfs_txnmgr.c    |  31 ++---
+>  fs/nilfs2/segment.c    |  48 ++++----
+>  fs/super.c             | 320 ++++++++++++++++++++++++++++++++++++++++---------
+>  fs/xfs/xfs_trans.c     |   2 +-
+>  fs/xfs/xfs_trans_ail.c |   7 +-
+>  include/linux/fs.h     |  63 +++++++++-
+>  kernel/power/process.c |  15 ++-
+>  12 files changed, 378 insertions(+), 134 deletions(-)
 > 
 
-This change is fine by me, so you can add
+I'm assuming an update of this to be posted due to the comments from Jan
+on patch [3/11] and patch [7/11] probably.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-to it, but it kind of doesn't make sense to apply it alone, so please feel free
-to route it via ARM64.
+Is there anything else that needs to be addressed?
 
 Thanks,
 Rafael
