@@ -1,84 +1,64 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [RFC PATCH 1/2] platform/x86: add Atom PMC quirk to disable SATA
-Date: Wed, 13 Dec 2017 17:37:15 +0100
-Message-ID: <e6aa5c55-8174-7ad9-009f-c254d3aeaf72@redhat.com>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
- <20170925191749.2oamusbajgs6clcg@sig21.net>
- <20170925192109.rty2fnm7c4jnj3vx@sig21.net>
- <34396652.fljU28PShI@aspire.rjw.lan>
- <a2c8d724-015a-e6c3-23ab-4b6036cc22eb@redhat.com>
- <CAEG3pNDL-8srk_JwqtZxs_waHAPfmRC_5Orhs_=XUhwdHTdM-g@mail.gmail.com>
- <e4760a03-b6af-00fc-6c26-9fff8ed6c378@redhat.com>
- <20171213162206.GA7337@sig21.net>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
+Date: Wed, 13 Dec 2017 17:41:55 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1712131738020.1885@nanos>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFwsMuHUBQz5kDNwRf17JnasXMWjvmLq5qXGH-694yeq1w@mail.gmail.com> <20171206121452.GA6320@dhcp22.suse.cz> <db81e89d-eee6-868c-dc10-c028f4c4be84@mblankhorst.nl> <alpine.DEB.2.20.1712061344560.1724@nanos>
+ <0f1d3d63-fa10-5cef-8014-81753dc60243@mblankhorst.nl> <alpine.DEB.2.20.1712061514420.1724@nanos> <57c8679e-1b88-c9ad-2299-2bea7560b28f@mblankhorst.nl> <alpine.DEB.2.20.1712081129450.1840@nanos> <alpine.DEB.2.20.1712131507160.1885@nanos>
+ <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20171213162206.GA7337@sig21.net>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Johannes Stezenbach <js@sig21.net>
-Cc: Michael Turquette <mturquette@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk <linux-clk@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Carlo Caione <carlo@endlessm.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from Galois.linutronix.de ([146.0.238.70]:36015 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753336AbdLMQmH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 11:42:07 -0500
+In-Reply-To: <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hi,
-
-On 13-12-17 17:22, Johannes Stezenbach wrote:
-> Hi,
+On Wed, 13 Dec 2017, Bjorn Helgaas wrote:
+> [+cc linux-pci, linux-pm]
 > 
-> On Wed, Dec 13, 2017 at 05:04:34PM +0100, Hans de Goede wrote:
->> On 13-12-17 16:25, Michael Turquette wrote:
->>> On Wed, Dec 13, 2017 at 12:53 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->>>> Although, maybe we need to have a specialized (derived)
->>>> ahci driver for these Atom SoCs and in there if no
->>>> disk is detected do this through the clock framework?
->>>
->>> Yes please. x86 is already modeling some clocks properly through the
->>> clock framework. During late init we clean up any clocks that were
->>> enabled out of reset or by the firmware/bootloader but not claimed and
->>> enabled by any Linux driver. That should ideally disable this
->>> particular clock for the case when no SATA drive is present, and
->>> require no quirk logic in the driver.
->>
->> Ah so you're thinking a special ahci driver which knows about
->> the clock, yes I think that could work.
->>
->> Or maybe do a match on the CPU model and if it is know to
->> not have SATA (or not routed to the outside), disable
->> the clock? That seems better because if I understood Johannes
->> correctly there is no SATA/AHCI PCI device (so nothing for
->> a driver to bind to) but the clock is still enabled, although
->> in that case the clock framework should do the right thing
->> if we revert commit d31fd43c0f9a "clk: x86: Do not gate clocks enabled by the firmware"
+> On Wed, Dec 13, 2017 at 04:57:56PM +0100, Thomas Gleixner wrote:
+> > So I was finally able to figure out what the hell is going on:
+> > 
+> > Suspend:
+> > 
+> >  - The device suspend code puts the graphics card into a power
+> >    state != PCI_D0.
+> > 
+> >  - Offline non boot CPUs
+> > 
+> >  - Break interrupt affinity. Allocate new vector on CPU 0, compose and
+> >    write MSI message which ends up in:
+> > 
+> >    __pci_write_msi_msg(entry, msg)
+> >    {
+> > 	if (dev->current_state != PCI_D0 || pci_dev_is_disconnected(dev)) {
+> > 	   /* Don't touch the hardware now */
+> > 	} else {
+> > 	   ....
+> > 	}
+> > 	entry->msg = *msg;
+> >    }
+> >  
+> >   So because the device is not in PCI_D0 the message is not written. It's
+> >   written in the device resume path.
 > 
-> Please don't get confused with the other thread about clocks.
-> This issue sets the "disable IP" bit, found by doing stupid
-> experiments to enable S0ix on E200HA.
-
-Ah my bad.
-
-> 1. no idea if Cherry Trail even has SATA IP, maybe this is a
->     meaningless bit but PMC firmware carried over from
->     Bay Trail looks at it
-
-
-There are no CHT SoCs with SATA AFAIK, but Braswell SoCs,
-which I believe is the same die do have SATA.
-
-I think the best fix here is to look at the model-string part
-of the CPU-id and do a quirk based on that, setting the "disable IP"
-bit for the SATA on all SoC models known to not have SATA
-(Z8300, Z8350, Z8500, Z8550, Z8700, Z8750).
-
-Rafael, Andy how does that sound as a solution?
-
-> 2. BIOS should have set the bit, so it is a BIOS quirk
+> I'm not a PM guru, but this ordering seems fragile.  If we offline
+> CPUs before re-targeting interrupts directed at those CPUs, aren't we
+> always going to be at risk of sending interrupts to an offline CPU?
 > 
-> 3. or maybe there is a much better solution that I don't know about
-> 
-> https://bugzilla.kernel.org/show_bug.cgi?id=193891
-> also has lspci output
+> Even if the device is now asleep and therefore should not generate an
+> interrupt, it seems like there's a window when the device returns to
+> PCI_D0 where it could generate an interrupt before we have a chance to
+> update the MSI message.
 
-Regards,
+Definitely. That was fragile forever but puzzles me is that I can't figure
+out what now causes that spurious interrupt to surface out of the blue.
 
-Hans
+Thanks,
+
+	tglx
