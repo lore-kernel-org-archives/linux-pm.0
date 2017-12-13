@@ -1,52 +1,33 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v5 6/9] ACPI/PPTT: Add topology parsing code
-Date: Wed, 13 Dec 2017 17:38:51 +0000
-Message-ID: <20171213173851.GA4060@red-moon>
-References: <20171201222330.18863-1-jeremy.linton@arm.com>
- <20171201222330.18863-7-jeremy.linton@arm.com>
- <9009154.M66RGdQJXA@aspire.rjw.lan>
- <fc12696c-15e1-cea4-42bf-db4b5daa45f2@arm.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
+Date: Wed, 13 Dec 2017 09:45:50 -0800
+Message-ID: <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFwsMuHUBQz5kDNwRf17JnasXMWjvmLq5qXGH-694yeq1w@mail.gmail.com>
+ <20171206121452.GA6320@dhcp22.suse.cz> <db81e89d-eee6-868c-dc10-c028f4c4be84@mblankhorst.nl>
+ <alpine.DEB.2.20.1712061344560.1724@nanos> <0f1d3d63-fa10-5cef-8014-81753dc60243@mblankhorst.nl>
+ <alpine.DEB.2.20.1712061514420.1724@nanos> <57c8679e-1b88-c9ad-2299-2bea7560b28f@mblankhorst.nl>
+ <alpine.DEB.2.20.1712081129450.1840@nanos> <alpine.DEB.2.20.1712131507160.1885@nanos>
+ <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com> <alpine.DEB.2.20.1712131738020.1885@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:33064 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753739AbdLMRiP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 13 Dec 2017 12:38:15 -0500
-Content-Disposition: inline
-In-Reply-To: <fc12696c-15e1-cea4-42bf-db4b5daa45f2@arm.com>
+Received: from mail-it0-f53.google.com ([209.85.214.53]:39610 "EHLO
+        mail-it0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752816AbdLMRpv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 12:45:51 -0500
+In-Reply-To: <alpine.DEB.2.20.1712131738020.1885@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Tue, Dec 12, 2017 at 10:13:08AM -0600, Jeremy Linton wrote:
-> Hi,
-> 
-> First, thanks for taking a look at this.
-> 
-> On 12/11/2017 07:12 PM, Rafael J. Wysocki wrote:
-> >On Friday, December 1, 2017 11:23:27 PM CET Jeremy Linton wrote:
-> >>The PPTT can be used to determine the groupings of CPU's at
-> >>given levels in the system. Lets add a few routines to the PPTT
-> >>parsing code to return a unique id for each unique level in the
-> >>processor hierarchy. This can then be matched to build
-> >>thread/core/cluster/die/package/etc mappings for each processing
-> >>element in the system.
-> >>
-> >>Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
-> >
-> >Why can't this be folded into patch [2/9]?
-> 
-> It can, and I will be happy squash it.
-> 
-> It was requested that the topology portion of the parser be split
-> out back in v3.
-> 
-> https://www.spinics.net/lists/linux-acpi/msg78487.html
+On Wed, Dec 13, 2017 at 8:41 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>
+> Definitely. That was fragile forever but puzzles me is that I can't figure
+> out what now causes that spurious interrupt to surface out of the blue.
 
-I asked to split cache/topology since I am not familiar with cache
-code and Sudeep - who looks after the cache code - won't be able
-to review this series in time for v4.16.
+Perhaps just timing?
 
-Lorenzo
+How hard would it be to change the ordering to just redirect irqs first?
+
+                 Linus
