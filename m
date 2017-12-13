@@ -1,135 +1,66 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [RFC PATCH 1/2] platform/x86: add Atom PMC quirk to disable SATA
-Date: Wed, 13 Dec 2017 09:53:21 +0100
-Message-ID: <a2c8d724-015a-e6c3-23ab-4b6036cc22eb@redhat.com>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
- <20170925191749.2oamusbajgs6clcg@sig21.net>
- <20170925192109.rty2fnm7c4jnj3vx@sig21.net>
- <34396652.fljU28PShI@aspire.rjw.lan>
+From: Miquel RAYNAL <miquel.raynal@free-electrons.com>
+Subject: Re: [PATCH v2 3/4] thermal: armada: add support for CP110
+Date: Wed, 13 Dec 2017 09:55:01 +0100
+Message-ID: <20171213095501.1988749d@xps13>
+References: <f8c589337a4fb78852eadf15058e8f8d132d4dc0.1512299484.git.baruch@tkos.co.il>
+        <d48c916a2502f9c75e9ea4ba41300e2ffbb254d8.1512299484.git.baruch@tkos.co.il>
+        <20171211160932.692ba8be@xps13>
+        <20171211152731.glkkes5errcxmsvz@sapphire.tkos.co.il>
+        <87y3m9qjt2.fsf@free-electrons.com>
+        <20171213083848.j5het742yavxvkkw@sapphire.tkos.co.il>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <34396652.fljU28PShI@aspire.rjw.lan>
-Content-Language: en-US
-Sender: linux-clk-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Johannes Stezenbach <js@sig21.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.free-electrons.com ([62.4.15.54]:55240 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750795AbdLMIzN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 03:55:13 -0500
+In-Reply-To: <20171213083848.j5het742yavxvkkw@sapphire.tkos.co.il>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Baruch Siach <baruch@tkos.co.il>
+Cc: Gregory CLEMENT <gregory.clement@free-electrons.com>, Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, devicetree@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Russell King <linux@armlinux.org.uk>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hi,
+Hello Baruch,
 
-On 13-12-17 01:00, Rafael J. Wysocki wrote:
-> On Monday, September 25, 2017 9:21:09 PM CET Johannes Stezenbach wrote:
->> SATA controller is enabled on Asus E200HA even though the
->> machine doesn't use it (it has eMMC storage), however
->> SATA being on blocks S0ix entry so we need to disable it.
->>
->> Signed-off-by: Johannes Stezenbach <js@sig21.net>
+
+> > > How would a separate init_sensor routine improve things?
+> > 
+> > So yes please do it, thanks to this you won't have to add the
+> > control_msb_offset member and can use a clean function. Moreover if
+> > in the future we see some usefulness for this LSB register then we
+> > could use the new compatible for the Armada 38x.
 > 
-> Mika, Andy, Hans, any comments on this one?
-
-Seems sensible to me, I'm afraid we may need the same quirk on
-other devices, but I see no way around this.
-
-Although, maybe we need to have a specialized (derived)
-ahci driver for these Atom SoCs and in there if no
-disk is detected do this through the clock framework?
-
-That may be better then a long list of quirks.
-
-Johannes, question how did you test this and figure out
-which clocks to disable, a quick howto on this, I think
-a patch adding a little howto / README as say
-Documentation/power/intel-S0ix-debugging.txt
-documenting this would be great. I'm certainly interested
-in trying to reproduce this on some of my own Bay Trail and
-Cherry Trail devices and add fixes for those if necessary.
-
-Regards,
-
-Hans
-
-
-
-
+> There are two separate issues here:
 > 
->> ---
->>   drivers/platform/x86/pmc_atom.c | 33 +++++++++++++++++++++++++++++++++
->>   1 file changed, 33 insertions(+)
->>
->> diff --git a/drivers/platform/x86/pmc_atom.c b/drivers/platform/x86/pmc_atom.c
->> index 8d13c86cc418..b5dd38712268 100644
->> --- a/drivers/platform/x86/pmc_atom.c
->> +++ b/drivers/platform/x86/pmc_atom.c
->> @@ -17,6 +17,7 @@
->>   
->>   #include <linux/debugfs.h>
->>   #include <linux/device.h>
->> +#include <linux/dmi.h>
->>   #include <linux/init.h>
->>   #include <linux/io.h>
->>   #include <linux/platform_data/x86/clk-pmc-atom.h>
->> @@ -57,6 +58,9 @@ struct pmc_dev {
->>   static struct pmc_dev pmc_device;
->>   static u32 acpi_base_addr;
->>   
->> +static u32 quirks;
->> +#define QUIRK_DISABLE_SATA BIT(0)
->> +
->>   static const struct pmc_clk byt_clks[] = {
->>   	{
->>   		.name = "xtal",
->> @@ -271,6 +275,15 @@ static void pmc_hw_reg_setup(struct pmc_dev *pmc)
->>   	 * - GPIO_SCORE shared IRQ
->>   	 */
->>   	pmc_reg_write(pmc, PMC_S0IX_WAKE_EN, (u32)PMC_WAKE_EN_SETTING);
->> +
->> +	if (quirks & QUIRK_DISABLE_SATA) {
->> +		u32 func_dis;
->> +
->> +		pr_info("pmc: disable SATA IP\n");
->> +		func_dis = pmc_reg_read(pmc, PMC_FUNC_DIS);
->> +		func_dis |= BIT_SATA;
->> +		pmc_reg_write(pmc, PMC_FUNC_DIS, func_dis);
->> +	}
->>   }
->>   
->>   #ifdef CONFIG_DEBUG_FS
->> @@ -500,6 +513,24 @@ static struct pmc_notifier_block pmc_freeze_nb = {
->>   };
->>   #endif
->>   
->> +static int cht_asus_e200ha_cb(const struct dmi_system_id *id)
->> +{
->> +	pr_info("pmc: Asus E200HA detected\n");
->> +	quirks |= QUIRK_DISABLE_SATA;
->> +	return 1;
->> +}
->> +
->> +static const struct dmi_system_id cht_table[] = {
->> +	{
->> +		.callback = cht_asus_e200ha_cb,
->> +		.matches = {
->> +			DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
->> +			DMI_MATCH(DMI_PRODUCT_NAME, "E200HA"),
->> +		},
->> +	},
->> +	{ }
->> +};
->> +
->>   static int pmc_setup_dev(struct pci_dev *pdev, const struct pci_device_id *ent)
->>   {
->>   	struct pmc_dev *pmc = &pmc_device;
->> @@ -526,6 +557,8 @@ static int pmc_setup_dev(struct pci_dev *pdev, const struct pci_device_id *ent)
->>   
->>   	pmc->map = map;
->>   
->> +	dmi_check_system(cht_table);
->> +
->>   	/* PMC hardware registers setup */
->>   	pmc_hw_reg_setup(pmc);
->>   
->>
+>   1. DT binding
 > 
+>   2. init_sensor callback implementation
 > 
+> We both agree on #1. The A38x and CP110 need separate compatible
+> strings. In case we want to access the LSB control register on Armada
+> 38x, we will need yet another compatible string
+> (marvell,armada380-v2-thermal maybe?).
+> 
+> As for #2, I'm all for sharing as much code as possible. I find the
+> vendor kernel approach of duplicating the init routines[1] unhelpful
+> as it violates the DRY principle. The differences between
+> armada380_init_sensor() and cp110_init_sensor() are minor. In my
+> opinion, these differences should be expressed explicitly in the
+> armada_thermal_data, in a similar way to my suggested
+> control_msb_offset field. The vendor code hides these differences in
+> slight variations of duplicated code.
+> 
+> What is the advantage of a separate init routine?
+
+The advantage is that is the very near future I plan to add the
+overheat interrupt only on CP110 (not on 38x) and this needs some
+initialization. So if we don't make different routines now, I will
+have to do it right after.
+
+What would be fine is to have the shared code in a separate function,
+like it is done in Marvell kernel. What do you think about that?
+
+Thanks,
+Miquèl
