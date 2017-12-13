@@ -1,112 +1,86 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 00/11] fs: use freeze_fs on suspend/hibernate
-Date: Wed, 13 Dec 2017 02:09:49 +0100
-Message-ID: <7282138.2afjHhBgNp@aspire.rjw.lan>
-References: <20171129232356.28296-1-mcgrof@kernel.org>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: Ask for help on governor
+Date: Tue, 12 Dec 2017 19:10:00 -0800
+Message-ID: <000f01d373bf$deacca10$9c065e30$@net>
+References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com> <000801d37364$d48f6ed0$7dae4c70$@net> OnmAeAGHQC2CsOnmBePWkD
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-block-owner@vger.kernel.org>
-In-Reply-To: <20171129232356.28296-1-mcgrof@kernel.org>
-Sender: linux-block-owner@vger.kernel.org
-To: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Cc: viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+        charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta19.telus.net ([209.171.16.92]:36148 "EHLO cmta19.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750749AbdLMDKF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 12 Dec 2017 22:10:05 -0500
+In-Reply-To: OnmAeAGHQC2CsOnmBePWkD
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Andy Tang' <andy.tang@nxp.com>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM' <linux-pm@vger.kernel.org>
 
-On Thursday, November 30, 2017 12:23:45 AM CET Luis R. Rodriguez wrote:
-> This is a followup from the original RFC which proposed to start
-> to kill kthread freezing all together [0]. Instead of going straight
-> out to the jugular for kthread freezing this series only addresses
-> killing freezer calls on filesystems which implement freeze_fs, after
-> we let the kernel freeze these filesystems for us on suspend.
+On 2017.12.12 08:51 Rafael J. Wysocki wrote:
+> On Tue, Dec 12, 2017 at 5:18 PM, Doug Smythies <dsmythies@telus.net> wrote:
+>> On 2017.12.11 23:31 Viresh Kumar wrote:
+>>> On 12-12-17, 02:46, Andy Tang wrote:
+>>>> Hi,
+>>>>
+>>>> I run into a question that conservative governor can't work while ondemand governor works well.
+>>>> When cpu load gets higher, if ondemand governor is used, cpu frequency can get higher and higher.
+>>>> But if I use conservative governor, cpu frequency stays on lowest frequency no matter what cpu load is.
+>>>>
+>>>> This issue was found on kernel 4.14.0, on kernel 4.9 kernel. It acts well.
+>>>
+>>> You mean to say that the problem exists on 4.14 but not on 4.9?
+>>>
+>>> Strange, as we haven't seen any such reports from anyone else.
+>>
+>> Well, it is easy enough for us to check.
+>> Indeed, it is broken in kernel 4.14-rc1, but O.K. in kernel 4.13.
+>> It remains broken in kernel 4.15-rc1 (I am not on -rc3 yet).
+>>
+>> Because it was easier for me to do so, I used intel_cpufreq (i.e. intel_pstate in passive mode).
+>>
+>>>
+>>>> I think it may related to cpufreq framework, not driver itself. Could you guys give me some clues on how to debug it?
+>>>> I don't expect a direct answer; any suggestions are welcome.
+>>>
+>>> Please provide output of below:
+>>>
+>>> grep . /sys/devices/system/cpu/cpufreq/policy*/*
+>>>
+>>> And then you may need to bisect the problem as well by going to kernel version
+>>> in between 4.9 and 4.14.
+>>
+>> @Andy: Have you started bisecting the kernel yet? I suppose I could if you haven't,
+>> or if you do not know how.
+>
+> There is only one commit touching conservative in 4.14:
 > 
-> This approach puts on a slow but steady path towards the original goal
-> though. Each subsystem could look for similar solutions. Even with
-> filesystems we're not all done yet, after this we'll still have to
-> decide what to do about filesystems which do not implement freeze_fs().
-> 
-> Motivation and problem:
-> 
-> kthreads have some semantics for freezing, which helps the kernel
-> freeze them when a system is going to suspend or hibernation. These
-> semantics are not well defined though, and it actually turns out
-> pretty hard to get it right.
-> 
-> Without a proper solution suspend and hibernation are fragile on filesystems,
-> it can easily break suspend and fixing such issues are in no way trivial [1]
-> [2].
-> 
-> Proposed solution:
-> 
-> Instead of fixing such semantics and trying to get all filesystems to do it
-> right, we can easily do away with all freezing calls if the filesystem
-> implements a proper freeze_fs() callback. The following 9 filesystems have
-> freeze_fs() implemented as such we can let the kernel issue the callback upon
-> suspend and thaw on resume automatically on our behalf.
-> 
->   o xfs
->   o reiserfs
->   o nilfs2
->   o jfs
->   o f2fs
->   o ext4
->   o ext2
->   o btrfs
-> 
-> Of these, the following have freezer helpers, which can then be removed
-> after the kernel automaticaly calls freeze_fs for us on suspend:
-> 
->   o xfs
->   o nilfs2
->   o jfs
->   o f2fs
->   o ext4
-> 
-> I've tested this on a system with ext4 and XFS, and have let 0-day go at
-> without issues. I have branches availabe for linux-next [3] and Linus'
-> latest tree [4].
-> 
-> Further testing, thoughts, reviews, flames are all equally appreciated.
-> 
-> [0] https://lkml.kernel.org/r/20171003185313.1017-1-mcgrof@kernel.org
-> [1] https://bugzilla.suse.com/show_bug.cgi?id=1043449
-> [2] https://lkml.kernel.org/r/20171113103139.GA18936@yu-chen.sh.intel.com
-> [3] https://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/linux-next.git/log/?h=20171129-fs-freeze-cleanup
-> [4] https://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/linux.git/log/?h=20171129-fs-freeze-cleanup
-> 
-> Luis R. Rodriguez (11):
->   fs: provide unlocked helper for freeze_super()
->   fs: provide unlocked helper thaw_super()
->   fs: add frozen sb state helpers
->   fs: distinguish between user initiated freeze and kernel initiated
->     freeze
->   fs: add iterate_supers_excl() and iterate_supers_reverse_excl()
->   fs: freeze on suspend and thaw on resume
->   xfs: remove not needed freezing calls
->   ext4: remove not needed freezing calls
->   f2fs: remove not needed freezing calls
->   nilfs2: remove not needed freezing calls
->   jfs: remove not needed freezing calls
-> 
->  fs/ext4/ext4_jbd2.c    |   2 +-
->  fs/ext4/super.c        |   2 -
->  fs/f2fs/gc.c           |   5 +-
->  fs/f2fs/segment.c      |   6 +-
->  fs/jfs/jfs_logmgr.c    |  11 +-
->  fs/jfs/jfs_txnmgr.c    |  31 ++---
->  fs/nilfs2/segment.c    |  48 ++++----
->  fs/super.c             | 320 ++++++++++++++++++++++++++++++++++++++++---------
->  fs/xfs/xfs_trans.c     |   2 +-
->  fs/xfs/xfs_trans_ail.c |   7 +-
->  include/linux/fs.h     |  63 +++++++++-
->  kernel/power/process.c |  15 ++-
->  12 files changed, 378 insertions(+), 134 deletions(-)
-> 
+> 2d045036322c cpufreq: governor: Drop min_sampling_rate
+>
+> Maybe try to revert this one?
 
-I'm assuming an update of this to be posted due to the comments from Jan
-on patch [3/11] and patch [7/11] probably.
+Thanks for the suggestion. It was so very close, the problem commit is the very
+next one, aa7519af450d.
 
-Is there anything else that needs to be addressed?
+Bisect result:
 
-Thanks,
-Rafael
+aa7519af450d3c62a057aece24877c34562fa25a is the first bad commit
+commit aa7519af450d3c62a057aece24877c34562fa25a
+Author: Viresh Kumar <viresh.kumar@linaro.org>
+Date:   Wed Jul 19 15:42:42 2017 +0530
+
+    cpufreq: Use transition_delay_us for legacy governors as well
+
+    The policy->transition_delay_us field is used only by the schedutil
+    governor currently, and this field describes how fast the driver wants
+    the cpufreq governor to change CPUs frequency. It should rather be a
+    common thing across all governors, as it doesn't have any schedutil
+    dependency here.
+
+    Create a new helper cpufreq_policy_transition_delay_us() to get the
+    transition delay across all governors.
+
+    Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+    Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
