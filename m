@@ -1,79 +1,59 @@
-From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
-Subject: Re: [PATCH v2 3/4] thermal: armada: add support for CP110
-Date: Wed, 13 Dec 2017 11:42:31 +0200
-Message-ID: <20171213094231.sk5fj6fxvpvik3i2@sapphire.tkos.co.il>
-References: <f8c589337a4fb78852eadf15058e8f8d132d4dc0.1512299484.git.baruch@tkos.co.il>
- <d48c916a2502f9c75e9ea4ba41300e2ffbb254d8.1512299484.git.baruch@tkos.co.il>
- <20171211160932.692ba8be@xps13>
- <20171211152731.glkkes5errcxmsvz@sapphire.tkos.co.il>
- <87y3m9qjt2.fsf@free-electrons.com>
- <20171213083848.j5het742yavxvkkw@sapphire.tkos.co.il>
- <874lovq9cx.fsf@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <874lovq9cx.fsf-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Ezequiel Garcia <ezequiel-30ULvvUtt6G51wMPkGsGjgyUoB5FGQPZ@public.gmane.org>, Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH 0/4] sched: cpufreq: Track util update flags
+Date: Wed, 13 Dec 2017 15:23:19 +0530
+Message-ID: <cover.1513158452.git.viresh.kumar@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pl0-f68.google.com ([209.85.160.68]:45635 "EHLO
+        mail-pl0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752330AbdLMJx2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 04:53:28 -0500
+Received: by mail-pl0-f68.google.com with SMTP id o2so696831plk.12
+        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 01:53:28 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, juri.lelli@redhat.com, tkjos@android.com, joelaf@google.com, linux-kernel@vger.kernel.org
 
-Hi Gregory,
+Hi,
 
-On Wed, Dec 13, 2017 at 10:13:02AM +0100, Gregory CLEMENT wrote:
->  On mer., déc. 13 2017, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org> wrote:
+Currently the schedutil governor overwrites the sg_cpu->flags field on
+every call to the utilization handler. It was pretty good as the initial
+implementation of utilization handlers, there are several drawbacks
+though.
 
-[...]
+The biggest drawback is that the sg_cpu->flags field doesn't always
+represent the correct type of tasks that are enqueued on a CPU's rq. For
+example, if a fair task is enqueued while a RT or DL task is running, we
+will overwrite the flags with value 0 and that may take the CPU to lower
+OPPs unintentionally. There can be other corner cases as well which we
+aren't aware of currently.
 
-> > There are two separate issues here:
-> >
-> >   1. DT binding
-> >
-> >   2. init_sensor callback implementation
-> >
-> > We both agree on #1. The A38x and CP110 need separate compatible strings. In 
-> > case we want to access the LSB control register on Armada 38x, we will need 
-> > yet another compatible string (marvell,armada380-v2-thermal maybe?).
-> 
-> Actually, if it is _compatible_ then we will use the same compatible, ie
-> "marvell,armadacp110-thermal"
+This patchset tries to solve these problems by taking a different
+approach than overwriting flags, i.e. set and reset them. The second
+patch does that transition, other three patches are minor optimizations
+here and there, but related to this work.
 
-Reusing the same compatible string for the same hardware peripheral in 
-different SoCs is not a good idea. You often find out later that they are not 
-actually the same.
+Tested these on hikey620 with cyclictest, perf-pipe, hackbench and
+ebizzy and no obvious regressions were seen.
 
-But this point is moot. The A38x and CP110 thermal sensors are not the same. 
-The overheat interrupt registers are in different offsets.
+Based over linux-next/master (as I wanted both tip/master and
+pm/linux-next).
 
-> > As for #2, I'm all for sharing as much code as possible. I find the vendor 
-> > kernel approach of duplicating the init routines[1] unhelpful as it violates 
-> > the DRY principle. The differences between armada380_init_sensor() and 
-> > cp110_init_sensor() are minor. In my opinion, these differences should be 
-> > expressed explicitly in the armada_thermal_data, in a similar way to my 
-> > suggested control_msb_offset field. The vendor code hides these differences in 
-> > slight variations of duplicated code.
-> >
-> > What is the advantage of a separate init routine?
-> 
-> The main advantage is to be able keep the armada380_init_sensor as the
-> legacy init, and then being able to use the new armadacp110_init_sensor
-> for the new binding.
+--
+viresh
 
-I disagree, sorry. I don't think I can make my point any more clear than I 
-did.
+Viresh Kumar (4):
+  cpufreq: schedutil: Initialize sg_cpu->flags to 0
+  sched: cpufreq: Keep track of cpufreq utilization update flags
+  cpufreq: schedutil: Don't pass flags to sugov_set_iowait_boost()
+  cpufreq: schedutil: Don't call sugov_get_util() unnecessarily
 
-I am fine with you or Miquel making the code changes that you think are 
-necessary. I'll comment on the code when I see it.
-
-baruch
+ include/linux/sched/cpufreq.h    |  7 ++++++-
+ kernel/sched/cpufreq_schedutil.c | 36 +++++++++++++++++++++++++-----------
+ kernel/sched/deadline.c          |  4 ++++
+ kernel/sched/fair.c              |  8 ++++++--
+ kernel/sched/rt.c                |  4 ++++
+ 5 files changed, 45 insertions(+), 14 deletions(-)
 
 -- 
-     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
-=}------------------------------------------------ooO--U--Ooo------------{=
-   - baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org - tel: +972.2.679.5364, http://www.tkos.co.il -
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+2.15.0.194.g9af6a3dea062
