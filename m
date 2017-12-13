@@ -1,65 +1,194 @@
-From: Mike Galbraith <efault@gmx.de>
-Subject: Re: [PATCH v2 0/4] Utilization estimation (util_est) for FAIR tasks
-Date: Wed, 13 Dec 2017 18:56:33 +0100
-Message-ID: <1513187793.7297.26.camel@gmx.de>
-References: <20171205171018.9203-1-patrick.bellasi@arm.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v5 7/9] arm64: Topology, rename cluster_id
+Date: Wed, 13 Dec 2017 18:02:17 +0000
+Message-ID: <20171213180217.GB4060@red-moon>
+References: <20171201222330.18863-1-jeremy.linton@arm.com>
+ <20171201222330.18863-8-jeremy.linton@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-15"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mout.gmx.net ([212.227.15.15]:54846 "EHLO mout.gmx.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752434AbdLMR5g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 13 Dec 2017 12:57:36 -0500
-In-Reply-To: <20171205171018.9203-1-patrick.bellasi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171201222330.18863-8-jeremy.linton@arm.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jeremy Linton <jeremy.linton@arm.com>
+Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-On Tue, 2017-12-05 at 17:10 +0000, Patrick Bellasi wrote:
-> This is a respin of:
->    https://lkml.org/lkml/2017/11/9/546
-> which has been rebased on v4.15-rc2 to have util_est now working on top
-> of the recent PeterZ's:
->    [PATCH -v2 00/18] sched/fair: A bit of a cgroup/PELT overhaul
+[+Morten, Dietmar]
+
+$SUBJECT should be:
+
+arm64: topology: rename cluster_id
+
+On Fri, Dec 01, 2017 at 04:23:28PM -0600, Jeremy Linton wrote:
+> Lets match the name of the arm64 topology field
+> to the kernel macro that uses it.
 > 
-> The aim of this series is to improve some PELT behaviors to make it a
-> better fit for the scheduling of tasks common in embedded mobile
-> use-cases, without affecting other classes of workloads.
+> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+> ---
+>  arch/arm64/include/asm/topology.h |  4 ++--
+>  arch/arm64/kernel/topology.c      | 27 ++++++++++++++-------------
+>  2 files changed, 16 insertions(+), 15 deletions(-)
+> 
+> diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+> index c4f2d50491eb..118136268f66 100644
+> --- a/arch/arm64/include/asm/topology.h
+> +++ b/arch/arm64/include/asm/topology.h
+> @@ -7,14 +7,14 @@
+>  struct cpu_topology {
+>  	int thread_id;
+>  	int core_id;
+> -	int cluster_id;
+> +	int physical_id;
 
-I thought perhaps this patch set would improve the below behavior, but
-alas it does not.  That's 3 instances of firefox playing youtube clips
-being shoved into a corner by hogs sitting on 7 of 8 runqueues.  PELT
-serializes the threaded desktop, making that threading kinda pointless,
-and CFS not all that fair.
+package_id ?
 
- 6569 root      20   0    4048    704    628 R 100.0 0.004   5:10.48 7 cpuhog                                                                                                                                                                
- 6573 root      20   0    4048    712    636 R 100.0 0.004   5:07.47 5 cpuhog                                                                                                                                                                
- 6581 root      20   0    4048    696    620 R 100.0 0.004   5:07.36 1 cpuhog                                                                                                                                                                
- 6585 root      20   0    4048    812    736 R 100.0 0.005   5:08.14 4 cpuhog                                                                                                                                                                
- 6589 root      20   0    4048    712    636 R 100.0 0.004   5:06.42 6 cpuhog                                                                                                                                                                
- 6577 root      20   0    4048    720    644 R 99.80 0.005   5:06.52 3 cpuhog                                                                                                                                                                
- 6593 root      20   0    4048    728    652 R 99.60 0.005   5:04.25 0 cpuhog                                                                                                                                                                
- 6755 mikeg     20   0 2714788 885324 179196 S 19.96 5.544   2:14.36 2 Web Content                                                                                                                                                           
- 6620 mikeg     20   0 2318348 312336 145044 S 8.383 1.956   0:51.51 2 firefox                                                                                                                                                               
- 3190 root      20   0  323944  71704  42368 S 3.194 0.449   0:11.90 2 Xorg                                                                                                                                                                  
- 3718 root      20   0 3009580  67112  49256 S 0.599 0.420   0:02.89 2 kwin_x11                                                                                                                                                              
- 3761 root      20   0  769760  90740  62048 S 0.399 0.568   0:03.46 2 konsole                                                                                                                                                               
- 3845 root       9 -11  791224  20132  14236 S 0.399 0.126   0:03.00 2 pulseaudio                                                                                                                                                            
- 3722 root      20   0 3722308 172568  88088 S 0.200 1.081   0:04.35 2 plasmashel
+It has been debated before, I know. Should we keep the cluster_id too
+(even if it would be 1:1 mapped to package_id - for now) ?
 
- ------------------------------------------------------------------------------------------------------------------------------------
-  Task                  |   Runtime ms  | Switches | Average delay ms | Maximum delay ms | Sum     delay ms | Maximum delay at      |
- ------------------------------------------------------------------------------------------------------------------------------------
-  Web Content:6755      |   2864.862 ms |     7314 | avg:    0.299 ms | max:   40.374 ms | sum: 2189.472 ms | max at:    375.769240 |
-  Compositor:6680       |   1889.847 ms |     4672 | avg:    0.531 ms | max:   29.092 ms | sum: 2478.559 ms | max at:    375.759405 |
-  MediaPl~back #3:(13)  |   3269.777 ms |     7853 | avg:    0.218 ms | max:   19.451 ms | sum: 1711.635 ms | max at:    391.123970 |
-  MediaPl~back #4:(10)  |   1472.986 ms |     8189 | avg:    0.236 ms | max:   18.653 ms | sum: 1933.886 ms | max at:    376.124211 |
-  MediaPl~back #1:(9)   |    601.788 ms |     6598 | avg:    0.247 ms | max:   17.823 ms | sum: 1627.852 ms | max at:    401.122567 |
-  firefox:6620          |    303.181 ms |     6232 | avg:    0.111 ms | max:   15.602 ms | sum:  691.865 ms | max at:    385.078558 |
-  Socket Thread:6639    |    667.537 ms |     4806 | avg:    0.069 ms | max:   12.638 ms | sum:  329.387 ms | max at:    380.827323 |
-  MediaPD~oder #1:6835  |    154.737 ms |     1592 | avg:    0.700 ms | max:   10.139 ms | sum: 1113.688 ms | max at:    392.575370 |
-  MediaTimer #1:6828    |     42.660 ms |     5250 | avg:    0.575 ms | max:    9.845 ms | sum: 3018.994 ms | max at:    380.823677 |
-  MediaPD~oder #2:6840  |    150.822 ms |     1583 | avg:    0.703 ms | max:    9.639 ms | sum: 1112.962 ms | max at:    380.823741 |
-...
+There is also arch/arm to take into account, again, this patch is
+just renaming (as it should have named since the beginning) a
+topology level but we should consider everything from a legacy
+perspective.
+
+Lorenzo
+
+>  	cpumask_t thread_sibling;
+>  	cpumask_t core_sibling;
+>  };
+>  
+>  extern struct cpu_topology cpu_topology[NR_CPUS];
+>  
+> -#define topology_physical_package_id(cpu)	(cpu_topology[cpu].cluster_id)
+> +#define topology_physical_package_id(cpu)	(cpu_topology[cpu].physical_id)
+>  #define topology_core_id(cpu)		(cpu_topology[cpu].core_id)
+>  #define topology_core_cpumask(cpu)	(&cpu_topology[cpu].core_sibling)
+>  #define topology_sibling_cpumask(cpu)	(&cpu_topology[cpu].thread_sibling)
+> diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+> index 8d48b233e6ce..74a8a5173a35 100644
+> --- a/arch/arm64/kernel/topology.c
+> +++ b/arch/arm64/kernel/topology.c
+> @@ -51,7 +51,7 @@ static int __init get_cpu_for_node(struct device_node *node)
+>  	return -1;
+>  }
+>  
+> -static int __init parse_core(struct device_node *core, int cluster_id,
+> +static int __init parse_core(struct device_node *core, int physical_id,
+>  			     int core_id)
+>  {
+>  	char name[10];
+> @@ -67,7 +67,7 @@ static int __init parse_core(struct device_node *core, int cluster_id,
+>  			leaf = false;
+>  			cpu = get_cpu_for_node(t);
+>  			if (cpu >= 0) {
+> -				cpu_topology[cpu].cluster_id = cluster_id;
+> +				cpu_topology[cpu].physical_id = physical_id;
+>  				cpu_topology[cpu].core_id = core_id;
+>  				cpu_topology[cpu].thread_id = i;
+>  			} else {
+> @@ -89,7 +89,7 @@ static int __init parse_core(struct device_node *core, int cluster_id,
+>  			return -EINVAL;
+>  		}
+>  
+> -		cpu_topology[cpu].cluster_id = cluster_id;
+> +		cpu_topology[cpu].physical_id = physical_id;
+>  		cpu_topology[cpu].core_id = core_id;
+>  	} else if (leaf) {
+>  		pr_err("%pOF: Can't get CPU for leaf core\n", core);
+> @@ -105,7 +105,7 @@ static int __init parse_cluster(struct device_node *cluster, int depth)
+>  	bool leaf = true;
+>  	bool has_cores = false;
+>  	struct device_node *c;
+> -	static int cluster_id __initdata;
+> +	static int physical_id __initdata;
+>  	int core_id = 0;
+>  	int i, ret;
+>  
+> @@ -144,7 +144,7 @@ static int __init parse_cluster(struct device_node *cluster, int depth)
+>  			}
+>  
+>  			if (leaf) {
+> -				ret = parse_core(c, cluster_id, core_id++);
+> +				ret = parse_core(c, physical_id, core_id++);
+>  			} else {
+>  				pr_err("%pOF: Non-leaf cluster with core %s\n",
+>  				       cluster, name);
+> @@ -162,7 +162,7 @@ static int __init parse_cluster(struct device_node *cluster, int depth)
+>  		pr_warn("%pOF: empty cluster\n", cluster);
+>  
+>  	if (leaf)
+> -		cluster_id++;
+> +		physical_id++;
+>  
+>  	return 0;
+>  }
+> @@ -198,7 +198,7 @@ static int __init parse_dt_topology(void)
+>  	 * only mark cores described in the DT as possible.
+>  	 */
+>  	for_each_possible_cpu(cpu)
+> -		if (cpu_topology[cpu].cluster_id == -1)
+> +		if (cpu_topology[cpu].physical_id == -1)
+>  			ret = -EINVAL;
+>  
+>  out_map:
+> @@ -228,7 +228,7 @@ static void update_siblings_masks(unsigned int cpuid)
+>  	for_each_possible_cpu(cpu) {
+>  		cpu_topo = &cpu_topology[cpu];
+>  
+> -		if (cpuid_topo->cluster_id != cpu_topo->cluster_id)
+> +		if (cpuid_topo->physical_id != cpu_topo->physical_id)
+>  			continue;
+>  
+>  		cpumask_set_cpu(cpuid, &cpu_topo->core_sibling);
+> @@ -249,7 +249,7 @@ void store_cpu_topology(unsigned int cpuid)
+>  	struct cpu_topology *cpuid_topo = &cpu_topology[cpuid];
+>  	u64 mpidr;
+>  
+> -	if (cpuid_topo->cluster_id != -1)
+> +	if (cpuid_topo->physical_id != -1)
+>  		goto topology_populated;
+>  
+>  	mpidr = read_cpuid_mpidr();
+> @@ -263,19 +263,19 @@ void store_cpu_topology(unsigned int cpuid)
+>  		/* Multiprocessor system : Multi-threads per core */
+>  		cpuid_topo->thread_id  = MPIDR_AFFINITY_LEVEL(mpidr, 0);
+>  		cpuid_topo->core_id    = MPIDR_AFFINITY_LEVEL(mpidr, 1);
+> -		cpuid_topo->cluster_id = MPIDR_AFFINITY_LEVEL(mpidr, 2) |
+> +		cpuid_topo->physical_id = MPIDR_AFFINITY_LEVEL(mpidr, 2) |
+>  					 MPIDR_AFFINITY_LEVEL(mpidr, 3) << 8;
+>  	} else {
+>  		/* Multiprocessor system : Single-thread per core */
+>  		cpuid_topo->thread_id  = -1;
+>  		cpuid_topo->core_id    = MPIDR_AFFINITY_LEVEL(mpidr, 0);
+> -		cpuid_topo->cluster_id = MPIDR_AFFINITY_LEVEL(mpidr, 1) |
+> +		cpuid_topo->physical_id = MPIDR_AFFINITY_LEVEL(mpidr, 1) |
+>  					 MPIDR_AFFINITY_LEVEL(mpidr, 2) << 8 |
+>  					 MPIDR_AFFINITY_LEVEL(mpidr, 3) << 16;
+>  	}
+>  
+>  	pr_debug("CPU%u: cluster %d core %d thread %d mpidr %#016llx\n",
+> -		 cpuid, cpuid_topo->cluster_id, cpuid_topo->core_id,
+> +		 cpuid, cpuid_topo->physical_id, cpuid_topo->core_id,
+>  		 cpuid_topo->thread_id, mpidr);
+>  
+>  topology_populated:
+> @@ -291,7 +291,7 @@ static void __init reset_cpu_topology(void)
+>  
+>  		cpu_topo->thread_id = -1;
+>  		cpu_topo->core_id = 0;
+> -		cpu_topo->cluster_id = -1;
+> +		cpu_topo->physical_id = -1;
+>  
+>  		cpumask_clear(&cpu_topo->core_sibling);
+>  		cpumask_set_cpu(cpu, &cpu_topo->core_sibling);
+> @@ -300,6 +300,7 @@ static void __init reset_cpu_topology(void)
+>  	}
+>  }
+>  
+> +
+>  void __init init_cpu_topology(void)
+>  {
+>  	reset_cpu_topology();
+> -- 
+> 2.13.5
+> 
