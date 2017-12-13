@@ -1,79 +1,38 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH v2 6/7] cpufreq: Add DVFS support for Armada 37xx
-Date: Wed, 13 Dec 2017 17:45:05 +0100
-Message-ID: <87vahapofi.fsf@free-electrons.com>
-References: <20171207135616.23670-1-gregory.clement@free-electrons.com>
-        <20171207135616.23670-7-gregory.clement@free-electrons.com>
-        <20171212072426.GK25177@vireshk-i7>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: Ask for help on governor
+Date: Wed, 13 Dec 2017 08:49:46 -0800
+Message-ID: <000801d37432$637cdab0$2a769010$@net>
+References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com> <000801d37364$d48f6ed0$7dae4c70$@net> <000f01d373bf$deacca10$9c065e30$@net> P0Mmegy2kTqmMP0MoeccOV P9fLe8wpe7WleP9fMeeBW3
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:40686 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753586AbdLMQpQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 11:45:16 -0500
-In-Reply-To: <20171212072426.GK25177@vireshk-i7> (Viresh Kumar's message of
-        "Tue, 12 Dec 2017 12:54:26 +0530")
+Received: from cmta19.telus.net ([209.171.16.92]:42741 "EHLO cmta19.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753164AbdLMQtu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 13 Dec 2017 11:49:50 -0500
+In-Reply-To: P9fLe8wpe7WleP9fMeeBW3
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@free-electrons.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, Evan Wang <xswang@marvell.com>, Andre Heider <a.heider@gmail.com>
+To: 'Viresh Kumar' <viresh.kumar@linaro.org>
+Cc: "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Andy Tang' <andy.tang@nxp.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Doug Smythies' <dsmythies@telus.net>
 
 Hi Viresh,
- 
- On mar., déc. 12 2017, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-> On 07-12-17, 14:56, Gregory CLEMENT wrote:
->> +/* Power management in North Bridge register set */
->> +#define ARMADA_37XX_NB_L0L1	0x18
->> +#define ARMADA_37XX_NB_L2L3	0x1C
->> +#define	ARMADA_37XX_NB_TBG_DIV_OFF	13
->> +#define	ARMADA_37XX_NB_TBG_DIV_MASK	0x7
->> +#define	 ARMADA_37XX_NB_CLK_SEL_OFF	11
->> +#define	 ARMADA_37XX_NB_CLK_SEL_MASK	0x1
->> +#define	 ARMADA_37XX_NB_CLK_SEL_TBG      0x1
->> +#define	 ARMADA_37XX_NB_TBG_SEL_OFF	9
->> +#define	 ARMADA_37XX_NB_TBG_SEL_MASK	0x3
->> +#define	 ARMADA_37XX_NB_VDD_SEL_OFF	6
->> +#define	 ARMADA_37XX_NB_VDD_SEL_MASK	0x3
->> +#define	 ARMADA_37XX_NB_CONFIG_SHIFT	16
->> +#define ARMADA_37XX_NB_DYN_MOD	0x24
->> +#define	 ARMADA_37XX_NB_CLK_SEL_EN	BIT(26)
->> +#define	 ARMADA_37XX_NB_TBG_EN		BIT(28)
->> +#define	 ARMADA_37XX_NB_DIV_EN		BIT(29)
->> +#define	 ARMADA_37XX_NB_VDD_EN		BIT(30)
->> +#define	 ARMADA_37XX_NB_DFS_EN		BIT(31)
->> +#define ARMADA_37XX_NB_CPU_LOAD	0x30
->> +#define	 ARMADA_37XX_NB_CPU_LOAD_MASK	0x3
->> +#define	 ARMADA_37XX_DVFS_LOAD_0		0
->> +#define	 ARMADA_37XX_DVFS_LOAD_1		1
->> +#define	 ARMADA_37XX_DVFS_LOAD_2		2
->> +#define	 ARMADA_37XX_DVFS_LOAD_3		3
->
-> I thought you agreed to using space instead of tab after #define ?
+In addition to what I wrote earlier:
 
-Me too! Actually I did it, and I don't know what happened with this
-patch.
+I can also make the conservative governor work under the
+intel_cpufreq scaling driver, with the default 500 uSec
+sampling time, by increasing the
+/sys/devices/system/cpu/cpufreq/conservative/freq_step
+value from the default of 5 to 100.
 
-However it will be part of the next version and I will double check it.
+In this case there is not a specific break point freq_step,
+but rather a very gradual increase in CPU freq as a function
+of freq_step for a 100% load on a CPU.
 
->
-> Looks fine otherwise. You can add below after fixing above tab/space thing:
->
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Now, I wonder if the two issues here might be related after all.
 
-
-Thanks,
-
-Gregory
-
->
-> -- 
-> viresh
-
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+... Doug
