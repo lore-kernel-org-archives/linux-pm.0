@@ -1,66 +1,52 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH 2/2] cpufreq: mvebu: Free opp if registering failed
-Date: Wed, 13 Dec 2017 18:29:14 +0100
-Message-ID: <20171213172914.6148-3-gregory.clement@free-electrons.com>
-References: <20171213172914.6148-1-gregory.clement@free-electrons.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v5 6/9] ACPI/PPTT: Add topology parsing code
+Date: Wed, 13 Dec 2017 17:38:51 +0000
+Message-ID: <20171213173851.GA4060@red-moon>
+References: <20171201222330.18863-1-jeremy.linton@arm.com>
+ <20171201222330.18863-7-jeremy.linton@arm.com>
+ <9009154.M66RGdQJXA@aspire.rjw.lan>
+ <fc12696c-15e1-cea4-42bf-db4b5daa45f2@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:42556 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753409AbdLMR3Z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 12:29:25 -0500
-In-Reply-To: <20171213172914.6148-1-gregory.clement@free-electrons.com>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:33064 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753739AbdLMRiP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 13 Dec 2017 12:38:15 -0500
+Content-Disposition: inline
+In-Reply-To: <fc12696c-15e1-cea4-42bf-db4b5daa45f2@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@free-electrons.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@free-electrons.com>
+To: Jeremy Linton <jeremy.linton@arm.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org
 
-Since the introduction of this driver, the functions to remove the opp
-were added. So stop claiming we can't remove opp and use one of them in
-case of failure.
+On Tue, Dec 12, 2017 at 10:13:08AM -0600, Jeremy Linton wrote:
+> Hi,
+> 
+> First, thanks for taking a look at this.
+> 
+> On 12/11/2017 07:12 PM, Rafael J. Wysocki wrote:
+> >On Friday, December 1, 2017 11:23:27 PM CET Jeremy Linton wrote:
+> >>The PPTT can be used to determine the groupings of CPU's at
+> >>given levels in the system. Lets add a few routines to the PPTT
+> >>parsing code to return a unique id for each unique level in the
+> >>processor hierarchy. This can then be matched to build
+> >>thread/core/cluster/die/package/etc mappings for each processing
+> >>element in the system.
+> >>
+> >>Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+> >
+> >Why can't this be folded into patch [2/9]?
+> 
+> It can, and I will be happy squash it.
+> 
+> It was requested that the topology portion of the parser be split
+> out back in v3.
+> 
+> https://www.spinics.net/lists/linux-acpi/msg78487.html
 
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
----
- drivers/cpufreq/mvebu-cpufreq.c | 15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+I asked to split cache/topology since I am not familiar with cache
+code and Sudeep - who looks after the cache code - won't be able
+to review this series in time for v4.16.
 
-diff --git a/drivers/cpufreq/mvebu-cpufreq.c b/drivers/cpufreq/mvebu-cpufreq.c
-index c043aad8e3a0..31513bd42705 100644
---- a/drivers/cpufreq/mvebu-cpufreq.c
-+++ b/drivers/cpufreq/mvebu-cpufreq.c
-@@ -76,12 +76,6 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
- 			return PTR_ERR(clk);
- 		}
- 
--		/*
--		 * In case of a failure of dev_pm_opp_add(), we don't
--		 * bother with cleaning up the registered OPP (there's
--		 * no function to do so), and simply cancel the
--		 * registration of the cpufreq device.
--		 */
- 		ret = dev_pm_opp_add(cpu_dev, clk_get_rate(clk), 0);
- 		if (ret) {
- 			clk_put(clk);
-@@ -91,7 +85,8 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
- 		ret = dev_pm_opp_add(cpu_dev, clk_get_rate(clk) / 2, 0);
- 		if (ret) {
- 			clk_put(clk);
--			return ret;
-+			dev_err(cpu_dev, "Failed to register OPPs\n");
-+			goto opp_register_failed;
- 		}
- 
- 		ret = dev_pm_opp_set_sharing_cpus(cpu_dev,
-@@ -104,5 +99,11 @@ static int __init armada_xp_pmsu_cpufreq_init(void)
- 
- 	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
- 	return 0;
-+
-+opp_register_failed:
-+	/* As registering has failed remove all the opp for all cpus */
-+	dev_pm_opp_cpumask_remove_table(cpu_possible_mask);
-+
-+	return ret;
- }
- device_initcall(armada_xp_pmsu_cpufreq_init);
--- 
-2.15.1
+Lorenzo
