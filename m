@@ -1,49 +1,43 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH v4 09/12] clk: qcom: Add Krait clock controller driver
-Date: Wed, 13 Dec 2017 16:41:26 +0530
-Message-ID: <55bd6d93-9d0a-7fcb-0fb9-0e8fd9c21974@codeaurora.org>
-References: <1512726150-7204-1-git-send-email-sricharan@codeaurora.org>
- <1512726150-7204-10-git-send-email-sricharan@codeaurora.org>
- <20171212205104.vnnjr3w56w4mrfh6@rob-hp-laptop>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH 1/4] cpufreq: schedutil: Initialize sg_cpu->flags to 0
+Date: Wed, 13 Dec 2017 12:13:46 +0100
+Message-ID: <20171213111346.GC30887@localhost.localdomain>
+References: <cover.1513158452.git.viresh.kumar@linaro.org>
+ <763feda6424ced8486b25a0c52979634e6104478.1513158452.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <20171212205104.vnnjr3w56w4mrfh6@rob-hp-laptop>
-Content-Language: en-US
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: devicetree@vger.kernel.org, linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org, mturquette@baylibre.com, sboyd@codeaurora.org, linux-kernel@vger.kernel.org, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wm0-f65.google.com ([74.125.82.65]:38325 "EHLO
+        mail-wm0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752103AbdLMLNv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 06:13:51 -0500
+Received: by mail-wm0-f65.google.com with SMTP id 64so4282290wme.3
+        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 03:13:50 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <763feda6424ced8486b25a0c52979634e6104478.1513158452.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, tkjos@android.com, joelaf@google.com, linux-kernel@vger.kernel.org
 
-Hi Rob,
+Hi Viresh,
 
-On 12/13/2017 2:21 AM, Rob Herring wrote:
-> On Fri, Dec 08, 2017 at 03:12:27PM +0530, Sricharan R wrote:
->> From: Stephen Boyd <sboyd@codeaurora.org>
->>
->> The Krait CPU clocks are made up of a primary mux and secondary
->> mux for each CPU and the L2, controlled via cp15 accessors. For
->> Kraits within KPSSv1 each secondary mux accepts a different aux
->> source, but on KPSSv2 each secondary mux accepts the same aux
->> source.
->>
->> Cc: <devicetree@vger.kernel.org>
->> Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
->> ---
->>  .../devicetree/bindings/clock/qcom,krait-cc.txt    |  22 ++
+On 13/12/17 15:23, Viresh Kumar wrote:
+> Initializing sg_cpu->flags to SCHED_CPUFREQ_RT has no obvious benefit.
+> The flags field wouldn't be used until the utilization update handler is
+> called for the first time, and once that is called we will overwrite
+> flags anyway.
 > 
-> Please make bindings a separate patch.
+> Initialize it to 0.
 > 
+> Change-Id: I028dbb40c5c242cff52fe1b14aeaff37f29a2f8d
 
- ok.
+Without ^
 
-Regards,
- Sricharan
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
--- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+Reviewed-by: Juri Lelli <juri.lelli@redhat.com>
 
----
-This email has been checked for viruses by Avast antivirus software.
-https://www.avast.com/antivirus
+Best,
+
+- Juri
