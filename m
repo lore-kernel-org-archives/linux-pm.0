@@ -1,60 +1,81 @@
-From: Johannes Stezenbach <js@sig21.net>
-Subject: Re: [RFC PATCH 2/2] clk: x86: Disable unused clocks to fix S0ix
-Date: Wed, 13 Dec 2017 12:22:45 +0100
-Message-ID: <20171213112245.GB20260@sig21.net>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
- <1555462.9U3gvkyXAX@aspire.rjw.lan>
- <20170925192352.ihzakshd7yofowdd@sig21.net>
- <7178688.oS2VOf73im@aspire.rjw.lan>
- <fb202f9b-1fa2-4b9c-de75-4431a6273d12@redhat.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization
+ update flags
+Date: Wed, 13 Dec 2017 12:26:39 +0100
+Message-ID: <20171213112639.GD30887@localhost.localdomain>
+References: <cover.1513158452.git.viresh.kumar@linaro.org>
+ <17ff0b5d83a1275a98f0d1b87daf275f3e964af3.1513158452.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f193.google.com ([209.85.128.193]:33888 "EHLO
+        mail-wr0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752764AbdLML0n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 06:26:43 -0500
+Received: by mail-wr0-f193.google.com with SMTP id y21so1801959wrc.1
+        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 03:26:43 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <fb202f9b-1fa2-4b9c-de75-4431a6273d12@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
+In-Reply-To: <17ff0b5d83a1275a98f0d1b87daf275f3e964af3.1513158452.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, tkjos@android.com, joelaf@google.com, linux-kernel@vger.kernel.org
 
-On Wed, Dec 13, 2017 at 09:56:45AM +0100, Hans de Goede wrote:
-> On 13-12-17 01:01, Rafael J. Wysocki wrote:
-> > On Monday, September 25, 2017 9:23:52 PM CET Johannes Stezenbach wrote:
-> > > d31fd43c0f9a "clk: x86: Do not gate clocks enabled by the firmware"
-> > > exposed an issue on Asus E200HA where BIOS enables unused
-> > > Atom PMC clocks which prevent the system from entering S0ix.
-> > > Add a quirk to disable these clocks on E200HA.
-> > > 
-> > > Signed-off-by: Johannes Stezenbach <js@sig21.net>
-> > 
-> > Mika, Andy, Hans, any comments here?
-> 
-> This seems like it is papering over an issue in the
-> d31fd43c0f9a "clk: x86: Do not gate clocks enabled by the firmware"
-> patch to me. That patch seems like a somewhat hackish fix to
-> me, it would be better to figure out which device needs the clock
-> in question and fix the device's driver...
-> 
-> And or maybe have a mask of clocks for which to do this check
-> and not do it for all clocks at least? That way we can maybe
-> fix both Johannes and Carlo's issue in one go without needing
-> device specific quirks ?
-> 
-> Carlo, do you remember which clock you needed this for ?
-> 
-> Johannes, same question for you, which clock is being kept
-> alive because of this ?
+Hi Viresh,
 
-IIRC all of these platform clocks need to be disabled for S0ix,
-but d31fd43c0f9a keeps them all enabled (if BIOS had enabled them),
-and only the one claimed by the audio codec driver
-is disabled by it before trying to enter S0ix.
+On 13/12/17 15:23, Viresh Kumar wrote:
+> Currently the schedutil governor overwrites the sg_cpu->flags field on
+> every call to the utilization handler. It was pretty good as the initial
+> implementation of utilization handlers, there are several drawbacks
+> though.
+> 
+> The biggest drawback is that the sg_cpu->flags field doesn't always
+> represent the correct type of tasks that are enqueued on a CPU's rq. For
+> example, if a fair task is enqueued while a RT or DL task is running, we
+> will overwrite the flags with value 0 and that may take the CPU to lower
+> OPPs unintentionally. There can be other corner cases as well which we
+> aren't aware of currently.
+> 
+> This patch changes the current implementation to keep track of all the
+> task types that are currently enqueued to the CPUs rq. A new flag: CLEAR
+> is introduced and is set by the scheduling classes when their last task
+> is dequeued. When the CLEAR flag bit is set, the schedutil governor resets
+> all the other flag bits that are present in the flags parameter. For
+> now, the util update handlers return immediately if they were called to
+> clear the flag.
+> 
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  include/linux/sched/cpufreq.h    |  7 ++++++-
+>  kernel/sched/cpufreq_schedutil.c | 21 ++++++++++++++++++---
+>  kernel/sched/deadline.c          |  4 ++++
+>  kernel/sched/fair.c              |  8 ++++++--
+>  kernel/sched/rt.c                |  4 ++++
+>  5 files changed, 38 insertions(+), 6 deletions(-)
+> 
+> diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
+> index d1ad3d825561..6f6641e61236 100644
+> --- a/include/linux/sched/cpufreq.h
+> +++ b/include/linux/sched/cpufreq.h
+> @@ -8,10 +8,15 @@
+>   * Interface between cpufreq drivers and the scheduler:
+>   */
+>  
+> +#define SCHED_CPUFREQ_CLEAR	(1U << 31)
+>  #define SCHED_CPUFREQ_RT	(1U << 0)
+>  #define SCHED_CPUFREQ_DL	(1U << 1)
+> -#define SCHED_CPUFREQ_IOWAIT	(1U << 2)
+> +#define SCHED_CPUFREQ_CFS	(1U << 2)
 
-Yes, my vote would be to revert d31fd43c0f9a and fix the issue
-properly, but my patch was the result of previous discussion.
-Since it's BIOS' fault to have these clocks enabled I think
-a platform quirk isn't too bad.
+This flag doesn't do much, does it? I mean RT/DL/IOWAIT are used to bump
+up frequency, while you are adding CFS for the sake of simmetry, right?
+And with my patches DL will hopefully soon be in the same situation.
+If my understanding is correct, maybe add a comment?
 
+Apart from this, patch looks good to me; couldn't test it though, sorry.
+
+Reviewed-by: Juri Lelli <juri.lelli@redhat.com>
 
 Thanks,
-Johannes
+
+- Juri
