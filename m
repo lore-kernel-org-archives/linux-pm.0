@@ -1,59 +1,154 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [RFC PATCH 2/2] clk: x86: Disable unused clocks to fix S0ix
-Date: Wed, 13 Dec 2017 16:29:12 +0200
-Message-ID: <1513175352.7000.7.camel@linux.intel.com>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
-         <1555462.9U3gvkyXAX@aspire.rjw.lan>
-         <20170925192352.ihzakshd7yofowdd@sig21.net>
-         <7178688.oS2VOf73im@aspire.rjw.lan>
-         <fb202f9b-1fa2-4b9c-de75-4431a6273d12@redhat.com>
+From: Michael Turquette <mturquette@baylibre.com>
+Subject: Re: [RFC PATCH 1/2] platform/x86: add Atom PMC quirk to disable SATA
+Date: Wed, 13 Dec 2017 07:25:28 -0800
+Message-ID: <CAEG3pNDL-8srk_JwqtZxs_waHAPfmRC_5Orhs_=XUhwdHTdM-g@mail.gmail.com>
+References: <20170906204237.24x6fzlfmq7jmuce@sig21.net> <20170925191749.2oamusbajgs6clcg@sig21.net>
+ <20170925192109.rty2fnm7c4jnj3vx@sig21.net> <34396652.fljU28PShI@aspire.rjw.lan>
+ <a2c8d724-015a-e6c3-23ab-4b6036cc22eb@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <fb202f9b-1fa2-4b9c-de75-4431a6273d12@redhat.com>
+In-Reply-To: <a2c8d724-015a-e6c3-23ab-4b6036cc22eb@redhat.com>
 Sender: linux-acpi-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Johannes Stezenbach <js@sig21.net>, Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Johannes Stezenbach <js@sig21.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk <linux-clk@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Carlo Caione <carlo@endlessm.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2017-12-13 at 09:56 +0100, Hans de Goede wrote:
+Hell Hans, all,
+
+On Wed, Dec 13, 2017 at 12:53 AM, Hans de Goede <hdegoede@redhat.com> wrote:
+>
 > Hi,
-> 
-> On 13-12-17 01:01, Rafael J. Wysocki wrote:
-> > On Monday, September 25, 2017 9:23:52 PM CET Johannes Stezenbach
-> > wrote:
-> > > d31fd43c0f9a "clk: x86: Do not gate clocks enabled by the
-> > > firmware"
-> > > exposed an issue on Asus E200HA where BIOS enables unused
-> > > Atom PMC clocks which prevent the system from entering S0ix.
-> > > Add a quirk to disable these clocks on E200HA.
-> > > 
-> > > Signed-off-by: Johannes Stezenbach <js@sig21.net>
-> > 
-> > Mika, Andy, Hans, any comments here?
+>
+> On 13-12-17 01:00, Rafael J. Wysocki wrote:
+>>
+>> On Monday, September 25, 2017 9:21:09 PM CET Johannes Stezenbach wrote:
+>>>
+>>> SATA controller is enabled on Asus E200HA even though the
+>>> machine doesn't use it (it has eMMC storage), however
+>>> SATA being on blocks S0ix entry so we need to disable it.
+>>>
+>>> Signed-off-by: Johannes Stezenbach <js@sig21.net>
+>>
+>>
+>> Mika, Andy, Hans, any comments on this one?
+>
+>
+> Seems sensible to me, I'm afraid we may need the same quirk on
+> other devices, but I see no way around this.
 
-I remember discussing those in bugzilla, though I agree with Hans, it
-looks hackish still. I'm not sure on the other hand we can solve this
-properly in a meantime.
+Quirks go directly into the driver? Is there a Device Tree analogue
+for x86 that could help here?
 
-I also have some style related comments, but they are minor. I can go
-through better review after we settle down the way we would like to fix
-the issue.
+>
+> Although, maybe we need to have a specialized (derived)
+> ahci driver for these Atom SoCs and in there if no
+> disk is detected do this through the clock framework?
 
-> This seems like it is papering over an issue in the
-> d31fd43c0f9a "clk: x86: Do not gate clocks enabled by the firmware"
-> patch to me. That patch seems like a somewhat hackish fix to
-> me, it would be better to figure out which device needs the clock
-> in question and fix the device's driver...
+Yes please. x86 is already modeling some clocks properly through the
+clock framework. During late init we clean up any clocks that were
+enabled out of reset or by the firmware/bootloader but not claimed and
+enabled by any Linux driver. That should ideally disable this
+particular clock for the case when no SATA drive is present, and
+require no quirk logic in the driver.
 
-My understanding of S0ix prerequisites is all devices in question *must*
-have drivers loaded and drivers *must* have implemented runtime PM.
+Regards,
+Mike
 
-(Since I don't know if it's guaranteed by firmware that devices are left
-in D3 if they are not used. Besides that from the SATA case looks like
-some BIOS [hardware?] issue with power gating)
-
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+>
+> That may be better then a long list of quirks.
+>
+> Johannes, question how did you test this and figure out
+> which clocks to disable, a quick howto on this, I think
+> a patch adding a little howto / README as say
+> Documentation/power/intel-S0ix-debugging.txt
+> documenting this would be great. I'm certainly interested
+> in trying to reproduce this on some of my own Bay Trail and
+> Cherry Trail devices and add fixes for those if necessary.
+>
+> Regards,
+>
+> Hans
+>
+>
+>
+>
+>
+>>
+>>> ---
+>>>   drivers/platform/x86/pmc_atom.c | 33 +++++++++++++++++++++++++++++++++
+>>>   1 file changed, 33 insertions(+)
+>>>
+>>> diff --git a/drivers/platform/x86/pmc_atom.c b/drivers/platform/x86/pmc_atom.c
+>>> index 8d13c86cc418..b5dd38712268 100644
+>>> --- a/drivers/platform/x86/pmc_atom.c
+>>> +++ b/drivers/platform/x86/pmc_atom.c
+>>> @@ -17,6 +17,7 @@
+>>>     #include <linux/debugfs.h>
+>>>   #include <linux/device.h>
+>>> +#include <linux/dmi.h>
+>>>   #include <linux/init.h>
+>>>   #include <linux/io.h>
+>>>   #include <linux/platform_data/x86/clk-pmc-atom.h>
+>>> @@ -57,6 +58,9 @@ struct pmc_dev {
+>>>   static struct pmc_dev pmc_device;
+>>>   static u32 acpi_base_addr;
+>>>   +static u32 quirks;
+>>> +#define QUIRK_DISABLE_SATA BIT(0)
+>>> +
+>>>   static const struct pmc_clk byt_clks[] = {
+>>>         {
+>>>                 .name = "xtal",
+>>> @@ -271,6 +275,15 @@ static void pmc_hw_reg_setup(struct pmc_dev *pmc)
+>>>          * - GPIO_SCORE shared IRQ
+>>>          */
+>>>         pmc_reg_write(pmc, PMC_S0IX_WAKE_EN, (u32)PMC_WAKE_EN_SETTING);
+>>> +
+>>> +       if (quirks & QUIRK_DISABLE_SATA) {
+>>> +               u32 func_dis;
+>>> +
+>>> +               pr_info("pmc: disable SATA IP\n");
+>>> +               func_dis = pmc_reg_read(pmc, PMC_FUNC_DIS);
+>>> +               func_dis |= BIT_SATA;
+>>> +               pmc_reg_write(pmc, PMC_FUNC_DIS, func_dis);
+>>> +       }
+>>>   }
+>>>     #ifdef CONFIG_DEBUG_FS
+>>> @@ -500,6 +513,24 @@ static struct pmc_notifier_block pmc_freeze_nb = {
+>>>   };
+>>>   #endif
+>>>   +static int cht_asus_e200ha_cb(const struct dmi_system_id *id)
+>>> +{
+>>> +       pr_info("pmc: Asus E200HA detected\n");
+>>> +       quirks |= QUIRK_DISABLE_SATA;
+>>> +       return 1;
+>>> +}
+>>> +
+>>> +static const struct dmi_system_id cht_table[] = {
+>>> +       {
+>>> +               .callback = cht_asus_e200ha_cb,
+>>> +               .matches = {
+>>> +                       DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
+>>> +                       DMI_MATCH(DMI_PRODUCT_NAME, "E200HA"),
+>>> +               },
+>>> +       },
+>>> +       { }
+>>> +};
+>>> +
+>>>   static int pmc_setup_dev(struct pci_dev *pdev, const struct pci_device_id *ent)
+>>>   {
+>>>         struct pmc_dev *pmc = &pmc_device;
+>>> @@ -526,6 +557,8 @@ static int pmc_setup_dev(struct pci_dev *pdev, const struct pci_device_id *ent)
+>>>         pmc->map = map;
+>>>   +     dmi_check_system(cht_table);
+>>> +
+>>>         /* PMC hardware registers setup */
+>>>         pmc_hw_reg_setup(pmc);
+>>>
+>>
+>>
+>>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-clk" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
