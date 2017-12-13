@@ -1,64 +1,79 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
-Date: Wed, 13 Dec 2017 17:41:55 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1712131738020.1885@nanos>
-References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFwsMuHUBQz5kDNwRf17JnasXMWjvmLq5qXGH-694yeq1w@mail.gmail.com> <20171206121452.GA6320@dhcp22.suse.cz> <db81e89d-eee6-868c-dc10-c028f4c4be84@mblankhorst.nl> <alpine.DEB.2.20.1712061344560.1724@nanos>
- <0f1d3d63-fa10-5cef-8014-81753dc60243@mblankhorst.nl> <alpine.DEB.2.20.1712061514420.1724@nanos> <57c8679e-1b88-c9ad-2299-2bea7560b28f@mblankhorst.nl> <alpine.DEB.2.20.1712081129450.1840@nanos> <alpine.DEB.2.20.1712131507160.1885@nanos>
- <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH v2 6/7] cpufreq: Add DVFS support for Armada 37xx
+Date: Wed, 13 Dec 2017 17:45:05 +0100
+Message-ID: <87vahapofi.fsf@free-electrons.com>
+References: <20171207135616.23670-1-gregory.clement@free-electrons.com>
+        <20171207135616.23670-7-gregory.clement@free-electrons.com>
+        <20171212072426.GK25177@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:36015 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753336AbdLMQmH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 11:42:07 -0500
-In-Reply-To: <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com>
+Received: from mail.free-electrons.com ([62.4.15.54]:40686 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753586AbdLMQpQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 11:45:16 -0500
+In-Reply-To: <20171212072426.GK25177@vireshk-i7> (Viresh Kumar's message of
+        "Tue, 12 Dec 2017 12:54:26 +0530")
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@free-electrons.com>, =?utf-8?Q?Miqu=C3=A8l?= Raynal <miquel.raynal@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, Evan Wang <xswang@marvell.com>, Andre Heider <a.heider@gmail.com>
 
-On Wed, 13 Dec 2017, Bjorn Helgaas wrote:
-> [+cc linux-pci, linux-pm]
-> 
-> On Wed, Dec 13, 2017 at 04:57:56PM +0100, Thomas Gleixner wrote:
-> > So I was finally able to figure out what the hell is going on:
-> > 
-> > Suspend:
-> > 
-> >  - The device suspend code puts the graphics card into a power
-> >    state != PCI_D0.
-> > 
-> >  - Offline non boot CPUs
-> > 
-> >  - Break interrupt affinity. Allocate new vector on CPU 0, compose and
-> >    write MSI message which ends up in:
-> > 
-> >    __pci_write_msi_msg(entry, msg)
-> >    {
-> > 	if (dev->current_state != PCI_D0 || pci_dev_is_disconnected(dev)) {
-> > 	   /* Don't touch the hardware now */
-> > 	} else {
-> > 	   ....
-> > 	}
-> > 	entry->msg = *msg;
-> >    }
-> >  
-> >   So because the device is not in PCI_D0 the message is not written. It's
-> >   written in the device resume path.
-> 
-> I'm not a PM guru, but this ordering seems fragile.  If we offline
-> CPUs before re-targeting interrupts directed at those CPUs, aren't we
-> always going to be at risk of sending interrupts to an offline CPU?
-> 
-> Even if the device is now asleep and therefore should not generate an
-> interrupt, it seems like there's a window when the device returns to
-> PCI_D0 where it could generate an interrupt before we have a chance to
-> update the MSI message.
+Hi Viresh,
+ 
+ On mar., déc. 12 2017, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 
-Definitely. That was fragile forever but puzzles me is that I can't figure
-out what now causes that spurious interrupt to surface out of the blue.
+> On 07-12-17, 14:56, Gregory CLEMENT wrote:
+>> +/* Power management in North Bridge register set */
+>> +#define ARMADA_37XX_NB_L0L1	0x18
+>> +#define ARMADA_37XX_NB_L2L3	0x1C
+>> +#define	ARMADA_37XX_NB_TBG_DIV_OFF	13
+>> +#define	ARMADA_37XX_NB_TBG_DIV_MASK	0x7
+>> +#define	 ARMADA_37XX_NB_CLK_SEL_OFF	11
+>> +#define	 ARMADA_37XX_NB_CLK_SEL_MASK	0x1
+>> +#define	 ARMADA_37XX_NB_CLK_SEL_TBG      0x1
+>> +#define	 ARMADA_37XX_NB_TBG_SEL_OFF	9
+>> +#define	 ARMADA_37XX_NB_TBG_SEL_MASK	0x3
+>> +#define	 ARMADA_37XX_NB_VDD_SEL_OFF	6
+>> +#define	 ARMADA_37XX_NB_VDD_SEL_MASK	0x3
+>> +#define	 ARMADA_37XX_NB_CONFIG_SHIFT	16
+>> +#define ARMADA_37XX_NB_DYN_MOD	0x24
+>> +#define	 ARMADA_37XX_NB_CLK_SEL_EN	BIT(26)
+>> +#define	 ARMADA_37XX_NB_TBG_EN		BIT(28)
+>> +#define	 ARMADA_37XX_NB_DIV_EN		BIT(29)
+>> +#define	 ARMADA_37XX_NB_VDD_EN		BIT(30)
+>> +#define	 ARMADA_37XX_NB_DFS_EN		BIT(31)
+>> +#define ARMADA_37XX_NB_CPU_LOAD	0x30
+>> +#define	 ARMADA_37XX_NB_CPU_LOAD_MASK	0x3
+>> +#define	 ARMADA_37XX_DVFS_LOAD_0		0
+>> +#define	 ARMADA_37XX_DVFS_LOAD_1		1
+>> +#define	 ARMADA_37XX_DVFS_LOAD_2		2
+>> +#define	 ARMADA_37XX_DVFS_LOAD_3		3
+>
+> I thought you agreed to using space instead of tab after #define ?
+
+Me too! Actually I did it, and I don't know what happened with this
+patch.
+
+However it will be part of the next version and I will double check it.
+
+>
+> Looks fine otherwise. You can add below after fixing above tab/space thing:
+>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
 
 Thanks,
 
-	tglx
+Gregory
+
+>
+> -- 
+> viresh
+
+-- 
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
