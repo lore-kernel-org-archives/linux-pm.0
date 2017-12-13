@@ -1,33 +1,86 @@
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
-Date: Wed, 13 Dec 2017 09:45:50 -0800
-Message-ID: <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com>
-References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFwsMuHUBQz5kDNwRf17JnasXMWjvmLq5qXGH-694yeq1w@mail.gmail.com>
- <20171206121452.GA6320@dhcp22.suse.cz> <db81e89d-eee6-868c-dc10-c028f4c4be84@mblankhorst.nl>
- <alpine.DEB.2.20.1712061344560.1724@nanos> <0f1d3d63-fa10-5cef-8014-81753dc60243@mblankhorst.nl>
- <alpine.DEB.2.20.1712061514420.1724@nanos> <57c8679e-1b88-c9ad-2299-2bea7560b28f@mblankhorst.nl>
- <alpine.DEB.2.20.1712081129450.1840@nanos> <alpine.DEB.2.20.1712131507160.1885@nanos>
- <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com> <alpine.DEB.2.20.1712131738020.1885@nanos>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: [PATCH v3 0/4] Add CPU Frequency scaling support on Armada 37xx
+Date: Wed, 13 Dec 2017 18:51:15 +0100
+Message-ID: <20171213175119.9441-1-gregory.clement@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f53.google.com ([209.85.214.53]:39610 "EHLO
-        mail-it0-f53.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752816AbdLMRpv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 12:45:51 -0500
-In-Reply-To: <alpine.DEB.2.20.1712131738020.1885@nanos>
+Received: from mail.free-electrons.com ([62.4.15.54]:43194 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753051AbdLMRvh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 12:51:37 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
+Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@free-electrons.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, Evan Wang <xswang@marvell.com>, Andre Heider <a.heider@gmail.com>
 
-On Wed, Dec 13, 2017 at 8:41 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
->
-> Definitely. That was fragile forever but puzzles me is that I can't figure
-> out what now causes that spurious interrupt to surface out of the blue.
+Hi,
 
-Perhaps just timing?
+This is the third version of a series adding the CPU Frequency support
+on Armada 37xx using DVFS. It is based on the initial work of Evan
+Wang and Victor Gu.
 
-How hard would it be to change the ordering to just redirect irqs first?
+As requested all the patches not directly related to the Armada 37xx
+support had been sent in separate series.
 
-                 Linus
+The only other changes is replacing tab by space in the define as it
+should have be already done in the v2.
+
+The last patch is for arm-soc the arm-soc subsystem through mvebu and
+update the device tree to support the CPU frequency scaling.
+
+An update on the CPU clock driver is needed in order to take into
+account the DVFS setting. It's the purpose of an other series already
+sent, but is no dependencies between the series (for building or at
+runtime).
+
+Thanks,
+
+Gregory
+
+Changelog:
+
+v1 -> v2:
+
+ - using syscon instead of nb_pm for the binding of the North bridge
+   power management unit: reported by Rob Herring
+
+ - fix sorting inside the big LITTLE section for the Kconfig: reported
+   by Viresh Kumar
+
+ - fix the bogus freq calculation in armada37xx_cpufreq_driver_init,
+   bug reported by Andre Heider
+
+ - use dev_pm_opp_remove() on the previous opp if dev_pm_opp_add()
+   failed, reported by Viresh Kumar
+
+ - add the Tested-by flag from Andre Heider on "cpufreq: Add DVFS
+   support for Armada 37xx" patch
+
+v2 -> v3:
+
+ - move patches "cpufreq: ARM: sort the Kconfig menu", " cpufreq:
+   sort the drivers in ARM part", "cpufreq: mvebu: Use
+   dev_pm_opp_remove()" in separate series
+
+- add reviewed-by and acked-by flags on the commits
+
+- use space instead of tab in the #define in the armada-37xx-cpufreq.c file.
+
+Gregory CLEMENT (4):
+  dt-bindings: marvell: Add documentation for the North Bridge PM on
+    Armada 37xx
+  MAINTAINERS: add new entries for Armada 37xx cpufreq driver
+  cpufreq: Add DVFS support for Armada 37xx
+  arm64: dts: marvell: armada-37xx: add nodes allowing cpufreq support
+
+ .../bindings/arm/marvell/armada-37xx.txt           |  19 ++
+ MAINTAINERS                                        |   1 +
+ arch/arm64/boot/dts/marvell/armada-372x.dtsi       |   1 +
+ arch/arm64/boot/dts/marvell/armada-37xx.dtsi       |   7 +
+ drivers/cpufreq/Kconfig.arm                        |   7 +
+ drivers/cpufreq/Makefile                           |   1 +
+ drivers/cpufreq/armada-37xx-cpufreq.c              | 241 +++++++++++++++++++++
+ 7 files changed, 277 insertions(+)
+ create mode 100644 drivers/cpufreq/armada-37xx-cpufreq.c
+
+-- 
+2.15.1
