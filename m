@@ -1,51 +1,60 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 1/4] cpufreq: schedutil: Initialize sg_cpu->flags to 0
-Date: Wed, 13 Dec 2017 16:52:10 +0530
-Message-ID: <20171213112210.GF3322@vireshk-i7>
-References: <cover.1513158452.git.viresh.kumar@linaro.org>
- <763feda6424ced8486b25a0c52979634e6104478.1513158452.git.viresh.kumar@linaro.org>
- <20171213111346.GC30887@localhost.localdomain>
+From: Johannes Stezenbach <js@sig21.net>
+Subject: Re: [RFC PATCH 2/2] clk: x86: Disable unused clocks to fix S0ix
+Date: Wed, 13 Dec 2017 12:22:45 +0100
+Message-ID: <20171213112245.GB20260@sig21.net>
+References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
+ <1555462.9U3gvkyXAX@aspire.rjw.lan>
+ <20170925192352.ihzakshd7yofowdd@sig21.net>
+ <7178688.oS2VOf73im@aspire.rjw.lan>
+ <fb202f9b-1fa2-4b9c-de75-4431a6273d12@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pl0-f68.google.com ([209.85.160.68]:40384 "EHLO
-        mail-pl0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751914AbdLMLWO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 06:22:14 -0500
-Received: by mail-pl0-f68.google.com with SMTP id 1so810336pla.7
-        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 03:22:13 -0800 (PST)
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171213111346.GC30887@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <fb202f9b-1fa2-4b9c-de75-4431a6273d12@redhat.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Juri Lelli <juri.lelli@redhat.com>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, tkjos@android.com, joelaf@google.com, linux-kernel@vger.kernel.org
 
-On 13-12-17, 12:13, Juri Lelli wrote:
-> Hi Viresh,
-> 
-> On 13/12/17 15:23, Viresh Kumar wrote:
-> > Initializing sg_cpu->flags to SCHED_CPUFREQ_RT has no obvious benefit.
-> > The flags field wouldn't be used until the utilization update handler is
-> > called for the first time, and once that is called we will overwrite
-> > flags anyway.
+On Wed, Dec 13, 2017 at 09:56:45AM +0100, Hans de Goede wrote:
+> On 13-12-17 01:01, Rafael J. Wysocki wrote:
+> > On Monday, September 25, 2017 9:23:52 PM CET Johannes Stezenbach wrote:
+> > > d31fd43c0f9a "clk: x86: Do not gate clocks enabled by the firmware"
+> > > exposed an issue on Asus E200HA where BIOS enables unused
+> > > Atom PMC clocks which prevent the system from entering S0ix.
+> > > Add a quirk to disable these clocks on E200HA.
+> > > 
+> > > Signed-off-by: Johannes Stezenbach <js@sig21.net>
 > > 
-> > Initialize it to 0.
-> > 
-> > Change-Id: I028dbb40c5c242cff52fe1b14aeaff37f29a2f8d
+> > Mika, Andy, Hans, any comments here?
 > 
-> Without ^
+> This seems like it is papering over an issue in the
+> d31fd43c0f9a "clk: x86: Do not gate clocks enabled by the firmware"
+> patch to me. That patch seems like a somewhat hackish fix to
+> me, it would be better to figure out which device needs the clock
+> in question and fix the device's driver...
+> 
+> And or maybe have a mask of clocks for which to do this check
+> and not do it for all clocks at least? That way we can maybe
+> fix both Johannes and Carlo's issue in one go without needing
+> device specific quirks ?
+> 
+> Carlo, do you remember which clock you needed this for ?
+> 
+> Johannes, same question for you, which clock is being kept
+> alive because of this ?
 
-Wow. I have a script in place to make sure this doesn't get added. Not sure how
-this got added here, while its not present in any of the other patches.
+IIRC all of these platform clocks need to be disabled for S0ix,
+but d31fd43c0f9a keeps them all enabled (if BIOS had enabled them),
+and only the one claimed by the audio codec driver
+is disabled by it before trying to enter S0ix.
 
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> 
-> Reviewed-by: Juri Lelli <juri.lelli@redhat.com>
-> 
-> Best,
-> 
-> - Juri
+Yes, my vote would be to revert d31fd43c0f9a and fix the issue
+properly, but my patch was the result of previous discussion.
+Since it's BIOS' fault to have these clocks enabled I think
+a platform quirk isn't too bad.
 
--- 
-viresh
+
+Thanks,
+Johannes
