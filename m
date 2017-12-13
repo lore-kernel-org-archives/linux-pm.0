@@ -1,68 +1,101 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [RFC PATCH 1/2] platform/x86: add Atom PMC quirk to disable SATA
-Date: Wed, 13 Dec 2017 21:33:33 +0200
-Message-ID: <1513193613.7000.58.camel@linux.intel.com>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
-         <20170925191749.2oamusbajgs6clcg@sig21.net>
-         <20170925192109.rty2fnm7c4jnj3vx@sig21.net>
-         <34396652.fljU28PShI@aspire.rjw.lan>
-         <a2c8d724-015a-e6c3-23ab-4b6036cc22eb@redhat.com>
-         <CAEG3pNDL-8srk_JwqtZxs_waHAPfmRC_5Orhs_=XUhwdHTdM-g@mail.gmail.com>
-         <e4760a03-b6af-00fc-6c26-9fff8ed6c378@redhat.com>
-         <20171213162206.GA7337@sig21.net>
-         <e6aa5c55-8174-7ad9-009f-c254d3aeaf72@redhat.com>
+From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Subject: [PATCH 3/4] dt-bindings: opp: Introduce ti-opp-supply bindings
+Date: Wed, 13 Dec 2017 14:33:57 -0600
+Message-ID: <20171213203358.20839-4-d-gerlach@ti.com>
+References: <20171213203358.20839-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <e6aa5c55-8174-7ad9-009f-c254d3aeaf72@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>, Johannes Stezenbach <js@sig21.net>
-Cc: Michael Turquette <mturquette@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk <linux-clk@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Carlo Caione <carlo@endlessm.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171213203358.20839-1-d-gerlach-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2017-12-13 at 17:37 +0100, Hans de Goede wrote:
-> Hi,
-> 
-> On 13-12-17 17:22, Johannes Stezenbach wrote:
-> > 
+Document the devicetree bindings that describe Texas Instruments
+opp-supply which allow a platform to describe multiple regulators and
+additional information, such as registers containing data needed to
+program aforementioned regulators.
 
+Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+---
+ .../bindings/opp/ti-omap5-opp-supply.txt           | 63 ++++++++++++++++++++++
+ 1 file changed, 63 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/opp/ti-omap5-opp-supply.txt
 
-> > Please don't get confused with the other thread about clocks.
-> > This issue sets the "disable IP" bit, found by doing stupid
-> > experiments to enable S0ix on E200HA.
-> 
-> Ah my bad.
-
-Oh, perhaps I also need to refresh my memory from that buglink.
-
-> > 1. no idea if Cherry Trail even has SATA IP, maybe this is a
-> >     meaningless bit but PMC firmware carried over from
-> >     Bay Trail looks at it
-> 
-> 
-> There are no CHT SoCs with SATA AFAIK, but Braswell SoCs,
-> which I believe is the same die do have SATA.
-> 
-> I think the best fix here is to look at the model-string part
-> of the CPU-id and do a quirk based on that, setting the "disable IP"
-> bit for the SATA on all SoC models known to not have SATA
-> (Z8300, Z8350, Z8500, Z8550, Z8700, Z8750).
-> 
-> Rafael, Andy how does that sound as a solution?
-
-Yeah, that bit is a property of PMC microcontroller and thus belongs to
-its driver in Linux kernel.
-
-To make it strict we need a matching property. AFAIR CPU model ID is all
-the same for all CHT and BSW SoCs, so, can't be used to distinguish
-them. So, you are thinking about comparing CPU model name then?
-
-It might work. However, SATA itself is a part of PCH, and thus can not
-exactly be matched by CPU ID.
-
-Btw, Pentium Celeron N-series according to spec has SATA host.
-
+diff --git a/Documentation/devicetree/bindings/opp/ti-omap5-opp-supply.txt b/Documentation/devicetree/bindings/opp/ti-omap5-opp-supply.txt
+new file mode 100644
+index 000000000000..832346e489a3
+--- /dev/null
++++ b/Documentation/devicetree/bindings/opp/ti-omap5-opp-supply.txt
+@@ -0,0 +1,63 @@
++Texas Instruments OMAP compatible OPP supply description
++
++OMAP5, DRA7, and AM57 family of SoCs have Class0 AVS eFuse registers which
++contain data that can be used to adjust voltages programmed for some of their
++supplies for more efficient operation. This binding provides the information
++needed to read these values and use them to program the main regulator during
++an OPP transitions.
++
++Also, some supplies may have an associated vbb-supply which is an Adaptive Body
++Bias regulator which much be transitioned in a specific sequence with regards
++to the vdd-supply and clk when making an OPP transition. By supplying two
++regulators to the device that will undergo OPP transitions we can make use
++of the multi regulator binding that is part of the OPP core described here [1]
++to describe both regulators needed by the platform.
++
++[1] Documentation/devicetree/bindings/opp/opp.txt
++
++Required Properties for Device Node:
++- vdd-supply: phandle to regulator controlling VDD supply
++- vbb-supply: phandle to regulator controlling Body Bias supply
++	      (Usually Adaptive Body Bias regulator)
++
++Required Properties for opp-supply node:
++- compatible: Should be one of:
++	"ti,omap-opp-supply" - basic OPP supply controlling VDD and VBB
++	"ti,omap5-opp-supply" - OMAP5+ optimized voltages in efuse(class0)VDD
++			    along with VBB
++	"ti,omap5-core-opp-supply" - OMAP5+ optimized voltages in efuse(class0) VDD
++			    but no VBB.
++- reg: Address and length of the efuse register set for the device (mandatory
++	only for "ti,omap5-opp-supply")
++- ti,efuse-settings: An array of u32 tuple items providing information about
++	optimized efuse configuration. Each item consists of the following:
++	volt: voltage in uV - reference voltage (OPP voltage)
++	efuse_offseet: efuse offset from reg where the optimized voltage is stored.
++- ti,absolute-max-voltage-uv: absolute maximum voltage for the OPP supply.
++
++Example:
++
++/* Device Node (CPU)  */
++cpus {
++	cpu0: cpu@0 {
++		device_type = "cpu";
++
++		...
++
++		vdd-supply = <&vcc>;
++		vbb-supply = <&abb_mpu>;
++	};
++};
++
++/* OMAP OPP Supply with Class0 registers */
++opp_supply_mpu: opp_supply@4a003b20 {
++	compatible = "ti,omap5-opp-supply";
++	reg = <0x4a003b20 0x8>;
++	ti,efuse-settings = <
++	/* uV   offset */
++	1060000 0x0
++	1160000 0x4
++	1210000 0x8
++	>;
++	ti,absolute-max-voltage-uv = <1500000>;
++};
 -- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+2.15.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
