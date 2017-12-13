@@ -1,71 +1,158 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: Ask for help on governor
-Date: Wed, 13 Dec 2017 12:25:01 +0530
-Message-ID: <20171213065501.GU25177@vireshk-i7>
-References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com>
- <000801d37364$d48f6ed0$7dae4c70$@net>
- <000f01d373bf$deacca10$9c065e30$@net>
- <20171213061759.GT25177@vireshk-i7>
- <HE1PR0402MB28285FD45E5E6B72C4C1068DF3350@HE1PR0402MB2828.eurprd04.prod.outlook.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [v3 PATCH 1/3] powernv-cpufreq: Add helper to extract pstate from PMSR
+Date: Wed, 13 Dec 2017 12:27:39 +0530
+Message-ID: <1513148261-21097-2-git-send-email-ego@linux.vnet.ibm.com>
+References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f176.google.com ([209.85.192.176]:41671 "EHLO
-        mail-pf0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750751AbdLMGzF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 01:55:05 -0500
-Received: by mail-pf0-f176.google.com with SMTP id j28so942353pfk.8
-        for <linux-pm@vger.kernel.org>; Tue, 12 Dec 2017 22:55:05 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <HE1PR0402MB28285FD45E5E6B72C4C1068DF3350@HE1PR0402MB2828.eurprd04.prod.outlook.com>
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:52112 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1751341AbdLMG6A (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 01:58:00 -0500
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vBD6t4Ks085293
+        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 01:57:59 -0500
+Received: from e16.ny.us.ibm.com (e16.ny.us.ibm.com [129.33.205.206])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2etrs7xygm-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 01:57:59 -0500
+Received: from localhost
+        by e16.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+        Wed, 13 Dec 2017 01:57:58 -0500
+In-Reply-To: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Tang <andy.tang@nxp.com>
-Cc: Doug Smythies <dsmythies@telus.net>, "'Rafael J. Wysocki'" <rafael@kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM' <linux-pm@vger.kernel.org>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, huntbag@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-On 13-12-17, 06:22, Andy Tang wrote:
-> Hi,
-> 
-> Thanks you all for help. 
-> Anyway I found the root cause myself.
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-Well, I was quite sure that the problem you reported is different than what
-Dough was talking about..
+On POWERNV platform, the fields for pstates in the Power Management
+Status Register (PMSR) and the Power Management Control Register
+(PMCR) are 8-bits wide. On POWER8 the pstates are negatively numbered
+while on POWER9 they are positively numbered.
 
-> It was caused by commit: 00bfe05889e91b5112893b001e4a47b0a0f8bdd7.
-> 
-> In this commit, the part of code is as below:
-> +       if (policy_dbs->idle_periods < UINT_MAX) {
-> +               unsigned int freq_steps = policy_dbs->idle_periods * freq_step;
-> +
-> +               if (requested_freq > freq_steps)
-> +                       requested_freq -= freq_steps;
-> +               else
-> +                       requested_freq = policy->min;
-> +
-> +               policy_dbs->idle_periods = UINT_MAX;
-> +       }
-> 
-> On my platform, there are 3 frequency available which are: 1600Mhz, 800Mhz, 400Mhz.
-> Freq_steps is 80Mhz.
-> Due to this code, the requested_freq is always 480Mhz. Since we want 800Mhz as next target frequency, the cpu frequency can't be changed.
+The device-tree exports pstates as 32-bit entries. The device-tree
+implementation sign-extends the 8-bit pstate values to obtain the
+corresponding 32-bit entry.
 
-I am not sure I follow what you are saying. The above code is only taking care
-of idle periods (i.e. while the CPU was idle and we couldn't decrease the
-frequency). If there are no idle periods, then the requested_freq will increase
-by 80 MHz every time we try to change the frequency and after the 5th call its
-value will become 800 MHz and so we should see an update.
+Eg: On POWER8, a pstate value 0x82 [-126] is represented in the
+device-tree as 0xfffffff82 while on POWER9, the same value 0x82 [130]
+is represented in the device-tree as 0x00000082.
 
-Have you tried reverting the commit 00bfe0588 on top of 4.14? Does it make your
-regression go away?
+The powernv-cpufreq driver implementation represents pstates using the
+integer type. In multiple places in the driver, the code interprets
+the pstates extracted from the PMSR as a signed byte and assigns it to
+a integer variable to get the sign-extention.
 
-> Please work out a patch to fix this.
+On POWER9 platforms which have greater than 128 pstates, this results
+in the driver performing incorrect sign-extention, and thereby
+treating a legitimate pstate (say 130) as an invalid pstates (since it
+is interpreted as -126).
 
-Sure we can help, but I didn't understand the root cause yet.
+This patch fixes the issue by implementing a helper function to
+extract Pstates from PMSR register, and correctly sign-extend it to be
+consistent with the values provided by the device-tree.
 
-> This issue exists on all our LS* platforms.
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ drivers/cpufreq/powernv-cpufreq.c | 37 +++++++++++++++++++++++--------------
+ 1 file changed, 23 insertions(+), 14 deletions(-)
 
-LS -> loongson ?
-
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index b6d7c4c..f46b60f 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -41,11 +41,9 @@
+ #define POWERNV_MAX_PSTATES	256
+ #define PMSR_PSAFE_ENABLE	(1UL << 30)
+ #define PMSR_SPR_EM_DISABLE	(1UL << 31)
+-#define PMSR_MAX(x)		((x >> 32) & 0xFF)
++#define MAX_PSTATE_SHIFT	32
+ #define LPSTATE_SHIFT		48
+ #define GPSTATE_SHIFT		56
+-#define GET_LPSTATE(x)		(((x) >> LPSTATE_SHIFT) & 0xFF)
+-#define GET_GPSTATE(x)		(((x) >> GPSTATE_SHIFT) & 0xFF)
+ 
+ #define MAX_RAMP_DOWN_TIME				5120
+ /*
+@@ -94,6 +92,7 @@ struct global_pstate_info {
+ };
+ 
+ static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
++u32 pstate_sign_prefix;
+ static bool rebooting, throttled, occ_reset;
+ 
+ static const char * const throttle_reason[] = {
+@@ -148,6 +147,20 @@ enum throttle_reason_type {
+ 	bool wof_enabled;
+ } powernv_pstate_info;
+ 
++static inline int extract_pstate(u64 pmsr_val, unsigned int shift)
++{
++	int ret = ((pmsr_val >> shift) & 0xFF);
++
++	if (!ret)
++		return ret;
++
++	return (pstate_sign_prefix | ret);
++}
++
++#define extract_local_pstate(x) extract_pstate(x, LPSTATE_SHIFT)
++#define extract_global_pstate(x) extract_pstate(x, GPSTATE_SHIFT)
++#define extract_max_pstate(x)  extract_pstate(x, MAX_PSTATE_SHIFT)
++
+ /* Use following macros for conversions between pstate_id and index */
+ static inline int idx_to_pstate(unsigned int i)
+ {
+@@ -278,6 +291,9 @@ static int init_powernv_pstates(void)
+ 
+ 	powernv_pstate_info.nr_pstates = nr_pstates;
+ 	pr_debug("NR PStates %d\n", nr_pstates);
++
++	pstate_sign_prefix = pstate_min & ~0xFF;
++
+ 	for (i = 0; i < nr_pstates; i++) {
+ 		u32 id = be32_to_cpu(pstate_ids[i]);
+ 		u32 freq = be32_to_cpu(pstate_freqs[i]);
+@@ -438,17 +454,10 @@ struct powernv_smp_call_data {
+ static void powernv_read_cpu_freq(void *arg)
+ {
+ 	unsigned long pmspr_val;
+-	s8 local_pstate_id;
+ 	struct powernv_smp_call_data *freq_data = arg;
+ 
+ 	pmspr_val = get_pmspr(SPRN_PMSR);
+-
+-	/*
+-	 * The local pstate id corresponds bits 48..55 in the PMSR.
+-	 * Note: Watch out for the sign!
+-	 */
+-	local_pstate_id = (pmspr_val >> 48) & 0xFF;
+-	freq_data->pstate_id = local_pstate_id;
++	freq_data->pstate_id = extract_local_pstate(pmspr_val);
+ 	freq_data->freq = pstate_id_to_freq(freq_data->pstate_id);
+ 
+ 	pr_debug("cpu %d pmsr %016lX pstate_id %d frequency %d kHz\n",
+@@ -522,7 +531,7 @@ static void powernv_cpufreq_throttle_check(void *data)
+ 	chip = this_cpu_read(chip_info);
+ 
+ 	/* Check for Pmax Capping */
+-	pmsr_pmax = (s8)PMSR_MAX(pmsr);
++	pmsr_pmax = extract_max_pstate(pmsr);
+ 	pmsr_pmax_idx = pstate_to_idx(pmsr_pmax);
+ 	if (pmsr_pmax_idx != powernv_pstate_info.max) {
+ 		if (chip->throttled)
+@@ -645,8 +654,8 @@ void gpstate_timer_handler(struct timer_list *t)
+ 	 * value. Hence, read from PMCR to get correct data.
+ 	 */
+ 	val = get_pmspr(SPRN_PMCR);
+-	freq_data.gpstate_id = (s8)GET_GPSTATE(val);
+-	freq_data.pstate_id = (s8)GET_LPSTATE(val);
++	freq_data.gpstate_id = extract_global_pstate(val);
++	freq_data.pstate_id = extract_local_pstate(val);
+ 	if (freq_data.gpstate_id  == freq_data.pstate_id) {
+ 		reset_gpstates(policy);
+ 		spin_unlock(&gpstates->gpstate_lock);
 -- 
-viresh
+1.9.4
