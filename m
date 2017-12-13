@@ -1,154 +1,153 @@
-From: Michael Turquette <mturquette@baylibre.com>
-Subject: Re: [RFC PATCH 1/2] platform/x86: add Atom PMC quirk to disable SATA
-Date: Wed, 13 Dec 2017 07:25:28 -0800
-Message-ID: <CAEG3pNDL-8srk_JwqtZxs_waHAPfmRC_5Orhs_=XUhwdHTdM-g@mail.gmail.com>
-References: <20170906204237.24x6fzlfmq7jmuce@sig21.net> <20170925191749.2oamusbajgs6clcg@sig21.net>
- <20170925192109.rty2fnm7c4jnj3vx@sig21.net> <34396652.fljU28PShI@aspire.rjw.lan>
- <a2c8d724-015a-e6c3-23ab-4b6036cc22eb@redhat.com>
+From: Yu Chen <yu.c.chen@intel.com>
+Subject: Re: [PATCH 3/3][RFC/RFT] PM / sleep: Do not delay the
+ synchronization of MTRR during resume
+Date: Thu, 14 Dec 2017 00:02:42 +0800
+Message-ID: <20171213160242.GB29572@yu-chen.sh.intel.com>
+References: <cover.1509438899.git.yu.c.chen@intel.com>
+ <cbb3b328b1a07e61635c59db958b83318ca18dbd.1509438899.git.yu.c.chen@intel.com>
+ <1613777.Al2QaFApID@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <a2c8d724-015a-e6c3-23ab-4b6036cc22eb@redhat.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Johannes Stezenbach <js@sig21.net>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk <linux-clk@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Carlo Caione <carlo@endlessm.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1613777.Al2QaFApID@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Lukas Wunner <lukas@wunner.de>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Len Brown <len.brown@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Rui Zhang <rui.zhang@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hell Hans, all,
-
-On Wed, Dec 13, 2017 at 12:53 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->
-> Hi,
->
-> On 13-12-17 01:00, Rafael J. Wysocki wrote:
->>
->> On Monday, September 25, 2017 9:21:09 PM CET Johannes Stezenbach wrote:
->>>
->>> SATA controller is enabled on Asus E200HA even though the
->>> machine doesn't use it (it has eMMC storage), however
->>> SATA being on blocks S0ix entry so we need to disable it.
->>>
->>> Signed-off-by: Johannes Stezenbach <js@sig21.net>
->>
->>
->> Mika, Andy, Hans, any comments on this one?
->
->
-> Seems sensible to me, I'm afraid we may need the same quirk on
-> other devices, but I see no way around this.
-
-Quirks go directly into the driver? Is there a Device Tree analogue
-for x86 that could help here?
-
->
-> Although, maybe we need to have a specialized (derived)
-> ahci driver for these Atom SoCs and in there if no
-> disk is detected do this through the clock framework?
-
-Yes please. x86 is already modeling some clocks properly through the
-clock framework. During late init we clean up any clocks that were
-enabled out of reset or by the firmware/bootloader but not claimed and
-enabled by any Linux driver. That should ideally disable this
-particular clock for the case when no SATA drive is present, and
-require no quirk logic in the driver.
-
-Regards,
-Mike
-
->
-> That may be better then a long list of quirks.
->
-> Johannes, question how did you test this and figure out
-> which clocks to disable, a quick howto on this, I think
-> a patch adding a little howto / README as say
-> Documentation/power/intel-S0ix-debugging.txt
-> documenting this would be great. I'm certainly interested
-> in trying to reproduce this on some of my own Bay Trail and
-> Cherry Trail devices and add fixes for those if necessary.
->
-> Regards,
->
-> Hans
->
->
->
->
->
->>
->>> ---
->>>   drivers/platform/x86/pmc_atom.c | 33 +++++++++++++++++++++++++++++++++
->>>   1 file changed, 33 insertions(+)
->>>
->>> diff --git a/drivers/platform/x86/pmc_atom.c b/drivers/platform/x86/pmc_atom.c
->>> index 8d13c86cc418..b5dd38712268 100644
->>> --- a/drivers/platform/x86/pmc_atom.c
->>> +++ b/drivers/platform/x86/pmc_atom.c
->>> @@ -17,6 +17,7 @@
->>>     #include <linux/debugfs.h>
->>>   #include <linux/device.h>
->>> +#include <linux/dmi.h>
->>>   #include <linux/init.h>
->>>   #include <linux/io.h>
->>>   #include <linux/platform_data/x86/clk-pmc-atom.h>
->>> @@ -57,6 +58,9 @@ struct pmc_dev {
->>>   static struct pmc_dev pmc_device;
->>>   static u32 acpi_base_addr;
->>>   +static u32 quirks;
->>> +#define QUIRK_DISABLE_SATA BIT(0)
->>> +
->>>   static const struct pmc_clk byt_clks[] = {
->>>         {
->>>                 .name = "xtal",
->>> @@ -271,6 +275,15 @@ static void pmc_hw_reg_setup(struct pmc_dev *pmc)
->>>          * - GPIO_SCORE shared IRQ
->>>          */
->>>         pmc_reg_write(pmc, PMC_S0IX_WAKE_EN, (u32)PMC_WAKE_EN_SETTING);
->>> +
->>> +       if (quirks & QUIRK_DISABLE_SATA) {
->>> +               u32 func_dis;
->>> +
->>> +               pr_info("pmc: disable SATA IP\n");
->>> +               func_dis = pmc_reg_read(pmc, PMC_FUNC_DIS);
->>> +               func_dis |= BIT_SATA;
->>> +               pmc_reg_write(pmc, PMC_FUNC_DIS, func_dis);
->>> +       }
->>>   }
->>>     #ifdef CONFIG_DEBUG_FS
->>> @@ -500,6 +513,24 @@ static struct pmc_notifier_block pmc_freeze_nb = {
->>>   };
->>>   #endif
->>>   +static int cht_asus_e200ha_cb(const struct dmi_system_id *id)
->>> +{
->>> +       pr_info("pmc: Asus E200HA detected\n");
->>> +       quirks |= QUIRK_DISABLE_SATA;
->>> +       return 1;
->>> +}
->>> +
->>> +static const struct dmi_system_id cht_table[] = {
->>> +       {
->>> +               .callback = cht_asus_e200ha_cb,
->>> +               .matches = {
->>> +                       DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
->>> +                       DMI_MATCH(DMI_PRODUCT_NAME, "E200HA"),
->>> +               },
->>> +       },
->>> +       { }
->>> +};
->>> +
->>>   static int pmc_setup_dev(struct pci_dev *pdev, const struct pci_device_id *ent)
->>>   {
->>>         struct pmc_dev *pmc = &pmc_device;
->>> @@ -526,6 +557,8 @@ static int pmc_setup_dev(struct pci_dev *pdev, const struct pci_device_id *ent)
->>>         pmc->map = map;
->>>   +     dmi_check_system(cht_table);
->>> +
->>>         /* PMC hardware registers setup */
->>>         pmc_hw_reg_setup(pmc);
->>>
->>
->>
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-clk" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Wed, Dec 13, 2017 at 01:31:50AM +0100, Rafael J. Wysocki wrote:
+> On Tuesday, October 31, 2017 10:58:50 AM CET Yu Chen wrote:
+> > From: Chen Yu <yu.c.chen@intel.com>
+> > 
+> > Sometimes it is too late for the APs to synchronize the MTRR
+> > after all the APs have been brought up. In some cases the BIOS
+> > might scribble the MTRR across suspend/resume, as a result we
+> > might get insane MTRR after resumed back, thus every instruction
+> > run on this AP would be extremely slow if it happended to be 'uncached'
+> > in the MTRR, although after all the APs have been brought up, the
+> > delayed invoking of set_mtrr_state() will adjust the MTRR on APs
+> > thus brings everything back to normal. In practice it is necessary
+> > to synchronize the MTRR as early as possible to get it fixed during
+> > each AP's online. And this is what this patch does.
+> > 
+> > Moreover, since we have put the synchronization earlier, there is
+> > a side effect that, during each AP's online, the other cpus already
+> > online will be forced stopped to run mtrr_rendezvous_handler() and
+> > reprogram the MTRR again and again. This symptom can be lessened
+> > by checking if this cpu has already finished the synchronization
+> > during the enable_nonboot_cpus() stage, if it is, we can safely
+> > bypass the reprogramming action. (We can not bypass the
+> > mtrr_rendezvous_handler(), because the other online cpus must be
+> > stopped running the VMX transaction while one cpu is updating
+> > its MTRR, which is described here:
+> > Commit d0af9eed5aa9 ("x86, pat/mtrr: Rendezvous all the cpus for
+> > MTRR/PAT init")
+> > 
+> > This patch does not impact the normal boot up and cpu hotplug.
+> > 
+> > On a platform with insane MTRR after resumed,
+> > 1 .before this patch:
+> >    [  619.810899] Enabling non-boot CPUs ...
+> >    [  619.825537] smpboot: Booting Node 0 Processor 1 APIC 0x2
+> >    [  621.723809] CPU1 is up
+> >    [  621.840228] smpboot: Booting Node 0 Processor 3 APIC 0x3
+> >    [  626.690900] CPU3 is up
+> > 
+> > So it took cpu1 621.723809 - 619.825537 = 1898.272 ms, and
+> > cpu3 626.690900 - 621.840228 = 4850.672 ms.
+> > 
+> > 2. after this patch:
+> >    [  106.931790] smpboot: Booting Node 0 Processor 1 APIC 0x2
+> >    [  106.948360] CPU1 is up
+> >    [  106.986534] smpboot: Booting Node 0 Processor 3 APIC 0x3
+> >    [  106.990702] CPU3 is up
+> > 
+> > It took cpu1 106.948360 - 106.931790 = 16.57 ms, and
+> > cpu3 106.990702 - 106.986534 = 4.16 ms.
+> > 
+> > For comparison, I also verify the suspend on a 88 cpus Xeon Broadwell
+> > platform, and the result also shows that with this patch applied,
+> > the overall APs online time has decreased a little bit, I think this
+> > is because after we synchronize the MTRR earlier, the MTRRs also get
+> > updated to the correct value earlier.
+> > 
+> > I've tested 5 times each, before/after the patch applied:
+> > 
+> > 1. before this patch:
+> > [   64.549430] Enabling non-boot CPUs ...
+> > [   66.253304] End enabling non-boot CPUs
+> > 
+> > overall cpu online: 1.703874 second
+> > 
+> > [   62.159063] Enabling non-boot CPUs ...
+> > [   64.483443] End enabling non-boot CPUs
+> > 
+> > overall cpu online: 2.32438 second
+> > 
+> > [   58.351449] Enabling non-boot CPUs ...
+> > [   60.796951] End enabling non-boot CPUs
+> > 
+> > overall cpu online: 2.445502 second
+> > 
+> > [   64.491317] Enabling non-boot CPUs ...
+> > [   66.996208] End enabling non-boot CPUs
+> > 
+> > overall cpu online: 2.504891 second
+> > 
+> > [   60.593235] Enabling non-boot CPUs ...
+> > [   63.397886] End enabling non-boot CPUs
+> > 
+> > overall cpu online: 2.804651 second
+> > 
+> > average: 2.3566596 second
+> > 
+> > 2. after this patch:
+> > 
+> > [   66.077368] Enabling non-boot CPUs ...
+> > [   68.343374] End enabling non-boot CPUs
+> > 
+> > overall cpu online: 2.266006 second
+> > 
+> > [   64.594605] Enabling non-boot CPUs ...
+> > [   66.092688] End enabling non-boot CPUs
+> > 
+> > overall cpu online: 1.498083 second
+> > 
+> > [   64.778546] Enabling non-boot CPUs ...
+> > [   66.277577] End enabling non-boot CPUs
+> > 
+> > overall cpu online: 1.499031 second
+> > 
+> > [   63.773091] Enabling non-boot CPUs ...
+> > [   65.601637] End enabling non-boot CPUs
+> > 
+> > overall cpu online: 1.828546 second
+> > 
+> > [   64.638855] Enabling non-boot CPUs ...
+> > [   66.327098] End enabling non-boot CPUs
+> > 
+> > overall cpu online: 1.688243 second
+> > 
+> > average: 1.7559818 second
+> > 
+> > In one word, with the patch applied, the cpu online time during resume
+> > has decreased by about 6 seconds on a bogus MTRR platform, and decreased
+> > by about 600ms on a 88 cpus Xeon platform after resumed.
+> > 
+> > Cc: Len Brown <len.brown@intel.com>
+> > Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Cc: Rui Zhang <rui.zhang@intel.com>
+> > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> 
+> It will be better to combine this with patch [2/3] IMO, because that makes it
+> clear why the changes in that patch are needed.
+> 
+> Also you can define the new flag in mtrr/main.c, set it in
+> arch_enable_nonboot_cpus_begin() and clear it in
+> arch_enable_nonboot_cpus_end().  It is better to put it into the arch-specific
+> code as the flag itself is arch-specific.
+> 
+> Then, of course, you don't need patch [1/3] and all can be done in one patch.
+> 
+Ok, will rewrite the patch, thanks! 
