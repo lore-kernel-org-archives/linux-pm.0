@@ -1,83 +1,62 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 6/9] ACPI/PPTT: Add topology parsing code
-Date: Thu, 14 Dec 2017 00:09:54 +0100
-Message-ID: <CAJZ5v0hBZQ-vYbobOYtKFVg9hAtUo4GU==napcJ-btQhMvn+5g@mail.gmail.com>
-References: <20171201222330.18863-1-jeremy.linton@arm.com> <20171201222330.18863-7-jeremy.linton@arm.com>
- <9009154.M66RGdQJXA@aspire.rjw.lan> <fc12696c-15e1-cea4-42bf-db4b5daa45f2@arm.com>
- <20171213173851.GA4060@red-moon> <CAJZ5v0hTcC8D6pJuPK+isntWpckNgNmqLHW98iFXL817VYHHdg@mail.gmail.com>
- <6aca3fa0-9099-f283-ae16-0c48aa00d00d@arm.com>
+Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
+Date: Thu, 14 Dec 2017 00:26:32 +0100
+Message-ID: <CAJZ5v0g1bGtHiWoOVpj6-zYcLsici=jdoq-AFrRwnSAH7dXurQ@mail.gmail.com>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com>
+ <alpine.DEB.2.20.1712131856130.1885@nanos> <2011671.y8uyto1vn5@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <6aca3fa0-9099-f283-ae16-0c48aa00d00d@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Sudeep Holla <sudeep.holla@arm.com>, Hanjun Guo <hanjun.guo@linaro.org>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, Al Stone <ahs3@redhat.com>, Jayachandran.Nair@cavium.com
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f195.google.com ([74.125.82.195]:45235 "EHLO
+        mail-ot0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750737AbdLMX0d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 18:26:33 -0500
+In-Reply-To: <2011671.y8uyto1vn5@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Thu, Dec 14, 2017 at 12:06 AM, Jeremy Linton <jeremy.linton@arm.com> wrote:
-> Hi,
->
->
-> On 12/13/2017 04:28 PM, Rafael J. Wysocki wrote:
+On Wed, Dec 13, 2017 at 11:39 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, December 13, 2017 7:19:17 PM CET Thomas Gleixner wrote:
+>> On Wed, 13 Dec 2017, Linus Torvalds wrote:
 >>
->> On Wed, Dec 13, 2017 at 6:38 PM, Lorenzo Pieralisi
->> <lorenzo.pieralisi@arm.com> wrote:
->>>
->>> On Tue, Dec 12, 2017 at 10:13:08AM -0600, Jeremy Linton wrote:
->>>>
->>>> Hi,
->>>>
->>>> First, thanks for taking a look at this.
->>>>
->>>> On 12/11/2017 07:12 PM, Rafael J. Wysocki wrote:
->>>>>
->>>>> On Friday, December 1, 2017 11:23:27 PM CET Jeremy Linton wrote:
->>>>>>
->>>>>> The PPTT can be used to determine the groupings of CPU's at
->>>>>> given levels in the system. Lets add a few routines to the PPTT
->>>>>> parsing code to return a unique id for each unique level in the
->>>>>> processor hierarchy. This can then be matched to build
->>>>>> thread/core/cluster/die/package/etc mappings for each processing
->>>>>> element in the system.
->>>>>>
->>>>>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
->>>>>
->>>>>
->>>>> Why can't this be folded into patch [2/9]?
->>>>
->>>>
->>>> It can, and I will be happy squash it.
->>>>
->>>> It was requested that the topology portion of the parser be split
->>>> out back in v3.
->>>>
->>>> https://www.spinics.net/lists/linux-acpi/msg78487.html
->>>
->>>
->>> I asked to split cache/topology since I am not familiar with cache
->>> code and Sudeep - who looks after the cache code - won't be able
->>> to review this series in time for v4.16.
+>> > On Wed, Dec 13, 2017 at 8:41 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+>> > >
+>> > > Definitely. That was fragile forever but puzzles me is that I can't figure
+>> > > out what now causes that spurious interrupt to surface out of the blue.
+>> >
+>> > Perhaps just timing?
 >>
+>> That's what I'm trying to figure out right now, because that is the only
+>> sensible explanation left. The whole machinery of suspend is exactly the
+>> same with and without the vector changes. I instrumented all functions
+>> involved and the picture is the same. I even do not see any fundamental
+>> timing differences where one would say: That's it.
 >>
->> OK, so why do we need it in 4.16?
+>> What puzzles me even more is that in the range of commits I'm fiddling with
+>> there is no other change than the vector management stuff and the point
+>> where it breaks makes no sense at all. The point Maarten bisected it to
+>> works nicely here, so that might just point to a very subtle timing issue.
+>>
+>> > How hard would it be to change the ordering to just redirect irqs first?
+>>
+>> The whole interrupt redirection happens when the non boot CPUs are brought
+>> down, which is the very last step before the actual suspend happens.
+>>
+>> We could probably do that earlier, but that's something Rafael needs to
+>> answer ultimately.
 >
+> Well, that's both flattering and concerning. ;-)
 >
-> I think its more case of as soon as possible. That is because there are
-> machines where the topology is completely incorrect due to assumptions the
-> kernel makes based on registers that aren't defined for that purpose (say
-> describing which cores are in a physical socket, or LLC's attached to
-> interconnects or memory controllers).
->
-> This incorrect topology information is reported to things like the kernel
-> scheduler, which then makes poor scheduling decisions resulting in
-> sub-optimal system performance.
->
-> This patchset (and ACPI 6.2) clears up a lot of those problems.
+> Anyway, yes, we can do that earlier AFAICS.  Action handlers are not going to
+> run after we've called suspend_device_irqs() which happens before the final
+> stage of PCI devices suspend (suspend_noirq) and it doesn't matter which CPU
+> gets the interrupt from that point on (it is either wakeup or unwanted then).
 
-As long as the ACPI tables are as expected that is, I suppose?
-
-Anyway, fair enough, but I don't want to rush it in.
+There is a catch that we don't and likely should not do that for
+suspend-to-idle, but since we have pm_suspend_target_state now, that
+case can be distinguished from the "full suspend" one readily.
 
 Thanks,
 Rafael
