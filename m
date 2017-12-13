@@ -1,47 +1,168 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
-Date: Wed, 13 Dec 2017 19:19:17 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1712131856130.1885@nanos>
-References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFwsMuHUBQz5kDNwRf17JnasXMWjvmLq5qXGH-694yeq1w@mail.gmail.com> <20171206121452.GA6320@dhcp22.suse.cz> <db81e89d-eee6-868c-dc10-c028f4c4be84@mblankhorst.nl> <alpine.DEB.2.20.1712061344560.1724@nanos>
- <0f1d3d63-fa10-5cef-8014-81753dc60243@mblankhorst.nl> <alpine.DEB.2.20.1712061514420.1724@nanos> <57c8679e-1b88-c9ad-2299-2bea7560b28f@mblankhorst.nl> <alpine.DEB.2.20.1712081129450.1840@nanos> <alpine.DEB.2.20.1712131507160.1885@nanos>
- <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com> <alpine.DEB.2.20.1712131738020.1885@nanos> <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v5 8/9] arm64: topology: Enable ACPI/PPTT based CPU
+ topology.
+Date: Wed, 13 Dec 2017 18:22:19 +0000
+Message-ID: <20171213182219.GC4060@red-moon>
+References: <20171201222330.18863-1-jeremy.linton@arm.com>
+ <20171201222330.18863-9-jeremy.linton@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:33490 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753811AbdLMSVk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 13 Dec 2017 13:21:40 -0500
+Content-Disposition: inline
+In-Reply-To: <20171201222330.18863-9-jeremy.linton@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Jeremy Linton <jeremy.linton@arm.com>
+Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org
 
-On Wed, 13 Dec 2017, Linus Torvalds wrote:
+Nit: remove the period in $SUBJECT and capitalize with a coherent
+policy for the patches touching the same code.
 
-> On Wed, Dec 13, 2017 at 8:41 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> >
-> > Definitely. That was fragile forever but puzzles me is that I can't figure
-> > out what now causes that spurious interrupt to surface out of the blue.
+On Fri, Dec 01, 2017 at 04:23:29PM -0600, Jeremy Linton wrote:
+> Propagate the topology information from the PPTT tree to the
+> cpu_topology array. We can get the thread id, core_id and
+> cluster_id by assuming certain levels of the PPTT tree correspond
+> to those concepts. The package_id is flagged in the tree and can be
+> found by calling find_acpi_cpu_topology_package() which terminates
+> its search when it finds an ACPI node flagged as the physical
+> package. If the tree doesn't contain enough levels to represent
+> all of the requested levels then the root node will be returned
+> for all subsequent levels.
 > 
-> Perhaps just timing?
+> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+> ---
+>  arch/arm64/kernel/topology.c | 47 +++++++++++++++++++++++++++++++++++++++++++-
+>  include/linux/topology.h     |  2 ++
+>  2 files changed, 48 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+> index 74a8a5173a35..198714aca9e8 100644
+> --- a/arch/arm64/kernel/topology.c
+> +++ b/arch/arm64/kernel/topology.c
+> @@ -11,6 +11,7 @@
+>   * for more details.
+>   */
+>  
+> +#include <linux/acpi.h>
+>  #include <linux/arch_topology.h>
+>  #include <linux/cpu.h>
+>  #include <linux/cpumask.h>
+> @@ -22,6 +23,7 @@
+>  #include <linux/sched.h>
+>  #include <linux/sched/topology.h>
+>  #include <linux/slab.h>
+> +#include <linux/smp.h>
+>  #include <linux/string.h>
+>  
+>  #include <asm/cpu.h>
+> @@ -300,6 +302,47 @@ static void __init reset_cpu_topology(void)
+>  	}
+>  }
+>  
+> +#ifdef CONFIG_ACPI
+> +/*
+> + * Propagate the topology information of the processor_topology_node tree to the
+> + * cpu_topology array.
+> + */
+> +static int __init parse_acpi_topology(void)
+> +{
+> +	u64 is_threaded;
 
-That's what I'm trying to figure out right now, because that is the only
-sensible explanation left. The whole machinery of suspend is exactly the
-same with and without the vector changes. I instrumented all functions
-involved and the picture is the same. I even do not see any fundamental
-timing differences where one would say: That's it.
+Nit: a bool would be preferable.
 
-What puzzles me even more is that in the range of commits I'm fiddling with
-there is no other change than the vector management stuff and the point
-where it breaks makes no sense at all. The point Maarten bisected it to
-works nicely here, so that might just point to a very subtle timing issue.
+> +	int cpu;
+> +	int topology_id;
 
-> How hard would it be to change the ordering to just redirect irqs first?
+int cpu, topology_id;
 
-The whole interrupt redirection happens when the non boot CPUs are brought
-down, which is the very last step before the actual suspend happens.
+> +	is_threaded = read_cpuid_mpidr() & MPIDR_MT_BITMASK;
 
-We could probably do that earlier, but that's something Rafael needs to
-answer ultimately.
+> +	for_each_possible_cpu(cpu) {
+> +		topology_id = find_acpi_cpu_topology(cpu, 0);
+> +		if (topology_id < 0)
+> +			return topology_id;
+> +
+> +		if (is_threaded) {
+> +			cpu_topology[cpu].thread_id = topology_id;
+> +			topology_id = find_acpi_cpu_topology(cpu, 1);
+> +			cpu_topology[cpu].core_id   = topology_id;
+> +			topology_id = find_acpi_cpu_topology_package(cpu);
+> +			cpu_topology[cpu].physical_id = topology_id;
+> +		} else {
+> +			cpu_topology[cpu].thread_id  = -1;
+> +			cpu_topology[cpu].core_id    = topology_id;
+> +			topology_id = find_acpi_cpu_topology_package(cpu);
+> +			cpu_topology[cpu].physical_id = topology_id;
+> +		}
+> +	}
 
-Thanks,
+Add a space.
 
-	tglx
+It is probably my fault so apologies if that's the case. The
+
+find_acpi_cpu_topology()
+
+API is a bit strange since it behaves differently according to the
+level passed in.
+
+I think it is better to define two calls (it might well have been like
+that in one of the previous series versions):
+
+- find_acpi_cpu_package_level() (returns: package level if success, <0 on
+  failure)
+- acpi_cpu_topology_id()
+
+It would even be better to lump the two calls together but you do not
+know how many topology levels are there so it becomes a bit complicated
+to handle.
+
+> +	return 0;
+> +}
+> +
+> +#else
+> +static int __init parse_acpi_topology(void)
+
+static inline ?
+
+> +{
+> +	/*ACPI kernels should be built with PPTT support*/
+
+I think you can remove this comment.
+
+> +	return -EINVAL;
+> +}
+> +#endif
+>  
+>  void __init init_cpu_topology(void)
+>  {
+> @@ -309,6 +352,8 @@ void __init init_cpu_topology(void)
+>  	 * Discard anything that was parsed if we hit an error so we
+>  	 * don't use partial information.
+>  	 */
+> -	if (of_have_populated_dt() && parse_dt_topology())
+> +	if ((!acpi_disabled) && parse_acpi_topology())
+> +		reset_cpu_topology();
+> +	else if (of_have_populated_dt() && parse_dt_topology())
+>  		reset_cpu_topology();
+>  }
+> diff --git a/include/linux/topology.h b/include/linux/topology.h
+> index cb0775e1ee4b..170ce87edd88 100644
+> --- a/include/linux/topology.h
+> +++ b/include/linux/topology.h
+> @@ -43,6 +43,8 @@
+>  		if (nr_cpus_node(node))
+>  
+>  int arch_update_cpu_topology(void);
+> +int find_acpi_cpu_topology(unsigned int cpu, int level);
+> +int find_acpi_cpu_topology_package(unsigned int cpu);
+
+I do not think these two declarations:
+
+a) belong in this patch
+b) belong in include/linux/topology.h (should be acpi.h)
+
+Lorenzo
