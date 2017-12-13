@@ -1,146 +1,81 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v2 1/2] cpufreq: ARM: sort the Kconfig menu
-Date: Wed, 13 Dec 2017 18:05:35 +0100
-Message-ID: <20171213170536.28238-2-gregory.clement@free-electrons.com>
-References: <20171213170536.28238-1-gregory.clement@free-electrons.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v5 3/9] ACPI: Enable PPTT support on ARM64
+Date: Wed, 13 Dec 2017 17:26:47 +0000
+Message-ID: <20171213172647.GA3316@red-moon>
+References: <20171201222330.18863-1-jeremy.linton@arm.com>
+ <20171201222330.18863-4-jeremy.linton@arm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:41410 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753305AbdLMRFp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 12:05:45 -0500
-In-Reply-To: <20171213170536.28238-1-gregory.clement@free-electrons.com>
+Received: from foss.arm.com ([217.140.101.70]:32836 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753189AbdLMR0L (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 13 Dec 2017 12:26:11 -0500
+Content-Disposition: inline
+In-Reply-To: <20171201222330.18863-4-jeremy.linton@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@free-electrons.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, Evan Wang <xswang@marvell.com>, Andre Heider <a.heider@gmail.com>
+To: Jeremy Linton <jeremy.linton@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org
 
-Group all the related big LITTLE configuration together and sort the
-other entries in alphabetic order.
+On Fri, Dec 01, 2017 at 04:23:24PM -0600, Jeremy Linton wrote:
+> Now that we have a PPTT parser, in preparation for its use
+> on arm64, lets build it.
+> 
+> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+> ---
+>  arch/arm64/Kconfig    | 1 +
+>  drivers/acpi/Kconfig  | 3 +++
+>  drivers/acpi/Makefile | 1 +
+>  3 files changed, 5 insertions(+)
+> 
+> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+> index a93339f5178f..e62fd1e08c1f 100644
+> --- a/arch/arm64/Kconfig
+> +++ b/arch/arm64/Kconfig
+> @@ -7,6 +7,7 @@ config ARM64
+>  	select ACPI_REDUCED_HARDWARE_ONLY if ACPI
+>  	select ACPI_MCFG if ACPI
+>  	select ACPI_SPCR_TABLE if ACPI
+> +	select ACPI_PPTT if ACPI
+>  	select ARCH_CLOCKSOURCE_DATA
+>  	select ARCH_HAS_DEBUG_VIRTUAL
+>  	select ARCH_HAS_DEVMEM_IS_ALLOWED
+> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
+> index 46505396869e..df7aebf0af0e 100644
+> --- a/drivers/acpi/Kconfig
+> +++ b/drivers/acpi/Kconfig
+> @@ -545,6 +545,9 @@ config ACPI_CONFIGFS
+>  
+>  if ARM64
+>  source "drivers/acpi/arm64/Kconfig"
+> +
+> +config ACPI_PPTT
+> +	bool
 
-Also fixing tab vs space issue while mofifying these entries.
+We need to make a choice here. Either PPTT is considered ARM64 only and
+we move code and config to drivers/acpi/arm64/Kconfig or we leave it in
+drivers/acpi/pptt.c and we add a Kconfig entry in drivers/acpi/Kconfig
+(and we make pptt.c compile on !ARM64 - which is what it should be given
+that there is nothing ARM64 specific in it).
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
----
- drivers/cpufreq/Kconfig.arm | 81 ++++++++++++++++++++++-----------------------
- 1 file changed, 40 insertions(+), 41 deletions(-)
+Lorenzo
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index bdce4488ded1..beb8826afbb1 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -2,6 +2,22 @@
- # ARM CPU Frequency scaling drivers
- #
- 
-+config ACPI_CPPC_CPUFREQ
-+	tristate "CPUFreq driver based on the ACPI CPPC spec"
-+	depends on ACPI_PROCESSOR
-+	select ACPI_CPPC_LIB
-+	help
-+	  This adds a CPUFreq driver which uses CPPC methods
-+	  as described in the ACPIv5.1 spec. CPPC stands for
-+	  Collaborative Processor Performance Controls. It
-+	  is based on an abstract continuous scale of CPU
-+	  performance values which allows the remote power
-+	  processor to flexibly optimize for power and
-+	  performance. CPPC relies on power management firmware
-+	  support for its operation.
-+
-+	  If in doubt, say N.
-+
- # big LITTLE core layer and glue drivers
- config ARM_BIG_LITTLE_CPUFREQ
- 	tristate "Generic ARM big LITTLE CPUfreq driver"
-@@ -12,6 +28,30 @@ config ARM_BIG_LITTLE_CPUFREQ
- 	help
- 	  This enables the Generic CPUfreq driver for ARM big.LITTLE platforms.
- 
-+config ARM_DT_BL_CPUFREQ
-+	tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
-+	depends on ARM_BIG_LITTLE_CPUFREQ && OF
-+	help
-+	  This enables probing via DT for Generic CPUfreq driver for ARM
-+	  big.LITTLE platform. This gets frequency tables from DT.
-+
-+config ARM_SCPI_CPUFREQ
-+	tristate "SCPI based CPUfreq driver"
-+	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
-+	help
-+	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
-+	  using SCPI protocol for CPU power management.
-+
-+	  This driver uses SCPI Message Protocol driver to interact with the
-+	  firmware providing the CPU DVFS functionality.
-+
-+config ARM_VEXPRESS_SPC_CPUFREQ
-+	tristate "Versatile Express SPC based CPUfreq driver"
-+	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
-+	help
-+	  This add the CPUfreq driver support for Versatile Express
-+	  big.LITTLE platforms using SPC for power management.
-+
- config ARM_BRCMSTB_AVS_CPUFREQ
- 	tristate "Broadcom STB AVS CPUfreq driver"
- 	depends on ARCH_BRCMSTB || COMPILE_TEST
-@@ -33,20 +73,6 @@ config ARM_BRCMSTB_AVS_CPUFREQ_DEBUG
- 
- 	  If in doubt, say N.
- 
--config ARM_DT_BL_CPUFREQ
--	tristate "Generic probing via DT for ARM big LITTLE CPUfreq driver"
--	depends on ARM_BIG_LITTLE_CPUFREQ && OF
--	help
--	  This enables probing via DT for Generic CPUfreq driver for ARM
--	  big.LITTLE platform. This gets frequency tables from DT.
--
--config ARM_VEXPRESS_SPC_CPUFREQ
--        tristate "Versatile Express SPC based CPUfreq driver"
--	depends on ARM_BIG_LITTLE_CPUFREQ && ARCH_VEXPRESS_SPC
--        help
--          This add the CPUfreq driver support for Versatile Express
--	  big.LITTLE platforms using SPC for power management.
--
- config ARM_EXYNOS5440_CPUFREQ
- 	tristate "SAMSUNG EXYNOS5440"
- 	depends on SOC_EXYNOS5440
-@@ -205,16 +231,6 @@ config ARM_SA1100_CPUFREQ
- config ARM_SA1110_CPUFREQ
- 	bool
- 
--config ARM_SCPI_CPUFREQ
--        tristate "SCPI based CPUfreq driver"
--	depends on ARM_BIG_LITTLE_CPUFREQ && ARM_SCPI_PROTOCOL && COMMON_CLK_SCPI
--        help
--	  This adds the CPUfreq driver support for ARM big.LITTLE platforms
--	  using SCPI protocol for CPU power management.
--
--	  This driver uses SCPI Message Protocol driver to interact with the
--	  firmware providing the CPU DVFS functionality.
--
- config ARM_SPEAR_CPUFREQ
- 	bool "SPEAr CPUFreq support"
- 	depends on PLAT_SPEAR
-@@ -275,20 +291,3 @@ config ARM_PXA2xx_CPUFREQ
- 	  This add the CPUFreq driver support for Intel PXA2xx SOCs.
- 
- 	  If in doubt, say N.
--
--config ACPI_CPPC_CPUFREQ
--	tristate "CPUFreq driver based on the ACPI CPPC spec"
--	depends on ACPI_PROCESSOR
--	select ACPI_CPPC_LIB
--	default n
--	help
--	  This adds a CPUFreq driver which uses CPPC methods
--	  as described in the ACPIv5.1 spec. CPPC stands for
--	  Collaborative Processor Performance Controls. It
--	  is based on an abstract continuous scale of CPU
--	  performance values which allows the remote power
--	  processor to flexibly optimize for power and
--	  performance. CPPC relies on power management firmware
--	  support for its operation.
--
--	  If in doubt, say N.
--- 
-2.15.1
+>  endif
+>  
+>  config TPS68470_PMIC_OPREGION
+> diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
+> index 41954a601989..b6056b566df4 100644
+> --- a/drivers/acpi/Makefile
+> +++ b/drivers/acpi/Makefile
+> @@ -87,6 +87,7 @@ obj-$(CONFIG_ACPI_BGRT)		+= bgrt.o
+>  obj-$(CONFIG_ACPI_CPPC_LIB)	+= cppc_acpi.o
+>  obj-$(CONFIG_ACPI_SPCR_TABLE)	+= spcr.o
+>  obj-$(CONFIG_ACPI_DEBUGGER_USER) += acpi_dbg.o
+> +obj-$(CONFIG_ACPI_PPTT) 	+= pptt.o
+>  
+>  # processor has its own "processor." module_param namespace
+>  processor-y			:= processor_driver.o
+> -- 
+> 2.13.5
+> 
