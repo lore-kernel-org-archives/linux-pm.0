@@ -1,71 +1,47 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: [PATCH 0/4] PM / OPP: Introduce ti-opp-supply driver
-Date: Wed, 13 Dec 2017 14:33:54 -0600
-Message-ID: <20171213203358.20839-1-d-gerlach@ti.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
+Date: Wed, 13 Dec 2017 21:52:34 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1712132149420.1885@nanos>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFwsMuHUBQz5kDNwRf17JnasXMWjvmLq5qXGH-694yeq1w@mail.gmail.com> <20171206121452.GA6320@dhcp22.suse.cz> <db81e89d-eee6-868c-dc10-c028f4c4be84@mblankhorst.nl> <alpine.DEB.2.20.1712061344560.1724@nanos>
+ <0f1d3d63-fa10-5cef-8014-81753dc60243@mblankhorst.nl> <alpine.DEB.2.20.1712061514420.1724@nanos> <57c8679e-1b88-c9ad-2299-2bea7560b28f@mblankhorst.nl> <alpine.DEB.2.20.1712081129450.1840@nanos> <alpine.DEB.2.20.1712131507160.1885@nanos>
+ <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com> <alpine.DEB.2.20.1712131738020.1885@nanos> <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com> <alpine.DEB.2.20.1712131856130.1885@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from fllnx209.ext.ti.com ([198.47.19.16]:46012 "EHLO
-        fllnx209.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752908AbdLMUfv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 15:35:51 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.20.1712131856130.1885@nanos>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc: linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Nishanth Menon <nm@ti.com>, Dave Gerlach <d-gerlach@ti.com>
 
-Some SoCs, such as Texas Instruments DRA7 family, have complex requirements for
-scaling voltages and supplies when doing things like DVFS. For example, for
-cpufreq on dra7xx, the cpu-supply must be scaled as is normally done however
-there is also an Adaptive Body Bias (ABB) regulator that should be scaled at
-the same time as the main supply in sequence depending on the transition,
-explained earlier by Nishanth Menon here [1]. In addition to this, each
-possible operating point has a corresponding optimized voltage value stored in
-a register (Adaptive Voltage Scaling Class 0) that can be used instead of the
-nominal value.
+On Wed, 13 Dec 2017, Thomas Gleixner wrote:
+> On Wed, 13 Dec 2017, Linus Torvalds wrote:
+> 
+> > On Wed, Dec 13, 2017 at 8:41 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > >
+> > > Definitely. That was fragile forever but puzzles me is that I can't figure
+> > > out what now causes that spurious interrupt to surface out of the blue.
+> > 
+> > Perhaps just timing?
+> 
+> That's what I'm trying to figure out right now, because that is the only
+> sensible explanation left. The whole machinery of suspend is exactly the
+> same with and without the vector changes. I instrumented all functions
+> involved and the picture is the same. I even do not see any fundamental
+> timing differences where one would say: That's it.
+> 
+> What puzzles me even more is that in the range of commits I'm fiddling with
+> there is no other change than the vector management stuff and the point
+> where it breaks makes no sense at all. The point Maarten bisected it to
+> works nicely here, so that might just point to a very subtle timing issue.
 
-The OPP framework is now able to to handle DVFS transitions through the
-provided dev_pm_opp_set_rate API and cpufreq-dt is doing this. Viresh Kumar
-extended this to allow platforms to register a transition helper through the
-use of dev_pm_opp_register_set_opp_helper and has also extended the OPP core to
-support registering multiple regulators. By providing a TI platform specific
-opp_helper function and registering the proepr regulators with the OPP core we
-can meet the above requirements for properly changing DVFS state of the cpu
-device.
+After doing more debugging on this it turns out that this looks like a
+legacy interrupt coming in. The vector number is always 55, which is legacy
+IRQ 7 as seen from the PIC. The corresponding IOAPIC interrupt pin is
+masked and vector 55 is completely unused.
 
-This series introduces a ti-opp-supply driver that overrides the standard
-single regulator DVFS transition handler to handle scaling the ABB regulator in
-sequence with the normal supply and programing AVS voltages through a custom
-opp_helper that is registered. The ti-cpufreq driver is extended to allow
-registering the proper regulators needed for the CPU if the platform supports
-multi regulators and is also changed to a regular driver so that it can defer
-probe if needed as it now may have to if the regulators are not ready.
+More questions than answers. Still investigating.
 
-This series only contains driver changes and binding docs, DT patches will be
-sent later but I have pushed them all here for anyone curious [2].
+Thanks,
 
-This series is required to enable the highest 1.5GHz OPP on dra7/am57 platforms
-that support it but all dra7/am57 platforms will make use of this for all OPPs.
-
-Regards,
-Dave
-
-[1] https://marc.info/?l=linux-pm&m=145684495832764&w=2
-[2] https://github.com/dgerlach/linux-pm/tree/upstream/v4.15/ti-multireg-support
-
-Dave Gerlach (4):
-  cpufreq: ti-cpufreq: Convert to module_platform_driver
-  cpufreq: ti-cpufreq: Add support for multiple regulators
-  dt-bindings: opp: Introduce ti-opp-supply bindings
-  PM / OPP: Add ti-opp-supply driver
-
- .../bindings/opp/ti-omap5-opp-supply.txt           |  63 +++
- drivers/cpufreq/ti-cpufreq.c                       |  51 ++-
- drivers/opp/Makefile                               |   1 +
- drivers/opp/ti-opp-supply.c                        | 428 +++++++++++++++++++++
- 4 files changed, 537 insertions(+), 6 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/opp/ti-omap5-opp-supply.txt
- create mode 100644 drivers/opp/ti-opp-supply.c
-
--- 
-2.15.1
+	tglx
