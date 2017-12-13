@@ -1,223 +1,162 @@
-From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
-Subject: [PATCH] cpufreq: powernv: Add support of frequency domain
-Date: Wed, 13 Dec 2017 13:49:37 +0530
-Message-ID: <20171213081937.16376-1-huntbag@linux.vnet.ibm.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:42472 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1750880AbdLMIT4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 03:19:56 -0500
-Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vBD8Ix9s026776
-        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 03:19:55 -0500
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2eu02qhb2u-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 03:19:55 -0500
-Received: from localhost
-        by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
-        Wed, 13 Dec 2017 08:19:53 -0000
-Sender: linux-pm-owner@vger.kernel.org
+From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+Subject: Re: [PATCH v2 3/4] thermal: armada: add support for CP110
+Date: Wed, 13 Dec 2017 10:38:48 +0200
+Message-ID: <20171213083848.j5het742yavxvkkw@sapphire.tkos.co.il>
+References: <f8c589337a4fb78852eadf15058e8f8d132d4dc0.1512299484.git.baruch@tkos.co.il>
+ <d48c916a2502f9c75e9ea4ba41300e2ffbb254d8.1512299484.git.baruch@tkos.co.il>
+ <20171211160932.692ba8be@xps13>
+ <20171211152731.glkkes5errcxmsvz@sapphire.tkos.co.il>
+ <87y3m9qjt2.fsf@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <87y3m9qjt2.fsf-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Ezequiel Garcia <ezequiel-30ULvvUtt6G51wMPkGsGjgyUoB5FGQPZ@public.gmane.org>, Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: rjw@rjwysocki.net, viresh.kumar@linaro.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 
-Frequency-domain indicates group of CPUs that would share same frequency.
-It is detected using device-tree node "frequency-domain-indicator".
-frequency-domain-indicator is a bitmask which will have different value
-depending upon the generation of the processor.
+Hi Gregory,
 
-CPUs of the same chip for which the result of a bitwise AND between
-their PIR and the frequency-domain-indicator is the same share the same
-frequency.
+On Mon, Dec 11, 2017 at 06:02:49PM +0100, Gregory CLEMENT wrote:
+>  On lun., déc. 11 2017, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org> wrote:
+> > On Mon, Dec 11, 2017 at 04:09:32PM +0100, Miquel RAYNAL wrote:
+> >> On Sun,  3 Dec 2017 13:11:23 +0200
+> >> Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org> wrote:
+> >> 
+> >> > The CP110 component is integrated in the Armada 8k and 7k lines of
+> >> > processors.
+> >> > 
+> >> > This patch also adds an option of offset to the MSB of the control
+> >> > register. The existing DT binding for Armada 38x refers to a single
+> >> > 32 bit control register. It turns out that this is actually only the
+> >> > MSB of the control area. Changing the binding to fix that would break
+> >> > existing DT files, so the Armada 38x binding is left as is.
+> >> > 
+> >> > The new CP110 binding increases the size of the control area to 64
+> >> > bits, thus moving the MSB to offset 4.
+> >> > 
+> >> > Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+> >> > ---
+> >> > v2: No change
+> >> > ---
+> >> >  drivers/thermal/armada_thermal.c | 24 ++++++++++++++++++++++--
+> >> >  1 file changed, 22 insertions(+), 2 deletions(-)
+> >> > 
+> >> > diff --git a/drivers/thermal/armada_thermal.c
+> >> > b/drivers/thermal/armada_thermal.c index 0eb82097571f..59b75f63945d
+> >> > 100644 --- a/drivers/thermal/armada_thermal.c
+> >> > +++ b/drivers/thermal/armada_thermal.c
+> >> > @@ -73,6 +73,7 @@ struct armada_thermal_data {
+> >> >  	unsigned int temp_shift;
+> >> >  	unsigned int temp_mask;
+> >> >  	unsigned int is_valid_shift;
+> >> > +	unsigned int control_msb_offset;
+> >> >  };
+> >> >  
+> >> >  static void armadaxp_init_sensor(struct platform_device *pdev,
+> >> > @@ -142,12 +143,14 @@ static void armada375_init_sensor(struct
+> >> > platform_device *pdev, static void armada380_init_sensor(struct
+> >> > platform_device *pdev, struct armada_thermal_priv *priv)
+> >> >  {
+> >> > -	unsigned long reg = readl_relaxed(priv->control);
+> >> > +	void __iomem *control_msb =
+> >> > +		priv->control + priv->data->control_msb_offset;
+> >> > +	unsigned long reg = readl_relaxed(control_msb);
+> >> >  
+> >> >  	/* Reset hardware once */
+> >> >  	if (!(reg & A380_HW_RESET)) {
+> >> >  		reg |= A380_HW_RESET;
+> >> > -		writel(reg, priv->control);
+> >> > +		writel(reg, control_msb);
+> >> >  		mdelay(10);
+> >> >  	}
+> >> >  }
+> >> > @@ -266,6 +269,19 @@ static const struct armada_thermal_data
+> >> > armada_ap806_data = { .signed_sample = true,
+> >> >  };
+> >> >  
+> >> > +static const struct armada_thermal_data armada_cp110_data = {
+> >> > +	.is_valid = armada_is_valid,
+> >> > +	.init_sensor = armada380_init_sensor,
+> >> 
+> >> I see the initialization for CP110 thermal IP is close to
+> >> Armada-380's, but, as you point it in the commit log it is still
+> >> different.
+> >> 
+> >> I don't know what is the best way to handle this but until now each
+> >> new compatible had his own ->init_sensor function, shouldn't we do
+> >> the same here as changes are requested? This would naturally avoid the
+> >> situation with Armada-380 bindings.
+> >
+> > I'm not sure I understand your suggestion.
+> >
+> > There is no difference between the CP110 and the Armada 38x, as far as I can 
+> > see. The only quirk is that the existing Armada 38x DT binding is wrong I that 
+> > the 'reg' property references the control MSB, while leaving the LSB
+> > out. We
+> 
+> Well I would not say it was wrong but more incomplete :)
+> 
+> > can't change the Armada 38x binding without breaking existing DTs. The 
+> > 'control_msb_offset' field that this patch adds allows correct binding for 
+> > CP110, while keeping compatibility with the existing Armada 38x
+> > binding.
+> 
+> I am not against adding a new compatible string for CP110 but ot be
+> honest the new binding for CP110 does not bring anything as you don't
+> use at all the LSB register.
 
-In this patch, we define hash-table indexed by the aforementioned
-bitwise ANDed value to store the cpumask of the CPUs sharing the same
-frequency domain. Further, the cpufreq policy will be created per
-frequency-domain
+We don't use the LSB yet in mainline driver. But the vendor kernel uses it to 
+"change temperature band gap circuit curve" (quoting vendor kernel commit 
+4ff2d8a7d3 log). Chances are that we want to do this as well. But said commit 
+changed the DT binding in an incompatible way. We can't do that, and we both 
+agree on that.
 
-So for POWER9, a cpufreq policy is created per quad while for POWER8 it
-is created per core. Governor decides frequency for each policy but
-multiple cores may come under same policy. In such case frequency needs
-to be set on each core sharing that policy.
+> Actually, if on Armada 375 we initially mapped the LSB register it was
+> to support an very early release of the SoC (stepping Z) and only for
+> resetting its value. So I guess you started to write the AP860 part
+> based on the Armada 375 and then found that we could map a more complete
+> range of the registers.
+> 
+> > How would a separate init_sensor routine improve things?
+> 
+> So yes please do it, thanks to this you won't have to add the
+> control_msb_offset member and can use a clean function. Moreover if in
+> the future we see some usefulness for this LSB register then we could use
+> the new compatible for the Armada 38x.
 
-Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
----
- drivers/cpufreq/powernv-cpufreq.c | 95 +++++++++++++++++++++++++++++++++++----
- 1 file changed, 87 insertions(+), 8 deletions(-)
+There are two separate issues here:
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index b6d7c4c..9384110 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -37,6 +37,7 @@
- #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
- #include <asm/opal.h>
- #include <linux/timer.h>
-+#include <linux/hashtable.h>
- 
- #define POWERNV_MAX_PSTATES	256
- #define PMSR_PSAFE_ENABLE	(1UL << 30)
-@@ -130,6 +131,8 @@ static struct chip {
- static int nr_chips;
- static DEFINE_PER_CPU(struct chip *, chip_info);
- 
-+static u32 freq_domain_indicator;
-+
- /*
-  * Note:
-  * The set of pstates consists of contiguous integers.
-@@ -194,6 +197,38 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
- 	gpstates->last_gpstate_idx = 0;
- }
- 
-+#define SIZE NR_CPUS
-+#define ORDER_FREQ_MAP ilog2(SIZE)
-+
-+static DEFINE_HASHTABLE(freq_domain_map, ORDER_FREQ_MAP);
-+
-+struct hashmap {
-+	cpumask_t mask;
-+	int chip_id;
-+	u32 pir_key;
-+	struct hlist_node hash_node;
-+};
-+
-+static void insert(u32 key, int cpu)
-+{
-+	struct hashmap *data;
-+
-+	hash_for_each_possible(freq_domain_map, data, hash_node, key%SIZE) {
-+		if (data->chip_id == cpu_to_chip_id(cpu) &&
-+			data->pir_key == key) {
-+			cpumask_set_cpu(cpu, &data->mask);
-+			return;
-+		}
-+	}
-+
-+	data = kzalloc(sizeof(*data), GFP_KERNEL);
-+	hash_add(freq_domain_map, &data->hash_node, key%SIZE);
-+	cpumask_set_cpu(cpu, &data->mask);
-+	data->chip_id = cpu_to_chip_id(cpu);
-+	data->pir_key = key;
-+
-+}
-+
- /*
-  * Initialize the freq table based on data obtained
-  * from the firmware passed via device-tree
-@@ -206,6 +241,7 @@ static int init_powernv_pstates(void)
- 	u32 len_ids, len_freqs;
- 	u32 pstate_min, pstate_max, pstate_nominal;
- 	u32 pstate_turbo, pstate_ultra_turbo;
-+	u32 key;
- 
- 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
- 	if (!power_mgt) {
-@@ -229,6 +265,13 @@ static int init_powernv_pstates(void)
- 		return -ENODEV;
- 	}
- 
-+	if (of_device_is_compatible(power_mgt, "freq-domain-v1") &&
-+		of_property_read_u32(power_mgt, "ibm,freq-domain-indicator",
-+				 &freq_domain_indicator)) {
-+		pr_warn("ibm,freq-domain-indicator not found\n");
-+		freq_domain_indicator = 0;
-+	}
-+
- 	if (of_property_read_u32(power_mgt, "ibm,pstate-ultra-turbo",
- 				 &pstate_ultra_turbo)) {
- 		powernv_pstate_info.wof_enabled = false;
-@@ -249,6 +292,7 @@ static int init_powernv_pstates(void)
- next:
- 	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
- 		pstate_nominal, pstate_max);
-+	pr_info("frequency domain indicator %d", freq_domain_indicator);
- 	pr_info("Workload Optimized Frequency is %s in the platform\n",
- 		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
- 
-@@ -276,6 +320,15 @@ static int init_powernv_pstates(void)
- 		return -ENODEV;
- 	}
- 
-+	if (freq_domain_indicator) {
-+		hash_init(freq_domain_map);
-+		for_each_possible_cpu(i) {
-+			key = ((u32) get_hard_smp_processor_id(i) &
-+				freq_domain_indicator);
-+			insert(key, i);
-+		}
-+	}
-+
- 	powernv_pstate_info.nr_pstates = nr_pstates;
- 	pr_debug("NR PStates %d\n", nr_pstates);
- 	for (i = 0; i < nr_pstates; i++) {
-@@ -693,6 +746,8 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- {
- 	struct powernv_smp_call_data freq_data;
- 	unsigned int cur_msec, gpstate_idx;
-+	cpumask_t temp;
-+	u32 cpu;
- 	struct global_pstate_info *gpstates = policy->driver_data;
- 
- 	if (unlikely(rebooting) && new_index != get_nominal_index())
-@@ -761,24 +816,48 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
- 	spin_unlock(&gpstates->gpstate_lock);
- 
- 	/*
--	 * Use smp_call_function to send IPI and execute the
--	 * mtspr on target CPU.  We could do that without IPI
--	 * if current CPU is within policy->cpus (core)
-+	 * Use smp_call_function to send IPI and execute the mtspr on CPU.
-+	 * This needs to be done on every core of the policy
- 	 */
--	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
-+	cpumask_copy(&temp, policy->cpus);
-+
-+	while (!cpumask_empty(&temp)) {
-+		cpu = cpumask_first(&temp);
-+		smp_call_function_any(cpu_sibling_mask(cpu),
-+					set_pstate, &freq_data, 1);
-+		cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
-+	}
-+
- 	return 0;
- }
- 
- static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	int base, i, ret;
-+	int ret;
- 	struct kernfs_node *kn;
- 	struct global_pstate_info *gpstates;
- 
--	base = cpu_first_thread_sibling(policy->cpu);
-+	if (!freq_domain_indicator) {
-+		int base, i;
- 
--	for (i = 0; i < threads_per_core; i++)
--		cpumask_set_cpu(base + i, policy->cpus);
-+		base = cpu_first_thread_sibling(policy->cpu);
-+		for (i = 0; i < threads_per_core; i++)
-+			cpumask_set_cpu(base + i, policy->cpus);
-+	} else {
-+		u32 key;
-+		struct hashmap *data;
-+
-+		key = ((u32) get_hard_smp_processor_id(policy->cpu) &
-+				freq_domain_indicator);
-+		hash_for_each_possible(freq_domain_map, data, hash_node,
-+								 key%SIZE) {
-+			if (data->chip_id == cpu_to_chip_id(policy->cpu) &&
-+				data->pir_key == key) {
-+				cpumask_copy(policy->cpus, &data->mask);
-+				break;
-+			}
-+		}
-+	}
- 
- 	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
- 	if (!kn) {
+  1. DT binding
+
+  2. init_sensor callback implementation
+
+We both agree on #1. The A38x and CP110 need separate compatible strings. In 
+case we want to access the LSB control register on Armada 38x, we will need 
+yet another compatible string (marvell,armada380-v2-thermal maybe?).
+
+As for #2, I'm all for sharing as much code as possible. I find the vendor 
+kernel approach of duplicating the init routines[1] unhelpful as it violates 
+the DRY principle. The differences between armada380_init_sensor() and 
+cp110_init_sensor() are minor. In my opinion, these differences should be 
+expressed explicitly in the armada_thermal_data, in a similar way to my 
+suggested control_msb_offset field. The vendor code hides these differences in 
+slight variations of duplicated code.
+
+What is the advantage of a separate init routine?
+
+baruch
+
+[1] https://github.com/MarvellEmbeddedProcessors/linux-marvell/blob/linux-4.4.52-armada-17.10/drivers/thermal/armada_thermal.c
+
 -- 
-2.9.3
+     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
+=}------------------------------------------------ooO--U--Ooo------------{=
+   - baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org - tel: +972.2.679.5364, http://www.tkos.co.il -
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
