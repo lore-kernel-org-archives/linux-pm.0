@@ -1,202 +1,223 @@
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [v3 PATCH 2/3] powernv-cpufreq: Fix pstate_to_idx() to handle non-continguous pstates
-Date: Wed, 13 Dec 2017 12:27:40 +0530
-Message-ID: <1513148261-21097-3-git-send-email-ego@linux.vnet.ibm.com>
-References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
+From: Abhishek Goel <huntbag@linux.vnet.ibm.com>
+Subject: [PATCH] cpufreq: powernv: Add support of frequency domain
+Date: Wed, 13 Dec 2017 13:49:37 +0530
+Message-ID: <20171213081937.16376-1-huntbag@linux.vnet.ibm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:40852 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1751524AbdLMG6B (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 01:58:01 -0500
-Received: from pps.filterd (m0098420.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vBD6tvpS032540
-        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 01:58:00 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2etvx1nh9u-1
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:42472 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1750880AbdLMIT4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 03:19:56 -0500
+Received: from pps.filterd (m0098409.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vBD8Ix9s026776
+        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 03:19:55 -0500
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2eu02qhb2u-1
         (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 01:58:00 -0500
+        for <linux-pm@vger.kernel.org>; Wed, 13 Dec 2017 03:19:55 -0500
 Received: from localhost
-        by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-        Wed, 13 Dec 2017 01:57:59 -0500
-In-Reply-To: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
+        by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
+        Wed, 13 Dec 2017 08:19:53 -0000
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, viresh.kumar@linaro.org, rjw@rjwysocki.net, huntbag@linux.vnet.ibm.com, akshay.adiga@linux.vnet.ibm.com, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, Balbir Singh <bsingharora@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Frequency-domain indicates group of CPUs that would share same frequency.
+It is detected using device-tree node "frequency-domain-indicator".
+frequency-domain-indicator is a bitmask which will have different value
+depending upon the generation of the processor.
 
-The code in powernv-cpufreq, makes the following two assumptions which
-are not guaranteed by the device-tree bindings:
+CPUs of the same chip for which the result of a bitwise AND between
+their PIR and the frequency-domain-indicator is the same share the same
+frequency.
 
-    1) Pstate ids are continguous: This is used in pstate_to_idx() to
-       obtain the reverse map from a pstate to it's corresponding
-       entry into the cpufreq frequency table.
+In this patch, we define hash-table indexed by the aforementioned
+bitwise ANDed value to store the cpumask of the CPUs sharing the same
+frequency domain. Further, the cpufreq policy will be created per
+frequency-domain
 
-    2) Every Pstate should always lie between the max and the min
-       pstates that are explicitly reported in the device tree: This
-       is used to determine whether a pstate reported by the PMSR is
-       out of bounds.
+So for POWER9, a cpufreq policy is created per quad while for POWER8 it
+is created per core. Governor decides frequency for each policy but
+multiple cores may come under same policy. In such case frequency needs
+to be set on each core sharing that policy.
 
-Both these assumptions are unwarranted and can change on future
-platforms.
-
-In this patch, we maintain the reverse map from a pstate to it's index
-in the cpufreq frequency table and use this in pstate_to_idx(). This
-does away with the assumptions (1) mentioned above, and will work with
-non continguous pstate ids. If no entry exists for a particular
-pstate, then such a pstate is treated as being out of bounds. This
-gets rid of assumption (2).
-
-On all the existing platforms, where the pstates are 8-bit long
-values, the new implementation of pstate_to_idx() takes constant time.
-
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+Signed-off-by: Abhishek Goel <huntbag@linux.vnet.ibm.com>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 85 +++++++++++++++++++++++++++++----------
- 1 file changed, 63 insertions(+), 22 deletions(-)
+ drivers/cpufreq/powernv-cpufreq.c | 95 +++++++++++++++++++++++++++++++++++----
+ 1 file changed, 87 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index f46b60f..8e3dbca 100644
+index b6d7c4c..9384110 100644
 --- a/drivers/cpufreq/powernv-cpufreq.c
 +++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -29,6 +29,7 @@
- #include <linux/reboot.h>
- #include <linux/slab.h>
- #include <linux/cpu.h>
-+#include <linux/hashtable.h>
- #include <trace/events/power.h>
- 
- #include <asm/cputhreads.h>
-@@ -38,7 +39,8 @@
+@@ -37,6 +37,7 @@
+ #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
  #include <asm/opal.h>
  #include <linux/timer.h>
++#include <linux/hashtable.h>
  
--#define POWERNV_MAX_PSTATES	256
-+#define POWERNV_MAX_PSTATES_ORDER  8
-+#define POWERNV_MAX_PSTATES	(1UL << (POWERNV_MAX_PSTATES_ORDER))
+ #define POWERNV_MAX_PSTATES	256
  #define PMSR_PSAFE_ENABLE	(1UL << 30)
- #define PMSR_SPR_EM_DISABLE	(1UL << 31)
- #define MAX_PSTATE_SHIFT	32
-@@ -92,6 +94,27 @@ struct global_pstate_info {
- };
+@@ -130,6 +131,8 @@ static struct chip {
+ static int nr_chips;
+ static DEFINE_PER_CPU(struct chip *, chip_info);
  
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
++static u32 freq_domain_indicator;
 +
-+DEFINE_HASHTABLE(pstate_revmap, POWERNV_MAX_PSTATES_ORDER);
-+/**
-+ * struct pstate_idx_revmap_data: Entry in the hashmap pstate_revmap
-+ *				  indexed by a function of pstate id.
-+ *
-+ * @pstate_id: pstate id for this entry.
-+ *
-+ * @cpufreq_table_idx: Index into the powernv_freqs
-+ *		       cpufreq_frequency_table for frequency
-+ *		       corresponding to pstate_id.
-+ *
-+ * @hentry: hlist_node that hooks this entry into the pstate_revmap
-+ *	    hashtable
-+ */
-+struct pstate_idx_revmap_data {
-+	int pstate_id;
-+	unsigned int cpufreq_table_idx;
-+	struct hlist_node hentry;
+ /*
+  * Note:
+  * The set of pstates consists of contiguous integers.
+@@ -194,6 +197,38 @@ static inline void reset_gpstates(struct cpufreq_policy *policy)
+ 	gpstates->last_gpstate_idx = 0;
+ }
+ 
++#define SIZE NR_CPUS
++#define ORDER_FREQ_MAP ilog2(SIZE)
++
++static DEFINE_HASHTABLE(freq_domain_map, ORDER_FREQ_MAP);
++
++struct hashmap {
++	cpumask_t mask;
++	int chip_id;
++	u32 pir_key;
++	struct hlist_node hash_node;
 +};
 +
- u32 pstate_sign_prefix;
- static bool rebooting, throttled, occ_reset;
- 
-@@ -161,39 +184,47 @@ static inline int extract_pstate(u64 pmsr_val, unsigned int shift)
- #define extract_global_pstate(x) extract_pstate(x, GPSTATE_SHIFT)
- #define extract_max_pstate(x)  extract_pstate(x, MAX_PSTATE_SHIFT)
- 
--/* Use following macros for conversions between pstate_id and index */
-+/* Use following functions for conversions between pstate_id and index */
++static void insert(u32 key, int cpu)
++{
++	struct hashmap *data;
 +
-+/**
-+ * idx_to_pstate : Returns the pstate id corresponding to the
-+ *		   frequency in the cpufreq frequency table
-+ *		   powernv_freqs indexed by @i.
-+ *
-+ *		   If @i is out of bound, this will return the pstate
-+ *		   corresponding to the nominal frequency.
-+ */
- static inline int idx_to_pstate(unsigned int i)
- {
- 	if (unlikely(i >= powernv_pstate_info.nr_pstates)) {
--		pr_warn_once("index %u is out of bound\n", i);
-+		pr_warn_once("idx_to_pstate: index %u is out of bound\n", i);
- 		return powernv_freqs[powernv_pstate_info.nominal].driver_data;
++	hash_for_each_possible(freq_domain_map, data, hash_node, key%SIZE) {
++		if (data->chip_id == cpu_to_chip_id(cpu) &&
++			data->pir_key == key) {
++			cpumask_set_cpu(cpu, &data->mask);
++			return;
++		}
++	}
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	hash_add(freq_domain_map, &data->hash_node, key%SIZE);
++	cpumask_set_cpu(cpu, &data->mask);
++	data->chip_id = cpu_to_chip_id(cpu);
++	data->pir_key = key;
++
++}
++
+ /*
+  * Initialize the freq table based on data obtained
+  * from the firmware passed via device-tree
+@@ -206,6 +241,7 @@ static int init_powernv_pstates(void)
+ 	u32 len_ids, len_freqs;
+ 	u32 pstate_min, pstate_max, pstate_nominal;
+ 	u32 pstate_turbo, pstate_ultra_turbo;
++	u32 key;
+ 
+ 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+ 	if (!power_mgt) {
+@@ -229,6 +265,13 @@ static int init_powernv_pstates(void)
+ 		return -ENODEV;
  	}
  
- 	return powernv_freqs[i].driver_data;
- }
- 
--static inline unsigned int pstate_to_idx(int pstate)
-+/**
-+ * pstate_to_idx : Returns the index in the cpufreq frequencytable
-+ *		   powernv_freqs for the frequency whose corresponding
-+ *		   pstate id is @pstate.
-+ *
-+ *		   If no frequency corresponding to @pstate is found,
-+ *		   this will return the index of the nominal
-+ *		   frequency.
-+ */
-+static unsigned int pstate_to_idx(int pstate)
- {
--	int min = powernv_freqs[powernv_pstate_info.min].driver_data;
--	int max = powernv_freqs[powernv_pstate_info.max].driver_data;
-+	unsigned int key = pstate % POWERNV_MAX_PSTATES;
-+	struct pstate_idx_revmap_data *revmap_data;
- 
--	if (min > 0) {
--		if (unlikely((pstate < max) || (pstate > min))) {
--			pr_warn_once("pstate %d is out of bound\n", pstate);
--			return powernv_pstate_info.nominal;
--		}
--	} else {
--		if (unlikely((pstate > max) || (pstate < min))) {
--			pr_warn_once("pstate %d is out of bound\n", pstate);
--			return powernv_pstate_info.nominal;
--		}
-+	hash_for_each_possible(pstate_revmap, revmap_data, hentry, key) {
-+		if (revmap_data->pstate_id == pstate)
-+			return revmap_data->cpufreq_table_idx;
- 	}
--	/*
--	 * abs() is deliberately used so that is works with
--	 * both monotonically increasing and decreasing
--	 * pstate values
--	 */
--	return abs(pstate - idx_to_pstate(powernv_pstate_info.max));
++	if (of_device_is_compatible(power_mgt, "freq-domain-v1") &&
++		of_property_read_u32(power_mgt, "ibm,freq-domain-indicator",
++				 &freq_domain_indicator)) {
++		pr_warn("ibm,freq-domain-indicator not found\n");
++		freq_domain_indicator = 0;
++	}
 +
-+	pr_warn_once("pstate_to_idx: pstate %d not found\n", pstate);
-+	return powernv_pstate_info.nominal;
- }
+ 	if (of_property_read_u32(power_mgt, "ibm,pstate-ultra-turbo",
+ 				 &pstate_ultra_turbo)) {
+ 		powernv_pstate_info.wof_enabled = false;
+@@ -249,6 +292,7 @@ static int init_powernv_pstates(void)
+ next:
+ 	pr_info("cpufreq pstate min %d nominal %d max %d\n", pstate_min,
+ 		pstate_nominal, pstate_max);
++	pr_info("frequency domain indicator %d", freq_domain_indicator);
+ 	pr_info("Workload Optimized Frequency is %s in the platform\n",
+ 		(powernv_pstate_info.wof_enabled) ? "enabled" : "disabled");
  
- static inline void reset_gpstates(struct cpufreq_policy *policy)
-@@ -297,11 +328,21 @@ static int init_powernv_pstates(void)
+@@ -276,6 +320,15 @@ static int init_powernv_pstates(void)
+ 		return -ENODEV;
+ 	}
+ 
++	if (freq_domain_indicator) {
++		hash_init(freq_domain_map);
++		for_each_possible_cpu(i) {
++			key = ((u32) get_hard_smp_processor_id(i) &
++				freq_domain_indicator);
++			insert(key, i);
++		}
++	}
++
+ 	powernv_pstate_info.nr_pstates = nr_pstates;
+ 	pr_debug("NR PStates %d\n", nr_pstates);
  	for (i = 0; i < nr_pstates; i++) {
- 		u32 id = be32_to_cpu(pstate_ids[i]);
- 		u32 freq = be32_to_cpu(pstate_freqs[i]);
-+		struct pstate_idx_revmap_data *revmap_data;
-+		unsigned int key;
+@@ -693,6 +746,8 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ {
+ 	struct powernv_smp_call_data freq_data;
+ 	unsigned int cur_msec, gpstate_idx;
++	cpumask_t temp;
++	u32 cpu;
+ 	struct global_pstate_info *gpstates = policy->driver_data;
  
- 		pr_debug("PState id %d freq %d MHz\n", id, freq);
- 		powernv_freqs[i].frequency = freq * 1000; /* kHz */
- 		powernv_freqs[i].driver_data = id;
+ 	if (unlikely(rebooting) && new_index != get_nominal_index())
+@@ -761,24 +816,48 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+ 	spin_unlock(&gpstates->gpstate_lock);
  
-+		revmap_data = (struct pstate_idx_revmap_data *)
-+			      kmalloc(sizeof(*revmap_data), GFP_KERNEL);
+ 	/*
+-	 * Use smp_call_function to send IPI and execute the
+-	 * mtspr on target CPU.  We could do that without IPI
+-	 * if current CPU is within policy->cpus (core)
++	 * Use smp_call_function to send IPI and execute the mtspr on CPU.
++	 * This needs to be done on every core of the policy
+ 	 */
+-	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
++	cpumask_copy(&temp, policy->cpus);
 +
-+		revmap_data->pstate_id = id;
-+		revmap_data->cpufreq_table_idx = i;
-+		key = id % POWERNV_MAX_PSTATES;
-+		hash_add(pstate_revmap, &revmap_data->hentry, key);
++	while (!cpumask_empty(&temp)) {
++		cpu = cpumask_first(&temp);
++		smp_call_function_any(cpu_sibling_mask(cpu),
++					set_pstate, &freq_data, 1);
++		cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
++	}
 +
- 		if (id == pstate_max)
- 			powernv_pstate_info.max = i;
- 		else if (id == pstate_nominal)
+ 	return 0;
+ }
+ 
+ static int powernv_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+-	int base, i, ret;
++	int ret;
+ 	struct kernfs_node *kn;
+ 	struct global_pstate_info *gpstates;
+ 
+-	base = cpu_first_thread_sibling(policy->cpu);
++	if (!freq_domain_indicator) {
++		int base, i;
+ 
+-	for (i = 0; i < threads_per_core; i++)
+-		cpumask_set_cpu(base + i, policy->cpus);
++		base = cpu_first_thread_sibling(policy->cpu);
++		for (i = 0; i < threads_per_core; i++)
++			cpumask_set_cpu(base + i, policy->cpus);
++	} else {
++		u32 key;
++		struct hashmap *data;
++
++		key = ((u32) get_hard_smp_processor_id(policy->cpu) &
++				freq_domain_indicator);
++		hash_for_each_possible(freq_domain_map, data, hash_node,
++								 key%SIZE) {
++			if (data->chip_id == cpu_to_chip_id(policy->cpu) &&
++				data->pir_key == key) {
++				cpumask_copy(policy->cpus, &data->mask);
++				break;
++			}
++		}
++	}
+ 
+ 	kn = kernfs_find_and_get(policy->kobj.sd, throttle_attr_grp.name);
+ 	if (!kn) {
 -- 
-1.9.4
+2.9.3
