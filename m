@@ -1,69 +1,66 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: Re: [PATCH] cpufreq: imx6q/thermal: imx: move CPU cooling device
- from thermal to cpufreq
-Date: Wed, 13 Dec 2017 15:41:01 +0200
-Message-ID: <1513172461.2879.14.camel@nxp.com>
-References: <20171115092332.9320-1-bst@pengutronix.de>
-         <20171116114918.GS25384@dragon> <2436262.8Qovylrth1@aspire.rjw.lan>
+From: Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>
+Subject: Re: [RFC PATCH 2/2] clk: x86: Disable unused clocks to fix S0ix
+Date: Wed, 13 Dec 2017 08:25:05 -0600
+Message-ID: <d49e5176-91fe-b4ad-11b6-a227edd90fbf@linux.intel.com>
+References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
+ <1555462.9U3gvkyXAX@aspire.rjw.lan>
+ <20170925192352.ihzakshd7yofowdd@sig21.net>
+ <7178688.oS2VOf73im@aspire.rjw.lan>
+ <fb202f9b-1fa2-4b9c-de75-4431a6273d12@redhat.com>
+ <20171213112245.GB20260@sig21.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-bl2nam02on0084.outbound.protection.outlook.com ([104.47.38.84]:14937
-        "EHLO NAM02-BL2-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1753051AbdLMNlI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 13 Dec 2017 08:41:08 -0500
-In-Reply-To: <2436262.8Qovylrth1@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20171213112245.GB20260@sig21.net>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Johannes Stezenbach <js@sig21.net>, Hans de Goede <hdegoede@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-clk@vger.kernel.org, linux-pm@vger.kernel.org, Carlo Caione <carlo@endlessm.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, linux-acpi@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bastian Stender <bst@pengutronix.de>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Shawn Guo <shawnguo@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, kernel@pengutronix.de
 
-On Wed, 2017-12-13 at 02:00 +0100, Rafael J. Wysocki wrote:
-> On Thursday, November 16, 2017 12:49:18 PM CET Shawn Guo wrote:
-> > 
-> > On Wed, Nov 15, 2017 at 10:23:32AM +0100, Bastian Stender wrote:
-> > > 
-> > > The cooling device should be part of the i.MX cpufreq driver. So move
-> > > it there.
-> > > 
-> > > Use of_cpufreq_power_cooling_register to link the cooling device to the
-> > > device tree node provided.
-> > > 
-> > > This makes it possible to bind the cpufreq cooling device to a custom
-> > > thermal zone via a cooling-maps entry like:
-> > > 
-> > > 	cooling-maps {
-> > > 		map0 {
-> > > 			trip = <&board_alert>;
-> > > 			cooling-device = <&cpu0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-> > > 		};
-> > > 	};
-> > > 
-> > > Assuming a cpu node exists with label "cpu0" and #cooling-cells
-> > > property.
-> > > 
-> > > Signed-off-by: Bastian Stender <bst@pengutronix.de>
 
-> > I'm fine with the patch, but I would invite Leonard to take a look.
 
-> Given no response, what should I do?
+On 12/13/2017 05:22 AM, Johannes Stezenbach wrote:
+> On Wed, Dec 13, 2017 at 09:56:45AM +0100, Hans de Goede wrote:
+>> On 13-12-17 01:01, Rafael J. Wysocki wrote:
+>>> On Monday, September 25, 2017 9:23:52 PM CET Johannes Stezenbach wrote:
+>>>> d31fd43c0f9a "clk: x86: Do not gate clocks enabled by the firmware"
+>>>> exposed an issue on Asus E200HA where BIOS enables unused
+>>>> Atom PMC clocks which prevent the system from entering S0ix.
+>>>> Add a quirk to disable these clocks on E200HA.
+>>>>
+>>>> Signed-off-by: Johannes Stezenbach <js@sig21.net>
+>>> Mika, Andy, Hans, any comments here?
+>> This seems like it is papering over an issue in the
+>> d31fd43c0f9a "clk: x86: Do not gate clocks enabled by the firmware"
+>> patch to me. That patch seems like a somewhat hackish fix to
+>> me, it would be better to figure out which device needs the clock
+>> in question and fix the device's driver...
+>>
+>> And or maybe have a mask of clocks for which to do this check
+>> and not do it for all clocks at least? That way we can maybe
+>> fix both Johannes and Carlo's issue in one go without needing
+>> device specific quirks ?
+>>
+>> Carlo, do you remember which clock you needed this for ?
+>>
+>> Johannes, same question for you, which clock is being kept
+>> alive because of this ?
+> IIRC all of these platform clocks need to be disabled for S0ix,
+I don't know if this is 100% correct. We've enabled S0i1 with audio 
+playback running in the past, and i think the pmc_clk_3 was used.
 
-Sorry for keeping you waiting. I don't much about the "cooling device"
-infrastructure so I don't have much to add, I guess I assumed a reply
-wasn't required?
+> but d31fd43c0f9a keeps them all enabled (if BIOS had enabled them),
+> and only the one claimed by the audio codec driver
+> is disabled by it before trying to enter S0ix.
+>
+> Yes, my vote would be to revert d31fd43c0f9a and fix the issue
+> properly, but my patch was the result of previous discussion.
+> Since it's BIOS' fault to have these clocks enabled I think
+> a platform quirk isn't too bad.
+>
+>
+> Thanks,
+> Johannes
 
-Looking at the code you are removing "thermal_cooling_device *cdev;"
-from imx_thermal_data but kept "cpufreq_policy *policy". Isn't that
-unused now?
-
-Also, your code only adds the cooling device if certain devicetree
-properties are present. Shouldn't your patch come with imx6*.dtsi
-changes, or make the capacitance value default to zero somehow?
-Otherwise the effect of the patch on most boards would be to disable
-cpufreq cooling.
-
---
-Regards,
-Leonard
