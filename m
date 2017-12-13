@@ -1,34 +1,36 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 2/4] sched/fair: add util_est on top of PELT
-Date: Wed, 13 Dec 2017 17:05:37 +0100
-Message-ID: <20171213160537.uqa423dyt5wrpgll@hirez.programming.kicks-ass.net>
-References: <20171205171018.9203-1-patrick.bellasi@arm.com>
- <20171205171018.9203-3-patrick.bellasi@arm.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: Ask for help on governor
+Date: Wed, 13 Dec 2017 08:13:12 -0800
+Message-ID: <000601d3742d$48819ac0$d984d040$@net>
+References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com> <000801d37364$d48f6ed0$7dae4c70$@net> <000f01d373bf$deacca10$9c065e30$@net> <20171213061759.GT25177@vireshk-i7> P0QweRTHbuQ9TP0R1eouYx
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:57093 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752860AbdLMQFn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 11:05:43 -0500
-Content-Disposition: inline
-In-Reply-To: <20171205171018.9203-3-patrick.bellasi@arm.com>
+Received: from cmta16.telus.net ([209.171.16.89]:58192 "EHLO cmta16.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753247AbdLMQNS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 13 Dec 2017 11:13:18 -0500
+In-Reply-To: P0QweRTHbuQ9TP0R1eouYx
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+To: 'Andy Tang' <andy.tang@nxp.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>
+Cc: "'Rafael J. Wysocki'" <rafael@kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM' <linux-pm@vger.kernel.org>
 
-On Tue, Dec 05, 2017 at 05:10:16PM +0000, Patrick Bellasi wrote:
-> +	if (cfs_rq->nr_running > 0) {
-> +		util_est  = cfs_rq->util_est_runnable;
-> +		util_est -= task_util_est(p);
-> +		if (util_est < 0)
-> +			util_est = 0;
-> +		cfs_rq->util_est_runnable = util_est;
-> +	} else {
+On 2017.12.12 22:22 Andy Tang wrote:
 
-I'm thinking that's an explicit load-store to avoid intermediate values
-landing in cfs_rq->util_esp_runnable, right?
+> Hi,
+>
+> Thanks you all for help. 
+> Anyway I found the root cause myself.
+>
+> It was caused by commit: 00bfe05889e91b5112893b001e4a47b0a0f8bdd7.
 
-That would need READ_ONCE() / WRITE_ONCE() I think, without that the
-compiler is free to munge the lot together.
+O.K. It seems my attempt to help merely diluted your original
+issue, because it appears I found and bisected a different issue.
+
+Sorry for the distraction.
+
+... Doug
