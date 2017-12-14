@@ -1,316 +1,101 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: [PATCH v4 3/4] cpufreq: Add DVFS support for Armada 37xx
-Date: Thu, 14 Dec 2017 16:00:05 +0100
-Message-ID: <20171214150006.25438-4-gregory.clement@free-electrons.com>
-References: <20171214150006.25438-1-gregory.clement@free-electrons.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
+Date: Thu, 14 Dec 2017 16:30:39 +0100
+Message-ID: <5115041.vUGA3IjvdM@aspire.rjw.lan>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <3265333.8krWOQvcRi@aspire.rjw.lan> <alpine.DEB.2.20.1712141329040.4998@nanos>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:37378 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752719AbdLNPA3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 10:00:29 -0500
-In-Reply-To: <20171214150006.25438-1-gregory.clement@free-electrons.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45068 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752671AbdLNPbZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 10:31:25 -0500
+In-Reply-To: <alpine.DEB.2.20.1712141329040.4998@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org
-Cc: Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Gregory CLEMENT <gregory.clement@free-electrons.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@free-electrons.com>, =?UTF-8?q?Miqu=C3=A8l=20Raynal?= <miquel.raynal@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Victor Gu <xigu@marvell.com>, Marcin Wojtas <mw@semihalf.com>, Wilson Ding <dingwei@marvell.com>, Hua Jing <jinghua@marvell.com>, Neta Zur Hershkovits <neta@marvell.com>, Evan Wang <xswang@marvell.com>, Andre Heider <a.heider@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-This patch adds DVFS support for the Armada 37xx SoCs
+On Thursday, December 14, 2017 1:30:37 PM CET Thomas Gleixner wrote:
+> On Thu, 14 Dec 2017, Rafael J. Wysocki wrote:
+> > On Thursday, December 14, 2017 12:54:05 PM CET Thomas Gleixner wrote:
+> > > Now the graphics issue is a different story. That only happens on
+> > > hibernation after doing the snapshot. There all non boot cpus are onlined
+> > > again and after that the devices are 'thawed'. The following reenable of
+> > > interrupts fails because i915 is not in PCI_D0 state.
+> > > 
+> > > Suspend:
+> > > 
+> > >    irq_migrate_all_off_this_cpu: Mask 125 pci_msi_mask_irq+0x0/0x10
+> > >    __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a
+> > >    __pci_write_msi_msg: Not written <- Device not in PCI_D0
+> > >    ....
+> > >    device_pm_callback_start: i915 0000:00:02.0, parent: pci0000:00, noirq bus [resume]
+> > >    pci_pm_resume_noirq <-dpm_run_callback
+> > >    pci_pm_resume_noirq <-dpm_run_callback
+> > >    pci_pm_default_resume_early <-pci_pm_resume_noirq
+> > >    pci_pm_default_resume_early <-pci_pm_resume_noirq
+> > >    __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a  <-- Set the new affinity
+> > >    device_pm_callback_end: i915 0000:00:02.0, err=0
+> > 
+> > So this works, because we power up the device during resume even if it
+> > had been suspended (via runtime PM) before the suspend started.
+> > 
+> > > Hibernate:
+> > > 
+> > >    irq_migrate_all_off_this_cpu: Mask 125 pci_msi_mask_irq+0x0/0x10
+> > >    __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a
+> > >    __pci_write_msi_msg: Not written <- Device not in PCI_D0
+> > >    ....
+> > >    device_pm_callback_start: i915 0000:00:02.0, parent: pci0000:00, noirq bus [thaw]
+> > >    pci_pm_thaw_noirq <-dpm_run_callback
+> > >    __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a
+> > >    __pci_write_msi_msg: Not written  <--- Device is not in PCI_D0
+> > >    device_pm_callback_end: i915 0000:00:02.0, err=0
+> > 
+> > And here we try to leave the device alone which is OK for devices in D0,
+> > but not for suspended ones.
+> > 
+> > It looks like we need to power up them at the "thaw" time too or at least
+> > I don't see how to address that differently.
+> 
+> The question is whether the code which brings the device out of D0 should
+> write the message unconditionally. That would be sufficient I think.
 
-There are up to four CPU frequency loads for Armada 37xx controlled by
-the hardware.
+It doesn't have to do that.
 
-This driver associates the CPU load level to a frequency, then the
-hardware will switch while selecting a load level.
+The problem here is that pci_pm_thaw_noirq() calls pci_restore_state() which
+in fact requires the device to be in D0, so the caller should put it into
+D0 instead of trying to "update" its power state.
 
-The hardware also can associate a voltage for each level (AVS support)
-but it is not yet supported
+[Note that the PCI layer doesn't put devices into low-power states during the
+hibernation's "freeze" transition, but drivers can legitimately do that in
+their "freeze" callbacks which was overlooked in that code and that's what
+i915 does.]
 
-Tested-by: Andre Heider <a.heider@gmail.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+So IMO what we need is the change below.  I'm going to test it shortly,
+but please give it a go too.
+
 ---
- drivers/cpufreq/Kconfig.arm           |   7 +
- drivers/cpufreq/Makefile              |   1 +
- drivers/cpufreq/armada-37xx-cpufreq.c | 241 ++++++++++++++++++++++++++++++++++
- 3 files changed, 249 insertions(+)
- create mode 100644 drivers/cpufreq/armada-37xx-cpufreq.c
+ drivers/pci/pci-driver.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index beb8826afbb1..3a88e33b0cfe 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -18,6 +18,13 @@ config ACPI_CPPC_CPUFREQ
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -1027,7 +1027,12 @@ static int pci_pm_thaw_noirq(struct devi
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_resume_early(dev);
  
- 	  If in doubt, say N.
- 
-+config ARM_ARMADA_37XX_CPUFREQ
-+	tristate "Armada 37xx CPUFreq support"
-+	depends on ARCH_MVEBU
-+	help
-+	  This adds the CPUFreq driver support for Marvell Armada 37xx SoCs.
-+	  The Armada 37xx PMU supports 4 frequency and VDD levels.
-+
- # big LITTLE core layer and glue drivers
- config ARM_BIG_LITTLE_CPUFREQ
- 	tristate "Generic ARM big LITTLE CPUfreq driver"
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index d762e76887e7..e07715ce8844 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -52,6 +52,7 @@ obj-$(CONFIG_ARM_BIG_LITTLE_CPUFREQ)	+= arm_big_little.o
- # LITTLE drivers, so that it is probed last.
- obj-$(CONFIG_ARM_DT_BL_CPUFREQ)		+= arm_big_little_dt.o
- 
-+obj-$(CONFIG_ARM_ARMADA_37XX_CPUFREQ)	+= armada-37xx-cpufreq.o
- obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
- obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+= cppc_cpufreq.o
- obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
-diff --git a/drivers/cpufreq/armada-37xx-cpufreq.c b/drivers/cpufreq/armada-37xx-cpufreq.c
-new file mode 100644
-index 000000000000..c6ebc88a7d8d
---- /dev/null
-+++ b/drivers/cpufreq/armada-37xx-cpufreq.c
-@@ -0,0 +1,241 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * CPU frequency scaling support for Armada 37xx platform.
-+ *
-+ * Copyright (C) 2017 Marvell
-+ *
-+ * Gregory CLEMENT <gregory.clement@free-electrons.com>
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/cpu.h>
-+#include <linux/cpufreq.h>
-+#include <linux/err.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/mfd/syscon.h>
-+#include <linux/module.h>
-+#include <linux/of_address.h>
-+#include <linux/of_device.h>
-+#include <linux/of_irq.h>
-+#include <linux/platform_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
-+
-+/* Power management in North Bridge register set */
-+#define ARMADA_37XX_NB_L0L1	0x18
-+#define ARMADA_37XX_NB_L2L3	0x1C
-+#define  ARMADA_37XX_NB_TBG_DIV_OFF	13
-+#define  ARMADA_37XX_NB_TBG_DIV_MASK	0x7
-+#define  ARMADA_37XX_NB_CLK_SEL_OFF	11
-+#define  ARMADA_37XX_NB_CLK_SEL_MASK	0x1
-+#define  ARMADA_37XX_NB_CLK_SEL_TBG	0x1
-+#define  ARMADA_37XX_NB_TBG_SEL_OFF	9
-+#define  ARMADA_37XX_NB_TBG_SEL_MASK	0x3
-+#define  ARMADA_37XX_NB_VDD_SEL_OFF	6
-+#define  ARMADA_37XX_NB_VDD_SEL_MASK	0x3
-+#define  ARMADA_37XX_NB_CONFIG_SHIFT	16
-+#define ARMADA_37XX_NB_DYN_MOD	0x24
-+#define  ARMADA_37XX_NB_CLK_SEL_EN	BIT(26)
-+#define  ARMADA_37XX_NB_TBG_EN		BIT(28)
-+#define  ARMADA_37XX_NB_DIV_EN		BIT(29)
-+#define  ARMADA_37XX_NB_VDD_EN		BIT(30)
-+#define  ARMADA_37XX_NB_DFS_EN		BIT(31)
-+#define ARMADA_37XX_NB_CPU_LOAD 0x30
-+#define  ARMADA_37XX_NB_CPU_LOAD_MASK	0x3
-+#define  ARMADA_37XX_DVFS_LOAD_0	0
-+#define  ARMADA_37XX_DVFS_LOAD_1	1
-+#define  ARMADA_37XX_DVFS_LOAD_2	2
-+#define  ARMADA_37XX_DVFS_LOAD_3	3
-+
-+/*
-+ * On Armada 37xx the Power management manages 4 level of CPU load,
-+ * each level can be associated with a CPU clock source, a CPU
-+ * divider, a VDD level, etc...
-+ */
-+#define LOAD_LEVEL_NR	4
-+
-+struct armada_37xx_dvfs {
-+	u32 cpu_freq_max;
-+	u8 divider[LOAD_LEVEL_NR];
-+};
-+
-+static struct armada_37xx_dvfs armada_37xx_dvfs[] = {
-+	{.cpu_freq_max = 1200*1000*1000, .divider = {1, 2, 4, 6} },
-+	{.cpu_freq_max = 1000*1000*1000, .divider = {1, 2, 4, 5} },
-+	{.cpu_freq_max = 800*1000*1000,  .divider = {1, 2, 3, 4} },
-+	{.cpu_freq_max = 600*1000*1000,  .divider = {2, 4, 5, 6} },
-+};
-+
-+static struct armada_37xx_dvfs *armada_37xx_cpu_freq_info_get(u32 freq)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(armada_37xx_dvfs); i++) {
-+		if (freq == armada_37xx_dvfs[i].cpu_freq_max)
-+			return &armada_37xx_dvfs[i];
-+	}
-+
-+	pr_err("Unsupported CPU frequency %d MHz\n", freq/1000000);
-+	return NULL;
-+}
-+
-+/*
-+ * Setup the four level managed by the hardware. Once the four level
-+ * will be configured then the DVFS will be enabled.
-+ */
-+static void __init armada37xx_cpufreq_dvfs_setup(struct regmap *base,
-+						 struct clk *clk, u8 *divider)
-+{
-+	int load_lvl;
-+	struct clk *parent;
-+
-+	for (load_lvl = 0; load_lvl < LOAD_LEVEL_NR; load_lvl++) {
-+		unsigned int reg, mask, val, offset = 0;
-+
-+		if (load_lvl <= ARMADA_37XX_DVFS_LOAD_1)
-+			reg = ARMADA_37XX_NB_L0L1;
-+		else
-+			reg = ARMADA_37XX_NB_L2L3;
-+
-+		if (load_lvl == ARMADA_37XX_DVFS_LOAD_0 ||
-+		    load_lvl == ARMADA_37XX_DVFS_LOAD_2)
-+			offset += ARMADA_37XX_NB_CONFIG_SHIFT;
-+
-+		/* Set cpu clock source, for all the level we use TBG */
-+		val = ARMADA_37XX_NB_CLK_SEL_TBG << ARMADA_37XX_NB_CLK_SEL_OFF;
-+		mask = (ARMADA_37XX_NB_CLK_SEL_MASK
-+			<< ARMADA_37XX_NB_CLK_SEL_OFF);
-+
-+		/*
-+		 * Set cpu divider based on the pre-computed array in
-+		 * order to have balanced step.
-+		 */
-+		val |= divider[load_lvl] << ARMADA_37XX_NB_TBG_DIV_OFF;
-+		mask |= (ARMADA_37XX_NB_TBG_DIV_MASK
-+			<< ARMADA_37XX_NB_TBG_DIV_OFF);
-+
-+		/* Set VDD divider which is actually the load level. */
-+		val |= load_lvl << ARMADA_37XX_NB_VDD_SEL_OFF;
-+		mask |= (ARMADA_37XX_NB_VDD_SEL_MASK
-+			<< ARMADA_37XX_NB_VDD_SEL_OFF);
-+
-+		val <<= offset;
-+		mask <<= offset;
-+
-+		regmap_update_bits(base, reg, mask, val);
-+	}
-+
+-	pci_update_current_state(pci_dev, PCI_D0);
 +	/*
-+	 * Set cpu clock source, for all the level we keep the same
-+	 * clock source that the one already configured. For this one
-+	 * we need to use the clock framework
++	 * pci_restore_state() requires the device to be in D0 (because of MSI
++	 * restoration among other things), so force it into D0 in case the
++	 * driver's "freeze" callbacks put it into a low-power state directly.
 +	 */
-+	parent = clk_get_parent(clk);
-+	clk_set_parent(clk, parent);
-+}
-+
-+static void __init armada37xx_cpufreq_disable_dvfs(struct regmap *base)
-+{
-+	unsigned int reg = ARMADA_37XX_NB_DYN_MOD,
-+		mask = ARMADA_37XX_NB_DFS_EN;
-+
-+	regmap_update_bits(base, reg, mask, 0);
-+}
-+
-+static void __init armada37xx_cpufreq_enable_dvfs(struct regmap *base)
-+{
-+	unsigned int val, reg = ARMADA_37XX_NB_CPU_LOAD,
-+		mask = ARMADA_37XX_NB_CPU_LOAD_MASK;
-+
-+	/* Start with the highest load (0) */
-+	val = ARMADA_37XX_DVFS_LOAD_0;
-+	regmap_update_bits(base, reg, mask, val);
-+
-+	/* Now enable DVFS for the CPUs */
-+	reg = ARMADA_37XX_NB_DYN_MOD;
-+	mask =	ARMADA_37XX_NB_CLK_SEL_EN | ARMADA_37XX_NB_TBG_EN |
-+		ARMADA_37XX_NB_DIV_EN | ARMADA_37XX_NB_VDD_EN |
-+		ARMADA_37XX_NB_DFS_EN;
-+
-+	regmap_update_bits(base, reg, mask, mask);
-+}
-+
-+static int __init armada37xx_cpufreq_driver_init(void)
-+{
-+	struct armada_37xx_dvfs *dvfs;
-+	struct platform_device *pdev;
-+	unsigned int cur_frequency;
-+	struct regmap *nb_pm_base;
-+	struct device *cpu_dev;
-+	int load_lvl, ret;
-+	struct clk *clk;
-+
-+	nb_pm_base =
-+		syscon_regmap_lookup_by_compatible("marvell,armada-3700-nb-pm");
-+
-+	if (IS_ERR(nb_pm_base))
-+		return -ENODEV;
-+
-+	/* Before doing any configuration on the DVFS first, disable it */
-+	armada37xx_cpufreq_disable_dvfs(nb_pm_base);
-+
-+	/*
-+	 * On CPU 0 register the operating points supported (which are
-+	 * the nominal CPU frequency and full integer divisions of
-+	 * it).
-+	 */
-+	cpu_dev = get_cpu_device(0);
-+	if (!cpu_dev) {
-+		dev_err(cpu_dev, "Cannot get CPU\n");
-+		return -ENODEV;
-+	}
-+
-+	clk = clk_get(cpu_dev, 0);
-+	if (IS_ERR(clk)) {
-+		dev_err(cpu_dev, "Cannot get clock for CPU0\n");
-+		return PTR_ERR(clk);
-+	}
-+
-+	/* Get nominal (current) CPU frequency */
-+	cur_frequency = clk_get_rate(clk);
-+	if (!cur_frequency) {
-+		dev_err(cpu_dev, "Failed to get clock rate for CPU\n");
-+		return -EINVAL;
-+	}
-+
-+	dvfs = armada_37xx_cpu_freq_info_get(cur_frequency);
-+	if (!dvfs)
-+		return -EINVAL;
-+
-+	armada37xx_cpufreq_dvfs_setup(nb_pm_base, clk, dvfs->divider);
-+
-+	for (load_lvl = ARMADA_37XX_DVFS_LOAD_0; load_lvl < LOAD_LEVEL_NR;
-+	     load_lvl++) {
-+		unsigned long freq = cur_frequency / dvfs->divider[load_lvl];
-+
-+		ret = dev_pm_opp_add(cpu_dev, freq, 0);
-+		if (ret) {
-+			/* clean-up the already added opp before leaving */
-+			while (load_lvl-- > ARMADA_37XX_DVFS_LOAD_0) {
-+				freq = cur_frequency / dvfs->divider[load_lvl];
-+				dev_pm_opp_remove(cpu_dev, freq);
-+			}
-+			return ret;
-+		}
-+	}
-+
-+	/* Now that everything is setup, enable the DVFS at hardware level */
-+	armada37xx_cpufreq_enable_dvfs(nb_pm_base);
-+
-+	pdev = platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
-+
-+	return PTR_ERR_OR_ZERO(pdev);
-+}
-+/* late_initcall, to guarantee the driver is loaded after A37xx clock driver */
-+late_initcall(armada37xx_cpufreq_driver_init);
-+
-+MODULE_AUTHOR("Gregory CLEMENT <gregory.clement@free-electrons.com>");
-+MODULE_DESCRIPTION("Armada 37xx cpufreq driver");
-+MODULE_LICENSE("GPL");
--- 
-2.15.1
++	pci_set_power_state(pci_dev, PCI_D0);
+ 	pci_restore_state(pci_dev);
+ 
+ 	if (drv && drv->pm && drv->pm->thaw_noirq)
