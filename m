@@ -1,46 +1,34 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: [PATCH v3 07/11] thermal: armada: Update Kconfig and module
- description
-Date: Thu, 14 Dec 2017 14:10:18 +0100
-Message-ID: <20171214141018.62ff61c3@windsurf>
-References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-        <20171214103011.24713-8-miquel.raynal@free-electrons.com>
-        <87po7ho93k.fsf@free-electrons.com>
-        <20171214121706.529f9652@xps13>
-        <87efnxo8cf.fsf@free-electrons.com>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
+Date: Thu, 14 Dec 2017 14:24:22 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1712141423360.4998@nanos>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFwsMuHUBQz5kDNwRf17JnasXMWjvmLq5qXGH-694yeq1w@mail.gmail.com> <20171206121452.GA6320@dhcp22.suse.cz> <db81e89d-eee6-868c-dc10-c028f4c4be84@mblankhorst.nl> <alpine.DEB.2.20.1712061344560.1724@nanos>
+ <0f1d3d63-fa10-5cef-8014-81753dc60243@mblankhorst.nl> <alpine.DEB.2.20.1712061514420.1724@nanos> <57c8679e-1b88-c9ad-2299-2bea7560b28f@mblankhorst.nl> <alpine.DEB.2.20.1712081129450.1840@nanos> <alpine.DEB.2.20.1712131507160.1885@nanos>
+ <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com> <alpine.DEB.2.20.1712131738020.1885@nanos> <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com> <alpine.DEB.2.20.1712131856130.1885@nanos> <alpine.DEB.2.20.1712132149420.1885@nanos>
+ <alpine.DEB.2.20.1712132201380.1885@nanos> <alpine.DEB.2.20.1712132211570.1885@nanos>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:33557 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752414AbdLNNKc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 08:10:32 -0500
-In-Reply-To: <87efnxo8cf.fsf@free-electrons.com>
+Received: from Galois.linutronix.de ([146.0.238.70]:37455 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751925AbdLNNYh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 08:24:37 -0500
+In-Reply-To: <alpine.DEB.2.20.1712132211570.1885@nanos>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Miquel RAYNAL <miquel.raynal@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, linux-arm-kernel@lists.infradead.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-Hello,
-
-On Thu, 14 Dec 2017 12:30:08 +0100, Gregory CLEMENT wrote:
-
-> Unfortunately Armada SoCs is more that just these SoC!
+On Thu, 14 Dec 2017, Thomas Gleixner wrote:
+> Now, what's different vs. 4.14:
 > 
-> Have a look on Documentation/arm/Marvell/README to see how the Marvell
-> marketing guys had been creative :)
-> 
-> Some kirkwood are called Armada 300 and Armada 310.
-> The Dove is also called Armada 510.
-> Some PXA are called Armada too such as Armada 168 or Armada 610.
-> And finally the Berlin also use Aramda as code name: Armada 1000 or
-> Aramda 1500
+> The 4.14 code accidentaly had the irq descriptor for this vector still
+> populated in the old CPU due to the convoluted way the vector allocation
+> worked. I have still to investigate if one of those cases is actually
+> leaking the descriptor, which would be a fatal bug.
 
-However: "Marvell EBU Armada" should be distinctive enough.
+It doesn't leak. It repopulates it at the same place out of sheer luck.
 
-Thomas
--- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+Thanks,
+
+	tglx
