@@ -1,58 +1,64 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 3/3] soc: renesas: rcar-sysc: Keep wakeup sources
- active during system suspend
-Date: Thu, 14 Dec 2017 15:11:39 +0100
-Message-ID: <CAPDyKFrxaghoAcWJN1R7d7k5b=QwMpusGFuohVZpTaWngf3aiw@mail.gmail.com>
-References: <1510234022-29442-1-git-send-email-geert+renesas@glider.be> <1510234022-29442-4-git-send-email-geert+renesas@glider.be>
+Subject: Re: [PATCH v2 2/3] PM / core: Add IN_BAND_WAKEUP driver flag
+Date: Thu, 14 Dec 2017 15:13:32 +0100
+Message-ID: <CAPDyKFpFiBbuC6vhv4-gA+WOy2igwSZzZXtN9a9sH-f6FSWwWQ@mail.gmail.com>
+References: <1510588003-16650-1-git-send-email-ulf.hansson@linaro.org>
+ <1510588003-16650-3-git-send-email-ulf.hansson@linaro.org>
+ <1926914.PsNMcYBlGW@aspire.rjw.lan> <CAMuHMdUE+fdbS+HDxbcWNHaTZubnrQ7ai4bkOsBpLriG1y-gZg@mail.gmail.com>
+ <CAPDyKFoAY7yZJz9obke5DeqadpqJ0MEKPQJvxibpq85f+==BBA@mail.gmail.com>
+ <CAMuHMdXk9GaExvYbdSfV0bf4Kh1TNrZDKtAfTDaDfWFMvk6Snw@mail.gmail.com>
+ <CAPDyKFoey_kSf0OE7OmHCX4H4VFQcWOU6NE4suZ9=9stZVQNpQ@mail.gmail.com> <CAMuHMdXqK4QA=rqWpBMPmXY7vb2Feoncb4wym0C9y7tvV71zBw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <1510234022-29442-4-git-send-email-geert+renesas@glider.be>
-Sender: linux-clk-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAMuHMdXqK4QA=rqWpBMPmXY7vb2Feoncb4wym0C9y7tvV71zBw@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 9 November 2017 at 14:27, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
-> If an R-Car SYSC slave device is part of the CPG/MSTP or CPG/MSSR Clock
-> Domain and to be used as a wakeup source, it must be kept active during
-> system suspend.
+On 14 December 2017 at 11:52, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> Hi Ulf,
 >
-> Currently this is handled in device-specific drivers by explicitly
-> increasing the use count of the module clock when the device is
-> configured as a wakeup source.  However, the proper way to prevent the
-> device from being stopped is to inform this requirement to the genpd
-> core, by setting the GENPD_FLAG_ACTIVE_WAKEUP flag.
+> On Mon, Dec 11, 2017 at 9:59 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 11 December 2017 at 11:48, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>>> On Mon, Dec 11, 2017 at 11:24 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>> On 10 December 2017 at 11:16, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>>>>> To complicate matters, some drivers may be used on SoCs where the device
+>>>>> needs to be kept running (clock and/or power domain), and on SoCs where the
+>>>>> device is always running. This difference is typically handled by genpd,
+>>>>> and the device driver may not even be aware. Of course the driver can just
+>>>>> set IN_BAND_WAKEUP regardless, (else it has to check for the presence of
+>>>>> clocks and/or power-domains properties itself, duplicating genpd
+>>>>> core/driver code).
+>>>>>
+>>>>> So what about
+>>>>>
+>>>>>          if (IN_BAND_WAKEUP ||
+>>>>>             (GENPD_FLAG_ACTIVE_WAKEUP && !OUT_BAND_WAKEUP)) {
+>>>>
+>>>> We don't want to suspend the device in case of IN_BAND_WAKEUP, right!?
+>>>>
+>>>>>                 ... suspend device...
+>>>>>         }
+>>>
+>>> Oops, inverted logic. I should not write technical emails on Sunday morning.
+>>>
+>>> Yes, the device must be kept awake if either IN_BAND_WAKEUP is set, or
+>>> if GENPD_FLAG_ACTIVE_WAKEUP is set but OUT_BAND_WAKEUP isn't.
+>>
+>> Putting together the pieces of information received here, you have
+>> convinced me that we should stick to use the current
+>> GENPD_FLAG_ACTIVE_WAKEUP for now, which allows genpds to opt-in for
+>> start dealing with in-band-wakeups.
 >
-> Note that this will only affect devices configured as wakeup sources.
+> Thank you!
 >
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> So I'll move forward with "[PATCH v2 0/3] PM / Domain: renesas: Fix active
+> wakeup behavior"
+> (https://www.spinics.net/lists/linux-renesas-soc/msg19941.html)
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+Yes! I just added my reviewed-by tag to these.
 
 Kind regards
 Uffe
-
-> ---
-> v2:
->   - Integrate "soc: renesas: rcar-sysc: Use GENPD_FLAG_ACTIVE_WAKEUP",
-> ---
->  drivers/soc/renesas/rcar-sysc.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/soc/renesas/rcar-sysc.c b/drivers/soc/renesas/rcar-sysc.c
-> index c8406e81640f6560..ac4df1c43b2fbdbe 100644
-> --- a/drivers/soc/renesas/rcar-sysc.c
-> +++ b/drivers/soc/renesas/rcar-sysc.c
-> @@ -224,7 +224,7 @@ static void __init rcar_sysc_pd_setup(struct rcar_sysc_pd *pd)
->
->         if (!(pd->flags & (PD_CPU | PD_SCU))) {
->                 /* Enable Clock Domain for I/O devices */
-> -               genpd->flags |= GENPD_FLAG_PM_CLK;
-> +               genpd->flags |= GENPD_FLAG_PM_CLK | GENPD_FLAG_ACTIVE_WAKEUP;
->                 if (has_cpg_mstp) {
->                         genpd->attach_dev = cpg_mstp_attach_dev;
->                         genpd->detach_dev = cpg_mstp_detach_dev;
-> --
-> 2.7.4
->
