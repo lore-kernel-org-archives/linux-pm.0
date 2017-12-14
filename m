@@ -1,34 +1,61 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
-Date: Thu, 14 Dec 2017 14:24:22 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1712141423360.4998@nanos>
-References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFwsMuHUBQz5kDNwRf17JnasXMWjvmLq5qXGH-694yeq1w@mail.gmail.com> <20171206121452.GA6320@dhcp22.suse.cz> <db81e89d-eee6-868c-dc10-c028f4c4be84@mblankhorst.nl> <alpine.DEB.2.20.1712061344560.1724@nanos>
- <0f1d3d63-fa10-5cef-8014-81753dc60243@mblankhorst.nl> <alpine.DEB.2.20.1712061514420.1724@nanos> <57c8679e-1b88-c9ad-2299-2bea7560b28f@mblankhorst.nl> <alpine.DEB.2.20.1712081129450.1840@nanos> <alpine.DEB.2.20.1712131507160.1885@nanos>
- <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com> <alpine.DEB.2.20.1712131738020.1885@nanos> <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com> <alpine.DEB.2.20.1712131856130.1885@nanos> <alpine.DEB.2.20.1712132149420.1885@nanos>
- <alpine.DEB.2.20.1712132201380.1885@nanos> <alpine.DEB.2.20.1712132211570.1885@nanos>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V4 2/7] PCI: tegra: Use bus->sysdata to store and get
+ host private data
+Date: Thu, 14 Dec 2017 15:05:03 +0100
+Message-ID: <20171214140503.GB13733@ulmo>
+References: <1512723493-865-1-git-send-email-mmaddireddy@nvidia.com>
+ <1512723493-865-3-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from Galois.linutronix.de ([146.0.238.70]:37455 "EHLO
-        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751925AbdLNNYh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 08:24:37 -0500
-In-Reply-To: <alpine.DEB.2.20.1712132211570.1885@nanos>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="A6N2fC+uXW/VQSAv"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <1512723493-865-3-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: cyndis-/1wQRMveznE@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Thu, 14 Dec 2017, Thomas Gleixner wrote:
-> Now, what's different vs. 4.14:
-> 
-> The 4.14 code accidentaly had the irq descriptor for this vector still
-> populated in the old CPU due to the convoluted way the vector allocation
-> worked. I have still to investigate if one of those cases is actually
-> leaking the descriptor, which would be a fatal bug.
 
-It doesn't leak. It repopulates it at the same place out of sheer luck.
+--A6N2fC+uXW/VQSAv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
+On Fri, Dec 08, 2017 at 02:28:08PM +0530, Manikanta Maddireddy wrote:
+> Tegra host driver is using pci_find_host_bridge() to get private data,
+> however pci_find_host_bridge() is causing module build failure because
+> it is not exported. pci_find_host_bridge() can be avoided by using
+> bus->sysdata to store and get private data.
+>=20
+> Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> ---
+> V4:
+> * new patch in V4
+>=20
+>  drivers/pci/host/pci-tegra.c | 13 +++++--------
+>  1 file changed, 5 insertions(+), 8 deletions(-)
 
-	tglx
+Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+
+--A6N2fC+uXW/VQSAv
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAloyhQ8ACgkQ3SOs138+
+s6ElJhAAiEQCEKBp1Z0BYGO9V+vTORnsJ39ocNeUtwhcROH56OPJQLQBHKKRmXaf
+Aqjd5tyHbhLuIAoXeyngrn6EfuhNHA1JfUOWDmKFauCYoP5ei9M0cJilXNTLxDGh
+RjtcNM1AA9ajsmkIMeNYUs32OIkwNBvOaPjeiMWodKLvi9JFEZFRZbFAZnyKpnS2
+coVFK2l0FSoUPCn2uSoeth6udbTkH7kGD2FYPZ3vPLpFBbl4lgZW+I+4UjnIG6Is
+0Z6wU/ssElSg7zpDmVKWZi/A1llFYZbs72pmqKBpGEhm1440hKU1W5sdGfIY9T/K
+eFDI/A/DwIuwP2Tn0olRiFw+8Rxm24lQaSnX4u4ZcgVJTWCig9u0py71lJ1MGw+y
+GAdUPnLCFv6rQfAVNklmGkb2p/6lzwQvDOyVAAbWIwFyk2QKOU75rIBxnwL/o3v1
+jE3nFQ4lyz+UxqYXlfnx709UoxIxSb/Vx23iG8LGPqxxBxczK6XnYYugyy8RQ6nw
+6IslmGgu20QqBKLFZFHZFUGo46/wjB7tGrHQSbsHJNA8GkZbcdp0tKEgoRCizoCT
+uPf0Appm+uMUKG2bKPBOL269J6NIhg6Xz/sSeKZkVbzYc327whyJVsWiyFUzk5Ai
+QXlYMyyGk5b56Hdx8d55sEUSKA0JmgxTzuqF6ywu1nJBtyL7wu4=
+=LwAw
+-----END PGP SIGNATURE-----
+
+--A6N2fC+uXW/VQSAv--
