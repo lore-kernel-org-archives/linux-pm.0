@@ -1,85 +1,90 @@
-From: Miquel Raynal <miquel.raynal@free-electrons.com>
-Subject: [PATCH v3 01/11] dt-bindings: thermal: Describe Armada AP806 and CP110
-Date: Thu, 14 Dec 2017 11:30:01 +0100
-Message-ID: <20171214103011.24713-2-miquel.raynal@free-electrons.com>
+From: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH v3 03/11] thermal: armada: Simplify the check of the validity bit
+Date: Thu, 14 Dec 2017 11:30:03 +0100
+Message-ID: <20171214103011.24713-4-miquel.raynal@free-electrons.com>
 References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:57124 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751297AbdLNKaW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 05:30:22 -0500
-In-Reply-To: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171214103011.24713-1-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Miquel Raynal <miquel.raynal@free-electrons.com>, Baruch Siach <baruch@tkos.co.il>, David Sniatkiwicz <davidsn@marvell.com>
 
-From: Baruch Siach <baruch@tkos.co.il>
+All Armada SoCs use one bit to declare if the sensor values are valid.
+This bit moves across the versions of the IP.
 
-Add compatible strings for AP806 and CP110 that are part of the Armada
-8k/7k line of SoCs.
+The method until then was to do both a shift and compare with an useless
+flag of "0x1". It is clearer and quicker to directly save the value that
+must be ANDed instead of the bit position and do a single bitwise AND
+operation.
 
-Add a note on the differences in the size of the control area in
-different bindings. This is an existing difference between the Armada
-375 binding and the other boards already supported. The new AP806 and
-CP110 bindings are similar to the existing Armada 375 in this regard.
-
-Also add a note about the new property "marvell,thermal-zone-name" to
-help identify the zones from the sysfs.
-
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-[<miquel.raynal@free-electrons.com>: reword, additional details, new
-property]
-Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
+Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- .../devicetree/bindings/thermal/armada-thermal.txt | 29 ++++++++++++++++++----
- 1 file changed, 24 insertions(+), 5 deletions(-)
+ drivers/thermal/armada_thermal.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-index 24aacf8948c5..1602dc2ee220 100644
---- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-@@ -7,17 +7,36 @@ Required properties:
- 		marvell,armada375-thermal
- 		marvell,armada380-thermal
- 		marvell,armadaxp-thermal
-+		marvell,armada-ap806-thermal
-+		marvell,armada-cp110-thermal
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 6c4af2622d4f..26698f2d3ca7 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -24,8 +24,6 @@
+ #include <linux/of_device.h>
+ #include <linux/thermal.h>
  
- - reg:		Device's register space.
- 		Two entries are expected, see the examples below.
--		The first one is required for the sensor register;
--		the second one is required for the control register
--		to be used for sensor initialization (a.k.a. calibration).
-+		The first one points to the status register (4B).
-+		The second one points to the control registers (8B).
-+		Note: with legacy bindings, the second entry pointed
-+		only on the so called "control MSB" ("control 1"), was
-+		4B wide and did not let the possibility to reach the
-+		"control LSB" ("control 0") register.
+-#define THERMAL_VALID_MASK		0x1
+-
+ /* Thermal Manager Control and Status Register */
+ #define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
+ #define PMU_TM_DISABLE_OFFS		0
+@@ -67,7 +65,7 @@ struct armada_thermal_data {
+ 	/* Register shift and mask to access the sensor temperature */
+ 	unsigned int temp_shift;
+ 	unsigned int temp_mask;
+-	unsigned int is_valid_shift;
++	unsigned int is_valid_bit;
+ };
  
--Example:
-+Optional properties:
+ static void armadaxp_init_sensor(struct platform_device *pdev,
+@@ -151,7 +149,7 @@ static bool armada_is_valid(struct armada_thermal_priv *priv)
+ {
+ 	unsigned long reg = readl_relaxed(priv->sensor);
  
-+- marvell,thermal-zone-name: The name to identify the thermal zone
-+                             within the sysfs, useful when multiple
-+                             thermal zones are registered (AP, CPx...).
-+
-+Examples:
-+
-+	/* Legacy bindings */
- 	thermal@d0018300 {
- 		compatible = "marvell,armada370-thermal";
--                reg = <0xd0018300 0x4
-+		reg = <0xd0018300 0x4
- 		       0xd0018304 0x4>;
- 	};
-+
-+	ap_thermal: thermal@6f8084 {
-+		compatible = "marvell,armada-ap806-thermal";
-+		reg = <0x6f808C 0x4>,
-+		      <0x6f8084 0x8>;
-+		marvell,thermal-zone-name = "ap_thermal_zone";
-+	};
+-	return (reg >> priv->data->is_valid_shift) & THERMAL_VALID_MASK;
++	return reg & priv->data->is_valid_bit;
+ }
+ 
+ static int armada_get_temp(struct thermal_zone_device *thermal,
+@@ -199,7 +197,7 @@ static const struct armada_thermal_data armadaxp_data = {
+ static const struct armada_thermal_data armada370_data = {
+ 	.is_valid = armada_is_valid,
+ 	.init_sensor = armada370_init_sensor,
+-	.is_valid_shift = 9,
++	.is_valid_bit = BIT(9),
+ 	.temp_shift = 10,
+ 	.temp_mask = 0x1ff,
+ 	.coef_b = 3153000000UL,
+@@ -210,7 +208,7 @@ static const struct armada_thermal_data armada370_data = {
+ static const struct armada_thermal_data armada375_data = {
+ 	.is_valid = armada_is_valid,
+ 	.init_sensor = armada375_init_sensor,
+-	.is_valid_shift = 10,
++	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x1ff,
+ 	.coef_b = 3171900000UL,
+@@ -221,7 +219,7 @@ static const struct armada_thermal_data armada375_data = {
+ static const struct armada_thermal_data armada380_data = {
+ 	.is_valid = armada_is_valid,
+ 	.init_sensor = armada380_init_sensor,
+-	.is_valid_shift = 10,
++	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+ 	.coef_b = 1172499100UL,
 -- 
 2.11.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
