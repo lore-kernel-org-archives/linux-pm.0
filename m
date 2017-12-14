@@ -1,126 +1,122 @@
-From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v3 06/11] thermal: armada: Add support for Armada CP110
-Date: Thu, 14 Dec 2017 12:37:32 +0100
-Message-ID: <87a7ylo803.fsf@free-electrons.com>
-References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-        <20171214103011.24713-7-miquel.raynal@free-electrons.com>
-        <87tvwto96y.fsf@free-electrons.com> <20171214123301.1729df4f@xps13>
+From: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
+Date: Thu, 14 Dec 2017 12:54:05 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1712132211570.1885@nanos>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFwsMuHUBQz5kDNwRf17JnasXMWjvmLq5qXGH-694yeq1w@mail.gmail.com> <20171206121452.GA6320@dhcp22.suse.cz> <db81e89d-eee6-868c-dc10-c028f4c4be84@mblankhorst.nl> <alpine.DEB.2.20.1712061344560.1724@nanos>
+ <0f1d3d63-fa10-5cef-8014-81753dc60243@mblankhorst.nl> <alpine.DEB.2.20.1712061514420.1724@nanos> <57c8679e-1b88-c9ad-2299-2bea7560b28f@mblankhorst.nl> <alpine.DEB.2.20.1712081129450.1840@nanos> <alpine.DEB.2.20.1712131507160.1885@nanos>
+ <20171213162336.GG53955@bhelgaas-glaptop.roam.corp.google.com> <alpine.DEB.2.20.1712131738020.1885@nanos> <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com> <alpine.DEB.2.20.1712131856130.1885@nanos> <alpine.DEB.2.20.1712132149420.1885@nanos>
+ <alpine.DEB.2.20.1712132201380.1885@nanos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171214123301.1729df4f@xps13> (Miquel RAYNAL's message of "Thu,
-        14 Dec 2017 12:33:01 +0100")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <alpine.DEB.2.20.1712132201380.1885@nanos>
+Sender: linux-pci-owner@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Miquel,
- 
- On jeu., déc. 14 2017, Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+On Wed, 13 Dec 2017, Thomas Gleixner wrote:
+> On Wed, 13 Dec 2017, Thomas Gleixner wrote:
+> > On Wed, 13 Dec 2017, Thomas Gleixner wrote:
+> > > On Wed, 13 Dec 2017, Linus Torvalds wrote:
+> > > 
+> > > > On Wed, Dec 13, 2017 at 8:41 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > > >
+> > > > > Definitely. That was fragile forever but puzzles me is that I can't figure
+> > > > > out what now causes that spurious interrupt to surface out of the blue.
+> > > > 
+> > > > Perhaps just timing?
+> > > 
+> > > That's what I'm trying to figure out right now, because that is the only
+> > > sensible explanation left. The whole machinery of suspend is exactly the
+> > > same with and without the vector changes. I instrumented all functions
+> > > involved and the picture is the same. I even do not see any fundamental
+> > > timing differences where one would say: That's it.
+> > > 
+> > > What puzzles me even more is that in the range of commits I'm fiddling with
+> > > there is no other change than the vector management stuff and the point
+> > > where it breaks makes no sense at all. The point Maarten bisected it to
+> > > works nicely here, so that might just point to a very subtle timing issue.
+> > 
+> > After doing more debugging on this it turns out that this looks like a
+> > legacy interrupt coming in. The vector number is always 55, which is legacy
+> > IRQ 7 as seen from the PIC. The corresponding IOAPIC interrupt pin is
+> > masked and vector 55 is completely unused.
+> > 
+> > More questions than answers. Still investigating.
 
-> On Thu, 14 Dec 2017 12:11:49 +0100
-> Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
->
->> Hi Miquel,
->>  
->>  On jeu., déc. 14 2017, Miquel Raynal
->> <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
->> 
->> > From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
->> >
->> > The CP110 component is integrated in the Armada 8k and 7k lines of
->> > processors.
->> >
->> > Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
->> > [<miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>: renamed the register
->> > pointers]  
->> 
->> Actually you did more thant this see below
->> 
->> 
->> > Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
->> > ---
->> >  drivers/thermal/armada_thermal.c | 30
->> > ++++++++++++++++++++++++------ 1 file changed, 24 insertions(+), 6
->> > deletions(-)
->> >
->> > diff --git a/drivers/thermal/armada_thermal.c
->> > b/drivers/thermal/armada_thermal.c index 279d01937bb8..f5c911524656
->> > 100644 --- a/drivers/thermal/armada_thermal.c
->> > +++ b/drivers/thermal/armada_thermal.c
->> > @@ -37,7 +37,6 @@
->> >  #define A375_UNIT_CONTROL_MASK		0x7
->> >  #define A375_READOUT_INVERT		BIT(15)
->> >  #define A375_HW_RESETn			BIT(8)
->> > -#define A380_HW_RESET			BIT(8)
->> >  
->> >  /* Legacy bindings */
->> >  #define LEGACY_CONTROL_MEM_LEN		0x4
->> > @@ -52,6 +51,10 @@
->> >  #define CONTROL0_TSEN_RESET		BIT(1)
->> >  #define CONTROL0_TSEN_ENABLE		BIT(2)
->> >  
->> > +/* EXT_TSEN refers to the external temperature sensors, out of the
->> > AP */ +#define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
->> > +#define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)  
->> You added or rename these values
->> 
->> > +
->> >  struct armada_thermal_data;
->> >  
->> >  /* Marvell EBU Thermal Sensor Dev Structure */
->> > @@ -153,11 +156,10 @@ static void armada380_init_sensor(struct
->> > platform_device *pdev, u32 reg = readl_relaxed(priv->control1);
->> >  
->> >  	/* Reset hardware once */
->> > -	if (!(reg & A380_HW_RESET)) {
->> > -		reg |= A380_HW_RESET;
->> > -		writel(reg, priv->control1);
->> > -		msleep(10);
->> > -	}
->> > +	reg |= CONTROL1_EXT_TSEN_HW_RESETn;
->> > +	reg &= ~CONTROL1_EXT_TSEN_SW_RESET;
->> > +	writel(reg, priv->control1);  
->> 
->> And here you modified the behavior of this function.
->> Did you checked that it is valid for Armada 38x?
->
-> There is nothing about it the documentation and anyway this register
-> can be accessed later, so writing it is harmless ayway.
->
->> 
->> Given the comment we had, I thought we should not do anything if
->> CONTROL1_EXT_TSEN_HW_RESETn was not set.
->
-> That is the opposite, if it is not set (ie. reset is active), you have
-> to set it (reset is then disabled).
+At least that one could be explained by the changes. In the previous
+management scheme the IOAPIC interrupts were always allocated even when the
+interrupt was not in use. The new scheme does not longer do that because
+people complained about the vector waste (16 vectors on each CPU) and it
+got rid of all the special casing of IRQ0-15.
 
-Actually I was concerned by the "once" for me it means "only one time",
-but maybe it just meant it was useless to reset it again but not
-harmful.
+So the old scheme silently consumed the spurious vector. I added debug code
+to that effect to 4.14 and on that machine IRQ7 is triggered at the same
+point post resume and the core code drops it silently because the interrupt
+is marked masked and no action assigned.
 
-Gregory
+So the only difference to today is that the new code complains, while the
+old one does an extra mask of the already masked IOAPIC pin and silently
+returns.
 
->
->> 
->> By the way, if the new sequence is valid, this comment should be
->> removed or at least updated.
->
-> That's right, I will in v4.
->
-> Thanks for reviewing,
-> Miquèl
->
->
+After quite some investigation I found out that its independent of the
+graphics thing. That's a genuine issue on that platform which seems to emit
+random legacy vectors which were never ever used for unknown reasons. I
+verified that both the IOAPIC and the PIC are masked, so they cannot send
+crap. Though it turned out that the silly firmware unmasks the PIC and
+leaves it that way when it returns from suspend. Now there is a race
+whether the kernel resume path manages to mask the PIC again early enough
+before something triggers IRQ7 or not. Adding/removing debug code makes the
+problem come and go. So I really don't worry about that one and rather
+prefer to have the spurious interrupt printed than silently consumed by
+chance.
 
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Now the graphics issue is a different story. That only happens on
+hibernation after doing the snapshot. There all non boot cpus are onlined
+again and after that the devices are 'thawed'. The following reenable of
+interrupts fails because i915 is not in PCI_D0 state.
+
+Suspend:
+
+   irq_migrate_all_off_this_cpu: Mask 125 pci_msi_mask_irq+0x0/0x10
+   __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a
+   __pci_write_msi_msg: Not written <- Device not in PCI_D0
+   ....
+   device_pm_callback_start: i915 0000:00:02.0, parent: pci0000:00, noirq bus [resume]
+   pci_pm_resume_noirq <-dpm_run_callback
+   pci_pm_resume_noirq <-dpm_run_callback
+   pci_pm_default_resume_early <-pci_pm_resume_noirq
+   pci_pm_default_resume_early <-pci_pm_resume_noirq
+   __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a  <-- Set the new affinity
+   device_pm_callback_end: i915 0000:00:02.0, err=0
+
+Hibernate:
+
+   irq_migrate_all_off_this_cpu: Mask 125 pci_msi_mask_irq+0x0/0x10
+   __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a
+   __pci_write_msi_msg: Not written <- Device not in PCI_D0
+   ....
+   device_pm_callback_start: i915 0000:00:02.0, parent: pci0000:00, noirq bus [thaw]
+   pci_pm_thaw_noirq <-dpm_run_callback
+   __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a
+   __pci_write_msi_msg: Not written  <--- Device is not in PCI_D0
+   device_pm_callback_end: i915 0000:00:02.0, err=0
+
+So that code path fails to set the new affinity because at the point where
+the MSI msg should be written the device state is != PCI_D0.
+
+Now, what's different vs. 4.14:
+
+The 4.14 code accidentaly had the irq descriptor for this vector still
+populated in the old CPU due to the convoluted way the vector allocation
+worked. I have still to investigate if one of those cases is actually
+leaking the descriptor, which would be a fatal bug.
+
+But the new code does a proper cleanup and does not repopulate it on the
+offline CPU. So that unearthes the issue. I'm handing that over to the PM
+folks to look at. I got lost in that maze of callbacks.
+
+Thanks,
+
+	tglx
