@@ -1,88 +1,126 @@
-From: Miquel RAYNAL <miquel.raynal@free-electrons.com>
-Subject: Re: [PATCH v3 07/11] thermal: armada: Update Kconfig and module
- description
-Date: Thu, 14 Dec 2017 12:36:02 +0100
-Message-ID: <20171214123602.2d99127f@xps13>
+From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v3 06/11] thermal: armada: Add support for Armada CP110
+Date: Thu, 14 Dec 2017 12:37:32 +0100
+Message-ID: <87a7ylo803.fsf@free-electrons.com>
 References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-        <20171214103011.24713-8-miquel.raynal@free-electrons.com>
-        <87po7ho93k.fsf@free-electrons.com>
-        <20171214121706.529f9652@xps13>
-        <87efnxo8cf.fsf@free-electrons.com>
+        <20171214103011.24713-7-miquel.raynal@free-electrons.com>
+        <87tvwto96y.fsf@free-electrons.com> <20171214123301.1729df4f@xps13>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:59936 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751198AbdLNLgP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 06:36:15 -0500
-In-Reply-To: <87efnxo8cf.fsf@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171214123301.1729df4f@xps13> (Miquel RAYNAL's message of "Thu,
+        14 Dec 2017 12:33:01 +0100")
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, linux-arm-kernel@lists.infradead.org
 
-Hi Gregory,
+Hi Miquel,
+ 
+ On jeu., déc. 14 2017, Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
 
-On Thu, 14 Dec 2017 12:30:08 +0100
-Gregory CLEMENT <gregory.clement@free-electrons.com> wrote:
+> On Thu, 14 Dec 2017 12:11:49 +0100
+> Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+>
+>> Hi Miquel,
+>>  
+>>  On jeu., déc. 14 2017, Miquel Raynal
+>> <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+>> 
+>> > From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+>> >
+>> > The CP110 component is integrated in the Armada 8k and 7k lines of
+>> > processors.
+>> >
+>> > Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+>> > [<miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>: renamed the register
+>> > pointers]  
+>> 
+>> Actually you did more thant this see below
+>> 
+>> 
+>> > Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+>> > ---
+>> >  drivers/thermal/armada_thermal.c | 30
+>> > ++++++++++++++++++++++++------ 1 file changed, 24 insertions(+), 6
+>> > deletions(-)
+>> >
+>> > diff --git a/drivers/thermal/armada_thermal.c
+>> > b/drivers/thermal/armada_thermal.c index 279d01937bb8..f5c911524656
+>> > 100644 --- a/drivers/thermal/armada_thermal.c
+>> > +++ b/drivers/thermal/armada_thermal.c
+>> > @@ -37,7 +37,6 @@
+>> >  #define A375_UNIT_CONTROL_MASK		0x7
+>> >  #define A375_READOUT_INVERT		BIT(15)
+>> >  #define A375_HW_RESETn			BIT(8)
+>> > -#define A380_HW_RESET			BIT(8)
+>> >  
+>> >  /* Legacy bindings */
+>> >  #define LEGACY_CONTROL_MEM_LEN		0x4
+>> > @@ -52,6 +51,10 @@
+>> >  #define CONTROL0_TSEN_RESET		BIT(1)
+>> >  #define CONTROL0_TSEN_ENABLE		BIT(2)
+>> >  
+>> > +/* EXT_TSEN refers to the external temperature sensors, out of the
+>> > AP */ +#define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
+>> > +#define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)  
+>> You added or rename these values
+>> 
+>> > +
+>> >  struct armada_thermal_data;
+>> >  
+>> >  /* Marvell EBU Thermal Sensor Dev Structure */
+>> > @@ -153,11 +156,10 @@ static void armada380_init_sensor(struct
+>> > platform_device *pdev, u32 reg = readl_relaxed(priv->control1);
+>> >  
+>> >  	/* Reset hardware once */
+>> > -	if (!(reg & A380_HW_RESET)) {
+>> > -		reg |= A380_HW_RESET;
+>> > -		writel(reg, priv->control1);
+>> > -		msleep(10);
+>> > -	}
+>> > +	reg |= CONTROL1_EXT_TSEN_HW_RESETn;
+>> > +	reg &= ~CONTROL1_EXT_TSEN_SW_RESET;
+>> > +	writel(reg, priv->control1);  
+>> 
+>> And here you modified the behavior of this function.
+>> Did you checked that it is valid for Armada 38x?
+>
+> There is nothing about it the documentation and anyway this register
+> can be accessed later, so writing it is harmless ayway.
+>
+>> 
+>> Given the comment we had, I thought we should not do anything if
+>> CONTROL1_EXT_TSEN_HW_RESETn was not set.
+>
+> That is the opposite, if it is not set (ie. reset is active), you have
+> to set it (reset is then disabled).
 
-> Hi Miquel,
->  
->  On jeu., déc. 14 2017, Miquel RAYNAL
-> <miquel.raynal@free-electrons.com> wrote:
-> 
-> > Hi Gregory,
-> >
-> > On Thu, 14 Dec 2017 12:13:51 +0100
-> > Gregory CLEMENT <gregory.clement@free-electrons.com> wrote:
-> >  
-> >> Hi Miquel,
-> >>  
-> >>  On jeu., déc. 14 2017, Miquel Raynal
-> >> <miquel.raynal@free-electrons.com> wrote:
-> >>   
-> >> > Update Armada thermal driver Kconfig entry as well as the
-> >> > driver's MODULE_DESCRIPTION content, now that 64-bit SoCs are
-> >> > also supported, eg. Armada 7K and Armada 8K.
-> >> >
-> >> > Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
-> >> > ---
-> >> >  drivers/thermal/Kconfig          | 4 ++--
-> >> >  drivers/thermal/armada_thermal.c | 2 +-
-> >> >  2 files changed, 3 insertions(+), 3 deletions(-)
-> >> >
-> >> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> >> > index 315ae2926e20..44cad046f272 100644
-> >> > --- a/drivers/thermal/Kconfig
-> >> > +++ b/drivers/thermal/Kconfig
-> >> > @@ -301,13 +301,13 @@ config DB8500_THERMAL
-> >> >  	  thermal zone if trip points reached.
-> >> >  
-> >> >  config ARMADA_THERMAL
-> >> > -	tristate "Armada 370/XP thermal management"
-> >> > +	tristate "Armada 370/XP/7K/8K thermal management"    
-> >> if you want to be exhaustive you should also add Armada 375 and
-> >> 38x.  
-> >
-> > That is right, both are missing from the description, but wouldn't
-> > it be better to just state "Armada SoCs" instead of patching that
-> > file everythime a new SoC reuses this IP?  
-> 
-> Unfortunately Armada SoCs is more that just these SoC!
-> 
-> Have a look on Documentation/arm/Marvell/README to see how the Marvell
-> marketing guys had been creative :)
-> 
-> Some kirkwood are called Armada 300 and Armada 310.
-> The Dove is also called Armada 510.
-> Some PXA are called Armada too such as Armada 168 or Armada 610.
-> And finally the Berlin also use Aramda as code name: Armada 1000 or
-> Aramda 1500
+Actually I was concerned by the "once" for me it means "only one time",
+but maybe it just meant it was useless to reset it again but not
+harmful.
 
-Ehr...
+Gregory
 
-Ok, I'll stick to "Armada 37x/38x/XP/7K/8K SoCs".
+>
+>> 
+>> By the way, if the new sequence is valid, this comment should be
+>> removed or at least updated.
+>
+> That's right, I will in v4.
+>
+> Thanks for reviewing,
+> Miquèl
+>
+>
 
-
-Miquèl
+-- 
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
