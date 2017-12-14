@@ -1,72 +1,84 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 2/3] PM / core: Add IN_BAND_WAKEUP driver flag
-Date: Thu, 14 Dec 2017 11:52:35 +0100
-Message-ID: <CAMuHMdXqK4QA=rqWpBMPmXY7vb2Feoncb4wym0C9y7tvV71zBw@mail.gmail.com>
-References: <1510588003-16650-1-git-send-email-ulf.hansson@linaro.org>
- <1510588003-16650-3-git-send-email-ulf.hansson@linaro.org>
- <1926914.PsNMcYBlGW@aspire.rjw.lan> <CAMuHMdUE+fdbS+HDxbcWNHaTZubnrQ7ai4bkOsBpLriG1y-gZg@mail.gmail.com>
- <CAPDyKFoAY7yZJz9obke5DeqadpqJ0MEKPQJvxibpq85f+==BBA@mail.gmail.com>
- <CAMuHMdXk9GaExvYbdSfV0bf4Kh1TNrZDKtAfTDaDfWFMvk6Snw@mail.gmail.com> <CAPDyKFoey_kSf0OE7OmHCX4H4VFQcWOU6NE4suZ9=9stZVQNpQ@mail.gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [RFC PATCH 1/2] platform/x86: add Atom PMC quirk to disable SATA
+Date: Thu, 14 Dec 2017 11:53:30 +0100
+Message-ID: <2dd8be86-496d-1136-9cc2-0e9e0ac30d41@redhat.com>
+References: <20170906204237.24x6fzlfmq7jmuce@sig21.net>
+ <20170925191749.2oamusbajgs6clcg@sig21.net>
+ <20170925192109.rty2fnm7c4jnj3vx@sig21.net>
+ <34396652.fljU28PShI@aspire.rjw.lan>
+ <a2c8d724-015a-e6c3-23ab-4b6036cc22eb@redhat.com>
+ <CAEG3pNDL-8srk_JwqtZxs_waHAPfmRC_5Orhs_=XUhwdHTdM-g@mail.gmail.com>
+ <e4760a03-b6af-00fc-6c26-9fff8ed6c378@redhat.com>
+ <20171213162206.GA7337@sig21.net>
+ <e6aa5c55-8174-7ad9-009f-c254d3aeaf72@redhat.com>
+ <1513193613.7000.58.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f193.google.com ([209.85.220.193]:32904 "EHLO
-        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751181AbdLNKwg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 05:52:36 -0500
-In-Reply-To: <CAPDyKFoey_kSf0OE7OmHCX4H4VFQcWOU6NE4suZ9=9stZVQNpQ@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <1513193613.7000.58.camel@linux.intel.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Johannes Stezenbach <js@sig21.net>
+Cc: Michael Turquette <mturquette@baylibre.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Mika Westerberg <mika.westerberg@linux.intel.com>, Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>, linux-clk <linux-clk@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Carlo Caione <carlo@endlessm.com>, Darren Hart <dvhart@infradead.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Takashi Iwai <tiwai@suse.de>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-Hi Ulf,
+Hi,
 
-On Mon, Dec 11, 2017 at 9:59 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 11 December 2017 at 11:48, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> On Mon, Dec 11, 2017 at 11:24 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> On 10 December 2017 at 11:16, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->>>> To complicate matters, some drivers may be used on SoCs where the device
->>>> needs to be kept running (clock and/or power domain), and on SoCs where the
->>>> device is always running. This difference is typically handled by genpd,
->>>> and the device driver may not even be aware. Of course the driver can just
->>>> set IN_BAND_WAKEUP regardless, (else it has to check for the presence of
->>>> clocks and/or power-domains properties itself, duplicating genpd
->>>> core/driver code).
->>>>
->>>> So what about
->>>>
->>>>          if (IN_BAND_WAKEUP ||
->>>>             (GENPD_FLAG_ACTIVE_WAKEUP && !OUT_BAND_WAKEUP)) {
->>>
->>> We don't want to suspend the device in case of IN_BAND_WAKEUP, right!?
->>>
->>>>                 ... suspend device...
->>>>         }
+On 13-12-17 20:33, Andy Shevchenko wrote:
+> On Wed, 2017-12-13 at 17:37 +0100, Hans de Goede wrote:
+>> Hi,
 >>
->> Oops, inverted logic. I should not write technical emails on Sunday morning.
+>> On 13-12-17 17:22, Johannes Stezenbach wrote:
+>>>
+> 
+> 
+>>> Please don't get confused with the other thread about clocks.
+>>> This issue sets the "disable IP" bit, found by doing stupid
+>>> experiments to enable S0ix on E200HA.
 >>
->> Yes, the device must be kept awake if either IN_BAND_WAKEUP is set, or
->> if GENPD_FLAG_ACTIVE_WAKEUP is set but OUT_BAND_WAKEUP isn't.
->
-> Putting together the pieces of information received here, you have
-> convinced me that we should stick to use the current
-> GENPD_FLAG_ACTIVE_WAKEUP for now, which allows genpds to opt-in for
-> start dealing with in-band-wakeups.
+>> Ah my bad.
+> 
+> Oh, perhaps I also need to refresh my memory from that buglink.
+> 
+>>> 1. no idea if Cherry Trail even has SATA IP, maybe this is a
+>>>      meaningless bit but PMC firmware carried over from
+>>>      Bay Trail looks at it
+>>
+>>
+>> There are no CHT SoCs with SATA AFAIK, but Braswell SoCs,
+>> which I believe is the same die do have SATA.
+>>
+>> I think the best fix here is to look at the model-string part
+>> of the CPU-id and do a quirk based on that, setting the "disable IP"
+>> bit for the SATA on all SoC models known to not have SATA
+>> (Z8300, Z8350, Z8500, Z8550, Z8700, Z8750).
+>>
+>> Rafael, Andy how does that sound as a solution?
+> 
+> Yeah, that bit is a property of PMC microcontroller and thus belongs to
+> its driver in Linux kernel.
+> 
+> To make it strict we need a matching property. AFAIR CPU model ID is all
+> the same for all CHT and BSW SoCs, so, can't be used to distinguish
+> them. So, you are thinking about comparing CPU model name then?
 
-Thank you!
+Yes CPU model name.
 
-So I'll move forward with "[PATCH v2 0/3] PM / Domain: renesas: Fix active
-wakeup behavior"
-(https://www.spinics.net/lists/linux-renesas-soc/msg19941.html)
+> It might work. However, SATA itself is a part of PCH, and thus can not
+> exactly be matched by CPU ID.
 
-Gr{oetje,eeting}s,
+AFAIK the PCH is integrated, at least with the Z83xx Z85xx and X87xx
+models.
 
-                        Geert
+So using a CPU model name match seems a better solution to me
+then DMI product-name matching, as the CPU model name match should
+fix this for all devices with such a SoC.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> Btw, Pentium Celeron N-series according to spec has SATA host.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Right as I said the Braswell models do have SATA.
+
+Regards,
+
+Hans
