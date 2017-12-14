@@ -1,61 +1,41 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V4 2/7] PCI: tegra: Use bus->sysdata to store and get
- host private data
-Date: Thu, 14 Dec 2017 15:05:03 +0100
-Message-ID: <20171214140503.GB13733@ulmo>
-References: <1512723493-865-1-git-send-email-mmaddireddy@nvidia.com>
- <1512723493-865-3-git-send-email-mmaddireddy@nvidia.com>
+From: Timur Tabi <timur@codeaurora.org>
+Subject: Re: [PATCH v2 1/2] acpi, spcr: Make SPCR avialable to other
+ architectures
+Date: Thu, 14 Dec 2017 08:08:08 -0600
+Message-ID: <6541a055-bfd4-daa7-5b91-38384bd65c3f@codeaurora.org>
+References: <20171211155059.17062-1-prarit@redhat.com>
+ <20171211155059.17062-2-prarit@redhat.com> <20171213124533.GA32362@red-moon>
+ <d967861e-9f83-689c-2b14-58d7450c848b@codeaurora.org>
+ <20171214103027.GB697@e107981-ln.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="A6N2fC+uXW/VQSAv"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <1512723493-865-3-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Cc: cyndis-/1wQRMveznE@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.codeaurora.org ([198.145.29.96]:56016 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751084AbdLNOIY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 09:08:24 -0500
+In-Reply-To: <20171214103027.GB697@e107981-ln.cambridge.arm.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Prarit Bhargava <prarit@redhat.com>, linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, graeme.gregory@linaro.org, mark.salter@redhat.com
 
+On 12/14/17 4:30 AM, Lorenzo Pieralisi wrote:
+>> I didn't want to put any ACPI code in amba-pl011.c, so putting it in spcr.c
+>> made the most sense.  I agree the global variable is ugly.  If you have a
+>> better idea, I'm all ears.
 
---A6N2fC+uXW/VQSAv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> I told you my idea. It could have been made easier by reusing the
+> ACPI_DECLARE_PROBE_ENTRY() mechanism.
 
-On Fri, Dec 08, 2017 at 02:28:08PM +0530, Manikanta Maddireddy wrote:
-> Tegra host driver is using pci_find_host_bridge() to get private data,
-> however pci_find_host_bridge() is causing module build failure because
-> it is not exported. pci_find_host_bridge() can be avoided by using
-> bus->sysdata to store and get private data.
->=20
-> Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> ---
-> V4:
-> * new patch in V4
->=20
->  drivers/pci/host/pci-tegra.c | 13 +++++--------
->  1 file changed, 5 insertions(+), 8 deletions(-)
+Sorry, I don't mean to be difficult, but when did you tell *me* this 
+idea of yours?  I don't see any email from you to me that mentions 
+ACPI_DECLARE_PROBE_ENTRY().  I've never even heard of that macro before. 
+  Please note that I'm not the original author of this code.
 
-Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-
---A6N2fC+uXW/VQSAv
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAloyhQ8ACgkQ3SOs138+
-s6ElJhAAiEQCEKBp1Z0BYGO9V+vTORnsJ39ocNeUtwhcROH56OPJQLQBHKKRmXaf
-Aqjd5tyHbhLuIAoXeyngrn6EfuhNHA1JfUOWDmKFauCYoP5ei9M0cJilXNTLxDGh
-RjtcNM1AA9ajsmkIMeNYUs32OIkwNBvOaPjeiMWodKLvi9JFEZFRZbFAZnyKpnS2
-coVFK2l0FSoUPCn2uSoeth6udbTkH7kGD2FYPZ3vPLpFBbl4lgZW+I+4UjnIG6Is
-0Z6wU/ssElSg7zpDmVKWZi/A1llFYZbs72pmqKBpGEhm1440hKU1W5sdGfIY9T/K
-eFDI/A/DwIuwP2Tn0olRiFw+8Rxm24lQaSnX4u4ZcgVJTWCig9u0py71lJ1MGw+y
-GAdUPnLCFv6rQfAVNklmGkb2p/6lzwQvDOyVAAbWIwFyk2QKOU75rIBxnwL/o3v1
-jE3nFQ4lyz+UxqYXlfnx709UoxIxSb/Vx23iG8LGPqxxBxczK6XnYYugyy8RQ6nw
-6IslmGgu20QqBKLFZFHZFUGo46/wjB7tGrHQSbsHJNA8GkZbcdp0tKEgoRCizoCT
-uPf0Appm+uMUKG2bKPBOL269J6NIhg6Xz/sSeKZkVbzYc327whyJVsWiyFUzk5Ai
-QXlYMyyGk5b56Hdx8d55sEUSKA0JmgxTzuqF6ywu1nJBtyL7wu4=
-=LwAw
------END PGP SIGNATURE-----
-
---A6N2fC+uXW/VQSAv--
+-- 
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm
+Technologies, Inc.  Qualcomm Technologies, Inc. is a member of the
+Code Aurora Forum, a Linux Foundation Collaborative Project.
