@@ -1,61 +1,68 @@
-From: Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v3 07/11] thermal: armada: Update Kconfig and module
- description
-Date: Thu, 14 Dec 2017 12:17:06 +0100
-Message-ID: <20171214121706.529f9652@xps13>
-References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-        <20171214103011.24713-8-miquel.raynal@free-electrons.com>
-        <87po7ho93k.fsf@free-electrons.com>
+From: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [PATCH 1/2] thermal: mtk: Cleanup unused defines
+Date: Thu, 14 Dec 2017 12:21:33 +0100
+Message-ID: <e7158dac-5d29-5c89-518f-cbedaeb10df8@gmail.com>
+References: <20171201104321.8410-1-matthias.bgg@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <87po7ho93k.fsf-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171201104321.8410-1-matthias.bgg@gmail.com>
+Content-Language: en-US
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com
+Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, Matthias Brugger <mbrugger@suse.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Gregory,
 
-On Thu, 14 Dec 2017 12:13:51 +0100
-Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
 
-> Hi Miquel,
->  
->  On jeu., déc. 14 2017, Miquel Raynal
-> <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+On 12/01/2017 11:43 AM, Matthias Brugger wrote:
+> The mtk_thermal has some defiens which are never used within the driver.
+> This patch delets them.
 > 
-> > Update Armada thermal driver Kconfig entry as well as the driver's
-> > MODULE_DESCRIPTION content, now that 64-bit SoCs are also supported,
-> > eg. Armada 7K and Armada 8K.
-> >
-> > Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> > ---
-> >  drivers/thermal/Kconfig          | 4 ++--
-> >  drivers/thermal/armada_thermal.c | 2 +-
-> >  2 files changed, 3 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-> > index 315ae2926e20..44cad046f272 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -301,13 +301,13 @@ config DB8500_THERMAL
-> >  	  thermal zone if trip points reached.
-> >  
-> >  config ARMADA_THERMAL
-> > -	tristate "Armada 370/XP thermal management"
-> > +	tristate "Armada 370/XP/7K/8K thermal management"  
-> if you want to be exhaustive you should also add Armada 375 and 38x.
+> Signed-off-by: Matthias Brugger <mbrugger@suse.com>
+> ---
+>  drivers/thermal/mtk_thermal.c | 9 +--------
+>  1 file changed, 1 insertion(+), 8 deletions(-)
+> 
+> diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
+> index 1e61c09153c9..c75661a3801a 100644
+> --- a/drivers/thermal/mtk_thermal.c
+> +++ b/drivers/thermal/mtk_thermal.c
+> @@ -32,15 +32,10 @@
+>  #include <linux/types.h>
+>  
+>  /* AUXADC Registers */
+> -#define AUXADC_CON0_V		0x000
+> -#define AUXADC_CON1_V		0x004
+>  #define AUXADC_CON1_SET_V	0x008
+>  #define AUXADC_CON1_CLR_V	0x00c
+>  #define AUXADC_CON2_V		0x010
+>  #define AUXADC_DATA(channel)	(0x14 + (channel) * 4)
+> -#define AUXADC_MISC_V		0x094
+> -
+> -#define AUXADC_CON1_CHANNEL(x)	BIT(x)
+>  
+>  #define APMIXED_SYS_TS_CON1	0x604
+>  
+> @@ -158,8 +153,6 @@
+>  /* The number of sensing points per bank */
+>  #define MT2712_NUM_SENSORS_PER_ZONE	4
+>  
+> -#define THERMAL_NAME    "mtk-thermal"
+> -
+>  struct mtk_thermal;
+>  
+>  struct thermal_bank_cfg {
+> @@ -765,7 +758,7 @@ static struct platform_driver mtk_thermal_driver = {
+>  	.probe = mtk_thermal_probe,
+>  	.remove = mtk_thermal_remove,
+>  	.driver = {
+> -		.name = THERMAL_NAME,
+> +		.name = "mtk-thermal",
+>  		.of_match_table = mtk_thermal_of_match,
+>  	},
+>  };
+> 
 
-That is right, both are missing from the description, but wouldn't it
-be better to just state "Armada SoCs" instead of patching that file
-everythime a new SoC reuses this IP?
-
-Thanks,
-Miquèl
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Kind ping.
