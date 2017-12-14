@@ -1,41 +1,57 @@
-From: Timur Tabi <timur@codeaurora.org>
-Subject: Re: [PATCH v2 1/2] acpi, spcr: Make SPCR avialable to other
- architectures
-Date: Thu, 14 Dec 2017 08:08:08 -0600
-Message-ID: <6541a055-bfd4-daa7-5b91-38384bd65c3f@codeaurora.org>
-References: <20171211155059.17062-1-prarit@redhat.com>
- <20171211155059.17062-2-prarit@redhat.com> <20171213124533.GA32362@red-moon>
- <d967861e-9f83-689c-2b14-58d7450c848b@codeaurora.org>
- <20171214103027.GB697@e107981-ln.cambridge.arm.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/3] clk: renesas: mstp: Keep wakeup sources active
+ during system suspend
+Date: Thu, 14 Dec 2017 15:10:52 +0100
+Message-ID: <CAPDyKFq7dBHk9AhyMc1x+dJPmDJQ0osR4WkbT0wUR=hZMBScyw@mail.gmail.com>
+References: <1510234022-29442-1-git-send-email-geert+renesas@glider.be> <1510234022-29442-2-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:56016 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751084AbdLNOIY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 09:08:24 -0500
-In-Reply-To: <20171214103027.GB697@e107981-ln.cambridge.arm.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-clk-owner@vger.kernel.org>
+In-Reply-To: <1510234022-29442-2-git-send-email-geert+renesas@glider.be>
+Sender: linux-clk-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Kevin Hilman <khilman@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Cc: Prarit Bhargava <prarit@redhat.com>, linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, Bhupesh Sharma <bhsharma@redhat.com>, Lv Zheng <lv.zheng@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Jonathan Corbet <corbet@lwn.net>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, graeme.gregory@linaro.org, mark.salter@redhat.com
 
-On 12/14/17 4:30 AM, Lorenzo Pieralisi wrote:
->> I didn't want to put any ACPI code in amba-pl011.c, so putting it in spcr.c
->> made the most sense.  I agree the global variable is ugly.  If you have a
->> better idea, I'm all ears.
+On 9 November 2017 at 14:27, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> If a device is part of the CPG/MSTP Clock Domain and to be used as a
+> wakeup source, it must be kept active during system suspend.
+>
+> Currently this is handled in device-specific drivers by explicitly
+> increasing the use count of the module clock when the device is
+> configured as a wakeup source.  However, the proper way to prevent the
+> device from being stopped is to inform this requirement to the genpd
+> core, by setting the GENPD_FLAG_ACTIVE_WAKEUP flag.
+>
+> Note that this will only affect devices configured as wakeup sources.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-> I told you my idea. It could have been made easier by reusing the
-> ACPI_DECLARE_PROBE_ENTRY() mechanism.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Sorry, I don't mean to be difficult, but when did you tell *me* this 
-idea of yours?  I don't see any email from you to me that mentions 
-ACPI_DECLARE_PROBE_ENTRY().  I've never even heard of that macro before. 
-  Please note that I'm not the original author of this code.
+Kind regards
+Uffe
 
--- 
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm
-Technologies, Inc.  Qualcomm Technologies, Inc. is a member of the
-Code Aurora Forum, a Linux Foundation Collaborative Project.
+> ---
+> v2:
+>   - Integrate "clk: renesas: mstp: Use GENPD_FLAG_ACTIVE_WAKEUP",
+> ---
+>  drivers/clk/renesas/clk-mstp.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/clk/renesas/clk-mstp.c b/drivers/clk/renesas/clk-mstp.c
+> index 500a9e4e03c48957..0b222197a4576fd7 100644
+> --- a/drivers/clk/renesas/clk-mstp.c
+> +++ b/drivers/clk/renesas/clk-mstp.c
+> @@ -344,7 +344,7 @@ void __init cpg_mstp_add_clk_domain(struct device_node *np)
+>                 return;
+>
+>         pd->name = np->name;
+> -       pd->flags = GENPD_FLAG_PM_CLK;
+> +       pd->flags = GENPD_FLAG_PM_CLK | GENPD_FLAG_ACTIVE_WAKEUP;
+>         pd->attach_dev = cpg_mstp_attach_dev;
+>         pd->detach_dev = cpg_mstp_detach_dev;
+>         pm_genpd_init(pd, &pm_domain_always_on_gov, false);
+> --
+> 2.7.4
+>
