@@ -1,62 +1,46 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
-Date: Thu, 14 Dec 2017 13:30:37 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1712141329040.4998@nanos>
-References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <alpine.DEB.2.20.1712132201380.1885@nanos> <alpine.DEB.2.20.1712132211570.1885@nanos> <3265333.8krWOQvcRi@aspire.rjw.lan>
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Subject: Re: [PATCH v3 07/11] thermal: armada: Update Kconfig and module
+ description
+Date: Thu, 14 Dec 2017 14:10:18 +0100
+Message-ID: <20171214141018.62ff61c3@windsurf>
+References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
+        <20171214103011.24713-8-miquel.raynal@free-electrons.com>
+        <87po7ho93k.fsf@free-electrons.com>
+        <20171214121706.529f9652@xps13>
+        <87efnxo8cf.fsf@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <3265333.8krWOQvcRi@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.free-electrons.com ([62.4.15.54]:33557 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752414AbdLNNKc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 08:10:32 -0500
+In-Reply-To: <87efnxo8cf.fsf@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Miquel RAYNAL <miquel.raynal@free-electrons.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, linux-arm-kernel@lists.infradead.org
 
-On Thu, 14 Dec 2017, Rafael J. Wysocki wrote:
-> On Thursday, December 14, 2017 12:54:05 PM CET Thomas Gleixner wrote:
-> > Now the graphics issue is a different story. That only happens on
-> > hibernation after doing the snapshot. There all non boot cpus are onlined
-> > again and after that the devices are 'thawed'. The following reenable of
-> > interrupts fails because i915 is not in PCI_D0 state.
-> > 
-> > Suspend:
-> > 
-> >    irq_migrate_all_off_this_cpu: Mask 125 pci_msi_mask_irq+0x0/0x10
-> >    __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a
-> >    __pci_write_msi_msg: Not written <- Device not in PCI_D0
-> >    ....
-> >    device_pm_callback_start: i915 0000:00:02.0, parent: pci0000:00, noirq bus [resume]
-> >    pci_pm_resume_noirq <-dpm_run_callback
-> >    pci_pm_resume_noirq <-dpm_run_callback
-> >    pci_pm_default_resume_early <-pci_pm_resume_noirq
-> >    pci_pm_default_resume_early <-pci_pm_resume_noirq
-> >    __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a  <-- Set the new affinity
-> >    device_pm_callback_end: i915 0000:00:02.0, err=0
-> 
-> So this works, because we power up the device during resume even if it
-> had been suspended (via runtime PM) before the suspend started.
-> 
-> > Hibernate:
-> > 
-> >    irq_migrate_all_off_this_cpu: Mask 125 pci_msi_mask_irq+0x0/0x10
-> >    __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a
-> >    __pci_write_msi_msg: Not written <- Device not in PCI_D0
-> >    ....
-> >    device_pm_callback_start: i915 0000:00:02.0, parent: pci0000:00, noirq bus [thaw]
-> >    pci_pm_thaw_noirq <-dpm_run_callback
-> >    __pci_write_msi_msg: 0000:00:02.0 00000000fee0100c 0000412a
-> >    __pci_write_msi_msg: Not written  <--- Device is not in PCI_D0
-> >    device_pm_callback_end: i915 0000:00:02.0, err=0
-> 
-> And here we try to leave the device alone which is OK for devices in D0,
-> but not for suspended ones.
-> 
-> It looks like we need to power up them at the "thaw" time too or at least
-> I don't see how to address that differently.
+Hello,
 
-The question is whether the code which brings the device out of D0 should
-write the message unconditionally. That would be sufficient I think.
+On Thu, 14 Dec 2017 12:30:08 +0100, Gregory CLEMENT wrote:
 
-Thanks,
+> Unfortunately Armada SoCs is more that just these SoC!
+> 
+> Have a look on Documentation/arm/Marvell/README to see how the Marvell
+> marketing guys had been creative :)
+> 
+> Some kirkwood are called Armada 300 and Armada 310.
+> The Dove is also called Armada 510.
+> Some PXA are called Armada too such as Armada 168 or Armada 610.
+> And finally the Berlin also use Aramda as code name: Armada 1000 or
+> Aramda 1500
 
-	tglx
+However: "Marvell EBU Armada" should be distinctive enough.
+
+Thomas
+-- 
+Thomas Petazzoni, CTO, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
