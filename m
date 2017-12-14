@@ -1,90 +1,59 @@
-From: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v3 03/11] thermal: armada: Simplify the check of the validity bit
-Date: Thu, 14 Dec 2017 11:30:03 +0100
-Message-ID: <20171214103011.24713-4-miquel.raynal@free-electrons.com>
+From: Miquel Raynal <miquel.raynal@free-electrons.com>
+Subject: [PATCH v3 07/11] thermal: armada: Update Kconfig and module description
+Date: Thu, 14 Dec 2017 11:30:07 +0100
+Message-ID: <20171214103011.24713-8-miquel.raynal@free-electrons.com>
 References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171214103011.24713-1-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.free-electrons.com ([62.4.15.54]:57181 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751297AbdLNKaY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 05:30:24 -0500
+In-Reply-To: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Miquel Raynal <miquel.raynal@free-electrons.com>, Baruch Siach <baruch@tkos.co.il>, David Sniatkiwicz <davidsn@marvell.com>
 
-All Armada SoCs use one bit to declare if the sensor values are valid.
-This bit moves across the versions of the IP.
+Update Armada thermal driver Kconfig entry as well as the driver's
+MODULE_DESCRIPTION content, now that 64-bit SoCs are also supported,
+eg. Armada 7K and Armada 8K.
 
-The method until then was to do both a shift and compare with an useless
-flag of "0x1". It is clearer and quicker to directly save the value that
-must be ANDed instead of the bit position and do a single bitwise AND
-operation.
-
-Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
 ---
- drivers/thermal/armada_thermal.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ drivers/thermal/Kconfig          | 4 ++--
+ drivers/thermal/armada_thermal.c | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 315ae2926e20..44cad046f272 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -301,13 +301,13 @@ config DB8500_THERMAL
+ 	  thermal zone if trip points reached.
+ 
+ config ARMADA_THERMAL
+-	tristate "Armada 370/XP thermal management"
++	tristate "Armada 370/XP/7K/8K thermal management"
+ 	depends on ARCH_MVEBU || COMPILE_TEST
+ 	depends on HAS_IOMEM
+ 	depends on OF
+ 	help
+ 	  Enable this option if you want to have support for thermal management
+-	  controller present in Armada 370 and Armada XP SoC.
++	  controller present in Armada 370, Armada XP, Armada 7K/8K SoCs.
+ 
+ config DA9062_THERMAL
+ 	tristate "DA9062/DA9061 Dialog Semiconductor thermal driver"
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 6c4af2622d4f..26698f2d3ca7 100644
+index f5c911524656..da58a8961a37 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -24,8 +24,6 @@
- #include <linux/of_device.h>
- #include <linux/thermal.h>
+@@ -403,5 +403,5 @@ static struct platform_driver armada_thermal_driver = {
+ module_platform_driver(armada_thermal_driver);
  
--#define THERMAL_VALID_MASK		0x1
--
- /* Thermal Manager Control and Status Register */
- #define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
- #define PMU_TM_DISABLE_OFFS		0
-@@ -67,7 +65,7 @@ struct armada_thermal_data {
- 	/* Register shift and mask to access the sensor temperature */
- 	unsigned int temp_shift;
- 	unsigned int temp_mask;
--	unsigned int is_valid_shift;
-+	unsigned int is_valid_bit;
- };
- 
- static void armadaxp_init_sensor(struct platform_device *pdev,
-@@ -151,7 +149,7 @@ static bool armada_is_valid(struct armada_thermal_priv *priv)
- {
- 	unsigned long reg = readl_relaxed(priv->sensor);
- 
--	return (reg >> priv->data->is_valid_shift) & THERMAL_VALID_MASK;
-+	return reg & priv->data->is_valid_bit;
- }
- 
- static int armada_get_temp(struct thermal_zone_device *thermal,
-@@ -199,7 +197,7 @@ static const struct armada_thermal_data armadaxp_data = {
- static const struct armada_thermal_data armada370_data = {
- 	.is_valid = armada_is_valid,
- 	.init_sensor = armada370_init_sensor,
--	.is_valid_shift = 9,
-+	.is_valid_bit = BIT(9),
- 	.temp_shift = 10,
- 	.temp_mask = 0x1ff,
- 	.coef_b = 3153000000UL,
-@@ -210,7 +208,7 @@ static const struct armada_thermal_data armada370_data = {
- static const struct armada_thermal_data armada375_data = {
- 	.is_valid = armada_is_valid,
- 	.init_sensor = armada375_init_sensor,
--	.is_valid_shift = 10,
-+	.is_valid_bit = BIT(10),
- 	.temp_shift = 0,
- 	.temp_mask = 0x1ff,
- 	.coef_b = 3171900000UL,
-@@ -221,7 +219,7 @@ static const struct armada_thermal_data armada375_data = {
- static const struct armada_thermal_data armada380_data = {
- 	.is_valid = armada_is_valid,
- 	.init_sensor = armada380_init_sensor,
--	.is_valid_shift = 10,
-+	.is_valid_bit = BIT(10),
- 	.temp_shift = 0,
- 	.temp_mask = 0x3ff,
- 	.coef_b = 1172499100UL,
+ MODULE_AUTHOR("Ezequiel Garcia <ezequiel.garcia@free-electrons.com>");
+-MODULE_DESCRIPTION("Armada 370/XP thermal driver");
++MODULE_DESCRIPTION("Armada SoCs thermal driver");
+ MODULE_LICENSE("GPL v2");
 -- 
 2.11.0
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
