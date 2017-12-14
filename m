@@ -1,116 +1,72 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH v3 03/11] thermal: armada: Simplify the check of the validity bit
-Date: Thu, 14 Dec 2017 11:52:13 +0100
-Message-ID: <877etppoo2.fsf@free-electrons.com>
-References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-        <20171214103011.24713-4-miquel.raynal@free-electrons.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2 2/3] PM / core: Add IN_BAND_WAKEUP driver flag
+Date: Thu, 14 Dec 2017 11:52:35 +0100
+Message-ID: <CAMuHMdXqK4QA=rqWpBMPmXY7vb2Feoncb4wym0C9y7tvV71zBw@mail.gmail.com>
+References: <1510588003-16650-1-git-send-email-ulf.hansson@linaro.org>
+ <1510588003-16650-3-git-send-email-ulf.hansson@linaro.org>
+ <1926914.PsNMcYBlGW@aspire.rjw.lan> <CAMuHMdUE+fdbS+HDxbcWNHaTZubnrQ7ai4bkOsBpLriG1y-gZg@mail.gmail.com>
+ <CAPDyKFoAY7yZJz9obke5DeqadpqJ0MEKPQJvxibpq85f+==BBA@mail.gmail.com>
+ <CAMuHMdXk9GaExvYbdSfV0bf4Kh1TNrZDKtAfTDaDfWFMvk6Snw@mail.gmail.com> <CAPDyKFoey_kSf0OE7OmHCX4H4VFQcWOU6NE4suZ9=9stZVQNpQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:58145 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751173AbdLNKwZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 05:52:25 -0500
-In-Reply-To: <20171214103011.24713-4-miquel.raynal@free-electrons.com> (Miquel
-        Raynal's message of "Thu, 14 Dec 2017 11:30:03 +0100")
+Received: from mail-qk0-f193.google.com ([209.85.220.193]:32904 "EHLO
+        mail-qk0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751181AbdLNKwg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 14 Dec 2017 05:52:36 -0500
+In-Reply-To: <CAPDyKFoey_kSf0OE7OmHCX4H4VFQcWOU6NE4suZ9=9stZVQNpQ@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Miquel Raynal <miquel.raynal@free-electrons.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, linux-arm-kernel@lists.infradead.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM list <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-Hi Miquel,
- 
- On jeu., déc. 14 2017, Miquel Raynal <miquel.raynal@free-electrons.com> wrote:
+Hi Ulf,
 
-> All Armada SoCs use one bit to declare if the sensor values are valid.
-> This bit moves across the versions of the IP.
+On Mon, Dec 11, 2017 at 9:59 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> On 11 December 2017 at 11:48, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>> On Mon, Dec 11, 2017 at 11:24 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>> On 10 December 2017 at 11:16, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>>>> To complicate matters, some drivers may be used on SoCs where the device
+>>>> needs to be kept running (clock and/or power domain), and on SoCs where the
+>>>> device is always running. This difference is typically handled by genpd,
+>>>> and the device driver may not even be aware. Of course the driver can just
+>>>> set IN_BAND_WAKEUP regardless, (else it has to check for the presence of
+>>>> clocks and/or power-domains properties itself, duplicating genpd
+>>>> core/driver code).
+>>>>
+>>>> So what about
+>>>>
+>>>>          if (IN_BAND_WAKEUP ||
+>>>>             (GENPD_FLAG_ACTIVE_WAKEUP && !OUT_BAND_WAKEUP)) {
+>>>
+>>> We don't want to suspend the device in case of IN_BAND_WAKEUP, right!?
+>>>
+>>>>                 ... suspend device...
+>>>>         }
+>>
+>> Oops, inverted logic. I should not write technical emails on Sunday morning.
+>>
+>> Yes, the device must be kept awake if either IN_BAND_WAKEUP is set, or
+>> if GENPD_FLAG_ACTIVE_WAKEUP is set but OUT_BAND_WAKEUP isn't.
 >
-> The method until then was to do both a shift and compare with an useless
-> flag of "0x1". It is clearer and quicker to directly save the value that
-> must be ANDed instead of the bit position and do a single bitwise AND
-> operation.
->
-> Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
+> Putting together the pieces of information received here, you have
+> convinced me that we should stick to use the current
+> GENPD_FLAG_ACTIVE_WAKEUP for now, which allows genpds to opt-in for
+> start dealing with in-band-wakeups.
 
-Reviewed-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Thank you!
 
-Thanks,
+So I'll move forward with "[PATCH v2 0/3] PM / Domain: renesas: Fix active
+wakeup behavior"
+(https://www.spinics.net/lists/linux-renesas-soc/msg19941.html)
 
-Gregory
-> ---
->  drivers/thermal/armada_thermal.c | 12 +++++-------
->  1 file changed, 5 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-> index 6c4af2622d4f..26698f2d3ca7 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -24,8 +24,6 @@
->  #include <linux/of_device.h>
->  #include <linux/thermal.h>
->  
-> -#define THERMAL_VALID_MASK		0x1
-> -
->  /* Thermal Manager Control and Status Register */
->  #define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
->  #define PMU_TM_DISABLE_OFFS		0
-> @@ -67,7 +65,7 @@ struct armada_thermal_data {
->  	/* Register shift and mask to access the sensor temperature */
->  	unsigned int temp_shift;
->  	unsigned int temp_mask;
-> -	unsigned int is_valid_shift;
-> +	unsigned int is_valid_bit;
->  };
->  
->  static void armadaxp_init_sensor(struct platform_device *pdev,
-> @@ -151,7 +149,7 @@ static bool armada_is_valid(struct armada_thermal_priv *priv)
->  {
->  	unsigned long reg = readl_relaxed(priv->sensor);
->  
-> -	return (reg >> priv->data->is_valid_shift) & THERMAL_VALID_MASK;
-> +	return reg & priv->data->is_valid_bit;
->  }
->  
->  static int armada_get_temp(struct thermal_zone_device *thermal,
-> @@ -199,7 +197,7 @@ static const struct armada_thermal_data armadaxp_data = {
->  static const struct armada_thermal_data armada370_data = {
->  	.is_valid = armada_is_valid,
->  	.init_sensor = armada370_init_sensor,
-> -	.is_valid_shift = 9,
-> +	.is_valid_bit = BIT(9),
->  	.temp_shift = 10,
->  	.temp_mask = 0x1ff,
->  	.coef_b = 3153000000UL,
-> @@ -210,7 +208,7 @@ static const struct armada_thermal_data armada370_data = {
->  static const struct armada_thermal_data armada375_data = {
->  	.is_valid = armada_is_valid,
->  	.init_sensor = armada375_init_sensor,
-> -	.is_valid_shift = 10,
-> +	.is_valid_bit = BIT(10),
->  	.temp_shift = 0,
->  	.temp_mask = 0x1ff,
->  	.coef_b = 3171900000UL,
-> @@ -221,7 +219,7 @@ static const struct armada_thermal_data armada375_data = {
->  static const struct armada_thermal_data armada380_data = {
->  	.is_valid = armada_is_valid,
->  	.init_sensor = armada380_init_sensor,
-> -	.is_valid_shift = 10,
-> +	.is_valid_bit = BIT(10),
->  	.temp_shift = 0,
->  	.temp_mask = 0x3ff,
->  	.coef_b = 1172499100UL,
-> -- 
-> 2.11.0
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+Gr{oetje,eeting}s,
 
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
