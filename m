@@ -1,62 +1,95 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Linux 4.15-rc2: Regression in resume from ACPI S3
-Date: Thu, 14 Dec 2017 00:26:32 +0100
-Message-ID: <CAJZ5v0g1bGtHiWoOVpj6-zYcLsici=jdoq-AFrRwnSAH7dXurQ@mail.gmail.com>
-References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <CA+55aFw-SZLey5FaQfSLSbDU1sYhoGDrWoOngswkHMFfHW3O6w@mail.gmail.com>
- <alpine.DEB.2.20.1712131856130.1885@nanos> <2011671.y8uyto1vn5@aspire.rjw.lan>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: Ask for help on governor
+Date: Wed, 13 Dec 2017 17:21:29 -0800
+Message-ID: <000701d37479$e0570320$a1050960$@net>
+References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com> <000801d37364$d48f6ed0$7dae4c70$@net> <000f01d373bf$deacca10$9c065e30$@net> <20171213061759.GT25177@vireshk-i7> P0QweRTHbuQ9TP0R1eouYx
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f195.google.com ([74.125.82.195]:45235 "EHLO
-        mail-ot0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750737AbdLMX0d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 Dec 2017 18:26:33 -0500
-In-Reply-To: <2011671.y8uyto1vn5@aspire.rjw.lan>
+Received: from cmta20.telus.net ([209.171.16.93]:51246 "EHLO cmta20.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751641AbdLNBVe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 13 Dec 2017 20:21:34 -0500
+In-Reply-To: P0QweRTHbuQ9TP0R1eouYx
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PCI <linux-pci@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
+To: 'Andy Tang' <andy.tang@nxp.com>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>
+Cc: "'Rafael J. Wysocki'" <rafael@kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-On Wed, Dec 13, 2017 at 11:39 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> On Wednesday, December 13, 2017 7:19:17 PM CET Thomas Gleixner wrote:
->> On Wed, 13 Dec 2017, Linus Torvalds wrote:
->>
->> > On Wed, Dec 13, 2017 at 8:41 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
->> > >
->> > > Definitely. That was fragile forever but puzzles me is that I can't figure
->> > > out what now causes that spurious interrupt to surface out of the blue.
->> >
->> > Perhaps just timing?
->>
->> That's what I'm trying to figure out right now, because that is the only
->> sensible explanation left. The whole machinery of suspend is exactly the
->> same with and without the vector changes. I instrumented all functions
->> involved and the picture is the same. I even do not see any fundamental
->> timing differences where one would say: That's it.
->>
->> What puzzles me even more is that in the range of commits I'm fiddling with
->> there is no other change than the vector management stuff and the point
->> where it breaks makes no sense at all. The point Maarten bisected it to
->> works nicely here, so that might just point to a very subtle timing issue.
->>
->> > How hard would it be to change the ordering to just redirect irqs first?
->>
->> The whole interrupt redirection happens when the non boot CPUs are brought
->> down, which is the very last step before the actual suspend happens.
->>
->> We could probably do that earlier, but that's something Rafael needs to
->> answer ultimately.
+Note: adding Stratos, the commit author.
+ 
+On 2017.12.12 22:22 Andy Tang wrote:
+
+> Anyway I found the root cause myself.
 >
-> Well, that's both flattering and concerning. ;-)
->
-> Anyway, yes, we can do that earlier AFAICS.  Action handlers are not going to
-> run after we've called suspend_device_irqs() which happens before the final
-> stage of PCI devices suspend (suspend_noirq) and it doesn't matter which CPU
-> gets the interrupt from that point on (it is either wakeup or unwanted then).
+> It was caused by commit: 00bfe05889e91b5112893b001e4a47b0a0f8bdd7.
 
-There is a catch that we don't and likely should not do that for
-suspend-to-idle, but since we have pm_suspend_target_state now, that
-case can be distinguished from the "full suspend" one readily.
+Agreed.
 
-Thanks,
-Rafael
+Then why did my kernel bisection come to a different conclusion?
+Because, in my case, the issue only manifested itself when the
+sampling rate (which should really be called sampling period), became
+low enough to bring the issue to the surface.
+
+The other important thing to note for my system is that I use (O.K.,
+steal) the Ubuntu kernel configuration and so my tick rate is 250 Hz, not
+1000 Hz.
+
+I think the math for the idle periods calculation breaks down here
+(from drivers/cpufreq/cpufreq_governor.c):
+
+                if (time_elapsed > 2 * sampling_rate) {
+                        unsigned int periods = time_elapsed / sampling_rate;
+
+                        if (periods < idle_periods)
+                                idle_periods = periods;
+                }
+
+if 2 * sampling_rate is less than one jiffy.
+I.E. isn't time_elapsed always exactly one jiffy for a fully loaded CPU?
+Important note: on my system a jiffy is just over 4 milliseconds.
+So, for my test which is 100% load on one CPU, basically, idle_periods is always 2,
+maybe more and the conservative code is always resetting the target CPU frequency
+to minimum.
+
+For whatever reason, on my system, a frequency step of 5% will not raise the pstate,
+even though it should (the math works out to 1790 MHz, or pstate 17, but I never see it.
+If I raise the frequency step to anything else, the math makes complete sense. Example:
+frequency step = 10% so 3800 * 0.1 + 1600 = 1980 which means I should see pstate 19 being
+asked for. I do. However, it does not continue to increase because of the
+idle_periods problem, driving it back as an intermediate calculation, so all I ever see is
+requested pstate of 19.
+
+O.K. so if all this is true, then a 1000 Hz kernel shouldn't have a problem. Sort of, it
+doesn't. Why "sort of"? Because the default sample period of 500 usec is right
+on the edge, and sometimes the requested pstate does drop as a result. I used this
+command to watch the requested pstate:
+
+watch -d -n 1 sudo rdmsr --bitfield 15:8 -d -a 0x199
+
+(translation: watch the actual requested pstates for all CPUs, by reading the processor itself.)
+
+and while for CPU 7, it should clamp at 38 (for my system) it doesn't. O.K. so just
+increase the sampling period a little, to say 510 uSec, and then yes, it clamps at 38.
+
+O.K. so finally, I reverted the commit (but in a cheating way):
+
+diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
+index 58d4f4e..3493ca7 100644
+--- a/drivers/cpufreq/cpufreq_governor.c
++++ b/drivers/cpufreq/cpufreq_governor.c
+@@ -222,6 +222,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
+                        max_load = load;
+        }
+
++       idle_periods = 0;
+        policy_dbs->idle_periods = idle_periods;
+
+        return max_load;
+ 
+And everything is fine.
+
+... Doug
