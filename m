@@ -1,102 +1,78 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v3 01/11] dt-bindings: thermal: Describe Armada AP806 and
- CP110
-Date: Fri, 15 Dec 2017 17:28:54 -0600
-Message-ID: <20171215232854.n23biqelqoqjsevm@rob-hp-laptop>
-References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
- <20171214103011.24713-2-miquel.raynal@free-electrons.com>
- <20171215082759.7t24ka3lpkulcb7r@tarshish>
- <20171215093203.74b7a59c@xps13>
- <87po7gmlcs.fsf@free-electrons.com>
- <20171215115230.6fb83cb6@xps13>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PCI / PM: Force devices to D0 in pci_pm_thaw_noirq()
+Date: Sat, 16 Dec 2017 00:44:03 +0100
+Message-ID: <CAJZ5v0jQbD+A+i5o_HPBKZgz2Z8pUA4iARY+SR-s6TN0grBvPg@mail.gmail.com>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <alpine.DEB.2.20.1712141648190.4998@nanos>
+ <11146834.AWaDHrVcmB@aspire.rjw.lan> <2582328.YfNXS1jHhG@aspire.rjw.lan> <20171215183058.GV30595@bhelgaas-glaptop.roam.corp.google.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20171215115230.6fb83cb6@xps13>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171215183058.GV30595@bhelgaas-glaptop.roam.corp.google.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thomas Gleixner <tglx@linutronix.de>, Linux PCI <linux-pci@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Chen Yu <y.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 15, 2017 at 11:52:30AM +0100, Miquel RAYNAL wrote:
-> Hello Baruch and Gregory,
-> 
-> On Fri, 15 Dec 2017 09:44:19 +0100
-> Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
-> 
-> > Hi Miquel,
-> >  
-> >  On ven., déc. 15 2017, Miquel RAYNAL
-> > <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
-> > 
-> > > Hello Baruch,
-> > >
-> > > On Fri, 15 Dec 2017 10:27:59 +0200
-> > > Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org> wrote:
-> > >  
-> > >> Hi Miquel
-> > >> 
-> > >> On Thu, Dec 14, 2017 at 11:30:01AM +0100, Miquel Raynal wrote:  
-> > >> > +- marvell,thermal-zone-name: The name to identify the thermal
-> > >> > zone
-> > >> > +                             within the sysfs, useful when
-> > >> > multiple
-> > >> > +                             thermal zones are registered (AP,
-> > >> > CPx...).    
-> > >> 
-> > >> I don't think that would be acceptable. DT is about describing the
-> > >> hardware. sysfs is a Linux implementation detail which is not tied
-> > >> to any specific hardware. If this is accepted, the property should
-> > >> be named 'linux,thermal-zone-name'.  
-> > >
-> > > You are right the sysfs mention should not appear in the
-> > > description.
-> 
-> Actually, you are right for all of it, this property should not
-> exist, sorry for my too quick answer.
-> 
-> > >
-> > > Otherwise for the naming I'm not sure "linux," is a valid prefix in
-> > > that case.  
-> 
-> Thank you both for your explanations, I was also wrong about the prefix.
-> 
-> > 
-> > Actually the choice between linux or marvell make me realize that
-> > there is something wrong. Having a name associated to a device is
-> > something pretty usual with the device tree, however it is as the
-> > class device level, such as clock-names, line-name, or
-> > regulator-name. So in my opinion if we want to support naming from
-> > device tree it would be done for all the thermal device not just for
-> > the Marvell one.
-> > 
-> > However I don't think we need it. For example for the clocks we
-> > created the name dynamically using of the base address of the
-> > register to keep them unique.
-> 
-> I was convinced that dev_name's would be the same but after trying it on
-> a 8040-DB, using dev_name(&pdev->dev) gives:
-> 
->     f06f808c.thermal
->     f2400078.thermal
->     f4400078.thermal
-> 
-> which I found meaningful enough.
-> 
-> I will drop the property and use dev_name instead. I still need your
-> help to solve one problem though: how to make the distinction between
-> using "armada_thermal" (the previous name) and dev_name() ? If I don't
-> it kind of breaks userspace, doesn't it ?
+On Fri, Dec 15, 2017 at 7:30 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
+> On Fri, Dec 15, 2017 at 03:07:18AM +0100, Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>
+>> It is incorrect to call pci_restore_state() for devices in low-power
+>> states (D1-D3), as that involves the restoration of MSI setup which
+>> requires MMIO to be operational and that is only the case in D0.
+>>
+>> However, pci_pm_thaw_noirq() may do that if the driver's "freeze"
+>> callbacks put the device into a low-power state, so fix it by making
+>> it force devices into D0 via pci_set_power_state() instead of trying
+>> to "update" their power state which is pointless.
+>>
+>> Fixes: e60514bd4485 (PCI/PM: Restore the status of PCI devices across hibernation)
+>> Cc: 4.13+ <stable@vger.kernel.org> # 4.13+
+>> Reported-by: Thomas Gleixner <tglx@linutronix.de>
+>> Reported-by: Maarten Lankhorst <dev@mblankhorst.nl>
+>> Tested-by: Thomas Gleixner <tglx@linutronix.de>
+>> Tested-by: Maarten Lankhorst <dev@mblankhorst.nl>
+>> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+>
+> Let me know if you want me to take this.  I don't have anything
+> currently queued up that touches pci-driver.c, so I'm happy if you
+> take it yourself.
 
-No. The /sys/devices/... or /sys/bus/platform/... paths and names are 
-not guaranteed to be stable. These changed for every platform converted 
-to DT for example. Userspace should be accessing things through 
-/sys/class/... (or deal with changes).
+I will take it.
 
-Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Depending of what Yu finds, we may need an additional fix to make the
+Purley system work.
+
+>> ---
+>>
+>> The bug is not as old as I thought, actually.
+>>
+>> Yes, we did the pci_update_current_state() in pci_pm_thaw_noirq()
+>> forever, but it started to be problematic in 4.13, when we started
+>> to call pci_restore_state() in addition to it to fix another issue.
+>>
+>> ---
+>>  drivers/pci/pci-driver.c |    7 ++++++-
+>>  1 file changed, 6 insertions(+), 1 deletion(-)
+>>
+>> Index: linux-pm/drivers/pci/pci-driver.c
+>> ===================================================================
+>> --- linux-pm.orig/drivers/pci/pci-driver.c
+>> +++ linux-pm/drivers/pci/pci-driver.c
+>> @@ -1027,7 +1027,12 @@ static int pci_pm_thaw_noirq(struct devi
+>>       if (pci_has_legacy_pm_support(pci_dev))
+>>               return pci_legacy_resume_early(dev);
+>>
+>> -     pci_update_current_state(pci_dev, PCI_D0);
+>> +     /*
+>> +      * pci_restore_state() requires the device to be in D0 (because of MSI
+>> +      * restoration among other things), so force it into D0 in case the
+>> +      * driver's "freeze" callbacks put it into a low-power state directly.
+>> +      */
+>> +     pci_set_power_state(pci_dev, PCI_D0);
+>>       pci_restore_state(pci_dev);
+>>
+>>       if (drv && drv->pm && drv->pm->thaw_noirq)
+>>
