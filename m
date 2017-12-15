@@ -1,63 +1,121 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PCI / PM: Force devices to D0 in pci_pm_thaw_noirq()
-Date: Fri, 15 Dec 2017 03:07:18 +0100
-Message-ID: <2582328.YfNXS1jHhG@aspire.rjw.lan>
-References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <alpine.DEB.2.20.1712141648190.4998@nanos> <11146834.AWaDHrVcmB@aspire.rjw.lan>
+From: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Subject: [PATCH v2 2/4] cpufreq: ti-cpufreq: Add support for multiple regulators
+Date: Thu, 14 Dec 2017 22:25:26 -0600
+Message-ID: <20171215042528.28715-3-d-gerlach@ti.com>
+References: <20171215042528.28715-1-d-gerlach@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <11146834.AWaDHrVcmB@aspire.rjw.lan>
-Sender: linux-pci-owner@vger.kernel.org
-To: Thomas Gleixner <tglx@linutronix.de>, linux-pci@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Chen Yu <y.c.chen@intel.com>
+Content-Type: text/plain
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171215042528.28715-1-d-gerlach-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "Rafael J . Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Some platforms, like those in the DRA7 and AM57 families, require the
+scaling of multiple regulators in order to properly support higher OPPs.
+Let the ti-cpufreq driver determine when this is required and pass the
+appropriate regulator names to the OPP core so that they can be properly
+managed.
 
-It is incorrect to call pci_restore_state() for devices in low-power
-states (D1-D3), as that involves the restoration of MSI setup which
-requires MMIO to be operational and that is only the case in D0.
-
-However, pci_pm_thaw_noirq() may do that if the driver's "freeze"
-callbacks put the device into a low-power state, so fix it by making
-it force devices into D0 via pci_set_power_state() instead of trying
-to "update" their power state which is pointless.
-
-Fixes: e60514bd4485 (PCI/PM: Restore the status of PCI devices across hibernation)
-Cc: 4.13+ <stable@vger.kernel.org> # 4.13+
-Reported-by: Thomas Gleixner <tglx@linutronix.de>
-Reported-by: Maarten Lankhorst <dev@mblankhorst.nl>
-Tested-by: Thomas Gleixner <tglx@linutronix.de>
-Tested-by: Maarten Lankhorst <dev@mblankhorst.nl>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
 ---
+ drivers/cpufreq/ti-cpufreq.c | 28 ++++++++++++++++++++++++----
+ 1 file changed, 24 insertions(+), 4 deletions(-)
 
-The bug is not as old as I thought, actually.
-
-Yes, we did the pci_update_current_state() in pci_pm_thaw_noirq()
-forever, but it started to be problematic in 4.13, when we started
-to call pci_restore_state() in addition to it to fix another issue.
-
----
- drivers/pci/pci-driver.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-Index: linux-pm/drivers/pci/pci-driver.c
-===================================================================
---- linux-pm.orig/drivers/pci/pci-driver.c
-+++ linux-pm/drivers/pci/pci-driver.c
-@@ -1027,7 +1027,12 @@ static int pci_pm_thaw_noirq(struct devi
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_resume_early(dev);
+diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
+index b1c230a1e2aa..a099b7bf74cd 100644
+--- a/drivers/cpufreq/ti-cpufreq.c
++++ b/drivers/cpufreq/ti-cpufreq.c
+@@ -51,6 +51,7 @@ struct ti_cpufreq_soc_data {
+ 	unsigned long efuse_mask;
+ 	unsigned long efuse_shift;
+ 	unsigned long rev_offset;
++	bool multi_regulator;
+ };
  
--	pci_update_current_state(pci_dev, PCI_D0);
-+	/*
-+	 * pci_restore_state() requires the device to be in D0 (because of MSI
-+	 * restoration among other things), so force it into D0 in case the
-+	 * driver's "freeze" callbacks put it into a low-power state directly.
-+	 */
-+	pci_set_power_state(pci_dev, PCI_D0);
- 	pci_restore_state(pci_dev);
+ struct ti_cpufreq_data {
+@@ -58,6 +59,7 @@ struct ti_cpufreq_data {
+ 	struct device_node *opp_node;
+ 	struct regmap *syscon;
+ 	const struct ti_cpufreq_soc_data *soc_data;
++	struct opp_table *opp_table;
+ };
  
- 	if (drv && drv->pm && drv->pm->thaw_noirq)
+ static unsigned long amx3_efuse_xlate(struct ti_cpufreq_data *opp_data,
+@@ -96,6 +98,7 @@ static struct ti_cpufreq_soc_data am3x_soc_data = {
+ 	.efuse_offset = 0x07fc,
+ 	.efuse_mask = 0x1fff,
+ 	.rev_offset = 0x600,
++	.multi_regulator = false,
+ };
+ 
+ static struct ti_cpufreq_soc_data am4x_soc_data = {
+@@ -104,6 +107,7 @@ static struct ti_cpufreq_soc_data am4x_soc_data = {
+ 	.efuse_offset = 0x0610,
+ 	.efuse_mask = 0x3f,
+ 	.rev_offset = 0x600,
++	.multi_regulator = false,
+ };
+ 
+ static struct ti_cpufreq_soc_data dra7_soc_data = {
+@@ -112,6 +116,7 @@ static struct ti_cpufreq_soc_data dra7_soc_data = {
+ 	.efuse_mask = 0xf80000,
+ 	.efuse_shift = 19,
+ 	.rev_offset = 0x204,
++	.multi_regulator = true,
+ };
+ 
+ /**
+@@ -201,7 +206,9 @@ static int ti_cpufreq_probe(struct platform_device *pdev)
+ 	u32 version[VERSION_COUNT];
+ 	struct device_node *np;
+ 	const struct of_device_id *match;
++	struct opp_table *ti_opp_table;
+ 	struct ti_cpufreq_data *opp_data;
++	const char * const reg_names[] = {"vdd", "vbb"};
+ 	int ret;
+ 
+ 	np = of_find_node_by_path("/");
+@@ -248,16 +255,29 @@ static int ti_cpufreq_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto fail_put_node;
+ 
+-	ret = PTR_ERR_OR_ZERO(dev_pm_opp_set_supported_hw(opp_data->cpu_dev,
+-							  version, VERSION_COUNT));
+-	if (ret) {
++	ti_opp_table = dev_pm_opp_set_supported_hw(opp_data->cpu_dev,
++						   version, VERSION_COUNT);
++	if (IS_ERR(ti_opp_table)) {
+ 		dev_err(opp_data->cpu_dev,
+ 			"Failed to set supported hardware\n");
++		ret = PTR_ERR(ti_opp_table);
+ 		goto fail_put_node;
+ 	}
+ 
+-	of_node_put(opp_data->opp_node);
++	opp_data->opp_table = ti_opp_table;
++
++	if (opp_data->soc_data->multi_regulator) {
++		ti_opp_table = dev_pm_opp_set_regulators(opp_data->cpu_dev,
++							 reg_names,
++							 ARRAY_SIZE(reg_names));
++		if (IS_ERR(ti_opp_table)) {
++			dev_pm_opp_put_supported_hw(opp_data->opp_table);
++			ret =  PTR_ERR(ti_opp_table);
++			goto fail_put_node;
++		}
++	}
+ 
++	of_node_put(opp_data->opp_node);
+ register_cpufreq_dt:
+ 	platform_device_register_simple("cpufreq-dt", -1, NULL, 0);
+ 
+-- 
+2.15.1
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
