@@ -1,119 +1,63 @@
-From: Andy Tang <andy.tang@nxp.com>
-Subject: RE: Ask for help on governor
-Date: Fri, 15 Dec 2017 01:56:03 +0000
-Message-ID: <HE1PR0402MB2828268A242D3132E3A560F6F30B0@HE1PR0402MB2828.eurprd04.prod.outlook.com>
-References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com>
- <000801d37364$d48f6ed0$7dae4c70$@net> <000f01d373bf$deacca10$9c065e30$@net>
- <20171213061759.GT25177@vireshk-i7> P0QweRTHbuQ9TP0R1eouYx
- <000701d37479$e0570320$a1050960$@net> PJTJeNt3QC2CsPJTOebNwi
- <001f01d37544$5889d410$099d7c30$@net>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH] PCI / PM: Force devices to D0 in pci_pm_thaw_noirq()
+Date: Fri, 15 Dec 2017 03:07:18 +0100
+Message-ID: <2582328.YfNXS1jHhG@aspire.rjw.lan>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <alpine.DEB.2.20.1712141648190.4998@nanos> <11146834.AWaDHrVcmB@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-eopbgr30072.outbound.protection.outlook.com ([40.107.3.72]:41323
-        "EHLO EUR03-AM5-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1754792AbdLOB4G (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 14 Dec 2017 20:56:06 -0500
-In-Reply-To: <001f01d37544$5889d410$099d7c30$@net>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <11146834.AWaDHrVcmB@aspire.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: Thomas Gleixner <tglx@linutronix.de>, linux-pci@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Bjorn Helgaas <helgaas@kernel.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Chen Yu <y.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>
-Cc: "'Rafael J. Wysocki'" <rafael@kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux PM' <linux-pm@vger.kernel.org>
 
-Hi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-> -----Original Message-----
-> From: Doug Smythies [mailto:dsmythies@telus.net]
-> Sent: Friday, December 15, 2017 9:31 AM
-> To: Andy Tang <andy.tang@nxp.com>; 'Viresh Kumar'
-> <viresh.kumar@linaro.org>; 'Stratos Karafotis' <stratosk@semaphore.gr>
-> Cc: 'Rafael J. Wysocki' <rafael@kernel.org>; 'Rafael J. Wysocki'
-> <rjw@rjwysocki.net>; 'Linux PM' <linux-pm@vger.kernel.org>
-> Subject: RE: Ask for help on governor
->=20
-> On 2017.12.13 18:42 Andy Tang wrote:
-> > On 2017.12.14 09:21 Doug wrote:
-> >>
-> >> diff --git a/drivers/cpufreq/cpufreq_governor.c
-> >> b/drivers/cpufreq/cpufreq_governor.c
-> >> index 58d4f4e..3493ca7 100644
-> >> --- a/drivers/cpufreq/cpufreq_governor.c
-> >> +++ b/drivers/cpufreq/cpufreq_governor.c
-> >> @@ -222,6 +222,7 @@ unsigned int dbs_update(struct cpufreq_policy
-> >> *policy)
-> >>                         max_load =3D load;
-> >>         }
-> >>
-> >> +       idle_periods =3D 0;
-> >
-> > With this line added, conservative governor works well.
-> >
-> > Ondemand governor still can't work well.
->=20
-> Your original message said:
->=20
-> On 12-12-17, 02:46, Andy Tang wrote:
-> > I run into a question that conservative governor can't work while
-> ondemand governor works well.
->=20
-> So, for my part of it, I never looked at ondemand.
-Sorry for the misleading. Actually I observed two issues:
-1. conservative governor can't increase cpu frequency even the load is high=
- than 90%
-2. CPU load can't be calculated correctly when sampling_rate is 1000 for bo=
-th conservative and ondemand governor. At first I thought ondemand governor=
- worked well. Actually I did not test it thoroughly. Ondemand governor can =
-work only when cpu load is calculated correct.
+It is incorrect to call pci_restore_state() for devices in low-power
+states (D1-D3), as that involves the restoration of MSI setup which
+requires MMIO to be operational and that is only the case in D0.
 
->=20
-> > As I mentioned in earlier email, load varies from different sampling_ra=
-te.
->=20
-> Because that e-mail was html, a lot of people didn't get it, and it also =
-is not in
-> the archives. Anyway:
->=20
-> On 2017.12.12 23:24 Andy wrote:
->=20
-> > I also found sampling_rate affects the CPU load dramatically.
-> >			sample rate
-> >			100000	10000	1000
-> > actual cpu load	1%		1%	1%
-> > cpu report load	1%		20%	40-100%
-> >
-> > So we can know that when sample_rate is higher than 10000us, cpufreq
-> can not calculate the load correctly.
->=20
-> Can you tell us more details about how you did this test and how you know
-> your data is correct?
-> In particular, what is your work/sleep frequency for your 1% load.
-> In my experience the work/sleep frequency has always been a very
-> important consideration with these tests.
-> What is the tick rate of your kernel? Myself, I wouldn't expect a 1000 uS=
-ec
-> sample period to work properly.
-My tick rate is 250Hz.  And Yes, cpu load can't be calculated correctly.
-We really should set sampling_rate a proper values as default if there are =
-some sample rate don't work properly. We don't want to calculate a workable=
- sampling_rate according to the tick rate manually.
-=20
-That's odd too that you wouldn't expect a 1000 Usec sample period to work p=
-roperly but set this value as default, even worse, you allow to set a lower=
- value to it.
+However, pci_pm_thaw_noirq() may do that if the driver's "freeze"
+callbacks put the device into a low-power state, so fix it by making
+it force devices into D0 via pci_set_power_state() instead of trying
+to "update" their power state which is pointless.
 
-Is it better if we set a low limit of  sample period?=20
+Fixes: e60514bd4485 (PCI/PM: Restore the status of PCI devices across hibernation)
+Cc: 4.13+ <stable@vger.kernel.org> # 4.13+
+Reported-by: Thomas Gleixner <tglx@linutronix.de>
+Reported-by: Maarten Lankhorst <dev@mblankhorst.nl>
+Tested-by: Thomas Gleixner <tglx@linutronix.de>
+Tested-by: Maarten Lankhorst <dev@mblankhorst.nl>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Regards,
-Andy
-=20
->=20
-> I used turbostat to verify my tests, and yes, on demand does start to
-> misbehave if the sampling period is short relative to the tick period (ji=
-ffy
-> time), otherwise it was fine.
->=20
-> ... Doug
->=20
+The bug is not as old as I thought, actually.
+
+Yes, we did the pci_update_current_state() in pci_pm_thaw_noirq()
+forever, but it started to be problematic in 4.13, when we started
+to call pci_restore_state() in addition to it to fix another issue.
+
+---
+ drivers/pci/pci-driver.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+Index: linux-pm/drivers/pci/pci-driver.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pci-driver.c
++++ linux-pm/drivers/pci/pci-driver.c
+@@ -1027,7 +1027,12 @@ static int pci_pm_thaw_noirq(struct devi
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_resume_early(dev);
+ 
+-	pci_update_current_state(pci_dev, PCI_D0);
++	/*
++	 * pci_restore_state() requires the device to be in D0 (because of MSI
++	 * restoration among other things), so force it into D0 in case the
++	 * driver's "freeze" callbacks put it into a low-power state directly.
++	 */
++	pci_set_power_state(pci_dev, PCI_D0);
+ 	pci_restore_state(pci_dev);
+ 
+ 	if (drv && drv->pm && drv->pm->thaw_noirq)
