@@ -1,59 +1,233 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH v2 07/13] dt-bindings: power: reset: Document
- ocelot-reset binding
-Date: Fri, 15 Dec 2017 14:23:32 -0600
-Message-ID: <20171215202332.bn47da3fpkynusno@rob-hp-laptop>
-References: <20171208154618.20105-1-alexandre.belloni@free-electrons.com>
- <20171208154618.20105-8-alexandre.belloni@free-electrons.com>
+From: Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH v2 0/4] Utilization estimation (util_est) for FAIR tasks
+Date: Fri, 15 Dec 2017 21:23:07 +0100
+Message-ID: <1513369387.11185.127.camel@gmx.de>
+References: <20171205171018.9203-1-patrick.bellasi@arm.com>
+         <1513187793.7297.26.camel@gmx.de> <20171215161309.GF19821@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20171208154618.20105-8-alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.gmx.net ([212.227.17.21]:57776 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755406AbdLOUX6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 15 Dec 2017 15:23:58 -0500
+In-Reply-To: <20171215161309.GF19821@e110439-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-On Fri, Dec 08, 2017 at 04:46:12PM +0100, Alexandre Belloni wrote:
-> Add binding documentation for the Microsemi Ocelot reset block.
+On Fri, 2017-12-15 at 16:13 +0000, Patrick Bellasi wrote:
+> Hi Mike,
 > 
-> Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Signed-off-by: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> ---
->  .../devicetree/bindings/power/reset/ocelot-reset.txt    | 17 +++++++++++++++++
->  1 file changed, 17 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
+> On 13-Dec 18:56, Mike Galbraith wrote:
+> > On Tue, 2017-12-05 at 17:10 +0000, Patrick Bellasi wrote:
+> > > This is a respin of:
+> > >    https://lkml.org/lkml/2017/11/9/546
+> > > which has been rebased on v4.15-rc2 to have util_est now working on top
+> > > of the recent PeterZ's:
+> > >    [PATCH -v2 00/18] sched/fair: A bit of a cgroup/PELT overhaul
+> > > 
+> > > The aim of this series is to improve some PELT behaviors to make it a
+> > > better fit for the scheduling of tasks common in embedded mobile
+> > > use-cases, without affecting other classes of workloads.
+> > 
+> > I thought perhaps this patch set would improve the below behavior, but
+> > alas it does not.  That's 3 instances of firefox playing youtube clips
+> > being shoved into a corner by hogs sitting on 7 of 8 runqueues.  PELT
+> > serializes the threaded desktop, making that threading kinda pointless,
+> > and CFS not all that fair.
 > 
-> diff --git a/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-> new file mode 100644
-> index 000000000000..1bcf276b04cb
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-> @@ -0,0 +1,17 @@
-> +Microsemi Ocelot reset controller
-> +
-> +The DEVCPU_GCB:CHIP_REGS have a SOFT_RST register that can be used to reset the
-> +SoC MIPS core.
-> +
-> +Required Properties:
-> + - compatible: "mscc,ocelot-chip-reset"
-> +
-> +Example:
-> +	syscon@71070000 {
-> +		compatible = "mscc,ocelot-chip-regs", "simple-mfd", "syscon";
-> +		reg = <0x71070000 0x1c>;
-> +
-> +		reset {
-> +			compatible = "mscc,ocelot-chip-reset";
+> Perhaps I don't completely get your use-case.
+> Are the cpuhog thread pinned to a CPU or just happens to be always
+> running on the same CPU?
 
-Why do you need a subnode here other than as a way to instantiate a 
-driver? Can you describe the SOFT_RST register in reg property here 
-(without having overlapping regions)?
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Nothing is pinned.
+
+> I guess you would expect the three Firefox instances to be spread on
+> different CPUs. But whether this is possible depends also on the
+> specific tasks composition generated by Firefox, isn't it?
+
+It depends on load balancing.  We're letting firefox threads stack up
+to 6 deep while single hogs dominate the box.
+
+> Being a video playback pipeline I would not be surprised to see that
+> most of the time we actually have only 1 or 2 tasks RUNNABLE, while
+> the others are sleeping... and if an HW decoder is involved, even if
+> you have three instances running you likely get only one pipeline
+> active at each time...
+> 
+> If that's the case, why should CFS move Fairfox tasks around?
+
+No, while they are indeed ~fairly synchronous, there is overlap.  If
+there were not, there would be no wait time being accumulated. The load
+wants to consume roughly one full core worth, but to achieve that, it
+needs access to more than one runqueue, which we are not facilitating.
+
+> Is this always happening... or sometimes Firefox tasks gets a chance
+> to run on CPUs other then CPU2?
+
+There is some escape going on, but not enough for the load to get its
+fair share.  I have it sort of fixed up locally, but while patch keeps
+changing, it's not getting any prettier, nor is it particularly
+interested in letting me keep some performance gains I want, so...
+
+> How do you get these stats?
+
+perf sched record/perf sched lat.  I twiddled it to output accumulated
+wait times as well for convenience, stock only shows max.  See below.
+ If you play with perf sched, you'll notice some.. oddities about it.
+
+> It's definitively an interesting use-case however I think it's out of
+> the scope of util_est.
+
+Yeah.  If I had been less busy and read the whole thing, I wouldn't
+have taken it out for a spin.
+
+> Regarding the specific statement "CFS not all that fair", I would say
+> that the fairness of CFS is defined and has to be evaluated within a
+> single CPU and on a temporal (not clock cycles) base.
+
+No, that doesn't really fly.  In fact, in the group scheduling code, we
+actively pursue box wide fairness.  PELT is going a bit too far ATM.
+
+Point: if you think it's OK to serialize these firefox threads, would
+you still think so if those were kernel threads instead?  Serializing
+your kernel is a clear fail, but unpinned kthreads can be stacked up
+just as effectively as those browser threads are, eat needless wakeup
+latency and pass it on.
+
+> AFAIK, vruntime is progressed based on elapsed time, thus you can have
+> two tasks which gets the same slice time but consume it at different
+> frequencies. In this case also we are not that fair, isn't it?
+
+Time slices don't really exist as a concrete quantum in CFS.  There's
+vruntime equalization, and that's it.
+
+> Thus, at the end it all boils down to some (as much as possible)
+> low-overhead heuristics. Thus, a proper description of a
+> reproducible use-case can help on improving them.
+
+Nah, heuristics are fickle beasts, they WILL knife you in the back,
+it's just a question of how often, and how deep.
+
+> Can we model your use-case using a simple rt-app configuration?
+
+No idea.
+
+> This would likely help to have a simple and reproducible testing
+> scenario to better understand where the issue eventually is...
+> maybe by looking at an execution trace.
+
+It should be reproducible by anyone, just fire up NR_CPUS-1 pure hogs,
+point firefox at youtube, open three clips in tabs, watch tasks stack.
+
+Root cause IMHO is PELT having grown too aggressive.  SIS was made more
+aggressive to compensate, but when you slam that door you get the full
+PELT impact, and it stings, as does too aggressive bouncing when you
+leave the escape hatch open.  Sticky wicket that.  Both of those want a
+gentle wrap upside the head, as they're both acting a bit nutty.
+
+	-Mike
+
+---
+ tools/perf/builtin-sched.c |   34 ++++++++++++++++++++++++++--------
+ 1 file changed, 26 insertions(+), 8 deletions(-)
+
+--- a/tools/perf/builtin-sched.c
++++ b/tools/perf/builtin-sched.c
+@@ -212,6 +212,7 @@ struct perf_sched {
+ 	u64		 run_avg;
+ 	u64		 all_runtime;
+ 	u64		 all_count;
++	u64		 all_lat;
+ 	u64		 cpu_last_switched[MAX_CPUS];
+ 	struct rb_root	 atom_root, sorted_atom_root, merged_atom_root;
+ 	struct list_head sort_list, cmp_pid;
+@@ -1286,6 +1287,7 @@ static void output_lat_thread(struct per
+ 
+ 	sched->all_runtime += work_list->total_runtime;
+ 	sched->all_count   += work_list->nb_atoms;
++	sched->all_lat += work_list->total_lat;
+ 
+ 	if (work_list->num_merged > 1)
+ 		ret = printf("  %s:(%d) ", thread__comm_str(work_list->thread), work_list->num_merged);
+@@ -1298,10 +1300,11 @@ static void output_lat_thread(struct per
+ 	avg = work_list->total_lat / work_list->nb_atoms;
+ 	timestamp__scnprintf_usec(work_list->max_lat_at, max_lat_at, sizeof(max_lat_at));
+ 
+-	printf("|%11.3f ms |%9" PRIu64 " | avg:%9.3f ms | max:%9.3f ms | max at: %13s s\n",
++	printf("|%11.3f ms |%9" PRIu64 " | avg:%9.3f ms | max:%9.3f ms | sum:%9.3f ms | max at: %13s s\n",
+ 	      (double)work_list->total_runtime / NSEC_PER_MSEC,
+ 		 work_list->nb_atoms, (double)avg / NSEC_PER_MSEC,
+ 		 (double)work_list->max_lat / NSEC_PER_MSEC,
++		 (double)work_list->total_lat / NSEC_PER_MSEC,
+ 		 max_lat_at);
+ }
+ 
+@@ -1347,6 +1350,16 @@ static int max_cmp(struct work_atoms *l,
+ 	return 0;
+ }
+ 
++static int sum_cmp(struct work_atoms *l, struct work_atoms *r)
++{
++	if (l->total_lat < r->total_lat)
++		return -1;
++	if (l->total_lat > r->total_lat)
++		return 1;
++
++	return 0;
++}
++
+ static int switch_cmp(struct work_atoms *l, struct work_atoms *r)
+ {
+ 	if (l->nb_atoms < r->nb_atoms)
+@@ -1378,6 +1391,10 @@ static int sort_dimension__add(const cha
+ 		.name = "max",
+ 		.cmp  = max_cmp,
+ 	};
++	static struct sort_dimension sum_sort_dimension = {
++		.name = "sum",
++		.cmp  = sum_cmp,
++	};
+ 	static struct sort_dimension pid_sort_dimension = {
+ 		.name = "pid",
+ 		.cmp  = pid_cmp,
+@@ -1394,6 +1411,7 @@ static int sort_dimension__add(const cha
+ 		&pid_sort_dimension,
+ 		&avg_sort_dimension,
+ 		&max_sort_dimension,
++		&sum_sort_dimension,
+ 		&switch_sort_dimension,
+ 		&runtime_sort_dimension,
+ 	};
+@@ -3090,9 +3108,9 @@ static int perf_sched__lat(struct perf_s
+ 	perf_sched__merge_lat(sched);
+ 	perf_sched__sort_lat(sched);
+ 
+-	printf("\n -----------------------------------------------------------------------------------------------------------------\n");
+-	printf("  Task                  |   Runtime ms  | Switches | Average delay ms | Maximum delay ms | Maximum delay at       |\n");
+-	printf(" -----------------------------------------------------------------------------------------------------------------\n");
++	printf("\n ------------------------------------------------------------------------------------------------------------------------------------\n");
++	printf("  Task                  |   Runtime ms  | Switches | Average delay ms | Maximum delay ms | Sum     delay ms | Maximum delay at       |\n");
++	printf(" ------------------------------------------------------------------------------------------------------------------------------------\n");
+ 
+ 	next = rb_first(&sched->sorted_atom_root);
+ 
+@@ -3105,11 +3123,11 @@ static int perf_sched__lat(struct perf_s
+ 		thread__zput(work_list->thread);
+ 	}
+ 
+-	printf(" -----------------------------------------------------------------------------------------------------------------\n");
+-	printf("  TOTAL:                |%11.3f ms |%9" PRIu64 " |\n",
+-		(double)sched->all_runtime / NSEC_PER_MSEC, sched->all_count);
++	printf(" ------------------------------------------------------------------------------------------------------------\n");
++	printf("  TOTAL:                |%11.3f ms |%9" PRIu64 " |                                     |%14.3f ms |\n",
++		(double)sched->all_runtime / NSEC_PER_MSEC, sched->all_count, (double)sched->all_lat / NSEC_PER_MSEC);
+ 
+-	printf(" ---------------------------------------------------\n");
++	printf(" ------------------------------------------------------------------------------------------------------------\n");
+ 
+ 	print_bad_events(sched);
+ 	printf("\n");
