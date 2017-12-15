@@ -1,64 +1,39 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v4 3/4] ACPI / boot: Use INVALID_ACPI_IRQ instead of 0 for acpi_sci_override_gsi
-Date: Fri, 15 Dec 2017 23:25:10 +0200
-Message-ID: <20171215212511.52155-4-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v4 1/4] ACPI / boot: Swap variables in condition in acpi_register_gsi_ioapic()
+Date: Fri, 15 Dec 2017 23:25:08 +0200
+Message-ID: <20171215212511.52155-2-andriy.shevchenko@linux.intel.com>
 References: <20171215212511.52155-1-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171215212511.52155-1-andriy.shevchenko@linux.intel.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: linux-pm@vger.kernel.org
 
-0 is valid hardware interrupt which might be in some cases overridden.
-Due to this, switch to INVALID_ACPI_IRQ to mark SCI override not set.
+For better readability compare input to something considered settled
+down. Additionally move it to one line (while it's slightly longer
+80 characters it makes readability better).
 
-While here, change type of the variable from int to u32 to be in align
-with GSI type used in the rest of the code.
+No functional change intended.
 
 Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- arch/x86/include/asm/acpi.h | 2 +-
- arch/x86/kernel/acpi/boot.c | 5 +++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ arch/x86/kernel/acpi/boot.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/acpi.h b/arch/x86/include/asm/acpi.h
-index 8d0ec9df1cbe..44f5d79d5105 100644
---- a/arch/x86/include/asm/acpi.h
-+++ b/arch/x86/include/asm/acpi.h
-@@ -49,7 +49,7 @@ extern int acpi_fix_pin2_polarity;
- extern int acpi_disable_cmcff;
- 
- extern u8 acpi_sci_flags;
--extern int acpi_sci_override_gsi;
-+extern u32 acpi_sci_override_gsi;
- void acpi_pic_sci_set_trigger(unsigned int, u16);
- 
- struct device;
 diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index c6a6b82882b2..6302a931fe9b 100644
+index 3b33662c072a..bd556b0a48f3 100644
 --- a/arch/x86/kernel/acpi/boot.c
 +++ b/arch/x86/kernel/acpi/boot.c
-@@ -71,8 +71,9 @@ int acpi_ioapic;
- int acpi_strict;
- int acpi_disable_cmcff;
- 
-+/* ACPI SCI override configuration */
- u8 acpi_sci_flags __initdata;
--int acpi_sci_override_gsi __initdata;
-+u32 acpi_sci_override_gsi __initdata = INVALID_ACPI_IRQ;
- int acpi_skip_timer_override __initdata;
- int acpi_use_timer_override __initdata;
- int acpi_fix_pin2_polarity __initdata;
-@@ -1212,7 +1213,7 @@ static int __init acpi_parse_madt_ioapic_entries(void)
- 	 * If BIOS did not supply an INT_SRC_OVR for the SCI
- 	 * pretend we got one so we can set the SCI flags.
- 	 */
--	if (!acpi_sci_override_gsi)
-+	if (acpi_sci_override_gsi == INVALID_ACPI_IRQ)
- 		acpi_sci_ioapic_setup(acpi_gbl_FADT.sci_interrupt, 0, 0,
- 				      acpi_gbl_FADT.sci_interrupt);
- 
+@@ -679,8 +679,7 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
+ 	mutex_lock(&acpi_ioapic_lock);
+ 	irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC, &info);
+ 	/* Don't set up the ACPI SCI because it's already set up */
+-	if (irq >= 0 && enable_update_mptable &&
+-	    acpi_gbl_FADT.sci_interrupt != gsi)
++	if (irq >= 0 && enable_update_mptable && gsi != acpi_gbl_FADT.sci_interrupt)
+ 		mp_config_acpi_gsi(dev, gsi, trigger, polarity);
+ 	mutex_unlock(&acpi_ioapic_lock);
+ #endif
 -- 
 2.15.1
-
