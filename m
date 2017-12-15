@@ -1,39 +1,75 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: [PATCH v4 1/4] ACPI / boot: Swap variables in condition in acpi_register_gsi_ioapic()
-Date: Fri, 15 Dec 2017 23:25:08 +0200
-Message-ID: <20171215212511.52155-2-andriy.shevchenko@linux.intel.com>
-References: <20171215212511.52155-1-andriy.shevchenko@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171215212511.52155-1-andriy.shevchenko@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H . Peter Anvin" <hpa@zytor.com>, x86@kernel.org, linux-kernel@vger.kernel.org, Hanjun Guo <guohanjun@huawei.com>, linux-acpi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+From: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v2 07/13] dt-bindings: power: reset: Document
+ ocelot-reset binding
+Date: Fri, 15 Dec 2017 23:07:41 +0100
+Message-ID: <20171215220741.GE7022@piout.net>
+References: <20171208154618.20105-1-alexandre.belloni@free-electrons.com>
+ <20171208154618.20105-8-alexandre.belloni@free-electrons.com>
+ <20171215202332.bn47da3fpkynusno@rob-hp-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20171215202332.bn47da3fpkynusno@rob-hp-laptop>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-For better readability compare input to something considered settled
-down. Additionally move it to one line (while it's slightly longer
-80 characters it makes readability better).
+On 15/12/2017 at 14:23:32 -0600, Rob Herring wrote:
+> On Fri, Dec 08, 2017 at 04:46:12PM +0100, Alexandre Belloni wrote:
+> > Add binding documentation for the Microsemi Ocelot reset block.
+> > 
+> > Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> > Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> > Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> > Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> > Signed-off-by: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> > ---
+> >  .../devicetree/bindings/power/reset/ocelot-reset.txt    | 17 +++++++++++++++++
+> >  1 file changed, 17 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
+> > 
+> > diff --git a/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
+> > new file mode 100644
+> > index 000000000000..1bcf276b04cb
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
+> > @@ -0,0 +1,17 @@
+> > +Microsemi Ocelot reset controller
+> > +
+> > +The DEVCPU_GCB:CHIP_REGS have a SOFT_RST register that can be used to reset the
+> > +SoC MIPS core.
+> > +
+> > +Required Properties:
+> > + - compatible: "mscc,ocelot-chip-reset"
+> > +
+> > +Example:
+> > +	syscon@71070000 {
+> > +		compatible = "mscc,ocelot-chip-regs", "simple-mfd", "syscon";
+> > +		reg = <0x71070000 0x1c>;
+> > +
+> > +		reset {
+> > +			compatible = "mscc,ocelot-chip-reset";
+> 
+> Why do you need a subnode here other than as a way to instantiate a 
+> driver? Can you describe the SOFT_RST register in reg property here 
+> (without having overlapping regions)?
 
-No functional change intended.
+You mean like:
 
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- arch/x86/kernel/acpi/boot.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+reset@7107001c {
+	compatible = "mscc,ocelot-chip-reset";
+	reg = <0x7107001c 0x4>;
+};
 
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 3b33662c072a..bd556b0a48f3 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -679,8 +679,7 @@ static int acpi_register_gsi_ioapic(struct device *dev, u32 gsi,
- 	mutex_lock(&acpi_ioapic_lock);
- 	irq = mp_map_gsi_to_irq(gsi, IOAPIC_MAP_ALLOC, &info);
- 	/* Don't set up the ACPI SCI because it's already set up */
--	if (irq >= 0 && enable_update_mptable &&
--	    acpi_gbl_FADT.sci_interrupt != gsi)
-+	if (irq >= 0 && enable_update_mptable && gsi != acpi_gbl_FADT.sci_interrupt)
- 		mp_config_acpi_gsi(dev, gsi, trigger, polarity);
- 	mutex_unlock(&acpi_ioapic_lock);
- #endif
+I guess that could work.
+
 -- 
-2.15.1
+Alexandre Belloni, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
