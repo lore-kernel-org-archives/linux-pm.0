@@ -1,122 +1,141 @@
-From: Miquel RAYNAL <miquel.raynal@free-electrons.com>
-Subject: Re: [PATCH v3 03/11] thermal: armada: Simplify the check of the
- validity bit
-Date: Fri, 15 Dec 2017 11:56:33 +0100
-Message-ID: <20171215115633.4e5490eb@xps13>
-References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-        <20171214103011.24713-4-miquel.raynal@free-electrons.com>
-        <20171215083316.4xswddwbcijxhuxn@tarshish>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v2 2/4] sched/fair: add util_est on top of PELT
+Date: Fri, 15 Dec 2017 12:03:31 +0000
+Message-ID: <20171215120331.GA19821@e110439-lin>
+References: <20171205171018.9203-1-patrick.bellasi@arm.com>
+ <20171205171018.9203-3-patrick.bellasi@arm.com>
+ <20171213161922.qbxq2ko5q6ttzu2p@hirez.programming.kicks-ass.net>
+ <20171213163653.GD8264@e110439-lin>
+ <20171213170309.5yk62ipzo3ckpw6o@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:57914 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752866AbdLOK4p (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Dec 2017 05:56:45 -0500
-In-Reply-To: <20171215083316.4xswddwbcijxhuxn@tarshish>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:54860 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1755031AbdLOMDj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 15 Dec 2017 07:03:39 -0500
+Content-Disposition: inline
+In-Reply-To: <20171213170309.5yk62ipzo3ckpw6o@hirez.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Baruch Siach <baruch@tkos.co.il>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-Hello Baruch,
-
-On Fri, 15 Dec 2017 10:33:16 +0200
-Baruch Siach <baruch@tkos.co.il> wrote:
-
-> Hi Miquel,
+On 13-Dec 18:03, Peter Zijlstra wrote:
+> On Wed, Dec 13, 2017 at 04:36:53PM +0000, Patrick Bellasi wrote:
+> > On 13-Dec 17:19, Peter Zijlstra wrote:
+> > > On Tue, Dec 05, 2017 at 05:10:16PM +0000, Patrick Bellasi wrote:
+> > > > @@ -562,6 +577,12 @@ struct task_struct {
+> > > >  
+> > > >  	const struct sched_class	*sched_class;
+> > > >  	struct sched_entity		se;
+> > > > +	/*
+> > > > +	 * Since we use se.avg.util_avg to update util_est fields,
+> > > > +	 * this last can benefit from being close to se which
+> > > > +	 * also defines se.avg as cache aligned.
+> > > > +	 */
+> > > > +	struct util_est			util_est;
 > 
-> On Thu, Dec 14, 2017 at 11:30:03AM +0100, Miquel Raynal wrote:
-> > All Armada SoCs use one bit to declare if the sensor values are
-> > valid. This bit moves across the versions of the IP.
+> The thing is, since sched_entity has a member with cacheline alignment,
+> the whole structure must have cacheline alignment, and this util_est
+> _will_ start on a new line.
+
+Right, I was not considering that "aligned" affects also the
+start of the following data. Thus
+
+> See also:
+> 
+> $ pahole -EC task_struct defconfig/kernel/sched/core.o
+> 
+> ...
+> 		struct sched_avg {
+>                                 /* typedef u64 */ long long unsigned int last_update_time; /*   576     8 */
+>                                 /* typedef u64 */ long long unsigned int load_sum;       /*   584     8 */
+>                                 /* typedef u32 */ unsigned int util_sum;                 /*   592     4 */
+>                                 /* typedef u32 */ unsigned int period_contrib;           /*   596     4 */
+>                                 long unsigned int load_avg;                              /*   600     8 */
+>                                 long unsigned int util_avg;                              /*   608     8 */
+>                         } avg; /*   576    40 */
+>                         /* --- cacheline 6 boundary (384 bytes) --- */
+>                 } se; /*   192   448 */
+>                 /* --- cacheline 8 boundary (512 bytes) was 24 bytes ago --- */
+>                 struct util_est {
+>                         long unsigned int last;                                          /*   640     8 */
+>                         long unsigned int ewma;                                          /*   648     8 */
+>                 } util_est; /*   640    16 */
+> ...
+> 
+> The thing is somewhat confused on which cacheline is which, but you'll
+> see sched_avg landing at 576 (cacheline #9) and util_est at 640 (line
+> #10).
+> 
+> > > >  	struct sched_rt_entity		rt;
+> > > >  #ifdef CONFIG_CGROUP_SCHED
+> > > >  	struct task_group		*sched_task_group;
+> 
+> > One goal was to keep util_est variables close to the util_avg used to
+> > load the filter, for caches affinity sakes.
 > > 
-> > The method until then was to do both a shift and compare with an
-> > useless flag of "0x1". It is clearer and quicker to directly save
-> > the value that must be ANDed instead of the bit position and do a
-> > single bitwise AND operation.
+> > The other goal was to have util_est data only for Tasks and CPU's
+> > RQ, thus avoiding unused data for TG's RQ and SE.
 > > 
-> > Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
-> > ---
-> >  drivers/thermal/armada_thermal.c | 12 +++++-------
-> >  1 file changed, 5 insertions(+), 7 deletions(-)
+> > Unfortunately the first goal does not allow to achieve completely the
+> > second and, you right, the solution looks a bit inconsistent.
 > > 
-> > diff --git a/drivers/thermal/armada_thermal.c
-> > b/drivers/thermal/armada_thermal.c index 6c4af2622d4f..26698f2d3ca7
-> > 100644 --- a/drivers/thermal/armada_thermal.c
-> > +++ b/drivers/thermal/armada_thermal.c
-> > @@ -24,8 +24,6 @@
-> >  #include <linux/of_device.h>
-> >  #include <linux/thermal.h>
-> >  
-> > -#define THERMAL_VALID_MASK		0x1
-> > -
-> >  /* Thermal Manager Control and Status Register */
-> >  #define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
-> >  #define PMU_TM_DISABLE_OFFS		0
-> > @@ -67,7 +65,7 @@ struct armada_thermal_data {
-> >  	/* Register shift and mask to access the sensor
-> > temperature */ unsigned int temp_shift;
-> >  	unsigned int temp_mask;
-> > -	unsigned int is_valid_shift;
-> > +	unsigned int is_valid_bit;  
+> > Do you think we should better disregard cache proximity and move
+> > util_est_runnable to rq?
 > 
-> Type should be u32 now, I think.
+> proximity is likely important; I'd suggest moving util_est into
+> sched_entity.
 
-Indeed, I'll change it in next version.
+So, by moving util_est right after sched_avg, here is what we get (with some
+lines to better highlight 64B boundaries):
 
-> 
-> >  };
-> >  
-> >  static void armadaxp_init_sensor(struct platform_device *pdev,
-> > @@ -151,7 +149,7 @@ static bool armada_is_valid(struct
-> > armada_thermal_priv *priv) {
-> >  	unsigned long reg = readl_relaxed(priv->sensor);  
-> 
-> u32 here also, I think. But that's unrelated to this patch.
-
-I completely agree, actually this is done in the next patch, moving all
-"unsigned long reg" to "u32 reg" while renaming the registers
-pointers, hope this is fine?
-
-> 
-> > -	return (reg >> priv->data->is_valid_shift) &
-> > THERMAL_VALID_MASK;
-> > +	return reg & priv->data->is_valid_bit;
-> >  }
-> >  
-> >  static int armada_get_temp(struct thermal_zone_device *thermal,
-> > @@ -199,7 +197,7 @@ static const struct armada_thermal_data
-> > armadaxp_data = { static const struct armada_thermal_data
-> > armada370_data = { .is_valid = armada_is_valid,
-> >  	.init_sensor = armada370_init_sensor,
-> > -	.is_valid_shift = 9,
-> > +	.is_valid_bit = BIT(9),
-> >  	.temp_shift = 10,
-> >  	.temp_mask = 0x1ff,
-> >  	.coef_b = 3153000000UL,
-> > @@ -210,7 +208,7 @@ static const struct armada_thermal_data
-> > armada370_data = { static const struct armada_thermal_data
-> > armada375_data = { .is_valid = armada_is_valid,
-> >  	.init_sensor = armada375_init_sensor,
-> > -	.is_valid_shift = 10,
-> > +	.is_valid_bit = BIT(10),
-> >  	.temp_shift = 0,
-> >  	.temp_mask = 0x1ff,
-> >  	.coef_b = 3171900000UL,
-> > @@ -221,7 +219,7 @@ static const struct armada_thermal_data
-> > armada375_data = { static const struct armada_thermal_data
-> > armada380_data = { .is_valid = armada_is_valid,
-> >  	.init_sensor = armada380_init_sensor,
-> > -	.is_valid_shift = 10,
-> > +	.is_valid_bit = BIT(10),
-> >  	.temp_shift = 0,
-> >  	.temp_mask = 0x3ff,
-> >  	.coef_b = 1172499100UL,  
-> 
-> baruch
-> 
+                const struct sched_class  * sched_class;                                 /*   152     8 */
+                struct sched_entity {
+			[...]
+		---[ Line 9 ]-------------------------------------------------------------------------------
+                        struct sched_avg {
+                                /* typedef u64 */ long long unsigned int last_update_time; /*   576     8 */
+                                /* typedef u64 */ long long unsigned int load_sum;       /*   584     8 */
+                                /* typedef u64 */ long long unsigned int runnable_load_sum; /*   592     8 */
+                                /* typedef u32 */ unsigned int util_sum;                 /*   600     4 */
+                                /* typedef u32 */ unsigned int period_contrib;           /*   604     4 */
+                                long unsigned int load_avg;                              /*   608     8 */
+                                long unsigned int runnable_load_avg;                     /*   616     8 */
+                                long unsigned int util_avg;                              /*   624     8 */
+                        } avg; /*   576    56 */
+                        /* --- cacheline 6 boundary (384 bytes) was 24 bytes ago --- */
+                        struct util_est {
+                                long unsigned int last;                                  /*   632     8 */
+		---[ Line 10 ]------------------------------------------------------------------------------
+                                long unsigned int ewma;                                  /*   640     8 */
+                        } util_est; /*   632    16 */
+                } se; /*   192   512 */
+		---[ Line 11 ]------------------------------------------------------------------------------
+                /* --- cacheline 9 boundary (576 bytes) was 24 bytes ago --- */
+                struct sched_rt_entity {
+                        struct list_head {
+                                struct list_head * next;                                 /*   704     8 */
+                                struct list_head * prev;                                 /*   712     8 */
+                        } run_list; /*   704    16 */
 
 
-Best regards,
-Miquèl
+As you can see we still end up with util_est spanning acrosss two cache and
+even worst with an almost empty Line 10. The point is that sched_avg already
+uses 56B... which leave just 8bytes left.
+
+So, I can to move util_est there and use unsigned int for "last" and "ewma"
+storage. This should fix the cache alignment but only until we do not add
+other stuff to sched_avg.
+
+BTW, should not be possible to use a similar "fasting" approach for load_avg
+and runnable_load_avg? Given their range a u32 should be just good enough,
+isn't it?
+
+Cheers Patrick
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
