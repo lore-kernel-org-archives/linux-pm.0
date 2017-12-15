@@ -1,64 +1,53 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: Ask for help on governor
-Date: Fri, 15 Dec 2017 16:53:51 +0100
-Message-ID: <6904035.5JZpTxp8PG@aspire.rjw.lan>
-References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com> <20171213061759.GT25177@vireshk-i7> <002001d37577$9706a730$c513f590$@net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:50621 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S932247AbdLOPyh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Dec 2017 10:54:37 -0500
-In-Reply-To: <002001d37577$9706a730$c513f590$@net>
-Sender: linux-pm-owner@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 0/3] PM / core: Extend behaviour for wakeup paths
+Date: Fri, 15 Dec 2017 16:56:28 +0100
+Message-ID: <1513353391-30806-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Andy Tang' <andy.tang@nxp.com>, "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>
 
-On Friday, December 15, 2017 8:37:38 AM CET Doug Smythies wrote:
-> Hi Andy,
-> 
-> Could you please try the below reversion patch.
-> It is on top of kernel 4.15-rc3.
-> 
-> On my system, and for the intel_cpufrequ scaling driver,
-> the default sampling_rate goes back to 20000 (which works)
-> from 500 uSec (which doesn't), for both the conservative
-> and ondemand governors.
+The generic problem this series intends to solve, is that for some PM domains,
+especially genpd, the current information in the dev->power.wakeup_path, is not
+sufficient for a PM domain to fully understand how to treat devices in the
+wakeup path during system suspend.
 
-OK
+Particularly this applies to resources being consumed by the driver that has
+configured system wakeup settings for its device. Currently the PM domain lacks
+information about these consumed resources, which means it may decide to power
+of their corresponding device and its attached PM domain, while they actually
+would need to stay powered to allow system wakeup signals to be delivered.
 
-So AFAICS the problem is that dbs_update() makes assumptions that are not
-me, quite obviously, if the sampling interval is less than the tick period.
+Geert Uytterhoeven, has been working on these kind of problems for some Renesas
+SoCs and there have been lots of discussions around this. After some
+consideration I have dropped my first attempt [1] on how to address these
+problems, so here's hopefully a better one.
 
-For example, the "time_elapsed > 2 * sampling_rate" condition in it may
-very well trigger every time in that case and that obviously affects the
-conservative governor.
+So far I haven't included any patches for dealing with the "OUT_BAND_WAKEUP"
+thingy, but I suggest we do that in a second separate step, since it's not
+immediately need to fix the problems for the Renesas SoCs.
 
-What about the patch below, then?
+Geert's Renesas series [2], needs to be re-based on top of this series to make
+it convert to use the new DPM_FLAG_WAKEUP_PATH flag, which is introduced in
+this series. That leads to a tree-wise-dependency, so perhaps Rafael can host
+an immutable branch the Renesas tree can pull in. Let's see.
 
----
- drivers/cpufreq/cpufreq_governor.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+[1]
+https://www.spinics.net/lists/linux-renesas-soc/msg20122.html
 
-Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-+++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-@@ -430,7 +430,14 @@ int cpufreq_dbs_governor_init(struct cpu
- 	if (ret)
- 		goto free_policy_dbs_info;
- 
-+	/*
-+	 * The sampling interval should not be greater than the transition
-+	 * latency of the CPU, but it also cannot be less than the tick period
-+	 * for dbs_update() to work correctly.
-+	 */
- 	dbs_data->sampling_rate = cpufreq_policy_transition_delay_us(policy);
-+	if (dbs_data->sampling_rate < TICK_NSEC * NSEC_PER_USEC)
-+		dbs_data->sampling_rate = TICK_NSEC * NSEC_PER_USEC;
- 
- 	if (!have_governor_per_policy())
- 		gov->gdbs_data = dbs_data;
+[2]
+https://www.spinics.net/lists/linux-renesas-soc/msg19947.html
+
+Ulf Hansson (3):
+  PM / core: Assign the wakeup_path status flag in __device_prepare()
+  PM / core: Add WAKEUP_PATH driver flag
+  PM / Domains: Take WAKEUP_PATH driver flag into account in genpd
+
+ drivers/base/power/domain.c | 8 ++++++--
+ drivers/base/power/main.c   | 5 ++++-
+ include/linux/pm.h          | 7 +++++++
+ 3 files changed, 17 insertions(+), 3 deletions(-)
+
+-- 
+2.7.4
