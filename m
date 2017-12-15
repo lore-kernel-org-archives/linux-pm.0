@@ -1,77 +1,75 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: Ask for help on governor
-Date: Fri, 15 Dec 2017 10:27:12 -0800
-Message-ID: <002501d375d2$54f942c0$feebc840$@net>
-References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com> <20171213061759.GT25177@vireshk-i7> <002001d37577$9706a730$c513f590$@net> PsJoe2WoyTqmMPsJueuzun
+From: Bjorn Helgaas <helgaas@kernel.org>
+Subject: Re: [PATCH] PCI / PM: Force devices to D0 in pci_pm_thaw_noirq()
+Date: Fri, 15 Dec 2017 12:30:58 -0600
+Message-ID: <20171215183058.GV30595@bhelgaas-glaptop.roam.corp.google.com>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan>
+ <alpine.DEB.2.20.1712141648190.4998@nanos>
+ <11146834.AWaDHrVcmB@aspire.rjw.lan>
+ <2582328.YfNXS1jHhG@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta17.telus.net ([209.171.16.90]:40055 "EHLO cmta17.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755409AbdLOS1Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 15 Dec 2017 13:27:16 -0500
-In-Reply-To: PsJoe2WoyTqmMPsJueuzun
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <2582328.YfNXS1jHhG@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>, linux-pci@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Chen Yu <y.c.chen@intel.com>
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Andy Tang' <andy.tang@nxp.com>, "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>, Doug Smythies <dsmythies@telus.net>
 
-On 2017.12.15 07:54 Rafael J. Wysocki wrote:
-> On Friday, December 15, 2017 8:37:38 AM Doug Smythies wrote:
->
->> Could you please try the below reversion patch.
->> It is on top of kernel 4.15-rc3.
->> 
->> On my system, and for the intel_cpufrequ scaling driver,
->> the default sampling_rate goes back to 20000 (which works)
->> from 500 uSec (which doesn't), for both the conservative
->> and ondemand governors.
->
-> OK
+On Fri, Dec 15, 2017 at 03:07:18AM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> So AFAICS the problem is that dbs_update() makes assumptions that are not
-> me, quite obviously, if the sampling interval is less than the tick period.
->
-> For example, the "time_elapsed > 2 * sampling_rate" condition in it may
-> very well trigger every time in that case and that obviously affects the
-> conservative governor.
+> It is incorrect to call pci_restore_state() for devices in low-power
+> states (D1-D3), as that involves the restoration of MSI setup which
+> requires MMIO to be operational and that is only the case in D0.
+> 
+> However, pci_pm_thaw_noirq() may do that if the driver's "freeze"
+> callbacks put the device into a low-power state, so fix it by making
+> it force devices into D0 via pci_set_power_state() instead of trying
+> to "update" their power state which is pointless.
+> 
+> Fixes: e60514bd4485 (PCI/PM: Restore the status of PCI devices across hibernation)
+> Cc: 4.13+ <stable@vger.kernel.org> # 4.13+
+> Reported-by: Thomas Gleixner <tglx@linutronix.de>
+> Reported-by: Maarten Lankhorst <dev@mblankhorst.nl>
+> Tested-by: Thomas Gleixner <tglx@linutronix.de>
+> Tested-by: Maarten Lankhorst <dev@mblankhorst.nl>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-It does trigger every time and that is why the conservative gov. sticks at
-low frequency.
+Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 
-> What about the patch below, then?
+Let me know if you want me to take this.  I don't have anything
+currently queued up that touches pci-driver.c, so I'm happy if you
+take it yourself.
 
-I am testing now, from previous work, and already reported on this thread,
-I already know that the conservative governor will be O.K..
-It will take me awhile to thoroughly test the ondemand governor. At only 1.0
-ticks at best it will be quite noisy and more sensitive to work/sleep frequencies
-for periodic workflows.
-
-By the way, I modified your proposed patch, which needed to divide by
-NSEC_PER_USEC instead of multiply by.
-i.e. I am testing this:
-
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index 58d4f4e..1c2fd1d 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -430,7 +430,14 @@ int cpufreq_dbs_governor_init(struct cpufreq_policy *policy)
-        if (ret)
-                goto free_policy_dbs_info;
-
-+       /*
-+        * The sampling interval should not be greater than the transition
-+        * latency of the CPU, but it also cannot be less than the tick period
-+        * for dbs_update() to work correctly.
-+        */
-        dbs_data->sampling_rate = cpufreq_policy_transition_delay_us(policy);
-+       if (dbs_data->sampling_rate < TICK_NSEC / NSEC_PER_USEC)
-+               dbs_data->sampling_rate = TICK_NSEC / NSEC_PER_USEC;
-
-        if (!have_governor_per_policy())
-                gov->gdbs_data = dbs_data;
-
-... Doug
+> ---
+> 
+> The bug is not as old as I thought, actually.
+> 
+> Yes, we did the pci_update_current_state() in pci_pm_thaw_noirq()
+> forever, but it started to be problematic in 4.13, when we started
+> to call pci_restore_state() in addition to it to fix another issue.
+> 
+> ---
+>  drivers/pci/pci-driver.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> Index: linux-pm/drivers/pci/pci-driver.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-driver.c
+> +++ linux-pm/drivers/pci/pci-driver.c
+> @@ -1027,7 +1027,12 @@ static int pci_pm_thaw_noirq(struct devi
+>  	if (pci_has_legacy_pm_support(pci_dev))
+>  		return pci_legacy_resume_early(dev);
+>  
+> -	pci_update_current_state(pci_dev, PCI_D0);
+> +	/*
+> +	 * pci_restore_state() requires the device to be in D0 (because of MSI
+> +	 * restoration among other things), so force it into D0 in case the
+> +	 * driver's "freeze" callbacks put it into a low-power state directly.
+> +	 */
+> +	pci_set_power_state(pci_dev, PCI_D0);
+>  	pci_restore_state(pci_dev);
+>  
+>  	if (drv && drv->pm && drv->pm->thaw_noirq)
+> 
