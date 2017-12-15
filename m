@@ -1,75 +1,59 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Subject: Re: [PATCH] PCI / PM: Force devices to D0 in pci_pm_thaw_noirq()
-Date: Fri, 15 Dec 2017 12:30:58 -0600
-Message-ID: <20171215183058.GV30595@bhelgaas-glaptop.roam.corp.google.com>
-References: <168050887.sZlTFXWCmO@aspire.rjw.lan>
- <alpine.DEB.2.20.1712141648190.4998@nanos>
- <11146834.AWaDHrVcmB@aspire.rjw.lan>
- <2582328.YfNXS1jHhG@aspire.rjw.lan>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 07/13] dt-bindings: power: reset: Document
+ ocelot-reset binding
+Date: Fri, 15 Dec 2017 14:23:32 -0600
+Message-ID: <20171215202332.bn47da3fpkynusno@rob-hp-laptop>
+References: <20171208154618.20105-1-alexandre.belloni@free-electrons.com>
+ <20171208154618.20105-8-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <2582328.YfNXS1jHhG@aspire.rjw.lan>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-pci@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, linux-pm@vger.kernel.org, Chen Yu <y.c.chen@intel.com>
+In-Reply-To: <20171208154618.20105-8-alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 15, 2017 at 03:07:18AM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Dec 08, 2017 at 04:46:12PM +0100, Alexandre Belloni wrote:
+> Add binding documentation for the Microsemi Ocelot reset block.
 > 
-> It is incorrect to call pci_restore_state() for devices in low-power
-> states (D1-D3), as that involves the restoration of MSI setup which
-> requires MMIO to be operational and that is only the case in D0.
-> 
-> However, pci_pm_thaw_noirq() may do that if the driver's "freeze"
-> callbacks put the device into a low-power state, so fix it by making
-> it force devices into D0 via pci_set_power_state() instead of trying
-> to "update" their power state which is pointless.
-> 
-> Fixes: e60514bd4485 (PCI/PM: Restore the status of PCI devices across hibernation)
-> Cc: 4.13+ <stable@vger.kernel.org> # 4.13+
-> Reported-by: Thomas Gleixner <tglx@linutronix.de>
-> Reported-by: Maarten Lankhorst <dev@mblankhorst.nl>
-> Tested-by: Thomas Gleixner <tglx@linutronix.de>
-> Tested-by: Maarten Lankhorst <dev@mblankhorst.nl>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-
-Let me know if you want me to take this.  I don't have anything
-currently queued up that touches pci-driver.c, so I'm happy if you
-take it yourself.
-
+> Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Cc: Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+> Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Signed-off-by: Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 > ---
+>  .../devicetree/bindings/power/reset/ocelot-reset.txt    | 17 +++++++++++++++++
+>  1 file changed, 17 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
 > 
-> The bug is not as old as I thought, actually.
-> 
-> Yes, we did the pci_update_current_state() in pci_pm_thaw_noirq()
-> forever, but it started to be problematic in 4.13, when we started
-> to call pci_restore_state() in addition to it to fix another issue.
-> 
-> ---
->  drivers/pci/pci-driver.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> Index: linux-pm/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci-driver.c
-> +++ linux-pm/drivers/pci/pci-driver.c
-> @@ -1027,7 +1027,12 @@ static int pci_pm_thaw_noirq(struct devi
->  	if (pci_has_legacy_pm_support(pci_dev))
->  		return pci_legacy_resume_early(dev);
->  
-> -	pci_update_current_state(pci_dev, PCI_D0);
-> +	/*
-> +	 * pci_restore_state() requires the device to be in D0 (because of MSI
-> +	 * restoration among other things), so force it into D0 in case the
-> +	 * driver's "freeze" callbacks put it into a low-power state directly.
-> +	 */
-> +	pci_set_power_state(pci_dev, PCI_D0);
->  	pci_restore_state(pci_dev);
->  
->  	if (drv && drv->pm && drv->pm->thaw_noirq)
-> 
+> diff --git a/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
+> new file mode 100644
+> index 000000000000..1bcf276b04cb
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
+> @@ -0,0 +1,17 @@
+> +Microsemi Ocelot reset controller
+> +
+> +The DEVCPU_GCB:CHIP_REGS have a SOFT_RST register that can be used to reset the
+> +SoC MIPS core.
+> +
+> +Required Properties:
+> + - compatible: "mscc,ocelot-chip-reset"
+> +
+> +Example:
+> +	syscon@71070000 {
+> +		compatible = "mscc,ocelot-chip-regs", "simple-mfd", "syscon";
+> +		reg = <0x71070000 0x1c>;
+> +
+> +		reset {
+> +			compatible = "mscc,ocelot-chip-reset";
+
+Why do you need a subnode here other than as a way to instantiate a 
+driver? Can you describe the SOFT_RST register in reg property here 
+(without having overlapping regions)?
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
