@@ -1,71 +1,105 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PCI / PM: Force devices to D0 in pci_pm_thaw_noirq()
-Date: Fri, 15 Dec 2017 15:28:11 +0100
-Message-ID: <CAJZ5v0i1g2GJsfd_tPvtiFT0P=c_MPHkKDKLgSgiFK+CCcieEA@mail.gmail.com>
-References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <alpine.DEB.2.20.1712141648190.4998@nanos>
- <11146834.AWaDHrVcmB@aspire.rjw.lan> <2582328.YfNXS1jHhG@aspire.rjw.lan>
+Subject: Re: [PATCH v2 3/4] dt-bindings: opp: Introduce ti-opp-supply bindings
+Date: Fri, 15 Dec 2017 15:29:47 +0100
+Message-ID: <CAJZ5v0iaYAodhiQm3=7OMhtqP3JXoX_RTrYMRDxVwO=3hTL7Bg@mail.gmail.com>
+References: <20171215042528.28715-1-d-gerlach@ti.com> <20171215042528.28715-4-d-gerlach@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:41411 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755739AbdLOO2M (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Dec 2017 09:28:12 -0500
-In-Reply-To: <2582328.YfNXS1jHhG@aspire.rjw.lan>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:46771 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756553AbdLOO3s (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Dec 2017 09:29:48 -0500
+In-Reply-To: <20171215042528.28715-4-d-gerlach@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Linux PCI <linux-pci@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Chen Yu <yu.c.chen@intel.com>
+To: Dave Gerlach <d-gerlach@ti.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-arm-kernel@lists.infradead.org, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Nishanth Menon <nm@ti.com>
 
-On Fri, Dec 15, 2017 at 3:07 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Fri, Dec 15, 2017 at 5:25 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
+> Document the devicetree bindings that describe Texas Instruments
+> opp-supply which allow a platform to describe multiple regulators and
+> additional information, such as registers containing data needed to
+> program aforementioned regulators.
 >
-> It is incorrect to call pci_restore_state() for devices in low-power
-> states (D1-D3), as that involves the restoration of MSI setup which
-> requires MMIO to be operational and that is only the case in D0.
->
-> However, pci_pm_thaw_noirq() may do that if the driver's "freeze"
-> callbacks put the device into a low-power state, so fix it by making
-> it force devices into D0 via pci_set_power_state() instead of trying
-> to "update" their power state which is pointless.
->
-> Fixes: e60514bd4485 (PCI/PM: Restore the status of PCI devices across hibernation)
-> Cc: 4.13+ <stable@vger.kernel.org> # 4.13+
-> Reported-by: Thomas Gleixner <tglx@linutronix.de>
-> Reported-by: Maarten Lankhorst <dev@mblankhorst.nl>
-> Tested-by: Thomas Gleixner <tglx@linutronix.de>
-> Tested-by: Maarten Lankhorst <dev@mblankhorst.nl>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->
-> The bug is not as old as I thought, actually.
->
-> Yes, we did the pci_update_current_state() in pci_pm_thaw_noirq()
-> forever, but it started to be problematic in 4.13, when we started
-> to call pci_restore_state() in addition to it to fix another issue.
+> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
 
-Bjorn, any concerns about this one?
+I need an ACK from Rob on this one.
 
 > ---
->  drivers/pci/pci-driver.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+>  .../bindings/opp/ti-omap5-opp-supply.txt           | 63 ++++++++++++++++++++++
+>  1 file changed, 63 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/opp/ti-omap5-opp-supply.txt
 >
-> Index: linux-pm/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-pm.orig/drivers/pci/pci-driver.c
-> +++ linux-pm/drivers/pci/pci-driver.c
-> @@ -1027,7 +1027,12 @@ static int pci_pm_thaw_noirq(struct devi
->         if (pci_has_legacy_pm_support(pci_dev))
->                 return pci_legacy_resume_early(dev);
->
-> -       pci_update_current_state(pci_dev, PCI_D0);
-> +       /*
-> +        * pci_restore_state() requires the device to be in D0 (because of MSI
-> +        * restoration among other things), so force it into D0 in case the
-> +        * driver's "freeze" callbacks put it into a low-power state directly.
-> +        */
-> +       pci_set_power_state(pci_dev, PCI_D0);
->         pci_restore_state(pci_dev);
->
->         if (drv && drv->pm && drv->pm->thaw_noirq)
+> diff --git a/Documentation/devicetree/bindings/opp/ti-omap5-opp-supply.txt b/Documentation/devicetree/bindings/opp/ti-omap5-opp-supply.txt
+> new file mode 100644
+> index 000000000000..832346e489a3
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/opp/ti-omap5-opp-supply.txt
+> @@ -0,0 +1,63 @@
+> +Texas Instruments OMAP compatible OPP supply description
+> +
+> +OMAP5, DRA7, and AM57 family of SoCs have Class0 AVS eFuse registers which
+> +contain data that can be used to adjust voltages programmed for some of their
+> +supplies for more efficient operation. This binding provides the information
+> +needed to read these values and use them to program the main regulator during
+> +an OPP transitions.
+> +
+> +Also, some supplies may have an associated vbb-supply which is an Adaptive Body
+> +Bias regulator which much be transitioned in a specific sequence with regards
+> +to the vdd-supply and clk when making an OPP transition. By supplying two
+> +regulators to the device that will undergo OPP transitions we can make use
+> +of the multi regulator binding that is part of the OPP core described here [1]
+> +to describe both regulators needed by the platform.
+> +
+> +[1] Documentation/devicetree/bindings/opp/opp.txt
+> +
+> +Required Properties for Device Node:
+> +- vdd-supply: phandle to regulator controlling VDD supply
+> +- vbb-supply: phandle to regulator controlling Body Bias supply
+> +             (Usually Adaptive Body Bias regulator)
+> +
+> +Required Properties for opp-supply node:
+> +- compatible: Should be one of:
+> +       "ti,omap-opp-supply" - basic OPP supply controlling VDD and VBB
+> +       "ti,omap5-opp-supply" - OMAP5+ optimized voltages in efuse(class0)VDD
+> +                           along with VBB
+> +       "ti,omap5-core-opp-supply" - OMAP5+ optimized voltages in efuse(class0) VDD
+> +                           but no VBB.
+> +- reg: Address and length of the efuse register set for the device (mandatory
+> +       only for "ti,omap5-opp-supply")
+> +- ti,efuse-settings: An array of u32 tuple items providing information about
+> +       optimized efuse configuration. Each item consists of the following:
+> +       volt: voltage in uV - reference voltage (OPP voltage)
+> +       efuse_offseet: efuse offset from reg where the optimized voltage is stored.
+> +- ti,absolute-max-voltage-uv: absolute maximum voltage for the OPP supply.
+> +
+> +Example:
+> +
+> +/* Device Node (CPU)  */
+> +cpus {
+> +       cpu0: cpu@0 {
+> +               device_type = "cpu";
+> +
+> +               ...
+> +
+> +               vdd-supply = <&vcc>;
+> +               vbb-supply = <&abb_mpu>;
+> +       };
+> +};
+> +
+> +/* OMAP OPP Supply with Class0 registers */
+> +opp_supply_mpu: opp_supply@4a003b20 {
+> +       compatible = "ti,omap5-opp-supply";
+> +       reg = <0x4a003b20 0x8>;
+> +       ti,efuse-settings = <
+> +       /* uV   offset */
+> +       1060000 0x0
+> +       1160000 0x4
+> +       1210000 0x8
+> +       >;
+> +       ti,absolute-max-voltage-uv = <1500000>;
+> +};
+> --
+> 2.15.1
 >
