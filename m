@@ -1,59 +1,71 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: Ask for help on governor
-Date: Fri, 15 Dec 2017 15:26:18 +0100
-Message-ID: <CAJZ5v0gk_hm1LMOWUZ0RfsEZB=xJHJgLvvyQmteb_vtBdYqsJA@mail.gmail.com>
-References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com>
- <000801d37364$d48f6ed0$7dae4c70$@net> <000f01d373bf$deacca10$9c065e30$@net>
- <20171213061759.GT25177@vireshk-i7> <000701d37479$e0570320$a1050960$@net>
- <001f01d37544$5889d410$099d7c30$@net> <002001d37577$9706a730$c513f590$@net> <HE1PR0402MB282849253906D2387281806FF30B0@HE1PR0402MB2828.eurprd04.prod.outlook.com>
+Subject: Re: [PATCH] PCI / PM: Force devices to D0 in pci_pm_thaw_noirq()
+Date: Fri, 15 Dec 2017 15:28:11 +0100
+Message-ID: <CAJZ5v0i1g2GJsfd_tPvtiFT0P=c_MPHkKDKLgSgiFK+CCcieEA@mail.gmail.com>
+References: <168050887.sZlTFXWCmO@aspire.rjw.lan> <alpine.DEB.2.20.1712141648190.4998@nanos>
+ <11146834.AWaDHrVcmB@aspire.rjw.lan> <2582328.YfNXS1jHhG@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f51.google.com ([209.85.218.51]:34643 "EHLO
-        mail-oi0-f51.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755864AbdLOO0U (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Dec 2017 09:26:20 -0500
-Received: by mail-oi0-f51.google.com with SMTP id u193so6270382oie.1
-        for <linux-pm@vger.kernel.org>; Fri, 15 Dec 2017 06:26:19 -0800 (PST)
-In-Reply-To: <HE1PR0402MB282849253906D2387281806FF30B0@HE1PR0402MB2828.eurprd04.prod.outlook.com>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:41411 "EHLO
+        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755739AbdLOO2M (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Dec 2017 09:28:12 -0500
+In-Reply-To: <2582328.YfNXS1jHhG@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Tang <andy.tang@nxp.com>
-Cc: Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Stratos Karafotis <stratosk@semaphore.gr>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Linux PCI <linux-pci@vger.kernel.org>, Linus Torvalds <torvalds@linux-foundation.org>, Maarten Lankhorst <dev@mblankhorst.nl>, Michal Hocko <mhocko@kernel.org>, Andy Lutomirski <luto@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, the arch/x86 maintainers <x86@kernel.org>, Daniel Vetter <daniel.vetter@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Chen Yu <yu.c.chen@intel.com>
 
-On Fri, Dec 15, 2017 at 10:00 AM, Andy Tang <andy.tang@nxp.com> wrote:
-> Hi Doug,
+On Fri, Dec 15, 2017 at 3:07 AM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 >
->> -----Original Message-----
->> From: Doug Smythies [mailto:dsmythies@telus.net]
->> Sent: Friday, December 15, 2017 3:38 PM
->> To: Andy Tang <andy.tang@nxp.com>
->> Cc: 'Rafael J. Wysocki' <rafael@kernel.org>; 'Rafael J. Wysocki'
->> <rjw@rjwysocki.net>; 'Linux PM' <linux-pm@vger.kernel.org>; 'Viresh
->> Kumar' <viresh.kumar@linaro.org>; 'Stratos Karafotis'
->> <stratosk@semaphore.gr>
->> Subject: RE: Ask for help on governor
->>
->> Hi Andy,
->>
->> Could you please try the below reversion patch.
->> It is on top of kernel 4.15-rc3.
-> Tried, no any effects.
-
-Does this mean that the revert helps or that it doesn't help?
-
->>
->> On my system, and for the intel_cpufrequ scaling driver, the default
->> sampling_rate goes back to 20000 (which works) from 500 uSec (which
->> doesn't), for both the conservative and ondemand governors.
+> It is incorrect to call pci_restore_state() for devices in low-power
+> states (D1-D3), as that involves the restoration of MSI setup which
+> requires MMIO to be operational and that is only the case in D0.
 >
-> If I set the sampling_rate to 20,000 (actually 10,000 is enough), cpufreq works too for both the conservative and ondemand governors.
-> But on my platforms, the default rate is 1000 which leads to cpu load calculating issue.
+> However, pci_pm_thaw_noirq() may do that if the driver's "freeze"
+> callbacks put the device into a low-power state, so fix it by making
+> it force devices into D0 via pci_set_power_state() instead of trying
+> to "update" their power state which is pointless.
 >
+> Fixes: e60514bd4485 (PCI/PM: Restore the status of PCI devices across hibernation)
+> Cc: 4.13+ <stable@vger.kernel.org> # 4.13+
+> Reported-by: Thomas Gleixner <tglx@linutronix.de>
+> Reported-by: Maarten Lankhorst <dev@mblankhorst.nl>
+> Tested-by: Thomas Gleixner <tglx@linutronix.de>
+> Tested-by: Maarten Lankhorst <dev@mblankhorst.nl>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+>
+> The bug is not as old as I thought, actually.
+>
+> Yes, we did the pci_update_current_state() in pci_pm_thaw_noirq()
+> forever, but it started to be problematic in 4.13, when we started
+> to call pci_restore_state() in addition to it to fix another issue.
 
-OK, that's good to know.
+Bjorn, any concerns about this one?
 
-I'll look deeper into this later today or tomorrow.
-
-Thanks,
-Rafael
+> ---
+>  drivers/pci/pci-driver.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> Index: linux-pm/drivers/pci/pci-driver.c
+> ===================================================================
+> --- linux-pm.orig/drivers/pci/pci-driver.c
+> +++ linux-pm/drivers/pci/pci-driver.c
+> @@ -1027,7 +1027,12 @@ static int pci_pm_thaw_noirq(struct devi
+>         if (pci_has_legacy_pm_support(pci_dev))
+>                 return pci_legacy_resume_early(dev);
+>
+> -       pci_update_current_state(pci_dev, PCI_D0);
+> +       /*
+> +        * pci_restore_state() requires the device to be in D0 (because of MSI
+> +        * restoration among other things), so force it into D0 in case the
+> +        * driver's "freeze" callbacks put it into a low-power state directly.
+> +        */
+> +       pci_set_power_state(pci_dev, PCI_D0);
+>         pci_restore_state(pci_dev);
+>
+>         if (drv && drv->pm && drv->pm->thaw_noirq)
+>
