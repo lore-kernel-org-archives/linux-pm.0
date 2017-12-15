@@ -1,78 +1,93 @@
-From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v3 01/11] dt-bindings: thermal: Describe Armada AP806 and CP110
-Date: Fri, 15 Dec 2017 09:44:19 +0100
-Message-ID: <87po7gmlcs.fsf@free-electrons.com>
-References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-        <20171214103011.24713-2-miquel.raynal@free-electrons.com>
-        <20171215082759.7t24ka3lpkulcb7r@tarshish>
-        <20171215093203.74b7a59c@xps13>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] drivers: base: power: Fix GFP_KERNEL in spinlock context
+Date: Fri, 15 Dec 2017 09:45:15 +0100
+Message-ID: <20171215084515.GB8221@amd>
+References: <1513086342-3581-1-git-send-email-shrikant.maurya@techveda.org>
+ <CAMuHMdUrhV9RkUnXkTbSWaRY33iQrANwbKBE5KAPQseNgxOofg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171215093203.74b7a59c@xps13> (Miquel RAYNAL's message of "Fri,
-        15 Dec 2017 09:32:03 +0100")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="bCsyhTFzCvuiizWE"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43481 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753744AbdLOIpR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Dec 2017 03:45:17 -0500
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdUrhV9RkUnXkTbSWaRY33iQrANwbKBE5KAPQseNgxOofg@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-Hi Miquel,
- 
- On ven., déc. 15 2017, Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
-
-> Hello Baruch,
->
-> On Fri, 15 Dec 2017 10:27:59 +0200
-> Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org> wrote:
->
->> Hi Miquel
->> 
->> On Thu, Dec 14, 2017 at 11:30:01AM +0100, Miquel Raynal wrote:
->> > +- marvell,thermal-zone-name: The name to identify the thermal zone
->> > +                             within the sysfs, useful when multiple
->> > +                             thermal zones are registered (AP,
->> > CPx...).  
->> 
->> I don't think that would be acceptable. DT is about describing the
->> hardware. sysfs is a Linux implementation detail which is not tied to
->> any specific hardware. If this is accepted, the property should be
->> named 'linux,thermal-zone-name'.
->
-> You are right the sysfs mention should not appear in the description.
->
-> Otherwise for the naming I'm not sure "linux," is a valid prefix in
-> that case.
-
-Actually the choice between linux or marvell make me realize that there
-is something wrong. Having a name associated to a device is something
-pretty usual with the device tree, however it is as the class device
-level, such as clock-names, line-name, or regulator-name. So in my
-opinion if we want to support naming from device tree it would be done
-for all the thermal device not just for the Marvell one.
-
-However I don't think we need it. For example for the clocks we created
-the name dynamically using of the base address of the register to keep
-them unique.
-
-Gregory
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: shrikant.maurya@techveda.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Greg KH <gregkh@linuxfoundation.org>, Linux PM list <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Suniel Mahesh <sunil.m@techveda.org>, Karthik Tummala <karthik@techveda.org>, raghu@techveda.org
 
 
->
-> Miquèl
->
->
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+--bCsyhTFzCvuiizWE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+On Tue 2017-12-12 15:58:00, Geert Uytterhoeven wrote:
+> Hi Shrikant,
+>=20
+> On Tue, Dec 12, 2017 at 2:45 PM,  <shrikant.maurya@techveda.org> wrote:
+> > From: Shrikant Maurya <shrikant.maurya@techveda.org>
+> >
+> > As reported by Jia-Ju Bai (https://lkml.org/lkml/2017/12/11/872):
+> > API's are using GFP_KERNEL to allocate memory which may sleep.
+> >
+> > To ensure atomicity such allocations must be avoided in critical
+> > sections under spinlock.
+> > Fixed by replacing GFP_KERNEL to GFP_ATOMIC.
+> >
+> > Reported-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+> > Signed-off-by: Shrikant Maurya <shrikant.maurya@techveda.org>
+> > Signed-off-by: Suniel Mahesh <sunil.m@techveda.org>
+> > Signed-off-by: Raghu Bharadwaj <raghu@techveda.org>
+> > Signed-off-by: Karthik Tummala <karthik@techveda.org>
+>=20
+> Can't the call to device_init_wakeup() in isp116x_start() just be moved
+> below the spinlock release?
+>=20
+> > --- a/drivers/base/power/wakeup.c
+> > +++ b/drivers/base/power/wakeup.c
+> > @@ -92,11 +92,11 @@ struct wakeup_source *wakeup_source_create(const ch=
+ar *name)
+> >  {
+> >         struct wakeup_source *ws;
+> >
+> > -       ws =3D kmalloc(sizeof(*ws), GFP_KERNEL);
+> > +       ws =3D kmalloc(sizeof(*ws), GFP_ATOMIC);
+>=20
+> With GFP_ATOMIC, allocation failure is much more likely to occur.
+> So IMHO it's better to fix the isp116x, than to impose this burden on
+> every user.
+>=20
+> >         if (!ws)
+> >                 return NULL;
+> >
+> > -       wakeup_source_prepare(ws, name ? kstrdup_const(name, GFP_KERNEL=
+) : NULL);
+> > +       wakeup_source_prepare(ws, name ? kstrdup_const(name, GFP_ATOMIC=
+) : NULL);
+> >         return ws;
+
+NAK. This will silently replace name with NULL if memory is low.
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--bCsyhTFzCvuiizWE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlozi5sACgkQMOfwapXb+vJSMQCeLb9Hi6zQwi3h6a+wk7VFlggt
+S40AnA3K9ziiYXdYMLMpjRpJPp0RsPuj
+=hnyF
+-----END PGP SIGNATURE-----
+
+--bCsyhTFzCvuiizWE--
