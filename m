@@ -1,129 +1,58 @@
-From: kbuild test robot <fengguang.wu@intel.com>
-Subject: [pm:bleeding-edge 94/95] drivers/acpi/apei/apei-base.c:509:21:
- sparse: incorrect type in argument 1 (different base types)
-Date: Sat, 16 Dec 2017 12:20:10 +0800
-Message-ID: <201712161208.Ou0iMnN5%fengguang.wu@intel.com>
+From: Mike Galbraith <efault@gmx.de>
+Subject: Re: [PATCH v2 0/4] Utilization estimation (util_est) for FAIR tasks
+Date: Sat, 16 Dec 2017 07:37:52 +0100
+Message-ID: <1513406272.7101.9.camel@gmx.de>
+References: <20171205171018.9203-1-patrick.bellasi@arm.com>
+         <1513187793.7297.26.camel@gmx.de> <20171215161309.GF19821@e110439-lin>
+         <1513369387.11185.127.camel@gmx.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Vasyl Gomonovych <gomonovych@gmail.com>
-Cc: kbuild-all@01.org, linux-acpi@vger.kernel.org, devel@acpica.org, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset="ISO-8859-15"
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mout.gmx.net ([212.227.15.18]:53131 "EHLO mout.gmx.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750730AbdLPGij (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 16 Dec 2017 01:38:39 -0500
+In-Reply-To: <1513369387.11185.127.camel@gmx.de>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-head:   076c5d77b3e3b4898eedf2738f634ef8eabc3970
-commit: 43af46822779b067622ba468929daef8f61fbef4 [94/95] ACPI: APEI: Fix allocation and release of memory regions
-reproduce:
-        # apt-get install sparse
-        git checkout 43af46822779b067622ba468929daef8f61fbef4
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF=-D__CHECK_ENDIAN__
+On Fri, 2017-12-15 at 21:23 +0100, Mike Galbraith wrote:
+> 
+> Point: if you think it's OK to serialize these firefox threads, would
+> you still think so if those were kernel threads instead?  Serializing
+> your kernel is a clear fail, but unpinned kthreads can be stacked up
+> just as effectively as those browser threads are, eat needless wakeup
+> latency and pass it on.
 
+FWIW, somewhat cheezy example of that below.
 
-sparse warnings: (new ones prefixed by >>)
+(later, /me returns to [apparently endless] squabble w. PELT/SIS;)
 
-
-vim +509 drivers/acpi/apei/apei-base.c
-
-   466	
-   467	/*
-   468	 * IO memory/port resource management mechanism is used to check
-   469	 * whether memory/port area used by GARs conflicts with normal memory
-   470	 * or IO memory/port of devices.
-   471	 */
-   472	int apei_resources_request(struct apei_resources *resources,
-   473				   const char *desc)
-   474	{
-   475		struct apei_res *res, *res_bak = NULL;
-   476		struct resource *r;
-   477		struct apei_resources nvs_resources, arch_res;
-   478		int rc;
-   479	
-   480		rc = apei_resources_sub(resources, &apei_resources_all);
-   481		if (rc)
-   482			return rc;
-   483	
-   484		/*
-   485		 * Some firmware uses ACPI NVS region, that has been marked as
-   486		 * busy, so exclude it from APEI resources to avoid false
-   487		 * conflict.
-   488		 */
-   489		apei_resources_init(&nvs_resources);
-   490		rc = apei_get_nvs_resources(&nvs_resources);
-   491		if (rc)
-   492			goto nvs_res_fini;
-   493		rc = apei_resources_sub(resources, &nvs_resources);
-   494		if (rc)
-   495			goto nvs_res_fini;
-   496	
-   497		if (arch_apei_filter_addr) {
-   498			apei_resources_init(&arch_res);
-   499			rc = apei_get_arch_resources(&arch_res);
-   500			if (rc)
-   501				goto arch_res_fini;
-   502			rc = apei_resources_sub(resources, &arch_res);
-   503			if (rc)
-   504				goto arch_res_fini;
-   505		}
-   506	
-   507		rc = -EINVAL;
-   508		list_for_each_entry(res, &resources->iomem, list) {
- > 509			r = request_mem_region(res->start, resource_size(res), desc);
-   510			if (!r) {
-   511				pr_err(APEI_PFX
-   512			"Can not request [mem %#010llx-%#010llx] for %s registers\n",
-   513				       (unsigned long long)res->start,
-   514				       (unsigned long long)res->end - 1, desc);
-   515				res_bak = res;
-   516				goto err_unmap_iomem;
-   517			}
-   518		}
-   519	
-   520		list_for_each_entry(res, &resources->ioport, list) {
-   521			r = request_region(res->start, resource_size(res), desc);
-   522			if (!r) {
-   523				pr_err(APEI_PFX
-   524			"Can not request [io  %#06llx-%#06llx] for %s registers\n",
-   525				       (unsigned long long)res->start,
-   526				       (unsigned long long)res->end - 1, desc);
-   527				res_bak = res;
-   528				goto err_unmap_ioport;
-   529			}
-   530		}
-   531	
-   532		rc = apei_resources_merge(&apei_resources_all, resources);
-   533		if (rc) {
-   534			pr_err(APEI_PFX "Fail to merge resources!\n");
-   535			goto err_unmap_ioport;
-   536		}
-   537	
-   538		goto arch_res_fini;
-   539	
-   540	err_unmap_ioport:
-   541		list_for_each_entry(res, &resources->ioport, list) {
-   542			if (res == res_bak)
-   543				break;
-   544			release_region(res->start, resource_size(res));
-   545		}
-   546		res_bak = NULL;
-   547	err_unmap_iomem:
-   548		list_for_each_entry(res, &resources->iomem, list) {
-   549			if (res == res_bak)
-   550				break;
-   551			release_mem_region(res->start, resource_size(res));
-   552		}
-   553	arch_res_fini:
-   554		if (arch_apei_filter_addr)
-   555			apei_resources_fini(&arch_res);
-   556	nvs_res_fini:
-   557		apei_resources_fini(&nvs_resources);
-   558		return rc;
-   559	}
-   560	EXPORT_SYMBOL_GPL(apei_resources_request);
-   561	
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+bonnie in nfs mount of own box competing with 7 hogs:
+ ------------------------------------------------------------------------------------------------------------------------------------
+  Task                  |   Runtime ms  | Switches | Average delay ms | Maximum delay ms | Sum     delay ms | Maximum delay at      |
+ ------------------------------------------------------------------------------------------------------------------------------------
+  kworker/3:0:29        |    630.078 ms |    89669 | avg:    0.011 ms | max:  102.340 ms | sum:  962.919 ms | max at:    310.501277 |
+  kworker/3:1H:464      |   1179.868 ms |   101944 | avg:    0.005 ms | max:  102.232 ms | sum:  480.915 ms | max at:    310.501273 |
+  kswapd0:78            |   2662.230 ms |     1661 | avg:    0.128 ms | max:   93.935 ms | sum:  213.258 ms | max at:    310.503419 |
+  nfsd:2039             |   3257.143 ms |    78448 | avg:    0.112 ms | max:   86.039 ms | sum: 8795.767 ms | max at:    258.847140 |
+  nfsd:2038             |   3185.730 ms |    76253 | avg:    0.113 ms | max:   78.348 ms | sum: 8580.676 ms | max at:    258.831370 |
+  nfsd:2042             |   3256.554 ms |    81423 | avg:    0.110 ms | max:   74.941 ms | sum: 8929.015 ms | max at:    288.397203 |
+  nfsd:2040             |   3314.826 ms |    80396 | avg:    0.105 ms | max:   51.039 ms | sum: 8471.816 ms | max at:    363.870078 |
+  nfsd:2036             |   3058.867 ms |    70460 | avg:    0.115 ms | max:   44.629 ms | sum: 8092.319 ms | max at:    250.074253 |
+  nfsd:2037             |   3113.592 ms |    74276 | avg:    0.115 ms | max:   43.294 ms | sum: 8556.110 ms | max at:    310.443722 |
+  konsole:4013          |    402.509 ms |      894 | avg:    0.148 ms | max:   38.129 ms | sum:  132.050 ms | max at:    332.156495 |
+  haveged:497           |     11.831 ms |     1224 | avg:    0.104 ms | max:   37.575 ms | sum:  127.706 ms | max at:    350.669645 |
+  nfsd:2043             |   3316.033 ms |    78303 | avg:    0.115 ms | max:   36.511 ms | sum: 8995.138 ms | max at:    248.576108 |
+  nfsd:2035             |   3064.108 ms |    67413 | avg:    0.115 ms | max:   28.221 ms | sum: 7746.306 ms | max at:    313.785682 |
+  bash:7022             |      0.342 ms |        1 | avg:   22.959 ms | max:   22.959 ms | sum:   22.959 ms | max at:    262.258960 |
+  kworker/u16:4:354     |   2073.383 ms |     1550 | avg:    0.050 ms | max:   21.203 ms | sum:   77.185 ms | max at:    332.220678 |
+  kworker/4:3:6975      |   1189.868 ms |   115776 | avg:    0.018 ms | max:   20.856 ms | sum: 2071.894 ms | max at:    348.142757 |
+  kworker/2:4:6981      |    335.895 ms |    26617 | avg:    0.023 ms | max:   20.726 ms | sum:  625.102 ms | max at:    248.522083 |
+  bash:7021             |      0.517 ms |        2 | avg:   10.363 ms | max:   20.726 ms | sum:   20.727 ms | max at:    262.235708 |
+  ksoftirqd/2:22        |     65.718 ms |      998 | avg:    0.138 ms | max:   19.072 ms | sum:  137.827 ms | max at:    332.221676 |
+  kworker/7:3:6969      |    625.724 ms |    84153 | avg:    0.010 ms | max:   18.838 ms | sum:  876.603 ms | max at:    264.188983 |
+  bonnie:6965           |  79637.998 ms |    35434 | avg:    0.007 ms | max:   18.719 ms | sum:  256.748 ms | max at:    331.299867 | 
