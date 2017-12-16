@@ -1,113 +1,65 @@
-From: Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v3 01/11] dt-bindings: thermal: Describe Armada AP806
- and CP110
-Date: Sat, 16 Dec 2017 13:50:59 +0100
-Message-ID: <20171216135059.059bc00a@xps13>
-References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-        <20171214103011.24713-2-miquel.raynal@free-electrons.com>
-        <20171215082759.7t24ka3lpkulcb7r@tarshish>
-        <20171215093203.74b7a59c@xps13>
-        <87po7gmlcs.fsf@free-electrons.com>
-        <20171215115230.6fb83cb6@xps13>
-        <20171215232854.n23biqelqoqjsevm@rob-hp-laptop>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization
+ update flags
+Date: Sat, 16 Dec 2017 17:40:00 +0100
+Message-ID: <CAJZ5v0jLQ7v5u+OUpK0gSAHvR90K=agvUSuFNzJXMnk+YkKyzQ@mail.gmail.com>
+References: <cover.1513158452.git.viresh.kumar@linaro.org> <17ff0b5d83a1275a98f0d1b87daf275f3e964af3.1513158452.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171215232854.n23biqelqoqjsevm@rob-hp-laptop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f194.google.com ([74.125.82.194]:34871 "EHLO
+        mail-ot0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756368AbdLPQkB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Dec 2017 11:40:01 -0500
+In-Reply-To: <17ff0b5d83a1275a98f0d1b87daf275f3e964af3.1513158452.git.viresh.kumar@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hello Rob,
+On Wed, Dec 13, 2017 at 10:53 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Currently the schedutil governor overwrites the sg_cpu->flags field on
+> every call to the utilization handler. It was pretty good as the initial
+> implementation of utilization handlers, there are several drawbacks
+> though.
+>
+> The biggest drawback is that the sg_cpu->flags field doesn't always
+> represent the correct type of tasks that are enqueued on a CPU's rq. For
+> example, if a fair task is enqueued while a RT or DL task is running, we
+> will overwrite the flags with value 0 and that may take the CPU to lower
+> OPPs unintentionally. There can be other corner cases as well which we
+> aren't aware of currently.
+>
+> This patch changes the current implementation to keep track of all the
+> task types that are currently enqueued to the CPUs rq. A new flag: CLEAR
+> is introduced and is set by the scheduling classes when their last task
+> is dequeued. When the CLEAR flag bit is set, the schedutil governor resets
+> all the other flag bits that are present in the flags parameter. For
+> now, the util update handlers return immediately if they were called to
+> clear the flag.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  include/linux/sched/cpufreq.h    |  7 ++++++-
+>  kernel/sched/cpufreq_schedutil.c | 21 ++++++++++++++++++---
+>  kernel/sched/deadline.c          |  4 ++++
+>  kernel/sched/fair.c              |  8 ++++++--
+>  kernel/sched/rt.c                |  4 ++++
+>  5 files changed, 38 insertions(+), 6 deletions(-)
+>
+> diff --git a/include/linux/sched/cpufreq.h b/include/linux/sched/cpufreq.h
+> index d1ad3d825561..6f6641e61236 100644
+> --- a/include/linux/sched/cpufreq.h
+> +++ b/include/linux/sched/cpufreq.h
+> @@ -8,10 +8,15 @@
+>   * Interface between cpufreq drivers and the scheduler:
+>   */
+>
+> +#define SCHED_CPUFREQ_CLEAR    (1U << 31)
 
-On Fri, 15 Dec 2017 17:28:54 -0600
-Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+I'm not thrilled by this, because schedutil is not the only user of
+the flags and it's totally unclear what the other user(s) should do
+when this is set.
 
-> On Fri, Dec 15, 2017 at 11:52:30AM +0100, Miquel RAYNAL wrote:
-> > Hello Baruch and Gregory,
-> > 
-> > On Fri, 15 Dec 2017 09:44:19 +0100
-> > Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
-> >   
-> > > Hi Miquel,
-> > >  
-> > >  On ven., déc. 15 2017, Miquel RAYNAL
-> > > <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
-> > >   
-> > > > Hello Baruch,
-> > > >
-> > > > On Fri, 15 Dec 2017 10:27:59 +0200
-> > > > Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org> wrote:
-> > > >    
-> > > >> Hi Miquel
-> > > >> 
-> > > >> On Thu, Dec 14, 2017 at 11:30:01AM +0100, Miquel Raynal
-> > > >> wrote:    
-> > > >> > +- marvell,thermal-zone-name: The name to identify the
-> > > >> > thermal zone
-> > > >> > +                             within the sysfs, useful when
-> > > >> > multiple
-> > > >> > +                             thermal zones are registered
-> > > >> > (AP, CPx...).      
-> > > >> 
-> > > >> I don't think that would be acceptable. DT is about describing
-> > > >> the hardware. sysfs is a Linux implementation detail which is
-> > > >> not tied to any specific hardware. If this is accepted, the
-> > > >> property should be named 'linux,thermal-zone-name'.    
-> > > >
-> > > > You are right the sysfs mention should not appear in the
-> > > > description.  
-> > 
-> > Actually, you are right for all of it, this property should not
-> > exist, sorry for my too quick answer.
-> >   
-> > > >
-> > > > Otherwise for the naming I'm not sure "linux," is a valid
-> > > > prefix in that case.    
-> > 
-> > Thank you both for your explanations, I was also wrong about the
-> > prefix. 
-> > > 
-> > > Actually the choice between linux or marvell make me realize that
-> > > there is something wrong. Having a name associated to a device is
-> > > something pretty usual with the device tree, however it is as the
-> > > class device level, such as clock-names, line-name, or
-> > > regulator-name. So in my opinion if we want to support naming from
-> > > device tree it would be done for all the thermal device not just
-> > > for the Marvell one.
-> > > 
-> > > However I don't think we need it. For example for the clocks we
-> > > created the name dynamically using of the base address of the
-> > > register to keep them unique.  
-> > 
-> > I was convinced that dev_name's would be the same but after trying
-> > it on a 8040-DB, using dev_name(&pdev->dev) gives:
-> > 
-> >     f06f808c.thermal
-> >     f2400078.thermal
-> >     f4400078.thermal
-> > 
-> > which I found meaningful enough.
-> > 
-> > I will drop the property and use dev_name instead. I still need your
-> > help to solve one problem though: how to make the distinction
-> > between using "armada_thermal" (the previous name) and dev_name() ?
-> > If I don't it kind of breaks userspace, doesn't it ?  
-> 
-> No. The /sys/devices/... or /sys/bus/platform/... paths and names are 
-> not guaranteed to be stable. These changed for every platform
-> converted to DT for example. Userspace should be accessing things
-> through /sys/class/... (or deal with changes).
-
-Ok, thanks for the explanation.
-
-I will sent a v4 early next week about all the changes requested.
-
-Thank you all for reviewing.
-Miquèl
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Rafael
