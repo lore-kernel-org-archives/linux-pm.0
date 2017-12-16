@@ -1,112 +1,125 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 2/3 v6] battery: Add the ThinkPad "Not Charging" quirk
-Date: Sat, 16 Dec 2017 01:35:10 +0100
-Message-ID: <CAJZ5v0gPGiBcM1T+3kjHqSOmZ2srXajt=kENdhEWqgWyDbUkUQ@mail.gmail.com>
-References: <20171215165750.GA6282@thinkpad> <CAJZ5v0ida0RTUBdtpCK4rAXfdukadpTyxD0Rpp4R=kKcukyjKA@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0ida0RTUBdtpCK4rAXfdukadpTyxD0Rpp4R=kKcukyjKA@mail.gmail.com>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ognjen Galic <smclt30p@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>
+From: Doug Smythies <doug.smythies@gmail.com>
+Subject: [Resend][PATCH V2] cpufreq: intel_pstate: allow trace in passive mode
+Date: Fri, 15 Dec 2017 16:43:00 -0800
+Message-ID: <1513384980-3428-1-git-send-email-dsmythies@telus.net>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:42788 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755824AbdLPAnr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 Dec 2017 19:43:47 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: srinivas.pandruvada@linux.intel.com, rjw@rjwysocki.net
+Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-On Sat, Dec 16, 2017 at 1:33 AM, Rafael J. Wysocki <rafael@kernel.org> wrot=
-e:
-> On Fri, Dec 15, 2017 at 5:57 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
->> The EC/ACPI firmware on Lenovo ThinkPads used to report a status
->> of "Unknown" when the battery is between the charge start and
->> charge stop thresholds. On Windows, it reports "Not Charging"
->> so the quirk has been added to also report correctly.
->>
->> Now the "status" attribute returns "Not Charging" when the
->> battery on ThinkPads is not physicaly charging.
->>
->> Tested-by: Kevin Locke <kevin@kevinlocke.name>
->> Tested-by: Christoph B=C3=B6hmwalder <christoph@boehmwalder.at>
->> Signed-off-by: Ognjen Galic <smclt30p@gmail.com>
->
-> It doesn't look like this is related to the [1/3] and [3/3], so why do
-> you make it part of the series?
->
->> ---
->>  drivers/acpi/battery.c | 23 +++++++++++++++++++++++
->>  1 file changed, 23 insertions(+)
->>
->> diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
->> index 2951d07..81e9b4e 100644
->> --- a/drivers/acpi/battery.c
->> +++ b/drivers/acpi/battery.c
->> @@ -71,6 +71,7 @@ static async_cookie_t async_cookie;
->>  static bool battery_driver_registered;
->>  static int battery_bix_broken_package;
->>  static int battery_notification_delay_ms;
->> +static int battery_quirk_thinkpad_notcharging;
->
-> Drop "thinkpad" from this name as somebody may need to use the quirk
-> for a machine from a different vendor in the future.
->
->>  static unsigned int cache_time =3D 1000;
->>  module_param(cache_time, uint, 0644);
->>  MODULE_PARM_DESC(cache_time, "cache time in milliseconds");
->> @@ -222,6 +223,13 @@ static int acpi_battery_get_property(struct power_s=
-upply *psy,
->>                         val->intval =3D POWER_SUPPLY_STATUS_CHARGING;
->>                 else if (acpi_battery_is_charged(battery))
->>                         val->intval =3D POWER_SUPPLY_STATUS_FULL;
->> +               /*
->> +                * On the Lenovo ThinkPad ACPI implementation, when
->> +                * neither bits 0 or 1 are set, that state is
->> +                * considered as "Not Charging".
->> +                */
->> +               else if (battery_quirk_thinkpad_notcharging)
->> +                       val->intval =3D POWER_SUPPLY_STATUS_NOT_CHARGING=
-;
->>                 else
->>                         val->intval =3D POWER_SUPPLY_STATUS_UNKNOWN;
->>                 break;
->> @@ -1301,6 +1309,13 @@ battery_notification_delay_quirk(const struct dmi=
-_system_id *d)
->>         return 0;
->>  }
->>
->> +static int __init
->> +battery_quirk_not_charging(const struct dmi_system_id *d)
->
-> Don't break the above line (it will be over 80 chars long, but that's fin=
-e).
->
->> +{
->> +       battery_quirk_thinkpad_notcharging =3D 1;
->> +       return 0;
->> +}
->> +
->>  static const struct dmi_system_id bat_dmi_table[] __initconst =3D {
->>         {
->>                 .callback =3D battery_bix_broken_package_quirk,
->> @@ -1318,6 +1333,14 @@ static const struct dmi_system_id bat_dmi_table[]=
- __initconst =3D {
->>                         DMI_MATCH(DMI_PRODUCT_NAME, "Aspire V5-573G"),
->>                 },
->>         },
->> +       {
->
-> Add a comment to describe this quirk (which it is needed in the first pla=
-ce).
+Allow use of the trace_pstate_sample trace function
+when the intel_pstate driver is in passive mode.
+Since the core_busy and scaled_busy fields are not
+used, and it might be desirable to know which path
+through the driver was used, either intel_cpufreq_target
+or intel_cpufreq_fast_switch, re-task the core_busy
+field as a flag indicator.
 
-s/whichj/why/
+The user can then use the intel_pstate_tracer.py utility
+to summarize and plot the trace.
 
->
->> +               .callback =3D battery_quirk_not_charging,
->> +               .ident =3D "Lenovo ThinkPad",
->> +               .matches =3D {
->> +                       DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
->> +                       DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad"),
->> +               },
->> +       },
->>         {},
->>  };
->>
->> --
+In Passive mode the driver is only called if there is
+a need to change the target frequency, so durations
+(time gaps between calls) can be very very long. The user
+needs to understand, and not be confused by, this limitation.
+
+V2: prepare for resend. Rebase to current kernel, 4.15-rc3.
+Signed-off-by: Doug Smythies <dsmythies@telus.net>
+---
+ drivers/cpufreq/intel_pstate.c | 50 ++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 48 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 93a0e88..fe25d69 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1949,7 +1949,10 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
+ {
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+ 	struct cpufreq_freqs freqs;
+-	int target_pstate;
++	struct sample *sample;
++	int target_pstate, from;
++	u64 time;
++	bool sample_taken;
+ 
+ 	update_turbo_state();
+ 
+@@ -1969,12 +1972,32 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
+ 		break;
+ 	}
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
++
++	from = cpu->pstate.current_pstate;
++	time = ktime_get();
++	sample_taken = intel_pstate_sample(cpu, time);
++
+ 	if (target_pstate != cpu->pstate.current_pstate) {
+ 		cpu->pstate.current_pstate = target_pstate;
+ 		wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
+ 			      pstate_funcs.get_val(cpu, target_pstate));
+ 	}
+ 	freqs.new = target_pstate * cpu->pstate.scaling;
++
++	if (sample_taken) {
++		intel_pstate_calc_avg_perf(cpu);
++		sample = &cpu->sample;
++		trace_pstate_sample(0,
++		0,
++		from,
++		cpu->pstate.current_pstate,
++		sample->mperf,
++		sample->aperf,
++		sample->tsc,
++		get_avg_frequency(cpu),
++		fp_toint(cpu->iowait_boost * 100));
++	}
++
+ 	cpufreq_freq_transition_end(policy, &freqs, false);
+ 
+ 	return 0;
+@@ -1984,13 +2007,36 @@ static unsigned int intel_cpufreq_fast_switch(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+-	int target_pstate;
++	struct sample *sample;
++	int target_pstate, from;
++	u64 time;
++	bool sample_taken;
+ 
+ 	update_turbo_state();
+ 
+ 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
++
++	from = cpu->pstate.current_pstate;
++	time = ktime_get();
++	sample_taken = intel_pstate_sample(cpu, time);
++
+ 	intel_pstate_update_pstate(cpu, target_pstate);
++
++	if (sample_taken) {
++		intel_pstate_calc_avg_perf(cpu);
++		sample = &cpu->sample;
++		trace_pstate_sample(100,
++		0,
++		from,
++		cpu->pstate.current_pstate,
++		sample->mperf,
++		sample->aperf,
++		sample->tsc,
++		get_avg_frequency(cpu),
++		fp_toint(cpu->iowait_boost * 100));
++	}
++
+ 	return target_pstate * cpu->pstate.scaling;
+ }
+ 
+-- 
+2.7.4
