@@ -1,55 +1,55 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 5/9] pnp: remove unneeded kallsyms include
-Date: Sun, 17 Dec 2017 19:04:37 +0100
-Message-ID: <2204687.eed4zNc3av@aspire.rjw.lan>
-References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com> <CAJZ5v0hQ+QyJZ_bw9AGaSByvckpK5MeU=jkuy-MYg4Qdzoxrrw@mail.gmail.com> <20171208144909.GB489@tigerII.localdomain>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH v1 4/4] arm64: dts: mediatek: add mt2712 cpufreq related device nodes
+Date: Sun, 17 Dec 2017 19:05:55 +0100
+Message-ID: <7730089.t6jDuHQEn5@aspire.rjw.lan>
+References: <1512713278-17807-1-git-send-email-andrew-sh.cheng@mediatek.com> <20171212072625.GL25177@vireshk-i7> <a68c5382-2a9c-6c3c-ea67-99db46bdff1a@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <owner-linux-mm@kvack.org>
-In-Reply-To: <20171208144909.GB489@tigerII.localdomain>
-Sender: owner-linux-mm@kvack.org
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Memory Management List <linux-mm@kvack.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <a68c5382-2a9c-6c3c-ea67-99db46bdff1a-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On Friday, December 8, 2017 3:49:09 PM CET Sergey Senozhatsky wrote:
-> On (12/08/17 15:02), Rafael J. Wysocki wrote:
-> > On Fri, Dec 8, 2017 at 3:56 AM, Sergey Senozhatsky
-> > <sergey.senozhatsky.work@gmail.com> wrote:
-> > > The file was converted from print_fn_descriptor_symbol()
-> > > to %pF some time ago (2e532d68a2b3e2aa {pci,pnp} quirks.c:
-> > > don't use deprecated print_fn_descriptor_symbol()). kallsyms
-> > > does not seem to be needed anymore.
-> > >
-> > > Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-> > > Cc: Bjorn Helgaas <bhelgaas@google.com>
-> > > ---
-> > >  drivers/pnp/quirks.c | 1 -
-> > >  1 file changed, 1 deletion(-)
-> > >
-> > > diff --git a/drivers/pnp/quirks.c b/drivers/pnp/quirks.c
-> > > index f054cdddfef8..803666ae3635 100644
-> > > --- a/drivers/pnp/quirks.c
-> > > +++ b/drivers/pnp/quirks.c
-> > > @@ -21,7 +21,6 @@
-> > >  #include <linux/slab.h>
-> > >  #include <linux/pnp.h>
-> > >  #include <linux/io.h>
-> > > -#include <linux/kallsyms.h>
-> > >  #include "base.h"
-> > >
-> > >  static void quirk_awe32_add_ports(struct pnp_dev *dev,
-> > > --
-> > 
-> > Do you want me to apply this or do you want to route it differently?
+On Tuesday, December 12, 2017 10:34:42 AM CET Matthias Brugger wrote:
+> Hi,
 > 
-> please pick it up.
+> On 12/12/2017 08:26 AM, Viresh Kumar wrote:
+> > On 12-12-17, 02:17, Rafael J. Wysocki wrote:
+> >> On Monday, December 11, 2017 8:57:19 AM CET Viresh Kumar wrote:
+> >>> On 08-12-17, 14:07, Andrew-sh Cheng wrote:
+> >>>> Add opp v2 information,
+> >>>> and also add clocks, regulators and opp information into cpu nodes
+> >>>>
+> >>>> Signed-off-by: Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+> >>>> ---
+> >>>>  arch/arm64/boot/dts/mediatek/mt2712-evb.dts | 27 ++++++++++++++
+> >>>>  arch/arm64/boot/dts/mediatek/mt2712e.dtsi   | 57 +++++++++++++++++++++++++++++
+> >>>>  2 files changed, 84 insertions(+)
+> >>>
+> >>> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> >>
+> >> Of course, DT bindings require ACKs from DT maintainers to be applied.
+> > 
+> > I didn't knew that we need Acks from DT maintainers for dts files as well? Yeah,
+> > its very much required while defining new bindings for sure.
+> > 
+> 
+> I will take the dts parts through the Mediatek SoC tree, so you don't have to
+> worry about them.
+> 
+> Please let me know when you take patch 1 and 2.
 
-Applied, thanks!
+Applied now, thanks!
+
+Do you need the branch containing them to be exposed?
+
+Thanks,
+Rafael
 
 --
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
