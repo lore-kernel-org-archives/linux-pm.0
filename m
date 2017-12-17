@@ -1,50 +1,58 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] bus: simple-pm-bus: convert bool SIMPLE_PM_BUS to tristate
-Date: Sun, 17 Dec 2017 19:01:08 +0100
-Message-ID: <3708548.hFOf0HkmBe@aspire.rjw.lan>
-References: <1512043020-23452-1-git-send-email-geert+renesas@glider.be> <20171201070232.v4uilgo5cydaoyqa@verge.net.au>
+Subject: Re: [PATCH 3/9] power: remove unneeded kallsyms include
+Date: Sun, 17 Dec 2017 19:04:16 +0100
+Message-ID: <4033333.ijW7uRe5gx@aspire.rjw.lan>
+References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com> <CAJZ5v0g1CBhKTYi=CzYPcBXdH=yZ3iJcKzZ6TaftNWoq+X5wnQ@mail.gmail.com> <20171208144844.GA489@tigerII.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <20171201070232.v4uilgo5cydaoyqa@verge.net.au>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>, Kevin Hilman <khilman@linaro.org>, linux-arm-kernel@lists.infradead.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:45770 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752392AbdLQSFF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Dec 2017 13:05:05 -0500
+In-Reply-To: <20171208144844.GA489@tigerII.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Memory Management List <linux-mm@kvack.org>
 
-On Friday, December 1, 2017 8:02:33 AM CET Simon Horman wrote:
-> On Thu, Nov 30, 2017 at 12:57:00PM +0100, Geert Uytterhoeven wrote:
-> > From: Paul Gortmaker <paul.gortmaker@windriver.com>
+On Friday, December 8, 2017 3:48:44 PM CET Sergey Senozhatsky wrote:
+> On (12/08/17 15:01), Rafael J. Wysocki wrote:
+> > On Fri, Dec 8, 2017 at 3:56 AM, Sergey Senozhatsky
+> > <sergey.senozhatsky.work@gmail.com> wrote:
+> > > The file was converted from print_fn_descriptor_symbol()
+> > > to %pF some time ago (c80cfb0406c01bb "vsprintf: use new
+> > > vsprintf symbolic function pointer format"). kallsyms does
+> > > not seem to be needed anymore.
+> > >
+> > > Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> > > Cc: Rafael Wysocki <rjw@rjwysocki.net>
+> > > Cc: Len Brown <len.brown@intel.com>
+> > > ---
+> > >  drivers/base/power/main.c | 1 -
+> > >  1 file changed, 1 deletion(-)
+> > >
+> > > diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> > > index 5bc2cf1f812c..e2539d8423f7 100644
+> > > --- a/drivers/base/power/main.c
+> > > +++ b/drivers/base/power/main.c
+> > > @@ -18,7 +18,6 @@
+> > >   */
+> > >
+> > >  #include <linux/device.h>
+> > > -#include <linux/kallsyms.h>
+> > >  #include <linux/export.h>
+> > >  #include <linux/mutex.h>
+> > >  #include <linux/pm.h>
+> > > --
 > > 
-> > The Kconfig currently controlling compilation of this code is:
-> > 
-> > config SIMPLE_PM_BUS
-> >         bool "Simple Power-Managed Bus Driver"
-> > 
-> > ...meaning that it currently is not being built as a module by anyone.
-> > 
-> > In removing the orphaned modular support in a previous patch set,
-> > Geert indicated he'd rather see this code converted to tristate.
-> > 
-> > I normally don't do that because it extends functionality that I
-> > can't easily run time test or even know if the use case makes sense,
-> > but since in this case the author has nominated it as such, we do
-> > the conversion here.
-> > 
-> > Note that doesn't change the lack of run time testing ; this change
-> > is only tested for sucessful compile and modpost.
-> > 
-> > [geert: Ethernet is probed successfully on sh73a0/kzm9g after
-> >         insmodding simple-pm-bus.ko]
-> > 
-> > Cc: Kevin Hilman <khilman@linaro.org>
-> > Cc: Simon Horman <horms+renesas@verge.net.au>
-> > Cc: linux-arm-kernel@lists.infradead.org
-> > Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> > Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> > Do you want me to apply this or do you want to route it differently?
 > 
-> Acked-by: Simon Horman <horms+renesas@verge.net.au>
+> Hello Rafael,
+> 
+> don't mind if you'll pick it up.
 
-Applied, thanks!
+OK, applied now.
+
+Thanks!
