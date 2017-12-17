@@ -1,38 +1,47 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] cpufreq: imx6q: fix speed grading regression on i.MX6 QuadPlus
-Date: Sun, 17 Dec 2017 19:06:41 +0100
-Message-ID: <3041111.LGmKWMtgYY@aspire.rjw.lan>
-References: <20171211131900.17423-1-l.stach@pengutronix.de> <20171212144133.GR25177@vireshk-i7>
+From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Subject: Re: [PATCH v4 3/4] cpufreq: Add DVFS support for Armada 37xx
+Date: Sun, 17 Dec 2017 19:08:53 +0100
+Message-ID: <2201504.Sp2n0UgIp2@aspire.rjw.lan>
+References: <20171214150006.25438-1-gregory.clement@free-electrons.com> <20171214150006.25438-4-gregory.clement@free-electrons.com> <20171214153631.GZ3322@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:46418 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752393AbdLQSH3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Dec 2017 13:07:29 -0500
-In-Reply-To: <20171212144133.GR25177@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171214153631.GZ3322@vireshk-i7>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?ISO-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Victor Gu <xigu-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Marcin Wojtas <mw-nYOzD4b6Jr9Wk0Htik3J/w@public.gmane.org>, Wilson Ding <dingwei-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Hua Jing <jinghua-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Neta Zur Hershkovits <neta-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Evan Wang <xswang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Andre Heider <a.heider-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>, Lucas Stach <l.stach@pengutronix.de>
-Cc: linux-pm@vger.kernel.org, Fabio Estevam <fabio.estevam@nxp.com>, kernel@pengutronix.de, patchwork-lst@pengutronix.de
 
-On Tuesday, December 12, 2017 3:41:33 PM CET Viresh Kumar wrote:
-> On 11-12-17, 14:19, Lucas Stach wrote:
-> > The commit moving the speed grading check to the cpufreq driver introduced
-> > some additional checks, so the OPP disable is only attempted on SoCs where
-> > those OPPs are present. The compatible checks are missing the QuadPlus
-> > compatible, so invalid OPPs are not correctly disabled there.
+On Thursday, December 14, 2017 4:36:31 PM CET Viresh Kumar wrote:
+> On 14-12-17, 16:00, Gregory CLEMENT wrote:
+> > This patch adds DVFS support for the Armada 37xx SoCs
 > > 
-> > Move both checks to a single condition, so we don't need to sprinkle even
-> > more calls to of_machine_is_compatible().
+> > There are up to four CPU frequency loads for Armada 37xx controlled by
+> > the hardware.
 > > 
-> > Fixes: 2b3d58a3adca (cpufreq: imx6q: Move speed grading check to cpufreq driver)
-> > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> > This driver associates the CPU load level to a frequency, then the
+> > hardware will switch while selecting a load level.
+> > 
+> > The hardware also can associate a voltage for each level (AVS support)
+> > but it is not yet supported
+> > 
+> > Tested-by: Andre Heider <a.heider-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+> > Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> > Signed-off-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 > > ---
-> >  drivers/cpufreq/imx6q-cpufreq.c | 11 ++++++-----
-> >  1 file changed, 6 insertions(+), 5 deletions(-)
+> >  drivers/cpufreq/Kconfig.arm           |   7 +
+> >  drivers/cpufreq/Makefile              |   1 +
+> >  drivers/cpufreq/armada-37xx-cpufreq.c | 241 ++++++++++++++++++++++++++++++++++
+> >  3 files changed, 249 insertions(+)
+> >  create mode 100644 drivers/cpufreq/armada-37xx-cpufreq.c
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Thanks for taking care of very minor review comments I had. All the
+> patches look good now to me :)
 
-Applied, thanks!
+All applied, thanks!
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
