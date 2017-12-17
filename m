@@ -1,66 +1,47 @@
-From: Baruch Siach <baruch@tkos.co.il>
-Subject: Re: [PATCH v3 05/11] thermal: armada: Add support for Armada AP806
-Date: Sun, 17 Dec 2017 00:22:34 +0200
-Message-ID: <20171216222234.xp5gybcbfymouvvd@tarshish>
-References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
- <20171214103011.24713-6-miquel.raynal@free-electrons.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization update flags
+Date: Sun, 17 Dec 2017 01:19:16 +0100
+Message-ID: <20456740.6R3DDKEUDv@aspire.rjw.lan>
+References: <cover.1513158452.git.viresh.kumar@linaro.org> <CAJZ5v0jLQ7v5u+OUpK0gSAHvR90K=agvUSuFNzJXMnk+YkKyzQ@mail.gmail.com> <CAKohpomHfV=2CQj0_D=PsoMvbCu5v_ensJqaZmxUURzr27+yhA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from guitar.tcltek.co.il ([192.115.133.116]:58016 "EHLO
-        mx.tkos.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1756888AbdLPWWi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 16 Dec 2017 17:22:38 -0500
-Content-Disposition: inline
-In-Reply-To: <20171214103011.24713-6-miquel.raynal@free-electrons.com>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49635 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1756960AbdLQAUE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Dec 2017 19:20:04 -0500
+In-Reply-To: <CAKohpomHfV=2CQj0_D=PsoMvbCu5v_ensJqaZmxUURzr27+yhA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Miquel Raynal <miquel.raynal@free-electrons.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Miquèl,
-
-On Thu, Dec 14, 2017 at 11:30:05AM +0100, Miquel Raynal wrote:
-> From: Baruch Siach <baruch@tkos.co.il>
+On Saturday, December 16, 2017 5:47:07 PM CET Viresh Kumar wrote:
+> On 16 December 2017 at 22:10, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > On Wed, Dec 13, 2017 at 10:53 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
 > 
-> The AP806 component is integrated in the Armada 8k and 7k lines of
-> processors.
+> >> +#define SCHED_CPUFREQ_CLEAR    (1U << 31)
+> >
+> > I'm not thrilled by this, because schedutil is not the only user of
+> > the flags and it's totally unclear what the other user(s) should do
+> > when this is set.
 > 
-> The thermal sensor sample field on the status register is a signed
-> value. Extend armada_get_temp() to handle signed values.
-> 
-> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-> Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
-> ---
+> intel-pstate is the only other user of the IOWAIT flag, right? In order
+> not to change the current behavior, we can update that to return early
+> for now ?
 
-[...]
+We can do that in principle, but why should it return early?  Maybe it's
+a good time to update things, incidentally?
 
-> +static void armada_ap806_init_sensor(struct platform_device *pdev,
-> +				     struct armada_thermal_priv *priv)
-> +{
-> +	u32 reg;
-> +
-> +	if (!priv->control0) {
-> +		dev_err(&pdev->dev,
-> +			"Cannot access to control0 (control LSB) register\n");
-> +		return;
-> +	}
+I actually don't like the SCHED_CPUFRREQ_CLEAR flag *concept* as it is very
+much specific to schedutil and blatantly ignores everybody else.
 
-With the probe time control area size validation this check would not be 
-needed.
+Alternatively, you could add two flags for clearing SCHED_CPUFREQ_RT and
+SCHED_CPUFREQ_DL that could just be ingored entirely by intel_pstate.
 
-baruch
+So, why don't you make SCHED_CPUFREQ_RT and SCHED_CPUFREQ_DL "sticky" until,
+say, SCHED_CPUFREQ_NO_RT and SCHED_CPUFREQ_NO_DL are passed, respectively?
 
-> +
-> +	reg = readl_relaxed(priv->control0);
-> +	reg &= ~CONTROL0_TSEN_RESET;
-> +	reg |= CONTROL0_TSEN_START | CONTROL0_TSEN_ENABLE;
-> +	writel(reg, priv->control0);
-> +	msleep(10);
-> +}
-
--- 
-     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
-=}------------------------------------------------ooO--U--Ooo------------{=
-   - baruch@tkos.co.il - tel: +972.52.368.4656, http://www.tkos.co.il -
+Thanks,
+Rafael
