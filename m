@@ -1,57 +1,48 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [PATCH v2 0/2]  cpufreq: Sort Kconfig and Makefile
-Date: Sun, 17 Dec 2017 19:10:35 +0100
-Message-ID: <1827128.RRgnfOOfuH@aspire.rjw.lan>
-References: <20171213170536.28238-1-gregory.clement@free-electrons.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/2] cpufreq: few fix on mvebu driver
+Date: Sun, 17 Dec 2017 19:11:01 +0100
+Message-ID: <7730090.7esIMHHDxy@aspire.rjw.lan>
+References: <20171213172914.6148-1-gregory.clement@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171213170536.28238-1-gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, =?ISO-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Victor Gu <xigu-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Marcin Wojtas <mw-nYOzD4b6Jr9Wk0Htik3J/w@public.gmane.org>, Wilson Ding <dingwei-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Hua Jing <jinghua-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Neta Zur Hershkovits <neta-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Evan Wang <xswang-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Andre Heider <a.heider-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:53914 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1757348AbdLQSLt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Dec 2017 13:11:49 -0500
+In-Reply-To: <20171213172914.6148-1-gregory.clement@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Antoine Tenart <antoine.tenart@free-electrons.com>, =?ISO-8859-1?Q?Miqu=E8l?= Raynal <miquel.raynal@free-electrons.com>
 
-On Wednesday, December 13, 2017 6:05:34 PM CET Gregory CLEMENT wrote:
+On Wednesday, December 13, 2017 6:29:12 PM CET Gregory CLEMENT wrote:
 > Hi,
 > 
-> The patch of this series was originally part of the series "Add CPU
+> The second patch of this series was originally part of the series "Add CPU
 > Frequency scaling support on Armada 37xx" [1].
 > 
-> As requested by Rafael J. Wysocki, these 2 patches are extracted in a
-> independent series, in the meantime, Viresh Kumar gave his acked-by
-> that I added to the patches.
+> As requested by Viresh Kumar, it is extracted in a independent series.
+> In the meantime, Thomas Petazzoni pointed an issue on the first
+> version that I fixed in this series.
 > 
-> In this second version only the 1st patch had been modified, see the
-> changelog for the details.
+> While I was on this driver I found an aother issue that I fixed with
+> the first patch.
 > 
 > Thanks,
 > 
 > Gregory
 > 
-> [1]: http://lists.infradead.org/pipermail/linux-arm-kernel/2017-December/546709.html
-> 
-> Changelog:
-> v1 -> v2:
-> 
->  - Fixed tab vs space issue in KConfig, suggested by Randy Dunlap
->  - Removed unneeded "default n" in KConfig, suggested by Randy Dunlap
+> [1]: http://lists.infradead.org/pipermail/linux-arm-kernel/2017-December/547650.html
 > 
 > Gregory CLEMENT (2):
->   cpufreq: ARM: sort the Kconfig menu
->   cpufreq: sort the drivers in ARM part
+>   cpufreq: mvebu: Free the clock reference in the normal path
+>   cpufreq: mvebu: Free opp if registering failed
 > 
->  drivers/cpufreq/Kconfig.arm | 81 ++++++++++++++++++++++-----------------------
->  drivers/cpufreq/Makefile    |  8 ++---
->  2 files changed, 44 insertions(+), 45 deletions(-)
+>  drivers/cpufreq/mvebu-cpufreq.c | 16 +++++++++-------
+>  1 file changed, 9 insertions(+), 7 deletions(-)
 > 
 > 
 
 Both applied, thanks!
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
