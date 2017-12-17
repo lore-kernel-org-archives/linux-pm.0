@@ -1,47 +1,57 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization update flags
-Date: Sun, 17 Dec 2017 01:19:16 +0100
-Message-ID: <20456740.6R3DDKEUDv@aspire.rjw.lan>
-References: <cover.1513158452.git.viresh.kumar@linaro.org> <CAJZ5v0jLQ7v5u+OUpK0gSAHvR90K=agvUSuFNzJXMnk+YkKyzQ@mail.gmail.com> <CAKohpomHfV=2CQj0_D=PsoMvbCu5v_ensJqaZmxUURzr27+yhA@mail.gmail.com>
+From: Balbir Singh <bsingharora@gmail.com>
+Subject: Re: [v3 PATCH 1/3] powernv-cpufreq: Add helper to extract pstate from PMSR
+Date: Sun, 17 Dec 2017 14:04:03 +1100
+Message-ID: <CAKTCnzn9TskuPQavjkNZTjy+ff-BxSOsBkLvmb7+unH3O_3KKg@mail.gmail.com>
+References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com> <1513148261-21097-2-git-send-email-ego@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.net.pl ([79.96.170.134]:49635 "EHLO
-        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1756960AbdLQAUE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Dec 2017 19:20:04 -0500
-In-Reply-To: <CAKohpomHfV=2CQj0_D=PsoMvbCu5v_ensJqaZmxUURzr27+yhA@mail.gmail.com>
+Received: from mail-ua0-f194.google.com ([209.85.217.194]:35499 "EHLO
+        mail-ua0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757022AbdLQDEE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Dec 2017 22:04:04 -0500
+In-Reply-To: <1513148261-21097-2-git-send-email-ego@linux.vnet.ibm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, huntbag@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>
 
-On Saturday, December 16, 2017 5:47:07 PM CET Viresh Kumar wrote:
-> On 16 December 2017 at 22:10, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > On Wed, Dec 13, 2017 at 10:53 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> 
-> >> +#define SCHED_CPUFREQ_CLEAR    (1U << 31)
-> >
-> > I'm not thrilled by this, because schedutil is not the only user of
-> > the flags and it's totally unclear what the other user(s) should do
-> > when this is set.
-> 
-> intel-pstate is the only other user of the IOWAIT flag, right? In order
-> not to change the current behavior, we can update that to return early
-> for now ?
+On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
+<ego@linux.vnet.ibm.com> wrote:
+> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+>
+> On POWERNV platform, the fields for pstates in the Power Management
+> Status Register (PMSR) and the Power Management Control Register
+> (PMCR) are 8-bits wide. On POWER8 the pstates are negatively numbered
+> while on POWER9 they are positively numbered.
+>
+> The device-tree exports pstates as 32-bit entries. The device-tree
+> implementation sign-extends the 8-bit pstate values to obtain the
+> corresponding 32-bit entry.
+>
+> Eg: On POWER8, a pstate value 0x82 [-126] is represented in the
+> device-tree as 0xfffffff82 while on POWER9, the same value 0x82 [130]
+> is represented in the device-tree as 0x00000082.
+>
+> The powernv-cpufreq driver implementation represents pstates using the
+> integer type. In multiple places in the driver, the code interprets
+> the pstates extracted from the PMSR as a signed byte and assigns it to
+> a integer variable to get the sign-extention.
+>
+> On POWER9 platforms which have greater than 128 pstates, this results
+> in the driver performing incorrect sign-extention, and thereby
+> treating a legitimate pstate (say 130) as an invalid pstates (since it
+> is interpreted as -126).
+>
+> This patch fixes the issue by implementing a helper function to
+> extract Pstates from PMSR register, and correctly sign-extend it to be
+> consistent with the values provided by the device-tree.
+>
+> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+> ---
 
-We can do that in principle, but why should it return early?  Maybe it's
-a good time to update things, incidentally?
+This looks better
 
-I actually don't like the SCHED_CPUFRREQ_CLEAR flag *concept* as it is very
-much specific to schedutil and blatantly ignores everybody else.
+Acked-by: Balbir Singh <bsingharora@gmail.com>
 
-Alternatively, you could add two flags for clearing SCHED_CPUFREQ_RT and
-SCHED_CPUFREQ_DL that could just be ingored entirely by intel_pstate.
-
-So, why don't you make SCHED_CPUFREQ_RT and SCHED_CPUFREQ_DL "sticky" until,
-say, SCHED_CPUFREQ_NO_RT and SCHED_CPUFREQ_NO_DL are passed, respectively?
-
-Thanks,
-Rafael
+Balbir Singh
