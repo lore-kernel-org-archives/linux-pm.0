@@ -1,117 +1,88 @@
-From: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
-Subject: Re: [PATCH v2 00/13] MIPS: add support for the Microsemi MIPS SoCs
-Date: Sun, 17 Dec 2017 22:29:30 +0530
-Message-ID: <CANc+2y5t8RRvuSsVvAJRNtfFx_T0wCGsSVd7Vb03boiX8AnbUw@mail.gmail.com>
-References: <20171208154618.20105-1-alexandre.belloni@free-electrons.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH v2] PM / Domains: Remove obsolete "samsung,power-domain" check
+Date: Sun, 17 Dec 2017 18:59:57 +0100
+Message-ID: <1667553.TIa4WidOe2@aspire.rjw.lan>
+References: <1512042868-23017-1-git-send-email-geert+renesas@glider.be>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-gpio-owner@vger.kernel.org>
-In-Reply-To: <20171208154618.20105-1-alexandre.belloni@free-electrons.com>
-Sender: linux-gpio-owner@vger.kernel.org
-To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org, open list <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Linus Walleij <linus.walleij@linaro.org>, linux-gpio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:54026 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1752393AbdLQSAq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Dec 2017 13:00:46 -0500
+In-Reply-To: <1512042868-23017-1-git-send-email-geert+renesas@glider.be>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Kevin Hilman <khilman@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Alexandre,
+On Thursday, November 30, 2017 12:54:28 PM CET Geert Uytterhoeven wrote:
+> Currently the generic PM Domain code code checks for the presence of
+> both (generic) "power-domains" and (Samsung Exynos legacy)
+> "samsung,power-domain" properties in all device tree nodes representing
+> devices.
+> 
+> There are two issues with this:
+>   1. This imposes a small boot-time penalty on all platforms using DT,
+>   2. Platform-specific checks do not really belong in core framework
+>      code.
+> 
+> Remove the platform-specific check, as the last user of
+> "samsung,power-domain" was removed in commit 46dcf0ff0de35da8 ("ARM:
+> dts: exynos: Remove exynos4415.dtsi").  All other users were converted
+> before in commit 0da6587041363033 ("ARM: dts: convert to generic power
+> domain bindings for exynos DT").
+> 
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> ---
+> This is v2 of 'PM / Domains: Restrict "samsung,power-domain" checks to
+> ARCH_EXYNOS'.
+> 
+> "samsung,power-domain" was only ever used in:
+>   - arch/arm/boot/dts/exynos4415.dtsi: Removed
+>   - arch/arm/boot/dts/exynos3250.dtsi: CONFIG_ARCH_EXYNOS3
+>   - arch/arm/boot/dts/exynos4.dtsi:    CONFIG_ARCH_EXYNOS4
+>   - arch/arm/boot/dts/exynos4x12.dtsi: CONFIG_ARCH_EXYNOS4
+>   - arch/arm/boot/dts/exynos5250.dtsi: CONFIG_ARCH_EXYNOS5
+>   - arch/arm/boot/dts/exynos5420.dtsi: CONFIG_ARCH_EXYNOS5
+> 
+> v2:
+>   - Remove the check completely instead of restricting it to
+>     ARCH_EXYNOS, as suggested Javier Martinez Canillas one year ago
+>     ("Removing the support for the deprecated property sound sensible to me",
+>     http://lists.infradead.org/pipermail/linux-arm-kernel/2016-October/462868.html).
+> ---
+>  drivers/base/power/domain.c | 16 ++--------------
+>  1 file changed, 2 insertions(+), 14 deletions(-)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 0c80bea05bcb92be..f9dcc981b6b9328c 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2199,20 +2199,8 @@ int genpd_dev_pm_attach(struct device *dev)
+>  
+>  	ret = of_parse_phandle_with_args(dev->of_node, "power-domains",
+>  					"#power-domain-cells", 0, &pd_args);
+> -	if (ret < 0) {
+> -		if (ret != -ENOENT)
+> -			return ret;
+> -
+> -		/*
+> -		 * Try legacy Samsung-specific bindings
+> -		 * (for backwards compatibility of DT ABI)
+> -		 */
+> -		pd_args.args_count = 0;
+> -		pd_args.np = of_parse_phandle(dev->of_node,
+> -						"samsung,power-domain", 0);
+> -		if (!pd_args.np)
+> -			return -ENOENT;
+> -	}
+> +	if (ret < 0)
+> +		return ret;
+>  
+>  	mutex_lock(&gpd_list_lock);
+>  	pd = genpd_get_from_provider(&pd_args);
+> 
 
-With very small amount of code in arch/mips this series looks really nice.
-
-On 8 December 2017 at 21:16, Alexandre Belloni
-<alexandre.belloni@free-electrons.com> wrote:
-> Hi,
->
-> This patch series adds initial support for the Microsemi MIPS SoCs. It
-> is currently focusing on the Microsemi Ocelot (VSC7513, VSC7514).
->
-> It adds support for the IRQ controller, pinmux and gpio controller and
-> reset control.
->
-> This produces a kernel that can boot to the console.
->
-> This is a single series for reference but it can also be taken
-> separately by each maintainer as each drivers are independant.
->
-> Changes in v2:
->  - removed the wildcard in MAINAINERS
->  - corrected the Cc list
->  - added proper documentation for both syscons
->  - removed the mscc,cpucontrol property
->  - updated the ranges property in the ocelot dtsi
->
-> Cc: Rob Herring <robh+dt@kernel.org>
-> Cc: devicetree@vger.kernel.org
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Jason Cooper <jason@lakedaemon.net>
-> Cc: Linus Walleij <linus.walleij@linaro.org>
-> Cc: linux-gpio@vger.kernel.org
-> Cc: Sebastian Reichel <sre@kernel.org>
-> Cc: linux-pm@vger.kernel.org
->
->
-> Alexandre Belloni (13):
->   dt-bindings: Add vendor prefix for Microsemi Corporation
->   dt-bindings: interrupt-controller: Add binding for the Microsemi
->     Ocelot interrupt controller
->   irqchip: Add a driver for the Microsemi Ocelot controller
->   dt-bindings: pinctrl: Add bindings for Microsemi Ocelot
->   pinctrl: Add Microsemi Ocelot SoC driver
->   dt-bindings: mips: Add bindings for Microsemi SoCs
->   dt-bindings: power: reset: Document ocelot-reset binding
->   power: reset: Add a driver for the Microsemi Ocelot reset
->   MIPS: mscc: Add initial support for Microsemi MIPS SoCs
->   MIPS: mscc: add ocelot dtsi
->   MIPS: mscc: add ocelot PCB123 device tree
->   MIPS: defconfigs: add a defconfig for Microsemi SoCs
->   MAINTAINERS: Add entry for Microsemi MIPS SoCs
->
->  .../interrupt-controller/mscc,ocelot-icpu-intr.txt |  22 +
->  Documentation/devicetree/bindings/mips/mscc.txt    |  46 ++
->  .../bindings/pinctrl/mscc,ocelot-pinctrl.txt       |  39 ++
->  .../bindings/power/reset/ocelot-reset.txt          |  17 +
->  .../devicetree/bindings/vendor-prefixes.txt        |   1 +
->  MAINTAINERS                                        |   7 +
->  arch/mips/Kbuild.platforms                         |   1 +
->  arch/mips/Kconfig                                  |  24 +
->  arch/mips/boot/dts/Makefile                        |   1 +
->  arch/mips/boot/dts/mscc/Makefile                   |   6 +
->  arch/mips/boot/dts/mscc/ocelot.dtsi                | 115 +++++
->  arch/mips/boot/dts/mscc/ocelot_pcb123.dts          |  27 ++
->  arch/mips/configs/mscc_defconfig                   |  84 ++++
->  arch/mips/mscc/Makefile                            |  11 +
->  arch/mips/mscc/Platform                            |  12 +
->  arch/mips/mscc/setup.c                             | 106 +++++
->  drivers/irqchip/Kconfig                            |   5 +
->  drivers/irqchip/Makefile                           |   1 +
->  drivers/irqchip/irq-mscc-ocelot.c                  | 109 +++++
->  drivers/pinctrl/Kconfig                            |  10 +
->  drivers/pinctrl/Makefile                           |   1 +
->  drivers/pinctrl/pinctrl-ocelot.c                   | 505 +++++++++++++++++++++
->  drivers/power/reset/Kconfig                        |   7 +
->  drivers/power/reset/Makefile                       |   1 +
->  drivers/power/reset/ocelot-reset.c                 |  86 ++++
->  25 files changed, 1244 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interrupt-controller/mscc,ocelot-icpu-intr.txt
->  create mode 100644 Documentation/devicetree/bindings/mips/mscc.txt
->  create mode 100644 Documentation/devicetree/bindings/pinctrl/mscc,ocelot-pinctrl.txt
->  create mode 100644 Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
->  create mode 100644 arch/mips/boot/dts/mscc/Makefile
->  create mode 100644 arch/mips/boot/dts/mscc/ocelot.dtsi
->  create mode 100644 arch/mips/boot/dts/mscc/ocelot_pcb123.dts
->  create mode 100644 arch/mips/configs/mscc_defconfig
->  create mode 100644 arch/mips/mscc/Makefile
->  create mode 100644 arch/mips/mscc/Platform
->  create mode 100644 arch/mips/mscc/setup.c
->  create mode 100644 drivers/irqchip/irq-mscc-ocelot.c
->  create mode 100644 drivers/pinctrl/pinctrl-ocelot.c
->  create mode 100644 drivers/power/reset/ocelot-reset.c
->
-> --
-> 2.15.1
->
->
-
-Except for irqchip driver and pinctrl driver other parts of the series is
-Reviewed-by: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
-
-Regards,
-PrasannaKumar
+Applied, thanks!
