@@ -1,81 +1,117 @@
-From: Balbir Singh <bsingharora@gmail.com>
-Subject: Re: [v3 PATCH 3/3] powernv-cpufreq: Treat pstates as opaque 8-bit values
-Date: Sun, 17 Dec 2017 14:17:02 +1100
-Message-ID: <CAKTCnz=qMNECSSfVGXNfN9JfxAZUB86-dwtx1ZCicmj7b7Kweg@mail.gmail.com>
-References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com> <1513148261-21097-4-git-send-email-ego@linux.vnet.ibm.com>
+From: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
+Subject: Re: [PATCH v2 00/13] MIPS: add support for the Microsemi MIPS SoCs
+Date: Sun, 17 Dec 2017 22:29:30 +0530
+Message-ID: <CANc+2y5t8RRvuSsVvAJRNtfFx_T0wCGsSVd7Vb03boiX8AnbUw@mail.gmail.com>
+References: <20171208154618.20105-1-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-vk0-f66.google.com ([209.85.213.66]:37717 "EHLO
-        mail-vk0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757126AbdLQDRE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 16 Dec 2017 22:17:04 -0500
-In-Reply-To: <1513148261-21097-4-git-send-email-ego@linux.vnet.ibm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-gpio-owner@vger.kernel.org>
+In-Reply-To: <20171208154618.20105-1-alexandre.belloni@free-electrons.com>
+Sender: linux-gpio-owner@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org, open list <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Linus Walleij <linus.walleij@linaro.org>, linux-gpio@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, huntbag@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>
 
-On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
-<ego@linux.vnet.ibm.com> wrote:
-> From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
->
-> On POWER8 and POWER9, the PMSR and the PMCR registers define pstates
-> to be 8-bit wide values. The device-tree exports pstates as 32-bit
-> wide values of which the lower byte is the actual pstate.
->
-> The current implementation in the kernel treats pstates as integer
-> type, since it used to use the sign of the pstate for performing some
-> boundary-checks. This is no longer required after the patch
-> "powernv-cpufreq: Fix pstate_to_idx() to handle non-continguous
-> pstates".
->
-> So, in this patch, we modify the powernv-cpufreq driver to uniformly
-> treat pstates as opaque 8-bit values obtained from the device-tree or
-> the PMCR. This simplifies the extract_pstate() helper function since
-> we no longer no longer require to worry about the sign-extentions.
->
-> Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
-> ---
->  drivers/cpufreq/powernv-cpufreq.c | 47 ++++++++++++++++-----------------------
->  1 file changed, 19 insertions(+), 28 deletions(-)
->
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 8e3dbca..8a4e2ce 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -110,12 +110,11 @@ struct global_pstate_info {
->   *         hashtable
->   */
->  struct pstate_idx_revmap_data {
-> -       int pstate_id;
-> +       u8 pstate_id;
->         unsigned int cpufreq_table_idx;
->         struct hlist_node hentry;
->  };
->
-> -u32 pstate_sign_prefix;
->  static bool rebooting, throttled, occ_reset;
->
->  static const char * const throttle_reason[] = {
-> @@ -170,14 +169,9 @@ enum throttle_reason_type {
->         bool wof_enabled;
->  } powernv_pstate_info;
->
-> -static inline int extract_pstate(u64 pmsr_val, unsigned int shift)
-> +static inline u8 extract_pstate(u64 pmsr_val, unsigned int shift)
->  {
-> -       int ret = ((pmsr_val >> shift) & 0xFF);
-> -
-> -       if (!ret)
-> -               return ret;
-> -
-> -       return (pstate_sign_prefix | ret);
-> +       return ((pmsr_val >> shift) & 0xFF);
->  }
+Hi Alexandre,
 
-So we just added this and moved from an int to u8. I was going to ask
-if we still need an int in patch1, but I thought the driver dealt with
-just integers because of the larger framework.
+With very small amount of code in arch/mips this series looks really nice.
 
-Balbir Singh.
+On 8 December 2017 at 21:16, Alexandre Belloni
+<alexandre.belloni@free-electrons.com> wrote:
+> Hi,
+>
+> This patch series adds initial support for the Microsemi MIPS SoCs. It
+> is currently focusing on the Microsemi Ocelot (VSC7513, VSC7514).
+>
+> It adds support for the IRQ controller, pinmux and gpio controller and
+> reset control.
+>
+> This produces a kernel that can boot to the console.
+>
+> This is a single series for reference but it can also be taken
+> separately by each maintainer as each drivers are independant.
+>
+> Changes in v2:
+>  - removed the wildcard in MAINAINERS
+>  - corrected the Cc list
+>  - added proper documentation for both syscons
+>  - removed the mscc,cpucontrol property
+>  - updated the ranges property in the ocelot dtsi
+>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: devicetree@vger.kernel.org
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Jason Cooper <jason@lakedaemon.net>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: linux-gpio@vger.kernel.org
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+>
+>
+> Alexandre Belloni (13):
+>   dt-bindings: Add vendor prefix for Microsemi Corporation
+>   dt-bindings: interrupt-controller: Add binding for the Microsemi
+>     Ocelot interrupt controller
+>   irqchip: Add a driver for the Microsemi Ocelot controller
+>   dt-bindings: pinctrl: Add bindings for Microsemi Ocelot
+>   pinctrl: Add Microsemi Ocelot SoC driver
+>   dt-bindings: mips: Add bindings for Microsemi SoCs
+>   dt-bindings: power: reset: Document ocelot-reset binding
+>   power: reset: Add a driver for the Microsemi Ocelot reset
+>   MIPS: mscc: Add initial support for Microsemi MIPS SoCs
+>   MIPS: mscc: add ocelot dtsi
+>   MIPS: mscc: add ocelot PCB123 device tree
+>   MIPS: defconfigs: add a defconfig for Microsemi SoCs
+>   MAINTAINERS: Add entry for Microsemi MIPS SoCs
+>
+>  .../interrupt-controller/mscc,ocelot-icpu-intr.txt |  22 +
+>  Documentation/devicetree/bindings/mips/mscc.txt    |  46 ++
+>  .../bindings/pinctrl/mscc,ocelot-pinctrl.txt       |  39 ++
+>  .../bindings/power/reset/ocelot-reset.txt          |  17 +
+>  .../devicetree/bindings/vendor-prefixes.txt        |   1 +
+>  MAINTAINERS                                        |   7 +
+>  arch/mips/Kbuild.platforms                         |   1 +
+>  arch/mips/Kconfig                                  |  24 +
+>  arch/mips/boot/dts/Makefile                        |   1 +
+>  arch/mips/boot/dts/mscc/Makefile                   |   6 +
+>  arch/mips/boot/dts/mscc/ocelot.dtsi                | 115 +++++
+>  arch/mips/boot/dts/mscc/ocelot_pcb123.dts          |  27 ++
+>  arch/mips/configs/mscc_defconfig                   |  84 ++++
+>  arch/mips/mscc/Makefile                            |  11 +
+>  arch/mips/mscc/Platform                            |  12 +
+>  arch/mips/mscc/setup.c                             | 106 +++++
+>  drivers/irqchip/Kconfig                            |   5 +
+>  drivers/irqchip/Makefile                           |   1 +
+>  drivers/irqchip/irq-mscc-ocelot.c                  | 109 +++++
+>  drivers/pinctrl/Kconfig                            |  10 +
+>  drivers/pinctrl/Makefile                           |   1 +
+>  drivers/pinctrl/pinctrl-ocelot.c                   | 505 +++++++++++++++++++++
+>  drivers/power/reset/Kconfig                        |   7 +
+>  drivers/power/reset/Makefile                       |   1 +
+>  drivers/power/reset/ocelot-reset.c                 |  86 ++++
+>  25 files changed, 1244 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/interrupt-controller/mscc,ocelot-icpu-intr.txt
+>  create mode 100644 Documentation/devicetree/bindings/mips/mscc.txt
+>  create mode 100644 Documentation/devicetree/bindings/pinctrl/mscc,ocelot-pinctrl.txt
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
+>  create mode 100644 arch/mips/boot/dts/mscc/Makefile
+>  create mode 100644 arch/mips/boot/dts/mscc/ocelot.dtsi
+>  create mode 100644 arch/mips/boot/dts/mscc/ocelot_pcb123.dts
+>  create mode 100644 arch/mips/configs/mscc_defconfig
+>  create mode 100644 arch/mips/mscc/Makefile
+>  create mode 100644 arch/mips/mscc/Platform
+>  create mode 100644 arch/mips/mscc/setup.c
+>  create mode 100644 drivers/irqchip/irq-mscc-ocelot.c
+>  create mode 100644 drivers/pinctrl/pinctrl-ocelot.c
+>  create mode 100644 drivers/power/reset/ocelot-reset.c
+>
+> --
+> 2.15.1
+>
+>
+
+Except for irqchip driver and pinctrl driver other parts of the series is
+Reviewed-by: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
+
+Regards,
+PrasannaKumar
