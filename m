@@ -1,65 +1,76 @@
-From: Miquel RAYNAL <miquel.raynal@free-electrons.com>
-Subject: Re: [PATCH v3 05/11] thermal: armada: Add support for Armada AP806
-Date: Mon, 18 Dec 2017 10:41:27 +0100
-Message-ID: <20171218104127.65017555@xps13>
-References: <20171214103011.24713-1-miquel.raynal@free-electrons.com>
-        <20171214103011.24713-6-miquel.raynal@free-electrons.com>
-        <87y3m5o9h4.fsf@free-electrons.com>
+From: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
+Subject: [PATCH] PM / OPP: list_del_rcu should be used in function _remove_list_dev
+Date: Mon, 18 Dec 2017 17:37:38 +0800
+Message-ID: <20171218093738.27960-1-chunyan.zhang@spreadtrum.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:45293 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1758216AbdLRJl3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 04:41:29 -0500
-In-Reply-To: <87y3m5o9h4.fsf@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: stable <stable@vger.kernel.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Wang <vincent.wang@spreadtrum.com>, Orson Zhai <orson.zhai@spreadtrum.com>, Chunyan Zhang <zhang.lyra@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, linux-arm-kernel@lists.infradead.org
 
-Hello Gregory & Baruch,
+From: Vincent Wang <vincent.wang@spreadtrum.com>
 
-On Thu, 14 Dec 2017 12:05:43 +0100
-Gregory CLEMENT <gregory.clement@free-electrons.com> wrote:
+list_del_rcu() should be used to replace list_del() in the function
+_remove_list_dev(), since the opp is a rcu protected pointer.
+
+For example, on an ARM big.Little platform of spreadtrum, there are
+little cluster, big cluster and gpu using pm_opp. And the opp_table
+of big cluster will be removed when big cluster is removed, which
+is implemented in the cpufreq driver. Sometimes an issue maybe occur:
 
 
-> > @@ -184,9 +214,9 @@ static int armada_get_temp(struct
-> > thermal_zone_device *thermal, div = priv->data->coef_div;
-> >  
-> >  	if (priv->data->inverted)
-> > -		*temp = ((m * reg) - b) / div;
-> > +		*temp = ((m * sample) - b) / div;
-> >  	else
-> > -		*temp = (b - (m * reg)) / div;
-> > +		*temp = (b - (m * sample)) / div;
-> >  	return 0;
-> >  }
-> >  
-> > @@ -237,6 +267,19 @@ static const struct armada_thermal_data
-> > armada380_data = { .inverted = true,
-> >  };
-> >  
-> > +static const struct armada_thermal_data armada_ap806_data = {
-> > +	.is_valid = armada_is_valid,
-> > +	.init_sensor = armada_ap806_init_sensor,
-> > +	.is_valid_bit = BIT(16),
-> > +	.temp_shift = 0,
-> > +	.temp_mask = 0x3ff,
-> > +	.coef_b = -150000,  
-> 
-> Don't you expect any side effect by storing a negative value in a
-> unsigned variable?
+[  237.647758] c0 Unable to handle kernel paging request at virtual address dead000000000110
+[  237.647776] c0 pgd = ffffffc073e78000
+[  237.647786] c0 [dead000000000110] *pgd=0000000000000000, *pud=0000000000000000
+[  237.647808] c0 Internal error: Oops: 96000004 [#1] PREEMPT SMP
+[  237.653535] c0 Modules linked in: sprdwl_ng(O) mtty marlin2_fm mali_kbase(O)
+[  237.653569] c0 CPU: 0 PID: 38 Comm: kworker/u12:1 Tainted: G S      W  O    4.4.83+ #1
+[  237.653578] c0 Hardware name: Spreadtrum SP9850KHsmt 1h10 Board (DT)
+[  237.653594] c0 Workqueue: devfreq_wq devfreq_monitor
+[  237.653605] c0 task: ffffffc0babd0d80 task.stack: ffffffc0badbc000
+[  237.653619] c0 PC is at _find_device_opp+0x58/0xac
+[  237.653629] c0 LR is at dev_pm_opp_find_freq_ceil+0x2c/0xb8
 
-That is a fair question, I did not spot that.
+[  237.921294] c0 Call trace:
+[  237.921425] c0 [<ffffff80085362b0>] _find_device_opp+0x58/0xac
+[  237.921437] c0 [<ffffff8008536560>] dev_pm_opp_find_freq_ceil+0x2c/0xb8
+[  237.921452] c0 [<ffffff80088760f4>] devfreq_recommended_opp+0x54/0x7c
+[  237.921494] c0 [<ffffff8000b6a96c>] kbase_wait_write_flush+0x164/0x358 [mali_kbase]
+[  237.921504] c0 [<ffffff800887485c>] update_devfreq+0x8c/0xf8
+[  237.921514] c0 [<ffffff80088749e4>] devfreq_monitor+0x34/0x94
+[  237.921529] c0 [<ffffff80080bd75c>] process_one_work+0x154/0x458
+[  237.921539] c0 [<ffffff80080be428>] worker_thread+0x134/0x4a4
+[  237.921551] c0 [<ffffff80080c4bec>] kthread+0xdc/0xf0
+[  237.921564] c0 [<ffffff8008085f20>] ret_from_fork+0x10/0x30
 
-As other values are really close to 2^32 I don't know what is the best
-option for us in this case. Should I:
-- don't care?
-- use signed values? (dangerous IMHO)
-- use a union with a signed and an unsigned value? (problem moved to
-  ->get_temp())
+Cc: stable <stable@vger.kernel.org>     # 4.4
+Signed-off-by: Vincent Wang <vincent.wang@spreadtrum.com>
+Signed-off-by: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+This patch is for 4.4 stable branch only.
+Once this patch accepted, I can cook a similar patch for 4.9 stable branch.
 
-Thanks for your input.
-Miquèl
+This fix can't be done to upstream kernel as the OPP code doesn't
+use RCUs anymore.
+---
+ drivers/base/power/opp/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index db6e7e5..e0eac53 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -463,7 +463,7 @@ static void _kfree_list_dev_rcu(struct rcu_head *head)
+ static void _remove_list_dev(struct device_list_opp *list_dev,
+ 			     struct device_opp *dev_opp)
+ {
+-	list_del(&list_dev->node);
++	list_del_rcu(&list_dev->node);
+ 	call_srcu(&dev_opp->srcu_head.srcu, &list_dev->rcu_head,
+ 		  _kfree_list_dev_rcu);
+ }
+-- 
+1.9.1
