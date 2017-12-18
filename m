@@ -1,55 +1,48 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 3/3] soc: renesas: rcar-sysc: Keep wakeup sources
- active during system suspend
-Date: Mon, 18 Dec 2017 12:22:17 +0100
-Message-ID: <CAMuHMdU2CUE_68ZoQ5ssKaXYJ0L_P0gSTqVFS1GGa_cY7e-8cA@mail.gmail.com>
-References: <1510234022-29442-1-git-send-email-geert+renesas@glider.be>
- <1510234022-29442-4-git-send-email-geert+renesas@glider.be> <CAPDyKFrxaghoAcWJN1R7d7k5b=QwMpusGFuohVZpTaWngf3aiw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization
+ update flags
+Date: Mon, 18 Dec 2017 12:35:33 +0100
+Message-ID: <CAJZ5v0h+bvbe6DbMn+9DXbbctKG4POTsvEf_eL8R0nLajKXBTA@mail.gmail.com>
+References: <cover.1513158452.git.viresh.kumar@linaro.org> <CAJZ5v0jLQ7v5u+OUpK0gSAHvR90K=agvUSuFNzJXMnk+YkKyzQ@mail.gmail.com>
+ <CAKohpomHfV=2CQj0_D=PsoMvbCu5v_ensJqaZmxUURzr27+yhA@mail.gmail.com>
+ <20456740.6R3DDKEUDv@aspire.rjw.lan> <20171218045945.GG19815@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f196.google.com ([209.85.216.196]:38661 "EHLO
-        mail-qt0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1758068AbdLRLWS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 06:22:18 -0500
-In-Reply-To: <CAPDyKFrxaghoAcWJN1R7d7k5b=QwMpusGFuohVZpTaWngf3aiw@mail.gmail.com>
+Received: from mail-oi0-f66.google.com ([209.85.218.66]:36863 "EHLO
+        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1758326AbdLRLfe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 06:35:34 -0500
+In-Reply-To: <20171218045945.GG19815@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Magnus Damm <magnus.damm@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thu, Dec 14, 2017 at 3:11 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 9 November 2017 at 14:27, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
->> If an R-Car SYSC slave device is part of the CPG/MSTP or CPG/MSSR Clock
->> Domain and to be used as a wakeup source, it must be kept active during
->> system suspend.
+On Mon, Dec 18, 2017 at 5:59 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 17-12-17, 01:19, Rafael J. Wysocki wrote:
+>> We can do that in principle, but why should it return early?  Maybe it's
+>> a good time to update things, incidentally?
 >>
->> Currently this is handled in device-specific drivers by explicitly
->> increasing the use count of the module clock when the device is
->> configured as a wakeup source.  However, the proper way to prevent the
->> device from being stopped is to inform this requirement to the genpd
->> core, by setting the GENPD_FLAG_ACTIVE_WAKEUP flag.
+>> I actually don't like the SCHED_CPUFRREQ_CLEAR flag *concept* as it is very
+>> much specific to schedutil and blatantly ignores everybody else.
 >>
->> Note that this will only affect devices configured as wakeup sources.
+>> Alternatively, you could add two flags for clearing SCHED_CPUFREQ_RT and
+>> SCHED_CPUFREQ_DL that could just be ingored entirely by intel_pstate.
 >>
->> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> So, why don't you make SCHED_CPUFREQ_RT and SCHED_CPUFREQ_DL "sticky" until,
+>> say, SCHED_CPUFREQ_NO_RT and SCHED_CPUFREQ_NO_DL are passed, respectively?
 >
-> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> I didn't like adding scheduling class specific flags, and wanted the code to
+> treat all of them in the same way. And then the governors can make a policy over
+> that, on what to ignore and what not to. For example with the current patchset,
+> the governors can know when nothing else is queued on a CPU and CPU is going to
+> get into idle loop. They can choose to (or not to) do something in that case.
 
-Thank you!
+Well, if SCHED_CPUFRREQ_CLEAR means "this CPU is going to enter the
+idle loop" really, then it is better to call it
+SCHED_CPUFRREQ_ENTER_IDLE, for example.
 
-Simon: can you please queue this up for v4.16?
-I have queued the other 2 clock patches in clk-renesas-for-v4.16, and sent
-a PR for it.
-Thanks!
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+SCHED_CPUFRREQ_CLEAR meaning basically "you should clear these flags
+now" doesn't seem to convey any information to whoever doesn't
+squirrel the flags in the first place.
