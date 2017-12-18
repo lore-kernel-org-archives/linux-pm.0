@@ -1,18 +1,14 @@
 From: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
 Subject: [PATCH] PM / OPP: list_del_rcu should be used in function _remove_list_dev
-Date: Mon, 18 Dec 2017 16:31:42 +0800
-Message-ID: <20171218083142.26583-1-chunyan.zhang@spreadtrum.com>
+Date: Mon, 18 Dec 2017 16:32:23 +0800
+Message-ID: <20171218083223.26647-1-chunyan.zhang@spreadtrum.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from sci-ig2.spreadtrum.com ([222.66.158.135]:23282 "EHLO
-        SHSQR01.spreadtrum.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-        with ESMTP id S1751457AbdLRIlC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 03:41:02 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Orson Zhai <orson.zhai@spreadtrum.com>, Chunyan Zhang <zhang.lyra@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Wang <vincent.wang@spreadtrum.com>, Orson Zhai <orson.zhai@spreadtrum.com>, Chunyan Zhang <zhang.lyra@gmail.com>
+List-Id: linux-pm@vger.kernel.org
 
 From: Vincent Wang <vincent.wang@spreadtrum.com>
 
