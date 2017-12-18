@@ -1,79 +1,90 @@
-From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v4 09/12] thermal: armada: Change sensors trim default value
-Date: Mon, 18 Dec 2017 17:08:42 +0100
-Message-ID: <87lgi0hvcl.fsf@free-electrons.com>
+From: Gregory CLEMENT <gregory.clement@free-electrons.com>
+Subject: Re: [PATCH v4 10/12] thermal: armada: Wait sensors validity before
+ exiting the init callback
+Date: Mon, 18 Dec 2017 17:12:08 +0100
+Message-ID: <87h8sohv6v.fsf@free-electrons.com>
 References: <20171218143643.7714-1-miquel.raynal@free-electrons.com>
-        <20171218143643.7714-10-miquel.raynal@free-electrons.com>
+ <20171218143643.7714-11-miquel.raynal@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171218143643.7714-10-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> (Miquel
-        Raynal's message of "Mon, 18 Dec 2017 15:36:40 +0100")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20171218143643.7714-11-miquel.raynal@free-electrons.com> (Miquel
+ Raynal's message of "Mon, 18 Dec 2017 15:36:41 +0100")
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Miquel Raynal <miquel.raynal@free-electrons.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Baruch Siach <baruch@tkos.co.il>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Will Deacon <will.deacon@arm.com>, David Sniatkiwicz <davidsn@marvell.com>, Eduardo Valentin <edubezval@gmail.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Miquel,
- 
- On lun., déc. 18 2017, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
-
-> Errata #132698 highlights an error in the default value of Tc trim.
-> Set this parameter to b'011.
->
-> Suggested-by: David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
-> Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-
-Reviewed-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-
-Gregory
-
-> ---
->  drivers/thermal/armada_thermal.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
->
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-> index cef5c65c8f32..2eadd662591d 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -46,6 +46,10 @@
->  #define CONTROL0_OFFSET			0x0
->  #define CONTROL1_OFFSET			0x4
->  
-> +/* Errata fields */
-> +#define CONTROL0_TSEN_TC_TRIM_MASK	0x7
-> +#define CONTROL0_TSEN_TC_TRIM_VAL	0x3
-> +
->  /* TSEN refers to the temperature sensors within the AP */
->  #define CONTROL0_TSEN_START		BIT(0)
->  #define CONTROL0_TSEN_RESET		BIT(1)
-> @@ -161,6 +165,15 @@ static void armada380_init_sensor(struct platform_device *pdev,
->  	reg &= ~CONTROL1_EXT_TSEN_SW_RESET;
->  	writel(reg, priv->control1);
->  	msleep(10);
-> +
-> +	/* Set Tsen Tc Trim to correct default value (errata #132698) */
-> +	if (priv->control0) {
-> +		reg = readl_relaxed(priv->control0);
-> +		reg &= ~CONTROL0_TSEN_TC_TRIM_MASK;
-> +		reg |= CONTROL0_TSEN_TC_TRIM_VAL;
-> +		writel(reg, priv->control0);
-> +		msleep(10);
-> +	}
->  }
->  
->  static void armada_ap806_init_sensor(struct platform_device *pdev,
-> -- 
-> 2.11.0
->
-
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+SGkgTWlxdWVsLAogCiBPbiBsdW4uLCBkw6ljLiAxOCAyMDE3LCBNaXF1ZWwgUmF5bmFsIDxtaXF1
+ZWwucmF5bmFsQGZyZWUtZWxlY3Ryb25zLmNvbT4gd3JvdGU6Cgo+IFRoZSB0aGVybWFsIGNvcmUg
+d2lsbCBjaGVjayBmb3Igc2Vuc29ycyB2YWxpZGl0eSByaWdodCBhZnRlciB0aGUKPiBpbml0aWFs
+aXphdGlvbiBjYWxsYmFjayBoYXMgcmV0dXJuZWQuIEFzIHRoZSBpbml0aWFsaXphdGlvbiByb3V0
+aW5lIG1ha2UKPiBhIHJlc2V0LCB0aGUgc2Vuc29ycyBhcmUgbm90IHJlYWR5IGltbWVkaWF0ZWx5
+IGFuZCB0aGUgY29yZSBzcGF3bnMgYW4KPiBlcnJvciBpbiB0aGUgZG1lc2cuIEF2b2lkIHRoaXMg
+YW5ub3lpbmcgc2l0dWF0aW9uIGJ5IHBvbGxpbmcgb24gdGhlCj4gdmFsaWRpdHkgYml0IGJlZm9y
+ZSBleGl0aW5nIGZyb20gdGhlc2Ugcm91dGluZXMuIFRoaXMgYWxzbyBhdm9pZCB0aGUgdXNlCj4g
+b2YgYmxpbmQgc2xlZXBzLgo+Cj4gU3VnZ2VzdGVkLWJ5OiBEYXZpZCBTbmlhdGtpd2ljeiA8ZGF2
+aWRzbkBtYXJ2ZWxsLmNvbT4KPiBTaWduZWQtb2ZmLWJ5OiBNaXF1ZWwgUmF5bmFsIDxtaXF1ZWwu
+cmF5bmFsQGZyZWUtZWxlY3Ryb25zLmNvbT4KClJldmlld2VkLWJ5OiBHcmVnb3J5IENMRU1FTlQg
+PGdyZWdvcnkuY2xlbWVudEBmcmVlLWVsZWN0cm9ucy5jb20+Cgo+IC0tLQo+ICBkcml2ZXJzL3Ro
+ZXJtYWwvYXJtYWRhX3RoZXJtYWwuYyB8IDIzICsrKysrKysrKysrKysrKysrKysrLS0tCj4gIDEg
+ZmlsZSBjaGFuZ2VkLCAyMCBpbnNlcnRpb25zKCspLCAzIGRlbGV0aW9ucygtKQo+Cj4gZGlmZiAt
+LWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9hcm1hZGFfdGhlcm1hbC5jIGIvZHJpdmVycy90aGVybWFs
+L2FybWFkYV90aGVybWFsLmMKPiBpbmRleCAyZWFkZDY2MjU5MWQuLjRhNTE2NGRkZmZlNyAxMDA2
+NDQKPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwvYXJtYWRhX3RoZXJtYWwuYwo+ICsrKyBiL2RyaXZl
+cnMvdGhlcm1hbC9hcm1hZGFfdGhlcm1hbC5jCj4gQEAgLTIzLDYgKzIzLDcgQEAKPiAgI2luY2x1
+ZGUgPGxpbnV4L3BsYXRmb3JtX2RldmljZS5oPgo+ICAjaW5jbHVkZSA8bGludXgvb2ZfZGV2aWNl
+Lmg+Cj4gICNpbmNsdWRlIDxsaW51eC90aGVybWFsLmg+Cj4gKyNpbmNsdWRlIDxsaW51eC9pb3Bv
+bGwuaD4KPiAgCj4gIC8qIFRoZXJtYWwgTWFuYWdlciBDb250cm9sIGFuZCBTdGF0dXMgUmVnaXN0
+ZXIgKi8KPiAgI2RlZmluZSBQTVVfVERDMF9TV19SU1RfTUFTSwkJKDB4MSA8PCAxKQo+IEBAIC01
+OSw2ICs2MCw5IEBACj4gICNkZWZpbmUgQ09OVFJPTDFfRVhUX1RTRU5fU1dfUkVTRVQJQklUKDcp
+Cj4gICNkZWZpbmUgQ09OVFJPTDFfRVhUX1RTRU5fSFdfUkVTRVRuCUJJVCg4KQo+ICAKPiArI2Rl
+ZmluZSBTVEFUVVNfUE9MTF9QRVJJT0RfVVMJCTEwMDAKPiArI2RlZmluZSBTVEFUVVNfUE9MTF9U
+SU1FT1VUX1VTCQkxMDAwMDAKPiArCj4gIHN0cnVjdCBhcm1hZGFfdGhlcm1hbF9kYXRhOwo+ICAK
+PiAgLyogTWFydmVsbCBFQlUgVGhlcm1hbCBTZW5zb3IgRGV2IFN0cnVjdHVyZSAqLwo+IEBAIC0x
+NTUsNiArMTU5LDE2IEBAIHN0YXRpYyB2b2lkIGFybWFkYTM3NV9pbml0X3NlbnNvcihzdHJ1Y3Qg
+cGxhdGZvcm1fZGV2aWNlICpwZGV2LAo+ICAJbXNsZWVwKDUwKTsKPiAgfQo+ICAKPiArc3RhdGlj
+IHZvaWQgYXJtYWRhX3dhaXRfc2Vuc29yX3ZhbGlkaXR5KHN0cnVjdCBhcm1hZGFfdGhlcm1hbF9w
+cml2ICpwcml2KQo+ICt7Cj4gKwl1MzIgcmVnOwo+ICsKPiArCXJlYWRsX3JlbGF4ZWRfcG9sbF90
+aW1lb3V0KHByaXYtPnN0YXR1cywgcmVnLAo+ICsJCQkJICAgcmVnICYgcHJpdi0+ZGF0YS0+aXNf
+dmFsaWRfYml0LAo+ICsJCQkJICAgU1RBVFVTX1BPTExfUEVSSU9EX1VTLAo+ICsJCQkJICAgU1RB
+VFVTX1BPTExfVElNRU9VVF9VUyk7Cj4gK30KPiArCj4gIHN0YXRpYyB2b2lkIGFybWFkYTM4MF9p
+bml0X3NlbnNvcihzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2LAo+ICAJCQkJICBzdHJ1Y3Qg
+YXJtYWRhX3RoZXJtYWxfcHJpdiAqcHJpdikKPiAgewo+IEBAIC0xNjQsNyArMTc4LDYgQEAgc3Rh
+dGljIHZvaWQgYXJtYWRhMzgwX2luaXRfc2Vuc29yKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBk
+ZXYsCj4gIAlyZWcgfD0gQ09OVFJPTDFfRVhUX1RTRU5fSFdfUkVTRVRuOwo+ICAJcmVnICY9IH5D
+T05UUk9MMV9FWFRfVFNFTl9TV19SRVNFVDsKPiAgCXdyaXRlbChyZWcsIHByaXYtPmNvbnRyb2wx
+KTsKPiAtCW1zbGVlcCgxMCk7Cj4gIAo+ICAJLyogU2V0IFRzZW4gVGMgVHJpbSB0byBjb3JyZWN0
+IGRlZmF1bHQgdmFsdWUgKGVycmF0YSAjMTMyNjk4KSAqLwo+ICAJaWYgKHByaXYtPmNvbnRyb2ww
+KSB7Cj4gQEAgLTE3Miw4ICsxODUsMTAgQEAgc3RhdGljIHZvaWQgYXJtYWRhMzgwX2luaXRfc2Vu
+c29yKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYsCj4gIAkJcmVnICY9IH5DT05UUk9MMF9U
+U0VOX1RDX1RSSU1fTUFTSzsKPiAgCQlyZWcgfD0gQ09OVFJPTDBfVFNFTl9UQ19UUklNX1ZBTDsK
+PiAgCQl3cml0ZWwocmVnLCBwcml2LT5jb250cm9sMCk7Cj4gLQkJbXNsZWVwKDEwKTsKPiAgCX0K
+PiArCj4gKwkvKiBXYWl0IHRoZSBzZW5zb3JzIHRvIGJlIHZhbGlkIG9yIHRoZSBjb3JlIHdpbGwg
+d2FybiB0aGUgdXNlciAqLwo+ICsJYXJtYWRhX3dhaXRfc2Vuc29yX3ZhbGlkaXR5KHByaXYpOwo+
+ICB9Cj4gIAo+ICBzdGF0aWMgdm9pZCBhcm1hZGFfYXA4MDZfaW5pdF9zZW5zb3Ioc3RydWN0IHBs
+YXRmb3JtX2RldmljZSAqcGRldiwKPiBAQCAtMTg1LDcgKzIwMCw5IEBAIHN0YXRpYyB2b2lkIGFy
+bWFkYV9hcDgwNl9pbml0X3NlbnNvcihzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2LAo+ICAJ
+cmVnICY9IH5DT05UUk9MMF9UU0VOX1JFU0VUOwo+ICAJcmVnIHw9IENPTlRST0wwX1RTRU5fU1RB
+UlQgfCBDT05UUk9MMF9UU0VOX0VOQUJMRTsKPiAgCXdyaXRlbChyZWcsIHByaXYtPmNvbnRyb2ww
+KTsKPiAtCW1zbGVlcCgxMCk7Cj4gKwo+ICsJLyogV2FpdCB0aGUgc2Vuc29ycyB0byBiZSB2YWxp
+ZCBvciB0aGUgY29yZSB3aWxsIHdhcm4gdGhlIHVzZXIKCkp1c3Qgb3V0IG9mIGN1cmlvc2l0eSBi
+dXQgaG93IHRoZSBjb3JlIHdpbGwgd2FybiB0aGUgdXNlcj8KCkdyZWdvcnkKCj4gKi8KPiArCWFy
+bWFkYV93YWl0X3NlbnNvcl92YWxpZGl0eShwcml2KTsKPiAgfQo+ICAKPiAgc3RhdGljIGJvb2wg
+YXJtYWRhX2lzX3ZhbGlkKHN0cnVjdCBhcm1hZGFfdGhlcm1hbF9wcml2ICpwcml2KQo+IC0tIAo+
+IDIuMTEuMAo+CgotLSAKR3JlZ29yeSBDbGVtZW50LCBGcmVlIEVsZWN0cm9ucwpLZXJuZWwsIGRy
+aXZlcnMsIHJlYWwtdGltZSBhbmQgZW1iZWRkZWQgTGludXgKZGV2ZWxvcG1lbnQsIGNvbnN1bHRp
+bmcsIHRyYWluaW5nIGFuZCBzdXBwb3J0LgpodHRwOi8vZnJlZS1lbGVjdHJvbnMuY29tCgpfX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpsaW51eC1hcm0ta2Vy
+bmVsIG1haWxpbmcgbGlzdApsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmcKaHR0
+cDovL2xpc3RzLmluZnJhZGVhZC5vcmcvbWFpbG1hbi9saXN0aW5mby9saW51eC1hcm0ta2VybmVs
+Cg==
