@@ -1,80 +1,74 @@
-From: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v4 12/12] ARM64: dts: marvell: Add thermal support for A7K/A8K
-Date: Mon, 18 Dec 2017 15:36:43 +0100
-Message-ID: <20171218143643.7714-13-miquel.raynal@free-electrons.com>
+From: Miquel Raynal <miquel.raynal@free-electrons.com>
+Subject: [PATCH v4 02/12] thermal: armada: Use msleep for long delays
+Date: Mon, 18 Dec 2017 15:36:33 +0100
+Message-ID: <20171218143643.7714-3-miquel.raynal@free-electrons.com>
 References: <20171218143643.7714-1-miquel.raynal@free-electrons.com>
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171218143643.7714-1-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
+In-Reply-To: <20171218143643.7714-1-miquel.raynal@free-electrons.com>
+List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
+List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
+List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
+List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
+List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
+ <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
+Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
+Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devicetree@vger.kernel.org, Baruch Siach <baruch@tkos.co.il>, linux-pm@vger.kernel.org, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>, Miquel Raynal <miquel.raynal@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 List-Id: linux-pm@vger.kernel.org
 
-Add thermal DT nodes in AP806 and CP110 master/slave DTSI files.
+From: Baruch Siach <baruch@tkos.co.il>
 
-Suggested-by: David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
-Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Use msleep for long (> 10ms) delays, instead of the busy waiting mdelay.
+All delays are called from the probe routine, where scheduling is
+allowed.
+
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
+Reviewed-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- arch/arm64/boot/dts/marvell/armada-ap806.dtsi        | 6 ++++++
- arch/arm64/boot/dts/marvell/armada-cp110-master.dtsi | 6 ++++++
- arch/arm64/boot/dts/marvell/armada-cp110-slave.dtsi  | 6 ++++++
- 3 files changed, 18 insertions(+)
+ drivers/thermal/armada_thermal.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-index 1c4dd8ab9ad5..bbc5a4d3acac 100644
---- a/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-ap806.dtsi
-@@ -285,6 +285,12 @@
- 					gpio-ranges = <&ap_pinctrl 0 0 20>;
- 				};
- 			};
-+
-+			ap_thermal: thermal@6f808C {
-+				compatible = "marvell,armada-ap806-thermal";
-+				reg = <0x6f808C 0x4>,
-+				      <0x6f8084 0x8>;
-+			};
- 		};
- 	};
- };
-diff --git a/arch/arm64/boot/dts/marvell/armada-cp110-master.dtsi b/arch/arm64/boot/dts/marvell/armada-cp110-master.dtsi
-index e3b64d03fbd8..ecbc76d26dff 100644
---- a/arch/arm64/boot/dts/marvell/armada-cp110-master.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-cp110-master.dtsi
-@@ -182,6 +182,12 @@
- 				interrupts = <ICU_GRP_NSR 77 IRQ_TYPE_LEVEL_HIGH>;
- 			};
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 706d74798cbe..6c4af2622d4f 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -113,7 +113,7 @@ static void armada370_init_sensor(struct platform_device *pdev,
+ 	reg &= ~PMU_TDC0_START_CAL_MASK;
+ 	writel(reg, priv->control);
  
-+			cpm_thermal: thermal@400078 {
-+				compatible = "marvell,armada-cp110-thermal";
-+				reg = <0x400078 0x4>,
-+				      <0x400070 0x8>;
-+			};
-+
- 			cpm_syscon0: system-controller@440000 {
- 				compatible = "syscon", "simple-mfd";
- 				reg = <0x440000 0x2000>;
-diff --git a/arch/arm64/boot/dts/marvell/armada-cp110-slave.dtsi b/arch/arm64/boot/dts/marvell/armada-cp110-slave.dtsi
-index 0d51096c69f8..29ba32c68870 100644
---- a/arch/arm64/boot/dts/marvell/armada-cp110-slave.dtsi
-+++ b/arch/arm64/boot/dts/marvell/armada-cp110-slave.dtsi
-@@ -182,6 +182,12 @@
- 				interrupts = <ICU_GRP_NSR 77 IRQ_TYPE_LEVEL_HIGH>;
- 			};
+-	mdelay(10);
++	msleep(10);
+ }
  
-+			cps_thermal: thermal@400078 {
-+				compatible = "marvell,armada-cp110-thermal";
-+				reg = <0x400078 0x4>,
-+				      <0x400070 0x8>;
-+			};
-+
- 			cps_syscon0: system-controller@440000 {
- 				compatible = "syscon", "simple-mfd";
- 				reg = <0x440000 0x2000>;
+ static void armada375_init_sensor(struct platform_device *pdev,
+@@ -127,11 +127,11 @@ static void armada375_init_sensor(struct platform_device *pdev,
+ 	reg &= ~A375_HW_RESETn;
+ 
+ 	writel(reg, priv->control + 4);
+-	mdelay(20);
++	msleep(20);
+ 
+ 	reg |= A375_HW_RESETn;
+ 	writel(reg, priv->control + 4);
+-	mdelay(50);
++	msleep(50);
+ }
+ 
+ static void armada380_init_sensor(struct platform_device *pdev,
+@@ -143,7 +143,7 @@ static void armada380_init_sensor(struct platform_device *pdev,
+ 	if (!(reg & A380_HW_RESET)) {
+ 		reg |= A380_HW_RESET;
+ 		writel(reg, priv->control);
+-		mdelay(10);
++		msleep(10);
+ 	}
+ }
+ 
 -- 
 2.11.0
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
