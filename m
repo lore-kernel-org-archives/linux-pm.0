@@ -1,74 +1,169 @@
-From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v3 2/7] typec: tcpm: Add ADO header for Alert message handling
-Date: Mon, 18 Dec 2017 12:41:37 +0000
-Message-ID: <025e03a306ab7bfc8d763ae61ca6c97f2fb765de.1513599506.git.Adam.Thomson.Opensource@diasemi.com>
-References: <cover.1513599506.git.Adam.Thomson.Opensource@diasemi.com>
+From: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
+Subject: Re: [PATCH v2 08/13] power: reset: Add a driver for the Microsemi
+ Ocelot reset
+Date: Mon, 18 Dec 2017 18:56:30 +0530
+Message-ID: <CANc+2y5itUahW9s9buhUxkM-tYQQqT3EU4JYGZaZk_a6rpN+Bg@mail.gmail.com>
+References: <20171208154618.20105-1-alexandre.belloni@free-electrons.com> <20171208154618.20105-9-alexandre.belloni@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <cover.1513599506.git.Adam.Thomson.Opensource@diasemi.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>
-Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:40783 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1758182AbdLRN0b (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 08:26:31 -0500
+In-Reply-To: <20171208154618.20105-9-alexandre.belloni@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org, open list <linux-kernel@vger.kernel.org>, Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
 
-This commit adds a header providing definitions for handling Alert
-messages. Currently the header only focuses on handling incoming
-alerts.
+Hi Alexandre,
 
-Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
----
- include/linux/usb/pd_ado.h | 42 ++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 42 insertions(+)
- create mode 100644 include/linux/usb/pd_ado.h
+On 8 December 2017 at 21:16, Alexandre Belloni
+<alexandre.belloni@free-electrons.com> wrote:
+> The Microsemi Ocelot SoC has a register allowing to reset the MIPS core.
+> Unfortunately, the syscon-reboot driver can't be used directly (but almost)
+> as the reset control may be disabled using another register.
+>
+> Cc: Sebastian Reichel <sre@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Alexandre Belloni <alexandre.belloni@free-electrons.com>
+> ---
+>  drivers/power/reset/Kconfig        |  7 ++++
+>  drivers/power/reset/Makefile       |  1 +
+>  drivers/power/reset/ocelot-reset.c | 86 ++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 94 insertions(+)
+>  create mode 100644 drivers/power/reset/ocelot-reset.c
+>
+> diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+> index ca0de1a78e85..2372f8e1040d 100644
+> --- a/drivers/power/reset/Kconfig
+> +++ b/drivers/power/reset/Kconfig
+> @@ -113,6 +113,13 @@ config POWER_RESET_MSM
+>         help
+>           Power off and restart support for Qualcomm boards.
+>
+> +config POWER_RESET_OCELOT_RESET
+> +       bool "Microsemi Ocelot reset driver"
+> +       depends on MSCC_OCELOT || COMPILE_TEST
+> +       select MFD_SYSCON
+> +       help
+> +         This driver supports restart for Microsemi Ocelot SoC.
+> +
+>  config POWER_RESET_PIIX4_POWEROFF
+>         tristate "Intel PIIX4 power-off driver"
+>         depends on PCI
+> diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+> index aeb65edb17b7..df9d92291c67 100644
+> --- a/drivers/power/reset/Makefile
+> +++ b/drivers/power/reset/Makefile
+> @@ -12,6 +12,7 @@ obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
+>  obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
+>  obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
+> +obj-$(CONFIG_POWER_RESET_OCELOT_RESET) += ocelot-reset.o
+>  obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
+>  obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
+> diff --git a/drivers/power/reset/ocelot-reset.c b/drivers/power/reset/ocelot-reset.c
+> new file mode 100644
+> index 000000000000..1fb14bf17191
+> --- /dev/null
+> +++ b/drivers/power/reset/ocelot-reset.c
+> @@ -0,0 +1,86 @@
+> +// SPDX-License-Identifier: (GPL-2.0 OR MIT)
+> +/*
+> + * Microsemi MIPS SoC reset driver
+> + *
+> + * License: Dual MIT/GPL
+> + * Copyright (c) 2017 Microsemi Corporation
+> + */
+> +#include <linux/delay.h>
+> +#include <linux/io.h>
+> +#include <linux/notifier.h>
+> +#include <linux/mfd/syscon.h>
+> +#include <linux/of_address.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/reboot.h>
+> +#include <linux/regmap.h>
+> +
+> +struct ocelot_reset_context {
+> +       struct regmap *chip_regs;
+> +       struct regmap *cpu_ctrl;
+> +       struct notifier_block restart_handler;
+> +};
+> +
+> +#define ICPU_CFG_CPU_SYSTEM_CTRL_RESET 0x20
+> +#define CORE_RST_PROTECT BIT(2)
+> +
+> +#define CHIP_REGS_SOFT_RST 0x8
+> +#define SOFT_CHIP_RST BIT(0)
+> +
+> +static int ocelot_restart_handle(struct notifier_block *this,
+> +                                unsigned long mode, void *cmd)
+> +{
+> +       struct ocelot_reset_context *ctx = container_of(this, struct
+> +                                                       ocelot_reset_context,
+> +                                                       restart_handler);
+> +
+> +       /* Make sure the core is not protected from reset */
+> +       regmap_update_bits(ctx->cpu_ctrl, ICPU_CFG_CPU_SYSTEM_CTRL_RESET,
+> +                          CORE_RST_PROTECT, 0);
+> +
+> +       regmap_write(ctx->chip_regs, CHIP_REGS_SOFT_RST, SOFT_CHIP_RST);
+> +
+> +       pr_emerg("Unable to restart system\n");
+> +       return NOTIFY_DONE;
+> +}
+> +
+> +static int ocelot_reset_probe(struct platform_device *pdev)
+> +{
+> +       struct ocelot_reset_context *ctx;
+> +       struct device *dev = &pdev->dev;
+> +       int err;
+> +
+> +       ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
+> +       if (!ctx)
+> +               return -ENOMEM;
+> +
+> +       ctx->chip_regs = syscon_node_to_regmap(of_get_parent(dev->of_node));
+> +       if (IS_ERR(ctx->chip_regs))
+> +               return PTR_ERR(ctx->chip_regs);
+> +
+> +       ctx->cpu_ctrl = syscon_regmap_lookup_by_compatible("mscc,ocelot-cpu-syscon");
+> +       if (IS_ERR(ctx->cpu_ctrl))
+> +               return PTR_ERR(ctx->cpu_ctrl);
+> +
+> +       ctx->restart_handler.notifier_call = ocelot_restart_handle;
+> +       ctx->restart_handler.priority = 192;
+> +       err = register_restart_handler(&ctx->restart_handler);
+> +       if (err)
+> +               dev_err(dev, "can't register restart notifier (err=%d)\n", err);
+> +
+> +       return err;
+> +}
+> +
+> +static const struct of_device_id ocelot_reset_of_match[] = {
+> +       { .compatible = "mscc,ocelot-chip-reset" },
+> +       {}
+> +};
+> +
+> +static struct platform_driver ocelot_reset_driver = {
+> +       .probe = ocelot_reset_probe,
+> +       .driver = {
+> +               .name = "ocelot-chip-reset",
+> +               .of_match_table = ocelot_reset_of_match,
+> +       },
+> +};
+> +builtin_platform_driver(ocelot_reset_driver);
+> --
+> 2.15.1
+>
+>
 
-diff --git a/include/linux/usb/pd_ado.h b/include/linux/usb/pd_ado.h
-new file mode 100644
-index 0000000..9aa1cf3
---- /dev/null
-+++ b/include/linux/usb/pd_ado.h
-@@ -0,0 +1,42 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright (c) 2017 Dialog Semiconductor
-+ *
-+ * Author: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-+ */
-+
-+#ifndef __LINUX_USB_PD_ADO_H
-+#define __LINUX_USB_PD_ADO_H
-+
-+/* ADO : Alert Data Object */
-+#define USB_PD_ADO_TYPE_SHIFT			24
-+#define USB_PD_ADO_TYPE_MASK			0xff
-+#define USB_PD_ADO_FIXED_BATT_SHIFT		20
-+#define USB_PD_ADO_FIXED_BATT_MASK		0xf
-+#define USB_PD_ADO_HOT_SWAP_BATT_SHIFT		16
-+#define USB_PD_ADO_HOT_SWAP_BATT_MASK		0xf
-+
-+#define USB_PD_ADO_TYPE_BATT_STATUS_CHANGE	BIT(1)
-+#define USB_PD_ADO_TYPE_OCP			BIT(2)
-+#define USB_PD_ADO_TYPE_OTP			BIT(3)
-+#define USB_PD_ADO_TYPE_OP_COND_CHANGE		BIT(4)
-+#define USB_PD_ADO_TYPE_SRC_INPUT_CHANGE	BIT(5)
-+#define USB_PD_ADO_TYPE_OVP			BIT(6)
-+
-+static inline unsigned int usb_pd_ado_type(u32 ado)
-+{
-+	return (ado >> USB_PD_ADO_TYPE_SHIFT) & USB_PD_ADO_TYPE_MASK;
-+}
-+
-+static inline unsigned int usb_pd_ado_fixed_batt(u32 ado)
-+{
-+	return (ado >> USB_PD_ADO_FIXED_BATT_SHIFT) &
-+	       USB_PD_ADO_FIXED_BATT_MASK;
-+}
-+
-+static inline unsigned int usb_pd_ado_hot_swap_batt(u32 ado)
-+{
-+	return (ado >> USB_PD_ADO_HOT_SWAP_BATT_SHIFT) &
-+	       USB_PD_ADO_HOT_SWAP_BATT_MASK;
-+}
-+#endif /* __LINUX_USB_PD_ADO_H */
--- 
-1.9.1
+Looks good to me.
+Reviewed-by: PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>
+
+Regards,
+PrasannaKumar
