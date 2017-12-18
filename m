@@ -1,69 +1,80 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [v3 PATCH 3/3] powernv-cpufreq: Treat pstates as opaque 8-bit
- values
-Date: Mon, 18 Dec 2017 14:13:29 +0530
-Message-ID: <20171218084329.GB28881@in.ibm.com>
-References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
- <1513148261-21097-4-git-send-email-ego@linux.vnet.ibm.com>
- <CAKTCnz=qMNECSSfVGXNfN9JfxAZUB86-dwtx1ZCicmj7b7Kweg@mail.gmail.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH] PM / OPP: list_del_rcu should be used in function
+ _remove_list_dev
+Date: Mon, 18 Dec 2017 14:13:26 +0530
+Message-ID: <20171218084326.GI19815@vireshk-i7>
+References: <20171218083223.26647-1-chunyan.zhang@spreadtrum.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:50042 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1757933AbdLRInf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 03:43:35 -0500
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vBI8cgQ9065951
-        for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2017 03:43:35 -0500
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2ex6eq8evh-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2017 03:43:34 -0500
-Received: from localhost
-        by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-        Mon, 18 Dec 2017 03:43:34 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <CAKTCnz=qMNECSSfVGXNfN9JfxAZUB86-dwtx1ZCicmj7b7Kweg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20171218083223.26647-1-chunyan.zhang@spreadtrum.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Wang <vincent.wang@spreadtrum.com>, Orson Zhai <orson.zhai@spreadtrum.com>, Chunyan Zhang <zhang.lyra@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, huntbag@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>
 
-Hi Balbir,
-
-On Sun, Dec 17, 2017 at 02:17:02PM +1100, Balbir Singh wrote:
-> On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
-[..snip..]
-> >
-> > -static inline int extract_pstate(u64 pmsr_val, unsigned int shift)
-> > +static inline u8 extract_pstate(u64 pmsr_val, unsigned int shift)
-> >  {
-> > -       int ret = ((pmsr_val >> shift) & 0xFF);
-> > -
-> > -       if (!ret)
-> > -               return ret;
-> > -
-> > -       return (pstate_sign_prefix | ret);
-> > +       return ((pmsr_val >> shift) & 0xFF);
-> >  }
+On 18-12-17, 16:32, Chunyan Zhang wrote:
+> From: Vincent Wang <vincent.wang@spreadtrum.com>
 > 
-> So we just added this and moved from an int to u8. I was going to ask
-> if we still need an int in patch1, but I thought the driver dealt with
-> just integers because of the larger framework.
-
-The larger framework is with respect to the device tree which defines
-pstates as 32-bit integers (I am not aware of the reasons for this
-choice, but perhaps device-tree doesn't have a s8/u8 type?!). The
-driver still knows that pstates are only 8-bits wide because of the
-PMSR,PMCR definitions. Before this patch, the driver was still doing
-the conversions from 8-bit to int and vice-versa every time. With this
-patch, we do it only once, i.e at the initialization. After that we
-treat pstates as 8-bit integers. 
-
-
+> list_del_rcu() should be used to replace list_del() in the function
+> _remove_list_dev(), since the opp is a rcu protected pointer.
 > 
-> Balbir Singh.
+> For example, on an ARM big.Little platform of spreadtrum, there are
+> little cluster, big cluster and gpu using pm_opp. And the opp_table
+> of big cluster will be removed when big cluster is removed, which
+> is implemented in the cpufreq driver. Sometimes an issue maybe occur:
 > 
+> [  237.647758] c0 Unable to handle kernel paging request at virtual address dead000000000110
+> [  237.647776] c0 pgd = ffffffc073e78000
+> [  237.647786] c0 [dead000000000110] *pgd=0000000000000000, *pud=0000000000000000
+> [  237.647808] c0 Internal error: Oops: 96000004 [#1] PREEMPT SMP
+> [  237.653535] c0 Modules linked in: sprdwl_ng(O) mtty marlin2_fm mali_kbase(O)
+> [  237.653569] c0 CPU: 0 PID: 38 Comm: kworker/u12:1 Tainted: G S      W  O    4.4.83+ #1
+> [  237.653578] c0 Hardware name: Spreadtrum SP9850KHsmt 1h10 Board (DT)
+> [  237.653594] c0 Workqueue: devfreq_wq devfreq_monitor
+> [  237.653605] c0 task: ffffffc0babd0d80 task.stack: ffffffc0badbc000
+> [  237.653619] c0 PC is at _find_device_opp+0x58/0xac
+> [  237.653629] c0 LR is at dev_pm_opp_find_freq_ceil+0x2c/0xb8
+> 
+> [  237.921294] c0 Call trace:
+> [  237.921425] c0 [<ffffff80085362b0>] _find_device_opp+0x58/0xac
+> [  237.921437] c0 [<ffffff8008536560>] dev_pm_opp_find_freq_ceil+0x2c/0xb8
+> [  237.921452] c0 [<ffffff80088760f4>] devfreq_recommended_opp+0x54/0x7c
+> [  237.921494] c0 [<ffffff8000b6a96c>] kbase_wait_write_flush+0x164/0x358 [mali_kbase]
+> [  237.921504] c0 [<ffffff800887485c>] update_devfreq+0x8c/0xf8
+> [  237.921514] c0 [<ffffff80088749e4>] devfreq_monitor+0x34/0x94
+> [  237.921529] c0 [<ffffff80080bd75c>] process_one_work+0x154/0x458
+> [  237.921539] c0 [<ffffff80080be428>] worker_thread+0x134/0x4a4
+> [  237.921551] c0 [<ffffff80080c4bec>] kthread+0xdc/0xf0
+> [  237.921564] c0 [<ffffff8008085f20>] ret_from_fork+0x10/0x30
+> 
+> Cc: stable <stable@vger.kernel.org>     # 4.4
+> Signed-off-by: Vincent Wang <vincent.wang@spreadtrum.com>
+> Signed-off-by: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
+> ---
+> 
+> This patch is only for 4.4 stable branch.
+> Once this patch accepted, I can cook a similar patch for 4.9 stable branch.
+> 
+> ---
+>  drivers/base/power/opp/core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+> index db6e7e5..e0eac53 100644
+> --- a/drivers/base/power/opp/core.c
+> +++ b/drivers/base/power/opp/core.c
+> @@ -463,7 +463,7 @@ static void _kfree_list_dev_rcu(struct rcu_head *head)
+>  static void _remove_list_dev(struct device_list_opp *list_dev,
+>  			     struct device_opp *dev_opp)
+>  {
+> -	list_del(&list_dev->node);
+> +	list_del_rcu(&list_dev->node);
+>  	call_srcu(&dev_opp->srcu_head.srcu, &list_dev->rcu_head,
+>  		  _kfree_list_dev_rcu);
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
