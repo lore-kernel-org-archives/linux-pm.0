@@ -1,76 +1,64 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH v4 12/12] ARM64: dts: marvell: Add thermal support for
- A7K/A8K
-Date: Mon, 18 Dec 2017 17:13:57 +0100
-Message-ID: <878te0hv3u.fsf@free-electrons.com>
-References: <20171218143643.7714-1-miquel.raynal@free-electrons.com>
- <20171218143643.7714-13-miquel.raynal@free-electrons.com>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [PATCH] cpufreq: governor: Ensure sufficiently large sampling intervals
+Date: Mon, 18 Dec 2017 08:11:06 -0800
+Message-ID: <000601d3781a$d1354b50$739fe1f0$@net>
+References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com> <002001d37577$9706a730$c513f590$@net> <002501d375d2$54f942c0$feebc840$@net> Qk2VesPv1C2CsQk2aezkGC
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org>
-In-Reply-To: <20171218143643.7714-13-miquel.raynal@free-electrons.com> (Miquel
- Raynal's message of "Mon, 18 Dec 2017 15:36:43 +0100")
-List-Unsubscribe: <http://lists.infradead.org/mailman/options/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=unsubscribe>
-List-Archive: <http://lists.infradead.org/pipermail/linux-arm-kernel/>
-List-Post: <mailto:linux-arm-kernel@lists.infradead.org>
-List-Help: <mailto:linux-arm-kernel-request@lists.infradead.org?subject=help>
-List-Subscribe: <http://lists.infradead.org/mailman/listinfo/linux-arm-kernel>,
- <mailto:linux-arm-kernel-request@lists.infradead.org?subject=subscribe>
-Sender: "linux-arm-kernel" <linux-arm-kernel-bounces@lists.infradead.org>
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.infradead.org
-To: Miquel Raynal <miquel.raynal@free-electrons.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Andrew Lunn <andrew@lunn.ch>, Baruch Siach <baruch@tkos.co.il>, Jason Cooper <jason@lakedaemon.net>, Nadav Haklai <nadavh@marvell.com>, linux-pm@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Will Deacon <will.deacon@arm.com>, David Sniatkiwicz <davidsn@marvell.com>, Eduardo Valentin <edubezval@gmail.com>, devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-arm-kernel@lists.infradead.org, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta20.telus.net ([209.171.16.93]:39600 "EHLO cmta20.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S935667AbdLRQLM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 18 Dec 2017 11:11:12 -0500
+In-Reply-To: Qk2VesPv1C2CsQk2aezkGC
+Content-Language: en-ca
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>, 'Andy Tang' <andy.tang@nxp.com>, 'Linux PM' <linux-pm@vger.kernel.org>
 
-SGkgTWlxdWVsLAogCiBPbiBsdW4uLCBkw6ljLiAxOCAyMDE3LCBNaXF1ZWwgUmF5bmFsIDxtaXF1
-ZWwucmF5bmFsQGZyZWUtZWxlY3Ryb25zLmNvbT4gd3JvdGU6Cgo+IEFkZCB0aGVybWFsIERUIG5v
-ZGVzIGluIEFQODA2IGFuZCBDUDExMCBtYXN0ZXIvc2xhdmUgRFRTSSBmaWxlcy4KPgo+IFN1Z2dl
-c3RlZC1ieTogRGF2aWQgU25pYXRraXdpY3ogPGRhdmlkc25AbWFydmVsbC5jb20+Cj4gU2lnbmVk
-LW9mZi1ieTogTWlxdWVsIFJheW5hbCA8bWlxdWVsLnJheW5hbEBmcmVlLWVsZWN0cm9ucy5jb20+
-CgpBcHBsaWVkIG9uIG12ZWJ1L2R0NjQgKGJ1dCBub3QgeWV0IGluIGxpbnV4LW5leHQpCgpUaGFu
-a3MsCgpHcmVnb3J5Cgo+IC0tLQo+ICBhcmNoL2FybTY0L2Jvb3QvZHRzL21hcnZlbGwvYXJtYWRh
-LWFwODA2LmR0c2kgICAgICAgIHwgNiArKysrKysKPiAgYXJjaC9hcm02NC9ib290L2R0cy9tYXJ2
-ZWxsL2FybWFkYS1jcDExMC1tYXN0ZXIuZHRzaSB8IDYgKysrKysrCj4gIGFyY2gvYXJtNjQvYm9v
-dC9kdHMvbWFydmVsbC9hcm1hZGEtY3AxMTAtc2xhdmUuZHRzaSAgfCA2ICsrKysrKwo+ICAzIGZp
-bGVzIGNoYW5nZWQsIDE4IGluc2VydGlvbnMoKykKPgo+IGRpZmYgLS1naXQgYS9hcmNoL2FybTY0
-L2Jvb3QvZHRzL21hcnZlbGwvYXJtYWRhLWFwODA2LmR0c2kgYi9hcmNoL2FybTY0L2Jvb3QvZHRz
-L21hcnZlbGwvYXJtYWRhLWFwODA2LmR0c2kKPiBpbmRleCAxYzRkZDhhYjlhZDUuLmJiYzVhNGQz
-YWNhYyAxMDA2NDQKPiAtLS0gYS9hcmNoL2FybTY0L2Jvb3QvZHRzL21hcnZlbGwvYXJtYWRhLWFw
-ODA2LmR0c2kKPiArKysgYi9hcmNoL2FybTY0L2Jvb3QvZHRzL21hcnZlbGwvYXJtYWRhLWFwODA2
-LmR0c2kKPiBAQCAtMjg1LDYgKzI4NSwxMiBAQAo+ICAJCQkJCWdwaW8tcmFuZ2VzID0gPCZhcF9w
-aW5jdHJsIDAgMCAyMD47Cj4gIAkJCQl9Owo+ICAJCQl9Owo+ICsKPiArCQkJYXBfdGhlcm1hbDog
-dGhlcm1hbEA2ZjgwOEMgewo+ICsJCQkJY29tcGF0aWJsZSA9ICJtYXJ2ZWxsLGFybWFkYS1hcDgw
-Ni10aGVybWFsIjsKPiArCQkJCXJlZyA9IDwweDZmODA4QyAweDQ+LAo+ICsJCQkJICAgICAgPDB4
-NmY4MDg0IDB4OD47Cj4gKwkJCX07Cj4gIAkJfTsKPiAgCX07Cj4gIH07Cj4gZGlmZiAtLWdpdCBh
-L2FyY2gvYXJtNjQvYm9vdC9kdHMvbWFydmVsbC9hcm1hZGEtY3AxMTAtbWFzdGVyLmR0c2kgYi9h
-cmNoL2FybTY0L2Jvb3QvZHRzL21hcnZlbGwvYXJtYWRhLWNwMTEwLW1hc3Rlci5kdHNpCj4gaW5k
-ZXggZTNiNjRkMDNmYmQ4Li5lY2JjNzZkMjZkZmYgMTAwNjQ0Cj4gLS0tIGEvYXJjaC9hcm02NC9i
-b290L2R0cy9tYXJ2ZWxsL2FybWFkYS1jcDExMC1tYXN0ZXIuZHRzaQo+ICsrKyBiL2FyY2gvYXJt
-NjQvYm9vdC9kdHMvbWFydmVsbC9hcm1hZGEtY3AxMTAtbWFzdGVyLmR0c2kKPiBAQCAtMTgyLDYg
-KzE4MiwxMiBAQAo+ICAJCQkJaW50ZXJydXB0cyA9IDxJQ1VfR1JQX05TUiA3NyBJUlFfVFlQRV9M
-RVZFTF9ISUdIPjsKPiAgCQkJfTsKPiAgCj4gKwkJCWNwbV90aGVybWFsOiB0aGVybWFsQDQwMDA3
-OCB7Cj4gKwkJCQljb21wYXRpYmxlID0gIm1hcnZlbGwsYXJtYWRhLWNwMTEwLXRoZXJtYWwiOwo+
-ICsJCQkJcmVnID0gPDB4NDAwMDc4IDB4ND4sCj4gKwkJCQkgICAgICA8MHg0MDAwNzAgMHg4PjsK
-PiArCQkJfTsKPiArCj4gIAkJCWNwbV9zeXNjb24wOiBzeXN0ZW0tY29udHJvbGxlckA0NDAwMDAg
-ewo+ICAJCQkJY29tcGF0aWJsZSA9ICJzeXNjb24iLCAic2ltcGxlLW1mZCI7Cj4gIAkJCQlyZWcg
-PSA8MHg0NDAwMDAgMHgyMDAwPjsKPiBkaWZmIC0tZ2l0IGEvYXJjaC9hcm02NC9ib290L2R0cy9t
-YXJ2ZWxsL2FybWFkYS1jcDExMC1zbGF2ZS5kdHNpIGIvYXJjaC9hcm02NC9ib290L2R0cy9tYXJ2
-ZWxsL2FybWFkYS1jcDExMC1zbGF2ZS5kdHNpCj4gaW5kZXggMGQ1MTA5NmM2OWY4Li4yOWJhMzJj
-Njg4NzAgMTAwNjQ0Cj4gLS0tIGEvYXJjaC9hcm02NC9ib290L2R0cy9tYXJ2ZWxsL2FybWFkYS1j
-cDExMC1zbGF2ZS5kdHNpCj4gKysrIGIvYXJjaC9hcm02NC9ib290L2R0cy9tYXJ2ZWxsL2FybWFk
-YS1jcDExMC1zbGF2ZS5kdHNpCj4gQEAgLTE4Miw2ICsxODIsMTIgQEAKPiAgCQkJCWludGVycnVw
-dHMgPSA8SUNVX0dSUF9OU1IgNzcgSVJRX1RZUEVfTEVWRUxfSElHSD47Cj4gIAkJCX07Cj4gIAo+
-ICsJCQljcHNfdGhlcm1hbDogdGhlcm1hbEA0MDAwNzggewo+ICsJCQkJY29tcGF0aWJsZSA9ICJt
-YXJ2ZWxsLGFybWFkYS1jcDExMC10aGVybWFsIjsKPiArCQkJCXJlZyA9IDwweDQwMDA3OCAweDQ+
-LAo+ICsJCQkJICAgICAgPDB4NDAwMDcwIDB4OD47Cj4gKwkJCX07Cj4gKwo+ICAJCQljcHNfc3lz
-Y29uMDogc3lzdGVtLWNvbnRyb2xsZXJANDQwMDAwIHsKPiAgCQkJCWNvbXBhdGlibGUgPSAic3lz
-Y29uIiwgInNpbXBsZS1tZmQiOwo+ICAJCQkJcmVnID0gPDB4NDQwMDAwIDB4MjAwMD47Cj4gLS0g
-Cj4gMi4xMS4wCj4KCi0tIApHcmVnb3J5IENsZW1lbnQsIEZyZWUgRWxlY3Ryb25zCktlcm5lbCwg
-ZHJpdmVycywgcmVhbC10aW1lIGFuZCBlbWJlZGRlZCBMaW51eApkZXZlbG9wbWVudCwgY29uc3Vs
-dGluZywgdHJhaW5pbmcgYW5kIHN1cHBvcnQuCmh0dHA6Ly9mcmVlLWVsZWN0cm9ucy5jb20KCl9f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmxpbnV4LWFybS1r
-ZXJuZWwgbWFpbGluZyBsaXN0CmxpbnV4LWFybS1rZXJuZWxAbGlzdHMuaW5mcmFkZWFkLm9yZwpo
-dHRwOi8vbGlzdHMuaW5mcmFkZWFkLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2xpbnV4LWFybS1rZXJu
-ZWwK
+On 2017.12.17 17:16 Rafael J. Wysocki wrote:
+
+> After commit aa7519af450d (cpufreq: Use transition_delay_us for legacy
+> governors as well) the sampling_rate field of struct dbs_data may be
+> less than the tick period which causes dbs_update() to produce
+> incorrect results, so make the code ensure that the value of that
+> field will always be sufficiently large.
+>
+> Fixes: aa7519af450d (cpufreq: Use transition_delay_us for legacy governors as well)
+> Reported-by: Andy Tang <andy.tang@nxp.com>
+> Reported-by: Doug Smythies <dsmythies@telus.net>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> ---
+> drivers/cpufreq/cpufreq_governor.c |   19 ++++++++++++++++---
+> 1 file changed, 16 insertions(+), 3 deletions(-)
+>
+> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
+> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
+> @@ -22,6 +22,8 @@
+> 
+> #include "cpufreq_governor.h"
+> 
+> +#define CPUFREQ_DBS_MIN_SAMPLING_INTERVAL	(2 * TICK_NSEC / NSEC_PER_USEC)
+> +
+
+Left over from the other thread on Friday I was testing both the above and
+the 1 TICK version:
+
++#define CPUFREQ_DBS_MIN_SAMPLING_INTERVAL	(TICK_NSEC / NSEC_PER_USEC)
+
+I tested periodic workflows at around 35% average load with work/sleep
+frequencies from 100 to 2100 hertz, for both 250 Hertz kernels
+(4 millisecond TICK) and 1000 Hertz kernels (1 millisecond TICK)
+
+The 1 TICK version does have a "nosier" response than the 2 TICK version,
+but both seem to work fine. Neither are worse than the schedutil response
+for the same test.
+
+I'd be O.K. with either the 1 TICK or 2 TICK versions.
+
+... Doug
