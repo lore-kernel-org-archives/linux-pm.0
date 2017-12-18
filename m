@@ -1,7 +1,7 @@
 From: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v4 03/12] thermal: armada: Simplify the check of the validity bit
-Date: Mon, 18 Dec 2017 15:36:34 +0100
-Message-ID: <20171218143643.7714-4-miquel.raynal@free-electrons.com>
+Subject: [PATCH v4 07/12] thermal: armada: Add support for Armada CP110
+Date: Mon, 18 Dec 2017 15:36:38 +0100
+Message-ID: <20171218143643.7714-8-miquel.raynal@free-electrons.com>
 References: <20171218143643.7714-1-miquel.raynal@free-electrons.com>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <20171218143643.7714-1-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -10,81 +10,92 @@ To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valen
 Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-All Armada SoCs use one bit to declare if the sensor values are valid.
-This bit moves across the versions of the IP.
+From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
 
-The method until then was to do both a shift and compare with an useless
-flag of "0x1". It is clearer and quicker to directly save the value that
-must be ANDed instead of the bit position and do a single bitwise AND
-operation.
+The CP110 component is integrated in the Armada 8k and 7k lines of
+processors.
 
+Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+[<miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>: renamed the register pointers as
+well as some definitions related to the new register names and
+simplified the init sequence for Armada 380]
 Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Reviewed-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- drivers/thermal/armada_thermal.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ drivers/thermal/armada_thermal.c | 33 ++++++++++++++++++++++++++-------
+ 1 file changed, 26 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 6c4af2622d4f..f350d7efd35a 100644
+index ec29ea76b818..11a94ad66c35 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -24,8 +24,6 @@
- #include <linux/of_device.h>
- #include <linux/thermal.h>
+@@ -37,7 +37,6 @@
+ #define A375_UNIT_CONTROL_MASK		0x7
+ #define A375_READOUT_INVERT		BIT(15)
+ #define A375_HW_RESETn			BIT(8)
+-#define A380_HW_RESET			BIT(8)
  
--#define THERMAL_VALID_MASK		0x1
--
- /* Thermal Manager Control and Status Register */
- #define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
- #define PMU_TM_DISABLE_OFFS		0
-@@ -67,7 +65,7 @@ struct armada_thermal_data {
- 	/* Register shift and mask to access the sensor temperature */
- 	unsigned int temp_shift;
- 	unsigned int temp_mask;
--	unsigned int is_valid_shift;
-+	u32 is_valid_bit;
- };
+ /* Legacy bindings */
+ #define LEGACY_CONTROL_MEM_LEN		0x4
+@@ -52,6 +51,10 @@
+ #define CONTROL0_TSEN_RESET		BIT(1)
+ #define CONTROL0_TSEN_ENABLE		BIT(2)
  
- static void armadaxp_init_sensor(struct platform_device *pdev,
-@@ -149,9 +147,9 @@ static void armada380_init_sensor(struct platform_device *pdev,
++/* EXT_TSEN refers to the external temperature sensors, out of the AP */
++#define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
++#define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)
++
+ struct armada_thermal_data;
  
- static bool armada_is_valid(struct armada_thermal_priv *priv)
+ /* Marvell EBU Thermal Sensor Dev Structure */
+@@ -153,12 +156,11 @@ static void armada380_init_sensor(struct platform_device *pdev,
  {
--	unsigned long reg = readl_relaxed(priv->sensor);
-+	u32 reg = readl_relaxed(priv->sensor);
+ 	u32 reg = readl_relaxed(priv->control1);
  
--	return (reg >> priv->data->is_valid_shift) & THERMAL_VALID_MASK;
-+	return reg & priv->data->is_valid_bit;
+-	/* Reset hardware once */
+-	if (!(reg & A380_HW_RESET)) {
+-		reg |= A380_HW_RESET;
+-		writel(reg, priv->control1);
+-		msleep(10);
+-	}
++	/* Disable the HW/SW reset */
++	reg |= CONTROL1_EXT_TSEN_HW_RESETn;
++	reg &= ~CONTROL1_EXT_TSEN_SW_RESET;
++	writel(reg, priv->control1);
++	msleep(10);
  }
  
- static int armada_get_temp(struct thermal_zone_device *thermal,
-@@ -199,7 +197,7 @@ static const struct armada_thermal_data armadaxp_data = {
- static const struct armada_thermal_data armada370_data = {
- 	.is_valid = armada_is_valid,
- 	.init_sensor = armada370_init_sensor,
--	.is_valid_shift = 9,
-+	.is_valid_bit = BIT(9),
- 	.temp_shift = 10,
- 	.temp_mask = 0x1ff,
- 	.coef_b = 3153000000UL,
-@@ -210,7 +208,7 @@ static const struct armada_thermal_data armada370_data = {
- static const struct armada_thermal_data armada375_data = {
- 	.is_valid = armada_is_valid,
- 	.init_sensor = armada375_init_sensor,
--	.is_valid_shift = 10,
+ static void armada_ap806_init_sensor(struct platform_device *pdev,
+@@ -278,6 +280,19 @@ static const struct armada_thermal_data armada_ap806_data = {
+ 	.needs_control0 = true,
+ };
+ 
++static const struct armada_thermal_data armada_cp110_data = {
++	.is_valid = armada_is_valid,
++	.init_sensor = armada380_init_sensor,
 +	.is_valid_bit = BIT(10),
- 	.temp_shift = 0,
- 	.temp_mask = 0x1ff,
- 	.coef_b = 3171900000UL,
-@@ -221,7 +219,7 @@ static const struct armada_thermal_data armada375_data = {
- static const struct armada_thermal_data armada380_data = {
- 	.is_valid = armada_is_valid,
- 	.init_sensor = armada380_init_sensor,
--	.is_valid_shift = 10,
-+	.is_valid_bit = BIT(10),
- 	.temp_shift = 0,
- 	.temp_mask = 0x3ff,
- 	.coef_b = 1172499100UL,
++	.temp_shift = 0,
++	.temp_mask = 0x3ff,
++	.coef_b = 1172499100ULL,
++	.coef_m = 2000096ULL,
++	.coef_div = 4201,
++	.inverted = true,
++	.needs_control0 = true,
++};
++
+ static const struct of_device_id armada_thermal_id_table[] = {
+ 	{
+ 		.compatible = "marvell,armadaxp-thermal",
+@@ -300,6 +315,10 @@ static const struct of_device_id armada_thermal_id_table[] = {
+ 		.data       = &armada_ap806_data,
+ 	},
+ 	{
++		.compatible = "marvell,armada-cp110-thermal",
++		.data       = &armada_cp110_data,
++	},
++	{
+ 		/* sentinel */
+ 	},
+ };
 -- 
 2.11.0
 
