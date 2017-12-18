@@ -1,69 +1,96 @@
-From: Dave Gerlach <d-gerlach@ti.com>
-Subject: Re: [PATCH v2 3/4] dt-bindings: opp: Introduce ti-opp-supply bindings
-Date: Mon, 18 Dec 2017 13:25:00 -0600
-Message-ID: <abe0efc0-6dfc-e9b0-c535-aa1a48bf1a6b@ti.com>
-References: <20171215042528.28715-1-d-gerlach@ti.com>
- <20171215042528.28715-4-d-gerlach@ti.com>
- <CAJZ5v0iaYAodhiQm3=7OMhtqP3JXoX_RTrYMRDxVwO=3hTL7Bg@mail.gmail.com>
- <CAJZ5v0iRg0Sncqt4s3M5+E0h=HJiEDQ4vnB3=6mFhECCv_Lnng@mail.gmail.com>
+From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+Subject: Re: [PATCH v4 01/12] dt-bindings: thermal: Describe Armada AP806 and
+ CP110
+Date: Mon, 18 Dec 2017 22:33:24 +0200
+Message-ID: <20171218203324.ftyqrgjawkujvhmn@tarshish>
+References: <20171218143643.7714-1-miquel.raynal@free-electrons.com>
+ <20171218143643.7714-2-miquel.raynal@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from lelnx194.ext.ti.com ([198.47.27.80]:36182 "EHLO
-        lelnx194.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934949AbdLRTZU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 14:25:20 -0500
-In-Reply-To: <CAJZ5v0iRg0Sncqt4s3M5+E0h=HJiEDQ4vnB3=6mFhECCv_Lnng@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20171218143643.7714-2-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Tony Lindgren <tony@atomide.com>, Nishanth Menon <nm@ti.com>
 
-Rafael,
-On 12/16/2017 04:52 AM, Rafael J. Wysocki wrote:
-> On Fri, Dec 15, 2017 at 3:29 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Fri, Dec 15, 2017 at 5:25 AM, Dave Gerlach <d-gerlach@ti.com> wrote:
->>> Document the devicetree bindings that describe Texas Instruments
->>> opp-supply which allow a platform to describe multiple regulators and
->>> additional information, such as registers containing data needed to
->>> program aforementioned regulators.
->>>
->>> Signed-off-by: Dave Gerlach <d-gerlach@ti.com>
->>
->> I need an ACK from Rob on this one.
+Hi Miquèl,
+
+On Mon, Dec 18, 2017 at 03:36:32PM +0100, Miquel Raynal wrote:
+> From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
 > 
-> Actually, how this (and the next patch) is related to the [1-2/4]?
+> Add compatible strings for AP806 and CP110 that are part of the Armada
+> 8k/7k line of SoCs.
 > 
+> Add a note on the differences in the size of the control area in
+> different bindings. This is an existing difference between the Armada
+> 375 binding and the other boards already supported. The new AP806 and
+> CP110 bindings are similar to the existing Armada 375 in this regard.
+> 
+> Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+> [<miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>: reword, additional details]
+> Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> ---
+>  .../devicetree/bindings/thermal/armada-thermal.txt | 24 +++++++++++++++++-----
+>  1 file changed, 19 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+> index 24aacf8948c5..9b7b2c03cc6f 100644
+> --- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+> +++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+> @@ -7,17 +7,31 @@ Required properties:
+>  		marvell,armada375-thermal
+>  		marvell,armada380-thermal
+>  		marvell,armadaxp-thermal
+> +		marvell,armada-ap806-thermal
+> +		marvell,armada-cp110-thermal
+>  
+>  - reg:		Device's register space.
+>  		Two entries are expected, see the examples below.
+> -		The first one is required for the sensor register;
+> -		the second one is required for the control register
+> -		to be used for sensor initialization (a.k.a. calibration).
+> +		The first one points to the status register (4B).
+> +		The second one points to the control registers (8B).
+> +		Note: with legacy bindings, the second entry pointed
+> +		only to the so called "control MSB" ("control 1"), was
+> +		4B wide and did not let the possibility to reach the
+> +		"control LSB" ("control 0") register. This is only
+> +		allowed for compatibility reasons in Armada
+> +		370/375/38x/XP DT nodes.
 
-The main goal of this series is to add support for scaling the multiple
-regulators needed for the CPU on these TI platforms. The OPP core supports
-multiple regulators but only to the point that it can associate a list of
-regulators to a device. It still by default only scales the normal vdd regulator
-when doing a rate transition. Because of this, we must define our own method of
-doing rate transitions to take the references to our regulators held in the OPP
-core and scale them in the proper sequence depending on what the platform needs.
+"allowed" is not the right term, IMO. Legacy compatibles MUST point to the MSB 
+control register to preserve compatibility with existing DTs.
 
-So to describe the purpose of each patch and their relation to each other:
+The original patch had a list of legacy and non-legacy compatibles. I think we 
+need to keep them.
 
-Patch 1: We must be able to defer the ti-cpufreq driver now that we look for
-regulators during probe as they likely won't be ready when we probe.
+baruch
 
-Patch 2: Tell the OPP core about regulators needed for TI CPUFreq operation
-using the OPP core. This doesn't actually do anything besides place them in a
-list at this point because the OPP core can't know how TI platforms needs them
-scaled in relation to each other. Placing the regulator definition in ti-cpufreq
-driver ensures they are registered with opp core before cpufreq-dt probes (which
-is triggered at the end of ti-cpufreq probe) and actually makes the opp core get
-the regulators.
+> -Example:
+> +Examples:
+>  
+> +	/* Legacy bindings */
+>  	thermal@d0018300 {
+>  		compatible = "marvell,armada370-thermal";
+> -                reg = <0xd0018300 0x4
+> +		reg = <0xd0018300 0x4
+>  		       0xd0018304 0x4>;
+>  	};
+> +
+> +	ap_thermal: thermal@6f8084 {
+> +		compatible = "marvell,armada-ap806-thermal";
+> +		reg = <0x6f808C 0x4>,
+> +		      <0x6f8084 0x8>;
+> +	};
 
-Patch 3: Binding doc for patch 4 driver.
-
-Patch 4: TI OPP supply driver which understands how to actually make use of the
-two regulators that the OPP core now has a reference to. This overrides the
-standard opp_set_rate function to let us scale frequency and voltage as needed
-for TI platforms.
-
-Regards,
-Dave
+-- 
+     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
+=}------------------------------------------------ooO--U--Ooo------------{=
+   - baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org - tel: +972.52.368.4656, http://www.tkos.co.il -
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
