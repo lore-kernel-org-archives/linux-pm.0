@@ -1,20 +1,20 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Subject: Re: [PATCH] PM / OPP: list_del_rcu should be used in function
  _remove_list_dev
-Date: Mon, 18 Dec 2017 10:07:38 +0100
-Message-ID: <20171218090738.GA10436@kroah.com>
-References: <20171218083142.26583-1-chunyan.zhang@spreadtrum.com>
+Date: Mon, 18 Dec 2017 10:07:47 +0100
+Message-ID: <20171218090747.GB10436@kroah.com>
+References: <20171218083223.26647-1-chunyan.zhang@spreadtrum.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171218083142.26583-1-chunyan.zhang@spreadtrum.com>
+In-Reply-To: <20171218083223.26647-1-chunyan.zhang@spreadtrum.com>
 Sender: linux-kernel-owner@vger.kernel.org
 To: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Orson Zhai <orson.zhai@spreadtrum.com>, Chunyan Zhang <zhang.lyra@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Vincent Wang <vincent.wang@spreadtrum.com>, Orson Zhai <orson.zhai@spreadtrum.com>, Chunyan Zhang <zhang.lyra@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 18, 2017 at 04:31:42PM +0800, Chunyan Zhang wrote:
+On Mon, Dec 18, 2017 at 04:32:23PM +0800, Chunyan Zhang wrote:
 > From: Vincent Wang <vincent.wang@spreadtrum.com>
 > 
 > list_del_rcu() should be used to replace list_del() in the function
