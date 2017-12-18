@@ -1,37 +1,39 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Subject: Re: tps65090-charger: Delete an error message for a failed memory
- allocation in two functions
-Date: Mon, 18 Dec 2017 18:32:31 +0100
-Message-ID: <3e6fa357-091c-32bd-7680-bb75084469f5@users.sourceforge.net>
-References: <aa138aa9-d8c9-c6e3-7071-9fc642e7b248@users.sourceforge.net>
- <1513450432.4647.47.camel@perches.com>
- <4beb0d2e-adf6-5eeb-43c7-7829d54c6656@users.sourceforge.net>
- <alpine.DEB.2.20.1712162135140.17082@hadrien>
- <cf645236-d4da-a52c-216a-248d76a61025@users.sourceforge.net>
- <20171218172404.3nqyza4ml5oofykn@earth>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization
+ update flags
+Date: Mon, 18 Dec 2017 18:34:19 +0100
+Message-ID: <CAJZ5v0jfd6JsnSsk2SPv3AT=gjMyWFby3q32YcJrMuCK1ZoK8w@mail.gmail.com>
+References: <cover.1513158452.git.viresh.kumar@linaro.org> <CAJZ5v0jLQ7v5u+OUpK0gSAHvR90K=agvUSuFNzJXMnk+YkKyzQ@mail.gmail.com>
+ <CAKohpomHfV=2CQj0_D=PsoMvbCu5v_ensJqaZmxUURzr27+yhA@mail.gmail.com>
+ <20456740.6R3DDKEUDv@aspire.rjw.lan> <20171218045945.GG19815@vireshk-i7>
+ <CAJZ5v0h+bvbe6DbMn+9DXbbctKG4POTsvEf_eL8R0nLajKXBTA@mail.gmail.com> <20171218115943.GL19815@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 7bit
-Return-path: <kernel-janitors-owner@vger.kernel.org>
-In-Reply-To: <20171218172404.3nqyza4ml5oofykn@earth>
-Content-Language: en-GB
-Sender: kernel-janitors-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org
-Cc: Julia Lawall <julia.lawall@lip6.fr>, Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-ot0-f193.google.com ([74.125.82.193]:43235 "EHLO
+        mail-ot0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S934957AbdLRReU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 12:34:20 -0500
+In-Reply-To: <20171218115943.GL19815@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
->> But it seems that we are stuck with specific software aspects.
->> How would you like to see remaining open issues to be resolved
->> there anyhow?
-> 
-> FYI: I will drop this and (without any further notice) all future
-> patches from you, that do no follow the documented process in
-> Documentation/process/.
+On Mon, Dec 18, 2017 at 12:59 PM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 18-12-17, 12:35, Rafael J. Wysocki wrote:
+>> Well, if SCHED_CPUFRREQ_CLEAR means "this CPU is going to enter the
+>> idle loop" really, then it is better to call it
+>> SCHED_CPUFRREQ_ENTER_IDLE, for example.
+>>
+>> SCHED_CPUFRREQ_CLEAR meaning basically "you should clear these flags
+>> now" doesn't seem to convey any information to whoever doesn't
+>> squirrel the flags in the first place.
+>
+> Right, but when all the flags are cleared, then we can infer that we
+> are going to idle in the most probable case.
+>
+> Anyway, I will implement RT and DL clear flags as you suggested in the
+> next version.
 
-Which details do you find that do not fit to this development specification
-so far?
-
-Are there any update suggestions left over which you could eventually accept?
-
-Regards,
-Markus
+Cool, thanks!
