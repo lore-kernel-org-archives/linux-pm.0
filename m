@@ -1,7 +1,7 @@
 From: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v4 08/12] thermal: armada: Update Kconfig and module description
-Date: Mon, 18 Dec 2017 15:36:39 +0100
-Message-ID: <20171218143643.7714-9-miquel.raynal@free-electrons.com>
+Subject: [PATCH v4 11/12] thermal: armada: Give meaningful names to the thermal zones
+Date: Mon, 18 Dec 2017 15:36:42 +0100
+Message-ID: <20171218143643.7714-12-miquel.raynal@free-electrons.com>
 References: <20171218143643.7714-1-miquel.raynal@free-electrons.com>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <20171218143643.7714-1-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -10,58 +10,39 @@ To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valen
 Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Update Armada thermal driver Kconfig entry as well as the driver's
-MODULE_DESCRIPTION content, now that 64-bit SoCs are also supported,
-eg. Armada 7K and Armada 8K.
+After registration to the thermal core, sysfs will make one entry
+per instance of the driver in /sys/class/thermal_zoneX and
+/sys/class/hwmon/hwmonX, X being the index of the instance, all of them
+having the type/name "armada_thermal".
 
-Use the generic term "Marvell EBU Armada SoCs" instead of listing all
-the supported SoCs everywhere (excepted in the Kconfig description,
-where it is useful to have a list).
+Until now there was only one thermal zone per SoC but SoCs like Armada
+A7K and Armada A8K have respectively two and three thermal zones (one
+per AP and one per CP) and this number is subject to grow in the future.
+
+Use dev_name() instead of the "armada_thermal" string to get a
+meaningful name and be able to identify the thermal zones from
+userspace.
 
 Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- drivers/thermal/Kconfig          | 4 ++--
  drivers/thermal/armada_thermal.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 315ae2926e20..b6adc54b96f1 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -301,13 +301,13 @@ config DB8500_THERMAL
- 	  thermal zone if trip points reached.
- 
- config ARMADA_THERMAL
--	tristate "Armada 370/XP thermal management"
-+	tristate "Marvell EBU Armada SoCs thermal management"
- 	depends on ARCH_MVEBU || COMPILE_TEST
- 	depends on HAS_IOMEM
- 	depends on OF
- 	help
- 	  Enable this option if you want to have support for thermal management
--	  controller present in Armada 370 and Armada XP SoC.
-+	  controller present in Marvell EBU Armada SoCs (370,375,XP,38x,7K,8K).
- 
- config DA9062_THERMAL
- 	tristate "DA9062/DA9061 Dialog Semiconductor thermal driver"
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 11a94ad66c35..cef5c65c8f32 100644
+index 4a5164ddffe7..42ef80b3b5f8 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -1,5 +1,5 @@
- /*
-- * Marvell Armada 370/XP thermal sensor driver
-+ * Marvell EBU Armada SoCs thermal sensor driver
-  *
-  * Copyright (C) 2013 Marvell
-  *
-@@ -408,5 +408,5 @@ static struct platform_driver armada_thermal_driver = {
- module_platform_driver(armada_thermal_driver);
+@@ -403,8 +403,8 @@ static int armada_thermal_probe(struct platform_device *pdev)
  
- MODULE_AUTHOR("Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>");
--MODULE_DESCRIPTION("Armada 370/XP thermal driver");
-+MODULE_DESCRIPTION("Marvell EBU Armada SoCs thermal driver");
- MODULE_LICENSE("GPL v2");
+ 	priv->data->init_sensor(pdev, priv);
+ 
+-	thermal = thermal_zone_device_register("armada_thermal", 0, 0,
+-					       priv, &ops, NULL, 0, 0);
++	thermal = thermal_zone_device_register(dev_name(&pdev->dev), 0, 0, priv,
++					       &ops, NULL, 0, 0);
+ 	if (IS_ERR(thermal)) {
+ 		dev_err(&pdev->dev,
+ 			"Failed to register thermal zone device\n");
 -- 
 2.11.0
 
