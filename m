@@ -1,59 +1,77 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [v3 PATCH 2/3] powernv-cpufreq: Fix pstate_to_idx() to handle
- non-continguous pstates
-Date: Mon, 18 Dec 2017 14:08:20 +0530
-Message-ID: <20171218083820.GA28881@in.ibm.com>
-References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
- <1513148261-21097-3-git-send-email-ego@linux.vnet.ibm.com>
- <CAKTCnz=jrvbizrzUx1tDxMg__4coJHoxSXOS+K+zXQVAM=WF-g@mail.gmail.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
+Subject: [PATCH] PM / OPP: list_del_rcu should be used in function _remove_list_dev
+Date: Mon, 18 Dec 2017 16:31:42 +0800
+Message-ID: <20171218083142.26583-1-chunyan.zhang@spreadtrum.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAKTCnz=jrvbizrzUx1tDxMg__4coJHoxSXOS+K+zXQVAM=WF-g@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, huntbag@linux.vnet.ibm.com, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from sci-ig2.spreadtrum.com ([222.66.158.135]:23282 "EHLO
+        SHSQR01.spreadtrum.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+        with ESMTP id S1751457AbdLRIlC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 03:41:02 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Orson Zhai <orson.zhai@spreadtrum.com>, Chunyan Zhang <zhang.lyra@gmail.com>
 
-Hi Balbir,
+From: Vincent Wang <vincent.wang@spreadtrum.com>
 
-On Sun, Dec 17, 2017 at 02:15:25PM +1100, Balbir Singh wrote:
-> On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
-> <ego@linux.vnet.ibm.com> wrote:
-> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> >
-> > The code in powernv-cpufreq, makes the following two assumptions which
-> > are not guaranteed by the device-tree bindings:
-> >
-> >     1) Pstate ids are continguous: This is used in pstate_to_idx() to
-> >        obtain the reverse map from a pstate to it's corresponding
-> >        entry into the cpufreq frequency table.
-> >
-> >     2) Every Pstate should always lie between the max and the min
-> >        pstates that are explicitly reported in the device tree: This
-> >        is used to determine whether a pstate reported by the PMSR is
-> >        out of bounds.
-> >
-> > Both these assumptions are unwarranted and can change on future
-> > platforms.
-> 
-> While this is a good thing, I wonder if it is worth the complexity. Pstates
-> are contiguous because they define transitions in incremental value
-> of change in frequency and I can't see how this can be broken in the
-> future?
+list_del_rcu() should be used to replace list_del() in the function
+_remove_list_dev(), since the opp is a rcu protected pointer.
 
-In the future, we can have the OPAL firmware give us a smaller set of
-pstates instead of expose every one of them. As it stands today, for
-most of the workloads, we will need at best 20-30 pstates and not
-beyond that.
+For example, on an ARM big.Little platform of spreadtrum, there are
+little cluster, big cluster and gpu using pm_opp. And the opp_table
+of big cluster will be removed when big cluster is removed, which
+is implemented in the cpufreq driver. Sometimes an issue maybe occur:
 
+[  237.647758] c0 Unable to handle kernel paging request at virtual address dead000000000110
+[  237.647776] c0 pgd = ffffffc073e78000
+[  237.647786] c0 [dead000000000110] *pgd=0000000000000000, *pud=0000000000000000
+[  237.647808] c0 Internal error: Oops: 96000004 [#1] PREEMPT SMP
+[  237.653535] c0 Modules linked in: sprdwl_ng(O) mtty marlin2_fm mali_kbase(O)
+[  237.653569] c0 CPU: 0 PID: 38 Comm: kworker/u12:1 Tainted: G S      W  O    4.4.83+ #1
+[  237.653578] c0 Hardware name: Spreadtrum SP9850KHsmt 1h10 Board (DT)
+[  237.653594] c0 Workqueue: devfreq_wq devfreq_monitor
+[  237.653605] c0 task: ffffffc0babd0d80 task.stack: ffffffc0badbc000
+[  237.653619] c0 PC is at _find_device_opp+0x58/0xac
+[  237.653629] c0 LR is at dev_pm_opp_find_freq_ceil+0x2c/0xb8
 
-> 
-> Balbir Singh.
-> 
+[  237.921294] c0 Call trace:
+[  237.921425] c0 [<ffffff80085362b0>] _find_device_opp+0x58/0xac
+[  237.921437] c0 [<ffffff8008536560>] dev_pm_opp_find_freq_ceil+0x2c/0xb8
+[  237.921452] c0 [<ffffff80088760f4>] devfreq_recommended_opp+0x54/0x7c
+[  237.921494] c0 [<ffffff8000b6a96c>] kbase_wait_write_flush+0x164/0x358 [mali_kbase]
+[  237.921504] c0 [<ffffff800887485c>] update_devfreq+0x8c/0xf8
+[  237.921514] c0 [<ffffff80088749e4>] devfreq_monitor+0x34/0x94
+[  237.921529] c0 [<ffffff80080bd75c>] process_one_work+0x154/0x458
+[  237.921539] c0 [<ffffff80080be428>] worker_thread+0x134/0x4a4
+[  237.921551] c0 [<ffffff80080c4bec>] kthread+0xdc/0xf0
+[  237.921564] c0 [<ffffff8008085f20>] ret_from_fork+0x10/0x30
 
---
-Thanks and Regards
-gautham.
+Cc: stable <stable@vger.kernel.org>     # 4.4
+Signed-off-by: Vincent Wang <vincent.wang@spreadtrum.com>
+Signed-off-by: Chunyan Zhang <chunyan.zhang@spreadtrum.com>
+---
+
+This patch is only for 4.4 stable branch.
+Once this patch accepted, I can cook a similar patch for 4.9 stable branch.
+
+---
+ drivers/base/power/opp/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/opp/core.c b/drivers/base/power/opp/core.c
+index db6e7e5..e0eac53 100644
+--- a/drivers/base/power/opp/core.c
++++ b/drivers/base/power/opp/core.c
+@@ -463,7 +463,7 @@ static void _kfree_list_dev_rcu(struct rcu_head *head)
+ static void _remove_list_dev(struct device_list_opp *list_dev,
+ 			     struct device_opp *dev_opp)
+ {
+-	list_del(&list_dev->node);
++	list_del_rcu(&list_dev->node);
+ 	call_srcu(&dev_opp->srcu_head.srcu, &list_dev->rcu_head,
+ 		  _kfree_list_dev_rcu);
+ }
+-- 
+1.9.1
