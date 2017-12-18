@@ -1,39 +1,109 @@
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Subject: Re: [PATCH 3/9] power: remove unneeded kallsyms include
-Date: Mon, 18 Dec 2017 23:37:51 +0900
-Message-ID: <20171218143751.GA5053@tigerII.localdomain>
-References: <20171208025616.16267-1-sergey.senozhatsky@gmail.com>
- <CAJZ5v0g1CBhKTYi=CzYPcBXdH=yZ3iJcKzZ6TaftNWoq+X5wnQ@mail.gmail.com>
- <20171208144844.GA489@tigerII.localdomain>
- <4033333.ijW7uRe5gx@aspire.rjw.lan>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH v5 7/9] arm64: Topology, rename cluster_id
+Date: Mon, 18 Dec 2017 15:47:03 +0000
+Message-ID: <20171218154703.GA8157@red-moon>
+References: <20171201222330.18863-1-jeremy.linton@arm.com>
+ <20171201222330.18863-8-jeremy.linton@arm.com>
+ <20171213180217.GB4060@red-moon>
+ <7bb4e955-f3e5-d22f-4e78-eac97e66a9a6@arm.com>
+ <20171218124229.GG507@e105550-lin.cambridge.arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <owner-linux-mm@kvack.org>
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <4033333.ijW7uRe5gx@aspire.rjw.lan>
-Sender: owner-linux-mm@kvack.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, Len Brown <len.brown@intel.com>, Bjorn Helgaas <bhelgaas@google.com>, Vlastimil Babka <vbabka@suse.cz>, Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Fengguang Wu <fengguang.wu@intel.com>, Steven Rostedt <rostedt@goodmis.org>, Petr Mladek <pmladek@suse.com>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Memory Management List <linux-mm@kvack.org>
+In-Reply-To: <20171218124229.GG507@e105550-lin.cambridge.arm.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Morten Rasmussen <morten.rasmussen@foss.arm.com>
+Cc: Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
 
-On (12/17/17 19:04), Rafael J. Wysocki wrote:
-[..]
-> > > Do you want me to apply this or do you want to route it differently?
+On Mon, Dec 18, 2017 at 12:42:29PM +0000, Morten Rasmussen wrote:
+> On Fri, Dec 15, 2017 at 10:36:35AM -0600, Jeremy Linton wrote:
+> > Hi,
 > > 
-> > Hello Rafael,
+> > On 12/13/2017 12:02 PM, Lorenzo Pieralisi wrote:
+> > >[+Morten, Dietmar]
+> > >
+> > >$SUBJECT should be:
+> > >
+> > >arm64: topology: rename cluster_id
 > > 
-> > don't mind if you'll pick it up.
+> > Sure..
+> > 
+> > >
+> > >On Fri, Dec 01, 2017 at 04:23:28PM -0600, Jeremy Linton wrote:
+> > >>Lets match the name of the arm64 topology field
+> > >>to the kernel macro that uses it.
+> > >>
+> > >>Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+> > >>---
+> > >>  arch/arm64/include/asm/topology.h |  4 ++--
+> > >>  arch/arm64/kernel/topology.c      | 27 ++++++++++++++-------------
+> > >>  2 files changed, 16 insertions(+), 15 deletions(-)
+> > >>
+> > >>diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+> > >>index c4f2d50491eb..118136268f66 100644
+> > >>--- a/arch/arm64/include/asm/topology.h
+> > >>+++ b/arch/arm64/include/asm/topology.h
+> > >>@@ -7,14 +7,14 @@
+> > >>  struct cpu_topology {
+> > >>  	int thread_id;
+> > >>  	int core_id;
+> > >>-	int cluster_id;
+> > >>+	int physical_id;
+> > >
+> > >package_id ?
+> > 
+> > Given the macro is topology_physical_package_id, either makes sense to me.
+> > <shrug> I will change it in the next set.
 > 
-> OK, applied now.
+> I would vote for package_id too. arch/arm has 'socket_id' though.
 > 
-> Thanks!
+> > >
+> > >It has been debated before, I know. Should we keep the cluster_id too
+> > >(even if it would be 1:1 mapped to package_id - for now) ?
+> > 
+> > Well given that this patch replaces the patch that did that at your
+> > request..
+> > 
+> > I was hoping someone else would comment here, but my take at this point is
+> > that it doesn't really matter in a functional sense at the moment.
+> > Like the chiplet discussion it can be the subject of a future patch along
+> > with the patches which tweak the scheduler to understand the split.
+> > 
+> > BTW, given that i'm OoO next week, and the following that are the holidays,
+> > I don't intend to repost this for a couple weeks. I don't think there are
+> > any issues with this set.
+> > 
+> > >
+> > >There is also arch/arm to take into account, again, this patch is
+> > >just renaming (as it should have named since the beginning) a
+> > >topology level but we should consider everything from a legacy
+> > >perspective.
+> 
+> arch/arm has gone for thread/core/socket for the three topology levels
+> it supports.
+> 
+> I'm not sure what short term value keeping cluster_id has? Isn't it just
+> about where we make the package = cluster assignment? Currently it is in
+> the definition of topology_physical_package_id. If we keep cluster_id
+> and add package_id, it gets moved into the MPIDR/DT parsing code. 
+> 
+> Keeping cluster_id and introducing a topology_cluster_id function could
+> help cleaning up some of the users of topology_physical_package_id that
+> currently assumes package_id == cluster_id though.
 
-thanks!
+I think we should settle for a name (eg package_id), remove cluster_id
+and convert arch/arm socket_id to the same naming used on arm64 (for
+consistency - it is just a variable rename).
 
-	-ss
+This leaves us with the naming "cluster" only in DT topology bindings,
+which should be fine, given that "cluster" in that context is just a
+"processor-container" - yes we could have chosen a better naming in
+the first place but that's what it is.
 
---
-To unsubscribe, send a message with 'unsubscribe linux-mm' in
-the body to majordomo@kvack.org.  For more info on Linux MM,
-see: http://www.linux-mm.org/ .
-Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+We should nuke the existing users of topology_physical_package_id()
+to identify clusters, I would not add another function for that purpose,
+let's nip it in the bud.
+
+Lorenzo
