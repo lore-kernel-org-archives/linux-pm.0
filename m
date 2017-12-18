@@ -1,109 +1,106 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
-Subject: Re: [PATCH v5 7/9] arm64: Topology, rename cluster_id
-Date: Mon, 18 Dec 2017 15:47:03 +0000
-Message-ID: <20171218154703.GA8157@red-moon>
-References: <20171201222330.18863-1-jeremy.linton@arm.com>
- <20171201222330.18863-8-jeremy.linton@arm.com>
- <20171213180217.GB4060@red-moon>
- <7bb4e955-f3e5-d22f-4e78-eac97e66a9a6@arm.com>
- <20171218124229.GG507@e105550-lin.cambridge.arm.com>
+From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v4 05/12] thermal: armada: Use real status register name
+Date: Mon, 18 Dec 2017 16:58:30 +0100
+Message-ID: <873748jae1.fsf@free-electrons.com>
+References: <20171218143643.7714-1-miquel.raynal@free-electrons.com>
+        <20171218143643.7714-6-miquel.raynal@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171218124229.GG507@e105550-lin.cambridge.arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Morten Rasmussen <morten.rasmussen@foss.arm.com>
-Cc: Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171218143643.7714-6-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> (Miquel
+        Raynal's message of "Mon, 18 Dec 2017 15:36:36 +0100")
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Mon, Dec 18, 2017 at 12:42:29PM +0000, Morten Rasmussen wrote:
-> On Fri, Dec 15, 2017 at 10:36:35AM -0600, Jeremy Linton wrote:
-> > Hi,
-> > 
-> > On 12/13/2017 12:02 PM, Lorenzo Pieralisi wrote:
-> > >[+Morten, Dietmar]
-> > >
-> > >$SUBJECT should be:
-> > >
-> > >arm64: topology: rename cluster_id
-> > 
-> > Sure..
-> > 
-> > >
-> > >On Fri, Dec 01, 2017 at 04:23:28PM -0600, Jeremy Linton wrote:
-> > >>Lets match the name of the arm64 topology field
-> > >>to the kernel macro that uses it.
-> > >>
-> > >>Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
-> > >>---
-> > >>  arch/arm64/include/asm/topology.h |  4 ++--
-> > >>  arch/arm64/kernel/topology.c      | 27 ++++++++++++++-------------
-> > >>  2 files changed, 16 insertions(+), 15 deletions(-)
-> > >>
-> > >>diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
-> > >>index c4f2d50491eb..118136268f66 100644
-> > >>--- a/arch/arm64/include/asm/topology.h
-> > >>+++ b/arch/arm64/include/asm/topology.h
-> > >>@@ -7,14 +7,14 @@
-> > >>  struct cpu_topology {
-> > >>  	int thread_id;
-> > >>  	int core_id;
-> > >>-	int cluster_id;
-> > >>+	int physical_id;
-> > >
-> > >package_id ?
-> > 
-> > Given the macro is topology_physical_package_id, either makes sense to me.
-> > <shrug> I will change it in the next set.
-> 
-> I would vote for package_id too. arch/arm has 'socket_id' though.
-> 
-> > >
-> > >It has been debated before, I know. Should we keep the cluster_id too
-> > >(even if it would be 1:1 mapped to package_id - for now) ?
-> > 
-> > Well given that this patch replaces the patch that did that at your
-> > request..
-> > 
-> > I was hoping someone else would comment here, but my take at this point is
-> > that it doesn't really matter in a functional sense at the moment.
-> > Like the chiplet discussion it can be the subject of a future patch along
-> > with the patches which tweak the scheduler to understand the split.
-> > 
-> > BTW, given that i'm OoO next week, and the following that are the holidays,
-> > I don't intend to repost this for a couple weeks. I don't think there are
-> > any issues with this set.
-> > 
-> > >
-> > >There is also arch/arm to take into account, again, this patch is
-> > >just renaming (as it should have named since the beginning) a
-> > >topology level but we should consider everything from a legacy
-> > >perspective.
-> 
-> arch/arm has gone for thread/core/socket for the three topology levels
-> it supports.
-> 
-> I'm not sure what short term value keeping cluster_id has? Isn't it just
-> about where we make the package = cluster assignment? Currently it is in
-> the definition of topology_physical_package_id. If we keep cluster_id
-> and add package_id, it gets moved into the MPIDR/DT parsing code. 
-> 
-> Keeping cluster_id and introducing a topology_cluster_id function could
-> help cleaning up some of the users of topology_physical_package_id that
-> currently assumes package_id == cluster_id though.
+Hi Miquel,
+ 
+ On lun., déc. 18 2017, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
 
-I think we should settle for a name (eg package_id), remove cluster_id
-and convert arch/arm socket_id to the same naming used on arm64 (for
-consistency - it is just a variable rename).
+> Three 32-bit registers are used to drive the thermal IP: control0,
+> control1 and status. The two control registers share the same name both
+> in the documentation and in the code, while the latter is referred as
+> "sensor" in the code. Rename this pointer to be called "status" in order
+> to be aligned with the documentation.
+>
+> Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 
-This leaves us with the naming "cluster" only in DT topology bindings,
-which should be fine, given that "cluster" in that context is just a
-"processor-container" - yes we could have chosen a better naming in
-the first place but that's what it is.
+Reviewed-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 
-We should nuke the existing users of topology_physical_package_id()
-to identify clusters, I would not add another function for that purpose,
-let's nip it in the bud.
+Gregory
 
-Lorenzo
+> ---
+>  drivers/thermal/armada_thermal.c | 16 ++++++++--------
+>  1 file changed, 8 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+> index f422563e617c..198485fa77f2 100644
+> --- a/drivers/thermal/armada_thermal.c
+> +++ b/drivers/thermal/armada_thermal.c
+> @@ -51,7 +51,7 @@ struct armada_thermal_data;
+>  
+>  /* Marvell EBU Thermal Sensor Dev Structure */
+>  struct armada_thermal_priv {
+> -	void __iomem *sensor;
+> +	void __iomem *status;
+>  	void __iomem *control0;
+>  	void __iomem *control1;
+>  	struct armada_thermal_data *data;
+> @@ -98,9 +98,9 @@ static void armadaxp_init_sensor(struct platform_device *pdev,
+>  	writel(reg, priv->control1);
+>  
+>  	/* Enable the sensor */
+> -	reg = readl_relaxed(priv->sensor);
+> +	reg = readl_relaxed(priv->status);
+>  	reg &= ~PMU_TM_DISABLE_MASK;
+> -	writel(reg, priv->sensor);
+> +	writel(reg, priv->status);
+>  }
+>  
+>  static void armada370_init_sensor(struct platform_device *pdev,
+> @@ -156,7 +156,7 @@ static void armada380_init_sensor(struct platform_device *pdev,
+>  
+>  static bool armada_is_valid(struct armada_thermal_priv *priv)
+>  {
+> -	u32 reg = readl_relaxed(priv->sensor);
+> +	u32 reg = readl_relaxed(priv->status);
+>  
+>  	return reg & priv->data->is_valid_bit;
+>  }
+> @@ -175,7 +175,7 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
+>  		return -EIO;
+>  	}
+>  
+> -	reg = readl_relaxed(priv->sensor);
+> +	reg = readl_relaxed(priv->status);
+>  	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
+>  
+>  	/* Get formula coeficients */
+> @@ -277,9 +277,9 @@ static int armada_thermal_probe(struct platform_device *pdev)
+>  		return -ENOMEM;
+>  
+>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> -	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
+> -	if (IS_ERR(priv->sensor))
+> -		return PTR_ERR(priv->sensor);
+> +	priv->status = devm_ioremap_resource(&pdev->dev, res);
+> +	if (IS_ERR(priv->status))
+> +		return PTR_ERR(priv->status);
+>  
+>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+>  	control = devm_ioremap_resource(&pdev->dev, res);
+> -- 
+> 2.11.0
+>
+
+-- 
+Gregory Clement, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
