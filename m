@@ -1,49 +1,76 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization
- update flags
-Date: Mon, 18 Dec 2017 10:29:45 +0530
-Message-ID: <20171218045945.GG19815@vireshk-i7>
-References: <cover.1513158452.git.viresh.kumar@linaro.org>
- <CAJZ5v0jLQ7v5u+OUpK0gSAHvR90K=agvUSuFNzJXMnk+YkKyzQ@mail.gmail.com>
- <CAKohpomHfV=2CQj0_D=PsoMvbCu5v_ensJqaZmxUURzr27+yhA@mail.gmail.com>
- <20456740.6R3DDKEUDv@aspire.rjw.lan>
+From: Abhishek <huntbag@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: powernv: Add support of frequency domain
+Date: Mon, 18 Dec 2017 10:41:12 +0530
+Message-ID: <93cc9d38-4fd8-d340-2263-108329b69b94@linux.vnet.ibm.com>
+References: <20171213081937.16376-1-huntbag@linux.vnet.ibm.com>
+ <20171214044239.GU3322@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:34984 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S932280AbdLRE7t (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 17 Dec 2017 23:59:49 -0500
-Received: by mail-pf0-f195.google.com with SMTP id j124so9244224pfc.2
-        for <linux-pm@vger.kernel.org>; Sun, 17 Dec 2017 20:59:49 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20456740.6R3DDKEUDv@aspire.rjw.lan>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:56438 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1750708AbdLRFLV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 00:11:21 -0500
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vBI59UvZ099930
+        for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2017 00:11:20 -0500
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 2ex6es1r0m-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2017 00:11:20 -0500
+Received: from localhost
+        by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <huntbag@linux.vnet.ibm.com>;
+        Mon, 18 Dec 2017 05:11:18 -0000
+In-Reply-To: <20171214044239.GU3322@vireshk-i7>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>, ego@linux.vnet.ibm.com
+Cc: rjw@rjwysocki.net, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 
-On 17-12-17, 01:19, Rafael J. Wysocki wrote:
-> We can do that in principle, but why should it return early?  Maybe it's
-> a good time to update things, incidentally?
-> 
-> I actually don't like the SCHED_CPUFRREQ_CLEAR flag *concept* as it is very
-> much specific to schedutil and blatantly ignores everybody else.
-> 
-> Alternatively, you could add two flags for clearing SCHED_CPUFREQ_RT and
-> SCHED_CPUFREQ_DL that could just be ingored entirely by intel_pstate.
-> 
-> So, why don't you make SCHED_CPUFREQ_RT and SCHED_CPUFREQ_DL "sticky" until,
-> say, SCHED_CPUFREQ_NO_RT and SCHED_CPUFREQ_NO_DL are passed, respectively?
-
-I didn't like adding scheduling class specific flags, and wanted the code to
-treat all of them in the same way. And then the governors can make a policy over
-that, on what to ignore and what not to. For example with the current patchset,
-the governors can know when nothing else is queued on a CPU and CPU is going to
-get into idle loop. They can choose to (or not to) do something in that case.
-
-I just thought that writing consistent (i.e. no special code) code across all
-classes would be better.
-
--- 
-viresh
+On 12/14/2017 10:12 AM, Viresh Kumar wrote:
+> + Gautham,
+>
+> @Gautham: Can you please help reviewing this one ?
+>
+> On 13-12-17, 13:49, Abhishek Goel wrote:
+>> @@ -693,6 +746,8 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>>   {
+>>   	struct powernv_smp_call_data freq_data;
+>>   	unsigned int cur_msec, gpstate_idx;
+>> +	cpumask_t temp;
+>> +	u32 cpu;
+>>   	struct global_pstate_info *gpstates = policy->driver_data;
+>>   
+>>   	if (unlikely(rebooting) && new_index != get_nominal_index())
+>> @@ -761,24 +816,48 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>>   	spin_unlock(&gpstates->gpstate_lock);
+>>   
+>>   	/*
+>> -	 * Use smp_call_function to send IPI and execute the
+>> -	 * mtspr on target CPU.  We could do that without IPI
+>> -	 * if current CPU is within policy->cpus (core)
+>> +	 * Use smp_call_function to send IPI and execute the mtspr on CPU.
+>> +	 * This needs to be done on every core of the policy
+> Why on each CPU ?
+We need to do it in this way as the current implementation takes the max 
+of the PMSR of the cores. Thus, when the frequency is required to be 
+ramped up, it suffices to write to just the local PMSR, but when the 
+frequency is to be ramped down, if we don't send the IPI it breaks the 
+compatibility with P8.
+>
+>>   	 */
+>> -	smp_call_function_any(policy->cpus, set_pstate, &freq_data, 1);
+>> +	cpumask_copy(&temp, policy->cpus);
+>> +
+>> +	while (!cpumask_empty(&temp)) {
+>> +		cpu = cpumask_first(&temp);
+>> +		smp_call_function_any(cpu_sibling_mask(cpu),
+>> +					set_pstate, &freq_data, 1);
+>> +		cpumask_andnot(&temp, &temp, cpu_sibling_mask(cpu));
+>> +	}
+>> +
+>>   	return 0;
+>>   }
