@@ -1,55 +1,58 @@
-From: =?UTF-8?Q?Ognjen_Gali=C4=87?= <smclt30p@gmail.com>
-Subject: Re: [PATCH 2/3 v6] battery: Add the ThinkPad "Not Charging" quirk
-Date: Mon, 18 Dec 2017 11:21:26 +0100
-Message-ID: <CALgTWSv-4DSnU1MLiapL22rK-qaa45xCz6WuMnM_AeBtKYDidw@mail.gmail.com>
-References: <20171215165750.GA6282@thinkpad> <CAJZ5v0ida0RTUBdtpCK4rAXfdukadpTyxD0Rpp4R=kKcukyjKA@mail.gmail.com>
- <20171216084850.GA19033@thinkpad> <CAJZ5v0gWooR7rtY0qmEyERr=A+BoLWoSAHh5Reh3xE5Gvks9+g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gWooR7rtY0qmEyERr=A+BoLWoSAHh5Reh3xE5Gvks9+g@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: [PATCH V8 0/3] OPP: Allow OPP table to be used for power-domains
+Date: Mon, 18 Dec 2017 15:51:27 +0530
+Message-ID: <cover.1513591822.git.viresh.kumar@linaro.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 16/12/2017, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Sat, Dec 16, 2017 at 9:48 AM, Ognjen Galic <smclt30p@gmail.com> wrote:
->> On Sat, Dec 16, 2017 at 01:33:55AM +0100, Rafael J. Wysocki wrote:
->>> On Fri, Dec 15, 2017 at 5:57 PM, Ognjen Galic <smclt30p@gmail.com>
->>> wrote:
->>> > The EC/ACPI firmware on Lenovo ThinkPads used to report a status
->>> > of "Unknown" when the battery is between the charge start and
->>> > charge stop thresholds. On Windows, it reports "Not Charging"
->>> > so the quirk has been added to also report correctly.
->>> >
->>> > Now the "status" attribute returns "Not Charging" when the
->>> > battery on ThinkPads is not physicaly charging.
->>> >
->>> > Tested-by: Kevin Locke <kevin@kevinlocke.name>
->>> > Tested-by: Christoph B=C3=B6hmwalder <christoph@boehmwalder.at>
->>> > Signed-off-by: Ognjen Galic <smclt30p@gmail.com>
->>>
->>> It doesn't look like this is related to the [1/3] and [3/3], so why do
->>> you make it part of the series?
->>>
->>
->> I made it the same series because it is practically the same feature
->> set. Without this patch and with 1/3 and 3/3 applied, there is a bug
->> where the status attribute would show "Unknown" for a battery that is
->> between the start and stop thresholds while attached to AC.
->
-> OK, fair enough.
->
-> I would reorder it as the first patch in the series, then, because the
-> other two are more related to each other.
->
-> Thanks,
-> Rafael
->
+Hi,
 
-Do I really need now to re-order and re-send the whole patchset for it
-to get merged?
+Now that the performance state of PM domains are supported by the kernel
+(merged in linux-next), I am trying once again to define the bindings
+which we dropped until the code is merged first.
 
-Thanks.
+Summary:
+
+Power-domains can also have their active states and this patchset
+enhances the OPP binding to define those.
+
+The power domains can use the OPP bindings mostly as is. Though there
+are some changes required to support special cases:
+
+- Allow "operating-points-v2" to contain multiple phandles for power
+  domain providers providing multiple domains.
+
+- A new property "required-opp" is added for the devices to specify the
+  minimum required OPP of the master domain or any other type of device.
+
+- Allow some of the OPP properties to accept magic values (firmware
+  dependent) as the OS doesn't know the real freq/voltage values.
+
+V7->V8:
+- V7 1/2 divided into two patches. 1/3 is unchanged from V7.
+- 2/3 renamed the property from "power-domain-opp" to "required-opp", as
+  suggested by Rob.
+- Added Ulf's reviewed-by for 1/3 and 3/3.
+
+--
+viresh
+
+Viresh Kumar (3):
+  OPP: Allow OPP table to be used for power-domains
+  OPP: Introduce "required-opp" property
+  OPP: Allow "opp-hz" and "opp-microvolt" to contain magic values
+
+ Documentation/devicetree/bindings/opp/opp.txt      | 19 +++++++
+ .../devicetree/bindings/power/power_domain.txt     | 65 ++++++++++++++++++++++
+ 2 files changed, 84 insertions(+)
+
+-- 
+2.15.0.194.g9af6a3dea062
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
