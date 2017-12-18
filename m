@@ -1,64 +1,75 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH] cpufreq: governor: Ensure sufficiently large sampling intervals
-Date: Mon, 18 Dec 2017 08:11:06 -0800
-Message-ID: <000601d3781a$d1354b50$739fe1f0$@net>
-References: <HE1PR0402MB282866171A847AE244A9F76CF3340@HE1PR0402MB2828.eurprd04.prod.outlook.com> <002001d37577$9706a730$c513f590$@net> <002501d375d2$54f942c0$feebc840$@net> Qk2VesPv1C2CsQk2aezkGC
+From: Sebastian Reichel <sre@kernel.org>
+Subject: Re: tps65090-charger: Delete an error message for a failed memory
+ allocation in two functions
+Date: Mon, 18 Dec 2017 18:24:04 +0100
+Message-ID: <20171218172404.3nqyza4ml5oofykn@earth>
+References: <aa138aa9-d8c9-c6e3-7071-9fc642e7b248@users.sourceforge.net>
+ <1513450432.4647.47.camel@perches.com>
+ <4beb0d2e-adf6-5eeb-43c7-7829d54c6656@users.sourceforge.net>
+ <alpine.DEB.2.20.1712162135140.17082@hadrien>
+ <cf645236-d4da-a52c-216a-248d76a61025@users.sourceforge.net>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta20.telus.net ([209.171.16.93]:39600 "EHLO cmta20.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S935667AbdLRQLM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 18 Dec 2017 11:11:12 -0500
-In-Reply-To: Qk2VesPv1C2CsQk2aezkGC
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="j2gf7rgxtkc7secp"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <cf645236-d4da-a52c-216a-248d76a61025@users.sourceforge.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: Julia Lawall <julia.lawall@lip6.fr>, linux-pm@vger.kernel.org, Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc: 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Stratos Karafotis' <stratosk@semaphore.gr>, 'Andy Tang' <andy.tang@nxp.com>, 'Linux PM' <linux-pm@vger.kernel.org>
 
-On 2017.12.17 17:16 Rafael J. Wysocki wrote:
 
-> After commit aa7519af450d (cpufreq: Use transition_delay_us for legacy
-> governors as well) the sampling_rate field of struct dbs_data may be
-> less than the tick period which causes dbs_update() to produce
-> incorrect results, so make the code ensure that the value of that
-> field will always be sufficiently large.
->
-> Fixes: aa7519af450d (cpufreq: Use transition_delay_us for legacy governors as well)
-> Reported-by: Andy Tang <andy.tang@nxp.com>
-> Reported-by: Doug Smythies <dsmythies@telus.net>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> drivers/cpufreq/cpufreq_governor.c |   19 ++++++++++++++++---
-> 1 file changed, 16 insertions(+), 3 deletions(-)
->
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.c
-> @@ -22,6 +22,8 @@
-> 
-> #include "cpufreq_governor.h"
-> 
-> +#define CPUFREQ_DBS_MIN_SAMPLING_INTERVAL	(2 * TICK_NSEC / NSEC_PER_USEC)
-> +
+--j2gf7rgxtkc7secp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Left over from the other thread on Friday I was testing both the above and
-the 1 TICK version:
+Hi,
 
-+#define CPUFREQ_DBS_MIN_SAMPLING_INTERVAL	(TICK_NSEC / NSEC_PER_USEC)
+On Sat, Dec 16, 2017 at 09:47:34PM +0100, SF Markus Elfring wrote:
+> >> I am still waiting for possibilities to improve also the corresponding
+> >> reference documentation somehow as you know it already.
+> >=20
+> > If you require someone else to update the documentation to be able to
+> > explain why the patch is useful,
+>=20
+> My approach is to refer to the Linux allocation failure report.
+>=20
+>=20
+> > then it would seem that you do not know why the patch is useful,
+> > and thus should not submit it.
+>=20
+> We tried to clarify other explanation approaches a few times.
+>=20
+> But it seems that we are stuck with specific software aspects.
+> How would you like to see remaining open issues to be resolved
+> there anyhow?
 
-I tested periodic workflows at around 35% average load with work/sleep
-frequencies from 100 to 2100 hertz, for both 250 Hertz kernels
-(4 millisecond TICK) and 1000 Hertz kernels (1 millisecond TICK)
+FYI: I will drop this and (without any further notice) all future
+patches from you, that do no follow the documented process in
+Documentation/process/.
 
-The 1 TICK version does have a "nosier" response than the 2 TICK version,
-but both seem to work fine. Neither are worse than the schedutil response
-for the same test.
+-- Sebastian
 
-I'd be O.K. with either the 1 TICK or 2 TICK versions.
+--j2gf7rgxtkc7secp
+Content-Type: application/pgp-signature; name="signature.asc"
 
-... Doug
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlo3+asACgkQ2O7X88g7
++pqL0g//Z7T/gG/Yp/8W8pShe9T37MQgzqAVqCxhqng7oTPO19+ibs1gHidnkgRT
+oh+Qn4js8icw11qPZCkGI7hYMJ2ggJldQ3aZOWCsRCoFbefn0dmcN7Jr1dNBi0QM
+QgOIisF2tVne4lvX9kk1fTDp5FscTjRJGqCkgLZ2ENzfWo5TZicaHwIp07yGeL8d
+q3pplqt9rpS3uPMuHBO/JlRGC7kxVIr82mgU8ifW8LTbVIqQkfE4DxT8Nsh01ocK
+1hgGksBNP6nGFIS/ohzRQ1QIEbrkxCoDlAdsDdZraOkM04RTKawOUjdkxviI/lwj
+cOY0AcYibzMq3N/UGOh2+uZnAdzvJva8Qqp2REfUKAY1tlH/Te31f8M4BAz2XEt0
+NZUTRQeJw5TXPrhDbzX35xQKSJ15Dik0NkHSrlK/0EC5dbJKRKgt/vSOexIjsO3p
+pjneZBcGgRDHHl85vT9ypM4WziMC3YbGnj/1r8WoBPRlN5inJP1wCJHu55t1Y3le
+UdMrt8oxktwjO66LRd6ccc3d0AcI/Dr4dpgvQxSsSH4EESKWrlGQ3+36QgGw4wqS
+ZBpU6LQ3Ph49AmdxGcDikCqOwnQuQZ35t5xK/1wEIbpmGjyZOtf7B4OwpjqA94Vs
+aDuY9Y4DrkTAq1jFkmelHHgTvBdGwNkGb400hzHQq3y783ZDDUQ=
+=xh8M
+-----END PGP SIGNATURE-----
+
+--j2gf7rgxtkc7secp--
