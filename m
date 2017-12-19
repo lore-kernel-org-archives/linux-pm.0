@@ -1,48 +1,24 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 3/4] PM / core: Direct DPM_FLAG_SMART_SUSPEND optimization
-Date: Tue, 19 Dec 2017 14:15:30 +0100
-Message-ID: <CAPDyKFqd6qk66C4M0h-4WzLjt_p=LyS1unCAzLxKrUYoSMbz6Q@mail.gmail.com>
-References: <7742130.AaJQIxeI1n@aspire.rjw.lan> <252167445.OQUXi2Ca9Y@aspire.rjw.lan>
- <CAPDyKFpC0xLfGLqyWUZwnSVdeY9Ojs-JUtPzEkRr=KAuSXDfmQ@mail.gmail.com>
- <CAJZ5v0hFP4zP+Q1znQ9ZnUTLunNaStmSR4-h-AqKn6UaF-d9Vw@mail.gmail.com> <CAJZ5v0h97zsjG=xKHz=zjaQiLz-ER5YfsQz=c3k7ZFafG8H8Cg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0h97zsjG=xKHz=zjaQiLz-ER5YfsQz=c3k7ZFafG8H8Cg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+From: Biju Das <biju.das@bp.renesas.com>
+Subject: [PATCH v2 0/2] Add thermal support for iWave RZ/G1M board
+Date: Tue, 19 Dec 2017 13:17:27 +0000
+Message-ID: <1513689449-2700-1-git-send-email-biju.das@bp.renesas.com>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Chris Paterson <chris.paterson2@renesas.com>, Fabrizio Castro <fabrizio.castro@bp.renesas.com>, devicetree@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, Biju Das <biju.das@bp.renesas.com>
 List-Id: linux-pm@vger.kernel.org
 
-On 19 December 2017 at 12:19, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Tue, Dec 19, 2017 at 12:13 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Tue, Dec 19, 2017 at 8:38 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> On 10 December 2017 at 01:00, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>>>
->
-> [cut]
->
->>
->>> Moreover, what happens when/if a driver that has deployed this
->>> solution, starts being used on a new SoC and then additional
->>> operations during system suspend becomes required (for example
->>> pinctrls that needs to be put in a system sleep state)? Then
->>> everything falls apart, doesn't it?
->>
->> Then you runtime-resume the device in ->suspend() and the remaining
->> callbacks will run for you just fine.
->
-> BTW, I guess you'll need a middle layer in that case anyway so that
-> the driver doesn't have to distinguish between platforms it has to
-> work with which makes the argument somewhat moot.
+This series aims to add thermal support for iWave RZ/G1M board.
 
-No, this isn't the case. Let's take the pinctrl as an example.
+This patch series based on renesas tag renesas-devel-20171218-v4.15-rc4 
 
-The pinctrl system sleep state could be optionally defined in the DT,
-depending on the platform.
+Biju Das (2):
+  dt-bindings: thermal: rcar: Add device tree support for r8a7743
+  ARM: dts: r8a7743: Add thermal device to DT
 
-All the driver shall do, is to try to set the state, if it has been defined.
+ .../devicetree/bindings/thermal/rcar-thermal.txt   |  1 +
+ arch/arm/boot/dts/r8a7743.dtsi                     | 32 ++++++++++++++++++++++
+ 2 files changed, 33 insertions(+)
 
-Kind regards
-Uffe
+-- 
+1.9.1
