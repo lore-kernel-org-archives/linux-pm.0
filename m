@@ -1,129 +1,60 @@
-From: Joe Perches <joe@perches.com>
-Subject: [-next PATCH 4/4] treewide: Use DEVICE_ATTR_WO
-Date: Tue, 19 Dec 2017 10:15:09 -0800
-Message-ID: <fa30f1ad73f76dafff816df40cacffe613aa2f48.1513706702.git.joe@perches.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [-next PATCH 2/4] treewide: Use DEVICE_ATTR_RW
+Date: Tue, 19 Dec 2017 20:41:57 +0200
+Message-ID: <CAHp75VfyvA3kAtGiwJ63BOx43RuVSz-XgdK79WApytoaehOOgQ@mail.gmail.com>
 References: <cover.1513706701.git.joe@perches.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtprelay0001.hostedemail.com ([216.40.44.1]:41930 "EHLO
-        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1752274AbdLSSPv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Dec 2017 13:15:51 -0500
-In-Reply-To: <cover.1513706701.git.joe@perches.com>
-Sender: linux-pm-owner@vger.kernel.org
+ <cd38f14f06e1f447b3159ffe8c69c0df8241bb6e.1513706701.git.joe@perches.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <intel-gfx-bounces@lists.freedesktop.org>
+In-Reply-To: <cd38f14f06e1f447b3159ffe8c69c0df8241bb6e.1513706701.git.joe@perches.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
+List-Post: <mailto:intel-gfx@lists.freedesktop.org>
+List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
+ <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: intel-gfx-bounces@lists.freedesktop.org
+Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
+To: Joe Perches <joe@perches.com>
+Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Heiko Carstens <heiko.carstens@de.ibm.com>, ALSA Development Mailing List <alsa-devel@alsa-project.org>, dri-devel@lists.freedesktop.org, Jaroslav Kysela <perex@perex.cz>, Peter Ujfalusi <peter.ujfalusi@ti.com>, linux-s390@vger.kernel.org, Linux OMAP Mailing List <linux-omap@vger.kernel.org>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, linux-scsi <linux-scsi@vger.kernel.org>, Takashi Iwai <tiwai@suse.com>, Sebastian Ott <sebott@linux.vnet.ibm.com>, James Smart <james.smart@broadcom.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>, Jiri Slaby <jslaby@suse.com>, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, Dick Kennedy <dick.kennedy@broadcom.com>, Mathias Nyman <mathias.nyman@intel.com>, Bartlomiej
 List-Id: linux-pm@vger.kernel.org
-To: Borislav Petkov <bp@alien8.de>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, John Allen <jallen@linux.vnet.ibm.com>, Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>, linux-wimax@intel.com, James Smart <james.smart@broadcom.com>, Dick Kennedy <dick.kennedy@broadcom.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org
 
-Convert DEVICE_ATTR uses to DEVICE_ATTR_WO where possible.
-
-Done with perl script:
-
-$ git grep -w --name-only DEVICE_ATTR | \
-  xargs perl -i -e 'local $/; while (<>) { s/\bDEVICE_ATTR\s*\(\s*(\w+)\s*,\s*\(?(?:\s*S_IWUSR\s*|\s*0200\s*)\)?\s*,\s*NULL\s*,\s*\s_store\s*\)/DEVICE_ATTR_WO(\1)/g; print;}'
-
-Signed-off-by: Joe Perches <joe@perches.com>
----
- arch/s390/kernel/smp.c                 | 2 +-
- arch/x86/kernel/cpu/microcode/core.c   | 2 +-
- drivers/input/touchscreen/elants_i2c.c | 2 +-
- drivers/net/ethernet/ibm/ibmvnic.c     | 2 +-
- drivers/net/wimax/i2400m/sysfs.c       | 3 +--
- drivers/scsi/lpfc/lpfc_attr.c          | 3 +--
- drivers/thermal/thermal_sysfs.c        | 2 +-
- 7 files changed, 7 insertions(+), 9 deletions(-)
-
-diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
-index b8c1a85bcf2d..a919b2f0141d 100644
---- a/arch/s390/kernel/smp.c
-+++ b/arch/s390/kernel/smp.c
-@@ -1151,7 +1151,7 @@ static ssize_t __ref rescan_store(struct device *dev,
- 	rc = smp_rescan_cpus();
- 	return rc ? rc : count;
- }
--static DEVICE_ATTR(rescan, 0200, NULL, rescan_store);
-+static DEVICE_ATTR_WO(rescan);
- #endif /* CONFIG_HOTPLUG_CPU */
- 
- static int __init s390_smp_init(void)
-diff --git a/arch/x86/kernel/cpu/microcode/core.c b/arch/x86/kernel/cpu/microcode/core.c
-index c4fa4a85d4cb..09c74b0560dd 100644
---- a/arch/x86/kernel/cpu/microcode/core.c
-+++ b/arch/x86/kernel/cpu/microcode/core.c
-@@ -560,7 +560,7 @@ static ssize_t pf_show(struct device *dev,
- 	return sprintf(buf, "0x%x\n", uci->cpu_sig.pf);
- }
- 
--static DEVICE_ATTR(reload, 0200, NULL, reload_store);
-+static DEVICE_ATTR_WO(reload);
- static DEVICE_ATTR(version, 0400, version_show, NULL);
- static DEVICE_ATTR(processor_flags, 0400, pf_show, NULL);
- 
-diff --git a/drivers/input/touchscreen/elants_i2c.c b/drivers/input/touchscreen/elants_i2c.c
-index a458e5ec9e41..819213e88f32 100644
---- a/drivers/input/touchscreen/elants_i2c.c
-+++ b/drivers/input/touchscreen/elants_i2c.c
-@@ -1000,7 +1000,7 @@ static ssize_t show_iap_mode(struct device *dev,
- 				"Normal" : "Recovery");
- }
- 
--static DEVICE_ATTR(calibrate, S_IWUSR, NULL, calibrate_store);
-+static DEVICE_ATTR_WO(calibrate);
- static DEVICE_ATTR(iap_mode, S_IRUGO, show_iap_mode, NULL);
- static DEVICE_ATTR(update_fw, S_IWUSR, NULL, write_update_fw);
- 
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 1dc4aef37d3a..42b96e1a1b13 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -4411,7 +4411,7 @@ static ssize_t failover_store(struct device *dev, struct device_attribute *attr,
- 	return count;
- }
- 
--static DEVICE_ATTR(failover, 0200, NULL, failover_store);
-+static DEVICE_ATTR_WO(failover);
- 
- static unsigned long ibmvnic_get_desired_dma(struct vio_dev *vdev)
- {
-diff --git a/drivers/net/wimax/i2400m/sysfs.c b/drivers/net/wimax/i2400m/sysfs.c
-index 1237109f251a..8c67df11105c 100644
---- a/drivers/net/wimax/i2400m/sysfs.c
-+++ b/drivers/net/wimax/i2400m/sysfs.c
-@@ -65,8 +65,7 @@ ssize_t i2400m_idle_timeout_store(struct device *dev,
- }
- 
- static
--DEVICE_ATTR(i2400m_idle_timeout, S_IWUSR,
--	    NULL, i2400m_idle_timeout_store);
-+DEVICE_ATTR_WO(i2400m_idle_timeout);
- 
- static
- struct attribute *i2400m_dev_attrs[] = {
-diff --git a/drivers/scsi/lpfc/lpfc_attr.c b/drivers/scsi/lpfc/lpfc_attr.c
-index 517ff203cfde..6ddaf51a23f6 100644
---- a/drivers/scsi/lpfc/lpfc_attr.c
-+++ b/drivers/scsi/lpfc/lpfc_attr.c
-@@ -2418,8 +2418,7 @@ lpfc_soft_wwn_enable_store(struct device *dev, struct device_attribute *attr,
- 
- 	return count;
- }
--static DEVICE_ATTR(lpfc_soft_wwn_enable, S_IWUSR, NULL,
--		   lpfc_soft_wwn_enable_store);
-+static DEVICE_ATTR_WO(lpfc_soft_wwn_enable);
- 
- /**
-  * lpfc_soft_wwpn_show - Return the cfg soft ww port name of the adapter
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index 2bc964392924..ba81c9080f6e 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -317,7 +317,7 @@ emul_temp_store(struct device *dev, struct device_attribute *attr,
- 
- 	return ret ? ret : count;
- }
--static DEVICE_ATTR(emul_temp, S_IWUSR, NULL, emul_temp_store);
-+static DEVICE_ATTR_WO(emul_temp);
- #endif
- 
- static ssize_t
--- 
-2.15.0
+T24gVHVlLCBEZWMgMTksIDIwMTcgYXQgODoxNSBQTSwgSm9lIFBlcmNoZXMgPGpvZUBwZXJjaGVz
+LmNvbT4gd3JvdGU6Cj4gQ29udmVydCBERVZJQ0VfQVRUUiB1c2VzIHRvIERFVklDRV9BVFRSX1JX
+IHdoZXJlIHBvc3NpYmxlLgo+Cj4gRG9uZSB3aXRoIHBlcmwgc2NyaXB0Ogo+Cj4gJCBnaXQgZ3Jl
+cCAtdyAtLW5hbWUtb25seSBERVZJQ0VfQVRUUiB8IFwKPiAgIHhhcmdzIHBlcmwgLWkgLWUgJ2xv
+Y2FsICQvOyB3aGlsZSAoPD4pIHsgcy9cYkRFVklDRV9BVFRSXHMqXChccyooXHcrKVxzKixccypc
+KD8oXHMqU19JUlVHT1xzKlx8XHMqU19JV1VTUnxccypTX0lXVVNSXHMqXHxccypTX0lSVUdPXHMq
+fFxzKjA2NDRccyopXCk/XHMqLFxzKlwxX3Nob3dccyosXHMqXDFfc3RvcmVccypcKS9ERVZJQ0Vf
+QVRUUl9SVyhcMSkvZzsgcHJpbnQ7fScKCj4gIGRyaXZlcnMvcGxhdGZvcm0veDg2L2NvbXBhbC1s
+YXB0b3AuYyB8IDE4ICsrKysrLS0tLS0tLS0tLQoKPiAtLS0gYS9kcml2ZXJzL3BsYXRmb3JtL3g4
+Ni9jb21wYWwtbGFwdG9wLmMKPiArKysgYi9kcml2ZXJzL3BsYXRmb3JtL3g4Ni9jb21wYWwtbGFw
+dG9wLmMKPiBAQCAtNjc5LDE4ICs2NzksMTIgQEAgc3RhdGljIGludCBiYXRfd3JpdGVhYmxlX3By
+b3BlcnR5KHN0cnVjdCBwb3dlcl9zdXBwbHkgKnBzeSwKPiAgLyogPT09PT09PT09PT09PT0gKi8K
+PiAgLyogRHJpdmVyIEdsb2JhbHMgKi8KPiAgLyogPT09PT09PT09PT09PT0gKi8KPiAtc3RhdGlj
+IERFVklDRV9BVFRSKHdha2VfdXBfcG1lLAo+IC0gICAgICAgICAgICAgICAwNjQ0LCB3YWtlX3Vw
+X3BtZV9zaG93LCAgICAgICAgIHdha2VfdXBfcG1lX3N0b3JlKTsKPiAtc3RhdGljIERFVklDRV9B
+VFRSKHdha2VfdXBfbW9kZW0sCj4gLSAgICAgICAgICAgICAgIDA2NDQsIHdha2VfdXBfbW9kZW1f
+c2hvdywgICAgICAgd2FrZV91cF9tb2RlbV9zdG9yZSk7Cj4gLXN0YXRpYyBERVZJQ0VfQVRUUih3
+YWtlX3VwX2xhbiwKPiAtICAgICAgICAgICAgICAgMDY0NCwgd2FrZV91cF9sYW5fc2hvdywgd2Fr
+ZV91cF9sYW5fc3RvcmUpOwo+IC1zdGF0aWMgREVWSUNFX0FUVFIod2FrZV91cF93bGFuLAo+IC0g
+ICAgICAgICAgICAgICAwNjQ0LCB3YWtlX3VwX3dsYW5fc2hvdywgICAgICAgIHdha2VfdXBfd2xh
+bl9zdG9yZSk7Cj4gLXN0YXRpYyBERVZJQ0VfQVRUUih3YWtlX3VwX2tleSwKPiAtICAgICAgICAg
+ICAgICAgMDY0NCwgd2FrZV91cF9rZXlfc2hvdywgd2FrZV91cF9rZXlfc3RvcmUpOwo+IC1zdGF0
+aWMgREVWSUNFX0FUVFIod2FrZV91cF9tb3VzZSwKPiAtICAgICAgICAgICAgICAgMDY0NCwgd2Fr
+ZV91cF9tb3VzZV9zaG93LCAgICAgICB3YWtlX3VwX21vdXNlX3N0b3JlKTsKPiArc3RhdGljIERF
+VklDRV9BVFRSX1JXKHdha2VfdXBfcG1lKTsKPiArc3RhdGljIERFVklDRV9BVFRSX1JXKHdha2Vf
+dXBfbW9kZW0pOwo+ICtzdGF0aWMgREVWSUNFX0FUVFJfUlcod2FrZV91cF9sYW4pOwo+ICtzdGF0
+aWMgREVWSUNFX0FUVFJfUlcod2FrZV91cF93bGFuKTsKPiArc3RhdGljIERFVklDRV9BVFRSX1JX
+KHdha2VfdXBfa2V5KTsKPiArc3RhdGljIERFVklDRV9BVFRSX1JXKHdha2VfdXBfbW91c2UpOwoK
+QWNrZWQtYnk6IEFuZHkgU2hldmNoZW5rbyA8YW5keS5zaGV2Y2hlbmtvQGdtYWlsLmNvbT4KCmZv
+ciBQRHg4NiBiaXRzLgoKSGF2ZSB0byBzYXkgdGhhdCB3aGlsZSBpdCBkb2Vzbid0IGNoYW5nZSB0
+aGUgYXR0cmlidXRlcyBoZXJlLCBpdCBtaWdodApyZXF1aXJlIHN0aWxsIHRvIGJlIHJldmlzaXRl
+ZCBieSBzZWN1cml0eSBwZW9wbGUsIGlmIHRoZXkgd2lzaC4KCi0tIApXaXRoIEJlc3QgUmVnYXJk
+cywKQW5keSBTaGV2Y2hlbmtvCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCkludGVsLWdmeCBtYWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNr
+dG9wLm9yZwpodHRwczovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2lu
+dGVsLWdmeAo=
