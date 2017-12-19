@@ -1,230 +1,170 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v5 08/15] clk: qcom: Add support for Krait clocks
-Date: Tue, 19 Dec 2017 21:24:53 +0530
-Message-ID: <1513698900-10638-9-git-send-email-sricharan@codeaurora.org>
+From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Subject: [PATCH v5 13/15] clk: qcom: Add safe switch hook for krait mux clocks
+Date: Tue, 19 Dec 2017 21:24:58 +0530
+Message-ID: <1513698900-10638-14-git-send-email-sricharan@codeaurora.org>
 References: <1513698900-10638-1-git-send-email-sricharan@codeaurora.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1513698900-10638-1-git-send-email-sricharan@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: sricharan@codeaurora.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1513698900-10638-1-git-send-email-sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, david.brown-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Stephen Boyd <sboyd@codeaurora.org>
+When the Hfplls are reprogrammed during the rate change,
+the primary muxes which are sourced from the same hfpll
+for higher frequencies, needs to be switched to the 'safe
+secondary mux' as the parent for that small window. This
+is done by registering a clk notifier for the muxes and
+switching to the safe parent in the PRE_RATE_CHANGE notifier
+and back to the original parent in the POST_RATE_CHANGE notifier.
 
-The Krait clocks are made up of a series of muxes and a divider
-that choose between a fixed rate clock and dedicated HFPLLs for
-each CPU. Instead of using mmio accesses to remux parents, the
-Krait implementation exposes the remux control via cp15
-registers. Support these clocks.
-
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 ---
- drivers/clk/qcom/Kconfig     |   4 ++
- drivers/clk/qcom/Makefile    |   1 +
- drivers/clk/qcom/clk-krait.c | 124 +++++++++++++++++++++++++++++++++++++++++++
- drivers/clk/qcom/clk-krait.h |  38 +++++++++++++
- 4 files changed, 167 insertions(+)
- create mode 100644 drivers/clk/qcom/clk-krait.c
- create mode 100644 drivers/clk/qcom/clk-krait.h
+ drivers/clk/qcom/clk-krait.c |  2 ++
+ drivers/clk/qcom/clk-krait.h |  3 +++
+ drivers/clk/qcom/krait-cc.c  | 56 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 61 insertions(+)
 
-diff --git a/drivers/clk/qcom/Kconfig b/drivers/clk/qcom/Kconfig
-index 6c811bd..6592595 100644
---- a/drivers/clk/qcom/Kconfig
-+++ b/drivers/clk/qcom/Kconfig
-@@ -213,3 +213,7 @@ config QCOM_HFPLL
- 	  Support for the high-frequency PLLs present on Qualcomm devices.
- 	  Say Y if you want to support CPU frequency scaling on devices
- 	  such as MSM8974, APQ8084, etc.
-+
-+config KRAIT_CLOCKS
-+	bool
-+	select KRAIT_L2_ACCESSORS
-diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
-index 4a4bf38..b6741b0 100644
---- a/drivers/clk/qcom/Makefile
-+++ b/drivers/clk/qcom/Makefile
-@@ -10,6 +10,7 @@ clk-qcom-y += clk-rcg2.o
- clk-qcom-y += clk-branch.o
- clk-qcom-y += clk-regmap-divider.o
- clk-qcom-y += clk-regmap-mux.o
-+clk-qcom-$(CONFIG_KRAIT_CLOCKS) += clk-krait.o
- clk-qcom-y += clk-hfpll.o
- clk-qcom-y += reset.o
- clk-qcom-$(CONFIG_QCOM_GDSC) += gdsc.o
 diff --git a/drivers/clk/qcom/clk-krait.c b/drivers/clk/qcom/clk-krait.c
-new file mode 100644
-index 0000000..361c701
---- /dev/null
+index 361c701..f9744f1 100644
+--- a/drivers/clk/qcom/clk-krait.c
 +++ b/drivers/clk/qcom/clk-krait.c
-@@ -0,0 +1,124 @@
-+// SPDX-License-Identifier: GPL-2.0
-+// Copyright (c) 2017, The Linux Foundation. All rights reserved.
+@@ -50,6 +50,8 @@ static int krait_mux_set_parent(struct clk_hw *hw, u8 index)
+ 	if (__clk_is_enabled(hw->clk))
+ 		__krait_mux_set_sel(mux, sel);
+ 
++	mux->reparent = true;
 +
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/io.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/clk-provider.h>
-+#include <linux/spinlock.h>
-+
-+#include <asm/krait-l2-accessors.h>
-+
-+#include "clk-krait.h"
-+
-+/* Secondary and primary muxes share the same cp15 register */
-+static DEFINE_SPINLOCK(krait_clock_reg_lock);
-+
-+#define LPL_SHIFT	8
-+static void __krait_mux_set_sel(struct krait_mux_clk *mux, int sel)
-+{
-+	unsigned long flags;
-+	u32 regval;
-+
-+	spin_lock_irqsave(&krait_clock_reg_lock, flags);
-+	regval = krait_get_l2_indirect_reg(mux->offset);
-+	regval &= ~(mux->mask << mux->shift);
-+	regval |= (sel & mux->mask) << mux->shift;
-+	if (mux->lpl) {
-+		regval &= ~(mux->mask << (mux->shift + LPL_SHIFT));
-+		regval |= (sel & mux->mask) << (mux->shift + LPL_SHIFT);
-+	}
-+	krait_set_l2_indirect_reg(mux->offset, regval);
-+	spin_unlock_irqrestore(&krait_clock_reg_lock, flags);
-+
-+	/* Wait for switch to complete. */
-+	mb();
-+	udelay(1);
-+}
-+
-+static int krait_mux_set_parent(struct clk_hw *hw, u8 index)
-+{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+	u32 sel;
-+
-+	sel = clk_mux_reindex(index, mux->parent_map, 0);
-+	mux->en_mask = sel;
-+	/* Don't touch mux if CPU is off as it won't work */
-+	if (__clk_is_enabled(hw->clk))
-+		__krait_mux_set_sel(mux, sel);
-+
-+	return 0;
-+}
-+
-+static u8 krait_mux_get_parent(struct clk_hw *hw)
-+{
-+	struct krait_mux_clk *mux = to_krait_mux_clk(hw);
-+	u32 sel;
-+
-+	sel = krait_get_l2_indirect_reg(mux->offset);
-+	sel >>= mux->shift;
-+	sel &= mux->mask;
-+	mux->en_mask = sel;
-+
-+	return clk_mux_get_parent(hw, sel, mux->parent_map, 0);
-+}
-+
-+const struct clk_ops krait_mux_clk_ops = {
-+	.set_parent = krait_mux_set_parent,
-+	.get_parent = krait_mux_get_parent,
-+	.determine_rate = __clk_mux_determine_rate_closest,
-+};
-+EXPORT_SYMBOL_GPL(krait_mux_clk_ops);
-+
-+/* The divider can divide by 2, 4, 6 and 8. But we only really need div-2. */
-+static long krait_div2_round_rate(struct clk_hw *hw, unsigned long rate,
-+				  unsigned long *parent_rate)
-+{
-+	*parent_rate = clk_hw_round_rate(clk_hw_get_parent(hw), rate * 2);
-+	return DIV_ROUND_UP(*parent_rate, 2);
-+}
-+
-+static int krait_div2_set_rate(struct clk_hw *hw, unsigned long rate,
-+			       unsigned long parent_rate)
-+{
-+	struct krait_div2_clk *d = to_krait_div2_clk(hw);
-+	unsigned long flags;
-+	u32 val;
-+	u32 mask = BIT(d->width) - 1;
-+
-+	if (d->lpl)
-+		mask = mask << (d->shift + LPL_SHIFT) | mask << d->shift;
-+
-+	spin_lock_irqsave(&krait_clock_reg_lock, flags);
-+	val = krait_get_l2_indirect_reg(d->offset);
-+	val &= ~mask;
-+	krait_set_l2_indirect_reg(d->offset, val);
-+	spin_unlock_irqrestore(&krait_clock_reg_lock, flags);
-+
-+	return 0;
-+}
-+
-+static unsigned long
-+krait_div2_recalc_rate(struct clk_hw *hw, unsigned long parent_rate)
-+{
-+	struct krait_div2_clk *d = to_krait_div2_clk(hw);
-+	u32 mask = BIT(d->width) - 1;
-+	u32 div;
-+
-+	div = krait_get_l2_indirect_reg(d->offset);
-+	div >>= d->shift;
-+	div &= mask;
-+	div = (div + 1) * 2;
-+
-+	return DIV_ROUND_UP(parent_rate, div);
-+}
-+
-+const struct clk_ops krait_div2_clk_ops = {
-+	.round_rate = krait_div2_round_rate,
-+	.set_rate = krait_div2_set_rate,
-+	.recalc_rate = krait_div2_recalc_rate,
-+};
-+EXPORT_SYMBOL_GPL(krait_div2_clk_ops);
+ 	return 0;
+ }
+ 
 diff --git a/drivers/clk/qcom/clk-krait.h b/drivers/clk/qcom/clk-krait.h
-new file mode 100644
-index 0000000..d5c9c60
---- /dev/null
+index d5c9c60..6e2d4f4 100644
+--- a/drivers/clk/qcom/clk-krait.h
 +++ b/drivers/clk/qcom/clk-krait.h
-@@ -0,0 +1,38 @@
-+// SPDX-License-Identifier: GPL-2.0
-+// Copyright (c) 2017, The Linux Foundation. All rights reserved.
+@@ -13,6 +13,9 @@ struct krait_mux_clk {
+ 	u32		shift;
+ 	u32		en_mask;
+ 	bool		lpl;
++	u8		safe_sel;
++	u8		old_index;
++	bool		reparent;
+ 
+ 	struct clk_hw	hw;
+ 	struct notifier_block   clk_nb;
+diff --git a/drivers/clk/qcom/krait-cc.c b/drivers/clk/qcom/krait-cc.c
+index ee864fa..2d82c5f 100644
+--- a/drivers/clk/qcom/krait-cc.c
++++ b/drivers/clk/qcom/krait-cc.c
+@@ -26,6 +26,49 @@
+ 	0,
+ };
+ 
++/*
++ * Notifier function for switching the muxes to safe parent
++ * while the hfpll is getting reprogrammed.
++ */
++static int krait_notifier_cb(struct notifier_block *nb,
++			     unsigned long event,
++			     void *data)
++{
++	int ret = 0;
++	struct krait_mux_clk *mux = container_of(nb, struct krait_mux_clk,
++						 clk_nb);
++	/* Switch to safe parent */
++	if (event == PRE_RATE_CHANGE) {
++		mux->old_index = krait_mux_clk_ops.get_parent(&mux->hw);
++		ret = krait_mux_clk_ops.set_parent(&mux->hw, mux->safe_sel);
++		mux->reparent = false;
++	/*
++	 * By the time POST_RATE_CHANGE notifier is called,
++	 * clk framework itself would have changed the parent for the new rate.
++	 * Only otherwise, put back to the old parent.
++	 */
++	} else if (event == POST_RATE_CHANGE) {
++		if (!mux->reparent)
++			ret = krait_mux_clk_ops.set_parent(&mux->hw,
++							   mux->old_index);
++	}
 +
-+#ifndef __QCOM_CLK_KRAIT_H
-+#define __QCOM_CLK_KRAIT_H
++	return notifier_from_errno(ret);
++}
 +
-+#include <linux/clk-provider.h>
++static int krait_notifier_register(struct device *dev, struct clk *clk,
++				   struct krait_mux_clk *mux)
++{
++	int ret = 0;
 +
-+struct krait_mux_clk {
-+	unsigned int	*parent_map;
-+	u32		offset;
-+	u32		mask;
-+	u32		shift;
-+	u32		en_mask;
-+	bool		lpl;
++	mux->clk_nb.notifier_call = krait_notifier_cb;
++	ret = clk_notifier_register(clk, &mux->clk_nb);
++	if (ret)
++		dev_err(dev, "failed to register clock notifier: %d\n", ret);
 +
-+	struct clk_hw	hw;
-+	struct notifier_block   clk_nb;
-+};
++	return ret;
++}
 +
-+#define to_krait_mux_clk(_hw) container_of(_hw, struct krait_mux_clk, hw)
+ static int
+ krait_add_div(struct device *dev, int id, const char *s, unsigned int offset)
+ {
+@@ -70,6 +113,7 @@
+ krait_add_sec_mux(struct device *dev, int id, const char *s,
+ 		  unsigned int offset, bool unique_aux)
+ {
++	int ret;
+ 	struct krait_mux_clk *mux;
+ 	static const char *sec_mux_list[] = {
+ 		"acpu_aux",
+@@ -93,6 +137,7 @@
+ 	mux->shift = 2;
+ 	mux->parent_map = sec_mux_map;
+ 	mux->hw.init = &init;
++	mux->safe_sel = 0;
+ 
+ 	init.name = kasprintf(GFP_KERNEL, "krait%s_sec_mux", s);
+ 	if (!init.name)
+@@ -108,6 +153,11 @@
+ 
+ 	clk = devm_clk_register(dev, &mux->hw);
+ 
++	ret = krait_notifier_register(dev, clk, mux);
++	if (ret)
++		goto unique_aux;
 +
-+extern const struct clk_ops krait_mux_clk_ops;
-+
-+struct krait_div2_clk {
-+	u32		offset;
-+	u8		width;
-+	u32		shift;
-+	bool		lpl;
-+
-+	struct clk_hw	hw;
-+};
-+
-+#define to_krait_div2_clk(_hw) container_of(_hw, struct krait_div2_clk, hw)
-+
-+extern const struct clk_ops krait_div2_clk_ops;
-+
-+#endif
++unique_aux:
+ 	if (unique_aux)
+ 		kfree(sec_mux_list[0]);
+ err_aux:
+@@ -119,6 +169,7 @@
+ krait_add_pri_mux(struct device *dev, int id, const char *s,
+ 		  unsigned int offset)
+ {
++	int ret;
+ 	struct krait_mux_clk *mux;
+ 	const char *p_names[3];
+ 	struct clk_init_data init = {
+@@ -139,6 +190,7 @@
+ 	mux->lpl = id >= 0;
+ 	mux->parent_map = pri_mux_map;
+ 	mux->hw.init = &init;
++	mux->safe_sel = 2;
+ 
+ 	init.name = kasprintf(GFP_KERNEL, "krait%s_pri_mux", s);
+ 	if (!init.name)
+@@ -164,6 +216,10 @@
+ 
+ 	clk = devm_clk_register(dev, &mux->hw);
+ 
++	ret = krait_notifier_register(dev, clk, mux);
++	if (ret)
++		goto err_p3;
++err_p3:
+ 	kfree(p_names[2]);
+ err_p2:
+ 	kfree(p_names[1]);
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
