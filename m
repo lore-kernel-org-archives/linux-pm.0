@@ -1,73 +1,69 @@
-From: Biju Das <biju.das@bp.renesas.com>
-Subject: [PATCH v2 2/2] ARM: dts: r8a7743: Add thermal device to DT
-Date: Tue, 19 Dec 2017 13:17:29 +0000
-Message-ID: <1513689449-2700-3-git-send-email-biju.das@bp.renesas.com>
-References: <1513689449-2700-1-git-send-email-biju.das@bp.renesas.com>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1513689449-2700-1-git-send-email-biju.das@bp.renesas.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Chris Paterson <chris.paterson2@renesas.com>, Fabrizio Castro <fabrizio.castro@bp.renesas.com>, devicetree@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org, Biju Das <biju.das@bp.renesas.com>
+From: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH v5 00/11] Armada thermal: improvements and A7K/A8K SoCs support
+Date: Tue, 19 Dec 2017 14:57:08 +0100
+Message-ID: <20171219135719.9531-1-miquel.raynal@free-electrons.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This patch instantiates the thermal sensor module with thermal-zone
-support.
+Hi,
 
-This patch is based on the commit cac68a56e34b
-("ARM: dts: r8a7791: enable to use thermal-zone") by Kuninori Morimoto.
+This series takes over Baruch's series by integrating his patches about
+supporting thermal on Armada 7K and 8K SoCs within a larger series with
+several improvements on the armada_thermal.c driver.
 
-Signed-off-by: Biju Das <biju.das@bp.renesas.com>
-Reviewed-by: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-v1->v2
- * Fixed the size.
+For now, Armada 380 and CP110 compatibles share the same initialization
+routine but this will probably change in the near future when adding
+support for overheat interrupts.
 
- arch/arm/boot/dts/r8a7743.dtsi | 32 ++++++++++++++++++++++++++++++++
- 1 file changed, 32 insertions(+)
+DT bindings documentation is updated to match existing code.
 
-diff --git a/arch/arm/boot/dts/r8a7743.dtsi b/arch/arm/boot/dts/r8a7743.dtsi
-index f250147..6a6c40c 100644
---- a/arch/arm/boot/dts/r8a7743.dtsi
-+++ b/arch/arm/boot/dts/r8a7743.dtsi
-@@ -250,6 +250,38 @@
- 			resets = <&cpg 407>;
- 		};
- 
-+		thermal: thermal@e61f0000 {
-+			compatible = "renesas,thermal-r8a7743",
-+				     "renesas,rcar-gen2-thermal",
-+				     "renesas,rcar-thermal";
-+			reg = <0 0xe61f0000 0 0x10>, <0 0xe61f0100 0 0x38>;
-+			interrupts = <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg CPG_MOD 522>;
-+			power-domains = <&sysc R8A7743_PD_ALWAYS_ON>;
-+			resets = <&cpg 522>;
-+			#thermal-sensor-cells = <0>;
-+		};
-+
-+		thermal-zones {
-+			cpu_thermal: cpu-thermal {
-+				polling-delay-passive = <0>;
-+				polling-delay = <0>;
-+
-+				thermal-sensors = <&thermal>;
-+
-+				trips {
-+					cpu-crit {
-+						temperature = <95000>;
-+						hysteresis = <0>;
-+						type = "critical";
-+					};
-+				};
-+
-+				cooling-maps {
-+				};
-+			};
-+		};
-+
- 		timer {
- 			compatible = "arm,armv7-timer";
- 			interrupts = <GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(2) |
+Armada AP806 and CP110 DT are also updated with thermal nodes and have
+already been accepted (thus absent in this series).
+
+Thank you,
+Miquèl
+
+
+Changes since v4:
+  - Added Gregory's Reviewed-by tags
+  - Rephrased the paragraph in the documentation explaining what
+    compatible supports.
+  - Enumerated the compatibles supporting only the new bindings.
+  - Required the Armada 375 SoC compatible string to be used with
+    new bindings.
+
+
+Baruch Siach (4):
+  dt-bindings: thermal: Describe Armada AP806 and CP110
+  thermal: armada: Use msleep for long delays
+  thermal: armada: Add support for Armada AP806
+  thermal: armada: Add support for Armada CP110
+
+Miquel Raynal (7):
+  thermal: armada: Simplify the check of the validity bit
+  thermal: armada: Clarify control registers accesses
+  thermal: armada: Use real status register name
+  thermal: armada: Update Kconfig and module description
+  thermal: armada: Change sensors trim default value
+  thermal: armada: Wait sensors validity before exiting the init
+    callback
+  thermal: armada: Give meaningful names to the thermal zones
+
+ .../devicetree/bindings/thermal/armada-thermal.txt |  37 ++-
+ drivers/thermal/Kconfig                            |   4 +-
+ drivers/thermal/armada_thermal.c                   | 253 +++++++++++++++------
+ 3 files changed, 215 insertions(+), 79 deletions(-)
+
 -- 
-1.9.1
+2.11.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
