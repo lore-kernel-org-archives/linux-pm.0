@@ -1,7 +1,7 @@
 From: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v5 08/11] thermal: armada: Update Kconfig and module description
-Date: Tue, 19 Dec 2017 14:57:16 +0100
-Message-ID: <20171219135719.9531-9-miquel.raynal@free-electrons.com>
+Subject: [PATCH v5 05/11] thermal: armada: Use real status register name
+Date: Tue, 19 Dec 2017 14:57:13 +0100
+Message-ID: <20171219135719.9531-6-miquel.raynal@free-electrons.com>
 References: <20171219135719.9531-1-miquel.raynal@free-electrons.com>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <20171219135719.9531-1-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -10,59 +10,74 @@ To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valen
 Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Update Armada thermal driver Kconfig entry as well as the driver's
-MODULE_DESCRIPTION content, now that 64-bit SoCs are also supported,
-eg. Armada 7K and Armada 8K.
-
-Use the generic term "Marvell EBU Armada SoCs" instead of listing all
-the supported SoCs everywhere (excepted in the Kconfig description,
-where it is useful to have a list).
+Three 32-bit registers are used to drive the thermal IP: control0,
+control1 and status. The two control registers share the same name both
+in the documentation and in the code, while the latter is referred as
+"sensor" in the code. Rename this pointer to be called "status" in order
+to be aligned with the documentation.
 
 Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 Reviewed-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- drivers/thermal/Kconfig          | 4 ++--
- drivers/thermal/armada_thermal.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/thermal/armada_thermal.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 315ae2926e20..b6adc54b96f1 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -301,13 +301,13 @@ config DB8500_THERMAL
- 	  thermal zone if trip points reached.
- 
- config ARMADA_THERMAL
--	tristate "Armada 370/XP thermal management"
-+	tristate "Marvell EBU Armada SoCs thermal management"
- 	depends on ARCH_MVEBU || COMPILE_TEST
- 	depends on HAS_IOMEM
- 	depends on OF
- 	help
- 	  Enable this option if you want to have support for thermal management
--	  controller present in Armada 370 and Armada XP SoC.
-+	  controller present in Marvell EBU Armada SoCs (370,375,XP,38x,7K,8K).
- 
- config DA9062_THERMAL
- 	tristate "DA9062/DA9061 Dialog Semiconductor thermal driver"
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 3785b5248bf5..40b57ba2f55b 100644
+index d58376eba6d9..ceebabf45c53 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -1,5 +1,5 @@
- /*
-- * Marvell Armada 370/XP thermal sensor driver
-+ * Marvell EBU Armada SoCs thermal sensor driver
-  *
-  * Copyright (C) 2013 Marvell
-  *
-@@ -409,5 +409,5 @@ static struct platform_driver armada_thermal_driver = {
- module_platform_driver(armada_thermal_driver);
+@@ -51,7 +51,7 @@ struct armada_thermal_data;
  
- MODULE_AUTHOR("Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>");
--MODULE_DESCRIPTION("Armada 370/XP thermal driver");
-+MODULE_DESCRIPTION("Marvell EBU Armada SoCs thermal driver");
- MODULE_LICENSE("GPL v2");
+ /* Marvell EBU Thermal Sensor Dev Structure */
+ struct armada_thermal_priv {
+-	void __iomem *sensor;
++	void __iomem *status;
+ 	void __iomem *control0;
+ 	void __iomem *control1;
+ 	struct armada_thermal_data *data;
+@@ -99,9 +99,9 @@ static void armadaxp_init_sensor(struct platform_device *pdev,
+ 	writel(reg, priv->control1);
+ 
+ 	/* Enable the sensor */
+-	reg = readl_relaxed(priv->sensor);
++	reg = readl_relaxed(priv->status);
+ 	reg &= ~PMU_TM_DISABLE_MASK;
+-	writel(reg, priv->sensor);
++	writel(reg, priv->status);
+ }
+ 
+ static void armada370_init_sensor(struct platform_device *pdev,
+@@ -157,7 +157,7 @@ static void armada380_init_sensor(struct platform_device *pdev,
+ 
+ static bool armada_is_valid(struct armada_thermal_priv *priv)
+ {
+-	u32 reg = readl_relaxed(priv->sensor);
++	u32 reg = readl_relaxed(priv->status);
+ 
+ 	return reg & priv->data->is_valid_bit;
+ }
+@@ -176,7 +176,7 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
+ 		return -EIO;
+ 	}
+ 
+-	reg = readl_relaxed(priv->sensor);
++	reg = readl_relaxed(priv->status);
+ 	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
+ 
+ 	/* Get formula coeficients */
+@@ -279,9 +279,9 @@ static int armada_thermal_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	priv->sensor = devm_ioremap_resource(&pdev->dev, res);
+-	if (IS_ERR(priv->sensor))
+-		return PTR_ERR(priv->sensor);
++	priv->status = devm_ioremap_resource(&pdev->dev, res);
++	if (IS_ERR(priv->status))
++		return PTR_ERR(priv->status);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+ 	control = devm_ioremap_resource(&pdev->dev, res);
 -- 
 2.11.0
 
