@@ -1,107 +1,66 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [Resend][PATCH V2] cpufreq: intel_pstate: allow trace in passive mode
-Date: Tue, 19 Dec 2017 01:24:41 +0100
-Message-ID: <CAJZ5v0imBeL8tZwmJiB6UGBVgUUNcDm2izY0M7rZv=MtGsjTgA@mail.gmail.com>
-References: <1513384980-3428-1-git-send-email-dsmythies@telus.net> <1513639857.31113.12.camel@linux.intel.com>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH v2 3/4] dt-bindings: opp: Introduce ti-opp-supply bindings
+Date: Tue, 19 Dec 2017 01:26:06 +0100
+Message-ID: <CAJZ5v0iX9NykEu1yzL4D=iJ29fkd6ejXmu8kS9h4Mk8e1YxFWw@mail.gmail.com>
+References: <20171215042528.28715-1-d-gerlach@ti.com> <20171215042528.28715-4-d-gerlach@ti.com>
+ <CAJZ5v0iaYAodhiQm3=7OMhtqP3JXoX_RTrYMRDxVwO=3hTL7Bg@mail.gmail.com>
+ <CAJZ5v0iRg0Sncqt4s3M5+E0h=HJiEDQ4vnB3=6mFhECCv_Lnng@mail.gmail.com> <abe0efc0-6dfc-e9b0-c535-aa1a48bf1a6b@ti.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f193.google.com ([74.125.82.193]:39066 "EHLO
-        mail-ot0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S935186AbdLSAYm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 19:24:42 -0500
-In-Reply-To: <1513639857.31113.12.camel@linux.intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <abe0efc0-6dfc-e9b0-c535-aa1a48bf1a6b-l0cyMroinI0@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+Cc: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Linux OMAP Mailing List <linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Doug Smythies <doug.smythies@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Smythies <dsmythies@telus.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Tue, Dec 19, 2017 at 12:30 AM, Srinivas Pandruvada
-<srinivas.pandruvada@linux.intel.com> wrote:
-> On Fri, 2017-12-15 at 16:43 -0800, Doug Smythies wrote:
->> Allow use of the trace_pstate_sample trace function
->> when the intel_pstate driver is in passive mode.
->> Since the core_busy and scaled_busy fields are not
->> used, and it might be desirable to know which path
->> through the driver was used, either intel_cpufreq_target
->> or intel_cpufreq_fast_switch, re-task the core_busy
->> field as a flag indicator.
+On Mon, Dec 18, 2017 at 8:25 PM, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> wrote:
+> Rafael,
+> On 12/16/2017 04:52 AM, Rafael J. Wysocki wrote:
+>> On Fri, Dec 15, 2017 at 3:29 PM, Rafael J. Wysocki <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+>>> On Fri, Dec 15, 2017 at 5:25 AM, Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org> wrote:
+>>>> Document the devicetree bindings that describe Texas Instruments
+>>>> opp-supply which allow a platform to describe multiple regulators and
+>>>> additional information, such as registers containing data needed to
+>>>> program aforementioned regulators.
+>>>>
+>>>> Signed-off-by: Dave Gerlach <d-gerlach-l0cyMroinI0@public.gmane.org>
+>>>
+>>> I need an ACK from Rob on this one.
 >>
->> The user can then use the intel_pstate_tracer.py utility
->> to summarize and plot the trace.
+>> Actually, how this (and the next patch) is related to the [1-2/4]?
 >>
->> In Passive mode the driver is only called if there is
->> a need to change the target frequency, so durations
->> (time gaps between calls) can be very very long. The user
->> needs to understand, and not be confused by, this limitation.
->>
->> V2: prepare for resend. Rebase to current kernel, 4.15-rc3.
->> Signed-off-by: Doug Smythies <dsmythies@telus.net>
->> ---
->>  drivers/cpufreq/intel_pstate.c | 50
->> ++++++++++++++++++++++++++++++++++++++++--
->>  1 file changed, 48 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/cpufreq/intel_pstate.c
->> b/drivers/cpufreq/intel_pstate.c
->> index 93a0e88..fe25d69 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -1949,7 +1949,10 @@ static int intel_cpufreq_target(struct
->> cpufreq_policy *policy,
->>  {
->>       struct cpudata *cpu = all_cpu_data[policy->cpu];
->>       struct cpufreq_freqs freqs;
->> -     int target_pstate;
->> +     struct sample *sample;
->> +     int target_pstate, from;
->> +     u64 time;
->> +     bool sample_taken;
->>
->>       update_turbo_state();
->>
->> @@ -1969,12 +1972,32 @@ static int intel_cpufreq_target(struct
->> cpufreq_policy *policy,
->>               break;
->>       }
->>       target_pstate = intel_pstate_prepare_request(cpu,
->> target_pstate);
->> +
->> +     from = cpu->pstate.current_pstate;
->> +     time = ktime_get();
->> +     sample_taken = intel_pstate_sample(cpu, time);
->> +
-> This is quite a bit of overhead for tracing. Why not fold the above two
-> statements in the next if () with conditional tracing?
 >
->>       if (target_pstate != cpu->pstate.current_pstate) {
->>               cpu->pstate.current_pstate = target_pstate;
->>               wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
->>                             pstate_funcs.get_val(cpu,
->> target_pstate));
->>       }
->>       freqs.new = target_pstate * cpu->pstate.scaling;
->> +
->> +     if (sample_taken) {
-> if (trace_pstate_sample_enabled() && sample_taken) {
+> The main goal of this series is to add support for scaling the multiple
+> regulators needed for the CPU on these TI platforms. The OPP core supports
+> multiple regulators but only to the point that it can associate a list of
+> regulators to a device. It still by default only scales the normal vdd regulator
+> when doing a rate transition. Because of this, we must define our own method of
+> doing rate transitions to take the references to our regulators held in the OPP
+> core and scale them in the proper sequence depending on what the platform needs.
 >
->> +             intel_pstate_calc_avg_perf(cpu);
->> +             sample = &cpu->sample;
->> +             trace_pstate_sample(0,
-> Not sure they are statement below are aligned correctly.
+> So to describe the purpose of each patch and their relation to each other:
 >
->> +             0,
->> +             from,
->> +             cpu->pstate.current_pstate,
->> +             sample->mperf,
->> +             sample->aperf,
->> +             sample->tsc,
->> +             get_avg_frequency(cpu),
->> +             fp_toint(cpu->iowait_boost * 100));
->> +     }
->> +
-> Same below in the intel_cpufreq_fast_switch().
+> Patch 1: We must be able to defer the ti-cpufreq driver now that we look for
+> regulators during probe as they likely won't be ready when we probe.
+>
+> Patch 2: Tell the OPP core about regulators needed for TI CPUFreq operation
+> using the OPP core. This doesn't actually do anything besides place them in a
+> list at this point because the OPP core can't know how TI platforms needs them
+> scaled in relation to each other. Placing the regulator definition in ti-cpufreq
+> driver ensures they are registered with opp core before cpufreq-dt probes (which
+> is triggered at the end of ti-cpufreq probe) and actually makes the opp core get
+> the regulators.
+>
+> Patch 3: Binding doc for patch 4 driver.
+>
+> Patch 4: TI OPP supply driver which understands how to actually make use of the
+> two regulators that the OPP core now has a reference to. This overrides the
+> standard opp_set_rate function to let us scale frequency and voltage as needed
+> for TI platforms.
 
-And it's quite a bit of code duplication too.
-
-Maybe put this into a separate function and call it from the two places?
+Thanks for the explanation, I've applied the series.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
