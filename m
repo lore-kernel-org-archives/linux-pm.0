@@ -1,87 +1,57 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v5 10/15] devicetree: bindings: Document qcom,kpss-gcc
-Date: Tue, 19 Dec 2017 21:24:55 +0530
-Message-ID: <1513698900-10638-11-git-send-email-sricharan@codeaurora.org>
-References: <1513698900-10638-1-git-send-email-sricharan@codeaurora.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1513698900-10638-1-git-send-email-sricharan@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: robh+dt@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Cc: sricharan@codeaurora.org
+From: Stefan Riedmueller <s.riedmueller@phytec.de>
+Subject: [PATCH] cpufreq: imx6q-cpufreq: Fix speed grading check for imx6qp
+Date: Tue, 19 Dec 2017 16:56:22 +0100
+Message-ID: <1513698982-13560-1-git-send-email-s.riedmueller@phytec.de>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.visioncatalog.de ([217.6.246.34]:55620 "EHLO
+        root.phytec.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752349AbdLSQDL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 19 Dec 2017 11:03:11 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net, viresh.kumar@linaro.org
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, fabio.estevam@nxp.com, Stefan Riedmueller <s.riedmueller@phytec.de>
 
-From: Stephen Boyd <sboyd@codeaurora.org>
+Add compatibility for the i.MX 6QuadPlus to make it behave like the
+i.MX 6Quad, as both SOCs use the same operating points. Otherwise the
+i.MX 6QuadPlus tries to run with 1.2 GHz even though it only
+supports 1 GHz.
 
-The ACC and GCC regions present in KPSSv1 contain registers to
-control clocks and power to each Krait CPU and L2. Documenting
-the bindings here.
-
-Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
+Signed-off-by: Stefan Riedmueller <s.riedmueller@phytec.de>
 ---
- .../devicetree/bindings/arm/msm/qcom,kpss-acc.txt  |  7 +++++
- .../devicetree/bindings/arm/msm/qcom,kpss-gcc.txt  | 32 ++++++++++++++++++++++
- 2 files changed, 39 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
+ drivers/cpufreq/imx6q-cpufreq.c | 8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
-index 1333db9..382a574 100644
---- a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
-+++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-acc.txt
-@@ -21,10 +21,17 @@ PROPERTIES
- 		    the register region. An optional second element specifies
- 		    the base address and size of the alias register region.
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index 628fe89..5ca1988 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -218,7 +218,7 @@ static void imx6q_opp_check_speed_grading(struct device *dev)
+ 	 * SPEED_GRADING[1:0] defines the max speed of ARM:
+ 	 * 2b'11: 1200000000Hz;
+ 	 * 2b'10: 996000000Hz;
+-	 * 2b'01: 852000000Hz; -- i.MX6Q Only, exclusive with 996MHz.
++	 * 2b'01: 852000000Hz; -- i.MX6Q/QP Only, exclusive with 996MHz.
+ 	 * 2b'00: 792000000Hz;
+ 	 * We need to set the max speed of ARM according to fuse map.
+ 	 */
+@@ -227,13 +227,15 @@ static void imx6q_opp_check_speed_grading(struct device *dev)
+ 	val &= 0x3;
  
-+- clock-output-names:
-+	Usage: optional
-+	Value type: <string>
-+	Definition: Name of the output clock. Typically acpuX_aux where X is a
-+		    CPU number starting at 0.
-+
- Example:
- 
- 	clock-controller@2088000 {
- 		compatible = "qcom,kpss-acc-v2";
- 		reg = <0x02088000 0x1000>,
- 		      <0x02008000 0x1000>;
-+		clock-output-names = "acpu0_aux";
- 	};
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
-new file mode 100644
-index 0000000..37fc0a4
---- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/msm/qcom,kpss-gcc.txt
-@@ -0,0 +1,32 @@
-+Krait Processor Sub-system (KPSS) Global Clock Controller (GCC)
-+
-+PROPERTIES
-+
-+- compatible:
-+	Usage: required
-+	Value type: <string>
-+	Definition: should be one of the following. The generic compatible
-+			"qcom,kpss-gcc" should also be included.
-+			"qcom,kpss-gcc-ipq8064", "qcom,kpss-gcc"
-+			"qcom,kpss-gcc-apq8064", "qcom,kpss-gcc"
-+			"qcom,kpss-gcc-msm8974", "qcom,kpss-gcc"
-+			"qcom,kpss-gcc-msm8960", "qcom,kpss-gcc"
-+
-+- reg:
-+	Usage: required
-+	Value type: <prop-encoded-array>
-+	Definition: base address and size of the register region
-+
-+- clock-output-names:
-+	Usage: required
-+	Value type: <string>
-+	Definition: Name of the output clock. Typically acpu_l2_aux indicating
-+		    an L2 cache auxiliary clock.
-+
-+Example:
-+
-+	l2cc: clock-controller@2011000 {
-+		compatible = "qcom,kpss-gcc-ipq8064", "qcom,kpss-gcc";
-+		reg = <0x2011000 0x1000>;
-+		clock-output-names = "acpu_l2_aux";
-+	};
+ 	if ((val != OCOTP_CFG3_SPEED_1P2GHZ) &&
+-	     of_machine_is_compatible("fsl,imx6q"))
++	    (of_machine_is_compatible("fsl,imx6q") ||
++	     of_machine_is_compatible("fsl,imx6qp")))
+ 		if (dev_pm_opp_disable(dev, 1200000000))
+ 			dev_warn(dev, "failed to disable 1.2GHz OPP\n");
+ 	if (val < OCOTP_CFG3_SPEED_996MHZ)
+ 		if (dev_pm_opp_disable(dev, 996000000))
+ 			dev_warn(dev, "failed to disable 996MHz OPP\n");
+-	if (of_machine_is_compatible("fsl,imx6q")) {
++	if (of_machine_is_compatible("fsl,imx6q") ||
++	    of_machine_is_compatible("fsl,imx6qp")) {
+ 		if (val != OCOTP_CFG3_SPEED_852MHZ)
+ 			if (dev_pm_opp_disable(dev, 852000000))
+ 				dev_warn(dev, "failed to disable 852MHz OPP\n");
 -- 
-QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+2.7.4
