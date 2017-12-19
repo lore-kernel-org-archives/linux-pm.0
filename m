@@ -1,87 +1,45 @@
-From: Miquel Raynal <miquel.raynal@free-electrons.com>
-Subject: [PATCH v5 01/11] dt-bindings: thermal: Describe Armada AP806 and CP110
-Date: Tue, 19 Dec 2017 14:57:09 +0100
-Message-ID: <20171219135719.9531-2-miquel.raynal@free-electrons.com>
-References: <20171219135719.9531-1-miquel.raynal@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:55179 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1763249AbdLSN5f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Dec 2017 08:57:35 -0500
-In-Reply-To: <20171219135719.9531-1-miquel.raynal@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH 2/3 v6] battery: Add the ThinkPad "Not Charging" quirk
+Date: Tue, 19 Dec 2017 16:34:47 +0200
+Message-ID: <CAHp75VdDXuOmL0tnQE9V4P1ZNjbw1BVZ0HFEMhJqew-JZeVtGg@mail.gmail.com>
+References: <20171215165750.GA6282@thinkpad> <CAJZ5v0ida0RTUBdtpCK4rAXfdukadpTyxD0Rpp4R=kKcukyjKA@mail.gmail.com>
+ <20171216084850.GA19033@thinkpad> <CAJZ5v0gWooR7rtY0qmEyERr=A+BoLWoSAHh5Reh3xE5Gvks9+g@mail.gmail.com>
+ <CALgTWSv-4DSnU1MLiapL22rK-qaa45xCz6WuMnM_AeBtKYDidw@mail.gmail.com>
+ <CAHp75VfZaiQfridSQZh+TzpY1BGT3-Jk_2KGBKReMe7TFC507g@mail.gmail.com> <CAJZ5v0jqZk6CNPQ0xZ7ktzM61iFZMLCNhGWGVX5+9OZ5qXMo_g@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0jqZk6CNPQ0xZ7ktzM61iFZMLCNhGWGVX5+9OZ5qXMo_g@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: =?UTF-8?Q?Ognjen_Gali=C4=87?= <smclt30p@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Miquel Raynal <miquel.raynal@free-electrons.com>, Baruch Siach <baruch@tkos.co.il>, David Sniatkiwicz <davidsn@marvell.com>
 
-From: Baruch Siach <baruch@tkos.co.il>
+On Mon, Dec 18, 2017 at 7:31 PM, Rafael J. Wysocki <rafael@kernel.org> wrot=
+e:
+> On Mon, Dec 18, 2017 at 1:36 PM, Andy Shevchenko
+> <andy.shevchenko@gmail.com> wrote:
+>> On Mon, Dec 18, 2017 at 12:21 PM, Ognjen Gali=C4=87 <smclt30p@gmail.com>=
+ wrote:
+>>> On 16/12/2017, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>
+>>>> I would reorder it as the first patch in the series, then, because the
+>>>> other two are more related to each other.
+>>
+>>> Do I really need now to re-order and re-send the whole patchset for it
+>>> to get merged?
+>>
+>> Through which tree it's supposed to go?
+>
+> Wait, wait.  I haven't commented patches [1,3/3] yet, so no ACKs
+> assumed, please.
 
-Add compatible strings for AP806 and CP110 that are part of the Armada
-8k/7k line of SoCs.
+I would prefer if you can take it through linux-pm.
 
-Add a note on the differences in the size of the control area in
-different bindings. This is an existing difference between the Armada
-375 binding and the other boards already supported. The new AP806 and
-CP110 bindings are similar to the existing Armada 375 in this regard.
+Whenever you are okay with the series let me know I would review PDx86 bits=
+.
 
-Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-[<miquel.raynal@free-electrons.com>: reword, additional details]
-Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
----
- .../devicetree/bindings/thermal/armada-thermal.txt | 37 +++++++++++++++-------
- 1 file changed, 25 insertions(+), 12 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-index 24aacf8948c5..e0d013a2e66d 100644
---- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-@@ -2,22 +2,35 @@
- 
- Required properties:
- 
--- compatible:	Should be set to one of the following:
--		marvell,armada370-thermal
--		marvell,armada375-thermal
--		marvell,armada380-thermal
--		marvell,armadaxp-thermal
-+- compatible: Should be set to one of the following:
-+    * marvell,armada370-thermal
-+    * marvell,armada375-thermal
-+    * marvell,armada380-thermal
-+    * marvell,armadaxp-thermal
-+    * marvell,armada-ap806-thermal
-+    * marvell,armada-cp110-thermal
- 
--- reg:		Device's register space.
--		Two entries are expected, see the examples below.
--		The first one is required for the sensor register;
--		the second one is required for the control register
--		to be used for sensor initialization (a.k.a. calibration).
-+- reg: Device's register space.
-+  Two entries are expected, see the examples below. The first one points
-+  to the status register (4B). The second one points to the control
-+  registers (8B).
-+  Note: The compatibles marvell,armada370-thermal,
-+  marvell,armada380-thermal, and marvell,armadaxp-thermal must point to
-+  "control MSB/control 1", with size of 4 (deprecated binding), or point
-+  to "control LSB/control 0" with size of 8 (current binding). All other
-+  compatibles must point to "control LSB/control 0" with size of 8.
- 
--Example:
-+Examples:
- 
-+	/* Legacy bindings */
- 	thermal@d0018300 {
- 		compatible = "marvell,armada370-thermal";
--                reg = <0xd0018300 0x4
-+		reg = <0xd0018300 0x4
- 		       0xd0018304 0x4>;
- 	};
-+
-+	ap_thermal: thermal@6f8084 {
-+		compatible = "marvell,armada-ap806-thermal";
-+		reg = <0x6f808C 0x4>,
-+		      <0x6f8084 0x8>;
-+	};
--- 
-2.11.0
+--=20
+With Best Regards,
+Andy Shevchenko
