@@ -1,31 +1,44 @@
-From: Corey Minyard <minyard@acm.org>
-Subject: Re: [-next PATCH 0/4] sysfs and DEVICE_ATTR_<foo>
-Date: Tue, 19 Dec 2017 13:26:26 -0600
-Message-ID: <09832872-8e6c-3327-6e28-7ee6cc48df04@acm.org>
-References: <cover.1513706701.git.joe@perches.com>
-Reply-To: minyard@acm.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <driverdev-devel-bounces@linuxdriverproject.org>
-In-Reply-To: <cover.1513706701.git.joe@perches.com>
-Content-Language: en-GB
-List-Unsubscribe: <http://driverdev.linuxdriverproject.org/mailman/options/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=unsubscribe>
-List-Archive: <http://driverdev.linuxdriverproject.org/pipermail/driverdev-devel/>
-List-Post: <mailto:driverdev-devel@linuxdriverproject.org>
-List-Help: <mailto:driverdev-devel-request@linuxdriverproject.org?subject=help>
-List-Subscribe: <http://driverdev.linuxdriverproject.org/mailman/listinfo/driverdev-devel>,
- <mailto:driverdev-devel-request@linuxdriverproject.org?subject=subscribe>
-Errors-To: driverdev-devel-bounces@linuxdriverproject.org
-Sender: "devel" <driverdev-devel-bounces@linuxdriverproject.org>
-To: Joe Perches <joe@perches.com>, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, openipmi-developer@lists.sourceforge.net, intel-gfx@lists.freedesktop.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, platform-driver-x86@vger.kernel.org, linux-s390@vger.kernel.org, esc.storagedev@microsemi.com, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, linux-omap@vger.kernel.org
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org, linux-media@vger.kernel.org
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH 0/3] phy: core: Re-work runtime PM deployment and fix an issue
+Date: Tue, 19 Dec 2017 22:22:28 +0100
+Message-ID: <1513718551-28624-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f67.google.com ([209.85.215.67]:33715 "EHLO
+        mail-lf0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751305AbdLSVW6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Dec 2017 16:22:58 -0500
+Received: by mail-lf0-f67.google.com with SMTP id g80so17279623lfg.0
+        for <linux-pm@vger.kernel.org>; Tue, 19 Dec 2017 13:22:58 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Kishon Vijay Abraham I <kishon@ti.com>, linux-kernel@vger.kernel.org
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-renesas-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 
-On 12/19/2017 12:15 PM, Joe Perches wrote:
->   drivers/char/ipmi/ipmi_msghandler.c                | 17 +++---
+The intend of this series is to simplify the runtime PM deployment in the phy
+core, but while doing that fixing a related problem for a Renesas SoC making use
+of a phy. This issue was raised by Geert Uytterhoeven and Yoshihiro Shimoda, due
+to a changed behaviour in the runtime PM core.
 
-For ipmi:
+The commit in question is f8817f61e821 (PM / runtime: Drop children check from
+__pm_runtime_set_status()). However, it turned out that the problem existed
+already prior this change, only that the error was printed instead of giving a
+WARN splat.
 
-Acked-by: Corey Minyard <cminyard@mvista.com>
+More details about the changes are available in each change log. For additional
+background, please have look at the link below.
+
+https://patchwork.kernel.org/patch/10086651/
+
+Ulf Hansson (3):
+  phy: core: Move runtime PM reference counting to the parent device
+  phy: core: Drop unused runtime PM APIs
+  phy: core: Update the runtime PM section in the docs to reflect
+    changes
+
+ Documentation/phy.txt   | 28 +++++++-------
+ drivers/phy/phy-core.c  | 99 +++++++------------------------------------------
+ include/linux/phy/phy.h | 45 ----------------------
+ 3 files changed, 28 insertions(+), 144 deletions(-)
+
+-- 
+2.7.4
