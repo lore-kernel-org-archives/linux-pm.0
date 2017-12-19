@@ -1,132 +1,71 @@
-From: Miquel RAYNAL <miquel.raynal@free-electrons.com>
-Subject: Re: [PATCH v4 04/12] thermal: armada: Clarify control registers
- accesses
-Date: Tue, 19 Dec 2017 09:23:45 +0100
-Message-ID: <20171219092345.470fd427@xps13>
-References: <20171218143643.7714-1-miquel.raynal@free-electrons.com>
-        <20171218143643.7714-5-miquel.raynal@free-electrons.com>
-        <20171218203542.msnswjqeyuudyusz@tarshish>
-        <20171219013233.319365c4@xps13>
-        <20171219055154.f23leaob3zndmmqo@sapphire.tkos.co.il>
-        <20171219090814.3a53ec3d@xps13>
-        <20171219081941.utke7dh5bmmlub6h@sapphire.tkos.co.il>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpufreq: powernv: Add support of frequency domain
+Date: Tue, 19 Dec 2017 14:50:37 +0530
+Message-ID: <20171219092037.GA27991@in.ibm.com>
+References: <20171213081937.16376-1-huntbag@linux.vnet.ibm.com>
+ <20171214044239.GU3322@vireshk-i7>
+ <93cc9d38-4fd8-d340-2263-108329b69b94@linux.vnet.ibm.com>
+ <20171218082935.GH19815@vireshk-i7>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:45068 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S934287AbdLSIXs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Dec 2017 03:23:48 -0500
-In-Reply-To: <20171219081941.utke7dh5bmmlub6h@sapphire.tkos.co.il>
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:47246 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S935685AbdLSJUn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Dec 2017 04:20:43 -0500
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vBJ9Jh8g008595
+        for <linux-pm@vger.kernel.org>; Tue, 19 Dec 2017 04:20:42 -0500
+Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 2exyt7gude-1
+        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
+        for <linux-pm@vger.kernel.org>; Tue, 19 Dec 2017 04:20:42 -0500
+Received: from localhost
+        by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
+        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
+        Tue, 19 Dec 2017 04:20:41 -0500
+Content-Disposition: inline
+In-Reply-To: <20171218082935.GH19815@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Baruch Siach <baruch@tkos.co.il>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Jason Cooper <jason@lakedaemon.net>, Andrew Lunn <andrew@lunn.ch>, Gregory Clement <gregory.clement@free-electrons.com>, Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Abhishek <huntbag@linux.vnet.ibm.com>, ego@linux.vnet.ibm.com, rjw@rjwysocki.net, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 
-Hi Baruch,
-
-On Tue, 19 Dec 2017 10:19:41 +0200
-Baruch Siach <baruch@tkos.co.il> wrote:
-
-> Hi Miquèl,
+Hi Viresh,
+On Mon, Dec 18, 2017 at 01:59:35PM +0530, Viresh Kumar wrote:
+> On 18-12-17, 10:41, Abhishek wrote:
+> > We need to do it in this way as the current implementation takes the max of
+> > the PMSR of the cores. Thus, when the frequency is required to be ramped up,
+> > it suffices to write to just the local PMSR, but when the frequency is to be
+> > ramped down, if we don't send the IPI it breaks the compatibility with P8.
 > 
-> On Tue, Dec 19, 2017 at 09:08:14AM +0100, Miquel RAYNAL wrote:
-> > On Tue, 19 Dec 2017 07:51:54 +0200
-> > Baruch Siach <baruch@tkos.co.il> wrote:  
-> > > On Tue, Dec 19, 2017 at 01:32:33AM +0100, Miquel RAYNAL wrote:  
-> > > > On Mon, 18 Dec 2017 22:35:42 +0200
-> > > > Baruch Siach <baruch@tkos.co.il> wrote:    
-> > > > > On Mon, Dec 18, 2017 at 03:36:35PM +0100, Miquel Raynal
-> > > > > wrote:    
-> > > > > > Bindings were incomplete for a long time by only exposing
-> > > > > > one of the two available control registers. To ease the
-> > > > > > migration to the full bindings (already in use for the
-> > > > > > Armada 375 SoC), rename the pointers for clarification.
-> > > > > > This way, it will only be needed to add another pointer to
-> > > > > > access the other control register when the time comes.
-> > > > > > 
-> > > > > > This avoids dangerous situations where the offset 0 of the
-> > > > > > control area can be either one register or the other
-> > > > > > depending on the bindings used. After this change, device
-> > > > > > trees of other SoCs could be migrated to the "full"
-> > > > > > bindings if they may benefit from features from the
-> > > > > > unaccessible register, without any change in the driver.
-> > > > > > 
-> > > > > > Signed-off-by: Miquel Raynal
-> > > > > > <miquel.raynal@free-electrons.com> Reviewed-by: Gregory
-> > > > > > CLEMENT <gregory.clement@free-electrons.com> ---      
-> > > > > 
-> > > > > [...]
-> > > > >     
-> > > > > > +	/*
-> > > > > > +	 * Legacy DT bindings only described "control1"
-> > > > > > register (also referred
-> > > > > > +	 * as "control MSB" on old documentation). New
-> > > > > > bindings cover
-> > > > > > +	 * "control0/control LSB" and "control1/control
-> > > > > > MSB" registers within
-> > > > > > +	 * the same resource, which is then of size 8
-> > > > > > instead of 4.
-> > > > > > +	 */
-> > > > > > +	if (resource_size(res) == LEGACY_CONTROL_MEM_LEN) {
-> > > > > > +		/* ->control0 unavailable in this
-> > > > > > configuration */
-> > > > > > +		priv->control1 = control +
-> > > > > > LEGACY_CONTROL1_OFFSET;
-> > > > > > +	} else {
-> > > > > > +		priv->control0 = control + CONTROL0_OFFSET;
-> > > > > > +		priv->control1 = control + CONTROL1_OFFSET;
-> > > > > > +	}      
-> > > > > 
-> > > > > The needs_control0 field that you mentioned in the cover page
-> > > > > is missing here.    
-> > > > 
-> > > > Yes, at this point nobody actually *needs* control0 so the
-> > > > limitation is added with the patch that introduce ap806 support
-> > > > as it is the first compatible that needs both control0 and
-> > > > control1 to work correctly. Does this bother you?    
-> > > 
-> > > No. It is just that we agreed to have a verification here that the
-> > > size of the control registers resource matches the binding. I
-> > > thought that the needs_control0 field that you mention in the
-> > > cover page is meant to implement that.  
-> > 
-> > That is absolutely right, but at this point in the series, the
-> > supported compatible strings are
-> > "marvell,armada[370|375|38x|xp]-thermal". All of them can use both
-> > bindings so I don't see the point to have a needs_control0 field in
-> > this patch. It is introduced in the next patch that adds support
-> > for ap806 by only supporting the new bindings though.  
+> Looks strange really that you have to program this differently for speeding up
+> or down. These CPUs are part of one cpufreq policy and so I would normally
+> expect changes to any CPU should reflect for other CPUs as well.
 > 
-> OK. Makes sense.
-> 
-> > > necessary. It would just make sure that no one introduces a DT
-> > > with the wrong resource size.  
-> > 
-> > Not sure I understand what exactly you wanna check, can you
-> > give me an example?  
-> 
-> I wrote that before it occurred to me that we can use the control
-> registers size the distinguish between the old binding and the new
-> one.
-> 
-> I still think it would be nice to add needs_control0=true to
-> armada375_data, for consistency with the ap806 and cp110.
-
-Oh that is right, I forgot about that. I will add it and move the
-need_control0 boolean to this patch.
-
-Thank you,
-Miquèl
-
-> 
-> baruch
+> @Goutham: Do you know why it is so ?
 > 
 
+These are due to some implementation quirks where the platform has
+provided a PMCR per-core to be backward compatible with POWER8, but
+controls the frequency at a quad-level, by taking the maximum of the
+four PMCR values instead of the latest one. So, changes to any CPU in
+the core will reflect on all the cores if the frequency is higher than
+the current frequency, but not necessarily if the requested frequency
+is lower than the current frequency.
 
+Without sending the extra IPIs, we will be breaking the ABI since if
+we set userspace governor, and change the frequency of a core by
+lowering it, then it will not reflect on the CPUs of the cores in the
+quad.
 
--- 
-Miquel Raynal, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+Abhishek,
+I think we can rework this by sending the extra IPIs only in the
+presence of the quirk which can be indicated through a device-tree
+parameter. If the future implementation fix this, then we won't need
+the extra IPIs.
+
+> -- 
+> viresh
+> 
