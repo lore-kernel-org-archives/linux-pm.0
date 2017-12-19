@@ -1,65 +1,98 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Subject: Re: [PATCH 00/11] fs: use freeze_fs on suspend/hibernate
-Date: Tue, 19 Dec 2017 17:50:48 +0100
-Message-ID: <20171219165048.GE729@wotan.suse.de>
-References: <20171129232356.28296-1-mcgrof@kernel.org>
- <7282138.2afjHhBgNp@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH 3/4] PM / core: Direct DPM_FLAG_SMART_SUSPEND optimization
+Date: Tue, 19 Dec 2017 17:54:15 +0100
+Message-ID: <CAJZ5v0haf3fkwfbfA0rOTTqOLjzyeB8ewKfz5WdYSL09ffkJLw@mail.gmail.com>
+References: <7742130.AaJQIxeI1n@aspire.rjw.lan> <252167445.OQUXi2Ca9Y@aspire.rjw.lan>
+ <CAPDyKFpC0xLfGLqyWUZwnSVdeY9Ojs-JUtPzEkRr=KAuSXDfmQ@mail.gmail.com>
+ <CAJZ5v0hFP4zP+Q1znQ9ZnUTLunNaStmSR4-h-AqKn6UaF-d9Vw@mail.gmail.com>
+ <CAPDyKFpG5UbTqyVSg+5oTpq2ipVxQqydd39oUOG+5TNVEXG-YA@mail.gmail.com> <CAJZ5v0hSHEb+TeSqmparHAwvWM1tLN+6TNsEQL96mOMtLjWLjA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.suse.de ([195.135.220.15]:32902 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751906AbdLSQuv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 19 Dec 2017 11:50:51 -0500
-Content-Disposition: inline
-In-Reply-To: <7282138.2afjHhBgNp@aspire.rjw.lan>
+Received: from mail-ot0-f196.google.com ([74.125.82.196]:38068 "EHLO
+        mail-ot0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750877AbdLSQyQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Dec 2017 11:54:16 -0500
+In-Reply-To: <CAJZ5v0hSHEb+TeSqmparHAwvWM1tLN+6TNsEQL96mOMtLjWLjA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, viro@zeniv.linux.org.uk, bart.vanassche@wdc.com, ming.lei@redhat.com, tytso@mit.edu, darrick.wong@oracle.com, jikos@kernel.org, pavel@ucw.cz, len.brown@intel.com, linux-fsdevel@vger.kernel.org, boris.ostrovsky@oracle.com, jgross@suse.com, todd.e.brandt@linux.intel.com, nborisov@suse.com, jack@suse.cz, martin.petersen@oracle.com, ONeukum@suse.com, oleksandr@natalenko.name, oleg.b.antonyan@gmail.com, yu.chen.surf@gmail.com, dan.j.williams@intel.com, linux-pm@vger.kernel.org, linux-block@vger.kernel.org, linux-xfs@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On Wed, Dec 13, 2017 at 02:09:49AM +0100, Rafael J. Wysocki wrote:
-> I'm assuming an update of this to be posted due to the comments from Jan
-> on patch [3/11] and patch [7/11] probably.
-> 
-> Is there anything else that needs to be addressed?
+On Tue, Dec 19, 2017 at 5:29 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Tue, Dec 19, 2017 at 2:10 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 19 December 2017 at 12:13, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>> On Tue, Dec 19, 2017 at 8:38 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>> On 10 December 2017 at 01:00, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>>>
+>>>>> Make the PM core avoid invoking the "late" and "noirq" system-wide
+>>>>> suspend (or analogous) callbacks provided by device drivers directly
+>>>>> for devices with DPM_FLAG_SMART_SUSPEND set that are in runtime
+>>>>> suspend during the "late" and "noirq" phases of system-wide suspend
+>>>>> (or analogous) transitions.  That is only done for devices without
+>>>>> any middle-layer "late" and "noirq" suspend callbacks (to avoid
+>>>>> confusing the middle layer if there is one).
+>>>>>
+>>>>> The underlying observation is that runtime PM is disabled for devices
+>>>>> during the "late" and "noirq" system-wide suspend phases, so if they
+>>>>> remain in runtime suspend from the "late" phase forward, it doesn't
+>>>>> make sense to invoke the "late" and "noirq" callbacks provided by
+>>>>> the drivers for them (arguably, the device is already suspended and
+>>>>> in the right state).  Thus, if the remaining driver suspend callbacks
+>>>>> are to be invoked directly by the core, they can be skipped.
+>>>>>
+>>>
+>>> It looks like I'm consistently failing to explain my point clearly enough. :-)
+>>>
+>>>> As I have stated earlier, this isn't going to solve the general case,
+>>>> as the above change log seems to state.
+>
+> No, it doesn't, as long as drivers follow the documentation.
+>
+> So your concern seems to be "What if I don't follow the
+> documentation?" which, honestly, is not something I can address. :-)
 
-I was waiting on Jan Kara's feedback on how he'd like to proceed with the
-unthawing on error given his point on that the device mapper API seems to match
-the in kernel automatic freezing just that I didn't use that same interface.
+I'm not sure why this ended up in this particular place ...
 
-0-day did come back with one RCU issue which I also have to address:
+I must have messed up something.
 
-[  422.919958] kernel BUG at kernel/rcu/sync.c:228!                                                                                                                                           
-[  422.920115] invalid opcode: 0000 [#1] SMP                                                                                                                                                  
-[  422.920212] Modules linked in: rpcsec_gss_krb5 auth_rpcgss nfsv4 dns_resolver netconsole sr_mod cdrom sd_mod sg snd_hda_codec_idt snd_hda_codec_generic intel_rapl x86_pkg_temp_thermal    
-+intel_powerclamp coretemp kvm irqbypass crct10dif_pclmul snd_hda_intel crc32_pclmul crc32c_intel snd_hda_codec snd_hda_core snd_hwdep i915 ghash_clmulni_intel cryptd snd_pcm pcspkr         
-+drm_kms_helper snd_timer ahci libahci syscopyarea sysfillrect sysimgblt fb_sys_fops snd libata shpchp soundcore drm video ip_tables                                                          
-[  422.921168] CPU: 2 PID: 237 Comm: kworker/2:3 Not tainted 4.15.0-rc1-00030-gf95c16a #1                                                                                                     
-[  422.921347] Hardware name: Hewlett-Packard p6-1451cx/2ADA, BIOS 8.15 02/05/2013                                                                                                            
-[  422.921515] Workqueue: events destroy_super_work                                                                                                                                           
-[  422.921628] task: ffff8801bfcd0000 task.stack: ffffc90001128000                                                                                                                            
-[  422.921768] RIP: 0010:rcu_sync_dtor+0x65/0x70                                                                                                                                              
-[  422.921874] RSP: 0000:ffffc9000112be60 EFLAGS: 00010286                                                                                                                                    
-[  422.921985] RAX: 0000000000080000 RBX: ffff8801c00793d8 RCX: 000000000001fece                                                                                                              
-[  422.922133] RDX: 00000000fffffff6 RSI: 0000000000000282 RDI: ffff8801c00793d8                                                                                                              
-[  422.922283] RBP: ffff880212f1b6c0 R08: 0000000000000000 R09: 000000000000009c                                                                                                              
-[  422.922432] R10: 0000000000000000 R11: 0000000000000000 R12: ffff880212f1f800                                                                                                              
-[  422.922579] R13: 0000000000000000 R14: ffff8801c036db40 R15: ffff8801c00795b0                                                                                                              
-[  422.922728] FS:  0000000000000000(0000) GS:ffff880212f00000(0000) knlGS:0000000000000000                                                                                                   
-[  422.922931] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033                                                                                                                              
-[  422.923054] CR2: 00007ffe2f820ff8 CR3: 0000000001e09002 CR4: 00000000001606e0                                                                                                              
-[  422.923203] Call Trace:                                                                                                                                                                    
-[  422.923266]  percpu_free_rwsem+0x15/0x30                                                                                                                                                   
-[  422.923357]  destroy_super_work+0x3d/0x50                                                                                                                                                  
-[  422.923449]  process_one_work+0x18f/0x3e0                                                                                                                                                  
-[  422.923540]  worker_thread+0x3a/0x3b0                                                                                                                                                      
-[  422.923623]  ? process_one_work+0x3e0/0x3e0                                                                                                                                                
-[  422.923716]  kthread+0x11c/0x140                                                                                                                                                           
-[  422.923792]  ? kthread_create_worker_on_cpu+0x50/0x50                                                                                                                                      
-[  422.923905]  ret_from_fork+0x1f/0x30                                                                                                                                                       
-[  422.923986] Code: 00 fb 66 0f 1f 44 00 00 65 ff 0d 57 6c f2 7e 85 d2 74 15 8b 43 38 48 8d 04 40 ff 14 c5 f0 f5 a1 81 8b 43 20 85 c0 75 05 5b 5d c3 <0f> 0b 0f 0b 90 90 90 90 90 90 90 0f 1f
-+44 00 00 8b 87 c8 c3 00                                                                                                                                                                      
-[  422.924405] RIP: rcu_sync_dtor+0x65/0x70 RSP: ffffc9000112be60 
+>>> Well, it doesn't say that or anything similar, at least to my eyes.
+>>>
+>>> The observation is that if you have set DPM_FLAG_SMART_SUSPEND, then
+>>> you need to be prepared for your ->suspend_late and ->suspend_noirq to
+>>> be skipped (because the ACPI PM domain does that and you may happen to
+>>> work with it, for example) if the device is already suspended at the
+>>> beginning of the "late suspend" phase.  That's already documented.
+>>>
+>>> Given the above, and the fact that there is not much to be done for a
+>>> suspended device in ->suspend_late and ->suspend_noirq, why can't the
+>>> core skip these callbacks too if there's no middle layer?
+>>>
+>>> But the reason why I really need this is because
+>>> i2c-designware-platdrv can work both with the ACPI PM domain and
+>>> standalone and I need it to be handled consistently in both cases.
+>>
+>> Yeah, I understand that.
+>>
+>>>
+>>>> I think we really need to do that, before adding yet another system suspend/resume optimization
+>>>> path in the PM core.
+>>>
+>>> So what exactly is the technical argument in the above?
+>>
+>> As stated, when the driver needs additional operations to be done, it
+>> all falls a part.
 
-  Luis
+So I wanted to say the above thing here:
+
++ No, it doesn't, as long as drivers follow the documentation.
++
++ So your concern seems to be "What if I don't follow the
++ documentation?" which, honestly, is not something I can address. :-)
+
+> If the driver *needs* such operations to be done, then it *should*
+> *not* set DPM_FLAG_SMART_SUSPEND as per the existing documentation.
+
+Thanks,
+Rafael
