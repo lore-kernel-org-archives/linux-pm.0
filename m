@@ -1,12 +1,12 @@
 From: Miquel Raynal <miquel.raynal@free-electrons.com>
-Subject: [PATCH v5 02/11] thermal: armada: Use msleep for long delays
-Date: Tue, 19 Dec 2017 14:57:10 +0100
-Message-ID: <20171219135719.9531-3-miquel.raynal@free-electrons.com>
+Subject: [PATCH v5 01/11] dt-bindings: thermal: Describe Armada AP806 and CP110
+Date: Tue, 19 Dec 2017 14:57:09 +0100
+Message-ID: <20171219135719.9531-2-miquel.raynal@free-electrons.com>
 References: <20171219135719.9531-1-miquel.raynal@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:55188 "EHLO
+Received: from mail.free-electrons.com ([62.4.15.54]:55179 "EHLO
         mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1763250AbdLSN5f (ORCPT
+        with ESMTP id S1763249AbdLSN5f (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Dec 2017 08:57:35 -0500
 In-Reply-To: <20171219135719.9531-1-miquel.raynal@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
@@ -16,52 +16,72 @@ Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists
 
 From: Baruch Siach <baruch@tkos.co.il>
 
-Use msleep for long (> 10ms) delays, instead of the busy waiting mdelay.
-All delays are called from the probe routine, where scheduling is
-allowed.
+Add compatible strings for AP806 and CP110 that are part of the Armada
+8k/7k line of SoCs.
+
+Add a note on the differences in the size of the control area in
+different bindings. This is an existing difference between the Armada
+375 binding and the other boards already supported. The new AP806 and
+CP110 bindings are similar to the existing Armada 375 in this regard.
 
 Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+[<miquel.raynal@free-electrons.com>: reword, additional details]
 Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
-Reviewed-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- drivers/thermal/armada_thermal.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ .../devicetree/bindings/thermal/armada-thermal.txt | 37 +++++++++++++++-------
+ 1 file changed, 25 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 706d74798cbe..6c4af2622d4f 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -113,7 +113,7 @@ static void armada370_init_sensor(struct platform_device *pdev,
- 	reg &= ~PMU_TDC0_START_CAL_MASK;
- 	writel(reg, priv->control);
+diff --git a/Documentation/devicetree/bindings/thermal/armada-thermal.txt b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+index 24aacf8948c5..e0d013a2e66d 100644
+--- a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
+@@ -2,22 +2,35 @@
  
--	mdelay(10);
-+	msleep(10);
- }
+ Required properties:
  
- static void armada375_init_sensor(struct platform_device *pdev,
-@@ -127,11 +127,11 @@ static void armada375_init_sensor(struct platform_device *pdev,
- 	reg &= ~A375_HW_RESETn;
+-- compatible:	Should be set to one of the following:
+-		marvell,armada370-thermal
+-		marvell,armada375-thermal
+-		marvell,armada380-thermal
+-		marvell,armadaxp-thermal
++- compatible: Should be set to one of the following:
++    * marvell,armada370-thermal
++    * marvell,armada375-thermal
++    * marvell,armada380-thermal
++    * marvell,armadaxp-thermal
++    * marvell,armada-ap806-thermal
++    * marvell,armada-cp110-thermal
  
- 	writel(reg, priv->control + 4);
--	mdelay(20);
-+	msleep(20);
+-- reg:		Device's register space.
+-		Two entries are expected, see the examples below.
+-		The first one is required for the sensor register;
+-		the second one is required for the control register
+-		to be used for sensor initialization (a.k.a. calibration).
++- reg: Device's register space.
++  Two entries are expected, see the examples below. The first one points
++  to the status register (4B). The second one points to the control
++  registers (8B).
++  Note: The compatibles marvell,armada370-thermal,
++  marvell,armada380-thermal, and marvell,armadaxp-thermal must point to
++  "control MSB/control 1", with size of 4 (deprecated binding), or point
++  to "control LSB/control 0" with size of 8 (current binding). All other
++  compatibles must point to "control LSB/control 0" with size of 8.
  
- 	reg |= A375_HW_RESETn;
- 	writel(reg, priv->control + 4);
--	mdelay(50);
-+	msleep(50);
- }
+-Example:
++Examples:
  
- static void armada380_init_sensor(struct platform_device *pdev,
-@@ -143,7 +143,7 @@ static void armada380_init_sensor(struct platform_device *pdev,
- 	if (!(reg & A380_HW_RESET)) {
- 		reg |= A380_HW_RESET;
- 		writel(reg, priv->control);
--		mdelay(10);
-+		msleep(10);
- 	}
- }
- 
++	/* Legacy bindings */
+ 	thermal@d0018300 {
+ 		compatible = "marvell,armada370-thermal";
+-                reg = <0xd0018300 0x4
++		reg = <0xd0018300 0x4
+ 		       0xd0018304 0x4>;
+ 	};
++
++	ap_thermal: thermal@6f8084 {
++		compatible = "marvell,armada-ap806-thermal";
++		reg = <0x6f808C 0x4>,
++		      <0x6f8084 0x8>;
++	};
 -- 
 2.11.0
