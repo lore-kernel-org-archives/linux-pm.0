@@ -1,71 +1,128 @@
-From: Biju Das <biju.das@bp.renesas.com>
-Subject: RE: [PATCH 2/2] ARM: dts: r8a7743: Add thermal device to DT
-Date: Tue, 19 Dec 2017 12:11:25 +0000
-Message-ID: <KL1PR06MB17028B45996F222F98D4248EB80F0@KL1PR06MB1702.apcprd06.prod.outlook.com>
-References: <1513162673-31531-1-git-send-email-biju.das@bp.renesas.com>
- <1513162673-31531-3-git-send-email-biju.das@bp.renesas.com>
- <CAMuHMdUiabbd-Ry8AhZsfMiwVBBqYKaZEM_ROxCF-xJDkBgp1Q@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 3/4] PM / core: Direct DPM_FLAG_SMART_SUSPEND optimization
+Date: Tue, 19 Dec 2017 14:10:48 +0100
+Message-ID: <CAPDyKFpG5UbTqyVSg+5oTpq2ipVxQqydd39oUOG+5TNVEXG-YA@mail.gmail.com>
+References: <7742130.AaJQIxeI1n@aspire.rjw.lan> <252167445.OQUXi2Ca9Y@aspire.rjw.lan>
+ <CAPDyKFpC0xLfGLqyWUZwnSVdeY9Ojs-JUtPzEkRr=KAuSXDfmQ@mail.gmail.com> <CAJZ5v0hFP4zP+Q1znQ9ZnUTLunNaStmSR4-h-AqKn6UaF-d9Vw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAMuHMdUiabbd-Ry8AhZsfMiwVBBqYKaZEM_ROxCF-xJDkBgp1Q@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Chris Paterson <Chris.Paterson2@renesas.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-wr0-f178.google.com ([209.85.128.178]:44898 "EHLO
+        mail-wr0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1762939AbdLSNKv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Dec 2017 08:10:51 -0500
+Received: by mail-wr0-f178.google.com with SMTP id l41so7062692wre.11
+        for <linux-pm@vger.kernel.org>; Tue, 19 Dec 2017 05:10:50 -0800 (PST)
+In-Reply-To: <CAJZ5v0hFP4zP+Q1znQ9ZnUTLunNaStmSR4-h-AqKn6UaF-d9Vw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-SGkgR2VlcnQsDQoNClRoYW5rcywgSSB3aWxsIHNlbmQgdjIuDQoNClJlZ2FyZHMsDQpCaWp1DQoN
-Cj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogZ2VlcnQudXl0dGVyaG9ldmVu
-QGdtYWlsLmNvbSBbbWFpbHRvOmdlZXJ0LnV5dHRlcmhvZXZlbkBnbWFpbC5jb21dDQo+IE9uIEJl
-aGFsZiBPZiBHZWVydCBVeXR0ZXJob2V2ZW4NCj4gU2VudDogMTkgRGVjZW1iZXIgMjAxNyAxMTo0
-NQ0KPiBUbzogQmlqdSBEYXMgPGJpanUuZGFzQGJwLnJlbmVzYXMuY29tPg0KPiBDYzogUm9iIEhl
-cnJpbmcgPHJvYmgrZHRAa2VybmVsLm9yZz47IE1hcmsgUnV0bGFuZA0KPiA8bWFyay5ydXRsYW5k
-QGFybS5jb20+OyBaaGFuZyBSdWkgPHJ1aS56aGFuZ0BpbnRlbC5jb20+OyBFZHVhcmRvDQo+IFZh
-bGVudGluIDxlZHViZXp2YWxAZ21haWwuY29tPjsgU2ltb24gSG9ybWFuIDxob3Jtc0B2ZXJnZS5u
-ZXQuYXU+Ow0KPiBNYWdudXMgRGFtbSA8bWFnbnVzLmRhbW1AZ21haWwuY29tPjsgQ2hyaXMgUGF0
-ZXJzb24NCj4gPENocmlzLlBhdGVyc29uMkByZW5lc2FzLmNvbT47IGRldmljZXRyZWVAdmdlci5r
-ZXJuZWwub3JnOyBMaW51eC1SZW5lc2FzDQo+IDxsaW51eC1yZW5lc2FzLXNvY0B2Z2VyLmtlcm5l
-bC5vcmc+OyBMaW51eCBQTSBsaXN0IDxsaW51eC0NCj4gcG1Admdlci5rZXJuZWwub3JnPg0KPiBT
-dWJqZWN0OiBSZTogW1BBVENIIDIvMl0gQVJNOiBkdHM6IHI4YTc3NDM6IEFkZCB0aGVybWFsIGRl
-dmljZSB0byBEVA0KPg0KPiBPbiBXZWQsIERlYyAxMywgMjAxNyBhdCAxMTo1NyBBTSwgQmlqdSBE
-YXMgPGJpanUuZGFzQGJwLnJlbmVzYXMuY29tPg0KPiB3cm90ZToNCj4gPiBUaGlzIHBhdGNoIGlu
-c3RhbnRpYXRlcyB0aGUgdGhlcm1hbCBzZW5zb3IgbW9kdWxlIHdpdGggdGhlcm1hbC16b25lDQo+
-ID4gc3VwcG9ydC4NCj4gPg0KPiA+IFRoaXMgcGF0Y2ggaXMgYmFzZWQgb24gdGhlIGNvbW1pdCBj
-YWM2OGE1NmUzNGINCj4gPiAoIkFSTTogZHRzOiByOGE3NzkxOiBlbmFibGUgdG8gdXNlIHRoZXJt
-YWwtem9uZSIpIGJ5IEt1bmlub3JpIE1vcmltb3RvLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTog
-QmlqdSBEYXMgPGJpanUuZGFzQGJwLnJlbmVzYXMuY29tPg0KPiA+IFJldmlld2VkLWJ5OiBGYWJy
-aXppbyBDYXN0cm8gPGZhYnJpemlvLmNhc3Ryb0BicC5yZW5lc2FzLmNvbT4NCj4NCj4gUmV2aWV3
-ZWQtYnk6IEdlZXJ0IFV5dHRlcmhvZXZlbiA8Z2VlcnQrcmVuZXNhc0BnbGlkZXIuYmU+DQo+DQo+
-IE1pbm9yIG5pdCBiZWxvdy4uLg0KPg0KPiA+IC0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL3I4YTc3
-NDMuZHRzaQ0KPiA+ICsrKyBiL2FyY2gvYXJtL2Jvb3QvZHRzL3I4YTc3NDMuZHRzaQ0KPiA+IEBA
-IC0yNTAsNiArMjUwLDM4IEBADQo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgcmVzZXRzID0g
-PCZjcGcgNDA3PjsNCj4gPiAgICAgICAgICAgICAgICAgfTsNCj4gPg0KPiA+ICsgICAgICAgICAg
-ICAgICB0aGVybWFsOiB0aGVybWFsQGU2MWYwMDAwIHsNCj4gPiArICAgICAgICAgICAgICAgICAg
-ICAgICBjb21wYXRpYmxlID0gInJlbmVzYXMsdGhlcm1hbC1yOGE3NzQzIiwNCj4gPiArICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgInJlbmVzYXMscmNhci1nZW4yLXRoZXJtYWwi
-LA0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAicmVuZXNhcyxyY2Fy
-LXRoZXJtYWwiOw0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIHJlZyA9IDwwIDB4ZTYxZjAw
-MDAgMCAweDE0PiwgPDAgMHhlNjFmMDEwMCAwDQo+ID4gKyAweDM4PjsNCj4NCj4gPDAgMHhlNjFm
-MDAwMCAwIDB4MTA+Pw0KPg0KPiBUaGUgcmVnaXN0ZXIgYXQgb2Zmc2V0IDB4MTAgc2VlbXMgdG8g
-ZXhpc3Qgb24gUi1Nb2JpbGUgQVBFNiBvbmx5LCBidXQgYWxsIFItQ2FyDQo+IEdlbjIgLmR0c2lz
-IGluY2x1ZGUgaXQgaW4gdGhlIHJhbmdlLi4uDQo+DQo+IE5vdCB0aGF0IGl0IG1hdHRlcnMgbXVj
-aCwgbWFwcGluZyBncmFudWxhcml0eSBpcyBQQUdFX1NJWkUgYW55d2F5Li4uDQo+DQo+IEdye29l
-dGplLGVldGluZ31zLA0KPg0KPiAgICAgICAgICAgICAgICAgICAgICAgICBHZWVydA0KPg0KPiAt
-LQ0KPiBHZWVydCBVeXR0ZXJob2V2ZW4gLS0gVGhlcmUncyBsb3RzIG9mIExpbnV4IGJleW9uZCBp
-YTMyIC0tIGdlZXJ0QGxpbnV4LQ0KPiBtNjhrLm9yZw0KPg0KPiBJbiBwZXJzb25hbCBjb252ZXJz
-YXRpb25zIHdpdGggdGVjaG5pY2FsIHBlb3BsZSwgSSBjYWxsIG15c2VsZiBhIGhhY2tlci4gQnV0
-IHdoZW4NCj4gSSdtIHRhbGtpbmcgdG8gam91cm5hbGlzdHMgSSBqdXN0IHNheSAicHJvZ3JhbW1l
-ciIgb3Igc29tZXRoaW5nIGxpa2UgdGhhdC4NCj4gICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAtLSBMaW51cyBUb3J2YWxkcw0KDQoNCltodHRwczovL3d3dzIucmVuZXNhcy5ldS9tZWRp
-YS9lbWFpbC91bmljZWZfMjAxNy5qcGddDQoNClRoaXMgQ2hyaXN0bWFzLCBpbnN0ZWFkIG9mIHNl
-bmRpbmcgb3V0IGNhcmRzLCBSZW5lc2FzIEVsZWN0cm9uaWNzIEV1cm9wZSBoYXZlIGRlY2lkZWQg
-dG8gc3VwcG9ydCBVbmljZWYgd2l0aCBhIGRvbmF0aW9uLiBGb3IgZnVydGhlciBkZXRhaWxzIGNs
-aWNrIGhlcmU8aHR0cHM6Ly93d3cudW5pY2VmLm9yZy8+IHRvIGZpbmQgb3V0IGFib3V0IHRoZSB2
-YWx1YWJsZSB3b3JrIHRoZXkgZG8sIGhlbHBpbmcgY2hpbGRyZW4gYWxsIG92ZXIgdGhlIHdvcmxk
-Lg0KV2Ugd291bGQgbGlrZSB0byB0YWtlIHRoaXMgb3Bwb3J0dW5pdHkgdG8gd2lzaCB5b3UgYSBN
-ZXJyeSBDaHJpc3RtYXMgYW5kIGEgcHJvc3Blcm91cyBOZXcgWWVhci4NCg0KDQoNClJlbmVzYXMg
-RWxlY3Ryb25pY3MgRXVyb3BlIEx0ZCwgRHVrZXMgTWVhZG93LCBNaWxsYm9hcmQgUm9hZCwgQm91
-cm5lIEVuZCwgQnVja2luZ2hhbXNoaXJlLCBTTDggNUZILCBVSy4gUmVnaXN0ZXJlZCBpbiBFbmds
-YW5kICYgV2FsZXMgdW5kZXIgUmVnaXN0ZXJlZCBOby4gMDQ1ODY3MDkuDQo=
+On 19 December 2017 at 12:13, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Tue, Dec 19, 2017 at 8:38 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 10 December 2017 at 01:00, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+>>> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>>>
+>>> Make the PM core avoid invoking the "late" and "noirq" system-wide
+>>> suspend (or analogous) callbacks provided by device drivers directly
+>>> for devices with DPM_FLAG_SMART_SUSPEND set that are in runtime
+>>> suspend during the "late" and "noirq" phases of system-wide suspend
+>>> (or analogous) transitions.  That is only done for devices without
+>>> any middle-layer "late" and "noirq" suspend callbacks (to avoid
+>>> confusing the middle layer if there is one).
+>>>
+>>> The underlying observation is that runtime PM is disabled for devices
+>>> during the "late" and "noirq" system-wide suspend phases, so if they
+>>> remain in runtime suspend from the "late" phase forward, it doesn't
+>>> make sense to invoke the "late" and "noirq" callbacks provided by
+>>> the drivers for them (arguably, the device is already suspended and
+>>> in the right state).  Thus, if the remaining driver suspend callbacks
+>>> are to be invoked directly by the core, they can be skipped.
+>>>
+>
+> It looks like I'm consistently failing to explain my point clearly enough. :-)
+>
+>> As I have stated earlier, this isn't going to solve the general case,
+>> as the above change log seems to state.
+>
+> Well, it doesn't say that or anything similar, at least to my eyes.
+>
+> The observation is that if you have set DPM_FLAG_SMART_SUSPEND, then
+> you need to be prepared for your ->suspend_late and ->suspend_noirq to
+> be skipped (because the ACPI PM domain does that and you may happen to
+> work with it, for example) if the device is already suspended at the
+> beginning of the "late suspend" phase.  That's already documented.
+>
+> Given the above, and the fact that there is not much to be done for a
+> suspended device in ->suspend_late and ->suspend_noirq, why can't the
+> core skip these callbacks too if there's no middle layer?
+>
+> But the reason why I really need this is because
+> i2c-designware-platdrv can work both with the ACPI PM domain and
+> standalone and I need it to be handled consistently in both cases.
+
+Yeah, I understand that.
+
+>
+>> I think we really need to do that, before adding yet another system suspend/resume optimization
+>> path in the PM core.
+>
+> So what exactly is the technical argument in the above?
+
+As stated, when the driver needs additional operations to be done, it
+all falls a part.
+
+>
+>> The main reason is that lots of drivers have additional operations to
+>> perform, besides making sure that its device is put into a "runtime
+>> suspended state" during system suspend. In other words, skipping
+>> system suspend callbacks (and likewise for system resume) is to me the
+>> wrong solution to mitigate these problems.
+>>
+>>> This change really makes it possible for, say, platform device
+>>> drivers to re-use runtime PM suspend and resume callbacks by
+>>> pointing ->suspend_late and ->resume_early, respectively (and
+>>> possibly the analogous hibernation-related callback pointers too),
+>>> to them without adding any extra "is the device already suspended?"
+>>> type of checks to the callback routines, as long as they will be
+>>> invoked directly by the core.
+>>
+>> Certainly there are drivers that could start to deploying this
+>> solution, because at the moment they don't have any additional
+>> operations to perform at system suspend. But what about the rest,
+>> don't we care about them?
+>
+> We do, somewhat. :-)
+>
+>> Moreover, what happens when/if a driver that has deployed this
+>> solution, starts being used on a new SoC and then additional
+>> operations during system suspend becomes required (for example
+>> pinctrls that needs to be put in a system sleep state)? Then
+>> everything falls apart, doesn't it?
+>
+> Then you runtime-resume the device in ->suspend() and the remaining
+> callbacks will run for you just fine.
+
+Well, this proves my concern.
+
+Even if the driver has additional operations to perform, why should it
+have to runtime resume its device to have the callbacks to be invoked?
+That may be a waste in both time and power.
+
+No, this isn't good enough, sorry.
+
+>
+> And IMO running "late" and "noirq" system suspend callbacks on a
+> suspended device is super-fragile anyway as they generally need to
+> distinguish between the "suspended" and "not suspended" cases
+> consistently and what they do may affect the children or the parent of
+> the device in ways that are difficult to predict in general.  So, I'd
+> rather not do that in any case.
+
+That may be the case for the ACPI PM domain, but I don't see an issue
+when devices are being attached to a more trivial middle layer/PM
+domain.
+
+Kind regards
+Uffe
