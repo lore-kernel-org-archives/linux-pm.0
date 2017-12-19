@@ -1,44 +1,45 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization update flags
-Date: Tue, 19 Dec 2017 11:44:58 +0100
-Message-ID: <2751455.goTIWJZO51@aspire.rjw.lan>
-References: <20456740.6R3DDKEUDv@aspire.rjw.lan> <CAJWu+oo+_30hFy16Fnu=dmJV3u-8_EVZw1j2pBC5PbEMBrnWUg@mail.gmail.com> <20171219034118.GP19815@vireshk-i7>
+Subject: Re: [PATCH TRIVIAL] PM / wakeup: only recommend "call"ing device_init_wakeup() once
+Date: Tue, 19 Dec 2017 11:45:23 +0100
+Message-ID: <2776612.L7VRzgYgOe@aspire.rjw.lan>
+References: <20171218233048.156954-1-briannorris@chromium.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171219034118.GP19815@vireshk-i7>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Joel Fernandes <joelaf@google.com>, Patrick Bellasi <patrick.bellasi@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.net.pl ([79.96.170.134]:55053 "EHLO
+        cloudserver094114.home.net.pl" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S933165AbdLSKqN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Dec 2017 05:46:13 -0500
+In-Reply-To: <20171218233048.156954-1-briannorris@chromium.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Brian Norris <briannorris@chromium.org>
+Cc: Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Tony Lindgren <tony@atomide.com>
 
-On Tuesday, December 19, 2017 4:41:18 AM CET Viresh Kumar wrote:
-> On 18-12-17, 19:30, Joel Fernandes wrote:
-> > Yes that's clean to me but then as Rafael said, the use of this flag
-> > will be too specific for schedutil-only sg_cpu->flags clearing purpose
-> > right?
+On Tuesday, December 19, 2017 12:30:48 AM CET Brian Norris wrote:
+> I'll admit admit it: I've written bad driver code that tries to
+> configure a device's wake IRQ without having called device_init_wakeup()
+> first. But do you really have to ask ask me twice?
 > 
-> And so would be the extra parameter ?
+> Signed-off-by: Brian Norris <briannorris@chromium.org>
+> ---
+>  drivers/base/power/wakeup.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+> index 38559f04db2c..cb72965b3281 100644
+> --- a/drivers/base/power/wakeup.c
+> +++ b/drivers/base/power/wakeup.c
+> @@ -298,7 +298,7 @@ int device_wakeup_attach_irq(struct device *dev,
+>  
+>  	ws = dev->power.wakeup;
+>  	if (!ws) {
+> -		dev_err(dev, "forgot to call call device_init_wakeup?\n");
+> +		dev_err(dev, "forgot to call device_init_wakeup?\n");
+>  		return -EINVAL;
+>  	}
+>  
+> 
 
-Right.
-
-I don't like the new parameter idea too much.
-
-"Clearing" flags are generally fine by me, but I want them to have a meaning
-for whoever who may receive them.
-
-I guess you can define the original CLEAR thing to mean "clear the RT and
-DL flags if you have saved them or ignore them if set here otherwise"
-and then intel_pstate can work as though it was called with the flags
-argument equal to zero (or just with IOWAIT set, but that never happens
-if CLEAR is set I guess).
-
-Still, IMO NO_DL and NO_RT would be conceptually more straightforward
-(clear X if NO_X is set or ignore NO_X otherwise).
-
-But anyway it is scheduler code and the scheduler maintainers haven't
-spoken up so far, so what I'm saying may just not matter. :-)
-
-Thanks,
-Rafael
+Applied, thanks!
