@@ -1,92 +1,44 @@
-From: Lucas Stach <l.stach@pengutronix.de>
-Subject: Re: [PATCH] cpufreq: imx6q/thermal: imx: move CPU cooling device
- from thermal to cpufreq
-Date: Tue, 19 Dec 2017 11:30:24 +0100
-Message-ID: <1513679424.2890.16.camel@pengutronix.de>
-References: <20171115092332.9320-1-bst@pengutronix.de>
-         <20171116114918.GS25384@dragon> <2436262.8Qovylrth1@aspire.rjw.lan>
-         <1513172461.2879.14.camel@nxp.com>
-         <7cf13171-fe53-e9f1-12a1-fba428fbc4d4@pengutronix.de>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization update flags
+Date: Tue, 19 Dec 2017 11:44:58 +0100
+Message-ID: <2751455.goTIWJZO51@aspire.rjw.lan>
+References: <20456740.6R3DDKEUDv@aspire.rjw.lan> <CAJWu+oo+_30hFy16Fnu=dmJV3u-8_EVZw1j2pBC5PbEMBrnWUg@mail.gmail.com> <20171219034118.GP19815@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from metis.ext.4.pengutronix.de ([92.198.50.35]:58473 "EHLO
-        metis.ext.4.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S933348AbdLSKaa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Dec 2017 05:30:30 -0500
-In-Reply-To: <7cf13171-fe53-e9f1-12a1-fba428fbc4d4@pengutronix.de>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171219034118.GP19815@vireshk-i7>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Joel Fernandes <joelaf@google.com>, Patrick Bellasi <patrick.bellasi@arm.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Bastian Stender <bst@pengutronix.de>, Leonard Crestez <leonard.crestez@nxp.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, kernel@pengutronix.de, Zhang Rui <rui.zhang@intel.com>, Shawn Guo <shawnguo@kernel.org>
 
-Am Dienstag, den 19.12.2017, 11:22 +0100 schrieb Bastian Stender:
-> Hi Leonard,
+On Tuesday, December 19, 2017 4:41:18 AM CET Viresh Kumar wrote:
+> On 18-12-17, 19:30, Joel Fernandes wrote:
+> > Yes that's clean to me but then as Rafael said, the use of this flag
+> > will be too specific for schedutil-only sg_cpu->flags clearing purpose
+> > right?
 > 
-> On 12/13/2017 02:41 PM, Leonard Crestez wrote:
-> > On Wed, 2017-12-13 at 02:00 +0100, Rafael J. Wysocki wrote:
-> > > On Thursday, November 16, 2017 12:49:18 PM CET Shawn Guo wrote:
-> > > > 
-> > > > On Wed, Nov 15, 2017 at 10:23:32AM +0100, Bastian Stender
-> > > > wrote:
-> > > > > 
-> > > > > The cooling device should be part of the i.MX cpufreq driver.
-> > > > > So move
-> > > > > it there.
-> > > > > 
-> > > > > Use of_cpufreq_power_cooling_register to link the cooling
-> > > > > device to the
-> > > > > device tree node provided.
-> > > > > 
-> > > > > This makes it possible to bind the cpufreq cooling device to
-> > > > > a custom
-> > > > > thermal zone via a cooling-maps entry like:
-> > > > > 
-> > > > > 	cooling-maps {
-> > > > > 		map0 {
-> > > > > 			trip = <&board_alert>;
-> > > > > 			cooling-device = <&cpu0
-> > > > > THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-> > > > > 		};
-> > > > > 	};
-> > > > > 
-> > > > > Assuming a cpu node exists with label "cpu0" and #cooling-
-> > > > > cells
-> > > > > property.
-> > > > > 
-> > > > > Signed-off-by: Bastian Stender <bst@pengutronix.de>
-> > > > I'm fine with the patch, but I would invite Leonard to take a
-> > > > look.
-> > > Given no response, what should I do?
-> > 
-> > Sorry for keeping you waiting. I don't much about the "cooling
-> > device"
-> > infrastructure so I don't have much to add, I guess I assumed a
-> > reply
-> > wasn't required?
-> > 
-> > Looking at the code you are removing "thermal_cooling_device
-> > *cdev;"
-> > from imx_thermal_data but kept "cpufreq_policy *policy". Isn't that
-> > unused now?
-> 
-> Yes, you are right. Will send v2.
-> 
-> > Also, your code only adds the cooling device if certain devicetree
-> > properties are present. Shouldn't your patch come with imx6*.dtsi
-> > changes, or make the capacitance value default to zero somehow?
-> > Otherwise the effect of the patch on most boards would be to
-> > disable
-> > cpufreq cooling.
-> 
-> Good point. I guess the cpu nodes in imx6*.dtsi should get
-> cooling-min-level/cooling-min-level/#cooling-cells properties, right?
-> This would achieve the old behavior.
+> And so would be the extra parameter ?
 
-Sorry, but this breaks DT stability. Your driver code must work
-correctly with older DTs where those properties aren't present.
-Changing driver code and dts in lockstep is not an option.
+Right.
 
-Regards,
-Lucas
+I don't like the new parameter idea too much.
+
+"Clearing" flags are generally fine by me, but I want them to have a meaning
+for whoever who may receive them.
+
+I guess you can define the original CLEAR thing to mean "clear the RT and
+DL flags if you have saved them or ignore them if set here otherwise"
+and then intel_pstate can work as though it was called with the flags
+argument equal to zero (or just with IOWAIT set, but that never happens
+if CLEAR is set I guess).
+
+Still, IMO NO_DL and NO_RT would be conceptually more straightforward
+(clear X if NO_X is set or ignore NO_X otherwise).
+
+But anyway it is scheduler code and the scheduler maintainers haven't
+spoken up so far, so what I'm saying may just not matter. :-)
+
+Thanks,
+Rafael
