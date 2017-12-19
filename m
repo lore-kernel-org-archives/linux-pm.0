@@ -1,71 +1,120 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: powernv: Add support of frequency domain
-Date: Tue, 19 Dec 2017 14:50:37 +0530
-Message-ID: <20171219092037.GA27991@in.ibm.com>
-References: <20171213081937.16376-1-huntbag@linux.vnet.ibm.com>
- <20171214044239.GU3322@vireshk-i7>
- <93cc9d38-4fd8-d340-2263-108329b69b94@linux.vnet.ibm.com>
- <20171218082935.GH19815@vireshk-i7>
-Reply-To: ego@linux.vnet.ibm.com
+From: Morten Rasmussen <morten.rasmussen@foss.arm.com>
+Subject: Re: [PATCH v5 7/9] arm64: Topology, rename cluster_id
+Date: Tue, 19 Dec 2017 09:38:03 +0000
+Message-ID: <20171219093803.GH507@e105550-lin.cambridge.arm.com>
+References: <20171201222330.18863-1-jeremy.linton@arm.com>
+ <20171201222330.18863-8-jeremy.linton@arm.com>
+ <20171213180217.GB4060@red-moon>
+ <7bb4e955-f3e5-d22f-4e78-eac97e66a9a6@arm.com>
+ <20171218124229.GG507@e105550-lin.cambridge.arm.com>
+ <20171218154703.GA8157@red-moon>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:47246 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S935685AbdLSJUn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 Dec 2017 04:20:43 -0500
-Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
-        by mx0b-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vBJ9Jh8g008595
-        for <linux-pm@vger.kernel.org>; Tue, 19 Dec 2017 04:20:42 -0500
-Received: from e13.ny.us.ibm.com (e13.ny.us.ibm.com [129.33.205.203])
-        by mx0b-001b2d01.pphosted.com with ESMTP id 2exyt7gude-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Tue, 19 Dec 2017 04:20:42 -0500
-Received: from localhost
-        by e13.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-        Tue, 19 Dec 2017 04:20:41 -0500
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171218082935.GH19815@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20171218154703.GA8157@red-moon>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Cc: Jeremy Linton <jeremy.linton@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Abhishek <huntbag@linux.vnet.ibm.com>, ego@linux.vnet.ibm.com, rjw@rjwysocki.net, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 
-Hi Viresh,
-On Mon, Dec 18, 2017 at 01:59:35PM +0530, Viresh Kumar wrote:
-> On 18-12-17, 10:41, Abhishek wrote:
-> > We need to do it in this way as the current implementation takes the max of
-> > the PMSR of the cores. Thus, when the frequency is required to be ramped up,
-> > it suffices to write to just the local PMSR, but when the frequency is to be
-> > ramped down, if we don't send the IPI it breaks the compatibility with P8.
+On Mon, Dec 18, 2017 at 03:47:03PM +0000, Lorenzo Pieralisi wrote:
+> On Mon, Dec 18, 2017 at 12:42:29PM +0000, Morten Rasmussen wrote:
+> > On Fri, Dec 15, 2017 at 10:36:35AM -0600, Jeremy Linton wrote:
+> > > Hi,
+> > > 
+> > > On 12/13/2017 12:02 PM, Lorenzo Pieralisi wrote:
+> > > >[+Morten, Dietmar]
+> > > >
+> > > >$SUBJECT should be:
+> > > >
+> > > >arm64: topology: rename cluster_id
+> > > 
+> > > Sure..
+> > > 
+> > > >
+> > > >On Fri, Dec 01, 2017 at 04:23:28PM -0600, Jeremy Linton wrote:
+> > > >>Lets match the name of the arm64 topology field
+> > > >>to the kernel macro that uses it.
+> > > >>
+> > > >>Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
+> > > >>---
+> > > >>  arch/arm64/include/asm/topology.h |  4 ++--
+> > > >>  arch/arm64/kernel/topology.c      | 27 ++++++++++++++-------------
+> > > >>  2 files changed, 16 insertions(+), 15 deletions(-)
+> > > >>
+> > > >>diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+> > > >>index c4f2d50491eb..118136268f66 100644
+> > > >>--- a/arch/arm64/include/asm/topology.h
+> > > >>+++ b/arch/arm64/include/asm/topology.h
+> > > >>@@ -7,14 +7,14 @@
+> > > >>  struct cpu_topology {
+> > > >>  	int thread_id;
+> > > >>  	int core_id;
+> > > >>-	int cluster_id;
+> > > >>+	int physical_id;
+> > > >
+> > > >package_id ?
+> > > 
+> > > Given the macro is topology_physical_package_id, either makes sense to me.
+> > > <shrug> I will change it in the next set.
+> > 
+> > I would vote for package_id too. arch/arm has 'socket_id' though.
+> > 
+> > > >
+> > > >It has been debated before, I know. Should we keep the cluster_id too
+> > > >(even if it would be 1:1 mapped to package_id - for now) ?
+> > > 
+> > > Well given that this patch replaces the patch that did that at your
+> > > request..
+> > > 
+> > > I was hoping someone else would comment here, but my take at this point is
+> > > that it doesn't really matter in a functional sense at the moment.
+> > > Like the chiplet discussion it can be the subject of a future patch along
+> > > with the patches which tweak the scheduler to understand the split.
+> > > 
+> > > BTW, given that i'm OoO next week, and the following that are the holidays,
+> > > I don't intend to repost this for a couple weeks. I don't think there are
+> > > any issues with this set.
+> > > 
+> > > >
+> > > >There is also arch/arm to take into account, again, this patch is
+> > > >just renaming (as it should have named since the beginning) a
+> > > >topology level but we should consider everything from a legacy
+> > > >perspective.
+> > 
+> > arch/arm has gone for thread/core/socket for the three topology levels
+> > it supports.
+> > 
+> > I'm not sure what short term value keeping cluster_id has? Isn't it just
+> > about where we make the package = cluster assignment? Currently it is in
+> > the definition of topology_physical_package_id. If we keep cluster_id
+> > and add package_id, it gets moved into the MPIDR/DT parsing code. 
+> > 
+> > Keeping cluster_id and introducing a topology_cluster_id function could
+> > help cleaning up some of the users of topology_physical_package_id that
+> > currently assumes package_id == cluster_id though.
 > 
-> Looks strange really that you have to program this differently for speeding up
-> or down. These CPUs are part of one cpufreq policy and so I would normally
-> expect changes to any CPU should reflect for other CPUs as well.
-> 
-> @Goutham: Do you know why it is so ?
-> 
+> I think we should settle for a name (eg package_id), remove cluster_id
+> and convert arch/arm socket_id to the same naming used on arm64 (for
+> consistency - it is just a variable rename).
 
-These are due to some implementation quirks where the platform has
-provided a PMCR per-core to be backward compatible with POWER8, but
-controls the frequency at a quad-level, by taking the maximum of the
-four PMCR values instead of the latest one. So, changes to any CPU in
-the core will reflect on all the cores if the frequency is higher than
-the current frequency, but not necessarily if the requested frequency
-is lower than the current frequency.
+Agreed. 
 
-Without sending the extra IPIs, we will be breaking the ABI since if
-we set userspace governor, and change the frequency of a core by
-lowering it, then it will not reflect on the CPUs of the cores in the
-quad.
+> This leaves us with the naming "cluster" only in DT topology bindings,
+> which should be fine, given that "cluster" in that context is just a
+> "processor-container" - yes we could have chosen a better naming in
+> the first place but that's what it is.
 
-Abhishek,
-I think we can rework this by sending the extra IPIs only in the
-presence of the quirk which can be indicated through a device-tree
-parameter. If the future implementation fix this, then we won't need
-the extra IPIs.
+I think having "clusters" in DT is fine as it represent the actual
+hardware topology and uses the actual "Arm" term to describe it. The
+default topology in Linux just doesn't have an equivalent topology
+level, but that can be fixed. DT is however missing a notion of package.
 
-> -- 
-> viresh
-> 
+> We should nuke the existing users of topology_physical_package_id()
+> to identify clusters, I would not add another function for that purpose,
+> let's nip it in the bud.
+
+Even better if that can be pulled of.
+
+Morten
