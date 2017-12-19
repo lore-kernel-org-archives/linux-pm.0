@@ -1,128 +1,46 @@
-From: Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v4 01/12] dt-bindings: thermal: Describe Armada AP806
- and CP110
-Date: Tue, 19 Dec 2017 01:43:20 +0100
-Message-ID: <20171219014320.182d2522@xps13>
-References: <20171218143643.7714-1-miquel.raynal@free-electrons.com>
-        <20171218143643.7714-2-miquel.raynal@free-electrons.com>
-        <20171218203324.ftyqrgjawkujvhmn@tarshish>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization
+ update flags
+Date: Tue, 19 Dec 2017 08:42:37 +0530
+Message-ID: <20171219031237.GM19815@vireshk-i7>
+References: <cover.1513158452.git.viresh.kumar@linaro.org>
+ <CAJZ5v0jLQ7v5u+OUpK0gSAHvR90K=agvUSuFNzJXMnk+YkKyzQ@mail.gmail.com>
+ <CAKohpomHfV=2CQj0_D=PsoMvbCu5v_ensJqaZmxUURzr27+yhA@mail.gmail.com>
+ <20456740.6R3DDKEUDv@aspire.rjw.lan>
+ <20171218045945.GG19815@vireshk-i7>
+ <CAJZ5v0h+bvbe6DbMn+9DXbbctKG4POTsvEf_eL8R0nLajKXBTA@mail.gmail.com>
+ <20171218115943.GL19815@vireshk-i7>
+ <20171218121453.GH19821@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171218203324.ftyqrgjawkujvhmn@tarshish>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Jason Cooper <jason-NLaQJdtUoK4Be96aLqz0jA@public.gmane.org>, Andrew Lunn <andrew-g2DYL2Zd6BY@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Sebastian Hesselbarth <sebastian.hesselbarth-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Catalin Marinas <catalin.marinas-5wv7dgnIgG8@public.gmane.org>, Will Deacon <will.deacon-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:42103 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S936042AbdLSDMm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 Dec 2017 22:12:42 -0500
+Received: by mail-pg0-f65.google.com with SMTP id q67so795634pga.9
+        for <linux-pm@vger.kernel.org>; Mon, 18 Dec 2017 19:12:42 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20171218121453.GH19821@e110439-lin>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Linux PM <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hello Baruch,
-
-On Mon, 18 Dec 2017 22:33:24 +0200
-Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org> wrote:
-
-> Hi Miquèl,
+On 18-12-17, 12:14, Patrick Bellasi wrote:
+> For example, swithing from:
 > 
-> On Mon, Dec 18, 2017 at 03:36:32PM +0100, Miquel Raynal wrote:
-> > From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
-> > 
-> > Add compatible strings for AP806 and CP110 that are part of the
-> > Armada 8k/7k line of SoCs.
-> > 
-> > Add a note on the differences in the size of the control area in
-> > different bindings. This is an existing difference between the
-> > Armada 375 binding and the other boards already supported. The new
-> > AP806 and CP110 bindings are similar to the existing Armada 375 in
-> > this regard.
-> > 
-> > Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
-> > [<miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>: reword, additional details]
-> > Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> > ---
-> >  .../devicetree/bindings/thermal/armada-thermal.txt | 24
-> > +++++++++++++++++----- 1 file changed, 19 insertions(+), 5
-> > deletions(-)
-> > 
-> > diff --git
-> > a/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-> > b/Documentation/devicetree/bindings/thermal/armada-thermal.txt
-> > index 24aacf8948c5..9b7b2c03cc6f 100644 ---
-> > a/Documentation/devicetree/bindings/thermal/armada-thermal.txt +++
-> > b/Documentation/devicetree/bindings/thermal/armada-thermal.txt @@
-> > -7,17 +7,31 @@ Required properties: marvell,armada375-thermal
-> > marvell,armada380-thermal marvell,armadaxp-thermal
-> > +		marvell,armada-ap806-thermal
-> > +		marvell,armada-cp110-thermal
-> >  
-> >  - reg:		Device's register space.
-> >  		Two entries are expected, see the examples below.
-> > -		The first one is required for the sensor register;
-> > -		the second one is required for the control register
-> > -		to be used for sensor initialization (a.k.a.
-> > calibration).
-> > +		The first one points to the status register (4B).
-> > +		The second one points to the control registers
-> > (8B).
-> > +		Note: with legacy bindings, the second entry
-> > pointed
-> > +		only to the so called "control MSB" ("control 1"),
-> > was
-> > +		4B wide and did not let the possibility to reach
-> > the
-> > +		"control LSB" ("control 0") register. This is only
-> > +		allowed for compatibility reasons in Armada
-> > +		370/375/38x/XP DT nodes.  
+>  - void (*func)(struct update_util_data *data, u64 time,
+>  -              unsigned int flags))
+>  + void (*func)(struct update_util_data *data, u64 time,
+>  +              unsigned int flags, bool set))
 > 
-> "allowed" is not the right term, IMO. Legacy compatibles MUST point
-> to the MSB control register to preserve compatibility with existing
-> DTs.
-> 
-> The original patch had a list of legacy and non-legacy compatibles. I
-> think we need to keep them.
+> Where the additional boolean is actually used to define which
+> operation we wanna perform on the flags?
 
-Maybe I should reword this paragraph because we both agree on the
-meaning:
-
-"
-Note: Legacy bindings are only supported with Armada 370/375/38x/XP
-compatibles. The second memory resource entry only points to
-"control MSB/control 1", is 4 bytes wide and is preventing any access
-to "control LSB/control 0".
-"
-
-Does this sounds better to you?
-
-Thank you,
-Miquèl
-
-> 
-> baruch
-> 
-> > -Example:
-> > +Examples:
-> >  
-> > +	/* Legacy bindings */
-> >  	thermal@d0018300 {
-> >  		compatible = "marvell,armada370-thermal";
-> > -                reg = <0xd0018300 0x4
-> > +		reg = <0xd0018300 0x4
-> >  		       0xd0018304 0x4>;
-> >  	};
-> > +
-> > +	ap_thermal: thermal@6f8084 {
-> > +		compatible = "marvell,armada-ap806-thermal";
-> > +		reg = <0x6f808C 0x4>,
-> > +		      <0x6f8084 0x8>;
-> > +	};  
-> 
-
-
+The code will eventually have the same complexity or ugliness in both
+the cases. I would like to start with another flag for now and see if
+people prefer another parameter.
 
 -- 
-Miquel Raynal, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+viresh
