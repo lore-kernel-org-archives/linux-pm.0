@@ -1,119 +1,262 @@
 From: Sricharan R <sricharan@codeaurora.org>
-Subject: [PATCH v5 15/15] devicetree: bindings: Document qcom,pvs
-Date: Tue, 19 Dec 2017 21:25:00 +0530
-Message-ID: <1513698900-10638-16-git-send-email-sricharan@codeaurora.org>
+Subject: [PATCH v5 14/15] cpufreq: Add module to register cpufreq on Krait CPUs
+Date: Tue, 19 Dec 2017 21:24:59 +0530
+Message-ID: <1513698900-10638-15-git-send-email-sricharan@codeaurora.org>
 References: <1513698900-10638-1-git-send-email-sricharan@codeaurora.org>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-clk-owner@vger.kernel.org>
 In-Reply-To: <1513698900-10638-1-git-send-email-sricharan@codeaurora.org>
-Sender: linux-kernel-owner@vger.kernel.org
+Sender: linux-clk-owner@vger.kernel.org
 To: robh+dt@kernel.org, mark.rutland@arm.com, mturquette@baylibre.com, sboyd@codeaurora.org, linux@armlinux.org.uk, andy.gross@linaro.org, david.brown@linaro.org, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-soc@vger.kernel.org, linux-pm@vger.kernel.org
 Cc: sricharan@codeaurora.org
 List-Id: linux-pm@vger.kernel.org
 
 From: Stephen Boyd <sboyd@codeaurora.org>
 
+Register a cpufreq-generic device whenever we detect that a
+"qcom,krait" compatible CPU is present in DT.
+
+Cc: <devicetree@vger.kernel.org>
+[Sricharan: updated to use dev_pm_opp_set_prop_name]
+Signed-off-by: Sricharan R <sricharan@codeaurora.org>
 Signed-off-by: Stephen Boyd <sboyd@codeaurora.org>
 ---
- .../devicetree/bindings/arm/msm/qcom,pvs.txt       | 91 ++++++++++++++++++++++
- 1 file changed, 91 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
+ drivers/cpufreq/Kconfig.arm          |   9 ++
+ drivers/cpufreq/Makefile             |   1 +
+ drivers/cpufreq/cpufreq-dt-platdev.c |   3 +-
+ drivers/cpufreq/qcom-cpufreq.c       | 171 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 183 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/cpufreq/qcom-cpufreq.c
 
-diff --git a/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt b/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index bdce448..60f28e7 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -100,6 +100,15 @@ config ARM_OMAP2PLUS_CPUFREQ
+ 	depends on ARCH_OMAP2PLUS
+ 	default ARCH_OMAP2PLUS
+ 
++config ARM_QCOM_CPUFREQ
++	tristate "Qualcomm based"
++	depends on ARCH_QCOM
++	select PM_OPP
++	help
++	  This adds the CPUFreq driver for Qualcomm SoC based boards.
++
++	  If in doubt, say N.
++
+ config ARM_S3C_CPUFREQ
+ 	bool
+ 	help
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index 812f9e0..1496464 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -62,6 +62,7 @@ obj-$(CONFIG_ARM_MEDIATEK_CPUFREQ)	+= mediatek-cpufreq.o
+ obj-$(CONFIG_ARM_OMAP2PLUS_CPUFREQ)	+= omap-cpufreq.o
+ obj-$(CONFIG_ARM_PXA2xx_CPUFREQ)	+= pxa2xx-cpufreq.o
+ obj-$(CONFIG_PXA3xx)			+= pxa3xx-cpufreq.o
++obj-$(CONFIG_ARM_QCOM_CPUFREQ)		+= qcom-cpufreq.o
+ obj-$(CONFIG_ARM_S3C24XX_CPUFREQ)	+= s3c24xx-cpufreq.o
+ obj-$(CONFIG_ARM_S3C24XX_CPUFREQ_DEBUGFS) += s3c24xx-cpufreq-debugfs.o
+ obj-$(CONFIG_ARM_S3C2410_CPUFREQ)	+= s3c2410-cpufreq.o
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index ecc56e2..032ac4f 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -118,7 +118,7 @@
+ 	{ .compatible = "ti,am33xx", },
+ 	{ .compatible = "ti,am43", },
+ 	{ .compatible = "ti,dra7", },
+-
++	{ .compatible = "qcom,ipq8064", },
+ 	{ }
+ };
+ 
+@@ -157,6 +157,7 @@ static int __init cpufreq_dt_platdev_init(void)
+ 
+ create_pdev:
+ 	of_node_put(np);
++
+ 	return PTR_ERR_OR_ZERO(platform_device_register_data(NULL, "cpufreq-dt",
+ 			       -1, data,
+ 			       sizeof(struct cpufreq_dt_platform_data)));
+diff --git a/drivers/cpufreq/qcom-cpufreq.c b/drivers/cpufreq/qcom-cpufreq.c
 new file mode 100644
-index 0000000..260f537
+index 0000000..3e5583d
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/arm/msm/qcom,pvs.txt
-@@ -0,0 +1,91 @@
-+Qualcomm Process Voltage Scaling Tables
++++ b/drivers/cpufreq/qcom-cpufreq.c
+@@ -0,0 +1,171 @@
++// SPDX-License-Identifier: GPL-2.0
++// Copyright (c) 2013-2015, The Linux Foundation. All rights reserved.
 +
-+The node name is required to be "qcom,pvs". There shall only be one
-+such node present in the root of the tree.
++#include <linux/cpu.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/pm_opp.h>
++#include <linux/slab.h>
++#include "cpufreq-dt.h"
 +
-+PROPERTIES
++static void __init get_krait_bin_format_a(int *speed, int *pvs, int *pvs_ver)
++{
++	void __iomem *base;
++	u32 pte_efuse;
 +
-+- qcom,pvs-format-a or qcom,pvs-format-b:
-+	Usage: required
-+	Value type: <empty>
-+	Definition: Indicates where and how to read and interpret the efuse registers.
-+		    Based on that the opp-microvolt-<name> is extended with the right
-+		    speedXX-PVSXX-versionXX string. The cpu opp-table should be populated
-+		    with the operating-points-v2 binding and each opp must have the voltage
-+		    specified for all combinations of opp-microvolt-<speedXX-pvsXX-versionXX>.
++	*speed = *pvs = *pvs_ver = 0;
 +
-+Example:
++	base = ioremap(0x007000c0, 4);
++	if (!base) {
++		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
++		return;
++	}
 +
-+	cpu@0 {
-+		compatible = "qcom,krait";
-+		enable-method = "qcom,kpss-acc-v1";
-+		device_type = "cpu";
-+		reg = <0>;
-+		qcom,acc = <&acc0>;
-+		qcom,saw = <&saw0>;
-+		clocks = <&kraitcc 0>;
-+		clock-names = "cpu";
-+		cpu-supply = <&smb208_s2a>;
-+		operating-points-v2 = <&cpu_opp_table>;
-+	};
++	pte_efuse = readl_relaxed(base);
++	iounmap(base);
 +
-+	qcom,pvs {
-+		qcom,pvs-format-a;
-+	};
++	*speed = pte_efuse & 0xf;
++	if (*speed == 0xf)
++		*speed = (pte_efuse >> 4) & 0xf;
 +
++	if (*speed == 0xf) {
++		*speed = 0;
++		pr_warn("Speed bin: Defaulting to %d\n", *speed);
++	} else {
++		pr_info("Speed bin: %d\n", *speed);
++	}
 +
-+	cpu_opp_table: opp_table {
-+		compatible = "operating-points-v2";
++	*pvs = (pte_efuse >> 10) & 0x7;
++	if (*pvs == 0x7)
++		*pvs = (pte_efuse >> 13) & 0x7;
 +
-+		/*
-+		 * Missing opp-shared property means CPUs switch DVFS states
-+		 * independently.
-+		 */
++	if (*pvs == 0x7) {
++		*pvs = 0;
++		pr_warn("PVS bin: Defaulting to %d\n", *pvs);
++	} else {
++		pr_info("PVS bin: %d\n", *pvs);
++	}
++}
 +
-+		opp-1400000000 {
-+			opp-hz = /bits/ 64 <1400000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <1250000>;
-+			opp-microvolt-speed0-pvs1-v0 = <1175000>;
-+			opp-microvolt-speed0-pvs2-v0 = <1125000>;
-+			opp-microvolt-speed0-pvs3-v0 = <1050000>;
++static void __init get_krait_bin_format_b(int *speed, int *pvs, int *pvs_ver)
++{
++	u32 pte_efuse, redundant_sel;
++	void __iomem *base;
 +
-+		};
-+		opp-800000000 {
-+			opp-hz = /bits/ 64 <800000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <1100000>;
-+			opp-microvolt-speed0-pvs1-v0 = <1025000>;
-+			opp-microvolt-speed0-pvs2-v0 = <995000>;
-+			opp-microvolt-speed0-pvs3-v0 = <900000>;
++	*speed = 0;
++	*pvs = 0;
++	*pvs_ver = 0;
 +
-+		};
-+		opp-384000000 {
-+			opp-hz = /bits/ 64 <384000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <1000000>;
-+			opp-microvolt-speed0-pvs1-v0 = <925000>;
-+			opp-microvolt-speed0-pvs2-v0 = <875000>;
-+			opp-microvolt-speed0-pvs3-v0 = <800000>;
-+		};
-+		opp-1000000000 {
-+			opp-hz = /bits/ 64 <1000000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <1150000>;
-+			opp-microvolt-speed0-pvs1-v0 = <1075000>;
-+			opp-microvolt-speed0-pvs2-v0 = <1025000>;
-+			opp-microvolt-speed0-pvs3-v0 = <950000>;
++	base = ioremap(0xfc4b80b0, 8);
++	if (!base) {
++		pr_warn("Unable to read efuse data. Defaulting to 0!\n");
++		return;
++	}
 +
-+		};
-+		opp-600000000 {
-+			opp-hz = /bits/ 64 <600000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <1050000>;
-+			opp-microvolt-speed0-pvs1-v0 = <975000>;
-+			opp-microvolt-speed0-pvs2-v0 = <925000>;
-+			opp-microvolt-speed0-pvs3-v0 = <850000>;
-+		};
-+		opp-1200000000 {
-+			opp-hz = /bits/ 64 <1200000000>;
-+			opp-microvolt-speed0-pvs0-v0 = <1200000>;
-+			opp-microvolt-speed0-pvs1-v0 = <1125000>;
-+			opp-microvolt-speed0-pvs2-v0 = <1075000>;
-+			opp-microvolt-speed0-pvs3-v0 = <1000000>;
-+		};
-+	};
++	pte_efuse = readl_relaxed(base);
++	redundant_sel = (pte_efuse >> 24) & 0x7;
++	*speed = pte_efuse & 0x7;
++	/* 4 bits of PVS are in efuse register bits 31, 8-6. */
++	*pvs = ((pte_efuse >> 28) & 0x8) | ((pte_efuse >> 6) & 0x7);
++	*pvs_ver = (pte_efuse >> 4) & 0x3;
 +
++	switch (redundant_sel) {
++	case 1:
++		*speed = (pte_efuse >> 27) & 0xf;
++		break;
++	case 2:
++		*pvs = (pte_efuse >> 27) & 0xf;
++		break;
++	}
++
++	/* Check SPEED_BIN_BLOW_STATUS */
++	if (pte_efuse & BIT(3)) {
++		pr_info("Speed bin: %d\n", *speed);
++	} else {
++		pr_warn("Speed bin not set. Defaulting to 0!\n");
++		*speed = 0;
++	}
++
++	/* Check PVS_BLOW_STATUS */
++	pte_efuse = readl_relaxed(base + 0x4) & BIT(21);
++	if (pte_efuse) {
++		pr_info("PVS bin: %d\n", *pvs);
++	} else {
++		pr_warn("PVS bin not set. Defaulting to 0!\n");
++		*pvs = 0;
++	}
++
++	pr_info("PVS version: %d\n", *pvs_ver);
++	iounmap(base);
++}
++
++static int __init qcom_cpufreq_populate_opps(void)
++{
++	int speed, pvs, pvs_ver;
++	struct device_node *np;
++	struct device *dev;
++	int cpu = 0;
++	char pvs_name[] = "speedXX-pvsXX-vXX";
++
++	np = of_find_node_by_name(NULL, "qcom,pvs");
++	if (!np)
++		return -ENODEV;
++
++	if (of_property_read_bool(np, "qcom,pvs-format-a"))
++		get_krait_bin_format_a(&speed, &pvs, &pvs_ver);
++	else if (of_property_read_bool(np, "qcom,pvs-format-b"))
++		get_krait_bin_format_b(&speed, &pvs, &pvs_ver);
++	else
++		return -ENODEV;
++
++	snprintf(pvs_name, sizeof(pvs_name), "speed%d-pvs%d-v%d",
++		 speed, pvs, pvs_ver);
++
++	for (cpu = 0; cpu < num_possible_cpus(); cpu++) {
++		dev = get_cpu_device(cpu);
++		if (!dev)
++			return -ENODEV;
++
++		if (IS_ERR(dev_pm_opp_set_prop_name(dev, pvs_name)))
++			pr_warn("failed to add OPP name %s\n", pvs_name);
++	}
++
++	return 0;
++}
++
++static int __init qcom_cpufreq_driver_init(void)
++{
++	struct device *cpu_dev;
++	struct device_node *np;
++	int ret;
++
++	cpu_dev = get_cpu_device(0);
++	if (!cpu_dev)
++		return -ENODEV;
++
++	np = of_node_get(cpu_dev->of_node);
++	if (!np)
++		return -ENOENT;
++
++	if (!of_device_is_compatible(np, "qcom,krait")) {
++		of_node_put(np);
++		return -ENODEV;
++	}
++	of_node_put(np);
++
++	ret = qcom_cpufreq_populate_opps();
++	if (ret)
++		return ret;
++
++	return PTR_ERR(platform_device_register_simple("cpufreq-dt",
++						       -1, NULL, 0));
++}
++module_init(qcom_cpufreq_driver_init);
++
++MODULE_DESCRIPTION("Qualcomm CPUfreq driver");
++MODULE_LICENSE("GPL v2");
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+
