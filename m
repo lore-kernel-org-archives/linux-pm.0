@@ -1,75 +1,109 @@
-From: Biju Das <biju.das@bp.renesas.com>
-Subject: RE: [PATCH v2 2/2] ARM: dts: r8a7743: Add thermal device to DT
-Date: Wed, 20 Dec 2017 11:53:44 +0000
-Message-ID: <KL1PR06MB1702004602DF211F92CFAC9BB80C0@KL1PR06MB1702.apcprd06.prod.outlook.com>
-References: <1513689449-2700-1-git-send-email-biju.das@bp.renesas.com>
- <1513689449-2700-3-git-send-email-biju.das@bp.renesas.com>
- <20171220085036.gdcnbhonyqlewyi4@verge.net.au>
- <KL1PR06MB17029FA8C7AD57F067777E11B80C0@KL1PR06MB1702.apcprd06.prod.outlook.com>
- <20171220114844.w35ain6w6tvecfgo@verge.net.au>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/3] phy: core: Move runtime PM reference counting to the
+ parent device
+Date: Wed, 20 Dec 2017 13:08:10 +0100
+Message-ID: <CAPDyKFqEyk5TZZk3bo9hvfBZ=j-1k0YJ9Ux3YHpvHOhrOuK-xw@mail.gmail.com>
+References: <1513718551-28624-1-git-send-email-ulf.hansson@linaro.org>
+ <1513718551-28624-2-git-send-email-ulf.hansson@linaro.org>
+ <ced99cd1-d52c-ea76-332d-6c0492f256a8@ti.com> <CAPDyKFoy7AkAyA9boAakr1m5Y7+r2KMqbLR7KmHZThPRXoKMRA@mail.gmail.com>
+ <0c0cf0ba-e729-a1d8-ac0a-38c8eb13a5c6@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from relmlor4.renesas.com ([210.160.252.174]:49792 "EHLO
-        relmlie3.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1754695AbdLTLxt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 06:53:49 -0500
-In-Reply-To: <20171220114844.w35ain6w6tvecfgo@verge.net.au>
-Content-Language: en-US
+Received: from mail-io0-f193.google.com ([209.85.223.193]:37654 "EHLO
+        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754767AbdLTMIM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 07:08:12 -0500
+Received: by mail-io0-f193.google.com with SMTP id d16so17112232iob.4
+        for <linux-pm@vger.kernel.org>; Wed, 20 Dec 2017 04:08:12 -0800 (PST)
+In-Reply-To: <0c0cf0ba-e729-a1d8-ac0a-38c8eb13a5c6@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Magnus Damm <magnus.damm@gmail.com>, Chris Paterson <Chris.Paterson2@renesas.com>, Fabrizio Castro <fabrizio.castro@bp.renesas.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: Kishon Vijay Abraham I <kishon@ti.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-Thanks, I will check and provide feedback if any.
-
-Regards,
-Biju
-
-> -----Original Message-----
-> From: Simon Horman [mailto:horms@verge.net.au]
-> Sent: 20 December 2017 11:49
-> To: Biju Das <biju.das@bp.renesas.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>; Eduardo Valentin
-> <edubezval@gmail.com>; Rob Herring <robh+dt@kernel.org>; Mark Rutland
-> <mark.rutland@arm.com>; Magnus Damm <magnus.damm@gmail.com>;
-> Chris Paterson <Chris.Paterson2@renesas.com>; Fabrizio Castro
-> <fabrizio.castro@bp.renesas.com>; devicetree@vger.kernel.org; linux-renes=
-as-
-> soc@vger.kernel.org; linux-pm@vger.kernel.org
-> Subject: Re: [PATCH v2 2/2] ARM: dts: r8a7743: Add thermal device to DT
+On 20 December 2017 at 10:02, Kishon Vijay Abraham I <kishon@ti.com> wrote:
+> Hi Ulf,
 >
-> On Wed, Dec 20, 2017 at 11:36:51AM +0000, Biju Das wrote:
-> > Hi Simon,
-> >
-> > Just noticed that
-> >
-> > # make dtbs W=3D1 is giving below warning message.
-> >
-> > arch/arm/boot/dts/r8a7743-iwg20d-q7-dbcm-ca.dtb: Warning
-> (simple_bus_reg): Node /soc/thermal-zones missing or empty reg/ranges
-> property
-> >
-> > Do you prefer a fix patch or a v2 ?
+> On Wednesday 20 December 2017 02:05 PM, Ulf Hansson wrote:
+>> On 20 December 2017 at 07:42, Kishon Vijay Abraham I <kishon@ti.com> wrote:
+>>> Hi Ulf,
+>>>
+>>> On Wednesday 20 December 2017 02:52 AM, Ulf Hansson wrote:
+>>>> The runtime PM deployment in the phy core is a bit unnecessary complicated
+>>>> and the main reason is because it operates on the phy device, which is
+>>>> created by the phy core and assigned as a child device of the phy provider
+>>>> device.
+>>>>
+>>>> Let's simplify the code, by replacing the existing calls to
+>>>> phy_pm_runtime_get_sync() and phy_pm_runtime_put(), with regular calls to
+>>>> pm_runtime_get_sync() and pm_runtime_put(). While doing that, let's also
+>>>> change to give the phy provider device as the parameter to the runtime PM
+>>>> calls. This together with adding error paths, that allows the phy
+>>>> provider device to be runtime PM disabled, enables further clean up the
+>>>> code. More precisely, we can simply avoid to enable runtime PM for the phy
+>>>> device altogether, so let's do that as well.
+>>>>
+>>>> More importantly, this change also fixes an issue for system suspend.
+>>>> Especially in those cases when the phy provider device gets put into a low
+>>>> power state via calling the pm_runtime_force_suspend() helper, as is the
+>>>> case for a Renesas SoC, which has the phy provider device attached to the
+>>>> generic PM domain.
+>>>>
+>>>> The problem in this case, is that pm_runtime_force_suspend() expects the
+>>>> child device of the provider device to be runtime suspended, else this will
+>>>> trigger a WARN splat (correctly) when runtime PM gets re-enabled at system
+>>>> resume.
+>>>>
+>>>> In the current case, even if phy_power_off() triggers a pm_runtime_put()
+>>>> during system suspend the phy device (child) doesn't get runtime suspended,
+>>>> because that is prevented in the system suspend phases. However, by
+>>>> avoiding to enable runtime PM, this problem goes away.
+>>>>
+>>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>>> ---
+>>>>  drivers/phy/phy-core.c | 33 +++++++++++++--------------------
+>>>>  1 file changed, 13 insertions(+), 20 deletions(-)
+>>>>
+>>>> diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
+>>>> index b4964b0..9fa3f13 100644
+>>>> --- a/drivers/phy/phy-core.c
+>>>> +++ b/drivers/phy/phy-core.c
+>>>> @@ -222,10 +222,10 @@ int phy_init(struct phy *phy)
+>>>>       if (!phy)
+>>>>               return 0;
+>>>>
+>>>> -     ret = phy_pm_runtime_get_sync(phy);
+>>>> -     if (ret < 0 && ret != -ENOTSUPP)
+>>>> +     ret = pm_runtime_get_sync(phy->dev.parent);
+>>>
+>>> Won't this make phy-core manage pm_runtime of phy_provider even though the
+>>> phy_provider might not intend it?
+>>
+>> No it shouldn't.
+>>
+>> There are two cases to consider around this.
+>>
+>> 1) CONFIG_PM is unset. In this case pm_runtime_get_sync() will return
+>> 1, which is treated as succeeds by the error path.
+>>
+>> 2) CONFIG_PM is set, but the phy provider don't use runtime PM, thus
+>> it hasn't called pm_runtime_enable() for its device. In this case,
+>> pm_runtime_get_sync() returns -EACCES, which is also treated as
+>> success by the error path.
 >
-> I believe I have fixed that by applying
-> "ARM: dts: r8a7743: move timer and thermal-zones nodes out of bus"
->
-> Could you check the devel branch when I push it a little later today?
+> There can be a case where the phy_provider uses runtime PM but doesn't want
+> phy-core to manage it.
 
+Ah, so you mean there are cases when the provider driver calls
+pm_runtime_enable() *after* it calls phy_create()/dev_phy_create()
+instead of before?
 
-[https://www2.renesas.eu/media/email/unicef_2017.jpg]
+I am not really sure I understand *why* a provider driver wants to do
+that though, do you have more details?
+I mean, even if the phy core handles runtime PM, additional management
+can be done on top in the phy provider, there is nothing preventing
+that, but I guess that isn't sufficient?
 
-This Christmas, instead of sending out cards, Renesas Electronics Europe ha=
-ve decided to support Unicef with a donation. For further details click her=
-e<https://www.unicef.org/> to find out about the valuable work they do, hel=
-ping children all over the world.
-We would like to take this opportunity to wish you a Merry Christmas and a =
-prosperous New Year.
-
-
-
-Renesas Electronics Europe Ltd, Dukes Meadow, Millboard Road, Bourne End, B=
-uckinghamshire, SL8 5FH, UK. Registered in England & Wales under Registered=
- No. 04586709.
+Kind regards
+Uffe
