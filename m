@@ -1,88 +1,282 @@
-From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH V4 3/7] PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for
- Tegra PCIe
-Date: Wed, 20 Dec 2017 20:30:11 +0100
-Message-ID: <20171220193011.GA31757@ulmo>
-References: <1512723493-865-1-git-send-email-mmaddireddy@nvidia.com>
- <1512723493-865-4-git-send-email-mmaddireddy@nvidia.com>
- <20171215173643.GA1050@red-moon>
+From: Ognjen Galic <smclt30p@gmail.com>
+Subject: Re: [PATCH 1/3 v6] battery: Add the battery hooking API
+Date: Wed, 20 Dec 2017 20:32:43 +0100
+Message-ID: <20171220193243.GA7459@thinkpad>
+References: <20171215165654.GA6209@thinkpad>
+ <CAJZ5v0icKSOsxFTRonW8xEt7=oXBvCsO84FMx4ECQHTYd0_SGw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="G4iJoqBmSsgzjUCe"
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171215173643.GA1050@red-moon>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Cc: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, cyndis-/1wQRMveznE@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <CAJZ5v0icKSOsxFTRonW8xEt7=oXBvCsO84FMx4ECQHTYd0_SGw@mail.gmail.com>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-
---G4iJoqBmSsgzjUCe
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Dec 15, 2017 at 05:36:43PM +0000, Lorenzo Pieralisi wrote:
-> On Fri, Dec 08, 2017 at 02:28:09PM +0530, Manikanta Maddireddy wrote:
-> > Primary, secondary and subordinate default bus numbers are 0 in Tegra a=
-nd
-> > it is expecting SW to program these numbers in configration space.
-> >=20
-> > pci_scan_bridge_extend() function programs these numbers in configurati=
-on
-> > space if secondary & subordinate bus numbers are 0 or PCI_REASSIGN_ALL_=
-BUS
-> > flag is set. Since secondary & subordinate default bus numbers are 0,
-> > PCI_REASSIGN_ALL_BUS flag can be removed for Tegra PCIe.
-> >=20
-> > Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+On Mon, Dec 18, 2017 at 07:04:07PM +0100, Rafael J. Wysocki wrote:
+> On Fri, Dec 15, 2017 at 5:56 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
+> > This is a patch that implements a generic hooking API for the
+> > generic ACPI battery driver.
+> >
+> > With this new generic API, drivers can expose platform specific
+> > behaviour via sysfs attributes in /sys/class/power_supply/BATn/
+> > in a generic way.
+> >
+> > A perfect example of the need for this API are Lenovo ThinkPads.
+> >
+> > Lenovo ThinkPads have a ACPI extension that allows the setting of
+> > start and stop charge thresholds in the EC and battery firmware
+> > via ACPI. The thinkpad_acpi module can use this API to expose
+> > sysfs attributes that it controls inside the ACPI battery driver
+> > sysfs tree, under /sys/class/power_supply/BATN/.
+> >
+> > The file drivers/acpi/battery.h has been moved to
+> > include/acpi/battery.h and the includes inside ac.c, sbs.c, and
+> > battery.c have been adjusted to reflect that.
+> >
+> > When drivers hooks into the API, the API calls add_battery() for
+> > each battery in the system that passes it a acpi_battery
+> > struct. Then, the drivers can use device_create_file() to create
+> > new sysfs attributes with that struct and identify the batteries
+> > for per-battery attributes.
+> >
+> > Tested-by: Kevin Locke <kevin@kevinlocke.name>
+> > Tested-by: Christoph Böhmwalder <christoph@boehmwalder.at>
+> > Signed-off-by: Ognjen Galic <smclt30p@gmail.com>
 > > ---
-> > V3:
-> > * new patch in V3
-> > V4:
-> > * no change in this patch
-> >=20
-> >  drivers/pci/host/pci-tegra.c | 1 -
-> >  1 file changed, 1 deletion(-)
-> >=20
-> > diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-> > index a549c5899e26..0d91f1a3a6b4 100644
-> > --- a/drivers/pci/host/pci-tegra.c
-> > +++ b/drivers/pci/host/pci-tegra.c
-> > @@ -2604,7 +2604,6 @@ static int tegra_pcie_probe(struct platform_devic=
-e *pdev)
-> > =20
-> >  	tegra_pcie_enable_ports(pcie);
-> > =20
-> > -	pci_add_flags(PCI_REASSIGN_ALL_BUS);
->=20
-> This looks obviously OK to me but I need Thierry's ACK to queue it.
+> >  drivers/acpi/ac.c      |   2 +-
+> >  drivers/acpi/battery.c | 139 ++++++++++++++++++++++++++++++++++++++++++++++++-
+> >  drivers/acpi/battery.h |  11 ----
+> >  drivers/acpi/sbs.c     |   2 +-
+> >  include/acpi/battery.h |  21 ++++++++
+> >  5 files changed, 160 insertions(+), 15 deletions(-)
+> >  delete mode 100644 drivers/acpi/battery.h
+> >  create mode 100644 include/acpi/battery.h
+> >
+> > diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
+> > index 47a7ed5..2d8de2f 100644
+> > --- a/drivers/acpi/ac.c
+> > +++ b/drivers/acpi/ac.c
+> > @@ -33,7 +33,7 @@
+> >  #include <linux/platform_device.h>
+> >  #include <linux/power_supply.h>
+> >  #include <linux/acpi.h>
+> > -#include "battery.h"
+> > +#include <acpi/battery.h>
+> >
+> >  #define PREFIX "ACPI: "
+> >
+> > diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+> > index 13e7b56..2951d07 100644
+> > --- a/drivers/acpi/battery.c
+> > +++ b/drivers/acpi/battery.c
+> > @@ -30,6 +30,7 @@
+> >  #include <linux/dmi.h>
+> >  #include <linux/delay.h>
+> >  #include <linux/slab.h>
+> > +#include <linux/list.h>
+> >  #include <linux/suspend.h>
+> >  #include <asm/unaligned.h>
+> >
+> > @@ -42,7 +43,7 @@
+> >  #include <linux/acpi.h>
+> >  #include <linux/power_supply.h>
+> >
+> > -#include "battery.h"
+> > +#include <acpi/battery.h>
+> >
+> >  #define PREFIX "ACPI: "
+> >
+> > @@ -124,6 +125,7 @@ struct acpi_battery {
+> >         struct power_supply_desc bat_desc;
+> >         struct acpi_device *device;
+> >         struct notifier_block pm_nb;
+> > +       struct list_head list;
+> >         unsigned long update_time;
+> >         int revision;
+> >         int rate_now;
+> > @@ -626,6 +628,137 @@ static const struct device_attribute alarm_attr = {
+> >         .store = acpi_battery_alarm_store,
+> >  };
+> >
+> > +/*
+> > + * The Battery Hooking API
+> > + *
+> > + * This API is used inside other drivers that need to expose
+> > + * platform-specific behaviour within the generic driver in a
+> > + * generic way.
+> > + *
+> > + */
+> > +
+> > +LIST_HEAD(acpi_battery_list);
+> > +LIST_HEAD(battery_hook_list);
+> > +
+> > +void battery_hook_unregister(struct acpi_battery_hook *hook)
+> > +{
+> > +
+> > +       struct list_head *position;
+> > +       struct acpi_battery *battery;
+> > +
+> > +       /*
+> > +        * In order to remove a hook, we first need to
+> > +        * de-register all the batteries that are registered.
+> > +        */
+> > +
+> > +       list_for_each(position, &acpi_battery_list) {
+> > +               battery = list_entry(position, struct acpi_battery, list);
+> > +               hook->remove_battery(battery->bat);
+> > +       }
+> > +
+> > +       /* Then, just remove the hook */
+> > +
+> > +       list_del(&hook->list);
+> > +       pr_info("battery: extension unregistered: %s\n", hook->name);
+> > +
+> > +}
+> > +EXPORT_SYMBOL_GPL(battery_hook_unregister);
+> > +
+> > +void battery_hook_register(struct acpi_battery_hook *hook)
+> > +{
+> > +       struct list_head *position;
+> > +       struct acpi_battery *battery;
+> > +
+> > +       INIT_LIST_HEAD(&hook->list);
+> > +       list_add(&hook->list, &battery_hook_list);
+> > +
+> > +       /*
+> > +        * Now that the driver is registered, we need
+> > +        * to notify the hook that a battery is available
+> > +        * for each battery, so that the driver may add
+> > +        * its attributes.
+> > +        */
+> > +       list_for_each(position, &acpi_battery_list) {
+> > +               battery = list_entry(position, struct acpi_battery, list);
+> > +               if (hook->add_battery(battery->bat)) {
+> > +
+> > +                       /*
+> > +                        * If a add-battery returns non-zero,
+> > +                        * the registration of the extension has failed,
+> > +                        * we will unload it.
+> > +                        */
+> > +                       pr_err("battery: extension failed to load: %s",
+> > +                                       hook->name);
+> > +                       battery_hook_unregister(hook);
+> > +                       return;
+> > +
+> > +               }
+> > +       }
+> > +
+> > +       pr_info("battery: new extension: %s\n", hook->name);
+> > +
+> > +}
+> > +EXPORT_SYMBOL_GPL(battery_hook_register);
+> > +
+> > +static void battery_hook_add_battery(struct acpi_battery *battery)
+> > +{
+> > +
+> > +       /*
+> > +        * This function gets called right after the battery sysfs
+> > +        * attributes have been added, so that the drivers that
+> > +        * define custom sysfs attributes can add their own.
+> > +        */
+> > +
+> > +       struct list_head *position;
+> > +       struct acpi_battery_hook *hook_node;
+> > +
+> > +       INIT_LIST_HEAD(&battery->list);
+> > +       list_add(&battery->list, &acpi_battery_list);
+> > +
+> > +       /*
+> > +        * Since we added a new battery to the list, we need to
+> > +        * iterate over the hooks and call add_battery for each
+> > +        * hook that was registered. This usually happens
+> > +        * when a battery gets hotplugged or initialized
+> > +        * during the battery module initialization.
+> > +        */
+> > +
+> > +       list_for_each(position, &battery_hook_list) {
+> > +               hook_node = list_entry(position, struct acpi_battery_hook, list);
+> > +               if (hook_node->add_battery(battery->bat)) {
+> > +
+> > +                       /*
+> > +                        * The notification of the extensions has failed, to
+> > +                        * prevent further errors we will unload the extension.
+> > +                        */
+> > +                       battery_hook_unregister(hook_node);
+> > +                       pr_err("battery: error in extension, unloading: %s",
+> > +                                       hook_node->name);
+> > +               }
+> > +       }
+> > +
+> > +}
+> > +
+> > +static void battery_hook_remove_battery(struct acpi_battery *battery)
+> > +{
+> > +       struct list_head *position;
+> > +       struct acpi_battery_hook *hook;
+> > +
+> > +       /*
+> > +        * Before removing the hook, we need to remove all
+> > +        * custom attributes from the battery.
+> > +        */
+> > +       list_for_each(position, &battery_hook_list) {
+> > +               hook = list_entry(position, struct acpi_battery_hook, list);
+> > +               hook->remove_battery(battery->bat);
+> > +       }
+> > +
+> > +       /* Then, just remove the battery from the list */
+> > +
+> > +       list_del(&battery->list);
+> > +
+> > +}
+> > +
+> >  static int sysfs_add_battery(struct acpi_battery *battery)
+> >  {
+> >         struct power_supply_config psy_cfg = { .drv_data = battery, };
+> > @@ -647,6 +780,8 @@ static int sysfs_add_battery(struct acpi_battery *battery)
+> >         battery->bat = power_supply_register_no_ws(&battery->device->dev,
+> >                                 &battery->bat_desc, &psy_cfg);
+> >
+> > +       battery_hook_add_battery(battery);
+> 
+> What if a module registering the hook is loaded after
+> sysfs_add_battery() has run for the battery object in question?
 
-Just as an additional note: I think the real reason why this is okay to
-do is because we reset the PCI host controller in the kernel driver, so
-any bus assignments done by the firmware are reset as well.
+The battery module keeps a list of acpi_battery objects, and regardless
+of the time the hook was registered the batteries will always be
+registered.
 
-Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> 
+> What if it attempts to register a hook while this code is running?
 
---G4iJoqBmSsgzjUCe
-Content-Type: application/pgp-signature; name="signature.asc"
+I could not test that as the only module that uses this API is 
+thinkpad_acpi. 
 
------BEGIN PGP SIGNATURE-----
+> 
+> What if two entities try to add or remove hooks simultaneously?
 
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlo6ukAACgkQ3SOs138+
-s6Ew+g/+PHBkSe3TxzC9Pdrm/EKZiam0Z1GYXX4vjAymJ8BgLhwOl8EwsCsuuWRa
-Xvj+SKHvuZcUcUmb7/laPNzKP9rQ2yRwBwTuojfgUVmA5+mMa/ymL/k+qnDfKcm8
-vKRf5gg1ZGxBw71EbrqbOh0nsjRX7LkZ/IeN/wL3pXNPv4gmfEQLxh5TP6D0MyOi
-jPD80JAxNsHmOVfVj6zLcQmSR3F7c3TGR59k0jMlIa94+nzcPw1cWV4f3dYd38C0
-D/GC8HUxdEx2GTD/DSFLjoIy4b86VSTwJEBaMQfIzXPt9TVGKcEqJqvfTZr5qQKl
-0byniN9Uyoz6JIO21YxWmV0S70c36vWImR2A0TwvmBnCjAAhDfJ0NnOE3HLWaw48
-2h6CdYM8AXPKAd5vNmdX6fEodU7WIzKUPBPiTRqnqv/ZkHY8hchSYdV2QrCWtT2e
-hX+o2K0bxpJWXkoS1ScPr7QKfesrG9CoVeZUj3sNPaF5sEdIAjb/7/xeGbf5gkJO
-H49O/BeIdIGu1IBe6fLe9PzadUsVPvNMTE0jPIjLwDU1pOZTo7ED1vAJ4tAf+ajI
-VRiTv/QhQgyJr1jp+s2FPRQWxhzu6vTHvoOh3/eo+XY58Fydb1RxxrM83mYRH5+7
-3tZheKD6MYxVqNYs8PzyRICphlb3vqrToZiEo/+NKms/Q2lXjNM=
-=f6iP
------END PGP SIGNATURE-----
+Currently there is only one module using this API, so race conditions
+can't occur, currently. However, this could and will change in the
+future. See below.
 
---G4iJoqBmSsgzjUCe--
+> 
+> Don't you think any locking or other synchronization is necessary?
+>
+
+In the last version of the patch, version 7, I have implemented locking
+via mutual exclusions to future-proof the code. I have tested various
+scenarios of loading and unloading the battery and thinkpad_acpi modules
+and there are no obvious bugs or memory corruption.
+
+> Also, what if someone attempts to add a hook when the ACPI battery
+> module is not loaded?  Will that still work?
+
+The loading of the module that uses the API will fail with the message 
+that symbols that the module needs are missing, so a module can't use
+the hooks if battery is not loaded.
+
+> 
+> Thanks,
+> Rafael
