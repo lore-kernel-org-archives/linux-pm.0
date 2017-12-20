@@ -1,68 +1,47 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2 2/4] sched/fair: add util_est on top of PELT
-Date: Wed, 20 Dec 2017 09:57:47 +0100
-Message-ID: <20171220085747.tgkle5b77z7yz4j4@hirez.programming.kicks-ass.net>
-References: <20171205171018.9203-1-patrick.bellasi@arm.com>
- <20171205171018.9203-3-patrick.bellasi@arm.com>
- <20171213161624.oiwdwgitzzwkc35k@hirez.programming.kicks-ass.net>
- <20171215121417.GB19821@e110439-lin>
- <20171215125340.akzm5kwa4pnijavz@hirez.programming.kicks-ass.net>
- <20171215154140.GE19821@e110439-lin>
+From: Jarkko Nikula <jarkko.nikula@bitmer.com>
+Subject: Re: [-next PATCH 2/4] treewide: Use DEVICE_ATTR_RW
+Date: Wed, 20 Dec 2017 10:34:03 +0200
+Message-ID: <20171220083403.GA27231@bitmer.com>
+References: <cover.1513706701.git.joe@perches.com>
+ <cd38f14f06e1f447b3159ffe8c69c0df8241bb6e.1513706701.git.joe@perches.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:43606 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752128AbdLTI54 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 03:57:56 -0500
+Received: from 50-87-157-213.static.tentacle.fi ([213.157.87.50]:49549 "EHLO
+        bitmer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1754164AbdLTJAJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 20 Dec 2017 04:00:09 -0500
 Content-Disposition: inline
-In-Reply-To: <20171215154140.GE19821@e110439-lin>
+In-Reply-To: <cd38f14f06e1f447b3159ffe8c69c0df8241bb6e.1513706701.git.joe@perches.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+To: Joe Perches <joe@perches.com>
+Cc: Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Sebastian Ott <sebott@linux.vnet.ibm.com>, Peter Oberparleiter <oberpar@linux.vnet.ibm.com>, James Smart <james.smart@broadcom.com>, Dick Kennedy <dick.kennedy@broadcom.com>, Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Mathias Nyman <mathias.nyman@intel.com>, Felipe Balbi <balbi@kernel.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-On Fri, Dec 15, 2017 at 03:41:40PM +0000, Patrick Bellasi wrote:
-> Close enough, the actual code is:
+On Tue, Dec 19, 2017 at 10:15:07AM -0800, Joe Perches wrote:
+> Convert DEVICE_ATTR uses to DEVICE_ATTR_RW where possible.
 > 
->         util_est = p->util_est.ewma;
->     5218:       f9403ba3        ldr     x3, [x29,#112]
->     521c:       f9418462        ldr     x2, [x3,#776]
->         if (abs(util_est - util_last) <= (SCHED_CAPACITY_SCALE / 100))
->     5220:       eb010040        subs    x0, x2, x1
->     5224:       da805400        cneg    x0, x0, mi
->     5228:       f100281f        cmp     x0, #0xa
->     522c:       54fff9cd        b.le    5164 <dequeue_task_fair+0xa04>
+...
+  
+> diff --git a/sound/soc/omap/mcbsp.c b/sound/soc/omap/mcbsp.c
+> index 7a54e3083203..79d4dc785e5c 100644
+> --- a/sound/soc/omap/mcbsp.c
+> +++ b/sound/soc/omap/mcbsp.c
+> @@ -854,7 +854,7 @@ static ssize_t dma_op_mode_store(struct device *dev,
+>  	return size;
+>  }
+>  
+> -static DEVICE_ATTR(dma_op_mode, 0644, dma_op_mode_show, dma_op_mode_store);
+> +static DEVICE_ATTR_RW(dma_op_mode);
+>  
+While I can ack this part here if it helps generic cleanup effort I
+don't understart would it improve code readability in general? Mode 644
+is clear and don't need any grepping but for DEVICE_ATTR_RW() I had to go
+through all of these files in order to see what does it mean:
 
-Ah, that cneg instruction is cute; on x86 we end up with something like:
+DEVICE_ATTR_RW: include/linux/device.h
+__ATTR_RW: include/linux/sysfs.h
+S_IWUSR: include/uapi/linux/stat.h
+S_IRUGO: include/linux/stat.h
 
-bool abs_test(long s)
-{
-        return abs(s) < 32;
-}
-
-        cmpl    $-31, %eax
-        jl      .L107
-        movq    -8(%rbp), %rax
-        cmpl    $31, %eax
-        jg      .L107
-        movl    $1, %eax
-        jmp     .L108
-.L107:
-        movl    $0, %eax
-.L108:
-
-
-But I figured you can actually do:
-
-	abs(x) < y := (unsigned)(x + y - 1) < (2 * y - 1)
-
-Which, if y is a constant, should result in nicer code, and it does for
-x86:
-
-        addq    $31, %rax
-        cmpq    $62, %rax
-        setbe   %al
-        movzbl  %al, %eax
-
-Just not measurably faster, I suppose because of all the dependencies :/
+Jarkko Nikula <jarkko.nikula@bitmer.com>
