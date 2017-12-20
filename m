@@ -1,13 +1,13 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] Power management fixes for v4.15-rc5
-Date: Wed, 20 Dec 2017 20:06:27 +0100
-Message-ID: <CAJZ5v0jGE6d+-3PGztvzWAdHvuB4=y4tDYeNSYnwmRyU7kCLwg@mail.gmail.com>
+Subject: [GIT PULL] ACPI fixes for v4.15-rc5
+Date: Wed, 20 Dec 2017 20:07:49 +0100
+Message-ID: <CAJZ5v0h7BZgVFSaVBWcNrNBy76gh+ubZvf1_7sVvu9kt=S__1A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pci-owner@vger.kernel.org>
-Sender: linux-pci-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Sender: linux-acpi-owner@vger.kernel.org
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
 Hi Linus,
@@ -15,57 +15,42 @@ Hi Linus,
 Please pull from the tag
 
  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-4.15-rc5
+ acpi-4.15-rc5
 
-with top-most commit 63d15e8c2ac134b3fd5460d19043ffde6f6eeb61
+with top-most commit 9245fe9fccdbda5d81d97155e5c5de7e16510cee
 
- Merge branch 'pm-pci'
+ Merge branch 'acpi-cppc'
 
 on top of commit 1291a0d5049dbc06baaaf66a9ff3f53db493b19b
 
  Linux 4.15-rc4
 
-to receive power management fixes for 4.15-rc5.
+to receive ACPI fixes for 4.15-rc5.
 
-These fix a regression in the ondemand and conservative cpufreq
-governors that was introduced during the 4.13 cycle, a recent
-regression in the imx6q cpufreq driver and a regression in the PCI
-handling of hibernation from the 4.14 cycle.
+These fix a recently introduced issue in the ACPI CPPC driver and
+an obscure error hanling bug in the APEI code.
 
 Specifics:
 
- - Fix an issue in the PCI handling of the "thaw" transition during
-   hibernation (after creating an image), introduced by a bug fix
-   from the 4.13 cycle and exposed by recent changes in the IRQ
-   subsystem, that caused pci_restore_state() to be called for
-   devices in low-power states in some cases which is incorrect
-   and breaks MSI management on some systems (Rafael Wysocki).
+ - Fix an error handling issue in the ACPI APEI implementation
+   of the >read callback in struct pstore_info (Takashi Iwai).
 
- - Fix a recent regression in the imx6q cpufreq driver that broke
-   speed grading on i.MX6 QuadPlus by omitting checks causing
-   invalid operating performance points (OPPs) to be disabled on
-   that SoC as appropriate (Lucas Stach).
-
- - Fix a regression introduced during the 4.14 cycle in the ondemand
-   and conservative cpufreq governors that causes the sampling
-   interval used by them to be shorter than the tick period in some
-   cases which leads to incorrect decisions (Rafael Wysocki).
+ - Fix a possible out-of-bounds arrar read in the ACPI CPPC
+   driver (Colin Ian King).
 
 Thanks!
 
 
 ---------------
 
-Lucas Stach (1):
-      cpufreq: imx6q: fix speed grading regression on i.MX6 QuadPlus
+Colin Ian King (1):
+      ACPI: CPPC: remove initial assignment of pcc_ss_data
 
-Rafael J. Wysocki (2):
-      PCI / PM: Force devices to D0 in pci_pm_thaw_noirq()
-      cpufreq: governor: Ensure sufficiently large sampling intervals
+Takashi Iwai (1):
+      ACPI: APEI / ERST: Fix missing error handling in erst_reader()
 
 ---------------
 
- drivers/cpufreq/cpufreq_governor.c | 19 ++++++++++++++++---
- drivers/cpufreq/imx6q-cpufreq.c    | 11 ++++++-----
- drivers/pci/pci-driver.c           |  7 ++++++-
- 3 files changed, 28 insertions(+), 9 deletions(-)
+ drivers/acpi/apei/erst.c | 2 +-
+ drivers/acpi/cppc_acpi.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
