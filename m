@@ -1,56 +1,88 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: [GIT PULL] ACPI fixes for v4.15-rc5
-Date: Wed, 20 Dec 2017 20:07:49 +0100
-Message-ID: <CAJZ5v0h7BZgVFSaVBWcNrNBy76gh+ubZvf1_7sVvu9kt=S__1A@mail.gmail.com>
+From: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH V4 3/7] PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for
+ Tegra PCIe
+Date: Wed, 20 Dec 2017 20:30:11 +0100
+Message-ID: <20171220193011.GA31757@ulmo>
+References: <1512723493-865-1-git-send-email-mmaddireddy@nvidia.com>
+ <1512723493-865-4-git-send-email-mmaddireddy@nvidia.com>
+ <20171215173643.GA1050@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="G4iJoqBmSsgzjUCe"
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20171215173643.GA1050@red-moon>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Cc: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, cyndis-/1wQRMveznE@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Linus,
 
-Please pull from the tag
+--G4iJoqBmSsgzjUCe
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- acpi-4.15-rc5
+On Fri, Dec 15, 2017 at 05:36:43PM +0000, Lorenzo Pieralisi wrote:
+> On Fri, Dec 08, 2017 at 02:28:09PM +0530, Manikanta Maddireddy wrote:
+> > Primary, secondary and subordinate default bus numbers are 0 in Tegra a=
+nd
+> > it is expecting SW to program these numbers in configration space.
+> >=20
+> > pci_scan_bridge_extend() function programs these numbers in configurati=
+on
+> > space if secondary & subordinate bus numbers are 0 or PCI_REASSIGN_ALL_=
+BUS
+> > flag is set. Since secondary & subordinate default bus numbers are 0,
+> > PCI_REASSIGN_ALL_BUS flag can be removed for Tegra PCIe.
+> >=20
+> > Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> > ---
+> > V3:
+> > * new patch in V3
+> > V4:
+> > * no change in this patch
+> >=20
+> >  drivers/pci/host/pci-tegra.c | 1 -
+> >  1 file changed, 1 deletion(-)
+> >=20
+> > diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+> > index a549c5899e26..0d91f1a3a6b4 100644
+> > --- a/drivers/pci/host/pci-tegra.c
+> > +++ b/drivers/pci/host/pci-tegra.c
+> > @@ -2604,7 +2604,6 @@ static int tegra_pcie_probe(struct platform_devic=
+e *pdev)
+> > =20
+> >  	tegra_pcie_enable_ports(pcie);
+> > =20
+> > -	pci_add_flags(PCI_REASSIGN_ALL_BUS);
+>=20
+> This looks obviously OK to me but I need Thierry's ACK to queue it.
 
-with top-most commit 9245fe9fccdbda5d81d97155e5c5de7e16510cee
+Just as an additional note: I think the real reason why this is okay to
+do is because we reset the PCI host controller in the kernel driver, so
+any bus assignments done by the firmware are reset as well.
 
- Merge branch 'acpi-cppc'
+Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-on top of commit 1291a0d5049dbc06baaaf66a9ff3f53db493b19b
+--G4iJoqBmSsgzjUCe
+Content-Type: application/pgp-signature; name="signature.asc"
 
- Linux 4.15-rc4
+-----BEGIN PGP SIGNATURE-----
 
-to receive ACPI fixes for 4.15-rc5.
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlo6ukAACgkQ3SOs138+
+s6Ew+g/+PHBkSe3TxzC9Pdrm/EKZiam0Z1GYXX4vjAymJ8BgLhwOl8EwsCsuuWRa
+Xvj+SKHvuZcUcUmb7/laPNzKP9rQ2yRwBwTuojfgUVmA5+mMa/ymL/k+qnDfKcm8
+vKRf5gg1ZGxBw71EbrqbOh0nsjRX7LkZ/IeN/wL3pXNPv4gmfEQLxh5TP6D0MyOi
+jPD80JAxNsHmOVfVj6zLcQmSR3F7c3TGR59k0jMlIa94+nzcPw1cWV4f3dYd38C0
+D/GC8HUxdEx2GTD/DSFLjoIy4b86VSTwJEBaMQfIzXPt9TVGKcEqJqvfTZr5qQKl
+0byniN9Uyoz6JIO21YxWmV0S70c36vWImR2A0TwvmBnCjAAhDfJ0NnOE3HLWaw48
+2h6CdYM8AXPKAd5vNmdX6fEodU7WIzKUPBPiTRqnqv/ZkHY8hchSYdV2QrCWtT2e
+hX+o2K0bxpJWXkoS1ScPr7QKfesrG9CoVeZUj3sNPaF5sEdIAjb/7/xeGbf5gkJO
+H49O/BeIdIGu1IBe6fLe9PzadUsVPvNMTE0jPIjLwDU1pOZTo7ED1vAJ4tAf+ajI
+VRiTv/QhQgyJr1jp+s2FPRQWxhzu6vTHvoOh3/eo+XY58Fydb1RxxrM83mYRH5+7
+3tZheKD6MYxVqNYs8PzyRICphlb3vqrToZiEo/+NKms/Q2lXjNM=
+=f6iP
+-----END PGP SIGNATURE-----
 
-These fix a recently introduced issue in the ACPI CPPC driver and
-an obscure error hanling bug in the APEI code.
-
-Specifics:
-
- - Fix an error handling issue in the ACPI APEI implementation
-   of the >read callback in struct pstore_info (Takashi Iwai).
-
- - Fix a possible out-of-bounds arrar read in the ACPI CPPC
-   driver (Colin Ian King).
-
-Thanks!
-
-
----------------
-
-Colin Ian King (1):
-      ACPI: CPPC: remove initial assignment of pcc_ss_data
-
-Takashi Iwai (1):
-      ACPI: APEI / ERST: Fix missing error handling in erst_reader()
-
----------------
-
- drivers/acpi/apei/erst.c | 2 +-
- drivers/acpi/cppc_acpi.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+--G4iJoqBmSsgzjUCe--
