@@ -1,68 +1,64 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 1/6] cpufreq: schedutil: reset sg_cpus's flags at IDLE
- enter
-Date: Wed, 20 Dec 2017 15:33:44 +0100
-Message-ID: <20171220143344.o2kjuzvrnfghtjej@hirez.programming.kicks-ass.net>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171130114723.29210-2-patrick.bellasi@arm.com>
+From: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v1 4/4] arm64: dts: mediatek: add mt2712 cpufreq related
+ device nodes
+Date: Wed, 20 Dec 2017 15:47:10 +0100
+Message-ID: <59684978-43cc-3672-75af-602b2800a7f5@gmail.com>
+References: <1512713278-17807-1-git-send-email-andrew-sh.cheng@mediatek.com>
+ <20171212072625.GL25177@vireshk-i7>
+ <a68c5382-2a9c-6c3c-ea67-99db46bdff1a@gmail.com>
+ <7730089.t6jDuHQEn5@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:35667 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754337AbdLTOdy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 09:33:54 -0500
-Content-Disposition: inline
-In-Reply-To: <20171130114723.29210-2-patrick.bellasi@arm.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <7730089.t6jDuHQEn5-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
+Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
-Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-On Thu, Nov 30, 2017 at 11:47:18AM +0000, Patrick Bellasi wrote:
-> Currently, sg_cpu's flags are set to the value defined by the last call
-> of the cpufreq_update_util(); for RT/DL classes this corresponds to the
-> SCHED_CPUFREQ_{RT/DL} flags always being set.
+
+
+On 12/17/2017 07:05 PM, Rafael J. Wysocki wrote:
+> On Tuesday, December 12, 2017 10:34:42 AM CET Matthias Brugger wrote:
+>> Hi,
+>>
+>> On 12/12/2017 08:26 AM, Viresh Kumar wrote:
+>>> On 12-12-17, 02:17, Rafael J. Wysocki wrote:
+>>>> On Monday, December 11, 2017 8:57:19 AM CET Viresh Kumar wrote:
+>>>>> On 08-12-17, 14:07, Andrew-sh Cheng wrote:
+>>>>>> Add opp v2 information,
+>>>>>> and also add clocks, regulators and opp information into cpu nodes
+>>>>>>
+>>>>>> Signed-off-by: Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
+>>>>>> ---
+>>>>>>  arch/arm64/boot/dts/mediatek/mt2712-evb.dts | 27 ++++++++++++++
+>>>>>>  arch/arm64/boot/dts/mediatek/mt2712e.dtsi   | 57 +++++++++++++++++++++++++++++
+>>>>>>  2 files changed, 84 insertions(+)
+>>>>>
+>>>>> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+>>>>
+>>>> Of course, DT bindings require ACKs from DT maintainers to be applied.
+>>>
+>>> I didn't knew that we need Acks from DT maintainers for dts files as well? Yeah,
+>>> its very much required while defining new bindings for sure.
+>>>
+>>
+>> I will take the dts parts through the Mediatek SoC tree, so you don't have to
+>> worry about them.
+>>
+>> Please let me know when you take patch 1 and 2.
 > 
-> When multiple CPUs share the same frequency domain it might happen that
-> a CPU which executed an RT task, right before entering IDLE, has one of
-> the SCHED_CPUFREQ_RT_DL flags set, permanently, until it exits IDLE.
+> Applied now, thanks!
 > 
-> Although such an idle CPU is _going to be_ ignored by the
-> sugov_next_freq_shared():
->   1. this kind of "useless RT requests" are ignored only if more then
->      TICK_NSEC have elapsed since the last update
->   2. we can still potentially trigger an already too late switch to
->      MAX, which starts also a new throttling interval
->   3. the internal state machine is not consistent with what the
->      scheduler knows, i.e. the CPU is now actually idle
-
-So I _really_ hate having to clutter the idle path for this shared case
-:/
-
-1, can obviously be fixed by short-circuiting the timeout when idle.
-
-2. not sure how if you do 1; anybody doing a switch will go through
-   sugov_next_freq_shared() which will poll all relevant CPUs and per 1
-   will see its idle, no?
-
-Not sure what that leaves for 3.
-
-> diff --git a/kernel/sched/idle_task.c b/kernel/sched/idle_task.c
-> index d518664cce4f..6e8ae2aa7a13 100644
-> --- a/kernel/sched/idle_task.c
-> +++ b/kernel/sched/idle_task.c
-> @@ -30,6 +30,10 @@ pick_next_task_idle(struct rq *rq, struct task_struct *prev, struct rq_flags *rf
->  	put_prev_task(rq, prev);
->  	update_idle_core(rq);
->  	schedstat_inc(rq->sched_goidle);
-> +
-> +	/* kick cpufreq (see the comment in kernel/sched/sched.h). */
-> +	cpufreq_update_util(rq, SCHED_CPUFREQ_IDLE);
-> +
->  	return rq->idle;
->  }
->  
-> -- 
-> 2.14.1
+> Do you need the branch containing them to be exposed?
 > 
+
+No, that's not necessary.
+
+I pushed the two patches to v4.15-next/dts64 now.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
