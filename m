@@ -1,110 +1,363 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization
- update flags
-Date: Wed, 20 Dec 2017 15:01:16 +0000
-Message-ID: <20171220150116.GL19821@e110439-lin>
-References: <cover.1513158452.git.viresh.kumar@linaro.org>
- <20171220132826.kcu5zqkva5h6nmfk@hirez.programming.kicks-ass.net>
- <20171220143100.GJ19821@e110439-lin>
- <2145782.LdFHderQvS@aspire.rjw.lan>
+From: Ognjen Galic <smclt30p@gmail.com>
+Subject: [PATCH 1/3 v7] battery: Add the battery hooking API
+Date: Wed, 20 Dec 2017 16:15:36 +0100
+Message-ID: <20171220151536.GA12278@thinkpad>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:52936 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755542AbdLTPBV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 20 Dec 2017 10:01:21 -0500
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <2145782.LdFHderQvS@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Andy Shevchenko <andy.shevchenko@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ognjen =?utf-8?B?R2FsacSH?= <smclt30p@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Peter Zijlstra <peterz@infradead.org>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, juri.lelli@redhat.com, tkjos@android.com, joelaf@google.com, linux-kernel@vger.kernel.org
 
-On 20-Dec 15:52, Rafael J. Wysocki wrote:
-> On Wednesday, December 20, 2017 3:31:00 PM CET Patrick Bellasi wrote:
-> > On 20-Dec 14:28, Peter Zijlstra wrote:
-> > > On Wed, Dec 20, 2017 at 12:55:46PM +0000, Patrick Bellasi wrote:
-> > > > On 20-Dec 09:31, Peter Zijlstra wrote:
-> > > 
-> > > > > Didn't juri have patches to make DL do something sane? But yes, I think
-> > > > > those flags are part of the problem.
-> > > > 
-> > > > He recently reposted them here:
-> > > > 
-> > > >   https://lkml.kernel.org/r/20171204102325.5110-1-juri.lelli@redhat.com
-> > > 
-> > > Yeah, just found them and actually munged them into my queue; did all
-> > > the modifications you suggested too. Lets see if it comes apart.
-> > > 
-> > > > > > - From the utilization handler, we check runqueues of all three sched
-> > > > > >   classes to see if they have some work pending (this can be done
-> > > > > >   smartly by checking only RT first and skipping other checks if RT
-> > > > > >   has some work).
-> > > > > 
-> > > > > No that's wrong. DL should provide a minimum required based on existing
-> > > > > reservations, we can add the expected CFS average on top and request
-> > > > > that.
-> > > > > 
-> > > > > And for RT all we need to know is if current is of that class, otherwise
-> > > > > we don't care.
-> > > > 
-> > > > So, this:
-> > > > 
-> > > >    https://marc.info/?i=20171130114723.29210-3-patrick.bellasi%40arm.com
-> > > 
-> > > Right, I was actually looking for those patches, but I'm searching
-> > > backwards and hit upon Juri's patches first.
-> > > 
-> > > > was actually going in this direction, although still working on top of
-> > > > flags to not change the existing interface too much.
-> > > > 
-> > > > IMO, the advantage of flags is that they are a sort-of "pro-active"
-> > > > approach, where the scheduler notify sensible events to schedutil.
-> > > > But keep adding flags seems to overkilling to me too.
-> > > > 
-> > > > If we remove flags then we have to query the scheduler classes "on
-> > > > demand"... but, as Peter suggests, once we have DL bits Juri posted,
-> > > > the only issue if to know if an RT task is running.
-> > > > This the patch above can be just good enough, with no flags at all and
-> > > > with just a check for current being RT (or DL for the time being).
-> > > 
-> > > Well, we still need flags for crap like IO-WAIT IIRC. That's sugov
-> > > internal state and not something the scheduler actually already knows.
-> > 
-> > Right, that flag is set from:
-> > 
-> >     core.c::io_schedule_prepare()
-> > 
-> > for the current task, which is going to be dequeued soon.
-> > 
-> > Once it wakes up the next time, at enqueue time we trigger a boosting
-> > by passing schedutil that flag.
-> > 
-> > Thus, unless we are happy to delay the boosting until the task is
-> > actually picked for execution (don't think so), then we need to keep
-> > the flag and signal schedutil at enqueue time.
-> > 
-> > However, was wondering one thing: should't we already have a vruntime
-> > bonus for IO sleeping tasks? Because in that case, the task is likely
-> > to be on CPU quite soon... and thus, perhaps by removing the flag and
-> > moving the schedutil notification into core.c at the end of
-> > __schedule() should be working to detect both RT and FAIR::IOWAIT
-> > boosted tasks.
-> 
-> schedutil is not the only user of this flag.
+This is a patch that implements a generic hooking API for the
+generic ACPI battery driver.
 
-Sure, but with the idea above (not completely sure it makes sense)
-intel_pstate_update_util() can still get the IIOWAIT information.
+With this new generic API, drivers can expose platform specific
+behaviour via sysfs attributes in /sys/class/power_supply/BATn/
+in a generic way.
 
-We just get that info from current->in_iowait instead of checking a
-flag which is passed in via callback.
+A perfect example of the need for this API are Lenovo ThinkPads.
 
-> Thanks,
-> Rafael
-> 
+Lenovo ThinkPads have a ACPI extension that allows the setting of
+start and stop charge thresholds in the EC and battery firmware
+via ACPI. The thinkpad_acpi module can use this API to expose
+sysfs attributes that it controls inside the ACPI battery driver
+sysfs tree, under /sys/class/power_supply/BATN/.
 
+The file drivers/acpi/battery.h has been moved to
+include/acpi/battery.h and the includes inside ac.c, sbs.c, and
+battery.c have been adjusted to reflect that.
+
+When drivers hooks into the API, the API calls add_battery() for
+each battery in the system that passes it a acpi_battery
+struct. Then, the drivers can use device_create_file() to create
+new sysfs attributes with that struct and identify the batteries
+for per-battery attributes.
+
+v7:
+* Implemented mutual exclusion for hooking methods and battery
+callbacks
+* Fixed a BUG where errors in other modules would occur when the
+modules that depend on battery get unloaded
+
+Signed-off-by: Ognjen Galic <smclt30p@gmail.com>
+---
+ drivers/acpi/ac.c      |   2 +-
+ drivers/acpi/battery.c | 175 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ drivers/acpi/battery.h |  11 ----
+ drivers/acpi/sbs.c     |   2 +-
+ include/acpi/battery.h |  21 ++++++
+ 5 files changed, 196 insertions(+), 15 deletions(-)
+ delete mode 100644 drivers/acpi/battery.h
+ create mode 100644 include/acpi/battery.h
+
+diff --git a/drivers/acpi/ac.c b/drivers/acpi/ac.c
+index 47a7ed5..2d8de2f 100644
+--- a/drivers/acpi/ac.c
++++ b/drivers/acpi/ac.c
+@@ -33,7 +33,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/power_supply.h>
+ #include <linux/acpi.h>
+-#include "battery.h"
++#include <acpi/battery.h>
+ 
+ #define PREFIX "ACPI: "
+ 
+diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
+index 13e7b56..1794408 100644
+--- a/drivers/acpi/battery.c
++++ b/drivers/acpi/battery.c
+@@ -23,6 +23,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/module.h>
++#include <linux/mutex.h>
+ #include <linux/init.h>
+ #include <linux/types.h>
+ #include <linux/jiffies.h>
+@@ -30,6 +31,7 @@
+ #include <linux/dmi.h>
+ #include <linux/delay.h>
+ #include <linux/slab.h>
++#include <linux/list.h>
+ #include <linux/suspend.h>
+ #include <asm/unaligned.h>
+ 
+@@ -42,7 +44,7 @@
+ #include <linux/acpi.h>
+ #include <linux/power_supply.h>
+ 
+-#include "battery.h"
++#include <acpi/battery.h>
+ 
+ #define PREFIX "ACPI: "
+ 
+@@ -124,6 +126,7 @@ struct acpi_battery {
+ 	struct power_supply_desc bat_desc;
+ 	struct acpi_device *device;
+ 	struct notifier_block pm_nb;
++	struct list_head list;
+ 	unsigned long update_time;
+ 	int revision;
+ 	int rate_now;
+@@ -626,6 +629,171 @@ static const struct device_attribute alarm_attr = {
+ 	.store = acpi_battery_alarm_store,
+ };
+ 
++/*
++ * The Battery Hooking API
++ *
++ * This API is used inside other drivers that need to expose
++ * platform-specific behaviour within the generic driver in a
++ * generic way.
++ *
++ */
++
++LIST_HEAD(acpi_battery_list);
++LIST_HEAD(battery_hook_list);
++DEFINE_MUTEX(hook_mutex);
++
++void __battery_hook_unregister(struct acpi_battery_hook *hook, int force)
++{
++	struct list_head *position;
++	struct acpi_battery *battery;
++
++	/*
++	 * In order to remove a hook, we first need to
++	 * de-register all the batteries that are registered.
++	 */
++
++	if (!force)
++		mutex_lock(&hook_mutex);
++
++	list_for_each(position, &acpi_battery_list) {
++		battery = list_entry(position, struct acpi_battery, list);
++		hook->remove_battery(battery->bat);
++	}
++
++	/* Then, just remove the hook */
++
++	list_del(&hook->list);
++
++	if (!force)
++		mutex_unlock(&hook_mutex);
++
++	pr_info("battery: extension unregistered: %s\n", hook->name);
++}
++
++void battery_hook_unregister(struct acpi_battery_hook *hook)
++{
++	__battery_hook_unregister(hook, 0);
++}
++EXPORT_SYMBOL_GPL(battery_hook_unregister);
++
++void battery_hook_register(struct acpi_battery_hook *hook)
++{
++	struct list_head *position;
++	struct acpi_battery *battery;
++
++	mutex_lock(&hook_mutex);
++	INIT_LIST_HEAD(&hook->list);
++	list_add(&hook->list, &battery_hook_list);
++
++	/*
++	 * Now that the driver is registered, we need
++	 * to notify the hook that a battery is available
++	 * for each battery, so that the driver may add
++	 * its attributes.
++	 */
++	list_for_each(position, &acpi_battery_list) {
++		battery = list_entry(position, struct acpi_battery, list);
++		if (hook->add_battery(battery->bat)) {
++
++			/*
++			 * If a add-battery returns non-zero,
++			 * the registration of the extension has failed,
++			 * and we will not add it to the list of loaded
++			 * hooks.
++			 */
++			pr_err("battery: extension failed to load: %s",
++					hook->name);
++			__battery_hook_unregister(hook, 1);
++			return;
++
++		}
++	}
++
++	pr_info("battery: new extension: %s\n", hook->name);
++	mutex_unlock(&hook_mutex);
++}
++EXPORT_SYMBOL_GPL(battery_hook_register);
++
++static void battery_hook_add_battery(struct acpi_battery *battery)
++{
++
++	/*
++	 * This function gets called right after the battery sysfs
++	 * attributes have been added, so that the drivers that
++	 * define custom sysfs attributes can add their own.
++	 */
++
++	struct list_head *position;
++	struct acpi_battery_hook *hook_node;
++
++	mutex_lock(&hook_mutex);
++	INIT_LIST_HEAD(&battery->list);
++	list_add(&battery->list, &acpi_battery_list);
++
++	/*
++	 * Since we added a new battery to the list, we need to
++	 * iterate over the hooks and call add_battery for each
++	 * hook that was registered. This usually happens
++	 * when a battery gets hotplugged or initialized
++	 * during the battery module initialization.
++	 */
++
++	list_for_each(position, &battery_hook_list) {
++		hook_node = list_entry(position, struct acpi_battery_hook, list);
++		if (hook_node->add_battery(battery->bat)) {
++
++			/*
++			 * The notification of the extensions has failed, to
++			 * prevent further errors we will unload the extension.
++			 */
++			__battery_hook_unregister(hook_node, 1);
++			pr_err("battery: error in extension, unloading: %s",
++					hook_node->name);
++		}
++	}
++
++	mutex_unlock(&hook_mutex);
++}
++
++static void battery_hook_remove_battery(struct acpi_battery *battery)
++{
++	struct list_head *position;
++	struct acpi_battery_hook *hook;
++
++	mutex_lock(&hook_mutex);
++	/*
++	 * Before removing the hook, we need to remove all
++	 * custom attributes from the battery.
++	 */
++	list_for_each(position, &battery_hook_list) {
++		hook = list_entry(position, struct acpi_battery_hook, list);
++		hook->remove_battery(battery->bat);
++	}
++
++	/* Then, just remove the battery from the list */
++
++	list_del(&battery->list);
++	mutex_unlock(&hook_mutex);
++}
++
++static void __exit battery_hook_exit(void)
++{
++	struct list_head *position;
++	struct acpi_battery_hook *hook;
++
++	/*
++	 * At this point, the acpi_bus_unregister_driver
++	 * has called remove for all batteries. We just
++	 * need to remove the hooks.
++	 */
++	list_for_each(position, &battery_hook_list) {
++		hook = list_entry(position, struct acpi_battery_hook, list);
++		__battery_hook_unregister(hook, 0);
++	}
++
++	mutex_destroy(&hook_mutex);
++}
++
+ static int sysfs_add_battery(struct acpi_battery *battery)
+ {
+ 	struct power_supply_config psy_cfg = { .drv_data = battery, };
+@@ -647,6 +815,8 @@ static int sysfs_add_battery(struct acpi_battery *battery)
+ 	battery->bat = power_supply_register_no_ws(&battery->device->dev,
+ 				&battery->bat_desc, &psy_cfg);
+ 
++	battery_hook_add_battery(battery);
++
+ 	if (IS_ERR(battery->bat)) {
+ 		int result = PTR_ERR(battery->bat);
+ 
+@@ -663,7 +833,7 @@ static void sysfs_remove_battery(struct acpi_battery *battery)
+ 		mutex_unlock(&battery->sysfs_lock);
+ 		return;
+ 	}
+-
++	battery_hook_remove_battery(battery);
+ 	device_remove_file(&battery->bat->dev, &alarm_attr);
+ 	power_supply_unregister(battery->bat);
+ 	battery->bat = NULL;
+@@ -1361,6 +1531,7 @@ static void __exit acpi_battery_exit(void)
+ 	async_synchronize_cookie(async_cookie + 1);
+ 	if (battery_driver_registered)
+ 		acpi_bus_unregister_driver(&acpi_battery_driver);
++		battery_hook_exit();
+ #ifdef CONFIG_ACPI_PROCFS_POWER
+ 	if (acpi_battery_dir)
+ 		acpi_unlock_battery_dir(acpi_battery_dir);
+diff --git a/drivers/acpi/battery.h b/drivers/acpi/battery.h
+deleted file mode 100644
+index 225f493..0000000
+--- a/drivers/acpi/battery.h
++++ /dev/null
+@@ -1,11 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#ifndef __ACPI_BATTERY_H
+-#define __ACPI_BATTERY_H
+-
+-#define ACPI_BATTERY_CLASS "battery"
+-
+-#define ACPI_BATTERY_NOTIFY_STATUS	0x80
+-#define ACPI_BATTERY_NOTIFY_INFO	0x81
+-#define ACPI_BATTERY_NOTIFY_THRESHOLD   0x82
+-
+-#endif
+diff --git a/drivers/acpi/sbs.c b/drivers/acpi/sbs.c
+index a2428e9..295b592 100644
+--- a/drivers/acpi/sbs.c
++++ b/drivers/acpi/sbs.c
+@@ -32,9 +32,9 @@
+ #include <linux/delay.h>
+ #include <linux/power_supply.h>
+ #include <linux/platform_data/x86/apple.h>
++#include <acpi/battery.h>
+ 
+ #include "sbshc.h"
+-#include "battery.h"
+ 
+ #define PREFIX "ACPI: "
+ 
+diff --git a/include/acpi/battery.h b/include/acpi/battery.h
+new file mode 100644
+index 0000000..5d8f5d9
+--- /dev/null
++++ b/include/acpi/battery.h
+@@ -0,0 +1,21 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++#ifndef __ACPI_BATTERY_H
++#define __ACPI_BATTERY_H
++
++#define ACPI_BATTERY_CLASS "battery"
++
++#define ACPI_BATTERY_NOTIFY_STATUS	0x80
++#define ACPI_BATTERY_NOTIFY_INFO	0x81
++#define ACPI_BATTERY_NOTIFY_THRESHOLD   0x82
++
++struct acpi_battery_hook {
++	const char *name;
++	int (*add_battery)(struct power_supply *battery);
++	int (*remove_battery)(struct power_supply *battery);
++	struct list_head list;
++};
++
++void battery_hook_register(struct acpi_battery_hook *hook);
++void battery_hook_unregister(struct acpi_battery_hook *hook);
++
++#endif
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+2.7.4
