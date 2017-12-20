@@ -1,81 +1,63 @@
-From: Biju Das <biju.das-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>
-Subject: RE: [PATCH v2 2/2] ARM: dts: r8a7743: Add thermal device to DT
-Date: Wed, 20 Dec 2017 11:36:51 +0000
-Message-ID: <KL1PR06MB17029FA8C7AD57F067777E11B80C0@KL1PR06MB1702.apcprd06.prod.outlook.com>
-References: <1513689449-2700-1-git-send-email-biju.das@bp.renesas.com>
- <1513689449-2700-3-git-send-email-biju.das@bp.renesas.com>
- <20171220085036.gdcnbhonyqlewyi4@verge.net.au>
+From: Simon Horman <horms@verge.net.au>
+Subject: Re: [PATCH v2 3/3] soc: renesas: rcar-sysc: Keep wakeup sources
+ active during system suspend
+Date: Wed, 20 Dec 2017 12:46:12 +0100
+Message-ID: <20171220114611.nd4y7ja6cyu7o4lo@verge.net.au>
+References: <1510234022-29442-1-git-send-email-geert+renesas@glider.be>
+ <1510234022-29442-4-git-send-email-geert+renesas@glider.be>
+ <CAPDyKFrxaghoAcWJN1R7d7k5b=QwMpusGFuohVZpTaWngf3aiw@mail.gmail.com>
+ <CAMuHMdU2CUE_68ZoQ5ssKaXYJ0L_P0gSTqVFS1GGa_cY7e-8cA@mail.gmail.com>
+ <20171220102305.pibdggkfycmj63l4@verge.net.au>
+ <CAMuHMdW7r74wGvpDjBr94N0y6_414hxgXmMjzKAPU+bOfeG7Jg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171220085036.gdcnbhonyqlewyi4-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Chris Paterson <Chris.Paterson2-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Fabrizio Castro <fabrizio.castro-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAMuHMdW7r74wGvpDjBr94N0y6_414hxgXmMjzKAPU+bOfeG7Jg@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Magnus Damm <magnus.damm@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Simon,
-
-Just noticed that
-
-# make dtbs W=3D1 is giving below warning message.
-
-arch/arm/boot/dts/r8a7743-iwg20d-q7-dbcm-ca.dtb: Warning (simple_bus_reg): =
-Node /soc/thermal-zones missing or empty reg/ranges property
-
-Do you prefer a fix patch or a v2 ?
-
-Regards,
-Biju
-
-
-> -----Original Message-----
-> From: Simon Horman [mailto:horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org]
-> Sent: 20 December 2017 08:51
-> To: Biju Das <biju.das-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>
-> Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>; Eduardo Valentin
-> <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>; Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>; Mark Rutland
-> <mark.rutland-5wv7dgnIgG8@public.gmane.org>; Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>;
-> Chris Paterson <Chris.Paterson2-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>; Fabrizio Castro
-> <fabrizio.castro-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>; devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; linux-renes=
-as-
-> soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> Subject: Re: [PATCH v2 2/2] ARM: dts: r8a7743: Add thermal device to DT
->
-> On Tue, Dec 19, 2017 at 01:17:29PM +0000, Biju Das wrote:
-> > This patch instantiates the thermal sensor module with thermal-zone
-> > support.
+On Wed, Dec 20, 2017 at 11:28:43AM +0100, Geert Uytterhoeven wrote:
+> Hi Simon,
+> 
+> On Wed, Dec 20, 2017 at 11:23 AM, Simon Horman <horms@verge.net.au> wrote:
+> > On Mon, Dec 18, 2017 at 12:22:17PM +0100, Geert Uytterhoeven wrote:
+> >> On Thu, Dec 14, 2017 at 3:11 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >> > On 9 November 2017 at 14:27, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+> >> >> If an R-Car SYSC slave device is part of the CPG/MSTP or CPG/MSSR Clock
+> >> >> Domain and to be used as a wakeup source, it must be kept active during
+> >> >> system suspend.
+> >> >>
+> >> >> Currently this is handled in device-specific drivers by explicitly
+> >> >> increasing the use count of the module clock when the device is
+> >> >> configured as a wakeup source.  However, the proper way to prevent the
+> >> >> device from being stopped is to inform this requirement to the genpd
+> >> >> core, by setting the GENPD_FLAG_ACTIVE_WAKEUP flag.
+> >> >>
+> >> >> Note that this will only affect devices configured as wakeup sources.
+> >> >>
+> >> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> >> >
+> >> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+> >>
+> >> Thank you!
+> >>
+> >> Simon: can you please queue this up for v4.16?
+> >> I have queued the other 2 clock patches in clk-renesas-for-v4.16, and sent
+> >> a PR for it.
 > >
-> > This patch is based on the commit cac68a56e34b
-> > ("ARM: dts: r8a7791: enable to use thermal-zone") by Kuninori Morimoto.
-> >
-> > Signed-off-by: Biju Das <biju.das-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>
-> > Reviewed-by: Fabrizio Castro <fabrizio.castro-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>
-> > Reviewed-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
-> > ---
-> > v1->v2
-> >  * Fixed the size.
->
-> Thanks, applied.
+> > Thanks, I have applied this patch to the soc-for-v4.16 branch.
+> > It is currently not based v4.15-rc1. Let me know if it should
+> > be rebased on top of your pull request for clk-renesas-for-v4.16.
+> 
+> If the base is not v4.15-rc1, what is it? GENPD_FLAG_ACTIVE_WAKEUP was
+> introduced in v4.15-rc1, so it won't compile based on v4.14.
 
+Sorry, I typed my message incorrectly. The base _is_ v4.15-rc1.
 
-[https://www2.renesas.eu/media/email/unicef_2017.jpg]
+> There's no dependency on the clock drivers, so no need to base on
+> top of clk-renesas-for-v4.16.
 
-This Christmas, instead of sending out cards, Renesas Electronics Europe ha=
-ve decided to support Unicef with a donation. For further details click her=
-e<https://www.unicef.org/> to find out about the valuable work they do, hel=
-ping children all over the world.
-We would like to take this opportunity to wish you a Merry Christmas and a =
-prosperous New Year.
-
-
-
-Renesas Electronics Europe Ltd, Dukes Meadow, Millboard Road, Bourne End, B=
-uckinghamshire, SL8 5FH, UK. Registered in England & Wales under Registered=
- No. 04586709.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks, got it.
