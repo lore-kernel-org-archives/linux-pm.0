@@ -1,124 +1,47 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/3] phy: core: Move runtime PM reference counting to the
- parent device
-Date: Wed, 20 Dec 2017 13:37:47 +0100
-Message-ID: <CAPDyKFpzFFJzbjMPHVPRTakriL+J8F_X3nX9gNsut2EA3mpXTQ@mail.gmail.com>
-References: <1513718551-28624-1-git-send-email-ulf.hansson@linaro.org>
- <1513718551-28624-2-git-send-email-ulf.hansson@linaro.org>
- <ced99cd1-d52c-ea76-332d-6c0492f256a8@ti.com> <CAPDyKFoy7AkAyA9boAakr1m5Y7+r2KMqbLR7KmHZThPRXoKMRA@mail.gmail.com>
- <0c0cf0ba-e729-a1d8-ac0a-38c8eb13a5c6@ti.com> <CAPDyKFqEyk5TZZk3bo9hvfBZ=j-1k0YJ9Ux3YHpvHOhrOuK-xw@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [RFC PATCH v2 1/8] sched/cpufreq_schedutil: make use of DEADLINE
+ utilization signal
+Date: Wed, 20 Dec 2017 13:51:40 +0100
+Message-ID: <20171220125140.awxsp5r6hhrv7c6j@hirez.programming.kicks-ass.net>
+References: <20171204102325.5110-1-juri.lelli@redhat.com>
+ <20171204102325.5110-2-juri.lelli@redhat.com>
+ <20171205150935.GL31247@e110439-lin>
+ <20171205152424.GC15085@localhost.localdomain>
+ <20171205163409.GN31247@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f193.google.com ([209.85.223.193]:46977 "EHLO
-        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754310AbdLTMhs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 07:37:48 -0500
-Received: by mail-io0-f193.google.com with SMTP id x129so17193414iod.13
-        for <linux-pm@vger.kernel.org>; Wed, 20 Dec 2017 04:37:48 -0800 (PST)
-In-Reply-To: <CAPDyKFqEyk5TZZk3bo9hvfBZ=j-1k0YJ9Ux3YHpvHOhrOuK-xw@mail.gmail.com>
+Received: from merlin.infradead.org ([205.233.59.134]:45742 "EHLO
+        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754746AbdLTMwD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 07:52:03 -0500
+Content-Disposition: inline
+In-Reply-To: <20171205163409.GN31247@e110439-lin>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Kishon Vijay Abraham I <kishon@ti.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Juri Lelli <juri.lelli@redhat.com>, mingo@redhat.com, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, tglx@linutronix.de, vincent.guittot@linaro.org, rostedt@goodmis.org, luca.abeni@santannapisa.it, claudio@evidence.eu.com, tommaso.cucinotta@santannapisa.it, bristot@redhat.com, mathieu.poirier@linaro.org, tkjos@android.com, joelaf@google.com, morten.rasmussen@arm.com, dietmar.eggemann@arm.com, alessio.balsini@arm.com, Juri Lelli <juri.lelli@arm.com>, Ingo Molnar <mingo@kernel.org>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
 
-On 20 December 2017 at 13:08, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 20 December 2017 at 10:02, Kishon Vijay Abraham I <kishon@ti.com> wrote:
->> Hi Ulf,
->>
->> On Wednesday 20 December 2017 02:05 PM, Ulf Hansson wrote:
->>> On 20 December 2017 at 07:42, Kishon Vijay Abraham I <kishon@ti.com> wrote:
->>>> Hi Ulf,
->>>>
->>>> On Wednesday 20 December 2017 02:52 AM, Ulf Hansson wrote:
->>>>> The runtime PM deployment in the phy core is a bit unnecessary complicated
->>>>> and the main reason is because it operates on the phy device, which is
->>>>> created by the phy core and assigned as a child device of the phy provider
->>>>> device.
->>>>>
->>>>> Let's simplify the code, by replacing the existing calls to
->>>>> phy_pm_runtime_get_sync() and phy_pm_runtime_put(), with regular calls to
->>>>> pm_runtime_get_sync() and pm_runtime_put(). While doing that, let's also
->>>>> change to give the phy provider device as the parameter to the runtime PM
->>>>> calls. This together with adding error paths, that allows the phy
->>>>> provider device to be runtime PM disabled, enables further clean up the
->>>>> code. More precisely, we can simply avoid to enable runtime PM for the phy
->>>>> device altogether, so let's do that as well.
->>>>>
->>>>> More importantly, this change also fixes an issue for system suspend.
->>>>> Especially in those cases when the phy provider device gets put into a low
->>>>> power state via calling the pm_runtime_force_suspend() helper, as is the
->>>>> case for a Renesas SoC, which has the phy provider device attached to the
->>>>> generic PM domain.
->>>>>
->>>>> The problem in this case, is that pm_runtime_force_suspend() expects the
->>>>> child device of the provider device to be runtime suspended, else this will
->>>>> trigger a WARN splat (correctly) when runtime PM gets re-enabled at system
->>>>> resume.
->>>>>
->>>>> In the current case, even if phy_power_off() triggers a pm_runtime_put()
->>>>> during system suspend the phy device (child) doesn't get runtime suspended,
->>>>> because that is prevented in the system suspend phases. However, by
->>>>> avoiding to enable runtime PM, this problem goes away.
->>>>>
->>>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>>>> ---
->>>>>  drivers/phy/phy-core.c | 33 +++++++++++++--------------------
->>>>>  1 file changed, 13 insertions(+), 20 deletions(-)
->>>>>
->>>>> diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
->>>>> index b4964b0..9fa3f13 100644
->>>>> --- a/drivers/phy/phy-core.c
->>>>> +++ b/drivers/phy/phy-core.c
->>>>> @@ -222,10 +222,10 @@ int phy_init(struct phy *phy)
->>>>>       if (!phy)
->>>>>               return 0;
->>>>>
->>>>> -     ret = phy_pm_runtime_get_sync(phy);
->>>>> -     if (ret < 0 && ret != -ENOTSUPP)
->>>>> +     ret = pm_runtime_get_sync(phy->dev.parent);
->>>>
->>>> Won't this make phy-core manage pm_runtime of phy_provider even though the
->>>> phy_provider might not intend it?
->>>
->>> No it shouldn't.
->>>
->>> There are two cases to consider around this.
->>>
->>> 1) CONFIG_PM is unset. In this case pm_runtime_get_sync() will return
->>> 1, which is treated as succeeds by the error path.
->>>
->>> 2) CONFIG_PM is set, but the phy provider don't use runtime PM, thus
->>> it hasn't called pm_runtime_enable() for its device. In this case,
->>> pm_runtime_get_sync() returns -EACCES, which is also treated as
->>> success by the error path.
->>
->> There can be a case where the phy_provider uses runtime PM but doesn't want
->> phy-core to manage it.
->
-> Ah, so you mean there are cases when the provider driver calls
-> pm_runtime_enable() *after* it calls phy_create()/dev_phy_create()
-> instead of before?
+On Tue, Dec 05, 2017 at 04:34:10PM +0000, Patrick Bellasi wrote:
+> On 05-Dec 16:24, Juri Lelli wrote:
+> However, I'm not an expert, on those systems can we really set a
+> minimum guaranteed performance level?
 
-Okay so I found an example, thanks for pointing it out!
+If you look at the Intel SDM, Volume 3, 14.4 Hardware-Controlled
+Performance States (HWP), which is the Intel implementation of ACPI
+CPPC.
 
-drivers/phy/ti/phy-twl4030-usb.c
+You'll see that IA32_HWP_CAPABILITIES has a Guaranteed_Performance field
+and describes that upon changes to this frequency we will receive
+notifications (Interrupts).
 
->
-> I am not really sure I understand *why* a provider driver wants to do
-> that though, do you have more details?
-> I mean, even if the phy core handles runtime PM, additional management
-> can be done on top in the phy provider, there is nothing preventing
-> that, but I guess that isn't sufficient?
+If you then look at IA32_HWP_REQUEST, you'll see a Minimum_Performance
+field, which we can raise up-to the guaranteed level, and would/should
+contain the DEADLINE stuff.
 
-In the above example, I guess the reason is related to the use of
-usb_add_phy_dev().
+HWP_REQUEST also includes a Desired_Performance field, which is where we
+want to be for DL+CFS.
 
-I must say, the code in drivers/phy/ti/phy-twl4030-usb.c dealing with
-these things looks a bit fragile, from a runtime PM point view.
-However that's different story. :-)
-
-Let me re-spin this, taking care of the problem you pointed out!
-
-Kind regards
-Uffe
+Trouble is that cpufreq doesn't yet support the various CPPC fields. So
+we have this comment here at the input side stating what we'd want to do
+once cpufreq itself grows the interface bits.
