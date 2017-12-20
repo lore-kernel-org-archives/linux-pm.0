@@ -1,88 +1,74 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Subject: Re: [-next PATCH 2/4] treewide: Use DEVICE_ATTR_RW
-Date: Wed, 20 Dec 2017 14:26:18 +0100 (CET)
-Message-ID: <alpine.DEB.2.20.1712201425010.13140@hadrien>
-References: <cover.1513706701.git.joe@perches.com>
- <cd38f14f06e1f447b3159ffe8c69c0df8241bb6e.1513706701.git.joe@perches.com>
- <20171220083403.GA27231@bitmer.com> <1513761884.1234.83.camel@perches.com>
- <20171220093211.GA16177@kroah.com>
- <1513763681.1234.101.camel@perches.com> <20171220095926.GA24285@kroah.com>
- <1513767307.1234.114.camel@perches.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization
+ update flags
+Date: Wed, 20 Dec 2017 14:28:26 +0100
+Message-ID: <20171220132826.kcu5zqkva5h6nmfk@hirez.programming.kicks-ass.net>
+References: <cover.1513158452.git.viresh.kumar@linaro.org>
+ <17ff0b5d83a1275a98f0d1b87daf275f3e964af3.1513158452.git.viresh.kumar@linaro.org>
+ <20171219192504.nstxsfii6y7rh37w@hirez.programming.kicks-ass.net>
+ <20171220040446.GS19815@vireshk-i7>
+ <20171220083115.n4mc4pdkvycakce2@hirez.programming.kicks-ass.net>
+ <20171220125546.GI19821@e110439-lin>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <dri-devel-bounces@lists.freedesktop.org>
-In-Reply-To: <1513767307.1234.114.camel@perches.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
-List-Post: <mailto:dri-devel@lists.freedesktop.org>
-List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
- <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: dri-devel-bounces@lists.freedesktop.org
-Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, Jaroslav Kysela <perex@perex.cz>, Peter Ujfalusi <peter.ujfalusi@ti.com>, linux-s390@vger.kernel.org, linux-omap@vger.kernel.org, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org, Takashi Iwai <tiwai@suse.com>, Sebastian Ott <sebott@linux.vnet.ibm.com>, James Smart <james.smart@broadcom.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.com>, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, Dick Kennedy <dick.kennedy@broadcom.com>, Mathias Nyman <mathias.nyman@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Peter Oberparleiter <oberp>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171220125546.GI19821@e110439-lin>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, juri.lelli@redhat.com, tkjos@android.com, joelaf@google.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-CgpPbiBXZWQsIDIwIERlYyAyMDE3LCBKb2UgUGVyY2hlcyB3cm90ZToKCj4gT24gV2VkLCAyMDE3
-LTEyLTIwIGF0IDEwOjU5ICswMTAwLCBHcmVnIEtyb2FoLUhhcnRtYW4gd3JvdGU6Cj4gPiA+ID4g
-V2h5IHlvdSBkaWRuJ3Qgc2VuZCB0aGF0IHBhdGNoIHRvIHRoZSBzeXNmcyBtYWludGFpbmVyIGlz
-IGEgYml0IG9kZC4uLiAgOikKPiA+ID4KPiA+ID4gU28gaGVyZSdzIGFuIG9wcG9ydHVuaXR5IGZv
-ciB5b3U6Cj4gPiA+Cj4gPiA+IFRoZSBzeXNmcyBtYWludGFpbmVyIGhhc24ndCBhZGRlZCBpbmNs
-dWRlL2xpbnV4L3N5c2ZzLmggdG8KPiA+ID4gdGhlIGxpc3Qgb2YgbWFpbnRhaW5lZCBmaWxlcy4u
-Lgo+ID4gPgo+ID4gPiBEUklWRVIgQ09SRSwgS09CSkVDVFMsIERFQlVHRlMgQU5EIFNZU0ZTCj4g
-PiA+IE06CUdyZWcgS3JvYWgtSGFydG1hbiA8Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmc+Cj4g
-PiA+IFQ6CWdpdCBnaXQ6Ly9naXQua2VybmVsLm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQv
-Z3JlZ2toL2RyaXZlci1jb3JlLmdpdAo+ID4gPiBTOglTdXBwb3J0ZWQKPiA+ID4gRjoJRG9jdW1l
-bnRhdGlvbi9rb2JqZWN0LnR4dAo+ID4gPiBGOglkcml2ZXJzL2Jhc2UvCj4gPiA+IEY6CWZzL2Rl
-YnVnZnMvCj4gPiA+IEY6CWZzL3N5c2ZzLwo+ID4gPiBGOglpbmNsdWRlL2xpbnV4L2RlYnVnZnMu
-aAo+ID4gPiBGOglpbmNsdWRlL2xpbnV4L2tvYmoqCj4gPiA+IEY6CWxpYi9rb2JqKgo+ID4KPiA+
-IEhlaCwgZ29vZCBwb2ludCwgYnV0IHVzaW5nIGdldF9tYWludGFpbmVyLnBsIGRvZXMgcHV0IG1l
-IGF0IHRoZSB0b3Agb2YKPiA+IHRoZSBsaXN0IHRoYXQgeW91IHNob3VsZCBiZSBjYzppbmc6Cj4g
-Pgo+ID4gJCAuL3NjcmlwdHMvZ2V0X21haW50YWluZXIucGwgLS1maWxlIGluY2x1ZGUvbGludXgv
-c3lzZnMuaAo+ID4gR3JlZyBLcm9haC1IYXJ0bWFuIDxncmVna2hAbGludXhmb3VuZGF0aW9uLm9y
-Zz4gKGNvbW1pdF9zaWduZXI6My8zPTEwMCUsYXV0aG9yZWQ6Mi8zPTY3JSxhZGRlZF9saW5lczo3
-Lzg9ODglKQo+ID4gS2F0ZSBTdGV3YXJ0IDxrc3Rld2FydEBsaW51eGZvdW5kYXRpb24ub3JnPiAo
-Y29tbWl0X3NpZ25lcjoxLzM9MzMlKQo+ID4gVGhvbWFzIEdsZWl4bmVyIDx0Z2x4QGxpbnV0cm9u
-aXguZGU+IChjb21taXRfc2lnbmVyOjEvMz0zMyUpCj4gPiBQaGlsaXBwZSBPbWJyZWRhbm5lIDxw
-b21icmVkYW5uZUBuZXhiLmNvbT4gKGNvbW1pdF9zaWduZXI6MS8zPTMzJSkKPiA+IE5pY2sgRGVz
-YXVsbmllcnMgPG5pY2suZGVzYXVsbmllcnNAZ21haWwuY29tPiAoY29tbWl0X3NpZ25lcjoxLzM9
-MzMlLGF1dGhvcmVkOjEvMz0zMyUsYWRkZWRfbGluZXM6MS84PTEyJSxyZW1vdmVkX2xpbmVzOjEv
-MT0xMDAlKQo+ID4gbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZyAob3BlbiBsaXN0KQo+Cj4g
-VGhlIHNjcmlwdCBJIHVzZSB0byBzZW5kIHBhdGNoZXMgYWRkcyAtLW5vZ2l0IC0tbm9naXQtZmFs
-bGJhY2sKPiB0byBjb3B5IG9ubHkgbGlzdGVkIG1haW50YWluZXJzIGJlY2F1c2UgcGVvcGxlIHRo
-YXQgc2VuZCBjbGVhbnVwCj4gcGF0Y2hlcyBkb24ndCBnZW5lcmFsbHkgbGlrZSB0byBnZXQgcmFu
-ZG9tIHBhdGNoZXMuCj4KPiA+ID4gYnR3OiB0aGVyZSBhcmUgbWFueSB1c2VzIG9mIGEgcmV2ZXJz
-ZWQgZGVjbGFyYXRpb24gc3R5bGUgb2YgREVWSUNFX0FUVFIKPiA+ID4KPiA+ID4gSGVyZSdzIGFu
-b3RoZXIgdGhpbmcgdGhhdCBjb3VsZCBiZSBkb25lIGZvciBtb3JlIERFVklDRV9BVFRSXzxGT08+
-IHVzZXMuCj4gPiA+Cj4gPiA+ID09PQo+ID4gPgo+ID4gPiBTb21lIERFVklDRV9BVFRSIGRlZmlu
-aXRpb25zIHVzZSBhIHJldmVyc2VkIHN0YXRpYyBmdW5jdGlvbiBmb3JtIGZyb20KPiA+ID4gdGhl
-IHR5cGljYWwuICBDb252ZXJ0IHRoZW0gdG8gdXNlIHRoZSBtb3JlIGNvbW1vbiBtYWNybyBmb3Jt
-IHNvIGl0IGlzCj4gPiA+IGVhc2llciB0byBncmVwIGZvciB0aGUgc3R5bGUuCj4gW10KPiA+ID4g
-JCBnaXQgZ3JlcCAtLW5hbWUtb25seSAtdyBERVZJQ0VfQVRUUiB8IFwKPiA+ID4gICB4YXJncyBw
-ZXJsIC1pIGRldl9hdHRyX3J3X2JhY2t3YXJkcy5wZXJsCj4gPiBBaCwgbmljZSwgSSBsb3ZlIHBl
-cmwgOgo+Cj4gVGhhdCB3YXMgYSBiYWQgY29weS9wYXN0ZSBvZiB0aGUgc2NyaXB0Lgo+Cj4gVGhl
-IGFjdHVhbCBzY3JpcHQgZm9yIFJXIGlzOgo+Cj4gJCBjYXQgZGV2X2F0dHJfcndfYmFja3dhcmRz
-LnBlcmwKPiBsb2NhbCAkLzsKPiB3aGlsZSAoPD4pIHsKPiAgICAgbXkgJGZpbGUgPSAkXzsKPiAg
-ICAgd2hpbGUgKCRmaWxlID1+IG0vXGJERVZJQ0VfQVRUUlxzKlwoXHMqKFx3KylccyosL2cpIHsK
-PiAJbXkgJHZhciA9ICQxOwo+IAlpZiAoJGZpbGUgPX4gcy9cYkRFVklDRV9BVFRSXHMqXChccyok
-e3Zhcn1ccyosXHMqXCg/KFxzKlNfSVJVR09ccypcfFxzKlNfSVdVU1J8XHMqU19JV1VTUlxzKlx8
-XHMqU19JUlVHT1xzKnxccyowNjQ0XHMqKVwpP1xzKixccypzaG93XyR7dmFyfVxzKixccypzdG9y
-ZV8ke3Zhcn1ccypcKS9ERVZJQ0VfQVRUUl9SVygke3Zhcn0pL2cpIHsKPiAJICAgICRmaWxlID1+
-IHMvXGJzaG93XyR7dmFyfVxiLyR7dmFyfV9zaG93L2c7Cj4gCSAgICAkZmlsZSA9fiBzL1xic3Rv
-cmVfJHt2YXJ9XGIvJHt2YXJ9X3N0b3JlL2c7Cj4gCX0KPiAgICAgfQo+ICAgICBwcmludCAkZmls
-ZTsKPiB9Cj4KPiBUaGVyZSBhcmUgMyBkaWZmZXJlbnQgcGVybCBzY3JpcHRzIGZvciBydywgcm8s
-IGFuZCB3by4KPiBhbmQgdGhlc2Ugc2NyaXB0cywgYmVjYXVzZSBvZiBmdW5jdGlvbiByZW5hbWlu
-ZyBhbmQKPiBwb3NzaWJsZSByZXVzZSBvZiB0aGUgb3JpZ2luYWwgZnVuY3Rpb24gbmFtZXMgYnkg
-b3RoZXIKPiBzdHJpbmcgY29uY2F0ZW5hdGVkIG1hY3JvcywgY3JlYXRlIHNvbWUgYmFkIGNvbnZl
-cnNpb25zCj4gc28gdGhleSBuZWVkIHNvbWUgbWFudWFsIGNsZWFudXBzIHRvby4KPgo+IFBlcmhh
-cHMgY29jY2luZWxsZSBjb3VsZCBkbyBhIGJldHRlciBqb2Igb2YgaXQsIGJ1dAo+IGxpa2VseSBz
-dHJpbmcgY29uY2F0ZW5hdGlvbiBtYWNybyB1c2VzIGFyZSBnb2luZyB0bwo+IGJlIGhhcmQgdG8g
-ZGVhbCB3aXRoIGluIGFueSBjYXNlLgoKSSBtYWRlIGEgcnVsZSBmb3IgdGhpcyBhdCBvbmUgcG9p
-bnQsIGJ1dCB0aGVyZSBhcmUgY2FzZXMgd2hlcmUgdGhlCmZ1bmN0aW9ucyBoYXZlIHRoZSB3cm9u
-ZyBuYW1lcywgYW5kIHRoZW4gdGhlc2UgZnVuY3Rpb25zIG1heSBiZSB1c2VkCmVsc2V3aGVyZS4K
-Cmp1bGlhCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCmRy
-aS1kZXZlbCBtYWlsaW5nIGxpc3QKZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRw
-czovL2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbAo=
+On Wed, Dec 20, 2017 at 12:55:46PM +0000, Patrick Bellasi wrote:
+> On 20-Dec 09:31, Peter Zijlstra wrote:
+
+> > Didn't juri have patches to make DL do something sane? But yes, I think
+> > those flags are part of the problem.
+> 
+> He recently reposted them here:
+> 
+>   https://lkml.kernel.org/r/20171204102325.5110-1-juri.lelli@redhat.com
+
+Yeah, just found them and actually munged them into my queue; did all
+the modifications you suggested too. Lets see if it comes apart.
+
+> > > - From the utilization handler, we check runqueues of all three sched
+> > >   classes to see if they have some work pending (this can be done
+> > >   smartly by checking only RT first and skipping other checks if RT
+> > >   has some work).
+> > 
+> > No that's wrong. DL should provide a minimum required based on existing
+> > reservations, we can add the expected CFS average on top and request
+> > that.
+> > 
+> > And for RT all we need to know is if current is of that class, otherwise
+> > we don't care.
+> 
+> So, this:
+> 
+>    https://marc.info/?i=20171130114723.29210-3-patrick.bellasi%40arm.com
+
+Right, I was actually looking for those patches, but I'm searching
+backwards and hit upon Juri's patches first.
+
+> was actually going in this direction, although still working on top of
+> flags to not change the existing interface too much.
+> 
+> IMO, the advantage of flags is that they are a sort-of "pro-active"
+> approach, where the scheduler notify sensible events to schedutil.
+> But keep adding flags seems to overkilling to me too.
+> 
+> If we remove flags then we have to query the scheduler classes "on
+> demand"... but, as Peter suggests, once we have DL bits Juri posted,
+> the only issue if to know if an RT task is running.
+> This the patch above can be just good enough, with no flags at all and
+> with just a check for current being RT (or DL for the time being).
+
+Well, we still need flags for crap like IO-WAIT IIRC. That's sugov
+internal state and not something the scheduler actually already knows.
+
+But let me continue searching for patches..
+
+Ooh, I found patches from Brendan... should be very close to yours
+though, going by that msgid you posted on Nov 30th and I'm now on Dec
+1st, soooon... :-)
