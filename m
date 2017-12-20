@@ -1,264 +1,70 @@
-From: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: Re: [PATCH v5 06/11] thermal: armada: Add support for Armada AP806
-Date: Wed, 20 Dec 2017 11:27:18 +0100
-Message-ID: <87zi6dg0e1.fsf@free-electrons.com>
-References: <20171219135719.9531-1-miquel.raynal@free-electrons.com>
-        <20171219135719.9531-7-miquel.raynal@free-electrons.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2 3/3] soc: renesas: rcar-sysc: Keep wakeup sources
+ active during system suspend
+Date: Wed, 20 Dec 2017 11:28:43 +0100
+Message-ID: <CAMuHMdW7r74wGvpDjBr94N0y6_414hxgXmMjzKAPU+bOfeG7Jg@mail.gmail.com>
+References: <1510234022-29442-1-git-send-email-geert+renesas@glider.be>
+ <1510234022-29442-4-git-send-email-geert+renesas@glider.be>
+ <CAPDyKFrxaghoAcWJN1R7d7k5b=QwMpusGFuohVZpTaWngf3aiw@mail.gmail.com>
+ <CAMuHMdU2CUE_68ZoQ5ssKaXYJ0L_P0gSTqVFS1GGa_cY7e-8cA@mail.gmail.com> <20171220102305.pibdggkfycmj63l4@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171219135719.9531-7-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> (Miquel
-        Raynal's message of "Tue, 19 Dec 2017 14:57:14 +0100")
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f196.google.com ([209.85.220.196]:36725 "EHLO
+        mail-qk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S932448AbdLTK2p (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 05:28:45 -0500
+In-Reply-To: <20171220102305.pibdggkfycmj63l4@verge.net.au>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, Magnus Damm <magnus.damm@gmail.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-Hi Miquel,
- 
- On mar., déc. 19 2017, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+Hi Simon,
 
-> From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+On Wed, Dec 20, 2017 at 11:23 AM, Simon Horman <horms@verge.net.au> wrote:
+> On Mon, Dec 18, 2017 at 12:22:17PM +0100, Geert Uytterhoeven wrote:
+>> On Thu, Dec 14, 2017 at 3:11 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> > On 9 November 2017 at 14:27, Geert Uytterhoeven <geert+renesas@glider.be> wrote:
+>> >> If an R-Car SYSC slave device is part of the CPG/MSTP or CPG/MSSR Clock
+>> >> Domain and to be used as a wakeup source, it must be kept active during
+>> >> system suspend.
+>> >>
+>> >> Currently this is handled in device-specific drivers by explicitly
+>> >> increasing the use count of the module clock when the device is
+>> >> configured as a wakeup source.  However, the proper way to prevent the
+>> >> device from being stopped is to inform this requirement to the genpd
+>> >> core, by setting the GENPD_FLAG_ACTIVE_WAKEUP flag.
+>> >>
+>> >> Note that this will only affect devices configured as wakeup sources.
+>> >>
+>> >> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>> >
+>> > Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+>>
+>> Thank you!
+>>
+>> Simon: can you please queue this up for v4.16?
+>> I have queued the other 2 clock patches in clk-renesas-for-v4.16, and sent
+>> a PR for it.
 >
-> The AP806 component is integrated in the Armada 8K and 7K lines of
-> processors.
->
-> The thermal sensor sample field on the status register is a signed
-> value. Extend armada_get_temp() and the driver structure to handle
-> signed values.
->
-> Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
-> [<miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>: Changes when applying over the
-> previous patches, including the register names changes, also switched
-> the coefficients values to s64 instead of unsigned long to deal with
-> negative values and used do_div instead of the traditionnal '/']
-> Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> Reviewed-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> ---
->  drivers/thermal/armada_thermal.c | 74 ++++++++++++++++++++++++++++++++--------
->  1 file changed, 59 insertions(+), 15 deletions(-)
->
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-> index ceebabf45c53..c7dcac39cbf9 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -47,6 +47,11 @@
->  #define CONTROL0_OFFSET			0x0
->  #define CONTROL1_OFFSET			0x4
->  
-> +/* TSEN refers to the temperature sensors within the AP */
-> +#define CONTROL0_TSEN_START		BIT(0)
-> +#define CONTROL0_TSEN_RESET		BIT(1)
-> +#define CONTROL0_TSEN_ENABLE		BIT(2)
-> +
->  struct armada_thermal_data;
->  
->  /* Marvell EBU Thermal Sensor Dev Structure */
-> @@ -66,10 +71,11 @@ struct armada_thermal_data {
->  	bool (*is_valid)(struct armada_thermal_priv *);
->  
->  	/* Formula coeficients: temp = (b - m * reg) / div */
-> -	unsigned long coef_b;
-> -	unsigned long coef_m;
-> -	unsigned long coef_div;
-> +	s64 coef_b;
-> +	s64 coef_m;
-> +	u32 coef_div;
->  	bool inverted;
-> +	bool signed_sample;
->  
->  	/* Register shift and mask to access the sensor temperature */
->  	unsigned int temp_shift;
-> @@ -155,6 +161,18 @@ static void armada380_init_sensor(struct platform_device *pdev,
->  	}
->  }
->  
-> +static void armada_ap806_init_sensor(struct platform_device *pdev,
-> +				     struct armada_thermal_priv *priv)
-> +{
-> +	u32 reg;
-> +
-> +	reg = readl_relaxed(priv->control0);
-> +	reg &= ~CONTROL0_TSEN_RESET;
-> +	reg |= CONTROL0_TSEN_START | CONTROL0_TSEN_ENABLE;
-> +	writel(reg, priv->control0);
-> +	msleep(10);
-> +}
-> +
->  static bool armada_is_valid(struct armada_thermal_priv *priv)
->  {
->  	u32 reg = readl_relaxed(priv->status);
-> @@ -166,8 +184,8 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
->  			  int *temp)
->  {
->  	struct armada_thermal_priv *priv = thermal->devdata;
-> -	unsigned long reg;
-> -	unsigned long m, b, div;
-> +	u32 reg, div;
-> +	s64 sample, b, m;
->  
->  	/* Valid check */
->  	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
-> @@ -178,6 +196,11 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
->  
->  	reg = readl_relaxed(priv->status);
->  	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
-> +	if (priv->data->signed_sample)
-> +		/* The most significant bit is the sign bit */
-> +		sample = sign_extend32(reg, fls(priv->data->temp_mask) - 1);
-> +	else
-> +		sample = reg;
->  
->  	/* Get formula coeficients */
->  	b = priv->data->coef_b;
-> @@ -185,9 +208,12 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
->  	div = priv->data->coef_div;
->  
->  	if (priv->data->inverted)
-> -		*temp = ((m * reg) - b) / div;
-> +		*temp = (m * sample) - b;
->  	else
-> -		*temp = (b - (m * reg)) / div;
-> +		*temp = b - (m * sample);
-> +
-> +	do_div(*temp, div);
+> Thanks, I have applied this patch to the soc-for-v4.16 branch.
+> It is currently not based v4.15-rc1. Let me know if it should
+> be rebased on top of your pull request for clk-renesas-for-v4.16.
 
-I wanted to test in on ARMv7 and this line failed to compile:
-In file included from arch/arm/include/asm/div64.h:127:0,
-                 from include/linux/kernel.h:173,
-                 from include/linux/list.h:9,
-                 from include/linux/kobject.h:20,
-                 from include/linux/device.h:17,
-                 from drivers/thermal/armada_thermal.c:16:
-drivers/thermal/armada_thermal.c: In function ‘armada_get_temp’:
-include/asm-generic/div64.h:208:28: warning: comparison of distinct pointer types lacks a cast
-  (void)(((typeof((n)) *)0) == ((uint64_t *)0)); \
-                            ^
-drivers/thermal/armada_thermal.c:247:2: note: in expansion of macro ‘do_div’
-  do_div(*temp, div);
-  ^~~~~~
-In file included from include/linux/ioport.h:13:0,
-                 from include/linux/device.h:16,
-                 from drivers/thermal/armada_thermal.c:16:
-include/asm-generic/div64.h:221:25: warning: right shift count >= width of type [-Wshift-count-overflow]
-  } else if (likely(((n) >> 32) == 0)) {  \
-                         ^
-include/linux/compiler.h:175:40: note: in definition of macro ‘likely’
- # define likely(x) __builtin_expect(!!(x), 1)
-                                        ^
-drivers/thermal/armada_thermal.c:247:2: note: in expansion of macro ‘do_div’
-  do_div(*temp, div);
-  ^~~~~~
-In file included from arch/arm/include/asm/div64.h:127:0,
-                 from include/linux/kernel.h:173,
-                 from include/linux/list.h:9,
-                 from include/linux/kobject.h:20,
-                 from include/linux/device.h:17,
-                 from drivers/thermal/armada_thermal.c:16:
-include/asm-generic/div64.h:225:22: error: passing argument 1 of ‘__div64_32’ from incompatible pointer type [-Werror=incompatible-pointer-types]
-   __rem = __div64_32(&(n), __base); \
-                      ^
-drivers/thermal/armada_thermal.c:247:2: note: in expansion of macro ‘do_div’
-  do_div(*temp, div);
-  ^~~~~~
-In file included from include/linux/kernel.h:173:0,
-                 from include/linux/list.h:9,
-                 from include/linux/kobject.h:20,
-                 from include/linux/device.h:17,
-                 from drivers/thermal/armada_thermal.c:16:
-arch/arm/include/asm/div64.h:33:24: note: expected ‘uint64_t * {aka long long unsigned int *}’ but argument is of type ‘int *’
- static inline uint32_t __div64_32(uint64_t *n, uint32_t base)
+If the base is not v4.15-rc1, what is it? GENPD_FLAG_ACTIVE_WAKEUP was
+introduced in v4.15-rc1, so it won't compile based on v4.14.
 
-Gregory
+There's no dependency on the clock drivers, so no need to base on
+top of clk-renesas-for-v4.16.
 
-> +
->  	return 0;
->  }
->  
-> @@ -199,8 +225,8 @@ static const struct armada_thermal_data armadaxp_data = {
->  	.init_sensor = armadaxp_init_sensor,
->  	.temp_shift = 10,
->  	.temp_mask = 0x1ff,
-> -	.coef_b = 3153000000UL,
-> -	.coef_m = 10000000UL,
-> +	.coef_b = 3153000000ULL,
-> +	.coef_m = 10000000ULL,
->  	.coef_div = 13825,
->  };
->  
-> @@ -210,8 +236,8 @@ static const struct armada_thermal_data armada370_data = {
->  	.is_valid_bit = BIT(9),
->  	.temp_shift = 10,
->  	.temp_mask = 0x1ff,
-> -	.coef_b = 3153000000UL,
-> -	.coef_m = 10000000UL,
-> +	.coef_b = 3153000000ULL,
-> +	.coef_m = 10000000ULL,
->  	.coef_div = 13825,
->  };
->  
-> @@ -221,8 +247,8 @@ static const struct armada_thermal_data armada375_data = {
->  	.is_valid_bit = BIT(10),
->  	.temp_shift = 0,
->  	.temp_mask = 0x1ff,
-> -	.coef_b = 3171900000UL,
-> -	.coef_m = 10000000UL,
-> +	.coef_b = 3171900000ULL,
-> +	.coef_m = 10000000ULL,
->  	.coef_div = 13616,
->  	.needs_control0 = true,
->  };
-> @@ -233,12 +259,26 @@ static const struct armada_thermal_data armada380_data = {
->  	.is_valid_bit = BIT(10),
->  	.temp_shift = 0,
->  	.temp_mask = 0x3ff,
-> -	.coef_b = 1172499100UL,
-> -	.coef_m = 2000096UL,
-> +	.coef_b = 1172499100ULL,
-> +	.coef_m = 2000096ULL,
->  	.coef_div = 4201,
->  	.inverted = true,
->  };
->  
-> +static const struct armada_thermal_data armada_ap806_data = {
-> +	.is_valid = armada_is_valid,
-> +	.init_sensor = armada_ap806_init_sensor,
-> +	.is_valid_bit = BIT(16),
-> +	.temp_shift = 0,
-> +	.temp_mask = 0x3ff,
-> +	.coef_b = -150000LL,
-> +	.coef_m = 423ULL,
-> +	.coef_div = 1,
-> +	.inverted = true,
-> +	.signed_sample = true,
-> +	.needs_control0 = true,
-> +};
-> +
->  static const struct of_device_id armada_thermal_id_table[] = {
->  	{
->  		.compatible = "marvell,armadaxp-thermal",
-> @@ -257,6 +297,10 @@ static const struct of_device_id armada_thermal_id_table[] = {
->  		.data       = &armada380_data,
->  	},
->  	{
-> +		.compatible = "marvell,armada-ap806-thermal",
-> +		.data       = &armada_ap806_data,
-> +	},
-> +	{
->  		/* sentinel */
->  	},
->  };
-> -- 
-> 2.11.0
->
+Gr{oetje,eeting}s,
 
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+                        Geert
+
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
