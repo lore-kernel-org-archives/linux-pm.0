@@ -1,86 +1,138 @@
-From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpufreq: powernv: Add support of frequency domain
-Date: Wed, 20 Dec 2017 13:34:37 +0530
-Message-ID: <20171220080437.GA31588@in.ibm.com>
-References: <20171213081937.16376-1-huntbag@linux.vnet.ibm.com>
- <20171214044239.GU3322@vireshk-i7>
- <93cc9d38-4fd8-d340-2263-108329b69b94@linux.vnet.ibm.com>
- <20171218082935.GH19815@vireshk-i7>
- <20171219092037.GA27991@in.ibm.com>
- <CAKTCnz=Wq_qgG0=cxHuCibFZxLM7uPv0iULGBO5AkUGZgHLXkg@mail.gmail.com>
-Reply-To: ego@linux.vnet.ibm.com
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH V8 2/3] OPP: Introduce "required-opp" property
+Date: Wed, 20 Dec 2017 09:23:35 +0100
+Message-ID: <CAPDyKFoWo0bUMNbGFSgjdN-ZwS+o6_GUXt-sQK0Qpcndw5B8eA@mail.gmail.com>
+References: <cover.1513591822.git.viresh.kumar@linaro.org> <6615035f294a64a4c17e5b44ac6690d1c2ac127c.1513591822.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:59656 "EHLO
-        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1752542AbdLTIEu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 03:04:50 -0500
-Received: from pps.filterd (m0098396.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.21/8.16.0.21) with SMTP id vBK84lci048601
-        for <linux-pm@vger.kernel.org>; Wed, 20 Dec 2017 03:04:50 -0500
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 2eygekyuw6-1
-        (version=TLSv1.2 cipher=AES256-SHA bits=256 verify=NOT)
-        for <linux-pm@vger.kernel.org>; Wed, 20 Dec 2017 03:04:49 -0500
-Received: from localhost
-        by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only! Violators will be prosecuted
-        for <linux-pm@vger.kernel.org> from <ego@linux.vnet.ibm.com>;
-        Wed, 20 Dec 2017 01:04:49 -0700
-Content-Disposition: inline
-In-Reply-To: <CAKTCnz=Wq_qgG0=cxHuCibFZxLM7uPv0iULGBO5AkUGZgHLXkg@mail.gmail.com>
+Received: from mail-it0-f67.google.com ([209.85.214.67]:44771 "EHLO
+        mail-it0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752304AbdLTIXh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 03:23:37 -0500
+Received: by mail-it0-f67.google.com with SMTP id b5so5809279itc.3
+        for <linux-pm@vger.kernel.org>; Wed, 20 Dec 2017 00:23:36 -0800 (PST)
+In-Reply-To: <6615035f294a64a4c17e5b44ac6690d1c2ac127c.1513591822.git.viresh.kumar@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Balbir Singh <bsingharora@gmail.com>
-Cc: Gautham R Shenoy <ego@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>, Abhishek <huntbag@linux.vnet.ibm.com>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Kevin Hilman <khilman@kernel.org>, Rob Herring <robh+dt@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Tue, Dec 19, 2017 at 09:21:52PM +1100, Balbir Singh wrote:
-> On Tue, Dec 19, 2017 at 8:20 PM, Gautham R Shenoy
-> <ego@linux.vnet.ibm.com> wrote:
-> > Hi Viresh,
-> > On Mon, Dec 18, 2017 at 01:59:35PM +0530, Viresh Kumar wrote:
-> >> On 18-12-17, 10:41, Abhishek wrote:
-> >> > We need to do it in this way as the current implementation takes the max of
-> >> > the PMSR of the cores. Thus, when the frequency is required to be ramped up,
-> >> > it suffices to write to just the local PMSR, but when the frequency is to be
-> >> > ramped down, if we don't send the IPI it breaks the compatibility with P8.
-> >>
-> >> Looks strange really that you have to program this differently for speeding up
-> >> or down. These CPUs are part of one cpufreq policy and so I would normally
-> >> expect changes to any CPU should reflect for other CPUs as well.
-> >>
-> >> @Goutham: Do you know why it is so ?
-> >>
-> >
-> > These are due to some implementation quirks where the platform has
-> > provided a PMCR per-core to be backward compatible with POWER8, but
-> > controls the frequency at a quad-level, by taking the maximum of the
-> > four PMCR values instead of the latest one. So, changes to any CPU in
-> > the core will reflect on all the cores if the frequency is higher than
-> > the current frequency, but not necessarily if the requested frequency
-> > is lower than the current frequency.
-> >
-> > Without sending the extra IPIs, we will be breaking the ABI since if
-> > we set userspace governor, and change the frequency of a core by
-> > lowering it, then it will not reflect on the CPUs of the cores in the
-> > quad.
-> 
-> 
-> What about cpufreq_policy->cpus/related_cpus? Am I missing something?
+On 18 December 2017 at 11:21, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> Devices have inter-dependencies some times. For example a device that
+> needs to run at 800 MHz, needs another device (e.g. Its power domain) to
+> be configured at a particular operating performance point.
+>
+> This patch introduces a new property "required-opp" which can be present
+> directly in a device's node (if it doesn't need to change its OPPs), or
+> in device's OPP nodes. More details on the property can be seen in the
+> binding itself.
+>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/opp/opp.txt      |  8 +++
+>  .../devicetree/bindings/power/power_domain.txt     | 59 ++++++++++++++++++++++
+>  2 files changed, 67 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> index a3953a1bb1a1..4e4f30288c8b 100644
+> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> @@ -159,6 +159,14 @@ properties.
+>
+>  - status: Marks the node enabled/disabled.
+>
+> +- required-opp: This contains phandle to an OPP node in another device's OPP
+> +  table. It may contain an array of phandles, where each phandle points to an
+> +  OPP of a different device. It should not contain multiple phandles to the OPP
+> +  nodes in the same OPP table. This specifies the minimum required OPP of the
+> +  device(s), whose OPP's phandle is present in this property, for the
+> +  functioning of the current device at the current OPP (where this property is
+> +  present).
+> +
+>  Example 1: Single cluster Dual-core ARM cortex A9, switch DVFS states together.
+>
+>  / {
+> diff --git a/Documentation/devicetree/bindings/power/power_domain.txt b/Documentation/devicetree/bindings/power/power_domain.txt
+> index 61549840ab3b..f824763b202e 100644
+> --- a/Documentation/devicetree/bindings/power/power_domain.txt
+> +++ b/Documentation/devicetree/bindings/power/power_domain.txt
+> @@ -126,4 +126,63 @@ The node above defines a typical PM domain consumer device, which is located
+>  inside a PM domain with index 0 of a power controller represented by a node
+>  with the label "power".
+>
+> +Optional properties:
+> +- required-opp: This contains phandle to an OPP node in another device's OPP
+> +  table. It may contain an array of phandles, where each phandle points to an
+> +  OPP of a different device. It should not contain multiple phandles to the OPP
+> +  nodes in the same OPP table. This specifies the minimum required OPP of the
+> +  device(s), whose OPP's phandle is present in this property, for the
+> +  functioning of the current device at the current OPP (where this property is
+> +  present).
+> +
+> +Example:
+> +- OPP table for domain provider that provides two domains.
+> +
+> +       domain0_opp_table: opp_table0 {
+> +               compatible = "operating-points-v2";
+> +
+> +               domain0_opp_0: opp-1000000000 {
+> +                       opp-hz = /bits/ 64 <1000000000>;
+> +                       opp-microvolt = <975000 970000 985000>;
+> +               };
+> +               domain0_opp_1: opp-1100000000 {
+> +                       opp-hz = /bits/ 64 <1100000000>;
+> +                       opp-microvolt = <1000000 980000 1010000>;
+> +               };
+> +       };
+> +
+> +       domain1_opp_table: opp_table1 {
+> +               compatible = "operating-points-v2";
+> +
+> +               domain1_opp_0: opp-1200000000 {
+> +                       opp-hz = /bits/ 64 <1200000000>;
+> +                       opp-microvolt = <975000 970000 985000>;
+> +               };
+> +               domain1_opp_1: opp-1300000000 {
+> +                       opp-hz = /bits/ 64 <1300000000>;
+> +                       opp-microvolt = <1000000 980000 1010000>;
+> +               };
+> +       };
+> +
+> +       parent: power-controller@12340000 {
 
-The frequency indicator passed via the device tree is used to derive
-the mask corresponding to the set of CPUs that share the same
-frequency. It is this mask that is set to
-cpufreq_policy->cpus/related_cpus.
+Nitpick: Could you please change "parent" to "power", to be consistent
+with earlier examples.
+
+> +               compatible = "foo,power-controller";
+> +               reg = <0x12340000 0x1000>;
+> +               #power-domain-cells = <1>;
+> +               operating-points-v2 = <&domain0_opp_table>, <&domain1_opp_table>;
+> +       };
+> +
+> +       leaky-device0@12350000 {
+> +               compatible = "foo,i-leak-current";
+> +               reg = <0x12350000 0x1000>;
+> +               power-domains = <&parent 0>;
+> +               required-opp = <&domain0_opp_0>;
+> +       };
+> +
+> +       leaky-device1@12350000 {
+> +               compatible = "foo,i-leak-current";
+> +               reg = <0x12350000 0x1000>;
+> +               power-domains = <&parent 1>;
+> +               required-opp = <&domain1_opp_1>;
+> +       };
+> +
+>  [1]. Documentation/devicetree/bindings/power/domain-idle-state.txt
+> --
+> 2.15.0.194.g9af6a3dea062
+>
 
 
-> 
-> >
-> > Abhishek,
-> > I think we can rework this by sending the extra IPIs only in the
-> > presence of the quirk which can be indicated through a device-tree
-> > parameter. If the future implementation fix this, then we won't need
-> > the extra IPIs.
-> 
-> Balbir Singh.
-> 
+Besides the nitpick, feel free to add:
+
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+Kind regards
+Uffe
