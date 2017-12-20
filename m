@@ -1,64 +1,72 @@
-From: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH v1 4/4] arm64: dts: mediatek: add mt2712 cpufreq related
- device nodes
-Date: Wed, 20 Dec 2017 15:47:10 +0100
-Message-ID: <59684978-43cc-3672-75af-602b2800a7f5@gmail.com>
-References: <1512713278-17807-1-git-send-email-andrew-sh.cheng@mediatek.com>
- <20171212072625.GL25177@vireshk-i7>
- <a68c5382-2a9c-6c3c-ea67-99db46bdff1a@gmail.com>
- <7730089.t6jDuHQEn5@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization update flags
+Date: Wed, 20 Dec 2017 15:47:23 +0100
+Message-ID: <5156588.pkDhmtr2np@aspire.rjw.lan>
+References: <cover.1513158452.git.viresh.kumar@linaro.org> <20171220125546.GI19821@e110439-lin> <20171220132826.kcu5zqkva5h6nmfk@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <7730089.t6jDuHQEn5-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, srv_heupstream-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171220132826.kcu5zqkva5h6nmfk@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, juri.lelli@redhat.com, tkjos@android.com, joelaf@google.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 12/17/2017 07:05 PM, Rafael J. Wysocki wrote:
-> On Tuesday, December 12, 2017 10:34:42 AM CET Matthias Brugger wrote:
->> Hi,
->>
->> On 12/12/2017 08:26 AM, Viresh Kumar wrote:
->>> On 12-12-17, 02:17, Rafael J. Wysocki wrote:
->>>> On Monday, December 11, 2017 8:57:19 AM CET Viresh Kumar wrote:
->>>>> On 08-12-17, 14:07, Andrew-sh Cheng wrote:
->>>>>> Add opp v2 information,
->>>>>> and also add clocks, regulators and opp information into cpu nodes
->>>>>>
->>>>>> Signed-off-by: Andrew-sh Cheng <andrew-sh.cheng-NuS5LvNUpcJWk0Htik3J/w@public.gmane.org>
->>>>>> ---
->>>>>>  arch/arm64/boot/dts/mediatek/mt2712-evb.dts | 27 ++++++++++++++
->>>>>>  arch/arm64/boot/dts/mediatek/mt2712e.dtsi   | 57 +++++++++++++++++++++++++++++
->>>>>>  2 files changed, 84 insertions(+)
->>>>>
->>>>> Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
->>>>
->>>> Of course, DT bindings require ACKs from DT maintainers to be applied.
->>>
->>> I didn't knew that we need Acks from DT maintainers for dts files as well? Yeah,
->>> its very much required while defining new bindings for sure.
->>>
->>
->> I will take the dts parts through the Mediatek SoC tree, so you don't have to
->> worry about them.
->>
->> Please let me know when you take patch 1 and 2.
+On Wednesday, December 20, 2017 2:28:26 PM CET Peter Zijlstra wrote:
+> On Wed, Dec 20, 2017 at 12:55:46PM +0000, Patrick Bellasi wrote:
+> > On 20-Dec 09:31, Peter Zijlstra wrote:
 > 
-> Applied now, thanks!
+> > > Didn't juri have patches to make DL do something sane? But yes, I think
+> > > those flags are part of the problem.
+> > 
+> > He recently reposted them here:
+> > 
+> >   https://lkml.kernel.org/r/20171204102325.5110-1-juri.lelli@redhat.com
 > 
-> Do you need the branch containing them to be exposed?
+> Yeah, just found them and actually munged them into my queue; did all
+> the modifications you suggested too. Lets see if it comes apart.
+
+Good, because I think that the Juri's patches should go in first.
+
+Then we'll see what's still missing.
+
+> > > > - From the utilization handler, we check runqueues of all three sched
+> > > >   classes to see if they have some work pending (this can be done
+> > > >   smartly by checking only RT first and skipping other checks if RT
+> > > >   has some work).
+> > > 
+> > > No that's wrong. DL should provide a minimum required based on existing
+> > > reservations, we can add the expected CFS average on top and request
+> > > that.
+> > > 
+> > > And for RT all we need to know is if current is of that class, otherwise
+> > > we don't care.
+> > 
+> > So, this:
+> > 
+> >    https://marc.info/?i=20171130114723.29210-3-patrick.bellasi%40arm.com
 > 
+> Right, I was actually looking for those patches, but I'm searching
+> backwards and hit upon Juri's patches first.
+> 
+> > was actually going in this direction, although still working on top of
+> > flags to not change the existing interface too much.
+> > 
+> > IMO, the advantage of flags is that they are a sort-of "pro-active"
+> > approach, where the scheduler notify sensible events to schedutil.
+> > But keep adding flags seems to overkilling to me too.
+> > 
+> > If we remove flags then we have to query the scheduler classes "on
+> > demand"... but, as Peter suggests, once we have DL bits Juri posted,
+> > the only issue if to know if an RT task is running.
+> > This the patch above can be just good enough, with no flags at all and
+> > with just a check for current being RT (or DL for the time being).
+> 
+> Well, we still need flags for crap like IO-WAIT IIRC. That's sugov
+> internal state and not something the scheduler actually already knows.
 
-No, that's not necessary.
+Not only sugov to be precise, but yes.
 
-I pushed the two patches to v4.15-next/dts64 now.
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks,
+Rafael
