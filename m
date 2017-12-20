@@ -1,130 +1,81 @@
-From: Gregory CLEMENT <gregory.clement@free-electrons.com>
-Subject: Re: [PATCH v5 07/11] thermal: armada: Add support for Armada CP110
-Date: Wed, 20 Dec 2017 11:56:51 +0100
-Message-ID: <87r2rpfz0s.fsf@free-electrons.com>
-References: <20171219135719.9531-1-miquel.raynal@free-electrons.com>
-        <20171219135719.9531-8-miquel.raynal@free-electrons.com>
+From: Biju Das <biju.das-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>
+Subject: RE: [PATCH v2 2/2] ARM: dts: r8a7743: Add thermal device to DT
+Date: Wed, 20 Dec 2017 11:36:51 +0000
+Message-ID: <KL1PR06MB17029FA8C7AD57F067777E11B80C0@KL1PR06MB1702.apcprd06.prod.outlook.com>
+References: <1513689449-2700-1-git-send-email-biju.das@bp.renesas.com>
+ <1513689449-2700-3-git-send-email-biju.das@bp.renesas.com>
+ <20171220085036.gdcnbhonyqlewyi4@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:54450 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754749AbdLTK5D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 05:57:03 -0500
-In-Reply-To: <20171219135719.9531-8-miquel.raynal@free-electrons.com> (Miquel
-        Raynal's message of "Tue, 19 Dec 2017 14:57:15 +0100")
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171220085036.gdcnbhonyqlewyi4-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+Content-Language: en-US
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Chris Paterson <Chris.Paterson2-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>, Fabrizio Castro <fabrizio.castro-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Miquel Raynal <miquel.raynal@free-electrons.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Baruch Siach <baruch@tkos.co.il>, David Sniatkiwicz <davidsn@marvell.com>
 
-Hi Miquel,
- 
- On mar., déc. 19 2017, Miquel Raynal <miquel.raynal@free-electrons.com> wrote:
+Hi Simon,
 
-> From: Baruch Siach <baruch@tkos.co.il>
+Just noticed that
+
+# make dtbs W=3D1 is giving below warning message.
+
+arch/arm/boot/dts/r8a7743-iwg20d-q7-dbcm-ca.dtb: Warning (simple_bus_reg): =
+Node /soc/thermal-zones missing or empty reg/ranges property
+
+Do you prefer a fix patch or a v2 ?
+
+Regards,
+Biju
+
+
+> -----Original Message-----
+> From: Simon Horman [mailto:horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org]
+> Sent: 20 December 2017 08:51
+> To: Biju Das <biju.das-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>
+> Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>; Eduardo Valentin
+> <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>; Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>; Mark Rutland
+> <mark.rutland-5wv7dgnIgG8@public.gmane.org>; Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>;
+> Chris Paterson <Chris.Paterson2-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>; Fabrizio Castro
+> <fabrizio.castro-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>; devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; linux-renes=
+as-
+> soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org; linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+> Subject: Re: [PATCH v2 2/2] ARM: dts: r8a7743: Add thermal device to DT
 >
-> The CP110 component is integrated in the Armada 8k and 7k lines of
-> processors.
+> On Tue, Dec 19, 2017 at 01:17:29PM +0000, Biju Das wrote:
+> > This patch instantiates the thermal sensor module with thermal-zone
+> > support.
+> >
+> > This patch is based on the commit cac68a56e34b
+> > ("ARM: dts: r8a7791: enable to use thermal-zone") by Kuninori Morimoto.
+> >
+> > Signed-off-by: Biju Das <biju.das-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>
+> > Reviewed-by: Fabrizio Castro <fabrizio.castro-kTT6dE0pTRh9uiUsa/gSgQ@public.gmane.org>
+> > Reviewed-by: Geert Uytterhoeven <geert+renesas-gXvu3+zWzMSzQB+pC5nmwQ@public.gmane.org>
+> > ---
+> > v1->v2
+> >  * Fixed the size.
 >
-> Signed-off-by: Baruch Siach <baruch@tkos.co.il>
-> [<miquel.raynal@free-electrons.com>: renamed the register pointers as
-> well as some definitions related to the new register names and
-> simplified the init sequence for Armada 380]
-> Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
-> Reviewed-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-
-Here again, on Armada 7040 DB and Machitobin, the temperature value
-looks coherent:
-
-Tested-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
-
-Gregory
+> Thanks, applied.
 
 
-> ---
->  drivers/thermal/armada_thermal.c | 33 ++++++++++++++++++++++++++-------
->  1 file changed, 26 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-> index c7dcac39cbf9..3785b5248bf5 100644
-> --- a/drivers/thermal/armada_thermal.c
-> +++ b/drivers/thermal/armada_thermal.c
-> @@ -37,7 +37,6 @@
->  #define A375_UNIT_CONTROL_MASK		0x7
->  #define A375_READOUT_INVERT		BIT(15)
->  #define A375_HW_RESETn			BIT(8)
-> -#define A380_HW_RESET			BIT(8)
->  
->  /* Legacy bindings */
->  #define LEGACY_CONTROL_MEM_LEN		0x4
-> @@ -52,6 +51,10 @@
->  #define CONTROL0_TSEN_RESET		BIT(1)
->  #define CONTROL0_TSEN_ENABLE		BIT(2)
->  
-> +/* EXT_TSEN refers to the external temperature sensors, out of the AP */
-> +#define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
-> +#define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)
-> +
->  struct armada_thermal_data;
->  
->  /* Marvell EBU Thermal Sensor Dev Structure */
-> @@ -153,12 +156,11 @@ static void armada380_init_sensor(struct platform_device *pdev,
->  {
->  	u32 reg = readl_relaxed(priv->control1);
->  
-> -	/* Reset hardware once */
-> -	if (!(reg & A380_HW_RESET)) {
-> -		reg |= A380_HW_RESET;
-> -		writel(reg, priv->control1);
-> -		msleep(10);
-> -	}
-> +	/* Disable the HW/SW reset */
-> +	reg |= CONTROL1_EXT_TSEN_HW_RESETn;
-> +	reg &= ~CONTROL1_EXT_TSEN_SW_RESET;
-> +	writel(reg, priv->control1);
-> +	msleep(10);
->  }
->  
->  static void armada_ap806_init_sensor(struct platform_device *pdev,
-> @@ -279,6 +281,19 @@ static const struct armada_thermal_data armada_ap806_data = {
->  	.needs_control0 = true,
->  };
->  
-> +static const struct armada_thermal_data armada_cp110_data = {
-> +	.is_valid = armada_is_valid,
-> +	.init_sensor = armada380_init_sensor,
-> +	.is_valid_bit = BIT(10),
-> +	.temp_shift = 0,
-> +	.temp_mask = 0x3ff,
-> +	.coef_b = 1172499100ULL,
-> +	.coef_m = 2000096ULL,
-> +	.coef_div = 4201,
-> +	.inverted = true,
-> +	.needs_control0 = true,
-> +};
-> +
->  static const struct of_device_id armada_thermal_id_table[] = {
->  	{
->  		.compatible = "marvell,armadaxp-thermal",
-> @@ -301,6 +316,10 @@ static const struct of_device_id armada_thermal_id_table[] = {
->  		.data       = &armada_ap806_data,
->  	},
->  	{
-> +		.compatible = "marvell,armada-cp110-thermal",
-> +		.data       = &armada_cp110_data,
-> +	},
-> +	{
->  		/* sentinel */
->  	},
->  };
-> -- 
-> 2.11.0
->
+[https://www2.renesas.eu/media/email/unicef_2017.jpg]
 
--- 
-Gregory Clement, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+This Christmas, instead of sending out cards, Renesas Electronics Europe ha=
+ve decided to support Unicef with a donation. For further details click her=
+e<https://www.unicef.org/> to find out about the valuable work they do, hel=
+ping children all over the world.
+We would like to take this opportunity to wish you a Merry Christmas and a =
+prosperous New Year.
+
+
+
+Renesas Electronics Europe Ltd, Dukes Meadow, Millboard Road, Bourne End, B=
+uckinghamshire, SL8 5FH, UK. Registered in England & Wales under Registered=
+ No. 04586709.
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
