@@ -1,93 +1,74 @@
-From: Kishon Vijay Abraham I <kishon@ti.com>
-Subject: Re: [PATCH 1/3] phy: core: Move runtime PM reference counting to the
- parent device
-Date: Wed, 20 Dec 2017 14:32:01 +0530
-Message-ID: <0c0cf0ba-e729-a1d8-ac0a-38c8eb13a5c6@ti.com>
-References: <1513718551-28624-1-git-send-email-ulf.hansson@linaro.org>
- <1513718551-28624-2-git-send-email-ulf.hansson@linaro.org>
- <ced99cd1-d52c-ea76-332d-6c0492f256a8@ti.com>
- <CAPDyKFoy7AkAyA9boAakr1m5Y7+r2KMqbLR7KmHZThPRXoKMRA@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v2 2/4] sched/fair: add util_est on top of PELT
+Date: Wed, 20 Dec 2017 10:02:41 +0100
+Message-ID: <20171220090241.jjsrs76phexy6fwd@hirez.programming.kicks-ass.net>
+References: <20171205171018.9203-1-patrick.bellasi@arm.com>
+ <20171205171018.9203-3-patrick.bellasi@arm.com>
+ <20171213161624.oiwdwgitzzwkc35k@hirez.programming.kicks-ass.net>
+ <20171215121417.GB19821@e110439-lin>
+ <20171215125340.akzm5kwa4pnijavz@hirez.programming.kicks-ass.net>
+ <20171215154140.GE19821@e110439-lin>
+ <20171220085747.tgkle5b77z7yz4j4@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFoy7AkAyA9boAakr1m5Y7+r2KMqbLR7KmHZThPRXoKMRA@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from bombadil.infradead.org ([65.50.211.133]:56945 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752886AbdLTJCs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 04:02:48 -0500
+Content-Disposition: inline
+In-Reply-To: <20171220085747.tgkle5b77z7yz4j4@hirez.programming.kicks-ass.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Patrick Bellasi <patrick.bellasi@arm.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Paul Turner <pjt@google.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-Hi Ulf,
+On Wed, Dec 20, 2017 at 09:57:47AM +0100, Peter Zijlstra wrote:
+> On Fri, Dec 15, 2017 at 03:41:40PM +0000, Patrick Bellasi wrote:
+> > Close enough, the actual code is:
+> > 
+> >         util_est = p->util_est.ewma;
+> >     5218:       f9403ba3        ldr     x3, [x29,#112]
+> >     521c:       f9418462        ldr     x2, [x3,#776]
+> >         if (abs(util_est - util_last) <= (SCHED_CAPACITY_SCALE / 100))
+> >     5220:       eb010040        subs    x0, x2, x1
+> >     5224:       da805400        cneg    x0, x0, mi
+> >     5228:       f100281f        cmp     x0, #0xa
+> >     522c:       54fff9cd        b.le    5164 <dequeue_task_fair+0xa04>
+> 
+> Ah, that cneg instruction is cute; on x86 we end up with something like:
+> 
+> bool abs_test(long s)
+> {
+>         return abs(s) < 32;
+> }
+> 
+>         cmpl    $-31, %eax
+>         jl      .L107
+>         movq    -8(%rbp), %rax
+>         cmpl    $31, %eax
+>         jg      .L107
+>         movl    $1, %eax
+>         jmp     .L108
+> .L107:
+>         movl    $0, %eax
+> .L108:
+> 
+> 
+> But I figured you can actually do:
+> 
+> 	abs(x) < y := (unsigned)(x + y - 1) < (2 * y - 1)
+> 
+> Which, if y is a constant, should result in nicer code, and it does for
+> x86:
+> 
+>         addq    $31, %rax
+>         cmpq    $62, %rax
+>         setbe   %al
+>         movzbl  %al, %eax
+> 
+> Just not measurably faster, I suppose because of all the dependencies :/
 
-On Wednesday 20 December 2017 02:05 PM, Ulf Hansson wrote:
-> On 20 December 2017 at 07:42, Kishon Vijay Abraham I <kishon@ti.com> wrote:
->> Hi Ulf,
->>
->> On Wednesday 20 December 2017 02:52 AM, Ulf Hansson wrote:
->>> The runtime PM deployment in the phy core is a bit unnecessary complicated
->>> and the main reason is because it operates on the phy device, which is
->>> created by the phy core and assigned as a child device of the phy provider
->>> device.
->>>
->>> Let's simplify the code, by replacing the existing calls to
->>> phy_pm_runtime_get_sync() and phy_pm_runtime_put(), with regular calls to
->>> pm_runtime_get_sync() and pm_runtime_put(). While doing that, let's also
->>> change to give the phy provider device as the parameter to the runtime PM
->>> calls. This together with adding error paths, that allows the phy
->>> provider device to be runtime PM disabled, enables further clean up the
->>> code. More precisely, we can simply avoid to enable runtime PM for the phy
->>> device altogether, so let's do that as well.
->>>
->>> More importantly, this change also fixes an issue for system suspend.
->>> Especially in those cases when the phy provider device gets put into a low
->>> power state via calling the pm_runtime_force_suspend() helper, as is the
->>> case for a Renesas SoC, which has the phy provider device attached to the
->>> generic PM domain.
->>>
->>> The problem in this case, is that pm_runtime_force_suspend() expects the
->>> child device of the provider device to be runtime suspended, else this will
->>> trigger a WARN splat (correctly) when runtime PM gets re-enabled at system
->>> resume.
->>>
->>> In the current case, even if phy_power_off() triggers a pm_runtime_put()
->>> during system suspend the phy device (child) doesn't get runtime suspended,
->>> because that is prevented in the system suspend phases. However, by
->>> avoiding to enable runtime PM, this problem goes away.
->>>
->>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>> ---
->>>  drivers/phy/phy-core.c | 33 +++++++++++++--------------------
->>>  1 file changed, 13 insertions(+), 20 deletions(-)
->>>
->>> diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
->>> index b4964b0..9fa3f13 100644
->>> --- a/drivers/phy/phy-core.c
->>> +++ b/drivers/phy/phy-core.c
->>> @@ -222,10 +222,10 @@ int phy_init(struct phy *phy)
->>>       if (!phy)
->>>               return 0;
->>>
->>> -     ret = phy_pm_runtime_get_sync(phy);
->>> -     if (ret < 0 && ret != -ENOTSUPP)
->>> +     ret = pm_runtime_get_sync(phy->dev.parent);
->>
->> Won't this make phy-core manage pm_runtime of phy_provider even though the
->> phy_provider might not intend it?
-> 
-> No it shouldn't.
-> 
-> There are two cases to consider around this.
-> 
-> 1) CONFIG_PM is unset. In this case pm_runtime_get_sync() will return
-> 1, which is treated as succeeds by the error path.
-> 
-> 2) CONFIG_PM is set, but the phy provider don't use runtime PM, thus
-> it hasn't called pm_runtime_enable() for its device. In this case,
-> pm_runtime_get_sync() returns -EACCES, which is also treated as
-> success by the error path.
-
-There can be a case where the phy_provider uses runtime PM but doesn't want
-phy-core to manage it.
-
-Thanks
-Kishon
+Ah no, it actually is, I'm an idiot and used 'long' for return value. If
+I use bool we loose that last movzbl and we go from around 4.0 cycles
+down to 3.4 cycles.
