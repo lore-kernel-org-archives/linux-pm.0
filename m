@@ -1,64 +1,92 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization
- update flags
-Date: Wed, 20 Dec 2017 09:31:15 +0100
-Message-ID: <20171220083115.n4mc4pdkvycakce2@hirez.programming.kicks-ass.net>
-References: <cover.1513158452.git.viresh.kumar@linaro.org>
- <17ff0b5d83a1275a98f0d1b87daf275f3e964af3.1513158452.git.viresh.kumar@linaro.org>
- <20171219192504.nstxsfii6y7rh37w@hirez.programming.kicks-ass.net>
- <20171220040446.GS19815@vireshk-i7>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/3] phy: core: Move runtime PM reference counting to the
+ parent device
+Date: Wed, 20 Dec 2017 09:35:37 +0100
+Message-ID: <CAPDyKFoy7AkAyA9boAakr1m5Y7+r2KMqbLR7KmHZThPRXoKMRA@mail.gmail.com>
+References: <1513718551-28624-1-git-send-email-ulf.hansson@linaro.org>
+ <1513718551-28624-2-git-send-email-ulf.hansson@linaro.org> <ced99cd1-d52c-ea76-332d-6c0492f256a8@ti.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:43374 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754494AbdLTIbf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 03:31:35 -0500
-Content-Disposition: inline
-In-Reply-To: <20171220040446.GS19815@vireshk-i7>
+Received: from mail-it0-f65.google.com ([209.85.214.65]:38873 "EHLO
+        mail-it0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753760AbdLTIfj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 03:35:39 -0500
+Received: by mail-it0-f65.google.com with SMTP id r6so5938269itr.3
+        for <linux-pm@vger.kernel.org>; Wed, 20 Dec 2017 00:35:38 -0800 (PST)
+In-Reply-To: <ced99cd1-d52c-ea76-332d-6c0492f256a8@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, juri.lelli@redhat.com, tkjos@android.com, joelaf@google.com, linux-kernel@vger.kernel.org, patrick.bellasi@arm.com
+To: Kishon Vijay Abraham I <kishon@ti.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On Wed, Dec 20, 2017 at 09:34:46AM +0530, Viresh Kumar wrote:
-> On 19-12-17, 20:25, Peter Zijlstra wrote:
-> > Yeah, not happy about this either; we had code that did the right thing
-> > without this extra tracking I think.
-> 
-> Sure, but how do you suggest we fix the problems we are facing with
-> the current design? Patrick had a completely different proposal for
-> solving those problems, which I didn't like very much. This patchset
-> replaced these patches from Patrick:
+On 20 December 2017 at 07:42, Kishon Vijay Abraham I <kishon@ti.com> wrote:
+> Hi Ulf,
+>
+> On Wednesday 20 December 2017 02:52 AM, Ulf Hansson wrote:
+>> The runtime PM deployment in the phy core is a bit unnecessary complicated
+>> and the main reason is because it operates on the phy device, which is
+>> created by the phy core and assigned as a child device of the phy provider
+>> device.
+>>
+>> Let's simplify the code, by replacing the existing calls to
+>> phy_pm_runtime_get_sync() and phy_pm_runtime_put(), with regular calls to
+>> pm_runtime_get_sync() and pm_runtime_put(). While doing that, let's also
+>> change to give the phy provider device as the parameter to the runtime PM
+>> calls. This together with adding error paths, that allows the phy
+>> provider device to be runtime PM disabled, enables further clean up the
+>> code. More precisely, we can simply avoid to enable runtime PM for the phy
+>> device altogether, so let's do that as well.
+>>
+>> More importantly, this change also fixes an issue for system suspend.
+>> Especially in those cases when the phy provider device gets put into a low
+>> power state via calling the pm_runtime_force_suspend() helper, as is the
+>> case for a Renesas SoC, which has the phy provider device attached to the
+>> generic PM domain.
+>>
+>> The problem in this case, is that pm_runtime_force_suspend() expects the
+>> child device of the provider device to be runtime suspended, else this will
+>> trigger a WARN splat (correctly) when runtime PM gets re-enabled at system
+>> resume.
+>>
+>> In the current case, even if phy_power_off() triggers a pm_runtime_put()
+>> during system suspend the phy device (child) doesn't get runtime suspended,
+>> because that is prevented in the system suspend phases. However, by
+>> avoiding to enable runtime PM, this problem goes away.
+>>
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  drivers/phy/phy-core.c | 33 +++++++++++++--------------------
+>>  1 file changed, 13 insertions(+), 20 deletions(-)
+>>
+>> diff --git a/drivers/phy/phy-core.c b/drivers/phy/phy-core.c
+>> index b4964b0..9fa3f13 100644
+>> --- a/drivers/phy/phy-core.c
+>> +++ b/drivers/phy/phy-core.c
+>> @@ -222,10 +222,10 @@ int phy_init(struct phy *phy)
+>>       if (!phy)
+>>               return 0;
+>>
+>> -     ret = phy_pm_runtime_get_sync(phy);
+>> -     if (ret < 0 && ret != -ENOTSUPP)
+>> +     ret = pm_runtime_get_sync(phy->dev.parent);
+>
+> Won't this make phy-core manage pm_runtime of phy_provider even though the
+> phy_provider might not intend it?
 
-Please use the normal link format:
+No it shouldn't.
 
-  https://lkml.kernel.org/r/$MSGID
+There are two cases to consider around this.
 
-Then I can find them without having to resort to a frigging browser
-thing.
+1) CONFIG_PM is unset. In this case pm_runtime_get_sync() will return
+1, which is treated as succeeds by the error path.
 
-I'll try and dig through the email I have.
+2) CONFIG_PM is set, but the phy provider don't use runtime PM, thus
+it hasn't called pm_runtime_enable() for its device. In this case,
+pm_runtime_get_sync() returns -EACCES, which is also treated as
+success by the error path.
 
-> > Also, we can look at the rq state if we want to, we don't need to
-> > duplicate that state.
-> 
-> Well that also looks fine to me, and that would mean this:
-> 
-> - We remove SCHED_CPUFREQ_RT and SCHED_CPUFREQ_DL flags, but still
->   call the utilization callbacks from RT and DL classes.
+Does it make sense?
 
-Didn't juri have patches to make DL do something sane? But yes, I think
-those flags are part of the problem.
-
-> - From the utilization handler, we check runqueues of all three sched
->   classes to see if they have some work pending (this can be done
->   smartly by checking only RT first and skipping other checks if RT
->   has some work).
-
-No that's wrong. DL should provide a minimum required based on existing
-reservations, we can add the expected CFS average on top and request
-that.
-
-And for RT all we need to know is if current is of that class, otherwise
-we don't care.
+Kind regards
+Uffe
