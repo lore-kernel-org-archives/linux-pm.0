@@ -1,52 +1,50 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 2/4] sched: cpufreq: Keep track of cpufreq utilization
- update flags
-Date: Wed, 20 Dec 2017 10:17:12 +0100
-Message-ID: <20171220091712.kd2nx5rf3dgila45@hirez.programming.kicks-ass.net>
-References: <cover.1513158452.git.viresh.kumar@linaro.org>
- <17ff0b5d83a1275a98f0d1b87daf275f3e964af3.1513158452.git.viresh.kumar@linaro.org>
- <20171219192504.nstxsfii6y7rh37w@hirez.programming.kicks-ass.net>
- <20171220040446.GS19815@vireshk-i7>
- <20171220083115.n4mc4pdkvycakce2@hirez.programming.kicks-ass.net>
- <20171220084859.GY19815@vireshk-i7>
+From: Joe Perches <joe@perches.com>
+Subject: Re: [-next PATCH 2/4] treewide: Use DEVICE_ATTR_RW
+Date: Wed, 20 Dec 2017 01:24:44 -0800
+Message-ID: <1513761884.1234.83.camel@perches.com>
+References: <cover.1513706701.git.joe@perches.com>
+ <cd38f14f06e1f447b3159ffe8c69c0df8241bb6e.1513706701.git.joe@perches.com>
+ <20171220083403.GA27231@bitmer.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:43714 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754167AbdLTJRW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 20 Dec 2017 04:17:22 -0500
-Content-Disposition: inline
-In-Reply-To: <20171220084859.GY19815@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <20171220083403.GA27231@bitmer.com>
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Jarkko Nikula <jarkko.nikula@bitmer.com>
+Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, Jaroslav Kysela <perex@perex.cz>, Peter Ujfalusi <peter.ujfalusi@ti.com>, linux-s390@vger.kernel.org, linux-omap@vger.kernel.org, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org, Takashi Iwai <tiwai@suse.com>, Sebastian Ott <sebott@linux.vnet.ibm.com>, James Smart <james.smart@broadcom.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.com>, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, Dick Kennedy <dick.kennedy@broadcom.com>, Mathias Nyman <mathias.nyman@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Peter Oberparleiter <oberp>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael Wysocki <rjw@rjwysocki.net>, Ingo Molnar <mingo@redhat.com>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, juri.lelli@redhat.com, tkjos@android.com, joelaf@google.com, linux-kernel@vger.kernel.org, patrick.bellasi@arm.com
 
-On Wed, Dec 20, 2017 at 02:18:59PM +0530, Viresh Kumar wrote:
-> On 20-12-17, 09:31, Peter Zijlstra wrote:
-> What about this case: A CFS task is running currently and an RT task
-> is enqueued.
-> 
-> - Is it always the case that the CFS task is preempted immediately and
->   the CPU is given to RT task ? I was talking to Vincent earlier and
->   he told me that for certain configurations the CFS task may keep
->   running until the next tick.
-> 
-> - What if the CFS task has disabled preemption ?
-> 
-> - More corner cases like this ?
-
-If there is a runnable RT task we'll schedule to it ASAP. This means
-for:
-
- CONFIG_PREEMPT=y
-
-   either immediately or when next preempt_enable() hits a 0
-   preempt_count.
-
- CONFIG_PREEMPT=n
-
-   on any next kernel preemption point or when returning to userspace.
-
-But this is not something we should worry about.
+T24gV2VkLCAyMDE3LTEyLTIwIGF0IDEwOjM0ICswMjAwLCBKYXJra28gTmlrdWxhIHdyb3RlOgo+
+IE9uIFR1ZSwgRGVjIDE5LCAyMDE3IGF0IDEwOjE1OjA3QU0gLTA4MDAsIEpvZSBQZXJjaGVzIHdy
+b3RlOgo+ID4gQ29udmVydCBERVZJQ0VfQVRUUiB1c2VzIHRvIERFVklDRV9BVFRSX1JXIHdoZXJl
+IHBvc3NpYmxlLgpbXSAKPiA+IGRpZmYgLS1naXQgYS9zb3VuZC9zb2Mvb21hcC9tY2JzcC5jIGIv
+c291bmQvc29jL29tYXAvbWNic3AuYwpbXQo+ID4gQEAgLTg1NCw3ICs4NTQsNyBAQCBzdGF0aWMg
+c3NpemVfdCBkbWFfb3BfbW9kZV9zdG9yZShzdHJ1Y3QgZGV2aWNlICpkZXYsCj4gPiAgCXJldHVy
+biBzaXplOwo+ID4gIH0KPiA+ICAKPiA+IC1zdGF0aWMgREVWSUNFX0FUVFIoZG1hX29wX21vZGUs
+IDA2NDQsIGRtYV9vcF9tb2RlX3Nob3csIGRtYV9vcF9tb2RlX3N0b3JlKTsKPiA+ICtzdGF0aWMg
+REVWSUNFX0FUVFJfUlcoZG1hX29wX21vZGUpOwo+ID4gIAo+IAo+IFdoaWxlIEkgY2FuIGFjayB0
+aGlzIHBhcnQgaGVyZSBpZiBpdCBoZWxwcyBnZW5lcmljIGNsZWFudXAgZWZmb3J0IEkKPiBkb24n
+dCB1bmRlcnN0YXJ0IHdvdWxkIGl0IGltcHJvdmUgY29kZSByZWFkYWJpbGl0eSBpbiBnZW5lcmFs
+PyBNb2RlIDY0NAo+IGlzIGNsZWFyIGFuZCBkb24ndCBuZWVkIGFueSBncmVwcGluZyBidXQgZm9y
+IERFVklDRV9BVFRSX1JXKCkgSSBoYWQgdG8gZ28KPiB0aHJvdWdoIGFsbCBvZiB0aGVzZSBmaWxl
+cyBpbiBvcmRlciB0byBzZWUgd2hhdCBkb2VzIGl0IG1lYW46CgpBcmUgeW91IHN1Z2dlc3Rpbmcg
+dGhhdCBkZXZpY2UuaCAoYXMgdGhhdCBpcyB3aGVyZQpERVZJQ0VfQVRUUiBhbmQgdGhlIG90aGVy
+IERFVklDRV9BVFRSXzxGT08+IHZhcmlhbnRzCmFyZSAjZGVmaW5lZCkgc2hvdWxkIGhhdmUgYmV0
+dGVyIGNvbW1lbnRzIGZvciB0aGUKXzxGT08+IHZhcmlhbnRzPwoKPiBERVZJQ0VfQVRUUl9SVzog
+aW5jbHVkZS9saW51eC9kZXZpY2UuaAo+IF9fQVRUUl9SVzogaW5jbHVkZS9saW51eC9zeXNmcy5o
+Cj4gU19JV1VTUjogaW5jbHVkZS91YXBpL2xpbnV4L3N0YXQuaAo+IFNfSVJVR086IGluY2x1ZGUv
+bGludXgvc3RhdC5oCgpidHc6IHBhdGNoIDEvNCBvZiB0aGUgc2VyaWVzIGRvZXMgcmVtb3ZlIHRo
+ZSB1c2VzIG9mClNfPFBFUk1TPiBmcm9tIHRoZXNlIG1hY3JvcyBpbiBzeXNmcy5oIGFuZCBjb252
+ZXJ0cwp0aGVtIHRvIHNpbXBsZSBvY3RhbCBpbnN0ZWFkLgoKX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmktZGV2
+ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3JnL21h
+aWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
