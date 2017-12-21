@@ -1,71 +1,167 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 1/3] phy: core: Move runtime PM reference counting to
- the parent device
-Date: Thu, 21 Dec 2017 11:50:54 +0100
-Message-ID: <CAPDyKFokLc5cQW7RWAsdCY4h_Q8BgHKGQwHVUFX68fWF=BE6_g@mail.gmail.com>
+Subject: Re: [PATCH v2 2/3] phy: core: Drop unused runtime PM APIs
+Date: Thu, 21 Dec 2017 11:57:40 +0100
+Message-ID: <CAPDyKFrOONTsm5xiXrvqqy3koG5=11bKk1b2igx+FzSJbzj_Ng@mail.gmail.com>
 References: <1513778960-10073-1-git-send-email-ulf.hansson@linaro.org>
- <1513778960-10073-2-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0iwR1MnBokL29_QmUw2F6fgNNwzP7WLhtAL37MkMLd1xQ@mail.gmail.com>
+ <1513778960-10073-3-git-send-email-ulf.hansson@linaro.org> <TY1PR06MB0992E87FAA770B745DCBA690D80D0@TY1PR06MB0992.apcprd06.prod.outlook.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0iwR1MnBokL29_QmUw2F6fgNNwzP7WLhtAL37MkMLd1xQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Kishon Vijay Abraham I <kishon@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <TY1PR06MB0992E87FAA770B745DCBA690D80D0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Cc: Kishon Vijay Abraham I <kishon@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On 21 December 2017 at 02:39, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Wed, Dec 20, 2017 at 3:09 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> The runtime PM deployment in the phy core is deployed using the phy core
->> device, which is created by the phy core and assigned as a child device of
->> the phy provider device.
->>
->> The behaviour around the runtime PM deployment cause some issues during
->> system suspend, in cases when the phy provider device is put into a low
->> power state via a call to the pm_runtime_force_suspend() helper, as is the
->> case for a Renesas SoC, which has its phy provider device attached to the
->> generic PM domain.
->>
->> In more detail, the problem in this case is that pm_runtime_force_suspend()
->> expects the child device of the provider device, which is the phy core
->> device, to be runtime suspended, else a WARN splat will be printed
->> (correctly) when runtime PM gets re-enabled at system resume.
+On 21 December 2017 at 11:33, Yoshihiro Shimoda
+<yoshihiro.shimoda.uh@renesas.com> wrote:
+> Hi Ulf-san,
 >
-> So we are now trying to work around issues with
-> pm_runtime_force_suspend().  Lovely. :-/
-
-Yes, we have to, as pm_runtime_force_suspend() is widely deployed. Or
-are you saying we should just ignore all issues related to it?
-
-Of course, if we had something that could replace
-pm_runtime_force_suspend(), that would be great, but there isn't.
-
+>> -----Original Message-----
+>> From: Ulf Hansson, Sent: Wednesday, December 20, 2017 11:09 PM
+> <snip>
+>> diff --git a/include/linux/phy/phy.h b/include/linux/phy/phy.h
+>> index b4298a1..050b620 100644
+>> --- a/include/linux/phy/phy.h
+>> +++ b/include/linux/phy/phy.h
+>> @@ -17,7 +17,6 @@
+>>  #include <linux/err.h>
+>>  #include <linux/of.h>
+>>  #include <linux/device.h>
+>> -#include <linux/pm_runtime.h>
 >
->> In the current scenario, even if a call to phy_power_off() triggers it to
->> invoke pm_runtime_put() during system suspend, the phy core device doesn't
->> get runtime suspended, because this is prevented in the system suspend
->> phases by the PM core.
->>
->> To solve this problem, let's move the runtime PM deployment from the phy
->> core device to the phy provider device, as this provides the similar
->> behaviour. Changing this makes it redundant to enable runtime PM for the
->> phy core device, so let's avoid doing that.
->
-> I'm not really convinced that this approach is the best one to be honest.
->
-> I'll have a deeper look at this in the next few days, stay tuned.
+> After I applied this patch, some ata and gpu drivers causes build error [1].
+> So, we should fix the drivers at first...
 
-There is different ways to solve this, for sure. I picked this one,
-because I think it's the most trivial thing to do, and it shouldn't
-cause any other problems.
+Huh, right, those drivers shouldn't be relying on the phy.h to include
+pm_runtime.h.
 
-I think any other option would involve assigning ->suspend|resume()
-callbacks to the phy core device, but that's fine too, if you prefer
-that.
+The easiest way at this point is to just put back "#include
+<linux/pm_runtime.h>" in phy.h, then we can deal with these problems
+separately. I do that in a re-spin soon.
 
-Also, I have considered how to deal with wakeup paths for phys,
-although I didn't want to post changes as a part of this series, but
-maybe I should to give a more complete picture?
+BTW, I would be great if you could test this on the Renesas SoC to
+make sure it still fixes the problems (at least half of them I mean).
 
-Kind regards
+Thanks and kind regards
 Uffe
+
+>
+> Best regards,
+> Yoshihiro Shimoda
+> ---
+> [1]
+> drivers/ata/ahci_qoriq.c: In function 'ahci_qoriq_resume':
+> drivers/ata/ahci_qoriq.c:318:2: error: implicit declaration of function 'pm_runtime_disable' [-Werror=implicit-function-declaration]
+>   pm_runtime_disable(dev);
+>   ^
+> drivers/ata/ahci_qoriq.c:319:2: error: implicit declaration of function 'pm_runtime_set_active' [-Werror=implicit-function-declaration]
+>   pm_runtime_set_active(dev);
+>   ^
+> drivers/ata/ahci_qoriq.c:320:2: error: implicit declaration of function 'pm_runtime_enable' [-Werror=implicit-function-declaration]
+>   pm_runtime_enable(dev);
+>   ^
+> drivers/ata/ahci.c: In function 'ahci_init_one':
+> drivers/ata/ahci.c:1761:2: error: implicit declaration of function 'pm_runtime_put_noidle' [-Werror=implicit-function-declaration]
+>   pm_runtime_put_noidle(&pdev->dev);
+>   ^
+> drivers/ata/ahci.c: In function 'ahci_remove_one':
+> drivers/ata/ahci.c:1767:2: error: implicit declaration of function 'pm_runtime_get_noresume' [-Werror=implicit-function-declaration]
+>   pm_runtime_get_noresume(&pdev->dev);
+>   ^
+> drivers/ata/libahci.c: In function 'ahci_rpm_get_port':
+> drivers/ata/libahci.c:239:9: error: implicit declaration of function 'pm_runtime_get_sync' [-Werror=implicit-function-declaration]
+>   return pm_runtime_get_sync(ap->dev);
+>          ^
+> drivers/ata/libahci.c: In function 'ahci_rpm_put_port':
+> drivers/ata/libahci.c:251:2: error: implicit declaration of function 'pm_runtime_put' [-Werror=implicit-function-declaration]
+>   pm_runtime_put(ap->dev);
+>   ^
+> drivers/ata/ahci_ceva.c: In function 'ceva_ahci_resume':
+> drivers/ata/ahci_ceva.c:326:2: error: implicit declaration of function 'pm_runtime_disable' [-Werror=implicit-function-declaration]
+>   pm_runtime_disable(dev);
+>   ^
+> drivers/ata/ahci_ceva.c:327:2: error: implicit declaration of function 'pm_runtime_set_active' [-Werror=implicit-function-declaration]
+>   pm_runtime_set_active(dev);
+>   ^
+> drivers/ata/ahci_ceva.c:328:2: error: implicit declaration of function 'pm_runtime_enable' [-Werror=implicit-function-declaration]
+>   pm_runtime_enable(dev);
+>   ^
+> cc1: some warnings being treated as errors
+> make[2]: *** [drivers/ata/ahci_qoriq.o] Error 1
+> make[2]: *** Waiting for unfinished jobs....
+> cc1: some warnings being treated as errors
+> make[2]: *** [drivers/ata/ahci_ceva.o] Error 1
+> cc1: some warnings being treated as errors
+> make[2]: *** [drivers/ata/ahci.o] Error 1
+> drivers/gpu/drm/bridge/analogix/analogix_dp_core.c: In function 'analogix_dp_get_modes':
+> drivers/gpu/drm/bridge/analogix/analogix_dp_core.c:949:3: error: implicit declaration of function 'pm_runtime_get_sync' [-Werror=implicit-function-declaration]
+>    pm_runtime_get_sync(dp->dev);
+>    ^
+> drivers/gpu/drm/bridge/analogix/analogix_dp_core.c:951:3: error: implicit declaration of function 'pm_runtime_put' [-Werror=implicit-function-declaration]
+>    pm_runtime_put(dp->dev);
+>    ^
+> drivers/gpu/drm/bridge/analogix/analogix_dp_core.c: In function 'analogix_dp_bridge_disable':
+> drivers/gpu/drm/bridge/analogix/analogix_dp_core.c:1120:2: error: implicit declaration of function 'pm_runtime_put_sync' [-Werror=implicit-function-declaration]
+>   pm_runtime_put_sync(dp->dev);
+>   ^
+> drivers/gpu/drm/bridge/analogix/analogix_dp_core.c: In function 'analogix_dp_bind':
+> drivers/gpu/drm/bridge/analogix/analogix_dp_core.c:1387:2: error: implicit declaration of function 'pm_runtime_enable' [-Werror=implicit-function-declaration]
+>   pm_runtime_enable(dev);
+>   ^
+> drivers/gpu/drm/bridge/analogix/analogix_dp_core.c:1431:2: error: implicit declaration of function 'pm_runtime_disable' [-Werror=implicit-function-declaration]
+>   pm_runtime_disable(dev);
+>   ^
+> drivers/gpu/drm/exynos/exynos_drm_dsi.c: In function 'exynos_dsi_enable':
+> drivers/gpu/drm/exynos/exynos_drm_dsi.c:1385:2: error: implicit declaration of function 'pm_runtime_get_sync' [-Werror=implicit-function-declaration]
+>   pm_runtime_get_sync(dsi->dev);
+>   ^
+> drivers/gpu/drm/exynos/exynos_drm_dsi.c:1392:3: error: implicit declaration of function 'pm_runtime_put_sync' [-Werror=implicit-function-declaration]
+>    pm_runtime_put_sync(dsi->dev);
+>    ^
+> drivers/gpu/drm/exynos/exynos_drm_dsi.c: In function 'exynos_dsi_probe':
+> drivers/gpu/drm/exynos/exynos_drm_dsi.c:1797:2: error: implicit declaration of function 'pm_runtime_enable' [-Werror=implicit-function-declaration]
+>   pm_runtime_enable(dev);
+>   ^
+> drivers/gpu/drm/exynos/exynos_drm_dsi.c: In function 'exynos_dsi_remove':
+> drivers/gpu/drm/exynos/exynos_drm_dsi.c:1808:2: error: implicit declaration of function 'pm_runtime_disable' [-Werror=implicit-function-declaration]
+>   pm_runtime_disable(&pdev->dev);
+>   ^
+> drivers/gpu/drm/rockchip/cdn-dp-core.c: In function 'cdn_dp_clk_enable':
+> drivers/gpu/drm/rockchip/cdn-dp-core.c:111:8: error: implicit declaration of function 'pm_runtime_get_sync' [-Werror=implicit-function-declaration]
+>   ret = pm_runtime_get_sync(dp->dev);
+>         ^
+> drivers/gpu/drm/rockchip/cdn-dp-core.c:137:2: error: implicit declaration of function 'pm_runtime_put' [-Werror=implicit-function-declaration]
+>   pm_runtime_put(dp->dev);
+>   ^
+> drivers/gpu/drm/rockchip/cdn-dp-core.c: In function 'cdn_dp_clk_disable':
+> drivers/gpu/drm/rockchip/cdn-dp-core.c:148:2: error: implicit declaration of function 'pm_runtime_put_sync' [-Werror=implicit-function-declaration]
+>   pm_runtime_put_sync(dp->dev);
+>   ^
+> drivers/gpu/drm/rockchip/cdn-dp-core.c: In function 'cdn_dp_bind':
+> drivers/gpu/drm/rockchip/cdn-dp-core.c:1094:2: error: implicit declaration of function 'pm_runtime_enable' [-Werror=implicit-function-declaration]
+>   pm_runtime_enable(dev);
+>   ^
+> drivers/gpu/drm/rockchip/cdn-dp-core.c: In function 'cdn_dp_unbind':
+> drivers/gpu/drm/rockchip/cdn-dp-core.c:1118:2: error: implicit declaration of function 'pm_runtime_disable' [-Werror=implicit-function-declaration]
+>   pm_runtime_disable(dev);
+>   ^
+> cc1: some warnings being treated as errors
+> make[2]: *** [drivers/ata/libahci.o] Error 1
+> make[1]: *** [drivers/ata] Error 2
+> make[1]: *** Waiting for unfinished jobs....
+> cc1: some warnings being treated as errors
+> make[5]: *** [drivers/gpu/drm/bridge/analogix/analogix_dp_core.o] Error 1
+> make[4]: *** [drivers/gpu/drm/bridge/analogix] Error 2
+> make[3]: *** [drivers/gpu/drm/bridge] Error 2
+> make[3]: *** Waiting for unfinished jobs....
+> cc1: some warnings being treated as errors
+> make[4]: *** [drivers/gpu/drm/exynos/exynos_drm_dsi.o] Error 1
+> make[3]: *** [drivers/gpu/drm/exynos] Error 2
+> cc1: some warnings being treated as errors
+> make[4]: *** [drivers/gpu/drm/rockchip/cdn-dp-core.o] Error 1
+> make[3]: *** [drivers/gpu/drm/rockchip] Error 2
+> make[2]: *** [drivers/gpu/drm] Error 2
+> make[1]: *** [drivers/gpu] Error 2
+> make: *** [drivers] Error 2
+>
