@@ -1,39 +1,63 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
-Date: Thu, 21 Dec 2017 16:13:17 +0530
-Message-ID: <20171221104317.GB8312@vireshk-i7>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
- <20171220154358.663yoodeoxkqghx7@hirez.programming.kicks-ass.net>
- <20171221091502.GE19815@vireshk-i7>
- <20171221102530.all2hqoyh77mffmf@hirez.programming.kicks-ass.net>
- <20171221103022.GA8312@vireshk-i7>
- <20171221103941.ykehmki7m32r4pyr@hirez.programming.kicks-ass.net>
+From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH V4 3/7] PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for
+ Tegra PCIe
+Date: Thu, 21 Dec 2017 10:46:30 +0000
+Message-ID: <20171221104630.GB24280@red-moon>
+References: <1512723493-865-1-git-send-email-mmaddireddy@nvidia.com>
+ <1512723493-865-4-git-send-email-mmaddireddy@nvidia.com>
+ <20171215173643.GA1050@red-moon>
+ <20171220193011.GA31757@ulmo>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pl0-f47.google.com ([209.85.160.47]:36326 "EHLO
-        mail-pl0-f47.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753267AbdLUKnV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Dec 2017 05:43:21 -0500
-Received: by mail-pl0-f47.google.com with SMTP id b12so10742180plm.3
-        for <linux-pm@vger.kernel.org>; Thu, 21 Dec 2017 02:43:20 -0800 (PST)
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <20171221103941.ykehmki7m32r4pyr@hirez.programming.kicks-ass.net>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <20171220193011.GA31757@ulmo>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, cyndis-/1wQRMveznE@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-On 21-12-17, 11:39, Peter Zijlstra wrote:
-> The difference is that we apply the per-cpu boost on the per-cpu util
-> value and _then_ find the overall maximum.
+On Wed, Dec 20, 2017 at 08:30:11PM +0100, Thierry Reding wrote:
+> On Fri, Dec 15, 2017 at 05:36:43PM +0000, Lorenzo Pieralisi wrote:
+> > On Fri, Dec 08, 2017 at 02:28:09PM +0530, Manikanta Maddireddy wrote:
+> > > Primary, secondary and subordinate default bus numbers are 0 in Tegra and
+> > > it is expecting SW to program these numbers in configration space.
+> > > 
+> > > pci_scan_bridge_extend() function programs these numbers in configuration
+> > > space if secondary & subordinate bus numbers are 0 or PCI_REASSIGN_ALL_BUS
+> > > flag is set. Since secondary & subordinate default bus numbers are 0,
+> > > PCI_REASSIGN_ALL_BUS flag can be removed for Tegra PCIe.
+> > > 
+> > > Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> > > ---
+> > > V3:
+> > > * new patch in V3
+> > > V4:
+> > > * no change in this patch
+> > > 
+> > >  drivers/pci/host/pci-tegra.c | 1 -
+> > >  1 file changed, 1 deletion(-)
+> > > 
+> > > diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+> > > index a549c5899e26..0d91f1a3a6b4 100644
+> > > --- a/drivers/pci/host/pci-tegra.c
+> > > +++ b/drivers/pci/host/pci-tegra.c
+> > > @@ -2604,7 +2604,6 @@ static int tegra_pcie_probe(struct platform_device *pdev)
+> > >  
+> > >  	tegra_pcie_enable_ports(pcie);
+> > >  
+> > > -	pci_add_flags(PCI_REASSIGN_ALL_BUS);
+> > 
+> > This looks obviously OK to me but I need Thierry's ACK to queue it.
 > 
-> Instead of finding the overall maximum and then apply the per-cpu boost
-> to that.
+> Just as an additional note: I think the real reason why this is okay to
+> do is because we reset the PCI host controller in the kernel driver, so
+> any bus assignments done by the firmware are reset as well.
+> 
+> Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 
-Okay, so it is just about the right sequencing of these comparisons but the
-outcome will still be same, i.e. max of the 3 util/max values. Thanks.
+Thank you. This series needs rebasing, we should try to untangle
+the dependencies between series so that I can actually apply some
+of these patches that make sense on their own.
 
--- 
-viresh
+Lorenzo
