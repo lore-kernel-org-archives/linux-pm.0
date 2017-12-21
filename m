@@ -1,94 +1,35 @@
-From: Ognjen Galic <smclt30p@gmail.com>
-Subject: [PATCH v9 4/4] battery: Add the ThinkPad "Not Charging" quirk
-Date: Thu, 21 Dec 2017 20:55:12 +0100
-Message-ID: <20171221195512.GA17520@thinkpad>
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [PATCH V8 1/3] OPP: Allow OPP table to be used for power-domains
+Date: Thu, 21 Dec 2017 16:06:39 -0600
+Message-ID: <20171221220639.6yzsityvobpvyxge@rob-hp-laptop>
+References: <cover.1513591822.git.viresh.kumar@linaro.org>
+ <9cd1e90c782a8569d098adb63bee7dd1387528c4.1513591822.git.viresh.kumar@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-Sender: linux-acpi-owner@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Ognjen =?utf-8?B?R2FsacSH?= <smclt30p@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
+In-Reply-To: <9cd1e90c782a8569d098adb63bee7dd1387528c4.1513591822.git.viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The EC/ACPI firmware on Lenovo ThinkPads used to report a status
-of "Unknown" when the battery is between the charge start and
-charge stop thresholds. On Windows, it reports "Not Charging"
-so the quirk has been added to also report correctly.
+On Mon, Dec 18, 2017 at 03:51:28PM +0530, Viresh Kumar wrote:
+> Power-domains can also have their active states and this patch enhances
+> the OPP binding to define those. The power domains can use the OPP
+> bindings as is, with one additional change to Allow
+> "operating-points-v2" property to contain multiple phandles for power
+> domain providers providing multiple domains.
+> 
+> Reviewed-by: Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> Signed-off-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+> ---
+>  Documentation/devicetree/bindings/opp/opp.txt            | 5 +++++
+>  Documentation/devicetree/bindings/power/power_domain.txt | 6 ++++++
+>  2 files changed, 11 insertions(+)
 
-Now the "status" attribute returns "Not Charging" when the
-battery on ThinkPads is not physicaly charging.
----
-
-v7:
-* Added all the style changes as suggested by Rafael
-* Re-ordered the series to make this a post-implement
-bugfix
-
-v8:
-* No changes in this patch in v8
-
-v9:
-* No changes in this patch in v9
-
-Signed-off-by: Ognjen Galic <smclt30p@gmail.com>
----
- drivers/acpi/battery.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
-
-diff --git a/drivers/acpi/battery.c b/drivers/acpi/battery.c
-index da56c3a..d07da7f 100644
---- a/drivers/acpi/battery.c
-+++ b/drivers/acpi/battery.c
-@@ -72,6 +72,7 @@ static async_cookie_t async_cookie;
- static bool battery_driver_registered;
- static int battery_bix_broken_package;
- static int battery_notification_delay_ms;
-+static int battery_quirk_notcharging;
- static unsigned int cache_time = 1000;
- module_param(cache_time, uint, 0644);
- MODULE_PARM_DESC(cache_time, "cache time in milliseconds");
-@@ -223,6 +224,8 @@ static int acpi_battery_get_property(struct power_supply *psy,
- 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
- 		else if (acpi_battery_is_charged(battery))
- 			val->intval = POWER_SUPPLY_STATUS_FULL;
-+		else if (battery_quirk_notcharging)
-+			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
- 		else
- 			val->intval = POWER_SUPPLY_STATUS_UNKNOWN;
- 		break;
-@@ -1337,6 +1340,12 @@ battery_notification_delay_quirk(const struct dmi_system_id *d)
- 	return 0;
- }
- 
-+static int __init battery_quirk_not_charging(const struct dmi_system_id *d)
-+{
-+	battery_quirk_notcharging = 1;
-+	return 0;
-+}
-+
- static const struct dmi_system_id bat_dmi_table[] __initconst = {
- 	{
- 		.callback = battery_bix_broken_package_quirk,
-@@ -1354,6 +1363,19 @@ static const struct dmi_system_id bat_dmi_table[] __initconst = {
- 			DMI_MATCH(DMI_PRODUCT_NAME, "Aspire V5-573G"),
- 		},
- 	},
-+	{
-+		/*
-+		 * On Lenovo ThinkPads the BIOS specification defines
-+		 * a state when the bits for charging and discharging
-+		 * are both set to 0. That state is "Not Charging".
-+		 */
-+		.callback = battery_quirk_not_charging,
-+		.ident = "Lenovo ThinkPad",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "LENOVO"),
-+			DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad"),
-+		},
-+	},
- 	{},
- };
- 
--- 
-2.7.4
-
+Reviewed-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
