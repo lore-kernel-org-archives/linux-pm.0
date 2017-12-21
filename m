@@ -1,26 +1,63 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/3] PM / core: Assign the wakeup_path status flag in __device_prepare()
-Date: Thu, 21 Dec 2017 02:43:09 +0100
-Message-ID: <CAJZ5v0hctW_-WR2Gy4tszeXYJJfTRQbLCr_NRhAXao5_XR5NOw@mail.gmail.com>
-References: <1513353391-30806-1-git-send-email-ulf.hansson@linaro.org> <1513353391-30806-2-git-send-email-ulf.hansson@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH -next] PM / OPP: Make local function
+ ti_opp_supply_set_opp() static
+Date: Thu, 21 Dec 2017 11:17:50 +0530
+Message-ID: <20171221054750.GA19815@vireshk-i7>
+References: <1513748680-163750-1-git-send-email-weiyongjun1@huawei.com>
+ <20171220054202.GU19815@vireshk-i7>
+ <CAJZ5v0jNBhGzvmSShK=42SoD1Q0V2CZYfxRUv9SSV6nw2sozYw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1513353391-30806-2-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pl0-f68.google.com ([209.85.160.68]:33155 "EHLO
+        mail-pl0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750757AbdLUFry (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Dec 2017 00:47:54 -0500
+Received: by mail-pl0-f68.google.com with SMTP id 1so8972471plv.0
+        for <linux-pm@vger.kernel.org>; Wed, 20 Dec 2017 21:47:54 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jNBhGzvmSShK=42SoD1Q0V2CZYfxRUv9SSV6nw2sozYw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Wei Yongjun <weiyongjun1@huawei.com>, Dave Gerlach <d-gerlach@ti.com>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 
-On Fri, Dec 15, 2017 at 4:56 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> The PM core in the device_prepare() phase, resets the wakeup_path status
-> flag to the value of device_may_wakeup(). This means if a ->prepare() or a
-> ->suspend() callback for the device would update the device's wakeup
-> setting, this doesn't become reflected in the wakeup_path status flag.
->
-> In general this isn't a problem, because wakeup settings isn't supposed to
-> be changed during those system suspend phases. Nevertheless, there are a
-> cases not conforming to that behaviour, as device_set_wakeup_enable() is
-> indeed called from ->suspend() callbacks.
+On 21-12-17, 02:19, Rafael J. Wysocki wrote:
+> On Wed, Dec 20, 2017 at 6:42 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > +Dave/Rafael,
+> >
+> > On 20-12-17, 05:44, Wei Yongjun wrote:
+> >> Fixes the following sparse warning:
+> >>
+> >> drivers/opp/ti-opp-supply.c:276:5: warning:
+> >>  symbol 'ti_opp_supply_set_opp' was not declared. Should it be static?
+> >>
+> >> Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+> >> ---
+> >>  drivers/opp/ti-opp-supply.c | 2 +-
+> >>  1 file changed, 1 insertion(+), 1 deletion(-)
+> >>
+> >> diff --git a/drivers/opp/ti-opp-supply.c b/drivers/opp/ti-opp-supply.c
+> >> index 44dae3e..370eff3 100644
+> >> --- a/drivers/opp/ti-opp-supply.c
+> >> +++ b/drivers/opp/ti-opp-supply.c
+> >> @@ -273,7 +273,7 @@ static int _opp_set_voltage(struct device *dev,
+> >>   *
+> >>   * Return: If successful, 0, else appropriate error value.
+> >>   */
+> >> -int ti_opp_supply_set_opp(struct dev_pm_set_opp_data *data)
+> >> +static int ti_opp_supply_set_opp(struct dev_pm_set_opp_data *data)
+> >>  {
+> >>       struct dev_pm_opp_supply *old_supply_vdd = &data->old_opp.supplies[0];
+> >>       struct dev_pm_opp_supply *old_supply_vbb = &data->old_opp.supplies[1];
+> >
+> > Maybe this should be folded to the original patch ?
+> 
+> That is against the latest series from Dave, right?
+> 
+> I can apply it.
 
-And why is this regarded as correct?
+Yes.
+
+-- 
+viresh
