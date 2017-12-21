@@ -1,86 +1,187 @@
-From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 1/2] thermal: mtk: Cleanup unused defines
-Date: Thu, 21 Dec 2017 21:40:13 +0800
-Message-ID: <1513863613.2785.6.camel@intel.com>
-References: <20171201104321.8410-1-matthias.bgg@gmail.com>
-         <feb1e2bd-bee8-0950-7ecf-8e8c0e157f57@gmail.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH 2/3 v8] thinkpad_acpi: Add support for battery thresholds
+Date: Thu, 21 Dec 2017 15:53:10 +0200
+Message-ID: <CAHp75Vc2MYDLanvZmqaPkmFVfNbyBQoPwbRDDFmKDtSPAmfj9w@mail.gmail.com>
+References: <20171221100051.GA30647@thinkpad>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:28227 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750983AbdLUNkS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 21 Dec 2017 08:40:18 -0500
-In-Reply-To: <feb1e2bd-bee8-0950-7ecf-8e8c0e157f57@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20171221100051.GA30647@thinkpad>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ognjen Galic <smclt30p@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 List-Id: linux-pm@vger.kernel.org
-To: Matthias Brugger <matthias.bgg@gmail.com>, edubezval@gmail.com
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, Matthias Brugger <mbrugger@suse.com>
 
-On Thu, 2017-12-21 at 11:01 +0100, Matthias Brugger wrote:
-> 
-> On 12/01/2017 11:43 AM, Matthias Brugger wrote:
-> > 
-> > The mtk_thermal has some defiens which are never used within the
-> > driver.
-> > This patch delets them.
-> > 
-> > Signed-off-by: Matthias Brugger <mbrugger@suse.com>
-> > ---
-> Rui, Eduardo, do you have any comments on this patch?
-> 
-No, I don't have any.
-I suppose Eduardo will review them soon as I need the thermal soc
-material for next merge window.
+On Thu, Dec 21, 2017 at 12:00 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
+> thinkpad_acpi registers two new attributes for each battery:
+>
+> 1) Charge start threshold
+> /sys/class/power_supply/BATN/charge_start_threshold
+>
+> Valid values are [0, 99]. A value of 0 turns off the
+> start threshold wear control.
+>
+> 2) Charge stop threshold
+> /sys/class/power_supply/BATN/charge_stop_threshold
+>
+> Valid values are [1, 100]. A value of 100 turns off
+> the stop threshold wear control. This must be
+> configured first.
+>
+> This patch depends on the following patches:
+>
+> "battery: Add the battery hooking API"
 
-thanks,
-rui
-> Regards,
-> Matthias
-> 
-> > 
-> >  drivers/thermal/mtk_thermal.c | 9 +--------
-> >  1 file changed, 1 insertion(+), 8 deletions(-)
-> > 
-> > diff --git a/drivers/thermal/mtk_thermal.c
-> > b/drivers/thermal/mtk_thermal.c
-> > index 1e61c09153c9..c75661a3801a 100644
-> > --- a/drivers/thermal/mtk_thermal.c
-> > +++ b/drivers/thermal/mtk_thermal.c
-> > @@ -32,15 +32,10 @@
-> >  #include <linux/types.h>
-> >  
-> >  /* AUXADC Registers */
-> > -#define AUXADC_CON0_V		0x000
-> > -#define AUXADC_CON1_V		0x004
-> >  #define AUXADC_CON1_SET_V	0x008
-> >  #define AUXADC_CON1_CLR_V	0x00c
-> >  #define AUXADC_CON2_V		0x010
-> >  #define AUXADC_DATA(channel)	(0x14 + (channel) * 4)
-> > -#define AUXADC_MISC_V		0x094
-> > -
-> > -#define AUXADC_CON1_CHANNEL(x)	BIT(x)
-> >  
-> >  #define APMIXED_SYS_TS_CON1	0x604
-> >  
-> > @@ -158,8 +153,6 @@
-> >  /* The number of sensing points per bank */
-> >  #define MT2712_NUM_SENSORS_PER_ZONE	4
-> >  
-> > -#define THERMAL_NAME    "mtk-thermal"
-> > -
-> >  struct mtk_thermal;
-> >  
-> >  struct thermal_bank_cfg {
-> > @@ -765,7 +758,7 @@ static struct platform_driver
-> > mtk_thermal_driver = {
-> >  	.probe = mtk_thermal_probe,
-> >  	.remove = mtk_thermal_remove,
-> >  	.driver = {
-> > -		.name = THERMAL_NAME,
-> > +		.name = "mtk-thermal",
-> >  		.of_match_table = mtk_thermal_of_match,
-> >  	},
-> >  };
-> > 
+Sorry, didn't notice earlier some things commented below.
+
+>  #include <acpi/video.h>
+>
+> +
+>  /* ThinkPad CMOS commands */
+
+Redundant change.
+
+> +enum {
+> +       /* Error condition bit */
+> +       METHOD_ERR = (1 << 31),
+
+bitops.h but no BIT() use?
+
+BIT(31) ?
+
+> +};
+
+> +static int tpacpi_battery_set(int what, int battery, int value)
+> +{
+
+> +
+
+Redundant.
+
+> +       int param = 0x0, ret = 0xFFFFFFFF;
+
+Useless assignment for param, not sure abour ret.
+
+> +
+> +       /* The first 8 bits are the value of the threshold */
+> +       param = value;
+> +       /* The battery ID is in bits 8-9, 2 bits */
+> +       param |= battery << 8;
+> +
+> +       switch (what) {
+> +
+> +       case THRESHOLD_START:
+> +
+> +               if (tpacpi_battery_acpi_eval(SET_START, &ret, param)) {
+> +                       pr_err("failed to set charge threshold on battery %d",
+> +                                       battery);
+> +                       return -ENODEV;
+> +               }
+> +
+> +               return 0;
+> +
+> +       case THRESHOLD_STOP:
+> +
+> +               if (tpacpi_battery_acpi_eval(SET_STOP, &ret, param)) {
+> +                       pr_err("failed to set charge stop threshold: %d", battery);
+> +                       return -ENODEV;
+> +               }
+> +
+> +               return 0;
+> +
+> +       default:
+> +               pr_crit("wrong parameter: %d", what);
+> +               return -EINVAL;
+> +       }
+
+> +
+
+Redundant.
+
+> +}
+
+> +
+> +static int tpacpi_battery_probe(int battery)
+> +{
+> +       int ret = 0;
+> +
+
+> +       /* Reset the struct */
+
+Useless.
+
+> +       memset(&battery_info, 0, sizeof(struct tpacpi_battery_driver_data));
+
+> +}
+
+> +static ssize_t tpacpi_battery_store(struct device *dev,
+> +                                  struct device_attribute *devattr,
+> +                                  const char *buf, size_t count)
+> +{
+> +       int attr, battery;
+> +       unsigned long value;
+> +       struct power_supply *supply = to_power_supply(dev);
+
+Can you use reverse xmas tree, esp. put assignments first.
+
+> +       if (!supply) {
+
+How this could be possible?!
+
+> +               pr_err("Can't upcast to power_supply!");
+> +               return -ENODEV;
+> +       }
+
+> +       if (kstrtoul(buf, 10, &value))
+> +               return -EINVAL;
+
+Don't shadow an error code from kstrtoul().
+
+> +static ssize_t tpacpi_battery_show(struct device *dev,
+> +                                 struct device_attribute *devattr,
+> +                                 char *buf)
+> +{
+> +       int ret = 0x0, attr, battery;
+> +       struct power_supply *supply = to_power_supply(dev);
+
+> +       if (!supply) {
+
+How this could be possible?!
+
+> +               pr_crit("Can't upcast to power_supply!");
+> +               return -ENODEV;
+> +       }
+
+> +       return sprintf(buf, "%d\n", ret);
+> +}
+> +
+> +DEVICE_ATTR(charge_start_threshold, 0644,
+> +               tpacpi_battery_show, tpacpi_battery_store);
+> +DEVICE_ATTR(charge_stop_threshold, 0644,
+> +       tpacpi_battery_show, tpacpi_battery_store);
+
+DEVICE_ATTR_RW().
+
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -371,6 +371,8 @@ devm_power_supply_register_no_ws(struct device *parent,
+>  extern void power_supply_unregister(struct power_supply *psy);
+>  extern int power_supply_powers(struct power_supply *psy, struct device *dev);
+>
+> +#define to_power_supply(device) container_of(device, struct power_supply, dev)
+> +
+>  extern void *power_supply_get_drvdata(struct power_supply *psy);
+>  /* For APM emulation, think legacy userspace. */
+>  extern struct class *power_supply_class;
+
+This one sounds to me as a separate change.
+
+At the same time you may convert the current user of it to make sense
+of the change.
+drivers/power/supply/power_supply_core.c:671:
+
+I think I pointed to this out once.
+
+-- 
+With Best Regards,
+Andy Shevchenko
