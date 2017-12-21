@@ -1,43 +1,42 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/3] PM / core: Assign the wakeup_path status flag in __device_prepare()
-Date: Thu, 21 Dec 2017 11:13:57 +0100
-Message-ID: <CAPDyKFqa5Lt6jrDQd+V_cE+Bz2ZRJRe95-8bbJgV=LbkGPM0mw@mail.gmail.com>
-References: <1513353391-30806-1-git-send-email-ulf.hansson@linaro.org>
- <1513353391-30806-2-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0hctW_-WR2Gy4tszeXYJJfTRQbLCr_NRhAXao5_XR5NOw@mail.gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
+Date: Thu, 21 Dec 2017 11:25:30 +0100
+Message-ID: <20171221102530.all2hqoyh77mffmf@hirez.programming.kicks-ass.net>
+References: <20171130114723.29210-1-patrick.bellasi@arm.com>
+ <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
+ <20171220154358.663yoodeoxkqghx7@hirez.programming.kicks-ass.net>
+ <20171221091502.GE19815@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f43.google.com ([209.85.214.43]:36024 "EHLO
-        mail-it0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751890AbdLUKN7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Dec 2017 05:13:59 -0500
-Received: by mail-it0-f43.google.com with SMTP id d16so10249618itj.1
-        for <linux-pm@vger.kernel.org>; Thu, 21 Dec 2017 02:13:58 -0800 (PST)
-In-Reply-To: <CAJZ5v0hctW_-WR2Gy4tszeXYJJfTRQbLCr_NRhAXao5_XR5NOw@mail.gmail.com>
+Received: from merlin.infradead.org ([205.233.59.134]:56016 "EHLO
+        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751227AbdLUKZj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Dec 2017 05:25:39 -0500
+Content-Disposition: inline
+In-Reply-To: <20171221091502.GE19815@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-On 21 December 2017 at 02:43, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, Dec 15, 2017 at 4:56 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> The PM core in the device_prepare() phase, resets the wakeup_path status
->> flag to the value of device_may_wakeup(). This means if a ->prepare() or a
->> ->suspend() callback for the device would update the device's wakeup
->> setting, this doesn't become reflected in the wakeup_path status flag.
->>
->> In general this isn't a problem, because wakeup settings isn't supposed to
->> be changed during those system suspend phases. Nevertheless, there are a
->> cases not conforming to that behaviour, as device_set_wakeup_enable() is
->> indeed called from ->suspend() callbacks.
->
-> And why is this regarded as correct?
+On Thu, Dec 21, 2017 at 02:45:02PM +0530, Viresh Kumar wrote:
+> On 20-12-17, 16:43, Peter Zijlstra wrote:
+> > The below makes more sense to me too; hmm?
+> > 
+> > @@ -335,12 +335,11 @@ static unsigned int sugov_next_freq_shar
+> >  
+> >  		j_max = j_sg_cpu->max;
+> >  		j_util = sugov_aggregate_util(j_sg_cpu);
+> > +		sugov_iowait_boost(j_sg_cpu, &util, &max);
 
-I am not saying that this behavior is correct. However, I am trying to
-improve the situation, which doesn't hurt or does it?
+This should 'obviously' have been:
 
-More importantly, the next patch, which is about the wakeup path,
-depends on this.
+		sugov_iowait_boost(j_sg_cpu, &j_util, *j_max);
 
-Kind regards
-Uffe
+> >  		if (j_util * max > j_max * util) {
+> >  			util = j_util;
+> >  			max = j_max;
+> >  		}
+> > -
+> > -		sugov_iowait_boost(j_sg_cpu, &util, &max);
