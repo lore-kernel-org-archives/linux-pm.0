@@ -1,186 +1,58 @@
 From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH 2/3 v8] thinkpad_acpi: Add support for battery thresholds
-Date: Thu, 21 Dec 2017 15:53:10 +0200
-Message-ID: <CAHp75Vc2MYDLanvZmqaPkmFVfNbyBQoPwbRDDFmKDtSPAmfj9w@mail.gmail.com>
-References: <20171221100051.GA30647@thinkpad>
+Subject: Re: [PATCH 1/3 v8] battery: Add the battery hooking API
+Date: Thu, 21 Dec 2017 16:02:21 +0200
+Message-ID: <CAHp75VeZ3T3VOx_3S8D=Eg8BLHmSwGFmoWr+MVeFgKd0ZPwUtA@mail.gmail.com>
+References: <20171221100026.GA30586@thinkpad>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <20171221100051.GA30647@thinkpad>
+In-Reply-To: <20171221100026.GA30586@thinkpad>
 Sender: linux-acpi-owner@vger.kernel.org
 To: Ognjen Galic <smclt30p@gmail.com>
 Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 List-Id: linux-pm@vger.kernel.org
 
 On Thu, Dec 21, 2017 at 12:00 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
-> thinkpad_acpi registers two new attributes for each battery:
+> This is a patch that implements a generic hooking API for the
+> generic ACPI battery driver.
 >
-> 1) Charge start threshold
-> /sys/class/power_supply/BATN/charge_start_threshold
+> With this new generic API, drivers can expose platform specific
+> behaviour via sysfs attributes in /sys/class/power_supply/BATn/
+> in a generic way.
 >
-> Valid values are [0, 99]. A value of 0 turns off the
-> start threshold wear control.
+> A perfect example of the need for this API are Lenovo ThinkPads.
 >
-> 2) Charge stop threshold
-> /sys/class/power_supply/BATN/charge_stop_threshold
+> Lenovo ThinkPads have a ACPI extension that allows the setting of
+> start and stop charge thresholds in the EC and battery firmware
+> via ACPI. The thinkpad_acpi module can use this API to expose
+> sysfs attributes that it controls inside the ACPI battery driver
+> sysfs tree, under /sys/class/power_supply/BATN/.
 >
-> Valid values are [1, 100]. A value of 100 turns off
-> the stop threshold wear control. This must be
-> configured first.
+> The file drivers/acpi/battery.h has been moved to
+> include/acpi/battery.h and the includes inside ac.c, sbs.c, and
+> battery.c have been adjusted to reflect that.
 >
-> This patch depends on the following patches:
+> When drivers hooks into the API, the API calls add_battery() for
+> each battery in the system that passes it a acpi_battery
+> struct. Then, the drivers can use device_create_file() to create
+> new sysfs attributes with that struct and identify the batteries
+> for per-battery attributes.
+
 >
-> "battery: Add the battery hooking API"
+> v7:
+> * Implemented mutual exclusion for hooking methods and battery
+> callbacks
+> * Fixed a BUG where errors in other modules would occur when the
+> modules that depend on battery get unloaded
+> v8:
+> * Use list_for_each_safe instead of list_for_each for the module
+> exit function where deletion of nodes occurs
 
-Sorry, didn't notice earlier some things commented below.
+Just two workflow / style comments:
 
->  #include <acpi/video.h>
->
-> +
->  /* ThinkPad CMOS commands */
-
-Redundant change.
-
-> +enum {
-> +       /* Error condition bit */
-> +       METHOD_ERR = (1 << 31),
-
-bitops.h but no BIT() use?
-
-BIT(31) ?
-
-> +};
-
-> +static int tpacpi_battery_set(int what, int battery, int value)
-> +{
-
-> +
-
-Redundant.
-
-> +       int param = 0x0, ret = 0xFFFFFFFF;
-
-Useless assignment for param, not sure abour ret.
-
-> +
-> +       /* The first 8 bits are the value of the threshold */
-> +       param = value;
-> +       /* The battery ID is in bits 8-9, 2 bits */
-> +       param |= battery << 8;
-> +
-> +       switch (what) {
-> +
-> +       case THRESHOLD_START:
-> +
-> +               if (tpacpi_battery_acpi_eval(SET_START, &ret, param)) {
-> +                       pr_err("failed to set charge threshold on battery %d",
-> +                                       battery);
-> +                       return -ENODEV;
-> +               }
-> +
-> +               return 0;
-> +
-> +       case THRESHOLD_STOP:
-> +
-> +               if (tpacpi_battery_acpi_eval(SET_STOP, &ret, param)) {
-> +                       pr_err("failed to set charge stop threshold: %d", battery);
-> +                       return -ENODEV;
-> +               }
-> +
-> +               return 0;
-> +
-> +       default:
-> +               pr_crit("wrong parameter: %d", what);
-> +               return -EINVAL;
-> +       }
-
-> +
-
-Redundant.
-
-> +}
-
-> +
-> +static int tpacpi_battery_probe(int battery)
-> +{
-> +       int ret = 0;
-> +
-
-> +       /* Reset the struct */
-
-Useless.
-
-> +       memset(&battery_info, 0, sizeof(struct tpacpi_battery_driver_data));
-
-> +}
-
-> +static ssize_t tpacpi_battery_store(struct device *dev,
-> +                                  struct device_attribute *devattr,
-> +                                  const char *buf, size_t count)
-> +{
-> +       int attr, battery;
-> +       unsigned long value;
-> +       struct power_supply *supply = to_power_supply(dev);
-
-Can you use reverse xmas tree, esp. put assignments first.
-
-> +       if (!supply) {
-
-How this could be possible?!
-
-> +               pr_err("Can't upcast to power_supply!");
-> +               return -ENODEV;
-> +       }
-
-> +       if (kstrtoul(buf, 10, &value))
-> +               return -EINVAL;
-
-Don't shadow an error code from kstrtoul().
-
-> +static ssize_t tpacpi_battery_show(struct device *dev,
-> +                                 struct device_attribute *devattr,
-> +                                 char *buf)
-> +{
-> +       int ret = 0x0, attr, battery;
-> +       struct power_supply *supply = to_power_supply(dev);
-
-> +       if (!supply) {
-
-How this could be possible?!
-
-> +               pr_crit("Can't upcast to power_supply!");
-> +               return -ENODEV;
-> +       }
-
-> +       return sprintf(buf, "%d\n", ret);
-> +}
-> +
-> +DEVICE_ATTR(charge_start_threshold, 0644,
-> +               tpacpi_battery_show, tpacpi_battery_store);
-> +DEVICE_ATTR(charge_stop_threshold, 0644,
-> +       tpacpi_battery_show, tpacpi_battery_store);
-
-DEVICE_ATTR_RW().
-
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -371,6 +371,8 @@ devm_power_supply_register_no_ws(struct device *parent,
->  extern void power_supply_unregister(struct power_supply *psy);
->  extern int power_supply_powers(struct power_supply *psy, struct device *dev);
->
-> +#define to_power_supply(device) container_of(device, struct power_supply, dev)
-> +
->  extern void *power_supply_get_drvdata(struct power_supply *psy);
->  /* For APM emulation, think legacy userspace. */
->  extern struct class *power_supply_class;
-
-This one sounds to me as a separate change.
-
-At the same time you may convert the current user of it to make sense
-of the change.
-drivers/power/supply/power_supply_core.c:671:
-
-I think I pointed to this out once.
+- usually we put changelog under --- line;
+- when you prepare patch series you may use -v<N> to create a version
+<N> automatically.
 
 -- 
 With Best Regards,
