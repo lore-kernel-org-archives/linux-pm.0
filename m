@@ -1,497 +1,139 @@
-From: =?UTF-8?Q?Ognjen_Gali=C4=87?= <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Subject: Re: [PATCH 2/3 v8] thinkpad_acpi: Add support for
- battery thresholds
-Date: Thu, 21 Dec 2017 16:24:06 +0100
-Message-ID: <CALgTWSvnyBysDJqGFwCxB43wgzMAAUqYZ2M5r8-L9ZdJ9J4XxQ@mail.gmail.com>
-References: <20171221100051.GA30647@thinkpad>
- <CAHp75Vc2MYDLanvZmqaPkmFVfNbyBQoPwbRDDFmKDtSPAmfj9w@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 1/9] mmc: sdhci-pci: Stop calling sdhci_enable_irq_wakeups()
+Date: Thu, 21 Dec 2017 16:33:59 +0100
+Message-ID: <CAPDyKFrZjTvYdT8BGKadTdTBsaAeoC3YOQBBPOvqpv1JpaOUoQ@mail.gmail.com>
+References: <1513757933-11232-1-git-send-email-adrian.hunter@intel.com>
+ <1513757933-11232-2-git-send-email-adrian.hunter@intel.com>
+ <CAPDyKFoHPdYaorR38LaS5Hzs8CC99Smki8uZW8aDanboLRV3QA@mail.gmail.com> <b9801ecc-eaf4-7efc-fff0-3cbd40f29c9a@intel.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============4670975370945848674=="
-Return-path: <ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-In-Reply-To: <CAHp75Vc2MYDLanvZmqaPkmFVfNbyBQoPwbRDDFmKDtSPAmfj9w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/options/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum_name=ibm-acpi-devel>
-List-Post: <mailto:ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-List-Help: <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel>,
- <mailto:ibm-acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
-Errors-To: ibm-acpi-devel-bounces-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-To: Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Henrique de Moraes Holschuh <ibm-acpi-N3TV7GIv+o9fyO9Q7EP/yw@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Robert Moore <robert.moore-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, ACPI Devel Maling List <linux-acpi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Lv Zheng <lv.zheng-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph-KeW1gJXA36yNJhrcwGid2A@public.gmane.org>, Kevin Locke <kevin-yFOG++GfaLUI8/NkjqMgMw@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, devel-E0kO6a4B6psdnm+yROfE0A@public.gmane.org, ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, Andy Shevchenko <andy-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Len Brown <lenb-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <b9801ecc-eaf4-7efc-fff0-3cbd40f29c9a@intel.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Adrian Hunter <adrian.hunter@intel.com>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: linux-pm@vger.kernel.org
 
---===============4670975370945848674==
-Content-Type: multipart/alternative; boundary="94eb2c1ce1bc83e8760560db4ab2"
++ linux-pm, Rafael, Geert
 
---94eb2c1ce1bc83e8760560db4ab2
-Content-Type: text/plain; charset="UTF-8"
-
-On 21 Dec 2017 2:53 pm, "Andy Shevchenko" <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
-
-On Thu, Dec 21, 2017 at 12:00 PM, Ognjen Galic <smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
-> thinkpad_acpi registers two new attributes for each battery:
+On 21 December 2017 at 15:25, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> On 21/12/17 16:15, Ulf Hansson wrote:
+>> On 20 December 2017 at 09:18, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>>> sdhci_enable_irq_wakeups() is already called by sdhci_suspend_host() so
+>>> sdhci-pci should not need to call it. However sdhci_suspend_host() only
+>>> calls it if wakeups are enabled, and sdhci-pci does not enable them until
+>>> after calling sdhci_suspend_host(). So move the calls to
+>>> sdhci_pci_init_wakeup() before calling sdhci_suspend_host(), and
+>>> stop calling sdhci_enable_irq_wakeups(). That results in some
+>>> simplification because sdhci_pci_suspend_host() and
+>>> __sdhci_pci_suspend_host() no longer need to be separate functions.
+>>>
+>>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+>>> ---
+>>>  drivers/mmc/host/sdhci-pci-core.c | 58 ++++++++++++++-------------------------
+>>>  1 file changed, 21 insertions(+), 37 deletions(-)
+>>>
+>>> diff --git a/drivers/mmc/host/sdhci-pci-core.c b/drivers/mmc/host/sdhci-pci-core.c
+>>> index 110c634cfb43..2ffc09f088ee 100644
+>>> --- a/drivers/mmc/host/sdhci-pci-core.c
+>>> +++ b/drivers/mmc/host/sdhci-pci-core.c
+>>> @@ -39,10 +39,29 @@
+>>>  static void sdhci_pci_hw_reset(struct sdhci_host *host);
+>>>
+>>>  #ifdef CONFIG_PM_SLEEP
+>>> -static int __sdhci_pci_suspend_host(struct sdhci_pci_chip *chip)
+>>> +static int sdhci_pci_init_wakeup(struct sdhci_pci_chip *chip)
+>>> +{
+>>> +       mmc_pm_flag_t pm_flags = 0;
+>>> +       int i;
+>>> +
+>>> +       for (i = 0; i < chip->num_slots; i++) {
+>>> +               struct sdhci_pci_slot *slot = chip->slots[i];
+>>> +
+>>> +               if (slot)
+>>> +                       pm_flags |= slot->host->mmc->pm_flags;
+>>> +       }
+>>> +
+>>> +       return device_init_wakeup(&chip->pdev->dev,
+>>> +                                 (pm_flags & MMC_PM_KEEP_POWER) &&
+>>> +                                 (pm_flags & MMC_PM_WAKE_SDIO_IRQ));
+>>
+>> A couple of comments here.
+>>
+>> Wakeup settings shouldn't be changed during system suspend. That means
+>> we shouldn't call device_init_wakeup() (or device_set_wakeup_enable()
+>> for that matter) here.
+>>
+>> Instead, device_init_wakeup() should be called during ->probe(), while
+>> device_set_wakeup_enable() should normally *not* have to be called at
+>> all by drivers. There are a exceptions for device_set_wakeup_enable(),
+>> however it should not have to be called during system suspend, at
+>> least.
+>>
+>> Of course, I realize that you are not changing the behavior in this
+>> regards in this patch, so I am fine this anyway.
+>>
+>> My point is, that the end result while doing this improvements in this
+>> series, should strive to that device_init_wakeup() and
+>> device_set_wakeup_enable() becomes used correctly. I don't think that
+>> is the case, or is it?
 >
-> 1) Charge start threshold
-> /sys/class/power_supply/BATN/charge_start_threshold
+> Unfortunately we don't find out what the SDIO driver wants to do (i.e
+> pm_flags & MMC_PM_WAKE_SDIO_IRQ) until suspend.
+
+That's true! Of course, we need to be able to act on this, somehow.
+
 >
-> Valid values are [0, 99]. A value of 0 turns off the
-> start threshold wear control.
->
-> 2) Charge stop threshold
-> /sys/class/power_supply/BATN/charge_stop_threshold
->
-> Valid values are [1, 100]. A value of 100 turns off
-> the stop threshold wear control. This must be
-> configured first.
->
-> This patch depends on the following patches:
->
-> "battery: Add the battery hooking API"
+> I considered enabling wakeups by default but wasn't sure that would not
+> increase power consumption in devices not expecting it.
 
-Sorry, didn't notice earlier some things commented below.
+I understand the problem, believe me. However, I would rather like to
+try to find a generic solution to these problems, else we will keep
+abusing existing wakeups APIs.
 
->  #include <acpi/video.h>
->
-> +
->  /* ThinkPad CMOS commands */
+For your information, I have been working on several issues on how to
+handle the "wakeup path" correctly, which is linked to this problem.
+See a few quite small series for this below [1], [2].
 
-Redundant change.
+I think the general problems can be described liked this:
 
-> +enum {
-> +       /* Error condition bit */
-> +       METHOD_ERR = (1 << 31),
+1) The dev->power.wakeup_path flag doesn't get set for the device by
+the PM core, in case device_set_wakeup_enable() is called from a
+->suspend() callback. That also means, that the parent device don't
+get its >power.wakeup_path flag set in __device_suspend() by the PM
+core, while this may be expected by upper layers (PM domains, middle
+layers).
 
-bitops.h but no BIT() use?
+2) device_may_wakeup() doesn't tell us the hole story about the
+wakeup. Only that is *may* be configured. :-)
+So in cases when device_may_wakeup() returns true, we still have these
+three conditions to consider, which we currently can't distinguish
+between:
 
-BIT(31) ?
+*) The wakeup is configured and enabled, so the device should be
+enabled in the wakeup path.
 
-> +};
+**) The wakeup is configured and enabled, but as an out-band-wakeup
+signal (like a GPIO IRQ). This means the device shouldn't be enabled
+in the wakeup path.
 
-> +static int tpacpi_battery_set(int what, int battery, int value)
-> +{
+***) The wakeup isn't configured, thus disabled, because there are no
+consumers of the wakeup IRQ registered (as may be the case for SDIO
+IRQ). This also means the device shouldn't be enabled in the wakeup
+path.
 
-> +
+Potentially, one could consider **) and ***) being treated in the same
+way, via using an opt-out method, avoiding the wakeup path to be
+enabled. Currently I have been thinking of adding an "OUT_BAND_WAKEUP"
+driver PM flag, to deal with this, however there may be other
+preferred options.
 
-Redundant.
+Kind regards
+Uffe
 
-> +       int param = 0x0, ret = 0xFFFFFFFF;
-
-Useless assignment for param, not sure abour ret.
-
-> +
-> +       /* The first 8 bits are the value of the threshold */
-> +       param = value;
-> +       /* The battery ID is in bits 8-9, 2 bits */
-> +       param |= battery << 8;
-> +
-> +       switch (what) {
-> +
-> +       case THRESHOLD_START:
-> +
-> +               if (tpacpi_battery_acpi_eval(SET_START, &ret, param)) {
-> +                       pr_err("failed to set charge threshold on battery
-%d",
-> +                                       battery);
-> +                       return -ENODEV;
-> +               }
-> +
-> +               return 0;
-> +
-> +       case THRESHOLD_STOP:
-> +
-> +               if (tpacpi_battery_acpi_eval(SET_STOP, &ret, param)) {
-> +                       pr_err("failed to set charge stop threshold: %d",
-battery);
-> +                       return -ENODEV;
-> +               }
-> +
-> +               return 0;
-> +
-> +       default:
-> +               pr_crit("wrong parameter: %d", what);
-> +               return -EINVAL;
-> +       }
-
-> +
-
-Redundant.
-
-> +}
-
-> +
-> +static int tpacpi_battery_probe(int battery)
-> +{
-> +       int ret = 0;
-> +
-
-> +       /* Reset the struct */
-
-Useless.
-
-> +       memset(&battery_info, 0, sizeof(struct
-tpacpi_battery_driver_data));
-
-> +}
-
-> +static ssize_t tpacpi_battery_store(struct device *dev,
-> +                                  struct device_attribute *devattr,
-> +                                  const char *buf, size_t count)
-> +{
-> +       int attr, battery;
-> +       unsigned long value;
-> +       struct power_supply *supply = to_power_supply(dev);
-
-Can you use reverse xmas tree, esp. put assignments first.
-
-> +       if (!supply) {
-
-How this could be possible?!
-
-> +               pr_err("Can't upcast to power_supply!");
-> +               return -ENODEV;
-> +       }
-
-> +       if (kstrtoul(buf, 10, &value))
-> +               return -EINVAL;
-
-Don't shadow an error code from kstrtoul().
-
-> +static ssize_t tpacpi_battery_show(struct device *dev,
-> +                                 struct device_attribute *devattr,
-> +                                 char *buf)
-> +{
-> +       int ret = 0x0, attr, battery;
-> +       struct power_supply *supply = to_power_supply(dev);
-
-> +       if (!supply) {
-
-How this could be possible?!
-
-> +               pr_crit("Can't upcast to power_supply!");
-> +               return -ENODEV;
-> +       }
-
-> +       return sprintf(buf, "%d\n", ret);
-> +}
-> +
-> +DEVICE_ATTR(charge_start_threshold, 0644,
-> +               tpacpi_battery_show, tpacpi_battery_store);
-> +DEVICE_ATTR(charge_stop_threshold, 0644,
-> +       tpacpi_battery_show, tpacpi_battery_store);
-
-DEVICE_ATTR_RW().
-
-
-I did not use DEVICE_ATTR_RW() because I can't use a common store and show
-function for both attributes to minimize the code I need. If I used
-DEVICE_ATTR_RW() I would need to define 4 more functions that do the same.
-That seems redundant.
-
-
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -371,6 +371,8 @@ devm_power_supply_register_no_ws(struct device
-*parent,
->  extern void power_supply_unregister(struct power_supply *psy);
->  extern int power_supply_powers(struct power_supply *psy, struct device
-*dev);
->
-> +#define to_power_supply(device) container_of(device, struct
-power_supply, dev)
-> +
->  extern void *power_supply_get_drvdata(struct power_supply *psy);
->  /* For APM emulation, think legacy userspace. */
->  extern struct class *power_supply_class;
-
-This one sounds to me as a separate change.
-
-At the same time you may convert the current user of it to make sense
-of the change.
-drivers/power/supply/power_supply_core.c:671:
-
-I think I pointed to this out once.
-
-
-I wanted to minimize the changes in pm to avoid going through all the
-review process hassle for a few simple changes, because I'm modifying a
-third subsystem. But I will do it later tonight.
-
-This is my first patchset and I did not expect for the review process to be
-this agonizingly slow, so I wanted to speed it up by not touching pm.
-
-Thanks for the comments!
-
-Ognjen
-
-
---
-With Best Regards,
-Andy Shevchenko
-
---94eb2c1ce1bc83e8760560db4ab2
-Content-Type: text/html; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"auto"><div><br><div class=3D"gmail_extra"><div class=3D"gmail_q=
-uote">On 21 Dec 2017 2:53 pm, &quot;Andy Shevchenko&quot; &lt;<a href=3D"ma=
-ilto:andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org">andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org</a>&gt; wrote:<br=
- type=3D"attribution"><blockquote class=3D"quote" style=3D"margin:0 0 0 .8e=
-x;border-left:1px #ccc solid;padding-left:1ex"><div class=3D"quoted-text">O=
-n Thu, Dec 21, 2017 at 12:00 PM, Ognjen Galic &lt;<a href=3D"mailto:smclt30=
-p@gmail.com">smclt30p-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org</a>&gt; wrote:<br>
-&gt; thinkpad_acpi registers two new attributes for each battery:<br>
-&gt;<br>
-&gt; 1) Charge start threshold<br>
-&gt; /sys/class/power_supply/BATN/<wbr>charge_start_threshold<br>
-&gt;<br>
-&gt; Valid values are [0, 99]. A value of 0 turns off the<br>
-&gt; start threshold wear control.<br>
-&gt;<br>
-&gt; 2) Charge stop threshold<br>
-&gt; /sys/class/power_supply/BATN/<wbr>charge_stop_threshold<br>
-&gt;<br>
-&gt; Valid values are [1, 100]. A value of 100 turns off<br>
-&gt; the stop threshold wear control. This must be<br>
-&gt; configured first.<br>
-&gt;<br>
-&gt; This patch depends on the following patches:<br>
-&gt;<br>
-&gt; &quot;battery: Add the battery hooking API&quot;<br>
-<br>
-</div>Sorry, didn&#39;t notice earlier some things commented below.<br>
-<div class=3D"quoted-text"><br>
-&gt;=C2=A0 #include &lt;acpi/video.h&gt;<br>
-&gt;<br>
-&gt; +<br>
-&gt;=C2=A0 /* ThinkPad CMOS commands */<br>
-<br>
-</div>Redundant change.<br>
-<div class=3D"quoted-text"><br>
-&gt; +enum {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0/* Error condition bit */<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0METHOD_ERR =3D (1 &lt;&lt; 31),<br>
-<br>
-</div>bitops.h but no BIT() use?<br>
-<br>
-BIT(31) ?<br>
-<div class=3D"quoted-text"><br>
-&gt; +};<br>
-<br>
-&gt; +static int tpacpi_battery_set(int what, int battery, int value)<br>
-&gt; +{<br>
-<br>
-&gt; +<br>
-<br>
-</div>Redundant.<br>
-<div class=3D"quoted-text"><br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0int param =3D 0x0, ret =3D 0xFFFFFFFF;<br>
-<br>
-</div>Useless assignment for param, not sure abour ret.<br>
-<div class=3D"elided-text"><br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0/* The first 8 bits are the value of the t=
-hreshold */<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0param =3D value;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0/* The battery ID is in bits 8-9, 2 bits *=
-/<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0param |=3D battery &lt;&lt; 8;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0switch (what) {<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0case THRESHOLD_START:<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (tpacpi_bat=
-tery_acpi_eval(SET_<wbr>START, &amp;ret, param)) {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0pr_err(&quot;failed to set charge threshold on battery %d&quo=
-t;,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0batte=
-ry);<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0return -ENODEV;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return 0;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0case THRESHOLD_STOP:<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (tpacpi_bat=
-tery_acpi_eval(SET_<wbr>STOP, &amp;ret, param)) {<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0pr_err(&quot;failed to set charge stop threshold: %d&quot;, b=
-attery);<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0return -ENODEV;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return 0;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0default:<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0pr_crit(&quot;=
-wrong parameter: %d&quot;, what);<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -EINVAL=
-;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
-<br>
-&gt; +<br>
-<br>
-</div>Redundant.<br>
-<div class=3D"quoted-text"><br>
-&gt; +}<br>
-<br>
-&gt; +<br>
-&gt; +static int tpacpi_battery_probe(int battery)<br>
-&gt; +{<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0int ret =3D 0;<br>
-&gt; +<br>
-<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0/* Reset the struct */<br>
-<br>
-</div>Useless.<br>
-<div class=3D"quoted-text"><br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0memset(&amp;battery_info, 0, sizeof(struct=
- tpacpi_battery_driver_data));<br>
-<br>
-&gt; +}<br>
-<br>
-</div><div class=3D"quoted-text">&gt; +static ssize_t tpacpi_battery_store(=
-struct device *dev,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 struct device_attribute *=
-devattr,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 const char *buf, size_t c=
-ount)<br>
-&gt; +{<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0int attr, battery;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0unsigned long value;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0struct power_supply *supply =3D to_power_s=
-upply(dev);<br>
-<br>
-</div>Can you use reverse xmas tree, esp. put assignments first.<br>
-<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!supply) {<br>
-<br>
-How this could be possible?!<br>
-<div class=3D"quoted-text"><br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0pr_err(&quot;C=
-an&#39;t upcast to power_supply!&quot;);<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENODEV=
-;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
-<br>
-</div>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0if (kstrtoul(buf, 10, &amp;value))<b=
-r>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -EINVAL=
-;<br>
-<br>
-Don&#39;t shadow an error code from kstrtoul().<br>
-<div class=3D"quoted-text"><br>
-&gt; +static ssize_t tpacpi_battery_show(struct device *dev,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0struct device_attribute *d=
-evattr,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0char *buf)<br>
-&gt; +{<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0int ret =3D 0x0, attr, battery;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0struct power_supply *supply =3D to_power_s=
-upply(dev);<br>
-<br>
-</div>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0if (!supply) {<br>
-<br>
-How this could be possible?!<br>
-<div class=3D"quoted-text"><br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0pr_crit(&quot;=
-Can&#39;t upcast to power_supply!&quot;);<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0return -ENODEV=
-;<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
-<br>
-</div>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0return sprintf(buf, &quot;%d\n&quot;=
-, ret);<br>
-<div class=3D"quoted-text">&gt; +}<br>
-&gt; +<br>
-&gt; +DEVICE_ATTR(charge_start_<wbr>threshold, 0644,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0tpacpi_battery=
-_show, tpacpi_battery_store);<br>
-&gt; +DEVICE_ATTR(charge_stop_<wbr>threshold, 0644,<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0tpacpi_battery_show, tpacpi_battery_store)=
-;<br>
-<br>
-</div>DEVICE_ATTR_RW().<br>
-<div class=3D"quoted-text"></div></blockquote></div></div></div><div dir=3D=
-"auto"><br></div><div dir=3D"auto">I did not use DEVICE_ATTR_RW() because I=
- can&#39;t use a common store and show function for both attributes to mini=
-mize the code I need. If I used DEVICE_ATTR_RW() I would need to define 4 m=
-ore functions that do the same. That seems redundant.=C2=A0</div><div dir=
-=3D"auto"><br></div><div dir=3D"auto"><div class=3D"gmail_extra"><div class=
-=3D"gmail_quote"><blockquote class=3D"quote" style=3D"margin:0 0 0 .8ex;bor=
-der-left:1px #ccc solid;padding-left:1ex"><div class=3D"quoted-text"><br>
-&gt; --- a/include/linux/power_supply.h<br>
-&gt; +++ b/include/linux/power_supply.h<br>
-&gt; @@ -371,6 +371,8 @@ devm_power_supply_register_no_<wbr>ws(struct devic=
-e *parent,<br>
-&gt;=C2=A0 extern void power_supply_unregister(struct power_supply *psy);<b=
-r>
-&gt;=C2=A0 extern int power_supply_powers(struct power_supply *psy, struct =
-device *dev);<br>
-&gt;<br>
-&gt; +#define to_power_supply(device) container_of(device, struct power_sup=
-ply, dev)<br>
-&gt; +<br>
-&gt;=C2=A0 extern void *power_supply_get_drvdata(<wbr>struct power_supply *=
-psy);<br>
-&gt;=C2=A0 /* For APM emulation, think legacy userspace. */<br>
-&gt;=C2=A0 extern struct class *power_supply_class;<br>
-<br>
-</div>This one sounds to me as a separate change.<br>
-<br>
-At the same time you may convert the current user of it to make sense<br>
-of the change.<br>
-drivers/power/supply/power_<wbr>supply_core.c:671:<br>
-<br>
-I think I pointed to this out once.<br></blockquote></div></div></div><div =
-dir=3D"auto"><br></div><div dir=3D"auto">I wanted to minimize the changes i=
-n pm to avoid going through all the review process hassle for a few simple =
-changes, because I&#39;m modifying a third subsystem. But I will do it late=
-r tonight.</div><div dir=3D"auto"><br></div><div dir=3D"auto">This is my fi=
-rst patchset and I did not expect for the review process to be this agonizi=
-ngly slow, so I wanted to speed it up by not touching pm.</div><div dir=3D"=
-auto"><br></div><div dir=3D"auto">Thanks for the comments!</div><div dir=3D=
-"auto"><br></div><div dir=3D"auto">Ognjen</div><div dir=3D"auto"><br></div>=
-<div dir=3D"auto"><div class=3D"gmail_extra"><div class=3D"gmail_quote"><bl=
-ockquote class=3D"quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc so=
-lid;padding-left:1ex">
-<font color=3D"#888888"><br>
---<br>
-With Best Regards,<br>
-Andy Shevchenko<br>
-</font></blockquote></div><br></div></div></div>
-
---94eb2c1ce1bc83e8760560db4ab2--
-
-
---===============4670975370945848674==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-------------------------------------------------------------------------------
-Check out the vibrant tech community on one of the world's most
-engaging tech sites, Slashdot.org! http://sdm.link/slashdot
---===============4670975370945848674==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-_______________________________________________
-ibm-acpi-devel mailing list
-ibm-acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-https://lists.sourceforge.net/lists/listinfo/ibm-acpi-devel
-
---===============4670975370945848674==--
+[1]
+https://www.spinics.net/lists/linux-renesas-soc/msg21421.html
+[2]
+https://www.spinics.net/lists/linux-renesas-soc/msg20122.html
+(Actually the discussions there concluded that we may need an
+"OUT_BAND_WAKEUP" flag instead)
