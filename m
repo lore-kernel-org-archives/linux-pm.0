@@ -1,87 +1,52 @@
-From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v5 15/15] devicetree: bindings: Document qcom,pvs
-Date: Thu, 21 Dec 2017 17:23:01 +0530
-Message-ID: <864b6cfd-d3eb-d876-82e2-ebc79c5a6956@codeaurora.org>
-References: <1513698900-10638-1-git-send-email-sricharan@codeaurora.org>
- <1513698900-10638-16-git-send-email-sricharan@codeaurora.org>
- <20171220032614.GQ19815@vireshk-i7>
- <b0d8147a-46e1-0787-ae37-9c1ef957d190@codeaurora.org>
- <20171220211817.mpkkj747blr4qkqm@rob-hp-laptop>
+From: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+Subject: RE: [PATCH v2 2/3] phy: core: Drop unused runtime PM APIs
+Date: Thu, 21 Dec 2017 12:24:09 +0000
+Message-ID: <TY1PR06MB0992357759B33F1F3C826439D80D0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+References: <1513778960-10073-1-git-send-email-ulf.hansson@linaro.org>
+ <1513778960-10073-3-git-send-email-ulf.hansson@linaro.org>
+ <TY1PR06MB0992E87FAA770B745DCBA690D80D0@TY1PR06MB0992.apcprd06.prod.outlook.com>
+ <CAPDyKFrOONTsm5xiXrvqqy3koG5=11bKk1b2igx+FzSJbzj_Ng@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171220211817.mpkkj747blr4qkqm@rob-hp-laptop>
-Content-Language: en-US
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, david.brown-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, andy.gross-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from relmlor2.renesas.com ([210.160.252.172]:29659 "EHLO
+        relmlie1.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1752400AbdLUMYO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 21 Dec 2017 07:24:14 -0500
+In-Reply-To: <CAPDyKFrOONTsm5xiXrvqqy3koG5=11bKk1b2igx+FzSJbzj_Ng@mail.gmail.com>
+Content-Language: ja-JP
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kishon Vijay Abraham I <kishon@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "linux-renesas-soc@vger.kernel.org" <linux-renesas-soc@vger.kernel.org>
 
-Hi Rob,
-
-On 12/21/2017 2:48 AM, Rob Herring wrote:
-> On Wed, Dec 20, 2017 at 11:55:33AM +0530, Sricharan R wrote:
->> Hi Viresh,
->>
->> On 12/20/2017 8:56 AM, Viresh Kumar wrote:
->>> On 19-12-17, 21:25, Sricharan R wrote:
->>>> +	cpu@0 {
->>>> +		compatible = "qcom,krait";
->>>> +		enable-method = "qcom,kpss-acc-v1";
->>>> +		device_type = "cpu";
->>>> +		reg = <0>;
->>>> +		qcom,acc = <&acc0>;
->>>> +		qcom,saw = <&saw0>;
->>>> +		clocks = <&kraitcc 0>;
->>>> +		clock-names = "cpu";
->>>> +		cpu-supply = <&smb208_s2a>;
->>>> +		operating-points-v2 = <&cpu_opp_table>;
->>>> +	};
->>>> +
->>>> +	qcom,pvs {
->>>> +		qcom,pvs-format-a;
->>>> +	};
->>>
->>> Not sure what Rob is going to say on that :)
->>>
->>
->>  Yes. Would be good to know the best way.
-> 
-> Seems like this should be a property of an efuse node either implied by 
-> the compatible or a separate property. What determines format A vs. B?
-> 
-
- Yes, this efuse registers are part of the eeprom (qfprom) tied to the soc.
- So this property (details like bitfields and register offsets that it represents)
- can be put soc specific and nvmem apis can be used to read
- the registers. Does something like below look ok ?
-
- qcom,pvs {
-	compatible = "qcom,pvs-ipq8064";
-	nvmem-cells = <&pvs_efuse>;
- }
-
- qfprom: qfprom@700000 {
- 	compatible      = "qcom,qfprom";
- 	reg             = <0x00700000 0x1000>;
- 	#address-cells  = <1>;
- 	#size-cells     = <1>;
- 	ranges;
- 	pvs_efuse: pvs {
- 	reg = <0xc0 0x8>;
- 	};
- };
-
-
-Regards,
- Sricharan
- 
- 
-
--- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+DQo+IEZyb206IFVsZiBIYW5zc29uLCBTZW50OiBUaHVyc2RheSwgRGVjZW1iZXIgMjEsIDIwMTcg
+Nzo1OCBQTQ0KPiANCj4gT24gMjEgRGVjZW1iZXIgMjAxNyBhdCAxMTozMywgWW9zaGloaXJvIFNo
+aW1vZGENCj4gPHlvc2hpaGlyby5zaGltb2RhLnVoQHJlbmVzYXMuY29tPiB3cm90ZToNCj4gPiBI
+aSBVbGYtc2FuLA0KPiA+DQo+ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4+IEZy
+b206IFVsZiBIYW5zc29uLCBTZW50OiBXZWRuZXNkYXksIERlY2VtYmVyIDIwLCAyMDE3IDExOjA5
+IFBNDQo+ID4gPHNuaXA+DQo+ID4+IGRpZmYgLS1naXQgYS9pbmNsdWRlL2xpbnV4L3BoeS9waHku
+aCBiL2luY2x1ZGUvbGludXgvcGh5L3BoeS5oDQo+ID4+IGluZGV4IGI0Mjk4YTEuLjA1MGI2MjAg
+MTAwNjQ0DQo+ID4+IC0tLSBhL2luY2x1ZGUvbGludXgvcGh5L3BoeS5oDQo+ID4+ICsrKyBiL2lu
+Y2x1ZGUvbGludXgvcGh5L3BoeS5oDQo+ID4+IEBAIC0xNyw3ICsxNyw2IEBADQo+ID4+ICAjaW5j
+bHVkZSA8bGludXgvZXJyLmg+DQo+ID4+ICAjaW5jbHVkZSA8bGludXgvb2YuaD4NCj4gPj4gICNp
+bmNsdWRlIDxsaW51eC9kZXZpY2UuaD4NCj4gPj4gLSNpbmNsdWRlIDxsaW51eC9wbV9ydW50aW1l
+Lmg+DQo+ID4NCj4gPiBBZnRlciBJIGFwcGxpZWQgdGhpcyBwYXRjaCwgc29tZSBhdGEgYW5kIGdw
+dSBkcml2ZXJzIGNhdXNlcyBidWlsZCBlcnJvciBbMV0uDQo+ID4gU28sIHdlIHNob3VsZCBmaXgg
+dGhlIGRyaXZlcnMgYXQgZmlyc3QuLi4NCj4gDQo+IEh1aCwgcmlnaHQsIHRob3NlIGRyaXZlcnMg
+c2hvdWxkbid0IGJlIHJlbHlpbmcgb24gdGhlIHBoeS5oIHRvIGluY2x1ZGUNCj4gcG1fcnVudGlt
+ZS5oLg0KPiANCj4gVGhlIGVhc2llc3Qgd2F5IGF0IHRoaXMgcG9pbnQgaXMgdG8ganVzdCBwdXQg
+YmFjayAiI2luY2x1ZGUNCj4gPGxpbnV4L3BtX3J1bnRpbWUuaD4iIGluIHBoeS5oLCB0aGVuIHdl
+IGNhbiBkZWFsIHdpdGggdGhlc2UgcHJvYmxlbXMNCj4gc2VwYXJhdGVseS4gSSBkbyB0aGF0IGlu
+IGEgcmUtc3BpbiBzb29uLg0KDQpJIGdvdCBpdC4NCg0KPiBCVFcsIEkgd291bGQgYmUgZ3JlYXQg
+aWYgeW91IGNvdWxkIHRlc3QgdGhpcyBvbiB0aGUgUmVuZXNhcyBTb0MgdG8NCj4gbWFrZSBzdXJl
+IGl0IHN0aWxsIGZpeGVzIHRoZSBwcm9ibGVtcyAoYXQgbGVhc3QgaGFsZiBvZiB0aGVtIEkgbWVh
+bikuDQoNClN1cmUuIEkgcHV0IGJhY2sgdGhlICIjaW5jbHVkZSA8bGludXgvcG1fcnVudGltZS5o
+PiIgaW4gdGhlIHBoeS5oIGFuZCB0ZXN0ZWQNCnRoZSBwYXRjaGVzIG9uIG15IGVudmlyb25tZW50
+IChyOGE3Nzk1LXNhbHZhdG9yLXguZHRzIHdpdGggdjQuMTUtcmM0KS4gQW5kIHRoZW4sDQp0aGUg
+aXNzdWUgWzFdIGRpc2FwcGVhcmVkLg0KWzFdOg0KcHJpbnRlZCAiRW5hYmxpbmcgcnVudGltZSBQ
+TSBmb3IgaW5hY3RpdmUgZGV2aWNlIChlZTBhMDIwMC51c2ItcGh5KSB3aXRoIGFjdGl2ZSBjaGls
+ZHJlbiINCmluIHJlc3VtZSB0aW1pbmcuDQoNClNvLA0KDQpUZXN0ZWQtYnk6IFlvc2hpaGlybyBT
+aGltb2RhIDx5b3NoaWhpcm8uc2hpbW9kYS51aEByZW5lc2FzLmNvbT4NCg0KQmVzdCByZWdhcmRz
+LA0KWW9zaGloaXJvIFNoaW1vZGENCg0K
