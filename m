@@ -1,63 +1,71 @@
-From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
-Subject: Re: [PATCH V4 3/7] PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for
- Tegra PCIe
-Date: Thu, 21 Dec 2017 10:46:30 +0000
-Message-ID: <20171221104630.GB24280@red-moon>
-References: <1512723493-865-1-git-send-email-mmaddireddy@nvidia.com>
- <1512723493-865-4-git-send-email-mmaddireddy@nvidia.com>
- <20171215173643.GA1050@red-moon>
- <20171220193011.GA31757@ulmo>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/3] phy: core: Move runtime PM reference counting to
+ the parent device
+Date: Thu, 21 Dec 2017 11:50:54 +0100
+Message-ID: <CAPDyKFokLc5cQW7RWAsdCY4h_Q8BgHKGQwHVUFX68fWF=BE6_g@mail.gmail.com>
+References: <1513778960-10073-1-git-send-email-ulf.hansson@linaro.org>
+ <1513778960-10073-2-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0iwR1MnBokL29_QmUw2F6fgNNwzP7WLhtAL37MkMLd1xQ@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20171220193011.GA31757@ulmo>
-Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>, cyndis-/1wQRMveznE@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0iwR1MnBokL29_QmUw2F6fgNNwzP7WLhtAL37MkMLd1xQ@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Kishon Vijay Abraham I <kishon@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 20, 2017 at 08:30:11PM +0100, Thierry Reding wrote:
-> On Fri, Dec 15, 2017 at 05:36:43PM +0000, Lorenzo Pieralisi wrote:
-> > On Fri, Dec 08, 2017 at 02:28:09PM +0530, Manikanta Maddireddy wrote:
-> > > Primary, secondary and subordinate default bus numbers are 0 in Tegra and
-> > > it is expecting SW to program these numbers in configration space.
-> > > 
-> > > pci_scan_bridge_extend() function programs these numbers in configuration
-> > > space if secondary & subordinate bus numbers are 0 or PCI_REASSIGN_ALL_BUS
-> > > flag is set. Since secondary & subordinate default bus numbers are 0,
-> > > PCI_REASSIGN_ALL_BUS flag can be removed for Tegra PCIe.
-> > > 
-> > > Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-> > > ---
-> > > V3:
-> > > * new patch in V3
-> > > V4:
-> > > * no change in this patch
-> > > 
-> > >  drivers/pci/host/pci-tegra.c | 1 -
-> > >  1 file changed, 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-> > > index a549c5899e26..0d91f1a3a6b4 100644
-> > > --- a/drivers/pci/host/pci-tegra.c
-> > > +++ b/drivers/pci/host/pci-tegra.c
-> > > @@ -2604,7 +2604,6 @@ static int tegra_pcie_probe(struct platform_device *pdev)
-> > >  
-> > >  	tegra_pcie_enable_ports(pcie);
-> > >  
-> > > -	pci_add_flags(PCI_REASSIGN_ALL_BUS);
-> > 
-> > This looks obviously OK to me but I need Thierry's ACK to queue it.
-> 
-> Just as an additional note: I think the real reason why this is okay to
-> do is because we reset the PCI host controller in the kernel driver, so
-> any bus assignments done by the firmware are reset as well.
-> 
-> Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+On 21 December 2017 at 02:39, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Dec 20, 2017 at 3:09 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> The runtime PM deployment in the phy core is deployed using the phy core
+>> device, which is created by the phy core and assigned as a child device of
+>> the phy provider device.
+>>
+>> The behaviour around the runtime PM deployment cause some issues during
+>> system suspend, in cases when the phy provider device is put into a low
+>> power state via a call to the pm_runtime_force_suspend() helper, as is the
+>> case for a Renesas SoC, which has its phy provider device attached to the
+>> generic PM domain.
+>>
+>> In more detail, the problem in this case is that pm_runtime_force_suspend()
+>> expects the child device of the provider device, which is the phy core
+>> device, to be runtime suspended, else a WARN splat will be printed
+>> (correctly) when runtime PM gets re-enabled at system resume.
+>
+> So we are now trying to work around issues with
+> pm_runtime_force_suspend().  Lovely. :-/
 
-Thank you. This series needs rebasing, we should try to untangle
-the dependencies between series so that I can actually apply some
-of these patches that make sense on their own.
+Yes, we have to, as pm_runtime_force_suspend() is widely deployed. Or
+are you saying we should just ignore all issues related to it?
 
-Lorenzo
+Of course, if we had something that could replace
+pm_runtime_force_suspend(), that would be great, but there isn't.
+
+>
+>> In the current scenario, even if a call to phy_power_off() triggers it to
+>> invoke pm_runtime_put() during system suspend, the phy core device doesn't
+>> get runtime suspended, because this is prevented in the system suspend
+>> phases by the PM core.
+>>
+>> To solve this problem, let's move the runtime PM deployment from the phy
+>> core device to the phy provider device, as this provides the similar
+>> behaviour. Changing this makes it redundant to enable runtime PM for the
+>> phy core device, so let's avoid doing that.
+>
+> I'm not really convinced that this approach is the best one to be honest.
+>
+> I'll have a deeper look at this in the next few days, stay tuned.
+
+There is different ways to solve this, for sure. I picked this one,
+because I think it's the most trivial thing to do, and it shouldn't
+cause any other problems.
+
+I think any other option would involve assigning ->suspend|resume()
+callbacks to the phy core device, but that's fine too, if you prefer
+that.
+
+Also, I have considered how to deal with wakeup paths for phys,
+although I didn't want to post changes as a part of this series, but
+maybe I should to give a more complete picture?
+
+Kind regards
+Uffe
