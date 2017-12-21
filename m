@@ -1,139 +1,72 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/9] mmc: sdhci-pci: Stop calling sdhci_enable_irq_wakeups()
-Date: Thu, 21 Dec 2017 16:33:59 +0100
-Message-ID: <CAPDyKFrZjTvYdT8BGKadTdTBsaAeoC3YOQBBPOvqpv1JpaOUoQ@mail.gmail.com>
-References: <1513757933-11232-1-git-send-email-adrian.hunter@intel.com>
- <1513757933-11232-2-git-send-email-adrian.hunter@intel.com>
- <CAPDyKFoHPdYaorR38LaS5Hzs8CC99Smki8uZW8aDanboLRV3QA@mail.gmail.com> <b9801ecc-eaf4-7efc-fff0-3cbd40f29c9a@intel.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH 2/3 v8] thinkpad_acpi: Add support for battery thresholds
+Date: Thu, 21 Dec 2017 19:08:11 +0200
+Message-ID: <CAHp75VerEvMF+JJH+Vy5wnLyrTWBENEZv1GFZnKZRo+JguRPoQ@mail.gmail.com>
+References: <20171221100051.GA30647@thinkpad> <CAHp75Vc2MYDLanvZmqaPkmFVfNbyBQoPwbRDDFmKDtSPAmfj9w@mail.gmail.com>
+ <CALgTWSvnyBysDJqGFwCxB43wgzMAAUqYZ2M5r8-L9ZdJ9J4XxQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <b9801ecc-eaf4-7efc-fff0-3cbd40f29c9a@intel.com>
-Sender: linux-mmc-owner@vger.kernel.org
-To: Adrian Hunter <adrian.hunter@intel.com>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <CALgTWSvnyBysDJqGFwCxB43wgzMAAUqYZ2M5r8-L9ZdJ9J4XxQ@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: =?UTF-8?Q?Ognjen_Gali=C4=87?= <smclt30p@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 List-Id: linux-pm@vger.kernel.org
 
-+ linux-pm, Rafael, Geert
+On Thu, Dec 21, 2017 at 5:24 PM, Ognjen Gali=C4=87 <smclt30p@gmail.com> wro=
+te:
+> On 21 Dec 2017 2:53 pm, "Andy Shevchenko" <andy.shevchenko@gmail.com> wro=
+te:
+> On Thu, Dec 21, 2017 at 12:00 PM, Ognjen Galic <smclt30p@gmail.com> wrote=
+:
 
-On 21 December 2017 at 15:25, Adrian Hunter <adrian.hunter@intel.com> wrote:
-> On 21/12/17 16:15, Ulf Hansson wrote:
->> On 20 December 2017 at 09:18, Adrian Hunter <adrian.hunter@intel.com> wrote:
->>> sdhci_enable_irq_wakeups() is already called by sdhci_suspend_host() so
->>> sdhci-pci should not need to call it. However sdhci_suspend_host() only
->>> calls it if wakeups are enabled, and sdhci-pci does not enable them until
->>> after calling sdhci_suspend_host(). So move the calls to
->>> sdhci_pci_init_wakeup() before calling sdhci_suspend_host(), and
->>> stop calling sdhci_enable_irq_wakeups(). That results in some
->>> simplification because sdhci_pci_suspend_host() and
->>> __sdhci_pci_suspend_host() no longer need to be separate functions.
->>>
->>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
->>> ---
->>>  drivers/mmc/host/sdhci-pci-core.c | 58 ++++++++++++++-------------------------
->>>  1 file changed, 21 insertions(+), 37 deletions(-)
->>>
->>> diff --git a/drivers/mmc/host/sdhci-pci-core.c b/drivers/mmc/host/sdhci-pci-core.c
->>> index 110c634cfb43..2ffc09f088ee 100644
->>> --- a/drivers/mmc/host/sdhci-pci-core.c
->>> +++ b/drivers/mmc/host/sdhci-pci-core.c
->>> @@ -39,10 +39,29 @@
->>>  static void sdhci_pci_hw_reset(struct sdhci_host *host);
->>>
->>>  #ifdef CONFIG_PM_SLEEP
->>> -static int __sdhci_pci_suspend_host(struct sdhci_pci_chip *chip)
->>> +static int sdhci_pci_init_wakeup(struct sdhci_pci_chip *chip)
->>> +{
->>> +       mmc_pm_flag_t pm_flags = 0;
->>> +       int i;
->>> +
->>> +       for (i = 0; i < chip->num_slots; i++) {
->>> +               struct sdhci_pci_slot *slot = chip->slots[i];
->>> +
->>> +               if (slot)
->>> +                       pm_flags |= slot->host->mmc->pm_flags;
->>> +       }
->>> +
->>> +       return device_init_wakeup(&chip->pdev->dev,
->>> +                                 (pm_flags & MMC_PM_KEEP_POWER) &&
->>> +                                 (pm_flags & MMC_PM_WAKE_SDIO_IRQ));
->>
->> A couple of comments here.
->>
->> Wakeup settings shouldn't be changed during system suspend. That means
->> we shouldn't call device_init_wakeup() (or device_set_wakeup_enable()
->> for that matter) here.
->>
->> Instead, device_init_wakeup() should be called during ->probe(), while
->> device_set_wakeup_enable() should normally *not* have to be called at
->> all by drivers. There are a exceptions for device_set_wakeup_enable(),
->> however it should not have to be called during system suspend, at
->> least.
->>
->> Of course, I realize that you are not changing the behavior in this
->> regards in this patch, so I am fine this anyway.
->>
->> My point is, that the end result while doing this improvements in this
->> series, should strive to that device_init_wakeup() and
->> device_set_wakeup_enable() becomes used correctly. I don't think that
->> is the case, or is it?
+You need stop using HTML as well.
+
+>> +DEVICE_ATTR(charge_start_threshold, 0644,
+>> +               tpacpi_battery_show, tpacpi_battery_store);
+>> +DEVICE_ATTR(charge_stop_threshold, 0644,
+>> +       tpacpi_battery_show, tpacpi_battery_store);
 >
-> Unfortunately we don't find out what the SDIO driver wants to do (i.e
-> pm_flags & MMC_PM_WAKE_SDIO_IRQ) until suspend.
+> DEVICE_ATTR_RW().
 
-That's true! Of course, we need to be able to act on this, somehow.
+> I did not use DEVICE_ATTR_RW() because I can't use a common store and sho=
+w
+> function for both attributes to minimize the code I need. If I used
+> DEVICE_ATTR_RW() I would need to define 4 more functions that do the same=
+.
+> That seems redundant.
 
+_RW() variant still preferable since it makes much more easy to
+understand that this attribute doesn't need any *special* permissions.
+
+I think it's not big payment to make it so.
+
+>> +#define to_power_supply(device) container_of(device, struct power_suppl=
+y,
+>> dev)
+
+>>  This one sounds to me as a separate change.
+
+> At the same time you may convert the current user of it to make sense
+> of the change.
+> drivers/power/supply/power_supply_core.c:671:
 >
-> I considered enabling wakeups by default but wasn't sure that would not
-> increase power consumption in devices not expecting it.
+> I think I pointed to this out once.
 
-I understand the problem, believe me. However, I would rather like to
-try to find a generic solution to these problems, else we will keep
-abusing existing wakeups APIs.
+> I wanted to minimize the changes in pm to avoid going through all the rev=
+iew
+> process hassle for a few simple changes, because I'm modifying a third
+> subsystem. But I will do it later tonight.
 
-For your information, I have been working on several issues on how to
-handle the "wakeup path" correctly, which is linked to this problem.
-See a few quite small series for this below [1], [2].
+Thanks!
 
-I think the general problems can be described liked this:
+> This is my first patchset and I did not expect for the review process to =
+be
+> this agonizingly slow, so I wanted to speed it up by not touching pm.
 
-1) The dev->power.wakeup_path flag doesn't get set for the device by
-the PM core, in case device_set_wakeup_enable() is called from a
-->suspend() callback. That also means, that the parent device don't
-get its >power.wakeup_path flag set in __device_suspend() by the PM
-core, while this may be expected by upper layers (PM domains, middle
-layers).
+I see, though you actually made an opposite by that decision :-)
 
-2) device_may_wakeup() doesn't tell us the hole story about the
-wakeup. Only that is *may* be configured. :-)
-So in cases when device_may_wakeup() returns true, we still have these
-three conditions to consider, which we currently can't distinguish
-between:
-
-*) The wakeup is configured and enabled, so the device should be
-enabled in the wakeup path.
-
-**) The wakeup is configured and enabled, but as an out-band-wakeup
-signal (like a GPIO IRQ). This means the device shouldn't be enabled
-in the wakeup path.
-
-***) The wakeup isn't configured, thus disabled, because there are no
-consumers of the wakeup IRQ registered (as may be the case for SDIO
-IRQ). This also means the device shouldn't be enabled in the wakeup
-path.
-
-Potentially, one could consider **) and ***) being treated in the same
-way, via using an opt-out method, avoiding the wakeup path to be
-enabled. Currently I have been thinking of adding an "OUT_BAND_WAKEUP"
-driver PM flag, to deal with this, however there may be other
-preferred options.
-
-Kind regards
-Uffe
-
-[1]
-https://www.spinics.net/lists/linux-renesas-soc/msg21421.html
-[2]
-https://www.spinics.net/lists/linux-renesas-soc/msg20122.html
-(Actually the discussions there concluded that we may need an
-"OUT_BAND_WAKEUP" flag instead)
+--=20
+With Best Regards,
+Andy Shevchenko
