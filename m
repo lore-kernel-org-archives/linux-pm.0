@@ -1,39 +1,65 @@
-From: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
-Date: Fri, 22 Dec 2017 09:30:10 +0100
-Message-ID: <20171222083010.6fniwzwh3ftjs6ev@hirez.programming.kicks-ass.net>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
- <20171220154358.663yoodeoxkqghx7@hirez.programming.kicks-ass.net>
- <20171221091502.GE19815@vireshk-i7>
- <20171221102530.all2hqoyh77mffmf@hirez.programming.kicks-ass.net>
- <20171221103022.GA8312@vireshk-i7>
- <20171221103941.ykehmki7m32r4pyr@hirez.programming.kicks-ass.net>
- <20171221104317.GB8312@vireshk-i7>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: [ANNOUNCE] OSPM-summit 2018 - Registrations are open!
+Date: Fri, 22 Dec 2017 09:32:50 +0100
+Message-ID: <20171222083250.GI18612@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from merlin.infradead.org ([205.233.59.134]:38544 "EHLO
-        merlin.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751246AbdLVIaS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Dec 2017 03:30:18 -0500
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171221104317.GB8312@vireshk-i7>
-Sender: linux-pm-owner@vger.kernel.org
+Sender: linux-acpi-owner@vger.kernel.org
+To: linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <peterz@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Vincent Guittot <vincent.guittot@linaro.org>, Ulf Hansson <ulf.hansson@linaro.org>, Morten Rasmussen <morten.rasmussen@arm.com>, Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Luca Abeni <luca.abeni@santannapisa.it>, Tommaso Cucinotta <tommaso.cucinotta@sssup.it>, Sudeep Holla <sudeep.holla@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Kevin Hilman <khilman@baylibre.com>, Michael Turquette <mturquette@baylibre.com>, Paolo Valente <paolo.valente@unimore.it>, Claudio Scordino <claudio@evidence.eu.com>, Thomas Gleixner <tglx@linutronix.de>, Steven Rostedt <rostedt@goodmis.org>
 List-Id: linux-pm@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-On Thu, Dec 21, 2017 at 04:13:17PM +0530, Viresh Kumar wrote:
-> On 21-12-17, 11:39, Peter Zijlstra wrote:
-> > The difference is that we apply the per-cpu boost on the per-cpu util
-> > value and _then_ find the overall maximum.
-> > 
-> > Instead of finding the overall maximum and then apply the per-cpu boost
-> > to that.
-> 
-> Okay, so it is just about the right sequencing of these comparisons but the
-> outcome will still be same, i.e. max of the 3 util/max values. Thanks.
+Power Management and Scheduling in the Linux Kernel II edition
+(OSPM-summit 2018)
 
-Aah, you're right. I was thinking we have relative boost, and in that
-case the ordering matters much more.
+April 16-18, 2018
+Scuola Superiore Sant'Anna
+Pisa, Italy
+
+https://marc.info/?l=linux-kernel&m=151075286322645&w=2
+http://retis.sssup.it/ospm-summit/
+
+---
+
+REGISTRATIONS ARE NOW OPEN!
+
+Attending the OSPM-summit is free of charge, but registration to the
+event is mandatory. The event can allow a maximum of 50 people, and 15
+speakers already got in (so, be sure to register early!).
+
+To register fill in the registration form available at
+https://goo.gl/forms/QHebUBdSWgFeSrKv2
+
+The list of accepted topics is available at
+https://docs.google.com/spreadsheets/d/1ZPfASW6zVOM3xQvOrcaDEf1c-Pxi1XnFukVYHHwGUq4/edit?usp=sharing
+
+The list is not final yet; changes might be made at any time before the
+event. So, if you didn't submit anything yet, there is still lot of time
+to come to Pisa and talk about what matters to you. :)
+
+Speakers with accepted topics were automatically registered to the
+event.
+
+.:: VENUE
+
+The workshop will take place at ReTiS Lab*, Scuola Superiore
+Sant'Anna, Pisa, Italy. Pisa is a small town, walking distance from
+the city centre to the venue is 20 minutes, walking distance from the
+airport to the city centre is 30 minutes. More details are available
+from the summit web page: http://retis.sssup.it/ospm-summit/#site
+
+* https://goo.gl/maps/2pPXG2v7Lfp
+
+.:: ORGANISERS (in alphabetical order)
+
+Luca Abeni (SSSA)
+Patrick Bellasi (Arm)
+Tommaso Cucinotta (SSSA)
+Dietmar Eggemann (Arm)
+Sudeep Holla (Arm)
+Juri Lelli (Red Hat)
+Lorenzo Pieralisi (Arm)
+Morten Rasmussen (Arm)
+Claudio Scordino (Evidence SRL)
