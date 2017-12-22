@@ -1,40 +1,64 @@
-From: Peter Zijlstra <peterz@infradead.org>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
 Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
-Date: Fri, 22 Dec 2017 13:22:14 +0100
-Message-ID: <20171222122214.dzzx2pjja3wn5f4q@hirez.programming.kicks-ass.net>
+Date: Fri, 22 Dec 2017 12:25:30 +0000
+Message-ID: <20171222122530.GC30968@e110439-lin>
 References: <20171130114723.29210-1-patrick.bellasi@arm.com>
  <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
  <20171220173814.GC22246@localhost.localdomain>
  <20171222100626.7g5yklspjofcp2we@hirez.programming.kicks-ass.net>
  <20171222110206.GA6414@e110439-lin>
  <20171222114618.mlbqdbagrbr7oert@hirez.programming.kicks-ass.net>
- <20171222120714.GL18612@localhost.localdomain>
- <20171222121445.GB30968@e110439-lin>
+ <20171222121015.3otsnoibduurmhio@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from bombadil.infradead.org ([65.50.211.133]:55247 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750995AbdLVMWU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Dec 2017 07:22:20 -0500
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171222121445.GB30968@e110439-lin>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: Patrick Bellasi <patrick.bellasi@arm.com>
+In-Reply-To: <20171222121015.3otsnoibduurmhio@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
 Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 22, 2017 at 12:14:45PM +0000, Patrick Bellasi wrote:
-> I think that check is already gone for CFS in the current PeterZ tree.
-> It seems we use TICK_NS just for the reset of iowait_boost, isn't it?
+On 22-Dec 13:10, Peter Zijlstra wrote:
+> On Fri, Dec 22, 2017 at 12:46:18PM +0100, Peter Zijlstra wrote:
+> > Blergh that'd make a mess of things again.
+> 
+> Something like so then..
+> 
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -187,11 +187,16 @@ static void sugov_get_util(struct sugov_
+>  
+>  static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
+>  {
+> -	unsigned long util = sg_cpu->util_cfs + sg_cpu->util_dl;
+>  	struct rq *rq = cpu_rq(sg_cpu->cpu);
+> +	unsigned long util;
+>  
+> -	if (rq->rt.rt_nr_running)
+> +	if (rq->rt.rt_nr_running) {
+>  		util = sg_cpu->max;
+> +	} else {
+> +		util = sg_cpu->util_dl;
+> +		if (rq->cfs.h_nr_running)
+> +			util += sg_cpu->util_cfs;
 
-Easy enough to bring back though.
+Since sugov_aggregate_util always follow sugov_get_util, maybe we
+can move these checks into the latter and remove the first one?
 
-> However, if the remote updates of CFS works as expected,
-> the removal of the TICK_NS for CFS is not intentional?
+That way, sg_cpu->util_{dl,rt,cfs} will always report exactly the
+requests of each class considering also which tasks are RUNNABLE at
+sugov_get_util time.
 
-So I killed that because I now do get_util for all CPUs and figured
-get_util provides up-to-date numbers. So we don't need no artificial
-aging.
+Still the observation of Juri is valid: do we wanna really disregard
+all the CFS blocked load as soon as there are not CFS tasks?
 
-Esp. once we get that whole blocked load stuff sorted.
+> +	}
+>  
+>  	/*
+>  	 * Ideally we would like to set util_dl as min/guaranteed freq and
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
