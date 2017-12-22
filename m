@@ -1,53 +1,133 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 0/7] PM /Domain/OPP: Add support to get performance state from DT
-Date: Fri, 22 Dec 2017 12:56:24 +0530
-Message-ID: <cover.1513926033.git.viresh.kumar@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f194.google.com ([209.85.192.194]:34813 "EHLO
-        mail-pf0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750995AbdLVHaL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Dec 2017 02:30:11 -0500
-Received: by mail-pf0-f194.google.com with SMTP id a90so15010278pfk.1
-        for <linux-pm@vger.kernel.org>; Thu, 21 Dec 2017 23:30:10 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
-To: ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Len Brown <len.brown@intel.com>, Nishanth Menon <nm@ti.com>, Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Stephen Boyd <sboyd@codeaurora.org>, Viresh Kumar <vireshk@kernel.org>
+Subject: [PATCH 1/7] PM / OPP: Implement dev_pm_opp_of_add_table_indexed()
+Date: Fri, 22 Dec 2017 12:56:25 +0530
+Message-ID: <627a1c8658a1c0cd4b96ae087c87bb3dfa1ee70a.1513926033.git.viresh.kumar@linaro.org>
+References: <cover.1513926033.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <cover.1513926033.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1513926033.git.viresh.kumar@linaro.org>
+References: <cover.1513926033.git.viresh.kumar@linaro.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org
+List-Id: linux-pm@vger.kernel.org
 
-Hi,
+The "operating-points-v2" property can contain a list of phandles now,
+specifically for the power domain providers that provide multiple
+domains.
 
-Now that the DT bindings [1] are already Reviewed/Acked by respective
-maintainers, here is the code to start using them.
+Add support to parse that.
 
-The first two patches provide helpers in the OPP core, [3-5]/7 update
-the PM domain core to start supporting domain OPP tables, etc, 6/7
-updates the OPP core to use the new callback provided by the PM domains
-to get performance state and the last one removes the unused helpers
-now.
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/opp/of.c       | 50 +++++++++++++++++++++++++++++++++++++++++---------
+ include/linux/pm_opp.h |  6 ++++++
+ 2 files changed, 47 insertions(+), 9 deletions(-)
 
-This is tested on Hikey620 and works just fine.
-
---
-viresh
-
-[1] https://lkml.kernel.org/r/cover.1513591822.git.viresh.kumar@linaro.org
-
-Viresh Kumar (7):
-  PM / OPP: Implement dev_pm_opp_of_add_table_indexed()
-  PM / OPP: Implement of_dev_pm_opp_find_required_opp()
-  PM / Domain: Add struct device to genpd
-  PM / Domain: Add support to parse domain's OPP table
-  PM / Domain: Implement of_dev_pm_genpd_get_performance_state()
-  PM / OPP: Get performance state using genpd helper
-  PM / OPP: Remove dev_pm_opp_{un}register_get_pstate_helper()
-
- drivers/base/power/domain.c | 159 ++++++++++++++++++++++++++++++++++++++++----
- drivers/opp/core.c          |  82 +----------------------
- drivers/opp/of.c            | 123 +++++++++++++++++++++++++++++++---
- drivers/opp/opp.h           |   3 +-
- include/linux/pm_domain.h   |  12 ++++
- include/linux/pm_opp.h      |  22 +++---
- 6 files changed, 284 insertions(+), 117 deletions(-)
-
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index cb716aa2f44b..22c9bd191f62 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -250,20 +250,17 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
+ 
+ /* Returns opp descriptor node for a device node, caller must
+  * do of_node_put() */
+-static struct device_node *_opp_of_get_opp_desc_node(struct device_node *np)
++static struct device_node *_opp_of_get_opp_desc_node(struct device_node *np,
++						     int index)
+ {
+-	/*
+-	 * There should be only ONE phandle present in "operating-points-v2"
+-	 * property.
+-	 */
+-
+-	return of_parse_phandle(np, "operating-points-v2", 0);
++	/* "operating-points-v2" can be an array for power domain providers */
++	return of_parse_phandle(np, "operating-points-v2", index);
+ }
+ 
+ /* Returns opp descriptor node for a device, caller must do of_node_put() */
+ struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
+ {
+-	return _opp_of_get_opp_desc_node(dev->of_node);
++	return _opp_of_get_opp_desc_node(dev->of_node, 0);
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_opp_desc_node);
+ 
+@@ -509,6 +506,41 @@ int dev_pm_opp_of_add_table(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_add_table);
+ 
++/**
++ * dev_pm_opp_of_add_table_indexed() - Initialize indexed opp table from device tree
++ * @dev:	device pointer used to lookup OPP table.
++ * @index:	Index number.
++ *
++ * Register the initial OPP table with the OPP library for given device only
++ * using the "operating-points-v2" property.
++ *
++ * Return:
++ * 0		On success OR
++ *		Duplicate OPPs (both freq and volt are same) and opp->available
++ * -EEXIST	Freq are same and volt are different OR
++ *		Duplicate OPPs (both freq and volt are same) and !opp->available
++ * -ENOMEM	Memory allocation failure
++ * -ENODEV	when 'operating-points' property is not found or is invalid data
++ *		in device node.
++ * -ENODATA	when empty 'operating-points' property is found
++ * -EINVAL	when invalid entries are found in opp-v2 table
++ */
++int dev_pm_opp_of_add_table_indexed(struct device *dev, int index)
++{
++	struct device_node *opp_np;
++	int ret;
++
++	opp_np = _opp_of_get_opp_desc_node(dev->of_node, index);
++	if (!opp_np)
++		return -ENODEV;
++
++	ret = _of_add_opp_table_v2(dev, opp_np);
++	of_node_put(opp_np);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_of_add_table_indexed);
++
+ /* CPU device specific helpers */
+ 
+ /**
+@@ -613,7 +645,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+ 		}
+ 
+ 		/* Get OPP descriptor node */
+-		tmp_np = _opp_of_get_opp_desc_node(cpu_np);
++		tmp_np = _opp_of_get_opp_desc_node(cpu_np, 0);
+ 		of_node_put(cpu_np);
+ 		if (!tmp_np) {
+ 			pr_err("%pOF: Couldn't find opp node\n", cpu_np);
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 6c2d2e88f066..f042fdeaaa3c 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -303,6 +303,7 @@ static inline void dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask
+ 
+ #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
+ int dev_pm_opp_of_add_table(struct device *dev);
++int dev_pm_opp_of_add_table_indexed(struct device *dev, int index);
+ void dev_pm_opp_of_remove_table(struct device *dev);
+ int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask);
+ void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask);
+@@ -314,6 +315,11 @@ static inline int dev_pm_opp_of_add_table(struct device *dev)
+ 	return -ENOTSUPP;
+ }
+ 
++static inline int dev_pm_opp_of_add_table_indexed(struct device *dev, int index)
++{
++	return -ENOTSUPP;
++}
++
+ static inline void dev_pm_opp_of_remove_table(struct device *dev)
+ {
+ }
 -- 
 2.15.0.194.g9af6a3dea062
