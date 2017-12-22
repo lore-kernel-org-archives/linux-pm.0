@@ -1,133 +1,120 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH 1/7] PM / OPP: Implement dev_pm_opp_of_add_table_indexed()
-Date: Fri, 22 Dec 2017 12:56:25 +0530
-Message-ID: <627a1c8658a1c0cd4b96ae087c87bb3dfa1ee70a.1513926033.git.viresh.kumar@linaro.org>
+Subject: [PATCH 3/7] PM / Domain: Add struct device to genpd
+Date: Fri, 22 Dec 2017 12:56:27 +0530
+Message-ID: <a7867661e9bc6f5b1571f60398266ef678ccc1c0.1513926033.git.viresh.kumar@linaro.org>
 References: <cover.1513926033.git.viresh.kumar@linaro.org>
 Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <cover.1513926033.git.viresh.kumar@linaro.org>
 In-Reply-To: <cover.1513926033.git.viresh.kumar@linaro.org>
 References: <cover.1513926033.git.viresh.kumar@linaro.org>
 Sender: linux-kernel-owner@vger.kernel.org
-To: ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org
+To: ulf.hansson@linaro.org, Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Nishanth Menon <nm@ti.com>, Vincent Guittot <vincent.guittot@linaro.org>, robh+dt@kernel.org, rnayak@codeaurora.org, sudeep.holla@arm.com, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-The "operating-points-v2" property can contain a list of phandles now,
-specifically for the power domain providers that provide multiple
-domains.
+The power-domain core would be using the OPP core going forward and the
+OPP core has the basic requirement of a device structure for its working.
 
-Add support to parse that.
+Add a struct device to the genpd structure and also add a genpd bus type
+for the devices.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/of.c       | 50 +++++++++++++++++++++++++++++++++++++++++---------
- include/linux/pm_opp.h |  6 ++++++
- 2 files changed, 47 insertions(+), 9 deletions(-)
+ drivers/base/power/domain.c | 37 +++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h   |  1 +
+ 2 files changed, 38 insertions(+)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index cb716aa2f44b..22c9bd191f62 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -250,20 +250,17 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
- 
- /* Returns opp descriptor node for a device node, caller must
-  * do of_node_put() */
--static struct device_node *_opp_of_get_opp_desc_node(struct device_node *np)
-+static struct device_node *_opp_of_get_opp_desc_node(struct device_node *np,
-+						     int index)
- {
--	/*
--	 * There should be only ONE phandle present in "operating-points-v2"
--	 * property.
--	 */
--
--	return of_parse_phandle(np, "operating-points-v2", 0);
-+	/* "operating-points-v2" can be an array for power domain providers */
-+	return of_parse_phandle(np, "operating-points-v2", index);
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 0c80bea05bcb..013c1e206167 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1630,6 +1630,10 @@ static void genpd_lock_init(struct generic_pm_domain *genpd)
+ 	}
  }
  
- /* Returns opp descriptor node for a device, caller must do of_node_put() */
- struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev)
- {
--	return _opp_of_get_opp_desc_node(dev->of_node);
-+	return _opp_of_get_opp_desc_node(dev->of_node, 0);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_opp_desc_node);
++static struct bus_type genpd_bus_type = {
++	.name =		"genpd",
++};
++
+ /**
+  * pm_genpd_init - Initialize a generic I/O PM domain object.
+  * @genpd: PM domain object to initialize.
+@@ -1687,6 +1691,18 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
+ 			return ret;
+ 	}
  
-@@ -509,6 +506,41 @@ int dev_pm_opp_of_add_table(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_add_table);
++	genpd->dev.bus = &genpd_bus_type;
++	device_initialize(&genpd->dev);
++	dev_set_name(&genpd->dev, "%s", genpd->name);
++
++	ret = device_add(&genpd->dev);
++	if (ret) {
++		dev_err(&genpd->dev, "failed to add device: %d\n", ret);
++		put_device(&genpd->dev);
++		kfree(genpd->free);
++		return ret;
++	}
++
+ 	mutex_lock(&gpd_list_lock);
+ 	list_add(&genpd->gpd_list_node, &gpd_list);
+ 	mutex_unlock(&gpd_list_lock);
+@@ -1724,6 +1740,7 @@ static int genpd_remove(struct generic_pm_domain *genpd)
  
-+/**
-+ * dev_pm_opp_of_add_table_indexed() - Initialize indexed opp table from device tree
-+ * @dev:	device pointer used to lookup OPP table.
-+ * @index:	Index number.
-+ *
-+ * Register the initial OPP table with the OPP library for given device only
-+ * using the "operating-points-v2" property.
-+ *
-+ * Return:
-+ * 0		On success OR
-+ *		Duplicate OPPs (both freq and volt are same) and opp->available
-+ * -EEXIST	Freq are same and volt are different OR
-+ *		Duplicate OPPs (both freq and volt are same) and !opp->available
-+ * -ENOMEM	Memory allocation failure
-+ * -ENODEV	when 'operating-points' property is not found or is invalid data
-+ *		in device node.
-+ * -ENODATA	when empty 'operating-points' property is found
-+ * -EINVAL	when invalid entries are found in opp-v2 table
-+ */
-+int dev_pm_opp_of_add_table_indexed(struct device *dev, int index)
+ 	list_del(&genpd->gpd_list_node);
+ 	genpd_unlock(genpd);
++	device_del(&genpd->dev);
+ 	cancel_work_sync(&genpd->power_off_work);
+ 	kfree(genpd->free);
+ 	pr_debug("%s: removed %s\n", __func__, genpd->name);
+@@ -1888,6 +1905,7 @@ int of_genpd_add_provider_simple(struct device_node *np,
+ 		if (!ret) {
+ 			genpd->provider = &np->fwnode;
+ 			genpd->has_provider = true;
++			genpd->dev.of_node = np;
+ 		}
+ 	}
+ 
+@@ -1924,6 +1942,7 @@ int of_genpd_add_provider_onecell(struct device_node *np,
+ 
+ 		data->domains[i]->provider = &np->fwnode;
+ 		data->domains[i]->has_provider = true;
++		data->domains[i]->dev.of_node = np;
+ 	}
+ 
+ 	ret = genpd_add_provider(np, data->xlate, data);
+@@ -2691,3 +2710,21 @@ static void __exit genpd_debug_exit(void)
+ }
+ __exitcall(genpd_debug_exit);
+ #endif /* CONFIG_DEBUG_FS */
++
++static int __init pm_genpd_core_init(void)
 +{
-+	struct device_node *opp_np;
 +	int ret;
 +
-+	opp_np = _opp_of_get_opp_desc_node(dev->of_node, index);
-+	if (!opp_np)
-+		return -ENODEV;
-+
-+	ret = _of_add_opp_table_v2(dev, opp_np);
-+	of_node_put(opp_np);
++	ret = bus_register(&genpd_bus_type);
++	if (ret)
++		pr_err("bus_register failed (%d)\n", ret);
 +
 +	return ret;
 +}
-+EXPORT_SYMBOL_GPL(dev_pm_opp_of_add_table_indexed);
++pure_initcall(pm_genpd_core_init);
 +
- /* CPU device specific helpers */
- 
- /**
-@@ -613,7 +645,7 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
- 		}
- 
- 		/* Get OPP descriptor node */
--		tmp_np = _opp_of_get_opp_desc_node(cpu_np);
-+		tmp_np = _opp_of_get_opp_desc_node(cpu_np, 0);
- 		of_node_put(cpu_np);
- 		if (!tmp_np) {
- 			pr_err("%pOF: Couldn't find opp node\n", cpu_np);
-diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
-index 6c2d2e88f066..f042fdeaaa3c 100644
---- a/include/linux/pm_opp.h
-+++ b/include/linux/pm_opp.h
-@@ -303,6 +303,7 @@ static inline void dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask
- 
- #if defined(CONFIG_PM_OPP) && defined(CONFIG_OF)
- int dev_pm_opp_of_add_table(struct device *dev);
-+int dev_pm_opp_of_add_table_indexed(struct device *dev, int index);
- void dev_pm_opp_of_remove_table(struct device *dev);
- int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask);
- void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask);
-@@ -314,6 +315,11 @@ static inline int dev_pm_opp_of_add_table(struct device *dev)
- 	return -ENOTSUPP;
- }
- 
-+static inline int dev_pm_opp_of_add_table_indexed(struct device *dev, int index)
++static void __exit pm_genpd_core_exit(void)
 +{
-+	return -ENOTSUPP;
++	bus_unregister(&genpd_bus_type);
 +}
-+
- static inline void dev_pm_opp_of_remove_table(struct device *dev)
- {
- }
++__exitcall(pm_genpd_core_exit);
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 04dbef9847d3..aaacaa35005d 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -49,6 +49,7 @@ struct genpd_power_state {
+ struct genpd_lock_ops;
+ 
+ struct generic_pm_domain {
++	struct device dev;
+ 	struct dev_pm_domain domain;	/* PM domain operations */
+ 	struct list_head gpd_list_node;	/* Node in the global PM domains list */
+ 	struct list_head master_links;	/* Links with PM domain as a master */
 -- 
 2.15.0.194.g9af6a3dea062
