@@ -1,58 +1,54 @@
-From: TimGuo <timguo@zhaoxin.com>
-Subject: [PATCH] x86/acpi/cstate delete some unuseful operations
-Date: Fri, 22 Dec 2017 19:55:04 +0800
-Message-ID: <1513943704-4117-1-git-send-email-timguo@zhaoxin.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
+Date: Fri, 22 Dec 2017 13:07:14 +0100
+Message-ID: <20171222120714.GL18612@localhost.localdomain>
+References: <20171130114723.29210-1-patrick.bellasi@arm.com>
+ <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
+ <20171220173814.GC22246@localhost.localdomain>
+ <20171222100626.7g5yklspjofcp2we@hirez.programming.kicks-ass.net>
+ <20171222110206.GA6414@e110439-lin>
+ <20171222114618.mlbqdbagrbr7oert@hirez.programming.kicks-ass.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from zxshcas01.zhaoxin.com ([180.169.121.91]:6701 "EHLO
-        ZXSHCAS1.zhaoxin.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1750995AbdLVLzd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Dec 2017 06:55:33 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20171222114618.mlbqdbagrbr7oert@hirez.programming.kicks-ass.net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 List-Id: linux-pm@vger.kernel.org
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, mingo@kernel.org, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: brucechang@via-alliance.com, cooperyan@zhaoxin.com, qiyuanwang@zhaoxin.com, benjaminpan@viatech.com, TimGuo <timguo@zhaoxin.com>
 
-Unuseful cache flush operations which will be executed by ucode when entering C3 will
-cause larger C3 enter latency. And the bus master disable operation is not need for
-centaur platforms.
+Hi Peter,
 
-Signed-off-by: TimGuo <timguo@zhaoxin.com>
----
- arch/x86/kernel/acpi/cstate.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+On 22/12/17 12:46, Peter Zijlstra wrote:
+> On Fri, Dec 22, 2017 at 11:02:06AM +0000, Patrick Bellasi wrote:
+> > > @@ -315,8 +315,8 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
+> > >  		unsigned long j_util, j_max;
+> > >  		s64 delta_ns;
+> > >  
+> > > -		if (j_sg_cpu != sg_cpu)
+> > > -			sugov_get_util(j_sg_cpu);
+> > > +		if (idle_cpu(j))
+> > > +			continue;
+> > 
+> > That should work to skip IDLE CPUs... however I'm missing where now we
+> > get the sugov_get_util(j_sg_cpu) for active CPUs. It has been moved
+> > somewhere else I guess...
+> 
+> No, I'm just an idiot... lemme fix that.
+> 
+> > Moreover, that way don't we completely disregard CFS blocked load for
+> > IDLE CPUs... as well as DL reserved utilization, which should be
+> > released only at the 0-lag time?
+> 
+> I was thinking that since dl is a 'global' scheduler the reservation
+> would be too and thus the freq just needs a single CPU to be observed;
+> but I suppose there's nothing stopping anybody from splitting a clock
+> domain down the middle scheduling wise. So yes, good point.
 
-diff --git a/arch/x86/kernel/acpi/cstate.c b/arch/x86/kernel/acpi/cstate.c
-index dde437f..3eee490 100644
---- a/arch/x86/kernel/acpi/cstate.c
-+++ b/arch/x86/kernel/acpi/cstate.c
-@@ -51,6 +51,18 @@ void acpi_processor_power_init_bm_check(struct acpi_processor_flags *flags,
-        if (c->x86_vendor == X86_VENDOR_INTEL &&
-            (c->x86 > 0xf || (c->x86 == 6 && c->x86_model >= 0x0f)))
-                        flags->bm_control = 0;
-+
-+       if (c->x86_vendor == X86_VENDOR_CENTAUR) {
-+               /*
-+                * on all centaur CPUs, sw need not execute cache flush operation
-+                * when entering C3 type state.
-+                *
-+                * On all Centaur platforms, ARB_DISABLE is not required while
-+                * entering C3 type state.
-+                */
-+               flags->bm_check = 1;
-+               flags->bm_control = 0;
-+        }
- }
- EXPORT_SYMBOL(acpi_processor_power_init_bm_check);
+Also, for CFS current behaviour is to start ignoring contributions after
+TICK_NS. It seems that your change might introduce regressions?
 
---
-1.9.1
+Thanks,
 
-
-
-保密声明：
-本邮件含有保密或专有信息，仅供指定收件人使用。严禁对本邮件或其内容做任何未经授权的查阅、使用、复制或转发。
-CONFIDENTIAL NOTE:
-This email contains confidential or legally privileged information and is for the sole use of its intended recipient. Any unauthorized review, use, copying or forwarding of this email or the content of this email is strictly prohibited.
+- Juri
