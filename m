@@ -1,92 +1,87 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 16/16] power: supply: axp288_fuel_gauge: Do not register our psy on (some) HDMI sticks
-Date: Fri, 22 Dec 2017 13:37:54 +0100
-Message-ID: <20171222123754.9622-16-hdegoede@redhat.com>
-References: <20171222123754.9622-1-hdegoede@redhat.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
+Date: Fri, 22 Dec 2017 12:38:19 +0000
+Message-ID: <20171222123819.GD30968@e110439-lin>
+References: <20171130114723.29210-1-patrick.bellasi@arm.com>
+ <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
+ <20171220173814.GC22246@localhost.localdomain>
+ <20171222100626.7g5yklspjofcp2we@hirez.programming.kicks-ass.net>
+ <20171222110206.GA6414@e110439-lin>
+ <20171222114618.mlbqdbagrbr7oert@hirez.programming.kicks-ass.net>
+ <20171222120737.GA30968@e110439-lin>
+ <20171222121954.x3vgj7s6infdox46@hirez.programming.kicks-ass.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:59152 "EHLO mx1.redhat.com"
+Received: from foss.arm.com ([217.140.101.70]:46154 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753398AbdLVMiS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 22 Dec 2017 07:38:18 -0500
-In-Reply-To: <20171222123754.9622-1-hdegoede@redhat.com>
+        id S1755901AbdLVMiY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 22 Dec 2017 07:38:24 -0500
+Content-Disposition: inline
+In-Reply-To: <20171222121954.x3vgj7s6infdox46@hirez.programming.kicks-ass.net>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: Hans de Goede <hdegoede@redhat.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
 
-The Intel Compute Stick (Cherry Trail version) and the Meegopad T08 HDMI
-stick, both use an axp288 PMIC.  They also both have this wired up in such
-a way that the detection logic in the PMIC claims that a valid battery is
-present, resuling in GNOME and KDE showing a full-battery in their status
-bar and power-settings, while these devices do not have a battery.
+On 22-Dec 13:19, Peter Zijlstra wrote:
+> On Fri, Dec 22, 2017 at 12:07:37PM +0000, Patrick Bellasi wrote:
+> > > I was thinking that since dl is a 'global' scheduler the reservation
+> > > would be too and thus the freq just needs a single CPU to be observed;
+> > 
+> > AFAIU global is only the admission control (which is something worth a
+> > thread by itself...) while the dl_se->dl_bw are aggregated into the
+> > dl_rq->running_bw, which ultimately represents the DL bandwidth
+> > required for just a CPU.
+> 
+> Oh urgh yes, forgot that.. then the dl freq stuff isn't strictly correct
+> I think. But yes, that's another thread.
 
-For lack of a better fix add a DMI blacklist and do not register the
-axp288_fuel_gauge psy on devices on the blacklist.
+Mmm... maybe I don't get your point... I was referring to the global
+admission control of DL. If you have for example 3 60% DL tasks on a
+2CPU system, AFAIU the CBS will allow the tasks in the system (since
+the overall utilization is 180 < 200 * 0.95) although that workload is
+not necessarily schedule (for example if the tasks wakeups at the
+same time one of them will miss its deadline).
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/power/supply/axp288_fuel_gauge.c | 35 ++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+But, yeah... maybe I'm completely wrong or, in any case, it's for a
+different thread...
 
-diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-index 5750b6caecd4..94f93cd757ac 100644
---- a/drivers/power/supply/axp288_fuel_gauge.c
-+++ b/drivers/power/supply/axp288_fuel_gauge.c
-@@ -17,6 +17,7 @@
-  *
-  */
- 
-+#include <linux/dmi.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/device.h>
-@@ -694,6 +695,37 @@ static void fuel_gauge_init_irq(struct axp288_fg_info *info)
- 	}
- }
- 
-+/*
-+ * Some devices have no battery (HDMI sticks) and the axp288 battery's
-+ * detection reports one despite it not being there.
-+ */
-+static const struct dmi_system_id axp288_fuel_gauge_blacklist[] = {
-+	{
-+		/* Intel Cherry Trail Compute Stick, Windows version */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Intel Corporation"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "STK1AW32SC"),
-+		},
-+	},
-+	{
-+		/* Intel Cherry Trail Compute Stick, version without an OS */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Intel Corporation"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "STK1A32SC"),
-+		},
-+	},
-+	{
-+		/* Meegopad T08 */
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Default string"),
-+			DMI_MATCH(DMI_BOARD_VENDOR, "To be filled by OEM."),
-+			DMI_MATCH(DMI_BOARD_NAME, "T3 MRD"),
-+			DMI_MATCH(DMI_BOARD_VERSION, "V1.1"),
-+		},
-+	},
-+	{}
-+};
-+
- static int axp288_fuel_gauge_probe(struct platform_device *pdev)
- {
- 	int i, ret = 0;
-@@ -709,6 +741,9 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
- 		[BAT_VOLT] = "axp288-batt-volt",
- 	};
- 
-+	if (dmi_check_system(axp288_fuel_gauge_blacklist))
-+		return -ENODEV;
-+
- 	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
- 	if (!info)
- 		return -ENOMEM;
+> > > but I suppose there's nothing stopping anybody from splitting a clock
+> > > domain down the middle scheduling wise. So yes, good point.
+> > 
+> > That makes sense... moreover, using the global utilization, we would
+> > end up asking for capacities which cannot be provided by a single CPU.
+> 
+> Yes, but that _should_ not be a problem if you clock them all high
+> enough. But this gets to be complicated real fast I think.
+
+IMO the current solution with Juri's patches is working as expected:
+we know how many DL tasks are runnable on a CPU and we properly
+account for their utilization.
+
+The only "issue/limitation" is (eventually) the case described above.
+Dunno if we can enqueue 2 60% DL tasks on the same CPU... in that case
+we will ask for 120% Utilization?
+
+> > > Blergh that'd make a mess of things again.
+> > 
+> > Actually, looking better at your patch: are we not just ok with that?
+> > 
+> > I mean, we don't need this check on idle_cpu since in
+> > sugov_aggregate_util we already skip the util=sg_cpu->max in case of
+> > !rq->rt.rt_nr_running, while we aggregate just CFS and DL requests.
+> 
+> Right, well, I don't actually have an environment to test this sanely,
+> so someone will have to go play with the various variations and see what
+> works.
+
+Definitively, we have some synthetics for mainline... as well as we
+can easily backport this series to v4.9 and test for power/perf using
+a full Android stack. But, give today is the 22th, I guess we can do
+that after holidays (in ~2 weeks).
+
 -- 
-2.14.3
+#include <best/regards.h>
+
+Patrick Bellasi
