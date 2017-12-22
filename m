@@ -1,71 +1,203 @@
-From: Miquel Raynal <miquel.raynal@free-electrons.com>
-Subject: [PATCH v7 08/11] thermal: armada: Update Kconfig and module description
-Date: Fri, 22 Dec 2017 17:14:10 +0100
-Message-ID: <20171222161413.20816-9-miquel.raynal@free-electrons.com>
+From: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: [PATCH v7 06/11] thermal: armada: Add support for Armada AP806
+Date: Fri, 22 Dec 2017 17:14:08 +0100
+Message-ID: <20171222161413.20816-7-miquel.raynal@free-electrons.com>
 References: <20171222161413.20816-1-miquel.raynal@free-electrons.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:55759 "EHLO
-        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756438AbdLVQOi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Dec 2017 11:14:38 -0500
-In-Reply-To: <20171222161413.20816-1-miquel.raynal@free-electrons.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171222161413.20816-1-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Miquel Raynal <miquel.raynal@free-electrons.com>, Baruch Siach <baruch@tkos.co.il>, David Sniatkiwicz <davidsn@marvell.com>
 
-Update Armada thermal driver Kconfig entry as well as the driver's
-MODULE_DESCRIPTION content, now that 64-bit SoCs are also supported,
-eg. Armada 7K and Armada 8K.
+From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
 
-Use the generic term "Marvell EBU Armada SoCs" instead of listing all
-the supported SoCs everywhere (excepted in the Kconfig description,
-where it is useful to have a list).
+The AP806 component is integrated in the Armada 8K and 7K lines of
+processors.
 
-Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
-Reviewed-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+The thermal sensor sample field on the status register is a signed
+value. Extend armada_get_temp() and the driver structure to handle
+signed values.
+
+Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+[<miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>: Changes when applying over the
+previous patches, including the register names changes, also switched
+the coefficients values to s64 instead of unsigned long to deal with
+negative values and used do_div instead of the traditionnal '/']
+Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Reviewed-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Tested-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- drivers/thermal/Kconfig          | 4 ++--
- drivers/thermal/armada_thermal.c | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/thermal/armada_thermal.c | 74 +++++++++++++++++++++++++++++++---------
+ 1 file changed, 58 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 315ae2926e20..b6adc54b96f1 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -301,13 +301,13 @@ config DB8500_THERMAL
- 	  thermal zone if trip points reached.
- 
- config ARMADA_THERMAL
--	tristate "Armada 370/XP thermal management"
-+	tristate "Marvell EBU Armada SoCs thermal management"
- 	depends on ARCH_MVEBU || COMPILE_TEST
- 	depends on HAS_IOMEM
- 	depends on OF
- 	help
- 	  Enable this option if you want to have support for thermal management
--	  controller present in Armada 370 and Armada XP SoC.
-+	  controller present in Marvell EBU Armada SoCs (370,375,XP,38x,7K,8K).
- 
- config DA9062_THERMAL
- 	tristate "DA9062/DA9061 Dialog Semiconductor thermal driver"
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index f2eba2a6f1a5..d426b230e1c5 100644
+index ceebabf45c53..f35289b1cea9 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -1,5 +1,5 @@
- /*
-- * Marvell Armada 370/XP thermal sensor driver
-+ * Marvell EBU Armada SoCs thermal sensor driver
-  *
-  * Copyright (C) 2013 Marvell
-  *
-@@ -407,5 +407,5 @@ static struct platform_driver armada_thermal_driver = {
- module_platform_driver(armada_thermal_driver);
+@@ -47,6 +47,11 @@
+ #define CONTROL0_OFFSET			0x0
+ #define CONTROL1_OFFSET			0x4
  
- MODULE_AUTHOR("Ezequiel Garcia <ezequiel.garcia@free-electrons.com>");
--MODULE_DESCRIPTION("Armada 370/XP thermal driver");
-+MODULE_DESCRIPTION("Marvell EBU Armada SoCs thermal driver");
- MODULE_LICENSE("GPL v2");
++/* TSEN refers to the temperature sensors within the AP */
++#define CONTROL0_TSEN_START		BIT(0)
++#define CONTROL0_TSEN_RESET		BIT(1)
++#define CONTROL0_TSEN_ENABLE		BIT(2)
++
+ struct armada_thermal_data;
+ 
+ /* Marvell EBU Thermal Sensor Dev Structure */
+@@ -66,10 +71,11 @@ struct armada_thermal_data {
+ 	bool (*is_valid)(struct armada_thermal_priv *);
+ 
+ 	/* Formula coeficients: temp = (b - m * reg) / div */
+-	unsigned long coef_b;
+-	unsigned long coef_m;
+-	unsigned long coef_div;
++	s64 coef_b;
++	s64 coef_m;
++	u32 coef_div;
+ 	bool inverted;
++	bool signed_sample;
+ 
+ 	/* Register shift and mask to access the sensor temperature */
+ 	unsigned int temp_shift;
+@@ -155,6 +161,18 @@ static void armada380_init_sensor(struct platform_device *pdev,
+ 	}
+ }
+ 
++static void armada_ap806_init_sensor(struct platform_device *pdev,
++				     struct armada_thermal_priv *priv)
++{
++	u32 reg;
++
++	reg = readl_relaxed(priv->control0);
++	reg &= ~CONTROL0_TSEN_RESET;
++	reg |= CONTROL0_TSEN_START | CONTROL0_TSEN_ENABLE;
++	writel(reg, priv->control0);
++	msleep(10);
++}
++
+ static bool armada_is_valid(struct armada_thermal_priv *priv)
+ {
+ 	u32 reg = readl_relaxed(priv->status);
+@@ -163,11 +181,11 @@ static bool armada_is_valid(struct armada_thermal_priv *priv)
+ }
+ 
+ static int armada_get_temp(struct thermal_zone_device *thermal,
+-			  int *temp)
++			   int *temp)
+ {
+ 	struct armada_thermal_priv *priv = thermal->devdata;
+-	unsigned long reg;
+-	unsigned long m, b, div;
++	u32 reg, div;
++	s64 sample, b, m;
+ 
+ 	/* Valid check */
+ 	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
+@@ -178,6 +196,11 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
+ 
+ 	reg = readl_relaxed(priv->status);
+ 	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
++	if (priv->data->signed_sample)
++		/* The most significant bit is the sign bit */
++		sample = sign_extend32(reg, fls(priv->data->temp_mask) - 1);
++	else
++		sample = reg;
+ 
+ 	/* Get formula coeficients */
+ 	b = priv->data->coef_b;
+@@ -185,9 +208,10 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
+ 	div = priv->data->coef_div;
+ 
+ 	if (priv->data->inverted)
+-		*temp = ((m * reg) - b) / div;
++		*temp = div_s64((m * sample) - b, div);
+ 	else
+-		*temp = (b - (m * reg)) / div;
++		*temp = div_s64(b - (m * sample), div);
++
+ 	return 0;
+ }
+ 
+@@ -199,8 +223,8 @@ static const struct armada_thermal_data armadaxp_data = {
+ 	.init_sensor = armadaxp_init_sensor,
+ 	.temp_shift = 10,
+ 	.temp_mask = 0x1ff,
+-	.coef_b = 3153000000UL,
+-	.coef_m = 10000000UL,
++	.coef_b = 3153000000ULL,
++	.coef_m = 10000000ULL,
+ 	.coef_div = 13825,
+ };
+ 
+@@ -210,8 +234,8 @@ static const struct armada_thermal_data armada370_data = {
+ 	.is_valid_bit = BIT(9),
+ 	.temp_shift = 10,
+ 	.temp_mask = 0x1ff,
+-	.coef_b = 3153000000UL,
+-	.coef_m = 10000000UL,
++	.coef_b = 3153000000ULL,
++	.coef_m = 10000000ULL,
+ 	.coef_div = 13825,
+ };
+ 
+@@ -221,8 +245,8 @@ static const struct armada_thermal_data armada375_data = {
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x1ff,
+-	.coef_b = 3171900000UL,
+-	.coef_m = 10000000UL,
++	.coef_b = 3171900000ULL,
++	.coef_m = 10000000ULL,
+ 	.coef_div = 13616,
+ 	.needs_control0 = true,
+ };
+@@ -233,12 +257,26 @@ static const struct armada_thermal_data armada380_data = {
+ 	.is_valid_bit = BIT(10),
+ 	.temp_shift = 0,
+ 	.temp_mask = 0x3ff,
+-	.coef_b = 1172499100UL,
+-	.coef_m = 2000096UL,
++	.coef_b = 1172499100ULL,
++	.coef_m = 2000096ULL,
+ 	.coef_div = 4201,
+ 	.inverted = true,
+ };
+ 
++static const struct armada_thermal_data armada_ap806_data = {
++	.is_valid = armada_is_valid,
++	.init_sensor = armada_ap806_init_sensor,
++	.is_valid_bit = BIT(16),
++	.temp_shift = 0,
++	.temp_mask = 0x3ff,
++	.coef_b = -150000LL,
++	.coef_m = 423ULL,
++	.coef_div = 1,
++	.inverted = true,
++	.signed_sample = true,
++	.needs_control0 = true,
++};
++
+ static const struct of_device_id armada_thermal_id_table[] = {
+ 	{
+ 		.compatible = "marvell,armadaxp-thermal",
+@@ -257,6 +295,10 @@ static const struct of_device_id armada_thermal_id_table[] = {
+ 		.data       = &armada380_data,
+ 	},
+ 	{
++		.compatible = "marvell,armada-ap806-thermal",
++		.data       = &armada_ap806_data,
++	},
++	{
+ 		/* sentinel */
+ 	},
+ };
 -- 
 2.11.0
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
