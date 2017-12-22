@@ -1,7 +1,7 @@
 From: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v6 03/11] thermal: armada: Simplify the check of the validity bit
-Date: Fri, 22 Dec 2017 10:32:18 +0100
-Message-ID: <20171222093226.23456-4-miquel.raynal@free-electrons.com>
+Subject: [PATCH v6 08/11] thermal: armada: Update Kconfig and module description
+Date: Fri, 22 Dec 2017 10:32:23 +0100
+Message-ID: <20171222093226.23456-9-miquel.raynal@free-electrons.com>
 References: <20171222093226.23456-1-miquel.raynal@free-electrons.com>
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 In-Reply-To: <20171222093226.23456-1-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -10,81 +10,59 @@ To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valen
 Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-All Armada SoCs use one bit to declare if the sensor values are valid.
-This bit moves across the versions of the IP.
+Update Armada thermal driver Kconfig entry as well as the driver's
+MODULE_DESCRIPTION content, now that 64-bit SoCs are also supported,
+eg. Armada 7K and Armada 8K.
 
-The method until then was to do both a shift and compare with an useless
-flag of "0x1". It is clearer and quicker to directly save the value that
-must be ANDed instead of the bit position and do a single bitwise AND
-operation.
+Use the generic term "Marvell EBU Armada SoCs" instead of listing all
+the supported SoCs everywhere (excepted in the Kconfig description,
+where it is useful to have a list).
 
 Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 Reviewed-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- drivers/thermal/armada_thermal.c | 14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+ drivers/thermal/Kconfig          | 4 ++--
+ drivers/thermal/armada_thermal.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+index 315ae2926e20..b6adc54b96f1 100644
+--- a/drivers/thermal/Kconfig
++++ b/drivers/thermal/Kconfig
+@@ -301,13 +301,13 @@ config DB8500_THERMAL
+ 	  thermal zone if trip points reached.
+ 
+ config ARMADA_THERMAL
+-	tristate "Armada 370/XP thermal management"
++	tristate "Marvell EBU Armada SoCs thermal management"
+ 	depends on ARCH_MVEBU || COMPILE_TEST
+ 	depends on HAS_IOMEM
+ 	depends on OF
+ 	help
+ 	  Enable this option if you want to have support for thermal management
+-	  controller present in Armada 370 and Armada XP SoC.
++	  controller present in Marvell EBU Armada SoCs (370,375,XP,38x,7K,8K).
+ 
+ config DA9062_THERMAL
+ 	tristate "DA9062/DA9061 Dialog Semiconductor thermal driver"
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index 6c4af2622d4f..f350d7efd35a 100644
+index 93f7c0eb5141..537f6fdc9059 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -24,8 +24,6 @@
- #include <linux/of_device.h>
- #include <linux/thermal.h>
+@@ -1,5 +1,5 @@
+ /*
+- * Marvell Armada 370/XP thermal sensor driver
++ * Marvell EBU Armada SoCs thermal sensor driver
+  *
+  * Copyright (C) 2013 Marvell
+  *
+@@ -411,5 +411,5 @@ static struct platform_driver armada_thermal_driver = {
+ module_platform_driver(armada_thermal_driver);
  
--#define THERMAL_VALID_MASK		0x1
--
- /* Thermal Manager Control and Status Register */
- #define PMU_TDC0_SW_RST_MASK		(0x1 << 1)
- #define PMU_TM_DISABLE_OFFS		0
-@@ -67,7 +65,7 @@ struct armada_thermal_data {
- 	/* Register shift and mask to access the sensor temperature */
- 	unsigned int temp_shift;
- 	unsigned int temp_mask;
--	unsigned int is_valid_shift;
-+	u32 is_valid_bit;
- };
- 
- static void armadaxp_init_sensor(struct platform_device *pdev,
-@@ -149,9 +147,9 @@ static void armada380_init_sensor(struct platform_device *pdev,
- 
- static bool armada_is_valid(struct armada_thermal_priv *priv)
- {
--	unsigned long reg = readl_relaxed(priv->sensor);
-+	u32 reg = readl_relaxed(priv->sensor);
- 
--	return (reg >> priv->data->is_valid_shift) & THERMAL_VALID_MASK;
-+	return reg & priv->data->is_valid_bit;
- }
- 
- static int armada_get_temp(struct thermal_zone_device *thermal,
-@@ -199,7 +197,7 @@ static const struct armada_thermal_data armadaxp_data = {
- static const struct armada_thermal_data armada370_data = {
- 	.is_valid = armada_is_valid,
- 	.init_sensor = armada370_init_sensor,
--	.is_valid_shift = 9,
-+	.is_valid_bit = BIT(9),
- 	.temp_shift = 10,
- 	.temp_mask = 0x1ff,
- 	.coef_b = 3153000000UL,
-@@ -210,7 +208,7 @@ static const struct armada_thermal_data armada370_data = {
- static const struct armada_thermal_data armada375_data = {
- 	.is_valid = armada_is_valid,
- 	.init_sensor = armada375_init_sensor,
--	.is_valid_shift = 10,
-+	.is_valid_bit = BIT(10),
- 	.temp_shift = 0,
- 	.temp_mask = 0x1ff,
- 	.coef_b = 3171900000UL,
-@@ -221,7 +219,7 @@ static const struct armada_thermal_data armada375_data = {
- static const struct armada_thermal_data armada380_data = {
- 	.is_valid = armada_is_valid,
- 	.init_sensor = armada380_init_sensor,
--	.is_valid_shift = 10,
-+	.is_valid_bit = BIT(10),
- 	.temp_shift = 0,
- 	.temp_mask = 0x3ff,
- 	.coef_b = 1172499100UL,
+ MODULE_AUTHOR("Ezequiel Garcia <ezequiel.garcia-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>");
+-MODULE_DESCRIPTION("Armada 370/XP thermal driver");
++MODULE_DESCRIPTION("Marvell EBU Armada SoCs thermal driver");
+ MODULE_LICENSE("GPL v2");
 -- 
 2.11.0
 
