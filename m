@@ -1,83 +1,113 @@
-From: Patrick Bellasi <patrick.bellasi@arm.com>
-Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
-Date: Fri, 22 Dec 2017 11:02:06 +0000
-Message-ID: <20171222110206.GA6414@e110439-lin>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
- <20171220173814.GC22246@localhost.localdomain>
- <20171222100626.7g5yklspjofcp2we@hirez.programming.kicks-ass.net>
+From: Baruch Siach <baruch@tkos.co.il>
+Subject: Re: [PATCH v6 06/11] thermal: armada: Add support for Armada AP806
+Date: Fri, 22 Dec 2017 13:03:50 +0200
+Message-ID: <20171222110350.zq2hlrctbzbkbrm7@tarshish>
+References: <20171222093226.23456-1-miquel.raynal@free-electrons.com>
+ <20171222093226.23456-7-miquel.raynal@free-electrons.com>
+ <20171222101426.yujvg2xbca3ghpyc@tarshish>
+ <20171222114948.32c36369@xps13>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:44974 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1750786AbdLVLCP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 22 Dec 2017 06:02:15 -0500
+Received: from guitar.tcltek.co.il ([192.115.133.116]:58582 "EHLO
+        mx.tkos.co.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750786AbdLVLDy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 22 Dec 2017 06:03:54 -0500
 Content-Disposition: inline
-In-Reply-To: <20171222100626.7g5yklspjofcp2we@hirez.programming.kicks-ass.net>
+In-Reply-To: <20171222114948.32c36369@xps13>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Juri Lelli <juri.lelli@redhat.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+To: Miquel RAYNAL <miquel.raynal@free-electrons.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, David Sniatkiwicz <davidsn@marvell.com>
 
-On 22-Dec 11:06, Peter Zijlstra wrote:
-> On Wed, Dec 20, 2017 at 06:38:14PM +0100, Juri Lelli wrote:
-> > On 20/12/17 16:30, Peter Zijlstra wrote:
+Hi Miquèl,
+
+On Fri, Dec 22, 2017 at 11:49:48AM +0100, Miquel RAYNAL wrote:
+> On Fri, 22 Dec 2017 12:14:26 +0200
+> Baruch Siach <baruch@tkos.co.il> wrote:
+> > On Fri, Dec 22, 2017 at 10:32:21AM +0100, Miquel Raynal wrote:
+> > > From: Baruch Siach <baruch@tkos.co.il>
+> > > 
+> > > The AP806 component is integrated in the Armada 8K and 7K lines of
+> > > processors.
+> > > 
+> > > The thermal sensor sample field on the status register is a signed
+> > > value. Extend armada_get_temp() and the driver structure to handle
+> > > signed values.
+> > > 
+> > > Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+> > > [<miquel.raynal@free-electrons.com>: Changes when applying over the
+> > > previous patches, including the register names changes, also
+> > > switched the coefficients values to s64 instead of unsigned long to
+> > > deal with negative values and used do_div instead of the
+> > > traditionnal '/'] Signed-off-by: Miquel Raynal
+> > > <miquel.raynal@free-electrons.com> Reviewed-by: Gregory CLEMENT
+> > > <gregory.clement@free-electrons.com> Tested-by: Gregory CLEMENT
+> > > <gregory.clement@free-electrons.com> ---  
 > > 
-> > [...]
+> > [..]
 > > 
-> > > @@ -327,12 +331,7 @@ static unsigned int sugov_next_freq_shar
-> > >  		if (delta_ns > TICK_NSEC) {
-> > >  			j_sg_cpu->iowait_boost = 0;
-> > >  			j_sg_cpu->iowait_boost_pending = false;
-> > > -			j_sg_cpu->util_cfs = 0;
-> > > -			if (j_sg_cpu->util_dl == 0)
-> > > -				continue;
-> > >  		}
+> > >  static int armada_get_temp(struct thermal_zone_device *thermal,
+> > > -			  int *temp)
+> > > +			   int *temperature)
+> > >  {
+> > >  	struct armada_thermal_priv *priv = thermal->devdata;
+> > > -	unsigned long reg;
+> > > -	unsigned long m, b, div;
+> > > +	u32 reg, div;
+> > > +	s64 sample, b, m;
+> > > +	u64 tmp;
+> > >  
+> > >  	/* Valid check */
+> > >  	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
+> > > @@ -178,6 +197,11 @@ static int armada_get_temp(struct
+> > > thermal_zone_device *thermal, 
+> > >  	reg = readl_relaxed(priv->status);
+> > >  	reg = (reg >> priv->data->temp_shift) &
+> > > priv->data->temp_mask;
+> > > +	if (priv->data->signed_sample)
+> > > +		/* The most significant bit is the sign bit */
+> > > +		sample = sign_extend32(reg,
+> > > fls(priv->data->temp_mask) - 1);
+> > > +	else
+> > > +		sample = reg;
+> > >  
+> > >  	/* Get formula coeficients */
+> > >  	b = priv->data->coef_b;
+> > > @@ -185,9 +209,13 @@ static int armada_get_temp(struct
+> > > thermal_zone_device *thermal, div = priv->data->coef_div;
+> > >  
+> > >  	if (priv->data->inverted)
+> > > -		*temp = ((m * reg) - b) / div;
+> > > +		tmp = (m * sample) - b;
+> > >  	else
+> > > -		*temp = (b - (m * reg)) / div;
+> > > +		tmp = b - (m * sample);
+> > > +
+> > > +	do_div(tmp, div);
+> > > +	*temperature = (int)tmp;  
 > > 
-> > This goes away because with Brendan/Vincent fix we don't need the
-> > workaround for stale CFS util contribution for idle CPUs anymore?
+> > Nitpick: why not (untested)
+> > 
+> > #include <linux/math64.h>
+> > 
+> >   if (priv->data->inverted)
+> >     *temp = div_s64((m * sample) - b, div);
+> >   else
+> >     *temp = div_s64(b - (m * sample), div);
 > 
-> An easy fix would be something like the below I suppose (also folded a
-> change from Viresh).
-> 
-> This way it completely ignores the demand from idle CPUs. Which I
-> suppose is exactly what you want, no?
-> 
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index ab84d2261554..9736b537386a 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -315,8 +315,8 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
->  		unsigned long j_util, j_max;
->  		s64 delta_ns;
->  
-> -		if (j_sg_cpu != sg_cpu)
-> -			sugov_get_util(j_sg_cpu);
-> +		if (idle_cpu(j))
-> +			continue;
+> Indeed I could also use div_s64, but the result must be unsigned anyway.
 
-That should work to skip IDLE CPUs... however I'm missing where now we
-get the sugov_get_util(j_sg_cpu) for active CPUs. It has been moved
-somewhere else I guess...
+*temp is signed, as far as I can see. Temperature can go below zero, at least 
+in the Celsius scale.
 
-Moreover, that way don't we completely disregard CFS blocked load for
-IDLE CPUs... as well as DL reserved utilization, which should be
-released only at the 0-lag time?
+> But this does all the operations on the same line, maybe this is more
+> readable, I will update it and send (hopefully) the last version :)
 
->  
->  		/*
->  		 * If the CFS CPU utilization was last updated before the
-> @@ -354,7 +354,6 @@ static void sugov_update_shared(struct update_util_data *hook, u64 time,
->  
->  	raw_spin_lock(&sg_policy->update_lock);
->  
-> -	sugov_get_util(sg_cpu);
->  	sugov_set_iowait_boost(sg_cpu, time, flags);
->  	sg_cpu->last_update = time;
->  
+baruch
 
 -- 
-#include <best/regards.h>
-
-Patrick Bellasi
+     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
+=}------------------------------------------------ooO--U--Ooo------------{=
+   - baruch@tkos.co.il - tel: +972.52.368.4656, http://www.tkos.co.il -
