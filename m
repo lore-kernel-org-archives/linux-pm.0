@@ -1,58 +1,46 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
-Date: Fri, 22 Dec 2017 13:27:04 +0100
-Message-ID: <20171222122704.GM18612@localhost.localdomain>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
- <20171220173814.GC22246@localhost.localdomain>
- <20171222100626.7g5yklspjofcp2we@hirez.programming.kicks-ass.net>
- <20171222110206.GA6414@e110439-lin>
- <20171222114618.mlbqdbagrbr7oert@hirez.programming.kicks-ass.net>
- <20171222120737.GA30968@e110439-lin>
- <20171222121954.x3vgj7s6infdox46@hirez.programming.kicks-ass.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20171222121954.x3vgj7s6infdox46@hirez.programming.kicks-ass.net>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>, Claudio Scordino <claudio@evidence.eu.com>, Luca Abeni <luca.abeni@santannapisa.it>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: [PATCH 02/16] power: supply: axp288_charger: Add missing newlines to some messages
+Date: Fri, 22 Dec 2017 13:37:40 +0100
+Message-ID: <20171222123754.9622-2-hdegoede@redhat.com>
+References: <20171222123754.9622-1-hdegoede@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:35660 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751514AbdLVMh5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 22 Dec 2017 07:37:57 -0500
+In-Reply-To: <20171222123754.9622-1-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>
+Cc: Hans de Goede <hdegoede@redhat.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org
 
-On 22/12/17 13:19, Peter Zijlstra wrote:
-> On Fri, Dec 22, 2017 at 12:07:37PM +0000, Patrick Bellasi wrote:
-> > > I was thinking that since dl is a 'global' scheduler the reservation
-> > > would be too and thus the freq just needs a single CPU to be observed;
-> > 
-> > AFAIU global is only the admission control (which is something worth a
-> > thread by itself...) while the dl_se->dl_bw are aggregated into the
-> > dl_rq->running_bw, which ultimately represents the DL bandwidth
-> > required for just a CPU.
-> 
-> Oh urgh yes, forgot that.. then the dl freq stuff isn't strictly correct
-> I think. But yes, that's another thread.
-> 
-> > > but I suppose there's nothing stopping anybody from splitting a clock
-> > > domain down the middle scheduling wise. So yes, good point.
-> > 
-> > That makes sense... moreover, using the global utilization, we would
-> > end up asking for capacities which cannot be provided by a single CPU.
-> 
-> Yes, but that _should_ not be a problem if you clock them all high
-> enough. But this gets to be complicated real fast I think.
-> 
-> > > Blergh that'd make a mess of things again.
-> > 
-> > Actually, looking better at your patch: are we not just ok with that?
-> > 
-> > I mean, we don't need this check on idle_cpu since in
-> > sugov_aggregate_util we already skip the util=sg_cpu->max in case of
-> > !rq->rt.rt_nr_running, while we aggregate just CFS and DL requests.
-> 
-> Right, well, I don't actually have an environment to test this sanely,
-> so someone will have to go play with the various variations and see what
-> works.
+Add missing (terminating) "\n"-s to some dev_dbg messages.
 
-Adding Claudio and Luca to the thread (as I don't have a testing
-platform myself ATM). ;)
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/power/supply/axp288_charger.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
+index 54a95d196306..d398f8ee296d 100644
+--- a/drivers/power/supply/axp288_charger.c
++++ b/drivers/power/supply/axp288_charger.c
+@@ -584,13 +584,13 @@ static void axp288_charger_extcon_evt_worker(struct work_struct *work)
+ 
+ 	/* Determine cable/charger type */
+ 	if (extcon_get_state(edev, EXTCON_CHG_USB_SDP) > 0) {
+-		dev_dbg(&info->pdev->dev, "USB SDP charger  is connected");
++		dev_dbg(&info->pdev->dev, "USB SDP charger is connected\n");
+ 		current_limit = ILIM_500MA;
+ 	} else if (extcon_get_state(edev, EXTCON_CHG_USB_CDP) > 0) {
+-		dev_dbg(&info->pdev->dev, "USB CDP charger is connected");
++		dev_dbg(&info->pdev->dev, "USB CDP charger is connected\n");
+ 		current_limit = ILIM_1500MA;
+ 	} else if (extcon_get_state(edev, EXTCON_CHG_USB_DCP) > 0) {
+-		dev_dbg(&info->pdev->dev, "USB DCP charger is connected");
++		dev_dbg(&info->pdev->dev, "USB DCP charger is connected\n");
+ 		current_limit = ILIM_2000MA;
+ 	} else {
+ 		/* Charger type detection still in progress, bail. */
+-- 
+2.14.3
