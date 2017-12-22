@@ -1,95 +1,92 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 15/16] power: supply: axp288_fuel_gauge: Fix FULL status reporting
-Date: Fri, 22 Dec 2017 13:37:53 +0100
-Message-ID: <20171222123754.9622-15-hdegoede@redhat.com>
+Subject: [PATCH 16/16] power: supply: axp288_fuel_gauge: Do not register our psy on (some) HDMI sticks
+Date: Fri, 22 Dec 2017 13:37:54 +0100
+Message-ID: <20171222123754.9622-16-hdegoede@redhat.com>
 References: <20171222123754.9622-1-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:21768 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:59152 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755901AbdLVMiR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 22 Dec 2017 07:38:17 -0500
+        id S1753398AbdLVMiS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 22 Dec 2017 07:38:18 -0500
 In-Reply-To: <20171222123754.9622-1-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: Hans de Goede <hdegoede@redhat.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org
 
-Relying on the (dis)charge current reporting for reporting FULL back to
-userspace does not work really well and often leads to the reported status
-getting stuck at e.g. 98/99% (the fuelgauge is not perfect) for hours.
+The Intel Compute Stick (Cherry Trail version) and the Meegopad T08 HDMI
+stick, both use an axp288 PMIC.  They also both have this wired up in such
+a way that the detection logic in the PMIC claims that a valid battery is
+present, resuling in GNOME and KDE showing a full-battery in their status
+bar and power-settings, while these devices do not have a battery.
 
-What happens is that when the battery is full the axp288 keeps charging it
-with a very low current. Until it is really really full and once really
-really full, some inaccuracies in the adc lead to it then sometimes
-reporting a small discharging rate, even though an external pwr source is
-used. So we end up with a status of "charging" for hours after the battery
-is actually already full and sometimes this then flip-flops to discharging.
-
-This commit fixes this by using the fuel-gauge to check if the battery is
-approximately full and if it is then discount a (dis)charge current smaller
-then 64mA.
-
-If we encounter a 0 (dis)charge current when not full, then report this
-as "not charging".
+For lack of a better fix add a DMI blacklist and do not register the
+axp288_fuel_gauge psy on devices on the blacklist.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_fuel_gauge.c | 33 ++++++++++++++++++++++++++++----
- 1 file changed, 29 insertions(+), 4 deletions(-)
+ drivers/power/supply/axp288_fuel_gauge.c | 35 ++++++++++++++++++++++++++++++++
+ 1 file changed, 35 insertions(+)
 
 diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
-index 2fc144b1ec0a..5750b6caecd4 100644
+index 5750b6caecd4..94f93cd757ac 100644
 --- a/drivers/power/supply/axp288_fuel_gauge.c
 +++ b/drivers/power/supply/axp288_fuel_gauge.c
-@@ -337,7 +337,8 @@ static inline void fuel_gauge_remove_debugfs(struct axp288_fg_info *info)
+@@ -17,6 +17,7 @@
+  *
+  */
  
- static void fuel_gauge_get_status(struct axp288_fg_info *info)
- {
--	int ret, charge, discharge;
-+	int ret, charge, discharge, charge_now_raw, threshold;
-+	bool full;
- 
- 	ret = iio_read_channel_raw(info->iio_channel[BAT_CHRG_CURR], &charge);
- 	if (ret < 0) {
-@@ -352,12 +353,36 @@ static void fuel_gauge_get_status(struct axp288_fg_info *info)
- 		return;
++#include <linux/dmi.h>
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/device.h>
+@@ -694,6 +695,37 @@ static void fuel_gauge_init_irq(struct axp288_fg_info *info)
  	}
- 
--	if (charge > 0)
-+	ret = fuel_gauge_read_15bit_word(info, AXP288_FG_CC_MTR1_REG);
-+	if (ret < 0) {
-+		dev_err(&info->pdev->dev,
-+			"ADC charge current read failed:%d\n", ret);
-+		return;
-+	}
-+	charge_now_raw = ret;
-+
-+	/*
-+	 * When the battery is full the axp288 keeps charging it with a
-+	 * very low current. Until it is really really full and once really
-+	 * really full, some inaccuracies in the adc lead to it then sometimes
-+	 * reporting a small discharging rate, even though an external pwr
-+	 * source is used.
-+	 *
-+	 * So when we the battery is (nearly) full we treat low (dis)charge
-+	 * currents as 0.
-+	 */
-+
-+	full = DIV_ROUND_UP(charge_now_raw * 100, info->charge_full_raw) >= 98;
-+	threshold = full ? 64 : 0; /* mA */
-+
-+	if (charge > threshold)
- 		info->status = POWER_SUPPLY_STATUS_CHARGING;
--	else if (discharge > 0)
-+	else if (discharge > threshold)
- 		info->status = POWER_SUPPLY_STATUS_DISCHARGING;
--	else
-+	else if (full)
- 		info->status = POWER_SUPPLY_STATUS_FULL;
-+	else
-+		info->status = POWER_SUPPLY_STATUS_NOT_CHARGING;
  }
  
- static int fuel_gauge_get_vbatt(struct axp288_fg_info *info, int *vbatt)
++/*
++ * Some devices have no battery (HDMI sticks) and the axp288 battery's
++ * detection reports one despite it not being there.
++ */
++static const struct dmi_system_id axp288_fuel_gauge_blacklist[] = {
++	{
++		/* Intel Cherry Trail Compute Stick, Windows version */
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Intel Corporation"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "STK1AW32SC"),
++		},
++	},
++	{
++		/* Intel Cherry Trail Compute Stick, version without an OS */
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Intel Corporation"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "STK1A32SC"),
++		},
++	},
++	{
++		/* Meegopad T08 */
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Default string"),
++			DMI_MATCH(DMI_BOARD_VENDOR, "To be filled by OEM."),
++			DMI_MATCH(DMI_BOARD_NAME, "T3 MRD"),
++			DMI_MATCH(DMI_BOARD_VERSION, "V1.1"),
++		},
++	},
++	{}
++};
++
+ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
+ {
+ 	int i, ret = 0;
+@@ -709,6 +741,9 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
+ 		[BAT_VOLT] = "axp288-batt-volt",
+ 	};
+ 
++	if (dmi_check_system(axp288_fuel_gauge_blacklist))
++		return -ENODEV;
++
+ 	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
+ 	if (!info)
+ 		return -ENOMEM;
 -- 
 2.14.3
