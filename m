@@ -1,84 +1,102 @@
-From: Rainer Fiebig <jrf@mailbox.org>
-Subject: [patch]: do not subtract NR_FILE_MAPPED in minimum_image_size()
-Date: Fri, 22 Dec 2017 11:13:59 +0100
-Message-ID: <8acc18d9-ba18-21f6-ea33-d47a6596586c@mailbox.org>
+From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+Subject: Re: [PATCH v6 06/11] thermal: armada: Add support for Armada AP806
+Date: Fri, 22 Dec 2017 12:14:26 +0200
+Message-ID: <20171222101426.yujvg2xbca3ghpyc@tarshish>
+References: <20171222093226.23456-1-miquel.raynal@free-electrons.com>
+ <20171222093226.23456-7-miquel.raynal@free-electrons.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.mailbox.org ([80.241.60.212]:41701 "EHLO mx1.mailbox.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1758147AbdLVKOW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 22 Dec 2017 05:14:22 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20171222093226.23456-7-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Thorsten Leemhuis <thl@ct.de>
 
-Hi!
+Hi Miquèl,
 
-s2disk/s2both may fail unnecessarily and erratically if NR_FILE_MAPPED
-is high - for instance when using VMs with VirtualBox and perhaps VMware
-Player. In those situations s2disk becomes unreliable and therefore
-unusable.
+On Fri, Dec 22, 2017 at 10:32:21AM +0100, Miquel Raynal wrote:
+> From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+> 
+> The AP806 component is integrated in the Armada 8K and 7K lines of
+> processors.
+> 
+> The thermal sensor sample field on the status register is a signed
+> value. Extend armada_get_temp() and the driver structure to handle
+> signed values.
+> 
+> Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+> [<miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>: Changes when applying over the
+> previous patches, including the register names changes, also switched
+> the coefficients values to s64 instead of unsigned long to deal with
+> negative values and used do_div instead of the traditionnal '/']
+> Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> Reviewed-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> Tested-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> ---
 
-A typical scenario is: user issues a s2disk and it fails. User issues a
-second s2disk immediately after that and it succeeds. And user wonders why.
+[..]
 
-The problem is caused by minimum_image_size() in snapshot.c. The value
-it returns is roughly 100 % too high because NR_FILE_MAPPED is
-subtracted in its calculation which is imo wrong. Eventually the number
-of preallocated image pages is falsely too low.
+>  static int armada_get_temp(struct thermal_zone_device *thermal,
+> -			  int *temp)
+> +			   int *temperature)
+>  {
+>  	struct armada_thermal_priv *priv = thermal->devdata;
+> -	unsigned long reg;
+> -	unsigned long m, b, div;
+> +	u32 reg, div;
+> +	s64 sample, b, m;
+> +	u64 tmp;
+>  
+>  	/* Valid check */
+>  	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
+> @@ -178,6 +197,11 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
+>  
+>  	reg = readl_relaxed(priv->status);
+>  	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
+> +	if (priv->data->signed_sample)
+> +		/* The most significant bit is the sign bit */
+> +		sample = sign_extend32(reg, fls(priv->data->temp_mask) - 1);
+> +	else
+> +		sample = reg;
+>  
+>  	/* Get formula coeficients */
+>  	b = priv->data->coef_b;
+> @@ -185,9 +209,13 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
+>  	div = priv->data->coef_div;
+>  
+>  	if (priv->data->inverted)
+> -		*temp = ((m * reg) - b) / div;
+> +		tmp = (m * sample) - b;
+>  	else
+> -		*temp = (b - (m * reg)) / div;
+> +		tmp = b - (m * sample);
+> +
+> +	do_div(tmp, div);
+> +	*temperature = (int)tmp;
 
-This doesn't matter as long as NR_FILE_MAPPED-values are in a normal
-range or in 32bit-environments as the code allows for allocation of
-additional pages from highmem.
+Nitpick: why not (untested)
 
-But with the high values generated by VirtualBox-VMs (a 2-GB-VM causes
-NR_FILE_MAPPED go up by 2 GB) it may lead to failure in 64bit-systems.
+#include <linux/math64.h>
 
-Not subtracting NR_FILE_MAPPED in minimum_image_size() solves the problem.
+  if (priv->data->inverted)
+    *temp = div_s64((m * sample) - b, div);
+  else
+    *temp = div_s64(b - (m * sample), div);
 
-I've done at least hundreds of successful s2both/s2disk now on an x86_64
-system (with and without VirtualBox) which gives me some confidence that
-this is right. It has turned s2disk/s2both from unusable into 100% reliable.
+baruch
 
-As I don't have 32bit-equipment, I could not test it in such
-environment, though.
+> +
+>  	return 0;
+>  }
 
-The problem has also been discussed in a bug-thread which I closed
-myself because it obviously led to nowhere
-(https://bugzilla.kernel.org/show_bug.cgi?id=97201).
-
-Thoughts?
-
-Rainer Fiebig
-
-___
-
---- /kernel/power/snapshot.c
-+++ /kernel/power/snapshot.c
-@@ -1641,8 +1641,7 @@
-  * [number of saveable pages] - [number of pages that can be freed in
-theory]
-  *
-  * where the second term is the sum of (1) reclaimable slab pages, (2)
-active
-- * and (3) inactive anonymous pages, (4) active and (5) inactive file
-pages,
-- * minus mapped file pages.
-+ * and (3) inactive anonymous pages, (4) active and (5) inactive file
-pages.
-  */
- static unsigned long minimum_image_size(unsigned long saveable)
- {
-@@ -1652,8 +1651,7 @@
- 		+ global_node_page_state(NR_ACTIVE_ANON)
- 		+ global_node_page_state(NR_INACTIVE_ANON)
- 		+ global_node_page_state(NR_ACTIVE_FILE)
--		+ global_node_page_state(NR_INACTIVE_FILE)
--		- global_node_page_state(NR_FILE_MAPPED);
-+		+ global_node_page_state(NR_INACTIVE_FILE);
-
- 	return saveable <= size ? 0 : saveable - size;
- }
+-- 
+     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
+=}------------------------------------------------ooO--U--Ooo------------{=
+   - baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org - tel: +972.52.368.4656, http://www.tkos.co.il -
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
