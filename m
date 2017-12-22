@@ -1,102 +1,168 @@
-From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
-Subject: Re: [PATCH v6 06/11] thermal: armada: Add support for Armada AP806
-Date: Fri, 22 Dec 2017 12:14:26 +0200
-Message-ID: <20171222101426.yujvg2xbca3ghpyc@tarshish>
-References: <20171222093226.23456-1-miquel.raynal@free-electrons.com>
- <20171222093226.23456-7-miquel.raynal@free-electrons.com>
+From: Dong Aisheng <aisheng.dong@nxp.com>
+Subject: [PATCH 1/1] power: reset: remove unused imx-snvs-poweroff driver
+Date: Fri, 22 Dec 2017 18:28:59 +0800
+Message-ID: <1513938539-20873-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <20171222093226.23456-7-miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-by2nam03on0082.outbound.protection.outlook.com ([104.47.42.82]:58685
+        "EHLO NAM03-BY2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1757624AbdLVK3e (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 22 Dec 2017 05:29:34 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, shawnguo@kernel.org, sre@kernel.org, dongas86@gmail.com, aisheng.dong@nxp.com, yibin.gong@nxp.com, robh+dt@kernel.org, devicetree@vger.kernel.org
 
-Hi Miquèl,
+There's no user of it in kernel now and it basically functions the same
+as the generic syscon-poweroff.c to which we have already switched.
+So let's remove it.
 
-On Fri, Dec 22, 2017 at 10:32:21AM +0100, Miquel Raynal wrote:
-> From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
-> 
-> The AP806 component is integrated in the Armada 8K and 7K lines of
-> processors.
-> 
-> The thermal sensor sample field on the status register is a signed
-> value. Extend armada_get_temp() and the driver structure to handle
-> signed values.
-> 
-> Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
-> [<miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>: Changes when applying over the
-> previous patches, including the register names changes, also switched
-> the coefficients values to s64 instead of unsigned long to deal with
-> negative values and used do_div instead of the traditionnal '/']
-> Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> Reviewed-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> Tested-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-> ---
+Cc: Robin Gong <yibin.gong@nxp.com>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+---
+ .../bindings/power/reset/imx-snvs-poweroff.txt     | 23 --------
+ drivers/power/reset/Kconfig                        |  9 ---
+ drivers/power/reset/Makefile                       |  1 -
+ drivers/power/reset/imx-snvs-poweroff.c            | 66 ----------------------
+ 4 files changed, 99 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/reset/imx-snvs-poweroff.txt
+ delete mode 100644 drivers/power/reset/imx-snvs-poweroff.c
 
-[..]
-
->  static int armada_get_temp(struct thermal_zone_device *thermal,
-> -			  int *temp)
-> +			   int *temperature)
->  {
->  	struct armada_thermal_priv *priv = thermal->devdata;
-> -	unsigned long reg;
-> -	unsigned long m, b, div;
-> +	u32 reg, div;
-> +	s64 sample, b, m;
-> +	u64 tmp;
->  
->  	/* Valid check */
->  	if (priv->data->is_valid && !priv->data->is_valid(priv)) {
-> @@ -178,6 +197,11 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
->  
->  	reg = readl_relaxed(priv->status);
->  	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
-> +	if (priv->data->signed_sample)
-> +		/* The most significant bit is the sign bit */
-> +		sample = sign_extend32(reg, fls(priv->data->temp_mask) - 1);
-> +	else
-> +		sample = reg;
->  
->  	/* Get formula coeficients */
->  	b = priv->data->coef_b;
-> @@ -185,9 +209,13 @@ static int armada_get_temp(struct thermal_zone_device *thermal,
->  	div = priv->data->coef_div;
->  
->  	if (priv->data->inverted)
-> -		*temp = ((m * reg) - b) / div;
-> +		tmp = (m * sample) - b;
->  	else
-> -		*temp = (b - (m * reg)) / div;
-> +		tmp = b - (m * sample);
-> +
-> +	do_div(tmp, div);
-> +	*temperature = (int)tmp;
-
-Nitpick: why not (untested)
-
-#include <linux/math64.h>
-
-  if (priv->data->inverted)
-    *temp = div_s64((m * sample) - b, div);
-  else
-    *temp = div_s64(b - (m * sample), div);
-
-baruch
-
-> +
->  	return 0;
->  }
-
+diff --git a/Documentation/devicetree/bindings/power/reset/imx-snvs-poweroff.txt b/Documentation/devicetree/bindings/power/reset/imx-snvs-poweroff.txt
+deleted file mode 100644
+index 1b81fcd..0000000
+--- a/Documentation/devicetree/bindings/power/reset/imx-snvs-poweroff.txt
++++ /dev/null
+@@ -1,23 +0,0 @@
+-i.mx6 Poweroff Driver
+-
+-SNVS_LPCR in SNVS module can power off the whole system by pull
+-PMIC_ON_REQ low if PMIC_ON_REQ is connected with external PMIC.
+-If you don't want to use PMIC_ON_REQ as power on/off control,
+-please set status='disabled' to disable this driver.
+-
+-Required Properties:
+--compatible: "fsl,sec-v4.0-poweroff"
+--reg: Specifies the physical address of the SNVS_LPCR register
+-
+-Example:
+-	snvs@20cc000 {
+-		compatible = "fsl,sec-v4.0-mon", "simple-bus";
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		ranges = <0 0x020cc000 0x4000>;
+-		.....
+-		snvs_poweroff: snvs-poweroff@38 {
+-			compatible = "fsl,sec-v4.0-poweroff";
+-			reg = <0x38 0x4>;
+-		};
+-	}
+diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
+index ca0de1a..a102e74 100644
+--- a/drivers/power/reset/Kconfig
++++ b/drivers/power/reset/Kconfig
+@@ -98,15 +98,6 @@ config POWER_RESET_HISI
+ 	help
+ 	  Reboot support for Hisilicon boards.
+ 
+-config POWER_RESET_IMX
+-	bool "IMX6 power-off driver"
+-	depends on POWER_RESET && SOC_IMX6
+-	help
+-	  This driver support power off external PMIC by PMIC_ON_REQ on i.mx6
+-	  boards.If you want to use other pin to control external power,please
+-	  say N here or disable in dts to make sure pm_power_off never be
+-	  overwrote wrongly by this driver.
+-
+ config POWER_RESET_MSM
+ 	bool "Qualcomm MSM power-off driver"
+ 	depends on ARCH_QCOM
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index aeb65ed..dcc92f5 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -10,7 +10,6 @@ obj-$(CONFIG_POWER_RESET_GEMINI_POWEROFF) += gemini-poweroff.o
+ obj-$(CONFIG_POWER_RESET_GPIO) += gpio-poweroff.o
+ obj-$(CONFIG_POWER_RESET_GPIO_RESTART) += gpio-restart.o
+ obj-$(CONFIG_POWER_RESET_HISI) += hisi-reboot.o
+-obj-$(CONFIG_POWER_RESET_IMX) += imx-snvs-poweroff.o
+ obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
+ obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
+ obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
+diff --git a/drivers/power/reset/imx-snvs-poweroff.c b/drivers/power/reset/imx-snvs-poweroff.c
+deleted file mode 100644
+index ad6ce50..0000000
+--- a/drivers/power/reset/imx-snvs-poweroff.c
++++ /dev/null
+@@ -1,66 +0,0 @@
+-/* Power off driver for i.mx6
+- * Copyright (c) 2014, FREESCALE CORPORATION.  All rights reserved.
+- *
+- * based on msm-poweroff.c
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 and
+- * only version 2 as published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- */
+-
+-#include <linux/err.h>
+-#include <linux/init.h>
+-#include <linux/io.h>
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-#include <linux/of.h>
+-#include <linux/of_address.h>
+-#include <linux/platform_device.h>
+-
+-static void __iomem *snvs_base;
+-
+-static void do_imx_poweroff(void)
+-{
+-	u32 value = readl(snvs_base);
+-
+-	/* set TOP and DP_EN bit */
+-	writel(value | 0x60, snvs_base);
+-}
+-
+-static int imx_poweroff_probe(struct platform_device *pdev)
+-{
+-	snvs_base = of_iomap(pdev->dev.of_node, 0);
+-	if (!snvs_base) {
+-		dev_err(&pdev->dev, "failed to get memory\n");
+-		return -ENODEV;
+-	}
+-
+-	pm_power_off = do_imx_poweroff;
+-	return 0;
+-}
+-
+-static const struct of_device_id of_imx_poweroff_match[] = {
+-	{ .compatible = "fsl,sec-v4.0-poweroff", },
+-	{},
+-};
+-MODULE_DEVICE_TABLE(of, of_imx_poweroff_match);
+-
+-static struct platform_driver imx_poweroff_driver = {
+-	.probe = imx_poweroff_probe,
+-	.driver = {
+-		.name = "imx-snvs-poweroff",
+-		.of_match_table = of_match_ptr(of_imx_poweroff_match),
+-	},
+-};
+-
+-static int __init imx_poweroff_init(void)
+-{
+-	return platform_driver_register(&imx_poweroff_driver);
+-}
+-device_initcall(imx_poweroff_init);
 -- 
-     http://baruch.siach.name/blog/                  ~. .~   Tk Open Systems
-=}------------------------------------------------ooO--U--Ooo------------{=
-   - baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org - tel: +972.52.368.4656, http://www.tkos.co.il -
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+2.7.4
