@@ -1,213 +1,106 @@
 From: Miquel Raynal <miquel.raynal@free-electrons.com>
-Subject: [PATCH v7 04/11] thermal: armada: Clarify control registers accesses
-Date: Fri, 22 Dec 2017 17:14:06 +0100
-Message-ID: <20171222161413.20816-5-miquel.raynal@free-electrons.com>
+Subject: [PATCH v7 07/11] thermal: armada: Add support for Armada CP110
+Date: Fri, 22 Dec 2017 17:14:09 +0100
+Message-ID: <20171222161413.20816-8-miquel.raynal@free-electrons.com>
 References: <20171222161413.20816-1-miquel.raynal@free-electrons.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.free-electrons.com ([62.4.15.54]:55737 "EHLO
+Received: from mail.free-electrons.com ([62.4.15.54]:55769 "EHLO
         mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756346AbdLVQO3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Dec 2017 11:14:29 -0500
+        with ESMTP id S1756449AbdLVQOi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Dec 2017 11:14:38 -0500
 In-Reply-To: <20171222161413.20816-1-miquel.raynal@free-electrons.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Miquel Raynal <miquel.raynal@free-electrons.com>, Baruch Siach <baruch@tkos.co.il>, David Sniatkiwicz <davidsn@marvell.com>
 
-Bindings were incomplete for a long time by only exposing one of the two
-available control registers. To ease the migration to the full bindings
-(already in use for the Armada 375 SoC), rename the pointers for
-clarification. This way, it will only be needed to add another pointer
-to access the other control register when the time comes.
+From: Baruch Siach <baruch@tkos.co.il>
 
-This avoids dangerous situations where the offset 0 of the control
-area can be either one register or the other depending on the bindings
-used. After this change, device trees of other SoCs could be migrated to
-the "full" bindings if they may benefit from features from the
-unaccessible register, without any change in the driver.
+The CP110 component is integrated in the Armada 8k and 7k lines of
+processors.
 
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+[<miquel.raynal@free-electrons.com>: renamed the register pointers as
+well as some definitions related to the new register names and
+simplified the init sequence for Armada 380]
 Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
 Reviewed-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 Tested-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
 ---
- drivers/thermal/armada_thermal.c | 76 ++++++++++++++++++++++++++++------------
- 1 file changed, 54 insertions(+), 22 deletions(-)
+ drivers/thermal/armada_thermal.c | 33 ++++++++++++++++++++++++++-------
+ 1 file changed, 26 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index f350d7efd35a..d58376eba6d9 100644
+index f35289b1cea9..f2eba2a6f1a5 100644
 --- a/drivers/thermal/armada_thermal.c
 +++ b/drivers/thermal/armada_thermal.c
-@@ -39,12 +39,21 @@
+@@ -37,7 +37,6 @@
+ #define A375_UNIT_CONTROL_MASK		0x7
+ #define A375_READOUT_INVERT		BIT(15)
  #define A375_HW_RESETn			BIT(8)
- #define A380_HW_RESET			BIT(8)
+-#define A380_HW_RESET			BIT(8)
  
-+/* Legacy bindings */
-+#define LEGACY_CONTROL_MEM_LEN		0x4
-+
-+/* Current bindings with the 2 control registers under the same memory area */
-+#define LEGACY_CONTROL1_OFFSET		0x0
-+#define CONTROL0_OFFSET			0x0
-+#define CONTROL1_OFFSET			0x4
+ /* Legacy bindings */
+ #define LEGACY_CONTROL_MEM_LEN		0x4
+@@ -52,6 +51,10 @@
+ #define CONTROL0_TSEN_RESET		BIT(1)
+ #define CONTROL0_TSEN_ENABLE		BIT(2)
+ 
++/* EXT_TSEN refers to the external temperature sensors, out of the AP */
++#define CONTROL1_EXT_TSEN_SW_RESET	BIT(7)
++#define CONTROL1_EXT_TSEN_HW_RESETn	BIT(8)
 +
  struct armada_thermal_data;
  
  /* Marvell EBU Thermal Sensor Dev Structure */
- struct armada_thermal_priv {
- 	void __iomem *sensor;
--	void __iomem *control;
-+	void __iomem *control0;
-+	void __iomem *control1;
- 	struct armada_thermal_data *data;
+@@ -153,12 +156,11 @@ static void armada380_init_sensor(struct platform_device *pdev,
+ {
+ 	u32 reg = readl_relaxed(priv->control1);
+ 
+-	/* Reset hardware once */
+-	if (!(reg & A380_HW_RESET)) {
+-		reg |= A380_HW_RESET;
+-		writel(reg, priv->control1);
+-		msleep(10);
+-	}
++	/* Disable the HW/SW reset */
++	reg |= CONTROL1_EXT_TSEN_HW_RESETn;
++	reg &= ~CONTROL1_EXT_TSEN_SW_RESET;
++	writel(reg, priv->control1);
++	msleep(10);
+ }
+ 
+ static void armada_ap806_init_sensor(struct platform_device *pdev,
+@@ -277,6 +279,19 @@ static const struct armada_thermal_data armada_ap806_data = {
+ 	.needs_control0 = true,
  };
  
-@@ -66,27 +75,28 @@ struct armada_thermal_data {
- 	unsigned int temp_shift;
- 	unsigned int temp_mask;
- 	u32 is_valid_bit;
-+	bool needs_control0;
- };
- 
- static void armadaxp_init_sensor(struct platform_device *pdev,
- 				 struct armada_thermal_priv *priv)
- {
--	unsigned long reg;
-+	u32 reg;
- 
--	reg = readl_relaxed(priv->control);
-+	reg = readl_relaxed(priv->control1);
- 	reg |= PMU_TDC0_OTF_CAL_MASK;
--	writel(reg, priv->control);
-+	writel(reg, priv->control1);
- 
- 	/* Reference calibration value */
- 	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
- 	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
--	writel(reg, priv->control);
-+	writel(reg, priv->control1);
- 
- 	/* Reset the sensor */
--	reg = readl_relaxed(priv->control);
--	writel((reg | PMU_TDC0_SW_RST_MASK), priv->control);
-+	reg = readl_relaxed(priv->control1);
-+	writel((reg | PMU_TDC0_SW_RST_MASK), priv->control1);
- 
--	writel(reg, priv->control);
-+	writel(reg, priv->control1);
- 
- 	/* Enable the sensor */
- 	reg = readl_relaxed(priv->sensor);
-@@ -97,19 +107,19 @@ static void armadaxp_init_sensor(struct platform_device *pdev,
- static void armada370_init_sensor(struct platform_device *pdev,
- 				  struct armada_thermal_priv *priv)
- {
--	unsigned long reg;
-+	u32 reg;
- 
--	reg = readl_relaxed(priv->control);
-+	reg = readl_relaxed(priv->control1);
- 	reg |= PMU_TDC0_OTF_CAL_MASK;
--	writel(reg, priv->control);
-+	writel(reg, priv->control1);
- 
- 	/* Reference calibration value */
- 	reg &= ~PMU_TDC0_REF_CAL_CNT_MASK;
- 	reg |= (0xf1 << PMU_TDC0_REF_CAL_CNT_OFFS);
--	writel(reg, priv->control);
-+	writel(reg, priv->control1);
- 
- 	reg &= ~PMU_TDC0_START_CAL_MASK;
--	writel(reg, priv->control);
-+	writel(reg, priv->control1);
- 
- 	msleep(10);
- }
-@@ -117,30 +127,30 @@ static void armada370_init_sensor(struct platform_device *pdev,
- static void armada375_init_sensor(struct platform_device *pdev,
- 				  struct armada_thermal_priv *priv)
- {
--	unsigned long reg;
-+	u32 reg;
- 
--	reg = readl(priv->control + 4);
-+	reg = readl(priv->control1);
- 	reg &= ~(A375_UNIT_CONTROL_MASK << A375_UNIT_CONTROL_SHIFT);
- 	reg &= ~A375_READOUT_INVERT;
- 	reg &= ~A375_HW_RESETn;
- 
--	writel(reg, priv->control + 4);
-+	writel(reg, priv->control1);
- 	msleep(20);
- 
- 	reg |= A375_HW_RESETn;
--	writel(reg, priv->control + 4);
-+	writel(reg, priv->control1);
- 	msleep(50);
- }
- 
- static void armada380_init_sensor(struct platform_device *pdev,
- 				  struct armada_thermal_priv *priv)
- {
--	unsigned long reg = readl_relaxed(priv->control);
-+	u32 reg = readl_relaxed(priv->control1);
- 
- 	/* Reset hardware once */
- 	if (!(reg & A380_HW_RESET)) {
- 		reg |= A380_HW_RESET;
--		writel(reg, priv->control);
-+		writel(reg, priv->control1);
- 		msleep(10);
- 	}
- }
-@@ -214,6 +224,7 @@ static const struct armada_thermal_data armada375_data = {
- 	.coef_b = 3171900000UL,
- 	.coef_m = 10000000UL,
- 	.coef_div = 13616,
++static const struct armada_thermal_data armada_cp110_data = {
++	.is_valid = armada_is_valid,
++	.init_sensor = armada380_init_sensor,
++	.is_valid_bit = BIT(10),
++	.temp_shift = 0,
++	.temp_mask = 0x3ff,
++	.coef_b = 1172499100ULL,
++	.coef_m = 2000096ULL,
++	.coef_div = 4201,
++	.inverted = true,
 +	.needs_control0 = true,
++};
++
+ static const struct of_device_id armada_thermal_id_table[] = {
+ 	{
+ 		.compatible = "marvell,armadaxp-thermal",
+@@ -299,6 +314,10 @@ static const struct of_device_id armada_thermal_id_table[] = {
+ 		.data       = &armada_ap806_data,
+ 	},
+ 	{
++		.compatible = "marvell,armada-cp110-thermal",
++		.data       = &armada_cp110_data,
++	},
++	{
+ 		/* sentinel */
+ 	},
  };
- 
- static const struct armada_thermal_data armada380_data = {
-@@ -253,6 +264,7 @@ MODULE_DEVICE_TABLE(of, armada_thermal_id_table);
- 
- static int armada_thermal_probe(struct platform_device *pdev)
- {
-+	void __iomem *control = NULL;
- 	struct thermal_zone_device *thermal;
- 	const struct of_device_id *match;
- 	struct armada_thermal_priv *priv;
-@@ -272,11 +284,31 @@ static int armada_thermal_probe(struct platform_device *pdev)
- 		return PTR_ERR(priv->sensor);
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
--	priv->control = devm_ioremap_resource(&pdev->dev, res);
--	if (IS_ERR(priv->control))
--		return PTR_ERR(priv->control);
-+	control = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(control))
-+		return PTR_ERR(control);
- 
- 	priv->data = (struct armada_thermal_data *)match->data;
-+
-+	/*
-+	 * Legacy DT bindings only described "control1" register (also referred
-+	 * as "control MSB" on old documentation). New bindings cover
-+	 * "control0/control LSB" and "control1/control MSB" registers within
-+	 * the same resource, which is then of size 8 instead of 4.
-+	 */
-+	if (resource_size(res) == LEGACY_CONTROL_MEM_LEN) {
-+		/* ->control0 unavailable in this configuration */
-+		if (priv->data->needs_control0) {
-+			dev_err(&pdev->dev, "No access to control0 register\n");
-+			return -EINVAL;
-+		}
-+
-+		priv->control1 = control + LEGACY_CONTROL1_OFFSET;
-+	} else {
-+		priv->control0 = control + CONTROL0_OFFSET;
-+		priv->control1 = control + CONTROL1_OFFSET;
-+	}
-+
- 	priv->data->init_sensor(pdev, priv);
- 
- 	thermal = thermal_zone_device_register("armada_thermal", 0, 0,
 -- 
 2.11.0
