@@ -1,52 +1,53 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH RESEND 1/1] cpufreq: imx6q: switch to Use clk_bulk_get to refine clk operations
-Date: Fri, 22 Dec 2017 19:34:57 +0100
-Message-ID: <2124437.LcYqgt3btA@aspire.rjw.lan>
-References: <1504179837-18842-1-git-send-email-aisheng.dong@nxp.com> <20170914214032.GE11836@ubuntu> <20171221131733.GA24403@b29396-OptiPlex-7040>
+Subject: Re: [PATCH 1/3] PM / core: Assign the wakeup_path status flag in __device_prepare()
+Date: Fri, 22 Dec 2017 20:12:16 +0100
+Message-ID: <1742152.iLm4rp6jIy@aspire.rjw.lan>
+References: <1513353391-30806-1-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0hctW_-WR2Gy4tszeXYJJfTRQbLCr_NRhAXao5_XR5NOw@mail.gmail.com> <CAPDyKFqa5Lt6jrDQd+V_cE+Bz2ZRJRe95-8bbJgV=LbkGPM0mw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171221131733.GA24403@b29396-OptiPlex-7040>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Dong Aisheng <dongas86@gmail.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, vireshk@kernel.org, shawnguo@kernel.org, Anson.Huang@nxp.com, Leonard Crestez <leonard.crestez@nxp.com>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFqa5Lt6jrDQd+V_cE+Bz2ZRJRe95-8bbJgV=LbkGPM0mw@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thursday, December 21, 2017 2:18:01 PM CET Dong Aisheng wrote:
-> Hi Rafael,
+On Thursday, December 21, 2017 11:13:57 AM CET Ulf Hansson wrote:
+> On 21 December 2017 at 02:43, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > On Fri, Dec 15, 2017 at 4:56 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> >> The PM core in the device_prepare() phase, resets the wakeup_path status
+> >> flag to the value of device_may_wakeup(). This means if a ->prepare() or a
+> >> ->suspend() callback for the device would update the device's wakeup
+> >> setting, this doesn't become reflected in the wakeup_path status flag.
+> >>
+> >> In general this isn't a problem, because wakeup settings isn't supposed to
+> >> be changed during those system suspend phases. Nevertheless, there are a
+> >> cases not conforming to that behaviour, as device_set_wakeup_enable() is
+> >> indeed called from ->suspend() callbacks.
+> >
+> > And why is this regarded as correct?
 > 
-> On Thu, Sep 14, 2017 at 02:40:32PM -0700, Viresh Kumar wrote:
-> > On 31-08-17, 19:43, Dong Aisheng wrote:
-> > > Use clk_bulk_get to ease the driver clocks handling.
-> > > 
-> > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > > Cc: Shawn Guo <shawnguo@kernel.org>
-> > > Cc: Anson Huang <anson.huang@nxp.com>
-> > > Cc: Leonard Crestez <leonard.crestez@nxp.com>
-> > > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> > > --
-> > > The original one is here which depends on clk_bulk APIs.
-> > > https://patchwork.kernel.org/patch/9737337/
-> > > Now the clk_bulk APIs are already in kernel, so resend the patch.
-> > > (Patch title changed a bit to be more specific.)
-> > > ---
-> > >  drivers/cpufreq/imx6q-cpufreq.c | 125 ++++++++++++++++++----------------------
-> > >  1 file changed, 56 insertions(+), 69 deletions(-)
-> > 
-> > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > 
-> 
-> Would you help pick it?
-> I did not see it in latest kernel.
-> It still applies.
+> I am not saying that this behavior is correct. However, I am trying to
+> improve the situation, which doesn't hurt or does it?
 
-OK
+Adding a workaround for them kind of encourages new code to do the same
+thing, which actually may really hurt.  So I assume that these call sites are
+all legacy and that's why you don't want to touch them for now, but in that
+case the commit message should make it very clear that this is about legacy
+only and new code should not call device_set_wakeup_enable() during suspend.
 
-Can you please resend the patch again with the ACK from Viresh?
+[Something should be printed to the log if wakeup source objects
+are created while system suspend is in progress I guess or similar.]
 
-It looks like it fell through the cracks, sorry about that.
+> More importantly, the next patch, which is about the wakeup path,
+> depends on this.
+
+Honestly, this sounds like "We have this change we really really would like to
+make, but there's incorrect code getting in the way, so let's paper over it
+and be done."  Not very nice. :-/
+
+How many drivers actually do call device_set_wakeup_enable() during suspend?
 
 Thanks,
 Rafael
