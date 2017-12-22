@@ -1,123 +1,112 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 07/16] power: supply: axp288_charger: Do not cache input current limit value
-Date: Fri, 22 Dec 2017 13:37:45 +0100
-Message-ID: <20171222123754.9622-7-hdegoede@redhat.com>
+Subject: [PATCH 10/16] power: supply: axp288_charger: Simplify extcon cable handling
+Date: Fri, 22 Dec 2017 13:37:48 +0100
+Message-ID: <20171222123754.9622-10-hdegoede@redhat.com>
 References: <20171222123754.9622-1-hdegoede@redhat.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:58506 "EHLO mx1.redhat.com"
+Received: from mx1.redhat.com ([209.132.183.28]:54662 "EHLO mx1.redhat.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751737AbdLVMiF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 22 Dec 2017 07:38:05 -0500
+        id S1753617AbdLVMiJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 22 Dec 2017 07:38:09 -0500
 In-Reply-To: <20171222123754.9622-1-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: Sebastian Reichel <sre@kernel.org>
 Cc: Hans de Goede <hdegoede@redhat.com>, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org
 
-The hardware may change this underneath us.
+Simplify extcon cable handling using the new
+devm_extcon_register_notifier_all function to listen to all cables
+in one go.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/power/supply/axp288_charger.c | 48 ++++++++++++++++++++++++++---------
- 1 file changed, 36 insertions(+), 12 deletions(-)
+ drivers/power/supply/axp288_charger.c | 51 +++++++----------------------------
+ 1 file changed, 10 insertions(+), 41 deletions(-)
 
 diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
-index 070dd79e606f..2c7b0efbbf3d 100644
+index 8f4ac2d38b3f..4ec7b023c881 100644
 --- a/drivers/power/supply/axp288_charger.c
 +++ b/drivers/power/supply/axp288_charger.c
-@@ -156,7 +156,6 @@ struct axp288_chrg_info {
+@@ -103,9 +103,6 @@
+ #define USB_HOST_EXTCON_HID		"INT3496"
+ #define USB_HOST_EXTCON_NAME		"INT3496:00"
+ 
+-static const unsigned int cable_ids[] =
+-	{ EXTCON_CHG_USB_SDP, EXTCON_CHG_USB_CDP, EXTCON_CHG_USB_DCP };
+-
+ enum {
+ 	VBUS_OV_IRQ = 0,
+ 	CHARGE_DONE_IRQ,
+@@ -137,7 +134,7 @@ struct axp288_chrg_info {
+ 	/* SDP/CDP/DCP USB charging cable notifications */
+ 	struct {
+ 		struct extcon_dev *edev;
+-		struct notifier_block nb[ARRAY_SIZE(cable_ids)];
++		struct notifier_block nb;
  		struct work_struct work;
  	} cable;
  
--	int inlmt;
- 	int cc;
- 	int cv;
- 	int max_cc;
-@@ -217,6 +216,37 @@ static inline int axp288_charger_set_cv(struct axp288_chrg_info *info, int cv)
- 	return ret;
+@@ -595,34 +592,11 @@ static void axp288_charger_extcon_evt_worker(struct work_struct *work)
+ 	power_supply_changed(info->psy_usb);
  }
  
-+static int axp288_charger_get_vbus_inlmt(struct axp288_chrg_info *info)
-+{
-+	unsigned int val;
-+	int ret;
-+
-+	ret = regmap_read(info->regmap, AXP20X_CHRG_BAK_CTRL, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	val >>= CHRG_VBUS_ILIM_BIT_POS;
-+	switch (val) {
-+	case CHRG_VBUS_ILIM_100MA:
-+		return 100000;
-+	case CHRG_VBUS_ILIM_500MA:
-+		return 500000;
-+	case CHRG_VBUS_ILIM_900MA:
-+		return 900000;
-+	case CHRG_VBUS_ILIM_1500MA:
-+		return 1500000;
-+	case CHRG_VBUS_ILIM_2000MA:
-+		return 2000000;
-+	case CHRG_VBUS_ILIM_2500MA:
-+		return 2500000;
-+	case CHRG_VBUS_ILIM_3000MA:
-+		return 3000000;
-+	default:
-+		dev_warn(&info->pdev->dev, "Unknown ilim reg val: %d\n", val);
-+		return 0;
-+	}
-+}
-+
- static inline int axp288_charger_set_vbus_inlmt(struct axp288_chrg_info *info,
- 					   int inlmt)
+-/*
+- * We need 3 copies of this, because there is no way to find out for which
+- * cable id we are being called from the passed in arguments; and we must
+- * have a separate nb for each extcon_register_notifier call.
+- */
+-static int axp288_charger_handle_cable0_evt(struct notifier_block *nb,
+-					    unsigned long event, void *param)
+-{
+-	struct axp288_chrg_info *info =
+-		container_of(nb, struct axp288_chrg_info, cable.nb[0]);
+-	schedule_work(&info->cable.work);
+-	return NOTIFY_OK;
+-}
+-
+-static int axp288_charger_handle_cable1_evt(struct notifier_block *nb,
+-					    unsigned long event, void *param)
++static int axp288_charger_handle_cable_evt(struct notifier_block *nb,
++					   unsigned long event, void *param)
  {
-@@ -225,34 +255,25 @@ static inline int axp288_charger_set_vbus_inlmt(struct axp288_chrg_info *info,
+ 	struct axp288_chrg_info *info =
+-		container_of(nb, struct axp288_chrg_info, cable.nb[1]);
+-	schedule_work(&info->cable.work);
+-	return NOTIFY_OK;
+-}
+-
+-static int axp288_charger_handle_cable2_evt(struct notifier_block *nb,
+-					    unsigned long event, void *param)
+-{
+-	struct axp288_chrg_info *info =
+-		container_of(nb, struct axp288_chrg_info, cable.nb[2]);
++		container_of(nb, struct axp288_chrg_info, cable.nb);
+ 	schedule_work(&info->cable.work);
+ 	return NOTIFY_OK;
+ }
+@@ -800,17 +774,12 @@ static int axp288_charger_probe(struct platform_device *pdev)
  
- 	if (inlmt <= ILIM_100MA) {
- 		reg_val = CHRG_VBUS_ILIM_100MA;
--		inlmt = ILIM_100MA;
- 	} else if (inlmt <= ILIM_500MA) {
- 		reg_val = CHRG_VBUS_ILIM_500MA;
--		inlmt = ILIM_500MA;
- 	} else if (inlmt <= ILIM_900MA) {
- 		reg_val = CHRG_VBUS_ILIM_900MA;
--		inlmt = ILIM_900MA;
- 	} else if (inlmt <= ILIM_1500MA) {
- 		reg_val = CHRG_VBUS_ILIM_1500MA;
--		inlmt = ILIM_1500MA;
- 	} else if (inlmt <= ILIM_2000MA) {
- 		reg_val = CHRG_VBUS_ILIM_2000MA;
--		inlmt = ILIM_2000MA;
- 	} else if (inlmt <= ILIM_2500MA) {
- 		reg_val = CHRG_VBUS_ILIM_2500MA;
--		inlmt = ILIM_2500MA;
- 	} else {
- 		reg_val = CHRG_VBUS_ILIM_3000MA;
--		inlmt = ILIM_3000MA;
+ 	/* Register for extcon notification */
+ 	INIT_WORK(&info->cable.work, axp288_charger_extcon_evt_worker);
+-	info->cable.nb[0].notifier_call = axp288_charger_handle_cable0_evt;
+-	info->cable.nb[1].notifier_call = axp288_charger_handle_cable1_evt;
+-	info->cable.nb[2].notifier_call = axp288_charger_handle_cable2_evt;
+-	for (i = 0; i < ARRAY_SIZE(cable_ids); i++) {
+-		ret = devm_extcon_register_notifier(dev, info->cable.edev,
+-					  cable_ids[i], &info->cable.nb[i]);
+-		if (ret) {
+-			dev_err(dev, "failed to register extcon notifier for %u: %d\n",
+-				cable_ids[i], ret);
+-			return ret;
+-		}
++	info->cable.nb.notifier_call = axp288_charger_handle_cable_evt;
++	ret = devm_extcon_register_notifier_all(dev, info->cable.edev,
++						&info->cable.nb);
++	if (ret) {
++		dev_err(dev, "failed to register cable extcon notifier\n");
++		return ret;
  	}
+ 	schedule_work(&info->cable.work);
  
- 	reg_val = reg_val << CHRG_VBUS_ILIM_BIT_POS;
- 
- 	ret = regmap_update_bits(info->regmap, AXP20X_CHRG_BAK_CTRL,
- 				 CHRG_VBUS_ILIM_MASK, reg_val);
--	if (ret >= 0)
--		info->inlmt = inlmt;
--	else
-+	if (ret < 0)
- 		dev_err(&info->pdev->dev, "charger BAK control %d\n", ret);
- 
- 	return ret;
-@@ -428,7 +449,10 @@ static int axp288_charger_usb_get_property(struct power_supply *psy,
- 		val->intval = info->max_cv * 1000;
- 		break;
- 	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT:
--		val->intval = info->inlmt * 1000;
-+		ret = axp288_charger_get_vbus_inlmt(info);
-+		if (ret < 0)
-+			return ret;
-+		val->intval = ret;
- 		break;
- 	default:
- 		return -EINVAL;
 -- 
 2.14.3
