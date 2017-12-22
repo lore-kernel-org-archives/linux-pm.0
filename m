@@ -1,68 +1,67 @@
-From: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v6 00/11] Armada thermal: improvements and A7K/A8K SoCs support
-Date: Fri, 22 Dec 2017 10:32:15 +0100
-Message-ID: <20171222093226.23456-1-miquel.raynal@free-electrons.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
+From: Miquel Raynal <miquel.raynal@free-electrons.com>
+Subject: [PATCH v6 02/11] thermal: armada: Use msleep for long delays
+Date: Fri, 22 Dec 2017 10:32:17 +0100
+Message-ID: <20171222093226.23456-3-miquel.raynal@free-electrons.com>
+References: <20171222093226.23456-1-miquel.raynal@free-electrons.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.free-electrons.com ([62.4.15.54]:43033 "EHLO
+        mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757929AbdLVJcm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Dec 2017 04:32:42 -0500
+In-Reply-To: <20171222093226.23456-1-miquel.raynal@free-electrons.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Gregory Clement <gregory.clement@free-electrons.com>, Antoine Tenart <antoine.tenart@free-electrons.com>, Nadav Haklai <nadavh@marvell.com>, Miquel Raynal <miquel.raynal@free-electrons.com>, Baruch Siach <baruch@tkos.co.il>, David Sniatkiwicz <davidsn@marvell.com>
 
-Hi,
+From: Baruch Siach <baruch@tkos.co.il>
 
-This series takes over Baruch's series by integrating his patches about
-supporting thermal on Armada 7K and 8K SoCs within a larger series with
-several improvements on the armada_thermal.c driver.
+Use msleep for long (> 10ms) delays, instead of the busy waiting mdelay.
+All delays are called from the probe routine, where scheduling is
+allowed.
 
-For now, Armada 380 and CP110 compatibles share the same initialization
-routine but this will probably change in the near future when adding
-support for overheat interrupts.
+Signed-off-by: Baruch Siach <baruch@tkos.co.il>
+Signed-off-by: Miquel Raynal <miquel.raynal@free-electrons.com>
+Reviewed-by: Gregory CLEMENT <gregory.clement@free-electrons.com>
+---
+ drivers/thermal/armada_thermal.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-DT bindings documentation is updated to match existing code.
-
-Armada AP806 and CP110 DT are also updated with thermal nodes and have
-already been accepted (thus absent in this series).
-
-Thank you,
-Miquèl
-
-
-Changes since v5:
-  - Added Grogory's Tested-by tags for 64-bit platforms in patches:
-        "thermal: armada: Add support for Armada AP806"
-	"thermal: armada: Add support for Armada CP110"
-  - Fixed a compilation issue with 32-bit toolchains introduced in patch:
-        "thermal: armada: Add support for Armada AP806"
-
-
-Baruch Siach (4):
-  dt-bindings: thermal: Describe Armada AP806 and CP110
-  thermal: armada: Use msleep for long delays
-  thermal: armada: Add support for Armada AP806
-  thermal: armada: Add support for Armada CP110
-
-Miquel Raynal (7):
-  thermal: armada: Simplify the check of the validity bit
-  thermal: armada: Clarify control registers accesses
-  thermal: armada: Use real status register name
-  thermal: armada: Update Kconfig and module description
-  thermal: armada: Change sensors trim default value
-  thermal: armada: Wait sensors validity before exiting the init
-    callback
-  thermal: armada: Give meaningful names to the thermal zones
-
- .../devicetree/bindings/thermal/armada-thermal.txt |  37 ++-
- drivers/thermal/Kconfig                            |   4 +-
- drivers/thermal/armada_thermal.c                   | 257 +++++++++++++++------
- 3 files changed, 218 insertions(+), 80 deletions(-)
-
+diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
+index 706d74798cbe..6c4af2622d4f 100644
+--- a/drivers/thermal/armada_thermal.c
++++ b/drivers/thermal/armada_thermal.c
+@@ -113,7 +113,7 @@ static void armada370_init_sensor(struct platform_device *pdev,
+ 	reg &= ~PMU_TDC0_START_CAL_MASK;
+ 	writel(reg, priv->control);
+ 
+-	mdelay(10);
++	msleep(10);
+ }
+ 
+ static void armada375_init_sensor(struct platform_device *pdev,
+@@ -127,11 +127,11 @@ static void armada375_init_sensor(struct platform_device *pdev,
+ 	reg &= ~A375_HW_RESETn;
+ 
+ 	writel(reg, priv->control + 4);
+-	mdelay(20);
++	msleep(20);
+ 
+ 	reg |= A375_HW_RESETn;
+ 	writel(reg, priv->control + 4);
+-	mdelay(50);
++	msleep(50);
+ }
+ 
+ static void armada380_init_sensor(struct platform_device *pdev,
+@@ -143,7 +143,7 @@ static void armada380_init_sensor(struct platform_device *pdev,
+ 	if (!(reg & A380_HW_RESET)) {
+ 		reg |= A380_HW_RESET;
+ 		writel(reg, priv->control);
+-		mdelay(10);
++		msleep(10);
+ 	}
+ }
+ 
 -- 
 2.11.0
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
