@@ -1,77 +1,125 @@
-From: Ognjen Galic <smclt30p@gmail.com>
-Subject: Re: [PATCH v10 1/4] battery: Add the battery hooking API
-Date: Sat, 23 Dec 2017 13:03:44 +0100
-Message-ID: <20171223120344.GA7372@thinkpad>
-References: <20171223105258.GA4334@thinkpad>
- <CAJZ5v0guiuWi=8zHX3cUZarkcxTT-VY9R3ASaCdEPAfjQPDXkA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/3] phy: core: Move runtime PM reference counting to
+ the parent device
+Date: Sat, 23 Dec 2017 13:37:29 +0100
+Message-ID: <CAPDyKFotQS9HY664E8_paVihS8EJrvTjiaw9d6ksWviKGidJcA@mail.gmail.com>
+References: <1513778960-10073-1-git-send-email-ulf.hansson@linaro.org>
+ <1513778960-10073-2-git-send-email-ulf.hansson@linaro.org>
+ <CAJZ5v0iwR1MnBokL29_QmUw2F6fgNNwzP7WLhtAL37MkMLd1xQ@mail.gmail.com>
+ <CAPDyKFokLc5cQW7RWAsdCY4h_Q8BgHKGQwHVUFX68fWF=BE6_g@mail.gmail.com> <CAJZ5v0gKnHMgN0xokp1twLUCc5MFiXo_4tOORk_-Vxv0iFLLag@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0guiuWi=8zHX3cUZarkcxTT-VY9R3ASaCdEPAfjQPDXkA@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0gKnHMgN0xokp1twLUCc5MFiXo_4tOORk_-Vxv0iFLLag@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
+Cc: Kishon Vijay Abraham I <kishon@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Dec 23, 2017 at 12:59:45PM +0100, Rafael J. Wysocki wrote:
-> On Sat, Dec 23, 2017 at 11:52 AM, Ognjen Galic <smclt30p@gmail.com> wrote:
-> > This is a patch that implements a generic hooking API for the
-> > generic ACPI battery driver.
-> >
-> > With this new generic API, drivers can expose platform specific
-> > behaviour via sysfs attributes in /sys/class/power_supply/BATn/
-> > in a generic way.
-> >
-> > A perfect example of the need for this API are Lenovo ThinkPads.
-> >
-> > Lenovo ThinkPads have a ACPI extension that allows the setting of
-> > start and stop charge thresholds in the EC and battery firmware
-> > via ACPI. The thinkpad_acpi module can use this API to expose
-> > sysfs attributes that it controls inside the ACPI battery driver
-> > sysfs tree, under /sys/class/power_supply/BATN/.
-> >
-> > The file drivers/acpi/battery.h has been moved to
-> > include/acpi/battery.h and the includes inside ac.c, sbs.c, and
-> > battery.c have been adjusted to reflect that.
-> >
-> > When drivers hooks into the API, the API calls add_battery() for
-> > each battery in the system that passes it a acpi_battery
-> > struct. Then, the drivers can use device_create_file() to create
-> > new sysfs attributes with that struct and identify the batteries
-> > for per-battery attributes.
-> > ---
-> > v7:
-> > * Implemented mutual exclusion for hooking methods and battery
-> > callbacks
-> > * Fixed a BUG where errors in other modules would occur when the
-> > modules that depend on battery get unloaded
-> >
-> > v8:
-> > * Use list_for_each_safe instead of list_for_each for the module
-> > exit function where deletion of nodes occurs
-> >
-> > v9:
-> > * No changes in this patch in v9
-> >
-> > v10:
-> > * Fix compiler warnings in Intel's 0-day CI
-> 
-> You're sending new revisions too fast for me to review them. :-/
+On 23 December 2017 at 02:35, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Thu, Dec 21, 2017 at 11:50 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> On 21 December 2017 at 02:39, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>> On Wed, Dec 20, 2017 at 3:09 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>> The runtime PM deployment in the phy core is deployed using the phy core
+>>>> device, which is created by the phy core and assigned as a child device of
+>>>> the phy provider device.
+>>>>
+>>>> The behaviour around the runtime PM deployment cause some issues during
+>>>> system suspend, in cases when the phy provider device is put into a low
+>>>> power state via a call to the pm_runtime_force_suspend() helper, as is the
+>>>> case for a Renesas SoC, which has its phy provider device attached to the
+>>>> generic PM domain.
+>>>>
+>>>> In more detail, the problem in this case is that pm_runtime_force_suspend()
+>>>> expects the child device of the provider device, which is the phy core
+>>>> device, to be runtime suspended, else a WARN splat will be printed
+>>>> (correctly) when runtime PM gets re-enabled at system resume.
+>>>
+>>> So we are now trying to work around issues with
+>>> pm_runtime_force_suspend().  Lovely. :-/
+>>
+>> Yes, we have to, as pm_runtime_force_suspend() is widely deployed. Or
+>> are you saying we should just ignore all issues related to it?
+>
+> Or get rid of it?
+>
+> Seriously, is the resulting pain worth it?
 
-I'm sorry for the flooding, but it's really just small changes here and
-there, mainly syntax and style changes and some compiler warnings on 
-Intel's 0-day CI. Nothing major.
+I am not sure what pain you refer to? :-) So far I haven't got much
+errors being reported because of its use, have you?
 
-> 
-> Please stop doing this for a while until you get a response from me for the v10.
+Moreover, to me, this small series fixes the problems in a rather trivial way.
 
-There are no major issues with v10 that I can see, so I will wait for
-your review.
+>
+>> Of course, if we had something that could replace
+>> pm_runtime_force_suspend(), that would be great, but there isn't.
+>
+> I beg to differ.
+>
+> At least some of it could be replaced with the driver flags.
 
-> 
-> Thanks,
+Yes, true.
 
-Thank YOU for your time!
+On the other hand that is exactly the problem, only *some*. And more
+importantly, genpd can't use them, because it can't cope with have
+system wide PM callbacks to be skipped.
 
-> Rafael
+In other words, so far, the driver PM flags can't solve this issue.
+
+>
+>>>> In the current scenario, even if a call to phy_power_off() triggers it to
+>>>> invoke pm_runtime_put() during system suspend, the phy core device doesn't
+>>>> get runtime suspended, because this is prevented in the system suspend
+>>>> phases by the PM core.
+>>>>
+>>>> To solve this problem, let's move the runtime PM deployment from the phy
+>>>> core device to the phy provider device, as this provides the similar
+>>>> behaviour. Changing this makes it redundant to enable runtime PM for the
+>>>> phy core device, so let's avoid doing that.
+>>>
+>>> I'm not really convinced that this approach is the best one to be honest.
+>>>
+>>> I'll have a deeper look at this in the next few days, stay tuned.
+>>
+>> There is different ways to solve this, for sure. I picked this one,
+>> because I think it's the most trivial thing to do, and it shouldn't
+>> cause any other problems.
+>>
+>> I think any other option would involve assigning ->suspend|resume()
+>> callbacks to the phy core device, but that's fine too, if you prefer
+>> that.
+>>
+>> Also, I have considered how to deal with wakeup paths for phys,
+>> although I didn't want to post changes as a part of this series, but
+>> maybe I should to give a more complete picture?
+>
+> Yes, you should.
+
+Okay!
+
+>
+> The point is that without genpd using pm_runtime_force_suspend() the
+> phy code could very well stay the way it is.  And it is logical,
+> because having a parent with enabled runtime PM without enabling
+> runtime PM for its children is at least conceptually questionable.
+
+I agree that the phy core is today logical okay. But I think that's
+also the case, if we pick up this small series.
+
+There are many reasons and cases where a children is runtime PM
+disabled, while the parent is runtime PM enabled. Moreover the runtime
+PM core copes fine with that.
+
+>
+> So the conclusion may be that the phy code is OK, but calling
+> pm_runtime_force_suspend() from genpd isn't.
+
+So I am worried that changing genpd in this regards, may introduce
+other regressions. @subject series seems far less risky - and again,
+to me, the changes are trivial.
+
+Anyway, I will keep your suggestion in mind and think about, how/if
+genpd can be changed.
+
+Kind regards
+Uffe
