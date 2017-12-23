@@ -1,70 +1,229 @@
-From: Dong Aisheng <dongas86@gmail.com>
-Subject: Re: [PATCH RESEND 1/1] cpufreq: imx6q: switch to Use clk_bulk_get to
- refine clk operations
-Date: Sat, 23 Dec 2017 12:37:18 +0800
-Message-ID: <20171223043718.GB32736@b29396-OptiPlex-7040>
-References: <1504179837-18842-1-git-send-email-aisheng.dong@nxp.com>
- <20170914214032.GE11836@ubuntu>
- <20171221131733.GA24403@b29396-OptiPlex-7040>
- <2124437.LcYqgt3btA@aspire.rjw.lan>
+From: Dong Aisheng <aisheng.dong@nxp.com>
+Subject: [PATCH RESEND V2 1/1] cpufreq: imx6q: switch to Use clk_bulk_get to refine clk operations
+Date: Sat, 23 Dec 2017 12:53:52 +0800
+Message-ID: <1514004832-373-1-git-send-email-aisheng.dong@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f195.google.com ([209.85.192.195]:38291 "EHLO
-        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757161AbdLWEh2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Dec 2017 23:37:28 -0500
-Content-Disposition: inline
-In-Reply-To: <2124437.LcYqgt3btA@aspire.rjw.lan>
+Received: from mail-bl2nam02on0080.outbound.protection.outlook.com ([104.47.38.80]:57696
+        "EHLO NAM02-BL2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1752448AbdLWEyF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 22 Dec 2017 23:54:05 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, vireshk@kernel.org, shawnguo@kernel.org, Anson.Huang@nxp.com, Leonard Crestez <leonard.crestez@nxp.com>
+To: linux-pm@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org, shawnguo@kernel.org, dongas86@gmail.com, aisheng.dong@nxp.com, viresh.kumar@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Anson Huang <anson.huang@nxp.com>, Leonard Crestez <leonard.crestez@nxp.com>
 
-On Fri, Dec 22, 2017 at 07:34:57PM +0100, Rafael J. Wysocki wrote:
-> On Thursday, December 21, 2017 2:18:01 PM CET Dong Aisheng wrote:
-> > Hi Rafael,
-> > 
-> > On Thu, Sep 14, 2017 at 02:40:32PM -0700, Viresh Kumar wrote:
-> > > On 31-08-17, 19:43, Dong Aisheng wrote:
-> > > > Use clk_bulk_get to ease the driver clocks handling.
-> > > > 
-> > > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> > > > Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> > > > Cc: Shawn Guo <shawnguo@kernel.org>
-> > > > Cc: Anson Huang <anson.huang@nxp.com>
-> > > > Cc: Leonard Crestez <leonard.crestez@nxp.com>
-> > > > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> > > > --
-> > > > The original one is here which depends on clk_bulk APIs.
-> > > > https://patchwork.kernel.org/patch/9737337/
-> > > > Now the clk_bulk APIs are already in kernel, so resend the patch.
-> > > > (Patch title changed a bit to be more specific.)
-> > > > ---
-> > > >  drivers/cpufreq/imx6q-cpufreq.c | 125 ++++++++++++++++++----------------------
-> > > >  1 file changed, 56 insertions(+), 69 deletions(-)
-> > > 
-> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > > 
-> > 
-> > Would you help pick it?
-> > I did not see it in latest kernel.
-> > It still applies.
-> 
-> OK
-> 
-> Can you please resend the patch again with the ACK from Viresh?
-> 
+Use clk_bulk_get to ease the driver clocks handling.
 
-Of course yes.
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Shawn Guo <shawnguo@kernel.org>
+Cc: Anson Huang <anson.huang@nxp.com>
+Cc: Leonard Crestez <leonard.crestez@nxp.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+---
+Rebased on linux-pm.git/linux-next branch
+---
+ drivers/cpufreq/imx6q-cpufreq.c | 125 ++++++++++++++++++----------------------
+ 1 file changed, 56 insertions(+), 69 deletions(-)
 
-Thanks
-
-Regards
-Dong Aisheng
-
-> It looks like it fell through the cracks, sorry about that.
-> 
-> Thanks,
-> Rafael
-> 
+diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
+index d9b2c2d..8bfb077 100644
+--- a/drivers/cpufreq/imx6q-cpufreq.c
++++ b/drivers/cpufreq/imx6q-cpufreq.c
+@@ -25,15 +25,29 @@ static struct regulator *arm_reg;
+ static struct regulator *pu_reg;
+ static struct regulator *soc_reg;
+ 
+-static struct clk *arm_clk;
+-static struct clk *pll1_sys_clk;
+-static struct clk *pll1_sw_clk;
+-static struct clk *step_clk;
+-static struct clk *pll2_pfd2_396m_clk;
+-
+-/* clk used by i.MX6UL */
+-static struct clk *pll2_bus_clk;
+-static struct clk *secondary_sel_clk;
++enum IMX6_CPUFREQ_CLKS {
++	ARM,
++	PLL1_SYS,
++	STEP,
++	PLL1_SW,
++	PLL2_PFD2_396M,
++	/* MX6UL requires two more clks */
++	PLL2_BUS,
++	SECONDARY_SEL,
++};
++#define IMX6Q_CPUFREQ_CLK_NUM		5
++#define IMX6UL_CPUFREQ_CLK_NUM		7
++
++static int num_clks;
++static struct clk_bulk_data clks[] = {
++	{ .id = "arm" },
++	{ .id = "pll1_sys" },
++	{ .id = "step" },
++	{ .id = "pll1_sw" },
++	{ .id = "pll2_pfd2_396m" },
++	{ .id = "pll2_bus" },
++	{ .id = "secondary_sel" },
++};
+ 
+ static struct device *cpu_dev;
+ static bool free_opp;
+@@ -53,7 +67,7 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 
+ 	new_freq = freq_table[index].frequency;
+ 	freq_hz = new_freq * 1000;
+-	old_freq = clk_get_rate(arm_clk) / 1000;
++	old_freq = clk_get_rate(clks[ARM].clk) / 1000;
+ 
+ 	opp = dev_pm_opp_find_freq_ceil(cpu_dev, &freq_hz);
+ 	if (IS_ERR(opp)) {
+@@ -112,29 +126,31 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 		 * voltage of 528MHz, so lower the CPU frequency to one
+ 		 * half before changing CPU frequency.
+ 		 */
+-		clk_set_rate(arm_clk, (old_freq >> 1) * 1000);
+-		clk_set_parent(pll1_sw_clk, pll1_sys_clk);
+-		if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk))
+-			clk_set_parent(secondary_sel_clk, pll2_bus_clk);
++		clk_set_rate(clks[ARM].clk, (old_freq >> 1) * 1000);
++		clk_set_parent(clks[PLL1_SW].clk, clks[PLL1_SYS].clk);
++		if (freq_hz > clk_get_rate(clks[PLL2_PFD2_396M].clk))
++			clk_set_parent(clks[SECONDARY_SEL].clk,
++				       clks[PLL2_BUS].clk);
+ 		else
+-			clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
+-		clk_set_parent(step_clk, secondary_sel_clk);
+-		clk_set_parent(pll1_sw_clk, step_clk);
++			clk_set_parent(clks[SECONDARY_SEL].clk,
++				       clks[PLL2_PFD2_396M].clk);
++		clk_set_parent(clks[STEP].clk, clks[SECONDARY_SEL].clk);
++		clk_set_parent(clks[PLL1_SW].clk, clks[STEP].clk);
+ 	} else {
+-		clk_set_parent(step_clk, pll2_pfd2_396m_clk);
+-		clk_set_parent(pll1_sw_clk, step_clk);
+-		if (freq_hz > clk_get_rate(pll2_pfd2_396m_clk)) {
+-			clk_set_rate(pll1_sys_clk, new_freq * 1000);
+-			clk_set_parent(pll1_sw_clk, pll1_sys_clk);
++		clk_set_parent(clks[STEP].clk, clks[PLL2_PFD2_396M].clk);
++		clk_set_parent(clks[PLL1_SW].clk, clks[STEP].clk);
++		if (freq_hz > clk_get_rate(clks[PLL2_PFD2_396M].clk)) {
++			clk_set_rate(clks[PLL1_SYS].clk, new_freq * 1000);
++			clk_set_parent(clks[PLL1_SW].clk, clks[PLL1_SYS].clk);
+ 		} else {
+ 			/* pll1_sys needs to be enabled for divider rate change to work. */
+ 			pll1_sys_temp_enabled = true;
+-			clk_prepare_enable(pll1_sys_clk);
++			clk_prepare_enable(clks[PLL1_SYS].clk);
+ 		}
+ 	}
+ 
+ 	/* Ensure the arm clock divider is what we expect */
+-	ret = clk_set_rate(arm_clk, new_freq * 1000);
++	ret = clk_set_rate(clks[ARM].clk, new_freq * 1000);
+ 	if (ret) {
+ 		dev_err(cpu_dev, "failed to set clock rate: %d\n", ret);
+ 		regulator_set_voltage_tol(arm_reg, volt_old, 0);
+@@ -143,7 +159,7 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 
+ 	/* PLL1 is only needed until after ARM-PODF is set. */
+ 	if (pll1_sys_temp_enabled)
+-		clk_disable_unprepare(pll1_sys_clk);
++		clk_disable_unprepare(clks[PLL1_SYS].clk);
+ 
+ 	/* scaling down?  scale voltage after frequency */
+ 	if (new_freq < old_freq) {
+@@ -174,7 +190,7 @@ static int imx6q_cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	int ret;
+ 
+-	policy->clk = arm_clk;
++	policy->clk = clks[ARM].clk;
+ 	ret = cpufreq_generic_init(policy, freq_table, transition_latency);
+ 	policy->suspend_freq = policy->max;
+ 
+@@ -266,28 +282,15 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ 		return -ENOENT;
+ 	}
+ 
+-	arm_clk = clk_get(cpu_dev, "arm");
+-	pll1_sys_clk = clk_get(cpu_dev, "pll1_sys");
+-	pll1_sw_clk = clk_get(cpu_dev, "pll1_sw");
+-	step_clk = clk_get(cpu_dev, "step");
+-	pll2_pfd2_396m_clk = clk_get(cpu_dev, "pll2_pfd2_396m");
+-	if (IS_ERR(arm_clk) || IS_ERR(pll1_sys_clk) || IS_ERR(pll1_sw_clk) ||
+-	    IS_ERR(step_clk) || IS_ERR(pll2_pfd2_396m_clk)) {
+-		dev_err(cpu_dev, "failed to get clocks\n");
+-		ret = -ENOENT;
+-		goto put_clk;
+-	}
+-
+ 	if (of_machine_is_compatible("fsl,imx6ul") ||
+-	    of_machine_is_compatible("fsl,imx6ull")) {
+-		pll2_bus_clk = clk_get(cpu_dev, "pll2_bus");
+-		secondary_sel_clk = clk_get(cpu_dev, "secondary_sel");
+-		if (IS_ERR(pll2_bus_clk) || IS_ERR(secondary_sel_clk)) {
+-			dev_err(cpu_dev, "failed to get clocks specific to imx6ul\n");
+-			ret = -ENOENT;
+-			goto put_clk;
+-		}
+-	}
++	    of_machine_is_compatible("fsl,imx6ull"))
++		num_clks = IMX6UL_CPUFREQ_CLK_NUM;
++	else
++		num_clks = IMX6Q_CPUFREQ_CLK_NUM;
++
++	ret = clk_bulk_get(cpu_dev, num_clks, clks);
++	if (ret)
++		goto put_node;
+ 
+ 	arm_reg = regulator_get(cpu_dev, "arm");
+ 	pu_reg = regulator_get_optional(cpu_dev, "pu");
+@@ -424,22 +427,11 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
+ 		regulator_put(pu_reg);
+ 	if (!IS_ERR(soc_reg))
+ 		regulator_put(soc_reg);
+-put_clk:
+-	if (!IS_ERR(arm_clk))
+-		clk_put(arm_clk);
+-	if (!IS_ERR(pll1_sys_clk))
+-		clk_put(pll1_sys_clk);
+-	if (!IS_ERR(pll1_sw_clk))
+-		clk_put(pll1_sw_clk);
+-	if (!IS_ERR(step_clk))
+-		clk_put(step_clk);
+-	if (!IS_ERR(pll2_pfd2_396m_clk))
+-		clk_put(pll2_pfd2_396m_clk);
+-	if (!IS_ERR(pll2_bus_clk))
+-		clk_put(pll2_bus_clk);
+-	if (!IS_ERR(secondary_sel_clk))
+-		clk_put(secondary_sel_clk);
++
++	clk_bulk_put(num_clks, clks);
++put_node:
+ 	of_node_put(np);
++
+ 	return ret;
+ }
+ 
+@@ -453,13 +445,8 @@ static int imx6q_cpufreq_remove(struct platform_device *pdev)
+ 	if (!IS_ERR(pu_reg))
+ 		regulator_put(pu_reg);
+ 	regulator_put(soc_reg);
+-	clk_put(arm_clk);
+-	clk_put(pll1_sys_clk);
+-	clk_put(pll1_sw_clk);
+-	clk_put(step_clk);
+-	clk_put(pll2_pfd2_396m_clk);
+-	clk_put(pll2_bus_clk);
+-	clk_put(secondary_sel_clk);
++
++	clk_bulk_put(num_clks, clks);
+ 
+ 	return 0;
+ }
+-- 
+2.7.4
