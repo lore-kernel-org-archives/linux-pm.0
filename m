@@ -1,96 +1,64 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/3] PM / core: Assign the wakeup_path status flag in __device_prepare()
-Date: Sat, 23 Dec 2017 13:55:43 +0100
-Message-ID: <CAJZ5v0iu-5Y9j+Qc-no_BUAamYZ7tq=24qSUu4H=vU98YBXCxw@mail.gmail.com>
-References: <1513353391-30806-1-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0hctW_-WR2Gy4tszeXYJJfTRQbLCr_NRhAXao5_XR5NOw@mail.gmail.com>
- <CAPDyKFqa5Lt6jrDQd+V_cE+Bz2ZRJRe95-8bbJgV=LbkGPM0mw@mail.gmail.com>
- <1742152.iLm4rp6jIy@aspire.rjw.lan> <CAPDyKFpO7_GxjcANYPUO3aEp2uTrnioQ3=hsWSzPg_nDM3Sh-w@mail.gmail.com>
- <CAJZ5v0jp-kmuQGnxc-v9QsFxoCRwULhVDeSjHmCGh93wdRPcDA@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/3] phy: core: Move runtime PM reference counting to
+ the parent device
+Date: Sat, 23 Dec 2017 16:09:33 +0100
+Message-ID: <CAPDyKFpHNYbf3Wz+Hq94Rm_wQGWnQkc6B2cS_RTjkmcbeeZoyw@mail.gmail.com>
+References: <1513778960-10073-1-git-send-email-ulf.hansson@linaro.org>
+ <1513778960-10073-2-git-send-email-ulf.hansson@linaro.org>
+ <CAJZ5v0iwR1MnBokL29_QmUw2F6fgNNwzP7WLhtAL37MkMLd1xQ@mail.gmail.com> <CAJZ5v0hmSaWiy9zQPP+0FySySW4yNCm92mTtJ7ebd+rBjjqJng@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f171.google.com ([74.125.82.171]:40348 "EHLO
-        mail-ot0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750810AbdLWMzo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 Dec 2017 07:55:44 -0500
-In-Reply-To: <CAJZ5v0jp-kmuQGnxc-v9QsFxoCRwULhVDeSjHmCGh93wdRPcDA@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0hmSaWiy9zQPP+0FySySW4yNCm92mTtJ7ebd+rBjjqJng@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Kishon Vijay Abraham I <kishon@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On Sat, Dec 23, 2017 at 1:50 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Sat, Dec 23, 2017 at 1:03 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> On 22 December 2017 at 20:12, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->>> On Thursday, December 21, 2017 11:13:57 AM CET Ulf Hansson wrote:
->>>> On 21 December 2017 at 02:43, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>>> > On Fri, Dec 15, 2017 at 4:56 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>> >> The PM core in the device_prepare() phase, resets the wakeup_path status
->>>> >> flag to the value of device_may_wakeup(). This means if a ->prepare() or a
->>>> >> ->suspend() callback for the device would update the device's wakeup
->>>> >> setting, this doesn't become reflected in the wakeup_path status flag.
->>>> >>
->>>> >> In general this isn't a problem, because wakeup settings isn't supposed to
->>>> >> be changed during those system suspend phases. Nevertheless, there are a
->>>> >> cases not conforming to that behaviour, as device_set_wakeup_enable() is
->>>> >> indeed called from ->suspend() callbacks.
->>>> >
->>>> > And why is this regarded as correct?
->>>>
->>>> I am not saying that this behavior is correct. However, I am trying to
->>>> improve the situation, which doesn't hurt or does it?
->>>
->>> Adding a workaround for them kind of encourages new code to do the same
->>> thing, which actually may really hurt.  So I assume that these call sites are
->>> all legacy and that's why you don't want to touch them for now, but in that
->>> case the commit message should make it very clear that this is about legacy
->>> only and new code should not call device_set_wakeup_enable() during suspend.
->>
->> Yeah, makes sense. Let me clarify that!
->>
->>>
->>> [Something should be printed to the log if wakeup source objects
->>> are created while system suspend is in progress I guess or similar.]
->>
->> Yes, good idea. Let me cook a patch for that as well.
->>
->>>
->>>> More importantly, the next patch, which is about the wakeup path,
->>>> depends on this.
->>>
->>> Honestly, this sounds like "We have this change we really really would like to
->>> make, but there's incorrect code getting in the way, so let's paper over it
->>> and be done."  Not very nice. :-/
->>
->> Yeah it sounds a bit weird, I agree.
->>
->> However, maybe if I update the changelog and fold in a patch printing
->> an error in case the APIs is being abused, that would sort out the
->> confusion?
->
-> That should be sufficient IMO.
->
->> Another option is simply to squash patch 1 and patch2, what do you prefer?
->>
->>>
->>> How many drivers actually do call device_set_wakeup_enable() during suspend?
->>
->> There are some ethernet/wifi drivers, although it hard to say how many
->> without a more thorough investigation.
->>
->> Besides those I found these more obvious ones:
->> drivers/ssb/pcihost_wrapper.c
->> drivers/staging/rtlwifi/core.c
->> drivers/tty/serial/atmel_serial.c
->> drivers/usb/core/hcd-pci.c
->
-> Ugh.  I need to look at the last one at least ...
+[...]
 
-The drivers/usb/core/hcd-pci.c instance is actually valid, because it
-calls device_set_wakeup_enable() to remove the wakeup source object in
-case the device is dead.  Moreover, it does that in the "noirq" phase
-which is not covered by your patch anyway.
+>
+> So IMO the changes you are proposing make sense regardless of the
+> genpd issue, because they generally simplify the phy code, but the
+> additional use_runtime_pm field in struct phy represents redundant
+> information (manipulating reference counters shouldn't matter if
+> runtime PM is disabled), so it doesn't appear to be necessary.
+>
 
-Thanks,
-Rafael
+Actually, the first version I posted treated the return codes from
+pm_runtime_get_sync() according to your suggestion above.
+
+However, Kishon pointed out that it didn't work. That's because, there
+are phy provider drivers that enables runtime PM *after* calling
+phy_create(). And in those cases, that is because they want to treat
+runtime PM themselves.
+
+I think that's probably something we should look into to change, but I
+find it being a separate issue, that I didn't want to investigate as
+part of this series.
+
+See more about the thread here:
+https://www.spinics.net/lists/linux-renesas-soc/msg21711.html
+
+> [On a related note, I'm not sure why phy tries to intercept runtime PM
+> errors and "fix up" the reference counters.  That doesn't look right
+> to me at all.]
+>
+> That said, the current phy code is not strictly invalid.  While it
+> looks more complicated than necessary, it doesn't do things documented
+> as invalid in principle, so saying "The behaviour around the runtime
+> PM deployment cause some issues during system suspend" in the
+> changelog is describing the problem from a very specific angle.
+> Simply put, pm_runtime_force_suspend() and the current phy code cannot
+> work together and so using them together is a bug.  None of them
+> individually is at fault, but combining them is incorrect.
+>
+> Fortunately enough, the phy code can be modified so that it can be
+> used with pm_runtime_force_suspend() without problems, but picturing
+> it as "problematic", because it cannot do that today is not entirely
+> fair IMO.
+
+Right, this makes sense. Let me clarify this in the changelog.
+
+Kind regards
+Uffe
