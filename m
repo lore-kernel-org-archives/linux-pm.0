@@ -1,125 +1,80 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
 Subject: Re: [PATCH v2 1/3] phy: core: Move runtime PM reference counting to
  the parent device
-Date: Sat, 23 Dec 2017 13:37:29 +0100
-Message-ID: <CAPDyKFotQS9HY664E8_paVihS8EJrvTjiaw9d6ksWviKGidJcA@mail.gmail.com>
+Date: Sat, 23 Dec 2017 13:39:45 +0100
+Message-ID: <CAJZ5v0hmSaWiy9zQPP+0FySySW4yNCm92mTtJ7ebd+rBjjqJng@mail.gmail.com>
 References: <1513778960-10073-1-git-send-email-ulf.hansson@linaro.org>
- <1513778960-10073-2-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0iwR1MnBokL29_QmUw2F6fgNNwzP7WLhtAL37MkMLd1xQ@mail.gmail.com>
- <CAPDyKFokLc5cQW7RWAsdCY4h_Q8BgHKGQwHVUFX68fWF=BE6_g@mail.gmail.com> <CAJZ5v0gKnHMgN0xokp1twLUCc5MFiXo_4tOORk_-Vxv0iFLLag@mail.gmail.com>
+ <1513778960-10073-2-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0iwR1MnBokL29_QmUw2F6fgNNwzP7WLhtAL37MkMLd1xQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gKnHMgN0xokp1twLUCc5MFiXo_4tOORk_-Vxv0iFLLag@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Kishon Vijay Abraham I <kishon@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f68.google.com ([209.85.218.68]:33881 "EHLO
+        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751052AbdLWMjq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 Dec 2017 07:39:46 -0500
+In-Reply-To: <CAJZ5v0iwR1MnBokL29_QmUw2F6fgNNwzP7WLhtAL37MkMLd1xQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Kishon Vijay Abraham I <kishon@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On 23 December 2017 at 02:35, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Thu, Dec 21, 2017 at 11:50 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> On 21 December 2017 at 02:39, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> On Wed, Dec 20, 2017 at 3:09 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>> The runtime PM deployment in the phy core is deployed using the phy core
->>>> device, which is created by the phy core and assigned as a child device of
->>>> the phy provider device.
->>>>
->>>> The behaviour around the runtime PM deployment cause some issues during
->>>> system suspend, in cases when the phy provider device is put into a low
->>>> power state via a call to the pm_runtime_force_suspend() helper, as is the
->>>> case for a Renesas SoC, which has its phy provider device attached to the
->>>> generic PM domain.
->>>>
->>>> In more detail, the problem in this case is that pm_runtime_force_suspend()
->>>> expects the child device of the provider device, which is the phy core
->>>> device, to be runtime suspended, else a WARN splat will be printed
->>>> (correctly) when runtime PM gets re-enabled at system resume.
->>>
->>> So we are now trying to work around issues with
->>> pm_runtime_force_suspend().  Lovely. :-/
+On Thu, Dec 21, 2017 at 2:39 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Wed, Dec 20, 2017 at 3:09 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> The runtime PM deployment in the phy core is deployed using the phy core
+>> device, which is created by the phy core and assigned as a child device of
+>> the phy provider device.
 >>
->> Yes, we have to, as pm_runtime_force_suspend() is widely deployed. Or
->> are you saying we should just ignore all issues related to it?
->
-> Or get rid of it?
->
-> Seriously, is the resulting pain worth it?
-
-I am not sure what pain you refer to? :-) So far I haven't got much
-errors being reported because of its use, have you?
-
-Moreover, to me, this small series fixes the problems in a rather trivial way.
-
->
->> Of course, if we had something that could replace
->> pm_runtime_force_suspend(), that would be great, but there isn't.
->
-> I beg to differ.
->
-> At least some of it could be replaced with the driver flags.
-
-Yes, true.
-
-On the other hand that is exactly the problem, only *some*. And more
-importantly, genpd can't use them, because it can't cope with have
-system wide PM callbacks to be skipped.
-
-In other words, so far, the driver PM flags can't solve this issue.
-
->
->>>> In the current scenario, even if a call to phy_power_off() triggers it to
->>>> invoke pm_runtime_put() during system suspend, the phy core device doesn't
->>>> get runtime suspended, because this is prevented in the system suspend
->>>> phases by the PM core.
->>>>
->>>> To solve this problem, let's move the runtime PM deployment from the phy
->>>> core device to the phy provider device, as this provides the similar
->>>> behaviour. Changing this makes it redundant to enable runtime PM for the
->>>> phy core device, so let's avoid doing that.
->>>
->>> I'm not really convinced that this approach is the best one to be honest.
->>>
->>> I'll have a deeper look at this in the next few days, stay tuned.
+>> The behaviour around the runtime PM deployment cause some issues during
+>> system suspend, in cases when the phy provider device is put into a low
+>> power state via a call to the pm_runtime_force_suspend() helper, as is the
+>> case for a Renesas SoC, which has its phy provider device attached to the
+>> generic PM domain.
 >>
->> There is different ways to solve this, for sure. I picked this one,
->> because I think it's the most trivial thing to do, and it shouldn't
->> cause any other problems.
+>> In more detail, the problem in this case is that pm_runtime_force_suspend()
+>> expects the child device of the provider device, which is the phy core
+>> device, to be runtime suspended, else a WARN splat will be printed
+>> (correctly) when runtime PM gets re-enabled at system resume.
+>
+> So we are now trying to work around issues with
+> pm_runtime_force_suspend().  Lovely. :-/
+>
+>> In the current scenario, even if a call to phy_power_off() triggers it to
+>> invoke pm_runtime_put() during system suspend, the phy core device doesn't
+>> get runtime suspended, because this is prevented in the system suspend
+>> phases by the PM core.
 >>
->> I think any other option would involve assigning ->suspend|resume()
->> callbacks to the phy core device, but that's fine too, if you prefer
->> that.
->>
->> Also, I have considered how to deal with wakeup paths for phys,
->> although I didn't want to post changes as a part of this series, but
->> maybe I should to give a more complete picture?
+>> To solve this problem, let's move the runtime PM deployment from the phy
+>> core device to the phy provider device, as this provides the similar
+>> behaviour. Changing this makes it redundant to enable runtime PM for the
+>> phy core device, so let's avoid doing that.
 >
-> Yes, you should.
-
-Okay!
-
+> I'm not really convinced that this approach is the best one to be honest.
 >
-> The point is that without genpd using pm_runtime_force_suspend() the
-> phy code could very well stay the way it is.  And it is logical,
-> because having a parent with enabled runtime PM without enabling
-> runtime PM for its children is at least conceptually questionable.
+> I'll have a deeper look at this in the next few days, stay tuned.
 
-I agree that the phy core is today logical okay. But I think that's
-also the case, if we pick up this small series.
+So IMO the changes you are proposing make sense regardless of the
+genpd issue, because they generally simplify the phy code, but the
+additional use_runtime_pm field in struct phy represents redundant
+information (manipulating reference counters shouldn't matter if
+runtime PM is disabled), so it doesn't appear to be necessary.
 
-There are many reasons and cases where a children is runtime PM
-disabled, while the parent is runtime PM enabled. Moreover the runtime
-PM core copes fine with that.
+[On a related note, I'm not sure why phy tries to intercept runtime PM
+errors and "fix up" the reference counters.  That doesn't look right
+to me at all.]
 
->
-> So the conclusion may be that the phy code is OK, but calling
-> pm_runtime_force_suspend() from genpd isn't.
+That said, the current phy code is not strictly invalid.  While it
+looks more complicated than necessary, it doesn't do things documented
+as invalid in principle, so saying "The behaviour around the runtime
+PM deployment cause some issues during system suspend" in the
+changelog is describing the problem from a very specific angle.
+Simply put, pm_runtime_force_suspend() and the current phy code cannot
+work together and so using them together is a bug.  None of them
+individually is at fault, but combining them is incorrect.
 
-So I am worried that changing genpd in this regards, may introduce
-other regressions. @subject series seems far less risky - and again,
-to me, the changes are trivial.
+Fortunately enough, the phy code can be modified so that it can be
+used with pm_runtime_force_suspend() without problems, but picturing
+it as "problematic", because it cannot do that today is not entirely
+fair IMO.
 
-Anyway, I will keep your suggestion in mind and think about, how/if
-genpd can be changed.
-
-Kind regards
-Uffe
+Thanks,
+Rafael
