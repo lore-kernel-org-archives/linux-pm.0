@@ -1,56 +1,73 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH 1/3] PM / core: Assign the wakeup_path status flag in __device_prepare()
-Date: Sat, 23 Dec 2017 16:17:58 +0100
-Message-ID: <CAPDyKFqKoOuLK2NG+kXthCUSRJnNUf57wCq_eYrkh+-2KTPWhQ@mail.gmail.com>
-References: <1513353391-30806-1-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0hctW_-WR2Gy4tszeXYJJfTRQbLCr_NRhAXao5_XR5NOw@mail.gmail.com>
- <CAPDyKFqa5Lt6jrDQd+V_cE+Bz2ZRJRe95-8bbJgV=LbkGPM0mw@mail.gmail.com>
- <1742152.iLm4rp6jIy@aspire.rjw.lan> <CAPDyKFpO7_GxjcANYPUO3aEp2uTrnioQ3=hsWSzPg_nDM3Sh-w@mail.gmail.com>
- <CAJZ5v0jp-kmuQGnxc-v9QsFxoCRwULhVDeSjHmCGh93wdRPcDA@mail.gmail.com> <CAJZ5v0iu-5Y9j+Qc-no_BUAamYZ7tq=24qSUu4H=vU98YBXCxw@mail.gmail.com>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [PATCH 1/3 v7] battery: Add the battery hooking API (fwd)
+Date: Sat, 23 Dec 2017 20:24:41 +0100 (CET)
+Message-ID: <alpine.DEB.2.20.1712232023480.2138@hadrien>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f180.google.com ([209.85.223.180]:35702 "EHLO
-        mail-io0-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751529AbdLWPR7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 Dec 2017 10:17:59 -0500
-Received: by mail-io0-f180.google.com with SMTP id 14so20834391iou.2
-        for <linux-pm@vger.kernel.org>; Sat, 23 Dec 2017 07:17:59 -0800 (PST)
-In-Reply-To: <CAJZ5v0iu-5Y9j+Qc-no_BUAamYZ7tq=24qSUu4H=vU98YBXCxw@mail.gmail.com>
+Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:2074 "EHLO
+        mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1756065AbdLWTYo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 Dec 2017 14:24:44 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, =?ISO-8859-2?Q?Ognjen_Gali=E6?= <smclt30p@gmail.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, =?ISO-8859-15?Q?Christoph_B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 
-[...]
+Please check on the indentation of line 1534.
 
->>>> How many drivers actually do call device_set_wakeup_enable() during suspend?
->>>
->>> There are some ethernet/wifi drivers, although it hard to say how many
->>> without a more thorough investigation.
->>>
->>> Besides those I found these more obvious ones:
->>> drivers/ssb/pcihost_wrapper.c
->>> drivers/staging/rtlwifi/core.c
->>> drivers/tty/serial/atmel_serial.c
->>> drivers/usb/core/hcd-pci.c
->>
->> Ugh.  I need to look at the last one at least ...
->
-> The drivers/usb/core/hcd-pci.c instance is actually valid, because it
-> calls device_set_wakeup_enable() to remove the wakeup source object in
-> case the device is dead.  Moreover, it does that in the "noirq" phase
-> which is not covered by your patch anyway.
+julia
 
-Right, but this puzzles me a bit.
+---------- Forwarded message ----------
+Date: Sat, 23 Dec 2017 20:15:26 +0800
+From: kbuild test robot <fengguang.wu@intel.com>
+To: kbuild@01.org
+Cc: Julia Lawall <julia.lawall@lip6.fr>
+Subject: Re: [PATCH 1/3 v7] battery: Add the battery hooking API
 
-Could you explain what you mean by valid here? Is it okay to call
-device_set_wakeup_enable() in the suspend phase after all? No?
+Hi Ognjen,
 
-My very vague idea at this point is, if we find cases where
-device_set_wakeup_enable() makes sense to call during system suspend,
-probably those could/should be replaces by using the "wakeup_path"
-flag instead, somehow.
+Thank you for the patch! Perhaps something to improve:
 
-Kind regards
-Uffe
+[auto build test WARNING on platform-drivers-x86/for-next]
+[also build test WARNING on v4.15-rc4 next-20171222]
+[cannot apply to pm/linux-next]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+
+url:    https://github.com/0day-ci/linux/commits/Ognjen-Galic/battery-Add-the-battery-hooking-API/20171223-144855
+base:   git://git.infradead.org/users/dvhart/linux-platform-drivers-x86.git for-next
+:::::: branch date: 5 hours ago
+:::::: commit date: 5 hours ago
+
+>> drivers/acpi/battery.c:1533:2-51: code aligned with following code on line 1534
+--
+>> drivers/acpi/battery.c:707:3-9: preceding lock on line 684
+
+# https://github.com/0day-ci/linux/commit/19380b8e214c2ac505bb3b21bbb73f51ecc716de
+git remote add linux-review https://github.com/0day-ci/linux
+git remote update linux-review
+git checkout 19380b8e214c2ac505bb3b21bbb73f51ecc716de
+vim +1533 drivers/acpi/battery.c
+
+^1da177e Linus Torvalds 2005-04-16  1528
+4be44fcd Len Brown      2005-08-05  1529  static void __exit acpi_battery_exit(void)
+^1da177e Linus Torvalds 2005-04-16  1530  {
+5dfa0c73 Chris Wilson   2016-05-19  1531  	async_synchronize_cookie(async_cookie + 1);
+bc39fbcf Hans de Goede  2017-04-19  1532  	if (battery_driver_registered)
+^1da177e Linus Torvalds 2005-04-16 @1533  		acpi_bus_unregister_driver(&acpi_battery_driver);
+19380b8e Ognjen Galic   2017-12-20 @1534  		battery_hook_exit();
+3a670cc7 Lan Tianyu     2014-05-04  1535  #ifdef CONFIG_ACPI_PROCFS_POWER
+bc39fbcf Hans de Goede  2017-04-19  1536  	if (acpi_battery_dir)
+3a670cc7 Lan Tianyu     2014-05-04  1537  		acpi_unlock_battery_dir(acpi_battery_dir);
+3a670cc7 Lan Tianyu     2014-05-04  1538  #endif
+^1da177e Linus Torvalds 2005-04-16  1539  }
+^1da177e Linus Torvalds 2005-04-16  1540
+
+:::::: The code at line 1533 was first introduced by commit
+:::::: 1da177e4c3f41524e886b7f1b8a0c1fc7321cac2 Linux-2.6.12-rc2
+
+:::::: TO: Linus Torvalds <torvalds@ppc970.osdl.org>
+:::::: CC: Linus Torvalds <torvalds@ppc970.osdl.org>
+
+---
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
