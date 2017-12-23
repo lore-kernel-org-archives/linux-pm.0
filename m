@@ -1,47 +1,70 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 1/3] phy: core: Move runtime PM reference counting to
- the parent device
-Date: Sat, 23 Dec 2017 02:50:12 +0100
-Message-ID: <CAJZ5v0i1o=dWjfMowdiG_ChGJETFaSNRR6OjroOooc0nXhViFw@mail.gmail.com>
-References: <1513778960-10073-1-git-send-email-ulf.hansson@linaro.org>
- <1513778960-10073-2-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0iwR1MnBokL29_QmUw2F6fgNNwzP7WLhtAL37MkMLd1xQ@mail.gmail.com>
- <CAPDyKFokLc5cQW7RWAsdCY4h_Q8BgHKGQwHVUFX68fWF=BE6_g@mail.gmail.com> <CAJZ5v0gKnHMgN0xokp1twLUCc5MFiXo_4tOORk_-Vxv0iFLLag@mail.gmail.com>
+From: Dong Aisheng <dongas86@gmail.com>
+Subject: Re: [PATCH RESEND 1/1] cpufreq: imx6q: switch to Use clk_bulk_get to
+ refine clk operations
+Date: Sat, 23 Dec 2017 12:37:18 +0800
+Message-ID: <20171223043718.GB32736@b29396-OptiPlex-7040>
+References: <1504179837-18842-1-git-send-email-aisheng.dong@nxp.com>
+ <20170914214032.GE11836@ubuntu>
+ <20171221131733.GA24403@b29396-OptiPlex-7040>
+ <2124437.LcYqgt3btA@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0gKnHMgN0xokp1twLUCc5MFiXo_4tOORk_-Vxv0iFLLag@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:38291 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1757161AbdLWEh2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 Dec 2017 23:37:28 -0500
+Content-Disposition: inline
+In-Reply-To: <2124437.LcYqgt3btA@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Dong Aisheng <aisheng.dong@nxp.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, vireshk@kernel.org, shawnguo@kernel.org, Anson.Huang@nxp.com, Leonard Crestez <leonard.crestez@nxp.com>
 
-On Sat, Dec 23, 2017 at 2:35 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Thu, Dec 21, 2017 at 11:50 AM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> On 21 December 2017 at 02:39, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> On Wed, Dec 20, 2017 at 3:09 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>> The runtime PM deployment in the phy core is deployed using the phy core
->>>> device, which is created by the phy core and assigned as a child device of
->>>> the phy provider device.
+On Fri, Dec 22, 2017 at 07:34:57PM +0100, Rafael J. Wysocki wrote:
+> On Thursday, December 21, 2017 2:18:01 PM CET Dong Aisheng wrote:
+> > Hi Rafael,
+> > 
+> > On Thu, Sep 14, 2017 at 02:40:32PM -0700, Viresh Kumar wrote:
+> > > On 31-08-17, 19:43, Dong Aisheng wrote:
+> > > > Use clk_bulk_get to ease the driver clocks handling.
+> > > > 
+> > > > Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> > > > Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> > > > Cc: Shawn Guo <shawnguo@kernel.org>
+> > > > Cc: Anson Huang <anson.huang@nxp.com>
+> > > > Cc: Leonard Crestez <leonard.crestez@nxp.com>
+> > > > Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> > > > --
+> > > > The original one is here which depends on clk_bulk APIs.
+> > > > https://patchwork.kernel.org/patch/9737337/
+> > > > Now the clk_bulk APIs are already in kernel, so resend the patch.
+> > > > (Patch title changed a bit to be more specific.)
+> > > > ---
+> > > >  drivers/cpufreq/imx6q-cpufreq.c | 125 ++++++++++++++++++----------------------
+> > > >  1 file changed, 56 insertions(+), 69 deletions(-)
+> > > 
+> > > Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> > > 
+> > 
+> > Would you help pick it?
+> > I did not see it in latest kernel.
+> > It still applies.
+> 
+> OK
+> 
+> Can you please resend the patch again with the ACK from Viresh?
+> 
 
-[cut]
+Of course yes.
 
->>
->> Also, I have considered how to deal with wakeup paths for phys,
->> although I didn't want to post changes as a part of this series, but
->> maybe I should to give a more complete picture?
->
-> Yes, you should.
->
-> The point is that without genpd using pm_runtime_force_suspend() the
-> phy code could very well stay the way it is.  And it is logical,
-> because having a parent with enabled runtime PM without enabling
-> runtime PM for its children is at least conceptually questionable.
+Thanks
 
-Actually, I sort of agree that the phy's usage of runtime PM is too
-convoluted.  For example, it uses pm_runtime_enabled() unnecessarily
-at least in some places, but that doesn't seem to be fixed by your
-patches.
+Regards
+Dong Aisheng
 
-Thanks,
-Rafael
+> It looks like it fell through the cracks, sorry about that.
+> 
+> Thanks,
+> Rafael
+> 
