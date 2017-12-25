@@ -1,72 +1,51 @@
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [RFC PATCH v11 5/5] arm64: dts: rockchip: Move PCIe WAKE# irq to pcie port for Gru
-Date: Mon, 25 Dec 2017 19:47:42 +0800
-Message-ID: <20171225114742.18920-6-jeffy.chen@rock-chips.com>
+Subject: [RFC PATCH v11 3/5] mwifiex: Disable wakeup irq handling for pcie
+Date: Mon, 25 Dec 2017 19:47:40 +0800
+Message-ID: <20171225114742.18920-4-jeffy.chen@rock-chips.com>
 References: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular1.263xmail.com ([211.150.99.141]:50692 "EHLO
+        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752288AbdLYL4H (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Dec 2017 06:56:07 -0500
 In-Reply-To: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, bhelgaas@google.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Matthias Kaehlcke <mka@chromium.org>, devicetree@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Heiko Stuebner <heiko@sntech.de>, linux-rockchip@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Mark Rutland <mark.rutland@arm.com>, Caesar Wang <wxt@rock-chips.com>, Catalin Marinas <catalin.marinas@arm.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-kernel@vger.kernel.org, bhelgaas@google.com
+Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Xinming Hu <huxm@marvell.com>, Kalle Valo <kvalo@codeaurora.org>, Ganapathi Bhat <gbhat@marvell.com>, Amitkumar Karwar <amitkarwar@gmail.com>, linux-wireless@vger.kernel.org, Nishant Sarmukadam <nishants@marvell.com>, netdev@vger.kernel.org
 
-Currently we are handling PCIe WAKE# irq in mrvl wifi driver.
-
-Move it to rockchip pcie port since we are going to handle it in the
-pci core.
-
-Also avoid this irq been considered as the PCI interrupt pin in the
-of_irq_parse_pci().
+We are going to handle the wakeup irq in the pci core.
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
 
-Changes in v11:
-Move to pcie port as Brian suggested.
-
+Changes in v11: None
 Changes in v10: None
-Changes in v9:
-Rewrite the commit message.
-
-Changes in v8:
-Rewrite the commit message.
-
+Changes in v9: None
+Changes in v8: None
 Changes in v7: None
 Changes in v6: None
-Changes in v5:
-Use "wakeup" instead of "wake"
-
+Changes in v5: None
 Changes in v3: None
 Changes in v2: None
 
- arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/net/wireless/marvell/mwifiex/main.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
-index 03f195025390..be41d363efd8 100644
---- a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
-@@ -719,15 +719,16 @@ ap_i2c_audio: &i2c8 {
- 		#size-cells = <2>;
- 		ranges;
+diff --git a/drivers/net/wireless/marvell/mwifiex/main.c b/drivers/net/wireless/marvell/mwifiex/main.c
+index a96bd7e653bf..3cc3403b977a 100644
+--- a/drivers/net/wireless/marvell/mwifiex/main.c
++++ b/drivers/net/wireless/marvell/mwifiex/main.c
+@@ -1567,6 +1567,10 @@ static void mwifiex_probe_of(struct mwifiex_adapter *adapter)
+ 		goto err_exit;
  
-+		interrupts-extended = <&pcie0 1>, <&gpio0 8 IRQ_TYPE_LEVEL_LOW>;
-+		interrupt-names = "pci", "wakeup";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&wlan_host_wake_l>;
-+		wakeup-source;
+ 	adapter->dt_node = dev->of_node;
 +
- 		mvl_wifi: wifi@0,0 {
- 			compatible = "pci1b4b,2b42";
- 			reg = <0x83010000 0x0 0x00000000 0x0 0x00100000
- 			       0x83010000 0x0 0x00100000 0x0 0x00100000>;
--			interrupt-parent = <&gpio0>;
--			interrupts = <8 IRQ_TYPE_LEVEL_LOW>;
--			pinctrl-names = "default";
--			pinctrl-0 = <&wlan_host_wake_l>;
--			wakeup-source;
- 		};
- 	};
- };
++	if (adapter->iface_type != MWIFIEX_PCIE)
++		goto err_exit;
++
+ 	adapter->irq_wakeup = irq_of_parse_and_map(adapter->dt_node, 0);
+ 	if (!adapter->irq_wakeup) {
+ 		dev_dbg(dev, "fail to parse irq_wakeup from device tree\n");
 -- 
 2.11.0
