@@ -1,51 +1,59 @@
-From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [RFC PATCH v11 3/5] mwifiex: Disable wakeup irq handling for pcie
-Date: Mon, 25 Dec 2017 19:47:40 +0800
-Message-ID: <20171225114742.18920-4-jeffy.chen@rock-chips.com>
-References: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
+From: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: SSD being put to sleep during boot-up when laptop on battery
+Date: Mon, 25 Dec 2017 11:29:18 -0500 (EST)
+Message-ID: <Pine.LNX.4.44L0.1712251124400.9922-100000@netrider.rowland.org>
+References: <c880260b-ef6e-e9ec-aca9-830abec5f866@gmail.com>
+Mime-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.141]:50692 "EHLO
-        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752288AbdLYL4H (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Dec 2017 06:56:07 -0500
-In-Reply-To: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
+Received: from netrider.rowland.org ([192.131.102.5]:55967 "HELO
+        netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with SMTP id S1751684AbdLYQ3T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Dec 2017 11:29:19 -0500
+In-Reply-To: <c880260b-ef6e-e9ec-aca9-830abec5f866@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, bhelgaas@google.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Xinming Hu <huxm@marvell.com>, Kalle Valo <kvalo@codeaurora.org>, Ganapathi Bhat <gbhat@marvell.com>, Amitkumar Karwar <amitkarwar@gmail.com>, linux-wireless@vger.kernel.org, Nishant Sarmukadam <nishants@marvell.com>, netdev@vger.kernel.org
+To: Adam Bennett <abennett72@gmail.com>
+Cc: Linux-pm mailing list <linux-pm@vger.kernel.org>, SCSI development list <linux-scsi@vger.kernel.org>
 
-We are going to handle the wakeup irq in the pci core.
+On Sun, 24 Dec 2017, Adam Bennett wrote:
 
-Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
----
+> Alan,
+> 
+> I have a Dell Precision 7520 with an Samsung SSD in addition to an NVMe 
+> drive.  I'm currently running 4.14.8 but have seen the below problem 
+> since I moved from 4.9 to 4.13.
+> 
+> When I boot without AC plugged in, the SSD is stopped almost immediately 
+> in the boot process, not allowing the boot to continue.
+> 
+> I can boot on fine on AC.  When I unplug the cord, I see the "Stopping 
+> disk" message, and the system is unresponsive until I plug the AC back in.
+> 
+> I initially thought the problem was in user-space, but I set up 
+> laptop-mode-tools to keep "control" as "on", and the problem still 
+> persists.  Also, I don't see the issue in 4.9.
 
-Changes in v11: None
-Changes in v10: None
-Changes in v9: None
-Changes in v8: None
-Changes in v7: None
-Changes in v6: None
-Changes in v5: None
-Changes in v3: None
-Changes in v2: None
+It's entirely possible that the problem does lie in userspace, during 
+boot-up.  Don't forget that your initramfs image could be causing this; 
+have you tried to rebuild it with the new laptop settings?
 
- drivers/net/wireless/marvell/mwifiex/main.c | 4 ++++
- 1 file changed, 4 insertions(+)
+> I have temporarily worked around the problem by returning from 
+> sd_suspend_runtime without calling sd_suspend_common in sd.c (obviously 
+> not the true fix).
+> 
+> I have tried a number of searches, and couldn't find any bug reports of 
+> this nature, but I'm not that in-tune with the linux development process 
+> to have searched all the correct places.
 
-diff --git a/drivers/net/wireless/marvell/mwifiex/main.c b/drivers/net/wireless/marvell/mwifiex/main.c
-index a96bd7e653bf..3cc3403b977a 100644
---- a/drivers/net/wireless/marvell/mwifiex/main.c
-+++ b/drivers/net/wireless/marvell/mwifiex/main.c
-@@ -1567,6 +1567,10 @@ static void mwifiex_probe_of(struct mwifiex_adapter *adapter)
- 		goto err_exit;
- 
- 	adapter->dt_node = dev->of_node;
-+
-+	if (adapter->iface_type != MWIFIEX_PCIE)
-+		goto err_exit;
-+
- 	adapter->irq_wakeup = irq_of_parse_and_map(adapter->dt_node, 0);
- 	if (!adapter->irq_wakeup) {
- 		dev_dbg(dev, "fail to parse irq_wakeup from device tree\n");
--- 
-2.11.0
+This should be sent to the linux-pm and linux-scsi mailing lists 
+(CC'ed).
+
+> I'd like to help track this problem down, do you have any suggestions or 
+> is there some additional details I could provide?
+
+You can try bisecting between the 4.9 and 4.13 kernels to find the 
+commit which first caused the problem.
+
+Alan Stern
