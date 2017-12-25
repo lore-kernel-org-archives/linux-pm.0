@@ -1,83 +1,62 @@
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-Subject: Re: [regression] Re: Thinkpad T40p: suspend to ram stopped working
- sometime before 4.14
-Date: Mon, 25 Dec 2017 11:05:14 +0100
-Message-ID: <20171225100514.GB246@x4>
-References: <20171224114921.GA9891@amd>
- <58258946.1WsWlzHmoT@aspire.rjw.lan>
- <20171224152232.GA30077@amd>
- <20171224153624.GA22377@amd>
- <20171224181740.GA26326@amd>
- <20171224223739.GA24747@amd>
- <20171225084748.GA246@x4>
- <20171225095423.GA7858@amd>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from ud10.udmedia.de ([194.117.254.50]:49974 "EHLO
-        mail.ud10.udmedia.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750811AbdLYKFS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Dec 2017 05:05:18 -0500
-Content-Disposition: inline
-In-Reply-To: <20171225095423.GA7858@amd>
-Sender: linux-pm-owner@vger.kernel.org
+From: Jeffy Chen <jeffy.chen@rock-chips.com>
+Subject: [RFC PATCH v11 1/5] dt-bindings: PCI: Add definition of PCIe WAKE# irq and PCI irq
+Date: Mon, 25 Dec 2017 19:47:38 +0800
+Message-ID: <20171225114742.18920-2-jeffy.chen@rock-chips.com>
+References: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: linux-kernel@vger.kernel.org, bhelgaas@google.com
+Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, gregkh@linuxfoundation.org, kyle@kernel.org, akpm@linux-foundation.org, mmarek@suse.com, yamada.masahiro@socionext.com, dwmw2@infradead.org, torvalds@linux-foundation.org, kernel list <linux-kernel@vger.kernel.org>, len.brown@intel.com, linux-pm@vger.kernel.org
 
-On 2017.12.25 at 10:54 +0100, Pavel Machek wrote:
-> On Mon 2017-12-25 09:47:48, Markus Trippelsdorf wrote:
-> > On 2017.12.24 at 23:37 +0100, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > > > > > 4.15-rcX is broken, but that had other problems so lets not go there.
-> > > > > > > > 
-> > > > > > > > 4.14 is broken.
-> > > > > > > 
-> > > > > > > And what exactly does happen?
-> > > > > > 
-> > > > > > Suspend looks ok. I believe there's some reaction to power button, but
-> > > > > > screen stays blank. I'll re-check that.. I'm in the middle of bisect
-> > > > > > now.
-> > > > > 
-> > > > > Ok, so suspend looks ok. On resume, "moon" LED goes off and power /
-> > > > > bluetooth LEDs go on, but screen is black and no response to
-> > > > > > > > anything.
-> > > > 
-> > > > And it seems bad commit is
-> > > > 
-> > > > commit 5620a0d1aacd554ebebcff373e31107bb1ef7769
-> > > > Author: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > > > Date:   Thu Sep 14 14:23:01 2017 -0700
-> > > > 
-> > > >     firmware: delete in-kernel firmware
-> > > > 
-> > > > Unfortuantely, it does not revert cleanly.
-> > > 
-> > > I can't, because there's df85b2d767aad90fd2746f993fcd66dd322768f8 on
-> > > top of it, partialy reverting it. Seems like 5620 was causing problems
-> > > for other people before.
-> > > 
-> > > And then there's huge mega-patch called "license cleanup" on top of
-> > > that, which changes 11100 files (!) and makes work harder still.
-> > > 
-> > > Can we go for full revert?
-> > 
-> > No, it does not make any sense. 
-> > Could you please post your config? 
-> 
-> Well.. neither makes the original commit message any sense :-(.
-> 
-> CONFIG_PREVENT_FIRMWARE_BUILD=y
-> CONFIG_FW_LOADER=y
-> CONFIG_FIRMWARE_IN_KERNEL=y
-> CONFIG_EXTRA_FIRMWARE="radeon/R700_rlc.bin iwlwifi-1000-5.ucode"
-> CONFIG_EXTRA_FIRMWARE_DIR="/lib/firmware"
+We are going to handle PCIe WAKE# pin for PCI devices in the pci core,
+so add definitions of the optional PCIe WAKE# pin for PCI devices.
 
-Looks like a pilot error to me. You have a R200 card, but you load R700
-firmware. Try:
-CONFIG_EXTRA_FIRMWARE="radeon/R200_cp.bin iwlwifi-1000-5.ucode"
-instead.
+Also add an definition of the optional PCI interrupt pin for PCI
+devices to distinguish it from the PCIe WAKE# pin.
 
+Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+---
+
+Changes in v11:
+Only add irq definitions for PCI devices and rewrite the commit message.
+
+Changes in v10: None
+Changes in v9:
+Add section for PCI devices and rewrite the commit message.
+
+Changes in v8:
+Add optional "pci", and rewrite commit message.
+
+Changes in v7: None
+Changes in v6: None
+Changes in v5:
+Move to pci.txt
+
+Changes in v3: None
+Changes in v2: None
+
+ Documentation/devicetree/bindings/pci/pci.txt | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/pci/pci.txt b/Documentation/devicetree/bindings/pci/pci.txt
+index c77981c5dd18..3045ac452f27 100644
+--- a/Documentation/devicetree/bindings/pci/pci.txt
++++ b/Documentation/devicetree/bindings/pci/pci.txt
+@@ -24,3 +24,13 @@ driver implementation may support the following properties:
+    unsupported link speed, for instance, trying to do training for
+    unsupported link speed, etc.  Must be '4' for gen4, '3' for gen3, '2'
+    for gen2, and '1' for gen1. Any other values are invalid.
++
++PCI devices may support the following properties:
++
++- interrupts: Interrupt specifier for each name in interrupt-names.
++- interrupt-names:
++    May contain "wakeup" for PCIe WAKE# interrupt and "pci" for PCI interrupt.
++    The PCI devices may optionally include an 'interrupts' property that
++    represents the legacy PCI interrupt. And when we try to specify the PCIe
++    WAKE# pin, a corresponding 'interrupt-names' property is required to
++    distinguish them.
 -- 
-Markus
+2.11.0
