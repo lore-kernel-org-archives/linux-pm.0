@@ -1,74 +1,103 @@
-From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [RFC PATCH v12 5/5] arm64: dts: rockchip: Move PCIe WAKE# irq to pcie port for Gru
-Date: Tue, 26 Dec 2017 10:36:46 +0800
-Message-ID: <20171226023646.17722-6-jeffy.chen@rock-chips.com>
-References: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, bhelgaas@google.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Matthias Kaehlcke <mka@chromium.org>, Heiko Stuebner <heiko@sntech.de>, devicetree@vger.kernel.org, Klaus Goger <klaus.goger@theobroma-systems.com>, linux-rockchip@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH 13/16] power: supply: axp288_fuel_gauge: Cache charge_full value
+Date: Tue, 26 Dec 2017 15:04:48 +0800
+Message-ID: <CAGb2v646ah-6Es8x+_mg6BdJQ--9D+=fsUX9Sp5RuGeen4aMmw@mail.gmail.com>
+References: <20171222123754.9622-1-hdegoede@redhat.com> <20171222123754.9622-13-hdegoede@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from smtp.csie.ntu.edu.tw ([140.112.30.61]:33580 "EHLO
+        smtp.csie.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750705AbdLZHFS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Dec 2017 02:05:18 -0500
+Received: from mail-wm0-f42.google.com (mail-wm0-f42.google.com [74.125.82.42])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: b93043)
+        by smtp.csie.ntu.edu.tw (Postfix) with ESMTPSA id B5FF023B1F
+        for <linux-pm@vger.kernel.org>; Tue, 26 Dec 2017 15:05:12 +0800 (CST)
+Received: by mail-wm0-f42.google.com with SMTP id y82so34890201wmg.1
+        for <linux-pm@vger.kernel.org>; Mon, 25 Dec 2017 23:05:12 -0800 (PST)
+In-Reply-To: <20171222123754.9622-13-hdegoede@redhat.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 
-Currently we are handling PCIe WAKE# irq in mrvl wifi driver.
+Hi,
 
-Move it to rockchip pcie port since we are going to handle it in the
-pci core.
+On Fri, Dec 22, 2017 at 8:37 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+> The charge_full value never changes on the axp288 (there is no
+> charge_full_design), so we can read it once and cache it.
 
-Also avoid this irq been considered as the PCI interrupt pin in the
-of_irq_parse_pci().
+The manual says on page 57:
 
-Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
----
+    Additionally, the Fuel Gauge System is capable to learn the battery
+    characteristic on each Full charge cycle.  Information such as Battery
+    Maximum capacity (REG E0H, REG E1H) and Rdc (REG BAH, REG BBH) will be
+    updated automatically over time.
 
-Changes in v13: None
-Changes in v12: None
-Changes in v11:
-Move to pcie port as Brian suggested.
+Tablets might spend more time in suspend than actually being powered off,
+meaning over time the value the kernel knows might be stale. But it looks
+like the driver doesn't support suspend. I'd advise against this patch, or
+at least leave some todo note to add a read-out call in the resume callback
+(when its implemented).
 
-Changes in v10: None
-Changes in v9:
-Rewrite the commit message.
+ChenYu
 
-Changes in v8:
-Rewrite the commit message.
-
-Changes in v7: None
-Changes in v6: None
-Changes in v5:
-Use "wakeup" instead of "wake"
-
-Changes in v3: None
-Changes in v2: None
-
- arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
-
-diff --git a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
-index 03f195025390..be41d363efd8 100644
---- a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
-+++ b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
-@@ -719,15 +719,16 @@ ap_i2c_audio: &i2c8 {
- 		#size-cells = <2>;
- 		ranges;
- 
-+		interrupts-extended = <&pcie0 1>, <&gpio0 8 IRQ_TYPE_LEVEL_LOW>;
-+		interrupt-names = "pci", "wakeup";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&wlan_host_wake_l>;
-+		wakeup-source;
-+
- 		mvl_wifi: wifi@0,0 {
- 			compatible = "pci1b4b,2b42";
- 			reg = <0x83010000 0x0 0x00000000 0x0 0x00100000
- 			       0x83010000 0x0 0x00100000 0x0 0x00100000>;
--			interrupt-parent = <&gpio0>;
--			interrupts = <8 IRQ_TYPE_LEVEL_LOW>;
--			pinctrl-names = "default";
--			pinctrl-0 = <&wlan_host_wake_l>;
--			wakeup-source;
- 		};
- 	};
- };
--- 
-2.11.0
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+>  drivers/power/supply/axp288_fuel_gauge.c | 21 +++++++++------------
+>  1 file changed, 9 insertions(+), 12 deletions(-)
+>
+> diff --git a/drivers/power/supply/axp288_fuel_gauge.c b/drivers/power/supply/axp288_fuel_gauge.c
+> index eb60f75f00d7..800abecef45c 100644
+> --- a/drivers/power/supply/axp288_fuel_gauge.c
+> +++ b/drivers/power/supply/axp288_fuel_gauge.c
+> @@ -120,6 +120,7 @@ struct axp288_fg_info {
+>         struct power_supply *bat;
+>         struct mutex lock;
+>         int status;
+> +       int charge_full_raw;
+>         int max_volt;
+>         struct delayed_work status_monitor;
+>         struct dentry *debug_file;
+> @@ -504,11 +505,7 @@ static int fuel_gauge_get_property(struct power_supply *ps,
+>                 val->intval = ret * FG_DES_CAP_RES_LSB;
+>                 break;
+>         case POWER_SUPPLY_PROP_CHARGE_FULL:
+> -               ret = fuel_gauge_read_15bit_word(info, AXP288_FG_DES_CAP1_REG);
+> -               if (ret < 0)
+> -                       goto fuel_gauge_read_err;
+> -
+> -               val->intval = ret * FG_DES_CAP_RES_LSB;
+> +               val->intval = info->charge_full_raw * FG_DES_CAP_RES_LSB;
+>                 break;
+>         case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+>                 val->intval = PROP_VOLT(info->max_volt);
+> @@ -732,15 +729,15 @@ static int axp288_fuel_gauge_probe(struct platform_device *pdev)
+>                 }
+>         }
+>
+> -       ret = fuel_gauge_reg_readb(info, AXP288_FG_DES_CAP1_REG);
+> -       if (ret < 0)
+> -               goto out_free_iio_chan;
+> -
+> -       if (!(ret & FG_DES_CAP1_VALID)) {
+> -               dev_err(&pdev->dev, "axp288 not configured by firmware\n");
+> -               ret = -ENODEV;
+> +       ret = fuel_gauge_read_15bit_word(info, AXP288_FG_DES_CAP1_REG);
+> +       if (ret < 0) {
+> +               if (ret == -ENXIO) {
+> +                       dev_err(&pdev->dev, "axp288 not configured by firmware\n");
+> +                       ret = -ENODEV;
+> +               }
+>                 goto out_free_iio_chan;
+>         }
+> +       info->charge_full_raw = ret;
+>
+>         ret = fuel_gauge_reg_readb(info, AXP20X_CHRG_CTRL1);
+>         if (ret < 0)
+> --
+> 2.14.3
+>
