@@ -1,45 +1,94 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / wakeup: Drop redundant check from device_set_wakeup_enable()
-Date: Tue, 26 Dec 2017 01:50:20 +0100
-Message-ID: <2570001.kK8602TLGU@aspire.rjw.lan>
+From: JeffyChen <jeffy.chen@rock-chips.com>
+Subject: Re: [RFC PATCH v11 4/5] PCI / PM: Add support for the PCIe WAKE#
+ signal for OF
+Date: Tue, 26 Dec 2017 09:06:47 +0800
+Message-ID: <5A41A0A7.5070605@rock-chips.com>
+References: <20171225114742.18920-1-jeffy.chen@rock-chips.com> <20171225114742.18920-5-jeffy.chen@rock-chips.com> <9593014.U0c2JQdoEZ@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:63664 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750806AbdLZAvQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Dec 2017 19:51:16 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <9593014.U0c2JQdoEZ@aspire.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, dianders@chromium.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi Rafael,
 
-Since both device_wakeup_enable() and device_wakeup_disable() check
-if dev is not NULL and whether or not power.can_wakeup is set for it,
-device_set_wakeup_enable() doesn't have to do that, so drop that
-check from it.
+Thanks for your reply :)
 
-No intentional changes in functionality.
+On 12/26/2017 08:11 AM, Rafael J. Wysocki wrote:
+>> >+
+>> >+	dn = pci_device_to_OF_node(ppdev);
+>> >+	if (!dn)
+>> >+		return 0;
+>> >+
+>> >+	irq = of_irq_get_byname(dn, "wakeup");
+> Why is this a property of the bridge and not of the device itself?
+That is suggested by Brian, because in that way, the wakeup pin would 
+not "tied to what exact device is installed (or no device, if it's a slot)."
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/wakeup.c |    3 ---
- 1 file changed, 3 deletions(-)
+>
+>> >+	if (irq == -EPROBE_DEFER)
+> Braces here, please.
+ok, will fix in the next version.
 
-Index: linux-pm/drivers/base/power/wakeup.c
-===================================================================
---- linux-pm.orig/drivers/base/power/wakeup.c
-+++ linux-pm/drivers/base/power/wakeup.c
-@@ -464,9 +464,6 @@ EXPORT_SYMBOL_GPL(device_init_wakeup);
-  */
- int device_set_wakeup_enable(struct device *dev, bool enable)
- {
--	if (!dev || !dev->power.can_wakeup)
--		return -EINVAL;
--
- 	return enable ? device_wakeup_enable(dev) : device_wakeup_disable(dev);
- }
- EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
+>
+>> >+		return irq;
+>> >+	/* Ignore other errors, since a missing wakeup is non-fatal. */
+>> >+	else if (irq < 0) {
+>> >+		dev_info(&pdev->dev, "cannot get wakeup interrupt: %d\n", irq);
+>> >+		return 0;
+>> >+	}
+>> >+
+>> >+	device_init_wakeup(&pdev->dev, true);
+> Why do you call this before dev_pm_set_dedicated_wake_irq()?
+hmmm, i thought so too, but it turns out the dedicated wake irq 
+framework requires device_init_wakeup(dev, true) before attach the wake irq:
+
+int device_wakeup_attach_irq(struct device *dev,
+                              struct wake_irq *wakeirq)
+{
+         struct wakeup_source *ws;
+
+         ws = dev->power.wakeup;
+         if (!ws) {
+                 dev_err(dev, "forgot to call device_init_wakeup?\n");
+                 return -EINVAL;
+
+
+>
+>> >+
+>> >+	ret = dev_pm_set_dedicated_wake_irq(&pdev->dev, irq);
+>> >+	if (ret < 0) {
+>> >+		dev_err(&pdev->dev, "failed to set wake IRQ: %d\n", ret);
+>> >+		device_init_wakeup(&pdev->dev, false);
+>> >+		return ret;
+>> >+	}
+>> >+
+> It would be more straightforward to call device_init_wakeup() here.
+>
+>> >+	return 0;
+>> >+}
+>> >+EXPORT_SYMBOL_GPL(of_pci_setup_wake_irq);
+>> >+
+>> >+void of_pci_teardown_wake_irq(struct pci_dev *pdev)
+>> >+{
+>> >+	if (!pdev->dev.power.wakeirq)
+>> >+		return;
+>> >+
+>> >+	dev_pm_clear_wake_irq(&pdev->dev);
+>> >+	device_init_wakeup(&pdev->dev, false);
+>> >+}
+>> >+EXPORT_SYMBOL_GPL(of_pci_teardown_wake_irq);
+>> >+
+>> >  /**
+>> >   * of_irq_parse_pci - Resolve the interrupt for a PCI device
+>> >   * @pdev:       the device whose interrupt is to be resolved
+> Thanks,
+> Rafael
+>
+>
+>
+>
