@@ -1,67 +1,72 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Subject: Re: [PATCH 01/16] power: supply: axp288_charger: Do not stop +
- restart charging at boot
-Date: Tue, 26 Dec 2017 10:26:51 +0100
-Message-ID: <5b6e6a0b-2687-4b7a-14d2-e7fc61e68fa5@redhat.com>
-References: <20171222123754.9622-1-hdegoede@redhat.com>
- <CAGb2v64ReFdDkweEx77SfubudGCdBXuMREGifWDud3CbtMRDiA@mail.gmail.com>
+From: Yi Zeng <yizeng@asrmicro.com>
+Subject: [PATCH] thermal: power_allocator: fix one race condition issue for thermal_instances list
+Date: Tue, 26 Dec 2017 19:22:26 +0800
+Message-ID: <1514287346-6224-1-git-send-email-yizeng@asrmicro.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wm0-f43.google.com ([74.125.82.43]:34449 "EHLO
-        mail-wm0-f43.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750705AbdLZJ0x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Dec 2017 04:26:53 -0500
-Received: by mail-wm0-f43.google.com with SMTP id y82so35239547wmg.1
-        for <linux-pm@vger.kernel.org>; Tue, 26 Dec 2017 01:26:53 -0800 (PST)
-In-Reply-To: <CAGb2v64ReFdDkweEx77SfubudGCdBXuMREGifWDud3CbtMRDiA@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: rui.zhang@intel.com, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Yi Zeng <yizeng@asrmicro.com>
 List-Id: linux-pm@vger.kernel.org
-To: Chen-Yu Tsai <wens@csie.org>
-Cc: Sebastian Reichel <sre@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 
-Hi,
+When invoking allow_maximum_power and traverse tz->thermal_instances,
+we should grab thermal_zone_device->lock to avoid race condition. For
+example, during the system reboot, if the mali GPU device implements
+device shutdown callback and unregister GPU devfreq cooling device,
+the deleted list head may be accessed to cause panic, as the following
+log shows:
 
-On 26-12-17 08:29, Chen-Yu Tsai wrote:
-> On Fri, Dec 22, 2017 at 8:37 PM, Hans de Goede <hdegoede@redhat.com> wrote:
->> Before this commit we were relying solely on the extcon interface for
->> cable detection, including to determine if a cable providing vbus is
->> connected at all. This caused us to turn off charging at boot, because
->> when we run the initial state processing the axp288-extcon driver is still
->> running charger-type detection most of the time, so all charger cable
->> types read as disconnected when we run the initial state processing.
->>
->> This commit reworks the axp288_charger_extcon_evt_worker flow to use the
->> VBUS_VALID bit from the PWR_INPUT_STATUS register to determine if we
->> should turn charging on/off. Note this is the same bit as we use for the
->> online property.
->>
->> If VBUS_VALID is set, but the extcon code has not completed the charger
->> type detection yet, we now simply bail leaving things as configured by
->> the BIOS (we will get a notifier call when the extcon code is done and
->> reschedule the axp288_charger_extcon_evt_worker).
->>
->> The extcon code is the only one to trigger the worker (outside of the
->> initial run) and we can rely on it to only call us if things have changed,
->> so while we are completely refactoring axp288_charger_extcon_evt_worker,
->> also remove the code to check if the state has changed.
->>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> 
-> Other than the two patches I replied to, this looks good overall.
-> For the remaining patches,
-> 
-> Reviewed-by: Chen-Yu Tsai <wens@csie.org>
-> 
-> Hans, I don't have any devices with this PMIC, so I'm unlikely to spend
-> much time on the axp288 specific drivers. Any chance you want to maintain
-> them?
+[   33.551070] c3 25 (kworker/3:0) Unable to handle kernel paging request at virtual address dead000000000070
+[   33.566708] c3 25 (kworker/3:0) pgd = ffffffc0ed290000
+[   33.572071] c3 25 (kworker/3:0) [dead000000000070] *pgd=00000001ed292003, *pud=00000001ed292003, *pmd=0000000000000000
+[   33.581515] c3 25 (kworker/3:0) Internal error: Oops: 96000004 [#1] PREEMPT SMP
+[   33.599761] c3 25 (kworker/3:0) CPU: 3 PID: 25 Comm: kworker/3:0 Not tainted 4.4.35+ #912
+[   33.614137] c3 25 (kworker/3:0) Workqueue: events_freezable thermal_zone_device_check
+[   33.620245] c3 25 (kworker/3:0) task: ffffffc0f32e4200 ti: ffffffc0f32f0000 task.ti: ffffffc0f32f0000
+[   33.629466] c3 25 (kworker/3:0) PC is at power_allocator_throttle+0x7c8/0x8a4
+[   33.636609] c3 25 (kworker/3:0) LR is at power_allocator_throttle+0x808/0x8a4
+[   33.643742] c3 25 (kworker/3:0) pc : [<ffffff8008683dd0>] lr : [<ffffff8008683e10>] pstate: 20000145
+[   33.652874] c3 25 (kworker/3:0) sp : ffffffc0f32f3bb0
+[   34.468519] c3 25 (kworker/3:0) Process kworker/3:0 (pid: 25, stack limit = 0xffffffc0f32f0020)
+[   34.477220] c3 25 (kworker/3:0) Stack: (0xffffffc0f32f3bb0 to 0xffffffc0f32f4000)
+[   34.819822] c3 25 (kworker/3:0) Call trace:
+[   34.824021] c3 25 (kworker/3:0) Exception stack(0xffffffc0f32f39c0 to 0xffffffc0f32f3af0)
+[   34.924993] c3 25 (kworker/3:0) [<ffffff8008683dd0>] power_allocator_throttle+0x7c8/0x8a4
+[   34.933184] c3 25 (kworker/3:0) [<ffffff80086807f4>] handle_thermal_trip.part.25+0x70/0x224
+[   34.941545] c3 25 (kworker/3:0) [<ffffff8008680a68>] thermal_zone_device_update+0xc0/0x20c
+[   34.949818] c3 25 (kworker/3:0) [<ffffff8008680bd4>] thermal_zone_device_check+0x20/0x2c
+[   34.957924] c3 25 (kworker/3:0) [<ffffff80080b93a4>] process_one_work+0x168/0x458
+[   34.965414] c3 25 (kworker/3:0) [<ffffff80080ba068>] worker_thread+0x13c/0x4b4
+[   34.972650] c3 25 (kworker/3:0) [<ffffff80080c0a4c>] kthread+0xe8/0xfc
+[   34.979187] c3 25 (kworker/3:0) [<ffffff8008084e90>] ret_from_fork+0x10/0x40
+[   34.986244] c3 25 (kworker/3:0) Code: f9405e73 eb1302bf d102e273 54ffc460 (b9402a61)
+[   34.994339] c3 25 (kworker/3:0) ---[ end trace 32057901e3b7e1db ]---
 
-Yes that probably is a good idea, I will add a patch to v2 of the series
-adding a MAINTAINERS entry for this.
+Signed-off-by: Yi Zeng <yizeng@asrmicro.com>
+---
+ drivers/thermal/power_allocator.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Regards,
-
-Hans
+diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+index b4d3116..3055f9a 100644
+--- a/drivers/thermal/power_allocator.c
++++ b/drivers/thermal/power_allocator.c
+@@ -523,6 +523,7 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
+ 	struct thermal_instance *instance;
+ 	struct power_allocator_params *params = tz->governor_data;
+ 
++	mutex_lock(&tz->lock);
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+ 		if ((instance->trip != params->trip_max_desired_temperature) ||
+ 		    (!cdev_is_power_actor(instance->cdev)))
+@@ -534,6 +535,7 @@ static void allow_maximum_power(struct thermal_zone_device *tz)
+ 		mutex_unlock(&instance->cdev->lock);
+ 		thermal_cdev_update(instance->cdev);
+ 	}
++	mutex_unlock(&tz->lock);
+ }
+ 
+ /**
+-- 
+1.9.1
