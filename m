@@ -1,64 +1,79 @@
-From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [RFC PATCH v12 1/5] dt-bindings: PCI: Add definition of PCIe WAKE# irq and PCI irq
-Date: Tue, 26 Dec 2017 10:36:42 +0800
-Message-ID: <20171226023646.17722-2-jeffy.chen@rock-chips.com>
+From: Jeffy Chen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Subject: [RFC PATCH v12 2/5] of/irq: Adjust of_pci_irq parsing for multiple interrupts
+Date: Tue, 26 Dec 2017 10:36:43 +0800
+Message-ID: <20171226023646.17722-3-jeffy.chen@rock-chips.com>
 References: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
-Return-path: <linux-pci-owner@vger.kernel.org>
-In-Reply-To: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
-Sender: linux-pci-owner@vger.kernel.org
-To: linux-kernel@vger.kernel.org, bhelgaas@google.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171226023646.17722-1-jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Jeffy Chen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-We are going to handle PCIe WAKE# pin for PCI devices in the pci core,
-so add definitions of the optional PCIe WAKE# pin for PCI devices.
+Currently we are considering the first irq as the PCI interrupt pin,
+but a PCI device may have multiple interrupts(e.g. PCIe WAKE# pin).
 
-Also add an definition of the optional PCI interrupt pin for PCI
-devices to distinguish it from the PCIe WAKE# pin.
+Only parse the PCI interrupt pin when the irq is unnamed or named as
+"pci".
 
-Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+Signed-off-by: Jeffy Chen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 ---
 
 Changes in v13: None
-Changes in v12:
-Only add irq definitions for PCI devices and rewrite the commit message.
+Changes in v12: None
+Changes in v11:
+Address Brian's comments.
 
-Changes in v11: None
 Changes in v10: None
-Changes in v9:
-Add section for PCI devices and rewrite the commit message.
-
-Changes in v8:
-Add optional "pci", and rewrite commit message.
-
+Changes in v9: None
+Changes in v8: None
 Changes in v7: None
 Changes in v6: None
-Changes in v5:
-Move to pci.txt
-
+Changes in v5: None
 Changes in v3: None
 Changes in v2: None
 
- Documentation/devicetree/bindings/pci/pci.txt | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/of/of_pci_irq.c | 22 +++++++++++++++++++---
+ 1 file changed, 19 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/pci/pci.txt b/Documentation/devicetree/bindings/pci/pci.txt
-index c77981c5dd18..3045ac452f27 100644
---- a/Documentation/devicetree/bindings/pci/pci.txt
-+++ b/Documentation/devicetree/bindings/pci/pci.txt
-@@ -24,3 +24,13 @@ driver implementation may support the following properties:
-    unsupported link speed, for instance, trying to do training for
-    unsupported link speed, etc.  Must be '4' for gen4, '3' for gen3, '2'
-    for gen2, and '1' for gen1. Any other values are invalid.
+diff --git a/drivers/of/of_pci_irq.c b/drivers/of/of_pci_irq.c
+index 3a05568f65df..d39565d5477b 100644
+--- a/drivers/of/of_pci_irq.c
++++ b/drivers/of/of_pci_irq.c
+@@ -27,9 +27,25 @@ int of_irq_parse_pci(const struct pci_dev *pdev, struct of_phandle_args *out_irq
+ 	 */
+ 	dn = pci_device_to_OF_node(pdev);
+ 	if (dn) {
+-		rc = of_irq_parse_one(dn, 0, out_irq);
+-		if (!rc)
+-			return rc;
++		struct property *prop;
++		const char *name;
++		int index = 0;
 +
-+PCI devices may support the following properties:
++		of_property_for_each_string(dn, "interrupt-names", prop, name) {
++			if (!strcmp(name, "pci"))
++				break;
++			index++;
++		}
 +
-+- interrupts: Interrupt specifier for each name in interrupt-names.
-+- interrupt-names:
-+    May contain "wakeup" for PCIe WAKE# interrupt and "pci" for PCI interrupt.
-+    The PCI devices may optionally include an 'interrupts' property that
-+    represents the legacy PCI interrupt. And when we try to specify the PCIe
-+    WAKE# pin, a corresponding 'interrupt-names' property is required to
-+    distinguish them.
++		/*
++		 * Only parse from DT if we have no "interrupt-names",
++		 * or if we found an interrupt named "pci".
++		 */
++		if (index == 0 || name) {
++			rc = of_irq_parse_one(dn, index, out_irq);
++			if (!rc)
++				return rc;
++		}
+ 	}
+ 
+ 	/* Ok, we don't, time to have fun. Let's start by building up an
 -- 
 2.11.0
+
+
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
