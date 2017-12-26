@@ -1,83 +1,116 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v5 15/15] devicetree: bindings: Document qcom,pvs
-Date: Tue, 26 Dec 2017 11:36:34 -0600
-Message-ID: <CAL_JsqJTBgr2ctyRXGyzkRLztoy=qtvEh3AC79RjENBS=6yQRg@mail.gmail.com>
-References: <1513698900-10638-1-git-send-email-sricharan@codeaurora.org>
- <1513698900-10638-16-git-send-email-sricharan@codeaurora.org>
- <20171220032614.GQ19815@vireshk-i7> <b0d8147a-46e1-0787-ae37-9c1ef957d190@codeaurora.org>
- <20171220211817.mpkkj747blr4qkqm@rob-hp-laptop> <864b6cfd-d3eb-d876-82e2-ebc79c5a6956@codeaurora.org>
+From: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC V7 2/2] OPP: Allow "opp-hz" and "opp-microvolt" to contain
+ magic values
+Date: Tue, 26 Dec 2017 14:23:49 -0600
+Message-ID: <CAL_Jsq+ntPMiSacpsx7M7VwSXsx+fRbHpX-KFNVpDj+bYdNCiQ@mail.gmail.com>
+References: <23ba51eaa6b52117458165dccc00a95cf8e86e1d.1509453284.git.viresh.kumar@linaro.org>
+ <CAL_JsqKr7MsM6iZ_QYO=iCzXNwANEGQGDLFUEwe0Z-p2Z_aMYw@mail.gmail.com>
+ <CAKohpokvQD4Z6YY6MRG8c+hnsS=Z52X4XhyTgC5FTgf7VuaNmw@mail.gmail.com>
+ <CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ@mail.gmail.com>
+ <20171101214333.GG30645@codeaurora.org> <20171102045155.GX4240@vireshk-i7>
+ <20171102071533.GM30645@codeaurora.org> <20171102090033.GZ4240@vireshk-i7>
+ <CAPDyKFryn5=GMs+hiRcxGOC1U=-LL9RQdnY3cWniyE+4pwQDog@mail.gmail.com>
+ <20171130005029.GC19419@codeaurora.org> <20171130065907.GI11413@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-clk-owner@vger.kernel.org>
-In-Reply-To: <864b6cfd-d3eb-d876-82e2-ebc79c5a6956@codeaurora.org>
-Sender: linux-clk-owner@vger.kernel.org
-To: Sricharan R <sricharan@codeaurora.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@armlinux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, David Brown <david.brown@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Andy Gross <andy.gross@linaro.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171130065907.GI11413@vireshk-i7>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Thu, Dec 21, 2017 at 5:53 AM, Sricharan R <sricharan@codeaurora.org> wrote:
-> Hi Rob,
+On Thu, Nov 30, 2017 at 12:59 AM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> On 29-11-17, 16:50, Stephen Boyd wrote:
+>> Sorry it still makes zero sense to me. It seems that we're trying
+>> to make the OPP table parsing generic just for the sake of code
+>> brevity.
 >
-> On 12/21/2017 2:48 AM, Rob Herring wrote:
->> On Wed, Dec 20, 2017 at 11:55:33AM +0530, Sricharan R wrote:
->>> Hi Viresh,
->>>
->>> On 12/20/2017 8:56 AM, Viresh Kumar wrote:
->>>> On 19-12-17, 21:25, Sricharan R wrote:
->>>>> +  cpu@0 {
->>>>> +          compatible = "qcom,krait";
->>>>> +          enable-method = "qcom,kpss-acc-v1";
->>>>> +          device_type = "cpu";
->>>>> +          reg = <0>;
->>>>> +          qcom,acc = <&acc0>;
->>>>> +          qcom,saw = <&saw0>;
->>>>> +          clocks = <&kraitcc 0>;
->>>>> +          clock-names = "cpu";
->>>>> +          cpu-supply = <&smb208_s2a>;
->>>>> +          operating-points-v2 = <&cpu_opp_table>;
->>>>> +  };
->>>>> +
->>>>> +  qcom,pvs {
->>>>> +          qcom,pvs-format-a;
->>>>> +  };
->>>>
->>>> Not sure what Rob is going to say on that :)
->>>>
->>>
->>>  Yes. Would be good to know the best way.
->>
->> Seems like this should be a property of an efuse node either implied by
->> the compatible or a separate property. What determines format A vs. B?
->>
+> Not just the code but bindings as well to make sure we don't add a new
+> property (similar to earlier ones) for every platform that wants to
+> use performance states.
 >
->  Yes, this efuse registers are part of the eeprom (qfprom) tied to the soc.
->  So this property (details like bitfields and register offsets that it represents)
->  can be put soc specific and nvmem apis can be used to read
->  the registers. Does something like below look ok ?
+>> Is this the goal? From a DT writer perspective it seems
+>> confusing to say that opp-microvolt is sometimes a microvolt and
+>> sometimes not a microvolt.
 >
->  qcom,pvs {
->         compatible = "qcom,pvs-ipq8064";
->         nvmem-cells = <&pvs_efuse>;
->  }
-
-Why do you need this node? It doesn't look like it corresponds to a
-h/w block. It looks like you are just creating it to instantiate a
-driver.
-
->  qfprom: qfprom@700000 {
->         compatible      = "qcom,qfprom";
-
-Either this or...
-
->         reg             = <0x00700000 0x1000>;
->         #address-cells  = <1>;
->         #size-cells     = <1>;
->         ranges;
->         pvs_efuse: pvs {
-
-a compatible here should be specific enough so the OS can know what
-the bits are.
-
->         reg = <0xc0 0x8>;
+> Well it would still represent the voltage but not in microvolt units
+> as the platform guys decided to hide those values from kernel and
+> handle them directly in firmware.
+>
+>> Why can't the SoC specific genpd
+>> driver parse something like "qcom,corner" instead out of the
+>> node?
+>
+> Sure we can, but that means that a new property will be required for
+> the next platform.
+>
+> I did it this way as Kevin (and Rob) suggested NOT to add another
+> property but use the earlier ones as we aren't passing anything new
+> here, just that the units of the property are different. For another
+> SoC, we may want to hide both freq and voltage values from kernel and
+> pass firmware dependent values. Should we add two new properties for
+> that SoC then ?
+>
+>> BTW, I don't believe I have a use-case where I want to express
+>> power domain OPP tables.
+>
+> I do remember that you once said [1] that you may want to pass the
+> real voltage values as well via DT. And so I thought that you can pass
+> performance-state (corner) in opp-hz and real voltage values in
+> opp-microvolt.
+>
+>> I have many devices that all have
+>> different frequencies that are all tied into the same power
+>> domain. This binding makes it look like we can only have one
+>> frequency per domain which won't work.
+>
+> No, that isn't the case. Looks like we have some confusion here. Let
+> me try with a simple example:
+>
+>         foo: foo-power-domain@09000000 {
+>                 compatible = "foo,genpd";
+>                 #power-domain-cells = <0>;
+>                 operating-points-v2 = <&domain_opp_table>;
 >         };
->  };
+>
+>         cpu0: cpu@0 {
+>                 compatible = "arm,cortex-a53", "arm,armv8";
+>                 ...
+>                 operating-points-v2 = <&cpu_opp_table>;
+>                 power-domains = <&foo>;
+>         };
+>
+>
+>         domain_opp_table: domain_opp_table {
+>                 compatible = "operating-points-v2";
+>
+>                 domain_opp_1: opp00 {
+>                         opp-hz = /bits/ 64 <1>; /* These are corners AKA perf states */
+>                 };
+>                 domain_opp_2: opp01 {
+>                         opp-hz = /bits/ 64 <2>;
+>                 };
+>                 domain_opp_3: opp02 {
+>                         opp-hz = /bits/ 64 <3>;
+>                 };
+>         };
+>
+>         cpu_opp_table: cpu_opp_table {
+>                 compatible = "operating-points-v2";
+>                 opp-shared;
+>
+>                 opp00 {
+>                         opp-hz = /bits/ 64 <208000000>;
+>                         clock-latency-ns = <500000>;
+>                         power-domain-opp = <&domain_opp_1>;
+
+What is this? opp00 here is not a device. One OPP should not point to
+another. "power-domain-opp" is only supposed to appear in devices
+alongside power-domains properties.
+
+Rob
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
