@@ -1,86 +1,64 @@
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [RFC PATCH v12 0/5] PCI: rockchip: Move PCIe WAKE# handling into pci core
-Date: Tue, 26 Dec 2017 10:36:41 +0800
-Message-ID: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from regular1.263xmail.com ([211.150.99.132]:40004 "EHLO
-        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750806AbdLZCh3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Dec 2017 21:37:29 -0500
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Subject: [RFC PATCH v12 1/5] dt-bindings: PCI: Add definition of PCIe WAKE# irq and PCI irq
+Date: Tue, 26 Dec 2017 10:36:42 +0800
+Message-ID: <20171226023646.17722-2-jeffy.chen@rock-chips.com>
+References: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
+Sender: linux-pci-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, bhelgaas@google.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Xinming Hu <huxm@marvell.com>, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, Kalle Valo <kvalo@codeaurora.org>, Heiko Stuebner <heiko@sntech.de>, linux-rockchip@lists.infradead.org, Nishant Sarmukadam <nishants@marvell.com>, Will Deacon <will.deacon@arm.com>, Matthias Kaehlcke <mka@chromium.org>, devicetree@vger.kernel.org, Ganapathi Bhat <gbhat@marvell.com>, Frank Rowand <frowand.list@gmail.com>, Amitkumar Karwar <amitkarwar@gmail.com>, linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, linux-wireless@vger.
+Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
+We are going to handle PCIe WAKE# pin for PCI devices in the pci core,
+so add definitions of the optional PCIe WAKE# pin for PCI devices.
 
-Currently we are handling wake irq in mrvl wifi driver. Move it into
-pci core.
+Also add an definition of the optional PCI interrupt pin for PCI
+devices to distinguish it from the PCIe WAKE# pin.
 
-Tested on my chromebook bob(with cros 4.4 kernel and mrvl wifi).
+Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+---
 
-
-Changes in v13:
-Fix compiler error reported by kbuild test robot <fengguang.wu@intel.com>
-
+Changes in v13: None
 Changes in v12:
 Only add irq definitions for PCI devices and rewrite the commit message.
-Enable the wake irq in noirq stage to avoid possible irq storm.
 
-Changes in v11:
-Address Brian's comments.
-Only support 1-per-device PCIe WAKE# pin as suggested.
-Move to pcie port as Brian suggested.
-
-Changes in v10:
-Use device_set_wakeup_capable() instead of device_set_wakeup_enable(),
-since dedicated wakeirq will be lost in device_set_wakeup_enable(false).
-
+Changes in v11: None
+Changes in v10: None
 Changes in v9:
 Add section for PCI devices and rewrite the commit message.
-Fix check error in .cleanup().
-Move dedicated wakeirq setup to setup() callback and use
-device_set_wakeup_enable() to enable/disable.
-Rewrite the commit message.
 
 Changes in v8:
 Add optional "pci", and rewrite commit message.
-Add pci-of.c and use platform_pm_ops to handle the PCIe WAKE# signal.
-Rewrite the commit message.
 
-Changes in v7:
-Move PCIE_WAKE handling into pci core.
-
-Changes in v6:
-Fix device_init_wake error handling, and add some comments.
-
+Changes in v7: None
+Changes in v6: None
 Changes in v5:
 Move to pci.txt
-Rebase.
-Use "wakeup" instead of "wake"
 
-Changes in v3:
-Fix error handling.
+Changes in v3: None
+Changes in v2: None
 
-Changes in v2:
-Use dev_pm_set_dedicated_wake_irq.
+ Documentation/devicetree/bindings/pci/pci.txt | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-Jeffy Chen (5):
-  dt-bindings: PCI: Add definition of PCIe WAKE# irq and PCI irq
-  of/irq: Adjust of_pci_irq parsing for multiple interrupts
-  mwifiex: Disable wakeup irq handling for pcie
-  PCI / PM: Add support for the PCIe WAKE# signal for OF
-  arm64: dts: rockchip: Move PCIe WAKE# irq to pcie port for Gru
-
- Documentation/devicetree/bindings/pci/pci.txt | 10 ++++
- arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi  | 11 ++--
- drivers/net/wireless/marvell/mwifiex/main.c   |  4 ++
- drivers/of/of_pci_irq.c                       | 71 +++++++++++++++++++++++--
- drivers/pci/Makefile                          |  1 +
- drivers/pci/pci-driver.c                      | 10 ++++
- drivers/pci/pci-of.c                          | 75 +++++++++++++++++++++++++++
- include/linux/of_pci.h                        |  9 ++++
- 8 files changed, 183 insertions(+), 8 deletions(-)
- create mode 100644 drivers/pci/pci-of.c
-
+diff --git a/Documentation/devicetree/bindings/pci/pci.txt b/Documentation/devicetree/bindings/pci/pci.txt
+index c77981c5dd18..3045ac452f27 100644
+--- a/Documentation/devicetree/bindings/pci/pci.txt
++++ b/Documentation/devicetree/bindings/pci/pci.txt
+@@ -24,3 +24,13 @@ driver implementation may support the following properties:
+    unsupported link speed, for instance, trying to do training for
+    unsupported link speed, etc.  Must be '4' for gen4, '3' for gen3, '2'
+    for gen2, and '1' for gen1. Any other values are invalid.
++
++PCI devices may support the following properties:
++
++- interrupts: Interrupt specifier for each name in interrupt-names.
++- interrupt-names:
++    May contain "wakeup" for PCIe WAKE# interrupt and "pci" for PCI interrupt.
++    The PCI devices may optionally include an 'interrupts' property that
++    represents the legacy PCI interrupt. And when we try to specify the PCIe
++    WAKE# pin, a corresponding 'interrupt-names' property is required to
++    distinguish them.
 -- 
 2.11.0
