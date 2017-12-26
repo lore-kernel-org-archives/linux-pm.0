@@ -1,63 +1,48 @@
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Subject: [RFC PATCH v12 1/5] dt-bindings: PCI: Add definition of PCIe WAKE# irq and PCI irq
-Date: Tue, 26 Dec 2017 10:08:02 +0800
-Message-ID: <20171226020806.32710-2-jeffy.chen@rock-chips.com>
+Subject: [RFC PATCH v12 3/5] mwifiex: Disable wakeup irq handling for pcie
+Date: Tue, 26 Dec 2017 10:08:04 +0800
+Message-ID: <20171226020806.32710-4-jeffy.chen@rock-chips.com>
 References: <20171226020806.32710-1-jeffy.chen@rock-chips.com>
-Return-path: <linux-pci-owner@vger.kernel.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 In-Reply-To: <20171226020806.32710-1-jeffy.chen@rock-chips.com>
-Sender: linux-pci-owner@vger.kernel.org
+Sender: linux-kernel-owner@vger.kernel.org
 To: linux-kernel@vger.kernel.org, bhelgaas@google.com
-Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Xinming Hu <huxm@marvell.com>, Kalle Valo <kvalo@codeaurora.org>, Ganapathi Bhat <gbhat@marvell.com>, Amitkumar Karwar <amitkarwar@gmail.com>, linux-wireless@vger.kernel.org, Nishant Sarmukadam <nishants@marvell.com>, netdev@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-We are going to handle PCIe WAKE# pin for PCI devices in the pci core,
-so add definitions of the optional PCIe WAKE# pin for PCI devices.
-
-Also add an definition of the optional PCI interrupt pin for PCI
-devices to distinguish it from the PCIe WAKE# pin.
+We are going to handle the wakeup irq in the pci core.
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
 
 Changes in v12: None
-Changes in v11:
-Only add irq definitions for PCI devices and rewrite the commit message.
-
+Changes in v11: None
 Changes in v10: None
-Changes in v9:
-Add section for PCI devices and rewrite the commit message.
-
-Changes in v8:
-Add optional "pci", and rewrite commit message.
-
+Changes in v9: None
+Changes in v8: None
 Changes in v7: None
 Changes in v6: None
-Changes in v5:
-Move to pci.txt
-
+Changes in v5: None
 Changes in v3: None
 Changes in v2: None
 
- Documentation/devicetree/bindings/pci/pci.txt | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/net/wireless/marvell/mwifiex/main.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/pci/pci.txt b/Documentation/devicetree/bindings/pci/pci.txt
-index c77981c5dd18..3045ac452f27 100644
---- a/Documentation/devicetree/bindings/pci/pci.txt
-+++ b/Documentation/devicetree/bindings/pci/pci.txt
-@@ -24,3 +24,13 @@ driver implementation may support the following properties:
-    unsupported link speed, for instance, trying to do training for
-    unsupported link speed, etc.  Must be '4' for gen4, '3' for gen3, '2'
-    for gen2, and '1' for gen1. Any other values are invalid.
+diff --git a/drivers/net/wireless/marvell/mwifiex/main.c b/drivers/net/wireless/marvell/mwifiex/main.c
+index a96bd7e653bf..3cc3403b977a 100644
+--- a/drivers/net/wireless/marvell/mwifiex/main.c
++++ b/drivers/net/wireless/marvell/mwifiex/main.c
+@@ -1567,6 +1567,10 @@ static void mwifiex_probe_of(struct mwifiex_adapter *adapter)
+ 		goto err_exit;
+ 
+ 	adapter->dt_node = dev->of_node;
 +
-+PCI devices may support the following properties:
++	if (adapter->iface_type != MWIFIEX_PCIE)
++		goto err_exit;
 +
-+- interrupts: Interrupt specifier for each name in interrupt-names.
-+- interrupt-names:
-+    May contain "wakeup" for PCIe WAKE# interrupt and "pci" for PCI interrupt.
-+    The PCI devices may optionally include an 'interrupts' property that
-+    represents the legacy PCI interrupt. And when we try to specify the PCIe
-+    WAKE# pin, a corresponding 'interrupt-names' property is required to
-+    distinguish them.
+ 	adapter->irq_wakeup = irq_of_parse_and_map(adapter->dt_node, 0);
+ 	if (!adapter->irq_wakeup) {
+ 		dev_dbg(dev, "fail to parse irq_wakeup from device tree\n");
 -- 
 2.11.0
