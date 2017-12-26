@@ -1,38 +1,54 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 1/1] power: reset: remove unused imx-snvs-poweroff driver
-Date: Tue, 26 Dec 2017 15:57:15 -0600
-Message-ID: <20171226215715.ph5vjvmkvchvrnsd@rob-hp-laptop>
-References: <1513938539-20873-1-git-send-email-aisheng.dong@nxp.com>
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [RFC PATCH v12 1/5] dt-bindings: PCI: Add definition of PCIe
+ WAKE# irq and PCI irq
+Date: Tue, 26 Dec 2017 17:35:52 -0600
+Message-ID: <20171226233552.nacwqbpkozmy7n6c@rob-hp-laptop>
+References: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
+ <20171226023646.17722-2-jeffy.chen@rock-chips.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1513938539-20873-1-git-send-email-aisheng.dong-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>
-Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, dongas86-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, yibin.gong-3arQi8VN3Tc@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+In-Reply-To: <20171226023646.17722-2-jeffy.chen@rock-chips.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Jeffy Chen <jeffy.chen@rock-chips.com>
+Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 22, 2017 at 06:28:59PM +0800, Dong Aisheng wrote:
-> There's no user of it in kernel now and it basically functions the same
-> as the generic syscon-poweroff.c to which we have already switched.
-> So let's remove it.
+On Tue, Dec 26, 2017 at 10:36:42AM +0800, Jeffy Chen wrote:
+> We are going to handle PCIe WAKE# pin for PCI devices in the pci core,
+> so add definitions of the optional PCIe WAKE# pin for PCI devices.
 > 
-> Cc: Robin Gong <yibin.gong-3arQi8VN3Tc@public.gmane.org>
-> Cc: Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-> Signed-off-by: Dong Aisheng <aisheng.dong-3arQi8VN3Tc@public.gmane.org>
+> Also add an definition of the optional PCI interrupt pin for PCI
+> devices to distinguish it from the PCIe WAKE# pin.
+
+By v13 you should drop "RFC". RFC implies not ready for merging.
+
+> 
+> Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 > ---
->  .../bindings/power/reset/imx-snvs-poweroff.txt     | 23 --------
+> 
+> Changes in v13: None
+> Changes in v12:
+> Only add irq definitions for PCI devices and rewrite the commit message.
+> 
+> Changes in v11: None
+> Changes in v10: None
+> Changes in v9:
+> Add section for PCI devices and rewrite the commit message.
+> 
+> Changes in v8:
+> Add optional "pci", and rewrite commit message.
+> 
+> Changes in v7: None
+> Changes in v6: None
+> Changes in v5:
+> Move to pci.txt
+> 
+> Changes in v3: None
+> Changes in v2: None
+> 
+>  Documentation/devicetree/bindings/pci/pci.txt | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
 
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-
->  drivers/power/reset/Kconfig                        |  9 ---
->  drivers/power/reset/Makefile                       |  1 -
->  drivers/power/reset/imx-snvs-poweroff.c            | 66 ----------------------
->  4 files changed, 99 deletions(-)
->  delete mode 100644 Documentation/devicetree/bindings/power/reset/imx-snvs-poweroff.txt
->  delete mode 100644 drivers/power/reset/imx-snvs-poweroff.c
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Reviewed-by: Rob Herring <robh@kernel.org>
