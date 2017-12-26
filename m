@@ -1,141 +1,85 @@
-From: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Subject: Re: [RFC PATCH v11 4/5] PCI / PM: Add support for the PCIe WAKE# signal for OF
-Date: Tue, 26 Dec 2017 01:11:25 +0100
-Message-ID: <9593014.U0c2JQdoEZ@aspire.rjw.lan>
-References: <20171225114742.18920-1-jeffy.chen@rock-chips.com> <20171225114742.18920-5-jeffy.chen@rock-chips.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/3] PM / core: Assign the wakeup_path status flag in __device_prepare()
+Date: Tue, 26 Dec 2017 01:36:19 +0100
+Message-ID: <3322626.o28ExYgzAs@aspire.rjw.lan>
+References: <1513353391-30806-1-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0iu-5Y9j+Qc-no_BUAamYZ7tq=24qSUu4H=vU98YBXCxw@mail.gmail.com> <CAPDyKFqKoOuLK2NG+kXthCUSRJnNUf57wCq_eYrkh+-2KTPWhQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171225114742.18920-5-jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Jeffy Chen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cloudserver094114.home.pl ([79.96.170.134]:55611 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750805AbdLZAhQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 Dec 2017 19:37:16 -0500
+In-Reply-To: <CAPDyKFqKoOuLK2NG+kXthCUSRJnNUf57wCq_eYrkh+-2KTPWhQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On Monday, December 25, 2017 12:47:41 PM CET Jeffy Chen wrote:
-> Add of_pci_setup_wake_irq() and of_pci_teardown_wake_irq() to handle
-> the PCIe WAKE# interrupt.
+On Saturday, December 23, 2017 4:17:58 PM CET Ulf Hansson wrote:
+> [...]
 > 
-> Also use the dedicated wakeirq infrastructure to simplify it.
+> >>>> How many drivers actually do call device_set_wakeup_enable() during suspend?
+> >>>
+> >>> There are some ethernet/wifi drivers, although it hard to say how many
+> >>> without a more thorough investigation.
+> >>>
+> >>> Besides those I found these more obvious ones:
+> >>> drivers/ssb/pcihost_wrapper.c
+> >>> drivers/staging/rtlwifi/core.c
+> >>> drivers/tty/serial/atmel_serial.c
+> >>> drivers/usb/core/hcd-pci.c
+> >>
+> >> Ugh.  I need to look at the last one at least ...
+> >
+> > The drivers/usb/core/hcd-pci.c instance is actually valid, because it
+> > calls device_set_wakeup_enable() to remove the wakeup source object in
+> > case the device is dead.  Moreover, it does that in the "noirq" phase
+> > which is not covered by your patch anyway.
 > 
-> Signed-off-by: Jeffy Chen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-> ---
+> Right, but this puzzles me a bit.
 > 
-> Changes in v11:
-> Only support 1-per-device PCIe WAKE# pin as suggested.
-> 
-> Changes in v10:
-> Use device_set_wakeup_capable() instead of device_set_wakeup_enable(),
-> since dedicated wakeirq will be lost in device_set_wakeup_enable(false).
-> 
-> Changes in v9:
-> Fix check error in .cleanup().
-> Move dedicated wakeirq setup to setup() callback and use
-> device_set_wakeup_enable() to enable/disable.
-> 
-> Changes in v8:
-> Add pci-of.c and use platform_pm_ops to handle the PCIe WAKE# signal.
-> 
-> Changes in v7:
-> Move PCIE_WAKE handling into pci core.
-> 
-> Changes in v6:
-> Fix device_init_wake error handling, and add some comments.
-> 
-> Changes in v5:
-> Rebase.
-> 
-> Changes in v3:
-> Fix error handling.
-> 
-> Changes in v2:
-> Use dev_pm_set_dedicated_wake_irq.
-> 
->  drivers/of/of_pci_irq.c  | 49 ++++++++++++++++++++++++++++++++++++++++++++++++
->  drivers/pci/pci-driver.c | 10 ++++++++++
->  include/linux/of_pci.h   |  9 +++++++++
->  3 files changed, 68 insertions(+)
-> 
-> diff --git a/drivers/of/of_pci_irq.c b/drivers/of/of_pci_irq.c
-> index d39565d5477b..def884c1a37a 100644
-> --- a/drivers/of/of_pci_irq.c
-> +++ b/drivers/of/of_pci_irq.c
-> @@ -1,8 +1,57 @@
->  #include <linux/kernel.h>
->  #include <linux/of_pci.h>
->  #include <linux/of_irq.h>
-> +#include <linux/pm_wakeirq.h>
->  #include <linux/export.h>
->  
-> +int of_pci_setup_wake_irq(struct pci_dev *pdev)
-> +{
-> +	struct pci_dev *ppdev;
-> +	struct device_node *dn;
-> +	int ret, irq;
-> +
-> +	/* Get the pci_dev of our parent. Hopefully it's a port. */
-> +	ppdev = pdev->bus->self;
-> +	/* Nope, it's a host bridge. */
-> +	if (!ppdev)
-> +		return 0;
-> +
-> +	dn = pci_device_to_OF_node(ppdev);
-> +	if (!dn)
-> +		return 0;
-> +
-> +	irq = of_irq_get_byname(dn, "wakeup");
+> Could you explain what you mean by valid here? Is it okay to call
+> device_set_wakeup_enable() in the suspend phase after all? No?
 
-Why is this a property of the bridge and not of the device itself?
+This is an exception and it would be better to call
+device_wakeup_disable() directly here.
 
-> +	if (irq == -EPROBE_DEFER)
+In general, calling device_set_wakeup_enable() during system suspend (to
+"enable" device wakeup) and then during system resume (to "disable" it) may
+be problematic.
 
-Braces here, please.
+First, if device_wakeup_enable() is run during system suspend, it will
+create a wakeup source object, which then, quite obviously, can only cover
+the time after its creation, so there is a window (between the start of the
+system suspend transition and the creation of the wakeup source) during
+which wakeup events may be missed.
 
-> +		return irq;
-> +	/* Ignore other errors, since a missing wakeup is non-fatal. */
-> +	else if (irq < 0) {
-> +		dev_info(&pdev->dev, "cannot get wakeup interrupt: %d\n", irq);
-> +		return 0;
-> +	}
-> +
-> +	device_init_wakeup(&pdev->dev, true);
+That is not only relevant for devices supporting runtime PM, because input
+device drivers, say, may choose to report system wakeup events every time
+they see input (eg. from their interrupt handlers or similar) and wakeup
+sources used for that should be present before system suspend begins.
 
-Why do you call this before dev_pm_set_dedicated_wake_irq()?
+Also, if the wakeup source is not present already, this effectively overrides
+the choice made by user space which didn't set the device's "wakeup" attribute
+in sysfs to "enabled", so it should not wake up the system.
 
-> +
-> +	ret = dev_pm_set_dedicated_wake_irq(&pdev->dev, irq);
-> +	if (ret < 0) {
-> +		dev_err(&pdev->dev, "failed to set wake IRQ: %d\n", ret);
-> +		device_init_wakeup(&pdev->dev, false);
-> +		return ret;
-> +	}
-> +
+Second, if device_wakeup_disable() is run during system resume, it effectively
+destroys information that can be used to figure out why the system woke up
+and, again, it may cause the choice made by user space to be effectively
+overridden.
 
-It would be more straightforward to call device_init_wakeup() here.
+However, if the device is dead, calling device_wakeup_disable() on it is fine
+at any time (as dead devices do not wake up the system as a rule).
 
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(of_pci_setup_wake_irq);
-> +
-> +void of_pci_teardown_wake_irq(struct pci_dev *pdev)
-> +{
-> +	if (!pdev->dev.power.wakeirq)
-> +		return;
-> +
-> +	dev_pm_clear_wake_irq(&pdev->dev);
-> +	device_init_wakeup(&pdev->dev, false);
-> +}
-> +EXPORT_SYMBOL_GPL(of_pci_teardown_wake_irq);
-> +
->  /**
->   * of_irq_parse_pci - Resolve the interrupt for a PCI device
->   * @pdev:       the device whose interrupt is to be resolved
+> My very vague idea at this point is, if we find cases where
+> device_set_wakeup_enable() makes sense to call during system suspend,
+> probably those could/should be replaces by using the "wakeup_path"
+> flag instead, somehow.
+
+Not really in this particular case.  Clearing the wakeup enable bit for the
+device plays the role of "don't bother any more" here.
 
 Thanks,
 Rafael
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
