@@ -1,84 +1,81 @@
-From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH v12 4/5] PCI / PM: Add support for the PCIe WAKE#
- signal for OF
-Date: Wed, 27 Dec 2017 09:30:22 -0600
-Message-ID: <CAL_JsqJssPABjoRM-XAnuN_Xd2-sHoFifJNrRDdk_ruQ0DRw6A@mail.gmail.com>
-References: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
- <20171226023646.17722-5-jeffy.chen@rock-chips.com> <20171226235607.4rgp4ebrrktt6d56@rob-hp-laptop>
- <5A42F847.5060305@rock-chips.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Thinkpad x60 hibernate broken on 4.13+
+Date: Wed, 27 Dec 2017 18:59:17 +0100
+Message-ID: <20171227175917.GA9749@amd>
+References: <25febf9d-5d45-a7fc-f5c9-4d3bb2828237@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <5A42F847.5060305-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Shawn Lin <shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40143 "EHLO
+        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751895AbdL0R7T (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Dec 2017 12:59:19 -0500
+Content-Disposition: inline
+In-Reply-To: <25febf9d-5d45-a7fc-f5c9-4d3bb2828237@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Woody Suwalski <terraluna977@gmail.com>
+Cc: linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
-On Tue, Dec 26, 2017 at 7:32 PM, JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org> wrote:
-> Hi Rob,
->
-> Thanks for your reply.
->
-> On 12/27/2017 07:56 AM, Rob Herring wrote:
->>>
->>> >
->>> >  drivers/of/of_pci_irq.c  | 49 +++++++++++++++++++++++++++++++
->>
->> Please move this to drivers/pci/of.c (or perhaps create pci/of_irq.c).
->>
->>> >  drivers/pci/Makefile     |  1 +
->>> >  drivers/pci/pci-driver.c | 10 +++++++
->>> >  drivers/pci/pci-of.c     | 75
->>> > ++++++++++++++++++++++++++++++++++++++++++++++++
->>
->> We already have drivers/pci/of.c. It's not clear what the difference is
->> from the filenames. Either merge with of.c or perhaps of-pm.c.
->
->
-> this new file does something similar to the pci-acpi.c and pci-mid.c..
 
-pci-acpi.c has similar things to pci/of.c. The naming is just not consistent.
+--6TrnltStXW4iwmi0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Also, I plan to move the rest of drivers/of/of_pci* to drivers/pci.
+Hi!
 
-> and i am agree the naming is not clear, maybe we can rename both of those
-> files to something like pci-pm-***.c?
+> Merry Christmas all,
+> Following Pavel's example I have exercised my Thinkpad x60, and noticed t=
+hat
+> hibernation is broken - it does hibernate, but upon wakeup it goes through
+> restore image 80%, and then black screen and dead system. But the fan _is_
+> running, so I guess CPU is doing something.
+>=20
+> I have only done some rudimentary tests:
+> 4.12.3 and 4.12.9 are OK.
+> 4.13.3 and 4.13.12 bad
+> 4.14.5 and 4.14.9 bad
+> 4.15-rc5 bad
 
-At least pci-acpi.c is more than just PM functions, so that doesn't
-make sense. Given that all the ACPI related functions are in 1 file,
-we should do the same for DT.
+> Pavel, can you duplicate the issue? All I did to trigger was "systemctl
+> hibernate".
 
->
-> Hi Rafael, do you think this would make sense?
->
->
+I'm sorry, debugging that is not easy for me at the moment.
 
-[...]
+> Bisecting will be slow as I build the 32-bit kernels in a VM nowadays...
 
->>> >+static int __init of_pci_init(void)
->>> >+{
->>> >+      if (!acpi_disabled)
->>> >+              return 0;
->>> >+
->>> >+      pci_set_platform_pm(&of_pci_platform_pm);
->>
->> I guess no DT based system will override this?
->
->
-> i think the !acpi_disabled means acpi been disabled or CONFIG_ACPI is
-> undefined.
->
-> and pci-acpi.c would only work when we have CONFIG_ACPI.
->
-> but i have no idea about pci-mid.c or would it possible to have more
-> platform pm ops in the future...maybe we should add some dependency in the
-> Kconfig?
+You should be able to build on x86-64 with right .config...
 
-It's probably fine given there are only 2 other implementations so far.
+Before bisect, I'd suggest:
 
-Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+a) testing suspend. That should work in 4.13 and 4.14
+
+b) maybe testing with minimal drivers to see if it is one of the
+drivers breaking it.
+
+Oh and there's file in Documentation/ describing hibernation
+debugging. You should be able to locate bad driver without bisect.
+
+Thanks,
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--6TrnltStXW4iwmi0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlpD33UACgkQMOfwapXb+vJeswCfd7xtqxp1Y+0oHXvI7aAX2YVd
+MckAnjQWpuUw4HAclkq9hDwlqLKDEjvg
+=qyoE
+-----END PGP SIGNATURE-----
+
+--6TrnltStXW4iwmi0--
