@@ -1,81 +1,67 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Thinkpad x60 hibernate broken on 4.13+
-Date: Wed, 27 Dec 2017 18:59:17 +0100
-Message-ID: <20171227175917.GA9749@amd>
-References: <25febf9d-5d45-a7fc-f5c9-4d3bb2828237@gmail.com>
+From: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC V7 2/2] OPP: Allow "opp-hz" and "opp-microvolt" to contain
+ magic values
+Date: Wed, 27 Dec 2017 15:36:24 -0600
+Message-ID: <CAL_JsqJA-cCOLRwHC1ZegHEt9v7pMoxY6qXF7Taq3k19bU-k3w@mail.gmail.com>
+References: <CAKohpokvQD4Z6YY6MRG8c+hnsS=Z52X4XhyTgC5FTgf7VuaNmw@mail.gmail.com>
+ <CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ@mail.gmail.com>
+ <20171101214333.GG30645@codeaurora.org> <20171102045155.GX4240@vireshk-i7>
+ <20171102071533.GM30645@codeaurora.org> <20171102090033.GZ4240@vireshk-i7>
+ <CAPDyKFryn5=GMs+hiRcxGOC1U=-LL9RQdnY3cWniyE+4pwQDog@mail.gmail.com>
+ <20171130005029.GC19419@codeaurora.org> <20171130065907.GI11413@vireshk-i7>
+ <CAL_Jsq+ntPMiSacpsx7M7VwSXsx+fRbHpX-KFNVpDj+bYdNCiQ@mail.gmail.com> <20171227044526.GE8312@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40143 "EHLO
-        atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751895AbdL0R7T (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Dec 2017 12:59:19 -0500
-Content-Disposition: inline
-In-Reply-To: <25febf9d-5d45-a7fc-f5c9-4d3bb2828237@gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20171227044526.GE8312@vireshk-i7>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Woody Suwalski <terraluna977@gmail.com>
-Cc: linux-kernel@vger.kernel.org, rafael.j.wysocki@intel.com, Linux-pm mailing list <linux-pm@vger.kernel.org>
 
+On Tue, Dec 26, 2017 at 10:45 PM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> On 26-12-17, 14:23, Rob Herring wrote:
+>> >         cpu_opp_table: cpu_opp_table {
+>> >                 compatible = "operating-points-v2";
+>> >                 opp-shared;
+>> >
+>> >                 opp00 {
+>> >                         opp-hz = /bits/ 64 <208000000>;
+>> >                         clock-latency-ns = <500000>;
+>> >                         power-domain-opp = <&domain_opp_1>;
+>>
+>> What is this? opp00 here is not a device. One OPP should not point to
+>> another. "power-domain-opp" is only supposed to appear in devices
+>> alongside power-domains properties.
+>
+> There are two type of devices:
+>
+> A.) With fixed performance state requirements and they will have the
+> new "required-opp" property in the device node itself as you said.
+>
+> B.) Devices which can do DVFS (CPU, MMC, LCD, etc) and those may need
+> a different performance state of the domain for their individual OPPs
+> and so we can't have this property in the device all the time.
+>
+> Does this make sense ?
 
---6TrnltStXW4iwmi0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+No. From the definition for power-domain-opp
 
-Hi!
+"+- power-domain-opp: This contains phandle to one of the OPP nodes of
+the master
++  power domain. This specifies the minimum required OPP of the master
+domain for
++  the functioning of the device in this OPP (where this property is present).
++  This property can only be set for a device if the device node contains the
++  "power-domains" property. Also, either all or none of the OPP nodes in an OPP
++  table should have it set."
 
-> Merry Christmas all,
-> Following Pavel's example I have exercised my Thinkpad x60, and noticed t=
-hat
-> hibernation is broken - it does hibernate, but upon wakeup it goes through
-> restore image 80%, and then black screen and dead system. But the fan _is_
-> running, so I guess CPU is doing something.
->=20
-> I have only done some rudimentary tests:
-> 4.12.3 and 4.12.9 are OK.
-> 4.13.3 and 4.13.12 bad
-> 4.14.5 and 4.14.9 bad
-> 4.15-rc5 bad
+In the above example, you are violating the next to last sentence.
 
-> Pavel, can you duplicate the issue? All I did to trigger was "systemctl
-> hibernate".
+Though, I'm now confused by what the last sentence means.
 
-I'm sorry, debugging that is not easy for me at the moment.
-
-> Bisecting will be slow as I build the 32-bit kernels in a VM nowadays...
-
-You should be able to build on x86-64 with right .config...
-
-Before bisect, I'd suggest:
-
-a) testing suspend. That should work in 4.13 and 4.14
-
-b) maybe testing with minimal drivers to see if it is one of the
-drivers breaking it.
-
-Oh and there's file in Documentation/ describing hibernation
-debugging. You should be able to locate bad driver without bisect.
-
-Thanks,
-
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---6TrnltStXW4iwmi0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlpD33UACgkQMOfwapXb+vJeswCfd7xtqxp1Y+0oHXvI7aAX2YVd
-MckAnjQWpuUw4HAclkq9hDwlqLKDEjvg
-=qyoE
------END PGP SIGNATURE-----
-
---6TrnltStXW4iwmi0--
+Rob
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
