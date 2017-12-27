@@ -1,67 +1,69 @@
-From: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC V7 2/2] OPP: Allow "opp-hz" and "opp-microvolt" to contain
+From: Rob Herring <robh@kernel.org>
+Subject: Re: [PATCH V8 3/3] OPP: Allow "opp-hz" and "opp-microvolt" to contain
  magic values
-Date: Wed, 27 Dec 2017 15:36:24 -0600
-Message-ID: <CAL_JsqJA-cCOLRwHC1ZegHEt9v7pMoxY6qXF7Taq3k19bU-k3w@mail.gmail.com>
-References: <CAKohpokvQD4Z6YY6MRG8c+hnsS=Z52X4XhyTgC5FTgf7VuaNmw@mail.gmail.com>
- <CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ@mail.gmail.com>
- <20171101214333.GG30645@codeaurora.org> <20171102045155.GX4240@vireshk-i7>
- <20171102071533.GM30645@codeaurora.org> <20171102090033.GZ4240@vireshk-i7>
- <CAPDyKFryn5=GMs+hiRcxGOC1U=-LL9RQdnY3cWniyE+4pwQDog@mail.gmail.com>
- <20171130005029.GC19419@codeaurora.org> <20171130065907.GI11413@vireshk-i7>
- <CAL_Jsq+ntPMiSacpsx7M7VwSXsx+fRbHpX-KFNVpDj+bYdNCiQ@mail.gmail.com> <20171227044526.GE8312@vireshk-i7>
+Date: Wed, 27 Dec 2017 15:54:37 -0600
+Message-ID: <CAL_JsqJzMfNhHK=6Wt4dzBRS9BVGMZ-f7uk3OnUupudTfwuyUA@mail.gmail.com>
+References: <cover.1513591822.git.viresh.kumar@linaro.org> <476d7ae69184d787ccc6d99f8df6069007fd0a91.1513591822.git.viresh.kumar@linaro.org>
+ <20171226202955.32j7gzonrixtwdpt@rob-hp-laptop> <20171227085645.GF8312@vireshk-i7>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171227044526.GE8312@vireshk-i7>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail.kernel.org ([198.145.29.99]:47248 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752549AbdL0Vy7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 27 Dec 2017 16:54:59 -0500
+In-Reply-To: <20171227085645.GF8312@vireshk-i7>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Tue, Dec 26, 2017 at 10:45 PM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
-> On 26-12-17, 14:23, Rob Herring wrote:
->> >         cpu_opp_table: cpu_opp_table {
->> >                 compatible = "operating-points-v2";
->> >                 opp-shared;
->> >
->> >                 opp00 {
->> >                         opp-hz = /bits/ 64 <208000000>;
->> >                         clock-latency-ns = <500000>;
->> >                         power-domain-opp = <&domain_opp_1>;
+On Wed, Dec 27, 2017 at 2:56 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> On 26-12-17, 14:29, Rob Herring wrote:
+>> On Mon, Dec 18, 2017 at 03:51:30PM +0530, Viresh Kumar wrote:
+>
+>> > +On some platforms the exact frequency or voltage may be hidden from the OS by
+>> > +the firmware and the "opp-hz" or the "opp-microvolt" properties may contain
+>> > +magic values that represent the frequency or voltage in a firmware dependent
+>> > +way, for example an index of an array in the firmware.
 >>
->> What is this? opp00 here is not a device. One OPP should not point to
->> another. "power-domain-opp" is only supposed to appear in devices
->> alongside power-domains properties.
+>> I'm still not convinced this is a good idea.
 >
-> There are two type of devices:
+> You were kind-of a few days back :)
 >
-> A.) With fixed performance state requirements and they will have the
-> new "required-opp" property in the device node itself as you said.
+> lkml.kernel.org/r/CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ@mail.gmail.com
+
+Yeah, well that was before Stephen said anything.
+
+> So here is the deal:
 >
-> B.) Devices which can do DVFS (CPU, MMC, LCD, etc) and those may need
-> a different performance state of the domain for their individual OPPs
-> and so we can't have this property in the device all the time.
+> - I proposed "domain-performance-state" property for this stuff
+>   initially.
+> - But Kevin didn't like that and proposed reusing "opp-hz" and
+>   "opp-microvolt", which we all agreed to multiple times..
+> - And we are back to the same discussion now and its painful and time
+>   killing for all of us.
+
+There's bigger issues than where we put magic values as I raised in
+the other patch.
+
+> TBH, I don't have too strong preferences about any of the suggestions
+> you guys have and I need you guys to tell me what binding changes to
+> do here and I will do that.
 >
-> Does this make sense ?
+>> If you have firmware
+>> partially managing things, then I think we should have platform specific
+>> bindings or drivers.
+>
+> What about the initial idea then, like "performance-state" for the
+> power domains ? All platforms will anyway replicate that binding only.
 
-No. From the definition for power-domain-opp
-
-"+- power-domain-opp: This contains phandle to one of the OPP nodes of
-the master
-+  power domain. This specifies the minimum required OPP of the master
-domain for
-+  the functioning of the device in this OPP (where this property is present).
-+  This property can only be set for a device if the device node contains the
-+  "power-domains" property. Also, either all or none of the OPP nodes in an OPP
-+  table should have it set."
-
-In the above example, you are violating the next to last sentence.
-
-Though, I'm now confused by what the last sentence means.
+I don't really know. I don't really care either. I'll probably go
+along with what everyone agrees to, but the only one I see any
+agreement from is Ulf. Also, it is pretty vague as to what platforms
+will use this. You claimed you can support QCom scenarios, but there's
+really no evidence that that is true. What I don't want to see is this
+merged and then we need something more yet again in a few months for
+another platform.
 
 Rob
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
