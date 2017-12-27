@@ -1,62 +1,74 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V8 3/3] OPP: Allow "opp-hz" and "opp-microvolt" to
- contain magic values
-Date: Wed, 27 Dec 2017 14:26:45 +0530
-Message-ID: <20171227085645.GF8312@vireshk-i7>
-References: <cover.1513591822.git.viresh.kumar@linaro.org>
- <476d7ae69184d787ccc6d99f8df6069007fd0a91.1513591822.git.viresh.kumar@linaro.org>
- <20171226202955.32j7gzonrixtwdpt@rob-hp-laptop>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH] bq24190: Simplify code in property_is_writeable
+Date: Wed, 27 Dec 2017 10:20:42 +0100
+Message-ID: <20171227092041.GA14507@amd>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="Dxnq1zWXvFF0Q93v"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171226202955.32j7gzonrixtwdpt@rob-hp-laptop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Sender: linux-kernel-owner@vger.kernel.org
+To: pali.rohar@gmail.com, sre@kernel.org, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, patrikbachan@gmail.com, serge@hallyn.com, abcloriens@gmail.com, clayton@craftyguy.net, martijn@brixit.nl, sakari.ailus@linux.intel.com, Filip =?utf-8?Q?Matijevi=C4=87?= <filip.matijevic.pz@gmail.com>, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On 26-12-17, 14:29, Rob Herring wrote:
-> On Mon, Dec 18, 2017 at 03:51:30PM +0530, Viresh Kumar wrote:
 
-> > +On some platforms the exact frequency or voltage may be hidden from the OS by
-> > +the firmware and the "opp-hz" or the "opp-microvolt" properties may contain
-> > +magic values that represent the frequency or voltage in a firmware dependent
-> > +way, for example an index of an array in the firmware.
-> 
-> I'm still not convinced this is a good idea.
+--Dxnq1zWXvFF0Q93v
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-You were kind-of a few days back :)
+Simplify function that should be trivial.
 
-lkml.kernel.org/r/CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org
+Signed-off-by: Pavel machek <pavel@ucw.cz>
 
-So here is the deal:
+diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/=
+bq24190_charger.c
+index 35ff406..4ea8f0a 100644
+--- a/drivers/power/supply/bq24190_charger.c
++++ b/drivers/power/supply/bq24190_charger.c
+@@ -1193,8 +1193,6 @@ static int bq24190_charger_set_property(struct power_=
+supply *psy,
+ static int bq24190_charger_property_is_writeable(struct power_supply *psy,
+ 		enum power_supply_property psp)
+ {
+-	int ret;
+-
+ 	switch (psp) {
+ 	case POWER_SUPPLY_PROP_ONLINE:
+ 	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
+@@ -1202,13 +1200,10 @@ static int bq24190_charger_property_is_writeable(st=
+ruct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+ 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+ 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+-		ret =3D 1;
+-		break;
++		return 1;
+ 	default:
+-		ret =3D 0;
++		return 0;
+ 	}
+-
+-	return ret;
+ }
+=20
+ static void bq24190_input_current_limit_work(struct work_struct *work)
 
-- I proposed "domain-performance-state" property for this stuff
-  initially.
-- But Kevin didn't like that and proposed reusing "opp-hz" and
-  "opp-microvolt", which we all agreed to multiple times..
-- And we are back to the same discussion now and its painful and time
-  killing for all of us.
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
 
-TBH, I don't have too strong preferences about any of the suggestions
-you guys have and I need you guys to tell me what binding changes to
-do here and I will do that.
+--Dxnq1zWXvFF0Q93v
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-> If you have firmware 
-> partially managing things, then I think we should have platform specific 
-> bindings or drivers. 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-What about the initial idea then, like "performance-state" for the
-power domains ? All platforms will anyway replicate that binding only.
+iEYEARECAAYFAlpDZekACgkQMOfwapXb+vLTcgCfV+9s5i7jEKZbPc9yCPqfQe4X
+MdsAoKinRoq6w0LGo9r5UZBbiJoT3OpO
+=qkqz
+-----END PGP SIGNATURE-----
 
-> This is complex enough I'm not taking silence from Stephen as an okay.
-
-Sure, but I am not sure how to make him speak :)
-
--- 
-viresh
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--Dxnq1zWXvFF0Q93v--
