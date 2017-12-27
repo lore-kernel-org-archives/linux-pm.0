@@ -1,250 +1,45 @@
-From: JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
-Subject: Re: [RFC PATCH v12 4/5] PCI / PM: Add support for the PCIe WAKE#
- signal for OF
-Date: Wed, 27 Dec 2017 09:32:55 +0800
-Message-ID: <5A42F847.5060305@rock-chips.com>
-References: <20171226023646.17722-1-jeffy.chen@rock-chips.com> <20171226023646.17722-5-jeffy.chen@rock-chips.com> <20171226235607.4rgp4ebrrktt6d56@rob-hp-laptop>
+From: JeffyChen <jeffy.chen@rock-chips.com>
+Subject: Re: [RFC PATCH v12 1/5] dt-bindings: PCI: Add definition of PCIe
+ WAKE# irq and PCI irq
+Date: Wed, 27 Dec 2017 09:36:37 +0800
+Message-ID: <5A42F925.5090806@rock-chips.com>
+References: <20171226023646.17722-1-jeffy.chen@rock-chips.com> <20171226023646.17722-2-jeffy.chen@rock-chips.com> <20171226233552.nacwqbpkozmy7n6c@rob-hp-laptop> <3268448.IvXk7OJtIY@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20171226235607.4rgp4ebrrktt6d56@rob-hp-laptop>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org, shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org, briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from regular1.263xmail.com ([211.150.99.130]:39628 "EHLO
+        regular1.263xmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751620AbdL0Bgt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Dec 2017 20:36:49 -0500
+In-Reply-To: <3268448.IvXk7OJtIY@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Rob Herring <robh@kernel.org>
+Cc: linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, tony@atomide.com, shawn.lin@rock-chips.com, briannorris@chromium.org, dianders@chromium.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>
 
-Hi Rob,
+Hi Rafael and Rob,
 
 Thanks for your reply.
 
-On 12/27/2017 07:56 AM, Rob Herring wrote:
+On 12/27/2017 08:43 AM, Rafael J. Wysocki wrote:
+> On Wednesday, December 27, 2017 12:35:52 AM CET Rob Herring wrote:
+>> >On Tue, Dec 26, 2017 at 10:36:42AM +0800, Jeffy Chen wrote:
+>>> > >We are going to handle PCIe WAKE# pin for PCI devices in the pci core,
+>>> > >so add definitions of the optional PCIe WAKE# pin for PCI devices.
+>>> > >
+>>> > >Also add an definition of the optional PCI interrupt pin for PCI
+>>> > >devices to distinguish it from the PCIe WAKE# pin.
 >> >
->> >  drivers/of/of_pci_irq.c  | 49 +++++++++++++++++++++++++++++++
-> Please move this to drivers/pci/of.c (or perhaps create pci/of_irq.c).
+>> >By v13 you should drop "RFC". RFC implies not ready for merging.
+> Which very much still is the case AFAICS.
 >
->> >  drivers/pci/Makefile     |  1 +
->> >  drivers/pci/pci-driver.c | 10 +++++++
->> >  drivers/pci/pci-of.c     | 75 ++++++++++++++++++++++++++++++++++++++++++++++++
-> We already have drivers/pci/of.c. It's not clear what the difference is
-> from the filenames. Either merge with of.c or perhaps of-pm.c.
+maybe i should split this series, and send dt-binding patch and the pci 
+irq parsing patch along without RFC ?
 
-this new file does something similar to the pci-acpi.c and pci-mid.c..
-
-and i am agree the naming is not clear, maybe we can rename both of 
-those files to something like pci-pm-***.c?
-
-Hi Rafael, do you think this would make sense?
-
->> >  include/linux/of_pci.h   |  9 ++++++
->> >  5 files changed, 144 insertions(+)
->> >  create mode 100644 drivers/pci/pci-of.c
->> >
->> >diff --git a/drivers/of/of_pci_irq.c b/drivers/of/of_pci_irq.c
->> >index d39565d5477b..abec3a44853b 100644
->> >--- a/drivers/of/of_pci_irq.c
->> >+++ b/drivers/of/of_pci_irq.c
->> >@@ -1,8 +1,57 @@
->> >  #include <linux/kernel.h>
->> >  #include <linux/of_pci.h>
->> >  #include <linux/of_irq.h>
->> >+#include <linux/pm_wakeirq.h>
->> >  #include <linux/export.h>
->> >
->> >+int of_pci_setup_wake_irq(struct pci_dev *pdev)
->> >+{
->> >+	struct pci_dev *ppdev;
->> >+	struct device_node *dn;
->> >+	int ret, irq;
->> >+
->> >+	/* Get the pci_dev of our parent. Hopefully it's a port. */
->> >+	ppdev = pdev->bus->self;
->> >+	/* Nope, it's a host bridge. */
->> >+	if (!ppdev)
->> >+		return 0;
->> >+
->> >+	dn = pci_device_to_OF_node(ppdev);
->> >+	if (!dn)
->> >+		return 0;
->> >+
->> >+	irq = of_irq_get_byname(dn, "wakeup");
->> >+	if (irq == -EPROBE_DEFER) {
->> >+		return irq;
->> >+	} else if (irq < 0) {
->> >+		/* Ignore other errors, since a missing wakeup is non-fatal. */
->> >+		dev_info(&pdev->dev, "cannot get wakeup interrupt: %d\n", irq);
->> >+		return 0;
->> >+	}
->> >+
->> >+	device_init_wakeup(&pdev->dev, true);
->> >+
->> >+	ret = dev_pm_set_dedicated_wake_irq(&pdev->dev, irq);
->> >+	if (ret < 0) {
->> >+		dev_err(&pdev->dev, "failed to set wake IRQ: %d\n", ret);
->> >+		device_init_wakeup(&pdev->dev, false);
->> >+		return ret;
->> >+	}
->> >+
->> >+	/* Start out disabled to avoid irq storm */
->> >+	dev_pm_disable_wake_irq(&pdev->dev);
->> >+
->> >+	return 0;
->> >+}
->> >+EXPORT_SYMBOL_GPL(of_pci_setup_wake_irq);
->> >+
->> >+void of_pci_teardown_wake_irq(struct pci_dev *pdev)
->> >+{
->> >+	dev_pm_clear_wake_irq(&pdev->dev);
->> >+	device_init_wakeup(&pdev->dev, false);
->> >+}
->> >+EXPORT_SYMBOL_GPL(of_pci_teardown_wake_irq);
->> >+
->> >  /**
->> >   * of_irq_parse_pci - Resolve the interrupt for a PCI device
->> >   * @pdev:       the device whose interrupt is to be resolved
->> >diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
->> >index c7819b973df7..d0182c82162a 100644
->> >--- a/drivers/pci/Makefile
->> >+++ b/drivers/pci/Makefile
->> >@@ -29,6 +29,7 @@ obj-$(CONFIG_PCI_IOV) += iov.o
->> >  # ACPI _DSM provided firmware instance and string name
->> >  #
->> >  obj-$(CONFIG_ACPI)    += pci-acpi.o
->> >+obj-$(CONFIG_OF)      += pci-of.o
->> >
->> >  # SMBIOS provided firmware instance and labels
->> >  obj-$(CONFIG_PCI_LABEL) += pci-label.o
->> >diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
->> >index d79dbc377b9c..b4475ff35d97 100644
->> >--- a/drivers/pci/pci-driver.c
->> >+++ b/drivers/pci/pci-driver.c
->> >@@ -17,6 +17,7 @@
->> >  #include <linux/slab.h>
->> >  #include <linux/sched.h>
->> >  #include <linux/cpu.h>
->> >+#include <linux/of_pci.h>
->> >  #include <linux/pm_runtime.h>
->> >  #include <linux/suspend.h>
->> >  #include <linux/kexec.h>
->> >@@ -421,10 +422,17 @@ static int pci_device_probe(struct device *dev)
->> >  	if (error < 0)
->> >  		return error;
->> >
->> >+	error = of_pci_setup_wake_irq(pci_dev);
->> >+	if (error < 0) {
->> >+		pcibios_free_irq(pci_dev);
->> >+		return error;
->> >+	}
->> >+
->> >  	pci_dev_get(pci_dev);
->> >  	if (pci_device_can_probe(pci_dev)) {
->> >  		error = __pci_device_probe(drv, pci_dev);
->> >  		if (error) {
->> >+			of_pci_teardown_wake_irq(pci_dev);
->> >  			pcibios_free_irq(pci_dev);
->> >  			pci_dev_put(pci_dev);
->> >  		}
->> >@@ -438,6 +446,8 @@ static int pci_device_remove(struct device *dev)
->> >  	struct pci_dev *pci_dev = to_pci_dev(dev);
->> >  	struct pci_driver *drv = pci_dev->driver;
->> >
->> >+	of_pci_teardown_wake_irq(pci_dev);
->> >+
->> >  	if (drv) {
->> >  		if (drv->remove) {
->> >  			pm_runtime_get_sync(dev);
->> >diff --git a/drivers/pci/pci-of.c b/drivers/pci/pci-of.c
->> >new file mode 100644
->> >index 000000000000..ad413b2de508
->> >--- /dev/null
->> >+++ b/drivers/pci/pci-of.c
->> >@@ -0,0 +1,75 @@
->> >+/*
->> >+ * File:	pci-of.c
->> >+ * Purpose:	Provide PCI PM/wakeup support in OF systems
->> >+ *
->> >+ * Copyright (C) 2017 Google, Inc.
->> >+ *	Brian Norris<briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
->> >+ *
->> >+ * Copyright (C) 2017 Rockchip Electronics Co., Ltd.
->> >+ *	Jeffy Chen<jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
->> >+ *
->> >+ * This program is free software; you can redistribute it and/or modify it
->> >+ * under the terms and conditions of the GNU General Public License,
->> >+ * version 2, as published by the Free Software Foundation.
->> >+ */
->> >+
->> >+#include <linux/acpi.h>
->> >+#include <linux/init.h>
->> >+#include <linux/module.h>
->> >+#include <linux/pci.h>
->> >+#include <linux/pm_wakeirq.h>
->> >+#include "pci.h"
->> >+
->> >+static bool of_pci_power_manageable(struct pci_dev *dev)
->> >+{
->> >+	return false;
->> >+}
->> >+
->> >+static int of_pci_set_power_state(struct pci_dev *dev, pci_power_t state)
->> >+{
->> >+	return -ENOSYS;
->> >+}
->> >+
->> >+static pci_power_t of_pci_get_power_state(struct pci_dev *dev)
->> >+{
->> >+	return PCI_UNKNOWN;
->> >+}
->> >+
->> >+static pci_power_t of_pci_choose_state(struct pci_dev *pdev)
->> >+{
->> >+	return PCI_POWER_ERROR;
->> >+}
->> >+
->> >+static int of_pci_wakeup(struct pci_dev *dev, bool enable)
->> >+{
->> >+	if (enable)
->> >+		dev_pm_enable_wake_irq(&dev->dev);
->> >+	else
->> >+		dev_pm_disable_wake_irq(&dev->dev);
->> >+	return 0;
->> >+}
->> >+
->> >+static bool of_pci_need_resume(struct pci_dev *dev)
->> >+{
->> >+	return false;
->> >+}
->> >+
->> >+static const struct pci_platform_pm_ops of_pci_platform_pm = {
->> >+	.is_manageable = of_pci_power_manageable,
->> >+	.set_state = of_pci_set_power_state,
->> >+	.get_state = of_pci_get_power_state,
->> >+	.choose_state = of_pci_choose_state,
->> >+	.set_wakeup = of_pci_wakeup,
->> >+	.need_resume = of_pci_need_resume,
->> >+};
->> >+
->> >+static int __init of_pci_init(void)
->> >+{
->> >+	if (!acpi_disabled)
->> >+		return 0;
->> >+
->> >+	pci_set_platform_pm(&of_pci_platform_pm);
-> I guess no DT based system will override this?
-
-i think the !acpi_disabled means acpi been disabled or CONFIG_ACPI is 
-undefined.
-
-and pci-acpi.c would only work when we have CONFIG_ACPI.
-
-but i have no idea about pci-mid.c or would it possible to have more 
-platform pm ops in the future...maybe we should add some dependency in 
-the Kconfig?
-
+> Thanks,
+> Rafael
 >
-
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
+>
