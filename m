@@ -1,52 +1,58 @@
 From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC V7 2/2] OPP: Allow "opp-hz" and "opp-microvolt" to contain
- magic values
-Date: Wed, 27 Dec 2017 10:15:26 +0530
-Message-ID: <20171227044526.GE8312@vireshk-i7>
-References: <CAKohpokvQD4Z6YY6MRG8c+hnsS=Z52X4XhyTgC5FTgf7VuaNmw@mail.gmail.com>
- <CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ@mail.gmail.com>
- <20171101214333.GG30645@codeaurora.org>
- <20171102045155.GX4240@vireshk-i7>
- <20171102071533.GM30645@codeaurora.org>
- <20171102090033.GZ4240@vireshk-i7>
- <CAPDyKFryn5=GMs+hiRcxGOC1U=-LL9RQdnY3cWniyE+4pwQDog@mail.gmail.com>
- <20171130005029.GC19419@codeaurora.org>
- <20171130065907.GI11413@vireshk-i7>
- <CAL_Jsq+ntPMiSacpsx7M7VwSXsx+fRbHpX-KFNVpDj+bYdNCiQ@mail.gmail.com>
+Subject: Re: [PATCH V8 3/3] OPP: Allow "opp-hz" and "opp-microvolt" to
+ contain magic values
+Date: Wed, 27 Dec 2017 14:26:45 +0530
+Message-ID: <20171227085645.GF8312@vireshk-i7>
+References: <cover.1513591822.git.viresh.kumar@linaro.org>
+ <476d7ae69184d787ccc6d99f8df6069007fd0a91.1513591822.git.viresh.kumar@linaro.org>
+ <20171226202955.32j7gzonrixtwdpt@rob-hp-laptop>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <CAL_Jsq+ntPMiSacpsx7M7VwSXsx+fRbHpX-KFNVpDj+bYdNCiQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+In-Reply-To: <20171226202955.32j7gzonrixtwdpt@rob-hp-laptop>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org, sudeep.holla-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-On 26-12-17, 14:23, Rob Herring wrote:
-> >         cpu_opp_table: cpu_opp_table {
-> >                 compatible = "operating-points-v2";
-> >                 opp-shared;
-> >
-> >                 opp00 {
-> >                         opp-hz = /bits/ 64 <208000000>;
-> >                         clock-latency-ns = <500000>;
-> >                         power-domain-opp = <&domain_opp_1>;
+On 26-12-17, 14:29, Rob Herring wrote:
+> On Mon, Dec 18, 2017 at 03:51:30PM +0530, Viresh Kumar wrote:
+
+> > +On some platforms the exact frequency or voltage may be hidden from the OS by
+> > +the firmware and the "opp-hz" or the "opp-microvolt" properties may contain
+> > +magic values that represent the frequency or voltage in a firmware dependent
+> > +way, for example an index of an array in the firmware.
 > 
-> What is this? opp00 here is not a device. One OPP should not point to
-> another. "power-domain-opp" is only supposed to appear in devices
-> alongside power-domains properties.
+> I'm still not convinced this is a good idea.
 
-There are two type of devices:
+You were kind-of a few days back :)
 
-A.) With fixed performance state requirements and they will have the
-new "required-opp" property in the device node itself as you said.
+lkml.kernel.org/r/CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org
 
-B.) Devices which can do DVFS (CPU, MMC, LCD, etc) and those may need
-a different performance state of the domain for their individual OPPs
-and so we can't have this property in the device all the time.
+So here is the deal:
 
-Does this make sense ?
+- I proposed "domain-performance-state" property for this stuff
+  initially.
+- But Kevin didn't like that and proposed reusing "opp-hz" and
+  "opp-microvolt", which we all agreed to multiple times..
+- And we are back to the same discussion now and its painful and time
+  killing for all of us.
+
+TBH, I don't have too strong preferences about any of the suggestions
+you guys have and I need you guys to tell me what binding changes to
+do here and I will do that.
+
+> If you have firmware 
+> partially managing things, then I think we should have platform specific 
+> bindings or drivers. 
+
+What about the initial idea then, like "performance-state" for the
+power domains ? All platforms will anyway replicate that binding only.
+
+> This is complex enough I'm not taking silence from Stephen as an okay.
+
+Sure, but I am not sure how to make him speak :)
 
 -- 
 viresh
