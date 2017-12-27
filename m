@@ -1,107 +1,84 @@
-From: Tony Lindgren <tony@atomide.com>
-Subject: Re: [RFC PATCH v11 4/5] PCI / PM: Add support for the PCIe WAKE#
+From: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH v12 4/5] PCI / PM: Add support for the PCIe WAKE#
  signal for OF
-Date: Wed, 27 Dec 2017 07:08:00 -0800
-Message-ID: <20171227150800.GF3875@atomide.com>
-References: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
- <9593014.U0c2JQdoEZ@aspire.rjw.lan>
- <5A41A0A7.5070605@rock-chips.com>
- <5491520.JsEYlZiECc@aspire.rjw.lan>
+Date: Wed, 27 Dec 2017 09:30:22 -0600
+Message-ID: <CAL_JsqJssPABjoRM-XAnuN_Xd2-sHoFifJNrRDdk_ruQ0DRw6A@mail.gmail.com>
+References: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
+ <20171226023646.17722-5-jeffy.chen@rock-chips.com> <20171226235607.4rgp4ebrrktt6d56@rob-hp-laptop>
+ <5A42F847.5060305@rock-chips.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from muru.com ([72.249.23.125]:33512 "EHLO muru.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751115AbdL0PIF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 27 Dec 2017 10:08:05 -0500
-Content-Disposition: inline
-In-Reply-To: <5491520.JsEYlZiECc@aspire.rjw.lan>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <5A42F847.5060305-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Shawn Lin <shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: JeffyChen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, briannorris@chromium.org, dianders@chromium.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>
 
-* Rafael J. Wysocki <rjw@rjwysocki.net> [171227 01:00]:
-> On Tuesday, December 26, 2017 2:06:47 AM CET JeffyChen wrote:
-> > Hi Rafael,
-> > 
-> > Thanks for your reply :)
-> > 
-> > On 12/26/2017 08:11 AM, Rafael J. Wysocki wrote:
-> > >> >+
-> > >> >+	dn = pci_device_to_OF_node(ppdev);
-> > >> >+	if (!dn)
-> > >> >+		return 0;
-> > >> >+
-> > >> >+	irq = of_irq_get_byname(dn, "wakeup");
-> > > Why is this a property of the bridge and not of the device itself?
-> >
-> > That is suggested by Brian, because in that way, the wakeup pin would 
-> > not "tied to what exact device is installed (or no device, if it's a slot)."
-> 
-> But I don't think it works when there are two devices using different WAKE#
-> interrupt lines under the same bridge.  Or how does it work then?
+On Tue, Dec 26, 2017 at 7:32 PM, JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org> wrote:
+> Hi Rob,
+>
+> Thanks for your reply.
+>
+> On 12/27/2017 07:56 AM, Rob Herring wrote:
+>>>
+>>> >
+>>> >  drivers/of/of_pci_irq.c  | 49 +++++++++++++++++++++++++++++++
+>>
+>> Please move this to drivers/pci/of.c (or perhaps create pci/of_irq.c).
+>>
+>>> >  drivers/pci/Makefile     |  1 +
+>>> >  drivers/pci/pci-driver.c | 10 +++++++
+>>> >  drivers/pci/pci-of.c     | 75
+>>> > ++++++++++++++++++++++++++++++++++++++++++++++++
+>>
+>> We already have drivers/pci/of.c. It's not clear what the difference is
+>> from the filenames. Either merge with of.c or perhaps of-pm.c.
+>
+>
+> this new file does something similar to the pci-acpi.c and pci-mid.c..
 
-It won't work currently for multiple devices but adding more than
-one wakeriq per device is doable. And I think we will have other
-cases where multiple wakeirqs are connected to a single device, so
-that issue should be sorted out sooner or later.
+pci-acpi.c has similar things to pci/of.c. The naming is just not consistent.
 
-And if requesting wakeirq for the PCI WAKE# lines at the PCI
-controller does the job, then maybe that's all we need to start with.
+Also, I plan to move the rest of drivers/of/of_pci* to drivers/pci.
 
-Then in addition to that, we could do the following to allow
-PCI devices to request the wakeirq from the PCI controller:
+> and i am agree the naming is not clear, maybe we can rename both of those
+> files to something like pci-pm-***.c?
 
-1. PCI controller or framework implements a chained irq for
-   the WAKE# lines assuming it can mask/unmask the WAKE# lines
+At least pci-acpi.c is more than just PM functions, so that doesn't
+make sense. Given that all the ACPI related functions are in 1 file,
+we should do the same for DT.
 
-2. PCI devices then can just request the wakeirq from the PCI
-   controller
+>
+> Hi Rafael, do you think this would make sense?
+>
+>
 
-And that's about it. Optionally we could leave out the dependency
-to having PCI devices implement PM runtime and just resume the
-parent (PCI controller) if PCI devices has not implemented
-PM runtime.
+[...]
 
-> > >> >+	if (irq == -EPROBE_DEFER)
-> > > Braces here, please.
-> > ok, will fix in the next version.
-> > 
-> > >
-> > >> >+		return irq;
-> > >> >+	/* Ignore other errors, since a missing wakeup is non-fatal. */
-> > >> >+	else if (irq < 0) {
-> > >> >+		dev_info(&pdev->dev, "cannot get wakeup interrupt: %d\n", irq);
-> > >> >+		return 0;
-> > >> >+	}
-> > >> >+
-> > >> >+	device_init_wakeup(&pdev->dev, true);
-> > > Why do you call this before dev_pm_set_dedicated_wake_irq()?
-> >
-> > hmmm, i thought so too, but it turns out the dedicated wake irq 
-> > framework requires device_init_wakeup(dev, true) before attach the wake irq:
-> > 
-> > int device_wakeup_attach_irq(struct device *dev,
-> >                               struct wake_irq *wakeirq)
-> > {
-> >          struct wakeup_source *ws;
-> > 
-> >          ws = dev->power.wakeup;
-> >          if (!ws) {
-> >                  dev_err(dev, "forgot to call device_init_wakeup?\n");
-> >                  return -EINVAL;
-> > 
-> 
-> Well, that's a framework issue, fair enough.
-> 
-> That said, what if user space removes the wakeup source from under you
-> concurrently via sysfs?  Tony?
+>>> >+static int __init of_pci_init(void)
+>>> >+{
+>>> >+      if (!acpi_disabled)
+>>> >+              return 0;
+>>> >+
+>>> >+      pci_set_platform_pm(&of_pci_platform_pm);
+>>
+>> I guess no DT based system will override this?
+>
+>
+> i think the !acpi_disabled means acpi been disabled or CONFIG_ACPI is
+> undefined.
+>
+> and pci-acpi.c would only work when we have CONFIG_ACPI.
+>
+> but i have no idea about pci-mid.c or would it possible to have more
+> platform pm ops in the future...maybe we should add some dependency in the
+> Kconfig?
 
-Hmm sounds racy, need to take a look. I think the only reason
-to have the wakeirq pointer there was to save memory. It might
-make sense to remove the wakeirq dependency here.
+It's probably fine given there are only 2 other implementations so far.
 
-Regards,
-
-Tony
+Rob
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
