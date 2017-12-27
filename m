@@ -1,152 +1,107 @@
-From: Sricharan R <sricharan@codeaurora.org>
-Subject: Re: [PATCH v5 15/15] devicetree: bindings: Document qcom,pvs
-Date: Wed, 27 Dec 2017 15:50:52 +0530
-Message-ID: <4fdb2ab5-1dca-c44c-b647-3388a8ecea81@codeaurora.org>
-References: <1513698900-10638-1-git-send-email-sricharan@codeaurora.org>
- <1513698900-10638-16-git-send-email-sricharan@codeaurora.org>
- <20171220032614.GQ19815@vireshk-i7>
- <b0d8147a-46e1-0787-ae37-9c1ef957d190@codeaurora.org>
- <20171220211817.mpkkj747blr4qkqm@rob-hp-laptop>
- <864b6cfd-d3eb-d876-82e2-ebc79c5a6956@codeaurora.org>
- <CAL_JsqJTBgr2ctyRXGyzkRLztoy=qtvEh3AC79RjENBS=6yQRg@mail.gmail.com>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [RFC PATCH v11 4/5] PCI / PM: Add support for the PCIe WAKE#
+ signal for OF
+Date: Wed, 27 Dec 2017 07:08:00 -0800
+Message-ID: <20171227150800.GF3875@atomide.com>
+References: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
+ <9593014.U0c2JQdoEZ@aspire.rjw.lan>
+ <5A41A0A7.5070605@rock-chips.com>
+ <5491520.JsEYlZiECc@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from smtp.codeaurora.org ([198.145.29.96]:44426 "EHLO
-        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751864AbdL0KVB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Dec 2017 05:21:01 -0500
-In-Reply-To: <CAL_JsqJTBgr2ctyRXGyzkRLztoy=qtvEh3AC79RjENBS=6yQRg@mail.gmail.com>
-Content-Language: en-US
+Received: from muru.com ([72.249.23.125]:33512 "EHLO muru.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751115AbdL0PIF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 27 Dec 2017 10:08:05 -0500
+Content-Disposition: inline
+In-Reply-To: <5491520.JsEYlZiECc@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@armlinux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, David Brown <david.brown@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Andy Gross <andy.gross@linaro.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: JeffyChen <jeffy.chen@rock-chips.com>, linux-kernel@vger.kernel.org, bhelgaas@google.com, linux-pm@vger.kernel.org, shawn.lin@rock-chips.com, briannorris@chromium.org, dianders@chromium.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>
 
-Hi Rob,
-
-On 12/26/2017 11:06 PM, Rob Herring wrote:
-> On Thu, Dec 21, 2017 at 5:53 AM, Sricharan R <sricharan@codeaurora.org> wrote:
->> Hi Rob,
->>
->> On 12/21/2017 2:48 AM, Rob Herring wrote:
->>> On Wed, Dec 20, 2017 at 11:55:33AM +0530, Sricharan R wrote:
->>>> Hi Viresh,
->>>>
->>>> On 12/20/2017 8:56 AM, Viresh Kumar wrote:
->>>>> On 19-12-17, 21:25, Sricharan R wrote:
->>>>>> +  cpu@0 {
->>>>>> +          compatible = "qcom,krait";
->>>>>> +          enable-method = "qcom,kpss-acc-v1";
->>>>>> +          device_type = "cpu";
->>>>>> +          reg = <0>;
->>>>>> +          qcom,acc = <&acc0>;
->>>>>> +          qcom,saw = <&saw0>;
->>>>>> +          clocks = <&kraitcc 0>;
->>>>>> +          clock-names = "cpu";
->>>>>> +          cpu-supply = <&smb208_s2a>;
->>>>>> +          operating-points-v2 = <&cpu_opp_table>;
->>>>>> +  };
->>>>>> +
->>>>>> +  qcom,pvs {
->>>>>> +          qcom,pvs-format-a;
->>>>>> +  };
->>>>>
->>>>> Not sure what Rob is going to say on that :)
->>>>>
->>>>
->>>>  Yes. Would be good to know the best way.
->>>
->>> Seems like this should be a property of an efuse node either implied by
->>> the compatible or a separate property. What determines format A vs. B?
->>>
->>
->>  Yes, this efuse registers are part of the eeprom (qfprom) tied to the soc.
->>  So this property (details like bitfields and register offsets that it represents)
->>  can be put soc specific and nvmem apis can be used to read
->>  the registers. Does something like below look ok ?
->>
->>  qcom,pvs {
->>         compatible = "qcom,pvs-ipq8064";
->>         nvmem-cells = <&pvs_efuse>;
->>  }
+* Rafael J. Wysocki <rjw@rjwysocki.net> [171227 01:00]:
+> On Tuesday, December 26, 2017 2:06:47 AM CET JeffyChen wrote:
+> > Hi Rafael,
+> > 
+> > Thanks for your reply :)
+> > 
+> > On 12/26/2017 08:11 AM, Rafael J. Wysocki wrote:
+> > >> >+
+> > >> >+	dn = pci_device_to_OF_node(ppdev);
+> > >> >+	if (!dn)
+> > >> >+		return 0;
+> > >> >+
+> > >> >+	irq = of_irq_get_byname(dn, "wakeup");
+> > > Why is this a property of the bridge and not of the device itself?
+> >
+> > That is suggested by Brian, because in that way, the wakeup pin would 
+> > not "tied to what exact device is installed (or no device, if it's a slot)."
 > 
-> Why do you need this node? It doesn't look like it corresponds to a
-> h/w block. It looks like you are just creating it to instantiate a
-> driver.
+> But I don't think it works when there are two devices using different WAKE#
+> interrupt lines under the same bridge.  Or how does it work then?
+
+It won't work currently for multiple devices but adding more than
+one wakeriq per device is doable. And I think we will have other
+cases where multiple wakeirqs are connected to a single device, so
+that issue should be sorted out sooner or later.
+
+And if requesting wakeirq for the PCI WAKE# lines at the PCI
+controller does the job, then maybe that's all we need to start with.
+
+Then in addition to that, we could do the following to allow
+PCI devices to request the wakeirq from the PCI controller:
+
+1. PCI controller or framework implements a chained irq for
+   the WAKE# lines assuming it can mask/unmask the WAKE# lines
+
+2. PCI devices then can just request the wakeirq from the PCI
+   controller
+
+And that's about it. Optionally we could leave out the dependency
+to having PCI devices implement PM runtime and just resume the
+parent (PCI controller) if PCI devices has not implemented
+PM runtime.
+
+> > >> >+	if (irq == -EPROBE_DEFER)
+> > > Braces here, please.
+> > ok, will fix in the next version.
+> > 
+> > >
+> > >> >+		return irq;
+> > >> >+	/* Ignore other errors, since a missing wakeup is non-fatal. */
+> > >> >+	else if (irq < 0) {
+> > >> >+		dev_info(&pdev->dev, "cannot get wakeup interrupt: %d\n", irq);
+> > >> >+		return 0;
+> > >> >+	}
+> > >> >+
+> > >> >+	device_init_wakeup(&pdev->dev, true);
+> > > Why do you call this before dev_pm_set_dedicated_wake_irq()?
+> >
+> > hmmm, i thought so too, but it turns out the dedicated wake irq 
+> > framework requires device_init_wakeup(dev, true) before attach the wake irq:
+> > 
+> > int device_wakeup_attach_irq(struct device *dev,
+> >                               struct wake_irq *wakeirq)
+> > {
+> >          struct wakeup_source *ws;
+> > 
+> >          ws = dev->power.wakeup;
+> >          if (!ws) {
+> >                  dev_err(dev, "forgot to call device_init_wakeup?\n");
+> >                  return -EINVAL;
+> > 
 > 
->>  qfprom: qfprom@700000 {
->>         compatible      = "qcom,qfprom";
+> Well, that's a framework issue, fair enough.
 > 
-> Either this or...
-> 
->>         reg             = <0x00700000 0x1000>;
->>         #address-cells  = <1>;
->>         #size-cells     = <1>;
->>         ranges;
->>         pvs_efuse: pvs {
-> 
-> a compatible here should be specific enough so the OS can know what
-> the bits are.
+> That said, what if user space removes the wakeup source from under you
+> concurrently via sysfs?  Tony?
 
- Infact the above "qcom,pvs" node is required mainly to act as a consumer
- for the nvmem data provider ("qcom,qfprom") (using nvmem-cells = <&pvs_efuse>)
- Then "qfprom" can be made to contain a "format_a" or "format_b" specific cell.
-
- So all that is needed is, nvmem-cells = <&pvs_efuse_phandle> needs to be available
- somewhere. The requirement is similar what is now done by "operating-points-v2-ti-cpu"
- and the ti-cpufreq.c. There "operating-points-v2-ti-cpu" node, contains the syscon
- register to read the efuse values. Similarly does defining a new 
- "operating-points-v2-krait-cpu" which would contain the nvmem-cells property look ok ? 
- This would avoid defining a new qcom,pvs node.
- 
-	cpu@0 {
-		compatible = "qcom,krait";
-		enable-method = "qcom,kpss-acc-v1";
-		device_type = "cpu";
-		reg = <0>;
-		qcom,acc = <&acc0>;
-		qcom,saw = <&saw0>;
-		clocks = <&kraitcc 0>;
-		clock-names = "cpu";
-		cpu-supply = <&smb208_s2a>;
-		operating-points-v2 = <&cpu_opp_table>;
-	};
-
-	cpu_opp_table: opp_table {
-		compatible = "operating-points-v2-krait-cpu";
-
-		nvmem-cells = <&pvs_efuse_format_a>;
-		/*
-		 * Missing opp-shared property means CPUs switch DVFS states
-		 * independently.
-		 */
-
-		opp-1400000000 {
-			opp-hz = /bits/ 64 <1400000000>;
-			opp-microvolt-speed0-pvs0-v0 = <1250000>;
-			opp-microvolt-speed0-pvs1-v0 = <1175000>;
-			opp-microvolt-speed0-pvs2-v0 = <1125000>;
-			opp-microvolt-speed0-pvs3-v0 = <1050000>;
-
-		};
-		...
-	}
- 
-	qfprom: qfprom@700000 {
-		compatible      = "qcom,qfprom";
-		reg             = <0x00700000 0x1000>;
-		#address-cells  = <1>;
-		#size-cells     = <1>;
-		ranges;
-		pvs_efuse_format_a: pvs {
-			reg = <0xc0 0x8>;
-		};
-	}
+Hmm sounds racy, need to take a look. I think the only reason
+to have the wakeirq pointer there was to save memory. It might
+make sense to remove the wakeirq dependency here.
 
 Regards,
- Sricharan
 
--- 
-"QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+Tony
