@@ -1,63 +1,61 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH]cpuidle: preventive check in cpuidle_select against crash
-Date: Wed, 27 Dec 2017 03:30:02 +0100
-Message-ID: <CAJZ5v0jH=DqUSFT8yAt+M=_N0Qn-ou0dPmqK7DwG5S22jZ1R+A@mail.gmail.com>
-References: <20171226072626.GA4153@gaurav.jindal> <CAJZ5v0g36rdGVDT==CMCsnDFQ6ph2PxOyF0mgdMSfP4Wiv74TQ@mail.gmail.com>
- <20171227015722.GA3413@gaurav.jindal>
+From: Chen-Yu Tsai <wens@csie.org>
+Subject: Re: [PATCH v2 13/16] power: supply: axp288_fuel_gauge: Rework get_status()
+Date: Wed, 27 Dec 2017 11:15:00 +0800
+Message-ID: <CAGb2v66=N1Xn4EWQCHw7M08jCZ95u_qdTekp-Oo+vrBSqLrJcw@mail.gmail.com>
+References: <20171226125914.10235-1-hdegoede@redhat.com> <20171226125914.10235-13-hdegoede@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f66.google.com ([209.85.218.66]:38414 "EHLO
-        mail-oi0-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751225AbdL0CaD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Dec 2017 21:30:03 -0500
-In-Reply-To: <20171227015722.GA3413@gaurav.jindal>
+Received: from smtp.csie.ntu.edu.tw ([140.112.30.61]:39620 "EHLO
+        smtp.csie.ntu.edu.tw" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751225AbdL0DP0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 Dec 2017 22:15:26 -0500
+Received: from mail-wm0-f45.google.com (mail-wm0-f45.google.com [74.125.82.45])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: b93043)
+        by smtp.csie.ntu.edu.tw (Postfix) with ESMTPSA id 36B8F27BE5
+        for <linux-pm@vger.kernel.org>; Wed, 27 Dec 2017 11:15:24 +0800 (CST)
+Received: by mail-wm0-f45.google.com with SMTP id 64so37243251wme.3
+        for <linux-pm@vger.kernel.org>; Tue, 26 Dec 2017 19:15:24 -0800 (PST)
+In-Reply-To: <20171226125914.10235-13-hdegoede@redhat.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: gaurav jindal <gauravjindal1104@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 
-On Wed, Dec 27, 2017 at 2:57 AM, gaurav jindal
-<gauravjindal1104@gmail.com> wrote:
-> On Wed, Dec 27, 2017 at 01:42:58AM +0100, Rafael J. Wysocki wrote:
->> On Tue, Dec 26, 2017 at 8:26 AM, gaurav jindal
->> <gauravjindal1104@gmail.com> wrote:
->> > When selecting the idle state using cpuidle_select, there is no
->> > check on cpuidle_curr_governor. In cpuidle_switch_governor,
->> > cpuidle_currr_governor can be set to NULL to specify "disabled".
->>
->> How exactly?
+On Tue, Dec 26, 2017 at 8:59 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Relying on the (dis)charge current reporting for reporting FULL back to
+> userspace does not work really well and often leads to the reported status
+> getting stuck at e.g. 98/99% (the fuelgauge is not perfect) for hours.
 >
-> In cpuidle_switch_governor:
+> What happens is that when the battery is full the axp288 keeps charging it
+> with a very low current. Until it is really really full and once really
+> really full, some inaccuracies in the adc lead to it then sometimes
+> reporting a small discharging rate, even though an external pwr source is
+> used. So we end up with a status of "charging" for hours after the battery
+> is actually already full and sometimes this then flip-flops to discharging.
 >
-> /**
->  * cpuidle_switch_governor - changes the governor
->  * @gov: the new target governor
->  *
->  * NOTE: "gov" can be NULL to specify disabled
->  * Must be called with cpuidle_lock acquired.
->  */
-> int cpuidle_switch_governor(struct cpuidle_governor *gov)
-> {
->         struct cpuidle_device *dev;
+> This commit fixes this by first checking if a valid Vbus is present and if
+> it is present using the fuel-gauge's reported percentage to check for a
+> full battery.
 >
->         if (gov == cpuidle_curr_governor)
->                 return 0;
+> This commit also changes how get_status() determines if the battery is
+> charging or discharging when not reporting it as full. We still use the
+> current direction for this, but instead of reading 4 extra registers for
+> this (2 16 bit regs), simplify things by using the current-direction bit
+> in the power-status register, which already gets read anyways.
 >
->         cpuidle_uninstall_idle_handler();
+> This also reduces the amount of i2c reads to 1 when on battery and 2
+> when a valid Vbus is present.
 >
->         if (cpuidle_curr_governor) {
->                 list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
->                         cpuidle_disable_device(dev);
->         }
->
->         cpuidle_curr_governor = gov;
->
-> This allows to set the cpuidle_switch_governor as NULL. Although there is no
-> current code flow leading here, but it has a potential for bug in future. So
-> may be better to have prevention.
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-Or maybe not.
+This looks better. Thanks.
 
-Why don't you make cpuidle_switch_governor() check the argument
-against NULL instead?
+Reviewed-by: Chen-Yu Tsai <wens@csie.org>
+
+I do have one minor question though: What should the status be if there
+was no battery connected? Or is that not an issue?
+
+ChenYu
