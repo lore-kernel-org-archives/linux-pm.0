@@ -1,43 +1,107 @@
 From: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH 20/45] drivers: thermal: remove duplicate includes
-Date: Wed, 27 Dec 2017 10:09:34 +0800
-Message-ID: <1514340574.2755.5.camel@intel.com>
-References: <1512578405-4904-1-git-send-email-pravin.shedge4linux@gmail.com>
+Subject: Re: [PATCH] thermal: power_allocator: fix one race condition issue
+ for thermal_instances list
+Date: Wed, 27 Dec 2017 10:14:31 +0800
+Message-ID: <1514340871.2755.6.camel@intel.com>
+References: <1514287346-6224-1-git-send-email-yizeng@asrmicro.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1512578405-4904-1-git-send-email-pravin.shedge4linux@gmail.com>
+In-Reply-To: <1514287346-6224-1-git-send-email-yizeng@asrmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Pravin Shedge <pravin.shedge4linux@gmail.com>, linux-pm@vger.kernel.org
-Cc: edubezval@gmail.com, linux-kernel@vger.kernel.org
+To: Yi Zeng <yizeng@asrmicro.com>, edubezval@gmail.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, 2017-12-06 at 22:10 +0530, Pravin Shedge wrote:
-> These duplicate includes have been found with
-> scripts/checkincludes.pl but
-> they have been removed manually to avoid removing false positives.
+On Tue, 2017-12-26 at 19:22 +0800, Yi Zeng wrote:
+> When invoking allow_maximum_power and traverse tz->thermal_instances,
+> we should grab thermal_zone_device->lock to avoid race condition. For
+> example, during the system reboot, if the mali GPU device implements
+> device shutdown callback and unregister GPU devfreq cooling device,
+> the deleted list head may be accessed to cause panic, as the
+> following
+> log shows:
 > 
-> Signed-off-by: Pravin Shedge <pravin.shedge4linux@gmail.com>
+> [   33.551070] c3 25 (kworker/3:0) Unable to handle kernel paging
+> request at virtual address dead000000000070
+> [   33.566708] c3 25 (kworker/3:0) pgd = ffffffc0ed290000
+> [   33.572071] c3 25 (kworker/3:0) [dead000000000070]
+> *pgd=00000001ed292003, *pud=00000001ed292003, *pmd=0000000000000000
+> [   33.581515] c3 25 (kworker/3:0) Internal error: Oops: 96000004
+> [#1] PREEMPT SMP
+> [   33.599761] c3 25 (kworker/3:0) CPU: 3 PID: 25 Comm: kworker/3:0
+> Not tainted 4.4.35+ #912
+> [   33.614137] c3 25 (kworker/3:0) Workqueue: events_freezable
+> thermal_zone_device_check
+> [   33.620245] c3 25 (kworker/3:0) task: ffffffc0f32e4200 ti:
+> ffffffc0f32f0000 task.ti: ffffffc0f32f0000
+> [   33.629466] c3 25 (kworker/3:0) PC is at
+> power_allocator_throttle+0x7c8/0x8a4
+> [   33.636609] c3 25 (kworker/3:0) LR is at
+> power_allocator_throttle+0x808/0x8a4
+> [   33.643742] c3 25 (kworker/3:0) pc : [<ffffff8008683dd0>] lr :
+> [<ffffff8008683e10>] pstate: 20000145
+> [   33.652874] c3 25 (kworker/3:0) sp : ffffffc0f32f3bb0
+> [   34.468519] c3 25 (kworker/3:0) Process kworker/3:0 (pid: 25,
+> stack limit = 0xffffffc0f32f0020)
+> [   34.477220] c3 25 (kworker/3:0) Stack: (0xffffffc0f32f3bb0 to
+> 0xffffffc0f32f4000)
+> [   34.819822] c3 25 (kworker/3:0) Call trace:
+> [   34.824021] c3 25 (kworker/3:0) Exception stack(0xffffffc0f32f39c0
+> to 0xffffffc0f32f3af0)
+> [   34.924993] c3 25 (kworker/3:0) [<ffffff8008683dd0>]
+> power_allocator_throttle+0x7c8/0x8a4
+> [   34.933184] c3 25 (kworker/3:0) [<ffffff80086807f4>]
+> handle_thermal_trip.part.25+0x70/0x224
+> [   34.941545] c3 25 (kworker/3:0) [<ffffff8008680a68>]
+> thermal_zone_device_update+0xc0/0x20c
+> [   34.949818] c3 25 (kworker/3:0) [<ffffff8008680bd4>]
+> thermal_zone_device_check+0x20/0x2c
+> [   34.957924] c3 25 (kworker/3:0) [<ffffff80080b93a4>]
+> process_one_work+0x168/0x458
+> [   34.965414] c3 25 (kworker/3:0) [<ffffff80080ba068>]
+> worker_thread+0x13c/0x4b4
+> [   34.972650] c3 25 (kworker/3:0) [<ffffff80080c0a4c>]
+> kthread+0xe8/0xfc
+> [   34.979187] c3 25 (kworker/3:0) [<ffffff8008084e90>]
+> ret_from_fork+0x10/0x40
+> [   34.986244] c3 25 (kworker/3:0) Code: f9405e73 eb1302bf d102e273
+> 54ffc460 (b9402a61)
+> [   34.994339] c3 25 (kworker/3:0) ---[ end trace 32057901e3b7e1db ]-
+> --
+> 
+> Signed-off-by: Yi Zeng <yizeng@asrmicro.com>
 
 applied.
 
 thanks,
 rui
 > ---
->  drivers/thermal/of-thermal.c | 1 -
->  1 file changed, 1 deletion(-)
+>  drivers/thermal/power_allocator.c | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-
-> thermal.c
-> index d04ec3b..e09f035 100644
-> --- a/drivers/thermal/of-thermal.c
-> +++ b/drivers/thermal/of-thermal.c
-> @@ -30,7 +30,6 @@
->  #include <linux/err.h>
->  #include <linux/export.h>
->  #include <linux/string.h>
-> -#include <linux/thermal.h>
+> diff --git a/drivers/thermal/power_allocator.c
+> b/drivers/thermal/power_allocator.c
+> index b4d3116..3055f9a 100644
+> --- a/drivers/thermal/power_allocator.c
+> +++ b/drivers/thermal/power_allocator.c
+> @@ -523,6 +523,7 @@ static void allow_maximum_power(struct
+> thermal_zone_device *tz)
+>  	struct thermal_instance *instance;
+>  	struct power_allocator_params *params = tz->governor_data;
 >  
->  #include "thermal_core.h"
+> +	mutex_lock(&tz->lock);
+>  	list_for_each_entry(instance, &tz->thermal_instances,
+> tz_node) {
+>  		if ((instance->trip != params-
+> >trip_max_desired_temperature) ||
+>  		    (!cdev_is_power_actor(instance->cdev)))
+> @@ -534,6 +535,7 @@ static void allow_maximum_power(struct
+> thermal_zone_device *tz)
+>  		mutex_unlock(&instance->cdev->lock);
+>  		thermal_cdev_update(instance->cdev);
+>  	}
+> +	mutex_unlock(&tz->lock);
+>  }
 >  
+>  /**
