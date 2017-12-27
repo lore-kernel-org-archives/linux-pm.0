@@ -1,74 +1,32 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH] bq24190: Simplify code in property_is_writeable
-Date: Wed, 27 Dec 2017 10:20:42 +0100
-Message-ID: <20171227092041.GA14507@amd>
+From: "Sra. Angel Rania" <sra.angelrania83@gmail.com>
+Subject: Re: You will definetely be interested...
+Date: Wed, 27 Dec 2017 10:16:53 +0000
+Message-ID: <CAKx+QTsL6tbExobjfKn2Kvd+VURLikaeJ+JuuxF8mixxBiriEQ__18308.5221135572$1514369772$gmane$org@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-        protocol="application/pgp-signature"; boundary="Dxnq1zWXvFF0Q93v"
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-To: pali.rohar@gmail.com, sre@kernel.org, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, patrikbachan@gmail.com, serge@hallyn.com, abcloriens@gmail.com, clayton@craftyguy.net, martijn@brixit.nl, sakari.ailus@linux.intel.com, Filip =?utf-8?Q?Matijevi=C4=87?= <filip.matijevic.pz@gmail.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qt0-f194.google.com ([209.85.216.194]:34808 "EHLO
+        mail-qt0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751911AbdL0KRB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 Dec 2017 05:17:01 -0500
+Received: by mail-qt0-f194.google.com with SMTP id 33so47429005qtv.1
+        for <linux-pm@vger.kernel.org>; Wed, 27 Dec 2017 02:17:00 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
+Hi Dear,
 
---Dxnq1zWXvFF0Q93v
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Reading your profile has given me courage in search of a reasponsable
+and trust worthy Fellow. The past has treated me so awfully but now I
+am ready to move on despite of my health condition. I will like to
+have a sincere and important discussion with you that will be in your
+favor likewise to you and your environment especially to your close
+family. Endeavor to reply me and I have attached my picture in case
+you long to know who emailed you. I will be waiting to hear from you
+as soon as possble.
+Thanks for paying attention to my mail and will appreciate so much if
+I receive a reply from you for understable details.
 
-Simplify function that should be trivial.
+Thanks,
 
-Signed-off-by: Pavel machek <pavel@ucw.cz>
-
-diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/supply/=
-bq24190_charger.c
-index 35ff406..4ea8f0a 100644
---- a/drivers/power/supply/bq24190_charger.c
-+++ b/drivers/power/supply/bq24190_charger.c
-@@ -1193,8 +1193,6 @@ static int bq24190_charger_set_property(struct power_=
-supply *psy,
- static int bq24190_charger_property_is_writeable(struct power_supply *psy,
- 		enum power_supply_property psp)
- {
--	int ret;
--
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_ONLINE:
- 	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
-@@ -1202,13 +1200,10 @@ static int bq24190_charger_property_is_writeable(st=
-ruct power_supply *psy,
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
- 	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
--		ret =3D 1;
--		break;
-+		return 1;
- 	default:
--		ret =3D 0;
-+		return 0;
- 	}
--
--	return ret;
- }
-=20
- static void bq24190_input_current_limit_work(struct work_struct *work)
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---Dxnq1zWXvFF0Q93v
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlpDZekACgkQMOfwapXb+vLTcgCfV+9s5i7jEKZbPc9yCPqfQe4X
-MdsAoKinRoq6w0LGo9r5UZBbiJoT3OpO
-=qkqz
------END PGP SIGNATURE-----
-
---Dxnq1zWXvFF0Q93v--
+Mrs. Rania Hassan
