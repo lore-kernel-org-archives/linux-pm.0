@@ -1,148 +1,60 @@
-From: Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v5 15/15] devicetree: bindings: Document qcom,pvs
-Date: Wed, 27 Dec 2017 15:58:36 -0600
-Message-ID: <CAL_Jsq+Jfsr3xhR=uB6zBNMA-NerzugFQa0uJ81O4QW-iTNRaA@mail.gmail.com>
-References: <1513698900-10638-1-git-send-email-sricharan@codeaurora.org>
- <1513698900-10638-16-git-send-email-sricharan@codeaurora.org>
- <20171220032614.GQ19815@vireshk-i7> <b0d8147a-46e1-0787-ae37-9c1ef957d190@codeaurora.org>
- <20171220211817.mpkkj747blr4qkqm@rob-hp-laptop> <864b6cfd-d3eb-d876-82e2-ebc79c5a6956@codeaurora.org>
- <CAL_JsqJTBgr2ctyRXGyzkRLztoy=qtvEh3AC79RjENBS=6yQRg@mail.gmail.com> <4fdb2ab5-1dca-c44c-b647-3388a8ecea81@codeaurora.org>
+From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC PATCH v12 4/5] PCI / PM: Add support for the PCIe WAKE#
+ signal for OF
+Date: Thu, 28 Dec 2017 01:32:25 +0100
+Message-ID: <CAJZ5v0gVW12=10JfcQeOD+s6S1GqkF7KFz3k1rp3Up3dJDgaBg@mail.gmail.com>
+References: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
+ <20171226023646.17722-5-jeffy.chen@rock-chips.com> <20171226235607.4rgp4ebrrktt6d56@rob-hp-laptop>
+ <5A42F847.5060305@rock-chips.com> <CAL_JsqJssPABjoRM-XAnuN_Xd2-sHoFifJNrRDdk_ruQ0DRw6A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-In-Reply-To: <4fdb2ab5-1dca-c44c-b647-3388a8ecea81@codeaurora.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Sricharan R <sricharan@codeaurora.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Michael Turquette <mturquette@baylibre.com>, linux-pm@vger.kernel.org, Stephen Boyd <sboyd@codeaurora.org>, Russell King <linux@armlinux.org.uk>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, David Brown <david.brown@linaro.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Andy Gross <andy.gross@linaro.org>, "open list:ARM/QUALCOMM SUPPORT" <linux-soc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAL_JsqJssPABjoRM-XAnuN_Xd2-sHoFifJNrRDdk_ruQ0DRw6A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Shawn Lin <shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Wed, Dec 27, 2017 at 4:20 AM, Sricharan R <sricharan@codeaurora.org> wrote:
-> Hi Rob,
->
-> On 12/26/2017 11:06 PM, Rob Herring wrote:
->> On Thu, Dec 21, 2017 at 5:53 AM, Sricharan R <sricharan@codeaurora.org> wrote:
->>> Hi Rob,
->>>
->>> On 12/21/2017 2:48 AM, Rob Herring wrote:
->>>> On Wed, Dec 20, 2017 at 11:55:33AM +0530, Sricharan R wrote:
->>>>> Hi Viresh,
->>>>>
->>>>> On 12/20/2017 8:56 AM, Viresh Kumar wrote:
->>>>>> On 19-12-17, 21:25, Sricharan R wrote:
->>>>>>> +  cpu@0 {
->>>>>>> +          compatible = "qcom,krait";
->>>>>>> +          enable-method = "qcom,kpss-acc-v1";
->>>>>>> +          device_type = "cpu";
->>>>>>> +          reg = <0>;
->>>>>>> +          qcom,acc = <&acc0>;
->>>>>>> +          qcom,saw = <&saw0>;
->>>>>>> +          clocks = <&kraitcc 0>;
->>>>>>> +          clock-names = "cpu";
->>>>>>> +          cpu-supply = <&smb208_s2a>;
->>>>>>> +          operating-points-v2 = <&cpu_opp_table>;
->>>>>>> +  };
->>>>>>> +
->>>>>>> +  qcom,pvs {
->>>>>>> +          qcom,pvs-format-a;
->>>>>>> +  };
->>>>>>
->>>>>> Not sure what Rob is going to say on that :)
->>>>>>
->>>>>
->>>>>  Yes. Would be good to know the best way.
+On Wed, Dec 27, 2017 at 4:30 PM, Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
+> On Tue, Dec 26, 2017 at 7:32 PM, JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org> wrote:
+>> Hi Rob,
+>>
+>> Thanks for your reply.
+>>
+>> On 12/27/2017 07:56 AM, Rob Herring wrote:
 >>>>
->>>> Seems like this should be a property of an efuse node either implied by
->>>> the compatible or a separate property. What determines format A vs. B?
->>>>
+>>>> >
+>>>> >  drivers/of/of_pci_irq.c  | 49 +++++++++++++++++++++++++++++++
 >>>
->>>  Yes, this efuse registers are part of the eeprom (qfprom) tied to the soc.
->>>  So this property (details like bitfields and register offsets that it represents)
->>>  can be put soc specific and nvmem apis can be used to read
->>>  the registers. Does something like below look ok ?
+>>> Please move this to drivers/pci/of.c (or perhaps create pci/of_irq.c).
 >>>
->>>  qcom,pvs {
->>>         compatible = "qcom,pvs-ipq8064";
->>>         nvmem-cells = <&pvs_efuse>;
->>>  }
+>>>> >  drivers/pci/Makefile     |  1 +
+>>>> >  drivers/pci/pci-driver.c | 10 +++++++
+>>>> >  drivers/pci/pci-of.c     | 75
+>>>> > ++++++++++++++++++++++++++++++++++++++++++++++++
+>>>
+>>> We already have drivers/pci/of.c. It's not clear what the difference is
+>>> from the filenames. Either merge with of.c or perhaps of-pm.c.
 >>
->> Why do you need this node? It doesn't look like it corresponds to a
->> h/w block. It looks like you are just creating it to instantiate a
->> driver.
 >>
->>>  qfprom: qfprom@700000 {
->>>         compatible      = "qcom,qfprom";
->>
->> Either this or...
->>
->>>         reg             = <0x00700000 0x1000>;
->>>         #address-cells  = <1>;
->>>         #size-cells     = <1>;
->>>         ranges;
->>>         pvs_efuse: pvs {
->>
->> a compatible here should be specific enough so the OS can know what
->> the bits are.
+>> this new file does something similar to the pci-acpi.c and pci-mid.c..
 >
->  Infact the above "qcom,pvs" node is required mainly to act as a consumer
->  for the nvmem data provider ("qcom,qfprom") (using nvmem-cells = <&pvs_efuse>)
->  Then "qfprom" can be made to contain a "format_a" or "format_b" specific cell.
+> pci-acpi.c has similar things to pci/of.c. The naming is just not consistent.
 >
->  So all that is needed is, nvmem-cells = <&pvs_efuse_phandle> needs to be available
->  somewhere. The requirement is similar what is now done by "operating-points-v2-ti-cpu"
->  and the ti-cpufreq.c. There "operating-points-v2-ti-cpu" node, contains the syscon
->  register to read the efuse values. Similarly does defining a new
->  "operating-points-v2-krait-cpu" which would contain the nvmem-cells property look ok ?
->  This would avoid defining a new qcom,pvs node.
+> Also, I plan to move the rest of drivers/of/of_pci* to drivers/pci.
+>
+>> and i am agree the naming is not clear, maybe we can rename both of those
+>> files to something like pci-pm-***.c?
+>
+> At least pci-acpi.c is more than just PM functions, so that doesn't
+> make sense. Given that all the ACPI related functions are in 1 file,
+> we should do the same for DT.
 
-Yes, this seems reasonable.
+Agreed.
 
->
->         cpu@0 {
->                 compatible = "qcom,krait";
->                 enable-method = "qcom,kpss-acc-v1";
->                 device_type = "cpu";
->                 reg = <0>;
->                 qcom,acc = <&acc0>;
->                 qcom,saw = <&saw0>;
->                 clocks = <&kraitcc 0>;
->                 clock-names = "cpu";
->                 cpu-supply = <&smb208_s2a>;
->                 operating-points-v2 = <&cpu_opp_table>;
->         };
->
->         cpu_opp_table: opp_table {
->                 compatible = "operating-points-v2-krait-cpu";
->
->                 nvmem-cells = <&pvs_efuse_format_a>;
->                 /*
->                  * Missing opp-shared property means CPUs switch DVFS states
->                  * independently.
->                  */
->
->                 opp-1400000000 {
->                         opp-hz = /bits/ 64 <1400000000>;
->                         opp-microvolt-speed0-pvs0-v0 = <1250000>;
->                         opp-microvolt-speed0-pvs1-v0 = <1175000>;
->                         opp-microvolt-speed0-pvs2-v0 = <1125000>;
->                         opp-microvolt-speed0-pvs3-v0 = <1050000>;
->
->                 };
->                 ...
->         }
->
->         qfprom: qfprom@700000 {
->                 compatible      = "qcom,qfprom";
->                 reg             = <0x00700000 0x1000>;
->                 #address-cells  = <1>;
->                 #size-cells     = <1>;
->                 ranges;
->                 pvs_efuse_format_a: pvs {
->                         reg = <0xc0 0x8>;
->                 };
->         }
->
-> Regards,
->  Sricharan
->
-> --
-> "QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, hosted by The Linux Foundation
+Thanks,
+Rafael
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
