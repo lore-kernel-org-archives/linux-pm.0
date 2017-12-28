@@ -1,78 +1,54 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v10 2/4] pm: add to_power_supply macro to the API
-Date: Thu, 28 Dec 2017 10:19:32 +0200
-Message-ID: <CAHp75VcpuQz4n_wRJ+f-OKf4VAVVhXzKAC+FD0EE52cs+Zv22Q@mail.gmail.com>
-References: <20171223105316.GA4352@thinkpad>
+From: Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Subject: Re: [RFC PATCH v12 4/5] PCI / PM: Add support for the PCIe WAKE#
+ signal for OF
+Date: Thu, 28 Dec 2017 10:47:24 +0200
+Message-ID: <1514450844.7000.305.camel@linux.intel.com>
+References: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
+         <20171226023646.17722-5-jeffy.chen@rock-chips.com>
+         <20171226235607.4rgp4ebrrktt6d56@rob-hp-laptop>
+         <5A42F847.5060305@rock-chips.com>
+         <CAL_JsqJssPABjoRM-XAnuN_Xd2-sHoFifJNrRDdk_ruQ0DRw6A@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <20171223105316.GA4352@thinkpad>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Ognjen Galic <smclt30p@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
+Content-Transfer-Encoding: 7bit
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <CAL_JsqJssPABjoRM-XAnuN_Xd2-sHoFifJNrRDdk_ruQ0DRw6A-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Shawn Lin <shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Dec 23, 2017 at 12:53 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
-> This patch adds the to_power_supply macro to upcast
-> a device to a power_supply struct.
->
-> This is needed because the same piece of code using
-> container_of is used in various other places, so we
-> abstract away such low-level operations via a macro.
+On Wed, 2017-12-27 at 09:30 -0600, Rob Herring wrote:
+> On Tue, Dec 26, 2017 at 7:32 PM, JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+> wrote:
 
-> ---
+> this new file does something similar to the pci-acpi.c and pci-mid.c..
 
-This is wrong! You have to use *existing* --- line below. Otherwise
-all mail parsers will cut this out including your SoB tag.
+> pci-acpi.c has similar things to pci/of.c. The naming is just not
+> consistent.
 
->
-> v9:
-> * Split the pm changes from the thinkpad_acpi patch
-> into its own patch
->
-> v10:
-> * No changes in this patch in v10
->
-> Signed-off-by: Ognjen Galic <smclt30p@gmail.com>
+> > and i am agree the naming is not clear, maybe we can rename both of
+> > those
+> > files to something like pci-pm-***.c?
+> 
+> At least pci-acpi.c is more than just PM functions, so that doesn't
+> make sense. Given that all the ACPI related functions are in 1 file,
+> we should do the same for DT.
 
-Missed:
+> > but i have no idea about pci-mid.c or would it possible to have more
+> > platform pm ops in the future...maybe we should add some dependency
+> > in the
+> > Kconfig?
 
-Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+You may consider pci-mid.c as pci-sfi.c to some extend.
 
-> ---
->  drivers/power/supply/power_supply_core.c | 2 +-
->  include/linux/power_supply.h             | 2 ++
->  2 files changed, 3 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-> index 82f998a..feac7b0 100644
-> --- a/drivers/power/supply/power_supply_core.c
-> +++ b/drivers/power/supply/power_supply_core.c
-> @@ -668,7 +668,7 @@ EXPORT_SYMBOL_GPL(power_supply_powers);
->
->  static void power_supply_dev_release(struct device *dev)
->  {
-> -       struct power_supply *psy = container_of(dev, struct power_supply, dev);
-> +       struct power_supply *psy = to_power_supply(dev);
->         dev_dbg(dev, "%s\n", __func__);
->         kfree(psy);
->  }
-> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-> index 79e90b3..f0139b4 100644
-> --- a/include/linux/power_supply.h
-> +++ b/include/linux/power_supply.h
-> @@ -371,6 +371,8 @@ devm_power_supply_register_no_ws(struct device *parent,
->  extern void power_supply_unregister(struct power_supply *psy);
->  extern int power_supply_powers(struct power_supply *psy, struct device *dev);
->
-> +#define to_power_supply(device) container_of(device, struct power_supply, dev)
-> +
->  extern void *power_supply_get_drvdata(struct power_supply *psy);
->  /* For APM emulation, think legacy userspace. */
->  extern struct class *power_supply_class;
-
-Should fold in the changes you sent as a separate patch.
+So, in that sense it more looks like pci-of.c would be the name for DT
+case.
 
 -- 
-With Best Regards,
-Andy Shevchenko
+Andy Shevchenko <andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>
+Intel Finland Oy
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
