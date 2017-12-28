@@ -1,180 +1,88 @@
-From: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Subject: Re: [RFC PATCH v11 4/5] PCI / PM: Add support for the PCIe WAKE#
- signal for OF
-Date: Wed, 27 Dec 2017 20:22:05 -0800
-Message-ID: <20171228042205.GG3875@atomide.com>
-References: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
- <9593014.U0c2JQdoEZ@aspire.rjw.lan>
- <5A41A0A7.5070605@rock-chips.com>
- <5491520.JsEYlZiECc@aspire.rjw.lan>
- <20171227150800.GF3875@atomide.com>
- <CAJZ5v0iaHPGiZJURhqZb8wdJXHxrAEHVN=U6rNHWGf-FGemPJA@mail.gmail.com>
+From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Subject: Re: [RFC V7 2/2] OPP: Allow "opp-hz" and "opp-microvolt" to contain
+ magic values
+Date: Thu, 28 Dec 2017 10:02:36 +0530
+Message-ID: <20171228043236.GA8652@vireshk-i7>
+References: <20171101214333.GG30645@codeaurora.org>
+ <20171102045155.GX4240@vireshk-i7>
+ <20171102071533.GM30645@codeaurora.org>
+ <20171102090033.GZ4240@vireshk-i7>
+ <CAPDyKFryn5=GMs+hiRcxGOC1U=-LL9RQdnY3cWniyE+4pwQDog@mail.gmail.com>
+ <20171130005029.GC19419@codeaurora.org>
+ <20171130065907.GI11413@vireshk-i7>
+ <CAL_Jsq+ntPMiSacpsx7M7VwSXsx+fRbHpX-KFNVpDj+bYdNCiQ@mail.gmail.com>
+ <20171227044526.GE8312@vireshk-i7>
+ <CAL_JsqJA-cCOLRwHC1ZegHEt9v7pMoxY6qXF7Taq3k19bU-k3w@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iaHPGiZJURhqZb8wdJXHxrAEHVN=U6rNHWGf-FGemPJA-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+In-Reply-To: <CAL_JsqJA-cCOLRwHC1ZegHEt9v7pMoxY6qXF7Taq3k19bU-k3w-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Cc: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Shawn Lin <shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, "linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-* Rafael J. Wysocki <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> [171228 00:51]:
-> On Wed, Dec 27, 2017 at 4:08 PM, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org> wrote:
-> > * Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> [171227 01:00]:
-> >> On Tuesday, December 26, 2017 2:06:47 AM CET JeffyChen wrote:
-> >> > Hi Rafael,
+On 27-12-17, 15:36, Rob Herring wrote:
+> On Tue, Dec 26, 2017 at 10:45 PM, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org> wrote:
+> > On 26-12-17, 14:23, Rob Herring wrote:
+> >> >         cpu_opp_table: cpu_opp_table {
+> >> >                 compatible = "operating-points-v2";
+> >> >                 opp-shared;
 > >> >
-> >> > Thanks for your reply :)
-> >> >
-> >> > On 12/26/2017 08:11 AM, Rafael J. Wysocki wrote:
-> >> > >> >+
-> >> > >> >+       dn = pci_device_to_OF_node(ppdev);
-> >> > >> >+       if (!dn)
-> >> > >> >+               return 0;
-> >> > >> >+
-> >> > >> >+       irq = of_irq_get_byname(dn, "wakeup");
-> >> > > Why is this a property of the bridge and not of the device itself?
-> >> >
-> >> > That is suggested by Brian, because in that way, the wakeup pin would
-> >> > not "tied to what exact device is installed (or no device, if it's a slot)."
+> >> >                 opp00 {
+> >> >                         opp-hz = /bits/ 64 <208000000>;
+> >> >                         clock-latency-ns = <500000>;
+> >> >                         power-domain-opp = <&domain_opp_1>;
 > >>
-> >> But I don't think it works when there are two devices using different WAKE#
-> >> interrupt lines under the same bridge.  Or how does it work then?
+> >> What is this? opp00 here is not a device. One OPP should not point to
+> >> another. "power-domain-opp" is only supposed to appear in devices
+> >> alongside power-domains properties.
 > >
-> > It won't work currently for multiple devices but adding more than
-> > one wakeriq per device is doable. And I think we will have other
-> > cases where multiple wakeirqs are connected to a single device, so
-> > that issue should be sorted out sooner or later.
+> > There are two type of devices:
 > >
-> > And if requesting wakeirq for the PCI WAKE# lines at the PCI
-> > controller does the job, then maybe that's all we need to start with.
-> 
-> These are expected to be out-of-band, so not having anything to do
-> with the Root Complex.
-> 
-> In-band PME Messages go through the PCIe hierarchy, but that is a
-> standard mechanism and it is supported already.
-> 
-> WAKE# are platform-specific, pretty much by definition and I guess
-> that on most ARM boards they are just going to be some kind of GPIO
-> pins.
-
-OK. So probably supporting the following two configurations
-should be enough then:
-
-1. One or more WAKE# lines configured as a wakeirq for the PCI
-   controller
-
-   When the wakeirq calls pm_wakeup_event() for the PCI controller
-   device driver, the PCI controller wakes up and can deal with
-   it's child devices
-
-2. Optionally a WAKE# line from a PCI device configured as wakeirq
-   for the PCI device driver
-
-   In this case calling the PM runtime resume in the child
-   PCI device will also wake up the parent PCI controller,
-   and then the PCI controller can deal with it's children
-
-Seems like this series is pretty close to 1 above except
-we need to have a list of wakeirqs per device instead of
-just one. And option 2 should already work as long as the
-PCI device driver parses and configures the wakeirq.
-
-> > Then in addition to that, we could do the following to allow
-> > PCI devices to request the wakeirq from the PCI controller:
+> > A.) With fixed performance state requirements and they will have the
+> > new "required-opp" property in the device node itself as you said.
 > >
-> > 1. PCI controller or framework implements a chained irq for
-> >    the WAKE# lines assuming it can mask/unmask the WAKE# lines
+> > B.) Devices which can do DVFS (CPU, MMC, LCD, etc) and those may need
+> > a different performance state of the domain for their individual OPPs
+> > and so we can't have this property in the device all the time.
 > >
-> > 2. PCI devices then can just request the wakeirq from the PCI
-> >    controller
-> >
-> > And that's about it. Optionally we could leave out the dependency
-> > to having PCI devices implement PM runtime and just resume the
-> > parent (PCI controller) if PCI devices has not implemented
-> > PM runtime.
+> > Does this make sense ?
 > 
-> So if my understanding is correct, DT should give you the WAKE# IRQ
-> for the given endpoint PCI device and you only are expected to request
-> it.   The rest should just follow from the other pieces of information
-> in the DT.
-
-Yeah and it seems that we should allow configuring both cases
-1 and 2 above.
-
-> With the quite obvious caveat that the same IRQ may be used as WAKE#
-> for multiple endpoint devices (which BTW need not be under the same
-> bridge even).
-
-And with the shared interrupts we can't do the masking/unmasking
-automatically..
-
-> >> > >> >+       if (irq == -EPROBE_DEFER)
-> >> > > Braces here, please.
-> >> > ok, will fix in the next version.
-> >> >
-> >> > >
-> >> > >> >+               return irq;
-> >> > >> >+       /* Ignore other errors, since a missing wakeup is non-fatal. */
-> >> > >> >+       else if (irq < 0) {
-> >> > >> >+               dev_info(&pdev->dev, "cannot get wakeup interrupt: %d\n", irq);
-> >> > >> >+               return 0;
-> >> > >> >+       }
-> >> > >> >+
-> >> > >> >+       device_init_wakeup(&pdev->dev, true);
-> >> > > Why do you call this before dev_pm_set_dedicated_wake_irq()?
-> >> >
-> >> > hmmm, i thought so too, but it turns out the dedicated wake irq
-> >> > framework requires device_init_wakeup(dev, true) before attach the wake irq:
-> >> >
-> >> > int device_wakeup_attach_irq(struct device *dev,
-> >> >                               struct wake_irq *wakeirq)
-> >> > {
-> >> >          struct wakeup_source *ws;
-> >> >
-> >> >          ws = dev->power.wakeup;
-> >> >          if (!ws) {
-> >> >                  dev_err(dev, "forgot to call device_init_wakeup?\n");
-> >> >                  return -EINVAL;
-> >> >
-> >>
-> >> Well, that's a framework issue, fair enough.
-> >>
-> >> That said, what if user space removes the wakeup source from under you
-> >> concurrently via sysfs?  Tony?
-> >
-> > Hmm sounds racy, need to take a look.
+> No. From the definition for power-domain-opp
 > 
-> Not only racy, as I don't see anything to prevent user space from
-> making the dev->power.wakeup wakeup source go away via sysfs at any
-> time *after* the IRQ has been requested.
+> "+- power-domain-opp: This contains phandle to one of the OPP nodes of
+> the master
+> +  power domain. This specifies the minimum required OPP of the master
+> domain for
+> +  the functioning of the device in this OPP (where this property is present).
 
-Currently nothing happens with wakeirqs if there's no struct
-wakeup_source. On device_wakeup_enable() we call device_wakeup_attach()
-that just copies dev->power.wakeirq to ws->wakeirq. And when struct
-wake_source is freed the device should be active and wakeirq
-disabled. Or are you seeing other issues here?
+The per-opp thing was mentioned here.
 
-> Pretty much right after dev_pm_set_dedicated_wake_irq() has returned,
-> device_wakeup_disable() may be called on the device via wakeup_store()
-> and it doesn't even check if the device has a wakeup irq.
+> +  This property can only be set for a device if the device node contains the
+> +  "power-domains" property.
+
+This was trying to say something else, though it wasn't clear and so your
+concerns.
+
+I wanted to say that the device node or its OPP nodes can have the
+"power-domain-opp" property only if the device node has a "power-domains"
+property. i.e. you need to have power domain first and then only the
+power-domain-opp property.
+
+> Also, either all or none of the OPP nodes in an OPP
+> +  table should have it set."
 > 
-> > I think the only reason
-> > to have the wakeirq pointer there was to save memory. It might
-> > make sense to remove the wakeirq dependency here.
+> In the above example, you are violating the next to last sentence.
 > 
-> Well, that looks necessary to be honest.
+> Though, I'm now confused by what the last sentence means.
 
-Seems like we're OK there except for the race. But I still wonder
-if could just get rid of wakeirq in struct wakeup_source. Maybe
-all we need is to see if dev->power.wakeup is allocated for the
-wakeirqs.
+Yeah, lets leave it as is as the V8 has changed this significantly and you
+already Acked it :)
 
-Regards,
-
-Tony
+-- 
+viresh
 --
 To unsubscribe from this list: send the line "unsubscribe devicetree" in
 the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
