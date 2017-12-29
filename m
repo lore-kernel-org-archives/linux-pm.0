@@ -1,100 +1,99 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2 2/4] PM / core: Add WAKEUP_PATH driver flag
-Date: Fri, 29 Dec 2017 12:37:01 +0100
-Message-ID: <1514547423-18965-3-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v2 4/4] PM / core: Print warn if device gets enabled as wakeup source during sleep
+Date: Fri, 29 Dec 2017 12:37:03 +0100
+Message-ID: <1514547423-18965-5-git-send-email-ulf.hansson@linaro.org>
 References: <1514547423-18965-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:36329 "EHLO
-        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1755587AbdL2LhV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Dec 2017 06:37:21 -0500
-Received: by mail-lf0-f68.google.com with SMTP id c19so27996240lfg.3
-        for <linux-pm@vger.kernel.org>; Fri, 29 Dec 2017 03:37:20 -0800 (PST)
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <1514547423-18965-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Sender: linux-renesas-soc-owner@vger.kernel.org
 To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+List-Id: linux-pm@vger.kernel.org
 
-During system suspend, a driver may find that the wakeup setting is enabled
-for its device and therefore configures it to deliver system wakeup
-signals.
+In general, wakeup settings are not supposed to be changed during any of
+the system wide PM phases. The reason is simply that it would break
+guarantees provided by the PM core, to properly act on active wakeup
+sources.
 
-Additionally, sometimes the driver and its device, relies on some further
-consumed resource, like an irqchip or a phy for example, to stay powered
-on, as to be able to deliver system wakeup signals.
+However, there are exceptions to when, in particular, disabling a device as
+wakeup source makes sense. For example, in cases when a driver realizes
+that its device is dead during system suspend. For these scenarios, we
+don't need to care about acting on the wakeup source correctly, because a
+dead device shouldn't deliver wakeup signals.
 
-In general the driver deals with this, via raising an "enable count" of the
-consumed resource or via a subsystem specific API, like irq_set_irq_wake()
-or enable|disable_irq_wake() for an irqchip.
-
-However, this information about the wakeup path for resources, is currently
-not available to a PM domain (unless it has some HW-logic that knows this),
-which means that it may decide to power off a device and its PM domain. In
-other words, it may prevent the wakeup signal from being delivered.
-
-For this reason, let's introduce a new WAKEUP_PATH driver flag, to allow a
-driver to indicate that it controls a resource needed in the wakeup path.
-Make the PM core to check the WAKEUP_PATH flag immediately after the
-->suspend() callback has been invoked and set the wakeup_path status flag
-accordingly. In this way the wakeup_path flag also becomes propagated to
-the parent device, which may be useful for some cases.
-
-For a PM domain that needs the information about the wakeup path, it should
-check the wakeup_path status flag for its attached devices in a later
-suspend phase, but perhaps also the WAKEUP_PATH driver flag explicitly, in
-case it has been set after the ->suspend() callback has been invoked for
-the device.
+To this reasoning and to help users to properly manage wakeup settings,
+let's print a warning in cases someone calls device_wakeup_enable() during
+system sleep.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/main.c | 3 ++-
- include/linux/pm.h        | 7 +++++++
- 2 files changed, 9 insertions(+), 1 deletion(-)
+ drivers/base/power/main.c   | 4 ++++
+ drivers/base/power/wakeup.c | 4 ++++
+ include/linux/pm.h          | 1 +
+ 3 files changed, 9 insertions(+)
 
 diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 810e5fb..1327726 100644
+index 1327726..6b0d312 100644
 --- a/drivers/base/power/main.c
 +++ b/drivers/base/power/main.c
-@@ -1620,7 +1620,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
-  End:
- 	if (!error) {
- 		dev->power.is_suspended = true;
--		if (device_may_wakeup(dev))
-+		if (device_may_wakeup(dev) ||
-+		    dev_pm_test_driver_flags(dev, DPM_FLAG_WAKEUP_PATH))
- 			dev->power.wakeup_path = true;
- 		dpm_propagate_to_parent(dev);
- 		dpm_clear_suppliers_direct_complete(dev);
+@@ -1030,6 +1030,8 @@ static void device_complete(struct device *dev, pm_message_t state)
+ 		callback(dev);
+ 	}
+ 
++	dev->power.may_set_wakeup = dev->power.can_wakeup;
++
+ 	device_unlock(dev);
+ 
+ 	pm_runtime_put(dev);
+@@ -1747,6 +1749,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
+ 
+ 	device_lock(dev);
+ 
++	dev->power.may_set_wakeup = false;
+ 	dev->power.wakeup_path = false;
+ 
+ 	if (dev->power.no_pm_callbacks) {
+@@ -1775,6 +1778,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
+ 	if (ret < 0) {
+ 		suspend_report_result(callback, ret);
+ 		pm_runtime_put(dev);
++		dev->power.may_set_wakeup = dev->power.can_wakeup;
+ 		return ret;
+ 	}
+ 	/*
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index cb72965..5445bea 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -268,6 +268,9 @@ int device_wakeup_enable(struct device *dev)
+ 	if (!dev || !dev->power.can_wakeup)
+ 		return -EINVAL;
+ 
++	if (!dev->power.may_set_wakeup)
++		dev_warn(dev, "don't enable as wakup source during sleep!\n");
++
+ 	ws = wakeup_source_register(dev_name(dev));
+ 	if (!ws)
+ 		return -ENOMEM;
+@@ -413,6 +416,7 @@ void device_set_wakeup_capable(struct device *dev, bool capable)
+ 		return;
+ 
+ 	dev->power.can_wakeup = capable;
++	dev->power.may_set_wakeup = capable;
+ 	if (device_is_registered(dev) && !list_empty(&dev->power.entry)) {
+ 		if (capable) {
+ 			int ret = wakeup_sysfs_add(dev);
 diff --git a/include/linux/pm.h b/include/linux/pm.h
-index e723b78..ebc6ef8 100644
+index ebc6ef8..106fb15 100644
 --- a/include/linux/pm.h
 +++ b/include/linux/pm.h
-@@ -560,6 +560,7 @@ struct pm_subsys_data {
-  * SMART_PREPARE: Check the return value of the driver's ->prepare callback.
-  * SMART_SUSPEND: No need to resume the device from runtime suspend.
-  * LEAVE_SUSPENDED: Avoid resuming the device during system resume if possible.
-+ * WAKEUP_PATH: The device is used in the wakeup path from system suspend.
-  *
-  * Setting SMART_PREPARE instructs bus types and PM domains which may want
-  * system suspend/resume callbacks to be skipped for the device to return 0 from
-@@ -576,11 +577,17 @@ struct pm_subsys_data {
-  *
-  * Setting LEAVE_SUSPENDED informs the PM core and middle-layer code that the
-  * driver prefers the device to be left in suspend after system resume.
-+ *
-+ * Setting WAKEUP_PATH informs the PM core and the PM domain, that the device is
-+ * a part of the wakeup path at system suspend. The PM core detects this flag
-+ * and sets the wakeup_path status flag immeditaley after the ->suspend()
-+ * callback has been invoked for the the device.
-  */
- #define DPM_FLAG_NEVER_SKIP		BIT(0)
- #define DPM_FLAG_SMART_PREPARE		BIT(1)
- #define DPM_FLAG_SMART_SUSPEND		BIT(2)
- #define DPM_FLAG_LEAVE_SUSPENDED	BIT(3)
-+#define DPM_FLAG_WAKEUP_PATH		BIT(4)
- 
- struct dev_pm_info {
- 	pm_message_t		power_state;
+@@ -606,6 +606,7 @@ struct dev_pm_info {
+ 	struct list_head	entry;
+ 	struct completion	completion;
+ 	struct wakeup_source	*wakeup;
++	bool			may_set_wakeup:1;
+ 	bool			wakeup_path:1;
+ 	bool			syscore:1;
+ 	bool			no_pm_callbacks:1;	/* Owned by the PM core */
 -- 
 2.7.4
