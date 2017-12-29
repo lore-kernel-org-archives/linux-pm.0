@@ -1,89 +1,66 @@
-From: Ognjen =?UTF-8?Q?Gali=C4=87?= <smclt30p@gmail.com>
-Subject: Re: [PATCH v10 2/4] pm: add to_power_supply macro to the API
-Date: Sat, 30 Dec 2017 00:49:45 +0100
-Message-ID: <1514591385.9667.0.camel@gmail.com>
-References: <20171223105316.GA4352@thinkpad>
-         <CAHp75VcpuQz4n_wRJ+f-OKf4VAVVhXzKAC+FD0EE52cs+Zv22Q@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC PATCH v12 1/5] dt-bindings: PCI: Add definition of PCIe
+ WAKE# irq and PCI irq
+Date: Sat, 30 Dec 2017 00:50:10 +0100
+Message-ID: <CAJZ5v0iRRAQWSji0ioJ5B5M5RjbYAyb1VmuWhTZw4qy0G7_a4g@mail.gmail.com>
+References: <20171226020806.32710-1-jeffy.chen@rock-chips.com>
+ <20171226020806.32710-2-jeffy.chen@rock-chips.com> <20171229175717.GL3875@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <CAHp75VcpuQz4n_wRJ+f-OKf4VAVVhXzKAC+FD0EE52cs+Zv22Q@mail.gmail.com>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?ISO-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f46.google.com ([209.85.218.46]:42703 "EHLO
+        mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750709AbdL2XuL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Dec 2017 18:50:11 -0500
+In-Reply-To: <20171229175717.GL3875@atomide.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Jeffy Chen <jeffy.chen@rock-chips.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PM <linux-pm@vger.kernel.org>, Shawn Lin <shawn.lin@rock-chips.com>, Brian Norris <briannorris@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Anderson <dianders@chromium.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 
-On Čet, 2017-12-28 at 10:19 +0200, Andy Shevchenko wrote:
-> On Sat, Dec 23, 2017 at 12:53 PM, Ognjen Galic <smclt30p@gmail.com>
-> wrote:
-> > 
-> > This patch adds the to_power_supply macro to upcast
-> > a device to a power_supply struct.
-> > 
-> > This is needed because the same piece of code using
-> > container_of is used in various other places, so we
-> > abstract away such low-level operations via a macro.
-> > 
-> > ---
-> This is wrong! You have to use *existing* --- line below. Otherwise
-> all mail parsers will cut this out including your SoB tag.
-> 
+On Fri, Dec 29, 2017 at 6:57 PM, Tony Lindgren <tony@atomide.com> wrote:
+> * Jeffy Chen <jeffy.chen@rock-chips.com> [171226 02:11]:
+>> We are going to handle PCIe WAKE# pin for PCI devices in the pci core,
+>> so add definitions of the optional PCIe WAKE# pin for PCI devices.
+>>
+>> Also add an definition of the optional PCI interrupt pin for PCI
+>> devices to distinguish it from the PCIe WAKE# pin.
+>
+>> --- a/Documentation/devicetree/bindings/pci/pci.txt
+>> +++ b/Documentation/devicetree/bindings/pci/pci.txt
+>> @@ -24,3 +24,13 @@ driver implementation may support the following properties:
+>>     unsupported link speed, for instance, trying to do training for
+>>     unsupported link speed, etc.  Must be '4' for gen4, '3' for gen3, '2'
+>>     for gen2, and '1' for gen1. Any other values are invalid.
+>> +
+>> +PCI devices may support the following properties:
+>
+> This should say PCI ports instead of PCI devices.
 
-My bad I guess. Want another patch revision with that fixed or 
-something?
+No, it is more accurate to say "PCI devices".
 
-> > 
-> > 
-> > v9:
-> > * Split the pm changes from the thinkpad_acpi patch
-> > into its own patch
-> > 
-> > v10:
-> > * No changes in this patch in v10
-> > 
-> > Signed-off-by: Ognjen Galic <smclt30p@gmail.com>
-> Missed:
-> 
-> Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> 
-> > 
-> > ---
-> >  drivers/power/supply/power_supply_core.c | 2 +-
-> >  include/linux/power_supply.h             | 2 ++
-> >  2 files changed, 3 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/power/supply/power_supply_core.c
-> > b/drivers/power/supply/power_supply_core.c
-> > index 82f998a..feac7b0 100644
-> > --- a/drivers/power/supply/power_supply_core.c
-> > +++ b/drivers/power/supply/power_supply_core.c
-> > @@ -668,7 +668,7 @@ EXPORT_SYMBOL_GPL(power_supply_powers);
-> > 
-> >  static void power_supply_dev_release(struct device *dev)
-> >  {
-> > -       struct power_supply *psy = container_of(dev, struct
-> > power_supply, dev);
-> > +       struct power_supply *psy = to_power_supply(dev);
-> >         dev_dbg(dev, "%s\n", __func__);
-> >         kfree(psy);
-> >  }
-> > diff --git a/include/linux/power_supply.h
-> > b/include/linux/power_supply.h
-> > index 79e90b3..f0139b4 100644
-> > --- a/include/linux/power_supply.h
-> > +++ b/include/linux/power_supply.h
-> > @@ -371,6 +371,8 @@ devm_power_supply_register_no_ws(struct device
-> > *parent,
-> >  extern void power_supply_unregister(struct power_supply *psy);
-> >  extern int power_supply_powers(struct power_supply *psy, struct
-> > device *dev);
-> > 
-> > +#define to_power_supply(device) container_of(device, struct
-> > power_supply, dev)
-> > +
-> >  extern void *power_supply_get_drvdata(struct power_supply *psy);
-> >  /* For APM emulation, think legacy userspace. */
-> >  extern struct class *power_supply_class;
-> Should fold in the changes you sent as a separate patch.
-> 
+Well, it actually gets somewhat confusing, because in the PCI
+terminology a "PCI device" means a physical piece of hardware that can
+be put into a single "slot" (think socket on a board) and may consist
+up to 8 functional units called "functions" which are each represented
+by a struct pci_dev.  So there may be up to 8 struct pci_dev objects
+per "PCI device" (as per the standard language) and, BTW, drivers bind
+to functions (via the struct pci_dev objects).
+
+Now, WAKE# is shared by all functions within the same "PCI device"
+(I'm not sure if the standard specifies that directly, but at least it
+appears to be treated as an obvious physical limitation), so it may be
+useful to represent the "slot" or "device" level in the DT even though
+it has no struct device based representation in the kernel.
+
+>> +- interrupts: Interrupt specifier for each name in interrupt-names.
+>> +- interrupt-names:
+>> +    May contain "wakeup" for PCIe WAKE# interrupt and "pci" for PCI interrupt.
+>> +    The PCI devices may optionally include an 'interrupts' property that
+>> +    represents the legacy PCI interrupt. And when we try to specify the PCIe
+>> +    WAKE# pin, a corresponding 'interrupt-names' property is required to
+>> +    distinguish them.
+>> --
+>> 2.11.0
+>>
+>>
