@@ -1,69 +1,147 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: v4.15-rc5: resume took way too long, warning in syslog
-Date: Fri, 29 Dec 2017 11:23:36 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1712291119210.24019-100000@netrider.rowland.org>
-References: <20171229155714.GA30656@amd>
+From: Tony Lindgren <tony@atomide.com>
+Subject: Re: [RFC PATCH v11 4/5] PCI / PM: Add support for the PCIe WAKE#
+ signal for OF
+Date: Fri, 29 Dec 2017 09:15:48 -0800
+Message-ID: <20171229171548.GI3875@atomide.com>
+References: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
+ <CAJZ5v0hpK0_vjX3HinCpsFuKffVUn3d5EnqXdz0P893aRZgnRw@mail.gmail.com>
+ <20171228165134.GH3875@atomide.com>
+ <6120485.xubBpvge6h@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20171229155714.GA30656@amd>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux-pm mailing list <linux-pm@vger.kernel.org>, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pci-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <6120485.xubBpvge6h@aspire.rjw.lan>
+Sender: linux-pci-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, JeffyChen <jeffy.chen@rock-chips.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PM <linux-pm@vger.kernel.org>, Shawn Lin <shawn.lin@rock-chips.com>, Brian Norris <briannorris@chromium.org>, Doug Anderson <dianders@chromium.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, 29 Dec 2017, Pavel Machek wrote:
-
-> Hi!
+* Rafael J. Wysocki <rjw@rjwysocki.net> [171228 17:33]:
+> On Thursday, December 28, 2017 5:51:34 PM CET Tony Lindgren wrote:
+> > 
+> > Well Brian had a concern where we would have to implement PM runtime
+> > for all device drivers for PCI devices.
 > 
-> v4.15-rc5.. resume took _way_ too long, and I have warn_on in dmesg as
-> a bonus. It looks like USB problem...? I never seen this before.
+> Why would we?
 
-Is this problem very repeatable?  Is there any possibility of bisecting 
-to find the cause?
+Seems at least I was a bit confused. In the PCIe case the WAKE# is
+owned by the PCIe slot, not the child PCIe device. So you're right,
+there should be no need for the child PCIe device drivers to
+implement runtime PM.
 
-> [42269.489765] usb 1-1.3: reset full-speed USB device number 3 using ehci-pci
-> [42269.577806] ata2: SATA link down (SStatus 0 SControl 300)
-> [42269.577851] ata5: SATA link down (SStatus 0 SControl 300)
-> [42269.677809] usb 1-1.6: reset high-speed USB device number 4 using ehci-pci
-> [42270.167923] psmouse serio1: synaptics: queried max coordinates: x [..5472], y [..4448]
-> [42270.361825] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> [42270.363396] ata1.00: ACPI cmd ef/02:00:00:00:00:a0 (SET FEATURES) succeeded
-> [42270.363404] ata1.00: ACPI cmd f5/00:00:00:00:00:a0 (SECURITY FREEZE LOCK) filtered out
-> [42270.363409] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 (SET FEATURES) filtered out
-> [42270.366202] ata1.00: ACPI cmd ef/02:00:00:00:00:a0 (SET FEATURES) succeeded
-> [42270.366209] ata1.00: ACPI cmd f5/00:00:00:00:00:a0 (SECURITY FREEZE LOCK) filtered out
-> [42270.366215] ata1.00: ACPI cmd ef/10:03:00:00:00:a0 (SET FEATURES) filtered out
-> [42270.367116] ata1.00: configured for UDMA/133
-> [42273.571626] e1000e: eth2 NIC Link is Up 100 Mbps Full Duplex, Flow Control: Rx/Tx
-> [42273.571638] e1000e 0000:00:19.0 eth2: 10/100 speed: disabling TSO
-> [42274.421868] usb 2-1.1.4: reset high-speed USB device number 55 using ehci-pci
-> [42279.541849] usb 2-1.1.4: device descriptor read/64, error -110
-> [42295.157864] usb 2-1.1.4: device descriptor read/64, error -110
-> [42295.345865] usb 2-1.1.4: reset high-speed USB device number 55 using ehci-pci
-> [42300.533867] usb 2-1.1.4: device descriptor read/64, error -110
-> [42316.149843] usb 2-1.1.4: device descriptor read/64, error -110
-> [42316.337864] usb 2-1.1.4: reset high-speed USB device number 55 using ehci-pci
-> [42327.029859] usb 2-1.1.4: device not accepting address 55, error -110
-> [42327.113863] usb 2-1.1.4: reset high-speed USB device number 55 using ehci-pci
-> [42337.781888] usb 2-1.1.4: device not accepting address 55, error -110
+I was thinking the wakeirq case with WLAN on SDIO bus. Some WLAN
+devices can have a hardwired OOB wakeirq wired to a GPIO controller.
+In that case the wakeirq is owned by the child device driver
+(WLAN controller) and not by the SDIO slot. I was earlier
+thinking this is the same as the "Figure 5-4" case 1, but it's
+not.
 
-> [42337.913753] usb 2-1.1.4: new high-speed USB device number 56 using ehci-pci
-> [42338.395078] e1000e: eth2 NIC Link is Down
-> [42338.732172] systemd-journald[2470]: Received SIGTERM from PID 1 (systemd).
-> [42339.679602] systemd[1]: Unit systemd-journald.service entered failed state.
-> [42340.426957] systemd-journald[30462]: Received request to flush runtime journal from PID 1
-> [42343.029871] usb 2-1.1.4: device descriptor read/64, error -110
-> [42344.483918] e1000e: eth2 NIC Link is Up 100 Mbps Full Duplex, Flow Control: Rx/Tx
-> [42344.483927] e1000e 0000:00:19.0 eth2: 10/100 speed: disabling TSO
-> [42358.645164] usb 2-1.1.4: device descriptor read/64, error -110
-> [42358.833023] usb 2-1.1.4: new high-speed USB device number 57 using ehci-pci
-> [42364.018463] usb 2-1.1.4: device descriptor read/64, error -110
-> [42379.626669] usb 2-1.1.4: device descriptor read/64, error -110
-> [42379.735177] usb 2-1.1-port4: attempt power cycle
-> [42380.338299] usb 2-1.1.4: new high-speed USB device number 58 using ehci-pci
+So in the PCIe WAKE# case for device tree, we must have the
+wakeirq property for the PCIe slot for the struct device managing
+that slot, and not for the child device driver. I think it's
+already this way in the most recent set of patches, I need to
+look again.
 
-It sure looks like that USB device (or maybe the hub it was connected 
-to) decided to stop working during the suspend.
+> > So isn't my option 1 above similar to the PCIe spec "Figure 5-4"
+> > case 2?
+> 
+> No, it isn't, because in that case there is no practical difference
+> between WAKE# and an in-band PME message sent by the device (Beacon)
+> from the software perspective.
+> 
+> WAKE# causes the switch to send a PME message upstream and that is
+> handled by the Root Complex through the standard mechanism already
+> supported by our existing PME driver (drivers/pci/pcie/pme.c).
 
-Alan Stern
+OK. So if "Figure 5-4" case 2 is already handled then and we need
+to just deal with "Figure 5-4" case 1 :)
+
+> > Yeah. FYI, for the dedicated wakeirq cases I have, we need to keep
+> > them masked during runtime to avoid tons of interrupts as they
+> > are often wired to the RX pins.
+> 
+> OK
+> 
+> BTW, enable_irq_wake() should take care of the sharing, shouldn't it?
+
+That can be used to tell us which device has wakeirq enabled for
+wake-up events, but only for resume not runtiem PM. We still have the
+shared IRQ problem to deal with. And the PCIe subsystem still needs
+to go through the child devices.
+
+> But the WAKE# thing is not just for waking up the system from sleep states,
+> it is for runtime PM's wakeup signaling too.
+
+Yes my test cases have it working for runtime PM and for waking
+up system from suspend.
+
+> > > > Currently nothing happens with wakeirqs if there's no struct
+> > > > wakeup_source. On device_wakeup_enable() we call device_wakeup_attach()
+> > > > that just copies dev->power.wakeirq to ws->wakeirq. And when struct
+> > > > wake_source is freed the device should be active and wakeirq
+> > > > disabled. Or are you seeing other issues here?
+> > > 
+> > > I'm suspicious about one thing, but I need to look deeper into the code. :-)
+> 
+> So we are fine except for the race and we need the wakeirq field in wakeup
+> sources to automatically arm the wakeup IRQs during suspend.
+
+OK.
+
+> If I'm not mistaken, we only need something like the patch below (untested).
+
+Seems like it should fix the race, I'll do some testing next week.
+
+Regards,
+
+Tony
+
+> ---
+>  drivers/base/power/wakeirq.c |    9 ++++-----
+>  drivers/base/power/wakeup.c  |    2 +-
+>  2 files changed, 5 insertions(+), 6 deletions(-)
+> 
+> Index: linux-pm/drivers/base/power/wakeirq.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/wakeirq.c
+> +++ linux-pm/drivers/base/power/wakeirq.c
+> @@ -33,7 +33,6 @@ static int dev_pm_attach_wake_irq(struct
+>  				  struct wake_irq *wirq)
+>  {
+>  	unsigned long flags;
+> -	int err;
+>  
+>  	if (!dev || !wirq)
+>  		return -EINVAL;
+> @@ -45,12 +44,12 @@ static int dev_pm_attach_wake_irq(struct
+>  		return -EEXIST;
+>  	}
+>  
+> -	err = device_wakeup_attach_irq(dev, wirq);
+> -	if (!err)
+> -		dev->power.wakeirq = wirq;
+> +	dev->power.wakeirq = wirq;
+> +	if (dev->power.wakeup)
+> +		device_wakeup_attach_irq(dev, wirq);
+>  
+>  	spin_unlock_irqrestore(&dev->power.lock, flags);
+> -	return err;
+> +	return 0;
+>  }
+>  
+>  /**
+> Index: linux-pm/drivers/base/power/wakeup.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/wakeup.c
+> +++ linux-pm/drivers/base/power/wakeup.c
+> @@ -303,7 +303,7 @@ int device_wakeup_attach_irq(struct devi
+>  	}
+>  
+>  	if (ws->wakeirq)
+> -		return -EEXIST;
+> +		dev_err(dev, "Leftover wakeup IRQ found, overriding\n");
+>  
+>  	ws->wakeirq = wakeirq;
+>  	return 0;
+> 
