@@ -1,66 +1,81 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFC PATCH v12 1/5] dt-bindings: PCI: Add definition of PCIe
- WAKE# irq and PCI irq
-Date: Sat, 30 Dec 2017 00:50:10 +0100
-Message-ID: <CAJZ5v0iRRAQWSji0ioJ5B5M5RjbYAyb1VmuWhTZw4qy0G7_a4g@mail.gmail.com>
-References: <20171226020806.32710-1-jeffy.chen@rock-chips.com>
- <20171226020806.32710-2-jeffy.chen@rock-chips.com> <20171229175717.GL3875@atomide.com>
+Subject: Re: [RFC PATCH v12 5/5] arm64: dts: rockchip: Move PCIe WAKE# irq to
+ pcie port for Gru
+Date: Sat, 30 Dec 2017 01:10:14 +0100
+Message-ID: <CAJZ5v0ievZh=LULfJZm5ZQhg++r1D++MaE73RswR_WAJ=+bNGA@mail.gmail.com>
+References: <20171226023646.17722-1-jeffy.chen@rock-chips.com>
+ <20171226023646.17722-6-jeffy.chen@rock-chips.com> <20171229175539.GK3875@atomide.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f46.google.com ([209.85.218.46]:42703 "EHLO
-        mail-oi0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750709AbdL2XuL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 29 Dec 2017 18:50:11 -0500
-In-Reply-To: <20171229175717.GL3875@atomide.com>
-Sender: linux-pm-owner@vger.kernel.org
-List-Id: linux-pm@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20171229175539.GK3875@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
 To: Tony Lindgren <tony@atomide.com>
-Cc: Jeffy Chen <jeffy.chen@rock-chips.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PM <linux-pm@vger.kernel.org>, Shawn Lin <shawn.lin@rock-chips.com>, Brian Norris <briannorris@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Anderson <dianders@chromium.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
+Cc: Jeffy Chen <jeffy.chen@rock-chips.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PM <linux-pm@vger.kernel.org>, Shawn Lin <shawn.lin@rock-chips.com>, Brian Norris <briannorris@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Heiko Stuebner <heiko@sntech.de>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Klaus Goger <klaus.goger@theobroma-systems.com>, linux-rockchip@lists.infradead.org, Rob Herring <robh+dt@kernel.org>, linux-arm-kernel@lists.infradead.org, Will Deacon <will.deacon@arm.com>, Mark Rutland <mark.rutland@arm.com>, Catalin Marinas <catalin.marinas@arm.com>
+List-Id: linux-pm@vger.kernel.org
 
-On Fri, Dec 29, 2017 at 6:57 PM, Tony Lindgren <tony@atomide.com> wrote:
-> * Jeffy Chen <jeffy.chen@rock-chips.com> [171226 02:11]:
->> We are going to handle PCIe WAKE# pin for PCI devices in the pci core,
->> so add definitions of the optional PCIe WAKE# pin for PCI devices.
+On Fri, Dec 29, 2017 at 6:55 PM, Tony Lindgren <tony@atomide.com> wrote:
+> * Jeffy Chen <jeffy.chen@rock-chips.com> [171226 02:41]:
+>> Currently we are handling PCIe WAKE# irq in mrvl wifi driver.
 >>
->> Also add an definition of the optional PCI interrupt pin for PCI
->> devices to distinguish it from the PCIe WAKE# pin.
+>> Move it to rockchip pcie port since we are going to handle it in the
+>> pci core.
 >
->> --- a/Documentation/devicetree/bindings/pci/pci.txt
->> +++ b/Documentation/devicetree/bindings/pci/pci.txt
->> @@ -24,3 +24,13 @@ driver implementation may support the following properties:
->>     unsupported link speed, for instance, trying to do training for
->>     unsupported link speed, etc.  Must be '4' for gen4, '3' for gen3, '2'
->>     for gen2, and '1' for gen1. Any other values are invalid.
+> Yes in the PCIe case, the pcie port node is the right place for
+> the wakeirq instead of the child the mvl_wifi node. So one
+> question further down below to verify this..
+
+You seem to be using a convention by which the port represents the
+whole "slot" or "PCI device" (as an entity consisting of up to 8
+functions) connected to it.
+
+That is fair enough as long as the port is not the top of a more
+complex branch of the PCIe hierarchy, so maybe that case needs to be
+made special somehow?
+
+Also, I would document the convention by mentioning that the wakeup
+signaled via that interrupt doesn't apply to the port itself, but to
+the functions (endpoints) below it.
+
+>> Also avoid this irq been considered as the PCI interrupt pin in the
+>> of_irq_parse_pci().
+>
+> The above paragraph needs a bit more clarification to be
+> readable :)
+>
+>> --- a/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
+>> +++ b/arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi
+>> @@ -719,15 +719,16 @@ ap_i2c_audio: &i2c8 {
+>>               #size-cells = <2>;
+>>               ranges;
+>>
+>> +             interrupts-extended = <&pcie0 1>, <&gpio0 8 IRQ_TYPE_LEVEL_LOW>;
+>> +             interrupt-names = "pci", "wakeup";
+>> +             pinctrl-names = "default";
+>> +             pinctrl-0 = <&wlan_host_wake_l>;
+>> +             wakeup-source;
 >> +
->> +PCI devices may support the following properties:
+>>               mvl_wifi: wifi@0,0 {
+>>                       compatible = "pci1b4b,2b42";
+>>                       reg = <0x83010000 0x0 0x00000000 0x0 0x00100000
+>>                              0x83010000 0x0 0x00100000 0x0 0x00100000>;
+>> -                     interrupt-parent = <&gpio0>;
+>> -                     interrupts = <8 IRQ_TYPE_LEVEL_LOW>;
+>> -                     pinctrl-names = "default";
+>> -                     pinctrl-0 = <&wlan_host_wake_l>;
+>> -                     wakeup-source;
+>>               };
+>>       };
+>>  };
 >
-> This should say PCI ports instead of PCI devices.
+> So the above modifies pcie@0,0 node. And that node describes
+> the particular PCIe port that the WLAN is connected to instead
+> of describing the whole PCIe controller device, right?
+>
+> If so, then yeah it's totally where the wakeirq should be
+> defined for a PCIe device in the dts file :)
 
-No, it is more accurate to say "PCI devices".
+As long as the convention used here is clear to everybody, that is.
 
-Well, it actually gets somewhat confusing, because in the PCI
-terminology a "PCI device" means a physical piece of hardware that can
-be put into a single "slot" (think socket on a board) and may consist
-up to 8 functional units called "functions" which are each represented
-by a struct pci_dev.  So there may be up to 8 struct pci_dev objects
-per "PCI device" (as per the standard language) and, BTW, drivers bind
-to functions (via the struct pci_dev objects).
-
-Now, WAKE# is shared by all functions within the same "PCI device"
-(I'm not sure if the standard specifies that directly, but at least it
-appears to be treated as an obvious physical limitation), so it may be
-useful to represent the "slot" or "device" level in the DT even though
-it has no struct device based representation in the kernel.
-
->> +- interrupts: Interrupt specifier for each name in interrupt-names.
->> +- interrupt-names:
->> +    May contain "wakeup" for PCIe WAKE# interrupt and "pci" for PCI interrupt.
->> +    The PCI devices may optionally include an 'interrupts' property that
->> +    represents the legacy PCI interrupt. And when we try to specify the PCIe
->> +    WAKE# pin, a corresponding 'interrupt-names' property is required to
->> +    distinguish them.
->> --
->> 2.11.0
->>
->>
+Thanks,
+Rafael
