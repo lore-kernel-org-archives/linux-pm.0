@@ -1,122 +1,60 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [RFC PATCH v11 4/5] PCI / PM: Add support for the PCIe WAKE#
- signal for OF
-Date: Sat, 30 Dec 2017 01:21:16 +0100
-Message-ID: <CAJZ5v0hrzxJ2753Cj5LB=DkqDy9-JJnBXU_hJwOJpZazymStZg@mail.gmail.com>
-References: <20171225114742.18920-1-jeffy.chen@rock-chips.com>
- <CAJZ5v0hpK0_vjX3HinCpsFuKffVUn3d5EnqXdz0P893aRZgnRw@mail.gmail.com>
- <20171228165134.GH3875@atomide.com> <6120485.xubBpvge6h@aspire.rjw.lan>
- <20171229171548.GI3875@atomide.com> <CAJZ5v0icePurJoGdVtX06j=XHPdZSqXgm+vhL47ngv7OZoL3fw@mail.gmail.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [RFC PATCH v12 1/5] dt-bindings: PCI: Add definition of PCIe
+ WAKE# irq and PCI irq
+Date: Sat, 30 Dec 2017 01:31:14 +0100
+Message-ID: <CAJZ5v0hTUvqOFZU5OGaDL9EXZ+TnxbMDZdnqJ+_tvddm3YfgbQ@mail.gmail.com>
+References: <20171226020806.32710-1-jeffy.chen@rock-chips.com>
+ <20171226020806.32710-2-jeffy.chen@rock-chips.com> <20171229175717.GL3875@atomide.com>
+ <CAJZ5v0iRRAQWSji0ioJ5B5M5RjbYAyb1VmuWhTZw4qy0G7_a4g@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <CAJZ5v0icePurJoGdVtX06j=XHPdZSqXgm+vhL47ngv7OZoL3fw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>
-Cc: JeffyChen <jeffy.chen-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Shawn Lin <shawn.lin-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PCI <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Frank Rowand <frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Return-path: <linux-pci-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0iRRAQWSji0ioJ5B5M5RjbYAyb1VmuWhTZw4qy0G7_a4g@mail.gmail.com>
+Sender: linux-pci-owner@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: Jeffy Chen <jeffy.chen@rock-chips.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PM <linux-pm@vger.kernel.org>, Shawn Lin <shawn.lin@rock-chips.com>, Brian Norris <briannorris@chromium.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Doug Anderson <dianders@chromium.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
 
-On Sat, Dec 30, 2017 at 12:39 AM, Rafael J. Wysocki <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org> wrote:
-> On Fri, Dec 29, 2017 at 6:15 PM, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org> wrote:
->> * Rafael J. Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org> [171228 17:33]:
->>> On Thursday, December 28, 2017 5:51:34 PM CET Tony Lindgren wrote:
->>> >
->>> > Well Brian had a concern where we would have to implement PM runtime
->>> > for all device drivers for PCI devices.
+On Sat, Dec 30, 2017 at 12:50 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Fri, Dec 29, 2017 at 6:57 PM, Tony Lindgren <tony@atomide.com> wrote:
+>> * Jeffy Chen <jeffy.chen@rock-chips.com> [171226 02:11]:
+>>> We are going to handle PCIe WAKE# pin for PCI devices in the pci core,
+>>> so add definitions of the optional PCIe WAKE# pin for PCI devices.
 >>>
->>> Why would we?
+>>> Also add an definition of the optional PCI interrupt pin for PCI
+>>> devices to distinguish it from the PCIe WAKE# pin.
 >>
->> Seems at least I was a bit confused. In the PCIe case the WAKE# is
->> owned by the PCIe slot, not the child PCIe device.
+>>> --- a/Documentation/devicetree/bindings/pci/pci.txt
+>>> +++ b/Documentation/devicetree/bindings/pci/pci.txt
+>>> @@ -24,3 +24,13 @@ driver implementation may support the following properties:
+>>>     unsupported link speed, for instance, trying to do training for
+>>>     unsupported link speed, etc.  Must be '4' for gen4, '3' for gen3, '2'
+>>>     for gen2, and '1' for gen1. Any other values are invalid.
+>>> +
+>>> +PCI devices may support the following properties:
+>>
+>> This should say PCI ports instead of PCI devices.
 >
-> Well, it depends on what you mean by "slot" and "child device", but if
-> my understanding of it is correct, WAKE# actually is "owned" by the
-> latter.
+> No, it is more accurate to say "PCI devices".
 >
-> First, let me clarify the terminology.  PCI slots are not really
-> represented in the device hierarchy in Linux.  They are represented by
-> kernel objects for hotplug purposes, but these objects are not based
-> on struct device.
+> Well, it actually gets somewhat confusing, because in the PCI
+> terminology a "PCI device" means a physical piece of hardware that can
+> be put into a single "slot" (think socket on a board) and may consist
+> up to 8 functional units called "functions" which are each represented
+> by a struct pci_dev.  So there may be up to 8 struct pci_dev objects
+> per "PCI device" (as per the standard language) and, BTW, drivers bind
+> to functions (via the struct pci_dev objects).
 >
-> Generally, there are two kinds of PCI entities represented by struct
-> pci_dev, bridges and endpoints (functions).  Bridges may represent
-> physical devices, like PCI-to-PCI bridges, or parts of physical
-> devices, like PCIe ports.  In PCIe, every port is logically
-> represented by a bridge (and a PCI config space region with a Type 1
-> header).  However, ports do not take actions like generating
-> interrupts; the pieces of hardware containing them (switches, Root
-> Complex) do that.
->
-> Endpoints (functions) are children of bridges (e.g. PCIe ports) and
-> bridges may be children of other bridges (like in a switch that is
-> represented by a bus segment with one upstream bridge - the upstream
-> port - and possibly multiple downstream bridges - downstream ports).
-> So in PCI a parent always is a bridge (either a PCI bridge - a bridge
-> between to PCI bus segments - or a host bridge) and if that is a PCIe
-> port, it cannot "own" anything like WAKE#, because it is not affected
-> by it in any way and doesn't take part in the handling of it.
->
-> In the context of "Figure 5-4" in the spec, Case 1, what matters is
-> that every "Slot" in the figure represents a bunch (up to 8) of
-> endpoints (functions), but the "Slot" is not the parent of them.  The
-> port of the switch the "Slot" is connected to is the parent.  WAKE#
-> basically comes from one of the endpoints belonging to the "Slot" and
-> you need to look into the config space regions for all of these
-> endpoints to check which one has PME Status set and clear it (to
-> acknowledge the PME and make the hardware stop asserting the WAKE#
-> signal).  So, from the software perspective, the endpoint (child) is
-> the source of WAKE# and that should be reflected by DT properties IMO.
->
->> So you're right, there should be no need for the child PCIe device drivers to
->> implement runtime PM.
->
-> There should be no need for that regardless.  You only need an
-> interrupt handler that will look for the endpoint with PME Status set,
-> acknowledge it and possibly invoke runtime PM for the endpoint in
-> question (if supported).  All of that is standard and can happen at
-> the bus type level and the interrupt handler I'm talking about may be
-> based on pci_pme_wakeup() or pci_acpi_wake_dev().
->
->> I was thinking the wakeirq case with WLAN on SDIO bus. Some WLAN
->> devices can have a hardwired OOB wakeirq wired to a GPIO controller.
->> In that case the wakeirq is owned by the child device driver
->> (WLAN controller) and not by the SDIO slot. I was earlier
->> thinking this is the same as the "Figure 5-4" case 1, but it's
->> not.
->
-> Well, it is not in the sense that the endpoint driver is not expected
-> to handle the wakeup interrupt by itself.  The PCI bus type is
-> responsible for that, but technically WAKE# comes from the endpoint
-> (child).
->
->> So in the PCIe WAKE# case for device tree, we must have the
->> wakeirq property for the PCIe slot for the struct device managing
->> that slot,
->
-> Which doesn't exist.
->
->> and not for the child device driver. I think it's
->> already this way in the most recent set of patches, I need to
->> look again.
->
-> No, you need a wakeirq properly for the child *device* and that
-> property will be consumed by the PCI layer.
+> Now, WAKE# is shared by all functions within the same "PCI device"
+> (I'm not sure if the standard specifies that directly, but at least it
+> appears to be treated as an obvious physical limitation), so it may be
+> useful to represent the "slot" or "device" level in the DT even though
+> it has no struct device based representation in the kernel.
 
-Or, if you use the convention mentioned in another message in this
-thread, you can make the wakeirq be a property of a bridge (port) with
-the clarification of the assumption that WAKE# is shared by all
-functions below the bridge.  So the presence of the "wakeirq" property
-for a bridge (in addition to providing the wakeup IRQ) will mean that
-it applies to all devices below the bridge.
-
-In the case of parallel PCI (not PCIe), there may be multiple "slots"
-(or "PCI devices" consisting each of multiple functions) under one
-bridge and in theory each of them may use a different IRQ for WAKE#
-signaling, so the above convention will not work then.
+Within the convention that bridges represent "everything below them"
+as far as WAKE# is concerned, it can say "The following properties may
+be provided for PCI bridges:" and the description below should explain
+the convention.
 
 Thanks,
 Rafael
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
