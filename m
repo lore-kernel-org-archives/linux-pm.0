@@ -1,39 +1,31 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 1/2] thermal: mtk: Cleanup unused defines
-Date: Mon, 1 Jan 2018 11:56:52 -0800
-Message-ID: <20180101195650.GA13596@localhost.localdomain>
-References: <20171201104321.8410-1-matthias.bgg@gmail.com>
- <feb1e2bd-bee8-0950-7ecf-8e8c0e157f57@gmail.com>
- <1513863613.2785.6.camel@intel.com>
+Subject: Re: [PATCH v2 2/2] ARM: dts: r8a7743: Add thermal device to DT
+Date: Mon, 1 Jan 2018 12:11:58 -0800
+Message-ID: <20180101201157.GB13596@localhost.localdomain>
+References: <1513689449-2700-1-git-send-email-biju.das@bp.renesas.com>
+ <1513689449-2700-3-git-send-email-biju.das@bp.renesas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f68.google.com ([74.125.83.68]:43070 "EHLO
-        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751268AbeAAT45 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Jan 2018 14:56:57 -0500
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <1513863613.2785.6.camel@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1513689449-2700-3-git-send-email-biju.das@bp.renesas.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Biju Das <biju.das@bp.renesas.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Simon Horman <horms@verge.net.au>, Magnus Damm <magnus.damm@gmail.com>, Chris Paterson <chris.paterson2@renesas.com>, Fabrizio Castro <fabrizio.castro@bp.renesas.com>, devicetree@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Matthias Brugger <matthias.bgg@gmail.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org, Matthias Brugger <mbrugger@suse.com>
 
-On Thu, Dec 21, 2017 at 09:40:13PM +0800, Zhang Rui wrote:
-> On Thu, 2017-12-21 at 11:01 +0100, Matthias Brugger wrote:
-> > 
-> > On 12/01/2017 11:43 AM, Matthias Brugger wrote:
-> > > 
-> > > The mtk_thermal has some defiens which are never used within the
-> > > driver.
-> > > This patch delets them.
-> > > 
-> > > Signed-off-by: Matthias Brugger <mbrugger@suse.com>
-> > > ---
-> > Rui, Eduardo, do you have any comments on this patch?
-> > 
-> No, I don't have any.
-> I suppose Eduardo will review them soon as I need the thermal soc
-> material for next merge window.
+On Tue, Dec 19, 2017 at 01:17:29PM +0000, Biju Das wrote:
+> This patch instantiates the thermal sensor module with thermal-zone
+> support.
+> 
+> This patch is based on the commit cac68a56e34b
+> ("ARM: dts: r8a7791: enable to use thermal-zone") by Kuninori Morimoto.
+> 
+> Signed-off-by: Biju Das <biju.das@bp.renesas.com>
+> Reviewed-by: Fabrizio Castro <fabrizio.castro@bp.renesas.com>
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Yeah, I will be queueing this soon.
+As for the thermal composition of this patch:
+Acked-by: Eduardo Valentin <edubezval@gmail.com>
+
+Also taking care of patch 1.
