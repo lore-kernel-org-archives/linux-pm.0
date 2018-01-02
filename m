@@ -1,40 +1,49 @@
-From: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 0/4] PM / core: Direct handling of DPM_FLAG_SMART_SUSPEND
- and DPM_FLAG_LEAVE_SUSPENDED
-Date: Tue, 2 Jan 2018 10:57:51 -0500 (EST)
-Message-ID: <Pine.LNX.4.44L0.1801021053080.1633-100000@iolanthe.rowland.org>
-References: <CAPDyKFqi0TgSwPzjfJj=6SEtk4uKUJhgM9ubyax4u-4aC5=Jfw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqi0TgSwPzjfJj=6SEtk4uKUJhgM9ubyax4u-4aC5=Jfw@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v3 0/4] PM / core: Extend behaviour for wakeup paths
+Date: Tue,  2 Jan 2018 17:08:49 +0100
+Message-ID: <1514909333-4450-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, 2 Jan 2018, Ulf Hansson wrote:
+Changes in v3:
+	- Dropped the DPM_FLAG_WAKEUP_PATH, thus re-placed patch 2 and patch 3
+	with new patches.
+	- Simplified patch4, according to suggestions by Rafael.
+	- No changes to patch1.
 
-> > While I acknowledge that Ulf doesn't appear to be convinced by my
-> > arguments, I also see no technical reason why this cannot go in.
-> 
-> Correct, I am not convinced this is the right path as a general
-> optimization, at least in it's current form. The main argument is
-> about skipping invoking callbacks, as I have stated.
-> 
-> Moreover, I think we are lacking important input from some more
-> experienced PM core code contributors, like Alan, Kevin etc. If any of
-> those guys would give an ack, that would also make me more comfortable
-> with this.
-> 
-> On the other hand, I realize that we can't wait forever for that to happen.
+The generic problem this series intends to solve, is that for some PM domains,
+especially genpd, the current information in the dev->power.wakeup_path, is not
+sufficient for a PM domain to fully understand how to treat devices in the
+wakeup path during system suspend.
 
-Sad to say, I have not been paying any significant attention to this 
-patch series.  The major points I have gleaned are that these are all 
-relatively small optimizations, and that by default the patches do not 
-change existing behavior (they are opt-in).
+Particularly this applies to resources being consumed by the driver that has
+configured system wakeup settings for its device. Currently the PM domain lacks
+information about these consumed resources, which means it may decide to power
+of their corresponding device and its attached PM domain, while they actually
+would need to stay powered to allow system wakeup signals to be delivered.
 
-So at first glance there's no pressing reason not to apply them.  But 
-admittedly, this viewpoint ignores the larger picture.
+Geert Uytterhoeven, has been working on these kind of problems for some Renesas
+SoCs and there have been lots of discussions around this. So far I haven't
+included any patches for dealing with the "OUT_BAND_WAKEUP" thingy, but I
+suggest we do that in a second separate step, since it's not immediately needed
+to fix the problems for the Renesas SoCs.
 
-Alan Stern
+Ulf Hansson (4):
+  PM / core: Assign the wakeup_path status flag in __device_prepare()
+  PM / core: Propagate wakeup_path status flag in
+    __device_suspend_late()
+  PM / wakeup: Add device_set_wakeup_path() helper to control wakeup
+    path
+  PM / wakeup: Print warn if device gets enabled as wakeup source during
+    sleep
+
+ drivers/base/power/main.c   | 37 ++++++++++++++++++++-----------------
+ drivers/base/power/wakeup.c |  3 +++
+ include/linux/pm_wakeup.h   |  7 +++++++
+ 3 files changed, 30 insertions(+), 17 deletions(-)
+
+-- 
+2.7.4
