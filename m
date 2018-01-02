@@ -1,132 +1,109 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: [PATCH] cpu_cooling: Remove static-power related documentation
-Date: Tue,  2 Jan 2018 10:51:34 +0530
-Message-ID: <09947bfdaf86f674f8495849b88118065841a4f2.1514870425.git.viresh.kumar@linaro.org>
+From: Rajendra Nayak <rnayak@codeaurora.org>
+Subject: Re: [PATCH V8 3/3] OPP: Allow "opp-hz" and "opp-microvolt" to contain
+ magic values
+Date: Tue, 2 Jan 2018 11:35:10 +0530
+Message-ID: <3721988e-fa13-c5dc-9ee6-490ed9b4b767@codeaurora.org>
+References: <cover.1513591822.git.viresh.kumar@linaro.org>
+ <476d7ae69184d787ccc6d99f8df6069007fd0a91.1513591822.git.viresh.kumar@linaro.org>
+ <20171226202955.32j7gzonrixtwdpt@rob-hp-laptop>
+ <20171227085645.GF8312@vireshk-i7>
+ <CAL_JsqJzMfNhHK=6Wt4dzBRS9BVGMZ-f7uk3OnUupudTfwuyUA@mail.gmail.com>
+ <20171228043725.GB8652@vireshk-i7>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pf0-f193.google.com ([209.85.192.193]:34641 "EHLO
-        mail-pf0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751396AbeABFV6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 00:21:58 -0500
-Received: by mail-pf0-f193.google.com with SMTP id a90so25286431pfk.1
-        for <linux-pm@vger.kernel.org>; Mon, 01 Jan 2018 21:21:58 -0800 (PST)
+Received: from smtp.codeaurora.org ([198.145.29.96]:34840 "EHLO
+        smtp.codeaurora.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751419AbeABGFS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 01:05:18 -0500
+In-Reply-To: <20171228043725.GB8652@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rafael Wysocki <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Javi Merino <javi.merino@kernel.org>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, rui.zhang@intel.com, edubezval@gmail.com, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Viresh Kumar <viresh.kumar@linaro.org>, Rob Herring <robh@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@codeaurora.org>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Sudeep Holla <sudeep.holla@arm.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-commit 84fe2cab4859 ("cpu_cooling: Drop static-power related stuff")
-removed support for static-power in kernel, but it missed reflecting the
-same in documentation. Remove the static power related documentation
-bits as well.
 
-Reported-by: Javi Merino <javi.merino@kernel.org>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- Documentation/thermal/cpu-cooling-api.txt | 82 +------------------------------
- 1 file changed, 2 insertions(+), 80 deletions(-)
 
-diff --git a/Documentation/thermal/cpu-cooling-api.txt b/Documentation/thermal/cpu-cooling-api.txt
-index 7a1c89db0419..7df567eaea1a 100644
---- a/Documentation/thermal/cpu-cooling-api.txt
-+++ b/Documentation/thermal/cpu-cooling-api.txt
-@@ -44,16 +44,14 @@ the user. The registration APIs returns the cooling device pointer.
- 2. Power models
- 
- The power API registration functions provide a simple power model for
--CPUs.  The current power is calculated as dynamic + (optionally)
--static power.  This power model requires that the operating-points of
-+CPUs.  The current power is calculated as dynamic power (static power isn't
-+supported currently).  This power model requires that the operating-points of
- the CPUs are registered using the kernel's opp library and the
- `cpufreq_frequency_table` is assigned to the `struct device` of the
- cpu.  If you are using CONFIG_CPUFREQ_DT then the
- `cpufreq_frequency_table` should already be assigned to the cpu
- device.
- 
--2.1 Dynamic power
--
- The dynamic power consumption of a processor depends on many factors.
- For a given processor implementation the primary factors are:
- 
-@@ -92,79 +90,3 @@ mW/MHz/uVolt^2.  Typical values for mobile CPUs might lie in range
- from 100 to 500.  For reference, the approximate values for the SoC in
- ARM's Juno Development Platform are 530 for the Cortex-A57 cluster and
- 140 for the Cortex-A53 cluster.
--
--
--2.2 Static power
--
--Static leakage power consumption depends on a number of factors.  For a
--given circuit implementation the primary factors are:
--
--- Time the circuit spends in each 'power state'
--- Temperature
--- Operating voltage
--- Process grade
--
--The time the circuit spends in each 'power state' for a given
--evaluation period at first order means OFF or ON.  However,
--'retention' states can also be supported that reduce power during
--inactive periods without loss of context.
--
--Note: The visibility of state entries to the OS can vary, according to
--platform specifics, and this can then impact the accuracy of a model
--based on OS state information alone.  It might be possible in some
--cases to extract more accurate information from system resources.
--
--The temperature, operating voltage and process 'grade' (slow to fast)
--of the circuit are all significant factors in static leakage power
--consumption.  All of these have complex relationships to static power.
--
--Circuit implementation specific factors include the chosen silicon
--process as well as the type, number and size of transistors in both
--the logic gates and any RAM elements included.
--
--The static power consumption modelling must take into account the
--power managed regions that are implemented.  Taking the example of an
--ARM processor cluster, the modelling would take into account whether
--each CPU can be powered OFF separately or if only a single power
--region is implemented for the complete cluster.
--
--In one view, there are others, a static power consumption model can
--then start from a set of reference values for each power managed
--region (e.g. CPU, Cluster/L2) in each state (e.g. ON, OFF) at an
--arbitrary process grade, voltage and temperature point.  These values
--are then scaled for all of the following: the time in each state, the
--process grade, the current temperature and the operating voltage.
--However, since both implementation specific and complex relationships
--dominate the estimate, the appropriate interface to the model from the
--cpu cooling device is to provide a function callback that calculates
--the static power in this platform.  When registering the cpu cooling
--device pass a function pointer that follows the `get_static_t`
--prototype:
--
--    int plat_get_static(cpumask_t *cpumask, int interval,
--                        unsigned long voltage, u32 &power);
--
--`cpumask` is the cpumask of the cpus involved in the calculation.
--`voltage` is the voltage at which they are operating.  The function
--should calculate the average static power for the last `interval`
--milliseconds.  It returns 0 on success, -E* on error.  If it
--succeeds, it should store the static power in `power`.  Reading the
--temperature of the cpus described by `cpumask` is left for
--plat_get_static() to do as the platform knows best which thermal
--sensor is closest to the cpu.
--
--If `plat_static_func` is NULL, static power is considered to be
--negligible for this platform and only dynamic power is considered.
--
--The platform specific callback can then use any combination of tables
--and/or equations to permute the estimated value.  Process grade
--information is not passed to the model since access to such data, from
--on-chip measurement capability or manufacture time data, is platform
--specific.
--
--Note: the significance of static power for CPUs in comparison to
--dynamic power is highly dependent on implementation.  Given the
--potential complexity in implementation, the importance and accuracy of
--its inclusion when using cpu cooling devices should be assessed on a
--case by case basis.
--
+On 12/28/2017 10:07 AM, Viresh Kumar wrote:
+> On 27-12-17, 15:54, Rob Herring wrote:
+>> On Wed, Dec 27, 2017 at 2:56 AM, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>>> On 26-12-17, 14:29, Rob Herring wrote:
+>>>> On Mon, Dec 18, 2017 at 03:51:30PM +0530, Viresh Kumar wrote:
+>>>
+>>>>> +On some platforms the exact frequency or voltage may be hidden from the OS by
+>>>>> +the firmware and the "opp-hz" or the "opp-microvolt" properties may contain
+>>>>> +magic values that represent the frequency or voltage in a firmware dependent
+>>>>> +way, for example an index of an array in the firmware.
+>>>>
+>>>> I'm still not convinced this is a good idea.
+>>>
+>>> You were kind-of a few days back :)
+>>>
+>>> lkml.kernel.org/r/CAL_JsqK-qtAaM_Ou5NtxcWR3F_q=8rMPJUm-VqGtKhbtWe5SAQ@mail.gmail.com
+>>
+>> Yeah, well that was before Stephen said anything.
+>>
+>>> So here is the deal:
+>>>
+>>> - I proposed "domain-performance-state" property for this stuff
+>>>   initially.
+>>> - But Kevin didn't like that and proposed reusing "opp-hz" and
+>>>   "opp-microvolt", which we all agreed to multiple times..
+>>> - And we are back to the same discussion now and its painful and time
+>>>   killing for all of us.
+>>
+>> There's bigger issues than where we put magic values as I raised in
+>> the other patch.
+>>
+>>> TBH, I don't have too strong preferences about any of the suggestions
+>>> you guys have and I need you guys to tell me what binding changes to
+>>> do here and I will do that.
+>>>
+>>>> If you have firmware
+>>>> partially managing things, then I think we should have platform specific
+>>>> bindings or drivers.
+>>>
+>>> What about the initial idea then, like "performance-state" for the
+>>> power domains ? All platforms will anyway replicate that binding only.
+>>
+>> I don't really know. I don't really care either. I'll probably go
+>> along with what everyone agrees to, but the only one I see any
+>> agreement from is Ulf. Also, it is pretty vague as to what platforms
+>> will use this. You claimed you can support QCom scenarios, but there's
+>> really no evidence that that is true.
+> 
+> Well, I sent out the code few days back based on these bindings and everyone can
+> see how these bindings will get used now.
+> 
+>> What I don't want to see is this
+>> merged and then we need something more yet again in a few months for
+>> another platform.
+> 
+> Sure, I get your concerns.
+> 
+> So what we need now is:
+> 
+> - Stephen to start responding and clarify all the doubts he had as being silent
+>   isn't helping.
+> 
+> - Or Rajendra to post patches which can prove that this is usable. The last time
+>   I had a chat with him, he confirmed that he will post patches after 4.15-rc1
+>   and he should have posted them by now, but he didn't :(
+
+I would want to reiterate what I have been saying for a while, that for these patches
+to be usable on any qualcomm platform completely we need support to associate
+multiple power-domains to a single device which is missing today.
+
+The last time this came up during a discussion at connect, I believe the understanding
+was to get this (performance state support) merged *after* we decide how to support
+multiple powerdomains per device.
+
+What I have been testing with these patches is to move a single user (MMC, which BTW does not
+have to put requests on multiple powerdomains) to use this solution on a db820c (msm8996) device.
+Getting this merged now can open up issues for other devices (which can't move to this solution)
+since MMC alone would put requests to pull a *common* rail up/down while others can't.
+
 -- 
-2.15.0.194.g9af6a3dea062
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+hosted by The Linux Foundation
