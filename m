@@ -1,117 +1,97 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 4/4] PM / core: Print warn if device gets enabled as
- wakeup source during sleep
-Date: Tue, 2 Jan 2018 13:30:27 +0100
-Message-ID: <CAPDyKFoQUYHaqr7Tf5g9+8B2KF9pHXx7q+SEne7Mr1Z2r-ozBg@mail.gmail.com>
-References: <1514547423-18965-1-git-send-email-ulf.hansson@linaro.org>
- <1514547423-18965-5-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0jWjvfQAttj6uhOhc_Hs1oT=sz3yEGnWGJaCMvJ7HJf8Q@mail.gmail.com>
+Subject: Re: [PATCH v2 3/3] gpio: rcar: Use WAKEUP_PATH driver PM flag
+Date: Tue, 2 Jan 2018 13:53:56 +0100
+Message-ID: <CAPDyKFqcv8+B=xL_NSzydNYOH_ZzdJuqmrX72jsy=-FNnEf=tw@mail.gmail.com>
+References: <1514554304-18989-1-git-send-email-ulf.hansson@linaro.org>
+ <1514554304-18989-4-git-send-email-ulf.hansson@linaro.org>
+ <CAJZ5v0gWtr1bwi7WVeEbTJPu3KC8YfPvfUh5XDmomiK8TFmfyg@mail.gmail.com>
+ <CAMuHMdVmqM+WA_EaCRHNojpV6NYmS0-V18MoixyV5UdC3cq+2g@mail.gmail.com> <CAJZ5v0j7r_-TJA=n6ohC_iFc_0Tei9nfVZUN5rjB0n0CxYkMgQ@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0jWjvfQAttj6uhOhc_Hs1oT=sz3yEGnWGJaCMvJ7HJf8Q@mail.gmail.com>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f194.google.com ([209.85.223.194]:42648 "EHLO
+        mail-io0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751034AbeABMx6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 07:53:58 -0500
+Received: by mail-io0-f194.google.com with SMTP id x67so42704820ioi.9
+        for <linux-pm@vger.kernel.org>; Tue, 02 Jan 2018 04:53:57 -0800 (PST)
+In-Reply-To: <CAJZ5v0j7r_-TJA=n6ohC_iFc_0Tei9nfVZUN5rjB0n0CxYkMgQ@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-gpio@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 30 December 2017 at 01:58, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Fri, Dec 29, 2017 at 12:37 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> In general, wakeup settings are not supposed to be changed during any of
->> the system wide PM phases. The reason is simply that it would break
->> guarantees provided by the PM core, to properly act on active wakeup
->> sources.
+On 2 January 2018 at 11:48, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Tue, Jan 2, 2018 at 11:44 AM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+>> Hi Rafael,
 >>
->> However, there are exceptions to when, in particular, disabling a device as
->> wakeup source makes sense. For example, in cases when a driver realizes
->> that its device is dead during system suspend. For these scenarios, we
->> don't need to care about acting on the wakeup source correctly, because a
->> dead device shouldn't deliver wakeup signals.
+>> On Tue, Jan 2, 2018 at 11:32 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>>> On Fri, Dec 29, 2017 at 2:31 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>> From: Geert Uytterhoeven <geert+renesas@glider.be>
+>>>>
+>>>> Since commit ab82fa7da4dce5c7 ("gpio: rcar: Prevent module clock disable
+>>>> when wake-up is enabled"), when a GPIO is used for wakeup, the GPIO block's
+>>>> module clock (if exists) is manually kept running during system suspend, to
+>>>> make sure the device stays active.
+>>>>
+>>>> However, this explicit clock handling is merely a workaround for a failure
+>>>> to properly communicate wakeup information to the PM core. Instead, set the
+>>>> WAKEUP_PATH driver PM flag to indicate that the device is part of the
+>>>> wakeup path, which further also enables middle-layers and PM domains (like
+>>>> genpd) to act on this.
+>>>>
+>>>> In case the device is attached to genpd and depending on if it has an
+>>>> active wakeup configuration, genpd will keep the device active (the clock
+>>>> running) during system suspend when needed. This enables us to remove all
+>>>> explicit clock handling code from the driver, so let's do that as well.
+>>>>
+>>>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>>>> [Ulf: Converted to use the WAKEUP_PATH driver PM flag]
 >>
->> To this reasoning and to help users to properly manage wakeup settings,
->> let's print a warning in cases someone calls device_wakeup_enable() during
->> system sleep.
+>> Ulf: + killing the DEV_PM_OPS define, increasing kernel size if PM_SUSPEND=n?
 >>
->> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->> ---
->>  drivers/base/power/main.c   | 4 ++++
->>  drivers/base/power/wakeup.c | 4 ++++
->>  include/linux/pm.h          | 1 +
->>  3 files changed, 9 insertions(+)
+>>>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 >>
->> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
->> index 1327726..6b0d312 100644
->> --- a/drivers/base/power/main.c
->> +++ b/drivers/base/power/main.c
->> @@ -1030,6 +1030,8 @@ static void device_complete(struct device *dev, pm_message_t state)
->>                 callback(dev);
->>         }
+>>>> --- a/drivers/gpio/gpio-rcar.c
+>>>> +++ b/drivers/gpio/gpio-rcar.c
 >>
->> +       dev->power.may_set_wakeup = dev->power.can_wakeup;
->> +
->>         device_unlock(dev);
+>>>> @@ -415,6 +402,18 @@ static int gpio_rcar_parse_dt(struct gpio_rcar_priv *p, unsigned int *npins)
+>>>>         return 0;
+>>>>  }
+>>>>
+>>>> +#ifdef CONFIG_PM_SLEEP
+>>>> +static int gpio_rcar_suspend(struct device *dev)
+>>>> +{
+>>>> +       struct gpio_rcar_priv *p = dev_get_drvdata(dev);
+>>>> +
+>>>> +       dev_pm_set_driver_flags(dev, p->wakeup_path ? DPM_FLAG_WAKEUP_PATH : 0);
+>>>
+>>> Why don't you simply set dev->power.wakeup_path here?
 >>
->>         pm_runtime_put(dev);
->> @@ -1747,6 +1749,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
->>
->>         device_lock(dev);
->>
->> +       dev->power.may_set_wakeup = false;
->>         dev->power.wakeup_path = false;
->>
->>         if (dev->power.no_pm_callbacks) {
->> @@ -1775,6 +1778,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
->>         if (ret < 0) {
->>                 suspend_report_result(callback, ret);
->>                 pm_runtime_put(dev);
->> +               dev->power.may_set_wakeup = dev->power.can_wakeup;
->>                 return ret;
->>         }
->>         /*
->> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
->> index cb72965..5445bea 100644
->> --- a/drivers/base/power/wakeup.c
->> +++ b/drivers/base/power/wakeup.c
->> @@ -268,6 +268,9 @@ int device_wakeup_enable(struct device *dev)
->>         if (!dev || !dev->power.can_wakeup)
->>                 return -EINVAL;
->>
->> +       if (!dev->power.may_set_wakeup)
->> +               dev_warn(dev, "don't enable as wakup source during sleep!\n");
->> +
->>         ws = wakeup_source_register(dev_name(dev));
->>         if (!ws)
->>                 return -ENOMEM;
->> @@ -413,6 +416,7 @@ void device_set_wakeup_capable(struct device *dev, bool capable)
->>                 return;
->>
->>         dev->power.can_wakeup = capable;
->> +       dev->power.may_set_wakeup = capable;
->>         if (device_is_registered(dev) && !list_empty(&dev->power.entry)) {
->>                 if (capable) {
->>                         int ret = wakeup_sysfs_add(dev);
->> diff --git a/include/linux/pm.h b/include/linux/pm.h
->> index ebc6ef8..106fb15 100644
->> --- a/include/linux/pm.h
->> +++ b/include/linux/pm.h
->> @@ -606,6 +606,7 @@ struct dev_pm_info {
->>         struct list_head        entry;
->>         struct completion       completion;
->>         struct wakeup_source    *wakeup;
->> +       bool                    may_set_wakeup:1;
->>         bool                    wakeup_path:1;
->>         bool                    syscore:1;
->>         bool                    no_pm_callbacks:1;      /* Owned by the PM core */
->> --
+>> That's what my v1 did (https://patchwork.kernel.org/patch/10050995/).
 >
-> I didn't mean anything so complicated. :-)
+> I very much prefer this one. :-)
 
-Okay. :-)
+Okay!
+
+The reason why I suggested inventing a new driver PM flag, was because
+I consider the ->dev.power.wakeup_path, being a status flag/bit, owned
+by the PM core. In other words, consumers of the flag are allowed to
+look at it, but not change it.
+
+Anyway, I am perfectly fine to drop the DPM_FLAG_WAKEUP_PATH thingy.
+However, perhaps we should still add a helper function
+(device_set_wakeup_path() or similar), which users can call to set the
+flag?
 
 >
-> Just a warning message if (pm_suspend_target_state != PM_SUSPEND_ON)
-> in device_wakeup_enable() (or equivalent) should be sufficient.
+> What's wrong with it?
 
-Alright, let me re-spin this and thanks for the suggestion.
+It works, although I would rather change the assignment of the flag to
+respect if the current value is true, something like this:
+
+dev->power.wakeup_path = dev->power.wakeup_path || p->wakeup_path;
 
 Kind regards
 Uffe
