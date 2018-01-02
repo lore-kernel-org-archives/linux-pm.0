@@ -1,7 +1,8 @@
 From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
-Subject: [PATCH v4 7/7] typec: tcpm: Add support for sink PPS related messages
-Date: Tue, 2 Jan 2018 15:50:55 +0000
-Message-ID: <ec6635bd870084dbabf2f53b46ca3d0d5a0dd074.1514904983.git.Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v4 6/7] typec: tcpm: Represent source supply through power_supply
+ class
+Date: Tue, 2 Jan 2018 15:50:54 +0000
+Message-ID: <e2cb104f53e20a01f3b44442068c549e5d0e1ac3.1514904983.git.Adam.Thomson.Opensource@diasemi.com>
 References: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,261 +13,564 @@ To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roec
 Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
 
-This commit adds sink side support for Get_Status, Status,
-Get_PPS_Status and PPS_Status handling. As there's the
-potential for a partner to respond with Not_Supported
-handling of this message is also added. Sending of
-Not_Supported is added is added to handle messages
-received but not yet handled.
+This commit adds a power_supply class instance to represent a
+PD source's voltage and current properties. This provides an
+interface for reading these properties from user-space or other
+drivers.
+
+For PPS enabled Sources, this also provides write access to set
+the current and voltage and allows for swapping between standard
+PDO and PPS APDO.
+
+As this represents a superset of the information provided in the
+fusb302 driver, the power_supply instance in that code is removed
+as part of this change, so reverting the commit titled
+'typec: tcpm: Represent source supply through power_supply class'
 
 Signed-off-by: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
 ---
- drivers/usb/typec/tcpm.c | 152 ++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 143 insertions(+), 9 deletions(-)
+ .../ABI/testing/sysfs-class-power-tcpm-source-psy  |  92 ++++++++
+ drivers/usb/typec/Kconfig                          |   1 +
+ drivers/usb/typec/fusb302/Kconfig                  |   2 +-
+ drivers/usb/typec/fusb302/fusb302.c                |  63 +-----
+ drivers/usb/typec/tcpm.c                           | 233 ++++++++++++++++++++-
+ 5 files changed, 328 insertions(+), 63 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
 
-diff --git a/drivers/usb/typec/tcpm.c b/drivers/usb/typec/tcpm.c
-index b86a51c..54d17d7 100644
---- a/drivers/usb/typec/tcpm.c
-+++ b/drivers/usb/typec/tcpm.c
-@@ -19,7 +19,9 @@
- #include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/usb/pd.h>
-+#include <linux/usb/pd_ado.h>
- #include <linux/usb/pd_bdo.h>
-+#include <linux/usb/pd_ext_sdb.h>
- #include <linux/usb/pd_vdo.h>
- #include <linux/usb/tcpm.h>
- #include <linux/usb/typec.h>
-@@ -113,6 +115,11 @@
- 	S(SNK_TRYWAIT_VBUS),			\
- 	S(BIST_RX),				\
- 						\
-+	S(GET_STATUS_SEND),			\
-+	S(GET_STATUS_SEND_TIMEOUT),		\
-+	S(GET_PPS_STATUS_SEND),			\
-+	S(GET_PPS_STATUS_SEND_TIMEOUT),		\
-+						\
- 	S(ERROR_RECOVERY),			\
- 	S(PORT_RESET),				\
- 	S(PORT_RESET_WAIT_OFF)
-@@ -143,6 +150,7 @@ enum pd_msg_request {
- 	PD_MSG_NONE = 0,
- 	PD_MSG_CTRL_REJECT,
- 	PD_MSG_CTRL_WAIT,
-+	PD_MSG_CTRL_NOT_SUPP,
- 	PD_MSG_DATA_SINK_CAP,
- 	PD_MSG_DATA_SOURCE_CAP,
- };
-@@ -1413,10 +1421,42 @@ static int tcpm_validate_caps(struct tcpm_port *port, const u32 *pdo,
- /*
-  * PD (data, control) command handling functions
-  */
-+static inline enum tcpm_state ready_state(struct tcpm_port *port)
-+{
-+	if (port->pwr_role == TYPEC_SOURCE)
-+		return SRC_READY;
-+	else
-+		return SNK_READY;
-+}
+diff --git a/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy b/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
+new file mode 100644
+index 0000000..4986cba
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
+@@ -0,0 +1,92 @@
++What: 		/sys/class/power_supply/tcpm-source-psy/type
++Date:		December 2017
++Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
++Description:
++	This read-only property describes the main type of source supply.
++	Type-C is a USB standard so this property always returns "USB".
++
++What: 		/sys/class/power_supply/tcpm-source-psy/connected_type
++Date:		December 2017
++Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
++Description:
++	This read-only property describes the type of source supply that is
++	connected, if the supply is online. The value is always Type C
++	unless a source has been attached which is identified as USB-PD capable.
++
++	Valid values:
++		- "USB_TYPE_C"	: Type C connected supply, not UBS-PD capable
++				  (default value)
++		- "USB_PD"	: USB-PD capable source supply connected
++		- "USB_PD_PPS"	: USB-PD PPS capable source supply connected
++
++What: 		/sys/class/power_supply/tcpm-source-psy/online
++Date:		December 2017
++Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
++Description:
++	This read-write property describes the online state of the source
++	supply. When the value of this property is not 0, and the supply allows
++	it, then it's possible to switch between online states (i.e. 1 -> 2,
++	2 -> 1)
++
++	Valid values:
++		- 0	: Offline, no source supply attached
++		- 1	: Fixed Online, Type-C or USB-PD capable supply
++			  attached, non-configurable current and voltage
++			  properties in this state.
++		- 2	: PPS Online, USB-PD PPS feature enabled, 'current_now'
++			  and 'voltage_now' properties can be modified in this
++			  state. Re-writing of this value again, once already
++			  set, will re-request the same configured voltage and
++			  current values. This can be used as a keep-alive for
++			  the PPS connection.
++			  [NOTE: This is value only selectable if
++			   'connected_type' reports a value of "USB_PD_PPS"]
++
++What: 		/sys/class/power_supply/tcpm-source-psy/voltage_min
++Date:		December 2017
++Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
++Description:
++	This read-only property describes the minimum voltage the source supply
++	can provide.
++
++	Value in microvolts.
++
++What: 		/sys/class/power_supply/tcpm-source-psy/voltage_max
++Date:		December 2017
++Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
++Description:
++	This read-only property describes the maximum voltage the source supply
++	can provide.
++
++	Value in microvolts.
++
++What: 		/sys/class/power_supply/tcpm-source-psy/voltage_now
++Date:		December 2017
++Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
++Description:
++	This read-write property describes the voltage the source supply is
++	providing now. This property can only be written to if the source supply
++	is in online state '2' (PPS enabled), otherwise it's read-only
++	information.
++
++	Value in microvolts.
++
++What: 		/sys/class/power_supply/tcpm-source-psy/current_max
++Date:		December 2017
++Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
++Description:
++	This read-only property describes the maximum current the source supply
++	can provide.
++
++	Value in microamps.
++
++What: 		/sys/class/power_supply/tcpm-source-psy/current_now
++Date:		December 2017
++Contact:	Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
++Description:
++	This read-write property describes the current the source supply can
++	provide now. This property can only be written to if the source supply
++	is in online state '2' (PPS enabled), otherwise it's read-only
++	information.
++
++	Value in microamps.
+diff --git a/drivers/usb/typec/Kconfig b/drivers/usb/typec/Kconfig
+index bcb2744..1ef606d 100644
+--- a/drivers/usb/typec/Kconfig
++++ b/drivers/usb/typec/Kconfig
+@@ -48,6 +48,7 @@ if TYPEC
+ config TYPEC_TCPM
+ 	tristate "USB Type-C Port Controller Manager"
+ 	depends on USB
++	select POWER_SUPPLY
+ 	help
+ 	  The Type-C Port Controller Manager provides a USB PD and USB Type-C
+ 	  state machine for use with Type-C Port Controllers.
+diff --git a/drivers/usb/typec/fusb302/Kconfig b/drivers/usb/typec/fusb302/Kconfig
+index 48a4f2f..fce099f 100644
+--- a/drivers/usb/typec/fusb302/Kconfig
++++ b/drivers/usb/typec/fusb302/Kconfig
+@@ -1,6 +1,6 @@
+ config TYPEC_FUSB302
+ 	tristate "Fairchild FUSB302 Type-C chip driver"
+-	depends on I2C && POWER_SUPPLY
++	depends on I2C
+ 	help
+ 	  The Fairchild FUSB302 Type-C chip driver that works with
+ 	  Type-C Port Controller Manager to provide USB PD and USB
+diff --git a/drivers/usb/typec/fusb302/fusb302.c b/drivers/usb/typec/fusb302/fusb302.c
+index 9ce4756..82fddc7 100644
+--- a/drivers/usb/typec/fusb302/fusb302.c
++++ b/drivers/usb/typec/fusb302/fusb302.c
+@@ -18,7 +18,6 @@
+ #include <linux/of_device.h>
+ #include <linux/of_gpio.h>
+ #include <linux/pinctrl/consumer.h>
+-#include <linux/power_supply.h>
+ #include <linux/proc_fs.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/sched/clock.h>
+@@ -99,11 +98,6 @@ struct fusb302_chip {
+ 	/* lock for sharing chip states */
+ 	struct mutex lock;
  
- static int tcpm_pd_send_control(struct tcpm_port *port,
- 				enum pd_ctrl_msg_type type);
- 
-+static void tcpm_handle_alert(struct tcpm_port *port, const __le32 *payload,
-+			      int cnt)
-+{
-+	u32 p0 = le32_to_cpu(payload[0]);
-+	unsigned int type = usb_pd_ado_type(p0);
-+
-+	if (!type) {
-+		tcpm_log(port, "Alert message received with no type");
-+		return;
-+	}
-+
-+	/* Just handling non-battery alerts for now */
-+	if (!(type & USB_PD_ADO_TYPE_BATT_STATUS_CHANGE)) {
-+		switch (port->state) {
-+		case SRC_READY:
-+		case SNK_READY:
-+			tcpm_set_state(port, GET_STATUS_SEND, 0);
-+			break;
-+		default:
-+			tcpm_queue_message(port, PD_MSG_CTRL_WAIT);
-+			break;
-+		}
-+	}
-+}
-+
- static void tcpm_pd_data_request(struct tcpm_port *port,
- 				 const struct pd_message *msg)
- {
-@@ -1502,6 +1542,14 @@ static void tcpm_pd_data_request(struct tcpm_port *port,
- 			tcpm_set_state(port, BIST_RX, 0);
- 		}
- 		break;
-+	case PD_DATA_ALERT:
-+		tcpm_handle_alert(port, msg->payload, cnt);
-+		break;
-+	case PD_DATA_BATT_STATUS:
-+	case PD_DATA_GET_COUNTRY_INFO:
-+		/* Currently unsupported */
-+		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
-+		break;
- 	default:
- 		tcpm_log(port, "Unhandled data message type %#x", type);
- 		break;
-@@ -1584,6 +1632,7 @@ static void tcpm_pd_ctrl_request(struct tcpm_port *port,
- 		break;
- 	case PD_CTRL_REJECT:
- 	case PD_CTRL_WAIT:
-+	case PD_CTRL_NOT_SUPP:
- 		switch (port->state) {
- 		case SNK_NEGOTIATE_CAPABILITIES:
- 			/* USB PD specification, Figure 8-43 */
-@@ -1703,12 +1752,84 @@ static void tcpm_pd_ctrl_request(struct tcpm_port *port,
- 			break;
- 		}
- 		break;
-+	case PD_CTRL_GET_SOURCE_CAP_EXT:
-+	case PD_CTRL_GET_STATUS:
-+	case PD_CTRL_FR_SWAP:
-+	case PD_CTRL_GET_PPS_STATUS:
-+	case PD_CTRL_GET_COUNTRY_CODES:
-+		/* Currently not supported */
-+		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
-+		break;
- 	default:
- 		tcpm_log(port, "Unhandled ctrl message type %#x", type);
- 		break;
+-	/* psy + psy status */
+-	struct power_supply *psy;
+-	u32 current_limit;
+-	u32 supply_voltage;
+-
+ 	/* chip status */
+ 	enum toggling_mode toggling_mode;
+ 	enum src_current_status src_current_status;
+@@ -872,13 +866,11 @@ static int tcpm_set_vbus(struct tcpc_dev *dev, bool on, bool charge)
+ 		chip->vbus_on = on;
+ 		fusb302_log(chip, "vbus := %s", on ? "On" : "Off");
  	}
+-	if (chip->charge_on == charge) {
++	if (chip->charge_on == charge)
+ 		fusb302_log(chip, "charge is already %s",
+ 			    charge ? "On" : "Off");
+-	} else {
++	else
+ 		chip->charge_on = charge;
+-		power_supply_changed(chip->psy);
+-	}
+ 
+ done:
+ 	mutex_unlock(&chip->lock);
+@@ -894,11 +886,6 @@ static int tcpm_set_current_limit(struct tcpc_dev *dev, u32 max_ma, u32 mv)
+ 	fusb302_log(chip, "current limit: %d ma, %d mv (not implemented)",
+ 		    max_ma, mv);
+ 
+-	chip->supply_voltage = mv;
+-	chip->current_limit = max_ma;
+-
+-	power_supply_changed(chip->psy);
+-
+ 	return 0;
  }
  
-+static void tcpm_pd_ext_msg_request(struct tcpm_port *port,
-+				    const struct pd_message *msg)
-+{
-+	enum pd_ext_msg_type type = pd_header_type_le(msg->header);
-+	unsigned int data_size = pd_ext_header_data_size_le(msg->ext_msg.header);
-+	u8 *data;
-+
-+	if (!(msg->ext_msg.header && PD_EXT_HDR_CHUNKED)) {
-+		tcpm_log(port, "Unchunked extended messages unsupported");
-+		return;
-+	}
-+
-+	if (data_size > (PD_EXT_MAX_CHUNK_DATA)) {
-+		tcpm_log(port, "Chunk handling not yet supported");
-+		return;
-+	}
-+
-+	data = kzalloc(data_size, GFP_KERNEL);
-+	if (!data) {
-+		tcpm_log(port, "Failed to allocate memory for ext msg data");
-+		return;
-+	}
-+	memcpy(data, msg->ext_msg.data, data_size);
-+
-+	switch (type) {
-+	case PD_EXT_STATUS:
-+		/*
-+		 * If PPS related events raised then get PPS status to clear
-+		 * (see USB PD 3.0 Spec, 6.5.2.4)
-+		 */
-+		if (data[USB_PD_EXT_SDB_EVENT_FLAGS] & USB_PD_EXT_SDB_PPS_EVENTS)
-+			tcpm_set_state(port, GET_PPS_STATUS_SEND, 0);
-+		else
-+			tcpm_set_state(port, ready_state(port), 0);
-+		break;
-+	case PD_EXT_PPS_STATUS:
-+		/*
-+		 * For now the PPS status message is used to clear events
-+		 * and nothing more.
-+		 */
-+		tcpm_set_state(port, ready_state(port), 0);
-+		break;
-+	case PD_EXT_SOURCE_CAP_EXT:
-+	case PD_EXT_GET_BATT_CAP:
-+	case PD_EXT_GET_BATT_STATUS:
-+	case PD_EXT_BATT_CAP:
-+	case PD_EXT_GET_MANUFACTURER_INFO:
-+	case PD_EXT_MANUFACTURER_INFO:
-+	case PD_EXT_SECURITY_REQUEST:
-+	case PD_EXT_SECURITY_RESPONSE:
-+	case PD_EXT_FW_UPDATE_REQUEST:
-+	case PD_EXT_FW_UPDATE_RESPONSE:
-+	case PD_EXT_COUNTRY_INFO:
-+	case PD_EXT_COUNTRY_CODES:
-+		tcpm_queue_message(port, PD_MSG_CTRL_NOT_SUPP);
-+		break;
-+	default:
-+		tcpm_log(port, "Unhandle extended message type %#x", type);
-+		break;
-+	}
-+
-+	kfree(data);
-+}
-+
- static void tcpm_pd_rx_handler(struct work_struct *work)
- {
- 	struct pd_rx_event *event = container_of(work,
-@@ -1749,7 +1870,9 @@ static void tcpm_pd_rx_handler(struct work_struct *work)
- 				 "Data role mismatch, initiating error recovery");
- 			tcpm_set_state(port, ERROR_RECOVERY, 0);
- 		} else {
--			if (cnt)
-+			if (msg->header & PD_HEADER_EXT_HDR)
-+				tcpm_pd_ext_msg_request(port, msg);
-+			else if (cnt)
- 				tcpm_pd_data_request(port, msg);
- 			else
- 				tcpm_pd_ctrl_request(port, msg);
-@@ -1810,6 +1933,9 @@ static bool tcpm_send_queued_message(struct tcpm_port *port)
- 		case PD_MSG_CTRL_REJECT:
- 			tcpm_pd_send_control(port, PD_CTRL_REJECT);
- 			break;
-+		case PD_MSG_CTRL_NOT_SUPP:
-+			tcpm_pd_send_control(port, PD_CTRL_NOT_SUPP);
-+			break;
- 		case PD_MSG_DATA_SINK_CAP:
- 			tcpm_pd_send_sink_caps(port);
- 			break;
-@@ -2561,14 +2687,6 @@ static inline enum tcpm_state hard_reset_state(struct tcpm_port *port)
- 	return SNK_UNATTACHED;
+@@ -1697,43 +1684,6 @@ static irqreturn_t fusb302_irq_intn(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
  }
  
--static inline enum tcpm_state ready_state(struct tcpm_port *port)
+-static int fusb302_psy_get_property(struct power_supply *psy,
+-				    enum power_supply_property psp,
+-				    union power_supply_propval *val)
 -{
--	if (port->pwr_role == TYPEC_SOURCE)
--		return SRC_READY;
--	else
--		return SNK_READY;
+-	struct fusb302_chip *chip = power_supply_get_drvdata(psy);
+-
+-	switch (psp) {
+-	case POWER_SUPPLY_PROP_ONLINE:
+-		val->intval = chip->charge_on;
+-		break;
+-	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+-		val->intval = chip->supply_voltage * 1000; /* mV -> µV */
+-		break;
+-	case POWER_SUPPLY_PROP_CURRENT_MAX:
+-		val->intval = chip->current_limit * 1000; /* mA -> µA */
+-		break;
+-	default:
+-		return -ENODATA;
+-	}
+-
+-	return 0;
 -}
 -
- static inline enum tcpm_state unattached_state(struct tcpm_port *port)
+-static enum power_supply_property fusb302_psy_properties[] = {
+-	POWER_SUPPLY_PROP_ONLINE,
+-	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+-	POWER_SUPPLY_PROP_CURRENT_MAX,
+-};
+-
+-static const struct power_supply_desc fusb302_psy_desc = {
+-	.name		= "fusb302-typec-source",
+-	.type		= POWER_SUPPLY_TYPE_USB_TYPE_C,
+-	.properties	= fusb302_psy_properties,
+-	.num_properties	= ARRAY_SIZE(fusb302_psy_properties),
+-	.get_property	= fusb302_psy_get_property,
+-};
+-
+ static int init_gpio(struct fusb302_chip *chip)
  {
- 	if (port->port_type == TYPEC_PORT_DRP) {
-@@ -3271,6 +3389,22 @@ static void run_state_machine(struct tcpm_port *port)
- 		/* Always switch to unattached state */
- 		tcpm_set_state(port, unattached_state(port), 0);
+ 	struct device_node *node;
+@@ -1773,7 +1723,6 @@ static int fusb302_probe(struct i2c_client *client,
+ 	struct fusb302_chip *chip;
+ 	struct i2c_adapter *adapter;
+ 	struct device *dev = &client->dev;
+-	struct power_supply_config cfg = {};
+ 	const char *name;
+ 	int ret = 0;
+ 	u32 v;
+@@ -1820,14 +1769,6 @@ static int fusb302_probe(struct i2c_client *client,
+ 			return -EPROBE_DEFER;
+ 	}
+ 
+-	cfg.drv_data = chip;
+-	chip->psy = devm_power_supply_register(dev, &fusb302_psy_desc, &cfg);
+-	if (IS_ERR(chip->psy)) {
+-		ret = PTR_ERR(chip->psy);
+-		dev_err(chip->dev, "Error registering power-supply: %d\n", ret);
+-		return ret;
+-	}
+-
+ 	ret = fusb302_debugfs_init(chip);
+ 	if (ret < 0)
+ 		return ret;
+diff --git a/drivers/usb/typec/tcpm.c b/drivers/usb/typec/tcpm.c
+index b66d26c..b86a51c 100644
+--- a/drivers/usb/typec/tcpm.c
++++ b/drivers/usb/typec/tcpm.c
+@@ -12,6 +12,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/power_supply.h>
+ #include <linux/proc_fs.h>
+ #include <linux/sched/clock.h>
+ #include <linux/seq_file.h>
+@@ -281,6 +282,11 @@ struct tcpm_port {
+ 	u32 current_limit;
+ 	u32 supply_voltage;
+ 
++	/* Used to export TA voltage and current */
++	struct power_supply *psy;
++	struct power_supply_desc psy_desc;
++	enum power_supply_conn_type connected_type;
++
+ 	u32 bist_request;
+ 
+ 	/* PD state for Vendor Defined Messages */
+@@ -1893,6 +1899,7 @@ static int tcpm_pd_select_pdo(struct tcpm_port *port, int *sink_pdo,
+ 	int ret = -EINVAL;
+ 
+ 	port->pps_data.supported = false;
++	port->connected_type = POWER_SUPPLY_CONN_TYPE_USB_PD;
+ 
+ 	/*
+ 	 * Select the source PDO providing the most power which has a
+@@ -1974,8 +1981,11 @@ static int tcpm_pd_select_pdo(struct tcpm_port *port, int *sink_pdo,
+ 			}
+ 			break;
+ 		case PDO_TYPE_APDO:
+-			if (pdo_apdo_type(pdo) == APDO_TYPE_PPS)
++			if (pdo_apdo_type(pdo) == APDO_TYPE_PPS) {
+ 				port->pps_data.supported = true;
++				port->connected_type =
++					POWER_SUPPLY_CONN_TYPE_USB_PD_PPS;
++			}
+ 			continue;
+ 		default:
+ 			tcpm_log(port, "Invalid PDO type, ignoring");
+@@ -2459,6 +2469,9 @@ static void tcpm_reset_port(struct tcpm_port *port)
+ 	port->try_snk_count = 0;
+ 	port->supply_voltage = 0;
+ 	port->current_limit = 0;
++	port->connected_type = POWER_SUPPLY_CONN_TYPE_USB_TYPE_C;
++
++	power_supply_changed(port->psy);
+ }
+ 
+ static void tcpm_detach(struct tcpm_port *port)
+@@ -2991,6 +3004,8 @@ static void run_state_machine(struct tcpm_port *port)
+ 
+ 		tcpm_pps_complete(port, port->pps_status);
+ 
++		power_supply_changed(port->psy);
++
  		break;
-+	case GET_STATUS_SEND:
-+		tcpm_pd_send_control(port, PD_CTRL_GET_STATUS);
-+		tcpm_set_state(port, GET_STATUS_SEND_TIMEOUT,
-+			       PD_T_SENDER_RESPONSE);
+ 
+ 	/* Accessory states */
+@@ -4170,6 +4185,218 @@ static int nr_type_pdos(const u32 *pdo, unsigned int nr_pdo,
+ 	return count;
+ }
+ 
++/* Power Supply access to expose source power information */
++enum tcpm_psy_online_states {
++	TCPM_PSY_OFFLINE = 0,
++	TCPM_PSY_FIXED_ONLINE,
++	TCPM_PSY_PROG_ONLINE,
++};
++
++static enum power_supply_property tcpm_psy_props[] = {
++	POWER_SUPPLY_PROP_CONNECTED_TYPE,
++	POWER_SUPPLY_PROP_ONLINE,
++	POWER_SUPPLY_PROP_VOLTAGE_MIN,
++	POWER_SUPPLY_PROP_VOLTAGE_MAX,
++	POWER_SUPPLY_PROP_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_CURRENT_MAX,
++	POWER_SUPPLY_PROP_CURRENT_NOW,
++};
++
++static int tcpm_psy_get_online(struct tcpm_port *port,
++			       union power_supply_propval *val)
++{
++	if (port->vbus_charge) {
++		if (port->pps_data.active)
++			val->intval = TCPM_PSY_PROG_ONLINE;
++		else
++			val->intval = TCPM_PSY_FIXED_ONLINE;
++	} else {
++		val->intval = TCPM_PSY_OFFLINE;
++	}
++
++	return 0;
++}
++
++static int tcpm_psy_get_voltage_min(struct tcpm_port *port,
++				    union power_supply_propval *val)
++{
++	if (port->pps_data.active)
++		val->intval = port->pps_data.min_volt * 1000;
++	else
++		val->intval = port->supply_voltage * 1000;
++
++	return 0;
++}
++
++static int tcpm_psy_get_voltage_max(struct tcpm_port *port,
++				    union power_supply_propval *val)
++{
++	if (port->pps_data.active)
++		val->intval = port->pps_data.max_volt * 1000;
++	else
++		val->intval = port->supply_voltage * 1000;
++
++	return 0;
++}
++
++static int tcpm_psy_get_voltage_now(struct tcpm_port *port,
++				    union power_supply_propval *val)
++{
++	val->intval = port->supply_voltage * 1000;
++
++	return 0;
++}
++
++static int tcpm_psy_get_current_max(struct tcpm_port *port,
++				    union power_supply_propval *val)
++{
++	if (port->pps_data.active)
++		val->intval = port->pps_data.max_curr * 1000;
++	else
++		val->intval = port->current_limit * 1000;
++
++	return 0;
++}
++
++static int tcpm_psy_get_current_now(struct tcpm_port *port,
++				    union power_supply_propval *val)
++{
++	val->intval = port->current_limit * 1000;
++
++	return 0;
++}
++
++static int tcpm_psy_get_prop(struct power_supply *psy,
++			     enum power_supply_property psp,
++			     union power_supply_propval *val)
++{
++	struct tcpm_port *port = power_supply_get_drvdata(psy);
++	int ret = 0;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_CONNECTED_TYPE:
++		val->intval = port->connected_type;
 +		break;
-+	case GET_STATUS_SEND_TIMEOUT:
-+		tcpm_set_state(port, ready_state(port), 0);
++	case POWER_SUPPLY_PROP_ONLINE:
++		ret = tcpm_psy_get_online(port, val);
 +		break;
-+	case GET_PPS_STATUS_SEND:
-+		tcpm_pd_send_control(port, PD_CTRL_GET_PPS_STATUS);
-+		tcpm_set_state(port, GET_PPS_STATUS_SEND_TIMEOUT,
-+			       PD_T_SENDER_RESPONSE);
++	case POWER_SUPPLY_PROP_VOLTAGE_MIN:
++		ret = tcpm_psy_get_voltage_min(port, val);
 +		break;
-+	case GET_PPS_STATUS_SEND_TIMEOUT:
-+		tcpm_set_state(port, ready_state(port), 0);
++	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
++		ret = tcpm_psy_get_voltage_max(port, val);
 +		break;
- 	case ERROR_RECOVERY:
- 		tcpm_swap_complete(port, -EPROTO);
- 		tcpm_pps_complete(port, -EPROTO);
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		ret = tcpm_psy_get_voltage_now(port, val);
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_MAX:
++		ret = tcpm_psy_get_current_max(port, val);
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		ret = tcpm_psy_get_current_now(port, val);
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
++
++	return ret;
++}
++
++static int tcpm_psy_set_online(struct tcpm_port *port,
++			       const union power_supply_propval *val)
++{
++	int ret;
++
++	switch (val->intval) {
++	case TCPM_PSY_FIXED_ONLINE:
++		ret = tcpm_pps_activate(port, false);
++		break;
++	case TCPM_PSY_PROG_ONLINE:
++		ret = tcpm_pps_activate(port, true);
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
++
++	return ret;
++}
++
++static int tcpm_psy_set_prop(struct power_supply *psy,
++			     enum power_supply_property psp,
++			     const union power_supply_propval *val)
++{
++	struct tcpm_port *port = power_supply_get_drvdata(psy);
++	int ret = 0;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++		ret = tcpm_psy_set_online(port, val);
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++		if ((val->intval < (port->pps_data.min_volt * 1000)) ||
++		    (val->intval > (port->pps_data.max_volt * 1000)))
++			ret = -EINVAL;
++		else
++			ret = tcpm_pps_set_out_volt(port, (val->intval / 1000));
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		if (val->intval > (port->pps_data.max_curr * 1000))
++			ret = -EINVAL;
++		else
++			ret = tcpm_pps_set_op_curr(port, (val->intval / 1000));
++		break;
++	default:
++		ret = -EINVAL;
++		break;
++	}
++
++	return ret;
++}
++
++static int tcpm_psy_prop_writeable(struct power_supply *psy,
++				   enum power_supply_property psp)
++{
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++	case POWER_SUPPLY_PROP_CURRENT_NOW:
++		return 1;
++	default:
++		return 0;
++	}
++}
++
++static enum power_supply_conn_type tcpm_psy_conn_types[] = {
++	POWER_SUPPLY_CONN_TYPE_USB_TYPE_C,
++	POWER_SUPPLY_CONN_TYPE_USB_PD,
++	POWER_SUPPLY_CONN_TYPE_USB_PD_PPS,
++};
++
++static int devm_tcpm_psy_register(struct tcpm_port *port)
++{
++	struct power_supply_config psy_cfg = {};
++
++	psy_cfg.drv_data = port;
++	port->psy_desc.name = "tcpm-source-psy",
++	port->psy_desc.type = POWER_SUPPLY_TYPE_USB,
++	port->psy_desc.conn_types = tcpm_psy_conn_types;
++	port->psy_desc.num_conn_types = ARRAY_SIZE(tcpm_psy_conn_types);
++	port->psy_desc.properties = tcpm_psy_props,
++	port->psy_desc.num_properties = ARRAY_SIZE(tcpm_psy_props),
++	port->psy_desc.get_property = tcpm_psy_get_prop,
++	port->psy_desc.set_property = tcpm_psy_set_prop,
++	port->psy_desc.property_is_writeable = tcpm_psy_prop_writeable,
++
++	port->connected_type = POWER_SUPPLY_CONN_TYPE_USB_TYPE_C;
++
++	port->psy = devm_power_supply_register(port->dev, &port->psy_desc,
++					       &psy_cfg);
++
++	return PTR_ERR_OR_ZERO(port->psy);
++}
++
+ struct tcpm_port *tcpm_register_port(struct device *dev, struct tcpc_dev *tcpc)
+ {
+ 	struct tcpm_port *port;
+@@ -4253,6 +4480,10 @@ struct tcpm_port *tcpm_register_port(struct device *dev, struct tcpc_dev *tcpc)
+ 	port->partner_desc.identity = &port->partner_ident;
+ 	port->port_type = tcpc->config->type;
+ 
++	err = devm_tcpm_psy_register(port);
++	if (err)
++		goto out_destroy_wq;
++
+ 	port->typec_port = typec_register_port(port->dev, &port->typec_caps);
+ 	if (!port->typec_port) {
+ 		err = -ENOMEM;
 -- 
 1.9.1
