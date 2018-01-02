@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v3 3/4] PM / wakeup: Add device_set_wakeup_path() helper to control wakeup path
-Date: Tue,  2 Jan 2018 17:08:52 +0100
-Message-ID: <1514909333-4450-4-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v3 2/4] PM / core: Propagate wakeup_path status flag in __device_suspend_late()
+Date: Tue,  2 Jan 2018 17:08:51 +0100
+Message-ID: <1514909333-4450-3-git-send-email-ulf.hansson@linaro.org>
 References: <1514909333-4450-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <1514909333-4450-1-git-send-email-ulf.hansson@linaro.org>
@@ -10,63 +10,78 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-During system suspend, a driver may find that the wakeup setting is enabled
-for its device and therefore configures it to deliver system wakeup
-signals.
+Currently the wakeup_path status flag becomes propagated from a child
+device to its parent device at __device_suspend(). This allows a driver
+dealing with a parent device to act on the flag from its ->suspend()
+callback.
 
-Additionally, sometimes the driver and its device, relies on some further
-consumed resource, like an irqchip or a phy for example, to stay powered
-on, as to be able to deliver system wakeup signals.
-
-In general the driver deals with this, via raising an "enable count" of the
-consumed resource or via a subsystem specific API, like irq_set_irq_wake()
-or enable|disable_irq_wake() for an irqchip. However, this may not be
-sufficient in cases when the resource's device may be attached to a PM
-domain (genpd for example) or is attached to a non-trivial middle layer
-(PCI for example).
-
-To address cases like these, the existing ->dev.power.wakeup_path status
-flag is there to help. As a matter of fact, genpd already monitors the flag
-during system suspend and acts accordingly.
-
-However, so far it has not been clear, if anybody else but the PM core is
-allowed to set the ->dev.power.wakeup_path status flag, which is required
-to make this work. For this reason, let's introduce a new helper function,
-device_set_wakeup_path().
-
-Typically a driver that manages a resource needed in the wakeup path,
-should call device_set_wakeup_path() from its ->suspend() or
-->suspend_late() callback.
+However, in situations when the wakeup_path status flag needs to be set
+from a ->suspend_late() callback, its value doesn't get propagated to the
+parent by the PM core. Let's address this limitation, by also propagating
+the flag at __device_suspend_late().
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- include/linux/pm_wakeup.h | 7 +++++++
- 1 file changed, 7 insertions(+)
+ drivers/base/power/main.c | 33 +++++++++++++++++----------------
+ 1 file changed, 17 insertions(+), 16 deletions(-)
 
-diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
-index 4c2cba7..4238dde 100644
---- a/include/linux/pm_wakeup.h
-+++ b/include/linux/pm_wakeup.h
-@@ -88,6 +88,11 @@ static inline bool device_may_wakeup(struct device *dev)
- 	return dev->power.can_wakeup && !!dev->power.wakeup;
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 7aeb91d..612bf1b 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1476,6 +1476,22 @@ static pm_callback_t dpm_subsys_suspend_late_cb(struct device *dev,
+ 	return callback;
  }
  
-+static inline void device_set_wakeup_path(struct device *dev)
++static void dpm_propagate_to_parent(struct device *dev)
 +{
-+	dev->power.wakeup_path = true;
++	struct device *parent = dev->parent;
++
++	if (!parent)
++		return;
++
++	spin_lock_irq(&parent->power.lock);
++
++	parent->power.direct_complete = false;
++	if (dev->power.wakeup_path && !parent->power.ignore_children)
++		parent->power.wakeup_path = true;
++
++	spin_unlock_irq(&parent->power.lock);
 +}
 +
- /* drivers/base/power/wakeup.c */
- extern void wakeup_source_prepare(struct wakeup_source *ws, const char *name);
- extern struct wakeup_source *wakeup_source_create(const char *name);
-@@ -174,6 +179,8 @@ static inline bool device_may_wakeup(struct device *dev)
- 	return dev->power.can_wakeup && dev->power.should_wakeup;
+ /**
+  * __device_suspend_late - Execute a "late suspend" callback for given device.
+  * @dev: Device to handle.
+@@ -1528,6 +1544,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+ 		goto Complete;
+ 	}
+ 
++	dpm_propagate_to_parent(dev);
+ Skip:
+ 	dev->power.is_late_suspended = true;
+ 
+@@ -1660,22 +1677,6 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
+ 	return error;
  }
  
-+static inline void device_set_wakeup_path(struct device *dev) {}
-+
- static inline void __pm_stay_awake(struct wakeup_source *ws) {}
- 
- static inline void pm_stay_awake(struct device *dev) {}
+-static void dpm_propagate_to_parent(struct device *dev)
+-{
+-	struct device *parent = dev->parent;
+-
+-	if (!parent)
+-		return;
+-
+-	spin_lock_irq(&parent->power.lock);
+-
+-	parent->power.direct_complete = false;
+-	if (dev->power.wakeup_path && !parent->power.ignore_children)
+-		parent->power.wakeup_path = true;
+-
+-	spin_unlock_irq(&parent->power.lock);
+-}
+-
+ static void dpm_clear_suppliers_direct_complete(struct device *dev)
+ {
+ 	struct device_link *link;
 -- 
 2.7.4
