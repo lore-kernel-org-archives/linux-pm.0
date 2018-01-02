@@ -1,67 +1,84 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2 3/3] gpio: rcar: Use WAKEUP_PATH driver PM flag
-Date: Tue, 2 Jan 2018 16:41:30 +0100
-Message-ID: <CAPDyKFrFe_V0SVH_yCzfLAJ2mObvGGPELFUb8WOAFKGjqohN5w@mail.gmail.com>
-References: <1514554304-18989-1-git-send-email-ulf.hansson@linaro.org>
- <1514554304-18989-4-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0gWtr1bwi7WVeEbTJPu3KC8YfPvfUh5XDmomiK8TFmfyg@mail.gmail.com>
- <CAMuHMdVmqM+WA_EaCRHNojpV6NYmS0-V18MoixyV5UdC3cq+2g@mail.gmail.com>
- <CAJZ5v0j7r_-TJA=n6ohC_iFc_0Tei9nfVZUN5rjB0n0CxYkMgQ@mail.gmail.com>
- <CAPDyKFqcv8+B=xL_NSzydNYOH_ZzdJuqmrX72jsy=-FNnEf=tw@mail.gmail.com> <CAMuHMdUuQP4_Zw+PfSwtdnwsbSeGGAh7fEf2bveAFNe1tRuLFw@mail.gmail.com>
+From: Adam Thomson <Adam.Thomson.Opensource@diasemi.com>
+Subject: [PATCH v4 0/7] typec: tcpm: Add sink side support for PPS
+Date: Tue, 2 Jan 2018 15:50:48 +0000
+Message-ID: <cover.1514904982.git.Adam.Thomson.Opensource@diasemi.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f68.google.com ([209.85.214.68]:41357 "EHLO
-        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751300AbeABPlb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 10:41:31 -0500
-Received: by mail-it0-f68.google.com with SMTP id x28so39124264ita.0
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jan 2018 07:41:31 -0800 (PST)
-In-Reply-To: <CAMuHMdUuQP4_Zw+PfSwtdnwsbSeGGAh7fEf2bveAFNe1tRuLFw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Heikki Krogerus <heikki.krogerus@linux.intel.com>, Guenter Roeck <linux@roeck-us.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sebastian Reichel <sre@kernel.org>, Hans de Goede <hdegoede@redhat.com>, Yueyao Zhu <yueyao.zhu@gmail.com>, Rui Miguel Silva <rmfrfs@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, support.opensource@diasemi.com
 List-Id: linux-pm@vger.kernel.org
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-gpio@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 2 January 2018 at 14:53, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Tue, Jan 2, 2018 at 1:53 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->> On 2 January 2018 at 11:48, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> On Tue, Jan 2, 2018 at 11:44 AM, Geert Uytterhoeven
->>> <geert@linux-m68k.org> wrote:
->>>> On Tue, Jan 2, 2018 at 11:32 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>>>> On Fri, Dec 29, 2017 at 2:31 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>>>> --- a/drivers/gpio/gpio-rcar.c
->>>>>> +++ b/drivers/gpio/gpio-rcar.c
->>>>
->>>>>> @@ -415,6 +402,18 @@ static int gpio_rcar_parse_dt(struct gpio_rcar_priv *p, unsigned int *npins)
->>>>>>         return 0;
->>>>>>  }
->>>>>>
->>>>>> +#ifdef CONFIG_PM_SLEEP
->>>>>> +static int gpio_rcar_suspend(struct device *dev)
->>>>>> +{
->>>>>> +       struct gpio_rcar_priv *p = dev_get_drvdata(dev);
->>>>>> +
->>>>>> +       dev_pm_set_driver_flags(dev, p->wakeup_path ? DPM_FLAG_WAKEUP_PATH : 0);
->>>>>
->>>>> Why don't you simply set dev->power.wakeup_path here?
->>>>
->>>> That's what my v1 did (https://patchwork.kernel.org/patch/10050995/).
->>>
->>> I very much prefer this one. :-)
->>
->> Okay!
->
->>> What's wrong with it?
->>
->> It works, although I would rather change the assignment of the flag to
->> respect if the current value is true, something like this:
->>
->> dev->power.wakeup_path = dev->power.wakeup_path || p->wakeup_path;
->
-> dev->power.wakeup_path |= p->wakeup_path?
+This patch set adds sink side support for the PPS feature introduced in the
+USB PD 3.0 specification.
 
-Yeah, correct.
+The source PPS supply is represented using the Power Supply framework to provide
+access and control APIs for dealing with it's operating voltage and current,
+and switching between a standard PDO and PPS APDO operation. During standard PDO
+operation the voltage and current is read-only, but for APDO PPS these are
+writable as well to allow for control.
 
-Br
-Uffe
+It should be noted that the keepalive for PPS is not handled within TCPM. The
+expectation is that the external user will be required to ensure re-requests
+occur regularly to ensure PPS remains and the source does not hard reset.
+
+Changes in v4:
+ - For PD 3.0 definitions patch, make it benign with regards to existing TCPM
+   code so build isn't broken if this one patch is applied, as suggested by
+   kbuild robot. Update for dynamic revision is moved to be part of sink side
+   PPS support patch.
+ - Use PTR_ERR_OR_ZERO macro to simplify return of devm_tcpm_psy_register()
+   function, as suggested by kbuild robot.
+ - Make devm_tcpm_psy_register() static as not used outside this file.
+
+Changes in v3:
+ - Drop 'RFC' from patch series titles
+ - Rename PPS related defines to be PPS specific rather than generic APDO titles
+ - Update source caps logging to only print PPS APDOs, and for others report as
+   undefined.
+ - Add ABI documentation for tcpm-source-psy sysfs properties
+ - Rebase PDO selection on top of 'typec: tcpm: Only request matching pdos'
+   patch.
+ - Update capabilities validation introduced in
+   'typec: tcpm: Validate source and sink caps' to support PPS APDOs.
+ - Dropped power_supply 'type' property update for PPS addition
+ - Added 'connected_type' property to power_supply framework, to support
+   supplies which can report multiple connected types (e.g. USB), as discussed
+   with Heikki.
+
+Changes in v2:
+ - Use USB_PD and usb_pd prefixes for macros and inline functions in headers.
+ - Negotiate spec revision of PD headers during initial contract agreement.
+ - New headers now use SPDX tags for referencing correct license.
+
+NOTE: Code changes are based on linux-next tag 'next-20171212' to pick up
+capabilities validation and selection updates.
+
+Adam Thomson (7):
+  typec: tcpm: Add PD Rev 3.0 definitions to PD header
+  typec: tcpm: Add ADO header for Alert message handling
+  typec: tcpm: Add SDB header for Status message handling
+  typec: tcpm: Add core support for sink side PPS
+  power: supply: Add 'connected_type' property and supporting code
+  typec: tcpm: Represent source supply through power_supply class
+  typec: tcpm: Add support for sink PPS related messages
+
+ .../ABI/testing/sysfs-class-power-tcpm-source-psy  |  92 +++
+ drivers/power/supply/power_supply_sysfs.c          |  50 ++
+ drivers/usb/typec/Kconfig                          |   1 +
+ drivers/usb/typec/fusb302/Kconfig                  |   2 +-
+ drivers/usb/typec/fusb302/fusb302.c                |  63 +-
+ drivers/usb/typec/tcpm.c                           | 916 ++++++++++++++++++++-
+ include/linux/power_supply.h                       |  15 +
+ include/linux/usb/pd.h                             | 187 ++++-
+ include/linux/usb/pd_ado.h                         |  42 +
+ include/linux/usb/pd_ext_sdb.h                     |  31 +
+ include/linux/usb/tcpm.h                           |   2 +-
+ 11 files changed, 1306 insertions(+), 95 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-power-tcpm-source-psy
+ create mode 100644 include/linux/usb/pd_ado.h
+ create mode 100644 include/linux/usb/pd_ext_sdb.h
+
+-- 
+1.9.1
