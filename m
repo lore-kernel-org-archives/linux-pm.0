@@ -1,38 +1,74 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH 2/2] cpufreq: imx6q: add 696MHz operating point for i.mx6ul
-Date: Tue, 2 Jan 2018 12:37:32 -0200
-Message-ID: <CAOMZO5Do-tyR0ruqfSeJm2FDP7_chNeroFStTF85GnSt_2g5Uw@mail.gmail.com>
-References: <1514912859-17691-1-git-send-email-Anson.Huang@nxp.com> <1514912859-17691-2-git-send-email-Anson.Huang@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f193.google.com ([74.125.82.193]:41751 "EHLO
-        mail-ot0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752089AbeABOhe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 09:37:34 -0500
-In-Reply-To: <1514912859-17691-2-git-send-email-Anson.Huang@nxp.com>
-Sender: linux-pm-owner@vger.kernel.org
+From: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Subject: [PATCH v5 20/20] cpufreq: scmi: add support for fast frequency switching
+Date: Tue,  2 Jan 2018 14:42:42 +0000
+Message-ID: <1514904162-11201-21-git-send-email-sudeep.holla@arm.com>
+References: <1514904162-11201-1-git-send-email-sudeep.holla@arm.com>
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <1514904162-11201-1-git-send-email-sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: ALKML <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, LKML <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, DTML <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Cc: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, Roy Franz <roy.franz-YGCgFSpz5w/QT0dZR+AlfA@public.gmane.org>, Harb Abdulhamid <harba-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>, Loc Ho <lho-qTEPVZfXA3Y@public.gmane.org>, Alexey Klimov <klimov.linux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Ryan Harkin <Ryan.Harkin-5wv7dgnIgG8@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
-To: Anson Huang <Anson.Huang@nxp.com>
-Cc: "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, linux-pm@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, Dong Aisheng <aisheng.dong@nxp.com>, Ping Bai <ping.bai@nxp.com>, viresh kumar <viresh.kumar@linaro.org>, rjw@rjwysocki.net, Russell King - ARM Linux <linux@armlinux.org.uk>, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>
 
-Hi Anson,
+The cpufreq core provides option for drivers to implement fast_switch
+callback which is invoked for frequency switching from interrupt context.
 
-On Tue, Jan 2, 2018 at 3:07 PM, Anson Huang <Anson.Huang@nxp.com> wrote:
+This patch adds support for fast_switch callback in SCMI cpufreq driver
+by making use of polling based SCMI transfer. It also sets the flag
+fast_switch_possible.
 
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index d9b2c2d..cbda0cc 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -120,6 +120,10 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->                         clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
->                 clk_set_parent(step_clk, secondary_sel_clk);
->                 clk_set_parent(pll1_sw_clk, step_clk);
-> +               if (freq_hz > clk_get_rate(pll2_bus_clk)) {
-> +                       clk_set_rate(pll1_sys_clk, new_freq * 1000);
-> +                       clk_set_parent(pll1_sw_clk, pll1_sys_clk);
-> +               }
+Cc: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>
+Acked-by: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Signed-off-by: Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>
+---
+ drivers/cpufreq/scmi-cpufreq.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-This change should be part of a different patch.
+diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+index 0ee9335d0063..d0a82d7c6fd4 100644
+--- a/drivers/cpufreq/scmi-cpufreq.c
++++ b/drivers/cpufreq/scmi-cpufreq.c
+@@ -64,6 +64,19 @@ scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
+ 	return perf_ops->freq_set(handle, priv->domain_id, freq, false);
+ }
+ 
++static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
++					     unsigned int target_freq)
++{
++	struct scmi_data *priv = policy->driver_data;
++	struct scmi_perf_ops *perf_ops = handle->perf_ops;
++
++	if (!perf_ops->freq_set(handle, priv->domain_id,
++				target_freq * 1000, true))
++		return target_freq;
++
++	return 0;
++}
++
+ static int
+ scmi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+ {
+@@ -163,6 +176,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 
+ 	policy->cpuinfo.transition_latency = latency;
+ 
++	policy->fast_switch_possible = true;
+ 	return 0;
+ 
+ out_free_cpufreq_table:
+@@ -222,6 +236,7 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
+ 	.verify	= cpufreq_generic_frequency_table_verify,
+ 	.attr	= cpufreq_generic_attr,
+ 	.target_index	= scmi_cpufreq_set_target,
++	.fast_switch	= scmi_cpufreq_fast_switch,
+ 	.get	= scmi_cpufreq_get_rate,
+ 	.init	= scmi_cpufreq_init,
+ 	.exit	= scmi_cpufreq_exit,
+-- 
+2.7.4
 
-Thanks
+--
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
