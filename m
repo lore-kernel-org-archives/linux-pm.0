@@ -1,72 +1,118 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: thermal/drivers/hisi: Remove bogus const from function return type
-Date: Tue, 2 Jan 2018 08:36:31 +0100
-Message-ID: <CAMuHMdU-_Obwo8t=2oE3CfEmZ0nks03HNssS53cKVfbLCi2sdA@mail.gmail.com>
-References: <1511089467-20525-1-git-send-email-geert@linux-m68k.org> <20180101182123.GA3753@localhost.localdomain>
+From: Miquel RAYNAL <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Subject: Re: [PATCH v7 02/11] thermal: armada: Use msleep for long delays
+Date: Tue, 2 Jan 2018 08:42:40 +0100
+Message-ID: <20180102084240.3c43a770@xps13>
+References: <20171222161413.20816-1-miquel.raynal@free-electrons.com>
+        <20171222161413.20816-3-miquel.raynal@free-electrons.com>
+        <20180101205537.GA29474@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f179.google.com ([209.85.220.179]:33741 "EHLO
-        mail-qk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751109AbeABHgd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 02:36:33 -0500
-In-Reply-To: <20180101182123.GA3753@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+In-Reply-To: <20180101205537.GA29474-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Zhang Rui <rui.zhang-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Gregory Clement <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Antoine Tenart <antoine.tenart-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Nadav Haklai <nadavh-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>, Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>, David Sniatkiwicz <davidsn-eYqpPyKDWXRBDgjK7y7TUQ@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, Kevin Wangtao <kevin.wangtao@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi Eduardo,
+Hello Eduardo,
 
-On Mon, Jan 1, 2018 at 7:21 PM, Eduardo Valentin <edubezval@gmail.com> wrot=
-e:
-> On Sun, Nov 19, 2017 at 12:04:27PM +0100, Geert Uytterhoeven wrote:
->> With gcc-4.1.2:
->>
->>     drivers/thermal/hisi_thermal.c: In function =E2=80=98hisi_thermal_pr=
-obe=E2=80=99:
->>     drivers/thermal/hisi_thermal.c:530: warning: type qualifiers ignored=
- on function return type
->>
->> Remove the "const" keyword to fix this.
->
-> Interesting.
->
-> I intentionally asked Daniel to include the modifier because sparse
-> pointed this to me:
->
-> This patch adds this issue to hisi driver (sparse)
->
-> drivers/thermal/hisi_thermal.c:398:24: warning: incorrect type in assignm=
-ent (different modifiers)
-> drivers/thermal/hisi_thermal.c:398:24:    expected int ( *platform_probe =
-)( ... )
-> drivers/thermal/hisi_thermal.c:398:24:    got void const *
+On Mon, 1 Jan 2018 12:55:39 -0800
+Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
 
-Sparse doesn't like assigning void pointers to function pointers without a =
-cast.
+> On Fri, Dec 22, 2017 at 05:14:04PM +0100, Miquel Raynal wrote:
+> > From: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+> > 
+> > Use msleep for long (> 10ms) delays, instead of the busy waiting
+> > mdelay. All delays are called from the probe routine, where
+> > scheduling is allowed.
+> > 
+> > Signed-off-by: Baruch Siach <baruch-NswTu9S1W3P6gbPvEgmw2w@public.gmane.org>
+> > Signed-off-by: Miquel Raynal <miquel.raynal-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> > Reviewed-by: Gregory CLEMENT <gregory.clement-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>  
+> 
+> I am queueing this patch, however, ...
+> 
+> > ---
+> >  drivers/thermal/armada_thermal.c | 8 ++++----
+> >  1 file changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/drivers/thermal/armada_thermal.c
+> > b/drivers/thermal/armada_thermal.c index 706d74798cbe..6c4af2622d4f
+> > 100644 --- a/drivers/thermal/armada_thermal.c
+> > +++ b/drivers/thermal/armada_thermal.c
+> > @@ -113,7 +113,7 @@ static void armada370_init_sensor(struct
+> > platform_device *pdev, reg &= ~PMU_TDC0_START_CAL_MASK;
+> >  	writel(reg, priv->control);
+> >  
+> > -	mdelay(10);
+> > +	msleep(10);  
+> 
+> I want to double check with you that msleep(10) is documented to reach
+> up to 20ms, see:
+> 
+> 
+> WARNING: msleep < 20ms can sleep for up to 20ms; see
+> Documentation/timers/timers-howto.txt #43: FILE:
+> drivers/thermal/armada_thermal.c:116:
+> +	msleep(10);
+> 
+> WARNING: msleep < 20ms can sleep for up to 20ms; see
+> Documentation/timers/timers-howto.txt #66: FILE:
+> drivers/thermal/armada_thermal.c:146:
+> +		msleep(10);
+> 
+> Just want to check that you are aware of this and that it won't cause
+> troubles in the code flows changed in this patch. Driver is still in
+> one piece, correct?
 
-> which makes sense to me to be const, given that it is receiving the retur=
-n
-> of a function which returns a const void *.
-> nclude/linux/of_device.h:extern const void *of_device_get_match_data(cons=
-t struct device *dev);
+Thanks for queueing the series.
 
-That const applies to what is returned by of_device_get_match_data() (a con=
-st
-void *), not to what is returned by the returned function (an int).
+All of these delays are here to ensure that we do wait a minimum
+amount of time to let the hardware be ready, IMHO waiting up to 20ms is
+not an issue.
 
-Gr{oetje,eeting}s,
+Best regards,
+Miquèl
 
-                        Geert
+> 
+> >  }
+> >  
+> >  static void armada375_init_sensor(struct platform_device *pdev,
+> > @@ -127,11 +127,11 @@ static void armada375_init_sensor(struct
+> > platform_device *pdev, reg &= ~A375_HW_RESETn;
+> >  
+> >  	writel(reg, priv->control + 4);
+> > -	mdelay(20);
+> > +	msleep(20);
+> >  
+> >  	reg |= A375_HW_RESETn;
+> >  	writel(reg, priv->control + 4);
+> > -	mdelay(50);
+> > +	msleep(50);
+> >  }
+> >  
+> >  static void armada380_init_sensor(struct platform_device *pdev,
+> > @@ -143,7 +143,7 @@ static void armada380_init_sensor(struct
+> > platform_device *pdev, if (!(reg & A380_HW_RESET)) {
+> >  		reg |= A380_HW_RESET;
+> >  		writel(reg, priv->control);
+> > -		mdelay(10);
+> > +		msleep(10);
+> >  	}
+> >  }
+> >  
+> > -- 
+> > 2.11.0
+> >   
 
+
+
+-- 
+Miquel Raynal, Free Electrons
+Embedded Linux and Kernel engineering
+http://free-electrons.com
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+To unsubscribe from this list: send the line "unsubscribe devicetree" in
+the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
