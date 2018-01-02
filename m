@@ -1,62 +1,104 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v2 3/4] PM / Domains: Take WAKEUP_PATH driver flag into
- account in genpd
-Date: Tue, 2 Jan 2018 12:52:31 +0100
-Message-ID: <CAJZ5v0jqOKKWzUAF36X5y+ncSYZcuy3ZO2Zj9ufU4votRpcS9Q@mail.gmail.com>
-References: <1514547423-18965-1-git-send-email-ulf.hansson@linaro.org>
- <1514547423-18965-4-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0hoakc1_CwFXu5EE8SU8NstVv2aod+qpb4w4gjHE81X4A@mail.gmail.com> <CAPDyKFqJfWy3jaC6jY9bj3e261ONufe7EkSYFWChWVeXvKQjyg@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH 0/4] PM / core: Direct handling of DPM_FLAG_SMART_SUSPEND
+ and DPM_FLAG_LEAVE_SUSPENDED
+Date: Tue, 2 Jan 2018 13:17:02 +0100
+Message-ID: <CAPDyKFqi0TgSwPzjfJj=6SEtk4uKUJhgM9ubyax4u-4aC5=Jfw@mail.gmail.com>
+References: <7742130.AaJQIxeI1n@aspire.rjw.lan> <2174279.mj3UjPCxfO@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f194.google.com ([74.125.82.194]:36732 "EHLO
-        mail-ot0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751332AbeABLwc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 06:52:32 -0500
-In-Reply-To: <CAPDyKFqJfWy3jaC6jY9bj3e261ONufe7EkSYFWChWVeXvKQjyg@mail.gmail.com>
+Received: from mail-it0-f68.google.com ([209.85.214.68]:33387 "EHLO
+        mail-it0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751495AbeABMRD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 07:17:03 -0500
+Received: by mail-it0-f68.google.com with SMTP id o130so11050009itg.0
+        for <linux-pm@vger.kernel.org>; Tue, 02 Jan 2018 04:17:03 -0800 (PST)
+In-Reply-To: <2174279.mj3UjPCxfO@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On Tue, Jan 2, 2018 at 12:46 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 30 December 2017 at 01:47, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> On Fri, Dec 29, 2017 at 12:37 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>> In case the WAKEUP_PATH flag has been set in a later phase than from the
->>> ->suspend() callback, the PM core don't set the ->power.wakeup_path status
->>> flag for the device. Therefore, let's be safe and check it explicitly.
->>>
->>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->>> ---
->>>  drivers/base/power/domain.c | 8 ++++++--
->>>  1 file changed, 6 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
->>> index f9dcc98..32b4ba7 100644
->>> --- a/drivers/base/power/domain.c
->>> +++ b/drivers/base/power/domain.c
->>> @@ -1038,7 +1038,9 @@ static int genpd_finish_suspend(struct device *dev, bool poweroff)
->>>         if (IS_ERR(genpd))
->>>                 return -EINVAL;
->>>
->>> -       if (dev->power.wakeup_path && genpd_is_active_wakeup(genpd))
->>> +       if ((dev->power.wakeup_path ||
->>> +           dev_pm_test_driver_flags(dev, DPM_FLAG_WAKEUP_PATH)) &&
+On 2 January 2018 at 12:32, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Sunday, December 10, 2017 12:55:23 AM CET Rafael J. Wysocki wrote:
+>> Hi All,
 >>
->> Shouldn't dev->power.wakeup_path be always set if DPM_FLAG_WAKEUP_PATH
->> is set as per the second patch in the series?
+>> This series is a follow-up for
+>>
+>> https://marc.info/?l=linux-doc&m=151101644105835&w=2
+>>
+>> Patches[1-3/6] from the above have been reviewed and agreed on, so
+>> they are in linux-next now and here's a next version of the rest.
+>>
+>> Patches [1-2/4] are preparatory.  The first one is just really small
+>> code duplication avoidance on top of this recent fix:
+>>
+>> https://patchwork.kernel.org/patch/10097563/
+>>
+>> and the second one simply moves some code to separate functions.
+>>
+>> Patch [3/4] causes the PM core to carry out some optimizations for
+>> drivers of devices with DPM_FLAG_SMART_SUSPEND set whose "late"
+>> and "noirq" suspend (or equivalent) driver callbacks are invoked
+>> directly by the core.
+>>
+>> The underlying observation is that if the device is suspended (via
+>> runtime PM) during the "late suspend" phase of a system transition,
+>> invoking the "late" and "noirq" callbacks from the driver for it is not
+>> going to make it more suspended, so to speak, so it doesn't make sense to
+>> invoke them at all.
+>>
+>> [That optimization is only done for devices with DPM_FLAG_SMART_SUSPEND
+>> set, because drivers setting that flag are expected to be prepared for
+>> skipping their "late" and "noirq" callbacks if the device is already
+>> suspended.]
+>>
+>> Patch [4/4] makes the core do an analogous thing for devices with
+>> DPM_FLAG_LEAVE_SUSPENDED set whose "noirq" and "early" resume (or
+>> equivalent) driver callbacks are directly invoked by the core.
+>>
+>> In that case the observation is that if such devices can be left in
+>> suspend after the system transition to the working state, running
+>> resume callbacks from their drivers is simply not necessary.
+>>
+>> Pathes [3-4/4] have been reoredered and reworked a bit since the last
+>> iteration, so they are regarded as new.
+>>
+>> The series is on top of the linux-next branch of the linux-pm.git tree
+>> that should be merged into linux-next on Monday.
+>>
+>> [I have developed debug bus type and driver modules to test that code,
+>> but they are not ready to be made available at this point.]
 >
-> Not if DPM_FLAG_WAKEUP_PATH is set from a driver's ->suspend_late() callback.
+> While I acknowledge that Ulf doesn't appear to be convinced by my
+> arguments, I also see no technical reason why this cannot go in.
+
+Correct, I am not convinced this is the right path as a general
+optimization, at least in it's current form. The main argument is
+about skipping invoking callbacks, as I have stated.
+
+Moreover, I think we are lacking important input from some more
+experienced PM core code contributors, like Alan, Kevin etc. If any of
+those guys would give an ack, that would also make me more comfortable
+with this.
+
+On the other hand, I realize that we can't wait forever for that to happen.
+
 >
-> To do that, the PM core would need to be adopted to set/propagate the
-> "wakeup_path" flag at __device_suspend_late(), similar to what is done
-> at __device_suspend().
+> As I said during the discussion, I have tested it and it works for me
+> as expected.  I also need it to make progress on the drivers front.
+>
+> Moreover, it should not matter for any drivers that don't set the flags
+> in question, so the optimizations introduced here are super-easy to avoid
+> by leaving those flags unset.
 
-Why not?
+What prevents you from folding in some changes to a few drivers as
+apart of the $subject series?
 
-The wakeup_path flag is only used during the "noirq" phase, so it can
-be propagated to parent at the end of __device_suspend_late() instead
-of doing that in __device_suspend() even.
+I have asked for that, as to get a better picture of how this is going
+to work in the end.
 
-Thanks,
-Rafael
+[...]
+
+Kind regards
+Uffe
