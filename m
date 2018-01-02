@@ -1,110 +1,117 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 0/4] PM / core: Direct handling of DPM_FLAG_SMART_SUSPEND
- and DPM_FLAG_LEAVE_SUSPENDED
-Date: Tue, 2 Jan 2018 13:26:56 +0100
-Message-ID: <CAJZ5v0h4T19=_wVRoEUGzKTm6k4KY_+rezBEfhS-bMMxT=uKFQ@mail.gmail.com>
-References: <7742130.AaJQIxeI1n@aspire.rjw.lan> <2174279.mj3UjPCxfO@aspire.rjw.lan>
- <CAPDyKFqi0TgSwPzjfJj=6SEtk4uKUJhgM9ubyax4u-4aC5=Jfw@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 4/4] PM / core: Print warn if device gets enabled as
+ wakeup source during sleep
+Date: Tue, 2 Jan 2018 13:30:27 +0100
+Message-ID: <CAPDyKFoQUYHaqr7Tf5g9+8B2KF9pHXx7q+SEne7Mr1Z2r-ozBg@mail.gmail.com>
+References: <1514547423-18965-1-git-send-email-ulf.hansson@linaro.org>
+ <1514547423-18965-5-git-send-email-ulf.hansson@linaro.org> <CAJZ5v0jWjvfQAttj6uhOhc_Hs1oT=sz3yEGnWGJaCMvJ7HJf8Q@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f195.google.com ([74.125.82.195]:46663 "EHLO
-        mail-ot0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751765AbeABM05 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 07:26:57 -0500
-In-Reply-To: <CAPDyKFqi0TgSwPzjfJj=6SEtk4uKUJhgM9ubyax4u-4aC5=Jfw@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0jWjvfQAttj6uhOhc_Hs1oT=sz3yEGnWGJaCMvJ7HJf8Q@mail.gmail.com>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>
 
-On Tue, Jan 2, 2018 at 1:17 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 2 January 2018 at 12:32, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->> On Sunday, December 10, 2017 12:55:23 AM CET Rafael J. Wysocki wrote:
->>> Hi All,
->>>
->>> This series is a follow-up for
->>>
->>> https://marc.info/?l=linux-doc&m=151101644105835&w=2
->>>
->>> Patches[1-3/6] from the above have been reviewed and agreed on, so
->>> they are in linux-next now and here's a next version of the rest.
->>>
->>> Patches [1-2/4] are preparatory.  The first one is just really small
->>> code duplication avoidance on top of this recent fix:
->>>
->>> https://patchwork.kernel.org/patch/10097563/
->>>
->>> and the second one simply moves some code to separate functions.
->>>
->>> Patch [3/4] causes the PM core to carry out some optimizations for
->>> drivers of devices with DPM_FLAG_SMART_SUSPEND set whose "late"
->>> and "noirq" suspend (or equivalent) driver callbacks are invoked
->>> directly by the core.
->>>
->>> The underlying observation is that if the device is suspended (via
->>> runtime PM) during the "late suspend" phase of a system transition,
->>> invoking the "late" and "noirq" callbacks from the driver for it is not
->>> going to make it more suspended, so to speak, so it doesn't make sense to
->>> invoke them at all.
->>>
->>> [That optimization is only done for devices with DPM_FLAG_SMART_SUSPEND
->>> set, because drivers setting that flag are expected to be prepared for
->>> skipping their "late" and "noirq" callbacks if the device is already
->>> suspended.]
->>>
->>> Patch [4/4] makes the core do an analogous thing for devices with
->>> DPM_FLAG_LEAVE_SUSPENDED set whose "noirq" and "early" resume (or
->>> equivalent) driver callbacks are directly invoked by the core.
->>>
->>> In that case the observation is that if such devices can be left in
->>> suspend after the system transition to the working state, running
->>> resume callbacks from their drivers is simply not necessary.
->>>
->>> Pathes [3-4/4] have been reoredered and reworked a bit since the last
->>> iteration, so they are regarded as new.
->>>
->>> The series is on top of the linux-next branch of the linux-pm.git tree
->>> that should be merged into linux-next on Monday.
->>>
->>> [I have developed debug bus type and driver modules to test that code,
->>> but they are not ready to be made available at this point.]
+On 30 December 2017 at 01:58, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> On Fri, Dec 29, 2017 at 12:37 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> In general, wakeup settings are not supposed to be changed during any of
+>> the system wide PM phases. The reason is simply that it would break
+>> guarantees provided by the PM core, to properly act on active wakeup
+>> sources.
 >>
->> While I acknowledge that Ulf doesn't appear to be convinced by my
->> arguments, I also see no technical reason why this cannot go in.
->
-> Correct, I am not convinced this is the right path as a general
-> optimization, at least in it's current form. The main argument is
-> about skipping invoking callbacks, as I have stated.
->
-> Moreover, I think we are lacking important input from some more
-> experienced PM core code contributors, like Alan, Kevin etc. If any of
-> those guys would give an ack, that would also make me more comfortable
-> with this.
->
-> On the other hand, I realize that we can't wait forever for that to happen.
->
+>> However, there are exceptions to when, in particular, disabling a device as
+>> wakeup source makes sense. For example, in cases when a driver realizes
+>> that its device is dead during system suspend. For these scenarios, we
+>> don't need to care about acting on the wakeup source correctly, because a
+>> dead device shouldn't deliver wakeup signals.
 >>
->> As I said during the discussion, I have tested it and it works for me
->> as expected.  I also need it to make progress on the drivers front.
+>> To this reasoning and to help users to properly manage wakeup settings,
+>> let's print a warning in cases someone calls device_wakeup_enable() during
+>> system sleep.
 >>
->> Moreover, it should not matter for any drivers that don't set the flags
->> in question, so the optimizations introduced here are super-easy to avoid
->> by leaving those flags unset.
+>> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> ---
+>>  drivers/base/power/main.c   | 4 ++++
+>>  drivers/base/power/wakeup.c | 4 ++++
+>>  include/linux/pm.h          | 1 +
+>>  3 files changed, 9 insertions(+)
+>>
+>> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>> index 1327726..6b0d312 100644
+>> --- a/drivers/base/power/main.c
+>> +++ b/drivers/base/power/main.c
+>> @@ -1030,6 +1030,8 @@ static void device_complete(struct device *dev, pm_message_t state)
+>>                 callback(dev);
+>>         }
+>>
+>> +       dev->power.may_set_wakeup = dev->power.can_wakeup;
+>> +
+>>         device_unlock(dev);
+>>
+>>         pm_runtime_put(dev);
+>> @@ -1747,6 +1749,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
+>>
+>>         device_lock(dev);
+>>
+>> +       dev->power.may_set_wakeup = false;
+>>         dev->power.wakeup_path = false;
+>>
+>>         if (dev->power.no_pm_callbacks) {
+>> @@ -1775,6 +1778,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
+>>         if (ret < 0) {
+>>                 suspend_report_result(callback, ret);
+>>                 pm_runtime_put(dev);
+>> +               dev->power.may_set_wakeup = dev->power.can_wakeup;
+>>                 return ret;
+>>         }
+>>         /*
+>> diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+>> index cb72965..5445bea 100644
+>> --- a/drivers/base/power/wakeup.c
+>> +++ b/drivers/base/power/wakeup.c
+>> @@ -268,6 +268,9 @@ int device_wakeup_enable(struct device *dev)
+>>         if (!dev || !dev->power.can_wakeup)
+>>                 return -EINVAL;
+>>
+>> +       if (!dev->power.may_set_wakeup)
+>> +               dev_warn(dev, "don't enable as wakup source during sleep!\n");
+>> +
+>>         ws = wakeup_source_register(dev_name(dev));
+>>         if (!ws)
+>>                 return -ENOMEM;
+>> @@ -413,6 +416,7 @@ void device_set_wakeup_capable(struct device *dev, bool capable)
+>>                 return;
+>>
+>>         dev->power.can_wakeup = capable;
+>> +       dev->power.may_set_wakeup = capable;
+>>         if (device_is_registered(dev) && !list_empty(&dev->power.entry)) {
+>>                 if (capable) {
+>>                         int ret = wakeup_sysfs_add(dev);
+>> diff --git a/include/linux/pm.h b/include/linux/pm.h
+>> index ebc6ef8..106fb15 100644
+>> --- a/include/linux/pm.h
+>> +++ b/include/linux/pm.h
+>> @@ -606,6 +606,7 @@ struct dev_pm_info {
+>>         struct list_head        entry;
+>>         struct completion       completion;
+>>         struct wakeup_source    *wakeup;
+>> +       bool                    may_set_wakeup:1;
+>>         bool                    wakeup_path:1;
+>>         bool                    syscore:1;
+>>         bool                    no_pm_callbacks:1;      /* Owned by the PM core */
+>> --
 >
-> What prevents you from folding in some changes to a few drivers as
-> apart of the $subject series?
+> I didn't mean anything so complicated. :-)
+
+Okay. :-)
+
 >
-> I have asked for that, as to get a better picture of how this is going
-> to work in the end.
+> Just a warning message if (pm_suspend_target_state != PM_SUSPEND_ON)
+> in device_wakeup_enable() (or equivalent) should be sufficient.
 
-I can repost this along with the driver changes, but I don't think
-that will make much of a difference honestly and I really don't want
-to defer this series any more, so I will do as follows.
+Alright, let me re-spin this and thanks for the suggestion.
 
-Consider this series as queued up unless Greg speaks up and I will
-post patches [2-4/4] (the first one is in linux-next already) again
-with the drivers stuff later today.
-
-Thanks,
-Rafael
+Kind regards
+Uffe
