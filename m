@@ -1,50 +1,72 @@
-From: Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH V8 3/3] OPP: Allow "opp-hz" and "opp-microvolt" to
- contain magic values
-Date: Tue, 2 Jan 2018 12:03:27 +0530
-Message-ID: <20180102063327.GB15166@vireshk-i7>
-References: <cover.1513591822.git.viresh.kumar@linaro.org>
- <476d7ae69184d787ccc6d99f8df6069007fd0a91.1513591822.git.viresh.kumar@linaro.org>
- <20171226202955.32j7gzonrixtwdpt@rob-hp-laptop>
- <20171227085645.GF8312@vireshk-i7>
- <CAL_JsqJzMfNhHK=6Wt4dzBRS9BVGMZ-f7uk3OnUupudTfwuyUA@mail.gmail.com>
- <20171228043725.GB8652@vireshk-i7>
- <3721988e-fa13-c5dc-9ee6-490ed9b4b767@codeaurora.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: thermal/drivers/hisi: Remove bogus const from function return type
+Date: Tue, 2 Jan 2018 08:36:31 +0100
+Message-ID: <CAMuHMdU-_Obwo8t=2oE3CfEmZ0nks03HNssS53cKVfbLCi2sdA@mail.gmail.com>
+References: <1511089467-20525-1-git-send-email-geert@linux-m68k.org> <20180101182123.GA3753@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-Content-Disposition: inline
-In-Reply-To: <3721988e-fa13-c5dc-9ee6-490ed9b4b767-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Rajendra Nayak <rnayak-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Viresh Kumar <vireshk-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Nishanth Menon <nm-l0cyMroinI0@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, Rafael Wysocki <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Vincent Guittot <vincent.guittot-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Sudeep Holla <sudeep.holla-5wv7dgnIgG8@public.gmane.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f179.google.com ([209.85.220.179]:33741 "EHLO
+        mail-qk0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751109AbeABHgd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 02:36:33 -0500
+In-Reply-To: <20180101182123.GA3753@localhost.localdomain>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Kevin Wangtao <kevin.wangtao@linaro.org>, Arnd Bergmann <arnd@arndb.de>, Linux PM list <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On 02-01-18, 11:35, Rajendra Nayak wrote:
-> I would want to reiterate what I have been saying for a while, that for these patches
-> to be usable on any qualcomm platform completely we need support to associate
-> multiple power-domains to a single device which is missing today.
+Hi Eduardo,
 
-Sure, but I had the understanding based on our last communication that
-you are going to go with partial support for now and multiple domain
-thing will be done later on.
+On Mon, Jan 1, 2018 at 7:21 PM, Eduardo Valentin <edubezval@gmail.com> wrot=
+e:
+> On Sun, Nov 19, 2017 at 12:04:27PM +0100, Geert Uytterhoeven wrote:
+>> With gcc-4.1.2:
+>>
+>>     drivers/thermal/hisi_thermal.c: In function =E2=80=98hisi_thermal_pr=
+obe=E2=80=99:
+>>     drivers/thermal/hisi_thermal.c:530: warning: type qualifiers ignored=
+ on function return type
+>>
+>> Remove the "const" keyword to fix this.
+>
+> Interesting.
+>
+> I intentionally asked Daniel to include the modifier because sparse
+> pointed this to me:
+>
+> This patch adds this issue to hisi driver (sparse)
+>
+> drivers/thermal/hisi_thermal.c:398:24: warning: incorrect type in assignm=
+ent (different modifiers)
+> drivers/thermal/hisi_thermal.c:398:24:    expected int ( *platform_probe =
+)( ... )
+> drivers/thermal/hisi_thermal.c:398:24:    got void const *
 
-> What I have been testing with these patches is to move a single user (MMC, which BTW does not
-> have to put requests on multiple powerdomains) to use this solution on a db820c (msm8996) device.
+Sparse doesn't like assigning void pointers to function pointers without a =
+cast.
 
-Right.
+> which makes sense to me to be const, given that it is receiving the retur=
+n
+> of a function which returns a const void *.
+> nclude/linux/of_device.h:extern const void *of_device_get_match_data(cons=
+t struct device *dev);
 
-> Getting this merged now can open up issues for other devices (which can't move to this solution)
-> since MMC alone would put requests to pull a *common* rail up/down while others can't.
+That const applies to what is returned by of_device_get_match_data() (a con=
+st
+void *), not to what is returned by the returned function (an int).
 
-Even on that I thought that you will artificially vote for a high
-requirement for those devices from some platform code initially, and
-remove that code once all the device drivers (you need) are updated to
-post their own requirements.
+Gr{oetje,eeting}s,
 
--- 
-viresh
+                        Geert
+
 --
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
