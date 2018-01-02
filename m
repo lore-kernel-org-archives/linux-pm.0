@@ -1,54 +1,53 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 3/3] gpio: rcar: Use WAKEUP_PATH driver PM flag
-Date: Tue, 2 Jan 2018 14:57:00 +0100
-Message-ID: <CAMuHMdXZkUZRnpuT=G85ZerULEyNF09DUJAVMfvx+eUn-WmL7w@mail.gmail.com>
-References: <1514554304-18989-1-git-send-email-ulf.hansson@linaro.org>
- <1514554304-18989-4-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0gWtr1bwi7WVeEbTJPu3KC8YfPvfUh5XDmomiK8TFmfyg@mail.gmail.com>
- <CAMuHMdVmqM+WA_EaCRHNojpV6NYmS0-V18MoixyV5UdC3cq+2g@mail.gmail.com> <CAPDyKFrPTJ84-rBcdPH+Vs_L7Hbmh8G-C8fC1zYqP3H3dxn7vw@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Subject: [PATCH 12/12] power: reset: account for const type of of_device_id.data
+Date: Tue,  2 Jan 2018 14:28:08 +0100
+Message-ID: <1514899688-27844-13-git-send-email-Julia.Lawall@lip6.fr>
+References: <1514899688-27844-1-git-send-email-Julia.Lawall@lip6.fr>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f194.google.com ([209.85.220.194]:41179 "EHLO
-        mail-qk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753123AbeABN5C (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 08:57:02 -0500
-In-Reply-To: <CAPDyKFrPTJ84-rBcdPH+Vs_L7Hbmh8G-C8fC1zYqP3H3dxn7vw@mail.gmail.com>
+Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:10905 "EHLO
+        mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1753529AbeABN4z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 08:56:55 -0500
+In-Reply-To: <1514899688-27844-1-git-send-email-Julia.Lawall@lip6.fr>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-gpio@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Nicolas Ferre <nicolas.ferre@microchip.com>
+Cc: kernel-janitors@vger.kernel.org, Sebastian Reichel <sre@kernel.org>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-Hi Ulf,
+This driver creates a const structure that it stores in the data
+field of an of_device_id array.
 
-On Tue, Jan 2, 2018 at 2:02 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
->>>> [Ulf: Converted to use the WAKEUP_PATH driver PM flag]
->>
->> Ulf: + killing the DEV_PM_OPS define, increasing kernel size if PM_SUSPEND=n?
->
-> Oh, yes - correct!
->
-> The code looks nicer, with the penalty of one static struct declared
-> and not used, in case CONFIG_PM_SLEEP is unset.
+Add const to the declaration of the location that receives a value
+from the data field to ensure that the compiler will continue to check
+that the value is not modified and remove the const-dropping cast on
+the access to the data field.
 
-At 23 pointers of 4 or 8 bytes each in 3 drivers, I don't consider this
-insignificant.
+Done using Coccinelle.
 
-Fortunately this driver is not used on RZ/A1, which you can run without
-external RAM if you manage to fit everything in 10 MiB of SRAM...
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-> Should I revert back to your proposal, I am fine with whatever?
+---
+ drivers/power/reset/at91-sama5d2_shdwc.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Yes please.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff -u -p a/drivers/power/reset/at91-sama5d2_shdwc.c b/drivers/power/reset/at91-sama5d2_shdwc.c
+--- a/drivers/power/reset/at91-sama5d2_shdwc.c
++++ b/drivers/power/reset/at91-sama5d2_shdwc.c
+@@ -68,7 +68,7 @@ struct shdwc_config {
+ };
+ 
+ struct shdwc {
+-	struct shdwc_config *cfg;
++	const struct shdwc_config *cfg;
+ 	void __iomem *at91_shdwc_base;
+ };
+ 
+@@ -260,7 +260,7 @@ static int __init at91_shdwc_probe(struc
+ 	}
+ 
+ 	match = of_match_node(at91_shdwc_of_match, pdev->dev.of_node);
+-	at91_shdwc->cfg = (struct shdwc_config *)(match->data);
++	at91_shdwc->cfg = match->data;
+ 
+ 	sclk = devm_clk_get(&pdev->dev, NULL);
+ 	if (IS_ERR(sclk))
