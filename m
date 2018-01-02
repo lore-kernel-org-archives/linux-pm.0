@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v3 1/4] PM / core: Assign the wakeup_path status flag in __device_prepare()
-Date: Tue,  2 Jan 2018 17:08:50 +0100
-Message-ID: <1514909333-4450-2-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v3 3/4] PM / wakeup: Add device_set_wakeup_path() helper to control wakeup path
+Date: Tue,  2 Jan 2018 17:08:52 +0100
+Message-ID: <1514909333-4450-4-git-send-email-ulf.hansson@linaro.org>
 References: <1514909333-4450-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <1514909333-4450-1-git-send-email-ulf.hansson@linaro.org>
@@ -10,47 +10,63 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-The PM core in the device_prepare() phase, resets the wakeup_path status
-flag to the value of device_may_wakeup(). This means if a ->prepare() or a
-->suspend() callback for the device would update the device's wakeup
-setting, this doesn't become reflected in the wakeup_path status flag.
+During system suspend, a driver may find that the wakeup setting is enabled
+for its device and therefore configures it to deliver system wakeup
+signals.
 
-In general this isn't a problem, because wakeup settings are not supposed
-to be changed (via for example calling device_set_wakeup_enable()) during
-any system wide suspend/resume phase.  Nevertheless there are some users,
-which can be considered as legacy, that don't conform to this behaviour.
+Additionally, sometimes the driver and its device, relies on some further
+consumed resource, like an irqchip or a phy for example, to stay powered
+on, as to be able to deliver system wakeup signals.
 
-These legacy cases should be corrected, however until that is done, let's
-address the issue from the PM core, by moving the assignment of the
-wakeup_path status flag to the __device_suspend() phase and after the
-->suspend() callback has been invoked.
+In general the driver deals with this, via raising an "enable count" of the
+consumed resource or via a subsystem specific API, like irq_set_irq_wake()
+or enable|disable_irq_wake() for an irqchip. However, this may not be
+sufficient in cases when the resource's device may be attached to a PM
+domain (genpd for example) or is attached to a non-trivial middle layer
+(PCI for example).
+
+To address cases like these, the existing ->dev.power.wakeup_path status
+flag is there to help. As a matter of fact, genpd already monitors the flag
+during system suspend and acts accordingly.
+
+However, so far it has not been clear, if anybody else but the PM core is
+allowed to set the ->dev.power.wakeup_path status flag, which is required
+to make this work. For this reason, let's introduce a new helper function,
+device_set_wakeup_path().
+
+Typically a driver that manages a resource needed in the wakeup path,
+should call device_set_wakeup_path() from its ->suspend() or
+->suspend_late() callback.
 
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/main.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ include/linux/pm_wakeup.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 70398e7..7aeb91d 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1788,6 +1788,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
-  End:
- 	if (!error) {
- 		dev->power.is_suspended = true;
-+		if (device_may_wakeup(dev))
-+			dev->power.wakeup_path = true;
- 		dpm_propagate_to_parent(dev);
- 		dpm_clear_suppliers_direct_complete(dev);
- 	}
-@@ -1912,7 +1914,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
+diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
+index 4c2cba7..4238dde 100644
+--- a/include/linux/pm_wakeup.h
++++ b/include/linux/pm_wakeup.h
+@@ -88,6 +88,11 @@ static inline bool device_may_wakeup(struct device *dev)
+ 	return dev->power.can_wakeup && !!dev->power.wakeup;
+ }
  
- 	device_lock(dev);
++static inline void device_set_wakeup_path(struct device *dev)
++{
++	dev->power.wakeup_path = true;
++}
++
+ /* drivers/base/power/wakeup.c */
+ extern void wakeup_source_prepare(struct wakeup_source *ws, const char *name);
+ extern struct wakeup_source *wakeup_source_create(const char *name);
+@@ -174,6 +179,8 @@ static inline bool device_may_wakeup(struct device *dev)
+ 	return dev->power.can_wakeup && dev->power.should_wakeup;
+ }
  
--	dev->power.wakeup_path = device_may_wakeup(dev);
-+	dev->power.wakeup_path = false;
++static inline void device_set_wakeup_path(struct device *dev) {}
++
+ static inline void __pm_stay_awake(struct wakeup_source *ws) {}
  
- 	if (dev->power.no_pm_callbacks) {
- 		ret = 1;	/* Let device go direct_complete */
+ static inline void pm_stay_awake(struct device *dev) {}
 -- 
 2.7.4
