@@ -1,91 +1,88 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 0/4] PM / core: Direct handling of DPM_FLAG_SMART_SUSPEND
- and DPM_FLAG_LEAVE_SUSPENDED
-Date: Tue, 2 Jan 2018 14:26:25 +0100
-Message-ID: <20180102132625.GA23199@kroah.com>
-References: <7742130.AaJQIxeI1n@aspire.rjw.lan>
- <2174279.mj3UjPCxfO@aspire.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/3] phy: core: Move runtime PM reference counting to
+ the parent device
+Date: Tue, 2 Jan 2018 14:28:14 +0100
+Message-ID: <CAPDyKFrrHkhNH6Qr4NJQjPSVh+Ok-wC5-vrY5bi85Jk63Ash0A@mail.gmail.com>
+References: <1513778960-10073-1-git-send-email-ulf.hansson@linaro.org>
+ <CAJZ5v0hmSaWiy9zQPP+0FySySW4yNCm92mTtJ7ebd+rBjjqJng@mail.gmail.com>
+ <CAPDyKFpHNYbf3Wz+Hq94Rm_wQGWnQkc6B2cS_RTjkmcbeeZoyw@mail.gmail.com> <1828343.cNA3rGR90B@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:45638 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751527AbeABN0T (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 08:26:19 -0500
-Content-Disposition: inline
-In-Reply-To: <2174279.mj3UjPCxfO@aspire.rjw.lan>
+Received: from mail-io0-f178.google.com ([209.85.223.178]:37308 "EHLO
+        mail-io0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751882AbeABN2P (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 08:28:15 -0500
+Received: by mail-io0-f178.google.com with SMTP id n14so25685735iob.4
+        for <linux-pm@vger.kernel.org>; Tue, 02 Jan 2018 05:28:15 -0800 (PST)
+In-Reply-To: <1828343.cNA3rGR90B@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Kishon Vijay Abraham I <kishon@ti.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On Tue, Jan 02, 2018 at 12:32:55PM +0100, Rafael J. Wysocki wrote:
-> On Sunday, December 10, 2017 12:55:23 AM CET Rafael J. Wysocki wrote:
-> > Hi All,
-> > 
-> > This series is a follow-up for
-> > 
-> > https://marc.info/?l=linux-doc&m=151101644105835&w=2
-> > 
-> > Patches[1-3/6] from the above have been reviewed and agreed on, so
-> > they are in linux-next now and here's a next version of the rest.
-> > 
-> > Patches [1-2/4] are preparatory.  The first one is just really small
-> > code duplication avoidance on top of this recent fix:
-> > 
-> > https://patchwork.kernel.org/patch/10097563/
-> > 
-> > and the second one simply moves some code to separate functions.
-> > 
-> > Patch [3/4] causes the PM core to carry out some optimizations for
-> > drivers of devices with DPM_FLAG_SMART_SUSPEND set whose "late"
-> > and "noirq" suspend (or equivalent) driver callbacks are invoked
-> > directly by the core.
-> > 
-> > The underlying observation is that if the device is suspended (via
-> > runtime PM) during the "late suspend" phase of a system transition,
-> > invoking the "late" and "noirq" callbacks from the driver for it is not
-> > going to make it more suspended, so to speak, so it doesn't make sense to
-> > invoke them at all.
-> > 
-> > [That optimization is only done for devices with DPM_FLAG_SMART_SUSPEND
-> > set, because drivers setting that flag are expected to be prepared for
-> > skipping their "late" and "noirq" callbacks if the device is already
-> > suspended.]
-> > 
-> > Patch [4/4] makes the core do an analogous thing for devices with
-> > DPM_FLAG_LEAVE_SUSPENDED set whose "noirq" and "early" resume (or
-> > equivalent) driver callbacks are directly invoked by the core.
-> > 
-> > In that case the observation is that if such devices can be left in
-> > suspend after the system transition to the working state, running
-> > resume callbacks from their drivers is simply not necessary.
-> > 
-> > Pathes [3-4/4] have been reoredered and reworked a bit since the last
-> > iteration, so they are regarded as new.
-> > 
-> > The series is on top of the linux-next branch of the linux-pm.git tree
-> > that should be merged into linux-next on Monday.
-> > 
-> > [I have developed debug bus type and driver modules to test that code,
-> > but they are not ready to be made available at this point.]
-> 
-> While I acknowledge that Ulf doesn't appear to be convinced by my
-> arguments, I also see no technical reason why this cannot go in.
-> 
-> As I said during the discussion, I have tested it and it works for me
-> as expected.  I also need it to make progress on the drivers front.
-> 
-> Moreover, it should not matter for any drivers that don't set the flags
-> in question, so the optimizations introduced here are super-easy to avoid
-> by leaving those flags unset.
-> 
-> So I'm going to apply the series.
-> 
-> Greg, please let me know if you have objections.
+On 24 December 2017 at 13:00, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Saturday, December 23, 2017 4:09:33 PM CET Ulf Hansson wrote:
+>> [...]
+>>
+>> >
+>> > So IMO the changes you are proposing make sense regardless of the
+>> > genpd issue, because they generally simplify the phy code, but the
+>> > additional use_runtime_pm field in struct phy represents redundant
+>> > information (manipulating reference counters shouldn't matter if
+>> > runtime PM is disabled), so it doesn't appear to be necessary.
+>> >
+>>
+>> Actually, the first version I posted treated the return codes from
+>> pm_runtime_get_sync() according to your suggestion above.
+>>
+>> However, Kishon pointed out that it didn't work. That's because, there
+>> are phy provider drivers that enables runtime PM *after* calling
+>> phy_create(). And in those cases, that is because they want to treat
+>> runtime PM themselves.
+>>
+>> I think that's probably something we should look into to change, but I
+>> find it being a separate issue, that I didn't want to investigate as
+>> part of this series.
+>>
+>> See more about the thread here:
+>> https://www.spinics.net/lists/linux-renesas-soc/msg21711.html
+>
+> Even so, it shouldn't matter when the provider enables runtime PM.
+>
+> Calling pm_runtime_get_*()/pm_runtime_put_*() should always work as
+> long as they are balanced properly regardless of whether or not
+> runtime PM is enabled for the device or it is enabled in the meantime.
+> Of course, the initial runtime PM status of the device must reflect
+> the values of the usage counters, but that should not be too hard to
+> ensure.
 
-No objection from me at all, please apply.
+Yes, this is probably the main reason.
 
-thanks,
+However, as stated, I think we should look into addressing this
+problem more carefully, in a separate next step.
 
-greg k-h
+>
+> The reason why it matters here is because the phy core tries to be smart
+> about manipulating reference counters by itself and that's a mistake.
+>
+> So it looks to me like the whole thing needs to be reworked and yes,
+> that should be done in the first place IMO, because it will make the
+> issue with genpd go away automatically.
+
+Sorry, but I am not fully understanding what you suggest here. Perhaps
+you didn't check patch2?
+
+>
+> [Why is phy_pm_runtime_get() there at all, for instance?  It seems
+> to have no users and I kind of don't see use cases for it.  Also
+> phy_pm_runtime_get_sync() is only used by the phy core in three
+> places - shouldn't be too hard to fix that.]
+
+Removing these APIs and functions is done in patch2, so I guess I am
+already doing what you suggests above? No?
+
+[...]
+
+Kind regards
+Uffe
