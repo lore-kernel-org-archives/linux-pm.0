@@ -1,7 +1,7 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v3 2/4] PM / core: Propagate wakeup_path status flag in __device_suspend_late()
-Date: Tue,  2 Jan 2018 17:08:51 +0100
-Message-ID: <1514909333-4450-3-git-send-email-ulf.hansson@linaro.org>
+Subject: [PATCH v3 4/4] PM / wakeup: Print warn if device gets enabled as wakeup source during sleep
+Date: Tue,  2 Jan 2018 17:08:53 +0100
+Message-ID: <1514909333-4450-5-git-send-email-ulf.hansson@linaro.org>
 References: <1514909333-4450-1-git-send-email-ulf.hansson@linaro.org>
 Return-path: <linux-renesas-soc-owner@vger.kernel.org>
 In-Reply-To: <1514909333-4450-1-git-send-email-ulf.hansson@linaro.org>
@@ -10,78 +10,40 @@ To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
 Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-Currently the wakeup_path status flag becomes propagated from a child
-device to its parent device at __device_suspend(). This allows a driver
-dealing with a parent device to act on the flag from its ->suspend()
-callback.
+In general, wakeup settings are not supposed to be changed during any of
+the system wide PM phases. The reason is simply that it would break
+guarantees provided by the PM core, to properly act on active wakeup
+sources.
 
-However, in situations when the wakeup_path status flag needs to be set
-from a ->suspend_late() callback, its value doesn't get propagated to the
-parent by the PM core. Let's address this limitation, by also propagating
-the flag at __device_suspend_late().
+However, there are exceptions to when, in particular, disabling a device as
+wakeup source makes sense. For example, in cases when a driver realizes
+that its device is dead during system suspend. For these scenarios, we
+don't need to care about acting on the wakeup source correctly, because a
+dead device shouldn't deliver wakeup signals.
 
+To this reasoning and to help users to properly manage wakeup settings,
+let's print a warning in cases someone calls device_wakeup_enable() during
+system sleep.
+
+Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- drivers/base/power/main.c | 33 +++++++++++++++++----------------
- 1 file changed, 17 insertions(+), 16 deletions(-)
+ drivers/base/power/wakeup.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 7aeb91d..612bf1b 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1476,6 +1476,22 @@ static pm_callback_t dpm_subsys_suspend_late_cb(struct device *dev,
- 	return callback;
- }
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index b7b8b2f..272c44b 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -268,6 +268,9 @@ int device_wakeup_enable(struct device *dev)
+ 	if (!dev || !dev->power.can_wakeup)
+ 		return -EINVAL;
  
-+static void dpm_propagate_to_parent(struct device *dev)
-+{
-+	struct device *parent = dev->parent;
++	if (pm_suspend_target_state != PM_SUSPEND_ON)
++		dev_warn(dev, "don't enable as wakup source during sleep!\n");
 +
-+	if (!parent)
-+		return;
-+
-+	spin_lock_irq(&parent->power.lock);
-+
-+	parent->power.direct_complete = false;
-+	if (dev->power.wakeup_path && !parent->power.ignore_children)
-+		parent->power.wakeup_path = true;
-+
-+	spin_unlock_irq(&parent->power.lock);
-+}
-+
- /**
-  * __device_suspend_late - Execute a "late suspend" callback for given device.
-  * @dev: Device to handle.
-@@ -1528,6 +1544,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 		goto Complete;
- 	}
- 
-+	dpm_propagate_to_parent(dev);
- Skip:
- 	dev->power.is_late_suspended = true;
- 
-@@ -1660,22 +1677,6 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
- 	return error;
- }
- 
--static void dpm_propagate_to_parent(struct device *dev)
--{
--	struct device *parent = dev->parent;
--
--	if (!parent)
--		return;
--
--	spin_lock_irq(&parent->power.lock);
--
--	parent->power.direct_complete = false;
--	if (dev->power.wakeup_path && !parent->power.ignore_children)
--		parent->power.wakeup_path = true;
--
--	spin_unlock_irq(&parent->power.lock);
--}
--
- static void dpm_clear_suppliers_direct_complete(struct device *dev)
- {
- 	struct device_link *link;
+ 	ws = wakeup_source_register(dev_name(dev));
+ 	if (!ws)
+ 		return -ENOMEM;
 -- 
 2.7.4
