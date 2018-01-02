@@ -1,46 +1,88 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH] PM / runtime: Rework pm_runtime_force_suspend/resume()
-Date: Tue, 2 Jan 2018 12:21:43 +0100
-Message-ID: <CAJZ5v0hvCuJbt8wtCJFcLRpCdkNu=vGEuA7_dCWhkXgvGxgizw@mail.gmail.com>
-References: <4069324.Q7yJt6I4hJ@aspire.rjw.lan> <20180102105105.GA15376@wunner.de>
- <CAJZ5v0hYaEWPhqEuBkj7yusQiY1wfeJAn7QDfp-gmOYyNXatEg@mail.gmail.com>
+From: Morten Rasmussen <morten.rasmussen@foss.arm.com>
+Subject: Re: [PATCH v5 7/9] arm64: Topology, rename cluster_id
+Date: Tue, 2 Jan 2018 11:30:14 +0000
+Message-ID: <20180102113014.GA28799@e105550-lin.cambridge.arm.com>
+References: <20171201222330.18863-1-jeremy.linton@arm.com>
+ <20171201222330.18863-8-jeremy.linton@arm.com>
+ <20171213180217.GB4060@red-moon>
+ <7bb4e955-f3e5-d22f-4e78-eac97e66a9a6@arm.com>
+ <20171218124229.GG507@e105550-lin.cambridge.arm.com>
+ <965127a6-816b-8e0c-d228-a3d73a8c643a@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f50.google.com ([209.85.218.50]:45446 "EHLO
-        mail-oi0-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751357AbeABLVo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 06:21:44 -0500
-In-Reply-To: <CAJZ5v0hYaEWPhqEuBkj7yusQiY1wfeJAn7QDfp-gmOYyNXatEg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <965127a6-816b-8e0c-d228-a3d73a8c643a@huawei.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+Cc: Jeremy Linton <jeremy.linton@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, sudeep.holla@arm.com, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Tue, Jan 2, 2018 at 12:02 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Tue, Jan 2, 2018 at 11:51 AM, Lukas Wunner <lukas@wunner.de> wrote:
->> On Tue, Jan 02, 2018 at 01:56:28AM +0100, Rafael J. Wysocki wrote:
+On Tue, Jan 02, 2018 at 10:29:35AM +0800, Xiongfeng Wang wrote:
+> Hi,
+> 
+> On 2017/12/18 20:42, Morten Rasmussen wrote:
+> > On Fri, Dec 15, 2017 at 10:36:35AM -0600, Jeremy Linton wrote:
+> >> Hi,
+> >>
+> >> On 12/13/2017 12:02 PM, Lorenzo Pieralisi wrote:
+> >>> [+Morten, Dietmar]
+> >>>
+> >>> $SUBJECT should be:
+> >>>
+> >>> arm64: topology: rename cluster_id
+> >>
+> [cut]
+> >>
+> >> I was hoping someone else would comment here, but my take at this point is
+> >> that it doesn't really matter in a functional sense at the moment.
+> >> Like the chiplet discussion it can be the subject of a future patch along
+> >> with the patches which tweak the scheduler to understand the split.
+> >>
+> >> BTW, given that i'm OoO next week, and the following that are the holidays,
+> >> I don't intend to repost this for a couple weeks. I don't think there are
+> >> any issues with this set.
+> >>
+> >>>
+> >>> There is also arch/arm to take into account, again, this patch is
+> >>> just renaming (as it should have named since the beginning) a
+> >>> topology level but we should consider everything from a legacy
+> >>> perspective.
+> > 
+> > arch/arm has gone for thread/core/socket for the three topology levels
+> > it supports.
+> > 
+> > I'm not sure what short term value keeping cluster_id has? Isn't it just
+> > about where we make the package = cluster assignment? Currently it is in
+> > the definition of topology_physical_package_id. If we keep cluster_id
+> > and add package_id, it gets moved into the MPIDR/DT parsing code. 
+> > 
+> > Keeping cluster_id and introducing a topology_cluster_id function could
+> > help cleaning up some of the users of topology_physical_package_id that
+> > currently assumes package_id == cluster_id though.
+> 
+> I think we still need the information describing which cores are in one cluster.
+> Many arm64 chips have the architecture core/cluster/socket. Cores in one cluster may
+> share a same L2 cache. That information can be used to build the sched_domain. If we put
+> cores in one cluster in one sched_domain, the performance will be better.(please see
+> kernel/sched/topology.c:1197, cpu_coregroup_mask() uses 'core_sibling' to build a multi-core
+> sched_domain)
+> So I think we still need variable to record which cores are in one sched_domain for future use.
 
-[cut]
+I agree that information about clusters is useful. The problem is that
+we currently treat clusters as sockets (also known as dies or
+physical_package_id depending on which bit of code you are looking at). We
+don't handle the core/cluster/socket topology you mention as three
+'levels' of grouping of cores. We currently create one sched_domain
+levels for cores (in a cluster) and a parent sched_domain level of all
+clusters in the system ignoring if those are in different sockets and
+tell the scheduler that those clusters are all separate sockets. This
+doesn't work very well for systems with many clusters and/or multiple
+sockets.
 
->
->> One addition that would be really helpful:  pm_runtime_force_suspend()
->> should also force-suspend all children and consumers of the given
->> device.  Likewise, those should be resumed on pm_runtime_force_resume().
->> Then I could just add a device link from the audio PCI device on the GPU
->> to the graphics PCI device and just call pm_runtime_force_*() on the
->> graphics device (supplier) to magically power them both off and on.
->
-> Actually, the assumption is that pm_runtime_force_suspend() must be
-> called for the children before it is called for the parent even
-> without my patch, so it is just not going to work this way.
+How to solve that problem is a longer discussion which I'm happy to
+have. This patch is just preparing to get rid of the assumption that
+clusters are sockets as this is not in line with what other
+architectures does and the assumptions made by the scheduler.
 
-Moreover, what if those devices have nonzero usage counters?  There
-may be other reasons for that than just dependencies, like for example
-user space might have written "on" to their "control" files in sysfs.
-
-What you are looking for doesn't seem to match the runtime PM
-framework's assumptions, I'm afraid.
-
-Thanks,
-Rafael
+Morten
