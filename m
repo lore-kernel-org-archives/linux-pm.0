@@ -1,86 +1,61 @@
-From: Shuah Khan <shuahkh@osg.samsung.com>
-Subject: [GIT PULL] cpupower update for 4.16-rc1
-Date: Tue, 2 Jan 2018 16:13:17 -0700
-Message-ID: <47ae2127-281c-89ae-2818-faa17ed86047@osg.samsung.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM / runtime: Rework pm_runtime_force_suspend/resume()
+Date: Wed, 3 Jan 2018 00:21:36 +0100
+Message-ID: <CAJZ5v0gp_CJJZk7MwLtErqmM=iXxsxK5-mMA-w_4DYmtBBih0w@mail.gmail.com>
+References: <20180102130404.GA23434@wunner.de> <2760744.Zsn8Ys48yq@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------C372C0C5F471A3F3268EA89D"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from osg.samsung.com ([64.30.133.232]:48158 "EHLO osg.samsung.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751100AbeABXNV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 2 Jan 2018 18:13:21 -0500
-Content-Language: en-US
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <2760744.Zsn8Ys48yq@aspire.rjw.lan>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Lukas Wunner <lukas@wunner.de>
+Cc: Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Thomas Renninger <trenn@suse.de>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Shuah Khan <shuahkh@osg.samsung.com>, Shuah Khan <shuah@kernel.org>
 
-This is a multi-part message in MIME format.
---------------C372C0C5F471A3F3268EA89D
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+On Tue, Jan 2, 2018 at 8:07 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, January 2, 2018 2:04:04 PM CET Lukas Wunner wrote:
+>> On Tue, Jan 02, 2018 at 12:02:18PM +0100, Rafael J. Wysocki wrote:
+>> > On Tue, Jan 2, 2018 at 11:51 AM, Lukas Wunner <lukas@wunner.de> wrote:
+>> > > On Tue, Jan 02, 2018 at 01:56:28AM +0100, Rafael J. Wysocki wrote:
+>> > >> +     if (atomic_read(&dev->power.usage_count) <= 1 &&
+>> > >> +         atomic_read(&dev->power.child_count) == 0)
+>> > >> +             pm_runtime_set_suspended(dev);
+>> > >>
+>> > >> -     pm_runtime_set_suspended(dev);
+>> > >
+>> > > The ->runtime_suspend callback *has* been executed at this point.
+>> > > If the status is only updated conditionally, it may not reflect
+>> > > the device's actual power state correctly.  That doesn't seem to
+>> > > be a good idea.
+>> >
+>> > It doesn't matter, because this is done with runtime PM disabled, isn't it?
+>>
+>> It might not make a difference for the use case I have in mind, but
+>> pm_runtime_status_suspended() will return an incorrect result and is
+>> called from 47 files in 4.15-rc6 according to lxr.free-electrons.com.
+>
+> Generally, the runtime PM status is only meaningful for devices with runtime PM
+> enabled.
+>
+> There is an exception, which is during system suspend/resume, when runtime PM
+> is automatically disabled by the core, but that only under certain assumptions.
+>
+> Basically, you have to assume that no one else will mess up with the device
+> between the times you call pm_runtime_status_suspended() to check its runtime
+> PM status (or between the first time you do that and the last time runtime PM
+> has been enabled for the device).
+>
+> This patch doesn't change the situation in that respect.
 
-Hi Rafael,
+BTW, I'm not sure why you are worrying about the "status" field alone
+and not about the usage counter that can be greater than 0 after
+pm_runtime_force_suspend() which is inconsistent with the device's
+physical state (and with the "status" field too for that matter -
+always without the patch and in some cases with it) then.  As a matter
+of fact, the information left by the runtime PM framework is messed up
+with here this way or another and so anyway the only party that can
+make sense of it after pm_runtime_force_suspend() is the subsequent
+pm_runtime_force_resume().
 
-Please pull the cpupower update for 4.16-rc1.
-
-This update consists of a patch to remove FSF address.
-Diff is attached.
-
-thanks,
--- Shuah
-
-----------------------------------------------------------------------------------------------
-The following changes since commit ae64f9bd1d3621b5e60d7363bc20afb46aede215:
-
-  Linux 4.15-rc2 (2017-12-03 11:01:47 -0500)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux tags/linux-cpupower-4.16-rc1
-
-for you to fetch changes up to 0e96a0c83f0842d5cfd83b0a896bc82ff61f9849:
-
-  cpupower: Remove FSF address (2017-12-15 08:27:39 -0700)
-
-----------------------------------------------------------------
-linux-cpupower-4.16-rc1
-
-This update consists of a patch to remove FSF address.
-
-----------------------------------------------------------------
-Laura Abbott (1):
-      cpupower: Remove FSF address
-
- tools/power/cpupower/lib/cpufreq.h | 4 ----
- 1 file changed, 4 deletions(-)
-
-----------------------------------------------------------------------------------------------
-
---------------C372C0C5F471A3F3268EA89D
-Content-Type: text/x-patch;
- name="linux-cpupower-4.16-rc1.diff"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="linux-cpupower-4.16-rc1.diff"
-
-diff --git a/tools/power/cpupower/lib/cpufreq.h b/tools/power/cpupower/li=
-b/cpufreq.h
-index 3b005c39f068..60beaf5ed2ea 100644
---- a/tools/power/cpupower/lib/cpufreq.h
-+++ b/tools/power/cpupower/lib/cpufreq.h
-@@ -11,10 +11,6 @@
-  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  *  GNU General Public License for more details.
-- *
-- *  You should have received a copy of the GNU General Public License
-- *  along with this program; if not, write to the Free Software
-- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307=
-  USA
-  */
-=20
- #ifndef __CPUPOWER_CPUFREQ_H__
-
---------------C372C0C5F471A3F3268EA89D--
+Thanks,
+Rafael
