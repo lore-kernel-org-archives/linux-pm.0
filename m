@@ -1,109 +1,71 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / runtime: Rework pm_runtime_force_suspend/resume()
-Date: Tue, 02 Jan 2018 20:07:55 +0100
-Message-ID: <2760744.Zsn8Ys48yq@aspire.rjw.lan>
-References: <20180102130404.GA23434@wunner.de>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH v2 13/16] power: supply: axp288_fuel_gauge: Rework
+ get_status()
+Date: Tue, 2 Jan 2018 23:51:08 +0100
+Message-ID: <0ebb134a-78a0-e855-e6ba-282b0fc94c21@redhat.com>
+References: <20171226125914.10235-1-hdegoede@redhat.com>
+ <20171226125914.10235-13-hdegoede@redhat.com>
+ <CAGb2v66=N1Xn4EWQCHw7M08jCZ95u_qdTekp-Oo+vrBSqLrJcw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:51503 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751127AbeABTRV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 14:17:21 -0500
-In-Reply-To: <20180102130404.GA23434@wunner.de>
+Received: from mail-wm0-f46.google.com ([74.125.82.46]:39117 "EHLO
+        mail-wm0-f46.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750745AbeABWvL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 17:51:11 -0500
+Received: by mail-wm0-f46.google.com with SMTP id i11so389811wmf.4
+        for <linux-pm@vger.kernel.org>; Tue, 02 Jan 2018 14:51:10 -0800 (PST)
+In-Reply-To: <CAGb2v66=N1Xn4EWQCHw7M08jCZ95u_qdTekp-Oo+vrBSqLrJcw@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Lukas Wunner <lukas@wunner.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Chen-Yu Tsai <wens@csie.org>
+Cc: Sebastian Reichel <sre@kernel.org>, "open list:THERMAL" <linux-pm@vger.kernel.org>
 
-On Tuesday, January 2, 2018 2:04:04 PM CET Lukas Wunner wrote:
-> On Tue, Jan 02, 2018 at 12:02:18PM +0100, Rafael J. Wysocki wrote:
-> > On Tue, Jan 2, 2018 at 11:51 AM, Lukas Wunner <lukas@wunner.de> wrote:
-> > > On Tue, Jan 02, 2018 at 01:56:28AM +0100, Rafael J. Wysocki wrote:
-> > >> +     if (atomic_read(&dev->power.usage_count) <= 1 &&
-> > >> +         atomic_read(&dev->power.child_count) == 0)
-> > >> +             pm_runtime_set_suspended(dev);
-> > >>
-> > >> -     pm_runtime_set_suspended(dev);
-> > >
-> > > The ->runtime_suspend callback *has* been executed at this point.
-> > > If the status is only updated conditionally, it may not reflect
-> > > the device's actual power state correctly.  That doesn't seem to
-> > > be a good idea.
-> > 
-> > It doesn't matter, because this is done with runtime PM disabled, isn't it?
+Hi,
+
+On 27-12-17 04:15, Chen-Yu Tsai wrote:
+> On Tue, Dec 26, 2017 at 8:59 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+>> Relying on the (dis)charge current reporting for reporting FULL back to
+>> userspace does not work really well and often leads to the reported status
+>> getting stuck at e.g. 98/99% (the fuelgauge is not perfect) for hours.
+>>
+>> What happens is that when the battery is full the axp288 keeps charging it
+>> with a very low current. Until it is really really full and once really
+>> really full, some inaccuracies in the adc lead to it then sometimes
+>> reporting a small discharging rate, even though an external pwr source is
+>> used. So we end up with a status of "charging" for hours after the battery
+>> is actually already full and sometimes this then flip-flops to discharging.
+>>
+>> This commit fixes this by first checking if a valid Vbus is present and if
+>> it is present using the fuel-gauge's reported percentage to check for a
+>> full battery.
+>>
+>> This commit also changes how get_status() determines if the battery is
+>> charging or discharging when not reporting it as full. We still use the
+>> current direction for this, but instead of reading 4 extra registers for
+>> this (2 16 bit regs), simplify things by using the current-direction bit
+>> in the power-status register, which already gets read anyways.
+>>
+>> This also reduces the amount of i2c reads to 1 when on battery and 2
+>> when a valid Vbus is present.
+>>
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 > 
-> It might not make a difference for the use case I have in mind, but
-> pm_runtime_status_suspended() will return an incorrect result and is
-> called from 47 files in 4.15-rc6 according to lxr.free-electrons.com.
-
-Generally, the runtime PM status is only meaningful for devices with runtime PM
-enabled.
-
-There is an exception, which is during system suspend/resume, when runtime PM
-is automatically disabled by the core, but that only under certain assumptions.
-
-Basically, you have to assume that no one else will mess up with the device
-between the times you call pm_runtime_status_suspended() to check its runtime
-PM status (or between the first time you do that and the last time runtime PM
-has been enabled for the device).
-
-This patch doesn't change the situation in that respect.
-
-> > > The kerneldoc says:
-> > >
-> > >     Typically this function may be invoked from a system suspend callback
-> > >     to make sure the device is put into low power state.
-> > >
-> > > That portion is not modified by your patch.
-> > >
-> > > "Typically" implies that it's legal to call pm_runtime_force_suspend() in
-> > > *other* contexts than as a ->suspend hook.
-> > 
-> > It should only be used during system suspend anyway, however.
+> This looks better. Thanks.
 > 
-> Then the kerneldoc is wrong.
-
-It isn't wrong.  It may be incomplete, but the information in it is correct.
-
-And making it more complete is not part of this patch IMO.
-
-> > >> One addition that would be really helpful:  pm_runtime_force_suspend()
-> > >> should also force-suspend all children and consumers of the given
-> > >> device.  Likewise, those should be resumed on pm_runtime_force_resume().
-> > >> Then I could just add a device link from the audio PCI device on the GPU
-> > >> to the graphics PCI device and just call pm_runtime_force_*() on the
-> > >> graphics device (supplier) to magically power them both off and on.
-> > >
-> > > Actually, the assumption is that pm_runtime_force_suspend() must be
-> > > called for the children before it is called for the parent even
-> > > without my patch, so it is just not going to work this way.
-> > 
-> > Moreover, what if those devices have nonzero usage counters?  There
-> > may be other reasons for that than just dependencies, like for example
-> > user space might have written "on" to their "control" files in sysfs.
+> Reviewed-by: Chen-Yu Tsai <wens@csie.org>
 > 
-> In that case pm_runtime_force_suspend() should return a negative errno.
+> I do have one minor question though: What should the status be if there
+> was no battery connected?
 
-In which case it wouldn't be suitable for the system-wide PM callback role.
+Good question, I would expect userspace to check the present attribute before
+checking the status, but in my experience with a couple of HDMI sticks (so no
+battery) sofar they get wired up in such a way that the AXP288 thinks there is
+a battery anyways. Which also makes it impossible for get_status() to do anything
+here.
 
-> I envision amending control_store() so that "off" can be written to the
-> "control" file, allowing userspace to invoke pm_runtime_force_suspend()
-> to force certain devices into runtime suspend.
+Regards,
 
-But it isn't a good tool for the purpose which I'm trying to tell you.
-
-You need something else.
-
-> The user would get back
-> an error if the call failed for some reason (such as an active child or
-> consumer of the to be force-suspended device).  That would be a clean
-> replacement for the ON/OFF options we currently have for the
-> vga_switcheroo debugfs control file.
-
-Well, it looks like you are looking for an interface to invoke
-pm_runtime_suspend() for the device as it behaves exactly the way you want. :-)
-
-Thanks,
-Rafael
+Hans
