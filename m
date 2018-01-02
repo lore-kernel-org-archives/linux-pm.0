@@ -1,35 +1,46 @@
-From: Simon Horman <horms@verge.net.au>
-Subject: Re: [1/2] arm64: dts: r8a7795: add thermal cooling management
-Date: Tue, 2 Jan 2018 10:19:44 +0100
-Message-ID: <20180102091944.py647jheghud7sl2@verge.net.au>
-References: <20170913105909.13230-2-niklas.soderlund+renesas@ragnatech.se>
- <20180101181333.GA3631@localhost.localdomain>
+From: Linus Walleij <linus.walleij@linaro.org>
+Subject: Re: [PATCH v2 3/3] gpio: rcar: Use WAKEUP_PATH driver PM flag
+Date: Tue, 2 Jan 2018 10:27:00 +0100
+Message-ID: <CACRpkdZCApUP2YnYK09wzn3MOwH2XL3Jmm=FXHtsc2pwLyVNRw@mail.gmail.com>
+References: <1514554304-18989-1-git-send-email-ulf.hansson@linaro.org> <1514554304-18989-4-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from kirsty.vergenet.net ([202.4.237.240]:40445 "EHLO
-        kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752503AbeABJTs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 04:19:48 -0500
-Content-Disposition: inline
-In-Reply-To: <20180101181333.GA3631@localhost.localdomain>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1514554304-18989-4-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-gpio@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: Eduardo Valentin <edubezval@gmail.com>
-Cc: Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund+renesas@ragnatech.se>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, linux-renesas-soc@vger.kernel.org
 
-On Mon, Jan 01, 2018 at 10:13:35AM -0800, Eduardo Valentin wrote:
-> On Wed, Sep 13, 2017 at 12:59:08PM +0200, Niklas Söderlund wrote:
-> > Add nodes and properties for thermal cooling management support.
-> > 
-> > Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-> > ---
-> 
-> Just a reminder, this series should go via your arch tree. You may add
-> my acks.
+On Fri, Dec 29, 2017 at 2:31 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
 
-Ack.
+> From: Geert Uytterhoeven <geert+renesas@glider.be>
+>
+> Since commit ab82fa7da4dce5c7 ("gpio: rcar: Prevent module clock disable
+> when wake-up is enabled"), when a GPIO is used for wakeup, the GPIO block's
+> module clock (if exists) is manually kept running during system suspend, to
+> make sure the device stays active.
+>
+> However, this explicit clock handling is merely a workaround for a failure
+> to properly communicate wakeup information to the PM core. Instead, set the
+> WAKEUP_PATH driver PM flag to indicate that the device is part of the
+> wakeup path, which further also enables middle-layers and PM domains (like
+> genpd) to act on this.
+>
+> In case the device is attached to genpd and depending on if it has an
+> active wakeup configuration, genpd will keep the device active (the clock
+> running) during system suspend when needed. This enables us to remove all
+> explicit clock handling code from the driver, so let's do that as well.
+>
+> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+> [Ulf: Converted to use the WAKEUP_PATH driver PM flag]
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-Niklas, could you comment on the readiness of these patches
-for the renesas tree?
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
+
+I guess it is dependent on the other patches?
+
+If you want me to just apply it to the GPIO tree, tell me.
+
+Yours,
+Linus Walleij
