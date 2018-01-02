@@ -1,80 +1,95 @@
-From: Lukas Wunner <lukas@wunner.de>
-Subject: Re: [PATCH] PM / runtime: Rework pm_runtime_force_suspend/resume()
-Date: Tue, 2 Jan 2018 14:04:04 +0100
-Message-ID: <20180102130404.GA23434@wunner.de>
-References: <CAJZ5v0hvCuJbt8wtCJFcLRpCdkNu=vGEuA7_dCWhkXgvGxgizw@mail.gmail.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH v2 1/4] PM / core: Assign the wakeup_path status flag in __device_prepare()
+Date: Tue, 2 Jan 2018 14:17:23 +0100
+Message-ID: <CAPDyKFrdsr=t-Fh+LhJM7dDD+4bLoDG=MhF803ZS6MHUNynyCQ@mail.gmail.com>
+References: <1514547423-18965-1-git-send-email-ulf.hansson@linaro.org>
+ <CAJZ5v0gCnQgRS7aBkQ6LUoNab0_=mMqdqje+YLmJpcusANkfMg@mail.gmail.com>
+ <CAPDyKFq_sOvGBkSgVKgzooKke_huNFxOQabk+QiLGFCiP6vvWA@mail.gmail.com> <60600616.To3JVj42o5@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hvCuJbt8wtCJFcLRpCdkNu=vGEuA7_dCWhkXgvGxgizw@mail.gmail.com>
- <CAJZ5v0hYaEWPhqEuBkj7yusQiY1wfeJAn7QDfp-gmOYyNXatEg@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <60600616.To3JVj42o5@aspire.rjw.lan>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tue, Jan 02, 2018 at 12:02:18PM +0100, Rafael J. Wysocki wrote:
-> On Tue, Jan 2, 2018 at 11:51 AM, Lukas Wunner <lukas@wunner.de> wrote:
-> > On Tue, Jan 02, 2018 at 01:56:28AM +0100, Rafael J. Wysocki wrote:
-> >> +     if (atomic_read(&dev->power.usage_count) <= 1 &&
-> >> +         atomic_read(&dev->power.child_count) == 0)
-> >> +             pm_runtime_set_suspended(dev);
-> >>
-> >> -     pm_runtime_set_suspended(dev);
-> >
-> > The ->runtime_suspend callback *has* been executed at this point.
-> > If the status is only updated conditionally, it may not reflect
-> > the device's actual power state correctly.  That doesn't seem to
-> > be a good idea.
-> 
-> It doesn't matter, because this is done with runtime PM disabled, isn't it?
+On 2 January 2018 at 12:43, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Tuesday, January 2, 2018 12:36:55 PM CET Ulf Hansson wrote:
+>> On 30 December 2017 at 01:44, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>> > On Fri, Dec 29, 2017 at 12:37 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>> >> The PM core in the device_prepare() phase, resets the wakeup_path status
+>> >> flag to the value of device_may_wakeup(). This means if a ->prepare() or a
+>> >> ->suspend() callback for the device would update the device's wakeup
+>> >> setting, this doesn't become reflected in the wakeup_path status flag.
+>> >>
+>> >> In general this isn't a problem, because wakeup settings are not supposed
+>> >> to be changed (via for example calling device_set_wakeup_enable()) during
+>> >> any system wide suspend/resume phase.  Nevertheless there are some users,
+>> >> which can be considered as legacy, that don't conform to this behaviour.
+>> >>
+>> >> These legacy cases should be corrected, however until that is done, let's
+>> >> address the issue from the PM core, by moving the assignment of the
+>> >> wakeup_path status flag to the __device_suspend() phase and after the
+>> >> ->suspend() callback has been invoked.
+>> >>
+>> >> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+>> >> ---
+>> >>  drivers/base/power/main.c | 4 +++-
+>> >>  1 file changed, 3 insertions(+), 1 deletion(-)
+>> >>
+>> >> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+>> >> index 6e8cc5d..810e5fb 100644
+>> >> --- a/drivers/base/power/main.c
+>> >> +++ b/drivers/base/power/main.c
+>> >> @@ -1620,6 +1620,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>> >>   End:
+>> >>         if (!error) {
+>> >>                 dev->power.is_suspended = true;
+>> >> +               if (device_may_wakeup(dev))
+>> >> +                       dev->power.wakeup_path = true;
+>> >>                 dpm_propagate_to_parent(dev);
+>> >>                 dpm_clear_suppliers_direct_complete(dev);
+>> >>         }
+>> >> @@ -1744,7 +1746,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
+>> >>
+>> >>         device_lock(dev);
+>> >>
+>> >> -       dev->power.wakeup_path = device_may_wakeup(dev);
+>> >> +       dev->power.wakeup_path = false;
+>> >
+>> > If you did "dev->power.wakeup_path = device_may_wakeup(dev)" in
+>> > __device_suspend(), it wouldn't need to be cleared here I guess?
+>> >
+>>
+>> No that doesn't work, because it may override the value of the flag
+>> wrongly, in case a child's wakeup_path flag that is set and has been
+>> propagated to the parent.
+>
+> I see, OK.
+>
+> So it looks like the new driver flag is not really necessary.
 
-It might not make a difference for the use case I have in mind, but
-pm_runtime_status_suspended() will return an incorrect result and is
-called from 47 files in 4.15-rc6 according to lxr.free-electrons.com.
+Okay, I am fine with that. Please just check the other mail thread,
+should we have a helper function that users call to set the flag?
 
+>
+> The wakeup_path propagation may be done even later, like at the end of
+> __device_suspend_late(), which is fine, because it is not going to be used
+> before __device_suspend_noirq() anyway.
 
-> > The kerneldoc says:
-> >
-> >     Typically this function may be invoked from a system suspend callback
-> >     to make sure the device is put into low power state.
-> >
-> > That portion is not modified by your patch.
-> >
-> > "Typically" implies that it's legal to call pm_runtime_force_suspend() in
-> > *other* contexts than as a ->suspend hook.
-> 
-> It should only be used during system suspend anyway, however.
+I think we need to keep existing code in __device_suspend() as the
+flag is used by drivers/ssb/pcihost_wrapper.c, from its ->suspend()
+callback. Moreover, I think this is probably useful for other similar
+scenarios of drivers dealing with parent devices.
 
-Then the kerneldoc is wrong.
+However, adopting __device_suspend_late() to also deal the propagation
+of the flag is a good idea.
 
+>
+> Then, drivers can set it from their ->suspend and ->suspend_late callbacks.
 
-> >> One addition that would be really helpful:  pm_runtime_force_suspend()
-> >> should also force-suspend all children and consumers of the given
-> >> device.  Likewise, those should be resumed on pm_runtime_force_resume().
-> >> Then I could just add a device link from the audio PCI device on the GPU
-> >> to the graphics PCI device and just call pm_runtime_force_*() on the
-> >> graphics device (supplier) to magically power them both off and on.
-> >
-> > Actually, the assumption is that pm_runtime_force_suspend() must be
-> > called for the children before it is called for the parent even
-> > without my patch, so it is just not going to work this way.
-> 
-> Moreover, what if those devices have nonzero usage counters?  There
-> may be other reasons for that than just dependencies, like for example
-> user space might have written "on" to their "control" files in sysfs.
+Yes, that would be great!
 
-In that case pm_runtime_force_suspend() should return a negative errno.
-
-I envision amending control_store() so that "off" can be written to the
-"control" file, allowing userspace to invoke pm_runtime_force_suspend()
-to force certain devices into runtime suspend.  The user would get back
-an error if the call failed for some reason (such as an active child or
-consumer of the to be force-suspended device).  That would be a clean
-replacement for the ON/OFF options we currently have for the
-vga_switcheroo debugfs control file.
-
-Thanks,
-
-Lukas
+Kind regards
+Uffe
