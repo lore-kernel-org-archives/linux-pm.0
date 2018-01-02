@@ -1,53 +1,56 @@
-From: Claudio Scordino <claudio@evidence.eu.com>
-Subject: Re: [PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates
-Date: Tue, 2 Jan 2018 14:31:51 +0100
-Message-ID: <1afd8769-8f51-184f-221d-4ce68f90371d@evidence.eu.com>
-References: <20171130114723.29210-1-patrick.bellasi@arm.com>
- <20171220153029.dqrtjbyowhqdl56r@hirez.programming.kicks-ass.net>
- <20171220155625.lopjlsbvss3qgb4d@hirez.programming.kicks-ass.net>
- <84cc5951-45c4-3dd6-4f4f-fa5d11e6d1f6@evidence.eu.com>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [PATCH] PM / wakeup: Drop redundant check from device_set_wakeup_enable()
+Date: Tue, 2 Jan 2018 14:44:47 +0100
+Message-ID: <CAPDyKFqJKQj8+1p=OHPwK=5SoBtZ+JtG1MgPctr2WzHL23ER7w@mail.gmail.com>
+References: <2570001.kK8602TLGU@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f181.google.com ([209.85.128.181]:36647 "EHLO
-        mail-wr0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752080AbeABNbe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 08:31:34 -0500
-Received: by mail-wr0-f181.google.com with SMTP id u19so42135378wrc.3
-        for <linux-pm@vger.kernel.org>; Tue, 02 Jan 2018 05:31:34 -0800 (PST)
-In-Reply-To: <84cc5951-45c4-3dd6-4f4f-fa5d11e6d1f6@evidence.eu.com>
-Content-Language: en-US
+Received: from mail-io0-f193.google.com ([209.85.223.193]:41080 "EHLO
+        mail-io0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751034AbeABNos (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 08:44:48 -0500
+Received: by mail-io0-f193.google.com with SMTP id f6so12646803ioh.8
+        for <linux-pm@vger.kernel.org>; Tue, 02 Jan 2018 05:44:48 -0800 (PST)
+In-Reply-To: <2570001.kK8602TLGU@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Patrick Bellasi <patrick.bellasi@arm.com>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, Dietmar Eggemann <dietmar.eggemann@arm.com>, Morten Rasmussen <morten.rasmussen@arm.com>, Juri Lelli <juri.lelli@redhat.com>, Todd Kjos <tkjos@android.com>, Joel Fernandes <joelaf@google.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
 
-Hi Peter,
+On 26 December 2017 at 01:50, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>
+> Since both device_wakeup_enable() and device_wakeup_disable() check
+> if dev is not NULL and whether or not power.can_wakeup is set for it,
+> device_set_wakeup_enable() doesn't have to do that, so drop that
+> check from it.
+>
+> No intentional changes in functionality.
+>
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Il 31/12/2017 10:43, Claudio Scordino ha scritto:
-> Hi all,
-> 
-> Il 20/12/2017 16:56, Peter Zijlstra ha scritto:
->> On Wed, Dec 20, 2017 at 04:30:29PM +0100, Peter Zijlstra wrote:
->>>
->>> So I ended up with the below (on top of Juri's cpufreq-dl patches).
->>>
->>> It compiles, but that's about all the testing it had.
->>
->> Should all be available at:
->>
->>    git://git.kernel.org/pub/scm/linux/kernel/git/peterz/queue.git sched/core
->>
->> compile tested only, I suppose the 0day bot will let me know soon enough
->> :-)
-> 
-> I'm going to do some testing from Tuesday.
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-The rebase looks good to me.
+Kind regards
+Uffe
 
-Tested on Odroid XU4 (ARM big.LITTLE), no regressions found.
-
-Many thanks and best regards,
-
-           Claudio
+> ---
+>  drivers/base/power/wakeup.c |    3 ---
+>  1 file changed, 3 deletions(-)
+>
+> Index: linux-pm/drivers/base/power/wakeup.c
+> ===================================================================
+> --- linux-pm.orig/drivers/base/power/wakeup.c
+> +++ linux-pm/drivers/base/power/wakeup.c
+> @@ -464,9 +464,6 @@ EXPORT_SYMBOL_GPL(device_init_wakeup);
+>   */
+>  int device_set_wakeup_enable(struct device *dev, bool enable)
+>  {
+> -       if (!dev || !dev->power.can_wakeup)
+> -               return -EINVAL;
+> -
+>         return enable ? device_wakeup_enable(dev) : device_wakeup_disable(dev);
+>  }
+>  EXPORT_SYMBOL_GPL(device_set_wakeup_enable);
+>
