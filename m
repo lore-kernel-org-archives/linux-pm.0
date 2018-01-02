@@ -1,44 +1,27 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH] thermal/x86 pkg temp: Remove debugfs_create_u32() casts
-Date: Tue,  2 Jan 2018 16:30:57 +0100
-Message-ID: <1514907057-9917-1-git-send-email-geert+renesas@glider.be>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: Re: [PATCH 1/2] ARM: dts: imx6ul: add 696MHz operating point
+Date: Tue, 2 Jan 2018 13:32:02 -0200
+Message-ID: <CAOMZO5BGmnNzv7YobtB+KOi0PM+qzyYi97q_NZtT1PU_e+Bcbg@mail.gmail.com>
+References: <1514912859-17691-1-git-send-email-Anson.Huang@nxp.com>
+ <CAOMZO5C-qgyCJPBHYwjD9zjHqu4eoGDfoB5-BcFdnvSy01MKiQ@mail.gmail.com> <E5B0DB53-D0E5-430B-BBCC-EF3899C70DAE@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <E5B0DB53-D0E5-430B-BBCC-EF3899C70DAE@nxp.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Anson Huang <anson.huang@nxp.com>
+Cc: "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <linux-arm-kernel@lists.infradead.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>, "A.s. Dong" <aisheng.dong@nxp.com>, Jacky Bai <ping.bai@nxp.com>, viresh kumar <viresh.kumar@linaro.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, Russell King - ARM Linux <linux@armlinux.org.uk>, Rob Herring <robh+dt@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Shawn Guo <shawnguo@kernel.org>
 List-Id: linux-pm@vger.kernel.org
 
-When exposing data access through debugfs, the correct
-debugfs_create_*() functions must be used, depending on data type.
+On Tue, Jan 2, 2018 at 1:12 PM, Anson Huang <anson.huang@nxp.com> wrote:
 
-Remove all casts from data pointers passed to debugfs_create_*()
-functions, as such casts prevent the compiler from flagging bugs.
+> There is a comment in VDD_ARM, VDD_SOC must NOT lower than VDD_ARM.
+>
+> Output voltage must be set to the following rules:
+> =E2=80=A2 VDD_ARM_CAP <=3D VDD_SOC_CAP
+> =E2=80=A2 VDD_SOC_CAP - VDD_ARM_CAP < 330 mV
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
-Compile-tested only.
----
- drivers/thermal/x86_pkg_temp_thermal.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Thanks for the clarifcation.
 
-diff --git a/drivers/thermal/x86_pkg_temp_thermal.c b/drivers/thermal/x86_pkg_temp_thermal.c
-index d93eee2f101b0aee..1a6c88b10a396e37 100644
---- a/drivers/thermal/x86_pkg_temp_thermal.c
-+++ b/drivers/thermal/x86_pkg_temp_thermal.c
-@@ -96,12 +96,12 @@ static int pkg_temp_debugfs_init(void)
- 		return -ENOENT;
- 
- 	d = debugfs_create_u32("pkg_thres_interrupt", S_IRUGO, debugfs,
--				(u32 *)&pkg_interrupt_cnt);
-+			       &pkg_interrupt_cnt);
- 	if (!d)
- 		goto err_out;
- 
- 	d = debugfs_create_u32("pkg_thres_work", S_IRUGO, debugfs,
--				(u32 *)&pkg_work_cnt);
-+			       &pkg_work_cnt);
- 	if (!d)
- 		goto err_out;
- 
--- 
-2.7.4
+Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
