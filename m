@@ -1,113 +1,54 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH 00/12] account for const type of of_device_id.data
-Date: Tue,  2 Jan 2018 14:27:56 +0100
-Message-ID: <1514899688-27844-1-git-send-email-Julia.Lawall@lip6.fr>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: linux-iio@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Lars-Peter Clausen <lars@metafoo.de>, Hartmut Knaack <knaack.h@gmx.de>, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux-spi@vger.kernel.org, linux-rockchip@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, linux-pci@vger.kernel.org, linux-arm-msm@vger.kernel.org
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH v2 3/3] gpio: rcar: Use WAKEUP_PATH driver PM flag
+Date: Tue, 2 Jan 2018 14:57:00 +0100
+Message-ID: <CAMuHMdXZkUZRnpuT=G85ZerULEyNF09DUJAVMfvx+eUn-WmL7w@mail.gmail.com>
+References: <1514554304-18989-1-git-send-email-ulf.hansson@linaro.org>
+ <1514554304-18989-4-git-send-email-ulf.hansson@linaro.org>
+ <CAJZ5v0gWtr1bwi7WVeEbTJPu3KC8YfPvfUh5XDmomiK8TFmfyg@mail.gmail.com>
+ <CAMuHMdVmqM+WA_EaCRHNojpV6NYmS0-V18MoixyV5UdC3cq+2g@mail.gmail.com> <CAPDyKFrPTJ84-rBcdPH+Vs_L7Hbmh8G-C8fC1zYqP3H3dxn7vw@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f194.google.com ([209.85.220.194]:41179 "EHLO
+        mail-qk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1753123AbeABN5C (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 08:57:02 -0500
+In-Reply-To: <CAPDyKFrPTJ84-rBcdPH+Vs_L7Hbmh8G-C8fC1zYqP3H3dxn7vw@mail.gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-gpio@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Maintain const annotations when putting values into the data field of
-an of_device_id structure, and afterwards when extracting them from
-the data field of such a structure.
+Hi Ulf,
 
-This was done using the following semantic patch:
-(http://coccinelle.lip6.fr/)
+On Tue, Jan 2, 2018 at 2:02 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>>> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+>>>> [Ulf: Converted to use the WAKEUP_PATH driver PM flag]
+>>
+>> Ulf: + killing the DEV_PM_OPS define, increasing kernel size if PM_SUSPEND=n?
+>
+> Oh, yes - correct!
+>
+> The code looks nicer, with the penalty of one static struct declared
+> and not used, in case CONFIG_PM_SLEEP is unset.
 
-// <smpl>
-@r@
-identifier i,j;
-const struct j *m;
-struct i *y;
-type T;
-expression x,e;
-position p;
-@@
+At 23 pointers of 4 or 8 bytes each in 3 drivers, I don't consider this
+insignificant.
 
-(
-y =@p (T)(of_device_get_match_data(...));
-|
-x = of_match_node(...);
-... when != x = e
-(
-m = e;
-|
-y =@p (T)(x->data);
-)
-)
+Fortunately this driver is not used on RZ/A1, which you can run without
+external RAM if you manage to fit everything in 10 MiB of SRAM...
 
-@s@
-identifier r.i,j;
-@@
+> Should I revert back to your proposal, I am fine with whatever?
 
-const struct i j = { ... };
+Yes please.
 
-@t depends on s disable optional_qualifier@
-expression e;
-identifier r.i,x,j,n;
-struct j *m;
-struct i *e1;
-position any r.p;
-type T;
-@@
+Gr{oetje,eeting}s,
 
-(
-+const
-struct i *x;
-<+...
-(
-x =@p 
--   (T)(e)
-+   e
-|
-x =@p e
-)
-...+>
-|
-m->@e1 n =@p 
--   (T)(e)
-+   e
-|
-m->@e1 n =@p e
-)
+                        Geert
 
-@disable optional_qualifier@
-identifier t.j,t.n,r.i;
-@@
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-struct j {
-  ...
-+ const
-  struct i *n;
-  ...
-}
-
-@@
-identifier x,s.j;
-type T;
-@@
-
-struct of_device_id x[] = { ...,
-  { .data =
--           (T)
-            &j, }, ...};
-
-// </smpl>
-
----
-
- drivers/i2c/busses/i2c-rk3x.c               |   16 ++++++++--------
- drivers/iio/common/ssp_sensors/ssp.h        |    2 +-
- drivers/iio/common/ssp_sensors/ssp_dev.c    |    2 +-
- drivers/mtd/spi-nor/fsl-quadspi.c           |    8 ++++----
- drivers/pci/dwc/pcie-qcom.c                 |    4 ++--
- drivers/pinctrl/mvebu/pinctrl-armada-37xx.c |    4 ++--
- drivers/pinctrl/pinctrl-at91-pio4.c         |    4 ++--
- drivers/pinctrl/pinctrl-axp209.c            |    2 +-
- drivers/power/avs/rockchip-io-domain.c      |   24 ++++++++++++------------
- drivers/power/reset/at91-sama5d2_shdwc.c    |    4 ++--
- drivers/power/supply/axp20x_ac_power.c      |    8 ++++----
- drivers/spi/spi-fsl-dspi.c                  |    7 +++----
- drivers/spi/spi-sirf.c                      |    4 ++--
- 13 files changed, 44 insertions(+), 44 deletions(-)
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
