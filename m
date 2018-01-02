@@ -1,175 +1,73 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH] PM / runtime: Rework pm_runtime_force_suspend/resume()
-Date: Tue, 02 Jan 2018 01:56:28 +0100
-Message-ID: <4069324.Q7yJt6I4hJ@aspire.rjw.lan>
+From: MyungJoo Ham <myungjoo.ham@samsung.com>
+Subject: [PULL REQ] Linux-PM / Devfreq
+Date: Tue, 02 Jan 2018 02:11:02 +0000
+Message-ID: <20180102021102epcms1p50fc5fe42844cb879479e2f4ea20d4b73@epcms1p5>
+References: <CAJZ5v0iY932ZFzbCr=nXeR1SaRyFL1WoVVm3YmKvt1JykTfs=A@mail.gmail.com>
+        <CGME20171228115707epcas1p1a09ad8507de22f2e2c04f73308a7954c@epcms1p5>
+Reply-To: myungjoo.ham@samsung.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:56649 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753401AbeABA5c (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Jan 2018 19:57:32 -0500
+Received: from mailout1.samsung.com ([203.254.224.24]:10276 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751400AbeABCLI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 1 Jan 2018 21:11:08 -0500
+Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
+        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20180102021106epoutp014d07b7d3fcd9702cbea3d131bf1d5b2d~F3EtpRbD02023120231epoutp01N
+        for <linux-pm@vger.kernel.org>; Tue,  2 Jan 2018 02:11:06 +0000 (GMT)
+In-Reply-To: <CAJZ5v0iY932ZFzbCr=nXeR1SaRyFL1WoVVm3YmKvt1JykTfs=A@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+Cc: "garsilva@embeddedor.com" <garsilva@embeddedor.com>, "bjorn.andersson@linaro.org" <bjorn.andersson@linaro.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Dear Rafael,
 
-One of the limitations of pm_runtime_force_suspend/resume() is that
-if a parent driver wants to use these functions, all of its child
-drivers have to do that too because of the parent usage counter
-manipulations necessary to get the correct state of the parent during
-system-wide transitions to the working state (system resume).
-However, that limitation turns out to be artificial, so remove it.
+Here goes a pull request for you from PM / Devfreq, which consists of a few trivial fixes on error handlings.
 
-First, notice that it is not really necessary to change the device's
-runtime PM status in pm_runtime_force_suspend().  Moreover, if
-pm_runtime_set_suspended() is not called for a device, the children
-counter of its parent (if there is a parent) will not drop, so it
-is not necessary to increment the parent's usage counter in that
-case, as long as the children counters of devices are checked
-along with their usage counters in order to decide whether or not
-the devices may be left in suspend on the way out (that is, during
-the subsequent system-wide transition to the working state).
 
-Accordingly, modify pm_runtime_force_suspend() to only call
-pm_runtime_set_suspended() for devices whose usage and children
-counters are at the "no references" level and drop the parent usage
-counter incrementation from it.
+Cheers,
+MyungJoo
 
-Second, notice that with the above change in pm_runtime_force_suspend(),
-if the runtime PM status of the device in pm_runtime_force_resume() is
-"suspended", then either the device had remained in runtime suspend
-before pm_runtime_force_suspend() was called for it (in which case it
-is safe to leave it in suspend), or its runtime PM status has been
-changed by pm_runtime_force_suspend() itself.  Of course, the latter
-case is only possible if the usage and children counters of the device
-are at the "no reference" levels, so the device may be left in suspend
-then.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-In turn, if the runtime PM status of the device in
-pm_runtime_force_resume() is "active", pm_runtime_force_suspend()
-called for it previously found active references to it, so it needs
-to be resumed.
+The following changes since commit 30a7acd573899fd8b8ac39236eff6468b195ac7d:
 
-Hence, with the above change in pm_runtime_force_suspend(),
-pm_runtime_force_resume() only needs to check the device's runtime PM
-status to decide whether or not to resume it and it doesn't need to
-manipulate the device parent's usage counter any more, so modify it
-accordingly.
+  Linux 4.15-rc6 (2017-12-31 14:47:43 -0800)
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/runtime.c |   61 +++++++++++++------------------------------
- 1 file changed, 19 insertions(+), 42 deletions(-)
+are available in the git repository at:
 
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -1618,12 +1618,15 @@ void pm_runtime_drop_link(struct device
-  * @dev: Device to suspend.
-  *
-  * Disable runtime PM so we safely can check the device's runtime PM status and
-- * if it is active, invoke it's .runtime_suspend callback to bring it into
-- * suspend state. Keep runtime PM disabled to preserve the state unless we
-- * encounter errors.
-+ * if it is active, invoke it's ->runtime_suspend callback to suspend it.  Also,
-+ * if the device's usage and children counters don't indicate that the device
-+ * was in use before the system-wide transition under way, change its runtime PM
-+ * status to suspended after suspending it.  Keep runtime PM disabled to
-+ * preserve the state unless we encounter errors.
-  *
-  * Typically this function may be invoked from a system suspend callback to make
-- * sure the device is put into low power state.
-+ * sure the device is put into low power state.  It assumes that the analogous
-+ * pm_runtime_force_resume() will be used to resume the device.
-  */
- int pm_runtime_force_suspend(struct device *dev)
- {
-@@ -1645,18 +1648,12 @@ int pm_runtime_force_suspend(struct devi
- 	if (ret)
- 		goto err;
- 
--	/*
--	 * Increase the runtime PM usage count for the device's parent, in case
--	 * when we find the device being used when system suspend was invoked.
--	 * This informs pm_runtime_force_resume() to resume the parent
--	 * immediately, which is needed to be able to resume its children,
--	 * when not deferring the resume to be managed via runtime PM.
--	 */
--	if (dev->parent && atomic_read(&dev->power.usage_count) > 1)
--		pm_runtime_get_noresume(dev->parent);
-+	if (atomic_read(&dev->power.usage_count) <= 1 &&
-+	    atomic_read(&dev->power.child_count) == 0)
-+		pm_runtime_set_suspended(dev);
- 
--	pm_runtime_set_suspended(dev);
- 	return 0;
-+
- err:
- 	pm_runtime_enable(dev);
- 	return ret;
-@@ -1669,13 +1666,9 @@ EXPORT_SYMBOL_GPL(pm_runtime_force_suspe
-  *
-  * Prior invoking this function we expect the user to have brought the device
-  * into low power state by a call to pm_runtime_force_suspend(). Here we reverse
-- * those actions and brings the device into full power, if it is expected to be
-- * used on system resume. To distinguish that, we check whether the runtime PM
-- * usage count is greater than 1 (the PM core increases the usage count in the
-- * system PM prepare phase), as that indicates a real user (such as a subsystem,
-- * driver, userspace, etc.) is using it. If that is the case, the device is
-- * expected to be used on system resume as well, so then we resume it. In the
-- * other case, we defer the resume to be managed via runtime PM.
-+ * those actions and bring the device into full power, if it is expected to be
-+ * used on system resume.  In the other case, we defer the resume to be managed
-+ * via runtime PM.
-  *
-  * Typically this function may be invoked from a system resume callback.
-  */
-@@ -1684,6 +1677,9 @@ int pm_runtime_force_resume(struct devic
- 	int (*callback)(struct device *);
- 	int ret = 0;
- 
-+	if (pm_runtime_status_suspended(dev))
-+		goto out;
-+
- 	callback = RPM_GET_CALLBACK(dev, runtime_resume);
- 
- 	if (!callback) {
-@@ -1691,31 +1687,12 @@ int pm_runtime_force_resume(struct devic
- 		goto out;
- 	}
- 
--	if (!pm_runtime_status_suspended(dev))
--		goto out;
--
--	/*
--	 * Decrease the parent's runtime PM usage count, if we increased it
--	 * during system suspend in pm_runtime_force_suspend().
--	*/
--	if (atomic_read(&dev->power.usage_count) > 1) {
--		if (dev->parent)
--			pm_runtime_put_noidle(dev->parent);
--	} else {
--		goto out;
--	}
--
--	ret = pm_runtime_set_active(dev);
--	if (ret)
--		goto out;
--
- 	ret = callback(dev);
--	if (ret) {
--		pm_runtime_set_suspended(dev);
-+	if (ret)
- 		goto out;
--	}
- 
- 	pm_runtime_mark_last_busy(dev);
-+
- out:
- 	pm_runtime_enable(dev);
- 	return ret;
+  https://git.kernel.org/pub/scm/linux/kernel/git/mzx/devfreq.git for-next
+
+for you to fetch changes up to 63f1e05f7fe9ca509c60154d6a833abf96eecdc9:
+
+  PM / devfreq: Fix potential NULL pointer dereference in governor_store (2018-01-02 09:36:54 +0900)
+
+- ----------------------------------------------------------------
+Bjorn Andersson (1):
+      PM / devfreq: Propagate error from devfreq_add_device()
+
+Gustavo A. R. Silva (1):
+      PM / devfreq: Fix potential NULL pointer dereference in governor_store
+
+ drivers/devfreq/devfreq.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJaStbRAAoJEBOhurvWBoCKWpgQAILaN0YCMfQgNy24eVpnRFLW
+Ei2WjtymCiANrXx15yyD5qoedjc6GhPSM1yNT9RBnmNpHpgjEIybZiyom7cHc5zZ
+wIDKSZ31Ah7zs4AWcR3S9OTxNUlnsUPQhdAIVuOWQUQfhRqdnBqIIZ6T0E7lvidt
+PLrAhUjtW+2PkhxK9mT0apoJtVlqRWGjaRy5G4r3g8qdpv9T4omMvCp9ocrASPiV
+QV1KHv7LTIEfImdRBPVN8P7/7/gc2TX2on33NiYaNbz+hAq5g3HSFnQvusorJU44
+rSJq5NW9gZJNSaE3rOjsCtM6U6IS/K4XC1TNWAbSm6FAAp5DkJ3fVpFA1o2X0aa/
+Ca42GKn63xiYyhzkFF96i9U810U2ydc7CDy1R8eQOY+X2PGzbOYIZQkwQgT2QnHH
+OcpfrTKA2tr+h8OQfY2qz3DVoQgmP/ESHLMI9pNlcSI4cqiXddnr9n4vn2YUqxlI
+HyMJGUiEl9WfbSy07MIqekp7vfNK+9riMLbZoQJaZF9W8sqzfga+ku5kkIMBLj86
+dWmRjKMUnFAwF519eURRlfUNku8llZFdf7gf62/iVBL0XiAWq5+/5B0Spt1C3wfe
+jNe18XrcR77h0jrNuDQNiN6NztUSOAFWN2Qf4+uSpXga6nAp8BDdGdUci6EvaZZa
+8N7T+dsHrusI0SZZAGWM
+=yODl
+-----END PGP SIGNATURE-----
