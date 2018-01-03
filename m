@@ -1,121 +1,69 @@
-From: Fabio Estevam <festevam@gmail.com>
-Subject: [PATCH] thermal: thermal_hwmon: Convert to hwmon_device_register_with_info()
-Date: Wed,  3 Jan 2018 08:44:54 -0200
-Message-ID: <1514976294-31880-1-git-send-email-festevam@gmail.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f194.google.com ([209.85.220.194]:44345 "EHLO
-        mail-qk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751154AbeACKpB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jan 2018 05:45:01 -0500
-Received: by mail-qk0-f194.google.com with SMTP id v188so1011874qkh.11
-        for <linux-pm@vger.kernel.org>; Wed, 03 Jan 2018 02:45:01 -0800 (PST)
-Sender: linux-pm-owner@vger.kernel.org
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / runtime: Rework pm_runtime_force_suspend/resume()
+Date: Wed, 03 Jan 2018 12:01:47 +0100
+Message-ID: <1871035.vYgTsgebaR@aspire.rjw.lan>
+References: <20180102130404.GA23434@wunner.de> <2760744.Zsn8Ys48yq@aspire.rjw.lan> <CAJZ5v0gp_CJJZk7MwLtErqmM=iXxsxK5-mMA-w_4DYmtBBih0w@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <CAJZ5v0gp_CJJZk7MwLtErqmM=iXxsxK5-mMA-w_4DYmtBBih0w@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Lukas Wunner <lukas@wunner.de>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: linux-pm@vger.kernel.org
-To: rui.zhang@intel.com
-Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, arthurborsboom@gmail.com, Fabio Estevam <fabio.estevam@nxp.com>, Pavel Machek <pavel@ucw.cz>, Guenter Roeck <linux@roeck-us.net>
 
-From: Fabio Estevam <fabio.estevam@nxp.com>
+On Wednesday, January 3, 2018 12:21:36 AM CET Rafael J. Wysocki wrote:
+> On Tue, Jan 2, 2018 at 8:07 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Tuesday, January 2, 2018 2:04:04 PM CET Lukas Wunner wrote:
+> >> On Tue, Jan 02, 2018 at 12:02:18PM +0100, Rafael J. Wysocki wrote:
+> >> > On Tue, Jan 2, 2018 at 11:51 AM, Lukas Wunner <lukas@wunner.de> wrote:
+> >> > > On Tue, Jan 02, 2018 at 01:56:28AM +0100, Rafael J. Wysocki wrote:
+> >> > >> +     if (atomic_read(&dev->power.usage_count) <= 1 &&
+> >> > >> +         atomic_read(&dev->power.child_count) == 0)
+> >> > >> +             pm_runtime_set_suspended(dev);
+> >> > >>
+> >> > >> -     pm_runtime_set_suspended(dev);
+> >> > >
+> >> > > The ->runtime_suspend callback *has* been executed at this point.
+> >> > > If the status is only updated conditionally, it may not reflect
+> >> > > the device's actual power state correctly.  That doesn't seem to
+> >> > > be a good idea.
+> >> >
+> >> > It doesn't matter, because this is done with runtime PM disabled, isn't it?
+> >>
+> >> It might not make a difference for the use case I have in mind, but
+> >> pm_runtime_status_suspended() will return an incorrect result and is
+> >> called from 47 files in 4.15-rc6 according to lxr.free-electrons.com.
+> >
+> > Generally, the runtime PM status is only meaningful for devices with runtime PM
+> > enabled.
+> >
+> > There is an exception, which is during system suspend/resume, when runtime PM
+> > is automatically disabled by the core, but that only under certain assumptions.
+> >
+> > Basically, you have to assume that no one else will mess up with the device
+> > between the times you call pm_runtime_status_suspended() to check its runtime
+> > PM status (or between the first time you do that and the last time runtime PM
+> > has been enabled for the device).
+> >
+> > This patch doesn't change the situation in that respect.
+> 
+> BTW, I'm not sure why you are worrying about the "status" field alone
+> and not about the usage counter that can be greater than 0 after
+> pm_runtime_force_suspend() which is inconsistent with the device's
+> physical state (and with the "status" field too for that matter -
+> always without the patch and in some cases with it) then.  As a matter
+> of fact, the information left by the runtime PM framework is messed up
+> with here this way or another and so anyway the only party that can
+> make sense of it after pm_runtime_force_suspend() is the subsequent
+> pm_runtime_force_resume().
 
-Booting Linux on a mx6q based board leads to the following warning:
-    
-(NULL device *): hwmon_device_register() is deprecated. Please convert the
-driver to use hwmon_device_register_with_info().
-    
-, so do the conversion as suggested.
+All of that said, I have overlooked the fact that pm_runtime_force_suspend()
+itself can be called twice in a row for the same device during the same
+system-wide PM transition (genpd can do that, confusingly enough).
 
-Also, this results in the core taking care of creating the 'name'
-attribute, so drop the code doing that from the thermal driver.
+I'll send a v2 in a moment.
 
-The initial attempt to convert this driver to
-hwmon_device_register_with_info() caused issues on the N900 platform
-in commit 611fb68062f ("thermal: thermal_hwmon: Convert to
-hwmon_device_register_with_info()"):
-
-bq27xxx-battery 2-0055: failed to register battery
-bq27xxx-battery: probe of 2-0055 failed with error -22
-...
-rx51-battery: probe of n900-battery failed with error -22
-
-, leading to a revert in commit 3feb479cea37 ("Revert "thermal:
-thermal_hwmon: Convert to hwmon_device_register_with_info()"").
-
-The probe errors happened due to the '-' character being present in
-the name of the power supply devices: bq27200-0 and rx51-battery.
-
-Since commit 74d3b6419772 ("hwmon: Relax name attribute validation
-for new APIs") hwmon will no longer treat these names as errors,
-allowing the transition for hwmon_device_register_with_info() to
-happen in a safely manner. 
-
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Guenter Roeck <linux@roeck-us.net>
-Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
----
-Pavel,
-
-Could you please test this patch on your N900 platform?
-
-Thanks
-
- drivers/thermal/thermal_hwmon.c | 20 +++-----------------
- 1 file changed, 3 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
-index 541af59..c4a508a 100644
---- a/drivers/thermal/thermal_hwmon.c
-+++ b/drivers/thermal/thermal_hwmon.c
-@@ -59,14 +59,6 @@ static LIST_HEAD(thermal_hwmon_list);
- static DEFINE_MUTEX(thermal_hwmon_list_lock);
- 
- static ssize_t
--name_show(struct device *dev, struct device_attribute *attr, char *buf)
--{
--	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
--	return sprintf(buf, "%s\n", hwmon->type);
--}
--static DEVICE_ATTR_RO(name);
--
--static ssize_t
- temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	int temperature;
-@@ -165,15 +157,12 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
- 
- 	INIT_LIST_HEAD(&hwmon->tz_list);
- 	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
--	hwmon->device = hwmon_device_register(NULL);
-+	hwmon->device = hwmon_device_register_with_info(NULL, hwmon->type,
-+							hwmon, NULL, NULL);
- 	if (IS_ERR(hwmon->device)) {
- 		result = PTR_ERR(hwmon->device);
- 		goto free_mem;
- 	}
--	dev_set_drvdata(hwmon->device, hwmon);
--	result = device_create_file(hwmon->device, &dev_attr_name);
--	if (result)
--		goto free_mem;
- 
-  register_sys_interface:
- 	temp = kzalloc(sizeof(*temp), GFP_KERNEL);
-@@ -222,10 +211,8 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
-  free_temp_mem:
- 	kfree(temp);
-  unregister_name:
--	if (new_hwmon_device) {
--		device_remove_file(hwmon->device, &dev_attr_name);
-+	if (new_hwmon_device)
- 		hwmon_device_unregister(hwmon->device);
--	}
-  free_mem:
- 	if (new_hwmon_device)
- 		kfree(hwmon);
-@@ -267,7 +254,6 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
- 	list_del(&hwmon->node);
- 	mutex_unlock(&thermal_hwmon_list_lock);
- 
--	device_remove_file(hwmon->device, &dev_attr_name);
- 	hwmon_device_unregister(hwmon->device);
- 	kfree(hwmon);
- }
--- 
-2.7.4
+Thanks,
+Rafael
