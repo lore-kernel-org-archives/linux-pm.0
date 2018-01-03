@@ -1,47 +1,68 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Subject: Re: [RESEND PATCH 2/8] turbostat: Fix node and siblings lookup data
-Date: Wed, 3 Jan 2018 07:58:43 -0500
-Message-ID: <90ece10d-3b68-8d77-89af-b060ba8ba20e@redhat.com>
-References: <20171103122550.13341-1-prarit@redhat.com>
- <20171103122550.13341-3-prarit@redhat.com>
- <CAJvTdK=-pH_XTS5dNsgz+MEhqN-mYOwQaHOs_Qc+58+KpEp4Zw@mail.gmail.com>
- <0e6f30bf-8dad-a8a1-612c-6b39fcbf5e1c@redhat.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v5 4/9] drivers: base cacheinfo: Add support for ACPI
+ based firmware tables
+Date: Wed, 3 Jan 2018 14:21:24 +0000
+Message-ID: <3c3bf8a4-a13a-ce71-4bd2-71dd11b45521@arm.com>
+References: <20171201222330.18863-1-jeremy.linton@arm.com>
+ <20171201222330.18863-5-jeremy.linton@arm.com>
+ <2078459.JrYtfXc8fv@aspire.rjw.lan>
+ <5024a041-2ef4-3912-994f-b5fcc945e916@arm.com>
+ <CAJZ5v0hHdfE3khVvuqQm5JFMgY5R054c8UB9Nixii9ucq0Ecnw@mail.gmail.com>
+ <9bb1c58a-8d48-9952-e292-60b2bcb87a51@arm.com>
+ <CAJZ5v0gnWn_05XN7r+Mwwgc0ca5vx8wgAQ1A8aAwOPvc9H899Q@mail.gmail.com>
+ <fdb60100-3973-b9e3-487a-882836f8751e@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx1.redhat.com ([209.132.183.28]:50502 "EHLO mx1.redhat.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751245AbeACM6o (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 Jan 2018 07:58:44 -0500
-In-Reply-To: <0e6f30bf-8dad-a8a1-612c-6b39fcbf5e1c@redhat.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <fdb60100-3973-b9e3-487a-882836f8751e@arm.com>
+Content-Language: en-US
+Sender: linux-acpi-owner@vger.kernel.org
+To: Jeremy Linton <jeremy.linton@arm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Hanjun Guo <hanjun.guo@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, Al Stone <ahs3@redhat.com>, Jayachandran.Nair@cavium.com
 List-Id: linux-pm@vger.kernel.org
-To: Len Brown <lenb@kernel.org>
-Cc: Linux PM list <linux-pm@vger.kernel.org>, "Brown, Len" <len.brown@intel.com>, charles.rose@dell.com, "Rafael J. Wysocki" <rafael@kernel.org>, suravee.suthikulpanit@amd.com
 
+(Sorry for the delay, just returning from vacation)
 
+On 12/12/17 23:37, Jeremy Linton wrote:
+> On 12/12/2017 05:02 PM, Rafael J. Wysocki wrote:
 
-On 12/09/2017 06:25 AM, Prarit Bhargava wrote:
-> 
-> 
-> On 12/08/2017 05:47 PM, Len Brown wrote:
->> This patch causes a core dump:
+[...]
+
 >>
->> turbostat: malloc.c:2394: sysmalloc: Assertion `(old_top ==
->> initial_top (av) && old_size == 0) || ((unsigned long) (old_size) >=
->> MINSIZE && prev_inuse (old_top) && ((unsigned long) old_end &
->> (pagesize - 1)) == 0)' failed.
->>
->> Aborted (core dumped)
->>
-> 
-> Odd.  I ran this on Intel Haswell and up ... what system did you run this on?
+>> So call this field "token" or similar.  Don't call it "of_node" and
+>> don't introduce another "firmware_node" thing in addition to that.
+>> That just is a mess, sorry.
 
-ping?  Len?
-
-P.
+I completely agree. Both me and Lorenzo pointed that out in previous
+revisions and fair enough you have a valid concern it's use with PPTT.
 
 > 
-> P.
+> I sort of agree, I think I can just change the whole of_node to a
+> generic 'void *firmware_unique' which works fine for the PPTT code, it
+> should also work for the DT code in cache_leaves_are_shared().
+>
+
+Should be fine.
+
+> The slight gocha is there is a bit of DT code which initially runs
+> earlier that uses of_node as an indirect parameter to a couple functions
+> (by just passing the cacheinfo). Let me see if I can tweak that a bit.
+>
+
+May be use a simple inline wrapper functions to convert, might help if
+we diverge too.
+
+> Frankly, If I understood completely all the *priv cases I suspect it
+> might be possible to collapse *of_node into that as well. That is as
+> long as no one decides to flush out DT on x86, or PPTT on x86.
 > 
+
+priv is used to save architecture/cache specific details that can't be
+generalized. I doubt if this of_node or PPTT pointer/offset falls in
+that category.
+
+
+-- 
+Regards,
+Sudeep
