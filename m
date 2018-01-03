@@ -1,101 +1,75 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH]cpuidle: preventive check in cpuidle_select against crash
-Date: Wed, 03 Jan 2018 12:16:26 +0100
-Message-ID: <2321585.UHgzd7LiPO@aspire.rjw.lan>
-References: <20171226072626.GA4153@gaurav.jindal> <CAJZ5v0jH=DqUSFT8yAt+M=_N0Qn-ou0dPmqK7DwG5S22jZ1R+A@mail.gmail.com> <20171229184522.GA3423@gaurav.jindal>
+Subject: Re: [PATCH v11 3/5] thinkpad_acpi: Add support for battery thresholds
+Date: Wed, 03 Jan 2018 12:24:53 +0100
+Message-ID: <7475117.k4QWeGOQkJ@aspire.rjw.lan>
+References: <20171231141727.GA4643@thinkpad> <CAHp75VeYRYRpmqy_GGQ95e1YhvZGfWtsJrGbLiA4JskEmd69zg@mail.gmail.com> <20180103103455.GA17803@thinkpad>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:49190 "EHLO
+Received: from cloudserver094114.home.pl ([79.96.170.134]:56369 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751730AbeACLRc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jan 2018 06:17:32 -0500
-In-Reply-To: <20171229184522.GA3423@gaurav.jindal>
+        with ESMTP id S1751428AbeACLZ6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jan 2018 06:25:58 -0500
+In-Reply-To: <20180103103455.GA17803@thinkpad>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: gaurav jindal <gauravjindal1104@gmail.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p@gmail.com>
+Cc: Andy Shevchenko <andy.shevchenko@gmail.com>, "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?ISO-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 
-On Friday, December 29, 2017 7:45:22 PM CET gaurav jindal wrote:
-> On Wed, Dec 27, 2017 at 03:30:02AM +0100, Rafael J. Wysocki wrote:
-> > On Wed, Dec 27, 2017 at 2:57 AM, gaurav jindal
-> > <gauravjindal1104@gmail.com> wrote:
-> > > On Wed, Dec 27, 2017 at 01:42:58AM +0100, Rafael J. Wysocki wrote:
-> > >> On Tue, Dec 26, 2017 at 8:26 AM, gaurav jindal
-> > >> <gauravjindal1104@gmail.com> wrote:
-> > >> > When selecting the idle state using cpuidle_select, there is no
-> > >> > check on cpuidle_curr_governor. In cpuidle_switch_governor,
-> > >> > cpuidle_currr_governor can be set to NULL to specify "disabled".
-> > >>
-> > >> How exactly?
+On Wednesday, January 3, 2018 11:34:55 AM CET Ognjen Galić wrote:
+> On Mon, Jan 01, 2018 at 12:24:39PM +0200, Andy Shevchenko wrote:
+> > On Sun, Dec 31, 2017 at 4:17 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
+> > > thinkpad_acpi registers two new attributes for each battery:
 > > >
-> > > In cpuidle_switch_governor:
+> > > 1) Charge start threshold
+> > > /sys/class/power_supply/BATN/charge_start_threshold
 > > >
-> > > /**
-> > >  * cpuidle_switch_governor - changes the governor
-> > >  * @gov: the new target governor
-> > >  *
-> > >  * NOTE: "gov" can be NULL to specify disabled
-> > >  * Must be called with cpuidle_lock acquired.
-> > >  */
-> > > int cpuidle_switch_governor(struct cpuidle_governor *gov)
-> > > {
-> > >         struct cpuidle_device *dev;
+> > > Valid values are [0, 99]. A value of 0 turns off the
+> > > start threshold wear control.
 > > >
-> > >         if (gov == cpuidle_curr_governor)
-> > >                 return 0;
+> > > 2) Charge stop threshold
+> > > /sys/class/power_supply/BATN/charge_stop_threshold
 > > >
-> > >         cpuidle_uninstall_idle_handler();
+> > > Valid values are [1, 100]. A value of 100 turns off
+> > > the stop threshold wear control. This must be
+> > > configured first.
 > > >
-> > >         if (cpuidle_curr_governor) {
-> > >                 list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
-> > >                         cpuidle_disable_device(dev);
-> > >         }
-> > >
-> > >         cpuidle_curr_governor = gov;
-> > >
-> > > This allows to set the cpuidle_switch_governor as NULL. Although there is no
-> > > current code flow leading here, but it has a potential for bug in future. So
-> > > may be better to have prevention.
 > > 
-> > Or maybe not.
+> > > This patch depends on the following patches:
+> > >
+> > > "battery: Add the battery hooking API"
 > > 
-> > Why don't you make cpuidle_switch_governor() check the argument
-> > against NULL instead?
+> > Since this is series, no need to put above into changelog.
+> > 
+> > AFAICS it's not going to be backported either.
+> > 
+> > 
+> > > +/**
+> > > + * This evaluates a ACPI method call specific to the battery
+> > > + * ACPI extension. The specifics are that an error is marked
+> > > + * in the 32rd bit of the response, so we just check that here.
+> > > + *
+> > > + * Returns 0 on success
+> > > + */
+> > > +static int tpacpi_battery_acpi_eval(char *method, int *ret, int param)
+> > > +{
+> > 
+> > One problem and one trick you may do.
+> > 
+> > A problem: you return ACPI status as int. We have special type for
+> > that. So, be consistent with it.
+> > Looking to acpi_evalf() which is private to the module, I think you
+> > need to get rid of ACPI return codes here.
+> > 
+> > A trick: since you are using only least significant byte of the
+> > response, you can declare it as u8 *value (yeah, ret is not best name
+> > here I think).
 > 
-> If we check gov (argument passed in  cpuidle_switch_governor())against
-> NULL in cpuidle_switch_governor, can be a problem in a case where it 
-> is called as
-> cpuidle_switch_governor(NULL);
-> 
-> If cpuidle_curr_governor is not NULL, first the device is disabled.
-> 
-> if (cpuidle_curr_governor) {
-> 	list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
-> 	cpuidle_disable_device(dev);
-> }
-> 
-> after this cpuidle_curr_governor is set to gov, which is NULL in this case.
-> 
-> cpuidle_curr_governor = gov;
-> /* if is not updated by inserting a check, it will have an oudated value*/
-> 
-> Now, if gov is not NULL (which it is in this case), cpuidle device is enabled
-> 
-> if (gov) {
-> 	list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
-> 	cpuidle_enable_device(dev);
-> 	cpuidle_install_idle_handler();
-> 	printk(KERN_INFO "cpuidle: using governor %s\n", gov->name);
-> }
-> If we check for gov against NULL in this function, it will produce
-> dangling pointers and resource leaks.
+> Not really. In one place I need bit #9, so that will stay a int.
+> I have changed the acpi return value to acpi_status tho.
 
-I didn't recommend you to introduce bugs.
-
-Just return -EINVAL if gov is NULL before checking if gov is equal to
-cpuidle_curr_governor.
+OK, you can resend the updated series when you're ready.
 
 Thanks,
 Rafael
