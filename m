@@ -1,60 +1,122 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v5 7/9] arm64: Topology, rename cluster_id
-Date: Wed, 3 Jan 2018 14:29:34 +0000
-Message-ID: <20180103142934.GA5390@e107155-lin>
-References: <20171201222330.18863-1-jeremy.linton@arm.com>
- <20171201222330.18863-8-jeremy.linton@arm.com>
- <20171213180217.GB4060@red-moon>
- <7bb4e955-f3e5-d22f-4e78-eac97e66a9a6@arm.com>
- <20171218124229.GG507@e105550-lin.cambridge.arm.com>
- <965127a6-816b-8e0c-d228-a3d73a8c643a@huawei.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v12 2/4] pm: add to_power_supply macro to the API
+Date: Wed, 3 Jan 2018 16:34:34 +0200
+Message-ID: <CAHp75VctRMxMS8EUMYQ-B9s5TRDnHeeM1NvKNRmLezLbQc6cdQ@mail.gmail.com>
+References: <20180103115905.GA10115@thinkpad>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from foss.arm.com ([217.140.101.70]:50822 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751364AbeACO3p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 Jan 2018 09:29:45 -0500
-Content-Disposition: inline
-In-Reply-To: <965127a6-816b-8e0c-d228-a3d73a8c643a@huawei.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-acpi-owner@vger.kernel.org>
+In-Reply-To: <20180103115905.GA10115@thinkpad>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Ognjen Galic <smclt30p@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 List-Id: linux-pm@vger.kernel.org
-To: Xiongfeng Wang <wangxiongfeng2@huawei.com>, Morten Rasmussen <morten.rasmussen@foss.arm.com>, Jeremy Linton <jeremy.linton@arm.com>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
+
+On Wed, Jan 3, 2018 at 1:59 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
+> This patch adds the to_power_supply macro to upcast
+> a device to a power_supply struct.
+>
+> This is needed because the same piece of code using
+> container_of is used in various other places, so we
+> abstract away such low-level operations via a macro.
+>
+> Suggested-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> Signed-off-by: Ognjen Galic <smclt30p@gmail.com>
+
+It took me a while to understand if those private implementations are
+equivalent to what you introduced.
+Looks so sysfs_create_group() adds the attributes to power supply
+device kobject, thus the struct device pointer in the callback will be
+power supply child, not the actual hardware which seems correct.
+
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+
+> ---
+>
+> Notes:
+>     v9:
+>     * Split the pm changes from the thinkpad_acpi patch
+>     into its own patch
+>
+>     v10:
+>     * No changes in this patch in v10
+>
+>     v11:
+>     * Fix changelog formatting
+>
+>     v12:
+>     * Fix build issues in ds2781 and ds2780 battery drivers
+>
+>  drivers/power/supply/ds2780_battery.c    | 5 -----
+>  drivers/power/supply/ds2781_battery.c    | 5 -----
+>  drivers/power/supply/power_supply_core.c | 2 +-
+>  include/linux/power_supply.h             | 2 ++
+>  4 files changed, 3 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/power/supply/ds2780_battery.c b/drivers/power/supply/ds2780_battery.c
+> index e5d81b4..370e910 100644
+> --- a/drivers/power/supply/ds2780_battery.c
+> +++ b/drivers/power/supply/ds2780_battery.c
+> @@ -56,11 +56,6 @@ to_ds2780_device_info(struct power_supply *psy)
+>         return power_supply_get_drvdata(psy);
+>  }
+>
+> -static inline struct power_supply *to_power_supply(struct device *dev)
+> -{
+> -       return dev_get_drvdata(dev);
+> -}
+> -
+>  static inline int ds2780_battery_io(struct ds2780_device_info *dev_info,
+>         char *buf, int addr, size_t count, int io)
+>  {
+> diff --git a/drivers/power/supply/ds2781_battery.c b/drivers/power/supply/ds2781_battery.c
+> index efe83ef..d1b5a19 100644
+> --- a/drivers/power/supply/ds2781_battery.c
+> +++ b/drivers/power/supply/ds2781_battery.c
+> @@ -54,11 +54,6 @@ to_ds2781_device_info(struct power_supply *psy)
+>         return power_supply_get_drvdata(psy);
+>  }
+>
+> -static inline struct power_supply *to_power_supply(struct device *dev)
+> -{
+> -       return dev_get_drvdata(dev);
+> -}
+> -
+>  static inline int ds2781_battery_io(struct ds2781_device_info *dev_info,
+>         char *buf, int addr, size_t count, int io)
+>  {
+> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
+> index 82f998a..feac7b0 100644
+> --- a/drivers/power/supply/power_supply_core.c
+> +++ b/drivers/power/supply/power_supply_core.c
+> @@ -668,7 +668,7 @@ EXPORT_SYMBOL_GPL(power_supply_powers);
+>
+>  static void power_supply_dev_release(struct device *dev)
+>  {
+> -       struct power_supply *psy = container_of(dev, struct power_supply, dev);
+> +       struct power_supply *psy = to_power_supply(dev);
+>         dev_dbg(dev, "%s\n", __func__);
+>         kfree(psy);
+>  }
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index 79e90b3..f0139b4 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -371,6 +371,8 @@ devm_power_supply_register_no_ws(struct device *parent,
+>  extern void power_supply_unregister(struct power_supply *psy);
+>  extern int power_supply_powers(struct power_supply *psy, struct device *dev);
+>
+> +#define to_power_supply(device) container_of(device, struct power_supply, dev)
+> +
+>  extern void *power_supply_get_drvdata(struct power_supply *psy);
+>  /* For APM emulation, think legacy userspace. */
+>  extern struct class *power_supply_class;
+> --
+> 2.7.4
+>
 
 
-On 02/01/18 02:29, Xiongfeng Wang wrote:
-> Hi,
-> 
-> On 2017/12/18 20:42, Morten Rasmussen wrote:
->> On Fri, Dec 15, 2017 at 10:36:35AM -0600, Jeremy Linton wrote:
->>> Hi,
->>>
->>> On 12/13/2017 12:02 PM, Lorenzo Pieralisi wrote:
->>>> [+Morten, Dietmar]
->>>>
->>>> $SUBJECT should be:
->>>>
->>>> arm64: topology: rename cluster_id
->>>
-> [cut]
->>>
-> I think we still need the information describing which cores are in one
-> cluster. Many arm64 chips have the architecture core/cluster/socket. Cores
-> in one cluster may share a same L2 cache. That information can be used to
-> build the sched_domain. If we put cores in one cluster in one sched_domain,
-> the performance will be better.(please see kernel/sched/topology.c:1197,
-> cpu_coregroup_mask() uses 'core_sibling' to build a multi-core
-> sched_domain).
 
-We get all the cache information from DT/ACPI PPTT(mainly topology) and now
-even the geometry. So ideally, the sharing information must come from that.
-Any other solution might end up in conflict if DT/PPTT and that mismatch.
-
-> So I think we still need variable to record which cores are in one
-> sched_domain for future use.
-
-I tend to say no, at-least not as is.
 -- 
-Regards,
-Sudeep
+With Best Regards,
+Andy Shevchenko
