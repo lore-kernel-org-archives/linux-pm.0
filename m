@@ -1,46 +1,41 @@
-From: "Niklas =?iso-8859-1?Q?S=F6derlund?=" <niklas.soderlund@ragnatech.se>
-Subject: Re: [1/2] arm64: dts: r8a7795: add thermal cooling management
-Date: Wed, 3 Jan 2018 01:03:52 +0100
-Message-ID: <20180103000352.GB22490@bigcity.dyn.berto.se>
-References: <20170913105909.13230-2-niklas.soderlund+renesas@ragnatech.se>
- <20180101181333.GA3631@localhost.localdomain>
- <20180102091944.py647jheghud7sl2@verge.net.au>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: [PATCH 7/7] PCI / PM: Use SMART_SUSPEND and LEAVE_SUSPENDED flags for PCIe ports
+Date: Wed, 03 Jan 2018 01:38:27 +0100
+Message-ID: <33674270.0PFIgc82r6@aspire.rjw.lan>
+References: <7742130.AaJQIxeI1n@aspire.rjw.lan> <2436726.ykYRzVD45y@aspire.rjw.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20180102091944.py647jheghud7sl2@verge.net.au>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, linux-renesas-soc@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-i2c-owner@vger.kernel.org>
+In-Reply-To: <2436726.ykYRzVD45y@aspire.rjw.lan>
+Sender: linux-i2c-owner@vger.kernel.org
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-i2c <linux-i2c@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>
 List-Id: linux-pm@vger.kernel.org
 
-Hi Simon,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On 2018-01-02 10:19:44 +0100, Simon Horman wrote:
-> On Mon, Jan 01, 2018 at 10:13:35AM -0800, Eduardo Valentin wrote:
-> > On Wed, Sep 13, 2017 at 12:59:08PM +0200, Niklas Söderlund wrote:
-> > > Add nodes and properties for thermal cooling management support.
-> > > 
-> > > Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-> > > ---
-> > 
-> > Just a reminder, this series should go via your arch tree. You may add
-> > my acks.
-> 
-> Ack.
-> 
-> Niklas, could you comment on the readiness of these patches
-> for the renesas tree?
+Make the PCIe port driver set DPM_FLAG_SMART_SUSPEND and
+DPM_FLAG_LEAVE_SUSPENDED for the devices handled by it to benefit
+from the opportunistic optimizations in the PCI layer enabled by
+these flags.
 
-I think maybe the patches might have became a bit outdated since they 
-where posted due to all reg property fixup patches. The blocker for me 
-reposting this series is that the patches this depends 
-'topic/rcar-gen3-cpufreq' on are not yet in the renesas tree next or 
-devel branches. Do you think it would be valuable for me to refresh 
-these patches before the dependencies are picked up?
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/pci/pcie/portdrv_pci.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
--- 
-Regards,
-Niklas Söderlund
+Index: linux-pm/drivers/pci/pcie/portdrv_pci.c
+===================================================================
+--- linux-pm.orig/drivers/pci/pcie/portdrv_pci.c
++++ linux-pm/drivers/pci/pcie/portdrv_pci.c
+@@ -150,6 +150,9 @@ static int pcie_portdrv_probe(struct pci
+ 
+ 	pci_save_state(dev);
+ 
++	dev_pm_set_driver_flags(&dev->dev, DPM_FLAG_SMART_SUSPEND |
++					   DPM_FLAG_LEAVE_SUSPENDED);
++
+ 	if (pci_bridge_d3_possible(dev)) {
+ 		/*
+ 		 * Keep the port resumed 100ms to make sure things like
