@@ -1,163 +1,60 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Subject: Re: [PATCH v12 1/4] battery: Add the battery hooking API
-Date: Wed, 3 Jan 2018 16:25:42 +0200
-Message-ID: <CAHp75Vdj2rasWqdmBKGxNs9Y+Rap=UycoFdOcbG6QgA48Afq5w@mail.gmail.com>
-References: <20180103115847.GA10092@thinkpad>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v5 7/9] arm64: Topology, rename cluster_id
+Date: Wed, 3 Jan 2018 14:29:34 +0000
+Message-ID: <20180103142934.GA5390@e107155-lin>
+References: <20171201222330.18863-1-jeremy.linton@arm.com>
+ <20171201222330.18863-8-jeremy.linton@arm.com>
+ <20171213180217.GB4060@red-moon>
+ <7bb4e955-f3e5-d22f-4e78-eac97e66a9a6@arm.com>
+ <20171218124229.GG507@e105550-lin.cambridge.arm.com>
+ <965127a6-816b-8e0c-d228-a3d73a8c643a@huawei.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <platform-driver-x86-owner@vger.kernel.org>
-In-Reply-To: <20180103115847.GA10092@thinkpad>
-Sender: platform-driver-x86-owner@vger.kernel.org
-To: Ognjen Galic <smclt30p@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from foss.arm.com ([217.140.101.70]:50822 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751364AbeACO3p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 3 Jan 2018 09:29:45 -0500
+Content-Disposition: inline
+In-Reply-To: <965127a6-816b-8e0c-d228-a3d73a8c643a@huawei.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-
-On Wed, Jan 3, 2018 at 1:58 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
-> This is a patch that implements a generic hooking API for the
-> generic ACPI battery driver.
->
-> With this new generic API, drivers can expose platform specific
-> behaviour via sysfs attributes in /sys/class/power_supply/BATn/
-> in a generic way.
->
-> A perfect example of the need for this API are Lenovo ThinkPads.
->
-> Lenovo ThinkPads have a ACPI extension that allows the setting of
-> start and stop charge thresholds in the EC and battery firmware
-> via ACPI. The thinkpad_acpi module can use this API to expose
-> sysfs attributes that it controls inside the ACPI battery driver
-> sysfs tree, under /sys/class/power_supply/BATN/.
->
-> The file drivers/acpi/battery.h has been moved to
-> include/acpi/battery.h and the includes inside ac.c, sbs.c, and
-> battery.c have been adjusted to reflect that.
->
-> When drivers hooks into the API, the API calls add_battery() for
-> each battery in the system that passes it a acpi_battery
-> struct. Then, the drivers can use device_create_file() to create
-> new sysfs attributes with that struct and identify the batteries
-> for per-battery attributes.
-
-Thanks for an update. I have couple of minors. Otherwise look pretty much good!
-
->  drivers/acpi/battery.h |  11 ----
->  include/acpi/battery.h |  21 +++++++
-
-There are -M and -C command line parameters to git format-patch.
-They can take an optional argument (percentage) of threshold.
-
-Playing with those numbers you can achieve
-
-rename ...
-
-line and see actual diff.
-
-No need to resend because of this. Just an explanation for the future Git work.
-
-> +void __battery_hook_unregister(struct acpi_battery_hook *hook, int lock)
-> +{
-> +       struct list_head *position;
-> +       struct acpi_battery *battery;
-
-Missed empty line?
-
-> +       /*
-> +        * In order to remove a hook, we first need to
-> +        * de-register all the batteries that are registered.
-> +        */
-> +       if (lock)
-> +               mutex_lock(&hook_mutex);
-
-> +       list_for_each(position, &acpi_battery_list) {
-> +               battery = list_entry(position, struct acpi_battery, list);
-
-list_for_each_enrty() ?
-
-Or I'm missing something why it can't be used?
-
-> +               hook->remove_battery(battery->bat);
-> +       }
-
-> +void battery_hook_register(struct acpi_battery_hook *hook)
-> +{
-> +       struct acpi_battery *battery;
-
-> +       list_for_each_entry(battery, &acpi_battery_list, list) {
-> +               if (hook->add_battery(battery->bat)) {
-> +                       /*
-> +                        * If a add-battery returns non-zero,
-> +                        * the registration of the extension has failed,
-> +                        * and we will not add it to the list of loaded
-> +                        * hooks.
-> +                        */
-
-> +                       pr_err("extension failed to load: %s",
-> +                                       hook->name);
-
-Can it fit 80 characters?
-I mean if it would be one line...
-
-> +                       __battery_hook_unregister(hook, 0);
-> +                       return;
-> +               }
-> +       }
-> +       pr_info("new extension: %s\n", hook->name);
-> +       mutex_unlock(&hook_mutex);
-> +}
-
-> +static void battery_hook_add_battery(struct acpi_battery *battery)
-> +{
-
-> +       /*
-> +        * This function gets called right after the battery sysfs
-> +        * attributes have been added, so that the drivers that
-> +        * define custom sysfs attributes can add their own.
-> +        */
-
-Perhaps it should go before function definition.
-
-> +       struct acpi_battery_hook *hook_node;
-
-> +}
+To: Xiongfeng Wang <wangxiongfeng2@huawei.com>, Morten Rasmussen <morten.rasmussen@foss.arm.com>, Jeremy Linton <jeremy.linton@arm.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org, hanjun.guo@linaro.org, rjw@rjwysocki.net, will.deacon@arm.com, catalin.marinas@arm.com, gregkh@linuxfoundation.org, viresh.kumar@linaro.org, mark.rutland@arm.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, jhugo@codeaurora.org, Jonathan.Zhang@cavium.com, ahs3@redhat.com, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, lenb@kernel.org, morten.rasmussen@arm.com, dietmar.eggemann@arm.com
 
 
-> +static void __exit battery_hook_exit(void)
-> +{
-> +       struct acpi_battery_hook *hook;
-> +       struct acpi_battery_hook *ptr;
+On 02/01/18 02:29, Xiongfeng Wang wrote:
+> Hi,
+> 
+> On 2017/12/18 20:42, Morten Rasmussen wrote:
+>> On Fri, Dec 15, 2017 at 10:36:35AM -0600, Jeremy Linton wrote:
+>>> Hi,
+>>>
+>>> On 12/13/2017 12:02 PM, Lorenzo Pieralisi wrote:
+>>>> [+Morten, Dietmar]
+>>>>
+>>>> $SUBJECT should be:
+>>>>
+>>>> arm64: topology: rename cluster_id
+>>>
+> [cut]
+>>>
+> I think we still need the information describing which cores are in one
+> cluster. Many arm64 chips have the architecture core/cluster/socket. Cores
+> in one cluster may share a same L2 cache. That information can be used to
+> build the sched_domain. If we put cores in one cluster in one sched_domain,
+> the performance will be better.(please see kernel/sched/topology.c:1197,
+> cpu_coregroup_mask() uses 'core_sibling' to build a multi-core
+> sched_domain).
 
-Missed empty line?
+We get all the cache information from DT/ACPI PPTT(mainly topology) and now
+even the geometry. So ideally, the sharing information must come from that.
+Any other solution might end up in conflict if DT/PPTT and that mismatch.
 
-> +       /*
-> +        * At this point, the acpi_bus_unregister_driver
-> +        * has called remove for all batteries. We just
-> +        * need to remove the hooks.
-> +        */
+> So I think we still need variable to record which cores are in one
+> sched_domain for future use.
 
-A common pattern to use func() [note parens] when refer to function.
-
-> +       list_for_each_entry_safe(hook, ptr, &battery_hook_list, list) {
-> +               __battery_hook_unregister(hook, 1);
-> +       }
-> +       mutex_destroy(&hook_mutex);
-> +}
-
->         battery->bat = power_supply_register_no_ws(&battery->device->dev,
->                                 &battery->bat_desc, &psy_cfg);
->
-> +       battery_hook_add_battery(battery);
-> +
->         if (IS_ERR(battery->bat)) {
->                 int result = PTR_ERR(battery->bat);
-
-I'm not sure why you need to add hook when power_supply_register_no_ws() failed.
-
->         }
-> -
-> +       battery_hook_remove_battery(battery);
-
-No need to remove an empty line.
-
+I tend to say no, at-least not as is.
 -- 
-With Best Regards,
-Andy Shevchenko
+Regards,
+Sudeep
