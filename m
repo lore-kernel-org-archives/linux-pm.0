@@ -1,75 +1,232 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [1/2] arm64: dts: r8a7795: add thermal cooling management
-Date: Wed, 3 Jan 2018 11:25:37 +0100
-Message-ID: <CAMuHMdWf76hNbQva_z9-2bCbBiGfA-veK9GdCqTyThaiBsNpMQ@mail.gmail.com>
-References: <20170913105909.13230-2-niklas.soderlund+renesas@ragnatech.se>
- <20180101181333.GA3631@localhost.localdomain> <20180102091944.py647jheghud7sl2@verge.net.au>
- <20180103000352.GB22490@bigcity.dyn.berto.se> <20180103101438.il5grrfihewiduqe@verge.net.au>
+From: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p@gmail.com>
+Subject: Re: [PATCH v11 3/5] thinkpad_acpi: Add support for battery thresholds
+Date: Wed, 3 Jan 2018 11:34:55 +0100
+Message-ID: <20180103103455.GA17803@thinkpad>
+References: <20171231141727.GA4643@thinkpad>
+ <CAHp75VeYRYRpmqy_GGQ95e1YhvZGfWtsJrGbLiA4JskEmd69zg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qt0-f196.google.com ([209.85.216.196]:45749 "EHLO
-        mail-qt0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752193AbeACKZi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jan 2018 05:25:38 -0500
-In-Reply-To: <20180103101438.il5grrfihewiduqe@verge.net.au>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-acpi-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <CAHp75VeYRYRpmqy_GGQ95e1YhvZGfWtsJrGbLiA4JskEmd69zg@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 List-Id: linux-pm@vger.kernel.org
-To: Simon Horman <horms@verge.net.au>
-Cc: =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>, Eduardo Valentin <edubezval@gmail.com>, Linux PM list <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-Hi Simon,
+On Mon, Jan 01, 2018 at 12:24:39PM +0200, Andy Shevchenko wrote:
+> On Sun, Dec 31, 2017 at 4:17 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
+> > thinkpad_acpi registers two new attributes for each battery:
+> >
+> > 1) Charge start threshold
+> > /sys/class/power_supply/BATN/charge_start_threshold
+> >
+> > Valid values are [0, 99]. A value of 0 turns off the
+> > start threshold wear control.
+> >
+> > 2) Charge stop threshold
+> > /sys/class/power_supply/BATN/charge_stop_threshold
+> >
+> > Valid values are [1, 100]. A value of 100 turns off
+> > the stop threshold wear control. This must be
+> > configured first.
+> >
+> 
+> > This patch depends on the following patches:
+> >
+> > "battery: Add the battery hooking API"
+> 
+> Since this is series, no need to put above into changelog.
+> 
+> AFAICS it's not going to be backported either.
+> 
+> 
+> > +/**
+> > + * This evaluates a ACPI method call specific to the battery
+> > + * ACPI extension. The specifics are that an error is marked
+> > + * in the 32rd bit of the response, so we just check that here.
+> > + *
+> > + * Returns 0 on success
+> > + */
+> > +static int tpacpi_battery_acpi_eval(char *method, int *ret, int param)
+> > +{
+> 
+> One problem and one trick you may do.
+> 
+> A problem: you return ACPI status as int. We have special type for
+> that. So, be consistent with it.
+> Looking to acpi_evalf() which is private to the module, I think you
+> need to get rid of ACPI return codes here.
+> 
+> A trick: since you are using only least significant byte of the
+> response, you can declare it as u8 *value (yeah, ret is not best name
+> here I think).
 
-On Wed, Jan 3, 2018 at 11:14 AM, Simon Horman <horms@verge.net.au> wrote:
-> On Wed, Jan 03, 2018 at 01:03:52AM +0100, Niklas S=C3=B6derlund wrote:
->> On 2018-01-02 10:19:44 +0100, Simon Horman wrote:
->> > On Mon, Jan 01, 2018 at 10:13:35AM -0800, Eduardo Valentin wrote:
->> > > On Wed, Sep 13, 2017 at 12:59:08PM +0200, Niklas S=C3=B6derlund wrot=
-e:
->> > > > Add nodes and properties for thermal cooling management support.
->> > > >
->> > > > Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@rag=
-natech.se>
->> > > > ---
->> > >
->> > > Just a reminder, this series should go via your arch tree. You may a=
-dd
->> > > my acks.
->> >
->> > Ack.
->> >
->> > Niklas, could you comment on the readiness of these patches
->> > for the renesas tree?
->>
->> I think maybe the patches might have became a bit outdated since they
->> where posted due to all reg property fixup patches. The blocker for me
->> reposting this series is that the patches this depends
->> 'topic/rcar-gen3-cpufreq' on are not yet in the renesas tree next or
->> devel branches. Do you think it would be valuable for me to refresh
->> these patches before the dependencies are picked up?
->
-> Probably not. I'll try to work on getting cpufreq upstream :)
+Not really. In one place I need bit #9, so that will stay a int.
+I have changed the acpi return value to acpi_status tho.
 
-I think it's working fine in renesas-drivers, isn't it?
-
-As in the mean time the R-Car Gen3 CPG/MSSR drivers gained suspend/resume
-support, the only missing part is support for restoring the Z* clocks durin=
-g
-system resume.  Unless that is handled automatically by the cpufreq core.
-For secondary CPU cores, this may be handled by the CPU hotplug code.
-For the primary CPU core, I don't know.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-                                -- Linus Torvalds
+> 
+> So, something like
+> 
+> ..._eval(..., u8 *value, ...)
+> {
+>   int response;
+> 
+>   if (!..._evalf(..., &response, ...)) {
+>   ...
+> 
+> > +       if (!acpi_evalf(hkey_handle, ret, method, "dd", param)) {
+> > +               acpi_handle_err(hkey_handle, "%s: evaluate failed", method);
+> > +               return AE_ERROR;
+> > +       }
+> > +
+> > +       if (*ret & METHOD_ERR) {
+> 
+> if (response & ...) {
+> 
+> > +               acpi_handle_err(hkey_handle,
+> > +                               "%s evaluated but flagged as error", method);
+> > +               return AE_ERROR;
+> > +       }
+> 
+> *value = response;
+> 
+> > +
+> > +       return AE_OK;
+> > +}
+> 
+> > +static int tpacpi_battery_get(int what, int battery, int *ret)
+> > +{
+> > +       switch (what) {
+> > +
+> > +       case THRESHOLD_START:
+> > +
+> > +               if (tpacpi_battery_acpi_eval(GET_START, ret, battery))
+> > +                       return -ENODEV;
+> > +
+> 
+> > +               /* The value is in the low 8 bits of the response */
+> > +               *ret = *ret & 0xFF;
+> 
+> So, this will gone with a trick above.
+> 
+> > +               return 0;
+> > +
+> > +       case THRESHOLD_STOP:
+> > +
+> > +               if (tpacpi_battery_acpi_eval(GET_STOP, ret, battery))
+> > +                       return -ENODEV;
+> > +
+> > +               /* Value is in lower 8 bits */
+> > +               *ret = *ret & 0xFF;
+> 
+> Ditto.
+> 
+> > +
+> > +               /*
+> > +                * On the stop value, if we return 0 that
+> > +                * does not make any sense. 0 means Default, which
+> > +                * means that charging stops at 100%, so we return
+> > +                * that.
+> > +                */
+> > +               if (*ret == 0)
+> > +                       *ret = 100;
+> > +
+> > +               return 0;
+> > +
+> > +       default:
+> > +               pr_crit("wrong parameter: %d", what);
+> > +               return -EINVAL;
+> > +       }
+> > +
+> > +}
+> 
+> > +static int tpacpi_battery_probe(int battery)
+> > +{
+> > +       int ret = 0;
+> > +
+> > +       memset(&battery_info, 0, sizeof(struct tpacpi_battery_driver_data));
+> > +
+> > +       /*
+> > +        * 1) Get the current start threshold
+> > +        * 2) Check for support
+> > +        * 3) Get the current stop threshold
+> > +        * 4) Check for support
+> > +        */
+> > +
+> > +       if (acpi_has_method(hkey_handle, GET_START)) {
+> > +
+> > +               if (tpacpi_battery_acpi_eval(GET_START, &ret, battery)) {
+> > +                       pr_err("Error probing battery %d\n", battery);
+> > +                       return -ENODEV;
+> > +               }
+> > +
+> > +               /* Individual addressing is in bit 9 */
+> > +               if (ret & BIT(9))
+> > +                       battery_info.individual_addressing = true;
+> > +
+> > +               /* Support is marked in bit 8 */
+> > +               if (ret & BIT(8))
+> > +                       battery_info.batteries[battery].start_support = 1;
+> > +               else
+> > +                       return -ENODEV;
+> > +
+> > +               if (tpacpi_battery_get(THRESHOLD_START, battery,
+> > +                       &battery_info.batteries[battery].charge_start)) {
+> > +                       pr_err("Error probing battery %d\n", battery);
+> > +                       return -ENODEV;
+> > +               }
+> 
+> > +
+> 
+> Please, get rid of all useless empty lines like this one, or above (in
+> between of two if:s).
+> 
+> > +       }
+> 
+> > +/* General helper functions */
+> > +
+> > +static int tpacpi_battery_get_id(const char *battery_name)
+> > +{
+> > +
+> > +       if (strcmp(battery_name, "BAT0") == 0)
+> > +               return BAT_PRIMARY;
+> > +       if (strcmp(battery_name, "BAT1") == 0)
+> > +               return BAT_SECONDARY;
+> > +
+> > +       /*
+> > +        * If for some reason the battery is not BAT0 nor is it
+> > +        * BAT1, we will assume it's the default, first battery,
+> > +        * AKA primary.
+> > +        */
+> > +       pr_warn("unknown battery %s, assuming primary", battery_name);
+> > +       return BAT_PRIMARY;
+> > +}
+> > +
+> > +/* sysfs interface */
+> > +
+> > +static ssize_t tpacpi_battery_store(int what,
+> > +                                   struct device *dev,
+> > +                                   const char *buf, size_t count)
+> > +{
+> > +       struct power_supply *supply = to_power_supply(dev);
+> > +       unsigned long value;
+> > +       int battery, errno;
+> 
+> > +       errno = kstrtoul(buf, 10, &value);
+> 
+> > +
+> 
+> Dont' split lines like these where one returns some error code
+> followed by conditional check.
+> 
+> > +       if (errno)
+> 
+> > +               return errno;
+> 
+> Besides, errno is a bad name, please consider what is used elsewhere
+> in this module (rc, ret, rval, ...?).
+> 
+> -- 
+> With Best Regards,
+> Andy Shevchenko
