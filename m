@@ -1,173 +1,101 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: [PATCH v2] PM / runtime: Rework pm_runtime_force_suspend/resume()
-Date: Wed, 03 Jan 2018 12:06:40 +0100
-Message-ID: <303007688.lvsDLFNCpe@aspire.rjw.lan>
-References: <4069324.Q7yJt6I4hJ@aspire.rjw.lan>
+Subject: Re: [PATCH]cpuidle: preventive check in cpuidle_select against crash
+Date: Wed, 03 Jan 2018 12:16:26 +0100
+Message-ID: <2321585.UHgzd7LiPO@aspire.rjw.lan>
+References: <20171226072626.GA4153@gaurav.jindal> <CAJZ5v0jH=DqUSFT8yAt+M=_N0Qn-ou0dPmqK7DwG5S22jZ1R+A@mail.gmail.com> <20171229184522.GA3423@gaurav.jindal>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:52059 "EHLO
+Received: from cloudserver094114.home.pl ([79.96.170.134]:49190 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751616AbeACLHq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jan 2018 06:07:46 -0500
-In-Reply-To: <4069324.Q7yJt6I4hJ@aspire.rjw.lan>
+        with ESMTP id S1751730AbeACLRc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jan 2018 06:17:32 -0500
+In-Reply-To: <20171229184522.GA3423@gaurav.jindal>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Linux PM <linux-pm@vger.kernel.org>
-Cc: Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Wunner <lukas@wunner.de>
+To: gaurav jindal <gauravjindal1104@gmail.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Friday, December 29, 2017 7:45:22 PM CET gaurav jindal wrote:
+> On Wed, Dec 27, 2017 at 03:30:02AM +0100, Rafael J. Wysocki wrote:
+> > On Wed, Dec 27, 2017 at 2:57 AM, gaurav jindal
+> > <gauravjindal1104@gmail.com> wrote:
+> > > On Wed, Dec 27, 2017 at 01:42:58AM +0100, Rafael J. Wysocki wrote:
+> > >> On Tue, Dec 26, 2017 at 8:26 AM, gaurav jindal
+> > >> <gauravjindal1104@gmail.com> wrote:
+> > >> > When selecting the idle state using cpuidle_select, there is no
+> > >> > check on cpuidle_curr_governor. In cpuidle_switch_governor,
+> > >> > cpuidle_currr_governor can be set to NULL to specify "disabled".
+> > >>
+> > >> How exactly?
+> > >
+> > > In cpuidle_switch_governor:
+> > >
+> > > /**
+> > >  * cpuidle_switch_governor - changes the governor
+> > >  * @gov: the new target governor
+> > >  *
+> > >  * NOTE: "gov" can be NULL to specify disabled
+> > >  * Must be called with cpuidle_lock acquired.
+> > >  */
+> > > int cpuidle_switch_governor(struct cpuidle_governor *gov)
+> > > {
+> > >         struct cpuidle_device *dev;
+> > >
+> > >         if (gov == cpuidle_curr_governor)
+> > >                 return 0;
+> > >
+> > >         cpuidle_uninstall_idle_handler();
+> > >
+> > >         if (cpuidle_curr_governor) {
+> > >                 list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+> > >                         cpuidle_disable_device(dev);
+> > >         }
+> > >
+> > >         cpuidle_curr_governor = gov;
+> > >
+> > > This allows to set the cpuidle_switch_governor as NULL. Although there is no
+> > > current code flow leading here, but it has a potential for bug in future. So
+> > > may be better to have prevention.
+> > 
+> > Or maybe not.
+> > 
+> > Why don't you make cpuidle_switch_governor() check the argument
+> > against NULL instead?
+> 
+> If we check gov (argument passed in  cpuidle_switch_governor())against
+> NULL in cpuidle_switch_governor, can be a problem in a case where it 
+> is called as
+> cpuidle_switch_governor(NULL);
+> 
+> If cpuidle_curr_governor is not NULL, first the device is disabled.
+> 
+> if (cpuidle_curr_governor) {
+> 	list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+> 	cpuidle_disable_device(dev);
+> }
+> 
+> after this cpuidle_curr_governor is set to gov, which is NULL in this case.
+> 
+> cpuidle_curr_governor = gov;
+> /* if is not updated by inserting a check, it will have an oudated value*/
+> 
+> Now, if gov is not NULL (which it is in this case), cpuidle device is enabled
+> 
+> if (gov) {
+> 	list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+> 	cpuidle_enable_device(dev);
+> 	cpuidle_install_idle_handler();
+> 	printk(KERN_INFO "cpuidle: using governor %s\n", gov->name);
+> }
+> If we check for gov against NULL in this function, it will produce
+> dangling pointers and resource leaks.
 
-One of the limitations of pm_runtime_force_suspend/resume() is that
-if a parent driver wants to use these functions, all of its child
-drivers have to do that too because of the parent usage counter
-manipulations necessary to get the correct state of the parent during
-system-wide transitions to the working state (system resume).
-However, that limitation turns out to be artificial, so remove it.
+I didn't recommend you to introduce bugs.
 
-Namely, pm_runtime_force_suspend() only needs to update the children
-counter of its parent (if there's is a parent) when the device can
-stay in suspend after the subsequent system resume transition, as
-that counter is correct already otherwise.  Now, if the parent's
-children counter is not updated, it is not necessary to increment
-the parent's usage counter in that case any more, as long as the
-children counters of devices are checked along with their usage
-counters in order to decide whether or not the devices may be left
-in suspend after the subsequent system resume transition.
+Just return -EINVAL if gov is NULL before checking if gov is equal to
+cpuidle_curr_governor.
 
-Accordingly, modify pm_runtime_force_suspend() to only call
-pm_runtime_set_suspended() for devices whose usage and children
-counters are at the "no references" level (the runtime PM status
-of the device needs to be updated to "suspended" anyway in case
-this function is called once again for the same device during the
-transition under way), drop the parent usage counter incrementation
-from it and update pm_runtime_force_resume() to compensate for these
-changes.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/base/power/runtime.c |   74 +++++++++++++++++++------------------------
- 1 file changed, 34 insertions(+), 40 deletions(-)
-
-Index: linux-pm/drivers/base/power/runtime.c
-===================================================================
---- linux-pm.orig/drivers/base/power/runtime.c
-+++ linux-pm/drivers/base/power/runtime.c
-@@ -1613,17 +1613,28 @@ void pm_runtime_drop_link(struct device
- 	spin_unlock_irq(&dev->power.lock);
- }
- 
-+static bool pm_runtime_need_not_resume(struct device *dev)
-+{
-+	return atomic_read(&dev->power.usage_count) <= 1 &&
-+		atomic_read(&dev->power.child_count) == 0;
-+}
-+
- /**
-  * pm_runtime_force_suspend - Force a device into suspend state if needed.
-  * @dev: Device to suspend.
-  *
-  * Disable runtime PM so we safely can check the device's runtime PM status and
-- * if it is active, invoke it's .runtime_suspend callback to bring it into
-- * suspend state. Keep runtime PM disabled to preserve the state unless we
-- * encounter errors.
-+ * if it is active, invoke its ->runtime_suspend callback to suspend it and
-+ * change its runtime PM status field to RPM_SUSPENDED.  Also, if the device's
-+ * usage and children counters don't indicate that the device was in use before
-+ * the system-wide transition under way, decrement its parent's children counter
-+ * (if there is a parent).  Keep runtime PM disabled to preserve the state
-+ * unless we encounter errors.
-  *
-  * Typically this function may be invoked from a system suspend callback to make
-- * sure the device is put into low power state.
-+ * sure the device is put into low power state and it should only be used during
-+ * system-wide PM transitions to sleep states.  It assumes that the analogous
-+ * pm_runtime_force_resume() will be used to resume the device.
-  */
- int pm_runtime_force_suspend(struct device *dev)
- {
-@@ -1646,17 +1657,18 @@ int pm_runtime_force_suspend(struct devi
- 		goto err;
- 
- 	/*
--	 * Increase the runtime PM usage count for the device's parent, in case
--	 * when we find the device being used when system suspend was invoked.
--	 * This informs pm_runtime_force_resume() to resume the parent
--	 * immediately, which is needed to be able to resume its children,
--	 * when not deferring the resume to be managed via runtime PM.
-+	 * If the device can stay in suspend after the system-wide transition
-+	 * to the working state that will follow, drop the children counter of
-+	 * its parent, but set its status to RPM_SUSPENDED anyway in case this
-+	 * function will be called again for it in the meantime.
- 	 */
--	if (dev->parent && atomic_read(&dev->power.usage_count) > 1)
--		pm_runtime_get_noresume(dev->parent);
-+	if (pm_runtime_need_not_resume(dev))
-+		pm_runtime_set_suspended(dev);
-+	else
-+		__update_runtime_status(dev, RPM_SUSPENDED);
- 
--	pm_runtime_set_suspended(dev);
- 	return 0;
-+
- err:
- 	pm_runtime_enable(dev);
- 	return ret;
-@@ -1669,13 +1681,9 @@ EXPORT_SYMBOL_GPL(pm_runtime_force_suspe
-  *
-  * Prior invoking this function we expect the user to have brought the device
-  * into low power state by a call to pm_runtime_force_suspend(). Here we reverse
-- * those actions and brings the device into full power, if it is expected to be
-- * used on system resume. To distinguish that, we check whether the runtime PM
-- * usage count is greater than 1 (the PM core increases the usage count in the
-- * system PM prepare phase), as that indicates a real user (such as a subsystem,
-- * driver, userspace, etc.) is using it. If that is the case, the device is
-- * expected to be used on system resume as well, so then we resume it. In the
-- * other case, we defer the resume to be managed via runtime PM.
-+ * those actions and bring the device into full power, if it is expected to be
-+ * used on system resume.  In the other case, we defer the resume to be managed
-+ * via runtime PM.
-  *
-  * Typically this function may be invoked from a system resume callback.
-  */
-@@ -1684,32 +1692,18 @@ int pm_runtime_force_resume(struct devic
- 	int (*callback)(struct device *);
- 	int ret = 0;
- 
--	callback = RPM_GET_CALLBACK(dev, runtime_resume);
--
--	if (!callback) {
--		ret = -ENOSYS;
--		goto out;
--	}
--
--	if (!pm_runtime_status_suspended(dev))
-+	if (!pm_runtime_status_suspended(dev) || pm_runtime_need_not_resume(dev))
- 		goto out;
- 
- 	/*
--	 * Decrease the parent's runtime PM usage count, if we increased it
--	 * during system suspend in pm_runtime_force_suspend().
--	*/
--	if (atomic_read(&dev->power.usage_count) > 1) {
--		if (dev->parent)
--			pm_runtime_put_noidle(dev->parent);
--	} else {
--		goto out;
--	}
-+	 * The value of the parent's children counter is correct already, so
-+	 * just update the status of the device.
-+	 */
-+	__update_runtime_status(dev, RPM_ACTIVE);
- 
--	ret = pm_runtime_set_active(dev);
--	if (ret)
--		goto out;
-+	callback = RPM_GET_CALLBACK(dev, runtime_resume);
- 
--	ret = callback(dev);
-+	ret = callback ? callback(dev) : -ENOSYS;
- 	if (ret) {
- 		pm_runtime_set_suspended(dev);
- 		goto out;
+Thanks,
+Rafael
