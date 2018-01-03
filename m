@@ -1,232 +1,121 @@
-From: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p@gmail.com>
-Subject: Re: [PATCH v11 3/5] thinkpad_acpi: Add support for battery thresholds
-Date: Wed, 3 Jan 2018 11:34:55 +0100
-Message-ID: <20180103103455.GA17803@thinkpad>
-References: <20171231141727.GA4643@thinkpad>
- <CAHp75VeYRYRpmqy_GGQ95e1YhvZGfWtsJrGbLiA4JskEmd69zg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-acpi-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAHp75VeYRYRpmqy_GGQ95e1YhvZGfWtsJrGbLiA4JskEmd69zg@mail.gmail.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
+From: Fabio Estevam <festevam@gmail.com>
+Subject: [PATCH] thermal: thermal_hwmon: Convert to hwmon_device_register_with_info()
+Date: Wed,  3 Jan 2018 08:44:54 -0200
+Message-ID: <1514976294-31880-1-git-send-email-festevam@gmail.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-qk0-f194.google.com ([209.85.220.194]:44345 "EHLO
+        mail-qk0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751154AbeACKpB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jan 2018 05:45:01 -0500
+Received: by mail-qk0-f194.google.com with SMTP id v188so1011874qkh.11
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jan 2018 02:45:01 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rui.zhang@intel.com
+Cc: edubezval@gmail.com, linux-pm@vger.kernel.org, arthurborsboom@gmail.com, Fabio Estevam <fabio.estevam@nxp.com>, Pavel Machek <pavel@ucw.cz>, Guenter Roeck <linux@roeck-us.net>
 
-On Mon, Jan 01, 2018 at 12:24:39PM +0200, Andy Shevchenko wrote:
-> On Sun, Dec 31, 2017 at 4:17 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
-> > thinkpad_acpi registers two new attributes for each battery:
-> >
-> > 1) Charge start threshold
-> > /sys/class/power_supply/BATN/charge_start_threshold
-> >
-> > Valid values are [0, 99]. A value of 0 turns off the
-> > start threshold wear control.
-> >
-> > 2) Charge stop threshold
-> > /sys/class/power_supply/BATN/charge_stop_threshold
-> >
-> > Valid values are [1, 100]. A value of 100 turns off
-> > the stop threshold wear control. This must be
-> > configured first.
-> >
-> 
-> > This patch depends on the following patches:
-> >
-> > "battery: Add the battery hooking API"
-> 
-> Since this is series, no need to put above into changelog.
-> 
-> AFAICS it's not going to be backported either.
-> 
-> 
-> > +/**
-> > + * This evaluates a ACPI method call specific to the battery
-> > + * ACPI extension. The specifics are that an error is marked
-> > + * in the 32rd bit of the response, so we just check that here.
-> > + *
-> > + * Returns 0 on success
-> > + */
-> > +static int tpacpi_battery_acpi_eval(char *method, int *ret, int param)
-> > +{
-> 
-> One problem and one trick you may do.
-> 
-> A problem: you return ACPI status as int. We have special type for
-> that. So, be consistent with it.
-> Looking to acpi_evalf() which is private to the module, I think you
-> need to get rid of ACPI return codes here.
-> 
-> A trick: since you are using only least significant byte of the
-> response, you can declare it as u8 *value (yeah, ret is not best name
-> here I think).
+From: Fabio Estevam <fabio.estevam@nxp.com>
 
-Not really. In one place I need bit #9, so that will stay a int.
-I have changed the acpi return value to acpi_status tho.
+Booting Linux on a mx6q based board leads to the following warning:
+    
+(NULL device *): hwmon_device_register() is deprecated. Please convert the
+driver to use hwmon_device_register_with_info().
+    
+, so do the conversion as suggested.
 
-> 
-> So, something like
-> 
-> ..._eval(..., u8 *value, ...)
-> {
->   int response;
-> 
->   if (!..._evalf(..., &response, ...)) {
->   ...
-> 
-> > +       if (!acpi_evalf(hkey_handle, ret, method, "dd", param)) {
-> > +               acpi_handle_err(hkey_handle, "%s: evaluate failed", method);
-> > +               return AE_ERROR;
-> > +       }
-> > +
-> > +       if (*ret & METHOD_ERR) {
-> 
-> if (response & ...) {
-> 
-> > +               acpi_handle_err(hkey_handle,
-> > +                               "%s evaluated but flagged as error", method);
-> > +               return AE_ERROR;
-> > +       }
-> 
-> *value = response;
-> 
-> > +
-> > +       return AE_OK;
-> > +}
-> 
-> > +static int tpacpi_battery_get(int what, int battery, int *ret)
-> > +{
-> > +       switch (what) {
-> > +
-> > +       case THRESHOLD_START:
-> > +
-> > +               if (tpacpi_battery_acpi_eval(GET_START, ret, battery))
-> > +                       return -ENODEV;
-> > +
-> 
-> > +               /* The value is in the low 8 bits of the response */
-> > +               *ret = *ret & 0xFF;
-> 
-> So, this will gone with a trick above.
-> 
-> > +               return 0;
-> > +
-> > +       case THRESHOLD_STOP:
-> > +
-> > +               if (tpacpi_battery_acpi_eval(GET_STOP, ret, battery))
-> > +                       return -ENODEV;
-> > +
-> > +               /* Value is in lower 8 bits */
-> > +               *ret = *ret & 0xFF;
-> 
-> Ditto.
-> 
-> > +
-> > +               /*
-> > +                * On the stop value, if we return 0 that
-> > +                * does not make any sense. 0 means Default, which
-> > +                * means that charging stops at 100%, so we return
-> > +                * that.
-> > +                */
-> > +               if (*ret == 0)
-> > +                       *ret = 100;
-> > +
-> > +               return 0;
-> > +
-> > +       default:
-> > +               pr_crit("wrong parameter: %d", what);
-> > +               return -EINVAL;
-> > +       }
-> > +
-> > +}
-> 
-> > +static int tpacpi_battery_probe(int battery)
-> > +{
-> > +       int ret = 0;
-> > +
-> > +       memset(&battery_info, 0, sizeof(struct tpacpi_battery_driver_data));
-> > +
-> > +       /*
-> > +        * 1) Get the current start threshold
-> > +        * 2) Check for support
-> > +        * 3) Get the current stop threshold
-> > +        * 4) Check for support
-> > +        */
-> > +
-> > +       if (acpi_has_method(hkey_handle, GET_START)) {
-> > +
-> > +               if (tpacpi_battery_acpi_eval(GET_START, &ret, battery)) {
-> > +                       pr_err("Error probing battery %d\n", battery);
-> > +                       return -ENODEV;
-> > +               }
-> > +
-> > +               /* Individual addressing is in bit 9 */
-> > +               if (ret & BIT(9))
-> > +                       battery_info.individual_addressing = true;
-> > +
-> > +               /* Support is marked in bit 8 */
-> > +               if (ret & BIT(8))
-> > +                       battery_info.batteries[battery].start_support = 1;
-> > +               else
-> > +                       return -ENODEV;
-> > +
-> > +               if (tpacpi_battery_get(THRESHOLD_START, battery,
-> > +                       &battery_info.batteries[battery].charge_start)) {
-> > +                       pr_err("Error probing battery %d\n", battery);
-> > +                       return -ENODEV;
-> > +               }
-> 
-> > +
-> 
-> Please, get rid of all useless empty lines like this one, or above (in
-> between of two if:s).
-> 
-> > +       }
-> 
-> > +/* General helper functions */
-> > +
-> > +static int tpacpi_battery_get_id(const char *battery_name)
-> > +{
-> > +
-> > +       if (strcmp(battery_name, "BAT0") == 0)
-> > +               return BAT_PRIMARY;
-> > +       if (strcmp(battery_name, "BAT1") == 0)
-> > +               return BAT_SECONDARY;
-> > +
-> > +       /*
-> > +        * If for some reason the battery is not BAT0 nor is it
-> > +        * BAT1, we will assume it's the default, first battery,
-> > +        * AKA primary.
-> > +        */
-> > +       pr_warn("unknown battery %s, assuming primary", battery_name);
-> > +       return BAT_PRIMARY;
-> > +}
-> > +
-> > +/* sysfs interface */
-> > +
-> > +static ssize_t tpacpi_battery_store(int what,
-> > +                                   struct device *dev,
-> > +                                   const char *buf, size_t count)
-> > +{
-> > +       struct power_supply *supply = to_power_supply(dev);
-> > +       unsigned long value;
-> > +       int battery, errno;
-> 
-> > +       errno = kstrtoul(buf, 10, &value);
-> 
-> > +
-> 
-> Dont' split lines like these where one returns some error code
-> followed by conditional check.
-> 
-> > +       if (errno)
-> 
-> > +               return errno;
-> 
-> Besides, errno is a bad name, please consider what is used elsewhere
-> in this module (rc, ret, rval, ...?).
-> 
-> -- 
-> With Best Regards,
-> Andy Shevchenko
+Also, this results in the core taking care of creating the 'name'
+attribute, so drop the code doing that from the thermal driver.
+
+The initial attempt to convert this driver to
+hwmon_device_register_with_info() caused issues on the N900 platform
+in commit 611fb68062f ("thermal: thermal_hwmon: Convert to
+hwmon_device_register_with_info()"):
+
+bq27xxx-battery 2-0055: failed to register battery
+bq27xxx-battery: probe of 2-0055 failed with error -22
+...
+rx51-battery: probe of n900-battery failed with error -22
+
+, leading to a revert in commit 3feb479cea37 ("Revert "thermal:
+thermal_hwmon: Convert to hwmon_device_register_with_info()"").
+
+The probe errors happened due to the '-' character being present in
+the name of the power supply devices: bq27200-0 and rx51-battery.
+
+Since commit 74d3b6419772 ("hwmon: Relax name attribute validation
+for new APIs") hwmon will no longer treat these names as errors,
+allowing the transition for hwmon_device_register_with_info() to
+happen in a safely manner. 
+
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Guenter Roeck <linux@roeck-us.net>
+Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
+---
+Pavel,
+
+Could you please test this patch on your N900 platform?
+
+Thanks
+
+ drivers/thermal/thermal_hwmon.c | 20 +++-----------------
+ 1 file changed, 3 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index 541af59..c4a508a 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -59,14 +59,6 @@ static LIST_HEAD(thermal_hwmon_list);
+ static DEFINE_MUTEX(thermal_hwmon_list_lock);
+ 
+ static ssize_t
+-name_show(struct device *dev, struct device_attribute *attr, char *buf)
+-{
+-	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
+-	return sprintf(buf, "%s\n", hwmon->type);
+-}
+-static DEVICE_ATTR_RO(name);
+-
+-static ssize_t
+ temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
+ {
+ 	int temperature;
+@@ -165,15 +157,12 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+ 
+ 	INIT_LIST_HEAD(&hwmon->tz_list);
+ 	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
+-	hwmon->device = hwmon_device_register(NULL);
++	hwmon->device = hwmon_device_register_with_info(NULL, hwmon->type,
++							hwmon, NULL, NULL);
+ 	if (IS_ERR(hwmon->device)) {
+ 		result = PTR_ERR(hwmon->device);
+ 		goto free_mem;
+ 	}
+-	dev_set_drvdata(hwmon->device, hwmon);
+-	result = device_create_file(hwmon->device, &dev_attr_name);
+-	if (result)
+-		goto free_mem;
+ 
+  register_sys_interface:
+ 	temp = kzalloc(sizeof(*temp), GFP_KERNEL);
+@@ -222,10 +211,8 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+  free_temp_mem:
+ 	kfree(temp);
+  unregister_name:
+-	if (new_hwmon_device) {
+-		device_remove_file(hwmon->device, &dev_attr_name);
++	if (new_hwmon_device)
+ 		hwmon_device_unregister(hwmon->device);
+-	}
+  free_mem:
+ 	if (new_hwmon_device)
+ 		kfree(hwmon);
+@@ -267,7 +254,6 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+ 	list_del(&hwmon->node);
+ 	mutex_unlock(&thermal_hwmon_list_lock);
+ 
+-	device_remove_file(hwmon->device, &dev_attr_name);
+ 	hwmon_device_unregister(hwmon->device);
+ 	kfree(hwmon);
+ }
+-- 
+2.7.4
