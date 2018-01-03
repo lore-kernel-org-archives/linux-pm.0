@@ -1,26 +1,46 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [GIT PULL] cpupower update for 4.16-rc1
-Date: Wed, 3 Jan 2018 00:39:23 +0100
-Message-ID: <CAJZ5v0hEgvNxkmeGzuZii9amEsQYnmZ-_0iOwFwUkLcogYRKfA@mail.gmail.com>
-References: <47ae2127-281c-89ae-2818-faa17ed86047@osg.samsung.com>
+From: "Niklas =?iso-8859-1?Q?S=F6derlund?=" <niklas.soderlund@ragnatech.se>
+Subject: Re: [1/2] arm64: dts: r8a7795: add thermal cooling management
+Date: Wed, 3 Jan 2018 01:03:52 +0100
+Message-ID: <20180103000352.GB22490@bigcity.dyn.berto.se>
+References: <20170913105909.13230-2-niklas.soderlund+renesas@ragnatech.se>
+ <20180101181333.GA3631@localhost.localdomain>
+ <20180102091944.py647jheghud7sl2@verge.net.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f182.google.com ([74.125.82.182]:45990 "EHLO
-        mail-ot0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750986AbeABXjX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jan 2018 18:39:23 -0500
-In-Reply-To: <47ae2127-281c-89ae-2818-faa17ed86047@osg.samsung.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20180102091944.py647jheghud7sl2@verge.net.au>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Simon Horman <horms@verge.net.au>
+Cc: Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, devicetree@vger.kernel.org, Magnus Damm <magnus.damm@gmail.com>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Shuah Khan <shuahkh@osg.samsung.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Thomas Renninger <trenn@suse.de>, Linux PM <linux-pm@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Shuah Khan <shuah@kernel.org>
 
-On Wed, Jan 3, 2018 at 12:13 AM, Shuah Khan <shuahkh@osg.samsung.com> wrote:
-> Hi Rafael,
+Hi Simon,
 
-Hi,
+On 2018-01-02 10:19:44 +0100, Simon Horman wrote:
+> On Mon, Jan 01, 2018 at 10:13:35AM -0800, Eduardo Valentin wrote:
+> > On Wed, Sep 13, 2017 at 12:59:08PM +0200, Niklas Söderlund wrote:
+> > > Add nodes and properties for thermal cooling management support.
+> > > 
+> > > Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+> > > ---
+> > 
+> > Just a reminder, this series should go via your arch tree. You may add
+> > my acks.
+> 
+> Ack.
+> 
+> Niklas, could you comment on the readiness of these patches
+> for the renesas tree?
 
-> Please pull the cpupower update for 4.16-rc1.
+I think maybe the patches might have became a bit outdated since they 
+where posted due to all reg property fixup patches. The blocker for me 
+reposting this series is that the patches this depends 
+'topic/rcar-gen3-cpufreq' on are not yet in the renesas tree next or 
+devel branches. Do you think it would be valuable for me to refresh 
+these patches before the dependencies are picked up?
 
-Pulled, thanks!
+-- 
+Regards,
+Niklas Söderlund
