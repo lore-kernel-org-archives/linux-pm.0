@@ -1,55 +1,72 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: Re: [-next PATCH 2/4] treewide: Use DEVICE_ATTR_RW
-Date: Wed, 03 Jan 2018 16:16:08 +0100
-Message-ID: <4624388.pPJCIclP0U@amdc3058>
-References: <cover.1513706701.git.joe@perches.com>
- <CGME20171219181536epcas2p18d023209dc13ac504457c07b8b2b8965@epcas2p1.samsung.com>
- <cd38f14f06e1f447b3159ffe8c69c0df8241bb6e.1513706701.git.joe@perches.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>
+Subject: Re: [PATCH V4 3/7] PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for
+ Tegra PCIe
+Date: Wed, 3 Jan 2018 15:51:49 +0000
+Message-ID: <20180103155149.GA8929@e107981-ln.cambridge.arm.com>
+References: <1512723493-865-1-git-send-email-mmaddireddy@nvidia.com>
+ <1512723493-865-4-git-send-email-mmaddireddy@nvidia.com>
+ <20171215173643.GA1050@red-moon>
+ <20171220193011.GA31757@ulmo>
+ <20171221104630.GB24280@red-moon>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-In-reply-to: <cd38f14f06e1f447b3159ffe8c69c0df8241bb6e.1513706701.git.joe@perches.com>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Joe Perches <joe@perches.com>
-Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Heiko Carstens <heiko.carstens@de.ibm.com>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, Jaroslav Kysela <perex@perex.cz>, Peter Ujfalusi <peter.ujfalusi@ti.com>, linux-s390@vger.kernel.org, linux-omap@vger.kernel.org, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org, Takashi Iwai <tiwai@suse.com>, Sebastian Ott <sebott@linux.vnet.ibm.com>, James Smart <james.smart@broadcom.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.com>, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, Dick Kennedy <dick.kennedy@broadcom.com>, Mathias Nyman <mathias.nyman@intel.com>, linux-pm@vger.kernel.org, Peter Oberparleiter <oberpar@linux.vnet.ibm.com>, intel-gfx@lists.freedesktop.org, Eduardo Valentin <edube>
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+Content-Disposition: inline
+In-Reply-To: <20171221104630.GB24280@red-moon>
+Sender: linux-tegra-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Cc: cyndis-/1wQRMveznE@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-T24gVHVlc2RheSwgRGVjZW1iZXIgMTksIDIwMTcgMTA6MTU6MDcgQU0gSm9lIFBlcmNoZXMgd3Jv
-dGU6Cj4gQ29udmVydCBERVZJQ0VfQVRUUiB1c2VzIHRvIERFVklDRV9BVFRSX1JXIHdoZXJlIHBv
-c3NpYmxlLgo+IAo+IERvbmUgd2l0aCBwZXJsIHNjcmlwdDoKPiAKPiAkIGdpdCBncmVwIC13IC0t
-bmFtZS1vbmx5IERFVklDRV9BVFRSIHwgXAo+ICAgeGFyZ3MgcGVybCAtaSAtZSAnbG9jYWwgJC87
-IHdoaWxlICg8PikgeyBzL1xiREVWSUNFX0FUVFJccypcKFxzKihcdyspXHMqLFxzKlwoPyhccypT
-X0lSVUdPXHMqXHxccypTX0lXVVNSfFxzKlNfSVdVU1JccypcfFxzKlNfSVJVR09ccyp8XHMqMDY0
-NFxzKilcKT9ccyosXHMqXDFfc2hvd1xzKixccypcMV9zdG9yZVxzKlwpL0RFVklDRV9BVFRSX1JX
-KFwxKS9nOyBwcmludDt9Jwo+IAo+IFNpZ25lZC1vZmYtYnk6IEpvZSBQZXJjaGVzIDxqb2VAcGVy
-Y2hlcy5jb20+Cj4gLS0tCj4gIGFyY2gvczM5MC9rZXJuZWwvdG9wb2xvZ3kuYyAgICAgICAgICB8
-ICAzICstLQo+ICBhcmNoL3RpbGUva2VybmVsL3N5c2ZzLmMgICAgICAgICAgICAgfCAgMiArLQo+
-ICBkcml2ZXJzL2dwdS9kcm0vaTkxNS9pOTE1X3N5c2ZzLmMgICAgfCAgNiArKy0tLQo+ICBkcml2
-ZXJzL3BsYXRmb3JtL3g4Ni9jb21wYWwtbGFwdG9wLmMgfCAxOCArKysrKy0tLS0tLS0tLS0KPiAg
-ZHJpdmVycy9zMzkwL2Npby9kZXZpY2UuYyAgICAgICAgICAgIHwgIDIgKy0KPiAgZHJpdmVycy9z
-Y3NpL2xwZmMvbHBmY19hdHRyLmMgICAgICAgIHwgNDMgKysrKysrKysrKysrLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tCj4gIGRyaXZlcnMvdGhlcm1hbC90aGVybWFsX3N5c2ZzLmMgICAgICB8ICA5
-ICsrKystLS0tCj4gIGRyaXZlcnMvdHR5L3NlcmlhbC9zaC1zY2kuYyAgICAgICAgICB8ICAyICst
-Cj4gIGRyaXZlcnMvdXNiL2hvc3QveGhjaS1kYmdjYXAuYyAgICAgICB8ICAyICstCj4gIGRyaXZl
-cnMvdXNiL3BoeS9waHktdGFodm8uYyAgICAgICAgICB8ICAyICstCj4gIGRyaXZlcnMvdmlkZW8v
-ZmJkZXYvYXVvX2sxOTB4LmMgICAgICB8ICA0ICsrLS0KPiAgZHJpdmVycy92aWRlby9mYmRldi93
-MTAwZmIuYyAgICAgICAgIHwgIDQgKystLQo+ICBsaWIvdGVzdF9maXJtd2FyZS5jICAgICAgICAg
-ICAgICAgICAgfCAxNCArKysrKy0tLS0tLS0KPiAgbGliL3Rlc3Rfa21vZC5jICAgICAgICAgICAg
-ICAgICAgICAgIHwgMTQgKysrKystLS0tLS0tCj4gIHNvdW5kL3NvYy9vbWFwL21jYnNwLmMgICAg
-ICAgICAgICAgICB8ICA0ICsrLS0KPiAgMTUgZmlsZXMgY2hhbmdlZCwgNDkgaW5zZXJ0aW9ucygr
-KSwgODAgZGVsZXRpb25zKC0pCgpGb3IgZmJkZXYgY2hhbmdlczoKCkFja2VkLWJ5OiBCYXJ0bG9t
-aWVqIFpvbG5pZXJraWV3aWN6IDxiLnpvbG5pZXJraWVAc2Ftc3VuZy5jb20+CgpCZXN0IHJlZ2Fy
-ZHMsCi0tCkJhcnRsb21pZWogWm9sbmllcmtpZXdpY3oKU2Ftc3VuZyBSJkQgSW5zdGl0dXRlIFBv
-bGFuZApTYW1zdW5nIEVsZWN0cm9uaWNzCgpfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fXwpJbnRlbC1nZnggbWFpbGluZyBsaXN0CkludGVsLWdmeEBsaXN0cy5m
-cmVlZGVza3RvcC5vcmcKaHR0cHM6Ly9saXN0cy5mcmVlZGVza3RvcC5vcmcvbWFpbG1hbi9saXN0
-aW5mby9pbnRlbC1nZngK
+On Thu, Dec 21, 2017 at 10:46:30AM +0000, Lorenzo Pieralisi wrote:
+> On Wed, Dec 20, 2017 at 08:30:11PM +0100, Thierry Reding wrote:
+> > On Fri, Dec 15, 2017 at 05:36:43PM +0000, Lorenzo Pieralisi wrote:
+> > > On Fri, Dec 08, 2017 at 02:28:09PM +0530, Manikanta Maddireddy wrote:
+> > > > Primary, secondary and subordinate default bus numbers are 0 in Tegra and
+> > > > it is expecting SW to program these numbers in configration space.
+> > > > 
+> > > > pci_scan_bridge_extend() function programs these numbers in configuration
+> > > > space if secondary & subordinate bus numbers are 0 or PCI_REASSIGN_ALL_BUS
+> > > > flag is set. Since secondary & subordinate default bus numbers are 0,
+> > > > PCI_REASSIGN_ALL_BUS flag can be removed for Tegra PCIe.
+> > > > 
+> > > > Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> > > > ---
+> > > > V3:
+> > > > * new patch in V3
+> > > > V4:
+> > > > * no change in this patch
+> > > > 
+> > > >  drivers/pci/host/pci-tegra.c | 1 -
+> > > >  1 file changed, 1 deletion(-)
+> > > > 
+> > > > diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+> > > > index a549c5899e26..0d91f1a3a6b4 100644
+> > > > --- a/drivers/pci/host/pci-tegra.c
+> > > > +++ b/drivers/pci/host/pci-tegra.c
+> > > > @@ -2604,7 +2604,6 @@ static int tegra_pcie_probe(struct platform_device *pdev)
+> > > >  
+> > > >  	tegra_pcie_enable_ports(pcie);
+> > > >  
+> > > > -	pci_add_flags(PCI_REASSIGN_ALL_BUS);
+> > > 
+> > > This looks obviously OK to me but I need Thierry's ACK to queue it.
+> > 
+> > Just as an additional note: I think the real reason why this is okay to
+> > do is because we reset the PCI host controller in the kernel driver, so
+> > any bus assignments done by the firmware are reset as well.
+> > 
+> > Acked-by: Thierry Reding <treding-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+> 
+> Thank you. This series needs rebasing, we should try to untangle
+> the dependencies between series so that I can actually apply some
+> of these patches that make sense on their own.
+
+Manikanta, would you be able to decouple this series from:
+
+https://patchwork.ozlabs.org/patch/832053/
+
+so that we can make forward progress ? There are some patches in
+this series that I could apply - if rebased.
+
+Lorenzo
