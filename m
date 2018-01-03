@@ -1,68 +1,163 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH v5 4/9] drivers: base cacheinfo: Add support for ACPI
- based firmware tables
-Date: Wed, 3 Jan 2018 14:21:24 +0000
-Message-ID: <3c3bf8a4-a13a-ce71-4bd2-71dd11b45521@arm.com>
-References: <20171201222330.18863-1-jeremy.linton@arm.com>
- <20171201222330.18863-5-jeremy.linton@arm.com>
- <2078459.JrYtfXc8fv@aspire.rjw.lan>
- <5024a041-2ef4-3912-994f-b5fcc945e916@arm.com>
- <CAJZ5v0hHdfE3khVvuqQm5JFMgY5R054c8UB9Nixii9ucq0Ecnw@mail.gmail.com>
- <9bb1c58a-8d48-9952-e292-60b2bcb87a51@arm.com>
- <CAJZ5v0gnWn_05XN7r+Mwwgc0ca5vx8wgAQ1A8aAwOPvc9H899Q@mail.gmail.com>
- <fdb60100-3973-b9e3-487a-882836f8751e@arm.com>
+From: Andy Shevchenko <andy.shevchenko@gmail.com>
+Subject: Re: [PATCH v12 1/4] battery: Add the battery hooking API
+Date: Wed, 3 Jan 2018 16:25:42 +0200
+Message-ID: <CAHp75Vdj2rasWqdmBKGxNs9Y+Rap=UycoFdOcbG6QgA48Afq5w@mail.gmail.com>
+References: <20180103115847.GA10092@thinkpad>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <fdb60100-3973-b9e3-487a-882836f8751e@arm.com>
-Content-Language: en-US
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Sudeep Holla <sudeep.holla@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, Hanjun Guo <hanjun.guo@linaro.org>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, Al Stone <ahs3@redhat.com>, Jayachandran.Nair@cavium.com
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <20180103115847.GA10092@thinkpad>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Ognjen Galic <smclt30p@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, =?UTF-8?Q?Christoph_B=C3=B6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 List-Id: linux-pm@vger.kernel.org
 
-(Sorry for the delay, just returning from vacation)
-
-On 12/12/17 23:37, Jeremy Linton wrote:
-> On 12/12/2017 05:02 PM, Rafael J. Wysocki wrote:
-
-[...]
-
->>
->> So call this field "token" or similar.  Don't call it "of_node" and
->> don't introduce another "firmware_node" thing in addition to that.
->> That just is a mess, sorry.
-
-I completely agree. Both me and Lorenzo pointed that out in previous
-revisions and fair enough you have a valid concern it's use with PPTT.
-
-> 
-> I sort of agree, I think I can just change the whole of_node to a
-> generic 'void *firmware_unique' which works fine for the PPTT code, it
-> should also work for the DT code in cache_leaves_are_shared().
+On Wed, Jan 3, 2018 at 1:58 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
+> This is a patch that implements a generic hooking API for the
+> generic ACPI battery driver.
 >
-
-Should be fine.
-
-> The slight gocha is there is a bit of DT code which initially runs
-> earlier that uses of_node as an indirect parameter to a couple functions
-> (by just passing the cacheinfo). Let me see if I can tweak that a bit.
+> With this new generic API, drivers can expose platform specific
+> behaviour via sysfs attributes in /sys/class/power_supply/BATn/
+> in a generic way.
 >
+> A perfect example of the need for this API are Lenovo ThinkPads.
+>
+> Lenovo ThinkPads have a ACPI extension that allows the setting of
+> start and stop charge thresholds in the EC and battery firmware
+> via ACPI. The thinkpad_acpi module can use this API to expose
+> sysfs attributes that it controls inside the ACPI battery driver
+> sysfs tree, under /sys/class/power_supply/BATN/.
+>
+> The file drivers/acpi/battery.h has been moved to
+> include/acpi/battery.h and the includes inside ac.c, sbs.c, and
+> battery.c have been adjusted to reflect that.
+>
+> When drivers hooks into the API, the API calls add_battery() for
+> each battery in the system that passes it a acpi_battery
+> struct. Then, the drivers can use device_create_file() to create
+> new sysfs attributes with that struct and identify the batteries
+> for per-battery attributes.
 
-May be use a simple inline wrapper functions to convert, might help if
-we diverge too.
+Thanks for an update. I have couple of minors. Otherwise look pretty much good!
 
-> Frankly, If I understood completely all the *priv cases I suspect it
-> might be possible to collapse *of_node into that as well. That is as
-> long as no one decides to flush out DT on x86, or PPTT on x86.
-> 
+>  drivers/acpi/battery.h |  11 ----
+>  include/acpi/battery.h |  21 +++++++
 
-priv is used to save architecture/cache specific details that can't be
-generalized. I doubt if this of_node or PPTT pointer/offset falls in
-that category.
+There are -M and -C command line parameters to git format-patch.
+They can take an optional argument (percentage) of threshold.
 
+Playing with those numbers you can achieve
+
+rename ...
+
+line and see actual diff.
+
+No need to resend because of this. Just an explanation for the future Git work.
+
+> +void __battery_hook_unregister(struct acpi_battery_hook *hook, int lock)
+> +{
+> +       struct list_head *position;
+> +       struct acpi_battery *battery;
+
+Missed empty line?
+
+> +       /*
+> +        * In order to remove a hook, we first need to
+> +        * de-register all the batteries that are registered.
+> +        */
+> +       if (lock)
+> +               mutex_lock(&hook_mutex);
+
+> +       list_for_each(position, &acpi_battery_list) {
+> +               battery = list_entry(position, struct acpi_battery, list);
+
+list_for_each_enrty() ?
+
+Or I'm missing something why it can't be used?
+
+> +               hook->remove_battery(battery->bat);
+> +       }
+
+> +void battery_hook_register(struct acpi_battery_hook *hook)
+> +{
+> +       struct acpi_battery *battery;
+
+> +       list_for_each_entry(battery, &acpi_battery_list, list) {
+> +               if (hook->add_battery(battery->bat)) {
+> +                       /*
+> +                        * If a add-battery returns non-zero,
+> +                        * the registration of the extension has failed,
+> +                        * and we will not add it to the list of loaded
+> +                        * hooks.
+> +                        */
+
+> +                       pr_err("extension failed to load: %s",
+> +                                       hook->name);
+
+Can it fit 80 characters?
+I mean if it would be one line...
+
+> +                       __battery_hook_unregister(hook, 0);
+> +                       return;
+> +               }
+> +       }
+> +       pr_info("new extension: %s\n", hook->name);
+> +       mutex_unlock(&hook_mutex);
+> +}
+
+> +static void battery_hook_add_battery(struct acpi_battery *battery)
+> +{
+
+> +       /*
+> +        * This function gets called right after the battery sysfs
+> +        * attributes have been added, so that the drivers that
+> +        * define custom sysfs attributes can add their own.
+> +        */
+
+Perhaps it should go before function definition.
+
+> +       struct acpi_battery_hook *hook_node;
+
+> +}
+
+
+> +static void __exit battery_hook_exit(void)
+> +{
+> +       struct acpi_battery_hook *hook;
+> +       struct acpi_battery_hook *ptr;
+
+Missed empty line?
+
+> +       /*
+> +        * At this point, the acpi_bus_unregister_driver
+> +        * has called remove for all batteries. We just
+> +        * need to remove the hooks.
+> +        */
+
+A common pattern to use func() [note parens] when refer to function.
+
+> +       list_for_each_entry_safe(hook, ptr, &battery_hook_list, list) {
+> +               __battery_hook_unregister(hook, 1);
+> +       }
+> +       mutex_destroy(&hook_mutex);
+> +}
+
+>         battery->bat = power_supply_register_no_ws(&battery->device->dev,
+>                                 &battery->bat_desc, &psy_cfg);
+>
+> +       battery_hook_add_battery(battery);
+> +
+>         if (IS_ERR(battery->bat)) {
+>                 int result = PTR_ERR(battery->bat);
+
+I'm not sure why you need to add hook when power_supply_register_no_ws() failed.
+
+>         }
+> -
+> +       battery_hook_remove_battery(battery);
+
+No need to remove an empty line.
 
 -- 
-Regards,
-Sudeep
+With Best Regards,
+Andy Shevchenko
