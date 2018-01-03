@@ -1,170 +1,60 @@
-From: <vkilari@codeaurora.org>
-Subject: RE: [PATCH v5 6/9] ACPI/PPTT: Add topology parsing code
-Date: Wed, 3 Jan 2018 14:19:25 +0530
-Message-ID: <019601d3846f$c8708550$59518ff0$@codeaurora.org>
-References: <20171201222330.18863-1-jeremy.linton@arm.com> <20171201222330.18863-7-jeremy.linton@arm.com> <9009154.M66RGdQJXA@aspire.rjw.lan> <fc12696c-15e1-cea4-42bf-db4b5daa45f2@arm.com> <20171213173851.GA4060@red-moon> <CAJZ5v0hTcC8D6pJuPK+isntWpckNgNmqLHW98iFXL817VYHHdg@mail.gmail.com> <6aca3fa0-9099-f283-ae16-0c48aa00d00d@arm.com> <CAJZ5v0hBZQ-vYbobOYtKFVg9hAtUo4GU==napcJ-btQhMvn+5g@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <CAJZ5v0hBZQ-vYbobOYtKFVg9hAtUo4GU==napcJ-btQhMvn+5g@mail.gmail.com>
-Content-Language: en-us
-Sender: linux-acpi-owner@vger.kernel.org
-To: 'Jeremy Linton' <jeremy.linton@arm.com>
-Cc: 'Mark Rutland' <mark.rutland@arm.com>, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, 'Lorenzo Pieralisi' <lorenzo.pieralisi@arm.com>, 'Catalin Marinas' <catalin.marinas@arm.com>, jhugo@codeaurora.org, 'Will Deacon' <will.deacon@arm.com>, 'Linux PM' <linux-pm@vger.kernel.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'ACPI Devel Maling List' <linux-acpi@vger.kernel.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, 'Hanjun Guo' <hanjun.guo@linaro.org>, 'Al Stone' <ahs3@redhat.com>, 'Sudeep Holla' <sudeep.holla@arm.com>, austinwc@codeaurora.org, wangxiongfeng2@huawei.com, "'Rafael J. Wysocki'" <rafael@kernel.org>
+From: Leo Yan <leo.yan@linaro.org>
+Subject: [PATCH] thermal: Use power efficient workqueue
+Date: Wed,  3 Jan 2018 17:24:16 +0800
+Message-ID: <1514971456-2877-1-git-send-email-leo.yan@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f67.google.com ([209.85.218.67]:34915 "EHLO
+        mail-oi0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751712AbeACJYi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jan 2018 04:24:38 -0500
+Received: by mail-oi0-f67.google.com with SMTP id 184so603793oii.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jan 2018 01:24:38 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Leo Yan <leo.yan@linaro.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-Hi Jeremy,
+Thermal core framework uses the system_freezable_wq workqueue as its
+workqueue for polling temperature. Using system_freezable_wq workqueue
+prevents the scheduler to make smart decision about the best place to
+schedule the work.
 
- Sorry, I don't have your previous patch emails to reply on right patch
-context.
-So commenting on top of this patch.
+This commit replaces system_freezable_wq with
+system_freezable_power_efficient_wq. With kernel configuration
+CONFIG_WQ_POWER_EFFICIENT is enabled, the work can be scheduled on the
+best CPU from a power or a performance point of view.
 
-AFAIU, the PPTT v5 patches still rely on CLIDR_EL1 register to know the type
-of 
-Caches enabled/available on the platform. With PPTT, it should not rely on
-architecture
-registers. There can be platforms which can report cache availability in
-PPTT but not in 
-architecture registers.
+This commit is inspired by Vincent Guittot patch "netfilter: conntrack:
+use power efficient workqueue" and verified on 96boards Hikey960.
 
-The following code snippet shows usage of CLIDR_EL1
+Cc: Eduardo Valentin <edubezval@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Vincent Guittot <vincent.guittot@linaro.org>
+Signed-off-by: Leo Yan <leo.yan@linaro.org>
+---
+ drivers/thermal/thermal_core.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-In arch/arm64/kernel/cacheinfo.c
-
-static inline enum cache_type get_cache_type(int level)
-{
-         u64 clidr;
- 
-         if (level > MAX_CACHE_LEVEL)
-                 return CACHE_TYPE_NOCACHE;
-         clidr = read_sysreg(clidr_el1);
-         return CLIDR_CTYPE(clidr, level);
-}
-
-static int __populate_cache_leaves(unsigned int cpu)
-{
-          unsigned int level, idx;
-          enum cache_type type;
-          struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
-          struct cacheinfo *this_leaf = this_cpu_ci->info_list;
-  
-          for (idx = 0, level = 1; level <= this_cpu_ci->num_levels &&
-               idx < this_cpu_ci->num_leaves; idx++, level++) {
-                  type = get_cache_type(level);
-                  if (type == CACHE_TYPE_SEPARATE) {
-                          ci_leaf_init(this_leaf++, CACHE_TYPE_DATA, level);
-                          ci_leaf_init(this_leaf++, CACHE_TYPE_INST, level);
-                  } else {
-                          ci_leaf_init(this_leaf++, type, level);
-                  }
-         }
-          return 0;
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 2b1b0ba..ba90f71 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -293,11 +293,12 @@ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
+ 					    int delay)
+ {
+ 	if (delay > 1000)
+-		mod_delayed_work(system_freezable_wq, &tz->poll_queue,
++		mod_delayed_work(system_freezable_power_efficient_wq,
++				 &tz->poll_queue,
+ 				 round_jiffies(msecs_to_jiffies(delay)));
+ 	else if (delay)
+-		mod_delayed_work(system_freezable_wq, &tz->poll_queue,
+-				 msecs_to_jiffies(delay));
++		mod_delayed_work(system_freezable_power_efficient_wq,
++				 &tz->poll_queue, msecs_to_jiffies(delay));
+ 	else
+ 		cancel_delayed_work(&tz->poll_queue);
  }
-
-In populate_cache_leaves() the cache type is read from CLIDR_EL1 register.
-If CLIDR_EL1 reports CACHE_TYPE_NOCACHE for a particular level then sysfs
-entry
-/sys/devices/system/cpu/cpu0/index<n>/type is not created and hence
-userspace tools
-like lstopo will not report this cache level.
-
-Regards
-Vijay
-
-> -----Original Message-----
-> From: linux-arm-kernel
-[mailto:linux-arm-kernel-bounces@lists.infradead.org]
-> On Behalf Of Rafael J. Wysocki
-> Sent: Thursday, December 14, 2017 4:40 AM
-> To: Jeremy Linton <jeremy.linton@arm.com>
-> Cc: Mark Rutland <mark.rutland@arm.com>; Jonathan.Zhang@cavium.com;
-> Jayachandran.Nair@cavium.com; Lorenzo Pieralisi
-> <lorenzo.pieralisi@arm.com>; Catalin Marinas <catalin.marinas@arm.com>;
-> Rafael J. Wysocki <rafael@kernel.org>; jhugo@codeaurora.org; Will Deacon
-> <will.deacon@arm.com>; Linux PM <linux-pm@vger.kernel.org>; Rafael J.
-> Wysocki <rjw@rjwysocki.net>; Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org>; Linux Kernel Mailing List <linux-
-> kernel@vger.kernel.org>; ACPI Devel Maling List
-<linux-acpi@vger.kernel.org>;
-> Viresh Kumar <viresh.kumar@linaro.org>; Hanjun Guo
-> <hanjun.guo@linaro.org>; Al Stone <ahs3@redhat.com>; Sudeep Holla
-> <sudeep.holla@arm.com>; austinwc@codeaurora.org;
-> wangxiongfeng2@huawei.com; linux-arm-kernel@lists.infradead.org; Len
-> Brown <lenb@kernel.org>
-> Subject: Re: [PATCH v5 6/9] ACPI/PPTT: Add topology parsing code
-> 
-> On Thu, Dec 14, 2017 at 12:06 AM, Jeremy Linton <jeremy.linton@arm.com>
-> wrote:
-> > Hi,
-> >
-> >
-> > On 12/13/2017 04:28 PM, Rafael J. Wysocki wrote:
-> >>
-> >> On Wed, Dec 13, 2017 at 6:38 PM, Lorenzo Pieralisi
-> >> <lorenzo.pieralisi@arm.com> wrote:
-> >>>
-> >>> On Tue, Dec 12, 2017 at 10:13:08AM -0600, Jeremy Linton wrote:
-> >>>>
-> >>>> Hi,
-> >>>>
-> >>>> First, thanks for taking a look at this.
-> >>>>
-> >>>> On 12/11/2017 07:12 PM, Rafael J. Wysocki wrote:
-> >>>>>
-> >>>>> On Friday, December 1, 2017 11:23:27 PM CET Jeremy Linton wrote:
-> >>>>>>
-> >>>>>> The PPTT can be used to determine the groupings of CPU's at given
-> >>>>>> levels in the system. Lets add a few routines to the PPTT parsing
-> >>>>>> code to return a unique id for each unique level in the processor
-> >>>>>> hierarchy. This can then be matched to build
-> >>>>>> thread/core/cluster/die/package/etc mappings for each processing
-> >>>>>> element in the system.
-> >>>>>>
-> >>>>>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
-> >>>>>
-> >>>>>
-> >>>>> Why can't this be folded into patch [2/9]?
-> >>>>
-> >>>>
-> >>>> It can, and I will be happy squash it.
-> >>>>
-> >>>> It was requested that the topology portion of the parser be split
-> >>>> out back in v3.
-> >>>>
-> >>>> https://www.spinics.net/lists/linux-acpi/msg78487.html
-> >>>
-> >>>
-> >>> I asked to split cache/topology since I am not familiar with cache
-> >>> code and Sudeep - who looks after the cache code - won't be able to
-> >>> review this series in time for v4.16.
-> >>
-> >>
-> >> OK, so why do we need it in 4.16?
-> >
-> >
-> > I think its more case of as soon as possible. That is because there
-> > are machines where the topology is completely incorrect due to
-> > assumptions the kernel makes based on registers that aren't defined
-> > for that purpose (say describing which cores are in a physical socket,
-> > or LLC's attached to interconnects or memory controllers).
-> >
-> > This incorrect topology information is reported to things like the
-> > kernel scheduler, which then makes poor scheduling decisions resulting
-> > in sub-optimal system performance.
-> >
-> > This patchset (and ACPI 6.2) clears up a lot of those problems.
-> 
-> As long as the ACPI tables are as expected that is, I suppose?
-> 
-> Anyway, fair enough, but I don't want to rush it in.
-> 
-> Thanks,
-> Rafael
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-
+-- 
+2.7.4
