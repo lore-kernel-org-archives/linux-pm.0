@@ -1,60 +1,104 @@
-From: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH V3] PM: In kernel power management domain_pm created for
- async schedules
-Date: Thu, 4 Jan 2018 10:25:15 +0100
-Message-ID: <20180104092515.GB26245@kroah.com>
-References: <CAJZ5v0j2RPzdCzAp3ofjpmnFhMUym691TBS54OvQpw=fidS9Ew@mail.gmail.com>
- <20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p7>
- <20171206141238.GB11339@kroah.com>
- <3785462.Nrr6Y8ermz@aspire.rjw.lan>
- <20171213084612epcms5p7755822fff34c87907de2236923e82305@epcms5p7>
- <CGME20171206120714epcms5p70081d5bc518c3bb5f9cca4f56b203abf@epcms5p6>
- <20180104085900epcms5p6e6c7f3e8c0262e110dcd2fd3498fcd61@epcms5p6>
+From: Ognjen =?utf-8?B?R2FsacSH?= <smclt30p@gmail.com>
+Subject: Re: [PATCH v12 1/4] battery: Add the battery hooking API
+Date: Thu, 4 Jan 2018 12:13:13 +0100
+Message-ID: <20180104111313.GA12286@thinkpad>
+References: <20180103115847.GA10092@thinkpad>
+ <CAHp75Vdj2rasWqdmBKGxNs9Y+Rap=UycoFdOcbG6QgA48Afq5w@mail.gmail.com>
+ <20180103145307.GA17694@thinkpad>
+ <CAHp75VceXVb2N7hyjoDhAq_M+=2VcDcPc+Jt-FSsWuW7D7eFww@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.linuxfoundation.org ([140.211.169.12]:46958 "EHLO
-        mail.linuxfoundation.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752099AbeADJZM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jan 2018 04:25:12 -0500
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-acpi-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20180104085900epcms5p6e6c7f3e8c0262e110dcd2fd3498fcd61@epcms5p6>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <CAHp75VceXVb2N7hyjoDhAq_M+=2VcDcPc+Jt-FSsWuW7D7eFww@mail.gmail.com>
+Sender: linux-acpi-owner@vger.kernel.org
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Len Brown <lenb@kernel.org>, Robert Moore <robert.moore@intel.com>, Lv Zheng <lv.zheng@intel.com>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, devel@acpica.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>, Sebastian Reichel <sre@kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, ibm-acpi-devel@lists.sourceforge.net, Linux PM <linux-pm@vger.kernel.org>, Christoph =?iso-8859-1?Q?B=F6hmwalder?= <christoph@boehmwalder.at>, Kevin Locke <kevin@kevinlocke.name>
 List-Id: linux-pm@vger.kernel.org
-To: Vikas Bansal <vikas.bansal@samsung.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, "len.brown@intel.com" <len.brown@intel.com>, "pavel@ucw.cz" <pavel@ucw.cz>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Anuj Gupta <anuj01.gupta@samsung.com>
 
-On Thu, Jan 04, 2018 at 08:59:00AM +0000, Vikas Bansal wrote:
-> Sender : Rafael J. Wysocki <rafael@kernel.org>
+On Wed, Jan 03, 2018 at 06:40:12PM +0200, Andy Shevchenko wrote:
+> On Wed, Jan 3, 2018 at 4:53 PM, Ognjen Galić <smclt30p@gmail.com> wrote:
+> > On Wed, Jan 03, 2018 at 04:25:42PM +0200, Andy Shevchenko wrote:
+> >> On Wed, Jan 3, 2018 at 1:58 PM, Ognjen Galic <smclt30p@gmail.com> wrote:
 > 
-> Date : 2017-12-14 03:56 (GMT+5:30)
-> 
-> >
-> 
-> > On Wed, Dec 13, 2017 at 9:46 AM, Vikas Bansal <vikas.bansal@samsung.com>
-> wrote:
+> >> Thanks for an update. I have couple of minors. Otherwise look pretty much good!
 > >>
-> >> Sender : Rafael J. Wysocki <rjw@rjwysocki.net>
-> >> Date   : 2017-12-06 19:48 (GMT+5:30)
+> >> >  drivers/acpi/battery.h |  11 ----
+> >> >  include/acpi/battery.h |  21 +++++++
 > >>
-> >>>
-> >>> Also it is not clear to me if this fixes a mainline kernel issue,
-> >>> because the changelog mentions a driver doing something odd, but it
-> >>> doesn't say which one it is and whether or not it is in the tree.
-> >>
-> >> No, this driver is not part of mainline yet.
-> >
-> > So please submit it along with the driver that needs it, whenever that
-> > one is ready.
-> >
-> > Thanks,
-> > Rafael
+> >> There are -M and -C command line parameters to git format-patch.
 > 
-> I am not sure when that driver will be submitted to open source and I even
-> don't know whether final implementation of driver will have async_schedules or
-> not. I just found one optimization in PM core because of that driver. If there
-> is any issue with patch, please let me know. I will correct.
+> >> They can take an optional argument (percentage) of threshold.
+> >>
+> >> Playing with those numbers you can achieve
+> 
+> ^^^^ Pay attention to the above
+> 
+> >>
+> >> rename ...
+> >>
+> >> line and see actual diff.
+> >>
+> >> No need to resend because of this. Just an explanation for the future Git work.
+> >
+> > I did use thos options. I used the following command:
+> >
+> > git format-patch -M -C --notes -v12 -o ~/patches/. @^^^^
+> >
+> > I really don't know what you are targeting. :)
+> 
+> Please, read what I wrote above and the manual of git-format-patch.
+> 
+> >> > +void __battery_hook_unregister(struct acpi_battery_hook *hook, int lock)
+> >> > +{
+> >> > +       struct list_head *position;
+> >> > +       struct acpi_battery *battery;
+> >>
+> >> Missed empty line?
+> >
+> > checkpatch.pl complains if there are NOT empty lines between
+> > declarations and statements.
+> 
+> checkpatch some times on one hand complains about something which it
+> should not, on the other didn't take into consideration cases like
+> this one.
+> 
+> Your statement started with comment, btw.
+> 
+> >> > +       /*
+> >> > +        * In order to remove a hook, we first need to
+> >> > +        * de-register all the batteries that are registered.
+> >> > +        */
+> >> > +       if (lock)
+> >> > +               mutex_lock(&hook_mutex);
+> 
+> > I mean, it's not game-breaking, its just minor style stuff. I won't be
+> > sending more revisions because of these small issues, as I think its
+> > uneccessary to flood both Rafael and the mailing lists with patch
+> > revisions that remove or add a few spaces. No offence, it just got old.
+> 
+> Yes, his call anyway to apply or ask you for amendments. I'm just
+> helping with review.
 
-We can't take the patch without the driver at the same time, sorry.
+Rafael, what do you think? Do you want these style/syntax issues fixed
+or is it good to go?
 
-greg k-h
+Thanks for the time to review Andy! You are a champ! :)
+
+> 
+> >> > +static void __exit battery_hook_exit(void)
+> >> > +{
+> >> > +       struct acpi_battery_hook *hook;
+> >> > +       struct acpi_battery_hook *ptr;
+> >>
+> >> Missed empty line?
+> >
+> > See above about the checkpatch.pl stuff.
+> 
+> See above the answer.
+> 
+> 
+> -- 
+> With Best Regards,
+> Andy Shevchenko
