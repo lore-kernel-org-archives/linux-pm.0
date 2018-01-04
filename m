@@ -1,142 +1,29 @@
-From: =?UTF-8?q?Niklas=20S=C3=B6derlund?=
-        <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
-Subject: [PATCH v2 1/2] arm64: dts: r8a7795: add thermal cooling management
-Date: Thu,  4 Jan 2018 17:03:19 +0100
-Message-ID: <20180104160320.11514-2-niklas.soderlund+renesas@ragnatech.se>
-References: <20180104160320.11514-1-niklas.soderlund+renesas@ragnatech.se>
+From: "Peter Deng" <peterddeng2000@securemailer.com>
+Subject: Business Possibility
+Date: Thu, 4 Jan 2018 16:13:59 +0000
+Message-ID: <253240646175287163096@nadneaa2>
+Reply-To: peterddeng2000@secsuremailer.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <20180104160320.11514-1-niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Simon Horman <horms-/R6kz+dDXgpPR4JQBCEnsQ@public.gmane.org>, Magnus Damm <magnus.damm-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-renesas-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 8BIT
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from host116-16-237-212.serverdedicati.aruba.it ([212.237.16.116]:45846
+        "EHLO host.arubacloud.com" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1753487AbeADQUD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jan 2018 11:20:03 -0500
+Received: from slsourcinggroup.com (nadneaa2.miniserver.com [78.31.108.146])
+        by host.arubacloud.com (Postfix) with ESMTPA id 10726756A5
+        for <linux-pm@vger.kernel.org>; Thu,  4 Jan 2018 17:13:31 +0100 (CET)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
 
-Add nodes and properties for thermal cooling management support.
+Hello there, My name is Peter Deng a South African citizen and a friend to Mrs Mugabe sister . I got your contact through Korean business online directory. I represent the interest of Mrs Mugabe who wishes to move a total amount of $19 million  into a safe account owns by a trusted business man who is capable of accommodating such volume of funds with absolute trust & confidentiality.
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas-1zkq55x86MTxsAP9Fp7wbw@public.gmane.org>
-Acked-by: Eduardo Valentin <edubezval-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
----
- arch/arm64/boot/dts/renesas/r8a7795.dtsi | 40 ++++++++++++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+We are willing to give 5-10 percent of the total money for this efforts . A non disclosure non circumvent agreement will be signed before the eventual transfer of funds. It is important for to know that the fund owner is going through a period of political turmoil and she is in a precarious position, so this transaction has to be highly secretive & very confidential.
 
-diff --git a/arch/arm64/boot/dts/renesas/r8a7795.dtsi b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-index 1485e6a8e11220fe..19b7de57704c67e8 100644
---- a/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-+++ b/arch/arm64/boot/dts/renesas/r8a7795.dtsi
-@@ -43,6 +43,7 @@
- 			enable-method = "psci";
- 			clocks =<&cpg CPG_CORE R8A7795_CLK_Z>;
- 			operating-points-v2 = <&cluster0_opp>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		a57_1: cpu@1 {
-@@ -54,6 +55,7 @@
- 			enable-method = "psci";
- 			clocks =<&cpg CPG_CORE R8A7795_CLK_Z>;
- 			operating-points-v2 = <&cluster0_opp>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		a57_2: cpu@2 {
-@@ -65,6 +67,7 @@
- 			enable-method = "psci";
- 			clocks =<&cpg CPG_CORE R8A7795_CLK_Z>;
- 			operating-points-v2 = <&cluster0_opp>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		a57_3: cpu@3 {
-@@ -76,6 +79,7 @@
- 			enable-method = "psci";
- 			clocks =<&cpg CPG_CORE R8A7795_CLK_Z>;
- 			operating-points-v2 = <&cluster0_opp>;
-+			#cooling-cells = <2>;
- 		};
- 
- 		a53_0: cpu@100 {
-@@ -2418,12 +2422,24 @@
- 			thermal-sensors = <&tsc 0>;
- 
- 			trips {
-+				sensor1_passive: sensor1-passive {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
- 				sensor1_crit: sensor1-crit {
- 					temperature = <120000>;
- 					hysteresis = <2000>;
- 					type = "critical";
- 				};
- 			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&sensor1_passive>;
-+					cooling-device = <&a57_0 4 4>;
-+				};
-+			};
- 		};
- 
- 		sensor_thermal2: sensor-thermal2 {
-@@ -2432,12 +2448,24 @@
- 			thermal-sensors = <&tsc 1>;
- 
- 			trips {
-+				sensor2_passive: sensor2-passive {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
- 				sensor2_crit: sensor2-crit {
- 					temperature = <120000>;
- 					hysteresis = <2000>;
- 					type = "critical";
- 				};
- 			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&sensor2_passive>;
-+					cooling-device = <&a57_0 4 4>;
-+				};
-+			};
- 		};
- 
- 		sensor_thermal3: sensor-thermal3 {
-@@ -2446,12 +2474,24 @@
- 			thermal-sensors = <&tsc 2>;
- 
- 			trips {
-+				sensor3_passive: sensor3-passive {
-+					temperature = <95000>;
-+					hysteresis = <2000>;
-+					type = "passive";
-+				};
- 				sensor3_crit: sensor3-crit {
- 					temperature = <120000>;
- 					hysteresis = <2000>;
- 					type = "critical";
- 				};
- 			};
-+
-+			cooling-maps {
-+				map0 {
-+					trip = <&sensor3_passive>;
-+					cooling-device = <&a57_0 4 4>;
-+				};
-+			};
- 		};
- 	};
- 
--- 
-2.15.1
+Kindly respond back to me if this is what you can handle .
 
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Regards,
+
+Peter.
