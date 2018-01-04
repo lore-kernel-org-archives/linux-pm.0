@@ -1,232 +1,348 @@
-From: <vkilari@codeaurora.org>
-Subject: RE: [PATCH v5 6/9] ACPI/PPTT: Add topology parsing code
-Date: Thu, 4 Jan 2018 12:18:32 +0530
-Message-ID: <020801d38528$0ed8c670$2c8a5350$@codeaurora.org>
-References: <20171201222330.18863-1-jeremy.linton@arm.com> <20171201222330.18863-7-jeremy.linton@arm.com> <9009154.M66RGdQJXA@aspire.rjw.lan> <fc12696c-15e1-cea4-42bf-db4b5daa45f2@arm.com> <20171213173851.GA4060@red-moon> <CAJZ5v0hTcC8D6pJuPK+isntWpckNgNmqLHW98iFXL817VYHHdg@mail.gmail.com> <6aca3fa0-9099-f283-ae16-0c48aa00d00d@arm.com> <CAJZ5v0hBZQ-vYbobOYtKFVg9hAtUo4GU==napcJ-btQhMvn+5g@mail.gmail.com> <019601d3846f$c8708550$59518ff0$@codeaurora.org> <f89c8f07-bef6-c20b-cb2e-eaa2121689b3@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <f89c8f07-bef6-c20b-cb2e-eaa2121689b3@arm.com>
-Content-Language: en-us
-Sender: linux-acpi-owner@vger.kernel.org
-To: 'Jeremy Linton' <jeremy.linton@arm.com>
-Cc: 'Mark Rutland' <mark.rutland@arm.com>, Jonathan.Zhang@cavium.com, Jayachandran.Nair@cavium.com, 'Lorenzo Pieralisi' <lorenzo.pieralisi@arm.com>, austinwc@codeaurora.org, 'Linux PM' <linux-pm@vger.kernel.org>, jhugo@codeaurora.org, 'Catalin Marinas' <catalin.marinas@arm.com>, 'Sudeep Holla' <sudeep.holla@arm.com>, 'Will Deacon' <will.deacon@arm.com>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, wangxiongfeng2@huawei.com, 'ACPI Devel Maling List' <linux-acpi@vger.kernel.org>, 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Hanjun Guo' <hanjun.guo@linaro.org>, 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>, "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Al Stone' <ahs3@redhat>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: [PATCH] thermal: Add debugfs support for cooling devices
+Date: Thu,  4 Jan 2018 12:32:04 +0530
+Message-ID: <0b1810c1dfae6a3ddadeffb60669f3108a02d860.1515049019.git.viresh.kumar@linaro.org>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-Hi Jeremy
+This implements the debugfs interface for thermal cooling devices and
+exposes some pretty useful statistics. These statistics have proven to
+be quite useful specially while doing benchmarks related to the task
+scheduler, where we want to make sure that nothing has disrupted the
+test, specially the cooling device which may have put constraints on the
+CPUs. The information exposed here tells us to what extent the CPUs were
+constrained by the thermal framework.
 
-> -----Original Message-----
-> From: linux-arm-kernel
-[mailto:linux-arm-kernel-bounces@lists.infradead.org]
-> On Behalf Of Jeremy Linton
-> Sent: Wednesday, January 3, 2018 10:28 PM
-> To: vkilari@codeaurora.org
-> Cc: 'Mark Rutland' <mark.rutland@arm.com>; Jonathan.Zhang@cavium.com;
-> Jayachandran.Nair@cavium.com; 'Lorenzo Pieralisi'
-> <lorenzo.pieralisi@arm.com>; austinwc@codeaurora.org; 'Linux PM' <linux-
-> pm@vger.kernel.org>; jhugo@codeaurora.org; 'Catalin Marinas'
-> <catalin.marinas@arm.com>; 'Sudeep Holla' <sudeep.holla@arm.com>; 'Will
-> Deacon' <will.deacon@arm.com>; 'Linux Kernel Mailing List' <linux-
-> kernel@vger.kernel.org>; wangxiongfeng2@huawei.com; 'ACPI Devel Maling
-> List' <linux-acpi@vger.kernel.org>; 'Viresh Kumar'
-<viresh.kumar@linaro.org>;
-> 'Rafael J. Wysocki' <rjw@rjwysocki.net>; 'Hanjun Guo'
-> <hanjun.guo@linaro.org>; 'Greg Kroah-Hartman'
-> <gregkh@linuxfoundation.org>; 'Rafael J. Wysocki' <rafael@kernel.org>; 'Al
-> Stone' <ahs3@redhat.com>; linux-arm-kernel@lists.infradead.org; 'Len
-Brown'
-> <lenb@kernel.org>
-> Subject: Re: [PATCH v5 6/9] ACPI/PPTT: Add topology parsing code
-> 
-> Hi,
-> 
-> On 01/03/2018 02:49 AM, vkilari@codeaurora.org wrote:
-> > Hi Jeremy,
-> >
-> >   Sorry, I don't have your previous patch emails to reply on right
-> > patch context.
-> > So commenting on top of this patch.
-> >
-> > AFAIU, the PPTT v5 patches still rely on CLIDR_EL1 register to know
-> > the type of Caches enabled/available on the platform. With PPTT, it
-> > should not rely on architecture registers. There can be platforms
-> > which can report cache availability in PPTT but not in architecture
-> > registers.
-> >
-> > The following code snippet shows usage of CLIDR_EL1
-> >
-> > In arch/arm64/kernel/cacheinfo.c
-> >
-> > static inline enum cache_type get_cache_type(int level) {
-> >           u64 clidr;
-> >
-> >           if (level > MAX_CACHE_LEVEL)
-> >                   return CACHE_TYPE_NOCACHE;
-> >           clidr = read_sysreg(clidr_el1);
-> >           return CLIDR_CTYPE(clidr, level); }
-> >
-> > static int __populate_cache_leaves(unsigned int cpu) {
-> >            unsigned int level, idx;
-> >            enum cache_type type;
-> >            struct cpu_cacheinfo *this_cpu_ci = get_cpu_cacheinfo(cpu);
-> >            struct cacheinfo *this_leaf = this_cpu_ci->info_list;
-> >
-> >            for (idx = 0, level = 1; level <= this_cpu_ci->num_levels &&
-> >                 idx < this_cpu_ci->num_leaves; idx++, level++) {
-> >                    type = get_cache_type(level);
-> >                    if (type == CACHE_TYPE_SEPARATE) {
-> >                            ci_leaf_init(this_leaf++, CACHE_TYPE_DATA,
-level);
-> >                            ci_leaf_init(this_leaf++, CACHE_TYPE_INST,
-level);
-> >                    } else {
-> >                            ci_leaf_init(this_leaf++, type, level);
-> >                    }
-> >           }
-> >            return 0;
-> >   }
-> >
-> > In populate_cache_leaves() the cache type is read from CLIDR_EL1
-register.
-> > If CLIDR_EL1 reports CACHE_TYPE_NOCACHE for a particular level then
-> > sysfs entry /sys/devices/system/cpu/cpu0/index<n>/type is not created
-> > and hence userspace tools like lstopo will not report this cache
-> > level.
-> 
-> 
-> This sounds suspiciously like one of things tweaked between v4->v5. If you
-look
-> at update_cache_properties() in patch 2/9, you will see that we only
-> update/find NOCACHE nodes and convert them to UNIFIED when all the
-> attributes in the node are supplied.
-> 
-> This means that if the node has an incomplete set of attributes we won't
-update
-> it. Can you verify that you have all those attributes set for nodes which
-aren't
-> being described by the hardware?
+The read-only "transitions" file is per cooling device and it shows the
+total number of cooling state transitions the device has gone through
+since the time the cooling device is registered or the time when
+statistics were reset last.
 
-Thanks for pointing out.
-Why do we need to check for set of attributes and decide it as UNIFIED
-cache.?
-We can get cache type from attributes bits[3:2] if cache type valid flag is
-set
-irrespective of other attributes. If cache type valid flag is not set then
-we can assume
-it as NOCACHE type as neither architecture register nor in PPTT has valid
-cache type.
+The read-only "time_in_state/stateN" file is per cooling state and it
+shows the time spent by the device in the respective cooling state.
 
-> 
-> Thanks,
-> 
-> 
-> >
-> > Regards
-> > Vijay
-> >
-> >> -----Original Message-----
-> >> From: linux-arm-kernel
-> > [mailto:linux-arm-kernel-bounces@lists.infradead.org]
-> >> On Behalf Of Rafael J. Wysocki
-> >> Sent: Thursday, December 14, 2017 4:40 AM
-> >> To: Jeremy Linton <jeremy.linton@arm.com>
-> >> Cc: Mark Rutland <mark.rutland@arm.com>; Jonathan.Zhang@cavium.com;
-> >> Jayachandran.Nair@cavium.com; Lorenzo Pieralisi
-> >> <lorenzo.pieralisi@arm.com>; Catalin Marinas
-> >> <catalin.marinas@arm.com>; Rafael J. Wysocki <rafael@kernel.org>;
-> >> jhugo@codeaurora.org; Will Deacon <will.deacon@arm.com>; Linux PM
-> <linux-pm@vger.kernel.org>; Rafael J.
-> >> Wysocki <rjw@rjwysocki.net>; Greg Kroah-Hartman
-> >> <gregkh@linuxfoundation.org>; Linux Kernel Mailing List <linux-
-> >> kernel@vger.kernel.org>; ACPI Devel Maling List
-> > <linux-acpi@vger.kernel.org>;
-> >> Viresh Kumar <viresh.kumar@linaro.org>; Hanjun Guo
-> >> <hanjun.guo@linaro.org>; Al Stone <ahs3@redhat.com>; Sudeep Holla
-> >> <sudeep.holla@arm.com>; austinwc@codeaurora.org;
-> >> wangxiongfeng2@huawei.com; linux-arm-kernel@lists.infradead.org; Len
-> >> Brown <lenb@kernel.org>
-> >> Subject: Re: [PATCH v5 6/9] ACPI/PPTT: Add topology parsing code
-> >>
-> >> On Thu, Dec 14, 2017 at 12:06 AM, Jeremy Linton
-> >> <jeremy.linton@arm.com>
-> >> wrote:
-> >>> Hi,
-> >>>
-> >>>
-> >>> On 12/13/2017 04:28 PM, Rafael J. Wysocki wrote:
-> >>>>
-> >>>> On Wed, Dec 13, 2017 at 6:38 PM, Lorenzo Pieralisi
-> >>>> <lorenzo.pieralisi@arm.com> wrote:
-> >>>>>
-> >>>>> On Tue, Dec 12, 2017 at 10:13:08AM -0600, Jeremy Linton wrote:
-> >>>>>>
-> >>>>>> Hi,
-> >>>>>>
-> >>>>>> First, thanks for taking a look at this.
-> >>>>>>
-> >>>>>> On 12/11/2017 07:12 PM, Rafael J. Wysocki wrote:
-> >>>>>>>
-> >>>>>>> On Friday, December 1, 2017 11:23:27 PM CET Jeremy Linton wrote:
-> >>>>>>>>
-> >>>>>>>> The PPTT can be used to determine the groupings of CPU's at
-> >>>>>>>> given levels in the system. Lets add a few routines to the PPTT
-> >>>>>>>> parsing code to return a unique id for each unique level in the
-> >>>>>>>> processor hierarchy. This can then be matched to build
-> >>>>>>>> thread/core/cluster/die/package/etc mappings for each
-> >>>>>>>> processing element in the system.
-> >>>>>>>>
-> >>>>>>>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
-> >>>>>>>
-> >>>>>>>
-> >>>>>>> Why can't this be folded into patch [2/9]?
-> >>>>>>
-> >>>>>>
-> >>>>>> It can, and I will be happy squash it.
-> >>>>>>
-> >>>>>> It was requested that the topology portion of the parser be split
-> >>>>>> out back in v3.
-> >>>>>>
-> >>>>>> https://www.spinics.net/lists/linux-acpi/msg78487.html
-> >>>>>
-> >>>>>
-> >>>>> I asked to split cache/topology since I am not familiar with cache
-> >>>>> code and Sudeep - who looks after the cache code - won't be able
-> >>>>> to review this series in time for v4.16.
-> >>>>
-> >>>>
-> >>>> OK, so why do we need it in 4.16?
-> >>>
-> >>>
-> >>> I think its more case of as soon as possible. That is because there
-> >>> are machines where the topology is completely incorrect due to
-> >>> assumptions the kernel makes based on registers that aren't defined
-> >>> for that purpose (say describing which cores are in a physical
-> >>> socket, or LLC's attached to interconnects or memory controllers).
-> >>>
-> >>> This incorrect topology information is reported to things like the
-> >>> kernel scheduler, which then makes poor scheduling decisions
-> >>> resulting in sub-optimal system performance.
-> >>>
-> >>> This patchset (and ACPI 6.2) clears up a lot of those problems.
-> >>
-> >> As long as the ACPI tables are as expected that is, I suppose?
-> >>
-> >> Anyway, fair enough, but I don't want to rush it in.
-> >>
-> >> Thanks,
-> >> Rafael
-> >>
-> >> _______________________________________________
-> >> linux-arm-kernel mailing list
-> >> linux-arm-kernel@lists.infradead.org
-> >> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> >
-> 
-> 
-> _______________________________________________
-> linux-arm-kernel mailing list
-> linux-arm-kernel@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+The write-only "reset" file is used to reset the statistics.
 
+This is how the directory structure looks like for a single cooling
+device:
+
+$ ls -R /sys/kernel/debug/thermal/
+/sys/kernel/debug/thermal/:
+cooling_device0
+
+/sys/kernel/debug/thermal/cooling_device0:
+reset  time_in_state_ms  transitions
+
+/sys/kernel/debug/thermal/cooling_device0/time_in_state_ms:
+state0  state1  state2  state3
+
+This is tested on ARM 32-bit Hisilicon hikey620 board running Ubuntu and
+ARM 64-bit Hisilicon hikey960 board running Android.
+
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/thermal/Makefile          |   1 +
+ drivers/thermal/thermal_core.c    |   6 ++
+ drivers/thermal/thermal_core.h    |  18 ++++
+ drivers/thermal/thermal_debugfs.c | 167 ++++++++++++++++++++++++++++++++++++++
+ drivers/thermal/thermal_helpers.c |   5 +-
+ drivers/thermal/thermal_sysfs.c   |   1 +
+ include/linux/thermal.h           |   1 +
+ 7 files changed, 198 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/thermal/thermal_debugfs.c
+
+diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+index 610344eb3e03..629f74e73871 100644
+--- a/drivers/thermal/Makefile
++++ b/drivers/thermal/Makefile
+@@ -6,6 +6,7 @@
+ obj-$(CONFIG_THERMAL)		+= thermal_sys.o
+ thermal_sys-y			+= thermal_core.o thermal_sysfs.o \
+ 					thermal_helpers.o
++obj-$(CONFIG_DEBUG_FS)		+= thermal_debugfs.o
+ 
+ # interface to/from other layers providing sensors
+ thermal_sys-$(CONFIG_THERMAL_HWMON)		+= thermal_hwmon.o
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 2b1b0ba393a4..bcc34648580f 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -997,6 +997,8 @@ __thermal_cooling_device_register(struct device_node *np,
+ 						   THERMAL_EVENT_UNSPECIFIED);
+ 	mutex_unlock(&thermal_list_lock);
+ 
++	thermal_cooling_device_setup_debugfs(cdev);
++
+ 	return cdev;
+ }
+ 
+@@ -1104,6 +1106,7 @@ void thermal_cooling_device_unregister(struct thermal_cooling_device *cdev)
+ 
+ 	mutex_unlock(&thermal_list_lock);
+ 
++	thermal_cooling_device_remove_debugfs(cdev);
+ 	ida_simple_remove(&thermal_cdev_ida, cdev->id);
+ 	device_unregister(&cdev->device);
+ }
+@@ -1544,6 +1547,8 @@ static int __init thermal_init(void)
+ 		pr_warn("Thermal: Can not register suspend notifier, return %d\n",
+ 			result);
+ 
++	thermal_debugfs_register();
++
+ 	return 0;
+ 
+ exit_netlink:
+@@ -1563,6 +1568,7 @@ static int __init thermal_init(void)
+ 
+ static void __exit thermal_exit(void)
+ {
++	thermal_debugfs_unregister();
+ 	unregister_pm_notifier(&thermal_pm_nb);
+ 	of_thermal_destroy_zones();
+ 	genetlink_exit();
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 27e3b1df7360..3a8d50aa32dc 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -151,4 +151,22 @@ of_thermal_get_trip_points(struct thermal_zone_device *tz)
+ }
+ #endif
+ 
++#ifdef CONFIG_DEBUG_FS
++void thermal_debugfs_register(void);
++void thermal_debugfs_unregister(void);
++void thermal_cooling_device_setup_debugfs(struct thermal_cooling_device *cdev);
++void thermal_cooling_device_remove_debugfs(struct thermal_cooling_device *cdev);
++void thermal_cooling_device_debugfs_update(struct thermal_cooling_device *cdev,
++					   unsigned long new_state);
++#else
++static inline void thermal_debugfs_register(void) {}
++static inline void thermal_debugfs_unregister(void) {}
++static inline void
++thermal_cooling_device_setup_debugfs(struct thermal_cooling_device *cdev) {}
++static inline void
++thermal_cooling_device_remove_debugfs(struct thermal_cooling_device *cdev) {}
++static inline void
++thermal_cooling_device_debugfs_update(struct thermal_cooling_device *cdev,
++				      unsigned long new_state) {}
++#endif /* debugfs */
+ #endif /* __THERMAL_CORE_H__ */
+diff --git a/drivers/thermal/thermal_debugfs.c b/drivers/thermal/thermal_debugfs.c
+new file mode 100644
+index 000000000000..077684197250
+--- /dev/null
++++ b/drivers/thermal/thermal_debugfs.c
+@@ -0,0 +1,167 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Manages debugfs interface for thermal devices.
++ *
++ * Copyright (C) 2018 Linaro.
++ * Viresh Kumar <viresh.kumar@linaro.org>
++ */
++
++#include <linux/device.h>
++#include <linux/debugfs.h>
++#include <linux/ktime.h>
++#include <linux/slab.h>
++#include <linux/spinlock.h>
++
++#include "thermal_core.h"
++
++struct cooling_time_in_state {
++	ktime_t time;
++	struct cooling_dev_debugfs_data *data;
++};
++
++struct cooling_dev_debugfs_data {
++	struct dentry *dentry;
++	unsigned int total_trans;
++	unsigned long state;
++	unsigned long max_states;
++	ktime_t last_time;
++	struct cooling_time_in_state *time_in_state;
++};
++
++static struct dentry *rootdir;
++static DEFINE_SPINLOCK(lock);
++
++static void update_time_in_state(struct cooling_dev_debugfs_data *data)
++{
++	ktime_t now = ktime_get(), delta;
++
++	delta = ktime_sub(now, data->last_time);
++	data->time_in_state[data->state].time =
++		ktime_add(data->time_in_state[data->state].time, delta);
++	data->last_time = now;
++}
++
++void thermal_cooling_device_debugfs_update(struct thermal_cooling_device *cdev,
++					   unsigned long new_state)
++{
++	struct cooling_dev_debugfs_data *data = cdev->debugfs;
++
++	if (!data)
++		return;
++
++	spin_lock(&lock);
++	update_time_in_state(data);
++	data->state = new_state;
++	data->total_trans++;
++	spin_unlock(&lock);
++}
++
++static int read_time_in_state(void *ptr, u64 *val)
++{
++	struct cooling_time_in_state *time_in_state = ptr;
++
++	spin_lock(&lock);
++	update_time_in_state(time_in_state->data);
++	*val = ktime_to_ms(time_in_state->time);
++	spin_unlock(&lock);
++
++	return 0;
++}
++
++DEFINE_DEBUGFS_ATTRIBUTE(time_in_state_fops, read_time_in_state, NULL, "%llu\n");
++
++static int reset_stats(void *ptr, u64 val)
++{
++	struct cooling_dev_debugfs_data *data = ptr;
++	int i;
++
++	spin_lock(&lock);
++
++	data->total_trans = 0;
++	data->last_time = ktime_get();
++
++	for (i = 0; i < data->max_states; i++)
++		data->time_in_state[i].time = ktime_set(0, 0);
++
++	spin_unlock(&lock);
++
++	return 0;
++}
++
++DEFINE_DEBUGFS_ATTRIBUTE(reset_fops, NULL, reset_stats, "%llu\n");
++
++void thermal_cooling_device_setup_debugfs(struct thermal_cooling_device *cdev)
++{
++	struct cooling_dev_debugfs_data *data;
++	struct dentry *dentry;
++	unsigned long states;
++	int ret, size, i;
++	char name[NAME_MAX];
++
++	ret = cdev->ops->get_max_state(cdev, &states);
++	if (ret)
++		return;
++
++	size = sizeof(*data);
++	size += sizeof(*data->time_in_state) * states;
++
++	data = kzalloc(size, GFP_KERNEL);
++	if (!data)
++		return;
++
++	data->time_in_state = (struct cooling_time_in_state *)(data + 1);
++	cdev->debugfs = data;
++	data->last_time = ktime_get();
++	data->max_states = states;
++
++	data->dentry = debugfs_create_dir(dev_name(&cdev->device), rootdir);
++	if (!data->dentry)
++		goto free_data;
++
++	debugfs_create_file_unsafe("reset", 0666, data->dentry, data, &reset_fops);
++	debugfs_create_u32("transitions", 0444, data->dentry,
++			   &data->total_trans);
++
++	dentry = debugfs_create_dir("time_in_state_ms", data->dentry);
++	if (!dentry)
++		goto free_data_dentry;
++
++	for (i = 0; i < states; i++) {
++		data->time_in_state[i].data = data;
++		snprintf(name, NAME_MAX, "state%u", i);
++		debugfs_create_file_unsafe(name, 0444, dentry,
++					   &data->time_in_state[i],
++					   &time_in_state_fops);
++	}
++
++	return;
++
++free_data_dentry:
++	debugfs_remove_recursive(data->dentry);
++free_data:
++	kfree(data);
++	cdev->debugfs = NULL;
++}
++
++void thermal_cooling_device_remove_debugfs(struct thermal_cooling_device *cdev)
++{
++	struct cooling_dev_debugfs_data *data = cdev->debugfs;
++
++	if (!data)
++		return;
++
++	debugfs_remove_recursive(data->dentry);
++	kfree(data);
++	cdev->debugfs = NULL;
++}
++
++void thermal_debugfs_register(void)
++{
++	rootdir = debugfs_create_dir("thermal", NULL);
++}
++
++void thermal_debugfs_unregister(void)
++{
++	debugfs_remove_recursive(rootdir);
++	rootdir = NULL;
++}
+diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+index 8cdf75adcce1..8cfb2f4e7ea3 100644
+--- a/drivers/thermal/thermal_helpers.c
++++ b/drivers/thermal/thermal_helpers.c
+@@ -187,7 +187,10 @@ void thermal_cdev_update(struct thermal_cooling_device *cdev)
+ 		if (instance->target > target)
+ 			target = instance->target;
+ 	}
+-	cdev->ops->set_cur_state(cdev, target);
++
++	if (!cdev->ops->set_cur_state(cdev, target))
++		thermal_cooling_device_debugfs_update(cdev, target);
++
+ 	cdev->updated = true;
+ 	mutex_unlock(&cdev->lock);
+ 	trace_cdev_update(cdev, target);
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index fb80c96d8f73..be997ce3f32d 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -722,6 +722,7 @@ thermal_cooling_device_cur_state_store(struct device *dev,
+ 	result = cdev->ops->set_cur_state(cdev, state);
+ 	if (result)
+ 		return result;
++	thermal_cooling_device_debugfs_update(cdev, state);
+ 	return count;
+ }
+ 
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 8c5302374eaa..338d165cefef 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -148,6 +148,7 @@ struct thermal_cooling_device {
+ 	struct device device;
+ 	struct device_node *np;
+ 	void *devdata;
++	void *debugfs;
+ 	const struct thermal_cooling_device_ops *ops;
+ 	bool updated; /* true if the cooling device does not need update */
+ 	struct mutex lock; /* protect thermal_instances list */
+-- 
+2.15.0.194.g9af6a3dea062
