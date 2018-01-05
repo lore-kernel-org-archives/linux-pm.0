@@ -1,112 +1,128 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH v2 0/3] renesas: irqchip: Use WAKEUP_PATH driver PM flag
-Date: Fri, 5 Jan 2018 10:16:53 +0100
-Message-ID: <CAMuHMdVBBnH2REi4RP6N6S5PaCgrwFteHXPRtnr9jPwtUbx_qA@mail.gmail.com>
-References: <1514554304-18989-1-git-send-email-ulf.hansson@linaro.org>
- <CAJZ5v0heO9DxbxnrXJeXC0RDQV-oOb=KLJmXWm7uuy=y7U2KjA@mail.gmail.com>
- <CAMuHMdX0p7rnrtdVOeh71Nd4k8aU3Pi-L6y+LTFKoh21XNUs4w@mail.gmail.com> <CAJZ5v0iphV9w6wQy2uQ=wW3HEC+eK4ZnS8fBE-GFuESjXM4PCQ@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH v5 20/20] cpufreq: scmi: add support for fast frequency
+ switching
+Date: Fri, 5 Jan 2018 10:45:50 +0000
+Message-ID: <f9c3f16a-f33a-4d28-0893-3507af0732c4@arm.com>
+References: <1514904162-11201-1-git-send-email-sudeep.holla@arm.com>
+ <1514904162-11201-21-git-send-email-sudeep.holla@arm.com>
+ <CALW4P++xNXWUYoAEjV2=zfj-ps+JSD3kkkKRAeED08UF3Gabfw@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-qk0-f196.google.com ([209.85.220.196]:39117 "EHLO
-        mail-qk0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751261AbeAEJQz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jan 2018 04:16:55 -0500
-In-Reply-To: <CAJZ5v0iphV9w6wQy2uQ=wW3HEC+eK4ZnS8fBE-GFuESjXM4PCQ@mail.gmail.com>
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:43310 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1750927AbeAEKp4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Jan 2018 05:45:56 -0500
+In-Reply-To: <CALW4P++xNXWUYoAEjV2=zfj-ps+JSD3kkkKRAeED08UF3Gabfw@mail.gmail.com>
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux PM <linux-pm@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Jason Cooper <jason@lakedaemon.net>, Marc Zyngier <marc.zyngier@arm.com>, Linus Walleij <linus.walleij@linaro.org>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, linux-gpio@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Alexey Klimov <klimov.linux@gmail.com>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, ALKML <linux-arm-kernel@lists.infradead.org>, LKML <linux-kernel@vger.kernel.org>, DTML <devicetree@vger.kernel.org>, Roy Franz <roy.franz@cavium.com>, Harb Abdulhamid <harba@codeaurora.org>, Nishanth Menon <nm@ti.com>, Arnd Bergmann <arnd@arndb.de>, Loc Ho <lho@apm.com>, Ryan Harkin <Ryan.Harkin@arm.com>, Jassi Brar <jassisinghbrar@gmail.com>, linux-pm@vger.kernel.org
 
-Hi Rafael,
 
-On Sun, Dec 31, 2017 at 12:47 PM, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> On Sun, Dec 31, 2017 at 10:22 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> On Sun, Dec 31, 2017 at 1:56 AM, Rafael J. Wysocki <rafael@kernel.org> wrote:
->>> On Fri, Dec 29, 2017 at 2:31 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>>> From: Geert Uytterhoeven <geert+renesas@glider.be>
->>>>
->>>> Changes in v2: [By Ulf Hansson]
->>>>         - I have picked up the series from Geert [1] and converted it into use
->>>>         the WAKEUP_PATH driver PM flag. This includes some minor changes to each
->>>>         patch and updates to the changelogs.
->>>>         - An important note, the WAKEUP_PATH driver PM flag is introduced in a
->>>>         separate series [2], not yet applied, so @subject series depends on it.
->>>>         - One more note, two of the patches has a checkpatch error, however I
->>>>         did not fix them, becuase I think that should be done separate.
->>>>
->>>> [1]
->>>> https://lkml.org/lkml/2017/11/9/382
->>>> [2]
->>>> https://marc.info/?l=linux-pm&m=151454744124661&w=2
->>>>
->>>> More information below, picked from Geert's previous cover letter.
->>>>
->>>> Kind regards
->>>> Uffe
->>>>
->>>>
->>>> Hi all,
->>>>
->>>> If an interrupt controller in a Renesas ARM SoC is part of a Clock
->>>> Domain, and it is part of the wakeup path, it must be kept active during
->>>> system suspend.
->>>>
->>>> Currently this is handled in all interrupt controller drivers by
->>>> explicitly increasing the use count of the module clock when the device
->>>> is part of the wakeup path.  However, this explicit clock handling is
->>>> merely a workaround for a failure to properly communicate wakeup
->>>> information to the device core.
->>>>
->>>> Hence this series fixes the affected drivers by setting the devices'
->>>> power.wakeup_path fields instead, to indicate they are part of the
->>>> wakeup path.  Depending on the PM Domain's active_wakeup configuration,
->>>> the genpd core code will keep the device enabled (and the clock running)
->>>> during system suspend when needed.
->>>
->>> However, there is a convention, documented in the kerneldoc comment of
->>> device_init_wakeup(), by which devices participating in system wakeup
->>> "passively" (like USB controllers and hubs) are expected to have it
->>> enabled by default.
->>>
->>> If that convention was followed by the devices in question here, the
->>> wakeup_path bit would be set for them and no other code changes would
->>> be necessary.  So is there any reason for not following it?
+
+On 04/01/18 22:10, Alexey Klimov wrote:
+> Hi Sudeep,
+> 
+> On Tue, Jan 2, 2018 at 2:42 PM, Sudeep Holla <sudeep.holla@arm.com> wrote:
+>> The cpufreq core provides option for drivers to implement fast_switch
+>> callback which is invoked for frequency switching from interrupt context.
 >>
->> Yes there is.  The need to stay enabled during system suspend depends
->> on the consumer of the interrupt. It is controlled by the consumer using
->> the irq_chip.irq_set_wake() callback at runtime, and may change at runtime.
+>> This patch adds support for fast_switch callback in SCMI cpufreq driver
+>> by making use of polling based SCMI transfer. It also sets the flag
+>> fast_switch_possible.
 >>
->> If the wakeup_path flag is always set, the interrupt controller will
->> never be suspended during system suspend, and thus waste power.
->
-> OK
->
-> For IRQ chips in particular, I think, you don't need add new fields to
-> struct dev_pm_info to make it work.
->
-> In ->suspend (or ->suspend_late, which may be better) you can check
-> the IRQD_WAKEUP_STATE flag of the irq_desc associated with the pin.
-> If that is set, you can simply set power.wakeup_path for the device
-> and that will make genpd skip it.  Wouldn't that work?
+>> Cc: linux-pm@vger.kernel.org
+>> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+>> ---
+>>  drivers/cpufreq/scmi-cpufreq.c | 15 +++++++++++++++
+>>  1 file changed, 15 insertions(+)
+>>
+>> diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+>> index 0ee9335d0063..d0a82d7c6fd4 100644
+>> --- a/drivers/cpufreq/scmi-cpufreq.c
+>> +++ b/drivers/cpufreq/scmi-cpufreq.c
+>> @@ -64,6 +64,19 @@ scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
+>>         return perf_ops->freq_set(handle, priv->domain_id, freq, false);
+>>  }
+>>
+>> +static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
+>> +                                            unsigned int target_freq)
+>> +{
+>> +       struct scmi_data *priv = policy->driver_data;
+>> +       struct scmi_perf_ops *perf_ops = handle->perf_ops;
+>> +
+>> +       if (!perf_ops->freq_set(handle, priv->domain_id,
+>> +                               target_freq * 1000, true))
+>> +               return target_freq;
+>> +
+>> +       return 0;
+>> +}
+> 
+> Could you please explain how it's supposed to work for purpose of fast
+> frequency switching?
+> 
+> I am trying to track down ->freq_set.
+> So it looks like this will fire an scmi perf level set command and
+> will poll for this command to complete without asking for firmware to
+> send command completion irq.
+> 
+> scmi_perf_level_set() will call the following functions:
+> 
+> scmi_one_xfer_init();
+> scmi_do_xfer(handle, t);
+> scmi_one_xfer_put(handle, t);
+> 
+> 
+> The first function in the list calls scmi_one_xfer_get() which has
+> this in the description (I guess because of down_timeout()):
+> "This function can sleep depending on pending requests already in the system
+> for the SCMI entity. Further, this also holds a spinlock to maintain
+> integrity of internal data structures."
+> 
+> So it can sleep.
+> 
 
-The irq_desc is per pin, while suspend is called per platform device, which
-contains one or more irq_chips, each serving one or more pins.
-So checking for IRQD_WAKEUP_STATE means looping over all irq_descs
-associated to the platform device.
+Indeed, I can drop the whole semaphore story and expect the caller to
+retry in case buffer is full which is very rare condition.
 
-Which made me realize {gpio_rcar,irqc,intc_irqpin}_priv.wakeup_path should
-not be a flag, but a counter. Currently it works by luck, as we never have
-two independent wake-up sources being routed through the same irqchip.
+> As far as I see description of fast frequency switching it's required
+> for fast_switch to not sleep:
+> (file Documentation/cpu-freq/cpu-drivers.txt)
+> 
+> "This function is used for frequency switching from scheduler's context.
+> Not all drivers are expected to implement it, as sleeping from within
+> this callback isn't allowed. This callback must be highly optimized to
+> do switching as fast as possible."
+> 
+> 
+> The other questions to this implementation of fast switching:
+> 
+> 1) Fast switching callback must be highly optimized. Is it now? I see
+> few spinlocks (in scmi mbox client and in the mailbox framework) there
+> and polling functionality with udelay(5) inside that will timeout (if
+> my calculations are correct) after 0.5 ms.
 
-Gr{oetje,eeting}s,
+Do you have any alternate ideas to avoid that and still achieve fast
+switching ?
 
-                        Geert
+> 2) Is it highly dependent on transport? If mailbox transport
+> ->send_data() may sleep or hrtimer-based polling in mailbox framework
+> will be used, then this fast switch won't work, right?
+> 
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Yes.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+> I am still looking into that: I can be wrong and just trying to
+> understand if it is all okay.
+> 
+
+Thanks for taking a look at this.
+
+-- 
+Regards,
+Sudeep
