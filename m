@@ -1,36 +1,35 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 7/7] PCI / PM: Use SMART_SUSPEND and LEAVE_SUSPENDED flags
- for PCIe ports
-Date: Fri, 5 Jan 2018 00:28:39 +0100
-Message-ID: <CAJZ5v0jqQGM0KdUQ4x4bky+uXpKM90Aw7GLSFNWYW+9FppdmBw@mail.gmail.com>
-References: <7742130.AaJQIxeI1n@aspire.rjw.lan> <2436726.ykYRzVD45y@aspire.rjw.lan>
- <33674270.0PFIgc82r6@aspire.rjw.lan> <20180104221448.GH189897@bhelgaas-glaptop.roam.corp.google.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [RFC PATCH v11 4/5] PCI / PM: Add support for the PCIe WAKE# signal for OF
+Date: Fri, 05 Jan 2018 01:11:55 +0100
+Message-ID: <1652279.Kf304cK0PT@aspire.rjw.lan>
+References: <20171225114742.18920-1-jeffy.chen@rock-chips.com> <6120485.xubBpvge6h@aspire.rjw.lan> <20180103200837.GP3875@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f175.google.com ([74.125.82.175]:45298 "EHLO
-        mail-ot0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751029AbeADX2k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 4 Jan 2018 18:28:40 -0500
-In-Reply-To: <20180104221448.GH189897@bhelgaas-glaptop.roam.corp.google.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <20180103200837.GP3875@atomide.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: JeffyChen <jeffy.chen@rock-chips.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Bjorn Helgaas <bhelgaas@google.com>, Linux PM <linux-pm@vger.kernel.org>, Shawn Lin <shawn.lin@rock-chips.com>, Brian Norris <briannorris@chromium.org>, Doug Anderson <dianders@chromium.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, Frank Rowand <frowand.list@gmail.com>
 List-Id: linux-pm@vger.kernel.org
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alan Stern <stern@rowland.harvard.edu>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Mika Westerberg <mika.westerberg@linux.intel.com>, Ulf Hansson <ulf.hansson@linaro.org>, linux-i2c <linux-i2c@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Wolfram Sang <wsa@the-dreams.de>
 
-On Thu, Jan 4, 2018 at 11:14 PM, Bjorn Helgaas <helgaas@kernel.org> wrote:
-> On Wed, Jan 03, 2018 at 01:38:27AM +0100, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Make the PCIe port driver set DPM_FLAG_SMART_SUSPEND and
->> DPM_FLAG_LEAVE_SUSPENDED for the devices handled by it to benefit
->> from the opportunistic optimizations in the PCI layer enabled by
->> these flags.
->>
->> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
->
-> Please merge this along with the rest of the series.
+On Wednesday, January 3, 2018 9:08:37 PM CET Tony Lindgren wrote:
+> Hi,
+> 
+> * Rafael J. Wysocki <rjw@rjwysocki.net> [171228 17:33]:
+> > So we are fine except for the race and we need the wakeirq field in wakeup
+> > sources to automatically arm the wakeup IRQs during suspend.
+> > 
+> > If I'm not mistaken, we only need something like the patch below (untested).
+> 
+> Yeah for your patch below works just fine for my
+> test cases so:
+> 
+> Tested-by: Tony Lindgren <tony@atomide.com>
 
-I will, thank you!
+Cool, thanks!
+
+Let me respin it with a subject/changelog.
+
+Thanks,
+Rafael
