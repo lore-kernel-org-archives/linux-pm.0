@@ -1,181 +1,131 @@
-From: Rainer Fiebig <jrf@mailbox.org>
-Subject: Re: [patch]: do not subtract NR_FILE_MAPPED in minimum_image_size()
-Date: Fri, 5 Jan 2018 18:26:25 +0100
-Message-ID: <e73de831-7ba2-42ce-fc6c-572b4b7b5979@mailbox.org>
-References: <8acc18d9-ba18-21f6-ea33-d47a6596586c@mailbox.org>
- <7443072.0TraN5b7mn@aspire.rjw.lan>
+From: "Doug Smythies" <dsmythies@telus.net>
+Subject: RE: [Resend][PATCH V2] cpufreq: intel_pstate: allow trace in passive mode
+Date: Fri, 5 Jan 2018 12:15:43 -0800
+Message-ID: <001501d38661$f82af1b0$e880d510$@net>
+References: <1513384980-3428-1-git-send-email-dsmythies@telus.net> <1513639857.31113.12.camel@linux.intel.com> R5i6epWR47WleR5i7eE79h
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="mE0npTCo0y6m1aIg1zoUzXqdMqby7xbmy"
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mx2.mailbox.org ([80.241.60.215]:56409 "EHLO mx2.mailbox.org"
+Received: from cmta20.telus.net ([209.171.16.93]:56919 "EHLO cmta20.telus.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1751973AbeAER0h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Jan 2018 12:26:37 -0500
-In-Reply-To: <7443072.0TraN5b7mn@aspire.rjw.lan>
+        id S1752140AbeAEUPr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Jan 2018 15:15:47 -0500
+In-Reply-To: R5i6epWR47WleR5i7eE79h
+Content-Language: en-ca
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, Thorsten Leemhuis <thl@ct.de>
+To: "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---mE0npTCo0y6m1aIg1zoUzXqdMqby7xbmy
-Content-Type: multipart/mixed; boundary="f6rtsVlzN2rzdl3eJl68BRUHIV7FJFIDu";
- protected-headers="v1"
-From: Rainer Fiebig <jrf@mailbox.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-pm@vger.kernel.org, Thorsten Leemhuis <thl@ct.de>
-Message-ID: <e73de831-7ba2-42ce-fc6c-572b4b7b5979@mailbox.org>
-Subject: Re: [patch]: do not subtract NR_FILE_MAPPED in minimum_image_size()
-References: <8acc18d9-ba18-21f6-ea33-d47a6596586c@mailbox.org>
- <7443072.0TraN5b7mn@aspire.rjw.lan>
-In-Reply-To: <7443072.0TraN5b7mn@aspire.rjw.lan>
+On 2017.12.18 16:25 Rafael J. Wysocki wrote:
+> On 2017.12.18 15:31 Srinivas Pandruvada wrote:
+>> On Fri, 2017-12-15 at 16:43 -0800, Doug Smythies wrote:
+>>> Allow use of the trace_pstate_sample trace function
+>>> when the intel_pstate driver is in passive mode.
+>>> Since the core_busy and scaled_busy fields are not
+>>> used, and it might be desirable to know which path
+>>> through the driver was used, either intel_cpufreq_target
+>>> or intel_cpufreq_fast_switch, re-task the core_busy
+>>> field as a flag indicator.
+>>>
+>>> The user can then use the intel_pstate_tracer.py utility
+>>> to summarize and plot the trace.
+>>>
+>>> In Passive mode the driver is only called if there is
+>>> a need to change the target frequency, so durations
+>>> (time gaps between calls) can be very very long. The user
+>>> needs to understand, and not be confused by, this limitation.
 
---f6rtsVlzN2rzdl3eJl68BRUHIV7FJFIDu
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+The above statement isn't completely correct.
+I changed it in V3.
 
-Rafael J. Wysocki wrote:
-> On Friday, December 22, 2017 11:13:59 AM CET Rainer Fiebig wrote:
->> Hi!
+>>>
+>>> V2: prepare for resend. Rebase to current kernel, 4.15-rc3.
+>>> Signed-off-by: Doug Smythies <dsmythies@telus.net>
+>>> ---
+>>>  drivers/cpufreq/intel_pstate.c | 50
+>>> ++++++++++++++++++++++++++++++++++++++++--
+>>>  1 file changed, 48 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/cpufreq/intel_pstate.c
+>>> b/drivers/cpufreq/intel_pstate.c
+>>> index 93a0e88..fe25d69 100644
+>>> --- a/drivers/cpufreq/intel_pstate.c
+>>> +++ b/drivers/cpufreq/intel_pstate.c
+>>> @@ -1949,7 +1949,10 @@ static int intel_cpufreq_target(struct
+>>> cpufreq_policy *policy,
+>>>  {
+>>>       struct cpudata *cpu = all_cpu_data[policy->cpu];
+>>>       struct cpufreq_freqs freqs;
+>>> -     int target_pstate;
+>>> +     struct sample *sample;
+>>> +     int target_pstate, from;
+>>> +     u64 time;
+>>> +     bool sample_taken;
+>>>
+>>>       update_turbo_state();
+>>>
+>>> @@ -1969,12 +1972,32 @@ static int intel_cpufreq_target(struct
+>>> cpufreq_policy *policy,
+>>>               break;
+>>>       }
+>>>       target_pstate = intel_pstate_prepare_request(cpu,
+>>> target_pstate);
+>>> +
+>>> +     from = cpu->pstate.current_pstate;
+>>> +     time = ktime_get();
+>>> +     sample_taken = intel_pstate_sample(cpu, time);
+>>> +
+>> This is quite a bit of overhead for tracing.
+
+Yes, it is a bit of added code, but without tracing abilities I
+do not know how to investigate passive operation.
+
+>> Why not fold the above two
+>> statements in the next if () with conditional tracing?
+
+No, I specifically want to do a trace sample, even if the target
+is the same as last time. Why? Because we want to know the time
+between calls to the driver, i.e. the duration. That information
+is incredibly useful.
+
+>>>       if (target_pstate != cpu->pstate.current_pstate) {
+>>>               cpu->pstate.current_pstate = target_pstate;
+>>>               wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
+>>>                             pstate_funcs.get_val(cpu,
+>>> target_pstate));
+>>>       }
+>>>       freqs.new = target_pstate * cpu->pstate.scaling;
+>>> +
+>>> +     if (sample_taken) {
+>> if (trace_pstate_sample_enabled() && sample_taken) {
 >>
->> s2disk/s2both may fail unnecessarily and erratically if NR_FILE_MAPPED=
+>>> +             intel_pstate_calc_avg_perf(cpu);
+>>> +             sample = &cpu->sample;
+>>> +             trace_pstate_sample(0,
+>> Not sure they are statement below are aligned correctly.
 
->> is high - for instance when using VMs with VirtualBox and perhaps VMwa=
-re
->> Player. In those situations s2disk becomes unreliable and therefore
->> unusable.
->>
->> A typical scenario is: user issues a s2disk and it fails. User issues =
-a
->> second s2disk immediately after that and it succeeds. And user wonders=
- why.
->>
->> The problem is caused by minimum_image_size() in snapshot.c. The value=
+I'll double check in V3, thanks.
+I suspect that somewhere along the way tabs got converted to spaces.
 
->> it returns is roughly 100 % too high because NR_FILE_MAPPED is
->> subtracted in its calculation which is imo wrong. Eventually the numbe=
-r
->> of preallocated image pages is falsely too low.
->>
->> This doesn't matter as long as NR_FILE_MAPPED-values are in a normal
->> range or in 32bit-environments as the code allows for allocation of
->> additional pages from highmem.
->>
->> But with the high values generated by VirtualBox-VMs (a 2-GB-VM causes=
+>>> +             0,
+>>> +             from,
+>>> +             cpu->pstate.current_pstate,
+>>> +             sample->mperf,
+>>> +             sample->aperf,
+>>> +             sample->tsc,
+>>> +             get_avg_frequency(cpu),
+>>> +             fp_toint(cpu->iowait_boost * 100));
+>>> +     }
+>>> +
+>> Same below in the intel_cpufreq_fast_switch().
+>
+> And it's quite a bit of code duplication too.
+>
+> Maybe put this into a separate function and call it from the two places?
 
->> NR_FILE_MAPPED go up by 2 GB) it may lead to failure in 64bit-systems.=
+O.K. yes, V3, coming shortly, has a separate function.
 
->>
->> Not subtracting NR_FILE_MAPPED in minimum_image_size() solves the prob=
-lem.
->>
->> I've done at least hundreds of successful s2both/s2disk now on an x86_=
-64
->> system (with and without VirtualBox) which gives me some confidence th=
-at
->> this is right. It has turned s2disk/s2both from unusable into 100% rel=
-iable.
->>
->> As I don't have 32bit-equipment, I could not test it in such
->> environment, though.
->>
->> The problem has also been discussed in a bug-thread which I closed
->> myself because it obviously led to nowhere
->> (https://bugzilla.kernel.org/show_bug.cgi?id=3D97201).
->>
->> Thoughts?
->=20
-> Technically, it makes sense to me.
->=20
-> The patch is missing a Signed-off-by: tag which strictly speaking is
-> necessary for it to be applied, but I have added one for you speculativ=
-ely.
-> I need you to confirm that this is correct in accordance with the
-> the Developer's Certificate of Origin section in
-> Documentation/process/submitting-patches.rst, however.
->=20
-
-Very kind of you, thanks. I do confirm that the patch submitted by me is
-in accordance with the a/m Developer's Certificate of Origin.
-
-> Also your e-mail client breaks lines in patches, so I needed to fix tha=
-t up,
-Sorry for that!
-> but then it applied for me and I'm going to tentatively queue it up for=
- 4.16.
->=20
-Sounds great!
-> Thanks,
-> Rafael
->=20
-Thank you for your time and effort!
-Rainer Fiebig
->=20
->> ___
->>
->> --- /kernel/power/snapshot.c
->> +++ /kernel/power/snapshot.c
->> @@ -1641,8 +1641,7 @@
->>   * [number of saveable pages] - [number of pages that can be freed in=
-
->> theory]
->>   *
->>   * where the second term is the sum of (1) reclaimable slab pages, (2=
-)
->> active
->> - * and (3) inactive anonymous pages, (4) active and (5) inactive file=
-
->> pages,
->> - * minus mapped file pages.
->> + * and (3) inactive anonymous pages, (4) active and (5) inactive file=
-
->> pages.
->>   */
->>  static unsigned long minimum_image_size(unsigned long saveable)
->>  {
->> @@ -1652,8 +1651,7 @@
->>  		+ global_node_page_state(NR_ACTIVE_ANON)
->>  		+ global_node_page_state(NR_INACTIVE_ANON)
->>  		+ global_node_page_state(NR_ACTIVE_FILE)
->> -		+ global_node_page_state(NR_INACTIVE_FILE)
->> -		- global_node_page_state(NR_FILE_MAPPED);
->> +		+ global_node_page_state(NR_INACTIVE_FILE);
->>
->>  	return saveable <=3D size ? 0 : saveable - size;
->>  }
->>
->>
->>
->=20
->=20
-
-
-
---f6rtsVlzN2rzdl3eJl68BRUHIV7FJFIDu--
-
---mE0npTCo0y6m1aIg1zoUzXqdMqby7xbmy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.22 (GNU/Linux)
-
-iQIcBAEBAgAGBQJaT7VTAAoJEPDh9yYlivj1+w0QAKeNzmPz6qAL3fhaoA2yZDam
-0+PJ0AR34/s722tywiof/dxUrg9+Twp3kk740n98WmWXNMR1VZaP1XpnYuvjRdSx
-3UErTRPrztBw621MSB+cYF47oPu/7Y2wf3PBOWaJeY3fNBB6VUl8UPc6PfJ8Yl/0
-5Q57+x+P4lRVz/VWUaKDZWCG6M68NycKTve+N34vVhHTO3nab1OU4m4lncvkem+G
-l1Qw0Ia1ngh2d2Zf/SRvlYflUovYF3Wr3S6OaTUHiTCxTpm2fmBTHHCsR2tDpHWo
-vMwwhROuR/CV3i+iE1SsEwyJRutycYnkXyQqKrN2/5NHz5eJ7tWormTjY0rfqHU8
-tbel5ziN6LlOMOuYvHoMmbvXyL0ClcDDEcVm/nDr//ln1npRC3msAEPauVLerze+
-q0ynfRH3nUNkd4JQbwHxGjrgvN6oIPYSXRhGfBGJVWlHdxBtVjoDKk5RDR4sWZ5x
-2F6y5UVQP5MqmZLEX246ThbqeOnnbeszRPaDt+XRe0xPm2uBQkbQtC1w4ND2LHvV
-i6L+u73KS5ADu3yb71yW7I++Q3e538Ik8jCOjakqw2qDXMd2WrgzxP+Ql5AaMzYr
-e33bKq7AB+Qt/CgiAKxSlcCSD0eBAS4ywqOv+q/GYKiE/kQBkgv15y5gmjZPxtR4
-6gMWLaqyIAPG5Y+wq3r0
-=y5ku
------END PGP SIGNATURE-----
-
---mE0npTCo0y6m1aIg1zoUzXqdMqby7xbmy--
+... Doug
