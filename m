@@ -1,51 +1,56 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Subject: [BUG] schedutil governor produces regular max freq spikes because
- of lockup detector watchdog threads
-Date: Fri, 5 Jan 2018 22:37:32 +0200
-Message-ID: <1515184652.6892.26.camel@nxp.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [Resend][PATCH V2] cpufreq: intel_pstate: allow trace in
+ passive mode
+Date: Fri, 05 Jan 2018 13:06:46 -0800
+Message-ID: <1515186406.26317.38.camel@linux.intel.com>
+References: <1513384980-3428-1-git-send-email-dsmythies@telus.net>
+         <1513639857.31113.12.camel@linux.intel.com>
+         R5i6epWR47WleR5i7eE79h <001501d38661$f82af1b0$e880d510$@net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-by2nam03on0078.outbound.protection.outlook.com ([104.47.42.78]:39590
-        "EHLO NAM03-BY2-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1751537AbeAEUhh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 5 Jan 2018 15:37:37 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <001501d38661$f82af1b0$e880d510$@net>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Doug Smythies <dsmythies@telus.net>, "'Rafael J. Wysocki'" <rafael@kernel.org>
+Cc: "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Steve Muckle <smuckle@linaro.org>
-Cc: Anson Huang <anson.huang@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hello,
+On Fri, 2018-01-05 at 12:15 -0800, Doug Smythies wrote:
+> > 
 
-When using the schedutil governor together with the softlockup detector
-all CPUs go to their maximum frequency on a regular basis. This seems
-to be because the watchdog creates a RT thread on each CPU and this
-causes regular kicks with:
+[...]
 
-    cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_RT);
+> On 2017.12.18 16:25 Rafael J. Wysocki wrote:
+> > > > +     from = cpu->pstate.current_pstate;
+> > > > +     time = ktime_get();
+> > > > +     sample_taken = intel_pstate_sample(cpu, time);
+> > > > +
+> > > This is quite a bit of overhead for tracing.
+> Yes, it is a bit of added code, but without tracing abilities I
+> do not know how to investigate passive operation.
+> 
+> > 
+> > > 
+> > > Why not fold the above two
+> > > statements in the next if () with conditional tracing?
+> No, I specifically want to do a trace sample, even if the target
+> is the same as last time. Why? Because we want to know the time
+> between calls to the driver, i.e. the duration. That information
+> is incredibly useful.
 
-The schedutil governor responds to this by immediately setting the
-maximum cpu frequency, this is very undesirable.
+I am not saying you don't need trace. But you can do all processing
+when just trace is enabled. Which can be done by
+if (trace_pstate_sample_enabled())
 
-The issue can be fixed by this patch from android:
-    https://patchwork.kernel.org/patch/9301909/
+The above function should return true when trace is enabled.
 
-The patch stalled in a long discussion about how it's difficult for
-cpufreq to deal with RT and how some RT users might just disable
-cpufreq. It is indeed hard but if the system experiences regular power
-kicks from a common debug feature they will end up disabling schedutil
-instead. No other governors behave this way, perhaps the current
-behavior should be considered a bug in schedutil.
+So in your v3,
 
-That patch now has conflicts with latest upstream. Perhaps a modified
-variant should be reconsidered for inclusion, or is there some other
-solution pending?
+in intel_cpufreq_trace() you can simply return if
+trace_pstate_sample_enabled() is false, without
+calling intel_pstate_sample().
 
-Alternatively the watchdog threads could be somehow marked as to never
-cause increased cpufreq.
 
---
-Regards,
-Leonard
+Thanks,
+Srinivas
