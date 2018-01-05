@@ -1,90 +1,117 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH v5 3/9] ACPI: Enable PPTT support on ARM64
-Date: Fri, 5 Jan 2018 23:07:27 +0100
-Message-ID: <CAJZ5v0gP3ty=TBVXfUUSjXO2s0C9Mmp1z2cjuVbH4Hc+oaG1qQ@mail.gmail.com>
-References: <20171201222330.18863-1-jeremy.linton@arm.com> <20171201222330.18863-4-jeremy.linton@arm.com>
- <20171213172647.GA3316@red-moon> <f0f8c79a-2ff2-abe9-4a16-79485f0a1e2c@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <f0f8c79a-2ff2-abe9-4a16-79485f0a1e2c@arm.com>
-Sender: linux-acpi-owner@vger.kernel.org
-To: Jeremy Linton <jeremy.linton@arm.com>
-Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, linux-arm-kernel@lists.infradead.org, Sudeep Holla <sudeep.holla@arm.com>, Hanjun Guo <hanjun.guo@linaro.org>, Will Deacon <will.deacon@arm.com>, Catalin Marinas <catalin.marinas@arm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Viresh Kumar <viresh.kumar@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, jhugo@codeaurora.org, wangxiongfeng2@huawei.com, Jonathan.Zhang@cavium.com, Al Stone <ahs3@redhat.com>, Jayachandran.Nair@cavium.com, austinwc@codeaurora.org, Len Brown <lenb@kernel.org>
+From: Doug Smythies <doug.smythies@gmail.com>
+Subject: [PATCH V4] cpufreq: intel_pstate: allow trace in passive mode
+Date: Fri,  5 Jan 2018 14:14:04 -0800
+Message-ID: <1515190444-3254-1-git-send-email-dsmythies@telus.net>
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: srinivas.pandruvada@linux.intel.com, rjw@rjwysocki.net
+Cc: dsmythies@telus.net, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Fri, Jan 5, 2018 at 10:58 PM, Jeremy Linton <jeremy.linton@arm.com> wrote:
-> Hi,
->
->
-> On 12/13/2017 11:26 AM, Lorenzo Pieralisi wrote:
->>
->> On Fri, Dec 01, 2017 at 04:23:24PM -0600, Jeremy Linton wrote:
->>>
->>> Now that we have a PPTT parser, in preparation for its use
->>> on arm64, lets build it.
->>>
->>> Signed-off-by: Jeremy Linton <jeremy.linton@arm.com>
->>> ---
->>>   arch/arm64/Kconfig    | 1 +
->>>   drivers/acpi/Kconfig  | 3 +++
->>>   drivers/acpi/Makefile | 1 +
->>>   3 files changed, 5 insertions(+)
->>>
->>> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
->>> index a93339f5178f..e62fd1e08c1f 100644
->>> --- a/arch/arm64/Kconfig
->>> +++ b/arch/arm64/Kconfig
->>> @@ -7,6 +7,7 @@ config ARM64
->>>         select ACPI_REDUCED_HARDWARE_ONLY if ACPI
->>>         select ACPI_MCFG if ACPI
->>>         select ACPI_SPCR_TABLE if ACPI
->>> +       select ACPI_PPTT if ACPI
->>>         select ARCH_CLOCKSOURCE_DATA
->>>         select ARCH_HAS_DEBUG_VIRTUAL
->>>         select ARCH_HAS_DEVMEM_IS_ALLOWED
->>> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
->>> index 46505396869e..df7aebf0af0e 100644
->>> --- a/drivers/acpi/Kconfig
->>> +++ b/drivers/acpi/Kconfig
->>> @@ -545,6 +545,9 @@ config ACPI_CONFIGFS
->>>     if ARM64
->>>   source "drivers/acpi/arm64/Kconfig"
->>> +
->>> +config ACPI_PPTT
->>> +       bool
->>
->>
->> We need to make a choice here. Either PPTT is considered ARM64 only and
->> we move code and config to drivers/acpi/arm64/Kconfig or we leave it in
->> drivers/acpi/pptt.c and we add a Kconfig entry in drivers/acpi/Kconfig
->> (and we make pptt.c compile on !ARM64 - which is what it should be given
->> that there is nothing ARM64 specific in it).
->
->
-> No one else has expressed and opinion about this here..
->
-> So i'm not sure what to think.
->
-> OTOH a lot of people didn't like it when I had it in the arm64 directory,
-> which was my original opinion. It seems other people thought that at some
-> point in the future other ACPI platforms would want to use it so putting it
-> in the arm64 directory was a mistake.
+Allow use of the trace_pstate_sample trace function
+when the intel_pstate driver is in passive mode.
+Since the core_busy and scaled_busy fields are not
+used, and it might be desirable to know which path
+through the driver was used, either intel_cpufreq_target
+or intel_cpufreq_fast_switch, re-task the core_busy
+field as a flag indicator.
 
-In my view it may go directly into drivers/acpi/ for the time being.
+The user can then use the intel_pstate_tracer.py utility
+to summarize and plot the trace.
 
-That said, going forward it may be useful to add a special
-subdirectory under drivers/acpi/ for these "table drivers" as we seem
-to be acquiring them at alarming rate.
+Sometimes, in passive mode, the driver is not called for
+many tens or even hundreds of seconds. The user
+needs to understand, and not be confused by, this limitation.
 
-> So, I'm leaning towards leaving it like it is, under the assumption that
-> when someone puts in the effort to verify it on another ACPI platform they
-> can move the config option up 6 lines. In the meantime I don't think it
-> should be enabled on platforms where it hasn't been tested or is basically
-> blocked (cpu_cacheinfo->cpu_map_populated) from executing or there isn't
-> currently any benefit.
+V4: Only execute the trace specific overhead code if trace
+    is enabled. Suggested by Srinivas Pandruvada.
 
-Agreed.
+V3: Move largely duplicate code to a subroutine.
+    Suggested by Rafael J. Wysocki.
 
-Thanks,
-Rafael
+V2: prepare for resend. Rebase to current kernel, 4.15-rc3.
+Signed-off-by: Doug Smythies <dsmythies@telus.net>
+---
+ drivers/cpufreq/intel_pstate.c | 35 +++++++++++++++++++++++++++++++++--
+ 1 file changed, 33 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 93a0e88..53bb953 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1943,13 +1943,40 @@ static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
+ 	return 0;
+ }
+ 
++static void intel_cpufreq_trace(struct cpudata *cpu, int fast, int from)
++{
++	struct sample *sample;
++	u64 time;
++
++	time = ktime_get();
++	if (trace_pstate_sample_enabled()) {
++		if (intel_pstate_sample(cpu, time)) {
++			sample = &cpu->sample;
++			/* In passvie mode the trace core_busy field is
++			 * re-assigned to indicate if the driver call
++			 * was via the normal or fast switch path.
++			 * The scaled_busy field is not used, set to 0.
++			 */
++			trace_pstate_sample(fast,
++				0,
++				from,
++				cpu->pstate.current_pstate,
++				sample->mperf,
++				sample->aperf,
++				sample->tsc,
++				get_avg_frequency(cpu),
++				fp_toint(cpu->iowait_boost * 100));
++		}
++	}
++}
++
+ static int intel_cpufreq_target(struct cpufreq_policy *policy,
+ 				unsigned int target_freq,
+ 				unsigned int relation)
+ {
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+ 	struct cpufreq_freqs freqs;
+-	int target_pstate;
++	int target_pstate, from;
+ 
+ 	update_turbo_state();
+ 
+@@ -1969,12 +1996,14 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
+ 		break;
+ 	}
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
++	from = cpu->pstate.current_pstate;
+ 	if (target_pstate != cpu->pstate.current_pstate) {
+ 		cpu->pstate.current_pstate = target_pstate;
+ 		wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
+ 			      pstate_funcs.get_val(cpu, target_pstate));
+ 	}
+ 	freqs.new = target_pstate * cpu->pstate.scaling;
++	intel_cpufreq_trace(cpu, 0, from);
+ 	cpufreq_freq_transition_end(policy, &freqs, false);
+ 
+ 	return 0;
+@@ -1984,13 +2013,15 @@ static unsigned int intel_cpufreq_fast_switch(struct cpufreq_policy *policy,
+ 					      unsigned int target_freq)
+ {
+ 	struct cpudata *cpu = all_cpu_data[policy->cpu];
+-	int target_pstate;
++	int target_pstate, from;
+ 
+ 	update_turbo_state();
+ 
+ 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
++	from = cpu->pstate.current_pstate;
+ 	intel_pstate_update_pstate(cpu, target_pstate);
++	intel_cpufreq_trace(cpu, 100, from);
+ 	return target_pstate * cpu->pstate.scaling;
+ }
+ 
+-- 
+2.7.4
