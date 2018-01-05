@@ -1,105 +1,181 @@
-From: Bart Van Assche <bart.vanassche@wdc.com>
-Subject: [PATCH 1/2] PM / sleep: Make lock/unlock_system_sleep() available to kernel modules
-Date: Fri,  5 Jan 2018 09:19:08 -0800
-Message-ID: <20180105171909.11839-2-bart.vanassche@wdc.com>
-References: <20180105171909.11839-1-bart.vanassche@wdc.com>
-Return-path: <linux-scsi-owner@vger.kernel.org>
-In-Reply-To: <20180105171909.11839-1-bart.vanassche@wdc.com>
-Sender: linux-scsi-owner@vger.kernel.org
-To: "Martin K . Petersen" <martin.petersen@oracle.com>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>
-Cc: linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>, Woody Suwalski <terraluna977@gmail.com>, Alan Stern <stern@rowland.harvard.edu>, Bart Van Assche <bart.vanassche@wdc.com>
+From: Rainer Fiebig <jrf@mailbox.org>
+Subject: Re: [patch]: do not subtract NR_FILE_MAPPED in minimum_image_size()
+Date: Fri, 5 Jan 2018 18:26:25 +0100
+Message-ID: <e73de831-7ba2-42ce-fc6c-572b4b7b5979@mailbox.org>
+References: <8acc18d9-ba18-21f6-ea33-d47a6596586c@mailbox.org>
+ <7443072.0TraN5b7mn@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="mE0npTCo0y6m1aIg1zoUzXqdMqby7xbmy"
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx2.mailbox.org ([80.241.60.215]:56409 "EHLO mx2.mailbox.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751973AbeAER0h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Jan 2018 12:26:37 -0500
+In-Reply-To: <7443072.0TraN5b7mn@aspire.rjw.lan>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, Thorsten Leemhuis <thl@ct.de>
 
-Since pm_mutex is not exported using lock/unlock_system_sleep() from
-inside a kernel module causes a "pm_mutex undefined" linker error.
-Hence move lock/unlock_system_sleep() into kernel/power/main.c and
-export these.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--mE0npTCo0y6m1aIg1zoUzXqdMqby7xbmy
+Content-Type: multipart/mixed; boundary="f6rtsVlzN2rzdl3eJl68BRUHIV7FJFIDu";
+ protected-headers="v1"
+From: Rainer Fiebig <jrf@mailbox.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org, Thorsten Leemhuis <thl@ct.de>
+Message-ID: <e73de831-7ba2-42ce-fc6c-572b4b7b5979@mailbox.org>
+Subject: Re: [patch]: do not subtract NR_FILE_MAPPED in minimum_image_size()
+References: <8acc18d9-ba18-21f6-ea33-d47a6596586c@mailbox.org>
+ <7443072.0TraN5b7mn@aspire.rjw.lan>
+In-Reply-To: <7443072.0TraN5b7mn@aspire.rjw.lan>
 
-Signed-off-by: Bart Van Assche <bart.vanassche@wdc.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
----
- include/linux/suspend.h | 28 ++--------------------------
- kernel/power/main.c     | 29 +++++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+), 26 deletions(-)
+--f6rtsVlzN2rzdl3eJl68BRUHIV7FJFIDu
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index d60b0f5c38d5..cc22a24516d6 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -443,32 +443,8 @@ extern bool pm_save_wakeup_count(unsigned int count);
- extern void pm_wakep_autosleep_enabled(bool set);
- extern void pm_print_active_wakeup_sources(void);
- 
--static inline void lock_system_sleep(void)
--{
--	current->flags |= PF_FREEZER_SKIP;
--	mutex_lock(&pm_mutex);
--}
--
--static inline void unlock_system_sleep(void)
--{
--	/*
--	 * Don't use freezer_count() because we don't want the call to
--	 * try_to_freeze() here.
--	 *
--	 * Reason:
--	 * Fundamentally, we just don't need it, because freezing condition
--	 * doesn't come into effect until we release the pm_mutex lock,
--	 * since the freezer always works with pm_mutex held.
--	 *
--	 * More importantly, in the case of hibernation,
--	 * unlock_system_sleep() gets called in snapshot_read() and
--	 * snapshot_write() when the freezing condition is still in effect.
--	 * Which means, if we use try_to_freeze() here, it would make them
--	 * enter the refrigerator, thus causing hibernation to lockup.
--	 */
--	current->flags &= ~PF_FREEZER_SKIP;
--	mutex_unlock(&pm_mutex);
--}
-+extern void lock_system_sleep(void);
-+extern void unlock_system_sleep(void);
- 
- #else /* !CONFIG_PM_SLEEP */
- 
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 3a2ca9066583..705c2366dafe 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -22,6 +22,35 @@ DEFINE_MUTEX(pm_mutex);
- 
- #ifdef CONFIG_PM_SLEEP
- 
-+void lock_system_sleep(void)
-+{
-+	current->flags |= PF_FREEZER_SKIP;
-+	mutex_lock(&pm_mutex);
-+}
-+EXPORT_SYMBOL_GPL(lock_system_sleep);
-+
-+void unlock_system_sleep(void)
-+{
-+	/*
-+	 * Don't use freezer_count() because we don't want the call to
-+	 * try_to_freeze() here.
-+	 *
-+	 * Reason:
-+	 * Fundamentally, we just don't need it, because freezing condition
-+	 * doesn't come into effect until we release the pm_mutex lock,
-+	 * since the freezer always works with pm_mutex held.
-+	 *
-+	 * More importantly, in the case of hibernation,
-+	 * unlock_system_sleep() gets called in snapshot_read() and
-+	 * snapshot_write() when the freezing condition is still in effect.
-+	 * Which means, if we use try_to_freeze() here, it would make them
-+	 * enter the refrigerator, thus causing hibernation to lockup.
-+	 */
-+	current->flags &= ~PF_FREEZER_SKIP;
-+	mutex_unlock(&pm_mutex);
-+}
-+EXPORT_SYMBOL_GPL(unlock_system_sleep);
-+
- /* Routines for PM-transition notifications */
- 
- static BLOCKING_NOTIFIER_HEAD(pm_chain_head);
--- 
-2.15.1
+Rafael J. Wysocki wrote:
+> On Friday, December 22, 2017 11:13:59 AM CET Rainer Fiebig wrote:
+>> Hi!
+>>
+>> s2disk/s2both may fail unnecessarily and erratically if NR_FILE_MAPPED=
+
+>> is high - for instance when using VMs with VirtualBox and perhaps VMwa=
+re
+>> Player. In those situations s2disk becomes unreliable and therefore
+>> unusable.
+>>
+>> A typical scenario is: user issues a s2disk and it fails. User issues =
+a
+>> second s2disk immediately after that and it succeeds. And user wonders=
+ why.
+>>
+>> The problem is caused by minimum_image_size() in snapshot.c. The value=
+
+>> it returns is roughly 100 % too high because NR_FILE_MAPPED is
+>> subtracted in its calculation which is imo wrong. Eventually the numbe=
+r
+>> of preallocated image pages is falsely too low.
+>>
+>> This doesn't matter as long as NR_FILE_MAPPED-values are in a normal
+>> range or in 32bit-environments as the code allows for allocation of
+>> additional pages from highmem.
+>>
+>> But with the high values generated by VirtualBox-VMs (a 2-GB-VM causes=
+
+>> NR_FILE_MAPPED go up by 2 GB) it may lead to failure in 64bit-systems.=
+
+>>
+>> Not subtracting NR_FILE_MAPPED in minimum_image_size() solves the prob=
+lem.
+>>
+>> I've done at least hundreds of successful s2both/s2disk now on an x86_=
+64
+>> system (with and without VirtualBox) which gives me some confidence th=
+at
+>> this is right. It has turned s2disk/s2both from unusable into 100% rel=
+iable.
+>>
+>> As I don't have 32bit-equipment, I could not test it in such
+>> environment, though.
+>>
+>> The problem has also been discussed in a bug-thread which I closed
+>> myself because it obviously led to nowhere
+>> (https://bugzilla.kernel.org/show_bug.cgi?id=3D97201).
+>>
+>> Thoughts?
+>=20
+> Technically, it makes sense to me.
+>=20
+> The patch is missing a Signed-off-by: tag which strictly speaking is
+> necessary for it to be applied, but I have added one for you speculativ=
+ely.
+> I need you to confirm that this is correct in accordance with the
+> the Developer's Certificate of Origin section in
+> Documentation/process/submitting-patches.rst, however.
+>=20
+
+Very kind of you, thanks. I do confirm that the patch submitted by me is
+in accordance with the a/m Developer's Certificate of Origin.
+
+> Also your e-mail client breaks lines in patches, so I needed to fix tha=
+t up,
+Sorry for that!
+> but then it applied for me and I'm going to tentatively queue it up for=
+ 4.16.
+>=20
+Sounds great!
+> Thanks,
+> Rafael
+>=20
+Thank you for your time and effort!
+Rainer Fiebig
+>=20
+>> ___
+>>
+>> --- /kernel/power/snapshot.c
+>> +++ /kernel/power/snapshot.c
+>> @@ -1641,8 +1641,7 @@
+>>   * [number of saveable pages] - [number of pages that can be freed in=
+
+>> theory]
+>>   *
+>>   * where the second term is the sum of (1) reclaimable slab pages, (2=
+)
+>> active
+>> - * and (3) inactive anonymous pages, (4) active and (5) inactive file=
+
+>> pages,
+>> - * minus mapped file pages.
+>> + * and (3) inactive anonymous pages, (4) active and (5) inactive file=
+
+>> pages.
+>>   */
+>>  static unsigned long minimum_image_size(unsigned long saveable)
+>>  {
+>> @@ -1652,8 +1651,7 @@
+>>  		+ global_node_page_state(NR_ACTIVE_ANON)
+>>  		+ global_node_page_state(NR_INACTIVE_ANON)
+>>  		+ global_node_page_state(NR_ACTIVE_FILE)
+>> -		+ global_node_page_state(NR_INACTIVE_FILE)
+>> -		- global_node_page_state(NR_FILE_MAPPED);
+>> +		+ global_node_page_state(NR_INACTIVE_FILE);
+>>
+>>  	return saveable <=3D size ? 0 : saveable - size;
+>>  }
+>>
+>>
+>>
+>=20
+>=20
+
+
+
+--f6rtsVlzN2rzdl3eJl68BRUHIV7FJFIDu--
+
+--mE0npTCo0y6m1aIg1zoUzXqdMqby7xbmy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.22 (GNU/Linux)
+
+iQIcBAEBAgAGBQJaT7VTAAoJEPDh9yYlivj1+w0QAKeNzmPz6qAL3fhaoA2yZDam
+0+PJ0AR34/s722tywiof/dxUrg9+Twp3kk740n98WmWXNMR1VZaP1XpnYuvjRdSx
+3UErTRPrztBw621MSB+cYF47oPu/7Y2wf3PBOWaJeY3fNBB6VUl8UPc6PfJ8Yl/0
+5Q57+x+P4lRVz/VWUaKDZWCG6M68NycKTve+N34vVhHTO3nab1OU4m4lncvkem+G
+l1Qw0Ia1ngh2d2Zf/SRvlYflUovYF3Wr3S6OaTUHiTCxTpm2fmBTHHCsR2tDpHWo
+vMwwhROuR/CV3i+iE1SsEwyJRutycYnkXyQqKrN2/5NHz5eJ7tWormTjY0rfqHU8
+tbel5ziN6LlOMOuYvHoMmbvXyL0ClcDDEcVm/nDr//ln1npRC3msAEPauVLerze+
+q0ynfRH3nUNkd4JQbwHxGjrgvN6oIPYSXRhGfBGJVWlHdxBtVjoDKk5RDR4sWZ5x
+2F6y5UVQP5MqmZLEX246ThbqeOnnbeszRPaDt+XRe0xPm2uBQkbQtC1w4ND2LHvV
+i6L+u73KS5ADu3yb71yW7I++Q3e538Ik8jCOjakqw2qDXMd2WrgzxP+Ql5AaMzYr
+e33bKq7AB+Qt/CgiAKxSlcCSD0eBAS4ywqOv+q/GYKiE/kQBkgv15y5gmjZPxtR4
+6gMWLaqyIAPG5Y+wq3r0
+=y5ku
+-----END PGP SIGNATURE-----
+
+--mE0npTCo0y6m1aIg1zoUzXqdMqby7xbmy--
