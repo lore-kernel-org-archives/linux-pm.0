@@ -1,136 +1,67 @@
-From: "Rafael J. Wysocki" <rafael-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
-Subject: Re: [PATCH 2/2] cpufreq: imx6q: add 696MHz operating point for i.mx6ul
-Date: Fri, 5 Jan 2018 13:21:10 +0100
-Message-ID: <CAJZ5v0it+Gc5nTa5Vt8X8_OPHh6ndcQB3peAQA1SDsuQ2+FZKA@mail.gmail.com>
-References: <1514912859-17691-1-git-send-email-Anson.Huang@nxp.com> <1514912859-17691-2-git-send-email-Anson.Huang@nxp.com>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH v3 1/4] PM / core: Assign the wakeup_path status flag in __device_prepare()
+Date: Fri, 5 Jan 2018 13:44:11 +0100
+Message-ID: <CAJZ5v0jsEX37AVA0FWyf8HD29gYAPh0GNRsUtfNd1J6q8TT_8w@mail.gmail.com>
+References: <1514909333-4450-1-git-send-email-ulf.hansson@linaro.org> <1514909333-4450-2-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1514912859-17691-2-git-send-email-Anson.Huang-3arQi8VN3Tc@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux PM <linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Shawn Guo <shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Fabio Estevam <fabio.estevam-3arQi8VN3Tc@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Russell King - ARM Linux <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>, Viresh Kumar <viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Ping Bai <ping.bai-3arQi8VN3Tc@public.gmane.org>, aisheng.dong-3arQi8VN3Tc@public.gmane.org
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-oi0-f65.google.com ([209.85.218.65]:34957 "EHLO
+        mail-oi0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1750837AbeAEMoM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jan 2018 07:44:12 -0500
+In-Reply-To: <1514909333-4450-2-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: "Rafael J . Wysocki" <rjw@rjwysocki.net>, Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
 
-On Tue, Jan 2, 2018 at 6:07 PM, Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org> wrote:
-> Add 696MHz operating point for i.MX6UL, only for those
-> parts with speed grading fuse set to 2b'10 supports
-> 696MHz operating point, so, speed grading check is also
-> added for i.MX6UL in this patch, the clock tree for each
-> operating point are as below:
+On Tue, Jan 2, 2018 at 5:08 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+> The PM core in the device_prepare() phase, resets the wakeup_path status
+> flag to the value of device_may_wakeup(). This means if a ->prepare() or a
+> ->suspend() callback for the device would update the device's wakeup
+> setting, this doesn't become reflected in the wakeup_path status flag.
 >
-> 696MHz:
->     pll1                       696000000
->        pll1_bypass             696000000
->           pll1_sys             696000000
->              pll1_sw           696000000
->                 arm            696000000
-> 528MHz:
->     pll2                       528000000
->        pll2_bypass             528000000
->           pll2_bus             528000000
->              ca7_secondary_sel 528000000
->                 step           528000000
->                    pll1_sw     528000000
->                       arm      528000000
-> 396MHz:
->     pll2_pfd2_396m             396000000
->        ca7_secondary_sel       396000000
->           step                 396000000
->              pll1_sw           396000000
->                 arm            396000000
-> 198MHz:
->     pll2_pfd2_396m             396000000
->        ca7_secondary_sel       396000000
->           step                 396000000
->              pll1_sw           396000000
->                 arm            198000000
+> In general this isn't a problem, because wakeup settings are not supposed
+> to be changed (via for example calling device_set_wakeup_enable()) during
+> any system wide suspend/resume phase.  Nevertheless there are some users,
+> which can be considered as legacy, that don't conform to this behaviour.
 >
-> Signed-off-by: Anson Huang <Anson.Huang-3arQi8VN3Tc@public.gmane.org>
+> These legacy cases should be corrected, however until that is done, let's
+> address the issue from the PM core, by moving the assignment of the
+> wakeup_path status flag to the __device_suspend() phase and after the
+> ->suspend() callback has been invoked.
+>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-This doesn't apply for me and in a nontrivial way.
-
-What kernel is it against?
+I'm queuing this one up with an extra empty line added.
 
 > ---
->  drivers/cpufreq/imx6q-cpufreq.c | 46 ++++++++++++++++++++++++++++++++++++++++-
->  1 file changed, 45 insertions(+), 1 deletion(-)
+>  drivers/base/power/main.c | 4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 >
-> diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-> index d9b2c2d..cbda0cc 100644
-> --- a/drivers/cpufreq/imx6q-cpufreq.c
-> +++ b/drivers/cpufreq/imx6q-cpufreq.c
-> @@ -120,6 +120,10 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
->                         clk_set_parent(secondary_sel_clk, pll2_pfd2_396m_clk);
->                 clk_set_parent(step_clk, secondary_sel_clk);
->                 clk_set_parent(pll1_sw_clk, step_clk);
-> +               if (freq_hz > clk_get_rate(pll2_bus_clk)) {
-> +                       clk_set_rate(pll1_sys_clk, new_freq * 1000);
-> +                       clk_set_parent(pll1_sw_clk, pll1_sys_clk);
-> +               }
->         } else {
->                 clk_set_parent(step_clk, pll2_pfd2_396m_clk);
->                 clk_set_parent(pll1_sw_clk, step_clk);
-> @@ -244,6 +248,43 @@ static void imx6q_opp_check_speed_grading(struct device *dev)
->         of_node_put(np);
->  }
->
-> +#define OCOTP_CFG3_6UL_SPEED_696MHZ    0x2
-> +
-> +static void imx6ul_opp_check_speed_grading(struct device *dev)
-> +{
-> +       struct device_node *np;
-> +       void __iomem *base;
-> +       u32 val;
-> +
-> +       np = of_find_compatible_node(NULL, NULL, "fsl,imx6ul-ocotp");
-> +       if (!np)
-> +               return;
-> +
-> +       base = of_iomap(np, 0);
-> +       if (!base) {
-> +               dev_err(dev, "failed to map ocotp\n");
-> +               goto put_node;
-> +       }
-> +
-> +       /*
-> +        * Speed GRADING[1:0] defines the max speed of ARM:
-> +        * 2b'00: Reserved;
-> +        * 2b'01: 528000000Hz;
-> +        * 2b'10: 696000000Hz;
-> +        * 2b'11: Reserved;
-> +        * We need to set the max speed of ARM according to fuse map.
-> +        */
-> +       val = readl_relaxed(base + OCOTP_CFG3);
-> +       val >>= OCOTP_CFG3_SPEED_SHIFT;
-> +       val &= 0x3;
-> +       if (val != OCOTP_CFG3_6UL_SPEED_696MHZ)
-> +               if (dev_pm_opp_disable(dev, 696000000))
-> +                       dev_warn(dev, "failed to disable 696MHz OPP\n");
-> +       iounmap(base);
-> +put_node:
-> +       of_node_put(np);
-> +}
-> +
->  static int imx6q_cpufreq_probe(struct platform_device *pdev)
->  {
->         struct device_node *np;
-> @@ -311,7 +352,10 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
->                 goto put_reg;
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 70398e7..7aeb91d 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1788,6 +1788,8 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>   End:
+>         if (!error) {
+>                 dev->power.is_suspended = true;
+> +               if (device_may_wakeup(dev))
+> +                       dev->power.wakeup_path = true;
+>                 dpm_propagate_to_parent(dev);
+>                 dpm_clear_suppliers_direct_complete(dev);
 >         }
+> @@ -1912,7 +1914,7 @@ static int device_prepare(struct device *dev, pm_message_t state)
 >
-> -       imx6q_opp_check_speed_grading(cpu_dev);
-> +       if (of_machine_is_compatible("fsl,imx6ul"))
-> +               imx6ul_opp_check_speed_grading(cpu_dev);
-> +       else
-> +               imx6q_opp_check_speed_grading(cpu_dev);
+>         device_lock(dev);
 >
->         /* Because we have added the OPPs here, we must free them */
->         free_opp = true;
+> -       dev->power.wakeup_path = device_may_wakeup(dev);
+> +       dev->power.wakeup_path = false;
+>
+>         if (dev->power.no_pm_callbacks) {
+>                 ret = 1;        /* Let device go direct_complete */
 > --
-> 1.9.1
+> 2.7.4
 >
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
