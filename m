@@ -1,35 +1,80 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/2] PM / sleep: Make lock/unlock_system_sleep() available
- to kernel modules
-Date: Sat, 6 Jan 2018 00:38:54 +0100
-Message-ID: <CAJZ5v0iiSWRPDdVOhqLJBCLq_TG5rR_id+TZm9vTk+d1HeKNvw@mail.gmail.com>
-References: <20180105171909.11839-1-bart.vanassche@wdc.com>
- <20180105171909.11839-2-bart.vanassche@wdc.com> <CAJZ5v0igct51CSp6FB=s3OZyr5fKKMxvy=T7gg2L39=r72Jtbg@mail.gmail.com>
- <1515195138.3254.26.camel@wdc.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] tools/power/x86/intel_pstate_tracer: Free the trace
+ buffer memory
+Date: Fri, 05 Jan 2018 15:46:52 -0800
+Message-ID: <1515196012.26317.52.camel@linux.intel.com>
+References: <1515191476-3424-1-git-send-email-dsmythies@telus.net>
+         <CAJZ5v0hvFrfRR8PEQgUgEh3r1NnH5r26fxzc=Kc+k9D8rDp+Lw@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f68.google.com ([209.85.218.68]:41396 "EHLO
-        mail-oi0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752512AbeAEXiz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jan 2018 18:38:55 -0500
-In-Reply-To: <1515195138.3254.26.camel@wdc.com>
+Received: from mga09.intel.com ([134.134.136.24]:8958 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753287AbeAEXqx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Jan 2018 18:46:53 -0500
+In-Reply-To: <CAJZ5v0hvFrfRR8PEQgUgEh3r1NnH5r26fxzc=Kc+k9D8rDp+Lw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Bart Van Assche <Bart.VanAssche@wdc.com>
-Cc: "rafael@kernel.org" <rafael@kernel.org>, "jejb@linux.vnet.ibm.com" <jejb@linux.vnet.ibm.com>, "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>, "terraluna977@gmail.com" <terraluna977@gmail.com>, "stern@rowland.harvard.edu" <stern@rowland.harvard.edu>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "martin.petersen@oracle.com" <martin.petersen@oracle.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, Doug Smythies <doug.smythies@gmail.com>
+Cc: Doug Smythies <dsmythies@telus.net>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>
 
-On Sat, Jan 6, 2018 at 12:32 AM, Bart Van Assche <Bart.VanAssche@wdc.com> wrote:
-> On Sat, 2018-01-06 at 00:00 +0100, Rafael J. Wysocki wrote:
->> The changes are fine by me, but I really would prefer them to go in
->> via the PM tree which I guess means that the second patch would need
->> to go in this way too.
->
-> Hello Rafael,
->
-> If I can get a Tested-by from Woody and an Acked-by from Martin then I can
-> do that.
+On Fri, 2018-01-05 at 23:54 +0100, Rafael J. Wysocki wrote:
+> On Fri, Jan 5, 2018 at 11:31 PM, Doug Smythies <doug.smythies@gmail.c
+> om> wrote:
+> > 
+> > The trace buffer memory should be, mostly, freed after
+> > the buffer has been output.
+> > 
+> > This patch is required before a future patch that will allow
+> > the user to override the default, and specify the trace buffer
+> > memory allocation as a command line option.
+> > 
+> > Signed-off-by: Doug Smythies <dsmythies@telus.net>
+> Looks OK to me.  Srinivas?
 
-That would be an ACK from Marting for the second patch.
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-OK
+> 
+> > 
+> > ---
+> >  .../power/x86/intel_pstate_tracer/intel_pstate_tracer.py  | 15
+> > +++++++++++++++
+> >  1 file changed, 15 insertions(+)
+> > 
+> > diff --git
+> > a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > index 0b24dd9..29f50d4 100755
+> > --- a/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > +++ b/tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+> > @@ -411,6 +411,16 @@ def set_trace_buffer_size():
+> >          print('IO error setting trace buffer size ')
+> >          quit()
+> > 
+> > +def free_trace_buffer():
+> > +    """ Free the trace buffer memory """
+> > +
+> > +    try:
+> > +       open('/sys/kernel/debug/tracing/buffer_size_kb'
+> > +                 , 'w').write("1")
+> > +    except:
+> > +        print('IO error setting trace buffer size ')
+> > +        quit()
+> > +
+> >  def read_trace_data(filename):
+> >      """ Read and parse trace data """
+> > 
+> > @@ -583,4 +593,9 @@ for root, dirs, files in os.walk('.'):
+> >      for f in files:
+> >          fix_ownership(f)
+> > 
+> > +clear_trace_file()
+> > +# Free the memory
+> > +if interval:
+> > +    free_trace_buffer()
+> > +
+> >  os.chdir('../../')
+> > --
+> > 2.7.4
+> > 
