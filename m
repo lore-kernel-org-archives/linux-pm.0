@@ -1,127 +1,125 @@
-From: Anson Huang <Anson.Huang@nxp.com>
-Subject: [PATCH V2 2/2] cpufreq: imx6q: add 696MHz operating point for i.mx6ul
-Date: Sat, 6 Jan 2018 18:42:40 +0800
-Message-ID: <1515235360-1628-2-git-send-email-Anson.Huang@nxp.com>
-References: <1515235360-1628-1-git-send-email-Anson.Huang@nxp.com>
+From: Anson Huang <anson.huang@nxp.com>
+Subject: RE: [PATCH 2/2] cpufreq: imx6q: add 696MHz operating point for
+ i.mx6ul
+Date: Sat, 6 Jan 2018 03:05:41 +0000
+Message-ID: <AM3PR04MB131556AF9BDE24E071A51300F51D0@AM3PR04MB1315.eurprd04.prod.outlook.com>
+References: <1514912859-17691-1-git-send-email-Anson.Huang@nxp.com>
+ <1514912859-17691-2-git-send-email-Anson.Huang@nxp.com>
+ <CAJZ5v0it+Gc5nTa5Vt8X8_OPHh6ndcQB3peAQA1SDsuQ2+FZKA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1515235360-1628-1-git-send-email-Anson.Huang@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, rjw@rjwysocki.net, linux@armlinux.org.uk, viresh.kumar@linaro.org, rafael@kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-eopbgr40088.outbound.protection.outlook.com ([40.107.4.88]:40375
+        "EHLO EUR03-DB5-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1753615AbeAFDFw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 5 Jan 2018 22:05:52 -0500
+In-Reply-To: <CAJZ5v0it+Gc5nTa5Vt8X8_OPHh6ndcQB3peAQA1SDsuQ2+FZKA@mail.gmail.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Viresh Kumar <viresh.kumar@linaro.org>, Jacky Bai <ping.bai@nxp.com>, "A.s. Dong" <aisheng.dong@nxp.com>
 
-Add 696MHz operating point for i.MX6UL, only for those
-parts with speed grading fuse set to 2b'10 supports
-696MHz operating point, so, speed grading check is also
-added for i.MX6UL in this patch, the clock tree for each
-operating point are as below:
-
-696MHz:
-    pll1                       696000000
-       pll1_bypass             696000000
-          pll1_sys             696000000
-             pll1_sw           696000000
-                arm            696000000
-528MHz:
-    pll2                       528000000
-       pll2_bypass             528000000
-          pll2_bus             528000000
-             ca7_secondary_sel 528000000
-                step           528000000
-                   pll1_sw     528000000
-                      arm      528000000
-396MHz:
-    pll2_pfd2_396m             396000000
-       ca7_secondary_sel       396000000
-          step                 396000000
-             pll1_sw           396000000
-                arm            396000000
-198MHz:
-    pll2_pfd2_396m             396000000
-       ca7_secondary_sel       396000000
-          step                 396000000
-             pll1_sw           396000000
-                arm            198000000
-
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-changes since v1:
-	redo the patch based on linux-next-pm.
- drivers/cpufreq/imx6q-cpufreq.c | 46 ++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 45 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 8bfb077..741f22e 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -136,6 +136,10 @@ static int imx6q_set_target(struct cpufreq_policy *policy, unsigned int index)
- 				       clks[PLL2_PFD2_396M].clk);
- 		clk_set_parent(clks[STEP].clk, clks[SECONDARY_SEL].clk);
- 		clk_set_parent(clks[PLL1_SW].clk, clks[STEP].clk);
-+		if (freq_hz > clk_get_rate(clks[PLL2_BUS].clk)) {
-+			clk_set_rate(clks[PLL1_SYS].clk, new_freq * 1000);
-+			clk_set_parent(clks[PLL1_SW].clk, clks[PLL1_SYS].clk);
-+		}
- 	} else {
- 		clk_set_parent(clks[STEP].clk, clks[PLL2_PFD2_396M].clk);
- 		clk_set_parent(clks[PLL1_SW].clk, clks[STEP].clk);
-@@ -260,6 +264,43 @@ static void imx6q_opp_check_speed_grading(struct device *dev)
- 	of_node_put(np);
- }
- 
-+#define OCOTP_CFG3_6UL_SPEED_696MHZ	0x2
-+
-+static void imx6ul_opp_check_speed_grading(struct device *dev)
-+{
-+	struct device_node *np;
-+	void __iomem *base;
-+	u32 val;
-+
-+	np = of_find_compatible_node(NULL, NULL, "fsl,imx6ul-ocotp");
-+	if (!np)
-+		return;
-+
-+	base = of_iomap(np, 0);
-+	if (!base) {
-+		dev_err(dev, "failed to map ocotp\n");
-+		goto put_node;
-+	}
-+
-+	/*
-+	 * Speed GRADING[1:0] defines the max speed of ARM:
-+	 * 2b'00: Reserved;
-+	 * 2b'01: 528000000Hz;
-+	 * 2b'10: 696000000Hz;
-+	 * 2b'11: Reserved;
-+	 * We need to set the max speed of ARM according to fuse map.
-+	 */
-+	val = readl_relaxed(base + OCOTP_CFG3);
-+	val >>= OCOTP_CFG3_SPEED_SHIFT;
-+	val &= 0x3;
-+	if (val != OCOTP_CFG3_6UL_SPEED_696MHZ)
-+		if (dev_pm_opp_disable(dev, 696000000))
-+			dev_warn(dev, "failed to disable 696MHz OPP\n");
-+	iounmap(base);
-+put_node:
-+	of_node_put(np);
-+}
-+
- static int imx6q_cpufreq_probe(struct platform_device *pdev)
- {
- 	struct device_node *np;
-@@ -314,7 +355,10 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		goto put_reg;
- 	}
- 
--	imx6q_opp_check_speed_grading(cpu_dev);
-+	if (of_machine_is_compatible("fsl,imx6ul"))
-+		imx6ul_opp_check_speed_grading(cpu_dev);
-+	else
-+		imx6q_opp_check_speed_grading(cpu_dev);
- 
- 	/* Because we have added the OPPs here, we must free them */
- 	free_opp = true;
--- 
-1.9.1
+SGksIFJhZmFlbA0KDQpCZXN0IFJlZ2FyZHMhDQpBbnNvbiBIdWFuZw0KDQoNCj4gLS0tLS1Pcmln
+aW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogcmp3eXNvY2tpQGdtYWlsLmNvbSBbbWFpbHRvOnJq
+d3lzb2NraUBnbWFpbC5jb21dIE9uIEJlaGFsZiBPZiBSYWZhZWwNCj4gSi4gV3lzb2NraQ0KPiBT
+ZW50OiAyMDE4LTAxLTA1IDg6MjEgUE0NCj4gVG86IEFuc29uIEh1YW5nIDxhbnNvbi5odWFuZ0Bu
+eHAuY29tPg0KPiBDYzogbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnOyBkZXZp
+Y2V0cmVlQHZnZXIua2VybmVsLm9yZzsgTGludXgNCj4gUE0gPGxpbnV4LXBtQHZnZXIua2VybmVs
+Lm9yZz47IExpbnV4IEtlcm5lbCBNYWlsaW5nIExpc3QgPGxpbnV4LQ0KPiBrZXJuZWxAdmdlci5r
+ZXJuZWwub3JnPjsgU2hhd24gR3VvIDxzaGF3bmd1b0BrZXJuZWwub3JnPjsgU2FzY2hhIEhhdWVy
+DQo+IDxrZXJuZWxAcGVuZ3V0cm9uaXguZGU+OyBGYWJpbyBFc3RldmFtIDxmYWJpby5lc3RldmFt
+QG54cC5jb20+OyBSb2INCj4gSGVycmluZyA8cm9iaCtkdEBrZXJuZWwub3JnPjsgTWFyayBSdXRs
+YW5kIDxtYXJrLnJ1dGxhbmRAYXJtLmNvbT47DQo+IFJ1c3NlbGwgS2luZyAtIEFSTSBMaW51eCA8
+bGludXhAYXJtbGludXgub3JnLnVrPjsgUmFmYWVsIEouIFd5c29ja2kNCj4gPHJqd0Byand5c29j
+a2kubmV0PjsgVmlyZXNoIEt1bWFyIDx2aXJlc2gua3VtYXJAbGluYXJvLm9yZz47IEphY2t5IEJh
+aQ0KPiA8cGluZy5iYWlAbnhwLmNvbT47IEEucy4gRG9uZyA8YWlzaGVuZy5kb25nQG54cC5jb20+
+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi8yXSBjcHVmcmVxOiBpbXg2cTogYWRkIDY5Nk1IeiBv
+cGVyYXRpbmcgcG9pbnQgZm9yDQo+IGkubXg2dWwNCj4gDQo+IE9uIFR1ZSwgSmFuIDIsIDIwMTgg
+YXQgNjowNyBQTSwgQW5zb24gSHVhbmcgPEFuc29uLkh1YW5nQG54cC5jb20+IHdyb3RlOg0KPiA+
+IEFkZCA2OTZNSHogb3BlcmF0aW5nIHBvaW50IGZvciBpLk1YNlVMLCBvbmx5IGZvciB0aG9zZSBw
+YXJ0cyB3aXRoDQo+ID4gc3BlZWQgZ3JhZGluZyBmdXNlIHNldCB0byAyYicxMCBzdXBwb3J0cyA2
+OTZNSHogb3BlcmF0aW5nIHBvaW50LCBzbywNCj4gPiBzcGVlZCBncmFkaW5nIGNoZWNrIGlzIGFs
+c28gYWRkZWQgZm9yIGkuTVg2VUwgaW4gdGhpcyBwYXRjaCwgdGhlIGNsb2NrDQo+ID4gdHJlZSBm
+b3IgZWFjaCBvcGVyYXRpbmcgcG9pbnQgYXJlIGFzIGJlbG93Og0KPiA+DQo+ID4gNjk2TUh6Og0K
+PiA+ICAgICBwbGwxICAgICAgICAgICAgICAgICAgICAgICA2OTYwMDAwMDANCj4gPiAgICAgICAg
+cGxsMV9ieXBhc3MgICAgICAgICAgICAgNjk2MDAwMDAwDQo+ID4gICAgICAgICAgIHBsbDFfc3lz
+ICAgICAgICAgICAgIDY5NjAwMDAwMA0KPiA+ICAgICAgICAgICAgICBwbGwxX3N3ICAgICAgICAg
+ICA2OTYwMDAwMDANCj4gPiAgICAgICAgICAgICAgICAgYXJtICAgICAgICAgICAgNjk2MDAwMDAw
+DQo+ID4gNTI4TUh6Og0KPiA+ICAgICBwbGwyICAgICAgICAgICAgICAgICAgICAgICA1MjgwMDAw
+MDANCj4gPiAgICAgICAgcGxsMl9ieXBhc3MgICAgICAgICAgICAgNTI4MDAwMDAwDQo+ID4gICAg
+ICAgICAgIHBsbDJfYnVzICAgICAgICAgICAgIDUyODAwMDAwMA0KPiA+ICAgICAgICAgICAgICBj
+YTdfc2Vjb25kYXJ5X3NlbCA1MjgwMDAwMDANCj4gPiAgICAgICAgICAgICAgICAgc3RlcCAgICAg
+ICAgICAgNTI4MDAwMDAwDQo+ID4gICAgICAgICAgICAgICAgICAgIHBsbDFfc3cgICAgIDUyODAw
+MDAwMA0KPiA+ICAgICAgICAgICAgICAgICAgICAgICBhcm0gICAgICA1MjgwMDAwMDANCj4gPiAz
+OTZNSHo6DQo+ID4gICAgIHBsbDJfcGZkMl8zOTZtICAgICAgICAgICAgIDM5NjAwMDAwMA0KPiA+
+ICAgICAgICBjYTdfc2Vjb25kYXJ5X3NlbCAgICAgICAzOTYwMDAwMDANCj4gPiAgICAgICAgICAg
+c3RlcCAgICAgICAgICAgICAgICAgMzk2MDAwMDAwDQo+ID4gICAgICAgICAgICAgIHBsbDFfc3cg
+ICAgICAgICAgIDM5NjAwMDAwMA0KPiA+ICAgICAgICAgICAgICAgICBhcm0gICAgICAgICAgICAz
+OTYwMDAwMDANCj4gPiAxOThNSHo6DQo+ID4gICAgIHBsbDJfcGZkMl8zOTZtICAgICAgICAgICAg
+IDM5NjAwMDAwMA0KPiA+ICAgICAgICBjYTdfc2Vjb25kYXJ5X3NlbCAgICAgICAzOTYwMDAwMDAN
+Cj4gPiAgICAgICAgICAgc3RlcCAgICAgICAgICAgICAgICAgMzk2MDAwMDAwDQo+ID4gICAgICAg
+ICAgICAgIHBsbDFfc3cgICAgICAgICAgIDM5NjAwMDAwMA0KPiA+ICAgICAgICAgICAgICAgICBh
+cm0gICAgICAgICAgICAxOTgwMDAwMDANCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEFuc29uIEh1
+YW5nIDxBbnNvbi5IdWFuZ0BueHAuY29tPg0KPiANCj4gVGhpcyBkb2Vzbid0IGFwcGx5IGZvciBt
+ZSBhbmQgaW4gYSBub250cml2aWFsIHdheS4NCj4gDQo+IFdoYXQga2VybmVsIGlzIGl0IGFnYWlu
+c3Q/DQoNCkkgZGlkIGl0IGJhc2VkIG9uIGxpbnV4LW5leHQsIGl0IHNob3VsZCBiZSBvbiBsaW51
+eC1uZXh0LXBtIGJyYW5jaCwgSSByZWRvDQp0aGUgcGF0Y2ggc2V0IFYyIGJhc2VkIG9uIGxpbnV4
+LW5leHQtcG0sIGFsc28gcmVkbyB0aGUgdGVzdCwNCnNvcnJ5IGZvciB0aGUgaW5jb252ZW5pZW5j
+ZS4NCg0KQW5zb24uDQoNCj4gDQo+ID4gLS0tDQo+ID4gIGRyaXZlcnMvY3B1ZnJlcS9pbXg2cS1j
+cHVmcmVxLmMgfCA0Ng0KPiA+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KystDQo+ID4gIDEgZmlsZSBjaGFuZ2VkLCA0NSBpbnNlcnRpb25zKCspLCAxIGRlbGV0aW9uKC0p
+DQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYw0K
+PiA+IGIvZHJpdmVycy9jcHVmcmVxL2lteDZxLWNwdWZyZXEuYyBpbmRleCBkOWIyYzJkLi5jYmRh
+MGNjIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9pbXg2cS1jcHVmcmVxLmMNCj4g
+PiArKysgYi9kcml2ZXJzL2NwdWZyZXEvaW14NnEtY3B1ZnJlcS5jDQo+ID4gQEAgLTEyMCw2ICsx
+MjAsMTAgQEAgc3RhdGljIGludCBpbXg2cV9zZXRfdGFyZ2V0KHN0cnVjdCBjcHVmcmVxX3BvbGlj
+eQ0KPiAqcG9saWN5LCB1bnNpZ25lZCBpbnQgaW5kZXgpDQo+ID4gICAgICAgICAgICAgICAgICAg
+ICAgICAgY2xrX3NldF9wYXJlbnQoc2Vjb25kYXJ5X3NlbF9jbGssIHBsbDJfcGZkMl8zOTZtX2Ns
+ayk7DQo+ID4gICAgICAgICAgICAgICAgIGNsa19zZXRfcGFyZW50KHN0ZXBfY2xrLCBzZWNvbmRh
+cnlfc2VsX2Nsayk7DQo+ID4gICAgICAgICAgICAgICAgIGNsa19zZXRfcGFyZW50KHBsbDFfc3df
+Y2xrLCBzdGVwX2Nsayk7DQo+ID4gKyAgICAgICAgICAgICAgIGlmIChmcmVxX2h6ID4gY2xrX2dl
+dF9yYXRlKHBsbDJfYnVzX2NsaykpIHsNCj4gPiArICAgICAgICAgICAgICAgICAgICAgICBjbGtf
+c2V0X3JhdGUocGxsMV9zeXNfY2xrLCBuZXdfZnJlcSAqIDEwMDApOw0KPiA+ICsgICAgICAgICAg
+ICAgICAgICAgICAgIGNsa19zZXRfcGFyZW50KHBsbDFfc3dfY2xrLCBwbGwxX3N5c19jbGspOw0K
+PiA+ICsgICAgICAgICAgICAgICB9DQo+ID4gICAgICAgICB9IGVsc2Ugew0KPiA+ICAgICAgICAg
+ICAgICAgICBjbGtfc2V0X3BhcmVudChzdGVwX2NsaywgcGxsMl9wZmQyXzM5Nm1fY2xrKTsNCj4g
+PiAgICAgICAgICAgICAgICAgY2xrX3NldF9wYXJlbnQocGxsMV9zd19jbGssIHN0ZXBfY2xrKTsg
+QEAgLTI0NCw2DQo+ID4gKzI0OCw0MyBAQCBzdGF0aWMgdm9pZCBpbXg2cV9vcHBfY2hlY2tfc3Bl
+ZWRfZ3JhZGluZyhzdHJ1Y3QgZGV2aWNlICpkZXYpDQo+ID4gICAgICAgICBvZl9ub2RlX3B1dChu
+cCk7DQo+ID4gIH0NCj4gPg0KPiA+ICsjZGVmaW5lIE9DT1RQX0NGRzNfNlVMX1NQRUVEXzY5Nk1I
+WiAgICAweDINCj4gPiArDQo+ID4gK3N0YXRpYyB2b2lkIGlteDZ1bF9vcHBfY2hlY2tfc3BlZWRf
+Z3JhZGluZyhzdHJ1Y3QgZGV2aWNlICpkZXYpIHsNCj4gPiArICAgICAgIHN0cnVjdCBkZXZpY2Vf
+bm9kZSAqbnA7DQo+ID4gKyAgICAgICB2b2lkIF9faW9tZW0gKmJhc2U7DQo+ID4gKyAgICAgICB1
+MzIgdmFsOw0KPiA+ICsNCj4gPiArICAgICAgIG5wID0gb2ZfZmluZF9jb21wYXRpYmxlX25vZGUo
+TlVMTCwgTlVMTCwgImZzbCxpbXg2dWwtb2NvdHAiKTsNCj4gPiArICAgICAgIGlmICghbnApDQo+
+ID4gKyAgICAgICAgICAgICAgIHJldHVybjsNCj4gPiArDQo+ID4gKyAgICAgICBiYXNlID0gb2Zf
+aW9tYXAobnAsIDApOw0KPiA+ICsgICAgICAgaWYgKCFiYXNlKSB7DQo+ID4gKyAgICAgICAgICAg
+ICAgIGRldl9lcnIoZGV2LCAiZmFpbGVkIHRvIG1hcCBvY290cFxuIik7DQo+ID4gKyAgICAgICAg
+ICAgICAgIGdvdG8gcHV0X25vZGU7DQo+ID4gKyAgICAgICB9DQo+ID4gKw0KPiA+ICsgICAgICAg
+LyoNCj4gPiArICAgICAgICAqIFNwZWVkIEdSQURJTkdbMTowXSBkZWZpbmVzIHRoZSBtYXggc3Bl
+ZWQgb2YgQVJNOg0KPiA+ICsgICAgICAgICogMmInMDA6IFJlc2VydmVkOw0KPiA+ICsgICAgICAg
+ICogMmInMDE6IDUyODAwMDAwMEh6Ow0KPiA+ICsgICAgICAgICogMmInMTA6IDY5NjAwMDAwMEh6
+Ow0KPiA+ICsgICAgICAgICogMmInMTE6IFJlc2VydmVkOw0KPiA+ICsgICAgICAgICogV2UgbmVl
+ZCB0byBzZXQgdGhlIG1heCBzcGVlZCBvZiBBUk0gYWNjb3JkaW5nIHRvIGZ1c2UgbWFwLg0KPiA+
+ICsgICAgICAgICovDQo+ID4gKyAgICAgICB2YWwgPSByZWFkbF9yZWxheGVkKGJhc2UgKyBPQ09U
+UF9DRkczKTsNCj4gPiArICAgICAgIHZhbCA+Pj0gT0NPVFBfQ0ZHM19TUEVFRF9TSElGVDsNCj4g
+PiArICAgICAgIHZhbCAmPSAweDM7DQo+ID4gKyAgICAgICBpZiAodmFsICE9IE9DT1RQX0NGRzNf
+NlVMX1NQRUVEXzY5Nk1IWikNCj4gPiArICAgICAgICAgICAgICAgaWYgKGRldl9wbV9vcHBfZGlz
+YWJsZShkZXYsIDY5NjAwMDAwMCkpDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgZGV2X3dh
+cm4oZGV2LCAiZmFpbGVkIHRvIGRpc2FibGUgNjk2TUh6IE9QUFxuIik7DQo+ID4gKyAgICAgICBp
+b3VubWFwKGJhc2UpOw0KPiA+ICtwdXRfbm9kZToNCj4gPiArICAgICAgIG9mX25vZGVfcHV0KG5w
+KTsNCj4gPiArfQ0KPiA+ICsNCj4gPiAgc3RhdGljIGludCBpbXg2cV9jcHVmcmVxX3Byb2JlKHN0
+cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpICB7DQo+ID4gICAgICAgICBzdHJ1Y3QgZGV2aWNl
+X25vZGUgKm5wOw0KPiA+IEBAIC0zMTEsNyArMzUyLDEwIEBAIHN0YXRpYyBpbnQgaW14NnFfY3B1
+ZnJlcV9wcm9iZShzdHJ1Y3QNCj4gcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+ICAgICAgICAg
+ICAgICAgICBnb3RvIHB1dF9yZWc7DQo+ID4gICAgICAgICB9DQo+ID4NCj4gPiAtICAgICAgIGlt
+eDZxX29wcF9jaGVja19zcGVlZF9ncmFkaW5nKGNwdV9kZXYpOw0KPiA+ICsgICAgICAgaWYgKG9m
+X21hY2hpbmVfaXNfY29tcGF0aWJsZSgiZnNsLGlteDZ1bCIpKQ0KPiA+ICsgICAgICAgICAgICAg
+ICBpbXg2dWxfb3BwX2NoZWNrX3NwZWVkX2dyYWRpbmcoY3B1X2Rldik7DQo+ID4gKyAgICAgICBl
+bHNlDQo+ID4gKyAgICAgICAgICAgICAgIGlteDZxX29wcF9jaGVja19zcGVlZF9ncmFkaW5nKGNw
+dV9kZXYpOw0KPiA+DQo+ID4gICAgICAgICAvKiBCZWNhdXNlIHdlIGhhdmUgYWRkZWQgdGhlIE9Q
+UHMgaGVyZSwgd2UgbXVzdCBmcmVlIHRoZW0gKi8NCj4gPiAgICAgICAgIGZyZWVfb3BwID0gdHJ1
+ZTsNCj4gPiAtLQ0KPiA+IDEuOS4xDQo+ID4NCg==
