@@ -1,65 +1,183 @@
 From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [BUG] schedutil governor produces regular max freq spikes because of lockup detector watchdog threads
-Date: Sat, 6 Jan 2018 08:12:52 -0800
-Message-ID: <000001d38709$363d5180$a2b7f480$@net>
+Subject: RE: [PATCH V4] cpufreq: intel_pstate: allow trace in passive mode
+Date: Sat, 6 Jan 2018 08:40:34 -0800
+Message-ID: <000101d3870d$150c7960$3f256c20$@net>
+References: <1515190444-3254-1-git-send-email-dsmythies@telus.net> XaqeeUTMLTqmMXaqfe1WhS
 Mime-Version: 1.0
 Content-Type: text/plain;
         charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-References: XYkGesLZd7WleXYkHe0H9k
-In-Reply-To: XYkGesLZd7WleXYkHe0H9k
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from cmta18.telus.net ([209.171.16.91]:59943 "EHLO cmta18.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753586AbeAFQkk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 6 Jan 2018 11:40:40 -0500
+In-Reply-To: XaqeeUTMLTqmMXaqfe1WhS
 Content-Language: en-ca
-Sender: linux-kernel-owner@vger.kernel.org
-To: 'Leonard Crestez' <leonard.crestez@nxp.com>, linux-pm@vger.kernel.org, 'Viresh Kumar' <viresh.kumar@linaro.org>, "'Rafael J. Wysocki'" <rafael@kernel.org>, 'Steve Muckle' <smuckle@linaro.org>
-Cc: 'Anson Huang' <anson.huang@nxp.com>, linux-kernel@vger.kernel.org, Doug Smythies <dsmythies@telus.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "'Rafael J. Wysocki'" <rafael@kernel.org>
+Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-On 2018.01.05 12:38 Leonard Crestez wrote:
+On 2018.01.05 14:52 Rafael J. Wysocki wrote:
+> On Fri, Jan 5, 2018 at 11:14 PM, Doug Smythies <doug.smythies@gmail.com> wrote:
 
-> When using the schedutil governor together with the softlockup detector
-> all CPUs go to their maximum frequency on a regular basis. This seems
-> to be because the watchdog creates a RT thread on each CPU and this
-> causes regular kicks with:
+>> Allow use of the trace_pstate_sample trace function
+>> when the intel_pstate driver is in passive mode.
+>> Since the core_busy and scaled_busy fields are not
+>> used, and it might be desirable to know which path
+>> through the driver was used, either intel_cpufreq_target
+>> or intel_cpufreq_fast_switch, re-task the core_busy
+>> field as a flag indicator.
+>>
+>> The user can then use the intel_pstate_tracer.py utility
+>> to summarize and plot the trace.
+>>
+>> Sometimes, in passive mode, the driver is not called for
+>> many tens or even hundreds of seconds. The user
+>> needs to understand, and not be confused by, this limitation.
 >
->    cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_RT);
+> The description of the changes between different versions should go
+> under the Signed-off-by: tag, separated by an extra "---" from it.
+
+O.K. sorry.
+
+> Also please see a couple of cosmetic comments below.
 >
-> The schedutil governor responds to this by immediately setting the
-> maximum cpu frequency, this is very undesirable.
+>> V4: Only execute the trace specific overhead code if trace
+>>     is enabled. Suggested by Srinivas Pandruvada.
+>>
+>> V3: Move largely duplicate code to a subroutine.
+>>     Suggested by Rafael J. Wysocki.
+>>
+>> V2: prepare for resend. Rebase to current kernel, 4.15-rc3.
+>> Signed-off-by: Doug Smythies <dsmythies@telus.net>
+>> ---
+>>  drivers/cpufreq/intel_pstate.c | 35 +++++++++++++++++++++++++++++++++--
+>>  1 file changed, 33 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+>> index 93a0e88..53bb953 100644
+>> --- a/drivers/cpufreq/intel_pstate.c
+>> +++ b/drivers/cpufreq/intel_pstate.c
+>> @@ -1943,13 +1943,40 @@ static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
+>>         return 0;
+>>  }
+>>
+>> +static void intel_cpufreq_trace(struct cpudata *cpu, int fast, int from)
 >
-> The issue can be fixed by this patch from android:
->     https://patchwork.kernel.org/patch/9301909/
+> Please use "bool" for "fast" and I'd call it "fast_switch".
+
+O.K. thanks.
+
+>> +{
+>> +       struct sample *sample;
+>> +       u64 time;
+>> +
+>> +       time = ktime_get();
 >
-> The patch stalled in a long discussion about how it's difficult for
-> cpufreq to deal with RT and how some RT users might just disable
-> cpufreq. It is indeed hard but if the system experiences regular power
-> kicks from a common debug feature they will end up disabling schedutil
-> instead. No other governors behave this way, perhaps the current
-> behavior should be considered a bug in schedutil.
+> It is pointless to evaluate ktime_get() if
+> trace_pstate_sample_enabled() returns "false".
+
+Of course, thanks.
+
+>> +       if (trace_pstate_sample_enabled()) {
+>> +               if (intel_pstate_sample(cpu, time)) {
 >
-> That patch now has conflicts with latest upstream. Perhaps a modified
-> variant should be reconsidered for inclusion, or is there some other
-> solution pending?
+> And the extra indentation here is not very useful, so I'd write it as
 >
-> Alternatively the watchdog threads could be somehow marked as to never
-> cause increased cpufreq.
+> if (!trace_pstate_sample_enabled())
+>        return;
+>
+> if (!intel_pstate_sample(cpu, ktime_get()))
+>        return;
+>
+> (note that you don't need the "time" variable any more with this).
 
-Your e-mail was very timely for me. In mid December, while testing the
-minimum sampling rate change commit, I also did a reference test using
-intel-cpufreq driver and schedutil governor. Under a range of
-conditions 79% more package power was consumed by schedutil when compared
-to: ondemand, sample rate 2 mSec; ondemand, sample rate 20 mSec;
-intel_pstate driver.
+That is much better, Thanks.
 
-I did not know about the thread and patch you referred to. Thanks.
+>> +                       sample = &cpu->sample;
+>> +                       /* In passvie mode the trace core_busy field is
+>
+> "passive" (typo)
+>
+>> +                        * re-assigned to indicate if the driver call
+>> +                        * was via the normal or fast switch path.
+>> +                        * The scaled_busy field is not used, set to 0.
+>> +                        */
+>> +                       trace_pstate_sample(fast,
+>> +                               0,
+>> +                               from,
+>> +                               cpu->pstate.current_pstate,
+>> +                               sample->mperf,
+>> +                               sample->aperf,
+>> +                               sample->tsc,
+>> +                               get_avg_frequency(cpu),
+>> +                               fp_toint(cpu->iowait_boost * 100));
+>> +               }
+>> +       }
+>> +}
+>> +
+>>  static int intel_cpufreq_target(struct cpufreq_policy *policy,
+>>                                 unsigned int target_freq,
+>>                                 unsigned int relation)
+>>  {
+>>         struct cpudata *cpu = all_cpu_data[policy->cpu];
+>>         struct cpufreq_freqs freqs;
+>> -       int target_pstate;
+>> +       int target_pstate, from;
+>
+> I would call the new variable "old_pstate" or "orig_pstate" (so that
+> it is visibly clear that it represents a P-state).
 
-Additionally, on otherwise mostly idle CPUs, sometimes I observe that after
-the setting of max pstate, it gets left there with no update at all for
-over a hundred seconds. Examples:
+O.K.
+I used "from" because that is what Dirk called it in the trace buffer stuff. 
 
-CPU3: 165 seconds since change to max pstate; Load 0.07%; new pstate = minimum
-CPU5: 121 seconds since change to max pstate; Load 0.47%; new pstate = mid range
+>>
+>>         update_turbo_state();
+>>
+>> @@ -1969,12 +1996,14 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
+>>                 break;
+>>         }
+>>         target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
+>> +       from = cpu->pstate.current_pstate;
+>>         if (target_pstate != cpu->pstate.current_pstate) {
+>>                 cpu->pstate.current_pstate = target_pstate;
+>>                 wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
+>>                               pstate_funcs.get_val(cpu, target_pstate));
+>>         }
+>>         freqs.new = target_pstate * cpu->pstate.scaling;
+>> +       intel_cpufreq_trace(cpu, 0, from);
+>>         cpufreq_freq_transition_end(policy, &freqs, false);
+>>
+>>         return 0;
+>> @@ -1984,13 +2013,15 @@ static unsigned int intel_cpufreq_fast_switch(struct cpufreq_policy *policy,
+>>                                               unsigned int target_freq)
+>>  {
+>>         struct cpudata *cpu = all_cpu_data[policy->cpu];
+>> -       int target_pstate;
+>> +       int target_pstate, from;
+>>
+>>         update_turbo_state();
+>>
+>>         target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
+>>         target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
+>> +       from = cpu->pstate.current_pstate;
+>>         intel_pstate_update_pstate(cpu, target_pstate);
+>> +       intel_cpufreq_trace(cpu, 100, from);
+>
+> Why are you passing 100 here?  Anything different from 0 should
+> suffice, 1 in particular.  And I'd pass "false" or "true" (they will
+> be converted to 0 and 1 for output anyway).
 
-Reference (for me only): trace_stuff/results/pass24 samples 59797 and 59803
+Well, I wanted to just re-use the existing graphs generated by
+tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
+and so wanted to pass 0 or 100% to it. On purpose, those graphs
+do not autoscale on the y-axis.
 
-... Doug
+When investigating, the graphs can be used as a way to determine
+where to look in more detail at the raw csv files.
+
+>>         return target_pstate * cpu->pstate.scaling;
+>>  }
+>>
