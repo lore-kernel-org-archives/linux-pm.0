@@ -1,191 +1,107 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V4] cpufreq: intel_pstate: allow trace in passive mode
-Date: Mon, 08 Jan 2018 00:40:11 +0100
-Message-ID: <4147417.kcaZgZAipQ@aspire.rjw.lan>
-References: <1515190444-3254-1-git-send-email-dsmythies@telus.net> <000101d3870d$150c7960$3f256c20$@net>
+Subject: Re: [patch]: do not subtract NR_FILE_MAPPED in minimum_image_size()
+Date: Mon, 08 Jan 2018 00:41:15 +0100
+Message-ID: <12439401.CpEFC8q8uM@aspire.rjw.lan>
+References: <8acc18d9-ba18-21f6-ea33-d47a6596586c@mailbox.org> <7443072.0TraN5b7mn@aspire.rjw.lan> <e73de831-7ba2-42ce-fc6c-572b4b7b5979@mailbox.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:47014 "EHLO
+Received: from cloudserver094114.home.pl ([79.96.170.134]:41852 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754649AbeAGXlV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jan 2018 18:41:21 -0500
-In-Reply-To: <000101d3870d$150c7960$3f256c20$@net>
+        with ESMTP id S1754649AbeAGXmZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jan 2018 18:42:25 -0500
+In-Reply-To: <e73de831-7ba2-42ce-fc6c-572b4b7b5979@mailbox.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Doug Smythies <dsmythies@telus.net>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>
+To: Rainer Fiebig <jrf@mailbox.org>
+Cc: linux-pm@vger.kernel.org, Thorsten Leemhuis <thl@ct.de>
 
-On Saturday, January 6, 2018 5:40:34 PM CET Doug Smythies wrote:
-> On 2018.01.05 14:52 Rafael J. Wysocki wrote:
-> > On Fri, Jan 5, 2018 at 11:14 PM, Doug Smythies <doug.smythies@gmail.com> wrote:
+On Friday, January 5, 2018 6:26:25 PM CET Rainer Fiebig wrote:
+>  This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+> --mE0npTCo0y6m1aIg1zoUzXqdMqby7xbmy
+> Content-Type: multipart/mixed; boundary="f6rtsVlzN2rzdl3eJl68BRUHIV7FJFIDu";
+>  protected-headers="v1"
+> From: Rainer Fiebig <jrf@mailbox.org>
+> To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: linux-pm@vger.kernel.org, Thorsten Leemhuis <thl@ct.de>
+> Message-ID: <e73de831-7ba2-42ce-fc6c-572b4b7b5979@mailbox.org>
+> Subject: Re: [patch]: do not subtract NR_FILE_MAPPED in minimum_image_size()
+> References: <8acc18d9-ba18-21f6-ea33-d47a6596586c@mailbox.org>
+>  <7443072.0TraN5b7mn@aspire.rjw.lan>
+> In-Reply-To: <7443072.0TraN5b7mn@aspire.rjw.lan>
 > 
-> >> Allow use of the trace_pstate_sample trace function
-> >> when the intel_pstate driver is in passive mode.
-> >> Since the core_busy and scaled_busy fields are not
-> >> used, and it might be desirable to know which path
-> >> through the driver was used, either intel_cpufreq_target
-> >> or intel_cpufreq_fast_switch, re-task the core_busy
-> >> field as a flag indicator.
+> --f6rtsVlzN2rzdl3eJl68BRUHIV7FJFIDu
+> Content-Type: text/plain; charset=UTF-8
+> Content-Transfer-Encoding: quoted-printable
+> 
+> Rafael J. Wysocki wrote:
+> > On Friday, December 22, 2017 11:13:59 AM CET Rainer Fiebig wrote:
+> >> Hi!
 > >>
-> >> The user can then use the intel_pstate_tracer.py utility
-> >> to summarize and plot the trace.
+> >> s2disk/s2both may fail unnecessarily and erratically if NR_FILE_MAPPED=
+> 
+> >> is high - for instance when using VMs with VirtualBox and perhaps VMwa=
+> re
+> >> Player. In those situations s2disk becomes unreliable and therefore
+> >> unusable.
 > >>
-> >> Sometimes, in passive mode, the driver is not called for
-> >> many tens or even hundreds of seconds. The user
-> >> needs to understand, and not be confused by, this limitation.
-> >
-> > The description of the changes between different versions should go
-> > under the Signed-off-by: tag, separated by an extra "---" from it.
-> 
-> O.K. sorry.
-> 
-> > Also please see a couple of cosmetic comments below.
-> >
-> >> V4: Only execute the trace specific overhead code if trace
-> >>     is enabled. Suggested by Srinivas Pandruvada.
+> >> A typical scenario is: user issues a s2disk and it fails. User issues =
+> a
+> >> second s2disk immediately after that and it succeeds. And user wonders=
+>  why.
 > >>
-> >> V3: Move largely duplicate code to a subroutine.
-> >>     Suggested by Rafael J. Wysocki.
+> >> The problem is caused by minimum_image_size() in snapshot.c. The value=
+> 
+> >> it returns is roughly 100 % too high because NR_FILE_MAPPED is
+> >> subtracted in its calculation which is imo wrong. Eventually the numbe=
+> r
+> >> of preallocated image pages is falsely too low.
 > >>
-> >> V2: prepare for resend. Rebase to current kernel, 4.15-rc3.
-> >> Signed-off-by: Doug Smythies <dsmythies@telus.net>
-> >> ---
-> >>  drivers/cpufreq/intel_pstate.c | 35 +++++++++++++++++++++++++++++++++--
-> >>  1 file changed, 33 insertions(+), 2 deletions(-)
+> >> This doesn't matter as long as NR_FILE_MAPPED-values are in a normal
+> >> range or in 32bit-environments as the code allows for allocation of
+> >> additional pages from highmem.
 > >>
-> >> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> >> index 93a0e88..53bb953 100644
-> >> --- a/drivers/cpufreq/intel_pstate.c
-> >> +++ b/drivers/cpufreq/intel_pstate.c
-> >> @@ -1943,13 +1943,40 @@ static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
-> >>         return 0;
-> >>  }
-> >>
-> >> +static void intel_cpufreq_trace(struct cpudata *cpu, int fast, int from)
-> >
-> > Please use "bool" for "fast" and I'd call it "fast_switch".
+> >> But with the high values generated by VirtualBox-VMs (a 2-GB-VM causes=
 > 
-> O.K. thanks.
-> 
-> >> +{
-> >> +       struct sample *sample;
-> >> +       u64 time;
-> >> +
-> >> +       time = ktime_get();
-> >
-> > It is pointless to evaluate ktime_get() if
-> > trace_pstate_sample_enabled() returns "false".
-> 
-> Of course, thanks.
-> 
-> >> +       if (trace_pstate_sample_enabled()) {
-> >> +               if (intel_pstate_sample(cpu, time)) {
-> >
-> > And the extra indentation here is not very useful, so I'd write it as
-> >
-> > if (!trace_pstate_sample_enabled())
-> >        return;
-> >
-> > if (!intel_pstate_sample(cpu, ktime_get()))
-> >        return;
-> >
-> > (note that you don't need the "time" variable any more with this).
-> 
-> That is much better, Thanks.
-> 
-> >> +                       sample = &cpu->sample;
-> >> +                       /* In passvie mode the trace core_busy field is
-> >
-> > "passive" (typo)
-> >
-> >> +                        * re-assigned to indicate if the driver call
-> >> +                        * was via the normal or fast switch path.
-> >> +                        * The scaled_busy field is not used, set to 0.
-> >> +                        */
-> >> +                       trace_pstate_sample(fast,
-> >> +                               0,
-> >> +                               from,
-> >> +                               cpu->pstate.current_pstate,
-> >> +                               sample->mperf,
-> >> +                               sample->aperf,
-> >> +                               sample->tsc,
-> >> +                               get_avg_frequency(cpu),
-> >> +                               fp_toint(cpu->iowait_boost * 100));
-> >> +               }
-> >> +       }
-> >> +}
-> >> +
-> >>  static int intel_cpufreq_target(struct cpufreq_policy *policy,
-> >>                                 unsigned int target_freq,
-> >>                                 unsigned int relation)
-> >>  {
-> >>         struct cpudata *cpu = all_cpu_data[policy->cpu];
-> >>         struct cpufreq_freqs freqs;
-> >> -       int target_pstate;
-> >> +       int target_pstate, from;
-> >
-> > I would call the new variable "old_pstate" or "orig_pstate" (so that
-> > it is visibly clear that it represents a P-state).
-> 
-> O.K.
-> I used "from" because that is what Dirk called it in the trace buffer stuff. 
+> >> NR_FILE_MAPPED go up by 2 GB) it may lead to failure in 64bit-systems.=
 > 
 > >>
-> >>         update_turbo_state();
+> >> Not subtracting NR_FILE_MAPPED in minimum_image_size() solves the prob=
+> lem.
 > >>
-> >> @@ -1969,12 +1996,14 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
-> >>                 break;
-> >>         }
-> >>         target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-> >> +       from = cpu->pstate.current_pstate;
-> >>         if (target_pstate != cpu->pstate.current_pstate) {
-> >>                 cpu->pstate.current_pstate = target_pstate;
-> >>                 wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
-> >>                               pstate_funcs.get_val(cpu, target_pstate));
-> >>         }
-> >>         freqs.new = target_pstate * cpu->pstate.scaling;
-> >> +       intel_cpufreq_trace(cpu, 0, from);
-> >>         cpufreq_freq_transition_end(policy, &freqs, false);
+> >> I've done at least hundreds of successful s2both/s2disk now on an x86_=
+> 64
+> >> system (with and without VirtualBox) which gives me some confidence th=
+> at
+> >> this is right. It has turned s2disk/s2both from unusable into 100% rel=
+> iable.
 > >>
-> >>         return 0;
-> >> @@ -1984,13 +2013,15 @@ static unsigned int intel_cpufreq_fast_switch(struct cpufreq_policy *policy,
-> >>                                               unsigned int target_freq)
-> >>  {
-> >>         struct cpudata *cpu = all_cpu_data[policy->cpu];
-> >> -       int target_pstate;
-> >> +       int target_pstate, from;
+> >> As I don't have 32bit-equipment, I could not test it in such
+> >> environment, though.
 > >>
-> >>         update_turbo_state();
+> >> The problem has also been discussed in a bug-thread which I closed
+> >> myself because it obviously led to nowhere
+> >> (https://bugzilla.kernel.org/show_bug.cgi?id=3D97201).
 > >>
-> >>         target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
-> >>         target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-> >> +       from = cpu->pstate.current_pstate;
-> >>         intel_pstate_update_pstate(cpu, target_pstate);
-> >> +       intel_cpufreq_trace(cpu, 100, from);
-> >
-> > Why are you passing 100 here?  Anything different from 0 should
-> > suffice, 1 in particular.  And I'd pass "false" or "true" (they will
-> > be converted to 0 and 1 for output anyway).
+> >> Thoughts?
+> >=20
+> > Technically, it makes sense to me.
+> >=20
+> > The patch is missing a Signed-off-by: tag which strictly speaking is
+> > necessary for it to be applied, but I have added one for you speculativ=
+> ely.
+> > I need you to confirm that this is correct in accordance with the
+> > the Developer's Certificate of Origin section in
+> > Documentation/process/submitting-patches.rst, however.
+> >=20
 > 
-> Well, I wanted to just re-use the existing graphs generated by
-> tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-> and so wanted to pass 0 or 100% to it. On purpose, those graphs
-> do not autoscale on the y-axis.
-> 
-> When investigating, the graphs can be used as a way to determine
-> where to look in more detail at the raw csv files.
+> Very kind of you, thanks. I do confirm that the patch submitted by me is
+> in accordance with the a/m Developer's Certificate of Origin.
 
-OK, but that would require a comment at least.
+OK, thanks!
 
-I would #ifdef symbols for that, like INTEL_PSTATE_TRACE_FAST_SWITCH
-and INTEL_PSTATE_TRACE_TARGET or similar and define them as 100 and 0,
-respectively.
-
-I would call the corresponding function argument "trace_type" or
-similar (it should be u32 too) and I would explain in a comment
-why INTEL_PSTATE_TRACE_FAST_SWITCH is 100.
+Applied to my linux-next branch now.
 
 Thanks,
 Rafael
