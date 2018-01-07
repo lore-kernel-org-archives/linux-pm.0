@@ -1,87 +1,77 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 2/2] cpufreq: imx6q: add 696MHz operating point for i.mx6ul
-Date: Mon, 08 Jan 2018 00:34:00 +0100
-Message-ID: <2009633.KF2URkV5n1@aspire.rjw.lan>
-References: <1514912859-17691-1-git-send-email-Anson.Huang@nxp.com> <CAJZ5v0it+Gc5nTa5Vt8X8_OPHh6ndcQB3peAQA1SDsuQ2+FZKA@mail.gmail.com> <AM3PR04MB131556AF9BDE24E071A51300F51D0@AM3PR04MB1315.eurprd04.prod.outlook.com>
+Subject: Re: [PATCH v3 3/4] PM / wakeup: Add device_set_wakeup_path() helper to control wakeup path
+Date: Mon, 08 Jan 2018 00:34:29 +0100
+Message-ID: <2038838.WDDltxd3iX@aspire.rjw.lan>
+References: <1514909333-4450-1-git-send-email-ulf.hansson@linaro.org> <1514909333-4450-4-git-send-email-ulf.hansson@linaro.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <AM3PR04MB131556AF9BDE24E071A51300F51D0@AM3PR04MB1315.eurprd04.prod.outlook.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <anson.huang@nxp.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Jacky Bai <ping.bai@nxp.com>, "A.s. Dong" <aisheng.dong@nxp.com>
+Return-path: <linux-renesas-soc-owner@vger.kernel.org>
+In-Reply-To: <1514909333-4450-4-git-send-email-ulf.hansson@linaro.org>
+Sender: linux-renesas-soc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 
-On Saturday, January 6, 2018 4:05:41 AM CET Anson Huang wrote:
-> Hi, Rafael
+On Tuesday, January 2, 2018 5:08:52 PM CET Ulf Hansson wrote:
+> During system suspend, a driver may find that the wakeup setting is enabled
+> for its device and therefore configures it to deliver system wakeup
+> signals.
 > 
-> Best Regards!
-> Anson Huang
+> Additionally, sometimes the driver and its device, relies on some further
+> consumed resource, like an irqchip or a phy for example, to stay powered
+> on, as to be able to deliver system wakeup signals.
 > 
+> In general the driver deals with this, via raising an "enable count" of the
+> consumed resource or via a subsystem specific API, like irq_set_irq_wake()
+> or enable|disable_irq_wake() for an irqchip. However, this may not be
+> sufficient in cases when the resource's device may be attached to a PM
+> domain (genpd for example) or is attached to a non-trivial middle layer
+> (PCI for example).
 > 
-> > -----Original Message-----
-> > From: rjwysocki@gmail.com [mailto:rjwysocki@gmail.com] On Behalf Of Rafael
-> > J. Wysocki
-> > Sent: 2018-01-05 8:21 PM
-> > To: Anson Huang <anson.huang@nxp.com>
-> > Cc: linux-arm-kernel@lists.infradead.org; devicetree@vger.kernel.org; Linux
-> > PM <linux-pm@vger.kernel.org>; Linux Kernel Mailing List <linux-
-> > kernel@vger.kernel.org>; Shawn Guo <shawnguo@kernel.org>; Sascha Hauer
-> > <kernel@pengutronix.de>; Fabio Estevam <fabio.estevam@nxp.com>; Rob
-> > Herring <robh+dt@kernel.org>; Mark Rutland <mark.rutland@arm.com>;
-> > Russell King - ARM Linux <linux@armlinux.org.uk>; Rafael J. Wysocki
-> > <rjw@rjwysocki.net>; Viresh Kumar <viresh.kumar@linaro.org>; Jacky Bai
-> > <ping.bai@nxp.com>; A.s. Dong <aisheng.dong@nxp.com>
-> > Subject: Re: [PATCH 2/2] cpufreq: imx6q: add 696MHz operating point for
-> > i.mx6ul
-> > 
-> > On Tue, Jan 2, 2018 at 6:07 PM, Anson Huang <Anson.Huang@nxp.com> wrote:
-> > > Add 696MHz operating point for i.MX6UL, only for those parts with
-> > > speed grading fuse set to 2b'10 supports 696MHz operating point, so,
-> > > speed grading check is also added for i.MX6UL in this patch, the clock
-> > > tree for each operating point are as below:
-> > >
-> > > 696MHz:
-> > >     pll1                       696000000
-> > >        pll1_bypass             696000000
-> > >           pll1_sys             696000000
-> > >              pll1_sw           696000000
-> > >                 arm            696000000
-> > > 528MHz:
-> > >     pll2                       528000000
-> > >        pll2_bypass             528000000
-> > >           pll2_bus             528000000
-> > >              ca7_secondary_sel 528000000
-> > >                 step           528000000
-> > >                    pll1_sw     528000000
-> > >                       arm      528000000
-> > > 396MHz:
-> > >     pll2_pfd2_396m             396000000
-> > >        ca7_secondary_sel       396000000
-> > >           step                 396000000
-> > >              pll1_sw           396000000
-> > >                 arm            396000000
-> > > 198MHz:
-> > >     pll2_pfd2_396m             396000000
-> > >        ca7_secondary_sel       396000000
-> > >           step                 396000000
-> > >              pll1_sw           396000000
-> > >                 arm            198000000
-> > >
-> > > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> > 
-> > This doesn't apply for me and in a nontrivial way.
-> > 
-> > What kernel is it against?
+> To address cases like these, the existing ->dev.power.wakeup_path status
+> flag is there to help. As a matter of fact, genpd already monitors the flag
+> during system suspend and acts accordingly.
 > 
-> I did it based on linux-next, it should be on linux-next-pm branch, I redo
-> the patch set V2 based on linux-next-pm, also redo the test,
-> sorry for the inconvenience.
+> However, so far it has not been clear, if anybody else but the PM core is
+> allowed to set the ->dev.power.wakeup_path status flag, which is required
+> to make this work. For this reason, let's introduce a new helper function,
+> device_set_wakeup_path().
+> 
+> Typically a driver that manages a resource needed in the wakeup path,
+> should call device_set_wakeup_path() from its ->suspend() or
+> ->suspend_late() callback.
+> 
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+>  include/linux/pm_wakeup.h | 7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
+> diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
+> index 4c2cba7..4238dde 100644
+> --- a/include/linux/pm_wakeup.h
+> +++ b/include/linux/pm_wakeup.h
+> @@ -88,6 +88,11 @@ static inline bool device_may_wakeup(struct device *dev)
+>  	return dev->power.can_wakeup && !!dev->power.wakeup;
+>  }
+>  
+> +static inline void device_set_wakeup_path(struct device *dev)
+> +{
+> +	dev->power.wakeup_path = true;
+> +}
+> +
+>  /* drivers/base/power/wakeup.c */
+>  extern void wakeup_source_prepare(struct wakeup_source *ws, const char *name);
+>  extern struct wakeup_source *wakeup_source_create(const char *name);
+> @@ -174,6 +179,8 @@ static inline bool device_may_wakeup(struct device *dev)
+>  	return dev->power.can_wakeup && dev->power.should_wakeup;
+>  }
+>  
+> +static inline void device_set_wakeup_path(struct device *dev) {}
+> +
+>  static inline void __pm_stay_awake(struct wakeup_source *ws) {}
+>  
+>  static inline void pm_stay_awake(struct device *dev) {}
+> 
 
-But you didn't add the Reviewed-by: tags from Fabio to them.
-
-Was that on purpose or by mistake?
-
-Thanks,
-Rafael
+Applied, thanks!
