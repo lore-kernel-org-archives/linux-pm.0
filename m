@@ -1,183 +1,87 @@
-From: "Doug Smythies" <dsmythies@telus.net>
-Subject: RE: [PATCH V4] cpufreq: intel_pstate: allow trace in passive mode
-Date: Sat, 6 Jan 2018 08:40:34 -0800
-Message-ID: <000101d3870d$150c7960$3f256c20$@net>
-References: <1515190444-3254-1-git-send-email-dsmythies@telus.net> XaqeeUTMLTqmMXaqfe1WhS
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 2/2] cpufreq: imx6q: add 696MHz operating point for i.mx6ul
+Date: Mon, 08 Jan 2018 00:34:00 +0100
+Message-ID: <2009633.KF2URkV5n1@aspire.rjw.lan>
+References: <1514912859-17691-1-git-send-email-Anson.Huang@nxp.com> <CAJZ5v0it+Gc5nTa5Vt8X8_OPHh6ndcQB3peAQA1SDsuQ2+FZKA@mail.gmail.com> <AM3PR04MB131556AF9BDE24E071A51300F51D0@AM3PR04MB1315.eurprd04.prod.outlook.com>
 Mime-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cmta18.telus.net ([209.171.16.91]:59943 "EHLO cmta18.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1753586AbeAFQkk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 6 Jan 2018 11:40:40 -0500
-In-Reply-To: XaqeeUTMLTqmMXaqfe1WhS
-Content-Language: en-ca
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <AM3PR04MB131556AF9BDE24E071A51300F51D0@AM3PR04MB1315.eurprd04.prod.outlook.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Anson Huang <anson.huang@nxp.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, Viresh Kumar <viresh.kumar@linaro.org>, Jacky Bai <ping.bai@nxp.com>, "A.s. Dong" <aisheng.dong@nxp.com>
 List-Id: linux-pm@vger.kernel.org
-To: "'Rafael J. Wysocki'" <rafael@kernel.org>
-Cc: 'Srinivas Pandruvada' <srinivas.pandruvada@linux.intel.com>, "'Rafael J. Wysocki'" <rjw@rjwysocki.net>, 'Linux Kernel Mailing List' <linux-kernel@vger.kernel.org>, 'Linux PM' <linux-pm@vger.kernel.org>, Doug Smythies <dsmythies@telus.net>
 
-On 2018.01.05 14:52 Rafael J. Wysocki wrote:
-> On Fri, Jan 5, 2018 at 11:14 PM, Doug Smythies <doug.smythies@gmail.com> wrote:
+On Saturday, January 6, 2018 4:05:41 AM CET Anson Huang wrote:
+> Hi, Rafael
+> 
+> Best Regards!
+> Anson Huang
+> 
+> 
+> > -----Original Message-----
+> > From: rjwysocki@gmail.com [mailto:rjwysocki@gmail.com] On Behalf Of Rafael
+> > J. Wysocki
+> > Sent: 2018-01-05 8:21 PM
+> > To: Anson Huang <anson.huang@nxp.com>
+> > Cc: linux-arm-kernel@lists.infradead.org; devicetree@vger.kernel.org; Linux
+> > PM <linux-pm@vger.kernel.org>; Linux Kernel Mailing List <linux-
+> > kernel@vger.kernel.org>; Shawn Guo <shawnguo@kernel.org>; Sascha Hauer
+> > <kernel@pengutronix.de>; Fabio Estevam <fabio.estevam@nxp.com>; Rob
+> > Herring <robh+dt@kernel.org>; Mark Rutland <mark.rutland@arm.com>;
+> > Russell King - ARM Linux <linux@armlinux.org.uk>; Rafael J. Wysocki
+> > <rjw@rjwysocki.net>; Viresh Kumar <viresh.kumar@linaro.org>; Jacky Bai
+> > <ping.bai@nxp.com>; A.s. Dong <aisheng.dong@nxp.com>
+> > Subject: Re: [PATCH 2/2] cpufreq: imx6q: add 696MHz operating point for
+> > i.mx6ul
+> > 
+> > On Tue, Jan 2, 2018 at 6:07 PM, Anson Huang <Anson.Huang@nxp.com> wrote:
+> > > Add 696MHz operating point for i.MX6UL, only for those parts with
+> > > speed grading fuse set to 2b'10 supports 696MHz operating point, so,
+> > > speed grading check is also added for i.MX6UL in this patch, the clock
+> > > tree for each operating point are as below:
+> > >
+> > > 696MHz:
+> > >     pll1                       696000000
+> > >        pll1_bypass             696000000
+> > >           pll1_sys             696000000
+> > >              pll1_sw           696000000
+> > >                 arm            696000000
+> > > 528MHz:
+> > >     pll2                       528000000
+> > >        pll2_bypass             528000000
+> > >           pll2_bus             528000000
+> > >              ca7_secondary_sel 528000000
+> > >                 step           528000000
+> > >                    pll1_sw     528000000
+> > >                       arm      528000000
+> > > 396MHz:
+> > >     pll2_pfd2_396m             396000000
+> > >        ca7_secondary_sel       396000000
+> > >           step                 396000000
+> > >              pll1_sw           396000000
+> > >                 arm            396000000
+> > > 198MHz:
+> > >     pll2_pfd2_396m             396000000
+> > >        ca7_secondary_sel       396000000
+> > >           step                 396000000
+> > >              pll1_sw           396000000
+> > >                 arm            198000000
+> > >
+> > > Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> > 
+> > This doesn't apply for me and in a nontrivial way.
+> > 
+> > What kernel is it against?
+> 
+> I did it based on linux-next, it should be on linux-next-pm branch, I redo
+> the patch set V2 based on linux-next-pm, also redo the test,
+> sorry for the inconvenience.
 
->> Allow use of the trace_pstate_sample trace function
->> when the intel_pstate driver is in passive mode.
->> Since the core_busy and scaled_busy fields are not
->> used, and it might be desirable to know which path
->> through the driver was used, either intel_cpufreq_target
->> or intel_cpufreq_fast_switch, re-task the core_busy
->> field as a flag indicator.
->>
->> The user can then use the intel_pstate_tracer.py utility
->> to summarize and plot the trace.
->>
->> Sometimes, in passive mode, the driver is not called for
->> many tens or even hundreds of seconds. The user
->> needs to understand, and not be confused by, this limitation.
->
-> The description of the changes between different versions should go
-> under the Signed-off-by: tag, separated by an extra "---" from it.
+But you didn't add the Reviewed-by: tags from Fabio to them.
 
-O.K. sorry.
+Was that on purpose or by mistake?
 
-> Also please see a couple of cosmetic comments below.
->
->> V4: Only execute the trace specific overhead code if trace
->>     is enabled. Suggested by Srinivas Pandruvada.
->>
->> V3: Move largely duplicate code to a subroutine.
->>     Suggested by Rafael J. Wysocki.
->>
->> V2: prepare for resend. Rebase to current kernel, 4.15-rc3.
->> Signed-off-by: Doug Smythies <dsmythies@telus.net>
->> ---
->>  drivers/cpufreq/intel_pstate.c | 35 +++++++++++++++++++++++++++++++++--
->>  1 file changed, 33 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
->> index 93a0e88..53bb953 100644
->> --- a/drivers/cpufreq/intel_pstate.c
->> +++ b/drivers/cpufreq/intel_pstate.c
->> @@ -1943,13 +1943,40 @@ static int intel_cpufreq_verify_policy(struct cpufreq_policy *policy)
->>         return 0;
->>  }
->>
->> +static void intel_cpufreq_trace(struct cpudata *cpu, int fast, int from)
->
-> Please use "bool" for "fast" and I'd call it "fast_switch".
-
-O.K. thanks.
-
->> +{
->> +       struct sample *sample;
->> +       u64 time;
->> +
->> +       time = ktime_get();
->
-> It is pointless to evaluate ktime_get() if
-> trace_pstate_sample_enabled() returns "false".
-
-Of course, thanks.
-
->> +       if (trace_pstate_sample_enabled()) {
->> +               if (intel_pstate_sample(cpu, time)) {
->
-> And the extra indentation here is not very useful, so I'd write it as
->
-> if (!trace_pstate_sample_enabled())
->        return;
->
-> if (!intel_pstate_sample(cpu, ktime_get()))
->        return;
->
-> (note that you don't need the "time" variable any more with this).
-
-That is much better, Thanks.
-
->> +                       sample = &cpu->sample;
->> +                       /* In passvie mode the trace core_busy field is
->
-> "passive" (typo)
->
->> +                        * re-assigned to indicate if the driver call
->> +                        * was via the normal or fast switch path.
->> +                        * The scaled_busy field is not used, set to 0.
->> +                        */
->> +                       trace_pstate_sample(fast,
->> +                               0,
->> +                               from,
->> +                               cpu->pstate.current_pstate,
->> +                               sample->mperf,
->> +                               sample->aperf,
->> +                               sample->tsc,
->> +                               get_avg_frequency(cpu),
->> +                               fp_toint(cpu->iowait_boost * 100));
->> +               }
->> +       }
->> +}
->> +
->>  static int intel_cpufreq_target(struct cpufreq_policy *policy,
->>                                 unsigned int target_freq,
->>                                 unsigned int relation)
->>  {
->>         struct cpudata *cpu = all_cpu_data[policy->cpu];
->>         struct cpufreq_freqs freqs;
->> -       int target_pstate;
->> +       int target_pstate, from;
->
-> I would call the new variable "old_pstate" or "orig_pstate" (so that
-> it is visibly clear that it represents a P-state).
-
-O.K.
-I used "from" because that is what Dirk called it in the trace buffer stuff. 
-
->>
->>         update_turbo_state();
->>
->> @@ -1969,12 +1996,14 @@ static int intel_cpufreq_target(struct cpufreq_policy *policy,
->>                 break;
->>         }
->>         target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
->> +       from = cpu->pstate.current_pstate;
->>         if (target_pstate != cpu->pstate.current_pstate) {
->>                 cpu->pstate.current_pstate = target_pstate;
->>                 wrmsrl_on_cpu(policy->cpu, MSR_IA32_PERF_CTL,
->>                               pstate_funcs.get_val(cpu, target_pstate));
->>         }
->>         freqs.new = target_pstate * cpu->pstate.scaling;
->> +       intel_cpufreq_trace(cpu, 0, from);
->>         cpufreq_freq_transition_end(policy, &freqs, false);
->>
->>         return 0;
->> @@ -1984,13 +2013,15 @@ static unsigned int intel_cpufreq_fast_switch(struct cpufreq_policy *policy,
->>                                               unsigned int target_freq)
->>  {
->>         struct cpudata *cpu = all_cpu_data[policy->cpu];
->> -       int target_pstate;
->> +       int target_pstate, from;
->>
->>         update_turbo_state();
->>
->>         target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
->>         target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
->> +       from = cpu->pstate.current_pstate;
->>         intel_pstate_update_pstate(cpu, target_pstate);
->> +       intel_cpufreq_trace(cpu, 100, from);
->
-> Why are you passing 100 here?  Anything different from 0 should
-> suffice, 1 in particular.  And I'd pass "false" or "true" (they will
-> be converted to 0 and 1 for output anyway).
-
-Well, I wanted to just re-use the existing graphs generated by
-tools/power/x86/intel_pstate_tracer/intel_pstate_tracer.py
-and so wanted to pass 0 or 100% to it. On purpose, those graphs
-do not autoscale on the y-axis.
-
-When investigating, the graphs can be used as a way to determine
-where to look in more detail at the raw csv files.
-
->>         return target_pstate * cpu->pstate.scaling;
->>  }
->>
+Thanks,
+Rafael
