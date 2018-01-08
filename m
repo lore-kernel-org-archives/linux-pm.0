@@ -1,59 +1,86 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v4] PM / wakeup: Print warn if device gets enabled as wakeup source during sleep
-Date: Mon,  8 Jan 2018 12:44:43 +0100
-Message-ID: <1515411883-12626-1-git-send-email-ulf.hansson@linaro.org>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [RFD] Devices that need full power for wakeup
+Date: Mon, 8 Jan 2018 12:51:29 +0100
+Message-ID: <CAJZ5v0jf_CVsZOQj4ZzgU59Z9ketb_aNu0UdgMmgXyJwRc37Yg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f68.google.com ([209.85.215.68]:40229 "EHLO
-        mail-lf0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756014AbeAHLou (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jan 2018 06:44:50 -0500
-Received: by mail-lf0-f68.google.com with SMTP id u84so11777521lff.7
-        for <linux-pm@vger.kernel.org>; Mon, 08 Jan 2018 03:44:49 -0800 (PST)
+Received: from mail-oi0-f41.google.com ([209.85.218.41]:37895 "EHLO
+        mail-oi0-f41.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756366AbeAHLva (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jan 2018 06:51:30 -0500
+Received: by mail-oi0-f41.google.com with SMTP id r65so7168886oie.5
+        for <linux-pm@vger.kernel.org>; Mon, 08 Jan 2018 03:51:30 -0800 (PST)
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+To: Linux PM <linux-pm@vger.kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alan Stern <stern@rowland.harvard.edu>
 
-In general, wakeup settings are not supposed to be changed during any of
-the system wide PM phases. The reason is simply that it would break
-guarantees provided by the PM core, to properly act on active wakeup
-sources.
+Hi,
 
-However, there are exceptions to when, in particular, disabling a device as
-wakeup source makes sense. For example, in cases when a driver realizes
-that its device is dead during system suspend. For these scenarios, we
-don't need to care about acting on the wakeup source correctly, because a
-dead device shouldn't deliver wakeup signals.
+First, let me characterize the problem the way I understand it and if
+my understanding of it is not correct, let me know why.
 
-To this reasoning and to help users to properly manage wakeup settings,
-let's print a warning in cases someone calls device_wakeup_enable() during
-system sleep.
+There are devices that can only signal wakeup if they are provided
+with full "in-band" power (in contrast with devices that can signal
+wakeup with the help of a special "wakeup" power source, possibly of
+smaller capacity).  Suspending them via runtime PM is problematic
+because of the general assumption that wakeup should always be enabled
+for all runtime-suspended wakeup-capable devices which leads to sort
+of a Catch 22 situation in this particular case.
 
-Suggested-by: Rafael J. Wysocki <rafael@kernel.org>
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
+Some drivers work around that by only allowing the device to be
+suspended if they know that it is not expected by user space to signal
+wakeup and they use the runtime PM usage counter to prevent the device
+from being suspended otherwise.  That works for runtime PM, but if the
+system goes to a sleep state, the runtime PM usage counter is not
+taken into account and the handling of the device may not be adequate
+and there is a question how to address that.
 
-Changes in v4:
-	- Send this as a separate change.
-	- Changed from dev_warn() to dev_dbg().
+Assuming that the above description of the problem is accurate, here's
+how I see it.
 
----
- drivers/base/power/wakeup.c | 3 +++
- 1 file changed, 3 insertions(+)
+All depends on whether or not a device requiring full power for
+signaling wakeup is allowed to wake up the system from sleeps states.
+If it is not allowed to do that, it should be fully suspended during
+system transitions to sleep states regardless of its previous runtime
+PM status and (in the majority of cases) it may just be left in
+suspend if already suspended.
 
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index e73a081..f30c233 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -268,6 +268,9 @@ int device_wakeup_enable(struct device *dev)
- 	if (!dev || !dev->power.can_wakeup)
- 		return -EINVAL;
- 
-+	if (pm_suspend_target_state != PM_SUSPEND_ON)
-+		dev_dbg(dev, "don't enable as wakup source during sleep!\n");
-+
- 	ws = wakeup_source_register(dev_name(dev));
- 	if (!ws)
- 		return -ENOMEM;
--- 
-2.7.4
+The problematic case is when the device is allowed to wake up the
+system from sleep states, because it has to be provided with full
+power while the system is in a sleep state for the wakeup to work.
+Clearly, checking the runtime PM usage counter alone is not sufficient
+for that, because the wakeup counter may be nonzero for reasons other
+than wakeup and the driver may not be able to arrange things properly
+by itself during system-wide transitions, for example in the cases
+when the device belongs to a power domain managed by a separate code
+layer (like genpd).  This leads to the conclusion that it is necessary
+to provide an additional mechanism allowing all of the layers of code
+involved in the handling of the device to check what to do with it (or
+with the power domain it belongs to etc) during system-wide
+transitions to sleep state.
+
+In principle, that mechanism might be a new driver flag saying that
+power should not be removed from the device if device_may_wakeup()
+returns "true" for it.  However, there already is a similar thing in
+the kernel which already is taken into account by genpd_power_off()
+and which is the PM_QOS_FLAG_NO_POWER_OFF PM QoS flag.
+
+The existence of it means that drivers can use it for runtime PM in
+the first place instead of preventing devices from being suspended if
+they need to signal wakeup.  In principle, a driver may just set this
+flag and then suspend the device normally whenever that makes sense
+(of course, taking the flag into account if set) which may lead to
+reduced power draw if (say) device cloks may be gated without
+disturbing its wakeup capability.  Moreover, PM QoS requests may be
+added and removed at any time, so the driver may just set the flag or
+clear it whenever the device's wakeup settings change.
+
+And if this flag is taken into account by genpd_sync_power_off() too,
+using it may just be sufficient to address the concern at hand.
+
+Thoughts?
+
+Thanks,
+Rafael
