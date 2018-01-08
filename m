@@ -1,55 +1,69 @@
-From: Bjorn Andersson <bjorn.andersson@linaro.org>
-Subject: [PATCH] power: reset: msm: Clarify restart and poweroff
-Date: Sun,  7 Jan 2018 19:33:13 -0800
-Message-ID: <20180108033313.13538-1-bjorn.andersson@linaro.org>
-Return-path: <linux-arm-msm-owner@vger.kernel.org>
-Sender: linux-arm-msm-owner@vger.kernel.org
-To: Sebastian Reichel <sre@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH V3 2/2] cpufreq: imx6q: add 696MHz operating point for
+ i.mx6ul
+Date: Mon, 8 Jan 2018 09:13:55 +0530
+Message-ID: <20180108034355.GA4003@vireshk-i7>
+References: <1515377091-10422-1-git-send-email-Anson.Huang@nxp.com>
+ <1515377091-10422-2-git-send-email-Anson.Huang@nxp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pf0-f195.google.com ([209.85.192.195]:43060 "EHLO
+        mail-pf0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1755148AbeAHDn7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jan 2018 22:43:59 -0500
+Received: by mail-pf0-f195.google.com with SMTP id e3so5081913pfi.10
+        for <linux-pm@vger.kernel.org>; Sun, 07 Jan 2018 19:43:59 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <1515377091-10422-2-git-send-email-Anson.Huang@nxp.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Anson Huang <Anson.Huang@nxp.com>
+Cc: shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 
-When PSHOLD in a Qualcomm platform is deasserted the PMIC will perform
-either a power off or a restart of the system. The action to take is
-configured in the PON block, which is controlled by a separate driver.
+On 08-01-18, 10:04, Anson Huang wrote:
+> Add 696MHz operating point for i.MX6UL, only for those
+> parts with speed grading fuse set to 2b'10 supports
+> 696MHz operating point, so, speed grading check is also
+> added for i.MX6UL in this patch, the clock tree for each
+> operating point are as below:
+> 
+> 696MHz:
+>     pll1                       696000000
+>        pll1_bypass             696000000
+>           pll1_sys             696000000
+>              pll1_sw           696000000
+>                 arm            696000000
+> 528MHz:
+>     pll2                       528000000
+>        pll2_bypass             528000000
+>           pll2_bus             528000000
+>              ca7_secondary_sel 528000000
+>                 step           528000000
+>                    pll1_sw     528000000
+>                       arm      528000000
+> 396MHz:
+>     pll2_pfd2_396m             396000000
+>        ca7_secondary_sel       396000000
+>           step                 396000000
+>              pll1_sw           396000000
+>                 arm            396000000
+> 198MHz:
+>     pll2_pfd2_396m             396000000
+>        ca7_secondary_sel       396000000
+>           step                 396000000
+>              pll1_sw           396000000
+>                 arm            198000000
+> 
+> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
+> Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
+> ---
+> changes since v2:
+> 	add reviewed-by.
+>  drivers/cpufreq/imx6q-cpufreq.c | 46 ++++++++++++++++++++++++++++++++++++++++-
+>  1 file changed, 45 insertions(+), 1 deletion(-)
 
-As the configuration logic was added to the pm8941-pwrkey driver the
-comment in do_msm_poweroff() is no longer valid and the name
-do_msm_restart() is misleading. Update the naming and drop the comment.
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
----
- drivers/power/reset/msm-poweroff.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/power/reset/msm-poweroff.c b/drivers/power/reset/msm-poweroff.c
-index 4702efdfe466..01b8c71697cb 100644
---- a/drivers/power/reset/msm-poweroff.c
-+++ b/drivers/power/reset/msm-poweroff.c
-@@ -23,7 +23,7 @@
- #include <linux/pm.h>
- 
- static void __iomem *msm_ps_hold;
--static int do_msm_restart(struct notifier_block *nb, unsigned long action,
-+static int deassert_pshold(struct notifier_block *nb, unsigned long action,
- 			   void *data)
- {
- 	writel(0, msm_ps_hold);
-@@ -33,14 +33,13 @@ static int do_msm_restart(struct notifier_block *nb, unsigned long action,
- }
- 
- static struct notifier_block restart_nb = {
--	.notifier_call = do_msm_restart,
-+	.notifier_call = deassert_pshold,
- 	.priority = 128,
- };
- 
- static void do_msm_poweroff(void)
- {
--	/* TODO: Add poweroff capability */
--	do_msm_restart(&restart_nb, 0, NULL);
-+	deassert_pshold(&restart_nb, 0, NULL);
- }
- 
- static int msm_restart_probe(struct platform_device *pdev)
 -- 
-2.15.0
+viresh
