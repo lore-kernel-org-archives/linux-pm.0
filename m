@@ -1,317 +1,87 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: Re: [PATCH 1/9] mmc: sdhci-pci: Stop calling
- sdhci_enable_irq_wakeups()
-Date: Mon, 8 Jan 2018 16:49:26 +0200
-Message-ID: <c2d38388-93a0-61c0-e323-74851c08c1fd@intel.com>
-References: <1513757933-11232-1-git-send-email-adrian.hunter@intel.com>
- <1513757933-11232-2-git-send-email-adrian.hunter@intel.com>
- <CAPDyKFoHPdYaorR38LaS5Hzs8CC99Smki8uZW8aDanboLRV3QA@mail.gmail.com>
- <b9801ecc-eaf4-7efc-fff0-3cbd40f29c9a@intel.com>
- <CAPDyKFrZjTvYdT8BGKadTdTBsaAeoC3YOQBBPOvqpv1JpaOUoQ@mail.gmail.com>
+From: Patrick Bellasi <patrick.bellasi@arm.com>
+Subject: Re: [BUG] schedutil governor produces regular max freq spikes
+ because of lockup detector watchdog threads
+Date: Mon, 8 Jan 2018 15:14:50 +0000
+Message-ID: <20180108151450.GA30937@e110439-lin>
+References: <1515184652.6892.26.camel@nxp.com>
+ <CAJZ5v0gOwgr2yB_YY8ian6GXjdic3zRUa4S9vHNmudC8Khc5cA@mail.gmail.com>
+ <20180108040121.GB4003@vireshk-i7>
+ <1515417622.3207.5.camel@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFrZjTvYdT8BGKadTdTBsaAeoC3YOQBBPOvqpv1JpaOUoQ@mail.gmail.com>
-Content-Language: en-US
-Sender: linux-mmc-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1515417622.3207.5.camel@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Anson Huang <anson.huang@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Peter Zijlstra <peterz@infradead.org>, vincent.guittot@linaro.org
 List-Id: linux-pm@vger.kernel.org
 
-On 21/12/17 17:33, Ulf Hansson wrote:
-> + linux-pm, Rafael, Geert
+On 08-Jan 15:20, Leonard Crestez wrote:
+> On Mon, 2018-01-08 at 09:31 +0530, Viresh Kumar wrote:
+> > On 05-01-18, 23:18, Rafael J. Wysocki wrote:
+> > > On Fri, Jan 5, 2018 at 9:37 PM, Leonard Crestez <leonard.crestez@nxp.com> wrote:
 > 
-> On 21 December 2017 at 15:25, Adrian Hunter <adrian.hunter@intel.com> wrote:
->> On 21/12/17 16:15, Ulf Hansson wrote:
->>> On 20 December 2017 at 09:18, Adrian Hunter <adrian.hunter@intel.com> wrote:
->>>> sdhci_enable_irq_wakeups() is already called by sdhci_suspend_host() so
->>>> sdhci-pci should not need to call it. However sdhci_suspend_host() only
->>>> calls it if wakeups are enabled, and sdhci-pci does not enable them until
->>>> after calling sdhci_suspend_host(). So move the calls to
->>>> sdhci_pci_init_wakeup() before calling sdhci_suspend_host(), and
->>>> stop calling sdhci_enable_irq_wakeups(). That results in some
->>>> simplification because sdhci_pci_suspend_host() and
->>>> __sdhci_pci_suspend_host() no longer need to be separate functions.
->>>>
->>>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
->>>> ---
->>>>  drivers/mmc/host/sdhci-pci-core.c | 58 ++++++++++++++-------------------------
->>>>  1 file changed, 21 insertions(+), 37 deletions(-)
->>>>
->>>> diff --git a/drivers/mmc/host/sdhci-pci-core.c b/drivers/mmc/host/sdhci-pci-core.c
->>>> index 110c634cfb43..2ffc09f088ee 100644
->>>> --- a/drivers/mmc/host/sdhci-pci-core.c
->>>> +++ b/drivers/mmc/host/sdhci-pci-core.c
->>>> @@ -39,10 +39,29 @@
->>>>  static void sdhci_pci_hw_reset(struct sdhci_host *host);
->>>>
->>>>  #ifdef CONFIG_PM_SLEEP
->>>> -static int __sdhci_pci_suspend_host(struct sdhci_pci_chip *chip)
->>>> +static int sdhci_pci_init_wakeup(struct sdhci_pci_chip *chip)
->>>> +{
->>>> +       mmc_pm_flag_t pm_flags = 0;
->>>> +       int i;
->>>> +
->>>> +       for (i = 0; i < chip->num_slots; i++) {
->>>> +               struct sdhci_pci_slot *slot = chip->slots[i];
->>>> +
->>>> +               if (slot)
->>>> +                       pm_flags |= slot->host->mmc->pm_flags;
->>>> +       }
->>>> +
->>>> +       return device_init_wakeup(&chip->pdev->dev,
->>>> +                                 (pm_flags & MMC_PM_KEEP_POWER) &&
->>>> +                                 (pm_flags & MMC_PM_WAKE_SDIO_IRQ));
->>>
->>> A couple of comments here.
->>>
->>> Wakeup settings shouldn't be changed during system suspend. That means
->>> we shouldn't call device_init_wakeup() (or device_set_wakeup_enable()
->>> for that matter) here.
->>>
->>> Instead, device_init_wakeup() should be called during ->probe(), while
->>> device_set_wakeup_enable() should normally *not* have to be called at
->>> all by drivers. There are a exceptions for device_set_wakeup_enable(),
->>> however it should not have to be called during system suspend, at
->>> least.
->>>
->>> Of course, I realize that you are not changing the behavior in this
->>> regards in this patch, so I am fine this anyway.
->>>
->>> My point is, that the end result while doing this improvements in this
->>> series, should strive to that device_init_wakeup() and
->>> device_set_wakeup_enable() becomes used correctly. I don't think that
->>> is the case, or is it?
->>
->> Unfortunately we don't find out what the SDIO driver wants to do (i.e
->> pm_flags & MMC_PM_WAKE_SDIO_IRQ) until suspend.
+> > > > When using the schedutil governor together with the softlockup detector
+> > > > all CPUs go to their maximum frequency on a regular basis. This seems
+> > > > to be because the watchdog creates a RT thread on each CPU and this
+> > > > causes regular kicks with:
+> > > > 
+> > > >     cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_RT);
+> > > > 
+> > > > The schedutil governor responds to this by immediately setting the
+> > > > maximum cpu frequency, this is very undesirable.
+> > > > 
+> > > > The issue can be fixed by this patch from android:
+> > > > 
+> > > > The patch stalled in a long discussion about how it's difficult for
+> > > > cpufreq to deal with RT and how some RT users might just disable
+> > > > cpufreq. It is indeed hard but if the system experiences regular power
+> > > > kicks from a common debug feature they will end up disabling schedutil
+> > > > instead.
 > 
-> That's true! Of course, we need to be able to act on this, somehow.
+> > > Patrick has a series of patches dealing with this problem area AFAICS,
+> > > but we are currently integrating material from Juri related to
+> > > deadline tasks.
 > 
->>
->> I considered enabling wakeups by default but wasn't sure that would not
->> increase power consumption in devices not expecting it.
+> > I am not sure if Patrick's patches would solve this problem at all as
+> > we still go to max for RT and the RT task is created from the
+> > softlockup detector somehow.
 > 
-> I understand the problem, believe me. However, I would rather like to
-> try to find a generic solution to these problems, else we will keep
-> abusing existing wakeups APIs.
+> I assume you're talking about the series starting with
+> "[PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates"
 > 
-> For your information, I have been working on several issues on how to
-> handle the "wakeup path" correctly, which is linked to this problem.
-> See a few quite small series for this below [1], [2].
-> 
-> I think the general problems can be described liked this:
-> 
-> 1) The dev->power.wakeup_path flag doesn't get set for the device by
-> the PM core, in case device_set_wakeup_enable() is called from a
-> ->suspend() callback. That also means, that the parent device don't
-> get its >power.wakeup_path flag set in __device_suspend() by the PM
-> core, while this may be expected by upper layers (PM domains, middle
-> layers).
-> 
-> 2) device_may_wakeup() doesn't tell us the hole story about the
-> wakeup. Only that is *may* be configured. :-)
-> So in cases when device_may_wakeup() returns true, we still have these
-> three conditions to consider, which we currently can't distinguish
-> between:
-> 
-> *) The wakeup is configured and enabled, so the device should be
-> enabled in the wakeup path.
-> 
-> **) The wakeup is configured and enabled, but as an out-band-wakeup
-> signal (like a GPIO IRQ). This means the device shouldn't be enabled
-> in the wakeup path.
+> I checked and they have no effect on this particular issue (not
+> surprising).
 
-So what about just adding can_oob_wakeup and oob_wakeup i.e.
+Yeah, that series was addressing the same issue but for one specific
+RT thread: the one used by schedutil to change the frequency.
+For all other RT threads the intended behavior was still to got
+to max... moreover those patches has been superseded by a different
+solution which has been recently proposed by Peter:
 
+   20171220155625.lopjlsbvss3qgb4d@hirez.programming.kicks-ass.net
 
-diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-index 0f651efc58a1..162a511286b7 100644
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -323,23 +323,32 @@ static ssize_t pm_qos_no_power_off_store(struct device *dev,
- static ssize_t wakeup_show(struct device *dev, struct device_attribute *attr,
- 			   char *buf)
- {
--	return sprintf(buf, "%s\n", device_can_wakeup(dev)
--		? (device_may_wakeup(dev) ? _enabled : _disabled)
--		: "");
-+	return sprintf(buf, "%s\n", device_may_wakeup(dev) ||
-+				    device_may_oob_wakeup(dev) ? _enabled :
-+				    device_can_wakeup(dev) ||
-+				    device_can_oob_wakeup(dev) ? _disabled :
-+				    "");
- }
- 
- static ssize_t wakeup_store(struct device *dev, struct device_attribute *attr,
- 			    const char *buf, size_t n)
- {
--	if (!device_can_wakeup(dev))
-+	bool enable = false;
-+
-+	if (!device_can_wakeup(dev) && !device_can_oob_wakeup(dev))
- 		return -EINVAL;
- 
- 	if (sysfs_streq(buf, _enabled))
--		device_set_wakeup_enable(dev, 1);
--	else if (sysfs_streq(buf, _disabled))
--		device_set_wakeup_enable(dev, 0);
--	else
-+		enable = true;
-+	else if (!sysfs_streq(buf, _disabled))
- 		return -EINVAL;
-+
-+	if (device_can_wakeup(dev))
-+		device_set_wakeup_enable(dev, enable);
-+
-+	if (device_can_oob_wakeup(dev))
-+		device_set_oob_wakeup_enable(dev, enable);
-+
- 	return n;
- }
- 
-diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
-index e73a081c6397..13e176edc3d7 100644
---- a/drivers/base/power/wakeup.c
-+++ b/drivers/base/power/wakeup.c
-@@ -392,6 +392,20 @@ int device_wakeup_disable(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(device_wakeup_disable);
- 
-+static void wakeup_sysfs_add_remove(struct device *dev, bool capable)
-+{
-+	if (device_is_registered(dev) && !list_empty(&dev->power.entry)) {
-+		if (capable) {
-+			int ret = wakeup_sysfs_add(dev);
-+
-+			if (ret)
-+				dev_info(dev, "Wakeup sysfs attributes not added\n");
-+		} else {
-+			wakeup_sysfs_remove(dev);
-+		}
-+	}
-+}
-+
- /**
-  * device_set_wakeup_capable - Set/reset device wakeup capability flag.
-  * @dev: Device to handle.
-@@ -410,20 +424,35 @@ void device_set_wakeup_capable(struct device *dev, bool capable)
- 		return;
- 
- 	dev->power.can_wakeup = capable;
--	if (device_is_registered(dev) && !list_empty(&dev->power.entry)) {
--		if (capable) {
--			int ret = wakeup_sysfs_add(dev);
--
--			if (ret)
--				dev_info(dev, "Wakeup sysfs attributes not added\n");
--		} else {
--			wakeup_sysfs_remove(dev);
--		}
--	}
-+	wakeup_sysfs_add_remove(dev, capable);
- }
- EXPORT_SYMBOL_GPL(device_set_wakeup_capable);
- 
- /**
-+ * device_set_oob_wakeup_capable - Set/reset device oob wakeup capability flag.
-+ * @dev: Device to handle.
-+ * @capable: Whether or not @dev is capable of out-of-band wake up of the system
-+ * from sleep.
-+ *
-+ * If @capable is set, set the @dev's power.can_oob_wakeup flag and add its
-+ * wakeup-related attributes to sysfs.  Otherwise, unset the @dev's
-+ * power.can_oob_wakeup flag and remove its wakeup-related attributes from
-+ * sysfs.
-+ *
-+ * This function may sleep and it can't be called from any context where
-+ * sleeping is not allowed.
-+ */
-+void device_set_oob_wakeup_capable(struct device *dev, bool capable)
-+{
-+	if (!!dev->power.can_oob_wakeup == !!capable)
-+		return;
-+
-+	dev->power.can_oob_wakeup = capable;
-+	wakeup_sysfs_add_remove(dev, capable);
-+}
-+EXPORT_SYMBOL_GPL(device_set_oob_wakeup_capable);
-+
-+/**
-  * device_init_wakeup - Device wakeup initialization.
-  * @dev: Device to handle.
-  * @enable: Whether or not to enable @dev as a wakeup device.
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index e723b78d8357..22cfcacc0095 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -585,6 +585,8 @@ struct pm_subsys_data {
- struct dev_pm_info {
- 	pm_message_t		power_state;
- 	unsigned int		can_wakeup:1;
-+	unsigned int		can_oob_wakeup:1;
-+	unsigned int		oob_wakeup:1;
- 	unsigned int		async_suspend:1;
- 	bool			in_dpm_list:1;	/* Owned by the PM core */
- 	bool			is_prepared:1;	/* Owned by the PM core */
-diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
-index 4238dde0aaf0..64252cb0f97a 100644
---- a/include/linux/pm_wakeup.h
-+++ b/include/linux/pm_wakeup.h
-@@ -83,11 +83,30 @@ static inline bool device_can_wakeup(struct device *dev)
- 	return dev->power.can_wakeup;
- }
- 
-+static inline bool device_can_oob_wakeup(struct device *dev)
-+{
-+	return dev->power.can_oob_wakeup;
-+}
-+
- static inline bool device_may_wakeup(struct device *dev)
- {
- 	return dev->power.can_wakeup && !!dev->power.wakeup;
- }
- 
-+static inline bool device_may_oob_wakeup(struct device *dev)
-+{
-+	return dev->power.can_oob_wakeup && dev->power.oob_wakeup;
-+}
-+
-+static inline int device_set_oob_wakeup_enable(struct device *dev, bool enable)
-+{
-+	if (!dev->power.can_oob_wakeup)
-+		return -EINVAL;
-+
-+	dev->power.oob_wakeup = enable;
-+	return 0;
-+}
-+
- static inline void device_set_wakeup_path(struct device *dev)
- {
- 	dev->power.wakeup_path = true;
+As Viresh and Rafael suggested, we should eventually consider a
+different scheduling class and/or execution context for the watchdog.
+Maybe a generalization of Juri's proposed SCHED_FLAG_SUGOV flag for
+DL tasks can be useful:
 
+   20171204102325.5110-4-juri.lelli@redhat.com
 
-> 
-> ***) The wakeup isn't configured, thus disabled, because there are no
-> consumers of the wakeup IRQ registered (as may be the case for SDIO
-> IRQ). This also means the device shouldn't be enabled in the wakeup
-> path.
-> 
-> Potentially, one could consider **) and ***) being treated in the same
-> way, via using an opt-out method, avoiding the wakeup path to be
-> enabled. Currently I have been thinking of adding an "OUT_BAND_WAKEUP"
-> driver PM flag, to deal with this, however there may be other
-> preferred options.
-> 
-> Kind regards
-> Uffe
-> 
-> [1]
-> https://www.spinics.net/lists/linux-renesas-soc/msg21421.html
-> [2]
-> https://www.spinics.net/lists/linux-renesas-soc/msg20122.html
-> (Actually the discussions there concluded that we may need an
-> "OUT_BAND_WAKEUP" flag instead)
-> 
+Although that solution is already considered "gross" and thus perhaps
+it does not make sense to keep adding special DL tasks.
 
+Another possible alternative to "tag an RT task" as being special, is
+to use an API similar to the one proposed by the util_clamp RFC:
+
+   20170824180857.32103-1-patrick.bellasi@arm.com
+
+which would allow to define what's the maximum utilization which can
+be required by a properly configured RT task.
+
+-- 
+#include <best/regards.h>
+
+Patrick Bellasi
