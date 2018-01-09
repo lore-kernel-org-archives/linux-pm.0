@@ -1,12 +1,13 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v2 04/16] ARM: dtsi: axp209: add node for ADC
-Date: Tue,  9 Jan 2018 10:33:35 +0100
-Message-ID: <d4de180d7f9555c3851f29a8c34d1f706cafd83e.1515486346.git-series.quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 14/16] mfd: axp20x: add battery power supply
+ cell for AXP813
+Date: Tue,  9 Jan 2018 10:33:45 +0100
+Message-ID: <9f360d2724893421f5a8838639bbd9370361f61a.1515486346.git-series.quentin.schulz@free-electrons.com>
 References: <cover.1e46d70f7931be8154b450a2fcdf066450a1aa6f.1515486346.git-series.quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBRMZ2LJAKGQECNEU52I-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBUEZ2LJAKGQEXVA7HVQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <cover.1e46d70f7931be8154b450a2fcdf066450a1aa6f.1515486346.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 In-Reply-To: <cover.1e46d70f7931be8154b450a2fcdf066450a1aa6f.1515486346.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -21,29 +22,26 @@ To: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.g
 Cc: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-This adds a DT node for the ADC of the PMIC so that there can be
-consumers of its IIO channels declaring their consumptions via DT.
+As axp20x-battery-power-supply now supports AXP813, add a cell for it.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- arch/arm/boot/dts/axp209.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/mfd/axp20x.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/arm/boot/dts/axp209.dtsi b/arch/arm/boot/dts/axp209.dtsi
-index 897103e..a2e0052 100644
---- a/arch/arm/boot/dts/axp209.dtsi
-+++ b/arch/arm/boot/dts/axp209.dtsi
-@@ -58,6 +58,11 @@
- 		status = "disabled";
- 	};
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index d112414..1175091 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -887,6 +887,9 @@ static struct mfd_cell axp813_cells[] = {
+ 	}, {
+ 		.name			= "axp813-adc",
+ 		.of_compatible		= "x-powers,axp813-adc",
++	}, {
++		.name		= "axp20x-battery-power-supply",
++		.of_compatible	= "x-powers,axp813-battery-power-supply",
+ 	},
+ };
  
-+	axp_adc: axp-adc {
-+		compatible = "x-powers,axp20x-adc";
-+		#io-channel-cells = <1>;
-+	};
-+
- 	axp_gpio: gpio {
- 		compatible = "x-powers,axp209-gpio";
- 		gpio-controller;
 -- 
 git-series 0.9.1
