@@ -1,247 +1,63 @@
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH v2] PM / runtime: Rework pm_runtime_force_suspend/resume()
-Date: Tue, 09 Jan 2018 13:34:05 +0100
-Message-ID: <4116669.Kt826NCPrf@aspire.rjw.lan>
-References: <4069324.Q7yJt6I4hJ@aspire.rjw.lan> <303007688.lvsDLFNCpe@aspire.rjw.lan> <CAPDyKFqePzeiSjR=yvCAtHfOv6vJLm3wdPifsseK1p4cyyB8qQ@mail.gmail.com>
+From: Julian Calaby <julian.calaby-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Subject: Re: [PATCH v2 13/16] power: supply: axp20x_battery: add
+ support for AXP813
+Date: Tue, 9 Jan 2018 23:53:55 +1100
+Message-ID: <CAGRGNgVfok-UrKFNtkq1QteJqUphFBRH_U+nJcy=dPkzN6W08g@mail.gmail.com>
+References: <cover.1e46d70f7931be8154b450a2fcdf066450a1aa6f.1515486346.git-series.quentin.schulz@free-electrons.com>
+ <a1c061eb50edfd3519ece6c8177085b55d7aefc6.1515486346.git-series.quentin.schulz@free-electrons.com>
+Reply-To: julian.calaby-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <CAPDyKFqePzeiSjR=yvCAtHfOv6vJLm3wdPifsseK1p4cyyB8qQ@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Wunner <lukas@wunner.de>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-sunxi+bncBDQIP76OUQLBB6HW2LJAKGQEKZ5HHKA-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+In-Reply-To: <a1c061eb50edfd3519ece6c8177085b55d7aefc6.1515486346.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+List-Post: <https://groups.google.com/group/linux-sunxi/post>, <mailto:linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Help: <https://groups.google.com/support/>, <mailto:linux-sunxi+help-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Archive: <https://groups.google.com/group/linux-sunxi
+List-Subscribe: <https://groups.google.com/group/linux-sunxi/subscribe>, <mailto:linux-sunxi+subscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+List-Unsubscribe: <mailto:googlegroups-manage+1076902468213+unsubscribe-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>,
+ <https://groups.google.com/group/linux-sunxi/subscribe>
+To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+Cc: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.gmane.org, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "Mailing List, Arm" <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi <linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-On Tuesday, January 9, 2018 7:08:21 AM CET Ulf Hansson wrote:
-> On 3 January 2018 at 12:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> >
-> > One of the limitations of pm_runtime_force_suspend/resume() is that
-> > if a parent driver wants to use these functions, all of its child
-> > drivers have to do that too because of the parent usage counter
-> > manipulations necessary to get the correct state of the parent during
-> > system-wide transitions to the working state (system resume).
-> 
-> I understand your point, however this isn't describing the full story,
-> because there are a some more alternatives when
-> pm_runtime_force_suspend|resume() works well, when used for parent
-> devices. Let me clarify, just to make sure we get this correct.
-> 
-> 1) If the child device isn't managed by runtime PM at all (it always
-> has runtime PM disabled), pm_runtime_force_suspend|resume() can be
-> used for the parent device. This works because the runtime PM status
-> if the child remains in the default status, RPM_SUSPENDED.
-> 
-> 2) If, somehow, during system suspend/resume, the driver for the child
-> make sure to synchronize the runtime PM status of the child device,
-> according to the state of the HW, this should work too.
-> 
-> I leave it to you how to take this fact into consideration, if and how
-> to update the changelog.
+Hi Quentin,
 
-OK, let me see.
+On Tue, Jan 9, 2018 at 8:33 PM, Quentin Schulz
+<quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org> wrote:
+> The X-Powers AXP813 PMIC has got some slight differences from
+> AXP20X/AXP22X PMICs:
+>  - the maximum voltage supplied by the PMIC is 4.35 instead of 4.36/4.24
+>  for AXP20X/AXP22X,
+>  - the constant charge current formula is different,
+>
+> It also has a bit to tell whether the battery percentage returned by the
+> PMIC is valid.
+>
+> Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+> ---
+>  drivers/power/supply/axp20x_battery.c | 42 ++++++++++++++++++++++++++++-
+>  1 file changed, 42 insertions(+)
+>
+> diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
+> index d73c78f..dad72a5 100644
+> --- a/drivers/power/supply/axp20x_battery.c
+> +++ b/drivers/power/supply/axp20x_battery.c
+> @@ -46,6 +46,8 @@
+>  #define AXP20X_CHRG_CTRL1_TGT_4_2V     (2 << 5)
+>  #define AXP20X_CHRG_CTRL1_TGT_4_36V    (3 << 5)
+>
+> +#define AXP813_CHRG_CTRL1_TGT_4_35V    (3 << 5)
+> +
+>  #define AXP22X_CHRG_CTRL1_TGT_4_22V    (1 << 5)
+>  #define AXP22X_CHRG_CTRL1_TGT_4_24V    (3 << 5)
 
-> > However, that limitation turns out to be artificial, so remove it.
-> 
-> Agree!
-> 
-> >
-> > Namely, pm_runtime_force_suspend() only needs to update the children
-> > counter of its parent (if there's is a parent) when the device can
-> > stay in suspend after the subsequent system resume transition, as
-> > that counter is correct already otherwise.  Now, if the parent's
-> > children counter is not updated, it is not necessary to increment
-> > the parent's usage counter in that case any more, as long as the
-> > children counters of devices are checked along with their usage
-> > counters in order to decide whether or not the devices may be left
-> > in suspend after the subsequent system resume transition.
-> >
-> > Accordingly, modify pm_runtime_force_suspend() to only call
-> > pm_runtime_set_suspended() for devices whose usage and children
-> > counters are at the "no references" level (the runtime PM status
-> > of the device needs to be updated to "suspended" anyway in case
-> > this function is called once again for the same device during the
-> > transition under way), drop the parent usage counter incrementation
-> > from it and update pm_runtime_force_resume() to compensate for these
-> > changes.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/base/power/runtime.c |   74 +++++++++++++++++++------------------------
-> >  1 file changed, 34 insertions(+), 40 deletions(-)
-> >
-> > Index: linux-pm/drivers/base/power/runtime.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/base/power/runtime.c
-> > +++ linux-pm/drivers/base/power/runtime.c
-> > @@ -1613,17 +1613,28 @@ void pm_runtime_drop_link(struct device
-> >         spin_unlock_irq(&dev->power.lock);
-> >  }
-> >
-> > +static bool pm_runtime_need_not_resume(struct device *dev)
-> > +{
-> > +       return atomic_read(&dev->power.usage_count) <= 1 &&
-> > +               atomic_read(&dev->power.child_count) == 0;
-> 
-> We should take into account the ignore_children flag here, I think.
-> Something like this:
-> 
-> return atomic_read(&dev->power.usage_count) <= 1 &&
-> (atomic_read(&dev->power.child_count) == 0 ||
-> dev->power.ignore_children)
-
-The current code doesn't quite take ignore_children into account, however.
-
-Regardless of which way the change is made, there will be one corner case
-that is not going to be covered.  First, if ignore_children is taken into
-account, some cases in which the current code increments the parent's
-usage counter will be treated as "need not resume".  Second, if ignore_children
-is ignored, some cases in which the parent's usage counter is not incremented
-today will cause the parent to resume after the change.
-
-Frankly, I prefer to ignore ignore_children at least for the time being,
-because resuming the parent unnecessarily is not a tragedy (it will likely
-suspend shortly anyway), but if it is necessary to resume it and it is not
-be resumed, things will visibly break.
-
-So, I'd prefer to leave this patch as is and do a second one adding the
-ignore_children check.  Then, if things break due to the second patch, it
-can be reverted easily (unless that can be fixed differently).
-
-> > +}
-> > +
-> >  /**
-> >   * pm_runtime_force_suspend - Force a device into suspend state if needed.
-> >   * @dev: Device to suspend.
-> >   *
-> >   * Disable runtime PM so we safely can check the device's runtime PM status and
-> > - * if it is active, invoke it's .runtime_suspend callback to bring it into
-> > - * suspend state. Keep runtime PM disabled to preserve the state unless we
-> > - * encounter errors.
-> > + * if it is active, invoke its ->runtime_suspend callback to suspend it and
-> > + * change its runtime PM status field to RPM_SUSPENDED.  Also, if the device's
-> > + * usage and children counters don't indicate that the device was in use before
-> > + * the system-wide transition under way, decrement its parent's children counter
-> > + * (if there is a parent).  Keep runtime PM disabled to preserve the state
-> > + * unless we encounter errors.
-> >   *
-> >   * Typically this function may be invoked from a system suspend callback to make
-> > - * sure the device is put into low power state.
-> > + * sure the device is put into low power state and it should only be used during
-> > + * system-wide PM transitions to sleep states.  It assumes that the analogous
-> > + * pm_runtime_force_resume() will be used to resume the device.
-> >   */
-> >  int pm_runtime_force_suspend(struct device *dev)
-> >  {
-> > @@ -1646,17 +1657,18 @@ int pm_runtime_force_suspend(struct devi
-> >                 goto err;
-> >
-> >         /*
-> > -        * Increase the runtime PM usage count for the device's parent, in case
-> > -        * when we find the device being used when system suspend was invoked.
-> > -        * This informs pm_runtime_force_resume() to resume the parent
-> > -        * immediately, which is needed to be able to resume its children,
-> > -        * when not deferring the resume to be managed via runtime PM.
-> > +        * If the device can stay in suspend after the system-wide transition
-> > +        * to the working state that will follow, drop the children counter of
-> > +        * its parent, but set its status to RPM_SUSPENDED anyway in case this
-> > +        * function will be called again for it in the meantime.
-> >          */
-> > -       if (dev->parent && atomic_read(&dev->power.usage_count) > 1)
-> > -               pm_runtime_get_noresume(dev->parent);
-> > +       if (pm_runtime_need_not_resume(dev))
-> > +               pm_runtime_set_suspended(dev);
-> > +       else
-> > +               __update_runtime_status(dev, RPM_SUSPENDED);
-> >
-> 
-> This is clever!
-> 
-> I recall when working on commit 1d9174fbc55e ("PM / Runtime: Defer
-> resuming of the device in pm_runtime_force_resume()"), that I wanted
-> to take into account the dev->power.child_count, but couldn't figure
-> out exactly how. :-)
-> 
-> > -       pm_runtime_set_suspended(dev);
-> >         return 0;
-> > +
-> >  err:
-> >         pm_runtime_enable(dev);
-> >         return ret;
-> > @@ -1669,13 +1681,9 @@ EXPORT_SYMBOL_GPL(pm_runtime_force_suspe
-> >   *
-> >   * Prior invoking this function we expect the user to have brought the device
-> >   * into low power state by a call to pm_runtime_force_suspend(). Here we reverse
-> > - * those actions and brings the device into full power, if it is expected to be
-> > - * used on system resume. To distinguish that, we check whether the runtime PM
-> > - * usage count is greater than 1 (the PM core increases the usage count in the
-> > - * system PM prepare phase), as that indicates a real user (such as a subsystem,
-> > - * driver, userspace, etc.) is using it. If that is the case, the device is
-> > - * expected to be used on system resume as well, so then we resume it. In the
-> > - * other case, we defer the resume to be managed via runtime PM.
-> > + * those actions and bring the device into full power, if it is expected to be
-> > + * used on system resume.  In the other case, we defer the resume to be managed
-> > + * via runtime PM.
-> >   *
-> >   * Typically this function may be invoked from a system resume callback.
-> >   */
-> > @@ -1684,32 +1692,18 @@ int pm_runtime_force_resume(struct devic
-> >         int (*callback)(struct device *);
-> >         int ret = 0;
-> >
-> > -       callback = RPM_GET_CALLBACK(dev, runtime_resume);
-> > -
-> > -       if (!callback) {
-> > -               ret = -ENOSYS;
-> > -               goto out;
-> > -       }
-> 
-> This make me realize that, I think this is probably for legacy reasons.
-> 
-> I think we should allow the callback to be NULL, don't you think?
-
-Well, it probably doesn't matter too much, but OK.
-
-> Of course, this deserves its own change.
-
-Right.
-
-> > -
-> > -       if (!pm_runtime_status_suspended(dev))
-> > +       if (!pm_runtime_status_suspended(dev) || pm_runtime_need_not_resume(dev))
-> >                 goto out;
-> >
-> >         /*
-> > -        * Decrease the parent's runtime PM usage count, if we increased it
-> > -        * during system suspend in pm_runtime_force_suspend().
-> > -       */
-> > -       if (atomic_read(&dev->power.usage_count) > 1) {
-> > -               if (dev->parent)
-> > -                       pm_runtime_put_noidle(dev->parent);
-> > -       } else {
-> > -               goto out;
-> > -       }
-> > +        * The value of the parent's children counter is correct already, so
-> > +        * just update the status of the device.
-> > +        */
-> > +       __update_runtime_status(dev, RPM_ACTIVE);
-> >
-> > -       ret = pm_runtime_set_active(dev);
-> > -       if (ret)
-> > -               goto out;
-> > +       callback = RPM_GET_CALLBACK(dev, runtime_resume);
-> >
-> > -       ret = callback(dev);
-> > +       ret = callback ? callback(dev) : -ENOSYS;
-> >         if (ret) {
-> >                 pm_runtime_set_suspended(dev);
-> >                 goto out;
-> >
-> 
-> Thanks for looking into this!
-
-No problem.
+Should these be "alphabetical", i.e. AXP20X, AXP22X, AXP813?
 
 Thanks,
-Rafael
+
+-- 
+Julian Calaby
+
+Email: julian.calaby-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+Profile: http://www.google.com/profiles/julian.calaby/
