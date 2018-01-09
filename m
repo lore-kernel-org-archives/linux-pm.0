@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v2 15/16] ARM: dtsi: axp81x: add battery power
- supply subnode
-Date: Tue,  9 Jan 2018 10:33:46 +0100
-Message-ID: <24730136f603c9825729cc2a3822a40dd84e129e.1515486346.git-series.quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 12/16] dt-bindings: power: supply: axp20x:
+ add AXP813 battery DT binding
+Date: Tue,  9 Jan 2018 10:33:43 +0100
+Message-ID: <538e93d723d7755928ad118564a571371cb337b6.1515486346.git-series.quentin.schulz@free-electrons.com>
 References: <cover.1e46d70f7931be8154b450a2fcdf066450a1aa6f.1515486346.git-series.quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
@@ -22,33 +22,34 @@ To: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.g
 Cc: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP81X PMIC exposes battery supply various data such as
-the battery status (charging, discharging, full, dead), current max
-limit, current current, battery capacity (in percentage), voltage max
-and min limits, current voltage, and battery capacity (in Ah).
-
-This adds the battery power supply subnode for AXP81X PMIC.
+The AXP813 can have a battery as power supply, so let's add it to the
+list of compatibles.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- arch/arm/boot/dts/axp81x.dtsi | 5 +++++
- 1 file changed, 5 insertions(+)
+ Documentation/devicetree/bindings/power/supply/axp20x_battery.txt | 8 +++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/boot/dts/axp81x.dtsi b/arch/arm/boot/dts/axp81x.dtsi
-index dd25bfe..5fb396e 100644
---- a/arch/arm/boot/dts/axp81x.dtsi
-+++ b/arch/arm/boot/dts/axp81x.dtsi
-@@ -69,6 +69,11 @@
- 		};
- 	};
+diff --git a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+index c248866..4614c8e 100644
+--- a/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
++++ b/Documentation/devicetree/bindings/power/supply/axp20x_battery.txt
+@@ -4,12 +4,12 @@ Required Properties:
+  - compatible, one of:
+ 			"x-powers,axp209-battery-power-supply"
+ 			"x-powers,axp221-battery-power-supply"
++			"x-powers,axp813-battery-power-supply"
  
-+	battery_power_supply: battery-power-supply {
-+		compatible = "x-powers,axp813-battery-power-supply";
-+		status = "disabled";
-+	};
-+
- 	regulators {
- 		/* Default work frequency for buck regulators */
- 		x-powers,dcdc-freq = <3000>;
+-This node is a subnode of the axp20x/axp22x PMIC.
++This node is a subnode of the axp20x/axp22x/axp81x PMIC.
+ 
+-The AXP20X and AXP22X can read the battery voltage, charge and discharge
+-currents of the battery by reading ADC channels from the AXP20X/AXP22X
+-ADC.
++The AXP20X, AXP22X and AXP81X can read the battery voltage, charge and
++discharge currents of the battery by reading ADC channels from the ADC.
+ 
+ Example:
+ 
 -- 
 git-series 0.9.1
