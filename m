@@ -1,8 +1,8 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v2 08/16] iio: adc: axp20x_adc: add support for
- AXP813 ADC
-Date: Tue,  9 Jan 2018 10:33:39 +0100
-Message-ID: <d11f2c79cb7b5dd3882d1c0d3eb194e23baf9394.1515486346.git-series.quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 06/16] mfd: axp20x: make AXP209/22x cells
+ probe their ADC via DT
+Date: Tue,  9 Jan 2018 10:33:37 +0100
+Message-ID: <3b801d1dada3d9604311f65033343a14260cc7ae.1515486346.git-series.quentin.schulz@free-electrons.com>
 References: <cover.1e46d70f7931be8154b450a2fcdf066450a1aa6f.1515486346.git-series.quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
@@ -22,247 +22,43 @@ To: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.g
 Cc: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The X-Powers AXP813 PMIC is really close to what is already done for
-AXP20X/AXP22X.
-
-There are two pairs of bits to set the rate (one for Voltage and Current
-measurements and one for TS/GPIO0 voltage measurements) instead of one.
-
-The register to set the ADC rates is different from the one for
-AXP20X/AXP22X.
-
-GPIO0 can be used as an ADC (measuring Volts) unlike for AXP22X.
-
-The scales to apply to the different inputs are unlike the ones from
-AXP20X and AXP22X.
+This makes AXP209 and AXP22x ADCs probe first via DT and then by
+fallback via platform.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- drivers/iio/adc/axp20x_adc.c | 123 ++++++++++++++++++++++++++++++++++++-
- include/linux/mfd/axp20x.h   |   2 +-
- 2 files changed, 125 insertions(+)
+ drivers/mfd/axp20x.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/iio/adc/axp20x_adc.c b/drivers/iio/adc/axp20x_adc.c
-index f8c4c62..df50a1d 100644
---- a/drivers/iio/adc/axp20x_adc.c
-+++ b/drivers/iio/adc/axp20x_adc.c
-@@ -35,8 +35,13 @@
- #define AXP20X_GPIO10_IN_RANGE_GPIO1_VAL(x)	(((x) & BIT(0)) << 1)
- 
- #define AXP20X_ADC_RATE_MASK			GENMASK(7, 6)
-+#define AXP813_V_I_ADC_RATE_MASK		GENMASK(5, 4)
-+#define AXP813_ADC_RATE_MASK			(AXP20X_ADC_RATE_MASK | AXP813_V_I_ADC_RATE_MASK)
- #define AXP20X_ADC_RATE_HZ(x)			((ilog2((x) / 25) << 6) & AXP20X_ADC_RATE_MASK)
- #define AXP22X_ADC_RATE_HZ(x)			((ilog2((x) / 100) << 6) & AXP20X_ADC_RATE_MASK)
-+#define AXP813_TS_GPIO0_ADC_RATE_HZ(x)		AXP20X_ADC_RATE_HZ(x)
-+#define AXP813_V_I_ADC_RATE_HZ(x)		((ilog2((x) / 100) << 4) & AXP813_V_I_ADC_RATE_MASK)
-+#define AXP813_ADC_RATE_HZ(x)			(AXP20X_ADC_RATE_HZ(x) | AXP813_V_I_ADC_RATE_HZ(x))
- 
- #define AXP20X_ADC_CHANNEL(_channel, _name, _type, _reg)	\
- 	{							\
-@@ -95,6 +100,12 @@ enum axp22x_adc_channel_i {
- 	AXP22X_BATT_DISCHRG_I,
- };
- 
-+enum axp813_adc_channel_v {
-+	AXP813_TS_IN = 0,
-+	AXP813_GPIO0_V,
-+	AXP813_BATT_V,
-+};
-+
- static struct iio_map axp20x_maps[] = {
- 	{
- 		.consumer_dev_name = "axp20x-usb-power-supply",
-@@ -197,6 +208,25 @@ static const struct iio_chan_spec axp22x_adc_channels[] = {
- 			   AXP20X_BATT_DISCHRG_I_H),
- };
- 
-+static const struct iio_chan_spec axp813_adc_channels[] = {
-+	{
-+		.type = IIO_TEMP,
-+		.address = AXP22X_PMIC_TEMP_H,
-+		.info_mask_separate = BIT(IIO_CHAN_INFO_RAW) |
-+				      BIT(IIO_CHAN_INFO_SCALE) |
-+				      BIT(IIO_CHAN_INFO_OFFSET),
-+		.datasheet_name = "pmic_temp",
-+	},
-+	AXP20X_ADC_CHANNEL(AXP813_GPIO0_V, "gpio0_v", IIO_VOLTAGE,
-+			   AXP288_GP_ADC_H),
-+	AXP20X_ADC_CHANNEL(AXP813_BATT_V, "batt_v", IIO_VOLTAGE,
-+			   AXP20X_BATT_V_H),
-+	AXP20X_ADC_CHANNEL(AXP22X_BATT_CHRG_I, "batt_chrg_i", IIO_CURRENT,
-+			   AXP20X_BATT_CHRG_I_H),
-+	AXP20X_ADC_CHANNEL(AXP22X_BATT_DISCHRG_I, "batt_dischrg_i", IIO_CURRENT,
-+			   AXP20X_BATT_DISCHRG_I_H),
-+};
-+
- static int axp20x_adc_raw(struct iio_dev *indio_dev,
- 			  struct iio_chan_spec const *chan, int *val)
- {
-@@ -243,6 +273,18 @@ static int axp22x_adc_raw(struct iio_dev *indio_dev,
- 	return IIO_VAL_INT;
- }
- 
-+static int axp813_adc_raw(struct iio_dev *indio_dev,
-+			  struct iio_chan_spec const *chan, int *val)
-+{
-+	struct axp20x_adc_iio *info = iio_priv(indio_dev);
-+
-+	*val = axp20x_read_variable_width(info->regmap, chan->address, 12);
-+	if (*val < 0)
-+		return *val;
-+
-+	return IIO_VAL_INT;
-+}
-+
- static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
- {
- 	switch (channel) {
-@@ -273,6 +315,24 @@ static int axp20x_adc_scale_voltage(int channel, int *val, int *val2)
- 	}
- }
- 
-+static int axp813_adc_scale_voltage(int channel, int *val, int *val2)
-+{
-+	switch (channel) {
-+	case AXP813_GPIO0_V:
-+		*val = 0;
-+		*val2 = 800000;
-+		return IIO_VAL_INT_PLUS_MICRO;
-+
-+	case AXP813_BATT_V:
-+		*val = 1;
-+		*val2 = 100000;
-+		return IIO_VAL_INT_PLUS_MICRO;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
- static int axp20x_adc_scale_current(int channel, int *val, int *val2)
- {
- 	switch (channel) {
-@@ -342,6 +402,26 @@ static int axp22x_adc_scale(struct iio_chan_spec const *chan, int *val,
- 	}
- }
- 
-+static int axp813_adc_scale(struct iio_chan_spec const *chan, int *val,
-+			    int *val2)
-+{
-+	switch (chan->type) {
-+	case IIO_VOLTAGE:
-+		return axp813_adc_scale_voltage(chan->channel, val, val2);
-+
-+	case IIO_CURRENT:
-+		*val = 1;
-+		return IIO_VAL_INT;
-+
-+	case IIO_TEMP:
-+		*val = 100;
-+		return IIO_VAL_INT;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
- static int axp20x_adc_offset_voltage(struct iio_dev *indio_dev, int channel,
- 				     int *val)
- {
-@@ -425,6 +505,26 @@ static int axp22x_read_raw(struct iio_dev *indio_dev,
- 	}
- }
- 
-+static int axp813_read_raw(struct iio_dev *indio_dev,
-+			   struct iio_chan_spec const *chan, int *val,
-+			   int *val2, long mask)
-+{
-+	switch (mask) {
-+	case IIO_CHAN_INFO_OFFSET:
-+		*val = -2667;
-+		return IIO_VAL_INT;
-+
-+	case IIO_CHAN_INFO_SCALE:
-+		return axp813_adc_scale(chan, val, val2);
-+
-+	case IIO_CHAN_INFO_RAW:
-+		return axp813_adc_raw(indio_dev, chan, val);
-+
-+	default:
-+		return -EINVAL;
-+	}
-+}
-+
- static int axp20x_write_raw(struct iio_dev *indio_dev,
- 			    struct iio_chan_spec const *chan, int val, int val2,
- 			    long mask)
-@@ -470,6 +570,10 @@ static const struct iio_info axp22x_adc_iio_info = {
- 	.read_raw = axp22x_read_raw,
- };
- 
-+static const struct iio_info axp813_adc_iio_info = {
-+	.read_raw = axp813_read_raw,
-+};
-+
- static int axp20x_adc_rate(struct axp20x_adc_iio *info, int rate)
- {
- 	return regmap_update_bits(info->regmap, AXP20X_ADC_RATE,
-@@ -484,6 +588,13 @@ static int axp22x_adc_rate(struct axp20x_adc_iio *info, int rate)
- 				  AXP22X_ADC_RATE_HZ(rate));
- }
- 
-+static int axp813_adc_rate(struct axp20x_adc_iio *info, int rate)
-+{
-+	return regmap_update_bits(info->regmap, AXP813_ADC_RATE,
-+				 AXP813_ADC_RATE_MASK,
-+				 AXP813_ADC_RATE_HZ(rate));
-+}
-+
- struct axp_data {
- 	const struct iio_info		*iio_info;
- 	int				num_channels;
-@@ -515,9 +626,20 @@ static const struct axp_data axp22x_data = {
- 	.maps = axp22x_maps,
- };
- 
-+static const struct axp_data axp813_data = {
-+	.iio_info = &axp813_adc_iio_info,
-+	.num_channels = ARRAY_SIZE(axp813_adc_channels),
-+	.channels = axp813_adc_channels,
-+	.adc_en1_mask = AXP22X_ADC_EN1_MASK,
-+	.adc_rate = axp813_adc_rate,
-+	.adc_en2 = false,
-+	.maps = axp22x_maps,
-+};
-+
- static const struct of_device_id axp20x_adc_of_match[] = {
- 	{ .compatible = "x-powers,axp20x-adc", .data = (void *)&axp20x_data, },
- 	{ .compatible = "x-powers,axp22x-adc", .data = (void *)&axp22x_data, },
-+	{ .compatible = "x-powers,axp813-adc", .data = (void *)&axp813_data, },
- 	{ /* sentinel */ }
- };
- MODULE_DEVICE_TABLE(of, axp20x_adc_of_match);
-@@ -525,6 +647,7 @@ MODULE_DEVICE_TABLE(of, axp20x_adc_of_match);
- static const struct platform_device_id axp20x_adc_id_match[] = {
- 	{ .name = "axp20x-adc", .driver_data = (kernel_ulong_t)&axp20x_data, },
- 	{ .name = "axp22x-adc", .driver_data = (kernel_ulong_t)&axp22x_data, },
-+	{ .name = "axp813-adc", .driver_data = (kernel_ulong_t)&axp813_data, },
- 	{ /* sentinel */ },
- };
- MODULE_DEVICE_TABLE(platform, axp20x_adc_id_match);
-diff --git a/include/linux/mfd/axp20x.h b/include/linux/mfd/axp20x.h
-index 080798f..82bf774 100644
---- a/include/linux/mfd/axp20x.h
-+++ b/include/linux/mfd/axp20x.h
-@@ -266,6 +266,8 @@ enum axp20x_variants {
- #define AXP288_RT_BATT_V_H		0xa0
- #define AXP288_RT_BATT_V_L		0xa1
- 
-+#define AXP813_ADC_RATE			0x85
-+
- /* Fuel Gauge */
- #define AXP288_FG_RDC1_REG          0xba
- #define AXP288_FG_RDC0_REG          0xbb
+diff --git a/drivers/mfd/axp20x.c b/drivers/mfd/axp20x.c
+index d8c92fb..e0cbaea 100644
+--- a/drivers/mfd/axp20x.c
++++ b/drivers/mfd/axp20x.c
+@@ -659,6 +659,7 @@ static struct mfd_cell axp20x_cells[] = {
+ 		.name		= "axp20x-regulator",
+ 	}, {
+ 		.name		= "axp20x-adc",
++		.of_compatible	= "x-powers,axp20x-adc",
+ 	}, {
+ 		.name		= "axp20x-battery-power-supply",
+ 		.of_compatible	= "x-powers,axp209-battery-power-supply",
+@@ -683,7 +684,8 @@ static struct mfd_cell axp221_cells[] = {
+ 	}, {
+ 		.name		= "axp20x-regulator",
+ 	}, {
+-		.name		= "axp22x-adc"
++		.name		= "axp22x-adc",
++		.of_compatible	= "x-powers,axp22x-adc",
+ 	}, {
+ 		.name		= "axp20x-ac-power-supply",
+ 		.of_compatible	= "x-powers,axp221-ac-power-supply",
+@@ -707,6 +709,7 @@ static struct mfd_cell axp223_cells[] = {
+ 		.resources		= axp22x_pek_resources,
+ 	}, {
+ 		.name		= "axp22x-adc",
++		.of_compatible	= "x-powers,axp22x-adc",
+ 	}, {
+ 		.name		= "axp20x-battery-power-supply",
+ 		.of_compatible	= "x-powers,axp221-battery-power-supply",
 -- 
 git-series 0.9.1
