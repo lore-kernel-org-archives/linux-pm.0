@@ -1,148 +1,168 @@
-From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: Re: [PATCH 1/9] mmc: sdhci-pci: Stop calling
- sdhci_enable_irq_wakeups()
-Date: Tue, 9 Jan 2018 10:08:46 +0200
-Message-ID: <91961c28-2e09-250d-de7a-55ef44c89ce7@intel.com>
-References: <1513757933-11232-1-git-send-email-adrian.hunter@intel.com>
- <CAPDyKFrZjTvYdT8BGKadTdTBsaAeoC3YOQBBPOvqpv1JpaOUoQ@mail.gmail.com>
- <c2d38388-93a0-61c0-e323-74851c08c1fd@intel.com>
- <25263929.MvjmvFKZ9L@aspire.rjw.lan>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-mmc-owner@vger.kernel.org>
-In-Reply-To: <25263929.MvjmvFKZ9L@aspire.rjw.lan>
-Content-Language: en-US
-Sender: linux-mmc-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+From: xinx.sun@intel.com
+Subject: [PATCH] powercap: add suspend and resume mechanism for SOC power limit
+Date: Tue,  9 Jan 2018 16:25:10 +0800
+Message-ID: <1515486310-20330-1-git-send-email-xinx.sun@intel.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga02.intel.com ([134.134.136.20]:28213 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753890AbeAIION (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 9 Jan 2018 03:14:13 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: rjw@rjwysocki.net
+Cc: zhen.han@intel.com, xinx.sun@intel.com, chaox.m.wang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 09/01/18 02:26, Rafael J. Wysocki wrote:
-> On Monday, January 8, 2018 3:49:26 PM CET Adrian Hunter wrote:
->> On 21/12/17 17:33, Ulf Hansson wrote:
->>> + linux-pm, Rafael, Geert
->>>
->>> On 21 December 2017 at 15:25, Adrian Hunter <adrian.hunter@intel.com> wrote:
->>>> On 21/12/17 16:15, Ulf Hansson wrote:
->>>>> On 20 December 2017 at 09:18, Adrian Hunter <adrian.hunter@intel.com> wrote:
->>>>>> sdhci_enable_irq_wakeups() is already called by sdhci_suspend_host() so
->>>>>> sdhci-pci should not need to call it. However sdhci_suspend_host() only
->>>>>> calls it if wakeups are enabled, and sdhci-pci does not enable them until
->>>>>> after calling sdhci_suspend_host(). So move the calls to
->>>>>> sdhci_pci_init_wakeup() before calling sdhci_suspend_host(), and
->>>>>> stop calling sdhci_enable_irq_wakeups(). That results in some
->>>>>> simplification because sdhci_pci_suspend_host() and
->>>>>> __sdhci_pci_suspend_host() no longer need to be separate functions.
->>>>>>
->>>>>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
->>>>>> ---
->>>>>>  drivers/mmc/host/sdhci-pci-core.c | 58 ++++++++++++++-------------------------
->>>>>>  1 file changed, 21 insertions(+), 37 deletions(-)
->>>>>>
->>>>>> diff --git a/drivers/mmc/host/sdhci-pci-core.c b/drivers/mmc/host/sdhci-pci-core.c
->>>>>> index 110c634cfb43..2ffc09f088ee 100644
->>>>>> --- a/drivers/mmc/host/sdhci-pci-core.c
->>>>>> +++ b/drivers/mmc/host/sdhci-pci-core.c
->>>>>> @@ -39,10 +39,29 @@
->>>>>>  static void sdhci_pci_hw_reset(struct sdhci_host *host);
->>>>>>
->>>>>>  #ifdef CONFIG_PM_SLEEP
->>>>>> -static int __sdhci_pci_suspend_host(struct sdhci_pci_chip *chip)
->>>>>> +static int sdhci_pci_init_wakeup(struct sdhci_pci_chip *chip)
->>>>>> +{
->>>>>> +       mmc_pm_flag_t pm_flags = 0;
->>>>>> +       int i;
->>>>>> +
->>>>>> +       for (i = 0; i < chip->num_slots; i++) {
->>>>>> +               struct sdhci_pci_slot *slot = chip->slots[i];
->>>>>> +
->>>>>> +               if (slot)
->>>>>> +                       pm_flags |= slot->host->mmc->pm_flags;
->>>>>> +       }
->>>>>> +
->>>>>> +       return device_init_wakeup(&chip->pdev->dev,
->>>>>> +                                 (pm_flags & MMC_PM_KEEP_POWER) &&
->>>>>> +                                 (pm_flags & MMC_PM_WAKE_SDIO_IRQ));
->>>>>
->>>>> A couple of comments here.
->>>>>
->>>>> Wakeup settings shouldn't be changed during system suspend. That means
->>>>> we shouldn't call device_init_wakeup() (or device_set_wakeup_enable()
->>>>> for that matter) here.
->>>>>
->>>>> Instead, device_init_wakeup() should be called during ->probe(), while
->>>>> device_set_wakeup_enable() should normally *not* have to be called at
->>>>> all by drivers. There are a exceptions for device_set_wakeup_enable(),
->>>>> however it should not have to be called during system suspend, at
->>>>> least.
->>>>>
->>>>> Of course, I realize that you are not changing the behavior in this
->>>>> regards in this patch, so I am fine this anyway.
->>>>>
->>>>> My point is, that the end result while doing this improvements in this
->>>>> series, should strive to that device_init_wakeup() and
->>>>> device_set_wakeup_enable() becomes used correctly. I don't think that
->>>>> is the case, or is it?
->>>>
->>>> Unfortunately we don't find out what the SDIO driver wants to do (i.e
->>>> pm_flags & MMC_PM_WAKE_SDIO_IRQ) until suspend.
->>>
->>> That's true! Of course, we need to be able to act on this, somehow.
->>>
->>>>
->>>> I considered enabling wakeups by default but wasn't sure that would not
->>>> increase power consumption in devices not expecting it.
->>>
->>> I understand the problem, believe me. However, I would rather like to
->>> try to find a generic solution to these problems, else we will keep
->>> abusing existing wakeups APIs.
->>>
->>> For your information, I have been working on several issues on how to
->>> handle the "wakeup path" correctly, which is linked to this problem.
->>> See a few quite small series for this below [1], [2].
->>>
->>> I think the general problems can be described liked this:
->>>
->>> 1) The dev->power.wakeup_path flag doesn't get set for the device by
->>> the PM core, in case device_set_wakeup_enable() is called from a
->>> ->suspend() callback. That also means, that the parent device don't
->>> get its >power.wakeup_path flag set in __device_suspend() by the PM
->>> core, while this may be expected by upper layers (PM domains, middle
->>> layers).
->>>
->>> 2) device_may_wakeup() doesn't tell us the hole story about the
->>> wakeup. Only that is *may* be configured. :-)
->>> So in cases when device_may_wakeup() returns true, we still have these
->>> three conditions to consider, which we currently can't distinguish
->>> between:
->>>
->>> *) The wakeup is configured and enabled, so the device should be
->>> enabled in the wakeup path.
->>>
->>> **) The wakeup is configured and enabled, but as an out-band-wakeup
->>> signal (like a GPIO IRQ). This means the device shouldn't be enabled
->>> in the wakeup path.
->>
->> So what about just adding can_oob_wakeup and oob_wakeup i.e.
-> 
-> Why do you want to expose that to user space?  It is entirely internal IMO.
+From: Zhen Han <zhen.han@intel.com>
 
-It was not exposed to user space.  The idea was to use the same power/wake
-attribute for both "normal" and oob wake.
+PL1 and PL2 could be throlled or de-throttled by
+Thermal management to control SOC temperature.
+However, currently, their value will be reset to default value
+after once system suspend and resume.
+Add pm_notifier to save PL1, PL2 before system suspect and restore
+PL1, PL2 after system resume.
 
-The user doesn't care whether the wakeup is native to the device or
-performed by GPIO.  So it seems reasonable to use the power/wake attribute.
+Signed-off-by: Sun Xinx <xinx.sun@intel.com>
+---
+ drivers/powercap/intel_rapl.c | 97 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 97 insertions(+)
 
-> Besides, we have that already in ACPI, for example, so that would need to be
-> taken into account somehow.
-
-What in ACPI are you referring to?
-
-> But this a PCI driver, right?
-
-Yes.
-
-> Anyway, please post the original series again with a CC to linux-pm.
-
-Done.
+diff --git a/drivers/powercap/intel_rapl.c b/drivers/powercap/intel_rapl.c
+index d1694f1..0188cff 100644
+--- a/drivers/powercap/intel_rapl.c
++++ b/drivers/powercap/intel_rapl.c
+@@ -29,6 +29,7 @@
+ #include <linux/sysfs.h>
+ #include <linux/cpu.h>
+ #include <linux/powercap.h>
++#include <linux/suspend.h>
+ #include <asm/iosf_mbi.h>
+ 
+ #include <asm/processor.h>
+@@ -155,6 +156,7 @@ struct rapl_power_limit {
+ 	int prim_id; /* primitive ID used to enable */
+ 	struct rapl_domain *domain;
+ 	const char *name;
++	u64 last_power_limit;
+ };
+ 
+ static const char pl1_name[] = "long_term";
+@@ -1533,6 +1535,92 @@ static int rapl_cpu_down_prep(unsigned int cpu)
+ 
+ static enum cpuhp_state pcap_rapl_online;
+ 
++static void power_limit_state_save(void)
++{
++	struct rapl_package *rp;
++	struct rapl_domain *rd;
++	int nr_pl, ret, i;
++
++	get_online_cpus();
++	list_for_each_entry(rp, &rapl_packages, plist) {
++		if (!rp->power_zone)
++			continue;
++		rd = power_zone_to_rapl_domain(rp->power_zone);
++		nr_pl = find_nr_power_limit(rd);
++		for (i = 0; i < nr_pl; i++) {
++			switch (rd->rpl[i].prim_id) {
++			case PL1_ENABLE:
++				ret = rapl_read_data_raw(rd,
++						POWER_LIMIT1,
++						true,
++						&rd->rpl[i].last_power_limit);
++				if (ret)
++					rd->rpl[i].last_power_limit = 0;
++				break;
++			case PL2_ENABLE:
++				ret = rapl_read_data_raw(rd,
++						POWER_LIMIT2,
++						true,
++						&rd->rpl[i].last_power_limit);
++				if (ret)
++					rd->rpl[i].last_power_limit = 0;
++				break;
++			}
++		}
++	}
++	put_online_cpus();
++}
++
++static void power_limit_state_restore(void)
++{
++	struct rapl_package *rp;
++	struct rapl_domain *rd;
++	int nr_pl, i;
++
++	get_online_cpus();
++	list_for_each_entry(rp, &rapl_packages, plist) {
++		if (!rp->power_zone)
++			continue;
++		rd = power_zone_to_rapl_domain(rp->power_zone);
++		nr_pl = find_nr_power_limit(rd);
++		for (i = 0; i < nr_pl; i++) {
++			switch (rd->rpl[i].prim_id) {
++			case PL1_ENABLE:
++				if (rd->rpl[i].last_power_limit)
++					rapl_write_data_raw(rd,
++						POWER_LIMIT1,
++						rd->rpl[i].last_power_limit);
++				break;
++			case PL2_ENABLE:
++				if (rd->rpl[i].last_power_limit)
++					rapl_write_data_raw(rd,
++						POWER_LIMIT2,
++						rd->rpl[i].last_power_limit);
++				break;
++			}
++		}
++	}
++	put_online_cpus();
++}
++
++static int rapl_pm_callback(struct notifier_block *nb,
++	unsigned long mode, void *_unused)
++{
++	switch (mode) {
++	case PM_SUSPEND_PREPARE:
++		power_limit_state_save();
++		break;
++	case PM_POST_SUSPEND:
++		power_limit_state_restore();
++		break;
++	}
++	return NOTIFY_OK;
++}
++
++static struct notifier_block rapl_pm_notifier = {
++	.notifier_call = rapl_pm_callback,
++};
++
+ static int __init rapl_init(void)
+ {
+ 	const struct x86_cpu_id *id;
+@@ -1560,8 +1648,16 @@ static int __init rapl_init(void)
+ 
+ 	/* Don't bail out if PSys is not supported */
+ 	rapl_register_psys();
++
++	ret = register_pm_notifier(&rapl_pm_notifier);
++	if (ret)
++		goto err_unreg_all;
++
+ 	return 0;
+ 
++err_unreg_all:
++	cpuhp_remove_state(pcap_rapl_online);
++
+ err_unreg:
+ 	rapl_unregister_powercap();
+ 	return ret;
+@@ -1569,6 +1665,7 @@ static int __init rapl_init(void)
+ 
+ static void __exit rapl_exit(void)
+ {
++	unregister_pm_notifier(&rapl_pm_notifier);
+ 	cpuhp_remove_state(pcap_rapl_online);
+ 	rapl_unregister_powercap();
+ }
+-- 
+1.9.1
