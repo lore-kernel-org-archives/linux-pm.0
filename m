@@ -1,123 +1,241 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH] PM / wakeup: Enable option to specify wakeup as a non in-band wakeup
-Date: Tue,  9 Jan 2018 11:54:11 +0100
-Message-ID: <1515495251-22906-1-git-send-email-ulf.hansson@linaro.org>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: [PATCH 1/2] PM / OPP: introduce an OPP power estimation helper
+Date: Tue,  9 Jan 2018 11:02:51 +0000
+Message-ID: <20180109110252.13557-2-quentin.perret@arm.com>
+References: <20180109110252.13557-1-quentin.perret@arm.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-lf0-f65.google.com ([209.85.215.65]:32900 "EHLO
-        mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751889AbeAIKyX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 05:54:23 -0500
-Received: by mail-lf0-f65.google.com with SMTP id j143so15445834lfg.0
-        for <linux-pm@vger.kernel.org>; Tue, 09 Jan 2018 02:54:22 -0800 (PST)
+Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:52414 "EHLO
+        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1752615AbeAILDD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 9 Jan 2018 06:03:03 -0500
+In-Reply-To: <20180109110252.13557-1-quentin.perret@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Adrian Hunter <adrian.hunter@intel.com>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, linux-mmc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+To: linux-pm@vger.kernel.org
+Cc: rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com
 
-In some cases, a driver may not require its device to be powered on to be
-able to deliver wakeup signals during system suspend.
+The power dissipated by a CPU at a specific OPP is currently estimated by
+the thermal subsystem as P = C * V^2 * f, with P the power, C the CPU's
+capacitance, V the OPP's voltage and f the OPP's frequency. As this
+feature can be useful for other clients requiring energy models of CPUs,
+this commit introduces an equivalent power estimator directly into the OPP
+library, hence enabling code re-use.
 
-Likely the most common scenario when this is the case, is a driver routing
-the wakeup signal through a GPIO IRQ, instead of using the regular in-band
-IRQ logic, via the device itself.
-
-Obviously the driver may put its device into a low power state during
-system suspend in cases like this. For example it may gate clocks, put
-pinctrls into sleep state, etc.
-
-However, for middle-layers and PM domains (like genpd), which checks the
-return value from device_may_wakeup() and/or the ->dev.power.wakeup_path
-status flag, there is information missing about scenarios like these.
-
-In the case of genpd, when it finds the ->dev.power.wakeup_path status flag
-being set for a device during system suspend, it leaves the device in
-powered on state including its PM domain. In other words, wasting power.
-
-To address this issue, add a new ->dev.power.no_inband_wakeup flag for the
-device, which drivers may set/clear to inform the PM core, in case
-device_may_wakeup() returns true, whether that shall make the
-->dev.power.wakeup_path status flag to be set or not for the device.
-
-The PM core checks the ->dev.power.no_inband_wakeup flag in the
-__device_suspend() phase, after invoking the ->suspend() callback for the
-device. At that point, the driver is responsible that it has set a correct
-value to the flag.
-
-Let's also introduce a helper function, device_set_no_inband_wakeup(),
-which drivers shall use to set/clear the ->dev.power.no_inband_wakeup flag.
-
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Signed-off-by: Quentin Perret <quentin.perret@arm.com>
 ---
+ drivers/opp/core.c     | 40 +++++++++++++++++++++++++++++++++
+ drivers/opp/of.c       | 61 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/opp/opp.h      |  4 ++++
+ include/linux/pm_opp.h | 20 +++++++++++++++++
+ 4 files changed, 125 insertions(+)
 
-To get some additional background, one may look at earlier discussions from
-various threads. The most recent is in and RFD [1] from Rafael and from an mmc
-series by Adrian [2].
-
-Kind regards
-Uffe
-
-[1]
-https://marc.info/?l=linux-pm&m=151541229425689&w=2
-
-[2]
-https://www.spinics.net/lists/linux-mmc/msg47549.html
-
----
- drivers/base/power/main.c | 2 +-
- include/linux/pm.h        | 1 +
- include/linux/pm_wakeup.h | 8 ++++++++
- 3 files changed, 10 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 02a497e..376c275 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1794,7 +1794,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
-  End:
- 	if (!error) {
- 		dev->power.is_suspended = true;
--		if (device_may_wakeup(dev))
-+		if (device_may_wakeup(dev) && !dev->power.no_inband_wakeup)
- 			dev->power.wakeup_path = true;
- 
- 		dpm_propagate_wakeup_to_parent(dev);
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index e723b78..d131834 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -600,6 +600,7 @@ struct dev_pm_info {
- 	struct completion	completion;
- 	struct wakeup_source	*wakeup;
- 	bool			wakeup_path:1;
-+	bool			no_inband_wakeup:1;
- 	bool			syscore:1;
- 	bool			no_pm_callbacks:1;	/* Owned by the PM core */
- 	unsigned int		must_resume:1;	/* Owned by the PM core */
-diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
-index 4238dde..5d40887 100644
---- a/include/linux/pm_wakeup.h
-+++ b/include/linux/pm_wakeup.h
-@@ -93,6 +93,11 @@ static inline void device_set_wakeup_path(struct device *dev)
- 	dev->power.wakeup_path = true;
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index 92fa94a6dcc1..b5e1ad2d311d 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -127,6 +127,24 @@ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
  }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_get_freq);
  
-+static inline void device_set_no_inband_wakeup(struct device *dev, bool wakeup)
++/**
++ * dev_pm_opp_get_power() - Gets the estimated power corresponding to an opp
++ * @opp:	opp for which power has to be returned for
++ *
++ * Return: estimated power in mirco-watts corresponding to the opp, else
++ * return 0
++ */
++unsigned long dev_pm_opp_get_power(struct dev_pm_opp *opp)
 +{
-+	dev->power.no_inband_wakeup = wakeup;
++	if (IS_ERR_OR_NULL(opp) || !opp->available) {
++		pr_err("%s: Invalid parameters\n", __func__);
++		return 0;
++	}
++
++	return opp->power_estimate_uw;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_get_power);
++
+ /**
+  * dev_pm_opp_is_turbo() - Returns if opp is turbo OPP or not
+  * @opp: opp for which turbo mode is being verified
+@@ -148,6 +166,28 @@ bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_is_turbo);
+ 
++/**
++ * dev_pm_opp_has_power() - Get the status of power values for OPPs
++ * @cpu_dev:	CPU device for which we do this operation
++ *
++ * Return: True if the OPPs hold power estimates for the CPU
++ */
++bool dev_pm_opp_has_power(struct device *cpu_dev)
++{
++	struct opp_table *opp_table;
++	bool has_power;
++
++	opp_table = _find_opp_table(cpu_dev);
++	if (IS_ERR(opp_table))
++		return false;
++
++	has_power = opp_table->has_power;
++
++	dev_pm_opp_put_opp_table(opp_table);
++
++	return has_power;
 +}
 +
- /* drivers/base/power/wakeup.c */
- extern void wakeup_source_prepare(struct wakeup_source *ws, const char *name);
- extern struct wakeup_source *wakeup_source_create(const char *name);
-@@ -181,6 +186,9 @@ static inline bool device_may_wakeup(struct device *dev)
- 
- static inline void device_set_wakeup_path(struct device *dev) {}
- 
-+static inline void device_set_no_inband_wakeup(struct device *dev,
-+					       bool wakeup) {}
+ /**
+  * dev_pm_opp_get_max_clock_latency() - Get max clock latency in nanoseconds
+  * @dev:	device for which we do this operation
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index cb716aa2f44b..4a376cd00e8d 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -633,3 +633,64 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_sharing_cpus);
 +
- static inline void __pm_stay_awake(struct wakeup_source *ws) {}
++/**
++ * dev_pm_opp_of_estimate_power() - Estimates the power dissipated by @cpu_dev
++ *                                  at each OPP.
++ * @cpu_dev:	CPU device for which we do this estimation
++ *
++ * This estimates the active power consumed by a CPU at each OPP using:
++ *                         P = C * V^2 * f
++ * with P the power, C the CPU's capacitance, V the OPP's voltage and f the
++ * OPP's frequency. V and f are assumed to be known by the time this function
++ * is called and C is read from DT.
++ *
++ * Returns -EINVAL if the CPU's capacitance cannot be read from DT.
++ */
++int dev_pm_opp_of_estimate_power(struct device *cpu_dev)
++{
++	struct opp_table *opp_table;
++	unsigned long mV, uW, KHz;
++	struct device_node *np;
++	struct dev_pm_opp *opp;
++	u32 capacitance = 0;
++	int ret = 0;
++
++	opp_table = _find_opp_table(cpu_dev);
++	if (IS_ERR(opp_table)) {
++		ret = PTR_ERR(opp_table);
++		dev_dbg(cpu_dev, "%s: no OPP table (%d)\n", __func__, ret);
++		return ret;
++	}
++
++	np = of_node_get(cpu_dev->of_node);
++	if (!np) {
++		dev_err(cpu_dev, "%s: no node for cpu\n", __func__);
++		ret = -ENOENT;
++		goto out;
++	}
++
++	of_property_read_u32(np, "dynamic-power-coefficient", &capacitance);
++	of_node_put(np);
++
++	if (!capacitance) {
++		opp_table->has_power = false;
++		ret = -EINVAL;
++		goto out;
++	}
++
++	list_for_each_entry(opp, &opp_table->opp_list, node) {
++		mV = dev_pm_opp_get_voltage(opp) / 1000;
++		KHz = dev_pm_opp_get_freq(opp) / 1000;
++		uW = (unsigned long)capacitance * KHz * mV * mV;
++		uW /= 1000000000;
++		opp->power_estimate_uw = uW;
++	}
++
++	opp_table->has_power = true;
++
++out:
++	dev_pm_opp_put_opp_table(opp_table);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_of_estimate_power);
+diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
+index 4d00061648a3..11cb62944bea 100644
+--- a/drivers/opp/opp.h
++++ b/drivers/opp/opp.h
+@@ -84,6 +84,8 @@ struct dev_pm_opp {
  
- static inline void pm_stay_awake(struct device *dev) {}
+ 	unsigned long clock_latency_ns;
+ 
++	unsigned long power_estimate_uw;
++
+ 	struct opp_table *opp_table;
+ 
+ 	struct device_node *np;
+@@ -176,6 +178,8 @@ struct opp_table {
+ 	unsigned int regulator_count;
+ 	bool genpd_performance_state;
+ 
++	bool has_power;
++
+ 	int (*set_opp)(struct dev_pm_set_opp_data *data);
+ 	struct dev_pm_set_opp_data *set_opp_data;
+ 	int (*get_pstate)(struct device *dev, unsigned long rate);
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 6c2d2e88f066..63a0edc89c7c 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -85,8 +85,12 @@ unsigned long dev_pm_opp_get_voltage(struct dev_pm_opp *opp);
+ 
+ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp);
+ 
++unsigned long dev_pm_opp_get_power(struct dev_pm_opp *opp);
++
+ bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp);
+ 
++bool dev_pm_opp_has_power(struct device *cpu_dev);
++
+ int dev_pm_opp_get_opp_count(struct device *dev);
+ unsigned long dev_pm_opp_get_max_clock_latency(struct device *dev);
+ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev);
+@@ -150,11 +154,21 @@ static inline unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
+ 	return 0;
+ }
+ 
++static inline unsigned long dev_pm_opp_get_power(struct dev_pm_opp *opp)
++{
++	return 0;
++}
++
+ static inline bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp)
+ {
+ 	return false;
+ }
+ 
++static inline bool dev_pm_opp_has_power(struct device *cpu_dev)
++{
++	return false;
++}
++
+ static inline int dev_pm_opp_get_opp_count(struct device *dev)
+ {
+ 	return 0;
+@@ -308,6 +322,7 @@ int dev_pm_opp_of_cpumask_add_table(const struct cpumask *cpumask);
+ void dev_pm_opp_of_cpumask_remove_table(const struct cpumask *cpumask);
+ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask);
+ struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device *dev);
++int dev_pm_opp_of_estimate_power(struct device *cpu_dev);
+ #else
+ static inline int dev_pm_opp_of_add_table(struct device *dev)
+ {
+@@ -336,6 +351,11 @@ static inline struct device_node *dev_pm_opp_of_get_opp_desc_node(struct device
+ {
+ 	return NULL;
+ }
++
++static inline int dev_pm_opp_of_estimate_power(struct device *cpu_dev)
++{
++	return -EINVAL;
++}
+ #endif
+ 
+ #endif		/* __LINUX_OPP_H__ */
 -- 
-2.7.4
+2.15.1
