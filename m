@@ -1,7 +1,7 @@
 From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V5 5/7] PCI: tegra: Add loadable kernel module support
-Date: Tue, 9 Jan 2018 14:49:35 +0530
-Message-ID: <1515489577-2197-6-git-send-email-mmaddireddy@nvidia.com>
+Subject: [PATCH V5 6/7] PCI: tegra: Broadcast PME_Turn_Off message before link goes to L2
+Date: Tue, 9 Jan 2018 14:49:36 +0530
+Message-ID: <1515489577-2197-7-git-send-email-mmaddireddy@nvidia.com>
 References: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
@@ -12,116 +12,158 @@ To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlf
 Cc: jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-Implement remove callback function for Tegra PCIe driver to add
-loadable kernel module support. Change PCI_TEGRA config to tristate to
-allow pci-tegra driver to be build as a module.
+Per PCIe r3.0, sec 5.3.3.2.1, PCIe root port shoould broadcast PME_Turn_Off
+message before PCIe link goes to L2. PME_Turn_Off broadcast mechanism is
+implemented in AFI module. Each Tegra PCIe root port has its own
+PME_Turn_Off and PME_TO_Ack bitmap in AFI_PME register, program this
+register to broadcast PME_Turn_Off message.
 
 Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
 ---
 V2:
 * no change in this patch
 V3:
-* use tegra_pcie_debugfs_exit() helper function in tegra_pcie_debugfs_init()
+* add PME bitmap in soc data instead of using compatible string
+* replace while loop with readl_poll_timeout() for polling
+* commit log correction
 V4:
 * no change in this patch
 V5:
-* Decoupled from https://patchwork.ozlabs.org/patch/832053/ and
-rebased on linux-next
+* Rebased on linux-next
 
- drivers/pci/host/Kconfig     |  2 +-
- drivers/pci/host/pci-tegra.c | 34 +++++++++++++++++++++++++++++++---
- 2 files changed, 32 insertions(+), 4 deletions(-)
+ drivers/pci/host/pci-tegra.c | 45 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
 
-diff --git a/drivers/pci/host/Kconfig b/drivers/pci/host/Kconfig
-index 38d12980db0f..6fd2a5937804 100644
---- a/drivers/pci/host/Kconfig
-+++ b/drivers/pci/host/Kconfig
-@@ -34,7 +34,7 @@ config PCI_FTPCI100
- 	default ARCH_GEMINI
- 
- config PCI_TEGRA
--	bool "NVIDIA Tegra PCIe controller"
-+	tristate "NVIDIA Tegra PCIe controller"
- 	depends on ARCH_TEGRA
- 	help
- 	  Say Y here if you want support for the PCIe host controller found
 diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-index e68507f658d8..981f126b14d6 100644
+index 981f126b14d6..cc33fc0fb300 100644
 --- a/drivers/pci/host/pci-tegra.c
 +++ b/drivers/pci/host/pci-tegra.c
-@@ -35,6 +35,7 @@
+@@ -31,6 +31,7 @@
+ #include <linux/delay.h>
+ #include <linux/export.h>
+ #include <linux/interrupt.h>
++#include <linux/iopoll.h>
+ #include <linux/irq.h>
  #include <linux/irqdomain.h>
  #include <linux/kernel.h>
- #include <linux/init.h>
-+#include <linux/module.h>
- #include <linux/msi.h>
- #include <linux/of_address.h>
- #include <linux/of_pci.h>
-@@ -2276,6 +2277,12 @@ static const struct file_operations tegra_pcie_ports_ops = {
- 	.release = seq_release,
- };
+@@ -153,6 +154,8 @@
+ #define  AFI_INTR_EN_FPCI_TIMEOUT	(1 << 7)
+ #define  AFI_INTR_EN_PRSNT_SENSE	(1 << 8)
  
-+static void tegra_pcie_debugfs_exit(struct tegra_pcie *pcie)
-+{
-+	debugfs_remove_recursive(pcie->debugfs);
-+	pcie->debugfs = NULL;
-+}
++#define AFI_PCIE_PME		0xf0
 +
- static int tegra_pcie_debugfs_init(struct tegra_pcie *pcie)
- {
- 	struct dentry *file;
-@@ -2292,8 +2299,7 @@ static int tegra_pcie_debugfs_init(struct tegra_pcie *pcie)
+ #define AFI_PCIE_CONFIG					0x0f8
+ #define  AFI_PCIE_CONFIG_PCIE_DISABLE(x)		(1 << ((x) + 1))
+ #define  AFI_PCIE_CONFIG_PCIE_DISABLE_ALL		0xe
+@@ -233,6 +236,8 @@
+ #define PADS_REFCLK_CFG_PREDI_SHIFT		8  /* 11:8 */
+ #define PADS_REFCLK_CFG_DRVI_SHIFT		12 /* 15:12 */
+ 
++#define PME_ACK_TIMEOUT 10000
++
+ struct tegra_msi {
+ 	struct msi_controller chip;
+ 	DECLARE_BITMAP(used, INT_PCI_MSI_NR);
+@@ -251,6 +256,8 @@ struct tegra_pcie_soc {
+ 	u32 tx_ref_sel;
+ 	u32 pads_refclk_cfg0;
+ 	u32 pads_refclk_cfg1;
++	u8 pme_turnoff_bit[3];
++	u8 pme_ack_bit[3];
+ 	bool has_pex_clkreq_en;
+ 	bool has_pex_bias_ctrl;
+ 	bool has_intr_prsnt_sense;
+@@ -1358,6 +1365,31 @@ static int tegra_pcie_put_resources(struct tegra_pcie *pcie)
  	return 0;
- 
- remove:
--	debugfs_remove_recursive(pcie->debugfs);
--	pcie->debugfs = NULL;
-+	tegra_pcie_debugfs_exit(pcie);
- 	return -ENOMEM;
  }
  
-@@ -2311,6 +2317,7 @@ static int tegra_pcie_probe(struct platform_device *pdev)
- 
- 	pcie = pci_host_bridge_priv(host);
- 	host->sysdata = pcie;
-+	platform_set_drvdata(pdev, pcie);
- 
- 	pcie->soc = of_device_get_match_data(dev);
- 	INIT_LIST_HEAD(&pcie->ports);
-@@ -2388,6 +2395,25 @@ static int tegra_pcie_probe(struct platform_device *pdev)
- 	return err;
- }
- 
-+static int tegra_pcie_remove(struct platform_device *pdev)
++static void tegra_pcie_pme_turnoff(struct tegra_pcie_port *port)
 +{
-+	struct tegra_pcie *pcie = platform_get_drvdata(pdev);
-+	struct pci_host_bridge *host = pci_host_bridge_from_priv(pcie);
++	struct tegra_pcie *pcie = port->pcie;
++	const struct tegra_pcie_soc *soc = pcie->soc;
++	int err;
++	u32 val;
 +
-+	if (IS_ENABLED(CONFIG_DEBUG_FS))
-+		tegra_pcie_debugfs_exit(pcie);
-+	pci_stop_root_bus(host->bus);
-+	pci_remove_root_bus(host->bus);
-+	tegra_pcie_disable_ports(pcie);
-+	if (IS_ENABLED(CONFIG_PCI_MSI))
-+		tegra_pcie_disable_msi(pcie);
-+	tegra_pcie_free_resources(pcie);
-+	tegra_pcie_disable_controller(pcie);
-+	tegra_pcie_put_resources(pcie);
++	val = afi_readl(pcie, AFI_PCIE_PME);
++	val |= (0x1 << soc->pme_turnoff_bit[port->index]);
++	afi_writel(pcie, val, AFI_PCIE_PME);
 +
-+	return 0;
++	err = readl_poll_timeout(pcie->afi + AFI_PCIE_PME, val,
++				 val & (0x1 << soc->pme_ack_bit[port->index]),
++				 1, PME_ACK_TIMEOUT);
++	if (err)
++		dev_err(pcie->dev, "PME Ack is not received on port: %d\n",
++			port->index);
++
++	usleep_range(10000, 11000);
++
++	val = afi_readl(pcie, AFI_PCIE_PME);
++	val &= ~(0x1 << soc->pme_turnoff_bit[port->index]);
++	afi_writel(pcie, val, AFI_PCIE_PME);
 +}
 +
- static struct platform_driver tegra_pcie_driver = {
- 	.driver = {
- 		.name = "tegra-pcie",
-@@ -2395,5 +2421,7 @@ static struct platform_driver tegra_pcie_driver = {
- 		.suppress_bind_attrs = true,
- 	},
- 	.probe = tegra_pcie_probe,
-+	.remove = tegra_pcie_remove,
- };
--builtin_platform_driver(tegra_pcie_driver);
-+module_platform_driver(tegra_pcie_driver);
-+MODULE_LICENSE("GPL");
+ static int tegra_msi_alloc(struct tegra_msi *chip)
+ {
+ 	int msi;
+@@ -2109,6 +2141,8 @@ static const struct tegra_pcie_soc tegra20_pcie = {
+ 	.pads_pll_ctl = PADS_PLL_CTL_TEGRA20,
+ 	.tx_ref_sel = PADS_PLL_CTL_TXCLKREF_DIV10,
+ 	.pads_refclk_cfg0 = 0xfa5cfa5c,
++	.pme_turnoff_bit = {0, 8},
++	.pme_ack_bit = {5, 10},
+ 	.has_pex_clkreq_en = false,
+ 	.has_pex_bias_ctrl = false,
+ 	.has_intr_prsnt_sense = false,
+@@ -2125,6 +2159,8 @@ static const struct tegra_pcie_soc tegra30_pcie = {
+ 	.tx_ref_sel = PADS_PLL_CTL_TXCLKREF_BUF_EN,
+ 	.pads_refclk_cfg0 = 0xfa5cfa5c,
+ 	.pads_refclk_cfg1 = 0xfa5cfa5c,
++	.pme_turnoff_bit = {0, 8, 16},
++	.pme_ack_bit = {5, 10, 18},
+ 	.has_pex_clkreq_en = true,
+ 	.has_pex_bias_ctrl = true,
+ 	.has_intr_prsnt_sense = true,
+@@ -2140,6 +2176,8 @@ static const struct tegra_pcie_soc tegra124_pcie = {
+ 	.pads_pll_ctl = PADS_PLL_CTL_TEGRA30,
+ 	.tx_ref_sel = PADS_PLL_CTL_TXCLKREF_BUF_EN,
+ 	.pads_refclk_cfg0 = 0x44ac44ac,
++	.pme_turnoff_bit = {0, 8},
++	.pme_ack_bit = {5, 10},
+ 	.has_pex_clkreq_en = true,
+ 	.has_pex_bias_ctrl = true,
+ 	.has_intr_prsnt_sense = true,
+@@ -2155,6 +2193,8 @@ static const struct tegra_pcie_soc tegra210_pcie = {
+ 	.pads_pll_ctl = PADS_PLL_CTL_TEGRA30,
+ 	.tx_ref_sel = PADS_PLL_CTL_TXCLKREF_BUF_EN,
+ 	.pads_refclk_cfg0 = 0x90b890b8,
++	.pme_turnoff_bit = {0, 8},
++	.pme_ack_bit = {5, 10},
+ 	.has_pex_clkreq_en = true,
+ 	.has_pex_bias_ctrl = true,
+ 	.has_intr_prsnt_sense = true,
+@@ -2171,6 +2211,8 @@ static const struct tegra_pcie_soc tegra186_pcie = {
+ 	.tx_ref_sel = PADS_PLL_CTL_TXCLKREF_BUF_EN,
+ 	.pads_refclk_cfg0 = 0x80b880b8,
+ 	.pads_refclk_cfg1 = 0x000480b8,
++	.pme_turnoff_bit = {0, 8, 12},
++	.pme_ack_bit = {5, 10, 14},
+ 	.has_pex_clkreq_en = true,
+ 	.has_pex_bias_ctrl = true,
+ 	.has_intr_prsnt_sense = true,
+@@ -2399,11 +2441,14 @@ static int tegra_pcie_remove(struct platform_device *pdev)
+ {
+ 	struct tegra_pcie *pcie = platform_get_drvdata(pdev);
+ 	struct pci_host_bridge *host = pci_host_bridge_from_priv(pcie);
++	struct tegra_pcie_port *port, *tmp;
+ 
+ 	if (IS_ENABLED(CONFIG_DEBUG_FS))
+ 		tegra_pcie_debugfs_exit(pcie);
+ 	pci_stop_root_bus(host->bus);
+ 	pci_remove_root_bus(host->bus);
++	list_for_each_entry_safe(port, tmp, &pcie->ports, list)
++		tegra_pcie_pme_turnoff(port);
+ 	tegra_pcie_disable_ports(pcie);
+ 	if (IS_ENABLED(CONFIG_PCI_MSI))
+ 		tegra_pcie_disable_msi(pcie);
 -- 
 2.1.4
