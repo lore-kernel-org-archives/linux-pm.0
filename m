@@ -1,84 +1,77 @@
-From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH v2 16/16] MAINTAINERS: Add AXP288 PMIC entry
-Date: Tue, 9 Jan 2018 17:53:59 +0100
-Message-ID: <20180109165359.vz73iwrgdbrqinbr@earth.universe>
-References: <20171226125914.10235-1-hdegoede@redhat.com>
- <20171226125914.10235-16-hdegoede@redhat.com>
+From: Michael Nazzareno Trimarchi <michael@amarulasolutions.com>
+Subject: Re: power_supply_core freezable change_work
+Date: Tue, 9 Jan 2018 18:19:32 +0100
+Message-ID: <CAOf5uwmMrLqfg2tRvuAqAJBib1V11aRjRcp_aX1qV6=62k3wAw@mail.gmail.com>
+References: <CAOf5uwn=FwQB3hpi3Hw+=fRZmUPeoWZS_5Q=8sgx36AT0NYkUg@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ivqul4p3sfd4wx3w"
+Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:60958 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S934494AbeAIQyC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Jan 2018 11:54:02 -0500
-Content-Disposition: inline
-In-Reply-To: <20171226125914.10235-16-hdegoede@redhat.com>
+Received: from mail-io0-f174.google.com ([209.85.223.174]:41495 "EHLO
+        mail-io0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1760027AbeAIRTe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 12:19:34 -0500
+Received: by mail-io0-f174.google.com with SMTP id f6so19333936ioh.8
+        for <linux-pm@vger.kernel.org>; Tue, 09 Jan 2018 09:19:34 -0800 (PST)
+In-Reply-To: <CAOf5uwn=FwQB3hpi3Hw+=fRZmUPeoWZS_5Q=8sgx36AT0NYkUg@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org
+To: linux-pm@vger.kernel.org
+Cc: Mark Brown <broonie@linaro.org>
 
+Hi
 
---ivqul4p3sfd4wx3w
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Is this wrong?
 
-Hi,
+Michael
 
-On Tue, Dec 26, 2017 at 01:59:14PM +0100, Hans de Goede wrote:
-> Add an entry for the AXP288 PMIC drivers with myself as maintainer.
->=20
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
-
-Thanks, I queued the series.
-
--- Sebastian
-
->  MAINTAINERS | 6 ++++++
->  1 file changed, 6 insertions(+)
->=20
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 0749864ee655..95e99695f919 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -14857,6 +14857,12 @@ F:	include/linux/workqueue.h
->  F:	kernel/workqueue.c
->  F:	Documentation/core-api/workqueue.rst
-> =20
-> +X-POWERS AXP288 PMIC DRIVERS
-> +M:	Hans de Goede <hdegoede@redhat.com>
-> +S:	Maintained
-> +N:	axp288
-> +F:	drivers/acpi/pmic/intel_pmic_xpower.c
-> +
->  X-POWERS MULTIFUNCTION PMIC DEVICE DRIVERS
->  M:	Chen-Yu Tsai <wens@csie.org>
->  L:	linux-kernel@vger.kernel.org
-> --=20
-> 2.14.3
->=20
-
---ivqul4p3sfd4wx3w
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlpU86AACgkQ2O7X88g7
-+pqwgQ//dsmG4grFjq9G+NAIzPN0/193qVgFzLlNrbZU9ieZ+f520pqcKh8LkhXv
-Ss4lAUWq0JfSUx8nn/Y4N855a4NQG0bKF3+qqQC3TEkbmR3IXTetpGPBoYPKrmM5
-2Ed7C+gzxPg05y781y6ihKdp6bWgRQi9s60Qn2s0IADX1aUTNZpbRyBmYT4ODwHh
-TAVD4RIT3ATEZb2iUS9cHcpGwhL3ycmTCJa+yLKOMPCLnLlXfHhNH+xDCAVAzWIj
-PYGAiPNW49yiVInCux/8Jmw/ov0TqJ+7VahprtV0l/D6Hz9gvkt/Xv/OGf7WW1b/
-Wb2Sh9odTIAcMW8x+4o/XAVDtfOPeeaxsgc6ADFpjVdTu+xduT5CTaaZh6QWWxOG
-C8+wPDilD8c6wxKpMLrnEWMUAhEbFfGqrrz7Vg94G7qhv1+dJUUu2jVa7vhQBgnh
-A7uBzsymjdKViSjUdKzlqYTezpmGzqUyJrE8VdFQcWHmOlCmNvydsIkoh4YIdayp
-6539VdPo50YcIxA4LNLuPF/6YM/MMKGuZtmCMf0nKzq4OHu1oULH6quYBe/02NJr
-8rWNdy+5YpaSr5jpMzsCIHRVJSfLcgmyxPYbU6mGB25eUY2NzgWHvCNXWFCp7N0u
-iBTrS/a4RVMfwDC7V4MCwZUGfZsXFKWOwN18KoJDGInqV7SQHSk=
-=MUaM
------END PGP SIGNATURE-----
-
---ivqul4p3sfd4wx3w--
+On Wed, Sep 27, 2017 at 11:18 AM, Michael Nazzareno Trimarchi
+<michael@amarulasolutions.com> wrote:
+> Hi
+>
+> <4>[13502.656095] [<c0419264>] (sbs_read_word_data+0x0/0x70) from
+> [<c04192f8>] (sbs_set_battery_mode+0x24/0x6c)
+> <4>[13502.656095]  r6:d79b0800 r5:d7123408 r4:00000001 r3:c04194ac
+> <4>[13502.656125] [<c04192d4>] (sbs_set_battery_mode+0x0/0x6c) from
+> [<c041962c>] (sbs_get_property+0x180/0x6e4)
+> <4>[13502.656125]  r6:0000001b r5:d7123408 r4:d79b0800 r3:c04194ac
+> <4>[13502.656156] [<c04194ac>] (sbs_get_property+0x0/0x6e4) from
+> [<c0417e2c>] (power_supply_show_property+0x4c/0x1c8)
+> <4>[13502.656186] [<c0417de0>] (power_supply_show_property+0x0/0x1c8)
+> from [<c0418098>] (power_supply_uevent+0xa8/0x1d4)
+> <4>[13502.656186]  r8:ca4b1000 r7:0000001b r6:d7123408 r5:0000000e r4:c068d3dc
+> <4>[13502.656217] [<c0417ff0>] (power_supply_uevent+0x0/0x1d4) from
+> [<c0324f58>] (dev_uevent+0xc8/0x18c)
+> <4>[13502.656247] [<c0324e90>] (dev_uevent+0x0/0x18c) from
+> [<c025ce18>] (kobject_uevent_env+0x1d4/0x4c4)
+> <4>[13502.656247]  r7:d7882880 r6:00000000 r5:c069cda4 r4:00000002
+> <4>[13502.656278] [<c025cc44>] (kobject_uevent_env+0x0/0x4c4) from
+> [<c025d11c>] (kobject_uevent+0x14/0x18)
+> <4>[13502.656308] [<c025d108>] (kobject_uevent+0x0/0x18) from
+> [<c04178d0>] (power_supply_changed_work+0x94/0xb8)
+> <4>[13502.656308] [<c041783c>] (power_supply_changed_work+0x0/0xb8)
+> from [<c00603e8>] (process_one_work+0x158/0x474)
+> <4>[13502.656339]  r7:c1ae9e00 r6:c1ae4880 r5:cc480000 r4:ce655e00
+> <4>[13502.656369] [<c0060290>] (process_one_work+0x0/0x474) from
+> [<c0060a50>] (worker_thread+0x144/0x324)
+> <4>[13502.656369] [<c006090c>] (worker_thread+0x0/0x324) from
+> [<c00655c4>] (kthread+0x98/0xa4)
+> <4>[13502.656400] [<c006552c>] (kthread+0x0/0xa4) from [<c0047b6c>]
+> (do_exit+0x0/0x7c4)
+>
+> According to this stack I would like to know if I can queue
+>
+> diff --git a/drivers/power/power_supply_core.c
+> b/drivers/power/power_supply_core.c
+> index f58d1805..3dae683 100644
+> --- a/drivers/power/power_supply_core.c
+> +++ b/drivers/power/power_supply_core.c
+> @@ -75,7 +75,7 @@ void power_supply_changed(struct power_supply *psy)
+>         psy->changed = true;
+>         wake_lock(&psy->work_wake_lock);
+>         spin_unlock_irqrestore(&psy->changed_lock, flags);
+> -       schedule_work(&psy->changed_work);
+> +       queue_work(system_freezable_wq, &psy->chaged_work);
+>  }
+>  EXPORT_SYMBOL_GPL(power_supply_changed);
+>
+> Michael
