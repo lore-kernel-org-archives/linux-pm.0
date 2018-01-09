@@ -1,8 +1,7 @@
 From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v5 1/6] base: power: runtime: Export
-	pm_runtime_get/put_suppliers
-Date: Tue,  9 Jan 2018 15:31:44 +0530
-Message-ID: <1515492109-753-2-git-send-email-vivek.gautam@codeaurora.org>
+Subject: [PATCH v5 2/6] iommu/arm-smmu: Add pm_runtime/sleep ops
+Date: Tue,  9 Jan 2018 15:31:45 +0530
+Message-ID: <1515492109-753-3-git-send-email-vivek.gautam@codeaurora.org>
 References: <1515492109-753-1-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,55 +21,138 @@ To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A
 Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-The device link allows the pm framework to tie the supplier and
-consumer. So, whenever the consumer is powered-on the supplier
-is powered-on first.
+From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 
-There are however cases in which the consumer wants to power-on
-the supplier, but not itself.
-E.g., A Graphics or multimedia driver wants to power-on the SMMU
-to unmap a buffer and finish the TLB operations without powering
-on itself. Some of these unmap requests are coming from the
-user space when the controller itself is not powered-up, and it
-can be huge penalty in terms of power and latency to power-up
-the graphics/mm controllers.
-There can be an argument that the supplier should handle this case
-on its own and there should not be a need for the consumer to
-power-on the supplier. But as discussed on the thread [1] about
-ARM-SMMU runtime pm, we don't want to introduce runtime pm calls
-in atomic path in arm_smmu_unmap.
+The smmu needs to be functional only when the respective
+master's using it are active. The device_link feature
+helps to track such functional dependencies, so that the
+iommu gets powered when the master device enables itself
+using pm_runtime. So by adapting the smmu driver for
+runtime pm, above said dependency can be addressed.
 
-[1] https://patchwork.kernel.org/patch/9827825/
+This patch adds the pm runtime/sleep callbacks to the
+driver and also the functions to parse the smmu clocks
+from DT and enable them in resume/suspend.
 
+Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+Signed-off-by: Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+[vivek: Clock rework to request bulk of clocks]
 Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 ---
+ drivers/iommu/arm-smmu.c | 55 ++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 53 insertions(+), 2 deletions(-)
 
- * This is v2 of the patch [1]. Adding it to this patch series.
-   [1] https://patchwork.kernel.org/patch/10102447/
-
- drivers/base/power/runtime.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 6e89b51ea3d9..06a2a88fe866 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -1579,6 +1579,7 @@ void pm_runtime_get_suppliers(struct device *dev)
+diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
+index 78d4c6b8f1ba..21acffe91a1c 100644
+--- a/drivers/iommu/arm-smmu.c
++++ b/drivers/iommu/arm-smmu.c
+@@ -48,6 +48,7 @@
+ #include <linux/of_iommu.h>
+ #include <linux/pci.h>
+ #include <linux/platform_device.h>
++#include <linux/pm_runtime.h>
+ #include <linux/slab.h>
+ #include <linux/spinlock.h>
  
- 	device_links_read_unlock(idx);
+@@ -205,6 +206,9 @@ struct arm_smmu_device {
+ 	u32				num_global_irqs;
+ 	u32				num_context_irqs;
+ 	unsigned int			*irqs;
++	struct clk_bulk_data		*clocks;
++	int				num_clks;
++	const char * const		*clk_names;
+ 
+ 	u32				cavium_id_base; /* Specific to Cavium */
+ 
+@@ -1685,6 +1689,25 @@ static int arm_smmu_id_size_to_bits(int size)
+ 	}
  }
-+EXPORT_SYMBOL_GPL(pm_runtime_get_suppliers);
  
- /**
-  * pm_runtime_put_suppliers - Drop references to supplier devices.
-@@ -1597,6 +1598,7 @@ void pm_runtime_put_suppliers(struct device *dev)
- 
- 	device_links_read_unlock(idx);
- }
-+EXPORT_SYMBOL_GPL(pm_runtime_put_suppliers);
- 
- void pm_runtime_new_link(struct device *dev)
++static int arm_smmu_init_clocks(struct arm_smmu_device *smmu)
++{
++	int i;
++	int num = smmu->num_clks;
++
++	if (num < 1)
++		return 0;
++
++	smmu->clocks = devm_kcalloc(smmu->dev, num,
++				    sizeof(*smmu->clocks), GFP_KERNEL);
++	if (!smmu->clocks)
++		return -ENOMEM;
++
++	for (i = 0; i < num; i++)
++		smmu->clocks[i].id = smmu->clk_names[i];
++
++	return devm_clk_bulk_get(smmu->dev, num, smmu->clocks);
++}
++
+ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
  {
+ 	unsigned long size;
+@@ -1897,10 +1920,12 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
+ struct arm_smmu_match_data {
+ 	enum arm_smmu_arch_version version;
+ 	enum arm_smmu_implementation model;
++	const char * const *clks;
++	int num_clks;
+ };
+ 
+ #define ARM_SMMU_MATCH_DATA(name, ver, imp)	\
+-static struct arm_smmu_match_data name = { .version = ver, .model = imp }
++static const struct arm_smmu_match_data name = { .version = ver, .model = imp }
+ 
+ ARM_SMMU_MATCH_DATA(smmu_generic_v1, ARM_SMMU_V1, GENERIC_SMMU);
+ ARM_SMMU_MATCH_DATA(smmu_generic_v2, ARM_SMMU_V2, GENERIC_SMMU);
+@@ -2001,6 +2026,8 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev,
+ 	data = of_device_get_match_data(dev);
+ 	smmu->version = data->version;
+ 	smmu->model = data->model;
++	smmu->clk_names = data->clks;
++	smmu->num_clks = data->num_clks;
+ 
+ 	parse_driver_options(smmu);
+ 
+@@ -2099,6 +2126,10 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
+ 		smmu->irqs[i] = irq;
+ 	}
+ 
++	err = arm_smmu_init_clocks(smmu);
++	if (err)
++		return err;
++
+ 	err = arm_smmu_device_cfg_probe(smmu);
+ 	if (err)
+ 		return err;
+@@ -2197,7 +2228,27 @@ static int __maybe_unused arm_smmu_pm_resume(struct device *dev)
+ 	return 0;
+ }
+ 
+-static SIMPLE_DEV_PM_OPS(arm_smmu_pm_ops, NULL, arm_smmu_pm_resume);
++static int __maybe_unused arm_smmu_runtime_resume(struct device *dev)
++{
++	struct arm_smmu_device *smmu = dev_get_drvdata(dev);
++
++	return clk_bulk_prepare_enable(smmu->num_clks, smmu->clocks);
++}
++
++static int __maybe_unused arm_smmu_runtime_suspend(struct device *dev)
++{
++	struct arm_smmu_device *smmu = dev_get_drvdata(dev);
++
++	clk_bulk_disable_unprepare(smmu->num_clks, smmu->clocks);
++
++	return 0;
++}
++
++static const struct dev_pm_ops arm_smmu_pm_ops = {
++	SET_SYSTEM_SLEEP_PM_OPS(NULL, arm_smmu_pm_resume)
++	SET_RUNTIME_PM_OPS(arm_smmu_runtime_suspend,
++			   arm_smmu_runtime_resume, NULL)
++};
+ 
+ static struct platform_driver arm_smmu_driver = {
+ 	.driver	= {
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
