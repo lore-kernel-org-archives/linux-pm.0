@@ -1,130 +1,134 @@
-From: Todd Brandt <todd.e.brandt@linux.intel.com>
-Subject: [BUG] function_graph trace causes  hang when using sleepgraph
- (4.15.0-rc1 and newer)
-Date: Mon, 08 Jan 2018 15:55:14 -0800
-Message-ID: <1515455714.17761.7.camel@linux.intel.com>
-Reply-To: todd.e.brandt@linux.intel.com
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/9] mmc: sdhci-pci: Stop calling sdhci_enable_irq_wakeups()
+Date: Tue, 09 Jan 2018 01:26:49 +0100
+Message-ID: <25263929.MvjmvFKZ9L@aspire.rjw.lan>
+References: <1513757933-11232-1-git-send-email-adrian.hunter@intel.com> <CAPDyKFrZjTvYdT8BGKadTdTBsaAeoC3YOQBBPOvqpv1JpaOUoQ@mail.gmail.com> <c2d38388-93a0-61c0-e323-74851c08c1fd@intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga06.intel.com ([134.134.136.31]:15807 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1757008AbeAHXzQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 8 Jan 2018 18:55:16 -0500
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <c2d38388-93a0-61c0-e323-74851c08c1fd@intel.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Adrian Hunter <adrian.hunter@intel.com>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: linux-pm@vger.kernel.org
-To: linux-kernel@vger.kernel.org, rostedt@goodmis.org, linux-pm@vger.kernel.org
-Cc: len.brown@intel.com, todd.e.brandt@intel.com
 
-I've discovered an issue in the kernel which is causing sleepgraph
-(analyse_suspend) to hang the system when it tries to get a callgraph
-trace over suspend/resume. It happens on kernels 4.15.0-rc1 and newer.
+On Monday, January 8, 2018 3:49:26 PM CET Adrian Hunter wrote:
+> On 21/12/17 17:33, Ulf Hansson wrote:
+> > + linux-pm, Rafael, Geert
+> > 
+> > On 21 December 2017 at 15:25, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> >> On 21/12/17 16:15, Ulf Hansson wrote:
+> >>> On 20 December 2017 at 09:18, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> >>>> sdhci_enable_irq_wakeups() is already called by sdhci_suspend_host() so
+> >>>> sdhci-pci should not need to call it. However sdhci_suspend_host() only
+> >>>> calls it if wakeups are enabled, and sdhci-pci does not enable them until
+> >>>> after calling sdhci_suspend_host(). So move the calls to
+> >>>> sdhci_pci_init_wakeup() before calling sdhci_suspend_host(), and
+> >>>> stop calling sdhci_enable_irq_wakeups(). That results in some
+> >>>> simplification because sdhci_pci_suspend_host() and
+> >>>> __sdhci_pci_suspend_host() no longer need to be separate functions.
+> >>>>
+> >>>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+> >>>> ---
+> >>>>  drivers/mmc/host/sdhci-pci-core.c | 58 ++++++++++++++-------------------------
+> >>>>  1 file changed, 21 insertions(+), 37 deletions(-)
+> >>>>
+> >>>> diff --git a/drivers/mmc/host/sdhci-pci-core.c b/drivers/mmc/host/sdhci-pci-core.c
+> >>>> index 110c634cfb43..2ffc09f088ee 100644
+> >>>> --- a/drivers/mmc/host/sdhci-pci-core.c
+> >>>> +++ b/drivers/mmc/host/sdhci-pci-core.c
+> >>>> @@ -39,10 +39,29 @@
+> >>>>  static void sdhci_pci_hw_reset(struct sdhci_host *host);
+> >>>>
+> >>>>  #ifdef CONFIG_PM_SLEEP
+> >>>> -static int __sdhci_pci_suspend_host(struct sdhci_pci_chip *chip)
+> >>>> +static int sdhci_pci_init_wakeup(struct sdhci_pci_chip *chip)
+> >>>> +{
+> >>>> +       mmc_pm_flag_t pm_flags = 0;
+> >>>> +       int i;
+> >>>> +
+> >>>> +       for (i = 0; i < chip->num_slots; i++) {
+> >>>> +               struct sdhci_pci_slot *slot = chip->slots[i];
+> >>>> +
+> >>>> +               if (slot)
+> >>>> +                       pm_flags |= slot->host->mmc->pm_flags;
+> >>>> +       }
+> >>>> +
+> >>>> +       return device_init_wakeup(&chip->pdev->dev,
+> >>>> +                                 (pm_flags & MMC_PM_KEEP_POWER) &&
+> >>>> +                                 (pm_flags & MMC_PM_WAKE_SDIO_IRQ));
+> >>>
+> >>> A couple of comments here.
+> >>>
+> >>> Wakeup settings shouldn't be changed during system suspend. That means
+> >>> we shouldn't call device_init_wakeup() (or device_set_wakeup_enable()
+> >>> for that matter) here.
+> >>>
+> >>> Instead, device_init_wakeup() should be called during ->probe(), while
+> >>> device_set_wakeup_enable() should normally *not* have to be called at
+> >>> all by drivers. There are a exceptions for device_set_wakeup_enable(),
+> >>> however it should not have to be called during system suspend, at
+> >>> least.
+> >>>
+> >>> Of course, I realize that you are not changing the behavior in this
+> >>> regards in this patch, so I am fine this anyway.
+> >>>
+> >>> My point is, that the end result while doing this improvements in this
+> >>> series, should strive to that device_init_wakeup() and
+> >>> device_set_wakeup_enable() becomes used correctly. I don't think that
+> >>> is the case, or is it?
+> >>
+> >> Unfortunately we don't find out what the SDIO driver wants to do (i.e
+> >> pm_flags & MMC_PM_WAKE_SDIO_IRQ) until suspend.
+> > 
+> > That's true! Of course, we need to be able to act on this, somehow.
+> > 
+> >>
+> >> I considered enabling wakeups by default but wasn't sure that would not
+> >> increase power consumption in devices not expecting it.
+> > 
+> > I understand the problem, believe me. However, I would rather like to
+> > try to find a generic solution to these problems, else we will keep
+> > abusing existing wakeups APIs.
+> > 
+> > For your information, I have been working on several issues on how to
+> > handle the "wakeup path" correctly, which is linked to this problem.
+> > See a few quite small series for this below [1], [2].
+> > 
+> > I think the general problems can be described liked this:
+> > 
+> > 1) The dev->power.wakeup_path flag doesn't get set for the device by
+> > the PM core, in case device_set_wakeup_enable() is called from a
+> > ->suspend() callback. That also means, that the parent device don't
+> > get its >power.wakeup_path flag set in __device_suspend() by the PM
+> > core, while this may be expected by upper layers (PM domains, middle
+> > layers).
+> > 
+> > 2) device_may_wakeup() doesn't tell us the hole story about the
+> > wakeup. Only that is *may* be configured. :-)
+> > So in cases when device_may_wakeup() returns true, we still have these
+> > three conditions to consider, which we currently can't distinguish
+> > between:
+> > 
+> > *) The wakeup is configured and enabled, so the device should be
+> > enabled in the wakeup path.
+> > 
+> > **) The wakeup is configured and enabled, but as an out-band-wakeup
+> > signal (like a GPIO IRQ). This means the device shouldn't be enabled
+> > in the wakeup path.
+> 
+> So what about just adding can_oob_wakeup and oob_wakeup i.e.
 
-I've whittled it down to 3 items which have to be set for the hang to
-occur:
+Why do you want to expose that to user space?  It is entirely internal IMO.
 
-1) enable function_graph trace
-2) enable global clock
-3) enable trace points device_pm_callback_start or
-device_pm_callback_end
+Besides, we have that already in ACPI, for example, so that would need to be
+taken into account somehow.
 
-These things all occur when sleepgraph is run with -f. It needs to
-collect a function graph trace with global clock in tandem with the the
-device_pm_callback trace events. 
+But this a PCI driver, right?
 
-This script reproduces the error:
+Anyway, please post the original series again with a CC to linux-pm.
 
-echo "global" > /sys/kernel/debug/tracing/trace_clock
-echo "function_graph" > /sys/kernel/debug/tracing/current_tracer
-echo 1 >
-/sys/kernel/debug/tracing/events/power/device_pm_callback_start/enable
-echo 1 >
-/sys/kernel/debug/tracing/events/power/device_pm_callback_end/enable
-echo 1 >  /sys/kernel/debug/tracing/tracing_on
-echo "mem" > /sys/power/state
-# hang occurs here: system has to be rebooted
-echo 0 >  /sys/kernel/debug/tracing/tracing_on
+Thanks,
+Rafael
 
-I performed a bisect between 4.14.0 and 4.15.0-rc1 and it landed on an
-ftrace patch that was merged in for 4.15.0-rc1. I'm still debugging it,
-but I just wanted to get this out there ASAP so it can be hopefully be
-fixed before 4.15.0. I'm not sure if the issue is in ftrace or in the
-pm subsystem device_pm_callback code (though nothing has changed in the
-latter).
-
--- [BISECT LOG START] --
-
-git bisect start
-# bad: [4fbd8d194f06c8a3fd2af1ce560ddb31f7ec8323] Linux 4.15-rc1
-git bisect bad 4fbd8d194f06c8a3fd2af1ce560ddb31f7ec8323
-# good: [bebc6082da0a9f5d47a1ea2edc099bf671058bd4] Linux 4.14
-git bisect good bebc6082da0a9f5d47a1ea2edc099bf671058bd4
-# good: [1be2172e96e33bfa22a5c7a651f768ef30ce3984] Merge tag 'modules-
-for-v4.15' of git://git.kernel.org/pub/scm/linux/kernel/git/jeyu/linux
-git bisect good 1be2172e96e33bfa22a5c7a651f768ef30ce3984
-# good: [8c609698569578913ad40bb160b97c3f6cfa15ec] Merge tag 'armsoc-
-soc' of git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc
-git bisect good 8c609698569578913ad40bb160b97c3f6cfa15ec
-# good: [f6705bf959efac87bca76d40050d342f1d212587] Merge tag 'drm-for-
-v4.15-amd-dc' of git://people.freedesktop.org/~airlied/linux
-git bisect good f6705bf959efac87bca76d40050d342f1d212587
-# bad: [c633e898bde8990a34907c91b7d5245cab866c6e] Merge tag
-'devicetree-fixes-for-4.15' of
-git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux
-git bisect bad c633e898bde8990a34907c91b7d5245cab866c6e
-# bad: [fc35c1966e1372a21a88f6655279361e2f92713f] Merge tag 'clk-for-
-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/clk/linux
-git bisect bad fc35c1966e1372a21a88f6655279361e2f92713f
-# bad: [09bd7c75e55cbaa6c731b0c3a5512ad89159f26f] Merge tag 'kbuild-
-v4.15' of
-git://git.kernel.org/pub/scm/linux/kernel/git/masahiroy/linux-kbuild
-git bisect bad 09bd7c75e55cbaa6c731b0c3a5512ad89159f26f
-# good: [5eb9e8ac9a8f8ae98ae4386357683a0b5684bb48]
-arch/ia64/include/asm/topology.h: remove unused parent_node() macro
-git bisect good 5eb9e8ac9a8f8ae98ae4386357683a0b5684bb48
-# bad: [2dcd9c71c1ffa9a036e09047f60e08383bb0abb6] Merge tag 'trace-
-v4.15' of git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-
-trace
-git bisect bad 2dcd9c71c1ffa9a036e09047f60e08383bb0abb6
-# bad: [466c81c45b650deca213fda3d0ec4761667379a9] perf/ftrace: Fix
-function trace events
-git bisect bad 466c81c45b650deca213fda3d0ec4761667379a9
-# bad: [3e234289f86b12985ef8909cd34525fcb66c4efb] ftrace: Allow module
-init functions to be traced
-git bisect bad 3e234289f86b12985ef8909cd34525fcb66c4efb
-# bad: [83c07ecc4203728e85fc4a2ce6fdf25d16ea118e] tracing: Remove
-lookups from tracing_map hitcount
-git bisect bad 83c07ecc4203728e85fc4a2ce6fdf25d16ea118e
-# bad: [12ecef0cb12102d8c034770173d2d1363cb97d52] tracing: Reverse the
-order of trace_types_lock and event_mutex
-git bisect bad 12ecef0cb12102d8c034770173d2d1363cb97d52
-# good: [6e7a2398114a2597a0995f96f44d908741ae5035] tracing: Remove
-redundant unread variable ret
-git bisect good 6e7a2398114a2597a0995f96f44d908741ae5035
-# first bad commit: [12ecef0cb12102d8c034770173d2d1363cb97d52] tracing:
-Reverse the order of trace_types_lock and event_mutex
-
--- [BISECT LOG END] --
-
-This is the commit it landed on.
-
-12ecef0cb12102d8c034770173d2d1363cb97d52 is the first bad commit
-commit 12ecef0cb12102d8c034770173d2d1363cb97d52
-Author: Steven Rostedt (VMware) <rostedt@goodmis.org>
-Date:   Thu Sep 21 16:22:49 2017 -0400
-
-    tracing: Reverse the order of trace_types_lock and event_mutex
-    
-    In order to make future changes where we need to call
-    tracing_set_clock() from within an event command, the order of
-    trace_types_lock and event_mutex must be reversed, as the event
-command
-    will hold event_mutex and the trace_types_lock is taken from within
-    tracing_set_clock().
-    
-    Link: http://lkml.kernel.org/r/20170921162249.0dde3dca@gandalf.loca
-l.home
-    
-    Requested-by: Tom Zanussi <tom.zanussi@linux.intel.com>
-    Signed-off-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
