@@ -1,52 +1,68 @@
-From: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Subject: [PATCH V5 1/7] of: Export of_pci_range_to_resource()
-Date: Tue, 9 Jan 2018 14:49:31 +0530
-Message-ID: <1515489577-2197-2-git-send-email-mmaddireddy@nvidia.com>
+From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Subject: [PATCH V5 2/7] PCI: tegra: Use bus->sysdata to store and get host private data
+Date: Tue, 9 Jan 2018 14:49:32 +0530
+Message-ID: <1515489577-2197-3-git-send-email-mmaddireddy@nvidia.com>
 References: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
-Return-path: <devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
-In-Reply-To: <1515489577-2197-1-git-send-email-mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Sender: devicetree-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-To: thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, cyndis-/1wQRMveznE@public.gmane.org
-Cc: jonathanh-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, frowand.list-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org, tglx-hfZtesqFncYOwBW4kG4KsQ@public.gmane.org, vidyas-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, kthota-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate14.nvidia.com ([216.228.121.143]:6438 "EHLO
+        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752064AbeAIJUY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 04:20:24 -0500
+In-Reply-To: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: thierry.reding@gmail.com, bhelgaas@google.com, lorenzo.pieralisi@arm.com, cyndis@kapsi.fi
+Cc: jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Manikanta Maddireddy <mmaddireddy@nvidia.com>
 
-Tegra PCIe host driver parses of_pci_range from device tree and converts
-to resource. Export of_pci_range_to_resource() to allow Tegra PCIe host
-driver to be compiled as loadable kernel module.
+Tegra host driver is using pci_find_host_bridge() to get private data,
+however pci_find_host_bridge() is causing module build failure because
+it is not exported. pci_find_host_bridge() can be avoided by using
+bus->sysdata to store and get private data.
 
-Signed-off-by: Manikanta Maddireddy <mmaddireddy-DDmLM1+adcrQT0dZR+AlfA@public.gmane.org>
-Acked-by: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Acked-by: Thierry Reding <treding@nvidia.com>
 ---
-V2:
-* commit message update
-V3:
-* no change in this patch
 V4:
-* no change in this patch
+* new patch in V4
 V5:
-* no change in this patch
+* Rebase on top of linux-next
 
- drivers/of/address.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/pci/host/pci-tegra.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/of/address.c b/drivers/of/address.c
-index fa6cabfc3cb9..8d9b93f8701a 100644
---- a/drivers/of/address.c
-+++ b/drivers/of/address.c
-@@ -361,6 +361,7 @@ int of_pci_range_to_resource(struct of_pci_range *range,
- 	res->end = (resource_size_t)OF_BAD_ADDR;
- 	return err;
- }
-+EXPORT_SYMBOL(of_pci_range_to_resource);
- #endif /* CONFIG_PCI */
+diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
+index e126341fcb36..d790a26ad87e 100644
+--- a/drivers/pci/host/pci-tegra.c
++++ b/drivers/pci/host/pci-tegra.c
+@@ -379,8 +379,7 @@ static void __iomem *tegra_pcie_map_bus(struct pci_bus *bus,
+ 					unsigned int devfn,
+ 					int where)
+ {
+-	struct pci_host_bridge *host = pci_find_host_bridge(bus);
+-	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
++	struct tegra_pcie *pcie = bus->sysdata;
+ 	void __iomem *addr = NULL;
  
- /*
+ 	if (bus->number == 0) {
+@@ -573,8 +572,7 @@ static int tegra_pcie_request_resources(struct tegra_pcie *pcie)
+ 
+ static int tegra_pcie_map_irq(const struct pci_dev *pdev, u8 slot, u8 pin)
+ {
+-	struct pci_host_bridge *host = pci_find_host_bridge(pdev->bus);
+-	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
++	struct tegra_pcie *pcie = pdev->bus->sysdata;
+ 	int irq;
+ 
+ 	tegra_cpuidle_pcie_irqs_in_use();
+@@ -2258,6 +2256,7 @@ static int tegra_pcie_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	pcie = pci_host_bridge_priv(host);
++	host->sysdata = pcie;
+ 
+ 	pcie->soc = of_device_get_match_data(dev);
+ 	INIT_LIST_HEAD(&pcie->ports);
 -- 
 2.1.4
-
---
-To unsubscribe from this list: send the line "unsubscribe devicetree" in
-the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
