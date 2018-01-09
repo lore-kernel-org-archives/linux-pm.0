@@ -1,59 +1,123 @@
-From: Dong Aisheng <dongas86@gmail.com>
-Subject: Re: [PATCH V3 2/2] cpufreq: imx6q: add 696MHz operating point for
- i.mx6ul
-Date: Tue, 9 Jan 2018 18:27:47 +0800
-Message-ID: <20180109102747.GJ26312@b29396-OptiPlex-7040>
-References: <1515377091-10422-1-git-send-email-Anson.Huang@nxp.com>
- <1515377091-10422-2-git-send-email-Anson.Huang@nxp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1515377091-10422-2-git-send-email-Anson.Huang@nxp.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Anson Huang <Anson.Huang@nxp.com>
-Cc: shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, rjw@rjwysocki.net, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, linux-imx@nxp.com
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH] PM / wakeup: Enable option to specify wakeup as a non in-band wakeup
+Date: Tue,  9 Jan 2018 11:54:11 +0100
+Message-ID: <1515495251-22906-1-git-send-email-ulf.hansson@linaro.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-lf0-f65.google.com ([209.85.215.65]:32900 "EHLO
+        mail-lf0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751889AbeAIKyX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 05:54:23 -0500
+Received: by mail-lf0-f65.google.com with SMTP id j143so15445834lfg.0
+        for <linux-pm@vger.kernel.org>; Tue, 09 Jan 2018 02:54:22 -0800 (PST)
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Cc: Adrian Hunter <adrian.hunter@intel.com>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, linux-mmc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
 
-On Mon, Jan 08, 2018 at 10:04:51AM +0800, Anson Huang wrote:
-> Add 696MHz operating point for i.MX6UL, only for those
-> parts with speed grading fuse set to 2b'10 supports
-> 696MHz operating point, so, speed grading check is also
-> added for i.MX6UL in this patch, the clock tree for each
-> operating point are as below:
-> 
-> 696MHz:
->     pll1                       696000000
->        pll1_bypass             696000000
->           pll1_sys             696000000
->              pll1_sw           696000000
->                 arm            696000000
-> 528MHz:
->     pll2                       528000000
->        pll2_bypass             528000000
->           pll2_bus             528000000
->              ca7_secondary_sel 528000000
->                 step           528000000
->                    pll1_sw     528000000
->                       arm      528000000
-> 396MHz:
->     pll2_pfd2_396m             396000000
->        ca7_secondary_sel       396000000
->           step                 396000000
->              pll1_sw           396000000
->                 arm            396000000
-> 198MHz:
->     pll2_pfd2_396m             396000000
->        ca7_secondary_sel       396000000
->           step                 396000000
->              pll1_sw           396000000
->                 arm            198000000
-> 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
+In some cases, a driver may not require its device to be powered on to be
+able to deliver wakeup signals during system suspend.
 
-For this series:
-Acked-by: Dong Aisheng <aisheng.dong@nxp.com>
+Likely the most common scenario when this is the case, is a driver routing
+the wakeup signal through a GPIO IRQ, instead of using the regular in-band
+IRQ logic, via the device itself.
 
-Regards
-Dong Aisheng
+Obviously the driver may put its device into a low power state during
+system suspend in cases like this. For example it may gate clocks, put
+pinctrls into sleep state, etc.
+
+However, for middle-layers and PM domains (like genpd), which checks the
+return value from device_may_wakeup() and/or the ->dev.power.wakeup_path
+status flag, there is information missing about scenarios like these.
+
+In the case of genpd, when it finds the ->dev.power.wakeup_path status flag
+being set for a device during system suspend, it leaves the device in
+powered on state including its PM domain. In other words, wasting power.
+
+To address this issue, add a new ->dev.power.no_inband_wakeup flag for the
+device, which drivers may set/clear to inform the PM core, in case
+device_may_wakeup() returns true, whether that shall make the
+->dev.power.wakeup_path status flag to be set or not for the device.
+
+The PM core checks the ->dev.power.no_inband_wakeup flag in the
+__device_suspend() phase, after invoking the ->suspend() callback for the
+device. At that point, the driver is responsible that it has set a correct
+value to the flag.
+
+Let's also introduce a helper function, device_set_no_inband_wakeup(),
+which drivers shall use to set/clear the ->dev.power.no_inband_wakeup flag.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+
+To get some additional background, one may look at earlier discussions from
+various threads. The most recent is in and RFD [1] from Rafael and from an mmc
+series by Adrian [2].
+
+Kind regards
+Uffe
+
+[1]
+https://marc.info/?l=linux-pm&m=151541229425689&w=2
+
+[2]
+https://www.spinics.net/lists/linux-mmc/msg47549.html
+
+---
+ drivers/base/power/main.c | 2 +-
+ include/linux/pm.h        | 1 +
+ include/linux/pm_wakeup.h | 8 ++++++++
+ 3 files changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 02a497e..376c275 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1794,7 +1794,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+  End:
+ 	if (!error) {
+ 		dev->power.is_suspended = true;
+-		if (device_may_wakeup(dev))
++		if (device_may_wakeup(dev) && !dev->power.no_inband_wakeup)
+ 			dev->power.wakeup_path = true;
+ 
+ 		dpm_propagate_wakeup_to_parent(dev);
+diff --git a/include/linux/pm.h b/include/linux/pm.h
+index e723b78..d131834 100644
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -600,6 +600,7 @@ struct dev_pm_info {
+ 	struct completion	completion;
+ 	struct wakeup_source	*wakeup;
+ 	bool			wakeup_path:1;
++	bool			no_inband_wakeup:1;
+ 	bool			syscore:1;
+ 	bool			no_pm_callbacks:1;	/* Owned by the PM core */
+ 	unsigned int		must_resume:1;	/* Owned by the PM core */
+diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
+index 4238dde..5d40887 100644
+--- a/include/linux/pm_wakeup.h
++++ b/include/linux/pm_wakeup.h
+@@ -93,6 +93,11 @@ static inline void device_set_wakeup_path(struct device *dev)
+ 	dev->power.wakeup_path = true;
+ }
+ 
++static inline void device_set_no_inband_wakeup(struct device *dev, bool wakeup)
++{
++	dev->power.no_inband_wakeup = wakeup;
++}
++
+ /* drivers/base/power/wakeup.c */
+ extern void wakeup_source_prepare(struct wakeup_source *ws, const char *name);
+ extern struct wakeup_source *wakeup_source_create(const char *name);
+@@ -181,6 +186,9 @@ static inline bool device_may_wakeup(struct device *dev)
+ 
+ static inline void device_set_wakeup_path(struct device *dev) {}
+ 
++static inline void device_set_no_inband_wakeup(struct device *dev,
++					       bool wakeup) {}
++
+ static inline void __pm_stay_awake(struct wakeup_source *ws) {}
+ 
+ static inline void pm_stay_awake(struct device *dev) {}
+-- 
+2.7.4
