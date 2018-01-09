@@ -1,164 +1,135 @@
-From: Quentin Perret <quentin.perret@arm.com>
-Subject: [PATCH 2/2] thermal: cpu_cooling: use power models from the OPP library
-Date: Tue,  9 Jan 2018 11:02:52 +0000
-Message-ID: <20180109110252.13557-3-quentin.perret@arm.com>
-References: <20180109110252.13557-1-quentin.perret@arm.com>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH] PM / wakeup: Enable option to specify wakeup as a non in-band wakeup
+Date: Tue, 09 Jan 2018 12:22:16 +0100
+Message-ID: <1673173.6EtsNRVJQW@aspire.rjw.lan>
+References: <1515495251-22906-1-git-send-email-ulf.hansson@linaro.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from usa-sjc-mx-foss1.foss.arm.com ([217.140.101.70]:52438 "EHLO
-        foss.arm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1752615AbeAILDG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Jan 2018 06:03:06 -0500
-In-Reply-To: <20180109110252.13557-1-quentin.perret@arm.com>
+Received: from cloudserver094114.home.pl ([79.96.170.134]:64124 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751398AbeAILXc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 06:23:32 -0500
+In-Reply-To: <1515495251-22906-1-git-send-email-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: linux-pm@vger.kernel.org, Adrian Hunter <adrian.hunter@intel.com>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, linux-mmc@vger.kernel.org
 
-Now that the OPP library features a power estimator, the existing code
-in IPA can be modified to rely only on dev_pm_opp_get_power() without
-having to care about the dynamic-power-coefficient DT binding.
+On Tuesday, January 9, 2018 11:54:11 AM CET Ulf Hansson wrote:
+> In some cases, a driver may not require its device to be powered on to be
+> able to deliver wakeup signals during system suspend.
 
-Signed-off-by: Quentin Perret <quentin.perret@arm.com>
----
- drivers/cpufreq/arm_big_little.c   |  2 ++
- drivers/cpufreq/cpufreq-dt.c       |  2 ++
- drivers/cpufreq/mediatek-cpufreq.c |  2 ++
- drivers/thermal/cpu_cooling.c      | 33 +++++++++------------------------
- 4 files changed, 15 insertions(+), 24 deletions(-)
+That quite often is the case.
 
-diff --git a/drivers/cpufreq/arm_big_little.c b/drivers/cpufreq/arm_big_little.c
-index c56b57dcfda5..3ae67c3510b6 100644
---- a/drivers/cpufreq/arm_big_little.c
-+++ b/drivers/cpufreq/arm_big_little.c
-@@ -497,6 +497,8 @@ static int bL_cpufreq_init(struct cpufreq_policy *policy)
- 	if (is_bL_switching_enabled())
- 		per_cpu(cpu_last_req_freq, policy->cpu) = clk_get_cpu_rate(policy->cpu);
- 
-+	dev_pm_opp_of_estimate_power(cpu_dev);
-+
- 	dev_info(cpu_dev, "%s: CPU %d initialized\n", __func__, policy->cpu);
- 	return 0;
- }
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index de3d104c25d7..b05b0d8eb3f2 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -284,6 +284,8 @@ static int cpufreq_init(struct cpufreq_policy *policy)
- 	policy->cpuinfo.transition_latency = transition_latency;
- 	policy->dvfs_possible_from_any_cpu = true;
- 
-+	dev_pm_opp_of_estimate_power(cpu_dev);
-+
- 	return 0;
- 
- out_free_cpufreq_table:
-diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-index 8c04dddd3c28..c1b2fb67a73e 100644
---- a/drivers/cpufreq/mediatek-cpufreq.c
-+++ b/drivers/cpufreq/mediatek-cpufreq.c
-@@ -470,6 +470,8 @@ static int mtk_cpufreq_init(struct cpufreq_policy *policy)
- 	policy->driver_data = info;
- 	policy->clk = info->cpu_clk;
- 
-+	dev_pm_opp_of_estimate_power(info->cpu_dev);
-+
- 	return 0;
- 
- out_free_cpufreq_table:
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index dfd23245f778..b961bd6a198b 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -187,7 +187,6 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
- /**
-  * update_freq_table() - Update the freq table with power numbers
-  * @cpufreq_cdev:	the cpufreq cooling device in which to update the table
-- * @capacitance: dynamic power coefficient for these cpus
-  *
-  * Update the freq table with power numbers.  This table will be used in
-  * cpu_power_to_freq() and cpu_freq_to_power() to convert between power and
-@@ -197,8 +196,7 @@ static int cpufreq_thermal_notifier(struct notifier_block *nb,
-  * Return: 0 on success, -EINVAL if there are no OPPs for any CPUs,
-  * or -ENOMEM if we run out of memory.
-  */
--static int update_freq_table(struct cpufreq_cooling_device *cpufreq_cdev,
--			     u32 capacitance)
-+static int update_freq_table(struct cpufreq_cooling_device *cpufreq_cdev)
- {
- 	struct freq_table *freq_table = cpufreq_cdev->freq_table;
- 	struct dev_pm_opp *opp;
-@@ -227,9 +225,6 @@ static int update_freq_table(struct cpufreq_cooling_device *cpufreq_cdev,
- 
- 	for (i = 0; i <= cpufreq_cdev->max_level; i++) {
- 		unsigned long freq = freq_table[i].frequency * 1000;
--		u32 freq_mhz = freq_table[i].frequency / 1000;
--		u64 power;
--		u32 voltage_mv;
- 
- 		/*
- 		 * Find ceil frequency as 'freq' may be slightly lower than OPP
-@@ -242,18 +237,9 @@ static int update_freq_table(struct cpufreq_cooling_device *cpufreq_cdev,
- 			return -EINVAL;
- 		}
- 
--		voltage_mv = dev_pm_opp_get_voltage(opp) / 1000;
--		dev_pm_opp_put(opp);
--
--		/*
--		 * Do the multiplication with MHz and millivolt so as
--		 * to not overflow.
--		 */
--		power = (u64)capacitance * freq_mhz * voltage_mv * voltage_mv;
--		do_div(power, 1000000000);
--
- 		/* power is stored in mW */
--		freq_table[i].power = power;
-+		freq_table[i].power = dev_pm_opp_get_power(opp) / 1000;
-+		dev_pm_opp_put(opp);
- 	}
- 
- 	return 0;
-@@ -606,7 +592,7 @@ static unsigned int find_next_max(struct cpufreq_frequency_table *table,
-  */
- static struct thermal_cooling_device *
- __cpufreq_cooling_register(struct device_node *np,
--			struct cpufreq_policy *policy, u32 capacitance)
-+			struct cpufreq_policy *policy, bool power_model)
- {
- 	struct thermal_cooling_device *cdev;
- 	struct cpufreq_cooling_device *cpufreq_cdev;
-@@ -675,8 +661,8 @@ __cpufreq_cooling_register(struct device_node *np,
- 			pr_debug("%s: freq:%u KHz\n", __func__, freq);
- 	}
- 
--	if (capacitance) {
--		ret = update_freq_table(cpufreq_cdev, capacitance);
-+	if (power_model) {
-+		ret = update_freq_table(cpufreq_cdev);
- 		if (ret) {
- 			cdev = ERR_PTR(ret);
- 			goto remove_ida;
-@@ -760,7 +746,7 @@ of_cpufreq_cooling_register(struct cpufreq_policy *policy)
- {
- 	struct device_node *np = of_get_cpu_node(policy->cpu, NULL);
- 	struct thermal_cooling_device *cdev = NULL;
--	u32 capacitance = 0;
-+	bool has_power;
- 
- 	if (!np) {
- 		pr_err("cpu_cooling: OF node not available for cpu%d\n",
-@@ -769,10 +755,9 @@ of_cpufreq_cooling_register(struct cpufreq_policy *policy)
- 	}
- 
- 	if (of_find_property(np, "#cooling-cells", NULL)) {
--		of_property_read_u32(np, "dynamic-power-coefficient",
--				     &capacitance);
-+		has_power = dev_pm_opp_has_power(get_cpu_device(policy->cpu));
- 
--		cdev = __cpufreq_cooling_register(np, policy, capacitance);
-+		cdev = __cpufreq_cooling_register(np, policy, has_power);
- 		if (IS_ERR(cdev)) {
- 			pr_err("cpu_cooling: cpu%d is not running as cooling device: %ld\n",
- 			       policy->cpu, PTR_ERR(cdev));
--- 
-2.15.1
+It is the standard way wakeup signaling works in PCI and in ACPI.
+
+> Likely the most common scenario when this is the case, is a driver routing
+> the wakeup signal through a GPIO IRQ, instead of using the regular in-band
+> IRQ logic, via the device itself.
+> 
+> Obviously the driver may put its device into a low power state during
+> system suspend in cases like this. For example it may gate clocks, put
+> pinctrls into sleep state, etc.
+> 
+> However, for middle-layers and PM domains (like genpd), which checks the
+> return value from device_may_wakeup() and/or the ->dev.power.wakeup_path
+> status flag, there is information missing about scenarios like these.
+> 
+> In the case of genpd, when it finds the ->dev.power.wakeup_path status flag
+> being set for a device during system suspend, it leaves the device in
+> powered on state including its PM domain. In other words, wasting power.
+> 
+> To address this issue, add a new ->dev.power.no_inband_wakeup flag for the
+> device, which drivers may set/clear to inform the PM core, in case
+> device_may_wakeup() returns true, whether that shall make the
+> ->dev.power.wakeup_path status flag to be set or not for the device.
+> 
+> The PM core checks the ->dev.power.no_inband_wakeup flag in the
+> __device_suspend() phase, after invoking the ->suspend() callback for the
+> device. At that point, the driver is responsible that it has set a correct
+> value to the flag.
+> 
+> Let's also introduce a helper function, device_set_no_inband_wakeup(),
+> which drivers shall use to set/clear the ->dev.power.no_inband_wakeup flag.
+
+Wait, wait.
+
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> ---
+> 
+> To get some additional background, one may look at earlier discussions from
+> various threads. The most recent is in and RFD [1] from Rafael and from an mmc
+> series by Adrian [2].
+
+Let's first conclude that discussion, please.
+
+> [1]
+> https://marc.info/?l=linux-pm&m=151541229425689&w=2
+> 
+> [2]
+> https://www.spinics.net/lists/linux-mmc/msg47549.html
+> 
+> ---
+>  drivers/base/power/main.c | 2 +-
+>  include/linux/pm.h        | 1 +
+>  include/linux/pm_wakeup.h | 8 ++++++++
+>  3 files changed, 10 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 02a497e..376c275 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -1794,7 +1794,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+>   End:
+>  	if (!error) {
+>  		dev->power.is_suspended = true;
+> -		if (device_may_wakeup(dev))
+> +		if (device_may_wakeup(dev) && !dev->power.no_inband_wakeup)
+
+That is not just a system-wide PM concept.  It affects runtime PM potentially
+too.
+
+>  			dev->power.wakeup_path = true;
+>  
+>  		dpm_propagate_wakeup_to_parent(dev);
+> diff --git a/include/linux/pm.h b/include/linux/pm.h
+> index e723b78..d131834 100644
+> --- a/include/linux/pm.h
+> +++ b/include/linux/pm.h
+> @@ -600,6 +600,7 @@ struct dev_pm_info {
+>  	struct completion	completion;
+>  	struct wakeup_source	*wakeup;
+>  	bool			wakeup_path:1;
+> +	bool			no_inband_wakeup:1;
+>  	bool			syscore:1;
+>  	bool			no_pm_callbacks:1;	/* Owned by the PM core */
+>  	unsigned int		must_resume:1;	/* Owned by the PM core */
+> diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
+> index 4238dde..5d40887 100644
+> --- a/include/linux/pm_wakeup.h
+> +++ b/include/linux/pm_wakeup.h
+> @@ -93,6 +93,11 @@ static inline void device_set_wakeup_path(struct device *dev)
+>  	dev->power.wakeup_path = true;
+>  }
+>  
+> +static inline void device_set_no_inband_wakeup(struct device *dev, bool wakeup)
+> +{
+> +	dev->power.no_inband_wakeup = wakeup;
+> +}
+> +
+>  /* drivers/base/power/wakeup.c */
+>  extern void wakeup_source_prepare(struct wakeup_source *ws, const char *name);
+>  extern struct wakeup_source *wakeup_source_create(const char *name);
+> @@ -181,6 +186,9 @@ static inline bool device_may_wakeup(struct device *dev)
+>  
+>  static inline void device_set_wakeup_path(struct device *dev) {}
+>  
+> +static inline void device_set_no_inband_wakeup(struct device *dev,
+> +					       bool wakeup) {}
+> +
+>  static inline void __pm_stay_awake(struct wakeup_source *ws) {}
+>  
+>  static inline void pm_stay_awake(struct device *dev) {}
+> 
