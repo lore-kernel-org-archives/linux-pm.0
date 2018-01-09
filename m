@@ -1,148 +1,231 @@
-From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: Re: [PATCH v5 0/6] iommu/arm-smmu: Add runtime pm/sleep support
-Date: Tue, 9 Jan 2018 17:19:15 +0530
-Message-ID: <70e20deb-66fa-9e69-8b36-ba7b17d9390c@codeaurora.org>
-References: <1515492109-753-1-git-send-email-vivek.gautam@codeaurora.org>
-	<1568773.GtDhb2pIXv@aspire.rjw.lan>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 1/9] mmc: sdhci-pci: Stop calling sdhci_enable_irq_wakeups()
+Date: Tue, 09 Jan 2018 12:57:22 +0100
+Message-ID: <12962603.hOhJvKVt5q@aspire.rjw.lan>
+References: <1513757933-11232-1-git-send-email-adrian.hunter@intel.com> <1746209.FfylcBGxWs@aspire.rjw.lan> <CAPDyKFoTHVEWsK0fPG5HSKufCkj=Y0rkcOS=EbnJhhseikCbaA@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; Format="flowed"
-Content-Transfer-Encoding: 7bit
-Return-path: <iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-In-Reply-To: <1568773.GtDhb2pIXv-yvgW3jdyMHm1GS7QM15AGw@public.gmane.org>
-List-Unsubscribe: <https://lists.linuxfoundation.org/mailman/options/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=unsubscribe>
-List-Archive: <http://lists.linuxfoundation.org/pipermail/iommu/>
-List-Post: <mailto:iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>
-List-Help: <mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.linuxfoundation.org/mailman/listinfo/iommu>,
-	<mailto:iommu-request-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org?subject=subscribe>
-Sender: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-Errors-To: iommu-bounces-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org
-To: "Rafael J. Wysocki" <rjw-LthD3rsA81gm4RdzfppkhA@public.gmane.org>
-Cc: mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, will.deacon-5wv7dgnIgG8@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, freedreno-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <CAPDyKFoTHVEWsK0fPG5HSKufCkj=Y0rkcOS=EbnJhhseikCbaA@mail.gmail.com>
+Sender: linux-mmc-owner@vger.kernel.org
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Adrian Hunter <adrian.hunter@intel.com>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: linux-pm@vger.kernel.org
 
+On Tuesday, January 9, 2018 8:14:37 AM CET Ulf Hansson wrote:
+> On 9 January 2018 at 01:46, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Thursday, December 21, 2017 4:33:59 PM CET Ulf Hansson wrote:
+> >> + linux-pm, Rafael, Geert
+> >>
+> >> On 21 December 2017 at 15:25, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> >> > On 21/12/17 16:15, Ulf Hansson wrote:
+> >> >> On 20 December 2017 at 09:18, Adrian Hunter <adrian.hunter@intel.com> wrote:
+> >> >>> sdhci_enable_irq_wakeups() is already called by sdhci_suspend_host() so
+> >> >>> sdhci-pci should not need to call it. However sdhci_suspend_host() only
+> >> >>> calls it if wakeups are enabled, and sdhci-pci does not enable them until
+> >> >>> after calling sdhci_suspend_host(). So move the calls to
+> >> >>> sdhci_pci_init_wakeup() before calling sdhci_suspend_host(), and
+> >> >>> stop calling sdhci_enable_irq_wakeups(). That results in some
+> >> >>> simplification because sdhci_pci_suspend_host() and
+> >> >>> __sdhci_pci_suspend_host() no longer need to be separate functions.
+> >> >>>
+> >> >>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+> >> >>> ---
+> >> >>>  drivers/mmc/host/sdhci-pci-core.c | 58 ++++++++++++++-------------------------
+> >> >>>  1 file changed, 21 insertions(+), 37 deletions(-)
+> >> >>>
+> >> >>> diff --git a/drivers/mmc/host/sdhci-pci-core.c b/drivers/mmc/host/sdhci-pci-core.c
+> >> >>> index 110c634cfb43..2ffc09f088ee 100644
+> >> >>> --- a/drivers/mmc/host/sdhci-pci-core.c
+> >> >>> +++ b/drivers/mmc/host/sdhci-pci-core.c
+> >> >>> @@ -39,10 +39,29 @@
+> >> >>>  static void sdhci_pci_hw_reset(struct sdhci_host *host);
+> >> >>>
+> >> >>>  #ifdef CONFIG_PM_SLEEP
+> >> >>> -static int __sdhci_pci_suspend_host(struct sdhci_pci_chip *chip)
+> >> >>> +static int sdhci_pci_init_wakeup(struct sdhci_pci_chip *chip)
+> >> >>> +{
+> >> >>> +       mmc_pm_flag_t pm_flags = 0;
+> >> >>> +       int i;
+> >> >>> +
+> >> >>> +       for (i = 0; i < chip->num_slots; i++) {
+> >> >>> +               struct sdhci_pci_slot *slot = chip->slots[i];
+> >> >>> +
+> >> >>> +               if (slot)
+> >> >>> +                       pm_flags |= slot->host->mmc->pm_flags;
+> >> >>> +       }
+> >> >>> +
+> >> >>> +       return device_init_wakeup(&chip->pdev->dev,
+> >> >>> +                                 (pm_flags & MMC_PM_KEEP_POWER) &&
+> >> >>> +                                 (pm_flags & MMC_PM_WAKE_SDIO_IRQ));
+> >> >>
+> >> >> A couple of comments here.
+> >> >>
+> >> >> Wakeup settings shouldn't be changed during system suspend. That means
+> >> >> we shouldn't call device_init_wakeup() (or device_set_wakeup_enable()
+> >> >> for that matter) here.
+> >> >>
+> >> >> Instead, device_init_wakeup() should be called during ->probe(), while
+> >> >> device_set_wakeup_enable() should normally *not* have to be called at
+> >> >> all by drivers. There are a exceptions for device_set_wakeup_enable(),
+> >> >> however it should not have to be called during system suspend, at
+> >> >> least.
+> >> >>
+> >> >> Of course, I realize that you are not changing the behavior in this
+> >> >> regards in this patch, so I am fine this anyway.
+> >> >>
+> >> >> My point is, that the end result while doing this improvements in this
+> >> >> series, should strive to that device_init_wakeup() and
+> >> >> device_set_wakeup_enable() becomes used correctly. I don't think that
+> >> >> is the case, or is it?
+> >> >
+> >> > Unfortunately we don't find out what the SDIO driver wants to do (i.e
+> >> > pm_flags & MMC_PM_WAKE_SDIO_IRQ) until suspend.
+> >>
+> >> That's true! Of course, we need to be able to act on this, somehow.
+> >
+> > That sounds like a design issue, however ...
+> >
+> >> >
+> >> > I considered enabling wakeups by default but wasn't sure that would not
+> >> > increase power consumption in devices not expecting it.
+> >>
+> >> I understand the problem, believe me. However, I would rather like to
+> >> try to find a generic solution to these problems, else we will keep
+> >> abusing existing wakeups APIs.
+> >>
+> >> For your information, I have been working on several issues on how to
+> >> handle the "wakeup path" correctly, which is linked to this problem.
+> >> See a few quite small series for this below [1], [2].
+> >>
+> >> I think the general problems can be described liked this:
+> >>
+> >> 1) The dev->power.wakeup_path flag doesn't get set for the device by
+> >> the PM core, in case device_set_wakeup_enable() is called from a
+> >> ->suspend() callback. That also means, that the parent device don't
+> >> get its >power.wakeup_path flag set in __device_suspend() by the PM
+> >> core, while this may be expected by upper layers (PM domains, middle
+> >> layers).
+> >>
+> >> 2) device_may_wakeup() doesn't tell us the hole story about the
+> >> wakeup. Only that is *may* be configured. :-)
+> >> So in cases when device_may_wakeup() returns true, we still have these
+> >> three conditions to consider, which we currently can't distinguish
+> >> between:
+> >>
+> >> *) The wakeup is configured and enabled, so the device should be
+> >> enabled in the wakeup path.
+> >
+> > That's when the in-band device interrupt is used for wakeup, right?
+> 
+> Yes.
+> 
+> >
+> >> **) The wakeup is configured and enabled, but as an out-band-wakeup
+> >> signal (like a GPIO IRQ). This means the device shouldn't be enabled
+> >> in the wakeup path.
+> >
+> > I wouldn't really call all of that out of band, but really there's more to it
+> > in general.
+> >
+> > There may be a standard way to configure wakeup signaling which is handled by
+> > a separate code layer, like ACPI or PCI.  In that case the driver basically
+> > doesn't care (but it still may need to configure the device for remote
+> > wakeup internally).  That standard way may do whatever the driver would do
+> > to the wakeup interrupt or it may use an out-of-band mechanism.
+> 
+> Even if this is a PCI-MMC/SD driver, we can also have wakeup GPIO
+> irqs, for example to handle card detect when inserting/removing an SD
+> card.
+> 
+> The point is, there are cases when the driver has this of information,
+> but upper layer doesn't.
 
+In the PCI case that is an extra wakeup mechanism that the upper layer doesn't
+need to know about.
 
-On 01/09/2018 04:53 PM, Rafael J. Wysocki wrote:
-> On Tuesday, January 9, 2018 11:01:43 AM CET Vivek Gautam wrote:
->> This series provides the support for turning on the arm-smmu's
->> clocks/power domains using runtime pm. This is done using the
->> recently introduced device links patches, which lets the smmu's
->> runtime to follow the master's runtime pm, so the smmu remains
->> powered only when the masters use it.
->>
->> It also adds support for Qcom's arm-smmu-v2 variant that
->> has different clocks and power requirements.
->>
->> Took some reference from the exynos runtime patches [2].
->>
->> Previous version of the patchset [1].
->>
->> After much discussion [4] over the use of pm_runtime_get/put() in
->> .unmap op path for the arm-smmu, and after disussing over more than
->> a couple of approaches to address this, we are putting forward the
->> changes *without* using pm_runtime APIs in 'unmap'. Rather, letting
->> the client device take the control of powering on/off the connected
->> iommu through pm_runtime_get(put)_suppliers() APIs for the scnerios
->> when the iommu power can't be directly controlled by clients through
->> device links.
->> Rafael has agreed to export the suppliers APIs [5].
->>
->> [V5]
->>     * Dropped runtime pm calls from "arm_smmu_unmap" op as discussed over
->>       the list [4] for the last patch series.
->>     * Added a patch to export pm_runtime_get/put_suppliers() APIs to the
->>       series as agreed with Rafael [5].
->>     * Added the related patch for msm drm iommu layer to use
->>       pm_runtime_get/put_suppliers() APIs in msm_mmu_funcs.
->>     * Dropped arm-mmu500 clock patch since that would break existing
->>       platforms.
->>     * Changed compatible 'qcom,msm8996-smmu-v2' to 'qcom,smmu-v2' to reflect
->>       the IP version rather than the platform on which it is used.
->>       The same IP is used across multiple platforms including msm8996,
->>       and sdm845 etc.
->>     * Using clock bulk APIs to handle the clocks available to the IP as
->>       suggested by Stephen Boyd.
->>     * The first patch in v4 version of the patch-series:
->>       ("iommu/arm-smmu: Fix the error path in arm_smmu_add_device") has
->>       already made it to mainline.
->>
->> [V4]
->>     * Reworked the clock handling part. We now take clock names as data
->>       in the driver for supported compatible versions, and loop over them
->>       to get, enable, and disable the clocks.
->>     * Using qcom,msm8996 based compatibles for bindings instead of a generic
->>       qcom compatible.
->>     * Refactor MMU500 patch to just add the necessary clock names data and
->>       corresponding bindings.
->>     * Added the pm_runtime_get/put() calls in .unmap iommu op (fix added by
->>       Stanimir on top of previous patch version.
->>     * Added a patch to fix error path in arm_smmu_add_device()
->>     * Removed patch 3/5 of V3 patch series that added qcom,smmu-v2 bindings.
->>
->> [V3]
->>     * Reworked the patches to keep the clocks init/enabling function
->>       separately for each compatible.
->>
->>     * Added clocks bindings for MMU40x/500.
->>
->>     * Added a new compatible for qcom,smmu-v2 implementation and
->>       the clock bindings for the same.
->>
->>     * Rebased on top of 4.11-rc1
->>
->> [V2]
->>     * Split the patches little differently.
->>
->>     * Addressed comments.
->>
->>     * Removed the patch #4 [3] from previous post
->>       for arm-smmu context save restore. Planning to
->>       post this separately after reworking/addressing Robin's
->>       feedback.
->>
->>     * Reversed the sequence to disable clocks than enabling.
->>       This was required for those cases where the
->>       clocks are populated in a dependent order from DT.
->>
->> [1] https://www.spinics.net/lists/arm-kernel/msg567488.html
->> [2] https://lkml.org/lkml/2016/10/20/70
->> [3] https://patchwork.kernel.org/patch/9389717/
->> [4] https://patchwork.kernel.org/patch/9827825/
->> [5] https://patchwork.kernel.org/patch/10102445/
->>
->> Sricharan R (3):
->>    iommu/arm-smmu: Add pm_runtime/sleep ops
->>    iommu/arm-smmu: Invoke pm_runtime during probe, add/remove device
->>    iommu/arm-smmu: Add the device_link between masters and smmu
->>
->> Vivek Gautam (3):
->>    base: power: runtime: Export pm_runtime_get/put_suppliers
->>    iommu/arm-smmu: Add support for qcom,smmu-v2 variant
->>    drm/msm: iommu: Replace runtime calls with runtime suppliers
->>
->>   .../devicetree/bindings/iommu/arm,smmu.txt         |  35 ++++++
->>   drivers/base/power/runtime.c                       |   2 +
->>   drivers/gpu/drm/msm/msm_iommu.c                    |  16 +--
->>   drivers/iommu/arm-smmu.c                           | 124 ++++++++++++++++++++-
->>   4 files changed, 163 insertions(+), 14 deletions(-)
-> I need some time to review the series.
+In other cases it may be the only one in which the upper layer may or may not
+be interested.
 
-Sure, thanks Rafael.
+I guess the point is, rather, that the upper layer may not be able to make
+decisions based on the value of device_may_wakeup() alone, which is fair
+enough, but then how to provide it with the extra information and what that
+information should be still is a matter of discussion IMO.
 
-regards
-Vivek
+You seem to be focusing on the wakeup_path approach which hasn't even been
+designed for that.  Setting wakeup_path doesn't really tell the upper layers
+what wakeup mechanism exactly is going to be used, does it?
 
->
-> Thanks,
-> Rafael
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arm-msm" in
-> the body of a message to majordomo-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+So maybe we should try to define the problem more precisely ...
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+> >
+> > If there is no standard way, the driver may need to set up things by itself.
+> > In that case it needs to know what's available and how to use it, essentially
+> > at probe time.  I guess the information then would need to come from a DT or
+> > similar.
+> 
+> Right, on those SoC I mostly work on, this data comes from DT.
+> However, on some SoCs this data come from platform data as well.
+
+That doesn't matter.  In any case that information has to be available to the
+driver at the probe time.
+
+> >
+> > If it knows that it will use the sideband thing, it will not do *) obviously.
+> 
+> Right, however device_may_wakeup() may still return true for the device.
+
+Sure, it may.
+
+> >
+> >> ***) The wakeup isn't configured, thus disabled, because there are no
+> >> consumers of the wakeup IRQ registered (as may be the case for SDIO
+> >> IRQ). This also means the device shouldn't be enabled in the wakeup
+> >> path.
+> >>
+> >> Potentially, one could consider **) and ***) being treated in the same
+> >> way, via using an opt-out method, avoiding the wakeup path to be
+> >> enabled.
+> >
+> > Which means exactly what?
+> 
+> From the driver perspective, it decides to put the device into low
+> power state (clocks will be gated, etc), thus upper layers (PM domain)
+> should be informed that it can do that too.
+
+Right, but that's not the whole story.
+
+The upper layer may or may not recognize the concept of "wakeup".  The PCI
+bus type and the ACPI PM domain do recognize it and in their view it is the
+standard wakeup mechanisms to be used.  Everything beyond that is not
+recognized.  genpd doesn't really understand wakeup.  It only understands
+turning off/on domains and stopping/starting devices (and that may or may
+not understand wakeup, but the framework is oblivious to that).  So whatever
+mechanism you think about should be generic enough to match all of these
+different cases.
+
+Moreover, in fact, it should cover runtime PM too, because "wakeup" is not
+just limited to system-wide PM.
+
+So maybe let's just take a step back and have a deeper look at things to
+see what *really* needs to be addressed.
+
+> >
+> >> Currently I have been thinking of adding an "OUT_BAND_WAKEUP"
+> >> driver PM flag, to deal with this, however there may be other
+> >> preferred options.
+> >
+> > Yeah.  Messy stuff.
+> 
+> Well, let's try to agree on how to best describe the problem first.
+
+Exactly.
+
+> It seems like we are soon getting there. :-)
+
+Well, we'll see.
+
+Thanks,
+Rafael
+
