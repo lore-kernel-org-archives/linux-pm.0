@@ -1,77 +1,149 @@
-From: Michael Nazzareno Trimarchi <michael@amarulasolutions.com>
-Subject: Re: power_supply_core freezable change_work
-Date: Tue, 9 Jan 2018 18:19:32 +0100
-Message-ID: <CAOf5uwmMrLqfg2tRvuAqAJBib1V11aRjRcp_aX1qV6=62k3wAw@mail.gmail.com>
-References: <CAOf5uwn=FwQB3hpi3Hw+=fRZmUPeoWZS_5Q=8sgx36AT0NYkUg@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH 1/2] drivers: psci: remove cluster terminology and
+ dependency on physical_package_id
+Date: Tue, 9 Jan 2018 17:34:51 +0000
+Message-ID: <20180109173451.GB17222@red-moon>
+References: <1515516568-31359-1-git-send-email-sudeep.holla@arm.com>
+ <1515516568-31359-2-git-send-email-sudeep.holla@arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f174.google.com ([209.85.223.174]:41495 "EHLO
-        mail-io0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1760027AbeAIRTe (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 12:19:34 -0500
-Received: by mail-io0-f174.google.com with SMTP id f6so19333936ioh.8
-        for <linux-pm@vger.kernel.org>; Tue, 09 Jan 2018 09:19:34 -0800 (PST)
-In-Reply-To: <CAOf5uwn=FwQB3hpi3Hw+=fRZmUPeoWZS_5Q=8sgx36AT0NYkUg@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1515516568-31359-2-git-send-email-sudeep.holla@arm.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>, Jeremy Linton <jeremy.linton@arm.com>, Mark Rutland <mark.rutland@arm.com>
 List-Id: linux-pm@vger.kernel.org
-To: linux-pm@vger.kernel.org
-Cc: Mark Brown <broonie@linaro.org>
 
-Hi
+On Tue, Jan 09, 2018 at 04:49:27PM +0000, Sudeep Holla wrote:
+> Since the definition of the term "cluster" is not well defined in the
+> architecture, we should avoid using it. Also the physical package id
+> is currently mapped to so called "clusters" in ARM/ARM64 platforms which
+> is already argumentative.
 
-Is this wrong?
+I think we should describe why the PSCI checker uses the physical
+package id (ie because it is likely that power domains map to "clusters"
+- so physical package id *current* boundaries, it is trying to test
+"cluster" idle states) but I can easily rework the log before sending it
+upstream.
 
-Michael
+I will send it upstream for the next cycle along with patch (2), or
+if you prefer to send it yourself:
 
-On Wed, Sep 27, 2017 at 11:18 AM, Michael Nazzareno Trimarchi
-<michael@amarulasolutions.com> wrote:
-> Hi
->
-> <4>[13502.656095] [<c0419264>] (sbs_read_word_data+0x0/0x70) from
-> [<c04192f8>] (sbs_set_battery_mode+0x24/0x6c)
-> <4>[13502.656095]  r6:d79b0800 r5:d7123408 r4:00000001 r3:c04194ac
-> <4>[13502.656125] [<c04192d4>] (sbs_set_battery_mode+0x0/0x6c) from
-> [<c041962c>] (sbs_get_property+0x180/0x6e4)
-> <4>[13502.656125]  r6:0000001b r5:d7123408 r4:d79b0800 r3:c04194ac
-> <4>[13502.656156] [<c04194ac>] (sbs_get_property+0x0/0x6e4) from
-> [<c0417e2c>] (power_supply_show_property+0x4c/0x1c8)
-> <4>[13502.656186] [<c0417de0>] (power_supply_show_property+0x0/0x1c8)
-> from [<c0418098>] (power_supply_uevent+0xa8/0x1d4)
-> <4>[13502.656186]  r8:ca4b1000 r7:0000001b r6:d7123408 r5:0000000e r4:c068d3dc
-> <4>[13502.656217] [<c0417ff0>] (power_supply_uevent+0x0/0x1d4) from
-> [<c0324f58>] (dev_uevent+0xc8/0x18c)
-> <4>[13502.656247] [<c0324e90>] (dev_uevent+0x0/0x18c) from
-> [<c025ce18>] (kobject_uevent_env+0x1d4/0x4c4)
-> <4>[13502.656247]  r7:d7882880 r6:00000000 r5:c069cda4 r4:00000002
-> <4>[13502.656278] [<c025cc44>] (kobject_uevent_env+0x0/0x4c4) from
-> [<c025d11c>] (kobject_uevent+0x14/0x18)
-> <4>[13502.656308] [<c025d108>] (kobject_uevent+0x0/0x18) from
-> [<c04178d0>] (power_supply_changed_work+0x94/0xb8)
-> <4>[13502.656308] [<c041783c>] (power_supply_changed_work+0x0/0xb8)
-> from [<c00603e8>] (process_one_work+0x158/0x474)
-> <4>[13502.656339]  r7:c1ae9e00 r6:c1ae4880 r5:cc480000 r4:ce655e00
-> <4>[13502.656369] [<c0060290>] (process_one_work+0x0/0x474) from
-> [<c0060a50>] (worker_thread+0x144/0x324)
-> <4>[13502.656369] [<c006090c>] (worker_thread+0x0/0x324) from
-> [<c00655c4>] (kthread+0x98/0xa4)
-> <4>[13502.656400] [<c006552c>] (kthread+0x0/0xa4) from [<c0047b6c>]
-> (do_exit+0x0/0x7c4)
->
-> According to this stack I would like to know if I can queue
->
-> diff --git a/drivers/power/power_supply_core.c
-> b/drivers/power/power_supply_core.c
-> index f58d1805..3dae683 100644
-> --- a/drivers/power/power_supply_core.c
-> +++ b/drivers/power/power_supply_core.c
-> @@ -75,7 +75,7 @@ void power_supply_changed(struct power_supply *psy)
->         psy->changed = true;
->         wake_lock(&psy->work_wake_lock);
->         spin_unlock_irqrestore(&psy->changed_lock, flags);
-> -       schedule_work(&psy->changed_work);
-> +       queue_work(system_freezable_wq, &psy->chaged_work);
+Acked-by: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+
+Thanks for putting it together,
+Lorenzo
+
+> This patch removes the dependency on physical_package_id from the topology
+> in this PSCI checker. Also it replaces all the occurences of clusters to
+> cpu_groups which is derived from core_sibling_mask and may not directly
+> map to physical "cluster".
+> 
+> Cc: Mark Rutland <mark.rutland@arm.com>
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> ---
+>  drivers/firmware/psci_checker.c | 46 ++++++++++++++++++++---------------------
+>  1 file changed, 22 insertions(+), 24 deletions(-)
+> 
+> diff --git a/drivers/firmware/psci_checker.c b/drivers/firmware/psci_checker.c
+> index f3f4f810e5df..bb1c068bff19 100644
+> --- a/drivers/firmware/psci_checker.c
+> +++ b/drivers/firmware/psci_checker.c
+> @@ -77,8 +77,8 @@ static int psci_ops_check(void)
+>  	return 0;
 >  }
->  EXPORT_SYMBOL_GPL(power_supply_changed);
->
-> Michael
+>  
+> -static int find_clusters(const struct cpumask *cpus,
+> -			 const struct cpumask **clusters)
+> +static int find_cpu_groups(const struct cpumask *cpus,
+> +			   const struct cpumask **cpu_groups)
+>  {
+>  	unsigned int nb = 0;
+>  	cpumask_var_t tmp;
+> @@ -88,11 +88,11 @@ static int find_clusters(const struct cpumask *cpus,
+>  	cpumask_copy(tmp, cpus);
+>  
+>  	while (!cpumask_empty(tmp)) {
+> -		const struct cpumask *cluster =
+> +		const struct cpumask *cpu_group =
+>  			topology_core_cpumask(cpumask_any(tmp));
+>  
+> -		clusters[nb++] = cluster;
+> -		cpumask_andnot(tmp, tmp, cluster);
+> +		cpu_groups[nb++] = cpu_group;
+> +		cpumask_andnot(tmp, tmp, cpu_group);
+>  	}
+>  
+>  	free_cpumask_var(tmp);
+> @@ -170,24 +170,24 @@ static int hotplug_tests(void)
+>  {
+>  	int err;
+>  	cpumask_var_t offlined_cpus;
+> -	int i, nb_cluster;
+> -	const struct cpumask **clusters;
+> +	int i, nb_cpu_group;
+> +	const struct cpumask **cpu_groups;
+>  	char *page_buf;
+>  
+>  	err = -ENOMEM;
+>  	if (!alloc_cpumask_var(&offlined_cpus, GFP_KERNEL))
+>  		return err;
+> -	/* We may have up to nb_available_cpus clusters. */
+> -	clusters = kmalloc_array(nb_available_cpus, sizeof(*clusters),
+> -				 GFP_KERNEL);
+> -	if (!clusters)
+> +	/* We may have up to nb_available_cpus cpu_groups. */
+> +	cpu_groups = kmalloc_array(nb_available_cpus, sizeof(*cpu_groups),
+> +				   GFP_KERNEL);
+> +	if (!cpu_groups)
+>  		goto out_free_cpus;
+>  	page_buf = (char *)__get_free_page(GFP_KERNEL);
+>  	if (!page_buf)
+> -		goto out_free_clusters;
+> +		goto out_free_cpu_groups;
+>  
+>  	err = 0;
+> -	nb_cluster = find_clusters(cpu_online_mask, clusters);
+> +	nb_cpu_group = find_cpu_groups(cpu_online_mask, cpu_groups);
+>  
+>  	/*
+>  	 * Of course the last CPU cannot be powered down and cpu_down() should
+> @@ -197,24 +197,22 @@ static int hotplug_tests(void)
+>  	err += down_and_up_cpus(cpu_online_mask, offlined_cpus);
+>  
+>  	/*
+> -	 * Take down CPUs by cluster this time. When the last CPU is turned
+> -	 * off, the cluster itself should shut down.
+> +	 * Take down CPUs by cpu group this time. When the last CPU is turned
+> +	 * off, the cpu group itself should shut down.
+>  	 */
+> -	for (i = 0; i < nb_cluster; ++i) {
+> -		int cluster_id =
+> -			topology_physical_package_id(cpumask_any(clusters[i]));
+> +	for (i = 0; i < nb_cpu_group; ++i) {
+>  		ssize_t len = cpumap_print_to_pagebuf(true, page_buf,
+> -						      clusters[i]);
+> +						      cpu_groups[i]);
+>  		/* Remove trailing newline. */
+>  		page_buf[len - 1] = '\0';
+> -		pr_info("Trying to turn off and on again cluster %d "
+> -			"(CPUs %s)\n", cluster_id, page_buf);
+> -		err += down_and_up_cpus(clusters[i], offlined_cpus);
+> +		pr_info("Trying to turn off and on again group %d (CPUs %s)\n",
+> +			i, page_buf);
+> +		err += down_and_up_cpus(cpu_groups[i], offlined_cpus);
+>  	}
+>  
+>  	free_page((unsigned long)page_buf);
+> -out_free_clusters:
+> -	kfree(clusters);
+> +out_free_cpu_groups:
+> +	kfree(cpu_groups);
+>  out_free_cpus:
+>  	free_cpumask_var(offlined_cpus);
+>  	return err;
+> -- 
+> 2.7.4
+> 
