@@ -1,85 +1,59 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v4 2/2] PM / core: Propagate wakeup_path status flag in __device_suspend_late()
-Date: Tue,  9 Jan 2018 10:03:40 +0100
-Message-ID: <1515488620-10575-3-git-send-email-ulf.hansson@linaro.org>
-References: <1515488620-10575-1-git-send-email-ulf.hansson@linaro.org>
-Return-path: <linux-renesas-soc-owner@vger.kernel.org>
-In-Reply-To: <1515488620-10575-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-renesas-soc-owner@vger.kernel.org
-To: "Rafael J . Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
-Cc: Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>
+From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Subject: [PATCH V5 0/7] Add loadable kernel module and power management support
+Date: Tue, 9 Jan 2018 14:49:30 +0530
+Message-ID: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
+Mime-Version: 1.0
+Content-Type: text/plain
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:16736 "EHLO
+        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751544AbeAIJUB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 04:20:01 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: thierry.reding@gmail.com, bhelgaas@google.com, lorenzo.pieralisi@arm.com, cyndis@kapsi.fi
+Cc: jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Manikanta Maddireddy <mmaddireddy@nvidia.com>
 
-Currently the wakeup_path status flag becomes propagated from a child
-device to its parent device at __device_suspend(). This allows a driver
-dealing with a parent device to act on the flag from its ->suspend()
-callback.
+This series of patches adds loadable kernel module and power management
+support to Tegra PCIe host controller driver. irq_set_msi_desc() and
+tegra_cpuidle_pcie_irqs_in_use() symbols will be taken care in next
+set of patches.
 
-However, in situations when the wakeup_path status flag needs to be set
-from a ->suspend_late() callback, its value doesn't get propagated to the
-parent by the PM core. Let's address this limitation, by also propagating
-the flag at __device_suspend_late().
+These patches are tested on Jetson TK1, TX1 and TX2 platforms, following
+are the verification details.
+	- Multiple module insert & remove
+	- PCIe device functionality after module insert
+	- Free clock, resets, regulators, powergate, iomem and interrupt
+	resources after module remove
+	- PCIe device functionality after resume from RAM
 
-Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
----
- drivers/base/power/main.c | 31 ++++++++++++++++---------------
- 1 file changed, 16 insertions(+), 15 deletions(-)
+V2: PM QoS fix is dropped in V2 from this series because the fix is
+incorporated in latest 'commit 0759e80b84e3 ("PM / QoS: Fix device resume
+latency framework")'. Update commit message of few patches in V2.
 
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index 720e36e..02a497e 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -1447,6 +1447,21 @@ int dpm_suspend_noirq(pm_message_t state)
- 	return ret;
- }
- 
-+static void dpm_propagate_wakeup_to_parent(struct device *dev)
-+{
-+	struct device *parent = dev->parent;
-+
-+	if (!parent)
-+		return;
-+
-+	spin_lock_irq(&parent->power.lock);
-+
-+	if (dev->power.wakeup_path && !parent->power.ignore_children)
-+		parent->power.wakeup_path = true;
-+
-+	spin_unlock_irq(&parent->power.lock);
-+}
-+
- static pm_callback_t dpm_subsys_suspend_late_cb(struct device *dev,
- 						pm_message_t state,
- 						const char **info_p)
-@@ -1527,6 +1542,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 		async_error = error;
- 		goto Complete;
- 	}
-+	dpm_propagate_wakeup_to_parent(dev);
- 
- Skip:
- 	dev->power.is_late_suspended = true;
-@@ -1660,21 +1676,6 @@ static int legacy_suspend(struct device *dev, pm_message_t state,
- 	return error;
- }
- 
--static void dpm_propagate_wakeup_to_parent(struct device *dev)
--{
--	struct device *parent = dev->parent;
--
--	if (!parent)
--		return;
--
--	spin_lock_irq(&parent->power.lock);
--
--	if (dev->power.wakeup_path && !parent->power.ignore_children)
--		parent->power.wakeup_path = true;
--
--	spin_unlock_irq(&parent->power.lock);
--}
--
- static void dpm_clear_superiors_direct_complete(struct device *dev)
- {
- 	struct device_link *link;
+V3: Patches to export irq_set_msi_desc() and tegra_cpuidle_pcie_irqs_in_use()
+are dropped based on review comments. These symbols will be addressed in next
+series. Took care of few other review comments.
+
+V4: Dropped pci_find_host_bridge() export patch and added new patch to use
+bus->sysdata for private data.
+
+V5: Decouple from https://patchwork.ozlabs.org/patch/832053/ and rebase
+on top of linux-next
+
+Manikanta Maddireddy (7):
+  of: Export of_pci_range_to_resource()
+  PCI: tegra: Use bus->sysdata to store and get host private data
+  PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for Tegra PCIe
+  PCI: tegra: Free resources on probe failure
+  PCI: tegra: Add loadable kernel module support
+  PCI: tegra: Broadcast PME_Turn_Off message before link goes to L2
+  PCI: tegra: Add power management support
+
+ drivers/of/address.c         |   1 +
+ drivers/pci/host/Kconfig     |   2 +-
+ drivers/pci/host/pci-tegra.c | 333 ++++++++++++++++++++++++++++++++-----------
+ 3 files changed, 253 insertions(+), 83 deletions(-)
+
 -- 
-2.7.4
+2.1.4
