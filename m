@@ -1,7 +1,8 @@
 From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v5 2/6] iommu/arm-smmu: Add pm_runtime/sleep ops
-Date: Tue,  9 Jan 2018 15:31:45 +0530
-Message-ID: <1515492109-753-3-git-send-email-vivek.gautam@codeaurora.org>
+Subject: [PATCH v5 3/6] iommu/arm-smmu: Invoke pm_runtime during probe,
+	add/remove device
+Date: Tue,  9 Jan 2018 15:31:46 +0530
+Message-ID: <1515492109-753-4-git-send-email-vivek.gautam@codeaurora.org>
 References: <1515492109-753-1-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -23,136 +24,136 @@ List-Id: linux-pm@vger.kernel.org
 
 From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 
-The smmu needs to be functional only when the respective
-master's using it are active. The device_link feature
-helps to track such functional dependencies, so that the
-iommu gets powered when the master device enables itself
-using pm_runtime. So by adapting the smmu driver for
-runtime pm, above said dependency can be addressed.
-
-This patch adds the pm runtime/sleep callbacks to the
-driver and also the functions to parse the smmu clocks
-from DT and enable them in resume/suspend.
+The smmu device probe/remove and add/remove master device callbacks
+gets called when the smmu is not linked to its master, that is without
+the context of the master device. So calling runtime apis in those places
+separately.
 
 Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Signed-off-by: Archit Taneja <architt-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-[vivek: Clock rework to request bulk of clocks]
+[vivek: Cleanup pm runtime calls]
 Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 ---
- drivers/iommu/arm-smmu.c | 55 ++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 53 insertions(+), 2 deletions(-)
+ drivers/iommu/arm-smmu.c | 45 +++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 41 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-index 78d4c6b8f1ba..21acffe91a1c 100644
+index 21acffe91a1c..95478bfb182c 100644
 --- a/drivers/iommu/arm-smmu.c
 +++ b/drivers/iommu/arm-smmu.c
-@@ -48,6 +48,7 @@
- #include <linux/of_iommu.h>
- #include <linux/pci.h>
- #include <linux/platform_device.h>
-+#include <linux/pm_runtime.h>
- #include <linux/slab.h>
- #include <linux/spinlock.h>
+@@ -914,11 +914,15 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
+ 	struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
+ 	struct arm_smmu_device *smmu = smmu_domain->smmu;
+ 	struct arm_smmu_cfg *cfg = &smmu_domain->cfg;
+-	int irq;
++	int ret, irq;
  
-@@ -205,6 +206,9 @@ struct arm_smmu_device {
- 	u32				num_global_irqs;
- 	u32				num_context_irqs;
- 	unsigned int			*irqs;
-+	struct clk_bulk_data		*clocks;
-+	int				num_clks;
-+	const char * const		*clk_names;
+ 	if (!smmu || domain->type == IOMMU_DOMAIN_IDENTITY)
+ 		return;
  
- 	u32				cavium_id_base; /* Specific to Cavium */
++	ret = pm_runtime_get_sync(smmu->dev);
++	if (ret)
++		return;
++
+ 	/*
+ 	 * Disable the context bank and free the page tables before freeing
+ 	 * it.
+@@ -933,6 +937,8 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
  
-@@ -1685,6 +1689,25 @@ static int arm_smmu_id_size_to_bits(int size)
- 	}
+ 	free_io_pgtable_ops(smmu_domain->pgtbl_ops);
+ 	__arm_smmu_free_bitmap(smmu->context_map, cfg->cbndx);
++
++	pm_runtime_put_sync(smmu->dev);
  }
  
-+static int arm_smmu_init_clocks(struct arm_smmu_device *smmu)
-+{
-+	int i;
-+	int num = smmu->num_clks;
-+
-+	if (num < 1)
-+		return 0;
-+
-+	smmu->clocks = devm_kcalloc(smmu->dev, num,
-+				    sizeof(*smmu->clocks), GFP_KERNEL);
-+	if (!smmu->clocks)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < num; i++)
-+		smmu->clocks[i].id = smmu->clk_names[i];
-+
-+	return devm_clk_bulk_get(smmu->dev, num, smmu->clocks);
-+}
-+
- static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
- {
- 	unsigned long size;
-@@ -1897,10 +1920,12 @@ static int arm_smmu_device_cfg_probe(struct arm_smmu_device *smmu)
- struct arm_smmu_match_data {
- 	enum arm_smmu_arch_version version;
- 	enum arm_smmu_implementation model;
-+	const char * const *clks;
-+	int num_clks;
- };
+ static struct iommu_domain *arm_smmu_domain_alloc(unsigned type)
+@@ -1408,12 +1414,20 @@ static int arm_smmu_add_device(struct device *dev)
+ 	while (i--)
+ 		cfg->smendx[i] = INVALID_SMENDX;
  
- #define ARM_SMMU_MATCH_DATA(name, ver, imp)	\
--static struct arm_smmu_match_data name = { .version = ver, .model = imp }
-+static const struct arm_smmu_match_data name = { .version = ver, .model = imp }
+-	ret = arm_smmu_master_alloc_smes(dev);
++	ret = pm_runtime_get_sync(smmu->dev);
+ 	if (ret)
+ 		goto out_cfg_free;
  
- ARM_SMMU_MATCH_DATA(smmu_generic_v1, ARM_SMMU_V1, GENERIC_SMMU);
- ARM_SMMU_MATCH_DATA(smmu_generic_v2, ARM_SMMU_V2, GENERIC_SMMU);
-@@ -2001,6 +2026,8 @@ static int arm_smmu_device_dt_probe(struct platform_device *pdev,
- 	data = of_device_get_match_data(dev);
- 	smmu->version = data->version;
- 	smmu->model = data->model;
-+	smmu->clk_names = data->clks;
-+	smmu->num_clks = data->num_clks;
++	ret = arm_smmu_master_alloc_smes(dev);
++	if (ret) {
++		pm_runtime_put_sync(smmu->dev);
++		goto out_cfg_free;
++	}
++
+ 	iommu_device_link(&smmu->iommu, dev);
  
- 	parse_driver_options(smmu);
++	pm_runtime_put_sync(smmu->dev);
++
+ 	return 0;
  
-@@ -2099,6 +2126,10 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
- 		smmu->irqs[i] = irq;
- 	}
+ out_cfg_free:
+@@ -1428,7 +1442,7 @@ static void arm_smmu_remove_device(struct device *dev)
+ 	struct iommu_fwspec *fwspec = dev->iommu_fwspec;
+ 	struct arm_smmu_master_cfg *cfg;
+ 	struct arm_smmu_device *smmu;
+-
++	int ret;
  
-+	err = arm_smmu_init_clocks(smmu);
+ 	if (!fwspec || fwspec->ops != &arm_smmu_ops)
+ 		return;
+@@ -1436,8 +1450,21 @@ static void arm_smmu_remove_device(struct device *dev)
+ 	cfg  = fwspec->iommu_priv;
+ 	smmu = cfg->smmu;
+ 
++	/*
++	 * The device link between the master device and
++	 * smmu is already purged at this point.
++	 * So enable the power to smmu explicitly.
++	 */
++
++	ret = pm_runtime_get_sync(smmu->dev);
++	if (ret)
++		return;
++
+ 	iommu_device_unlink(&smmu->iommu, dev);
+ 	arm_smmu_master_free_smes(fwspec);
++
++	pm_runtime_put_sync(smmu->dev);
++
+ 	iommu_group_remove_device(dev);
+ 	kfree(fwspec->iommu_priv);
+ 	iommu_fwspec_free(dev);
+@@ -2130,6 +2157,14 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
+ 	if (err)
+ 		return err;
+ 
++	platform_set_drvdata(pdev, smmu);
++
++	pm_runtime_enable(dev);
++
++	err = pm_runtime_get_sync(dev);
 +	if (err)
 +		return err;
 +
  	err = arm_smmu_device_cfg_probe(smmu);
  	if (err)
  		return err;
-@@ -2197,7 +2228,27 @@ static int __maybe_unused arm_smmu_pm_resume(struct device *dev)
+@@ -2171,9 +2206,9 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
+ 		return err;
+ 	}
+ 
+-	platform_set_drvdata(pdev, smmu);
+ 	arm_smmu_device_reset(smmu);
+ 	arm_smmu_test_smr_masks(smmu);
++	pm_runtime_put_sync(dev);
+ 
+ 	/*
+ 	 * For ACPI and generic DT bindings, an SMMU will be probed before
+@@ -2212,6 +2247,8 @@ static int arm_smmu_device_remove(struct platform_device *pdev)
+ 
+ 	/* Turn the thing off */
+ 	writel(sCR0_CLIENTPD, ARM_SMMU_GR0_NS(smmu) + ARM_SMMU_GR0_sCR0);
++	pm_runtime_force_suspend(smmu->dev);
++
  	return 0;
  }
  
--static SIMPLE_DEV_PM_OPS(arm_smmu_pm_ops, NULL, arm_smmu_pm_resume);
-+static int __maybe_unused arm_smmu_runtime_resume(struct device *dev)
-+{
-+	struct arm_smmu_device *smmu = dev_get_drvdata(dev);
-+
-+	return clk_bulk_prepare_enable(smmu->num_clks, smmu->clocks);
-+}
-+
-+static int __maybe_unused arm_smmu_runtime_suspend(struct device *dev)
-+{
-+	struct arm_smmu_device *smmu = dev_get_drvdata(dev);
-+
-+	clk_bulk_disable_unprepare(smmu->num_clks, smmu->clocks);
-+
-+	return 0;
-+}
-+
-+static const struct dev_pm_ops arm_smmu_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(NULL, arm_smmu_pm_resume)
-+	SET_RUNTIME_PM_OPS(arm_smmu_runtime_suspend,
-+			   arm_smmu_runtime_resume, NULL)
-+};
- 
- static struct platform_driver arm_smmu_driver = {
- 	.driver	= {
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
