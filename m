@@ -1,112 +1,148 @@
 From: Adrian Hunter <adrian.hunter@intel.com>
-Subject: [PATCH RESEND 9/9] mmc: sdhci-pci: Respect PM flags when enabling card detect GPIO IRQ wakeup
-Date: Tue,  9 Jan 2018 09:52:26 +0200
-Message-ID: <1515484346-800-10-git-send-email-adrian.hunter@intel.com>
-References: <1515484346-800-1-git-send-email-adrian.hunter@intel.com>
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mga03.intel.com ([134.134.136.65]:46300 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1755234AbeAIHxT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Jan 2018 02:53:19 -0500
-In-Reply-To: <1515484346-800-1-git-send-email-adrian.hunter@intel.com>
-Sender: linux-pm-owner@vger.kernel.org
+Subject: Re: [PATCH 1/9] mmc: sdhci-pci: Stop calling
+ sdhci_enable_irq_wakeups()
+Date: Tue, 9 Jan 2018 10:08:46 +0200
+Message-ID: <91961c28-2e09-250d-de7a-55ef44c89ce7@intel.com>
+References: <1513757933-11232-1-git-send-email-adrian.hunter@intel.com>
+ <CAPDyKFrZjTvYdT8BGKadTdTBsaAeoC3YOQBBPOvqpv1JpaOUoQ@mail.gmail.com>
+ <c2d38388-93a0-61c0-e323-74851c08c1fd@intel.com>
+ <25263929.MvjmvFKZ9L@aspire.rjw.lan>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-mmc-owner@vger.kernel.org>
+In-Reply-To: <25263929.MvjmvFKZ9L@aspire.rjw.lan>
+Content-Language: en-US
+Sender: linux-mmc-owner@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>
 
-Commit 03dbaa04a2e5 ("mmc: slot-gpio: Add support to enable irq wake on
-cd_irq") enabled wakeup irrespective of the host controller's PM flags.
-However, users also want to control it from sysfs power/wakeup attribute.
-That means the driver needs to check the PM flags before enabling it in the
-suspend callback. Add support for that in sdhci-pci, which is the only
-driver presently using the MMC_CAP_CD_WAKE flag, and remove the enabling in
-mmc_gpiod_request_cd_irq().
+On 09/01/18 02:26, Rafael J. Wysocki wrote:
+> On Monday, January 8, 2018 3:49:26 PM CET Adrian Hunter wrote:
+>> On 21/12/17 17:33, Ulf Hansson wrote:
+>>> + linux-pm, Rafael, Geert
+>>>
+>>> On 21 December 2017 at 15:25, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>>>> On 21/12/17 16:15, Ulf Hansson wrote:
+>>>>> On 20 December 2017 at 09:18, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>>>>>> sdhci_enable_irq_wakeups() is already called by sdhci_suspend_host() so
+>>>>>> sdhci-pci should not need to call it. However sdhci_suspend_host() only
+>>>>>> calls it if wakeups are enabled, and sdhci-pci does not enable them until
+>>>>>> after calling sdhci_suspend_host(). So move the calls to
+>>>>>> sdhci_pci_init_wakeup() before calling sdhci_suspend_host(), and
+>>>>>> stop calling sdhci_enable_irq_wakeups(). That results in some
+>>>>>> simplification because sdhci_pci_suspend_host() and
+>>>>>> __sdhci_pci_suspend_host() no longer need to be separate functions.
+>>>>>>
+>>>>>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+>>>>>> ---
+>>>>>>  drivers/mmc/host/sdhci-pci-core.c | 58 ++++++++++++++-------------------------
+>>>>>>  1 file changed, 21 insertions(+), 37 deletions(-)
+>>>>>>
+>>>>>> diff --git a/drivers/mmc/host/sdhci-pci-core.c b/drivers/mmc/host/sdhci-pci-core.c
+>>>>>> index 110c634cfb43..2ffc09f088ee 100644
+>>>>>> --- a/drivers/mmc/host/sdhci-pci-core.c
+>>>>>> +++ b/drivers/mmc/host/sdhci-pci-core.c
+>>>>>> @@ -39,10 +39,29 @@
+>>>>>>  static void sdhci_pci_hw_reset(struct sdhci_host *host);
+>>>>>>
+>>>>>>  #ifdef CONFIG_PM_SLEEP
+>>>>>> -static int __sdhci_pci_suspend_host(struct sdhci_pci_chip *chip)
+>>>>>> +static int sdhci_pci_init_wakeup(struct sdhci_pci_chip *chip)
+>>>>>> +{
+>>>>>> +       mmc_pm_flag_t pm_flags = 0;
+>>>>>> +       int i;
+>>>>>> +
+>>>>>> +       for (i = 0; i < chip->num_slots; i++) {
+>>>>>> +               struct sdhci_pci_slot *slot = chip->slots[i];
+>>>>>> +
+>>>>>> +               if (slot)
+>>>>>> +                       pm_flags |= slot->host->mmc->pm_flags;
+>>>>>> +       }
+>>>>>> +
+>>>>>> +       return device_init_wakeup(&chip->pdev->dev,
+>>>>>> +                                 (pm_flags & MMC_PM_KEEP_POWER) &&
+>>>>>> +                                 (pm_flags & MMC_PM_WAKE_SDIO_IRQ));
+>>>>>
+>>>>> A couple of comments here.
+>>>>>
+>>>>> Wakeup settings shouldn't be changed during system suspend. That means
+>>>>> we shouldn't call device_init_wakeup() (or device_set_wakeup_enable()
+>>>>> for that matter) here.
+>>>>>
+>>>>> Instead, device_init_wakeup() should be called during ->probe(), while
+>>>>> device_set_wakeup_enable() should normally *not* have to be called at
+>>>>> all by drivers. There are a exceptions for device_set_wakeup_enable(),
+>>>>> however it should not have to be called during system suspend, at
+>>>>> least.
+>>>>>
+>>>>> Of course, I realize that you are not changing the behavior in this
+>>>>> regards in this patch, so I am fine this anyway.
+>>>>>
+>>>>> My point is, that the end result while doing this improvements in this
+>>>>> series, should strive to that device_init_wakeup() and
+>>>>> device_set_wakeup_enable() becomes used correctly. I don't think that
+>>>>> is the case, or is it?
+>>>>
+>>>> Unfortunately we don't find out what the SDIO driver wants to do (i.e
+>>>> pm_flags & MMC_PM_WAKE_SDIO_IRQ) until suspend.
+>>>
+>>> That's true! Of course, we need to be able to act on this, somehow.
+>>>
+>>>>
+>>>> I considered enabling wakeups by default but wasn't sure that would not
+>>>> increase power consumption in devices not expecting it.
+>>>
+>>> I understand the problem, believe me. However, I would rather like to
+>>> try to find a generic solution to these problems, else we will keep
+>>> abusing existing wakeups APIs.
+>>>
+>>> For your information, I have been working on several issues on how to
+>>> handle the "wakeup path" correctly, which is linked to this problem.
+>>> See a few quite small series for this below [1], [2].
+>>>
+>>> I think the general problems can be described liked this:
+>>>
+>>> 1) The dev->power.wakeup_path flag doesn't get set for the device by
+>>> the PM core, in case device_set_wakeup_enable() is called from a
+>>> ->suspend() callback. That also means, that the parent device don't
+>>> get its >power.wakeup_path flag set in __device_suspend() by the PM
+>>> core, while this may be expected by upper layers (PM domains, middle
+>>> layers).
+>>>
+>>> 2) device_may_wakeup() doesn't tell us the hole story about the
+>>> wakeup. Only that is *may* be configured. :-)
+>>> So in cases when device_may_wakeup() returns true, we still have these
+>>> three conditions to consider, which we currently can't distinguish
+>>> between:
+>>>
+>>> *) The wakeup is configured and enabled, so the device should be
+>>> enabled in the wakeup path.
+>>>
+>>> **) The wakeup is configured and enabled, but as an out-band-wakeup
+>>> signal (like a GPIO IRQ). This means the device shouldn't be enabled
+>>> in the wakeup path.
+>>
+>> So what about just adding can_oob_wakeup and oob_wakeup i.e.
+> 
+> Why do you want to expose that to user space?  It is entirely internal IMO.
 
-Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
----
- drivers/mmc/core/slot-gpio.c      |  2 --
- drivers/mmc/host/sdhci-pci-core.c | 18 ++++++++++++++----
- drivers/mmc/host/sdhci.c          |  4 ++++
- 3 files changed, 18 insertions(+), 6 deletions(-)
+It was not exposed to user space.  The idea was to use the same power/wake
+attribute for both "normal" and oob wake.
 
-diff --git a/drivers/mmc/core/slot-gpio.c b/drivers/mmc/core/slot-gpio.c
-index 3a30535c2f31..74dd534905f7 100644
---- a/drivers/mmc/core/slot-gpio.c
-+++ b/drivers/mmc/core/slot-gpio.c
-@@ -149,8 +149,6 @@ void mmc_gpiod_request_cd_irq(struct mmc_host *host)
- 
- 	if (irq < 0)
- 		host->caps |= MMC_CAP_NEEDS_POLL;
--	else if ((host->caps & MMC_CAP_CD_WAKE) && !enable_irq_wake(irq))
--		host->slot.cd_wake_enabled = true;
- }
- EXPORT_SYMBOL(mmc_gpiod_request_cd_irq);
- 
-diff --git a/drivers/mmc/host/sdhci-pci-core.c b/drivers/mmc/host/sdhci-pci-core.c
-index baedb2624e36..fa233fc6c854 100644
---- a/drivers/mmc/host/sdhci-pci-core.c
-+++ b/drivers/mmc/host/sdhci-pci-core.c
-@@ -41,18 +41,25 @@
- static int sdhci_pci_init_wakeup(struct sdhci_pci_chip *chip)
- {
- 	mmc_pm_flag_t pm_flags = 0;
-+	bool cap_cd_wake = false;
- 	int i;
- 
- 	for (i = 0; i < chip->num_slots; i++) {
- 		struct sdhci_pci_slot *slot = chip->slots[i];
- 
--		if (slot)
-+		if (slot) {
- 			pm_flags |= slot->host->mmc->pm_flags;
-+			if (slot->host->mmc->caps & MMC_CAP_CD_WAKE)
-+				cap_cd_wake = true;
-+		}
- 	}
- 
--	return device_set_wakeup_enable(&chip->pdev->dev,
--					(pm_flags & MMC_PM_KEEP_POWER) &&
--					(pm_flags & MMC_PM_WAKE_SDIO_IRQ));
-+	if ((pm_flags & MMC_PM_KEEP_POWER) && (pm_flags & MMC_PM_WAKE_SDIO_IRQ))
-+		return device_wakeup_enable(&chip->pdev->dev);
-+	else if (!cap_cd_wake)
-+		return device_wakeup_disable(&chip->pdev->dev);
-+
-+	return 0;
- }
- 
- static int sdhci_pci_suspend_host(struct sdhci_pci_chip *chip)
-@@ -1687,6 +1694,9 @@ static struct sdhci_pci_slot *sdhci_pci_probe_slot(
- 	if (device_can_wakeup(&pdev->dev))
- 		host->mmc->pm_caps |= MMC_PM_WAKE_SDIO_IRQ;
- 
-+	if (host->mmc->caps & MMC_CAP_CD_WAKE)
-+		device_init_wakeup(&pdev->dev, true);
-+
- 	if (slot->cd_idx >= 0) {
- 		ret = mmc_gpiod_request_cd(host->mmc, NULL, slot->cd_idx,
- 					   slot->cd_override_level, 0, NULL);
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index c82fd16dd14e..883b55077231 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -2891,6 +2891,8 @@ int sdhci_suspend_host(struct sdhci_host *host)
- 		free_irq(host->irq, host);
- 	}
- 
-+	mmc_gpio_set_cd_wake(host->mmc, true);
-+
- 	return 0;
- }
- 
-@@ -2918,6 +2920,8 @@ int sdhci_resume_host(struct sdhci_host *host)
- 		mmiowb();
- 	}
- 
-+	mmc_gpio_set_cd_wake(host->mmc, false);
-+
- 	if (host->irq_wake_enabled) {
- 		sdhci_disable_irq_wakeups(host);
- 	} else {
--- 
-1.9.1
+The user doesn't care whether the wakeup is native to the device or
+performed by GPIO.  So it seems reasonable to use the power/wake attribute.
+
+> Besides, we have that already in ACPI, for example, so that would need to be
+> taken into account somehow.
+
+What in ACPI are you referring to?
+
+> But this a PCI driver, right?
+
+Yes.
+
+> Anyway, please post the original series again with a CC to linux-pm.
+
+Done.
