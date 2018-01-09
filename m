@@ -1,13 +1,12 @@
 From: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Subject: [PATCH v2 16/16] ARM: dtsi: sun8i: a711: enable battery
- power supply subnode
-Date: Tue,  9 Jan 2018 10:33:47 +0100
-Message-ID: <2bcfc20abd661c172a30056547c7cd0397f67c4a.1515486346.git-series.quentin.schulz@free-electrons.com>
+Subject: [PATCH v2 09/16] ARM: dtsi: axp81x: add node for ADC
+Date: Tue,  9 Jan 2018 10:33:40 +0100
+Message-ID: <d2103b3aff2ba61ceeee3413be8218c36686fd28.1515486346.git-series.quentin.schulz@free-electrons.com>
 References: <cover.1e46d70f7931be8154b450a2fcdf066450a1aa6f.1515486346.git-series.quentin.schulz@free-electrons.com>
 Reply-To: quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-sunxi+bncBCLZXSNY5IDBBWEZ2LJAKGQEFB4OPLQ-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
+Return-path: <linux-sunxi+bncBCLZXSNY5IDBBTUZ2LJAKGQEPYHRK3A-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org>
 Sender: linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 In-Reply-To: <cover.1e46d70f7931be8154b450a2fcdf066450a1aa6f.1515486346.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 In-Reply-To: <cover.1e46d70f7931be8154b450a2fcdf066450a1aa6f.1515486346.git-series.quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -22,28 +21,29 @@ To: jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, knaack.h-Mmb7MZpHnFY@public.g
 Cc: linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 List-Id: linux-pm@vger.kernel.org
 
-The TBS A711 has an AXP813 PMIC and a soldered battery, thus, we enable
-the battery power supply subnode in its Device Tree.
+This adds a DT node for the ADC of the PMIC so that there can be
+consumers of its IIO channels declaring their consumptions via DT.
 
 Signed-off-by: Quentin Schulz <quentin.schulz-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 ---
- arch/arm/boot/dts/sun8i-a83t-tbs-a711.dts | 4 ++++
- 1 file changed, 4 insertions(+)
+ arch/arm/boot/dts/axp81x.dtsi | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/arm/boot/dts/sun8i-a83t-tbs-a711.dts b/arch/arm/boot/dts/sun8i-a83t-tbs-a711.dts
-index 511fca4..1de362f 100644
---- a/arch/arm/boot/dts/sun8i-a83t-tbs-a711.dts
-+++ b/arch/arm/boot/dts/sun8i-a83t-tbs-a711.dts
-@@ -231,6 +231,10 @@
+diff --git a/arch/arm/boot/dts/axp81x.dtsi b/arch/arm/boot/dts/axp81x.dtsi
+index fd55b89..dd25bfe 100644
+--- a/arch/arm/boot/dts/axp81x.dtsi
++++ b/arch/arm/boot/dts/axp81x.dtsi
+@@ -48,6 +48,11 @@
+ 	interrupt-controller;
+ 	#interrupt-cells = <1>;
  
- #include "axp81x.dtsi"
- 
-+&battery_power_supply {
-+	status = "okay";
-+};
++	axp_adc: axp-adc {
++		compatible = "x-powers,axp813-adc";
++		#io-channel-cells = <1>;
++	};
 +
- &reg_aldo1 {
- 	regulator-min-microvolt = <1800000>;
- 	regulator-max-microvolt = <1800000>;
+ 	axp_gpio: axp-gpio {
+ 		compatible = "x-powers,axp813-gpio";
+ 		gpio-controller;
 -- 
 git-series 0.9.1
