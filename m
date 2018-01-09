@@ -1,99 +1,112 @@
 From: Sebastian Reichel <sre@kernel.org>
-Subject: Re: [PATCH] bq24190: Simplify code in property_is_writeable
-Date: Tue, 9 Jan 2018 17:21:54 +0100
-Message-ID: <20180109162154.ewgp5bbuxlaesgwz@earth.universe>
-References: <20171227092041.GA14507@amd>
+Subject: Re: [PATCH 06/12] power: supply: account for const type of
+ of_device_id.data
+Date: Tue, 9 Jan 2018 17:22:24 +0100
+Message-ID: <20180109162224.g6pw37qrzkjzx3ax@earth.universe>
+References: <1514899688-27844-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1514899688-27844-7-git-send-email-Julia.Lawall@lip6.fr>
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="uownwn2qz3fjurl6"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail.kernel.org ([198.145.29.99]:57074 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1758882AbeAIQV5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 9 Jan 2018 11:21:57 -0500
+        protocol="application/pgp-signature"; boundary="yt25y5mx5ughqgal"
+Return-path: <linux-kernel-owner@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20171227092041.GA14507@amd>
-Sender: linux-pm-owner@vger.kernel.org
+In-Reply-To: <1514899688-27844-7-git-send-email-Julia.Lawall@lip6.fr>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: kernel-janitors@vger.kernel.org, Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Pavel Machek <pavel@ucw.cz>
-Cc: pali.rohar@gmail.com, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, patrikbachan@gmail.com, serge@hallyn.com, abcloriens@gmail.com, clayton@craftyguy.net, martijn@brixit.nl, sakari.ailus@linux.intel.com, Filip =?utf-8?Q?Matijevi=C4=87?= <filip.matijevic.pz@gmail.com>, linux-pm@vger.kernel.org
 
 
---uownwn2qz3fjurl6
+--yt25y5mx5ughqgal
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Dec 27, 2017 at 10:20:42AM +0100, Pavel Machek wrote:
-> Simplify function that should be trivial.
+On Tue, Jan 02, 2018 at 02:28:02PM +0100, Julia Lawall wrote:
+> This driver creates two const structures that it stores in the data
+> field of an of_device_id array.
 >=20
-> Signed-off-by: Pavel machek <pavel@ucw.cz>
+> The data field of an of_device_id structure has type const void *, so
+> there is no need for a const-discarding cast when putting const values
+> into such a structure.
+>=20
+> Furthermore, adding const to the declaration of the location that
+> receives a const value from such a field ensures that the compiler
+> will continue to check that the value is not modified.  The
+> const-discarding cast on the extraction from the data field is thus
+> no longer needed.
+>=20
+> Done using Coccinelle.
+>=20
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+>=20
+> ---
 
 Thanks, queued.
 
 -- Sebastian
 
-> diff --git a/drivers/power/supply/bq24190_charger.c b/drivers/power/suppl=
-y/bq24190_charger.c
-> index 35ff406..4ea8f0a 100644
-> --- a/drivers/power/supply/bq24190_charger.c
-> +++ b/drivers/power/supply/bq24190_charger.c
-> @@ -1193,8 +1193,6 @@ static int bq24190_charger_set_property(struct powe=
-r_supply *psy,
->  static int bq24190_charger_property_is_writeable(struct power_supply *ps=
-y,
->  		enum power_supply_property psp)
->  {
-> -	int ret;
-> -
->  	switch (psp) {
->  	case POWER_SUPPLY_PROP_ONLINE:
->  	case POWER_SUPPLY_PROP_TEMP_ALERT_MAX:
-> @@ -1202,13 +1200,10 @@ static int bq24190_charger_property_is_writeable(=
-struct power_supply *psy,
->  	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
->  	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
->  	case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
-> -		ret =3D 1;
-> -		break;
-> +		return 1;
->  	default:
-> -		ret =3D 0;
-> +		return 0;
->  	}
-> -
-> -	return ret;
->  }
-> =20
->  static void bq24190_input_current_limit_work(struct work_struct *work)
+>  drivers/power/supply/axp20x_ac_power.c |    8 ++++----
+>  1 file changed, 4 insertions(+), 4 deletions(-)
 >=20
-> --=20
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/b=
-log.html
+> diff -u -p a/drivers/power/supply/axp20x_ac_power.c b/drivers/power/suppl=
+y/axp20x_ac_power.c
+> --- a/drivers/power/supply/axp20x_ac_power.c
+> +++ b/drivers/power/supply/axp20x_ac_power.c
+> @@ -159,7 +159,7 @@ static int axp20x_ac_power_probe(struct
+>  	struct axp20x_dev *axp20x =3D dev_get_drvdata(pdev->dev.parent);
+>  	struct power_supply_config psy_cfg =3D {};
+>  	struct axp20x_ac_power *power;
+> -	struct axp_data *axp_data;
+> +	const struct axp_data *axp_data;
+>  	static const char * const irq_names[] =3D { "ACIN_PLUGIN", "ACIN_REMOVA=
+L",
+>  		NULL };
+>  	int i, irq, ret;
+> @@ -176,7 +176,7 @@ static int axp20x_ac_power_probe(struct
+>  	if (!power)
+>  		return -ENOMEM;
+> =20
+> -	axp_data =3D (struct axp_data *)of_device_get_match_data(&pdev->dev);
+> +	axp_data =3D of_device_get_match_data(&pdev->dev);
+> =20
+>  	if (axp_data->acin_adc) {
+>  		power->acin_v =3D devm_iio_channel_get(&pdev->dev, "acin_v");
+> @@ -230,10 +230,10 @@ static int axp20x_ac_power_probe(struct
+>  static const struct of_device_id axp20x_ac_power_match[] =3D {
+>  	{
+>  		.compatible =3D "x-powers,axp202-ac-power-supply",
+> -		.data =3D (void *)&axp20x_data,
+> +		.data =3D &axp20x_data,
+>  	}, {
+>  		.compatible =3D "x-powers,axp221-ac-power-supply",
+> -		.data =3D (void *)&axp22x_data,
+> +		.data =3D &axp22x_data,
+>  	}, { /* sentinel */ }
+>  };
+>  MODULE_DEVICE_TABLE(of, axp20x_ac_power_match);
+>=20
 
-
-
---uownwn2qz3fjurl6
+--yt25y5mx5ughqgal
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlpU7BEACgkQ2O7X88g7
-+ppXeA/9Eo3GtrcOyAp1zQAN81D+SZ7XmPqIcu9jcdIYCNeH8U5SqKrnmWAuyjLo
-EORrZCBoNkNA+ojchl43e8ggHr0JqLvZnL7RFLLfLnpHNxizbFqxzfnlT0+KpHDR
-u+4ckUlCfJXWML5HCGq4xVTHu7DeM73MrQX7dAGlkLfTX6YL0AufrnrcbhVzpL3T
-G/GpqlPlYpNRFsImcFh8Fk2auY0CbeXljcPtPqvroiBmJr2qs0FYIzCF81aq9QAN
-lJsfDrf9FH2S6iIbdrkzYRf5JKyqemgkzbRUXob+3EqWnPqSq3BM0FBlqdQW4XTx
-ug1H9Nj3cjnp7y5RPfVL24eW3pEE5GAzxq81tgafK9Qj/3uAmPa+5gJMo6J+JuoK
-3dpG8AXexCULF0RFlFShD6tC6fzcs6Vig1Fif4Qmx2fnOmeOGPlE1DBA9qlj3Lui
-poXfVZRlewdVFWRC1T0oB+CKkT6GXXysF4NA+dp+fYHZtjUMGMFlaoElh8vuzLdO
-pHQzpmdBw3cbEMVIjxZ8k80utBaAAtIuT7W7CycwSzIq0EkUDUXTFsAK829/9n2Q
-SvmAF3NTmqWi/mhSsb4WLrxD+TkXuYUrczyQfiK8SB+6HnQSCmpIWXQbhwYTpu/l
-dAOOf/uV9N2NybzfRk9UuxcE4nUjYQXw04We4DzE+52AmTlBWzU=
-=ntsD
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAlpU7D8ACgkQ2O7X88g7
++pqpOw/9ET2Vvi2UoM0hzMPFNolvhS61gO04izGH1BI+KesGDEdk1ZRdErNsBvHm
+hrhTuZWPAcMUiAPMEJjrSZsOPaQx8LDyDE98QrvGdtntKJM/scVjrTTojxCYBvv2
+9XLNRVjduuaBWoGoAeTWNTEbd04FI8TFqNIGc9qAIATIUY87qMZPVH5QxniQEcN9
+T/pQfYkEsilrJ/k22T82SpyWPkxR6ioJkHLqLyZ/Yj4tleeV4f93ivP+tP+HtP6z
+AAKuGx3TNqOmmypNuxzug6Cj36ZgG0JfTNOGRyOXFGEpPN7COZbRL+xb8hEhDCz8
+D80CZ331+VXZd5+r0w5winqgekZqp5QT5551yLNNR9Jug+vmekIamhONVKECpT4B
+OiyY2HT9jlQUNXIhNuRE9NCebz/hOsaiwllShmCuHo5REPk4P66znnwcZM9xL5xP
+ru+YHdhYhtVdyWaK1tJe2LWt5+IgNSUxYFgBa8+9tls0VvSIDbwTTZa4r9oNuGDg
+FORPW3fDxmQI6M0Np1tlvUSp2Roz8YJmiTn0JUz7TQM53lKtx3oev05BUNIHWOND
+rUkmRkSyluIycb1TIgkbuiDdAU0oKwEoutjYuzSFbtEqvPTKHSvy8bMKinUWlZlu
+Okk/H4bLeMj9t63NNwo5WI8BxItVtpCDLZbqS4LyKGclpf0u5BU=
+=MDRc
 -----END PGP SIGNATURE-----
 
---uownwn2qz3fjurl6--
+--yt25y5mx5ughqgal--
