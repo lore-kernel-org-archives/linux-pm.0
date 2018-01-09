@@ -1,68 +1,53 @@
 From: Manikanta Maddireddy <mmaddireddy@nvidia.com>
-Subject: [PATCH V5 2/7] PCI: tegra: Use bus->sysdata to store and get host private data
-Date: Tue, 9 Jan 2018 14:49:32 +0530
-Message-ID: <1515489577-2197-3-git-send-email-mmaddireddy@nvidia.com>
+Subject: [PATCH V5 3/7] PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for Tegra PCIe
+Date: Tue, 9 Jan 2018 14:49:33 +0530
+Message-ID: <1515489577-2197-4-git-send-email-mmaddireddy@nvidia.com>
 References: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
 Content-Type: text/plain
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from hqemgate14.nvidia.com ([216.228.121.143]:6438 "EHLO
-        hqemgate14.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752064AbeAIJUY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 04:20:24 -0500
+Received: from hqemgate16.nvidia.com ([216.228.121.65]:16773 "EHLO
+        hqemgate16.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1751916AbeAIJUf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 04:20:35 -0500
 In-Reply-To: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: thierry.reding@gmail.com, bhelgaas@google.com, lorenzo.pieralisi@arm.com, cyndis@kapsi.fi
 Cc: jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org, Manikanta Maddireddy <mmaddireddy@nvidia.com>
 
-Tegra host driver is using pci_find_host_bridge() to get private data,
-however pci_find_host_bridge() is causing module build failure because
-it is not exported. pci_find_host_bridge() can be avoided by using
-bus->sysdata to store and get private data.
+Primary, secondary and subordinate default bus numbers are 0 in Tegra and
+it is expecting SW to program these numbers in configration space.
+
+pci_scan_bridge_extend() function programs these numbers in configuration
+space if secondary & subordinate bus numbers are 0 or PCI_REASSIGN_ALL_BUS
+flag is set. Since secondary & subordinate default bus numbers are 0,
+PCI_REASSIGN_ALL_BUS flag can be removed for Tegra PCIe.
 
 Signed-off-by: Manikanta Maddireddy <mmaddireddy@nvidia.com>
 Acked-by: Thierry Reding <treding@nvidia.com>
 ---
+V3:
+* new patch in V3
 V4:
-* new patch in V4
+* no change in this patch
 V5:
-* Rebase on top of linux-next
+* no change in this patch
 
- drivers/pci/host/pci-tegra.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ drivers/pci/host/pci-tegra.c | 1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/drivers/pci/host/pci-tegra.c b/drivers/pci/host/pci-tegra.c
-index e126341fcb36..d790a26ad87e 100644
+index d790a26ad87e..e4b47ebc91fe 100644
 --- a/drivers/pci/host/pci-tegra.c
 +++ b/drivers/pci/host/pci-tegra.c
-@@ -379,8 +379,7 @@ static void __iomem *tegra_pcie_map_bus(struct pci_bus *bus,
- 					unsigned int devfn,
- 					int where)
- {
--	struct pci_host_bridge *host = pci_find_host_bridge(bus);
--	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
-+	struct tegra_pcie *pcie = bus->sysdata;
- 	void __iomem *addr = NULL;
+@@ -2293,7 +2293,6 @@ static int tegra_pcie_probe(struct platform_device *pdev)
  
- 	if (bus->number == 0) {
-@@ -573,8 +572,7 @@ static int tegra_pcie_request_resources(struct tegra_pcie *pcie)
+ 	tegra_pcie_enable_ports(pcie);
  
- static int tegra_pcie_map_irq(const struct pci_dev *pdev, u8 slot, u8 pin)
- {
--	struct pci_host_bridge *host = pci_find_host_bridge(pdev->bus);
--	struct tegra_pcie *pcie = pci_host_bridge_priv(host);
-+	struct tegra_pcie *pcie = pdev->bus->sysdata;
- 	int irq;
- 
- 	tegra_cpuidle_pcie_irqs_in_use();
-@@ -2258,6 +2256,7 @@ static int tegra_pcie_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	pcie = pci_host_bridge_priv(host);
-+	host->sysdata = pcie;
- 
- 	pcie->soc = of_device_get_match_data(dev);
- 	INIT_LIST_HEAD(&pcie->ports);
+-	pci_add_flags(PCI_REASSIGN_ALL_BUS);
+ 	host->busnr = pcie->busn.start;
+ 	host->dev.parent = &pdev->dev;
+ 	host->ops = &tegra_pcie_ops;
 -- 
 2.1.4
