@@ -1,224 +1,192 @@
 From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [PATCH v2] PM / runtime: Rework pm_runtime_force_suspend/resume()
-Date: Tue, 9 Jan 2018 07:08:21 +0100
-Message-ID: <CAPDyKFqePzeiSjR=yvCAtHfOv6vJLm3wdPifsseK1p4cyyB8qQ@mail.gmail.com>
-References: <4069324.Q7yJt6I4hJ@aspire.rjw.lan> <303007688.lvsDLFNCpe@aspire.rjw.lan>
+Subject: Re: [PATCH 1/9] mmc: sdhci-pci: Stop calling sdhci_enable_irq_wakeups()
+Date: Tue, 9 Jan 2018 08:14:37 +0100
+Message-ID: <CAPDyKFoTHVEWsK0fPG5HSKufCkj=Y0rkcOS=EbnJhhseikCbaA@mail.gmail.com>
+References: <1513757933-11232-1-git-send-email-adrian.hunter@intel.com>
+ <b9801ecc-eaf4-7efc-fff0-3cbd40f29c9a@intel.com> <CAPDyKFrZjTvYdT8BGKadTdTBsaAeoC3YOQBBPOvqpv1JpaOUoQ@mail.gmail.com>
+ <1746209.FfylcBGxWs@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-it0-f52.google.com ([209.85.214.52]:44131 "EHLO
-        mail-it0-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1757753AbeAIGIX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 01:08:23 -0500
-Received: by mail-it0-f52.google.com with SMTP id b5so10263922itc.3
-        for <linux-pm@vger.kernel.org>; Mon, 08 Jan 2018 22:08:23 -0800 (PST)
-In-Reply-To: <303007688.lvsDLFNCpe@aspire.rjw.lan>
+Received: from mail-io0-f170.google.com ([209.85.223.170]:36917 "EHLO
+        mail-io0-f170.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754512AbeAIHOj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 02:14:39 -0500
+Received: by mail-io0-f170.google.com with SMTP id n14so17434274iob.4
+        for <linux-pm@vger.kernel.org>; Mon, 08 Jan 2018 23:14:39 -0800 (PST)
+In-Reply-To: <1746209.FfylcBGxWs@aspire.rjw.lan>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
 To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>, Kevin Hilman <khilman@kernel.org>, LKML <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Lukas Wunner <lukas@wunner.de>
+Cc: Adrian Hunter <adrian.hunter@intel.com>, linux-mmc <linux-mmc@vger.kernel.org>, Haridhar Kalvala <haridhar.kalvala@intel.com>, Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On 3 January 2018 at 12:06, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 9 January 2018 at 01:46, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Thursday, December 21, 2017 4:33:59 PM CET Ulf Hansson wrote:
+>> + linux-pm, Rafael, Geert
+>>
+>> On 21 December 2017 at 15:25, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>> > On 21/12/17 16:15, Ulf Hansson wrote:
+>> >> On 20 December 2017 at 09:18, Adrian Hunter <adrian.hunter@intel.com> wrote:
+>> >>> sdhci_enable_irq_wakeups() is already called by sdhci_suspend_host() so
+>> >>> sdhci-pci should not need to call it. However sdhci_suspend_host() only
+>> >>> calls it if wakeups are enabled, and sdhci-pci does not enable them until
+>> >>> after calling sdhci_suspend_host(). So move the calls to
+>> >>> sdhci_pci_init_wakeup() before calling sdhci_suspend_host(), and
+>> >>> stop calling sdhci_enable_irq_wakeups(). That results in some
+>> >>> simplification because sdhci_pci_suspend_host() and
+>> >>> __sdhci_pci_suspend_host() no longer need to be separate functions.
+>> >>>
+>> >>> Signed-off-by: Adrian Hunter <adrian.hunter@intel.com>
+>> >>> ---
+>> >>>  drivers/mmc/host/sdhci-pci-core.c | 58 ++++++++++++++-------------------------
+>> >>>  1 file changed, 21 insertions(+), 37 deletions(-)
+>> >>>
+>> >>> diff --git a/drivers/mmc/host/sdhci-pci-core.c b/drivers/mmc/host/sdhci-pci-core.c
+>> >>> index 110c634cfb43..2ffc09f088ee 100644
+>> >>> --- a/drivers/mmc/host/sdhci-pci-core.c
+>> >>> +++ b/drivers/mmc/host/sdhci-pci-core.c
+>> >>> @@ -39,10 +39,29 @@
+>> >>>  static void sdhci_pci_hw_reset(struct sdhci_host *host);
+>> >>>
+>> >>>  #ifdef CONFIG_PM_SLEEP
+>> >>> -static int __sdhci_pci_suspend_host(struct sdhci_pci_chip *chip)
+>> >>> +static int sdhci_pci_init_wakeup(struct sdhci_pci_chip *chip)
+>> >>> +{
+>> >>> +       mmc_pm_flag_t pm_flags = 0;
+>> >>> +       int i;
+>> >>> +
+>> >>> +       for (i = 0; i < chip->num_slots; i++) {
+>> >>> +               struct sdhci_pci_slot *slot = chip->slots[i];
+>> >>> +
+>> >>> +               if (slot)
+>> >>> +                       pm_flags |= slot->host->mmc->pm_flags;
+>> >>> +       }
+>> >>> +
+>> >>> +       return device_init_wakeup(&chip->pdev->dev,
+>> >>> +                                 (pm_flags & MMC_PM_KEEP_POWER) &&
+>> >>> +                                 (pm_flags & MMC_PM_WAKE_SDIO_IRQ));
+>> >>
+>> >> A couple of comments here.
+>> >>
+>> >> Wakeup settings shouldn't be changed during system suspend. That means
+>> >> we shouldn't call device_init_wakeup() (or device_set_wakeup_enable()
+>> >> for that matter) here.
+>> >>
+>> >> Instead, device_init_wakeup() should be called during ->probe(), while
+>> >> device_set_wakeup_enable() should normally *not* have to be called at
+>> >> all by drivers. There are a exceptions for device_set_wakeup_enable(),
+>> >> however it should not have to be called during system suspend, at
+>> >> least.
+>> >>
+>> >> Of course, I realize that you are not changing the behavior in this
+>> >> regards in this patch, so I am fine this anyway.
+>> >>
+>> >> My point is, that the end result while doing this improvements in this
+>> >> series, should strive to that device_init_wakeup() and
+>> >> device_set_wakeup_enable() becomes used correctly. I don't think that
+>> >> is the case, or is it?
+>> >
+>> > Unfortunately we don't find out what the SDIO driver wants to do (i.e
+>> > pm_flags & MMC_PM_WAKE_SDIO_IRQ) until suspend.
+>>
+>> That's true! Of course, we need to be able to act on this, somehow.
 >
-> One of the limitations of pm_runtime_force_suspend/resume() is that
-> if a parent driver wants to use these functions, all of its child
-> drivers have to do that too because of the parent usage counter
-> manipulations necessary to get the correct state of the parent during
-> system-wide transitions to the working state (system resume).
+> That sounds like a design issue, however ...
+>
+>> >
+>> > I considered enabling wakeups by default but wasn't sure that would not
+>> > increase power consumption in devices not expecting it.
+>>
+>> I understand the problem, believe me. However, I would rather like to
+>> try to find a generic solution to these problems, else we will keep
+>> abusing existing wakeups APIs.
+>>
+>> For your information, I have been working on several issues on how to
+>> handle the "wakeup path" correctly, which is linked to this problem.
+>> See a few quite small series for this below [1], [2].
+>>
+>> I think the general problems can be described liked this:
+>>
+>> 1) The dev->power.wakeup_path flag doesn't get set for the device by
+>> the PM core, in case device_set_wakeup_enable() is called from a
+>> ->suspend() callback. That also means, that the parent device don't
+>> get its >power.wakeup_path flag set in __device_suspend() by the PM
+>> core, while this may be expected by upper layers (PM domains, middle
+>> layers).
+>>
+>> 2) device_may_wakeup() doesn't tell us the hole story about the
+>> wakeup. Only that is *may* be configured. :-)
+>> So in cases when device_may_wakeup() returns true, we still have these
+>> three conditions to consider, which we currently can't distinguish
+>> between:
+>>
+>> *) The wakeup is configured and enabled, so the device should be
+>> enabled in the wakeup path.
+>
+> That's when the in-band device interrupt is used for wakeup, right?
 
-I understand your point, however this isn't describing the full story,
-because there are a some more alternatives when
-pm_runtime_force_suspend|resume() works well, when used for parent
-devices. Let me clarify, just to make sure we get this correct.
-
-1) If the child device isn't managed by runtime PM at all (it always
-has runtime PM disabled), pm_runtime_force_suspend|resume() can be
-used for the parent device. This works because the runtime PM status
-if the child remains in the default status, RPM_SUSPENDED.
-
-2) If, somehow, during system suspend/resume, the driver for the child
-make sure to synchronize the runtime PM status of the child device,
-according to the state of the HW, this should work too.
-
-I leave it to you how to take this fact into consideration, if and how
-to update the changelog.
-
-> However, that limitation turns out to be artificial, so remove it.
-
-Agree!
+Yes.
 
 >
-> Namely, pm_runtime_force_suspend() only needs to update the children
-> counter of its parent (if there's is a parent) when the device can
-> stay in suspend after the subsequent system resume transition, as
-> that counter is correct already otherwise.  Now, if the parent's
-> children counter is not updated, it is not necessary to increment
-> the parent's usage counter in that case any more, as long as the
-> children counters of devices are checked along with their usage
-> counters in order to decide whether or not the devices may be left
-> in suspend after the subsequent system resume transition.
+>> **) The wakeup is configured and enabled, but as an out-band-wakeup
+>> signal (like a GPIO IRQ). This means the device shouldn't be enabled
+>> in the wakeup path.
 >
-> Accordingly, modify pm_runtime_force_suspend() to only call
-> pm_runtime_set_suspended() for devices whose usage and children
-> counters are at the "no references" level (the runtime PM status
-> of the device needs to be updated to "suspended" anyway in case
-> this function is called once again for the same device during the
-> transition under way), drop the parent usage counter incrementation
-> from it and update pm_runtime_force_resume() to compensate for these
-> changes.
+> I wouldn't really call all of that out of band, but really there's more to it
+> in general.
 >
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/base/power/runtime.c |   74 +++++++++++++++++++------------------------
->  1 file changed, 34 insertions(+), 40 deletions(-)
->
-> Index: linux-pm/drivers/base/power/runtime.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/runtime.c
-> +++ linux-pm/drivers/base/power/runtime.c
-> @@ -1613,17 +1613,28 @@ void pm_runtime_drop_link(struct device
->         spin_unlock_irq(&dev->power.lock);
->  }
->
-> +static bool pm_runtime_need_not_resume(struct device *dev)
-> +{
-> +       return atomic_read(&dev->power.usage_count) <= 1 &&
-> +               atomic_read(&dev->power.child_count) == 0;
+> There may be a standard way to configure wakeup signaling which is handled by
+> a separate code layer, like ACPI or PCI.  In that case the driver basically
+> doesn't care (but it still may need to configure the device for remote
+> wakeup internally).  That standard way may do whatever the driver would do
+> to the wakeup interrupt or it may use an out-of-band mechanism.
 
-We should take into account the ignore_children flag here, I think.
-Something like this:
+Even if this is a PCI-MMC/SD driver, we can also have wakeup GPIO
+irqs, for example to handle card detect when inserting/removing an SD
+card.
 
-return atomic_read(&dev->power.usage_count) <= 1 &&
-(atomic_read(&dev->power.child_count) == 0 ||
-dev->power.ignore_children)
+The point is, there are cases when the driver has this of information,
+but upper layer doesn't.
 
-> +}
-> +
->  /**
->   * pm_runtime_force_suspend - Force a device into suspend state if needed.
->   * @dev: Device to suspend.
->   *
->   * Disable runtime PM so we safely can check the device's runtime PM status and
-> - * if it is active, invoke it's .runtime_suspend callback to bring it into
-> - * suspend state. Keep runtime PM disabled to preserve the state unless we
-> - * encounter errors.
-> + * if it is active, invoke its ->runtime_suspend callback to suspend it and
-> + * change its runtime PM status field to RPM_SUSPENDED.  Also, if the device's
-> + * usage and children counters don't indicate that the device was in use before
-> + * the system-wide transition under way, decrement its parent's children counter
-> + * (if there is a parent).  Keep runtime PM disabled to preserve the state
-> + * unless we encounter errors.
->   *
->   * Typically this function may be invoked from a system suspend callback to make
-> - * sure the device is put into low power state.
-> + * sure the device is put into low power state and it should only be used during
-> + * system-wide PM transitions to sleep states.  It assumes that the analogous
-> + * pm_runtime_force_resume() will be used to resume the device.
->   */
->  int pm_runtime_force_suspend(struct device *dev)
->  {
-> @@ -1646,17 +1657,18 @@ int pm_runtime_force_suspend(struct devi
->                 goto err;
 >
->         /*
-> -        * Increase the runtime PM usage count for the device's parent, in case
-> -        * when we find the device being used when system suspend was invoked.
-> -        * This informs pm_runtime_force_resume() to resume the parent
-> -        * immediately, which is needed to be able to resume its children,
-> -        * when not deferring the resume to be managed via runtime PM.
-> +        * If the device can stay in suspend after the system-wide transition
-> +        * to the working state that will follow, drop the children counter of
-> +        * its parent, but set its status to RPM_SUSPENDED anyway in case this
-> +        * function will be called again for it in the meantime.
->          */
-> -       if (dev->parent && atomic_read(&dev->power.usage_count) > 1)
-> -               pm_runtime_get_noresume(dev->parent);
-> +       if (pm_runtime_need_not_resume(dev))
-> +               pm_runtime_set_suspended(dev);
-> +       else
-> +               __update_runtime_status(dev, RPM_SUSPENDED);
+> If there is no standard way, the driver may need to set up things by itself.
+> In that case it needs to know what's available and how to use it, essentially
+> at probe time.  I guess the information then would need to come from a DT or
+> similar.
+
+Right, on those SoC I mostly work on, this data comes from DT.
+However, on some SoCs this data come from platform data as well.
+
 >
+> If it knows that it will use the sideband thing, it will not do *) obviously.
 
-This is clever!
+Right, however device_may_wakeup() may still return true for the device.
 
-I recall when working on commit 1d9174fbc55e ("PM / Runtime: Defer
-resuming of the device in pm_runtime_force_resume()"), that I wanted
-to take into account the dev->power.child_count, but couldn't figure
-out exactly how. :-)
-
-> -       pm_runtime_set_suspended(dev);
->         return 0;
-> +
->  err:
->         pm_runtime_enable(dev);
->         return ret;
-> @@ -1669,13 +1681,9 @@ EXPORT_SYMBOL_GPL(pm_runtime_force_suspe
->   *
->   * Prior invoking this function we expect the user to have brought the device
->   * into low power state by a call to pm_runtime_force_suspend(). Here we reverse
-> - * those actions and brings the device into full power, if it is expected to be
-> - * used on system resume. To distinguish that, we check whether the runtime PM
-> - * usage count is greater than 1 (the PM core increases the usage count in the
-> - * system PM prepare phase), as that indicates a real user (such as a subsystem,
-> - * driver, userspace, etc.) is using it. If that is the case, the device is
-> - * expected to be used on system resume as well, so then we resume it. In the
-> - * other case, we defer the resume to be managed via runtime PM.
-> + * those actions and bring the device into full power, if it is expected to be
-> + * used on system resume.  In the other case, we defer the resume to be managed
-> + * via runtime PM.
->   *
->   * Typically this function may be invoked from a system resume callback.
->   */
-> @@ -1684,32 +1692,18 @@ int pm_runtime_force_resume(struct devic
->         int (*callback)(struct device *);
->         int ret = 0;
 >
-> -       callback = RPM_GET_CALLBACK(dev, runtime_resume);
-> -
-> -       if (!callback) {
-> -               ret = -ENOSYS;
-> -               goto out;
-> -       }
-
-This make me realize that, I think this is probably for legacy reasons.
-
-I think we should allow the callback to be NULL, don't you think? Of
-course, this deserves its own change.
-
-> -
-> -       if (!pm_runtime_status_suspended(dev))
-> +       if (!pm_runtime_status_suspended(dev) || pm_runtime_need_not_resume(dev))
->                 goto out;
+>> ***) The wakeup isn't configured, thus disabled, because there are no
+>> consumers of the wakeup IRQ registered (as may be the case for SDIO
+>> IRQ). This also means the device shouldn't be enabled in the wakeup
+>> path.
+>>
+>> Potentially, one could consider **) and ***) being treated in the same
+>> way, via using an opt-out method, avoiding the wakeup path to be
+>> enabled.
 >
->         /*
-> -        * Decrease the parent's runtime PM usage count, if we increased it
-> -        * during system suspend in pm_runtime_force_suspend().
-> -       */
-> -       if (atomic_read(&dev->power.usage_count) > 1) {
-> -               if (dev->parent)
-> -                       pm_runtime_put_noidle(dev->parent);
-> -       } else {
-> -               goto out;
-> -       }
-> +        * The value of the parent's children counter is correct already, so
-> +        * just update the status of the device.
-> +        */
-> +       __update_runtime_status(dev, RPM_ACTIVE);
->
-> -       ret = pm_runtime_set_active(dev);
-> -       if (ret)
-> -               goto out;
-> +       callback = RPM_GET_CALLBACK(dev, runtime_resume);
->
-> -       ret = callback(dev);
-> +       ret = callback ? callback(dev) : -ENOSYS;
->         if (ret) {
->                 pm_runtime_set_suspended(dev);
->                 goto out;
->
+> Which means exactly what?
 
-Thanks for looking into this!
+>From the driver perspective, it decides to put the device into low
+power state (clocks will be gated, etc), thus upper layers (PM domain)
+should be informed that it can do that too.
+
+>
+>> Currently I have been thinking of adding an "OUT_BAND_WAKEUP"
+>> driver PM flag, to deal with this, however there may be other
+>> preferred options.
+>
+> Yeah.  Messy stuff.
+
+Well, let's try to agree on how to best describe the problem first. It
+seems like we are soon getting there. :-)
 
 Kind regards
 Uffe
