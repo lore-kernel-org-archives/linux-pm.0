@@ -1,8 +1,7 @@
 From: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Subject: [PATCH v5 3/6] iommu/arm-smmu: Invoke pm_runtime during probe,
-	add/remove device
-Date: Tue,  9 Jan 2018 15:31:46 +0530
-Message-ID: <1515492109-753-4-git-send-email-vivek.gautam@codeaurora.org>
+Subject: [PATCH v5 5/6] iommu/arm-smmu: Add support for qcom,smmu-v2 variant
+Date: Tue,  9 Jan 2018 15:31:48 +0530
+Message-ID: <1515492109-753-6-git-send-email-vivek.gautam@codeaurora.org>
 References: <1515492109-753-1-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -22,138 +21,120 @@ To: joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A
 Cc: len.brown-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, pavel-+ZI9xUNit7I@public.gmane.org
 List-Id: linux-pm@vger.kernel.org
 
-From: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+qcom,smmu-v2 is an arm,smmu-v2 implementation with specific
+clock and power requirements. This smmu core is used with
+multiple masters on msm8996, viz. mdss, video, etc.
+Add bindings for the same.
 
-The smmu device probe/remove and add/remove master device callbacks
-gets called when the smmu is not linked to its master, that is without
-the context of the master device. So calling runtime apis in those places
-separately.
-
-Signed-off-by: Sricharan R <sricharan-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-[vivek: Cleanup pm runtime calls]
 Signed-off-by: Vivek Gautam <vivek.gautam-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
 ---
- drivers/iommu/arm-smmu.c | 45 +++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 41 insertions(+), 4 deletions(-)
 
+ * Major change in this patch -
+   Changed compatible string from 'qcom,msm8996-smmu-v2' to
+   'qcom,smmu-v2' to reflect the IP version rather than the
+   platform on which it is used.
+   The same IP is used across multiple platforms including msm8996,
+   and sdm845 etc.
+
+ .../devicetree/bindings/iommu/arm,smmu.txt         | 35 ++++++++++++++++++++++
+ drivers/iommu/arm-smmu.c                           | 13 ++++++++
+ 2 files changed, 48 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/iommu/arm,smmu.txt b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
+index 8a6ffce12af5..e4951288c87c 100644
+--- a/Documentation/devicetree/bindings/iommu/arm,smmu.txt
++++ b/Documentation/devicetree/bindings/iommu/arm,smmu.txt
+@@ -17,6 +17,7 @@ conditions.
+                         "arm,mmu-401"
+                         "arm,mmu-500"
+                         "cavium,smmu-v2"
++                        "qcom,smmu-v2"
+ 
+                   depending on the particular implementation and/or the
+                   version of the architecture implemented.
+@@ -71,6 +72,23 @@ conditions.
+                   or using stream matching with #iommu-cells = <2>, and
+                   may be ignored if present in such cases.
+ 
++- clock-names:    Should be "bus", and "iface" for "qcom,smmu-v2"
++                  implementation.
++
++                  "bus" clock for "qcom,smmu-v2" is required for downstream
++                  bus access and for the smmu ptw.
++
++                  "iface" clock is required to access smmu's registers through
++                  the TCU's programming interface.
++
++- clocks:         Phandles for respective clocks described by clock-names.
++
++- power-domains:  Phandles to SMMU's power domain specifier. This is
++                  required even if SMMU belongs to the master's power
++                  domain, as the SMMU will have to be enabled and
++                  accessed before master gets enabled and linked to its
++                  SMMU.
++
+ ** Deprecated properties:
+ 
+ - mmu-masters (deprecated in favour of the generic "iommus" binding) :
+@@ -137,3 +155,20 @@ conditions.
+                 iommu-map = <0 &smmu3 0 0x400>;
+                 ...
+         };
++
++	/* Qcom's arm,smmu-v2 implementation */
++	smmu4: iommu {
++		compatible = "qcom,smmu-v2";
++		reg = <0xd00000 0x10000>;
++
++		#global-interrupts = <1>;
++		interrupts = <GIC_SPI 73 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 320 IRQ_TYPE_LEVEL_HIGH>,
++			     <GIC_SPI 321 IRQ_TYPE_LEVEL_HIGH>;
++		#iommu-cells = <1>;
++		power-domains = <&mmcc MDSS_GDSC>;
++
++		clocks = <&mmcc SMMU_MDP_AXI_CLK>,
++			 <&mmcc SMMU_MDP_AHB_CLK>;
++		clock-names = "bus", "iface";
++	};
 diff --git a/drivers/iommu/arm-smmu.c b/drivers/iommu/arm-smmu.c
-index 21acffe91a1c..95478bfb182c 100644
+index 33bbcfedb896..2ade214c41bc 100644
 --- a/drivers/iommu/arm-smmu.c
 +++ b/drivers/iommu/arm-smmu.c
-@@ -914,11 +914,15 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
- 	struct arm_smmu_domain *smmu_domain = to_smmu_domain(domain);
- 	struct arm_smmu_device *smmu = smmu_domain->smmu;
- 	struct arm_smmu_cfg *cfg = &smmu_domain->cfg;
--	int irq;
-+	int ret, irq;
+@@ -119,6 +119,7 @@ enum arm_smmu_implementation {
+ 	GENERIC_SMMU,
+ 	ARM_MMU500,
+ 	CAVIUM_SMMUV2,
++	QCOM_SMMUV2,
+ };
  
- 	if (!smmu || domain->type == IOMMU_DOMAIN_IDENTITY)
- 		return;
+ struct arm_smmu_s2cr {
+@@ -1971,6 +1972,17 @@ struct arm_smmu_match_data {
+ ARM_SMMU_MATCH_DATA(arm_mmu500, ARM_SMMU_V2, ARM_MMU500);
+ ARM_SMMU_MATCH_DATA(cavium_smmuv2, ARM_SMMU_V2, CAVIUM_SMMUV2);
  
-+	ret = pm_runtime_get_sync(smmu->dev);
-+	if (ret)
-+		return;
++static const char * const qcom_smmuv2_clks[] = {
++	"bus", "iface",
++};
 +
- 	/*
- 	 * Disable the context bank and free the page tables before freeing
- 	 * it.
-@@ -933,6 +937,8 @@ static void arm_smmu_destroy_domain_context(struct iommu_domain *domain)
- 
- 	free_io_pgtable_ops(smmu_domain->pgtbl_ops);
- 	__arm_smmu_free_bitmap(smmu->context_map, cfg->cbndx);
++static const struct arm_smmu_match_data qcom_smmuv2 = {
++	.version = ARM_SMMU_V2,
++	.model = QCOM_SMMUV2,
++	.clks = qcom_smmuv2_clks,
++	.num_clks = ARRAY_SIZE(qcom_smmuv2_clks),
++};
 +
-+	pm_runtime_put_sync(smmu->dev);
- }
- 
- static struct iommu_domain *arm_smmu_domain_alloc(unsigned type)
-@@ -1408,12 +1414,20 @@ static int arm_smmu_add_device(struct device *dev)
- 	while (i--)
- 		cfg->smendx[i] = INVALID_SMENDX;
- 
--	ret = arm_smmu_master_alloc_smes(dev);
-+	ret = pm_runtime_get_sync(smmu->dev);
- 	if (ret)
- 		goto out_cfg_free;
- 
-+	ret = arm_smmu_master_alloc_smes(dev);
-+	if (ret) {
-+		pm_runtime_put_sync(smmu->dev);
-+		goto out_cfg_free;
-+	}
-+
- 	iommu_device_link(&smmu->iommu, dev);
- 
-+	pm_runtime_put_sync(smmu->dev);
-+
- 	return 0;
- 
- out_cfg_free:
-@@ -1428,7 +1442,7 @@ static void arm_smmu_remove_device(struct device *dev)
- 	struct iommu_fwspec *fwspec = dev->iommu_fwspec;
- 	struct arm_smmu_master_cfg *cfg;
- 	struct arm_smmu_device *smmu;
--
-+	int ret;
- 
- 	if (!fwspec || fwspec->ops != &arm_smmu_ops)
- 		return;
-@@ -1436,8 +1450,21 @@ static void arm_smmu_remove_device(struct device *dev)
- 	cfg  = fwspec->iommu_priv;
- 	smmu = cfg->smmu;
- 
-+	/*
-+	 * The device link between the master device and
-+	 * smmu is already purged at this point.
-+	 * So enable the power to smmu explicitly.
-+	 */
-+
-+	ret = pm_runtime_get_sync(smmu->dev);
-+	if (ret)
-+		return;
-+
- 	iommu_device_unlink(&smmu->iommu, dev);
- 	arm_smmu_master_free_smes(fwspec);
-+
-+	pm_runtime_put_sync(smmu->dev);
-+
- 	iommu_group_remove_device(dev);
- 	kfree(fwspec->iommu_priv);
- 	iommu_fwspec_free(dev);
-@@ -2130,6 +2157,14 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
- 	if (err)
- 		return err;
- 
-+	platform_set_drvdata(pdev, smmu);
-+
-+	pm_runtime_enable(dev);
-+
-+	err = pm_runtime_get_sync(dev);
-+	if (err)
-+		return err;
-+
- 	err = arm_smmu_device_cfg_probe(smmu);
- 	if (err)
- 		return err;
-@@ -2171,9 +2206,9 @@ static int arm_smmu_device_probe(struct platform_device *pdev)
- 		return err;
- 	}
- 
--	platform_set_drvdata(pdev, smmu);
- 	arm_smmu_device_reset(smmu);
- 	arm_smmu_test_smr_masks(smmu);
-+	pm_runtime_put_sync(dev);
- 
- 	/*
- 	 * For ACPI and generic DT bindings, an SMMU will be probed before
-@@ -2212,6 +2247,8 @@ static int arm_smmu_device_remove(struct platform_device *pdev)
- 
- 	/* Turn the thing off */
- 	writel(sCR0_CLIENTPD, ARM_SMMU_GR0_NS(smmu) + ARM_SMMU_GR0_sCR0);
-+	pm_runtime_force_suspend(smmu->dev);
-+
- 	return 0;
- }
- 
+ static const struct of_device_id arm_smmu_of_match[] = {
+ 	{ .compatible = "arm,smmu-v1", .data = &smmu_generic_v1 },
+ 	{ .compatible = "arm,smmu-v2", .data = &smmu_generic_v2 },
+@@ -1978,6 +1990,7 @@ struct arm_smmu_match_data {
+ 	{ .compatible = "arm,mmu-401", .data = &arm_mmu401 },
+ 	{ .compatible = "arm,mmu-500", .data = &arm_mmu500 },
+ 	{ .compatible = "cavium,smmu-v2", .data = &cavium_smmuv2 },
++	{ .compatible = "qcom,smmu-v2", .data = &qcom_smmuv2 },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, arm_smmu_of_match);
 -- 
 QUALCOMM INDIA, on behalf of Qualcomm Innovation Center, Inc. is a member
 of Code Aurora Forum, hosted by The Linux Foundation
