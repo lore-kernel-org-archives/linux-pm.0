@@ -1,51 +1,189 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [-next PATCH 3/4] treewide: Use DEVICE_ATTR_RO
-Date: Tue, 9 Jan 2018 16:34:16 +0100
-Message-ID: <20180109153416.GA7780@kroah.com>
-References: <cover.1513706701.git.joe@perches.com>
- <2e64e7d278fa9e4e255221fb84717884a7bfb69c.1513706701.git.joe@perches.com>
- <20171221093410.ygvupz3azaccxgnb@valkosipuli.retiisi.org.uk>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [BUG] schedutil governor produces regular max freq spikes because
+ of lockup detector watchdog threads
+Date: Tue, 9 Jan 2018 16:50:47 +0100
+Message-ID: <CAJZ5v0gV_4y1rKio9QRP_-M65rXtQHi2W3O22uiXJ08oafVtOw@mail.gmail.com>
+References: <1515184652.6892.26.camel@nxp.com> <CAJZ5v0gOwgr2yB_YY8ian6GXjdic3zRUa4S9vHNmudC8Khc5cA@mail.gmail.com>
+ <20180108040121.GB4003@vireshk-i7> <1515417622.3207.5.camel@nxp.com>
+ <20180108151450.GA30937@e110439-lin> <1515426694.3207.28.camel@nxp.com>
+ <CAJZ5v0hnY+2pL0LGAeQv7xZcYN42+_azKH9cGGLvPU1iO6fmWg@mail.gmail.com> <1515508985.3310.8.camel@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <intel-gfx-bounces@lists.freedesktop.org>
-Content-Disposition: inline
-In-Reply-To: <20171221093410.ygvupz3azaccxgnb@valkosipuli.retiisi.org.uk>
-List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <https://lists.freedesktop.org/archives/intel-gfx>
-List-Post: <mailto:intel-gfx@lists.freedesktop.org>
-List-Help: <mailto:intel-gfx-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/intel-gfx>,
- <mailto:intel-gfx-request@lists.freedesktop.org?subject=subscribe>
-Errors-To: intel-gfx-bounces@lists.freedesktop.org
-Sender: "Intel-gfx" <intel-gfx-bounces@lists.freedesktop.org>
-To: Sakari Ailus <sakari.ailus@iki.fi>
-Cc: Don Brace <don.brace@microsemi.com>, alsa-devel@alsa-project.org, Rich Felker <dalias@libc.org>, linux-sh@vger.kernel.org, David Airlie <airlied@linux.ie>, Sebastian Ott <sebott@linux.vnet.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, linux-nvme@lists.infradead.org, James Smart <james.smart@broadcom.com>, Keith Busch <keith.busch@intel.com>, Robert Jarzmik <robert.jarzmik@free.fr>, Christoph Hellwig <hch@lst.de>, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, Mauro Carvalho Chehab <mchehab@kernel.org>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Sagi Grimberg <sagi@grimberg.me>, Yoshinori Sato <ysato@users.sourceforge.jp>, esc.storagedev@microsemi.com, Russell King <linux@armlinux.org.uk>, linux-acpi@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, Dick Kennedy <dick.kennedy@broadcom.com>, Corey Minyard <minyard@acm.or>
+Content-Type: text/plain; charset="UTF-8"
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1515508985.3310.8.camel@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Anson Huang <anson.huang@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
 
-T24gVGh1LCBEZWMgMjEsIDIwMTcgYXQgMTE6MzQ6MTBBTSArMDIwMCwgU2FrYXJpIEFpbHVzIHdy
-b3RlOgo+IEhpIEpvZSwKPiAKPiBPbiBUdWUsIERlYyAxOSwgMjAxNyBhdCAxMDoxNTowOEFNIC0w
-ODAwLCBKb2UgUGVyY2hlcyB3cm90ZToKPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3N0YWdpbmcv
-bWVkaWEvYXRvbWlzcC9wY2kvYXRvbWlzcDIvaG1tL2htbS5jIGIvZHJpdmVycy9zdGFnaW5nL21l
-ZGlhL2F0b21pc3AvcGNpL2F0b21pc3AyL2htbS9obW0uYwo+ID4gaW5kZXggYTFjODFjMTI3MThj
-Li40MzM4YjhhMTMwOWYgMTAwNjQ0Cj4gPiAtLS0gYS9kcml2ZXJzL3N0YWdpbmcvbWVkaWEvYXRv
-bWlzcC9wY2kvYXRvbWlzcDIvaG1tL2htbS5jCj4gPiArKysgYi9kcml2ZXJzL3N0YWdpbmcvbWVk
-aWEvYXRvbWlzcC9wY2kvYXRvbWlzcDIvaG1tL2htbS5jCj4gPiBAQCAtMTU4LDEwICsxNTgsMTAg
-QEAgc3RhdGljIHNzaXplX3QgZHluYW1pY19wb29sX3Nob3coc3RydWN0IGRldmljZSAqZGV2LAo+
-ID4gIAlyZXR1cm4gcmV0Owo+ID4gIH07Cj4gPiAgCj4gPiAtc3RhdGljIERFVklDRV9BVFRSKGFj
-dGl2ZV9ibywgMDQ0NCwgYWN0aXZlX2JvX3Nob3csIE5VTEwpOwo+ID4gLXN0YXRpYyBERVZJQ0Vf
-QVRUUihmcmVlX2JvLCAwNDQ0LCBmcmVlX2JvX3Nob3csIE5VTEwpOwo+ID4gLXN0YXRpYyBERVZJ
-Q0VfQVRUUihyZXNlcnZlZF9wb29sLCAwNDQ0LCByZXNlcnZlZF9wb29sX3Nob3csIE5VTEwpOwo+
-ID4gLXN0YXRpYyBERVZJQ0VfQVRUUihkeW5hbWljX3Bvb2wsIDA0NDQsIGR5bmFtaWNfcG9vbF9z
-aG93LCBOVUxMKTsKPiA+ICtzdGF0aWMgREVWSUNFX0FUVFJfUk8oYWN0aXZlX2JvKTsKPiA+ICtz
-dGF0aWMgREVWSUNFX0FUVFJfUk8oZnJlZV9ibyk7Cj4gPiArc3RhdGljIERFVklDRV9BVFRSX1JP
-KHJlc2VydmVkX3Bvb2wpOwo+ID4gK3N0YXRpYyBERVZJQ0VfQVRUUl9STyhkeW5hbWljX3Bvb2wp
-Owo+ID4gIAo+ID4gIHN0YXRpYyBzdHJ1Y3QgYXR0cmlidXRlICpzeXNmc19hdHRyc19jdHJsW10g
-PSB7Cj4gPiAgCSZkZXZfYXR0cl9hY3RpdmVfYm8uYXR0ciwKPiAKPiBJIGhhdmUgdGhlIGV4YWN0
-IHNhbWUgY2hhbmdlcyBxdWV1ZWQgdXAgaW4gbXkgdHJlZS4gQXMgdGhlcmUgc2VlbSB0byBiZSBu
-bwo+IGRlcGVuZGVuY2llcyB0byBvdGhlciBwYXRjaGVzIGluIHlvdXIgc2V0LCBob3cgYWJvdXQg
-ZHJvcHBpbmcgdGhpcyBjaHVuaz8KCkkndmUgbm93IGRyb3BwZWQgaXQsIHRoYW5rcy4KCmdyZWcg
-ay1oCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCkludGVs
-LWdmeCBtYWlsaW5nIGxpc3QKSW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZwpodHRwczov
-L2xpc3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2ludGVsLWdmeAo=
+On Tue, Jan 9, 2018 at 3:43 PM, Leonard Crestez <leonard.crestez@nxp.com> wrote:
+> On Tue, 2018-01-09 at 02:17 +0100, Rafael J. Wysocki wrote:
+>> On Mon, Jan 8, 2018 at 4:51 PM, Leonard Crestez  wrote:
+>> > On Mon, 2018-01-08 at 15:14 +0000, Patrick Bellasi wrote:
+>> > > On 08-Jan 15:20, Leonard Crestez wrote:
+>> > > > On Mon, 2018-01-08 at 09:31 +0530, Viresh Kumar wrote:
+>> > > > > On 05-01-18, 23:18, Rafael J. Wysocki wrote:
+>> > > > > > On Fri, Jan 5, 2018 at 9:37 PM, Leonard Crestez  wrote:
+>
+>> > > > > > > When using the schedutil governor together with the softlockup detector
+>> > > > > > > all CPUs go to their maximum frequency on a regular basis. This seems
+>> > > > > > > to be because the watchdog creates a RT thread on each CPU and this
+>> > > > > > > causes regular kicks with:
+>> > > > > > >
+>> > > > > > >     cpufreq_update_this_cpu(rq, SCHED_CPUFREQ_RT);
+>> > > > > > >
+>> > > > > > > The schedutil governor responds to this by immediately setting the
+>> > > > > > > maximum cpu frequency, this is very undesirable.
+>> > > > > > >
+>> > > > > > > The issue can be fixed by this patch from android:
+>> > > > > > >
+>> > > > > > > The patch stalled in a long discussion about how it's difficult for
+>> > > > > > > cpufreq to deal with RT and how some RT users might just disable
+>> > > > > > > cpufreq. It is indeed hard but if the system experiences regular power
+>> > > > > > > kicks from a common debug feature they will end up disabling schedutil
+>> > > > > > > instead.
+>
+>> > > > > > Patrick has a series of patches dealing with this problem area AFAICS,
+>> > > > > > but we are currently integrating material from Juri related to
+>> > > > > > deadline tasks.
+>
+>> > > > > I am not sure if Patrick's patches would solve this problem at all as
+>> > > > > we still go to max for RT and the RT task is created from the
+>> > > > > softlockup detector somehow.
+>
+>> > > > I assume you're talking about the series starting with
+>> > > > "[PATCH v3 0/6] cpufreq: schedutil: fixes for flags updates"
+>> > > >
+>> > > > I checked and they have no effect on this particular issue (not
+>> > > > surprising).
+>> > >
+>> > > Yeah, that series was addressing the same issue but for one specific
+>> > > RT thread: the one used by schedutil to change the frequency.
+>> > > For all other RT threads the intended behavior was still to got
+>> > > to max... moreover those patches has been superseded by a different
+>> > > solution which has been recently proposed by Peter:
+>> > >
+>> > >    20171220155625.lopjlsbvss3qgb4d@hirez.programming.kicks-ass.net
+>> > >
+>> > > As Viresh and Rafael suggested, we should eventually consider a
+>> > > different scheduling class and/or execution context for the watchdog.
+>> > > Maybe a generalization of Juri's proposed SCHED_FLAG_SUGOV flag for
+>> > > DL tasks can be useful:
+>> > >
+>> > >    20171204102325.5110-4-juri.lelli@redhat.com
+>> > >
+>> > > Although that solution is already considered "gross" and thus perhaps
+>> > > it does not make sense to keep adding special DL tasks.
+>> > >
+>> > > Another possible alternative to "tag an RT task" as being special, is
+>> > > to use an API similar to the one proposed by the util_clamp RFC:
+>> > >
+>> > >    20170824180857.32103-1-patrick.bellasi@arm.com
+>> > >
+>> > > which would allow to define what's the maximum utilization which can
+>> > > be required by a properly configured RT task.
+>
+>> > Marking the watchdog as somehow "not important for performance" would
+>> > probably work, I guess it will take a while to get a stable solution.
+>> >
+>> > BTW, in the current version it seems the kick happens *after* the RT
+>> > task executes. It seems very likely that cpufreq will go back down
+>> > before a RT executes again, so how does it help? Unless most of the
+>> > workload is RT. But even in that case aren't you better off with
+>> > regular scaling since schedutil will notice utilization is high anyway?
+>> >
+>> > Scaling freq up first would make more sense except such operations can
+>> > have very high latencies anyway.
+>
+>> I guess what happens is that it takes time to switch the frequency and
+>> the RT task gives the CPU away before the frequency actually changes.
+>
+> What I am saying is that as far as I can tell when cpufreq_update_util
+> is called when the task has already executed and is been switched out.
+
+That would be a bug.
+
+> My tests are not very elaborate but based on some ftracing it seems to
+> me that the current behavior is for cpufreq spikes to always trail RT
+> activity. Like this:
+
+The cpufreq spikes need not be correlated with cpufreq_update_util()
+execution time except that they occur more or less after
+cpufreq_update_util() has run.
+
+>
+>           <idle>-0     [002]   496.510138: sched_switch:         swapper/2:0 [120] S ==> watchdog/2:20 [0]
+>       watchdog/2-20    [002]   496.510156: bprint:               watchdog: IN watchdog(2)
+>       watchdog/2-20    [002]   496.510364: bprint:               watchdog: OU watchdog(2)
+>       watchdog/2-20    [002]   496.510377: bprint:               update_curr_rt: watchdog kick RT! cpu=2 comm=watchdog/2
+>       watchdog/2-20    [002]   496.510383: kernel_stack:         <stack trace>
+> => deactivate_task (c0157d94)
+> => __schedule (c0b13570)
+> => schedule (c0b13c8c)
+> => smpboot_thread_fn (c015211c)
+> => kthread (c014db3c)
+> => ret_from_fork (c0108214)
+>       watchdog/2-20    [002]   496.510410: sched_switch:         watchdog/2:20 [0] D ==> swapper/2:0 [120]
+>           <idle>-0     [001]   496.510488: sched_switch:         swapper/1:0 [120] S ==> sugov:0:580 [49]
+>          sugov:0-580   [001]   496.510634: sched_switch:         sugov:0:580 [49] T ==> swapper/1:0 [120]
+>           <idle>-0     [001]   496.510817: sched_switch:         swapper/1:0 [120] S ==> sugov:0:580 [49]
+>          sugov:0-580   [001]   496.510867: sched_switch:         sugov:0:580 [49] T ==> swapper/1:0 [120]
+>           <idle>-0     [001]   496.511036: sched_switch:         swapper/1:0 [120] S ==> sugov:0:580 [49]
+>          sugov:0-580   [001]   496.511079: sched_switch:         sugov:0:580 [49] T ==> swapper/1:0 [120]
+>           <idle>-0     [001]   496.511243: sched_switch:         swapper/1:0 [120] S ==> sugov:0:580 [49]
+>          sugov:0-580   [001]   496.511282: sched_switch:         sugov:0:580 [49] T ==> swapper/1:0 [120]
+>           <idle>-0     [001]   496.511445: sched_switch:         swapper/1:0 [120] S ==> sugov:0:580 [49]
+>          sugov:0-580   [001]   496.511669: sched_switch:         sugov:0:580 [49] T ==> swapper/1:0 [120]
+>           <idle>-0     [001]   496.511859: sched_switch:         swapper/1:0 [120] S ==> sugov:0:580 [49]
+>          sugov:0-580   [001]   496.511906: sched_switch:         sugov:0:580 [49] T ==> swapper/1:0 [120]
+>           <idle>-0     [001]   496.512073: sched_switch:         swapper/1:0 [120] S ==> sugov:0:580 [49]
+>          sugov:0-580   [001]   496.512114: sched_switch:         sugov:0:580 [49] T ==> swapper/1:0 [120]
+>           <idle>-0     [001]   496.512269: sched_switch:         swapper/1:0 [120] S ==> sugov:0:580 [49]
+>          sugov:0-580   [001]   496.512312: sched_switch:         sugov:0:580 [49] T ==> swapper/1:0 [120]
+>           <idle>-0     [001]   496.512448: sched_switch:         swapper/1:0 [120] S ==> sugov:0:580 [49]
+>          sugov:0-580   [001]   496.512662: sched_switch:         sugov:0:580 [49] T ==> swapper/1:0 [120]
+>           <idle>-0     [001]   496.513185: sched_switch:         swapper/1:0 [120] S ==> sugov:0:580 [49]
+>          sugov:0-580   [001]   496.513239: cpu_frequency:        state=996000 cpu_id=0
+>          sugov:0-580   [001]   496.513243: cpu_frequency:        state=996000 cpu_id=1
+>          sugov:0-580   [001]   496.513245: cpu_frequency:        state=996000 cpu_id=2
+>          sugov:0-580   [001]   496.513247: cpu_frequency:        state=996000 cpu_id=3
+
+sugov is the schedutil's kthread, right?  It will always run with a
+delay with respect to the cpufreq_update_util() invocation that
+triggers it.
+
+>
+> I guess it would still help if an RT task starts, blocks and then
+> immediately resumes?
+
+Yes.  Or if it continues to run.
+
+>> > Viresh suggested earlier to move watchdog to DL but apparently per-cpu
+>> > threads are not supported. sched_setattr fails on this check:
+>> >
+>> > kernel/sched/core.c#n4167
+>
+>> Actually, how often does the softlockup watchdog run?
+>
+> Every 4 seconds (really it's /proc/sys/kernel/watchdog_thresh * 2 / 5
+> and watchdog_thresh defaults to 10). There is a per-cpu hrtimer which
+> wakes the per-cpu thread in order to check that tasks can still
+> execute, this works very well against bugs like infinite loops in
+> softirq mode. The timers are synchronized initially but can get
+> staggered (for example by hotplug).
+>
+> My guess is that it's only marked RT so that it executes ahead of other
+> threads and the watchdog doesn't trigger simply when there are lots of
+> userspace tasks.
+
+I think so too.
+
+I see a couple of more-or-less hackish ways to avoid the issue, but
+nothing particularly attractive ATM.
+
+I wouldn't change the general behavior with respect to RT tasks
+because of this, though, as we would quickly find a case in which that
+would turn out to be not desirable.
+
+Thanks,
+Rafael
