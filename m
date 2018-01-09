@@ -1,135 +1,122 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH] PM / wakeup: Enable option to specify wakeup as a non in-band wakeup
-Date: Tue, 09 Jan 2018 12:22:16 +0100
-Message-ID: <1673173.6EtsNRVJQW@aspire.rjw.lan>
-References: <1515495251-22906-1-git-send-email-ulf.hansson@linaro.org>
+Subject: Re: [PATCH v5 0/6] iommu/arm-smmu: Add runtime pm/sleep support
+Date: Tue, 09 Jan 2018 12:23:23 +0100
+Message-ID: <1568773.GtDhb2pIXv@aspire.rjw.lan>
+References: <1515492109-753-1-git-send-email-vivek.gautam@codeaurora.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from cloudserver094114.home.pl ([79.96.170.134]:64124 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751398AbeAILXc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 06:23:32 -0500
-In-Reply-To: <1515495251-22906-1-git-send-email-ulf.hansson@linaro.org>
-Sender: linux-pm-owner@vger.kernel.org
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1515492109-753-1-git-send-email-vivek.gautam@codeaurora.org>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Vivek Gautam <vivek.gautam@codeaurora.org>
+Cc: joro@8bytes.org, robh+dt@kernel.org, mark.rutland@arm.com, gregkh@linuxfoundation.org, robdclark@gmail.com, will.deacon@arm.com, robin.murphy@arm.com, sboyd@codeaurora.org, iommu@lists.linux-foundation.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org, len.brown@intel.com, pavel@ucw.cz, airlied@linux.ie, sricharan@codeaurora.org, m.szyprowski@samsung.com, architt@codeaurora.org, linux-arm-msm@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: linux-pm@vger.kernel.org, Adrian Hunter <adrian.hunter@intel.com>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms@verge.net.au>, Niklas Soderlund <niklas.soderlund+renesas@ragnatech.se>, Vincent Guittot <vincent.guittot@linaro.org>, linux-renesas-soc@vger.kernel.org, linux-mmc@vger.kernel.org
 
-On Tuesday, January 9, 2018 11:54:11 AM CET Ulf Hansson wrote:
-> In some cases, a driver may not require its device to be powered on to be
-> able to deliver wakeup signals during system suspend.
+On Tuesday, January 9, 2018 11:01:43 AM CET Vivek Gautam wrote:
+> This series provides the support for turning on the arm-smmu's
+> clocks/power domains using runtime pm. This is done using the
+> recently introduced device links patches, which lets the smmu's
+> runtime to follow the master's runtime pm, so the smmu remains
+> powered only when the masters use it.
+> 
+> It also adds support for Qcom's arm-smmu-v2 variant that
+> has different clocks and power requirements.
+> 
+> Took some reference from the exynos runtime patches [2].
+> 
+> Previous version of the patchset [1].
+> 
+> After much discussion [4] over the use of pm_runtime_get/put() in
+> .unmap op path for the arm-smmu, and after disussing over more than
+> a couple of approaches to address this, we are putting forward the
+> changes *without* using pm_runtime APIs in 'unmap'. Rather, letting
+> the client device take the control of powering on/off the connected
+> iommu through pm_runtime_get(put)_suppliers() APIs for the scnerios
+> when the iommu power can't be directly controlled by clients through
+> device links.
+> Rafael has agreed to export the suppliers APIs [5].
+> 
+> [V5]
+>    * Dropped runtime pm calls from "arm_smmu_unmap" op as discussed over
+>      the list [4] for the last patch series.
+>    * Added a patch to export pm_runtime_get/put_suppliers() APIs to the
+>      series as agreed with Rafael [5].
+>    * Added the related patch for msm drm iommu layer to use
+>      pm_runtime_get/put_suppliers() APIs in msm_mmu_funcs.
+>    * Dropped arm-mmu500 clock patch since that would break existing
+>      platforms.
+>    * Changed compatible 'qcom,msm8996-smmu-v2' to 'qcom,smmu-v2' to reflect
+>      the IP version rather than the platform on which it is used.
+>      The same IP is used across multiple platforms including msm8996,
+>      and sdm845 etc.
+>    * Using clock bulk APIs to handle the clocks available to the IP as
+>      suggested by Stephen Boyd.
+>    * The first patch in v4 version of the patch-series:
+>      ("iommu/arm-smmu: Fix the error path in arm_smmu_add_device") has
+>      already made it to mainline.
+> 
+> [V4]
+>    * Reworked the clock handling part. We now take clock names as data
+>      in the driver for supported compatible versions, and loop over them
+>      to get, enable, and disable the clocks.
+>    * Using qcom,msm8996 based compatibles for bindings instead of a generic
+>      qcom compatible.
+>    * Refactor MMU500 patch to just add the necessary clock names data and
+>      corresponding bindings.
+>    * Added the pm_runtime_get/put() calls in .unmap iommu op (fix added by
+>      Stanimir on top of previous patch version.
+>    * Added a patch to fix error path in arm_smmu_add_device()
+>    * Removed patch 3/5 of V3 patch series that added qcom,smmu-v2 bindings.
+> 
+> [V3]
+>    * Reworked the patches to keep the clocks init/enabling function
+>      separately for each compatible.
+> 
+>    * Added clocks bindings for MMU40x/500.
+> 
+>    * Added a new compatible for qcom,smmu-v2 implementation and
+>      the clock bindings for the same.
+> 
+>    * Rebased on top of 4.11-rc1
+> 
+> [V2]
+>    * Split the patches little differently.
+> 
+>    * Addressed comments.
+> 
+>    * Removed the patch #4 [3] from previous post
+>      for arm-smmu context save restore. Planning to
+>      post this separately after reworking/addressing Robin's
+>      feedback.
+> 
+>    * Reversed the sequence to disable clocks than enabling.
+>      This was required for those cases where the
+>      clocks are populated in a dependent order from DT.
+> 
+> [1] https://www.spinics.net/lists/arm-kernel/msg567488.html
+> [2] https://lkml.org/lkml/2016/10/20/70
+> [3] https://patchwork.kernel.org/patch/9389717/
+> [4] https://patchwork.kernel.org/patch/9827825/
+> [5] https://patchwork.kernel.org/patch/10102445/
+> 
+> Sricharan R (3):
+>   iommu/arm-smmu: Add pm_runtime/sleep ops
+>   iommu/arm-smmu: Invoke pm_runtime during probe, add/remove device
+>   iommu/arm-smmu: Add the device_link between masters and smmu
+> 
+> Vivek Gautam (3):
+>   base: power: runtime: Export pm_runtime_get/put_suppliers
+>   iommu/arm-smmu: Add support for qcom,smmu-v2 variant
+>   drm/msm: iommu: Replace runtime calls with runtime suppliers
+> 
+>  .../devicetree/bindings/iommu/arm,smmu.txt         |  35 ++++++
+>  drivers/base/power/runtime.c                       |   2 +
+>  drivers/gpu/drm/msm/msm_iommu.c                    |  16 +--
+>  drivers/iommu/arm-smmu.c                           | 124 ++++++++++++++++++++-
+>  4 files changed, 163 insertions(+), 14 deletions(-)
 
-That quite often is the case.
+I need some time to review the series.
 
-It is the standard way wakeup signaling works in PCI and in ACPI.
-
-> Likely the most common scenario when this is the case, is a driver routing
-> the wakeup signal through a GPIO IRQ, instead of using the regular in-band
-> IRQ logic, via the device itself.
-> 
-> Obviously the driver may put its device into a low power state during
-> system suspend in cases like this. For example it may gate clocks, put
-> pinctrls into sleep state, etc.
-> 
-> However, for middle-layers and PM domains (like genpd), which checks the
-> return value from device_may_wakeup() and/or the ->dev.power.wakeup_path
-> status flag, there is information missing about scenarios like these.
-> 
-> In the case of genpd, when it finds the ->dev.power.wakeup_path status flag
-> being set for a device during system suspend, it leaves the device in
-> powered on state including its PM domain. In other words, wasting power.
-> 
-> To address this issue, add a new ->dev.power.no_inband_wakeup flag for the
-> device, which drivers may set/clear to inform the PM core, in case
-> device_may_wakeup() returns true, whether that shall make the
-> ->dev.power.wakeup_path status flag to be set or not for the device.
-> 
-> The PM core checks the ->dev.power.no_inband_wakeup flag in the
-> __device_suspend() phase, after invoking the ->suspend() callback for the
-> device. At that point, the driver is responsible that it has set a correct
-> value to the flag.
-> 
-> Let's also introduce a helper function, device_set_no_inband_wakeup(),
-> which drivers shall use to set/clear the ->dev.power.no_inband_wakeup flag.
-
-Wait, wait.
-
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
-> 
-> To get some additional background, one may look at earlier discussions from
-> various threads. The most recent is in and RFD [1] from Rafael and from an mmc
-> series by Adrian [2].
-
-Let's first conclude that discussion, please.
-
-> [1]
-> https://marc.info/?l=linux-pm&m=151541229425689&w=2
-> 
-> [2]
-> https://www.spinics.net/lists/linux-mmc/msg47549.html
-> 
-> ---
->  drivers/base/power/main.c | 2 +-
->  include/linux/pm.h        | 1 +
->  include/linux/pm_wakeup.h | 8 ++++++++
->  3 files changed, 10 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-> index 02a497e..376c275 100644
-> --- a/drivers/base/power/main.c
-> +++ b/drivers/base/power/main.c
-> @@ -1794,7 +1794,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
->   End:
->  	if (!error) {
->  		dev->power.is_suspended = true;
-> -		if (device_may_wakeup(dev))
-> +		if (device_may_wakeup(dev) && !dev->power.no_inband_wakeup)
-
-That is not just a system-wide PM concept.  It affects runtime PM potentially
-too.
-
->  			dev->power.wakeup_path = true;
->  
->  		dpm_propagate_wakeup_to_parent(dev);
-> diff --git a/include/linux/pm.h b/include/linux/pm.h
-> index e723b78..d131834 100644
-> --- a/include/linux/pm.h
-> +++ b/include/linux/pm.h
-> @@ -600,6 +600,7 @@ struct dev_pm_info {
->  	struct completion	completion;
->  	struct wakeup_source	*wakeup;
->  	bool			wakeup_path:1;
-> +	bool			no_inband_wakeup:1;
->  	bool			syscore:1;
->  	bool			no_pm_callbacks:1;	/* Owned by the PM core */
->  	unsigned int		must_resume:1;	/* Owned by the PM core */
-> diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
-> index 4238dde..5d40887 100644
-> --- a/include/linux/pm_wakeup.h
-> +++ b/include/linux/pm_wakeup.h
-> @@ -93,6 +93,11 @@ static inline void device_set_wakeup_path(struct device *dev)
->  	dev->power.wakeup_path = true;
->  }
->  
-> +static inline void device_set_no_inband_wakeup(struct device *dev, bool wakeup)
-> +{
-> +	dev->power.no_inband_wakeup = wakeup;
-> +}
-> +
->  /* drivers/base/power/wakeup.c */
->  extern void wakeup_source_prepare(struct wakeup_source *ws, const char *name);
->  extern struct wakeup_source *wakeup_source_create(const char *name);
-> @@ -181,6 +186,9 @@ static inline bool device_may_wakeup(struct device *dev)
->  
->  static inline void device_set_wakeup_path(struct device *dev) {}
->  
-> +static inline void device_set_no_inband_wakeup(struct device *dev,
-> +					       bool wakeup) {}
-> +
->  static inline void __pm_stay_awake(struct wakeup_source *ws) {}
->  
->  static inline void pm_stay_awake(struct device *dev) {}
-> 
+Thanks,
+Rafael
