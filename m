@@ -1,89 +1,94 @@
-From: Ulf Hansson <ulf.hansson@linaro.org>
-Subject: Re: [pm:bleeding-edge 148/162] drivers/base/power/wakeup.c:271:
- undefined reference to `pm_suspend_target_state'
-Date: Wed, 10 Jan 2018 15:08:02 +0100
-Message-ID: <CAPDyKFpcwXjW6qs9OpGc8J3byFrtO1OcJzO-fVpocmSu6RraWw@mail.gmail.com>
-References: <201801101147.W1FX9kS5%fengguang.wu@intel.com>
+From: Juri Lelli <juri.lelli@redhat.com>
+Subject: Re: [BUG] schedutil governor produces regular max freq spikes
+ because of lockup detector watchdog threads
+Date: Wed, 10 Jan 2018 15:21:58 +0100
+Message-ID: <20180110142158.GC16413@localhost.localdomain>
+References: <CAJZ5v0gOwgr2yB_YY8ian6GXjdic3zRUa4S9vHNmudC8Khc5cA@mail.gmail.com>
+ <20180108040121.GB4003@vireshk-i7>
+ <1515417622.3207.5.camel@nxp.com>
+ <20180108151450.GA30937@e110439-lin>
+ <1515426694.3207.28.camel@nxp.com>
+ <CAJZ5v0hnY+2pL0LGAeQv7xZcYN42+_azKH9cGGLvPU1iO6fmWg@mail.gmail.com>
+ <1515508985.3310.8.camel@nxp.com>
+ <CAJZ5v0gV_4y1rKio9QRP_-M65rXtQHi2W3O22uiXJ08oafVtOw@mail.gmail.com>
+ <20180110105451.GB16413@localhost.localdomain>
+ <CAJZ5v0gytg+ESkcH0uW+AYKaeiT_cb8vdUnhPzds13CaDR521g@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-io0-f196.google.com ([209.85.223.196]:45327 "EHLO
-        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752108AbeAJOID (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 09:08:03 -0500
-Received: by mail-io0-f196.google.com with SMTP id e20so22528173iof.12
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 06:08:03 -0800 (PST)
-In-Reply-To: <201801101147.W1FX9kS5%fengguang.wu@intel.com>
+Received: from mail-wr0-f194.google.com ([209.85.128.194]:37533 "EHLO
+        mail-wr0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S965115AbeAJOWD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 09:22:03 -0500
+Received: by mail-wr0-f194.google.com with SMTP id f8so17504053wre.4
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 06:22:02 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gytg+ESkcH0uW+AYKaeiT_cb8vdUnhPzds13CaDR521g@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Linux PM <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Leonard Crestez <leonard.crestez@nxp.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Anson Huang <anson.huang@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-Rafael,
+On 10/01/18 13:35, Rafael J. Wysocki wrote:
+> On Wed, Jan 10, 2018 at 11:54 AM, Juri Lelli <juri.lelli@redhat.com> wrote:
+> > On 09/01/18 16:50, Rafael J. Wysocki wrote:
+> >> On Tue, Jan 9, 2018 at 3:43 PM, Leonard Crestez <leonard.crestez@nxp.com> wrote:
+> >
+> > [...]
+> >
+> >> > Every 4 seconds (really it's /proc/sys/kernel/watchdog_thresh * 2 / 5
+> >> > and watchdog_thresh defaults to 10). There is a per-cpu hrtimer which
+> >> > wakes the per-cpu thread in order to check that tasks can still
+> >> > execute, this works very well against bugs like infinite loops in
+> >> > softirq mode. The timers are synchronized initially but can get
+> >> > staggered (for example by hotplug).
+> >> >
+> >> > My guess is that it's only marked RT so that it executes ahead of other
+> >> > threads and the watchdog doesn't trigger simply when there are lots of
+> >> > userspace tasks.
+> >>
+> >> I think so too.
+> >>
+> >> I see a couple of more-or-less hackish ways to avoid the issue, but
+> >> nothing particularly attractive ATM.
+> >>
+> >> I wouldn't change the general behavior with respect to RT tasks
+> >> because of this, though, as we would quickly find a case in which that
+> >> would turn out to be not desirable.
+> >
+> > I agree we cannot generalize to all RT tasks, but what Patrick proposed
+> > (clamping utilization of certain known tasks) might help here:
+> >
+> > lkml.kernel.org/r/20170824180857.32103-1-patrick.bellasi@arm.com
+> >
+> > Maybe with a per-task interface instead of using cgroups?
+> 
+> The problem here is that this is a kernel thing and user space should
+> not be expected to have to do anything about fixing this IMO.
 
-On 10 January 2018 at 04:26, kbuild test robot <fengguang.wu@intel.com> wrote:
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
-> head:   b6c524b2e93b23a396a90031faa29350beeb95fc
-> commit: edd0afcd2eb853ee46a1509a1983b042a6b857f4 [148/162] PM / wakeup: Print warn if device gets enabled as wakeup source during sleep
-> config: i386-randconfig-s0-201801 (attached as .config)
-> compiler: gcc-6 (Debian 6.4.0-9) 6.4.0 20171026
-> reproduce:
->         git checkout edd0afcd2eb853ee46a1509a1983b042a6b857f4
->         # save the attached .config to linux build tree
->         make ARCH=i386
->
-> All errors (new ones prefixed by >>):
->
->    drivers/base/power/wakeup.o: In function `device_wakeup_enable':
->>> drivers/base/power/wakeup.c:271: undefined reference to `pm_suspend_target_state'
+Not sure. If we would have such an interface, it should be possible to
+use it from both kernel and userspace. In this case kernel might be able
+to do the "right" thing. Also, RT userspace is usually already responsible
+for configuring system priorities, it might be easy to set this as well.
 
-This error is because the .config has CONFIG_SUSPEND unset while
-CONFIG_PM_SLEEP is set.
+> > The other option would be to relax DL tasks affinity constraints, so
+> > that a case like this might be handled. Daniel and Tommaso proposed
+> > possible approaches, this might be a driving use case. Not sure how we
+> > would come up with a proper runtime for the watchdog, though.
+> 
+> That is a problem.
+> 
+> Basically, it needs to run as soon as possible, but it will be running
+> for a very short time, every time.
 
-Adding below to drivers/base/power/wakeup.c fixes it, but perhaps
-there is a better option?
+Does it really require to run "as soon as possible" or is it "at least
+once every watchdog period"? In the latter case DL might still fit, with
+a very short runtime (to be defined).
 
-#ifndef CONFIG_SUSPEND
-suspend_state_t pm_suspend_target_state;
-#endif
+> Overall, using a thread for that seems wasteful ...
 
-Kind regards
-Uffe
+Not sure I'm following you here, aren't we using a thread already?
 
->
-> vim +271 drivers/base/power/wakeup.c
->
->    256
->    257  /**
->    258   * device_wakeup_enable - Enable given device to be a wakeup source.
->    259   * @dev: Device to handle.
->    260   *
->    261   * Create a wakeup source object, register it and attach it to @dev.
->    262   */
->    263  int device_wakeup_enable(struct device *dev)
->    264  {
->    265          struct wakeup_source *ws;
->    266          int ret;
->    267
->    268          if (!dev || !dev->power.can_wakeup)
->    269                  return -EINVAL;
->    270
->  > 271          if (pm_suspend_target_state != PM_SUSPEND_ON)
->    272                  dev_dbg(dev, "Suspicious %s() during system transition\n", __func__);
->    273
->    274          ws = wakeup_source_register(dev_name(dev));
->    275          if (!ws)
->    276                  return -ENOMEM;
->    277
->    278          ret = device_wakeup_attach(dev, ws);
->    279          if (ret)
->    280                  wakeup_source_unregister(ws);
->    281
->    282          return ret;
->    283  }
->    284  EXPORT_SYMBOL_GPL(device_wakeup_enable);
->    285
->
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+Thanks,
+
+- Juri
