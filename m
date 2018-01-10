@@ -1,58 +1,131 @@
 From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/2] cpufreq: scpi: remove arm_big_little dependency
-Date: Wed, 10 Jan 2018 09:49:05 +0530
-Message-ID: <20180110041905.GC3335@vireshk-i7>
-References: <1515516568-31359-1-git-send-email-sudeep.holla@arm.com>
- <1515516568-31359-3-git-send-email-sudeep.holla@arm.com>
+Subject: Re: [PATCH 1/2] PM / OPP: introduce an OPP power estimation helper
+Date: Wed, 10 Jan 2018 10:06:25 +0530
+Message-ID: <20180110043625.GD3335@vireshk-i7>
+References: <20180109110252.13557-1-quentin.perret@arm.com>
+ <20180109110252.13557-2-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pl0-f67.google.com ([209.85.160.67]:45734 "EHLO
-        mail-pl0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965353AbeAJETI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 23:19:08 -0500
-Received: by mail-pl0-f67.google.com with SMTP id o2so6548460plk.12
-        for <linux-pm@vger.kernel.org>; Tue, 09 Jan 2018 20:19:08 -0800 (PST)
+Received: from mail-pg0-f68.google.com ([74.125.83.68]:35373 "EHLO
+        mail-pg0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1756296AbeAJEg2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 23:36:28 -0500
+Received: by mail-pg0-f68.google.com with SMTP id d6so8849048pgv.2
+        for <linux-pm@vger.kernel.org>; Tue, 09 Jan 2018 20:36:28 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1515516568-31359-3-git-send-email-sudeep.holla@arm.com>
+In-Reply-To: <20180109110252.13557-2-quentin.perret@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Sudeep Holla <sudeep.holla@arm.com>
-Cc: linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jeremy Linton <jeremy.linton@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com
 
-On 09-01-18, 16:49, Sudeep Holla wrote:
-> +static int
-> +scpi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
->  {
-> -	return scpi_ops->get_transition_latency(cpu_dev);
-> +	int cpu, domain, tdomain;
-> +	struct device *tcpu_dev;
-> +
-> +	domain = scpi_ops->device_domain_id(cpu_dev);
-> +	if (domain < 0)
-> +		return domain;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		if (cpu == cpu_dev->id)
-> +			continue;
-> +
-> +		tcpu_dev = get_cpu_device(cpu);
-> +		if (!tcpu_dev)
-> +			continue;
-> +
-> +		tdomain = scpi_ops->device_domain_id(tcpu_dev);
-> +		if (tdomain == domain)
-> +			cpumask_set_cpu(cpu, cpumask);
+On 09-01-18, 11:02, Quentin Perret wrote:
+> The power dissipated by a CPU at a specific OPP is currently estimated by
+> the thermal subsystem as P = C * V^2 * f, with P the power, C the CPU's
+> capacitance, V the OPP's voltage and f the OPP's frequency. As this
+> feature can be useful for other clients requiring energy models of CPUs,
+> this commit introduces an equivalent power estimator directly into the OPP
+> library, hence enabling code re-use.
+
+Okay. I am fine with the basic idea of moving this stuff into the OPP
+library but will do it a bit differently.
+
+> Signed-off-by: Quentin Perret <quentin.perret@arm.com>
+> ---
+>  drivers/opp/core.c     | 40 +++++++++++++++++++++++++++++++++
+>  drivers/opp/of.c       | 61 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/opp/opp.h      |  4 ++++
+>  include/linux/pm_opp.h | 20 +++++++++++++++++
+>  4 files changed, 125 insertions(+)
+> 
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index 92fa94a6dcc1..b5e1ad2d311d 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -127,6 +127,24 @@ unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_get_freq);
+>  
+> +/**
+> + * dev_pm_opp_get_power() - Gets the estimated power corresponding to an opp
+> + * @opp:	opp for which power has to be returned for
+> + *
+> + * Return: estimated power in mirco-watts corresponding to the opp, else
+> + * return 0
+> + */
+> +unsigned long dev_pm_opp_get_power(struct dev_pm_opp *opp)
+> +{
+> +	if (IS_ERR_OR_NULL(opp) || !opp->available) {
+
+Drop the available check here.
+
+> +		pr_err("%s: Invalid parameters\n", __func__);
+> +		return 0;
 > +	}
 > +
-> +	return 0;
+> +	return opp->power_estimate_uw;
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_opp_get_power);
+> +
+>  /**
+>   * dev_pm_opp_is_turbo() - Returns if opp is turbo OPP or not
+>   * @opp: opp for which turbo mode is being verified
+> @@ -148,6 +166,28 @@ bool dev_pm_opp_is_turbo(struct dev_pm_opp *opp)
 >  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_is_turbo);
+>  
+> +/**
+> + * dev_pm_opp_has_power() - Get the status of power values for OPPs
+> + * @cpu_dev:	CPU device for which we do this operation
+> + *
+> + * Return: True if the OPPs hold power estimates for the CPU
+> + */
+> +bool dev_pm_opp_has_power(struct device *cpu_dev)
+> +{
+> +	struct opp_table *opp_table;
+> +	bool has_power;
+> +
+> +	opp_table = _find_opp_table(cpu_dev);
+> +	if (IS_ERR(opp_table))
+> +		return false;
+> +
+> +	has_power = opp_table->has_power;
+> +
+> +	dev_pm_opp_put_opp_table(opp_table);
+> +
+> +	return has_power;
+> +}
+> +
+>  /**
+>   * dev_pm_opp_get_max_clock_latency() - Get max clock latency in nanoseconds
+>   * @dev:	device for which we do this operation
+> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+> index cb716aa2f44b..4a376cd00e8d 100644
+> --- a/drivers/opp/of.c
+> +++ b/drivers/opp/of.c
+> @@ -633,3 +633,64 @@ int dev_pm_opp_of_get_sharing_cpus(struct device *cpu_dev,
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(dev_pm_opp_of_get_sharing_cpus);
+> +
+> +/**
+> + * dev_pm_opp_of_estimate_power() - Estimates the power dissipated by @cpu_dev
+> + *                                  at each OPP.
+> + * @cpu_dev:	CPU device for which we do this estimation
+> + *
+> + * This estimates the active power consumed by a CPU at each OPP using:
+> + *                         P = C * V^2 * f
+> + * with P the power, C the CPU's capacitance, V the OPP's voltage and f the
+> + * OPP's frequency. V and f are assumed to be known by the time this function
+> + * is called and C is read from DT.
+> + *
+> + * Returns -EINVAL if the CPU's capacitance cannot be read from DT.
+> + */
+> +int dev_pm_opp_of_estimate_power(struct device *cpu_dev)
 
-So this is the main thing you want to achieve ? i.e. get the
-policy->cpus from scpi_ops, right ?
-
-Why can't we update .init_opp_table() to include policy as a parameter
-and let individual stub drivers update policy->cpus then ?
+I wouldn't add this special function, but rather fill
+power_estimate_uW while creating the OPPs for the first time.
 
 -- 
 viresh
