@@ -1,133 +1,77 @@
-From: "Sun, XinX" <xinx.sun@intel.com>
-Subject: RE: [PATCH] powercap: add suspend and resume mechanism for SOC
- power limit
-Date: Wed, 10 Jan 2018 07:00:11 +0000
-Message-ID: <29BA90D9533CD34EA40DF8A796ED93C30409C338@CDSMSX104.ccr.corp.intel.com>
-References: <1515544703-19409-1-git-send-email-xinx.sun@intel.com>
-         <1515548830.69545.28.camel@linux.intel.com>
-         <29BA90D9533CD34EA40DF8A796ED93C30409C1B1@CDSMSX104.ccr.corp.intel.com>
- <1515565269.585.30.camel@linux.intel.com>
+From: Gautham R Shenoy <ego@linux.vnet.ibm.com>
+Subject: Re: [v3 PATCH 2/3] powernv-cpufreq: Fix pstate_to_idx() to handle
+ non-continguous pstates
+Date: Wed, 10 Jan 2018 14:25:45 +0530
+Message-ID: <20180110085545.GA13666@in.ibm.com>
+References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com>
+ <CAKTCnz=jrvbizrzUx1tDxMg__4coJHoxSXOS+K+zXQVAM=WF-g@mail.gmail.com>
+ <20171218083820.GA28881@in.ibm.com>
+ <3110289.BbUpyYVBQa@aspire.rjw.lan>
+ <CAKTCnznuf1jwWZEqi+og8LyayfzMwGYRUXhK4+zfbSYDfexyRA@mail.gmail.com>
+Reply-To: ego@linux.vnet.ibm.com
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1515565269.585.30.camel@linux.intel.com>
-Content-Language: en-US
+Content-Disposition: inline
+In-Reply-To: <CAKTCnznuf1jwWZEqi+og8LyayfzMwGYRUXhK4+zfbSYDfexyRA@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>
-Cc: "Han, Zhen" <zhen.han@intel.com>, "Wang, ChaoX M" <chaox.m.wang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Balbir Singh <bsingharora@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Gautham R Shenoy <ego@linux.vnet.ibm.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Abhishek <huntbag@linux.vnet.ibm.com>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>
 List-Id: linux-pm@vger.kernel.org
 
-VGhhbmtzIGZvciB5b3VyIHN1Z2dlc3Rpb24uDQpJIHdpbGwgcGF5IGF0dGVudGlvbiBhYm91dCB0
-aGlzLg0KDQpCUiwNClN1biBYaW4NCg0KLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCkZyb206
-IFNyaW5pdmFzIFBhbmRydXZhZGEgW21haWx0bzpzcmluaXZhcy5wYW5kcnV2YWRhQGxpbnV4Lmlu
-dGVsLmNvbV0gDQpTZW50OiBXZWRuZXNkYXksIEphbnVhcnkgMTAsIDIwMTggMjoyMSBQTQ0KVG86
-IFN1biwgWGluWCA8eGlueC5zdW5AaW50ZWwuY29tPjsgcmp3QHJqd3lzb2NraS5uZXQ7IGphY29i
-Lmp1bi5wYW5AbGludXguaW50ZWwuY29tDQpDYzogSGFuLCBaaGVuIDx6aGVuLmhhbkBpbnRlbC5j
-b20+OyBXYW5nLCBDaGFvWCBNIDxjaGFveC5tLndhbmdAaW50ZWwuY29tPjsgbGludXgtcG1Admdl
-ci5rZXJuZWwub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQpTdWJqZWN0OiBSZTog
-W1BBVENIXSBwb3dlcmNhcDogYWRkIHN1c3BlbmQgYW5kIHJlc3VtZSBtZWNoYW5pc20gZm9yIFNP
-QyBwb3dlciBsaW1pdA0KDQpPbiBXZWQsIDIwMTgtMDEtMTAgYXQgMDE6NTMgKzAwMDAsIFN1biwg
-WGluWCB3cm90ZToNCj4gQWNjb3JkaW5nIHRvIFJhZmFlbCdzIGNvbW1lbnQuDQo+ID4gDQo+ID4g
-VGhlcmUgaXMgYSBmb3JtYWwgaXNzdWUgaGVyZS4NCj4gPiBXZSBuZWVkIGEgU2lnbmVkLW9mZi1i
-eTogdGFnIGZyb20gWmhlbiBIYW4gdG9vLg0KPiBJIGNoYW5nZWQgU2lnbmVkLW9mZiBpbiBjb21t
-aXQgbWVzc2FnZS4NCj4gDQpUaGlzIGlzIG5vdCB0aGUgY29ycmVjdCBwcm9jZWR1cmUgdG8gZG8g
-c3VjaCB0aGluZ3MgYWZ0ZXIgc2VuZGluZyB0aGUgcGF0Y2guDQpCYXNpY2FsbHkgeW91IGNhbiBj
-aGFuZ2UgcHJlZml4IHRvICJbUEFUQ0hdIiB0byAiW1VwZGF0ZV1bUEFUQ0hdIi4NCg0KVGhlbiBh
-ZnRlciAiLS0tIiBhZGQgY2hhbmdlIGhpc3RvcnkuDQoNCkUuZy4NCg0KU2lnbmVkLW9mZi1ieTog
-WmhlbiBIYW4gPHpoZW4uaGFuQGludGVsLmNvbT4+wqA+wqAtLS0NCi0tLQ0KQ2hhbmdlOsKgDQoJ
-Rml4ZWQgdGhlIHNpZ25lZC1vZmYgdGFnLg0KDQoNCg0KDQpUaGFua3MsDQpTcmluaXZhcw0KDQo+
-IFRoYW5rcyAmIEJSLA0KPiBTdW4gWGluDQo+IA0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
-LQ0KPiBGcm9tOiBTcmluaXZhcyBQYW5kcnV2YWRhIFttYWlsdG86c3Jpbml2YXMucGFuZHJ1dmFk
-YUBsaW51eC5pbnRlbC5jb20NCj4gXQ0KPiBTZW50OiBXZWRuZXNkYXksIEphbnVhcnkgMTAsIDIw
-MTggOTo0NyBBTQ0KPiBUbzogU3VuLCBYaW5YIDx4aW54LnN1bkBpbnRlbC5jb20+OyByandAcmp3
-eXNvY2tpLm5ldDsgamFjb2IuanVuLnBhbkAgDQo+IGxpbnV4LmludGVsLmNvbQ0KPiBDYzogSGFu
-LCBaaGVuIDx6aGVuLmhhbkBpbnRlbC5jb20+OyBXYW5nLCBDaGFvWCBNIDxjaGFveC5tLndhbmdA
-aW50ZWwgDQo+IC5jb20+OyBsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4LWtlcm5lbEB2
-Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gcG93ZXJjYXA6IGFkZCBzdXNw
-ZW5kIGFuZCByZXN1bWUgbWVjaGFuaXNtIGZvciANCj4gU09DIHBvd2VyIGxpbWl0DQo+IA0KPiBP
-biBXZWQsIDIwMTgtMDEtMTAgYXQgMDg6MzggKzA4MDAsIHhpbnguc3VuQGludGVsLmNvbSB3cm90
-ZToNCj4gPiANCj4gPiBGcm9tOiBaaGVuIEhhbiA8emhlbi5oYW5AaW50ZWwuY29tPg0KPiA+IA0K
-PiA+IFBMMSBhbmQgUEwyIGNvdWxkIGJlIHRocm9sbGVkIG9yIGRlLXRocm90dGxlZCBieSBUaGVy
-bWFsIG1hbmFnZW1lbnQgDQo+ID4gdG8gY29udHJvbCBTT0MgdGVtcGVyYXR1cmUuDQo+ID4gSG93
-ZXZlciwgY3VycmVudGx5LCB0aGVpciB2YWx1ZSB3aWxsIGJlIHJlc2V0IHRvIGRlZmF1bHQgdmFs
-dWUgYWZ0ZXIgDQo+ID4gb25jZSBzeXN0ZW0gc3VzcGVuZCBhbmQgcmVzdW1lLg0KPiA+IEFkZCBw
-bV9ub3RpZmllciB0byBzYXZlIFBMMSwgUEwyIGJlZm9yZSBzeXN0ZW0gc3VzcGVjdCBhbmQgcmVz
-dG9yZSANCj4gPiBQTDEsIFBMMiBhZnRlciBzeXN0ZW0gcmVzdW1lLg0KPiA+IA0KPiBXaHkgYXJl
-IHlvdSBwb3N0aW5nIHRoaXMgcGF0Y2ggYWdhaW4/DQo+IElmIHRoZXJlIGFueSBjaGFuZ2UgZnJv
-bSB5b3VyIHByaW9yIHBvc3Q/DQo+IA0KPiBUaGFua3MsDQo+IFNyaW5pdmFzDQo+IA0KPiA+IA0K
-PiA+IFNpZ25lZC1vZmYtYnk6IFpoZW4gSGFuIDx6aGVuLmhhbkBpbnRlbC5jb20+DQo+ID4gLS0t
-DQo+ID4gwqBkcml2ZXJzL3Bvd2VyY2FwL2ludGVsX3JhcGwuYyB8IDk3DQo+ID4gKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KPiA+IMKgMSBmaWxlIGNoYW5nZWQs
-IDk3IGluc2VydGlvbnMoKykNCj4gPiANCj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9wb3dlcmNh
-cC9pbnRlbF9yYXBsLmMgDQo+ID4gYi9kcml2ZXJzL3Bvd2VyY2FwL2ludGVsX3JhcGwuYyBpbmRl
-eCBkMTY5NGYxLi4wMTg4Y2ZmIDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvcG93ZXJjYXAvaW50
-ZWxfcmFwbC5jDQo+ID4gKysrIGIvZHJpdmVycy9wb3dlcmNhcC9pbnRlbF9yYXBsLmMNCj4gPiBA
-QCAtMjksNiArMjksNyBAQA0KPiA+IMKgI2luY2x1ZGUgPGxpbnV4L3N5c2ZzLmg+DQo+ID4gwqAj
-aW5jbHVkZSA8bGludXgvY3B1Lmg+DQo+ID4gwqAjaW5jbHVkZSA8bGludXgvcG93ZXJjYXAuaD4N
-Cj4gPiArI2luY2x1ZGUgPGxpbnV4L3N1c3BlbmQuaD4NCj4gPiDCoCNpbmNsdWRlIDxhc20vaW9z
-Zl9tYmkuaD4NCj4gPiDCoA0KPiA+IMKgI2luY2x1ZGUgPGFzbS9wcm9jZXNzb3IuaD4NCj4gPiBA
-QCAtMTU1LDYgKzE1Niw3IEBAIHN0cnVjdCByYXBsX3Bvd2VyX2xpbWl0IHsNCj4gPiDCoAlpbnQg
-cHJpbV9pZDsgLyogcHJpbWl0aXZlIElEIHVzZWQgdG8gZW5hYmxlICovDQo+ID4gwqAJc3RydWN0
-IHJhcGxfZG9tYWluICpkb21haW47DQo+ID4gwqAJY29uc3QgY2hhciAqbmFtZTsNCj4gPiArCXU2
-NCBsYXN0X3Bvd2VyX2xpbWl0Ow0KPiA+IMKgfTsNCj4gPiDCoA0KPiA+IMKgc3RhdGljIGNvbnN0
-IGNoYXIgcGwxX25hbWVbXSA9ICJsb25nX3Rlcm0iOyBAQCAtMTUzMyw2ICsxNTM1LDkyIEBAIA0K
-PiA+IHN0YXRpYyBpbnQgcmFwbF9jcHVfZG93bl9wcmVwKHVuc2lnbmVkIGludA0KPiA+IGNwdSkN
-Cj4gPiDCoA0KPiA+IMKgc3RhdGljIGVudW0gY3B1aHBfc3RhdGUgcGNhcF9yYXBsX29ubGluZTsN
-Cj4gPiDCoA0KPiA+ICtzdGF0aWMgdm9pZCBwb3dlcl9saW1pdF9zdGF0ZV9zYXZlKHZvaWQpIHsN
-Cj4gPiArCXN0cnVjdCByYXBsX3BhY2thZ2UgKnJwOw0KPiA+ICsJc3RydWN0IHJhcGxfZG9tYWlu
-ICpyZDsNCj4gPiArCWludCBucl9wbCwgcmV0LCBpOw0KPiA+ICsNCj4gPiArCWdldF9vbmxpbmVf
-Y3B1cygpOw0KPiA+ICsJbGlzdF9mb3JfZWFjaF9lbnRyeShycCwgJnJhcGxfcGFja2FnZXMsIHBs
-aXN0KSB7DQo+ID4gKwkJaWYgKCFycC0+cG93ZXJfem9uZSkNCj4gPiArCQkJY29udGludWU7DQo+
-ID4gKwkJcmQgPSBwb3dlcl96b25lX3RvX3JhcGxfZG9tYWluKHJwLT5wb3dlcl96b25lKTsNCj4g
-PiArCQlucl9wbCA9IGZpbmRfbnJfcG93ZXJfbGltaXQocmQpOw0KPiA+ICsJCWZvciAoaSA9IDA7
-IGkgPCBucl9wbDsgaSsrKSB7DQo+ID4gKwkJCXN3aXRjaCAocmQtPnJwbFtpXS5wcmltX2lkKSB7
-DQo+ID4gKwkJCWNhc2UgUEwxX0VOQUJMRToNCj4gPiArCQkJCXJldCA9IHJhcGxfcmVhZF9kYXRh
-X3JhdyhyZCwNCj4gPiArCQkJCQkJUE9XRVJfTElNSVQxLA0KPiA+ICsJCQkJCQl0cnVlLA0KPiA+
-ICsJCQkJCQkmcmQtDQo+ID4gPiANCj4gPiA+IHJwbFtpXS5sYXN0X3Bvd2VyX2xpbWl0KTsNCj4g
-PiArCQkJCWlmIChyZXQpDQo+ID4gKwkJCQkJcmQtDQo+ID4gPnJwbFtpXS5sYXN0X3Bvd2VyX2xp
-bWl0DQo+ID4gPSAwOw0KPiA+ICsJCQkJYnJlYWs7DQo+ID4gKwkJCWNhc2UgUEwyX0VOQUJMRToN
-Cj4gPiArCQkJCXJldCA9IHJhcGxfcmVhZF9kYXRhX3JhdyhyZCwNCj4gPiArCQkJCQkJUE9XRVJf
-TElNSVQyLA0KPiA+ICsJCQkJCQl0cnVlLA0KPiA+ICsJCQkJCQkmcmQtDQo+ID4gPiANCj4gPiA+
-IHJwbFtpXS5sYXN0X3Bvd2VyX2xpbWl0KTsNCj4gPiArCQkJCWlmIChyZXQpDQo+ID4gKwkJCQkJ
-cmQtDQo+ID4gPnJwbFtpXS5sYXN0X3Bvd2VyX2xpbWl0DQo+ID4gPSAwOw0KPiA+ICsJCQkJYnJl
-YWs7DQo+ID4gKwkJCX0NCj4gPiArCQl9DQo+ID4gKwl9DQo+ID4gKwlwdXRfb25saW5lX2NwdXMo
-KTsNCj4gPiArfQ0KPiA+ICsNCj4gPiArc3RhdGljIHZvaWQgcG93ZXJfbGltaXRfc3RhdGVfcmVz
-dG9yZSh2b2lkKSB7DQo+ID4gKwlzdHJ1Y3QgcmFwbF9wYWNrYWdlICpycDsNCj4gPiArCXN0cnVj
-dCByYXBsX2RvbWFpbiAqcmQ7DQo+ID4gKwlpbnQgbnJfcGwsIGk7DQo+ID4gKw0KPiA+ICsJZ2V0
-X29ubGluZV9jcHVzKCk7DQo+ID4gKwlsaXN0X2Zvcl9lYWNoX2VudHJ5KHJwLCAmcmFwbF9wYWNr
-YWdlcywgcGxpc3QpIHsNCj4gPiArCQlpZiAoIXJwLT5wb3dlcl96b25lKQ0KPiA+ICsJCQljb250
-aW51ZTsNCj4gPiArCQlyZCA9IHBvd2VyX3pvbmVfdG9fcmFwbF9kb21haW4ocnAtPnBvd2VyX3pv
-bmUpOw0KPiA+ICsJCW5yX3BsID0gZmluZF9ucl9wb3dlcl9saW1pdChyZCk7DQo+ID4gKwkJZm9y
-IChpID0gMDsgaSA8IG5yX3BsOyBpKyspIHsNCj4gPiArCQkJc3dpdGNoIChyZC0+cnBsW2ldLnBy
-aW1faWQpIHsNCj4gPiArCQkJY2FzZSBQTDFfRU5BQkxFOg0KPiA+ICsJCQkJaWYgKHJkLT5ycGxb
-aV0ubGFzdF9wb3dlcl9saW1pdCkNCj4gPiArCQkJCQlyYXBsX3dyaXRlX2RhdGFfcmF3KHJkLA0K
-PiA+ICsJCQkJCQlQT1dFUl9MSU1JVDEsDQo+ID4gKwkJCQkJCXJkLQ0KPiA+ID4gDQo+ID4gPiBy
-cGxbaV0ubGFzdF9wb3dlcl9saW1pdCk7DQo+ID4gKwkJCQlicmVhazsNCj4gPiArCQkJY2FzZSBQ
-TDJfRU5BQkxFOg0KPiA+ICsJCQkJaWYgKHJkLT5ycGxbaV0ubGFzdF9wb3dlcl9saW1pdCkNCj4g
-PiArCQkJCQlyYXBsX3dyaXRlX2RhdGFfcmF3KHJkLA0KPiA+ICsJCQkJCQlQT1dFUl9MSU1JVDIs
-DQo+ID4gKwkJCQkJCXJkLQ0KPiA+ID4gDQo+ID4gPiBycGxbaV0ubGFzdF9wb3dlcl9saW1pdCk7
-DQo+ID4gKwkJCQlicmVhazsNCj4gPiArCQkJfQ0KPiA+ICsJCX0NCj4gPiArCX0NCj4gPiArCXB1
-dF9vbmxpbmVfY3B1cygpOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IHJhcGxfcG1f
-Y2FsbGJhY2soc3RydWN0IG5vdGlmaWVyX2Jsb2NrICpuYiwNCj4gPiArCXVuc2lnbmVkIGxvbmcg
-bW9kZSwgdm9pZCAqX3VudXNlZCkgew0KPiA+ICsJc3dpdGNoIChtb2RlKSB7DQo+ID4gKwljYXNl
-IFBNX1NVU1BFTkRfUFJFUEFSRToNCj4gPiArCQlwb3dlcl9saW1pdF9zdGF0ZV9zYXZlKCk7DQo+
-ID4gKwkJYnJlYWs7DQo+ID4gKwljYXNlIFBNX1BPU1RfU1VTUEVORDoNCj4gPiArCQlwb3dlcl9s
-aW1pdF9zdGF0ZV9yZXN0b3JlKCk7DQo+ID4gKwkJYnJlYWs7DQo+ID4gKwl9DQo+ID4gKwlyZXR1
-cm4gTk9USUZZX09LOw0KPiA+ICt9DQo+ID4gKw0KPiA+ICtzdGF0aWMgc3RydWN0IG5vdGlmaWVy
-X2Jsb2NrIHJhcGxfcG1fbm90aWZpZXIgPSB7DQo+ID4gKwkubm90aWZpZXJfY2FsbCA9IHJhcGxf
-cG1fY2FsbGJhY2ssIH07DQo+ID4gKw0KPiA+IMKgc3RhdGljIGludCBfX2luaXQgcmFwbF9pbml0
-KHZvaWQpDQo+ID4gwqB7DQo+ID4gwqAJY29uc3Qgc3RydWN0IHg4Nl9jcHVfaWQgKmlkOw0KPiA+
-IEBAIC0xNTYwLDggKzE2NDgsMTYgQEAgc3RhdGljIGludCBfX2luaXQgcmFwbF9pbml0KHZvaWQp
-DQo+ID4gwqANCj4gPiDCoAkvKiBEb24ndCBiYWlsIG91dCBpZiBQU3lzIGlzIG5vdCBzdXBwb3J0
-ZWQgKi8NCj4gPiDCoAlyYXBsX3JlZ2lzdGVyX3BzeXMoKTsNCj4gPiArDQo+ID4gKwlyZXQgPSBy
-ZWdpc3Rlcl9wbV9ub3RpZmllcigmcmFwbF9wbV9ub3RpZmllcik7DQo+ID4gKwlpZiAocmV0KQ0K
-PiA+ICsJCWdvdG8gZXJyX3VucmVnX2FsbDsNCj4gPiArDQo+ID4gwqAJcmV0dXJuIDA7DQo+ID4g
-wqANCj4gPiArZXJyX3VucmVnX2FsbDoNCj4gPiArCWNwdWhwX3JlbW92ZV9zdGF0ZShwY2FwX3Jh
-cGxfb25saW5lKTsNCj4gPiArDQo+ID4gwqBlcnJfdW5yZWc6DQo+ID4gwqAJcmFwbF91bnJlZ2lz
-dGVyX3Bvd2VyY2FwKCk7DQo+ID4gwqAJcmV0dXJuIHJldDsNCj4gPiBAQCAtMTU2OSw2ICsxNjY1
-LDcgQEAgc3RhdGljIGludCBfX2luaXQgcmFwbF9pbml0KHZvaWQpDQo+ID4gwqANCj4gPiDCoHN0
-YXRpYyB2b2lkIF9fZXhpdCByYXBsX2V4aXQodm9pZCkNCj4gPiDCoHsNCj4gPiArCXVucmVnaXN0
-ZXJfcG1fbm90aWZpZXIoJnJhcGxfcG1fbm90aWZpZXIpOw0KPiA+IMKgCWNwdWhwX3JlbW92ZV9z
-dGF0ZShwY2FwX3JhcGxfb25saW5lKTsNCj4gPiDCoAlyYXBsX3VucmVnaXN0ZXJfcG93ZXJjYXAo
-KTsNCj4gPiDCoH0NCg==
+Hi Rafael,
+
+On Wed, Jan 03, 2018 at 11:47:58PM +1100, Balbir Singh wrote:
+> On Wed, Jan 3, 2018 at 11:07 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > On Monday, December 18, 2017 9:38:20 AM CET Gautham R Shenoy wrote:
+> >> Hi Balbir,
+> >>
+> >> On Sun, Dec 17, 2017 at 02:15:25PM +1100, Balbir Singh wrote:
+> >> > On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
+> >> > <ego@linux.vnet.ibm.com> wrote:
+> >> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> >> > >
+> >> > > The code in powernv-cpufreq, makes the following two assumptions which
+> >> > > are not guaranteed by the device-tree bindings:
+> >> > >
+> >> > >     1) Pstate ids are continguous: This is used in pstate_to_idx() to
+> >> > >        obtain the reverse map from a pstate to it's corresponding
+> >> > >        entry into the cpufreq frequency table.
+> >> > >
+> >> > >     2) Every Pstate should always lie between the max and the min
+> >> > >        pstates that are explicitly reported in the device tree: This
+> >> > >        is used to determine whether a pstate reported by the PMSR is
+> >> > >        out of bounds.
+> >> > >
+> >> > > Both these assumptions are unwarranted and can change on future
+> >> > > platforms.
+> >> >
+> >> > While this is a good thing, I wonder if it is worth the complexity. Pstates
+> >> > are contiguous because they define transitions in incremental value
+> >> > of change in frequency and I can't see how this can be broken in the
+> >> > future?
+> >>
+> >> In the future, we can have the OPAL firmware give us a smaller set of
+> >> pstates instead of expose every one of them. As it stands today, for
+> >> most of the workloads, we will need at best 20-30 pstates and not
+> >> beyond that.
+> >
+> > I'm not sure about the status here.
+> >
+> > Is this good to go as is or is it going to be updated?
+> >
+> 
+> I have no major objections, except some of the added complexity, but
+> Gautham makes a point that this is refactoring for the future
+
+I have tested this across POWER8 and POWER9. The additional complexity
+introduced by the second patch is required for the future when we are
+going to reduce the number of pstates.
+
+
+> 
+> Balbir Singh.
+> 
+--
+Thanks and Regards
+gautham.
