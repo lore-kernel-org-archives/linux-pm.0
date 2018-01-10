@@ -1,74 +1,46 @@
-From: TimGuo <timguo@zhaoxin.com>
-Subject: (unknown)
-Date: Wed, 10 Jan 2018 18:27:59 +0800
-Message-ID: <1515580079-4035-1-git-send-email-timguo@zhaoxin.com>
+From: Quentin Perret <quentin.perret@arm.com>
+Subject: Re: [PATCH 1/2] PM / OPP: introduce an OPP power estimation helper
+Date: Wed, 10 Jan 2018 10:36:03 +0000
+Message-ID: <20180110103602.GB25543@e108498-lin.cambridge.arm.com>
+References: <20180109110252.13557-1-quentin.perret@arm.com>
+ <20180109110252.13557-2-quentin.perret@arm.com>
+ <20180110043625.GD3335@vireshk-i7>
+ <20180110102044.GA25543@e108498-lin.cambridge.arm.com>
+ <20180110102552.GD3626@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from zxshcas2.zhaoxin.com ([180.169.121.92]:13970 "EHLO
-        ZXSHCAS2.zhaoxin.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1751547AbeAJK2W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 05:28:22 -0500
-Subject: 
+Received: from foss.arm.com ([217.140.101.70]:39442 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753635AbeAJKgH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Jan 2018 05:36:07 -0500
+Content-Disposition: inline
+In-Reply-To: <20180110102552.GD3626@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, mingo@kernel.org, x86@kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: brucechang@via-alliance.com, cooperyan@zhaoxin.com, qiyuanwang@zhaoxin.com, benjaminpan@viatech.com, TimGuo <timguo@zhaoxin.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, edubezval@gmail.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com
 
->From 812522018b0f1d9501fbdda4018be9a6fc9c21bf Mon Sep 17 00:00:00 2001
-From: TimGuo <timguo@zhaoxin.com>
-Date: Wed, 10 Jan 2018 18:16:33 +0800
-Subject: [PATCH] x86/centaur: Mark TSC invariant
+On Wednesday 10 Jan 2018 at 15:55:52 (+0530), Viresh Kumar wrote:
+> On 10-01-18, 10:20, Quentin Perret wrote:
+> > So that was actually my first idea as well but I struggled to come up
+> > with a clean implementation TBH ...
+> > 
+> > My concern was mainly to get the dynamic-power-coefficient cleanly. With
+> > the approach you proposed, there are cases (for platforms using
+> > dev_pm_opp_add() such as Juno for ex) where I don't see how we can avoid
+> > to re-read the capacitance from the DT for each and every OPP that's being
+> > added. Or we have to rely on the driver to give it to us but that's against
+> > changes that you pushed recently I think.
+> > 
+> > Do you think reading the "dynamic-power-coefficient" value from the DT
+> > directly in dev_pm_add_opp() (and other places to support the v2 bindings)
+> > would be acceptable ? Did you have something different in mind ?
+> 
+> I think you can read it from within _of_init_opp_table() only once and then just
+> use it everywhere. Will that work ?
 
-Centaur CPU has a constant frequency TSC and that TSC
-does not stop in C-States. But because the flags are not set for that CPU
-the TSC is treated as non constant frequency and assumed to stop in
-C-States, which makes it an unreliable and unusable clock source.
-Setting those flags tells the kernel that the TSC is usable, so it will
-select it over HPET. The effect of this is that reading time stamps (from
-kernel or user space) will be faster and more efficient.
+Yes, that should definitely do the trick :) I'll do change in the v2.
 
-Signed-off-by: TimGuo <timguo@zhaoxin.com>
-Acked-by: tglx <tglx@linutronix.de>
----
- arch/x86/kernel/cpu/centaur.c | 4 ++++
- drivers/acpi/processor_idle.c | 1 +
- 2 files changed, 5 insertions(+)
-
-diff --git a/arch/x86/kernel/cpu/centaur.c b/arch/x86/kernel/cpu/centaur.c
-index 68bc6d9..c578cd2 100644
---- a/arch/x86/kernel/cpu/centaur.c
-+++ b/arch/x86/kernel/cpu/centaur.c
-@@ -106,6 +106,10 @@ static void early_init_centaur(struct cpuinfo_x86 *c)
- #ifdef CONFIG_X86_64
-        set_cpu_cap(c, X86_FEATURE_SYSENTER32);
- #endif
-+       if (c->x86_power & (1 << 8)) {
-+               set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
-+               set_cpu_cap(c, X86_FEATURE_NONSTOP_TSC);
-+       }
- }
-
- static void init_centaur(struct cpuinfo_x86 *c)
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index d50a7b6..5f0071c 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -207,6 +207,7 @@ static void tsc_check_state(int state)
-        switch (boot_cpu_data.x86_vendor) {
-        case X86_VENDOR_AMD:
-        case X86_VENDOR_INTEL:
-+       case X86_VENDOR_CENTAUR:
-                /*
-                 * AMD Fam10h TSC will tick in all
-                 * C/P/S0/S1 states when this bit is set.
---
-1.9.1
-
-
-
-保密声明：
-本邮件含有保密或专有信息，仅供指定收件人使用。严禁对本邮件或其内容做任何未经授权的查阅、使用、复制或转发。
-CONFIDENTIAL NOTE:
-This email contains confidential or legally privileged information and is for the sole use of its intended recipient. Any unauthorized review, use, copying or forwarding of this email or the content of this email is strictly prohibited.
+Thank you very much,
+Quentin
