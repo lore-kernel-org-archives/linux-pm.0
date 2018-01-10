@@ -1,56 +1,98 @@
 From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [PATCH 1/2] ACPI / PM: Use Low Power S0 Idle on more systems
-Date: Wed, 10 Jan 2018 23:25:00 +0100
-Message-ID: <CAJZ5v0gg8Pn8AU8auPMT+DYVoUK6TmsRUfK+E8RWfThbLPQ+PQ@mail.gmail.com>
-References: <4046497.JI7UjL75gC@aspire.rjw.lan> <12541194.33112yYDjW@aspire.rjw.lan>
- <1515590661.7000.855.camel@linux.intel.com>
+Subject: Re: [BUG] s2idle: Surface Pro 3 suspend/resume issues
+Date: Wed, 10 Jan 2018 23:30:59 +0100
+Message-ID: <CAJZ5v0jphuR-d+8Aerd2i42_cJoghR+3UjrO7AJsGv2K+MJSAQ@mail.gmail.com>
+References: <85be1584-5260-e7e1-2eda-23607f5a93c2@mrs.ro> <d1c1bab6e2b343abf9105a892dc06c49@mrs.ro>
+ <1515399224.2578.17.camel@intel.com> <f9aed3f0e77fc7d3f663fb913e1bb5aa@mrs.ro>
+ <CAJZ5v0hFc931y1bFWPUgc+Ybx+YnP0sget_1PXd=DLTogzHxyg@mail.gmail.com> <91bc90ae-62be-6871-05f6-3505e9bbd014@geekify.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-ot0-f193.google.com ([74.125.82.193]:33555 "EHLO
-        mail-ot0-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1751561AbeAJWZB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 17:25:01 -0500
-In-Reply-To: <1515590661.7000.855.camel@linux.intel.com>
+Received: from mail-ot0-f178.google.com ([74.125.82.178]:46692 "EHLO
+        mail-ot0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752432AbeAJWbA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 17:31:00 -0500
+Received: by mail-ot0-f178.google.com with SMTP id f6so500455oti.13
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 14:31:00 -0800 (PST)
+In-Reply-To: <91bc90ae-62be-6871-05f6-3505e9bbd014@geekify.de>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Valentin Manea <valy@mrs.ro>
+To: Nick Singer <nick.singer@geekify.de>
+Cc: Valentin Manea <linux-pm@mrs.ro>, "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On Wed, Jan 10, 2018 at 2:24 PM, Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> wrote:
-> On Wed, 2018-01-10 at 13:26 +0100, Rafael J. Wysocki wrote:
->> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->>
->> Some systems don't support the ACPI_LPS0_ENTRY and ACPI_LPS0_EXIT
->> functions in their Low Power S0 Idle _DSM, but still expect EC
->> events to be processed in the suspend-to-idle state for power button
->> wakeup (among other things) to work.  Surface Pro3 turns out to be
->> one of them.
->>
->> Fortunately, it still provides Low Power S0 Idle _DSM with the screen
->> on/off functions supported, so modify the ACPI suspend-to-idle to use
->> the Low Power S0 Idle code path for all systems supporting the
->> ACPI_LPS0_ENTRY and ACPI_LPS0_EXIT or the ACPI_LPS0_SCREEN_OFF and
->> ACPI_LPS0_SCREEN_ON functions in their Low Power S0 Idle _DSM.
->>
->> Potentially, that will cause more systems to use suspend-to-idle by
->> default, so some future corrections may be necessary if it leads
->> to issues, but let it remain more straightforward for now.
->
->> -#define ACPI_S2IDLE_FUNC_MASK        ((1 << ACPI_LPS0_ENTRY) | (1 <<
->> ACPI_LPS0_EXIT))
->> +#define ACPI_LPS0_SCREEN_MASK        ((1 << ACPI_LPS0_SCREEN_OFF) |
->> (1 << ACPI_LPS0_SCREEN_ON))
->
->> +#define ACPI_LPS0_S2I_MASK   ((1 << ACPI_LPS0_ENTRY) | (1 <<
->> ACPI_LPS0_EXIT))
->
-> Just a nitpick: Can we leave S2IDLE instead of S2I?
-> Would it make sense for potential code readers?
+On Wed, Jan 10, 2018 at 6:03 PM, Nick Singer <nick.singer@geekify.de> wrote:
+> On 01/08/18 12:03, Rafael J. Wysocki wrote:
+>> On Mon, Jan 8, 2018 at 9:21 AM, Valentin Manea <linux-pm@mrs.ro> wrote:
+>>>
+>>> On 2018-01-08 08:13, Zhang Rui wrote:
+>>>>
+>>>> On Mon, 2018-01-08 at 07:55 +0000, Valentin Manea wrote:
+>>>>>
+>>>>> Again with correct linux-pm
+>>>>>
+>>>>> Hi,
+>>>>>
+>>>>>    Somewhere between 4.12 and 4.13 the s2idle doesn't work anymore on
+>>>>> the
+>>>>> Surface Pro 3.
+>>>>
+>>>>
+>>>> will you please be more specific about the symptom?
+>>>> what command do you use to do s2idle, and how do you wake it up?
+>>>
+>>>
+>>> Sure, sorry for not being more specific. I tried both the DE(KDE) suspend
+>>> functionality but also:
+>>> echo memory  > /sys/power/state
+>>> and the behaviour is the same: display goes dark, system is not responding -
+>>> the power button which previously wakes up the system doesn't work anymore.
+>>> It needs a hard reset from this point
 
-I wanted it to be shorter, but if that is a problem, I'd rather call
-it PLATFORM than S2IDLE (as technically they are related to the
-low-power mode of the platform).
+> I've a pretty similar behavior since kernel >4.7 on my ThinkPad t450s.
 
-I'll send an update shortly.
+This is a different bug and you are probably not talking about suspend-to-idle.
+
+>>> The home button has a slight vibration when device is fully running, in this
+>>> state the vibration doesn't happen at all so I suppose it went through some
+>>> sleep stages.
+
+> On my machine, the lights and the fan turn back on, power-button still
+> indicates a sleep by a build-in, blinking led.
+
+But is this suspend-to-idle or suspend-to-RAM?
+
+>>> For reference I tried with iommu=off booting because of another bug that
+>>> made the rounds but that never helped. The problem seems to be in the 3
+>>> patches I mentioned in my top email
+
+> I haven't been able to pin-point any patch down so haven't tested the 3
+> mentioned patches.
+
+They probably won't help.
+
+Anyway, please open a new BZ entry for this at bugzilla.kernel.org in
+the suspend/hibernation category (you can assign it to
+rjw@rjwysocki.net).  We'll track it in there.
+
+>
+>> I think what happens is that the events from the power button are
+>> treated as spurious now.
+>>
+>> The easiest way to debug this would be to find an alternative wakeup
+>> device and then see what happens with the button wakeup.
+>>
+>> Please open a BZ entry for this at bugzilla.kernel.org (in the
+>> suspend/hibernation category) and add rjw@rjwysocki.net to the CC list
+>> in it.  I'll get back to you then.
+
+> Could you please reference the bug here if you intend to create one? I'd
+> like to check the suggested debugging mechanisms suggested to you also
+> on my machine. I'm assuming it could be a related issue (since the
+> symptoms are so similar).
+
+That's kernel BZ #198389, but honestly I don't think it's the same
+issue.  The symptoms may be similar, but the underlying issue is
+likely different.
+
+Thanks,
+Rafael
