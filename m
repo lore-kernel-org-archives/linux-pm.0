@@ -1,45 +1,50 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 2/2] cpufreq: intel_pstate: Add Skylake servers support
-Date: Wed, 10 Jan 2018 11:38:52 -0800
-Message-ID: <20180110193852.63667-2-srinivas.pandruvada@linux.intel.com>
-References: <20180110193852.63667-1-srinivas.pandruvada@linux.intel.com>
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180110193852.63667-1-srinivas.pandruvada@linux.intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: lenb@kernel.org, rjw@rjwysocki.net
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Subject: [PATCH] thermal: int3400_thermal: Ignore charger events
+Date: Wed, 10 Jan 2018 20:59:49 +0100
+Message-ID: <20180110195949.27535-1-hdegoede@redhat.com>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mx1.redhat.com ([209.132.183.28]:50128 "EHLO mx1.redhat.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1751152AbeAJT7w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Jan 2018 14:59:52 -0500
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Zhang Rui <rui.zhang@intel.com>, Eduardo Valentin <edubezval@gmail.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-pm@vger.kernel.org
 
-Currently intel_pstate can function only in HWP mode on Skylake servers.
-When HWP feature is not enabled on the processor then acpi-cpufreq is
-driver is used.
+Ignore events of type 0x86 which are fired of when plugging in / out the
+charger, judging from both observed behavior and the AML code on an Asus
+T100HA.
 
-Based on the power and performance tests using intel_pstate scaling
-algorithm the results are comparable. But intel_pstate brings in
-additional features:
-- Display of turbo frequency range, which many users like to see
-- Place limits in the turbo frequency range when platform allows
+This silences these kernel errors on the T100HA:
+[   86.599918] acpi INT3400:00: Unsupported event [0x86]
+[  120.133024] acpi INT3400:00: Unsupported event [0x86]
 
-Since these tests are done only using non PID algorithm introduced in
-kernel version 4.14, this patch is not a backport candidate. So each user
-has to carefully weigh the benefits before he backports.
-
-Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/cpufreq/intel_pstate.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/thermal/int340x_thermal/int3400_thermal.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 3b6616b15c59..7edf7a0e5a96 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -1620,6 +1620,7 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
- 	ICPU(INTEL_FAM6_XEON_PHI_KNM,		knl_funcs),
- 	ICPU(INTEL_FAM6_ATOM_GOLDMONT,		core_funcs),
- 	ICPU(INTEL_FAM6_ATOM_GEMINI_LAKE,       core_funcs),
-+	ICPU(INTEL_FAM6_SKYLAKE_X,		core_funcs),
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
+diff --git a/drivers/thermal/int340x_thermal/int3400_thermal.c b/drivers/thermal/int340x_thermal/int3400_thermal.c
+index 8ee38f55c7f3..e92e7a2b401a 100644
+--- a/drivers/thermal/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/int340x_thermal/int3400_thermal.c
+@@ -17,6 +17,7 @@
+ #include "acpi_thermal_rel.h"
+ 
+ #define INT3400_THERMAL_TABLE_CHANGED 0x83
++#define INT3400_CHARGER_EVENT         0x86
+ 
+ enum int3400_thermal_uuid {
+ 	INT3400_THERMAL_PASSIVE_1,
+@@ -210,6 +211,8 @@ static void int3400_notify(acpi_handle handle,
+ 		kobject_uevent_env(&priv->thermal->device.kobj, KOBJ_CHANGE,
+ 				thermal_prop);
+ 		break;
++	case INT3400_CHARGER_EVENT:
++		break;
+ 	default:
+ 		dev_err(&priv->adev->dev, "Unsupported event [0x%x]\n", event);
+ 		break;
 -- 
-2.13.6
+2.14.3
