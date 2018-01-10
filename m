@@ -1,68 +1,89 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: [PATCH 2/2] platform/x86: surfacepro3: Support for wakeup from
- suspend-to-idle
-Date: Wed, 10 Jan 2018 15:26:56 +0200
-Message-ID: <1515590816.7000.857.camel@linux.intel.com>
-References: <4046497.JI7UjL75gC@aspire.rjw.lan>
-         <6492549.QWquAG8VGe@aspire.rjw.lan>
+From: Ulf Hansson <ulf.hansson@linaro.org>
+Subject: Re: [pm:bleeding-edge 148/162] drivers/base/power/wakeup.c:271:
+ undefined reference to `pm_suspend_target_state'
+Date: Wed, 10 Jan 2018 15:08:02 +0100
+Message-ID: <CAPDyKFpcwXjW6qs9OpGc8J3byFrtO1OcJzO-fVpocmSu6RraWw@mail.gmail.com>
+References: <201801101147.W1FX9kS5%fengguang.wu@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-acpi-owner@vger.kernel.org>
-In-Reply-To: <6492549.QWquAG8VGe@aspire.rjw.lan>
-Sender: linux-acpi-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Linux ACPI <linux-acpi@vger.kernel.org>
-Cc: Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Valentin Manea <valy@mrs.ro>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-io0-f196.google.com ([209.85.223.196]:45327 "EHLO
+        mail-io0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752108AbeAJOID (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 09:08:03 -0500
+Received: by mail-io0-f196.google.com with SMTP id e20so22528173iof.12
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 06:08:03 -0800 (PST)
+In-Reply-To: <201801101147.W1FX9kS5%fengguang.wu@intel.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Linux PM <linux-pm@vger.kernel.org>
 
-On Wed, 2018-01-10 at 13:26 +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> Modify surface_button_notify() to make it wake up the system from
-> suspend-to-idle (by reporting "hard" wakeup events while suspended)
-> and add wakeup initialization to surface_button_add() for wakeup
-> events reported by this driver to work at all.
-> 
-> Link: https://bugzilla.kernel.org/show_bug.cgi?id=198389
-> Reported-by: Valentin Manea <valy@mrs.ro>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Rafael,
 
-Change seems sane to me.
+On 10 January 2018 at 04:26, kbuild test robot <fengguang.wu@intel.com> wrote:
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git bleeding-edge
+> head:   b6c524b2e93b23a396a90031faa29350beeb95fc
+> commit: edd0afcd2eb853ee46a1509a1983b042a6b857f4 [148/162] PM / wakeup: Print warn if device gets enabled as wakeup source during sleep
+> config: i386-randconfig-s0-201801 (attached as .config)
+> compiler: gcc-6 (Debian 6.4.0-9) 6.4.0 20171026
+> reproduce:
+>         git checkout edd0afcd2eb853ee46a1509a1983b042a6b857f4
+>         # save the attached .config to linux build tree
+>         make ARCH=i386
+>
+> All errors (new ones prefixed by >>):
+>
+>    drivers/base/power/wakeup.o: In function `device_wakeup_enable':
+>>> drivers/base/power/wakeup.c:271: undefined reference to `pm_suspend_target_state'
 
-Acked-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+This error is because the .config has CONFIG_SUSPEND unset while
+CONFIG_PM_SLEEP is set.
 
-(in case you would like to push it through PM tree, otherwise I can take
-it)
+Adding below to drivers/base/power/wakeup.c fixes it, but perhaps
+there is a better option?
 
+#ifndef CONFIG_SUSPEND
+suspend_state_t pm_suspend_target_state;
+#endif
+
+Kind regards
+Uffe
+
+>
+> vim +271 drivers/base/power/wakeup.c
+>
+>    256
+>    257  /**
+>    258   * device_wakeup_enable - Enable given device to be a wakeup source.
+>    259   * @dev: Device to handle.
+>    260   *
+>    261   * Create a wakeup source object, register it and attach it to @dev.
+>    262   */
+>    263  int device_wakeup_enable(struct device *dev)
+>    264  {
+>    265          struct wakeup_source *ws;
+>    266          int ret;
+>    267
+>    268          if (!dev || !dev->power.can_wakeup)
+>    269                  return -EINVAL;
+>    270
+>  > 271          if (pm_suspend_target_state != PM_SUSPEND_ON)
+>    272                  dev_dbg(dev, "Suspicious %s() during system transition\n", __func__);
+>    273
+>    274          ws = wakeup_source_register(dev_name(dev));
+>    275          if (!ws)
+>    276                  return -ENOMEM;
+>    277
+>    278          ret = device_wakeup_attach(dev, ws);
+>    279          if (ret)
+>    280                  wakeup_source_unregister(ws);
+>    281
+>    282          return ret;
+>    283  }
+>    284  EXPORT_SYMBOL_GPL(device_wakeup_enable);
+>    285
+>
 > ---
->  drivers/platform/x86/surfacepro3_button.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> Index: linux-pm/drivers/platform/x86/surfacepro3_button.c
-> ===================================================================
-> --- linux-pm.orig/drivers/platform/x86/surfacepro3_button.c
-> +++ linux-pm/drivers/platform/x86/surfacepro3_button.c
-> @@ -119,7 +119,7 @@ static void surface_button_notify(struct
->  	if (key_code == KEY_RESERVED)
->  		return;
->  	if (pressed)
-> -		pm_wakeup_event(&device->dev, 0);
-> +		pm_wakeup_dev_event(&device->dev, 0, button-
-> >suspended);
->  	if (button->suspended)
->  		return;
->  	input_report_key(input, key_code, pressed?1:0);
-> @@ -185,6 +185,8 @@ static int surface_button_add(struct acp
->  	error = input_register_device(input);
->  	if (error)
->  		goto err_free_input;
-> +
-> +	device_init_wakeup(&device->dev, true);
->  	dev_info(&device->dev,
->  			"%s [%s]\n", name, acpi_device_bid(device));
->  	return 0;
-> 
-
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
