@@ -1,77 +1,66 @@
-From: Nick Singer <nick.singer@geekify.de>
-Subject: Re: [BUG] s2idle: Surface Pro 3 suspend/resume issues
-Date: Wed, 10 Jan 2018 18:03:24 +0100
-Message-ID: <91bc90ae-62be-6871-05f6-3505e9bbd014@geekify.de>
-References: <85be1584-5260-e7e1-2eda-23607f5a93c2@mrs.ro>
- <d1c1bab6e2b343abf9105a892dc06c49@mrs.ro>
- <1515399224.2578.17.camel@intel.com>
- <f9aed3f0e77fc7d3f663fb913e1bb5aa@mrs.ro>
- <CAJZ5v0hFc931y1bFWPUgc+Ybx+YnP0sget_1PXd=DLTogzHxyg@mail.gmail.com>
+From: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+Subject: Re: [PATCH V5 0/7] Add loadable kernel module and power management
+ support
+Date: Wed, 10 Jan 2018 17:15:21 +0000
+Message-ID: <20180110171521.GA26960@e107981-ln.cambridge.arm.com>
+References: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from geekify.de ([188.68.48.219]:38038 "EHLO mail.geekify.de"
+Received: from foss.arm.com ([217.140.101.70]:46232 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S965536AbeAJRNC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 10 Jan 2018 12:13:02 -0500
-In-Reply-To: <CAJZ5v0hFc931y1bFWPUgc+Ybx+YnP0sget_1PXd=DLTogzHxyg@mail.gmail.com>
-Content-Language: en-US
+        id S965932AbeAJRP3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Jan 2018 12:15:29 -0500
+Content-Disposition: inline
+In-Reply-To: <1515489577-2197-1-git-send-email-mmaddireddy@nvidia.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Valentin Manea <linux-pm@mrs.ro>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+To: Manikanta Maddireddy <mmaddireddy@nvidia.com>
+Cc: thierry.reding@gmail.com, bhelgaas@google.com, cyndis@kapsi.fi, jonathanh@nvidia.com, robh+dt@kernel.org, frowand.list@gmail.com, rjw@rjwysocki.net, tglx@linutronix.de, vidyas@nvidia.com, kthota@nvidia.com, linux-tegra@vger.kernel.org, devicetree@vger.kernel.org, linux-pci@vger.kernel.org, linux-pm@vger.kernel.org
 
-On 01/08/18 12:03, Rafael J. Wysocki wrote:
-> On Mon, Jan 8, 2018 at 9:21 AM, Valentin Manea <linux-pm@mrs.ro> wrote:
->>
->> On 2018-01-08 08:13, Zhang Rui wrote:
->>>
->>> On Mon, 2018-01-08 at 07:55 +0000, Valentin Manea wrote:
->>>>
->>>> Again with correct linux-pm
->>>>
->>>> Hi,
->>>>
->>>>    Somewhere between 4.12 and 4.13 the s2idle doesn't work anymore on
->>>> the
->>>> Surface Pro 3.
->>>
->>>
->>> will you please be more specific about the symptom?
->>> what command do you use to do s2idle, and how do you wake it up?
->>
->>
->> Sure, sorry for not being more specific. I tried both the DE(KDE) suspend
->> functionality but also:
->> echo memory  > /sys/power/state
->> and the behaviour is the same: display goes dark, system is not responding -
->> the power button which previously wakes up the system doesn't work anymore.
->> It needs a hard reset from this point
-I've a pretty similar behavior since kernel >4.7 on my ThinkPad t450s.
-
->> The home button has a slight vibration when device is fully running, in this
->> state the vibration doesn't happen at all so I suppose it went through some
->> sleep stages.
-On my machine, the lights and the fan turn back on, power-button still
-indicates a sleep by a build-in, blinking led.
-
->> For reference I tried with iommu=off booting because of another bug that
->> made the rounds but that never helped. The problem seems to be in the 3
->> patches I mentioned in my top email
-I haven't been able to pin-point any patch down so haven't tested the 3
-mentioned patches.
-
-> I think what happens is that the events from the power button are
-> treated as spurious now.
+On Tue, Jan 09, 2018 at 02:49:30PM +0530, Manikanta Maddireddy wrote:
+> This series of patches adds loadable kernel module and power management
+> support to Tegra PCIe host controller driver. irq_set_msi_desc() and
+> tegra_cpuidle_pcie_irqs_in_use() symbols will be taken care in next
+> set of patches.
 > 
-> The easiest way to debug this would be to find an alternative wakeup
-> device and then see what happens with the button wakeup.
+> These patches are tested on Jetson TK1, TX1 and TX2 platforms, following
+> are the verification details.
+> 	- Multiple module insert & remove
+> 	- PCIe device functionality after module insert
+> 	- Free clock, resets, regulators, powergate, iomem and interrupt
+> 	resources after module remove
+> 	- PCIe device functionality after resume from RAM
 > 
-> Please open a BZ entry for this at bugzilla.kernel.org (in the
-> suspend/hibernation category) and add rjw@rjwysocki.net to the CC list
-> in it.  I'll get back to you then.
-Could you please reference the bug here if you intend to create one? I'd
-like to check the suggested debugging mechanisms suggested to you also
-on my machine. I'm assuming it could be a related issue (since the
-symptoms are so similar).
+> V2: PM QoS fix is dropped in V2 from this series because the fix is
+> incorporated in latest 'commit 0759e80b84e3 ("PM / QoS: Fix device resume
+> latency framework")'. Update commit message of few patches in V2.
+> 
+> V3: Patches to export irq_set_msi_desc() and tegra_cpuidle_pcie_irqs_in_use()
+> are dropped based on review comments. These symbols will be addressed in next
+> series. Took care of few other review comments.
+> 
+> V4: Dropped pci_find_host_bridge() export patch and added new patch to use
+> bus->sysdata for private data.
+> 
+> V5: Decouple from https://patchwork.ozlabs.org/patch/832053/ and rebase
+> on top of linux-next
+> 
+> Manikanta Maddireddy (7):
+>   of: Export of_pci_range_to_resource()
+>   PCI: tegra: Use bus->sysdata to store and get host private data
+>   PCI: tegra: Remove PCI_REASSIGN_ALL_BUS flag for Tegra PCIe
+>   PCI: tegra: Free resources on probe failure
+>   PCI: tegra: Add loadable kernel module support
+>   PCI: tegra: Broadcast PME_Turn_Off message before link goes to L2
+>   PCI: tegra: Add power management support
+> 
+>  drivers/of/address.c         |   1 +
+>  drivers/pci/host/Kconfig     |   2 +-
+>  drivers/pci/host/pci-tegra.c | 333 ++++++++++++++++++++++++++++++++-----------
+>  3 files changed, 253 insertions(+), 83 deletions(-)
+
+Can I ask you please to rebase this series against my pci/tegra branch ?
+
+Thanks,
+Lorenzo
