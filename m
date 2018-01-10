@@ -1,52 +1,77 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 2/2] cpufreq: scpi: remove arm_big_little dependency
-Date: Wed, 10 Jan 2018 16:45:26 +0000
-Message-ID: <2621899b-4c0b-e78d-5432-1993a3d295f1@arm.com>
-References: <1515516568-31359-1-git-send-email-sudeep.holla@arm.com>
- <1515516568-31359-3-git-send-email-sudeep.holla@arm.com>
- <20180110144631.GE3626@vireshk-i7>
+From: Nick Singer <nick.singer@geekify.de>
+Subject: Re: [BUG] s2idle: Surface Pro 3 suspend/resume issues
+Date: Wed, 10 Jan 2018 18:03:24 +0100
+Message-ID: <91bc90ae-62be-6871-05f6-3505e9bbd014@geekify.de>
+References: <85be1584-5260-e7e1-2eda-23607f5a93c2@mrs.ro>
+ <d1c1bab6e2b343abf9105a892dc06c49@mrs.ro>
+ <1515399224.2578.17.camel@intel.com>
+ <f9aed3f0e77fc7d3f663fb913e1bb5aa@mrs.ro>
+ <CAJZ5v0hFc931y1bFWPUgc+Ybx+YnP0sget_1PXd=DLTogzHxyg@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180110144631.GE3626@vireshk-i7>
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from geekify.de ([188.68.48.219]:38038 "EHLO mail.geekify.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S965536AbeAJRNC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Jan 2018 12:13:02 -0500
+In-Reply-To: <CAJZ5v0hFc931y1bFWPUgc+Ybx+YnP0sget_1PXd=DLTogzHxyg@mail.gmail.com>
 Content-Language: en-US
-Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jeremy Linton <jeremy.linton@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Valentin Manea <linux-pm@mrs.ro>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Linux PM <linux-pm@vger.kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
+On 01/08/18 12:03, Rafael J. Wysocki wrote:
+> On Mon, Jan 8, 2018 at 9:21 AM, Valentin Manea <linux-pm@mrs.ro> wrote:
+>>
+>> On 2018-01-08 08:13, Zhang Rui wrote:
+>>>
+>>> On Mon, 2018-01-08 at 07:55 +0000, Valentin Manea wrote:
+>>>>
+>>>> Again with correct linux-pm
+>>>>
+>>>> Hi,
+>>>>
+>>>>    Somewhere between 4.12 and 4.13 the s2idle doesn't work anymore on
+>>>> the
+>>>> Surface Pro 3.
+>>>
+>>>
+>>> will you please be more specific about the symptom?
+>>> what command do you use to do s2idle, and how do you wake it up?
+>>
+>>
+>> Sure, sorry for not being more specific. I tried both the DE(KDE) suspend
+>> functionality but also:
+>> echo memory  > /sys/power/state
+>> and the behaviour is the same: display goes dark, system is not responding -
+>> the power button which previously wakes up the system doesn't work anymore.
+>> It needs a hard reset from this point
+I've a pretty similar behavior since kernel >4.7 on my ThinkPad t450s.
 
+>> The home button has a slight vibration when device is fully running, in this
+>> state the vibration doesn't happen at all so I suppose it went through some
+>> sleep stages.
+On my machine, the lights and the fan turn back on, power-button still
+indicates a sleep by a build-in, blinking led.
 
-On 10/01/18 14:46, Viresh Kumar wrote:
-> On 09-01-18, 16:49, Sudeep Holla wrote:
->> The dependency on physical_package_id from the topology to get the
->> cluster identifier is wrong. The concept of cluster used in ARM topology
->> is unfortunately not well defined in the architecture, we should avoid
->> using it. Further the frequency domain need not be mapped to so called
->> "clusters" one to one.
->>
->> SCPI already provides means to obtain the frequency domain id from the
->> device tree. In order to support some new topologies(e.g. DSU which
->> contains 2 frequency domains within the physical cluster), pseudo
->> clusters are created to make this driver work which is wrong again.
->>
->> In order to solve those issues and also remove dependency of topological
->> physical id for frequency domain, this patch removes the arm_big_little
->> dependency from scpi driver.
->>
->> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
->> Cc: Viresh Kumar <viresh.kumar@linaro.org>
->> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
->> ---
->>  drivers/cpufreq/scpi-cpufreq.c | 193 +++++++++++++++++++++++++++++++++++++----
->>  1 file changed, 178 insertions(+), 15 deletions(-)
+>> For reference I tried with iommu=off booting because of another bug that
+>> made the rounds but that never helped. The problem seems to be in the 3
+>> patches I mentioned in my top email
+I haven't been able to pin-point any patch down so haven't tested the 3
+mentioned patches.
+
+> I think what happens is that the events from the power button are
+> treated as spurious now.
 > 
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+> The easiest way to debug this would be to find an alternative wakeup
+> device and then see what happens with the button wakeup.
 > 
-
-Thanks :)
-
--- 
-Regards,
-Sudeep
+> Please open a BZ entry for this at bugzilla.kernel.org (in the
+> suspend/hibernation category) and add rjw@rjwysocki.net to the CC list
+> in it.  I'll get back to you then.
+Could you please reference the bug here if you intend to create one? I'd
+like to check the suggested debugging mechanisms suggested to you also
+on my machine. I'm assuming it could be a related issue (since the
+symptoms are so similar).
