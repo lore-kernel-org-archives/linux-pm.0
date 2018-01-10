@@ -1,116 +1,47 @@
-From: "Tim Guo(BJ-RD)" <TimGuo@zhaoxin.com>
-Subject: =?utf-8?B?562U5aSNOiBbUEFUQ0hdIHg4Ni9hY3BpL2NzdGF0ZSBkZWxldGUgc29tZSB1?=
- =?utf-8?Q?nuseful_operations?=
-Date: Wed, 10 Jan 2018 03:47:16 +0000
-Message-ID: <31343a0429e544a3823c469d66004837@zhaoxin.com>
-References: <1513943704-4117-1-git-send-email-timguo@zhaoxin.com>
- <2688053.9MAEhVZnSn@aspire.rjw.lan>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [BUG] schedutil governor produces regular max freq spikes
+ because of lockup detector watchdog threads
+Date: Wed, 10 Jan 2018 09:38:29 +0530
+Message-ID: <20180110040829.GB3335@vireshk-i7>
+References: <1515184652.6892.26.camel@nxp.com>
+ <CAJZ5v0gOwgr2yB_YY8ian6GXjdic3zRUa4S9vHNmudC8Khc5cA@mail.gmail.com>
+ <20180108040121.GB4003@vireshk-i7>
+ <1515417622.3207.5.camel@nxp.com>
+ <20180108151450.GA30937@e110439-lin>
+ <1515426694.3207.28.camel@nxp.com>
+ <CAJZ5v0hnY+2pL0LGAeQv7xZcYN42+_azKH9cGGLvPU1iO6fmWg@mail.gmail.com>
+ <1515508985.3310.8.camel@nxp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from zxshcas2.zhaoxin.com ([180.169.121.92]:33719 "EHLO
-        ZXSHCAS2.zhaoxin.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S965127AbeAJDro (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 22:47:44 -0500
-In-Reply-To: <2688053.9MAEhVZnSn@aspire.rjw.lan>
-Content-Language: zh-CN
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1515508985.3310.8.camel@nxp.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Patrick Bellasi <patrick.bellasi@arm.com>, Linux PM <linux-pm@vger.kernel.org>, Anson Huang <anson.huang@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Juri Lelli <juri.lelli@redhat.com>, Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: "tglx@linutronix.de" <tglx@linutronix.de>, "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>, "mingo@kernel.org" <mingo@kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Bruce Chang (VAS)" <BruceChang@via-alliance.com>, "Cooper Yan(BJ-RD)" <CooperYan@zhaoxin.com>, "Qiyuan Wang(BJ-RD)" <QiyuanWang@zhaoxin.com>, Benjamin Pan <BenjaminPan@viatech.com>
 
-RGVhciBSYWZhZWwsDQpTb3JyeSB0byBtaXNzIHRoaXMgbWFpbC4NCkkgdW5kZXJzdG9vZCB0aGF0
-IGl0IHdhcyBub3QgbmVjZXNzYXJ5IHRvIGRpc2FibGUgYnVzIG1hc3RlciBhcmJpdHJhdGlvbiBv
-biBDMyBlbnRyeSBmb3IgQ2VudGF1ciBDUFVzLCB3aGljaCBpcyB3aHkgeW91IGNsZWFyIGJtX2Nv
-bnRyb2wsIHJpZ2h0Pw0KW0NvbW1lbnQgYnkgVGltXSBZZXMuDQoNCkFuZCB0aGUgZ29hbCBpcyB0
-byByZWR1Y2UgdGhlIEMzIGxhdGVuY3ksIGJ1dCBJJ20gbm90IHN1cmUgYWJvdXQgdGhlIGNhY2hl
-IGZsdXNoaW5nIHBhcnQuICBEbyB5b3Ugd2FudCB0byBzYXkgdGhhdCBkaXNhYmxpbmcgYnVzIG1h
-c3RlciBhcmJpdHJhdGlvbiBjYXVzZXMgdGhlIENQVSBjYWNoZXMgdG8gYmUgZmx1c2hlZCB3aGlj
-aCBpcyB0aW1lLWNvbnN1bWluZyBhbmQgc2hvdWxkIGJldHRlciBiZSBhdm9pZGVkIGlmIG5vdCBu
-ZWNlc3Nhcnk/DQpbQ29tbWVudCBieSBUaW1dIExldCdzIHNlZSBhY3BpX2lkbGVfZW50ZXIoKSBm
-dW5jdGlvbi4gV2hlbiBlbnRlcmluZyBDMyB0eXBlIHN0YXRlLCBhbmQgd2hlbiBubyBibV9zdGF0
-dXMgaGFzIGJlZW4gZGV0ZWN0ZWQsIHdpbGwgZXhlY3V0ZSBhY3BpX2lkbGVfZW50ZXJfYm0oKSBm
-dW5jdGlvbiB3aGVuIHNldHRpbmcgZmxhZ3MuYm1fY2hlY2sgd2l0aCAxLiBJbiBhY3BpX2lkbGVf
-ZW50ZXJfYm0oKSBmdW5jdGlvbiwgd2lsbCBub3QgZXhlY3V0ZSBBQ1BJX0ZMVVNIX0NQVV9DQUNI
-RSgpLiBBQ1BJX0ZMVVNIX0NQVV9DQUNIRSBuZWVkIGxvbmcgdGltZSB0byBjb21wbGV0ZS4gQWN0
-dWFsbHksIHRoaXMgc29mdHdhcmUgb3BlcmF0aW9uIGZvciBjZW50YXVyIENQVSBpcyBub3QgbmVj
-ZXNzYXJ5LkJlY2F1c2UgdGhlIGNhY2hlIGZsdXNoIG9wZXJhdGlvbiB3aWxsIGJlIGV4ZWN1dGVk
-IGJ5IENQVSBtaWNyb2NvZGUgYXV0b21hdGljYWxseS4NCg0Kc3RhdGljIGludCBhY3BpX2lkbGVf
-ZW50ZXIoc3RydWN0IGNwdWlkbGVfZGV2aWNlICpkZXYsDQogICBzdHJ1Y3QgY3B1aWRsZV9kcml2
-ZXIgKmRydiwgaW50IGluZGV4KQ0Kew0Kc3RydWN0IGFjcGlfcHJvY2Vzc29yX2N4ICpjeCA9IHBl
-cl9jcHUoYWNwaV9jc3RhdGVbaW5kZXhdLCBkZXYtPmNwdSk7DQpzdHJ1Y3QgYWNwaV9wcm9jZXNz
-b3IgKnByOw0KDQpwciA9IF9fdGhpc19jcHVfcmVhZChwcm9jZXNzb3JzKTsNCmlmICh1bmxpa2Vs
-eSghcHIpKQ0KcmV0dXJuIC1FSU5WQUw7DQoNCmlmIChjeC0+dHlwZSAhPSBBQ1BJX1NUQVRFX0Mx
-KSB7DQppZiAoYWNwaV9pZGxlX2ZhbGxiYWNrX3RvX2MxKHByKSAmJiBudW1fb25saW5lX2NwdXMo
-KSA+IDEpIHsNCmluZGV4ID0gQUNQSV9JRExFX1NUQVRFX1NUQVJUOw0KY3ggPSBwZXJfY3B1KGFj
-cGlfY3N0YXRlW2luZGV4XSwgZGV2LT5jcHUpOw0KfSBlbHNlIGlmIChjeC0+dHlwZSA9PSBBQ1BJ
-X1NUQVRFX0MzICYmIHByLT5mbGFncy5ibV9jaGVjaykgew0KaWYgKGN4LT5ibV9zdHNfc2tpcCB8
-fCAhYWNwaV9pZGxlX2JtX2NoZWNrKCkpIHsNCmFjcGlfaWRsZV9lbnRlcl9ibShwciwgY3gsIHRy
-dWUpOw0KcmV0dXJuIGluZGV4Ow0KfSBlbHNlIGlmIChkcnYtPnNhZmVfc3RhdGVfaW5kZXggPj0g
-MCkgew0KaW5kZXggPSBkcnYtPnNhZmVfc3RhdGVfaW5kZXg7DQpjeCA9IHBlcl9jcHUoYWNwaV9j
-c3RhdGVbaW5kZXhdLCBkZXYtPmNwdSk7DQp9IGVsc2Ugew0KYWNwaV9zYWZlX2hhbHQoKTsNCnJl
-dHVybiAtRUJVU1k7DQp9DQp9DQp9DQoNCmxhcGljX3RpbWVyX3N0YXRlX2Jyb2FkY2FzdChwciwg
-Y3gsIDEpOw0KDQppZiAoY3gtPnR5cGUgPT0gQUNQSV9TVEFURV9DMykNCkFDUElfRkxVU0hfQ1BV
-X0NBQ0hFKCk7DQoNCmFjcGlfaWRsZV9kb19lbnRyeShjeCk7DQoNCmxhcGljX3RpbWVyX3N0YXRl
-X2Jyb2FkY2FzdChwciwgY3gsIDApOw0KDQpyZXR1cm4gaW5kZXg7DQp9DQoNClRoYW5rIHlvdS4N
-Cg0KVGltDQoNCi0tLS0t6YKu5Lu25Y6f5Lu2LS0tLS0NCuWPkeS7tuS6ujogUmFmYWVsIEouIFd5
-c29ja2kgW21haWx0bzpyandAcmp3eXNvY2tpLm5ldF0NCuWPkemAgeaXtumXtDogMjAxOOW5tDHm
-nIg15pelIDIxOjI5DQrmlLbku7bkuro6IFRpbSBHdW8oQkotUkQpIDxUaW1HdW9Aemhhb3hpbi5j
-b20+DQrmioTpgIE6IHRnbHhAbGludXRyb25peC5kZTsgbWluZ29AcmVkaGF0LmNvbTsgaHBhQHp5
-dG9yLmNvbTsgbWluZ29Aa2VybmVsLm9yZzsgeDg2QGtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIu
-a2VybmVsLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgQnJ1Y2UgQ2hhbmcgKFZB
-UykgPEJydWNlQ2hhbmdAdmlhLWFsbGlhbmNlLmNvbT47IENvb3BlciBZYW4oQkotUkQpIDxDb29w
-ZXJZYW5Aemhhb3hpbi5jb20+OyBRaXl1YW4gV2FuZyhCSi1SRCkgPFFpeXVhbldhbmdAemhhb3hp
-bi5jb20+OyBCZW5qYW1pbiBQYW4gPEJlbmphbWluUGFuQHZpYXRlY2guY29tPg0K5Li76aKYOiBS
-ZTogW1BBVENIXSB4ODYvYWNwaS9jc3RhdGUgZGVsZXRlIHNvbWUgdW51c2VmdWwgb3BlcmF0aW9u
-cw0KDQpPbiBGcmlkYXksIERlY2VtYmVyIDIyLCAyMDE3IDEyOjU1OjA0IFBNIENFVCBUaW1HdW8g
-d3JvdGU6DQo+IFVudXNlZnVsIGNhY2hlIGZsdXNoIG9wZXJhdGlvbnMgd2hpY2ggd2lsbCBiZSBl
-eGVjdXRlZCBieSB1Y29kZSB3aGVuDQo+IGVudGVyaW5nIEMzIHdpbGwgY2F1c2UgbGFyZ2VyIEMz
-IGVudGVyIGxhdGVuY3kuIEFuZCB0aGUgYnVzIG1hc3Rlcg0KPiBkaXNhYmxlIG9wZXJhdGlvbiBp
-cyBub3QgbmVlZCBmb3IgY2VudGF1ciBwbGF0Zm9ybXMuDQoNCk15IGF0dGVtcHRzIHRvIG1ha2Ug
-c29tZSBzZW5zZSBvZiB0aGUgYWJvdmUgaG9wbGVzc2x5IGZhaWxlZC4gOi0vDQoNCkkgdW5kZXJz
-dG9vZCB0aGF0IGl0IHdhcyBub3QgbmVjZXNzYXJ5IHRvIGRpc2FibGUgYnVzIG1hc3RlciBhcmJp
-dHJhdGlvbiBvbiBDMyBlbnRyeSBmb3IgQ2VudGF1ciBDUFVzLCB3aGljaCBpcyB3aHkgeW91IGNs
-ZWFyIGJtX2NvbnRyb2wsIHJpZ2h0Pw0KDQpBbmQgdGhlIGdvYWwgaXMgdG8gcmVkdWNlIHRoZSBD
-MyBsYXRlbmN5LCBidXQgSSdtIG5vdCBzdXJlIGFib3V0IHRoZSBjYWNoZSBmbHVzaGluZyBwYXJ0
-LiAgRG8geW91IHdhbnQgdG8gc2F5IHRoYXQgZGlzYWJsaW5nIGJ1cyBtYXN0ZXIgYXJiaXRyYXRp
-b24gY2F1c2VzIHRoZSBDUFUgY2FjaGVzIHRvIGJlIGZsdXNoZWQgd2hpY2ggaXMgdGltZS1jb25z
-dW1pbmcgYW5kIHNob3VsZCBiZXR0ZXIgYmUgYXZvaWRlZCBpZiBub3QgbmVjZXNzYXJ5Pw0KDQo+
-IFNpZ25lZC1vZmYtYnk6IFRpbUd1byA8dGltZ3VvQHpoYW94aW4uY29tPg0KPiAtLS0NCj4gIGFy
-Y2gveDg2L2tlcm5lbC9hY3BpL2NzdGF0ZS5jIHwgMTIgKysrKysrKysrKysrDQo+ICAxIGZpbGUg
-Y2hhbmdlZCwgMTIgaW5zZXJ0aW9ucygrKQ0KPg0KPiBkaWZmIC0tZ2l0IGEvYXJjaC94ODYva2Vy
-bmVsL2FjcGkvY3N0YXRlLmMNCj4gYi9hcmNoL3g4Ni9rZXJuZWwvYWNwaS9jc3RhdGUuYyBpbmRl
-eCBkZGU0MzdmLi4zZWVlNDkwIDEwMDY0NA0KPiAtLS0gYS9hcmNoL3g4Ni9rZXJuZWwvYWNwaS9j
-c3RhdGUuYw0KPiArKysgYi9hcmNoL3g4Ni9rZXJuZWwvYWNwaS9jc3RhdGUuYw0KPiBAQCAtNTEs
-NiArNTEsMTggQEAgdm9pZCBhY3BpX3Byb2Nlc3Nvcl9wb3dlcl9pbml0X2JtX2NoZWNrKHN0cnVj
-dCBhY3BpX3Byb2Nlc3Nvcl9mbGFncyAqZmxhZ3MsDQo+ICAgICAgICAgaWYgKGMtPng4Nl92ZW5k
-b3IgPT0gWDg2X1ZFTkRPUl9JTlRFTCAmJg0KPiAgICAgICAgICAgICAoYy0+eDg2ID4gMHhmIHx8
-IChjLT54ODYgPT0gNiAmJiBjLT54ODZfbW9kZWwgPj0gMHgwZikpKQ0KPiAgICAgICAgICAgICAg
-ICAgICAgICAgICBmbGFncy0+Ym1fY29udHJvbCA9IDA7DQo+ICsNCj4gKyAgICAgICBpZiAoYy0+
-eDg2X3ZlbmRvciA9PSBYODZfVkVORE9SX0NFTlRBVVIpIHsNCj4gKyAgICAgICAgICAgICAgIC8q
-DQo+ICsgICAgICAgICAgICAgICAgKiBvbiBhbGwgY2VudGF1ciBDUFVzLCBzdyBuZWVkIG5vdCBl
-eGVjdXRlIGNhY2hlIGZsdXNoIG9wZXJhdGlvbg0KPiArICAgICAgICAgICAgICAgICogd2hlbiBl
-bnRlcmluZyBDMyB0eXBlIHN0YXRlLg0KPiArICAgICAgICAgICAgICAgICoNCj4gKyAgICAgICAg
-ICAgICAgICAqIE9uIGFsbCBDZW50YXVyIHBsYXRmb3JtcywgQVJCX0RJU0FCTEUgaXMgbm90IHJl
-cXVpcmVkIHdoaWxlDQo+ICsgICAgICAgICAgICAgICAgKiBlbnRlcmluZyBDMyB0eXBlIHN0YXRl
-Lg0KPiArICAgICAgICAgICAgICAgICovDQo+ICsgICAgICAgICAgICAgICBmbGFncy0+Ym1fY2hl
-Y2sgPSAxOw0KPiArICAgICAgICAgICAgICAgZmxhZ3MtPmJtX2NvbnRyb2wgPSAwOw0KPiArICAg
-ICAgICB9DQo+ICB9DQo+ICBFWFBPUlRfU1lNQk9MKGFjcGlfcHJvY2Vzc29yX3Bvd2VyX2luaXRf
-Ym1fY2hlY2spOw0KPg0KPiAtLQ0KPiAxLjkuMQ0KPg0KPg0KPg0KPiDkv53lr4blo7DmmI7vvJoN
-Cj4g5pys6YKu5Lu25ZCr5pyJ5L+d5a+G5oiW5LiT5pyJ5L+h5oGv77yM5LuF5L6b5oyH5a6a5pS2
-5Lu25Lq65L2/55So44CC5Lil56aB5a+55pys6YKu5Lu25oiW5YW25YaF5a655YGa5Lu75L2V5pyq
-57uP5o6I5p2D55qE5p+l6ZiF44CB5L2/55So44CB5aSN5Yi25oiW6L2s5Y+R44CCDQo+IENPTkZJ
-REVOVElBTCBOT1RFOg0KPiBUaGlzIGVtYWlsIGNvbnRhaW5zIGNvbmZpZGVudGlhbCBvciBsZWdh
-bGx5IHByaXZpbGVnZWQgaW5mb3JtYXRpb24gYW5kIGlzIGZvciB0aGUgc29sZSB1c2Ugb2YgaXRz
-IGludGVuZGVkIHJlY2lwaWVudC4gQW55IHVuYXV0aG9yaXplZCByZXZpZXcsIHVzZSwgY29weWlu
-ZyBvciBmb3J3YXJkaW5nIG9mIHRoaXMgZW1haWwgb3IgdGhlIGNvbnRlbnQgb2YgdGhpcyBlbWFp
-bCBpcyBzdHJpY3RseSBwcm9oaWJpdGVkLg0KPg0KDQoNCg0KDQrkv53lr4blo7DmmI7vvJoNCuac
-rOmCruS7tuWQq+acieS/neWvhuaIluS4k+acieS/oeaBr++8jOS7heS+m+aMh+WumuaUtuS7tuS6
-uuS9v+eUqOOAguS4peemgeWvueacrOmCruS7tuaIluWFtuWGheWuueWBmuS7u+S9leacque7j+aO
-iOadg+eahOafpemYheOAgeS9v+eUqOOAgeWkjeWItuaIlui9rOWPkeOAgg0KQ09ORklERU5USUFM
-IE5PVEU6DQpUaGlzIGVtYWlsIGNvbnRhaW5zIGNvbmZpZGVudGlhbCBvciBsZWdhbGx5IHByaXZp
-bGVnZWQgaW5mb3JtYXRpb24gYW5kIGlzIGZvciB0aGUgc29sZSB1c2Ugb2YgaXRzIGludGVuZGVk
-IHJlY2lwaWVudC4gQW55IHVuYXV0aG9yaXplZCByZXZpZXcsIHVzZSwgY29weWluZyBvciBmb3J3
-YXJkaW5nIG9mIHRoaXMgZW1haWwgb3IgdGhlIGNvbnRlbnQgb2YgdGhpcyBlbWFpbCBpcyBzdHJp
-Y3RseSBwcm9oaWJpdGVkLg0K
+On 09-01-18, 16:43, Leonard Crestez wrote:
+> What I am saying is that as far as I can tell when cpufreq_update_util
+> is called when the task has already executed and is been switched out.
+
+Can you check if this patch makes it any better ?
+
+https://marc.info/?l=linux-kernel&m=151204248901636&w=2
+
+> My tests are not very elaborate but based on some ftracing it seems to
+> me that the current behavior is for cpufreq spikes to always trail RT
+> activity. Like this:
+> 
+>           <idle>-0     [002]   496.510138: sched_switch:         swapper/2:0 [120] S ==> watchdog/2:20 [0]
+>       watchdog/2-20    [002]   496.510156: bprint:               watchdog: IN watchdog(2)
+>       watchdog/2-20    [002]   496.510364: bprint:               watchdog: OU watchdog(2)
+>       watchdog/2-20    [002]   496.510377: bprint:               update_curr_rt: watchdog kick RT! cpu=2 comm=watchdog/2
+
+Probabl update_curr_rt is getting called a bit after the task has
+already run. The above patch moves the call to cpufreq_update_util()
+to enqueue/dequeue paths and that should fix it.
+
+-- 
+viresh
