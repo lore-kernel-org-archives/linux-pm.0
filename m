@@ -1,133 +1,68 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: thermal_hwmon: Convert to
- hwmon_device_register_with_info()
-Date: Wed, 10 Jan 2018 11:29:57 -0800
-Message-ID: <20180110192955.GD3837@localhost.localdomain>
-References: <1514976294-31880-1-git-send-email-festevam@gmail.com>
+Subject: Re: [PATCH 0/2] thermal, OPP: move the CPU power estimation to the
+ OPP library
+Date: Wed, 10 Jan 2018 11:34:33 -0800
+Message-ID: <20180110193431.GE3837@localhost.localdomain>
+References: <20180109110252.13557-1-quentin.perret@arm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f67.google.com ([74.125.83.67]:37474 "EHLO
-        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1754231AbeAJT3v (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 14:29:51 -0500
-Received: by mail-pg0-f67.google.com with SMTP id z17so137022pgc.4
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 11:29:51 -0800 (PST)
+Received: from mail-pg0-f65.google.com ([74.125.83.65]:46164 "EHLO
+        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1752790AbeAJTe2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 14:34:28 -0500
+Received: by mail-pg0-f65.google.com with SMTP id r2so122703pgq.13
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 11:34:28 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1514976294-31880-1-git-send-email-festevam@gmail.com>
+In-Reply-To: <20180109110252.13557-1-quentin.perret@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Fabio Estevam <festevam@gmail.com>
-Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, arthurborsboom@gmail.com, Fabio Estevam <fabio.estevam@nxp.com>, Pavel Machek <pavel@ucw.cz>, Guenter Roeck <linux@roeck-us.net>
+To: Quentin Perret <quentin.perret@arm.com>
+Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com
 
-On Wed, Jan 03, 2018 at 08:44:54AM -0200, Fabio Estevam wrote:
-> From: Fabio Estevam <fabio.estevam@nxp.com>
+On Tue, Jan 09, 2018 at 11:02:50AM +0000, Quentin Perret wrote:
+> Currently, IPA estimates the power dissipated by a CPU at each available OPP
+> using its capacitance (the dynamic-power-coefficient DT binding). This series
+> relocates this feature into the OPP library as a preparation for future
+> changes. More specifically:
 > 
-> Booting Linux on a mx6q based board leads to the following warning:
->     
-> (NULL device *): hwmon_device_register() is deprecated. Please convert the
-> driver to use hwmon_device_register_with_info().
->     
-> , so do the conversion as suggested.
-> 
-> Also, this results in the core taking care of creating the 'name'
-> attribute, so drop the code doing that from the thermal driver.
-> 
-> The initial attempt to convert this driver to
-> hwmon_device_register_with_info() caused issues on the N900 platform
-> in commit 611fb68062f ("thermal: thermal_hwmon: Convert to
-> hwmon_device_register_with_info()"):
-> 
-> bq27xxx-battery 2-0055: failed to register battery
-> bq27xxx-battery: probe of 2-0055 failed with error -22
-> ...
-> rx51-battery: probe of n900-battery failed with error -22
-> 
-> , leading to a revert in commit 3feb479cea37 ("Revert "thermal:
-> thermal_hwmon: Convert to hwmon_device_register_with_info()"").
-> 
-> The probe errors happened due to the '-' character being present in
-> the name of the power supply devices: bq27200-0 and rx51-battery.
-> 
-> Since commit 74d3b6419772 ("hwmon: Relax name attribute validation
-> for new APIs") hwmon will no longer treat these names as errors,
-> allowing the transition for hwmon_device_register_with_info() to
-> happen in a safely manner. 
+>    1. The current DT-based approach for power estimation will need deep
+>       changes to support SCMI-provided power values. While the thermal
+>       subsystem is not necessarily the best place to hide multiple power
+>       estimation methods, the OPP library appears to be a good candidate to
+>       implement the required platform abstraction.
+>    2. The energy models of CPUs will be needed by other clients in the future
+>       (such as the task scheduler or CPUFreq governors for example) in order
+>       to make energy-aware decisions. The relocation to the OPP library will
+>       enable code re-use and all clients will benefit form the platform
+>       abstraction mentioned previously.
 
-I am mostly fine with the patch as long as we get an ack from hwmon
-folks.
+To be quite frank, I am happy to see this leaving thermal subsystem.
+However, a few concerns with the patch set as it is. First, I am not
+convinced PM OPP is the right place to put this, nor I see a good
+explanation put in the patch set why it must be part of PM OPP.
+Second, looks like we are following ARM "good" practice of fixing
+problems of the future. I would only really sign off for this series
+when we see real "other future users", otherwise we end up with the
+infamous static power scenario in 2-3 years down the row. If we
+currently do not have users of this IN MAINLINE KERNEL, then the series
+is not for upstream.
 
 > 
-> Cc: Pavel Machek <pavel@ucw.cz>
-> Cc: Guenter Roeck <linux@roeck-us.net>
-> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
-> ---
-> Pavel,
+> Quentin Perret (2):
+>   PM / OPP: introduce an OPP power estimation helper
+>   thermal: cpu_cooling: use power models from the OPP library
 > 
-> Could you please test this patch on your N900 platform?
+>  drivers/cpufreq/arm_big_little.c   |  2 ++
+>  drivers/cpufreq/cpufreq-dt.c       |  2 ++
+>  drivers/cpufreq/mediatek-cpufreq.c |  2 ++
+>  drivers/opp/core.c                 | 40 +++++++++++++++++++++++++
+>  drivers/opp/of.c                   | 61 ++++++++++++++++++++++++++++++++++++++
+>  drivers/opp/opp.h                  |  4 +++
+>  drivers/thermal/cpu_cooling.c      | 33 ++++++---------------
+>  include/linux/pm_opp.h             | 20 +++++++++++++
+>  8 files changed, 140 insertions(+), 24 deletions(-)
 > 
-> Thanks
-> 
->  drivers/thermal/thermal_hwmon.c | 20 +++-----------------
->  1 file changed, 3 insertions(+), 17 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
-> index 541af59..c4a508a 100644
-> --- a/drivers/thermal/thermal_hwmon.c
-> +++ b/drivers/thermal/thermal_hwmon.c
-> @@ -59,14 +59,6 @@ static LIST_HEAD(thermal_hwmon_list);
->  static DEFINE_MUTEX(thermal_hwmon_list_lock);
->  
->  static ssize_t
-> -name_show(struct device *dev, struct device_attribute *attr, char *buf)
-> -{
-> -	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
-> -	return sprintf(buf, "%s\n", hwmon->type);
-> -}
-> -static DEVICE_ATTR_RO(name);
-> -
-> -static ssize_t
->  temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
->  {
->  	int temperature;
-> @@ -165,15 +157,12 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
->  
->  	INIT_LIST_HEAD(&hwmon->tz_list);
->  	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
-> -	hwmon->device = hwmon_device_register(NULL);
-> +	hwmon->device = hwmon_device_register_with_info(NULL, hwmon->type,
-> +							hwmon, NULL, NULL);
->  	if (IS_ERR(hwmon->device)) {
->  		result = PTR_ERR(hwmon->device);
->  		goto free_mem;
->  	}
-> -	dev_set_drvdata(hwmon->device, hwmon);
-> -	result = device_create_file(hwmon->device, &dev_attr_name);
-> -	if (result)
-> -		goto free_mem;
->  
->   register_sys_interface:
->  	temp = kzalloc(sizeof(*temp), GFP_KERNEL);
-> @@ -222,10 +211,8 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
->   free_temp_mem:
->  	kfree(temp);
->   unregister_name:
-> -	if (new_hwmon_device) {
-> -		device_remove_file(hwmon->device, &dev_attr_name);
-> +	if (new_hwmon_device)
->  		hwmon_device_unregister(hwmon->device);
-> -	}
->   free_mem:
->  	if (new_hwmon_device)
->  		kfree(hwmon);
-> @@ -267,7 +254,6 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
->  	list_del(&hwmon->node);
->  	mutex_unlock(&thermal_hwmon_list_lock);
->  
-> -	device_remove_file(hwmon->device, &dev_attr_name);
->  	hwmon_device_unregister(hwmon->device);
->  	kfree(hwmon);
->  }
 > -- 
-> 2.7.4
+> 2.15.1
 > 
