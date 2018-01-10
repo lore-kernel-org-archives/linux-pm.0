@@ -1,64 +1,84 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [BUG] schedutil governor produces regular max freq spikes
- because of lockup detector watchdog threads
-Date: Wed, 10 Jan 2018 11:54:51 +0100
-Message-ID: <20180110105451.GB16413@localhost.localdomain>
-References: <1515184652.6892.26.camel@nxp.com>
- <CAJZ5v0gOwgr2yB_YY8ian6GXjdic3zRUa4S9vHNmudC8Khc5cA@mail.gmail.com>
- <20180108040121.GB4003@vireshk-i7>
- <1515417622.3207.5.camel@nxp.com>
- <20180108151450.GA30937@e110439-lin>
- <1515426694.3207.28.camel@nxp.com>
- <CAJZ5v0hnY+2pL0LGAeQv7xZcYN42+_azKH9cGGLvPU1iO6fmWg@mail.gmail.com>
- <1515508985.3310.8.camel@nxp.com>
- <CAJZ5v0gV_4y1rKio9QRP_-M65rXtQHi2W3O22uiXJ08oafVtOw@mail.gmail.com>
+From: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 2/2] cpufreq: scpi: remove arm_big_little dependency
+Date: Wed, 10 Jan 2018 11:34:22 +0000
+Message-ID: <65c2f2f9-b651-3608-2883-37cc9a3bd540@arm.com>
+References: <1515516568-31359-1-git-send-email-sudeep.holla@arm.com>
+ <1515516568-31359-3-git-send-email-sudeep.holla@arm.com>
+ <20180110041905.GC3335@vireshk-i7>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gV_4y1rKio9QRP_-M65rXtQHi2W3O22uiXJ08oafVtOw@mail.gmail.com>
+In-Reply-To: <20180110041905.GC3335@vireshk-i7>
+Content-Language: en-US
 Sender: linux-kernel-owner@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Anson Huang <anson.huang@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jeremy Linton <jeremy.linton@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
 List-Id: linux-pm@vger.kernel.org
 
-On 09/01/18 16:50, Rafael J. Wysocki wrote:
-> On Tue, Jan 9, 2018 at 3:43 PM, Leonard Crestez <leonard.crestez@nxp.com> wrote:
 
-[...]
 
-> > Every 4 seconds (really it's /proc/sys/kernel/watchdog_thresh * 2 / 5
-> > and watchdog_thresh defaults to 10). There is a per-cpu hrtimer which
-> > wakes the per-cpu thread in order to check that tasks can still
-> > execute, this works very well against bugs like infinite loops in
-> > softirq mode. The timers are synchronized initially but can get
-> > staggered (for example by hotplug).
-> >
-> > My guess is that it's only marked RT so that it executes ahead of other
-> > threads and the watchdog doesn't trigger simply when there are lots of
-> > userspace tasks.
+On 10/01/18 04:19, Viresh Kumar wrote:
+> On 09-01-18, 16:49, Sudeep Holla wrote:
+>> +static int
+>> +scpi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
+>>  {
+>> -	return scpi_ops->get_transition_latency(cpu_dev);
+>> +	int cpu, domain, tdomain;
+>> +	struct device *tcpu_dev;
+>> +
+>> +	domain = scpi_ops->device_domain_id(cpu_dev);
+>> +	if (domain < 0)
+>> +		return domain;
+>> +
+>> +	for_each_possible_cpu(cpu) {
+>> +		if (cpu == cpu_dev->id)
+>> +			continue;
+>> +
+>> +		tcpu_dev = get_cpu_device(cpu);
+>> +		if (!tcpu_dev)
+>> +			continue;
+>> +
+>> +		tdomain = scpi_ops->device_domain_id(tcpu_dev);
+>> +		if (tdomain == domain)
+>> +			cpumask_set_cpu(cpu, cpumask);
+>> +	}
+>> +
+>> +	return 0;
+>>  }
 > 
-> I think so too.
+> So this is the main thing you want to achieve ? i.e. get the
+> policy->cpus from scpi_ops, right ?
 > 
-> I see a couple of more-or-less hackish ways to avoid the issue, but
-> nothing particularly attractive ATM.
+
+>From the looks of it yes, but...
+
+> Why can't we update .init_opp_table() to include policy as a parameter
+> and let individual stub drivers update policy->cpus then ?
 > 
-> I wouldn't change the general behavior with respect to RT tasks
-> because of this, though, as we would quickly find a case in which that
-> would turn out to be not desirable.
 
-I agree we cannot generalize to all RT tasks, but what Patrick proposed
-(clamping utilization of certain known tasks) might help here:
+Possible, again but ...
 
-lkml.kernel.org/r/20170824180857.32103-1-patrick.bellasi@arm.com
+There are few reasons why I would like remove scpi dependency on bL driver:
 
-Maybe with a per-task interface instead of using cgroups?
+1. It has a notion of big and little which may not be true but that not
+   much of a problem.
 
-The other option would be to relax DL tasks affinity constraints, so
-that a case like this might be handled. Daniel and Tommaso proposed
-possible approaches, this might be a driving use case. Not sure how we
-would come up with a proper runtime for the watchdog, though.
+2. MAX_CLUSTER = 2 and scpi is getting used on multi-cluster systems
+   though it was first tested on Juno which was bL system. There are
+   quite a few internal FVP platforms that can manage to run with just
+   proper DT with this change.
 
-Best,
+3. raw_cpu_to_cluster still calls topology_physical_package_id which
+   breaks on these platforms and also with introduction of ACPI PPTT it
+   will break on all ARM64 platforms.
 
-- Juri
+4. We can still leave usage of topology_physical_package_id as is in
+   arm_big_little.c worst case if it's going to be used only on ARM32
+   For ARM64, topology_physical_package_id will be changed to give
+   actual physical socket number which will be 0 for all multi-cluster
+   (including bL) systems as along as they are single chip.
+
+-- 
+Regards,
+Sudeep
