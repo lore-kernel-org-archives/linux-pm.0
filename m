@@ -1,68 +1,55 @@
-From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH 0/2] thermal, OPP: move the CPU power estimation to the
- OPP library
-Date: Wed, 10 Jan 2018 11:34:33 -0800
-Message-ID: <20180110193431.GE3837@localhost.localdomain>
-References: <20180109110252.13557-1-quentin.perret@arm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 1/2] cpufreq: intel_pstate: Replace bxt_funcs with core_funcs
+Date: Wed, 10 Jan 2018 11:38:51 -0800
+Message-ID: <20180110193852.63667-1-srinivas.pandruvada@linux.intel.com>
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pg0-f65.google.com ([74.125.83.65]:46164 "EHLO
-        mail-pg0-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752790AbeAJTe2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 14:34:28 -0500
-Received: by mail-pg0-f65.google.com with SMTP id r2so122703pgq.13
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 11:34:28 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20180109110252.13557-1-quentin.perret@arm.com>
+Received: from mga06.intel.com ([134.134.136.31]:38251 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1753628AbeAJTiz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Jan 2018 14:38:55 -0500
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Quentin Perret <quentin.perret@arm.com>
-Cc: linux-pm@vger.kernel.org, rjw@rjwysocki.net, vireshk@kernel.org, nm@ti.com, sboyd@codeaurora.org, sudeep.holla@arm.com, amit.kachhap@gmail.com, javi.merino@kernel.org, rui.zhang@intel.com, matthias.bgg@gmail.com, dietmar.eggemann@arm.com, morten.rasmussen@arm.com, patrick.bellasi@arm.com, ionela.voinescu@arm.com
+To: lenb@kernel.org, rjw@rjwysocki.net
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-On Tue, Jan 09, 2018 at 11:02:50AM +0000, Quentin Perret wrote:
-> Currently, IPA estimates the power dissipated by a CPU at each available OPP
-> using its capacitance (the dynamic-power-coefficient DT binding). This series
-> relocates this feature into the OPP library as a preparation for future
-> changes. More specifically:
-> 
->    1. The current DT-based approach for power estimation will need deep
->       changes to support SCMI-provided power values. While the thermal
->       subsystem is not necessarily the best place to hide multiple power
->       estimation methods, the OPP library appears to be a good candidate to
->       implement the required platform abstraction.
->    2. The energy models of CPUs will be needed by other clients in the future
->       (such as the task scheduler or CPUFreq governors for example) in order
->       to make energy-aware decisions. The relocation to the OPP library will
->       enable code re-use and all clients will benefit form the platform
->       abstraction mentioned previously.
+Since core_funcs and bxt_funcs have same set of callbacks, replace
+bxt_funcs with core_funcs.
 
-To be quite frank, I am happy to see this leaving thermal subsystem.
-However, a few concerns with the patch set as it is. First, I am not
-convinced PM OPP is the right place to put this, nor I see a good
-explanation put in the patch set why it must be part of PM OPP.
-Second, looks like we are following ARM "good" practice of fixing
-problems of the future. I would only really sign off for this series
-when we see real "other future users", otherwise we end up with the
-infamous static power scenario in 2-3 years down the row. If we
-currently do not have users of this IN MAINLINE KERNEL, then the series
-is not for upstream.
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ drivers/cpufreq/intel_pstate.c | 13 ++-----------
+ 1 file changed, 2 insertions(+), 11 deletions(-)
 
-> 
-> Quentin Perret (2):
->   PM / OPP: introduce an OPP power estimation helper
->   thermal: cpu_cooling: use power models from the OPP library
-> 
->  drivers/cpufreq/arm_big_little.c   |  2 ++
->  drivers/cpufreq/cpufreq-dt.c       |  2 ++
->  drivers/cpufreq/mediatek-cpufreq.c |  2 ++
->  drivers/opp/core.c                 | 40 +++++++++++++++++++++++++
->  drivers/opp/of.c                   | 61 ++++++++++++++++++++++++++++++++++++++
->  drivers/opp/opp.h                  |  4 +++
->  drivers/thermal/cpu_cooling.c      | 33 ++++++---------------
->  include/linux/pm_opp.h             | 20 +++++++++++++
->  8 files changed, 140 insertions(+), 24 deletions(-)
-> 
-> -- 
-> 2.15.1
-> 
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 93a0e88bef76..3b6616b15c59 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1595,15 +1595,6 @@ static const struct pstate_funcs knl_funcs = {
+ 	.get_val = core_get_val,
+ };
+ 
+-static const struct pstate_funcs bxt_funcs = {
+-	.get_max = core_get_max_pstate,
+-	.get_max_physical = core_get_max_pstate_physical,
+-	.get_min = core_get_min_pstate,
+-	.get_turbo = core_get_turbo_pstate,
+-	.get_scaling = core_get_scaling,
+-	.get_val = core_get_val,
+-};
+-
+ #define ICPU(model, policy) \
+ 	{ X86_VENDOR_INTEL, 6, model, X86_FEATURE_APERFMPERF,\
+ 			(unsigned long)&policy }
+@@ -1627,8 +1618,8 @@ static const struct x86_cpu_id intel_pstate_cpu_ids[] = {
+ 	ICPU(INTEL_FAM6_BROADWELL_XEON_D,	core_funcs),
+ 	ICPU(INTEL_FAM6_XEON_PHI_KNL,		knl_funcs),
+ 	ICPU(INTEL_FAM6_XEON_PHI_KNM,		knl_funcs),
+-	ICPU(INTEL_FAM6_ATOM_GOLDMONT,		bxt_funcs),
+-	ICPU(INTEL_FAM6_ATOM_GEMINI_LAKE,       bxt_funcs),
++	ICPU(INTEL_FAM6_ATOM_GOLDMONT,		core_funcs),
++	ICPU(INTEL_FAM6_ATOM_GEMINI_LAKE,       core_funcs),
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(x86cpu, intel_pstate_cpu_ids);
+-- 
+2.13.6
