@@ -1,66 +1,51 @@
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [v3 PATCH 2/3] powernv-cpufreq: Fix pstate_to_idx() to handle non-continguous pstates
-Date: Wed, 10 Jan 2018 13:00:10 +0100
-Message-ID: <8482639.QyQtvhC9hx@aspire.rjw.lan>
-References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com> <CAKTCnznuf1jwWZEqi+og8LyayfzMwGYRUXhK4+zfbSYDfexyRA@mail.gmail.com> <20180110085545.GA13666@in.ibm.com>
+Subject: [PATCH 2/2] platform/x86: surfacepro3: Support for wakeup from suspend-to-idle
+Date: Wed, 10 Jan 2018 13:26:35 +0100
+Message-ID: <6492549.QWquAG8VGe@aspire.rjw.lan>
+References: <4046497.JI7UjL75gC@aspire.rjw.lan>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7Bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180110085545.GA13666@in.ibm.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: ego@linux.vnet.ibm.com
-Cc: Balbir Singh <bsingharora@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Abhishek <huntbag@linux.vnet.ibm.com>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>
+Return-path: <platform-driver-x86-owner@vger.kernel.org>
+In-Reply-To: <4046497.JI7UjL75gC@aspire.rjw.lan>
+Sender: platform-driver-x86-owner@vger.kernel.org
+To: Linux ACPI <linux-acpi@vger.kernel.org>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Darren Hart <dvhart@infradead.org>, LKML <linux-kernel@vger.kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Platform Driver <platform-driver-x86@vger.kernel.org>, Valentin Manea <valy@mrs.ro>
 List-Id: linux-pm@vger.kernel.org
 
-On Wednesday, January 10, 2018 9:55:45 AM CET Gautham R Shenoy wrote:
-> Hi Rafael,
-> 
-> On Wed, Jan 03, 2018 at 11:47:58PM +1100, Balbir Singh wrote:
-> > On Wed, Jan 3, 2018 at 11:07 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
-> > > On Monday, December 18, 2017 9:38:20 AM CET Gautham R Shenoy wrote:
-> > >> Hi Balbir,
-> > >>
-> > >> On Sun, Dec 17, 2017 at 02:15:25PM +1100, Balbir Singh wrote:
-> > >> > On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
-> > >> > <ego@linux.vnet.ibm.com> wrote:
-> > >> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> > >> > >
-> > >> > > The code in powernv-cpufreq, makes the following two assumptions which
-> > >> > > are not guaranteed by the device-tree bindings:
-> > >> > >
-> > >> > >     1) Pstate ids are continguous: This is used in pstate_to_idx() to
-> > >> > >        obtain the reverse map from a pstate to it's corresponding
-> > >> > >        entry into the cpufreq frequency table.
-> > >> > >
-> > >> > >     2) Every Pstate should always lie between the max and the min
-> > >> > >        pstates that are explicitly reported in the device tree: This
-> > >> > >        is used to determine whether a pstate reported by the PMSR is
-> > >> > >        out of bounds.
-> > >> > >
-> > >> > > Both these assumptions are unwarranted and can change on future
-> > >> > > platforms.
-> > >> >
-> > >> > While this is a good thing, I wonder if it is worth the complexity. Pstates
-> > >> > are contiguous because they define transitions in incremental value
-> > >> > of change in frequency and I can't see how this can be broken in the
-> > >> > future?
-> > >>
-> > >> In the future, we can have the OPAL firmware give us a smaller set of
-> > >> pstates instead of expose every one of them. As it stands today, for
-> > >> most of the workloads, we will need at best 20-30 pstates and not
-> > >> beyond that.
-> > >
-> > > I'm not sure about the status here.
-> > >
-> > > Is this good to go as is or is it going to be updated?
-> > >
-> > 
-> > I have no major objections, except some of the added complexity, but
-> > Gautham makes a point that this is refactoring for the future
-> 
-> I have tested this across POWER8 and POWER9. The additional complexity
-> introduced by the second patch is required for the future when we are
-> going to reduce the number of pstates.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I have applied the series, thanks!
+Modify surface_button_notify() to make it wake up the system from
+suspend-to-idle (by reporting "hard" wakeup events while suspended)
+and add wakeup initialization to surface_button_add() for wakeup
+events reported by this driver to work at all.
+
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=198389
+Reported-by: Valentin Manea <valy@mrs.ro>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/platform/x86/surfacepro3_button.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-pm/drivers/platform/x86/surfacepro3_button.c
+===================================================================
+--- linux-pm.orig/drivers/platform/x86/surfacepro3_button.c
++++ linux-pm/drivers/platform/x86/surfacepro3_button.c
+@@ -119,7 +119,7 @@ static void surface_button_notify(struct
+ 	if (key_code == KEY_RESERVED)
+ 		return;
+ 	if (pressed)
+-		pm_wakeup_event(&device->dev, 0);
++		pm_wakeup_dev_event(&device->dev, 0, button->suspended);
+ 	if (button->suspended)
+ 		return;
+ 	input_report_key(input, key_code, pressed?1:0);
+@@ -185,6 +185,8 @@ static int surface_button_add(struct acp
+ 	error = input_register_device(input);
+ 	if (error)
+ 		goto err_free_input;
++
++	device_init_wakeup(&device->dev, true);
+ 	dev_info(&device->dev,
+ 			"%s [%s]\n", name, acpi_device_bid(device));
+ 	return 0;
