@@ -1,73 +1,238 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Subject: Re: [PATCH V8 3/3] OPP: Allow "opp-hz" and "opp-microvolt" to
- contain magic values
-Date: Wed, 10 Jan 2018 11:07:26 +0530
-Message-ID: <20180110053726.GA3626@vireshk-i7>
-References: <476d7ae69184d787ccc6d99f8df6069007fd0a91.1513591822.git.viresh.kumar@linaro.org>
- <20171226202955.32j7gzonrixtwdpt@rob-hp-laptop>
- <20171227085645.GF8312@vireshk-i7>
- <CAL_JsqJzMfNhHK=6Wt4dzBRS9BVGMZ-f7uk3OnUupudTfwuyUA@mail.gmail.com>
- <20171228043725.GB8652@vireshk-i7>
- <20171229003253.GD7997@codeaurora.org>
- <20171229045854.GE8652@vireshk-i7>
- <20180105221954.GC21040@codeaurora.org>
- <20180108041643.GC4003@vireshk-i7>
- <20180110025454.GG21040@codeaurora.org>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] powercap: add suspend and resume mechanism for SOC
+ power limit
+Date: Tue, 09 Jan 2018 22:21:09 -0800
+Message-ID: <1515565269.585.30.camel@linux.intel.com>
+References: <1515544703-19409-1-git-send-email-xinx.sun@intel.com>
+         <1515548830.69545.28.camel@linux.intel.com>
+         <29BA90D9533CD34EA40DF8A796ED93C30409C1B1@CDSMSX104.ccr.corp.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-pl0-f68.google.com ([209.85.160.68]:46699 "EHLO
-        mail-pl0-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1752381AbeAJFhb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 00:37:31 -0500
-Received: by mail-pl0-f68.google.com with SMTP id i6so6671498plt.13
-        for <linux-pm@vger.kernel.org>; Tue, 09 Jan 2018 21:37:31 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <20180110025454.GG21040@codeaurora.org>
+Received: from mga04.intel.com ([192.55.52.120]:48882 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S933663AbeAJGVM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 10 Jan 2018 01:21:12 -0500
+In-Reply-To: <29BA90D9533CD34EA40DF8A796ED93C30409C1B1@CDSMSX104.ccr.corp.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Rob Herring <robh@kernel.org>, Stephen Boyd <sboyd@codeaurora.org>
-Cc: Ulf Hansson <ulf.hansson@linaro.org>, Kevin Hilman <khilman@kernel.org>, Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>, Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, Rajendra Nayak <rnayak@codeaurora.org>, Sudeep Holla <sudeep.holla@arm.com>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: "Sun, XinX" <xinx.sun@intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>
+Cc: "Han, Zhen" <zhen.han@intel.com>, "Wang, ChaoX M" <chaox.m.wang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 09-01-18, 18:54, Stephen Boyd wrote:
-> My read of Kevin's comments lead me to think he's saying that a
-> generic 'domain-performance-state' property is worse than putting
-> the numbers directly inside of the opp table with a comment above
-> it. Now that's all fine, but now that we have required-opps
-> binding we sort of have the domain-performance-state property
-> again, but it's a phandle instead of a raw state number.
+On Wed, 2018-01-10 at 01:53 +0000, Sun, XinX wrote:
+> According to Rafael's comment.
+> > 
+> > There is a formal issue here.
+> > We need a Signed-off-by: tag from Zhen Han too.
+> I changed Signed-off in commit message.
 > 
-> So we have
-> 
-> 	required-opps = <&perf_state>;
-> 
-> but what was proposed before was
-> 
-> 	domain-performance-state = <1>;
-> 
-> or Kevin's 
-> 
-> 	opp-table = <100000 1>;
+This is not the correct procedure to do such things after sending the
+patch.
+Basically you can change prefix to "[PATCH]" to "[Update][PATCH]".
 
-His concern was also on what will we do if "frequency" or other OPP
-properties aren't known tomorrow by the kernel but the firmware? In
-Qcom case, its just the voltage (corner) today, but it can very well
-be other properties tomorrow. Are we going to add more platform
-specific bindings then ? And this is the main reason why I have been
-aligned towards using something like this patch.
+Then after "---" add change history.
 
-If we drop the magic-values idea and hence this patch, then we can
-either add a "domain-performance-state" property, which will only be
-used by the power domains or leave it for the platforms to add
-something like "qcom,corner".
+E.g.
 
-All we are doing here is putting a voltage (corner) value, unknown to
-the kernel, in a new property instead of "opp-microvolt". But the
-above question still remains, what about other properties that may
-need magic values in future.
+Signed-off-by: Zhen Han <zhen.han@intel.com>> > ---
+---
+Change: 
+	Fixed the signed-off tag.
 
-Honestly speaking, I am not sure what's the right thing to do here. I
-will do whatever you and Rob incline for.
 
--- 
-viresh
+
+
+Thanks,
+Srinivas
+
+> Thanks & BR,
+> Sun Xin
+> 
+> -----Original Message-----
+> From: Srinivas Pandruvada [mailto:srinivas.pandruvada@linux.intel.com
+> ] 
+> Sent: Wednesday, January 10, 2018 9:47 AM
+> To: Sun, XinX <xinx.sun@intel.com>; rjw@rjwysocki.net; jacob.jun.pan@
+> linux.intel.com
+> Cc: Han, Zhen <zhen.han@intel.com>; Wang, ChaoX M <chaox.m.wang@intel
+> .com>; linux-pm@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH] powercap: add suspend and resume mechanism for
+> SOC power limit
+> 
+> On Wed, 2018-01-10 at 08:38 +0800, xinx.sun@intel.com wrote:
+> > 
+> > From: Zhen Han <zhen.han@intel.com>
+> > 
+> > PL1 and PL2 could be throlled or de-throttled by Thermal management
+> > to 
+> > control SOC temperature.
+> > However, currently, their value will be reset to default value
+> > after 
+> > once system suspend and resume.
+> > Add pm_notifier to save PL1, PL2 before system suspect and restore 
+> > PL1, PL2 after system resume.
+> > 
+> Why are you posting this patch again?
+> If there any change from your prior post?
+> 
+> Thanks,
+> Srinivas
+> 
+> > 
+> > Signed-off-by: Zhen Han <zhen.han@intel.com>
+> > ---
+> >  drivers/powercap/intel_rapl.c | 97
+> > +++++++++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 97 insertions(+)
+> > 
+> > diff --git a/drivers/powercap/intel_rapl.c 
+> > b/drivers/powercap/intel_rapl.c index d1694f1..0188cff 100644
+> > --- a/drivers/powercap/intel_rapl.c
+> > +++ b/drivers/powercap/intel_rapl.c
+> > @@ -29,6 +29,7 @@
+> >  #include <linux/sysfs.h>
+> >  #include <linux/cpu.h>
+> >  #include <linux/powercap.h>
+> > +#include <linux/suspend.h>
+> >  #include <asm/iosf_mbi.h>
+> >  
+> >  #include <asm/processor.h>
+> > @@ -155,6 +156,7 @@ struct rapl_power_limit {
+> >  	int prim_id; /* primitive ID used to enable */
+> >  	struct rapl_domain *domain;
+> >  	const char *name;
+> > +	u64 last_power_limit;
+> >  };
+> >  
+> >  static const char pl1_name[] = "long_term"; @@ -1533,6 +1535,92
+> > @@ 
+> > static int rapl_cpu_down_prep(unsigned int
+> > cpu)
+> >  
+> >  static enum cpuhp_state pcap_rapl_online;
+> >  
+> > +static void power_limit_state_save(void) {
+> > +	struct rapl_package *rp;
+> > +	struct rapl_domain *rd;
+> > +	int nr_pl, ret, i;
+> > +
+> > +	get_online_cpus();
+> > +	list_for_each_entry(rp, &rapl_packages, plist) {
+> > +		if (!rp->power_zone)
+> > +			continue;
+> > +		rd = power_zone_to_rapl_domain(rp->power_zone);
+> > +		nr_pl = find_nr_power_limit(rd);
+> > +		for (i = 0; i < nr_pl; i++) {
+> > +			switch (rd->rpl[i].prim_id) {
+> > +			case PL1_ENABLE:
+> > +				ret = rapl_read_data_raw(rd,
+> > +						POWER_LIMIT1,
+> > +						true,
+> > +						&rd-
+> > > 
+> > > rpl[i].last_power_limit);
+> > +				if (ret)
+> > +					rd-
+> > >rpl[i].last_power_limit
+> > = 0;
+> > +				break;
+> > +			case PL2_ENABLE:
+> > +				ret = rapl_read_data_raw(rd,
+> > +						POWER_LIMIT2,
+> > +						true,
+> > +						&rd-
+> > > 
+> > > rpl[i].last_power_limit);
+> > +				if (ret)
+> > +					rd-
+> > >rpl[i].last_power_limit
+> > = 0;
+> > +				break;
+> > +			}
+> > +		}
+> > +	}
+> > +	put_online_cpus();
+> > +}
+> > +
+> > +static void power_limit_state_restore(void) {
+> > +	struct rapl_package *rp;
+> > +	struct rapl_domain *rd;
+> > +	int nr_pl, i;
+> > +
+> > +	get_online_cpus();
+> > +	list_for_each_entry(rp, &rapl_packages, plist) {
+> > +		if (!rp->power_zone)
+> > +			continue;
+> > +		rd = power_zone_to_rapl_domain(rp->power_zone);
+> > +		nr_pl = find_nr_power_limit(rd);
+> > +		for (i = 0; i < nr_pl; i++) {
+> > +			switch (rd->rpl[i].prim_id) {
+> > +			case PL1_ENABLE:
+> > +				if (rd->rpl[i].last_power_limit)
+> > +					rapl_write_data_raw(rd,
+> > +						POWER_LIMIT1,
+> > +						rd-
+> > > 
+> > > rpl[i].last_power_limit);
+> > +				break;
+> > +			case PL2_ENABLE:
+> > +				if (rd->rpl[i].last_power_limit)
+> > +					rapl_write_data_raw(rd,
+> > +						POWER_LIMIT2,
+> > +						rd-
+> > > 
+> > > rpl[i].last_power_limit);
+> > +				break;
+> > +			}
+> > +		}
+> > +	}
+> > +	put_online_cpus();
+> > +}
+> > +
+> > +static int rapl_pm_callback(struct notifier_block *nb,
+> > +	unsigned long mode, void *_unused)
+> > +{
+> > +	switch (mode) {
+> > +	case PM_SUSPEND_PREPARE:
+> > +		power_limit_state_save();
+> > +		break;
+> > +	case PM_POST_SUSPEND:
+> > +		power_limit_state_restore();
+> > +		break;
+> > +	}
+> > +	return NOTIFY_OK;
+> > +}
+> > +
+> > +static struct notifier_block rapl_pm_notifier = {
+> > +	.notifier_call = rapl_pm_callback,
+> > +};
+> > +
+> >  static int __init rapl_init(void)
+> >  {
+> >  	const struct x86_cpu_id *id;
+> > @@ -1560,8 +1648,16 @@ static int __init rapl_init(void)
+> >  
+> >  	/* Don't bail out if PSys is not supported */
+> >  	rapl_register_psys();
+> > +
+> > +	ret = register_pm_notifier(&rapl_pm_notifier);
+> > +	if (ret)
+> > +		goto err_unreg_all;
+> > +
+> >  	return 0;
+> >  
+> > +err_unreg_all:
+> > +	cpuhp_remove_state(pcap_rapl_online);
+> > +
+> >  err_unreg:
+> >  	rapl_unregister_powercap();
+> >  	return ret;
+> > @@ -1569,6 +1665,7 @@ static int __init rapl_init(void)
+> >  
+> >  static void __exit rapl_exit(void)
+> >  {
+> > +	unregister_pm_notifier(&rapl_pm_notifier);
+> >  	cpuhp_remove_state(pcap_rapl_online);
+> >  	rapl_unregister_powercap();
+> >  }
