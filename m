@@ -1,84 +1,66 @@
-From: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 2/2] cpufreq: scpi: remove arm_big_little dependency
-Date: Wed, 10 Jan 2018 11:34:22 +0000
-Message-ID: <65c2f2f9-b651-3608-2883-37cc9a3bd540@arm.com>
-References: <1515516568-31359-1-git-send-email-sudeep.holla@arm.com>
- <1515516568-31359-3-git-send-email-sudeep.holla@arm.com>
- <20180110041905.GC3335@vireshk-i7>
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [v3 PATCH 2/3] powernv-cpufreq: Fix pstate_to_idx() to handle non-continguous pstates
+Date: Wed, 10 Jan 2018 13:00:10 +0100
+Message-ID: <8482639.QyQtvhC9hx@aspire.rjw.lan>
+References: <1513148261-21097-1-git-send-email-ego@linux.vnet.ibm.com> <CAKTCnznuf1jwWZEqi+og8LyayfzMwGYRUXhK4+zfbSYDfexyRA@mail.gmail.com> <20180110085545.GA13666@in.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
 Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <20180110041905.GC3335@vireshk-i7>
-Content-Language: en-US
+In-Reply-To: <20180110085545.GA13666@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
-To: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Sudeep Holla <sudeep.holla@arm.com>, linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Jeremy Linton <jeremy.linton@arm.com>, Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: ego@linux.vnet.ibm.com
+Cc: Balbir Singh <bsingharora@gmail.com>, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Abhishek <huntbag@linux.vnet.ibm.com>, Akshay Adiga <akshay.adiga@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>, linux-pm@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)" <linuxppc-dev@lists.ozlabs.org>
 List-Id: linux-pm@vger.kernel.org
 
-
-
-On 10/01/18 04:19, Viresh Kumar wrote:
-> On 09-01-18, 16:49, Sudeep Holla wrote:
->> +static int
->> +scpi_get_sharing_cpus(struct device *cpu_dev, struct cpumask *cpumask)
->>  {
->> -	return scpi_ops->get_transition_latency(cpu_dev);
->> +	int cpu, domain, tdomain;
->> +	struct device *tcpu_dev;
->> +
->> +	domain = scpi_ops->device_domain_id(cpu_dev);
->> +	if (domain < 0)
->> +		return domain;
->> +
->> +	for_each_possible_cpu(cpu) {
->> +		if (cpu == cpu_dev->id)
->> +			continue;
->> +
->> +		tcpu_dev = get_cpu_device(cpu);
->> +		if (!tcpu_dev)
->> +			continue;
->> +
->> +		tdomain = scpi_ops->device_domain_id(tcpu_dev);
->> +		if (tdomain == domain)
->> +			cpumask_set_cpu(cpu, cpumask);
->> +	}
->> +
->> +	return 0;
->>  }
+On Wednesday, January 10, 2018 9:55:45 AM CET Gautham R Shenoy wrote:
+> Hi Rafael,
 > 
-> So this is the main thing you want to achieve ? i.e. get the
-> policy->cpus from scpi_ops, right ?
+> On Wed, Jan 03, 2018 at 11:47:58PM +1100, Balbir Singh wrote:
+> > On Wed, Jan 3, 2018 at 11:07 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> > > On Monday, December 18, 2017 9:38:20 AM CET Gautham R Shenoy wrote:
+> > >> Hi Balbir,
+> > >>
+> > >> On Sun, Dec 17, 2017 at 02:15:25PM +1100, Balbir Singh wrote:
+> > >> > On Wed, Dec 13, 2017 at 5:57 PM, Gautham R. Shenoy
+> > >> > <ego@linux.vnet.ibm.com> wrote:
+> > >> > > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+> > >> > >
+> > >> > > The code in powernv-cpufreq, makes the following two assumptions which
+> > >> > > are not guaranteed by the device-tree bindings:
+> > >> > >
+> > >> > >     1) Pstate ids are continguous: This is used in pstate_to_idx() to
+> > >> > >        obtain the reverse map from a pstate to it's corresponding
+> > >> > >        entry into the cpufreq frequency table.
+> > >> > >
+> > >> > >     2) Every Pstate should always lie between the max and the min
+> > >> > >        pstates that are explicitly reported in the device tree: This
+> > >> > >        is used to determine whether a pstate reported by the PMSR is
+> > >> > >        out of bounds.
+> > >> > >
+> > >> > > Both these assumptions are unwarranted and can change on future
+> > >> > > platforms.
+> > >> >
+> > >> > While this is a good thing, I wonder if it is worth the complexity. Pstates
+> > >> > are contiguous because they define transitions in incremental value
+> > >> > of change in frequency and I can't see how this can be broken in the
+> > >> > future?
+> > >>
+> > >> In the future, we can have the OPAL firmware give us a smaller set of
+> > >> pstates instead of expose every one of them. As it stands today, for
+> > >> most of the workloads, we will need at best 20-30 pstates and not
+> > >> beyond that.
+> > >
+> > > I'm not sure about the status here.
+> > >
+> > > Is this good to go as is or is it going to be updated?
+> > >
+> > 
+> > I have no major objections, except some of the added complexity, but
+> > Gautham makes a point that this is refactoring for the future
 > 
+> I have tested this across POWER8 and POWER9. The additional complexity
+> introduced by the second patch is required for the future when we are
+> going to reduce the number of pstates.
 
->From the looks of it yes, but...
-
-> Why can't we update .init_opp_table() to include policy as a parameter
-> and let individual stub drivers update policy->cpus then ?
-> 
-
-Possible, again but ...
-
-There are few reasons why I would like remove scpi dependency on bL driver:
-
-1. It has a notion of big and little which may not be true but that not
-   much of a problem.
-
-2. MAX_CLUSTER = 2 and scpi is getting used on multi-cluster systems
-   though it was first tested on Juno which was bL system. There are
-   quite a few internal FVP platforms that can manage to run with just
-   proper DT with this change.
-
-3. raw_cpu_to_cluster still calls topology_physical_package_id which
-   breaks on these platforms and also with introduction of ACPI PPTT it
-   will break on all ARM64 platforms.
-
-4. We can still leave usage of topology_physical_package_id as is in
-   arm_big_little.c worst case if it's going to be used only on ARM32
-   For ARM64, topology_physical_package_id will be changed to give
-   actual physical socket number which will be 0 for all multi-cluster
-   (including bL) systems as along as they are single chip.
-
--- 
-Regards,
-Sudeep
+I have applied the series, thanks!
