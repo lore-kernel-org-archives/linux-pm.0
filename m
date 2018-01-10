@@ -1,189 +1,184 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Subject: Re: [RFD] Devices that need full power for wakeup
-Date: Wed, 10 Jan 2018 02:22:10 +0100
-Message-ID: <CAJZ5v0hw_z5qGiGFGtJHLMfduEsH5c9y8q7ZFNCZdjwppP=GbA@mail.gmail.com>
-References: <CAJZ5v0jf_CVsZOQj4ZzgU59Z9ketb_aNu0UdgMmgXyJwRc37Yg@mail.gmail.com>
- <CAPDyKFqZ+ja5bu+G7ynTowq1CFQ2_k2zdA7qGbj3VagdB0yT4Q@mail.gmail.com>
+From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: Re: [PATCH] powercap: add suspend and resume mechanism for SOC
+ power limit
+Date: Tue, 09 Jan 2018 17:47:10 -0800
+Message-ID: <1515548830.69545.28.camel@linux.intel.com>
+References: <1515544703-19409-1-git-send-email-xinx.sun@intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-oi0-f54.google.com ([209.85.218.54]:34125 "EHLO
-        mail-oi0-f54.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1753562AbeAJBWL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jan 2018 20:22:11 -0500
-Received: by mail-oi0-f54.google.com with SMTP id a70so5483364oib.1
-        for <linux-pm@vger.kernel.org>; Tue, 09 Jan 2018 17:22:11 -0800 (PST)
-In-Reply-To: <CAPDyKFqZ+ja5bu+G7ynTowq1CFQ2_k2zdA7qGbj3VagdB0yT4Q@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner@vger.kernel.org>
+In-Reply-To: <1515544703-19409-1-git-send-email-xinx.sun@intel.com>
+Sender: linux-kernel-owner@vger.kernel.org
+To: xinx.sun@intel.com, rjw@rjwysocki.net, jacob.jun.pan@linux.intel.com
+Cc: zhen.han@intel.com, chaox.m.wang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alan Stern <stern@rowland.harvard.edu>
 
-On Mon, Jan 8, 2018 at 5:33 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
-> On 8 January 2018 at 12:51, Rafael J. Wysocki <rafael@kernel.org> wrote:
->> Hi,
->>
->> First, let me characterize the problem the way I understand it and if
->> my understanding of it is not correct, let me know why.
->>
->> There are devices that can only signal wakeup if they are provided
->> with full "in-band" power (in contrast with devices that can signal
->> wakeup with the help of a special "wakeup" power source, possibly of
->> smaller capacity).  Suspending them via runtime PM is problematic
->> because of the general assumption that wakeup should always be enabled
->> for all runtime-suspended wakeup-capable devices which leads to sort
->> of a Catch 22 situation in this particular case.
->>
->> Some drivers work around that by only allowing the device to be
->> suspended if they know that it is not expected by user space to signal
->> wakeup and they use the runtime PM usage counter to prevent the device
->> from being suspended otherwise.  That works for runtime PM, but if the
->> system goes to a sleep state, the runtime PM usage counter is not
->> taken into account and the handling of the device may not be adequate
->> and there is a question how to address that.
->
-> As far as I understand, I would describe the problem a bit
-> differently. Let me elaborate on that.
->
-> Genpd treats a device with the ->dev.power.wakeup_path flag set, as it
-> need to stay powered on during system suspend, thus also its PM
-> domain. There is nothing new around this, which make me think that we
-> should continue to treat that as being the default behavior.
-
-It actually does more than just preventing device (and domain) power
-from being turned off, as it causes the entire genpd_finish_suspend()
-to be skipped effectively in the genpd_is_active_wakeup() case.
-
-Nothing wrong with that in principle, but let's be precise.
-
-> This is also what Geert convinced to be the best, from earlier discussions.
-
-I'm not sure about that.  Geert seems to need power to stay on,
-nothing more, and that regardless of genpd_is_active_wakeup() AFAICS.
-
-> However, there are a few related issues around system wakeups in
-> genpd, during system suspend.
->
-> 1)
-> If the driver for the device, configures system wakeup as an
-> "out-band-wakeup", the device and its PM domain, don't need to stay
-> powered on during system suspend from the driver perspective.
-
-That depends.
-
-The wakeup signal has to be generated or asserted by something,
-presumably the device itself.
-
-Out-of-band usually only means that the signal is routed in a special
-way different from the usual device's interrupt routing and not that
-the device is not involved in wakeup signaling at all.
-
-A wakeup signal usually means that something interesting happened
-outside and that thing needs to be detected in the first place, most
-likely by the device.
-
-> A very common scenario when this is the case, is when a wakeup signal is
-> routed via GPIO IRQ.
->
-> In these cases, genpd still leaves the device powered on, as well as
-> its PM domain, thus wasting power during system suspend.
-
-Which probably is the right thing to do.
-
-> 2)
-> The are cases when device_may_wakeup() returns true for a device, but
-> because there are no consumers registered for the system wakeup IRQ,
-> it doesn't make sense for the driver to configure system wakeup for
-> the device during system suspend. An example of this, exists in the
-> mmc subsystem, when an SDIO controller driver, during system suspend,
-> realizes that there are no SDIO functional driver (a WiFi driver for
-> example) that wants system wakeup signals (SDIO IRQs) to be delivered.
-
-This isn't genpd-specific, but general.
-
-device_may_wakeup() currently means that the device can and is allowed
-(by user space) to signal wakeup, but if the device is just a man in
-the middle and merely passes wakeup signals from its children or
-consumers, it is not necessary to configure it for wakeup when none of
-them are allowed to wake up the system.
-
-So far we have just enabled wakeup unconditionally for such "passive"
-devices, although that indeed generally isn't particularly
-energy-efficient, but it is simple and it allowed us to avoid quite
-some headaches.
-
-> Again, the problem boils done to that the middle-layer/PM domain, only
-> can check the ->dev.power.wakeup_path flag to know if the device needs
-> to stay power on during system suspend, while in fact in both case 1)
-> and case 2), the device could have been powered off.
->
-> I think, to cope with these scenarios, we need a way for drivers to
-> inform the middle-layer/PM domain, that the driver is fine with
-> powering off the device and its PM domain during system suspend. Of
-> course, then its up to the middle-layer/PM domain to act on this.
-
-I'm not sure why you want it this way and why it makes sense even.
-
-The handling of "passive" devices requires two things: an indication
-that the device is "passive" and the tracking of its "consumers".
-wakeup_path only is a poor man's substitute for the latter.
-
->>
->> Assuming that the above description of the problem is accurate, here's
->> how I see it.
->>
->> All depends on whether or not a device requiring full power for
->> signaling wakeup is allowed to wake up the system from sleeps states.
->> If it is not allowed to do that, it should be fully suspended during
->> system transitions to sleep states regardless of its previous runtime
->> PM status and (in the majority of cases) it may just be left in
->> suspend if already suspended.
->>
->> The problematic case is when the device is allowed to wake up the
->> system from sleep states, because it has to be provided with full
->> power while the system is in a sleep state for the wakeup to work.
->> Clearly, checking the runtime PM usage counter alone is not sufficient
->> for that, because the wakeup counter may be nonzero for reasons other
->> than wakeup and the driver may not be able to arrange things properly
->> by itself during system-wide transitions, for example in the cases
->> when the device belongs to a power domain managed by a separate code
->> layer (like genpd).  This leads to the conclusion that it is necessary
->> to provide an additional mechanism allowing all of the layers of code
->> involved in the handling of the device to check what to do with it (or
->> with the power domain it belongs to etc) during system-wide
->> transitions to sleep state.
->>
->> In principle, that mechanism might be a new driver flag saying that
->> power should not be removed from the device if device_may_wakeup()
->> returns "true" for it.  However, there already is a similar thing in
->> the kernel which already is taken into account by genpd_power_off()
->> and which is the PM_QOS_FLAG_NO_POWER_OFF PM QoS flag.
->>
->> The existence of it means that drivers can use it for runtime PM in
->> the first place instead of preventing devices from being suspended if
->> they need to signal wakeup.  In principle, a driver may just set this
->> flag and then suspend the device normally whenever that makes sense
->> (of course, taking the flag into account if set) which may lead to
->> reduced power draw if (say) device cloks may be gated without
->> disturbing its wakeup capability.  Moreover, PM QoS requests may be
->> added and removed at any time, so the driver may just set the flag or
->> clear it whenever the device's wakeup settings change.
->>
->> And if this flag is taken into account by genpd_sync_power_off() too,
->> using it may just be sufficient to address the concern at hand.
->>
->> Thoughts?
->
-> As I tried to describe above, I think we rather need an "opt-out
-> method", rather than opt-in. In other words, a flag telling that the
-> device can be powered off, from the driver's perspective.
->
-> I also think such flag needs to be propagated to parent devices,
-> similar to what we do for the wakeup_path flag.
->
-> If this makes some sense, I can share some patches which I already in my pipe!?
-
-I'd rather like to agree on general rules to start with.
+On Wed, 2018-01-10 at 08:38 +0800, xinx.sun@intel.com wrote:
+> From: Zhen Han <zhen.han@intel.com>
+> 
+> PL1 and PL2 could be throlled or de-throttled by
+> Thermal management to control SOC temperature.
+> However, currently, their value will be reset to default value
+> after once system suspend and resume.
+> Add pm_notifier to save PL1, PL2 before system suspect and restore
+> PL1, PL2 after system resume.
+> 
+Why are you posting this patch again?
+If there any change from your prior post?
 
 Thanks,
-Rafael
+Srinivas
+
+> Signed-off-by: Zhen Han <zhen.han@intel.com>
+> ---
+>  drivers/powercap/intel_rapl.c | 97
+> +++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 97 insertions(+)
+> 
+> diff --git a/drivers/powercap/intel_rapl.c
+> b/drivers/powercap/intel_rapl.c
+> index d1694f1..0188cff 100644
+> --- a/drivers/powercap/intel_rapl.c
+> +++ b/drivers/powercap/intel_rapl.c
+> @@ -29,6 +29,7 @@
+>  #include <linux/sysfs.h>
+>  #include <linux/cpu.h>
+>  #include <linux/powercap.h>
+> +#include <linux/suspend.h>
+>  #include <asm/iosf_mbi.h>
+>  
+>  #include <asm/processor.h>
+> @@ -155,6 +156,7 @@ struct rapl_power_limit {
+>  	int prim_id; /* primitive ID used to enable */
+>  	struct rapl_domain *domain;
+>  	const char *name;
+> +	u64 last_power_limit;
+>  };
+>  
+>  static const char pl1_name[] = "long_term";
+> @@ -1533,6 +1535,92 @@ static int rapl_cpu_down_prep(unsigned int
+> cpu)
+>  
+>  static enum cpuhp_state pcap_rapl_online;
+>  
+> +static void power_limit_state_save(void)
+> +{
+> +	struct rapl_package *rp;
+> +	struct rapl_domain *rd;
+> +	int nr_pl, ret, i;
+> +
+> +	get_online_cpus();
+> +	list_for_each_entry(rp, &rapl_packages, plist) {
+> +		if (!rp->power_zone)
+> +			continue;
+> +		rd = power_zone_to_rapl_domain(rp->power_zone);
+> +		nr_pl = find_nr_power_limit(rd);
+> +		for (i = 0; i < nr_pl; i++) {
+> +			switch (rd->rpl[i].prim_id) {
+> +			case PL1_ENABLE:
+> +				ret = rapl_read_data_raw(rd,
+> +						POWER_LIMIT1,
+> +						true,
+> +						&rd-
+> >rpl[i].last_power_limit);
+> +				if (ret)
+> +					rd->rpl[i].last_power_limit
+> = 0;
+> +				break;
+> +			case PL2_ENABLE:
+> +				ret = rapl_read_data_raw(rd,
+> +						POWER_LIMIT2,
+> +						true,
+> +						&rd-
+> >rpl[i].last_power_limit);
+> +				if (ret)
+> +					rd->rpl[i].last_power_limit
+> = 0;
+> +				break;
+> +			}
+> +		}
+> +	}
+> +	put_online_cpus();
+> +}
+> +
+> +static void power_limit_state_restore(void)
+> +{
+> +	struct rapl_package *rp;
+> +	struct rapl_domain *rd;
+> +	int nr_pl, i;
+> +
+> +	get_online_cpus();
+> +	list_for_each_entry(rp, &rapl_packages, plist) {
+> +		if (!rp->power_zone)
+> +			continue;
+> +		rd = power_zone_to_rapl_domain(rp->power_zone);
+> +		nr_pl = find_nr_power_limit(rd);
+> +		for (i = 0; i < nr_pl; i++) {
+> +			switch (rd->rpl[i].prim_id) {
+> +			case PL1_ENABLE:
+> +				if (rd->rpl[i].last_power_limit)
+> +					rapl_write_data_raw(rd,
+> +						POWER_LIMIT1,
+> +						rd-
+> >rpl[i].last_power_limit);
+> +				break;
+> +			case PL2_ENABLE:
+> +				if (rd->rpl[i].last_power_limit)
+> +					rapl_write_data_raw(rd,
+> +						POWER_LIMIT2,
+> +						rd-
+> >rpl[i].last_power_limit);
+> +				break;
+> +			}
+> +		}
+> +	}
+> +	put_online_cpus();
+> +}
+> +
+> +static int rapl_pm_callback(struct notifier_block *nb,
+> +	unsigned long mode, void *_unused)
+> +{
+> +	switch (mode) {
+> +	case PM_SUSPEND_PREPARE:
+> +		power_limit_state_save();
+> +		break;
+> +	case PM_POST_SUSPEND:
+> +		power_limit_state_restore();
+> +		break;
+> +	}
+> +	return NOTIFY_OK;
+> +}
+> +
+> +static struct notifier_block rapl_pm_notifier = {
+> +	.notifier_call = rapl_pm_callback,
+> +};
+> +
+>  static int __init rapl_init(void)
+>  {
+>  	const struct x86_cpu_id *id;
+> @@ -1560,8 +1648,16 @@ static int __init rapl_init(void)
+>  
+>  	/* Don't bail out if PSys is not supported */
+>  	rapl_register_psys();
+> +
+> +	ret = register_pm_notifier(&rapl_pm_notifier);
+> +	if (ret)
+> +		goto err_unreg_all;
+> +
+>  	return 0;
+>  
+> +err_unreg_all:
+> +	cpuhp_remove_state(pcap_rapl_online);
+> +
+>  err_unreg:
+>  	rapl_unregister_powercap();
+>  	return ret;
+> @@ -1569,6 +1665,7 @@ static int __init rapl_init(void)
+>  
+>  static void __exit rapl_exit(void)
+>  {
+> +	unregister_pm_notifier(&rapl_pm_notifier);
+>  	cpuhp_remove_state(pcap_rapl_online);
+>  	rapl_unregister_powercap();
+>  }
