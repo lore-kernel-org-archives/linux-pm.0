@@ -1,184 +1,111 @@
-From: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: Re: [PATCH] powercap: add suspend and resume mechanism for SOC
+From: "Sun, XinX" <xinx.sun@intel.com>
+Subject: RE: [PATCH] powercap: add suspend and resume mechanism for SOC
  power limit
-Date: Tue, 09 Jan 2018 17:47:10 -0800
-Message-ID: <1515548830.69545.28.camel@linux.intel.com>
+Date: Wed, 10 Jan 2018 01:53:03 +0000
+Message-ID: <29BA90D9533CD34EA40DF8A796ED93C30409C1B1@CDSMSX104.ccr.corp.intel.com>
 References: <1515544703-19409-1-git-send-email-xinx.sun@intel.com>
+ <1515548830.69545.28.camel@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner@vger.kernel.org>
-In-Reply-To: <1515544703-19409-1-git-send-email-xinx.sun@intel.com>
-Sender: linux-kernel-owner@vger.kernel.org
-To: xinx.sun@intel.com, rjw@rjwysocki.net, jacob.jun.pan@linux.intel.com
-Cc: zhen.han@intel.com, chaox.m.wang@intel.com, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mga14.intel.com ([192.55.52.115]:45159 "EHLO mga14.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S932754AbeAJBxH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 9 Jan 2018 20:53:07 -0500
+In-Reply-To: <1515548830.69545.28.camel@linux.intel.com>
+Content-Language: en-US
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "jacob.jun.pan@linux.intel.com" <jacob.jun.pan@linux.intel.com>
+Cc: "Han, Zhen" <zhen.han@intel.com>, "Wang, ChaoX M" <chaox.m.wang@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Wed, 2018-01-10 at 08:38 +0800, xinx.sun@intel.com wrote:
-> From: Zhen Han <zhen.han@intel.com>
-> 
-> PL1 and PL2 could be throlled or de-throttled by
-> Thermal management to control SOC temperature.
-> However, currently, their value will be reset to default value
-> after once system suspend and resume.
-> Add pm_notifier to save PL1, PL2 before system suspect and restore
-> PL1, PL2 after system resume.
-> 
-Why are you posting this patch again?
-If there any change from your prior post?
-
-Thanks,
-Srinivas
-
-> Signed-off-by: Zhen Han <zhen.han@intel.com>
-> ---
->  drivers/powercap/intel_rapl.c | 97
-> +++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 97 insertions(+)
-> 
-> diff --git a/drivers/powercap/intel_rapl.c
-> b/drivers/powercap/intel_rapl.c
-> index d1694f1..0188cff 100644
-> --- a/drivers/powercap/intel_rapl.c
-> +++ b/drivers/powercap/intel_rapl.c
-> @@ -29,6 +29,7 @@
->  #include <linux/sysfs.h>
->  #include <linux/cpu.h>
->  #include <linux/powercap.h>
-> +#include <linux/suspend.h>
->  #include <asm/iosf_mbi.h>
->  
->  #include <asm/processor.h>
-> @@ -155,6 +156,7 @@ struct rapl_power_limit {
->  	int prim_id; /* primitive ID used to enable */
->  	struct rapl_domain *domain;
->  	const char *name;
-> +	u64 last_power_limit;
->  };
->  
->  static const char pl1_name[] = "long_term";
-> @@ -1533,6 +1535,92 @@ static int rapl_cpu_down_prep(unsigned int
-> cpu)
->  
->  static enum cpuhp_state pcap_rapl_online;
->  
-> +static void power_limit_state_save(void)
-> +{
-> +	struct rapl_package *rp;
-> +	struct rapl_domain *rd;
-> +	int nr_pl, ret, i;
-> +
-> +	get_online_cpus();
-> +	list_for_each_entry(rp, &rapl_packages, plist) {
-> +		if (!rp->power_zone)
-> +			continue;
-> +		rd = power_zone_to_rapl_domain(rp->power_zone);
-> +		nr_pl = find_nr_power_limit(rd);
-> +		for (i = 0; i < nr_pl; i++) {
-> +			switch (rd->rpl[i].prim_id) {
-> +			case PL1_ENABLE:
-> +				ret = rapl_read_data_raw(rd,
-> +						POWER_LIMIT1,
-> +						true,
-> +						&rd-
-> >rpl[i].last_power_limit);
-> +				if (ret)
-> +					rd->rpl[i].last_power_limit
-> = 0;
-> +				break;
-> +			case PL2_ENABLE:
-> +				ret = rapl_read_data_raw(rd,
-> +						POWER_LIMIT2,
-> +						true,
-> +						&rd-
-> >rpl[i].last_power_limit);
-> +				if (ret)
-> +					rd->rpl[i].last_power_limit
-> = 0;
-> +				break;
-> +			}
-> +		}
-> +	}
-> +	put_online_cpus();
-> +}
-> +
-> +static void power_limit_state_restore(void)
-> +{
-> +	struct rapl_package *rp;
-> +	struct rapl_domain *rd;
-> +	int nr_pl, i;
-> +
-> +	get_online_cpus();
-> +	list_for_each_entry(rp, &rapl_packages, plist) {
-> +		if (!rp->power_zone)
-> +			continue;
-> +		rd = power_zone_to_rapl_domain(rp->power_zone);
-> +		nr_pl = find_nr_power_limit(rd);
-> +		for (i = 0; i < nr_pl; i++) {
-> +			switch (rd->rpl[i].prim_id) {
-> +			case PL1_ENABLE:
-> +				if (rd->rpl[i].last_power_limit)
-> +					rapl_write_data_raw(rd,
-> +						POWER_LIMIT1,
-> +						rd-
-> >rpl[i].last_power_limit);
-> +				break;
-> +			case PL2_ENABLE:
-> +				if (rd->rpl[i].last_power_limit)
-> +					rapl_write_data_raw(rd,
-> +						POWER_LIMIT2,
-> +						rd-
-> >rpl[i].last_power_limit);
-> +				break;
-> +			}
-> +		}
-> +	}
-> +	put_online_cpus();
-> +}
-> +
-> +static int rapl_pm_callback(struct notifier_block *nb,
-> +	unsigned long mode, void *_unused)
-> +{
-> +	switch (mode) {
-> +	case PM_SUSPEND_PREPARE:
-> +		power_limit_state_save();
-> +		break;
-> +	case PM_POST_SUSPEND:
-> +		power_limit_state_restore();
-> +		break;
-> +	}
-> +	return NOTIFY_OK;
-> +}
-> +
-> +static struct notifier_block rapl_pm_notifier = {
-> +	.notifier_call = rapl_pm_callback,
-> +};
-> +
->  static int __init rapl_init(void)
->  {
->  	const struct x86_cpu_id *id;
-> @@ -1560,8 +1648,16 @@ static int __init rapl_init(void)
->  
->  	/* Don't bail out if PSys is not supported */
->  	rapl_register_psys();
-> +
-> +	ret = register_pm_notifier(&rapl_pm_notifier);
-> +	if (ret)
-> +		goto err_unreg_all;
-> +
->  	return 0;
->  
-> +err_unreg_all:
-> +	cpuhp_remove_state(pcap_rapl_online);
-> +
->  err_unreg:
->  	rapl_unregister_powercap();
->  	return ret;
-> @@ -1569,6 +1665,7 @@ static int __init rapl_init(void)
->  
->  static void __exit rapl_exit(void)
->  {
-> +	unregister_pm_notifier(&rapl_pm_notifier);
->  	cpuhp_remove_state(pcap_rapl_online);
->  	rapl_unregister_powercap();
->  }
+QWNjb3JkaW5nIHRvIFJhZmFlbCdzIGNvbW1lbnQuDQo+VGhlcmUgaXMgYSBmb3JtYWwgaXNzdWUg
+aGVyZS4NCj5XZSBuZWVkIGEgU2lnbmVkLW9mZi1ieTogdGFnIGZyb20gWmhlbiBIYW4gdG9vLg0K
+DQpJIGNoYW5nZWQgU2lnbmVkLW9mZiBpbiBjb21taXQgbWVzc2FnZS4NCg0KVGhhbmtzICYgQlIs
+DQpTdW4gWGluDQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBTcmluaXZhcyBQ
+YW5kcnV2YWRhIFttYWlsdG86c3Jpbml2YXMucGFuZHJ1dmFkYUBsaW51eC5pbnRlbC5jb21dIA0K
+U2VudDogV2VkbmVzZGF5LCBKYW51YXJ5IDEwLCAyMDE4IDk6NDcgQU0NClRvOiBTdW4sIFhpblgg
+PHhpbnguc3VuQGludGVsLmNvbT47IHJqd0Byand5c29ja2kubmV0OyBqYWNvYi5qdW4ucGFuQGxp
+bnV4LmludGVsLmNvbQ0KQ2M6IEhhbiwgWmhlbiA8emhlbi5oYW5AaW50ZWwuY29tPjsgV2FuZywg
+Q2hhb1ggTSA8Y2hhb3gubS53YW5nQGludGVsLmNvbT47IGxpbnV4LXBtQHZnZXIua2VybmVsLm9y
+ZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KU3ViamVjdDogUmU6IFtQQVRDSF0gcG93
+ZXJjYXA6IGFkZCBzdXNwZW5kIGFuZCByZXN1bWUgbWVjaGFuaXNtIGZvciBTT0MgcG93ZXIgbGlt
+aXQNCg0KT24gV2VkLCAyMDE4LTAxLTEwIGF0IDA4OjM4ICswODAwLCB4aW54LnN1bkBpbnRlbC5j
+b20gd3JvdGU6DQo+IEZyb206IFpoZW4gSGFuIDx6aGVuLmhhbkBpbnRlbC5jb20+DQo+IA0KPiBQ
+TDEgYW5kIFBMMiBjb3VsZCBiZSB0aHJvbGxlZCBvciBkZS10aHJvdHRsZWQgYnkgVGhlcm1hbCBt
+YW5hZ2VtZW50IHRvIA0KPiBjb250cm9sIFNPQyB0ZW1wZXJhdHVyZS4NCj4gSG93ZXZlciwgY3Vy
+cmVudGx5LCB0aGVpciB2YWx1ZSB3aWxsIGJlIHJlc2V0IHRvIGRlZmF1bHQgdmFsdWUgYWZ0ZXIg
+DQo+IG9uY2Ugc3lzdGVtIHN1c3BlbmQgYW5kIHJlc3VtZS4NCj4gQWRkIHBtX25vdGlmaWVyIHRv
+IHNhdmUgUEwxLCBQTDIgYmVmb3JlIHN5c3RlbSBzdXNwZWN0IGFuZCByZXN0b3JlIA0KPiBQTDEs
+IFBMMiBhZnRlciBzeXN0ZW0gcmVzdW1lLg0KPiANCldoeSBhcmUgeW91IHBvc3RpbmcgdGhpcyBw
+YXRjaCBhZ2Fpbj8NCklmIHRoZXJlIGFueSBjaGFuZ2UgZnJvbSB5b3VyIHByaW9yIHBvc3Q/DQoN
+ClRoYW5rcywNClNyaW5pdmFzDQoNCj4gU2lnbmVkLW9mZi1ieTogWmhlbiBIYW4gPHpoZW4uaGFu
+QGludGVsLmNvbT4NCj4gLS0tDQo+ICBkcml2ZXJzL3Bvd2VyY2FwL2ludGVsX3JhcGwuYyB8IDk3
+DQo+ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gIDEgZmls
+ZSBjaGFuZ2VkLCA5NyBpbnNlcnRpb25zKCspDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9w
+b3dlcmNhcC9pbnRlbF9yYXBsLmMgDQo+IGIvZHJpdmVycy9wb3dlcmNhcC9pbnRlbF9yYXBsLmMg
+aW5kZXggZDE2OTRmMS4uMDE4OGNmZiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9wb3dlcmNhcC9p
+bnRlbF9yYXBsLmMNCj4gKysrIGIvZHJpdmVycy9wb3dlcmNhcC9pbnRlbF9yYXBsLmMNCj4gQEAg
+LTI5LDYgKzI5LDcgQEANCj4gICNpbmNsdWRlIDxsaW51eC9zeXNmcy5oPg0KPiAgI2luY2x1ZGUg
+PGxpbnV4L2NwdS5oPg0KPiAgI2luY2x1ZGUgPGxpbnV4L3Bvd2VyY2FwLmg+DQo+ICsjaW5jbHVk
+ZSA8bGludXgvc3VzcGVuZC5oPg0KPiAgI2luY2x1ZGUgPGFzbS9pb3NmX21iaS5oPg0KPiAgDQo+
+ICAjaW5jbHVkZSA8YXNtL3Byb2Nlc3Nvci5oPg0KPiBAQCAtMTU1LDYgKzE1Niw3IEBAIHN0cnVj
+dCByYXBsX3Bvd2VyX2xpbWl0IHsNCj4gIAlpbnQgcHJpbV9pZDsgLyogcHJpbWl0aXZlIElEIHVz
+ZWQgdG8gZW5hYmxlICovDQo+ICAJc3RydWN0IHJhcGxfZG9tYWluICpkb21haW47DQo+ICAJY29u
+c3QgY2hhciAqbmFtZTsNCj4gKwl1NjQgbGFzdF9wb3dlcl9saW1pdDsNCj4gIH07DQo+ICANCj4g
+IHN0YXRpYyBjb25zdCBjaGFyIHBsMV9uYW1lW10gPSAibG9uZ190ZXJtIjsgQEAgLTE1MzMsNiAr
+MTUzNSw5MiBAQCANCj4gc3RhdGljIGludCByYXBsX2NwdV9kb3duX3ByZXAodW5zaWduZWQgaW50
+DQo+IGNwdSkNCj4gIA0KPiAgc3RhdGljIGVudW0gY3B1aHBfc3RhdGUgcGNhcF9yYXBsX29ubGlu
+ZTsNCj4gIA0KPiArc3RhdGljIHZvaWQgcG93ZXJfbGltaXRfc3RhdGVfc2F2ZSh2b2lkKSB7DQo+
+ICsJc3RydWN0IHJhcGxfcGFja2FnZSAqcnA7DQo+ICsJc3RydWN0IHJhcGxfZG9tYWluICpyZDsN
+Cj4gKwlpbnQgbnJfcGwsIHJldCwgaTsNCj4gKw0KPiArCWdldF9vbmxpbmVfY3B1cygpOw0KPiAr
+CWxpc3RfZm9yX2VhY2hfZW50cnkocnAsICZyYXBsX3BhY2thZ2VzLCBwbGlzdCkgew0KPiArCQlp
+ZiAoIXJwLT5wb3dlcl96b25lKQ0KPiArCQkJY29udGludWU7DQo+ICsJCXJkID0gcG93ZXJfem9u
+ZV90b19yYXBsX2RvbWFpbihycC0+cG93ZXJfem9uZSk7DQo+ICsJCW5yX3BsID0gZmluZF9ucl9w
+b3dlcl9saW1pdChyZCk7DQo+ICsJCWZvciAoaSA9IDA7IGkgPCBucl9wbDsgaSsrKSB7DQo+ICsJ
+CQlzd2l0Y2ggKHJkLT5ycGxbaV0ucHJpbV9pZCkgew0KPiArCQkJY2FzZSBQTDFfRU5BQkxFOg0K
+PiArCQkJCXJldCA9IHJhcGxfcmVhZF9kYXRhX3JhdyhyZCwNCj4gKwkJCQkJCVBPV0VSX0xJTUlU
+MSwNCj4gKwkJCQkJCXRydWUsDQo+ICsJCQkJCQkmcmQtDQo+ID5ycGxbaV0ubGFzdF9wb3dlcl9s
+aW1pdCk7DQo+ICsJCQkJaWYgKHJldCkNCj4gKwkJCQkJcmQtPnJwbFtpXS5sYXN0X3Bvd2VyX2xp
+bWl0DQo+ID0gMDsNCj4gKwkJCQlicmVhazsNCj4gKwkJCWNhc2UgUEwyX0VOQUJMRToNCj4gKwkJ
+CQlyZXQgPSByYXBsX3JlYWRfZGF0YV9yYXcocmQsDQo+ICsJCQkJCQlQT1dFUl9MSU1JVDIsDQo+
+ICsJCQkJCQl0cnVlLA0KPiArCQkJCQkJJnJkLQ0KPiA+cnBsW2ldLmxhc3RfcG93ZXJfbGltaXQp
+Ow0KPiArCQkJCWlmIChyZXQpDQo+ICsJCQkJCXJkLT5ycGxbaV0ubGFzdF9wb3dlcl9saW1pdA0K
+PiA9IDA7DQo+ICsJCQkJYnJlYWs7DQo+ICsJCQl9DQo+ICsJCX0NCj4gKwl9DQo+ICsJcHV0X29u
+bGluZV9jcHVzKCk7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyB2b2lkIHBvd2VyX2xpbWl0X3N0YXRl
+X3Jlc3RvcmUodm9pZCkgew0KPiArCXN0cnVjdCByYXBsX3BhY2thZ2UgKnJwOw0KPiArCXN0cnVj
+dCByYXBsX2RvbWFpbiAqcmQ7DQo+ICsJaW50IG5yX3BsLCBpOw0KPiArDQo+ICsJZ2V0X29ubGlu
+ZV9jcHVzKCk7DQo+ICsJbGlzdF9mb3JfZWFjaF9lbnRyeShycCwgJnJhcGxfcGFja2FnZXMsIHBs
+aXN0KSB7DQo+ICsJCWlmICghcnAtPnBvd2VyX3pvbmUpDQo+ICsJCQljb250aW51ZTsNCj4gKwkJ
+cmQgPSBwb3dlcl96b25lX3RvX3JhcGxfZG9tYWluKHJwLT5wb3dlcl96b25lKTsNCj4gKwkJbnJf
+cGwgPSBmaW5kX25yX3Bvd2VyX2xpbWl0KHJkKTsNCj4gKwkJZm9yIChpID0gMDsgaSA8IG5yX3Bs
+OyBpKyspIHsNCj4gKwkJCXN3aXRjaCAocmQtPnJwbFtpXS5wcmltX2lkKSB7DQo+ICsJCQljYXNl
+IFBMMV9FTkFCTEU6DQo+ICsJCQkJaWYgKHJkLT5ycGxbaV0ubGFzdF9wb3dlcl9saW1pdCkNCj4g
+KwkJCQkJcmFwbF93cml0ZV9kYXRhX3JhdyhyZCwNCj4gKwkJCQkJCVBPV0VSX0xJTUlUMSwNCj4g
+KwkJCQkJCXJkLQ0KPiA+cnBsW2ldLmxhc3RfcG93ZXJfbGltaXQpOw0KPiArCQkJCWJyZWFrOw0K
+PiArCQkJY2FzZSBQTDJfRU5BQkxFOg0KPiArCQkJCWlmIChyZC0+cnBsW2ldLmxhc3RfcG93ZXJf
+bGltaXQpDQo+ICsJCQkJCXJhcGxfd3JpdGVfZGF0YV9yYXcocmQsDQo+ICsJCQkJCQlQT1dFUl9M
+SU1JVDIsDQo+ICsJCQkJCQlyZC0NCj4gPnJwbFtpXS5sYXN0X3Bvd2VyX2xpbWl0KTsNCj4gKwkJ
+CQlicmVhazsNCj4gKwkJCX0NCj4gKwkJfQ0KPiArCX0NCj4gKwlwdXRfb25saW5lX2NwdXMoKTsN
+Cj4gK30NCj4gKw0KPiArc3RhdGljIGludCByYXBsX3BtX2NhbGxiYWNrKHN0cnVjdCBub3RpZmll
+cl9ibG9jayAqbmIsDQo+ICsJdW5zaWduZWQgbG9uZyBtb2RlLCB2b2lkICpfdW51c2VkKQ0KPiAr
+ew0KPiArCXN3aXRjaCAobW9kZSkgew0KPiArCWNhc2UgUE1fU1VTUEVORF9QUkVQQVJFOg0KPiAr
+CQlwb3dlcl9saW1pdF9zdGF0ZV9zYXZlKCk7DQo+ICsJCWJyZWFrOw0KPiArCWNhc2UgUE1fUE9T
+VF9TVVNQRU5EOg0KPiArCQlwb3dlcl9saW1pdF9zdGF0ZV9yZXN0b3JlKCk7DQo+ICsJCWJyZWFr
+Ow0KPiArCX0NCj4gKwlyZXR1cm4gTk9USUZZX09LOw0KPiArfQ0KPiArDQo+ICtzdGF0aWMgc3Ry
+dWN0IG5vdGlmaWVyX2Jsb2NrIHJhcGxfcG1fbm90aWZpZXIgPSB7DQo+ICsJLm5vdGlmaWVyX2Nh
+bGwgPSByYXBsX3BtX2NhbGxiYWNrLA0KPiArfTsNCj4gKw0KPiAgc3RhdGljIGludCBfX2luaXQg
+cmFwbF9pbml0KHZvaWQpDQo+ICB7DQo+ICAJY29uc3Qgc3RydWN0IHg4Nl9jcHVfaWQgKmlkOw0K
+PiBAQCAtMTU2MCw4ICsxNjQ4LDE2IEBAIHN0YXRpYyBpbnQgX19pbml0IHJhcGxfaW5pdCh2b2lk
+KQ0KPiAgDQo+ICAJLyogRG9uJ3QgYmFpbCBvdXQgaWYgUFN5cyBpcyBub3Qgc3VwcG9ydGVkICov
+DQo+ICAJcmFwbF9yZWdpc3Rlcl9wc3lzKCk7DQo+ICsNCj4gKwlyZXQgPSByZWdpc3Rlcl9wbV9u
+b3RpZmllcigmcmFwbF9wbV9ub3RpZmllcik7DQo+ICsJaWYgKHJldCkNCj4gKwkJZ290byBlcnJf
+dW5yZWdfYWxsOw0KPiArDQo+ICAJcmV0dXJuIDA7DQo+ICANCj4gK2Vycl91bnJlZ19hbGw6DQo+
+ICsJY3B1aHBfcmVtb3ZlX3N0YXRlKHBjYXBfcmFwbF9vbmxpbmUpOw0KPiArDQo+ICBlcnJfdW5y
+ZWc6DQo+ICAJcmFwbF91bnJlZ2lzdGVyX3Bvd2VyY2FwKCk7DQo+ICAJcmV0dXJuIHJldDsNCj4g
+QEAgLTE1NjksNiArMTY2NSw3IEBAIHN0YXRpYyBpbnQgX19pbml0IHJhcGxfaW5pdCh2b2lkKQ0K
+PiAgDQo+ICBzdGF0aWMgdm9pZCBfX2V4aXQgcmFwbF9leGl0KHZvaWQpDQo+ICB7DQo+ICsJdW5y
+ZWdpc3Rlcl9wbV9ub3RpZmllcigmcmFwbF9wbV9ub3RpZmllcik7DQo+ICAJY3B1aHBfcmVtb3Zl
+X3N0YXRlKHBjYXBfcmFwbF9vbmxpbmUpOw0KPiAgCXJhcGxfdW5yZWdpc3Rlcl9wb3dlcmNhcCgp
+Ow0KPiAgfQ0K
