@@ -1,69 +1,132 @@
 From: Eduardo Valentin <edubezval@gmail.com>
-Subject: Re: [PATCH] thermal: Use power efficient workqueue
-Date: Wed, 10 Jan 2018 11:28:05 -0800
-Message-ID: <20180110192803.GC3837@localhost.localdomain>
-References: <1514971456-2877-1-git-send-email-leo.yan@linaro.org>
+Subject: Re: [PATCH] thermal: thermal_hwmon: Convert to
+ hwmon_device_register_with_info()
+Date: Wed, 10 Jan 2018 11:29:57 -0800
+Message-ID: <20180110192955.GD3837@localhost.localdomain>
+References: <1514976294-31880-1-git-send-email-festevam@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-kernel-owner@vger.kernel.org>
+Return-path: <linux-pm-owner@vger.kernel.org>
+Received: from mail-pg0-f67.google.com ([74.125.83.67]:37474 "EHLO
+        mail-pg0-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1754231AbeAJT3v (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 14:29:51 -0500
+Received: by mail-pg0-f67.google.com with SMTP id z17so137022pgc.4
+        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 11:29:51 -0800 (PST)
 Content-Disposition: inline
-In-Reply-To: <1514971456-2877-1-git-send-email-leo.yan@linaro.org>
-Sender: linux-kernel-owner@vger.kernel.org
-To: Leo Yan <leo.yan@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>, Vincent Guittot <vincent.guittot@linaro.org>
+In-Reply-To: <1514976294-31880-1-git-send-email-festevam@gmail.com>
+Sender: linux-pm-owner@vger.kernel.org
 List-Id: linux-pm@vger.kernel.org
+To: Fabio Estevam <festevam@gmail.com>
+Cc: rui.zhang@intel.com, linux-pm@vger.kernel.org, arthurborsboom@gmail.com, Fabio Estevam <fabio.estevam@nxp.com>, Pavel Machek <pavel@ucw.cz>, Guenter Roeck <linux@roeck-us.net>
 
-On Wed, Jan 03, 2018 at 05:24:16PM +0800, Leo Yan wrote:
-> Thermal core framework uses the system_freezable_wq workqueue as its
-> workqueue for polling temperature. Using system_freezable_wq workqueue
-> prevents the scheduler to make smart decision about the best place to
-> schedule the work.
+On Wed, Jan 03, 2018 at 08:44:54AM -0200, Fabio Estevam wrote:
+> From: Fabio Estevam <fabio.estevam@nxp.com>
 > 
-> This commit replaces system_freezable_wq with
-> system_freezable_power_efficient_wq. With kernel configuration
-> CONFIG_WQ_POWER_EFFICIENT is enabled, the work can be scheduled on the
-> best CPU from a power or a performance point of view.
+> Booting Linux on a mx6q based board leads to the following warning:
+>     
+> (NULL device *): hwmon_device_register() is deprecated. Please convert the
+> driver to use hwmon_device_register_with_info().
+>     
+> , so do the conversion as suggested.
 > 
-> This commit is inspired by Vincent Guittot patch "netfilter: conntrack:
-> use power efficient workqueue" and verified on 96boards Hikey960.
+> Also, this results in the core taking care of creating the 'name'
+> attribute, so drop the code doing that from the thermal driver.
+> 
+> The initial attempt to convert this driver to
+> hwmon_device_register_with_info() caused issues on the N900 platform
+> in commit 611fb68062f ("thermal: thermal_hwmon: Convert to
+> hwmon_device_register_with_info()"):
+> 
+> bq27xxx-battery 2-0055: failed to register battery
+> bq27xxx-battery: probe of 2-0055 failed with error -22
+> ...
+> rx51-battery: probe of n900-battery failed with error -22
+> 
+> , leading to a revert in commit 3feb479cea37 ("Revert "thermal:
+> thermal_hwmon: Convert to hwmon_device_register_with_info()"").
+> 
+> The probe errors happened due to the '-' character being present in
+> the name of the power supply devices: bq27200-0 and rx51-battery.
+> 
+> Since commit 74d3b6419772 ("hwmon: Relax name attribute validation
+> for new APIs") hwmon will no longer treat these names as errors,
+> allowing the transition for hwmon_device_register_with_info() to
+> happen in a safely manner. 
 
-The case may not be the same as for netfilter and for thermal.
-
-what is the worst case scheduling delay here?
-
-More importantly, what problem are you really trying to solve?
-Do you have a case in which thermal WQs are consuming too much CPUs?
-Do you care describing (also in the commit)?
+I am mostly fine with the patch as long as we get an ack from hwmon
+folks.
 
 > 
-> Cc: Eduardo Valentin <edubezval@gmail.com>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Cc: Vincent Guittot <vincent.guittot@linaro.org>
-> Signed-off-by: Leo Yan <leo.yan@linaro.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Guenter Roeck <linux@roeck-us.net>
+> Signed-off-by: Fabio Estevam <fabio.estevam@nxp.com>
 > ---
->  drivers/thermal/thermal_core.c | 7 ++++---
->  1 file changed, 4 insertions(+), 3 deletions(-)
+> Pavel,
 > 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 2b1b0ba..ba90f71 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -293,11 +293,12 @@ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
->  					    int delay)
+> Could you please test this patch on your N900 platform?
+> 
+> Thanks
+> 
+>  drivers/thermal/thermal_hwmon.c | 20 +++-----------------
+>  1 file changed, 3 insertions(+), 17 deletions(-)
+> 
+> diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+> index 541af59..c4a508a 100644
+> --- a/drivers/thermal/thermal_hwmon.c
+> +++ b/drivers/thermal/thermal_hwmon.c
+> @@ -59,14 +59,6 @@ static LIST_HEAD(thermal_hwmon_list);
+>  static DEFINE_MUTEX(thermal_hwmon_list_lock);
+>  
+>  static ssize_t
+> -name_show(struct device *dev, struct device_attribute *attr, char *buf)
+> -{
+> -	struct thermal_hwmon_device *hwmon = dev_get_drvdata(dev);
+> -	return sprintf(buf, "%s\n", hwmon->type);
+> -}
+> -static DEVICE_ATTR_RO(name);
+> -
+> -static ssize_t
+>  temp_input_show(struct device *dev, struct device_attribute *attr, char *buf)
 >  {
->  	if (delay > 1000)
-> -		mod_delayed_work(system_freezable_wq, &tz->poll_queue,
-> +		mod_delayed_work(system_freezable_power_efficient_wq,
-> +				 &tz->poll_queue,
->  				 round_jiffies(msecs_to_jiffies(delay)));
->  	else if (delay)
-> -		mod_delayed_work(system_freezable_wq, &tz->poll_queue,
-> -				 msecs_to_jiffies(delay));
-> +		mod_delayed_work(system_freezable_power_efficient_wq,
-> +				 &tz->poll_queue, msecs_to_jiffies(delay));
->  	else
->  		cancel_delayed_work(&tz->poll_queue);
+>  	int temperature;
+> @@ -165,15 +157,12 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+>  
+>  	INIT_LIST_HEAD(&hwmon->tz_list);
+>  	strlcpy(hwmon->type, tz->type, THERMAL_NAME_LENGTH);
+> -	hwmon->device = hwmon_device_register(NULL);
+> +	hwmon->device = hwmon_device_register_with_info(NULL, hwmon->type,
+> +							hwmon, NULL, NULL);
+>  	if (IS_ERR(hwmon->device)) {
+>  		result = PTR_ERR(hwmon->device);
+>  		goto free_mem;
+>  	}
+> -	dev_set_drvdata(hwmon->device, hwmon);
+> -	result = device_create_file(hwmon->device, &dev_attr_name);
+> -	if (result)
+> -		goto free_mem;
+>  
+>   register_sys_interface:
+>  	temp = kzalloc(sizeof(*temp), GFP_KERNEL);
+> @@ -222,10 +211,8 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+>   free_temp_mem:
+>  	kfree(temp);
+>   unregister_name:
+> -	if (new_hwmon_device) {
+> -		device_remove_file(hwmon->device, &dev_attr_name);
+> +	if (new_hwmon_device)
+>  		hwmon_device_unregister(hwmon->device);
+> -	}
+>   free_mem:
+>  	if (new_hwmon_device)
+>  		kfree(hwmon);
+> @@ -267,7 +254,6 @@ void thermal_remove_hwmon_sysfs(struct thermal_zone_device *tz)
+>  	list_del(&hwmon->node);
+>  	mutex_unlock(&thermal_hwmon_list_lock);
+>  
+> -	device_remove_file(hwmon->device, &dev_attr_name);
+>  	hwmon_device_unregister(hwmon->device);
+>  	kfree(hwmon);
 >  }
 > -- 
 > 2.7.4
