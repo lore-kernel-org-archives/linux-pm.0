@@ -1,94 +1,60 @@
-From: Juri Lelli <juri.lelli@redhat.com>
-Subject: Re: [BUG] schedutil governor produces regular max freq spikes
- because of lockup detector watchdog threads
-Date: Wed, 10 Jan 2018 15:21:58 +0100
-Message-ID: <20180110142158.GC16413@localhost.localdomain>
-References: <CAJZ5v0gOwgr2yB_YY8ian6GXjdic3zRUa4S9vHNmudC8Khc5cA@mail.gmail.com>
- <20180108040121.GB4003@vireshk-i7>
- <1515417622.3207.5.camel@nxp.com>
- <20180108151450.GA30937@e110439-lin>
- <1515426694.3207.28.camel@nxp.com>
- <CAJZ5v0hnY+2pL0LGAeQv7xZcYN42+_azKH9cGGLvPU1iO6fmWg@mail.gmail.com>
- <1515508985.3310.8.camel@nxp.com>
- <CAJZ5v0gV_4y1rKio9QRP_-M65rXtQHi2W3O22uiXJ08oafVtOw@mail.gmail.com>
- <20180110105451.GB16413@localhost.localdomain>
- <CAJZ5v0gytg+ESkcH0uW+AYKaeiT_cb8vdUnhPzds13CaDR521g@mail.gmail.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Subject: Re: [-next PATCH 2/4] treewide: Use DEVICE_ATTR_RW
+Date: Wed, 10 Jan 2018 16:43:02 +0200
+Message-ID: <41847882-9ad9-aeb1-009b-2f9b2fdb656e@ti.com>
+References: <cover.1513706701.git.joe@perches.com>
+ <cd38f14f06e1f447b3159ffe8c69c0df8241bb6e.1513706701.git.joe@perches.com>
+ <20171220083403.GA27231@bitmer.com> <1513761884.1234.83.camel@perches.com>
+ <20171220093211.GA16177@kroah.com> <20171220105404.GA29856@bitmer.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Return-path: <linux-pm-owner@vger.kernel.org>
-Received: from mail-wr0-f194.google.com ([209.85.128.194]:37533 "EHLO
-        mail-wr0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S965115AbeAJOWD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 10 Jan 2018 09:22:03 -0500
-Received: by mail-wr0-f194.google.com with SMTP id f8so17504053wre.4
-        for <linux-pm@vger.kernel.org>; Wed, 10 Jan 2018 06:22:02 -0800 (PST)
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gytg+ESkcH0uW+AYKaeiT_cb8vdUnhPzds13CaDR521g@mail.gmail.com>
-Sender: linux-pm-owner@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
+Return-path: <dri-devel-bounces@lists.freedesktop.org>
+In-Reply-To: <20171220105404.GA29856@bitmer.com>
+Content-Language: en-US
+List-Unsubscribe: <https://lists.freedesktop.org/mailman/options/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <https://lists.freedesktop.org/archives/dri-devel>
+List-Post: <mailto:dri-devel@lists.freedesktop.org>
+List-Help: <mailto:dri-devel-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <https://lists.freedesktop.org/mailman/listinfo/dri-devel>,
+ <mailto:dri-devel-request@lists.freedesktop.org?subject=subscribe>
+Errors-To: dri-devel-bounces@lists.freedesktop.org
+Sender: "dri-devel" <dri-devel-bounces@lists.freedesktop.org>
+To: Jarkko Nikula <jarkko.nikula@bitmer.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, Jaroslav Kysela <perex@perex.cz>, linux-s390@vger.kernel.org, linux-omap@vger.kernel.org, "James E.J.
+ Bottomley" <jejb@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org, Takashi Iwai <tiwai@suse.com>, Sebastian Ott <sebott@linux.vnet.ibm.com>, James Smart <james.smart@broadcom.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.com>, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, Dick Kennedy <dick.kennedy@broadcom.com>, Mathias Nyman <mathias.nyman@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Peter Oberparleiter <oberpar@linux.vnet.ibm.com>, intel-gfx@lists.
 List-Id: linux-pm@vger.kernel.org
-To: "Rafael J. Wysocki" <rafael@kernel.org>
-Cc: Leonard Crestez <leonard.crestez@nxp.com>, Patrick Bellasi <patrick.bellasi@arm.com>, Viresh Kumar <viresh.kumar@linaro.org>, Linux PM <linux-pm@vger.kernel.org>, Anson Huang <anson.huang@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Zijlstra <peterz@infradead.org>, Vincent Guittot <vincent.guittot@linaro.org>
 
-On 10/01/18 13:35, Rafael J. Wysocki wrote:
-> On Wed, Jan 10, 2018 at 11:54 AM, Juri Lelli <juri.lelli@redhat.com> wrote:
-> > On 09/01/18 16:50, Rafael J. Wysocki wrote:
-> >> On Tue, Jan 9, 2018 at 3:43 PM, Leonard Crestez <leonard.crestez@nxp.com> wrote:
-> >
-> > [...]
-> >
-> >> > Every 4 seconds (really it's /proc/sys/kernel/watchdog_thresh * 2 / 5
-> >> > and watchdog_thresh defaults to 10). There is a per-cpu hrtimer which
-> >> > wakes the per-cpu thread in order to check that tasks can still
-> >> > execute, this works very well against bugs like infinite loops in
-> >> > softirq mode. The timers are synchronized initially but can get
-> >> > staggered (for example by hotplug).
-> >> >
-> >> > My guess is that it's only marked RT so that it executes ahead of other
-> >> > threads and the watchdog doesn't trigger simply when there are lots of
-> >> > userspace tasks.
-> >>
-> >> I think so too.
-> >>
-> >> I see a couple of more-or-less hackish ways to avoid the issue, but
-> >> nothing particularly attractive ATM.
-> >>
-> >> I wouldn't change the general behavior with respect to RT tasks
-> >> because of this, though, as we would quickly find a case in which that
-> >> would turn out to be not desirable.
-> >
-> > I agree we cannot generalize to all RT tasks, but what Patrick proposed
-> > (clamping utilization of certain known tasks) might help here:
-> >
-> > lkml.kernel.org/r/20170824180857.32103-1-patrick.bellasi@arm.com
-> >
-> > Maybe with a per-task interface instead of using cgroups?
-> 
-> The problem here is that this is a kernel thing and user space should
-> not be expected to have to do anything about fixing this IMO.
-
-Not sure. If we would have such an interface, it should be possible to
-use it from both kernel and userspace. In this case kernel might be able
-to do the "right" thing. Also, RT userspace is usually already responsible
-for configuring system priorities, it might be easy to set this as well.
-
-> > The other option would be to relax DL tasks affinity constraints, so
-> > that a case like this might be handled. Daniel and Tommaso proposed
-> > possible approaches, this might be a driving use case. Not sure how we
-> > would come up with a proper runtime for the watchdog, though.
-> 
-> That is a problem.
-> 
-> Basically, it needs to run as soon as possible, but it will be running
-> for a very short time, every time.
-
-Does it really require to run "as soon as possible" or is it "at least
-once every watchdog period"? In the latter case DL might still fit, with
-a very short runtime (to be defined).
-
-> Overall, using a thread for that seems wasteful ...
-
-Not sure I'm following you here, aren't we using a thread already?
-
-Thanks,
-
-- Juri
+CgpPbiAyMDE3LTEyLTIwIDEyOjU0LCBKYXJra28gTmlrdWxhIHdyb3RlOgo+IE9uIFdlZCwgRGVj
+IDIwLCAyMDE3IGF0IDEwOjMyOjExQU0gKzAxMDAsIEdyZWcgS3JvYWgtSGFydG1hbiB3cm90ZToK
+Pj4gT24gV2VkLCBEZWMgMjAsIDIwMTcgYXQgMDE6MjQ6NDRBTSAtMDgwMCwgSm9lIFBlcmNoZXMg
+d3JvdGU6Cj4+PiBPbiBXZWQsIDIwMTctMTItMjAgYXQgMTA6MzQgKzAyMDAsIEphcmtrbyBOaWt1
+bGEgd3JvdGU6Cj4+Pj4gT24gVHVlLCBEZWMgMTksIDIwMTcgYXQgMTA6MTU6MDdBTSAtMDgwMCwg
+Sm9lIFBlcmNoZXMgd3JvdGU6Cj4+Pj4+IENvbnZlcnQgREVWSUNFX0FUVFIgdXNlcyB0byBERVZJ
+Q0VfQVRUUl9SVyB3aGVyZSBwb3NzaWJsZS4KPj4+IFtdIAo+Pj4+PiBkaWZmIC0tZ2l0IGEvc291
+bmQvc29jL29tYXAvbWNic3AuYyBiL3NvdW5kL3NvYy9vbWFwL21jYnNwLmMKPj4+IFtdCj4+Pj4+
+IEBAIC04NTQsNyArODU0LDcgQEAgc3RhdGljIHNzaXplX3QgZG1hX29wX21vZGVfc3RvcmUoc3Ry
+dWN0IGRldmljZSAqZGV2LAo+Pj4+PiAgCXJldHVybiBzaXplOwo+Pj4+PiAgfQo+Pj4+PiAgCj4+
+Pj4+IC1zdGF0aWMgREVWSUNFX0FUVFIoZG1hX29wX21vZGUsIDA2NDQsIGRtYV9vcF9tb2RlX3No
+b3csIGRtYV9vcF9tb2RlX3N0b3JlKTsKPj4+Pj4gK3N0YXRpYyBERVZJQ0VfQVRUUl9SVyhkbWFf
+b3BfbW9kZSk7Cj4+Pj4+ICAKPj4+Pgo+Pj4+IFdoaWxlIEkgY2FuIGFjayB0aGlzIHBhcnQgaGVy
+ZSBpZiBpdCBoZWxwcyBnZW5lcmljIGNsZWFudXAgZWZmb3J0IEkKPj4+PiBkb24ndCB1bmRlcnN0
+YXJ0IHdvdWxkIGl0IGltcHJvdmUgY29kZSByZWFkYWJpbGl0eSBpbiBnZW5lcmFsPyBNb2RlIDY0
+NAo+Pj4+IGlzIGNsZWFyIGFuZCBkb24ndCBuZWVkIGFueSBncmVwcGluZyBidXQgZm9yIERFVklD
+RV9BVFRSX1JXKCkgSSBoYWQgdG8gZ28KPj4+PiB0aHJvdWdoIGFsbCBvZiB0aGVzZSBmaWxlcyBp
+biBvcmRlciB0byBzZWUgd2hhdCBkb2VzIGl0IG1lYW46Cj4+Cj4+IFllYWgsIDY0NCBpcyAiY2xl
+YXIiLCBidXQgX1JXKCkgaXMgZXZlbiBtb3JlIGNsZWFyLiAgSWRlYWxseSBJIHdhbnQgdG8KPj4g
+Z2V0IHJpZCBvZiBhbGwgb2YgdGhlICJub24tc3RhbmRhcmQiIHVzZXJzIHRoYXQgc2V0IHJhbmRv
+bSBtb2RlcyBvZgo+PiBzeXNmcyBmaWxlcywgYXMgd2UgZ2V0IGl0IHdyb25nIHRvbyBtYW55IHRp
+bWVzLiAgVXNpbmcgdGhlICJkZWZhdWx0cyIgaXMKPj4gbXVjaCBiZXR0ZXIuCj4+Cj4gRmFpciBl
+bm91Z2guIEZvciB0aGUgc291bmQvc29jL29tYXAvIChBY2tlZC1ieSB3YXMgbWlzc2luZyBmcm9t
+IG15Cj4gcHJldmlvdXMgcmVwbHkpOgo+IAo+IEFja2VkLWJ5OiBKYXJra28gTmlrdWxhIDxqYXJr
+a28ubmlrdWxhQGJpdG1lci5jb20+CgpBbmQgZnJvbSBtZSB0byB0aGUgc2FtZSBmaWxlIChzb3Vu
+ZC9zb2Mvb21hcC9tY2JzcC5jKToKCkFja2VkLWJ5OiBQZXRlciBVamZhbHVzaSA8cGV0ZXIudWpm
+YWx1c2lAdGkuY29tPgoKCi0gUMOpdGVyCgpUZXhhcyBJbnN0cnVtZW50cyBGaW5sYW5kIE95LCBQ
+b3Jra2FsYW5rYXR1IDIyLCAwMDE4MCBIZWxzaW5raS4KWS10dW5udXMvQnVzaW5lc3MgSUQ6IDA2
+MTU1MjEtNC4gS290aXBhaWtrYS9Eb21pY2lsZTogSGVsc2lua2kKX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18KZHJpLWRldmVsIG1haWxpbmcgbGlzdApkcmkt
+ZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0b3Aub3Jn
+L21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsCg==
